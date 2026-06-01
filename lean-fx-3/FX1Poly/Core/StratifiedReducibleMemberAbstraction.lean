@@ -79,4 +79,47 @@ theorem IsReducibleMemberAt.abstraction {scope : Nat} {level : Nat}
        (codomainReducible argument argumentInDomain).headExpansionClosed)
      bodyReducible⟩
 
+/-- **Choice-free dependent Π-FORMATION via the canonical codomain.**  `ReducibleTypeAt.piType` specialized
+to the FIXED canonical codomain function `fun argument => IsReducibleMemberAt level (subst0 codomainCode
+argument)`: the per-argument codomain-reducibility premise is discharged from mere per-argument EXISTENCE
+(`IsReducibleTypeAt`) by `IsReducibleTypeAt.reducibleMemberCandidate` (PathA-3).  No candidate is extracted
+per argument, so no choice is used — this is the brick that dissolves the dependent fundamental theorem's
+Π-formation choice wall. -/
+theorem ReducibleTypeAt.piTypeCanonical {scope : Nat} {level : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm scope → Prop}
+    (domainReducible : ReducibleTypeAt level domainCode domainCandidate)
+    (codomainExists : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsReducibleTypeAt level (RawTerm.subst0 codomainCode argument)) :
+    ReducibleTypeAt level
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+      (IsDependentArrowReducible domainCandidate
+        (fun argument => IsReducibleMemberAt level (RawTerm.subst0 codomainCode argument))) :=
+  ReducibleTypeAt.piType
+    (fun argument => IsReducibleMemberAt level (RawTerm.subst0 codomainCode argument))
+    domainReducible
+    (fun argument argumentInDomain => (codomainExists argument argumentInDomain).reducibleMemberCandidate)
+
+/-- **Choice-free dependent Π-INTRODUCTION via the canonical codomain.**  `IsReducibleMemberAt.abstraction`
+specialized to the canonical codomain: the body lands in `IsReducibleMemberAt level (subst0 codomainCode
+argument)` for every reducible argument (its fundamental-theorem IH), and the codomain-reducibility premise
+is again discharged from existence by `IsReducibleTypeAt.reducibleMemberCandidate`.  The dependent
+generalization of `abstractionNonDependent` (the `codomainCode := weaken B` special case), choice-free. -/
+theorem IsReducibleMemberAt.abstractionCanonical {scope : Nat} {level : Nat}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm scope → Prop}
+    (domainReducible : ReducibleTypeAt level domainCode domainCandidate)
+    (domainArgumentsSN : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsStronglyNormalizing argument)
+    (codomainExists : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsReducibleTypeAt level (RawTerm.subst0 codomainCode argument))
+    (bodyReducible : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsReducibleMemberAt level (RawTerm.subst0 codomainCode argument) (RawTerm.subst0 body argument)) :
+    IsReducibleMemberAt level
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+      (.mkGen .gen_lam () (.childCons body .childNil)) :=
+  IsReducibleMemberAt.abstraction domainReducible domainArgumentsSN
+    (fun argument argumentInDomain => (codomainExists argument argumentInDomain).reducibleMemberCandidate)
+    bodyReducible
+
 end FX1Poly.Core
