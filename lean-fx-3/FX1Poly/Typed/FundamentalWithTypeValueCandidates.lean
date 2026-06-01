@@ -289,6 +289,53 @@ theorem hasTypeValueCandidatesForAllPositiveUniverseMembers_iff_allReducibleType
   ⟨HasTypeValueCandidatesForAllPositiveUniverseMembers.toAllReducibleTypesAtAllLevels,
     HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers⟩
 
+/-- **Type-value completion entails lower-fuel extension.**  If every strongly-normalizing all-level
+reducible type exposes the all-positive member predicate, then any strongly-normalizing type reducible at
+one fuel level is reducible at every fuel level.
+
+Proof idea: view `typeCode` as a member of a fixed standard universe at fuel `predLevel + 1`.  The completion
+principle gives that universe code the all-positive member predicate as its candidate at the same positive
+fuel.  Candidate determinism then transports the one-fuel universe membership of `typeCode` into
+all-positive universe membership, and `universeCode_iff` decodes that back to all-level type reducibility.
+This pins the exact strength of the type-value completion principle: it is not weaker than the level
+extension property consumed by universe-code formation. -/
+theorem HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.reducibleTypeAtExtendsToAllLevels
+    (allReducibleTypesHaveTypeValueCandidates :
+      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
+    {scope : Nat} {predLevel : Nat} {typeCode : RawTerm scope}
+    {candidate : RawTerm scope → Prop}
+    (typeCodeNormalizing : IsStronglyNormalizing typeCode)
+    (typeCodeReducibleAtLevel : ReducibleTypeAt predLevel typeCode candidate) :
+    IsReducibleTypeAtAllLevels typeCode := by
+  let standardUniverse : RawTerm scope :=
+    universeCodeCell LevelExpr.lzero UniverseFlag.standard
+  have standardUniverseNormalizing : IsStronglyNormalizing standardUniverse :=
+    universeCode_isStronglyNormalizing (LevelExpr.lzero, UniverseFlag.standard)
+  have standardUniverseReducibleAtAllLevels :
+      IsReducibleTypeAtAllLevels standardUniverse := by
+    intro level
+    cases level with
+    | zero =>
+        exact ⟨_, ReducibleTypeStep.universeCode LevelExpr.lzero UniverseFlag.standard⟩
+    | succ predLevel =>
+        exact ⟨_, ReducibleTypeStep.universeCode LevelExpr.lzero UniverseFlag.standard⟩
+  have standardUniverseHasAllPositiveCandidate :
+      HasAllPositiveReducibleCandidateAt (predLevel + 1) standardUniverse :=
+    allReducibleTypesHaveTypeValueCandidates standardUniverseNormalizing
+      standardUniverseReducibleAtAllLevels predLevel
+  have typeCodeMemberInStandardUniverseAtLevel :
+      universeReducibilityPredicate (ReducibleTypeAt predLevel) typeCode :=
+    ⟨typeCodeNormalizing, ⟨candidate, typeCodeReducibleAtLevel⟩⟩
+  have typeCodeMemberAtAllPositiveLevels :
+      IsReducibleMemberAtAllPositiveLevels standardUniverse typeCode :=
+    HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+      standardUniverseHasAllPositiveCandidate
+      (ReducibleTypeStep.universeCode LevelExpr.lzero UniverseFlag.standard)
+      typeCodeMemberInStandardUniverseAtLevel
+  exact ((IsReducibleMemberAtAllPositiveLevels.universeCode_iff
+    (levelExpr := LevelExpr.lzero) (flag := UniverseFlag.standard)
+    (typeCode := typeCode)).mp typeCodeMemberAtAllPositiveLevels).2
+
 /-- **The variable member arm over the type-value environment.** -/
 theorem fundamentalVarWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (index : Fin scope) :
