@@ -43,4 +43,23 @@ theorem DescTelescopePi.consInversion {profile : PolyProfile} {baseScope current
   | cons _context _head _headLevel _restLevels _flag _rest headTyped restTyped =>
       exact ⟨headTyped, restTyped⟩
 
+/-- **Two-child former telescope ⟹ two-element level list.**  A depth-0 premise telescope over the concrete
+two-child spine `childCons _ (childCons _ childNil)` (the Π / Σ formers' `[0,1]` `binderShifts` shape) carries
+exactly a two-element level list.  The child spine fixes the `RawTermChildren` index, so the `nil`
+constructors are refuted definitionally by that index alone — a single live `cons` arm at each step, no
+refuted-arm discrimination, hence no `propext` / `Quot.sound` leak (same discipline as `consInversion`).  The
+`genFormationPi` fundamental-theorem arm uses it to recover `levels = [domainLevel, codomainLevel]` (needed to
+state the `FormerChildrenReducible` bundle) WITHOUT casing the premise telescope as a recursion target. -/
+theorem DescTelescopePi.twoChildLevels {profile : PolyProfile} {baseScope : Nat}
+    {context : TypingContext profile baseScope} {levelsList : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren [0, 1] baseScope}
+    (telescope : DescTelescopePi profile (currentDepth := 0) context levelsList flag children) :
+    ∃ domainLevel codomainLevel, levelsList = [domainLevel, codomainLevel] := by
+  cases telescope with
+  | cons _context _head domainLevel _restLevels _flag _rest _headTyped restTyped =>
+      cases restTyped with
+      | cons _context2 _head2 codomainLevel _restLevels2 _flag2 _rest2 _headTyped2 tailTelescope =>
+          cases tailTelescope with
+          | nil => exact ⟨domainLevel, codomainLevel, rfl⟩
+
 end FX1Poly.Typed

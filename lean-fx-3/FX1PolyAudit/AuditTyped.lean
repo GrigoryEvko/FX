@@ -866,6 +866,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeCodeCell_noWeakHeadStep
 #assert_no_axioms FX1Poly.Typed.IsReducibleMember.atUniverseCode
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormerOfChildMemberships
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormerOfChildMemberships
 #assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.toPiMember
