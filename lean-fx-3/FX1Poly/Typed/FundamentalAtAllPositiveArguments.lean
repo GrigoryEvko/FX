@@ -43,6 +43,22 @@ theorem IsReducibleMemberAtAllPositiveLevels.atLevel {scope : Nat}
     IsReducibleMemberAt (level + 1) typeCode term :=
   memberAtAllPositiveLevels level
 
+/-- **A type whose level candidate is the all-positive member predicate.**  This is the candidate-level
+semantic hook the dependent binder needs: determinism then turns membership in any decoded candidate for the
+same type/level into all-positive membership. -/
+def HasAllPositiveReducibleCandidateAt {scope : Nat} (level : Nat) (typeCode : RawTerm scope) : Prop :=
+  ReducibleTypeAt level typeCode (IsReducibleMemberAtAllPositiveLevels typeCode)
+
+/-- If a type denotes the all-positive member predicate at a level, any other candidate for that same
+type/level contains only all-positive members. -/
+theorem HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive {scope : Nat}
+    {level : Nat} {typeCode term : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (hasAllPositiveCandidate : HasAllPositiveReducibleCandidateAt level typeCode)
+    (candidateReducible : ReducibleTypeAt level typeCode candidate)
+    (candidateMember : candidate term) :
+    IsReducibleMemberAtAllPositiveLevels typeCode term :=
+  (ReducibleTypeAt.deterministic candidateReducible hasAllPositiveCandidate term).mp candidateMember
+
 /-- **Dependent Pi-introduction from all-positive arguments.**  If every argument accepted by the decoded
 domain candidate can be strengthened to all positive domain-membership levels, then the codomain and body
 all-level recursive hypotheses can be run under the cons-extended all-level environment.  This is the exact
