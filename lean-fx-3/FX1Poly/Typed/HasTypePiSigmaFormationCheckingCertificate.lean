@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeCheck
 import FX1Poly.Typed.HasTypeDescDecidable
+import FX1Poly.Typed.HasTypeDescStronglyNormalizing
 import FX1Poly.Typed.HasTypeStronglyNormalizing
 
 /-! # FX1Poly/Typed/HasTypePiSigmaFormationCheckingCertificate
@@ -16,6 +17,8 @@ decidability/coherence facts for the smaller native pi/sigma-formation `HasType`
 * typed classifier conversion: `Conv.decidableOfTyped` and `Conv.decidableOfHasTypeDesc`;
 * validity: `HasType.classifierIsType`;
 * native-pi-sigma HasType normalization: `HasType.isStronglyNormalizing`.
+* description-engine validity and normalization: `HasTypeDesc.classifierIsTypeDesc` and
+  `HasTypeDesc.isStronglyNormalizing`.
 
 This file packages those pieces as a single kernel object,
 `HasTypePiSigmaFormationCheckingCertificate`, so downstream semantic-core work can depend on one explicit
@@ -79,9 +82,16 @@ structure HasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sc
       HasTypeDesc profile context firstSubject firstClassifier →
       HasTypeDesc profile context secondSubject secondClassifier →
         Decidable (Conv firstClassifier secondClassifier)
+  /-- Description-engine validity: every classifier produced by description typing is itself a
+  description-engine type. -/
+  proveHasTypeDescClassifierIsTypeDesc : ∀ {subject classifier : RawTerm scope},
+    HasTypeDesc profile context subject classifier → IsTypeDesc profile context classifier
   /-- Validity: every classifier produced by typing is itself a type. -/
   proveClassifierIsType : ∀ {subject classifier : RawTerm scope},
     HasType profile context subject classifier → IsType profile context classifier
+  /-- Description-engine normalization: every description-typed subject is strongly normalizing. -/
+  proveHasTypeDescSubjectIsStronglyNormalizing : ∀ {subject classifier : RawTerm scope},
+    HasTypeDesc profile context subject classifier → StepStar.IsStronglyNormalizing subject
   /-- Native pi/sigma-formation HasType normalization: every typed subject is strongly normalizing. -/
   proveSubjectIsStronglyNormalizing : ∀ {subject classifier : RawTerm scope},
     HasType profile context subject classifier → StepStar.IsStronglyNormalizing subject
@@ -104,7 +114,10 @@ def buildHasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sco
     Conv.decidableOfTyped contextIsWellFormed firstTyped secondTyped
   decideHasTypeDescClassifierConv := fun firstTyped secondTyped =>
     Conv.decidableOfHasTypeDesc contextIsWellFormed firstTyped secondTyped
+  proveHasTypeDescClassifierIsTypeDesc := fun typed =>
+    HasTypeDesc.classifierIsTypeDesc contextIsWellFormed typed
   proveClassifierIsType := fun typed => HasType.classifierIsType contextIsWellFormed typed
+  proveHasTypeDescSubjectIsStronglyNormalizing := fun typed => typed.isStronglyNormalizing
   proveSubjectIsStronglyNormalizing := fun typed => typed.isStronglyNormalizing
 
 end FX1Poly.Typed
