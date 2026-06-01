@@ -1,5 +1,6 @@
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleSemanticRules
+import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Core.StratifiedReducibleUniverseDecode
 
 /-! # FX1Poly/Typed/FundamentalAtAllLeafArms
@@ -164,5 +165,43 @@ theorem fundamentalPiIntroAtAll {profile : PolyProfile} {scope : Nat}
   · intro argument argumentInDomain
     exact bodyReducibleUnderArgument substitution env predLevel domainReducible
       argument argumentInDomain
+
+/-- **The Π-formation arm over the ∀-level conclusion, factored through the two-child former bundle.**  Once
+the premise-telescope companion has produced `FormerChildrenReducible` for the substituted domain/codomain
+children, the Π former's universe membership is exactly `FormerChildrenReducible.toPiMember`, after the
+classifier substitution on the universe code reduces by `subst_universeCodeCell`. -/
+theorem fundamentalPiFormationAtAll {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (childrenReducible :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
+        FormerChildrenReducible predLevel flag substitution domainCode codomainCode
+          domainLevel codomainLevel) :
+    FundamentalConclusionAtAll context (piTyCodeCell domainCode codomainCode)
+      (universeCodeCell formerLevel flag) := by
+  intro _targetScope substitution env predLevel
+  rw [subst_universeCodeCell]
+  exact (childrenReducible substitution env predLevel).toPiMember
+
+/-- **The Σ-formation arm over the ∀-level conclusion, factored through the two-child former bundle.**  The
+Σ/data-former twin of `fundamentalPiFormationAtAll`: the premise telescope supplies the same child bundle,
+and `FormerChildrenReducible.toSigmaMember` performs the semantic dispatch. -/
+theorem fundamentalSigmaFormationAtAll {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (childrenReducible :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
+        FormerChildrenReducible predLevel flag substitution domainCode codomainCode
+          domainLevel codomainLevel) :
+    FundamentalConclusionAtAll context
+      (.mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+      (universeCodeCell formerLevel flag) := by
+  intro _targetScope substitution env predLevel
+  rw [subst_universeCodeCell]
+  exact (childrenReducible substitution env predLevel).toSigmaMember
 
 end FX1Poly.Typed
