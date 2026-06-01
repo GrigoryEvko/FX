@@ -113,4 +113,49 @@ theorem ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.cons
         exact tailEnvWithCandidates.lookupPositiveCandidate
           ⟨position, Nat.lt_of_succ_lt_succ isLtSuccSucc⟩ predLevel
 
+/-- Extend a strengthened all-level environment when the binding type already has the standard positive-fuel
+candidate companion under all-level substitutions.  This is the recursor-facing `cons` wrapper: the caller
+supplies the fresh head as an all-positive member of the binding type, and the binding's type-companion is
+run at the tail substitution to provide variable zero's positive-candidate witness. -/
+theorem ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.consFromPositiveTypeCandidate
+    {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope} {bindingType : RawTerm scope}
+    {tailSubstitution : RawTermSubst scope (targetScope + 1)}
+    {headTerm : RawTerm (targetScope + 1)}
+    (tailEnvWithCandidates :
+      ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context tailSubstitution)
+    (headReducibleAtAllPositiveLevels :
+      IsReducibleMemberAtAllPositiveLevels (RawTerm.subst tailSubstitution bindingType) headTerm)
+    (bindingTypeHasPositiveCandidate :
+      HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution context bindingType) :
+    ReducibleEnvAtAllLevelsWithPositiveTypeCandidates (context.cons bindingType)
+      (RawTermSubst.cons headTerm tailSubstitution) :=
+  ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.cons tailEnvWithCandidates
+    headReducibleAtAllPositiveLevels
+    (fun predLevel =>
+      bindingTypeHasPositiveCandidate tailSubstitution
+        tailEnvWithCandidates.toAllLevels predLevel)
+
+/-- Use the enriched environment's lookup type-candidate companion to strengthen membership in any decoded
+candidate for a looked-up binding type to all-positive membership.  This is the direct domain-variable
+bridge: if a binder domain is a context variable, the environment carries exactly the positive-fuel
+all-positive candidate witness needed to promote ordinary domain-candidate membership. -/
+theorem ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.lookupMemberExtendsToAllPositive
+    {profile : PolyProfile} {scope targetScope : Nat}
+    {context : TypingContext profile scope} {substitution : RawTermSubst scope targetScope}
+    (envWithCandidates :
+      ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+    (index : Fin scope) (predLevel : Nat)
+    {candidate : RawTerm targetScope → Prop}
+    (lookupTypeReducible :
+      ReducibleTypeAt (predLevel + 1)
+        (RawTerm.subst substitution (context.lookup index)) candidate)
+    {argument : RawTerm targetScope}
+    (argumentInCandidate : candidate argument) :
+    IsReducibleMemberAtAllPositiveLevels
+      (RawTerm.subst substitution (context.lookup index)) argument :=
+  HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+    (envWithCandidates.lookupPositiveCandidate index predLevel)
+    lookupTypeReducible argumentInCandidate
+
 end FX1Poly.Typed
