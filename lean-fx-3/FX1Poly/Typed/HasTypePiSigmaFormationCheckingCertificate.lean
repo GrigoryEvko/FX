@@ -2,6 +2,7 @@ import FX1Poly.Typed.HasTypeCheck
 import FX1Poly.Typed.HasTypeDescClosedForms
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescStronglyNormalizing
+import FX1Poly.Typed.HasTypeFormationNoLambdaApplication
 import FX1Poly.Typed.HasTypeStronglyNormalizing
 
 /-! # FX1Poly/Typed/HasTypePiSigmaFormationCheckingCertificate
@@ -20,6 +21,7 @@ decidability/coherence facts for the smaller native pi/sigma-formation `HasType`
 * native-pi-sigma HasType normalization: `HasType.isStronglyNormalizing`.
 * description-engine validity and normalization: `HasTypeDesc.classifierIsTypeDesc` and
   `HasTypeDesc.isStronglyNormalizing`.
+* formation-boundary rejection: native `HasType` and `HasTypeDesc` cannot type lambda/application subjects.
 
 This file packages those pieces as a single kernel object,
 `HasTypePiSigmaFormationCheckingCertificate`, so downstream semantic-core work can depend on one explicit
@@ -96,6 +98,20 @@ structure HasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sc
   /-- Native pi/sigma-formation HasType normalization: every typed subject is strongly normalizing. -/
   proveSubjectIsStronglyNormalizing : ∀ {subject classifier : RawTerm scope},
     HasType profile context subject classifier → StepStar.IsStronglyNormalizing subject
+  /-- Native pi/sigma-formation `HasType` rejects lambda subjects. -/
+  rejectHasTypeLambda : ∀ {body : RawTerm (scope + 1)} {classifier : RawTerm scope},
+    HasType profile context (lamCell body) classifier → False
+  /-- Native pi/sigma-formation `HasType` rejects application subjects. -/
+  rejectHasTypeApplication :
+    ∀ {functionTerm argument classifier : RawTerm scope},
+      HasType profile context (appCell functionTerm argument) classifier → False
+  /-- The equivalent description formation engine rejects lambda subjects. -/
+  rejectHasTypeDescLambda : ∀ {body : RawTerm (scope + 1)} {classifier : RawTerm scope},
+    HasTypeDesc profile context (lamCell body) classifier → False
+  /-- The equivalent description formation engine rejects application subjects. -/
+  rejectHasTypeDescApplication :
+    ∀ {functionTerm argument classifier : RawTerm scope},
+      HasTypeDesc profile context (appCell functionTerm argument) classifier → False
 
 /-- Build the native-pi-sigma formation checking certificate from a well-formed context.  This is the explicit
 record-level aggregation of the already-proved native typed checking, equivalent description-engine checking,
@@ -120,6 +136,10 @@ def buildHasTypePiSigmaFormationCheckingCertificate {profile : PolyProfile} {sco
   proveClassifierIsType := fun typed => HasType.classifierIsType contextIsWellFormed typed
   proveHasTypeDescSubjectIsStronglyNormalizing := fun typed => typed.isStronglyNormalizing
   proveSubjectIsStronglyNormalizing := fun typed => typed.isStronglyNormalizing
+  rejectHasTypeLambda := fun typed => HasType.subjectCannotBeLambda typed
+  rejectHasTypeApplication := fun typed => HasType.subjectCannotBeApplication typed
+  rejectHasTypeDescLambda := fun typed => HasTypeDesc.subjectCannotBeLambda typed
+  rejectHasTypeDescApplication := fun typed => HasTypeDesc.subjectCannotBeApplication typed
 
 /-- Native empty-context subject regularity exposed through the checking certificate.  This is scoped to the
 native pi/sigma-formation `HasType` core: a closed typed subject is itself a native type. -/
