@@ -46,6 +46,7 @@ import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
+import FX1Poly.Typed.FundamentalWithPositiveTypeCandidates
 import FX1Poly.Typed.FundamentalAtAllLeafArms
 import FX1Poly.Typed.FundamentalAtAllTelescope
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
@@ -883,6 +884,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.cons
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.consFromPositiveTypeCandidate
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.lookupMemberExtendsToAllPositive
+
+/-! ### Dependent fundamental theorem — proof-relevant positive-candidate environment arm layer.  This is
+    the recursor-facing strengthened motive: ordinary all-level membership plus positive type-candidate
+    companions for looked-up binding types.  The non-binder arms project to the ordinary all-level layer; the
+    lambda arm is the binder-critical proof that a decoded domain argument can be strengthened to
+    all-positive membership, extending the strengthened environment before running the codomain/body
+    recursive premises. -/
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll.toPositiveTypeCandidateEnv
+#assert_no_axioms FX1Poly.Typed.fundamentalVarWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalConvWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalPiElimWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroWithPositiveTypeCandidatesFromPositiveDomainCandidate
 
 /-! ### Dependent fundamental theorem — the NON-telescope arms over the ∀-level environment.  `var` (the arm
     the ∀-level env was built to unblock: closes by instantiating the all-levels family at the conclusion
