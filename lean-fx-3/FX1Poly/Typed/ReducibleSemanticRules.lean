@@ -1,5 +1,7 @@
 import FX1Poly.Core.StratifiedReducibleMember
 import FX1Poly.Core.StratifiedReducibleMemberNonDependent
+import FX1Poly.Core.StratifiedReducibleUniverseDecode
+import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Core.ConvSubstRename
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescPiSubstitution
@@ -309,5 +311,43 @@ theorem formationGenerator_noWeakHeadStep {scope : Nat} {generator : Generator}
       | rootIota iotaStep => cases iotaStep
     · simp only [typingRuleDescOf, if_neg isPiFormer, if_neg isSigmaFormer] at isFormation
       nomatch isFormation
+
+/-- **Semantic Σ-former formation under a closing substitution (the `genFormationPi` data-former arm for
+`gen_sigmaTyCode`).**  Under a closing `substitution`, the Σ-type code `Σ domain. codomain` is a reducible
+member of its universe `Type@levelExpr` whenever its substituted domain and under-binder codomain are
+strongly normalizing (the telescope's γ-closed strong-normalization induction hypotheses).  The substituted
+former is strongly normalizing (`sigmaTyCode_isStronglyNormalizing_of_domain_codomain` over the substituted
+children — the substitution distributes over the Σ cell by `rfl`, domain by `substitution`, codomain by the
+lift) and a reducible TYPE classified by strong normalization in the Tarski universe
+(`IsReducibleMemberAt.dataFormerInUniverse`: weak-head normal — only the vacuous `rootIota` arm unifies a
+Σ root — and root-distinct from Π / universe); `subst_universeCodeCell` (`rfl`) leaves the universe
+classifier fixed.  Together with `piTypeCanonicalUnderSubst` (the `gen_piTyCode` arm) and
+`formationGenerator_noWeakHeadStep` (the weak-head-normality common to both formation generators), this
+discharges the fundamental theorem's `genFormationPi` arm entirely by dispatch over the two
+`typingRuleDescOf` formers — no per-former development remains at the induction site. -/
+theorem IsReducibleMemberAt.sigmaFormationUnderSubst {scope targetScope : Nat} {predLevel : Nat}
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (substitution : RawTermSubst scope targetScope)
+    (domainNormalizing : IsStronglyNormalizing (RawTerm.subst substitution domain))
+    (codomainNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) codomain)) :
+    IsReducibleMemberAt (predLevel + 1)
+      (RawTerm.subst substitution (universeCodeCell levelExpr flag))
+      (RawTerm.subst substitution
+        (.mkGen .gen_sigmaTyCode () (.childCons domain (.childCons codomain .childNil)))) := by
+  rw [subst_universeCodeCell]
+  have substEq :
+      RawTerm.subst substitution
+          (.mkGen .gen_sigmaTyCode () (.childCons domain (.childCons codomain .childNil)))
+        = .mkGen .gen_sigmaTyCode ()
+            (.childCons (RawTerm.subst substitution domain)
+              (.childCons (RawTerm.subst (RawTermSubst.lift substitution) codomain) .childNil)) := rfl
+  rw [substEq]
+  exact IsReducibleMemberAt.dataFormerInUniverse levelExpr flag
+    (sigmaTyCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing)
+    (fun _reduct weakHeadStep => by cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+    (fun rootEquation => nomatch rootEquation)
+    (fun rootEquation => nomatch rootEquation)
 
 end FX1Poly.Typed
