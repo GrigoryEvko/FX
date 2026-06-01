@@ -52,6 +52,66 @@ theorem IsReducibleMemberAtAllPositiveLevels.atLevel {scope : Nat}
     IsReducibleMemberAt (level + 1) typeCode term :=
   memberAtAllPositiveLevels level
 
+/-- **All-level type reducibility descends through one weak-head reduct.**  If a type code is reducible at
+every fuel and weak-head steps to `reduct`, then `reduct` is reducible at every fuel with the same
+per-level candidate.  This is the forward redex clause needed by an SN induction over type codes. -/
+theorem IsReducibleTypeAtAllLevels.ofWeakHeadReduct {scope : Nat}
+    {typeCode reduct : RawTerm scope}
+    (typeCodeReducibleAtAllLevels : IsReducibleTypeAtAllLevels typeCode)
+    (weakHeadStep : WeakHeadStep typeCode reduct) :
+    IsReducibleTypeAtAllLevels reduct := by
+  intro level
+  obtain ⟨candidate, typeCodeReducible⟩ := typeCodeReducibleAtAllLevels level
+  cases level with
+  | zero =>
+      exact ⟨candidate, typeCodeReducible.candidateAtWhnfReduct weakHeadStep⟩
+  | succ predLevel =>
+      exact ⟨candidate, typeCodeReducible.candidateAtWhnfReduct weakHeadStep⟩
+
+/-- **All-level type reducibility lifts backward through one weak-head step.**  This packages
+`ReducibleTypeAt.headExpand` at the existential all-level type layer. -/
+theorem IsReducibleTypeAtAllLevels.headExpand {scope : Nat}
+    {typeCode reduct : RawTerm scope}
+    (weakHeadStep : WeakHeadStep typeCode reduct)
+    (reductReducibleAtAllLevels : IsReducibleTypeAtAllLevels reduct) :
+    IsReducibleTypeAtAllLevels typeCode := by
+  intro level
+  obtain ⟨candidate, reductReducible⟩ := reductReducibleAtAllLevels level
+  exact ⟨candidate, ReducibleTypeAt.headExpand weakHeadStep reductReducible⟩
+
+/-- **All-positive membership lifts backward through one weak-head step in the classifier.**  A member of
+the weak-head reduct is a member of the redex classifier at every positive fuel by rewrapping each per-level
+candidate with the `whnfExpand` constructor. -/
+theorem IsReducibleMemberAtAllPositiveLevels.headExpand {scope : Nat}
+    {typeCode reduct term : RawTerm scope}
+    (weakHeadStep : WeakHeadStep typeCode reduct)
+    (reductMemberAtAllPositiveLevels : IsReducibleMemberAtAllPositiveLevels reduct term) :
+    IsReducibleMemberAtAllPositiveLevels typeCode term := by
+  intro level
+  obtain ⟨candidate, reductReducible, termInCandidate⟩ :=
+    reductMemberAtAllPositiveLevels level
+  exact ⟨candidate, ReducibleTypeAt.headExpand weakHeadStep reductReducible, termInCandidate⟩
+
+/-- **Concrete positive membership extends across one weak-head expansion of the classifier, provided the
+reduct's concrete members already extend.**  This is the exact redex clause for the operational bridge
+`HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes`: peel the concrete member to the weak-head
+reduct using `candidateAtWhnfReduct`, run the reduct bridge, then lift the resulting all-positive member
+back to the original classifier. -/
+theorem IsReducibleMemberAt.extendsToAllPositiveAtWeakHeadExpansion {scope : Nat}
+    {predLevel : Nat} {typeCode reduct term : RawTerm scope}
+    (weakHeadStep : WeakHeadStep typeCode reduct)
+    (reductMembersExtend :
+      ∀ {term : RawTerm scope} {predLevel : Nat},
+        IsReducibleMemberAt (predLevel + 1) reduct term →
+          IsReducibleMemberAtAllPositiveLevels reduct term)
+    (member : IsReducibleMemberAt (predLevel + 1) typeCode term) :
+    IsReducibleMemberAtAllPositiveLevels typeCode term := by
+  obtain ⟨candidate, typeCodeReducible, termInCandidate⟩ := member
+  have reductMember : IsReducibleMemberAt (predLevel + 1) reduct term :=
+    ⟨candidate, typeCodeReducible.candidateAtWhnfReduct weakHeadStep, termInCandidate⟩
+  exact IsReducibleMemberAtAllPositiveLevels.headExpand weakHeadStep
+    (reductMembersExtend reductMember)
+
 /-- **All-positive membership in a universe.**  A term is an all-positive member of a universe code exactly
 when it is strongly normalizing and reducible as a type at every fuel level.  This theorem states the hard
 dependent-Type obligation precisely: ordinary Tarski membership at one positive level decodes to one lower
