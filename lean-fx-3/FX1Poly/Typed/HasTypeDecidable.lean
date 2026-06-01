@@ -28,7 +28,7 @@ classifier is exactly the no-derivation case).
 Forward directions rest on `classifierIsType` + the inversions + rigidity
 (`Conv.eq_of_isType`), all zero-axiom; backward directions `subst` the classifier
 equality and apply the `var` / `universeFormation` rule.  The refutation reuses
-`typedSubjectIsVariableOrUniverseCode` + the concrete-cell head computations.
+`subjectIsVariableOrTypeFormerCode` + the concrete-cell head computations.
 Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -87,7 +87,7 @@ theorem HasType.universeCodeCell_iff_classifierEqSucc {profile : PolyProfile}
 /-- A subject whose head generator is none of `gen_var`, `gen_universeCode`,
 `gen_piTyCode`, or `gen_sigmaTyCode` has no typing derivation under any
 classifier: every typed subject is a variable, universe-code, Π-type-code, or
-Σ-type-code cell (`typedSubjectIsVariableOrUniverseCode`, the 4-way
+Σ-type-code cell (`subjectIsVariableOrTypeFormerCode`, the 4-way
 classification). -/
 theorem HasType.not_of_headGenerator {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
@@ -99,7 +99,7 @@ theorem HasType.not_of_headGenerator {profile : PolyProfile} {scope : Nat}
     (notSigma : RawTerm.headGenerator subject ≠ Generator.gen_sigmaTyCode) :
     ¬ HasType profile context subject classifier := by
   intro typed
-  rcases typed.typedSubjectIsVariableOrUniverseCode with
+  rcases typed.subjectIsVariableOrTypeFormerCode with
     ⟨index, subjectIsVariable⟩ | ⟨codeLevel, codeFlag, subjectIsUniverseCode⟩ |
       ⟨domainCode, codomainCode, subjectIsPi⟩ |
       ⟨domainCode, codomainCode, subjectIsSigma⟩

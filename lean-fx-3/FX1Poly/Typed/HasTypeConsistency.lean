@@ -32,7 +32,7 @@ degeneracy is the honest, checkable truth, and `HasType .empty t
   `piFormation` / `sigmaFormation` each witness `IsType` from their OWN
   conclusion derivation (the universe / Π / Σ code inhabits the universe the arm
   produces); `conv` forwards its IH (same subject).  Distinct from the shape
-  classification `typedSubjectIsVariableOrUniverseCode` — that recovers the
+  classification `subjectIsVariableOrTypeFormerCode` — that recovers the
   subject SHAPE; this recovers the semantic `IsType` witness (not derivable from
   the shape alone, which lacks the formation derivation).
 * `HasType.closedSubjectIsType` — the closed corollary: in the empty context the

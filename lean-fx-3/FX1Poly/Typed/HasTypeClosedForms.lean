@@ -38,7 +38,7 @@ honesty note.
 ## Zero-axiom verification
 
 `closedSubjectIsTypeFormer` is an `rcases` on the 4-way shape classification
-`typedSubjectIsVariableOrUniverseCode` with the `var` disjunct killed by a
+`subjectIsVariableOrTypeFormerCode` with the `var` disjunct killed by a
 `Fin 0` refutation (`Nat.not_lt_zero` on `index.isLt`, NOT `Fin.elim0` — that
 routes through the OfNat / casesOn propext trap, see the Fin-cases-axiom lesson).
 `closedClassifierConvUniverseCode` composes `closedSubjectIsType` with
@@ -54,7 +54,7 @@ open FX1Poly.Core FX1Poly.Universe
 /-- Canonical forms (P10 precursor, native pi/sigma-formation HasType core): a closed well-typed
 subject is EXACTLY a universe / Π / Σ type-former code.  The empty context has
 no variables (`Fin 0`), so the `var` disjunct of the 4-way shape classification
-`typedSubjectIsVariableOrUniverseCode` is impossible; the other three disjuncts
+`subjectIsVariableOrTypeFormerCode` is impossible; the other three disjuncts
 are the type-former codes.  Sharper than `closedSubjectIsType` (which gives the
 semantic `IsType`): this reads off the precise syntactic shape. -/
 theorem HasType.closedSubjectIsTypeFormer {profile : PolyProfile}
@@ -66,7 +66,7 @@ theorem HasType.closedSubjectIsTypeFormer {profile : PolyProfile}
         subject = piTyCodeCell domainCode codomainCode) ∨
       (∃ (domainCode : RawTerm 0) (codomainCode : RawTerm 1),
         subject = sigmaTyCodeCell domainCode codomainCode) := by
-  rcases typed.typedSubjectIsVariableOrUniverseCode with
+  rcases typed.subjectIsVariableOrTypeFormerCode with
     ⟨index, _⟩ | universeShape | piShape | sigmaShape
   · exact absurd index.isLt (Nat.not_lt_zero index.val)
   · exact Or.inl universeShape

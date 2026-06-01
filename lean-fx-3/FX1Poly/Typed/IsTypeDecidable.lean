@@ -22,7 +22,7 @@ this is decidable by casing on `classifier`'s head generator:
   children are types (the codomain under the domain binder), decided by recursing
   into `decideWithWitness`;
 * any other head ⇒ never a type (`IsType.not_of_headGenerator`, via
-  `typedSubjectIsVariableOrUniverseCode`).
+  `subjectIsVariableOrTypeFormerCode`).
 
 These lemmas are the content of `Decidable IsType` (#303); the decision procedure
 `decideWithWitness` assembles them by casing on the cell's head generator
@@ -94,7 +94,7 @@ theorem IsType.variableCell_iff_lookupIsUniverseCode {profile : PolyProfile}
 
 /-- A cell whose head generator is neither `gen_var` nor `gen_universeCode` is
 never a type: every typed subject is a variable or universe-code cell
-(`typedSubjectIsVariableOrUniverseCode`), so no derivation can type this cell as
+(`subjectIsVariableOrTypeFormerCode`), so no derivation can type this cell as
 a universe code. -/
 theorem IsType.not_of_headGenerator {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope}
@@ -105,7 +105,7 @@ theorem IsType.not_of_headGenerator {profile : PolyProfile} {scope : Nat}
     (notSigma : RawTerm.headGenerator classifier ≠ Generator.gen_sigmaTyCode) :
     ¬ IsType profile context classifier := by
   rintro ⟨levelExpr, flag, typed⟩
-  rcases typed.typedSubjectIsVariableOrUniverseCode with
+  rcases typed.subjectIsVariableOrTypeFormerCode with
     ⟨index, subjectIsVariable⟩ | ⟨codeLevel, codeFlag, subjectIsUniverseCode⟩ |
       ⟨domainCode, codomainCode, subjectIsPi⟩ |
       ⟨domainCode, codomainCode, subjectIsSigma⟩

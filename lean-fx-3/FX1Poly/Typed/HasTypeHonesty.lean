@@ -10,10 +10,10 @@ layer is what rejects it.  This file makes that rejection a CHECKED fact
 — the type-level counterpart of the structural-vs-semantic gap probes, at
 the .term-over-.type layer.
 
-## Scope of this fragment
+## Scope: native pi/sigma-formation HasType core
 
 `HasType` types only variable, universe-code, Π-type code, and Σ-type code
-cells on the native pi/sigma-formation HasType core (`HasType.typedSubjectIsVariableOrUniverseCode`).
+cells on the native pi/sigma-formation HasType core (`HasType.subjectIsVariableOrTypeFormerCode`).
 Every other cell — in particular the genuinely ill-typed `app(unit, unit)`
 — therefore has no derivation (`appUnitUnit_hasNoTyping`).
 
@@ -54,13 +54,13 @@ is a variable cell, a universe-code cell, a Π-type code cell, or a Σ-type code
 cell.  Proof: `var` produces a `variableCell`; `universeFormation` produces a
 `universeCodeCell`; `piFormation` produces a `piTyCodeCell`; `sigmaFormation`
 produces a `sigmaTyCodeCell`; `conv` preserves the subject (its IH gives the
-same subject).  FRAGMENT-SPECIFIC — it grows by one disjunct per non-`conv` arm;
+same subject).  Native-core-specific: it grows by one disjunct per non-`conv` arm;
 the proof technique for the 0-FP probe.  This proof is `Conv.trans`-free (the
 `conv` case just forwards its IH).
 
 The name covers four shapes (variable, universe code, Π-type code, Σ-type
 code). -/
-theorem HasType.typedSubjectIsVariableOrUniverseCode {profile : PolyProfile}
+theorem HasType.subjectIsVariableOrTypeFormerCode {profile : PolyProfile}
     {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (typed : HasType profile context subject classifier) :
@@ -86,13 +86,13 @@ theorem HasType.typedSubjectIsVariableOrUniverseCode {profile : PolyProfile}
       exact Or.inr (Or.inr (Or.inr ⟨_, _, rfl⟩))
 
 /-- 0-FP probe: the ill-typed cell `app(unit, unit)` has NO typing
-derivation in the var+conv core, for any classifier.  The typed layer
+derivation in the native pi/sigma-formation HasType core, for any classifier.  The typed layer
 rejects what the raw layer admits. -/
 theorem appUnitUnit_hasNoTyping {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope} :
     HasType profile context appUnitUnit classifier → False := by
   intro typed
-  rcases typed.typedSubjectIsVariableOrUniverseCode with
+  rcases typed.subjectIsVariableOrTypeFormerCode with
     ⟨index, subjectEq⟩ | ⟨levelExpr, flag, subjectEq⟩ |
       ⟨domainCode, codomainCode, subjectEq⟩ | ⟨domainCode, codomainCode, subjectEq⟩
   · have headGeneratorsAgree : Generator.gen_app = Generator.gen_var :=

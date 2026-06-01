@@ -102,7 +102,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.unitCell
 #assert_no_axioms FX1Poly.Typed.appUnitUnit
 #assert_no_axioms FX1Poly.Typed.RawTerm.headGenerator
-#assert_no_axioms FX1Poly.Typed.HasType.typedSubjectIsVariableOrUniverseCode
+#assert_no_axioms FX1Poly.Typed.HasType.subjectIsVariableOrTypeFormerCode
 #assert_no_axioms FX1Poly.Typed.appUnitUnit_hasNoTyping
 
 /-! ### WfContext — well-formedness predicate + inversions + non-vacuity witness -/
@@ -258,7 +258,7 @@ gates pin them shut.
     types; a variable is a type iff its looked-up classifier is a universe code
     (forward by `inversionVariable` + rigidity); Π / Σ codes are types iff their
     children are; any other head is never a type
-    (`typedSubjectIsVariableOrUniverseCode`). -/
+    (`subjectIsVariableOrTypeFormerCode`). -/
 
 #assert_no_axioms FX1Poly.Typed.IsType.ofUniverseCodeCell
 #assert_no_axioms FX1Poly.Typed.IsType.variableCell_iff_lookupIsUniverseCode
