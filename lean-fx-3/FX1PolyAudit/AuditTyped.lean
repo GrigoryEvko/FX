@@ -1124,6 +1124,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalPiFormationAtAllFromUniverseDomainPositiveCandidate
 #assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationAtAllFromAllLevelDomainCandidateCompanion
 #assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationAtAllFromPositiveDomainCandidateAndBaseLevelPremise
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationAtAllFromPositiveDomainCandidate
 #assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationAtAllFromUniverseDomainPositiveCandidate
 
 -- Canonical per-level candidate companion extracted from an all-level `T : Type@u` fundamental result.  This

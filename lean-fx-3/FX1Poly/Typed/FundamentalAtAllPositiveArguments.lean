@@ -1393,6 +1393,54 @@ theorem fundamentalSigmaFormationAtAllFromPositiveDomainCandidateAndBaseLevelPre
       domainFundamental domainHasPositiveCandidateUnderSubstitution codomainMemberAtDomainLevel
       codomainFundamental)
 
+/-- **Sigma-formation from a positive-fuel domain companion, without the Pi base-level premise.**  The
+Sigma/data-former reducibility dispatch needs only domain normalization plus one open-body normalization
+witness, mined from the codomain child at the one-higher domain level `predLevel + 1`.  It does not need
+the Pi-specific codomain-at-domain-level premise used to build dependent-arrow `codomainExists`.  Therefore
+positive-fuel domain candidates are enough: they strengthen the one-higher argument to all-positive
+membership, extend the all-level environment, and run the codomain fundamental theorem. -/
+theorem fundamentalSigmaFormationAtAllFromPositiveDomainCandidate
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (domainHasPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution context domainCode)
+    (codomainFundamental :
+      FundamentalConclusionAtAll (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalConclusionAtAll context (sigmaTyCodeCell domainCode codomainCode)
+      (universeCodeCell formerLevel flag) := by
+  intro targetScope substitution env predLevel
+  have domainMember : IsReducibleMemberAt (predLevel + 1)
+      (universeCodeCell domainLevel flag) (RawTerm.subst substitution domainCode) := by
+    have member := domainFundamental substitution env predLevel
+    rwa [subst_universeCodeCell] at member
+  have domainMemberAbove : IsReducibleMemberAt (predLevel + 2)
+      (universeCodeCell domainLevel flag) (RawTerm.subst substitution domainCode) := by
+    have member := domainFundamental substitution env (predLevel + 1)
+    rwa [subst_universeCodeCell] at member
+  have codomainMemberAtNextLevel :
+      ∀ argument : RawTerm (targetScope + 1),
+        IsReducibleMemberAt (predLevel + 1) (RawTerm.subst substitution domainCode) argument →
+        IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+          (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode) := by
+    intro argument argumentMember
+    obtain ⟨domainCandidate, domainReducible, argumentInDomain⟩ := argumentMember
+    have argumentAtAllPositiveLevels :
+        IsReducibleMemberAtAllPositiveLevels
+          (RawTerm.subst substitution domainCode) argument :=
+      HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+        (domainHasPositiveCandidateUnderSubstitution substitution env predLevel)
+        domainReducible argumentInDomain
+    exact codomainFundamental (RawTermSubst.cons argument substitution)
+      (ReducibleEnvAtAllLevels.cons env argumentAtAllPositiveLevels) predLevel
+  have result := IsReducibleMemberAt.sigmaFormerOfChildMembershipsAtRequiredLevel
+    (formerLevel := formerLevel) domainMember domainMemberAbove codomainMemberAtNextLevel
+  rw [subst_universeCodeCell]
+  exact result
+
 /-- **Σ-formation for a universe-code domain from the positive-fuel domain companion.**  The data-former
 twin of `fundamentalPiFormationAtAllFromUniverseDomainPositiveCandidate`. -/
 theorem fundamentalSigmaFormationAtAllFromUniverseDomainPositiveCandidate
