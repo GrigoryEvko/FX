@@ -3,6 +3,7 @@ import FX1Poly.Core.ArrowCandidateMembership
 import FX1Poly.Core.SubstPreservationProbes
 import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.CompoundSubstPreservation
+import FX1Poly.Core.RawTermSubstConsCommute
 
 /-! # FX1Poly/Core/CandidateInterpretationFundamental
     — the fundamental-theorem cases under a closing substitution, over the choice-free interpretation
@@ -132,5 +133,34 @@ theorem InterpretsType.fundamentalArrowAbstraction {scope targetScope : Nat}
         (.mkGen .gen_lam () (.childCons body .childNil))) := by
   rw [RawTerm.subst_lam_reduces]
   exact IsArrowReducible.abstraction domainArgumentsSN codomainClosed bodyReducible
+
+/-- **The `piIntro` (λ) fundamental-theorem arm in the form the closure induction supplies it** — the
+binder arm packaged for direct dispatch by the `HasTypeDescPi` fundamental-theorem induction.  When the
+induction reaches `λ body : Π domain codomain`, the body's induction hypothesis is taken at the
+binder-EXTENDED closing environment: the substitution extended by the argument, `RawTermSubst.cons argument
+substitution` — so the IH delivers `codomainCandidate (subst (cons argument substitution) body)` for every
+`domainCandidate`-reducible argument (`bodyReducible` here, the cons-substitution form).  But
+`fundamentalArrowAbstraction` / `IsArrowReducible.abstraction` consume the β-redex form `subst0 (subst (lift
+substitution) body) argument`.  The binder-split keystone `RawTerm.subst_cons_eq_subst0_lift` is exactly the
+bridge — `subst (cons argument substitution) body = subst0 (subst (lift substitution) body) argument` — so a
+single rewrite reshapes the IH into the abstraction premise.  This is the precise glue the closure induction
+calls in its piIntro arm: no further substitution reasoning needed at the induction site, just this lemma. -/
+theorem InterpretsType.fundamentalArrowAbstractionConsForm {scope targetScope : Nat}
+    {domainCandidate codomainCandidate : RawTerm targetScope → Prop}
+    {body : RawTerm (scope + 1)}
+    (substitution : RawTermSubst scope targetScope)
+    (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      IsStronglyNormalizing argument)
+    (codomainClosed : HeadExpansionClosed codomainCandidate)
+    (bodyReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      codomainCandidate
+        (RawTerm.subst (RawTermSubst.cons argument substitution) body)) :
+    IsArrowReducible domainCandidate codomainCandidate
+      (RawTerm.subst substitution
+        (.mkGen .gen_lam () (.childCons body .childNil))) := by
+  apply InterpretsType.fundamentalArrowAbstraction substitution domainArgumentsSN codomainClosed
+  intro argument argumentInDomain
+  rw [← RawTerm.subst_cons_eq_subst0_lift]
+  exact bodyReducible argument argumentInDomain
 
 end FX1Poly.Core
