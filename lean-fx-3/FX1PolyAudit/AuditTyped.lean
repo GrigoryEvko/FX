@@ -45,6 +45,7 @@ import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.HasTypeDescPiConsistency
 import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.ReducibleMemberFormation
+import FX1Poly.Typed.DescTelescopeInversion
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -861,3 +862,4 @@ gates pin them shut.
     fundamental theorem's formation/universe arm bridge between a well-formed type term and its SN. -/
 #assert_no_axioms FX1Poly.Typed.universeCodeCell_noWeakHeadStep
 #assert_no_axioms FX1Poly.Typed.IsReducibleMember.atUniverseCode
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
