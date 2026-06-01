@@ -768,27 +768,6 @@ theorem fundamentalConvValidityWithTypeValueCandidatesFromTargetTypeValuePremise
   ⟨fundamentalConvWithTypeValueCandidates subjectFundamental reclassifierFundamental converts,
     targetTypeValueCandidate⟩
 
-/-- **Bundled conversion validity from type-value completion.**  The member half is the semantic conversion
-rule.  The type-value half is derived generically: if the substituted reclassifier is a universe code, the
-converted subject member conclusion can be run at every positive fuel, and the completion principle turns
-that all-positive universe membership into the required type-value payload. -/
-theorem fundamentalConvValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
-    {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier reclassifier : RawTerm scope}
-    {levelExpr : LevelExpr} {flag : UniverseFlag}
-    (allReducibleTypesHaveTypeValueCandidates :
-      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
-    (subjectFundamental :
-      FundamentalConclusionWithTypeValueCandidates context subject classifier)
-    (reclassifierFundamental :
-      FundamentalConclusionWithTypeValueCandidates context reclassifier
-        (universeCodeCell levelExpr flag))
-    (converts : Conv classifier reclassifier) :
-    FundamentalValidityWithTypeValueCandidates context subject reclassifier :=
-  FundamentalConclusionWithTypeValueCandidates.toValidityOfAllReducibleTypesHaveTypeValueCandidates
-    (fundamentalConvWithTypeValueCandidates subjectFundamental reclassifierFundamental converts)
-    allReducibleTypesHaveTypeValueCandidates
-
 /-- **Bundled conversion validity from positive-member extension.**  The conversion member rule is unchanged;
 the type-value payload is supplied by the operational member-extension bridge. -/
 theorem fundamentalConvValidityWithTypeValueCandidatesOfPositiveMemberExtension
@@ -804,9 +783,9 @@ theorem fundamentalConvValidityWithTypeValueCandidatesOfPositiveMemberExtension
         (universeCodeCell levelExpr flag))
     (converts : Conv classifier reclassifier) :
     FundamentalValidityWithTypeValueCandidates context subject reclassifier :=
-  fundamentalConvValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+  FundamentalConclusionWithTypeValueCandidates.toValidityOfAllReducibleTypesHaveTypeValueCandidates
+    (fundamentalConvWithTypeValueCandidates subjectFundamental reclassifierFundamental converts)
     positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
-    subjectFundamental reclassifierFundamental converts
 
 /-- **The `piElim`/application member arm over the type-value environment.**  Application does not need any
 new type-value payload: the dependent application rule consumes the function and argument member premises at
@@ -852,28 +831,6 @@ theorem fundamentalPiElimValidityWithTypeValueCandidatesFromResultTypeValuePremi
   ⟨fundamentalPiElimWithTypeValueCandidates functionFundamental argumentFundamental,
     resultTypeValueCandidate⟩
 
-/-- **Dependent application validity from type-value completion.**  The member half is the usual semantic
-application.  The type-value half no longer needs a bespoke result premise: if the instantiated codomain is
-a universe code after substitution, the member half supplies all-positive universe membership of the
-application result, and the global completion principle turns that membership into the required type-value
-candidate payload. -/
-theorem fundamentalPiElimValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
-    {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {functionTerm argument domainCode : RawTerm scope}
-    {codomainCode : RawTerm (scope + 1)}
-    (allReducibleTypesHaveTypeValueCandidates :
-      HasTypeValueCandidatesForAllReducibleTypesAtAllLevels)
-    (functionFundamental :
-      FundamentalConclusionWithTypeValueCandidates context functionTerm
-        (piTyCodeCell domainCode codomainCode))
-    (argumentFundamental :
-      FundamentalConclusionWithTypeValueCandidates context argument domainCode) :
-    FundamentalValidityWithTypeValueCandidates context
-      (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument) :=
-  FundamentalConclusionWithTypeValueCandidates.toValidityOfAllReducibleTypesHaveTypeValueCandidates
-    (fundamentalPiElimWithTypeValueCandidates functionFundamental argumentFundamental)
-    allReducibleTypesHaveTypeValueCandidates
-
 /-- **Dependent application validity from positive-member extension.**  This exposes the application arm
 against the operational type-value bridge directly. -/
 theorem fundamentalPiElimValidityWithTypeValueCandidatesOfPositiveMemberExtension
@@ -889,9 +846,9 @@ theorem fundamentalPiElimValidityWithTypeValueCandidatesOfPositiveMemberExtensio
       FundamentalConclusionWithTypeValueCandidates context argument domainCode) :
     FundamentalValidityWithTypeValueCandidates context
       (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument) :=
-  fundamentalPiElimValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+  FundamentalConclusionWithTypeValueCandidates.toValidityOfAllReducibleTypesHaveTypeValueCandidates
+    (fundamentalPiElimWithTypeValueCandidates functionFundamental argumentFundamental)
     positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
-    functionFundamental argumentFundamental
 
 /-- **Dependent lambda introduction over the type-value environment, with the universe-domain value
 payload explicit.**  The ordinary member proof is the same canonical-candidate argument as in the
