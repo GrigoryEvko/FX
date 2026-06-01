@@ -75,6 +75,7 @@ import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
 import FX1Poly.Typed.UniverseDomainMemberExtension
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsLeaves
+import FX1Poly.Typed.ReducibleTypeAtAllLevelsInduction
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1333,3 +1334,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.ofUniverseCode
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.ofUniverseMemberNonPiNonUniverseArgument
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.ofUniverseMemberUniverseCodeArgument
+
+-- Level-irrelevance INDUCTION over the whole reducibility derivation: every `ReducibleTypeStep` arm but
+-- `piType` discharged unconditionally (redex via `headExpand` — extending the non-Π discharge to
+-- redex-carrying args — neutral/universe via the leaves, congruence via the IH).  The entire type-level
+-- level-irrelevance obstruction is reduced to ONE hypothesis, the `piArm` (Π-former case).
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.ofReducibleTypeStep
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.ofReducibleAtLevel
