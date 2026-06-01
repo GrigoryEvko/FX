@@ -3722,7 +3722,7 @@ theorem LevelExpr.AllAtomsAreVarsOrLzero_append :
       LevelExpr.AllAtomsAreVarsOrLzero ys →
       LevelExpr.AllAtomsAreVarsOrLzero (xs ++ ys)
   | [], _ys, _hX, hY => hY
-  | head :: rest, ys, hX, hY =>
+  | _head :: rest, ys, hX, hY =>
       ⟨hX.1, LevelExpr.AllAtomsAreVarsOrLzero_append rest ys hX.2 hY⟩
 
 /-- `lmaxAtoms` of an `IsVariableJoin` expression yields only
