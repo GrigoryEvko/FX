@@ -288,6 +288,131 @@ theorem fundamentalSigmaFormationWithPositiveTypeCandidates
     domainFundamental domainHasPositiveCandidate codomainMemberAtDomainLevel codomainFundamental
     substitution envWithCandidates predLevel).toSigmaMember
 
+/-- **The base-level codomain premise for a universe-code domain over the strengthened environment.**
+Fuel zero is impossible for universe-domain membership.  At successor fuel, the universe-domain positive
+candidate companion upgrades the argument to all-positive membership, extends the strengthened environment,
+and runs the codomain recursive premise at the required successor level. -/
+theorem codomainMemberAtDomainLevelWithPositiveTypeCandidatesFromUniverseDomain
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode : RawTerm (scope + 1)}
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context
+        (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+      (predLevel : Nat) (argument : RawTerm (targetScope + 1)),
+      IsReducibleMemberAt predLevel
+        (RawTerm.subst substitution (universeCodeCell domainLevel flag)) argument →
+      IsReducibleMemberAt (predLevel + 1) (universeCodeCell codomainLevel flag)
+        (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode) := by
+  intro _targetScope substitution envWithCandidates predLevel argument argumentMember
+  cases predLevel with
+  | zero =>
+      rw [subst_universeCodeCell] at argumentMember
+      exact False.elim
+        (IsReducibleMemberAt.universeCodeHasNoMemberAtZero domainLevel flag argument
+          argumentMember)
+  | succ memberPredLevel =>
+      obtain ⟨domainCandidate, domainReducible, argumentInDomain⟩ := argumentMember
+      have argumentAtAllPositiveLevels :
+          IsReducibleMemberAtAllPositiveLevels
+            (RawTerm.subst substitution (universeCodeCell domainLevel flag)) argument :=
+        HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+          (domainHasPositiveCandidate substitution envWithCandidates memberPredLevel)
+          domainReducible argumentInDomain
+      have extendedEnvWithCandidates :
+          ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
+            (context.cons (universeCodeCell domainLevel flag))
+            (RawTermSubst.cons argument substitution) :=
+        ReducibleEnvAtAllLevelsWithPositiveTypeCandidates.cons envWithCandidates
+          argumentAtAllPositiveLevels
+          (fun headPredLevel =>
+            domainHasPositiveCandidate substitution envWithCandidates headPredLevel)
+      exact codomainFundamental (RawTermSubst.cons argument substitution)
+        extendedEnvWithCandidates (memberPredLevel + 1)
+
+/-- **Dispatch-level former children for a universe-code domain over the strengthened environment.**  This
+specializes `formerChildrenReducibleAtDispatchLevelsWithPositiveTypeCandidates` by deriving the explicit
+base-level codomain premise from the empty fuel-zero universe semantics and the positive-fuel domain
+candidate companion. -/
+theorem formerChildrenReducibleAtDispatchLevelsWithPositiveTypeCandidatesFromUniverseDomain
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode : RawTerm (scope + 1)}
+    (domainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context
+        (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution)
+      (predLevel : Nat),
+      FormerChildrenReducibleAtDispatchLevels predLevel flag substitution
+        (universeCodeCell domainLevel flag) codomainCode domainLevel.lsucc codomainLevel :=
+  formerChildrenReducibleAtDispatchLevelsWithPositiveTypeCandidates
+    domainFundamental domainHasPositiveCandidate
+    (codomainMemberAtDomainLevelWithPositiveTypeCandidatesFromUniverseDomain
+      domainHasPositiveCandidate codomainFundamental)
+    codomainFundamental
+
+/-- **Pi-formation for a universe-code domain over the strengthened environment.** -/
+theorem fundamentalPiFormationWithPositiveTypeCandidatesFromUniverseDomain
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode : RawTerm (scope + 1)}
+    (domainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context
+        (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalConclusionWithPositiveTypeCandidates context
+      (piTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
+      (universeCodeCell formerLevel flag) := by
+  intro _targetScope substitution envWithCandidates predLevel
+  rw [subst_universeCodeCell]
+  exact (formerChildrenReducibleAtDispatchLevelsWithPositiveTypeCandidatesFromUniverseDomain
+    domainFundamental domainHasPositiveCandidate codomainFundamental
+    substitution envWithCandidates predLevel).toPiMember
+
+/-- **Sigma-formation for a universe-code domain over the strengthened environment.** -/
+theorem fundamentalSigmaFormationWithPositiveTypeCandidatesFromUniverseDomain
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    {codomainCode : RawTerm (scope + 1)}
+    (domainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates context (universeCodeCell domainLevel flag)
+        (universeCodeCell domainLevel.lsucc flag))
+    (domainHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context
+        (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates
+        (context.cons (universeCodeCell domainLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    FundamentalConclusionWithPositiveTypeCandidates context
+      (sigmaTyCodeCell (universeCodeCell domainLevel flag) codomainCode)
+      (universeCodeCell formerLevel flag) := by
+  intro _targetScope substitution envWithCandidates predLevel
+  rw [subst_universeCodeCell]
+  exact (formerChildrenReducibleAtDispatchLevelsWithPositiveTypeCandidatesFromUniverseDomain
+    domainFundamental domainHasPositiveCandidate codomainFundamental
+    substitution envWithCandidates predLevel).toSigmaMember
+
 /-- **Dependent lambda introduction over the strengthened environment.**  The domain premise supplies the
 ordinary decoded domain candidate at the conclusion fuel.  The domain's positive-fuel candidate companion
 then upgrades every argument accepted by that decoded candidate into all-positive membership, allowing the
