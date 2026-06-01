@@ -1,0 +1,193 @@
+import FX1Poly.Typed.FundamentalWithPositiveTypeCandidates
+import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
+
+/-! # FX1Poly/Typed/FundamentalWithTypeValueCandidates
+    -- fundamental-theorem motives over the type-value candidate environment
+
+`FundamentalWithPositiveTypeCandidates` records the positive-fuel candidate companion for every looked-up
+binding TYPE.  The dependent fundamental theorem's type-variable arm needs one more boundary datum: when a
+variable's substituted classifier is a universe code, the substituted VARIABLE VALUE itself must carry the
+positive-fuel all-positive candidate companion.  `ReducibleEnvAtAllLevelsWithTypeValueCandidates` packages
+that data.
+
+This file introduces the corresponding conclusion shapes:
+
+* ordinary member reducibility over the stronger environment;
+* positive-candidate reducibility for type codes over the stronger environment; and
+* the conditional type-value candidate conclusion: if the substituted classifier is a universe code, then
+  the substituted subject is a positive-candidate type value.
+
+The last shape is the local Lean analogue of the bundled validity records in `logrel-coq`: the fundamental
+theorem should carry the boundary/type-value payload that later arms consume, instead of trying to recover it
+from a bare membership result by level irrelevance.
+
+## Zero-axiom verification
+
+All proofs are projections from the previously gated positive-candidate layer or from the
+type-value-candidate environment.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+-/
+
+namespace FX1Poly.Typed
+
+open FX1Poly.Core FX1Poly.Foundation FX1Poly.Universe
+open StepStar
+
+/-- **The member half over the type-value candidate environment.**  This is the ordinary semantic
+fundamental-theorem conclusion, but quantified over the stronger proof-relevant environment that also
+contains type-variable value candidates. -/
+def FundamentalConclusionWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (subject classifier : RawTerm scope) : Prop :=
+  ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+    (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+    (predLevel : Nat),
+    IsReducibleMemberAt (predLevel + 1) (RawTerm.subst substitution classifier)
+      (RawTerm.subst substitution subject)
+
+/-- **The type-code half over the type-value candidate environment.**  A type code exposes
+`IsReducibleMemberAtAllPositiveLevels` as its candidate at every positive fuel, under every strengthened
+closing substitution. -/
+def PositiveCandidateConclusionWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (typeCode : RawTerm scope) : Prop :=
+  ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+    (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+    (predLevel : Nat),
+    HasAllPositiveReducibleCandidateAt (predLevel + 1)
+      (RawTerm.subst substitution typeCode)
+
+/-- **The conditional type-value half over the type-value candidate environment.**  If a subject's
+substituted classifier is a universe code, then the substituted subject itself is a type value with the
+positive-fuel all-positive candidate.  This is the proof-relevant payload the type-variable arm needs. -/
+def TypeValueCandidateConclusionWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (subject classifier : RawTerm scope) : Prop :=
+  ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+    (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution)
+    {levelExpr : LevelExpr} {flag : UniverseFlag},
+    RawTerm.subst substitution classifier = universeCodeCell levelExpr flag →
+      ∀ predLevel : Nat,
+        HasAllPositiveReducibleCandidateAt (predLevel + 1)
+          (RawTerm.subst substitution subject)
+
+/-- **Bundled semantic validity over the type-value candidate environment.**  This package is intentionally
+stronger than a bare member conclusion: it carries both ordinary membership and the conditional type-value
+candidate payload needed when the classifier is a universe code.  The shape mirrors the "valid term bundles
+its boundaries" discipline used by logical-relation developments, while remaining specific to the FX1Poly
+stratified fuel semantics. -/
+def FundamentalValidityWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (subject classifier : RawTerm scope) : Prop :=
+  FundamentalConclusionWithTypeValueCandidates context subject classifier ∧
+    TypeValueCandidateConclusionWithTypeValueCandidates context subject classifier
+
+/-- Project the ordinary member conclusion from a bundled validity result. -/
+theorem FundamentalValidityWithTypeValueCandidates.memberConclusion
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (subjectValidity :
+      FundamentalValidityWithTypeValueCandidates context subject classifier) :
+    FundamentalConclusionWithTypeValueCandidates context subject classifier :=
+  subjectValidity.1
+
+/-- Project the conditional type-value candidate conclusion from a bundled validity result. -/
+theorem FundamentalValidityWithTypeValueCandidates.typeValueCandidateConclusion
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (subjectValidity :
+      FundamentalValidityWithTypeValueCandidates context subject classifier) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context subject classifier :=
+  subjectValidity.2
+
+/-- Read a positive-candidate-environment member theorem through the stronger type-value environment. -/
+theorem FundamentalConclusionWithPositiveTypeCandidates.toTypeValueCandidateEnv
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (subjectFundamental :
+      FundamentalConclusionWithPositiveTypeCandidates context subject classifier) :
+    FundamentalConclusionWithTypeValueCandidates context subject classifier := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  exact subjectFundamental substitution
+    envWithTypeValueCandidates.toPositiveTypeCandidates predLevel
+
+/-- Read a positive-candidate-environment type theorem through the stronger type-value environment. -/
+theorem PositiveCandidateConclusionWithPositiveTypeCandidates.toTypeValueCandidateEnv
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {typeCode : RawTerm scope}
+    (typeHasPositiveCandidate :
+      PositiveCandidateConclusionWithPositiveTypeCandidates context typeCode) :
+    PositiveCandidateConclusionWithTypeValueCandidates context typeCode := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  exact typeHasPositiveCandidate substitution
+    envWithTypeValueCandidates.toPositiveTypeCandidates predLevel
+
+/-- A type-code positive-candidate theorem also supplies the conditional type-value theorem, for any
+classifier.  The classifier-universe equality is unused because the subject is already known to be a type
+value under all strengthened substitutions. -/
+theorem PositiveCandidateConclusionWithTypeValueCandidates.toTypeValueCandidateConclusion
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {typeCode classifier : RawTerm scope}
+    (typeHasPositiveCandidate :
+      PositiveCandidateConclusionWithTypeValueCandidates context typeCode) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context typeCode classifier := by
+  intro _targetScope substitution envWithTypeValueCandidates _levelExpr _flag
+  intro _classifierSubstIsUniverse predLevel
+  exact typeHasPositiveCandidate substitution envWithTypeValueCandidates predLevel
+
+/-- **The variable member arm over the type-value environment.** -/
+theorem fundamentalVarWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    FundamentalConclusionWithTypeValueCandidates context (variableCell index) (context.lookup index) :=
+  FundamentalConclusionWithPositiveTypeCandidates.toTypeValueCandidateEnv
+    (fundamentalVarWithPositiveTypeCandidates context index)
+
+/-- **The looked-up binding-type positive-candidate arm over the type-value environment.** -/
+theorem positiveCandidateVarLookupWithTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    PositiveCandidateConclusionWithTypeValueCandidates context (context.lookup index) := by
+  intro _targetScope substitution envWithTypeValueCandidates predLevel
+  exact envWithTypeValueCandidates.lookupPositiveCandidate index predLevel
+
+/-- **The type-variable value arm over the type-value environment.**  If the substituted lookup classifier
+of a variable is a universe code, the environment supplies the positive-fuel candidate companion for the
+substituted variable value itself. -/
+theorem typeValueCandidateVarWithTypeValueCandidates
+    {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    TypeValueCandidateConclusionWithTypeValueCandidates context
+      (variableCell index) (context.lookup index) := by
+  intro _targetScope substitution envWithTypeValueCandidates _levelExpr _flag
+  intro lookupSubstIsUniverse predLevel
+  exact envWithTypeValueCandidates.lookupTypeValuePositiveCandidate
+    index lookupSubstIsUniverse predLevel
+
+/-- **The bundled variable arm over the type-value environment.**  This is the load-bearing type-variable
+case: variable membership comes from the all-level environment projection, while the conditional type-value
+payload comes from the environment's substituted-lookup universe witness. -/
+theorem fundamentalVarValidityWithTypeValueCandidates {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    FundamentalValidityWithTypeValueCandidates context (variableCell index) (context.lookup index) :=
+  ⟨fundamentalVarWithTypeValueCandidates context index,
+    typeValueCandidateVarWithTypeValueCandidates context index⟩
+
+/-- A strengthened member result for `typeCode : Type@levelExpr` yields strong normalization and
+all-level reducibility of the substituted type code. -/
+theorem FundamentalConclusionWithTypeValueCandidates.typeInUniverse_hasStrongNormalizationAndAllLevelReducibility
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {typeCode : RawTerm scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (typeFundamental :
+      FundamentalConclusionWithTypeValueCandidates context typeCode
+        (universeCodeCell levelExpr flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution),
+      IsStronglyNormalizing (RawTerm.subst substitution typeCode) ∧
+        IsReducibleTypeAtAllLevels (RawTerm.subst substitution typeCode) := by
+  intro _targetScope substitution envWithTypeValueCandidates
+  have typeMemberAtAllPositive :
+      IsReducibleMemberAtAllPositiveLevels (universeCodeCell levelExpr flag)
+        (RawTerm.subst substitution typeCode) := by
+    intro level
+    have typeMember := typeFundamental substitution envWithTypeValueCandidates level
+    rwa [subst_universeCodeCell] at typeMember
+  exact (IsReducibleMemberAtAllPositiveLevels.universeCode_iff
+    (levelExpr := levelExpr) (flag := flag)).mp typeMemberAtAllPositive
+
+end FX1Poly.Typed

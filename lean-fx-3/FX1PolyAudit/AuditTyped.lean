@@ -48,6 +48,7 @@ import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
 import FX1Poly.Typed.FundamentalWithPositiveTypeCandidates
+import FX1Poly.Typed.FundamentalWithTypeValueCandidates
 import FX1Poly.Typed.FundamentalAtAllLeafArms
 import FX1Poly.Typed.FundamentalAtAllTelescope
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
@@ -899,6 +900,26 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates.lookupTypeValuePositiveCandidate
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates.cons
+
+/-! ### Dependent fundamental theorem — bundled type-value candidate motive.  This strengthens the
+    positive-candidate arm layer by carrying the conditional type-variable payload in the theorem motive
+    itself: if a substituted classifier is a universe code, the substituted subject must expose the
+    all-positive member predicate as a positive-fuel candidate.  The bundled validity shape prevents later
+    binder/type-variable arms from trying to recover this payload by false level irrelevance. -/
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.PositiveCandidateConclusionWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.TypeValueCandidateConclusionWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.FundamentalValidityWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.FundamentalValidityWithTypeValueCandidates.memberConclusion
+#assert_no_axioms FX1Poly.Typed.FundamentalValidityWithTypeValueCandidates.typeValueCandidateConclusion
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithPositiveTypeCandidates.toTypeValueCandidateEnv
+#assert_no_axioms FX1Poly.Typed.PositiveCandidateConclusionWithPositiveTypeCandidates.toTypeValueCandidateEnv
+#assert_no_axioms FX1Poly.Typed.PositiveCandidateConclusionWithTypeValueCandidates.toTypeValueCandidateConclusion
+#assert_no_axioms FX1Poly.Typed.fundamentalVarWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.positiveCandidateVarLookupWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.typeValueCandidateVarWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalVarValidityWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithTypeValueCandidates.typeInUniverse_hasStrongNormalizationAndAllLevelReducibility
 
 /-! ### Dependent fundamental theorem — proof-relevant positive-candidate environment arm layer.  This is
     the recursor-facing strengthened motive: ordinary all-level membership plus positive type-candidate
