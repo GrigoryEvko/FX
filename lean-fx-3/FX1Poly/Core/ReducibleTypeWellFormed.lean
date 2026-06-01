@@ -34,7 +34,7 @@ by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Foundation FX1Poly.Universe
 open StepStar
 
 /-- **The semantic well-formed-type predicate.**  A code is a reducible type when it denotes some
@@ -79,5 +79,18 @@ theorem IsReducibleMember.isReducibleType {scope : Nat} {typeCode term : RawTerm
     (member : IsReducibleMember typeCode term) : IsReducibleType typeCode :=
   let ⟨candidate, reducible, _membership⟩ := member
   ⟨candidate, reducible⟩
+
+/-- **A universe code is a reducible type** — the fundamental theorem's type-formation `universeFormation`
+arm, at the `IsReducibleType` level.  A universe code `Type@e` is a weak-head-normal non-Π leaf (its only
+candidate WeakHeadStep arm is `rootIota`, refuted since no `IotaHeadStep` fires on a `gen_universeCode`
+root; its root is `gen_universeCode ≠ gen_piTyCode`), so `ofNeutral` denotes it the strong-normalization
+candidate.  This specializes `ofNeutral` with the neutral side-conditions discharged once for universe
+codes — exactly what the type-FT's universe-formation arm reads (`Type@e` is a reducible type, no per-use
+re-derivation of weak-head-normality). -/
+theorem IsReducibleType.universeCode {scope : Nat} (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsReducibleType (.mkGen .gen_universeCode (levelExpr, flag) .childNil : RawTerm scope) :=
+  IsReducibleType.ofNeutral
+    (fun _reduct weakHeadStep => by cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+    (fun rootEquation => nomatch rootEquation)
 
 end FX1Poly.Core
