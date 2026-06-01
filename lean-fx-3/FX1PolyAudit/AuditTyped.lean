@@ -47,6 +47,7 @@ import FX1Poly.Typed.FundamentalAtAllLeafArms
 import FX1Poly.Typed.FundamentalAtAllTelescope
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
 import FX1Poly.Typed.FundamentalAtAllPiIntro
+import FX1Poly.Typed.FundamentalAtAllVectorPremises
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
 import FX1Poly.Typed.HasTypeDescPiConsistency
@@ -840,6 +841,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtAll
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAllFromMemberPremises
+#assert_no_axioms FX1Poly.Typed.IsFundamentalConclusionAtVector
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAllFromVectorPremises
+#assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAllFromVectorPremise
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
