@@ -280,6 +280,18 @@ def HasTypeValueCandidatesForAllReducibleTypesAtAllLevels : Prop :=
       IsReducibleTypeAtAllLevels typeCode →
         ∀ predLevel : Nat, HasAllPositiveReducibleCandidateAt (predLevel + 1) typeCode
 
+/-- **Positive-member extension for strongly normalizing all-level types.**  This is the operational
+binder-facing form of type-value completion: if a type code is strongly normalizing and reducible at every
+fuel, then any member at one positive fuel is a member at every positive fuel.  The theorem below proves this
+is equivalent to `HasTypeValueCandidatesForAllReducibleTypesAtAllLevels`, so the remaining semantic
+completion target can be attacked either as a candidate theorem or as this direct member-extension theorem. -/
+def HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes : Prop :=
+  ∀ {scope : Nat} {typeCode term : RawTerm scope} {predLevel : Nat},
+    IsStronglyNormalizing typeCode →
+      IsReducibleTypeAtAllLevels typeCode →
+        IsReducibleMemberAt (predLevel + 1) typeCode term →
+          IsReducibleMemberAtAllPositiveLevels typeCode term
+
 /-- The reducible-type completion principle implies the universe-member payload: all-positive membership in
 a universe code is exactly strong normalization plus reducibility at every fuel level. -/
 theorem HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers
@@ -320,6 +332,48 @@ theorem hasTypeValueCandidatesForAllPositiveUniverseMembers_iff_allReducibleType
       HasTypeValueCandidatesForAllReducibleTypesAtAllLevels :=
   ⟨HasTypeValueCandidatesForAllPositiveUniverseMembers.toAllReducibleTypesAtAllLevels,
     HasTypeValueCandidatesForAllReducibleTypesAtAllLevels.toUniverseMembers⟩
+
+/-- **Type-value completion is equivalent to positive-member extension.**  The candidate formulation says
+that every strongly normalizing all-level type denotes `IsReducibleMemberAtAllPositiveLevels` at every
+positive fuel.  The member-extension formulation says that any concrete positive-fuel member of such a type
+extends to all positive fuels.
+
+Forward direction: use the all-positive candidate at the member's fuel and determinism to transport the
+member into it.  Reverse direction: choose any candidate of the type at the requested positive fuel and
+close it under `ofPointwiseIff`; one direction is the extension property, the other direction reads the
+all-positive member at that same fuel and transports its witness candidate back by determinism. -/
+theorem hasTypeValueCandidatesForAllReducibleTypesAtAllLevels_iff_positiveMemberExtension :
+    HasTypeValueCandidatesForAllReducibleTypesAtAllLevels ↔
+      HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes := by
+  constructor
+  · intro allReducibleTypesHaveTypeValueCandidates
+    intro _scope typeCode term predLevel typeCodeNormalizing typeCodeReducibleAtAllLevels member
+    obtain ⟨candidate, typeCodeReducibleAtLevel, termInCandidate⟩ := member
+    exact HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+      (allReducibleTypesHaveTypeValueCandidates typeCodeNormalizing
+        typeCodeReducibleAtAllLevels predLevel)
+      typeCodeReducibleAtLevel termInCandidate
+  · intro positiveMemberExtension
+    intro scope typeCode typeCodeNormalizing typeCodeReducibleAtAllLevels predLevel
+    obtain ⟨candidate, typeCodeReducibleAtLevel⟩ :=
+      typeCodeReducibleAtAllLevels (predLevel + 1)
+    have pointwise :
+        PointwiseIff candidate (IsReducibleMemberAtAllPositiveLevels typeCode) := by
+      intro term
+      constructor
+      · intro termInCandidate
+        exact positiveMemberExtension typeCodeNormalizing typeCodeReducibleAtAllLevels
+          ⟨candidate, typeCodeReducibleAtLevel, termInCandidate⟩
+      · intro termAtAllPositiveLevels
+        obtain ⟨witnessCandidate, witnessReducible, termInWitness⟩ :=
+          termAtAllPositiveLevels predLevel
+        exact (ReducibleTypeAt.deterministic witnessReducible typeCodeReducibleAtLevel term).mp
+          termInWitness
+    cases predLevel with
+    | zero =>
+        exact ReducibleTypeStep.ofPointwiseIff typeCodeReducibleAtLevel pointwise
+    | succ memberPredLevel =>
+        exact ReducibleTypeStep.ofPointwiseIff typeCodeReducibleAtLevel pointwise
 
 /-- **Type-value completion entails lower-fuel extension.**  If every strongly-normalizing all-level
 reducible type exposes the all-positive member predicate, then any strongly-normalizing type reducible at
