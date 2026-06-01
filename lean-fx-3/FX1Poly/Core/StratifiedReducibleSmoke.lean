@@ -1,5 +1,6 @@
 import FX1Poly.Core.StratifiedReducibleUniverseDecode
 import FX1Poly.Core.StratifiedReducibleMemberNonDependent
+import FX1Poly.Core.StrongNormalizationConstructors
 
 /-! # FX1Poly/Core/StratifiedReducibleSmoke
     — concrete end-to-end smoke tests of the stratified reducibility → strong-normalization pipeline
@@ -79,5 +80,30 @@ theorem closedSimpleArrow_isReducibleType {scope : Nat} {predLevel : Nat}
         (universeReducibilityPredicate (ReducibleTypeAt predLevel)) :=
     ReducibleTypeStep.universeCode levelExpr flag
   ⟨_, ReducibleTypeAt.arrowType universeReducible universeReducible⟩
+
+/-- **A Σ-type former over strongly-normalizing components is a reducible member of its universe, via the
+data-former arm of the fundamental theorem.**  `Σ domain codomain` (a genuine 2-child data former, distinct
+from the Π/universe codes) is a reducible member of `Type@levelExpr` at `predLevel + 1` whenever its domain
+and under-binder codomain are strongly normalizing: the former is strongly normalizing
+(`sigmaTyCode_isStronglyNormalizing_of_domain_codomain` — two-child congruence SN from the children's SN),
+weak-head-normal (no weak-head step is Σ-rooted — only `rootIota` could unify, and no ι-redex is a type
+former), and root-distinct from both Π and universe.  `dataFormerInUniverse` then classifies it by strong
+normalization in the Tarski universe.  This validates the `genFormationPi` data-former dispatch on a concrete
+2-child former: with the per-former SN lemma supplied, membership-in-universe is automatic — no per-former
+reducibility-candidate development, exactly as the general fundamental-theorem arm will dispatch. -/
+theorem sigmaFormer_isReducibleMemberOfUniverse {scope : Nat} {predLevel : Nat}
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (domainNormalizing : IsStronglyNormalizing domain)
+    (codomainNormalizing : IsStronglyNormalizing codomain) :
+    IsReducibleMemberAt (predLevel + 1)
+      (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+      (.mkGen .gen_sigmaTyCode ()
+        (.childCons domain (.childCons codomain .childNil))) :=
+  IsReducibleMemberAt.dataFormerInUniverse levelExpr flag
+    (sigmaTyCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing)
+    (fun _reduct weakHeadStep => by cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+    (fun rootEquation => nomatch rootEquation)
+    (fun rootEquation => nomatch rootEquation)
 
 end FX1Poly.Core
