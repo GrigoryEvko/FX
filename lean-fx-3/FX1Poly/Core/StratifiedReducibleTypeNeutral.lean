@@ -131,6 +131,26 @@ theorem ReducibleTypeAt.reducibleOfNeutral {scope : Nat} {level : Nat}
   | zero => exact ReducibleTypeStep.reducibleOfNeutral neutral
   | succ predLevel => exact ReducibleTypeStep.reducibleOfNeutral neutral
 
+/-- **Any weak-head-normal non-Π non-universe type code is a stratified reducible type** (candidate the
+strong-normalization predicate).  Generalizes `reducibleOfNeutral` from `IsNeutral` codes (variable /
+stuck-eliminator) to ALL weak-head-normal codes that are neither Π- nor universe-rooted — in particular every
+DATA type FORMER (Σ / Nat / List / Option / Either / Id / product / sum codes), which are weak-head normal
+(type formers do not weak-head step) and root-distinct from Π / universe, yet are NOT `IsNeutral` (they are
+constructors, not stuck eliminations).  The `neutral` arm of `ReducibleTypeStep` fires from the guards
+ALONE.  This is the generic reducible-TYPE half of the fundamental theorem's `genFormationPi` arm for the
+non-Π non-universe formers: with SN of the former supplied (from SN of its children), the former is a
+reducible type at every level, candidate `IsStronglyNormalizing` — no per-former reducibility candidate
+needed, the Tarski model classifies every data type by strong normalization. -/
+theorem ReducibleTypeAt.reducibleOfWeakHeadNormalFormer {scope : Nat} {level : Nat}
+    {typeCode : RawTerm scope}
+    (weakHeadNormal : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
+    (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode) :
+    ∃ candidate : RawTerm scope → Prop, ReducibleTypeAt level typeCode candidate := by
+  cases level with
+  | zero => exact ⟨_, ReducibleTypeStep.neutral weakHeadNormal notPiType notUniverse⟩
+  | succ predLevel => exact ⟨_, ReducibleTypeStep.neutral weakHeadNormal notPiType notUniverse⟩
+
 /-- **The Tarski-universe candidate is UNCONDITIONALLY a Girard reducibility candidate at every level.**
 The conditional `ReducibleTypeStep.universeCandidateIsReducibilityCandidate` with both interface legs now
 discharged for `ReducibleTypeAt level`: the forward leg by `ReducibleTypeAt.forwardStep`, the neutral leg by
