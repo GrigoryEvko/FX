@@ -93,4 +93,35 @@ theorem IsReducibleType.universeCode {scope : Nat} (levelExpr : LevelExpr) (flag
     (fun _reduct weakHeadStep => by cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
     (fun rootEquation => nomatch rootEquation)
 
+/-- **Choice-free Π introduction (the fundamental theorem's `piIntro` arm).**  `lam body` is a reducible
+member of the Π-type when, for every reducible argument, (i) the instantiated codomain is a reducible TYPE
+and (ii) the body's substitution instance is a reducible member of it.  Unlike `IsReducibleMember.abstraction`,
+the codomain candidate is NOT supplied as a uniform function — only the EXISTENTIAL `IsReducibleType` (what
+the fundamental theorem's codomain type-formation hypothesis delivers per argument).  The canonical candidate
+`ReducibleType.atMemberPredicate` resolves the uniformity WITHOUT choice: the fixed codomain candidate family
+is `fun argument => IsReducibleMember (subst0 codomainCode argument)`, a genuine function of the type, and at
+each argument `atMemberPredicate` turns the existential reducible-type witness into reducibility AT that
+canonical candidate, while the body hypothesis IS membership in it definitionally.  This is the keystone the
+`ofPointwiseIff` arm was added to enable. -/
+theorem IsReducibleMember.abstractionAtMemberPredicate {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm scope → Prop}
+    (domainReducible : ReducibleType domainCode domainCandidate)
+    (domainArgumentsSN : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsStronglyNormalizing argument)
+    (codomainIsReducibleType : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsReducibleType (RawTerm.subst0 codomainCode argument))
+    (bodyReducible : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsReducibleMember (RawTerm.subst0 codomainCode argument) (RawTerm.subst0 body argument)) :
+    IsReducibleMember
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+      (.mkGen .gen_lam () (.childCons body .childNil)) :=
+  IsReducibleMember.abstraction
+    (codomainCandidate := fun argument => IsReducibleMember (RawTerm.subst0 codomainCode argument))
+    domainReducible domainArgumentsSN
+    (fun argument argumentInDomain =>
+      (codomainIsReducibleType argument argumentInDomain).elim
+        (fun _witnessCandidate witnessReducible => ReducibleType.atMemberPredicate witnessReducible))
+    bodyReducible
+
 end FX1Poly.Core
