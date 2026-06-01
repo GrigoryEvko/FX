@@ -42,6 +42,16 @@ def IsFundamentalConclusionAtVector {profile : PolyProfile} {scope : Nat}
     IsReducibleMemberAt (predLevel + 1) (RawTerm.subst substitution classifier)
       (RawTerm.subst substitution subject)
 
+/-- **Read a vector-environment fundamental result as an all-level result.**  The all-level environment
+supplies the positive vector whose every tail entry is the conclusion level.  This is the final export
+bridge for a recursor proved in vector form. -/
+theorem fundamentalConclusionAtAllOfVector {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (subjectFundamental : IsFundamentalConclusionAtVector context subject classifier) :
+    FundamentalConclusionAtAll context subject classifier := by
+  intro _targetScope substitution env predLevel
+  exact subjectFundamental substitution predLevel (env.toVecPositive (fun _index => predLevel))
+
 /-- **Pi-introduction over the all-level environment, from vector recursive premises.**  The domain remains
 an all-level premise.  The codomain/body recursive premises are vector-shaped, because the fresh argument is
 available at exactly the domain-member level.  For each argument, the tail variables are read from the
