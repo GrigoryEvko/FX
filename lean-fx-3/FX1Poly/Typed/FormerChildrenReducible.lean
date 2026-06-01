@@ -1,4 +1,5 @@
 import FX1Poly.Typed.PiFormerMembership
+import FX1Poly.Typed.TelescopeReducible
 
 /-! # FX1Poly/Typed/FormerChildrenReducible
     — the non-recursive 2-child former-children reducibility bundle and its dispatch to former membership
@@ -67,6 +68,30 @@ theorem FormerChildrenReducible.toSigmaMember {scope targetScope : Nat}
       (RawTerm.subst substitution
         (.mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))) :=
   IsReducibleMemberAt.sigmaFormerOfChildMemberships bundle.1 bundle.2.1 bundle.2.2
+
+/-- **Extract the bundle from the telescope logical relation.**  The mutual `fundamentalTelescope`
+companion returns a `TelescopeReducible flag 0 2 substitution (domainLevel :: codomainLevel :: [])` over
+the former's two-child spine; this projects the three child fundamental-theorem results the dispatch
+lemmas consume.  Both child memberships at `predLevel` (domain) and `predLevel + 1` (domain, above) come
+from the head conjunct `telescopeReducible.1` (universal in the level); the codomain conjunct comes from
+the tail conjunct `telescopeReducible.2` applied to a domain member, whose own head conjunct (at the
+codomain level) is read at `predLevel`.  The `TelescopeReducible` relation reduces definitionally at the
+concrete two-`cons`-then-`nil` shape, so the projections typecheck directly.  This is the genFormationPi
+arm's whole extraction step — the bridge from `fundamentalTelescope`'s output to `toPiMember` /
+`toSigmaMember`. -/
+theorem FormerChildrenReducible.ofTelescopeReducible {scope targetScope : Nat}
+    (predLevel : Nat) {flag : UniverseFlag}
+    {substitution : RawTermSubst scope (targetScope + 1)}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr}
+    (telescopeReducible :
+      TelescopeReducible flag 0 2 substitution (domainLevel :: codomainLevel :: [])
+        (.childCons domainCode (.childCons codomainCode .childNil))) :
+    FormerChildrenReducible predLevel flag substitution domainCode codomainCode
+      domainLevel codomainLevel :=
+  ⟨telescopeReducible.1 predLevel, telescopeReducible.1 (predLevel + 1),
+    fun {_memberLevel} argument argumentMember =>
+      (telescopeReducible.2 argument argumentMember).1 predLevel⟩
 
 end FX1Poly.Typed
 

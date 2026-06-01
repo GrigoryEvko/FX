@@ -870,6 +870,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormerOfChildMemberships
 #assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.toPiMember
 #assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.toSigmaMember
+#assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.ofTelescopeReducible
 #assert_no_axioms FX1Poly.Typed.consecutiveShifts
 #assert_no_axioms FX1Poly.Typed.TelescopeReducible
 #assert_no_axioms FX1Poly.Typed.Generator.gen_piTyCode_binderShifts_eq
