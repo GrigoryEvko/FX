@@ -48,6 +48,7 @@ import FX1Poly.Typed.FundamentalAtAllTelescope
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
 import FX1Poly.Typed.FundamentalAtAllPiIntro
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
+import FX1Poly.Typed.FundamentalAtAllNonDependentBinders
 import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -838,6 +839,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalPiFormationAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationAtAll
+#assert_no_axioms FX1Poly.Typed.formerChildrenReducibleNonDependentAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationNonDependentAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationNonDependentAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroNonDependentAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalTelescopeNilAtAll
 #assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtAll
 #assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAll
