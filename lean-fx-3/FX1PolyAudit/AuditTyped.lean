@@ -792,6 +792,11 @@ gates pin them shut.
     nesting).  Future arms (conv / piIntro / formation) append here. -/
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.applicationUnderSubst
 
+/-! ### CONV ARM under a closing substitution.  Transports membership across the substituted conversion
+    (`Conv.subst`) via the shipped `castAlongConv`; the target type-reducibility is supplied by the
+    fundamental theorem via `tarskiDecode` of the `reclassifier : Type@e` premise's IH at `level + 1`. -/
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.castAlongConvUnderSubst
+
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
     reducibility relation assigns it the SN candidate and `IsReducibleMember (universeCodeCell ..) t ↔

@@ -1,4 +1,5 @@
 import FX1Poly.Core.StratifiedReducibleMember
+import FX1Poly.Core.ConvSubstRename
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescPiSubstitution
 
@@ -39,7 +40,7 @@ Two `rfl` rewrites (`subst_appCell`, `subst_piTyCodeCell`) + the β-commutation 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Foundation
 
 /-- **Semantic Π elimination under a closing substitution (the `piElim` arm of the fundamental theorem).**
 Given that a closing substitution `substitution` sends `functionTerm` to a reducible member of the closed
@@ -68,5 +69,26 @@ theorem IsReducibleMemberAt.applicationUnderSubst {scope targetScope : Nat} {lev
   rw [subst_piTyCodeCell] at functionReducible
   rw [subst_appCell, RawTerm.subst0_subst_commute]
   exact IsReducibleMemberAt.application functionReducible argumentReducible
+
+/-- **Semantic conversion under a closing substitution (the `conv` arm of the fundamental theorem).**
+Given that a closing `substitution` sends `subject` to a reducible member of the closed `classifier`, and
+that the closed `reclassifier` is itself a reducible type at `level` — which the fundamental theorem obtains
+by `tarskiDecode`-ing the `reclassifier : Type@e` premise's induction hypothesis taken at `level + 1` — it
+sends `subject` to a reducible member of the closed `reclassifier`.  The membership transports across the
+SUBSTITUTED conversion `Conv.subst substitution converts` via the shipped `IsReducibleMemberAt.castAlongConv`.
+The `level` is threaded unchanged — conversion introduces no universe nesting. -/
+theorem IsReducibleMemberAt.castAlongConvUnderSubst {scope targetScope : Nat} {level : Nat}
+    {classifier reclassifier subject : RawTerm scope}
+    {candidateRight : RawTerm targetScope → Prop}
+    (substitution : RawTermSubst scope targetScope)
+    (subjectReducible : IsReducibleMemberAt level
+      (RawTerm.subst substitution classifier) (RawTerm.subst substitution subject))
+    (reclassifierReducible : ReducibleTypeAt level
+      (RawTerm.subst substitution reclassifier) candidateRight)
+    (converts : Conv classifier reclassifier) :
+    IsReducibleMemberAt level
+      (RawTerm.subst substitution reclassifier) (RawTerm.subst substitution subject) :=
+  IsReducibleMemberAt.castAlongConv subjectReducible reclassifierReducible
+    (Conv.subst substitution converts)
 
 end FX1Poly.Typed

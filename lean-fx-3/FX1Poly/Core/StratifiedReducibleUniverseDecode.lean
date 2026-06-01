@@ -38,7 +38,7 @@ shipped `piTypeInversion`; `tarskiDecode` destructures the existential and the `
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation FX1Poly.Universe
+open FX1Poly.Foundation FX1Poly.Universe StepStar
 
 /-- **Universe-code inversion (parametric).**  A `gen_universeCode`-rooted type reducible at the step-functor
 came through the `universeCode` arm: `whnfExpand` cannot fire (a universe code is weak-head normal, refuted
@@ -74,5 +74,43 @@ theorem IsReducibleMemberAt.tarskiDecode {scope : Nat} {predLevel : Nat}
   obtain ⟨_stronglyNormalizing, typeReducible⟩ :=
     (ReducibleTypeStep.universeCodeInversion universeReducible typeCode).mp membership
   exact typeReducible
+
+/-- **The Tarski encode** — the dual of `tarskiDecode`.  A strongly-normalizing reducible type at `level` is
+a reducible member of the universe code at `level + 1`: the universe at `level + 1` is INHABITED by exactly
+the SN reducible types at `level`.  The universe candidate is `universeReducibilityPredicate
+(ReducibleTypeAt level)` = `fun typeCode => SN typeCode ∧ ∃ candidate, ReducibleTypeAt level typeCode
+candidate`, so the member is the triple ⟨that candidate, the universe code's own reducibility (the
+`universeCode` arm), the membership ⟨SN witness, the type's candidate⟩⟩.  No inversion needed — encode just
+applies the `universeCode` constructor.  The direction the formation arms consume to exhibit a type-former
+(or a universe code) AS a universe member. -/
+theorem IsReducibleMemberAt.tarskiEncode {scope : Nat} {predLevel : Nat}
+    {levelExpr : LevelExpr} {flag : UniverseFlag} {typeCode : RawTerm scope}
+    (stronglyNormalizing : IsStronglyNormalizing typeCode)
+    (typeReducible : IsReducibleTypeAt predLevel typeCode) :
+    IsReducibleMemberAt (predLevel + 1)
+      (.mkGen .gen_universeCode (levelExpr, flag) .childNil) typeCode :=
+  ⟨universeReducibilityPredicate (ReducibleTypeAt predLevel),
+   ReducibleTypeStep.universeCode levelExpr flag,
+   ⟨stronglyNormalizing, typeReducible⟩⟩
+
+/-- **The Tarski universe-membership characterization** (decode ∧ encode packaged into the defining iff).
+A term is a reducible member of the universe code at `level + 1` IFF it is a strongly-normalizing reducible
+type at `level`.  This is the definitive statement of the universe's Tarski semantics: the universe at
+`level + 1` is PRECISELY the SN reducible types at `level`.  Forward is `universeCodeInversion` (keeping BOTH
+conjuncts of the universe candidate — the inversion exhibits the candidate as `SN ∧ ∃ candidate,
+ReducibleTypeAt level _ candidate`, definitionally `SN ∧ IsReducibleTypeAt level`); backward is
+`tarskiEncode`. -/
+theorem IsReducibleMemberAt.universeMembership_iff {scope : Nat} {predLevel : Nat}
+    {levelExpr : LevelExpr} {flag : UniverseFlag} {typeCode : RawTerm scope} :
+    IsReducibleMemberAt (predLevel + 1)
+        (.mkGen .gen_universeCode (levelExpr, flag) .childNil) typeCode ↔
+      IsStronglyNormalizing typeCode ∧ IsReducibleTypeAt predLevel typeCode := by
+  constructor
+  · intro member
+    obtain ⟨_universeCandidate, universeReducible, membership⟩ := member
+    exact (ReducibleTypeStep.universeCodeInversion universeReducible typeCode).mp membership
+  · intro stronglyNormalizingAndReducible
+    exact IsReducibleMemberAt.tarskiEncode
+      stronglyNormalizingAndReducible.1 stronglyNormalizingAndReducible.2
 
 end FX1Poly.Core
