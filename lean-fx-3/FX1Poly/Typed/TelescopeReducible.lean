@@ -68,4 +68,16 @@ def TelescopeReducible {baseScope targetScope : Nat} (flag : UniverseFlag) :
         TelescopeReducible flag (currentDepth + 1) _ (RawTermSubst.cons argument substitution)
           restLevels tail)
 
+/-- **A Π former's children spine is `consecutiveShifts`-indexed.**  `gen_piTyCode.binderShifts` is the
+literal `[0,1]`, which is `consecutiveShifts 0 2` definitionally — so a Π former's premise telescope (a
+two-child spine at base depth 0) is exactly the index `TelescopeReducible`/`fundamentalTelescope` consume.
+The bridge the `genFormationPi` arm uses to feed the Π former's telescope into the relation. -/
+theorem Generator.gen_piTyCode_binderShifts_eq :
+    Generator.gen_piTyCode.binderShifts = consecutiveShifts 0 2 := rfl
+
+/-- **A Σ former's children spine is `consecutiveShifts`-indexed.**  The data-former twin of
+`gen_piTyCode_binderShifts_eq`: `gen_sigmaTyCode.binderShifts = [0,1] = consecutiveShifts 0 2`. -/
+theorem Generator.gen_sigmaTyCode_binderShifts_eq :
+    Generator.gen_sigmaTyCode.binderShifts = consecutiveShifts 0 2 := rfl
+
 end FX1Poly.Typed
