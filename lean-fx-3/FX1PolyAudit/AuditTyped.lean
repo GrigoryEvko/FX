@@ -1054,9 +1054,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllPositiveLevels
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.atAllPositiveLevels
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.atLevel
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.ofWeakHeadReduct
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.headExpand
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllPositiveLevels.ofWeakHeadReduct
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllPositiveLevels.headExpand
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.headExpand
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.extendsToAllPositiveAtWeakHeadExpansion
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.domainOfPiType

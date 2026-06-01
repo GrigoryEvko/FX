@@ -50,6 +50,13 @@ from all-positive arguments. -/
 def IsReducibleTypeAtAllPositiveLevels {scope : Nat} (typeCode : RawTerm scope) : Prop :=
   ∀ predLevel : Nat, IsReducibleTypeAt (predLevel + 1) typeCode
 
+/-- All-level type reducibility includes positive-level type reducibility. -/
+theorem IsReducibleTypeAtAllLevels.atAllPositiveLevels {scope : Nat}
+    {typeCode : RawTerm scope}
+    (typeCodeReducibleAtAllLevels : IsReducibleTypeAtAllLevels typeCode) :
+    IsReducibleTypeAtAllPositiveLevels typeCode :=
+  fun predLevel => typeCodeReducibleAtAllLevels (predLevel + 1)
+
 /-- Read an all-positive member at one concrete positive level. -/
 theorem IsReducibleMemberAtAllPositiveLevels.atLevel {scope : Nat}
     {typeCode term : RawTerm scope}
@@ -83,6 +90,27 @@ theorem IsReducibleTypeAtAllLevels.headExpand {scope : Nat}
     IsReducibleTypeAtAllLevels typeCode := by
   intro level
   obtain ⟨candidate, reductReducible⟩ := reductReducibleAtAllLevels level
+  exact ⟨candidate, ReducibleTypeAt.headExpand weakHeadStep reductReducible⟩
+
+/-- **Positive-level type reducibility descends through one weak-head reduct.** -/
+theorem IsReducibleTypeAtAllPositiveLevels.ofWeakHeadReduct {scope : Nat}
+    {typeCode reduct : RawTerm scope}
+    (typeCodeReducibleAtAllPositiveLevels : IsReducibleTypeAtAllPositiveLevels typeCode)
+    (weakHeadStep : WeakHeadStep typeCode reduct) :
+    IsReducibleTypeAtAllPositiveLevels reduct := by
+  intro predLevel
+  obtain ⟨candidate, typeCodeReducible⟩ :=
+    typeCodeReducibleAtAllPositiveLevels predLevel
+  exact ⟨candidate, typeCodeReducible.candidateAtWhnfReduct weakHeadStep⟩
+
+/-- **Positive-level type reducibility lifts backward through one weak-head step.** -/
+theorem IsReducibleTypeAtAllPositiveLevels.headExpand {scope : Nat}
+    {typeCode reduct : RawTerm scope}
+    (weakHeadStep : WeakHeadStep typeCode reduct)
+    (reductReducibleAtAllPositiveLevels : IsReducibleTypeAtAllPositiveLevels reduct) :
+    IsReducibleTypeAtAllPositiveLevels typeCode := by
+  intro predLevel
+  obtain ⟨candidate, reductReducible⟩ := reductReducibleAtAllPositiveLevels predLevel
   exact ⟨candidate, ReducibleTypeAt.headExpand weakHeadStep reductReducible⟩
 
 /-- **All-positive membership lifts backward through one weak-head step in the classifier.**  A member of
