@@ -655,6 +655,26 @@ theorem fundamentalPiIntroAtAllFromPositiveDomainCandidateCompanion
       domainHasPositiveCandidateUnderSubstitution substitution env predLevel)
     codomainFundamental bodyFundamental
 
+/-- **All-level candidate companions strengthen ordinary members at any level to all-positive members.**
+This is the former-dispatch projection from the full all-level type companion.  Unlike the positive-fuel
+companion, this one is strong enough for dispatch premises that may inspect the domain at fuel `0`. -/
+theorem HasAllPositiveReducibleCandidateUnderAllLevelSubstitution.memberExtendsToAllPositive
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainCode : RawTerm scope}
+    (domainHasAllPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateUnderAllLevelSubstitution context domainCode) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevels context substitution) (memberLevel : Nat)
+      {domainCandidate : RawTerm (targetScope + 1) → Prop},
+      ReducibleTypeAt memberLevel (RawTerm.subst substitution domainCode) domainCandidate →
+        ∀ argument : RawTerm (targetScope + 1), domainCandidate argument →
+          IsReducibleMemberAtAllPositiveLevels
+            (RawTerm.subst substitution domainCode) argument := by
+  intro _targetScope substitution env memberLevel domainCandidate domainReducible argument argumentMember
+  exact HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
+    (domainHasAllPositiveCandidateUnderSubstitution substitution env memberLevel)
+    domainReducible argumentMember
+
 /-- **Dispatch-level Pi/Sigma former children from all-positive arguments.**  If any semantic domain member
 needed by the former dispatch can be strengthened to all positive domain-membership levels, then the
 codomain child's all-level recursive hypothesis supplies both codomain-under-argument premises consumed by
@@ -723,6 +743,30 @@ theorem formerChildrenReducibleAtDispatchLevelsFromAllPositiveDomainCandidate {p
       let ⟨_domainCandidate, domainReducible, argumentInDomain⟩ := memberWitness
       HasAllPositiveReducibleCandidateAt.memberExtendsToAllPositive
         candidateWitness domainReducible argumentInDomain)
+    codomainFundamental
+
+/-- **Dispatch-level Π/Σ former children from the all-level domain-candidate companion.**  This packages the
+former-facing bridge in the exact full-fuel companion form needed when the dispatch may consume a domain
+member at fuel `0`.  It is therefore appropriate for neutral and Σ-domain companions; universe domains still
+need the separate positive-fuel analysis because the universe candidate is not all-positive at level `0`. -/
+theorem formerChildrenReducibleAtDispatchLevelsFromAllLevelDomainCandidateCompanion
+    {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental :
+      FundamentalConclusionAtAll context domainCode (universeCodeCell domainLevel flag))
+    (domainHasAllPositiveCandidateUnderSubstitution :
+      HasAllPositiveReducibleCandidateUnderAllLevelSubstitution context domainCode)
+    (codomainFundamental :
+      FundamentalConclusionAtAll (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      (_env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat),
+      FormerChildrenReducibleAtDispatchLevels predLevel flag substitution domainCode codomainCode
+        domainLevel codomainLevel :=
+  formerChildrenReducibleAtDispatchLevelsFromAllPositiveDomainCandidate domainFundamental
+    (fun substitution env _predLevel memberLevel =>
+      domainHasAllPositiveCandidateUnderSubstitution substitution env memberLevel)
     codomainFundamental
 
 end FX1Poly.Typed
