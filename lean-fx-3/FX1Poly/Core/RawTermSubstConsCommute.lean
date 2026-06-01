@@ -1,6 +1,7 @@
 import FX1Poly.Core.CandidateReducibleSubst
 import FX1Poly.Core.RawTermRenameSubstCommute
 import FX1Poly.Core.RawTermSubstPointwise
+import FX1Poly.Core.RawTermSubst0Commute
 
 /-! # Foundation/PolyCell/Core/RawTermSubstConsCommute
     — weakening cancels under a cons-extended substitution
@@ -54,5 +55,42 @@ theorem RawTerm.weaken_subst_cons {scope targetScope : Nat} (sourceTerm : RawTer
     (RawTermSubst.cons headTerm tailSubst) sourceTerm]
   exact RawTerm.subst_pointwise
     (RawTermSubst.weaken_then_cons_pointwise headTerm tailSubst) sourceTerm
+
+/-- **A `cons`-extended substitution is a `subst0` after the lifted tail** — the binder-split keystone the
+fundamental theorem's `piIntro` assembly case threads.  Substituting `cons head tail` through `body` equals
+lifting `tail` under the binder, substituting that into `body`, then `subst0`-ing the head:
+
+  `subst (cons head tail) body = subst0 (subst (lift tail) body) head`.
+
+The body induction hypothesis, taken at the binder-extended closing environment (`ReducibleEnvAt.cons`
+produces the substitution `RawTermSubst.cons arg γ`), reduces `body` to `subst (cons arg γ) body`; the
+semantic introduction rule (`abstractionUnderSubst` / `abstractionNonDependentUnderSubst`) consumes
+`subst0 (subst (lift γ) body) arg`.  This identity is the bridge between them, and the SAME `subst0`
+identity bridges the eliminated type `subst (cons arg γ) B` to the arm's `subst0 (subst (lift γ) B) arg`.
+
+The single-substitution counterpart of `RawTerm.subst0_subst_commute`, proved by the identical
+`subst_compose` + `subst_pointwise` template: at variable 0 both sides hit `head` (`rfl`); at `k + 1` both
+reduce to `tail k` (`RawTerm.weaken_subst_singleton` cancels the lift's weakening against the head
+singleton). -/
+theorem RawTerm.subst_cons_eq_subst0_lift {scope targetScope : Nat}
+    (body : RawTerm (scope + 1)) (headTerm : RawTerm targetScope)
+    (tailSubst : RawTermSubst scope targetScope) :
+    RawTerm.subst (RawTermSubst.cons headTerm tailSubst) body =
+      RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift tailSubst) body) headTerm := by
+  unfold RawTerm.subst0
+  rw [RawTerm.subst_compose (RawTermSubst.lift tailSubst)
+    (RawTermSubst.singleton headTerm) body]
+  apply RawTerm.subst_pointwise
+  intro position
+  cases position with
+  | mk positionValue positionBound =>
+      cases positionValue with
+      | zero => rfl
+      | succ priorPositionValue =>
+          dsimp only [RawTermSubst.compose, RawTermSubst.singleton,
+            RawTermSubst.lift, RawTermSubst.cons]
+          exact (RawTerm.weaken_subst_singleton
+            (tailSubst ⟨priorPositionValue, Nat.lt_of_succ_lt_succ positionBound⟩)
+            headTerm).symm
 
 end FX1Poly.Core
