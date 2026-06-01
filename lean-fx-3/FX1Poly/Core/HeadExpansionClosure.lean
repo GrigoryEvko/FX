@@ -71,6 +71,17 @@ theorem isStronglyNormalizing_headExpansionClosed {scope : Nat} :
     HeadExpansionClosed (IsStronglyNormalizing (scope := scope)) :=
   fun argumentSN contractumSN => betaSpineHeadExpansion argumentSN contractumSN
 
+/-- **Head-expansion closure respects pointwise equivalence.**  The property is membership-defined (a redex
+inherits membership from its contractum), so transporting the candidate across a pointwise `↔` preserves it.
+Consumed by the stratified relation's `ofPointwiseIff` congruence-closure arm. -/
+theorem HeadExpansionClosed.respectsPointwiseIff {scope : Nat}
+    {candidate canonicalCandidate : RawTerm scope → Prop}
+    (closed : HeadExpansionClosed candidate)
+    (equivalence : ∀ term : RawTerm scope, candidate term ↔ canonicalCandidate term) :
+    HeadExpansionClosed canonicalCandidate := by
+  intro _body _argument _spine argumentSN contractumMember
+  exact (equivalence _).mp (closed argumentSN ((equivalence _).mpr contractumMember))
+
 /-- **The arrow former preserves head-expansion closure.**  If the codomain candidate is
 head-expansion-closed, so is `IsArrowReducible domain codomain` — applying the redex to one more
 argument absorbs into the spine (`applySpineApp_append`), where the codomain's closure discharges

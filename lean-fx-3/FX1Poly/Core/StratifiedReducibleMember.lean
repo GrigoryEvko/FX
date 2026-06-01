@@ -70,13 +70,8 @@ theorem ReducibleTypeStep.piTypeInversion {scope : Nat}
       (∀ argument : RawTerm scope, domainCandidate argument →
         ReducibleTypeStep lowerReducible (RawTerm.subst0 codomainCode argument)
           (codomainCandidate argument)) ∧
-      PointwiseIff candidate (IsDependentArrowReducible domainCandidate codomainCandidate) := by
-  cases reducible with
-  | whnfExpand weakHeadStep _reductReducible =>
-      cases weakHeadStep with | rootIota iotaStep => cases iotaStep
-  | neutral _noWeakHeadStep notPiType _notUniverse => exact absurd rfl notPiType
-  | piType codomainCandidate domainReducible codomainReducible =>
-      exact ⟨_, codomainCandidate, domainReducible, codomainReducible, fun _term => Iff.rfl⟩
+      PointwiseIff candidate (IsDependentArrowReducible domainCandidate codomainCandidate) :=
+  reducible.candidatePiShape rfl
 
 /-- **Π-code inversion (level-indexed).**  `ReducibleTypeStep.piTypeInversion` through the `Nat` recursion
 of `ReducibleTypeAt` (both cases by defeq). -/

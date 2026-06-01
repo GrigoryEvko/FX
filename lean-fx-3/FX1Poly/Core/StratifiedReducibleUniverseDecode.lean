@@ -51,12 +51,8 @@ theorem ReducibleTypeStep.universeCodeInversion {scope : Nat}
     {levelExpr : LevelExpr} {flag : UniverseFlag} {candidate : RawTerm scope → Prop}
     (reducible : ReducibleTypeStep lowerReducible
       (.mkGen .gen_universeCode (levelExpr, flag) .childNil) candidate) :
-    PointwiseIff candidate (universeReducibilityPredicate lowerReducible) := by
-  cases reducible with
-  | whnfExpand weakHeadStep _reductReducible =>
-      cases weakHeadStep with | rootIota iotaStep => cases iotaStep
-  | neutral _noWeakHeadStep _notPiType notUniverse => exact absurd rfl notUniverse
-  | universeCode _levelExpr _flag => intro _term; exact Iff.rfl
+    PointwiseIff candidate (universeReducibilityPredicate lowerReducible) :=
+  reducible.candidateIffUniverse rfl
 
 /-- **The Tarski decode.**  A reducible member of the universe code at `level + 1` is a reducible type at
 `level` — the universe at `level + 1` decodes to the reducible types at `level` (its second conjunct, after

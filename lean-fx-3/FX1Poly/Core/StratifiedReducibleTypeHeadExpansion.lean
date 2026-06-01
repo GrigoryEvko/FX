@@ -138,6 +138,8 @@ theorem ReducibleTypeStep.headExpansionClosed {scope : Nat}
       obtain ⟨contractumStronglyNormalizing, lowerCandidate, lowerContractum⟩ := contractumMember
       exact ⟨betaSpineHeadExpansion argumentSN contractumStronglyNormalizing,
         lowerCandidate, lowerHeadExpand lowerContractum⟩
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 
 /-- **Every level-indexed reducibility candidate is head-expansion-closed** (unconditional).
 `ReducibleTypeStep.headExpansionClosed` with `lowerHeadExpand` discharged: at level `0` the lower relation

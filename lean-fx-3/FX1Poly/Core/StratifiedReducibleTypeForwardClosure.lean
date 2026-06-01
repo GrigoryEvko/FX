@@ -131,6 +131,9 @@ theorem ReducibleTypeStep.forwardStepStar {scope : Nat}
           chain
       subst finalEquation
       exact ReducibleTypeStep.universeCode levelExpr flag
+  | ofPointwiseIff _innerReducible pointwiseIff innerHypothesis =>
+      intro finalType chain
+      exact (innerHypothesis chain).ofPointwiseIff pointwiseIff
 
 /-- **Forward closure of the level-indexed relation.**  `ReducibleTypeStep.forwardStepStar` specialized
 through the `Nat` recursion of `ReducibleTypeAt` (level `0` over the empty lower relation, level `n+1` over

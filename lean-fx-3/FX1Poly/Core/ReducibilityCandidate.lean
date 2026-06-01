@@ -77,6 +77,23 @@ theorem isStronglyNormalizing_isReducibilityCandidate {scope : Nat} :
     intro term _termIsNeutral reductsStronglyNormalizing
     exact Acc.intro term reductsStronglyNormalizing
 
+/-- **Reducibility candidacy respects pointwise equivalence.**  CR1/CR2/CR3 are all membership-defined, so
+transporting the predicate across a pointwise `↔` preserves candidacy: each field rewrites its hypotheses
+and conclusion through the equivalence at the relevant term.  This is the congruence the stratified
+relation's `ofPointwiseIff` arm consumes to keep `isReducibilityCandidate` (and the canonical
+member-predicate of the dependent fundamental theorem genuinely a candidate). -/
+theorem IsReducibilityCandidate.respectsPointwiseIff {scope : Nat}
+    {predicate canonicalPredicate : RawTerm scope → Prop}
+    (candidate : IsReducibilityCandidate predicate)
+    (equivalence : ∀ term : RawTerm scope, predicate term ↔ canonicalPredicate term) :
+    IsReducibilityCandidate canonicalPredicate where
+  stronglyNormalizing := fun member => candidate.stronglyNormalizing ((equivalence _).mpr member)
+  closedUnderStep := fun member step =>
+    (equivalence _).mp (candidate.closedUnderStep ((equivalence _).mpr member) step)
+  neutralExpansion := fun neutralTerm reductsMembers =>
+    (equivalence _).mp (candidate.neutralExpansion neutralTerm
+      (fun reduct step => (equivalence reduct).mpr (reductsMembers reduct step)))
+
 /-- Every reducibility candidate contains all variables.  A variable is neutral
 (`IsNeutral.var`) and has no reducts (`noStep_var`), so CR3's "all one-step
 reducts are reducible" premise holds vacuously.  This is the

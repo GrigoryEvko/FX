@@ -160,6 +160,8 @@ theorem ReducibleTypeStep.isReducibilityCandidate {scope : Nat}
   | universeCode _levelExpr _flag =>
       exact ReducibleTypeStep.universeCandidateIsReducibilityCandidate
         lowerForwardStep lowerNeutralInclusion
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 
 /-- **Every level-indexed reducibility candidate is a Girard reducibility candidate** (unconditional, at
 every positive fuel level).  `ReducibleTypeStep.isReducibilityCandidate` with both interface legs discharged
