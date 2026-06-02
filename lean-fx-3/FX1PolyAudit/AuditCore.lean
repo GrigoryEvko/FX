@@ -6,6 +6,7 @@ import FX1Poly.Core.GeneratorFinitePolygraph
 import FX1Poly.Core.GeneratorPolygraphMap
 import FX1Poly.Core.RawCellWordEncoding
 import FX1Poly.Core.StepRewriteRuleMap
+import FX1Poly.Core.StepWordRewriteSoundness
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -110,6 +111,22 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Step.inducedRewriteRule_rightHandSide_ne_nil
 #assert_no_axioms FX1Poly.Core.fxStepSystem
 #assert_no_axioms FX1Poly.Core.Step.inducedRewriteRule_mem_fxStepSystem
+
+-- SN-127 (#630): the FORWARD half of the Leg-3 bridge -- FX reduction embeds into word rewriting over the
+-- term-code monoid. FxWordRewritesOneStep is one-step word rewriting (List Nat) under an FxTermRewriteRule system
+-- (fire + left/right context closure). Step.toWordRewrite is single-step SOUNDNESS (the fire of the SN-126 system
+-- rule -- NOT gated on typed SN, since fxStepSystem holds every instantiated reduction as a top-level rule).
+-- FxWordRewritesMany is the refl-trans closure with single/trans + context lifts (a congruence preorder);
+-- StepStar.toWordRewrites is many-step SOUNDNESS by induction over the chain. Zero-axiom (Prop inductives +
+-- constructor application + structural inductions).
+#assert_no_axioms FX1Poly.Core.FxWordRewritesOneStep
+#assert_no_axioms FX1Poly.Core.Step.toWordRewrite
+#assert_no_axioms FX1Poly.Core.FxWordRewritesMany
+#assert_no_axioms FX1Poly.Core.FxWordRewritesMany.single
+#assert_no_axioms FX1Poly.Core.FxWordRewritesMany.trans
+#assert_no_axioms FX1Poly.Core.FxWordRewritesMany.underLeftContext
+#assert_no_axioms FX1Poly.Core.FxWordRewritesMany.underRightContext
+#assert_no_axioms FX1Poly.Core.StepStar.toWordRewrites
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
