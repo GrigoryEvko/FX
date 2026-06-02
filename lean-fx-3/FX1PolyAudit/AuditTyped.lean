@@ -1344,6 +1344,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.validTyping_identity_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_piBetweenUniverses_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_sigmaBetweenUniverses_stronglyNormalizing
+-- OPEN-CONTEXT HANDOFFS (ValidTyping.lean): the UNCONDITIONAL open twins of the ClosedLevelIndexed handoffs.
+-- The closed handoffs take the level-indexed fundamental conclusion as a HYPOTHESIS; over ValidTyping the
+-- fundamental IS proved (ValidTyping.fundamental), so substReducible (open reducibility under any reducible env)
+-- + substStronglyNormalizing (open SN via CR1) are unconditional and hold in ANY context. openVariable… is the
+-- first SN witness for a NON-closed subject (a free var closed by a reducible substitution), exercising the open
+-- handoff with a genuine reducible env (Fin 1 split refuted structurally, no omega).
+#assert_no_axioms FX1Poly.Typed.ValidTyping.substReducible
+#assert_no_axioms FX1Poly.Typed.ValidTyping.substStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.validTyping_openVariable_substStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll

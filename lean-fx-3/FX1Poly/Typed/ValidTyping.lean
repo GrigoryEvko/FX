@@ -239,4 +239,71 @@ theorem validTyping_sigmaBetweenUniverses_stronglyNormalizing {profile : PolyPro
         ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell levelExpr flag))
         levelExpr flag))
 
+/-! ## Open-context handoffs (UNCONDITIONAL)
+
+The closed-SN handoffs in `ClosedLevelIndexed.lean` (`closedSubject{Reducible,StronglyNormalizing}FromLevelIndexed`)
+take the level-indexed fundamental conclusion as an explicit HYPOTHESIS — they were stated before any recursor
+assembled it.  Over `ValidTyping` the fundamental theorem is PROVED (`ValidTyping.fundamental`), so the
+corresponding handoffs are UNCONDITIONAL, and they hold in ANY context (not just the empty one): a ValidTyping
+subject is a reducible member — hence strongly normalizing — under EVERY reducible closing environment.
+`ValidTyping.closedStronglyNormalizing` is the empty-context special case (vacuous environment). -/
+
+/-- **Open reducibility handoff (unconditional).**  A `ValidTyping` derivation at a positive level is a reducible
+member of its (substituted) classifier under any reducible closing environment — `ValidTyping.fundamental`
+instantiated at that environment.  The open generalization of `closedSubjectReducibleFromLevelIndexed`, now with
+no hypothesis (the fundamental theorem is assembled). -/
+theorem ValidTyping.substReducible {profile : PolyProfile} {scope targetScope : Nat}
+    (predLevel : Nat) {contextLevels : Fin scope → Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (typed : ValidTyping profile contextLevels (predLevel + 1) context subject classifier)
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (env : ReducibleEnvVec contextLevels context substitution) :
+    IsReducibleMemberAt (predLevel + 1)
+      (RawTerm.subst substitution classifier) (RawTerm.subst substitution subject) :=
+  typed.fundamental substitution env
+
+/-- **Open strong-normalization handoff (unconditional).**  The substituted subject of a `ValidTyping` derivation
+is strongly normalizing under any reducible closing environment: open reducibility (`substReducible`) followed by
+CR1 (`IsReducibleMemberAt.stronglyNormalizing`, at the positive level `predLevel + 1`; the substituted subject
+lands in the positive scope `targetScope + 1` CR1 requires).  The open generalization of
+`closedSubjectStronglyNormalizingFromLevelIndexed`, unconditional through the assembled recursor. -/
+theorem ValidTyping.substStronglyNormalizing {profile : PolyProfile} {scope targetScope : Nat}
+    (predLevel : Nat) {contextLevels : Fin scope → Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (typed : ValidTyping profile contextLevels (predLevel + 1) context subject classifier)
+    (substitution : RawTermSubst scope (targetScope + 1))
+    (env : ReducibleEnvVec contextLevels context substitution) :
+    IsStronglyNormalizing (RawTerm.subst substitution subject) :=
+  (typed.substReducible predLevel substitution env).stronglyNormalizing
+
+/-- **Smoke: an OPEN term is SN through the open handoff.**  A free variable `x : Type@(e+1)` in a one-entry
+context, closed by the substitution `x ↦ Type@e` (which IS a reducible member of `x`'s type, by
+`IsReducibleMemberAt.universeFormation`), is strongly normalizing through `substStronglyNormalizing`.  The first
+SN witness in this file for a NON-closed subject — exercising the open handoff with a genuine (non-vacuous)
+reducible environment.  The environment is built by the propext-free `Fin 1` position split (the impossible
+`k + 1` position is refuted structurally via `Nat.lt_of_succ_lt_succ`, never `omega`/`Fin.cases`). -/
+theorem validTyping_openVariable_substStronglyNormalizing {profile : PolyProfile}
+    (predLevel : Nat) (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (RawTerm.subst
+        (fun _index => (universeCodeCell levelExpr flag : RawTerm 1))
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) := by
+  have typed :
+      ValidTyping profile (levelCons (predLevel + 1) emptyLevelVector) (predLevel + 1)
+        ((TypingContext.empty : TypingContext profile 0).cons
+          (universeCodeCell levelExpr.lsucc flag))
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (((TypingContext.empty : TypingContext profile 0).cons
+          (universeCodeCell levelExpr.lsucc flag)).lookup (⟨0, Nat.succ_pos 0⟩ : Fin 1)) :=
+    ValidTyping.var (levelCons (predLevel + 1) emptyLevelVector)
+      ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell levelExpr.lsucc flag))
+      (⟨0, Nat.succ_pos 0⟩ : Fin 1)
+  exact typed.substStronglyNormalizing predLevel
+    (fun _index => (universeCodeCell levelExpr flag : RawTerm 1))
+    (fun index =>
+      match index with
+      | ⟨0, _⟩ => IsReducibleMemberAt.universeFormation predLevel levelExpr flag
+      | ⟨_priorValue + 1, isLtSucc⟩ =>
+          (Nat.not_lt_zero _priorValue (Nat.lt_of_succ_lt_succ isLtSucc)).elim)
+
 end FX1Poly.Typed
