@@ -1437,3 +1437,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.nonDependentArrowPositive
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.reducibleAndMemberExtension
+
+-- Smart constructors making the first-order fragment CONSTRUCTIBLE for concrete types (via the
+-- canonical-form weak-head-normality lemmas), plus the end-to-end corollary that a variable type is
+-- reducible-at-all-levels and member-extending — a closed demonstration that the Tait machinery applies
+-- concretely, not merely to an abstract fragment.
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofVariable
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofSigmaTyCode
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.arrowOfVariableDomain
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.variableReducibleAndMemberExtension

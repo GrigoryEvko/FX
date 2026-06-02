@@ -131,4 +131,49 @@ theorem IsFirstOrderSimplyTyped.reducibleAndMemberExtension {scope : Nat} {typeC
             (fun applicationTerm {_memberPredLevel} m => codomainMemberExtension applicationTerm m)
             member⟩
 
+/-- **A variable type is first-order simply-typed.**  The canonical neutral leaf: a de Bruijn variable is
+weak-head-normal (`WeakHeadStep.not_from_var`), is `gen_var`-rooted (neither Π- nor universe-rooted), so it is
+an `IsFirstOrderSimplyTyped` leaf.  This is the base inhabitant witnessing the fragment is non-empty and
+constructible for concrete types. -/
+theorem IsFirstOrderSimplyTyped.ofVariable {scope : Nat} {index : Fin scope} :
+    IsFirstOrderSimplyTyped (variableCell index) :=
+  IsFirstOrderSimplyTyped.leaf
+    (fun _reduct => WeakHeadStep.not_from_var)
+    (show Generator.gen_var ≠ Generator.gen_piTyCode by decide)
+    (show Generator.gen_var ≠ Generator.gen_universeCode by decide)
+
+/-- **A Σ-type code is first-order simply-typed.**  A dependent-pair type former is a DATA leaf in the
+reducibility model (`ReducibleTypeStep` has no `sigmaType` arm — Σ is `neutral`-treated), weak-head-normal
+(`WeakHeadStep.not_from_sigmaTyCode`) and `gen_sigmaTyCode`-rooted (neither Π nor universe), hence a leaf. -/
+theorem IsFirstOrderSimplyTyped.ofSigmaTyCode {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)} :
+    IsFirstOrderSimplyTyped (sigmaTyCodeCell domainCode codomainCode) :=
+  IsFirstOrderSimplyTyped.leaf
+    (fun _reduct => WeakHeadStep.not_from_sigmaTyCode)
+    (show Generator.gen_sigmaTyCode ≠ Generator.gen_piTyCode by decide)
+    (show Generator.gen_sigmaTyCode ≠ Generator.gen_universeCode by decide)
+
+/-- **An arrow with a VARIABLE domain over a first-order codomain is first-order simply-typed.**  The recursive
+constructor instantiated at the canonical neutral domain: `variableCell index → codomainBase` is first-order
+whenever `codomainBase` is, building curried first-order function types `α → β → … → ω` over variable base
+types. -/
+theorem IsFirstOrderSimplyTyped.arrowOfVariableDomain {scope : Nat} {index : Fin scope}
+    {codomainBase : RawTerm scope} (codomain : IsFirstOrderSimplyTyped codomainBase) :
+    IsFirstOrderSimplyTyped (piTyCodeCell (variableCell index) (RawTerm.weaken codomainBase)) :=
+  IsFirstOrderSimplyTyped.arrow
+    (fun _reduct => WeakHeadStep.not_from_var)
+    (show Generator.gen_var ≠ Generator.gen_piTyCode by decide)
+    (show Generator.gen_var ≠ Generator.gen_universeCode by decide)
+    codomain
+
+/-- **End-to-end: a variable type is reducible at all levels and member-extending.**  The first-order Tait
+assembly applied to the concrete `ofVariable` witness — a closed demonstration that the reducibility machinery
+produces the universe member-extension principle on a concrete type, not merely an abstract fragment. -/
+theorem IsFirstOrderSimplyTyped.variableReducibleAndMemberExtension {scope : Nat} {index : Fin scope} :
+    IsReducibleTypeAtAllLevels (variableCell index) ∧
+      (∀ (term : RawTerm scope) {predLevel : Nat},
+        IsReducibleMemberAt (predLevel + 1) (variableCell index) term →
+          IsReducibleMemberAtAllPositiveLevels (variableCell index) term) :=
+  IsFirstOrderSimplyTyped.ofVariable.reducibleAndMemberExtension
+
 end FX1Poly.Typed
