@@ -45,6 +45,7 @@ import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
+import FX1Poly.Typed.SimplyTypedTypeExprFT
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1516,3 +1517,12 @@ gates pin them shut.
 -- variables — so the simply-typed fundamental theorem is NOT wall-blocked, only awaiting the judgment+env
 -- assembly.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.typeVariableReducible
+
+-- The TYPE-LEVEL half of the simply-typed fundamental theorem.  `IsSimplyTypedTypeExpr` classifies the pure
+-- STLC type expressions over a context (type variable bound at a universe, or non-dependent arrow of such), and
+-- `reducibleAtAllLevels` proves every one substitutes to an all-levels reducible type under an all-levels
+-- reducible closing environment.  The type-variable arm reads reducibility off the environment (sidestepping
+-- the universe wall via `typeVariableReducible`); the arrow arm is `nonDependentArrowOfAllLevelsDomain` on the
+-- induction hypotheses.  This is the domain/codomain reducibility the term FT's λ-introduction arm consumes.
+#assert_no_axioms FX1Poly.Typed.IsSimplyTypedTypeExpr
+#assert_no_axioms FX1Poly.Typed.IsSimplyTypedTypeExpr.reducibleAtAllLevels
