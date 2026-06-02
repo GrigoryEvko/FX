@@ -102,4 +102,36 @@ theorem lockedStrategyGoCertificate {scope : Nat}
    universeDomainPiTrivialCandidateAtZero domainLevel flag
      (RawTerm.weaken (universeCodeCell codomainLevel flag))⟩
 
+/-! ## SN-021 design decision (the generic `genFormationPi` arm for `ValidTyping`) — pinned 2026-06-02
+
+SN-021 adds the GENERIC table-driven former arm to `ValidTyping` (over `typingRuleDescOf`), so the leveled
+relation matches `HasTypeDescPi`'s cascade-free former coverage (Π / Σ become instances of one arm). The
+discharge target is the shipped `fundamentalGenFormationFormerLevelIndexed` (FundamentalLevelIndexed.lean),
+whose key hypothesis is
+`telescopeFundamental : ∀ σ (env : ReducibleEnvVec contextLevels context σ) shapeEq,
+  TelescopeReducible flag 0 levels.length σ levels (shapeEq ▸ children)`.
+
+OBSTRUCTION. The model `HasTypeDescPi.fundamentalVectorFromFormation` obtains that telescope IH FOR FREE from
+the MUTUAL recursor `HasTypeDescPi.rec` (`motive_2 := IsTelescopeReducibleAtVector` over the mutual
+`DescTelescopePi`). `ValidTyping` is a SINGLE (non-mutual) inductive, so `ValidTyping.rec` produces no
+telescope IH — the genFormationPi arm cannot synthesize `telescopeFundamental`.
+
+CHOSEN DESIGN (faithful, consistent with the existing syntactic former arms). Make `ValidTyping` MUTUAL with a
+leveled `ValidTelescope` (the level-indexed twin of `DescTelescopePi`); the new `ValidTyping.genFormationPi`
+ctor carries a `ValidTelescope` children premise; `ValidTyping.fundamental` becomes a MUTUAL recursion whose
+second motive is the level-indexed telescope-fundamental shape that feeds
+`fundamentalGenFormationFormerLevelIndexed`. This is a core-inductive change that must land ATOMICALLY (ctor +
+mutual fundamental together) and is therefore multi-tick; it is de-risked in scratch before touching the
+gated kernel.
+
+REJECTED ALTERNATIVES. (a) Carry the existing `DescTelescopePi` (HasTypeDescPi-based) premise and derive
+`telescopeFundamental` inside the arm — CIRCULAR: it needs the unconditional `HasTypeDescPi` fundamental,
+which is the very thing still under assembly (`fundamentalVectorFromFormation` is conditional on a formation
+premise). (b) Bake `TelescopeReducible` (a semantic reducibility statement) into the ctor as a hypothesis —
+sound and one-ctor, but INCONSISTENT with the existing `piFormation`/`sigmaFormation` arms, which carry
+SYNTACTIC `∀ aboveLevel, ValidTyping …` children premises, not reducibility; mixing a semantic premise into
+one former arm while the concrete formers stay syntactic is a design wart. The mutual `ValidTelescope` keeps
+every former arm syntactic.
+-/
+
 end FX1Poly.Typed
