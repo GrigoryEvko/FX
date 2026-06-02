@@ -152,6 +152,7 @@ import FX1Poly.Core.PolygraphConvergentDecision
 import FX1Poly.Core.SconingWitness
 import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StrongNormalizationRenameForward
+import FX1Poly.Core.StrongNormalizationSmokeCorpus
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.StepIotaEtaDoubleStrips
@@ -205,3 +206,8 @@ per-decl list.  It also re-checks the native infra under
 -- cleanly-shippable structural fragment, off the FT critical path.
 #assert_no_axioms FX1Poly.Core.ReducibleTypeStep.neutralRename_of_leftInverse
 #assert_no_axioms FX1Poly.Core.ReducibleTypeStep.neutralRenameMember_of_leftInverse
+
+-- SN-044: concrete strong-normalization smoke corpus (variable leaf, unit leaf, identity beta-redex).
+#assert_no_axioms FX1Poly.Core.smoke_variable_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_unit_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_identityRedex_isStronglyNormalizing
