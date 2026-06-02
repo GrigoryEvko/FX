@@ -942,6 +942,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.ofVecPositiveFamily
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consHeadToEnvAtPositive
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consHeadToVecPositive
+-- consTypeVariable: the all-level env extends through a TYPE-VARIABLE binder (type = universe code, substitute
+-- = a fresh variable) -- the all-level head requirement (binder wall) discharged by typeVariableAllLevelMember.
+-- Surmounts the binder wall for type-variable domains, the dependent-former variable-domain obstruction.
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consTypeVariable
+#assert_no_axioms FX1Poly.Typed.reducibleEnvAtAllLevels_oneTypeVariable
 
 /-! ### PROOF-RELEVANT ∀-LEVEL ENVIRONMENT with positive type-candidate companions.  This strengthens the
     all-level environment with the binder-facing fact that every substituted lookup type has the

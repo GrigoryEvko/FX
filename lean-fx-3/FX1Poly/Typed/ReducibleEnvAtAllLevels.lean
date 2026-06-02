@@ -1,5 +1,6 @@
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvVec
+import FX1Poly.Typed.ReducibleEnvVecTypeVariable
 
 /-! # FX1Poly/Typed/ReducibleEnvAtAllLevels
     — the ∀-level (Kripke) reducible closing-substitution environment for the dependent fundamental theorem
@@ -43,7 +44,7 @@ the shipped, zero-axiom `ReducibleEnvAt.{lookupReducible,empty,cons}`.  No new i
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Foundation FX1Poly.Universe
 
 /-- The ∀-level (Kripke) reducible closing-substitution environment: `substitution` sends each context
 variable to a reducible member of its looked-up (closed) type at EVERY positive level `level + 1`.  The
@@ -137,5 +138,40 @@ theorem ReducibleEnvAtAllLevels.consHeadToVecPositive {profile : PolyProfile} {s
     ReducibleEnvVec (levelCons (headLevel + 1) (fun index => tailLevels index + 1))
       (context.cons bindingType) (RawTermSubst.cons headTerm tailSubst) :=
   ReducibleEnvVec.cons (tailReducible.toVecPositive tailLevels) headReducible
+
+/-- **The TYPE-VARIABLE binder extension of the all-level environment — surmounting the binder wall.**
+`ReducibleEnvAtAllLevels.cons` (above) imposes the binder wall: the fresh head must be reducible at EVERY
+positive level.  For a TYPE-VARIABLE binding — the fresh binding's type is a universe code `Type@levelExpr` and
+its substitute is a fresh variable — that all-level requirement is exactly `typeVariableAllLevelMember` (a type
+variable is a reducible member of its universe at every positive level, because the universe code is a reducible
+TYPE at every level).  So the all-level environment DOES extend through type-variable binders, with no
+all-level-vs-per-level off-by-one.  This is the binder-extension a dependent Π/Σ-FORMER arm with a type-variable
+DOMAIN needs (the obstruction characterized in the previous frontier note): the body/codomain then typechecks
+under the extended all-level environment, with the bound type variable available at every level the former
+consumes (`predLevel` and `predLevel + 1`). -/
+theorem ReducibleEnvAtAllLevels.consTypeVariable {profile : PolyProfile} {scope innerScope : Nat}
+    {context : TypingContext profile scope}
+    {tailSubst : RawTermSubst scope (innerScope + 1)}
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (tailReducible : ReducibleEnvAtAllLevels context tailSubst)
+    (freshIndex : Fin (innerScope + 1)) :
+    ReducibleEnvAtAllLevels (context.cons (universeCodeCell levelExpr flag))
+      (RawTermSubst.cons (variableCell freshIndex) tailSubst) := by
+  apply ReducibleEnvAtAllLevels.cons tailReducible
+  intro level
+  rw [subst_universeCodeCell]
+  exact typeVariableAllLevelMember freshIndex levelExpr flag level
+
+/-- Non-vacuity: a one-entry type-variable context `[Type@levelExpr]` admits an all-level environment, built
+from the empty all-level environment by one `consTypeVariable`.  Witnesses that type-variable contexts — the
+case the dependent former arm's variable domain inhabits — are genuinely served by the all-level environment. -/
+theorem reducibleEnvAtAllLevels_oneTypeVariable {profile : PolyProfile} {innerScope : Nat}
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (substitution : RawTermSubst 0 (innerScope + 1)) (freshIndex : Fin (innerScope + 1)) :
+    ReducibleEnvAtAllLevels
+      ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell levelExpr flag))
+      (RawTermSubst.cons (variableCell freshIndex) substitution) :=
+  ReducibleEnvAtAllLevels.consTypeVariable levelExpr flag
+    (ReducibleEnvAtAllLevels.empty substitution) freshIndex
 
 end FX1Poly.Typed
