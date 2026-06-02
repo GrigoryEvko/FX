@@ -1428,6 +1428,14 @@ gates pin them shut.
 -- reducibility pair — the simply-typed step where the dependent-Π codomain-growth obstruction is absent.
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.nonDependentArrow
 
+-- TYPE-side crack past the universe-domain wall: a non-dependent arrow is all-levels reducible from domain +
+-- codomain all-levels reducibility ALONE — NO domain member-extension (the codomain candidate is constant in
+-- the argument when the codomain is `weaken`-ed, so the argument membership is never consumed).  This reaches
+-- a non-dependent arrow over a UNIVERSE domain (`Type@e → B`), which the member-extension-requiring
+-- `nonDependentArrow` cannot — only the dependent and member legs of a universe domain stay open.
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.nonDependentArrowOfAllLevelsDomain
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.universeDomainNonDependentArrow
+
 -- ASSEMBLY CAPSTONE: the universe member-extension principle (open in general at the fuel-0 universe wall) is
 -- proved UNCONDITIONALLY for the FIRST-ORDER simply-typed fragment — types built from neutral/data leaves and
 -- non-dependent arrows with neutral DOMAINS (curried first-order functions over base types).  This is the
