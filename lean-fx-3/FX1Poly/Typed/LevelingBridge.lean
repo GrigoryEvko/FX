@@ -189,4 +189,42 @@ theorem validTypingBridgeGenFormationPi {profile : PolyProfile} {scope : Nat}
   ⟨_, ValidTyping.genFormationPi contextLevels predLevel generator payload isFormation
     premises telescopeFundamental⟩
 
+/-! ## The `∀ aboveLevel` former-domain premise (SN-025) — the keystone obstruction
+
+`ValidTyping.piFormation`/`sigmaFormation` demand the DOMAIN at EVERY level:
+`∀ aboveLevel, ValidTyping contextLevels (aboveLevel + 1) context domainCode (universeCodeCell domainLevel
+flag)` — the fuel-polymorphic shape reflecting that a type CODE's membership in a universe holds at every
+level (SN-001 pinned why this is exactly where the fuel-0 universe-vacuity bites).  The GO-case producer is
+below; the deferred case is noted honestly.
+
+* **GO case — universe-code domain.**  When the domain IS a universe code `Type@innerLevel`,
+  `validTypingForallAboveLevelUniverseDomain` produces the premise directly, because
+  `ValidTyping.universeFormation` is LEVEL-POLYMORPHIC (any `predLevel + 1`): instantiate `predLevel :=
+  aboveLevel` at each level.  This is the case the universe-domain former needs and the case SN-004's GO
+  verdict (the universe-DOMAIN Π closes at classifier-level semantics) underwrites.
+
+* **DEFERRED case — type-variable / neutral domain.**  When the domain is a bare type VARIABLE (a `var i`
+  whose looked-up type is a universe code), the SYNTACTIC `ValidTyping.var` PINS its level at
+  `contextLevels i` — it is NOT derivable at every level — so the `∀ aboveLevel` premise is NOT produced by
+  the syntactic validity ctors here.  This is the SN-001 obstruction at the syntactic layer.  It is handled
+  at the REDUCIBILITY level instead, by the shipped all-levels machinery
+  (`IsReducibleTypeAtAllLevels.piTypeOfNeutralDomain`, `ReducibleEnvAtAllLevels.consTypeVariable`,
+  `allLevelsReducible_piOverNeutralVariableDomain` — a type variable inhabits `Type@e` reducibly at every
+  level via `IsReducibleTypeAt.universeCode`), which the full bridge assembly (SN-027) routes the
+  type-variable domain through rather than through `ValidTyping.piFormation`'s syntactic domain premise.
+-/
+
+/-- **The `∀ aboveLevel` former-domain premise for a UNIVERSE-CODE domain (the GO case).**  A universe code
+`Type@innerLevel` is `ValidTyping`-valid at EVERY positive level (classifier the `lsucc` code), via the
+level-polymorphic `ValidTyping.universeFormation` instantiated at `predLevel := aboveLevel`.  This is exactly
+the fuel-polymorphic domain premise `ValidTyping.piFormation`/`sigmaFormation` require when the former's
+domain is a universe code — the case SN-004's GO verdict underwrites. -/
+theorem validTypingForallAboveLevelUniverseDomain {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (context : TypingContext profile scope)
+    (innerLevel : LevelExpr) (flag : UniverseFlag) :
+    ∀ aboveLevel : Nat,
+      ValidTyping profile contextLevels (aboveLevel + 1) context
+        (universeCodeCell innerLevel flag) (universeCodeCell innerLevel.lsucc flag) :=
+  fun aboveLevel => ValidTyping.universeFormation contextLevels aboveLevel context innerLevel flag
+
 end FX1Poly.Typed

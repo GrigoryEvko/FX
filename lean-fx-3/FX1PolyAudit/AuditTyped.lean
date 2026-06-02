@@ -1433,6 +1433,15 @@ gates pin them shut.
 -- isFundamentalConclusionAtVector_iff_forall_levelIndexed (gated above): the uniform-vector var is unprovable
 -- because it would force membership at predLevel+1 for EVERY predLevel, whereas a var is reducible only at its
 -- env-fixed contextLevels index.
+-- SN-025 (LevelingBridge.lean): the ∀-aboveLevel former-domain premise — GO case discharged. A UNIVERSE-CODE
+-- domain Type@innerLevel is ValidTyping-valid at EVERY level via the level-polymorphic universeFormation
+-- (validTypingForallAboveLevelUniverseDomain), exactly the fuel-polymorphic premise piFormation/sigmaFormation
+-- need for a universe-code domain (the SN-004-GO-underwritten case). DEFERRED (honest): a bare TYPE-VARIABLE
+-- domain is NOT produced syntactically — ValidTyping.var pins its level at contextLevels i (the SN-001 obstruction
+-- at the syntactic layer); it is handled at the REDUCIBILITY level (IsReducibleTypeAtAllLevels.piTypeOfNeutralDomain
+-- / ReducibleEnvAtAllLevels.consTypeVariable / allLevelsReducible_piOverNeutralVariableDomain), which the bridge
+-- assembly SN-027 routes the type-variable domain through.
+#assert_no_axioms FX1Poly.Typed.validTypingForallAboveLevelUniverseDomain
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_identity_stronglyNormalizing
