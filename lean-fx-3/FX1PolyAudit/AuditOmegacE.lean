@@ -60,3 +60,15 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesMany.length_preserved
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesMany.underLeftContext
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesMany.underRightContext
+
+-- CONVERTIBILITY MODULO A SYSTEM (Rewrite.lean): the reflexive-symmetric-transitive closure of rewriting =
+-- equality in the PRESENTED monoid (what the Makkai word problem decides). ConvertibleModulo is an
+-- equivalence (so the quotient is well-defined) and a two-sided append-congruence (so the quotient is a
+-- monoid); RewritesMany embeds into it (ofRewritesMany). Length is a convertibility invariant under a
+-- length-preserving system — the SEPARATING invariant (different lengths ⟹ not convertible).
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.ofRewritesMany
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.equivalence
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.underLeftContext
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.underRightContext
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.length_preserved

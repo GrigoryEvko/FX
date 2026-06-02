@@ -160,4 +160,96 @@ theorem OmegacEWord.RewritesMany.underRightContext {dimension : Nat}
   | step head _tail tailIH =>
       exact OmegacEWord.RewritesMany.step (head.underRightContext suffixWord) tailIH
 
+/-! ## Convertibility modulo a system — the presented monoid
+
+`RewritesMany` is the directed reduction; its reflexive-symmetric-transitive closure is `ConvertibleModulo`,
+equality in the monoid PRESENTED by the rule system (generators = scaffold cells, relations = the rules).  This
+is exactly what the Makkai word problem decides.  Convertibility is an equivalence and a two-sided congruence,
+so the quotient is a monoid; and length is a convertibility invariant for length-preserving systems — the
+SEPARATING invariant (different lengths ⟹ not convertible, a checkable necessary condition). -/
+
+/-- **Word convertibility modulo a rule system**: the reflexive-symmetric-transitive closure of one-step
+rewriting — equality in the presented monoid (the relation the word problem decides). -/
+inductive OmegacEWord.ConvertibleModulo {dimension : Nat}
+    (system : OmegacERewriteRule dimension → Prop) :
+    OmegacEWord dimension → OmegacEWord dimension → Prop where
+  | ofStep {sourceWord targetWord : OmegacEWord dimension}
+      (step : OmegacEWord.RewritesOneStep system sourceWord targetWord) :
+      OmegacEWord.ConvertibleModulo system sourceWord targetWord
+  | refl (word : OmegacEWord dimension) : OmegacEWord.ConvertibleModulo system word word
+  | symm {sourceWord targetWord : OmegacEWord dimension}
+      (converts : OmegacEWord.ConvertibleModulo system sourceWord targetWord) :
+      OmegacEWord.ConvertibleModulo system targetWord sourceWord
+  | trans {firstWord middleWord lastWord : OmegacEWord dimension}
+      (firstToMiddle : OmegacEWord.ConvertibleModulo system firstWord middleWord)
+      (middleToLast : OmegacEWord.ConvertibleModulo system middleWord lastWord) :
+      OmegacEWord.ConvertibleModulo system firstWord lastWord
+
+/-- A many-step reduction is a convertibility (the forward embedding `RewritesMany ⊆ ConvertibleModulo`). -/
+theorem OmegacEWord.ConvertibleModulo.ofRewritesMany {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    {sourceWord targetWord : OmegacEWord dimension}
+    (many : OmegacEWord.RewritesMany system sourceWord targetWord) :
+    OmegacEWord.ConvertibleModulo system sourceWord targetWord := by
+  induction many with
+  | refl word => exact OmegacEWord.ConvertibleModulo.refl word
+  | step head _tail tailIH =>
+      exact OmegacEWord.ConvertibleModulo.trans (OmegacEWord.ConvertibleModulo.ofStep head) tailIH
+
+/-- **Convertibility modulo a system is an equivalence relation** — so the quotient by it is well-defined
+(the presented monoid's carrier). -/
+theorem OmegacEWord.ConvertibleModulo.equivalence {dimension : Nat}
+    (system : OmegacERewriteRule dimension → Prop) :
+    Equivalence (OmegacEWord.ConvertibleModulo system) :=
+  { refl := OmegacEWord.ConvertibleModulo.refl
+    symm := OmegacEWord.ConvertibleModulo.symm
+    trans := OmegacEWord.ConvertibleModulo.trans }
+
+/-- Convertibility is a congruence under a left context — `append`-compatible, so the quotient inherits a
+monoid multiplication. -/
+theorem OmegacEWord.ConvertibleModulo.underLeftContext {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (prefixWord : OmegacEWord dimension)
+    {sourceWord targetWord : OmegacEWord dimension}
+    (converts : OmegacEWord.ConvertibleModulo system sourceWord targetWord) :
+    OmegacEWord.ConvertibleModulo system
+      (OmegacEWord.append prefixWord sourceWord)
+      (OmegacEWord.append prefixWord targetWord) := by
+  induction converts with
+  | ofStep step => exact OmegacEWord.ConvertibleModulo.ofStep (step.underLeftContext prefixWord)
+  | refl word => exact OmegacEWord.ConvertibleModulo.refl (OmegacEWord.append prefixWord word)
+  | symm _converts convertsIH => exact OmegacEWord.ConvertibleModulo.symm convertsIH
+  | trans _firstToMiddle _middleToLast firstIH middleIH =>
+      exact OmegacEWord.ConvertibleModulo.trans firstIH middleIH
+
+/-- Convertibility is a congruence under a right context — `append`-compatible on the right. -/
+theorem OmegacEWord.ConvertibleModulo.underRightContext {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (suffixWord : OmegacEWord dimension)
+    {sourceWord targetWord : OmegacEWord dimension}
+    (converts : OmegacEWord.ConvertibleModulo system sourceWord targetWord) :
+    OmegacEWord.ConvertibleModulo system
+      (OmegacEWord.append sourceWord suffixWord)
+      (OmegacEWord.append targetWord suffixWord) := by
+  induction converts with
+  | ofStep step => exact OmegacEWord.ConvertibleModulo.ofStep (step.underRightContext suffixWord)
+  | refl word => exact OmegacEWord.ConvertibleModulo.refl (OmegacEWord.append word suffixWord)
+  | symm _converts convertsIH => exact OmegacEWord.ConvertibleModulo.symm convertsIH
+  | trans _firstToMiddle _middleToLast firstIH middleIH =>
+      exact OmegacEWord.ConvertibleModulo.trans firstIH middleIH
+
+/-- **Length is a convertibility invariant for length-preserving systems** — the SEPARATING invariant: words
+of different lengths are NOT convertible, a checkable necessary condition for the word problem. -/
+theorem OmegacEWord.ConvertibleModulo.length_preserved {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (lengthPreserving : IsLengthPreservingSystem system)
+    {sourceWord targetWord : OmegacEWord dimension}
+    (converts : OmegacEWord.ConvertibleModulo system sourceWord targetWord) :
+    sourceWord.length = targetWord.length := by
+  induction converts with
+  | ofStep step => exact step.length_preserved lengthPreserving
+  | refl _word => rfl
+  | symm _converts convertsIH => exact convertsIH.symm
+  | trans _firstToMiddle _middleToLast firstIH middleIH => exact firstIH.trans middleIH
+
 end FX1Poly.OmegacE
