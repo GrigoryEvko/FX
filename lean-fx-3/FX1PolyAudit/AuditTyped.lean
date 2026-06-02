@@ -89,6 +89,7 @@ import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsNonDependentArrow
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsNonDependentArrow
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
+import FX1Poly.Typed.SimplyTypedTermReducibility
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1476,3 +1477,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsSimplyTyped.ofNeutral
 #assert_no_axioms FX1Poly.Typed.IsSimplyTyped.higherOrderArrow
 #assert_no_axioms FX1Poly.Typed.IsSimplyTyped.higherOrderArrowReducibleAndMemberExtension
+
+-- TERM-level reducibility of the simply-typed fragment: the term-formation rules (abstraction / application)
+-- made concrete + the SN payoff on a REDUCING term.  `lambdaNeutralArrow` / `applicationNonDependentArrow`
+-- are the candidate-free piIntro/piElim specializations; `polymorphicIdentity` is `λx.x : A→A`; and
+-- `polymorphicIdentityRedexStronglyNormalizing` proves the β-redex `(λx.x) y` strongly normalizes — strong
+-- normalization of an actually-reducing term (CR1 on a non-normal form), the genuine Tait payoff.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.lambdaNeutralArrow
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.applicationNonDependentArrow
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.polymorphicIdentity
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityRedexStronglyNormalizing
