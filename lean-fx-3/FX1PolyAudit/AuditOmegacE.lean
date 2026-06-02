@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.OmegacE.WordFreeMonoid
 import FX1Poly.OmegacE.WordFreeMonoidUniversal
+import FX1Poly.OmegacE.Rewrite
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -43,3 +44,19 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 -- monoid hom into (ℕ,+,0) sending each generator to 1 — the textbook universal-property instance).
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.hom_ext
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.length_eq_foldOut
+
+-- DIMENSION-2 WORD REWRITING (Rewrite.lean): word equality MODULO a rule system — the structure whose
+-- convergence (termination + confluence) is the Makkai word-problem decision. One-step rewriting fires a
+-- rule inside any context (congruence by construction); many-step is its reflexive-transitive closure.
+-- First invariant: length is preserved under a length-preserving system (one-step + many-step). Plus the
+-- algebraic package: many-step is reflexive/transitive + a two-sided append-congruence (monoid-compatible
+-- preorder). Honest scope: the rewriting SUBSTRATE — NOT yet the FX-Step bridge, confluence, or decidability.
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesOneStep
+#assert_no_axioms FX1Poly.OmegacE.IsLengthPreservingSystem
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesOneStep.length_preserved
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesMany
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesMany.single
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesMany.trans
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesMany.length_preserved
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesMany.underLeftContext
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesMany.underRightContext
