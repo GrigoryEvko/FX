@@ -80,4 +80,83 @@ theorem IsReducibleMember.sigmaFormerInNeutralUniverse {scope : Nat}
   (IsReducibleMember.atNeutralClassifier universeNoWeakHeadStep universeNotPiType).mpr
     (sigmaTyCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing)
 
+/-- **The arrow former inhabits its universe — the non-dependent twin of `piFormerInNeutralUniverse`.**
+An arrow-type code is a reducible member of any neutral non-Π universe classifier exactly when strongly
+normalizing, supplied from the two endpoint codes' strong normalization by
+`arrowCode_isStronglyNormalizing_of_domain_codomain`.  Both endpoint codes live at the SAME scope (the
+arrow former binds no variable), unlike the Π/Σ formers whose codomain sits under one binder. -/
+theorem IsReducibleMember.arrowFormerInNeutralUniverse {scope : Nat}
+    {universeCode : RawTerm scope}
+    (universeNoWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep universeCode reduct)
+    (universeNotPiType : universeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    {domain codomain : RawTerm scope}
+    (domainNormalizing : IsStronglyNormalizing domain)
+    (codomainNormalizing : IsStronglyNormalizing codomain) :
+    IsReducibleMember universeCode
+      (.mkGen .gen_arrowCode () (.childCons domain (.childCons codomain .childNil))) :=
+  (IsReducibleMember.atNeutralClassifier universeNoWeakHeadStep universeNotPiType).mpr
+    (arrowCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing)
+
+/-- **The product former inhabits its universe.**  A product-type code is a reducible member of any
+neutral non-Π universe classifier when both component codes are strongly normalizing, via
+`productCode_isStronglyNormalizing_of_left_right`. -/
+theorem IsReducibleMember.productFormerInNeutralUniverse {scope : Nat}
+    {universeCode : RawTerm scope}
+    (universeNoWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep universeCode reduct)
+    (universeNotPiType : universeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    {leftType rightType : RawTerm scope}
+    (leftNormalizing : IsStronglyNormalizing leftType)
+    (rightNormalizing : IsStronglyNormalizing rightType) :
+    IsReducibleMember universeCode
+      (.mkGen .gen_productCode () (.childCons leftType (.childCons rightType .childNil))) :=
+  (IsReducibleMember.atNeutralClassifier universeNoWeakHeadStep universeNotPiType).mpr
+    (productCode_isStronglyNormalizing_of_left_right leftNormalizing rightNormalizing)
+
+/-- **The sum former inhabits its universe.**  A sum-type code is a reducible member of any neutral
+non-Π universe classifier when both summand codes are strongly normalizing, via
+`sumCode_isStronglyNormalizing_of_left_right`. -/
+theorem IsReducibleMember.sumFormerInNeutralUniverse {scope : Nat}
+    {universeCode : RawTerm scope}
+    (universeNoWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep universeCode reduct)
+    (universeNotPiType : universeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    {leftType rightType : RawTerm scope}
+    (leftNormalizing : IsStronglyNormalizing leftType)
+    (rightNormalizing : IsStronglyNormalizing rightType) :
+    IsReducibleMember universeCode
+      (.mkGen .gen_sumCode () (.childCons leftType (.childCons rightType .childNil))) :=
+  (IsReducibleMember.atNeutralClassifier universeNoWeakHeadStep universeNotPiType).mpr
+    (sumCode_isStronglyNormalizing_of_left_right leftNormalizing rightNormalizing)
+
+/-- **The either former inhabits its universe.**  An either-type code is a reducible member of any
+neutral non-Π universe classifier when both side codes are strongly normalizing, via
+`eitherCode_isStronglyNormalizing_of_left_right`. -/
+theorem IsReducibleMember.eitherFormerInNeutralUniverse {scope : Nat}
+    {universeCode : RawTerm scope}
+    (universeNoWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep universeCode reduct)
+    (universeNotPiType : universeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    {leftType rightType : RawTerm scope}
+    (leftNormalizing : IsStronglyNormalizing leftType)
+    (rightNormalizing : IsStronglyNormalizing rightType) :
+    IsReducibleMember universeCode
+      (.mkGen .gen_eitherCode () (.childCons leftType (.childCons rightType .childNil))) :=
+  (IsReducibleMember.atNeutralClassifier universeNoWeakHeadStep universeNotPiType).mpr
+    (eitherCode_isStronglyNormalizing_of_left_right leftNormalizing rightNormalizing)
+
+/-- **The equivalence former inhabits its universe.**  An equivalence-type code is a reducible member of
+any neutral non-Π universe classifier when both carrier codes are strongly normalizing, via
+`equivCode_isStronglyNormalizing_of_source_target`.  Completes the non-dependent type-code former family
+(arrow / product / sum / either / equiv) at the conv-complete neutral-universe membership layer, the twin
+of the dependent `piFormerInNeutralUniverse` / `sigmaFormerInNeutralUniverse`. -/
+theorem IsReducibleMember.equivFormerInNeutralUniverse {scope : Nat}
+    {universeCode : RawTerm scope}
+    (universeNoWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep universeCode reduct)
+    (universeNotPiType : universeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    {sourceType targetType : RawTerm scope}
+    (sourceNormalizing : IsStronglyNormalizing sourceType)
+    (targetNormalizing : IsStronglyNormalizing targetType) :
+    IsReducibleMember universeCode
+      (.mkGen .gen_equivCode () (.childCons sourceType (.childCons targetType .childNil))) :=
+  (IsReducibleMember.atNeutralClassifier universeNoWeakHeadStep universeNotPiType).mpr
+    (equivCode_isStronglyNormalizing_of_source_target sourceNormalizing targetNormalizing)
+
 end FX1Poly.Core

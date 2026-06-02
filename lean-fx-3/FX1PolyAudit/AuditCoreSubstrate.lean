@@ -238,3 +238,16 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.smoke_polyFunctor_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_nestedLamNatSucc_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_nestedPiSigma_isStronglyNormalizing
+
+-- SN-070/071: the type-code-former family inhabits its neutral universe as a reducible member (the
+-- conv-complete IsReducibleMember layer the fundamental theorem assembles over).  atNeutralClassifier is
+-- the characterization (membership at a neutral classifier = strong normalization); the seven formers
+-- (dependent pi/sigma + non-dependent arrow/product/sum/either/equiv) discharge via their SN closures.
+#assert_no_axioms FX1Poly.Core.IsReducibleMember.atNeutralClassifier
+#assert_no_axioms FX1Poly.Core.IsReducibleMember.piFormerInNeutralUniverse
+#assert_no_axioms FX1Poly.Core.IsReducibleMember.sigmaFormerInNeutralUniverse
+#assert_no_axioms FX1Poly.Core.IsReducibleMember.arrowFormerInNeutralUniverse
+#assert_no_axioms FX1Poly.Core.IsReducibleMember.productFormerInNeutralUniverse
+#assert_no_axioms FX1Poly.Core.IsReducibleMember.sumFormerInNeutralUniverse
+#assert_no_axioms FX1Poly.Core.IsReducibleMember.eitherFormerInNeutralUniverse
+#assert_no_axioms FX1Poly.Core.IsReducibleMember.equivFormerInNeutralUniverse
