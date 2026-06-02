@@ -17,6 +17,7 @@ import FX1Poly.OmegacE.AbsorptionConfluence
 import FX1Poly.OmegacE.AbsorptionLocalConfluence
 import FX1Poly.OmegacE.AbsorptionReducer
 import FX1Poly.OmegacE.SortingSystem
+import FX1Poly.OmegacE.SortingTermination
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -407,3 +408,17 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.sortingSystem_rewritesOneStep_length_preserved
 #assert_no_axioms FX1Poly.OmegacE.sortingSystem_rewritesMany_length_preserved
 #assert_no_axioms FX1Poly.OmegacE.sortingSystem_convertibleModulo_length_preserved
+
+-- SORTING INVERSION MEASURE (SortingTermination.lean): SN-120 progress 2a — the bubble-sort termination measure.
+-- countBelowThreshold (count cells with slotValue < threshold) + countInversions (total out-of-order pairs) +
+-- crossInversionCount (the SUM-fold cross term across an append). The two append homomorphisms are the reusable core;
+-- countInversions_append's cons case is a five-term Nat AC rearrangement (a+b)+((c+d)+e)=((a+c)+d)+(b+e), discharged by
+-- explicit Nat.add_assoc/add_left_comm normalizing both sides to a+(b+(c+(d+e))) — NOT ac_rfl (leaks propext+Quot.sound),
+-- the heavier analogue of SN-118's aBeforeBInversions (whose cross term was a single product). Zero-axiom. Deferred
+-- (progress 2b): countBelowThreshold_preserved_by_step + cross-term preservation (both args) + the strict per-step
+-- decrease + sortingSystem_isTerminating (Subrelation into InvImage). Then braid-critical-pair confluence + reducer.
+#assert_no_axioms FX1Poly.OmegacE.countBelowThreshold
+#assert_no_axioms FX1Poly.OmegacE.countInversions
+#assert_no_axioms FX1Poly.OmegacE.crossInversionCount
+#assert_no_axioms FX1Poly.OmegacE.countBelowThreshold_append
+#assert_no_axioms FX1Poly.OmegacE.countInversions_append
