@@ -1,4 +1,6 @@
 import FX1Poly.Core.StratifiedReducibleType
+import FX1Poly.Core.StrongNormalizationApplication
+import FX1Poly.Core.StrongNormalizationRename
 
 /-! # Foundation/PolyCell/Core/KripkeCandidateRenameClosure
     — Kripke-indexed reducibility candidates make arrow rename-closure DEFINITIONAL (SN-043 refactor seed)
@@ -50,6 +52,7 @@ Both laws close by `Iff.rfl` (definitional composition-associativity on `RawRena
 
 namespace FX1Poly.Core
 open FX1Poly.Foundation
+open StepStar
 
 /-- **A Kripke-indexed reducibility candidate at `sourceScope`.**  Unlike a plain `RawTerm sourceScope →
 Prop`, a Kripke candidate is a renaming-indexed family: at each renaming `ρ : sourceScope → targetScope`
@@ -176,5 +179,53 @@ theorem kripkeArrowDep_transport_pointwise {sourceScope renamedScope : Nat}
       kripkeArrowDep (KripkeCand.transport forwardRenaming domainCandidate)
         (KripkeCodFamily.transport forwardRenaming codomainFamily) indexRenaming functionTerm :=
   Iff.rfl
+
+/-! ## CR1 for the Kripke arrow — members are strongly normalizing
+
+The first reducibility-candidate property (CR1) of the Kripke arrow, the SUBSTANTIVE payoff of the seed
+(not a definitional `Iff.rfl`).  The classical Tait argument: a function `f` in the arrow at the identity
+renaming, applied (via the weakening renaming) to the fresh variable `var 0` — which the domain candidate
+contains by hypothesis — lands in the codomain candidate; codomain-CR1 makes that application strongly
+normalizing; `isStronglyNormalizing_of_appFunction` descends SN to the renamed function `rename weaken f`;
+and `isStronglyNormalizing_of_rename` (reverse rename-SN) descends it to `f`.  The renaming index threads
+as `compose identity weaken = weaken` definitionally, so the hypotheses apply directly. -/
+
+/-- **CR1 for the non-dependent Kripke arrow.**  A member of `kripkeArrow` at the identity renaming is
+strongly normalizing, given the domain candidate contains the fresh variable (at the weakening renaming)
+and the codomain candidate's members are strongly normalizing. -/
+theorem kripkeArrow_stronglyNormalizing {scope : Nat}
+    {domainCandidate codomainCandidate : KripkeCand scope} {functionTerm : RawTerm scope}
+    (domainContainsFreshVariable :
+      domainCandidate RawRenaming.weaken (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil))
+    (codomainMembersStronglyNormalizing :
+      ∀ {targetScope : Nat} (indexRenaming : RawRenaming scope targetScope) (term : RawTerm targetScope),
+        codomainCandidate indexRenaming term → IsStronglyNormalizing term)
+    (membership : kripkeArrow domainCandidate codomainCandidate RawRenaming.identity functionTerm) :
+    IsStronglyNormalizing functionTerm :=
+  isStronglyNormalizing_of_rename RawRenaming.weaken
+    (isStronglyNormalizing_of_appFunction
+      (codomainMembersStronglyNormalizing _ _
+        (membership RawRenaming.weaken (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil)
+          domainContainsFreshVariable)))
+
+/-- **CR1 for the dependent Kripke arrow.**  The dependent-product (`Pi`) generalization: same Tait
+argument, with the codomain family evaluated at the fresh variable.  This is the CR1 the dependent
+`ReducibleTypeStep.piType` arm will require once the candidate layer is Kripke-indexed. -/
+theorem kripkeArrowDep_stronglyNormalizing {scope : Nat}
+    {domainCandidate : KripkeCand scope} {codomainFamily : KripkeCodFamily scope}
+    {functionTerm : RawTerm scope}
+    (domainContainsFreshVariable :
+      domainCandidate RawRenaming.weaken (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil))
+    (codomainMembersStronglyNormalizing :
+      ∀ {targetScope : Nat} (indexRenaming : RawRenaming scope targetScope)
+        (argument term : RawTerm targetScope),
+        codomainFamily indexRenaming argument term → IsStronglyNormalizing term)
+    (membership : kripkeArrowDep domainCandidate codomainFamily RawRenaming.identity functionTerm) :
+    IsStronglyNormalizing functionTerm :=
+  isStronglyNormalizing_of_rename RawRenaming.weaken
+    (isStronglyNormalizing_of_appFunction
+      (codomainMembersStronglyNormalizing _ _ _
+        (membership RawRenaming.weaken (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil)
+          domainContainsFreshVariable)))
 
 end FX1Poly.Core

@@ -306,3 +306,6 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.appFunctionCongStep
 #assert_no_axioms FX1Poly.Core.isStronglyNormalizing_of_appFunction_aux
 #assert_no_axioms FX1Poly.Core.isStronglyNormalizing_of_appFunction
+-- CR1 for the Kripke arrow (non-dependent + dependent): members are strongly normalizing (Tait argument).
+#assert_no_axioms FX1Poly.Core.kripkeArrow_stronglyNormalizing
+#assert_no_axioms FX1Poly.Core.kripkeArrowDep_stronglyNormalizing
