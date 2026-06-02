@@ -57,6 +57,7 @@ import FX1Poly.Core.FireRootRedex
 import FX1Poly.Core.FireRootRedexComplete
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
+import FX1Poly.Core.Normalize
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
 import FX1Poly.Core.NormalFormUnique
@@ -1661,6 +1662,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.RawTermChildren.reduceOnceSpine_complete
 #assert_no_axioms FX1Poly.Core.RawTerm.reduceOnce_eq_none_iff_isStepNormalForm
 #assert_no_axioms FX1Poly.Core.RawTerm.not_isStepNormalForm_imp_reduceOnce_isSome
+
+-- THE NORMALIZER FUNCTION + its correctness, and the parameter-free SN-fragment decidable Conv it unlocks.
+-- normalize iterates reduceOnce along Acc StepSuccessor (Acc.rec — the descent shrinks the accessibility
+-- proof, not the term); normalize_reducesTo / normalize_isStepNormalForm are its soundness/normality.
+-- Conv.decidableOfStronglyNormalizing: two SN terms → Decidable (Conv ..), no NF witnesses / Normalizer /
+-- global confluence.  The culmination of the WN grind (#503) — raw redex detection to a real decider.
+#assert_no_axioms FX1Poly.Core.RawTerm.normalize
+#assert_no_axioms FX1Poly.Core.RawTerm.normalize_unfold
+#assert_no_axioms FX1Poly.Core.RawTerm.normalize_reducesTo
+#assert_no_axioms FX1Poly.Core.RawTerm.normalize_isStepNormalForm
+#assert_no_axioms FX1Poly.Core.Conv.decidableOfStronglyNormalizing
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
