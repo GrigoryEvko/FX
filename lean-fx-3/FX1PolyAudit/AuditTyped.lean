@@ -56,6 +56,7 @@ import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
 import FX1Poly.Core.NormalFormUnique
+import FX1Poly.Core.StronglyNormalizingConvDecision
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1643,3 +1644,10 @@ gates pin them shut.
 -- handle a normalizer function realizes and SN-fragment decidable Conv (#267) rests on.
 #assert_no_axioms FX1Poly.Core.normalForm_unique
 #assert_no_axioms FX1Poly.Core.exists_unique_normalForm_of_isStronglyNormalizing
+
+-- SN-FRAGMENT DECIDABLE CONV: Conv = normal-form equality on the strongly-normalizing fragment, with the
+-- global StepStar.HasConfluence hypothesis of PolygraphConvergentDecision DISCHARGED per-term from the SN
+-- witnesses (confluence_of_localJoin_and_accessible).  The honest raw-layer decider modulo the normalizer
+-- function (#261/#480) that supplies the normal-form witnesses.
+#assert_no_axioms FX1Poly.Core.Conv.iff_normalForms_eq_of_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.Conv.decidableOfNormalForms_of_isStronglyNormalizing
