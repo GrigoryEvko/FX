@@ -60,6 +60,7 @@ import FX1Poly.Typed.SimplyTypedTermCanonicityLevelFree
 import FX1Poly.Typed.SimplyTypedTermConsistencyLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.SimplyTypedNormalForm
+import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
@@ -1791,6 +1792,18 @@ gates pin them shut.
 -- universe-code head generators differ) — the fragment's consistency.
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.closedTermHasArrowType
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.noClosedTermAtUniverseCode
+
+-- CONV EQUIVALENCE PACKAGE (#421) — convertibility is a DECIDABLE EQUIVALENCE RELATION on closed simply-
+-- typed terms.  Raw Conv.refl/sym are unconditional but Conv.trans needs Church-Rosser for the chains
+-- leaving the shared middle term, which at the raw layer requires that middle term to be strongly
+-- normalizing (raw Step is NOT globally SN).  On the simply-typed fragment the fundamental theorem supplies
+-- exactly that SN, so conv_trans (= trans_of_middle_accessible ∘ stronglyNormalizingBare) holds; bundled
+-- with refl/sym it gives convertsTo_equivalence, and decidableOfSimplyTypedBareClosed makes it decidable.
+-- This is the honest locus where the Conv equivalence structure becomes provable — the unconditional raw
+-- Conv.trans remains genuinely unavailable.
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.conv_trans
+#assert_no_axioms FX1Poly.Typed.SimplyTypedClosedTerm.convertsTo_equivalence
+#assert_no_axioms FX1Poly.Typed.SimplyTypedClosedTerm.decidableConvertsTo
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
