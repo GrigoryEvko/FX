@@ -97,6 +97,7 @@ import FX1Poly.Typed.HasTypeDescFundamentalAtAllFromGenFormation
 import FX1Poly.Typed.FundamentalLevelIndexed
 import FX1Poly.Typed.ClosedLevelIndexed
 import FX1Poly.Typed.TypeFundamentalLevelIndexed
+import FX1Poly.Typed.LeveledContext
 import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -1273,6 +1274,11 @@ gates pin them shut.
 -- at its env level, via tarskiDecode of the env's membership. Completes the type-FT for all formation
 -- type-subjects (universe code + Pi/Sigma formers + var) modulo conv (mutual with the term FT).
 #assert_no_axioms FX1Poly.Typed.varIsTypeFundamentalLevelIndexed
+-- LEVELED VALID CONTEXT (the validity-context structure for the term-FT recursor motive): context is a
+-- telescope of types each typed at a universe code, contextLevels recording each entry's positive membership
+-- level via levelCons. allLevelsPositive (induction on the inductive; propext-clean Fin split) is the
+-- positivity invariant the recursor relies on (CR1 + conv tarskiDecode one-up both need positive levels).
+#assert_no_axioms FX1Poly.Typed.LeveledContext.allLevelsPositive
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
