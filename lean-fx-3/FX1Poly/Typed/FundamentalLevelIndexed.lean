@@ -1,6 +1,7 @@
 import FX1Poly.Typed.FundamentalAtAllLeafArms
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleSemanticRules
+import FX1Poly.Typed.PiFormerMembership
 
 /-! # FX1Poly/Typed/FundamentalLevelIndexed
     — the decoupled-`subjectLevel` fundamental-theorem conclusion (Route 2: dependent FT, var-level wall).
@@ -163,5 +164,75 @@ theorem fundamentalPiIntroLevelIndexed {profile : PolyProfile} {scope : Nat}
       ← RawTerm.subst_cons_eq_subst0_lift _ argument substitution]
     exact bodyFundamental (RawTermSubst.cons argument substitution)
       (ReducibleEnvVec.cons env ⟨domainCandidate, domainReducible, argumentInDomain⟩)
+
+/-- **The Π type-FORMER arm of the level-indexed FT** (the dependent type-former, level-indexed).
+Consumes the domain fundamental QUANTIFIED over an arbitrary positive `aboveLevel` (used at
+`predLevel+1` and `predLevel+2` — the latter only to mine a fresh variable inhabitant of the domain
+candidate) and the codomain fundamental QUANTIFIED over the fresh binder's head level (instantiated
+at `predLevel` and `predLevel+1` — the two argument levels Π-formation actually consumes), and
+produces the Π code's membership in `universeCodeCell formerLevel flag` at `predLevel+1`.  The level-
+indexed twin of `IsReducibleMemberAt.piFormerOfChildMembershipsAtRequiredLevels`; the quantified head
+level is precisely what `ReducibleEnvVec.cons` threads (each codomain instantiation cons-extends the
+env at the matching `levelCons headLevel contextLevels`).  `codomainLevel` is pinned at the rule
+call because it appears only in the (yet-placeholder) codomain hypotheses, not the conclusion. -/
+theorem fundamentalPiFormationLevelIndexed {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental : ∀ aboveLevel : Nat,
+      FundamentalConclusionLevelIndexed contextLevels (aboveLevel + 1) context domainCode
+        (universeCodeCell domainLevel flag))
+    (codomainFundamental : ∀ headLevel : Nat,
+      FundamentalConclusionLevelIndexed (levelCons headLevel contextLevels) (predLevel + 1)
+        (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag)) :
+    FundamentalConclusionLevelIndexed contextLevels (predLevel + 1) context
+      (piTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) := by
+  intro _targetScope substitution env
+  rw [subst_universeCodeCell]
+  have domainMember := domainFundamental predLevel substitution env
+  rw [subst_universeCodeCell] at domainMember
+  have domainMemberAbove := domainFundamental (predLevel + 1) substitution env
+  rw [subst_universeCodeCell] at domainMemberAbove
+  refine IsReducibleMemberAt.piFormerOfChildMembershipsAtRequiredLevels
+    (codomainLevel := codomainLevel) domainMember
+    domainMemberAbove (fun argument argumentInDomain => ?_) (fun argument argumentInDomain => ?_)
+  · have codomainMember := codomainFundamental predLevel
+      (RawTermSubst.cons argument substitution) (ReducibleEnvVec.cons env argumentInDomain)
+    rwa [subst_universeCodeCell] at codomainMember
+  · have codomainMember := codomainFundamental (predLevel + 1)
+      (RawTermSubst.cons argument substitution) (ReducibleEnvVec.cons env argumentInDomain)
+    rwa [subst_universeCodeCell] at codomainMember
+
+/-- **The Σ type-FORMER arm of the level-indexed FT.**  The data-former twin: Σ formation is
+classified in its universe by STRONG NORMALIZATION alone (`sigmaFormerOfChildMembershipsAtRequiredLevel`,
+the `dataFormerInUniverse` route), so it needs only the domain fundamental (at `predLevel+1` /
+`predLevel+2`) and the codomain fundamental at the single head level `predLevel+1` — no codomain at
+the lower argument level, no `codomainExists`.  Otherwise identical to the Π former arm. -/
+theorem fundamentalSigmaFormationLevelIndexed {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental : ∀ aboveLevel : Nat,
+      FundamentalConclusionLevelIndexed contextLevels (aboveLevel + 1) context domainCode
+        (universeCodeCell domainLevel flag))
+    (codomainFundamental :
+      FundamentalConclusionLevelIndexed (levelCons (predLevel + 1) contextLevels) (predLevel + 1)
+        (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag)) :
+    FundamentalConclusionLevelIndexed contextLevels (predLevel + 1) context
+      (sigmaTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) := by
+  intro _targetScope substitution env
+  rw [subst_universeCodeCell]
+  have domainMember := domainFundamental predLevel substitution env
+  rw [subst_universeCodeCell] at domainMember
+  have domainMemberAbove := domainFundamental (predLevel + 1) substitution env
+  rw [subst_universeCodeCell] at domainMemberAbove
+  refine IsReducibleMemberAt.sigmaFormerOfChildMembershipsAtRequiredLevel
+    (codomainLevel := codomainLevel) domainMember
+    domainMemberAbove (fun argument argumentInDomain => ?_)
+  have codomainMember := codomainFundamental
+    (RawTermSubst.cons argument substitution) (ReducibleEnvVec.cons env argumentInDomain)
+  rwa [subst_universeCodeCell] at codomainMember
 
 end FX1Poly.Typed

@@ -1231,6 +1231,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalPiElimLevelIndexed
 #assert_no_axioms FX1Poly.Typed.fundamentalConvLevelIndexed
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroLevelIndexed
+-- The dependent type-FORMER arms (the level-indexed twins of PiFormerMembership): the Π/Σ type-code
+-- cell is a reducible universe member, from its children's QUANTIFIED-over-head-level fundamentals.
+-- These are the membership dispatch the generic genFormation/genFormationPi arm calls; the remaining
+-- Route-2 work is the DescTelescope(Pi) inversion feeding these the domain/codomain fundamentals + the
+-- HasTypeDescPi.rec assembly.
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationLevelIndexed
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationLevelIndexed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
