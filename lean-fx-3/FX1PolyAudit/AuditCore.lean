@@ -3,6 +3,7 @@ import FX1Poly.Core.CellSort
 import FX1Poly.Typed.HasType
 import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Core.GeneratorFinitePolygraph
+import FX1Poly.Core.GeneratorPolygraphMap
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -59,6 +60,18 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Generator.toNat_lt
 #assert_no_axioms FX1Poly.Core.Generator.fromTag_total_on_range
 #assert_no_axioms FX1Poly.Core.fxKernelPolygraph
+
+-- SN-124 (#627): the explicit Generator -> polygraph-generator map. PolygraphGenerator presents each former with
+-- its boundary (tag + child arity + child boundary shifts, coherently); toPolygraphGenerator is the presentation
+-- map; _injective is FAITHFUL (distinct gens present distinctly, via toNat_injective); _boundary/_tag confirm the
+-- presented data IS binderShifts/toNat (rfl); _recoversGenerator is INVERTIBLE (fromTag round-trips the presented
+-- tag). The per-generator object SN-125's RawCell->OmegacEWord encoding lifts the dim-1 free monoid over. Zero-axiom
+-- (record literal over shipped toNat/arity/binderShifts; rfl projections; congrArg into toNat_injective).
+#assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator
+#assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_injective
+#assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_boundary
+#assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_tag
+#assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_recoversGenerator
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
