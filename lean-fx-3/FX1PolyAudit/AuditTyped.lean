@@ -52,6 +52,7 @@ import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
 import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
+import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.FireRootRedex
@@ -1698,6 +1699,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.StepStar.stronglyNormalizing_of_subst
 #assert_no_axioms FX1Poly.Typed.emptyClosingSubst
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfSimplyTypedBareClosed
+
+-- CANONICAL NORMAL FORM for closed simply-typed terms — the NORMALIZE companion to the bare-closed DECIDE.
+-- stronglyNormalizingBare: bare SN (the sole use site of stronglyNormalizing_of_subst); normalForm: the
+-- computable RawTerm 0; conv_normalForm / normalForm_isStepNormalForm: term ↝* its NF and NF is normal;
+-- normalForm_eq_self_of_isStepNormalForm: no spurious rewriting on a normal input; conv_iff_normalForm_eq:
+-- two terms convert IFF their NFs coincide (the canonical NF is a complete conversion invariant — the
+-- explicit characterization behind decidableOfSimplyTypedBareClosed).
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.stronglyNormalizingBare
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalForm
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.conv_normalForm
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalForm_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalForm_eq_self_of_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.conv_iff_normalForm_eq
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
