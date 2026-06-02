@@ -14,6 +14,7 @@ import FX1Poly.OmegacE.TranspositionConfluence
 import FX1Poly.OmegacE.TranspositionReducer
 import FX1Poly.OmegacE.AbsorptionSystem
 import FX1Poly.OmegacE.AbsorptionConfluence
+import FX1Poly.OmegacE.AbsorptionLocalConfluence
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -355,3 +356,15 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 -- (explicit listAppendAssoc rw chains, no simp). Deferred: the absorptionHasLocalConfluence wrapper (listPrefixSplit
 -- trichotomy dispatching same-position/critical-pair/THIS disjoint) + newman ⟹ absorptionHasConfluence.
 #assert_no_axioms FX1Poly.OmegacE.absorptionJoinableDisjoint
+
+-- ABSORPTION LOCAL + GLOBAL CONFLUENCE (AbsorptionLocalConfluence.lean): SN-119 progress 2b-ii(b) — the
+-- confluence capstone, assembled from the AbsorptionConfluence building blocks. absorptionJoinableWhenLeftShorter
+-- (4 rule combos × listPrefixSplit trichotomy: nil same-position matched=equal/mismatched=v≠s absurd; [m] one-cell
+-- overlap (L,R)=[v,s,v] critical-pair lemma / (R,L)=[s,v,s] both reducts [s,s,s] / matched absurd; cons-cons disjoint
+-- = the commute helper) → absorptionHasLocalConfluence (decompose both reducts, Nat.le_total dispatches 8 leaves) →
+-- absorptionHasConfluence (newman + the shipped termination) = the FIRST fully-CONFLUENT two-rule presentation with
+-- genuine inter-rule critical pairs. Zero-axiom: disjoint leaves bridge cons-form↔append-form via ←doubleConsAppend +
+-- ←listAppendAssoc (no simp). Only the decidable word problem (two-rule WordReducer, progress 3) remains to close SN-119.
+#assert_no_axioms FX1Poly.OmegacE.absorptionJoinableWhenLeftShorter
+#assert_no_axioms FX1Poly.OmegacE.absorptionHasLocalConfluence
+#assert_no_axioms FX1Poly.OmegacE.absorptionHasConfluence
