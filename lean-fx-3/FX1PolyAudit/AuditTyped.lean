@@ -955,6 +955,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consVariableOfAllLevelType
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consTypeVariable
 #assert_no_axioms FX1Poly.Typed.reducibleEnvAtAllLevels_oneTypeVariable
+-- SN-009 VERIFIED 2026-06-02 (no rebuild): the universe-code / closed env cons is shipped + gated.
+-- consTypeVariable (ReducibleEnvAtAllLevels.lean:173-185) extends the all-level env through a Type@e binding —
+-- the fresh variable inhabits Type@e reducibly at EVERY level via IsReducibleTypeAt.universeCode (level-
+-- polymorphic), routed through consVariableOfAllLevelType + IsReducibleMemberAt.variable; the fixed-level form is
+-- ReducibleEnvVec.cons (gated ~1459). The SMOKE reducibleEnvAtAllLevels_oneTypeVariable (gated just above) builds an
+-- all-level env for the one-entry context [Type@e] from empty by one consTypeVariable. No denote-keyed variant:
+-- per SN-008, denote-keying is instantiation of the abstract level, not a new cons (do NOT duplicate).
 
 /-! ### PROOF-RELEVANT ∀-LEVEL ENVIRONMENT with positive type-candidate companions.  This strengthens the
     all-level environment with the binder-facing fact that every substituted lookup type has the
