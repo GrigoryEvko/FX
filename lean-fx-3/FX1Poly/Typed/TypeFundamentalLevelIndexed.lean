@@ -40,6 +40,27 @@ def IsTypeFundamentalLevelIndexed {profile : PolyProfile} {scope : Nat}
     ReducibleEnvVec contextLevels context substitution →
     IsReducibleTypeAt typeLevel (RawTerm.subst substitution typeCode)
 
+/-- **The type-FT is a projection of the term-FT** — the generic `tarskiDecode` bridge, the conceptual heart
+of the type half.  If a term-FT conclusion places `typeCode` as a reducible MEMBER of a universe code at
+`predLevel+1`, then `typeCode` is a reducible TYPE at `predLevel`.  This shows the type half of the "mutual"
+fundamental theorem is NOT a separate induction — it is `tarskiDecode ∘ (term-FT)`.  So the term-FT
+recursor's `conv` arm will obtain its reclassifier's TYPE validity (`castAlongConv`'s `targetReducible`)
+directly from the reclassifier's own term-FT induction hypothesis (`reclassifierTyped : reclassifier :
+universeCodeCell …`), at the level one above.  The three former type-FT lemmas below are this bridge applied
+to the matching term-FT former arm. -/
+theorem typeFundamentalOfTermFundamental {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope} {typeCode : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (termFundamental :
+      FundamentalConclusionLevelIndexed contextLevels (predLevel + 1) context typeCode
+        (universeCodeCell levelExpr flag)) :
+    IsTypeFundamentalLevelIndexed contextLevels predLevel context typeCode := by
+  intro _targetScope substitution env
+  have member := termFundamental substitution env
+  rw [subst_universeCodeCell] at member
+  exact member.tarskiDecode
+
 /-- **A universe code is a reducible TYPE at every level** (the type-FT for the `universeFormation` subject).
 `fundamentalUniverseFormationLevelIndexed` makes `universeCodeCell levelExpr flag` a reducible MEMBER of its
 parent universe at `predLevel+1`; `tarskiDecode` drops that to a reducible TYPE at `predLevel`.  Polymorphic
@@ -48,13 +69,9 @@ theorem universeCodeIsTypeFundamentalLevelIndexed {profile : PolyProfile} {scope
     (contextLevels : Fin scope → Nat) (predLevel : Nat) (context : TypingContext profile scope)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     IsTypeFundamentalLevelIndexed contextLevels predLevel context
-      (universeCodeCell levelExpr flag) := by
-  intro _targetScope substitution env
-  have member :=
-    fundamentalUniverseFormationLevelIndexed contextLevels predLevel context levelExpr flag
-      substitution env
-  rw [subst_universeCodeCell] at member
-  exact member.tarskiDecode
+      (universeCodeCell levelExpr flag) :=
+  typeFundamentalOfTermFundamental contextLevels predLevel
+    (fundamentalUniverseFormationLevelIndexed contextLevels predLevel context levelExpr flag)
 
 /-- **A Π type-code is a reducible TYPE at `predLevel`** (the type-FT for the Π former), from the domain and
 codomain fundamentals — `fundamentalPiFormationLevelIndexed` makes the Π code a member of its universe at
@@ -72,13 +89,10 @@ theorem piFormerIsTypeFundamentalLevelIndexed {profile : PolyProfile} {scope : N
       FundamentalConclusionLevelIndexed (levelCons headLevel contextLevels) (predLevel + 1)
         (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag)) :
     IsTypeFundamentalLevelIndexed contextLevels predLevel context
-      (piTyCodeCell domainCode codomainCode) := by
-  intro _targetScope substitution env
-  have member :=
-    fundamentalPiFormationLevelIndexed contextLevels predLevel
-      (formerLevel := formerLevel) domainFundamental codomainFundamental substitution env
-  rw [subst_universeCodeCell] at member
-  exact member.tarskiDecode
+      (piTyCodeCell domainCode codomainCode) :=
+  typeFundamentalOfTermFundamental contextLevels predLevel
+    (fundamentalPiFormationLevelIndexed contextLevels predLevel
+      (formerLevel := formerLevel) domainFundamental codomainFundamental)
 
 /-- **A Σ type-code is a reducible TYPE at `predLevel`** (the type-FT for the Σ former), the data-former twin
 of `piFormerIsTypeFundamentalLevelIndexed`. -/
@@ -94,13 +108,10 @@ theorem sigmaFormerIsTypeFundamentalLevelIndexed {profile : PolyProfile} {scope 
       FundamentalConclusionLevelIndexed (levelCons (predLevel + 1) contextLevels) (predLevel + 1)
         (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag)) :
     IsTypeFundamentalLevelIndexed contextLevels predLevel context
-      (sigmaTyCodeCell domainCode codomainCode) := by
-  intro _targetScope substitution env
-  have member :=
-    fundamentalSigmaFormationLevelIndexed contextLevels predLevel
-      (formerLevel := formerLevel) domainFundamental codomainFundamental substitution env
-  rw [subst_universeCodeCell] at member
-  exact member.tarskiDecode
+      (sigmaTyCodeCell domainCode codomainCode) :=
+  typeFundamentalOfTermFundamental contextLevels predLevel
+    (fundamentalSigmaFormationLevelIndexed contextLevels predLevel
+      (formerLevel := formerLevel) domainFundamental codomainFundamental)
 
 /-- **A type variable is a reducible TYPE at its env level** (the type-FT for the type-`var` subject).
 When the variable's looked-up type is a universe code `universeCodeCell levelExpr flag` and its env level is

@@ -1262,6 +1262,10 @@ gates pin them shut.
 -- Pi/Sigma formers) are reducible TYPES (ReducibleTypeAt, not just members) at their level, via tarskiDecode
 -- of the shipped term-FT arms. This is the ReducibleTypeAt form the conv arm consumes for its classifier;
 -- the type-variable case + context-validity threading remain for the full mutual relation.
+-- The GENERIC type-FT bridge: type-FT = tarskiDecode ∘ term-FT. Collapses the type half of the mutual FT
+-- into a projection of the term FT (no separate induction); the three former type-FT lemmas below route
+-- through it. The recursor's conv arm draws its reclassifier's type validity from the reclassifier's term IH.
+#assert_no_axioms FX1Poly.Typed.typeFundamentalOfTermFundamental
 #assert_no_axioms FX1Poly.Typed.universeCodeIsTypeFundamentalLevelIndexed
 #assert_no_axioms FX1Poly.Typed.piFormerIsTypeFundamentalLevelIndexed
 #assert_no_axioms FX1Poly.Typed.sigmaFormerIsTypeFundamentalLevelIndexed
