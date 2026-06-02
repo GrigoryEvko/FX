@@ -85,6 +85,7 @@ import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsPiMemberExtension
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsHeadExpand
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsConv
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsStronglyNormalizing
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsNonDependentArrow
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1405,3 +1406,9 @@ gates pin them shut.
 -- bottom positive fuel via `atLevel 0`, then single-level CR1).  The SN bridge the strong-normalization /
 -- canonicity corollaries consume once a binder/telescope arm strengthens a one-level member to all-positive.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.stronglyNormalizing
+
+-- Member-extension for a NON-DEPENDENT arrow `A → B`: the dependent `piTypeMemberExtension`'s argument-indexed
+-- codomain hypotheses collapse to the CONSTANT base-codomain facts via weaken-cancellation
+-- (`subst0 (weaken B) arg = B`).  The member-side twin of `formerChildrenReducibleNonDependentAtAll`; the
+-- premise-(2) recursion step for the simply-typed fragment (no dependent-Π codomain growth).
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.nonDependentArrow
