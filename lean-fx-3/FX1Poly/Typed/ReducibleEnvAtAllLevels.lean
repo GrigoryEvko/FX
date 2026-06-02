@@ -139,16 +139,37 @@ theorem ReducibleEnvAtAllLevels.consHeadToVecPositive {profile : PolyProfile} {s
       (context.cons bindingType) (RawTermSubst.cons headTerm tailSubst) :=
   ReducibleEnvVec.cons (tailReducible.toVecPositive tailLevels) headReducible
 
-/-- **The TYPE-VARIABLE binder extension of the all-level environment — surmounting the binder wall.**
-`ReducibleEnvAtAllLevels.cons` (above) imposes the binder wall: the fresh head must be reducible at EVERY
-positive level.  For a TYPE-VARIABLE binding — the fresh binding's type is a universe code `Type@levelExpr` and
-its substitute is a fresh variable — that all-level requirement is exactly `typeVariableAllLevelMember` (a type
-variable is a reducible member of its universe at every positive level, because the universe code is a reducible
-TYPE at every level).  So the all-level environment DOES extend through type-variable binders, with no
-all-level-vs-per-level off-by-one.  This is the binder-extension a dependent Π/Σ-FORMER arm with a type-variable
-DOMAIN needs (the obstruction characterized in the previous frontier note): the body/codomain then typechecks
-under the extended all-level environment, with the bound type variable available at every level the former
-consumes (`predLevel` and `predLevel + 1`). -/
+/-- **The general VARIABLE binder extension of the all-level environment — surmounting the binder wall for ANY
+all-level-reducible binding type.**  `ReducibleEnvAtAllLevels.cons` imposes the binder wall: the fresh head must
+be reducible at EVERY positive level.  When the fresh binding's substitute is a VARIABLE and its (substituted)
+type is reducible AS A TYPE at every positive level, the head requirement is discharged uniformly by
+`IsReducibleMemberAt.variable` (a variable inhabits any reducible type) at each level.  So the all-level
+environment extends through a variable binder whenever the binding type is all-level reducible — the general
+form of `consTypeVariable` (which is the universe-code instance, where the all-level type reducibility is
+automatic).  This is the binder-extension a dependent Π/Σ-FORMER arm needs for a context whose entries are
+arbitrary types (formers, type variables, …), not only bare universe codes. -/
+theorem ReducibleEnvAtAllLevels.consVariableOfAllLevelType {profile : PolyProfile} {scope innerScope : Nat}
+    {context : TypingContext profile scope}
+    {tailSubst : RawTermSubst scope (innerScope + 1)} {bindingType : RawTerm scope}
+    (tailReducible : ReducibleEnvAtAllLevels context tailSubst)
+    (typeAllLevel : ∀ level : Nat,
+      IsReducibleTypeAt (level + 1) (RawTerm.subst tailSubst bindingType))
+    (freshIndex : Fin (innerScope + 1)) :
+    ReducibleEnvAtAllLevels (context.cons bindingType)
+      (RawTermSubst.cons (variableCell freshIndex) tailSubst) := by
+  apply ReducibleEnvAtAllLevels.cons tailReducible
+  intro level
+  obtain ⟨_candidate, reducible⟩ := typeAllLevel level
+  exact IsReducibleMemberAt.variable reducible freshIndex
+
+/-- **The TYPE-VARIABLE binder extension of the all-level environment — surmounting the binder wall.**  The
+universe-code instance of `consVariableOfAllLevelType`: the fresh binding's type is a universe code
+`Type@levelExpr` (so its substitute is a TYPE variable), whose all-level type reducibility is automatic
+(`IsReducibleTypeAt.universeCode`, level-polymorphic).  So the all-level environment DOES extend through
+type-variable binders, with no all-level-vs-per-level off-by-one.  This is the binder-extension a dependent
+Π/Σ-FORMER arm with a type-variable DOMAIN needs (the obstruction characterized in the previous frontier note):
+the body/codomain then typechecks under the extended all-level environment, with the bound type variable
+available at every level the former consumes (`predLevel` and `predLevel + 1`). -/
 theorem ReducibleEnvAtAllLevels.consTypeVariable {profile : PolyProfile} {scope innerScope : Nat}
     {context : TypingContext profile scope}
     {tailSubst : RawTermSubst scope (innerScope + 1)}
@@ -156,11 +177,12 @@ theorem ReducibleEnvAtAllLevels.consTypeVariable {profile : PolyProfile} {scope 
     (tailReducible : ReducibleEnvAtAllLevels context tailSubst)
     (freshIndex : Fin (innerScope + 1)) :
     ReducibleEnvAtAllLevels (context.cons (universeCodeCell levelExpr flag))
-      (RawTermSubst.cons (variableCell freshIndex) tailSubst) := by
-  apply ReducibleEnvAtAllLevels.cons tailReducible
-  intro level
-  rw [subst_universeCodeCell]
-  exact typeVariableAllLevelMember freshIndex levelExpr flag level
+      (RawTermSubst.cons (variableCell freshIndex) tailSubst) :=
+  ReducibleEnvAtAllLevels.consVariableOfAllLevelType tailReducible
+    (fun level => by
+      rw [subst_universeCodeCell]
+      exact IsReducibleTypeAt.universeCode (level + 1) levelExpr flag)
+    freshIndex
 
 /-- Non-vacuity: a one-entry type-variable context `[Type@levelExpr]` admits an all-level environment, built
 from the empty all-level environment by one `consTypeVariable`.  Witnesses that type-variable contexts — the

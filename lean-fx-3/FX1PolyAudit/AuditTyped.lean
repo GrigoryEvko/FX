@@ -942,9 +942,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.ofVecPositiveFamily
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consHeadToEnvAtPositive
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consHeadToVecPositive
--- consTypeVariable: the all-level env extends through a TYPE-VARIABLE binder (type = universe code, substitute
--- = a fresh variable) -- the all-level head requirement (binder wall) discharged by typeVariableAllLevelMember.
--- Surmounts the binder wall for type-variable domains, the dependent-former variable-domain obstruction.
+-- consVariableOfAllLevelType: the GENERAL variable binder-extension -- the all-level env extends through a
+-- variable binder whenever the binding type is reducible AS A TYPE at every positive level (head discharged by
+-- IsReducibleMemberAt.variable). consTypeVariable is its universe-code instance (all-level type reducibility
+-- automatic via IsReducibleTypeAt.universeCode). Surmounts the binder wall for arbitrary all-level binding types.
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consVariableOfAllLevelType
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtAllLevels.consTypeVariable
 #assert_no_axioms FX1Poly.Typed.reducibleEnvAtAllLevels_oneTypeVariable
 
