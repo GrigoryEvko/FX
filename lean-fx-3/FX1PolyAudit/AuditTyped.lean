@@ -49,6 +49,7 @@ import FX1Poly.Typed.SimplyTypedTypeExprFT
 import FX1Poly.Typed.AbstractionNonDependentUnderSubstLevelFree
 import FX1Poly.Typed.SimplyTypedTypeExprReducibleLevelFree
 import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
+import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1559,3 +1560,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.stronglyNormalizingUnderSubst
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.reducibleClosed
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.stronglyNormalizingClosed
+
+-- CHURCH-ROSSER + NORMAL-FORM UNIQUENESS for simply-typed terms: the SN result fed the per-term Newman bridge
+-- (`confluence_of_localJoin_and_accessible`) gives confluence (`reductsJoinUnderSubst`), and `eq_of_noStep`
+-- gives normal-form uniqueness (`normalFormUnique{UnderSubst,Closed}`) — the foundation for deciding conversion
+-- on the simply-typed fragment.
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.reductsJoinUnderSubst
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalFormUniqueUnderSubst
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalFormUniqueClosed
