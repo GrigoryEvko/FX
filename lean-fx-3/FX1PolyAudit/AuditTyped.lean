@@ -131,6 +131,7 @@ import FX1Poly.Typed.ReducibleTypeAtAllLevelsNonDependentArrow
 import FX1Poly.Typed.RouteAObstruction
 import FX1Poly.Typed.ClassifierLevelDiagnosis
 import FX1Poly.Typed.ClassifierLevelMeasure
+import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1598,6 +1599,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.denote_le_lmax_left
 #assert_no_axioms FX1Poly.Typed.denote_le_lmax_right
 #assert_no_axioms FX1Poly.Typed.variableCell_reducibleTypeAtZero
+
+-- SN-004 (make-or-break): the universe-DOMAIN Π former CLOSES at classifier-level semantics.  Constant
+-- codomain is shipped (universeDomainNonDependentArrow); the dependent case reduces to domain
+-- member-extension (piTypeOfDomainMemberExtension), supplied by the SN-003 denote-WF recursion — the fuel-0
+-- wall does NOT reappear.  VERDICT: GO (Route B viable).  Concrete witness:
+#assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleAllLevels
 
 -- Member-side leaf (dual of the type leaves): membership in a neutral / data-former classifier is
 -- `IsStronglyNormalizing` (level-independent), so a one-level member extends to all positive levels — the
