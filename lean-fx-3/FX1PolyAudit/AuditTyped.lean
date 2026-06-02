@@ -98,6 +98,7 @@ import FX1Poly.Typed.FundamentalLevelIndexed
 import FX1Poly.Typed.ClosedLevelIndexed
 import FX1Poly.Typed.TypeFundamentalLevelIndexed
 import FX1Poly.Typed.LeveledContext
+import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -1282,6 +1283,11 @@ gates pin them shut.
 -- level via levelCons. allLevelsPositive (induction on the inductive; propext-clean Fin split) is the
 -- positivity invariant the recursor relies on (CR1 + conv tarskiDecode one-up both need positive levels).
 #assert_no_axioms FX1Poly.Typed.LeveledContext.allLevelsPositive
+-- FIRST UNCONDITIONAL SN results via the level-indexed FT: concrete closed terms whose FT conclusion is built
+-- directly from the shipped arms at the empty context (no recursor), discharged to plain IsStronglyNormalizing
+-- by the closed-SN handoff. End-to-end validation that the arms + handoff compose into hypothesis-free SN.
+#assert_no_axioms FX1Poly.Typed.universeCode_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.closedPiBetweenUniverses_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
