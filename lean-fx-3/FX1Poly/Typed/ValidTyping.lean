@@ -306,4 +306,52 @@ theorem validTyping_openVariable_substStronglyNormalizing {profile : PolyProfile
       | ⟨_priorValue + 1, isLtSucc⟩ =>
           (Nat.not_lt_zero _priorValue (Nat.lt_of_succ_lt_succ isLtSucc)).elim)
 
+/-! ## Per-arm recursor non-vacuity corpus (completing piElim + conv)
+
+The smokes above witness the recursor's `universeFormation` / `piIntro` / `var` / `piFormation` /
+`sigmaFormation` arms producing genuine SN.  These two complete the corpus — `piElim` (application, the genuine
+β-reducing arm) and `conv` (the type-reclassification arm). -/
+
+/-- **Smoke: a closed β-redex is SN through the recursor's `piElim` arm.**  `(λx.x)(Type@e)` — the closed
+identity applied to a universe code — reduces (β) and is strongly normalizing through the recursor's application
+arm, composed over `piIntro` (the identity, `λ(x : Type@(e+2)). x : Π(Type@(e+2)). Type@(e+2)`) and
+`universeFormation` (the argument `Type@e : Type@(e+2)`).  The genuinely-reducing witness for `piElim`. -/
+theorem validTyping_betaRedex_stronglyNormalizing {profile : PolyProfile}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (universeCodeCell levelExpr flag) : RawTerm 0) :=
+  ValidTyping.closedStronglyNormalizing (profile := profile) 0
+    (ValidTyping.piElim emptyLevelVector 1
+      (ValidTyping.piIntro emptyLevelVector 0
+        (domainLevel := levelExpr.lsucc.lsucc) (codomainLevel := levelExpr.lsucc.lsucc) (flag := flag)
+        (ValidTyping.universeFormation emptyLevelVector 1
+          (TypingContext.empty : TypingContext profile 0) levelExpr.lsucc flag)
+        (ValidTyping.universeFormation (levelCons 1 emptyLevelVector) 1
+          ((TypingContext.empty : TypingContext profile 0).cons
+            (universeCodeCell levelExpr.lsucc flag)) levelExpr.lsucc flag)
+        (ValidTyping.var (levelCons 1 emptyLevelVector)
+          ((TypingContext.empty : TypingContext profile 0).cons
+            (universeCodeCell levelExpr.lsucc flag))
+          (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (ValidTyping.universeFormation emptyLevelVector 0
+        (TypingContext.empty : TypingContext profile 0) levelExpr flag))
+
+/-- **Smoke: a universe code re-typed through the recursor's `conv` arm is SN.**  The conversion is REFLEXIVITY —
+a closed ValidTyping-derived term never has a REDEX type (`piElim`'s result is `subst0`, already computed; the
+other arms conclude at universe codes), so no genuine closed type-conversion is constructible in this fragment.
+The arm's level coordination is still exercised end-to-end: the subject sits at `subjectLevel`, the reclassifier
+is typed as a universe member ONE LEVEL UP (`subjectLevel + 1`), and `fundamentalConvLevelIndexed` runs its
+`tarskiDecode` + `castAlongConv` transport through the recursor.  The non-vacuity witness for `conv`. -/
+theorem validTyping_convRefl_stronglyNormalizing {profile : PolyProfile}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing (universeCodeCell levelExpr flag : RawTerm 0) :=
+  ValidTyping.closedStronglyNormalizing (profile := profile) 0
+    (ValidTyping.conv emptyLevelVector 1
+      (ValidTyping.universeFormation emptyLevelVector 0
+        (TypingContext.empty : TypingContext profile 0) levelExpr flag)
+      (Conv.refl _)
+      (ValidTyping.universeFormation emptyLevelVector 1
+        (TypingContext.empty : TypingContext profile 0) levelExpr.lsucc flag))
+
 end FX1Poly.Typed

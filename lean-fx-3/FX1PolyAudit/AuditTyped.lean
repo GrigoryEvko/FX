@@ -1353,6 +1353,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ValidTyping.substReducible
 #assert_no_axioms FX1Poly.Typed.ValidTyping.substStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_openVariable_substStronglyNormalizing
+-- PER-ARM RECURSOR NON-VACUITY CORPUS (ValidTyping.lean): completing piElim + conv. betaRedex = a closed
+-- β-redex (λx.x)(Type@e) SN through the piElim arm (genuinely reducing); convRefl = a universe code re-typed
+-- through the conv arm (reflexive conversion — closed ValidTyping terms never have a redex type, so the arm's
+-- level coordination subjectLevel/subjectLevel+1 + tarskiDecode + castAlongConv is exercised but the conversion
+-- is refl). All 7 recursor arms now have a non-vacuity SN witness.
+#assert_no_axioms FX1Poly.Typed.validTyping_betaRedex_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.validTyping_convRefl_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
