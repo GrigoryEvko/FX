@@ -112,4 +112,70 @@ theorem absorptionRewriteOneStep_ofDecompositionRight {dimension : Nat}
   rw [← listAppendAssoc, ← listAppendAssoc] at fired
   exact fired
 
+/-- `[a,b,c] ++ rest = a :: b :: c :: rest` definitionally — the length-3 analogue of `doubleConsAppend`,
+for the three-cell critical-pair words `[v,s,v]` / `[s,s,v]` / `[v,s,s]` / `[s,s,s]`. -/
+theorem tripleConsAppend {alpha : Type _} (firstCell secondCell thirdCell : alpha)
+    (rest : List alpha) :
+    [firstCell, secondCell, thirdCell] ++ rest = firstCell :: secondCell :: thirdCell :: rest :=
+  rfl
+
+/-- **The genuine inter-rule critical pair join** (the mathematical heart of SN-119).  The overlap word
+`[v,s,v]` has two one-step reducts: `[s,s,v]` (rule-Left fired at the front `[v,s]`) and `[v,s,s]` (rule-Right
+fired at the back `[s,v]`).  Both reduce in ONE further step to the common all-surviving word `[s,s,s]` —
+`[s,s,v]` by firing rule-Right on its `[s,v]` suffix, `[v,s,s]` by firing rule-Left on its `[v,s]` prefix.
+
+This is the join that is NOT vacuous (unlike transposition's one-cell overlap, which forced `a = b`) and NOT
+trivially-equal (unlike the idempotent `[c,c,c]` overlap, whose reducts coincide).  It is the genuinely-new
+multi-step critical-pair resolution that SN-119 contributes.  (The other overlap word `[s,v,s]` has both
+one-step reducts already equal to `[s,s,s]`, so it joins by reflexivity — no lemma needed.) -/
+theorem absorptionCriticalPairJoinLeftRight {dimension : Nat}
+    (vanishingCell survivingCell : OmegacECell dimension)
+    (leftPart rightPart : List (OmegacECell dimension)) :
+    OmegacEWord.Joinable (absorptionSystem vanishingCell survivingCell)
+      ⟨leftPart ++ [survivingCell, survivingCell, vanishingCell] ++ rightPart⟩
+      ⟨leftPart ++ [vanishingCell, survivingCell, survivingCell] ++ rightPart⟩ := by
+  refine ⟨⟨leftPart ++ [survivingCell, survivingCell, survivingCell] ++ rightPart⟩, ?_, ?_⟩
+  · have step := absorptionRewriteOneStep_ofDecompositionRight vanishingCell survivingCell
+      (leftPart ++ [survivingCell]) rightPart
+    have hsrc :
+        (⟨leftPart ++ [survivingCell, survivingCell, vanishingCell] ++ rightPart⟩
+          : OmegacEWord dimension)
+        = ⟨(leftPart ++ [survivingCell]) ++ [survivingCell, vanishingCell] ++ rightPart⟩ := by
+      apply congrArg OmegacEWord.mk
+      rw [listAppendAssoc leftPart [survivingCell, survivingCell, vanishingCell] rightPart,
+          listAppendAssoc (leftPart ++ [survivingCell]) [survivingCell, vanishingCell] rightPart,
+          listAppendAssoc leftPart [survivingCell] ([survivingCell, vanishingCell] ++ rightPart),
+          tripleConsAppend, singleConsAppend, doubleConsAppend]
+    have htgt :
+        (⟨(leftPart ++ [survivingCell]) ++ [survivingCell, survivingCell] ++ rightPart⟩
+          : OmegacEWord dimension)
+        = ⟨leftPart ++ [survivingCell, survivingCell, survivingCell] ++ rightPart⟩ := by
+      apply congrArg OmegacEWord.mk
+      rw [listAppendAssoc leftPart [survivingCell, survivingCell, survivingCell] rightPart,
+          listAppendAssoc (leftPart ++ [survivingCell]) [survivingCell, survivingCell] rightPart,
+          listAppendAssoc leftPart [survivingCell] ([survivingCell, survivingCell] ++ rightPart),
+          tripleConsAppend, singleConsAppend, doubleConsAppend]
+    rw [hsrc, ← htgt]
+    exact OmegacEWord.RewritesMany.single step
+  · have step := absorptionRewriteOneStep_ofDecompositionLeft vanishingCell survivingCell
+      leftPart ([survivingCell] ++ rightPart)
+    have hsrc :
+        (⟨leftPart ++ [vanishingCell, survivingCell, survivingCell] ++ rightPart⟩
+          : OmegacEWord dimension)
+        = ⟨leftPart ++ [vanishingCell, survivingCell] ++ ([survivingCell] ++ rightPart)⟩ := by
+      apply congrArg OmegacEWord.mk
+      rw [listAppendAssoc leftPart [vanishingCell, survivingCell, survivingCell] rightPart,
+          listAppendAssoc leftPart [vanishingCell, survivingCell] ([survivingCell] ++ rightPart),
+          tripleConsAppend, doubleConsAppend, singleConsAppend]
+    have htgt :
+        (⟨leftPart ++ [survivingCell, survivingCell] ++ ([survivingCell] ++ rightPart)⟩
+          : OmegacEWord dimension)
+        = ⟨leftPart ++ [survivingCell, survivingCell, survivingCell] ++ rightPart⟩ := by
+      apply congrArg OmegacEWord.mk
+      rw [listAppendAssoc leftPart [survivingCell, survivingCell, survivingCell] rightPart,
+          listAppendAssoc leftPart [survivingCell, survivingCell] ([survivingCell] ++ rightPart),
+          tripleConsAppend, doubleConsAppend, singleConsAppend]
+    rw [hsrc, ← htgt]
+    exact OmegacEWord.RewritesMany.single step
+
 end FX1Poly.OmegacE

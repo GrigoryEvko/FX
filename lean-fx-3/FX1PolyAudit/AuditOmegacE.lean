@@ -334,3 +334,15 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.absorptionRewriteOneStep_decomposition
 #assert_no_axioms FX1Poly.OmegacE.absorptionRewriteOneStep_ofDecompositionLeft
 #assert_no_axioms FX1Poly.OmegacE.absorptionRewriteOneStep_ofDecompositionRight
+
+-- ABSORPTION CRITICAL-PAIR JOIN (AbsorptionConfluence.lean): SN-119 progress 2b-i — the mathematical HEART.
+-- The genuine inter-rule critical pair: the overlap word [v,s,v] has two one-step reducts [s,s,v] (rule-Left at
+-- front) and [v,s,s] (rule-Right at back), both reducing in ONE further step to the common all-surviving [s,s,s]
+-- ([s,s,v] fires rule-Right on its [s,v] suffix; [v,s,s] fires rule-Left on its [v,s] prefix). NOT vacuous (unlike
+-- transposition's overlap which forced a=b) and NOT trivially-equal (unlike idempotent [c,c,c]) — the genuinely-new
+-- multi-step join SN-119 contributes. tripleConsAppend = length-3 cons-collapse (rfl) for the 3-cell words.
+-- Zero-axiom: explicit listAppendAssoc/singleConsAppend/doubleConsAppend/tripleConsAppend rw chains (no simp).
+-- Deferred (progress 2b-ii): the full absorptionHasLocalConfluence (4-combo wrapper consuming THIS lemma in the
+-- (Left,Right) overlap case + the trivial [s,v,s] + matched-vacuous + disjoint-commute) + newman ⟹ confluence.
+#assert_no_axioms FX1Poly.OmegacE.tripleConsAppend
+#assert_no_axioms FX1Poly.OmegacE.absorptionCriticalPairJoinLeftRight
