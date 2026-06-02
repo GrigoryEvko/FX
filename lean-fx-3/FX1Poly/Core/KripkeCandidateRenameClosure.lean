@@ -115,4 +115,66 @@ theorem kripkeArrow_transport_pointwise {sourceScope renamedScope : Nat}
         (KripkeCand.transport forwardRenaming codomainCandidate) indexRenaming functionTerm :=
   Iff.rfl
 
+/-! ## The DEPENDENT Kripke arrow (the Pi case FX actually needs)
+
+The `ReducibleTypeStep.piType` arm is DEPENDENT: the codomain candidate is evaluated at the argument
+(`Πx:A. B x`).  The codomain is therefore a family indexed by renaming AND argument; the dependent arrow's
+rename-closure is STILL definitional, the argument riding along the same composition-associativity. -/
+
+/-- A codomain candidate FAMILY at `sourceScope`: indexed by renaming AND argument (the dependency of a
+dependent-product codomain). -/
+def KripkeCodFamily (sourceScope : Nat) :=
+  ∀ {targetScope : Nat},
+    RawRenaming sourceScope targetScope → RawTerm targetScope → RawTerm targetScope → Prop
+
+/-- Renaming transport of a codomain family, by precomposition on the index (the argument rides along). -/
+def KripkeCodFamily.transport {sourceScope renamedScope : Nat}
+    (forwardRenaming : RawRenaming sourceScope renamedScope) (family : KripkeCodFamily sourceScope) :
+    KripkeCodFamily renamedScope :=
+  fun {_targetScope} indexRenaming argument term =>
+    family (RawRenaming.compose forwardRenaming indexRenaming) argument term
+
+/-- Codomain-family transport is functorial (presheaf law), pointwise — definitional composition
+associativity, the argument inert. -/
+theorem codFamily_transport_transport_pointwise {sourceScope middleScope renamedScope : Nat}
+    (firstRenaming : RawRenaming sourceScope middleScope)
+    (secondRenaming : RawRenaming middleScope renamedScope)
+    (family : KripkeCodFamily sourceScope)
+    {targetScope : Nat} (indexRenaming : RawRenaming renamedScope targetScope)
+    (argument term : RawTerm targetScope) :
+    KripkeCodFamily.transport secondRenaming (KripkeCodFamily.transport firstRenaming family)
+        indexRenaming argument term ↔
+      KripkeCodFamily.transport (RawRenaming.compose firstRenaming secondRenaming) family
+        indexRenaming argument term :=
+  Iff.rfl
+
+/-- **The dependent Kripke arrow (dependent-product candidate).**  A function term lies in the dependent
+arrow at index `indexRenaming` when, for every further renaming and argument in the domain candidate at the
+composite index, the renamed application lands in the codomain FAMILY evaluated AT THAT ARGUMENT at the
+composite index. -/
+def kripkeArrowDep {sourceScope : Nat}
+    (domainCandidate : KripkeCand sourceScope) (codomainFamily : KripkeCodFamily sourceScope) :
+    KripkeCand sourceScope :=
+  fun {_targetScope} indexRenaming functionTerm =>
+    ∀ {argScope : Nat} (furtherRenaming : RawRenaming _targetScope argScope) (argument : RawTerm argScope),
+      domainCandidate (RawRenaming.compose indexRenaming furtherRenaming) argument →
+      codomainFamily (RawRenaming.compose indexRenaming furtherRenaming) argument
+        (.mkGen .gen_app ()
+          (.childCons (RawTerm.rename furtherRenaming functionTerm) (.childCons argument .childNil)))
+
+/-- **The dependent Kripke arrow is closed under renaming, definitionally.**  The dependent-product
+(`Pi`) generalization of `kripkeArrow_transport_pointwise` — the exact rename-closure the dependent
+`ReducibleTypeStep.piType` arm requires, here again `Iff.rfl` by composition-associativity (the argument
+and codomain dependency ride along inertly). -/
+theorem kripkeArrowDep_transport_pointwise {sourceScope renamedScope : Nat}
+    (forwardRenaming : RawRenaming sourceScope renamedScope)
+    (domainCandidate : KripkeCand sourceScope) (codomainFamily : KripkeCodFamily sourceScope)
+    {targetScope : Nat} (indexRenaming : RawRenaming renamedScope targetScope)
+    (functionTerm : RawTerm targetScope) :
+    KripkeCand.transport forwardRenaming (kripkeArrowDep domainCandidate codomainFamily)
+        indexRenaming functionTerm ↔
+      kripkeArrowDep (KripkeCand.transport forwardRenaming domainCandidate)
+        (KripkeCodFamily.transport forwardRenaming codomainFamily) indexRenaming functionTerm :=
+  Iff.rfl
+
 end FX1Poly.Core

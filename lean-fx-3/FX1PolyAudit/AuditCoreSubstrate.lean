@@ -157,6 +157,7 @@ import FX1Poly.Core.StrongNormalizationSmokeCorpus
 import FX1Poly.Core.StrongNormalizationFormerCorpus
 import FX1Poly.Core.StrongNormalizationBetaEtaLeaves
 import FX1Poly.Core.StrongNormalizationBetaEtaFormers
+import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.StepIotaEtaDoubleStrips
@@ -298,3 +299,10 @@ per-decl list.  It also re-checks the native infra under
 -- functoriality + the headline arrow rename-closure), not yet wired into ReducibleTypeStep.
 #assert_no_axioms FX1Poly.Core.transport_transport_pointwise
 #assert_no_axioms FX1Poly.Core.kripkeArrow_transport_pointwise
+-- Dependent Kripke arrow (the Pi case): codomain family transport functoriality + dependent rename-closure.
+#assert_no_axioms FX1Poly.Core.codFamily_transport_transport_pointwise
+#assert_no_axioms FX1Poly.Core.kripkeArrowDep_transport_pointwise
+-- CR1 structural ingredient: an application's strong normalization descends to its function (Acc pullback).
+#assert_no_axioms FX1Poly.Core.appFunctionCongStep
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizing_of_appFunction_aux
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizing_of_appFunction
