@@ -309,3 +309,6 @@ per-decl list.  It also re-checks the native infra under
 -- CR1 for the Kripke arrow (non-dependent + dependent): members are strongly normalizing (Tait argument).
 #assert_no_axioms FX1Poly.Core.kripkeArrow_stronglyNormalizing
 #assert_no_axioms FX1Poly.Core.kripkeArrowDep_stronglyNormalizing
+-- CR2 for the Kripke arrow (non-dependent + dependent): forward Step closure.
+#assert_no_axioms FX1Poly.Core.kripkeArrow_forwardStep
+#assert_no_axioms FX1Poly.Core.kripkeArrowDep_forwardStep

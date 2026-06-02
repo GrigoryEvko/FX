@@ -1,6 +1,7 @@
 import FX1Poly.Core.StratifiedReducibleType
 import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationRename
+import FX1Poly.Core.StepRename
 
 /-! # Foundation/PolyCell/Core/KripkeCandidateRenameClosure
     — Kripke-indexed reducibility candidates make arrow rename-closure DEFINITIONAL (SN-043 refactor seed)
@@ -227,5 +228,49 @@ theorem kripkeArrowDep_stronglyNormalizing {scope : Nat}
       (codomainMembersStronglyNormalizing _ _ _
         (membership RawRenaming.weaken (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil)
           domainContainsFreshVariable)))
+
+/-! ## CR2 for the Kripke arrow — forward closure under `Step`
+
+A member of the Kripke arrow that takes a `Step` is again a member.  For any further renaming and domain
+argument, the original member lands in the codomain; the function-step renames (`Step.rename`) and lifts to
+an application step (`appFunctionCongStep`); codomain-CR2 carries the codomain membership forward.  The
+renaming index is unchanged throughout, so this is a direct composition (no associativity juggling). -/
+
+/-- **CR2 for the non-dependent Kripke arrow.**  `Step functionTerm functionTerm'` carries arrow membership
+forward, given the codomain candidate is closed under `Step`. -/
+theorem kripkeArrow_forwardStep {scope : Nat}
+    {domainCandidate codomainCandidate : KripkeCand scope}
+    (codomainClosedUnderStep :
+      ∀ {targetScope : Nat} (indexRenaming : RawRenaming scope targetScope)
+        {term term' : RawTerm targetScope},
+        codomainCandidate indexRenaming term → Step term term' → codomainCandidate indexRenaming term')
+    {targetScope : Nat} {indexRenaming : RawRenaming scope targetScope}
+    {functionTerm functionTerm' : RawTerm targetScope}
+    (functionStep : Step functionTerm functionTerm')
+    (membership : kripkeArrow domainCandidate codomainCandidate indexRenaming functionTerm) :
+    kripkeArrow domainCandidate codomainCandidate indexRenaming functionTerm' := by
+  intro _argScope furtherRenaming argument domainMember
+  exact codomainClosedUnderStep _
+    (membership furtherRenaming argument domainMember)
+    (appFunctionCongStep (Step.rename furtherRenaming functionStep))
+
+/-- **CR2 for the dependent Kripke arrow.**  The dependent-product generalization; codomain-CR2 holds at
+each fixed argument. -/
+theorem kripkeArrowDep_forwardStep {scope : Nat}
+    {domainCandidate : KripkeCand scope} {codomainFamily : KripkeCodFamily scope}
+    (codomainClosedUnderStep :
+      ∀ {targetScope : Nat} (indexRenaming : RawRenaming scope targetScope)
+        (argument : RawTerm targetScope) {term term' : RawTerm targetScope},
+        codomainFamily indexRenaming argument term → Step term term' →
+          codomainFamily indexRenaming argument term')
+    {targetScope : Nat} {indexRenaming : RawRenaming scope targetScope}
+    {functionTerm functionTerm' : RawTerm targetScope}
+    (functionStep : Step functionTerm functionTerm')
+    (membership : kripkeArrowDep domainCandidate codomainFamily indexRenaming functionTerm) :
+    kripkeArrowDep domainCandidate codomainFamily indexRenaming functionTerm' := by
+  intro _argScope furtherRenaming argument domainMember
+  exact codomainClosedUnderStep _ argument
+    (membership furtherRenaming argument domainMember)
+    (appFunctionCongStep (Step.rename furtherRenaming functionStep))
 
 end FX1Poly.Core
