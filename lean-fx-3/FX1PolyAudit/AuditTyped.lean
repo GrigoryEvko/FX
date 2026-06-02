@@ -132,6 +132,7 @@ import FX1Poly.Typed.RouteAObstruction
 import FX1Poly.Typed.ClassifierLevelDiagnosis
 import FX1Poly.Typed.ClassifierLevelMeasure
 import FX1Poly.Typed.ClassifierLevelSpike
+import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1605,6 +1606,12 @@ gates pin them shut.
 -- member-extension (piTypeOfDomainMemberExtension), supplied by the SN-003 denote-WF recursion — the fuel-0
 -- wall does NOT reappear.  VERDICT: GO (Route B viable).  Concrete witness:
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleAllLevels
+
+-- SN-005 (decision gate, GO locked 2026-06-02): SN strategy = classifier-level validity route PRIMARY,
+-- BKS sconing independent-second, Makkai word-equality cross-check.  The certificate anchors the GO rationale
+-- as a checked object — the SAME universe-domain Π former is genuinely all-levels reducible (live model,
+-- SN-004) yet only VACUOUSLY fuel-0 reducible with the trivial candidate (dead model, SN-001).
+#assert_no_axioms FX1Poly.Typed.lockedStrategyGoCertificate
 
 -- Member-side leaf (dual of the type leaves): membership in a neutral / data-former classifier is
 -- `IsStronglyNormalizing` (level-independent), so a one-level member extends to all positive levels — the
