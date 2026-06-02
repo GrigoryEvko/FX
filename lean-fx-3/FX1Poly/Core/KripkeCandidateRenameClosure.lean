@@ -16,10 +16,20 @@ The stratified `ReducibleTypeStep.piType` arm's arrow candidate quantifies over 
 Renaming `ρ : scope → scope'` ENLARGES the scope, so rebuilding the arm at `scope'` demands the codomain
 reducible under EVERY `scope'`-argument — including fresh-variable arguments outside `rename ρ`'s image,
 which the inner induction hypothesis cannot supply.  This is the precise wall blocking SN-040 (reducibility
-closed under renaming) at the `piType` arm, and — through the strengthened fundamental theorem's
-fuel-stability requirement — the whole unconditional Milestone-A spine (SN-043 SN-for-well-typed, SN-046
-typed Newman, SN-047..050 canonicity/consistency).  See `StratifiedReducibleTypeRename` for the obstruction
+closed under renaming) at the `piType` arm.  See `StratifiedReducibleTypeRename` for the obstruction
 write-up.
+
+CALIBRATION (do not overclaim): the non-Kripke arrow candidate causes TWO distinct obstructions, and this
+POC addresses only the FIRST.  (1) The RENAME obstruction (SN-040), resolved by Kripke-indexing over future
+renamings — what this file builds.  (2) The FUEL-STABILITY obstruction (one-level reducibility → all-levels),
+which is the actual gate on SN-043: it is exactly the premise
+`HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes`
+(`FundamentalWithTypeValueCandidates.lean`), and candidate rename-closure does NOT discharge it.  A FULL
+Kripke refactor would have to quantify the arrow over future renamings AND future fuel (Abel/Adjedj); this
+POC does the renaming dimension only.  Moreover the PRIMARY (locked, SN-005) fundamental-theorem route is
+env-based (`ReducibleEnvAtAllLevels`), which sidesteps candidate rename-closure altogether — so SN-040 is
+OFF that critical path.  Net: finishing this POC's CR bundle is a sound standalone construction but does not
+by itself unblock SN-043.
 
 ## The Kripke resolution (validated here)
 
@@ -43,6 +53,24 @@ indexed by the argument), (2) the reducibility-candidate bundle (CR1/CR2/CR3) fo
 (3) re-indexing `ReducibleTypeStep` / `ReducibleTypeAt` over Kripke candidates, (4) re-threading the
 fundamental theorem.  This seed proves the KEY enabling fact — that Kripke-indexing trivializes
 rename-closure — so step (3)'s `piType` rename arm will discharge definitionally rather than hit the wall.
+
+## STATUS: PAUSED at CR3 (off the SN-043 critical path)
+
+Shipped + gated, all zero-axiom: rename-closure (`Iff.rfl`), presheaf functoriality, the dependent Kripke
+arrow, CR1 (`kripkeArrow_stronglyNormalizing` / `kripkeArrowDep_stronglyNormalizing`), CR2
+(`kripkeArrow_forwardStep` / `kripkeArrowDep_forwardStep`), and the CR3 prerequisite `IsNeutral.rename`
+(`NeutralTermRename.lean`).  The remaining property — CR3 (neutral backward closure, Girard's hard arrow
+case) — needs a full-`Step` rename-reflection-with-image
+`Step (rename ρ f) h → ∃ f', Step f f' ∧ rename ρ f' = h` for the neutral-head case, which in turn needs
+free-variable Step-monotonicity plus a rename-respects-used-positions lemma — a multi-lemma sub-effort.
+
+Per the CALIBRATION above, completing CR3 unblocks nothing downstream (SN-043 is gated on the SEPARATE
+fuel-stability premise, and the primary FT route is env-based).  This POC is therefore deliberately PAUSED:
+a future agent should NOT resume grinding CR3 in micro-ticks.  Resume only as part of a deliberately-scoped
+deep push that ALSO Kripke-indexes over fuel (the dimension that actually gates SN-043), or if a downstream
+genuinely consumes standalone candidate rename-closure.  Between deep pushes, prefer tractable unblocked SN
+tasks (the additive Leg-3 termination/word constructions SN-115..136, or the §27.3 five-layer-defense corpus
+SN-140..144) over extending this seed.
 
 ## Zero-axiom verification
 
