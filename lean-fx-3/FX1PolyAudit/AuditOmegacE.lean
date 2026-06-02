@@ -346,3 +346,12 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 -- (Left,Right) overlap case + the trivial [s,v,s] + matched-vacuous + disjoint-commute) + newman ⟹ confluence.
 #assert_no_axioms FX1Poly.OmegacE.tripleConsAppend
 #assert_no_axioms FX1Poly.OmegacE.absorptionCriticalPairJoinLeftRight
+
+-- ABSORPTION DISJOINT-COMMUTE (AbsorptionConfluence.lean): SN-119 progress 2b-ii first piece — the third
+-- trichotomy branch (the bulk). Two non-overlapping redexes commute: firing pairA→[s,s] and pairB→[s,s] both
+-- reach the common all-[s,s] word. KEY ECONOMY: the word equalities are PURE associativity (pairs stay opaque
+-- as ++pairA/++pairB, never cons-collapsed), so this ONE helper covers all four rule combinations — the rule
+-- disjunction is consumed only at the two _ofDecomposition fires (rcases hPairA/hPairB → Left/Right). Zero-axiom
+-- (explicit listAppendAssoc rw chains, no simp). Deferred: the absorptionHasLocalConfluence wrapper (listPrefixSplit
+-- trichotomy dispatching same-position/critical-pair/THIS disjoint) + newman ⟹ absorptionHasConfluence.
+#assert_no_axioms FX1Poly.OmegacE.absorptionJoinableDisjoint

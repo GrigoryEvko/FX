@@ -178,4 +178,66 @@ theorem absorptionCriticalPairJoinLeftRight {dimension : Nat}
     rw [hsrc, ← htgt]
     exact OmegacEWord.RewritesMany.single step
 
+/-- **Disjoint redexes commute** — the third trichotomy branch of local confluence (the bulk).  Two
+non-overlapping redexes separated by `mid'`: firing the left one (`pairA → [s,s]`) and the right one
+(`pairB → [s,s]`) both reach the common all-`[s,s]` word.  The crucial economy: the word equalities are PURE
+associativity (the pairs stay opaque as `++ pairA` / `++ pairB`, never cons-collapsed), so this SINGLE helper
+covers all four rule combinations — the rule disjunction is consumed only at the two `_ofDecomposition` fires.
+This is exactly the SN-118 disjoint-commute case generalized to two distinct rules with no extra case-blowup. -/
+theorem absorptionJoinableDisjoint {dimension : Nat}
+    (vanishingCell survivingCell : OmegacECell dimension)
+    (leftA mid' rightB pairA pairB : List (OmegacECell dimension))
+    (hPairA : pairA = [vanishingCell, survivingCell] ∨ pairA = [survivingCell, vanishingCell])
+    (hPairB : pairB = [vanishingCell, survivingCell] ∨ pairB = [survivingCell, vanishingCell]) :
+    OmegacEWord.Joinable (absorptionSystem vanishingCell survivingCell)
+      ⟨leftA ++ [survivingCell, survivingCell] ++ (mid' ++ pairB ++ rightB)⟩
+      ⟨(leftA ++ pairA ++ mid') ++ [survivingCell, survivingCell] ++ rightB⟩ := by
+  refine ⟨⟨leftA ++ [survivingCell, survivingCell] ++ mid'
+            ++ [survivingCell, survivingCell] ++ rightB⟩, ?_, ?_⟩
+  · have hsrc :
+        (⟨leftA ++ [survivingCell, survivingCell] ++ (mid' ++ pairB ++ rightB)⟩
+          : OmegacEWord dimension)
+        = ⟨(leftA ++ [survivingCell, survivingCell] ++ mid') ++ pairB ++ rightB⟩ := by
+      apply congrArg OmegacEWord.mk
+      rw [← listAppendAssoc (leftA ++ [survivingCell, survivingCell]) (mid' ++ pairB) rightB,
+          ← listAppendAssoc (leftA ++ [survivingCell, survivingCell]) mid' pairB]
+    rw [hsrc]
+    rcases hPairB with hB | hB
+    · subst hB
+      exact OmegacEWord.RewritesMany.single
+        (absorptionRewriteOneStep_ofDecompositionLeft vanishingCell survivingCell
+          (leftA ++ [survivingCell, survivingCell] ++ mid') rightB)
+    · subst hB
+      exact OmegacEWord.RewritesMany.single
+        (absorptionRewriteOneStep_ofDecompositionRight vanishingCell survivingCell
+          (leftA ++ [survivingCell, survivingCell] ++ mid') rightB)
+  · have hsrc :
+        (⟨(leftA ++ pairA ++ mid') ++ [survivingCell, survivingCell] ++ rightB⟩
+          : OmegacEWord dimension)
+        = ⟨leftA ++ pairA ++ (mid' ++ [survivingCell, survivingCell] ++ rightB)⟩ := by
+      apply congrArg OmegacEWord.mk
+      rw [listAppendAssoc (leftA ++ pairA ++ mid') [survivingCell, survivingCell] rightB,
+          listAppendAssoc (leftA ++ pairA) mid' ([survivingCell, survivingCell] ++ rightB),
+          ← listAppendAssoc mid' [survivingCell, survivingCell] rightB]
+    have htgt :
+        (⟨leftA ++ [survivingCell, survivingCell] ++ (mid' ++ [survivingCell, survivingCell] ++ rightB)⟩
+          : OmegacEWord dimension)
+        = ⟨leftA ++ [survivingCell, survivingCell] ++ mid'
+            ++ [survivingCell, survivingCell] ++ rightB⟩ := by
+      apply congrArg OmegacEWord.mk
+      rw [← listAppendAssoc (leftA ++ [survivingCell, survivingCell])
+            (mid' ++ [survivingCell, survivingCell]) rightB,
+          ← listAppendAssoc (leftA ++ [survivingCell, survivingCell]) mid'
+            [survivingCell, survivingCell]]
+    rw [hsrc, ← htgt]
+    rcases hPairA with hA | hA
+    · subst hA
+      exact OmegacEWord.RewritesMany.single
+        (absorptionRewriteOneStep_ofDecompositionLeft vanishingCell survivingCell
+          leftA (mid' ++ [survivingCell, survivingCell] ++ rightB))
+    · subst hA
+      exact OmegacEWord.RewritesMany.single
+        (absorptionRewriteOneStep_ofDecompositionRight vanishingCell survivingCell
+          leftA (mid' ++ [survivingCell, survivingCell] ++ rightB))
+
 end FX1Poly.OmegacE
