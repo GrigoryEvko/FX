@@ -198,3 +198,21 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.listAppendAssoc
 #assert_no_axioms FX1Poly.OmegacE.rewriteOneStep_decomposition
 #assert_no_axioms FX1Poly.OmegacE.rewriteOneStep_ofDecomposition
+
+-- IDEMPOTENT LOCAL CONFLUENCE + DECIDABILITY (IdempotentConfluence.lean): the capstone — the FIRST non-trivial
+-- FULLY-DECIDED ωcE system. listPrefixSplit (overlap combinatorial core) + joinableWhenLeftShorter (the 3
+-- overlap cases: []/[c] collapse to equal reducts, c::c::mid' is the disjoint commuting case) ⟹
+-- idempotentHasLocalConfluence (trichotomy on redex positions) ⟹ decidableConvertibleModulo_idempotentSystem
+-- (via decidableConvertibleModulo_ofConvergent: local confluence + shipped termination + shipped reducer).
+-- PROPEXT DISCIPLINE: simp (even simp only with clean lemmas) pulls propext — ALL list reasoning is rw-only,
+-- via singleConsAppend/doubleConsAppend (rfl redex-collapsers, also avoiding injection's [].append artifacts)
+-- + listAppendNil + explicit-arg listAppendAssoc. Validates newman + the convergent-presentation decision
+-- end-to-end on a real genuinely-rewriting presentation (the empty system was vacuous).
+#assert_no_axioms FX1Poly.OmegacE.listAppendNil
+#assert_no_axioms FX1Poly.OmegacE.singleConsAppend
+#assert_no_axioms FX1Poly.OmegacE.doubleConsAppend
+#assert_no_axioms FX1Poly.OmegacE.listPrefixSplit
+#assert_no_axioms FX1Poly.OmegacE.joinable_of_wordEq
+#assert_no_axioms FX1Poly.OmegacE.joinableWhenLeftShorter
+#assert_no_axioms FX1Poly.OmegacE.idempotentHasLocalConfluence
+#assert_no_axioms FX1Poly.OmegacE.decidableConvertibleModulo_idempotentSystem
