@@ -46,6 +46,7 @@ import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
 import FX1Poly.Typed.SimplyTypedTypeExprFT
+import FX1Poly.Typed.AbstractionNonDependentUnderSubstLevelFree
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1526,3 +1527,11 @@ gates pin them shut.
 -- induction hypotheses.  This is the domain/codomain reducibility the term FT's λ-introduction arm consumes.
 #assert_no_axioms FX1Poly.Typed.IsSimplyTypedTypeExpr
 #assert_no_axioms FX1Poly.Typed.IsSimplyTypedTypeExpr.reducibleAtAllLevels
+
+-- The simply-typed lambda arm of the LEVEL-FREE term fundamental theorem: the non-dependent specialization
+-- of the dependent `abstractionUnderSubst`, pre-cancelling the codomain weakening
+-- (`subst0 (subst (lift σ) (weaken codomainBase)) arg = subst σ codomainBase`).  The simply-typed term FT
+-- assembles over the level-free layer (not the stratified one): level-free `ReducibleEnv.cons` extends from
+-- a single `IsReducibleMember`, so the lam binder needs no all-levels argument — the stratified universe wall
+-- is structurally absent for a non-dependent codomain.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMember.abstractionNonDependentUnderSubst
