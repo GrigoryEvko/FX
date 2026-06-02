@@ -51,6 +51,7 @@ import FX1Poly.Typed.SimplyTypedTypeExprReducibleLevelFree
 import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
 import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
+import FX1Poly.Typed.SimplyTypedTermInversionLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -1727,6 +1728,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.isStepNormalFormBool_betaRedex_false
 #assert_no_axioms FX1Poly.Typed.isStepNormalFormBool_identityLambda_true
 #assert_no_axioms FX1Poly.Typed.fireRootRedex_betaIdentity_fires
+
+-- SIMPLY-TYPED GENERATION (INVERSION) LEMMAS — the "extract the premises" foundation of subject reduction.
+-- SimplyTypedTermLF has no conv arm, so inversions conclude EQUALITIES: a variable's type IS its lookup, an
+-- application's type IS the function's arrow codomain, a lambda's type IS a Π-code over a weakened codomain.
+-- Proven by the cell-index inversion recipe (generalize subject + thread Eq + headGenerator/noConfusion +
+-- injection past the mkGen/childCons index-eqs).  SR-β consumes inversionApplication then inversionLambda.
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.inversionVariable
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.inversionApplication
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.inversionLambda
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
