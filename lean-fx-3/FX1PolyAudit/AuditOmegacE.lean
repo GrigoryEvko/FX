@@ -19,6 +19,7 @@ import FX1Poly.OmegacE.AbsorptionReducer
 import FX1Poly.OmegacE.SortingSystem
 import FX1Poly.OmegacE.SortingTermination
 import FX1Poly.OmegacE.SortingConfluence
+import FX1Poly.OmegacE.SortingReducer
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -464,3 +465,18 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.sortingJoinableWhenLeftShorter
 #assert_no_axioms FX1Poly.OmegacE.sortingHasLocalConfluence
 #assert_no_axioms FX1Poly.OmegacE.sortingHasConfluence
+
+-- SORTING REDUCER + DECIDABILITY (SortingReducer.lean): SN-120 CAPSTONE. The bounded-search reducer mirrors the
+-- transposition reducer but the scanner's firing test is the DECIDABLE ORDER GUARD slotValue second < slotValue
+-- first (Nat.decLt), not a fixed-pair cell equality. soundness fires sortingSwapRule_fires under context;
+-- completeness destructures the guarded existential membership. decidableConvertibleModulo_sortingSystem =
+-- decidableConvertibleModulo_ofConvergent (sortingHasLocalConfluence + sortingSystem_isTerminating + reducer) needs
+-- NO distinctness (the guard is in membership). Third fully-decided OmegacE system, the symmetric-group word problem.
+-- Zero-axiom (nomatch/Bool.noConfusion, dsimp+if_pos, option_isSome_map reused; no list-append simp).
+#assert_no_axioms FX1Poly.OmegacE.sortingReduceCells_fires
+#assert_no_axioms FX1Poly.OmegacE.sortingReduceCells_isSome_append_right
+#assert_no_axioms FX1Poly.OmegacE.sortingReduceCells_isSome_append_left
+#assert_no_axioms FX1Poly.OmegacE.sortingReduceCells_sound
+#assert_no_axioms FX1Poly.OmegacE.sortingRewrite_implies_reduceCells_isSome
+#assert_no_axioms FX1Poly.OmegacE.sortingWordReducer
+#assert_no_axioms FX1Poly.OmegacE.decidableConvertibleModulo_sortingSystem
