@@ -42,6 +42,7 @@ import FX1Poly.Core.ReducibleMemberNeutral
 import FX1Poly.Core.ReducibleTypeWellFormed
 import FX1Poly.Core.StratifiedReducibleType
 import FX1Poly.Core.StratifiedReducibleTypeRename
+import FX1Poly.Core.KripkeCandidateRenameClosure
 import FX1Poly.Core.StratifiedReducibleTypeForwardClosure
 import FX1Poly.Core.StratifiedReducibleTypeCandidate
 import FX1Poly.Core.StratifiedReducibleTypeNeutral
@@ -291,3 +292,9 @@ per-decl list.  It also re-checks the native infra under
 -- and the identity beta-redex: the corpus's first non-normal-form (head-expansion) betaEta witness.
 #assert_no_axioms FX1Poly.Core.noStep_lamVar0
 #assert_no_axioms FX1Poly.Core.smoke_identityRedex_isStronglyNormalizingBetaEta
+
+-- SN-043 Kripke-refactor seed: Kripke-indexed candidates make arrow rename-closure DEFINITIONAL,
+-- dissolving the non-Kripke SN-040 piType obstruction.  Non-dependent proof of concept (presheaf
+-- functoriality + the headline arrow rename-closure), not yet wired into ReducibleTypeStep.
+#assert_no_axioms FX1Poly.Core.transport_transport_pointwise
+#assert_no_axioms FX1Poly.Core.kripkeArrow_transport_pointwise
