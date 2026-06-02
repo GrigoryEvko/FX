@@ -93,6 +93,7 @@ import FX1Poly.Typed.FundamentalAtAllVectorPremises
 import FX1Poly.Typed.FundamentalAtAllNonDependentBinders
 import FX1Poly.Typed.FundamentalAtUniformVectorPremises
 import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
+import FX1Poly.Typed.HasTypeDescFundamentalAtAllFromGenFormation
 import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -1203,6 +1204,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedClassifierSubstStronglyNormalizingFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectStronglyNormalizingFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedClassifierStronglyNormalizingFromFormation
+
+-- ALL-LEVEL FORMATION FT, var/conv/universeFormation discharged, genFormation factored (#496 progress).
+-- The downstream SN chain (the FromFormation block above) is conditional on the formation engine HasTypeDesc
+-- satisfying the FT.  This peels the three NON-former formation arms off that obligation: over the all-level
+-- environment, var is off-by-one-free (fundamentalVarAtAll), conv/universeFormation dispatch to their AtAll
+-- arms; the genFormation former arm (whose telescope binder obligation = the recursive
+-- codomain-under-argument premise) is the sole explicit hypothesis.  Reduces the formation FT to the
+-- genFormation former arm alone — the formation-engine analog of fundamentalVectorFromFormation.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.fundamentalAtAllFromGenFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
