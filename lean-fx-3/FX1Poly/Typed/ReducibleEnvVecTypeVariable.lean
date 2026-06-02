@@ -1,6 +1,7 @@
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.HasTypeSubstitution
 import FX1Poly.Core.StratifiedReducibleUniverseDecode
+import FX1Poly.Core.StratifiedReducibleMemberNeutral
 
 /-! # FX1Poly/Typed/ReducibleEnvVecTypeVariable
     — the TYPE fundamental-theorem's `var` arm: a type variable is a reducible type one tower-rung down
@@ -48,5 +49,28 @@ theorem ReducibleEnvVec.typeVariableReducible {profile : PolyProfile} {scope tar
   have member := envReducible.lookupReducible index
   rw [lookupIsUniverse, subst_universeCodeCell, levelIsSucc] at member
   exact member.tarskiDecode
+
+/-- **A syntactic TYPE variable is an all-level reducible member of its universe.**  A variable `var index`
+whose type is the universe code `Type@levelExpr` is a reducible member of that universe at EVERY positive level
+`predLevel + 1` — because the universe code is a reducible TYPE at every level (`IsReducibleTypeAt.universeCode`,
+level-polymorphic), and a variable inhabits any reducible type (`IsReducibleMemberAt.variable`).
+
+This is the SYNTACTIC fact (no closing substitution) behind why a type variable could in principle serve as a
+former DOMAIN: a Π/Σ former needs its domain reducible at TWO consecutive fuel levels (`predLevel + 1` and
+`predLevel + 2`, per `IsReducibleMemberAt.piFormerOfChildMemberships`), and a type variable supplies BOTH (it is
+all-level).  The current per-variable-level environment (`ReducibleEnvVec`) pins each variable to its ONE env
+level `levels index`, so it does NOT expose this all-level membership under a closing substitution — that is the
+documented all-level-vs-per-level environment crux the dependent former arm runs into.  This lemma records that
+the obstruction is purely the ENVIRONMENT design (a type variable is intrinsically level-polymorphic), not an
+intrinsic single-level limitation of variables: an all-level environment for type-variable entries would
+discharge the dependent former DOMAIN directly through this membership. -/
+theorem typeVariableAllLevelMember {scope : Nat} (index : Fin (scope + 1))
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    ∀ predLevel : Nat,
+      IsReducibleMemberAt (predLevel + 1)
+        (universeCodeCell levelExpr flag : RawTerm (scope + 1)) (variableCell index) := by
+  intro predLevel
+  obtain ⟨_candidate, reducible⟩ := IsReducibleTypeAt.universeCode (predLevel + 1) levelExpr flag
+  exact IsReducibleMemberAt.variable reducible index
 
 end FX1Poly.Typed

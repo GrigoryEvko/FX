@@ -1426,6 +1426,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.cons
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.typeVariableReducible
+-- typeVariableAllLevelMember: a SYNTACTIC type variable (type = universe code) is a reducible member of its
+-- universe at EVERY positive level (universe codes are level-poly types; vars inhabit any reducible type).
+-- Records that the dependent-former DOMAIN obstruction is the per-variable-level ENV pinning, not an intrinsic
+-- single-level limitation of variables — an all-level env for type-variable entries would discharge it.
+#assert_no_axioms FX1Poly.Typed.typeVariableAllLevelMember
 
 /-! ### SEMANTIC TYPING RULES UNDER A CLOSING SUBSTITUTION (the fundamental theorem's arm bodies).
     The Girard-Tait fundamental theorem over `HasTypeDescPi` is a thin induction whose arms dispatch to
