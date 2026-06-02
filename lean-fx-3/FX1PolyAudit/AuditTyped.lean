@@ -54,6 +54,7 @@ import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.ExistsStepOfNotNormal
+import FX1Poly.Core.WeakNormalization
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1629,3 +1630,9 @@ gates pin them shut.
 -- The step-extraction the `Acc StepSuccessor` weak-normalization descent calls at every non-normal node.
 #assert_no_axioms FX1Poly.Core.exists_step_of_not_isStepNormalForm
 #assert_no_axioms FX1Poly.Core.exists_stepChildren_of_not_areStepNormalForms
+
+-- WEAK NORMALIZATION: a strongly-normalizing term reaches a structural normal form, with the reduction
+-- chain produced by descending the `Acc StepSuccessor` witness and extracting a real Step at every
+-- non-normal node.  The StepStar-existence half of normalization (uniqueness comes from confluence) —
+-- the strongly-normalizing-fragment door to decidable Conv (#267) and the WHNF migration (#374).
+#assert_no_axioms FX1Poly.Core.exists_normalForm_of_isStronglyNormalizing
