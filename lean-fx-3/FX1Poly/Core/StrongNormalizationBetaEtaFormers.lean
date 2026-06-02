@@ -360,4 +360,44 @@ theorem smoke_polyFunctor_isStronglyNormalizingBetaEta {scope : Nat} :
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
+/-! ## Identity beta-redex — the non-normal-form entry point (completes the SN-044 corpus under betaEta) -/
+
+/-- **The identity lambda is `Step`-normal.**  `lam (var 0)` has no `beta` / `iota` redex (its root is a
+lambda, not an application or eliminator) and its single child `var 0` is `Step`-normal (`noStep_var`), so
+the only surviving `cong` carries an impossible child step. -/
+theorem noStep_lamVar0 {scope : Nat} {targetTerm : RawTerm scope}
+    (step : Step
+      (.mkGen .gen_lam ()
+        (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil) .childNil)) targetTerm) :
+    False := by
+  cases step with
+  | cong _generator _payload childrenStep =>
+    exact noStepChildren_oneNormalChild
+      (fun _ stepFromVar => noStep_var ⟨0, Nat.succ_pos scope⟩ stepFromVar) childrenStep
+
+/-- **Smoke: the identity beta-redex `(lam (var 0)) unit` is beta-eta strongly normalizing.**  Unlike the
+leaf and former witnesses this is NOT beta-eta normal — it carries a redex — so this is the corpus's first
+head-expansion case: its sole beta-eta reduct is the contractum `unit` (beta-eta SN by
+`unit_isStronglyNormalizingBetaEta`), the `cong` congruences are impossible (both children
+`lam (var 0)` / `unit` are `Step`-normal), and no `Step.eta` fires (an application is not an eta redex
+shape).  Completes the SN-044 entry-point corpus (variable / unit / identity redex) under the eta
+extension. -/
+theorem smoke_identityRedex_isStronglyNormalizingBetaEta {scope : Nat} :
+    Step.betaEtaStar.IsStronglyNormalizing
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil) .childNil))
+          (.childCons (.mkGen .gen_unit () .childNil) .childNil)) : RawTerm scope) := by
+  apply Acc.intro
+  intro _reduct edge
+  cases edge with
+  | inl stepEdge =>
+    cases stepEdge with
+    | beta => exact unit_isStronglyNormalizingBetaEta
+    | cong _generator _payload childrenStep =>
+      exact (noStepChildren_twoNormalChildren
+        (fun _ stepFromLam => noStep_lamVar0 stepFromLam) (fun _ => noStep_unit) childrenStep).elim
+  | inr etaEdge => cases etaEdge
+
 end FX1Poly.Core

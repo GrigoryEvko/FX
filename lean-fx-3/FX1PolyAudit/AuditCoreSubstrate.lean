@@ -288,3 +288,6 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.smoke_piTyCode_isStronglyNormalizingBetaEta
 #assert_no_axioms FX1Poly.Core.smoke_sigmaTyCode_isStronglyNormalizingBetaEta
 #assert_no_axioms FX1Poly.Core.smoke_polyFunctor_isStronglyNormalizingBetaEta
+-- and the identity beta-redex: the corpus's first non-normal-form (head-expansion) betaEta witness.
+#assert_no_axioms FX1Poly.Core.noStep_lamVar0
+#assert_no_axioms FX1Poly.Core.smoke_identityRedex_isStronglyNormalizingBetaEta
