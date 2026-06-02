@@ -54,6 +54,7 @@ import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Typed.SimplyTypedTermInversionLevelFree
 import FX1Poly.Typed.SimplyTypedTypeExprClosureLevelFree
 import FX1Poly.Typed.SimplyTypedTermRenameLevelFree
+import FX1Poly.Typed.SimplyTypedTermSubstLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -1753,6 +1754,13 @@ gates pin them shut.
 -- weakenUnderBinding is the one-fresh-binder corollary the substitution lemma's binder-lift consumes.
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.weakenUnderBinding
+
+-- SIMPLY-TYPED SUBSTITUTION PRESERVATION — the SR arc's β-engine.  SimplyTypedTermLF survives any well-typed
+-- substitution; the lam arm transports IsReducibleTypeExprLF premises via .subst and lifts the body IH with
+-- the 0/succ split (var at 0, weakenUnderBinding at k+1).  substituteUnderBinding is the subst0 corollary
+-- β-reduction cites: (λ.body) arg ↝ body[arg] preserves type.
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.substituteUnderBinding
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
