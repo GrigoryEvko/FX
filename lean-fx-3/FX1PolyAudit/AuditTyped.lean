@@ -130,6 +130,7 @@ import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsNonDependentArrow
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsNonDependentArrow
 import FX1Poly.Typed.RouteAObstruction
 import FX1Poly.Typed.ClassifierLevelDiagnosis
+import FX1Poly.Typed.ClassifierLevelMeasure
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1588,6 +1589,15 @@ gates pin them shut.
 -- alignment matching the shipped tarskiDecode discipline by definitional equality.  Setup verdict: GO;
 -- the make-or-break universe-DOMAIN Π-formation case is deferred to SN-004.
 #assert_no_axioms FX1Poly.Typed.universeCode_reducibleMemberAtClassifierLevel
+
+-- SN-003: the predicative well-founded MEASURE for classifier-level reducibility.  `denote_lt_lsucc` is the
+-- strict decrease at the universe-decode step; the `lmax` bounds are the non-increasing former-component
+-- descents; `variableCell_reducibleTypeAtZero` is the non-degenerate base (neutral types inhabit level 0,
+-- unlike the SN-001 universe-code vacuity).
+#assert_no_axioms FX1Poly.Typed.denote_lt_lsucc
+#assert_no_axioms FX1Poly.Typed.denote_le_lmax_left
+#assert_no_axioms FX1Poly.Typed.denote_le_lmax_right
+#assert_no_axioms FX1Poly.Typed.variableCell_reducibleTypeAtZero
 
 -- Member-side leaf (dual of the type leaves): membership in a neutral / data-former classifier is
 -- `IsStronglyNormalizing` (level-independent), so a one-level member extends to all positive levels — the
