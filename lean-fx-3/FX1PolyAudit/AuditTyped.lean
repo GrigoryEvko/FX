@@ -54,6 +54,7 @@ import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.FireRootRedex
+import FX1Poly.Core.FireRootRedexComplete
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
@@ -1635,6 +1636,13 @@ gates pin them shut.
 -- Propext-clean over the 194-ctor table via DecidableEq dite-chains + ▸-casts + full spine destructure.
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex_sound
+
+-- COMPLETENESS of root-redex firing: fireRootRedex fires on EXACTLY the redexes hasRootStepSource detects
+-- (the 11-generator dite-chains agree, via the RedexExtraction source-inversions + rfl firings).  The
+-- contrapositive `fireRootRedex = none → hasRootStepSource = false` is the root half of structural normality
+-- that reduceOnce completeness consumes.
+#assert_no_axioms FX1Poly.Core.RawTerm.hasRootStepSource_imp_fireRootRedex_isSome
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex_eq_none_imp_hasRootStepSource_false
 
 -- One deterministic reduction step as a TOTAL FUNCTION + soundness: `reduceOnce` fires a root redex
 -- (fireRootRedex) or descends the child spine to the first reducible child; `reduceOnce_sound` /
