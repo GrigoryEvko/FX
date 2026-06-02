@@ -1357,6 +1357,13 @@ gates pin them shut.
 -- closed identity λx.x lands SN through piIntro; validTyping_{pi,sigma}BetweenUniverses… show closed Π/Σ codes land
 -- SN through the former arms. REMAINING for full SN: the GENERIC genFormation arm (table-driven former over an
 -- arbitrary telescope, of which Π/Σ are instances) + the HasTypeDescPi→ValidTyping leveling bridge.
+-- SN-007 VERIFIED 2026-06-02 (no rebuild): ValidTyping IS the per-binder-leveled validity context — its index is
+-- the ABSTRACT (Fin scope → Nat) contextLevels + Nat subjectLevel (depth/fuel levels, NOT denote(LevelExpr)); all
+-- seven claimed arms (var/universeFormation/conv/piIntro/piElim/piFormation/sigmaFormation) are present; the var arm
+-- produces subjectLevel := contextLevels index by construction (the off-by-one dodge, SN-024); fundamental is PROVED
+-- (clean ValidTyping.rec induction) + gated below; it is the consumer the SN-022 bridge composes with. No
+-- classifier-universe-level (denote-keyed) variant is built: SN-004 is GO but the fuel-level bridge (SN-022) is not
+-- yet shown insufficient, so a variant would be premature duplication (task discipline: do NOT duplicate ValidTyping).
 #assert_no_axioms FX1Poly.Typed.ValidTyping
 #assert_no_axioms FX1Poly.Typed.ValidTyping.fundamental
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
