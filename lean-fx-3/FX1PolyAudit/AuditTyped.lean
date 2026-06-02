@@ -95,6 +95,7 @@ import FX1Poly.Typed.FundamentalAtUniformVectorPremises
 import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
 import FX1Poly.Typed.HasTypeDescFundamentalAtAllFromGenFormation
 import FX1Poly.Typed.FundamentalLevelIndexed
+import FX1Poly.Typed.ClosedLevelIndexed
 import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -1243,6 +1244,14 @@ gates pin them shut.
 -- of fundamentalVectorFromFormation's genFormationPi arm — the FORMER half of the recursor assembly. Remaining:
 -- the motive threading subjectLevel/contextLevels + the telescope motive_2 producing telescopeFundamental.
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationFormerLevelIndexed
+-- CLOSED-TERM HANDOFF (#497/#498): at the empty context the per-variable-level env is vacuous
+-- (ReducibleEnvVec.empty), so a level-indexed fundamental conclusion specializes to closed reducibility
+-- under any closing substitution, and via CR1 (positive level) + the empty-renaming SN reflection to closed
+-- strong normalization. Conditional on the level-indexed fundamental conclusion for the closed term (an
+-- explicit argument, as the committed *FromFormation handoffs are conditional on the formation premise);
+-- unconditional once the HasTypeDescPi.rec level-indexed assembly supplies that conclusion.
+#assert_no_axioms FX1Poly.Typed.closedSubjectReducibleFromLevelIndexed
+#assert_no_axioms FX1Poly.Typed.closedSubjectStronglyNormalizingFromLevelIndexed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
