@@ -138,6 +138,36 @@ genFormationPi from the children's own fundamentals (recursively bridge children
 
 STILL REJECTED. Carrying the bare `DescTelescopePi` premise and deriving `telescopeFundamental` INSIDE the arm
 — CIRCULAR: it needs the unconditional `HasTypeDescPi` fundamental, the very thing still under assembly.
+
+## SN-027 residual crux PRECISELY LOCATED (the dependent-former term-variable binder wall) — pinned 2026-06-02
+
+A deep trace of the shipped fundamental-theorem machinery relocates SN-027's residual obstruction away from the
+"ValidTyping total-bridge induction" framing. The unconditional close is NOT a recursor-wiring job; it is ONE
+genuine mathematical obstruction, and the conditional reductions around it are all shipped:
+
+* `HasTypeDescPi.fundamentalVectorFromFormation` does the FULL `HasTypeDescPi.rec` assembly; its only open
+  premise is the formation-engine VECTOR conclusion, which is provably too strong for `var` (the vector
+  conclusion demands an arbitrary level, the environment pins the variable at its stored level). Dead for the
+  unconditional theorem.
+* `HasTypeDesc.fundamentalAtAllFromGenFormation` discharges `var` / `conv` / `universeFormation` UNCONDITIONALLY
+  over the all-level environment (`ReducibleEnvAtAllLevels` makes `var` off-by-one-free), reducing the whole
+  formation-engine fundamental theorem to the SINGLE `genFormation` former arm.
+* That lone former arm is the wall: for `Π A. B` the codomain `B` is typed under a TERM-variable binding
+  (`var 0 : A`), so reading `B` reducible needs the all-level environment extended by the domain argument at
+  EVERY level. But `ReducibleEnvAtAllLevels.cons` requires the fresh head reducible at all levels — its only
+  variable conses are `consTypeVariable` / `consVariableOfAllLevelType`, where the bound variable is itself a
+  TYPE (all-level via `universeCode`). A term member of `A` lives at `A`'s single level. The candidate-carrying
+  `ReducibleEnvAtAllLevelsWithTypeValueCandidates.cons` STILL requires an all-positive-levels head; the uniform
+  vector also fails (it forces equal levels, but a former's domain and codomain levels differ).
+
+RESOLUTION DIRECTION. The genuine endgame is the STRENGTHENED fundamental theorem whose TERM conclusion is itself
+all-levels-member (`FundamentalValidityWithTypeValueCandidates`), so domain arguments come OUT all-levels and
+satisfy the environment-cons all-levels-head requirement — the interface
+`HasTypeDescPiTypeValueCandidateFundamentalTheorem`. Its leaf and binder arms are extensively shipped (the
+`fundamental…ValidityWithTypeValueCandidates…` family), but each carries the residual closure condition
+(`…OfAllReducibleTypesHaveTypeValueCandidates` / `…OfPositiveMemberExtension`), so the strengthened mutual
+theorem bottoms out at discharging THAT closure property. This is a large dedicated construction, not a
+micro-step; until it lands, the conditional chain above is SN-027's sound, gated deliverable.
 -/
 
 end FX1Poly.Typed
