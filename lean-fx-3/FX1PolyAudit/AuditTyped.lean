@@ -1473,6 +1473,16 @@ gates pin them shut.
 -- subjectLevel-instance of the all-level reclassifier IH. Supersedes the pre-aligned validTypingBridgeConv
 -- (SN-022). Type variables (var-pinned) are the sole non-level-flexible type code → reducibility route (SN-025).
 #assert_no_axioms FX1Poly.Typed.validTypingBridgeConvFromAllLevelReclassifier
+-- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
+-- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
+-- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
+-- already discharges it given function+argument at a common level, so piElim needs NO further per-arm lemma; the
+-- residual is purely the induction's LEVEL-ALIGNMENT of function vs argument. That alignment is clean for
+-- universe-code-classified members (type codes: membership in Type@e is L-independent in its decoded-at-denote-e
+-- part) but case-dependent for Π-classified function TERMS (Π-membership depends on the level). So the remaining
+-- SN-027 work is the single ASSEMBLY theorem: the HasTypeDescPi induction threading contextLevels with the refined
+-- motive (∀-level type-code subjects, single-level terms) + the member-level alignment for piElim + the
+-- ofFormation/HasTypeDesc inversion — all per-arm ingredients (conv, type-code flexibility, piElim block) now in hand.
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_identity_stronglyNormalizing
