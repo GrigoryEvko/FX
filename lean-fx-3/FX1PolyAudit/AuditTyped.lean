@@ -1483,6 +1483,15 @@ gates pin them shut.
 -- SN-027 work is the single ASSEMBLY theorem: the HasTypeDescPi induction threading contextLevels with the refined
 -- motive (∀-level type-code subjects, single-level terms) + the member-level alignment for piElim + the
 -- ofFormation/HasTypeDesc inversion — all per-arm ingredients (conv, type-code flexibility, piElim block) now in hand.
+-- SN-027 update (infra located, prior pessimism CORRECTED): the term arms' member-level alignment is NOT
+-- blocked on missing math — the reducibility layer already has a rich, gated IsReducibleMemberAtAllPositiveLevels
+-- framework (.atLevel / .headExpand / .universeCode_iff / .ofUniverseMember{NonPiNonUniverse,UniverseCode,
+-- PiNeutralDomain}Argument / .ofNeutralClassifier / .piTypeMemberExtension / .castAlongConvOfAllLevels +
+-- IsReducibleMemberAt.extendsToAllPositiveAtUniverseCodeOfLowerTypeExtendsToAllLevels). ValidTyping itself has NO
+-- syntactic level subsumption (var pins its level), so the assembly routes the TERM arms (piElim/piIntro) through
+-- this all-levels MEMBER machinery (reducibility layer) rather than through syntactic ValidTyping re-leveling.
+-- NET: the unconditional assembly is tractable WIRING (refined-motive HasTypeDescPi induction over existing infra),
+-- not infra-blocked — the focused remaining work of SN-027.
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_identity_stronglyNormalizing
