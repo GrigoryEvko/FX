@@ -12,12 +12,16 @@ check fires, the cell genuinely takes a `Step`, and the proof PRODUCES the reduc
 This is the missing ingredient for WEAK NORMALIZATION from strong normalization (the `Acc StepSuccessor`
 descent must, at a non-normal term, extract an actual reduct to recurse on), which in turn feeds decidable
 conversion on the strongly-normalizing fragment (#267) and the WHNF migration (#374).  The grind is one brick
-per root-redex shape; this file ships the FUNCTION (beta) and PRODUCT (fst/snd) redexes.  The inductive-
-eliminator iotas (boolElim / natElim / natRec / listElim / optionMatch / eitherMatch / idJ / idStrictRec) have
-constructor-shaped scrutinees and are deferred to subsequent bricks.
+per root-redex shape; this file ships the FUNCTION (beta), PRODUCT (fst/snd), BOOLEAN (boolElim), and NATURAL
+(natElim / natRec) redexes.  The remaining inductive-eliminator iotas (listElim / optionMatch / eitherMatch /
+idJ / idStrictRec) have the same shape and are deferred to subsequent bricks.
 
 Each brick has two parts: a shallow shape inversion (`isXxxSource t = true → t` has the constructor shape) and
-the extraction proper (destructure the spine, invert the source, apply the matching `Step` constructor).
+the extraction proper (destructure the spine, invert the source, apply the matching `Step` constructor).  For
+the two-constructor eliminators (the scrutinee is one of two constructors) the boolean root check is a
+disjunction `isXxxSource scrutinee || isYyySource scrutinee`; the case split is done by `cases h :
+isXxxSource scrutinee` (NOT `rw [Bool.or_eq_true]`, which leaks `propext` through the iff-rewrite), with the
+false branch collapsing `false || b ≡ b` by definitional reduction.
 
 ## Zero-axiom verification
 
@@ -102,5 +106,125 @@ theorem hasPairProjectionIotaRoot_exists_step_snd {scope : Nat}
       obtain ⟨firstValue, secondValue, pairShape⟩ := isPairSource_eq_pair iotaRoot
       subst pairShape
       exact ⟨secondValue, Step.iotaSndPair⟩
+
+/-- A `gen_boolTrue`-rooted term is the `boolTrue` cell. -/
+theorem isBoolTrueSource_eq_boolTrue {scope : Nat} {scrutinee : RawTerm scope}
+    (sourceIsBoolTrue : RawTerm.isBoolTrueSource scrutinee = true) :
+    scrutinee = .mkGen .gen_boolTrue () .childNil := by
+  match scrutinee with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isBoolTrueSource] at sourceIsBoolTrue
+      by_cases generatorIsBoolTrue : generator = .gen_boolTrue
+      · subst generatorIsBoolTrue
+        match children with
+        | .childNil => rfl
+      · rw [if_neg generatorIsBoolTrue] at sourceIsBoolTrue
+        exact absurd sourceIsBoolTrue (by decide)
+
+/-- A `gen_boolFalse`-rooted term is the `boolFalse` cell. -/
+theorem isBoolFalseSource_eq_boolFalse {scope : Nat} {scrutinee : RawTerm scope}
+    (sourceIsBoolFalse : RawTerm.isBoolFalseSource scrutinee = true) :
+    scrutinee = .mkGen .gen_boolFalse () .childNil := by
+  match scrutinee with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isBoolFalseSource] at sourceIsBoolFalse
+      by_cases generatorIsBoolFalse : generator = .gen_boolFalse
+      · subst generatorIsBoolFalse
+        match children with
+        | .childNil => rfl
+      · rw [if_neg generatorIsBoolFalse] at sourceIsBoolFalse
+        exact absurd sourceIsBoolFalse (by decide)
+
+/-- **boolElim iota redex extraction.**  If the scrutinee child of a `gen_boolElim` cell is `boolTrue` or
+`boolFalse` (`hasBoolElimIotaRoot`), the eliminator takes a `Step` (the selected branch).  The disjunctive
+root check is split by `cases` on the boolean (propext-free), the false branch collapsing `false || b`. -/
+theorem hasBoolElimIotaRoot_exists_step {scope : Nat}
+    (children : RawTermChildren [0, 0, 0] scope)
+    (iotaRoot : RawTermChildren.hasBoolElimIotaRoot children = true) :
+    ∃ target : RawTerm scope, Step (.mkGen .gen_boolElim () children) target := by
+  match children with
+  | .childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)) =>
+      replace iotaRoot :
+          (RawTerm.isBoolTrueSource scrutinee || RawTerm.isBoolFalseSource scrutinee) = true := iotaRoot
+      cases trueValue : RawTerm.isBoolTrueSource scrutinee with
+      | true =>
+          rw [isBoolTrueSource_eq_boolTrue trueValue]
+          exact ⟨thenBranch, Step.iotaBoolTrue⟩
+      | false =>
+          rw [trueValue] at iotaRoot
+          replace iotaRoot : RawTerm.isBoolFalseSource scrutinee = true := iotaRoot
+          rw [isBoolFalseSource_eq_boolFalse iotaRoot]
+          exact ⟨elseBranch, Step.iotaBoolFalse⟩
+
+/-- A `gen_natZero`-rooted term is the `natZero` cell. -/
+theorem isNatZeroSource_eq_natZero {scope : Nat} {scrutinee : RawTerm scope}
+    (sourceIsNatZero : RawTerm.isNatZeroSource scrutinee = true) :
+    scrutinee = .mkGen .gen_natZero () .childNil := by
+  match scrutinee with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isNatZeroSource] at sourceIsNatZero
+      by_cases generatorIsNatZero : generator = .gen_natZero
+      · subst generatorIsNatZero
+        match children with
+        | .childNil => rfl
+      · rw [if_neg generatorIsNatZero] at sourceIsNatZero
+        exact absurd sourceIsNatZero (by decide)
+
+/-- A `gen_natSucc`-rooted term is a `natSucc` cell over its predecessor. -/
+theorem isNatSuccSource_eq_natSucc {scope : Nat} {scrutinee : RawTerm scope}
+    (sourceIsNatSucc : RawTerm.isNatSuccSource scrutinee = true) :
+    ∃ predecessor : RawTerm scope,
+      scrutinee = .mkGen .gen_natSucc () (.childCons predecessor .childNil) := by
+  match scrutinee with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isNatSuccSource] at sourceIsNatSucc
+      by_cases generatorIsNatSucc : generator = .gen_natSucc
+      · subst generatorIsNatSucc
+        match children with
+        | .childCons predecessor .childNil => exact ⟨predecessor, rfl⟩
+      · rw [if_neg generatorIsNatSucc] at sourceIsNatSucc
+        exact absurd sourceIsNatSucc (by decide)
+
+/-- **natElim iota redex extraction.**  A `gen_natElim` over a `natZero`/`natSucc` scrutinee
+(`hasNatElimIotaRoot`) takes a `Step` (zero branch, or the step-case app-chain). -/
+theorem hasNatElimIotaRoot_exists_step_natElim {scope : Nat}
+    (children : RawTermChildren [0, 0, 0] scope)
+    (iotaRoot : RawTermChildren.hasNatElimIotaRoot children = true) :
+    ∃ target : RawTerm scope, Step (.mkGen .gen_natElim () children) target := by
+  match children with
+  | .childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)) =>
+      replace iotaRoot :
+          (RawTerm.isNatZeroSource scrutinee || RawTerm.isNatSuccSource scrutinee) = true := iotaRoot
+      cases zeroValue : RawTerm.isNatZeroSource scrutinee with
+      | true =>
+          rw [isNatZeroSource_eq_natZero zeroValue]
+          exact ⟨zeroBranch, Step.iotaNatElimZero⟩
+      | false =>
+          rw [zeroValue] at iotaRoot
+          replace iotaRoot : RawTerm.isNatSuccSource scrutinee = true := iotaRoot
+          obtain ⟨predecessor, succShape⟩ := isNatSuccSource_eq_natSucc iotaRoot
+          rw [succShape]
+          exact ⟨_, Step.iotaNatElimSucc⟩
+
+/-- **natRec iota redex extraction.**  The `gen_natRec` twin of `…_natElim` (same root check; the v2
+substrate treats `gen_natElim` and `gen_natRec` identically). -/
+theorem hasNatElimIotaRoot_exists_step_natRec {scope : Nat}
+    (children : RawTermChildren [0, 0, 0] scope)
+    (iotaRoot : RawTermChildren.hasNatElimIotaRoot children = true) :
+    ∃ target : RawTerm scope, Step (.mkGen .gen_natRec () children) target := by
+  match children with
+  | .childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)) =>
+      replace iotaRoot :
+          (RawTerm.isNatZeroSource scrutinee || RawTerm.isNatSuccSource scrutinee) = true := iotaRoot
+      cases zeroValue : RawTerm.isNatZeroSource scrutinee with
+      | true =>
+          rw [isNatZeroSource_eq_natZero zeroValue]
+          exact ⟨zeroBranch, Step.iotaNatRecZero⟩
+      | false =>
+          rw [zeroValue] at iotaRoot
+          replace iotaRoot : RawTerm.isNatSuccSource scrutinee = true := iotaRoot
+          obtain ⟨predecessor, succShape⟩ := isNatSuccSource_eq_natSucc iotaRoot
+          rw [succShape]
+          exact ⟨_, Step.iotaNatRecSucc⟩
 
 end FX1Poly.Core

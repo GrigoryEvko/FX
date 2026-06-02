@@ -1588,3 +1588,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.isPairSource_eq_pair
 #assert_no_axioms FX1Poly.Core.hasPairProjectionIotaRoot_exists_step_fst
 #assert_no_axioms FX1Poly.Core.hasPairProjectionIotaRoot_exists_step_snd
+
+-- Redex-extraction bricks: BOOLEAN (boolElim) + NATURAL (natElim/natRec).  The two-constructor eliminators'
+-- disjunctive root check is split propext-free (`cases h : isXxxSource`, NOT `rw [Bool.or_eq_true]`).
+#assert_no_axioms FX1Poly.Core.isBoolTrueSource_eq_boolTrue
+#assert_no_axioms FX1Poly.Core.isBoolFalseSource_eq_boolFalse
+#assert_no_axioms FX1Poly.Core.hasBoolElimIotaRoot_exists_step
+#assert_no_axioms FX1Poly.Core.isNatZeroSource_eq_natZero
+#assert_no_axioms FX1Poly.Core.isNatSuccSource_eq_natSucc
+#assert_no_axioms FX1Poly.Core.hasNatElimIotaRoot_exists_step_natElim
+#assert_no_axioms FX1Poly.Core.hasNatElimIotaRoot_exists_step_natRec
