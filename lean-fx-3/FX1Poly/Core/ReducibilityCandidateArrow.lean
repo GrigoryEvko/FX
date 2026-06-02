@@ -83,6 +83,24 @@ theorem IsNeutral.not_lam {scope : Nat} {body : RawTerm (scope + 1)}
     intro shapeEquation
     exact Generator.noConfusion (congrArg RawTerm.rootGenerator shapeEquation)
 
+/-- A neutral term's head is never the Π-type former.  Every `IsNeutral` arm fixes the root to an
+elimination generator (`gen_var`, `gen_app`, `gen_fst`, …); casing the neutrality witness with the
+subject free sends each arm's `rootGenerator` to that concrete generator, refuted against `gen_piTyCode`
+by `Generator.noConfusion`.  This is the `notPiType` obligation of the first-order simply-typed `leaf`
+constructor, discharged uniformly for the whole neutral family (not just variables). -/
+theorem IsNeutral.rootGenerator_ne_piTyCode {scope : Nat} {term : RawTerm scope}
+    (neutral : IsNeutral term) : term.rootGenerator ≠ Generator.gen_piTyCode := by
+  cases neutral <;>
+    exact fun shapeEquation => Generator.noConfusion shapeEquation
+
+/-- A neutral term's head is never the universe-code former (dual of `rootGenerator_ne_piTyCode`).  This
+is the `notUniverse` obligation of the first-order simply-typed `leaf`, again uniform over the neutral
+family. -/
+theorem IsNeutral.rootGenerator_ne_universeCode {scope : Nat} {term : RawTerm scope}
+    (neutral : IsNeutral term) : term.rootGenerator ≠ Generator.gen_universeCode := by
+  cases neutral <;>
+    exact fun shapeEquation => Generator.noConfusion shapeEquation
+
 /-- The function-space reducibility predicate: `function` is arrow-reducible
 when applying it to any `domainPredicate`-reducible argument yields a
 `codomainPredicate`-reducible application. -/

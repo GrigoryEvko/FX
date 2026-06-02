@@ -142,6 +142,28 @@ theorem IsFirstOrderSimplyTyped.ofVariable {scope : Nat} {index : Fin scope} :
     (show Generator.gen_var ≠ Generator.gen_piTyCode by decide)
     (show Generator.gen_var ≠ Generator.gen_universeCode by decide)
 
+/-- **Every neutral type is first-order simply-typed.**  The general leaf principle: a neutral term
+(variable, neutral application `f a`, projection `fst p`, or stuck eliminator `natElim n …`) is
+weak-head-normal (`IsNeutral.noWeakHeadStep`) and rooted at an elimination generator — neither Π nor
+universe (`IsNeutral.rootGenerator_ne_piTyCode` / `…_ne_universeCode`) — so it is an `IsFirstOrderSimplyTyped`
+leaf.  This lifts the fragment's leaf class from bare variables to the full Tait neutral family in one
+constructor; `ofVariable` is the `IsNeutral.var` instance. -/
+theorem IsFirstOrderSimplyTyped.ofNeutral {scope : Nat} {classifier : RawTerm scope}
+    (neutral : IsNeutral classifier) : IsFirstOrderSimplyTyped classifier :=
+  IsFirstOrderSimplyTyped.leaf
+    neutral.noWeakHeadStep
+    neutral.rootGenerator_ne_piTyCode
+    neutral.rootGenerator_ne_universeCode
+
+/-- **A neutral application `f a` is first-order simply-typed** whenever its function head `f` is neutral —
+the canonical NON-variable neutral leaf (a type-family application `F a`).  Instantiates `ofNeutral` at the
+`IsNeutral.app` arm, demonstrating the leaf class genuinely extends past variables and Σ-codes. -/
+theorem IsFirstOrderSimplyTyped.ofNeutralApplication {scope : Nat}
+    {function argument : RawTerm scope} (functionIsNeutral : IsNeutral function) :
+    IsFirstOrderSimplyTyped
+      (.mkGen .gen_app () (.childCons function (.childCons argument .childNil))) :=
+  IsFirstOrderSimplyTyped.ofNeutral (IsNeutral.app functionIsNeutral)
+
 /-- **A Σ-type code is first-order simply-typed.**  A dependent-pair type former is a DATA leaf in the
 reducibility model (`ReducibleTypeStep` has no `sigmaType` arm — Σ is `neutral`-treated), weak-head-normal
 (`WeakHeadStep.not_from_sigmaTyCode`) and `gen_sigmaTyCode`-rooted (neither Π nor universe), hence a leaf. -/
@@ -175,5 +197,20 @@ theorem IsFirstOrderSimplyTyped.variableReducibleAndMemberExtension {scope : Nat
         IsReducibleMemberAt (predLevel + 1) (variableCell index) term →
           IsReducibleMemberAtAllPositiveLevels (variableCell index) term) :=
   IsFirstOrderSimplyTyped.ofVariable.reducibleAndMemberExtension
+
+/-- **End-to-end on a NON-variable neutral type: a neutral application is reducible at all levels and
+member-extending.**  The first-order Tait assembly applied to `ofNeutralApplication` — concretely
+exercising the reducibility machinery on a type-family application `f a` (function head neutral), the
+ground newly covered by `ofNeutral` beyond the bare-variable `variableReducibleAndMemberExtension`. -/
+theorem IsFirstOrderSimplyTyped.neutralApplicationReducibleAndMemberExtension {scope : Nat}
+    {function argument : RawTerm scope} (functionIsNeutral : IsNeutral function) :
+    IsReducibleTypeAtAllLevels
+        (.mkGen .gen_app () (.childCons function (.childCons argument .childNil))) ∧
+      (∀ (term : RawTerm scope) {predLevel : Nat},
+        IsReducibleMemberAt (predLevel + 1)
+            (.mkGen .gen_app () (.childCons function (.childCons argument .childNil))) term →
+          IsReducibleMemberAtAllPositiveLevels
+            (.mkGen .gen_app () (.childCons function (.childCons argument .childNil))) term) :=
+  (IsFirstOrderSimplyTyped.ofNeutralApplication functionIsNeutral).reducibleAndMemberExtension
 
 end FX1Poly.Typed

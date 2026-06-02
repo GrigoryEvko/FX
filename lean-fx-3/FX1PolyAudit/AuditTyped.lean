@@ -1446,3 +1446,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofSigmaTyCode
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.arrowOfVariableDomain
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.variableReducibleAndMemberExtension
+
+-- The general neutral-leaf principle: every neutral type (variable / neutral application / projection /
+-- stuck eliminator) is first-order simply-typed, lifting the leaf class from bare variables to the full
+-- Tait neutral family.  Backed by the Core `IsNeutral.rootGenerator_ne_piTyCode` / `…_ne_universeCode`
+-- root-disequality lemmas (swept by `#audit_namespace FX1Poly.Core`).  The end-to-end corollary exercises
+-- reducibility + member-extension on a NON-variable neutral type (a type-family application `f a`).
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofNeutral
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofNeutralApplication
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.neutralApplicationReducibleAndMemberExtension
