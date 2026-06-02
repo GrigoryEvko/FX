@@ -25,6 +25,36 @@ So `ofReducibleTypeStep` is the inductive backbone of level-irrelevance: a proof
 (`piArm`) completes type-level level-irrelevance for every reducible type, hence the cons-arm universe
 domain, hence the formation fundamental theorem.
 
+## Why the `piArm` is a genuine fixpoint, not a clean lemma (frontier note)
+
+The open `piArm` is dischargeable for a NEUTRAL / data-former domain (`piTypeOfNeutralDomain`: the domain
+candidate is the level-independent `IsStronglyNormalizing`, so no mismatch).  The irreducible case is a
+**universe domain** `Π (x : Type@e). C`, and it is a true fixpoint for a precise, structural reason — the
+fuel model is too weak at its base, and the weakness PROPAGATES up every finite level:
+
+  * `ReducibleTypeAt 0 = ReducibleTypeStep (fun _ _ => False)` (empty lower relation), so universe membership
+    at fuel 0 is the EMPTY candidate (`IsReducibleMemberAt.universeCodeHasNoMemberAtZero` is the committed
+    seed: no term inhabits `Type@e` at fuel 0).
+  * Hence `Π (x : Type@e). C` is VACUOUSLY reducible at fuel 0 (empty domain ⇒ the codomain obligation is
+    over an empty candidate), carrying NO information about `C` on actual members.  So
+    `IsReducibleTypeAt 0 (Π Type@e C) → IsReducibleTypeAt 1 (…)` cannot be proved structurally: the level-0
+    hypothesis is too weak to feed the level-1 codomain obligation.
+  * The vacuity is not confined to level 0: universe membership at level `k` admits every code merely
+    reducible-at-`(k-1)`, so the candidates at successive levels genuinely differ for universe codes, and the
+    `existsCongr` inductive step (`StratifiedReducibleLevelCongr`) cannot bridge the `0 ↔ 1` base at ANY
+    finite fuel.
+  * The `piArm`'s structural IHs give `IsReducibleTypeAtAllLevels` for the domain and for the codomain under
+    domain-candidate arguments — but the universe domain additionally needs the domain MEMBERS' OWN
+    level-irrelevance (`piTypeOfDomainMemberExtension`'s member-extension premise), which is the whole theorem
+    on codes that are NOT structurally smaller than `Π Type@e C`.  Circular ⇒ no clean induction.
+
+CONCLUSION (recorded so this is not re-derived): the universe-domain `piArm` cannot be closed within the
+external-`Nat`-fuel reducibility model.  It requires a NON-FUEL reformulation — reducibility well-founded on
+the type code's structure (the members of `Type@e` are sub-codes), i.e. the Adjedj-style relation indexed by
+the VALIDITY DERIVATION rather than an external fuel, threaded through the mutual term/type fundamental
+theorem.  The entire reduction chain DOWN TO this one obligation is committed and gated; only the model-level
+reformulation remains.
+
 ## Zero-axiom verification
 
 A single `induction` on `ReducibleTypeStep` with a level-independent motive (`IsReducibleTypeAtAllLevels
