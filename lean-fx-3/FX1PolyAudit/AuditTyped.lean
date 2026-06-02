@@ -83,6 +83,7 @@ import FX1Poly.Typed.FundamentalTelescopeConsWhnfDomain
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiDomainMemberExtension
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsPiMemberExtension
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsHeadExpand
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsConv
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1391,3 +1392,10 @@ gates pin them shut.
 -- by the contractum's member-extension, head-expand back).  With `ofNeutralClassifier` this completes the
 -- member-side arm family for the non-Π / non-universe cases — the structurally-recursive part.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.extensionHeadExpand
+
+-- The CONVERSION arm of the member-extension family: member-extension transports across an arbitrary kernel
+-- `Conv` of the classifier (target reducible at all positive levels), via the single-level `castAlongConv` /
+-- `ReducibleTypeAt.convTransfer`.  More flexible than the single-step whnfExpand arm; the conv arm of the
+-- strengthened formation-FT motive.  `castAlongConvOfAllLevels` is the all-levels-target convenience form.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.castAlongConv
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.castAlongConvOfAllLevels
