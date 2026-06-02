@@ -153,6 +153,7 @@ import FX1Poly.Core.SconingWitness
 import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StrongNormalizationRenameForward
 import FX1Poly.Core.StrongNormalizationSmokeCorpus
+import FX1Poly.Core.StrongNormalizationFormerCorpus
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.StepIotaEtaDoubleStrips
@@ -211,3 +212,29 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.smoke_variable_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_unit_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_identityRedex_isStronglyNormalizing
+
+-- SN-081: one closed strong-normalization witness per raw former family, plus two nested
+-- compositional witnesses (closures compose with correct de Bruijn scope threading through the
+-- under-binder slots).  Each exercises one Step.from_<former> congruence injection on a concrete cell.
+#assert_no_axioms FX1Poly.Core.smoke_lam_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_pathLam_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_diffLambda_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_natSucc_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_optionSome_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_eitherInl_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_eitherInr_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_refl_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_modIntro_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_pair_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_listCons_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_glueIntro_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_arrowCode_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_productCode_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_sumCode_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_eitherCode_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_equivCode_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_piTyCode_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_sigmaTyCode_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_polyFunctor_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_nestedLamNatSucc_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_nestedPiSigma_isStronglyNormalizing
