@@ -1598,3 +1598,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.isNatSuccSource_eq_natSucc
 #assert_no_axioms FX1Poly.Core.hasNatElimIotaRoot_exists_step_natElim
 #assert_no_axioms FX1Poly.Core.hasNatElimIotaRoot_exists_step_natRec
+
+-- Redex-extraction bricks completing the per-redex layer: LIST + OPTION + EITHER + IDENTITY eliminators.
+-- listCons is the first BINARY-constructor inversion; eitherMatch has two unary scrutinees; idJ/idStrictRec
+-- have a single (non-disjunctive) isReflSource check on the witness child.  With every root-redex shape
+-- covered, `hasRootStepSource → ∃ step` is now assemblable.
+#assert_no_axioms FX1Poly.Core.isListNilSource_eq_listNil
+#assert_no_axioms FX1Poly.Core.isListConsSource_eq_listCons
+#assert_no_axioms FX1Poly.Core.isOptionNoneSource_eq_optionNone
+#assert_no_axioms FX1Poly.Core.isOptionSomeSource_eq_optionSome
+#assert_no_axioms FX1Poly.Core.isEitherInlSource_eq_eitherInl
+#assert_no_axioms FX1Poly.Core.isEitherInrSource_eq_eitherInr
+#assert_no_axioms FX1Poly.Core.isReflSource_eq_refl
+#assert_no_axioms FX1Poly.Core.hasListElimIotaRoot_exists_step
+#assert_no_axioms FX1Poly.Core.hasOptionMatchIotaRoot_exists_step
+#assert_no_axioms FX1Poly.Core.hasEitherMatchIotaRoot_exists_step
+#assert_no_axioms FX1Poly.Core.hasIdElimIotaRoot_exists_step_idJ
+#assert_no_axioms FX1Poly.Core.hasIdElimIotaRoot_exists_step_idStrictRec

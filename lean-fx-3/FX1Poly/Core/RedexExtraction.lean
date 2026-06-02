@@ -12,9 +12,11 @@ check fires, the cell genuinely takes a `Step`, and the proof PRODUCES the reduc
 This is the missing ingredient for WEAK NORMALIZATION from strong normalization (the `Acc StepSuccessor`
 descent must, at a non-normal term, extract an actual reduct to recurse on), which in turn feeds decidable
 conversion on the strongly-normalizing fragment (#267) and the WHNF migration (#374).  The grind is one brick
-per root-redex shape; this file ships the FUNCTION (beta), PRODUCT (fst/snd), BOOLEAN (boolElim), and NATURAL
-(natElim / natRec) redexes.  The remaining inductive-eliminator iotas (listElim / optionMatch / eitherMatch /
-idJ / idStrictRec) have the same shape and are deferred to subsequent bricks.
+per root-redex shape, and this file now covers ALL of them: FUNCTION (beta), PRODUCT (fst/snd), BOOLEAN
+(boolElim), NATURAL (natElim / natRec), LIST (listElim), OPTION (optionMatch), EITHER (eitherMatch), and
+IDENTITY (idJ / idStrictRec).  With every `hasXxxRoot`-shape covered, the next step is the assembly
+`hasRootStepSource = true → ∃ target, Step source target` (a generator case-split dispatching to these bricks),
+then the mutual `exists_step_of_not_isStepNormalForm` and weak normalization.
 
 Each brick has two parts: a shallow shape inversion (`isXxxSource t = true → t` has the constructor shape) and
 the extraction proper (destructure the spine, invert the source, apply the matching `Step` constructor).  For
@@ -226,5 +228,195 @@ theorem hasNatElimIotaRoot_exists_step_natRec {scope : Nat}
           obtain ⟨predecessor, succShape⟩ := isNatSuccSource_eq_natSucc iotaRoot
           rw [succShape]
           exact ⟨_, Step.iotaNatRecSucc⟩
+
+/-- A `gen_listNil`-rooted term is the `listNil` cell. -/
+theorem isListNilSource_eq_listNil {scope : Nat} {scrutinee : RawTerm scope}
+    (sourceIsListNil : RawTerm.isListNilSource scrutinee = true) :
+    scrutinee = .mkGen .gen_listNil () .childNil := by
+  match scrutinee with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isListNilSource] at sourceIsListNil
+      by_cases generatorIsListNil : generator = .gen_listNil
+      · subst generatorIsListNil
+        match children with
+        | .childNil => rfl
+      · rw [if_neg generatorIsListNil] at sourceIsListNil
+        exact absurd sourceIsListNil (by decide)
+
+/-- A `gen_listCons`-rooted term is a `listCons` cell over its head and tail. -/
+theorem isListConsSource_eq_listCons {scope : Nat} {scrutinee : RawTerm scope}
+    (sourceIsListCons : RawTerm.isListConsSource scrutinee = true) :
+    ∃ headVal tailVal : RawTerm scope,
+      scrutinee = .mkGen .gen_listCons () (.childCons headVal (.childCons tailVal .childNil)) := by
+  match scrutinee with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isListConsSource] at sourceIsListCons
+      by_cases generatorIsListCons : generator = .gen_listCons
+      · subst generatorIsListCons
+        match children with
+        | .childCons headVal (.childCons tailVal .childNil) => exact ⟨headVal, tailVal, rfl⟩
+      · rw [if_neg generatorIsListCons] at sourceIsListCons
+        exact absurd sourceIsListCons (by decide)
+
+/-- A `gen_optionNone`-rooted term is the `optionNone` cell. -/
+theorem isOptionNoneSource_eq_optionNone {scope : Nat} {scrutinee : RawTerm scope}
+    (sourceIsOptionNone : RawTerm.isOptionNoneSource scrutinee = true) :
+    scrutinee = .mkGen .gen_optionNone () .childNil := by
+  match scrutinee with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isOptionNoneSource] at sourceIsOptionNone
+      by_cases generatorIsOptionNone : generator = .gen_optionNone
+      · subst generatorIsOptionNone
+        match children with
+        | .childNil => rfl
+      · rw [if_neg generatorIsOptionNone] at sourceIsOptionNone
+        exact absurd sourceIsOptionNone (by decide)
+
+/-- A `gen_optionSome`-rooted term is an `optionSome` cell over its value. -/
+theorem isOptionSomeSource_eq_optionSome {scope : Nat} {scrutinee : RawTerm scope}
+    (sourceIsOptionSome : RawTerm.isOptionSomeSource scrutinee = true) :
+    ∃ value : RawTerm scope,
+      scrutinee = .mkGen .gen_optionSome () (.childCons value .childNil) := by
+  match scrutinee with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isOptionSomeSource] at sourceIsOptionSome
+      by_cases generatorIsOptionSome : generator = .gen_optionSome
+      · subst generatorIsOptionSome
+        match children with
+        | .childCons value .childNil => exact ⟨value, rfl⟩
+      · rw [if_neg generatorIsOptionSome] at sourceIsOptionSome
+        exact absurd sourceIsOptionSome (by decide)
+
+/-- A `gen_eitherInl`-rooted term is an `eitherInl` cell over its value. -/
+theorem isEitherInlSource_eq_eitherInl {scope : Nat} {scrutinee : RawTerm scope}
+    (sourceIsEitherInl : RawTerm.isEitherInlSource scrutinee = true) :
+    ∃ value : RawTerm scope,
+      scrutinee = .mkGen .gen_eitherInl () (.childCons value .childNil) := by
+  match scrutinee with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isEitherInlSource] at sourceIsEitherInl
+      by_cases generatorIsEitherInl : generator = .gen_eitherInl
+      · subst generatorIsEitherInl
+        match children with
+        | .childCons value .childNil => exact ⟨value, rfl⟩
+      · rw [if_neg generatorIsEitherInl] at sourceIsEitherInl
+        exact absurd sourceIsEitherInl (by decide)
+
+/-- A `gen_eitherInr`-rooted term is an `eitherInr` cell over its value. -/
+theorem isEitherInrSource_eq_eitherInr {scope : Nat} {scrutinee : RawTerm scope}
+    (sourceIsEitherInr : RawTerm.isEitherInrSource scrutinee = true) :
+    ∃ value : RawTerm scope,
+      scrutinee = .mkGen .gen_eitherInr () (.childCons value .childNil) := by
+  match scrutinee with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isEitherInrSource] at sourceIsEitherInr
+      by_cases generatorIsEitherInr : generator = .gen_eitherInr
+      · subst generatorIsEitherInr
+        match children with
+        | .childCons value .childNil => exact ⟨value, rfl⟩
+      · rw [if_neg generatorIsEitherInr] at sourceIsEitherInr
+        exact absurd sourceIsEitherInr (by decide)
+
+/-- A `gen_refl`-rooted term is a `refl` cell over its witness. -/
+theorem isReflSource_eq_refl {scope : Nat} {witness : RawTerm scope}
+    (sourceIsRefl : RawTerm.isReflSource witness = true) :
+    ∃ rawWitness : RawTerm scope,
+      witness = .mkGen .gen_refl () (.childCons rawWitness .childNil) := by
+  match witness with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isReflSource] at sourceIsRefl
+      by_cases generatorIsRefl : generator = .gen_refl
+      · subst generatorIsRefl
+        match children with
+        | .childCons rawWitness .childNil => exact ⟨rawWitness, rfl⟩
+      · rw [if_neg generatorIsRefl] at sourceIsRefl
+        exact absurd sourceIsRefl (by decide)
+
+/-- **listElim iota redex extraction.**  A `gen_listElim` over a `listNil`/`listCons` scrutinee takes a
+`Step` (nil branch, or the step-case app-chain). -/
+theorem hasListElimIotaRoot_exists_step {scope : Nat}
+    (children : RawTermChildren [0, 0, 0] scope)
+    (iotaRoot : RawTermChildren.hasListElimIotaRoot children = true) :
+    ∃ target : RawTerm scope, Step (.mkGen .gen_listElim () children) target := by
+  match children with
+  | .childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)) =>
+      replace iotaRoot :
+          (RawTerm.isListNilSource scrutinee || RawTerm.isListConsSource scrutinee) = true := iotaRoot
+      cases nilValue : RawTerm.isListNilSource scrutinee with
+      | true =>
+          rw [isListNilSource_eq_listNil nilValue]
+          exact ⟨nilBranch, Step.iotaListElimNil⟩
+      | false =>
+          rw [nilValue] at iotaRoot
+          replace iotaRoot : RawTerm.isListConsSource scrutinee = true := iotaRoot
+          obtain ⟨headVal, tailVal, consShape⟩ := isListConsSource_eq_listCons iotaRoot
+          rw [consShape]
+          exact ⟨_, Step.iotaListElimCons⟩
+
+/-- **optionMatch iota redex extraction.** -/
+theorem hasOptionMatchIotaRoot_exists_step {scope : Nat}
+    (children : RawTermChildren [0, 0, 0] scope)
+    (iotaRoot : RawTermChildren.hasOptionMatchIotaRoot children = true) :
+    ∃ target : RawTerm scope, Step (.mkGen .gen_optionMatch () children) target := by
+  match children with
+  | .childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)) =>
+      replace iotaRoot :
+          (RawTerm.isOptionNoneSource scrutinee || RawTerm.isOptionSomeSource scrutinee) = true := iotaRoot
+      cases noneValue : RawTerm.isOptionNoneSource scrutinee with
+      | true =>
+          rw [isOptionNoneSource_eq_optionNone noneValue]
+          exact ⟨noneBranch, Step.iotaOptionMatchNone⟩
+      | false =>
+          rw [noneValue] at iotaRoot
+          replace iotaRoot : RawTerm.isOptionSomeSource scrutinee = true := iotaRoot
+          obtain ⟨value, someShape⟩ := isOptionSomeSource_eq_optionSome iotaRoot
+          rw [someShape]
+          exact ⟨_, Step.iotaOptionMatchSome⟩
+
+/-- **eitherMatch iota redex extraction** (both scrutinee constructors are unary). -/
+theorem hasEitherMatchIotaRoot_exists_step {scope : Nat}
+    (children : RawTermChildren [0, 0, 0] scope)
+    (iotaRoot : RawTermChildren.hasEitherMatchIotaRoot children = true) :
+    ∃ target : RawTerm scope, Step (.mkGen .gen_eitherMatch () children) target := by
+  match children with
+  | .childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)) =>
+      replace iotaRoot :
+          (RawTerm.isEitherInlSource scrutinee || RawTerm.isEitherInrSource scrutinee) = true := iotaRoot
+      cases inlValue : RawTerm.isEitherInlSource scrutinee with
+      | true =>
+          obtain ⟨value, inlShape⟩ := isEitherInlSource_eq_eitherInl inlValue
+          rw [inlShape]
+          exact ⟨_, Step.iotaEitherMatchInl⟩
+      | false =>
+          rw [inlValue] at iotaRoot
+          replace iotaRoot : RawTerm.isEitherInrSource scrutinee = true := iotaRoot
+          obtain ⟨value, inrShape⟩ := isEitherInrSource_eq_eitherInr iotaRoot
+          rw [inrShape]
+          exact ⟨_, Step.iotaEitherMatchInr⟩
+
+/-- **idJ iota redex extraction.**  The identity eliminator's root check is a single `isReflSource` on the
+witness child (no disjunction); a `refl` witness yields the base case. -/
+theorem hasIdElimIotaRoot_exists_step_idJ {scope : Nat}
+    (children : RawTermChildren [0, 0] scope)
+    (iotaRoot : RawTermChildren.hasIdElimIotaRoot children = true) :
+    ∃ target : RawTerm scope, Step (.mkGen .gen_idJ () children) target := by
+  match children with
+  | .childCons baseCase (.childCons witness .childNil) =>
+      replace iotaRoot : RawTerm.isReflSource witness = true := iotaRoot
+      obtain ⟨rawWitness, reflShape⟩ := isReflSource_eq_refl iotaRoot
+      rw [reflShape]
+      exact ⟨baseCase, Step.iotaIdJRefl⟩
+
+/-- **idStrictRec iota redex extraction** (same root check as idJ; `gen_idStrictRec`). -/
+theorem hasIdElimIotaRoot_exists_step_idStrictRec {scope : Nat}
+    (children : RawTermChildren [0, 0] scope)
+    (iotaRoot : RawTermChildren.hasIdElimIotaRoot children = true) :
+    ∃ target : RawTerm scope, Step (.mkGen .gen_idStrictRec () children) target := by
+  match children with
+  | .childCons baseCase (.childCons witness .childNil) =>
+      replace iotaRoot : RawTerm.isReflSource witness = true := iotaRoot
+      obtain ⟨rawWitness, reflShape⟩ := isReflSource_eq_refl iotaRoot
+      rw [reflShape]
+      exact ⟨baseCase, Step.iotaIdStrictRecRefl⟩
 
 end FX1Poly.Core
