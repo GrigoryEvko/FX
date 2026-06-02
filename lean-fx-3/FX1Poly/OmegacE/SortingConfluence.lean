@@ -169,4 +169,151 @@ theorem sortingBraidCriticalPairJoin {dimension : Nat}
       ⟨leftCtx ++ [cellA, cellC, cellB] ++ rightCtx⟩ :=
   (sortingBraidCriticalPairJoinBare slotValue cellA cellB cellC hba hcb).inContext leftCtx rightCtx
 
+/-- **When the left redex is the shorter prefix, the two reducts are joinable.**  Prefix-split the shared source,
+then case on the overlap `mid`:
+* `[]` (same position) — injection gives `biggerA = biggerB`, `smallerA = smallerB`, `rightA = rightB`, so the two
+  reducts are EQUAL (joined trivially via `joinable_of_wordEq`).  Unlike transposition this is never a mismatch.
+* `[m]` (one-cell overlap) — THE BRAID critical pair: injection gives `biggerA = m`, `smallerA = biggerB`,
+  `rightA = smallerB :: rightB`, so the reducts are `⟨leftA ++ [smallerA,biggerA,smallerB] ++ rightB⟩` /
+  `⟨leftA ++ [biggerA,smallerB,smallerA] ++ rightB⟩`, joined by `sortingBraidCriticalPairJoin` (guard `hcb` from
+  `hB` via `smallerA = biggerB`).  This is the genuinely-new content vs transposition's vacuous one-cell case.
+* `m :: m2 :: mid'` (disjoint) — the redexes commute: each reduct fires the other still-present redex, meeting at
+  the doubly-reduced word (structurally identical to the transposition/absorption disjoint case). -/
+theorem sortingJoinableWhenLeftShorter {dimension : Nat}
+    (slotValue : OmegacECell dimension → Nat)
+    (leftA rightA leftB rightB : List (OmegacECell dimension))
+    (biggerA smallerA biggerB smallerB : OmegacECell dimension)
+    (hA : slotValue smallerA < slotValue biggerA)
+    (hB : slotValue smallerB < slotValue biggerB)
+    (hEq : leftA ++ [biggerA, smallerA] ++ rightA = leftB ++ [biggerB, smallerB] ++ rightB)
+    (hLen : leftA.length ≤ leftB.length) :
+    OmegacEWord.Joinable (sortingSystem slotValue)
+      ⟨leftA ++ [smallerA, biggerA] ++ rightA⟩
+      ⟨leftB ++ [smallerB, biggerB] ++ rightB⟩ := by
+  rw [listAppendAssoc, listAppendAssoc] at hEq
+  obtain ⟨mid, hMid, hRest⟩ :=
+    listPrefixSplit leftA leftB ([biggerA, smallerA] ++ rightA)
+      ([biggerB, smallerB] ++ rightB) hEq hLen
+  rw [doubleConsAppend, doubleConsAppend] at hRest
+  cases mid with
+  | nil =>
+      rw [List.nil_append] at hRest
+      injection hRest with hBig hRest1
+      injection hRest1 with hSml hRights
+      subst hBig
+      subst hSml
+      subst hRights
+      subst hMid
+      apply joinable_of_wordEq
+      apply congrArg OmegacEWord.mk
+      rw [listAppendNil]
+  | cons m midTail =>
+      cases midTail with
+      | nil =>
+          rw [List.cons_append, List.nil_append] at hRest
+          injection hRest with hm hRest1
+          injection hRest1 with hSmlEqBigB hRights
+          subst hm
+          subst hRights
+          subst hMid
+          have hcb : slotValue smallerB < slotValue smallerA := by
+            rw [hSmlEqBigB]; exact hB
+          have braid := sortingBraidCriticalPairJoin slotValue leftA rightB biggerA smallerA smallerB hA hcb
+          have hFirst : (⟨leftA ++ [smallerA, biggerA] ++ (smallerB :: rightB)⟩ : OmegacEWord dimension)
+              = ⟨leftA ++ [smallerA, biggerA, smallerB] ++ rightB⟩ := by
+            apply congrArg OmegacEWord.mk
+            rw [listAppendAssoc leftA [smallerA, biggerA] (smallerB :: rightB),
+                listAppendAssoc leftA [smallerA, biggerA, smallerB] rightB]
+            rfl
+          have hSecond : (⟨leftA ++ [biggerA] ++ [smallerB, biggerB] ++ rightB⟩ : OmegacEWord dimension)
+              = ⟨leftA ++ [biggerA, smallerB, smallerA] ++ rightB⟩ := by
+            apply congrArg OmegacEWord.mk
+            rw [hSmlEqBigB, listAppendAssoc (leftA ++ [biggerA]) [smallerB, biggerB] rightB,
+                listAppendAssoc leftA [biggerA] ([smallerB, biggerB] ++ rightB),
+                listAppendAssoc leftA [biggerA, smallerB, biggerB] rightB]
+            rfl
+          rw [hFirst, hSecond]
+          exact braid
+      | cons m2 mid' =>
+          rw [List.cons_append, List.cons_append] at hRest
+          injection hRest with hm1 hRest1
+          injection hRest1 with hm2 hRights
+          subst hm1
+          subst hm2
+          subst hRights
+          subst hMid
+          refine ⟨⟨leftA ++ [smallerA, biggerA] ++ mid' ++ [smallerB, biggerB] ++ rightB⟩, ?_, ?_⟩
+          · have step := sortingRewriteOneStep_ofDecomposition slotValue
+              (leftA ++ [smallerA, biggerA] ++ mid') rightB biggerB smallerB hB
+            have hsrc :
+                (⟨leftA ++ [smallerA, biggerA] ++ (mid' ++ (biggerB :: smallerB :: rightB))⟩
+                  : OmegacEWord dimension)
+                = ⟨leftA ++ [smallerA, biggerA] ++ mid' ++ [biggerB, smallerB] ++ rightB⟩ := by
+              apply congrArg OmegacEWord.mk
+              rw [listAppendAssoc (leftA ++ [smallerA, biggerA] ++ mid') [biggerB, smallerB] rightB,
+                  doubleConsAppend,
+                  listAppendAssoc (leftA ++ [smallerA, biggerA]) mid'
+                    (biggerB :: smallerB :: rightB)]
+            rw [hsrc]
+            exact OmegacEWord.RewritesMany.single step
+          · have step := sortingRewriteOneStep_ofDecomposition slotValue
+              leftA (mid' ++ [smallerB, biggerB] ++ rightB) biggerA smallerA hA
+            have hsrc :
+                (⟨leftA ++ biggerA :: smallerA :: mid' ++ [smallerB, biggerB] ++ rightB⟩
+                  : OmegacEWord dimension)
+                = ⟨leftA ++ [biggerA, smallerA] ++ (mid' ++ [smallerB, biggerB] ++ rightB)⟩ := by
+              apply congrArg OmegacEWord.mk
+              rw [listAppendAssoc leftA [biggerA, smallerA]
+                    (mid' ++ [smallerB, biggerB] ++ rightB),
+                  doubleConsAppend biggerA smallerA
+                    (mid' ++ [smallerB, biggerB] ++ rightB),
+                  listAppendAssoc (leftA ++ (biggerA :: smallerA :: mid')) [smallerB, biggerB]
+                    rightB,
+                  listAppendAssoc leftA (biggerA :: smallerA :: mid')
+                    ([smallerB, biggerB] ++ rightB),
+                  List.cons_append, List.cons_append,
+                  listAppendAssoc mid' [smallerB, biggerB] rightB]
+            have htgt :
+                (⟨leftA ++ [smallerA, biggerA] ++ (mid' ++ [smallerB, biggerB] ++ rightB)⟩
+                  : OmegacEWord dimension)
+                = ⟨leftA ++ [smallerA, biggerA] ++ mid' ++ [smallerB, biggerB] ++ rightB⟩ := by
+              apply congrArg OmegacEWord.mk
+              rw [listAppendAssoc ((leftA ++ [smallerA, biggerA]) ++ mid') [smallerB, biggerB]
+                    rightB,
+                  listAppendAssoc (leftA ++ [smallerA, biggerA]) mid'
+                    ([smallerB, biggerB] ++ rightB),
+                  listAppendAssoc mid' [smallerB, biggerB] rightB]
+            rw [hsrc, ← htgt]
+            exact OmegacEWord.RewritesMany.single step
+
+/-- **The sorting system is locally confluent.**  Decompose both one-step reducts of a common source, then by the
+redex-position comparison apply `sortingJoinableWhenLeftShorter` (or its symmetric). -/
+theorem sortingHasLocalConfluence {dimension : Nat}
+    (slotValue : OmegacECell dimension → Nat) :
+    HasLocalConfluence (sortingSystem slotValue) := by
+  intro sourceWord firstReduct secondReduct step1 step2
+  obtain ⟨leftA, rightA, biggerA, smallerA, hA, hSrcA, hTgtA⟩ :=
+    sortingRewriteOneStep_decomposition slotValue step1
+  obtain ⟨leftB, rightB, biggerB, smallerB, hB, hSrcB, hTgtB⟩ :=
+    sortingRewriteOneStep_decomposition slotValue step2
+  have hEq : leftA ++ [biggerA, smallerA] ++ rightA
+           = leftB ++ [biggerB, smallerB] ++ rightB := hSrcA.symm.trans hSrcB
+  have hFirst : firstReduct = ⟨leftA ++ [smallerA, biggerA] ++ rightA⟩ := by rw [← hTgtA]
+  have hSecond : secondReduct = ⟨leftB ++ [smallerB, biggerB] ++ rightB⟩ := by rw [← hTgtB]
+  rw [hFirst, hSecond]
+  rcases Nat.le_total leftA.length leftB.length with hle | hle
+  · exact sortingJoinableWhenLeftShorter slotValue leftA rightA leftB rightB
+      biggerA smallerA biggerB smallerB hA hB hEq hle
+  · exact (sortingJoinableWhenLeftShorter slotValue leftB rightB leftA rightA
+      biggerB smallerB biggerA smallerA hB hA hEq.symm hle).symm
+
+/-- **The sorting system is CONFLUENT** — the SN-120 confluence headline.  `newman` applied to the local
+confluence here plus the shipped `sortingSystem_isTerminating`: termination + local confluence ⟹ global
+confluence.  The bubble-sort / symmetric-group presentation is convergent; the only remaining SN-120 atom is the
+decidable word problem (the guarded `WordReducer`). -/
+theorem sortingHasConfluence {dimension : Nat}
+    (slotValue : OmegacECell dimension → Nat) :
+    HasConfluence (sortingSystem slotValue) :=
+  newman (sortingHasLocalConfluence slotValue) (sortingSystem_isTerminating slotValue)
+
 end FX1Poly.OmegacE

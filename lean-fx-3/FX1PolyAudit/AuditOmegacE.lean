@@ -453,3 +453,14 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 -- one-cell-overlap (braid) case of local confluence needs. Zero-axiom.
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.Joinable.inContext
 #assert_no_axioms FX1Poly.OmegacE.sortingBraidCriticalPairJoin
+
+-- SORTING LOCAL + GLOBAL CONFLUENCE (SortingConfluence.lean): SN-120 confluence headline. The prefix-split
+-- trichotomy joinableWhenLeftShorter dispatches: nil = equal reducts (NOT a mismatch — both redexes coincide);
+-- single = THE braid critical pair (reuses sortingBraidCriticalPairJoin, the new content vs transposition's vacuous
+-- one-cell case); cons-cons = disjoint commute (mirrors transposition/absorption). hasLocalConfluence decomposes both
+-- reducts + Nat.le_total dispatch; hasConfluence = newman localConfluence + sortingSystem_isTerminating (the guarded
+-- family needs no external a≠b). The braid word-eqs close by listAppendAssoc reassociation + a default-transparency
+-- rfl (the inner concrete-prefix appends are defeq). The sorting/symmetric presentation is now CONVERGENT. Zero-axiom.
+#assert_no_axioms FX1Poly.OmegacE.sortingJoinableWhenLeftShorter
+#assert_no_axioms FX1Poly.OmegacE.sortingHasLocalConfluence
+#assert_no_axioms FX1Poly.OmegacE.sortingHasConfluence
