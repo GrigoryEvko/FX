@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.ReducibleSemanticRules
+import FX1Poly.Core.SubstPreservationProbes
 
 /-! # FX1Poly/Typed/SimplyTypedTermReducibility
     — the term-formation reducibility rules of the simply-typed fragment, made concrete
@@ -37,6 +38,11 @@ in `ReducibleSemanticRules`); the universe/dependent obstruction is absent in th
   * `IsReducibleMemberAt.constantIdentity` — `λx.(λy.y) : A → (B → B)` is a reducible member: a higher-order
     function (ARROW codomain) returning the polymorphic identity, demonstrating `lambdaNeutralDomain` on a
     non-neutral codomain.
+  * `subst0_lamCellVarOne_eq_lamWeaken` — the binder-crossing substitution `subst0 (λy.var 1) arg = λy.weaken
+    arg`, proven fold-`rfl`-free (no `propext`/`Quot.sound`) with a `Nat`-arithmetic `Fin` bound (no `omega`).
+  * `IsReducibleMemberAt.kCombinator` — `λx.λy.x : A → (B → A)` is a reducible member: the hardest concrete
+    term, where the inner body CAPTURES the outer bound variable, exercising variable-capture-avoiding
+    substitution under nested binders.
 
 ## Zero-axiom verification
 
@@ -179,5 +185,52 @@ theorem IsReducibleMemberAt.constantIdentity {scope : Nat} {level : Nat}
       = lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩) from
     RawTerm.weaken_subst_singleton (lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) argument]
   exact IsReducibleMemberAt.polymorphicIdentity
+
+/-- **Substituting into `λy.x` (the captured outer variable) yields the constant function `λy.(weaken x)`.**
+The binder-crossing substitution computation behind the K combinator: `subst0 (λy. var 1) arg = λy. weaken arg`.
+`subst_lamCell` pushes the substitution under the λ (lifting it); `RawTerm.subst_var_reduces` evaluates the
+lifted substitution at the captured variable `var 1`, which `RawTermSubst.lift`'s successor case sends to
+`weaken (singleton arg at var 0) = weaken arg` (`singleton_var_zero`).  Proven WITHOUT a fold-level `rfl` (which
+would leak `propext`/`Quot.sound`) and with a `Nat`-arithmetic `Fin` bound (avoiding the `omega` leak). -/
+theorem subst0_lamCellVarOne_eq_lamWeaken {scope : Nat} (argument : RawTerm scope) :
+    RawTerm.subst0
+        (lamCell (variableCell ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩)) argument
+      = lamCell (RawTerm.weaken argument) := by
+  show RawTerm.subst (RawTermSubst.singleton argument)
+      (lamCell (.mkGen .gen_var ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ .childNil))
+      = lamCell (RawTerm.weaken argument)
+  rw [subst_lamCell]
+  refine congrArg lamCell ?_
+  rw [RawTerm.subst_var_reduces]
+  show RawTerm.weaken (RawTermSubst.singleton argument ⟨0, Nat.zero_lt_succ scope⟩)
+      = RawTerm.weaken argument
+  rw [RawTermSubst.singleton_var_zero]
+
+/-- **The K combinator `λx.λy.x : A → (B → A)` is a reducible member** (for variable types A, B).  The hardest
+concrete simply-typed term: the inner body captures the OUTER bound variable `x`, so the outer abstraction's
+body substitution crosses the inner binder (`subst0_lamCellVarOne_eq_lamWeaken`: `subst0 (λy.var 1) arg = λy.
+weaken arg`).  The resulting constant function `λy.(weaken arg)` is a reducible member of `B → A` by
+`lambdaNeutralArrow` (its body cancels under substitution to `arg`, which is strongly normalizing).  Exercises
+the variable-capture-avoiding substitution under nested binders end-to-end. -/
+theorem IsReducibleMemberAt.kCombinator {scope : Nat} {level : Nat}
+    {domainIndex codomainIndex : Fin scope} :
+    IsReducibleMemberAt level
+      (piTyCodeCell (variableCell domainIndex)
+        (RawTerm.weaken (piTyCodeCell (variableCell codomainIndex)
+          (RawTerm.weaken (variableCell domainIndex)))))
+      (lamCell (lamCell (variableCell ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩))) := by
+  have codomainReducibleType : IsReducibleTypeAt level
+      (piTyCodeCell (variableCell codomainIndex) (RawTerm.weaken (variableCell domainIndex))) :=
+    (IsSimplyTyped.arrow (IsSimplyTyped.ofNeutral (IsNeutral.var codomainIndex))
+      (IsSimplyTyped.ofNeutral (IsNeutral.var domainIndex))).reducibleAndMemberExtension.1 level
+  refine IsReducibleMemberAt.lambdaNeutralDomain (IsNeutral.var domainIndex) codomainReducibleType ?_
+  intro argument argumentSN
+  rw [subst0_lamCellVarOne_eq_lamWeaken argument]
+  refine IsReducibleMemberAt.lambdaNeutralArrow (IsNeutral.var codomainIndex)
+    (IsNeutral.var domainIndex) ?_
+  intro innerArgument _innerArgumentSN
+  rw [show RawTerm.subst0 (RawTerm.weaken argument) innerArgument = argument from
+    RawTerm.weaken_subst_singleton argument innerArgument]
+  exact argumentSN
 
 end FX1Poly.Typed

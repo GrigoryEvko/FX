@@ -1494,3 +1494,10 @@ gates pin them shut.
 -- `constantIdentity` demonstrates it on an ARROW codomain: `λx.(λy.y) : A → (B → B)`.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.lambdaNeutralDomain
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.constantIdentity
+
+-- The K combinator `λx.λy.x : A → (B → A)` — the hardest concrete simply-typed term, where the inner body
+-- CAPTURES the outer bound variable.  `subst0_lamCellVarOne_eq_lamWeaken` is the binder-crossing substitution
+-- computation behind it (`subst0 (λy.var 1) arg = λy.weaken arg`), proven fold-`rfl`-free (no propext /
+-- Quot.sound) with a Nat-arithmetic Fin bound (no omega).
+#assert_no_axioms FX1Poly.Typed.subst0_lamCellVarOne_eq_lamWeaken
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.kCombinator
