@@ -12,6 +12,7 @@ import FX1Poly.OmegacE.IdempotentConfluence
 import FX1Poly.OmegacE.TranspositionSystem
 import FX1Poly.OmegacE.TranspositionConfluence
 import FX1Poly.OmegacE.TranspositionReducer
+import FX1Poly.OmegacE.AbsorptionSystem
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -296,3 +297,27 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.transpositionReduceOnce
 #assert_no_axioms FX1Poly.OmegacE.transpositionWordReducer
 #assert_no_axioms FX1Poly.OmegacE.decidableConvertibleModulo_transpositionSystem
+
+-- ABSORPTION SYSTEM — FIRST TWO-RULE / INTER-RULE CRITICAL PAIR (AbsorptionSystem.lean): SN-119 (#622) opener.
+-- A survivingCell absorbs an adjacent vanishingCell on either side: TWO rules [v,s]→[s,s] and [s,v]→[s,s].
+-- The genuinely new content vs the single-rule predecessors: membership is a DISJUNCTION, so every `fire`
+-- inversion `rcases`-es which rule fired. Length-PRESERVING (keeps SN-118's achievement), so length is no
+-- measure; terminating by countOccurrences vanishingCell strict decrease (each rule absorbs one v) — a SIMPLER
+-- measure than SN-118's inversion count (no cross term), REUSING the shipped countOccurrences + _append. Needs
+-- v≠s (at v=s both rules are self-loops). Zero-axiom: fire witnesses Or.inl/Or.inr rfl; isLengthPreserving =
+-- rcases + 2 rfl; decrease by induction (fire rcases → both 0<1; context = append-split + Nat.add_lt_add_*);
+-- isTerminating = Subrelation into InvImage (·<·) measure. The one propext trap (rw [if_pos rfl] leaving
+-- 1 + countOccurrences _ [] = 1) closed by explicit default-transparency rfl. Deferred SN-119 atoms: the genuine
+-- inter-rule LOCAL CONFLUENCE (real critical pairs [v,s,v]/[s,v,s] joining to [s,s,s], NOT vacuous) + the
+-- two-rule WordReducer decidability.
+#assert_no_axioms FX1Poly.OmegacE.absorptionRuleVanishingLeft
+#assert_no_axioms FX1Poly.OmegacE.absorptionRuleVanishingRight
+#assert_no_axioms FX1Poly.OmegacE.absorptionSystem
+#assert_no_axioms FX1Poly.OmegacE.absorptionRuleVanishingLeft_fires
+#assert_no_axioms FX1Poly.OmegacE.absorptionRuleVanishingRight_fires
+#assert_no_axioms FX1Poly.OmegacE.absorptionSystem_isLengthPreserving
+#assert_no_axioms FX1Poly.OmegacE.absorptionSystem_rewritesOneStep_length_preserved
+#assert_no_axioms FX1Poly.OmegacE.absorptionSystem_rewritesMany_length_preserved
+#assert_no_axioms FX1Poly.OmegacE.absorptionSystem_convertibleModulo_length_preserved
+#assert_no_axioms FX1Poly.OmegacE.vanishingCount_decreases_by_step
+#assert_no_axioms FX1Poly.OmegacE.absorptionSystem_isTerminating
