@@ -102,4 +102,66 @@ theorem fundamentalPiElimLevelIndexed {profile : PolyProfile} {scope : Nat}
   exact IsReducibleMemberAt.applicationUnderSubst substitution
     (functionFundamental substitution env) (argumentFundamental substitution env)
 
+/-- **The `conv` arm (level-changing: carries the `tarskiDecode` +1).**  The subject is a member of its
+classifier at `subjectLevel`; the reclassifier is a universe member, so running its fundamental ONE LEVEL UP
+(`subjectLevel + 1`) and `tarskiDecode`-ing drops it to a reducible TYPE at `subjectLevel`; then
+`castAlongConvUnderSubst` transports the subject's membership across the substituted conversion onto the
+reclassifier, at the same `subjectLevel`.  Mirrors `fundamentalConvAtAll` with the level decoupled. -/
+theorem fundamentalConvLevelIndexed {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (subjectLevel : Nat)
+    {context : TypingContext profile scope} {subject classifier reclassifier : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (subjectFundamental : FundamentalConclusionLevelIndexed contextLevels subjectLevel context subject
+      classifier)
+    (reclassifierFundamental : FundamentalConclusionLevelIndexed contextLevels (subjectLevel + 1) context
+      reclassifier (universeCodeCell levelExpr flag))
+    (converts : Conv classifier reclassifier) :
+    FundamentalConclusionLevelIndexed contextLevels subjectLevel context subject reclassifier := by
+  intro _targetScope substitution env
+  have reclassifierMember := reclassifierFundamental substitution env
+  rw [subst_universeCodeCell] at reclassifierMember
+  obtain ⟨_candidate, reclassifierReducible⟩ := reclassifierMember.tarskiDecode
+  exact IsReducibleMemberAt.castAlongConvUnderSubst substitution
+    (subjectFundamental substitution env) reclassifierReducible converts
+
+/-- **The `piIntro` (dependent λ-introduction) arm — the binder, the level-indexed FT's crux.**
+`abstractionCanonicalUnderSubst` is UNIFORM-level: the domain/codomain reducible TYPES and the body reducible
+MEMBER all sit at the lam's level `predLevel + 1`, and the bound argument lands at `predLevel + 1` via
+`ReducibleEnvVec.cons` / `levelCons (predLevel + 1)`.  The level must be POSITIVE (`predLevel + 1`) because
+the domain candidate's `isReducibilityCandidate` (CR1: domain members are strongly normalizing) only holds at
+a positive level.  The domain/codomain are universe members at `predLevel + 1 + 1` (decoded down one by
+`tarskiDecode`); the body is a member at `predLevel + 1`.  The `subst_cons_eq_subst0_lift` keystone reshapes
+the `cons`-substitution output into the `subst0 (subst (lift …) …) argument` shape the rule demands.  This
+arm closing is what breaks the dependent-binder wall in the level-indexed design. -/
+theorem fundamentalPiIntroLevelIndexed {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainFundamental : FundamentalConclusionLevelIndexed contextLevels (predLevel + 1 + 1) context
+      domainCode (universeCodeCell domainLevel flag))
+    (codomainFundamental : FundamentalConclusionLevelIndexed (levelCons (predLevel + 1) contextLevels)
+      (predLevel + 1 + 1) (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag))
+    (bodyFundamental : FundamentalConclusionLevelIndexed (levelCons (predLevel + 1) contextLevels)
+      (predLevel + 1) (context.cons domainCode) body codomainCode) :
+    FundamentalConclusionLevelIndexed contextLevels (predLevel + 1) context (lamCell body)
+      (piTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution env
+  have domainMember := domainFundamental substitution env
+  rw [subst_universeCodeCell] at domainMember
+  obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+    (fun _argument argumentInDomain =>
+      domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
+    (fun argument argumentInDomain => ?_) (fun argument argumentInDomain => ?_)
+  · rw [← RawTerm.subst_cons_eq_subst0_lift _ argument substitution]
+    have codomainMember := codomainFundamental (RawTermSubst.cons argument substitution)
+      (ReducibleEnvVec.cons env ⟨domainCandidate, domainReducible, argumentInDomain⟩)
+    rw [subst_universeCodeCell] at codomainMember
+    exact codomainMember.tarskiDecode
+  · rw [← RawTerm.subst_cons_eq_subst0_lift _ argument substitution,
+      ← RawTerm.subst_cons_eq_subst0_lift _ argument substitution]
+    exact bodyFundamental (RawTermSubst.cons argument substitution)
+      (ReducibleEnvVec.cons env ⟨domainCandidate, domainReducible, argumentInDomain⟩)
+
 end FX1Poly.Typed

@@ -1221,11 +1221,16 @@ gates pin them shut.
 -- not the dependent binder (codomain one rung lower via tarskiDecode). FundamentalConclusionLevelIndexed
 -- concludes at a SEPARATE subjectLevel = the subject's level, so var = lookupReducible directly (off-by-one-free),
 -- and the level-preserving arms (universeFormation, piElim — application is uniform-level via applicationUnderSubst)
--- thread it unchanged. The level-CHANGING arms (conv, binder/genFormation, carrying the tarskiDecode +1/-1) are
--- the remaining Route-2 work; these three validate the predicate composes.
+-- thread it unchanged. The level-CHANGING arms now ALSO land: conv carries the tarskiDecode +1 (reclassifier run
+-- one level up, decoded down to a reducible type, then castAlongConvUnderSubst); piIntro (the dependent binder, the
+-- crux that walled the FT) is uniform-level via abstractionCanonicalUnderSubst with the bound arg deposited at
+-- predLevel+1 via levelCons (positive level needed for CR1 on the domain candidate). genFormation (the dependent
+-- type-former telescope) + the HasTypeDescPi.rec assembly with consistency hypotheses are the remaining Route-2 work.
 #assert_no_axioms FX1Poly.Typed.fundamentalVarLevelIndexed
 #assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationLevelIndexed
 #assert_no_axioms FX1Poly.Typed.fundamentalPiElimLevelIndexed
+#assert_no_axioms FX1Poly.Typed.fundamentalConvLevelIndexed
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroLevelIndexed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
