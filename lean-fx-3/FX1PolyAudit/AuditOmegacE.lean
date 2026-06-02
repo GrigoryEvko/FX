@@ -7,6 +7,7 @@ import FX1Poly.OmegacE.WordProblem
 import FX1Poly.OmegacE.ReducerNormalizer
 import FX1Poly.OmegacE.EmptySystem
 import FX1Poly.OmegacE.IdempotentSystem
+import FX1Poly.OmegacE.IdempotentReducer
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -165,3 +166,23 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.idempotentRule_fires
 #assert_no_axioms FX1Poly.OmegacE.idempotentSystem_isLengthReducing
 #assert_no_axioms FX1Poly.OmegacE.idempotentSystem_isTerminating
+
+-- IDEMPOTENT REDUCER + TERMINATING NORMALIZER (IdempotentReducer.lean): the searchable engine the idempotent
+-- system supplies — idempotentReduceCells (leftmost-redex scan, splice [c,c]→[c]) with soundness (a splice IS
+-- a RewritesOneStep via idempotentRule_fires under context) and completeness (idempotentRewrite_implies_
+-- reduceCells_isSome: every one-step rewrite means the scan finds a redex, via the append-monotonicity lemmas
+-- = the structural inversion of one-step rewriting). idempotentWordReducer bundles them (the FIRST concrete
+-- WordReducer that genuinely rewrites — the empty system's was the identity); idempotentWordNormalizer =
+-- toNormalizer along the shipped termination = the FIRST terminating normalizer for a non-trivial concrete
+-- ωcE system. Honest scope: decidability still needs HasLocalConfluence (the [c,c,c] critical pair) — the
+-- final Path-B atom for this system. propext-clean: nomatch/Bool.noConfusion (not simp-to-True), dsimp+if_pos.
+#assert_no_axioms FX1Poly.OmegacE.idempotentReduceCells
+#assert_no_axioms FX1Poly.OmegacE.idempotentReduceCells_doubled
+#assert_no_axioms FX1Poly.OmegacE.option_isSome_map
+#assert_no_axioms FX1Poly.OmegacE.idempotentReduceCells_isSome_append_right
+#assert_no_axioms FX1Poly.OmegacE.idempotentReduceCells_isSome_append_left
+#assert_no_axioms FX1Poly.OmegacE.idempotentReduceCells_sound
+#assert_no_axioms FX1Poly.OmegacE.idempotentRewrite_implies_reduceCells_isSome
+#assert_no_axioms FX1Poly.OmegacE.idempotentReduceOnce
+#assert_no_axioms FX1Poly.OmegacE.idempotentWordReducer
+#assert_no_axioms FX1Poly.OmegacE.idempotentWordNormalizer
