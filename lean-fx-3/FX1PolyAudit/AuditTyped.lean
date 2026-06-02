@@ -1238,6 +1238,11 @@ gates pin them shut.
 -- HasTypeDescPi.rec assembly.
 #assert_no_axioms FX1Poly.Typed.fundamentalPiFormationLevelIndexed
 #assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationLevelIndexed
+-- The GENERIC genFormation/genFormationPi former arm: dispatches piTyCode/sigmaTyCode, inverts the two-child
+-- spine, reads the FormerChildrenReducible bundle off the level-indexed telescope IH. The level-indexed twin
+-- of fundamentalVectorFromFormation's genFormationPi arm — the FORMER half of the recursor assembly. Remaining:
+-- the motive threading subjectLevel/contextLevels + the telescope motive_2 producing telescopeFundamental.
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationFormerLevelIndexed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll

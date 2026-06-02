@@ -2,6 +2,8 @@ import FX1Poly.Typed.FundamentalAtAllLeafArms
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.PiFormerMembership
+import FX1Poly.Typed.FormerChildrenReducible
+import FX1Poly.Typed.DescTelescopeInversion
 
 /-! # FX1Poly/Typed/FundamentalLevelIndexed
     — the decoupled-`subjectLevel` fundamental-theorem conclusion (Route 2: dependent FT, var-level wall).
@@ -234,5 +236,63 @@ theorem fundamentalSigmaFormationLevelIndexed {profile : PolyProfile} {scope : N
   have codomainMember := codomainFundamental
     (RawTermSubst.cons argument substitution) (ReducibleEnvVec.cons env argumentInDomain)
   rwa [subst_universeCodeCell] at codomainMember
+
+/-- **The generic `genFormation`/`genFormationPi` former arm of the level-indexed FT.**  Over any former
+with a `typingRuleDescOf` row (currently Π / Σ), given the premise telescope and its telescope-reducibility
+IH in level-indexed shape (`∀ substitution, env-at-contextLevels, shapeEq → TelescopeReducible …`), the
+former cell `mkGen generator payload children` is a reducible member of its output universe
+`rule.outputType scope levels flag` at `predLevel+1`.  Dispatches on the generator (`by_cases` to
+`gen_piTyCode`/`gen_sigmaTyCode`, the only `typingRuleDescOf` rows), inverts the two-child spine via
+`DescTelescopePi.twoChildLevels`, and reads the `FormerChildrenReducible` bundle off the telescope relation
+through the shipped `ofTelescopeReducible` + `toPiMember`/`toSigmaMember`.  This is the level-indexed twin
+of the committed `HasTypeDescPi.fundamentalVectorFromFormation` genFormationPi arm — the SAME dispatch with
+the decoupled-`subjectLevel` (`FundamentalConclusionLevelIndexed`) wrapper in place of the vector wrapper
+(`IsFundamentalConclusionAtVector`); `TelescopeReducible`'s `headMember` is already all-level-quantified, so
+no per-child level coordination is needed here.  This is the FORMER half of the `HasTypeDescPi.rec` /
+`HasTypeDesc.rec` assembly; the remaining assembly work is the motive that threads `subjectLevel`/
+`contextLevels` and the telescope motive_2 that produces this arm's `telescopeFundamental` IH from the per-
+child `FundamentalConclusionLevelIndexed` IHs. -/
+theorem fundamentalGenFormationFormerLevelIndexed {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope}
+    {generator : Generator} (payload : generator.payload scope)
+    {children : RawTermChildren generator.binderShifts scope}
+    {levels : List LevelExpr} {flag : UniverseFlag} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    (premises : DescTelescopePi profile (currentDepth := 0) context levels flag children)
+    (telescopeFundamental :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvVec contextLevels context substitution)
+        (shapeEq : generator.binderShifts = consecutiveShifts 0 levels.length),
+        TelescopeReducible flag 0 levels.length substitution levels (shapeEq ▸ children)) :
+    FundamentalConclusionLevelIndexed contextLevels (predLevel + 1) context
+      (.mkGen generator payload children) (rule.outputType scope levels flag) := by
+  intro _targetScope substitution env
+  by_cases isPiFormer : generator = .gen_piTyCode
+  · subst isPiFormer
+    obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+    match children with
+    | .childCons _domainCode (.childCons _codomainCode .childNil) =>
+        obtain ⟨_domainLevel, _codomainLevel, levelsShape⟩ := DescTelescopePi.twoChildLevels premises
+        subst levelsShape
+        dsimp only [universeFormerOutput]
+        rw [subst_universeCodeCell]
+        exact (FormerChildrenReducible.ofTelescopeReducible predLevel
+          (telescopeFundamental substitution env Generator.gen_piTyCode_binderShifts_eq)).toPiMember
+  · by_cases isSigmaFormer : generator = .gen_sigmaTyCode
+    · subst isSigmaFormer
+      obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+      match children with
+      | .childCons _domainCode (.childCons _codomainCode .childNil) =>
+          obtain ⟨_domainLevel, _codomainLevel, levelsShape⟩ := DescTelescopePi.twoChildLevels premises
+          subst levelsShape
+          dsimp only [universeFormerOutput]
+          rw [subst_universeCodeCell]
+          exact (FormerChildrenReducible.ofTelescopeReducible predLevel
+            (telescopeFundamental substitution env Generator.gen_sigmaTyCode_binderShifts_eq)).toSigmaMember
+    · exfalso
+      unfold typingRuleDescOf at isFormation
+      rw [if_neg isPiFormer, if_neg isSigmaFormer] at isFormation
+      contradiction
 
 end FX1Poly.Typed
