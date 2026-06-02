@@ -60,6 +60,7 @@ import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.Normalize
 import FX1Poly.Core.NormalizeMeta
+import FX1Poly.Core.StronglyNormalizingSubst
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
 import FX1Poly.Core.NormalFormUnique
@@ -1689,6 +1690,14 @@ gates pin them shut.
 -- alone decides convertibility (no SN hypothesis), joining the FT (#502) and WN-normalizer (#503) lines.
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfSimplyTypedUnderSubst
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfSimplyTypedClosed
+
+-- SN REFLECTED BY SUBSTITUTION: SN of `subst σ term` ⇒ SN of bare `term` (Acc reflected along `subst σ` via
+-- Step.subst + Subrelation.accessible ∘ InvImage.accessible).  This pulls the FT's SN-of-substituted back to
+-- SN-of-bare, removing the closing-substitution wart: decidableOfSimplyTypedBareClosed decides conversion of
+-- the BARE closed terms themselves — the cleanest "simply-typed fragment has decidable conversion".
+#assert_no_axioms FX1Poly.Core.StepStar.stronglyNormalizing_of_subst
+#assert_no_axioms FX1Poly.Typed.emptyClosingSubst
+#assert_no_axioms FX1Poly.Typed.Conv.decidableOfSimplyTypedBareClosed
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
