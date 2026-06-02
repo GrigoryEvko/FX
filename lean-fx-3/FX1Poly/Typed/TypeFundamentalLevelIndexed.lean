@@ -102,4 +102,26 @@ theorem sigmaFormerIsTypeFundamentalLevelIndexed {profile : PolyProfile} {scope 
   rw [subst_universeCodeCell] at member
   exact member.tarskiDecode
 
+/-- **A type variable is a reducible TYPE at its env level** (the type-FT for the type-`var` subject).
+When the variable's looked-up type is a universe code `universeCodeCell levelExpr flag` and its env level is
+positive (`contextLevels index = predLevel + 1`), the environment gives the variable as a reducible MEMBER of
+that universe at `predLevel+1`, and `tarskiDecode` drops it to a reducible TYPE at `predLevel`.  Unlike the
+universe-code/former subjects (polymorphic in the level — the membership level is free fuel), the variable's
+type-level is FIXED by the env, so the `levelMatches` hypothesis pins it; the eventual context-consistency
+supplies exactly this (each type entry's env level is one above its universe's decoded level).  With this,
+the type-FT covers every formation type-subject — universe code, Π former, Σ former, type variable —
+modulo the `conv` case (which is mutual with the term FT: `ReducibleTypeAt.convInvariant` needs both
+endpoints reducible, so the source type's reducibility comes from its own term-FT validity). -/
+theorem varIsTypeFundamentalLevelIndexed {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope} (index : Fin scope)
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (lookupIsUniverse : context.lookup index = universeCodeCell levelExpr flag)
+    (levelMatches : contextLevels index = predLevel + 1) :
+    IsTypeFundamentalLevelIndexed contextLevels predLevel context (variableCell index) := by
+  intro _targetScope substitution env
+  have member := env.lookupReducible index
+  rw [levelMatches, lookupIsUniverse, subst_universeCodeCell] at member
+  exact member.tarskiDecode
+
 end FX1Poly.Typed

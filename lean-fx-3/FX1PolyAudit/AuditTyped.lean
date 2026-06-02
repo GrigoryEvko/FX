@@ -1265,6 +1265,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeCodeIsTypeFundamentalLevelIndexed
 #assert_no_axioms FX1Poly.Typed.piFormerIsTypeFundamentalLevelIndexed
 #assert_no_axioms FX1Poly.Typed.sigmaFormerIsTypeFundamentalLevelIndexed
+-- type-FT var case: a type variable (looked-up type a universe code, env level positive) is a reducible TYPE
+-- at its env level, via tarskiDecode of the env's membership. Completes the type-FT for all formation
+-- type-subjects (universe code + Pi/Sigma formers + var) modulo conv (mutual with the term FT).
+#assert_no_axioms FX1Poly.Typed.varIsTypeFundamentalLevelIndexed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
