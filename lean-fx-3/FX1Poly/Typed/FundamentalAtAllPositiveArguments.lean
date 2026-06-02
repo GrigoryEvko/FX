@@ -1414,4 +1414,41 @@ theorem fundamentalSigmaFormationAtAllFromPositiveDomainCandidate
   rw [subst_universeCodeCell]
   exact result
 
+/-- **A type variable, AS A TYPE, has the all-positive member predicate as its reducible candidate.**  A
+variable is a neutral classifier — weak-head-normal (`WeakHeadStep.not_from_var`), not Π-rooted, not
+universe-rooted — so `ofNeutralClassifier` applies at every level.  The candidate-side complement of
+`typeVariableAllLevelMember` (the member-side fact).  This discharges the candidate premise for the
+NEUTRAL-domain case of the dependent Π/Σ former (a former whose domain is a type variable). -/
+theorem typeVariableHasAllPositiveCandidate {scope : Nat} (index : Fin scope) (level : Nat) :
+    HasAllPositiveReducibleCandidateAt level (variableCell index) := by
+  apply HasAllPositiveReducibleCandidateAt.ofNeutralClassifier
+  · intro reduct
+    exact WeakHeadStep.not_from_var
+  · show Generator.gen_var ≠ Generator.gen_piTyCode
+    decide
+  · show Generator.gen_var ≠ Generator.gen_universeCode
+    decide
+
+/-- **A Π type with a type-VARIABLE domain has an all-positive candidate.**  The concrete witness
+`Π(x : A). A` where `A = var 0` is the type variable of a one-entry context (the codomain is `A` weakened, i.e.
+`var 1`, so `subst0` returns `A`).  Domain candidate and post-substitution codomain candidate are both
+`typeVariableHasAllPositiveCandidate`, combined by `HasAllPositiveReducibleCandidateAt.piType`.  This is the
+first former with a VARIABLE domain shown to have a candidate — beyond the ∀-level-domain limitation of
+`fundamentalPiFormationLevelIndexed` (which requires the domain reducible at two consecutive fuel levels, a
+universe-code/former-only regime).  The genuinely-DEPENDENT former (codomain uses the bound variable as a type)
+still requires the universe-domain candidate, whose discharge is the member-extension manufacture = the recursor. -/
+theorem piBetweenTypeVariablesHasAllPositiveCandidate (level : Nat) :
+    HasAllPositiveReducibleCandidateAt level
+      (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (variableCell (⟨1, Nat.lt_succ_self 1⟩ : Fin 2))) := by
+  apply HasAllPositiveReducibleCandidateAt.piType
+  · intro candidateLevel
+    exact typeVariableHasAllPositiveCandidate _ candidateLevel
+  · intro candidateLevel argument _argumentAtAllPositiveLevels
+    show HasAllPositiveReducibleCandidateAt candidateLevel
+      (RawTerm.subst0 (variableCell (⟨1, Nat.lt_succ_self 1⟩ : Fin 2)) argument)
+    rw [show RawTerm.subst0 (variableCell (⟨1, Nat.lt_succ_self 1⟩ : Fin 2)) argument
+          = variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1) from rfl]
+    exact typeVariableHasAllPositiveCandidate _ candidateLevel
+
 end FX1Poly.Typed

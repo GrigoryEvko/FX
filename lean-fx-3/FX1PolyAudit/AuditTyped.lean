@@ -1160,6 +1160,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.extendsToAllPositiveAtUniverseCodeOfLowerTypeExtendsToAllLevels
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.universeCodeHasNoMemberAtZero
 #assert_no_axioms FX1Poly.Typed.HasAllPositiveReducibleCandidateAt.notSuccUniverseCodeAtZero
+-- typeVariableHasAllPositiveCandidate: a type variable AS A TYPE has the all-positive candidate (neutral
+-- classifier via ofNeutralClassifier + WeakHeadStep.not_from_var) -- candidate-side complement of
+-- typeVariableAllLevelMember. piBetweenTypeVariablesHasAllPositiveCandidate: a Π with a type-VARIABLE domain
+-- (Π(x:A).A, A = var 0) has a candidate -- the FIRST former with a variable domain, beyond the ∀-level-domain
+-- limitation of fundamentalPiFormationLevelIndexed (the genuinely-dependent former still needs the recursor).
+#assert_no_axioms FX1Poly.Typed.typeVariableHasAllPositiveCandidate
+#assert_no_axioms FX1Poly.Typed.piBetweenTypeVariablesHasAllPositiveCandidate
 #assert_no_axioms FX1Poly.Typed.HasAllPositiveReducibleCandidateUnderAllLevelSubstitution.notSuccUniverseCode
 #assert_no_axioms FX1Poly.Typed.HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution.piType
 #assert_no_axioms FX1Poly.Typed.HasAllPositiveReducibleCandidateAtPositiveLevelsUnderSubstitution.sigmaType
