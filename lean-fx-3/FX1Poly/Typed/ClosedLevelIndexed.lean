@@ -1,4 +1,5 @@
 import FX1Poly.Typed.FundamentalLevelIndexed
+import FX1Poly.Typed.TypeFundamentalLevelIndexed
 import FX1Poly.Core.RawTermRenameSubstCommute
 import FX1Poly.Core.StrongNormalizationRename
 
@@ -74,5 +75,21 @@ theorem closedSubjectStronglyNormalizingFromLevelIndexed {profile : PolyProfile}
     rwa [RawTerm.rename_subst_commute emptyRenaming
       (RawTermSubst.identity : RawTermSubst 1 1) subject]
   exact StepStar.isStronglyNormalizing_of_rename emptyRenaming renamedSubjectNormalizing
+
+/-- **Closed type reducibility from the type-FT.**  At the empty context the per-variable-level environment
+is vacuous (`ReducibleEnvVec.empty`), so a type-level fundamental conclusion (`IsTypeFundamentalLevelIndexed`)
+specializes immediately to a closed type code being a reducible TYPE at its level under any target closing
+substitution.  The type-level twin of `closedSubjectReducibleFromLevelIndexed`; the handoff a closed-former
+canonicity argument consumes (a closed Π/Σ code, or `Type@e`, is a reducible type, so its closed members are
+classified).  Conditional on the type-FT for the closed type — unconditional once the recursor assembly
+supplies it (the type half is `tarskiDecode ∘ term-FT`, so it lands with the term FT). -/
+theorem closedTypeReducibleFromTypeFundamental {profile : PolyProfile} (typeLevel : Nat)
+    {typeCode : RawTerm 0}
+    (typeFundamental :
+      IsTypeFundamentalLevelIndexed emptyLevelVector typeLevel
+        (TypingContext.empty : TypingContext profile 0) typeCode)
+    {targetScope : Nat} (substitution : RawTermSubst 0 (targetScope + 1)) :
+    IsReducibleTypeAt typeLevel (RawTerm.subst substitution typeCode) :=
+  typeFundamental substitution (ReducibleEnvVec.empty emptyLevelVector substitution)
 
 end FX1Poly.Typed
