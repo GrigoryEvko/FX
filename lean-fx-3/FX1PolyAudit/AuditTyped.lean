@@ -962,6 +962,18 @@ gates pin them shut.
 -- ReducibleEnvVec.cons (gated ~1459). The SMOKE reducibleEnvAtAllLevels_oneTypeVariable (gated just above) builds an
 -- all-level env for the one-entry context [Type@e] from empty by one consTypeVariable. No denote-keyed variant:
 -- per SN-008, denote-keying is instantiation of the abstract level, not a new cons (do NOT duplicate).
+-- SN-010/011/012 VERIFIED 2026-06-02 (no rebuild; the env-cons/lookup family, all gated above):
+--  · SN-010 consTypeVariable — the type-variable binder extension (detailed in the SN-009 note above; its
+--    non-vacuity witness reducibleEnvAtAllLevels_oneTypeVariable is gated above).
+--  · SN-011 consVariableOfAllLevelType — the GENERAL binder extension for ANY all-levels-reducible binding type
+--    (premise typeAllLevel : ∀ level, IsReducibleTypeAt (level+1) bindingType; head discharged by
+--    IsReducibleMemberAt.variable); consTypeVariable is its universe-code instance, consHeadToVecPositive
+--    (gated above) the mixed-level bridge.
+--  · SN-012 ReducibleEnvVec.lookupReducible — yields IsReducibleMemberAt (levels index) (subst σ (lookup index))
+--    (σ index): the variable's reducible membership at its OWN env level levels index (= contextLevels index),
+--    the off-by-one-FREE leg the var FT arm consumes; ReducibleEnvAtAllLevels.lookupReducible (gated above) is
+--    the all-levels form.
+-- No denote-keyed variants built: instantiation of the abstract level, not a rebuild (SN-008 discipline).
 
 /-! ### PROOF-RELEVANT ∀-LEVEL ENVIRONMENT with positive type-candidate companions.  This strengthens the
     all-level environment with the binder-facing fact that every substituted lookup type has the
