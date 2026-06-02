@@ -1501,3 +1501,10 @@ gates pin them shut.
 -- Quot.sound) with a Nat-arithmetic Fin bound (no omega).
 #assert_no_axioms FX1Poly.Typed.subst0_lamCellVarOne_eq_lamWeaken
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.kCombinator
+
+-- Abstraction rule-family completion: `lambdaLeafDomain` is the maximally-general form — a LEAF domain
+-- (weak-head-normal, non-Π, non-universe: data formers, not only neutrals) + any reducible codomain — matching
+-- the `IsSimplyTyped.leaf` class and subsuming `lambdaNeutralArrow` / `lambdaNeutralDomain`.  `sigmaIdentity`
+-- (`λx.x : (Σ A. B) → (Σ A. B)`) is the identity over a Σ-code DATA-FORMER base type, reachable only via it.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.lambdaLeafDomain
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaIdentity

@@ -43,6 +43,12 @@ in `ReducibleSemanticRules`); the universe/dependent obstruction is absent in th
   * `IsReducibleMemberAt.kCombinator` — `λx.λy.x : A → (B → A)` is a reducible member: the hardest concrete
     term, where the inner body CAPTURES the outer bound variable, exercising variable-capture-avoiding
     substitution under nested binders.
+  * `IsReducibleMemberAt.lambdaLeafDomain` — the MAXIMALLY-GENERAL abstraction rule: a LEAF domain
+    (weak-head-normal, non-Π, non-universe — covering DATA FORMERS, not only neutrals) + any reducible
+    codomain.  Subsumes `lambdaNeutralArrow` and `lambdaNeutralDomain`, matching the `IsSimplyTyped.leaf` class.
+  * `IsReducibleMemberAt.sigmaIdentity` — `λx.x : (Σ A. B) → (Σ A. B)` is a reducible member: the identity over
+    a Σ-code (data-former) base type, reachable only via `lambdaLeafDomain` (a Σ-code is a leaf but NOT
+    neutral).
 
 ## Zero-axiom verification
 
@@ -232,5 +238,63 @@ theorem IsReducibleMemberAt.kCombinator {scope : Nat} {level : Nat}
   rw [show RawTerm.subst0 (RawTerm.weaken argument) innerArgument = argument from
     RawTerm.weaken_subst_singleton argument innerArgument]
   exact argumentSN
+
+/-- **Abstraction over a LEAF domain — the maximally-general form.**  `λ.body : A → B` is a reducible member
+when the domain A is a leaf (weak-head-normal, neither Π- nor universe-rooted — covering DATA FORMERS such as
+Σ-codes, not only neutrals) and the codomain B is any reducible type (candidate = its member-predicate, so the
+body condition is "the body lands as a member of B").  Generalizes both `lambdaNeutralArrow` (neutral domain +
+neutral codomain) and `lambdaNeutralDomain` (neutral domain + arbitrary codomain) by replacing `IsNeutral` with
+the raw leaf conditions — matching the leaf class of `IsSimplyTyped.leaf` at the type level.  The leaf
+conditions fire `ReducibleTypeStep.neutral` directly (giving the SN candidate), so the proof is identical to
+the neutral case. -/
+theorem IsReducibleMemberAt.lambdaLeafDomain {scope : Nat} {level : Nat}
+    {domainCode codomainBase : RawTerm scope} {body : RawTerm (scope + 1)}
+    (domainWeakHeadNormal : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
+    (domainNotPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (domainNotUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (codomainReducibleType : IsReducibleTypeAt level codomainBase)
+    (bodyMember : ∀ argument : RawTerm scope, IsStronglyNormalizing argument →
+      IsReducibleMemberAt level codomainBase (RawTerm.subst0 body argument)) :
+    IsReducibleMemberAt level
+      (piTyCodeCell domainCode (RawTerm.weaken codomainBase)) (lamCell body) := by
+  have domainReducible : ReducibleTypeAt level domainCode IsStronglyNormalizing := by
+    cases level with
+    | zero => exact ReducibleTypeStep.neutral domainWeakHeadNormal domainNotPiType domainNotUniverse
+    | succ predLevel =>
+        exact ReducibleTypeStep.neutral domainWeakHeadNormal domainNotPiType domainNotUniverse
+  exact IsReducibleMemberAt.abstractionNonDependent domainReducible
+    (fun _argument argumentSN => argumentSN)
+    (IsReducibleTypeAt.reducibleMemberCandidate codomainReducibleType) bodyMember
+
+/-- **The identity over a Σ-code base type: `λx.x : (Σ A. B) → (Σ A. B)` is a reducible member.**  A Σ-code is a
+DATA FORMER — a leaf that is NOT neutral — so this inhabitant lies strictly outside what the neutral abstraction
+rules (`lambdaNeutralArrow` / `polymorphicIdentity`) can express; it is reachable only via `lambdaLeafDomain`.
+Witnesses that the term-formation reducibility rules cover data-former base types, the term-level companion to
+the type-level `IsSimplyTyped` Σ-leaf treatment. -/
+theorem IsReducibleMemberAt.sigmaIdentity {scope : Nat} {level : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)} :
+    IsReducibleMemberAt level
+      (piTyCodeCell (sigmaTyCodeCell domainCode codomainCode)
+        (RawTerm.weaken (sigmaTyCodeCell domainCode codomainCode)))
+      (lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) := by
+  have sigmaWeakHeadNormal :
+      ∀ reduct : RawTerm scope, ¬ WeakHeadStep (sigmaTyCodeCell domainCode codomainCode) reduct :=
+    fun _reduct => WeakHeadStep.not_from_sigmaTyCode
+  have sigmaNotPiType :
+      (sigmaTyCodeCell domainCode codomainCode).rootGenerator ≠ Generator.gen_piTyCode :=
+    show Generator.gen_sigmaTyCode ≠ Generator.gen_piTyCode by decide
+  have sigmaNotUniverse :
+      (sigmaTyCodeCell domainCode codomainCode).rootGenerator ≠ Generator.gen_universeCode :=
+    show Generator.gen_sigmaTyCode ≠ Generator.gen_universeCode by decide
+  have codomainReducibleType : IsReducibleTypeAt level (sigmaTyCodeCell domainCode codomainCode) :=
+    (IsSimplyTyped.leaf sigmaWeakHeadNormal sigmaNotPiType
+      sigmaNotUniverse).reducibleAndMemberExtension.1 level
+  refine IsReducibleMemberAt.lambdaLeafDomain sigmaWeakHeadNormal sigmaNotPiType sigmaNotUniverse
+    codomainReducibleType ?_
+  intro argument argumentSN
+  rw [show RawTerm.subst0 (variableCell ⟨0, Nat.zero_lt_succ scope⟩) argument = argument from
+    RawTerm.subst0_var_zero argument]
+  exact (IsReducibleMemberAt.atNeutralClassifier sigmaWeakHeadNormal sigmaNotPiType
+    sigmaNotUniverse).mpr argumentSN
 
 end FX1Poly.Typed
