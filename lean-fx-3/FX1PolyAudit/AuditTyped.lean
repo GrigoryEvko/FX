@@ -55,6 +55,7 @@ import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
+import FX1Poly.Core.NormalFormUnique
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1636,3 +1637,9 @@ gates pin them shut.
 -- non-normal node.  The StepStar-existence half of normalization (uniqueness comes from confluence) —
 -- the strongly-normalizing-fragment door to decidable Conv (#267) and the WHNF migration (#374).
 #assert_no_axioms FX1Poly.Core.exists_normalForm_of_isStronglyNormalizing
+
+-- NORMAL-FORM UNIQUENESS: confluence forces two normal reducts of one SN term to coincide, so the SN
+-- fragment has a UNIQUE normal form (existence from WN + this uniqueness clause).  The "the normal form"
+-- handle a normalizer function realizes and SN-fragment decidable Conv (#267) rests on.
+#assert_no_axioms FX1Poly.Core.normalForm_unique
+#assert_no_axioms FX1Poly.Core.exists_unique_normalForm_of_isStronglyNormalizing
