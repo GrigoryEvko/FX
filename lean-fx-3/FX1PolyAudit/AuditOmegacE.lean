@@ -18,6 +18,7 @@ import FX1Poly.OmegacE.AbsorptionLocalConfluence
 import FX1Poly.OmegacE.AbsorptionReducer
 import FX1Poly.OmegacE.SortingSystem
 import FX1Poly.OmegacE.SortingTermination
+import FX1Poly.OmegacE.SortingConfluence
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -434,3 +435,14 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.crossInversionCount_preserved_left_by_step
 #assert_no_axioms FX1Poly.OmegacE.countInversions_decreases
 #assert_no_axioms FX1Poly.OmegacE.sortingSystem_isTerminating
+
+-- SORTING CONFLUENCE (SortingConfluence.lean): SN-120 progress 3 — structural inversion + the BRAID critical pair.
+-- decomposition/ofDecomposition mirror the transposition twins but EXISTENTIALLY produce the swapped cells + guard
+-- (the rule is a guarded family, not a fixed pair). sortingBraidCriticalPairJoinBare is the mathematical heart: for
+-- a strictly descending triple slotValue c < slotValue b < slotValue a, the front reduct [b,a,c] and back reduct
+-- [a,c,b] of [a,b,c] both reach the sorted [c,b,a] in TWO steps each — the braid relation aba=bab, the first true
+-- multi-step RewritesMany join. The four ofDecomposition steps typecheck against the concrete triples by defeq (the
+-- list appends compute), so no word massaging at the bare layer. Zero-axiom (Nat.lt_trans + RewritesMany.step/single).
+#assert_no_axioms FX1Poly.OmegacE.sortingRewriteOneStep_decomposition
+#assert_no_axioms FX1Poly.OmegacE.sortingRewriteOneStep_ofDecomposition
+#assert_no_axioms FX1Poly.OmegacE.sortingBraidCriticalPairJoinBare
