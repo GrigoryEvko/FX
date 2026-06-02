@@ -1288,6 +1288,9 @@ gates pin them shut.
 -- by the closed-SN handoff. End-to-end validation that the arms + handoff compose into hypothesis-free SN.
 #assert_no_axioms FX1Poly.Typed.universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.closedPiBetweenUniverses_stronglyNormalizing
+-- The closed identity λx.x : Π Type@e. Type@e is unconditionally SN — first such result with a LAMBDA +
+-- BOUND VARIABLE, composing piIntro + var arms end-to-end (the heart of the FT). Fin-1 index via ⟨0,_⟩.
+#assert_no_axioms FX1Poly.Typed.closedIdentityOnUniverse_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll

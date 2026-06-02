@@ -59,4 +59,33 @@ theorem closedPiBetweenUniverses_stronglyNormalizing {profile : PolyProfile}
           ((TypingContext.empty : TypingContext profile 0).cons
             (universeCodeCell domainLevel flag)) codomainLevel flag))
 
+/-- **UNCONDITIONAL strong normalization of the closed identity function on a universe.**  The term
+`λ (x : Type@e). x = lamCell (variableCell 0)`, at type `Π (Type@e). Type@e`, is `IsStronglyNormalizing` —
+proved by composing the `piIntro` arm (domain + codomain supplied by the `universeFormation` arm; BODY by the
+`var` arm at index 0) at the empty context, then the closed-SN handoff.  This is the first unconditional SN
+for a closed term with a LAMBDA and a BOUND VARIABLE — exercising `fundamentalPiIntroLevelIndexed` and
+`fundamentalVarLevelIndexed` together end-to-end (the heart of the fundamental theorem), hypothesis-free.
+The body's `var` lookup `(empty.cons (Type@e)).lookup 0` is the weakened binding, definitionally the
+codomain `Type@e`, so the var arm feeds `piIntro`'s body premise directly.  The Fin-1 index is written
+`⟨0, Nat.succ_pos 0⟩` (NOT the `(0 : Fin 1)` OfNat numeral, which pulls `propext`). -/
+theorem closedIdentityOnUniverse_stronglyNormalizing {profile : PolyProfile}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) :=
+  closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
+    (fundamentalPiIntroLevelIndexed (context := (TypingContext.empty : TypingContext profile 0))
+      emptyLevelVector 0
+      (domainCode := universeCodeCell levelExpr flag)
+      (codomainCode := universeCodeCell levelExpr flag)
+      (body := variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+      (domainLevel := levelExpr.lsucc) (codomainLevel := levelExpr.lsucc) (flag := flag)
+      (fundamentalUniverseFormationLevelIndexed emptyLevelVector (0 + 1)
+        (TypingContext.empty : TypingContext profile 0) levelExpr flag)
+      (fundamentalUniverseFormationLevelIndexed (levelCons (0 + 1) emptyLevelVector) (0 + 1)
+        ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell levelExpr flag))
+        levelExpr flag)
+      (fundamentalVarLevelIndexed (levelCons (0 + 1) emptyLevelVector)
+        ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell levelExpr flag))
+        (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+
 end FX1Poly.Typed
