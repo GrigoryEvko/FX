@@ -101,6 +101,7 @@ import FX1Poly.Typed.LeveledContext
 import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
+import FX1Poly.Typed.ClosedNonConvertibility
 import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -1315,6 +1316,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.closedConv_iff_normalForm_eq
 #assert_no_axioms FX1Poly.Typed.closedBetaRedexNormalForm_eq
 #assert_no_axioms FX1Poly.Typed.closedIdentityNormalForm_eq
+-- NEGATIVE non-vacuity capstone: closed normal terms convert IFF syntactically equal
+-- (closedNormalConv_iff_syntacticEq, the isStepNormalForm-stated rigidity), so distinct head generators are
+-- PROVABLY non-convertible. Complements betaRedexConvertsToReduct (positive) — the decidable-Conv lane
+-- decides both convertible AND non-convertible closed pairs. Unconditional (no FT/SN — just normality).
+#assert_no_axioms FX1Poly.Typed.closedNormalConv_iff_syntacticEq
+#assert_no_axioms FX1Poly.Typed.closedUniverseCode_not_conv_identity
+#assert_no_axioms FX1Poly.Typed.closedUniverseCode_not_conv_piCode
+#assert_no_axioms FX1Poly.Typed.closedIdentity_not_conv_piCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
