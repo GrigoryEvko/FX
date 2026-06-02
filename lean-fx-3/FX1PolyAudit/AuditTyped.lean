@@ -48,6 +48,7 @@ import FX1Poly.Typed.ReducibleEnvTypeVariable
 import FX1Poly.Typed.SimplyTypedTypeExprFT
 import FX1Poly.Typed.AbstractionNonDependentUnderSubstLevelFree
 import FX1Poly.Typed.SimplyTypedTypeExprReducibleLevelFree
+import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1546,3 +1547,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleType.nonDependentArrow
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeExprLF
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeExprLF.reducibleUnderSubst
+
+-- THE LEVEL-FREE SIMPLY-TYPED TERM FUNDAMENTAL THEOREM (#502): the well-scoped term judgment
+-- `SimplyTypedTermLF` (var/app/lam) + `reducibleUnderSubst` (every simply-typed term, closed by a reducible
+-- substitution, is a reducible member of its type — var→lookupReducible, app→applicationUnderSubst,
+-- lam→abstractionNonDependentUnderSubst fed reducibleUnderSubst) + the strong-normalization corollaries.
+-- `stronglyNormalizingClosed` is the tangible payoff: every closed simply-typed term strongly normalizes
+-- (SN-for-well-typed on the wall-free simply-typed fragment).
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.reducibleUnderSubst
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.stronglyNormalizingUnderSubst
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.reducibleClosed
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.stronglyNormalizingClosed
