@@ -8,6 +8,7 @@ import FX1Poly.OmegacE.ReducerNormalizer
 import FX1Poly.OmegacE.EmptySystem
 import FX1Poly.OmegacE.IdempotentSystem
 import FX1Poly.OmegacE.IdempotentReducer
+import FX1Poly.OmegacE.IdempotentConfluence
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -186,3 +187,14 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.idempotentReduceOnce
 #assert_no_axioms FX1Poly.OmegacE.idempotentWordReducer
 #assert_no_axioms FX1Poly.OmegacE.idempotentWordNormalizer
+
+-- IDEMPOTENT CONFLUENCE LAYER — STRUCTURAL CHARACTERIZATION (IdempotentConfluence.lean): one-step idempotent
+-- rewriting IS "collapse one [c,c] to [c] in context" — rewriteOneStep_decomposition (forward: induction on
+-- the rewrite, context ctors extend A/B) + rewriteOneStep_ofDecomposition (backward: fire under both contexts).
+-- The inversion that turns the inductive RewritesOneStep into an explicit redex position = the critical-pair
+-- extraction tool local confluence consumes. listAppendAssoc = propext-free append associativity (core
+-- List.append_assoc carries propext — the Word.lean discipline). Honest scope: characterization only;
+-- HasLocalConfluence (the [c,c,c] overlap analysis) + decidability are the next atom.
+#assert_no_axioms FX1Poly.OmegacE.listAppendAssoc
+#assert_no_axioms FX1Poly.OmegacE.rewriteOneStep_decomposition
+#assert_no_axioms FX1Poly.OmegacE.rewriteOneStep_ofDecomposition
