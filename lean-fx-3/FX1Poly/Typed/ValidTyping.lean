@@ -2,7 +2,7 @@ import FX1Poly.Typed.FundamentalLevelIndexed
 import FX1Poly.Typed.ClosedLevelIndexed
 
 /-! # FX1Poly/Typed/ValidTyping
-    — the level-annotated typing (Abel validity-derivation-indexed relation): the recursor, leaf+conv core
+    — the level-annotated typing (Abel validity-derivation-indexed relation): the recursor, var/universe/conv/Π core
 
 The level-indexed fundamental theorem has all its per-constructor ARMS shipped as standalone lemmas
 (`FundamentalLevelIndexed.lean`), but the RECURSOR that assembles them was blocked: a single level-free motive
@@ -16,23 +16,29 @@ the inductive, so the coordination holds BY CONSTRUCTION —
 * `var` concludes at `contextLevels index` (its env level);
 * `conv`'s `reclassifierTyped` is at `subjectLevel + 1` (one level up, exactly what `tarskiDecode` + the
   conv-transport need);
-* `universeFormation` is level-polymorphic (any `predLevel + 1`).
+* `universeFormation` is level-polymorphic (any `predLevel + 1`);
+* `piIntro` checks domain & codomain codes at `predLevel + 1 + 1` (their universe sits one above the function's
+  level) and the body at `predLevel + 1` under `levelCons (predLevel + 1)` (the bound variable's env level);
+* `piElim` keeps function, argument, and application at one shared `subjectLevel`.
 
 With the levels pinned by the constructor, the fundamental theorem `ValidTyping.fundamental` is a CLEAN single
 induction (`ValidTyping.rec`): each arm is discharged verbatim by the shipped level-indexed arm
-(`fundamentalVarLevelIndexed` / `fundamentalUniverseFormationLevelIndexed` / `fundamentalConvLevelIndexed`),
-with `conv` threading its two IHs at the two coordinated levels.  This is the FIRST assembled recursor on the
-dependent-FT lane — the var/conv wall broken for the leaf+conv core.
+(`fundamentalVarLevelIndexed` / `…UniverseFormation…` / `…Conv…` / `…PiIntro…` / `…PiElim…`), with `conv`
+threading its two IHs and `piIntro` its three (under the extended env) at the coordinated levels.  This is the
+assembled recursor on the dependent-FT lane — the var/conv wall broken, now extended through the COMPUTATIONAL
+core (λ-introduction + application, where β-redexes live).
 
 ## Honest scope
 
-This is the `var` / `universeFormation` / `conv` CORE of the formation engine.  Two pieces remain to land full
-SN-for-well-typed: (1) the `genFormation` arm — Π/Σ type formers, threading the shipped
-`fundamentalGenFormationFormerLevelIndexed` through a level-annotated `DescTelescope`; (2) the LEVELING bridge
-`HasTypeDesc → ValidTyping` (every level-free formation derivation admits a consistent leveling — `var` at the
-context's recorded level, `conv`'s reclassifier re-leveled one up since universe-code members are
-level-polymorphic).  This file establishes that, once levels are annotated, the recursor assembles — the design
-that was the open crux.
+This covers `var` / `universeFormation` / `conv` / `piIntro` / `piElim` — the leaf+conv core PLUS the
+function/application computational core.  The closed identity `λx.x : Π(_ : U). U` is SN through this recursor
+(`validTyping_identity_stronglyNormalizing`), the first dependent-FT SN witness whose subject carries a binder
+and a bound-variable occurrence.  Two pieces remain to land full SN-for-well-typed: (1) the `genFormation` /
+`sigma` arms — remaining type formers, threading the shipped `fundamentalGenFormationFormerLevelIndexed` through
+a level-annotated `DescTelescope`; (2) the LEVELING bridge `HasTypeDescPi → ValidTyping` (every level-free
+derivation admits a consistent leveling — `var` at the context's recorded level, `conv`'s reclassifier re-leveled
+one up since universe-code members are level-polymorphic).  This file establishes that, once levels are
+annotated, the recursor assembles through the binder arms — the design that was the open crux.
 
 ## Zero-axiom verification
 
@@ -70,24 +76,51 @@ inductive ValidTyping (profile : PolyProfile) :
       (reclassifierTyped : ValidTyping profile contextLevels (subjectLevel + 1) context
         reclassifier (universeCodeCell levelExpr flag)) :
       ValidTyping profile contextLevels subjectLevel context subject reclassifier
+  | piIntro {scope : Nat} (contextLevels : Fin scope → Nat) (predLevel : Nat)
+      {context : TypingContext profile scope}
+      {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+      {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+      (domainTyped : ValidTyping profile contextLevels (predLevel + 1 + 1) context
+        domainCode (universeCodeCell domainLevel flag))
+      (codomainTyped : ValidTyping profile (levelCons (predLevel + 1) contextLevels)
+        (predLevel + 1 + 1) (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag))
+      (bodyTyped : ValidTyping profile (levelCons (predLevel + 1) contextLevels)
+        (predLevel + 1) (context.cons domainCode) body codomainCode) :
+      ValidTyping profile contextLevels (predLevel + 1) context
+        (lamCell body) (piTyCodeCell domainCode codomainCode)
+  | piElim {scope : Nat} (contextLevels : Fin scope → Nat) (subjectLevel : Nat)
+      {context : TypingContext profile scope}
+      {functionTerm argument domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+      (functionTyped : ValidTyping profile contextLevels subjectLevel context functionTerm
+        (piTyCodeCell domainCode codomainCode))
+      (argumentTyped : ValidTyping profile contextLevels subjectLevel context argument domainCode) :
+      ValidTyping profile contextLevels subjectLevel context
+        (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument)
 
-/-- **The fundamental theorem over `ValidTyping`** — the assembled recursor for the leaf+conv core.  A clean
-single induction (`ValidTyping.rec`): each arm is the shipped level-indexed arm; `conv` threads its two IHs
-(subject at `subjectLevel`, reclassifier at `subjectLevel + 1`) through `fundamentalConvLevelIndexed`.  The
-`contextLevels` index is pre-generalized by `induction`, so it is inferred (`_`) at each arm rather than
-re-bound. -/
+/-- **The fundamental theorem over `ValidTyping`** — the assembled recursor for the var/universe/conv/Π core.  A
+clean single induction (`ValidTyping.rec`): each arm is discharged verbatim by the shipped level-indexed arm
+(`fundamentalVarLevelIndexed` / `…UniverseFormation…` / `…Conv…` / `…PiIntro…` / `…PiElim…`).  `conv` threads its
+two IHs (subject at `subjectLevel`, reclassifier at `subjectLevel + 1`); `piIntro` threads three (domain &
+codomain codes at `predLevel + 1 + 1`, body at `predLevel + 1`, under the extended `levelCons` environment);
+`piElim` threads function & argument at the same level.  Because the inductive carries the per-arm level
+environments as genuine indices, `induction` binds `contextLevels` as a named arm variable in every arm (it is
+threaded explicitly to each shipped lemma, not inferred). -/
 theorem ValidTyping.fundamental {profile : PolyProfile} {scope : Nat}
     {contextLevels : Fin scope → Nat} {subjectLevel : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (typed : ValidTyping profile contextLevels subjectLevel context subject classifier) :
     FundamentalConclusionLevelIndexed contextLevels subjectLevel context subject classifier := by
   induction typed with
-  | var context index =>
-      exact fundamentalVarLevelIndexed _ context index
-  | universeFormation predLevel context levelExpr flag =>
-      exact fundamentalUniverseFormationLevelIndexed _ predLevel context levelExpr flag
-  | conv subjectLevel _typed converts _reclassifierTyped typedIH reclassifierIH =>
-      exact fundamentalConvLevelIndexed _ subjectLevel typedIH reclassifierIH converts
+  | var contextLevels context index =>
+      exact fundamentalVarLevelIndexed contextLevels context index
+  | universeFormation contextLevels predLevel context levelExpr flag =>
+      exact fundamentalUniverseFormationLevelIndexed contextLevels predLevel context levelExpr flag
+  | conv contextLevels subjectLevel _typed converts _reclassifierTyped typedIH reclassifierIH =>
+      exact fundamentalConvLevelIndexed contextLevels subjectLevel typedIH reclassifierIH converts
+  | piIntro contextLevels predLevel _domainTyped _codomainTyped _bodyTyped domainIH codomainIH bodyIH =>
+      exact fundamentalPiIntroLevelIndexed contextLevels predLevel domainIH codomainIH bodyIH
+  | piElim contextLevels subjectLevel _functionTyped _argumentTyped functionIH argumentIH =>
+      exact fundamentalPiElimLevelIndexed contextLevels subjectLevel functionIH argumentIH
 
 /-- **Closed strong normalization from `ValidTyping`** — the recursor's payoff for this fragment: a closed
 `ValidTyping` derivation at a positive level is UNCONDITIONALLY strongly normalizing (FT + the empty-context
@@ -109,5 +142,26 @@ theorem validTyping_universeCode_stronglyNormalizing {profile : PolyProfile}
   ValidTyping.closedStronglyNormalizing (profile := profile) 0
     (ValidTyping.universeFormation emptyLevelVector 0
       (TypingContext.empty : TypingContext profile 0) levelExpr flag)
+
+/-- **Smoke: the closed identity `λx.x` is SN through the recursor's `piIntro` arm.**  This exercises the
+computational core: the lambda binds a real variable (`bodyTyped` is the `var` arm at the extended context), so
+`piIntro` is applied non-vacuously — the recursor threads `var` under a binder and `closedStronglyNormalizing`
+discharges the whole lambda to plain SN.  The function has type `Π(_ : U). U` (universe-to-universe identity).
+This is the first SN witness on the dependent-FT lane whose subject contains a binder AND a bound-variable
+occurrence — the shape where β-redexes live. -/
+theorem validTyping_identity_stronglyNormalizing {profile : PolyProfile}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) :=
+  ValidTyping.closedStronglyNormalizing (profile := profile) 0
+    (ValidTyping.piIntro emptyLevelVector 0
+      (domainLevel := levelExpr.lsucc) (codomainLevel := levelExpr.lsucc) (flag := flag)
+      (ValidTyping.universeFormation emptyLevelVector 1
+        (TypingContext.empty : TypingContext profile 0) levelExpr flag)
+      (ValidTyping.universeFormation (levelCons 1 emptyLevelVector) 1
+        ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell levelExpr flag))
+        levelExpr flag)
+      (ValidTyping.var (levelCons 1 emptyLevelVector)
+        ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell levelExpr flag))
+        (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
 
 end FX1Poly.Typed
