@@ -54,6 +54,7 @@ import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.FireRootRedex
+import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
 import FX1Poly.Core.NormalFormUnique
@@ -1634,6 +1635,14 @@ gates pin them shut.
 -- Propext-clean over the 194-ctor table via DecidableEq dite-chains + ▸-casts + full spine destructure.
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex_sound
+
+-- One deterministic reduction step as a TOTAL FUNCTION + soundness: `reduceOnce` fires a root redex
+-- (fireRootRedex) or descends the child spine to the first reducible child; `reduceOnce_sound` /
+-- `reduceOnceSpine_sound` show every produced reduct is a genuine Step / StepChildren.  The descent engine
+-- the WN normalizer FUNCTION (#261/#480) iterates along Acc StepSuccessor.
+#assert_no_axioms FX1Poly.Core.RawTerm.reduceOnce
+#assert_no_axioms FX1Poly.Core.RawTerm.reduceOnce_sound
+#assert_no_axioms FX1Poly.Core.RawTermChildren.reduceOnceSpine_sound
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
