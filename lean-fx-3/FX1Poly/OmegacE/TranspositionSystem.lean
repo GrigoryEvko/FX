@@ -123,4 +123,99 @@ theorem transpositionSystem_convertibleModulo_length_preserved {dimension : Nat}
     sourceWord.length = targetWord.length :=
   conv.length_preserved (transpositionSystem_isLengthPreserving firstCell secondCell)
 
+/-! ## Termination measure: the inversion count
+
+The transposition system is length-PRESERVING, so length is NOT a termination measure.  The correct measure
+is the INVERSION COUNT: the number of `(firstCell-before-secondCell)` ordered pairs.  A swap `[a,b] → [b,a]`
+removes exactly one such inversion (the adjacent `a` moves right past the `b`; relative to every other cell
+both keep their order), so the count strictly decreases by one — a well-founded `ℕ` measure (the genuine
+non-length termination certificate, the analogue of `IsTerminating_of_lengthReducing` for this class).
+
+This subsection ships the MEASURE + its append-homomorphism (the reusable core).  The strict-decrease lemma
+(`RewritesOneStep ⟹ measure target < measure source`, the meaty step that uses `a ≠ b` in the `fire` case and
+count-preservation + this append lemma in the context cases) and the `IsTerminating` assembly (via
+`Subrelation` into `InvImage (· < ·) measure`, mirroring `IsTerminating_of_lengthReducing`) are the next
+SN-118 increment.
+
+REUSABLE ZERO-AXIOM FINDING: `Nat.add_mul` leaks `propext` (verified by `#print axioms`); use
+`Nat.add_comm 1 d` + `Nat.succ_mul` to distribute `(1 + d) * b` instead.  `ac_rfl` leaks `propext + Quot.sound`;
+do the additive AC by explicit `Nat.add_assoc` / `Nat.add_left_comm` rewrites to a canonical form. -/
+
+/-- Count the occurrences of a fixed `target` cell in a word's cell list. -/
+def countOccurrences {dimension : Nat} (target : OmegacECell dimension) :
+    List (OmegacECell dimension) → Nat
+  | [] => 0
+  | head :: tail => (if head = target then 1 else 0) + countOccurrences target tail
+
+/-- The inversion measure: the number of ordered `(firstCell-before-secondCell)` pairs in a cell list — the
+positions `i < j` with cell `i = firstCell` and cell `j = secondCell` (counted via `countOccurrences` of
+`secondCell` in each suffix following a `firstCell`).  Strictly decreased by every `[a,b] → [b,a]` swap. -/
+def aBeforeBInversions {dimension : Nat}
+    (firstCell secondCell : OmegacECell dimension) :
+    List (OmegacECell dimension) → Nat
+  | [] => 0
+  | head :: tail =>
+      (if head = firstCell then countOccurrences secondCell tail else 0)
+        + aBeforeBInversions firstCell secondCell tail
+
+/-- `countOccurrences` is a monoid homomorphism from list append to `ℕ` addition. -/
+theorem countOccurrences_append {dimension : Nat} (target : OmegacECell dimension)
+    (leftCells rightCells : List (OmegacECell dimension)) :
+    countOccurrences target (leftCells ++ rightCells)
+      = countOccurrences target leftCells + countOccurrences target rightCells := by
+  induction leftCells with
+  | nil =>
+      show countOccurrences target rightCells = 0 + countOccurrences target rightCells
+      rw [Nat.zero_add]
+  | cons head tail ih =>
+      show (if head = target then 1 else 0) + countOccurrences target (tail ++ rightCells)
+        = ((if head = target then 1 else 0) + countOccurrences target tail)
+          + countOccurrences target rightCells
+      rw [ih, Nat.add_assoc]
+
+/-- **Inversion count over an append**: the inversions of `left ++ right` are the inversions within `left`,
+plus the inversions within `right`, plus the CROSS inversions (each `firstCell` in `left` pairs with each
+`secondCell` in `right`) — the count-product `countOccurrences firstCell left * countOccurrences secondCell
+right`.  The key structural law behind the strict-decrease proof's context cases (a rewrite inside a context
+preserves the cross term, since it preserves the cell multiset, leaving only the inner measure to decrease). -/
+theorem aBeforeBInversions_append {dimension : Nat}
+    (firstCell secondCell : OmegacECell dimension)
+    (leftCells rightCells : List (OmegacECell dimension)) :
+    aBeforeBInversions firstCell secondCell (leftCells ++ rightCells)
+      = aBeforeBInversions firstCell secondCell leftCells
+        + countOccurrences firstCell leftCells * countOccurrences secondCell rightCells
+        + aBeforeBInversions firstCell secondCell rightCells := by
+  induction leftCells with
+  | nil =>
+      show aBeforeBInversions firstCell secondCell rightCells
+        = 0 + 0 * countOccurrences secondCell rightCells
+          + aBeforeBInversions firstCell secondCell rightCells
+      rw [Nat.zero_mul, Nat.add_zero, Nat.zero_add]
+  | cons head tail ih =>
+      show (if head = firstCell then countOccurrences secondCell (tail ++ rightCells) else 0)
+          + aBeforeBInversions firstCell secondCell (tail ++ rightCells)
+        = ((if head = firstCell then countOccurrences secondCell tail else 0)
+            + aBeforeBInversions firstCell secondCell tail)
+          + ((if head = firstCell then 1 else 0) + countOccurrences firstCell tail)
+            * countOccurrences secondCell rightCells
+          + aBeforeBInversions firstCell secondCell rightCells
+      rw [countOccurrences_append, ih]
+      by_cases headIsFirst : head = firstCell
+      · rw [if_pos headIsFirst, if_pos headIsFirst, if_pos headIsFirst,
+          Nat.add_comm 1 (countOccurrences firstCell tail), Nat.succ_mul]
+        generalize countOccurrences secondCell rightCells = termB
+        generalize countOccurrences secondCell tail = termA
+        generalize aBeforeBInversions firstCell secondCell tail = termC
+        generalize aBeforeBInversions firstCell secondCell rightCells = termE
+        generalize countOccurrences firstCell tail * termB = termP
+        rw [Nat.add_comm termP termB,
+            Nat.add_assoc termA termB ((termC + termP) + termE),
+            Nat.add_assoc termC termP termE,
+            Nat.add_assoc (termA + termC) (termB + termP) termE,
+            Nat.add_assoc termA termC ((termB + termP) + termE),
+            Nat.add_assoc termB termP termE,
+            Nat.add_left_comm termC termB (termP + termE)]
+      · rw [if_neg headIsFirst, if_neg headIsFirst, if_neg headIsFirst,
+          Nat.zero_add, Nat.zero_add, Nat.zero_add]
+
 end FX1Poly.OmegacE

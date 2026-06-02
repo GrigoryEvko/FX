@@ -235,3 +235,16 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.transpositionSystem_rewritesOneStep_length_preserved
 #assert_no_axioms FX1Poly.OmegacE.transpositionSystem_rewritesMany_length_preserved
 #assert_no_axioms FX1Poly.OmegacE.transpositionSystem_convertibleModulo_length_preserved
+
+-- TRANSPOSITION TERMINATION MEASURE (TranspositionSystem.lean): the inversion-count measure infrastructure
+-- toward SN-118 termination. The system is length-PRESERVING, so length is no measure; the inversion count
+-- (firstCell-before-secondCell ordered pairs) strictly decreases per swap. countOccurrences + aBeforeBInversions
+-- are the measure; the two append-homomorphism lemmas (countOccurrences_append, aBeforeBInversions_append with
+-- its cross-term count-product) are the reusable core the strict-decrease proof's context cases consume. The
+-- strict-decrease lemma + IsTerminating assembly are the next increment. ZERO-AXIOM DISCIPLINE: aBeforeBInversions_append
+-- avoids Nat.add_mul (leaks propext) via Nat.add_comm 1 _ + Nat.succ_mul, and avoids ac_rfl (leaks propext +
+-- Quot.sound) via explicit Nat.add_assoc/add_left_comm canonicalization.
+#assert_no_axioms FX1Poly.OmegacE.countOccurrences
+#assert_no_axioms FX1Poly.OmegacE.aBeforeBInversions
+#assert_no_axioms FX1Poly.OmegacE.countOccurrences_append
+#assert_no_axioms FX1Poly.OmegacE.aBeforeBInversions_append
