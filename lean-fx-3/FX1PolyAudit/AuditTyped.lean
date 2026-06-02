@@ -2196,3 +2196,10 @@ gates pin them shut.
 -- function (#261/#480) that supplies the normal-form witnesses.
 #assert_no_axioms FX1Poly.Core.Conv.iff_normalForms_eq_of_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.Conv.decidableOfNormalForms_of_isStronglyNormalizing
+
+-- GIRARD CR BUNDLE (per-decl gates, migrating the load-bearing reducibility-candidate primitives off
+-- sweep-only coverage): the IsReducibilityCandidate triple CR1/CR2/CR3 (structure fields), the base
+-- SN-is-a-candidate witness, candidate-congruence under PointwiseIff, and candidate variable-membership.
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizing_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.IsReducibilityCandidate.respectsPointwiseIff
+#assert_no_axioms FX1Poly.Core.IsReducibilityCandidate.containsVariable
