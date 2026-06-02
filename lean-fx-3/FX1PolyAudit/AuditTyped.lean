@@ -57,6 +57,7 @@ import FX1Poly.Typed.SimplyTypedTermRenameLevelFree
 import FX1Poly.Typed.SimplyTypedTermSubstLevelFree
 import FX1Poly.Typed.SimplyTypedTermSubjectReductionLevelFree
 import FX1Poly.Typed.SimplyTypedTermCanonicityLevelFree
+import FX1Poly.Typed.SimplyTypedTermConsistencyLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -1783,6 +1784,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.canonicalSplit
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.closedNormalIsLambda
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalFormIsLambda
+
+-- INHABITATION / CONSISTENCY — the final theorem of the simply-typed metatheory.  Every closed simply-typed
+-- term has an arrow type (canonicity says its NF is a lambda, type-preserving normalization keeps the type,
+-- lambda inversion makes the type an arrow); hence universe codes are uninhabited by closed terms (arrow vs
+-- universe-code head generators differ) — the fragment's consistency.
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.closedTermHasArrowType
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.noClosedTermAtUniverseCode
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
