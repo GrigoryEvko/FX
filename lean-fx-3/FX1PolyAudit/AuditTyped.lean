@@ -86,6 +86,7 @@ import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsHeadExpand
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsConv
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsStronglyNormalizing
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsNonDependentArrow
+import FX1Poly.Typed.ReducibleTypeAtAllLevelsNonDependentArrow
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1412,3 +1413,9 @@ gates pin them shut.
 -- (`subst0 (weaken B) arg = B`).  The member-side twin of `formerChildrenReducibleNonDependentAtAll`; the
 -- premise-(2) recursion step for the simply-typed fragment (no dependent-Π codomain growth).
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.nonDependentArrow
+
+-- TYPE-side twin: all-levels type reducibility for a non-dependent arrow `A → B`.  The dependent
+-- `piTypeOfDomainMemberExtension`'s argument-indexed codomain premise collapses to the constant base-codomain
+-- all-levels fact via weaken-cancellation.  With the member-side twin this is the full non-dependent-arrow
+-- reducibility pair — the simply-typed step where the dependent-Π codomain-growth obstruction is absent.
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.nonDependentArrow
