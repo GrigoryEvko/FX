@@ -88,4 +88,41 @@ theorem closedIdentityOnUniverse_stronglyNormalizing {profile : PolyProfile}
         ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell levelExpr flag))
         (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
 
+/-- **UNCONDITIONAL strong normalization of a closed β-redex.**  The application
+`(λ (x : Type@(e+1)). x) (Type@e) = appCell (lamCell (variableCell 0)) (universeCodeCell e flag)` is
+`IsStronglyNormalizing` — composing the `piElim` (application) arm over the identity function (itself the
+`piIntro` + `var` composition) and the argument `Type@e : Type@(e+1)` (the `universeFormation` arm), all at
+the empty context, then the closed-SN handoff.  First unconditional SN with an APPLICATION / β-redex: it
+exercises `fundamentalPiElimLevelIndexed` AND the `subst0 codomainCode argument` in its conclusion (which
+reduces definitionally here, the codomain being a closed cell), end-to-end — the reducing case of the
+machinery, hypothesis-free. -/
+theorem closedIdentityApplication_stronglyNormalizing {profile : PolyProfile}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (universeCodeCell levelExpr flag) : RawTerm 0) :=
+  closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
+    (fundamentalPiElimLevelIndexed (context := (TypingContext.empty : TypingContext profile 0))
+      emptyLevelVector (0 + 1)
+      (functionTerm := lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (argument := universeCodeCell levelExpr flag)
+      (domainCode := universeCodeCell levelExpr.lsucc flag)
+      (codomainCode := universeCodeCell levelExpr.lsucc flag)
+      (fundamentalPiIntroLevelIndexed (context := (TypingContext.empty : TypingContext profile 0))
+        emptyLevelVector 0
+        (domainCode := universeCodeCell levelExpr.lsucc flag)
+        (codomainCode := universeCodeCell levelExpr.lsucc flag)
+        (body := variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (domainLevel := levelExpr.lsucc.lsucc) (codomainLevel := levelExpr.lsucc.lsucc) (flag := flag)
+        (fundamentalUniverseFormationLevelIndexed emptyLevelVector (0 + 1)
+          (TypingContext.empty : TypingContext profile 0) levelExpr.lsucc flag)
+        (fundamentalUniverseFormationLevelIndexed (levelCons (0 + 1) emptyLevelVector) (0 + 1)
+          ((TypingContext.empty : TypingContext profile 0).cons
+            (universeCodeCell levelExpr.lsucc flag)) levelExpr.lsucc flag)
+        (fundamentalVarLevelIndexed (levelCons (0 + 1) emptyLevelVector)
+          ((TypingContext.empty : TypingContext profile 0).cons
+            (universeCodeCell levelExpr.lsucc flag)) (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (fundamentalUniverseFormationLevelIndexed emptyLevelVector 0
+        (TypingContext.empty : TypingContext profile 0) levelExpr flag))
+
 end FX1Poly.Typed

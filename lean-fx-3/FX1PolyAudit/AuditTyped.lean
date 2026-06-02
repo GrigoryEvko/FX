@@ -1291,6 +1291,9 @@ gates pin them shut.
 -- The closed identity λx.x : Π Type@e. Type@e is unconditionally SN — first such result with a LAMBDA +
 -- BOUND VARIABLE, composing piIntro + var arms end-to-end (the heart of the FT). Fin-1 index via ⟨0,_⟩.
 #assert_no_axioms FX1Poly.Typed.closedIdentityOnUniverse_stronglyNormalizing
+-- The closed β-redex (λx.x) Type@e is unconditionally SN — first such result with an APPLICATION, composing
+-- piElim over (piIntro + var) and universeFormation; exercises the subst0 in piElim's conclusion end-to-end.
+#assert_no_axioms FX1Poly.Typed.closedIdentityApplication_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
