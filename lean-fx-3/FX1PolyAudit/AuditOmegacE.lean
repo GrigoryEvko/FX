@@ -491,3 +491,10 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.generatorsAt
 #assert_no_axioms FX1Poly.OmegacE.generatorsAt_length
 #assert_no_axioms FX1Poly.OmegacE.mem_generatorsAt
+-- SN-122 completion: distinctness (the 2 are DISTINCT, a 2-element Fintype per dim — decide on concrete dims,
+-- higherCoherence.inj + congrArg Fin.val + Nat.noConfusion on the higher pair) + suspension-preserves-slot (the
+-- "+Suspend" half: slotOf_atSlot_general extends the canonical slot round-trips over Fin 2; slotOf_suspend then
+-- shows Σ keeps a generator's slot, so the binary structure is stable under suspension). Zero-axiom.
+#assert_no_axioms FX1Poly.OmegacE.generatorsAt_nodup
+#assert_no_axioms FX1Poly.OmegacE.slotOf_atSlot_general
+#assert_no_axioms FX1Poly.OmegacE.slotOf_suspend

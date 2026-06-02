@@ -16,15 +16,20 @@ word-problem search space at each dimension is finite), supplied here as a stand
   with the membership motive; the higher-coherence arm splits the `Fin 2` index by direct structure matching
   (`⟨0,_⟩ / ⟨1,_⟩ / ⟨v+2, h⟩`), discharging the out-of-range case by `Nat.not_lt`+`Nat.le_add_left`
   (propext-free, avoiding the `Fin.cases` axiom leak).
+* `generatorsAt_nodup` — DISTINCTNESS: the two generators at each dimension are distinct (`Nodup`), so each level
+  is a 2-element `Fintype` (exactly two, not two-with-duplicate).
+* `slotOf_atSlot_general` + `slotOf_suspend` — the "+ Suspend" half: suspension PRESERVES a generator's slot, so
+  the binary finite-type structure is stable under the suspension `Σ` (the two slots at dim `n` map to the two
+  at `n+1`).
 
 ## Honest scope / ledger
 
-This ships the finite-type ENUMERATION + exhaustiveness — a genuine, standalone ωcE structural theorem.  It does
-NOT bump `fxOmegacEConstructionLevel`: the linear `OmegacEConstructionLevel` ladder places `finiteTypeFamily`
-above `boundaryPresented`/`hlorPushoutConstruction`, and those rungs (the generator BOUNDARY data + the HLOR
-pushout) remain the deferred Axis-9 construction.  The enumeration here is independent of those rungs and stands
-on its own.  Deferred enrichments: per-dimension distinctness (`generatorsAt` is `Nodup` — exactly two DISTINCT
-generators), and compatibility with the suspension `Σ` (the "+ Suspend" half of SN-122).
+This ships the full finite-type-family witness (enumeration + exhaustiveness + distinctness + suspension
+stability) — a genuine, standalone ωcE structural theorem package.  It does NOT bump
+`fxOmegacEConstructionLevel`: the linear `OmegacEConstructionLevel` ladder places `finiteTypeFamily` above
+`boundaryPresented`/`hlorPushoutConstruction`, and those rungs (the generator BOUNDARY data + the HLOR pushout)
+remain the deferred Axis-9 construction (SN-121).  The finite-type theorems here are independent of those rungs
+and stand on their own.
 
 ## Zero-axiom verification
 
@@ -80,5 +85,44 @@ theorem mem_generatorsAt {dimension : Nat} (cell : OmegacECell dimension) :
       | ⟨1, _⟩ => mem_pair_second _ _
       | ⟨counterValue + 2, isLessThanTwo⟩ =>
           absurd isLessThanTwo (Nat.not_lt.mpr (Nat.le_add_left 2 counterValue)))
+
+/-- **Distinctness**: the two generators at every dimension are distinct (the enumeration has no duplicates).
+With `generatorsAt_length` this upgrades "binary finite-type" to EXACTLY two distinct generators — a 2-element
+`Fintype` at each level.  The concrete dimensions decide via the shipped `DecidableEq`; the higher-coherence pair
+differs in its `Fin 2` slot (`higherCoherence.inj` then `congrArg Fin.val` + `Nat.noConfusion`). -/
+theorem generatorsAt_nodup (dimension : Nat) : (generatorsAt dimension).Nodup := by
+  match dimension with
+  | 0 => decide
+  | 1 => decide
+  | 2 => decide
+  | (_baseDim + 3) =>
+      refine List.Pairwise.cons ?_ (List.Pairwise.cons (fun _ memberOfEmpty => nomatch memberOfEmpty)
+        List.Pairwise.nil)
+      intro candidate memberOfTail
+      cases memberOfTail with
+      | head =>
+          intro cellsEqual
+          exact Nat.noConfusion (congrArg Fin.val (OmegacECell.higherCoherence.inj cellsEqual))
+      | tail _ memberOfEmpty => nomatch memberOfEmpty
+
+/-- General slot round-trip: selecting one of the two slots and reading it back is the identity (the canonical
+slot-specific round-trips `slotOf_atSlot_slot{Zero,One}` extended over all of `Fin 2` by structure split). -/
+theorem slotOf_atSlot_general (dimension : Nat) (slot : Fin 2) :
+    OmegacECell.slotOf (OmegacECell.atSlot dimension slot) = slot := by
+  match slot with
+  | ⟨0, _⟩ => exact OmegacECell.slotOf_atSlot_slotZero dimension
+  | ⟨1, _⟩ => exact OmegacECell.slotOf_atSlot_slotOne dimension
+  | ⟨counterValue + 2, isLessThanTwo⟩ =>
+      exact absurd isLessThanTwo (Nat.not_lt.mpr (Nat.le_add_left 2 counterValue))
+
+/-- **Suspension preserves the slot** — the "+ Suspend" half of SN-122.  A generator and its once-suspended image
+occupy the same of the two slots, so the binary finite-type structure is STABLE under the suspension `Σ`: the two
+slots at dimension `n` map to the two slots at dimension `n+1`.  Immediate from `OmegacECell.suspend`'s definition
+(`atSlot (n+1) (slotOf cell)`) and the general round-trip `slotOf_atSlot_general`. -/
+theorem slotOf_suspend {dimension : Nat} (cell : OmegacECell dimension) :
+    OmegacECell.slotOf (OmegacECell.suspend cell) = OmegacECell.slotOf cell := by
+  show OmegacECell.slotOf (OmegacECell.atSlot (dimension + 1) (OmegacECell.slotOf cell))
+      = OmegacECell.slotOf cell
+  exact slotOf_atSlot_general (dimension + 1) (OmegacECell.slotOf cell)
 
 end FX1Poly.OmegacE
