@@ -20,6 +20,7 @@ import FX1Poly.OmegacE.SortingSystem
 import FX1Poly.OmegacE.SortingTermination
 import FX1Poly.OmegacE.SortingConfluence
 import FX1Poly.OmegacE.SortingReducer
+import FX1Poly.OmegacE.OmegacEFiniteType
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -480,3 +481,13 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.sortingRewrite_implies_reduceCells_isSome
 #assert_no_axioms FX1Poly.OmegacE.sortingWordReducer
 #assert_no_axioms FX1Poly.OmegacE.decidableConvertibleModulo_sortingSystem
+
+-- ωcE FINITE-TYPE FAMILY (OmegacEFiniteType.lean): SN-122 core. The walking-coherent-equivalence generator family
+-- is BINARY finite-type: generatorsAt enumerates exactly 2 generators per dimension (Nat match 0|1|2|baseDim+3),
+-- generatorsAt_length proves the binary cardinality, mem_generatorsAt proves EXHAUSTIVENESS (every cell is listed)
+-- via OmegacECell.casesOn with the membership motive + Fin-2 structure split (no Fin.cases). Standalone finite-type
+-- witness; does NOT bump fxOmegacEConstructionLevel (boundaryPresented/hlorPushout rungs remain the deferred HLOR
+-- construction; SN-121's full boundary presentation needs the higher-cell pasting data). Zero-axiom.
+#assert_no_axioms FX1Poly.OmegacE.generatorsAt
+#assert_no_axioms FX1Poly.OmegacE.generatorsAt_length
+#assert_no_axioms FX1Poly.OmegacE.mem_generatorsAt
