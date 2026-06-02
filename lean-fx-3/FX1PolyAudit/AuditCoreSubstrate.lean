@@ -43,6 +43,7 @@ import FX1Poly.Core.ReducibleTypeWellFormed
 import FX1Poly.Core.StratifiedReducibleType
 import FX1Poly.Core.StratifiedReducibleTypeRename
 import FX1Poly.Core.KripkeCandidateRenameClosure
+import FX1Poly.Core.NeutralTermRename
 import FX1Poly.Core.StratifiedReducibleTypeForwardClosure
 import FX1Poly.Core.StratifiedReducibleTypeCandidate
 import FX1Poly.Core.StratifiedReducibleTypeNeutral
@@ -312,3 +313,6 @@ per-decl list.  It also re-checks the native infra under
 -- CR2 for the Kripke arrow (non-dependent + dependent): forward Step closure.
 #assert_no_axioms FX1Poly.Core.kripkeArrow_forwardStep
 #assert_no_axioms FX1Poly.Core.kripkeArrowDep_forwardStep
+-- CR3 structural ingredient: neutrality is preserved by renaming (needed so the applied fresh-var head
+-- `rename furtherRenaming functionTerm` stays neutral in the Kripke arrow's neutral backward closure).
+#assert_no_axioms FX1Poly.Core.IsNeutral.rename
