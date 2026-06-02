@@ -47,6 +47,7 @@ import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
 import FX1Poly.Typed.SimplyTypedTypeExprFT
 import FX1Poly.Typed.AbstractionNonDependentUnderSubstLevelFree
+import FX1Poly.Typed.SimplyTypedTypeExprReducibleLevelFree
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1535,3 +1536,13 @@ gates pin them shut.
 -- a single `IsReducibleMember`, so the lam binder needs no all-levels argument — the stratified universe wall
 -- is structurally absent for a non-dependent codomain.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMember.abstractionNonDependentUnderSubst
+
+-- The domain supplier for the level-free simply-typed term FT: the non-dependent arrow type builder
+-- (`ReducibleType.nonDependentArrow`, level-free twin of the stratified `IsReducibleTypeAtAllLevels.nonDependentArrow`),
+-- the directly-reducible type-expression class (`IsReducibleTypeExprLF` = universe codes + non-dependent
+-- arrows; no type-variable leaves, which decode only to SN level-free), and the supplier proper
+-- (`reducibleUnderSubst`) — every such expression substitutes to a directly-reducible level-free type, the
+-- domain reducibility the lam arm consumes.
+#assert_no_axioms FX1Poly.Typed.ReducibleType.nonDependentArrow
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeExprLF
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeExprLF.reducibleUnderSubst
