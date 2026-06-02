@@ -87,6 +87,7 @@ import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsConv
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsStronglyNormalizing
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsNonDependentArrow
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsNonDependentArrow
+import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1426,3 +1427,13 @@ gates pin them shut.
 -- all-levels fact via weaken-cancellation.  With the member-side twin this is the full non-dependent-arrow
 -- reducibility pair — the simply-typed step where the dependent-Π codomain-growth obstruction is absent.
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.nonDependentArrow
+
+-- ASSEMBLY CAPSTONE: the universe member-extension principle (open in general at the fuel-0 universe wall) is
+-- proved UNCONDITIONALLY for the FIRST-ORDER simply-typed fragment — types built from neutral/data leaves and
+-- non-dependent arrows with neutral DOMAINS (curried first-order functions over base types).  This is the
+-- classic Tait reducibility result realized on FX's stratified Tarski substrate: the first non-trivial
+-- fragment where the reducibility machinery closes end-to-end, assembling the neutral-leaf, non-dependent-
+-- arrow (type + positive-source member), and ofNeutralClassifier arms by induction on a 2-ctor witness.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.nonDependentArrowPositive
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.reducibleAndMemberExtension
