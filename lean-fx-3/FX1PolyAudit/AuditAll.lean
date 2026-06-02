@@ -8,6 +8,7 @@ import FX1PolyAudit.AuditFXProfile
 import FX1PolyAudit.AuditNbE
 import FX1PolyAudit.AuditUniverse
 import FX1PolyAudit.AuditTyped
+import FX1PolyAudit.AuditOmegacE
 import FX1PolyAudit.AuditFX0Poly
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
@@ -55,6 +56,9 @@ The second invariant is the one a release gate actually needs.
   weakening / substitution / validity / SN / inversion / uniqueness /
   decidable `IsType` + decidable `HasType` + decidable typed `Conv`,
   plus the honesty (0-FP) and decider (0-FN-per-fragment) corpora.
+* `AuditOmegacE`        — the ωcE / Makkai word-problem leg (Path B): the
+  dimension-1 free-monoid structure on scaffold words (the word-equality
+  recursion base).
 
 ## Deliberately EXCLUDED — do NOT re-add
 
