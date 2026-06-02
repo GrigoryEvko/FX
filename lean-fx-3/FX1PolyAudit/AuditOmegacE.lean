@@ -104,6 +104,15 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.confluenceFromAccessible
 #assert_no_axioms FX1Poly.OmegacE.newman
 
+-- TERMINATION FROM A LENGTH MEASURE (Confluence.lean): IsLengthReducingSystem (every rule strictly shortens)
+-- ⟹ IsTerminating (IsTerminating_of_lengthReducing), via length_lt_of_lengthReducing (one step strictly
+-- decreases length) + Subrelation.accessible into InvImage (·<·) length (Nat.lt well-founded). Discharges the
+-- termination hypothesis of the convergent-presentation decision from a CHECKABLE measure — with newman, a
+-- concrete length-reducing system needs only local confluence + a reducer.
+#assert_no_axioms FX1Poly.OmegacE.IsLengthReducingSystem
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.RewritesOneStep.length_lt_of_lengthReducing
+#assert_no_axioms FX1Poly.OmegacE.IsTerminating_of_lengthReducing
+
 -- WORD PROBLEM DECIDED (WordProblem.lean): convergent presentation ⟹ decidable convertibility — the Path-B
 -- twin of Conv.decidableOfStronglyNormalizing. WordNormalizer (normalize to a reachable normal form) +
 -- rigidity (rewritesMany_eq_of_blocksStep) give Joinable = NF-equality, then Church-Rosser gives

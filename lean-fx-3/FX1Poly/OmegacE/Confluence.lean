@@ -204,4 +204,51 @@ theorem newman {dimension : Nat}
   intro sourceWord firstReduct secondReduct sourceToFirst sourceToSecond
   exact confluenceFromAccessible localConfluence (terminating sourceWord) sourceToFirst sourceToSecond
 
+/-! ## Termination from a length measure
+
+`IsTerminating` (well-foundedness of reduction) is abstract; this discharges it from a CHECKABLE condition —
+every rule strictly decreasing length — the simplest termination certificate a concrete system supplies. -/
+
+/-- A rule system is length-reducing when every rule's right-hand side is strictly shorter than its left. -/
+def IsLengthReducingSystem {dimension : Nat}
+    (system : OmegacERewriteRule dimension → Prop) : Prop :=
+  ∀ rule : OmegacERewriteRule dimension, system rule →
+    rule.rightHandSide.length < rule.leftHandSide.length
+
+/-- A one-step rewrite under a length-reducing system strictly decreases length (the strict analogue of
+`RewritesOneStep.length_preserved`): `fire` is the rule hypothesis, the context cases add `length_append` to
+the inner strict inequality. -/
+theorem OmegacEWord.RewritesOneStep.length_lt_of_lengthReducing {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (lengthReducing : IsLengthReducingSystem system)
+    {sourceWord targetWord : OmegacEWord dimension}
+    (step : OmegacEWord.RewritesOneStep system sourceWord targetWord) :
+    targetWord.length < sourceWord.length := by
+  induction step with
+  | fire rule isInSystem => exact lengthReducing rule isInSystem
+  | underLeftContext prefixWord _inner innerIH =>
+      rw [OmegacEWord.length_append, OmegacEWord.length_append]
+      exact Nat.add_lt_add_left innerIH prefixWord.length
+  | underRightContext suffixWord _inner innerIH =>
+      rw [OmegacEWord.length_append, OmegacEWord.length_append]
+      exact Nat.add_lt_add_right innerIH suffixWord.length
+
+/-- **A length-reducing system is terminating.**  Reduction embeds (by strictly decreasing length) into `<` on
+`ℕ` pulled back along `length`, which is well-founded — so every word is accessible.  Discharges the
+`IsTerminating` hypothesis of the convergent-presentation decision (`decidableConvertibleModulo_ofConvergent`)
+from a checkable length measure; combined with `newman` it leaves only local confluence + a reducer to supply
+for a concrete length-reducing system. -/
+theorem IsTerminating_of_lengthReducing {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (lengthReducing : IsLengthReducingSystem system) :
+    IsTerminating system := by
+  intro word
+  have subrel :
+      Subrelation (fun reduct source => OmegacEWord.RewritesOneStep system source reduct)
+        (InvImage (· < ·) (OmegacEWord.length (dimension := dimension))) := by
+    intro smaller larger hStep
+    exact OmegacEWord.RewritesOneStep.length_lt_of_lengthReducing lengthReducing hStep
+  exact subrel.accessible
+    ((InvImage.wf (OmegacEWord.length (dimension := dimension)) Nat.lt_wfRel.wf).apply word)
+
 end FX1Poly.OmegacE
