@@ -100,6 +100,7 @@ import FX1Poly.Typed.TypeFundamentalLevelIndexed
 import FX1Poly.Typed.LeveledContext
 import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Typed.ClosedConvDecision
+import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -1304,6 +1305,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.decidableConvBetaRedexAndReduct
 #assert_no_axioms FX1Poly.Typed.decidableConvBetaRedexAndIdentity
 #assert_no_axioms FX1Poly.Typed.betaRedexConvertsToReduct
+-- EXTRACTION twin of the decision lane: from the FT-derived closed SN, the normalizer EXTRACTS the canonical
+-- normal form (closedNormalFormFromLevelIndexed) with its metatheory — converts to it, it is normal, and NF
+-- equality is a COMPLETE conversion invariant (closedConv_iff_normalForm_eq). The cherries are PROVEN (not
+-- just decidable): the closed β-redex normalizes to its reduct Type@e; the closed identity is its own NF.
+#assert_no_axioms FX1Poly.Typed.closedNormalFormFromLevelIndexed
+#assert_no_axioms FX1Poly.Typed.closedNormalForm_conv
+#assert_no_axioms FX1Poly.Typed.closedNormalForm_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.closedConv_iff_normalForm_eq
+#assert_no_axioms FX1Poly.Typed.closedBetaRedexNormalForm_eq
+#assert_no_axioms FX1Poly.Typed.closedIdentityNormalForm_eq
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
