@@ -1413,6 +1413,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.validTypingBridgeVar
 #assert_no_axioms FX1Poly.Typed.validTypingBridgeUniverseFormation
 #assert_no_axioms FX1Poly.Typed.validTypingBridgeConv
+-- SN-023 (LevelingBridge.lean): the binder + former bridge arms — each mirrors the matching ValidTyping ctor's
+-- level discipline (piIntro: codes at predLevel+1+1, body at predLevel+1 under levelCons; piElim: shared level;
+-- piFormation/sigmaFormation: the ∀-aboveLevel domain premise SN-025 produces; genFormationPi: the SN-021 ctor).
+-- Per-arm TARGET SHAPES given coordinated inputs; the cross-IH coordination + ∀-aboveLevel production is the
+-- inductive assembly SN-027 (ValidTyping is NOT level-weakenable — var pins its level — so coordination is the
+-- deferred crux, not arm-local).
+#assert_no_axioms FX1Poly.Typed.validTypingBridgePiIntro
+#assert_no_axioms FX1Poly.Typed.validTypingBridgePiElim
+#assert_no_axioms FX1Poly.Typed.validTypingBridgePiFormation
+#assert_no_axioms FX1Poly.Typed.validTypingBridgeSigmaFormation
+#assert_no_axioms FX1Poly.Typed.validTypingBridgeGenFormationPi
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_identity_stronglyNormalizing

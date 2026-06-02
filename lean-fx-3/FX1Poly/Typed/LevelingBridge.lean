@@ -86,4 +86,107 @@ theorem validTypingBridgeConv {profile : PolyProfile} {scope : Nat}
       ValidTyping profile contextLevels resultLevel context subject reclassifier :=
   ⟨_, ValidTyping.conv contextLevels subjectLevel typed converts reclassifierTyped⟩
 
+/-! ## Binder + former bridge arms (SN-023)
+
+Each arm below mirrors the matching `ValidTyping` constructor's level discipline: given the sub-derivations at
+exactly the levels that constructor demands (its coordinated inputs), the arm produces the former/binder cell's
+validity, existentially closed over the conclusion level.  As with the conv arm, the genuinely-hard work — the
+inductive ASSEMBLY that threads a CONSISTENT `contextLevels` across the whole derivation, aligns the per-IH
+levels (`ValidTyping` is NOT level-weakenable: `var` pins its level at `contextLevels index`), and PRODUCES the
+`∀ aboveLevel` Π/Σ-formation domain premise (SN-025, where the universe-domain all-levels obstruction lives) —
+is deferred to the composition step SN-027.  These arms fix the target shapes that assembly must hit.
+-/
+
+/-- **Bridge piIntro arm.**  The λ-introduction binder: domain/codomain codes at `predLevel + 1 + 1`, body at
+`predLevel + 1` under the `levelCons (predLevel + 1)`-extended level vector — exactly `ValidTyping.piIntro`'s
+discipline. -/
+theorem validTypingBridgePiIntro {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
+    (domainTyped : ValidTyping profile contextLevels (predLevel + 1 + 1) context
+      domainCode (universeCodeCell domainLevel flag))
+    (codomainTyped : ValidTyping profile (levelCons (predLevel + 1) contextLevels) (predLevel + 1 + 1)
+      (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag))
+    (bodyTyped : ValidTyping profile (levelCons (predLevel + 1) contextLevels) (predLevel + 1)
+      (context.cons domainCode) body codomainCode) :
+    ∃ subjectLevel : Nat,
+      ValidTyping profile contextLevels subjectLevel context
+        (lamCell body) (piTyCodeCell domainCode codomainCode) :=
+  ⟨_, ValidTyping.piIntro contextLevels predLevel domainTyped codomainTyped bodyTyped⟩
+
+/-- **Bridge piElim arm.**  Application: function and argument share one `subjectLevel`; the result classifier
+is the codomain substituted by the argument — exactly `ValidTyping.piElim`'s discipline. -/
+theorem validTypingBridgePiElim {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (subjectLevel : Nat)
+    {context : TypingContext profile scope}
+    {functionTerm argument domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (functionTyped : ValidTyping profile contextLevels subjectLevel context
+      functionTerm (piTyCodeCell domainCode codomainCode))
+    (argumentTyped : ValidTyping profile contextLevels subjectLevel context argument domainCode) :
+    ∃ resultLevel : Nat,
+      ValidTyping profile contextLevels resultLevel context
+        (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument) :=
+  ⟨_, ValidTyping.piElim contextLevels subjectLevel functionTyped argumentTyped⟩
+
+/-- **Bridge piFormation arm.**  The Π type former: domain reducible at EVERY level (`∀ aboveLevel`, the
+fuel-polymorphic type-code premise SN-025 produces during assembly), codomain at `predLevel + 1` under one
+`levelCons headLevel` — exactly `ValidTyping.piFormation`'s discipline. -/
+theorem validTypingBridgePiFormation {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainTyped : ∀ aboveLevel : Nat,
+      ValidTyping profile contextLevels (aboveLevel + 1) context
+        domainCode (universeCodeCell domainLevel flag))
+    (codomainTyped : ∀ headLevel : Nat,
+      ValidTyping profile (levelCons headLevel contextLevels) (predLevel + 1)
+        (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag)) :
+    ∃ subjectLevel : Nat,
+      ValidTyping profile contextLevels subjectLevel context
+        (piTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) :=
+  ⟨_, ValidTyping.piFormation (formerLevel := formerLevel) contextLevels predLevel domainTyped codomainTyped⟩
+
+/-- **Bridge sigmaFormation arm.**  The Σ former twin: `∀ aboveLevel` domain, single-level codomain (Σ
+formation is classified by SN of the domain alone) — exactly `ValidTyping.sigmaFormation`'s discipline. -/
+theorem validTypingBridgeSigmaFormation {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainTyped : ∀ aboveLevel : Nat,
+      ValidTyping profile contextLevels (aboveLevel + 1) context
+        domainCode (universeCodeCell domainLevel flag))
+    (codomainTyped : ValidTyping profile (levelCons (predLevel + 1) contextLevels) (predLevel + 1)
+      (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag)) :
+    ∃ subjectLevel : Nat,
+      ValidTyping profile contextLevels subjectLevel context
+        (sigmaTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) :=
+  ⟨_, ValidTyping.sigmaFormation (formerLevel := formerLevel) contextLevels predLevel
+    domainTyped codomainTyped⟩
+
+/-- **Bridge genFormationPi arm.**  The GENERIC table-driven former (SN-021's ctor): any `typingRuleDescOf`
+former (Π/Σ as instances) with its `DescTelescopePi` premise telescope and the `telescopeFundamental`
+reducibility of its children bridges to `ValidTyping.genFormationPi` — cascade-free former coverage. -/
+theorem validTypingBridgeGenFormationPi {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope}
+    (generator : Generator) (payload : generator.payload scope)
+    {children : RawTermChildren generator.binderShifts scope}
+    {levels : List LevelExpr} {flag : UniverseFlag} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    (premises : DescTelescopePi profile (currentDepth := 0) context levels flag children)
+    (telescopeFundamental :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        (_env : ReducibleEnvVec contextLevels context substitution)
+        (shapeEq : generator.binderShifts = consecutiveShifts 0 levels.length),
+        TelescopeReducible flag 0 levels.length substitution levels (shapeEq ▸ children)) :
+    ∃ subjectLevel : Nat,
+      ValidTyping profile contextLevels subjectLevel context
+        (.mkGen generator payload children) (rule.outputType scope levels flag) :=
+  ⟨_, ValidTyping.genFormationPi contextLevels predLevel generator payload isFormation
+    premises telescopeFundamental⟩
+
 end FX1Poly.Typed
