@@ -50,6 +50,7 @@ import FX1Poly.Typed.AbstractionNonDependentUnderSubstLevelFree
 import FX1Poly.Typed.SimplyTypedTypeExprReducibleLevelFree
 import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
+import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1568,3 +1569,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.reductsJoinUnderSubst
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalFormUniqueUnderSubst
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalFormUniqueClosed
+
+-- INHABITATION CORPUS for the simply-typed term FT (the fundamental theorem is non-vacuous): concrete
+-- `SimplyTypedTermLF` derivations of the polymorphic identity at a universe base type and at an arrow type,
+-- with their strong normalization as fundamental-theorem corollaries.  Simply-typed analogue of TY-honesty.
+#assert_no_axioms FX1Poly.Typed.identityIsSimplyTyped
+#assert_no_axioms FX1Poly.Typed.identityStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.arrowIdentityIsSimplyTyped
+#assert_no_axioms FX1Poly.Typed.arrowIdentityStronglyNormalizing
