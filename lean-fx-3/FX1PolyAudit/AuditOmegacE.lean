@@ -3,6 +3,7 @@ import FX1Poly.OmegacE.WordFreeMonoid
 import FX1Poly.OmegacE.WordFreeMonoidUniversal
 import FX1Poly.OmegacE.Rewrite
 import FX1Poly.OmegacE.Confluence
+import FX1Poly.OmegacE.WordProblem
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -89,3 +90,15 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.HasChurchRosser
 #assert_no_axioms FX1Poly.OmegacE.churchRosser_of_confluence
 #assert_no_axioms FX1Poly.OmegacE.convertibleModulo_iff_joinable_of_churchRosser
+
+-- WORD PROBLEM DECIDED (WordProblem.lean): convergent presentation ⟹ decidable convertibility — the Path-B
+-- twin of Conv.decidableOfStronglyNormalizing. WordNormalizer (normalize to a reachable normal form) +
+-- rigidity (rewritesMany_eq_of_blocksStep) give Joinable = NF-equality, then Church-Rosser gives
+-- ConvertibleModulo = NF-equality, hence Decidable (ConvertibleModulo) by decidable_of_iff over the
+-- propext-free word DecidableEq. CONDITIONAL on HasConfluence + a WordNormalizer (discharged per concrete
+-- system later); the convertibility characterization uses Iff.trans, NOT rw [← iff] (which pulls propext).
+#assert_no_axioms FX1Poly.OmegacE.WordNormalizer
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.rewritesMany_eq_of_blocksStep
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.Joinable.iff_normalize_eq
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.iff_normalize_eq
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.decidableOfNormalizer
