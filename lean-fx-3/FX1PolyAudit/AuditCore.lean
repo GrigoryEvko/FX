@@ -5,6 +5,7 @@ import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Core.GeneratorFinitePolygraph
 import FX1Poly.Core.GeneratorPolygraphMap
 import FX1Poly.Core.RawCellWordEncoding
+import FX1Poly.Core.StepRewriteRuleMap
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -92,6 +93,23 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.encodeRuleWord_identity_right
 #assert_no_axioms FX1Poly.Core.RawCell.generatingCellCount
 #assert_no_axioms FX1Poly.Core.encodeRuleWord_length_eq_generatingCellCount
+
+-- SN-126 (#629): each FX reduction as a rewrite rule over the term-code word monoid. Uses the SHIPPED faithful
+-- RawTerm.toCode (head tag + payload + children) as the bridge encode. toCode_mkGen (rfl head-tag rule) +
+-- toCode_ne_nil (every code begins with the head tag, so non-degenerate rules). Step.inducedRewriteRule maps a
+-- reduction to the rule (redex.toCode, reduct.toCode); projections rfl + both-sides-non-empty. fxStepSystem is
+-- the generated rule system (a rule is in it iff it is some reduction's code-pair); inducedRewriteRule_mem proves
+-- every Step lands in it by construction -- the fxSystem SN-127's bridge soundness ranges over. Zero-axiom
+-- (rfl / cases+cons_ne_nil / existential-intro with rfl witnesses).
+#assert_no_axioms FX1Poly.Core.toCode_mkGen
+#assert_no_axioms FX1Poly.Core.toCode_ne_nil
+#assert_no_axioms FX1Poly.Core.Step.inducedRewriteRule
+#assert_no_axioms FX1Poly.Core.Step.inducedRewriteRule_leftHandSide
+#assert_no_axioms FX1Poly.Core.Step.inducedRewriteRule_rightHandSide
+#assert_no_axioms FX1Poly.Core.Step.inducedRewriteRule_leftHandSide_ne_nil
+#assert_no_axioms FX1Poly.Core.Step.inducedRewriteRule_rightHandSide_ne_nil
+#assert_no_axioms FX1Poly.Core.fxStepSystem
+#assert_no_axioms FX1Poly.Core.Step.inducedRewriteRule_mem_fxStepSystem
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
