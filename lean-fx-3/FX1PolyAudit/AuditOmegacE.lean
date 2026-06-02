@@ -4,6 +4,7 @@ import FX1Poly.OmegacE.WordFreeMonoidUniversal
 import FX1Poly.OmegacE.Rewrite
 import FX1Poly.OmegacE.Confluence
 import FX1Poly.OmegacE.WordProblem
+import FX1Poly.OmegacE.ReducerNormalizer
 import FX1Poly.OmegacE.EmptySystem
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
@@ -114,6 +115,20 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.Joinable.iff_normalize_eq
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.iff_normalize_eq
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.decidableOfNormalizer
+
+-- NORMALIZER FROM TERMINATION + REDUCER (ReducerNormalizer.lean): the word analog of RawTerm.normalize.
+-- WordReducer (sound+complete reduceOnce) + IsTerminating ⟹ a WordNormalizer (toNormalizer), via Acc.rec
+-- driving reduceOnce along the termination accessibility (normalize_reaches/normalize_blocksStep correctness;
+-- Acc.rec axiom-free). CAPSTONE decidableConvertibleModulo_ofConvergent: local confluence + termination +
+-- reducer ⟹ decidable word problem (newman → toNormalizer → decidableOfNormalizer) — the full convergent-
+-- presentation decidability, every hypothesis checkable for a concrete system.
+#assert_no_axioms FX1Poly.OmegacE.WordReducer
+#assert_no_axioms FX1Poly.OmegacE.WordReducer.normalize
+#assert_no_axioms FX1Poly.OmegacE.WordReducer.normalize_unfold
+#assert_no_axioms FX1Poly.OmegacE.WordReducer.normalize_reaches
+#assert_no_axioms FX1Poly.OmegacE.WordReducer.normalize_blocksStep
+#assert_no_axioms FX1Poly.OmegacE.WordReducer.toNormalizer
+#assert_no_axioms FX1Poly.OmegacE.decidableConvertibleModulo_ofConvergent
 
 -- FIRST CONCRETE CONVERGENT PRESENTATION (EmptySystem.lean): the empty (free-monoid) rule system discharges
 -- BOTH abstract hypotheses end-to-end — no word rewrites (rewritesOneStep_emptySystem_absurd), identity
