@@ -16,6 +16,7 @@ import FX1Poly.OmegacE.AbsorptionSystem
 import FX1Poly.OmegacE.AbsorptionConfluence
 import FX1Poly.OmegacE.AbsorptionLocalConfluence
 import FX1Poly.OmegacE.AbsorptionReducer
+import FX1Poly.OmegacE.SortingSystem
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -389,3 +390,20 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.absorptionReduceOnce
 #assert_no_axioms FX1Poly.OmegacE.absorptionWordReducer
 #assert_no_axioms FX1Poly.OmegacE.decidableConvertibleModulo_absorptionSystem
+
+-- SORTING / SYMMETRIC SYSTEM — GUARDED RULE FAMILY (SortingSystem.lean): SN-120 opener (#623), the "graduation".
+-- Parameterized by a priority slotValue : OmegacECell → Nat; the rule [a,b]→[b,a] fires for EVERY descending pair
+-- (slotValue b < slotValue a) — bubble sort = the symmetric-group word problem. Membership is an EXISTENTIAL with a
+-- strict-order GUARD (∃ a b, slotValue b < slotValue a ∧ rule = sortingSwapRule a b) — the genuinely-new structure
+-- vs the absorption system's two-element disjunction. fires = guarded fire (⟨a,b,descending,rfl⟩); isLengthPreserving
+-- = obtain the existential + rfl; the 3 length invariants instantiate the shipped preservation lemmas. Zero-axiom.
+-- Deferred SN-120 atoms: INVERSION-count termination (all out-of-order pairs, generalizing SN-118's aBeforeBInversions);
+-- LOCAL CONFLUENCE with the braid critical pair [a,b,c] (slotValue a>b>c; reducts join to sorted [c,b,a] via multi-step);
+-- a guarded WordReducer + decidability.
+#assert_no_axioms FX1Poly.OmegacE.sortingSwapRule
+#assert_no_axioms FX1Poly.OmegacE.sortingSystem
+#assert_no_axioms FX1Poly.OmegacE.sortingSwapRule_fires
+#assert_no_axioms FX1Poly.OmegacE.sortingSystem_isLengthPreserving
+#assert_no_axioms FX1Poly.OmegacE.sortingSystem_rewritesOneStep_length_preserved
+#assert_no_axioms FX1Poly.OmegacE.sortingSystem_rewritesMany_length_preserved
+#assert_no_axioms FX1Poly.OmegacE.sortingSystem_convertibleModulo_length_preserved
