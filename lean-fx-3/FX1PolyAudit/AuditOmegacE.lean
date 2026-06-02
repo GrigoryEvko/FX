@@ -13,6 +13,7 @@ import FX1Poly.OmegacE.TranspositionSystem
 import FX1Poly.OmegacE.TranspositionConfluence
 import FX1Poly.OmegacE.TranspositionReducer
 import FX1Poly.OmegacE.AbsorptionSystem
+import FX1Poly.OmegacE.AbsorptionConfluence
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -321,3 +322,15 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.absorptionSystem_convertibleModulo_length_preserved
 #assert_no_axioms FX1Poly.OmegacE.vanishingCount_decreases_by_step
 #assert_no_axioms FX1Poly.OmegacE.absorptionSystem_isTerminating
+
+-- ABSORPTION DECOMPOSITION — STRUCTURAL INVERSION (AbsorptionConfluence.lean): SN-119 progress 2a. A step IS
+-- "rewrite a mixed pair to [s,s] in context"; the inversion carries a DISJUNCTION on the source redex shape
+-- ([v,s] OR [s,v]) — the new structure vs transposition's single-rule decomposition. _decomposition (forward,
+-- induction on the step; fire rcases-es the rule disjunction, context cases reuse listAppendAssoc) +
+-- _ofDecompositionLeft/Right (backward, fire under both contexts, one per rule). The critical-pair-extraction
+-- tools the local-confluence proof (next increment) consumes. Zero-axiom: pure listAppendAssoc rw chains, no
+-- simp. Deferred: the genuine inter-rule LOCAL CONFLUENCE (real [v,s,v] multi-step join to [s,s,s]) + newman
+-- + the two-rule WordReducer decidability.
+#assert_no_axioms FX1Poly.OmegacE.absorptionRewriteOneStep_decomposition
+#assert_no_axioms FX1Poly.OmegacE.absorptionRewriteOneStep_ofDecompositionLeft
+#assert_no_axioms FX1Poly.OmegacE.absorptionRewriteOneStep_ofDecompositionRight
