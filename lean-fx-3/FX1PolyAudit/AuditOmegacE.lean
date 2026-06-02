@@ -37,3 +37,9 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.foldOut_append
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.foldOut_singleton
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.foldOut_unique
+
+-- UNIVERSAL-PROPERTY CONSEQUENCES: hom_ext (two monoid homs out of the free monoid agreeing on generators
+-- are equal — uniqueness packaged for direct use) and length_eq_foldOut (word length IS the canonical free-
+-- monoid hom into (ℕ,+,0) sending each generator to 1 — the textbook universal-property instance).
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.hom_ext
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.length_eq_foldOut

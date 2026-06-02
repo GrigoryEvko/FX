@@ -116,5 +116,35 @@ theorem foldOut_unique (multiply : Target → Target → Target) (unit : Target)
               rw [homSingleton, inductionHypothesis]
           _ = foldOut multiply unit interpretCell (OmegacEWord.mk (headCell :: tailCells)) := rfl
 
+/-- **Homomorphism extensionality.**  Two monoid homomorphisms out of the word monoid that agree on the
+generators are equal — a direct corollary of `foldOut_unique` (both equal the fold of their common generator
+action).  This is the universal property's "uniqueness" packaged for direct use: to compare two maps out of
+the free monoid, compare them on generators. -/
+theorem hom_ext (multiply : Target → Target → Target) (unit : Target)
+    (firstHom secondHom : OmegacEWord dimension → Target)
+    (firstEmpty : firstHom (empty dimension) = unit)
+    (secondEmpty : secondHom (empty dimension) = unit)
+    (firstAppend : ∀ firstWord secondWord : OmegacEWord dimension,
+      firstHom (append firstWord secondWord) = multiply (firstHom firstWord) (firstHom secondWord))
+    (secondAppend : ∀ firstWord secondWord : OmegacEWord dimension,
+      secondHom (append firstWord secondWord) = multiply (secondHom firstWord) (secondHom secondWord))
+    (agreeOnGenerators : ∀ cell : OmegacECell dimension,
+      firstHom (singleton cell) = secondHom (singleton cell))
+    (word : OmegacEWord dimension) :
+    firstHom word = secondHom word :=
+  (foldOut_unique multiply unit (fun cell => firstHom (singleton cell)) firstHom
+      firstEmpty firstAppend (fun _cell => rfl) word).trans
+    (foldOut_unique multiply unit (fun cell => firstHom (singleton cell)) secondHom
+      secondEmpty secondAppend (fun cell => (agreeOnGenerators cell).symm) word).symm
+
+/-- **Word length is the canonical free-monoid homomorphism into `(ℕ, +, 0)`.**  Sending every generator to
+`1`, `length` is THE unique monoid homomorphism extending that interpretation — the textbook instance of the
+universal property.  Proved by `foldOut_unique` on the shipped `length_empty`/`length_append`/
+`length_singleton`. -/
+theorem length_eq_foldOut (word : OmegacEWord dimension) :
+    word.length = foldOut Nat.add 0 (fun _cell => 1) word :=
+  foldOut_unique Nat.add 0 (fun _cell => 1) (fun candidateWord => candidateWord.length)
+    (length_empty dimension) length_append (fun cell => length_singleton cell) word
+
 end OmegacEWord
 end FX1Poly.OmegacE
