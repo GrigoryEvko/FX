@@ -92,6 +92,17 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.churchRosser_of_confluence
 #assert_no_axioms FX1Poly.OmegacE.convertibleModulo_iff_joinable_of_churchRosser
 
+-- NEWMAN'S LEMMA (Confluence.lean): confluence from the checkable local confluence. HasLocalConfluence (peak
+-- of two single steps joinable — critical-pair-checkable) + IsTerminating (every word Acc under reduction) ⟹
+-- HasConfluence (newman), via confluenceFromAccessible (Acc.rec well-founded tiling: local-confluence peak +
+-- two strictly-smaller IH applications). THE tool to discharge HasConfluence on a concrete system; with
+-- churchRosser_of_confluence + WordProblem's decision, a terminating locally-confluent system has a decidable
+-- word problem. Acc.rec is propext-free here (constant-shaped motive).
+#assert_no_axioms FX1Poly.OmegacE.HasLocalConfluence
+#assert_no_axioms FX1Poly.OmegacE.IsTerminating
+#assert_no_axioms FX1Poly.OmegacE.confluenceFromAccessible
+#assert_no_axioms FX1Poly.OmegacE.newman
+
 -- WORD PROBLEM DECIDED (WordProblem.lean): convergent presentation ⟹ decidable convertibility — the Path-B
 -- twin of Conv.decidableOfStronglyNormalizing. WordNormalizer (normalize to a reachable normal form) +
 -- rigidity (rewritesMany_eq_of_blocksStep) give Joinable = NF-equality, then Church-Rosser gives

@@ -138,4 +138,70 @@ theorem convertibleModulo_iff_joinable_of_churchRosser {dimension : Nat}
       OmegacEWord.Joinable system firstWord secondWord :=
   ⟨fun converts => churchRosser converts, fun joinable => joinable.toConvertible⟩
 
+/-! ## Newman's lemma — confluence from the checkable local confluence
+
+`HasConfluence` quantifies over arbitrary many-step reductions, so it is not directly checkable.  Newman's
+lemma reduces it to LOCAL confluence (the peak of two SINGLE steps is joinable — checkable by critical-pair
+analysis) plus TERMINATION (well-foundedness of the reduction relation).  This is THE tool for discharging
+`HasConfluence` on a concrete system. -/
+
+/-- **Local confluence**: the peak of two single rewrite steps out of one word is joinable.  Checkable in
+practice (finitely many critical pairs); Newman lifts it to global confluence under termination. -/
+def HasLocalConfluence {dimension : Nat}
+    (system : OmegacERewriteRule dimension → Prop) : Prop :=
+  ∀ {sourceWord firstReduct secondReduct : OmegacEWord dimension},
+    OmegacEWord.RewritesOneStep system sourceWord firstReduct →
+    OmegacEWord.RewritesOneStep system sourceWord secondReduct →
+    OmegacEWord.Joinable system firstReduct secondReduct
+
+/-- **Termination**: every word is accessible under the reduction relation — there are no infinite reduction
+sequences (the well-founded measure a concrete system supplies, e.g. strictly decreasing length). -/
+def IsTerminating {dimension : Nat}
+    (system : OmegacERewriteRule dimension → Prop) : Prop :=
+  ∀ word : OmegacEWord dimension,
+    Acc (fun reduct source => OmegacEWord.RewritesOneStep system source reduct) word
+
+/-- The well-founded core of Newman's lemma: from local confluence, confluence holds at every ACCESSIBLE word.
+By Acc-recursion on the source — if either reduction is `refl` the joinability is immediate; otherwise the two
+first steps' peak is joined by local confluence, and the two inductive hypotheses (at the two strictly-smaller
+one-step reducts) tile the result together. -/
+theorem confluenceFromAccessible {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (localConfluence : HasLocalConfluence system) :
+    ∀ {sourceWord : OmegacEWord dimension},
+      Acc (fun reduct source => OmegacEWord.RewritesOneStep system source reduct) sourceWord →
+      ∀ {firstReduct secondReduct : OmegacEWord dimension},
+        OmegacEWord.RewritesMany system sourceWord firstReduct →
+        OmegacEWord.RewritesMany system sourceWord secondReduct →
+        OmegacEWord.Joinable system firstReduct secondReduct := by
+  intro sourceWord accessible
+  induction accessible with
+  | intro currentSource _accStep innerIH =>
+    intro firstReduct secondReduct sourceToFirst sourceToSecond
+    cases sourceToFirst with
+    | refl _ => exact OmegacEWord.Joinable.ofRewritesMany sourceToSecond
+    | step firstHead firstTail =>
+      cases sourceToSecond with
+      | refl _ =>
+        exact (OmegacEWord.Joinable.ofRewritesMany
+          (OmegacEWord.RewritesMany.step firstHead firstTail)).symm
+      | step secondHead secondTail =>
+        obtain ⟨peakMerge, firstMidToMerge, secondMidToMerge⟩ :=
+          localConfluence firstHead secondHead
+        obtain ⟨firstFinal, firstToFirstFinal, mergeToFirstFinal⟩ :=
+          innerIH _ firstHead firstTail firstMidToMerge
+        obtain ⟨secondFinal, secondToSecondFinal, firstFinalToSecondFinal⟩ :=
+          innerIH _ secondHead secondTail (secondMidToMerge.trans mergeToFirstFinal)
+        exact ⟨secondFinal, firstToFirstFinal.trans firstFinalToSecondFinal, secondToSecondFinal⟩
+
+/-- **Newman's lemma for word rewriting**: a terminating, locally-confluent system is confluent.  Combined
+with `churchRosser_of_confluence` + `WordProblem`'s decision, a terminating system with checkable local
+confluence has a decidable word problem. -/
+theorem newman {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (localConfluence : HasLocalConfluence system) (terminating : IsTerminating system) :
+    HasConfluence system := by
+  intro sourceWord firstReduct secondReduct sourceToFirst sourceToSecond
+  exact confluenceFromAccessible localConfluence (terminating sourceWord) sourceToFirst sourceToSecond
+
 end FX1Poly.OmegacE
