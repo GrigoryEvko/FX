@@ -52,6 +52,7 @@ import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
 import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Typed.SimplyTypedTermInversionLevelFree
+import FX1Poly.Typed.SimplyTypedTypeExprClosureLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -1737,6 +1738,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.inversionVariable
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.inversionApplication
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.inversionLambda
+
+-- REDUCIBLE TYPE-EXPR CLOSURE under renaming and substitution — the SR arc's type-side substrate.  The
+-- lam rule of SimplyTypedTermLF carries IsReducibleTypeExprLF premises on domain/codomain; the (downstream)
+-- renaming/substitution-preservation lemmas transport those premises across the action via these closure
+-- lemmas (universe-code leaves are action-invariant; arrows thread *_lift_weaken_commute through the codomain).
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeExprLF.subst
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeExprLF.rename
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
