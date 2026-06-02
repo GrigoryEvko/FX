@@ -94,6 +94,7 @@ import FX1Poly.Typed.FundamentalAtAllNonDependentBinders
 import FX1Poly.Typed.FundamentalAtUniformVectorPremises
 import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
 import FX1Poly.Typed.HasTypeDescFundamentalAtAllFromGenFormation
+import FX1Poly.Typed.FundamentalLevelIndexed
 import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -1213,6 +1214,18 @@ gates pin them shut.
 -- codomain-under-argument premise) is the sole explicit hypothesis.  Reduces the formation FT to the
 -- genFormation former arm alone — the formation-engine analog of fundamentalVectorFromFormation.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.fundamentalAtAllFromGenFormation
+
+-- DECOUPLED-subjectLevel FT CONCLUSION (#496 — the var-level wall resolution).  IsFundamentalConclusionAtVector
+-- fixes the conclusion at a uniform predLevel+1 decoupled from the env's per-variable levels, so var (reducible
+-- only at its own level contextLevels index) is unprovable for arbitrary vectors; uniform-vector handles var but
+-- not the dependent binder (codomain one rung lower via tarskiDecode). FundamentalConclusionLevelIndexed
+-- concludes at a SEPARATE subjectLevel = the subject's level, so var = lookupReducible directly (off-by-one-free),
+-- and the level-preserving arms (universeFormation, piElim — application is uniform-level via applicationUnderSubst)
+-- thread it unchanged. The level-CHANGING arms (conv, binder/genFormation, carrying the tarskiDecode +1/-1) are
+-- the remaining Route-2 work; these three validate the predicate composes.
+#assert_no_axioms FX1Poly.Typed.fundamentalVarLevelIndexed
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationLevelIndexed
+#assert_no_axioms FX1Poly.Typed.fundamentalPiElimLevelIndexed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
