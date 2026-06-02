@@ -1326,20 +1326,24 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.closedUniverseCode_not_conv_piCode
 #assert_no_axioms FX1Poly.Typed.closedIdentity_not_conv_piCode
 -- LEG-2 RECURSOR (ValidTyping.lean): the level-annotated typing (Abel validity-derivation-indexed relation),
--- now spanning var/universeFormation/conv/piIntro/piElim — the leaf+conv core PLUS the COMPUTATIONAL core
--- (λ-introduction + application, where β-redexes live). var/conv level coordination resolved BY CONSTRUCTION
--- (var at contextLevels index; conv's reclassifier at subjectLevel+1; piIntro's body under levelCons at
--- predLevel+1, codes at predLevel+1+1; piElim shares subjectLevel) — so ValidTyping.fundamental is a CLEAN
--- single induction (ValidTyping.rec) threading the shipped level-indexed arms (var/universe/conv/piIntro/piElim).
+-- now spanning var/universeFormation/conv/piIntro/piElim/piFormation/sigmaFormation — the leaf+conv core, the
+-- COMPUTATIONAL core (λ-introduction + application, where β-redexes live), AND the Π/Σ TYPE-former core. var/conv
+-- level coordination resolved BY CONSTRUCTION (var at contextLevels index; conv's reclassifier at subjectLevel+1;
+-- piIntro's body under levelCons at predLevel+1, codes at predLevel+1+1; piElim shares subjectLevel; the formers
+-- carry ∀-level-quantified domain children — a type code's universe membership is fuel-polymorphic — which the
+-- recursor lifts to ∀-quantified IHs feeding fundamentalPiFormationLevelIndexed/…Sigma…). So ValidTyping.fundamental
+-- is a CLEAN single induction (ValidTyping.rec) threading the seven shipped level-indexed arms.
 -- closedStronglyNormalizing = SN-for-well-typed (core, closed) via the recursor; validTyping_identity… shows the
--- closed identity λx.x (a real binder with a bound-variable body) lands genuine SN through piIntro. REMAINING for
--- full SN: the genFormation/sigma arms (remaining formers + leveled telescope) + the HasTypeDescPi→ValidTyping
--- leveling bridge.
+-- closed identity λx.x lands SN through piIntro; validTyping_{pi,sigma}BetweenUniverses… show closed Π/Σ codes land
+-- SN through the former arms. REMAINING for full SN: the GENERIC genFormation arm (table-driven former over an
+-- arbitrary telescope, of which Π/Σ are instances) + the HasTypeDescPi→ValidTyping leveling bridge.
 #assert_no_axioms FX1Poly.Typed.ValidTyping
 #assert_no_axioms FX1Poly.Typed.ValidTyping.fundamental
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_identity_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.validTyping_piBetweenUniverses_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.validTyping_sigmaBetweenUniverses_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
