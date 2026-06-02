@@ -414,11 +414,23 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 -- crossInversionCount (the SUM-fold cross term across an append). The two append homomorphisms are the reusable core;
 -- countInversions_append's cons case is a five-term Nat AC rearrangement (a+b)+((c+d)+e)=((a+c)+d)+(b+e), discharged by
 -- explicit Nat.add_assoc/add_left_comm normalizing both sides to a+(b+(c+(d+e))) — NOT ac_rfl (leaks propext+Quot.sound),
--- the heavier analogue of SN-118's aBeforeBInversions (whose cross term was a single product). Zero-axiom. Deferred
--- (progress 2b): countBelowThreshold_preserved_by_step + cross-term preservation (both args) + the strict per-step
--- decrease + sortingSystem_isTerminating (Subrelation into InvImage). Then braid-critical-pair confluence + reducer.
+-- the heavier analogue of SN-118's aBeforeBInversions (whose cross term was a single product). Zero-axiom.
 #assert_no_axioms FX1Poly.OmegacE.countBelowThreshold
 #assert_no_axioms FX1Poly.OmegacE.countInversions
 #assert_no_axioms FX1Poly.OmegacE.crossInversionCount
 #assert_no_axioms FX1Poly.OmegacE.countBelowThreshold_append
 #assert_no_axioms FX1Poly.OmegacE.countInversions_append
+
+-- SORTING TERMINATION (SortingTermination.lean): SN-120 progress 2b — the bubble-sort termination proper.
+-- Multiset invariance (countBelowThreshold preserved by a swap) lifts to cross-term preservation in BOTH arguments
+-- of crossInversionCount (via the additive crossInversionCount_append_left), so the countInversions_append context
+-- cases keep the cross term fixed and the strict decrease (fire: inner measure 1->0 by <-asymmetry) rides the inner
+-- IH. sortingSystem_isTerminating embeds reduction into InvImage (· < ·) countInversions — and unlike the
+-- transposition system needs NO external a≠b, since the strict-order guard is baked into sortingSystem membership.
+-- Zero-axiom (if_neg/if_pos + Nat.add_comm/add_zero/add_assoc + Nat.lt_asymm + Subrelation.accessible/InvImage.wf).
+#assert_no_axioms FX1Poly.OmegacE.countBelowThreshold_preserved_by_step
+#assert_no_axioms FX1Poly.OmegacE.crossInversionCount_append_left
+#assert_no_axioms FX1Poly.OmegacE.crossInversionCount_preserved_right_by_step
+#assert_no_axioms FX1Poly.OmegacE.crossInversionCount_preserved_left_by_step
+#assert_no_axioms FX1Poly.OmegacE.countInversions_decreases
+#assert_no_axioms FX1Poly.OmegacE.sortingSystem_isTerminating
