@@ -53,6 +53,7 @@ import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
 import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.SimplyTypedNormalForm
+import FX1Poly.Typed.ReduceSmokeCorpus
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.FireRootRedex
@@ -1712,6 +1713,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalForm_isStepNormalForm
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalForm_eq_self_of_isStepNormalForm
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.conv_iff_normalForm_eq
+
+-- REDUCER SMOKE CORPUS — the WN-grind reducer COMPUTES on concrete closed terms (each `by rfl`, no decide).
+-- Demonstrates non-vacuity of reduceOnce / fireRootRedex / isStepNormalFormBool: β fires with the right
+-- reduct (identity + binder-ignoring bodies), the reducer halts on normal forms, a two-step normalization
+-- trace reaches `unit`, the detector agrees, and the root engine fires directly.  The 8 theorem gates
+-- transitively certify the 5 fixture defs are axiom-free too.
+#assert_no_axioms FX1Poly.Typed.reduceOnce_betaIdentity_fires
+#assert_no_axioms FX1Poly.Typed.reduceOnce_betaConstant_fires
+#assert_no_axioms FX1Poly.Typed.reduceOnce_identityLambda_halts
+#assert_no_axioms FX1Poly.Typed.reduceOnce_unit_halts
+#assert_no_axioms FX1Poly.Typed.reduceOnce_nestedRedex_fires
+#assert_no_axioms FX1Poly.Typed.isStepNormalFormBool_betaRedex_false
+#assert_no_axioms FX1Poly.Typed.isStepNormalFormBool_identityLambda_true
+#assert_no_axioms FX1Poly.Typed.fireRootRedex_betaIdentity_fires
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
