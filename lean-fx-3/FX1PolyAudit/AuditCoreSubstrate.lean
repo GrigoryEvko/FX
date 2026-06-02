@@ -29,6 +29,7 @@ import FX1Poly.Core.WeakHeadStepSubsumes
 import FX1Poly.Core.WeakHeadStepNormalForms
 import FX1Poly.Core.WeakHeadStepSubst
 import FX1Poly.Core.WeakHeadStepRename
+import FX1Poly.Core.WeakHeadStepRenameReflect
 import FX1Poly.Core.WeakHeadStepCommute
 import FX1Poly.Core.WeakHeadNormalPreservation
 import FX1Poly.Core.ReducibleTypeForwardClosure
@@ -190,3 +191,10 @@ per-decl list.  It also re-checks the native infra under
 -- WeakHeadStep.subst) — the whnfExpand-arm ingredient of the stratified ReducibleTypeStep rename-closure.
 #assert_no_axioms FX1Poly.Core.IotaHeadStep.rename
 #assert_no_axioms FX1Poly.Core.WeakHeadStep.rename
+
+-- SN-040 (WIP): a left-invertible renaming REFLECTS weak-head reduction (hence preserves weak-head
+-- normality) — the neutral-arm ingredient of the stratified ReducibleTypeStep rename-closure, derived from
+-- WeakHeadStep.rename preservation run on the left inverse + the round-trip (no per-shape inversion grind).
+#assert_no_axioms FX1Poly.Core.RawTerm.rename_leftInverse_roundTrip
+#assert_no_axioms FX1Poly.Core.WeakHeadStep.rename_reflects_of_leftInverse
+#assert_no_axioms FX1Poly.Core.WeakHeadStep.rename_preserves_weakHeadNormal_of_leftInverse
