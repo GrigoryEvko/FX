@@ -446,3 +446,10 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.sortingRewriteOneStep_decomposition
 #assert_no_axioms FX1Poly.OmegacE.sortingRewriteOneStep_ofDecomposition
 #assert_no_axioms FX1Poly.OmegacE.sortingBraidCriticalPairJoinBare
+
+-- Joinable.inContext is generic (any system): lift a bare ⟨bareLeft⟩⋈⟨bareRight⟩ join under leftCtx _ rightCtx via
+-- RewritesMany.underRightContext/underLeftContext + one listAppendAssoc reassociation (append IS ++ on cells, so the
+-- rest is defeq). sortingBraidCriticalPairJoin is the bare braid join lifted to context — the exact shape the
+-- one-cell-overlap (braid) case of local confluence needs. Zero-axiom.
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.Joinable.inContext
+#assert_no_axioms FX1Poly.OmegacE.sortingBraidCriticalPairJoin

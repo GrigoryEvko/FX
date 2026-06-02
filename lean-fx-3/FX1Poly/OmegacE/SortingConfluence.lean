@@ -131,4 +131,42 @@ theorem sortingBraidCriticalPairJoinBare {dimension : Nat}
     OmegacEWord.RewritesMany.step stepFrontA (OmegacEWord.RewritesMany.single stepFrontB),
     OmegacEWord.RewritesMany.step stepBackA (OmegacEWord.RewritesMany.single stepBackB)⟩
 
+/-- **Lift a bare joinability into a surrounding context** `leftCtx _ rightCtx`.  Generic (any system): both
+reduction sequences are wrapped by `RewritesMany.underRightContext`/`underLeftContext`, and the source words are
+reassociated `(leftCtx ++ bare) ++ rightCtx = leftCtx ++ (bare ++ rightCtx)` (the only step that is not defeq,
+since `OmegacEWord.append` IS `++` on cells) to match the lifted form.  The common reduct is taken in the lifted
+(right-associated) shape so both legs land on it directly. -/
+theorem OmegacEWord.Joinable.inContext {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (leftCtx rightCtx : List (OmegacECell dimension))
+    {bareLeft bareRight : List (OmegacECell dimension)}
+    (joinable : OmegacEWord.Joinable system ⟨bareLeft⟩ ⟨bareRight⟩) :
+    OmegacEWord.Joinable system
+      ⟨leftCtx ++ bareLeft ++ rightCtx⟩ ⟨leftCtx ++ bareRight ++ rightCtx⟩ := by
+  obtain ⟨⟨commonCells⟩, manyLeft, manyRight⟩ := joinable
+  refine ⟨⟨leftCtx ++ (commonCells ++ rightCtx)⟩, ?_, ?_⟩
+  · rw [show (⟨leftCtx ++ bareLeft ++ rightCtx⟩ : OmegacEWord dimension)
+        = ⟨leftCtx ++ (bareLeft ++ rightCtx)⟩ from
+        congrArg OmegacEWord.mk (listAppendAssoc leftCtx bareLeft rightCtx)]
+    exact (manyLeft.underRightContext ⟨rightCtx⟩).underLeftContext ⟨leftCtx⟩
+  · rw [show (⟨leftCtx ++ bareRight ++ rightCtx⟩ : OmegacEWord dimension)
+        = ⟨leftCtx ++ (bareRight ++ rightCtx)⟩ from
+        congrArg OmegacEWord.mk (listAppendAssoc leftCtx bareRight rightCtx)]
+    exact (manyRight.underRightContext ⟨rightCtx⟩).underLeftContext ⟨leftCtx⟩
+
+/-- **The braid critical-pair join in context** — `sortingBraidCriticalPairJoinBare` lifted under an arbitrary
+surrounding context, ready for the one-cell-overlap case of local confluence.  In `sortingJoinableWhenLeftShorter`
+the single-cell overlap `[a,b,c]` produces exactly `⟨leftA ++ [b,a,c] ++ rightB⟩` / `⟨leftA ++ [a,c,b] ++ rightB⟩`,
+which this lemma joins directly (the new content of SN-120, vs the vacuous/absurd one-cell case of transposition). -/
+theorem sortingBraidCriticalPairJoin {dimension : Nat}
+    (slotValue : OmegacECell dimension → Nat)
+    (leftCtx rightCtx : List (OmegacECell dimension))
+    (cellA cellB cellC : OmegacECell dimension)
+    (hba : slotValue cellB < slotValue cellA)
+    (hcb : slotValue cellC < slotValue cellB) :
+    OmegacEWord.Joinable (sortingSystem slotValue)
+      ⟨leftCtx ++ [cellB, cellA, cellC] ++ rightCtx⟩
+      ⟨leftCtx ++ [cellA, cellC, cellB] ++ rightCtx⟩ :=
+  (sortingBraidCriticalPairJoinBare slotValue cellA cellB cellC hba hcb).inContext leftCtx rightCtx
+
 end FX1Poly.OmegacE
