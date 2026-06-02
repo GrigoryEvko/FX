@@ -134,6 +134,7 @@ import FX1Poly.Typed.ClassifierLevelMeasure
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
+import FX1Poly.Typed.LevelingBridge
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1403,6 +1404,15 @@ gates pin them shut.
 -- transitively by the .fundamental gate).
 #assert_no_axioms FX1Poly.Typed.ValidTyping
 #assert_no_axioms FX1Poly.Typed.ValidTyping.fundamental
+-- SN-022 (LevelingBridge.lean): the leveling bridge HasTypeDescPi → ∃ contextLevels subjectLevel, ValidTyping …
+-- — var/conv/universeFormation arms. var + universeFormation are UNCONDITIONAL leaves (direct ValidTyping ctor
+-- applications; var concludes at subjectLevel := contextLevels index, the SN-024 off-by-one dodge); conv is the
+-- coordinated-input wrapper (cross-sub-derivation level coordination is the inductive assembly's job, SN-027).
+-- Composed with the PROVEN ValidTyping.fundamental ⟹ unconditional dependent reducibility/SN. Binder/former
+-- arms = SN-023.
+#assert_no_axioms FX1Poly.Typed.validTypingBridgeVar
+#assert_no_axioms FX1Poly.Typed.validTypingBridgeUniverseFormation
+#assert_no_axioms FX1Poly.Typed.validTypingBridgeConv
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_identity_stronglyNormalizing
