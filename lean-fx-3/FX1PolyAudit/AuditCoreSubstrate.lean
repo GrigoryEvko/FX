@@ -155,6 +155,7 @@ import FX1Poly.Core.StrongNormalizationRenameForward
 import FX1Poly.Core.StrongNormalizationSmokeCorpus
 import FX1Poly.Core.StrongNormalizationFormerCorpus
 import FX1Poly.Core.StrongNormalizationBetaEtaLeaves
+import FX1Poly.Core.StrongNormalizationBetaEtaFormers
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.StepIotaEtaDoubleStrips
@@ -261,3 +262,29 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.isStronglyNormalizingBetaEta_of_noBetaEtaStep
 #assert_no_axioms FX1Poly.Core.var_isStronglyNormalizingBetaEta
 #assert_no_axioms FX1Poly.Core.unit_isStronglyNormalizingBetaEta
+
+-- SN-045 (formers): the full SN-081 per-former corpus is robust under the eta extension.  Two generic
+-- StepChildren-normality helpers + one betaEta-SN witness per former (the formers over unit children are
+-- betaEta normal: cong has no normal-child StepChildren, and no Step.eta fires by shape mismatch).
+#assert_no_axioms FX1Poly.Core.noStepChildren_oneNormalChild
+#assert_no_axioms FX1Poly.Core.noStepChildren_twoNormalChildren
+#assert_no_axioms FX1Poly.Core.smoke_lam_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_pathLam_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_diffLambda_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_natSucc_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_optionSome_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_eitherInl_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_eitherInr_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_refl_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_modIntro_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_pair_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_listCons_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_glueIntro_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_arrowCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_productCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_sumCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_eitherCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_equivCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_piTyCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_sigmaTyCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_polyFunctor_isStronglyNormalizingBetaEta
