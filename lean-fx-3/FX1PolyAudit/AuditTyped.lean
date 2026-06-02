@@ -1246,6 +1246,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsTelescopeReducibleAtVector
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalVectorFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalAtAllFromFormation
+-- SN-026 (cross-check route status, documented-as-deferred per its DONE): the Kripke / all-levels route
+-- (HasTypeDescPiAllLevelFundamentalTheorem = HasTypeDescPi → FundamentalConclusionAtAll, the ∀-level
+-- ReducibleEnvAtAllLevels shape) is the SECOND route to the unconditional FT, parallel to the SN-022/023
+-- ValidTyping bridge. Its machinery is shipped + gated: the interface + its corollaries (gated below), the
+-- CONDITIONAL all-levels FT fundamentalAtAllFromFormation (gated here) + allLevelFundamentalTheoremFromFormationVector
+-- (gated below), and the all-levels leaf arms (FundamentalAtAllLeafArms: var/conv/piIntro). Both routes bottom out
+-- at the SAME formation-FT obstruction (the var + ∀-aboveLevel former-domain content of SN-022..025); an
+-- UNCONDITIONAL HasTypeDescPiAllLevelFundamentalTheorem value therefore awaits that shared discharge. Per SN-005
+-- the ValidTyping bridge is PRIMARY, so this Kripke route is kept as the CROSS-CHECK and its unconditional value
+-- is completed together with the primary assembly (SN-027) — not independently duplicated here.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.classifierStronglyNormalizingFromFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectReducibleUnderSubstFromFormation
