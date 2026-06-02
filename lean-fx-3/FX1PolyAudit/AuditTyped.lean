@@ -53,6 +53,7 @@ import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
 import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
+import FX1Poly.Core.FireRootRedex
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
 import FX1Poly.Core.NormalFormUnique
@@ -1625,6 +1626,14 @@ gates pin them shut.
 -- 11 per-redex bricks via a generator case-split mirroring `hasRootStepSource`'s definition.  The missing
 -- root ingredient for weak normalization (the Acc descent's step-extraction at a non-normal term).
 #assert_no_axioms FX1Poly.Core.hasRootStepSource_exists_step
+
+-- The COMPUTABLE root-redex firing FUNCTION + its soundness: `fireRootRedex generator payload children`
+-- returns `some reduct` exactly on a root redex, exhibiting the reduct as a concrete RawTerm (vs the
+-- existential `hasRootStepSource_exists_step`).  The reduct-supplier the weak-normalization normalizer
+-- FUNCTION (#261/#480) needs to make `decidableOfNormalForms_of_isStronglyNormalizing` parameter-free.
+-- Propext-clean over the 194-ctor table via DecidableEq dite-chains + ▸-casts + full spine destructure.
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex_sound
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
