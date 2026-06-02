@@ -44,6 +44,7 @@ import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
+import FX1Poly.Typed.ReducibleEnvTypeVariable
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1508,3 +1509,10 @@ gates pin them shut.
 -- (`λx.x : (Σ A. B) → (Σ A. B)`) is the identity over a Σ-code DATA-FORMER base type, reachable only via it.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.lambdaLeafDomain
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaIdentity
+
+-- The FT crux that sidesteps the universe wall: a type-VARIABLE domain (a context binding `α : Type@e`) is a
+-- reducible TYPE under a reducible environment, read off the environment via the universe-membership decode
+-- (`universeMembership_iff`).  The wall blocks TYPE abstraction (`λA:Type.…`), not term abstraction over type
+-- variables — so the simply-typed fundamental theorem is NOT wall-blocked, only awaiting the judgment+env
+-- assembly.
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.typeVariableReducible
