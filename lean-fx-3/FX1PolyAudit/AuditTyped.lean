@@ -1273,6 +1273,17 @@ gates pin them shut.
 -- crux that walled the FT) is uniform-level via abstractionCanonicalUnderSubst with the bound arg deposited at
 -- predLevel+1 via levelCons (positive level needed for CR1 on the domain candidate). genFormation (the dependent
 -- type-former telescope) + the HasTypeDescPi.rec assembly with consistency hypotheses are the remaining Route-2 work.
+-- SN-013 VERIFIED + GATED 2026-06-02: FundamentalConclusionLevelIndexed is the DECOUPLED-subjectLevel FT motive
+-- (FundamentalLevelIndexed.lean:60) — ∀ closing σ, ReducibleEnvVec contextLevels context σ → IsReducibleMemberAt
+-- subjectLevel (subst σ classifier) (subst σ subject) — with subjectLevel a SEPARATE Nat (fuel/depth, NOT denote)
+-- from the env's contextLevels vector; that decoupling lets var conclude at its OWN level and the binder thread the
+-- codomain one rung lower. The motive def itself was previously ungated — this gate closes that gap.
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionLevelIndexed
+-- SN-014..020 VERIFIED 2026-06-02 (no rebuild): the seven fundamental*LevelIndexed arms that discharge the motive
+-- (assembled by ValidTyping.fundamental) are each gated immediately below — var (own-level direct
+-- ReducibleEnvVec.lookupReducible, off-by-one-free), universeFormation, conv (tarskiDecode +1), piIntro (binder via
+-- levelCons at predLevel+1), piElim (uniform level), piFormation + sigmaFormation (∀-head-level-quantified former
+-- membership). No denote-keyed motive/arm variants: instantiation of the abstract level, not a rebuild (SN-008).
 #assert_no_axioms FX1Poly.Typed.fundamentalVarLevelIndexed
 #assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationLevelIndexed
 #assert_no_axioms FX1Poly.Typed.fundamentalPiElimLevelIndexed
