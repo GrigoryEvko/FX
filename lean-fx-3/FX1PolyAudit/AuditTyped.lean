@@ -52,6 +52,7 @@ import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
 import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Core.RedexExtraction
+import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1615,3 +1616,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.hasEitherMatchIotaRoot_exists_step
 #assert_no_axioms FX1Poly.Core.hasIdElimIotaRoot_exists_step_idJ
 #assert_no_axioms FX1Poly.Core.hasIdElimIotaRoot_exists_step_idStrictRec
+
+-- The ROOT-REDEX DISPATCH: `hasRootStepSource source = true → ∃ target, Step source target`, assembling all
+-- 11 per-redex bricks via a generator case-split mirroring `hasRootStepSource`'s definition.  The missing
+-- root ingredient for weak normalization (the Acc descent's step-extraction at a non-normal term).
+#assert_no_axioms FX1Poly.Core.hasRootStepSource_exists_step
