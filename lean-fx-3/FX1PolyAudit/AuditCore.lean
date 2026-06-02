@@ -8,6 +8,7 @@ import FX1Poly.Core.RawCellWordEncoding
 import FX1Poly.Core.StepRewriteRuleMap
 import FX1Poly.Core.StepWordRewriteSoundness
 import FX1Poly.Core.StepWordRewriteEquivariance
+import FX1Poly.Core.ConvWordJoinableBridge
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -143,6 +144,18 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.fxStepSystem_imp_step
 #assert_no_axioms FX1Poly.Core.fxStepSystem_leftHandSide_ne_nil
 #assert_no_axioms FX1Poly.Core.fxStepSystem_rightHandSide_ne_nil
+
+-- SN-129 (#632): Conv -> word-joinability bridge (FORWARD half). Conv is term joinability (StepStar.Join =
+-- common reduct); FxWordJoinable is the ConvertibleModulo for the FX term-code word monoid (common word reduct).
+-- Conv.toWordJoinable maps both StepStar legs via SN-127's StepStar.toWordRewrites with common = commonTerm.toCode.
+-- refl/symm shipped (a reflexive-symmetric relation); trans NOT claimed (needs word confluence SN-132/133).
+-- REVERSE blocked by SN-128's word->term completeness gap, honestly deferred. Zero-axiom.
+#assert_no_axioms FX1Poly.Core.FxWordJoinable
+#assert_no_axioms FX1Poly.Core.FxWordJoinable.refl
+#assert_no_axioms FX1Poly.Core.FxWordJoinable.symm
+#assert_no_axioms FX1Poly.Core.FxWordJoinable.ofWordRewritesMany
+#assert_no_axioms FX1Poly.Core.Conv.toWordJoinable
+#assert_no_axioms FX1Poly.Core.Step.toWordJoinable
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
