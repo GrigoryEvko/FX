@@ -56,6 +56,7 @@ import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.FireRootRedex
 import FX1Poly.Core.FireRootRedexComplete
 import FX1Poly.Core.ReduceOnce
+import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
 import FX1Poly.Core.NormalFormUnique
@@ -1651,6 +1652,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.RawTerm.reduceOnce
 #assert_no_axioms FX1Poly.Core.RawTerm.reduceOnce_sound
 #assert_no_axioms FX1Poly.Core.RawTermChildren.reduceOnceSpine_sound
+
+-- COMPLETENESS of reduceOnce: it halts (returns none) EXACTLY at structural normal forms.  With soundness
+-- this pins reduceOnce's halting set to isStepNormalForm.  reduceOnce_eq_none_iff_isStepNormalForm packages
+-- the biconditional; not_isStepNormalForm_imp_reduceOnce_isSome is the descent guarantee (a non-normal term
+-- genuinely reduces) the Acc StepSuccessor normalizer FUNCTION steps along.
+#assert_no_axioms FX1Poly.Core.RawTerm.reduceOnce_complete
+#assert_no_axioms FX1Poly.Core.RawTermChildren.reduceOnceSpine_complete
+#assert_no_axioms FX1Poly.Core.RawTerm.reduceOnce_eq_none_iff_isStepNormalForm
+#assert_no_axioms FX1Poly.Core.RawTerm.not_isStepNormalForm_imp_reduceOnce_isSome
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
