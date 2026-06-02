@@ -1452,6 +1452,15 @@ gates pin them shut.
 -- / ReducibleEnvAtAllLevels.consTypeVariable / allLevelsReducible_piOverNeutralVariableDomain), which the bridge
 -- assembly SN-027 routes the type-variable domain through.
 #assert_no_axioms FX1Poly.Typed.validTypingForallAboveLevelUniverseDomain
+-- SN-027 (LevelingBridge.lean, COMPOSE step): hasTypeDescPiReducibleFromTotalBridge composes the TOTAL leveling
+-- bridge (HasTypeDescPi → ∃ contextLevels predLevel, ValidTyping … (predLevel+1) …) with the PROVEN
+-- ValidTyping.substReducible ⟹ every HasTypeDescPi-typed subject is reducible under every closing reducible env.
+-- The total bridge is an explicit HYPOTHESIS here (mirroring the conditional fundamentalAtAllFromFormation): the
+-- residual crux is the total-bridge INDUCTION that assembles the SN-022..025 per-arm blocks under a consistent
+-- contextLevels + coordinates IH levels + inverts ofFormation/HasTypeDesc + routes type-variable domains through
+-- the reducibility all-levels machinery — the formation-FT obstruction both routes share. Composition done; the
+-- unconditional discharge is the in-progress remainder of SN-027.
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPiReducibleFromTotalBridge
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_identity_stronglyNormalizing

@@ -227,4 +227,47 @@ theorem validTypingForallAboveLevelUniverseDomain {profile : PolyProfile} {scope
         (universeCodeCell innerLevel flag) (universeCodeCell innerLevel.lsucc flag) :=
   fun aboveLevel => ValidTyping.universeFormation contextLevels aboveLevel context innerLevel flag
 
+/-! ## Composing the bridge with `ValidTyping.fundamental` (SN-027)
+
+The payoff of the bridge: composed with the PROVEN `ValidTyping.substReducible`
+(= `ValidTyping.fundamental` at a closing environment), the leveling bridge turns every `HasTypeDescPi`
+derivation into UNCONDITIONAL reducibility of its subject under every closing reducible environment.
+`hasTypeDescPiReducibleFromTotalBridge` is that composition, taking the TOTAL bridge
+(`HasTypeDescPi → ∃ contextLevels predLevel, ValidTyping … (predLevel + 1) …`) as an explicit hypothesis —
+mirroring the shipped conditional all-levels FT `HasTypeDescPi.fundamentalAtAllFromFormation`.
+
+The composition itself is the clean step (`obtain` the bridged `ValidTyping`, then `substReducible`).  The
+TOTAL bridge — the full induction on `HasTypeDescPi` that ASSEMBLES the per-arm building blocks
+(`validTypingBridge{Var,UniverseFormation,Conv,PiIntro,PiElim,PiFormation,SigmaFormation,GenFormationPi}` +
+`validTypingForallAboveLevelUniverseDomain`) under a CONSISTENT `contextLevels`, coordinates the per-IH
+levels, inverts the `ofFormation`/`HasTypeDesc` engine, and routes type-variable domains through the
+reducibility all-levels machinery (SN-025 deferral) — is the residual crux this composition is parameterized
+over: the formation-FT obstruction that BOTH the ValidTyping route and the Kripke route (SN-026) bottom out
+at.  Discharging it (the total-bridge induction) completes SN-027 unconditionally and feeds SN-028/029/030/043.
+-/
+
+/-- **The bridge composed with `ValidTyping.substReducible` ⟹ reducibility of every typed term** (conditional
+on the total leveling bridge).  Given the total bridge `HasTypeDescPi → ∃ contextLevels predLevel, ValidTyping
+profile contextLevels (predLevel + 1) context subject classifier`, every `HasTypeDescPi`-typed subject is a
+reducible member of its (substituted) classifier at `predLevel + 1` under every reducible closing environment
+at the bridged levels.  The existential levels are produced by the bridge; the reducibility is
+`ValidTyping.substReducible` (i.e. `ValidTyping.fundamental` at the environment).  The total-bridge hypothesis
+is the residual induction (the formation-FT obstruction; see the section docstring). -/
+theorem hasTypeDescPiReducibleFromTotalBridge {profile : PolyProfile}
+    (totalBridge :
+      ∀ {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope},
+        HasTypeDescPi profile context subject classifier →
+          ∃ (contextLevels : Fin scope → Nat) (predLevel : Nat),
+            ValidTyping profile contextLevels (predLevel + 1) context subject classifier)
+    {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context subject classifier) :
+    ∃ (contextLevels : Fin scope → Nat) (predLevel : Nat),
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvVec contextLevels context substitution →
+          IsReducibleMemberAt (predLevel + 1)
+            (RawTerm.subst substitution classifier) (RawTerm.subst substitution subject) := by
+  obtain ⟨contextLevels, predLevel, validTyped⟩ := totalBridge typed
+  exact ⟨contextLevels, predLevel,
+    fun substitution env => validTyped.substReducible predLevel substitution env⟩
+
 end FX1Poly.Typed
