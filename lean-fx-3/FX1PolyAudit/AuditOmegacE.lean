@@ -10,6 +10,7 @@ import FX1Poly.OmegacE.IdempotentSystem
 import FX1Poly.OmegacE.IdempotentReducer
 import FX1Poly.OmegacE.IdempotentConfluence
 import FX1Poly.OmegacE.TranspositionSystem
+import FX1Poly.OmegacE.TranspositionConfluence
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -259,3 +260,17 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.countOccurrences_preserved_by_step
 #assert_no_axioms FX1Poly.OmegacE.aBeforeBInversions_decreases
 #assert_no_axioms FX1Poly.OmegacE.transpositionSystem_isTerminating
+
+-- TRANSPOSITION CONFLUENCE (TranspositionConfluence.lean): the SN-118 convergence half. The single rule
+-- [a,b]→[b,a] has NO self-overlap (overlap would force a=b), so it is ORTHOGONAL — the prefix-trichotomy's
+-- one-cell-overlap case is VACUOUS (absurd … distinct), unlike idempotent's real [c,c,c] critical pair.
+-- transpositionRewriteOneStep_decomposition/ofDecomposition (structural inversion) → transpositionJoinableWhenLeftShorter
+-- (disjoint redexes commute) → transpositionHasLocalConfluence → transpositionHasConfluence (newman + the shipped
+-- termination). Generic word-list helpers reused from IdempotentConfluence; disjoint-case word equalities via
+-- explicit-arg rw chains (simp only pulls propext from its machinery). All zero-axiom. Remaining SN-118 atom:
+-- a WordReducer for the decidable word problem.
+#assert_no_axioms FX1Poly.OmegacE.transpositionRewriteOneStep_decomposition
+#assert_no_axioms FX1Poly.OmegacE.transpositionRewriteOneStep_ofDecomposition
+#assert_no_axioms FX1Poly.OmegacE.transpositionJoinableWhenLeftShorter
+#assert_no_axioms FX1Poly.OmegacE.transpositionHasLocalConfluence
+#assert_no_axioms FX1Poly.OmegacE.transpositionHasConfluence
