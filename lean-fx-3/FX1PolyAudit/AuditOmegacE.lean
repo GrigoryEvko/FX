@@ -9,6 +9,7 @@ import FX1Poly.OmegacE.EmptySystem
 import FX1Poly.OmegacE.IdempotentSystem
 import FX1Poly.OmegacE.IdempotentReducer
 import FX1Poly.OmegacE.IdempotentConfluence
+import FX1Poly.OmegacE.TranspositionSystem
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -216,3 +217,21 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.joinableWhenLeftShorter
 #assert_no_axioms FX1Poly.OmegacE.idempotentHasLocalConfluence
 #assert_no_axioms FX1Poly.OmegacE.decidableConvertibleModulo_idempotentSystem
+
+-- FIRST CONCRETE LENGTH-PRESERVING PRESENTATION (TranspositionSystem.lean): the adjacent-transposition rule
+-- [a,b] → [b,a], the complement of the length-REDUCING idempotent system. The first system in the
+-- length-PRESERVING class (IsLengthPreservingSystem) — the simplest convergent class for which length is NOT a
+-- termination measure (decided by bounded search over the finite same-length word set). transpositionRule_fires
+-- is the non-vacuity witness; transpositionSystem_isLengthPreserving is the headline certificate; the three
+-- length-invariance corollaries (one-step / many-step / convertibility) instantiate the shipped preservation
+-- lemmas and establish that the whole reduction/convertibility graph of a word stays within fixed length (the
+-- bounded-search-decidability substrate). Honest scope: SYSTEM + length invariants + non-vacuity only;
+-- termination (inversion measure, needs a ≠ b), orthogonal local confluence, and the bounded-search decision
+-- are the deferred subsequent atoms (SN-118 continuation).
+#assert_no_axioms FX1Poly.OmegacE.transpositionRule
+#assert_no_axioms FX1Poly.OmegacE.transpositionSystem
+#assert_no_axioms FX1Poly.OmegacE.transpositionRule_fires
+#assert_no_axioms FX1Poly.OmegacE.transpositionSystem_isLengthPreserving
+#assert_no_axioms FX1Poly.OmegacE.transpositionSystem_rewritesOneStep_length_preserved
+#assert_no_axioms FX1Poly.OmegacE.transpositionSystem_rewritesMany_length_preserved
+#assert_no_axioms FX1Poly.OmegacE.transpositionSystem_convertibleModulo_length_preserved
