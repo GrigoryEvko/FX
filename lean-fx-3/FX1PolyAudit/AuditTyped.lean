@@ -129,6 +129,7 @@ import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsStronglyNormalizing
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsNonDependentArrow
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsNonDependentArrow
 import FX1Poly.Typed.RouteAObstruction
+import FX1Poly.Typed.ClassifierLevelDiagnosis
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1581,6 +1582,12 @@ gates pin them shut.
 -- cannot bootstrap past the degenerate 0↔1 base.  Formal input for the SN-002+ classifier-level pivot.
 #assert_no_axioms FX1Poly.Typed.universeDomainPiVacuouslyReducibleAtZero
 #assert_no_axioms FX1Poly.Typed.universeDomainPiTrivialCandidateAtZero
+
+-- SN-002 spike: the reducibility level CAN be re-keyed to the classifier universe level `denote(LevelExpr)`
+-- — `Type@e` is a reducible member at its DENOTED classifier level `denote(lsucc e)`, the `lsucc → +1`
+-- alignment matching the shipped tarskiDecode discipline by definitional equality.  Setup verdict: GO;
+-- the make-or-break universe-DOMAIN Π-formation case is deferred to SN-004.
+#assert_no_axioms FX1Poly.Typed.universeCode_reducibleMemberAtClassifierLevel
 
 -- Member-side leaf (dual of the type leaves): membership in a neutral / data-former classifier is
 -- `IsStronglyNormalizing` (level-independent), so a one-level member extends to all positive levels — the
