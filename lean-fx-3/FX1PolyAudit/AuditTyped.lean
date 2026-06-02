@@ -1461,6 +1461,12 @@ gates pin them shut.
 -- the reducibility all-levels machinery — the formation-FT obstruction both routes share. Composition done; the
 -- unconditional discharge is the in-progress remainder of SN-027.
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPiReducibleFromTotalBridge
+-- SN-027 (refined-motive coordination): validTypingBridgeConvFromAllLevelReclassifier discharges the conv arm's
+-- LEVEL alignment — the existential ∃-shape can't force aligned levels, but a REFINED MOTIVE giving type-code
+-- subjects an ∀-level conclusion does: conv needs the reclassifier at subjectLevel+1, which is just the
+-- subjectLevel-instance of the all-level reclassifier IH. Supersedes the pre-aligned validTypingBridgeConv
+-- (SN-022). Type variables (var-pinned) are the sole non-level-flexible type code → reducibility route (SN-025).
+#assert_no_axioms FX1Poly.Typed.validTypingBridgeConvFromAllLevelReclassifier
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_identity_stronglyNormalizing

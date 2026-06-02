@@ -270,4 +270,44 @@ theorem hasTypeDescPiReducibleFromTotalBridge {profile : PolyProfile}
   exact ⟨contextLevels, predLevel,
     fun substitution env => validTyped.substReducible predLevel substitution env⟩
 
+/-! ## The refined-motive coordination (SN-027, toward the total-bridge induction)
+
+The total-bridge induction's residual difficulty is per-arm LEVEL coordination, and the existential
+`∃ contextLevels subjectLevel` shape (one per derivation) cannot supply it: the `conv`/`piElim` arms need
+their sub-derivations at a SHARED `contextLevels` and at ALIGNED levels, which independent existentials do not
+force.  The resolution is a REFINED MOTIVE: thread `contextLevels` as a shared parameter, and give
+TYPE-CODE-classified subjects (classifier a universe code) an `∀ level` conclusion — they are LEVEL-FLEXIBLE
+(`universeFormation` / `piFormation` produce them at any `predLevel + 1`) — while ordinary term subjects keep
+a single level.  The one type code that is NOT level-flexible is a bare type VARIABLE (`ValidTyping.var` pins
+its level at `contextLevels index`); that case routes through the reducibility all-levels machinery
+(`ReducibleEnvAtAllLevels.consTypeVariable`, SN-025's deferral), not this syntactic path.
+
+`validTypingBridgeConvFromAllLevelReclassifier` below is the first concrete payoff: the `conv` arm's level
+coordination is DISCHARGED once the reclassifier (a type code) is supplied at every level — the conv rule
+needs the reclassifier at exactly `subjectLevel + 1`, which is just the `subjectLevel`-instance of the
+`∀ level` reclassifier IH.  It supersedes the pre-aligned `validTypingBridgeConv` (SN-022), which demanded the
+reclassifier already at `subjectLevel + 1`. -/
+
+/-- **Conv-arm coordination from an all-level reclassifier (the refined-motive conv arm).**  Given the subject
+valid at `subjectLevel` and the reclassifier (a type code) valid at EVERY level `level + 1` under the same
+`contextLevels`, the reclassified subject is valid — by instantiating the all-level reclassifier IH at exactly
+`subjectLevel` to meet `ValidTyping.conv`'s `subjectLevel + 1` reclassifier requirement.  This is how the
+total-bridge induction's `conv` arm coordinates levels: the refined motive supplies the reclassifier (a
+universe-code-classified type code) at all levels, and conv picks the one it needs — dissolving the
+level-alignment obstruction that the bare existential shape could not. -/
+theorem validTypingBridgeConvFromAllLevelReclassifier {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (subjectLevel : Nat)
+    {context : TypingContext profile scope}
+    {subject classifier reclassifier : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (subjectTyped : ValidTyping profile contextLevels subjectLevel context subject classifier)
+    (converts : Conv classifier reclassifier)
+    (reclassifierAllLevel : ∀ level : Nat,
+      ValidTyping profile contextLevels (level + 1) context reclassifier
+        (universeCodeCell levelExpr flag)) :
+    ∃ resultLevel : Nat,
+      ValidTyping profile contextLevels resultLevel context subject reclassifier :=
+  ⟨subjectLevel,
+    ValidTyping.conv contextLevels subjectLevel subjectTyped converts (reclassifierAllLevel subjectLevel)⟩
+
 end FX1Poly.Typed
