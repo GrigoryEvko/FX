@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.OmegacE.WordFreeMonoid
+import FX1Poly.OmegacE.WordFreeMonoidUniversal
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -26,3 +27,13 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWordCode.append_empty
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWordCode.ofWord_empty
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWordCode.toWord_empty
+
+-- FREE-MONOID UNIVERSAL PROPERTY: OmegacEWord is the FREE monoid on its generators — for any target monoid
+-- (explicit multiply/unit + laws) and generator interpretation, foldOut is the unique extending monoid
+-- homomorphism.  The categorical "free" characterization (how to map OUT of the free structure), the basis
+-- for any future word-problem decision/normal-form target.  All zero-axiom (List.foldr + structural list
+-- inductions; the dim-2 rewriting relations that make word equality non-trivial are the next Path-B step).
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.foldOut_empty
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.foldOut_append
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.foldOut_singleton
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.foldOut_unique
