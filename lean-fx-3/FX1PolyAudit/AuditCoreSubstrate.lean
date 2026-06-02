@@ -28,6 +28,7 @@ import FX1Poly.Core.WeakHeadStepDeterministic
 import FX1Poly.Core.WeakHeadStepSubsumes
 import FX1Poly.Core.WeakHeadStepNormalForms
 import FX1Poly.Core.WeakHeadStepSubst
+import FX1Poly.Core.WeakHeadStepRename
 import FX1Poly.Core.WeakHeadStepCommute
 import FX1Poly.Core.WeakHeadNormalPreservation
 import FX1Poly.Core.ReducibleTypeForwardClosure
@@ -184,3 +185,8 @@ per-decl list.  It also re-checks the native infra under
 -- direction StrongNormalizationRename.lean explicitly leaves unproven, the neutral-leaf ingredient of the
 -- stratified reducibility rename-closure.  Explicit per-decl gate (preferred over sweep-only coverage).
 #assert_no_axioms FX1Poly.Core.StepStar.isStronglyNormalizing_rename_of_leftInverse
+
+-- SN-040 (WIP): the complete weak-head reduction commutes with renaming (the renaming twin of
+-- WeakHeadStep.subst) — the whnfExpand-arm ingredient of the stratified ReducibleTypeStep rename-closure.
+#assert_no_axioms FX1Poly.Core.IotaHeadStep.rename
+#assert_no_axioms FX1Poly.Core.WeakHeadStep.rename
