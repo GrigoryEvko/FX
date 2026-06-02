@@ -59,6 +59,7 @@ import FX1Poly.Core.FireRootRedexComplete
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.Normalize
+import FX1Poly.Core.NormalizeMeta
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
 import FX1Poly.Core.NormalFormUnique
@@ -1674,6 +1675,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.RawTerm.normalize_reducesTo
 #assert_no_axioms FX1Poly.Core.RawTerm.normalize_isStepNormalForm
 #assert_no_axioms FX1Poly.Core.Conv.decidableOfStronglyNormalizing
+
+-- NORMALIZER METATHEORY: fixed-point-at-NF, idempotence, term↔NF conversion, and the headline
+-- normalize_eq_iff_conv (two terms convert iff their normal forms coincide — the normal form is a complete
+-- conversion invariant on the SN fragment, the explicit biconditional behind decidableOfStronglyNormalizing).
+#assert_no_axioms FX1Poly.Core.RawTerm.normalize_eq_self_of_isStepNormalForm
+#assert_no_axioms FX1Poly.Core.RawTerm.normalize_idempotent
+#assert_no_axioms FX1Poly.Core.RawTerm.conv_normalize
+#assert_no_axioms FX1Poly.Core.RawTerm.normalize_eq_iff_conv
 
 -- DECIDABLE CONV ON THE SIMPLY-TYPED FRAGMENT WITH SN DISCHARGED.  Composing the normalizer's
 -- decidableOfStronglyNormalizing with the simply-typed fundamental theorem's stronglyNormalizing* — typing
