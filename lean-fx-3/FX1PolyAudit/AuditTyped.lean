@@ -1394,6 +1394,13 @@ gates pin them shut.
 -- (clean ValidTyping.rec induction) + gated below; it is the consumer the SN-022 bridge composes with. No
 -- classifier-universe-level (denote-keyed) variant is built: SN-004 is GO but the fuel-level bridge (SN-022) is not
 -- yet shown insufficient, so a variant would be premature duplication (task discipline: do NOT duplicate ValidTyping).
+-- SN-021 LANDED 2026-06-02: ValidTyping now also carries the GENERIC table-driven `genFormationPi` ctor (over
+-- typingRuleDescOf — Π/Σ as instances), so the leveled relation has cascade-free former coverage matching
+-- HasTypeDescPi. The ctor is NON-recursive in ValidTyping (carries DescTelescopePi + the telescopeFundamental
+-- reducibility premise — faithful for an Abel VALIDITY relation), so it needed no mutual refactor; the fundamental
+-- arm is a one-liner to fundamentalGenFormationFormerLevelIndexed (real former-membership work). Both gates below
+-- now cover the extended inductive + theorem zero-axiom (the genFormationPi arm's axiom-cleanliness is checked
+-- transitively by the .fundamental gate).
 #assert_no_axioms FX1Poly.Typed.ValidTyping
 #assert_no_axioms FX1Poly.Typed.ValidTyping.fundamental
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing

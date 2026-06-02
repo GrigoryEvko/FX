@@ -116,22 +116,28 @@ the MUTUAL recursor `HasTypeDescPi.rec` (`motive_2 := IsTelescopeReducibleAtVect
 `DescTelescopePi`). `ValidTyping` is a SINGLE (non-mutual) inductive, so `ValidTyping.rec` produces no
 telescope IH — the genFormationPi arm cannot synthesize `telescopeFundamental`.
 
-CHOSEN DESIGN (faithful, consistent with the existing syntactic former arms). Make `ValidTyping` MUTUAL with a
-leveled `ValidTelescope` (the level-indexed twin of `DescTelescopePi`); the new `ValidTyping.genFormationPi`
-ctor carries a `ValidTelescope` children premise; `ValidTyping.fundamental` becomes a MUTUAL recursion whose
-second motive is the level-indexed telescope-fundamental shape that feeds
-`fundamentalGenFormationFormerLevelIndexed`. This is a core-inductive change that must land ATOMICALLY (ctor +
-mutual fundamental together) and is therefore multi-tick; it is de-risked in scratch before touching the
-gated kernel.
+ADOPTED DESIGN (revised 2026-06-02 — option (b), the semantic-premise ctor; LANDED). The
+`ValidTyping.genFormationPi` ctor carries exactly `fundamentalGenFormationFormerLevelIndexed`'s premises: the
+structural `premises : DescTelescopePi …` PLUS the `telescopeFundamental` hypothesis (the children telescope is
+reducible under every closing reducible environment). `ValidTyping.fundamental`'s new arm is then a one-liner
+to `fundamentalGenFormationFormerLevelIndexed` — which still does the REAL former-membership work (dispatch
+Π/Σ, invert the two-child spine, build the former's universe membership via `toPiMember`/`toSigmaMember`), so
+the arm is non-vacuous. The reversal of last week's instinct is justified: `ValidTyping` is an Abel VALIDITY
+relation (semantic — see its own docstring), so a former case that ASSUMES component reducibility and DERIVES
+former reducibility is exactly standard logical-relations reasoning, not a wart. The ctor is NON-recursive in
+`ValidTyping`, so it needed NO mutual refactor, is trivially strictly-positive, landed atomically, and the
+shipped `ValidTyping` / `ValidTyping.fundamental` gates now cover it zero-axiom.
 
-REJECTED ALTERNATIVES. (a) Carry the existing `DescTelescopePi` (HasTypeDescPi-based) premise and derive
-`telescopeFundamental` inside the arm — CIRCULAR: it needs the unconditional `HasTypeDescPi` fundamental,
-which is the very thing still under assembly (`fundamentalVectorFromFormation` is conditional on a formation
-premise). (b) Bake `TelescopeReducible` (a semantic reducibility statement) into the ctor as a hypothesis —
-sound and one-ctor, but INCONSISTENT with the existing `piFormation`/`sigmaFormation` arms, which carry
-SYNTACTIC `∀ aboveLevel, ValidTyping …` children premises, not reducibility; mixing a semantic premise into
-one former arm while the concrete formers stay syntactic is a design wart. The mutual `ValidTelescope` keeps
-every former arm syntactic.
+WHY NOT the mutual `ValidTelescope` (last tick's plan). It would keep every former arm syntactic (children as
+`ValidTyping` sub-derivations lifted by a mutual recursor) — cleaner in principle, but a heavy core-inductive
+change (mutual inductive + mutual fundamental, with the mutual-recursor propext/Quot.sound risks). Option (b)
+achieves the SAME GOAL (cascade-free former coverage over `typingRuleDescOf`) atomically and zero-axiom, so the
+mutual route is UNNECESSARY. The bridge SN-023 supplies `telescopeFundamental` for a constructed
+genFormationPi from the children's own fundamentals (recursively bridge children → `ValidTyping`, then apply
+`ValidTyping.fundamental`), so option (b) is bridge-compatible.
+
+STILL REJECTED. Carrying the bare `DescTelescopePi` premise and deriving `telescopeFundamental` INSIDE the arm
+— CIRCULAR: it needs the unconditional `HasTypeDescPi` fundamental, the very thing still under assembly.
 -/
 
 end FX1Poly.Typed

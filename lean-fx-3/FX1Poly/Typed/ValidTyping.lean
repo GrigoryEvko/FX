@@ -128,8 +128,24 @@ inductive ValidTyping (profile : PolyProfile) :
         (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag)) :
       ValidTyping profile contextLevels (predLevel + 1) context
         (sigmaTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag)
+  | genFormationPi {scope : Nat} (contextLevels : Fin scope → Nat) (predLevel : Nat)
+      {context : TypingContext profile scope}
+      (generator : Generator) (payload : generator.payload scope)
+      {children : RawTermChildren generator.binderShifts scope}
+      {levels : List LevelExpr} {flag : UniverseFlag} {rule : TypingRuleDesc}
+      (isFormation : typingRuleDescOf generator = some rule)
+      (premises : DescTelescopePi profile (currentDepth := 0) context levels flag children)
+      (telescopeFundamental :
+        ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+          (_env : ReducibleEnvVec contextLevels context substitution)
+          (shapeEq : generator.binderShifts = consecutiveShifts 0 levels.length),
+          TelescopeReducible flag 0 levels.length substitution levels (shapeEq ▸ children)) :
+      ValidTyping profile contextLevels (predLevel + 1) context
+        (.mkGen generator payload children) (rule.outputType scope levels flag)
 
-/-- **The fundamental theorem over `ValidTyping`** — the assembled recursor for the var/universe/conv/Π/Σ core.  A
+/-- **The fundamental theorem over `ValidTyping`** — the assembled recursor for the var/universe/conv/Π/Σ core
+plus the generic `genFormationPi` former arm (SN-021), discharged by `fundamentalGenFormationFormerLevelIndexed`
+from the ctor's carried `premises`/`telescopeFundamental`.  A
 clean single induction (`ValidTyping.rec`): each arm is discharged verbatim by the shipped level-indexed arm
 (`fundamentalVarLevelIndexed` / `…UniverseFormation…` / `…Conv…` / `…PiIntro…` / `…PiElim…` / `…PiFormation…` /
 `…SigmaFormation…`).  `conv` threads its two IHs (subject at `subjectLevel`, reclassifier at `subjectLevel + 1`);
@@ -160,6 +176,9 @@ theorem ValidTyping.fundamental {profile : PolyProfile} {scope : Nat}
       exact fundamentalPiFormationLevelIndexed contextLevels predLevel domainIH codomainIH
   | sigmaFormation contextLevels predLevel _domainTyped _codomainTyped domainIH codomainIH =>
       exact fundamentalSigmaFormationLevelIndexed contextLevels predLevel domainIH codomainIH
+  | genFormationPi contextLevels predLevel _generator payload isFormation premises telescopeFundamental =>
+      exact fundamentalGenFormationFormerLevelIndexed contextLevels predLevel payload isFormation
+        premises telescopeFundamental
 
 /-- **Closed strong normalization from `ValidTyping`** — the recursor's payoff for this fragment: a closed
 `ValidTyping` derivation at a positive level is UNCONDITIONALLY strongly normalizing (FT + the empty-context
