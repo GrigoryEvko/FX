@@ -30,6 +30,13 @@ in `ReducibleSemanticRules`); the universe/dependent obstruction is absent in th
   * `polymorphicIdentityRedexStronglyNormalizing` — `(λx.x) y` (a β-REDEX) is strongly normalizing: the
     identity (reducible member of `A → A`) applied to a variable (reducible member of A) is a reducible member
     of A, hence SN by CR1 at the neutral classifier.  SN of an actually-reducing term.
+  * `IsReducibleMemberAt.lambdaNeutralDomain` — ABSTRACTION over ANY reducible codomain (generalizes
+    `lambdaNeutralArrow`): the codomain candidate is its own member-predicate, so the body condition is "the
+    body lands as a reducible MEMBER of the codomain" — the form HIGHER-ORDER terms (functions returning
+    functions) and the fundamental theorem's λ arm need.
+  * `IsReducibleMemberAt.constantIdentity` — `λx.(λy.y) : A → (B → B)` is a reducible member: a higher-order
+    function (ARROW codomain) returning the polymorphic identity, demonstrating `lambdaNeutralDomain` on a
+    non-neutral codomain.
 
 ## Zero-axiom verification
 
@@ -122,5 +129,55 @@ theorem polymorphicIdentityRedexStronglyNormalizing {scope : Nat} {predLevel : N
   exact (IsReducibleMemberAt.atNeutralClassifier (IsNeutral.var typeIndex).noWeakHeadStep
     (IsNeutral.var typeIndex).rootGenerator_ne_piTyCode
     (IsNeutral.var typeIndex).rootGenerator_ne_universeCode).mp applicationMember
+
+/-- **Abstraction for a neutral domain over ANY reducible codomain.**  Generalizes `lambdaNeutralArrow`
+(which required the codomain to be neutral too) to an arbitrary reducible codomain — the form needed for
+HIGHER-ORDER terms (functions returning functions).  The codomain candidate is its own member-predicate
+(`IsReducibleTypeAt.reducibleMemberCandidate`, supplied by mere existence of a candidate), so the body
+condition is the clean "the body lands as a reducible MEMBER of the codomain" — exactly the shape the
+fundamental theorem's λ arm threads.  `lambdaNeutralArrow` is the special case where the codomain is neutral
+(its member-predicate coincides with `IsStronglyNormalizing`). -/
+theorem IsReducibleMemberAt.lambdaNeutralDomain {scope : Nat} {level : Nat}
+    {domainCode codomainBase : RawTerm scope} {body : RawTerm (scope + 1)}
+    (domainNeutral : IsNeutral domainCode)
+    (codomainReducibleType : IsReducibleTypeAt level codomainBase)
+    (bodyMember : ∀ argument : RawTerm scope, IsStronglyNormalizing argument →
+      IsReducibleMemberAt level codomainBase (RawTerm.subst0 body argument)) :
+    IsReducibleMemberAt level
+      (piTyCodeCell domainCode (RawTerm.weaken codomainBase)) (lamCell body) := by
+  have domainReducible : ReducibleTypeAt level domainCode IsStronglyNormalizing := by
+    have noStep := domainNeutral.noWeakHeadStep
+    have notPi := domainNeutral.rootGenerator_ne_piTyCode
+    have notUniv := domainNeutral.rootGenerator_ne_universeCode
+    cases level with
+    | zero => exact ReducibleTypeStep.neutral noStep notPi notUniv
+    | succ predLevel => exact ReducibleTypeStep.neutral noStep notPi notUniv
+  exact IsReducibleMemberAt.abstractionNonDependent domainReducible
+    (fun _argument argumentSN => argumentSN)
+    (IsReducibleTypeAt.reducibleMemberCandidate codomainReducibleType) bodyMember
+
+/-- **A higher-order term: `λx.(λy.y) : A → (B → B)` is a reducible member.**  The function that ignores its
+argument and returns the polymorphic B-identity — a reducible member at an ARROW codomain, demonstrating
+`lambdaNeutralDomain` on a non-neutral codomain.  The codomain `B → B` is reducible
+(`IsSimplyTyped.reducibleAndMemberExtension`); the body `weaken (λy.y)` cancels under single substitution
+(`weaken_subst_singleton`) to the B-identity, which is a reducible member by `polymorphicIdentity`. -/
+theorem IsReducibleMemberAt.constantIdentity {scope : Nat} {level : Nat}
+    {domainIndex codomainIndex : Fin scope} :
+    IsReducibleMemberAt level
+      (piTyCodeCell (variableCell domainIndex)
+        (RawTerm.weaken (piTyCodeCell (variableCell codomainIndex)
+          (RawTerm.weaken (variableCell codomainIndex)))))
+      (lamCell (RawTerm.weaken (lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩)))) := by
+  have codomainReducibleType : IsReducibleTypeAt level
+      (piTyCodeCell (variableCell codomainIndex) (RawTerm.weaken (variableCell codomainIndex))) :=
+    (IsSimplyTyped.arrow (IsSimplyTyped.ofNeutral (IsNeutral.var codomainIndex))
+      (IsSimplyTyped.ofNeutral (IsNeutral.var codomainIndex))).reducibleAndMemberExtension.1 level
+  refine IsReducibleMemberAt.lambdaNeutralDomain (IsNeutral.var domainIndex) codomainReducibleType ?_
+  intro argument _argumentSN
+  rw [show RawTerm.subst0
+      (RawTerm.weaken (lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩))) argument
+      = lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩) from
+    RawTerm.weaken_subst_singleton (lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) argument]
+  exact IsReducibleMemberAt.polymorphicIdentity
 
 end FX1Poly.Typed

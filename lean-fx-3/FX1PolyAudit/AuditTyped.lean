@@ -1487,3 +1487,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.applicationNonDependentArrow
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.polymorphicIdentity
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityRedexStronglyNormalizing
+
+-- HIGHER-ORDER term reducibility: `lambdaNeutralDomain` generalizes the abstraction rule from a neutral
+-- codomain to ANY reducible codomain (candidate = the codomain's own member-predicate, so the body condition
+-- is "body lands as a member" — the form functions-returning-functions and the FT λ arm need).
+-- `constantIdentity` demonstrates it on an ARROW codomain: `λx.(λy.y) : A → (B → B)`.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.lambdaNeutralDomain
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.constantIdentity
