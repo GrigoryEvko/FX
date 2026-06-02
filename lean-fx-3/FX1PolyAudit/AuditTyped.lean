@@ -1390,6 +1390,13 @@ gates pin them shut.
 -- type+member level-irrelevance is reduced to domain+codomain member-extension.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.piTypeMemberExtension
 
+-- The TIGHT primary form: the domain/codomain member-extension premises need only hold from POSITIVE source
+-- levels (the proof never invokes them at the degenerate fuel-0), and the all-source-level
+-- `piTypeMemberExtension` is now the trivial weakening that delegates to it.  This tightening is what lets the
+-- member-extension family ASSEMBLE over nested non-dependent arrows (a sub-arrow supplies only positive-source
+-- member-extension, which now suffices to feed the enclosing arrow).
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.piTypeMemberExtensionPositive
+
 -- The member-side `whnfExpand` arm of mutual type+member level-irrelevance: member-extension lifts backward
 -- across one weak-head step of the classifier (peel the member to the shared-candidate contractum, strengthen
 -- by the contractum's member-extension, head-expand back).  With `ofNeutralClassifier` this completes the

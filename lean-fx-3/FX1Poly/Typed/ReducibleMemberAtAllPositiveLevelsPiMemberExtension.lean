@@ -34,24 +34,27 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 open StepStar
 
-/-- **Member leg of the Π `piType` arm.**  A positive-level member of a Π type extends to all positive
-levels, given the domain is reducible at all levels and both the domain and codomain admit member-extension.
-The dual of `IsReducibleTypeAtAllLevels.piTypeOfDomainMemberExtension`; together they discharge the `piType`
-arm of mutual type+member level-irrelevance from domain+codomain member-extension. -/
-theorem IsReducibleMemberAtAllPositiveLevels.piTypeMemberExtension {scope : Nat}
+/-- **Member leg of the Π `piType` arm — POSITIVE-source-level domain/codomain member-extension.**  The tight
+primary form: the domain and codomain member-extension premises need only hold from POSITIVE source levels
+(`IsReducibleMemberAt (memberPredLevel + 1) …`), not from every level including the degenerate fuel-`0`.  The
+proof only ever invokes them at `posLevel + 1` (the rebuilt Π domain candidate) and `predLevel + 1` (the
+application result), so the fuel-`0` requirement was gratuitous.  This tightening is what lets the member-
+extension family ASSEMBLE over nested non-dependent arrows: a sub-arrow supplies member-extension only from
+positive source levels (its own source is positive), and that now suffices to feed the enclosing arrow. -/
+theorem IsReducibleMemberAtAllPositiveLevels.piTypeMemberExtensionPositive {scope : Nat}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {functionTerm : RawTerm scope} {predLevel : Nat}
     (domainAllLevels : IsReducibleTypeAtAllLevels domainCode)
-    (domainMemberExtension : ∀ argument : RawTerm scope, ∀ {memberLevel : Nat},
-        IsReducibleMemberAt memberLevel domainCode argument →
+    (domainMemberExtension : ∀ argument : RawTerm scope, ∀ {memberPredLevel : Nat},
+        IsReducibleMemberAt (memberPredLevel + 1) domainCode argument →
           IsReducibleMemberAtAllPositiveLevels domainCode argument)
     (codomainAllLevels : ∀ argument : RawTerm scope,
         IsReducibleMemberAtAllPositiveLevels domainCode argument →
           IsReducibleTypeAtAllLevels (RawTerm.subst0 codomainCode argument))
     (codomainMemberExtension : ∀ argument : RawTerm scope,
         IsReducibleMemberAtAllPositiveLevels domainCode argument →
-          ∀ applicationTerm : RawTerm scope, ∀ {memberLevel : Nat},
-            IsReducibleMemberAt memberLevel (RawTerm.subst0 codomainCode argument) applicationTerm →
+          ∀ applicationTerm : RawTerm scope, ∀ {memberPredLevel : Nat},
+            IsReducibleMemberAt (memberPredLevel + 1) (RawTerm.subst0 codomainCode argument) applicationTerm →
               IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument) applicationTerm)
     (member : IsReducibleMemberAt (predLevel + 1)
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
@@ -75,5 +78,39 @@ theorem IsReducibleMemberAtAllPositiveLevels.piTypeMemberExtension {scope : Nat}
   have applicationAtPredLevel :=
     IsReducibleMemberAt.application member (argumentAllPositive predLevel)
   exact codomainMemberExtension argument argumentAllPositive _ applicationAtPredLevel posLevel
+
+/-- **Member leg of the Π `piType` arm.**  A positive-level member of a Π type extends to all positive
+levels, given the domain is reducible at all levels and both the domain and codomain admit member-extension.
+The dual of `IsReducibleTypeAtAllLevels.piTypeOfDomainMemberExtension`; together they discharge the `piType`
+arm of mutual type+member level-irrelevance from domain+codomain member-extension.  This all-source-level form
+is the trivial weakening of `piTypeMemberExtensionPositive` (restrict its positive-source premises to every
+source level); it is kept as the consumer-facing signature. -/
+theorem IsReducibleMemberAtAllPositiveLevels.piTypeMemberExtension {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {functionTerm : RawTerm scope} {predLevel : Nat}
+    (domainAllLevels : IsReducibleTypeAtAllLevels domainCode)
+    (domainMemberExtension : ∀ argument : RawTerm scope, ∀ {memberLevel : Nat},
+        IsReducibleMemberAt memberLevel domainCode argument →
+          IsReducibleMemberAtAllPositiveLevels domainCode argument)
+    (codomainAllLevels : ∀ argument : RawTerm scope,
+        IsReducibleMemberAtAllPositiveLevels domainCode argument →
+          IsReducibleTypeAtAllLevels (RawTerm.subst0 codomainCode argument))
+    (codomainMemberExtension : ∀ argument : RawTerm scope,
+        IsReducibleMemberAtAllPositiveLevels domainCode argument →
+          ∀ applicationTerm : RawTerm scope, ∀ {memberLevel : Nat},
+            IsReducibleMemberAt memberLevel (RawTerm.subst0 codomainCode argument) applicationTerm →
+              IsReducibleMemberAtAllPositiveLevels (RawTerm.subst0 codomainCode argument) applicationTerm)
+    (member : IsReducibleMemberAt (predLevel + 1)
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+      functionTerm) :
+    IsReducibleMemberAtAllPositiveLevels
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
+      functionTerm :=
+  IsReducibleMemberAtAllPositiveLevels.piTypeMemberExtensionPositive domainAllLevels
+    (fun argument {_memberPredLevel} member => domainMemberExtension argument member)
+    codomainAllLevels
+    (fun argument argumentExtension applicationTerm {_memberPredLevel} member =>
+      codomainMemberExtension argument argumentExtension applicationTerm member)
+    member
 
 end FX1Poly.Typed
