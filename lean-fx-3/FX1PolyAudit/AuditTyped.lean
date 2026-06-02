@@ -1447,6 +1447,14 @@ gates pin them shut.
     different typing-tower rungs (each rung sits one fuel higher via `tarskiDecode`, and upward
     level-cumulativity is false).  `ReducibleEnvVec` indexes each variable by its OWN tower level via a
     `Fin scope → Nat` vector; `levelCons` is the propext-free fresh-level cons. -/
+-- SN-008 VERIFIED 2026-06-02 (no rebuild): ReducibleEnvVec IS the per-variable-level reducible closing
+-- environment — `def ReducibleEnvVec (levels : Fin scope → Nat) context substitution := ∀ index,
+-- IsReducibleMemberAt (levels index) (subst substitution (context.lookup index)) (substitution index)` — its
+-- per-variable level is the ABSTRACT (Fin scope → Nat) vector (fuel/depth, NOT denote(LevelExpr)); empty/cons/
+-- lookupReducible are proved + gated below, and the all-levels Kripke variant ReducibleEnvAtAllLevels (+9 members)
+-- is gated above (lines ~943-956). A denote-keyed env is the INSTANTIATION levels := fun i => denote(classifierOf i)
+-- env — NO new relation (the SN-002 "instantiation, not rebuild" finding) — so NO variant is built: it would
+-- duplicate the shipped env (task discipline forbids duplication).
 #assert_no_axioms FX1Poly.Typed.levelCons
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvVec
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.lookupReducible
