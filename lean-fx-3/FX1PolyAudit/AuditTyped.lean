@@ -96,6 +96,7 @@ import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
 import FX1Poly.Typed.HasTypeDescFundamentalAtAllFromGenFormation
 import FX1Poly.Typed.FundamentalLevelIndexed
 import FX1Poly.Typed.ClosedLevelIndexed
+import FX1Poly.Typed.TypeFundamentalLevelIndexed
 import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -1257,6 +1258,13 @@ gates pin them shut.
 -- env-fixed level) and lets vector-proved grown arms be read as level-indexed conclusions (toLevelIndexed).
 #assert_no_axioms FX1Poly.Typed.isFundamentalConclusionAtVector_iff_forall_levelIndexed
 #assert_no_axioms FX1Poly.Typed.IsFundamentalConclusionAtVector.toLevelIndexed
+-- TYPE-FT (the type half of the mutual fundamental theorem): the formation type-subjects (universe code +
+-- Pi/Sigma formers) are reducible TYPES (ReducibleTypeAt, not just members) at their level, via tarskiDecode
+-- of the shipped term-FT arms. This is the ReducibleTypeAt form the conv arm consumes for its classifier;
+-- the type-variable case + context-validity threading remain for the full mutual relation.
+#assert_no_axioms FX1Poly.Typed.universeCodeIsTypeFundamentalLevelIndexed
+#assert_no_axioms FX1Poly.Typed.piFormerIsTypeFundamentalLevelIndexed
+#assert_no_axioms FX1Poly.Typed.sigmaFormerIsTypeFundamentalLevelIndexed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
