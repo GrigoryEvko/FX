@@ -154,6 +154,7 @@ import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StrongNormalizationRenameForward
 import FX1Poly.Core.StrongNormalizationSmokeCorpus
 import FX1Poly.Core.StrongNormalizationFormerCorpus
+import FX1Poly.Core.StrongNormalizationBetaEtaLeaves
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.StepIotaEtaDoubleStrips
@@ -251,3 +252,12 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.IsReducibleMember.sumFormerInNeutralUniverse
 #assert_no_axioms FX1Poly.Core.IsReducibleMember.eitherFormerInNeutralUniverse
 #assert_no_axioms FX1Poly.Core.IsReducibleMember.equivFormerInNeutralUniverse
+
+-- SN-045 (base): the SN entry points (variable / unit leaves) are robust under the eta extension
+-- (Step.betaEta = Step union Step.eta).  Leaf eta-inversion + the reusable no-betaEta-step Acc base.
+-- The formers over normal children are the documented follow-up (cong + StepChildren child-step inversion).
+#assert_no_axioms FX1Poly.Core.noEtaStep_var
+#assert_no_axioms FX1Poly.Core.noEtaStep_unit
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizingBetaEta_of_noBetaEtaStep
+#assert_no_axioms FX1Poly.Core.var_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.unit_isStronglyNormalizingBetaEta
