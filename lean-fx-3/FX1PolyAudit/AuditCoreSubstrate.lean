@@ -148,6 +148,7 @@ import FX1Poly.Core.ReducibleTypeInversion
 import FX1Poly.Core.PolygraphConvergentDecision
 import FX1Poly.Core.SconingWitness
 import FX1Poly.Core.StrongNormalizationRename
+import FX1Poly.Core.StrongNormalizationRenameForward
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.StepIotaEtaDoubleStrips
@@ -178,3 +179,8 @@ per-decl list.  It also re-checks the native infra under
 
 #audit_namespace FX1Poly.Core
 #audit_namespace FX1Poly.Foundation
+
+-- SN-040 (WIP): forward strong-normalization preservation along a left-invertible renaming — the forward
+-- direction StrongNormalizationRename.lean explicitly leaves unproven, the neutral-leaf ingredient of the
+-- stratified reducibility rename-closure.  Explicit per-decl gate (preferred over sweep-only coverage).
+#assert_no_axioms FX1Poly.Core.StepStar.isStronglyNormalizing_rename_of_leftInverse
