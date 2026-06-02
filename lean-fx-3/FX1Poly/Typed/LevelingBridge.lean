@@ -227,6 +227,57 @@ theorem validTypingForallAboveLevelUniverseDomain {profile : PolyProfile} {scope
         (universeCodeCell innerLevel flag) (universeCodeCell innerLevel.lsucc flag) :=
   fun aboveLevel => ValidTyping.universeFormation contextLevels aboveLevel context innerLevel flag
 
+/-! ### Type-code level-flexibility, former cases (the structural induction's recursive step)
+
+`validTypingForallAboveLevelUniverseDomain` is the BASE case of type-code level-flexibility (a universe code
+is valid at every level).  The two former lemmas below are the RECURSIVE step: a Π / Σ type code over a
+level-flexible domain and codomain is itself level-flexible.  Together they establish that EVERY non-variable
+type code (universe codes, and Π/Σ formers thereof) carries the `∀ level` conclusion the refined motive needs
+— with a bare type VARIABLE the only escape (routed through the reducibility all-levels machinery, SN-025).
+The proof is `ValidTyping.piFormation`/`sigmaFormation` at `predLevel := aboveLevel`: the domain premise is
+already `∀`-level (predLevel-independent), and the codomain premise is consumed at `aboveLevel + 1`. -/
+
+/-- **Π-former level-flexibility.**  A Π type code `Π A. B` is `ValidTyping`-valid at EVERY level, given its
+domain valid at every level and its codomain (under one `levelCons headLevel`) valid at every level — the
+recursive step of type-code level-flexibility for the Π former. -/
+theorem validTypingForallAboveLevelPiFormer {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainAllLevel : ∀ aboveLevel : Nat,
+      ValidTyping profile contextLevels (aboveLevel + 1) context
+        domainCode (universeCodeCell domainLevel flag))
+    (codomainAllLevel : ∀ aboveLevel headLevel : Nat,
+      ValidTyping profile (levelCons headLevel contextLevels) (aboveLevel + 1)
+        (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag)) :
+    ∀ aboveLevel : Nat,
+      ValidTyping profile contextLevels (aboveLevel + 1) context
+        (piTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) :=
+  fun aboveLevel =>
+    ValidTyping.piFormation (formerLevel := formerLevel) contextLevels aboveLevel
+      domainAllLevel (codomainAllLevel aboveLevel)
+
+/-- **Σ-former level-flexibility.**  The data-former twin: a Σ type code `Σ A. B` is valid at every level given
+its domain valid at every level and its codomain (under `levelCons (aboveLevel + 1)`) valid at every level.
+Σ formation classifies by the domain alone, so its codomain premise is single-level per `aboveLevel` (not the
+`∀ headLevel` family the Π codomain needs). -/
+theorem validTypingForallAboveLevelSigmaFormer {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (domainAllLevel : ∀ aboveLevel : Nat,
+      ValidTyping profile contextLevels (aboveLevel + 1) context
+        domainCode (universeCodeCell domainLevel flag))
+    (codomainAllLevel : ∀ aboveLevel : Nat,
+      ValidTyping profile (levelCons (aboveLevel + 1) contextLevels) (aboveLevel + 1)
+        (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag)) :
+    ∀ aboveLevel : Nat,
+      ValidTyping profile contextLevels (aboveLevel + 1) context
+        (sigmaTyCodeCell domainCode codomainCode) (universeCodeCell formerLevel flag) :=
+  fun aboveLevel =>
+    ValidTyping.sigmaFormation (formerLevel := formerLevel) contextLevels aboveLevel
+      domainAllLevel (codomainAllLevel aboveLevel)
+
 /-! ## Composing the bridge with `ValidTyping.fundamental` (SN-027)
 
 The payoff of the bridge: composed with the PROVEN `ValidTyping.substReducible`

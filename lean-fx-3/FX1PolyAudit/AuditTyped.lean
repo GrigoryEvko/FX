@@ -1452,6 +1452,12 @@ gates pin them shut.
 -- / ReducibleEnvAtAllLevels.consTypeVariable / allLevelsReducible_piOverNeutralVariableDomain), which the bridge
 -- assembly SN-027 routes the type-variable domain through.
 #assert_no_axioms FX1Poly.Typed.validTypingForallAboveLevelUniverseDomain
+-- SN-027 (type-code level-flexibility, former recursive cases): a Π/Σ type code over a level-flexible domain
+-- + codomain is itself valid at EVERY level (via piFormation/sigmaFormation at predLevel := aboveLevel). With
+-- the universeFormation base above, this is the structural induction establishing that every NON-variable type
+-- code carries the ∀-level conclusion the refined motive needs (type variables = the sole escape → reducibility).
+#assert_no_axioms FX1Poly.Typed.validTypingForallAboveLevelPiFormer
+#assert_no_axioms FX1Poly.Typed.validTypingForallAboveLevelSigmaFormer
 -- SN-027 (LevelingBridge.lean, COMPOSE step): hasTypeDescPiReducibleFromTotalBridge composes the TOTAL leveling
 -- bridge (HasTypeDescPi → ∃ contextLevels predLevel, ValidTyping … (predLevel+1) …) with the PROVEN
 -- ValidTyping.substReducible ⟹ every HasTypeDescPi-typed subject is reducible under every closing reducible env.
