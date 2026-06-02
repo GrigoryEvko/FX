@@ -1424,6 +1424,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.validTypingBridgePiFormation
 #assert_no_axioms FX1Poly.Typed.validTypingBridgeSigmaFormation
 #assert_no_axioms FX1Poly.Typed.validTypingBridgeGenFormationPi
+-- SN-024 VERIFIED 2026-06-02 (subsumed by SN-022's var arm; end-to-end off-by-one resolution confirmed):
+-- validTypingBridgeVar (gated above) assigns subjectLevel := contextLevels index, making the variable's level a
+-- FUNCTION of the context rather than a free parameter; ValidTyping.fundamental's var arm
+-- (fundamentalVarLevelIndexed, gated above, via ReducibleEnvVec.lookupReducible) then discharges it with NO
+-- level-equality side condition. This is precisely where the uniform-level recursor route is STUCK — it demands
+-- envLevels index = predLevel+1 for independently-quantified envLevels/predLevel. The formal basis is
+-- isFundamentalConclusionAtVector_iff_forall_levelIndexed (gated above): the uniform-vector var is unprovable
+-- because it would force membership at predLevel+1 for EVERY predLevel, whereas a var is reducible only at its
+-- env-fixed contextLevels index.
 #assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.validTyping_identity_stronglyNormalizing
