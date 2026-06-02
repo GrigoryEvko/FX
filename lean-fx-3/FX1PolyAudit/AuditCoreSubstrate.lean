@@ -41,6 +41,7 @@ import FX1Poly.Core.ReducibleMember
 import FX1Poly.Core.ReducibleMemberNeutral
 import FX1Poly.Core.ReducibleTypeWellFormed
 import FX1Poly.Core.StratifiedReducibleType
+import FX1Poly.Core.StratifiedReducibleTypeRename
 import FX1Poly.Core.StratifiedReducibleTypeForwardClosure
 import FX1Poly.Core.StratifiedReducibleTypeCandidate
 import FX1Poly.Core.StratifiedReducibleTypeNeutral
@@ -198,3 +199,9 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.RawTerm.rename_leftInverse_roundTrip
 #assert_no_axioms FX1Poly.Core.WeakHeadStep.rename_reflects_of_leftInverse
 #assert_no_axioms FX1Poly.Core.WeakHeadStep.rename_preserves_weakHeadNormal_of_leftInverse
+
+-- SN-040 (WIP): the neutral LEAF of the stratified ReducibleTypeStep rename-closure (type + member level).
+-- The piType arm is genuinely Kripke-obstructed (see StratifiedReducibleTypeRename docstring); this is the
+-- cleanly-shippable structural fragment, off the FT critical path.
+#assert_no_axioms FX1Poly.Core.ReducibleTypeStep.neutralRename_of_leftInverse
+#assert_no_axioms FX1Poly.Core.ReducibleTypeStep.neutralRenameMember_of_leftInverse
