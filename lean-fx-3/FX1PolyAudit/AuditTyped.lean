@@ -84,6 +84,7 @@ import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiDomainMemberExtension
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsPiMemberExtension
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsHeadExpand
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsConv
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsStronglyNormalizing
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1399,3 +1400,8 @@ gates pin them shut.
 -- strengthened formation-FT motive.  `castAlongConvOfAllLevels` is the all-levels-target convenience form.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.castAlongConv
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.castAlongConvOfAllLevels
+
+-- CR1 for the all-positive member family: every all-positive member is strongly normalizing (read at the
+-- bottom positive fuel via `atLevel 0`, then single-level CR1).  The SN bridge the strong-normalization /
+-- canonicity corollaries consume once a binder/telescope arm strengthens a one-level member to all-positive.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.stronglyNormalizing
