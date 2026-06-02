@@ -128,6 +128,7 @@ import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsConv
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsStronglyNormalizing
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsNonDependentArrow
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsNonDependentArrow
+import FX1Poly.Typed.RouteAObstruction
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1573,6 +1574,13 @@ gates pin them shut.
 -- First concrete all-levels witness for a DEPENDENT Π with a non-universe (type-variable / neutral) domain —
 -- validates the neutral-domain piArm discharger end-to-end; the universe-domain Π remains the open fixpoint.
 #assert_no_axioms FX1Poly.Typed.allLevelsReducible_piOverNeutralVariableDomain
+
+-- SN-001: the fuel-0 universe-vacuity obstruction, pinned as committed theorems.  A universe-DOMAIN Π is
+-- VACUOUSLY reducible at fuel 0 for EVERY codomain (its fuel-0 candidate is the trivial `fun _ => True`),
+-- so fuel-0 reducibility carries no information and the all-levels / member-extension route (Route A)
+-- cannot bootstrap past the degenerate 0↔1 base.  Formal input for the SN-002+ classifier-level pivot.
+#assert_no_axioms FX1Poly.Typed.universeDomainPiVacuouslyReducibleAtZero
+#assert_no_axioms FX1Poly.Typed.universeDomainPiTrivialCandidateAtZero
 
 -- Member-side leaf (dual of the type leaves): membership in a neutral / data-former classifier is
 -- `IsStronglyNormalizing` (level-independent), so a one-level member extends to all positive levels — the
