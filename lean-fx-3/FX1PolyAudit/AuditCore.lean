@@ -4,6 +4,7 @@ import FX1Poly.Typed.HasType
 import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Core.GeneratorFinitePolygraph
 import FX1Poly.Core.GeneratorPolygraphMap
+import FX1Poly.Core.RawCellWordEncoding
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -72,6 +73,25 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_boundary
 #assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_tag
 #assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_recoversGenerator
+
+-- SN-125 (#628): the dim-1 free-monoid rule-word encoding of the RawCell composite layer — the FX-Conv-to-word
+-- bridge START. encodeRuleWord reads off the ordered generating-cell rule ids (the dim-1 REWRITE-rule alphabet,
+-- distinct from SN-124's 194 term-formers): objects/identities to the empty word, generatingCell to [ruleId],
+-- composites to ++. The per-ctor rules are rfl; _assoc + _identity_left/_right are the MONOID HOMOMORPHISM onto
+-- the free monoid (List ++ / [] with assoc + 2-sided unit); length_eq_generatingCellCount is FAITHFULNESS to the
+-- rewrite content. Zero-axiom (structural recursion + local propext-free list/Nat lemmas). SN-126 maps each
+-- generatingCell to a source-word ⇒ target-word rule on top of this.
+#assert_no_axioms FX1Poly.Core.RawCell.encodeRuleWord
+#assert_no_axioms FX1Poly.Core.encodeRuleWord_termBase
+#assert_no_axioms FX1Poly.Core.encodeRuleWord_generatingCell
+#assert_no_axioms FX1Poly.Core.encodeRuleWord_verticalComposite
+#assert_no_axioms FX1Poly.Core.encodeRuleWord_horizontalComposite
+#assert_no_axioms FX1Poly.Core.encodeRuleWord_identityCell
+#assert_no_axioms FX1Poly.Core.encodeRuleWord_assoc
+#assert_no_axioms FX1Poly.Core.encodeRuleWord_identity_left
+#assert_no_axioms FX1Poly.Core.encodeRuleWord_identity_right
+#assert_no_axioms FX1Poly.Core.RawCell.generatingCellCount
+#assert_no_axioms FX1Poly.Core.encodeRuleWord_length_eq_generatingCellCount
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
