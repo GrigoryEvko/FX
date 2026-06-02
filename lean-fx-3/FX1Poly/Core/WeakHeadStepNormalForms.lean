@@ -115,4 +115,27 @@ theorem WeakHeadStep.not_from_refl {scope : Nat}
   intro weakHeadStep
   cases weakHeadStep with | rootIota iotaStep => cases iotaStep
 
+/-- A VARIABLE has no weak-head step — the canonical NEUTRAL head.  Together with the type-former and
+constructor cases this is what makes a de Bruijn variable a weak-head-normal `neutral` leaf (e.g. the
+`IsFirstOrderSimplyTyped` leaf witness for a variable base type). -/
+theorem WeakHeadStep.not_from_var {scope : Nat} {index : Fin scope} {reduct : RawTerm scope} :
+    ¬ WeakHeadStep (.mkGen .gen_var index .childNil) reduct := by
+  intro weakHeadStep
+  cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+
+/-- A universe code `Type@e` has no weak-head step (a type former, not an application or eliminator). -/
+theorem WeakHeadStep.not_from_universeCode {scope : Nat}
+    {payload : Generator.gen_universeCode.payload scope} {reduct : RawTerm scope} :
+    ¬ WeakHeadStep (.mkGen .gen_universeCode payload .childNil) reduct := by
+  intro weakHeadStep
+  cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+
+/-- A Σ-code has no weak-head step (a type former, the dual of `not_from_piTyCode`). -/
+theorem WeakHeadStep.not_from_sigmaTyCode {scope : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)} {reduct : RawTerm scope} :
+    ¬ WeakHeadStep
+        (.mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) reduct := by
+  intro weakHeadStep
+  cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+
 end FX1Poly.Core
