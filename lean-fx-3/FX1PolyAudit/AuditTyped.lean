@@ -51,6 +51,7 @@ import FX1Poly.Typed.SimplyTypedTypeExprReducibleLevelFree
 import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
 import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
+import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.FireRootRedex
@@ -1673,6 +1674,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.RawTerm.normalize_reducesTo
 #assert_no_axioms FX1Poly.Core.RawTerm.normalize_isStepNormalForm
 #assert_no_axioms FX1Poly.Core.Conv.decidableOfStronglyNormalizing
+
+-- DECIDABLE CONV ON THE SIMPLY-TYPED FRAGMENT WITH SN DISCHARGED.  Composing the normalizer's
+-- decidableOfStronglyNormalizing with the simply-typed fundamental theorem's stronglyNormalizing* — typing
+-- alone decides convertibility (no SN hypothesis), joining the FT (#502) and WN-normalizer (#503) lines.
+#assert_no_axioms FX1Poly.Typed.Conv.decidableOfSimplyTypedUnderSubst
+#assert_no_axioms FX1Poly.Typed.Conv.decidableOfSimplyTypedClosed
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
