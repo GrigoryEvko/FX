@@ -99,6 +99,7 @@ import FX1Poly.Typed.ClosedLevelIndexed
 import FX1Poly.Typed.TypeFundamentalLevelIndexed
 import FX1Poly.Typed.LeveledContext
 import FX1Poly.Typed.ClosedSNSmoke
+import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -1294,6 +1295,15 @@ gates pin them shut.
 -- The closed β-redex (λx.x) Type@e is unconditionally SN — first such result with an APPLICATION, composing
 -- piElim over (piIntro + var) and universeFormation; exercises the subst0 in piElim's conclusion end-to-end.
 #assert_no_axioms FX1Poly.Typed.closedIdentityApplication_stronglyNormalizing
+-- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
+-- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
+-- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
+-- FT conclusion (becomes unconditional with the recursor). betaRedexConvertsToReduct is the non-vacuity witness
+-- (the redex really converts to its reduct). Concrete realization of raw decidable Conv (#267 / #503).
+#assert_no_axioms FX1Poly.Typed.closedConvDecidableFromLevelIndexed
+#assert_no_axioms FX1Poly.Typed.decidableConvBetaRedexAndReduct
+#assert_no_axioms FX1Poly.Typed.decidableConvBetaRedexAndIdentity
+#assert_no_axioms FX1Poly.Typed.betaRedexConvertsToReduct
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
