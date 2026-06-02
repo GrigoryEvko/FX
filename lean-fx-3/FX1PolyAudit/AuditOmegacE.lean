@@ -6,6 +6,7 @@ import FX1Poly.OmegacE.Confluence
 import FX1Poly.OmegacE.WordProblem
 import FX1Poly.OmegacE.ReducerNormalizer
 import FX1Poly.OmegacE.EmptySystem
+import FX1Poly.OmegacE.IdempotentSystem
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -151,3 +152,16 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.emptyHasConfluence
 #assert_no_axioms FX1Poly.OmegacE.convertibleModulo_emptySystem_iff_eq
 #assert_no_axioms FX1Poly.OmegacE.decidableConvertibleModulo_emptySystem
+
+-- FIRST CONCRETE NON-EMPTY TERMINATING PRESENTATION (IdempotentSystem.lean): the idempotent rule [c,c] → [c],
+-- the EmptySystem successor its docstring named ("a non-trivial length-reducing system"). Unlike the empty
+-- system (which rewrites NOTHING), this one genuinely FIRES (idempotentRule_fires — the non-vacuity witness
+-- contrasting rewritesOneStep_emptySystem_absurd) and is the first NON-trivial discharge of IsTerminating
+-- (idempotentSystem_isTerminating, via the length measure 1 < 2). Honest scope: termination + non-vacuity only;
+-- the full decidable word problem additionally needs a WordReducer (rule-matching reduceOnce) and
+-- HasLocalConfluence (critical pair [c,c,c] joins at [c,c] both ways) — the next two Path-B atoms.
+#assert_no_axioms FX1Poly.OmegacE.idempotentRule
+#assert_no_axioms FX1Poly.OmegacE.idempotentSystem
+#assert_no_axioms FX1Poly.OmegacE.idempotentRule_fires
+#assert_no_axioms FX1Poly.OmegacE.idempotentSystem_isLengthReducing
+#assert_no_axioms FX1Poly.OmegacE.idempotentSystem_isTerminating
