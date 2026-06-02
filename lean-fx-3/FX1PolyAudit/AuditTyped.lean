@@ -1252,6 +1252,11 @@ gates pin them shut.
 -- unconditional once the HasTypeDescPi.rec level-indexed assembly supplies that conclusion.
 #assert_no_axioms FX1Poly.Typed.closedSubjectReducibleFromLevelIndexed
 #assert_no_axioms FX1Poly.Typed.closedSubjectStronglyNormalizingFromLevelIndexed
+-- BRIDGE to the committed vector machinery: IsFundamentalConclusionAtVector ≡ the level-indexed conclusion
+-- at every (envLevels, predLevel+1). Makes precise why var fails at vector (forces predLevel+1 for the var's
+-- env-fixed level) and lets vector-proved grown arms be read as level-indexed conclusions (toLevelIndexed).
+#assert_no_axioms FX1Poly.Typed.isFundamentalConclusionAtVector_iff_forall_levelIndexed
+#assert_no_axioms FX1Poly.Typed.IsFundamentalConclusionAtVector.toLevelIndexed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll

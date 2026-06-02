@@ -4,6 +4,7 @@ import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.DescTelescopeInversion
+import FX1Poly.Typed.FundamentalAtAllVectorPremises
 
 /-! # FX1Poly/Typed/FundamentalLevelIndexed
     — the decoupled-`subjectLevel` fundamental-theorem conclusion (Route 2: dependent FT, var-level wall).
@@ -294,5 +295,35 @@ theorem fundamentalGenFormationFormerLevelIndexed {profile : PolyProfile} {scope
       unfold typingRuleDescOf at isFormation
       rw [if_neg isPiFormer, if_neg isSigmaFormer] at isFormation
       contradiction
+
+/-- **The vector fundamental conclusion IS the level-indexed conclusion, universally quantified over the
+env's level vector and a positive conclusion level.**  `IsFundamentalConclusionAtVector` fixes the conclusion
+at `predLevel+1` while quantifying over an ARBITRARY env level vector — so, by unfolding, it is exactly the
+family of `FundamentalConclusionLevelIndexed` instances at every `(envLevels, predLevel+1)`.  The precise
+connector between the committed vector machinery (`HasTypeDescPi.fundamentalVectorFromFormation`, which
+discharges the grown arms at the vector motive) and the decoupled-`subjectLevel` arms above.  It also makes
+explicit WHY `var` is unprovable at the vector conclusion: that would force membership at `predLevel+1` for
+EVERY `predLevel`, whereas a variable is reducible only at its env-fixed level `contextLevels index`. -/
+theorem isFundamentalConclusionAtVector_iff_forall_levelIndexed {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope} :
+    IsFundamentalConclusionAtVector context subject classifier ↔
+      ∀ (envLevels : Fin scope → Nat) (predLevel : Nat),
+        FundamentalConclusionLevelIndexed envLevels (predLevel + 1) context subject classifier := by
+  constructor
+  · intro vectorConclusion envLevels predLevel _targetScope substitution env
+    exact vectorConclusion substitution predLevel env
+  · intro perVectorConclusion _targetScope substitution envLevels predLevel env
+    exact perVectorConclusion envLevels predLevel substitution env
+
+/-- **Forward projection** (the usable half): a vector fundamental conclusion yields the level-indexed
+conclusion at any chosen env level vector and positive conclusion level — so a grown arm proved at the
+committed vector motive can be read as a level-indexed conclusion wherever the decoupled-`subjectLevel`
+machinery expects one. -/
+theorem IsFundamentalConclusionAtVector.toLevelIndexed {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (vectorConclusion : IsFundamentalConclusionAtVector context subject classifier)
+    (envLevels : Fin scope → Nat) (predLevel : Nat) :
+    FundamentalConclusionLevelIndexed envLevels (predLevel + 1) context subject classifier :=
+  fun substitution env => vectorConclusion substitution predLevel env
 
 end FX1Poly.Typed
