@@ -1,0 +1,141 @@
+import FX1Poly.OmegacE.Rewrite
+
+/-! # FX1Poly/OmegacE/Confluence
+    — confluence / Church-Rosser for word rewriting: the decidability enabler for the Makkai word problem
+
+`Rewrite.lean` built directed rewriting (`RewritesOneStep`/`RewritesMany`) and the presented-monoid equality
+(`ConvertibleModulo` = the reflexive-symmetric-transitive closure).  Convertibility is what the word problem
+must decide, but as a symmetric-transitive closure it is not directly searchable.  Confluence collapses it to
+JOINABILITY (`∃ a common reduct`), which a normalizer can decide.
+
+This file is the confluence layer (the ωcE/Path-B twin of the term-layer `StepStarConfluence.lean`):
+
+* `Joinable` — two words reduce to a common word; reflexive, symmetric, contains `RewritesMany`, embeds into
+  `ConvertibleModulo` (`toConvertible`), and (under a length-preserving system) preserves length.
+* `HasConfluence` — the diamond property: any two reducts of one source are joinable.
+* `HasChurchRosser` — convertible words are joinable.
+* `churchRosser_of_confluence` — the standard metatheorem: confluence ⟹ Church-Rosser (induction on the
+  convertibility derivation; the `trans` case merges the two common reducts via confluence).
+* `convertibleModulo_iff_joinable_of_churchRosser` — under Church-Rosser, convertibility IS joinability — the
+  reduction that makes the word problem decidable once a normalizer exists.
+
+## Honest scope
+
+This is the confluence PROPERTY layer + its consequences.  It does NOT prove confluence for any concrete rule
+system (that needs local confluence + termination via Newman's lemma, or critical-pair analysis — the next
+Path-B atoms), nor decide the word problem (that additionally needs a terminating normalizer to make
+`Joinable` checkable).  `HasConfluence`/`HasChurchRosser` are stated as properties exactly as the term layer
+states `StepStar.HasConfluence` — discharged per concrete system later.
+
+## Zero-axiom verification
+
+Structural inductions over `ConvertibleModulo` + `RewritesMany.trans`/`.single`.  No `axiom`, `sorry`,
+`propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in
+`FX1PolyAudit/AuditOmegacE.lean`.
+-/
+
+namespace FX1Poly.OmegacE
+
+/-- Two words are **joinable** when they reduce to a common word.  Confluence's currency: the searchable
+relation convertibility collapses to under Church-Rosser. -/
+def OmegacEWord.Joinable {dimension : Nat}
+    (system : OmegacERewriteRule dimension → Prop)
+    (firstWord secondWord : OmegacEWord dimension) : Prop :=
+  ∃ commonWord : OmegacEWord dimension,
+    OmegacEWord.RewritesMany system firstWord commonWord ∧
+      OmegacEWord.RewritesMany system secondWord commonWord
+
+/-- Joinability is reflexive (a word joins itself at itself). -/
+theorem OmegacEWord.Joinable.refl {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop} (word : OmegacEWord dimension) :
+    OmegacEWord.Joinable system word word :=
+  ⟨word, OmegacEWord.RewritesMany.refl word, OmegacEWord.RewritesMany.refl word⟩
+
+/-- Joinability is symmetric. -/
+theorem OmegacEWord.Joinable.symm {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    {firstWord secondWord : OmegacEWord dimension}
+    (joinable : OmegacEWord.Joinable system firstWord secondWord) :
+    OmegacEWord.Joinable system secondWord firstWord :=
+  Exists.elim joinable (fun commonWord reaches => ⟨commonWord, reaches.2, reaches.1⟩)
+
+/-- A many-step reduction makes its endpoints joinable (join at the target). -/
+theorem OmegacEWord.Joinable.ofRewritesMany {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    {sourceWord targetWord : OmegacEWord dimension}
+    (many : OmegacEWord.RewritesMany system sourceWord targetWord) :
+    OmegacEWord.Joinable system sourceWord targetWord :=
+  ⟨targetWord, many, OmegacEWord.RewritesMany.refl targetWord⟩
+
+/-- Joinable words are convertible (`firstWord →* common ←* secondWord`, glued by `symm`/`trans`). -/
+theorem OmegacEWord.Joinable.toConvertible {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    {firstWord secondWord : OmegacEWord dimension}
+    (joinable : OmegacEWord.Joinable system firstWord secondWord) :
+    OmegacEWord.ConvertibleModulo system firstWord secondWord := by
+  obtain ⟨commonWord, firstReaches, secondReaches⟩ := joinable
+  exact OmegacEWord.ConvertibleModulo.trans
+    (OmegacEWord.ConvertibleModulo.ofRewritesMany firstReaches)
+    (OmegacEWord.ConvertibleModulo.symm (OmegacEWord.ConvertibleModulo.ofRewritesMany secondReaches))
+
+/-- Joinable words have equal length under a length-preserving system (both reduce to the common word,
+each preserving length). -/
+theorem OmegacEWord.Joinable.length_preserved {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (lengthPreserving : IsLengthPreservingSystem system)
+    {firstWord secondWord : OmegacEWord dimension}
+    (joinable : OmegacEWord.Joinable system firstWord secondWord) :
+    firstWord.length = secondWord.length := by
+  obtain ⟨commonWord, firstReaches, secondReaches⟩ := joinable
+  exact (firstReaches.length_preserved lengthPreserving).trans
+    (secondReaches.length_preserved lengthPreserving).symm
+
+/-- **The confluence (diamond) property**: any two reducts of a common source are joinable. -/
+def HasConfluence {dimension : Nat}
+    (system : OmegacERewriteRule dimension → Prop) : Prop :=
+  ∀ {sourceWord firstReduct secondReduct : OmegacEWord dimension},
+    OmegacEWord.RewritesMany system sourceWord firstReduct →
+    OmegacEWord.RewritesMany system sourceWord secondReduct →
+    OmegacEWord.Joinable system firstReduct secondReduct
+
+/-- **The Church-Rosser property**: convertible words are joinable. -/
+def HasChurchRosser {dimension : Nat}
+    (system : OmegacERewriteRule dimension → Prop) : Prop :=
+  ∀ {firstWord secondWord : OmegacEWord dimension},
+    OmegacEWord.ConvertibleModulo system firstWord secondWord →
+    OmegacEWord.Joinable system firstWord secondWord
+
+/-- **Confluence implies Church-Rosser** — the standard metatheorem.  By induction on the convertibility
+derivation: `ofStep`/`refl`/`symm` are direct; the `trans` case merges the two inductively-obtained common
+reducts (`leftCommon` for `first~middle`, `rightCommon` for `middle~last`) by applying confluence to the two
+reductions OUT OF `middle`, then chaining with `RewritesMany.trans`. -/
+theorem churchRosser_of_confluence {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (confluence : HasConfluence system) :
+    HasChurchRosser system := by
+  intro firstWord secondWord converts
+  induction converts with
+  | ofStep step => exact OmegacEWord.Joinable.ofRewritesMany (OmegacEWord.RewritesMany.single step)
+  | refl word => exact OmegacEWord.Joinable.refl word
+  | symm _converts convertsIH => exact convertsIH.symm
+  | trans _firstToMiddle _middleToLast firstIH middleIH =>
+      obtain ⟨leftCommon, firstReachesLeft, middleReachesLeft⟩ := firstIH
+      obtain ⟨rightCommon, middleReachesRight, lastReachesRight⟩ := middleIH
+      obtain ⟨mergedCommon, leftReachesMerged, rightReachesMerged⟩ :=
+        confluence middleReachesLeft middleReachesRight
+      exact ⟨mergedCommon,
+        firstReachesLeft.trans leftReachesMerged,
+        lastReachesRight.trans rightReachesMerged⟩
+
+/-- **Under Church-Rosser, convertibility is exactly joinability.**  The decidability enabler: the symmetric-
+transitive closure (`ConvertibleModulo`) reduces to `∃ a common reduct` (`Joinable`), which a terminating
+normalizer can decide (normalize both, compare). -/
+theorem convertibleModulo_iff_joinable_of_churchRosser {dimension : Nat}
+    {system : OmegacERewriteRule dimension → Prop}
+    (churchRosser : HasChurchRosser system)
+    {firstWord secondWord : OmegacEWord dimension} :
+    OmegacEWord.ConvertibleModulo system firstWord secondWord ↔
+      OmegacEWord.Joinable system firstWord secondWord :=
+  ⟨fun converts => churchRosser converts, fun joinable => joinable.toConvertible⟩
+
+end FX1Poly.OmegacE

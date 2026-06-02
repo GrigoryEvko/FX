@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.OmegacE.WordFreeMonoid
 import FX1Poly.OmegacE.WordFreeMonoidUniversal
 import FX1Poly.OmegacE.Rewrite
+import FX1Poly.OmegacE.Confluence
 
 /-! # FX1PolyAudit/AuditOmegacE — zero-axiom gates for the ωcE / Makkai word-problem leg
 
@@ -72,3 +73,19 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.underLeftContext
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.underRightContext
 #assert_no_axioms FX1Poly.OmegacE.OmegacEWord.ConvertibleModulo.length_preserved
+
+-- CONFLUENCE / CHURCH-ROSSER (Confluence.lean): the decidability enabler. Joinable (∃ common reduct) is
+-- reflexive/symmetric, contains RewritesMany, embeds into ConvertibleModulo, preserves length. The standard
+-- metatheorem churchRosser_of_confluence (confluence ⟹ Church-Rosser, trans case merges common reducts via
+-- the diamond) + convertibleModulo_iff_joinable_of_churchRosser (under CR, convertible = joinable, reducing
+-- the symm-trans closure to a searchable ∃). HasConfluence/HasChurchRosser are PROPERTIES (discharged per
+-- concrete system later); decidability additionally needs a terminating normalizer — both subsequent atoms.
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.Joinable.refl
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.Joinable.symm
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.Joinable.ofRewritesMany
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.Joinable.toConvertible
+#assert_no_axioms FX1Poly.OmegacE.OmegacEWord.Joinable.length_preserved
+#assert_no_axioms FX1Poly.OmegacE.HasConfluence
+#assert_no_axioms FX1Poly.OmegacE.HasChurchRosser
+#assert_no_axioms FX1Poly.OmegacE.churchRosser_of_confluence
+#assert_no_axioms FX1Poly.OmegacE.convertibleModulo_iff_joinable_of_churchRosser
