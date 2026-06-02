@@ -53,6 +53,7 @@ import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
 import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
+import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1621,3 +1622,10 @@ gates pin them shut.
 -- 11 per-redex bricks via a generator case-split mirroring `hasRootStepSource`'s definition.  The missing
 -- root ingredient for weak normalization (the Acc descent's step-extraction at a non-normal term).
 #assert_no_axioms FX1Poly.Core.hasRootStepSource_exists_step
+
+-- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
+-- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
+-- a structural recursion into the child spine (`Step.cong` / `StepChildren.here` / `StepChildren.there`).
+-- The step-extraction the `Acc StepSuccessor` weak-normalization descent calls at every non-normal node.
+#assert_no_axioms FX1Poly.Core.exists_step_of_not_isStepNormalForm
+#assert_no_axioms FX1Poly.Core.exists_stepChildren_of_not_areStepNormalForms
