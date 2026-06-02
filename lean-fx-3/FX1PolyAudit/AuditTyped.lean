@@ -1570,6 +1570,9 @@ gates pin them shut.
 -- universe-rooted domains.
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.piTypeOfNeutralDomain
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.ofUniverseMemberPiNeutralDomainArgument
+-- First concrete all-levels witness for a DEPENDENT Π with a non-universe (type-variable / neutral) domain —
+-- validates the neutral-domain piArm discharger end-to-end; the universe-domain Π remains the open fixpoint.
+#assert_no_axioms FX1Poly.Typed.allLevelsReducible_piOverNeutralVariableDomain
 
 -- Member-side leaf (dual of the type leaves): membership in a neutral / data-former classifier is
 -- `IsStronglyNormalizing` (level-independent), so a one-level member extends to all positive levels — the

@@ -90,4 +90,28 @@ theorem IsReducibleMemberAtAllPositiveLevels.ofUniverseMemberPiNeutralDomainArgu
         domainNotUniverse codomainAllLevelsForStronglyNormalizingArgument)
     member
 
+/-- **First concrete all-levels-reducibility witness for a DEPENDENT Π with a non-universe domain** —
+`Π (x : var_index). Type@levelExpr` (a type-polymorphic-looking binder whose domain is a type VARIABLE, not a
+universe) is reducible at all levels.  Validates the neutral-domain `piArm` discharger
+(`piTypeOfNeutralDomain`) end-to-end on a real term: the domain `var_index` is neutral (`IsNeutral.var`, no
+weak-head step, root `gen_var` ≠ Π/universe), and the codomain `Type@levelExpr` is reducible at all levels for
+every (strongly-normalizing) argument via `ofUniverseCode` (it does not mention the bound variable, so
+`subst0` leaves it a universe code).  This is the non-vacuity companion the all-levels Π machinery lacked: the
+neutral/data-former branch of type-level level-irrelevance is genuinely inhabited.  The remaining open branch
+is the UNIVERSE-domain Π (`Π (x : Type@e). x`), whose domain-member level-irrelevance is the documented
+fixpoint requiring the mutual term/type fundamental theorem. -/
+theorem allLevelsReducible_piOverNeutralVariableDomain {scope : Nat} (index : Fin scope)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsReducibleTypeAtAllLevels
+      (piTyCodeCell (variableCell index) (universeCodeCell levelExpr flag)) := by
+  apply IsReducibleTypeAtAllLevels.piTypeOfNeutralDomain
+  · exact (IsNeutral.var index).noWeakHeadStep
+  · show Generator.gen_var ≠ Generator.gen_piTyCode
+    decide
+  · show Generator.gen_var ≠ Generator.gen_universeCode
+    decide
+  · intro argument _stronglyNormalizing
+    show IsReducibleTypeAtAllLevels (universeCodeCell levelExpr flag)
+    exact IsReducibleTypeAtAllLevels.ofUniverseCode
+
 end FX1Poly.Typed
