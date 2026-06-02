@@ -1,4 +1,4 @@
-import FX1Poly.OmegacE.Rewrite
+import FX1Poly.OmegacE.Confluence
 
 /-! # FX1Poly/OmegacE/TranspositionSystem
     — the first CONCRETE LENGTH-PRESERVING presentation: the adjacent-transposition rule `[a,b] → [b,a]`
@@ -131,11 +131,13 @@ removes exactly one such inversion (the adjacent `a` moves right past the `b`; r
 both keep their order), so the count strictly decreases by one — a well-founded `ℕ` measure (the genuine
 non-length termination certificate, the analogue of `IsTerminating_of_lengthReducing` for this class).
 
-This subsection ships the MEASURE + its append-homomorphism (the reusable core).  The strict-decrease lemma
-(`RewritesOneStep ⟹ measure target < measure source`, the meaty step that uses `a ≠ b` in the `fire` case and
-count-preservation + this append lemma in the context cases) and the `IsTerminating` assembly (via
-`Subrelation` into `InvImage (· < ·) measure`, mirroring `IsTerminating_of_lengthReducing`) are the next
-SN-118 increment.
+This subsection ships the MEASURE + its append-homomorphism, then the full termination chain:
+`countOccurrences_preserved_by_step` (a rewrite preserves the cell multiset) →
+`aBeforeBInversions_decreases` (a swap strictly decreases the inversion count — `a ≠ b` in the `fire` case,
+count-preservation + the append homomorphism in the context cases) → `transpositionSystem_isTerminating` (via
+`Subrelation` into `InvImage (· < ·) measure`, mirroring `IsTerminating_of_lengthReducing`).  TERMINATION is
+thus complete — the genuine non-length certificate for the length-preserving class.  Remaining SN-118 atoms:
+orthogonal local confluence (no self-overlap ⟹ `newman`) + bounded-search decidability.
 
 REUSABLE ZERO-AXIOM FINDING: `Nat.add_mul` leaks `propext` (verified by `#print axioms`); use
 `Nat.add_comm 1 d` + `Nat.succ_mul` to distribute `(1 + d) * b` instead.  `ac_rfl` leaks `propext + Quot.sound`;
@@ -217,5 +219,106 @@ theorem aBeforeBInversions_append {dimension : Nat}
             Nat.add_left_comm termC termB (termP + termE)]
       · rw [if_neg headIsFirst, if_neg headIsFirst, if_neg headIsFirst,
           Nat.zero_add, Nat.zero_add, Nat.zero_add]
+
+/-- **A rewrite preserves the cell multiset**: a transposition step leaves every cell's occurrence count
+unchanged.  `fire` swaps `[a,b] ↦ [b,a]` (same two cells, equal counts by `add_comm`); context cases add
+`countOccurrences_append` to the inner IH.  This makes the inversion-measure cross terms invariant under a
+rewrite-in-context — the bridge between the append homomorphism and the strict decrease. -/
+theorem countOccurrences_preserved_by_step {dimension : Nat}
+    (firstCell secondCell probe : OmegacECell dimension)
+    {sourceWord targetWord : OmegacEWord dimension}
+    (step : OmegacEWord.RewritesOneStep (transpositionSystem firstCell secondCell)
+      sourceWord targetWord) :
+    countOccurrences probe sourceWord.cells = countOccurrences probe targetWord.cells := by
+  induction step with
+  | fire rule isInSystem =>
+      have ruleEq : rule = transpositionRule firstCell secondCell := isInSystem
+      subst ruleEq
+      show (if firstCell = probe then 1 else 0) + ((if secondCell = probe then 1 else 0) + 0)
+        = (if secondCell = probe then 1 else 0) + ((if firstCell = probe then 1 else 0) + 0)
+      rw [Nat.add_zero, Nat.add_zero, Nat.add_comm]
+  | underLeftContext prefixWord _inner innerIH =>
+      dsimp only [OmegacEWord.append]
+      rw [countOccurrences_append, countOccurrences_append, innerIH]
+  | underRightContext suffixWord _inner innerIH =>
+      dsimp only [OmegacEWord.append]
+      rw [countOccurrences_append, countOccurrences_append, innerIH]
+
+/-- **A transposition step strictly decreases the inversion measure** (requires `firstCell ≠ secondCell`).
+`fire` swaps `[a,b] ↦ [b,a]`, removing the one `a`-before-`b` inversion (`measure = 1 ↦ 0`, the `a ≠ b` killing
+the spurious `if b = a` branch).  Context cases: the append homomorphism splits the measure, count-preservation
+makes the cross terms equal, and the inner IH gives the strict decrease on the rewritten factor, lifted by
+`Nat.add_lt_add_left` / `Nat.add_lt_add_right`. -/
+theorem aBeforeBInversions_decreases {dimension : Nat}
+    (firstCell secondCell : OmegacECell dimension)
+    (distinct : firstCell ≠ secondCell)
+    {sourceWord targetWord : OmegacEWord dimension}
+    (step : OmegacEWord.RewritesOneStep (transpositionSystem firstCell secondCell)
+      sourceWord targetWord) :
+    aBeforeBInversions firstCell secondCell targetWord.cells
+      < aBeforeBInversions firstCell secondCell sourceWord.cells := by
+  have notSF : secondCell = firstCell → False := fun h => distinct h.symm
+  induction step with
+  | fire rule isInSystem =>
+      have ruleEq : rule = transpositionRule firstCell secondCell := isInSystem
+      subst ruleEq
+      have targetZero : aBeforeBInversions firstCell secondCell [secondCell, firstCell] = 0 := by
+        show (if secondCell = firstCell then countOccurrences secondCell [firstCell] else 0)
+             + aBeforeBInversions firstCell secondCell [firstCell] = 0
+        rw [if_neg notSF, Nat.zero_add]
+        show (if firstCell = firstCell then countOccurrences secondCell [] else 0)
+             + aBeforeBInversions firstCell secondCell [] = 0
+        rw [if_pos rfl]
+        rfl
+      have sourceOne : aBeforeBInversions firstCell secondCell [firstCell, secondCell] = 1 := by
+        show (if firstCell = firstCell then countOccurrences secondCell [secondCell] else 0)
+             + aBeforeBInversions firstCell secondCell [secondCell] = 1
+        rw [if_pos rfl]
+        have countOne : countOccurrences secondCell [secondCell] = 1 := by
+          show (if secondCell = secondCell then 1 else 0) + countOccurrences secondCell [] = 1
+          rw [if_pos rfl]
+          rfl
+        have invZero : aBeforeBInversions firstCell secondCell [secondCell] = 0 := by
+          show (if secondCell = firstCell then countOccurrences secondCell [] else 0)
+               + aBeforeBInversions firstCell secondCell [] = 0
+          rw [if_neg notSF]
+          rfl
+        rw [countOne, invZero]
+      show aBeforeBInversions firstCell secondCell [secondCell, firstCell]
+        < aBeforeBInversions firstCell secondCell [firstCell, secondCell]
+      rw [targetZero, sourceOne]
+      exact Nat.zero_lt_one
+  | underLeftContext prefixWord inner innerIH =>
+      dsimp only [OmegacEWord.append]
+      rw [aBeforeBInversions_append, aBeforeBInversions_append,
+          countOccurrences_preserved_by_step firstCell secondCell secondCell inner]
+      exact Nat.add_lt_add_left innerIH _
+  | underRightContext suffixWord inner innerIH =>
+      dsimp only [OmegacEWord.append]
+      rw [aBeforeBInversions_append, aBeforeBInversions_append,
+          countOccurrences_preserved_by_step firstCell secondCell firstCell inner]
+      exact Nat.add_lt_add_right (Nat.add_lt_add_right innerIH _) _
+
+/-- **The transposition system is terminating** (requires `firstCell ≠ secondCell`) — the SN-118 headline.
+The inversion measure embeds reduction into `<` on `ℕ` (pulled back along the measure), which is well-founded,
+so every word is accessible.  This is the genuine NON-LENGTH termination certificate for the length-preserving
+class (the complement of the idempotent system's `IsTerminating_of_lengthReducing`), discharging the
+`IsTerminating` premise of `newman` / `decidableConvertibleModulo_ofConvergent` for this system. -/
+theorem transpositionSystem_isTerminating {dimension : Nat}
+    (firstCell secondCell : OmegacECell dimension)
+    (distinct : firstCell ≠ secondCell) :
+    IsTerminating (transpositionSystem firstCell secondCell) := by
+  intro word
+  have subrel :
+      Subrelation
+        (fun reduct source =>
+          OmegacEWord.RewritesOneStep (transpositionSystem firstCell secondCell) source reduct)
+        (InvImage (· < ·)
+          (fun candidate => aBeforeBInversions firstCell secondCell candidate.cells)) := by
+    intro smaller larger hStep
+    exact aBeforeBInversions_decreases firstCell secondCell distinct hStep
+  exact subrel.accessible
+    ((InvImage.wf (fun candidate => aBeforeBInversions firstCell secondCell candidate.cells)
+      Nat.lt_wfRel.wf).apply word)
 
 end FX1Poly.OmegacE

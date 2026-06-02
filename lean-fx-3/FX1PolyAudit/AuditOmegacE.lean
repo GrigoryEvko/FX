@@ -248,3 +248,14 @@ Lean per-decl gates only — no namespace sweep, no dependency walk (see `AuditA
 #assert_no_axioms FX1Poly.OmegacE.aBeforeBInversions
 #assert_no_axioms FX1Poly.OmegacE.countOccurrences_append
 #assert_no_axioms FX1Poly.OmegacE.aBeforeBInversions_append
+
+-- TRANSPOSITION TERMINATION COMPLETE (TranspositionSystem.lean): the SN-118 termination half. The inversion
+-- measure decreases per swap, so the length-PRESERVING transposition system is terminating — the genuine
+-- NON-length certificate (complement of the idempotent system's length-reducing one). countOccurrences_preserved_by_step
+-- (multiset invariance) → aBeforeBInversions_decreases (strict decrease, needs firstCell ≠ secondCell) →
+-- transpositionSystem_isTerminating (Subrelation into InvImage (·<·) measure, mirroring IsTerminating_of_lengthReducing).
+-- All zero-axiom (the if-residual base cases close by default-transparency rfl; no Nat.add_mul / ac_rfl). Remaining
+-- SN-118 atoms: orthogonal local confluence + bounded-search decidability.
+#assert_no_axioms FX1Poly.OmegacE.countOccurrences_preserved_by_step
+#assert_no_axioms FX1Poly.OmegacE.aBeforeBInversions_decreases
+#assert_no_axioms FX1Poly.OmegacE.transpositionSystem_isTerminating
