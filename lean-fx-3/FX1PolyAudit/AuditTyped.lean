@@ -51,6 +51,7 @@ import FX1Poly.Typed.SimplyTypedTypeExprReducibleLevelFree
 import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
 import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
+import FX1Poly.Core.RedexExtraction
 import FX1Poly.Typed.ReducibleEnvAtAllLevels
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
@@ -1577,3 +1578,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.identityStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.arrowIdentityIsSimplyTyped
 #assert_no_axioms FX1Poly.Typed.arrowIdentityStronglyNormalizing
+
+-- PRODUCTIVE REDEX EXTRACTION (toward weak normalization, #267/#374): the converse of
+-- `isStepNormalForm_blocks_step` per root-redex shape — a fired root check yields an actual `Step`, witness
+-- produced.  This batch covers the FUNCTION (beta) and PRODUCT (fst/snd) redexes (+ the shallow source
+-- inversions); inductive-eliminator iotas are deferred to subsequent bricks.
+#assert_no_axioms FX1Poly.Core.isLamSource_eq_lam
+#assert_no_axioms FX1Poly.Core.hasAppBetaRoot_exists_step
+#assert_no_axioms FX1Poly.Core.isPairSource_eq_pair
+#assert_no_axioms FX1Poly.Core.hasPairProjectionIotaRoot_exists_step_fst
+#assert_no_axioms FX1Poly.Core.hasPairProjectionIotaRoot_exists_step_snd
