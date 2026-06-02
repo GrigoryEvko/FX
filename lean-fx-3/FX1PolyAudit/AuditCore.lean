@@ -9,6 +9,7 @@ import FX1Poly.Core.StepRewriteRuleMap
 import FX1Poly.Core.StepWordRewriteSoundness
 import FX1Poly.Core.StepWordRewriteEquivariance
 import FX1Poly.Core.ConvWordJoinableBridge
+import FX1Poly.Core.BetaEtaWordSystem
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -156,6 +157,21 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.FxWordJoinable.ofWordRewritesMany
 #assert_no_axioms FX1Poly.Core.Conv.toWordJoinable
 #assert_no_axioms FX1Poly.Core.Step.toWordJoinable
+
+-- SN-130 (#633): the certified beta/iota/eta word-rewrite system. fxStepSystem (SN-126) was beta/iota only (over
+-- Step); eta lives in Step.eta, so this enumerates the FULL system fxBetaEtaStepSystem over Step.betaEta (= Step
+-- or Step.eta). Generic membership + single-step soundness (fire) reuse SN-127's generic FxWordRewrites*;
+-- fxStepSystem_imp_fxBetaEtaStepSystem embeds the beta/iota system (Or.inl); Step/Step.eta.toBetaEtaWordRewrite
+-- certify beta/iota (Or.inl) AND eta (Or.inr) rules -- the eta half is NEW. Step.betaEtaStar.toWordRewrites is the
+-- many-step eta-inclusive soundness. Zero-axiom.
+#assert_no_axioms FX1Poly.Core.fxBetaEtaStepSystem
+#assert_no_axioms FX1Poly.Core.Step.betaEta.inducedRewriteRule
+#assert_no_axioms FX1Poly.Core.Step.betaEta.inducedRewriteRule_mem_fxBetaEtaStepSystem
+#assert_no_axioms FX1Poly.Core.Step.betaEta.toWordRewrite
+#assert_no_axioms FX1Poly.Core.fxStepSystem_imp_fxBetaEtaStepSystem
+#assert_no_axioms FX1Poly.Core.Step.toBetaEtaWordRewrite
+#assert_no_axioms FX1Poly.Core.Step.eta.toBetaEtaWordRewrite
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.toWordRewrites
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
