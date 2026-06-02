@@ -102,6 +102,7 @@ import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
+import FX1Poly.Typed.ValidTyping
 import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
 import FX1Poly.Typed.ReducibleEnvVec
 import FX1Poly.Typed.ReducibleEnvVecTypeVariable
@@ -1324,6 +1325,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.closedUniverseCode_not_conv_identity
 #assert_no_axioms FX1Poly.Typed.closedUniverseCode_not_conv_piCode
 #assert_no_axioms FX1Poly.Typed.closedIdentity_not_conv_piCode
+-- LEG-2 RECURSOR (ValidTyping.lean): the level-annotated typing (Abel validity-derivation-indexed relation),
+-- leaf+conv core. var/conv level coordination resolved BY CONSTRUCTION (var at contextLevels index; conv's
+-- reclassifier at subjectLevel+1) — so ValidTyping.fundamental is a CLEAN single induction (ValidTyping.rec)
+-- threading the shipped level-indexed arms — the FIRST assembled fundamental-theorem recursor on the
+-- dependent-FT lane, breaking the var/conv wall for the core. closedStronglyNormalizing = SN-for-well-typed
+-- (core, closed) via the recursor; the smoke shows it lands genuine SN. REMAINING for full SN: the
+-- genFormation arm (Π/Σ formers + leveled telescope) + the HasTypeDesc→ValidTyping leveling bridge.
+#assert_no_axioms FX1Poly.Typed.ValidTyping
+#assert_no_axioms FX1Poly.Typed.ValidTyping.fundamental
+#assert_no_axioms FX1Poly.Typed.ValidTyping.closedStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.validTyping_universeCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiSubstitutedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectStronglyNormalizingFromFundamentalAtAll
