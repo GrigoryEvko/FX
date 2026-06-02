@@ -77,8 +77,10 @@ theorem IsReducibleMemberAtAllPositiveLevels.nonDependentArrowPositive {scope : 
 data former (a `leaf`: weak-head-normal, not Π-, not universe-rooted) or a non-dependent `arrow` whose DOMAIN
 is such a leaf and whose codomain is itself first-order simply-typed.  This captures the curried first-order
 function types `A₁ → A₂ → … → Aₙ → B` over neutral / data base types — every arrow domain is base, while
-codomains may nest arrows.  Higher-order domains (`(A → B) → C`) are deliberately excluded: they hit the open
-fuel-`0` wall. -/
+codomains may nest arrows.  Higher-order arrow domains (`(A → B) → C`) are excluded from THIS inductive only;
+they are NOT blocked — `IsSimplyTyped` (HigherOrderSimplyTypedReducibility) closes arrows on the domain too
+and proves the same Tait result for the full simply-typed fragment.  The genuine fuel-`0` wall is confined to
+UNIVERSE domains (`Type@e → C`, dependent), whose member-extension is the open type-polymorphic core. -/
 inductive IsFirstOrderSimplyTyped : {scope : Nat} → RawTerm scope → Prop
   | leaf {scope : Nat} {classifier : RawTerm scope}
       (weakHeadNormal : ∀ reduct : RawTerm scope, ¬ WeakHeadStep classifier reduct)

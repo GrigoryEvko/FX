@@ -88,6 +88,7 @@ import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsStronglyNormalizing
 import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsNonDependentArrow
 import FX1Poly.Typed.ReducibleTypeAtAllLevelsNonDependentArrow
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
+import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -1463,3 +1464,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofNeutral
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofNeutralApplication
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.neutralApplicationReducibleAndMemberExtension
+
+-- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
+-- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
+-- arrow domain `(A → B) → C` recurses, NOT blocked).  The arrow-domain recursion is unblocked precisely by the
+-- member-extension-free type-side arrow `nonDependentArrowOfAllLevelsDomain` (the IH supplies only
+-- positive-source member-extension, which the member-side `nonDependentArrowPositive` accepts).  Corrects the
+-- first-order file's docstring claim that higher-order domains hit the fuel-0 wall — only UNIVERSE domains do.
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.reducibleAndMemberExtension
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.ofFirstOrder
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.ofNeutral
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.higherOrderArrow
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.higherOrderArrowReducibleAndMemberExtension
