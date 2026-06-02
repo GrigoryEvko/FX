@@ -133,6 +133,7 @@ import FX1Poly.Typed.ClassifierLevelDiagnosis
 import FX1Poly.Typed.ClassifierLevelMeasure
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
+import FX1Poly.Typed.LogRelSpec
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1612,6 +1613,12 @@ gates pin them shut.
 -- as a checked object — the SAME universe-domain Π former is genuinely all-levels reducible (live model,
 -- SN-004) yet only VACUOUSLY fuel-0 reducible with the trivial candidate (dead model, SN-001).
 #assert_no_axioms FX1Poly.Typed.lockedStrategyGoCertificate
+
+-- SN-006 (contingency spec, fallback-only): the Adjedj derivation-indexed LogRel.  Key finding: `HasTypeDescPi`
+-- is Prop-valued, so a Nat derivation-size is BLOCKED (no large elim from Prop); the fallback is Prop-motive
+-- structural recursion on the derivation (same scheme as ValidTyping.fundamental, impredicativity-robust).
+-- The marker is the fallback's deferred TARGET statement (= the primary SN goal), a checked Prop, no obligation.
+#assert_no_axioms FX1Poly.Typed.DerivationIndexedStrongNormalizationFallback
 
 -- Member-side leaf (dual of the type leaves): membership in a neutral / data-former classifier is
 -- `IsStronglyNormalizing` (level-independent), so a one-level member extends to all positive levels — the
