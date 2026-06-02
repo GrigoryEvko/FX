@@ -7,6 +7,7 @@ import FX1Poly.Core.GeneratorPolygraphMap
 import FX1Poly.Core.RawCellWordEncoding
 import FX1Poly.Core.StepRewriteRuleMap
 import FX1Poly.Core.StepWordRewriteSoundness
+import FX1Poly.Core.StepWordRewriteEquivariance
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -127,6 +128,21 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.FxWordRewritesMany.underLeftContext
 #assert_no_axioms FX1Poly.Core.FxWordRewritesMany.underRightContext
 #assert_no_axioms FX1Poly.Core.StepStar.toWordRewrites
+
+-- SN-128 (#631): rename/subst-equivariance of the Step->word bridge + system-level inversion. The soundness
+-- commutes with the term rename/subst actions (Step.toWordRewrite_rename/_subst, StepStar.toWordRewrites_rename,
+-- via the shipped Step.rename/Step.subst/StepStar.rename) and the generated system is closed under both
+-- (fxStepSystem_rename_mem/_subst_mem). fxStepSystem_imp_step inverts the system (every rule comes from a Step) +
+-- _leftHandSide/_rightHandSide_ne_nil (no degenerate rules). FULL word->Step completeness is BLOCKED (free word
+-- monoid + toCode payload-collapse on universe codes), honestly deferred -- not faked. Zero-axiom.
+#assert_no_axioms FX1Poly.Core.Step.toWordRewrite_rename
+#assert_no_axioms FX1Poly.Core.StepStar.toWordRewrites_rename
+#assert_no_axioms FX1Poly.Core.Step.toWordRewrite_subst
+#assert_no_axioms FX1Poly.Core.fxStepSystem_rename_mem
+#assert_no_axioms FX1Poly.Core.fxStepSystem_subst_mem
+#assert_no_axioms FX1Poly.Core.fxStepSystem_imp_step
+#assert_no_axioms FX1Poly.Core.fxStepSystem_leftHandSide_ne_nil
+#assert_no_axioms FX1Poly.Core.fxStepSystem_rightHandSide_ne_nil
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
