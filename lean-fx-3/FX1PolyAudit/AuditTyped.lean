@@ -55,6 +55,7 @@ import FX1Poly.Typed.SimplyTypedTermInversionLevelFree
 import FX1Poly.Typed.SimplyTypedTypeExprClosureLevelFree
 import FX1Poly.Typed.SimplyTypedTermRenameLevelFree
 import FX1Poly.Typed.SimplyTypedTermSubstLevelFree
+import FX1Poly.Typed.SimplyTypedTermSubjectReductionLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -1761,6 +1762,15 @@ gates pin them shut.
 -- β-reduction cites: (λ.body) arg ↝ body[arg] preserves type.
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.substituteUnderBinding
+
+-- SUBJECT REDUCTION + TYPE-PRESERVING NORMALIZATION — the SR arc CULMINATION.  Reduction preserves typing
+-- (single-step inverts Step per shape via StepInversion: var refuted, app = β/cong-fn/cong-arg with the
+-- β-engine substituteUnderBinding + weaken_subst_singleton, lam = cong-body); multi-step iterates it; and
+-- normalForm_typed (the gold payoff) threads the normalizer's reduction chain through SR* so the canonical
+-- normal form of a closed simply-typed term is itself simply-typed at the same type.
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.subjectReduction
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.subjectReductionStar
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalForm_typed
 
 -- The PRODUCTIVE MIRROR of `isStepNormalForm_blocks_step`: a non-normal term genuinely reduces, with the
 -- reduct exhibited.  Mutual term + child-spine halves.  Combines the root-redex dispatch (root conjunct) with
