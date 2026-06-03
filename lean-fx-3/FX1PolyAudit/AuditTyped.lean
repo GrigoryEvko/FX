@@ -140,6 +140,7 @@ import FX1Poly.Typed.ValidTypingRefinedMotive
 import FX1Poly.Typed.ValidTypingTermArms
 import FX1Poly.Typed.ValidTypingFormerArms
 import FX1Poly.Typed.ValidTypingConvArm
+import FX1Poly.Typed.ValidTypingVariableLevelPinned
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1537,6 +1538,17 @@ gates pin them shut.
 -- as piElim type-family + var type-variable. With this, the HasTypeDescPi conv ctor's refined-motive arm is in
 -- hand; the assembly #662 residual is ofFormation + the induction skeleton (shared contextLevels) + neutral env routing.
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.conv
+-- SN-027 the VARIABLE-LEVEL-PINNING INVERSION + the type-variable obstruction (#662 diagnosis,
+-- ValidTypingVariableLevelPinned.lean): validTypingVariableLevelPinned proves a ValidTyping derivation of subject
+-- variableCell index has level = contextLevels index (var pins, conv preserves, all other ctors have a distinct
+-- head generator; genFormationPi forced to gen_var contradicts typingRuleDescOf gen_var = none). The corollary
+-- typeVariableNotLevelFlexible turns it into the WALL: a type variable cannot satisfy the refined motive's
+-- conjunct-2 (forall level) — at contextLevels index it would force contextLevels index + 1 = contextLevels index.
+-- This PINS that the dependent assembly's neutral type-codes (var-at-universe + the piElim type-family case) do NOT
+-- go through ValidTyping all-level flexibility; they route through the reducibility env at the single
+-- conv-coordinated level. The shipped refined-motive arms stay correct for the FORMER + value-subject cases.
+#assert_no_axioms FX1Poly.Typed.validTypingVariableLevelPinned
+#assert_no_axioms FX1Poly.Typed.typeVariableNotLevelFlexible
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
