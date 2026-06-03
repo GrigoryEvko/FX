@@ -16,6 +16,7 @@ import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
+import FX1Poly.Core.TakahashiTriangle
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
 import FX1Poly.Core.KripkeReducibilityCandidate
@@ -265,6 +266,14 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.ofReflTransClosure
 #assert_no_axioms FX1Poly.Core.StepStar.hasConfluence_of_parallelDiamond
 #assert_no_axioms FX1Poly.Core.StepStar.hasStrip_of_parallelDiamond
+
+-- Takahashi triangle lemma (toward #420): the linear route to the parallel-reduction diamond. A
+-- completeDevelopment function with the TriangleProperty (every reduct steps to the source's complete
+-- development) yields DiamondProperty.ofTriangle and Confluent.ofTriangle, reducing the deferred parallel
+-- diamond above from a quadratic redex-pair join to the single linear "exhibit completeDevelopment + its
+-- triangle" obligation (Takahashi 1995). Composes with diamondConfluence + hasConfluence_of_parallelDiamond.
+#assert_no_axioms FX1Poly.Core.DiamondProperty.ofTriangle
+#assert_no_axioms FX1Poly.Core.Confluent.ofTriangle
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
