@@ -74,6 +74,7 @@ import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
+import FX1Poly.Core.EmptyCanonicalFormsCandidate
 import FX1Poly.Core.StronglyNormalizingSubst
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
@@ -2076,6 +2077,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.pairCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.pairValue_isMember
 #assert_no_axioms FX1Poly.Core.pairClosedReducesToValue
+-- EMPTY type / CONSISTENCY core (SN-050/053): emptyIsValue := False (no value constructors); the candidate is
+-- the SN neutral terms (isReducibilityCandidateOfValuesNormal with vacuous value-normality); a CLOSED member
+-- is impossible (closedReducesToValue yields a False-satisfying value). The #672-free structural heart of "no
+-- closed proof of Empty"; only the membership half (closed well-typed Empty term is a member) awaits the FT.
+#assert_no_axioms FX1Poly.Core.emptyCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.emptyHasNoClosedMember
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
