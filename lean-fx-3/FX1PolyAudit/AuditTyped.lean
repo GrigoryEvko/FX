@@ -144,6 +144,7 @@ import FX1Poly.Typed.ValidTypingVariableLevelPinned
 import FX1Poly.Typed.FormationEngineFundamentalReduction
 import FX1Poly.Typed.FormationEngineFundamental
 import FX1Poly.Typed.FormationEngineFundamentalAssembly
+import FX1Poly.Typed.HasTypeDescPiConditionalConfluence
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1692,6 +1693,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiAllLevelFundamentalTheorem.toClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiPositiveCandidateFundamentalTheorem.toClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiTypeValueCandidateFundamentalTheorem.toClosedStrongNormalizationTheorem
+-- SN-046 typed Newman bridge + general typed decidable Conv, CONDITIONAL on the one typed-SN interface
+-- (HasTypeDescPiConditionalConfluence.lean). HasTypeDescPiStronglyNormalizes = the named typed-SN hypothesis
+-- (= SN-043, gate #672). subjectConfluenceOfStronglyNormalizes = Newman confined to the SN fragment
+-- (StepStar.confluence_of_localJoin_and_accessible on the hypothesis-supplied SN witness; raw global confluence
+-- false-by-Omega is never used). decidableOfHasTypeDescPiStronglyNormalizes = general typed Conv decidable via
+-- the parameter-free SN-fragment decider (Conv.decidableOfStronglyNormalizing), subsuming decidableOfIsType
+-- (TYPES-only) to ARBITRARY well-typed terms. All zero-axiom (Acc-recursion + instDecidableEqRawTerm). Once #672
+-- lands and feeds HasTypeDescPi.subjectStronglyNormalizingFromFormation, the hypothesis discharges and these go
+-- unconditional in one step.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPiStronglyNormalizes
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectConfluenceOfStronglyNormalizes
+#assert_no_axioms FX1Poly.Typed.Conv.decidableOfHasTypeDescPiStronglyNormalizes
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
