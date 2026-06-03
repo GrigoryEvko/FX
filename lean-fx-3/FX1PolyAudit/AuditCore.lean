@@ -36,6 +36,7 @@ import FX1Poly.Core.StratifiedReducibleMemberStepClosure
 import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationCodeFormers
 import FX1Poly.Core.StrongNormalizationModalEliminators
+import FX1Poly.Core.StrongNormalizationNatElim
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -565,3 +566,10 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Step.from_subsume
 #assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_of_child
 #assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_of_child
+
+-- Recursive-eliminator iota-redex SN (toward SN-061): the natSucc one-child subterm-SN lemma (predecessor of
+-- an SN natSucc is SN), and the conditional natElim successor-case redex SN (normal branches + the
+-- succ-contractum SN for every SN predecessor ⟹ the natElim redex with an SN scrutinee is SN). The
+-- succ-contractum hypothesis is the honest IH-carrying premise the numeral WF-recursion eventually discharges.
+#assert_no_axioms FX1Poly.Core.StepStar.predecessor_isStronglyNormalizing_of_natSucc
+#assert_no_axioms FX1Poly.Core.StepStar.natElim_isStronglyNormalizing_of_normal_branches
