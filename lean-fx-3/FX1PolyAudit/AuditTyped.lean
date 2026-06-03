@@ -166,6 +166,7 @@ import FX1Poly.Typed.DenoteKeyedLevelIrrelevance
 import FX1Poly.Typed.DenoteKeyedReducibleEnv
 import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
+import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2918,3 +2919,12 @@ gates pin them shut.
 -- no funext) + deterministic; uniform in level (no cases-level split the fuel original needed).
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.reducibleMemberCandidate
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtDenote.reducibleMemberCandidate
+
+-- DenoteKeyedPiFormationFromExistence (route D Π-formation arm, the route-D-friendly piArm): the denote
+-- Π-formation arm that takes the codomain IH as mere EXISTENCE (IsReducibleTypeAtAllDenoteLevels) rather than a
+-- chosen candidate, extracting the per-level candidate choice-freely via the canonical-member-candidate engine.
+-- uniformDomainPi covers any level-stable-candidate domain; neutralDomainPi is the witnessing instance (type
+-- variables / stuck applications — the common FT case). The domain-membership gating matches because the domain
+-- candidate is uniform across levels. No Classical.choice.
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_reducibleFromCodomainExistence
+#assert_no_axioms FX1Poly.Typed.neutralDomainPi_reducibleFromCodomainExistence
