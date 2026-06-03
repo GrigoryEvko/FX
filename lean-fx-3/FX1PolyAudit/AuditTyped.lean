@@ -74,6 +74,7 @@ import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.BoolElimCanonicalComputation
+import FX1Poly.Core.BoolElimClosedMembership
 import FX1Poly.Core.SigmaProjectionCanonicalComputation
 import FX1Poly.Core.IdentityEliminatorCanonicalComputation
 import FX1Poly.Core.OptionEitherMatchCanonicalComputation
@@ -2133,6 +2134,13 @@ gates pin them shut.
 -- (StepStar.transLast). The elimination analog of closed-bool canonicity; no fundamental theorem used.
 #assert_no_axioms FX1Poly.Core.StepStar.boolElimScrutinee
 #assert_no_axioms FX1Poly.Core.boolElimCanonicalScrutineeReducesToBranch
+-- ELIMINATION MEMBERSHIP (#672-free, SN-063 eliminator half): a closed boolElim on a canonical bool scrutinee
+-- with member branches is ITSELF a member of the result candidate. The cell is SN (boolElim SN from the
+-- members' CR1 witnesses), reduces to the selected branch (boolElimCanonicalScrutineeReducesToBranch), and that
+-- closed branch member reaches a value (closedReducesToValue) — value-reaching weak-head expansion
+-- (ofStepStarReachingValue, #735) lifts membership back to the cell. The recursor lands in the candidate, not
+-- merely normalizes — closed-layer assembly, no fundamental theorem.
+#assert_no_axioms FX1Poly.Core.boolElimClosedIsMember
 -- Sigma PROJECTION canonicity (#672-free, SN-058 path): fst/snd on a CANONICAL pair scrutinee PROJECT to the
 -- components. StepStar.fstScrutinee/sndScrutinee = the unary scrutinee-position chain congruences (generic
 -- StepStar.congAt + Step.cong (StepChildren.here ...) at the sole child). pairCanonicalScrutineeProjectsTo-
