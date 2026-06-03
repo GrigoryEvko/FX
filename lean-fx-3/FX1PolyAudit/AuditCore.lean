@@ -574,6 +574,8 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- succ-contractum hypothesis is the honest IH-carrying premise the numeral WF-recursion eventually discharges.
 #assert_no_axioms FX1Poly.Core.StepStar.predecessor_isStronglyNormalizing_of_natSucc
 #assert_no_axioms FX1Poly.Core.StepStar.natElim_isStronglyNormalizing_of_normal_branches
+-- natRec (dependent recursor) firing-case twin, completing the Nat recursor pair.
+#assert_no_axioms FX1Poly.Core.StepStar.natRec_isStronglyNormalizing_of_normal_branches
 
 -- Recursive-eliminator iota-redex SN, second data type — List (toward SN-064): the two listCons
 -- subterm-SN projections (head/tail of an SN cons are SN) and the conditional listElim cons-case redex SN

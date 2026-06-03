@@ -140,5 +140,68 @@ theorem natElim_isStronglyNormalizing_of_normal_branches {scope : Nat}
           · exact absurd succStep (succBranchHasNoStep succAfter)))
     scrutineeTerminates
 
+/-- **The natRec successor-case iota-redex is strongly normalizing** — the dependent-recursor twin of
+`natElim_isStronglyNormalizing_of_normal_branches`.  `gen_natRec` (the dependent recursor) shares
+`gen_natElim`'s substrate metadata and its successor ι-rule shape (`Step.from_natRec` is the `gen_natRec`
+mirror of `Step.from_natElim`), so the firing-case argument is identical: `Acc.ndrec` on the scrutinee, with
+ι-succ discharged by `succContractumTerminates` at the `natSucc` predecessor subterm.  This is the normal-branch
+firing-case complement of the shipped neutral-branch `natRecSucc_isStronglyNormalizing_of_neutral_succBranch`,
+completing the firing-case formulation for the Nat recursor pair (toward SN-061). -/
+theorem natRec_isStronglyNormalizing_of_normal_branches {scope : Nat}
+    {scrutinee zeroBranch succBranch : RawTerm scope}
+    (zeroBranchHasNoStep : ∀ targetZero : RawTerm scope, Step zeroBranch targetZero → False)
+    (succBranchHasNoStep : ∀ targetSucc : RawTerm scope, Step succBranch targetSucc → False)
+    (succContractumTerminates :
+      ∀ {predecessor : RawTerm scope}, IsStronglyNormalizing predecessor →
+        IsStronglyNormalizing
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons succBranch (.childCons predecessor .childNil)))
+              (.childCons
+                (.mkGen .gen_natRec ()
+                  (.childCons predecessor
+                    (.childCons zeroBranch (.childCons succBranch .childNil))))
+                .childNil)) : RawTerm scope))
+    (scrutineeTerminates : IsStronglyNormalizing scrutinee) :
+    IsStronglyNormalizing
+      (.mkGen .gen_natRec ()
+        (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil))) :
+        RawTerm scope) :=
+  Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentScrutinee =>
+      IsStronglyNormalizing
+        (.mkGen .gen_natRec ()
+          (.childCons currentScrutinee
+            (.childCons zeroBranch (.childCons succBranch .childNil))) :
+          RawTerm scope))
+    (m := fun currentScrutinee currentScrutineeSuccessors scrutineeIH =>
+      Acc.intro
+        (.mkGen .gen_natRec ()
+          (.childCons currentScrutinee
+            (.childCons zeroBranch (.childCons succBranch .childNil))) :
+          RawTerm scope)
+        (fun targetTerm natRecStep => by
+          rcases Step.from_natRec natRecStep with
+            ⟨_scrutineeIsZero, targetIsZero⟩ |
+            ⟨predecessor, scrutineeIsSucc, targetIsContractum⟩ |
+            ⟨scrutineeAfter, targetIsScrutineeStep, scrutineeStep⟩ |
+            ⟨zeroAfter, _targetIsZeroStep, zeroStep⟩ |
+            ⟨succAfter, _targetIsSuccStep, succStep⟩
+          · rw [targetIsZero]
+            exact isStronglyNormalizing_of_noStep zeroBranchHasNoStep
+          · rw [targetIsContractum]
+            have currentScrutineeSN : IsStronglyNormalizing currentScrutinee :=
+              Acc.intro currentScrutinee currentScrutineeSuccessors
+            rw [scrutineeIsSucc] at currentScrutineeSN
+            exact succContractumTerminates
+              (predecessor_isStronglyNormalizing_of_natSucc currentScrutineeSN)
+          · rw [targetIsScrutineeStep]
+            exact scrutineeIH scrutineeAfter scrutineeStep
+          · exact absurd zeroStep (zeroBranchHasNoStep zeroAfter)
+          · exact absurd succStep (succBranchHasNoStep succAfter)))
+    scrutineeTerminates
+
 end StepStar
 end FX1Poly.Core
