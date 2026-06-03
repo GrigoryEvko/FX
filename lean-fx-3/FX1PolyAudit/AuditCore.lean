@@ -45,6 +45,7 @@ import FX1Poly.Core.NatElimValueMember
 import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.ListElimValueMember
 import FX1Poly.Core.ApplicationStrongNormalizationForward
+import FX1Poly.Core.BetaRedexStrongNormalization
 import FX1Poly.Core.ListOptionIdCodeUniverseMembership
 import FX1Poly.Core.EitherEquivCodeUniverseMembership
 import FX1Poly.Core.LinearFormerUniverseMembership
@@ -698,3 +699,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Step.from_tensorProduct
 #assert_no_axioms FX1Poly.Core.StepStar.linearArrow_isStronglyNormalizing_of_source_target
 #assert_no_axioms FX1Poly.Core.StepStar.tensorProduct_isStronglyNormalizing_of_factors
+
+-- Single-contractum β-redex SN (neutral arm of the member weak-head β-expansion, the denote lambda-arm
+-- engine toward SN-043/#672): app (lam body) arg is SN given lam body, arg, and the SINGLE contractum
+-- subst0 body arg are SN (body free to step). Unlike the existing appLam family — which fixes a NORMAL body
+-- or demands a UNIFORM contractum-SN over all reducts — this needs only the single contractum, recovering the
+-- body-reduct contractums by descendStepStar along StepStar.subst0Body. stepStarLamInversion (a StepStar chain
+-- out of a lambda lands on a lambda, body chain recovered) is the reusable supporting substrate.
+#assert_no_axioms FX1Poly.Core.stepStarLamInversion
+#assert_no_axioms FX1Poly.Core.stepStarLamBodyChain
+#assert_no_axioms FX1Poly.Core.appLam_isStronglyNormalizing_of_contractum
