@@ -71,6 +71,7 @@ import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.Normalize
 import FX1Poly.Core.NormalizeMeta
 import FX1Poly.Core.CanonicalFormsCandidate
+import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.StronglyNormalizingSubst
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
@@ -2041,6 +2042,14 @@ gates pin them shut.
 -- `IsNeutral.closedUnderStep` (NeutralStepClosure.lean), so a data type need only supply that its values are
 -- normal forms (trivial for constructors) to obtain its reducibility candidate.
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal
+-- FIRST CONCRETE DATA CANDIDATE — bool (SN-063 data core), unconditional + zero-axiom: boolIsValue := the
+-- true/false constructor cells; boolIsValue values are structural normal forms (isStepNormalFormBool computes
+-- to true); the candidate is isReducibilityCandidateOfValuesNormal at boolIsValue (CR1+CR2+CR3, neutral half
+-- via IsNeutral.closedUnderStep); both canonical inhabitants are members (Acc.intro over no_step_from_bool*).
+#assert_no_axioms FX1Poly.Core.boolIsValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.boolCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.boolTrueCell_isMember
+#assert_no_axioms FX1Poly.Core.boolFalseCell_isMember
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
