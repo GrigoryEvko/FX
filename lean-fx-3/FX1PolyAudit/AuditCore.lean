@@ -646,6 +646,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.value_isStronglyNormalizing_of_eitherInr
 #assert_no_axioms FX1Poly.Core.StepStar.optionMatch_isStronglyNormalizing_of_normal_branches
 #assert_no_axioms FX1Poly.Core.StepStar.eitherMatch_isStronglyNormalizing_of_normal_branches
+-- SN-from-SN-BRANCHES strengthening (toward the optionMatch/eitherMatch closed-membership, SN-065/066): the
+-- branches need only be SN (members), not normal — required for the Tait/data-candidate eliminator argument.
+-- Triple nested accessibility induction; the applied-branch contractum SN hypothesis (∀ value, SN value →
+-- SN (app branch value)) is THREADED through the branch induction, updated under branch-congruence via
+-- app-head Step.cong + IsStronglyNormalizing.inv. eitherMatch threads BOTH left and right contractums.
+#assert_no_axioms FX1Poly.Core.StepStar.optionMatch_isStronglyNormalizing_of_strongly_normalizing_branches
+#assert_no_axioms FX1Poly.Core.StepStar.eitherMatch_isStronglyNormalizing_of_strongly_normalizing_branches
 
 -- Linear-logic type-former SN (congruence-only, no β+ι root rule): linearArrow (⊸) and tensorProduct (⊗),
 -- two-child formers structurally identical to arrowCode/productCode. Cong inversions + twoChildCong SN.
