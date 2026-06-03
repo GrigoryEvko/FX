@@ -1631,6 +1631,10 @@ gates pin them shut.
 -- at Conv.refl). The variable-reclassifier case routes to validTypingBridgeConvPinnedReclassifier (the leveling
 -- eq) via RawTerm.isVariableOrNot.
 #assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.convNonVariableReclassifier
+-- the revised-motive TERM wrapper: a single-level-valid subject whose classifier is not convertible to any
+-- universe code satisfies the motive (conjunct-2 vacuous via the unsatisfiable convertibility guard). The
+-- binder/elim term-output arms consume it with Conv.piTyCode_not_universeCode / Conv.sigmaTyCode_not_universeCode.
+#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.ofTermValidity
 -- SN-027 the TERM-SUBJECT ARMS (#660, ValidTypingTermArms.lean): the refined motive's term arms (piIntro now,
 -- piElim/var next) discharge through ofTermValidity — single-level ValidTyping + a non-universe classifier makes
 -- the level-flexibility conjunct VACUOUS (the classifier=universeCodeCell hypothesis is impossible). piIntro is

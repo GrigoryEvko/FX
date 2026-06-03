@@ -165,4 +165,21 @@ theorem RevisedBridgeConclusion.convNonVariableReclassifier {profile : PolyProfi
   · intro outLevel outFlag reclassifierConvUniverse subjectNotVariable
     exact subjectFlexible outLevel outFlag (Conv.trans converts reclassifierConvUniverse) subjectNotVariable
 
+/-- **The revised-motive term-subject wrapper.**  A subject valid at one level whose classifier is NOT
+convertible to ANY universe code satisfies the revised motive: conjunct-1 is the supplied validity, conjunct-2
+is vacuous (its convertibility guard `Conv classifier (universeCodeCell …)` is unsatisfiable).  The convertibility
+analogue of `RefinedTotalBridgeConclusion.ofTermValidity` (which used a syntactic-inequality guard) — the binder
+and elimination TERM-output arms consume this with the shipped `Conv.piTyCode_not_universeCode` /
+`Conv.sigmaTyCode_not_universeCode` no-confusion facts (a Π/Σ code is never convertible to a universe code). -/
+theorem RevisedBridgeConclusion.ofTermValidity {profile : PolyProfile} {scope : Nat}
+    {contextLevels : Fin scope → Nat} {subjectLevel : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (typed : ValidTyping profile contextLevels subjectLevel context subject classifier)
+    (classifierNotConvUniverse : ∀ (levelExpr : LevelExpr) (flag : UniverseFlag),
+      ¬ Conv classifier (universeCodeCell levelExpr flag)) :
+    RevisedBridgeConclusion profile contextLevels context subject classifier :=
+  ⟨⟨subjectLevel, typed⟩,
+   fun levelExpr flag classifierConv _subjectNotVariable =>
+     absurd classifierConv (classifierNotConvUniverse levelExpr flag)⟩
+
 end FX1Poly.Typed
