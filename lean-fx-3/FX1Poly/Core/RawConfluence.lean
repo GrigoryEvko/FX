@@ -54,6 +54,15 @@ theorem StepStar.rawConfluence : StepStar.HasConfluence :=
   StepStar.hasConfluence_of_parallelDiamond
     (@ParStep) (@Step.toParStep) (@ParStep.toStepStar) (@ParStep.diamond)
 
+/-- **Unconditional raw strip property** (`#377`, the Newman-precursor).  A single `Step` out of a source
+joins against ANY `StepStar` chain out of the same source — the asymmetric one-step-vs-many form of
+Church-Rosser.  Discharged from the `ParStep` diamond via route B (`hasStrip_of_parallelDiamond`).  Distinct
+from `rawConfluence` (many-vs-many): `StepStar.confluence_of_strip` turns this into confluence, so `rawStrip`
+is the alternative spine to the same Church-Rosser result — also with NO strong-normalization assumption. -/
+theorem StepStar.rawStrip : StepStar.HasStrip :=
+  StepStar.hasStrip_of_parallelDiamond
+    (@ParStep) (@Step.toParStep) (@ParStep.toStepStar) (@ParStep.diamond)
+
 /-! ### Raw conversion is an equivalence relation — the unconditional harvest of confluence.
 
 `Conv` (`StepStarConfluence.lean`) is *defined* as `StepStar.Join` — joinability via a common reduct.

@@ -430,6 +430,12 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.ParStep.diamond
 #assert_no_axioms FX1Poly.Core.StepStar.rawConfluence
 
+-- The Newman-precursor strip property (#377), unconditional via the ParStep diamond (route B,
+-- hasStrip_of_parallelDiamond): a single Step out of a source joins against any StepStar chain out of it.
+-- Distinct statement from rawConfluence (one-vs-many vs many-vs-many); confluence_of_strip turns it into
+-- the same Church-Rosser result. No SN assumption.
+#assert_no_axioms FX1Poly.Core.StepStar.rawStrip
+
 -- The harvest of #420: raw Conv (= StepStar.Join) is an UNCONDITIONAL equivalence relation. Conv.refl /
 -- Conv.sym were structural (StepStarConfluence); Conv.trans needed Church-Rosser, previously only available
 -- conditionally (trans_of_confluence / trans_of_strip / trans_of_strongNormalization, the last UNAVAILABLE
