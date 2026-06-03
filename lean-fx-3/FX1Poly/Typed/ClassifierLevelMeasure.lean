@@ -96,4 +96,21 @@ theorem variableCell_reducibleTypeAtZero {scope : Nat} (index : Fin scope) :
       (by show Generator.gen_var ≠ Generator.gen_piTyCode; decide)
       (by show Generator.gen_var ≠ Generator.gen_universeCode; decide)⟩
 
+/-- **Universe-domain-Π member-level strict-decrease (the Adjedj recursion's measure step).**  The level
+`denote e env` of a member of `Type@e` is strictly below the level `denote (lmax (lsucc e) levelC) env` of
+the dependent function type `Π (X : Type@e). C` — whose level combines `lsucc e` (the universe domain
+`Type@e` lives at `lsucc e`) with the codomain level `levelC` via `lmax`.  Composes `denote_lt_lsucc`
+(`denote e < denote (lsucc e)`) with `denote_le_lmax_left` (`denote (lsucc e) ≤ denote (lmax (lsucc e)
+levelC)`).
+
+This is THE well-founded measure-decrease the universe-domain `piArm` of type-level level-irrelevance
+descends on: a domain member `X : Type@e` is a type of strictly smaller universe level than the Π it
+inhabits, so its OWN level-irrelevance is available as the induction hypothesis — breaking the circularity
+that fuel and code-structure both hit (`RouteAObstruction` / `roadmap_672`).  The remaining gap is purely the
+plumbing: the member's level bound `denote e` must be supplied by the VALIDITY DERIVATION (`ValidTyping`'s
+`subjectLevel`), since a bare reducibility witness does not bound a member's universe level. -/
+theorem denote_lt_lmax_lsucc_left (e levelC : LevelExpr) (env : Nat → Nat) :
+    LevelExpr.denote e env < LevelExpr.denote (LevelExpr.lmax e.lsucc levelC) env :=
+  Nat.lt_of_lt_of_le (denote_lt_lsucc e env) (denote_le_lmax_left e.lsucc levelC env)
+
 end FX1Poly.Typed

@@ -1957,6 +1957,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.denote_le_lmax_left
 #assert_no_axioms FX1Poly.Typed.denote_le_lmax_right
 #assert_no_axioms FX1Poly.Typed.variableCell_reducibleTypeAtZero
+-- The composed universe-domain-Pi measure step (#672 sub-step 3): a member of Type@e has level denote e
+-- strictly below the dependent Pi's level lmax (lsucc e) levelC — the Adjedj recursion's well-founded
+-- descent. Member level bound comes from ValidTyping's subjectLevel (the validity derivation), not bare
+-- reducibility.
+#assert_no_axioms FX1Poly.Typed.denote_lt_lmax_lsucc_left
 
 -- SN-004 (make-or-break): the universe-DOMAIN Π former CLOSES at classifier-level semantics.  Constant
 -- codomain is shipped (universeDomainNonDependentArrow); the dependent case reduces to domain
