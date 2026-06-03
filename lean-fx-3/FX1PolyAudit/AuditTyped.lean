@@ -142,6 +142,7 @@ import FX1Poly.Typed.ValidTypingFormerArms
 import FX1Poly.Typed.ValidTypingConvArm
 import FX1Poly.Typed.ValidTypingVariableLevelPinned
 import FX1Poly.Typed.FormationEngineFundamentalReduction
+import FX1Poly.Typed.FormationEngineFundamental
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1559,6 +1560,14 @@ gates pin them shut.
 -- residual is now the 4-arm formation-engine FT (#674: var via the all-level env, not pinning; universe/genFormation
 -- formers; conv via Conv-invariance of reducibility) — the var arm is dischargeable here, no level-pinning wall.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiAllLevelFundamentalTheorem.ofFormationFundamental
+-- SN-027 #674 the formation-engine FT, arm by arm (FormationEngineFundamental.lean). First arm:
+-- universeFormation. Type@e is a reducible member of Type@(lsucc e) at every positive level — the universe code
+-- is closed so subst is identity (subst_universeCodeCell) and membership is IsReducibleMemberAt.universeFormation
+-- (SN-037), independent of the env-level vector. Remaining arms for formationFundamental: var (via the env lookup,
+-- ReducibleEnvVec.lookupReducible — NOT the ValidTyping pinning), conv (Conv-invariance of reducibility SN-034),
+-- genFormation (the generic former telescope). Then assemble the 4-arm induction => discharge SN-027 + the ~10
+-- downstream theorems via HasTypeDescPiAllLevelFundamentalTheorem.ofFormationFundamental (shipped).
+#assert_no_axioms FX1Poly.Typed.formationFundamentalUniverseFormationArm
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
