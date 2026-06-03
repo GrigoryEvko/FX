@@ -13,6 +13,7 @@ import FX1Poly.Core.BetaEtaWordSystem
 import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder
+import FX1Poly.Core.Newman
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -218,6 +219,21 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.wellFounded_of_lexPairMeasure
 #assert_no_axioms FX1Poly.Core.wellFounded_of_precedenceMultisetMeasure
 #assert_no_axioms FX1Poly.Core.wellFounded_of_precedenceLexMeasure
+
+-- SN-046 core (#549): the ABSTRACT Newman's lemma -- terminating + weakly confluent ⟹ confluent -- the
+-- confluence analogue of the termination orders, generic over any relation. ReflTransClosure (own RTC, since
+-- Relation.ReflTransGen is Mathlib-only) + single/trans; Joinable/WeaklyConfluent/Confluent vocabulary; newmanAux
+-- is the WF-induction tiling (WCR on the two first steps, IH at each reduct, compose); newman is the headline.
+-- The confluence arc instantiates this: SN-046 typed fragment, SN-133 fxSystem (both gated on typed SN). Zero-axiom
+-- (cases on RTC is propext-clean since its indices are free vars, not ctor patterns).
+#assert_no_axioms FX1Poly.Core.ReflTransClosure
+#assert_no_axioms FX1Poly.Core.ReflTransClosure.single
+#assert_no_axioms FX1Poly.Core.ReflTransClosure.trans
+#assert_no_axioms FX1Poly.Core.Joinable
+#assert_no_axioms FX1Poly.Core.WeaklyConfluent
+#assert_no_axioms FX1Poly.Core.Confluent
+#assert_no_axioms FX1Poly.Core.newmanAux
+#assert_no_axioms FX1Poly.Core.newman
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
