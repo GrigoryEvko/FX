@@ -1555,6 +1555,11 @@ gates pin them shut.
 -- (composite-domain Π handled by its env-extension codomain IH), so SN-043's ONLY residual is the leveling bridge
 -- (totalBridge / #662) — NOT the superseded fuel gate HasPositiveMemberExtension… (#672), which is OFF this path.
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPiStronglyNormalizingFromTotalBridge
+-- SN-043 headline (LevelingBridge.lean): hasTypeDescPiClosedStronglyNormalizingFromEmptyBridge — the LITERAL
+-- closed SN-043 shape HasTypeDescPi .empty t T → SN t, modulo the empty-context leveling bridge. Composes with
+-- the unconditional ValidTyping.closedStronglyNormalizing; uses the empty bridge (producing emptyLevelVector
+-- directly) to stay coercion-free (no funext over Fin 0). The closed plain-SN specialization of the open form.
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPiClosedStronglyNormalizingFromEmptyBridge
 -- SN-027 (refined-motive coordination): validTypingBridgeConvFromAllLevelReclassifier discharges the conv arm's
 -- LEVEL alignment — the existential ∃-shape can't force aligned levels, but a REFINED MOTIVE giving type-code
 -- subjects an ∀-level conclusion does: conv needs the reclassifier at subjectLevel+1, which is just the

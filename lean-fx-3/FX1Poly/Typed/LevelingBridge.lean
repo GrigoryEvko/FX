@@ -381,6 +381,31 @@ theorem hasTypeDescPiStronglyNormalizingFromTotalBridge {profile : PolyProfile}
   exact ⟨contextLevels,
     fun substitution env => validTyped.substStronglyNormalizing predLevel substitution env⟩
 
+/-- **The LITERAL closed SN-043 milestone shape, modulo the empty leveling bridge** (the headline
+`HasTypeDescPi .empty t T → IsStronglyNormalizing t`, SN-043/#546, SN-029/#532).  For a CLOSED derivation the
+context is empty, so its level vector IS `emptyLevelVector` — the natural closed-case form of the leveling
+bridge produces `ValidTyping emptyLevelVector …`.  Composed with the shipped UNCONDITIONAL
+`ValidTyping.closedStronglyNormalizing` (which internally does the scope-0→scope-1 renaming reflection), this is
+plain strong normalization of the closed subject — no funext, no renaming plumbing here.
+
+Surfacing the residual as the EMPTY leveling bridge (rather than the general `totalBridge`) keeps the closed
+statement coercion-free: a closed term's `contextLevels : Fin 0 → Nat` need not be reconciled with
+`emptyLevelVector` (which would need `funext` over `Fin 0`, a `Quot.sound` leak) — the bridge produces the empty
+vector directly.  The general open form is `hasTypeDescPiStronglyNormalizingFromTotalBridge`; this is its closed,
+plain-SN specialization, the actual SN-043 headline modulo the (now lone) leveling-bridge residual. -/
+theorem hasTypeDescPiClosedStronglyNormalizingFromEmptyBridge {profile : PolyProfile}
+    (emptyBridge :
+      ∀ {subject classifier : RawTerm 0},
+        HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject classifier →
+          ∃ predLevel : Nat,
+            ValidTyping profile emptyLevelVector (predLevel + 1)
+              (TypingContext.empty : TypingContext profile 0) subject classifier)
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject classifier) :
+    StepStar.IsStronglyNormalizing subject := by
+  obtain ⟨predLevel, validTyped⟩ := emptyBridge typed
+  exact validTyped.closedStronglyNormalizing predLevel
+
 /-! ## The refined-motive coordination (SN-027, toward the total-bridge induction)
 
 The total-bridge induction's residual difficulty is per-arm LEVEL coordination, and the existential
