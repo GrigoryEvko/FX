@@ -174,6 +174,7 @@ import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.DependentPiOverNeutralDomain
 import FX1Poly.Typed.DependentPiNeutralCodomain
 import FX1Poly.Typed.DependentlyTypedNeutralDomainFragment
+import FX1Poly.Typed.FirstOrderSimplyTypedSubsumption
 import FX1Poly.Typed.SimplyTypedTermReducibility
 
 /-! # Tools/AuditAll/AuditTyped
@@ -2691,3 +2692,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsNeutralDomainDependentlyTyped.reducibleAndMemberExtension
 #assert_no_axioms FX1Poly.Typed.IsNeutralDomainDependentlyTyped.ofNeutral
 #assert_no_axioms FX1Poly.Typed.IsNeutralDomainDependentlyTyped.typeFamilyApplication
+
+-- The dependent-neutral fragment STRICTLY CONTAINS the first-order simply-typed fragment: a non-dependent
+-- arrow is the constant-codomain degenerate dependent Pi (weaken_subst_singleton cancels the substitution).
+-- The corollary re-derives first-order reducibility+member-extension through the dependent fragment's single
+-- fundamental theorem — one FT covering both fragments. Higher-order simply-typed (arrow domains) is NOT
+-- subsumed (needs domain member-extension at fuel 0, deferred with the universe-domain crux of #672).
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.toNeutralDomainDependentlyTyped
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.reducibleAndMemberExtensionViaDependentFragment
