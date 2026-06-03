@@ -1,4 +1,5 @@
 import FX1Poly.Typed.DenoteKeyedReducibility
+import FX1Poly.Typed.DenoteKeyedLevelIrrelevance
 
 /-! # FX1Poly/Typed/DenoteKeyedUniverseDomainPi
     — the denote-keyed model closes the universe-domain Π former that the external-fuel model could not
@@ -43,19 +44,23 @@ This file harvests that into the two facts the fuel `piArm` lacked:
   `Π (X : Type@e). C[X]` at one level above `denote levelExpr env` is a reducible member at EVERY such level.
   The denote-keyed analogue of `IsReducibleMemberAtAllPositiveLevels` for the impredicative universe-domain Π,
   via the uniform candidate + `ReducibleTypeAtDenote.deterministic`.
+* `universeDomainPi_reducibleAtEveryDenoteLevel` — totalises the type-level result to `∀ level`
+  (`IsReducibleTypeAtAllDenoteLevels`, the backbone `piArm` shape): genuine levels reuse the above, low levels
+  (`level ≤ denote levelExpr env`) are vacuous since the domain candidate is empty there.
 
 This is the denote-keyed `piArm` content at the type-former level AND its member-stability corollary: the
-universe-domain Π is uniformly reducible and its members are level-stable, both of which the fuel model
-provably could not establish.  It is the load-bearing step toward discharging the actual SN-043 gate
-`HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes` over the non-fuel relation.
+universe-domain Π is reducible at every denote level (and uniformly above the domain's level) and its members
+are level-stable, all of which the fuel model provably could not establish.  It is the load-bearing step toward
+discharging the actual SN-043 gate `HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes` over the
+non-fuel relation.
 
 ## Zero-axiom verification
 
-All four theorems are direct applications of `universeMembership_levelIrrelevant` (the headline
+All five theorems are direct applications of `universeMembership_levelIrrelevant` (the headline
 level-irrelevance, itself `ofPointwiseIff`-clean), the `ReducibleTypeStepDenote.piType` / `.universeCode`
-constructors, and `ReducibleTypeAtDenote.deterministic` (member-stability).  No `induction`, no `funext`, no
-`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditTyped.lean`.
+constructors, `ReducibleTypeAtDenote.deterministic` (member-stability), and `denoteBelowFamily_eq_empty_of_ge`
+(the vacuous low-level case).  No `induction`, no `funext`, no `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -174,5 +179,37 @@ theorem universeDomainPi_memberStableAcrossDenoteLevels {scope : Nat} (env : Nat
     ReducibleTypeAtDenote.deterministic sourceReducible (uniformReducible sourceLevel sourceLevelAbove)
   exact ⟨uniformCandidate, uniformReducible targetLevel targetLevelAbove,
     (candidatesAgree functionTerm).mp memberInSource⟩
+
+/-- **The universe-domain Π is reducible at EVERY denote level — total `IsReducibleTypeAtAllDenoteLevels`.**
+This is the shape the level-irrelevance backbone's `piArm` consumes (`∀ level`, not `∀ level > denote e env`).
+The genuine levels (`> denote levelExpr env`) reuse `universeDomainPi_reducibleAtAllDenoteLevels`; the low
+levels (`level ≤ denote levelExpr env`) are vacuous: there the domain `Type@e` candidate is the EMPTY predicate
+(`denoteBelowFamily_eq_empty_of_ge` makes the decode-at-`denote e env` family empty when `denote e env ≥
+level`), so the `piType` constructor fires with the codomain obligation discharged vacuously from the empty
+domain membership.  So the dependent universe-domain Π `Π (X : Type@e). C[X]` is reducible-as-a-type at every
+ambient denote level, completing the type-level half of the universe-domain `piArm`. -/
+theorem universeDomainPi_reducibleAtEveryDenoteLevel {scope : Nat} (env : Nat → Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) {codomainCode : RawTerm (scope + 1)}
+    (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
+    (codomainReducible : ∀ (level : Nat), LevelExpr.denote levelExpr env < level →
+      ∀ argument : RawTerm scope,
+        (IsStronglyNormalizing argument ∧
+          IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) argument) →
+          ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
+            (codomainCandidate argument)) :
+    IsReducibleTypeAtAllDenoteLevels env
+      (.mkGen .gen_piTyCode () (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+        (.childCons codomainCode .childNil))) := by
+  intro level
+  by_cases levelAbove : LevelExpr.denote levelExpr env < level
+  · exact universeDomainPi_reducibleAtAllDenoteLevels env levelExpr flag codomainCandidate
+      codomainReducible level levelAbove
+  · have levelLe : level ≤ LevelExpr.denote levelExpr env := Nat.not_lt.mp levelAbove
+    refine ⟨_, ReducibleTypeStepDenote.piType (fun _ => IsStronglyNormalizing)
+      (ReducibleTypeStepDenote.universeCode levelExpr flag) (fun _argument argumentInDomain => ?_)⟩
+    obtain ⟨_argumentSN, _candidate, candidateInEmptyFamily⟩ := argumentInDomain
+    rw [denoteBelowFamily_eq_empty_of_ge env level (LevelExpr.denote levelExpr env) levelLe]
+      at candidateInEmptyFamily
+    exact candidateInEmptyFamily.elim
 
 end FX1Poly.Typed

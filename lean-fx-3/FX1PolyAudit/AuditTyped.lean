@@ -2867,6 +2867,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleAtAllDenoteLevels
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_uniformCandidateAtAllDenoteLevels
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_memberStableAcrossDenoteLevels
+-- totalises the universe-domain Π to ∀ level (the IsReducibleTypeAtAllDenoteLevels piArm shape): genuine
+-- levels reuse reducibleAtAllDenoteLevels, low levels (≤ denote e env) vacuous via empty domain candidate.
+#assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleAtEveryDenoteLevel
 
 -- DenoteKeyedLevelIrrelevance (#672 toward the denote level-irrelevance induction): the denote analogue of the
 -- fuel IsReducibleTypeAtAllLevels.ofReducibleTypeStep. IsReducibleTypeAtAllDenoteLevels = ∀ level,
