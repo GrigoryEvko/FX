@@ -130,6 +130,7 @@ import FX1Poly.Core.ReducibilityCandidateArrow
 import FX1Poly.Core.NeutralStepClosure
 import FX1Poly.Core.StrongNormalizationRedexes
 import FX1Poly.Core.StrongNormalizationIotaRedexes
+import FX1Poly.Core.BoolElimStrongNormalization
 import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationSpineExpansion
 import FX1Poly.Core.HeadExpansionClosure
@@ -322,3 +323,8 @@ per-decl list.  It also re-checks the native infra under
 -- Discharges the `neutralClosedUnderStep` hypothesis of `CanonicalFormsPredicate.closedUnderStep` toward
 -- unconditional bool reducibility (SN-063).
 #assert_no_axioms FX1Poly.Core.IsNeutral.closedUnderStep
+-- ELIMINATOR SN FRONTIER: boolElim s t e is strongly normalizing when its scrutinee AND both branches are SN
+-- (strengthening boolElim_isStronglyNormalizing_of_normal_branches from normal to SN branches, via a triple
+-- nested accessibility induction absorbing the ι-redex). The iota-head-expansion SN foundation for boolElim
+-- reducibility (toward SN-063 + the fundamental theorem's eliminator arm).
+#assert_no_axioms FX1Poly.Core.StepStar.boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
