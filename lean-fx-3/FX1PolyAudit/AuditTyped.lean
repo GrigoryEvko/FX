@@ -84,6 +84,7 @@ import FX1Poly.Core.ConsistencyViaSconing
 import FX1Poly.Core.DataEliminatorProgressViaSconing
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
+import FX1Poly.Core.UnitCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
 import FX1Poly.Core.ListCanonicalFormsCandidate
 import FX1Poly.Core.OptionCanonicalFormsCandidate
@@ -2236,6 +2237,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.pairCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.pairValue_isMember
 #assert_no_axioms FX1Poly.Core.pairClosedReducesToValue
+-- NULLARY single-constructor data candidate — Unit, the last SN-049 data type (Sum = Either, already
+-- shipped). isUnitValue := (term = unitCell); the unit cell is a structural normal form (rfl); the candidate
+-- is isReducibilityCandidateOfValuesNormal at isUnitValue; the unit cell is a member (Acc over
+-- no_step_from_unit); a closed member reduces to a value and, by unit's uniqueness, to THE unit cell.
+-- Unconditional + #672-free.
+#assert_no_axioms FX1Poly.Core.isUnitValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.unitCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.unitCell_isMember
+#assert_no_axioms FX1Poly.Core.unitClosedReducesToValue
+#assert_no_axioms FX1Poly.Core.unitClosedReducesToUnitCell
 -- EMPTY type / CONSISTENCY core (SN-050/053): emptyIsValue := False (no value constructors); the candidate is
 -- the SN neutral terms (isReducibilityCandidateOfValuesNormal with vacuous value-normality); a CLOSED member
 -- is impossible (closedReducesToValue yields a False-satisfying value). The #672-free structural heart of "no
