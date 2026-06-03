@@ -183,6 +183,7 @@ import FX1Poly.Typed.DenoteKeyedAmbientLevelBridge
 import FX1Poly.Typed.DenoteKeyedNonDependentArrow
 import FX1Poly.Typed.DenoteKeyedFundamentalPiIntro
 import FX1Poly.Typed.DenoteKeyedClosedMember
+import FX1Poly.Typed.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3108,3 +3109,12 @@ gates pin them shut.
 -- subject as a denote-reducible member of its closed classifier. Composed with denote CR1, this is the
 -- wire-to-SN step for the closed-term SN headline (SN-043). Fed the eventual unconditional denote FT (#744).
 #assert_no_axioms FX1Poly.Typed.closedMemberAtDenote
+
+-- DenoteKeyedTelescopeReducible (SN-D5d first brick): the denote-keyed telescope-reducibility relation, the
+-- return type the genFormationPi premise's future fundamentalTelescope companion produces. Single-level denote
+-- analogue of the fuel TelescopeReducible (simpler: one ambient level, no +1 scope). nil = vacuous base; twoChild
+-- = the Π/Σ-former unfolder (binderShifts [0,1] = consecutiveShifts 0 2). Starts the genFormationPi arm
+-- infrastructure (#750); the cons recursion + the genFormationPi connection remain.
+#assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote
+#assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote.nil
+#assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote.twoChild
