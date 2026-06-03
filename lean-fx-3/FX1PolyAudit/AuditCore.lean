@@ -41,6 +41,7 @@ import FX1Poly.Core.StrongNormalizationListElim
 import FX1Poly.Core.StrongNormalizationMatch
 import FX1Poly.Core.StrongNormalizationLinearFormers
 import FX1Poly.Core.NatElimValueReducibility
+import FX1Poly.Core.NatElimValueMember
 import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.ApplicationStrongNormalizationForward
 import FX1Poly.Core.ListOptionIdCodeUniverseMembership
@@ -619,6 +620,16 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- scrutinee-reduction/neutral outer regimes are the deferred other half of SN-061.
 #assert_no_axioms FX1Poly.Core.natElimValueReducibility
 #assert_no_axioms FX1Poly.Core.natRecValueReducibility
+
+-- VALUE-CASE natElim reducibility with the recursor-SN obligation DISCHARGED (toward SN-061): replaces the
+-- bespoke redexStronglyNormalizing hypothesis of natElimValueReducibility with the UNIVERSAL candidate
+-- properties CR1 (members are SN) + CR2 (membership forward-closed under Step) + succBranchTerminates. The
+-- scrutinee-fixed cell-SN recursor (natElimNormalScrutineeCellStronglyNormalizing) does a double Acc induction
+-- over the branches, carrying the branch interface forward via CR2, with the ι-reduct SN coming from its
+-- membership via CR1 -- so it needs no bespoke succContractumTerminates. #672-independent (fixed result
+-- candidate, the pure Tait value-recursor argument).
+#assert_no_axioms FX1Poly.Core.natElimNormalScrutineeCellStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.natElimValueMember
 
 -- VALUE-CASE of listElim recursor reducibility (SN-064), the list analogue of the Nat recursor value-case:
 -- listElim on a LIST-VALUE scrutinee lands in the result candidate by IsListValue structural induction firing
