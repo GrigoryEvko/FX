@@ -41,6 +41,7 @@ import FX1Poly.Core.StrongNormalizationListElim
 import FX1Poly.Core.StrongNormalizationMatch
 import FX1Poly.Core.StrongNormalizationLinearFormers
 import FX1Poly.Core.NatElimValueReducibility
+import FX1Poly.Core.ListElimValueReducibility
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -587,6 +588,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- scrutinee-reduction/neutral outer regimes are the deferred other half of SN-061.
 #assert_no_axioms FX1Poly.Core.natElimValueReducibility
 #assert_no_axioms FX1Poly.Core.natRecValueReducibility
+
+-- VALUE-CASE of listElim recursor reducibility (SN-064), the list analogue of the Nat recursor value-case:
+-- listElim on a LIST-VALUE scrutinee lands in the result candidate by IsListValue structural induction firing
+-- the two ι rules (nil->nilBranch; cons->app(app(app c head)tail)(listElim tail n c)) through the candidate's
+-- weak-head expansion. Same conditional interface (weak-head-expansion + branch reducibility + SN-of-redex);
+-- the scrutinee-reduction/neutral outer regime is the deferred shared other half.
+#assert_no_axioms FX1Poly.Core.listElimValueReducibility
 
 -- Recursive-eliminator iota-redex SN, second data type — List (toward SN-064): the two listCons
 -- subterm-SN projections (head/tail of an SN cons are SN) and the conditional listElim cons-case redex SN
