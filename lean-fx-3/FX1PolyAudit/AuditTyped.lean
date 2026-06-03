@@ -195,6 +195,7 @@ import FX1Poly.Typed.ValidTypingRefinedMotive
 import FX1Poly.Typed.ValidTypingTermArms
 import FX1Poly.Typed.ValidTypingFormerArms
 import FX1Poly.Typed.ValidTypingConvArm
+import FX1Poly.Typed.ValidTypingPiArms
 import FX1Poly.Typed.ValidTypingVariableLevelPinned
 import FX1Poly.Typed.FormationEngineFundamentalReduction
 import FX1Poly.Typed.FormationEngineFundamental
@@ -1644,6 +1645,13 @@ gates pin them shut.
 -- universe code satisfies the motive (conjunct-2 vacuous via the unsatisfiable convertibility guard). The
 -- binder/elim term-output arms consume it with Conv.piTyCode_not_universeCode / Conv.sigmaTyCode_not_universeCode.
 #assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.ofTermValidity
+-- the revised-motive BINDER/ELIMINATION term arms (ValidTypingPiArms.lean), revised twins of the old-motive
+-- RefinedTotalBridgeConclusion.piIntro/.piElim. piIntro: classifier is a Π code, conjunct-2 vacuous via
+-- Conv.piTyCode_not_universeCode (a PROOF). piElim: function+argument ALIGNED at one subjectLevel
+-- (ValidTyping.piElim is same-level — the bare-existential motive cannot align, verified), conjunct-2 vacuous
+-- via the resultNotConvUniverse hypothesis the assembly discharges (type-family case routes separately, pinned).
+#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.piIntro
+#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.piElim
 -- SN-027 the TERM-SUBJECT ARMS (#660, ValidTypingTermArms.lean): the refined motive's term arms (piIntro now,
 -- piElim/var next) discharge through ofTermValidity — single-level ValidTyping + a non-universe classifier makes
 -- the level-flexibility conjunct VACUOUS (the classifier=universeCodeCell hypothesis is impossible). piIntro is
