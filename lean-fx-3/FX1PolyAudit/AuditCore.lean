@@ -19,6 +19,7 @@ import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.TakahashiTriangle
 import FX1Poly.Core.ParallelReduction
 import FX1Poly.Core.CompleteDevelopment
+import FX1Poly.Core.ParStepSubstRename
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
 import FX1Poly.Core.KripkeReducibilityCandidate
@@ -320,6 +321,18 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelf_stepStar
 #assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment_stepStar
 #assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopmentChildren_stepChildrenStar
+
+-- ParStep stable under substitution + renaming (toward the #420 triangle): the parallel-substitution
+-- lemma the triangle ParStep a b -> ParStep b (completeDevelopment a) needs at its beta/iota arms is built
+-- on these. ParStep.subst mirrors Step.subst's recursor idiom (all-substitutions motive; beta via
+-- subst0_subst_commute, cong via the gen_var split, every iota arm applies its premises' IHs at sigma,
+-- the spine lifts sigma by the child binder shift). ParStep.rename is the corollary via the Step.rename
+-- rename->subst trick. These are the renaming/substitution substrate the binder case of the eventual
+-- parallel substitution lemma requires.
+#assert_no_axioms FX1Poly.Core.ParStep.subst
+#assert_no_axioms FX1Poly.Core.ParStepChildren.subst
+#assert_no_axioms FX1Poly.Core.ParStep.rename
+#assert_no_axioms FX1Poly.Core.ParStepChildren.rename
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
