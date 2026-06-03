@@ -170,6 +170,7 @@ import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
 import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
 import FX1Poly.Typed.DenoteKeyedApplicationMember
 import FX1Poly.Typed.DenoteKeyedConvMember
+import FX1Poly.Typed.DenoteKeyedMemberForwardClosed
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2971,3 +2972,10 @@ gates pin them shut.
 -- under the closing substitution via Conv.subst, then transports. The conversion typing rule, member level.
 #assert_no_axioms FX1Poly.Typed.memberConvAtDenote
 #assert_no_axioms FX1Poly.Typed.convMemberUnderClosingSubstitution
+
+-- DenoteKeyedMemberForwardClosed (CR2 for the denote relation, UNCONDITIONAL — first piece of the bounded-CR
+-- decomposition toward B1'): every denote-reducible type's candidate is forward-closed under Step on members.
+-- Uses only the lowerForwardStep leg (unconditional), never the bounded neutralInclusion. Π arm reduces to the
+-- codomain CR2 (no domain candidacy ⟹ no bound); universe arm uses lowerForwardStep. Isolates the level bound
+-- to CR1's Π-arm + CR3.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.memberForwardClosed
