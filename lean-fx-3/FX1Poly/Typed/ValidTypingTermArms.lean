@@ -27,13 +27,15 @@ The two term arms differ in HOW that non-universe proof is obtained, and that di
   `conv` consumer instantiates `∀ level` at exactly `subjectLevel`).  So `piElim` takes the non-universe fact as
   a HYPOTHESIS `resultNotUniverse`, discharged by the assembly for value-producing applications.
 
-This file ships the term-subject machinery and the two term arms (`var` is #659, still pending):
+This file ships the term-subject machinery and the three term arms:
 
 * `RefinedTotalBridgeConclusion.ofTermValidity` — the uniform term-arm wrapper: single-level `ValidTyping` plus a
   proof that the classifier is not a universe code yields the refined motive (vacuous second conjunct).
 * `piTyCodeCell_ne_universeCodeCell` — the structural discriminator: a Π code is never a universe code.
-* `RefinedTotalBridgeConclusion.piIntro` — the λ arm (non-universe PROVED).
+* `RefinedTotalBridgeConclusion.piIntro` — the λ arm (non-universe PROVED, unconditionally a Π code).
 * `RefinedTotalBridgeConclusion.piElim` — the application arm (non-universe HYPOTHESIZED; type-family case env-routed).
+* `RefinedTotalBridgeConclusion.var` — the variable arm (non-universe HYPOTHESIZED; type-variable case env-routed,
+  identical wall to `piElim`).
 
 The genuinely hard LEVEL coordination — turning each sub-derivation's `∃`-level into the SHARED level the premises
 here demand — is the ASSEMBLY's job (#662), not these arms'.  Each arm states exactly the premises `ValidTyping`'s
@@ -132,5 +134,34 @@ theorem RefinedTotalBridgeConclusion.piElim {profile : PolyProfile} {scope : Nat
   RefinedTotalBridgeConclusion.ofTermValidity
     (ValidTyping.piElim contextLevels subjectLevel functionTyped argumentTyped)
     resultNotUniverse
+
+/-- **The var (variable) arm of the refined motive.**  A variable `variableCell index` whose declared (looked-up)
+type `context.lookup index` is NOT a universe code is a term subject — discharged through `ofTermValidity`,
+EXACTLY like `piElim`, and for the same structural reason.
+
+The variable case splits along the looked-up type:
+
+* a TERM variable (its declared type is a Π code, a Σ code, a data type — anything non-universe) flows through
+  this arm: `resultNotUniverse` holds, conjunct-2 is vacuous.
+* a TYPE variable (its declared type IS `universeCodeCell levelExpr flag`) is a NEUTRAL type code, and
+  `ValidTyping.var` pins it to the SINGLE level `contextLevels index` — so the refined motive's conjunct-2
+  (`∀ level, ValidTyping … (level+1) …`) is UNSATISFIABLE at the `ValidTyping` layer (identical to `piElim`'s
+  type-family case).  That case does NOT flow through this arm; it routes through the reducibility-layer
+  type-variable env (`consTypeVariable`) at the coordinated level in the assembly.  The conv consumer needs the
+  reclassifier at only ONE level, so the assembly supplies the neutral case by level-COORDINATION (the subject
+  and the neutral type-variable share a level under `Conv`), not all-level flexibility.
+
+Hence the honest signature mirrors `piElim`: given the variable and a proof its declared type is not a universe
+code, the motive holds.  The assembly discharges `lookupNotUniverse` for term variables by inspecting the looked-up
+type, and handles the type-variable case through the reducibility env. -/
+theorem RefinedTotalBridgeConclusion.var {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (context : TypingContext profile scope) (index : Fin scope)
+    (lookupNotUniverse : ∀ (levelExpr : LevelExpr) (flag : UniverseFlag),
+      context.lookup index ≠ universeCodeCell levelExpr flag) :
+    RefinedTotalBridgeConclusion profile contextLevels context
+      (variableCell index) (context.lookup index) :=
+  RefinedTotalBridgeConclusion.ofTermValidity
+    (ValidTyping.var contextLevels context index)
+    lookupNotUniverse
 
 end FX1Poly.Typed

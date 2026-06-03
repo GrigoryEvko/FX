@@ -1521,6 +1521,13 @@ gates pin them shut.
 -- assembly, which only ever needs ONE level (validTypingBridgeConvFromAllLevelReclassifier instantiates the
 -- forall-level reclassifier at exactly subjectLevel — line 361). So resultNotUniverse is the honest precondition.
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.piElim
+-- SN-027 the var TERM ARM (#659, ValidTypingTermArms.lean): the EXACT analogue of piElim. A variable whose
+-- looked-up type context.lookup index is NOT a universe code is a term subject (ofTermValidity over
+-- ValidTyping.var). A TYPE variable (lookup IS a universe code) is a neutral type code PINNED to the single level
+-- contextLevels index by ValidTyping.var, so conjunct-2 (forall level) is UNSATISFIABLE at the ValidTyping layer
+-- (same wall as piElim's type-family case) — routed through the reducibility type-variable env (consTypeVariable)
+-- at the coordinated level in the assembly. So lookupNotUniverse is the honest precondition.
+#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.var
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
