@@ -175,6 +175,7 @@ import FX1Poly.Typed.DenoteKeyedUniverseMemberBetaExpansion
 import FX1Poly.Typed.DenoteKeyedMemberWeakHeadExpansion
 import FX1Poly.Typed.DenoteKeyedHeadExpansion
 import FX1Poly.Typed.DenoteKeyedAbstractionMember
+import FX1Poly.Typed.DenoteKeyedAbstractionUnderSubst
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3025,3 +3026,12 @@ gates pin them shut.
 -- bounded denote CR1 to BRICK 5; the FT supplies it at the ambient classifier level. Feeds SN-D3 (under-subst)
 -- and the SN-D5 FT induction's Π-introduction case.
 #assert_no_axioms FX1Poly.Typed.abstractionMemberAtDenote
+
+-- DenoteKeyedAbstractionUnderSubst (SN-D3): the FT-shaped under-closing-substitution twin of SN-D2, the
+-- introduction counterpart of applicationMemberUnderClosingSubstitution / piFormationUnderClosingSubstitution.
+-- subst σ (Π A B) and subst σ (λ body) distribute definitionally (children crossing the binder get lift σ);
+-- the codomain/body premises arrive in the FT IH shape (under cons argument σ) and bridge to
+-- abstractionMemberAtDenote's subst0 … (lift σ) shape via RawTerm.subst_cons_eq_subst0_lift. The
+-- codomainCandidate is pinned explicitly (existentially packaged in the conclusion). Feeds the SN-D5 FT
+-- induction's Π-introduction case under the closing substitution.
+#assert_no_axioms FX1Poly.Typed.abstractionMemberUnderClosingSubstitution
