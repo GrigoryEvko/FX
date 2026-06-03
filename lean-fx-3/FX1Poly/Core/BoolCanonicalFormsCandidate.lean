@@ -78,4 +78,14 @@ theorem boolFalseCell_isMember {scope : Nat} :
       (fun _reduct stepFromBool => absurd stepFromBool Step.no_step_from_boolFalse),
     Or.inr ⟨boolFalseCell, StepStar.refl boolFalseCell, Or.inr rfl⟩⟩
 
+/-- **Closed bool-candidate members reduce to `true` or `false`** — canonicity for booleans, modulo
+membership.  A closed member of the bool candidate is non-neutral (no closed neutral, `IsNeutral.noClosed`),
+so by `CanonicalFormsPredicate.closedReducesToValue` it reduces to a boolean value, i.e. to `boolTrueCell` or
+`boolFalseCell`.  Combined with "a closed well-typed term of bool type is a member" (the fundamental theorem,
+gated on `#672` / SN-043) this is SN-047 closed-bool canonicity.  The extraction shown here is `#672`-free. -/
+theorem boolClosedReducesToTrueOrFalse {term : RawTerm 0}
+    (member : CanonicalFormsPredicate boolIsValue term) :
+    ∃ value : RawTerm 0, StepStar term value ∧ (value = boolTrueCell ∨ value = boolFalseCell) :=
+  CanonicalFormsPredicate.closedReducesToValue member
+
 end FX1Poly.Core

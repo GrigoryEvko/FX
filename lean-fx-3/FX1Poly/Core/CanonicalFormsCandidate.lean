@@ -155,4 +155,18 @@ theorem CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal {scope : N
     IsReducibilityCandidate (CanonicalFormsPredicate isValue) :=
   CanonicalFormsPredicate.isReducibilityCandidate IsNeutral.closedUnderStep isValueImpliesNormal
 
+/-- **Closed canonical-forms members are canonical** — the canonicity payload of the candidate.  A CLOSED
+member (scope 0) cannot be neutral: `IsNeutral.noClosed` refutes the neutral disjunct (no closed term is a
+stuck eliminator — every neutral bottoms out at a variable, of which scope 0 has none).  So the member's
+"neutral OR reduces-to-value" disjunct collapses to its right branch: the member reduces to a designated
+`isValue`.  Combined with a proof that a closed well-typed term is a member (the fundamental theorem), this is
+exactly data canonicity — a closed term of the data type reduces to a constructor (SN-047 / SN-049).  The
+extraction is `#672`-independent; only the membership half awaits the typed reducibility fundamental theorem. -/
+theorem CanonicalFormsPredicate.closedReducesToValue {isValue : RawTerm 0 → Prop} {term : RawTerm 0}
+    (member : CanonicalFormsPredicate isValue term) :
+    ∃ value : RawTerm 0, StepStar term value ∧ isValue value := by
+  rcases member.2 with termIsNeutral | reducesToValue
+  · exact (IsNeutral.noClosed termIsNeutral).elim
+  · exact reducesToValue
+
 end FX1Poly.Core

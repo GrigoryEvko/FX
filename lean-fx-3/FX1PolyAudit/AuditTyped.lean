@@ -2050,6 +2050,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.boolCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.boolTrueCell_isMember
 #assert_no_axioms FX1Poly.Core.boolFalseCell_isMember
+-- CANONICITY EXTRACTION (#672-free): a CLOSED candidate member cannot be neutral (IsNeutral.noClosed), so it
+-- reduces to a designated value. Generic closedReducesToValue + bool specialization (closed bool member
+-- reduces to true/false). The structural core of SN-047/049 canonicity; only the membership half (closed
+-- well-typed term is a member) awaits the typed reducibility fundamental theorem.
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.closedReducesToValue
+#assert_no_axioms FX1Poly.Core.boolClosedReducesToTrueOrFalse
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
