@@ -34,6 +34,7 @@ import FX1Poly.Core.StratifiedReducibleLevelCongr
 import FX1Poly.Core.StratifiedReducibleMemberNeutral
 import FX1Poly.Core.StratifiedReducibleMemberStepClosure
 import FX1Poly.Core.StrongNormalizationSubterm
+import FX1Poly.Core.StrongNormalizationCodeFormers
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -542,3 +543,16 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.closedUnderStep
 #assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.closedUnderStepStar
 #assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.neutralExpansion
+
+-- Structural SN closure completing the universe-code former family: the one-child listCode/optionCode
+-- congruence inversions + SN, the three-child idCode inversion + SN, and the reusable three-child
+-- congruence SN combinator (the three-child analogue of the shipped one/two-child versions).  The SN-half
+-- ingredient of "the code is a reducible member of El" (SN-071); SN is fuel-independent so this is
+-- #672-independent.
+#assert_no_axioms FX1Poly.Core.Step.from_listCode
+#assert_no_axioms FX1Poly.Core.Step.from_optionCode
+#assert_no_axioms FX1Poly.Core.Step.from_idCode
+#assert_no_axioms FX1Poly.Core.StepStar.isStronglyNormalizing_of_threeChildCong
+#assert_no_axioms FX1Poly.Core.StepStar.listCode_isStronglyNormalizing_of_element
+#assert_no_axioms FX1Poly.Core.StepStar.optionCode_isStronglyNormalizing_of_element
+#assert_no_axioms FX1Poly.Core.StepStar.idCode_isStronglyNormalizing_of_type_endpoints
