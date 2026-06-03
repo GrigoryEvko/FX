@@ -173,6 +173,7 @@ import FX1Poly.Typed.DenoteKeyedConvMember
 import FX1Poly.Typed.DenoteKeyedMemberForwardClosed
 import FX1Poly.Typed.DenoteKeyedUniverseMemberBetaExpansion
 import FX1Poly.Typed.DenoteKeyedMemberWeakHeadExpansion
+import FX1Poly.Typed.DenoteKeyedHeadExpansion
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3004,3 +3005,12 @@ gates pin them shut.
 -- ofReducibleTypeStepDenote discipline. The lambda FT arm instantiates with source = app (lam body) arg + SN
 -- via appLam_isStronglyNormalizing_of_contractum; a proof of piArm alone completes the full member WHE.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi
+
+-- DenoteKeyedHeadExpansion (SN-D1): the SPINE-GENERAL head-expansion closure ported from the fuel layer
+-- (StratifiedReducibleTypeHeadExpansion.lean:98) onto the denote relation — the lower-risk lambda-arm vehicle
+-- (Route Y; spine absorbs the extra app arg via applySpineApp_append, so NO application-SN spine / NO piArm).
+-- The parametric form takes a per-level lowerHeadExpand leg; the unconditional ReducibleTypeAtDenote corollary
+-- discharges it via denoteBelowFamily_backwardWeakHeadStep on WeakHeadStep.betaSpine — bound-free (vacuous
+-- above the bound). Feeds SN-D2 (abstractionMemberAtDenote via the generic DependentArrowCandidate.abstraction).
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.headExpansionClosed
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.headExpansionClosed
