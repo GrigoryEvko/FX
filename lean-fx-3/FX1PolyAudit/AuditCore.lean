@@ -43,6 +43,7 @@ import FX1Poly.Core.StrongNormalizationLinearFormers
 import FX1Poly.Core.NatElimValueReducibility
 import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.ApplicationStrongNormalizationForward
+import FX1Poly.Core.ListOptionIdCodeUniverseMembership
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -564,6 +565,14 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.listCode_isStronglyNormalizing_of_element
 #assert_no_axioms FX1Poly.Core.StepStar.optionCode_isStronglyNormalizing_of_element
 #assert_no_axioms FX1Poly.Core.StepStar.idCode_isStronglyNormalizing_of_type_endpoints
+-- UNIVERSE MEMBERSHIP of the one/three-child data-type codes (SN-071): list/option/id codes are reducible
+-- members of Type@levelExpr, each a direct dataFormerInUniverse instance fed the per-former SN combinator + the
+-- uniform weak-head-normal (only rootIota could unify, killed by cases iotaStep) + root-distinctness from
+-- piTyCode/universeCode. The two-child eitherCode/equivCode are the remaining SN-071 piece (need 2-child Step
+-- inversions). #672-independent.
+#assert_no_axioms FX1Poly.Core.listCode_isReducibleMemberOfUniverse
+#assert_no_axioms FX1Poly.Core.optionCode_isReducibleMemberOfUniverse
+#assert_no_axioms FX1Poly.Core.idCode_isReducibleMemberOfUniverse
 
 -- Modal-core β+ι SN coverage: gen_modElim / gen_subsume are congruence-only (no iota root rule; the modal
 -- collapse is raw η), so their cong inversions + one-child-cong SN closures complete the modal-core SN
