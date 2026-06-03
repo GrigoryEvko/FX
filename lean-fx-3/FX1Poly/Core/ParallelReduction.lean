@@ -170,4 +170,42 @@ mutual
     | .childCons head tail => ParStepChildren.cons (ParStep.refl head) (ParStepChildren.refl tail)
 end
 
+mutual
+  /-- **`Step ⊆ ParStep`** (the lower sandwich bound, `stepToPar` for
+  `StepStar.hasConfluence_of_parallelDiamond`): every single reduction is a parallel reduction firing ONLY
+  that redex, leaving the sub-terms reflexive.  Each `Step` arm maps to the matching `ParStep` arm with
+  `ParStep.refl` on every surviving component; `cong` maps the single-child `StepChildren` to a pointwise
+  `ParStepChildren` (the stepping child via the recursive call, the rest reflexive). -/
+  theorem Step.toParStep {scope : Nat} {a b : RawTerm scope} : Step a b → ParStep a b
+    | .beta => ParStep.beta (ParStep.refl _) (ParStep.refl _)
+    | .cong gen payload childStep => ParStep.cong gen payload (StepChildren.toParStepChildren childStep)
+    | .iotaBoolTrue => ParStep.iotaBoolTrue (ParStep.refl _)
+    | .iotaBoolFalse => ParStep.iotaBoolFalse (ParStep.refl _)
+    | .iotaFstPair => ParStep.iotaFstPair (ParStep.refl _)
+    | .iotaSndPair => ParStep.iotaSndPair (ParStep.refl _)
+    | .iotaNatElimZero => ParStep.iotaNatElimZero (ParStep.refl _)
+    | .iotaNatRecZero => ParStep.iotaNatRecZero (ParStep.refl _)
+    | .iotaListElimNil => ParStep.iotaListElimNil (ParStep.refl _)
+    | .iotaOptionMatchNone => ParStep.iotaOptionMatchNone (ParStep.refl _)
+    | .iotaOptionMatchSome => ParStep.iotaOptionMatchSome (ParStep.refl _) (ParStep.refl _)
+    | .iotaEitherMatchInl => ParStep.iotaEitherMatchInl (ParStep.refl _) (ParStep.refl _)
+    | .iotaEitherMatchInr => ParStep.iotaEitherMatchInr (ParStep.refl _) (ParStep.refl _)
+    | .iotaNatElimSucc => ParStep.iotaNatElimSucc (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
+    | .iotaNatRecSucc => ParStep.iotaNatRecSucc (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
+    | .iotaListElimCons =>
+        ParStep.iotaListElimCons (ParStep.refl _) (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
+    | .iotaIdJRefl => ParStep.iotaIdJRefl (ParStep.refl _)
+    | .iotaIdStrictRecRefl => ParStep.iotaIdStrictRecRefl (ParStep.refl _)
+  /-- **`StepChildren ⊆ ParStepChildren`** (the spine companion of `Step.toParStep`): a single-child step
+  lifts to a pointwise parallel reduction — the stepping child parallel-reduces (recursive call), the
+  other children stay reflexive. -/
+  theorem StepChildren.toParStepChildren {parentScope : Nat} {binderShifts : List Nat}
+      {children children' : RawTermChildren binderShifts parentScope} :
+      StepChildren children children' → ParStepChildren children children'
+    | .here rest childStep =>
+        ParStepChildren.cons (Step.toParStep childStep) (ParStepChildren.refl rest)
+    | .there head restStep =>
+        ParStepChildren.cons (ParStep.refl head) (StepChildren.toParStepChildren restStep)
+end
+
 end FX1Poly.Core

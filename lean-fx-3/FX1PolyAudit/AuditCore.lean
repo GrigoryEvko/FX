@@ -290,6 +290,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- relation that will discharge HasMaximalReduct -> the diamond -> raw confluence (the prize SN cannot supply).
 #assert_no_axioms FX1Poly.Core.ParStep.refl
 #assert_no_axioms FX1Poly.Core.ParStepChildren.refl
+-- Step subset ParStep (the lower sandwich bound = stepToPar for hasConfluence_of_parallelDiamond): every single
+-- reduction is a parallel reduction firing only that redex, surviving sub-terms reflexive; cong maps the
+-- single-child StepChildren to a pointwise ParStepChildren. Mutual term-mode structural recursion on the
+-- derivation. One of the two arguments the raw-confluence adapter needs; the upper bound ParStep subset StepStar
+-- is the next increment.
+#assert_no_axioms FX1Poly.Core.Step.toParStep
+#assert_no_axioms FX1Poly.Core.StepChildren.toParStepChildren
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
