@@ -3143,3 +3143,7 @@ gates pin them shut.
 -- reducible type at every level), so the DEPENDENT composite piArm needs a different technique, not a bound lemma.
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.nonDependentArrow
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.universeDomainNonDependentArrow
+-- The consumable interface: uniform reducibility ⟹ is-a-reducible-type above the threshold (drops the candidate
+-- to existence). The face the uniform backbone presents to a consumer (the A2 ambient-level bridge) once the
+-- piArm lands. Weaker than IsReducibleTypeAtAllDenoteLevels (below-threshold reducibility is leaf-specific).
+#assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.isReducibleTypeAboveThreshold

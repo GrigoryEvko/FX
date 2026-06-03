@@ -110,6 +110,20 @@ theorem UniformlyReducibleAboveDenote.headExpand {scope : Nat} {env : Nat → Na
   exact ⟨threshold, candidate,
     fun level habove => ReducibleTypeStepDenote.whnfExpand weakHeadStep (reducibleAbove level habove)⟩
 
+/-- **The consumable interface: uniform reducibility ⟹ is-a-reducible-type above the threshold.**  Drops the
+specific uniform candidate to mere existence (`IsReducibleTypeAtDenote`), exposing the threshold so a consumer
+(e.g. the A2 ambient-level bridge `universeMemberReducibleAtLevel`) can read "reducible at every level above the
+threshold" without committing to a candidate.  This is the face the uniform backbone presents once the piArm
+lands: a consumer that only needs reducibility at a high-enough ambient level instantiates this at that level.
+Note this is the WEAKER all-levels-EXISTENCE projection valid only ABOVE the threshold — it is NOT the full
+`IsReducibleTypeAtAllDenoteLevels` (which demands all levels including ≤ threshold, where a universe code's
+candidate is degenerate/empty); below-threshold reducibility is leaf-specific and not provided by the motive. -/
+theorem UniformlyReducibleAboveDenote.isReducibleTypeAboveThreshold {scope : Nat} {env : Nat → Nat}
+    {typeCode : RawTerm scope} (uniform : UniformlyReducibleAboveDenote env typeCode) :
+    ∃ threshold : Nat, ∀ level : Nat, threshold < level → IsReducibleTypeAtDenote env level typeCode := by
+  obtain ⟨threshold, candidate, reducible⟩ := uniform
+  exact ⟨threshold, fun level habove => ⟨candidate, reducible level habove⟩⟩
+
 /-- **Uniform level-irrelevance by induction on the denote-keyed reducibility derivation, Π arm isolated.**
 The `UniformlyReducibleAboveDenote`-motive analogue of `IsReducibleTypeAtAllDenoteLevels.\
 ofReducibleTypeStepDenote`: every `ReducibleTypeStepDenote` arm but `piType` is discharged unconditionally
