@@ -138,6 +138,7 @@ import FX1Poly.Typed.LevelingBridge
 import FX1Poly.Typed.ValidTypingLevelFlexible
 import FX1Poly.Typed.ValidTypingRefinedMotive
 import FX1Poly.Typed.ValidTypingTermArms
+import FX1Poly.Typed.ValidTypingFormerArms
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1503,6 +1504,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.ofTermValidity
 #assert_no_axioms FX1Poly.Typed.piTyCodeCell_ne_universeCodeCell
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.piIntro
+-- SN-027 the GENERIC-FORMER ARM (#658, ValidTypingFormerArms.lean): genFormationPi is neither a fixed former
+-- (its classifier is the GENERIC rule.outputType, not a syntactic universe code, so ofLevelFlexible can't apply)
+-- nor a term arm (its classifier may BE a universe code). conjunct-1 fires ValidTyping.genFormationPi at the
+-- carried predLevel; conjunct-2 (only when rule.outputType matches a universe code) refires at every level — the
+-- ctor's isFormation/premises/telescopeFundamental are all predLevel-INDEPENDENT, the same freedom the fixed
+-- formers exploit — and casts the classifier through the match equality (eq ▸).
+#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.genFormationPi
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
