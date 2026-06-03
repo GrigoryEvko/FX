@@ -1740,6 +1740,15 @@ gates pin them shut.
 -- apex collapses both onto one term). The typed fragment is a normalizing rewriting system with a unique
 -- canonical representative. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueNormalFormOfStronglyNormalizes
+-- RELEASE-READINESS CONSOLIDATION (#664, Thrust-C de-risking): convergencePackageModuloStronglyNormalizes bundles
+-- the THREE propositional normalization consequences of the single typed-SN hypothesis into one auditable
+-- statement: (1) weak normalization, (2) per-subject confluence (typed Newman bridge SN-046), (3) unique normal
+-- form. Termination (the hypothesis) + WN + confluence = convergence; conjunct 3 is the headline. NOT new
+-- metatheory — each conjunct is the corresponding shipped conditional theorem applied to the one hypothesis; the
+-- value is the single discharge point. Decidable Conv + Conv=normalize-eq are the companion gated results (their
+-- conclusions thread the SN witness into normalize, so they stay standalone in HasTypeDescPiConditionalConfluence).
+-- Unconditional in one step once #672 lands. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convergencePackageModuloStronglyNormalizes
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
