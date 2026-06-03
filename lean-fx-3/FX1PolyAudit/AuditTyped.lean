@@ -71,6 +71,7 @@ import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.Normalize
 import FX1Poly.Core.NormalizeMeta
 import FX1Poly.Core.CanonicalFormsCandidate
+import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.BoolElimCanonicalComputation
 import FX1Poly.Core.SigmaProjectionCanonicalComputation
@@ -2115,6 +2116,15 @@ gates pin them shut.
 -- well-typed term is a member) awaits the typed reducibility fundamental theorem.
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.closedReducesToValue
 #assert_no_axioms FX1Poly.Core.boolClosedReducesToTrueOrFalse
+-- WEAK-HEAD EXPANSION (backward closure) for the data candidate, in the regime where it HOLDS: a redex into
+-- a value-reaching contractum, itself SN, is a member (r ↝ contractum ↝* value gives r ↝* value). The data
+-- candidate is NOT weak-head-expansion-closed for a NEUTRAL contractum (a fired redex is non-neutral yet
+-- reduces to the stuck neutral, satisfying neither disjunct) — that boundary is the honest scope, documented
+-- in the file. weakHeadExpansionOfMemberNotNeutral is the directly-usable member form (ι contractum is a
+-- non-neutral closed branch member). The closed-canonicity recursor-assembly step; #672-independent.
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.weakHeadExpansionOfValueReaching
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.ofStepStarReachingValue
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.weakHeadExpansionOfMemberNotNeutral
 -- ELIMINATION canonicity (#672-free, SN-063 path): boolElim on a CANONICAL scrutinee COMPUTES to a branch.
 -- StepStar.boolElimScrutinee = the scrutinee-position chain congruence (generic StepStar.congAt + Step.cong
 -- (StepChildren.here ...) at the head of the 3-child spine). boolElimCanonicalScrutineeReducesToBranch = the
