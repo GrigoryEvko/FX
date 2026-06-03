@@ -184,6 +184,7 @@ import FX1Poly.Typed.DenoteKeyedNonDependentArrow
 import FX1Poly.Typed.DenoteKeyedFundamentalPiIntro
 import FX1Poly.Typed.DenoteKeyedClosedMember
 import FX1Poly.Typed.DenoteKeyedTelescopeReducible
+import FX1Poly.Typed.DenoteKeyedUniformReducible
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3118,3 +3119,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote.nil
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote.twoChild
+
+-- DenoteKeyedUniformReducible (#752 foundation): the uniform-candidate-above-threshold motive
+-- UniformlyReducibleAboveDenote — the STRENGTHENING that breaks the piType circularity in the level-irrelevance
+-- proof (the all-levels motive's per-level candidate varies; this fixes a single candidate above a threshold, so
+-- the piType arm's domain IH supplies a uniform domain candidate that transfers the codomain gate across levels).
+-- Three easy backbone arms: ofNeutral (threshold 0, SN candidate, level-independent ctor), ofUniverseCode
+-- (threshold denote e, level-independent decode-set via universeMembership_levelIrrelevant), headExpand (rewrap
+-- the contractum's uniform candidate via whnfExpand). REMAINING: the backbone induction + the piType arm (the
+-- #752 content) ⟹ UniformlyReducibleAboveDenote ⟹ IsReducibleTypeAtAllDenoteLevels, discharging the
+-- ofReducibleTypeStepDenote piArm unconditionally.
+#assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote
+#assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofNeutral
+#assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofUniverseCode
+#assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.headExpand
