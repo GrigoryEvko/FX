@@ -79,6 +79,7 @@ import FX1Poly.Core.SigmaProjectionCanonicalComputation
 import FX1Poly.Core.IdentityEliminatorCanonicalComputation
 import FX1Poly.Core.IdEliminatorClosedMembership
 import FX1Poly.Core.OptionEitherMatchCanonicalComputation
+import FX1Poly.Core.MatchClosedMembership
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.BoolCanonicityViaSconing
 import FX1Poly.Core.DataCanonicityViaSconing
@@ -2185,6 +2186,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.StepStar.eitherMatchScrutinee
 #assert_no_axioms FX1Poly.Core.optionMatchCanonicalScrutineeReduces
 #assert_no_axioms FX1Poly.Core.eitherMatchCanonicalScrutineeReduces
+-- APPLIED-BRANCH eliminator MEMBERSHIP (#672-free, the SN-065/066 elimination half, closed-layer): a closed
+-- optionMatch/eitherMatch whose scrutinee is a canonical member and whose branches RESPECT SN arguments (map SN
+-- args to result-candidate members) is ITSELF a member. The applied-branch twin of boolElim/idJ closed
+-- membership — the some/inl/inr ι applies the branch to the wrapped payload, so the cell-SN ingredient is the
+-- SN-from-SN-branches matcher lemma (someContractumTerminates from branchRespectsSN's CR1), and the contractum
+-- app branch payload reaches a value because the payload is SN (canonical scrutinee subterm via descendStepStar
+-- + value-subterm) and branchRespectsSN payload is a member. ofStepStarReachingValue (#735) lifts to the cell.
+#assert_no_axioms FX1Poly.Core.optionMatchClosedIsMember
+#assert_no_axioms FX1Poly.Core.eitherMatchClosedIsMember
 -- RECURSIVE eliminators, BASE CASE (#672-free, SN-061/062/064 base half): natElim/natRec on zero, listElim on
 -- nil COMPUTE to the base branch. StepStar.natElimScrutinee/natRecScrutinee/listElimScrutinee = head-child
 -- scrutinee congruences (as for boolElim). natElim/natRecZeroScrutineeReducesToBranch +
