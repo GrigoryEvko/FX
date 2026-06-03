@@ -45,6 +45,7 @@ import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.ApplicationStrongNormalizationForward
 import FX1Poly.Core.ListOptionIdCodeUniverseMembership
 import FX1Poly.Core.EitherEquivCodeUniverseMembership
+import FX1Poly.Core.LinearFormerUniverseMembership
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -579,6 +580,12 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- stratified membership (arrow/product/sum + list/option/either/id/equiv) now closed, #672-independent.
 #assert_no_axioms FX1Poly.Core.eitherCode_isReducibleMemberOfUniverse
 #assert_no_axioms FX1Poly.Core.equivCode_isReducibleMemberOfUniverse
+-- LINEAR-LOGIC type formers (⊸ / ⊗) inhabit their universe too: linearArrow/tensorProduct are two-child
+-- .type formers, classified by dataFormerInUniverse on the shipped two-child SN combinators (linearity is a
+-- usage grade, orthogonal to the type-code-in-universe fact). bangModality (!A) deferred (needs its SN
+-- substrate). #672-independent.
+#assert_no_axioms FX1Poly.Core.linearArrow_isReducibleMemberOfUniverse
+#assert_no_axioms FX1Poly.Core.tensorProduct_isReducibleMemberOfUniverse
 
 -- Modal-core β+ι SN coverage: gen_modElim / gen_subsume are congruence-only (no iota root rule; the modal
 -- collapse is raw η), so their cong inversions + one-child-cong SN closures complete the modal-core SN
