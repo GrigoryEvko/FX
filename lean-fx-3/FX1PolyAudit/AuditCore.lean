@@ -23,6 +23,7 @@ import FX1Poly.Core.ParStepSubstRename
 import FX1Poly.Core.ParStepSubstPointwise
 import FX1Poly.Core.ParStepInversion
 import FX1Poly.Core.CompleteDevelopmentParStep
+import FX1Poly.Core.ParStepTriangle
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
 import FX1Poly.Core.KripkeReducibilityCandidate
@@ -406,6 +407,18 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- hides deep subterms from structural recursion, so route through the recursor's children-spine IH); none ->
 -- cong, some -> per-redex fire with the child IHs extracted by cases. ~350 lines, propext-clean.
 #assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment_parStep
+
+-- The Takahashi triangle (the #420 headline): every parallel reduct b of a further parallel-reduces to
+-- completeDevelopment a -- the maximal-reduct property that discharges the ParStep DiamondProperty and
+-- hence (through the Step subset ParStep subset StepStar sandwich) unconditional raw confluence. Proved by
+-- induction on the ParStep a b derivation (ParStep.rec, termination-free): beta/branch-selection iota arms
+-- close by IHs through the cd_<redex>_eq defeq, recursive iota by nested cong, cong by triangleCongFires.
+-- triangleCongFires is the cong-some workhorse: it dispatches on the 11 redex generators, inverts the
+-- cong-reduced scrutinee/function child to learn the post-cong head shape, extracts the per-component
+-- development steps from the children IH, and fires the matching ParStep ctor (whose contractum is
+-- definitionally fireRootRedexOrSelf's output); non-firing branches reuse fireRootRedex_sound's keys.
+#assert_no_axioms FX1Poly.Core.ParStep.triangleCongFires
+#assert_no_axioms FX1Poly.Core.ParStep.triangle
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
