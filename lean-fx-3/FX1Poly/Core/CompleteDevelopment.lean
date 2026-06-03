@@ -21,15 +21,22 @@ The clean construction delegates ALL redex-shape detection to the already-propex
 
 * `fireRootRedexOrSelf` — fire the root redex if present (`Option.getD` over `fireRootRedex`), else
   keep the cell.  Non-recursive, a single `Option` match.
+* `fireRootRedexOrSelfGated` — fire on the DEVELOPED children but ONLY when the ORIGINAL children
+  form a syntactic redex (a single `Option` match on `fireRootRedex` of the original children).
 * `completeDevelopment` / `completeDevelopmentChildren` — develop every child, then fire the root
-  redex once.  The only matches are `mkGen` (one constructor) and `childNil`/`childCons` (two
-  non-overlapping constructors), so no propext-leaking matcher is generated.
+  redex once VIA THE GATE.  The only matches are `mkGen` (one constructor), `childNil`/`childCons`
+  (two non-overlapping constructors), and the gate's `Option`, so no propext-leaking matcher is generated.
 
-This is exactly Takahashi's complete development: developing the children first contracts all
-redexes inside them; firing the (developed) root once contracts the head redex; and because
-`fireRootRedex`'s ι-contractums build the recursive eliminator call SYNTACTICALLY (e.g.
-`natElim … (succ n) ↦ app (app s n) (natElim … n)`), the redexes CREATED by contraction are left
-untouched — the defining property that separates the complete development from full normalization.
+This is exactly Takahashi's complete development: developing the children first contracts all redexes
+inside them; firing the (developed) root once contracts the head redex IF the source was a syntactic
+redex; and because `fireRootRedex`'s ι-contractums build the recursive eliminator call SYNTACTICALLY
+(e.g. `natElim … (succ n) ↦ app (app s n) (natElim … n)`), the redexes CREATED by contraction are left
+untouched — the defining property separating the complete development from full normalization.  The
+GATE is essential: firing on developed children alone over-fires (an inner redex whose contractum is a
+`lam` would turn an enclosing non-`lam`-headed application into a β-redex and contract it), which is not
+a single parallel-reduction step and would break the triangle's `ParStep a (cd a)` instance.  Gating on
+the original head — safe because redex-head constructors are never themselves root-redex generators, so
+developing preserves the head — fires the SAME redex with the developed components (see `cd_app_lam_eq`).
 
 `completeDevelopment_stepStar` confirms the development sits inside the existing reduction relation:
 the source `StepStar`-reduces to its complete development (children congruence via
@@ -60,14 +67,31 @@ def RawTerm.fireRootRedexOrSelf {scope : Nat} (generator : Generator)
   (RawTerm.fireRootRedex generator payload children).getD
     (.mkGen generator payload children)
 
+/-- **Gated root firing.**  Fire the root redex on the DEVELOPED children, but ONLY when the ORIGINAL
+children already form a syntactic redex.  This is the gate that makes `completeDevelopment` the STANDARD
+Takahashi development rather than an over-firing one: firing on developed children alone would also
+contract redexes CREATED by developing the children (e.g. an inner redex whose contractum is a `lam`
+turns the enclosing application into a β-redex), which is not a single parallel-reduction step.  Because
+the redex-head constructors (`lam`, `boolTrue`/`boolFalse`, `pair`, `natZero`/`natSucc`, `listNil`/`listCons`,
+`optionNone`/`optionSome`, `eitherInl`/`eitherInr`, `refl`) are never themselves root-redex generators,
+developing the children preserves the head, so when the gate passes the developed children fire the SAME
+redex shape — yielding exactly the contractum built from the developed components. -/
+def RawTerm.fireRootRedexOrSelfGated {scope : Nat} (generator : Generator)
+    (payload : generator.payload scope)
+    (originalChildren developedChildren : RawTermChildren generator.binderShifts scope) :
+    RawTerm scope :=
+  match RawTerm.fireRootRedex generator payload originalChildren with
+  | some _ => RawTerm.fireRootRedexOrSelf generator payload developedChildren
+  | none => .mkGen generator payload developedChildren
+
 mutual
 /-- **Takahashi complete development.**  Contracts every redex present in `term` simultaneously —
-develop all children, then fire the root redex once — but leaves redexes CREATED by the contraction
-untouched.  Propext-clean: the redex-shape detection is delegated to `fireRootRedex`, so this is a
-single `mkGen` match. -/
+develop all children, then fire the root redex once IF the source was a syntactic redex (the
+`fireRootRedexOrSelfGated` gate) — but leaves redexes CREATED by the contraction untouched.  Propext-clean:
+the redex-shape detection is delegated to `fireRootRedex`, so this is a single `mkGen` match. -/
 def RawTerm.completeDevelopment {scope : Nat} : (term : RawTerm scope) → RawTerm scope
   | .mkGen generator payload children =>
-      RawTerm.fireRootRedexOrSelf generator payload
+      RawTerm.fireRootRedexOrSelfGated generator payload children
         (RawTerm.completeDevelopmentChildren children)
 
 /-- Pointwise complete development of a children spine. -/
@@ -91,6 +115,19 @@ theorem RawTerm.fireRootRedexOrSelf_stepStar {scope : Nat} {generator : Generato
   | none => exact StepStar.refl _
   | some reduct => exact StepStar.single (RawTerm.fireRootRedex_sound hFired)
 
+/-- **Gated root firing is reachable by `StepStar`** from the developed cell.  When the gate passes
+(`some`), the developed cell `StepStar`-reduces to the fired reduct (`fireRootRedexOrSelf_stepStar`);
+when it does not (`none`), the gated result IS the developed cell (reflexivity). -/
+theorem RawTerm.fireRootRedexOrSelfGated_stepStar {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope}
+    {originalChildren developedChildren : RawTermChildren generator.binderShifts scope} :
+    StepStar (.mkGen generator payload developedChildren)
+      (RawTerm.fireRootRedexOrSelfGated generator payload originalChildren developedChildren) := by
+  unfold RawTerm.fireRootRedexOrSelfGated
+  cases RawTerm.fireRootRedex generator payload originalChildren with
+  | some _ => exact RawTerm.fireRootRedexOrSelf_stepStar
+  | none => exact StepStar.refl _
+
 mutual
 /-- **The complete development is reachable from the source by `StepStar`.**  Develop all children
 (a congruence chain lifted via `StepStar.ofChildrenStar`), then fire the root redex once
@@ -102,7 +139,7 @@ theorem RawTerm.completeDevelopment_stepStar {scope : Nat} :
       StepStar.trans_compose
         (StepStar.ofChildrenStar
           (RawTerm.completeDevelopmentChildren_stepChildrenStar children))
-        RawTerm.fireRootRedexOrSelf_stepStar
+        RawTerm.fireRootRedexOrSelfGated_stepStar
 
 /-- Pointwise children-spine companion of `completeDevelopment_stepStar`: each child `StepStar`-reduces
 to its complete development, replayed through the spine via `here`/`there`/`trans_compose`. -/
@@ -118,5 +155,17 @@ theorem RawTerm.completeDevelopmentChildren_stepChildrenStar
         (StepChildrenStar.there (RawTerm.completeDevelopment childHead)
           (RawTerm.completeDevelopmentChildren_stepChildrenStar childTail))
 end
+
+/-- **Triangle-readiness: the β-redex develops to `subst0` of the developed components.**  Holds by
+`rfl` — the gate passes (`fireRootRedex` fires on the syntactic β-redex), the developed function child
+`lam (cd body)` is still a `lam`, so the gated firing reduces to `subst0 (cd body) (cd arg)`.  This is
+the exact equation the Takahashi triangle's β arm needs, and witnesses that the gated (non-over-firing)
+development fires the source β-redex with the developed components — the property the over-firing version
+also had for β but violated by additionally firing redexes created under non-`lam` heads. -/
+theorem cd_app_lam_eq {scope : Nat} (body : RawTerm (scope + 1)) (arg : RawTerm scope) :
+    RawTerm.completeDevelopment
+      (.mkGen .gen_app () (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+        (.childCons arg .childNil)))
+      = RawTerm.subst0 (RawTerm.completeDevelopment body) (RawTerm.completeDevelopment arg) := rfl
 
 end FX1Poly.Core

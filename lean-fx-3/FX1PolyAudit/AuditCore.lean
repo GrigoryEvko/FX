@@ -317,11 +317,20 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- children via ofChildrenStar, then fire the root via fireRootRedex_sound. This is the function the eventual
 -- HasMaximalReduct ParStep (triangle) proof maximizes against -> the ParStep diamond -> raw confluence.
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelf
+-- fireRootRedexOrSelfGated: fire on developed children only when the ORIGINAL children form a syntactic
+-- redex. This GATE makes completeDevelopment the standard (non-over-firing) Takahashi development: firing
+-- on developed children alone would contract redexes CREATED by developing (an inner redex whose
+-- contractum is a lam turns a non-lam-headed app into a beta-redex), breaking the triangle's ParStep a (cd a).
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelfGated
 #assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment
 #assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopmentChildren
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelf_stepStar
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelfGated_stepStar
 #assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment_stepStar
 #assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopmentChildren_stepChildrenStar
+-- cd_app_lam_eq: the gated beta-redex develops to subst0 of the developed components, by rfl -- the exact
+-- equation the Takahashi triangle's beta arm needs, witnessing triangle-readiness of the gated development.
+#assert_no_axioms FX1Poly.Core.cd_app_lam_eq
 
 -- ParStep stable under substitution + renaming (toward the #420 triangle): the parallel-substitution
 -- lemma the triangle ParStep a b -> ParStep b (completeDevelopment a) needs at its beta/iota arms is built
