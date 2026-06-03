@@ -169,6 +169,7 @@ import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
 import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
 import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
 import FX1Poly.Typed.DenoteKeyedApplicationMember
+import FX1Poly.Typed.DenoteKeyedConvMember
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2954,3 +2955,10 @@ gates pin them shut.
 -- piTypeInversion (domain/codomain candidates + application-form PointwiseIff) + deterministic (aligns the
 -- argument's candidate with the domain candidate). No backward-closure, no new machinery.
 #assert_no_axioms FX1Poly.Typed.applicationMemberAtDenote
+
+-- DenoteKeyedConvMember (the denote FT's conversion member arm): a denote-reducible member of typeLeft, with
+-- Conv typeLeft typeRight + typeRight denote-reducible, is a denote-reducible member of typeRight (via the
+-- shipped convTransfer). convMemberUnderClosingSubstitution is the FT-shaped form: pushes the raw conversion
+-- under the closing substitution via Conv.subst, then transports. The conversion typing rule, member level.
+#assert_no_axioms FX1Poly.Typed.memberConvAtDenote
+#assert_no_axioms FX1Poly.Typed.convMemberUnderClosingSubstitution
