@@ -104,6 +104,7 @@ import FX1Poly.Typed.FundamentalAtAllTelescope
 import FX1Poly.Typed.FundamentalAtAllFormerChildren
 import FX1Poly.Typed.FundamentalAtAllPiIntro
 import FX1Poly.Typed.FundamentalAtAllPositiveArguments
+import FX1Poly.Typed.NeutralFuelStability
 import FX1Poly.Typed.StrongNormalizingAllLevelPiComponents
 import FX1Poly.Typed.FundamentalAtAllTelescopePositiveArguments
 import FX1Poly.Typed.FundamentalAtAllPositiveMemberExtension
@@ -2624,3 +2625,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.isStronglyNormalizing_isReducibilityCandidate
 #assert_no_axioms FX1Poly.Core.IsReducibilityCandidate.respectsPointwiseIff
 #assert_no_axioms FX1Poly.Core.IsReducibilityCandidate.containsVariable
+
+-- The NEUTRAL ARM of the #672 fuel-stability gate. For a weak-head-normal non-Pi non-universe type code
+-- reducible at every fuel level, the stratified candidate is level-independent (= IsStronglyNormalizing via
+-- candidateIffStronglyNormalizing), so membership at one positive fuel implies SN implies membership at all
+-- positive fuels. This is a genuine non-vacuous sub-case of HasPositiveMemberExtensionForStronglyNormalizing
+-- AllLevelTypes; the universe / Pi arms (where the candidate moves with the fuel) remain the open crux (#672).
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.ofNeutralTypeMember
