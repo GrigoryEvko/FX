@@ -10,6 +10,7 @@ import FX1Poly.Core.StepWordRewriteSoundness
 import FX1Poly.Core.StepWordRewriteEquivariance
 import FX1Poly.Core.ConvWordJoinableBridge
 import FX1Poly.Core.BetaEtaWordSystem
+import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -172,6 +173,20 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Step.toBetaEtaWordRewrite
 #assert_no_axioms FX1Poly.Core.Step.eta.toBetaEtaWordRewrite
 #assert_no_axioms FX1Poly.Core.Step.betaEtaStar.toWordRewrites
+
+-- SN-116 (#619): the Dershowitz-Manna multiset ordering + its well-foundedness, the foundational termination
+-- order (RPO multiset-status SN-115, ι-eliminator termination SN-131). Mechanized zero-axiom over Init only: a
+-- true multiset is the quotient of List by permutation, but Quot.sound is banned, so MultisetRedOne is an
+-- EXISTENTIAL on plain List (prefix ++ removed :: suffix shrinks to prefix ++ added ++ suffix, added all below
+-- removed). isWellFounded is the DM theorem via the nested-Acc argument (emptyAccessible + consAccessible with
+-- the accAppendBelow inner helper). Inversion by obtain + cases prefixList (clean List split, no indexed-cases
+-- propext leak). replaceHead/underContext make the order constructible. Zero-axiom.
+#assert_no_axioms FX1Poly.Core.MultisetRedOne
+#assert_no_axioms FX1Poly.Core.MultisetRedOne.replaceHead
+#assert_no_axioms FX1Poly.Core.MultisetRedOne.underContext
+#assert_no_axioms FX1Poly.Core.MultisetRedOne.emptyAccessible
+#assert_no_axioms FX1Poly.Core.MultisetRedOne.consAccessible
+#assert_no_axioms FX1Poly.Core.MultisetRedOne.isWellFounded
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
