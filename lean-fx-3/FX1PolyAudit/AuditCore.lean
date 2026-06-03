@@ -22,6 +22,7 @@ import FX1Poly.Core.CompleteDevelopment
 import FX1Poly.Core.ParStepSubstRename
 import FX1Poly.Core.ParStepSubstPointwise
 import FX1Poly.Core.ParStepInversion
+import FX1Poly.Core.CompleteDevelopmentParStep
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
 import FX1Poly.Core.KripkeReducibilityCandidate
@@ -398,6 +399,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.ParStep.listNil_inv
 #assert_no_axioms FX1Poly.Core.ParStep.optionNone_inv
 #assert_no_axioms FX1Poly.Core.ParStep.refl_inv
+
+-- completeDevelopment_parStep: every term parallel-reduces to its complete development. The correctness
+-- witness for the gated cd (an over-firing cd would FAIL it -- a created redex can't be fired in the same
+-- single parallel step) AND the triangle's b:=a instance. Via RawTerm.rec (the by_cases generator dispatch
+-- hides deep subterms from structural recursion, so route through the recursor's children-spine IH); none ->
+-- cong, some -> per-redex fire with the child IHs extracted by cases. ~350 lines, propext-clean.
+#assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment_parStep
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
