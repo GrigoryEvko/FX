@@ -227,6 +227,37 @@ theorem validTypingForallAboveLevelUniverseDomain {profile : PolyProfile} {scope
         (universeCodeCell innerLevel flag) (universeCodeCell innerLevel.lsucc flag) :=
   fun aboveLevel => ValidTyping.universeFormation contextLevels aboveLevel context innerLevel flag
 
+/-- **Universe-domain Π formation, bridged (the GO case made concrete — the #672-sidestep).**  A dependent
+function type `Π (X : Type@innerLevel). C` whose DOMAIN is a universe code is `ValidTyping`-valid: the domain
+`Type@innerLevel` is valid at EVERY positive level (`validTypingForallAboveLevelUniverseDomain`, via the
+level-polymorphic `universeFormation`), so `validTypingBridgePiFormation`'s `∀ aboveLevel` domain premise is
+discharged directly — with NO impredicative member-extension.
+
+This is the precise sense in which the `ValidTyping` per-level route CLOSES the universe-domain Π that the
+fuel all-levels route stalls on at #672 (`UniverseDomainMemberExtension`'s `typeLevelIrrelevance`): the fuel
+route must extend a universe MEMBER's reducibility to all levels (impredicative, the SN-001/`RouteAObstruction`
+degeneracy), whereas the per-level route forms the universe-domain Π from the level-polymorphic FORMATION of
+its domain, never invoking member-extension.  The two routes' residuals are complementary: this route defers
+the type-VARIABLE-domain binder (routed through the shipped reducibility all-levels machinery,
+`consTypeVariable` / `piTypeOfNeutralDomain`, per the deferred-case note above), while the fuel route defers
+this universe domain. -/
+theorem validTypingBridgePiFormation_universeDomain {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope}
+    (innerLevel : LevelExpr) {codomainCode : RawTerm (scope + 1)}
+    {codomainLevel formerLevel : LevelExpr} {flag : UniverseFlag}
+    (codomainTyped : ∀ headLevel : Nat,
+      ValidTyping profile (levelCons headLevel contextLevels) (predLevel + 1)
+        (context.cons (universeCodeCell innerLevel flag)) codomainCode
+        (universeCodeCell codomainLevel flag)) :
+    ∃ subjectLevel : Nat,
+      ValidTyping profile contextLevels subjectLevel context
+        (piTyCodeCell (universeCodeCell innerLevel flag) codomainCode)
+        (universeCodeCell formerLevel flag) :=
+  validTypingBridgePiFormation (formerLevel := formerLevel) contextLevels predLevel
+    (validTypingForallAboveLevelUniverseDomain contextLevels context innerLevel flag)
+    codomainTyped
+
 /-! ### Type-code level-flexibility, former cases (the structural induction's recursive step)
 
 `validTypingForallAboveLevelUniverseDomain` is the BASE case of type-code level-flexibility (a universe code

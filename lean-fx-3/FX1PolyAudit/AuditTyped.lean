@@ -1505,6 +1505,11 @@ gates pin them shut.
 -- / ReducibleEnvAtAllLevels.consTypeVariable / allLevelsReducible_piOverNeutralVariableDomain), which the bridge
 -- assembly SN-027 routes the type-variable domain through.
 #assert_no_axioms FX1Poly.Typed.validTypingForallAboveLevelUniverseDomain
+-- The universe-domain Pi formation bridged (the #672-sidestep made concrete): Pi(X:Type@e).C is
+-- ValidTyping-valid via the level-polymorphic universeFormation domain premise — NO impredicative
+-- member-extension (the fuel-route #672 obstruction). Composes validTypingBridgePiFormation with the GO-case
+-- forall-aboveLevel producer; demonstrates the per-level route closes the universe-domain Pi the fuel route stalls on.
+#assert_no_axioms FX1Poly.Typed.validTypingBridgePiFormation_universeDomain
 -- SN-027 (type-code level-flexibility, former recursive cases): a Π/Σ type code over a level-flexible domain
 -- + codomain is itself valid at EVERY level (via piFormation/sigmaFormation at predLevel := aboveLevel). With
 -- the universeFormation base above, this is the structural induction establishing that every NON-variable type
