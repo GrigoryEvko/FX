@@ -81,6 +81,7 @@ import FX1Poly.Core.BoolCanonicityViaSconing
 import FX1Poly.Core.DataCanonicityViaSconing
 import FX1Poly.Core.DataMetatheoryViaSconing
 import FX1Poly.Core.ConsistencyViaSconing
+import FX1Poly.Core.DataEliminatorProgressViaSconing
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
@@ -2199,6 +2200,14 @@ gates pin them shut.
 -- empty type. The fundamental (closed well-typed empty -> member) is the explicit sole #672 obligation.
 #assert_no_axioms FX1Poly.Core.consistencyScone
 #assert_no_axioms FX1Poly.Core.consistencyViaSconing
+-- PROGRESS via the sconing fundamental (SN-058/063): the operational complement to canonicity. Where
+-- canonicity says what value a closed well-typed data term reduces to, progress says a closed well-typed
+-- eliminator is never STUCK. Composes the sconing fundamental (well-typed scrutinee -> candidate member,
+-- the explicit #672 obligation) with the #672-free eliminator computation. Restricted to the NON-RECURSIVE
+-- eliminators (boolElim branch selection, fst/snd projection) whose iota fires once with no recursive
+-- sub-term; the recursive natElim/natRec/listElim only progress #672-free on their base constructor.
+#assert_no_axioms FX1Poly.Core.boolElimProgressViaSconing
+#assert_no_axioms FX1Poly.Core.pairProjectionProgressViaSconing
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
