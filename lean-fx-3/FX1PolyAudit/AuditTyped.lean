@@ -1634,6 +1634,12 @@ gates pin them shut.
 -- discipline supplies); conjunct-2 vacuous (a variable reclassifier is not conv to a universe code). Routed by
 -- isVariableOrNot. This COMPLETES the conv arm modulo the leveling equation.
 #assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.convVariableReclassifier
+-- the BASE CASE of the level synthesis (ValidTypingConvArm.lean): the conv-variable arm for a FRESHLY-BOUND type
+-- variable ⟨0,_⟩ under a binder (contextLevels = levelCons (predLevel+1) tailLevels). The leveling eq
+-- contextLevels ⟨0,_⟩ = subjectLevel+1 is discharged BY rfl (levelCons's ⟨0,_⟩ branch = predLevel+1, subject at
+-- predLevel) — NO hypothesis. A binder pins its variable's level, so the coordination is automatic; this is where
+-- the assembly's level synthesis bottoms out (deeper variables thread the eq through the levelCons tail).
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.convBoundVariableReclassifier
 -- the revised-motive TERM wrapper: a single-level-valid subject whose classifier is not convertible to any
 -- universe code satisfies the motive (conjunct-2 vacuous via the unsatisfiable convertibility guard). The
 -- binder/elim term-output arms consume it with Conv.piTyCode_not_universeCode / Conv.sigmaTyCode_not_universeCode.

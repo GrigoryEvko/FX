@@ -56,4 +56,27 @@ theorem TotalBridgeConclusion.convVariableReclassifier {profile : PolyProfile} {
   intro outLevel outFlag reclassifierConvUniverse _subjectNotVariable
   exact absurd reclassifierConvUniverse (variableCell_not_conv_universeCodeCell index outLevel outFlag)
 
+/-- **The conv-variable arm for a FRESHLY-BOUND type variable — the base case of the level synthesis.**  When the
+reclassifier is the de-Bruijn-`⟨0,_⟩` variable just introduced by a binder (its context level vector has the form
+`levelCons (predLevel + 1) tailLevels`), the leveling equation `contextLevels ⟨0,_⟩ = subjectLevel + 1` that
+`convVariableReclassifier` consumes is discharged BY COMPUTATION: `levelCons`'s `⟨0,_⟩` branch reduces to the head
+`predLevel + 1`, so taking the subject at `subjectLevel = predLevel` makes the equation `rfl`.  This is where the
+totalBridge-assembly's level synthesis bottoms out — a binder PINS its variable's level, so the conv-to-bound-
+type-variable coordination needs no hypothesis.  (The general arm `convVariableReclassifier` still carries the
+equation for DEEPER variables, whose level the synthesis threads inductively through the `levelCons` tail.) -/
+theorem TotalBridgeConclusion.convBoundVariableReclassifier {profile : PolyProfile} {scope : Nat}
+    (tailLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile (scope + 1)}
+    {subject classifier : RawTerm (scope + 1)}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (isLt : 0 < scope + 1)
+    (subjectValid : ValidTyping profile (levelCons (predLevel + 1) tailLevels) predLevel context
+      subject classifier)
+    (converts : Conv classifier (variableCell ⟨0, isLt⟩))
+    (reclassifierIsUniverse : context.lookup ⟨0, isLt⟩ = universeCodeCell levelExpr flag) :
+    TotalBridgeConclusion profile (levelCons (predLevel + 1) tailLevels) context
+      subject (variableCell ⟨0, isLt⟩) :=
+  TotalBridgeConclusion.convVariableReclassifier (levelCons (predLevel + 1) tailLevels) predLevel
+    subjectValid converts reclassifierIsUniverse rfl
+
 end FX1Poly.Typed
