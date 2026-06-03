@@ -603,6 +603,14 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.natElim_isStronglyNormalizing_of_normal_branches
 -- natRec (dependent recursor) firing-case twin, completing the Nat recursor pair.
 #assert_no_axioms FX1Poly.Core.StepStar.natRec_isStronglyNormalizing_of_normal_branches
+-- SN-from-SN-BRANCHES strengthening (toward the recursor closed-membership, SN-061): the branches need only be
+-- SN (members), not normal — required for the Tait/data-candidate recursor argument. Triple nested accessibility
+-- induction on (scrutinee, zeroBranch, succBranch); the succ-contractum SN hypothesis is THREADED through both
+-- branch inductions. The recursive analogue of the matcher SN-from-SN-branches: the succ ι-contractum contains a
+-- recursive natElim/natRec call, and the succ branch occurs TWICE (in app succBranch pred AND the recursive
+-- call), so its update under succ-congruence is two app/natElim-cong + IsStronglyNormalizing.inv hops.
+#assert_no_axioms FX1Poly.Core.StepStar.natElim_isStronglyNormalizing_of_strongly_normalizing_branches
+#assert_no_axioms FX1Poly.Core.StepStar.natRec_isStronglyNormalizing_of_strongly_normalizing_branches
 
 -- VALUE-CASE of non-dependent Nat-recursor reducibility (the computational heart of SN-061): the recursor on
 -- a NUMERAL scrutinee lands in the result candidate, by IsNatValue structural induction firing the two ι rules
