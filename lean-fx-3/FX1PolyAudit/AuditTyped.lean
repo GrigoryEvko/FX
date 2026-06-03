@@ -1650,6 +1650,13 @@ gates pin them shut.
 -- via the resultNotConvUniverse hypothesis the assembly discharges (type-family case routes separately, pinned).
 #assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.piIntro
 #assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.piElim
+-- the SECOND level-synthesis mechanism (ValidTypingPiArms.lean): the piElim arm for a TYPE ARGUMENT
+-- (impredicative/polymorphic application). The argument is a type (classifier a universe code), hence
+-- LEVEL-FLEXIBLE, so ValidTyping.piElim's same-level alignment discharges WITHOUT hypothesis — the function sits
+-- at positive level predLevel+1 (every totalBridge subject does) and the argument's flexibility supplies it at
+-- exactly that level. Type arguments float to any level. (Residual hard case: a TERM argument needs the
+-- assembly's level inference.)
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.piElimTypeArgument
 -- the GENERIC-FORMER arm (ValidTypingFormerArms.lean): genFormationPi is a TYPE CODE whose classifier is the
 -- generic rule.outputType (not syntactically a universe code). conjunct-1 fires ValidTyping.genFormationPi at the
 -- carried predLevel; conjunct-2 (when the classifier is CONVERTIBLE to a universe code) refires it at every level

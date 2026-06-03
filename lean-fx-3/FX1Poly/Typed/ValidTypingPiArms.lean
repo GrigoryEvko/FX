@@ -83,4 +83,30 @@ theorem TotalBridgeConclusion.piElim {profile : PolyProfile} {scope : Nat}
     (ValidTyping.piElim contextLevels subjectLevel functionTyped argumentTyped)
     resultNotConvUniverse
 
+/-- **The piElim arm for a TYPE ARGUMENT — the alignment discharges via flexibility.**  When the application's
+argument is a TYPE (its classifier is a universe code `Type@domainLevel`, so it is LEVEL-FLEXIBLE — the
+impredicative/polymorphic-application case like `id Nat` or `f Type@0`), the same-level alignment
+`ValidTyping.piElim` demands needs NO hypothesis: the function sits at a positive level `predLevel + 1` (every
+totalBridge subject does, `LeveledContext.allLevelsPositive`), and the argument's flexibility supplies it at
+exactly that level (`argumentFlexible predLevel : ValidTyping … (predLevel + 1) … argument (Type@domainLevel)`).
+This is the SECOND level-synthesis mechanism (after the binder-pins-level base case
+`convBoundVariableReclassifier`): type arguments float to any level, so they align with their function for free.
+The residual hard case is a TERM argument, where neither flexibility nor a binder helps and the assembly's level
+inference must coordinate the two sub-derivations. -/
+theorem TotalBridgeConclusion.piElimTypeArgument {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (predLevel : Nat)
+    {context : TypingContext profile scope}
+    {functionTerm argument : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel : LevelExpr} {flag : UniverseFlag}
+    (functionTyped : ValidTyping profile contextLevels (predLevel + 1) context
+      functionTerm (piTyCodeCell (universeCodeCell domainLevel flag) codomainCode))
+    (argumentFlexible : IsLevelFlexibleTypeCode profile contextLevels context argument domainLevel flag)
+    (resultNotConvUniverse : ∀ (levelExpr : LevelExpr) (flag : UniverseFlag),
+      ¬ Conv (RawTerm.subst0 codomainCode argument) (universeCodeCell levelExpr flag)) :
+    TotalBridgeConclusion profile contextLevels context
+      (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument) :=
+  TotalBridgeConclusion.ofTermValidity
+    (ValidTyping.piElim contextLevels (predLevel + 1) functionTyped (argumentFlexible predLevel))
+    resultNotConvUniverse
+
 end FX1Poly.Typed
