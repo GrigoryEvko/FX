@@ -76,6 +76,7 @@ import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
 import FX1Poly.Core.ListCanonicalFormsCandidate
+import FX1Poly.Core.OptionCanonicalFormsCandidate
 import FX1Poly.Core.StronglyNormalizingSubst
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
@@ -2092,6 +2093,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.listCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isListValue_isMember
 #assert_no_axioms FX1Poly.Core.listClosedReducesToValue
+-- OPTION data candidate (SN-065): isOptionValue := none | some payload (payload normal) — nullary + unary,
+-- no recursion; option values are normal forms; the candidate is isReducibilityCandidateOfValuesNormal at
+-- isOptionValue; every option value is a member (memberOfValue); a closed member reduces to none/some.
+#assert_no_axioms FX1Poly.Core.isOptionValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.optionCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isOptionValue_isMember
+#assert_no_axioms FX1Poly.Core.optionClosedReducesToValue
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
