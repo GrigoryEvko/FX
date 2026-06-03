@@ -85,6 +85,7 @@ import FX1Poly.Core.DataEliminatorProgressViaSconing
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.UnitCanonicalFormsCandidate
+import FX1Poly.Core.ModIntroCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
 import FX1Poly.Core.ListCanonicalFormsCandidate
 import FX1Poly.Core.OptionCanonicalFormsCandidate
@@ -2247,6 +2248,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.unitCell_isMember
 #assert_no_axioms FX1Poly.Core.unitClosedReducesToValue
 #assert_no_axioms FX1Poly.Core.unitClosedReducesToUnitCell
+-- MODAL layer data candidate — modIntro (SN-073 data core): the modal box is a single unary constructor
+-- (option-some shape); isModIntroValue := modIntro of a normal payload; value-normality is the one-child
+-- spine; candidate via isReducibilityCandidateOfValuesNormal; a normal box is a member (memberOfValue); a
+-- closed member reduces to a modIntro. Over β+ι Step (raw modal η is a separate relation). #672-free.
+#assert_no_axioms FX1Poly.Core.isModIntroValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.modIntroCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.modIntroValue_isMember
+#assert_no_axioms FX1Poly.Core.modIntroClosedReducesToValue
 -- EMPTY type / CONSISTENCY core (SN-050/053): emptyIsValue := False (no value constructors); the candidate is
 -- the SN neutral terms (isReducibilityCandidateOfValuesNormal with vacuous value-normality); a CLOSED member
 -- is impossible (closedReducesToValue yields a False-satisfying value). The #672-free structural heart of "no
