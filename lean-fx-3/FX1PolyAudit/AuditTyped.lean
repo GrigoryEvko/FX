@@ -179,6 +179,7 @@ import FX1Poly.Typed.DenoteKeyedAbstractionUnderSubst
 import FX1Poly.Typed.DenoteKeyedFundamentalMotive
 import FX1Poly.Typed.DenoteKeyedFundamentalPiElim
 import FX1Poly.Typed.DenoteKeyedFundamentalConv
+import FX1Poly.Typed.DenoteKeyedAmbientLevelBridge
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3068,3 +3069,13 @@ gates pin them shut.
 -- universe-membership→ambient bridge (carrying denote levelExpr env < level). piIntro's domain hits the SAME
 -- bridge; piElim sidesteps it.
 #assert_no_axioms FX1Poly.Typed.fundamentalConvAtDenote
+
+-- DenoteKeyedAmbientLevelBridge (SN-D5-A2bridge): the single shared deep ingredient of the denote FT's
+-- conv/piIntro arms. universeMemberReducibleAtLevel turns a universe MEMBERSHIP at the ambient level into the
+-- type's REDUCIBILITY at the ambient level (given denote levelExpr env < level). Real content: candidateIffUniverse
+-- unpacking → universeDenotePredicate ∃-conjunct → denoteBelowFamily_eq_reducible (decoded-level reducibility) →
+-- ofReducibleTypeStepDenote lift to all levels → project to level. Parametric over EXACTLY the
+-- ofReducibleTypeStepDenote composite-domain piArm (at the decoded level's below-family) — the lone deep A2
+-- residual = the denote restatement of #672. Consolidates: conv (SN-D5a) + piIntro (SN-D5c) BOTH reduce through
+-- this bridge to that one piArm.
+#assert_no_axioms FX1Poly.Typed.universeMemberReducibleAtLevel
