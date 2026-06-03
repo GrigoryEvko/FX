@@ -18,6 +18,7 @@ import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
+import FX1Poly.Core.KripkeReducibilityCandidate
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -286,6 +287,15 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.confluentOfDeterministicAux
 #assert_no_axioms FX1Poly.Core.confluentOfDeterministic
 #assert_no_axioms FX1Poly.Core.WeakHeadStep.hasConfluence
+
+-- SN-040, HONEST unconditional Kripke form: a reducibility candidate is closed under renaming. The bare
+-- ReducibleTypeStep SN-040 is FALSE (the piType same-scope argument quantifier has a real counterexample at a
+-- renamed Pi-type). The TRUE statement lives at the Kripke-indexed candidate: IsKripkeReducibilityCandidate
+-- (CR1 members-SN + CR2 closed-under-Step) survives KripkeCand.transport along ANY renaming with NO hypothesis
+-- (the index precomposes; laws read off at the composed index). Predicate-level companion is the shipped
+-- kripkeArrowDep_transport_pointwise. Off the SN-043 critical path (that gate is fuel-stability, not renaming).
+#assert_no_axioms FX1Poly.Core.IsKripkeReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.IsKripkeReducibilityCandidate.transport
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
