@@ -154,6 +154,7 @@ import FX1Poly.Typed.FormationEngineFundamentalReduction
 import FX1Poly.Typed.FormationEngineFundamental
 import FX1Poly.Typed.FormationEngineFundamentalAssembly
 import FX1Poly.Typed.HasTypeDescPiConditionalConfluence
+import FX1Poly.Typed.HasTypeDescPiUniqueNormalForm
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1723,6 +1724,12 @@ gates pin them shut.
 -- normalize_reducesTo + normalize_isStepNormalForm). Completes typed-SN ⟹ {confluence, decidable Conv,
 -- Conv=normalize-eq, WN}. Zero-axiom (Acc-recursion).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectWeaklyNormalizesOfStronglyNormalizes
+-- CANONICAL-FORMS HEADLINE (conditional on typed-SN): uniqueNormalFormOfStronglyNormalizes — every well-typed
+-- subject has a UNIQUE normal form. Existence = weak normalization; uniqueness = confluence + normal-form
+-- rigidity (two NFs reached from one subject join, and a NF reached by a chain IS the chain start, so the join
+-- apex collapses both onto one term). The typed fragment is a normalizing rewriting system with a unique
+-- canonical representative. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueNormalFormOfStronglyNormalizes
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
