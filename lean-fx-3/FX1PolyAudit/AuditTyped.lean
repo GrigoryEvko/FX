@@ -72,6 +72,7 @@ import FX1Poly.Core.Normalize
 import FX1Poly.Core.NormalizeMeta
 import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.BoolCanonicalFormsCandidate
+import FX1Poly.Core.BoolElimCanonicalComputation
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
@@ -2096,6 +2097,14 @@ gates pin them shut.
 -- well-typed term is a member) awaits the typed reducibility fundamental theorem.
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.closedReducesToValue
 #assert_no_axioms FX1Poly.Core.boolClosedReducesToTrueOrFalse
+-- ELIMINATION canonicity (#672-free, SN-063 path): boolElim on a CANONICAL scrutinee COMPUTES to a branch.
+-- StepStar.boolElimScrutinee = the scrutinee-position chain congruence (generic StepStar.congAt + Step.cong
+-- (StepChildren.here ...) at the head of the 3-child spine). boolElimCanonicalScrutineeReducesToBranch = the
+-- headline: the scrutinee reduces to true/false (boolClosedReducesToTrueOrFalse), the congruence carries that
+-- under the boolElim, and the matching iota (iotaBoolTrue/iotaBoolFalse) selects the then/else branch
+-- (StepStar.transLast). The elimination analog of closed-bool canonicity; no fundamental theorem used.
+#assert_no_axioms FX1Poly.Core.StepStar.boolElimScrutinee
+#assert_no_axioms FX1Poly.Core.boolElimCanonicalScrutineeReducesToBranch
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
