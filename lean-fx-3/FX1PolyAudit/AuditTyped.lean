@@ -80,6 +80,7 @@ import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.BoolCanonicityViaSconing
 import FX1Poly.Core.DataCanonicityViaSconing
 import FX1Poly.Core.DataMetatheoryViaSconing
+import FX1Poly.Core.ConsistencyViaSconing
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
@@ -2189,6 +2190,15 @@ gates pin them shut.
 -- Does NOT flip the Tier-0 ln.hasBKSMetatheoryPackage flag (that tracks the categorical glued-model package).
 #assert_no_axioms FX1Poly.Core.DataMetatheory
 #assert_no_axioms FX1Poly.Core.dataMetatheoryViaSconing
+-- CONSISTENCY via the sconing leg (SN-050/053): the third corner of the sconing-leg triad (normalization +
+-- canonicity + consistency). consistencyScone is the sconing witness at the empty type — computable = the empty
+-- candidate, canonical-form notion the DEGENERATE fun _ => False (the empty type has no canonical forms),
+-- EXTRACTION the #672-free emptyHasNoClosedMember (no closed term inhabits the empty candidate, as a closed
+-- member would reduce to a value but an empty value is False). consistencyViaSconing = canonicity applied:
+-- given the fundamental, every closed well-typed empty term yields False. Consistency IS canonicity at the
+-- empty type. The fundamental (closed well-typed empty -> member) is the explicit sole #672 obligation.
+#assert_no_axioms FX1Poly.Core.consistencyScone
+#assert_no_axioms FX1Poly.Core.consistencyViaSconing
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
