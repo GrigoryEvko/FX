@@ -163,6 +163,7 @@ import FX1Poly.Typed.ClassifierLevelMeasure
 import FX1Poly.Typed.DenoteKeyedReducibility
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPi
 import FX1Poly.Typed.DenoteKeyedLevelIrrelevance
+import FX1Poly.Typed.DenoteKeyedReducibleEnv
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2892,3 +2893,11 @@ gates pin them shut.
 -- non-universe analogue of universeDomainPi_memberStableAcrossDenoteLevels (which holds only above denote e).
 #assert_no_axioms FX1Poly.Typed.uniformType_memberStableAcrossDenoteLevels
 #assert_no_axioms FX1Poly.Typed.neutralType_memberStableAcrossDenoteLevels
+
+-- DenoteKeyedReducibleEnv (route C toward the denote fundamental theorem): the denote analogue of
+-- ReducibleEnvAt, riding on IsReducibleMemberAtDenote. def + var-projection + empty + binder-cons; the cons
+-- proof is character-identical to ReducibleEnvAt.cons (env/level ride along the lookup/weaken rewrites).
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtDenote
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtDenote.lookupReducible
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtDenote.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtDenote.cons
