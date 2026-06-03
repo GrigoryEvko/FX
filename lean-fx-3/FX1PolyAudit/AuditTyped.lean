@@ -2793,3 +2793,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_eq_reducible
 #assert_no_axioms FX1Poly.Typed.universeCode_isReducibleAtDenote
 #assert_no_axioms FX1Poly.Typed.universeMembership_levelIrrelevant
+
+-- DenoteKeyedReducibility CR machinery (#672 sub-step 1): shape inversions + determinism, ported from
+-- StratifiedReducibleType. The only structural difference: the denote-keyed universe candidate depends on
+-- levelExpr, so candidateIffUniverse/deterministic align it via universeCodeCell_inj (where the fuel version
+-- used bare Iff.rfl). piTypeInversion decomposes a reducible Pi(Type@e)C — the decomposition the
+-- universe-domain piArm of typeLevelIrrelevance consumes; deterministic aligns the domain/codomain candidates.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidateAtWhnfReduct
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidateIffStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidatePiShape
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidateIffUniverse
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.deterministic
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.deterministic
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.piTypeInversion

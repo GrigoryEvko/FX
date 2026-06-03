@@ -1,4 +1,5 @@
 import FX1Poly.Typed.ClassifierLevelMeasure
+import FX1Poly.Typed.UniverseCodeShape
 
 /-! # FX1Poly/Typed/DenoteKeyedReducibility
     — the classifier-universe-level reducibility relation (SN-006 foundation toward #672)
@@ -193,5 +194,204 @@ theorem universeMembership_levelIrrelevant {scope : Nat} (env : Nat → Nat) (le
       IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) member)
   rw [key]
   exact Iff.rfl
+
+/-! ## CR machinery: shape inversions + determinism
+
+Ported verbatim from `StratifiedReducibleType.*`, the only structural difference being the universe arm:
+since the denote-keyed universe candidate depends on `levelExpr` (it decodes at `denote levelExpr env`),
+`candidateIffUniverse` / `deterministic` align the `levelExpr` via `universeCodeCell_inj` (zero-axiom, a
+plain `cases` on the cell equality), where the fuel versions could use bare `Iff.rfl`.  These feed the
+universe-domain `piArm` of `typeLevelIrrelevance` (the remaining #672 obligation): `piTypeInversion`
+decomposes a reducible `Π(Type@e)C`, `deterministic` aligns the domain/codomain candidates, and
+`candidateIffStronglyNormalizing` is the neutral leaf the determinism induction consumes. -/
+
+/-- **Weak-head peel through `ofPointwiseIff`.**  A reducible type that weak-head-steps inherits the same
+candidate at the contractum. -/
+theorem ReducibleTypeStepDenote.candidateAtWhnfReduct {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) :
+    ∀ {reduct : RawTerm scope}, WeakHeadStep typeCode reduct →
+      ReducibleTypeStepDenote env lowerAt reduct candidate := by
+  induction reducible with
+  | whnfExpand weakHeadStep0 reductReducible0 _ =>
+      intro reduct weakHeadStep
+      have reductEquation := WeakHeadStep.deterministic weakHeadStep0 weakHeadStep
+      subst reductEquation
+      exact reductReducible0
+  | neutral noWeakHeadStep _ _ =>
+      intro reduct weakHeadStep
+      exact absurd weakHeadStep (noWeakHeadStep reduct)
+  | piType _ _ _ _ _ =>
+      intro reduct weakHeadStep
+      cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+  | universeCode _ _ =>
+      intro reduct weakHeadStep
+      cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+  | ofPointwiseIff _ pointwiseIff innerHypothesis =>
+      intro reduct weakHeadStep
+      exact .ofPointwiseIff (innerHypothesis weakHeadStep) pointwiseIff
+
+/-- **A weak-head-normal non-Π non-universe type has the strong-normalization candidate** (up to pointwise
+iff). -/
+theorem ReducibleTypeStepDenote.candidateIffStronglyNormalizing {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) :
+    (∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct) →
+    typeCode.rootGenerator ≠ Generator.gen_piTyCode →
+    typeCode.rootGenerator ≠ Generator.gen_universeCode →
+    PointwiseIff candidate IsStronglyNormalizing := by
+  induction reducible with
+  | whnfExpand weakHeadStep0 _ _ =>
+      intro noWeakHeadStep _ _; exact absurd weakHeadStep0 (noWeakHeadStep _)
+  | neutral _ _ _ => intro _ _ _ _term; exact Iff.rfl
+  | piType _ _ _ _ _ => intro _ notPiType _; exact absurd rfl notPiType
+  | universeCode _ _ => intro _ _ notUniverse; exact absurd rfl notUniverse
+  | ofPointwiseIff _ pointwiseIff innerHypothesis =>
+      intro noWeakHeadStep notPiType notUniverse term
+      exact (pointwiseIff term).symm.trans (innerHypothesis noWeakHeadStep notPiType notUniverse term)
+
+/-- **Π-shape inversion (subject generic + equation).**  A reducible type whose code IS a Π-code came
+through the `piType` arm: it recovers the domain / codomain candidates, their reducibility, and that the
+candidate is the dependent-arrow predicate pointwise. -/
+theorem ReducibleTypeStepDenote.candidatePiShape {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) :
+    ∀ {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)},
+      typeCode = (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) →
+      ∃ (domainCandidate : RawTerm scope → Prop)
+        (codomainCandidate : RawTerm scope → (RawTerm scope → Prop)),
+        ReducibleTypeStepDenote env lowerAt domainCode domainCandidate ∧
+        (∀ argument : RawTerm scope, domainCandidate argument →
+          ReducibleTypeStepDenote env lowerAt (RawTerm.subst0 codomainCode argument)
+            (codomainCandidate argument)) ∧
+        PointwiseIff candidate
+          (fun functionTerm => ∀ argument : RawTerm scope, domainCandidate argument →
+            codomainCandidate argument
+              (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil)))) := by
+  induction reducible with
+  | whnfExpand weakHeadStep0 _ _ =>
+      intro _domainCode _codomainCode hType; subst hType
+      cases weakHeadStep0 with | rootIota iotaStep => cases iotaStep
+  | neutral _ notPiType _ =>
+      intro _domainCode _codomainCode hType; subst hType; exact absurd rfl notPiType
+  | piType codomainCandidate domainReducible codomainReducible _ _ =>
+      intro _domainCode _codomainCode hType; cases hType
+      exact ⟨_, codomainCandidate, domainReducible, codomainReducible, fun _term => Iff.rfl⟩
+  | universeCode _ _ =>
+      intro _domainCode _codomainCode hType
+      have rootMismatch : Generator.gen_universeCode = Generator.gen_piTyCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch (by decide)
+  | ofPointwiseIff _ pointwiseIff innerHypothesis =>
+      intro _domainCode _codomainCode hType
+      obtain ⟨domainCandidate, codomainCandidate, domainReducible, codomainReducible, pwi⟩ :=
+        innerHypothesis hType
+      exact ⟨domainCandidate, codomainCandidate, domainReducible, codomainReducible,
+        fun term => (pointwiseIff term).symm.trans (pwi term)⟩
+
+/-- **Universe-shape inversion (subject generic + equation).**  A reducible type whose code IS a universe
+code has the denote-keyed universe candidate (up to pointwise iff).  The `universeCode` arm aligns the
+inducted-arm `levelExpr` with the equation's via `universeCodeCell_inj` (where the fuel version's
+levelExpr-independent candidate allowed bare `Iff.rfl`). -/
+theorem ReducibleTypeStepDenote.candidateIffUniverse {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) :
+    ∀ {levelExpr : LevelExpr} {flag : UniverseFlag},
+      typeCode = (.mkGen .gen_universeCode (levelExpr, flag) .childNil) →
+      PointwiseIff candidate (universeDenotePredicate env lowerAt levelExpr) := by
+  induction reducible with
+  | whnfExpand weakHeadStep0 _ _ =>
+      intro _levelExpr _flag hType; subst hType
+      cases weakHeadStep0 with | rootIota iotaStep => cases iotaStep
+  | neutral _ _ notUniverse =>
+      intro _levelExpr _flag hType; subst hType; exact absurd rfl notUniverse
+  | piType _ _ _ _ _ =>
+      intro _levelExpr _flag hType
+      have rootMismatch : Generator.gen_piTyCode = Generator.gen_universeCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch (by decide)
+  | universeCode levelExpr flag =>
+      intro _levelExpr _flag hType term
+      obtain ⟨levelEq, _flagEq⟩ := universeCodeCell_inj hType
+      subst levelEq
+      exact Iff.rfl
+  | ofPointwiseIff _ pointwiseIff innerHypothesis =>
+      intro _levelExpr _flag hType term
+      exact (pointwiseIff term).symm.trans (innerHypothesis hType term)
+
+/-- **The denote-keyed step functor is functional** (up to pointwise iff): at a fixed `env` / `lowerAt`, a
+type-code denotes at most one candidate. -/
+theorem ReducibleTypeStepDenote.deterministic {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {typeCode : RawTerm scope} {candidate1 : RawTerm scope → Prop}
+    (reducible1 : ReducibleTypeStepDenote env lowerAt typeCode candidate1) :
+    ∀ {candidate2 : RawTerm scope → Prop},
+      ReducibleTypeStepDenote env lowerAt typeCode candidate2 → PointwiseIff candidate1 candidate2 := by
+  induction reducible1 with
+  | whnfExpand weakHeadStep1 _reductReducible1 reductInductiveHypothesis =>
+      intro candidate2 reducible2
+      exact reductInductiveHypothesis (reducible2.candidateAtWhnfReduct weakHeadStep1)
+  | neutral noWeakHeadStep1 notPiType1 notUniverse1 =>
+      intro candidate2 reducible2 term
+      exact (reducible2.candidateIffStronglyNormalizing noWeakHeadStep1 notPiType1 notUniverse1 term).symm
+  | piType codomainCandidate1 _domainReducible1 _codomainReducible1
+      domainInductiveHypothesis codomainInductiveHypothesis =>
+      intro candidate2 reducible2
+      obtain ⟨domainCandidate2, codomainCandidate2, _domainReducible2, codomainReducible2, pointwiseIff2⟩ :=
+        reducible2.candidatePiShape rfl
+      refine fun functionTerm => Iff.trans ?_ (pointwiseIff2 functionTerm).symm
+      constructor
+      · intro membership1 argument domain2Argument
+        have domain1Argument := (domainInductiveHypothesis _domainReducible2 argument).mpr domain2Argument
+        have codomainEquivalence :=
+          codomainInductiveHypothesis argument domain1Argument
+            (codomainReducible2 argument domain2Argument)
+        exact (codomainEquivalence _).mp (membership1 argument domain1Argument)
+      · intro membership2 argument domain1Argument
+        have domain2Argument := (domainInductiveHypothesis _domainReducible2 argument).mp domain1Argument
+        have codomainEquivalence :=
+          codomainInductiveHypothesis argument domain1Argument
+            (codomainReducible2 argument domain2Argument)
+        exact (codomainEquivalence _).mpr (membership2 argument domain2Argument)
+  | universeCode _levelExpr1 _flag1 =>
+      intro candidate2 reducible2 term
+      exact (reducible2.candidateIffUniverse rfl term).symm
+  | ofPointwiseIff _innerReducible1 pointwiseIff1 innerInductiveHypothesis1 =>
+      intro candidate2 reducible2 term
+      exact (pointwiseIff1 term).symm.trans (innerInductiveHypothesis1 reducible2 term)
+
+/-- **The level-indexed relation is functional.**  Direct from `ReducibleTypeStepDenote.deterministic`
+(unlike the fuel `ReducibleTypeAt`, no `Nat` recursion: `ReducibleTypeAtDenote env level` IS the step functor
+over `denoteBelowFamily env level`). -/
+theorem ReducibleTypeAtDenote.deterministic {scope : Nat} {env : Nat → Nat} {level : Nat}
+    {typeCode : RawTerm scope} {candidate1 candidate2 : RawTerm scope → Prop}
+    (reducible1 : ReducibleTypeAtDenote env level typeCode candidate1)
+    (reducible2 : ReducibleTypeAtDenote env level typeCode candidate2) :
+    PointwiseIff candidate1 candidate2 :=
+  ReducibleTypeStepDenote.deterministic reducible1 reducible2
+
+/-- **Π-code inversion (existential, level-indexed).**  A `gen_piTyCode`-rooted reducible type came through
+the `piType` arm; recovers the domain/codomain candidates.  The decomposition the universe-domain `piArm`
+consumes to take apart a reducible `Π(Type@e)C`. -/
+theorem ReducibleTypeAtDenote.piTypeInversion {scope : Nat} {env : Nat → Nat} {level : Nat}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeAtDenote env level
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) candidate) :
+    ∃ (domainCandidate : RawTerm scope → Prop)
+      (codomainCandidate : RawTerm scope → (RawTerm scope → Prop)),
+      ReducibleTypeAtDenote env level domainCode domainCandidate ∧
+      (∀ argument : RawTerm scope, domainCandidate argument →
+        ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
+          (codomainCandidate argument)) ∧
+      PointwiseIff candidate
+        (fun functionTerm => ∀ argument : RawTerm scope, domainCandidate argument →
+          codomainCandidate argument
+            (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil)))) :=
+  reducible.candidatePiShape rfl
 
 end FX1Poly.Typed
