@@ -16,6 +16,7 @@ import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
+import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -262,6 +263,17 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.ofReflTransClosure
 #assert_no_axioms FX1Poly.Core.StepStar.hasConfluence_of_parallelDiamond
 #assert_no_axioms FX1Poly.Core.StepStar.hasStrip_of_parallelDiamond
+
+-- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
+-- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
+-- diamonds COMMUTE into a confluent union (the intended FX use: beta-parallel diamond + iota-parallel
+-- diamond + beta/iota commute, without one monolithic 20-arm ParStep). StronglyCommutes + DiamondProperty.union
+-- (4-way case split) + confluentOfUnionDiamonds + confluentUnionOfParallelDiamonds (2-relation generalization
+-- of confluentOfDiamondSimulation). Zero-axiom.
+#assert_no_axioms FX1Poly.Core.StronglyCommutes
+#assert_no_axioms FX1Poly.Core.DiamondProperty.union
+#assert_no_axioms FX1Poly.Core.confluentOfUnionDiamonds
+#assert_no_axioms FX1Poly.Core.confluentUnionOfParallelDiamonds
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
