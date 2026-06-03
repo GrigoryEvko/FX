@@ -2037,6 +2037,10 @@ gates pin them shut.
 -- honest unconditional foundation for data canonicity (SN-063 bool reducibility / SN-047 bool canonicity).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.closedUnderStep
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.isReducibilityCandidate
+-- NEUTRAL OBLIGATION NOW DISCHARGED: the `neutralClosedUnderStep` argument is exactly the unconditional
+-- `IsNeutral.closedUnderStep` (NeutralStepClosure.lean), so a data type need only supply that its values are
+-- normal forms (trivial for constructors) to obtain its reducibility candidate.
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an

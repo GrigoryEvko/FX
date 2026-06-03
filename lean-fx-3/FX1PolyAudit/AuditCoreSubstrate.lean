@@ -127,6 +127,7 @@ import FX1Poly.Core.IdEliminatorLayer
 import FX1Poly.Core.NeutralTerm
 import FX1Poly.Core.ReducibilityCandidate
 import FX1Poly.Core.ReducibilityCandidateArrow
+import FX1Poly.Core.NeutralStepClosure
 import FX1Poly.Core.StrongNormalizationRedexes
 import FX1Poly.Core.StrongNormalizationIotaRedexes
 import FX1Poly.Core.StrongNormalizationSubterm
@@ -316,3 +317,8 @@ per-decl list.  It also re-checks the native infra under
 -- CR3 structural ingredient: neutrality is preserved by renaming (needed so the applied fresh-var head
 -- `rename furtherRenaming functionTerm` stays neutral in the Kripke arrow's neutral backward closure).
 #assert_no_axioms FX1Poly.Core.IsNeutral.rename
+-- A neutral term's one-step reduct is again neutral: a neutral can only step by congruence (no root redex
+-- fires, the principal child being neutral never a constructor), and congruence preserves the stuck shape.
+-- Discharges the `neutralClosedUnderStep` hypothesis of `CanonicalFormsPredicate.closedUnderStep` toward
+-- unconditional bool reducibility (SN-063).
+#assert_no_axioms FX1Poly.Core.IsNeutral.closedUnderStep

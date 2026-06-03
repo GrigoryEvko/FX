@@ -1,6 +1,7 @@
 import FX1Poly.Core.ReducibilityCandidate
 import FX1Poly.Core.NormalFormUnique
 import FX1Poly.Core.RawTermNF
+import FX1Poly.Core.NeutralStepClosure
 
 /-! # Foundation/PolyCell/Core/CanonicalFormsCandidate
     — the generic "strongly-normalizing, neutral-or-value" candidate skeleton (data-canonicity foundation)
@@ -139,5 +140,19 @@ theorem CanonicalFormsPredicate.isReducibilityCandidate {scope : Nat}
   stronglyNormalizing := CanonicalFormsPredicate.stronglyNormalizing
   closedUnderStep := CanonicalFormsPredicate.closedUnderStep neutralClosedUnderStep isValueImpliesNormal
   neutralExpansion := CanonicalFormsPredicate.neutralExpansion
+
+/-- **The canonical-forms predicate is a reducibility candidate given ONLY that data values are normal
+forms** — the neutral half of the obligation is now discharged unconditionally.  The
+`neutralClosedUnderStep` argument of `CanonicalFormsPredicate.isReducibilityCandidate` is exactly
+`IsNeutral.closedUnderStep` (`NeutralStepClosure.lean`: a neutral's one-step reduct is again neutral), so a
+concrete data type need only supply `isValueImpliesNormal` for its constructors — trivial, since a
+constructor with normal children admits no `Step`.  This is the form a data type instantiates to obtain its
+arm of the reducibility model (toward SN-063 bool reducibility / SN-047 bool canonicity). -/
+theorem CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal {scope : Nat}
+    {isValue : RawTerm scope → Prop}
+    (isValueImpliesNormal :
+      ∀ {value : RawTerm scope}, isValue value → RawTerm.isStepNormalForm value) :
+    IsReducibilityCandidate (CanonicalFormsPredicate isValue) :=
+  CanonicalFormsPredicate.isReducibilityCandidate IsNeutral.closedUnderStep isValueImpliesNormal
 
 end FX1Poly.Core
