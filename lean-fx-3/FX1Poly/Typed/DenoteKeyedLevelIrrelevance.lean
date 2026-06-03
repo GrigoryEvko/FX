@@ -37,14 +37,22 @@ This file also ships the NON-universe half of the `piArm`:
 The complementary universe-domain instance (candidate uniform only above `denote e env`) is
 `DenoteKeyedUniverseDomainPi.universeDomainPi_reducibleAtEveryDenoteLevel`.
 
+And the MEMBER-level complement (toward the denote #672 member-extension):
+  * `uniformType_memberStableAcrossDenoteLevels` — a member of any type reducible with a single all-level
+    uniform candidate is level-stable (via `ReducibleTypeAtDenote.deterministic`); the non-universe analogue
+    of `DenoteKeyedUniverseDomainPi.universeDomainPi_memberStableAcrossDenoteLevels`.
+  * `neutralType_memberStableAcrossDenoteLevels` — the witnessing neutral-type instance.
+
 ## Zero-axiom verification
 
 The three leaves are anonymous-constructor wrappers of the `ReducibleTypeStepDenote.{neutral, whnfExpand}`
 constructors and `universeCode_isReducibleAtDenote`; the backbone is one `induction` on
 `ReducibleTypeStepDenote` with the level-independent motive `IsReducibleTypeAtAllDenoteLevels env typeCode`
 (avoiding the indexed-match propext leak); the two `piArm` instances are `piType`-constructor wrappers (the
-neutral one delegating to the uniform-candidate one).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+neutral one delegating to the uniform-candidate one); the two member-stability theorems are
+`ReducibleTypeAtDenote.deterministic` + reassembly (the neutral one delegating to the uniform one).  No
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -167,5 +175,41 @@ theorem neutralDomainPi_reducibleAtEveryDenoteLevel {scope : Nat} (env : Nat →
   uniformDomainPi_reducibleAtEveryDenoteLevel env IsStronglyNormalizing
     (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
     codomainCandidate codomainReducible
+
+/-- **Member-stability for a uniform-candidate type — the member-level complement of the uniform-candidate
+piArm.**  If `typeCode` is reducible with a SINGLE candidate `candidate` at every denote level, then a reducible
+member at one level is a reducible member at every level: the source-level candidate agrees pointwise with the
+uniform `candidate` by `ReducibleTypeAtDenote.deterministic`, so the member sits in `candidate`, reducible at
+the target level.  Unconditional (no level threshold), since the candidate never drifts.  This is the
+non-universe analogue of `DenoteKeyedUniverseDomainPi.universeDomainPi_memberStableAcrossDenoteLevels` (which
+holds only ABOVE `denote e env`); together they give member-stability across the denote-reducible type shapes,
+the denote-keyed content of the #672 member-extension. -/
+theorem uniformType_memberStableAcrossDenoteLevels {scope : Nat} (env : Nat → Nat)
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (uniformReducible : ∀ level : Nat, ReducibleTypeAtDenote env level typeCode candidate)
+    {term : RawTerm scope} {sourceLevel : Nat}
+    (memberAtSource : IsReducibleMemberAtDenote env sourceLevel typeCode term)
+    (targetLevel : Nat) :
+    IsReducibleMemberAtDenote env targetLevel typeCode term := by
+  obtain ⟨sourceCandidate, sourceReducible, memberInSource⟩ := memberAtSource
+  have candidatesAgree :=
+    ReducibleTypeAtDenote.deterministic sourceReducible (uniformReducible sourceLevel)
+  exact ⟨candidate, uniformReducible targetLevel, (candidatesAgree term).mp memberInSource⟩
+
+/-- **Member-stability for a neutral type (witnessing instance).**  A weak-head-normal non-Π non-universe type
+has the literally-uniform candidate `IsStronglyNormalizing` at every level (the `neutral` arm), so its members
+are level-stable.  Type variables and stuck applications used as classifiers. -/
+theorem neutralType_memberStableAcrossDenoteLevels {scope : Nat} (env : Nat → Nat)
+    {typeCode : RawTerm scope}
+    (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
+    (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode)
+    {term : RawTerm scope} {sourceLevel : Nat}
+    (memberAtSource : IsReducibleMemberAtDenote env sourceLevel typeCode term)
+    (targetLevel : Nat) :
+    IsReducibleMemberAtDenote env targetLevel typeCode term :=
+  uniformType_memberStableAcrossDenoteLevels env
+    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
+    memberAtSource targetLevel
 
 end FX1Poly.Typed

@@ -2887,3 +2887,8 @@ gates pin them shut.
 -- (candidate IsStronglyNormalizing). Complements A1 (universe domain, uniform above denote e env).
 #assert_no_axioms FX1Poly.Typed.uniformDomainPi_reducibleAtEveryDenoteLevel
 #assert_no_axioms FX1Poly.Typed.neutralDomainPi_reducibleAtEveryDenoteLevel
+-- member-level complement (toward the denote #672 member-extension): a member of a type reducible with one
+-- all-level uniform candidate is level-stable (via determinism); neutral-type instance witnesses it. The
+-- non-universe analogue of universeDomainPi_memberStableAcrossDenoteLevels (which holds only above denote e).
+#assert_no_axioms FX1Poly.Typed.uniformType_memberStableAcrossDenoteLevels
+#assert_no_axioms FX1Poly.Typed.neutralType_memberStableAcrossDenoteLevels
