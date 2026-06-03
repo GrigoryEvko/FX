@@ -87,4 +87,22 @@ def Conv.decidableOfHasTypeDescPiStronglyNormalizes {profile : PolyProfile} {sco
   Conv.decidableOfStronglyNormalizing
     (typedStronglyNormalizes leftTyped) (typedStronglyNormalizes rightTyped)
 
+/-- **NbE soundness + completeness for the typed fragment, conditional on typed-SN.**  Given the typed-SN
+interface, two well-typed subjects are convertible IFF `RawTerm.normalize` maps them to the SAME term.  This is
+the SEMANTIC characterization underlying `Conv.decidableOfHasTypeDescPiStronglyNormalizes` (the decision is
+`decidable_of_iff` over this equality): conversion on the typed fragment is EXACTLY normal-form equality — the
+Path-A NbE headline (Conv ↔ quote∘eval equality), here as the raw `normalize`-equality, modulo the one SN
+hypothesis.  Confluence is discharged per-term by the two SN witnesses; no global confluence is assumed. -/
+theorem Conv.iff_normalize_eq_of_hasTypeDescPiStronglyNormalizes {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {leftSubject leftClassifier rightSubject rightClassifier : RawTerm scope}
+    (typedStronglyNormalizes : HasTypeDescPiStronglyNormalizes profile)
+    (leftTyped : HasTypeDescPi profile context leftSubject leftClassifier)
+    (rightTyped : HasTypeDescPi profile context rightSubject rightClassifier) :
+    Conv leftSubject rightSubject ↔
+      RawTerm.normalize leftSubject (typedStronglyNormalizes leftTyped)
+        = RawTerm.normalize rightSubject (typedStronglyNormalizes rightTyped) :=
+  Conv.iff_normalize_eq_of_isStronglyNormalizing
+    (typedStronglyNormalizes leftTyped) (typedStronglyNormalizes rightTyped)
+
 end FX1Poly.Typed

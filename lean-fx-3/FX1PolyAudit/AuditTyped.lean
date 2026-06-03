@@ -1705,6 +1705,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiStronglyNormalizes
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectConfluenceOfStronglyNormalizes
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfHasTypeDescPiStronglyNormalizes
+-- SN-046/NbE-soundness: Conv.iff_normalize_eq_of_hasTypeDescPiStronglyNormalizes = the SEMANTIC characterization
+-- for the typed fragment (Conv ↔ normalize-equality), the Path-A NbE headline (Conv ↔ quote∘eval eq) modulo the
+-- one typed-SN hypothesis. The decidability theorem above is decidable_of_iff over this. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.Conv.iff_normalize_eq_of_hasTypeDescPiStronglyNormalizes
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at
@@ -2197,6 +2201,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.RawTerm.normalize_reducesTo
 #assert_no_axioms FX1Poly.Core.RawTerm.normalize_isStepNormalForm
 #assert_no_axioms FX1Poly.Core.Conv.decidableOfStronglyNormalizing
+-- Conv.iff_normalize_eq_of_isStronglyNormalizing: the SEMANTIC NbE soundness+completeness iff — two SN terms
+-- convert IFF RawTerm.normalize maps them to the SAME term (the explicit biconditional decidableOfStronglyNorm-
+-- alizing is decidable_of_iff over). Sharper than iff_normalForms_eq (NFs as opaque args): RHS is a literal
+-- RawTerm equality via the actual normalizer.
+#assert_no_axioms FX1Poly.Core.Conv.iff_normalize_eq_of_isStronglyNormalizing
 
 -- NORMALIZER METATHEORY: fixed-point-at-NF, idempotence, term↔NF conversion, and the headline
 -- normalize_eq_iff_conv (two terms convert iff their normal forms coincide — the normal form is a complete

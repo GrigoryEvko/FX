@@ -110,4 +110,25 @@ def Conv.decidableOfStronglyNormalizing {scope : Nat} {leftTerm rightTerm : RawT
     (RawTerm.normalize_reducesTo rightTerm rightTerminates)
     (RawTerm.normalize_isStepNormalForm rightTerm rightTerminates)
 
+/-- **Conv = normalize-equality on the strongly-normalizing fragment** (the NbE soundness+completeness
+characterization).  Two SN terms are convertible iff `RawTerm.normalize` maps them to the SAME term —
+the semantic core underlying `Conv.decidableOfStronglyNormalizing` (which is `decidable_of_iff` over this).
+Sharper than `Conv.iff_normalForms_eq_of_isStronglyNormalizing` (which takes the normal forms and their
+reduction chains as opaque arguments): here the normal forms ARE the normalizer's outputs, supplied by
+`normalize_reducesTo` / `normalize_isStepNormalForm`, so the right-hand side is a literal `RawTerm` equality
+decided by `instDecidableEqRawTerm`.  No global confluence — confluence is discharged per-term by the two SN
+witnesses. -/
+theorem Conv.iff_normalize_eq_of_isStronglyNormalizing {scope : Nat}
+    {leftTerm rightTerm : RawTerm scope}
+    (leftTerminates : StepStar.IsStronglyNormalizing leftTerm)
+    (rightTerminates : StepStar.IsStronglyNormalizing rightTerm) :
+    Conv leftTerm rightTerm ↔
+      RawTerm.normalize leftTerm leftTerminates = RawTerm.normalize rightTerm rightTerminates :=
+  Conv.iff_normalForms_eq_of_isStronglyNormalizing
+    leftTerminates rightTerminates
+    (RawTerm.normalize_reducesTo leftTerm leftTerminates)
+    (RawTerm.normalize_isStepNormalForm leftTerm leftTerminates)
+    (RawTerm.normalize_reducesTo rightTerm rightTerminates)
+    (RawTerm.normalize_isStepNormalForm rightTerm rightTerminates)
+
 end FX1Poly.Core
