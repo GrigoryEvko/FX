@@ -11,6 +11,7 @@ import FX1Poly.Core.StepWordRewriteEquivariance
 import FX1Poly.Core.ConvWordJoinableBridge
 import FX1Poly.Core.BetaEtaWordSystem
 import FX1Poly.Core.MultisetOrder
+import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -187,6 +188,22 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.MultisetRedOne.emptyAccessible
 #assert_no_axioms FX1Poly.Core.MultisetRedOne.consAccessible
 #assert_no_axioms FX1Poly.Core.MultisetRedOne.isWellFounded
+
+-- SN-117 (#620): the lexicographic list order + WF (the lex companion to SN-116's multiset order — the comparison
+-- LPO uses for arguments, RPO for lex-status symbols) + measure-based termination certificates over BOTH orders.
+-- LexListStep is the existential-on-List lex single step (length-matched tails); isWellFounded via length-indexed
+-- nested accessibility. wellFounded_of_multisetMeasure/_lexMeasure turn a measure-decrease into WellFounded via
+-- InvImage.wf. Zero-axiom: List-existential inversion (cases commonPrefix), defeq length + local length_append,
+-- Nat.noConfusion DIRECTLY (absurd+succ_ne_zero leaks propext). The recursive path ordering on FX terms is the
+-- downstream SN-131 composition.
+#assert_no_axioms FX1Poly.Core.LexListStep
+#assert_no_axioms FX1Poly.Core.LexListStep.length_eq
+#assert_no_axioms FX1Poly.Core.LexListStep.emptyAccessible
+#assert_no_axioms FX1Poly.Core.LexListStep.consAccessible
+#assert_no_axioms FX1Poly.Core.LexListStep.accessibleByLength
+#assert_no_axioms FX1Poly.Core.LexListStep.isWellFounded
+#assert_no_axioms FX1Poly.Core.wellFounded_of_multisetMeasure
+#assert_no_axioms FX1Poly.Core.wellFounded_of_lexMeasure
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
