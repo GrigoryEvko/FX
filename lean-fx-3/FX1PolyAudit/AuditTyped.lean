@@ -2818,3 +2818,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.convInvariant
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.convTransfer
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.convTransfer
+
+-- DenoteKeyedReducibility CR-soundness (#672 sub-step 2b): every denote-keyed candidate is a Girard
+-- reducibility candidate (CR1/CR2/CR3). The arrow CR is a verbatim port (CR3 via convTransfer); the
+-- parametric isReducibilityCandidate reuses the fuel universeCandidateIsReducibilityCandidate at the DECODED
+-- level via the defeq universeDenotePredicate env lowerAt levelExpr = universeReducibilityPredicate
+-- (lowerAt (denote levelExpr env)). Interface legs are per-level (∀ lvl); the unconditional level-indexed
+-- discharge carries the predicative level-bound subtlety, deferred to the piArm step.
+#assert_no_axioms FX1Poly.Typed.isDependentArrowReducibleStepDenote_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.isReducibilityCandidate
