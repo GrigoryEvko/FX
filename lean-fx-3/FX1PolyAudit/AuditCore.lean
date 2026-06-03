@@ -15,6 +15,7 @@ import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
+import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -241,7 +242,9 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- collapse (the sandwich glue) + DiamondProperty + stripLemma (single strips against many) + diamondConfluence +
 -- confluentOfDiamondSimulation (the parallel-reduction recipe: rel ⊆ parRel ⊆ RTC rel + parRel diamond ⟹ rel
 -- confluent -- how single-step β, which lacks the diamond, is proved confluent via parallel reduction). The
--- generic core of #420 parStar.confluence (instantiate at the FX parStar + cd_lemma #256). Zero-axiom.
+-- generic core of #420 parStar.confluence. NOTE the shipped cd_lemma (#256) is LOCAL confluence (feeds Newman /
+-- the strip property), NOT this parallel diamond; the diamond needs a concrete FX parallel reduction (deferred).
+-- Zero-axiom.
 #assert_no_axioms FX1Poly.Core.ReflTransClosure.monotone
 #assert_no_axioms FX1Poly.Core.ReflTransClosure.collapse
 #assert_no_axioms FX1Poly.Core.DiamondProperty
@@ -249,6 +252,16 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.diamondConfluenceAux
 #assert_no_axioms FX1Poly.Core.diamondConfluence
 #assert_no_axioms FX1Poly.Core.confluentOfDiamondSimulation
+
+-- M8-S1 FX-layer wiring (#420): connects the abstract diamond/strip confluence to the concrete raw `StepStar`.
+-- StepStar ≅ ReflTransClosure Step (toReflTransClosure / ofReflTransClosure), then hasConfluence_of_parallelDiamond
+-- (route A via confluentOfDiamondSimulation) and hasStrip_of_parallelDiamond (route B via stripLemma, realizing
+-- StepStarConfluence's `confluence_of_strip`). A sandwiched parallel relation (Step ⊆ ParStep ⊆ StepStar) with the
+-- diamond yields raw global confluence; the concrete FX parallel reduction + its diamond is the deferred content.
+#assert_no_axioms FX1Poly.Core.StepStar.toReflTransClosure
+#assert_no_axioms FX1Poly.Core.StepStar.ofReflTransClosure
+#assert_no_axioms FX1Poly.Core.StepStar.hasConfluence_of_parallelDiamond
+#assert_no_axioms FX1Poly.Core.StepStar.hasStrip_of_parallelDiamond
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
