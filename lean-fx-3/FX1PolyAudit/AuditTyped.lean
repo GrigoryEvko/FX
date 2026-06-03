@@ -2849,15 +2849,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.isReducibilityCandidate
 
 -- DenoteKeyedReducibility interface-leg discharge for denoteBelowFamily (#672 sub-step 3 prerequisite):
--- the two per-level legs the parametric isReducibilityCandidate consumes. forwardStep is unconditional
--- (below the level via coherence, above it vacuous since the family is empty); neutralInclusion holds for
--- lvl < level only (at/above, the family is empty and neutral-inclusion fails — SN-001 degeneracy re-keyed
--- to denote). The piArm satisfies the bound via denote e < level (denote_lt_lsucc).
+-- the per-level legs the candidate machinery consumes. forwardStep is unconditional (below the level via
+-- coherence, above it vacuous since the family is empty); neutralInclusion holds for lvl < level only
+-- (at/above, the family is empty and neutral-inclusion FAILS — SN-001 degeneracy re-keyed to denote; the
+-- piArm satisfies the bound via denote e < level / denote_lt_lsucc). backwardWeakHeadStep is the THIRD leg
+-- and is UNCONDITIONAL: unlike neutral-inclusion (an existence obligation, false on the empty family), a
+-- backward-step leg is an implication whose premise is False above the bound, hence vacuous there and
+-- whnfExpand below it — the leg the member weak-head β-expansion (denote lambda-arm engine) needs at its
+-- universe arm, making that case bound-free.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.forwardStep
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.reducibleOfNeutral
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_eq_empty_of_ge
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_forwardStep
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_neutralInclusion_of_lt
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamily_backwardWeakHeadStep
 -- the denote-keyed semantic member predicate (member analogue of IsReducibleTypeAtDenote)
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtDenote
 

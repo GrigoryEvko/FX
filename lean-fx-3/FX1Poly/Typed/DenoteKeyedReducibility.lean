@@ -730,4 +730,26 @@ theorem denoteBelowFamily_neutralInclusion_of_lt {scope : Nat} (env : Nat → Na
   rw [denoteBelowFamily_eq_reducible env level lvl hlt]
   exact ReducibleTypeStepDenote.reducibleOfNeutral neutral
 
+/-- **Interface leg 3 (unconditional): `denoteBelowFamily env level` is backward-closed under a
+`WeakHeadStep`.**  The mirror of `denoteBelowFamily_forwardStep`, using the relation's own `whnfExpand`
+arm below the bound and the empty-relation vacuity above it.  The crucial contrast with leg 2
+(`neutralInclusion`): that leg is an EXISTENCE obligation (`∃ candidate, lowerAt typeCode candidate`),
+which FAILS on the empty above-bound family (a neutral type has no reducts, yet the empty relation has no
+members) and so is bounded by `lvl < level`.  This leg is an IMPLICATION whose premise
+`denoteBelowFamily env level lvl reduct candidate` is `False` at/above the bound — so it holds VACUOUSLY
+there and UNCONDITIONALLY everywhere.  This is the leg the eventual member weak-head β-expansion (the
+denote lambda-arm engine, the analogue of the fuel `CanonicalFormsWeakHeadExpansion`) consumes at its
+universe arm: because backward-step closure is unconditional, that universe case is bound-free, leaving
+the level bound confined to the Π-arm's spine backward closure. -/
+theorem denoteBelowFamily_backwardWeakHeadStep {scope : Nat} (env : Nat → Nat) (level : Nat) (lvl : Nat)
+    {typeCode reduct : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (member : denoteBelowFamily env level lvl reduct candidate)
+    (weakHeadStep : WeakHeadStep typeCode reduct) :
+    denoteBelowFamily env level lvl typeCode candidate := by
+  by_cases hlt : lvl < level
+  · rw [denoteBelowFamily_eq_reducible env level lvl hlt] at member ⊢
+    exact ReducibleTypeStepDenote.whnfExpand weakHeadStep member
+  · rw [denoteBelowFamily_eq_empty_of_ge env level lvl (Nat.not_lt.mp hlt)] at member
+    exact member.elim
+
 end FX1Poly.Typed
