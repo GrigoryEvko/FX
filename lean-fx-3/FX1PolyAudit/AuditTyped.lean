@@ -168,6 +168,7 @@ import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
 import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
 import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
+import FX1Poly.Typed.DenoteKeyedApplicationMember
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2946,3 +2947,10 @@ gates pin them shut.
 -- routes through universeDomainPi_reducibleFromCodomainExistence + subst_cons_eq_subst0_lift. Completes the
 -- binder-arm-under-subst family (uniform/neutral/universe).
 #assert_no_axioms FX1Poly.Typed.universeDomainPiFormationUnderClosingSubstitution
+
+-- DenoteKeyedApplicationMember (the denote FT's Π-elimination member arm, the first MEMBER-level arm): a
+-- denote-reducible member of Π domainCode codomainCode applied to a denote-reducible member of domainCode is a
+-- denote-reducible member of subst0 codomainCode argumentTerm. Reads directly off the piType candidate via
+-- piTypeInversion (domain/codomain candidates + application-form PointwiseIff) + deterministic (aligns the
+-- argument's candidate with the domain candidate). No backward-closure, no new machinery.
+#assert_no_axioms FX1Poly.Typed.applicationMemberAtDenote
