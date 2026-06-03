@@ -11,6 +11,7 @@ import FX1Poly.Typed.HasTypeInversion
 import FX1Poly.Typed.HasTypeDecidableConv
 import FX1Poly.Typed.HasTypeSubjectReduction
 import FX1Poly.Typed.UniverseCodeShape
+import FX1Poly.Typed.UniverseCodeConversion
 import FX1Poly.Typed.SigmaCodeShape
 import FX1Poly.Typed.IsTypeDecidable
 import FX1Poly.Typed.HasTypeDecidable
@@ -353,6 +354,12 @@ gates pin them shut.
 -- a variable reclassifier is pinned (validTypingBridgeConvPinnedReclassifier, needs contextLevels index =
 -- subjectLevel+1). Separates flexible-former from pinned-variable where isUniverseCodeOrNot cannot.
 #assert_no_axioms FX1Poly.Typed.RawTerm.isVariableOrNot
+-- UNIVERSE-CODE CONVERSION INJECTIVITY (no-Type-in-Type under conversion): two CONVERTIBLE universe codes have
+-- equal levels and flags. Universe codes are step normal forms (noStep), so global confluence
+-- (Conv.iff_normalForms_eq_of_confluence, the #420/#716 harvest, no SN premise) collapses Conv to syntactic
+-- equality, then universeCodeCell_inj. The totalBridge conv arm reads this to align a universe-code
+-- reclassifier's level with the classifier it was converted from (the conjunct-2-through-conv residual).
+#assert_no_axioms FX1Poly.Typed.universeCodeCell_inj_of_conv
 
 /-! ### Π-formation shape bricks — `piTyCodeCell`
     smart ctor + head-generator computation + the two-child destructor that
