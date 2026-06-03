@@ -2,6 +2,7 @@ import FX1Poly.Core.ParStepTriangle
 import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.TakahashiTriangle
 import FX1Poly.Core.NormalFormUnique
+import FX1Poly.Core.RawTermDecEq
 
 /-! # FX1Poly/Core/RawConfluence
     — UNCONDITIONAL raw confluence of the FX reduction relation (`#420`, the M8-S1 payoff).
@@ -108,5 +109,66 @@ theorem normalForm_unique_of_confluence {scope : Nat}
     (fun reduct firstStep => RawTerm.isStepNormalForm_blocks_step firstIsNormal reduct firstStep)
     (fun reduct secondStep => RawTerm.isStepNormalForm_blocks_step secondIsNormal reduct secondStep)
     (StepStar.rawConfluence chain1 chain2)
+
+/-! ### Conv = normal-form equality, with NO strong-normalization hypothesis.
+
+`StronglyNormalizingConvDecision.lean`'s `Conv.iff_normalForms_eq_of_isStronglyNormalizing` decides
+`Conv` as normal-form equality but threads BOTH endpoints' `IsStronglyNormalizing` witnesses — used only to
+supply per-term confluence (`confluence_of_localJoin_and_accessible`) for the forward direction.  Global
+`rawConfluence` + `normalForm_unique_of_confluence` discharge those, so the iff holds for ANY two terms
+that HAPPEN to reduce to normal forms — SN or not.  This separates the two ingredients of decidable
+conversion cleanly: **existence** of normal forms / termination of a normalizer is the SN obligation (the
+gated part), whereas the **correctness** of "compare the normal forms" is pure confluence (now
+unconditional). -/
+
+/-- **Conv = normal-form equality (no SN hypothesis).**  For any two terms with normal forms in hand
+(reduction chains + normality), conversion is exactly equality of those normal forms.  Forward: the
+conversion's common reduct and the left normal form are both reducts of `leftTerm`, so `rawConfluence`
+joins them; rigidity collapses the apex onto the left normal form, so `rightTerm` also reaches it, and
+`normalForm_unique_of_confluence` equates the two normal forms.  Backward: equal normal forms expose a
+shared reduct.  Strengthens `Conv.iff_normalForms_eq_of_isStronglyNormalizing` by dropping both SN
+premises. -/
+theorem Conv.iff_normalForms_eq_of_confluence {scope : Nat}
+    {leftTerm rightTerm leftNormalForm rightNormalForm : RawTerm scope}
+    (leftReducesToNF : StepStar leftTerm leftNormalForm)
+    (leftIsNormal : RawTerm.isStepNormalForm leftNormalForm)
+    (rightReducesToNF : StepStar rightTerm rightNormalForm)
+    (rightIsNormal : RawTerm.isStepNormalForm rightNormalForm) :
+    Conv leftTerm rightTerm ↔ leftNormalForm = rightNormalForm := by
+  constructor
+  · intro convertibility
+    obtain ⟨commonTerm, leftToCommon, rightToCommon⟩ := convertibility
+    -- The left term reaches both the conversion's common reduct and the left normal form; GLOBAL
+    -- confluence joins them, and the normal form is rigid, so the apex collapses onto the left normal
+    -- form: the common reduct itself reduces to the left normal form.
+    obtain ⟨apexTerm, commonToApex, normalToApex⟩ := StepStar.rawConfluence leftToCommon leftReducesToNF
+    have apexIsNormalForm : apexTerm = leftNormalForm :=
+      StepStar.eq_of_noStep
+        (fun reduct stepFromNF => RawTerm.isStepNormalForm_blocks_step leftIsNormal reduct stepFromNF)
+        normalToApex
+    have commonToNormalForm : StepStar commonTerm leftNormalForm := apexIsNormalForm ▸ commonToApex
+    have rightToNormalForm : StepStar rightTerm leftNormalForm :=
+      StepStar.trans_compose rightToCommon commonToNormalForm
+    -- The right term now reaches both the left and right normal forms; confluence uniqueness equates them.
+    exact normalForm_unique_of_confluence rightToNormalForm leftIsNormal
+      rightReducesToNF rightIsNormal
+  · intro normalFormsEqual
+    exact ⟨rightNormalForm, normalFormsEqual ▸ leftReducesToNF, rightReducesToNF⟩
+
+/-- **Decidable Conv from normal forms (no SN hypothesis).**  Given two terms together with their normal
+forms (reduction chains + normality), conversion is decidable — it is normal-form equality, decided by the
+propext-free `instDecidableEqRawTerm`.  No global-confluence assumption (discharged by `rawConfluence`) and
+no SN premise; a normalizer function supplying the normal-form witnesses makes this a parameter-free
+decision on whatever fragment it normalizes. -/
+def Conv.decidableOfNormalForms {scope : Nat}
+    {leftTerm rightTerm leftNormalForm rightNormalForm : RawTerm scope}
+    (leftReducesToNF : StepStar leftTerm leftNormalForm)
+    (leftIsNormal : RawTerm.isStepNormalForm leftNormalForm)
+    (rightReducesToNF : StepStar rightTerm rightNormalForm)
+    (rightIsNormal : RawTerm.isStepNormalForm rightNormalForm) :
+    Decidable (Conv leftTerm rightTerm) :=
+  decidable_of_iff _
+    (Conv.iff_normalForms_eq_of_confluence
+      leftReducesToNF leftIsNormal rightReducesToNF rightIsNormal).symm
 
 end FX1Poly.Core

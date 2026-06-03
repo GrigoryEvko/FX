@@ -448,6 +448,15 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- isStepNormalForm_blocks_step, joining via rawConfluence instead of the SN-keyed local confluence.
 #assert_no_axioms FX1Poly.Core.normalForm_unique_of_confluence
 
+-- Conv = normal-form equality with NO SN hypothesis. StronglyNormalizingConvDecision's
+-- iff_normalForms_eq_of_isStronglyNormalizing threads both endpoints' IsStronglyNormalizing witnesses,
+-- used only for per-term confluence; rawConfluence + normalForm_unique_of_confluence discharge them, so the
+-- iff holds for ANY two terms that reduce to normal forms. Separates decidable Conv into existence-of-NFs
+-- (the SN obligation, gated) and correctness-of-NF-comparison (pure confluence, now unconditional). The
+-- decidable wrapper decides Conv via instDecidableEqRawTerm given the normal-form witnesses, no SN premise.
+#assert_no_axioms FX1Poly.Core.Conv.iff_normalForms_eq_of_confluence
+#assert_no_axioms FX1Poly.Core.Conv.decidableOfNormalForms
+
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
 -- diamonds COMMUTE into a confluent union (the intended FX use: beta-parallel diamond + iota-parallel
