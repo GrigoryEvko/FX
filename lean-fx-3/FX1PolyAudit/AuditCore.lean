@@ -390,6 +390,14 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.ParStep.optionSome_inv
 #assert_no_axioms FX1Poly.Core.ParStep.eitherInl_inv
 #assert_no_axioms FX1Poly.Core.ParStep.eitherInr_inv
+-- Nullary scrutinee / witness inversions completing the 13-constructor set: the full triangle's cong arm
+-- learns from e.g. ParStep boolTrue sc' that sc' = boolTrue, so a cong-reduced redex is still a redex.
+#assert_no_axioms FX1Poly.Core.ParStep.boolTrue_inv
+#assert_no_axioms FX1Poly.Core.ParStep.boolFalse_inv
+#assert_no_axioms FX1Poly.Core.ParStep.natZero_inv
+#assert_no_axioms FX1Poly.Core.ParStep.listNil_inv
+#assert_no_axioms FX1Poly.Core.ParStep.optionNone_inv
+#assert_no_axioms FX1Poly.Core.ParStep.refl_inv
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose

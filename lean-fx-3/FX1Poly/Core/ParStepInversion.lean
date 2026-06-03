@@ -120,4 +120,55 @@ theorem ParStep.eitherInr_inv {scope : Nat} {value : RawTerm scope} {target : Ra
       cases childrenStep with
       | cons headStep tailStep => cases tailStep with | nil => exact ⟨_, rfl, headStep⟩
 
+/-! ### Nullary scrutinee / witness inversions.
+
+The redex *scrutinees*/*witnesses* with no extracted sub-component: `boolTrue`/`boolFalse` (boolElim
+scrutinees), `natZero` (natElim/natRec scrutinee), `listNil` (listElim scrutinee), `optionNone`
+(optionMatch scrutinee), and `refl` (idJ/idStrictRec witness).  The full triangle's cong-arm needs these
+to recognize that a cong-reduced redex is STILL a syntactic redex — e.g. from `ParStep boolTrue sc'` it
+learns `sc' = boolTrue`, so `boolElim sc' …` after cong is still a `boolElim`-true redex that fires.  The
+nullary ones invert to a bare equality (no child reduces); `refl` keeps its witness reduced. -/
+
+/-- **Inversion of `ParStep` at `boolTrue`.**  `boolTrue` only parallel-reduces to `boolTrue`. -/
+theorem ParStep.boolTrue_inv {scope : Nat} {target : RawTerm scope}
+    (step : ParStep (.mkGen .gen_boolTrue () .childNil) target) :
+    target = .mkGen .gen_boolTrue () .childNil := by
+  cases step with | cong gen payload childrenStep => cases childrenStep with | nil => rfl
+
+/-- **Inversion of `ParStep` at `boolFalse`.**  `boolFalse` only parallel-reduces to `boolFalse`. -/
+theorem ParStep.boolFalse_inv {scope : Nat} {target : RawTerm scope}
+    (step : ParStep (.mkGen .gen_boolFalse () .childNil) target) :
+    target = .mkGen .gen_boolFalse () .childNil := by
+  cases step with | cong gen payload childrenStep => cases childrenStep with | nil => rfl
+
+/-- **Inversion of `ParStep` at `natZero`.**  `natZero` only parallel-reduces to `natZero`. -/
+theorem ParStep.natZero_inv {scope : Nat} {target : RawTerm scope}
+    (step : ParStep (.mkGen .gen_natZero () .childNil) target) :
+    target = .mkGen .gen_natZero () .childNil := by
+  cases step with | cong gen payload childrenStep => cases childrenStep with | nil => rfl
+
+/-- **Inversion of `ParStep` at `listNil`.**  `listNil` only parallel-reduces to `listNil`. -/
+theorem ParStep.listNil_inv {scope : Nat} {target : RawTerm scope}
+    (step : ParStep (.mkGen .gen_listNil () .childNil) target) :
+    target = .mkGen .gen_listNil () .childNil := by
+  cases step with | cong gen payload childrenStep => cases childrenStep with | nil => rfl
+
+/-- **Inversion of `ParStep` at `optionNone`.**  `optionNone` only parallel-reduces to `optionNone`. -/
+theorem ParStep.optionNone_inv {scope : Nat} {target : RawTerm scope}
+    (step : ParStep (.mkGen .gen_optionNone () .childNil) target) :
+    target = .mkGen .gen_optionNone () .childNil := by
+  cases step with | cong gen payload childrenStep => cases childrenStep with | nil => rfl
+
+/-- **Inversion of `ParStep` at `refl`.**  A parallel reduct of `refl witness` is `refl witness'` with the
+witness reduced — the idJ/idStrictRec ι arms need only that the reduct is still a `refl` (the witness is
+not used in the contractum, but it must be present for the redex to fire). -/
+theorem ParStep.refl_inv {scope : Nat} {witness : RawTerm scope} {target : RawTerm scope}
+    (step : ParStep (.mkGen .gen_refl () (.childCons witness .childNil)) target) :
+    ∃ witness' : RawTerm scope,
+      target = .mkGen .gen_refl () (.childCons witness' .childNil) ∧ ParStep witness witness' := by
+  cases step with
+  | cong gen payload childrenStep =>
+      cases childrenStep with
+      | cons headStep tailStep => cases tailStep with | nil => exact ⟨_, rfl, headStep⟩
+
 end FX1Poly.Core
