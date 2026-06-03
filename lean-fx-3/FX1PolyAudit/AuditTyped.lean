@@ -135,6 +135,7 @@ import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
 import FX1Poly.Typed.LevelingBridge
+import FX1Poly.Typed.ValidTypingLevelFlexible
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1473,6 +1474,16 @@ gates pin them shut.
 -- subjectLevel-instance of the all-level reclassifier IH. Supersedes the pre-aligned validTypingBridgeConv
 -- (SN-022). Type variables (var-pinned) are the sole non-level-flexible type code → reducibility route (SN-025).
 #assert_no_axioms FX1Poly.Typed.validTypingBridgeConvFromAllLevelReclassifier
+-- SN-027 refined-motive PRODUCERS (#656/#657): a type code is LEVEL-FLEXIBLE (valid as a universe member at
+-- every positive level) because the ValidTyping formers produce it at ANY predLevel. IsLevelFlexibleTypeCode +
+-- the three former arms (universeFormation immediate; pi/sigma given all-level domain + level-flexible codomain)
+-- + the connector convWithLevelFlexibleReclassifier wiring a flexible reclassifier into the conv bridge. These
+-- are the WITNESSES validTypingBridgeConvFromAllLevelReclassifier's reclassifierAllLevel premise consumes.
+#assert_no_axioms FX1Poly.Typed.IsLevelFlexibleTypeCode
+#assert_no_axioms FX1Poly.Typed.universeFormation_isLevelFlexible
+#assert_no_axioms FX1Poly.Typed.piFormation_isLevelFlexible
+#assert_no_axioms FX1Poly.Typed.sigmaFormation_isLevelFlexible
+#assert_no_axioms FX1Poly.Typed.ValidTyping.convWithLevelFlexibleReclassifier
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
