@@ -171,6 +171,7 @@ import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
 import FX1Poly.Typed.DenoteKeyedApplicationMember
 import FX1Poly.Typed.DenoteKeyedConvMember
 import FX1Poly.Typed.DenoteKeyedMemberForwardClosed
+import FX1Poly.Typed.DenoteKeyedUniverseMemberBetaExpansion
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2984,3 +2985,12 @@ gates pin them shut.
 -- codomain CR2 (no domain candidacy ⟹ no bound); universe arm uses lowerForwardStep. Isolates the level bound
 -- to CR1's Π-arm + CR3.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.memberForwardClosed
+
+-- DenoteKeyedUniverseMemberBetaExpansion (the UNIVERSE arm of the denote member weak-head β-expansion / the
+-- lambda-arm engine toward SN-043/#672): the β-redex app (lam body) arg is a member of the denote universe
+-- candidate given its contractum subst0 body arg is. SN conjunct via appLam_isStronglyNormalizing_of_contractum
+-- (last tick's neutral arm); the ∃c, lowerAt(denote e) · c conjunct via the lower backward-weak-head-step leg
+-- on WeakHeadStep.beta — discharged UNCONDITIONALLY for denoteBelowFamily (backward-step is an implication
+-- vacuous above the bound, not the bounded neutral-inclusion existence). So this arm is BOUND-FREE; the level
+-- bound is confined to the remaining Π/spine arm (application-SN).
+#assert_no_axioms FX1Poly.Typed.universeMemberBetaExpansionAtDenote
