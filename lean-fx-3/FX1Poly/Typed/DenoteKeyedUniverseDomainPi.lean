@@ -35,18 +35,27 @@ This file harvests that into the two facts the fuel `piArm` lacked:
   SINGLE codomain obligation (the codomain reducible under that fixed domain membership) discharges the
   `piType` constructor at every level simultaneously — no across-level member-extension is needed, so the
   circularity that defeated the fuel `piArm` never arises.
+* `universeDomainPi_uniformCandidateAtAllDenoteLevels` — the uniform-candidate strengthening: ONE candidate
+  (the dependent-arrow predicate over the fixed decode-set domain candidate) witnesses reducibility at every
+  level above `denote levelExpr env`.  Pulls the existential outside the level quantifier — the form
+  member-stability consumes.
+* `universeDomainPi_memberStableAcrossDenoteLevels` — the #672-shaped payoff: a reducible MEMBER of
+  `Π (X : Type@e). C[X]` at one level above `denote levelExpr env` is a reducible member at EVERY such level.
+  The denote-keyed analogue of `IsReducibleMemberAtAllPositiveLevels` for the impredicative universe-domain Π,
+  via the uniform candidate + `ReducibleTypeAtDenote.deterministic`.
 
-This is the denote-keyed `piArm` content at the type-former level: the universe-domain Π is uniformly
-reducible, which the fuel model provably could not establish.  It is the load-bearing step toward discharging
-the actual SN-043 gate `HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes` over the non-fuel
-relation.
+This is the denote-keyed `piArm` content at the type-former level AND its member-stability corollary: the
+universe-domain Π is uniformly reducible and its members are level-stable, both of which the fuel model
+provably could not establish.  It is the load-bearing step toward discharging the actual SN-043 gate
+`HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes` over the non-fuel relation.
 
 ## Zero-axiom verification
 
-Both theorems are direct applications of `universeMembership_levelIrrelevant` (the headline level-irrelevance,
-itself `ofPointwiseIff`-clean) and the `ReducibleTypeStepDenote.piType` / `.universeCode` constructors.  No
-`induction`, no `funext`, no `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or
-`omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+All four theorems are direct applications of `universeMembership_levelIrrelevant` (the headline
+level-irrelevance, itself `ofPointwiseIff`-clean), the `ReducibleTypeStepDenote.piType` / `.universeCode`
+constructors, and `ReducibleTypeAtDenote.deterministic` (member-stability).  No `induction`, no `funext`, no
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -99,5 +108,71 @@ theorem universeDomainPi_reducibleAtAllDenoteLevels {scope : Nat} (env : Nat →
   exact ⟨_, ReducibleTypeStepDenote.piType codomainCandidate
     (universeMembership_levelIrrelevant env level levelExpr flag levelAbove)
     (fun argument argumentInDomain => codomainReducible level levelAbove argument argumentInDomain)⟩
+
+/-- **Uniform-candidate form: ONE candidate works at every level above `denote levelExpr env`.**  Pulls the
+existential of `universeDomainPi_reducibleAtAllDenoteLevels` OUTSIDE the level quantifier: the dependent
+universe-domain Π `Π (X : Type@e). C[X]` has a SINGLE candidate (the dependent-arrow predicate over the fixed
+decode-set domain candidate) that witnesses its reducibility at every ambient level above `denote levelExpr
+env`.  This is the form member-stability consumes — a member of THAT candidate is a member at every such level
+by definition, with no candidate to re-derive per level.  Possible precisely because the domain candidate is
+level-stable (`universeMembership_levelIrrelevant`), so the dependent-arrow candidate is itself level-stable. -/
+theorem universeDomainPi_uniformCandidateAtAllDenoteLevels {scope : Nat} (env : Nat → Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) {codomainCode : RawTerm (scope + 1)}
+    (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
+    (codomainReducible : ∀ (level : Nat), LevelExpr.denote levelExpr env < level →
+      ∀ argument : RawTerm scope,
+        (IsStronglyNormalizing argument ∧
+          IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) argument) →
+          ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
+            (codomainCandidate argument)) :
+    ∃ candidate : RawTerm scope → Prop, ∀ (level : Nat), LevelExpr.denote levelExpr env < level →
+      ReducibleTypeAtDenote env level
+        (.mkGen .gen_piTyCode () (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+          (.childCons codomainCode .childNil)))
+        candidate := by
+  refine ⟨fun functionTerm => ∀ argument : RawTerm scope,
+    (IsStronglyNormalizing argument ∧
+      IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) argument) →
+      codomainCandidate argument
+        (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil))), ?_⟩
+  intro level levelAbove
+  exact ReducibleTypeStepDenote.piType codomainCandidate
+    (universeMembership_levelIrrelevant env level levelExpr flag levelAbove)
+    (fun argument argumentInDomain => codomainReducible level levelAbove argument argumentInDomain)
+
+/-- **Member-stability for the universe-domain Π — the #672-shaped payoff over the denote relation.**  A
+reducible member of `Π (X : Type@e). C[X]` at ONE level above `denote levelExpr env` is a reducible member at
+EVERY level above it.  This is the denote-keyed analogue of `IsReducibleMemberAtAllPositiveLevels` (the content
+of #672 `HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes`) for the impredicative
+universe-domain Π — the one type former the external-fuel model provably could not stabilise.
+
+The proof is the uniform candidate plus determinism: the source-level candidate agrees (pointwise) with the
+uniform candidate by `ReducibleTypeAtDenote.deterministic`, so the member lies in the uniform candidate, which
+is reducible at the target level.  No across-level member transport, no fuel induction. -/
+theorem universeDomainPi_memberStableAcrossDenoteLevels {scope : Nat} (env : Nat → Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) {codomainCode : RawTerm (scope + 1)}
+    (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
+    (codomainReducible : ∀ (level : Nat), LevelExpr.denote levelExpr env < level →
+      ∀ argument : RawTerm scope,
+        (IsStronglyNormalizing argument ∧
+          IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) argument) →
+          ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
+            (codomainCandidate argument))
+    {functionTerm : RawTerm scope}
+    {sourceLevel : Nat} (sourceLevelAbove : LevelExpr.denote levelExpr env < sourceLevel)
+    (memberAtSource : IsReducibleMemberAtDenote env sourceLevel
+      (.mkGen .gen_piTyCode () (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+        (.childCons codomainCode .childNil))) functionTerm)
+    {targetLevel : Nat} (targetLevelAbove : LevelExpr.denote levelExpr env < targetLevel) :
+    IsReducibleMemberAtDenote env targetLevel
+      (.mkGen .gen_piTyCode () (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+        (.childCons codomainCode .childNil))) functionTerm := by
+  obtain ⟨uniformCandidate, uniformReducible⟩ :=
+    universeDomainPi_uniformCandidateAtAllDenoteLevels env levelExpr flag codomainCandidate codomainReducible
+  obtain ⟨sourceCandidate, sourceReducible, memberInSource⟩ := memberAtSource
+  have candidatesAgree :=
+    ReducibleTypeAtDenote.deterministic sourceReducible (uniformReducible sourceLevel sourceLevelAbove)
+  exact ⟨uniformCandidate, uniformReducible targetLevel targetLevelAbove,
+    (candidatesAgree functionTerm).mp memberInSource⟩
 
 end FX1Poly.Typed

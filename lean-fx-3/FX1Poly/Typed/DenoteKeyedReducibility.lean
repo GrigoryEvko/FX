@@ -138,6 +138,14 @@ def IsReducibleTypeAtDenote {scope : Nat} (env : Nat → Nat) (level : Nat) (typ
     Prop :=
   ∃ candidate : RawTerm scope → Prop, ReducibleTypeAtDenote env level typeCode candidate
 
+/-- **Semantic member (denote-keyed).**  `term` is a reducible member of `typeCode` at `level` when `typeCode`
+is reducible there with some candidate and `term` lies in it.  The member analogue of `IsReducibleTypeAtDenote`,
+used by the universe-domain member-stability development (a member at one level above the domain's decoded level
+is a member at every such level, via the uniform candidate). -/
+def IsReducibleMemberAtDenote {scope : Nat} (env : Nat → Nat) (level : Nat)
+    (typeCode term : RawTerm scope) : Prop :=
+  ∃ candidate : RawTerm scope → Prop, ReducibleTypeAtDenote env level typeCode candidate ∧ candidate term
+
 /-- **Coherence (level-stability of the below-family).**  For `lvl < level`, the below-family at `lvl`
 agrees with the relation at `lvl` — the structural witness that the value at a fixed index is STABLE once
 the ambient level passes it.  Structural induction on `level`; the `lvl = level` boundary uses

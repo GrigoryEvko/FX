@@ -2849,6 +2849,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_eq_empty_of_ge
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_forwardStep
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_neutralInclusion_of_lt
+-- the denote-keyed semantic member predicate (member analogue of IsReducibleTypeAtDenote)
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtDenote
 
 -- DenoteKeyedUniverseDomainPi (#672 toward the non-fuel piArm): the denote model closes the universe-domain
 -- Π that the external-fuel level-irrelevance induction (ReducibleTypeAtAllLevelsInduction.piArm) provably
@@ -2857,5 +2859,10 @@ gates pin them shut.
 -- obstruction). reducibleAtAllDenoteLevels assembles the dependent universe-domain Π Π(Type@e).C uniformly
 -- across all those levels with one codomain candidate, since the level-stable domain candidate discharges the
 -- piType constructor at every level simultaneously (no across-level member-extension circularity).
+-- uniformCandidateAtAllDenoteLevels pulls the candidate existential outside the level quantifier (∃cand,∀level)
+-- and memberStableAcrossDenoteLevels is the #672-shaped payoff: a member at one level above denote e env is a
+-- member at every such level, via the uniform candidate + ReducibleTypeAtDenote.deterministic.
 #assert_no_axioms FX1Poly.Typed.universeDomainCandidate_levelStable
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleAtAllDenoteLevels
+#assert_no_axioms FX1Poly.Typed.universeDomainPi_uniformCandidateAtAllDenoteLevels
+#assert_no_axioms FX1Poly.Typed.universeDomainPi_memberStableAcrossDenoteLevels
