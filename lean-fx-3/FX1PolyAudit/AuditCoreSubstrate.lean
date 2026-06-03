@@ -131,6 +131,7 @@ import FX1Poly.Core.NeutralStepClosure
 import FX1Poly.Core.StrongNormalizationRedexes
 import FX1Poly.Core.StrongNormalizationIotaRedexes
 import FX1Poly.Core.BoolElimStrongNormalization
+import FX1Poly.Core.IdentityEliminatorStrongNormalization
 import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationSpineExpansion
 import FX1Poly.Core.HeadExpansionClosure
@@ -328,3 +329,8 @@ per-decl list.  It also re-checks the native infra under
 -- nested accessibility induction absorbing the ι-redex). The iota-head-expansion SN foundation for boolElim
 -- reducibility (toward SN-063 + the fundamental theorem's eliminator arm).
 #assert_no_axioms FX1Poly.Core.StepStar.boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
+-- ELIMINATOR SN FRONTIER (identity): idJ / idStrictRec base witness is SN when base AND witness are SN
+-- (the base merely-SN strengthening the IotaRedexes docstring flags as needing a base×witness 2D induction;
+-- the boolElim-style double nested Acc, the analogue of the boolElim triple). Toward SN-068 / SN-069.
+#assert_no_axioms FX1Poly.Core.StepStar.idJ_isStronglyNormalizing_of_strongly_normalizing_base
+#assert_no_axioms FX1Poly.Core.StepStar.idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base
