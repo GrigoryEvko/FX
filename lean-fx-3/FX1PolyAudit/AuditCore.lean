@@ -38,6 +38,7 @@ import FX1Poly.Core.StrongNormalizationCodeFormers
 import FX1Poly.Core.StrongNormalizationModalEliminators
 import FX1Poly.Core.StrongNormalizationNatElim
 import FX1Poly.Core.StrongNormalizationListElim
+import FX1Poly.Core.StrongNormalizationMatch
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -584,3 +585,14 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.headValue_isStronglyNormalizing_of_listCons
 #assert_no_axioms FX1Poly.Core.StepStar.tailValue_isStronglyNormalizing_of_listCons
 #assert_no_axioms FX1Poly.Core.StepStar.listElim_isStronglyNormalizing_of_normal_branches
+
+-- Non-recursive applied-branch eliminator iota-redex SN — optionMatch / eitherMatch (toward SN-065/066): the
+-- three one-child value subterm-SN lemmas (value of an SN optionSome/eitherInl/eitherInr is SN), and the two
+-- conditional firing-case redex SN (normal branches + the applied `app branch value` contractum SN for every
+-- SN value ⟹ the matcher redex with an SN scrutinee is SN). Completes the firing-case eliminator-SN
+-- formulation across passive/recursive/applied-non-recursive shapes. #672-independent.
+#assert_no_axioms FX1Poly.Core.StepStar.value_isStronglyNormalizing_of_optionSome
+#assert_no_axioms FX1Poly.Core.StepStar.value_isStronglyNormalizing_of_eitherInl
+#assert_no_axioms FX1Poly.Core.StepStar.value_isStronglyNormalizing_of_eitherInr
+#assert_no_axioms FX1Poly.Core.StepStar.optionMatch_isStronglyNormalizing_of_normal_branches
+#assert_no_axioms FX1Poly.Core.StepStar.eitherMatch_isStronglyNormalizing_of_normal_branches
