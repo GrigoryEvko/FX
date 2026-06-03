@@ -78,6 +78,7 @@ import FX1Poly.Core.EmptyCanonicalFormsCandidate
 import FX1Poly.Core.ListCanonicalFormsCandidate
 import FX1Poly.Core.OptionCanonicalFormsCandidate
 import FX1Poly.Core.EitherCanonicalFormsCandidate
+import FX1Poly.Core.ReflCanonicalFormsCandidate
 import FX1Poly.Core.StronglyNormalizingSubst
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
@@ -2109,6 +2110,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.eitherCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isEitherValue_isMember
 #assert_no_axioms FX1Poly.Core.eitherClosedReducesToValue
+-- IDENTITY refl data candidate (SN-067): isReflValue := refl witness (witness normal) — the single unary
+-- introduction of the identity type; refl values are normal forms; the candidate is
+-- isReducibilityCandidateOfValuesNormal at isReflValue; every refl value is a member (memberOfValue); a closed
+-- member reduces to a refl. Completes the data-introduction extraction family.
+#assert_no_axioms FX1Poly.Core.isReflValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.reflCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isReflValue_isMember
+#assert_no_axioms FX1Poly.Core.reflClosedReducesToValue
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
