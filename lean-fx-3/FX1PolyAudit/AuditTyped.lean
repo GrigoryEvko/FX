@@ -2208,6 +2208,14 @@ gates pin them shut.
 -- sub-term; the recursive natElim/natRec/listElim only progress #672-free on their base constructor.
 #assert_no_axioms FX1Poly.Core.boolElimProgressViaSconing
 #assert_no_axioms FX1Poly.Core.pairProjectionProgressViaSconing
+-- Progress completion for the REMAINING non-recursive eliminators (option/either case selection, idJ/idStrictRec
+-- base selection): same composition pattern (fundamental + #672-free eliminator computation). With boolElim +
+-- fst/snd above, this closes the progress track for EVERY non-recursive data eliminator — never stuck on
+-- well-typed input, modulo the one shared #672 fundamental.
+#assert_no_axioms FX1Poly.Core.optionMatchProgressViaSconing
+#assert_no_axioms FX1Poly.Core.eitherMatchProgressViaSconing
+#assert_no_axioms FX1Poly.Core.idJProgressViaSconing
+#assert_no_axioms FX1Poly.Core.idStrictRecProgressViaSconing
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
