@@ -74,6 +74,7 @@ import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.BoolElimCanonicalComputation
 import FX1Poly.Core.SigmaProjectionCanonicalComputation
+import FX1Poly.Core.IdentityEliminatorCanonicalComputation
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
@@ -2115,6 +2116,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.StepStar.fstScrutinee
 #assert_no_axioms FX1Poly.Core.StepStar.sndScrutinee
 #assert_no_axioms FX1Poly.Core.pairCanonicalScrutineeProjectsToComponents
+-- IDENTITY-ELIMINATOR canonicity (#672-free, SN-068/069 path): idJ/idStrictRec on a CANONICAL refl WITNESS
+-- COMPUTE to the base case. StepStar.idJWitness/idStrictRecWitness = the witness-position (second-child) chain
+-- congruences (generic StepStar.congAt + Step.cong (StepChildren.there base (here ...)) reaching past the base
+-- case into the witness child; headShift := 0 pins the [0,0]-spine). idJ/idStrictRecCanonicalWitnessReducesToBase
+-- = the headline: the witness reduces to a refl (reflClosedReducesToValue), the witness congruence carries that
+-- under the eliminator, and the matching iota (iotaIdJRefl/iotaIdStrictRecRefl) selects the base case. The last
+-- non-growing eliminators (ι selects base from the witness); no fundamental theorem used.
+#assert_no_axioms FX1Poly.Core.StepStar.idJWitness
+#assert_no_axioms FX1Poly.Core.StepStar.idStrictRecWitness
+#assert_no_axioms FX1Poly.Core.idJCanonicalWitnessReducesToBase
+#assert_no_axioms FX1Poly.Core.idStrictRecCanonicalWitnessReducesToBase
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
