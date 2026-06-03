@@ -1,19 +1,22 @@
 import FX1Poly.Core.NatElimValueReducibility
+import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.StrongNormalizationNatElim
+import FX1Poly.Core.StrongNormalizationListElim
 import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.NeutralTerm
 
 /-! # FX1Poly/Core/RecursorClosedMembership
-    — a closed `natElim` / `natRec` on a member Nat scrutinee with reducible branches is a data-candidate member
-      (the deferred half of SN-061)
+    — a closed `natElim` / `natRec` / `listElim` on a member recursive scrutinee with reducible branches is a
+      data-candidate member (the deferred halves of SN-061 and SN-064)
 
 `MatchClosedMembership` / `SigmaProjectionClosedMembership` closed the elimination membership for the
-NON-RECURSIVE eliminators.  This file is the RECURSIVE twin: the elimination membership for the Nat recursors
-`natElim` / `natRec`, whose ι rule on `natSucc` re-invokes the recursor on the predecessor.  It is the deferred
-half of SN-061 — `NatElimValueReducibility` (#732) supplied the numeral VALUE case (parameterized over the result
-candidate); this file discharges the SCRUTINEE-REDUCES-TO-NUMERAL regime, instantiating that value case at the
-closed data candidate and lifting through the scrutinee reduction.
+NON-RECURSIVE eliminators.  This file is the RECURSIVE twin: the elimination membership for the recursors
+`natElim` / `natRec` (whose ι rule on `natSucc` re-invokes the recursor on the predecessor) and `listElim`
+(whose ι rule on `listCons` re-invokes the recursor on the tail).  It is the deferred half of SN-061 / SN-064 —
+`NatElimValueReducibility` (#732) / `ListElimValueReducibility` (#733) supplied the numeral / list-value VALUE
+case (parameterized over the result candidate); this file discharges the SCRUTINEE-REDUCES-TO-VALUE regime,
+instantiating that value case at the closed data candidate and lifting through the scrutinee reduction.
 
 The assembly consumes the recursive substrate built one step earlier:
 
@@ -151,5 +154,73 @@ theorem natRecClosedIsMember {isValue : RawTerm 0 → Prop}
   exact CanonicalFormsPredicate.ofStepStarReachingValue
     (StepStar.natRecScrutinee scrutineeToNumeral) cellStronglyNormalizing
     numeralMember.closedReducesToValue
+
+/-- The `listElim` cell over its (scrutinee, nilBranch, consBranch) spine. -/
+private abbrev listElimCell (scrutinee nilBranch consBranch : RawTerm 0) : RawTerm 0 :=
+  .mkGen .gen_listElim () (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)))
+
+/-- The `listElim` cons-contractum `app (app (app consBranch head) tail) (listElim tail nilBranch consBranch)`. -/
+private abbrev listElimConsContractumClosed (consBranch head tail nilBranch : RawTerm 0) : RawTerm 0 :=
+  .mkGen .gen_app ()
+    (.childCons
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_app () (.childCons consBranch (.childCons head .childNil)))
+          (.childCons tail .childNil)))
+      (.childCons
+        (listElimCell tail nilBranch consBranch)
+        .childNil))
+
+/-- **A closed `listElim` on a member List scrutinee with reducible branches is a member of the result
+candidate.**  The deferred (scrutinee-reduction) half of SN-064 — the list twin of `natElimClosedIsMember`: the
+scrutinee reduces to a list value (List canonicity), `listElimValueReducibility` (#733) lands the list-value
+recursor cell in the candidate (instantiated at the closed data candidate, fed the SN-from-SN-branches recursor
+for `redexStronglyNormalizing` and the data candidate's closed weak-head-expansion for `headExpand`), and
+`ofStepStarReachingValue` lifts membership through the scrutinee congruence to the original cell.
+`consContractumTerminates` is the honest recursor-SN IH-premise (the same conditional-arm discipline
+`listElimValueReducibility` itself uses for `redexStronglyNormalizing`).  `consBranchApplication` takes the head
+in `RawTerm.isStepNormalForm` form (not SN) and the tail as an `IsListValue` — exactly the Tait interface the
+list recursor arm supplies for a reducible cons branch.  `#672`-independent: pure closed-canonicity assembly. -/
+theorem listElimClosedIsMember {isValue : RawTerm 0 → Prop}
+    {scrutinee nilBranch consBranch : RawTerm 0}
+    (scrutineeMember : CanonicalFormsPredicate IsListValue scrutinee)
+    (nilBranchMember : CanonicalFormsPredicate isValue nilBranch)
+    (consBranchTerminates : IsStronglyNormalizing consBranch)
+    (consBranchApplication : ∀ {head tail result : RawTerm 0},
+        RawTerm.isStepNormalForm head → IsListValue tail → CanonicalFormsPredicate isValue result →
+        CanonicalFormsPredicate isValue
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_app () (.childCons consBranch (.childCons head .childNil)))
+                  (.childCons tail .childNil)))
+              (.childCons result .childNil))))
+    (consContractumTerminates : ∀ head tail : RawTerm 0,
+        IsStronglyNormalizing head → IsStronglyNormalizing tail →
+        IsStronglyNormalizing (listElimConsContractumClosed consBranch head tail nilBranch)) :
+    CanonicalFormsPredicate isValue (listElimCell scrutinee nilBranch consBranch) := by
+  have headExpand : ∀ {redexTerm contractum : RawTerm 0},
+      WeakHeadStep redexTerm contractum → CanonicalFormsPredicate isValue contractum →
+      IsStronglyNormalizing redexTerm → CanonicalFormsPredicate isValue redexTerm :=
+    fun weakHeadStep memberContractum redexSN =>
+      CanonicalFormsPredicate.weakHeadExpansionOfMemberNotNeutral weakHeadStep.toStep redexSN
+        memberContractum IsNeutral.noClosed
+  have recursorSN : ∀ {value : RawTerm 0}, IsListValue value →
+      IsStronglyNormalizing (listElimCell value nilBranch consBranch) :=
+    fun valueIsList =>
+      listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
+        (isListValue_isMember valueIsList).stronglyNormalizing
+        nilBranchMember.stronglyNormalizing consBranchTerminates
+  have cellStronglyNormalizing : IsStronglyNormalizing (listElimCell scrutinee nilBranch consBranch) :=
+    listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
+      scrutineeMember.stronglyNormalizing nilBranchMember.stronglyNormalizing consBranchTerminates
+  obtain ⟨listValue, scrutineeToList, listValueIsList⟩ := scrutineeMember.closedReducesToValue
+  have listValueMember : CanonicalFormsPredicate isValue (listElimCell listValue nilBranch consBranch) :=
+    listElimValueReducibility (CanonicalFormsPredicate isValue)
+      headExpand nilBranchMember consBranchApplication recursorSN listValueIsList
+  exact CanonicalFormsPredicate.ofStepStarReachingValue
+    (StepStar.listElimScrutinee scrutineeToList) cellStronglyNormalizing
+    listValueMember.closedReducesToValue
 
 end FX1Poly.Core

@@ -2216,6 +2216,11 @@ gates pin them shut.
 -- #732 uses for redexStronglyNormalizing).
 #assert_no_axioms FX1Poly.Core.natElimClosedIsMember
 #assert_no_axioms FX1Poly.Core.natRecClosedIsMember
+-- The list twin (deferred half of SN-064, closed-layer): a closed listElim on a member List scrutinee with a
+-- reducible (3-argument function-space) cons branch is ITSELF a member. Instantiates listElimValueReducibility
+-- (#733) at the closed data candidate; consBranchApplication takes the head in isStepNormalForm form (not SN)
+-- and the tail as IsListValue; consContractumTerminates is the honest recursor-SN IH-premise.
+#assert_no_axioms FX1Poly.Core.listElimClosedIsMember
 -- RECURSIVE eliminators, BASE CASE (#672-free, SN-061/062/064 base half): natElim/natRec on zero, listElim on
 -- nil COMPUTE to the base branch. StepStar.natElimScrutinee/natRecScrutinee/listElimScrutinee = head-child
 -- scrutinee congruences (as for boolElim). natElim/natRecZeroScrutineeReducesToBranch +
