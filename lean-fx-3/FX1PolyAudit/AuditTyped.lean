@@ -1999,6 +1999,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsSimplyTyped.ofNeutral
 #assert_no_axioms FX1Poly.Typed.IsSimplyTyped.higherOrderArrow
 #assert_no_axioms FX1Poly.Typed.IsSimplyTyped.higherOrderArrowReducibleAndMemberExtension
+-- #672 STLC discharge (operational form): IsSimplyTyped.positiveMemberExtension — for ANY simply-typed type,
+-- a member at one positive level extends to all positive levels, the exact operational shape of
+-- HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes (#672) restricted to the predicative STLC
+-- fragment. This is the simply-typed dispatch arm of the eventual #672 assembly, discharged in full generality
+-- (no SN / all-levels hypothesis — both are CONCLUSIONS of simply-typedness). Residual = universe-domain +
+-- dependent-codomain (the impredicative / WHN-under-subst core).
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.positiveMemberExtension
 
 -- TERM-level reducibility of the simply-typed fragment: the term-formation rules (abstraction / application)
 -- made concrete + the SN payoff on a REDUCING term.  `lambdaNeutralArrow` / `applicationNonDependentArrow`

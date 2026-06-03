@@ -149,4 +149,22 @@ theorem IsSimplyTyped.higherOrderArrowReducibleAndMemberExtension {scope : Nat}
             (piTyCodeCell (piTyCodeCell baseA (RawTerm.weaken baseB)) (RawTerm.weaken baseC)) term) :=
   (IsSimplyTyped.higherOrderArrow neutralA neutralB neutralC).reducibleAndMemberExtension
 
+/-- **The simply-typed discharge of the #672 member-extension principle, in operational form.**  For ANY
+simply-typed type code (`IsSimplyTyped`), a member at one positive source level extends to every positive
+level — the `IsReducibleMemberAtAllPositiveLevels` half of `reducibleAndMemberExtension`, projected to the
+exact operational shape of `HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes` (#672).  This is
+the predicative STLC dispatch arm of the eventual #672 assembly, discharged in full generality (no `predLevel`
+fixed, any simply-typed type): the simply-typed cases need neither the `IsStronglyNormalizing` nor the
+`IsReducibleTypeAtAllLevels` hypothesis of #672 — both are CONCLUSIONS of simply-typedness
+(`reducibleAndMemberExtension.1`).  The genuine open residual is everything OUTSIDE this fragment: Π types with
+a UNIVERSE domain (the impredicative type-polymorphic core) and DEPENDENT codomains (where `subst0` preserves
+the codomain's root generator but NOT, in general, its weak-head-normality — a head redex can appear when the
+binder occupied an eliminator position). The general witnesses (`ofNeutral` / `ofFirstOrder` /
+`higherOrderArrow`) all factor through this lemma. -/
+theorem IsSimplyTyped.positiveMemberExtension {scope : Nat} {typeCode term : RawTerm scope}
+    {predLevel : Nat} (simplyTyped : IsSimplyTyped typeCode)
+    (member : IsReducibleMemberAt (predLevel + 1) typeCode term) :
+    IsReducibleMemberAtAllPositiveLevels typeCode term :=
+  (simplyTyped.reducibleAndMemberExtension).2 term member
+
 end FX1Poly.Typed
