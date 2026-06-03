@@ -75,6 +75,7 @@ import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.BoolElimCanonicalComputation
 import FX1Poly.Core.SigmaProjectionCanonicalComputation
 import FX1Poly.Core.IdentityEliminatorCanonicalComputation
+import FX1Poly.Core.OptionEitherMatchCanonicalComputation
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
@@ -2127,6 +2128,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.StepStar.idStrictRecWitness
 #assert_no_axioms FX1Poly.Core.idJCanonicalWitnessReducesToBase
 #assert_no_axioms FX1Poly.Core.idStrictRecCanonicalWitnessReducesToBase
+-- NON-RECURSIVE data eliminators (#672-free, SN-065/066 path): optionMatch/eitherMatch on a CANONICAL scrutinee
+-- COMPUTE to a branch. StepStar.optionMatchScrutinee/eitherMatchScrutinee = the head-child scrutinee congruences
+-- (StepStar.congAt + Step.cong (here ...), as for boolElim). optionMatchCanonicalScrutineeReduces = none-branch
+-- (scrutinee ->* none) or app someBranch payload (scrutinee ->* some payload); eitherMatchCanonicalScrutinee-
+-- Reduces = app leftBranch/rightBranch payload (scrutinee ->* inl/inr payload). Option/Either are non-recursive,
+-- so the iota fires once (no recursive sub-term) — completing the canonical-computation track for ALL
+-- non-recursive eliminators (bool/sigma-proj/identity/option/either); only recursive nat/list need Tait. No
+-- fundamental theorem used.
+#assert_no_axioms FX1Poly.Core.StepStar.optionMatchScrutinee
+#assert_no_axioms FX1Poly.Core.StepStar.eitherMatchScrutinee
+#assert_no_axioms FX1Poly.Core.optionMatchCanonicalScrutineeReduces
+#assert_no_axioms FX1Poly.Core.eitherMatchCanonicalScrutineeReduces
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
