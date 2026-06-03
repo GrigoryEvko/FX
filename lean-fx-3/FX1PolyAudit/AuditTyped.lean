@@ -172,6 +172,7 @@ import FX1Poly.Typed.DenoteKeyedApplicationMember
 import FX1Poly.Typed.DenoteKeyedConvMember
 import FX1Poly.Typed.DenoteKeyedMemberForwardClosed
 import FX1Poly.Typed.DenoteKeyedUniverseMemberBetaExpansion
+import FX1Poly.Typed.DenoteKeyedMemberWeakHeadExpansion
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2994,3 +2995,12 @@ gates pin them shut.
 -- vacuous above the bound, not the bounded neutral-inclusion existence). So this arm is BOUND-FREE; the level
 -- bound is confined to the remaining Π/spine arm (application-SN).
 #assert_no_axioms FX1Poly.Typed.universeMemberBetaExpansionAtDenote
+
+-- DenoteKeyedMemberWeakHeadExpansion: the inductive BACKBONE of the denote member weak-head expansion (the
+-- lambda-arm engine toward SN-043/#672). One induction over ReducibleTypeStepDenote in the GENERAL form
+-- (WeakHeadStep source reduct + SN source — the β-specific form breaks at the Π arm), discharging FOUR arms
+-- intrinsically (neutral = SN source; universe = the unconditional backward leg; whnf/ofPointwiseIff = IH) and
+-- isolating the fifth (piType = the application-SN-spine arm) as an explicit piArm hypothesis — the
+-- ofReducibleTypeStepDenote discipline. The lambda FT arm instantiates with source = app (lam body) arg + SN
+-- via appLam_isStronglyNormalizing_of_contractum; a proof of piArm alone completes the full member WHE.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi
