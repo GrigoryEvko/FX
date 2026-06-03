@@ -630,6 +630,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- candidate, the pure Tait value-recursor argument).
 #assert_no_axioms FX1Poly.Core.natElimNormalScrutineeCellStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.natElimValueMember
+-- The dependent-recursor twin: identical discharge (CR1+CR2+succBranchTerminates replacing
+-- redexStronglyNormalizing) via the natRec scrutinee-fixed cell-SN recursor, gen_natRec's five-way
+-- Step.from_natRec inversion matching natElim's.
+#assert_no_axioms FX1Poly.Core.natRecNormalScrutineeCellStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.natRecValueMember
 
 -- VALUE-CASE of listElim recursor reducibility (SN-064), the list analogue of the Nat recursor value-case:
 -- listElim on a LIST-VALUE scrutinee lands in the result candidate by IsListValue structural induction firing
