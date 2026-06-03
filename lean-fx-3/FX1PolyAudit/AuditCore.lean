@@ -274,6 +274,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- triangle" obligation (Takahashi 1995). Composes with diamondConfluence + hasConfluence_of_parallelDiamond.
 #assert_no_axioms FX1Poly.Core.DiamondProperty.ofTriangle
 #assert_no_axioms FX1Poly.Core.Confluent.ofTriangle
+-- The existential per-source form (HasMaximalReduct): generalizes the function-based TriangleProperty
+-- (HasMaximalReduct.ofTriangle) and is the form the concrete FX parallel reduction discharges by structural
+-- recursion on the source (no separately-defined total completeDevelopment function over RawTerm needed).
+-- ofMaximalReduct yields the diamond; Confluent.ofMaximalReduct composes with diamondConfluence.
+#assert_no_axioms FX1Poly.Core.HasMaximalReduct.ofTriangle
+#assert_no_axioms FX1Poly.Core.DiamondProperty.ofMaximalReduct
+#assert_no_axioms FX1Poly.Core.Confluent.ofMaximalReduct
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose

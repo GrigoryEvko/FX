@@ -61,4 +61,41 @@ theorem Confluent.ofTriangle {rel : Carrier → Carrier → Prop}
     (triangle : TriangleProperty rel completeDevelopment) : Confluent rel :=
   diamondConfluence (DiamondProperty.ofTriangle triangle)
 
+/-- **A relation has maximal reducts** when every point has a reduct to which every other single-step
+reduct further reduces.  This is the EXISTENTIAL, per-source form of Takahashi's complete development:
+instead of a separately-defined total `completeDevelopment` function (which over `RawTerm` would need a
+full structural-recursion definition plus a termination argument), the maximal reduct is exhibited
+per-source — the form a concrete FX parallel-reduction diamond proof discharges by induction on the
+source term. -/
+def HasMaximalReduct (rel : Carrier → Carrier → Prop) : Prop :=
+  ∀ source : Carrier, ∃ maximalReduct : Carrier,
+    ∀ target : Carrier, rel source target → rel target maximalReduct
+
+/-- A complete-development function with the triangle property yields maximal reducts: its value at each
+source is the witness, and the triangle property is exactly the "every reduct reaches it" clause.  So the
+existential `HasMaximalReduct` form generalizes the function-based `TriangleProperty`. -/
+theorem HasMaximalReduct.ofTriangle {rel : Carrier → Carrier → Prop}
+    {completeDevelopment : Carrier → Carrier}
+    (triangle : TriangleProperty rel completeDevelopment) : HasMaximalReduct rel :=
+  fun source => ⟨completeDevelopment source, fun _target reduction => triangle reduction⟩
+
+/-- **Maximal reducts ⟹ diamond property.**  The per-source form of the Takahashi triangle argument: two
+diverging single steps `rel source leftStep` and `rel source rightStep` reconverge at the maximal reduct
+of `source`, since by definition every reduct of `source` reaches it in one further step.  Linear, no
+quadratic redex-pair split. -/
+theorem DiamondProperty.ofMaximalReduct {rel : Carrier → Carrier → Prop}
+    (hasMaximalReduct : HasMaximalReduct rel) : DiamondProperty rel := by
+  intro source leftStep rightStep leftReduction rightReduction
+  obtain ⟨maximalReduct, reductsReachMaximal⟩ := hasMaximalReduct source
+  exact ⟨maximalReduct,
+    reductsReachMaximal leftStep leftReduction, reductsReachMaximal rightStep rightReduction⟩
+
+/-- **Maximal reducts ⟹ confluence.**  Composing `DiamondProperty.ofMaximalReduct` with the shipped
+`diamondConfluence`.  This is the form the concrete FX parallel reduction will instantiate: prove that
+every term has a maximal parallel reduct (by structural recursion), and raw confluence follows with no
+termination assumption. -/
+theorem Confluent.ofMaximalReduct {rel : Carrier → Carrier → Prop}
+    (hasMaximalReduct : HasMaximalReduct rel) : Confluent rel :=
+  diamondConfluence (DiamondProperty.ofMaximalReduct hasMaximalReduct)
+
 end FX1Poly.Core
