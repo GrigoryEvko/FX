@@ -20,6 +20,7 @@ import FX1Poly.Core.TakahashiTriangle
 import FX1Poly.Core.ParallelReduction
 import FX1Poly.Core.CompleteDevelopment
 import FX1Poly.Core.ParStepSubstRename
+import FX1Poly.Core.ParStepSubstPointwise
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
 import FX1Poly.Core.KripkeReducibilityCandidate
@@ -333,6 +334,20 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.ParStepChildren.subst
 #assert_no_axioms FX1Poly.Core.ParStep.rename
 #assert_no_axioms FX1Poly.Core.ParStepChildren.rename
+
+-- Parallel substitution lemma (the #420 triangle's beta/iota engine): substituting a parallel-reduced
+-- argument into a parallel-reduced body parallel-reduces. ParStep is a single parallel step (not
+-- transitive), so the diagonal cannot be composed from two one-sided ParStep.subst applications -- it
+-- needs the combined induction varying BOTH the substitution (sigma => tau, related by PointwiseParStep,
+-- lifted under binders by ParStep.weaken) AND the term. ParStep.subst0_diagonal instantiates substPointwise
+-- at the two singleton substitutions; this is what the triangle's beta arm fires with (and the recursive
+-- iota arms whose contractums embed subst0 of developed components).
+#assert_no_axioms FX1Poly.Core.ParStep.weaken
+#assert_no_axioms FX1Poly.Core.RawTermSubst.lift_pointwiseParStep
+#assert_no_axioms FX1Poly.Core.iterateLiftRaw_RawTermSubst_pointwiseParStep
+#assert_no_axioms FX1Poly.Core.ParStep.substPointwise
+#assert_no_axioms FX1Poly.Core.RawTermSubst.singleton_pointwiseParStep
+#assert_no_axioms FX1Poly.Core.ParStep.subst0_diagonal
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
