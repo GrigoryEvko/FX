@@ -2928,3 +2928,8 @@ gates pin them shut.
 -- candidate is uniform across levels. No Classical.choice.
 #assert_no_axioms FX1Poly.Typed.uniformDomainPi_reducibleFromCodomainExistence
 #assert_no_axioms FX1Poly.Typed.neutralDomainPi_reducibleFromCodomainExistence
+-- universeDomainPi_reducibleFromCodomainExistence: the impredicative case — Π(X:Type@e).C[X] reducible from
+-- codomain existence over universe members. Threshold split (Nat.lt_or_ge, choice-free): above denote e the
+-- below-family = the relation at denote e (universe membership IS the codomain gate); at/below it's empty
+-- (codomain vacuous). Completes the from-existence piArm family across all domain shapes.
+#assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleFromCodomainExistence

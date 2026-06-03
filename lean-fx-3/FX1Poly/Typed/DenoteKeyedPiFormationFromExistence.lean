@@ -32,7 +32,7 @@ constructor is by-construction.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core
+open FX1Poly.Core FX1Poly.Universe
 open StepStar
 
 /-- **Uniform-candidate-domain Π-formation from codomain EXISTENCE (choice-free).**  Given a domain reducible
@@ -70,5 +70,39 @@ theorem neutralDomainPi_reducibleFromCodomainExistence {scope : Nat} (env : Nat 
   uniformDomainPi_reducibleFromCodomainExistence env IsStronglyNormalizing
     (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
     codomainExistence
+
+/-- **Universe-domain Π-formation from codomain EXISTENCE (the impredicative case).**  `Π (X : Type@levelExpr).
+C[X]` is denote-reducible at every level given the codomain reducible-at-all-levels (existence) for every
+universe member `X` — an SN type reducible at the decoded classifier level `denote levelExpr env`.  Unlike the
+uniform/neutral arms, the universe domain's candidate is NOT level-uniform: it is the level-irrelevant decode
+set ABOVE `denote levelExpr env` and EMPTY at/below it.  The proof splits on the threshold (choice-free, via
+`Nat.lt_or_ge`): above, the below-family equals the relation at `denote levelExpr env`
+(`denoteBelowFamily_eq_reducible`), so universe membership IS exactly the codomain-existence gate
+(`SN ∧ IsReducibleTypeAtDenote env (denote levelExpr env)`); at/below, the below-family is empty
+(`denoteBelowFamily_eq_empty_of_ge`), so the codomain premise is vacuous.  Codomain candidate extracted
+choice-freely via `reducibleMemberCandidate`.  This completes the from-existence piArm family across all domain
+shapes (uniform, neutral, universe) — the impredicative #672 case, sidestepped by decoding at the fixed
+classifier level. -/
+theorem universeDomainPi_reducibleFromCodomainExistence {scope : Nat} (env : Nat → Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) {codomainCode : RawTerm (scope + 1)}
+    (codomainExistence : ∀ argument : RawTerm scope,
+      (IsStronglyNormalizing argument ∧
+        IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) argument) →
+      IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst0 codomainCode argument)) :
+    IsReducibleTypeAtAllDenoteLevels env
+      (.mkGen .gen_piTyCode ()
+        (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+          (.childCons codomainCode .childNil))) := by
+  intro level
+  refine ⟨_, ReducibleTypeStepDenote.piType
+    (fun argument => IsReducibleMemberAtDenote env level (RawTerm.subst0 codomainCode argument))
+    (ReducibleTypeStepDenote.universeCode levelExpr flag) (fun argument argumentInUniverse => ?_)⟩
+  obtain ⟨argumentStronglyNormalizing, candidate, argumentInFamily⟩ := argumentInUniverse
+  rcases Nat.lt_or_ge (LevelExpr.denote levelExpr env) level with above | below
+  · rw [denoteBelowFamily_eq_reducible env level (LevelExpr.denote levelExpr env) above] at argumentInFamily
+    exact (codomainExistence argument
+      ⟨argumentStronglyNormalizing, candidate, argumentInFamily⟩ level).reducibleMemberCandidate
+  · rw [denoteBelowFamily_eq_empty_of_ge env level (LevelExpr.denote levelExpr env) below] at argumentInFamily
+    exact argumentInFamily.elim
 
 end FX1Poly.Typed
