@@ -1625,6 +1625,12 @@ gates pin them shut.
 -- routes the conv arm onto the guard.
 #assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.var
 #assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.universeFormation
+-- the CONV arm (non-variable reclassifier) of the revised motive. The convertibility guard (Conv classifier
+-- (Type@e f), not syntactic =) lets conjunct-2 propagate through conv by Conv.trans; conjunct-1 reclassifies
+-- via convWithLevelFlexibleReclassifier (the non-variable reclassifier is level-flexible from its own conjunct-2
+-- at Conv.refl). The variable-reclassifier case routes to validTypingBridgeConvPinnedReclassifier (the leveling
+-- eq) via RawTerm.isVariableOrNot.
+#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.convNonVariableReclassifier
 -- SN-027 the TERM-SUBJECT ARMS (#660, ValidTypingTermArms.lean): the refined motive's term arms (piIntro now,
 -- piElim/var next) discharge through ofTermValidity — single-level ValidTyping + a non-universe classifier makes
 -- the level-flexibility conjunct VACUOUS (the classifier=universeCodeCell hypothesis is impossible). piIntro is

@@ -1,5 +1,6 @@
 import FX1Poly.Typed.ValidTypingLevelFlexible
 import FX1Poly.Typed.UniverseCodeShape
+import FX1Poly.Typed.UniverseCodeConversion
 
 /-! # FX1Poly/Typed/ValidTypingRefinedMotive
     — the refined-motive total-bridge conclusion (SN-027, #655)
@@ -94,13 +95,18 @@ and the non-variable type-code arms (`universeFormation` here; Π/Σ/gen formers
 before.  The `RawTerm.isVariableOrNot` dichotomy routes the conv arm onto this guard. -/
 
 /-- **The revised total-bridge conclusion.**  Single-level validity, plus level-flexibility for a
-universe-classified subject that is NOT a variable.  The non-variable guard on conjunct-2 is the var-arm fix
-(`RefinedTotalBridgeConclusion`'s unguarded conjunct-2 is unsatisfiable for a type variable). -/
+universe-classified subject that is NOT a variable.  Two refinements over `RefinedTotalBridgeConclusion`:
+(1) the non-variable guard `(∀ index, subject ≠ variableCell index)` on conjunct-2 — the var-arm fix
+(the unguarded conjunct-2 is unsatisfiable for a type variable, pinned by `ValidTyping.var`);
+(2) conjunct-2 is guarded by CONVERTIBILITY `Conv classifier (universeCodeCell …)` rather than syntactic
+equality, so it propagates through the `conv` arm by `Conv.trans` (a conv changes a subject's classifier to a
+CONVERTIBLE one, not a syntactically-equal one; the syntactic guard would not survive).  The leaf
+`universeFormation` arm meets the convertibility guard via `universeCodeCell_inj_of_conv`. -/
 def RevisedBridgeConclusion (profile : PolyProfile) {scope : Nat}
     (contextLevels : Fin scope → Nat) (context : TypingContext profile scope)
     (subject classifier : RawTerm scope) : Prop :=
   (∃ subjectLevel : Nat, ValidTyping profile contextLevels subjectLevel context subject classifier) ∧
-  (∀ (levelExpr : LevelExpr) (flag : UniverseFlag), classifier = universeCodeCell levelExpr flag →
+  (∀ (levelExpr : LevelExpr) (flag : UniverseFlag), Conv classifier (universeCodeCell levelExpr flag) →
     (∀ index : Fin scope, subject ≠ variableCell index) →
     IsLevelFlexibleTypeCode profile contextLevels context subject levelExpr flag)
 
@@ -113,20 +119,50 @@ theorem RevisedBridgeConclusion.var {profile : PolyProfile} {scope : Nat}
     RevisedBridgeConclusion profile contextLevels context
       (variableCell index) (context.lookup index) :=
   ⟨⟨contextLevels index, ValidTyping.var contextLevels context index⟩,
-   fun _levelExpr _flag _classifierEq subjectNotVariable =>
+   fun _levelExpr _flag _classifierConv subjectNotVariable =>
      absurd rfl (subjectNotVariable index)⟩
 
 /-- **The universeFormation arm of the revised motive.**  Conjunct-1 by `ValidTyping.universeFormation`;
-conjunct-2 by `universeFormation_isLevelFlexible` (a universe code is a non-variable type code, so the guard is
-met and its flexibility is the shipped former-level-polymorphism). -/
+conjunct-2 by `universeFormation_isLevelFlexible` (a universe code is a non-variable type code).  The
+convertibility guard `Conv (Type@(lsucc levelExpr)) (Type@outLevel outFlag)` is met via
+`universeCodeCell_inj_of_conv` — convertible universe codes have equal level/flag, so `outLevel = lsucc levelExpr`
+and `outFlag = flag`, reducing to the shipped former-level-polymorphism. -/
 theorem RevisedBridgeConclusion.universeFormation {profile : PolyProfile} {scope : Nat}
     (contextLevels : Fin scope → Nat) (context : TypingContext profile scope)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     RevisedBridgeConclusion profile contextLevels context
       (universeCodeCell levelExpr flag) (universeCodeCell levelExpr.lsucc flag) :=
   ⟨⟨0 + 1, ValidTyping.universeFormation contextLevels 0 context levelExpr flag⟩,
-   fun _levelExpr _flag classifierEq _subjectNotVariable => by
-     obtain ⟨rfl, rfl⟩ := universeCodeCell_inj classifierEq
+   fun _outLevel _outFlag classifierConv _subjectNotVariable => by
+     obtain ⟨rfl, rfl⟩ := universeCodeCell_inj_of_conv classifierConv
      exact universeFormation_isLevelFlexible contextLevels context levelExpr flag⟩
+
+/-- **The conv arm of the revised motive (non-variable reclassifier).**  Reclassifying the subject's type from
+`classifier` to a NON-VARIABLE `reclassifier` (typed at `universeCodeCell levelExpr flag`) preserves the revised
+motive.  Conjunct-1: the reclassifier, being a non-variable universe-classified type code, is LEVEL-FLEXIBLE (its
+own conjunct-2 at `Conv.refl`), so `ValidTyping.convWithLevelFlexibleReclassifier` reclassifies the subject.
+Conjunct-2: the subject is UNCHANGED, and a convertibility-to-universe-code witness for the NEW classifier
+(`reclassifier`) composes with the conv (`Conv.trans`) into one for the OLD classifier, which the subject's own
+conjunct-2 consumes — the propagation the convertibility guard was designed for.  The VARIABLE-reclassifier case
+(`reclassifier = variableCell j`, a pinned neutral type code) is handled separately via
+`validTypingBridgeConvPinnedReclassifier` and the leveling equation; `RawTerm.isVariableOrNot` routes between the
+two in the assembly. -/
+theorem RevisedBridgeConclusion.convNonVariableReclassifier {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) {context : TypingContext profile scope}
+    {subject classifier reclassifier : RawTerm scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (subjectTyped : RevisedBridgeConclusion profile contextLevels context subject classifier)
+    (converts : Conv classifier reclassifier)
+    (reclassifierTyped :
+      RevisedBridgeConclusion profile contextLevels context reclassifier (universeCodeCell levelExpr flag))
+    (reclassifierNotVariable : ∀ index : Fin scope, reclassifier ≠ variableCell index) :
+    RevisedBridgeConclusion profile contextLevels context subject reclassifier := by
+  obtain ⟨⟨subjectLevel, subjectValid⟩, subjectFlexible⟩ := subjectTyped
+  refine ⟨?_, ?_⟩
+  · have reclassifierFlexible :=
+      reclassifierTyped.2 levelExpr flag (Conv.refl _) reclassifierNotVariable
+    exact ValidTyping.convWithLevelFlexibleReclassifier contextLevels subjectLevel subjectValid converts
+      reclassifierFlexible
+  · intro outLevel outFlag reclassifierConvUniverse subjectNotVariable
+    exact subjectFlexible outLevel outFlag (Conv.trans converts reclassifierConvUniverse) subjectNotVariable
 
 end FX1Poly.Typed
