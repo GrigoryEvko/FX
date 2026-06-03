@@ -162,6 +162,7 @@ import FX1Poly.Typed.ClassifierLevelDiagnosis
 import FX1Poly.Typed.ClassifierLevelMeasure
 import FX1Poly.Typed.DenoteKeyedReducibility
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPi
+import FX1Poly.Typed.DenoteKeyedLevelIrrelevance
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2866,3 +2867,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleAtAllDenoteLevels
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_uniformCandidateAtAllDenoteLevels
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_memberStableAcrossDenoteLevels
+
+-- DenoteKeyedLevelIrrelevance (#672 toward the denote level-irrelevance induction): the denote analogue of the
+-- fuel IsReducibleTypeAtAllLevels.ofReducibleTypeStep. IsReducibleTypeAtAllDenoteLevels = ∀ level,
+-- IsReducibleTypeAtDenote env level typeCode. ofNeutral/ofUniverseCode/headExpand are the level-uniform leaves;
+-- ofReducibleTypeStepDenote is the induction backbone discharging neutral/universe/whnfExpand/ofPointwiseIff and
+-- isolating piType as the piArm hypothesis (whose impredicative universe-domain instance the fuel model could
+-- not close but DenoteKeyedUniverseDomainPi does).
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.ofNeutral
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.ofUniverseCode
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.headExpand
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote
