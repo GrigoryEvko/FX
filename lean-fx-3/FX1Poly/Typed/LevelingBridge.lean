@@ -446,4 +446,37 @@ theorem validTypingBridgeConvFromAllLevelReclassifier {profile : PolyProfile} {s
   ⟨subjectLevel,
     ValidTyping.conv contextLevels subjectLevel subjectTyped converts (reclassifierAllLevel subjectLevel)⟩
 
+/-- **Conv-arm coordination with a PINNED (type-variable) reclassifier — the complement that resolves the
+refined-motive wall.**  When the conv reclassifier is a bare type VARIABLE `var index` (its looked-up type a
+universe code), `validTypingBridgeConvFromAllLevelReclassifier` does NOT apply: a type variable is NOT
+level-flexible (`typeVariableNotLevelFlexible`), so it cannot be supplied at every level.  This was read as the
+wall for the total-bridge induction's type-variable case.
+
+It is NOT a wall.  `ValidTyping.conv` needs the reclassifier at exactly `subjectLevel + 1`, and a type variable
+`var index` IS valid there — at its PINNED level `contextLevels index` (`ValidTyping.var`) — PROVIDED the
+leveling is CONSISTENT: `contextLevels index = subjectLevel + 1`.  That equation is not an extra assumption to
+be wished for; it is the LEVELING DISCIPLINE itself — a type variable `var index : Type@e` inhabits a universe
+one level above the subject it classifies, so its context level is exactly the subject's level plus one.  Under
+that consistency the type-variable conv case discharges directly (`ValidTyping.var` rewritten to the matching
+level + universe-code classifier).
+
+So the refined-motive blockage was an OVER-DEMANDING motive (it required `IsLevelFlexibleTypeCode` for ALL
+universe-classified subjects, which a type variable cannot satisfy), not a fundamental obstruction.  The
+total-bridge assembly should synthesize `contextLevels` so this consistency holds at every variable usage
+(level inference), then this lemma — not the reducibility-neutrality detour — closes the type-variable conv arm
+inside `ValidTyping`. -/
+theorem validTypingBridgeConvPinnedReclassifier {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (subjectLevel : Nat)
+    {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope} {index : Fin scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (subjectTyped : ValidTyping profile contextLevels subjectLevel context subject classifier)
+    (converts : Conv classifier (variableCell index))
+    (reclassifierIsUniverse : context.lookup index = universeCodeCell levelExpr flag)
+    (levelMatch : contextLevels index = subjectLevel + 1) :
+    ValidTyping profile contextLevels subjectLevel context subject (variableCell index) := by
+  apply ValidTyping.conv contextLevels subjectLevel subjectTyped converts
+  rw [← levelMatch, ← reclassifierIsUniverse]
+  exact ValidTyping.var contextLevels context index
+
 end FX1Poly.Typed

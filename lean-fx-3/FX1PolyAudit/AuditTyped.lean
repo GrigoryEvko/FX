@@ -1566,6 +1566,13 @@ gates pin them shut.
 -- subjectLevel-instance of the all-level reclassifier IH. Supersedes the pre-aligned validTypingBridgeConv
 -- (SN-022). Type variables (var-pinned) are the sole non-level-flexible type code → reducibility route (SN-025).
 #assert_no_axioms FX1Poly.Typed.validTypingBridgeConvFromAllLevelReclassifier
+-- SN-027 (the type-variable conv arm, refined-motive wall RESOLVED): validTypingBridgeConvPinnedReclassifier —
+-- a type-variable reclassifier is NOT level-flexible, but ValidTyping.conv only needs it at subjectLevel+1, and
+-- a type variable var index IS valid there at its PINNED level contextLevels index PROVIDED the leveling is
+-- consistent (contextLevels index = subjectLevel+1, the leveling discipline). So the refined-motive blockage was
+-- an over-demanding motive (flexibility for ALL universe-classified subjects), not a real obstruction: the
+-- type-variable conv case closes inside ValidTyping under level-consistency, NOT via the reducibility detour.
+#assert_no_axioms FX1Poly.Typed.validTypingBridgeConvPinnedReclassifier
 -- SN-027 refined-motive PRODUCERS (#656/#657): a type code is LEVEL-FLEXIBLE (valid as a universe member at
 -- every positive level) because the ValidTyping formers produce it at ANY predLevel. IsLevelFlexibleTypeCode +
 -- the three former arms (universeFormation immediate; pi/sigma given all-level domain + level-flexible codomain)
