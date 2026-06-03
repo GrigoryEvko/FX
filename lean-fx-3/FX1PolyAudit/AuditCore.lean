@@ -43,6 +43,7 @@ import FX1Poly.Core.StrongNormalizationLinearFormers
 import FX1Poly.Core.NatElimValueReducibility
 import FX1Poly.Core.NatElimValueMember
 import FX1Poly.Core.ListElimValueReducibility
+import FX1Poly.Core.ListElimValueMember
 import FX1Poly.Core.ApplicationStrongNormalizationForward
 import FX1Poly.Core.ListOptionIdCodeUniverseMembership
 import FX1Poly.Core.EitherEquivCodeUniverseMembership
@@ -642,6 +643,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- weak-head expansion. Same conditional interface (weak-head-expansion + branch reducibility + SN-of-redex);
 -- the scrutinee-reduction/neutral outer regime is the deferred shared other half.
 #assert_no_axioms FX1Poly.Core.listElimValueReducibility
+
+-- VALUE-CASE listElim reducibility with the recursor-SN obligation DISCHARGED (SN-064 twin of
+-- natElimValueMember): CR1 + CR2 + consBranchTerminates replace the bespoke redexStronglyNormalizing, via the
+-- listElim scrutinee-fixed cell-SN recursor. Cons branch is the three-deep app (head + tail), recovered by two
+-- childCons injection drills; otherwise identical to the Nat recursor discharge.
+#assert_no_axioms FX1Poly.Core.listElimNormalScrutineeCellStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.listElimValueMember
 
 -- SN of an APPLICATION under the β-contraction side-condition (the member weak-head-expansion unblocker):
 -- app f a is SN given f SN, a SN, AND every β-contraction body[a] (for f ↝* lam body) SN. The side-condition
