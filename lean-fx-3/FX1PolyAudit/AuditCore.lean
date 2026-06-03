@@ -17,6 +17,7 @@ import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.TakahashiTriangle
+import FX1Poly.Core.ParallelReduction
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
 import FX1Poly.Core.KripkeReducibilityCandidate
@@ -281,6 +282,14 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.HasMaximalReduct.ofTriangle
 #assert_no_axioms FX1Poly.Core.DiamondProperty.ofMaximalReduct
 #assert_no_axioms FX1Poly.Core.Confluent.ofMaximalReduct
+
+-- The concrete FX parallel reduction (toward #420): ParStep contracts any set of redexes simultaneously
+-- (Takahashi), mirroring all 18 Step rules with parallel sub-reduction of the surviving sub-terms; the pointwise
+-- ParStepChildren reduces every child at once. ParStep.refl / ParStepChildren.refl give reflexivity by mutual
+-- structural recursion (term-mode match, no termination_by — avoids the v4.29.1 WF substitution gap). This is the
+-- relation that will discharge HasMaximalReduct -> the diamond -> raw confluence (the prize SN cannot supply).
+#assert_no_axioms FX1Poly.Core.ParStep.refl
+#assert_no_axioms FX1Poly.Core.ParStepChildren.refl
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
