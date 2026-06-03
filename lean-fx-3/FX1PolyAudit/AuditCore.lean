@@ -643,6 +643,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.headValue_isStronglyNormalizing_of_listCons
 #assert_no_axioms FX1Poly.Core.StepStar.tailValue_isStronglyNormalizing_of_listCons
 #assert_no_axioms FX1Poly.Core.StepStar.listElim_isStronglyNormalizing_of_normal_branches
+-- SN-from-SN-BRANCHES strengthening (toward the listElim closed-membership, SN-064): the list twin of the
+-- natElim SN-from-SN-branches recursor. Triple nested accessibility induction; the cons-contractum SN hypothesis
+-- (over head + tail) is THREADED through both branch inductions — nilBranch one hop (recursive listElim),
+-- consBranch two hops (app (app consBranch head) tail, three app layers deep, AND the recursive listElim).
+#assert_no_axioms FX1Poly.Core.StepStar.listElim_isStronglyNormalizing_of_strongly_normalizing_branches
 
 -- Non-recursive applied-branch eliminator iota-redex SN — optionMatch / eitherMatch (toward SN-065/066): the
 -- three one-child value subterm-SN lemmas (value of an SN optionSome/eitherInl/eitherInr is SN), and the two
