@@ -77,6 +77,7 @@ import FX1Poly.Core.SigmaProjectionCanonicalComputation
 import FX1Poly.Core.IdentityEliminatorCanonicalComputation
 import FX1Poly.Core.OptionEitherMatchCanonicalComputation
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
+import FX1Poly.Core.BoolCanonicityViaSconing
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
@@ -2154,6 +2155,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.natElimZeroScrutineeReducesToBranch
 #assert_no_axioms FX1Poly.Core.natRecZeroScrutineeReducesToBranch
 #assert_no_axioms FX1Poly.Core.listElimNilScrutineeReducesToBranch
+-- SCONING LEG (Path C, the INDEPENDENT canonicity route; SN-092/100): the FIRST concrete data-type sconing
+-- witness. boolCanonicityScone instantiates the generic BKS SconingWitness for bool with the SHARP canonical-form
+-- notion (reduces to true/false): computable = bool candidate, EXTRACTION discharged #672-free by
+-- boolClosedReducesToTrueOrFalse, fundamental (well-typed bool -> candidate member = the FT) the explicit sole
+-- obligation. boolCanonicityViaSconing = SconingWitness.canonicity applied: given fundamental, closed well-typed
+-- bool reduces to true/false. Shows the sconing route reaches the SAME bool canonicity as Tait, modulo the SAME
+-- #672 fundamental — extraction is free, so Path C adds no obligation beyond Path A's. No fundamental proven here.
+#assert_no_axioms FX1Poly.Core.boolCanonicityScone
+#assert_no_axioms FX1Poly.Core.boolCanonicityViaSconing
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
