@@ -35,6 +35,7 @@ import FX1Poly.Core.StratifiedReducibleMemberNeutral
 import FX1Poly.Core.StratifiedReducibleMemberStepClosure
 import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationCodeFormers
+import FX1Poly.Core.StrongNormalizationModalEliminators
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -556,3 +557,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.listCode_isStronglyNormalizing_of_element
 #assert_no_axioms FX1Poly.Core.StepStar.optionCode_isStronglyNormalizing_of_element
 #assert_no_axioms FX1Poly.Core.StepStar.idCode_isStronglyNormalizing_of_type_endpoints
+
+-- Modal-core β+ι SN coverage: gen_modElim / gen_subsume are congruence-only (no iota root rule; the modal
+-- collapse is raw η), so their cong inversions + one-child-cong SN closures complete the modal-core SN
+-- coverage alongside modIntro (StrongNormalizationConstructors) and the modIntro reducibility candidate.
+#assert_no_axioms FX1Poly.Core.Step.from_modElim
+#assert_no_axioms FX1Poly.Core.Step.from_subsume
+#assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_of_child
+#assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_of_child
