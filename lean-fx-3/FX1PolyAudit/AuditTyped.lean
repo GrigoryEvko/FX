@@ -181,6 +181,7 @@ import FX1Poly.Typed.DenoteKeyedFundamentalPiElim
 import FX1Poly.Typed.DenoteKeyedFundamentalConv
 import FX1Poly.Typed.DenoteKeyedAmbientLevelBridge
 import FX1Poly.Typed.DenoteKeyedNonDependentArrow
+import FX1Poly.Typed.DenoteKeyedFundamentalPiIntro
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3090,3 +3091,12 @@ gates pin them shut.
 -- past the universe-domain wall). The dependent composite-domain Π stays gated on #752.
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.nonDependentArrowOfAllLevelsDomain
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.universeDomainNonDependentArrow
+
+-- DenoteKeyedFundamentalPiIntro (SN-D5c): the denote FT's Π-introduction (λ) dispatcher arm — THE binder crux
+-- (the case the per-level route walled on). Canonical-candidate move: domain + codomain candidates are the
+-- canonical member predicate IsReducibleMemberAtDenote env level (subst …), so (a) the env-cons arg-membership
+-- is direct (candidate = membership predicate) and (b) bodyReducible is direct (codomain candidate = body IH
+-- target, no deterministic). Assembled via abstractionMemberUnderClosingSubstitution (SN-D3) + reducibleMemberCandidate
+-- + ReducibleEnvAtDenote.cons. UNCONDITIONAL given the three caller premises: domain/codomain reducible-at-level
+-- (= A2-bridge-applied IHs) + domain CR1; the body IH is direct. Feeds the SN-D5 induction's piIntro case.
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtDenote
