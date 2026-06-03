@@ -1,6 +1,7 @@
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
 import FX1Poly.Typed.FundamentalAtAllPositiveArguments
 import FX1Poly.Typed.UniverseCodeShape
+import FX1Poly.Typed.FundamentalLevelIndexed
 
 /-! # FX1Poly/Typed/FormationEngineFundamental
     — the formation-engine fundamental theorem, arm by arm (#674; the SN-027 Kripke residual)
@@ -40,12 +41,27 @@ Unlike the refined-motive-via-`ValidTyping` route (whose conjunct-2 is provably 
   T`, whose cross-positive-level extension is the universe-domain-Π fixpoint (#672).  So the arm reduces EXACTLY
   to: the variable's substituted member at ALL positive levels — read at `predLevel + 1` via `.atLevel`.
 
+* `formationFundamentalGenFormationArm` — the `genFormation` arm: the generic former (Π/Σ via the
+  `universeFormerOutput` rule) over a fundamentally-reducible child telescope is a reducible member of its output
+  universe at every positive conclusion level.  Like `conv` it is LEVEL-PRESERVING — the universe-former output
+  is level-flexible, so it needs NO #672 extension.  It is a thin `∀ envLevels predLevel` wrapper over the
+  shipped, gated level-indexed former lemma `fundamentalGenFormationFormerLevelIndexed`: the
+  `IsFundamentalConclusionAtVector` shape is exactly that lemma's `FundamentalConclusionLevelIndexed` universally
+  quantified over the env-level vector and the positive conclusion level.
+
+The complete formation-engine FT assembly (`formationFundamentalVectorOfAllVariablesPositive`,
+`FormationEngineFundamentalAssembly.lean`) already discharges ALL four `HasTypeDesc` arms modulo the single
+`variablesAllPositive` (#672) hypothesis — inlining the former logic over the formation telescope `DescTelescope`.
+This standalone arm is the independently-reviewable NAMED companion at the grown-telescope (`DescTelescopePi`)
+vector shape: the lift of `fundamentalGenFormationFormerLevelIndexed` from `FundamentalConclusionLevelIndexed` to
+`IsFundamentalConclusionAtVector`, completing this file's arm-by-arm decomposition (universeFormation / conv /
+var were standalone, genFormation was not).  It is NOT new metatheory — the assembly already proves the engine FT
+— but it exposes the grown former membership at the vector conclusion as a reusable lemma.
+
 ## Remaining (#674 → #672)
 
 * discharge `allPositiveMember` for every variable — the universe-domain-Π type-level all-positive extension
   (#672, the ACTUAL SN-027/SN-043 gate); the sole unconditional gap, shared with the ValidTyping route.
-* `genFormation` — the generic former telescope (binary/telescope helper over the premise IHs); tractable like
-  `conv` (no level mismatch), shippable independently of the var fixpoint.
 
 ## Zero-axiom verification
 
@@ -116,5 +132,39 @@ theorem formationFundamentalVarArmOfAllPositiveMember {profile : PolyProfile} {s
     IsFundamentalConclusionAtVector context (variableCell index) (context.lookup index) := by
   intro _targetScope substitution envLevels predLevel env
   exact (allPositiveMember substitution env).atLevel predLevel
+
+/-- **The `genFormation` arm of the formation-engine FT — #672-INDEPENDENT, level-preserving.**  The generic
+former `mkGen generator payload children` (Π/Σ via the `universeFormerOutput` rule, the only `typingRuleDescOf`
+rows) over a fundamentally-reducible child telescope is a reducible member of its output universe
+`rule.outputType scope levels flag` at every positive conclusion level `predLevel + 1`.  Unlike the `var` arm,
+this needs NO all-positive member extension (#672): the universe-former output is level-flexible — `toPiMember`/
+`toSigmaMember` build the former membership at the requested `predLevel + 1` directly, and `TelescopeReducible`'s
+`headMember` is already all-level-quantified, so no per-child level coordination is required.  The arm is a thin
+`∀ envLevels predLevel` wrapper over the shipped, gated `fundamentalGenFormationFormerLevelIndexed`:
+`IsFundamentalConclusionAtVector context subject classifier` unfolds to
+`∀ {envLevels} predLevel, FundamentalConclusionLevelIndexed envLevels (predLevel + 1) context subject classifier`,
+so instantiating that lemma at the universally-quantified `(envLevels, predLevel)` and applying it to the
+substitution and environment closes the goal.  The `telescopeFundamental` premise — the children's all-level
+telescope reducibility under every closing reducible env — is the genFormation analogue of the `conv` arm's two
+inductive premises; the shipped complete assembly `formationFundamentalVectorOfAllVariablesPositive` produces
+the equivalent telescope reducibility from the mutual `DescTelescope` motive. -/
+theorem formationFundamentalGenFormationArm {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {generator : Generator} (payload : generator.payload scope)
+    {children : RawTermChildren generator.binderShifts scope}
+    {levels : List LevelExpr} {flag : UniverseFlag} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    (premises : DescTelescopePi profile (currentDepth := 0) context levels flag children)
+    (telescopeFundamental :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+        {envLevels : Fin scope → Nat}
+        (_env : ReducibleEnvVec envLevels context substitution)
+        (shapeEq : generator.binderShifts = consecutiveShifts 0 levels.length),
+        TelescopeReducible flag 0 levels.length substitution levels (shapeEq ▸ children)) :
+    IsFundamentalConclusionAtVector context (.mkGen generator payload children)
+      (rule.outputType scope levels flag) := by
+  intro _targetScope substitution envLevels predLevel env
+  exact fundamentalGenFormationFormerLevelIndexed envLevels predLevel payload isFormation premises
+    (fun substitution env shapeEq => telescopeFundamental substitution env shapeEq) substitution env
 
 end FX1Poly.Typed

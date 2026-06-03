@@ -1595,6 +1595,16 @@ gates pin them shut.
 -- bottom out at the SAME variable obstruction. Residual: genFormation arm (former telescope, tractable like conv)
 -- + the #672 fixpoint discharge.
 #assert_no_axioms FX1Poly.Typed.formationFundamentalVarArmOfAllPositiveMember
+-- genFormation arm (#672-INDEPENDENT, level-preserving): formationFundamentalGenFormationArm. The generic former
+-- (Pi/Sigma via universeFormerOutput) over a fundamentally-reducible child telescope is a reducible member of its
+-- output universe at every positive conclusion level. A thin forall-envLevels/predLevel wrapper over the shipped
+-- fundamentalGenFormationFormerLevelIndexed: IsFundamentalConclusionAtVector unfolds to
+-- forall envLevels predLevel, FundamentalConclusionLevelIndexed envLevels (predLevel+1) ..., so instantiate +
+-- apply. Universe-former output is level-flexible (toPiMember/toSigmaMember build membership at the requested
+-- predLevel+1) so NO #672 extension. The complete assembly formationFundamentalVectorOfAllVariablesPositive
+-- already inlines the equivalent former logic over DescTelescope; this is the independently-reviewable NAMED arm
+-- at the grown-telescope DescTelescopePi vector shape, completing the file's arm-by-arm set.
+#assert_no_axioms FX1Poly.Typed.formationFundamentalGenFormationArm
 -- SN-027 #674 COMPLETE formation-engine FT assembly (FormationEngineFundamentalAssembly.lean). The formation
 -- telescope DescTelescope and the grown telescope DescTelescopePi have STRUCTURALLY IDENTICAL nil/cons ctors
 -- (cons carries HasTypeDesc vs HasTypeDescPi head; else identical), so the grown engine's proven recursor
