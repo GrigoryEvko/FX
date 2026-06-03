@@ -174,6 +174,7 @@ import FX1Poly.Typed.DenoteKeyedMemberForwardClosed
 import FX1Poly.Typed.DenoteKeyedUniverseMemberBetaExpansion
 import FX1Poly.Typed.DenoteKeyedMemberWeakHeadExpansion
 import FX1Poly.Typed.DenoteKeyedHeadExpansion
+import FX1Poly.Typed.DenoteKeyedAbstractionMember
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3014,3 +3015,13 @@ gates pin them shut.
 -- above the bound). Feeds SN-D2 (abstractionMemberAtDenote via the generic DependentArrowCandidate.abstraction).
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.headExpansionClosed
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.headExpansionClosed
+
+-- DenoteKeyedAbstractionMember (SN-D2): the denote FT's Π-INTRODUCTION (λ) member arm, the introduction twin
+-- of applicationMemberAtDenote. lam body is a denote-reducible MEMBER of Π domainCode codomainCode, assembled
+-- in one anonymous constructor: the Π type is reducible with the dependent-arrow candidate via the piType ctor
+-- (whose candidate is defeq to DependentArrowCandidate), and λ-membership is the generic
+-- DependentArrowCandidate.abstraction fed SN-D1's ReducibleTypeAtDenote.headExpansionClosed for the codomain
+-- head-expansion-closure premise. The domain CR1 (domainArgumentsSN) is an explicit premise, deferring the
+-- bounded denote CR1 to BRICK 5; the FT supplies it at the ambient classifier level. Feeds SN-D3 (under-subst)
+-- and the SN-D5 FT induction's Π-introduction case.
+#assert_no_axioms FX1Poly.Typed.abstractionMemberAtDenote
