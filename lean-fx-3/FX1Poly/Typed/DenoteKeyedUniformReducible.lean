@@ -26,16 +26,30 @@ at a uniform candidate without any cross-level coordination:
   * `headExpand` — a redex inherits its weak-head contractum's uniform candidate at the same threshold (rewrap
     each level through the level-independent `whnfExpand` constructor).
 
-REMAINING for #752 (next ticks): the backbone INDUCTION over `ReducibleTypeStepDenote` assembling these arms
-(the `ofPointwiseIff` arm is absorbed by the motive's `∃ candidate`), and the load-bearing piType arm — where
-the uniform domain candidate transfers the codomain gate.  Then `UniformlyReducibleAboveDenote ⟹
-IsReducibleTypeAtAllDenoteLevels` discharges the `ofReducibleTypeStepDenote` piArm unconditionally, closing #752.
+This file ships the motive, the three EASY backbone arms, AND the backbone INDUCTION
+`ofReducibleTypeStepDenote` — a verbatim mirror of the all-levels `IsReducibleTypeAtAllDenoteLevels.\
+ofReducibleTypeStepDenote`, the same 5-arm dispatch over `ReducibleTypeStepDenote` (whnfExpand→`headExpand`,
+neutral→`ofNeutral`, universeCode→`ofUniverseCode`, ofPointwiseIff→IH absorbed by the motive's `∃ candidate`,
+piType→the supplied `piArm`), with the uniform motive carried through.
+
+REMAINING for #752 (next ticks, now sharper): the load-bearing piType `piArm` — and its obstruction is DEEPER
+than one motive-swap.  The uniform DOMAIN candidate does dissolve the source-vs-target candidate mismatch
+(determinism at the concrete source level equates the uniform candidate with the source candidate gating the
+codomain IH).  But the CODOMAIN side has a THRESHOLD-SWAP obstruction: the codomain IH gives, per argument, a
+threshold `codThreshold(arg)` that VARIES with the argument, and a single Π threshold must dominate them all —
+an `∃∀ / ∀∃` swap with no uniform bound in general.  A uniform bound exists in principle (a type reducible at
+level `lvl` can only contain universe codes that decode `< lvl`, so a domain member's codomain threshold is
+bounded by the domain's decoded level + the codomain code's own universe content) — but formalizing
+"reducibility bounds a type code's universe level" is a substantial level-tracking lemma, the genuine residual
+of #752.  So the backbone is the inductive scaffold; the piArm discharge is the remaining deep brick.
 
 ## Zero-axiom verification
 
-A `∃`-packaged `def` plus three arms (two anonymous-constructor leaves; `headExpand` rewraps via `whnfExpand`).
-No induction here (the backbone induction is the next brick), no `funext`.  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+A `∃`-packaged `def`, three arms (two anonymous-constructor leaves; `headExpand` rewraps via `whnfExpand`), and
+one `induction` on `ReducibleTypeStepDenote` with the level-independent motive `UniformlyReducibleAboveDenote env
+typeCode` (avoiding the indexed-match propext leak, exactly as the all-levels backbone does).  No `funext`.  No
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -83,5 +97,51 @@ theorem UniformlyReducibleAboveDenote.headExpand {scope : Nat} {env : Nat → Na
   obtain ⟨threshold, candidate, reducibleAbove⟩ := reductUniform
   exact ⟨threshold, candidate,
     fun level habove => ReducibleTypeStepDenote.whnfExpand weakHeadStep (reducibleAbove level habove)⟩
+
+/-- **Uniform level-irrelevance by induction on the denote-keyed reducibility derivation, Π arm isolated.**
+The `UniformlyReducibleAboveDenote`-motive analogue of `IsReducibleTypeAtAllDenoteLevels.\
+ofReducibleTypeStepDenote`: every `ReducibleTypeStepDenote` arm but `piType` is discharged unconditionally
+(redex via `headExpand`, neutral via `ofNeutral`, universe via `ofUniverseCode`, the `ofPointwiseIff`
+congruence via the induction hypothesis on the SAME code — absorbed by the motive's `∃ candidate`), and the
+`piType` arm is the supplied `piArm` (general over the domain).  The level-independent motive
+`UniformlyReducibleAboveDenote env typeCode` makes the full (non-partial) induction propext-clean — the same
+discipline the all-levels backbone uses.
+
+This is the inductive scaffold of the #752 (composite-dependent-domain level-irrelevance) discharge under the
+strengthened uniform motive: a proof of the uniform `piArm` alone completes uniform level-irrelevance for every
+denote-reducible type.  The `piArm`'s domain inductive hypothesis is `UniformlyReducibleAboveDenote env
+domainCode` (a SINGLE candidate above a threshold), which is exactly the strengthening that dissolves the
+source-vs-target domain candidate mismatch (via determinism at the concrete source level); the residual deep
+obstruction is the codomain threshold-swap, documented in the module header. -/
+theorem UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    (piArm : ∀ {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+        {domainCandidate : RawTerm scope → Prop}
+        (codomainCandidate : RawTerm scope → (RawTerm scope → Prop)),
+        ReducibleTypeStepDenote env lowerAt domainCode domainCandidate →
+        (∀ argument : RawTerm scope, domainCandidate argument →
+          ReducibleTypeStepDenote env lowerAt (RawTerm.subst0 codomainCode argument)
+            (codomainCandidate argument)) →
+        UniformlyReducibleAboveDenote env domainCode →
+        (∀ argument : RawTerm scope, domainCandidate argument →
+          UniformlyReducibleAboveDenote env (RawTerm.subst0 codomainCode argument)) →
+        UniformlyReducibleAboveDenote env
+          (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))))
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) :
+    UniformlyReducibleAboveDenote env typeCode := by
+  induction reducible with
+  | whnfExpand weakHeadStep _reductReducible reductInductiveHypothesis =>
+      exact UniformlyReducibleAboveDenote.headExpand weakHeadStep reductInductiveHypothesis
+  | neutral noWeakHeadStep notPiType notUniverse =>
+      exact UniformlyReducibleAboveDenote.ofNeutral noWeakHeadStep notPiType notUniverse
+  | @piType domainCode codomainCode domainCandidate codomainCandidate domainReducible
+      codomainReducible domainInductiveHypothesis codomainInductiveHypothesis =>
+      exact piArm codomainCandidate domainReducible codomainReducible
+        domainInductiveHypothesis codomainInductiveHypothesis
+  | universeCode levelExpr flag =>
+      exact UniformlyReducibleAboveDenote.ofUniverseCode env levelExpr flag
+  | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
+      exact innerInductiveHypothesis
 
 end FX1Poly.Typed

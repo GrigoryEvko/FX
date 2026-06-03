@@ -3126,10 +3126,13 @@ gates pin them shut.
 -- the piType arm's domain IH supplies a uniform domain candidate that transfers the codomain gate across levels).
 -- Three easy backbone arms: ofNeutral (threshold 0, SN candidate, level-independent ctor), ofUniverseCode
 -- (threshold denote e, level-independent decode-set via universeMembership_levelIrrelevant), headExpand (rewrap
--- the contractum's uniform candidate via whnfExpand). REMAINING: the backbone induction + the piType arm (the
--- #752 content) ⟹ UniformlyReducibleAboveDenote ⟹ IsReducibleTypeAtAllDenoteLevels, discharging the
--- ofReducibleTypeStepDenote piArm unconditionally.
+-- the contractum's uniform candidate via whnfExpand). PLUS the backbone induction ofReducibleTypeStepDenote —
+-- a verbatim mirror of the all-levels IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote (same 5-arm
+-- dispatch, level-independent uniform motive, piType isolated as the piArm hypothesis). REMAINING for #752: the
+-- piArm discharge itself — deeper than one motive-swap (the codomain threshold-swap needs a "reducibility bounds
+-- a type code's universe level" lemma; see the module header), then the projection to IsReducibleTypeAtAllDenoteLevels.
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofNeutral
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofUniverseCode
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.headExpand
+#assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote
