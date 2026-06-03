@@ -1425,6 +1425,12 @@ gates pin them shut.
 -- level via levelCons. allLevelsPositive (induction on the inductive; propext-clean Fin split) is the
 -- positivity invariant the recursor relies on (CR1 + conv tarskiDecode one-up both need positive levels).
 #assert_no_axioms FX1Poly.Typed.LeveledContext.allLevelsPositive
+-- LEVELED-CONTEXT LOOKUP-AS-TYPE: every entry of a leveled context is a HasTypeDescPi-type at a universe code,
+-- in the FULL context (head + each tail entry weakened in via HasTypeDescPi.weakenUnderBinding; the classifier
+-- universeCodeCell is rename-invariant). The substrate the term-FT recursor's var/conv arms read to classify
+-- each looked-up context variable (supplies the reclassifierIsUniverse premise of the conv bridge arm). Clean
+-- leveled-context recursor + propext-clean Fin split, like allLevelsPositive.
+#assert_no_axioms FX1Poly.Typed.LeveledContext.lookupTyped
 -- FIRST UNCONDITIONAL SN results via the level-indexed FT: concrete closed terms whose FT conclusion is built
 -- directly from the shipped arms at the empty context (no recursor), discharged to plain IsStronglyNormalizing
 -- by the closed-SN handoff. End-to-end validation that the arms + handoff compose into hypothesis-free SN.
