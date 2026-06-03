@@ -1709,6 +1709,11 @@ gates pin them shut.
 -- for the typed fragment (Conv ↔ normalize-equality), the Path-A NbE headline (Conv ↔ quote∘eval eq) modulo the
 -- one typed-SN hypothesis. The decidability theorem above is decidable_of_iff over this. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.Conv.iff_normalize_eq_of_hasTypeDescPiStronglyNormalizes
+-- WEAK NORMALIZATION leg of the conditional package: subjectWeaklyNormalizesOfStronglyNormalizes — typed-SN ⟹
+-- every well-typed subject reaches a normal form (RawTerm.normalize on the hypothesis-supplied SN witness;
+-- normalize_reducesTo + normalize_isStepNormalForm). Completes typed-SN ⟹ {confluence, decidable Conv,
+-- Conv=normalize-eq, WN}. Zero-axiom (Acc-recursion).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectWeaklyNormalizesOfStronglyNormalizes
 
 /-! ### PER-VARIABLE-LEVEL reducible environment (the Kripke refinement for the dependent fundamental
     theorem).  `ReducibleEnvAt`'s single global level cannot serve a context that mixes variables at

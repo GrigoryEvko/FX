@@ -105,4 +105,21 @@ theorem Conv.iff_normalize_eq_of_hasTypeDescPiStronglyNormalizes {profile : Poly
   Conv.iff_normalize_eq_of_isStronglyNormalizing
     (typedStronglyNormalizes leftTyped) (typedStronglyNormalizes rightTyped)
 
+/-- **Weak normalization for the typed fragment, conditional on typed-SN.**  Given the typed-SN interface, every
+well-typed subject reduces to a normal form: `RawTerm.normalize` (the `Acc`-recursive iterate-`reduceOnce`
+normalizer) consumes the subject's strong-normalization witness and returns a term that the subject reaches by a
+`StepStar` chain (`normalize_reducesTo`) and that admits no further `Step` (`normalize_isStepNormalForm`).  The
+normalization leg of the conditional Milestone-A package: typed-SN ⟹ {confluence, decidable Conv,
+Conv = normalize-equality, WEAK NORMALIZATION}.  Unconditional in one step once #672 discharges the hypothesis;
+the existence proof is the shipped normalizer applied to the hypothesis-supplied SN witness. -/
+theorem HasTypeDescPi.subjectWeaklyNormalizesOfStronglyNormalizes {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (typedStronglyNormalizes : HasTypeDescPiStronglyNormalizes profile)
+    (typed : HasTypeDescPi profile context subject classifier) :
+    ∃ normalForm : RawTerm scope,
+      StepStar subject normalForm ∧ RawTerm.isStepNormalForm normalForm :=
+  ⟨RawTerm.normalize subject (typedStronglyNormalizes typed),
+    RawTerm.normalize_reducesTo subject (typedStronglyNormalizes typed),
+    RawTerm.normalize_isStepNormalForm subject (typedStronglyNormalizes typed)⟩
+
 end FX1Poly.Typed
