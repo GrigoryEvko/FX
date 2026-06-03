@@ -1549,6 +1549,12 @@ gates pin them shut.
 -- the reducibility all-levels machinery — the formation-FT obstruction both routes share. Composition done; the
 -- unconditional discharge is the in-progress remainder of SN-027.
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPiReducibleFromTotalBridge
+-- SN-043 endgame reframe (LevelingBridge.lean): hasTypeDescPiStronglyNormalizingFromTotalBridge — the SN twin of
+-- hasTypeDescPiReducibleFromTotalBridge, composing the total bridge with the UNCONDITIONAL
+-- ValidTyping.substStronglyNormalizing. Operationalizes the finding that ValidTyping.fundamental is unconditional
+-- (composite-domain Π handled by its env-extension codomain IH), so SN-043's ONLY residual is the leveling bridge
+-- (totalBridge / #662) — NOT the superseded fuel gate HasPositiveMemberExtension… (#672), which is OFF this path.
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPiStronglyNormalizingFromTotalBridge
 -- SN-027 (refined-motive coordination): validTypingBridgeConvFromAllLevelReclassifier discharges the conv arm's
 -- LEVEL alignment — the existential ∃-shape can't force aligned levels, but a REFINED MOTIVE giving type-code
 -- subjects an ∀-level conclusion does: conv needs the reclassifier at subjectLevel+1, which is just the

@@ -352,6 +352,35 @@ theorem hasTypeDescPiReducibleFromTotalBridge {profile : PolyProfile}
   exact ⟨contextLevels, predLevel,
     fun substitution env => validTyped.substReducible predLevel substitution env⟩
 
+/-- **SN-for-well-typed via the LIVE `ValidTyping` route, conditional ONLY on the leveling bridge** (the
+SN twin of `hasTypeDescPiReducibleFromTotalBridge`, and the operational statement of the SN-043 endgame reframe).
+Given the total bridge, every `HasTypeDescPi`-typed subject is strongly normalizing under every reducible closing
+environment — by composing the bridge with the UNCONDITIONAL `ValidTyping.substStronglyNormalizing`
+(= `ValidTyping.fundamental` at the environment, then CR1).
+
+The point: this routes SN entirely through the assembled `ValidTyping.fundamental` (which discharges the
+composite-domain Π formation via its env-extension codomain IH, no impredicative member-extension), so the ONLY
+residual between here and unconditional SN-043 is the leveling bridge (the `totalBridge` induction, SN-027/#662).
+It does NOT depend on the superseded fuel-route gate
+`HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes` (#672): the per-level `ValidTyping` route closes
+the universe/composite-domain cases that the fuel all-levels route stalls on, so #672 is OFF this critical path. -/
+theorem hasTypeDescPiStronglyNormalizingFromTotalBridge {profile : PolyProfile}
+    (totalBridge :
+      ∀ {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope},
+        HasTypeDescPi profile context subject classifier →
+          ∃ (contextLevels : Fin scope → Nat) (predLevel : Nat),
+            ValidTyping profile contextLevels (predLevel + 1) context subject classifier)
+    {scope targetScope : Nat} {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context subject classifier) :
+    ∃ contextLevels : Fin scope → Nat,
+      ∀ (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvVec contextLevels context substitution →
+          StepStar.IsStronglyNormalizing (RawTerm.subst substitution subject) := by
+  obtain ⟨contextLevels, predLevel, validTyped⟩ := totalBridge typed
+  exact ⟨contextLevels,
+    fun substitution env => validTyped.substStronglyNormalizing predLevel substitution env⟩
+
 /-! ## The refined-motive coordination (SN-027, toward the total-bridge induction)
 
 The total-bridge induction's residual difficulty is per-arm LEVEL coordination, and the existential
