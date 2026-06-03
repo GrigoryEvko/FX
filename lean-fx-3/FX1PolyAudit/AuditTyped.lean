@@ -73,6 +73,7 @@ import FX1Poly.Core.NormalizeMeta
 import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.NatCanonicalFormsCandidate
+import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.StronglyNormalizingSubst
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
@@ -2067,6 +2068,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.natCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isNatValue_isMember
 #assert_no_axioms FX1Poly.Core.natClosedReducesToValue
+-- BINARY data candidate — Σ pairs (SN-057/059): isPairValue := a pairCell with both components normal; a
+-- pair of normals is a structural normal form (the two-child spine recursion); the candidate is
+-- isReducibilityCandidateOfValuesNormal at isPairValue; a normal pair is a member (memberOfValue); a closed
+-- member reduces to a pair (closedReducesToValue). Unconditional + #672-free.
+#assert_no_axioms FX1Poly.Core.isPairValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.pairCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.pairValue_isMember
+#assert_no_axioms FX1Poly.Core.pairClosedReducesToValue
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
