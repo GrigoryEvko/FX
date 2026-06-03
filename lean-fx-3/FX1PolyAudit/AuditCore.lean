@@ -17,6 +17,7 @@ import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.CommutationConfluence
+import FX1Poly.Core.DeterministicConfluence
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -274,6 +275,17 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.DiamondProperty.union
 #assert_no_axioms FX1Poly.Core.confluentOfUnionDiamonds
 #assert_no_axioms FX1Poly.Core.confluentUnionOfParallelDiamonds
+
+-- Deterministic confluence (abstract toolkit, FOURTH route): a deterministic (functional) relation is confluent
+-- -- its reflexive-transitive reducts from a common source are linearly ordered. Determinism does NOT give the
+-- strict diamond (a normal form breaks it), so this is its own linear-chain induction. The route for
+-- deterministic reduction strategies (weak-head here, the deterministic NbE evaluator M12 downstream).
+-- IsDeterministic + confluentOfDeterministic + the concrete WeakHeadStep.hasConfluence (weak-head reduction is
+-- Church-Rosser, from WeakHeadStep.deterministic). Zero-axiom.
+#assert_no_axioms FX1Poly.Core.IsDeterministic
+#assert_no_axioms FX1Poly.Core.confluentOfDeterministicAux
+#assert_no_axioms FX1Poly.Core.confluentOfDeterministic
+#assert_no_axioms FX1Poly.Core.WeakHeadStep.hasConfluence
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
