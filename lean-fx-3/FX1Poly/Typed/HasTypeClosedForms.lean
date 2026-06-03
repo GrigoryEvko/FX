@@ -1,6 +1,7 @@
 import FX1Poly.Typed.HasTypeConsistency
 import FX1Poly.Typed.HasTypeInversion
 import FX1Poly.Typed.WfContext
+import FX1Poly.Typed.ClosedNonConvertibility
 
 /-! # FX1Poly/Typed/HasTypeClosedForms
     — the closed-typing CHARACTERIZATION completed (P10 consistency precursor, #460)
@@ -90,5 +91,24 @@ theorem HasType.closedClassifierConvUniverseCode {profile : PolyProfile}
   exact ⟨levelExpr, flag,
     HasType.uniqueness (WfContext.emptyIsWellFormed (profile := profile))
       typed subjectTyped⟩
+
+/-- **The concrete P10 consistency witness (non-vacuity): no closed term is typed at the identity function.**
+The closed identity `λx. x` (`lamCell (variableCell 0)`) is a concrete NON-type classifier — the available
+stand-in for the absent `Empty` (`gen_empty` is not in the generator table).  Were a closed term typed at it,
+`closedClassifierConvUniverseCode` would make its classifier convertible to a universe code; but
+`closedUniverseCode_not_conv_identity` refutes any conversion between a closed universe code and the identity
+(distinct normal-form heads `gen_universeCode` / `gen_lam`).  This turns the consistency INTERFACE
+(`closedClassifierConvUniverseCode`) into a concrete `→ False` — the first witness that the characterization is
+non-vacuous, and the shape the starred ★ #460 takes once an `Empty` former exists (instantiate at `El Empty`
+instead of the identity). -/
+theorem HasType.noClosedTermAtIdentityClassifier {profile : PolyProfile}
+    {subject : RawTerm 0}
+    (typed : HasType profile TypingContext.empty subject
+      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) :
+    False := by
+  obtain ⟨levelExpr, flag, classifierConv⟩ := typed.closedClassifierConvUniverseCode
+  obtain ⟨commonTerm, identityReducesToCommon, universeReducesToCommon⟩ := classifierConv
+  exact closedUniverseCode_not_conv_identity levelExpr flag
+    ⟨commonTerm, universeReducesToCommon, identityReducesToCommon⟩
 
 end FX1Poly.Typed

@@ -433,6 +433,13 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.HasType.closedSubjectIsTypeFormer
 #assert_no_axioms FX1Poly.Typed.HasType.closedClassifierConvUniverseCode
+-- The concrete P10 consistency WITNESS (non-vacuity): noClosedTermAtIdentityClassifier — no closed term is
+-- typed at the identity function lambda-x.x (a concrete NON-type classifier, the available stand-in for the
+-- absent Empty since gen_empty is not in the generator table). Turns the closedClassifierConvUniverseCode
+-- INTERFACE into a concrete -> False: a closed term at the identity would make its classifier Conv to a universe
+-- code, refuted by closedUniverseCode_not_conv_identity (gen_universeCode vs gen_lam normal-form heads). The
+-- shape ★ #460 takes once an Empty former exists (instantiate at El Empty instead of the identity). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasType.noClosedTermAtIdentityClassifier
 
 /-! ### Context well-formedness decision
     — `WfContext.decidable` decides whether a raw `TypingContext` telescope is
