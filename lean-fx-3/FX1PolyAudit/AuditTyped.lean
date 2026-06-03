@@ -161,6 +161,7 @@ import FX1Poly.Typed.RouteAObstruction
 import FX1Poly.Typed.ClassifierLevelDiagnosis
 import FX1Poly.Typed.ClassifierLevelMeasure
 import FX1Poly.Typed.DenoteKeyedReducibility
+import FX1Poly.Typed.DenoteKeyedUniverseDomainPi
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2848,3 +2849,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_eq_empty_of_ge
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_forwardStep
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_neutralInclusion_of_lt
+
+-- DenoteKeyedUniverseDomainPi (#672 toward the non-fuel piArm): the denote model closes the universe-domain
+-- Π that the external-fuel level-irrelevance induction (ReducibleTypeAtAllLevelsInduction.piArm) provably
+-- could not. candidate_levelStable is the conceptual heart — one fixed candidate is Type@e's candidate at
+-- every ambient level above denote e env (the negation of the fuel "candidates at successive levels differ"
+-- obstruction). reducibleAtAllDenoteLevels assembles the dependent universe-domain Π Π(Type@e).C uniformly
+-- across all those levels with one codomain candidate, since the level-stable domain candidate discharges the
+-- piType constructor at every level simultaneously (no across-level member-extension circularity).
+#assert_no_axioms FX1Poly.Typed.universeDomainCandidate_levelStable
+#assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleAtAllDenoteLevels
