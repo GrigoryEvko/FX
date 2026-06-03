@@ -1,5 +1,6 @@
 import FX1Poly.Core.Step
 import FX1Poly.Core.RawTermSubst0
+import FX1Poly.Core.StepSubst
 
 /-! # FX1Poly/Core/ParallelReduction
     — the FX parallel reduction relation + reflexivity (toward the Takahashi diamond / raw confluence, #420)
@@ -206,6 +207,139 @@ mutual
         ParStepChildren.cons (Step.toParStep childStep) (ParStepChildren.refl rest)
     | .there head restStep =>
         ParStepChildren.cons (ParStep.refl head) (StepChildren.toParStepChildren restStep)
+end
+
+mutual
+  /-- **`ParStep ⊆ StepStar`** (the upper sandwich bound, `parToStepStar` for
+  `StepStar.hasConfluence_of_parallelDiamond`): every parallel reduction is a finite sequence of single
+  reductions.  Each arm reduces the redex's surviving sub-terms via `StepStar.ofChildrenStar` (the
+  child-spine congruence lifter) — recursively through `ParStep.toStepStar` — then fires the matching root
+  `Step`: `beta` reduces `body`/`arg` under `lam`/`app` then `Step.beta`; the branch-selection ι reduce
+  the selected branch then fire; the app-chain ι (`some`/`inl`/`inr`) reduce the branch under the match,
+  fire, then reduce the wrapped value under the resulting `app`; the recursive `succ`/`cons` ι reduce
+  predecessor/head/tail + branches under the eliminator then fire (the reduct is exactly the fired
+  all-reduced redex).  `cong` lifts the pointwise `ParStepChildren` to a `StepStar` through
+  `ofChildrenStar`. -/
+  theorem ParStep.toStepStar {scope : Nat} {a b : RawTerm scope} : ParStep a b → StepStar a b
+    | .beta bodyPar argPar =>
+        StepStar.transLast
+          (StepStar.ofChildrenStar
+            (StepChildrenStar.trans_compose
+              (StepChildrenStar.here _
+                (StepStar.ofChildrenStar (StepChildrenStar.here _ (ParStep.toStepStar bodyPar))))
+              (StepChildrenStar.there _
+                (StepChildrenStar.here _ (ParStep.toStepStar argPar)))))
+          Step.beta
+    | .cong _gen _payload childrenPar =>
+        StepStar.ofChildrenStar (ParStepChildren.toStepChildrenStar childrenPar)
+    | .iotaBoolTrue thenPar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar thenPar))))
+          Step.iotaBoolTrue
+    | .iotaBoolFalse elsePar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.there _ (StepChildrenStar.there _
+            (StepChildrenStar.here _ (ParStep.toStepStar elsePar)))))
+          Step.iotaBoolFalse
+    | .iotaFstPair firstPar =>
+        StepStar.transLast (StepStar.ofChildrenStar (StepChildrenStar.here _
+          (StepStar.ofChildrenStar (StepChildrenStar.here _ (ParStep.toStepStar firstPar)))))
+          Step.iotaFstPair
+    | .iotaSndPair secondPar =>
+        StepStar.transLast (StepStar.ofChildrenStar (StepChildrenStar.here _
+          (StepStar.ofChildrenStar (StepChildrenStar.there _
+            (StepChildrenStar.here _ (ParStep.toStepStar secondPar))))))
+          Step.iotaSndPair
+    | .iotaNatElimZero zeroPar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar zeroPar))))
+          Step.iotaNatElimZero
+    | .iotaNatRecZero zeroPar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar zeroPar))))
+          Step.iotaNatRecZero
+    | .iotaListElimNil nilPar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar nilPar))))
+          Step.iotaListElimNil
+    | .iotaOptionMatchNone nonePar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar nonePar))))
+          Step.iotaOptionMatchNone
+    | .iotaOptionMatchSome somePar valuePar =>
+        StepStar.trans_compose
+          (StepStar.ofChildrenStar (StepChildrenStar.there _ (StepChildrenStar.there _
+            (StepChildrenStar.here _ (ParStep.toStepStar somePar)))))
+          (StepStar.trans Step.iotaOptionMatchSome
+            (StepStar.ofChildrenStar (StepChildrenStar.there _
+              (StepChildrenStar.here _ (ParStep.toStepStar valuePar)))))
+    | .iotaEitherMatchInl leftPar valuePar =>
+        StepStar.trans_compose
+          (StepStar.ofChildrenStar (StepChildrenStar.there _ (StepChildrenStar.here _
+            (ParStep.toStepStar leftPar))))
+          (StepStar.trans Step.iotaEitherMatchInl
+            (StepStar.ofChildrenStar (StepChildrenStar.there _
+              (StepChildrenStar.here _ (ParStep.toStepStar valuePar)))))
+    | .iotaEitherMatchInr rightPar valuePar =>
+        StepStar.trans_compose
+          (StepStar.ofChildrenStar (StepChildrenStar.there _ (StepChildrenStar.there _
+            (StepChildrenStar.here _ (ParStep.toStepStar rightPar)))))
+          (StepStar.trans Step.iotaEitherMatchInr
+            (StepStar.ofChildrenStar (StepChildrenStar.there _
+              (StepChildrenStar.here _ (ParStep.toStepStar valuePar)))))
+    | .iotaNatElimSucc predPar zeroPar succPar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.trans_compose
+            (StepChildrenStar.here _
+              (StepStar.ofChildrenStar (StepChildrenStar.here _ (ParStep.toStepStar predPar))))
+            (StepChildrenStar.trans_compose
+              (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar zeroPar)))
+              (StepChildrenStar.there _ (StepChildrenStar.there _
+                (StepChildrenStar.here _ (ParStep.toStepStar succPar)))))))
+          Step.iotaNatElimSucc
+    | .iotaNatRecSucc predPar zeroPar succPar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.trans_compose
+            (StepChildrenStar.here _
+              (StepStar.ofChildrenStar (StepChildrenStar.here _ (ParStep.toStepStar predPar))))
+            (StepChildrenStar.trans_compose
+              (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar zeroPar)))
+              (StepChildrenStar.there _ (StepChildrenStar.there _
+                (StepChildrenStar.here _ (ParStep.toStepStar succPar)))))))
+          Step.iotaNatRecSucc
+    | .iotaListElimCons headPar tailPar nilPar consPar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.trans_compose
+            (StepChildrenStar.here _
+              (StepStar.ofChildrenStar (StepChildrenStar.here _ (ParStep.toStepStar headPar))))
+            (StepChildrenStar.trans_compose
+              (StepChildrenStar.here _
+                (StepStar.ofChildrenStar (StepChildrenStar.there _
+                  (StepChildrenStar.here _ (ParStep.toStepStar tailPar)))))
+              (StepChildrenStar.trans_compose
+                (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar nilPar)))
+                (StepChildrenStar.there _ (StepChildrenStar.there _
+                  (StepChildrenStar.here _ (ParStep.toStepStar consPar))))))))
+          Step.iotaListElimCons
+    | .iotaIdJRefl basePar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.here _ (ParStep.toStepStar basePar)))
+          Step.iotaIdJRefl
+    | .iotaIdStrictRecRefl basePar =>
+        StepStar.transLast (StepStar.ofChildrenStar
+          (StepChildrenStar.here _ (ParStep.toStepStar basePar)))
+          Step.iotaIdStrictRecRefl
+  /-- **`ParStepChildren ⊆ StepChildrenStar`** (the spine companion of `ParStep.toStepStar`): a pointwise
+  parallel children reduction is a finite sequence of single child-spine steps — reduce the head (via
+  `ParStep.toStepStar`), then the tail (recursive call), composing with `trans_compose`. -/
+  theorem ParStepChildren.toStepChildrenStar {binderShifts : List Nat} {scope : Nat}
+      {children children' : RawTermChildren binderShifts scope} :
+      ParStepChildren children children' → StepChildrenStar children children'
+    | .nil => StepChildrenStar.refl _
+    | .cons headPar tailPar =>
+        StepChildrenStar.trans_compose
+          (StepChildrenStar.here _ (ParStep.toStepStar headPar))
+          (StepChildrenStar.there _ (ParStepChildren.toStepChildrenStar tailPar))
 end
 
 end FX1Poly.Core

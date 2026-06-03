@@ -297,6 +297,14 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- is the next increment.
 #assert_no_axioms FX1Poly.Core.Step.toParStep
 #assert_no_axioms FX1Poly.Core.StepChildren.toParStepChildren
+-- ParStep subset StepStar (the upper sandwich bound = parToStepStar): every parallel reduction is a finite
+-- sequence of single steps. Each arm reduces the redex's surviving sub-terms via StepStar.ofChildrenStar (the
+-- child-spine congruence lifter) then fires the matching root Step; cong lifts the pointwise ParStepChildren
+-- through ofChildrenStar. With Step.toParStep above, this COMPLETES the sandwich Step subset ParStep subset
+-- StepStar that StepStar.hasConfluence_of_parallelDiamond needs -- only the ParStep DiamondProperty (via
+-- HasMaximalReduct) remains for unconditional raw confluence.
+#assert_no_axioms FX1Poly.Core.ParStep.toStepStar
+#assert_no_axioms FX1Poly.Core.ParStepChildren.toStepChildrenStar
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
