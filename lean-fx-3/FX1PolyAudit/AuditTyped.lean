@@ -194,6 +194,7 @@ import FX1Poly.Typed.ValidTypingLevelFlexible
 import FX1Poly.Typed.ValidTypingRefinedMotive
 import FX1Poly.Typed.ValidTypingConvArm
 import FX1Poly.Typed.ValidTypingPiArms
+import FX1Poly.Typed.ValidTypingFormerArms
 import FX1Poly.Typed.ValidTypingVariableLevelPinned
 import FX1Poly.Typed.FormationEngineFundamentalReduction
 import FX1Poly.Typed.FormationEngineFundamental
@@ -1643,6 +1644,13 @@ gates pin them shut.
 -- via the resultNotConvUniverse hypothesis the assembly discharges (type-family case routes separately, pinned).
 #assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.piIntro
 #assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.piElim
+-- the GENERIC-FORMER arm (ValidTypingFormerArms.lean): genFormationPi is a TYPE CODE whose classifier is the
+-- generic rule.outputType (not syntactically a universe code). conjunct-1 fires ValidTyping.genFormationPi at the
+-- carried predLevel; conjunct-2 (when the classifier is CONVERTIBLE to a universe code) refires it at every level
+-- and reclassifies through the convertibility witness via ValidTyping.conv (the old syntactic-guard motive used a
+-- bare eq ▸). The premises are predLevel-independent — the same freedom the fixed formers exploit. This COMPLETES
+-- the TotalBridgeConclusion arm-set; only the HasTypeDescPi.rec assembly + level synthesis remain for #662.
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.genFormationPi
 -- (An earlier syntactic-equality-guarded motive iteration that the var-arm wall killed, and its arm cluster, were
 -- deleted; the convertibility-guarded TotalBridgeConclusion above is the canonical motive. genFormationPi's
 -- TotalBridgeConclusion arm + the HasTypeDescPi.rec assembly are the #662 residual.)
