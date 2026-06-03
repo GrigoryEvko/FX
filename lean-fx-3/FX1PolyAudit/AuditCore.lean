@@ -44,6 +44,7 @@ import FX1Poly.Core.NatElimValueReducibility
 import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.ApplicationStrongNormalizationForward
 import FX1Poly.Core.ListOptionIdCodeUniverseMembership
+import FX1Poly.Core.EitherEquivCodeUniverseMembership
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -573,6 +574,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.listCode_isReducibleMemberOfUniverse
 #assert_no_axioms FX1Poly.Core.optionCode_isReducibleMemberOfUniverse
 #assert_no_axioms FX1Poly.Core.idCode_isReducibleMemberOfUniverse
+-- The two-child either/equiv codes complete the SN-071 family at the stratified layer, reusing the shipped
+-- two-child SN combinators (eitherCode/equivCode SN + Step.from_* inversions). Whole universe-code-family
+-- stratified membership (arrow/product/sum + list/option/either/id/equiv) now closed, #672-independent.
+#assert_no_axioms FX1Poly.Core.eitherCode_isReducibleMemberOfUniverse
+#assert_no_axioms FX1Poly.Core.equivCode_isReducibleMemberOfUniverse
 
 -- Modal-core β+ι SN coverage: gen_modElim / gen_subsume are congruence-only (no iota root rule; the modal
 -- collapse is raw η), so their cong inversions + one-child-cong SN closures complete the modal-core SN
