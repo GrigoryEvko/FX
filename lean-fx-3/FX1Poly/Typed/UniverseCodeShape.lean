@@ -105,6 +105,27 @@ theorem headGenerator_variableCell {scope : Nat} (index : Fin scope) :
     RawTerm.headGenerator (variableCell index) = Generator.gen_var := by
   rfl
 
+/-- **The pure structural variable dichotomy.**  Every `RawTerm` either IS a variable cell
+(`∃ index, term = variableCell index`) or provably is NOT one (`∀ index, ≠`).  Decided by head-generator
+inspection (`DecidableEq Generator`, no Classical), exactly like `RawTerm.isUniverseCodeOrNot`.
+
+The second routing primitive the totalBridge conv arm (SN-027/#662) needs.  A conv reclassifier is typed at a
+universe code, so it is a TYPE; the conv consumer must produce it at `subjectLevel + 1`.  A NON-variable type
+code (universe code / Π / Σ / generic former) is LEVEL-FLEXIBLE (valid at every positive level —
+`universeFormation_isLevelFlexible` etc.), so it re-derives at `subjectLevel + 1` and routes through
+`ValidTyping.convWithLevelFlexibleReclassifier`.  A VARIABLE reclassifier is PINNED to `contextLevels index`
+(`ValidTyping.var`), so it routes through `validTypingBridgeConvPinnedReclassifier`, which needs the leveling
+equation `contextLevels index = subjectLevel + 1`.  This dichotomy is what separates the two routes —
+`isUniverseCodeOrNot` does not, because a Π/Σ former is "not a universe code" yet still flexible. -/
+theorem RawTerm.isVariableOrNot {scope : Nat} (term : RawTerm scope) :
+    (∃ index : Fin scope, term = variableCell index) ∨
+    (∀ index : Fin scope, term ≠ variableCell index) := by
+  by_cases headIsVariable : RawTerm.headGenerator term = Generator.gen_var
+  · exact Or.inl (eq_variableCell_of_headGenerator headIsVariable)
+  · refine Or.inr (fun index termEqVariable => headIsVariable ?_)
+    rw [termEqVariable]
+    exact headGenerator_variableCell index
+
 /-- The head generator of a Π-type code cell is `gen_piTyCode`.  `scope` pinned by
 the domain code. -/
 theorem headGenerator_piTyCodeCell {scope : Nat} (domainCode : RawTerm scope)

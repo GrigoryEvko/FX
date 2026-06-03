@@ -347,6 +347,12 @@ gates pin them shut.
 -- (type variable / type-family application — the level-flexibility-unsatisfiable subjects) routes to the pinned
 -- reclassifier handler. Applied to context.lookup index resp. subst0 codomainCode argument.
 #assert_no_axioms FX1Poly.Typed.RawTerm.isUniverseCodeOrNot
+-- PURE STRUCTURAL VARIABLE DICHOTOMY: every RawTerm either IS a variable cell or provably is NOT, by
+-- head-generator inspection (zero-axiom). The SECOND totalBridge conv-arm router (SN-027/#662): a non-variable
+-- type-code reclassifier is level-flexible (re-derives at subjectLevel+1 via convWithLevelFlexibleReclassifier);
+-- a variable reclassifier is pinned (validTypingBridgeConvPinnedReclassifier, needs contextLevels index =
+-- subjectLevel+1). Separates flexible-former from pinned-variable where isUniverseCodeOrNot cannot.
+#assert_no_axioms FX1Poly.Typed.RawTerm.isVariableOrNot
 
 /-! ### Π-formation shape bricks — `piTyCodeCell`
     smart ctor + head-generator computation + the two-child destructor that
