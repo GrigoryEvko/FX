@@ -2882,3 +2882,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.ofUniverseCode
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.headExpand
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote
+-- the NON-universe half of the piArm: uniformDomainPi handles any domain with a single candidate uniform at
+-- ALL levels (neutral/data/non-universe-former domains); neutralDomainPi is the witnessing neutral instance
+-- (candidate IsStronglyNormalizing). Complements A1 (universe domain, uniform above denote e env).
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_reducibleAtEveryDenoteLevel
+#assert_no_axioms FX1Poly.Typed.neutralDomainPi_reducibleAtEveryDenoteLevel

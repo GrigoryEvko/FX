@@ -28,13 +28,23 @@ So `ofReducibleTypeStepDenote` is the inductive backbone of denote-keyed type-le
 of the `piArm` alone (universe-domain instance + neutral/data-domain instance) completes level-irrelevance for
 every denote-reducible type.
 
+This file also ships the NON-universe half of the `piArm`:
+  * `uniformDomainPi_reducibleAtEveryDenoteLevel` — the `piArm` for any domain whose candidate is a single
+    predicate uniform across ALL levels (neutral / data / non-universe-containing former domains); at each
+    level `piType` assembles the dependent arrow from the uniform domain candidate.
+  * `neutralDomainPi_reducibleAtEveryDenoteLevel` — the witnessing instance: a neutral domain has the
+    literally-uniform candidate `IsStronglyNormalizing` (the `neutral` arm).
+The complementary universe-domain instance (candidate uniform only above `denote e env`) is
+`DenoteKeyedUniverseDomainPi.universeDomainPi_reducibleAtEveryDenoteLevel`.
+
 ## Zero-axiom verification
 
 The three leaves are anonymous-constructor wrappers of the `ReducibleTypeStepDenote.{neutral, whnfExpand}`
 constructors and `universeCode_isReducibleAtDenote`; the backbone is one `induction` on
 `ReducibleTypeStepDenote` with the level-independent motive `IsReducibleTypeAtAllDenoteLevels env typeCode`
-(avoiding the indexed-match propext leak).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+(avoiding the indexed-match propext leak); the two `piArm` instances are `piType`-constructor wrappers (the
+neutral one delegating to the uniform-candidate one).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -115,5 +125,47 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote {scope : Nat}
       exact IsReducibleTypeAtAllDenoteLevels.ofUniverseCode env levelExpr flag
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
+
+/-- **Uniform-candidate-domain `piArm`.**  If the domain `domainCode` is reducible with a SINGLE candidate
+`domainCandidate` at every denote level, and the codomain is reducible (under domain membership) at every
+level with codomain-candidate function `codomainCandidate`, then `Π domainCode codomainCode` is reducible at
+every denote level.  At each level `piType` assembles the dependent arrow directly — the uniform domain
+candidate makes the codomain obligation the same shape at every level.  This is the `piArm` for every domain
+whose candidate does NOT drift with the level (neutral types, data types, non-universe-containing formers); the
+universe domain — whose candidate is uniform only ABOVE `denote e env` — is the complementary case handled by
+`DenoteKeyedUniverseDomainPi.universeDomainPi_reducibleAtEveryDenoteLevel`.  Choice-free: the codomain
+candidate is supplied as data (the fundamental-theorem-side existential extraction is a separate concern). -/
+theorem uniformDomainPi_reducibleAtEveryDenoteLevel {scope : Nat} (env : Nat → Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainCandidate : RawTerm scope → Prop)
+    (domainReducible : ∀ level : Nat, ReducibleTypeAtDenote env level domainCode domainCandidate)
+    (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
+    (codomainReducible : ∀ (level : Nat) (argument : RawTerm scope), domainCandidate argument →
+      ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
+        (codomainCandidate argument)) :
+    IsReducibleTypeAtAllDenoteLevels env
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
+  fun level => ⟨_, ReducibleTypeStepDenote.piType codomainCandidate (domainReducible level)
+    (fun argument argumentInDomain => codomainReducible level argument argumentInDomain)⟩
+
+/-- **Neutral-domain `piArm` (the witnessing instance of the uniform-candidate piArm).**  A weak-head-normal
+non-Π non-universe DOMAIN has the literally-uniform candidate `IsStronglyNormalizing` at every level (the
+`neutral` arm references neither the lower family nor the level), so `uniformDomainPi_reducibleAtEveryDenoteLevel`
+applies.  The denote analogue of the fuel `IsReducibleTypeAtAllLevels.piTypeOfNeutralDomain` — domains that are
+type variables or stuck applications. -/
+theorem neutralDomainPi_reducibleAtEveryDenoteLevel {scope : Nat} (env : Nat → Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
+    (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
+    (codomainReducible : ∀ (level : Nat) (argument : RawTerm scope), IsStronglyNormalizing argument →
+      ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
+        (codomainCandidate argument)) :
+    IsReducibleTypeAtAllDenoteLevels env
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
+  uniformDomainPi_reducibleAtEveryDenoteLevel env IsStronglyNormalizing
+    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
+    codomainCandidate codomainReducible
 
 end FX1Poly.Typed
