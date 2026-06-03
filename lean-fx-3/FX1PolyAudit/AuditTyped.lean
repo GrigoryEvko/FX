@@ -176,6 +176,7 @@ import FX1Poly.Typed.DenoteKeyedMemberWeakHeadExpansion
 import FX1Poly.Typed.DenoteKeyedHeadExpansion
 import FX1Poly.Typed.DenoteKeyedAbstractionMember
 import FX1Poly.Typed.DenoteKeyedAbstractionUnderSubst
+import FX1Poly.Typed.DenoteKeyedFundamentalMotive
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3035,3 +3036,14 @@ gates pin them shut.
 -- codomainCandidate is pinned explicitly (existentially packaged in the conclusion). Feeds the SN-D5 FT
 -- induction's Π-introduction case under the closing substitution.
 #assert_no_axioms FX1Poly.Typed.abstractionMemberUnderClosingSubstitution
+
+-- DenoteKeyedFundamentalMotive (SN-D4): the denote FT conclusion motive + the two LEAF member arms. The motive
+-- FundamentalConclusionAtDenote uses a SINGLE uniform ambient level (not the per-variable contextLevels vector
+-- the fuel route FundamentalConclusionLevelIndexed needed) — the denote relation's level-irrelevance lets one
+-- ambient level carry the whole judgment, the binder cons threading the same level. fundamentalVarAtDenote =
+-- ReducibleEnvAtDenote.lookupReducible (subst on a variable is the substitution lookup definitionally);
+-- fundamentalUniverseFormationAtDenote = universeFormationMemberUnderClosingSubstitution (carries the levelAbove
+-- side condition the FT discharges at a large-enough ambient level). The recursive arms (conv/piIntro/piElim/
+-- genFormationPi) belong to the SN-D5 induction assembly.
+#assert_no_axioms FX1Poly.Typed.fundamentalVarAtDenote
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtDenote
