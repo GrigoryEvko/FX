@@ -2941,3 +2941,8 @@ gates pin them shut.
 -- Π cell by rfl; uniformDomainPi_reducibleFromCodomainExistence + subst_cons_eq_subst0_lift discharge it. The
 -- first genuine FT binder arm over the denote relation, choice-free.
 #assert_no_axioms FX1Poly.Typed.piFormationUnderClosingSubstitution
+-- universeDomainPiFormationUnderClosingSubstitution: the impredicative twin — Π over a closed universe-code
+-- domain under a closing substitution. Domain closed (childNil) ⇒ subst leaves it fixed (rfl distribution);
+-- routes through universeDomainPi_reducibleFromCodomainExistence + subst_cons_eq_subst0_lift. Completes the
+-- binder-arm-under-subst family (uniform/neutral/universe).
+#assert_no_axioms FX1Poly.Typed.universeDomainPiFormationUnderClosingSubstitution

@@ -65,4 +65,35 @@ theorem piFormationUnderClosingSubstitution {scope targetScope : Nat} (env : Nat
   rw [← RawTerm.subst_cons_eq_subst0_lift codomainCode argument substitution]
   exact codomainReducible argument argumentInDomain
 
+/-- **The denote universe-domain Π-formation fundamental-theorem arm under a closing substitution (the
+impredicative twin).**  For an impredicative-polymorphic Π whose domain is a closed universe code
+`Type@levelExpr`, the substituted Π code `subst substitution (Π (Type@levelExpr) codomainCode)` is
+denote-reducible at every level given the codomain reducible-at-all-levels under the `cons`-extended
+substitution for every universe member.  The domain is closed (`childNil`), so `subst substitution` leaves it
+fixed and the Π distribution lands the codomain under `lift substitution` definitionally; the arm routes
+through `universeDomainPi_reducibleFromCodomainExistence` (threshold-split inside), the codomain IH bridged by
+`RawTerm.subst_cons_eq_subst0_lift`.  Completes the binder-arm-under-substitution family across all domain
+shapes (uniform / neutral / universe). -/
+theorem universeDomainPiFormationUnderClosingSubstitution {scope targetScope : Nat} (env : Nat → Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) {codomainCode : RawTerm (scope + 1)}
+    {substitution : RawTermSubst scope targetScope}
+    (codomainReducible : ∀ argument : RawTerm targetScope,
+      (IsStronglyNormalizing argument ∧
+        IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) argument) →
+      IsReducibleTypeAtAllDenoteLevels env
+        (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode)) :
+    IsReducibleTypeAtAllDenoteLevels env
+      (RawTerm.subst substitution
+        (.mkGen .gen_piTyCode ()
+          (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+            (.childCons codomainCode .childNil)))) := by
+  show IsReducibleTypeAtAllDenoteLevels env
+    (.mkGen .gen_piTyCode ()
+      (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+        (.childCons (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) .childNil)))
+  refine universeDomainPi_reducibleFromCodomainExistence env levelExpr flag
+    (fun argument argumentInUniverse => ?_)
+  rw [← RawTerm.subst_cons_eq_subst0_lift codomainCode argument substitution]
+  exact codomainReducible argument argumentInUniverse
+
 end FX1Poly.Typed
