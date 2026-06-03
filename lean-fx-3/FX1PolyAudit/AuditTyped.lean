@@ -139,6 +139,7 @@ import FX1Poly.Typed.ValidTypingLevelFlexible
 import FX1Poly.Typed.ValidTypingRefinedMotive
 import FX1Poly.Typed.ValidTypingTermArms
 import FX1Poly.Typed.ValidTypingFormerArms
+import FX1Poly.Typed.ValidTypingConvArm
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1528,6 +1529,14 @@ gates pin them shut.
 -- (same wall as piElim's type-family case) — routed through the reducibility type-variable env (consTypeVariable)
 -- at the coordinated level in the assembly. So lookupNotUniverse is the honest precondition.
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.var
+-- SN-027 the conv ARM (#673, ValidTypingConvArm.lean): the conversion arm of the refined motive, the PAYOFF of
+-- the level-flexibility conjunct. conjunct-1 = validTypingBridgeConvFromAllLevelReclassifier (subject at one
+-- level + reclassifier at EVERY level — the reclassifier's refined-motive conjunct-2 — picks the subjectLevel
+-- instance for ValidTyping.conv's subjectLevel+1 requirement). conjunct-2 vacuous via reclassifierNotUniverse
+-- (term-output). The type-output case (reclassifier IS a universe code) is the env-routed neutral case, same wall
+-- as piElim type-family + var type-variable. With this, the HasTypeDescPi conv ctor's refined-motive arm is in
+-- hand; the assembly #662 residual is ofFormation + the induction skeleton (shared contextLevels) + neutral env routing.
+#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.conv
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
