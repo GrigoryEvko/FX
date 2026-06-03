@@ -79,6 +79,7 @@ import FX1Poly.Core.OptionEitherMatchCanonicalComputation
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.BoolCanonicityViaSconing
 import FX1Poly.Core.DataCanonicityViaSconing
+import FX1Poly.Core.DataMetatheoryViaSconing
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
@@ -2179,6 +2180,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.optionCanonicityViaSconing
 #assert_no_axioms FX1Poly.Core.eitherCanonicityViaSconing
 #assert_no_axioms FX1Poly.Core.pairCanonicityViaSconing
+-- BKS BUNDLING CAPSTONE for the data axis (SN-096/110): one fundamental obligation => BOTH metatheorems.
+-- DataMetatheory bundles normalization (every well-typed term is SN) + canonicity (reduces to a constructor).
+-- dataMetatheoryViaSconing: from the single fundamental (well-typed -> candidate member), normalization is the
+-- candidate's CR1 first conjunct (stronglyNormalizing), canonicity is the closed extraction
+-- (closedReducesToValue = dataCanonicityViaSconing). The data-axis realization of "one functor => many
+-- metatheorems" (BKS sconing-is-enough). Both halves #672-free; the shared fundamental is the sole #672 gate.
+-- Does NOT flip the Tier-0 ln.hasBKSMetatheoryPackage flag (that tracks the categorical glued-model package).
+#assert_no_axioms FX1Poly.Core.DataMetatheory
+#assert_no_axioms FX1Poly.Core.dataMetatheoryViaSconing
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
