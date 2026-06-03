@@ -12,6 +12,7 @@ import FX1Poly.Core.ConvWordJoinableBridge
 import FX1Poly.Core.BetaEtaWordSystem
 import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.TerminationOrders
+import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -204,6 +205,19 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.LexListStep.isWellFounded
 #assert_no_axioms FX1Poly.Core.wellFounded_of_multisetMeasure
 #assert_no_axioms FX1Poly.Core.wellFounded_of_lexMeasure
+
+-- SN-115 (#618): the RPO termination certificate -- precedence x argument-order, lexicographically. LexPair is the
+-- lex product of two relations as a DISJUNCTION (not the indexed Prod.Lex, whose cases leaks propext via the
+-- pair-index); isWellFounded by nested Acc with rcases on the Or. wellFounded_of_precedenceMultisetMeasure /
+-- _LexMeasure are the RPO certificates for multiset-status (SN-116) / lex-status (SN-117) symbols: a step
+-- terminates if the precedence rank decreases OR stays equal while the argument measure decreases. The full
+-- recursive path ordering on FX terms is the downstream SN-131 composition. Zero-axiom (Or-inversion + InvImage.wf).
+#assert_no_axioms FX1Poly.Core.LexPair
+#assert_no_axioms FX1Poly.Core.LexPair.pairAccessible
+#assert_no_axioms FX1Poly.Core.LexPair.isWellFounded
+#assert_no_axioms FX1Poly.Core.wellFounded_of_lexPairMeasure
+#assert_no_axioms FX1Poly.Core.wellFounded_of_precedenceMultisetMeasure
+#assert_no_axioms FX1Poly.Core.wellFounded_of_precedenceLexMeasure
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
