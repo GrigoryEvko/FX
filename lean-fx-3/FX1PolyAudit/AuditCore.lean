@@ -440,6 +440,14 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Conv.equivalence
 #assert_no_axioms FX1Poly.Core.Conv.instTrans
 
+-- Uniqueness of normal forms WITHOUT a termination hypothesis. normalForm_unique (NormalFormUnique.lean)
+-- joins two normal reducts via confluence_of_localJoin_and_accessible, needing IsStronglyNormalizing
+-- sourceTerm (the only confluence available before #420). StepStar.rawConfluence joins ANY two reductions
+-- of a common source, so two normal reducts coincide whether or not the source terminates -- making "the
+-- normal form" a well-defined partial function on ALL raw terms. The proof reuses Conv.eq_of_noStep +
+-- isStepNormalForm_blocks_step, joining via rawConfluence instead of the SN-keyed local confluence.
+#assert_no_axioms FX1Poly.Core.normalForm_unique_of_confluence
+
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
 -- diamonds COMMUTE into a confluent union (the intended FX use: beta-parallel diamond + iota-parallel

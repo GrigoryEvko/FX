@@ -1,6 +1,7 @@
 import FX1Poly.Core.ParStepTriangle
 import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.TakahashiTriangle
+import FX1Poly.Core.NormalFormUnique
 
 /-! # FX1Poly/Core/RawConfluence
     — UNCONDITIONAL raw confluence of the FX reduction relation (`#420`, the M8-S1 payoff).
@@ -80,5 +81,32 @@ theorem Conv.equivalence {scope : Nat} : Equivalence (@Conv scope) where
 `Conv.trans`.  Lets downstream conversion reasoning chain `Conv` steps with `calc` / `Trans.trans`. -/
 instance Conv.instTrans {scope : Nat} : Trans (@Conv scope) (@Conv scope) (@Conv scope) where
   trans := Conv.trans
+
+/-! ### Normal forms are unique — without any termination hypothesis.
+
+`NormalFormUnique.lean`'s `normalForm_unique` joins two normal reducts via
+`confluence_of_localJoin_and_accessible`, which needs the source to be strongly normalizing
+(`StepStar.IsStronglyNormalizing sourceTerm`) — the only confluence available before `#420`.  Global
+`rawConfluence` removes that need: it joins ANY two reductions of a common source, so two normal reducts
+coincide whether or not the source terminates.  This makes "the normal form of a raw term" a well-defined
+*partial* function on ALL raw terms (a possibly-diverging term may reach no normal form, but if it reaches
+one, that form is unique). -/
+
+/-- **Uniqueness of normal forms, unconditionally.**  Two structurally-normal `StepStar`-reducts of one
+common source coincide — with NO strong-normalization hypothesis.  `rawConfluence` joins the two reduction
+chains; normality makes each endpoint rigid (`isStepNormalForm_blocks_step`), so the shared reduct equals
+both.  This strengthens `normalForm_unique` (which threads `IsStronglyNormalizing sourceTerm`) by dropping
+the termination premise — the canonical harvest of unconditional global confluence. -/
+theorem normalForm_unique_of_confluence {scope : Nat}
+    {sourceTerm normalForm1 normalForm2 : RawTerm scope}
+    (chain1 : StepStar sourceTerm normalForm1)
+    (firstIsNormal : RawTerm.isStepNormalForm normalForm1)
+    (chain2 : StepStar sourceTerm normalForm2)
+    (secondIsNormal : RawTerm.isStepNormalForm normalForm2) :
+    normalForm1 = normalForm2 :=
+  Conv.eq_of_noStep
+    (fun reduct firstStep => RawTerm.isStepNormalForm_blocks_step firstIsNormal reduct firstStep)
+    (fun reduct secondStep => RawTerm.isStepNormalForm_blocks_step secondIsNormal reduct secondStep)
+    (StepStar.rawConfluence chain1 chain2)
 
 end FX1Poly.Core
