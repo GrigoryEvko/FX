@@ -55,6 +55,30 @@ the VALIDITY DERIVATION rather than an external fuel, threaded through the mutua
 theorem.  The entire reduction chain DOWN TO this one obligation is committed and gated; only the model-level
 reformulation remains.
 
+## Sharpened residual + the concrete non-fuel handle (frontier update)
+
+The open case is even smaller than "universe-domain `piArm`": the NON-dependent universe-domain arrow
+`Type@e → C` (codomain not using the bound variable) is ALREADY closed unconditionally
+(`IsReducibleTypeAtAllLevels.universeDomainNonDependentArrow`, via the weaken-cancellation trick — the Π
+candidate at each level reuses the codomain candidate directly, NO domain-member-extension needed).  So the
+SOLE remaining obligation is the **dependent universe-domain Π** `Π (X : Type@e). C[X]` where `C` genuinely
+uses `X` — impredicative dependent polymorphism (type families indexed by types).
+
+Why no fuel/structural induction reaches it (the precise obstruction, re-confirmed): typeLevelIrrelevance is
+consumed at `predLevel` possibly `0` (the member-decode of `IsReducibleMemberAt (predLevel+1) (Type@e) A`),
+and `IsReducibleTypeAt 0 (Π (Type@e) C)` is VACUOUS (empty fuel-0 universe domain), carrying no information
+about `C` on real members — so it cannot feed the non-vacuous level-`1+` codomain obligation.  Strong fuel
+induction therefore fails at the base; structural induction on the code is circular (domain members are not
+sub-codes of `Π (Type@e) C`).
+
+The CONCRETE handle for the derivation-indexed LR (the measure to recurse on): the **universe LEVEL of the
+type code**, not the external fuel.  A member `X : Type@e` is a type of universe level `≤ e`, strictly below
+`Type@e`'s level `e+1 ≤ level (Π (Type@e) C)`.  So a well-founded recursion on the universe level (carried by
+the validity derivation, e.g. `ValidTyping` / `HasTypeDescPi`) makes the domain members STRICTLY SMALLER —
+their own level-irrelevance is then the IH, breaking the circularity that fuel and code-structure both hit.
+Building that level-indexed (validity-derivation-threaded) reducibility relation is the committed next effort
+(SN-006); this file's `piArm` is its single consumer.
+
 ## Zero-axiom verification
 
 A single `induction` on `ReducibleTypeStep` with a level-independent motive (`IsReducibleTypeAtAllLevels
