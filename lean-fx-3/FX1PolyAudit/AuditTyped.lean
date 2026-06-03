@@ -141,6 +141,7 @@ import FX1Poly.Typed.ValidTypingTermArms
 import FX1Poly.Typed.ValidTypingFormerArms
 import FX1Poly.Typed.ValidTypingConvArm
 import FX1Poly.Typed.ValidTypingVariableLevelPinned
+import FX1Poly.Typed.FormationEngineFundamentalReduction
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1549,6 +1550,15 @@ gates pin them shut.
 -- conv-coordinated level. The shipped refined-motive arms stay correct for the FORMER + value-subject cases.
 #assert_no_axioms FX1Poly.Typed.validTypingVariableLevelPinned
 #assert_no_axioms FX1Poly.Typed.typeVariableNotLevelFlexible
+-- SN-027 the KRIPKE-ROUTE REDUCTION (#674, FormationEngineFundamentalReduction.lean): given the wall pinned above,
+-- the assembly PIVOTS to the Kripke route (SN-026) where neutral type-codes route through ReducibleEnvAtAllLevels
+-- (reducibility, NOT ValidTyping levels). The grown-engine recursor HasTypeDescPi.fundamentalAtAllFromFormation is
+-- ALREADY proven conditional on the formation-engine FT (HasTypeDesc -> IsFundamentalConclusionAtVector). This
+-- theorem WIRES that single hypothesis to the all-level FT INTERFACE HasTypeDescPiAllLevelFundamentalTheorem, which
+-- is consumed (never previously produced) by ~10 downstream SN/canonicity/consistency theorems. So SN-027's sole
+-- residual is now the 4-arm formation-engine FT (#674: var via the all-level env, not pinning; universe/genFormation
+-- formers; conv via Conv-invariance of reducibility) — the var arm is dischargeable here, no level-pinning wall.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPiAllLevelFundamentalTheorem.ofFormationFundamental
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
