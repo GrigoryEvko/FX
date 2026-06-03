@@ -78,6 +78,7 @@ import FX1Poly.Core.IdentityEliminatorCanonicalComputation
 import FX1Poly.Core.OptionEitherMatchCanonicalComputation
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.BoolCanonicityViaSconing
+import FX1Poly.Core.DataCanonicityViaSconing
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
@@ -2164,6 +2165,20 @@ gates pin them shut.
 -- #672 fundamental — extraction is free, so Path C adds no obligation beyond Path A's. No fundamental proven here.
 #assert_no_axioms FX1Poly.Core.boolCanonicityScone
 #assert_no_axioms FX1Poly.Core.boolCanonicityViaSconing
+-- GENERIC data-canonicity sconing witness (SN-048/049/093): the bool witness above was a SPECIAL CASE.
+-- EVERY data candidate shares ONE uniform #672-free extraction (CanonicalFormsPredicate.closedReducesToValue,
+-- generic in the value predicate), so dataCanonicityScone is parametric in isValue: computable = data candidate,
+-- extraction = the uniform closedReducesToValue, fundamental (well-typed -> candidate member) the explicit sole
+-- obligation. dataCanonicityViaSconing = canonicity applied generically. nat/list/option/either/pair instances
+-- are one-line specializations at the concrete value predicates — the "one functor => canonicity for all data"
+-- realization (toward SN-110), each the §3.12 canonicity headline per type via Path C. No fundamental proven here.
+#assert_no_axioms FX1Poly.Core.dataCanonicityScone
+#assert_no_axioms FX1Poly.Core.dataCanonicityViaSconing
+#assert_no_axioms FX1Poly.Core.natCanonicityViaSconing
+#assert_no_axioms FX1Poly.Core.listCanonicityViaSconing
+#assert_no_axioms FX1Poly.Core.optionCanonicityViaSconing
+#assert_no_axioms FX1Poly.Core.eitherCanonicityViaSconing
+#assert_no_axioms FX1Poly.Core.pairCanonicityViaSconing
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
