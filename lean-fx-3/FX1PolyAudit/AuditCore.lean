@@ -37,6 +37,7 @@ import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationCodeFormers
 import FX1Poly.Core.StrongNormalizationModalEliminators
 import FX1Poly.Core.StrongNormalizationNatElim
+import FX1Poly.Core.StrongNormalizationListElim
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -573,3 +574,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- succ-contractum hypothesis is the honest IH-carrying premise the numeral WF-recursion eventually discharges.
 #assert_no_axioms FX1Poly.Core.StepStar.predecessor_isStronglyNormalizing_of_natSucc
 #assert_no_axioms FX1Poly.Core.StepStar.natElim_isStronglyNormalizing_of_normal_branches
+
+-- Recursive-eliminator iota-redex SN, second data type — List (toward SN-064): the two listCons
+-- subterm-SN projections (head/tail of an SN cons are SN) and the conditional listElim cons-case redex SN
+-- (normal branches + the triple-app cons-contractum SN for every SN head/tail ⟹ the listElim redex with an
+-- SN scrutinee is SN). Same honest IH-carrying contractum premise as natElim; the cons scrutinee is 2-child.
+#assert_no_axioms FX1Poly.Core.StepStar.headValue_isStronglyNormalizing_of_listCons
+#assert_no_axioms FX1Poly.Core.StepStar.tailValue_isStronglyNormalizing_of_listCons
+#assert_no_axioms FX1Poly.Core.StepStar.listElim_isStronglyNormalizing_of_normal_branches
