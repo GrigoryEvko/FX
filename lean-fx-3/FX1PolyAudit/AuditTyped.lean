@@ -70,6 +70,7 @@ import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.Normalize
 import FX1Poly.Core.NormalizeMeta
+import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.StronglyNormalizingSubst
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
@@ -2017,6 +2018,16 @@ gates pin them shut.
 -- introduction form, never a stuck eliminator. Pure structural induction over the 12-arm IsNeutral; #672-free.
 #assert_no_axioms FX1Poly.Core.IsNeutral.elimEmptyScope
 #assert_no_axioms FX1Poly.Core.IsNeutral.noClosed
+-- DATA-CANONICITY FOUNDATION: CanonicalFormsPredicate isValue = SN ∧ (neutral ∨ reduces-to-value), the sharper
+-- canonicity-bearing candidate (vs the bare SN candidate the model gives data leaves). Generic over the value
+-- predicate (bool→true/false, Empty→empty pred, nat→zero/succ). CR1 (stronglyNormalizing) = first conjunct; CR3
+-- (neutralExpansion) = Acc.intro over reducts' SN + Or.inl (shipped SN-candidate CR3 pattern); containsVariable
+-- via vacuous CR3. CR2 DEFERRED (needs IsNeutral-closed-under-Step + per-term confluence) — so this is the
+-- honest 2-of-3 foundation, NOT yet a full IsReducibilityCandidate. #672-free. Toward SN-063/047.
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.stronglyNormalizing
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.neutralExpansion
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.containsVariable
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
