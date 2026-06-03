@@ -42,6 +42,7 @@ import FX1Poly.Core.StrongNormalizationMatch
 import FX1Poly.Core.StrongNormalizationLinearFormers
 import FX1Poly.Core.NatElimValueReducibility
 import FX1Poly.Core.ListElimValueReducibility
+import FX1Poly.Core.ApplicationStrongNormalizationForward
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -595,6 +596,15 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- weak-head expansion. Same conditional interface (weak-head-expansion + branch reducibility + SN-of-redex);
 -- the scrutinee-reduction/neutral outer regime is the deferred shared other half.
 #assert_no_axioms FX1Poly.Core.listElimValueReducibility
+
+-- SN of an APPLICATION under the β-contraction side-condition (the member weak-head-expansion unblocker):
+-- app f a is SN given f SN, a SN, AND every β-contraction body[a] (for f ↝* lam body) SN. The side-condition
+-- is essential — SN of the two positions alone does NOT give SN of the application (the Ω term loops). This is
+-- the honest "application preserves SN" and the load-bearing Π arm of the recursor-value `headExpand` premise.
+-- `descendStepStar` is the StepStar-iterated forward SN closure (every reduct of an SN term is SN).
+#assert_no_axioms FX1Poly.Core.IsStronglyNormalizing.descendStepStar
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizing_applicationCell_aux
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizing_applicationCell_ofBetaContractionsStronglyNormalizing
 
 -- Recursive-eliminator iota-redex SN, second data type — List (toward SN-064): the two listCons
 -- subterm-SN projections (head/tail of an SN cons are SN) and the conditional listElim cons-case redex SN
