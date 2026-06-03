@@ -136,6 +136,7 @@ import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
 import FX1Poly.Typed.LevelingBridge
 import FX1Poly.Typed.ValidTypingLevelFlexible
+import FX1Poly.Typed.ValidTypingRefinedMotive
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1484,6 +1485,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.piFormation_isLevelFlexible
 #assert_no_axioms FX1Poly.Typed.sigmaFormation_isLevelFlexible
 #assert_no_axioms FX1Poly.Typed.ValidTyping.convWithLevelFlexibleReclassifier
+-- SN-027 the REFINED MOTIVE (#655): RefinedTotalBridgeConclusion = single-level validity ∧ (universe-classifier
+-- ⟹ level-flexible). This is the IH-strengthening total-bridge motive that forces the conv/piElim level
+-- coordination the bare ∃-shape can't. singleLevel/flexibleOfUniverseClassifier projections + ofLevelFlexible
+-- (the producer wiring the *_isLevelFlexible former witnesses into the motive via universeCodeCell_inj).
+#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion
+#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.singleLevel
+#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.flexibleOfUniverseClassifier
+#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.ofLevelFlexible
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
