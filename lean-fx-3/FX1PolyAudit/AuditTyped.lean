@@ -340,6 +340,13 @@ gates pin them shut.
 -- universe-code cell injectivity (no-Type-in-Type probe support): equal
 -- universe codes have equal levels and flags, via `cases` on the cell equality
 #assert_no_axioms FX1Poly.Typed.universeCodeCell_inj
+-- PURE STRUCTURAL UNIVERSE-CODE DICHOTOMY: every RawTerm either IS a universe code or provably is NOT one,
+-- decided by head-generator inspection (DecidableEq Generator via by_cases, no Classical). The routing primitive
+-- the totalBridge assembly (SN-027/#662) consumes: the term arms (RefinedTotalBridgeConclusion.var/.piElim) carry
+-- a "classifier is not a universe code" hypothesis, discharged for the TERM case while the neutral-TYPE case
+-- (type variable / type-family application — the level-flexibility-unsatisfiable subjects) routes to the pinned
+-- reclassifier handler. Applied to context.lookup index resp. subst0 codomainCode argument.
+#assert_no_axioms FX1Poly.Typed.RawTerm.isUniverseCodeOrNot
 
 /-! ### Π-formation shape bricks — `piTyCodeCell`
     smart ctor + head-generator computation + the two-child destructor that

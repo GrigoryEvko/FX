@@ -78,6 +78,27 @@ theorem headGenerator_universeCodeCell {scope : Nat} (levelExpr : LevelExpr)
       = Generator.gen_universeCode := by
   rfl
 
+/-- **The pure structural universe-code dichotomy.**  Every `RawTerm` either IS a universe code
+(`∃ levelExpr flag, term = universeCodeCell …`) or provably is NOT one (`∀ levelExpr flag, ≠`).  Decided by
+head-generator inspection (`DecidableEq Generator`, no Classical): head `= gen_universeCode` recovers the cell
+via `eq_universeCodeCell_of_headGenerator`; otherwise any equality to a universe code would force the head to be
+`gen_universeCode` (`headGenerator_universeCodeCell`), a contradiction.
+
+This is the routing primitive the totalBridge assembly (SN-027/#662) needs: the term arms
+`RefinedTotalBridgeConclusion.var` / `.piElim` carry a "classifier is not a universe code" hypothesis, and the
+assembly discharges it for the TERM case while routing the neutral-TYPE case (a type variable whose looked-up
+type IS a universe code, or a type-family application whose result IS a universe code — exactly the subjects
+whose refined-motive conjunct-2 level-flexibility is unsatisfiable) to the pinned reclassifier handler.  The
+split is this dichotomy applied to `context.lookup index` resp. `subst0 codomainCode argument`. -/
+theorem RawTerm.isUniverseCodeOrNot {scope : Nat} (term : RawTerm scope) :
+    (∃ (levelExpr : LevelExpr) (flag : UniverseFlag), term = universeCodeCell levelExpr flag) ∨
+    (∀ (levelExpr : LevelExpr) (flag : UniverseFlag), term ≠ universeCodeCell levelExpr flag) := by
+  by_cases headIsUniverseCode : RawTerm.headGenerator term = Generator.gen_universeCode
+  · exact Or.inl (eq_universeCodeCell_of_headGenerator headIsUniverseCode)
+  · refine Or.inr (fun levelExpr flag termEqUniverseCode => headIsUniverseCode ?_)
+    rw [termEqUniverseCode]
+    exact headGenerator_universeCodeCell levelExpr flag
+
 /-- The head generator of a variable cell is `gen_var`.  `scope` is pinned by the
 index's `Fin scope` type. -/
 theorem headGenerator_variableCell {scope : Nat} (index : Fin scope) :
