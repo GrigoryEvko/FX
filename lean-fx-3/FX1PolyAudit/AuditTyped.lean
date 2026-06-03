@@ -180,6 +180,7 @@ import FX1Poly.Typed.DenoteKeyedFundamentalMotive
 import FX1Poly.Typed.DenoteKeyedFundamentalPiElim
 import FX1Poly.Typed.DenoteKeyedFundamentalConv
 import FX1Poly.Typed.DenoteKeyedAmbientLevelBridge
+import FX1Poly.Typed.DenoteKeyedNonDependentArrow
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3079,3 +3080,13 @@ gates pin them shut.
 -- residual = the denote restatement of #672. Consolidates: conv (SN-D5a) + piIntro (SN-D5c) BOTH reduce through
 -- this bridge to that one piArm.
 #assert_no_axioms FX1Poly.Typed.universeMemberReducibleAtLevel
+
+-- DenoteKeyedNonDependentArrow (an unconditional slice of #752): the denote port of the fuel
+-- nonDependentArrowOfAllLevelsDomain. A non-dependent arrow domainCode → codomainBase is reducible at ALL denote
+-- levels from domain + base-codomain all-levels reducibility ALONE — NO domain-candidate uniformity, NO
+-- member-extension, NO piArm. The weaken-cancellation subst0 (weaken codomainBase) arg = codomainBase collapses
+-- the piType codomain obligation to the constant base fact, so the (possibly composite/drifting) domain candidate
+-- is never consumed per-argument. universeDomainNonDependentArrow is the Type@e → codomainBase instance (reaches
+-- past the universe-domain wall). The dependent composite-domain Π stays gated on #752.
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.nonDependentArrowOfAllLevelsDomain
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.universeDomainNonDependentArrow
