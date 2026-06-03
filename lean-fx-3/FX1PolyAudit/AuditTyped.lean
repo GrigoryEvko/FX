@@ -172,6 +172,7 @@ import FX1Poly.Typed.HasTypeDescPiUniqueNormalForm
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.DependentPiOverNeutralDomain
+import FX1Poly.Typed.DependentPiNeutralCodomain
 import FX1Poly.Typed.SimplyTypedTermReducibility
 
 /-! # Tools/AuditAll/AuditTyped
@@ -2670,3 +2671,12 @@ gates pin them shut.
 -- the closed surface past the simply-typed fragment. The universe-domain case remains the open crux (#672).
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllPositiveLevels.dependentPiOverNeutralDomain
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.dependentPiMemberExtensionOverNeutralDomain
+
+-- First FULLY UNCONDITIONAL dependent Pi arm + concrete closed witness: when the codomain INSTANTIATIONS
+-- subst0 cod arg are also neutral/data (for every arg), the codomain leg discharges too (via the neutral leaf
+-- + #717), so the dependent Pi is reducible / member-extending with NO reducibility hypothesis. The headline
+-- concreteDependentPi exhibits Pi (x : A). P x (A, P free type/family variables) reducible end-to-end with
+-- ZERO hypotheses — the first genuinely dependent type closed through the stratified reducibility model.
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllPositiveLevels.dependentPiOverNeutralDomainNeutralCodomain
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.dependentPiOverNeutralDomainNeutralCodomain
+#assert_no_axioms FX1Poly.Typed.concreteDependentPi_isReducibleType
