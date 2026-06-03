@@ -165,6 +165,7 @@ import FX1Poly.Typed.DenoteKeyedUniverseDomainPi
 import FX1Poly.Typed.DenoteKeyedLevelIrrelevance
 import FX1Poly.Typed.DenoteKeyedReducibleEnv
 import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
+import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2909,3 +2910,11 @@ gates pin them shut.
 -- classifier candidate) + isStronglyNormalizing_of_noStep∘noStep_universeCode (SN conjunct) +
 -- universeCode_isReducibleAtDenote (reducible-type conjunct); a single anonymous-constructor term, no induction.
 #assert_no_axioms FX1Poly.Typed.universeFormationMemberAtDenote
+
+-- DenoteKeyedCanonicalMemberCandidate (route D Π-formation engine, the denote analogue of #490): the canonical
+-- member-predicate IsReducibleMemberAtDenote env level typeCode is itself the type's own candidate. The
+-- choice-free codomain extraction the denote FT's Π-formation arm consumes — turns the codomain IH's mere
+-- EXISTENCE of a candidate into the FIXED canonical predicate, no Classical.choice. ofPointwiseIff (pointwise,
+-- no funext) + deterministic; uniform in level (no cases-level split the fuel original needed).
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.reducibleMemberCandidate
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtDenote.reducibleMemberCandidate
