@@ -3136,3 +3136,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofUniverseCode
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.headExpand
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote
+-- Non-dependent arrow piArm (uniform motive): the UNCONDITIONAL slice of #752. The weaken-cancellation makes
+-- the codomain constant in the argument, so the codomain threshold-swap vanishes (Π threshold = domThreshold +
+-- codomainThreshold, NOT max — the Nat.le_max_* lemmas leak propext, so + with Nat.le_add_* is the clean route).
+-- Correction recorded: the prior "reducibility bounds a type's universe level" idea is FALSE (Type@huge is a
+-- reducible type at every level), so the DEPENDENT composite piArm needs a different technique, not a bound lemma.
+#assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.nonDependentArrow
+#assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.universeDomainNonDependentArrow

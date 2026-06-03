@@ -32,24 +32,36 @@ ofReducibleTypeStepDenote`, the same 5-arm dispatch over `ReducibleTypeStepDenot
 neutral→`ofNeutral`, universeCode→`ofUniverseCode`, ofPointwiseIff→IH absorbed by the motive's `∃ candidate`,
 piType→the supplied `piArm`), with the uniform motive carried through.
 
-REMAINING for #752 (next ticks, now sharper): the load-bearing piType `piArm` — and its obstruction is DEEPER
-than one motive-swap.  The uniform DOMAIN candidate does dissolve the source-vs-target candidate mismatch
-(determinism at the concrete source level equates the uniform candidate with the source candidate gating the
-codomain IH).  But the CODOMAIN side has a THRESHOLD-SWAP obstruction: the codomain IH gives, per argument, a
-threshold `codThreshold(arg)` that VARIES with the argument, and a single Π threshold must dominate them all —
-an `∃∀ / ∀∃` swap with no uniform bound in general.  A uniform bound exists in principle (a type reducible at
-level `lvl` can only contain universe codes that decode `< lvl`, so a domain member's codomain threshold is
-bounded by the domain's decoded level + the codomain code's own universe content) — but formalizing
-"reducibility bounds a type code's universe level" is a substantial level-tracking lemma, the genuine residual
-of #752.  So the backbone is the inductive scaffold; the piArm discharge is the remaining deep brick.
+REMAINING for #752 (next ticks): the load-bearing piType `piArm` — its obstruction is DEEPER than one
+motive-swap.  The uniform DOMAIN candidate dissolves the source-vs-target candidate mismatch (determinism at the
+concrete source level equates the uniform candidate with the source candidate gating the codomain IH).  But the
+CODOMAIN side has a THRESHOLD-SWAP obstruction: the codomain IH gives, per argument, a threshold
+`codThreshold(arg)` that VARIES with the argument, and a single Π threshold must dominate them all — an `∃∀ /
+∀∃` swap with no uniform bound in general.
+
+CORRECTION (do not re-propose): a prior note suggested the bound exists because "a type reducible at level `lvl`
+contains only universe codes that decode `< lvl`".  That is FALSE — `Type@huge` is a reducible type at EVERY
+level (`IsReducibleTypeAtAllDenoteLevels.ofUniverseCode`, the universe arm fires unconditionally with a possibly
+degenerate candidate), so reducibility does NOT bound a type code's syntactic universe content.  The
+threshold-swap is therefore genuine for DEPENDENT composite codomains and needs a different technique (the
+ValidTyping-derivation-level-indexed route, or a structural-on-code recursion that handles substitution).
+
+This file's `nonDependentArrow` discharges the slice where the obstruction VANISHES: a NON-dependent codomain
+`weaken codomainBase` substitutes to the constant `codomainBase` (independent of the argument), so there is a
+SINGLE codomain threshold — the Π threshold is just `domThreshold + codomainThreshold`, no per-argument swap.
+So the backbone is the inductive scaffold; the non-dependent piArm is unconditional; the DEPENDENT composite
+piArm remains the deep brick.
 
 ## Zero-axiom verification
 
-A `∃`-packaged `def`, three arms (two anonymous-constructor leaves; `headExpand` rewraps via `whnfExpand`), and
-one `induction` on `ReducibleTypeStepDenote` with the level-independent motive `UniformlyReducibleAboveDenote env
-typeCode` (avoiding the indexed-match propext leak, exactly as the all-levels backbone does).  No `funext`.  No
-`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditTyped.lean`.
+A `∃`-packaged `def`, three leaf arms (two anonymous-constructor; `headExpand` rewraps via `whnfExpand`), one
+`induction` on `ReducibleTypeStepDenote` with the level-independent motive `UniformlyReducibleAboveDenote env
+typeCode` (avoiding the indexed-match propext leak, exactly as the all-levels backbone does), and the
+non-dependent arrow piArm (`piType` + the weaken-cancellation `rw`).  No `funext`.  GOTCHA recorded: the
+non-dependent arrow's Π threshold uses `domThreshold + codomainThreshold` with `Nat.le_add_left/right`, NOT
+`max` with `Nat.le_max_left/right` — the `Nat.le_max_*` lemmas leak `propext` in this Init-only setting, so the
+`+`-with-`Nat.le_add_*` bound is the zero-axiom route.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -143,5 +155,45 @@ theorem UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote {scope : Nat} {e
       exact UniformlyReducibleAboveDenote.ofUniverseCode env levelExpr flag
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
+
+/-- **Uniform non-dependent-arrow `piArm` — the unconditional slice of #752 in the uniform motive.**  The simple
+arrow `domainCode → codomainBase` (= `piTyCodeCell domainCode (RawTerm.weaken codomainBase)`) is uniformly
+reducible above `domThreshold + codomainThreshold` from the domain and base codomain being uniformly reducible
+ALONE — no member-extension, no composite-domain piArm.  The threshold-swap that blocks the general dependent
+piArm VANISHES: the codomain `weaken codomainBase` substitutes to the CONSTANT `codomainBase`
+(`RawTerm.weaken_subst_singleton`, independent of the argument), so there is a SINGLE codomain threshold and the
+Π threshold is just the sum — no per-argument supremum.  The uniform-motive twin of the all-levels
+`IsReducibleTypeAtAllDenoteLevels.nonDependentArrowOfAllLevelsDomain`. -/
+theorem UniformlyReducibleAboveDenote.nonDependentArrow {scope : Nat} (env : Nat → Nat)
+    {domainCode codomainBase : RawTerm scope}
+    (domainUniform : UniformlyReducibleAboveDenote env domainCode)
+    (codomainUniform : UniformlyReducibleAboveDenote env codomainBase) :
+    UniformlyReducibleAboveDenote env (piTyCodeCell domainCode (RawTerm.weaken codomainBase)) := by
+  obtain ⟨domThreshold, domainCandidate, domainReducible⟩ := domainUniform
+  obtain ⟨codomainThreshold, codomainCandidate, codomainReducible⟩ := codomainUniform
+  refine ⟨domThreshold + codomainThreshold,
+    (fun functionTerm => ∀ argument : RawTerm scope, domainCandidate argument →
+      codomainCandidate
+        (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil)))),
+    fun level habove => ?_⟩
+  refine ReducibleTypeStepDenote.piType (domainCandidate := domainCandidate)
+    (fun _argument => codomainCandidate)
+    (domainReducible level (Nat.lt_of_le_of_lt (Nat.le_add_right _ _) habove))
+    (fun argument _argumentInDomain => ?_)
+  rw [show RawTerm.subst0 (RawTerm.weaken codomainBase) argument = codomainBase from
+    RawTerm.weaken_subst_singleton codomainBase argument]
+  exact codomainReducible level (Nat.lt_of_le_of_lt (Nat.le_add_left _ _) habove)
+
+/-- **Universe-domain non-dependent arrow (uniform motive).**  `Type@levelExpr → codomainBase` is uniformly
+reducible whenever the base codomain is — the uniform-motive twin of `IsReducibleTypeAtAllDenoteLevels.\
+universeDomainNonDependentArrow`, reaching past the universe-domain wall (a universe domain has no
+member-extension, but the non-dependent codomain makes member-extension unnecessary). -/
+theorem UniformlyReducibleAboveDenote.universeDomainNonDependentArrow {scope : Nat} (env : Nat → Nat)
+    {levelExpr : LevelExpr} {flag : UniverseFlag} {codomainBase : RawTerm scope}
+    (codomainUniform : UniformlyReducibleAboveDenote env codomainBase) :
+    UniformlyReducibleAboveDenote env
+      (piTyCodeCell (universeCodeCell levelExpr flag) (RawTerm.weaken codomainBase)) :=
+  UniformlyReducibleAboveDenote.nonDependentArrow env
+    (UniformlyReducibleAboveDenote.ofUniverseCode env levelExpr flag) codomainUniform
 
 end FX1Poly.Typed
