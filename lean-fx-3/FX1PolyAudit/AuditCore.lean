@@ -430,6 +430,16 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.ParStep.diamond
 #assert_no_axioms FX1Poly.Core.StepStar.rawConfluence
 
+-- The harvest of #420: raw Conv (= StepStar.Join) is an UNCONDITIONAL equivalence relation. Conv.refl /
+-- Conv.sym were structural (StepStarConfluence); Conv.trans needed Church-Rosser, previously only available
+-- conditionally (trans_of_confluence / trans_of_strip / trans_of_strongNormalization, the last UNAVAILABLE
+-- since raw beta+iota is not SN). StepStar.rawConfluence discharges the confluence hypothesis, so Conv.trans
+-- + Conv.equivalence + the calc-enabling Trans instance are now unconditional -- the foundation the
+-- raw-layer conversion checker rests on.
+#assert_no_axioms FX1Poly.Core.Conv.trans
+#assert_no_axioms FX1Poly.Core.Conv.equivalence
+#assert_no_axioms FX1Poly.Core.Conv.instTrans
+
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
 -- diamonds COMMUTE into a confluent union (the intended FX use: beta-parallel diamond + iota-parallel

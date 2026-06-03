@@ -51,4 +51,34 @@ theorem StepStar.rawConfluence : StepStar.HasConfluence :=
   StepStar.hasConfluence_of_parallelDiamond
     (@ParStep) (@Step.toParStep) (@ParStep.toStepStar) (@ParStep.diamond)
 
+/-! ### Raw conversion is an equivalence relation — the unconditional harvest of confluence.
+
+`Conv` (`StepStarConfluence.lean`) is *defined* as `StepStar.Join` — joinability via a common reduct.
+`Conv.refl` and `Conv.sym` are structural (a term joins itself; a join is symmetric).  Transitivity,
+however, is exactly Church-Rosser: chaining `a ~ b` (join at `c`) and `b ~ d` (join at `e`) needs `c` and
+`e` — both reducts of `b` — to rejoin, which is confluence at `b`.  `StepStarConfluence.lean` could only
+offer `Conv.trans_of_confluence` (a confluence hypothesis), `trans_of_strip`, or
+`trans_of_strongNormalization` (global SN — UNAVAILABLE for raw β+ι).  `StepStar.rawConfluence` now
+discharges the confluence hypothesis, so raw `Conv` is an UNCONDITIONAL equivalence relation — the
+foundation the raw-layer conversion checker rests on. -/
+
+/-- **Unconditional transitivity of raw conversion**, by discharging `Conv.trans_of_confluence` with the
+shipped `StepStar.rawConfluence`. -/
+theorem Conv.trans {scope : Nat} {firstTerm middleTerm lastTerm : RawTerm scope}
+    (firstMiddle : Conv firstTerm middleTerm) (middleLast : Conv middleTerm lastTerm) :
+    Conv firstTerm lastTerm :=
+  Conv.trans_of_confluence StepStar.rawConfluence firstMiddle middleLast
+
+/-- **Raw conversion is an equivalence relation** — unconditionally.  Reflexivity/symmetry are structural
+(`Conv.refl` / `Conv.sym`); transitivity is `Conv.trans` via raw confluence (`#420`). -/
+theorem Conv.equivalence {scope : Nat} : Equivalence (@Conv scope) where
+  refl := Conv.refl
+  symm := Conv.sym
+  trans := Conv.trans
+
+/-- `calc`-enabling homogeneous `Trans` instance for raw conversion, backed by the unconditional
+`Conv.trans`.  Lets downstream conversion reasoning chain `Conv` steps with `calc` / `Trans.trans`. -/
+instance Conv.instTrans {scope : Nat} : Trans (@Conv scope) (@Conv scope) (@Conv scope) where
+  trans := Conv.trans
+
 end FX1Poly.Core
