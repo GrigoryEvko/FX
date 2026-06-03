@@ -77,6 +77,7 @@ import FX1Poly.Core.BoolElimCanonicalComputation
 import FX1Poly.Core.BoolElimClosedMembership
 import FX1Poly.Core.SigmaProjectionCanonicalComputation
 import FX1Poly.Core.IdentityEliminatorCanonicalComputation
+import FX1Poly.Core.IdEliminatorClosedMembership
 import FX1Poly.Core.OptionEitherMatchCanonicalComputation
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.BoolCanonicityViaSconing
@@ -2161,6 +2162,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.StepStar.idStrictRecWitness
 #assert_no_axioms FX1Poly.Core.idJCanonicalWitnessReducesToBase
 #assert_no_axioms FX1Poly.Core.idStrictRecCanonicalWitnessReducesToBase
+-- IDENTITY-ELIMINATOR MEMBERSHIP (#672-free, the SN-068/069 elimination half, closed-layer): a closed idJ/
+-- idStrictRec whose witness is a canonical identity member and whose base case is a member of a result candidate
+-- is ITSELF a member of that candidate. The exact clean analogue of boolElimClosedIsMember — idJ/idStrictRec are
+-- the non-growing (passive-base) eliminators whose single iota selects the base case DIRECTLY from the witness
+-- position (no payload app, no recursion). The cell is SN (idJ/idStrictRec_isStronglyNormalizing_of_strongly_
+-- normalizing_base, the SN-base strengthening, on the members' CR1 SN), reduces to the base case (idJ/
+-- idStrictRecCanonicalWitnessReducesToBase), and that closed base-case member reaches a value (closedReducesTo-
+-- Value) — value-reaching weak-head expansion (ofStepStarReachingValue, #735) lifts membership to the cell. The
+-- recursor lands in the candidate, not merely normalizes; no fundamental theorem used.
+#assert_no_axioms FX1Poly.Core.idJClosedIsMember
+#assert_no_axioms FX1Poly.Core.idStrictRecClosedIsMember
 -- NON-RECURSIVE data eliminators (#672-free, SN-065/066 path): optionMatch/eitherMatch on a CANONICAL scrutinee
 -- COMPUTE to a branch. StepStar.optionMatchScrutinee/eitherMatchScrutinee = the head-child scrutinee congruences
 -- (StepStar.congAt + Step.cong (here ...), as for boolElim). optionMatchCanonicalScrutineeReduces = none-branch
