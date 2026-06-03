@@ -2914,6 +2914,10 @@ gates pin them shut.
 -- classifier candidate) + isStronglyNormalizing_of_noStep∘noStep_universeCode (SN conjunct) +
 -- universeCode_isReducibleAtDenote (reducible-type conjunct); a single anonymous-constructor term, no induction.
 #assert_no_axioms FX1Poly.Typed.universeFormationMemberAtDenote
+-- universeFormationMemberUnderClosingSubstitution: the FT-shaped universe-formation member arm. The universe
+-- codes are closed (childNil) so subst σ is rfl on them; reduces to universeFormationMemberAtDenote. Completes
+-- the member-arm-under-subst leaf set (conv / Π-elimination / universeFormation).
+#assert_no_axioms FX1Poly.Typed.universeFormationMemberUnderClosingSubstitution
 
 -- DenoteKeyedCanonicalMemberCandidate (route D Π-formation engine, the denote analogue of #490): the canonical
 -- member-predicate IsReducibleMemberAtDenote env level typeCode is itself the type's own candidate. The

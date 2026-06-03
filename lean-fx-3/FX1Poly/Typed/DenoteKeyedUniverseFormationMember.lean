@@ -55,4 +55,24 @@ theorem universeFormationMemberAtDenote {scope : Nat} (env : Nat → Nat)
     isStronglyNormalizing_of_noStep (fun _target => noStep_universeCode (levelExpr, flag)),
     universeCode_isReducibleAtDenote env (LevelExpr.denote (LevelExpr.lsucc levelExpr) env) levelExpr flag⟩
 
+/-- **The denote universeFormation member arm under a closing substitution (the fundamental-theorem shape).**
+The universe codes are closed (`childNil`), so the closing substitution leaves both the subject `Type@levelExpr`
+and its classifier `Type@(lsucc levelExpr)` fixed (`subst σ` is `rfl` on them); the goal therefore reduces
+definitionally to `universeFormationMemberAtDenote`.  This is the FT's universe-formation case under the closing
+substitution — the member side of no-Type-in-Type, completing the member-arm-under-substitution leaf set
+(var / conv / Π-elimination / universeFormation). -/
+theorem universeFormationMemberUnderClosingSubstitution {scope targetScope : Nat} (env : Nat → Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) (level : Nat)
+    (levelAbove : LevelExpr.denote (LevelExpr.lsucc levelExpr) env < level)
+    (substitution : RawTermSubst scope targetScope) :
+    IsReducibleMemberAtDenote env level
+      (RawTerm.subst substitution
+        (.mkGen .gen_universeCode (LevelExpr.lsucc levelExpr, flag) .childNil))
+      (RawTerm.subst substitution
+        (.mkGen .gen_universeCode (levelExpr, flag) .childNil)) := by
+  show IsReducibleMemberAtDenote env level
+    (.mkGen .gen_universeCode (LevelExpr.lsucc levelExpr, flag) .childNil)
+    (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+  exact universeFormationMemberAtDenote env levelExpr flag level levelAbove
+
 end FX1Poly.Typed
