@@ -21,6 +21,7 @@ import FX1Poly.Core.ParallelReduction
 import FX1Poly.Core.CompleteDevelopment
 import FX1Poly.Core.ParStepSubstRename
 import FX1Poly.Core.ParStepSubstPointwise
+import FX1Poly.Core.ParStepInversion
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
 import FX1Poly.Core.KripkeReducibilityCandidate
@@ -375,6 +376,20 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.ParStep.substPointwise
 #assert_no_axioms FX1Poly.Core.RawTermSubst.singleton_pointwiseParStep
 #assert_no_axioms FX1Poly.Core.ParStep.subst0_diagonal
+
+-- ParStep cong-inversion at the non-redex-head constructors: a parallel reduct of mkGen C .. keeps the
+-- head C with components reduced (only the cong arm's source unifies; the β/ι arms have app/eliminator
+-- sources). These extract the developed sub-components the triangle's β/ι arms need from the cong-reduced
+-- children -- the route forced because completeDevelopment dispatches on the 194-ctor generator by
+-- by_cases (hiding deep subterms from structural recursion), so completeDevelopment_parStep must recurse
+-- only on the direct children spine and extract per-component ParSteps by these inversions.
+#assert_no_axioms FX1Poly.Core.ParStep.lam_inv
+#assert_no_axioms FX1Poly.Core.ParStep.pair_inv
+#assert_no_axioms FX1Poly.Core.ParStep.natSucc_inv
+#assert_no_axioms FX1Poly.Core.ParStep.listCons_inv
+#assert_no_axioms FX1Poly.Core.ParStep.optionSome_inv
+#assert_no_axioms FX1Poly.Core.ParStep.eitherInl_inv
+#assert_no_axioms FX1Poly.Core.ParStep.eitherInr_inv
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
