@@ -77,6 +77,7 @@ import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
 import FX1Poly.Core.ListCanonicalFormsCandidate
 import FX1Poly.Core.OptionCanonicalFormsCandidate
+import FX1Poly.Core.EitherCanonicalFormsCandidate
 import FX1Poly.Core.StronglyNormalizingSubst
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
@@ -2100,6 +2101,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.optionCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isOptionValue_isMember
 #assert_no_axioms FX1Poly.Core.optionClosedReducesToValue
+-- EITHER (sum) data candidate (SN-066): isEitherValue := inl payload | inr payload (payload normal) — two
+-- unary tagged arms; either values are normal forms; the candidate is isReducibilityCandidateOfValuesNormal
+-- at isEitherValue; every either value is a member (memberOfValue); a closed member reduces to inl/inr.
+-- Completes the tagged-union extraction family (option + either).
+#assert_no_axioms FX1Poly.Core.isEitherValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.eitherCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isEitherValue_isMember
+#assert_no_axioms FX1Poly.Core.eitherClosedReducesToValue
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
