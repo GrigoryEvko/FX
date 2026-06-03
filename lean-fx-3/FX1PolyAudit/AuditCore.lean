@@ -39,6 +39,7 @@ import FX1Poly.Core.StrongNormalizationModalEliminators
 import FX1Poly.Core.StrongNormalizationNatElim
 import FX1Poly.Core.StrongNormalizationListElim
 import FX1Poly.Core.StrongNormalizationMatch
+import FX1Poly.Core.StrongNormalizationLinearFormers
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -596,3 +597,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.value_isStronglyNormalizing_of_eitherInr
 #assert_no_axioms FX1Poly.Core.StepStar.optionMatch_isStronglyNormalizing_of_normal_branches
 #assert_no_axioms FX1Poly.Core.StepStar.eitherMatch_isStronglyNormalizing_of_normal_branches
+
+-- Linear-logic type-former SN (congruence-only, no β+ι root rule): linearArrow (⊸) and tensorProduct (⊗),
+-- two-child formers structurally identical to arrowCode/productCode. Cong inversions + twoChildCong SN.
+-- Extends the former-SN coverage to the linear generator family. #672-independent.
+#assert_no_axioms FX1Poly.Core.Step.from_linearArrow
+#assert_no_axioms FX1Poly.Core.Step.from_tensorProduct
+#assert_no_axioms FX1Poly.Core.StepStar.linearArrow_isStronglyNormalizing_of_source_target
+#assert_no_axioms FX1Poly.Core.StepStar.tensorProduct_isStronglyNormalizing_of_factors
