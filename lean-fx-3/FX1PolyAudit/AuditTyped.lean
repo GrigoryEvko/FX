@@ -105,6 +105,7 @@ import FX1Poly.Typed.FundamentalAtAllFormerChildren
 import FX1Poly.Typed.FundamentalAtAllPiIntro
 import FX1Poly.Typed.FundamentalAtAllPositiveArguments
 import FX1Poly.Typed.NeutralFuelStability
+import FX1Poly.Typed.PiTypeSaturationReassembly
 import FX1Poly.Typed.StrongNormalizingAllLevelPiComponents
 import FX1Poly.Typed.FundamentalAtAllTelescopePositiveArguments
 import FX1Poly.Typed.FundamentalAtAllPositiveMemberExtension
@@ -2632,3 +2633,10 @@ gates pin them shut.
 -- positive fuels. This is a genuine non-vacuous sub-case of HasPositiveMemberExtensionForStronglyNormalizing
 -- AllLevelTypes; the universe / Pi arms (where the candidate moves with the fuel) remain the open crux (#672).
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.ofNeutralTypeMember
+
+-- The Pi TYPE-saturation reassembly arm of #672 (inverse of domainOfPiType / codomainOfPiTypeAtAllPositive
+-- Argument): from domain all-positive + domain-member fuel-stability + codomain all-positive (per all-positive
+-- arg), the Pi type is reducible at all positive fuels. Choice-free via reducibleMemberCandidate. A conditional
+-- inductive step matching the existing arm style (the component fuel-stabilities are the recursion's sub-term
+-- IHs); the well-founded recursion tie-up remains the open crux (#672).
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllPositiveLevels.ofPiType
