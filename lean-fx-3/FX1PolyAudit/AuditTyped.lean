@@ -178,6 +178,7 @@ import FX1Poly.Typed.DenoteKeyedAbstractionMember
 import FX1Poly.Typed.DenoteKeyedAbstractionUnderSubst
 import FX1Poly.Typed.DenoteKeyedFundamentalMotive
 import FX1Poly.Typed.DenoteKeyedFundamentalPiElim
+import FX1Poly.Typed.DenoteKeyedFundamentalConv
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3056,3 +3057,14 @@ gates pin them shut.
 -- the target type's reducibility at the ambient level from a universe membership at the decoded level). Feeds
 -- the SN-D5 HasTypeDescPi induction's piElim case.
 #assert_no_axioms FX1Poly.Typed.fundamentalPiElimAtDenote
+
+-- DenoteKeyedFundamentalConv (SN-D5a): the denote FT's conversion dispatcher arm. The real content is
+-- convMemberUnderClosingSubstitution (pushes Conv under σ, transports the member). SOLE RESIDUAL isolated as the
+-- explicit reclassifierReducible premise = the target type's reducibility at the AMBIENT level — the single-level
+-- motive's genuine obstruction: the reclassifier IH gives reducibility only at the DECODED level (universe
+-- membership), and bridging to ambient is the general denote type-level level-irrelevance (A2). No conv-transport
+-- produces it directly (reducibility candidates aren't backward-closed under arbitrary Step; convInvariant is
+-- determinism-only at both layers). The wiring discharges the premise via the reclassifierTyped IH + the A2
+-- universe-membership→ambient bridge (carrying denote levelExpr env < level). piIntro's domain hits the SAME
+-- bridge; piElim sidesteps it.
+#assert_no_axioms FX1Poly.Typed.fundamentalConvAtDenote
