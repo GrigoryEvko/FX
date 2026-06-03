@@ -167,6 +167,7 @@ import FX1Poly.Typed.DenoteKeyedReducibleEnv
 import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
 import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
+import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2933,3 +2934,10 @@ gates pin them shut.
 -- below-family = the relation at denote e (universe membership IS the codomain gate); at/below it's empty
 -- (codomain vacuous). Completes the from-existence piArm family across all domain shapes.
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleFromCodomainExistence
+
+-- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
+-- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
+-- substitution (the codomain IH shape), the substituted Π code is denote-reducible. subst distributes over the
+-- Π cell by rfl; uniformDomainPi_reducibleFromCodomainExistence + subst_cons_eq_subst0_lift discharge it. The
+-- first genuine FT binder arm over the denote relation, choice-free.
+#assert_no_axioms FX1Poly.Typed.piFormationUnderClosingSubstitution
