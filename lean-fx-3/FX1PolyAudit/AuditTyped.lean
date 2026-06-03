@@ -177,6 +177,7 @@ import FX1Poly.Typed.DenoteKeyedHeadExpansion
 import FX1Poly.Typed.DenoteKeyedAbstractionMember
 import FX1Poly.Typed.DenoteKeyedAbstractionUnderSubst
 import FX1Poly.Typed.DenoteKeyedFundamentalMotive
+import FX1Poly.Typed.DenoteKeyedFundamentalPiElim
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3047,3 +3048,11 @@ gates pin them shut.
 -- genFormationPi) belong to the SN-D5 induction assembly.
 #assert_no_axioms FX1Poly.Typed.fundamentalVarAtDenote
 #assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtDenote
+
+-- DenoteKeyedFundamentalPiElim (SN-D5b): the denote FT's Π-elimination (application) dispatcher arm — the first
+-- RECURSIVE-arm dispatcher (leaves shipped in SN-D4). Lowest-risk recursive arm: a direct composition of
+-- applicationMemberUnderClosingSubstitution with the function + argument sub-conclusions at the SAME closing
+-- substitution / environment / uniform ambient level — NO level-bridge (unlike the conv arm, which must extract
+-- the target type's reducibility at the ambient level from a universe membership at the decoded level). Feeds
+-- the SN-D5 HasTypeDescPi induction's piElim case.
+#assert_no_axioms FX1Poly.Typed.fundamentalPiElimAtDenote
