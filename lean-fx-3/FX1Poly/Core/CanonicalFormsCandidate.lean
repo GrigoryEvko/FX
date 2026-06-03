@@ -169,4 +169,18 @@ theorem CanonicalFormsPredicate.closedReducesToValue {isValue : RawTerm 0 → Pr
   · exact (IsNeutral.noClosed termIsNeutral).elim
   · exact reducesToValue
 
+/-- **A normal value is a member of its canonical-forms candidate.**  If `value` satisfies the value
+predicate and is a structural normal form, it is a member: it is strongly normalizing (a normal form admits
+no `Step`, so `Acc.intro` closes vacuously via `RawTerm.isStepNormalForm_blocks_step`) and reduces
+reflexively to itself, a value.  This is the constructor-reducibility helper every data type instantiates for
+its (normal) constructors — `value ↝* value` with `value` canonical. -/
+theorem CanonicalFormsPredicate.memberOfValue {scope : Nat} {isValue : RawTerm scope → Prop}
+    {value : RawTerm scope}
+    (valueIsNormal : RawTerm.isStepNormalForm value) (valueIsValue : isValue value) :
+    CanonicalFormsPredicate isValue value :=
+  ⟨Acc.intro value
+      (fun reduct stepFromValue =>
+        absurd stepFromValue (RawTerm.isStepNormalForm_blocks_step valueIsNormal reduct)),
+    Or.inr ⟨value, StepStar.refl value, valueIsValue⟩⟩
+
 end FX1Poly.Core

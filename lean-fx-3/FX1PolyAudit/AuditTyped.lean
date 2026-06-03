@@ -72,6 +72,7 @@ import FX1Poly.Core.Normalize
 import FX1Poly.Core.NormalizeMeta
 import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.BoolCanonicalFormsCandidate
+import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.StronglyNormalizingSubst
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
@@ -2056,6 +2057,16 @@ gates pin them shut.
 -- well-typed term is a member) awaits the typed reducibility fundamental theorem.
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.closedReducesToValue
 #assert_no_axioms FX1Poly.Core.boolClosedReducesToTrueOrFalse
+-- A normal value is a member of its candidate (the generic constructor-reducibility helper).
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
+-- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
+-- structural normal forms by induction (a natSucc cell is normal iff its predecessor is); the candidate is
+-- isReducibilityCandidateOfValuesNormal at IsNatValue; every numeral is a member (memberOfValue); a closed
+-- member reduces to a numeral (closedReducesToValue). Unconditional + #672-free.
+#assert_no_axioms FX1Poly.Core.isNatValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.natCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isNatValue_isMember
+#assert_no_axioms FX1Poly.Core.natClosedReducesToValue
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
