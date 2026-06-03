@@ -192,8 +192,6 @@ import FX1Poly.Typed.LogRelSpec
 import FX1Poly.Typed.LevelingBridge
 import FX1Poly.Typed.ValidTypingLevelFlexible
 import FX1Poly.Typed.ValidTypingRefinedMotive
-import FX1Poly.Typed.ValidTypingTermArms
-import FX1Poly.Typed.ValidTypingFormerArms
 import FX1Poly.Typed.ValidTypingConvArm
 import FX1Poly.Typed.ValidTypingPiArms
 import FX1Poly.Typed.ValidTypingVariableLevelPinned
@@ -344,7 +342,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeCodeCell_inj
 -- PURE STRUCTURAL UNIVERSE-CODE DICHOTOMY: every RawTerm either IS a universe code or provably is NOT one,
 -- decided by head-generator inspection (DecidableEq Generator via by_cases, no Classical). The routing primitive
--- the totalBridge assembly (SN-027/#662) consumes: the term arms (RefinedTotalBridgeConclusion.var/.piElim) carry
+-- the totalBridge assembly (SN-027/#662) consumes: the term arms (TotalBridgeConclusion.var/.piElim) carry
 -- a "classifier is not a universe code" hypothesis, discharged for the TERM case while the neutral-TYPE case
 -- (type variable / type-family application — the level-flexibility-unsatisfiable subjects) routes to the pinned
 -- reclassifier handler. Applied to context.lookup index resp. subst0 codomainCode argument.
@@ -1614,85 +1612,40 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.piFormation_isLevelFlexible
 #assert_no_axioms FX1Poly.Typed.sigmaFormation_isLevelFlexible
 #assert_no_axioms FX1Poly.Typed.ValidTyping.convWithLevelFlexibleReclassifier
--- SN-027 the REFINED MOTIVE (#655): RefinedTotalBridgeConclusion = single-level validity ∧ (universe-classifier
--- ⟹ level-flexible). This is the IH-strengthening total-bridge motive that forces the conv/piElim level
--- coordination the bare ∃-shape can't. singleLevel/flexibleOfUniverseClassifier projections + ofLevelFlexible
--- (the producer wiring the *_isLevelFlexible former witnesses into the motive via universeCodeCell_inj).
-#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion
-#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.singleLevel
-#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.flexibleOfUniverseClassifier
-#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.ofLevelFlexible
--- SN-027 the REVISED motive (the var-arm FIX, #662 assembly): RefinedTotalBridgeConclusion's conjunct-2 demanded
--- level-flexibility for EVERY universe-classified subject — unsatisfiable for a type VARIABLE (pinned to
--- contextLevels index). The revised motive guards conjunct-2 with (∀ index, subject ≠ variableCell index),
--- excluding variable subjects. var arm: conjunct-2 vacuous (subject IS a variable). universeFormation arm:
--- flexibility via universeFormation_isLevelFlexible (a universe code is not a variable). RawTerm.isVariableOrNot
--- routes the conv arm onto the guard.
-#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.var
-#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.universeFormation
+-- SN-027 the TOTAL-BRIDGE MOTIVE (#655, ValidTypingRefinedMotive.lean): TotalBridgeConclusion = single-level
+-- validity ∧ (NON-VARIABLE subject whose classifier is CONVERTIBLE to a universe code ⟹ level-flexible). The
+-- IH-strengthening induction motive that forces the conv/piElim level coordination the bare ∃-shape can't. Two
+-- design points: the non-variable guard (∀ index, subject ≠ variableCell index) — a type variable is pinned by
+-- ValidTyping.var, cannot be flexible; and the CONVERTIBILITY guard (Conv classifier (Type@e f), not syntactic =)
+-- so conjunct-2 propagates through conv by Conv.trans. var arm: conjunct-2 vacuous (subject IS a variable).
+-- universeFormation arm: flexibility via universeFormation_isLevelFlexible, convertibility guard met by
+-- universeCodeCell_inj_of_conv. RawTerm.isVariableOrNot routes the conv arm onto the guard.
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.var
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.universeFormation
 -- the CONV arm (non-variable reclassifier) of the revised motive. The convertibility guard (Conv classifier
 -- (Type@e f), not syntactic =) lets conjunct-2 propagate through conv by Conv.trans; conjunct-1 reclassifies
 -- via convWithLevelFlexibleReclassifier (the non-variable reclassifier is level-flexible from its own conjunct-2
 -- at Conv.refl). The variable-reclassifier case routes to validTypingBridgeConvPinnedReclassifier (the leveling
 -- eq) via RawTerm.isVariableOrNot.
-#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.convNonVariableReclassifier
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.convNonVariableReclassifier
 -- the conv arm VARIABLE-reclassifier twin (ValidTypingConvArm.lean): conjunct-1 via validTypingBridgeConvPinnedReclassifier
 -- (consuming the leveling eq contextLevels index = subjectLevel + 1, the one residual the assembly's leveling
 -- discipline supplies); conjunct-2 vacuous (a variable reclassifier is not conv to a universe code). Routed by
 -- isVariableOrNot. This COMPLETES the conv arm modulo the leveling equation.
-#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.convVariableReclassifier
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.convVariableReclassifier
 -- the revised-motive TERM wrapper: a single-level-valid subject whose classifier is not convertible to any
 -- universe code satisfies the motive (conjunct-2 vacuous via the unsatisfiable convertibility guard). The
 -- binder/elim term-output arms consume it with Conv.piTyCode_not_universeCode / Conv.sigmaTyCode_not_universeCode.
-#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.ofTermValidity
--- the revised-motive BINDER/ELIMINATION term arms (ValidTypingPiArms.lean), revised twins of the old-motive
--- RefinedTotalBridgeConclusion.piIntro/.piElim. piIntro: classifier is a Π code, conjunct-2 vacuous via
--- Conv.piTyCode_not_universeCode (a PROOF). piElim: function+argument ALIGNED at one subjectLevel
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.ofTermValidity
+-- the BINDER/ELIMINATION term arms (ValidTypingPiArms.lean). piIntro: classifier is a Π code, conjunct-2 vacuous
+-- via Conv.piTyCode_not_universeCode (a PROOF). piElim: function+argument ALIGNED at one subjectLevel
 -- (ValidTyping.piElim is same-level — the bare-existential motive cannot align, verified), conjunct-2 vacuous
 -- via the resultNotConvUniverse hypothesis the assembly discharges (type-family case routes separately, pinned).
-#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.piIntro
-#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.piElim
--- SN-027 the TERM-SUBJECT ARMS (#660, ValidTypingTermArms.lean): the refined motive's term arms (piIntro now,
--- piElim/var next) discharge through ofTermValidity — single-level ValidTyping + a non-universe classifier makes
--- the level-flexibility conjunct VACUOUS (the classifier=universeCodeCell hypothesis is impossible). piIntro is
--- the first: its classifier piTyCodeCell is never a universeCodeCell (piTyCodeCell_ne_universeCodeCell, distinct
--- head generators), so it wraps ValidTyping.piIntro over coordinated premises. The level coordination (IH ∃-level
--- → the shared predLevel these premises demand) is the assembly's job (#662), not these arms'.
-#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.ofTermValidity
-#assert_no_axioms FX1Poly.Typed.piTyCodeCell_ne_universeCodeCell
-#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.piIntro
--- SN-027 the GENERIC-FORMER ARM (#658, ValidTypingFormerArms.lean): genFormationPi is neither a fixed former
--- (its classifier is the GENERIC rule.outputType, not a syntactic universe code, so ofLevelFlexible can't apply)
--- nor a term arm (its classifier may BE a universe code). conjunct-1 fires ValidTyping.genFormationPi at the
--- carried predLevel; conjunct-2 (only when rule.outputType matches a universe code) refires at every level — the
--- ctor's isFormation/premises/telescopeFundamental are all predLevel-INDEPENDENT, the same freedom the fixed
--- formers exploit — and casts the classifier through the match equality (eq ▸).
-#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.genFormationPi
--- SN-027 the piElim TERM ARM (#661, ValidTypingTermArms.lean): an application whose RESULT classifier
--- subst0 codomainCode argument is NOT a universe code is a term subject — ofTermValidity over ValidTyping.piElim,
--- like piIntro. KEY FINDING (why piElim carries a HYPOTHESIS where piIntro carried a PROOF): an application's
--- result IS a universe code precisely when the function is a type family (f : Pi(x:A). Type@e); then appCell f a
--- is a NEUTRAL type PINNED to one level by ValidTyping (the function var has no derivation at other levels), so
--- the refined motive's conjunct-2 (forall level) is UNSATISFIABLE at the ValidTyping layer for that case. That
--- type-family case does NOT flow through this arm — it routes through the reducibility-neutral machinery in the
--- assembly, which only ever needs ONE level (validTypingBridgeConvFromAllLevelReclassifier instantiates the
--- forall-level reclassifier at exactly subjectLevel — line 361). So resultNotUniverse is the honest precondition.
-#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.piElim
--- SN-027 the var TERM ARM (#659, ValidTypingTermArms.lean): the EXACT analogue of piElim. A variable whose
--- looked-up type context.lookup index is NOT a universe code is a term subject (ofTermValidity over
--- ValidTyping.var). A TYPE variable (lookup IS a universe code) is a neutral type code PINNED to the single level
--- contextLevels index by ValidTyping.var, so conjunct-2 (forall level) is UNSATISFIABLE at the ValidTyping layer
--- (same wall as piElim's type-family case) — routed through the reducibility type-variable env (consTypeVariable)
--- at the coordinated level in the assembly. So lookupNotUniverse is the honest precondition.
-#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.var
--- SN-027 the conv ARM (#673, ValidTypingConvArm.lean): the conversion arm of the refined motive, the PAYOFF of
--- the level-flexibility conjunct. conjunct-1 = validTypingBridgeConvFromAllLevelReclassifier (subject at one
--- level + reclassifier at EVERY level — the reclassifier's refined-motive conjunct-2 — picks the subjectLevel
--- instance for ValidTyping.conv's subjectLevel+1 requirement). conjunct-2 vacuous via reclassifierNotUniverse
--- (term-output). The type-output case (reclassifier IS a universe code) is the env-routed neutral case, same wall
--- as piElim type-family + var type-variable. With this, the HasTypeDescPi conv ctor's refined-motive arm is in
--- hand; the assembly #662 residual is ofFormation + the induction skeleton (shared contextLevels) + neutral env routing.
-#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.conv
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.piIntro
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.piElim
+-- (An earlier syntactic-equality-guarded motive iteration that the var-arm wall killed, and its arm cluster, were
+-- deleted; the convertibility-guarded TotalBridgeConclusion above is the canonical motive. genFormationPi's
+-- TotalBridgeConclusion arm + the HasTypeDescPi.rec assembly are the #662 residual.)
 -- SN-027 the VARIABLE-LEVEL-PINNING INVERSION + the type-variable obstruction (#662 diagnosis,
 -- ValidTypingVariableLevelPinned.lean): validTypingVariableLevelPinned proves a ValidTyping derivation of subject
 -- variableCell index has level = contextLevels index (var pins, conv preserves, all other ctors have a distinct

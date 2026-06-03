@@ -85,10 +85,10 @@ via `eq_universeCodeCell_of_headGenerator`; otherwise any equality to a universe
 `gen_universeCode` (`headGenerator_universeCodeCell`), a contradiction.
 
 This is the routing primitive the totalBridge assembly (SN-027/#662) needs: the term arms
-`RefinedTotalBridgeConclusion.var` / `.piElim` carry a "classifier is not a universe code" hypothesis, and the
+`TotalBridgeConclusion.var` / `.piElim` carry a "classifier is not a universe code" hypothesis, and the
 assembly discharges it for the TERM case while routing the neutral-TYPE case (a type variable whose looked-up
 type IS a universe code, or a type-family application whose result IS a universe code — exactly the subjects
-whose refined-motive conjunct-2 level-flexibility is unsatisfiable) to the pinned reclassifier handler.  The
+whose motive conjunct-2 level-flexibility is unsatisfiable) to the pinned reclassifier handler.  The
 split is this dichotomy applied to `context.lookup index` resp. `subst0 codomainCode argument`. -/
 theorem RawTerm.isUniverseCodeOrNot {scope : Nat} (term : RawTerm scope) :
     (∃ (levelExpr : LevelExpr) (flag : UniverseFlag), term = universeCodeCell levelExpr flag) ∨

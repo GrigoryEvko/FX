@@ -1,69 +1,39 @@
-import FX1Poly.Typed.ValidTypingTermArms
+import FX1Poly.Typed.ValidTypingRefinedMotive
 import FX1Poly.Typed.LevelingBridge
 
 /-! # FX1Poly/Typed/ValidTypingConvArm
-    — the conversion arm of the refined-motive total bridge (SN-027, #673; ingredient of the assembly #662)
+    — the conv-VARIABLE arm of the total-bridge motive (SN-027; ingredient of the assembly #662)
 
 The total bridge `HasTypeDescPi → ∃ contextLevels predLevel, ValidTyping …` (SN-027) inducts on `HasTypeDescPi`
-against `RefinedTotalBridgeConclusion`.  Its five constructors are `ofFormation` / `conv` / `piIntro` / `piElim`
-/ `genFormationPi`.  The `piIntro` / `piElim` / `genFormationPi` arms are shipped (`ValidTypingTermArms.lean`,
-`ValidTypingFormerArms.lean`); this file ships the `conv` arm.
+against `TotalBridgeConclusion` (`ValidTypingRefinedMotive.lean`).  The `conv` arm splits on whether the
+reclassifier the subject was converted to is a context VARIABLE:
 
-The conv arm is the PAYOFF of the refined motive's level-flexibility conjunct.  In `HasTypeDescPi.conv` the
-subject is reclassified from `classifier` to a `reclassifier` typed at `universeCodeCell levelExpr flag`.  The
-induction supplies:
+* a NON-VARIABLE reclassifier (universe code / Π-Σ-gen former) is LEVEL-FLEXIBLE — handled by
+  `TotalBridgeConclusion.convNonVariableReclassifier` (`ValidTypingRefinedMotive.lean`);
+* a VARIABLE reclassifier `variableCell index` is PINNED to `contextLevels index` by `ValidTyping.var` — handled
+  by THIS file's `convVariableReclassifier`, which consumes the leveling equation
+  `contextLevels index = subjectLevel + 1` (the residual the assembly's level synthesis supplies).
 
-* the subject valid at a single level (`subjectTyped`);
-* the reclassifier — a universe-code-classified TYPE CODE — at EVERY level (`reclassifierAllLevel`), which is
-  exactly the reclassifier's refined-motive conjunct-2 (its level-flexibility).
-
-The conv rule needs the reclassifier at exactly `subjectLevel + 1`, which is the `subjectLevel`-instance of the
-`∀ level` premise — so `validTypingBridgeConvFromAllLevelReclassifier` discharges conjunct-1 of the output.  The
-output's conjunct-2 is vacuous WHEN the reclassifier is not itself a universe code (the reclassified subject is a
-term, not a type) — `reclassifierNotUniverse`.  The type-output case (the reclassifier IS a universe code, so the
-subject is a type being reclassified to a higher universe) is the env-routed neutral case, identical to
-`piElim`'s type-family and `var`'s type-variable cases; it does not flow through this arm.
+`RawTerm.isVariableOrNot` routes between the two in the assembly; together they discharge the whole `conv` arm
+modulo the leveling equation.
 
 ## What is proved
 
-* `RefinedTotalBridgeConclusion.conv` — the conv arm: conjunct-1 by the all-level conv coordination, conjunct-2
-  vacuous in the term-output case.
+* `TotalBridgeConclusion.convVariableReclassifier` — the variable-reclassifier conv arm: conjunct-1 via
+  `validTypingBridgeConvPinnedReclassifier` (consuming the leveling equation), conjunct-2 vacuous (a variable is
+  never convertible to a universe code, `variableCell_not_conv_universeCodeCell`).
 
 ## Zero-axiom verification
 
-`obtain` the reclassified `ValidTyping` from `validTypingBridgeConvFromAllLevelReclassifier`, then
-`ofTermValidity` with `reclassifierNotUniverse`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+`validTypingBridgeConvPinnedReclassifier` + `variableCell_not_conv_universeCodeCell` + `absurd`.  No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **The conversion arm of the refined motive (term-output case).**  Given the subject valid at one level, a
-conversion of its classifier to a reclassifier supplied at EVERY level (the reclassifier's level-flexibility,
-available because the reclassifier is a universe-code-classified type code), and a proof that the reclassifier is
-NOT a universe code, the reclassified subject satisfies the refined motive: conjunct-1 from the all-level conv
-coordination (`validTypingBridgeConvFromAllLevelReclassifier`, which picks the `subjectLevel` instance), conjunct-2
-vacuous.  The type-output case (reclassifier a universe code) is the env-routed neutral case. -/
-theorem RefinedTotalBridgeConclusion.conv {profile : PolyProfile} {scope : Nat}
-    (contextLevels : Fin scope → Nat) (subjectLevel : Nat)
-    {context : TypingContext profile scope}
-    {subject classifier reclassifier : RawTerm scope}
-    {levelExpr : LevelExpr} {flag : UniverseFlag}
-    (subjectTyped : ValidTyping profile contextLevels subjectLevel context subject classifier)
-    (converts : Conv classifier reclassifier)
-    (reclassifierAllLevel : ∀ level : Nat,
-      ValidTyping profile contextLevels (level + 1) context reclassifier
-        (universeCodeCell levelExpr flag))
-    (reclassifierNotUniverse : ∀ (le : LevelExpr) (fl : UniverseFlag),
-      reclassifier ≠ universeCodeCell le fl) :
-    RefinedTotalBridgeConclusion profile contextLevels context subject reclassifier := by
-  obtain ⟨resultLevel, reclassifiedTyped⟩ :=
-    validTypingBridgeConvFromAllLevelReclassifier contextLevels subjectLevel
-      subjectTyped converts reclassifierAllLevel
-  exact RefinedTotalBridgeConclusion.ofTermValidity reclassifiedTyped reclassifierNotUniverse
-
-/-- **The conv-VARIABLE arm of the revised motive.**  Twin of `convNonVariableReclassifier` for the case where the
+/-- **The conv-VARIABLE arm of the motive.**  Twin of `convNonVariableReclassifier` for the case where the
 reclassifier the subject was converted to is a context VARIABLE `variableCell index` whose looked-up type is a
 universe code.  Conjunct-1: the reclassified subject is valid at `subjectLevel` via
 `validTypingBridgeConvPinnedReclassifier`, which consumes the leveling equation
@@ -72,7 +42,7 @@ variable case.  Conjunct-2 is vacuous: the convertibility guard `Conv (variableC
 unsatisfiable (`variableCell_not_conv_universeCodeCell`), so the level-flexibility obligation has no hypotheses to
 discharge.  Routed alongside `convNonVariableReclassifier` by `RawTerm.isVariableOrNot`; together they COMPLETE the
 conv arm of the totalBridge modulo the leveling equation. -/
-theorem RevisedBridgeConclusion.convVariableReclassifier {profile : PolyProfile} {scope : Nat}
+theorem TotalBridgeConclusion.convVariableReclassifier {profile : PolyProfile} {scope : Nat}
     (contextLevels : Fin scope → Nat) (subjectLevel : Nat) {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} {index : Fin scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag}
@@ -80,7 +50,7 @@ theorem RevisedBridgeConclusion.convVariableReclassifier {profile : PolyProfile}
     (converts : Conv classifier (variableCell index))
     (reclassifierIsUniverse : context.lookup index = universeCodeCell levelExpr flag)
     (levelMatch : contextLevels index = subjectLevel + 1) :
-    RevisedBridgeConclusion profile contextLevels context subject (variableCell index) := by
+    TotalBridgeConclusion profile contextLevels context subject (variableCell index) := by
   refine ⟨⟨subjectLevel, validTypingBridgeConvPinnedReclassifier contextLevels subjectLevel
     subjectValid converts reclassifierIsUniverse levelMatch⟩, ?_⟩
   intro outLevel outFlag reclassifierConvUniverse _subjectNotVariable

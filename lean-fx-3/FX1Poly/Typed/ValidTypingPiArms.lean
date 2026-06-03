@@ -1,16 +1,15 @@
-import FX1Poly.Typed.ValidTypingTermArms
+import FX1Poly.Typed.ValidTypingRefinedMotive
 import FX1Poly.Typed.ConvCodeInjectivity
 
 /-! # FX1Poly/Typed/ValidTypingPiArms
-    — the REVISED-motive piIntro / piElim term arms (SN-027/#662 assembly)
+    — the piIntro / piElim term arms of the total-bridge motive (SN-027/#662 assembly)
 
-The revised total-bridge motive `RevisedBridgeConclusion` (`ValidTypingRefinedMotive.lean`) already has its
-leaf arms shipped — `var`, `universeFormation`, `convNonVariableReclassifier` (this layer),
+The total-bridge motive `TotalBridgeConclusion` (`ValidTypingRefinedMotive.lean`) already has its leaf arms
+shipped — `var`, `universeFormation`, `convNonVariableReclassifier` (that file),
 `convVariableReclassifier` (`ValidTypingConvArm.lean`), and the term wrapper `ofTermValidity`.  This file ships
-the two BINDER/ELIMINATION term arms, the revised twins of the old-motive
-`RefinedTotalBridgeConclusion.piIntro` / `.piElim` (`ValidTypingTermArms.lean`).
+the two BINDER/ELIMINATION term arms.
 
-Both subjects are TERMS, so both arms discharge through `RevisedBridgeConclusion.ofTermValidity` (conjunct-1 the
+Both subjects are TERMS, so both arms discharge through `TotalBridgeConclusion.ofTermValidity` (conjunct-1 the
 supplied `ValidTyping`, conjunct-2 vacuous because the classifier is not convertible to a universe code):
 
 * **piIntro** — subject `lamCell body`, classifier `piTyCodeCell domainCode codomainCode`.  The classifier is a
@@ -41,12 +40,12 @@ not align).  The arm takes the aligned pair; the assembly's level synthesis supp
 namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **The piIntro (λ-introduction) arm of the revised motive.**  A lambda `lamCell body` at the Π type
+/-- **The piIntro (λ-introduction) arm of the motive.**  A lambda `lamCell body` at the Π type
 `piTyCodeCell domainCode codomainCode` (domain/codomain codes at `predLevel + 1 + 1`, body at `predLevel + 1`
 under the `levelCons (predLevel + 1)`-extended level vector — `ValidTyping.piIntro`'s discipline) satisfies the
-revised motive.  Conjunct-1 is `ValidTyping.piIntro`; conjunct-2 is provably vacuous — the classifier is a Π
-code, never convertible to a universe code (`Conv.piTyCode_not_universeCode`). -/
-theorem RevisedBridgeConclusion.piIntro {profile : PolyProfile} {scope : Nat}
+motive.  Conjunct-1 is `ValidTyping.piIntro`; conjunct-2 is provably vacuous — the classifier is a Π code, never
+convertible to a universe code (`Conv.piTyCode_not_universeCode`). -/
+theorem TotalBridgeConclusion.piIntro {profile : PolyProfile} {scope : Nat}
     (contextLevels : Fin scope → Nat) (predLevel : Nat)
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
@@ -57,19 +56,19 @@ theorem RevisedBridgeConclusion.piIntro {profile : PolyProfile} {scope : Nat}
       (predLevel + 1 + 1) (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag))
     (bodyTyped : ValidTyping profile (levelCons (predLevel + 1) contextLevels)
       (predLevel + 1) (context.cons domainCode) body codomainCode) :
-    RevisedBridgeConclusion profile contextLevels context
+    TotalBridgeConclusion profile contextLevels context
       (lamCell body) (piTyCodeCell domainCode codomainCode) :=
-  RevisedBridgeConclusion.ofTermValidity
+  TotalBridgeConclusion.ofTermValidity
     (ValidTyping.piIntro contextLevels predLevel domainTyped codomainTyped bodyTyped)
     (fun _levelExpr _flag convertibility => Conv.piTyCode_not_universeCode convertibility)
 
-/-- **The piElim (application) arm of the revised motive.**  An application `appCell functionTerm argument`
+/-- **The piElim (application) arm of the motive.**  An application `appCell functionTerm argument`
 (function and argument ALIGNED at a common `subjectLevel` — `ValidTyping.piElim` is a same-level rule) whose
-result classifier `subst0 codomainCode argument` is NOT convertible to any universe code satisfies the revised
-motive.  Conjunct-1 is `ValidTyping.piElim`; conjunct-2 is vacuous via the `resultNotConvUniverse` hypothesis.
-The type-family case (result convertible to a universe code) routes separately in the assembly — there the
+result classifier `subst0 codomainCode argument` is NOT convertible to any universe code satisfies the motive.
+Conjunct-1 is `ValidTyping.piElim`; conjunct-2 is vacuous via the `resultNotConvUniverse` hypothesis.  The
+type-family case (result convertible to a universe code) routes separately in the assembly — there the
 application is a pinned neutral type, coordinated like the conv-variable reclassifier, not made level-flexible. -/
-theorem RevisedBridgeConclusion.piElim {profile : PolyProfile} {scope : Nat}
+theorem TotalBridgeConclusion.piElim {profile : PolyProfile} {scope : Nat}
     (contextLevels : Fin scope → Nat) (subjectLevel : Nat)
     {context : TypingContext profile scope}
     {functionTerm argument domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
@@ -78,9 +77,9 @@ theorem RevisedBridgeConclusion.piElim {profile : PolyProfile} {scope : Nat}
     (argumentTyped : ValidTyping profile contextLevels subjectLevel context argument domainCode)
     (resultNotConvUniverse : ∀ (levelExpr : LevelExpr) (flag : UniverseFlag),
       ¬ Conv (RawTerm.subst0 codomainCode argument) (universeCodeCell levelExpr flag)) :
-    RevisedBridgeConclusion profile contextLevels context
+    TotalBridgeConclusion profile contextLevels context
       (appCell functionTerm argument) (RawTerm.subst0 codomainCode argument) :=
-  RevisedBridgeConclusion.ofTermValidity
+  TotalBridgeConclusion.ofTermValidity
     (ValidTyping.piElim contextLevels subjectLevel functionTyped argumentTyped)
     resultNotConvUniverse
 

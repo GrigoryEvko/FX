@@ -27,9 +27,9 @@ EXACTLY the level `contextLevels index`, regardless of the classifier.  Proof by
 `typeVariableNotLevelFlexible` — a type variable (`context.lookup index = universeCodeCell levelExpr flag`)
 cannot be level-flexible: instantiating the would-be `∀ level` flexibility at `level := contextLevels index`
 gives, via the inversion, `contextLevels index + 1 = contextLevels index` — refuted by `Nat.succ_ne_self`.  This
-is exactly the refined motive's conjunct-2 obligation for a type variable, so it cannot be discharged at the
+is exactly the motive's conjunct-2 obligation for a type variable, so it cannot be discharged at the
 `ValidTyping` layer.  (The matching obstruction for a type-family application is the `piElim`
-finding in `ValidTypingTermArms.lean`.)
+finding in `ValidTypingPiArms.lean`.)
 
 **Consequence for the assembly (#662):** the total-bridge induction's neutral type-code cases (var-at-universe,
 type-family app) do NOT produce `ValidTyping` all-level flexibility; they route through the reducibility env at the
