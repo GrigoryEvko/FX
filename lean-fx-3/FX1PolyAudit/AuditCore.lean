@@ -14,6 +14,7 @@ import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.Newman
+import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.ReducibleTypeClosed
 import FX1Poly.Core.PointwiseIffAlgebra
 import FX1Poly.Core.StratifiedReducibleLevelCongr
@@ -234,6 +235,20 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Confluent
 #assert_no_axioms FX1Poly.Core.newmanAux
 #assert_no_axioms FX1Poly.Core.newman
+
+-- M8-S1 core (#420): the diamond ⟹ confluence route (strip lemma), the SECOND abstract confluence path
+-- complementing Newman -- confluence from the DIAMOND property alone, no termination. ReflTransClosure.monotone/
+-- collapse (the sandwich glue) + DiamondProperty + stripLemma (single strips against many) + diamondConfluence +
+-- confluentOfDiamondSimulation (the parallel-reduction recipe: rel ⊆ parRel ⊆ RTC rel + parRel diamond ⟹ rel
+-- confluent -- how single-step β, which lacks the diamond, is proved confluent via parallel reduction). The
+-- generic core of #420 parStar.confluence (instantiate at the FX parStar + cd_lemma #256). Zero-axiom.
+#assert_no_axioms FX1Poly.Core.ReflTransClosure.monotone
+#assert_no_axioms FX1Poly.Core.ReflTransClosure.collapse
+#assert_no_axioms FX1Poly.Core.DiamondProperty
+#assert_no_axioms FX1Poly.Core.stripLemma
+#assert_no_axioms FX1Poly.Core.diamondConfluenceAux
+#assert_no_axioms FX1Poly.Core.diamondConfluence
+#assert_no_axioms FX1Poly.Core.confluentOfDiamondSimulation
 
 -- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
 -- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
