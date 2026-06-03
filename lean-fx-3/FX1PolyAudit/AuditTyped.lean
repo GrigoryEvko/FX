@@ -173,6 +173,7 @@ import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.DependentPiOverNeutralDomain
 import FX1Poly.Typed.DependentPiNeutralCodomain
+import FX1Poly.Typed.DependentlyTypedNeutralDomainFragment
 import FX1Poly.Typed.SimplyTypedTermReducibility
 
 /-! # Tools/AuditAll/AuditTyped
@@ -2680,3 +2681,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllPositiveLevels.dependentPiOverNeutralDomainNeutralCodomain
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.dependentPiOverNeutralDomainNeutralCodomain
 #assert_no_axioms FX1Poly.Typed.concreteDependentPi_isReducibleType
+
+-- The DEPENDENT analogue of IsFirstOrderSimplyTyped: an inductive fragment (neutral/data leaves + dependent Pi
+-- over neutral domains with recursively-fragment codomain instantiations) + one fundamental theorem. Captures
+-- curried dependent functions Pi(x:A).Pi(y:B x).C x y over neutral/data base types. reducibleAndMemberExtension
+-- is the #672 fuel-stability gate proven for this fragment; the all-levels dependentPiOverNeutralDomain feeds
+-- its member leg; typeFamilyApplication is the concrete Pi(x:A).P x fragment member. Universe-domain Pi open.
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllLevels.dependentPiOverNeutralDomain
+#assert_no_axioms FX1Poly.Typed.IsNeutralDomainDependentlyTyped.reducibleAndMemberExtension
+#assert_no_axioms FX1Poly.Typed.IsNeutralDomainDependentlyTyped.ofNeutral
+#assert_no_axioms FX1Poly.Typed.IsNeutralDomainDependentlyTyped.typeFamilyApplication
