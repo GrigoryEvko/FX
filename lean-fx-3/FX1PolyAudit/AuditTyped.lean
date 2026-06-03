@@ -2955,6 +2955,11 @@ gates pin them shut.
 -- piTypeInversion (domain/codomain candidates + application-form PointwiseIff) + deterministic (aligns the
 -- argument's candidate with the domain candidate). No backward-closure, no new machinery.
 #assert_no_axioms FX1Poly.Typed.applicationMemberAtDenote
+-- applicationMemberUnderClosingSubstitution: the FT-shaped elimination arm — substituted function member +
+-- substituted argument member ⟹ substituted application is a member of the substituted dependent codomain. subst
+-- distributes over app/Π cells by rfl; the dependent result type commutes via RawTerm.subst0_subst_commute into
+-- applicationMemberAtDenote's output shape.
+#assert_no_axioms FX1Poly.Typed.applicationMemberUnderClosingSubstitution
 
 -- DenoteKeyedConvMember (the denote FT's conversion member arm): a denote-reducible member of typeLeft, with
 -- Conv typeLeft typeRight + typeRight denote-reducible, is a denote-reducible member of typeRight (via the

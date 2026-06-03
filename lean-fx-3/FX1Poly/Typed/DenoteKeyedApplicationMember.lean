@@ -1,4 +1,5 @@
 import FX1Poly.Typed.DenoteKeyedReducibility
+import FX1Poly.Core.RawTermSubst0Commute
 
 /-! # FX1Poly/Typed/DenoteKeyedApplicationMember
     — the denote fundamental theorem's Π-ELIMINATION (application) member arm
@@ -52,5 +53,29 @@ theorem applicationMemberAtDenote {scope : Nat} (env : Nat → Nat) (level : Nat
       argumentInCandidate
   exact ⟨codomainCandidate argumentTerm, codomainReducible argumentTerm argumentInDomain,
     functionApplies argumentTerm argumentInDomain⟩
+
+/-- **The denote Π-elimination member arm under a closing substitution (the fundamental-theorem shape).**  From
+a denote-reducible member of the substituted Π `subst σ (Π domainCode codomainCode)` and a denote-reducible
+member of the substituted domain `subst σ domainCode`, the substituted application `subst σ (app functionTerm
+argumentTerm)` is a denote-reducible member of the substituted dependent codomain `subst σ (subst0 codomainCode
+argumentTerm)`.  The `subst` distributes over the app and Π cells definitionally; the dependent result type
+commutes by `RawTerm.subst0_subst_commute` (`subst σ (subst0 B a) = subst0 (subst (lift σ) B) (subst σ a)`) into
+exactly the shape `applicationMemberAtDenote` produces.  This is the FT's elimination case under the closing
+substitution. -/
+theorem applicationMemberUnderClosingSubstitution {scope targetScope : Nat} (env : Nat → Nat) (level : Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {functionTerm argumentTerm : RawTerm scope} {substitution : RawTermSubst scope targetScope}
+    (functionMember : IsReducibleMemberAtDenote env level
+      (RawTerm.subst substitution
+        (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))))
+      (RawTerm.subst substitution functionTerm))
+    (argumentMember : IsReducibleMemberAtDenote env level
+      (RawTerm.subst substitution domainCode) (RawTerm.subst substitution argumentTerm)) :
+    IsReducibleMemberAtDenote env level
+      (RawTerm.subst substitution (RawTerm.subst0 codomainCode argumentTerm))
+      (RawTerm.subst substitution
+        (.mkGen .gen_app () (.childCons functionTerm (.childCons argumentTerm .childNil)))) := by
+  rw [RawTerm.subst0_subst_commute codomainCode argumentTerm substitution]
+  exact applicationMemberAtDenote env level functionMember argumentMember
 
 end FX1Poly.Typed
