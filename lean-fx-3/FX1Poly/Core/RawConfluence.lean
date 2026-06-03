@@ -3,6 +3,7 @@ import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.TakahashiTriangle
 import FX1Poly.Core.NormalFormUnique
 import FX1Poly.Core.RawTermDecEq
+import FX1Poly.Core.PolygraphConvergentDecision
 
 /-! # FX1Poly/Core/RawConfluence
     — UNCONDITIONAL raw confluence of the FX reduction relation (`#420`, the M8-S1 payoff).
@@ -170,5 +171,33 @@ def Conv.decidableOfNormalForms {scope : Nat}
   decidable_of_iff _
     (Conv.iff_normalForms_eq_of_confluence
       leftReducesToNF leftIsNormal rightReducesToNF rightIsNormal).symm
+
+/-! ### The Path-B decider needs only a normalizer — its confluence hypothesis is now a theorem.
+
+`PolygraphConvergentDecision.lean`'s `Conv.iff_normalForm_eq` / `Conv.decidableOfNormalizer` (the Path-B
+"Conv = normal-form word equality" decider, polycell.md §2.3) take a `Normalizer` AND a
+`StepStar.HasConfluence` hypothesis — its docstring calls them *"precisely WHAT THE FULL DECIDER NEEDS."*
+`rawConfluence` discharges the confluence half, so a `Normalizer` ALONE decides `Conv` — no separate
+confluence side-condition.  This is the SN-113/SN-114 advance: the Path-B decider's two inputs collapse to
+one.  The remaining input — the `Normalizer` (a TOTAL normal-form function with `reducesToNormalForm` for
+every term) — stays the strong-normalization obligation: raw β+ι has no global normalizer (it is not SN),
+so a `Normalizer` exists only for the SN/typed fragment (the Makkai/Forest word construction, #638, is one
+explicit instance).  What this removes is the *separate* confluence assumption — it is no longer a
+hypothesis the normalizer-construction must also supply. -/
+
+/-- **A normalizer alone characterizes `Conv` as normal-form equality** (confluence discharged).  Drops the
+`StepStar.HasConfluence` hypothesis of `Conv.iff_normalForm_eq` by supplying `rawConfluence`. -/
+theorem Normalizer.conv_iff_normalForm_eq {scope : Nat} (normalizer : Normalizer scope)
+    (leftTerm rightTerm : RawTerm scope) :
+    Conv leftTerm rightTerm ↔ normalizer.normalForm leftTerm = normalizer.normalForm rightTerm :=
+  Conv.iff_normalForm_eq normalizer StepStar.rawConfluence leftTerm rightTerm
+
+/-- **A normalizer alone decides `Conv`** (the Path-B term decider, confluence discharged).  Drops the
+`StepStar.HasConfluence` hypothesis of `Conv.decidableOfNormalizer` by supplying `rawConfluence`: given any
+`Normalizer` for the (SN-)fragment it normalizes, conversion is decidable as normal-form equality via the
+propext-free `instDecidableEqRawTerm`. -/
+def Normalizer.decidableConv {scope : Nat} (normalizer : Normalizer scope)
+    (leftTerm rightTerm : RawTerm scope) : Decidable (Conv leftTerm rightTerm) :=
+  Conv.decidableOfNormalizer normalizer StepStar.rawConfluence leftTerm rightTerm
 
 end FX1Poly.Core

@@ -457,6 +457,15 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Conv.iff_normalForms_eq_of_confluence
 #assert_no_axioms FX1Poly.Core.Conv.decidableOfNormalForms
 
+-- Path-B decider (polycell.md §2.3), confluence hypothesis discharged (SN-113/SN-114). Conv.iff_normalForm_eq
+-- / Conv.decidableOfNormalizer (PolygraphConvergentDecision) take a Normalizer AND StepStar.HasConfluence;
+-- rawConfluence discharges the latter, so a Normalizer ALONE decides Conv as normal-form equality. The
+-- Normalizer (a TOTAL normal-form function) stays the SN obligation -- raw beta+iota has no global
+-- normalizer; what is removed is the separate confluence assumption the normalizer-construction would
+-- otherwise also have to supply.
+#assert_no_axioms FX1Poly.Core.Normalizer.conv_iff_normalForm_eq
+#assert_no_axioms FX1Poly.Core.Normalizer.decidableConv
+
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
 -- diamonds COMMUTE into a confluent union (the intended FX use: beta-parallel diamond + iota-parallel
