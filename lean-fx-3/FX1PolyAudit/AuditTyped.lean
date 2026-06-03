@@ -2806,3 +2806,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.deterministic
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.deterministic
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.piTypeInversion
+
+-- DenoteKeyedReducibility forward closure + conversion-invariance (#672 sub-step 2a): ported from
+-- StratifiedReducibleTypeForwardClosure/ConvInvariance. The reduction helpers (commuteWithStep,
+-- weakHeadNormalRootStableAlongStepStar, piTyCode_decompose, noStep_universeCode) are relation-agnostic and
+-- reused verbatim; only the reducibility constructors change. convTransfer is the membership form the conv
+-- typing arm and the dependent-arrow CR3 argument-reduction case consume — the prerequisite for the arrow CR.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.whnfExpandClosure
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.forwardStepStar
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.forwardStepStar
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.convInvariant
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.convTransfer
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.convTransfer
