@@ -646,4 +646,80 @@ theorem ReducibleTypeStepDenote.isReducibilityCandidate {scope : Nat} {env : Nat
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 
+/-! ## Interface-leg discharge for `denoteBelowFamily`
+
+The parametric `isReducibilityCandidate` consumes two per-level interface legs on the lower family
+(`lowerForwardStep`, `lowerNeutralInclusion`).  This section discharges them for `denoteBelowFamily env
+level`: `forwardStep` UNCONDITIONALLY (below the level coherence reduces to the real relation's forward
+closure; at/above it the family is empty, vacuous), and `neutralInclusion` for `lvl < level` ONLY.
+
+The bound is essential and precise: at a decoded level `≥ level` the below-family is the EMPTY relation
+(`denoteBelowFamily_eq_empty_of_ge`), and neutral-inclusion of the empty relation is FALSE — a variable is
+neutral with no reducts, yet the empty relation has no members (the SN-001 fuel-0 degeneracy re-keyed to
+`denote`).  The universe-domain `piArm` discharges this side-condition: it instantiates at the Π's own level
+`≥ denote e + 1 > denote e` (via `ClassifierLevelMeasure.denote_lt_lsucc`), so the universe arm's decoded
+level `denote e env` is strictly below the ambient level and the bound holds. -/
+
+/-- **Single-step forward closure (denote-keyed).** -/
+theorem ReducibleTypeStepDenote.forwardStep {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {typeCode reduct : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) (step : Step typeCode reduct) :
+    ReducibleTypeStepDenote env lowerAt reduct candidate :=
+  ReducibleTypeStepDenote.forwardStepStar reducible (StepStar.single step)
+
+/-- **A neutral type is reducible (denote-keyed)** — the SN candidate via the `neutral` arm (a neutral term
+is weak-head-normal and neither Π- nor universe-rooted). -/
+theorem ReducibleTypeStepDenote.reducibleOfNeutral {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {typeCode : RawTerm scope} (neutral : IsNeutral typeCode) :
+    ∃ candidate : RawTerm scope → Prop, ReducibleTypeStepDenote env lowerAt typeCode candidate := by
+  refine ⟨IsStronglyNormalizing, ReducibleTypeStepDenote.neutral
+    (fun reduct => neutral.noWeakHeadStep reduct) ?_ ?_⟩
+  · cases neutral <;> exact fun rootEquation => nomatch rootEquation
+  · cases neutral <;> exact fun rootEquation => nomatch rootEquation
+
+/-- **The below-family is the EMPTY relation at or above the level.**  Structural induction on `level`; at
+`level + 1` with `level + 1 ≤ lvl` both the `lvl < level` and `lvl = level` guards fail, leaving the empty
+arm. -/
+theorem denoteBelowFamily_eq_empty_of_ge {scope : Nat} (env : Nat → Nat) :
+    ∀ (level lvl : Nat), level ≤ lvl →
+      denoteBelowFamily (scope := scope) env level lvl = (fun _ _ => False) := by
+  intro level
+  induction level with
+  | zero => intro lvl _; rfl
+  | succ predLevel _ih =>
+      intro lvl hle
+      have predLessThan : predLevel < lvl := Nat.lt_of_lt_of_le (Nat.lt_succ_self predLevel) hle
+      show (if lvl < predLevel then denoteBelowFamily env predLevel lvl
+            else if lvl = predLevel then ReducibleTypeStepDenote env (denoteBelowFamily env predLevel)
+            else fun _ _ => False) = fun _ _ => False
+      rw [if_neg (Nat.not_lt.mpr (Nat.le_of_lt predLessThan)),
+        if_neg (Ne.symm (Nat.ne_of_lt predLessThan))]
+
+/-- **Interface leg 1 (unconditional): `denoteBelowFamily env level` is forward-closed under `Step` at every
+level.**  Below the bound, coherence reduces to the real relation's forward closure; at/above it the family
+is empty (the `member` hypothesis is `False`). -/
+theorem denoteBelowFamily_forwardStep {scope : Nat} (env : Nat → Nat) (level : Nat) (lvl : Nat)
+    {typeCode reduct : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (member : denoteBelowFamily env level lvl typeCode candidate) (step : Step typeCode reduct) :
+    denoteBelowFamily env level lvl reduct candidate := by
+  by_cases hlt : lvl < level
+  · rw [denoteBelowFamily_eq_reducible env level lvl hlt] at member ⊢
+    exact ReducibleTypeStepDenote.forwardStep member step
+  · rw [denoteBelowFamily_eq_empty_of_ge env level lvl (Nat.not_lt.mp hlt)] at member
+    exact member.elim
+
+/-- **Interface leg 2 (bounded by `lvl < level`): neutral-inclusion of `denoteBelowFamily env level`.**
+Below the bound, coherence reduces to the real relation, where a neutral type is reducible
+(`reducibleOfNeutral`).  The premise (reducts reducible) is not needed.  At/above the bound this FAILS (the
+empty relation has no neutral members) — the level-bound the `piArm` satisfies via `denote e < level`. -/
+theorem denoteBelowFamily_neutralInclusion_of_lt {scope : Nat} (env : Nat → Nat) (level : Nat) (lvl : Nat)
+    (hlt : lvl < level) {typeCode : RawTerm scope} (neutral : IsNeutral typeCode)
+    (_reductsReducible : ∀ reduct : RawTerm scope, Step typeCode reduct →
+      ∃ candidate : RawTerm scope → Prop, denoteBelowFamily env level lvl reduct candidate) :
+    ∃ candidate : RawTerm scope → Prop, denoteBelowFamily env level lvl typeCode candidate := by
+  rw [denoteBelowFamily_eq_reducible env level lvl hlt]
+  exact ReducibleTypeStepDenote.reducibleOfNeutral neutral
+
 end FX1Poly.Typed

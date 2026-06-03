@@ -2827,3 +2827,14 @@ gates pin them shut.
 -- discharge carries the predicative level-bound subtlety, deferred to the piArm step.
 #assert_no_axioms FX1Poly.Typed.isDependentArrowReducibleStepDenote_isReducibilityCandidate
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.isReducibilityCandidate
+
+-- DenoteKeyedReducibility interface-leg discharge for denoteBelowFamily (#672 sub-step 3 prerequisite):
+-- the two per-level legs the parametric isReducibilityCandidate consumes. forwardStep is unconditional
+-- (below the level via coherence, above it vacuous since the family is empty); neutralInclusion holds for
+-- lvl < level only (at/above, the family is empty and neutral-inclusion fails — SN-001 degeneracy re-keyed
+-- to denote). The piArm satisfies the bound via denote e < level (denote_lt_lsucc).
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.forwardStep
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.reducibleOfNeutral
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamily_eq_empty_of_ge
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamily_forwardStep
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamily_neutralInclusion_of_lt
