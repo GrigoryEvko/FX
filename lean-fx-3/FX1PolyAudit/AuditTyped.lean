@@ -182,6 +182,7 @@ import FX1Poly.Typed.DenoteKeyedFundamentalConv
 import FX1Poly.Typed.DenoteKeyedAmbientLevelBridge
 import FX1Poly.Typed.DenoteKeyedNonDependentArrow
 import FX1Poly.Typed.DenoteKeyedFundamentalPiIntro
+import FX1Poly.Typed.DenoteKeyedClosedMember
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3100,3 +3101,10 @@ gates pin them shut.
 -- + ReducibleEnvAtDenote.cons. UNCONDITIONAL given the three caller premises: domain/codomain reducible-at-level
 -- (= A2-bridge-applied IHs) + domain CR1; the body IH is direct. Feeds the SN-D5 induction's piIntro case.
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtDenote
+
+-- DenoteKeyedClosedMember (route-E / SN-D6 precursor): closed-term reducibility from the empty-context denote FT
+-- conclusion. Instantiate the FundamentalConclusionAtDenote at the empty context at the IDENTITY substitution +
+-- ReducibleEnvAtDenote.empty, then cancel subst identity = id (RawTerm.subst_identity_apply) — yielding the closed
+-- subject as a denote-reducible member of its closed classifier. Composed with denote CR1, this is the
+-- wire-to-SN step for the closed-term SN headline (SN-043). Fed the eventual unconditional denote FT (#744).
+#assert_no_axioms FX1Poly.Typed.closedMemberAtDenote
