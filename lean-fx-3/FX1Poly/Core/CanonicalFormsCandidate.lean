@@ -1,4 +1,6 @@
 import FX1Poly.Core.ReducibilityCandidate
+import FX1Poly.Core.NormalFormUnique
+import FX1Poly.Core.RawTermNF
 
 /-! # Foundation/PolyCell/Core/CanonicalFormsCandidate
     — the generic "strongly-normalizing, neutral-or-value" candidate skeleton (data-canonicity foundation)
@@ -80,5 +82,62 @@ theorem CanonicalFormsPredicate.containsVariable {scope : Nat}
     CanonicalFormsPredicate isValue (.mkGen .gen_var index .childNil) :=
   CanonicalFormsPredicate.neutralExpansion (IsNeutral.var index)
     (fun _reduct stepFromVar => (noStep_var index stepFromVar).elim)
+
+/-- **CR2 for the canonical-forms candidate**, the formerly-deferred forward-closure leg — discharged from the
+two genuinely-provable data-specific facts.  A member's reduct stays a member: it is strongly normalizing (the
+shipped SN candidate's CR2), and its "neutral or reduces-to-value" disjunct is preserved:
+
+* if the term is neutral, the reduct is neutral by `neutralClosedUnderStep` (a neutral never head-fires — a
+  neutral scrutinee is no constructor — so its reducts are congruence reducts, still neutral);
+* if the term reduces to a `value`, then since `value` is a NORMAL FORM (`isValueImpliesNormal`) and the term is
+  strongly normalizing, per-term confluence (`confluence_of_localJoin_and_accessible`) joins the one-step reduct
+  with the value-reduction, and the value's rigidity (`eq_of_noStep` via `isStepNormalForm_blocks_step`) collapses
+  the join's apex onto the value — so the reduct also reduces to the value.
+
+The two hypotheses are exactly the data-specific obligations (both shipped-able kernel facts: `IsNeutral` closed
+under `Step` is an 11-arm `Step.from_X` inversion; data values ARE normal forms by construction).  Confluence is
+discharged per-term by the member's own SN witness — no global-confluence assumption. -/
+theorem CanonicalFormsPredicate.closedUnderStep {scope : Nat}
+    {isValue : RawTerm scope → Prop}
+    (neutralClosedUnderStep :
+      ∀ {neutralTerm neutralReduct : RawTerm scope},
+        IsNeutral neutralTerm → Step neutralTerm neutralReduct → IsNeutral neutralReduct)
+    (isValueImpliesNormal :
+      ∀ {value : RawTerm scope}, isValue value → RawTerm.isStepNormalForm value)
+    {term reduct : RawTerm scope}
+    (member : CanonicalFormsPredicate isValue term) (stepToReduct : Step term reduct) :
+    CanonicalFormsPredicate isValue reduct := by
+  refine ⟨isStronglyNormalizing_isReducibilityCandidate.closedUnderStep member.1 stepToReduct, ?_⟩
+  rcases member.2 with termIsNeutral | ⟨value, termReducesToValue, valueIsValue⟩
+  · exact Or.inl (neutralClosedUnderStep termIsNeutral stepToReduct)
+  · have valueIsNormal : RawTerm.isStepNormalForm value := isValueImpliesNormal valueIsValue
+    have reductJoinsValue : StepStar.Join reduct value :=
+      StepStar.confluence_of_localJoin_and_accessible member.1
+        (StepStar.trans stepToReduct (StepStar.refl reduct)) termReducesToValue
+    obtain ⟨apexTerm, reductToApex, valueToApex⟩ := reductJoinsValue
+    have apexEqualsValue : apexTerm = value :=
+      StepStar.eq_of_noStep
+        (fun stepReduct stepFromValue =>
+          RawTerm.isStepNormalForm_blocks_step valueIsNormal stepReduct stepFromValue)
+        valueToApex
+    exact Or.inr ⟨value, apexEqualsValue ▸ reductToApex, valueIsValue⟩
+
+/-- **The canonical-forms predicate is a full Girard reducibility candidate**, given the two data-specific
+facts (`IsNeutral` closed under `Step` + data values are normal forms).  Bundles the generic CR1
+(`stronglyNormalizing`) and CR3 (`neutralExpansion`) with the now-discharged CR2 (`closedUnderStep`).  Once the
+two facts are supplied for a concrete data type (e.g. `bool` with `isValue := · = boolTrue ∨ · = boolFalse`),
+this is an honest `IsReducibilityCandidate` ready to be the data type's arm of the reducibility model — the
+foundation for unconditional data canonicity (SN-063 bool reducibility / SN-047 bool canonicity). -/
+theorem CanonicalFormsPredicate.isReducibilityCandidate {scope : Nat}
+    {isValue : RawTerm scope → Prop}
+    (neutralClosedUnderStep :
+      ∀ {neutralTerm neutralReduct : RawTerm scope},
+        IsNeutral neutralTerm → Step neutralTerm neutralReduct → IsNeutral neutralReduct)
+    (isValueImpliesNormal :
+      ∀ {value : RawTerm scope}, isValue value → RawTerm.isStepNormalForm value) :
+    IsReducibilityCandidate (CanonicalFormsPredicate isValue) where
+  stronglyNormalizing := CanonicalFormsPredicate.stronglyNormalizing
+  closedUnderStep := CanonicalFormsPredicate.closedUnderStep neutralClosedUnderStep isValueImpliesNormal
+  neutralExpansion := CanonicalFormsPredicate.neutralExpansion
 
 end FX1Poly.Core

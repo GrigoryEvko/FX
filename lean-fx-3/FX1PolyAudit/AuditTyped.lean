@@ -2028,6 +2028,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.stronglyNormalizing
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.neutralExpansion
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.containsVariable
+-- CR2 NOW DISCHARGED (was deferred last tick): closedUnderStep — a member's reduct stays a member, the disjunct
+-- preserved by neutralClosedUnderStep (neutral case) or per-term confluence + value rigidity (reduces-to-value
+-- case: value is an NF, confluence_of_localJoin_and_accessible joins the reduct with the value-chain,
+-- eq_of_noStep collapses the apex onto the value). isReducibilityCandidate = the FULL CR1+CR2+CR3 bundle: the
+-- canonical-forms predicate IS a Girard reducibility candidate given the two data facts (IsNeutral closed under
+-- Step + data values are normal). Per-term confluence only (no global-confluence assumption). #672-free; the
+-- honest unconditional foundation for data canonicity (SN-063 bool reducibility / SN-047 bool canonicity).
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.closedUnderStep
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.isReducibilityCandidate
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
