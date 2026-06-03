@@ -81,6 +81,7 @@ import FX1Poly.Core.IdEliminatorClosedMembership
 import FX1Poly.Core.OptionEitherMatchCanonicalComputation
 import FX1Poly.Core.MatchClosedMembership
 import FX1Poly.Core.SigmaProjectionClosedMembership
+import FX1Poly.Core.RecursorClosedMembership
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.BoolCanonicityViaSconing
 import FX1Poly.Core.DataCanonicityViaSconing
@@ -2205,6 +2206,16 @@ gates pin them shut.
 -- so reaches a value; ofStepStarReachingValue (#735) lifts to the cell.
 #assert_no_axioms FX1Poly.Core.fstClosedIsMember
 #assert_no_axioms FX1Poly.Core.sndClosedIsMember
+-- RECURSIVE eliminator MEMBERSHIP (#672-free, the deferred half of SN-061, closed-layer): a closed natElim/
+-- natRec on a member Nat scrutinee with a reducible (function-space) succ branch is ITSELF a member. The
+-- recursive twin of the eliminator-membership track — instantiates natElim/natRecValueReducibility (#732) at the
+-- closed data candidate (headExpand from weakHeadExpansionOfMemberNotNeutral + WeakHeadStep.toStep + IsNeutral.
+-- noClosed), discharges redexStronglyNormalizing + cell SN via the natElim/natRec SN-from-SN-branches recursors
+-- (prior tick), lifts the numeral-case membership through the scrutinee congruence by ofStepStarReachingValue
+-- (#735). succContractumTerminates is the honest recursor-SN IH-premise (the same conditional-arm discipline
+-- #732 uses for redexStronglyNormalizing).
+#assert_no_axioms FX1Poly.Core.natElimClosedIsMember
+#assert_no_axioms FX1Poly.Core.natRecClosedIsMember
 -- RECURSIVE eliminators, BASE CASE (#672-free, SN-061/062/064 base half): natElim/natRec on zero, listElim on
 -- nil COMPUTE to the base branch. StepStar.natElimScrutinee/natRecScrutinee/listElimScrutinee = head-child
 -- scrutinee congruences (as for boolElim). natElim/natRecZeroScrutineeReducesToBranch +
