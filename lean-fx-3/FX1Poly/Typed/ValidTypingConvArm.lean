@@ -63,4 +63,27 @@ theorem RefinedTotalBridgeConclusion.conv {profile : PolyProfile} {scope : Nat}
       subjectTyped converts reclassifierAllLevel
   exact RefinedTotalBridgeConclusion.ofTermValidity reclassifiedTyped reclassifierNotUniverse
 
+/-- **The conv-VARIABLE arm of the revised motive.**  Twin of `convNonVariableReclassifier` for the case where the
+reclassifier the subject was converted to is a context VARIABLE `variableCell index` whose looked-up type is a
+universe code.  Conjunct-1: the reclassified subject is valid at `subjectLevel` via
+`validTypingBridgeConvPinnedReclassifier`, which consumes the leveling equation
+`contextLevels index = subjectLevel + 1` — the single residual the assembly's leveling discipline supplies for the
+variable case.  Conjunct-2 is vacuous: the convertibility guard `Conv (variableCell index) (universeCodeCell …)` is
+unsatisfiable (`variableCell_not_conv_universeCodeCell`), so the level-flexibility obligation has no hypotheses to
+discharge.  Routed alongside `convNonVariableReclassifier` by `RawTerm.isVariableOrNot`; together they COMPLETE the
+conv arm of the totalBridge modulo the leveling equation. -/
+theorem RevisedBridgeConclusion.convVariableReclassifier {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (subjectLevel : Nat) {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope} {index : Fin scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (subjectValid : ValidTyping profile contextLevels subjectLevel context subject classifier)
+    (converts : Conv classifier (variableCell index))
+    (reclassifierIsUniverse : context.lookup index = universeCodeCell levelExpr flag)
+    (levelMatch : contextLevels index = subjectLevel + 1) :
+    RevisedBridgeConclusion profile contextLevels context subject (variableCell index) := by
+  refine ⟨⟨subjectLevel, validTypingBridgeConvPinnedReclassifier contextLevels subjectLevel
+    subjectValid converts reclassifierIsUniverse levelMatch⟩, ?_⟩
+  intro outLevel outFlag reclassifierConvUniverse _subjectNotVariable
+  exact absurd reclassifierConvUniverse (variableCell_not_conv_universeCodeCell index outLevel outFlag)
+
 end FX1Poly.Typed

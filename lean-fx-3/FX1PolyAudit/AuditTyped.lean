@@ -360,6 +360,10 @@ gates pin them shut.
 -- equality, then universeCodeCell_inj. The totalBridge conv arm reads this to align a universe-code
 -- reclassifier's level with the classifier it was converted from (the conjunct-2-through-conv residual).
 #assert_no_axioms FX1Poly.Typed.universeCodeCell_inj_of_conv
+-- A VARIABLE IS NEVER CONVERTIBLE TO A UNIVERSE CODE: both are step normal forms with distinct head generators
+-- (gen_var vs gen_universeCode), so global confluence collapses any conversion to syntactic equality, refuted by
+-- the head distinctness. The conjunct-2-vacuity fact the totalBridge conv-VARIABLE arm reads.
+#assert_no_axioms FX1Poly.Typed.variableCell_not_conv_universeCodeCell
 
 /-! ### Π-formation shape bricks — `piTyCodeCell`
     smart ctor + head-generator computation + the two-child destructor that
@@ -1631,6 +1635,11 @@ gates pin them shut.
 -- at Conv.refl). The variable-reclassifier case routes to validTypingBridgeConvPinnedReclassifier (the leveling
 -- eq) via RawTerm.isVariableOrNot.
 #assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.convNonVariableReclassifier
+-- the conv arm VARIABLE-reclassifier twin (ValidTypingConvArm.lean): conjunct-1 via validTypingBridgeConvPinnedReclassifier
+-- (consuming the leveling eq contextLevels index = subjectLevel + 1, the one residual the assembly's leveling
+-- discipline supplies); conjunct-2 vacuous (a variable reclassifier is not conv to a universe code). Routed by
+-- isVariableOrNot. This COMPLETES the conv arm modulo the leveling equation.
+#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.convVariableReclassifier
 -- the revised-motive TERM wrapper: a single-level-valid subject whose classifier is not convertible to any
 -- universe code satisfies the motive (conjunct-2 vacuous via the unsatisfiable convertibility guard). The
 -- binder/elim term-output arms consume it with Conv.piTyCode_not_universeCode / Conv.sigmaTyCode_not_universeCode.

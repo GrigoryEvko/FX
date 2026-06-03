@@ -42,4 +42,23 @@ theorem universeCodeCell_inj_of_conv {scope : Nat}
     (Conv.iff_normalForms_eq_of_confluence (StepStar.refl _) leftIsNormal (StepStar.refl _) rightIsNormal).mp conv
   exact universeCodeCell_inj codesEqual
 
+/-- **A variable is never convertible to a universe code.**  Both `variableCell index` (head `gen_var`,
+`childNil`) and `universeCodeCell …` (head `gen_universeCode`) are step normal forms, so global confluence
+(`Conv.iff_normalForms_eq_of_confluence`) would collapse their convertibility to syntactic equality — but their
+head generators are distinct.  The conjunct-2-vacuity fact the totalBridge conv-VARIABLE arm reads: a reclassifier
+that is a variable is not convertible to a universe code, so the reclassified subject's level-flexibility
+obligation (guarded by `Conv reclassifier (universeCodeCell …)`) is unsatisfiable. -/
+theorem variableCell_not_conv_universeCodeCell {scope : Nat} (index : Fin scope)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    ¬ Conv (variableCell index : RawTerm scope) (universeCodeCell levelExpr flag) := by
+  intro conv
+  have variableIsNormal : RawTerm.isStepNormalForm (variableCell index : RawTerm scope) := rfl
+  have universeIsNormal : RawTerm.isStepNormalForm (universeCodeCell levelExpr flag : RawTerm scope) := rfl
+  have codesEqual : (variableCell index : RawTerm scope) = universeCodeCell levelExpr flag :=
+    (Conv.iff_normalForms_eq_of_confluence (StepStar.refl _) variableIsNormal
+      (StepStar.refl _) universeIsNormal).mp conv
+  have headEq := congrArg RawTerm.headGenerator codesEqual
+  rw [headGenerator_variableCell, headGenerator_universeCodeCell] at headEq
+  exact absurd headEq (by decide)
+
 end FX1Poly.Typed
