@@ -143,6 +143,7 @@ import FX1Poly.Typed.ValidTypingConvArm
 import FX1Poly.Typed.ValidTypingVariableLevelPinned
 import FX1Poly.Typed.FormationEngineFundamentalReduction
 import FX1Poly.Typed.FormationEngineFundamental
+import FX1Poly.Typed.FormationEngineFundamentalAssembly
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1583,6 +1584,20 @@ gates pin them shut.
 -- bottom out at the SAME variable obstruction. Residual: genFormation arm (former telescope, tractable like conv)
 -- + the #672 fixpoint discharge.
 #assert_no_axioms FX1Poly.Typed.formationFundamentalVarArmOfAllPositiveMember
+-- SN-027 #674 COMPLETE formation-engine FT assembly (FormationEngineFundamentalAssembly.lean). The formation
+-- telescope DescTelescope and the grown telescope DescTelescopePi have STRUCTURALLY IDENTICAL nil/cons ctors
+-- (cons carries HasTypeDesc vs HasTypeDescPi head; else identical), so the grown engine's proven recursor
+-- assembly ports near-verbatim to HasTypeDesc.rec MINUS piIntro/piElim. IsTelescopeReducibleAtVectorFormation is
+-- the formation-telescope motive_2 (same body as the grown IsTelescopeReducibleAtVector, indexed by DescTelescope).
+#assert_no_axioms FX1Poly.Typed.IsTelescopeReducibleAtVectorFormation
+-- The 4-arm HasTypeDesc.rec assembly: universeFormation/conv reuse the shipped arms; genFormation ports the proven
+-- grown genFormationPi former arm (by_cases gen_piTyCode/gen_sigmaTyCode + FormerChildrenReducible.ofTelescope-
+-- Reducible .toPiMember/.toSigmaMember, swapping DescTelescope.twoChildLevels for the grown one); the telescope
+-- nil/cons arms thread the head member + rest under ReducibleEnvVec.cons. EVERY arm proven outright EXCEPT var,
+-- which consumes the single explicit variablesAllPositive hypothesis = #672. So this collapses the entire SN-027
+-- dependent metatheory (and SN-043 + ~35 downstream) to the ONE statement #672, with genFormation+telescope no
+-- longer residual. Wires through HasTypeDescPiAllLevelFundamentalTheorem.ofFormationFundamental (shipped).
+#assert_no_axioms FX1Poly.Typed.formationFundamentalVectorOfAllVariablesPositive
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
