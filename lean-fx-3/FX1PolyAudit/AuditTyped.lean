@@ -171,6 +171,7 @@ import FX1Poly.Typed.HasTypeDescPiConditionalConfluence
 import FX1Poly.Typed.HasTypeDescPiUniqueNormalForm
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
+import FX1Poly.Typed.DependentPiOverNeutralDomain
 import FX1Poly.Typed.SimplyTypedTermReducibility
 
 /-! # Tools/AuditAll/AuditTyped
@@ -2660,3 +2661,12 @@ gates pin them shut.
 -- inductive step matching the existing arm style (the component fuel-stabilities are the recursion's sub-term
 -- IHs); the well-founded recursion tie-up remains the open crux (#672).
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllPositiveLevels.ofPiType
+
+-- First genuinely DEPENDENT Pi fuel-stability arm: a Pi over a neutral/data domain. Both domain legs of the
+-- Pi reassembly (#718) / Pi member-extension (piTypeMemberExtensionPositive) discharge unconditionally for a
+-- neutral/data domain (domain all-levels via ofWeakHeadNormalNonPiNonUniverse; domain-member fuel-stability
+-- via the #717 neutral arm ofNeutralTypeMember), isolating the residual to the CODOMAIN alone. The codomain
+-- genuinely varies with the argument (unlike the simply-typed non-dependent arrow), so this strictly extends
+-- the closed surface past the simply-typed fragment. The universe-domain case remains the open crux (#672).
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllPositiveLevels.dependentPiOverNeutralDomain
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.dependentPiMemberExtensionOverNeutralDomain
