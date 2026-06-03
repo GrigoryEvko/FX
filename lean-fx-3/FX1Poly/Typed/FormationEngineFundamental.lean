@@ -1,4 +1,5 @@
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
+import FX1Poly.Typed.FundamentalAtAllPositiveArguments
 import FX1Poly.Typed.UniverseCodeShape
 
 /-! # FX1Poly/Typed/FormationEngineFundamental
@@ -32,16 +33,19 @@ Unlike the refined-motive-via-`ValidTyping` route (whose conjunct-2 is provably 
   of `classifier` + reclassifier member of `Type@levelExpr` + a conversion give the subject as a member of the
   reclassifier, via `castAlongConvUnderSubst`.  Level-preserving — no level mismatch.
 
-## Remaining arms (#674)
+* `formationFundamentalVarArmOfAllPositiveMember` — the `var` arm with its residual ISOLATED.
+  `IsFundamentalConclusionAtVector` concludes at an ARBITRARY `predLevel + 1`, but `ReducibleEnvVec` supplies
+  each variable at its single STORED level only.  Since `IsReducibleMemberAt level T t = ∃ candidate,
+  ReducibleTypeAt level T candidate ∧ candidate t`, the level-dependence lives ENTIRELY in `ReducibleTypeAt level
+  T`, whose cross-positive-level extension is the universe-domain-Π fixpoint (#672).  So the arm reduces EXACTLY
+  to: the variable's substituted member at ALL positive levels — read at `predLevel + 1` via `.atLevel`.
 
-* `var` — the genuine residual difficulty: `IsFundamentalConclusionAtVector` concludes at an ARBITRARY
-  `predLevel + 1`, but `ReducibleEnvVec.lookupReducible` returns the variable at its STORED level `envLevels
-  index` (probed: a level mismatch with no side-condition discharge, exactly as the
-  `FundamentalAtAllVectorPremises` docstring warns for a global formation theorem).  The level-indexed twin
-  `fundamentalVarLevelIndexed` works because it concludes at the variable's own level; the AtVector arbitrary
-  level needs the all-positive-extension (`IsReducibleMemberAt.extendsToAllPositive*`) under a classifier
-  condition, or a restriction of the vector shape.
-* `genFormation` — the generic former telescope (binary/telescope helper over the premise IHs).
+## Remaining (#674 → #672)
+
+* discharge `allPositiveMember` for every variable — the universe-domain-Π type-level all-positive extension
+  (#672, the ACTUAL SN-027/SN-043 gate); the sole unconditional gap, shared with the ValidTyping route.
+* `genFormation` — the generic former telescope (binary/telescope helper over the premise IHs); tractable like
+  `conv` (no level mismatch), shippable independently of the var fixpoint.
 
 ## Zero-axiom verification
 
@@ -90,5 +94,27 @@ theorem formationFundamentalConvArm {profile : PolyProfile} {scope : Nat}
   obtain ⟨_candidate, reclassifierReducible⟩ := reclassifierMember.tarskiDecode
   exact IsReducibleMemberAt.castAlongConvUnderSubst substitution
     (subjectIH substitution predLevel env) reclassifierReducible converts
+
+/-- **The `var` arm of the formation-engine FT, with its residual ISOLATED to the all-positive member extension
+(= the #672 fixpoint gate).**  `IsFundamentalConclusionAtVector` concludes at an ARBITRARY `predLevel + 1`, but
+`ReducibleEnvVec` supplies each variable at its single STORED level `envLevels index` only — and since
+`IsReducibleMemberAt level T t = ∃ candidate, ReducibleTypeAt level T candidate ∧ candidate t`, the
+level-dependence lives ENTIRELY in `ReducibleTypeAt level T`, whose extension across positive levels is the
+universe-domain-Π fixpoint (the documented SN-027 obstruction, tracked as #672).  So the var arm reduces EXACTLY
+to: the variable's substituted member is reducible at ALL positive levels.  Given that hypothesis, the arm reads
+it at `predLevel + 1` via `.atLevel`.  The hypothesis is precisely what `ReducibleEnvVec`'s single-level member
+does NOT provide; discharging it for every variable is the #672 fixpoint.  This isolates the formation FT's sole
+genuine residual — both the ValidTyping route (`ValidTypingVariableLevelPinned.lean`) and this Kripke route bottom
+out at the SAME variable obstruction. -/
+theorem formationFundamentalVarArmOfAllPositiveMember {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope)
+    (allPositiveMember : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+      {envLevels : Fin scope → Nat} (_env : ReducibleEnvVec envLevels context substitution),
+      IsReducibleMemberAtAllPositiveLevels
+        (RawTerm.subst substitution (context.lookup index))
+        (RawTerm.subst substitution (variableCell index))) :
+    IsFundamentalConclusionAtVector context (variableCell index) (context.lookup index) := by
+  intro _targetScope substitution envLevels predLevel env
+  exact (allPositiveMember substitution env).atLevel predLevel
 
 end FX1Poly.Typed

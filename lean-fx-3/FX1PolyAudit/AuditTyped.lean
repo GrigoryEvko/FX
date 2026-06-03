@@ -1574,6 +1574,15 @@ gates pin them shut.
 -- AtVector arbitrary-level conclusion vs the env's stored-level lookup, probed mismatch; needs extendsToAllPositive
 -- under a classifier condition) + genFormation (the former telescope helper).
 #assert_no_axioms FX1Poly.Typed.formationFundamentalConvArm
+-- #674 var arm, RESIDUAL ISOLATED: formationFundamentalVarArmOfAllPositiveMember. IsReducibleMemberAt level T t =
+-- exists candidate, ReducibleTypeAt level T candidate AND candidate t — so ALL level-dependence is in
+-- ReducibleTypeAt level T, whose cross-positive-level extension IS the universe-domain-Pi fixpoint (#672). The var
+-- arm reduces EXACTLY to: the variable's substituted member at ALL positive levels (.atLevel reads it at
+-- predLevel+1). ReducibleEnvVec gives only ONE level, so discharging allPositiveMember per variable = #672 = the
+-- ACTUAL SN-027/SN-043 gate. BOTH the ValidTyping route (ValidTypingVariableLevelPinned) and this Kripke route
+-- bottom out at the SAME variable obstruction. Residual: genFormation arm (former telescope, tractable like conv)
+-- + the #672 fixpoint discharge.
+#assert_no_axioms FX1Poly.Typed.formationFundamentalVarArmOfAllPositiveMember
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
