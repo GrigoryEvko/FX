@@ -80,6 +80,7 @@ import FX1Poly.Core.IdentityEliminatorCanonicalComputation
 import FX1Poly.Core.IdEliminatorClosedMembership
 import FX1Poly.Core.OptionEitherMatchCanonicalComputation
 import FX1Poly.Core.MatchClosedMembership
+import FX1Poly.Core.SigmaProjectionClosedMembership
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.BoolCanonicityViaSconing
 import FX1Poly.Core.DataCanonicityViaSconing
@@ -2195,6 +2196,15 @@ gates pin them shut.
 -- + value-subterm) and branchRespectsSN payload is a member. ofStepStarReachingValue (#735) lifts to the cell.
 #assert_no_axioms FX1Poly.Core.optionMatchClosedIsMember
 #assert_no_axioms FX1Poly.Core.eitherMatchClosedIsMember
+-- PROJECTION eliminator MEMBERSHIP (#672-free, the SN-058 elimination half, closed-layer): a closed fst/snd on
+-- a canonical pair scrutinee whose projected component is a result-candidate member is ITSELF a member. The
+-- projection twin of the branch-eliminator membership, completing the closed-membership track for ALL
+-- non-recursive eliminators. Cell SN is the shipped fst/snd_isStronglyNormalizing_of_argument (contractum is a
+-- subterm, no respect-hypothesis); pairCanonicalScrutineeProjectsToComponents reduces the cell to the component;
+-- firstComponentMember/secondComponentMember (conditional on the witnessed scrutinee ->* pairCell) is a member,
+-- so reaches a value; ofStepStarReachingValue (#735) lifts to the cell.
+#assert_no_axioms FX1Poly.Core.fstClosedIsMember
+#assert_no_axioms FX1Poly.Core.sndClosedIsMember
 -- RECURSIVE eliminators, BASE CASE (#672-free, SN-061/062/064 base half): natElim/natRec on zero, listElim on
 -- nil COMPUTE to the base branch. StepStar.natElimScrutinee/natRecScrutinee/listElimScrutinee = head-child
 -- scrutinee congruences (as for boolElim). natElim/natRecZeroScrutineeReducesToBranch +
