@@ -1568,6 +1568,12 @@ gates pin them shut.
 -- genFormation (the generic former telescope). Then assemble the 4-arm induction => discharge SN-027 + the ~10
 -- downstream theorems via HasTypeDescPiAllLevelFundamentalTheorem.ofFormationFundamental (shipped).
 #assert_no_axioms FX1Poly.Typed.formationFundamentalUniverseFormationArm
+-- #674 conv arm: formationFundamentalConvArm (binary helper over the 2 sub-derivation IHs + converts). Level-
+-- PRESERVING (no mismatch): reclassifier IH one level up, tarskiDecode to a reducible type, castAlongConvUnderSubst
+-- (SN-034) transports the subject's membership across the conversion. Residual: var (the genuine hard arm — the
+-- AtVector arbitrary-level conclusion vs the env's stored-level lookup, probed mismatch; needs extendsToAllPositive
+-- under a classifier condition) + genFormation (the former telescope helper).
+#assert_no_axioms FX1Poly.Typed.formationFundamentalConvArm
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
