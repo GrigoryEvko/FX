@@ -168,4 +168,119 @@ theorem cd_app_lam_eq {scope : Nat} (body : RawTerm (scope + 1)) (arg : RawTerm 
         (.childCons arg .childNil)))
       = RawTerm.subst0 (RawTerm.completeDevelopment body) (RawTerm.completeDevelopment arg) := rfl
 
+/-! ### ι reduction-rule equations.
+
+The companions of `cd_app_lam_eq` for the sixteen ι-redexes: each pins down, by `rfl`, the developed
+contractum the gated complete development produces for that syntactic redex.  The gate fires (the source
+is a syntactic redex), the scrutinee/witness constructor develops to itself (it is not a root-redex
+generator), and the developed children fire the matching `Step`/`ParStep` arm — yielding the contractum
+built from the developed components.  These are the reduction rules the Takahashi triangle's β/ι arms
+rewrite the goal's `completeDevelopment` with before firing the matching `ParStep` constructor. -/
+
+theorem cd_boolElimTrue_eq {scope : Nat} (thenBranch elseBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_boolElim () (.childCons (.mkGen .gen_boolTrue () .childNil)
+      (.childCons thenBranch (.childCons elseBranch .childNil)))) =
+      RawTerm.completeDevelopment thenBranch := rfl
+
+theorem cd_boolElimFalse_eq {scope : Nat} (thenBranch elseBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_boolElim () (.childCons (.mkGen .gen_boolFalse () .childNil)
+      (.childCons thenBranch (.childCons elseBranch .childNil)))) =
+      RawTerm.completeDevelopment elseBranch := rfl
+
+theorem cd_fstPair_eq {scope : Nat} (firstValue secondValue : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_fst () (.childCons (.mkGen .gen_pair ()
+      (.childCons firstValue (.childCons secondValue .childNil))) .childNil)) =
+      RawTerm.completeDevelopment firstValue := rfl
+
+theorem cd_sndPair_eq {scope : Nat} (firstValue secondValue : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_snd () (.childCons (.mkGen .gen_pair ()
+      (.childCons firstValue (.childCons secondValue .childNil))) .childNil)) =
+      RawTerm.completeDevelopment secondValue := rfl
+
+theorem cd_natElimZero_eq {scope : Nat} (zeroBranch succBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_natElim () (.childCons (.mkGen .gen_natZero () .childNil)
+      (.childCons zeroBranch (.childCons succBranch .childNil)))) =
+      RawTerm.completeDevelopment zeroBranch := rfl
+
+theorem cd_natRecZero_eq {scope : Nat} (zeroBranch succBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_natRec () (.childCons (.mkGen .gen_natZero () .childNil)
+      (.childCons zeroBranch (.childCons succBranch .childNil)))) =
+      RawTerm.completeDevelopment zeroBranch := rfl
+
+theorem cd_listElimNil_eq {scope : Nat} (nilBranch consBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_listElim () (.childCons (.mkGen .gen_listNil () .childNil)
+      (.childCons nilBranch (.childCons consBranch .childNil)))) =
+      RawTerm.completeDevelopment nilBranch := rfl
+
+theorem cd_optionMatchNone_eq {scope : Nat} (noneBranch someBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_optionMatch () (.childCons (.mkGen .gen_optionNone () .childNil)
+      (.childCons noneBranch (.childCons someBranch .childNil)))) =
+      RawTerm.completeDevelopment noneBranch := rfl
+
+theorem cd_optionMatchSome_eq {scope : Nat} (value noneBranch someBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_optionMatch () (.childCons
+      (.mkGen .gen_optionSome () (.childCons value .childNil))
+      (.childCons noneBranch (.childCons someBranch .childNil)))) =
+      .mkGen .gen_app () (.childCons (RawTerm.completeDevelopment someBranch)
+        (.childCons (RawTerm.completeDevelopment value) .childNil)) := rfl
+
+theorem cd_eitherMatchInl_eq {scope : Nat} (value leftBranch rightBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_eitherMatch () (.childCons
+      (.mkGen .gen_eitherInl () (.childCons value .childNil))
+      (.childCons leftBranch (.childCons rightBranch .childNil)))) =
+      .mkGen .gen_app () (.childCons (RawTerm.completeDevelopment leftBranch)
+        (.childCons (RawTerm.completeDevelopment value) .childNil)) := rfl
+
+theorem cd_eitherMatchInr_eq {scope : Nat} (value leftBranch rightBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_eitherMatch () (.childCons
+      (.mkGen .gen_eitherInr () (.childCons value .childNil))
+      (.childCons leftBranch (.childCons rightBranch .childNil)))) =
+      .mkGen .gen_app () (.childCons (RawTerm.completeDevelopment rightBranch)
+        (.childCons (RawTerm.completeDevelopment value) .childNil)) := rfl
+
+theorem cd_natElimSucc_eq {scope : Nat} (predecessor zeroBranch succBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_natElim () (.childCons
+      (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+      (.childCons zeroBranch (.childCons succBranch .childNil)))) =
+      .mkGen .gen_app () (.childCons
+        (.mkGen .gen_app () (.childCons (RawTerm.completeDevelopment succBranch)
+          (.childCons (RawTerm.completeDevelopment predecessor) .childNil)))
+        (.childCons (.mkGen .gen_natElim () (.childCons (RawTerm.completeDevelopment predecessor)
+          (.childCons (RawTerm.completeDevelopment zeroBranch)
+            (.childCons (RawTerm.completeDevelopment succBranch) .childNil)))) .childNil)) := rfl
+
+theorem cd_natRecSucc_eq {scope : Nat} (predecessor zeroBranch succBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_natRec () (.childCons
+      (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+      (.childCons zeroBranch (.childCons succBranch .childNil)))) =
+      .mkGen .gen_app () (.childCons
+        (.mkGen .gen_app () (.childCons (RawTerm.completeDevelopment succBranch)
+          (.childCons (RawTerm.completeDevelopment predecessor) .childNil)))
+        (.childCons (.mkGen .gen_natRec () (.childCons (RawTerm.completeDevelopment predecessor)
+          (.childCons (RawTerm.completeDevelopment zeroBranch)
+            (.childCons (RawTerm.completeDevelopment succBranch) .childNil)))) .childNil)) := rfl
+
+theorem cd_listElimCons_eq {scope : Nat} (headValue tailValue nilBranch consBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_listElim () (.childCons
+      (.mkGen .gen_listCons () (.childCons headValue (.childCons tailValue .childNil)))
+      (.childCons nilBranch (.childCons consBranch .childNil)))) =
+      .mkGen .gen_app () (.childCons
+        (.mkGen .gen_app () (.childCons
+          (.mkGen .gen_app () (.childCons (RawTerm.completeDevelopment consBranch)
+            (.childCons (RawTerm.completeDevelopment headValue) .childNil)))
+          (.childCons (RawTerm.completeDevelopment tailValue) .childNil)))
+        (.childCons (.mkGen .gen_listElim () (.childCons (RawTerm.completeDevelopment tailValue)
+          (.childCons (RawTerm.completeDevelopment nilBranch)
+            (.childCons (RawTerm.completeDevelopment consBranch) .childNil)))) .childNil)) := rfl
+
+theorem cd_idJRefl_eq {scope : Nat} (baseCase rawWitness : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_idJ () (.childCons baseCase
+      (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil))) =
+      RawTerm.completeDevelopment baseCase := rfl
+
+theorem cd_idStrictRecRefl_eq {scope : Nat} (baseCase rawWitness : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_idStrictRec () (.childCons baseCase
+      (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil))) =
+      RawTerm.completeDevelopment baseCase := rfl
+
 end FX1Poly.Core

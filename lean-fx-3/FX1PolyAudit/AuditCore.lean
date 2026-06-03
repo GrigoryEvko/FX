@@ -331,6 +331,24 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- cd_app_lam_eq: the gated beta-redex develops to subst0 of the developed components, by rfl -- the exact
 -- equation the Takahashi triangle's beta arm needs, witnessing triangle-readiness of the gated development.
 #assert_no_axioms FX1Poly.Core.cd_app_lam_eq
+-- ι reduction-rule equations: per-redex definitional characterization of the gated complete development
+-- (all rfl), the companions of cd_app_lam_eq the triangle's 16 ι arms rewrite with before firing.
+#assert_no_axioms FX1Poly.Core.cd_boolElimTrue_eq
+#assert_no_axioms FX1Poly.Core.cd_boolElimFalse_eq
+#assert_no_axioms FX1Poly.Core.cd_fstPair_eq
+#assert_no_axioms FX1Poly.Core.cd_sndPair_eq
+#assert_no_axioms FX1Poly.Core.cd_natElimZero_eq
+#assert_no_axioms FX1Poly.Core.cd_natRecZero_eq
+#assert_no_axioms FX1Poly.Core.cd_listElimNil_eq
+#assert_no_axioms FX1Poly.Core.cd_optionMatchNone_eq
+#assert_no_axioms FX1Poly.Core.cd_optionMatchSome_eq
+#assert_no_axioms FX1Poly.Core.cd_eitherMatchInl_eq
+#assert_no_axioms FX1Poly.Core.cd_eitherMatchInr_eq
+#assert_no_axioms FX1Poly.Core.cd_natElimSucc_eq
+#assert_no_axioms FX1Poly.Core.cd_natRecSucc_eq
+#assert_no_axioms FX1Poly.Core.cd_listElimCons_eq
+#assert_no_axioms FX1Poly.Core.cd_idJRefl_eq
+#assert_no_axioms FX1Poly.Core.cd_idStrictRecRefl_eq
 
 -- ParStep stable under substitution + renaming (toward the #420 triangle): the parallel-substitution
 -- lemma the triangle ParStep a b -> ParStep b (completeDevelopment a) needs at its beta/iota arms is built
