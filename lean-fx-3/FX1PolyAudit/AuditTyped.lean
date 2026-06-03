@@ -76,6 +76,7 @@ import FX1Poly.Core.BoolElimCanonicalComputation
 import FX1Poly.Core.SigmaProjectionCanonicalComputation
 import FX1Poly.Core.IdentityEliminatorCanonicalComputation
 import FX1Poly.Core.OptionEitherMatchCanonicalComputation
+import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
@@ -2140,6 +2141,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.StepStar.eitherMatchScrutinee
 #assert_no_axioms FX1Poly.Core.optionMatchCanonicalScrutineeReduces
 #assert_no_axioms FX1Poly.Core.eitherMatchCanonicalScrutineeReduces
+-- RECURSIVE eliminators, BASE CASE (#672-free, SN-061/062/064 base half): natElim/natRec on zero, listElim on
+-- nil COMPUTE to the base branch. StepStar.natElimScrutinee/natRecScrutinee/listElimScrutinee = head-child
+-- scrutinee congruences (as for boolElim). natElim/natRecZeroScrutineeReducesToBranch +
+-- listElimNilScrutineeReducesToBranch = the headline: when the scrutinee reduces to the base constructor
+-- (zero/nil), the congruence carries that under the eliminator and the base iota (iotaNatElimZero/iotaNatRecZero/
+-- iotaListElimNil) selects the base branch. The recursive (succ/cons) step case GROWS (iota reappears the
+-- eliminator on predecessor/tail) and needs full Tait; this is the clean base-case half. No fundamental theorem.
+#assert_no_axioms FX1Poly.Core.StepStar.natElimScrutinee
+#assert_no_axioms FX1Poly.Core.StepStar.natRecScrutinee
+#assert_no_axioms FX1Poly.Core.StepStar.listElimScrutinee
+#assert_no_axioms FX1Poly.Core.natElimZeroScrutineeReducesToBranch
+#assert_no_axioms FX1Poly.Core.natRecZeroScrutineeReducesToBranch
+#assert_no_axioms FX1Poly.Core.listElimNilScrutineeReducesToBranch
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
