@@ -137,6 +137,7 @@ import FX1Poly.Typed.LogRelSpec
 import FX1Poly.Typed.LevelingBridge
 import FX1Poly.Typed.ValidTypingLevelFlexible
 import FX1Poly.Typed.ValidTypingRefinedMotive
+import FX1Poly.Typed.ValidTypingTermArms
 import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
 import FX1Poly.Typed.SimplyTypedTermReducibility
@@ -1493,6 +1494,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.singleLevel
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.flexibleOfUniverseClassifier
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.ofLevelFlexible
+-- SN-027 the TERM-SUBJECT ARMS (#660, ValidTypingTermArms.lean): the refined motive's term arms (piIntro now,
+-- piElim/var next) discharge through ofTermValidity — single-level ValidTyping + a non-universe classifier makes
+-- the level-flexibility conjunct VACUOUS (the classifier=universeCodeCell hypothesis is impossible). piIntro is
+-- the first: its classifier piTyCodeCell is never a universeCodeCell (piTyCodeCell_ne_universeCodeCell, distinct
+-- head generators), so it wraps ValidTyping.piIntro over coordinated premises. The level coordination (IH ∃-level
+-- → the shared predLevel these premises demand) is the assembly's job (#662), not these arms'.
+#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.ofTermValidity
+#assert_no_axioms FX1Poly.Typed.piTyCodeCell_ne_universeCodeCell
+#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.piIntro
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
