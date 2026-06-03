@@ -175,6 +175,7 @@ import FX1Poly.Typed.DependentPiOverNeutralDomain
 import FX1Poly.Typed.DependentPiNeutralCodomain
 import FX1Poly.Typed.DependentlyTypedNeutralDomainFragment
 import FX1Poly.Typed.FirstOrderSimplyTypedSubsumption
+import FX1Poly.Typed.UniverseCumulativity
 import FX1Poly.Typed.SimplyTypedTermReducibility
 
 /-! # Tools/AuditAll/AuditTyped
@@ -2700,3 +2701,12 @@ gates pin them shut.
 -- subsumed (needs domain member-extension at fuel 0, deferred with the universe-domain crux of #672).
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.toNeutralDomainDependentlyTyped
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.reducibleAndMemberExtensionViaDependentFragment
+
+-- Cumulativity SN-072: reducibility respects Type@e ⊆ Type@(lsucc e). In the fuel-stratified model the
+-- universe candidate is LevelExpr/flag-independent (meta-fuel decoupled from object levels; the hierarchy
+-- discipline lives in HasType, not the semantic model), so universe membership is level-label-IRRELEVANT
+-- (a two-way equivalence) and cumulativity is its named corollary (single-level + all-positive). Honest scope:
+-- this is cumulativity in the coarse model; per-LevelExpr cumulativity awaits the LevelExpr-matching refinement.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.universeMembershipLevelLabelIrrelevant
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.universeCumulativity
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.universeCumulativity
