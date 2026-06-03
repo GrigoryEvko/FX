@@ -2004,6 +2004,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofNeutral
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofNeutralApplication
 #assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.neutralApplicationReducibleAndMemberExtension
+-- NO CLOSED NEUTRAL (closed-canonical-forms precursor for canonicity SN-047/049 + consistency SN-050).
+-- IsNeutral.elimEmptyScope: a neutral term forces an inhabitant of Fin scope — every arm but `var` recurses on a
+-- same-scope neutral premise, so threading the (Fin scope → False) emptiness witness down the spine refutes the
+-- head variable; stated scope-polymorphically to keep the induction motive index-clean. IsNeutral.noClosed:
+-- specialize to scope 0 (Fin 0 empty via elim0) — no RawTerm 0 is neutral, so a CLOSED normal form is an
+-- introduction form, never a stuck eliminator. Pure structural induction over the 12-arm IsNeutral; #672-free.
+#assert_no_axioms FX1Poly.Core.IsNeutral.elimEmptyScope
+#assert_no_axioms FX1Poly.Core.IsNeutral.noClosed
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an

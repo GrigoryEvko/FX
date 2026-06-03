@@ -127,4 +127,36 @@ inductive IsNeutral : {scope : Nat} → RawTerm scope → Prop where
       IsNeutral (.mkGen .gen_idStrictRec ()
         (.childCons baseCase (.childCons witness .childNil)))
 
+/-- **A neutral term forces an inhabitant of its scope's variable space.**  Every `IsNeutral` derivation
+bottoms out at the atomic `var` arm — a `Fin scope` index — and every other arm is rooted at an eliminator
+whose neutral premise lives at the SAME scope.  So a neutral term cannot exist when `Fin scope` is empty:
+threading the emptiness witness down the neutral spine reaches the head variable and refutes it.  Stated
+scope-polymorphically (`(Fin scope → False) → False`) so the induction motive stays index-clean — no scope is
+fixed in the motive, every recursive arm just forwards the same emptiness witness to its inductive
+hypothesis. -/
+theorem IsNeutral.elimEmptyScope {scope : Nat} {term : RawTerm scope}
+    (neutral : IsNeutral term) : (Fin scope → False) → False := by
+  induction neutral with
+  | var index => intro scopeEmpty; exact scopeEmpty index
+  | app _ headInductiveHypothesis => intro scopeEmpty; exact headInductiveHypothesis scopeEmpty
+  | fst _ argumentInductiveHypothesis => intro scopeEmpty; exact argumentInductiveHypothesis scopeEmpty
+  | snd _ argumentInductiveHypothesis => intro scopeEmpty; exact argumentInductiveHypothesis scopeEmpty
+  | boolElim _ scrutineeInductiveHypothesis => intro scopeEmpty; exact scrutineeInductiveHypothesis scopeEmpty
+  | natElim _ scrutineeInductiveHypothesis => intro scopeEmpty; exact scrutineeInductiveHypothesis scopeEmpty
+  | natRec _ scrutineeInductiveHypothesis => intro scopeEmpty; exact scrutineeInductiveHypothesis scopeEmpty
+  | listElim _ scrutineeInductiveHypothesis => intro scopeEmpty; exact scrutineeInductiveHypothesis scopeEmpty
+  | optionMatch _ scrutineeInductiveHypothesis =>
+      intro scopeEmpty; exact scrutineeInductiveHypothesis scopeEmpty
+  | eitherMatch _ scrutineeInductiveHypothesis =>
+      intro scopeEmpty; exact scrutineeInductiveHypothesis scopeEmpty
+  | idJ _ witnessInductiveHypothesis => intro scopeEmpty; exact witnessInductiveHypothesis scopeEmpty
+  | idStrictRec _ witnessInductiveHypothesis => intro scopeEmpty; exact witnessInductiveHypothesis scopeEmpty
+
+/-- **No closed term is neutral.**  A `RawTerm 0` (the empty scope) cannot be neutral: `Fin 0` is empty, so
+`IsNeutral.elimEmptyScope` refutes the neutral spine at its head variable.  This is the closed-canonical-forms
+precursor for canonicity and consistency: a CLOSED normal form is never a stuck (neutral) eliminator, so it
+must be an introduction form — and the empty type, having no introduction form, has no closed inhabitant. -/
+theorem IsNeutral.noClosed {term : RawTerm 0} (neutral : IsNeutral term) : False :=
+  neutral.elimEmptyScope (fun index => index.elim0)
+
 end FX1Poly.Core
