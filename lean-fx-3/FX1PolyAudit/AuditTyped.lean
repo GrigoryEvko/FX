@@ -73,6 +73,7 @@ import FX1Poly.Core.NormalizeMeta
 import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.BoolElimCanonicalComputation
+import FX1Poly.Core.SigmaProjectionCanonicalComputation
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
@@ -2105,6 +2106,15 @@ gates pin them shut.
 -- (StepStar.transLast). The elimination analog of closed-bool canonicity; no fundamental theorem used.
 #assert_no_axioms FX1Poly.Core.StepStar.boolElimScrutinee
 #assert_no_axioms FX1Poly.Core.boolElimCanonicalScrutineeReducesToBranch
+-- Sigma PROJECTION canonicity (#672-free, SN-058 path): fst/snd on a CANONICAL pair scrutinee PROJECT to the
+-- components. StepStar.fstScrutinee/sndScrutinee = the unary scrutinee-position chain congruences (generic
+-- StepStar.congAt + Step.cong (StepChildren.here ...) at the sole child). pairCanonicalScrutineeProjectsTo-
+-- Components = the headline: the scrutinee reduces to pairCell first second (pairClosedReducesToValue), the
+-- projection congruences carry that under fst/snd, and the matching iota (iotaFstPair/iotaSndPair) projects out
+-- the components. The Sigma-projection analog of boolElim branch-selection; no fundamental theorem used.
+#assert_no_axioms FX1Poly.Core.StepStar.fstScrutinee
+#assert_no_axioms FX1Poly.Core.StepStar.sndScrutinee
+#assert_no_axioms FX1Poly.Core.pairCanonicalScrutineeProjectsToComponents
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
