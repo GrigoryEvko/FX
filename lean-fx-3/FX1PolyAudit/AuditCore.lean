@@ -24,6 +24,7 @@ import FX1Poly.Core.ParStepSubstPointwise
 import FX1Poly.Core.ParStepInversion
 import FX1Poly.Core.CompleteDevelopmentParStep
 import FX1Poly.Core.ParStepTriangle
+import FX1Poly.Core.RawConfluence
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
 import FX1Poly.Core.KripkeReducibilityCandidate
@@ -419,6 +420,15 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- definitionally fireRootRedexOrSelf's output); non-firing branches reuse fireRootRedex_sound's keys.
 #assert_no_axioms FX1Poly.Core.ParStep.triangleCongFires
 #assert_no_axioms FX1Poly.Core.ParStep.triangle
+
+-- The #420 PAYOFF: unconditional raw confluence. ParStep.diamond instantiates DiamondProperty.ofTriangle
+-- at ParStep.triangle; StepStar.rawConfluence feeds that diamond + the Step subset ParStep subset StepStar
+-- sandwich (Step.toParStep / ParStep.toStepStar) to StepStar.hasConfluence_of_parallelDiamond, yielding
+-- global Church-Rosser for the raw StepStar relation -- with NO strong-normalization assumption (raw
+-- beta+iota is not SN). This closes the M8-S1 confluence pipeline (StepStarConfluence.lean previously
+-- supplied StepStar.HasConfluence only conditionally).
+#assert_no_axioms FX1Poly.Core.ParStep.diamond
+#assert_no_axioms FX1Poly.Core.StepStar.rawConfluence
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
