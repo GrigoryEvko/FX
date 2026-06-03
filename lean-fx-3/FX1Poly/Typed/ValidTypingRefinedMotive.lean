@@ -81,4 +81,52 @@ theorem RefinedTotalBridgeConclusion.ofLevelFlexible {profile : PolyProfile} {sc
     obtain ⟨rfl, rfl⟩ := universeCodeCell_inj eq
     exact flexible⟩
 
+/-! ## The REVISED motive — the var-arm fix (SN-027/#662 assembly)
+
+`RefinedTotalBridgeConclusion`'s conjunct-2 demanded `IsLevelFlexibleTypeCode` for EVERY universe-classified
+subject, which a TYPE VARIABLE (`var j : Type@e`, pinned to `contextLevels j` by `ValidTyping.var`) provably
+cannot satisfy — so its var arm was the standing wall.  The revised motive adds the guard
+`(∀ index, subject ≠ variableCell index)`, EXCLUDING variable subjects from the level-flexibility demand.  This
+is exactly the right exclusion: a variable's reclassifier role is handled by `validTypingBridgeConvPinnedReclassifier`
+(via the leveling equation), not by all-level flexibility, so the motive should not demand flexibility OF a
+variable subject.  With the guard, the `var` arm discharges conjunct-2 VACUOUSLY (the subject IS a variable),
+and the non-variable type-code arms (`universeFormation` here; Π/Σ/gen formers later) supply flexibility as
+before.  The `RawTerm.isVariableOrNot` dichotomy routes the conv arm onto this guard. -/
+
+/-- **The revised total-bridge conclusion.**  Single-level validity, plus level-flexibility for a
+universe-classified subject that is NOT a variable.  The non-variable guard on conjunct-2 is the var-arm fix
+(`RefinedTotalBridgeConclusion`'s unguarded conjunct-2 is unsatisfiable for a type variable). -/
+def RevisedBridgeConclusion (profile : PolyProfile) {scope : Nat}
+    (contextLevels : Fin scope → Nat) (context : TypingContext profile scope)
+    (subject classifier : RawTerm scope) : Prop :=
+  (∃ subjectLevel : Nat, ValidTyping profile contextLevels subjectLevel context subject classifier) ∧
+  (∀ (levelExpr : LevelExpr) (flag : UniverseFlag), classifier = universeCodeCell levelExpr flag →
+    (∀ index : Fin scope, subject ≠ variableCell index) →
+    IsLevelFlexibleTypeCode profile contextLevels context subject levelExpr flag)
+
+/-- **The var arm of the revised motive.**  Conjunct-1 by `ValidTyping.var` (at the variable's pinned env level
+`contextLevels index`); conjunct-2 VACUOUS — the subject is `variableCell index`, so the non-variable guard
+`∀ j, variableCell index ≠ variableCell j` is contradictory at `j := index`.  This is the arm that the refined
+motive could not discharge for a type variable. -/
+theorem RevisedBridgeConclusion.var {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (context : TypingContext profile scope) (index : Fin scope) :
+    RevisedBridgeConclusion profile contextLevels context
+      (variableCell index) (context.lookup index) :=
+  ⟨⟨contextLevels index, ValidTyping.var contextLevels context index⟩,
+   fun _levelExpr _flag _classifierEq subjectNotVariable =>
+     absurd rfl (subjectNotVariable index)⟩
+
+/-- **The universeFormation arm of the revised motive.**  Conjunct-1 by `ValidTyping.universeFormation`;
+conjunct-2 by `universeFormation_isLevelFlexible` (a universe code is a non-variable type code, so the guard is
+met and its flexibility is the shipped former-level-polymorphism). -/
+theorem RevisedBridgeConclusion.universeFormation {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) (context : TypingContext profile scope)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    RevisedBridgeConclusion profile contextLevels context
+      (universeCodeCell levelExpr flag) (universeCodeCell levelExpr.lsucc flag) :=
+  ⟨⟨0 + 1, ValidTyping.universeFormation contextLevels 0 context levelExpr flag⟩,
+   fun _levelExpr _flag classifierEq _subjectNotVariable => by
+     obtain ⟨rfl, rfl⟩ := universeCodeCell_inj classifierEq
+     exact universeFormation_isLevelFlexible contextLevels context levelExpr flag⟩
+
 end FX1Poly.Typed

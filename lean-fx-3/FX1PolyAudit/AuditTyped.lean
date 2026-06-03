@@ -1610,6 +1610,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.singleLevel
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.flexibleOfUniverseClassifier
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.ofLevelFlexible
+-- SN-027 the REVISED motive (the var-arm FIX, #662 assembly): RefinedTotalBridgeConclusion's conjunct-2 demanded
+-- level-flexibility for EVERY universe-classified subject — unsatisfiable for a type VARIABLE (pinned to
+-- contextLevels index). The revised motive guards conjunct-2 with (∀ index, subject ≠ variableCell index),
+-- excluding variable subjects. var arm: conjunct-2 vacuous (subject IS a variable). universeFormation arm:
+-- flexibility via universeFormation_isLevelFlexible (a universe code is not a variable). RawTerm.isVariableOrNot
+-- routes the conv arm onto the guard.
+#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.var
+#assert_no_axioms FX1Poly.Typed.RevisedBridgeConclusion.universeFormation
 -- SN-027 the TERM-SUBJECT ARMS (#660, ValidTypingTermArms.lean): the refined motive's term arms (piIntro now,
 -- piElim/var next) discharge through ofTermValidity — single-level ValidTyping + a non-universe classifier makes
 -- the level-flexibility conjunct VACUOUS (the classifier=universeCodeCell hypothesis is impossible). piIntro is
