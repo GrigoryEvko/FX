@@ -75,6 +75,7 @@ import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.EmptyCanonicalFormsCandidate
+import FX1Poly.Core.ListCanonicalFormsCandidate
 import FX1Poly.Core.StronglyNormalizingSubst
 import FX1Poly.Core.ExistsStepOfNotNormal
 import FX1Poly.Core.WeakNormalization
@@ -2083,6 +2084,14 @@ gates pin them shut.
 -- closed proof of Empty"; only the membership half (closed well-typed Empty term is a member) awaits the FT.
 #assert_no_axioms FX1Poly.Core.emptyCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.emptyHasNoClosedMember
+-- RICHEST data candidate — List (SN-064): IsListValue inductive combines nullary nil + binary-recursive cons
+-- (head normal like pair, tail recursive like Nat); list values are normal forms by induction; the candidate
+-- is isReducibilityCandidateOfValuesNormal at IsListValue; every list value is a member (memberOfValue); a
+-- closed member reduces to a list constructor (closedReducesToValue). Unconditional + #672-free.
+#assert_no_axioms FX1Poly.Core.isListValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.listCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isListValue_isMember
+#assert_no_axioms FX1Poly.Core.listClosedReducesToValue
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
