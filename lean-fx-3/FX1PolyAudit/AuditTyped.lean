@@ -1511,6 +1511,16 @@ gates pin them shut.
 -- ctor's isFormation/premises/telescopeFundamental are all predLevel-INDEPENDENT, the same freedom the fixed
 -- formers exploit — and casts the classifier through the match equality (eq ▸).
 #assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.genFormationPi
+-- SN-027 the piElim TERM ARM (#661, ValidTypingTermArms.lean): an application whose RESULT classifier
+-- subst0 codomainCode argument is NOT a universe code is a term subject — ofTermValidity over ValidTyping.piElim,
+-- like piIntro. KEY FINDING (why piElim carries a HYPOTHESIS where piIntro carried a PROOF): an application's
+-- result IS a universe code precisely when the function is a type family (f : Pi(x:A). Type@e); then appCell f a
+-- is a NEUTRAL type PINNED to one level by ValidTyping (the function var has no derivation at other levels), so
+-- the refined motive's conjunct-2 (forall level) is UNSATISFIABLE at the ValidTyping layer for that case. That
+-- type-family case does NOT flow through this arm — it routes through the reducibility-neutral machinery in the
+-- assembly, which only ever needs ONE level (validTypingBridgeConvFromAllLevelReclassifier instantiates the
+-- forall-level reclassifier at exactly subjectLevel — line 361). So resultNotUniverse is the honest precondition.
+#assert_no_axioms FX1Poly.Typed.RefinedTotalBridgeConclusion.piElim
 -- SN-027 piElim diagnosis (read-validated against fundamentalPiElimLevelIndexed + applicationUnderSubst): the
 -- piElim arm runs at a UNIFORM subjectLevel — function (: Π), argument (: domain), and result are ALL at one
 -- level (applicationUnderSubst closes at any COMMON level). The per-arm block validTypingBridgePiElim (SN-023)
