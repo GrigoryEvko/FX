@@ -160,6 +160,7 @@ import FX1Poly.Typed.ReducibleTypeAtAllLevelsNonDependentArrow
 import FX1Poly.Typed.RouteAObstruction
 import FX1Poly.Typed.ClassifierLevelDiagnosis
 import FX1Poly.Typed.ClassifierLevelMeasure
+import FX1Poly.Typed.DenoteKeyedReducibility
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2776,3 +2777,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.universeMembershipLevelLabelIrrelevant
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.universeCumulativity
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtAllPositiveLevels.universeCumulativity
+
+-- DenoteKeyedReducibility (SN-006 foundation toward #672): the classifier-universe-level reducibility
+-- relation. The universe arm decodes Type@e to the lower relation AT denote e (the fixed classifier level),
+-- not ambient-fuel-minus-one — defeating SN-001's fuel-0 vacuity. The lower family is STRUCTURAL (not WF:
+-- the WF .eq_def leaks Quot.sound), granting arbitrary-lower-level access at the structural predecessor.
+-- universeMembership_levelIrrelevant is the headline: Type@e's candidate is the SAME decode-at-(denote e)
+-- set at every ambient level > denote e — the level-irrelevance the fuel model could not deliver, true by
+-- construction. universeCode_isReducibleAtDenote is the anti-vacuity (refutes RouteAObstruction's empty base).
+#assert_no_axioms FX1Poly.Typed.universeDenotePredicate
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamily
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtDenote
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamily_eq_reducible
+#assert_no_axioms FX1Poly.Typed.universeCode_isReducibleAtDenote
+#assert_no_axioms FX1Poly.Typed.universeMembership_levelIrrelevant
