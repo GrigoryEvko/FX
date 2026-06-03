@@ -164,6 +164,7 @@ import FX1Poly.Typed.DenoteKeyedReducibility
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPi
 import FX1Poly.Typed.DenoteKeyedLevelIrrelevance
 import FX1Poly.Typed.DenoteKeyedReducibleEnv
+import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -2901,3 +2902,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtDenote.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtDenote.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtDenote.cons
+
+-- DenoteKeyedUniverseFormationMember (route D leaf brick, the denote FT's universeFormation arm): the universe
+-- code Type@e is a denote-reducible MEMBER (above denote (lsucc e) env) of its classifier Type@(lsucc e) —
+-- the denote-layer no-Type-in-Type at the membership level. Composes universeMembership_levelIrrelevant (the
+-- classifier candidate) + isStronglyNormalizing_of_noStep∘noStep_universeCode (SN conjunct) +
+-- universeCode_isReducibleAtDenote (reducible-type conjunct); a single anonymous-constructor term, no induction.
+#assert_no_axioms FX1Poly.Typed.universeFormationMemberAtDenote
