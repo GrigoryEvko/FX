@@ -18,6 +18,7 @@ import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.TakahashiTriangle
 import FX1Poly.Core.ParallelReduction
+import FX1Poly.Core.CompleteDevelopment
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
 import FX1Poly.Core.KripkeReducibilityCandidate
@@ -305,6 +306,20 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- HasMaximalReduct) remains for unconditional raw confluence.
 #assert_no_axioms FX1Poly.Core.ParStep.toStepStar
 #assert_no_axioms FX1Poly.Core.ParStepChildren.toStepChildrenStar
+
+-- Takahashi complete development (the maximal-reduct witness toward #420): contract every redex present
+-- at once but NOT the redexes created by contraction. Propext-clean because the ~18-redex-shape detection is
+-- delegated to the already-clean fireRootRedex (a direct overlapping-nested-pattern match leaks propext and
+-- defeats the equation compiler); completeDevelopment itself does only flat mkGen / childNil-childCons matches.
+-- completeDevelopment_stepStar = the soundness half (the development is reachable by StepStar): develop the
+-- children via ofChildrenStar, then fire the root via fireRootRedex_sound. This is the function the eventual
+-- HasMaximalReduct ParStep (triangle) proof maximizes against -> the ParStep diamond -> raw confluence.
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelf
+#assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment
+#assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopmentChildren
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelf_stepStar
+#assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment_stepStar
+#assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopmentChildren_stepChildrenStar
 
 -- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
 -- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
