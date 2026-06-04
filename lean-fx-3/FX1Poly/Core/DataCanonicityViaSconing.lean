@@ -4,6 +4,8 @@ import FX1Poly.Core.ListCanonicalFormsCandidate
 import FX1Poly.Core.OptionCanonicalFormsCandidate
 import FX1Poly.Core.EitherCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
+import FX1Poly.Core.UnitCanonicalFormsCandidate
+import FX1Poly.Core.ReflCanonicalFormsCandidate
 
 /-! # FX1Poly/Core/DataCanonicityViaSconing
     — the GENERIC data-canonicity sconing witness: one theorem for every data axis (SN-048/049/093)
@@ -121,6 +123,29 @@ theorem pairCanonicityViaSconing {isWellTyped : RawTerm 0 → Prop}
       isWellTyped term → CanonicalFormsPredicate isPairValue term)
     (term : RawTerm 0) (typed : isWellTyped term) :
     ∃ value : RawTerm 0, StepStar term value ∧ isPairValue value :=
+  dataCanonicityViaSconing fundamental term typed
+
+/-- **Closed-Unit canonicity via the sconing leg (SN-049).**  `dataCanonicityViaSconing` at
+`isValue := isUnitValue`: every closed well-typed Unit term reduces to the unit constructor, modulo the
+fundamental obligation.  The one-value (§3.12) canonicity instance — the last non-modal data type to join
+the generic sconing witness, completing the Unit corner of SN-049. -/
+theorem unitCanonicityViaSconing {isWellTyped : RawTerm 0 → Prop}
+    (fundamental : ∀ term : RawTerm 0,
+      isWellTyped term → CanonicalFormsPredicate isUnitValue term)
+    (term : RawTerm 0) (typed : isWellTyped term) :
+    ∃ value : RawTerm 0, StepStar term value ∧ isUnitValue value :=
+  dataCanonicityViaSconing fundamental term typed
+
+/-- **Closed-identity canonicity via the sconing leg (SN-059/067 introduction half).**
+`dataCanonicityViaSconing` at `isValue := isReflValue`: every closed well-typed identity-type term reduces to
+`refl`, modulo the fundamental obligation.  The identity-introduction canonicity instance, joining the generic
+sconing witness — completing the data-canonicity-via-sconing coverage to ALL data axes (nat / list / option /
+either / pair / unit / identity, with bool the standalone first witness). -/
+theorem identityCanonicityViaSconing {isWellTyped : RawTerm 0 → Prop}
+    (fundamental : ∀ term : RawTerm 0,
+      isWellTyped term → CanonicalFormsPredicate isReflValue term)
+    (term : RawTerm 0) (typed : isWellTyped term) :
+    ∃ value : RawTerm 0, StepStar term value ∧ isReflValue value :=
   dataCanonicityViaSconing fundamental term typed
 
 end FX1Poly.Core

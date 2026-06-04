@@ -2364,6 +2364,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.optionCanonicityViaSconing
 #assert_no_axioms FX1Poly.Core.eitherCanonicityViaSconing
 #assert_no_axioms FX1Poly.Core.pairCanonicityViaSconing
+-- unit + identity(refl) canonicity via sconing: the last two data types join the generic witness (SN-049 Unit,
+-- SN-059/067 identity introduction), completing data-canonicity-via-sconing coverage to ALL data axes. Thin
+-- isValue specializations (isUnitValue / isReflValue); #672-free extraction, conditional only on the per-type
+-- fundamental (NOT typed SN), so genuinely unblocked.
+#assert_no_axioms FX1Poly.Core.unitCanonicityViaSconing
+#assert_no_axioms FX1Poly.Core.identityCanonicityViaSconing
 -- BKS BUNDLING CAPSTONE for the data axis (SN-096/110): one fundamental obligation => BOTH metatheorems.
 -- DataMetatheory bundles normalization (every well-typed term is SN) + canonicity (reduces to a constructor).
 -- dataMetatheoryViaSconing: from the single fundamental (well-typed -> candidate member), normalization is the
