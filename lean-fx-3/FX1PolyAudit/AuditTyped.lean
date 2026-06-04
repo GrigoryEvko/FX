@@ -261,6 +261,7 @@ import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.HasTypeDescPiCongruence
 import FX1Poly.Typed.HasTypeDescPiFormerCongruence
 import FX1Poly.Typed.HasTypeDescContextConversion
+import FX1Poly.Typed.HasTypeDescPiContextConversion
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
@@ -4317,6 +4318,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.convContextCondition_cons
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.convContext
 #assert_no_axioms FX1Poly.Typed.DescTelescope.convTelescope
+
+-- GROWN context-conversion: the validity-free arms (HasTypeDescPiContextConversion.lean, #814 part 2a). Of
+-- the grown engine's six arms, FIVE are validity-free; the LONE hard arm is piElim (conv-backing the function
+-- to its exact Π needs "typing a Conv-equal type" = type-Conv-closure, which reduces to SR — no such lemma
+-- exists, it would be circular). So the full grown context-conversion is part of the mutual fundamental-
+-- metatheory bundle (deferred). These two validity-free pieces already discharge former-DOMAIN congruence for
+-- the COMMON case (a former whose codomain is a FORMATION type): convBackToUniverseCode + the ofFormation arm.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convBackToUniverseCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextOfFormation
 
 -- Conv-KEEPING Π/Σ-code former inversion (HasTypeDescPiFormerInversion.lean, the former head for the SR cong arm
 -- #458). inversionPiCodeComponents drops the classifier Conv (its telescope workhorse discards _convToCode/_converts),
