@@ -60,6 +60,7 @@ import FX1Poly.Typed.SimplyTypedTermSubjectReductionLevelFree
 import FX1Poly.Typed.SimplyTypedTermCanonicityLevelFree
 import FX1Poly.Typed.SimplyTypedTermConsistencyLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
+import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -2694,6 +2695,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.StepStar.stronglyNormalizing_of_subst
 #assert_no_axioms FX1Poly.Typed.emptyClosingSubst
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfSimplyTypedBareClosed
+
+-- simplyTypedBareClosedStronglyNormalizing (Milestone A0 simply-typed floor, SN half): the standalone reusable
+-- form of "a closed simply-typed term is strongly normalizing" — previously only inline inside
+-- decidableOfSimplyTypedBareClosed. The simply-typed FT's stronglyNormalizingClosed reflected to the bare term
+-- via stronglyNormalizing_of_subst. With decidableOfSimplyTypedBareClosed (the decidable-Conv half) this names
+-- the UNCONDITIONAL defensible-kernel floor: the simply-typed fragment has SN PROVEN (not assumed), so typing
+-- alone decides conversion. Honest qualifier boundary: simply-typed fragment ONLY; broader fragments need SN-043.
+#assert_no_axioms FX1Poly.Typed.simplyTypedBareClosedStronglyNormalizing
 
 -- CANONICAL NORMAL FORM for closed simply-typed terms — the NORMALIZE companion to the bare-closed DECIDE.
 -- stronglyNormalizingBare: bare SN (the sole use site of stronglyNormalizing_of_subst); normalForm: the
