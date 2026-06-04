@@ -1,5 +1,6 @@
 import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Core.StrongNormalizationEta
+import FX1Poly.Core.StrongNormalizationBetaEtaUnion
 
 /-! # FX1Poly/Typed/OpenStronglyNormalizingBetaEta
     — OSN-1 scaffolding: the precise remaining crux for open βη strong normalization
@@ -21,14 +22,18 @@ under β AND under η, taken separately.
 
 The union βη-SN is NOT the conjunction of the two component SNs: β and η INTERLEAVE, and no single measure
 decreases on both (β can duplicate and grow `size`; η shrinks `size` but need not lower the β-reduction rank).
-The classical resolution is η-postponement over β — equivalently, that **η-reducts of β-SN terms stay β-SN**,
-isolated here as `EtaPreservesBetaStronglyNormalizing`.  With it, the βη relation is the lexicographic
-combination of the β reduction tree and `size`, and βη-SN follows.  That lexicographic SN-of-union assembly
-needs ordinal-rank / `Prod.Lex` well-foundedness machinery beyond `Init`, and the crux itself is a multi-case
-β/η critical-pair analysis (one obligation per η constructor) — both are the genuinely remaining OSN-1 work,
-tracked separately; this file does not assume them.
+The classical resolution is η-postponement over β.  Two framings of the missing ingredient appear here.  The
+WEAKER one — **η-reducts of β-SN terms stay β-SN** — is `EtaPreservesBetaStronglyNormalizing`.  The framing
+actually used by the proof is the Bachmair-Dershowitz / Geser QUASI-COMMUTATION of η over β,
+`FX1Poly.Core.EtaQuasiCommutesOverBeta`: the abstract SN-of-union criterion `accUnion` (shipped, Init-only,
+zero-axiom in `StrongNormalizationUnion`) takes β-SN + η-SN-everywhere + quasi-commutation and yields βη-SN —
+no ordinal-rank / `Prod.Lex` machinery needed.  So the βη-SN assembly itself is DONE; the sole remaining OSN-1
+work is the quasi-commutation crux, a multi-case β/η critical-pair analysis (one obligation per η constructor,
+OSN-B3..B6).  This file does not assume it — it is taken as an explicit hypothesis.
 
-`etaReductOfWellTypedIsBetaStronglyNormalizing` records the crux's immediate payoff for well-typed terms.
+`etaReductOfWellTypedIsBetaStronglyNormalizing` records the weaker crux's payoff;
+`betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes` is the full conditional βη-SN assembly via the
+Geser route.
 
 ## Zero-axiom verification
 
@@ -77,5 +82,23 @@ theorem HasTypeDescPi.etaReductOfWellTypedIsBetaStronglyNormalizing
     (etaStep : Step.eta subject reduct) :
     StepStar.IsStronglyNormalizing reduct :=
   etaPreserves etaStep (HasTypeDescPi.stronglyNormalizingOfWfContext contextWellFormed typed)
+
+/-- **Conditional open βη strong normalization — the OSN-1 assembly.**  Given the η-postponement crux
+`EtaQuasiCommutesOverBeta`, every well-typed term in a well-formed context is strongly normalizing under the
+FULL βη relation `Step.betaEta = Step ∪ Step.eta`.  This is the Geser SN-of-union criterion
+(`FX1Poly.Core.accUnionBetaEta`) fed by OB-5 (β-SN, `HasTypeDescPi.stronglyNormalizingOfWfContext`) and the
+unconditional shipped η-SN (`Step.etaStar.isStronglyNormalizing`).  The lone remaining hypothesis
+`EtaQuasiCommutesOverBeta` is the per-η-constructor postponement (OSN-B3..B6); discharging it makes this
+theorem UNCONDITIONAL (OSN-B7, closing #796).  Zero-axiom: a direct application of the zero-axiom
+`accUnionBetaEta` to the zero-axiom OB-5. -/
+theorem HasTypeDescPi.betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes
+    (etaQuasiCommutes : EtaQuasiCommutesOverBeta)
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContext context)
+    (typed : HasTypeDescPi profile context subject classifier) :
+    Step.betaEtaStar.IsStronglyNormalizing subject :=
+  accUnionBetaEta etaQuasiCommutes
+    (HasTypeDescPi.stronglyNormalizingOfWfContext contextWellFormed typed)
 
 end FX1Poly.Typed

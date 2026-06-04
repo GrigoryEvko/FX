@@ -4197,12 +4197,15 @@ gates pin them shut.
 -- OSN-1 scaffolding (OpenStronglyNormalizingBetaEta.lean): the precise remaining crux for open βη-SN +
 -- the complete pieces it enables. Well-typed open terms are β-SN (OB-5) AND η-SN (unconditional, since η shrinks
 -- RawTerm.size) separately (componentwiseStronglyNormalizingOfWfContext). The UNION βη-SN is NOT their
--- conjunction (β/η interleave; constructive SN-of-union needs lex/ordinal-rank infra beyond Init); its sole
--- missing ingredient is η-postponement over β, isolated as EtaPreservesBetaStronglyNormalizing, whose payoff for
--- well-typed terms is etaReductOfWellTypedIsBetaStronglyNormalizing. No sorry/placeholder — the union assembly
--- and the crux's multi-case proof are the genuinely-remaining OSN-1 work, tracked separately.
+-- conjunction (β/η interleave), but the SN-of-union assembly IS shipped Init-only zero-axiom (the Geser
+-- criterion accUnionBetaEta, OSN-B1/B2): betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes wires OB-5
+-- (β-SN) + shipped η-SN + that criterion into conditional open βη-SN. Its lone hypothesis is the η-postponement
+-- crux EtaQuasiCommutesOverBeta (the multi-case per-η-ctor critical-pair analysis, OSN-B3..B6 — the genuinely
+-- remaining OSN-1 work); the weaker EtaPreservesBetaStronglyNormalizing framing's payoff is
+-- etaReductOfWellTypedIsBetaStronglyNormalizing. No sorry/placeholder.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.componentwiseStronglyNormalizingOfWfContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaReductOfWellTypedIsBetaStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes
 
 -- Universe-formation level-strictness (UniverseFormationStrictness.lean, 0-FP soundness corpus): the universe
 -- rule is level-TIGHT — a universe code is classified by EXACTLY Type@(e+1) up to Conv

@@ -50,6 +50,7 @@ import FX1Poly.Core.ListOptionIdCodeUniverseMembership
 import FX1Poly.Core.EitherEquivCodeUniverseMembership
 import FX1Poly.Core.LinearFormerUniverseMembership
 import FX1Poly.Core.StrongNormalizationUnion
+import FX1Poly.Core.StrongNormalizationBetaEtaUnion
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -719,3 +720,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.accDownwardUnionStar
 #assert_no_axioms FX1Poly.Core.accUnionInner
 #assert_no_axioms FX1Poly.Core.accUnion
+
+-- OSN-B1 (StrongNormalizationBetaEtaUnion.lean): instantiate the abstract criterion at the FX βη relations.
+-- Step.betaEtaSuccessor IS UnionSuccessor Step Step.eta by defeq (betaEtaSuccessor_eq_unionSuccessor = rfl),
+-- so accUnionBetaEta lands the Geser criterion on Step.betaEtaStar.IsStronglyNormalizing: β-SN + shipped η-SN
+-- + the EtaQuasiCommutesOverBeta crux ⇒ βη-SN. The crux (η-postponement, OSN-B3..B6) is the sole remaining gap.
+#assert_no_axioms FX1Poly.Core.EtaQuasiCommutesOverBeta
+#assert_no_axioms FX1Poly.Core.betaEtaSuccessor_eq_unionSuccessor
+#assert_no_axioms FX1Poly.Core.accUnionBetaEta
