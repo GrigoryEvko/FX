@@ -99,6 +99,7 @@ import FX1Poly.Core.SubjectReductionIotaOption
 import FX1Poly.Core.SubjectReductionIotaProjections
 import FX1Poly.Core.CompoundRenamePreservation
 import FX1Poly.Core.CompoundSubstPreservation
+import FX1Poly.Core.RawTermFoldNonVarCommute
 import FX1Poly.Core.BetaRedexDoublingSpike
 import FX1Poly.Core.StructuralInductionPrimitives
 import FX1Poly.Core.PairEliminatorLayer
@@ -375,3 +376,14 @@ per-decl list.  It also re-checks the native infra under
 -- the boolElim-style double nested Acc, the analogue of the boolElim triple). Toward SN-068 / SN-069.
 #assert_no_axioms FX1Poly.Core.StepStar.idJ_isStronglyNormalizing_of_strongly_normalizing_base
 #assert_no_axioms FX1Poly.Core.StepStar.idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base
+
+-- Generic NON-VARIABLE cell commutation for fold traversals (RawTermFoldNonVarCommute.lean, the
+-- cascade-death substrate for subst/rename through an ABSTRACT formation cell). fold_mkGen_of_ne_var
+-- exposes the fold NON-VARIABLE branch for an abstract non-gen_var generator (dsimp [fold] + dif_neg);
+-- subst/rename_mkGen_of_ne_var are the traversal corollaries (canonical_algebra_eq_mkGen rebuild). The
+-- payload cast is Generator.payload_scope_invariant_of_not_var (the 194-generator enumeration in ONE
+-- place). Unblocks the category-C formation-family consumers (HasTypeDescSubstitution/Weakening + grown
+-- twins) from their per-generator by_cases pi/sigma — a new formation row touches none of them.
+#assert_no_axioms FX1Poly.Core.fold_mkGen_of_ne_var
+#assert_no_axioms FX1Poly.Core.RawTerm.subst_mkGen_of_ne_var
+#assert_no_axioms FX1Poly.Core.RawTerm.rename_mkGen_of_ne_var
