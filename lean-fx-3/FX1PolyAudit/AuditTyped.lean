@@ -87,6 +87,7 @@ import FX1Poly.Core.RecursorClosedMembership
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.BoolCanonicityViaSconing
 import FX1Poly.Core.DataCanonicityViaSconing
+import FX1Poly.Core.ModalCanonicityViaSconing
 import FX1Poly.Core.DataMetatheoryViaSconing
 import FX1Poly.Core.ConsistencyViaSconing
 import FX1Poly.Core.DataEliminatorProgressViaSconing
@@ -2370,6 +2371,10 @@ gates pin them shut.
 -- fundamental (NOT typed SN), so genuinely unblocked.
 #assert_no_axioms FX1Poly.Core.unitCanonicityViaSconing
 #assert_no_axioms FX1Poly.Core.identityCanonicityViaSconing
+-- modIntro (modal box) canonicity via sconing (SN-073): the modal-box former joins the generic sconing witness
+-- (isModIntroValue), completing canonicity-via-sconing coverage to ALL formers with a canonical-forms candidate
+-- (data + modal box). #672-free extraction, conditional only on the per-type fundamental, so genuinely unblocked.
+#assert_no_axioms FX1Poly.Core.modIntroCanonicityViaSconing
 -- BKS BUNDLING CAPSTONE for the data axis (SN-096/110): one fundamental obligation => BOTH metatheorems.
 -- DataMetatheory bundles normalization (every well-typed term is SN) + canonicity (reduces to a constructor).
 -- dataMetatheoryViaSconing: from the single fundamental (well-typed -> candidate member), normalization is the
