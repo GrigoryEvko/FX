@@ -64,6 +64,7 @@ import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.SimplyTypedMetatheoryViaSconing
 import FX1Poly.Tier0.FxRenamingCategory
 import FX1Poly.Tier0.IsomorphismCategorical
+import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -3650,3 +3651,23 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.IsIsomorphism.identity
 #assert_no_axioms FX1Poly.Tier0.IsIsomorphism.comp
 #assert_no_axioms FX1Poly.Tier0.IsIsomorphism.pullbackAlong
+-- The FIRST concrete zero-axiom RepresentableMapCategory for FX (FxThinScopeRMC.lean, SN-084/085). The renaming
+-- category's FUNCTION morphisms can't host a zero-axiom RMC -- every CwR equality (pullback commutes/universal,
+-- iso inverse laws) is a function equality needing funext (Quot.sound). Escape: a THIN (preorder) base, where a
+-- morphism a->b is a Prop-proof PLift(a<=b), so proof irrelevance (definitional, NOT an axiom) makes every
+-- morphism equality free (rfl). thinScopeCategory: the scope-inclusion preorder (objects = scopes Nat, morphism
+-- = a<=b). thinScopeRepresentableMaps: the equal-scope (iso) class, decidable via Nat.decEq. thinScopeRMC: all 3
+-- CwR axioms genuine -- closedUnderPullback via the MEET (pullbacks in a poset are meets; greatest common
+-- sub-scope + universal property), isomorphismsRepresentable via antisymmetry, closedUnderComposition via
+-- transitivity. meetScopes + its 4 facts: a propext-free structural min (core Nat.min leaks propext) proved by
+-- Nat induction over the clean le primitives. Honest scope: the degenerate THIN instance, establishing the
+-- Tier-0 interface is inhabitable; NOT the full renaming/substitution CwR (that needs data morphisms). All
+-- zero-axiom (no funext, no Nat.min).
+#assert_no_axioms FX1Poly.Tier0.meetScopes
+#assert_no_axioms FX1Poly.Tier0.meetScopes_le_left
+#assert_no_axioms FX1Poly.Tier0.meetScopes_le_right
+#assert_no_axioms FX1Poly.Tier0.le_meetScopes
+#assert_no_axioms FX1Poly.Tier0.meetScopes_eq_right_of_le
+#assert_no_axioms FX1Poly.Tier0.thinScopeCategory
+#assert_no_axioms FX1Poly.Tier0.thinScopeRepresentableMaps
+#assert_no_axioms FX1Poly.Tier0.thinScopeRMC
