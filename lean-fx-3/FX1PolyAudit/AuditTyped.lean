@@ -220,6 +220,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedPiIntroArm
 import FX1Poly.Typed.DenoteKeyedBoundedFormerEngine
 import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiDischarge
+import FX1Poly.Typed.DenoteKeyedBoundedAssemblyBridge
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3498,6 +3499,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniverseDomainCodomainReducibilityBounded
 #assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniverseCodeComponentsBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiUniverseUniverseAtBounded
+
+-- THE A2 BRIDGE + WIRED CONV ARM (DenoteKeyedBoundedAssemblyBridge): toward the bounded grown-FT assembly. The
+-- recursor arms extract a reducible-TYPE-at-bound from a universe-MEMBERSHIP IH -- now a clean cumulativity
+-- composition (universeMemberReducibleAsTypeAtDecodedLevelBounded then isReducibleBounded_cumulative via Nat.le_of_lt).
+-- reducibleTypeAtBoundUnderSubstFromMembershipBounded is the under-subst wrapper; fundamentalConvArmBounded wires the
+-- conv recursor arm (fundamentalConvAtBounded composed with the bridge). The piIntro arm additionally needs member->SN
+-- (CR1) at arbitrary scope, blocked by ReducibleTypeAtBounded.isReducibilityCandidate being at scope+1 -- the next residual.
+#assert_no_axioms FX1Poly.Typed.reducibleTypeAtBoundFromUniverseMemberBounded
+#assert_no_axioms FX1Poly.Typed.reducibleTypeAtBoundUnderSubstFromMembershipBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalConvArmBounded
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
