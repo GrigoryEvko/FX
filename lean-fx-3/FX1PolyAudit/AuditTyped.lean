@@ -216,6 +216,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedReducibleEnv
 import FX1Poly.Typed.DenoteKeyedBoundedFundamentalMotive
 import FX1Poly.Typed.DenoteKeyedBoundedConvArm
 import FX1Poly.Typed.DenoteKeyedBoundedPiElimArm
+import FX1Poly.Typed.DenoteKeyedBoundedPiIntroArm
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3452,6 +3453,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.applicationMemberAtBounded
 #assert_no_axioms FX1Poly.Typed.applicationMemberUnderClosingSubstitutionBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalPiElimAtBounded
+-- THE BOUNDED FT PI-INTRO ARM (DenoteKeyedBoundedPiIntroArm) — THE BINDER CRUX. The headline: headExpansionClosed
+-- is a FORGET-BRIDGE transfer (HeadExpansionClosed candidate is a FACT; ReducibleTypeStepDenote.headExpansionClosed
+-- is lowerAt-parametric) fed the bounded leg denoteBelowFamilyBounded_backwardWeakHeadStep (verbatim by-cases port).
+-- reducibleMemberCandidate (the choice-free canonical predicate) makes the binder env-cons coordination direct;
+-- abstractionMemberAtBounded via DependentArrowCandidate.abstraction; the arm threads ReducibleEnvAtBounded.cons.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.reducibleMemberCandidate
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtBounded.reducibleMemberCandidate
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamilyBounded_backwardWeakHeadStep
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.headExpansionClosed
+#assert_no_axioms FX1Poly.Typed.abstractionMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.abstractionMemberUnderClosingSubstitutionBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtBounded
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
