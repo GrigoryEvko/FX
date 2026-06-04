@@ -253,6 +253,7 @@ import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
 import FX1Poly.Typed.WfContextBetaEtaConfluence
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CanonicityTargetSignature
+import FX1Poly.Typed.NullaryFormerFormation
 import FX1Poly.Typed.UniverseFormationStrictness
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
@@ -4235,6 +4236,15 @@ gates pin them shut.
 -- genFormationPi); naming a data type is a BOUNDED ~10-12-site generator addition (like gen_arrowCode) + the
 -- high-risk candidate identification — NOT 80-arm cascade-death. Gated on the engine data-representation (#483).
 #assert_no_axioms FX1Poly.Typed.dataCanonicityFromCandidateBridge
+
+-- Nullary-former formation (NullaryFormerFormation.lean): the engine-side CON-A2 (#809), parametric. The
+-- empty type is a nullary type-former; a generator carrying the shared universeFormerOutput row with ZERO
+-- children types as Type@0 through the SAME generic genFormationPi arm (no new arm; P13), because
+-- lmaxAll [] = lzero (universeFormerOutput_nil). Instantiating at the future gen_emptyCode (binderShifts = [],
+-- children := .childNil, premise := DescTelescopePi.nil, all rfl) gives ⊢ Empty : Type@0 — SN-050's formation
+-- half (its NON-VACUITY), settled here; the residual is the substrate generator + candidate bridge (CON-A3).
+#assert_no_axioms FX1Poly.Typed.universeFormerOutput_nil
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_nullaryFormation_viaGenArm
 
 -- Universe-formation level-strictness (UniverseFormationStrictness.lean, 0-FP soundness corpus): the universe
 -- rule is level-TIGHT — a universe code is classified by EXACTLY Type@(e+1) up to Conv
