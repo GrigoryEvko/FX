@@ -259,6 +259,7 @@ import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.HasTypeDescPiCongruence
+import FX1Poly.Typed.HasTypeDescPiFormerCongruence
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
@@ -4293,6 +4294,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congLamBody
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congFunction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congArgument
+
+-- Grown-engine FORMER codomain-congruence (HasTypeDescPiFormerCongruence.lean, the Step.cong-into-a-Π/Σ-codomain
+-- cases of the SR dispatcher #458/SN-055). piFormationViaGenArm/sigmaFormationViaGenArm are the grown Π/Σ formation
+-- INTRODUCTIONS through the generic genFormationPi arm (output universeFormerOutput [domL,codL] reduces to Type@(lmax
+-- domL codL) by lmaxAll, no new arm). congPiCodomain/congSigmaCodomain are the codomain SR cong arms (the congLamBody
+-- recipe one dimension over): invertPiTyCode/invertSigmaTyCode + reFire + conv. CODOMAIN cong is context-conversion-FREE
+-- (cons domain unchanged); the DOMAIN cong (needs context-conversion) is the deferred sibling brick.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piFormationViaGenArm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormationViaGenArm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congPiCodomain
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congSigmaCodomain
 
 -- Conv-KEEPING Π/Σ-code former inversion (HasTypeDescPiFormerInversion.lean, the former head for the SR cong arm
 -- #458). inversionPiCodeComponents drops the classifier Conv (its telescope workhorse discards _convToCode/_converts),
