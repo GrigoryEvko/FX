@@ -243,6 +243,7 @@ import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.OpenStronglyNormalizing
 import FX1Poly.Typed.BoundedNeutralMember
 import FX1Poly.Typed.BoundedUniverseInversion
+import FX1Poly.Typed.BoundedBindingTypeReducible
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4123,6 +4124,14 @@ gates pin them shut.
 -- belowBound premise the universe-member decode (universeMemberReducibleAsTypeAtDecodedLevelBounded) consumes in
 -- OB-2 (binding-type bounded-reducibility). Index-inversion via generalize + induction, propext-clean.
 #assert_no_axioms FX1Poly.Typed.belowBound_of_reducibleUniverse
+
+-- OB-2b (BoundedBindingTypeReducible.lean): a universe-typed subject is bound-reducible-as-type under a
+-- reducible env. Given a grown derivation typing bindingType at Type@levelExpr, a BoundExceedsPi budget at bound,
+-- and a bound-reducible closing env at bound, subst σ bindingType is bound-reducible-as-type at bound. Composes
+-- fundamentalAtBoundedSucc (FT) → subst_universeCodeCell → belowBound_of_reducibleUniverse (OB-2a) →
+-- universeMemberReducibleAsTypeAtDecodedLevelBounded (decode) → isReducibleBounded_cumulative. The type-side leaf
+-- the reducible-closing-environment builder (reducibleEnvOfWfContext, OB-3/OB-4) cons-feeds toward open SN-043.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReducibleAsTypeUnderEnv
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
