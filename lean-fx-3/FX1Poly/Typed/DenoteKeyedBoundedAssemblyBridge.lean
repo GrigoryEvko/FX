@@ -101,4 +101,21 @@ theorem fundamentalConvArmBounded {profile : PolyProfile} {scope : Nat} (env : N
     (reducibleTypeAtBoundUnderSubstFromMembershipBounded env bound context levelExpr flag belowBound
       reclassifierConclusion)
 
+/-- **Bounded CR1 in member form, at the non-empty closing scope `scope + 1`.**  A bound-reducible member of any type
+is strongly normalizing — `obtain` the candidate, then `ReducibleTypeAtBounded.isReducibilityCandidate.strongly\
+Normalizing` (CR1).  The `scope + 1` index is structural, not incidental: the bounded reducibility-candidate bundle is
+stated at `scope + 1` because its arrow-CR1 arm instantiates the codomain at the var-0 inhabitant `gen_var ⟨0, _⟩`,
+which only exists at a non-empty scope.  This is exactly the scope the fundamental theorem closes into — the denote
+vector assembly likewise closes every binder-local premise into `targetScope + 1` and reads CR1 there.  The bounded
+member relation keys reducibility on the ambient `bound`; the denote layer keys it on a positive fuel level, but both
+share the same structural need for a fresh variable in the arrow CR1, hence the `+ 1`.  This is the
+`domainArgumentsSN` discharge for the piIntro recursor arm ONCE that arm closes into `scope + 1` (the motive-level
+decision deferred to the assembly). -/
+theorem stronglyNormalizing_of_memberAtBoundedSucc {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {typeCode term : RawTerm (scope + 1)}
+    (member : IsReducibleMemberAtBounded env bound typeCode term) :
+    IsStronglyNormalizing term := by
+  obtain ⟨_candidate, candidateReducible, termInCandidate⟩ := member
+  exact candidateReducible.isReducibilityCandidate.stronglyNormalizing termInCandidate
+
 end FX1Poly.Typed

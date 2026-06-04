@@ -3510,6 +3510,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.reducibleTypeAtBoundUnderSubstFromMembershipBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalConvArmBounded
 
+-- Bounded CR1 in member form at the non-empty closing scope (scope+1) -- the piIntro arm's domainArgumentsSN discharge.
+-- The bounded reducibility-candidate bundle is at scope+1 (arrow-CR1 var-0 inhabitant), exactly the scope the FT closes
+-- into; arbitrary-scope member-SN is structurally blocked (the same var-0 wall in denote too -- denote escapes by keying
+-- CR1 on a positive fuel LEVEL, scope-general). The wired piIntro arm consumes this once its motive closes into scope+1.
+#assert_no_axioms FX1Poly.Typed.stronglyNormalizing_of_memberAtBoundedSucc
+
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
 -- lowerAt only at the fixed index denote e, which the below-family coherence (denoteBelowFamily_eq_reducible)
