@@ -244,6 +244,7 @@ import FX1Poly.Typed.OpenStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
+import FX1Poly.Typed.HasTypeDescPiCongruence
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4131,3 +4132,14 @@ gates pin them shut.
 -- substituteUnderBinding retypes the reduct, and validity (classifierIsTypeDesc, the WfContext consumer) + the conv
 -- rule convert it back to classifier. The Step.beta case of the SR master dispatcher (#458).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaSubjectReduction
+
+-- Grown-engine congruence-at-typing building blocks (HasTypeDescPiCongruence.lean, the λ/app cong arms of the SR
+-- master dispatcher #458, modulo the stepped child's SR). Each takes the child's type-preservation as a HYPOTHESIS
+-- (childPreserves : ∀ {S}, … child S → … child' S) — exactly the "preserves ANY classifier" shape Step subject
+-- reduction supplies — so they are recursion-free and leak no existential domain/codomain to the caller. congLamBody
+-- inverts via invertLam + rebuilds via piIntro; congFunction/congArgument invert via invertApp + rebuild via piElim,
+-- with congArgument additionally moving the dependent output (subst0 cod a ⤳ subst0 cod a') by Conv.subst0 over the
+-- step's Conv argument argument'. All three close to the original classifier by validity (classifierIsTypeDesc) + conv.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congLamBody
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congFunction
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congArgument
