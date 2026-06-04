@@ -238,4 +238,58 @@ theorem fundamentalPiElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (en
     (functionConclusion substitution envReducible)
     (argumentConclusion substitution envReducible)
 
+/-- **The +1-closing type-former engine.**  The `FundamentalConclusionAtBoundedSucc` analogue of
+`fundamentalTypeFormerAtBounded`: a former that, under every +1-closing substitution, is SN and bound-reducible at
+its decoded level is a +1-closing fundamental member of its universe classifier.  Mirrors the arbitrary-scope engine
+at the `targetScope + 1` substitution via the scope-parametric `universeMembershipIntroAtBounded`. -/
+theorem fundamentalTypeFormerAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
+    (bound : Nat) (context : TypingContext profile scope) (typeFormer : RawTerm scope)
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (belowBound : LevelExpr.denote levelExpr env < bound)
+    (formerReducible : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        IsStronglyNormalizing (RawTerm.subst substitution typeFormer) ∧
+        IsReducibleTypeAtBounded env (LevelExpr.denote levelExpr env)
+          (RawTerm.subst substitution typeFormer)) :
+    FundamentalConclusionAtBoundedSucc env bound context typeFormer (universeCodeCell levelExpr flag) := by
+  intro _targetScope substitution envReducible
+  obtain ⟨formerSN, formerRed⟩ := formerReducible substitution envReducible
+  exact universeMembershipIntroAtBounded env levelExpr flag bound
+    (RawTerm.subst substitution typeFormer) belowBound formerSN formerRed
+
+/-- **The +1-closing `genFormationPi` arm.**  The `FundamentalConclusionAtBoundedSucc` analogue of
+`fundamentalGenFormationPiAtBounded`: from the domain's universe membership (CR1-discharged to domain SN), the
+codomain's under-binder SN, and the Π former's bound-reducible-as-type at the decoded output level — all under every
++1-closing substitution — `Π domain. codomain` is a +1-closing fundamental member of `Type@levelExpr`.  Routes through
+`fundamentalTypeFormerAtBoundedSucc`; the Π-former SN is `piTyCode_isStronglyNormalizing_of_domain_codomain`
+(relation-agnostic).  This is the genFormationPi grown-FT arm in the same +1 motive as the term arms — so the eventual
+`HasTypeDescPi.rec` dispatch reads it from a +1-scope telescope IH (motive_2). -/
+theorem fundamentalGenFormationPiAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
+    (bound : Nat) (context : TypingContext profile scope)
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (domainLevel levelExpr : LevelExpr) (flag : UniverseFlag)
+    (belowBound : LevelExpr.denote levelExpr env < bound)
+    (domainBelowBound : LevelExpr.denote domainLevel env < bound)
+    (domainMember : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        IsReducibleMemberAtBounded env bound
+          (universeCodeCell domainLevel flag) (RawTerm.subst substitution domain))
+    (codomainSN : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) codomain))
+    (piReducibleAsType : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        IsReducibleTypeAtBounded env (LevelExpr.denote levelExpr env)
+          (RawTerm.subst substitution (piTyCodeCell domain codomain))) :
+    FundamentalConclusionAtBoundedSucc env bound context
+      (piTyCodeCell domain codomain) (universeCodeCell levelExpr flag) :=
+  fundamentalTypeFormerAtBoundedSucc env bound context (piTyCodeCell domain codomain) levelExpr flag belowBound
+    (fun substitution envReducible => by
+      refine ⟨?_, piReducibleAsType substitution envReducible⟩
+      rw [subst_piTyCodeCell]
+      exact piTyCode_isStronglyNormalizing_of_domain_codomain
+        (stronglyNormalizing_of_universeMemberAtBounded env bound domainLevel flag _ domainBelowBound
+          (domainMember substitution envReducible))
+        (codomainSN substitution envReducible))
+
 end FX1Poly.Typed

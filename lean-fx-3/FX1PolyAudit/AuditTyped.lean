@@ -3533,6 +3533,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalConvArmBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalPiElimAtBoundedSucc
 
+-- The +1-closing former engine + genFormationPi arm. Mirrors of fundamentalTypeFormerAtBounded / fundamentalGenForm
+-- ationPiAtBounded over the +1 motive (universeMembershipIntroAtBounded + piTyCode SN are scope-parametric/relation-
+-- agnostic). With these, ALL FIVE grown-FT arms (conv/piIntro/piElim/genFormationPi + ofFormation premise) are now
+-- +1-available; only the HasTypeDescPi.rec dispatch (motive_2 telescope + bound-exceeds-levels threading) + the
+-- formation FT remain before the SN-043 wire.
+#assert_no_axioms FX1Poly.Typed.fundamentalTypeFormerAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiAtBoundedSucc
+
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
 -- lowerAt only at the fixed index denote e, which the below-family coherence (denoteBelowFamily_eq_reducible)
