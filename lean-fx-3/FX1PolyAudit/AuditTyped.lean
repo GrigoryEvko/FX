@@ -219,6 +219,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedPiElimArm
 import FX1Poly.Typed.DenoteKeyedBoundedPiIntroArm
 import FX1Poly.Typed.DenoteKeyedBoundedFormerEngine
 import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiArm
+import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiDischarge
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3484,6 +3485,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeMemberReducibleAsTypeAtDecodedLevelBounded
 #assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromComponentReducibilityBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiAtBounded
+
+-- THE PAYOFF (DenoteKeyedBoundedGenFormationPiDischarge): the bound-carrying piReducibleAsType DISCHARGE variants.
+-- piReducibleAsTypeFromNonUniformLevelMemberBounded closes the model-obstructed non-uniform case (a child classified
+-- STRICTLY below the Π output universe) via isReducibleBounded_cumulative -- the free bounded cumulativity decode-
+-- then-lift the denote relation cannot do (DenoteKeyedCumulativityObstruction). Uniform is its Nat.le_refl instance.
+-- The universe-code variants discharge anti-vacuously via the GATED universeCode_isReducibleAtBounded (strict-below
+-- hypotheses). fundamentalGenFormationPiUniverseUniverseAtBounded = the FIRST fully-discharged bounded genFormationPi
+-- arm (Π (A : Type@a). Type@b), all three premises of fundamentalGenFormationPiAtBounded closed.
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromNonUniformLevelMemberBounded
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniformLevelMemberBounded
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniverseDomainCodomainReducibilityBounded
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniverseCodeComponentsBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiUniverseUniverseAtBounded
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
