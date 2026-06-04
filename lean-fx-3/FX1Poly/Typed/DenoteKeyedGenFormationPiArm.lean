@@ -3,6 +3,7 @@ import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.HasTypeSubstitution
 import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Typed.DenoteKeyedSingleLevelPi
+import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 
 /-! # FX1Poly/Typed/DenoteKeyedGenFormationPiArm
     — the genFormationPi Π fundamental-theorem arm (premise-isolating; SN-D5d toward SN-043/#750)
@@ -217,5 +218,40 @@ theorem piReducibleAsTypeFromUniverseCodeComponents {profile : PolyProfile} {sco
         show (universeCodeCell codomainLevel codomainFlag).subst0 argument
           = universeCodeCell codomainLevel codomainFlag from rfl]
       exact universeCode_isReducibleAtDenote env (LevelExpr.denote levelExpr env) codomainLevel codomainFlag)
+
+/-- **The COMPLETE denote fundamental-theorem arm for the type-of-type-families former `Π (A : Type@a). Type@b`.**
+The first genFormationPi former whose FT conclusion closes UNCONDITIONALLY (all three premises of
+`fundamentalGenFormationPiAtDenote` discharged, no hypotheses beyond the ambient level-above conditions):
+
+  * `domainMember` — `Type@a` is a reducible member of its classifier `Type@(lsucc a)` at the ambient level
+    (`universeFormationMemberUnderClosingSubstitution`, the closed universe codes unchanged by the substitution);
+  * `codomainSN` — the codomain `Type@b` is a normal form (`isStronglyNormalizing_of_noStep` + `noStep_universeCode`,
+    after the substitution leaves the closed universe code fixed);
+  * `piReducibleAsType` — `piReducibleAsTypeFromUniverseCodeComponents` (the anti-vacuity discharge of the #752
+    residual for two universe-code children).
+
+The Σ arm `fundamentalGenFormationSigmaAtDenote` already closes via its free neutral candidate; this is the Π
+analogue closed for the universe-universe shape, the FIRST fully-discharged genFormationPi arm.  The output
+universe `levelExpr` and the shared `flag` are free parameters (the caller instantiates `levelExpr` at the Π's
+actual `lmaxAll [lsucc a, lsucc b]`); the domain's classifier level is `lsucc a`.  The remaining genFormationPi
+shapes — where a child is a universe MEMBER classified strictly below the Π level rather than a universe CODE —
+are the level-bounded cumulativity residual (#753). -/
+theorem fundamentalGenFormationPiUniverseUniverse {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
+    (level : Nat) (context : TypingContext profile scope)
+    (innerDomainLevel innerCodomainLevel levelExpr : LevelExpr) (flag : UniverseFlag)
+    (levelAbove : LevelExpr.denote levelExpr env < level)
+    (domainAbove : LevelExpr.denote (LevelExpr.lsucc innerDomainLevel) env < level) :
+    FundamentalConclusionAtDenote env level context
+      (piTyCodeCell (universeCodeCell innerDomainLevel flag) (universeCodeCell innerCodomainLevel flag))
+      (universeCodeCell levelExpr flag) :=
+  fundamentalGenFormationPiAtDenote env level context (LevelExpr.lsucc innerDomainLevel) levelExpr flag
+    levelAbove domainAbove
+    (fun substitution _envReducible =>
+      universeFormationMemberUnderClosingSubstitution env innerDomainLevel flag level domainAbove substitution)
+    (fun substitution _envReducible => by
+      rw [subst_universeCodeCell]
+      exact isStronglyNormalizing_of_noStep (fun _target => noStep_universeCode (innerCodomainLevel, flag)))
+    (piReducibleAsTypeFromUniverseCodeComponents env level context
+      innerDomainLevel innerCodomainLevel levelExpr flag flag)
 
 end FX1Poly.Typed

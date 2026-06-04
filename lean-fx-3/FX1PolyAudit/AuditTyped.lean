@@ -3352,6 +3352,13 @@ gates pin them shut.
 -- member-candidate phenomenon, not a type-reducibility one.
 #assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniverseCodeComponents
 
+-- fundamentalGenFormationPiUniverseUniverse (the FIRST fully-closed genFormationPi denote FT arm): the complete
+-- FundamentalConclusionAtDenote for the type-of-type-families former Π (A:Type@a). Type@b, all three premises of
+-- fundamentalGenFormationPiAtDenote discharged UNCONDITIONALLY — domainMember via universeFormationMemberUnder-
+-- ClosingSubstitution (Type@a member of Type@(lsucc a)), codomainSN via noStep_universeCode, piReducibleAsType via
+-- piReducibleAsTypeFromUniverseCodeComponents. The Π analogue of the already-closed Σ arm; advances SN-D5d (#750).
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiUniverseUniverse
+
 -- gapUniverseDomainPiVacuouslyReducibleAtLowLevel (the cumulativity-obstruction WITNESS): at lowLevel ≤
 -- denote gapLevel env, Type@gapLevel has the EMPTY member candidate (denoteBelowFamily empty at index ≥
 -- lowLevel), so Π(Type@gapLevel) codomain is reducible-as-type at lowLevel for ANY codomain (vacuous codomain
