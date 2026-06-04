@@ -169,6 +169,7 @@ import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
 import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
 import FX1Poly.Typed.DenoteKeyedGeneralDomainPiArm
+import FX1Poly.Typed.DenoteKeyedUniformPiCandidate
 import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
 import FX1Poly.Typed.DenoteKeyedApplicationMember
 import FX1Poly.Typed.DenoteKeyedConvMember
@@ -3028,6 +3029,19 @@ gates pin them shut.
 -- precisely the THRESHOLD-DRIFT domains (composite domains with sub-threshold universe codes, member-stability
 -- fails below threshold), needing the threshold-split.
 #assert_no_axioms FX1Poly.Typed.generalDomainPi_reducibleFromMemberStability
+
+-- DenoteKeyedUniformPiCandidate (#752 — composite member-stability, the recursive step): a Π over uniform-
+-- candidate components has a SINGLE uniform candidate, because the piType candidate
+-- (fun f => ∀ arg, domCand arg → codCand arg (f arg)) is level-INDEPENDENT when its components are. So uniform
+-- candidacy composes up the Π/Σ-former spine from leaf types (the leaf member-stability lemmas covered only a
+-- single uniform candidate / neutral types). uniformDomainPi_hasUniformCandidate: Π reducible at every level
+-- with the fixed candidate (one piType per level). uniformDomainPi_memberStable: hence member-stable
+-- (uniformType_memberStableAcrossDenoteLevels on it). This is what lets the shipped uniform piArm /
+-- generalDomainPi reach composite (uniform-component) domains (Nat → Nat). The remaining residual is precisely
+-- the THRESHOLD-DRIFT domains (composite domains with sub-threshold universe codes — candidate varies, NOT
+-- uniform), needing the threshold-split.
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_hasUniformCandidate
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_memberStable
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
