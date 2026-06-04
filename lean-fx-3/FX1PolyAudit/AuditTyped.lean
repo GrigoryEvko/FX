@@ -162,6 +162,7 @@ import FX1Poly.Typed.RouteAObstruction
 import FX1Poly.Typed.ClassifierLevelDiagnosis
 import FX1Poly.Typed.ClassifierLevelMeasure
 import FX1Poly.Typed.DenoteKeyedReducibility
+import FX1Poly.Typed.DenoteKeyedReducibilitySmoke
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPi
 import FX1Poly.Typed.DenoteKeyedLevelIrrelevance
 import FX1Poly.Typed.DenoteKeyedReducibleEnv
@@ -3131,6 +3132,16 @@ gates pin them shut.
 -- the decoded level) — the form the genFormationPi assembly prefers (the telescope's universe-membership intro
 -- supplies exactly the decoded-level membership). Only side-condition: denote levelExpr env < highLevel.
 #assert_no_axioms FX1Poly.Typed.universeDomainPiFormerViaEngine
+
+-- DenoteKeyedReducibilitySmoke (regression corpus, SN-149-flavored): the first CONCRETE denote-reducibility
+-- witnesses — the two LEAF cases of the step functor. smoke_universeCode_isReducibleAtDenote: the universeCode
+-- arm (a universe code reducible at EVERY level, the anti-vacuity refuting SN-001's empty fuel-0 base).
+-- smoke_neutralVariable_isReducibleAtDenote: the neutral arm (a context variable, weak-head-normal non-Π
+-- non-universe, reducible with the SN candidate; noWeakHeadStep from noStep_var via WeakHeadStep.toStep, the
+-- root-generator inequalities via show-then-decide on the closed enum). The universe/neutral leaves of the
+-- denote reducibility relation, guarding the load-bearing entry points against regression.
+#assert_no_axioms FX1Poly.Typed.smoke_universeCode_isReducibleAtDenote
+#assert_no_axioms FX1Poly.Typed.smoke_neutralVariable_isReducibleAtDenote
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
