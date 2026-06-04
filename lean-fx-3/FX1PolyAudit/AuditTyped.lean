@@ -211,6 +211,7 @@ import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.DenoteKeyedGenFormationSigmaArm
 import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedCumulativityObstruction
+import FX1Poly.Typed.DenoteKeyedBoundedReducibility
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3374,6 +3375,19 @@ gates pin them shut.
 -- model-obstructed (semantic reducibility does NOT bound universes — universeCode_isReducibleAtDenote fires at
 -- every level), so it needs a bound-carrying model OR stays a carried premise (conditional/fragment milestone).
 #assert_no_axioms FX1Poly.Typed.gapUniverseDomainPiVacuouslyReducibleAtLowLevel
+
+-- #753 / SN-D5e BOUND-CARRYING RELATION (DenoteKeyedBoundedReducibility) — the genuine resolution of the
+-- obstruction above. ReducibleTypeStepBounded GATES the universeCode arm on denote levelExpr env < bound, so
+-- high-universe codes are EXCLUDED from low bounds by construction (universe-label-AWARE, unlike the label-blind
+-- ReducibleTypeStepDenote). denoteBelowFamilyBounded keeps the structural (non-WF) recursion ⟹ Quot.sound-free.
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamilyBounded_eq_reducible
+-- THE PAYOFF: cumulativity is FREE in the gated relation (the property the label-blind model CANNOT prove). A
+-- bounded-reducibility derivation lifts from bound to any higherBound ≥ bound with the SAME candidate — universeCode
+-- arm re-fires (its gate denote e < higherBound guaranteed by denote e < bound ≤ higherBound) reconciled via
+-- ofPointwiseIff (funext-free), every other arm by IH. The keystone the genFormationPi piArm needs.
+#assert_no_axioms FX1Poly.Typed.stepBounded_cumulative
+#assert_no_axioms FX1Poly.Typed.isReducibleBounded_cumulative
+
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
 -- lowerAt only at the fixed index denote e, which the below-family coherence (denoteBelowFamily_eq_reducible)
