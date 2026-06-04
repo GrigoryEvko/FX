@@ -263,6 +263,7 @@ import FX1Poly.Typed.HasTypeDescPiFormerCongruence
 import FX1Poly.Typed.HasTypeDescContextConversion
 import FX1Poly.Typed.HasTypeDescPiContextConversion
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
+import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4350,3 +4351,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertPiTyCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertSigmaCodeTelescopeWithConvGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertSigmaTyCode
+
+-- Grown-engine canonical-forms boundary (HasTypeDescPiDataHeadUntyped.lean, the SR dispatcher's iota-vacuity
+-- leg toward SN-055/#558). The grown engine types no data constructor and no data eliminator — it is the pure
+-- Π/formation fragment. cellHasNoTypingWhenRootNotGrownHead is the contrapositive of subjectRootGenerator (a
+-- grown-typed subject is rooted at one of var/universeCode/piTyCode/sigmaTyCode/lam/app): a cell rooted
+-- elsewhere has no grown typing. The SR dispatcher cites it once per Step.iota* case — every iota redex
+-- (.mkGen ELIM_GEN …) is refuted, discharging the iota family vacuously. The smoke corpus instantiates it on
+-- the real iota-redex heads across the eliminator shape classes (boolElim branch-select / fst projection /
+-- natElim recursion / idJ path-induction) and on a data constructor (pair), each via the generic lemma + a
+-- six-way distinct-constructor refutation. The remaining eliminator heads (snd/natRec/listElim/optionMatch/
+-- eitherMatch/idStrictRec) and all other constructors fall to the identical one-line application.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.cellHasNoTypingWhenRootNotGrownHead
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.boolElimCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fstCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natElimCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.idJCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pairCellHasNoTyping
