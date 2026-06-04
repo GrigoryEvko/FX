@@ -3516,6 +3516,15 @@ gates pin them shut.
 -- CR1 on a positive fuel LEVEL, scope-general). The wired piIntro arm consumes this once its motive closes into scope+1.
 #assert_no_axioms FX1Poly.Typed.stronglyNormalizing_of_memberAtBoundedSucc
 
+-- THE +1-CLOSING MOTIVE + the piIntro arm with domainArgumentsSN AUTO-DISCHARGED. The grown-FT assembly must close
+-- into a non-empty scope targetScope+1 so the binder arm reads member->SN via the scope+1 bounded CR1. FundamentalConcl
+-- usionAtBoundedSucc is that motive; .toSucc lifts the shipped arbitrary-scope arms (var/conv/universeFormation/piElim/
+-- genFormationPi -- no binder) into it for free; fundamentalPiIntroAtBoundedSucc is the last binder-specific arm, its
+-- domainArgumentsSN premise ELIMINATED (discharged internally by stronglyNormalizing_of_memberAtBoundedSucc at the +1 scope).
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtBounded.toSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtBoundedSucc
+
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
 -- lowerAt only at the fixed index denote e, which the below-family coherence (denoteBelowFamily_eq_reducible)

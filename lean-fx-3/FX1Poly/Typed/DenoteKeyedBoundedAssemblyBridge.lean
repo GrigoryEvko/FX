@@ -118,4 +118,64 @@ theorem stronglyNormalizing_of_memberAtBoundedSucc {scope : Nat} {env : Nat → 
   obtain ⟨_candidate, candidateReducible, termInCandidate⟩ := member
   exact candidateReducible.isReducibilityCandidate.stronglyNormalizing termInCandidate
 
+/-- **The +1-closing bounded fundamental-theorem conclusion.**  Identical to `FundamentalConclusionAtBounded` except
+the closing substitution lands in a NON-EMPTY scope `targetScope + 1`.  This is the motive the grown-FT assembly must
+use so the binder (piIntro) arm can read member→SN via the scope+1 bounded CR1 (`stronglyNormalizing_of_memberAt\
+BoundedSucc`) — the denote vector assembly likewise closes every binder-local premise into `targetScope + 1`. -/
+def FundamentalConclusionAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
+    (context : TypingContext profile scope) (subject classifier : RawTerm scope) : Prop :=
+  ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+    ReducibleEnvAtBounded env bound context substitution →
+    IsReducibleMemberAtBounded env bound
+      (RawTerm.subst substitution classifier) (RawTerm.subst substitution subject)
+
+/-- **Down-cast: an arbitrary-scope conclusion gives the +1-closing conclusion.**  `FundamentalConclusionAtBounded`
+quantifies over EVERY closing scope, so it specializes to the `targetScope + 1` scopes the +1-motive uses — one
+instantiation.  This lifts the shipped arbitrary-scope arms (var / universeFormation / conv / piElim / genFormationPi
+— none of which introduce a binder) into the +1-closing motive for free; only the piIntro arm needs the genuinely-new
++1 treatment below. -/
+theorem FundamentalConclusionAtBounded.toSucc {profile : PolyProfile} {scope : Nat} {env : Nat → Nat}
+    {bound : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (conclusion : FundamentalConclusionAtBounded env bound context subject classifier) :
+    FundamentalConclusionAtBoundedSucc env bound context subject classifier :=
+  fun substitution envReducible => conclusion substitution envReducible
+
+/-- **The +1-closing piIntro (λ) fundamental-theorem arm — domainArgumentsSN AUTO-DISCHARGED.**  Because the +1-motive
+closes into `targetScope + 1`, the domain arguments live at `targetScope + 1`, where the bounded CR1 applies — so the
+`domainArgumentsSN` premise that `fundamentalPiIntroAtBounded` carried is now discharged INTERNALLY via
+`stronglyNormalizing_of_memberAtBoundedSucc`, and disappears from the signature.  Routes through
+`abstractionMemberUnderClosingSubstitutionBounded` (the shipped binder-crux lemma) at the +1 scope with the canonical
+member-predicate candidates; the body IH threads through `ReducibleEnvAtBounded.cons`.  This is the last grown-FT arm
+that needed binder-specific work; all others lift via `FundamentalConclusionAtBounded.toSucc`. -/
+theorem fundamentalPiIntroAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
+    (context : TypingContext profile scope)
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    (domainReducibleAtBound : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        IsReducibleTypeAtBounded env bound (RawTerm.subst substitution domainCode))
+    (codomainReducibleAtBound : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ argument : RawTerm (targetScope + 1),
+          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution domainCode) argument →
+          IsReducibleTypeAtBounded env bound
+            (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
+    (bodyConclusion :
+        FundamentalConclusionAtBoundedSucc env bound (context.cons domainCode) body codomainCode) :
+    FundamentalConclusionAtBoundedSucc env bound context (lamCell body)
+      (piTyCodeCell domainCode codomainCode) := by
+  intro _targetScope substitution envReducible
+  exact abstractionMemberUnderClosingSubstitutionBounded
+    (domainCandidate := IsReducibleMemberAtBounded env bound (RawTerm.subst substitution domainCode))
+    (codomainCandidate := fun argument =>
+      IsReducibleMemberAtBounded env bound
+        (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
+    env bound
+    (domainReducibleAtBound substitution envReducible).reducibleMemberCandidate
+    (fun argument argumentMember =>
+      (codomainReducibleAtBound substitution envReducible argument argumentMember).reducibleMemberCandidate)
+    (fun _argument argumentMember => stronglyNormalizing_of_memberAtBoundedSucc argumentMember)
+    (fun argument argumentMember =>
+      bodyConclusion (RawTermSubst.cons argument substitution)
+        (ReducibleEnvAtBounded.cons envReducible argumentMember))
+
 end FX1Poly.Typed
