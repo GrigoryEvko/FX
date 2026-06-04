@@ -244,6 +244,7 @@ import FX1Poly.Typed.OpenStronglyNormalizing
 import FX1Poly.Typed.BoundedNeutralMember
 import FX1Poly.Typed.BoundedUniverseInversion
 import FX1Poly.Typed.BoundedBindingTypeReducible
+import FX1Poly.Typed.ReducibleEnvOfWfContext
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4132,6 +4133,14 @@ gates pin them shut.
 -- universeMemberReducibleAsTypeAtDecodedLevelBounded (decode) → isReducibleBounded_cumulative. The type-side leaf
 -- the reducible-closing-environment builder (reducibleEnvOfWfContext, OB-3/OB-4) cons-feeds toward open SN-043.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReducibleAsTypeUnderEnv
+
+-- OB-3 (ReducibleEnvOfWfContext.lean): the reducible closing environment for a well-formed context. Every WfContext
+-- admits a bound + a closing substitution (every variable ↦ var 0 ∈ scope 1, the "var 0 head" trick that sidesteps
+-- renaming closure) under which it is a bound-reducible environment. Telescope induction via ReducibleEnvAtBounded.cons:
+-- OB-2 makes each binding type reducible, OB-1 puts var 0 in it, with a SUM bound (Nat.le_add_*, propext-free — the
+-- max-based attempt leaked propext via Nat.le_max_*). The env half of the OpenStronglyNormalizing residual; OB-4 bundles
+-- the main derivation's budget. Toward unconditional open SN-043 (#546).
+#assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContext
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
