@@ -2,6 +2,7 @@ import FX1Poly.Typed.DenoteKeyedUniverseMembershipIntro
 import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.HasTypeSubstitution
 import FX1Poly.Core.StrongNormalizationConstructors
+import FX1Poly.Typed.DenoteKeyedSingleLevelPi
 
 /-! # FX1Poly/Typed/DenoteKeyedGenFormationPiArm
     — the genFormationPi Π fundamental-theorem arm (premise-isolating; SN-D5d toward SN-043/#750)
@@ -80,5 +81,38 @@ theorem fundamentalGenFormationPiAtDenote {profile : PolyProfile} {scope : Nat} 
         (stronglyNormalizing_of_universeMemberAtDenote env level domainLevel flag _ domainAbove
           (domainMember substitution envReducible))
         (codomainSN substitution envReducible))
+
+/-- **Discharge `fundamentalGenFormationPiAtDenote`'s `piReducibleAsType` premise from the children's
+reducibility at the decoded output level.**  The `piReducibleAsType` premise (the #752-shaped Π reducible-as-type
+at `denote levelExpr env`) is reduced to the more PRIMITIVE children's reducibility AT THAT decoded level — which
+the fundamental-theorem recursion naturally supplies (the domain child is a universe member, reducible-as-type at
+the decoded level by `universeMemberReducibleAsTypeAtDecodedLevel`; the codomain child is reducible at the
+decoded level under the var-0-extended environment, the `subst0 (subst (lift σ) codomain) argument` shape via the
+subst-lift commutation).  Routes through the drift-free single-level `piReducibleAtLevelFromComponents` after
+distributing the substitution by `subst_piTyCodeCell`.  SINGLE level (the decoded output level, above all
+internal thresholds) ⟹ NO all-levels low-level drift — this sidesteps the #752 all-levels piArm for the
+genFormationPi reducible-as-type half. -/
+theorem piReducibleAsTypeFromComponentReducibility {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
+    (level : Nat) (context : TypingContext profile scope)
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)} (levelExpr : LevelExpr)
+    (domainReducibleAtDecoded : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) (RawTerm.subst substitution domain))
+    (codomainReducibleAtDecoded : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        ∀ argument : RawTerm targetScope,
+          IsReducibleMemberAtDenote env (LevelExpr.denote levelExpr env)
+            (RawTerm.subst substitution domain) argument →
+          IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env)
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomain) argument)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env)
+          (RawTerm.subst substitution (piTyCodeCell domain codomain)) := by
+  intro _targetScope substitution envReducible
+  rw [subst_piTyCodeCell]
+  exact piReducibleAtLevelFromComponents env (LevelExpr.denote levelExpr env)
+    (domainReducibleAtDecoded substitution envReducible)
+    (codomainReducibleAtDecoded substitution envReducible)
 
 end FX1Poly.Typed

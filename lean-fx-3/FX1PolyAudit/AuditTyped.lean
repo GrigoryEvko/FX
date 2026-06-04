@@ -3270,6 +3270,14 @@ gates pin them shut.
 -- two #672-family walls cleanly isolated: codomain SN (denote SN-040, shared) + Π reducible-as-type (#752).
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiAtDenote
 
+-- piReducibleAsTypeFromComponentReducibility (the #672 reframe applied): discharges the genFormationPi arm's
+-- piReducibleAsType premise from the children's reducibility AT THE DECODED OUTPUT LEVEL (the primitive form the
+-- FT recursion supplies) — domain via universeMemberReducibleAsTypeAtDecodedLevel, codomain under the var-0
+-- extended env (subst0 (subst (lift σ) codomain) arg). Routes through the drift-free single-level
+-- piReducibleAtLevelFromComponents after subst_piTyCodeCell. SINGLE level (decoded, above thresholds) ⟹ no
+-- all-levels drift; sidesteps the #752 all-levels piArm for the genFormationPi reducible-as-type half.
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromComponentReducibility
+
 -- SN-D5d (the SN-040-FREE codomain-member wiring — CORRECTS the ticks #18/#19 SN-040 claim): the codomain's
 -- universe membership at `cons headTerm σ` (var0 → a domain member, σ tail UN-RENAMED) comes from the codomain
 -- IH via ReducibleEnvAtDenote.cons — NO renaming-closure (SN-040). The `cons` (prepend) vs `lift` (weaken-rename)
