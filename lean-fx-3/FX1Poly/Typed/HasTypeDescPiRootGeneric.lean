@@ -48,6 +48,28 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
+/-- **The table-generic FORMATION-engine root classification.**  A `HasTypeDesc`-typed subject is rooted at
+`gen_var` (`var`) or `gen_universeCode` (`universeFormation`), or its root carries a formation rule
+(`typingRuleDescOf root = some rule`, the `genFormation` arm).  Unlike `HasTypeDesc.subjectRootGenerator`,
+this does NOT enumerate `gen_piTyCode`/`gen_sigmaTyCode` — they fall into the formation-rule disjunct — so a
+new formation row leaves it intact.  The formation-engine basis the grown classification delegates to (its
+`ofFormation` arm), removing the last hard-coded-table dependency from grown root inversion.  Term-mode
+structural recursion on the `HasTypeDesc` derivation (the `HasTypeDesc`/`DescTelescope` mutual block forbids
+`induction`). -/
+theorem HasTypeDesc.subjectRootGeneratorGeneric {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (typed : HasTypeDesc profile context subject classifier) :
+    subject.rootGenerator = Generator.gen_var ∨
+      subject.rootGenerator = Generator.gen_universeCode ∨
+      (∃ rule : TypingRuleDesc, typingRuleDescOf subject.rootGenerator = some rule) :=
+  match typed with
+  | .var _context _index => Or.inl rfl
+  | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped =>
+      typedPremise.subjectRootGeneratorGeneric
+  | .universeFormation _context _levelExpr _flag => Or.inr (Or.inl rfl)
+  | .genFormation _context _generator _payload _children _levels _flag rule isFormation _premises =>
+      Or.inr (Or.inr ⟨rule, isFormation⟩)
+
 /-- **The table-generic grown-engine root classification.**  A `HasTypeDescPi`-typed subject is rooted at
 one of the four non-former heads — `gen_var` (`var`), `gen_universeCode` (`ofFormation ∘
 universeFormation`), `gen_lam` (`piIntro`), `gen_app` (`piElim`) — or its root carries a formation rule
@@ -65,15 +87,10 @@ theorem HasTypeDescPi.subjectRootGeneratorGeneric {profile : PolyProfile} {scope
       (∃ rule : TypingRuleDesc, typingRuleDescOf subject.rootGenerator = some rule) :=
   match typed with
   | .ofFormation formationTyped =>
-      match formationTyped.subjectRootGenerator with
+      match formationTyped.subjectRootGeneratorGeneric with
       | Or.inl isVar => Or.inl isVar
       | Or.inr (Or.inl isUniverse) => Or.inr (Or.inl isUniverse)
-      | Or.inr (Or.inr (Or.inl isPi)) =>
-          Or.inr (Or.inr (Or.inr (Or.inr
-            ⟨{ outputType := universeFormerOutput }, by rw [isPi]; exact typingRuleDescOf_piTyCode⟩)))
-      | Or.inr (Or.inr (Or.inr isSigma)) =>
-          Or.inr (Or.inr (Or.inr (Or.inr
-            ⟨{ outputType := universeFormerOutput }, by rw [isSigma]; exact typingRuleDescOf_sigmaTyCode⟩)))
+      | Or.inr (Or.inr formerRule) => Or.inr (Or.inr (Or.inr (Or.inr formerRule)))
   | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped =>
       typedPremise.subjectRootGeneratorGeneric
   | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
@@ -109,5 +126,30 @@ theorem HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded {profile : Poly
     have isFormerAtGenerator : typingRuleDescOf generator = some rule := isFormer
     rw [rootNotFormer] at isFormerAtGenerator
     cases isFormerAtGenerator
+
+/-- **The table-generic CLOSED grown-engine root classification.**  In the empty context a grown-typed
+subject cannot be `gen_var`-rooted (the `gen_var` payload is `Fin 0`, uninhabited), so a closed grown subject
+is rooted at `gen_universeCode` / `gen_lam` / `gen_app` or carries a formation rule.  The table-generic
+successor to `closedSubjectRootGenerator` (which enumerates `gen_piTyCode`/`gen_sigmaTyCode`): consistency
+turns on this — of these heads only `gen_app` can classify at a non-universe / non-Π type (a formation-rule
+head is universe-code-classified), so `HasTypeDescPi .empty t Empty → False` reduces to ruling out a closed
+application, for ANY formation table.  Drops the `gen_var` disjunct off `subjectRootGeneratorGeneric` via the
+`Fin 0` payload (refuted by `Nat.not_lt_zero`, NOT `Fin.elim0` which routes through the casesOn propext
+trap). -/
+theorem HasTypeDescPi.closedSubjectRootGeneratorGeneric {profile : PolyProfile}
+    {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
+    subject.rootGenerator = Generator.gen_universeCode ∨
+      subject.rootGenerator = Generator.gen_lam ∨
+      subject.rootGenerator = Generator.gen_app ∨
+      (∃ rule : TypingRuleDesc, typingRuleDescOf subject.rootGenerator = some rule) := by
+  rcases typed.subjectRootGeneratorGeneric with isVar | rest
+  · exfalso
+    cases subject with
+    | mkGen generator payload children =>
+        have isVarGenerator : generator = Generator.gen_var := isVar
+        subst isVarGenerator
+        exact absurd payload.isLt (Nat.not_lt_zero payload.val)
+  · exact rest
 
 end FX1Poly.Typed

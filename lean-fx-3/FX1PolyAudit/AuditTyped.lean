@@ -4380,3 +4380,14 @@ gates pin them shut.
 -- future-proof refutation (data ctors/elims have typingRuleDescOf=none permanently, refuted for all time).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectRootGeneratorGeneric
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded
+
+-- Table-generic root classification — formation engine + closed grown (HasTypeDescPiRootGeneric.lean,
+-- completing the generic root-classification family). HasTypeDesc.subjectRootGeneratorGeneric is the
+-- FORMATION-engine table-generic root inversion (var/universeCode ∨ ∃ rule, typingRuleDescOf root = some
+-- rule); the grown subjectRootGeneratorGeneric's ofFormation arm now DELEGATES to it (removing the last
+-- hard-coded gen_piTyCode/gen_sigmaTyCode dependency from grown root inversion). closedSubjectRootGenerator
+-- Generic is the empty-context twin (drops the gen_var disjunct via the Fin 0 payload) — the consistency
+-- inversion that survives table growth. Together with last fire's subjectRootGeneratorGeneric these make the
+-- whole root-classification family table-generic.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGeneratorGeneric
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectRootGeneratorGeneric
