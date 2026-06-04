@@ -197,6 +197,7 @@ import FX1Poly.Typed.DenoteKeyedUniverseMembershipIntro
 import FX1Poly.Typed.DenoteKeyedTelescopeFundamental
 import FX1Poly.Typed.DenoteKeyedSigmaFormation
 import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
+import FX1Poly.Typed.DenoteKeyedGenFormationSigmaArm
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3168,6 +3169,13 @@ gates pin them shut.
 -- denote analogue of the fuel sigmaFormerOfChildMembershipsAtRequiredLevel).
 #assert_no_axioms FX1Poly.Typed.stronglyNormalizing_of_universeMemberAtDenote
 #assert_no_axioms FX1Poly.Typed.sigmaFormationFromChildMembersAtDenote
+
+-- SN-D5d (the genFormationPi Σ FT arm, premise-isolating like fundamentalPiIntroAtDenote): domain universe
+-- membership (CR1-discharged to domain SN) + codomain under-binder SN, both ∀-substitution, ⟹ the Σ former's
+-- FundamentalConclusionAtDenote at Type@levelExpr. The Σ case reduces to children SN (reducible-as-type is the
+-- free neutral arm); the codomain SN is the deferred premise (its production needs var-0 mining at the weakened
+-- scope = the Kripke-obstructed SN-040). The direct analogue of fundamentalPiIntroAtDenote for genFormationPi/Σ.
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationSigmaAtDenote
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
