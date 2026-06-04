@@ -221,6 +221,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedFormerEngine
 import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiDischarge
 import FX1Poly.Typed.DenoteKeyedBoundedAssemblyBridge
+import FX1Poly.Typed.DenoteKeyedBoundedTelescopeReducible
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3911,3 +3912,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.thinScopeSections
 #assert_no_axioms FX1Poly.Tier0.thinScopeGlobalSections
 #assert_no_axioms FX1Poly.Tier0.thinScopeTautologicalSconing
+
+-- Bound-carrying telescope-reducibility relation (DenoteKeyedBoundedTelescopeReducible.lean) — the motive_2
+-- shape for the grown-FT HasTypeDescPi.rec dispatch. The bound-carrying analogue of TelescopeReducibleAtDenote,
+-- carrying TWO nat levels: `bound` (each child head a bound-reducible member of its universe code) and `argLevel`
+-- (the tail's domain argument quantification level = the former's decoded output level, strictly below `bound` by
+-- gate-extraction). twoChild is the Π/Σ-former unfolder (consecutiveShifts 0 2), the shape the bounded
+-- genFormationPi arm reads domain/codomain reducibility off before lifting via free bounded cumulativity.
+-- Structural-recursion def on `count` + nil (True.intro) + twoChild (anonymous conjunction constructor).
+#assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded
+#assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded.nil
+#assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded.twoChild
