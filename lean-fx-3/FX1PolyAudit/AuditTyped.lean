@@ -168,6 +168,7 @@ import FX1Poly.Typed.DenoteKeyedReducibleEnv
 import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
 import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
+import FX1Poly.Typed.DenoteKeyedGeneralDomainPiArm
 import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
 import FX1Poly.Typed.DenoteKeyedApplicationMember
 import FX1Poly.Typed.DenoteKeyedConvMember
@@ -3015,6 +3016,18 @@ gates pin them shut.
 -- below-family = the relation at denote e (universe membership IS the codomain gate); at/below it's empty
 -- (codomain vacuous). Completes the from-existence piArm family across all domain shapes.
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleFromCodomainExistence
+
+-- DenoteKeyedGeneralDomainPiArm (#752 residual isolation): the GENERAL domain piArm modulo domain
+-- member-stability. The backbone's domain IH gives a candidate PER LEVEL (drift allowed); the piType assembly
+-- needs them collapsed, which IS domain member-stability (a denote-reducible member at one level is a member at
+-- every level). generalDomainPi_reducibleFromMemberStability takes the per-level domain reducibility + member-
+-- stability + codomain existence and produces the Π at every level — strictly generalizing the uniform piArm
+-- (its member-stable-by-a-uniform-candidate instance via determinism), reaching member-stable COMPOSITE domains
+-- (Nat → Nat). Construction: canonical member-predicate as domain/codomain candidate (reducibleMemberCandidate),
+-- member-stability lifting per-level domain membership to the all-level gate. The remaining #752 residual is now
+-- precisely the THRESHOLD-DRIFT domains (composite domains with sub-threshold universe codes, member-stability
+-- fails below threshold), needing the threshold-split.
+#assert_no_axioms FX1Poly.Typed.generalDomainPi_reducibleFromMemberStability
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
