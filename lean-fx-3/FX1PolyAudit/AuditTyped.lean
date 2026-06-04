@@ -226,6 +226,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedTelescopeFundamental
 import FX1Poly.Typed.DenoteKeyedBoundedTelescopeProjection
 import FX1Poly.Typed.FormerOutputLevelBounds
 import FX1Poly.Typed.BoundedCodomainOpenSN
+import FX1Poly.Typed.BoundedDomainInhabitant
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3959,3 +3960,11 @@ gates pin them shut.
 -- relation-agnostic IsStronglyNormalizing.ofSubst0Body reflects it to the OPEN body subst (lift σ) codomain.
 -- The hardest sub-piece of the genFormationPi recursor arm (BFT-4), via shipped primitives only.
 #assert_no_axioms FX1Poly.Typed.codomainOpenStronglyNormalizing_ofBoundedFilledMember
+
+-- Last two genFormationPi recursor-arm prerequisites (BoundedDomainInhabitant.lean): levelMax_lt (the output
+-- belowBound — max of two below-bound child levels is below bound, via LevelExpr.levelMax_le); and
+-- variableZeroMemberOfBoundedUniverseMember (the var-0 neutral inhabits the cumulatively-lifted domain candidate
+-- at argLevel: decode universe member → reducible type at its level → isReducibleBounded_cumulative lift →
+-- IsReducibilityCandidate.containsVariable). The argument the genFormationPi arm feeds the codomain telescope.
+#assert_no_axioms FX1Poly.Typed.levelMax_lt
+#assert_no_axioms FX1Poly.Typed.variableZeroMemberOfBoundedUniverseMember
