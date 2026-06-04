@@ -3394,6 +3394,21 @@ gates pin them shut.
 -- First fruits of the bridge: determinism transferred (the canonical-candidate reconciliation the bounded FT needs).
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.deterministic
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.deterministic
+-- THE UNCONDITIONAL CR1/CR2/CR3 BUNDLE for the bounded relation. Forward-closure must PRODUCE a bounded
+-- (gate-preserving) derivation, so it does NOT transfer through the forget bridge -- it is a direct port
+-- (universeCode is a step normal form, gate carried vacuously). The reducibility-candidate bundle is also a
+-- direct induction, but here the gate PAYS OFF: at the universeCode arm belowBound : denote e < bound supplies
+-- the level bound neutral-inclusion needs, so the FAMILY-level ReducibleTypeAtBounded.isReducibilityCandidate is
+-- UNCONDITIONAL -- no predicative caveat (the property the label-blind ReducibleTypeAtDenote could not get).
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.whnfExpandClosure
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.forwardStepStar
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.forwardStep
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.reducibleOfNeutral
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamilyBounded_eq_empty_of_ge
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamilyBounded_forwardStep
+#assert_no_axioms FX1Poly.Typed.denoteBelowFamilyBounded_neutralInclusion_of_lt
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.isReducibilityCandidate
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.isReducibilityCandidate
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches

@@ -248,4 +248,191 @@ theorem ReducibleTypeAtBounded.deterministic {scope : Nat} {env : Nat → Nat} {
     PointwiseIff candidate1 candidate2 :=
   ReducibleTypeStepBounded.deterministic reducible1 reducible2
 
+/-! ## Reduction-closure infrastructure + the UNCONDITIONAL CR1/CR2/CR3 bundle
+
+Forward-closure must PRODUCE a bounded derivation (preserve the gate), so it does NOT transfer through the forget
+bridge — it is a direct port of the denote proof (`universeCode` is a step normal form, so the gate is carried
+through vacuously).  CR1/CR2/CR3 (`isReducibilityCandidate`) is also a direct induction, but here the gate PAYS
+OFF: at the `universeCode` arm `belowBound : denote e < bound` supplies the level bound the neutral-inclusion leg
+needs, so the FAMILY-level `ReducibleTypeAtBounded.isReducibilityCandidate` is UNCONDITIONAL — no deferred
+predicative caveat (contrast the label-blind `ReducibleTypeStepDenote`, whose `denoteBelowFamily` discharge fails
+neutral-inclusion at decoded levels ≥ the ambient level). -/
+
+/-- Multi-step weak-head-expansion closure (port of `ReducibleTypeStepDenote.whnfExpandClosure`). -/
+theorem ReducibleTypeStepBounded.whnfExpandClosure {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop} {bound : Nat}
+    {candidate : RawTerm scope → Prop} :
+    ∀ {firstType finalType : RawTerm scope}, StepStar firstType finalType →
+      ∀ {weakHeadReduct : RawTerm scope}, WeakHeadStep firstType weakHeadReduct →
+        ReducibleTypeStepBounded env lowerAt bound weakHeadReduct candidate →
+        (∀ furtherReduct : RawTerm scope, StepStar weakHeadReduct furtherReduct →
+          ReducibleTypeStepBounded env lowerAt bound furtherReduct candidate) →
+        ReducibleTypeStepBounded env lowerAt bound finalType candidate := by
+  intro firstType finalType chain
+  induction chain with
+  | refl _ =>
+      intro weakHeadReduct weakHeadStep reductReducible _laterClosure
+      exact ReducibleTypeStepBounded.whnfExpand weakHeadStep reductReducible
+  | trans firstStep _restChain restClosure =>
+      intro weakHeadReduct weakHeadStep reductReducible laterClosure
+      rcases weakHeadStep.commuteWithStep _ firstStep with
+        midEquation | ⟨_laterReduct, laterWeakHeadStep, catchUpChain⟩
+      · subst midEquation
+        exact laterClosure _ _restChain
+      · exact restClosure laterWeakHeadStep (laterClosure _ catchUpChain)
+          (fun furtherReduct furtherChain =>
+            laterClosure furtherReduct (StepStar.trans_compose catchUpChain furtherChain))
+
+/-- **Forward closure under multi-step reduction (bounded).**  A bounded-reducible type stays bounded-reducible at
+the SAME candidate along any `StepStar`; the `universeCode` arm re-fires with its carried `belowBound` (a universe
+code is a step normal form, so the chain is reflexive there).  Direct port of `ReducibleTypeStepDenote.forwardStepStar`
+— it cannot transfer through the forget bridge because it must produce a BOUNDED (gate-preserving) derivation. -/
+theorem ReducibleTypeStepBounded.forwardStepStar {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop} {bound : Nat}
+    {candidate : RawTerm scope → Prop} {typeCode : RawTerm scope}
+    (reducible : ReducibleTypeStepBounded env lowerAt bound typeCode candidate) :
+    ∀ {finalType : RawTerm scope}, StepStar typeCode finalType →
+      ReducibleTypeStepBounded env lowerAt bound finalType candidate := by
+  induction reducible with
+  | whnfExpand weakHeadStep reductReducible reductInductiveHypothesis =>
+      intro finalType chain
+      exact ReducibleTypeStepBounded.whnfExpandClosure chain weakHeadStep reductReducible
+        (fun _furtherReduct furtherChain => reductInductiveHypothesis furtherChain)
+  | neutral noWeakHeadStep notPiType notUniverse =>
+      intro finalType chain
+      obtain ⟨finalNoWeakHeadStep, rootEquation⟩ :=
+        WeakHeadStep.weakHeadNormalRootStableAlongStepStar chain noWeakHeadStep
+      exact ReducibleTypeStepBounded.neutral finalNoWeakHeadStep
+        (fun rootIsPiType => notPiType (rootEquation.symm.trans rootIsPiType))
+        (fun rootIsUniverse => notUniverse (rootEquation.symm.trans rootIsUniverse))
+  | piType codomainCandidate _domainReducible _codomainReducible
+      domainInductiveHypothesis codomainInductiveHypothesis =>
+      intro finalType chain
+      obtain ⟨_updatedDomain, _updatedCodomain, finalEquation, domainChain, codomainChain⟩ :=
+        StepStar.piTyCode_decompose chain
+      subst finalEquation
+      exact ReducibleTypeStepBounded.piType codomainCandidate (domainInductiveHypothesis domainChain)
+        (fun argument domainMember =>
+          codomainInductiveHypothesis argument domainMember
+            (StepStar.subst0Body argument codomainChain))
+  | universeCode levelExpr flag belowBound =>
+      intro finalType chain
+      have finalEquation :=
+        StepStar.eq_of_noStep (fun _reduct step => StepStar.noStep_universeCode (levelExpr, flag) step)
+          chain
+      subst finalEquation
+      exact ReducibleTypeStepBounded.universeCode levelExpr flag belowBound
+  | ofPointwiseIff _innerReducible pointwiseIff innerHypothesis =>
+      intro finalType chain
+      exact (innerHypothesis chain).ofPointwiseIff pointwiseIff
+
+/-- Single-step forward closure (bounded). -/
+theorem ReducibleTypeStepBounded.forwardStep {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop} {bound : Nat}
+    {typeCode reduct : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepBounded env lowerAt bound typeCode candidate) (step : Step typeCode reduct) :
+    ReducibleTypeStepBounded env lowerAt bound reduct candidate :=
+  ReducibleTypeStepBounded.forwardStepStar reducible (StepStar.single step)
+
+/-- A neutral type is bounded-reducible (SN candidate via the `neutral` arm). -/
+theorem ReducibleTypeStepBounded.reducibleOfNeutral {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop} {bound : Nat}
+    {typeCode : RawTerm scope} (neutral : IsNeutral typeCode) :
+    ∃ candidate : RawTerm scope → Prop, ReducibleTypeStepBounded env lowerAt bound typeCode candidate := by
+  refine ⟨IsStronglyNormalizing, ReducibleTypeStepBounded.neutral
+    (fun reduct => neutral.noWeakHeadStep reduct) ?_ ?_⟩
+  · cases neutral <;> exact fun rootEquation => nomatch rootEquation
+  · cases neutral <;> exact fun rootEquation => nomatch rootEquation
+
+/-- The bounded below-family is the empty relation at or above the bound (port of `denoteBelowFamily_eq_empty_of_ge`). -/
+theorem denoteBelowFamilyBounded_eq_empty_of_ge {scope : Nat} (env : Nat → Nat) :
+    ∀ (bound lvl : Nat), bound ≤ lvl →
+      denoteBelowFamilyBounded (scope := scope) env bound lvl = (fun _ _ => False) := by
+  intro bound
+  induction bound with
+  | zero => intro lvl _; rfl
+  | succ predBound _ih =>
+      intro lvl hle
+      have predLessThan : predBound < lvl := Nat.lt_of_lt_of_le (Nat.lt_succ_self predBound) hle
+      show (if lvl < predBound then denoteBelowFamilyBounded env predBound lvl
+            else if lvl = predBound then ReducibleTypeStepBounded env (denoteBelowFamilyBounded env predBound) predBound
+            else fun _ _ => False) = fun _ _ => False
+      rw [if_neg (Nat.not_lt.mpr (Nat.le_of_lt predLessThan)),
+        if_neg (Ne.symm (Nat.ne_of_lt predLessThan))]
+
+/-- **Interface leg 1 (forward-closed, unconditional):** the bounded below-family is forward-`Step`-closed at every
+level (below the bound via the relation's forward closure; at/above it the empty-relation premise is `False`). -/
+theorem denoteBelowFamilyBounded_forwardStep {scope : Nat} (env : Nat → Nat) (bound lvl : Nat)
+    {typeCode reduct : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (member : denoteBelowFamilyBounded env bound lvl typeCode candidate) (step : Step typeCode reduct) :
+    denoteBelowFamilyBounded env bound lvl reduct candidate := by
+  by_cases hlt : lvl < bound
+  · rw [denoteBelowFamilyBounded_eq_reducible env bound lvl hlt] at member ⊢
+    exact ReducibleTypeStepBounded.forwardStep member step
+  · rw [denoteBelowFamilyBounded_eq_empty_of_ge env bound lvl (Nat.not_lt.mp hlt)] at member
+    exact member.elim
+
+/-- **Interface leg 2 (neutral-inclusion, below the bound):** a neutral type is in the bounded below-family at any
+`lvl < bound` (coherence to the relation, where `reducibleOfNeutral` applies).  The `lvl < bound` bound is exactly
+what the gate supplies at every universe arm — which is why the family CR1/2/3 is unconditional. -/
+theorem denoteBelowFamilyBounded_neutralInclusion_of_lt {scope : Nat} (env : Nat → Nat) (bound lvl : Nat)
+    (hlt : lvl < bound) {typeCode : RawTerm scope} (neutral : IsNeutral typeCode)
+    (_reductsReducible : ∀ reduct : RawTerm scope, Step typeCode reduct →
+      ∃ candidate : RawTerm scope → Prop, denoteBelowFamilyBounded env bound lvl reduct candidate) :
+    ∃ candidate : RawTerm scope → Prop, denoteBelowFamilyBounded env bound lvl typeCode candidate := by
+  rw [denoteBelowFamilyBounded_eq_reducible env bound lvl hlt]
+  exact ReducibleTypeStepBounded.reducibleOfNeutral neutral
+
+/-- **CR1/CR2/CR3 for the bounded step relation (parametric).**  Every bounded-reducible candidate is a Girard
+reducibility candidate.  Induction: `whnfExpand`/`ofPointwiseIff` by IH, `neutral` is the SN candidate, `piType`
+the dependent-arrow candidate (bridging the codomain to denote to reuse `isDependentArrowReducibleStepDenote_is\
+ReducibilityCandidate`, var-0 domain inhabitant), `universeCode` discharges its legs LOCALLY via `belowBound` —
+hence neutral-inclusion is needed only BELOW the bound.  At `scope + 1` for the arrow CR1's var-0 inhabitant. -/
+theorem ReducibleTypeStepBounded.isReducibilityCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {lowerAt : Nat → RawTerm (scope + 1) → (RawTerm (scope + 1) → Prop) → Prop}
+    (lowerForwardStep : ∀ (lvl : Nat) {typeCode reduct : RawTerm (scope + 1)}
+        {candidate : RawTerm (scope + 1) → Prop},
+      lowerAt lvl typeCode candidate → Step typeCode reduct → lowerAt lvl reduct candidate)
+    (lowerNeutralInclusionBelowBound : ∀ (lvl : Nat), lvl < bound →
+        ∀ {typeCode : RawTerm (scope + 1)}, IsNeutral typeCode →
+      (∀ reduct : RawTerm (scope + 1), Step typeCode reduct →
+        ∃ candidate : RawTerm (scope + 1) → Prop, lowerAt lvl reduct candidate) →
+      ∃ candidate : RawTerm (scope + 1) → Prop, lowerAt lvl typeCode candidate)
+    {typeCode : RawTerm (scope + 1)} {candidate : RawTerm (scope + 1) → Prop}
+    (reducible : ReducibleTypeStepBounded env lowerAt bound typeCode candidate) :
+    IsReducibilityCandidate candidate := by
+  induction reducible with
+  | whnfExpand _weakHeadStep _reductReducible reductInductiveHypothesis =>
+      exact reductInductiveHypothesis
+  | neutral _noWeakHeadStep _notPiType _notUniverse =>
+      exact isStronglyNormalizing_isReducibilityCandidate
+  | piType codomainCandidate _domainReducible codomainReducible
+      domainInductiveHypothesis codomainInductiveHypothesis =>
+      exact isDependentArrowReducibleStepDenote_isReducibilityCandidate
+        domainInductiveHypothesis codomainInductiveHypothesis
+        (fun argument argumentMember => (codomainReducible argument argumentMember).toReducibleTypeStepDenote)
+        (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil)
+        (domainInductiveHypothesis.containsVariable ⟨0, Nat.succ_pos scope⟩)
+  | universeCode levelExpr _flag belowBound =>
+      exact ReducibleTypeStep.universeCandidateIsReducibilityCandidate
+        (lowerForwardStep (LevelExpr.denote levelExpr env))
+        (lowerNeutralInclusionBelowBound (LevelExpr.denote levelExpr env) belowBound)
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
+
+/-- **★ The bounded level-indexed relation has UNCONDITIONAL CR1/CR2/CR3.**  The family-level reducibility-candidate
+bundle, discharged with NO predicative caveat: the two `denoteBelowFamilyBounded` legs (forward-closed everywhere;
+neutral-inclusion below the bound) feed `ReducibleTypeStepBounded.isReducibilityCandidate`, whose universe arm only
+ever asks neutral-inclusion below the bound (the gate).  This is the property the label-blind `ReducibleTypeAtDenote`
+could not get unconditionally — members of a bounded-reducible type are strongly normalizing (CR1), the relation is
+forward-closed (CR2) and neutral-backward-closed (CR3), for the FULL relation, zero side conditions. -/
+theorem ReducibleTypeAtBounded.isReducibilityCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {typeCode : RawTerm (scope + 1)} {candidate : RawTerm (scope + 1) → Prop}
+    (reducible : ReducibleTypeAtBounded env bound typeCode candidate) :
+    IsReducibilityCandidate candidate :=
+  ReducibleTypeStepBounded.isReducibilityCandidate (lowerAt := denoteBelowFamilyBounded env bound)
+    (fun lvl => denoteBelowFamilyBounded_forwardStep env bound lvl)
+    (fun lvl hlt => denoteBelowFamilyBounded_neutralInclusion_of_lt env bound lvl hlt)
+    reducible
+
 end FX1Poly.Typed
