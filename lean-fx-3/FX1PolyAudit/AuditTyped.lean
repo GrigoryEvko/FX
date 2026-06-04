@@ -239,6 +239,7 @@ import FX1Poly.Typed.BoundExceedsPi
 import FX1Poly.Typed.BoundExceedsPiDischarge
 import FX1Poly.Typed.BoundedGrownFundamental
 import FX1Poly.Typed.ClosedBoundedReducibleMember
+import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4085,3 +4086,11 @@ gates pin them shut.
 -- witness, instantiated at the unique closing substitution Fin.elim0 : RawTermSubst 0 1. Turns the
 -- budget-conditional grown FT into an UNCONDITIONAL closed-reducibility fact; feeds the member→SN bridge (BFT-14).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedBoundedReducibleMember
+
+-- SN-for-well-typed, CLOSED case (ClosedStronglyNormalizing.lean, BFT-14 = SN-043-closed). Every closed grown
+-- derivation has a strongly-normalizing subject, unconditionally. Composes closedBoundedReducibleMember (BFT-13) →
+-- stronglyNormalizing_of_memberAtBoundedSucc (scope+1 bounded CR1) → StepStar.stronglyNormalizing_of_subst (SN
+-- reflects through the closing substitution). Capstone of the bounded reducibility route (BFT-1..14) for closed
+-- terms; what closed-term canonicity (SN-047/048/049) and consistency (SN-050) consume. Arbitrary-context SN-043
+-- (#546) additionally needs the neutral-variable open-term closing env — tracked separately.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedStronglyNormalizing
