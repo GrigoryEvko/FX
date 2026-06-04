@@ -243,6 +243,7 @@ import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.OpenStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
+import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4122,3 +4123,11 @@ gates pin them shut.
 -- ofFormation/piIntro/genFormationPi refuted, conv re-threads via the unconditional raw Conv.trans.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertAppGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertApp
+
+-- Fully-general β subject reduction (HasTypeDescPiBetaSR.lean, TY-SR-β #474). For ANY grown derivation of a β-redex
+-- appCell (lamCell body) argument at classifier (over a well-formed context), the β-reduct subst0 body argument is
+-- typed at the SAME classifier. The INVERTED form (vs the shipped component-given betaCoherence): invertApp +
+-- invertLam recover the components, Conv.piTyCode_inj reconciles the application's vs the λ's domain/codomain,
+-- substituteUnderBinding retypes the reduct, and validity (classifierIsTypeDesc, the WfContext consumer) + the conv
+-- rule convert it back to classifier. The Step.beta case of the SR master dispatcher (#458).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaSubjectReduction
