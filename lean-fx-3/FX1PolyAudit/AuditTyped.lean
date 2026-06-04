@@ -237,6 +237,7 @@ import FX1Poly.Typed.BoundExceedsDischarge
 import FX1Poly.Typed.BoundedFormationDispatch
 import FX1Poly.Typed.BoundExceedsPi
 import FX1Poly.Typed.BoundExceedsPiDischarge
+import FX1Poly.Typed.BoundedGrownFundamental
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4070,3 +4071,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.BoundExceedsPiTelescope.monotoneInBound
 #assert_no_axioms FX1Poly.Typed.BoundExceedsPi.existsBound
 #assert_no_axioms FX1Poly.Typed.BoundExceedsPiTelescope.existsBound
+
+-- The UNCONDITIONAL (up to budget) grown FT (BoundedGrownFundamental.lean, BFT-12c). Given a BoundExceedsPi budget,
+-- every HasTypeDescPi derivation satisfies FundamentalConclusionAtBoundedSucc. Via BoundExceedsPi.rec: the
+-- ofFormation arm feeds the carried embedded BoundExceeds into HasTypeDesc.fundamentalAtBoundedSucc (BFT-11),
+-- discharging BFT-6's formationFundamental premise inline; every other arm mirrors BFT-6 (budgets unused). With
+-- BoundExceedsPi.existsBound (BFT-12b) this is one closed-corollary step (BFT-13) from SN-043.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalAtBoundedSucc
