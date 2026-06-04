@@ -185,4 +185,45 @@ theorem neutralDomainMemberStableToOuter {scope : Nat} (env : Nat → Nat) (oute
   neutralType_memberStableAcrossDenoteLevels env noWeakHeadStep notPiType notUniverse
     memberAtSource outerLevel
 
+/-- **Member-transfer across head-expansion (backward).**  A denote-reducible member of the contractum `reduct`
+is a member of the redex `typeCode`: the `whnfExpand` constructor re-attaches the same candidate above the
+weak-head step.  The member-level analogue of `ReducibleTypeStepDenote` head-expansion closure (SN-D1). -/
+theorem IsReducibleMemberAtDenote.headExpand {scope : Nat} {env : Nat → Nat} {level : Nat}
+    {typeCode reduct : RawTerm scope} {term : RawTerm scope}
+    (weakHeadStep : WeakHeadStep typeCode reduct)
+    (member : IsReducibleMemberAtDenote env level reduct term) :
+    IsReducibleMemberAtDenote env level typeCode term :=
+  let ⟨candidate, reducible, candidateTerm⟩ := member
+  ⟨candidate, ReducibleTypeStepDenote.whnfExpand weakHeadStep reducible, candidateTerm⟩
+
+/-- **Member-transfer across head-reduction (forward).**  A denote-reducible member of the redex `typeCode` is a
+member of the contractum `reduct`: the contractum keeps the same candidate (`candidateAtWhnfReduct`).  Together
+with `headExpand` this is the member-level whnf-invariance the whnfExpand domain arm of the #752 dispatcher
+needs. -/
+theorem IsReducibleMemberAtDenote.weakHeadForward {scope : Nat} {env : Nat → Nat} {level : Nat}
+    {typeCode reduct : RawTerm scope} {term : RawTerm scope}
+    (weakHeadStep : WeakHeadStep typeCode reduct)
+    (member : IsReducibleMemberAtDenote env level typeCode term) :
+    IsReducibleMemberAtDenote env level reduct term :=
+  let ⟨candidate, reducible, candidateTerm⟩ := member
+  ⟨candidate, ReducibleTypeStepDenote.candidateAtWhnfReduct reducible weakHeadStep, candidateTerm⟩
+
+/-- **The whnfExpand domain arm of the #752 `memberStableToOuter` dispatcher.**  When the domain `domainCode`
+weak-head-steps to `reduct`, member-stability to `outerLevel` transfers from `reduct` to `domainCode`: a member
+of `domainCode` at any source level is (forward) a member of `reduct`, lifted by `reductStable` to `outerLevel`,
+then (head-expansion) carried back to `domainCode`.  Reduces the redex-domain case to the contractum's
+member-stability — the IH a `cases domainReducible` dispatcher supplies for the `whnfExpand` arm.  Zero-axiom,
+choice-free; no induction (the recursion is the `reductStable` premise). -/
+theorem whnfExpandDomainMemberStableToOuter {scope : Nat} (env : Nat → Nat) (outerLevel : Nat)
+    {domainCode reduct : RawTerm scope} (weakHeadStep : WeakHeadStep domainCode reduct)
+    (reductStable : ∀ (sourceLevel : Nat) (argument : RawTerm scope),
+        IsReducibleMemberAtDenote env sourceLevel reduct argument →
+        IsReducibleMemberAtDenote env outerLevel reduct argument)
+    (sourceLevel : Nat) (argument : RawTerm scope)
+    (memberAtSource : IsReducibleMemberAtDenote env sourceLevel domainCode argument) :
+    IsReducibleMemberAtDenote env outerLevel domainCode argument :=
+  IsReducibleMemberAtDenote.headExpand weakHeadStep
+    (reductStable sourceLevel argument
+      (IsReducibleMemberAtDenote.weakHeadForward weakHeadStep memberAtSource))
+
 end FX1Poly.Typed

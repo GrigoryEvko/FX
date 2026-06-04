@@ -3067,6 +3067,15 @@ gates pin them shut.
 -- fixed-target specialization of neutralType_memberStableAcrossDenoteLevels (neutral candidate = SN, uniform).
 #assert_no_axioms FX1Poly.Typed.neutralDomainMemberStableToOuter
 
+-- Member-transfer across weak-head reduction (the member-level analogues of SN-D1 head-expansion closure):
+-- headExpand re-attaches the same candidate above a whnf step (whnfExpand ctor); weakHeadForward keeps the
+-- candidate at the contractum (candidateAtWhnfReduct). whnfExpandDomainMemberStableToOuter is the whnfExpand
+-- arm of the #752 dispatcher — member-stability transfers across a domain whnf step (forward to reduct, lift by
+-- the contractum's stability, head-expand back), reducing the redex-domain case to the contractum's stability.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtDenote.headExpand
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtDenote.weakHeadForward
+#assert_no_axioms FX1Poly.Typed.whnfExpandDomainMemberStableToOuter
+
 -- DenoteKeyedUniverseDomainPiArm (#752 — the universeCode arm of the ofReducibleTypeStepDenote piArm case-split):
 -- the domain is a universe code Type@innerLevelExpr whose membership candidate DRIFTS (empty below the inner
 -- decoded level, real above), so the neutral/uniform adapters cannot reach it. The two decode lemmas split the
