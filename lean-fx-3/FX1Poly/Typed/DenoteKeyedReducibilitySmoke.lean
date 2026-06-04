@@ -18,8 +18,11 @@ two LEAF cases of the step functor — guarding the load-bearing reducibility en
     (a weak-head step embeds into a full step, which a variable has none of); the root-generator inequalities
     reduce `(.mkGen .gen_var ..).rootGenerator` to `gen_var` (a `show` to the closed goal, no free `index`) and
     `decide` the closed enum inequality.
+  * `smoke_sigmaFormer_isReducibleAtDenote` — the `neutral` arm on a FORMER (not a leaf): a Σ-type former is
+    reducible-as-type unconditionally (`noWeakHeadStep` discharged by `nomatch` — no `WeakHeadStep` constructor
+    matches a `gen_sigmaTyCode`-rooted cell), the easy half of the genFormationPi reducible-as-type ingredient.
 
-Together they are the universe / neutral leaves of `ReducibleTypeStepDenote`; the remaining two arms
+Together they exercise the universe / neutral arms of `ReducibleTypeStepDenote`; the remaining two arms
 (`whnfExpand` head-expansion, `piType` dependent arrow) are exercised by the shipped former-reducibility lemmas.
 
 ## Zero-axiom verification
@@ -54,5 +57,23 @@ theorem smoke_neutralVariable_isReducibleAtDenote {scope : Nat} (env : Nat → N
       (fun _reduct weakHeadStep => noStep_var index weakHeadStep.toStep)
       (by show Generator.gen_var ≠ Generator.gen_piTyCode; decide)
       (by show Generator.gen_var ≠ Generator.gen_universeCode; decide)⟩
+
+/-- **Smoke: a Σ-type FORMER is denote-reducible at any level via the neutral arm.**  A Σ former is
+weak-head-normal (NO `WeakHeadStep` constructor matches a `gen_sigmaTyCode`-rooted cell — each is keyed on an
+app/eliminator head; `nomatch` discharges the impossible cases propext-cleanly) and is neither Π- nor
+universe-rooted, so the `neutral` arm fires WITHOUT any constraint on the children `domain`/`codomain`.  This
+concretely witnesses the EASY half of the genFormationPi (#744/#750) reducible-as-type ingredient: a
+NON-Π NON-universe type former is a reducible TYPE unconditionally (the Π case alone routes through the `piType`
+arm, which DOES constrain its children).  The `nomatch`-on-`WeakHeadStep` recipe is the propext-clean discharge
+of "a type former has no weak-head step", reusable for the other non-Π formers (arrow / product / sum / …). -/
+theorem smoke_sigmaFormer_isReducibleAtDenote {scope : Nat} (env : Nat → Nat) (level : Nat)
+    (domain : RawTerm scope) (codomain : RawTerm (scope + 1)) :
+    IsReducibleTypeAtDenote env level
+      (.mkGen .gen_sigmaTyCode () (.childCons domain (.childCons codomain .childNil))) :=
+  ⟨IsStronglyNormalizing,
+    ReducibleTypeStepDenote.neutral
+      (fun _reduct weakHeadStep => nomatch weakHeadStep)
+      (by show Generator.gen_sigmaTyCode ≠ Generator.gen_piTyCode; decide)
+      (by show Generator.gen_sigmaTyCode ≠ Generator.gen_universeCode; decide)⟩
 
 end FX1Poly.Typed

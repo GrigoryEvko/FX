@@ -3142,6 +3142,11 @@ gates pin them shut.
 -- denote reducibility relation, guarding the load-bearing entry points against regression.
 #assert_no_axioms FX1Poly.Typed.smoke_universeCode_isReducibleAtDenote
 #assert_no_axioms FX1Poly.Typed.smoke_neutralVariable_isReducibleAtDenote
+-- smoke_sigmaFormer: the neutral arm on a FORMER (not a leaf) — a Σ-type former is reducible-as-type
+-- unconditionally (noWeakHeadStep via nomatch; no constraint on the children), concretely witnessing the EASY
+-- half of the genFormationPi reducible-as-type ingredient (non-Π non-universe formers are reducible types; only
+-- the Π case routes through the piType arm and constrains its children).
+#assert_no_axioms FX1Poly.Typed.smoke_sigmaFormer_isReducibleAtDenote
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
