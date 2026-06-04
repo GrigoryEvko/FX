@@ -170,6 +170,7 @@ import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
 import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
 import FX1Poly.Typed.DenoteKeyedGeneralDomainPiArm
+import FX1Poly.Typed.DenoteKeyedUniverseDomainPiArm
 import FX1Poly.Typed.DenoteKeyedUniformPiCandidate
 import FX1Poly.Typed.DenoteKeyedUniformPiAboveThreshold
 import FX1Poly.Typed.DenoteKeyedPiFormerAtLevel
@@ -3050,6 +3051,22 @@ gates pin them shut.
 -- in exactly the shape the backbone supplies its premises. Remaining piArm arms: universe-code + composite.
 #assert_no_axioms FX1Poly.Typed.uniformDomainPiArmFromInductiveHypotheses
 #assert_no_axioms FX1Poly.Typed.neutralDomainPiArmFromInductiveHypotheses
+
+-- DenoteKeyedUniverseDomainPiArm (#752 — the universeCode arm of the ofReducibleTypeStepDenote piArm case-split):
+-- the domain is a universe code Type@innerLevelExpr whose membership candidate DRIFTS (empty below the inner
+-- decoded level, real above), so the neutral/uniform adapters cannot reach it. The two decode lemmas split the
+-- lowerAt-keyed universe predicate universeDenotePredicate env (denoteBelowFamily env outerLevel) innerLevelExpr:
+-- _aboveThreshold (inner < outer) decodes to "SN ∧ reducible-as-type at the inner level" via
+-- denoteBelowFamily_eq_reducible; _empty (outer ≤ inner) refutes membership via denoteBelowFamily_eq_empty_of_ge.
+-- universeDomainPiArmFromInductiveHypotheses then discharges the arm gated on the WELL-TYPED-guaranteed threshold
+-- (denote innerLevelExpr env < outerLevel = the Π-formation level constraint Type@inner : Type@outer), assembling
+-- IsReducibleTypeAtAllDenoteLevels PER OUTPUT LEVEL (so the codomain candidate may DRIFT — no member-stability):
+-- above the inner level decode + transport to the backbone candidate + fire the codomain IH's canonical
+-- member-predicate; at/below the inner level the domain is empty so the codomain obligation is vacuous. Remaining
+-- #752 arms: composite/threshold-drift (piType) + the high-inner-universe case (unreachable for well-typed input).
+#assert_no_axioms FX1Poly.Typed.universeDenotePredicate_belowFamily_aboveThreshold
+#assert_no_axioms FX1Poly.Typed.universeDenotePredicate_belowFamily_empty
+#assert_no_axioms FX1Poly.Typed.universeDomainPiArmFromInductiveHypotheses
 
 -- DenoteKeyedUniformPiCandidate (#752 — composite member-stability, the recursive step): a Π over uniform-
 -- candidate components has a SINGLE uniform candidate, because the piType candidate
