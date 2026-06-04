@@ -252,6 +252,7 @@ import FX1Poly.Typed.ContextValidityFails
 import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
 import FX1Poly.Typed.WfContextBetaEtaConfluence
 import FX1Poly.Typed.ConsistencyTargetSignature
+import FX1Poly.Typed.CanonicityTargetSignature
 import FX1Poly.Typed.UniverseFormationStrictness
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
@@ -4227,6 +4228,13 @@ gates pin them shut.
 -- BFT closedBoundedReducibleMember + "emptyTypeCode's candidate is the empty candidate"). Plan's CON-A1/A2
 -- (gen_empty cascade) mismodel the architecture; the gap is the engine data-representation (#483/#485-487).
 #assert_no_axioms FX1Poly.Typed.consistencyFromEmptyCandidateBridge
+
+-- Canonicity target signature (CanonicityTargetSignature.lean): the SN-047/048/049 twin of CON-A0. Engine
+-- canonicity reduces to the SAME data-candidate bridge as consistency, making the Phase-A boundary uniform.
+-- Refined cost finding: HasTypeDesc typing is cascade-free (P13 typingRuleDescOf table + generic
+-- genFormationPi); naming a data type is a BOUNDED ~10-12-site generator addition (like gen_arrowCode) + the
+-- high-risk candidate identification — NOT 80-arm cascade-death. Gated on the engine data-representation (#483).
+#assert_no_axioms FX1Poly.Typed.dataCanonicityFromCandidateBridge
 
 -- Universe-formation level-strictness (UniverseFormationStrictness.lean, 0-FP soundness corpus): the universe
 -- rule is level-TIGHT — a universe code is classified by EXACTLY Type@(e+1) up to Conv
