@@ -231,6 +231,7 @@ import FX1Poly.Typed.BoundedGenFormationPiFromTelescope
 import FX1Poly.Typed.BoundedGenFormationSigmaFromTelescope
 import FX1Poly.Typed.BoundedTelescopeConsSucc
 import FX1Poly.Typed.BoundedGrownDispatch
+import FX1Poly.Typed.BoundedFormationLeafArms
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4010,3 +4011,11 @@ gates pin them shut.
 -- companion + member cumulativity]. The +1-closing analogue of the denote HasTypeDescPi.fundamentalVectorFromFormation.
 #assert_no_axioms FX1Poly.Typed.IsTelescopeReducibleAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalAtBoundedSuccFromFormation
+
+-- The bounded formation leaf arms (BoundedFormationLeafArms.lean) — the +1-closing var (BFT-7) and
+-- universeFormation (BFT-9) arms of the bounded FORMATION FT (HasTypeDesc.rec dispatch). Each is the
+-- FundamentalConclusionAtBounded.toSucc lift of the shipped arbitrary-scope leaf arm (no binder); the
+-- universeFormation arm threads belowBound : denote (lsucc levelExpr) env < bound (the per-term gate the dispatch
+-- supplies). The conv arm (BFT-8) is already fundamentalConvArmBoundedSucc; genFormation (BFT-10) reuses BFT-4+Σ-twin.
+#assert_no_axioms FX1Poly.Typed.fundamentalVarAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtBoundedSucc
