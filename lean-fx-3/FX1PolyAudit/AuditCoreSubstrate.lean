@@ -225,6 +225,12 @@ per-decl list.  It also re-checks the native infra under
 -- arm of full ARBITRARY-renaming Step reflection (the genuine Kripke-arrow-CR3 ingredient, a per-eliminator
 -- induction — the injective renamePullback above does NOT serve CR3, which quantifies over all renamings).
 #assert_no_axioms FX1Poly.Core.RawTerm.rename_eq_mkGen
+-- The β arm of arbitrary-ρ Step reflection (Step.reflectBeta): rename ρ term = app (lam renamedBody) renamedArg →
+-- ∃ t', Step term t' ∧ rename ρ t' = subst0 renamedBody renamedArg. Recovers the source β-redex via
+-- rename_eq_app/rename_eq_lam, β-reduces, and aligns the contractum image by rename_subst0_commute. The
+-- substitution leaf arm of full reflection (the Kripke-arrow-CR3 ingredient); a complete standalone case (β is a
+-- base case, no sub-reflection hypothesis). The child-projection ι arms + recursive cong arm join it later.
+#assert_no_axioms FX1Poly.Core.Step.reflectBeta
 
 -- SN-040 (WIP): the neutral LEAF of the stratified ReducibleTypeStep rename-closure (type + member level).
 -- The piType arm is genuinely Kripke-obstructed (see StratifiedReducibleTypeRename docstring); this is the

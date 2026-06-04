@@ -1,6 +1,8 @@
 import FX1Poly.Core.StepRename
 import FX1Poly.Core.StrongNormalizationRenameForward
 import FX1Poly.Core.CandidateInterpretationRename
+import FX1Poly.Core.HeadStepRenameReflect
+import FX1Poly.Core.RawTermFresh
 
 /-! # FX1Poly/Core/StepRenameReflect — pulling a `Step` BACK along an injective renaming
 
@@ -65,6 +67,35 @@ theorem RawTerm.rename_eq_mkGen {sourceScope targetScope : Nat}
       change generator = gen at rootEquation
       subst rootEquation
       exact ⟨payload, children, rfl⟩
+
+/-- **The β arm of arbitrary-renaming `Step` reflection.**  If `rename rho term` is a β-redex `app (lam
+renamedBody) renamedArg`, then `term` is the source β-redex `app (lam body) arg` (renaming preserves the
+app/lam shape, `rename_eq_app` / `rename_eq_lam`), it β-reduces to `subst0 body arg`, and that source
+contractum renames to the redex's contractum `subst0 renamedBody renamedArg` — by the substitution/renaming
+commutation `rename_subst0_commute` aligned through the recovered body/argument renamings.  The β leaf arm of
+full arbitrary-ρ `Step` reflection (`Step (rename rho t) u → ∃ t', Step t t' ∧ rename rho t' = u`): a complete
+standalone case needing NO sub-reflection hypothesis (β is a base case), the substitution arm that the
+child-projection ι arms and the recursive `cong` arm will join in the eventual mutual assembly. -/
+theorem Step.reflectBeta {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedBody : RawTerm (targetScope + 1)} {renamedArg : RawTerm targetScope}
+    (renameEquation : RawTerm.rename rho term =
+      .mkGen .gen_app ()
+        (.childCons (.mkGen .gen_lam () (.childCons renamedBody .childNil))
+          (.childCons renamedArg .childNil))) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      Step term sourceReduct ∧
+        RawTerm.rename rho sourceReduct = RawTerm.subst0 renamedBody renamedArg := by
+  obtain ⟨functionTerm, argument, termEqApp, functionRename, argumentRename⟩ :=
+    RawTerm.rename_eq_app rho renameEquation
+  obtain ⟨body, functionEqLam⟩ := RawTerm.rename_eq_lam rho functionRename
+  subst termEqApp
+  subst functionEqLam
+  rw [RawTerm.rename_lam_reduces] at functionRename
+  injection functionRename with _scopeEq _generatorEq _payloadEq bodyChildrenEq
+  injection bodyChildrenEq with _childScopeEq _childShiftEq _childRestShiftsEq bodyEq _nilEq
+  refine ⟨RawTerm.subst0 body argument, Step.beta, ?_⟩
+  rw [RawTerm.rename_subst0_commute, bodyEq, argumentRename]
 
 /-- **Pull a `Step` back along an injective renaming.**  If the `forwardRenaming`-renamed `sourceTerm`
 takes a reduction to `renamedReduct`, then `sourceTerm` itself reduces to `rename leftInverseRenaming
