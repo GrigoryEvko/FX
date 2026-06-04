@@ -202,6 +202,7 @@ import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.DenoteKeyedGenFormationSigmaArm
 import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedCumulativityObstruction
+import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedCodomainMemberWiring
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
@@ -3296,6 +3297,15 @@ gates pin them shut.
 -- model-obstructed (semantic reducibility does NOT bound universes — universeCode_isReducibleAtDenote fires at
 -- every level), so it needs a bound-carrying model OR stays a carried premise (conditional/fragment milestone).
 #assert_no_axioms FX1Poly.Typed.gapUniverseDomainPiVacuouslyReducibleAtLowLevel
+
+-- closedTypeCodeStronglyNormalizingFromFundamentalAtDenote (SN-D6 type-code fragment): a CLOSED subject
+-- classified by Type@levelExpr (decoded level < ambient) satisfying the denote FT conclusion at the empty context
+-- is strongly normalizing. Composes closedMemberAtDenote (FT conclusion → closed universe membership) with the
+-- shipped denote universe-member CR1 stronglyNormalizing_of_universeMemberAtDenote (bound-packaged by levelAbove).
+-- The early-win type-code fragment of SN-D6 — subjects that ARE types, where denote CR1 is threshold-free (the
+-- general-classifier CR1 carries the denoteBelowFamily neutral-inclusion bound the cumulativity obstruction pins).
+-- Conditional only on the (still-blocked) FT conclusion; de-risks SN-D5 without the non-uniform genFormationPi residual.
+#assert_no_axioms FX1Poly.Typed.closedTypeCodeStronglyNormalizingFromFundamentalAtDenote
 
 -- SN-D5d (the SN-040-FREE codomain-member wiring — CORRECTS the ticks #18/#19 SN-040 claim): the codomain's
 -- universe membership at `cons headTerm σ` (var0 → a domain member, σ tail UN-RENAMED) comes from the codomain
