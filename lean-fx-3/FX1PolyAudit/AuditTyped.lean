@@ -205,6 +205,7 @@ import FX1Poly.Typed.DenoteKeyedGenFormationSigmaArm
 import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedCumulativityObstruction
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
+import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
 import FX1Poly.Typed.DenoteKeyedCodomainMemberWiring
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
@@ -3547,3 +3548,16 @@ gates pin them shut.
 -- to existence). The face the uniform backbone presents to a consumer (the A2 ambient-level bridge) once the
 -- piArm lands. Weaker than IsReducibleTypeAtAllDenoteLevels (below-threshold reducibility is leaf-specific).
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.isReducibleTypeAboveThreshold
+-- SN-D7 (#746): MEMBER strong-normalization for the universe-domain Π fragment over the denote relation
+-- (DenoteKeyedUniverseDomainPiMemberSN.lean). The TYPE-level half (universeDomainPi_reducibleAtEveryDenoteLevel
+-- + member-stability) was shipped; this adds the MEMBER-SN payoff the fragment lacked. The early win that
+-- de-risks SN-D5: it sidesteps the cumulativity obstruction (DenoteKeyedCumulativityObstruction) entirely by
+-- fixing ONE ambient level strictly above denote e — no across-level transport — where the Type@e universe
+-- candidate is a genuine reducibility candidate (the bounded denoteBelowFamily legs hold via denote e < level)
+-- and the shipped denote dependent-arrow CR1 lifts it to the whole Π. universeDomainPiCandidateIsReducibility-
+-- Candidate: the dependent-arrow candidate is a Girard CR (domain inhabitant supplied concretely as Type@0).
+-- universeDomainPiMemberStronglyNormalizing: a reducible member of Π(X:Type@e).C[X] is SN via that CR's
+-- stronglyNormalizing field + ReducibleTypeAtDenote.deterministic. Isolates the residual SN-043 obstruction to
+-- ESTABLISHING the codomain reducibility uniformly across levels — no member of the fragment is the obstacle.
+#assert_no_axioms FX1Poly.Typed.universeDomainPiCandidateIsReducibilityCandidate
+#assert_no_axioms FX1Poly.Typed.universeDomainPiMemberStronglyNormalizing
