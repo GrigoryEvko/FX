@@ -292,4 +292,44 @@ theorem fundamentalGenFormationPiAtBoundedSucc {profile : PolyProfile} {scope : 
           (domainMember substitution envReducible))
         (codomainSN substitution envReducible))
 
+/-- **Gate extraction (spine).**  Induction on the gated step relation, in the eq-as-hypothesis style of
+`candidatePiShape`: a bound-reducible type that IS a universe code `Type@levelExpr` forces the gate
+`denote levelExpr env < bound`.  The `universeCode` arm carries the gate; `whnfExpand` is impossible (a universe
+code is a weak-head normal form — no `rootIota`); `neutral` contradicts its own `rootGenerator ≠ gen_universeCode`
+premise; `piType` is a head mismatch (`gen_piTyCode ≠ gen_universeCode`); `ofPointwiseIff` recurses. -/
+theorem ReducibleTypeStepBounded.belowBoundOfUniverseCodeShape {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop} {bound : Nat}
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepBounded env lowerAt bound typeCode candidate) :
+    ∀ {levelExpr : LevelExpr} {flag : UniverseFlag},
+      typeCode = universeCodeCell levelExpr flag → LevelExpr.denote levelExpr env < bound := by
+  induction reducible with
+  | whnfExpand weakHeadStep0 _ _ =>
+      intro _levelExpr _flag hType; subst hType
+      cases weakHeadStep0 with | rootIota iotaStep => cases iotaStep
+  | neutral _ _ notUniverse =>
+      intro _levelExpr _flag hType; subst hType; exact absurd rfl notUniverse
+  | piType _ _ _ _ _ =>
+      intro _levelExpr _flag hType
+      have rootMismatch : Generator.gen_piTyCode = Generator.gen_universeCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch (by decide)
+  | universeCode _levelExpr' _flag' belowBound =>
+      intro _levelExpr _flag hType
+      obtain ⟨levelEq, _flagEq⟩ := universeCodeCell_inj hType
+      exact levelEq ▸ belowBound
+  | ofPointwiseIff _ _ innerHypothesis =>
+      intro _levelExpr _flag hType; exact innerHypothesis hType
+
+/-- **The gate-extraction lemma — DISSOLVES the bound-threading.**  A bound-reducible universe code `Type@levelExpr`
+forces `denote levelExpr env < bound`.  This is what lets every grown-FT recursor arm RECOVER its `belowBound` side
+condition locally from a sub-derivation's reducibility (after intro-ing the closing substitution and applying the
+universe-typing IH) — so the recursor needs NO global "bound exceeds every level in the subject" invariant.  The
+bounded layer's `universeCode` gate, read backwards: reducibility AT a bound certifies the level is below it. -/
+theorem universeCodeReducibleAtBounded_belowBound {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {levelExpr : LevelExpr} {flag : UniverseFlag} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeAtBounded env bound (universeCodeCell levelExpr flag) candidate) :
+    LevelExpr.denote levelExpr env < bound :=
+  reducible.belowBoundOfUniverseCodeShape rfl
+
 end FX1Poly.Typed

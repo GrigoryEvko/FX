@@ -3541,6 +3541,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalTypeFormerAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiAtBoundedSucc
 
+-- GATE EXTRACTION -- dissolves the bound-threading. The bounded universeCode arm carries belowBound (denote levelExpr
+-- env < bound) as a gate; read backwards, a bound-reducible universe code FORCES that gate. So each grown-FT recursor
+-- arm recovers its belowBound LOCALLY from a sub-derivation's reducibility (intro the closing substitution, apply the
+-- universe-typing IH, extract) -- NO global "bound exceeds every level in subject" invariant needed. The spine is a
+-- 5-arm induction (candidatePiShape style): universeCode carries it, whnfExpand/neutral/piType impossible, ofPointwiseIff recurses.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.belowBoundOfUniverseCodeShape
+#assert_no_axioms FX1Poly.Typed.universeCodeReducibleAtBounded_belowBound
+
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
 -- lowerAt only at the fixed index denote e, which the below-family coherence (denoteBelowFamily_eq_reducible)
