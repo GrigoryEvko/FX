@@ -116,4 +116,35 @@ theorem universeDomainPiArmFromInductiveHypotheses {scope : Nat} (env : Nat → 
   · exact absurd argumentInDomain (universeDenotePredicate_belowFamily_empty env outputLevel innerLevelExpr
       (Nat.not_lt.mp aboveAtOutput) argument)
 
+/-- **Universe-domain `memberStableToOuter` instance (threshold-gated).**  A denote-reducible member of the
+universe code `Type@innerLevelExpr` at any source level is a member at the fixed `outerLevel`, given the
+well-typedness threshold `denote innerLevelExpr env < outerLevel`.  A member at the source forces `denote
+innerLevelExpr env < sourceLevel` (else the universe candidate is empty there, `_empty`); the source membership
+decodes (`_aboveThreshold`) to `SN ∧ reducible-as-type at the inner level`, which is EXACTLY the candidate at
+`outerLevel` (also above the inner level), so the member transports.  This is the `memberStableToOuter` the
+unified `piArmFromMemberStabilityToOuterLevel` consumes for a universe-code domain — the unified-piArm route to
+the universeCode arm. -/
+theorem universeDomainMemberStableToOuter {scope : Nat} (env : Nat → Nat) (outerLevel : Nat)
+    (innerLevelExpr : LevelExpr) (innerFlag : UniverseFlag)
+    (innerBelowOuter : LevelExpr.denote innerLevelExpr env < outerLevel)
+    (sourceLevel : Nat) (argument : RawTerm scope)
+    (memberAtSource : IsReducibleMemberAtDenote env sourceLevel
+      (.mkGen .gen_universeCode (innerLevelExpr, innerFlag) .childNil) argument) :
+    IsReducibleMemberAtDenote env outerLevel
+      (.mkGen .gen_universeCode (innerLevelExpr, innerFlag) .childNil) argument := by
+  obtain ⟨sourceCandidate, sourceReducible, candidateArgument⟩ := memberAtSource
+  have universeArgument : universeDenotePredicate env (denoteBelowFamily env sourceLevel)
+      innerLevelExpr argument :=
+    (ReducibleTypeAtDenote.deterministic sourceReducible
+      (ReducibleTypeStepDenote.universeCode innerLevelExpr innerFlag) argument).mp candidateArgument
+  by_cases innerBelowSource : LevelExpr.denote innerLevelExpr env < sourceLevel
+  · rw [universeDenotePredicate_belowFamily_aboveThreshold env sourceLevel innerLevelExpr innerBelowSource]
+      at universeArgument
+    refine ⟨universeDenotePredicate env (denoteBelowFamily env outerLevel) innerLevelExpr,
+      ReducibleTypeStepDenote.universeCode innerLevelExpr innerFlag, ?_⟩
+    rw [universeDenotePredicate_belowFamily_aboveThreshold env outerLevel innerLevelExpr innerBelowOuter]
+    exact universeArgument
+  · exact absurd universeArgument (universeDenotePredicate_belowFamily_empty env sourceLevel innerLevelExpr
+      (Nat.not_lt.mp innerBelowSource) argument)
+
 end FX1Poly.Typed

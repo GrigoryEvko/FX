@@ -3063,6 +3063,10 @@ gates pin them shut.
 -- residual is now exactly memberStableToOuter (neutral/uniform always; universe above threshold; composite open).
 #assert_no_axioms FX1Poly.Typed.piArmFromMemberStabilityToOuterLevel
 
+-- The concrete memberStableToOuter INSTANCES the unified piArm consumes. neutralDomainMemberStableToOuter:
+-- fixed-target specialization of neutralType_memberStableAcrossDenoteLevels (neutral candidate = SN, uniform).
+#assert_no_axioms FX1Poly.Typed.neutralDomainMemberStableToOuter
+
 -- DenoteKeyedUniverseDomainPiArm (#752 — the universeCode arm of the ofReducibleTypeStepDenote piArm case-split):
 -- the domain is a universe code Type@innerLevelExpr whose membership candidate DRIFTS (empty below the inner
 -- decoded level, real above), so the neutral/uniform adapters cannot reach it. The two decode lemmas split the
@@ -3078,6 +3082,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeDenotePredicate_belowFamily_aboveThreshold
 #assert_no_axioms FX1Poly.Typed.universeDenotePredicate_belowFamily_empty
 #assert_no_axioms FX1Poly.Typed.universeDomainPiArmFromInductiveHypotheses
+-- universeDomainMemberStableToOuter: the universe-code instance of the unified piArm's memberStableToOuter,
+-- gated on inner < outerLevel. A member at source forces inner < source (else empty), decodes to SN ∧
+-- reducible-at-inner, the same predicate as the outerLevel candidate (also above inner) — so it transports.
+#assert_no_axioms FX1Poly.Typed.universeDomainMemberStableToOuter
 
 -- DenoteKeyedUniformPiCandidate (#752 — composite member-stability, the recursive step): a Π over uniform-
 -- candidate components has a SINGLE uniform candidate, because the piType candidate

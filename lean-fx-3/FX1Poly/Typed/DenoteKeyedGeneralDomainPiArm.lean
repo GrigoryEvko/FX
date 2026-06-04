@@ -168,4 +168,21 @@ theorem piArmFromMemberStabilityToOuterLevel {scope : Nat} (env : Nat → Nat) (
     (ReducibleTypeAtDenote.deterministic reducibleOuter domainReducible argument).mp candidateOuterArgument
   exact (codomainInductiveHypothesis argument domainCandidateArgument outputLevel).reducibleMemberCandidate
 
+/-- **Neutral-domain `memberStableToOuter` instance.**  A weak-head-normal non-Π non-universe domain has the
+literally-uniform candidate `IsStronglyNormalizing` at every level, so a denote-reducible member at any source
+level is a member at the fixed `outerLevel` — the fixed-target specialization of the shipped neutral
+member-stability `neutralType_memberStableAcrossDenoteLevels`.  This is exactly the `memberStableToOuter`
+hypothesis `piArmFromMemberStabilityToOuterLevel` consumes for a neutral domain (the unified-piArm route to the
+neutral-domain arm, equivalent to `neutralDomainPiArmFromInductiveHypotheses`). -/
+theorem neutralDomainMemberStableToOuter {scope : Nat} (env : Nat → Nat) (outerLevel : Nat)
+    {domainCode : RawTerm scope}
+    (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
+    (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (sourceLevel : Nat) (argument : RawTerm scope)
+    (memberAtSource : IsReducibleMemberAtDenote env sourceLevel domainCode argument) :
+    IsReducibleMemberAtDenote env outerLevel domainCode argument :=
+  neutralType_memberStableAcrossDenoteLevels env noWeakHeadStep notPiType notUniverse
+    memberAtSource outerLevel
+
 end FX1Poly.Typed
