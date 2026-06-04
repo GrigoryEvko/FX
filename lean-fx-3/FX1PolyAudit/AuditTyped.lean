@@ -245,6 +245,7 @@ import FX1Poly.Typed.BoundedNeutralMember
 import FX1Poly.Typed.BoundedUniverseInversion
 import FX1Poly.Typed.BoundedBindingTypeReducible
 import FX1Poly.Typed.ReducibleEnvOfWfContext
+import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4141,6 +4142,14 @@ gates pin them shut.
 -- max-based attempt leaked propext via Nat.le_max_*). The env half of the OpenStronglyNormalizing residual; OB-4 bundles
 -- the main derivation's budget. Toward unconditional open SN-043 (#546).
 #assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContext
+
+-- ★ SN-043 OPEN (OpenStronglyNormalizingUnconditional.lean, OB-5): every well-typed grown term in a WELL-FORMED
+-- context is strongly normalizing, UNCONDITIONALLY. WfContext Γ → HasTypeDescPi Γ subject classifier →
+-- IsStronglyNormalizing subject. The open generalization of closedStronglyNormalizing (BFT-14) from .empty to
+-- arbitrary WfContext Γ. Composes existsBound (budget) + reducibleEnvOfWfContext (OB-3, the reducible closing env)
+-- at a common SUM bound, fed to stronglyNormalizingOfReducibleEnv (reflects SN internally). The OB-1..OB-5
+-- capstone — reached with NO #672, NO KB merged candidate, NO renaming closure. Closes #546.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfWfContext
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
