@@ -1,5 +1,6 @@
 import FX1Poly.Typed.DenoteKeyedPiFormerAtLevel
 import FX1Poly.Typed.DenoteKeyedReducibleTypeLevelLift
+import FX1Poly.Typed.DenoteKeyedUniformPiAboveThreshold
 
 /-! # FX1Poly/Typed/DenoteKeyedPiArmDischarge
     — discharging `reducibleTypeLevelLift`'s `piArmLift` hypothesis, case by case (toward SN-043/#752)
@@ -126,5 +127,70 @@ theorem universeDomainPiArmLift {scope : Nat} {env : Nat → Nat} (lowLevel high
         (domainStep.candidateIffUniverse rfl argument).mpr
           (predicateBridge argument argumentInHighPredicate)
       exact codomainLiftedPerMember argument argumentInDomainCandidate)
+
+/-- **The GENERAL above-threshold discharge — the shape-independent engine.**  For ANY domain reducible with one
+fixed candidate `domainCandidate` at every level strictly above `threshold`, the Π former is reducible at
+`highLevel` (itself above the threshold).  The member-stability bridge — converting a canonical highLevel member
+back to `domainCandidate` membership — is just `ReducibleTypeAtDenote.deterministic` AT THE SINGLE `highLevel`:
+both the member's candidate and the uniform candidate live at `highLevel`, so determinism aligns them with NO
+cross-level transport.  That collapse of the cross-level bridge to one-level determinism is the decisive
+simplification: the lift's `piArmLift` already supplies the domain reducible at `highLevel`, so the only residual
+is pinning the member's candidate to `domainCandidate`, which determinism does at `highLevel` alone.
+
+This subsumes the universe and neutral special cases (each is "establish the shape's uniformity, apply this") and
+is exactly the form the composite case needs.  The three `piArmLift` shape discharges are now uniformly: NEUTRAL
+(uniform at every level with the SN candidate), UNIVERSE (uniform above its decoded level), COMPOSITE (uniform
+above its components' threshold). -/
+theorem aboveThresholdDomainPiArmLift {scope : Nat} {env : Nat → Nat} (threshold highLevel : Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm scope → Prop}
+    (highAbove : threshold < highLevel)
+    (domainUniform : ∀ level : Nat, threshold < level →
+      ReducibleTypeAtDenote env level domainCode domainCandidate)
+    (codomainLiftedPerMember : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsReducibleTypeAtDenote env highLevel (RawTerm.subst0 codomainCode argument)) :
+    IsReducibleTypeAtDenote env highLevel
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
+  piFormerReducibleAtLevel env highLevel
+    ⟨domainCandidate, domainUniform highLevel highAbove⟩
+    (fun argument argumentMember => by
+      obtain ⟨memberCandidate, memberCandidateReducible, argumentInMemberCandidate⟩ := argumentMember
+      have argumentInDomainCandidate : domainCandidate argument :=
+        (ReducibleTypeAtDenote.deterministic memberCandidateReducible
+          (domainUniform highLevel highAbove) argument).mp argumentInMemberCandidate
+      exact codomainLiftedPerMember argument argumentInDomainCandidate)
+
+/-- **The composite-domain (above-threshold) discharge — case 3/3.**  When the Π's domain is itself a composite
+`Π innerDomain innerCodomain` whose components are uniform above the threshold, the inner Π has a fixed `piType`
+candidate above the threshold (`uniformDomainPi_hasUniformCandidateAboveThreshold`), so it feeds the general
+`aboveThresholdDomainPiArmLift` engine directly.  This is the lone deep #672 / SN-001 obstruction — a composite
+domain like `Type@0 → Type@0` whose candidate drifts below threshold — now closed ABOVE the threshold, which is
+all the genFormationPi arm needs (a former's decoded level sits above its components' thresholds).  The third and
+last of the three `piArmLift` domain-shape cases; with neutral and universe it makes the single-level child-lift's
+`piArmLift` dischargeable on every domain shape (each above its own threshold). -/
+theorem compositeDomainPiArmLift {scope : Nat} {env : Nat → Nat} (threshold highLevel : Nat)
+    {innerDomain : RawTerm scope} {innerCodomain : RawTerm (scope + 1)} {codomainCode : RawTerm (scope + 1)}
+    (innerDomainCandidate : RawTerm scope → Prop)
+    (innerCodomainCandidate : RawTerm scope → (RawTerm scope → Prop))
+    (highAbove : threshold < highLevel)
+    (innerDomainUniform : ∀ level : Nat, threshold < level →
+      ReducibleTypeAtDenote env level innerDomain innerDomainCandidate)
+    (innerCodomainUniform : ∀ level : Nat, threshold < level → ∀ argument : RawTerm scope,
+      innerDomainCandidate argument →
+      ReducibleTypeAtDenote env level (RawTerm.subst0 innerCodomain argument)
+        (innerCodomainCandidate argument))
+    (codomainLiftedPerMember : ∀ functionTerm : RawTerm scope,
+      (∀ argument : RawTerm scope, innerDomainCandidate argument →
+        innerCodomainCandidate argument
+          (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil)))) →
+      IsReducibleTypeAtDenote env highLevel (RawTerm.subst0 codomainCode functionTerm)) :
+    IsReducibleTypeAtDenote env highLevel
+      (.mkGen .gen_piTyCode ()
+        (.childCons (.mkGen .gen_piTyCode () (.childCons innerDomain (.childCons innerCodomain .childNil)))
+          (.childCons codomainCode .childNil))) :=
+  aboveThresholdDomainPiArmLift threshold highLevel highAbove
+    (uniformDomainPi_hasUniformCandidateAboveThreshold env threshold innerDomainCandidate innerDomainUniform
+      innerCodomainCandidate innerCodomainUniform)
+    codomainLiftedPerMember
 
 end FX1Poly.Typed

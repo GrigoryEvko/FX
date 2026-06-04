@@ -3111,6 +3111,20 @@ gates pin them shut.
 -- obstruction sharpest. So the universe case is NOT unconditionally free (contrast neutral); the genFormationPi
 -- context supplies the thresholds (components live strictly below the former's level).
 #assert_no_axioms FX1Poly.Typed.universeDomainPiArmLift
+-- aboveThresholdDomainPiArmLift: the GENERAL shape-independent engine. For ANY domain reducible with one fixed
+-- candidate at every above-threshold level, the Π is reducible at highLevel — the member bridge is just
+-- ReducibleTypeAtDenote.deterministic at the SINGLE highLevel (both the member's candidate and the uniform
+-- candidate live there, so no cross-level transport). Subsumes the universe/neutral cases and is the form the
+-- composite case needs; the lift's piArmLift already supplies the domain reducible at highLevel, so the only
+-- residual is determinism-pinning the member's candidate to domainCandidate.
+#assert_no_axioms FX1Poly.Typed.aboveThresholdDomainPiArmLift
+-- compositeDomainPiArmLift: the COMPOSITE-domain case (3/3), ABOVE THRESHOLD. The domain is itself Π inner over
+-- components uniform above threshold, so it has a fixed piType candidate there
+-- (uniformDomainPi_hasUniformCandidateAboveThreshold) and feeds the general engine. This is the lone deep
+-- #672/SN-001 obstruction (Type@0 → Type@0, candidate drifts below threshold) closed ABOVE threshold — all the
+-- genFormationPi arm needs (the former's decoded level sits above its components' thresholds). With neutral and
+-- universe it discharges piArmLift on every domain shape.
+#assert_no_axioms FX1Poly.Typed.compositeDomainPiArmLift
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
