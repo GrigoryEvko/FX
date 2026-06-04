@@ -218,6 +218,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedConvArm
 import FX1Poly.Typed.DenoteKeyedBoundedPiElimArm
 import FX1Poly.Typed.DenoteKeyedBoundedPiIntroArm
 import FX1Poly.Typed.DenoteKeyedBoundedFormerEngine
+import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3474,6 +3475,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeMembershipIntroAtBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalTypeFormerAtBounded
 #assert_no_axioms FX1Poly.Typed.stronglyNormalizing_of_universeMemberAtBounded
+-- THE BOUNDED GENFORMATIONPI ARM SKELETON (DenoteKeyedBoundedGenFormationPiArm): the single-level Π toolkit + the
+-- premise-isolating arm. piReducibleAtLevelFromComponentsBounded (piType + canonical member-predicate codomain),
+-- universeMemberReducibleAsTypeAtDecodedLevelBounded (.2-projection twin of the universe-member SN), the connector,
+-- and fundamentalGenFormationPiAtBounded (routes through the former engine; Π-former SN relation-agnostic). The
+-- non-uniform piReducibleAsType — model-obstructed in denote — closes via free cumulativity (the next brick).
+#assert_no_axioms FX1Poly.Typed.piReducibleAtLevelFromComponentsBounded
+#assert_no_axioms FX1Poly.Typed.universeMemberReducibleAsTypeAtDecodedLevelBounded
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromComponentReducibilityBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiAtBounded
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
