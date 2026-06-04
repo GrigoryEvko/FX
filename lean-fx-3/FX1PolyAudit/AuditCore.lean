@@ -49,6 +49,7 @@ import FX1Poly.Core.BetaRedexStrongNormalization
 import FX1Poly.Core.ListOptionIdCodeUniverseMembership
 import FX1Poly.Core.EitherEquivCodeUniverseMembership
 import FX1Poly.Core.LinearFormerUniverseMembership
+import FX1Poly.Core.StrongNormalizationUnion
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -709,3 +710,12 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.stepStarLamInversion
 #assert_no_axioms FX1Poly.Core.stepStarLamBodyChain
 #assert_no_axioms FX1Poly.Core.appLam_isStronglyNormalizing_of_contractum
+
+-- OSN-B2 (StrongNormalizationUnion.lean): the abstract Geser SN-of-union criterion — reduceLeft SN at a +
+-- reduceRight SN everywhere + reduceRight quasi-commutes over reduceLeft ⇒ (reduceLeft ∪ reduceRight) SN at a.
+-- Constructive, Init-only, zero-axiom: nested Acc (outer on reduceLeft-Acc, inner on reduceRight-Acc with the
+-- outer IH carried in the motive; quasi-commutation reconstructs the right-descendant's left-predecessors).
+-- The make-or-break crux for open βη-SN (OSN-1); reusable for SN-146/147 SN-robustness.
+#assert_no_axioms FX1Poly.Core.accDownwardUnionStar
+#assert_no_axioms FX1Poly.Core.accUnionInner
+#assert_no_axioms FX1Poly.Core.accUnion
