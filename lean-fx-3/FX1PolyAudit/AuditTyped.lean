@@ -171,6 +171,7 @@ import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
 import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
 import FX1Poly.Typed.DenoteKeyedGeneralDomainPiArm
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiArm
+import FX1Poly.Typed.DenoteKeyedSingleLevelPi
 import FX1Poly.Typed.DenoteKeyedUniformPiCandidate
 import FX1Poly.Typed.DenoteKeyedUniformPiAboveThreshold
 import FX1Poly.Typed.DenoteKeyedPiFormerAtLevel
@@ -3111,6 +3112,16 @@ gates pin them shut.
 -- canNOT satisfy compositeDomainMemberStableToOuter's all-levels component-stability premise; threshold-drift
 -- composites are the open #672 residual, NOT closed by the member-stability route (corrects the prior overclaim).
 #assert_no_axioms FX1Poly.Typed.universeCodeNotAllLevelsMemberStable
+
+-- DenoteKeyedSingleLevelPi (the #672 REFRAME — drift-free single-level toolkit): the all-levels piArm (#752)
+-- over-generalizes to low levels where composite-universe domains are vacuously inhabited (the drift,
+-- universeCodeNotAllLevelsMemberStable). But genFormationPi's piReducibleAsType needs the Π reducible-as-type at
+-- ONE level (the decoded output level, above thresholds). piReducibleAtLevelFromComponents assembles it directly
+-- via the piType arm + canonical member-predicates (single level ⟹ no member-stability, no drift).
+-- universeMemberReducibleAsTypeAtDecodedLevel is the A2 bridge's prefix: a universe member is reducible-as-type
+-- at the decoded level directly (no all-levels lift, no piArm) — drift-free for ANY typeCode.
+#assert_no_axioms FX1Poly.Typed.piReducibleAtLevelFromComponents
+#assert_no_axioms FX1Poly.Typed.universeMemberReducibleAsTypeAtDecodedLevel
 
 -- DenoteKeyedUniformPiCandidate (#752 — composite member-stability, the recursive step): a Π over uniform-
 -- candidate components has a SINGLE uniform candidate, because the piType candidate
