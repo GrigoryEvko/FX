@@ -7,9 +7,13 @@ import FX1Poly.Typed.DenoteKeyedReducibleTypeLevelLift
 `reducibleTypeLevelLift` (DenoteKeyedReducibleTypeLevelLift) lifts a reducibility derivation from `lowerAt` to a
 single fixed `highLevel`, with the `piType` arm isolated as the `piArmLift` hypothesis.  To make the child-lift
 unconditional, `piArmLift` must be discharged for every domain shape the induction can encounter: neutral
-(type-variable / stuck), universe code, and threshold-drift composite.  This file accrues those discharges; the
-neutral and universe shapes are the FREE-lift cases (reducible at every level, member-stable), the composite is
-the deep member-stability-above-threshold residual.
+(type-variable / stuck), universe code, and threshold-drift composite.  This file accrues those discharges.  The
+split is NOT free-vs-deep as one might first guess — it is FREE (neutral only) vs ABOVE-THRESHOLD (universe AND
+composite).  A neutral type's strong-normalization candidate is level-independent, so the neutral case lifts
+unconditionally.  A universe code, by contrast, is a reducible TYPE at every level but its MEMBER candidate goes
+VACUOUS below its decoded level (`IsStronglyNormalizing ∧ False`), so the universe case — exactly like the
+composite — needs the threshold conditions.  In the genFormationPi context those hold by construction (a former's
+components live strictly below its own decoded level).
 
 `neutralDomainPiArmLift`: the NEUTRAL-domain case.  When the Π's domain is neutral (weak-head-normal, non-Π,
 non-universe — a context type variable or a stuck application), the lift's `piType` conclusion holds:
@@ -66,5 +70,61 @@ theorem neutralDomainPiArmLift {scope : Nat} {env : Nat → Nat} (highLevel : Na
         (domainReducible.candidateIffStronglyNormalizing
           noWeakHeadStep notPiType notUniverse argument).mpr argumentStronglyNormalizing
       codomainLiftedPerMember argument argumentInDomainCandidate)
+
+/-- **The universe-domain (above-threshold) discharge of `reducibleTypeLevelLift`'s `piArmLift`.**  For a
+universe-code domain `Type@levelExpr`, the Π former is reducible at `highLevel` — PROVIDED the universe's decoded
+level sits strictly below BOTH the lower family level and `highLevel` (`domainBelowLow`, `domainBelowHigh`).  The
+domain is reducible at `highLevel` for free (`universeDomainPiFormerReducibleAtLevel` via
+`universeCode_isReducibleAtDenote`); the member-stability bridge pins both candidates to the denote-keyed universe
+predicate (`candidateIffUniverse` at each level), then collapses BOTH below-family universe predicates to the
+single fixed decode-at-`denote levelExpr env` set via coherence (`denoteBelowFamily_eq_reducible`, applicable
+exactly because of the two threshold conditions).
+
+The threshold conditions are ESSENTIAL, not bureaucratic: below its decoded level a universe code's member
+candidate is `IsStronglyNormalizing ∧ False` — the EMPTY predicate (the `denoteBelowFamily` index runs off the
+end).  So `Type@e` is a reducible TYPE at every level (anti-vacuity, `universeCode_isReducibleAtDenote`) but its
+MEMBER candidate goes vacuous below threshold — the threshold-drift obstruction in its sharpest form.  The
+universe-domain case is therefore the ABOVE-THRESHOLD case, NOT unconditionally free (contrast the neutral case,
+whose SN candidate never goes vacuous).  In the genFormationPi context the conditions hold by construction: a
+former's universe-code components live strictly below the former's own decoded level.  The second of the three
+`piArmLift` shape cases (neutral / universe / composite). -/
+theorem universeDomainPiArmLift {scope : Nat} {env : Nat → Nat} (lowLevel highLevel : Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) {codomainCode : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm scope → Prop}
+    (domainBelowLow : LevelExpr.denote levelExpr env < lowLevel)
+    (domainBelowHigh : LevelExpr.denote levelExpr env < highLevel)
+    (domainStep : ReducibleTypeStepDenote env (denoteBelowFamily env lowLevel)
+      (.mkGen .gen_universeCode (levelExpr, flag) .childNil) domainCandidate)
+    (codomainLiftedPerMember : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsReducibleTypeAtDenote env highLevel (RawTerm.subst0 codomainCode argument)) :
+    IsReducibleTypeAtDenote env highLevel
+      (.mkGen .gen_piTyCode ()
+        (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+          (.childCons codomainCode .childNil))) := by
+  have lowCollapse : denoteBelowFamily (scope := scope) env lowLevel (LevelExpr.denote levelExpr env)
+      = ReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) :=
+    denoteBelowFamily_eq_reducible (scope := scope) env lowLevel (LevelExpr.denote levelExpr env) domainBelowLow
+  have highCollapse : denoteBelowFamily (scope := scope) env highLevel (LevelExpr.denote levelExpr env)
+      = ReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) :=
+    denoteBelowFamily_eq_reducible (scope := scope) env highLevel (LevelExpr.denote levelExpr env) domainBelowHigh
+  have predicateBridge : ∀ argument : RawTerm scope,
+      universeDenotePredicate env (denoteBelowFamily env highLevel) levelExpr argument →
+      universeDenotePredicate env (denoteBelowFamily env lowLevel) levelExpr argument := by
+    intro argument memberHigh
+    obtain ⟨stronglyNormalizing, candidateAtDenote, reducibleAtDenote⟩ := memberHigh
+    refine ⟨stronglyNormalizing, candidateAtDenote, ?_⟩
+    rw [lowCollapse]
+    rw [highCollapse] at reducibleAtDenote
+    exact reducibleAtDenote
+  exact universeDomainPiFormerReducibleAtLevel env highLevel levelExpr flag
+    (fun argument argumentMember => by
+      obtain ⟨memberCandidate, memberCandidateReducible, argumentInMemberCandidate⟩ := argumentMember
+      have argumentInHighPredicate :
+          universeDenotePredicate env (denoteBelowFamily env highLevel) levelExpr argument :=
+        (memberCandidateReducible.candidateIffUniverse rfl argument).mp argumentInMemberCandidate
+      have argumentInDomainCandidate : domainCandidate argument :=
+        (domainStep.candidateIffUniverse rfl argument).mpr
+          (predicateBridge argument argumentInHighPredicate)
+      exact codomainLiftedPerMember argument argumentInDomainCandidate)
 
 end FX1Poly.Typed

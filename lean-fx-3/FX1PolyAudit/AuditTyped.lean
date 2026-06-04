@@ -3101,6 +3101,16 @@ gates pin them shut.
 -- level-irrelevant SN pivot). The first of the three piArmLift shape cases; with the universe and composite
 -- cases it makes the single-level child-lift unconditional on a neutral spine.
 #assert_no_axioms FX1Poly.Typed.neutralDomainPiArmLift
+-- universeDomainPiArmLift: the UNIVERSE-domain case (2/3), ABOVE THRESHOLD. For a universe-code domain Type@e,
+-- the Π is reducible at highLevel PROVIDED denote e < lowLevel AND denote e < highLevel: domain reducible at
+-- highLevel for free (universeDomainPiFormerReducibleAtLevel), and the member bridge pins both candidates to the
+-- universe predicate (candidateIffUniverse) then collapses both below-family predicates to the fixed
+-- decode-at-(denote e) set via coherence (denoteBelowFamily_eq_reducible — applicable exactly by the two
+-- thresholds). The thresholds are ESSENTIAL: below its decoded level a universe code's member candidate is
+-- IsStronglyNormalizing ∧ False (EMPTY — the index runs off denoteBelowFamily's end), the threshold-drift
+-- obstruction sharpest. So the universe case is NOT unconditionally free (contrast neutral); the genFormationPi
+-- context supplies the thresholds (components live strictly below the former's level).
+#assert_no_axioms FX1Poly.Typed.universeDomainPiArmLift
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
