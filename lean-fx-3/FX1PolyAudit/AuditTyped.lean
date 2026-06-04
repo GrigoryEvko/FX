@@ -201,6 +201,7 @@ import FX1Poly.Typed.DenoteKeyedSigmaFormation
 import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.DenoteKeyedGenFormationSigmaArm
 import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
+import FX1Poly.Typed.DenoteKeyedCumulativityObstruction
 import FX1Poly.Typed.DenoteKeyedCodomainMemberWiring
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
@@ -3286,6 +3287,15 @@ gates pin them shut.
 -- decoded level = the Π's level), fed to the connector. The non-uniform cases (levelExpr strictly above one
 -- child's universe) need the level-bounded TYPE-reducibility cumulativity (the documented multi-lemma residual).
 #assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniformLevelMember
+
+-- gapUniverseDomainPiVacuouslyReducibleAtLowLevel (the cumulativity-obstruction WITNESS): at lowLevel ≤
+-- denote gapLevel env, Type@gapLevel has the EMPTY member candidate (denoteBelowFamily empty at index ≥
+-- lowLevel), so Π(Type@gapLevel) codomain is reducible-as-type at lowLevel for ANY codomain (vacuous codomain
+-- obligation). Low-level reducibility of a gap-universe-domain Π is codomain-BLIND ⟹ cannot be lifted to a
+-- higher level where the domain gains members. Pins WHY the non-uniform genFormationPi piReducibleAsType is
+-- model-obstructed (semantic reducibility does NOT bound universes — universeCode_isReducibleAtDenote fires at
+-- every level), so it needs a bound-carrying model OR stays a carried premise (conditional/fragment milestone).
+#assert_no_axioms FX1Poly.Typed.gapUniverseDomainPiVacuouslyReducibleAtLowLevel
 
 -- SN-D5d (the SN-040-FREE codomain-member wiring — CORRECTS the ticks #18/#19 SN-040 claim): the codomain's
 -- universe membership at `cons headTerm σ` (var0 → a domain member, σ tail UN-RENAMED) comes from the codomain
