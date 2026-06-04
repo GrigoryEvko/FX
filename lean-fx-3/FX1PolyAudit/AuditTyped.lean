@@ -63,6 +63,7 @@ import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.SimplyTypedMetatheoryViaSconing
 import FX1Poly.Tier0.FxRenamingCategory
+import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -3637,3 +3638,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.fxRenamingCategory
 #assert_no_axioms FX1Poly.Tier0.fxRenamingCategory_identity_eq
 #assert_no_axioms FX1Poly.Tier0.fxRenamingCategory_compose_eq
+-- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
+-- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
+-- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
+-- renaming or the substitution category): isomorphismsRepresentable (trivial), closedUnderComposition (<= comp),
+-- closedUnderPullback (<= pullbackAlong). IsIsomorphism.identity: the identity is an iso. IsIsomorphism.comp:
+-- isos compose ((f.g)^-1 = g^-1.f^-1). IsIsomorphism.pullbackAlong: the pullback of an iso f along any g is the
+-- square (apex = dom g, right proj = identity, left proj = g.f^-1) with its universal property -- right proj is
+-- the identity (an iso, hence representable). All pure equational reasoning through the RawCategory law fields +
+-- the IsIsomorphism inverse laws; NO funext (morphism extensionality would pull Quot.sound). All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.identity
+#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.comp
+#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.pullbackAlong
