@@ -233,6 +233,7 @@ import FX1Poly.Typed.BoundedTelescopeConsSucc
 import FX1Poly.Typed.BoundedGrownDispatch
 import FX1Poly.Typed.BoundedFormationLeafArms
 import FX1Poly.Typed.BoundExceedsDesc
+import FX1Poly.Typed.BoundExceedsDischarge
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4028,3 +4029,15 @@ gates pin them shut.
 -- obstruction). Foundation for the bounded formation FT dispatch (BFT-11) + the ∃-bound discharge (BFT-12).
 #assert_no_axioms FX1Poly.Typed.BoundExceeds
 #assert_no_axioms FX1Poly.Typed.BoundExceedsTelescope
+
+-- The BFT-12 discharge core (BoundExceedsDischarge.lean): monotonicity + existence of the universe-level budget.
+-- `monotoneInBound` lifts a budget to any larger bound (term-mode match on the budget; conv arm pins the implicit
+-- Conv proof in the pattern); `existsBound` constructs a bound for every formation derivation by structural
+-- recursion (universeFormation supplies denote(lsucc e)env+1; recursive arms take the SUM of sub-bounds — NOT max,
+-- whose Init le-lemmas leak propext — and lift via monotoneInBound). existsBound routes through HasTypeDesc.rec /
+-- DescTelescope.rec (propext-free) rather than a match on the indexed family. Feeds the BFT-12 bound-choice that
+-- threads a single bound through the bounded grown FT toward SN-043.
+#assert_no_axioms FX1Poly.Typed.BoundExceeds.monotoneInBound
+#assert_no_axioms FX1Poly.Typed.BoundExceedsTelescope.monotoneInBound
+#assert_no_axioms FX1Poly.Typed.BoundExceeds.existsBound
+#assert_no_axioms FX1Poly.Typed.BoundExceedsTelescope.existsBound
