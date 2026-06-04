@@ -3387,6 +3387,13 @@ gates pin them shut.
 -- ofPointwiseIff (funext-free), every other arm by IH. The keystone the genFormationPi piArm needs.
 #assert_no_axioms FX1Poly.Typed.stepBounded_cumulative
 #assert_no_axioms FX1Poly.Typed.isReducibleBounded_cumulative
+-- THE FORGET BRIDGE (bounded ⊆ denote): a bounded-reducibility derivation IS a denote derivation (drop the gate),
+-- so ALL ReducibleTypeStepDenote metatheory (determinism, candidate-shapes, forward-closure, convTransfer, the
+-- CR1/2/3 bundle) transfers to the bounded relation WITHOUT re-porting. The leverage lemma for the rest of #753.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.toReducibleTypeStepDenote
+-- First fruits of the bridge: determinism transferred (the canonical-candidate reconciliation the bounded FT needs).
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.deterministic
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.deterministic
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches

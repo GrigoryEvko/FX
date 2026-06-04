@@ -196,4 +196,56 @@ theorem isReducibleBounded_cumulative {scope : Nat} {env : Nat → Nat} {bound h
   let ⟨candidate, candidateReducible⟩ := reducible
   ⟨candidate, stepBounded_cumulative candidateReducible higherBound hle⟩
 
+/-! ## The forget bridge: bounded ⊆ denote (all denote metatheory transfers for free)
+
+The gated relation is the denote relation with a strictly-stronger universeCode arm, so a bounded-reducibility
+derivation IS a denote-reducibility derivation (drop the `belowBound` gate).  This single bridge makes the ENTIRE
+`ReducibleTypeStepDenote` metatheory — determinism, candidate-shape inversions, forward-step closure,
+Conv-invariance/transfer, and the CR1/CR2/CR3 reducibility-candidate bundle — apply to bounded derivations WITHOUT
+re-porting any of it.  The gate only RESTRICTS which derivations exist (excluding the label-blind universe members);
+it never changes a candidate, so everything the denote relation proves about a candidate holds verbatim. -/
+
+/-- **The forget bridge.**  A bounded-reducibility derivation forgets its universe gate to a denote-reducibility
+derivation at the same `lowerAt` and candidate.  Five-arm induction, each arm mapping to its denote twin; the
+`universeCode` arm drops `belowBound` (the candidate `universeDenotePredicate env lowerAt levelExpr` is identical).
+The leverage lemma: bounded ⊆ denote, so denote metatheory is inherited. -/
+theorem ReducibleTypeStepBounded.toReducibleTypeStepDenote {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop} {bound : Nat}
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepBounded env lowerAt bound typeCode candidate) :
+    ReducibleTypeStepDenote env lowerAt typeCode candidate := by
+  induction reducible with
+  | whnfExpand weakHeadStep _reductReducible ih =>
+      exact ReducibleTypeStepDenote.whnfExpand weakHeadStep ih
+  | neutral noStep notPi notUniverse =>
+      exact ReducibleTypeStepDenote.neutral noStep notPi notUniverse
+  | @piType _domainCode _codomainCode _domainCandidate codomainCandidate _domainReducible _codomainReducible
+      ihDomain ihCodomain =>
+      exact ReducibleTypeStepDenote.piType codomainCandidate ihDomain ihCodomain
+  | universeCode levelExpr flag _belowBound =>
+      exact ReducibleTypeStepDenote.universeCode levelExpr flag
+  | ofPointwiseIff _innerReducible pointwiseIff ih =>
+      exact ReducibleTypeStepDenote.ofPointwiseIff ih pointwiseIff
+
+/-- **The gated step relation is functional** — transferred from `ReducibleTypeStepDenote.deterministic` through
+the forget bridge.  Two candidates of the same type code at the same bound are pointwise-equivalent. -/
+theorem ReducibleTypeStepBounded.deterministic {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop} {bound : Nat}
+    {typeCode : RawTerm scope} {candidate1 candidate2 : RawTerm scope → Prop}
+    (reducible1 : ReducibleTypeStepBounded env lowerAt bound typeCode candidate1)
+    (reducible2 : ReducibleTypeStepBounded env lowerAt bound typeCode candidate2) :
+    PointwiseIff candidate1 candidate2 :=
+  ReducibleTypeStepDenote.deterministic reducible1.toReducibleTypeStepDenote
+    reducible2.toReducibleTypeStepDenote
+
+/-- **The bound-carrying level-indexed relation is functional** — the family-level determinism, the canonical-
+candidate reconciliation the bounded FT consumes (it lets a per-level existential candidate be replaced by the
+canonical one).  Direct from `ReducibleTypeStepBounded.deterministic`. -/
+theorem ReducibleTypeAtBounded.deterministic {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {typeCode : RawTerm scope} {candidate1 candidate2 : RawTerm scope → Prop}
+    (reducible1 : ReducibleTypeAtBounded env bound typeCode candidate1)
+    (reducible2 : ReducibleTypeAtBounded env bound typeCode candidate2) :
+    PointwiseIff candidate1 candidate2 :=
+  ReducibleTypeStepBounded.deterministic reducible1 reducible2
+
 end FX1Poly.Typed
