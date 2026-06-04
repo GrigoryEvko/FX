@@ -2,6 +2,7 @@ import FX1Poly.Typed.DenoteKeyedSigmaFormation
 import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.DenoteKeyedFundamentalMotive
 import FX1Poly.Typed.HasTypeDesc
+import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 
 /-! # FX1Poly/Typed/DenoteKeyedGenFormationSigmaArm
     — the genFormationPi Σ fundamental-theorem arm (premise-isolating; SN-D5d toward SN-043/#750)
@@ -75,5 +76,40 @@ theorem fundamentalGenFormationSigmaAtDenote {profile : PolyProfile} {scope : Na
     (stronglyNormalizing_of_universeMemberAtDenote env level domainLevel flag _ domainAbove
       (domainMember substitution envReducible))
     (codomainSN substitution envReducible)
+
+/-- **The COMPLETE denote fundamental-theorem arm for the dependent-pair-over-universes former
+`Σ (A : Type@a). Type@b`.**  The Σ twin of `fundamentalGenFormationPiUniverseUniverse`, completing the
+universe-universe dependent-former PAIR: both `Π (A:Type@a). Type@b` and `Σ (A:Type@a). Type@b` now have complete
+unconditional denote FT arms (no open premises beyond the ambient level-above conditions).  Discharges both premises
+of `fundamentalGenFormationSigmaAtDenote`:
+
+  * `domainMember` — `Type@a` is a reducible member of its classifier `Type@(lsucc a)`
+    (`universeFormationMemberUnderClosingSubstitution`);
+  * `codomainSN` — the codomain `Type@b` is a normal form (`isStronglyNormalizing_of_noStep` +
+    `noStep_universeCode`).
+
+The Σ proof is even SHORTER than the Π twin's: the Σ arm carries NO `piReducibleAsType` premise — its
+reducible-as-type half is the free neutral candidate (`sigmaFormationMemberAtDenote`), whereas Π's routes through
+the dependent-arrow candidate and needs the anti-vacuity `piReducibleAsType` discharge.  That asymmetry — Σ free,
+Π via the #752-shaped discharge — is the genuine structural difference between the two formers at the denote layer.
+The non-universe-code shapes (a child a universe MEMBER classified strictly below the former's level) remain the
+#753 bound-carrying residual, identically for both Π and Σ. -/
+theorem fundamentalGenFormationSigmaUniverseUniverse {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
+    (level : Nat) (context : TypingContext profile scope)
+    (innerDomainLevel innerCodomainLevel levelExpr : LevelExpr) (flag : UniverseFlag)
+    (levelAbove : LevelExpr.denote levelExpr env < level)
+    (domainAbove : LevelExpr.denote (LevelExpr.lsucc innerDomainLevel) env < level) :
+    FundamentalConclusionAtDenote env level context
+      (.mkGen .gen_sigmaTyCode ()
+        (.childCons (universeCodeCell innerDomainLevel flag)
+          (.childCons (universeCodeCell innerCodomainLevel flag) .childNil)))
+      (universeCodeCell levelExpr flag) :=
+  fundamentalGenFormationSigmaAtDenote env level context (LevelExpr.lsucc innerDomainLevel) levelExpr flag
+    levelAbove domainAbove
+    (fun substitution _envReducible =>
+      universeFormationMemberUnderClosingSubstitution env innerDomainLevel flag level domainAbove substitution)
+    (fun substitution _envReducible => by
+      rw [subst_universeCodeCell]
+      exact isStronglyNormalizing_of_noStep (fun _target => noStep_universeCode (innerCodomainLevel, flag)))
 
 end FX1Poly.Typed

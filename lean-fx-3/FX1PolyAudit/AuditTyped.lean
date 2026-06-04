@@ -3359,6 +3359,13 @@ gates pin them shut.
 -- piReducibleAsTypeFromUniverseCodeComponents. The Π analogue of the already-closed Σ arm; advances SN-D5d (#750).
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiUniverseUniverse
 
+-- fundamentalGenFormationSigmaUniverseUniverse (the Σ twin, completing the universe-universe former PAIR): the
+-- complete FundamentalConclusionAtDenote for Σ (A:Type@a). Type@b, both premises of fundamentalGenFormationSigmaAt-
+-- Denote discharged UNCONDITIONALLY — domainMember via universeFormationMemberUnderClosingSubstitution, codomainSN
+-- via noStep_universeCode. NO piReducibleAsType premise (Σ uses its free neutral candidate) — so even shorter than
+-- the Π twin, documenting the genuine Σ-free / Π-via-#752-discharge asymmetry. Both formers over universes now closed.
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationSigmaUniverseUniverse
+
 -- gapUniverseDomainPiVacuouslyReducibleAtLowLevel (the cumulativity-obstruction WITNESS): at lowLevel ≤
 -- denote gapLevel env, Type@gapLevel has the EMPTY member candidate (denoteBelowFamily empty at index ≥
 -- lowLevel), so Π(Type@gapLevel) codomain is reducible-as-type at lowLevel for ANY codomain (vacuous codomain
