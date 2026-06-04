@@ -234,6 +234,7 @@ import FX1Poly.Typed.BoundedGrownDispatch
 import FX1Poly.Typed.BoundedFormationLeafArms
 import FX1Poly.Typed.BoundExceedsDesc
 import FX1Poly.Typed.BoundExceedsDischarge
+import FX1Poly.Typed.BoundedFormationDispatch
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4041,3 +4042,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.BoundExceedsTelescope.monotoneInBound
 #assert_no_axioms FX1Poly.Typed.BoundExceeds.existsBound
 #assert_no_axioms FX1Poly.Typed.BoundExceedsTelescope.existsBound
+
+-- The bounded FORMATION-engine fundamental theorem (BoundedFormationDispatch.lean, BFT-10 + BFT-11). Discharges the
+-- formationFundamental premise shape of BFT-6: given a BoundExceeds budget, every HasTypeDesc formation derivation
+-- satisfies FundamentalConclusionAtBoundedSucc. Proved by BoundExceeds.rec (induction on the BUDGET, not the
+-- derivation) so the universeFormation arm receives belowBound NAMED — sidestepping the opaque-outputType-index
+-- inversion that blocks a match on the budget. IsFormationTelescopeReducibleAtBoundedSucc is the DescTelescope
+-- motive_2 wrapper (BFT-10).
+#assert_no_axioms FX1Poly.Typed.IsFormationTelescopeReducibleAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.fundamentalAtBoundedSucc
