@@ -196,6 +196,7 @@ import FX1Poly.Typed.DenoteKeyedUniformReducible
 import FX1Poly.Typed.DenoteKeyedUniverseMembershipIntro
 import FX1Poly.Typed.DenoteKeyedTelescopeFundamental
 import FX1Poly.Typed.DenoteKeyedSigmaFormation
+import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3157,6 +3158,16 @@ gates pin them shut.
 -- two-child former-SN, packaged by universeMembershipIntroAtDenote. typingRuleDescOf is some only for {Π, Σ},
 -- so this + the Π piType arm (the #752 threshold residual) cover the whole 2-case genFormationPi split.
 #assert_no_axioms FX1Poly.Typed.sigmaFormationMemberAtDenote
+
+-- SN-D5d (denote universe-member CR1 + Σ-from-child-members assembly): bridges the children's universe
+-- MEMBERSHIPS (what the FT telescope IH supplies) to sigmaFormationMemberAtDenote's SN premises.
+-- stronglyNormalizing_of_universeMemberAtDenote: a member of Type@e above threshold is SN (universe candidate
+-- pinned via universeMembership_levelIrrelevant + ReducibleTypeAtDenote.deterministic — the threshold is the
+-- fundamental #672 caveat). sigmaFormationFromChildMembersAtDenote: domain member + codomain member at var 0
+-- ⟹ Σ universe membership (domain SN by CR1; codomain-under-binder SN by CR1 then openBodyOfConsSubst; the
+-- denote analogue of the fuel sigmaFormerOfChildMembershipsAtRequiredLevel).
+#assert_no_axioms FX1Poly.Typed.stronglyNormalizing_of_universeMemberAtDenote
+#assert_no_axioms FX1Poly.Typed.sigmaFormationFromChildMembersAtDenote
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
