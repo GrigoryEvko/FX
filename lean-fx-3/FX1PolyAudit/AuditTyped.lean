@@ -2714,6 +2714,11 @@ gates pin them shut.
 -- the UNCONDITIONAL defensible-kernel floor: the simply-typed fragment has SN PROVEN (not assumed), so typing
 -- alone decides conversion. Honest qualifier boundary: simply-typed fragment ONLY; broader fragments need SN-043.
 #assert_no_axioms FX1Poly.Typed.simplyTypedBareClosedStronglyNormalizing
+-- simplyTypedDefensibleKernel (Milestone A0 bundle witness, #666/#557): the named SimplyTypedDefensibleKernel
+-- structure (SN proven + Conv decidable) witnessed by the shipped unconditional theorems
+-- (simplyTypedBareClosedStronglyNormalizing + Conv.decidableOfSimplyTypedBareClosed). The formal declaration of
+-- Milestone A0 over the simply-typed fragment, NOT gated on SN-043 (no SN hypothesis carried). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.simplyTypedDefensibleKernel
 
 -- CANONICAL NORMAL FORM for closed simply-typed terms — the NORMALIZE companion to the bare-closed DECIDE.
 -- stronglyNormalizingBare: bare SN (the sole use site of stronglyNormalizing_of_subst); normalForm: the

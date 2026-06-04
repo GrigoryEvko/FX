@@ -53,4 +53,31 @@ theorem simplyTypedBareClosedStronglyNormalizing {profile : PolyProfile}
   StepStar.stronglyNormalizing_of_subst emptyClosingSubst term
     (typed.stronglyNormalizingClosed emptyClosingSubst)
 
+/-- **The Milestone-A0 defensible-kernel floor, as a named bundle.**  Over the simply-typed fragment
+(`SimplyTypedTermLF`), the kernel is a DEFENSIBLE DECIDABLE KERNEL UNCONDITIONALLY: strong normalization is a
+THEOREM (`stronglyNormalizing`, not a hypothesis) and conversion is therefore decidable with typing alone
+(`convDecidable`, no SN hypothesis).  This is the formal declaration of Milestone A0 over the already-decidable
+fragment, NOT gated on SN-043: the broad decidable-Conv deciders (`Conv.decidableOfStronglyNormalizing`,
+`…HasTypeDescPiStronglyNormalizes`) all TAKE an SN hypothesis whose discharge IS the open SN-043, but the
+simply-typed fundamental theorem discharges it here.  `Type`-valued because `convDecidable` is decision DATA. -/
+structure SimplyTypedDefensibleKernel (profile : PolyProfile) : Type where
+  /-- Closed simply-typed terms are strongly normalizing — SN PROVEN, no hypothesis. -/
+  stronglyNormalizing : ∀ {term type : RawTerm 0},
+    SimplyTypedTermLF (TypingContext.empty : TypingContext profile 0) term type →
+      IsStronglyNormalizing term
+  /-- Conversion of closed simply-typed terms is decidable — typing alone decides, no SN hypothesis. -/
+  convDecidable : ∀ {firstTerm firstType secondTerm secondType : RawTerm 0},
+    SimplyTypedTermLF (TypingContext.empty : TypingContext profile 0) firstTerm firstType →
+      SimplyTypedTermLF (TypingContext.empty : TypingContext profile 0) secondTerm secondType →
+        Decidable (Conv firstTerm secondTerm)
+
+/-- **The witness for the Milestone-A0 defensible kernel.**  Both fields are the shipped UNCONDITIONAL theorems:
+`stronglyNormalizing` is `simplyTypedBareClosedStronglyNormalizing` (the FT's SN reflected to the bare term),
+`convDecidable` is `Conv.decidableOfSimplyTypedBareClosed` (the FT's SN feeding the normalizer-based decider).
+So Milestone A0 over the simply-typed fragment HOLDS, zero-axiom, with no SN hypothesis carried — the honest
+defensible-kernel floor (the broader fragments remain gated on SN-043 / the bound-carrying model). -/
+def simplyTypedDefensibleKernel {profile : PolyProfile} : SimplyTypedDefensibleKernel profile :=
+  { stronglyNormalizing := simplyTypedBareClosedStronglyNormalizing
+    convDecidable := Conv.decidableOfSimplyTypedBareClosed }
+
 end FX1Poly.Typed
