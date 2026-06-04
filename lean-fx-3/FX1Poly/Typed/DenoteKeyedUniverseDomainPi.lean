@@ -212,4 +212,34 @@ theorem universeDomainPi_reducibleAtEveryDenoteLevel {scope : Nat} (env : Nat �
       at candidateInEmptyFamily
     exact candidateInEmptyFamily.elim
 
+/-- **Member-stability for the universe LEAF above its decoded level — the leaf twin of
+`universeDomainPi_memberStableAcrossDenoteLevels`.**  A reducible member of `Type@levelExpr` (a type code
+classified by that universe) at ONE ambient level above `denote levelExpr env` is a reducible member at
+EVERY level above it.  Where `DenoteKeyedLevelIrrelevance`'s `uniformType_/neutralType_memberStableAcross
+DenoteLevels` cover only types whose candidate is uniform across ALL levels, the universe candidate is
+uniform only ABOVE `denote levelExpr env` (below, it is the empty decode-set), so this needs the
+above-the-bound restriction — exactly as the Π version does.
+
+The proof is the universe twin of the Π member-stability: the fixed decode-at-`denote levelExpr env`
+candidate (`universeMembership_levelIrrelevant`) is the universe's candidate at both the source and target
+levels; `ReducibleTypeAtDenote.deterministic` reconciles the source member's candidate with it, so the
+member sits in the fixed candidate, reducible at the target.  Choice-free (the candidate is canonical, not
+existentially extracted), no across-level transport.  Completes the universe-leaf half of the denote #672
+member-extension in the BOUNDED regime (the gap regime is the obstruction, see
+`DenoteKeyedCumulativityObstruction`). -/
+theorem universeLeafMemberStableAcrossDenoteLevels {scope : Nat} (env : Nat → Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    {typeMember : RawTerm scope} {sourceLevel : Nat}
+    (sourceLevelAbove : LevelExpr.denote levelExpr env < sourceLevel)
+    (memberAtSource : IsReducibleMemberAtDenote env sourceLevel
+      (.mkGen .gen_universeCode (levelExpr, flag) .childNil) typeMember)
+    {targetLevel : Nat} (targetLevelAbove : LevelExpr.denote levelExpr env < targetLevel) :
+    IsReducibleMemberAtDenote env targetLevel
+      (.mkGen .gen_universeCode (levelExpr, flag) .childNil) typeMember := by
+  obtain ⟨sourceCandidate, sourceReducible, memberInSource⟩ := memberAtSource
+  have candidatesAgree := ReducibleTypeAtDenote.deterministic sourceReducible
+    (universeMembership_levelIrrelevant env sourceLevel levelExpr flag sourceLevelAbove)
+  exact ⟨_, universeMembership_levelIrrelevant env targetLevel levelExpr flag targetLevelAbove,
+    (candidatesAgree typeMember).mp memberInSource⟩
+
 end FX1Poly.Typed

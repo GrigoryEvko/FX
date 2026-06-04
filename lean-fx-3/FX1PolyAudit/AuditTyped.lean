@@ -3000,6 +3000,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleAtAllDenoteLevels
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_uniformCandidateAtAllDenoteLevels
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_memberStableAcrossDenoteLevels
+-- universeLeafMemberStableAcrossDenoteLevels: the LEAF twin of the Π member-stability -- a reducible member of
+-- Type@e at one level above denote e is a member at every level above it. The fixed decode-set candidate
+-- (universeMembership_levelIrrelevant) is the same at both levels; determinism reconciles. Fills the gap left by
+-- DenoteKeyedLevelIrrelevance (which has leaf member-stability only for neutral/uniform types, uniform across ALL
+-- levels; the universe is uniform only ABOVE denote e). Choice-free (canonical candidate). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.universeLeafMemberStableAcrossDenoteLevels
 -- totalises the universe-domain Π to ∀ level (the IsReducibleTypeAtAllDenoteLevels piArm shape): genuine
 -- levels reuse reducibleAtAllDenoteLevels, low levels (≤ denote e env) vacuous via empty domain candidate.
 #assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleAtEveryDenoteLevel
