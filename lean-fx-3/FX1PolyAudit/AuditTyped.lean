@@ -217,6 +217,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedFundamentalMotive
 import FX1Poly.Typed.DenoteKeyedBoundedConvArm
 import FX1Poly.Typed.DenoteKeyedBoundedPiElimArm
 import FX1Poly.Typed.DenoteKeyedBoundedPiIntroArm
+import FX1Poly.Typed.DenoteKeyedBoundedFormerEngine
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3465,6 +3466,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.abstractionMemberAtBounded
 #assert_no_axioms FX1Poly.Typed.abstractionMemberUnderClosingSubstitutionBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtBounded
+-- THE BOUNDED FORMER ENGINE (DenoteKeyedBoundedFormerEngine): the universe-membership INTRODUCTION + type-former
+-- arm + universe-member SN projection that the bounded universeFormation / genFormationPi arms route through. All
+-- three route through the SHIPPED universeMembershipBounded_levelIrrelevant; fundamentalTypeFormerAtBounded isolates
+-- the former's type-reducibility (route A) as the single premise — the residual that, in the BOUNDED relation,
+-- closes via free cumulativity (stepBounded_cumulative) where the denote relation is model-obstructed.
+#assert_no_axioms FX1Poly.Typed.universeMembershipIntroAtBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalTypeFormerAtBounded
+#assert_no_axioms FX1Poly.Typed.stronglyNormalizing_of_universeMemberAtBounded
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
