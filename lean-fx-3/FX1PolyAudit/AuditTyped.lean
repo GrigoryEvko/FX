@@ -65,6 +65,7 @@ import FX1Poly.Typed.SimplyTypedMetatheoryViaSconing
 import FX1Poly.Tier0.FxRenamingCategory
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
+import FX1Poly.Tier0.FxThinScopeGlobalSections
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -3671,3 +3672,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.thinScopeCategory
 #assert_no_axioms FX1Poly.Tier0.thinScopeRepresentableMaps
 #assert_no_axioms FX1Poly.Tier0.thinScopeRMC
+-- GlobalSections over the thin scope CwR via the Yoneda representable presheaf (FxThinScopeGlobalSections.lean,
+-- next Tier-0 sconing-pipeline rung above the thin RMC). sections scope = Hom(scope, topScope) = PLift(scope <=
+-- topScope); the contravariant action precomposes by Nat.le_trans; both functor laws are rfl (sections are
+-- Prop-proofs, so proof irrelevance makes parallel sections equal -- no funext). thinScopeSections: the
+-- representable presheaf as a literal-Nat family (dodges the LE .Object synth trap). thinScopeGlobalSections:
+-- the GlobalSections instance. thinScopeTautologicalSconing: SconingObject.tautological inhabits over it. A
+-- genuine canonical presheaf (Yoneda), establishing the GlobalSections/SconingObject interfaces are inhabitable
+-- zero-axiom; honestly the representable, NOT the "closed terms" CwR semantics (needs the data-morphism base).
+#assert_no_axioms FX1Poly.Tier0.thinScopeSections
+#assert_no_axioms FX1Poly.Tier0.thinScopeGlobalSections
+#assert_no_axioms FX1Poly.Tier0.thinScopeTautologicalSconing
