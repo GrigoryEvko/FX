@@ -696,6 +696,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_piTyCode
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_sigmaTyCode
+-- Formation-family invariant (HasTypeDesc.lean): every typingRuleDescOf row outputs universeFormerOutput,
+-- enumerated ONCE. The cascade-death substrate for the formation-family metatheory — consumers obtain
+-- rule.outputType = universeFormerOutput from here instead of their own unfold + pi/sigma split, so a new
+-- universeFormerOutput row (data type code) is absorbed by adding one by_cases case HERE. First consumer
+-- migrated: HasTypeDescValidity.genFormation arm (now table-generic). ~14 consumers remain to migrate.
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_outputIsUniverseFormer
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc
 #assert_no_axioms FX1Poly.Typed.DescTelescope
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_piFormation_viaGenArm

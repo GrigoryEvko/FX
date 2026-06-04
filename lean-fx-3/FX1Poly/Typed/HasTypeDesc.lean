@@ -172,6 +172,36 @@ check). -/
 theorem typingRuleDescOf_sigmaTyCode :
     typingRuleDescOf .gen_sigmaTyCode = some { outputType := universeFormerOutput } := rfl
 
+/-- **Formation-family invariant: every formation rule outputs a universe code.**  The `typingRuleDescOf`
+table currently maps EXACTLY the dependent type-formers (`gen_piTyCode` / `gen_sigmaTyCode`) to the SHARED
+`universeFormerOutput` rule (a former lives at the `lmax` of its children's levels).  This lemma enumerates
+the table ONCE: any generator carrying a formation rule has `rule.outputType = universeFormerOutput`.
+
+It is the cascade-death substrate for the FORMATION-FAMILY metatheory (validity / substitution / weakening /
+the FT `genFormation` arm): a consumer obtains `rule.outputType = universeFormerOutput` from HERE instead of
+its own `unfold typingRuleDescOf` + per-generator (`by_cases` pi/sigma) split.  Adding a new
+`universeFormerOutput` row (a data type code: `product`/`sum`/`list`/`option`/`either`) is then ONE new
+`by_cases` case in THIS lemma — every consumer that obtains its output type from here inherits it, with no
+per-consumer cascade.  (polycell.md §3.16.19 per-family metatheory inheritance.)
+
+Zero-axiom — the established `subst` + `Option.some.inj` (pi/sigma) and `unfold`/`if_neg`/`contradiction`
+(the non-former branch) pattern; no `propext`/`Quot.sound`/`Classical`/`native_decide`/`omega`. -/
+theorem typingRuleDescOf_outputIsUniverseFormer {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule) :
+    rule.outputType = universeFormerOutput := by
+  by_cases hPi : generator = .gen_piTyCode
+  · subst hPi
+    have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+    rw [hRule]
+  · by_cases hSigma : generator = .gen_sigmaTyCode
+    · subst hSigma
+      have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+      rw [hRule]
+    · exfalso
+      unfold typingRuleDescOf at isFormation
+      rw [if_neg hPi, if_neg hSigma] at isFormation
+      contradiction
+
 /-- Reconstruction: the generic `genFormation` arm derives Π-formation.  Domain
 typed at `Type@(domainLevel, flag)`, codomain at `Type@(codomainLevel, flag)`
 UNDER the domain binder ⟹ `piTyCodeCell` inhabits `Type@(lmax domainLevel
