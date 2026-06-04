@@ -4308,6 +4308,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congPiCodomain
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congSigmaCodomain
 
+-- Former-DOMAIN congruence SR arms (HasTypeDescPiFormerCongruence.lean, the dual of congPi/SigmaCodomain,
+-- completing the cong-arm family for the SR dispatcher #458/SN-055). congPiDomain/congSigmaDomain: stepping a
+-- Π/Σ DOMAIN changes the codomain's context binding (cons domain ⤳ cons domain'), so the codomain is re-typed
+-- there via an explicit codomainReTyping hypothesis = the head-CONTEXT-CONVERSION (the deferred grown
+-- context-conversion / mutual fundamental-metatheory bundle, #814; dischargeable for FORMATION codomains via
+-- convContextOfFormation). Mirrors congPiCodomain (invertPiTyCode/invertSigmaTyCode + piFormationViaGenArm + conv).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congPiDomain
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congSigmaDomain
+
 -- CONTEXT-CONVERSION for the FORMATION engine (HasTypeDescContextConversion.lean, #814 part 1): typing stable
 -- under a pointwise-Conv-replaced context, the leaf fragment (the clean wf-free half; the grown HasTypeDescPi
 -- version's ofFormation arm delegates here, and its piIntro/piElim need wf-validity — the deferred half). The
