@@ -236,6 +236,7 @@ import FX1Poly.Typed.BoundExceedsDesc
 import FX1Poly.Typed.BoundExceedsDischarge
 import FX1Poly.Typed.BoundedFormationDispatch
 import FX1Poly.Typed.BoundExceedsPi
+import FX1Poly.Typed.BoundExceedsPiDischarge
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4060,3 +4061,12 @@ gates pin them shut.
 -- grown FT discharge (BoundExceedsPi.rec, ofFormation arm → BFT-11) at a single fixed bound.
 #assert_no_axioms FX1Poly.Typed.BoundExceedsPi
 #assert_no_axioms FX1Poly.Typed.BoundExceedsPiTelescope
+
+-- The BFT-12b grown-budget discharge (BoundExceedsPiDischarge.lean): monotonicity + existence for BoundExceedsPi.
+-- Mirror of BoundExceedsDischarge over the grown engine; existsBound's ofFormation arm delegates to
+-- BoundExceeds.existsBound (origin of the fuel), the piIntro arm sums THREE sub-bounds (Nat.le_trans chain). Feeds
+-- the BFT-12c grown-FT bound-choice toward SN-043.
+#assert_no_axioms FX1Poly.Typed.BoundExceedsPi.monotoneInBound
+#assert_no_axioms FX1Poly.Typed.BoundExceedsPiTelescope.monotoneInBound
+#assert_no_axioms FX1Poly.Typed.BoundExceedsPi.existsBound
+#assert_no_axioms FX1Poly.Typed.BoundExceedsPiTelescope.existsBound
