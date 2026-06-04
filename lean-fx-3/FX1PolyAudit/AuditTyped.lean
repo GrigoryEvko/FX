@@ -242,6 +242,7 @@ import FX1Poly.Typed.ClosedBoundedReducibleMember
 import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.OpenStronglyNormalizing
 import FX1Poly.Typed.BoundedNeutralMember
+import FX1Poly.Typed.BoundedUniverseInversion
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4115,6 +4116,13 @@ gates pin them shut.
 -- neutral/identity closing environment (reducibleEnvOfWfContext, OB-3) cons-feeds at every context position — the
 -- first brick discharging the OpenStronglyNormalizing residual toward UNCONDITIONAL open SN-043 (#546).
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtBounded.ofVariable
+
+-- OB-2a (BoundedUniverseInversion.lean): the universe gate inversion. A bound-reducible-as-type universe code
+-- Type@levelExpr has its decoded level < bound. Four arms impossible for a universe code (weak-head-normal, not
+-- neutral, not a Π cell); the universeCode arm carries belowBound; ofPointwiseIff recurses. Recovers the
+-- belowBound premise the universe-member decode (universeMemberReducibleAsTypeAtDecodedLevelBounded) consumes in
+-- OB-2 (binding-type bounded-reducibility). Index-inversion via generalize + induction, propext-clean.
+#assert_no_axioms FX1Poly.Typed.belowBound_of_reducibleUniverse
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
