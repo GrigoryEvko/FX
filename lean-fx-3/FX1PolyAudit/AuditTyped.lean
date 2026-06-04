@@ -90,6 +90,7 @@ import FX1Poly.Core.DataCanonicityViaSconing
 import FX1Poly.Core.ModalCanonicityViaSconing
 import FX1Poly.Core.DataMetatheoryViaSconing
 import FX1Poly.Core.ReducibilityNormalizationViaSconing
+import FX1Poly.Core.ReducibilityConversionViaSconing
 import FX1Poly.Core.ConsistencyViaSconing
 import FX1Poly.Core.DataEliminatorProgressViaSconing
 import FX1Poly.Core.NatCanonicalFormsCandidate
@@ -3592,3 +3593,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.reducibilityNormalizationScone
 #assert_no_axioms FX1Poly.Core.normalizationViaSconing
 #assert_no_axioms FX1Poly.Core.reducibilityMetatheoryViaSconing
+-- Decidable conversion from a reducibility candidate + the full-metatheory capstone (the decidability FX wants
+-- most, ReducibilityConversionViaSconing.lean). ReducibilityNormalizationViaSconing extracts SN + weak
+-- normalization from a candidate; DECIDABLE CONVERSION (the Milestone-A core) is the next free extraction: CR1
+-- makes both sides SN, and Conv.decidableOfStronglyNormalizing (Normalize.lean) decides Conv by normalizing each
+-- side and comparing -- no global confluence. conversionDecidableViaSconing: the decidability extraction.
+-- conversionIffNormalizeEqViaSconing: the semantic NbE characterization (Conv = normalize-equality).
+-- ReducibilityFullMetatheory + reducibilityFullMetatheoryViaSconing: ONE fundamental => SN + weak normalization
+-- + decidable conversion, the general-reducibility decidable-metatheory capstone (Type-valued: conversion is
+-- decision DATA). Parametric in the fundamental (gated on SN-043 for the full kernel, discharged on fragments);
+-- NOT the BKS parametricity leg (that needs a binary relation). All zero-axiom.
+#assert_no_axioms FX1Poly.Core.conversionDecidableViaSconing
+#assert_no_axioms FX1Poly.Core.conversionIffNormalizeEqViaSconing
+#assert_no_axioms FX1Poly.Core.reducibilityFullMetatheoryViaSconing
