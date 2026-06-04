@@ -51,6 +51,7 @@ import FX1Poly.Core.EitherEquivCodeUniverseMembership
 import FX1Poly.Core.LinearFormerUniverseMembership
 import FX1Poly.Core.StrongNormalizationUnion
 import FX1Poly.Core.StrongNormalizationBetaEtaUnion
+import FX1Poly.Core.EtaPostponementOverBeta
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -728,3 +729,10 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.EtaQuasiCommutesOverBeta
 #assert_no_axioms FX1Poly.Core.betaEtaSuccessor_eq_unionSuccessor
 #assert_no_axioms FX1Poly.Core.accUnionBetaEta
+
+-- OSN-B3 (EtaPostponementOverBeta.lean): the etaLam case of the η-postponement crux. A β/ι-step inside the
+-- function lifts (Step.weaken + Step.cong/StepChildren through lam ∘ app) to a single step on the etaLam
+-- source (etaLamSourceCongruence); then one etaLam η-contraction reaches the original reduct — so etaLam
+-- η-then-β reorders to β-then-(one η) ⊆ βη*. The etaLam obligation of EtaQuasiCommutesOverBeta (OSN-B6).
+#assert_no_axioms FX1Poly.Core.Step.etaLamSourceCongruence
+#assert_no_axioms FX1Poly.Core.etaLamQuasiCommutesOverBeta
