@@ -62,4 +62,82 @@ theorem HasTypeDescPi.subjectConfluenceOfWfContext {profile : PolyProfile} {scop
     (HasTypeDescPi.stronglyNormalizingOfWfContext contextWellFormed typed)
     subjectToLeft subjectToRight
 
+/-- **Weak normalization on the WfContext fragment, UNCONDITIONALLY.**  Every well-typed subject in a well-formed
+context reaches a structural normal form — `RawTerm.normalize` driven by the OB-5 SN witness.  The unconditional
+form of `HasTypeDescPi.subjectWeaklyNormalizesOfStronglyNormalizes`. -/
+theorem HasTypeDescPi.subjectWeaklyNormalizesOfWfContext {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContext context)
+    (typed : HasTypeDescPi profile context subject classifier) :
+    ∃ normalForm : RawTerm scope,
+      StepStar subject normalForm ∧ RawTerm.isStepNormalForm normalForm :=
+  ⟨RawTerm.normalize subject (HasTypeDescPi.stronglyNormalizingOfWfContext contextWellFormed typed),
+    RawTerm.normalize_reducesTo subject (HasTypeDescPi.stronglyNormalizingOfWfContext contextWellFormed typed),
+    RawTerm.normalize_isStepNormalForm subject
+      (HasTypeDescPi.stronglyNormalizingOfWfContext contextWellFormed typed)⟩
+
+/-- **Unique normal form on the WfContext fragment, UNCONDITIONALLY.**  Every well-typed subject in a well-formed
+context has a UNIQUE normal form: existence is weak normalization (above), uniqueness is global confluence
+(`subjectConfluenceOfWfContext`, SN-046) plus normal-form rigidity (`StepStar.eq_of_noStep` via
+`isStepNormalForm_blocks_step` collapses the join apex onto each candidate).  The unconditional form of
+`HasTypeDescPi.uniqueNormalFormOfStronglyNormalizes` — the typed fragment is a normalizing rewriting system with
+a canonical representative per well-typed subject (the Path-A NbE headline), no SN hypothesis. -/
+theorem HasTypeDescPi.uniqueNormalFormOfWfContext {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContext context)
+    (typed : HasTypeDescPi profile context subject classifier) :
+    ∃ normalForm : RawTerm scope,
+      (StepStar subject normalForm ∧ RawTerm.isStepNormalForm normalForm) ∧
+        ∀ otherForm : RawTerm scope,
+          (StepStar subject otherForm ∧ RawTerm.isStepNormalForm otherForm) →
+            otherForm = normalForm := by
+  obtain ⟨canonicalForm, subjectToCanonical, canonicalIsNormal⟩ :=
+    HasTypeDescPi.subjectWeaklyNormalizesOfWfContext contextWellFormed typed
+  refine ⟨canonicalForm, ⟨subjectToCanonical, canonicalIsNormal⟩, ?_⟩
+  rintro otherForm ⟨subjectToOther, otherIsNormal⟩
+  obtain ⟨apex, otherToApex, canonicalToApex⟩ :=
+    HasTypeDescPi.subjectConfluenceOfWfContext contextWellFormed typed subjectToOther subjectToCanonical
+  have apexEqualsOther : apex = otherForm :=
+    StepStar.eq_of_noStep
+      (fun stepReduct stepFromOther =>
+        RawTerm.isStepNormalForm_blocks_step otherIsNormal stepReduct stepFromOther)
+      otherToApex
+  have apexEqualsCanonical : apex = canonicalForm :=
+    StepStar.eq_of_noStep
+      (fun stepReduct stepFromCanonical =>
+        RawTerm.isStepNormalForm_blocks_step canonicalIsNormal stepReduct stepFromCanonical)
+      canonicalToApex
+  exact apexEqualsOther.symm.trans apexEqualsCanonical
+
+/-- **The typed fragment is a convergent rewriting system with unique normal forms, UNCONDITIONALLY on the
+WfContext fragment.**  The unconditional twin of `convergencePackageModuloStronglyNormalizes`: bundles weak
+normalization, per-subject confluence (SN-046), and unique normal forms into ONE auditable statement, each
+conjunct WfContext-hypothesized (the honest precondition), with the typed-SN hypothesis fully discharged by open
+SN-043 (OB-5).  Together with the standalone `Conv.decidableOfWellTypedInWfContext` (SN-051), this is the
+Milestone-A normalization package for the typed fragment, no SN hypothesis. -/
+theorem HasTypeDescPi.convergencePackageOfWfContext {profile : PolyProfile} :
+    (∀ {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope},
+        WfContext context → HasTypeDescPi profile context subject classifier →
+          ∃ normalForm : RawTerm scope, StepStar subject normalForm ∧ RawTerm.isStepNormalForm normalForm)
+      ∧ (∀ {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope},
+          WfContext context → HasTypeDescPi profile context subject classifier →
+            ∀ {leftReduct rightReduct : RawTerm scope},
+              StepStar subject leftReduct → StepStar subject rightReduct →
+                StepStar.Join leftReduct rightReduct)
+      ∧ (∀ {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope},
+          WfContext context → HasTypeDescPi profile context subject classifier →
+            ∃ normalForm : RawTerm scope,
+              (StepStar subject normalForm ∧ RawTerm.isStepNormalForm normalForm) ∧
+                ∀ otherForm : RawTerm scope,
+                  (StepStar subject otherForm ∧ RawTerm.isStepNormalForm otherForm) →
+                    otherForm = normalForm) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro _scope _context _subject _classifier contextWellFormed typed
+    exact HasTypeDescPi.subjectWeaklyNormalizesOfWfContext contextWellFormed typed
+  · intro _scope _context _subject _classifier contextWellFormed typed
+      _leftReduct _rightReduct subjectToLeft subjectToRight
+    exact HasTypeDescPi.subjectConfluenceOfWfContext contextWellFormed typed subjectToLeft subjectToRight
+  · intro _scope _context _subject _classifier contextWellFormed typed
+    exact HasTypeDescPi.uniqueNormalFormOfWfContext contextWellFormed typed
+
 end FX1Poly.Typed

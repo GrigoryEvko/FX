@@ -4160,6 +4160,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfWellTypedInWfContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectConfluenceOfWfContext
 
+-- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
+-- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
+-- normal form (WN + SN-046-uncond confluence + normal-form rigidity), and the bundled headline. The typed
+-- fragment is a convergent rewriting system with canonical representatives per well-typed subject (the Path-A NbE
+-- headline), no SN hypothesis — only the honest WfContext presupposition.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectWeaklyNormalizesOfWfContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueNormalFormOfWfContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convergencePackageOfWfContext
+
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
 -- types at a shared flag and the body typed at the codomain under the domain binder. The grown analogue of the
