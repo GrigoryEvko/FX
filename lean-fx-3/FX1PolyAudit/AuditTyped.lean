@@ -211,6 +211,7 @@ import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.DenoteKeyedGenFormationSigmaArm
 import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedCumulativityObstruction
+import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
 import FX1Poly.Typed.DenoteKeyedNonDependentArrowMemberSN
@@ -3338,6 +3339,16 @@ gates pin them shut.
 -- model-obstructed (semantic reducibility does NOT bound universes — universeCode_isReducibleAtDenote fires at
 -- every level), so it needs a bound-carrying model OR stays a carried premise (conditional/fragment milestone).
 #assert_no_axioms FX1Poly.Typed.gapUniverseDomainPiVacuouslyReducibleAtLowLevel
+-- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
+-- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
+-- lowerAt only at the fixed index denote e, which the below-family coherence (denoteBelowFamily_eq_reducible)
+-- rewrites to the bound-independent ReducibleTypeAtDenote env (denote e). universeDenoteCandidate_boundIndependent:
+-- the candidate agrees pointwise at two ambient levels both exceeding denote e. universeReducible_withLowerCandidate
+-- _atHigher: cumulativity below the bound (same-candidate transport up via ofPointwiseIff). Together with the
+-- obstruction witness this pins the EXACT cumulativity boundary (holds iff universe < ambient); the gap regime
+-- is the sole residual = exactly what the bound-carrying refactor (#753) excludes by construction. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.universeDenoteCandidate_boundIndependent
+#assert_no_axioms FX1Poly.Typed.universeReducible_withLowerCandidate_atHigher
 
 -- closedTypeCodeStronglyNormalizingFromFundamentalAtDenote (SN-D6 type-code fragment): a CLOSED subject
 -- classified by Type@levelExpr (decoded level < ambient) satisfying the denote FT conclusion at the empty context
