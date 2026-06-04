@@ -251,6 +251,7 @@ import FX1Poly.Typed.OpenSNSmoke
 import FX1Poly.Typed.ContextValidityFails
 import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
 import FX1Poly.Typed.WfContextBetaEtaConfluence
+import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.UniverseFormationStrictness
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
@@ -4218,6 +4219,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.Step.betaEtaStar.eq_of_noBetaEtaStep
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectBetaEtaConfluenceOfWfContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContext
+
+-- CON-A0 (ConsistencyTargetSignature.lean): the SN-050 spike verdict. The data types are value-predicate
+-- candidates, NOT engine cells (no gen_empty); HasTypeDescPi doesn't type data (typingRuleDescOf = some only
+-- pi/sigma). So SN-050 = consistencyViaSconing (#697, shipped) specialized to engine typing, with the sole
+-- residual the explicit candidateBridge (closed engine-typing at emptyTypeCode ⟹ empty-candidate member =
+-- BFT closedBoundedReducibleMember + "emptyTypeCode's candidate is the empty candidate"). Plan's CON-A1/A2
+-- (gen_empty cascade) mismodel the architecture; the gap is the engine data-representation (#483/#485-487).
+#assert_no_axioms FX1Poly.Typed.consistencyFromEmptyCandidateBridge
 
 -- Universe-formation level-strictness (UniverseFormationStrictness.lean, 0-FP soundness corpus): the universe
 -- rule is level-TIGHT — a universe code is classified by EXACTLY Type@(e+1) up to Conv
