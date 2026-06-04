@@ -220,6 +220,11 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.Step.renamePullbackOfLeftInverse
 #assert_no_axioms FX1Poly.Core.Step.renameReflectsExistsOfLeftInverse
 #assert_no_axioms FX1Poly.Core.StepStar.renamePullbackOfLeftInverse
+-- Generic head-recovery for a renamed cell (RawTerm.rename_eq_mkGen): rename rho term = mkGen gen _ _ → term =
+-- mkGen gen _ _. The generator-generic head-recovery half of rename_eq_app/lam; the uniform first step of every
+-- arm of full ARBITRARY-renaming Step reflection (the genuine Kripke-arrow-CR3 ingredient, a per-eliminator
+-- induction — the injective renamePullback above does NOT serve CR3, which quantifies over all renamings).
+#assert_no_axioms FX1Poly.Core.RawTerm.rename_eq_mkGen
 
 -- SN-040 (WIP): the neutral LEAF of the stratified ReducibleTypeStep rename-closure (type + member level).
 -- The piType arm is genuinely Kripke-obstructed (see StratifiedReducibleTypeRename docstring); this is the

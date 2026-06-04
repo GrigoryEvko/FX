@@ -1,5 +1,6 @@
 import FX1Poly.Core.StepRename
 import FX1Poly.Core.StrongNormalizationRenameForward
+import FX1Poly.Core.CandidateInterpretationRename
 
 /-! # FX1Poly/Core/StepRenameReflect — pulling a `Step` BACK along an injective renaming
 
@@ -39,6 +40,31 @@ namespace FX1Poly.Core
 
 open FX1Poly.Foundation
 open StepStar
+
+/-- **Generic head-recovery for a renamed cell.**  If `rename rho term` is a `gen`-headed cell, then so is
+`term` — renaming preserves the head generator (`rename_rootGenerator`), and `RawTerm` is a single `mkGen`
+constructor, so `term` is `mkGen gen _ _` with some payload/children.  The generator-generic head-recovery
+half of the shipped `rename_eq_app` / `rename_eq_lam` (which additionally expose the renamed children at a
+CONCRETE head via the `rfl`-distribution `rename_app_reduces`).  This is the uniform first step of every arm
+of full arbitrary-renaming `Step` reflection (`Step (rename rho t) u → ∃ t', Step t t' ∧ rename rho t' = u`,
+the Kripke-arrow-CR3 ingredient): recover `t`'s head, then a concrete-`gen` `rfl`-distribution + `injection`
+exposes the children for the per-arm reconstruction. -/
+theorem RawTerm.rename_eq_mkGen {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {gen : Generator} {payloadReduct : gen.payload targetScope}
+    {childrenReduct : RawTermChildren gen.binderShifts targetScope}
+    (renameEquation : RawTerm.rename rho term = .mkGen gen payloadReduct childrenReduct) :
+    ∃ (payload : gen.payload sourceScope) (children : RawTermChildren gen.binderShifts sourceScope),
+      term = .mkGen gen payload children := by
+  have rootEquation : term.rootGenerator = gen := by
+    have congruence := congrArg RawTerm.rootGenerator renameEquation
+    rw [RawTerm.rename_rootGenerator] at congruence
+    exact congruence
+  match term, rootEquation with
+  | .mkGen generator payload children, rootEquation =>
+      change generator = gen at rootEquation
+      subst rootEquation
+      exact ⟨payload, children, rfl⟩
 
 /-- **Pull a `Step` back along an injective renaming.**  If the `forwardRenaming`-renamed `sourceTerm`
 takes a reduction to `renamedReduct`, then `sourceTerm` itself reduces to `rename leftInverseRenaming
