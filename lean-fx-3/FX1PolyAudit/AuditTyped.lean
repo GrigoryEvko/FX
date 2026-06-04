@@ -241,6 +241,7 @@ import FX1Poly.Typed.BoundedGrownFundamental
 import FX1Poly.Typed.ClosedBoundedReducibleMember
 import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.OpenStronglyNormalizing
+import FX1Poly.Typed.BoundedNeutralMember
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4107,6 +4108,13 @@ gates pin them shut.
 -- instance). Reduces fully-unconditional #546 to ONE residual: reducibleEnvOfWfContext (the identity closing subst
 -- is bound-reducible over a well-formed context — the classical reducible-substitution lemma).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfReducibleEnv
+
+-- OB-1 (BoundedNeutralMember.lean): a variable is a bound-reducible member of any bound-reducible type. The
+-- candidate is an unconditional reducibility candidate (ReducibleTypeAtBounded.isReducibilityCandidate) and a
+-- variable joins it by CR3 (neutralExpansion) with a vacuous reduct premise (noStep_var). The member-side leaf the
+-- neutral/identity closing environment (reducibleEnvOfWfContext, OB-3) cons-feeds at every context position — the
+-- first brick discharging the OpenStronglyNormalizing residual toward UNCONDITIONAL open SN-043 (#546).
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtBounded.ofVariable
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
