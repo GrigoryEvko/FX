@@ -247,6 +247,7 @@ import FX1Poly.Typed.BoundedBindingTypeReducible
 import FX1Poly.Typed.ReducibleEnvOfWfContext
 import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Typed.WfContextDecidableConv
+import FX1Poly.Typed.OpenSNSmoke
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4168,6 +4169,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectWeaklyNormalizesOfWfContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueNormalFormOfWfContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convergencePackageOfWfContext
+
+-- OSN-2 (OpenSNSmoke.lean): open-context SN regression corpus via open SN-043 (OB-5). Four concrete terms in the
+-- non-empty well-formed context Γ = (.empty).cons (Type@e) — a universe code (ofFormation), the context
+-- variable var 0 (var-rule bridge), the identity lambda (piIntro binder), and the β-redex (λx.x) Type@s (piElim)
+-- — each discharged to IsStronglyNormalizing by HasTypeDescPi.stronglyNormalizingOfWfContext. The β-redex entry
+-- is the NON-VACUOUS one: a term that actually reduces, whose termination OB-5 certifies. The open analogue of
+-- ClosedSNSmoke (SN-044), demonstrating the open milestone result fires on genuinely open terms.
+#assert_no_axioms FX1Poly.Typed.openUniverseCode_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.openContextVariable_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.openIdentityLambda_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.openBetaRedex_stronglyNormalizing
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
