@@ -3052,6 +3052,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.uniformDomainPiArmFromInductiveHypotheses
 #assert_no_axioms FX1Poly.Typed.neutralDomainPiArmFromInductiveHypotheses
 
+-- DenoteKeyedGeneralDomainPiArm UNIFIED piArm (#752): the bridge invokes ofReducibleTypeStepDenote at
+-- lowerAt = denoteBelowFamily env outerLevel, so the backbone's domain step IS (definitionally) ReducibleType
+-- AtDenote env outerLevel. piArmFromMemberStabilityToOuterLevel collapses the whole 5-arm cases-domainReducible
+-- split to ONE hypothesis — member-stability of the domain TO the fixed outerLevel — with codomain existence
+-- derived automatically by determinism against domainReducible (no codomainExistence premise, no per-shape
+-- casing). Strictly more usable than generalDomainPi_reducibleFromMemberStability (only stability-to-outerLevel,
+-- not to-every-level). Per output level: (domainAllLevel level).reducibleMemberCandidate as domain candidate,
+-- memberStableToOuter lifts the member to outerLevel, determinism pins domainCandidate, codomain IH fires. The
+-- residual is now exactly memberStableToOuter (neutral/uniform always; universe above threshold; composite open).
+#assert_no_axioms FX1Poly.Typed.piArmFromMemberStabilityToOuterLevel
+
 -- DenoteKeyedUniverseDomainPiArm (#752 — the universeCode arm of the ofReducibleTypeStepDenote piArm case-split):
 -- the domain is a universe code Type@innerLevelExpr whose membership candidate DRIFTS (empty below the inner
 -- decoded level, real above), so the neutral/uniform adapters cannot reach it. The two decode lemmas split the

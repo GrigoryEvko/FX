@@ -128,4 +128,44 @@ theorem neutralDomainPiArmFromInductiveHypotheses {scope : Nat} (env : Nat → N
     (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
     codomainInductiveHypothesis
 
+/-- **The UNIFIED piArm — the whole case-split collapses to member-stability at one level.**  The A2 bridge
+`universeMemberReducibleAtLevel` (`DenoteKeyedAmbientLevelBridge.lean`) invokes `ofReducibleTypeStepDenote` at
+`lowerAt = denoteBelowFamily env outerLevel`, so the backbone's domain step `domainReducible` IS — definitionally
+— `ReducibleTypeAtDenote env outerLevel domainCode domainCandidate` (`ReducibleTypeAtDenote env level :=
+ReducibleTypeStepDenote env (denoteBelowFamily env level)`).  That single observation collapses the entire 5-arm
+`cases domainReducible` (neutral / universeCode / piType / whnfExpand / ofPointwiseIff) to ONE hypothesis: the
+domain's members are STABLE up to the fixed `outerLevel`.  No per-shape casing, no codomain member-stability.
+
+The construction is per output level (each an independent `piType` node — codomain candidate may drift): the
+domain reducibility at `outputLevel` is `(domainAllLevel outputLevel).reducibleMemberCandidate` (canonical
+member-predicate); for a member `argument` there, `memberStableToOuter` lifts it to a member at `outerLevel`,
+whose candidate `ReducibleTypeAtDenote.deterministic`-agrees with `domainCandidate` (both at `outerLevel`), so
+`domainCandidate argument` holds and the codomain IH fires with its own canonical member-predicate.  Strictly
+more usable than `generalDomainPi_reducibleFromMemberStability`: the codomain EXISTENCE is derived automatically
+from `domainReducible` (no separate `codomainExistence` premise), and only stability TO `outerLevel` is needed
+(not to every level).  The per-shape residual is now exactly `memberStableToOuter` — neutral/uniform (always
+stable), universe (stable above the inner threshold), composite (the open threshold-drift case). -/
+theorem piArmFromMemberStabilityToOuterLevel {scope : Nat} (env : Nat → Nat) (outerLevel : Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm scope → Prop}
+    (domainReducible : ReducibleTypeAtDenote env outerLevel domainCode domainCandidate)
+    (domainAllLevel : IsReducibleTypeAtAllDenoteLevels env domainCode)
+    (memberStableToOuter : ∀ (sourceLevel : Nat) (argument : RawTerm scope),
+        IsReducibleMemberAtDenote env sourceLevel domainCode argument →
+        IsReducibleMemberAtDenote env outerLevel domainCode argument)
+    (codomainInductiveHypothesis : ∀ argument : RawTerm scope, domainCandidate argument →
+        IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst0 codomainCode argument)) :
+    IsReducibleTypeAtAllDenoteLevels env
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) := by
+  intro outputLevel
+  refine ⟨_, ReducibleTypeStepDenote.piType
+    (fun argument => IsReducibleMemberAtDenote env outputLevel (RawTerm.subst0 codomainCode argument))
+    (domainAllLevel outputLevel).reducibleMemberCandidate
+    (fun argument argumentInDomain => ?_)⟩
+  obtain ⟨candidateOuter, reducibleOuter, candidateOuterArgument⟩ :=
+    memberStableToOuter outputLevel argument argumentInDomain
+  have domainCandidateArgument : domainCandidate argument :=
+    (ReducibleTypeAtDenote.deterministic reducibleOuter domainReducible argument).mp candidateOuterArgument
+  exact (codomainInductiveHypothesis argument domainCandidateArgument outputLevel).reducibleMemberCandidate
+
 end FX1Poly.Typed
