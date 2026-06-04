@@ -224,6 +224,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedAssemblyBridge
 import FX1Poly.Typed.DenoteKeyedBoundedTelescopeReducible
 import FX1Poly.Typed.DenoteKeyedBoundedTelescopeFundamental
 import FX1Poly.Typed.DenoteKeyedBoundedTelescopeProjection
+import FX1Poly.Typed.FormerOutputLevelBounds
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3940,3 +3941,13 @@ gates pin them shut.
 -- piReducibleAsTypeFromNonUniformLevelMemberBounded consumes; codomain reshaped subst(cons)→subst0(subst(lift))
 -- via RawTerm.subst_cons_eq_subst0_lift. The telescope→discharge bridge for the genFormationPi recursor arm.
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded.twoChildMembers
+
+-- Π/Σ-former output-level bounds (FormerOutputLevelBounds.lean) — the genFormationPi belowOutput premises:
+-- each child level ≤ the former's lmaxAll output level. lmaxAll [a,b] = lmax a b (definitional fold collapse);
+-- denote_lmax → structural levelMax; levelMax_le_left/right re-derived (the ClassifierLevelMeasure ones are
+-- file-private). Feeds piReducibleAsTypeFromNonUniformLevelMemberBounded's domainBelowOutput/codomainBelowOutput.
+#assert_no_axioms FX1Poly.Typed.levelMax_le_left
+#assert_no_axioms FX1Poly.Typed.levelMax_le_right
+#assert_no_axioms FX1Poly.Typed.lmaxAll_pair
+#assert_no_axioms FX1Poly.Typed.denote_domainLevel_le_lmaxAll_pair
+#assert_no_axioms FX1Poly.Typed.denote_codomainLevel_le_lmaxAll_pair
