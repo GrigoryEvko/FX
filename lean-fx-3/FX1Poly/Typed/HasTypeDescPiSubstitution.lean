@@ -112,32 +112,22 @@ theorem HasTypeDesc.substIntoGrown {profile : PolyProfile}
       have substPremises :=
         DescTelescope.substIntoGrown premises targetContext substitution
           substitutionTyped
-      by_cases hPi : generator = .gen_piTyCode
-      · subst hPi
-        obtain rfl : rule = { outputType := universeFormerOutput } :=
-          Option.some.inj isFormation.symm
-        show HasTypeDescPi profile targetContext
-          (RawTerm.subst substitution (RawTerm.mkGen .gen_piTyCode payload children))
-          (RawTerm.subst substitution (universeCodeCell (lmaxAll levels) flag))
-        rw [subst_universeCodeCell]
-        exact HasTypeDescPi.genFormationPi targetContext .gen_piTyCode payload
-          (RawTermChildren.subst substitution children) levels flag
-          { outputType := universeFormerOutput } typingRuleDescOf_piTyCode substPremises
-      · by_cases hSigma : generator = .gen_sigmaTyCode
-        · subst hSigma
-          obtain rfl : rule = { outputType := universeFormerOutput } :=
-            Option.some.inj isFormation.symm
-          show HasTypeDescPi profile targetContext
-            (RawTerm.subst substitution (RawTerm.mkGen .gen_sigmaTyCode payload children))
-            (RawTerm.subst substitution (universeCodeCell (lmaxAll levels) flag))
-          rw [subst_universeCodeCell]
-          exact HasTypeDescPi.genFormationPi targetContext .gen_sigmaTyCode payload
-            (RawTermChildren.subst substitution children) levels flag
-            { outputType := universeFormerOutput } typingRuleDescOf_sigmaTyCode substPremises
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg hPi, if_neg hSigma] at isFormation
-          contradiction
+      -- TABLE-GENERIC (no `by_cases pi/sigma`): the grown-engine twin of the GTL-01 migration.
+      -- `formationRuleImpliesNotVariable` + `formationRuleIsUniverseFormer` + the non-var commutation
+      -- `RawTerm.subst_mkGen_of_ne_var` distribute the substitution over the ABSTRACT formation cell;
+      -- the GENERIC `genFormationPi` re-fires with the ORIGINAL generator/isFormation.  A new
+      -- formation row absorbs here with zero edits.
+      have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
+      obtain rfl : rule = { outputType := universeFormerOutput } :=
+        formationRuleIsUniverseFormer isFormation
+      show HasTypeDescPi profile targetContext
+        (RawTerm.subst substitution (RawTerm.mkGen generator payload children))
+        (RawTerm.subst substitution (universeCodeCell (lmaxAll levels) flag))
+      rw [subst_universeCodeCell, RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+      exact HasTypeDescPi.genFormationPi targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.subst substitution children) levels flag
+        { outputType := universeFormerOutput } isFormation substPremises
 
 /-- Companion: substitute a formation premise spine under a grown substitution, producing a grown
 `DescTelescopePi` spine.  Head via `HasTypeDesc.substIntoGrown`; tail under the binder with the
@@ -343,32 +333,22 @@ theorem HasTypeDescPi.substRespectingContext {profile : PolyProfile}
       have substPremises :=
         DescTelescopePi.substRespectingTelescope premises targetContext substitution
           substitutionTyped
-      by_cases hPi : generator = .gen_piTyCode
-      · subst hPi
-        obtain rfl : rule = { outputType := universeFormerOutput } :=
-          Option.some.inj isFormation.symm
-        show HasTypeDescPi profile targetContext
-          (RawTerm.subst substitution (RawTerm.mkGen .gen_piTyCode payload children))
-          (RawTerm.subst substitution (universeCodeCell (lmaxAll levels) flag))
-        rw [subst_universeCodeCell]
-        exact HasTypeDescPi.genFormationPi targetContext .gen_piTyCode payload
-          (RawTermChildren.subst substitution children) levels flag
-          { outputType := universeFormerOutput } typingRuleDescOf_piTyCode substPremises
-      · by_cases hSigma : generator = .gen_sigmaTyCode
-        · subst hSigma
-          obtain rfl : rule = { outputType := universeFormerOutput } :=
-            Option.some.inj isFormation.symm
-          show HasTypeDescPi profile targetContext
-            (RawTerm.subst substitution (RawTerm.mkGen .gen_sigmaTyCode payload children))
-            (RawTerm.subst substitution (universeCodeCell (lmaxAll levels) flag))
-          rw [subst_universeCodeCell]
-          exact HasTypeDescPi.genFormationPi targetContext .gen_sigmaTyCode payload
-            (RawTermChildren.subst substitution children) levels flag
-            { outputType := universeFormerOutput } typingRuleDescOf_sigmaTyCode substPremises
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg hPi, if_neg hSigma] at isFormation
-          contradiction
+      -- TABLE-GENERIC (no `by_cases pi/sigma`): the grown-engine twin of the GTL-01 migration.
+      -- `formationRuleImpliesNotVariable` + `formationRuleIsUniverseFormer` + the non-var commutation
+      -- `RawTerm.subst_mkGen_of_ne_var` distribute the substitution over the ABSTRACT formation cell;
+      -- the GENERIC `genFormationPi` re-fires with the ORIGINAL generator/isFormation.  A new
+      -- formation row absorbs here with zero edits.
+      have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
+      obtain rfl : rule = { outputType := universeFormerOutput } :=
+        formationRuleIsUniverseFormer isFormation
+      show HasTypeDescPi profile targetContext
+        (RawTerm.subst substitution (RawTerm.mkGen generator payload children))
+        (RawTerm.subst substitution (universeCodeCell (lmaxAll levels) flag))
+      rw [subst_universeCodeCell, RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+      exact HasTypeDescPi.genFormationPi targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.subst substitution children) levels flag
+        { outputType := universeFormerOutput } isFormation substPremises
 
 /-- Companion: substitute a GROWN premise spine under a grown substitution, producing a grown
 `DescTelescopePi`.  Head via `HasTypeDescPi.substRespectingContext`; tail under the binder with the

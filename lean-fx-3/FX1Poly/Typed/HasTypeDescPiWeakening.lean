@@ -182,32 +182,21 @@ theorem HasTypeDescPi.renameRespectingContext {profile : PolyProfile}
       have renamedPremises :=
         DescTelescopePi.renameRespectingTelescope premises targetContext rawRenaming
           contextCondition
-      by_cases hPi : generator = .gen_piTyCode
-      · subst hPi
-        obtain rfl : rule = { outputType := universeFormerOutput } :=
-          Option.some.inj isFormation.symm
-        show HasTypeDescPi profile targetContext
-          (RawTerm.rename rawRenaming (RawTerm.mkGen .gen_piTyCode payload children))
-          (RawTerm.rename rawRenaming (universeCodeCell (lmaxAll levels) flag))
-        rw [rename_universeCodeCell]
-        exact HasTypeDescPi.genFormationPi targetContext .gen_piTyCode payload
-          (RawTermChildren.rename rawRenaming children) levels flag
-          { outputType := universeFormerOutput } typingRuleDescOf_piTyCode renamedPremises
-      · by_cases hSigma : generator = .gen_sigmaTyCode
-        · subst hSigma
-          obtain rfl : rule = { outputType := universeFormerOutput } :=
-            Option.some.inj isFormation.symm
-          show HasTypeDescPi profile targetContext
-            (RawTerm.rename rawRenaming (RawTerm.mkGen .gen_sigmaTyCode payload children))
-            (RawTerm.rename rawRenaming (universeCodeCell (lmaxAll levels) flag))
-          rw [rename_universeCodeCell]
-          exact HasTypeDescPi.genFormationPi targetContext .gen_sigmaTyCode payload
-            (RawTermChildren.rename rawRenaming children) levels flag
-            { outputType := universeFormerOutput } typingRuleDescOf_sigmaTyCode renamedPremises
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg hPi, if_neg hSigma] at isFormation
-          contradiction
+      -- TABLE-GENERIC (no `by_cases pi/sigma`): the grown-engine rename twin.  The non-var commutation
+      -- `RawTerm.rename_mkGen_of_ne_var` distributes the renaming over the ABSTRACT formation cell and
+      -- the GENERIC `genFormationPi` re-fires with the ORIGINAL generator/isFormation — realizing the
+      -- "no per-former dispatch" cascade-free shape this arm's docstring describes.
+      have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
+      obtain rfl : rule = { outputType := universeFormerOutput } :=
+        formationRuleIsUniverseFormer isFormation
+      show HasTypeDescPi profile targetContext
+        (RawTerm.rename rawRenaming (RawTerm.mkGen generator payload children))
+        (RawTerm.rename rawRenaming (universeCodeCell (lmaxAll levels) flag))
+      rw [rename_universeCodeCell, RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
+      exact HasTypeDescPi.genFormationPi targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.rename rawRenaming children) levels flag
+        { outputType := universeFormerOutput } isFormation renamedPremises
 
 theorem DescTelescopePi.renameRespectingTelescope {profile : PolyProfile}
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
