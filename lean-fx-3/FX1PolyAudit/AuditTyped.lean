@@ -89,6 +89,7 @@ import FX1Poly.Core.BoolCanonicityViaSconing
 import FX1Poly.Core.DataCanonicityViaSconing
 import FX1Poly.Core.ModalCanonicityViaSconing
 import FX1Poly.Core.DataMetatheoryViaSconing
+import FX1Poly.Core.ReducibilityNormalizationViaSconing
 import FX1Poly.Core.ConsistencyViaSconing
 import FX1Poly.Core.DataEliminatorProgressViaSconing
 import FX1Poly.Core.NatCanonicalFormsCandidate
@@ -3575,3 +3576,19 @@ gates pin them shut.
 -- DEPENDENT composite-domain Pi stays gated on #752/#753. Both zero-axiom.
 #assert_no_axioms FX1Poly.Typed.universeDomainNonDependentArrowMemberStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.universeToUniverseArrowMemberStronglyNormalizing
+-- General-reducibility NORMALIZATION sconing extraction (SN-094 / SN-110 at the logical-predicate level,
+-- ReducibilityNormalizationViaSconing.lean). reducibilityScone (SconingWitness) extracts strong normalization;
+-- DataMetatheoryViaSconing (#696) bundles SN + reduces-to-value for the DATA axis. Neither delivers the genuine
+-- WEAK-NORMALIZATION metatheorem (term reaches a structural normal form). This file adds it at the GENERAL
+-- reducibility-candidate level (any IsReducibilityCandidate, any scope): the SECOND concrete sconing witness,
+-- whose extraction composes CR1 (candidate => SN) with exists_normalForm_of_isStronglyNormalizing (SN => reaches
+-- NF, WeakNormalization.lean). reachesStepNormalForm: the WN predicate. reducibilityNormalizationScone: the
+-- normalization sconing witness. normalizationViaSconing: well-typed => reaches NF. ReducibilityMetatheory +
+-- reducibilityMetatheoryViaSconing: ONE fundamental => BOTH strong + weak normalization, the general-reducibility
+-- "sconing is enough" demonstration (SN-110), strictly beyond DataMetatheory's SN-only. Parametric in the
+-- fundamental obligation (honest: gated on SN-043 for the full kernel, discharged on proven fragments); does NOT
+-- flip the Tier-0 categorical NormalizationExtraction ledger flag. All zero-axiom.
+#assert_no_axioms FX1Poly.Core.reachesStepNormalForm
+#assert_no_axioms FX1Poly.Core.reducibilityNormalizationScone
+#assert_no_axioms FX1Poly.Core.normalizationViaSconing
+#assert_no_axioms FX1Poly.Core.reducibilityMetatheoryViaSconing
