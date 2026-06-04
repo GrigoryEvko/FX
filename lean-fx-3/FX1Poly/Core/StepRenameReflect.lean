@@ -97,6 +97,80 @@ theorem Step.reflectBeta {sourceScope targetScope : Nat}
   refine ⟨RawTerm.subst0 body argument, Step.beta, ?_⟩
   rw [RawTerm.rename_subst0_commute, bodyEq, argumentRename]
 
+/-- **The `boolElim`-on-`boolTrue` ι arm of arbitrary-renaming `Step` reflection.**  If `rename rho term` is
+the ι-redex `boolElim boolTrue thenBranch elseBranch`, then `term` is the source redex `boolElim boolTrue
+sourceThen sourceElse` (renaming preserves the `gen_boolElim` head and the nested `gen_boolTrue` scrutinee head,
+both recovered by `rename_eq_mkGen`; `gen_boolTrue` has no children so the scrutinee is recovered exactly), it
+ι-reduces to its then-branch, and that source then-branch renames to `renamedThen`.  A child-PROJECTION ι leaf
+arm: the contractum is a child of the redex (no substitution), so the image equation is the child's own
+recovered renaming.  Complete standalone case (ι is a base case, no sub-reflection hypothesis). -/
+theorem Step.reflectIotaBoolTrue {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedThen renamedElse : RawTerm targetScope}
+    (renameEquation : RawTerm.rename rho term =
+      .mkGen .gen_boolElim ()
+        (.childCons (.mkGen .gen_boolTrue () .childNil)
+          (.childCons renamedThen (.childCons renamedElse .childNil)))) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      Step term sourceReduct ∧ RawTerm.rename rho sourceReduct = renamedThen := by
+  obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
+  subst termEq
+  match payload, children with
+  | (), .childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)) =>
+      rw [show RawTerm.rename rho
+            (.mkGen .gen_boolElim ()
+              (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))) =
+            (.mkGen .gen_boolElim ()
+              (.childCons (RawTerm.rename rho scrutinee)
+                (.childCons (RawTerm.rename rho thenBranch)
+                  (.childCons (RawTerm.rename rho elseBranch) .childNil)))
+              : RawTerm targetScope) from rfl] at renameEquation
+      injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
+      injection childrenEq with _ _ _ scrutineeEq tailEq
+      injection tailEq with _ _ _ thenEq tail2Eq
+      injection tail2Eq with _ _ _ _elseEq _nilEq
+      obtain ⟨_scrutPayload, _scrutChildren, scrutTermEq⟩ := RawTerm.rename_eq_mkGen rho scrutineeEq
+      subst scrutTermEq
+      match _scrutPayload, _scrutChildren with
+      | (), .childNil =>
+          exact ⟨thenBranch, Step.iotaBoolTrue, thenEq⟩
+
+/-- **The `boolElim`-on-`boolFalse` ι arm of arbitrary-renaming `Step` reflection.**  The symmetric twin of
+`reflectIotaBoolTrue`: a `boolElim boolFalse thenBranch elseBranch` ι-redex reflects to the source redex
+projecting its ELSE-branch.  Same child-projection recipe (head recovery + concrete `gen_boolElim`
+rfl-distribution + injection + `gen_boolFalse` scrutinee recovery), returning the else-branch with its
+recovered renaming as the contractum image. -/
+theorem Step.reflectIotaBoolFalse {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedThen renamedElse : RawTerm targetScope}
+    (renameEquation : RawTerm.rename rho term =
+      .mkGen .gen_boolElim ()
+        (.childCons (.mkGen .gen_boolFalse () .childNil)
+          (.childCons renamedThen (.childCons renamedElse .childNil)))) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      Step term sourceReduct ∧ RawTerm.rename rho sourceReduct = renamedElse := by
+  obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
+  subst termEq
+  match payload, children with
+  | (), .childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)) =>
+      rw [show RawTerm.rename rho
+            (.mkGen .gen_boolElim ()
+              (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))) =
+            (.mkGen .gen_boolElim ()
+              (.childCons (RawTerm.rename rho scrutinee)
+                (.childCons (RawTerm.rename rho thenBranch)
+                  (.childCons (RawTerm.rename rho elseBranch) .childNil)))
+              : RawTerm targetScope) from rfl] at renameEquation
+      injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
+      injection childrenEq with _ _ _ scrutineeEq tailEq
+      injection tailEq with _ _ _ _thenEq tail2Eq
+      injection tail2Eq with _ _ _ elseEq _nilEq
+      obtain ⟨_scrutPayload, _scrutChildren, scrutTermEq⟩ := RawTerm.rename_eq_mkGen rho scrutineeEq
+      subst scrutTermEq
+      match _scrutPayload, _scrutChildren with
+      | (), .childNil =>
+          exact ⟨elseBranch, Step.iotaBoolFalse, elseEq⟩
+
 /-- **Pull a `Step` back along an injective renaming.**  If the `forwardRenaming`-renamed `sourceTerm`
 takes a reduction to `renamedReduct`, then `sourceTerm` itself reduces to `rename leftInverseRenaming
 renamedReduct` — the source reduct recovered by the left-inverse.  The confinement-free `Step` half of

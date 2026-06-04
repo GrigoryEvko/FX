@@ -231,6 +231,12 @@ per-decl list.  It also re-checks the native infra under
 -- substitution leaf arm of full reflection (the Kripke-arrow-CR3 ingredient); a complete standalone case (β is a
 -- base case, no sub-reflection hypothesis). The child-projection ι arms + recursive cong arm join it later.
 #assert_no_axioms FX1Poly.Core.Step.reflectBeta
+-- The boolElim child-projection ι arms of arbitrary-ρ Step reflection (Step.reflectIotaBoolTrue/BoolFalse):
+-- rename ρ term = boolElim (boolTrue/boolFalse) then else → ∃ t', Step term t' ∧ rename ρ t' = then/else. Head
+-- recovery (rename_eq_mkGen) + concrete gen_boolElim rfl-distribution + injection + gen_boolTrue/boolFalse
+-- scrutinee recovery; the contractum is a child (no subst), image = the child's recovered renaming. ι leaf arms.
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaBoolTrue
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaBoolFalse
 
 -- SN-040 (WIP): the neutral LEAF of the stratified ReducibleTypeStep rename-closure (type + member level).
 -- The piType arm is genuinely Kripke-obstructed (see StratifiedReducibleTypeRename docstring); this is the
