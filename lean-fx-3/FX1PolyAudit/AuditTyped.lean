@@ -172,6 +172,7 @@ import FX1Poly.Typed.DenoteKeyedGeneralDomainPiArm
 import FX1Poly.Typed.DenoteKeyedUniformPiCandidate
 import FX1Poly.Typed.DenoteKeyedUniformPiAboveThreshold
 import FX1Poly.Typed.DenoteKeyedPiFormerAtLevel
+import FX1Poly.Typed.DenoteKeyedReducibleTypeLevelLift
 import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
 import FX1Poly.Typed.DenoteKeyedApplicationMember
 import FX1Poly.Typed.DenoteKeyedConvMember
@@ -3076,6 +3077,19 @@ gates pin them shut.
 -- domain shapes; threshold-drift composites lift via the above-threshold uniform candidate (shipped) as the
 -- domain premise. Completes the genFormationPi piArm INGREDIENTS; only the telescope/recursor wiring remains.
 #assert_no_axioms FX1Poly.Typed.neutralDomainPiFormerReducibleAtLevel
+
+-- DenoteKeyedReducibleTypeLevelLift (#752/#744 — the genFormationPi child-LIFT engine): the SINGLE-level
+-- reducibility lift backbone. A former's telescope children arrive reducible at THEIR decoded levels (strictly
+-- lower than the former's); lifting them to the former's level is genFormationPi's central move.
+-- reducibleTypeLevelLift: from a ReducibleTypeStepDenote env lowerAt step produce reducibility at one fixed
+-- highLevel — four constructive arms (whnfExpand head-expands the lifted reduct; neutral free; universeCode via
+-- universeCode_isReducibleAtDenote, reducible at EVERY level; ofPointwiseIff inherits) with the piType arm
+-- isolated as piArmLift. Contrast the all-level IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote whose
+-- piArm is unachievable for threshold-drift composite-domain Π (fails below threshold); the single fixed highLevel
+-- makes piArmLift the TRACTABLE member-stability bridge (above threshold, via the shipped
+-- uniformDomainPi_memberStableAboveThreshold) rather than the unachievable all-level gate. The route correction
+-- for #752 crystallised into reusable infrastructure.
+#assert_no_axioms FX1Poly.Typed.reducibleTypeLevelLift
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
