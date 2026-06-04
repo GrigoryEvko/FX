@@ -747,3 +747,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Step.etaPairSourceReduceFst
 #assert_no_axioms FX1Poly.Core.Step.etaPairSourceReduceSnd
 #assert_no_axioms FX1Poly.Core.etaPairQuasiCommutesOverBeta
+
+-- OSN-B5 (EtaPostponementOverBeta.lean): the last two η constructors, closing the 5. etaPathLam is etaLam's
+-- binder shape over gen_pathLam/gen_pathApp (single copy, scope+1 ascription). etaGlueIntro is the second
+-- DUPLICATING case: glueIntro[glueElim g, g] records g twice (the second directly), so it follows etaPair's
+-- reduce-first/reduce-second/η multi-step UnionStar pattern. All 5 per-η-ctor obligations now in hand for B6.
+#assert_no_axioms FX1Poly.Core.Step.etaPathLamSourceCongruence
+#assert_no_axioms FX1Poly.Core.etaPathLamQuasiCommutesOverBeta
+#assert_no_axioms FX1Poly.Core.Step.etaGlueIntroReduceElim
+#assert_no_axioms FX1Poly.Core.Step.etaGlueIntroReduceSecond
+#assert_no_axioms FX1Poly.Core.etaGlueIntroQuasiCommutesOverBeta

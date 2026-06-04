@@ -138,4 +138,79 @@ theorem etaPairQuasiCommutesOverBeta {scope : Nat}
      (UnionStar.tailLeft (UnionStar.refl _) (Step.etaPairSourceReduceSnd betaStep))
      (Step.eta.etaPair reduct)⟩
 
+/-! ## etaPathLam (OSN-B5, the cubical binder case)
+
+`etaPathLamSource p = pathLam[ pathApp[ weaken p, newestVar ] ]` — etaLam's exact shape over the cubical
+path generators `gen_pathLam`/`gen_pathApp`.  Single copy under one binder, so the proof is etaLam's,
+verbatim modulo the generator names. -/
+
+/-- Lift a β/ι-step under the etaPathLam source context `pathLam[ pathApp[ weaken _, newestVar ] ]`. -/
+theorem Step.etaPathLamSourceCongruence {scope : Nat}
+    {innerPath reduct : RawTerm scope}
+    (betaStep : Step innerPath reduct) :
+    Step (RawTerm.etaPathLamSource innerPath) (RawTerm.etaPathLamSource reduct) :=
+  Step.cong .gen_pathLam ()
+    (StepChildren.here .childNil
+      (Step.cong .gen_pathApp ()
+        (StepChildren.here
+          (.childCons RawTerm.newestVar .childNil : RawTermChildren [0] (scope + 1))
+          (Step.weaken betaStep))))
+
+/-- **etaPathLam quasi-commutes over β (OSN-B5).**  The etaPathLam case of
+`QuasiCommutesRightOverLeft Step Step.eta`: congruence lift then one etaPathLam η-contraction. -/
+theorem etaPathLamQuasiCommutesOverBeta {scope : Nat}
+    {innerPath reduct : RawTerm scope}
+    (betaStep : Step innerPath reduct) :
+    ∃ commonReduct, Step (RawTerm.etaPathLamSource innerPath) commonReduct ∧
+      UnionStar Step Step.eta commonReduct reduct :=
+  ⟨RawTerm.etaPathLamSource reduct,
+   Step.etaPathLamSourceCongruence betaStep,
+   UnionStar.tailRight (UnionStar.refl _) (Step.eta.etaPathLam reduct)⟩
+
+/-! ## etaGlueIntro (OSN-B5, the second DUPLICATING case)
+
+`etaGlueIntroSource g = glueIntro[ glueElim g, g ]` records the glued term TWICE (once under `glueElim`,
+once as the direct second child).  Like etaPair, one β/ι-step on the source reaches only the first copy, so
+the βη-tail β-reduces the second and η-contracts — a multi-step `UnionStar`.  The second copy is `g`
+directly (no projection wrapper), so its reduction is a single `cong`. -/
+
+/-- etaGlueIntro reduce the `glueElim g` copy (child 0) to `glueIntro[ glueElim c, g ]`. -/
+theorem Step.etaGlueIntroReduceElim {scope : Nat}
+    {gluedTerm reduct : RawTerm scope}
+    (betaStep : Step gluedTerm reduct) :
+    Step (RawTerm.etaGlueIntroSource gluedTerm)
+      (.mkGen .gen_glueIntro ()
+        (.childCons (.mkGen .gen_glueElim () (.childCons reduct .childNil))
+          (.childCons gluedTerm .childNil))) :=
+  Step.cong .gen_glueIntro ()
+    (StepChildren.here _
+      (Step.cong .gen_glueElim () (StepChildren.here .childNil betaStep)))
+
+/-- etaGlueIntro reduce the direct second `g` copy (child 1), reaching `etaGlueIntroSource reduct`. -/
+theorem Step.etaGlueIntroReduceSecond {scope : Nat}
+    {gluedTerm reduct : RawTerm scope}
+    (betaStep : Step gluedTerm reduct) :
+    Step
+      (.mkGen .gen_glueIntro ()
+        (.childCons (.mkGen .gen_glueElim () (.childCons reduct .childNil))
+          (.childCons gluedTerm .childNil)))
+      (RawTerm.etaGlueIntroSource reduct) :=
+  Step.cong .gen_glueIntro ()
+    (StepChildren.there _
+      (StepChildren.here .childNil betaStep))
+
+/-- **etaGlueIntro quasi-commutes over β (OSN-B5).**  The etaGlueIntro case of
+`QuasiCommutesRightOverLeft Step Step.eta`: one β/ι-step on the source (the `glueElim` copy), then the
+βη-tail reduces the second copy and η-contracts — a multi-step `UnionStar` (`tailLeft` then `tailRight`). -/
+theorem etaGlueIntroQuasiCommutesOverBeta {scope : Nat}
+    {gluedTerm reduct : RawTerm scope}
+    (betaStep : Step gluedTerm reduct) :
+    ∃ commonReduct, Step (RawTerm.etaGlueIntroSource gluedTerm) commonReduct ∧
+      UnionStar Step Step.eta commonReduct reduct :=
+  ⟨_,
+   Step.etaGlueIntroReduceElim betaStep,
+   UnionStar.tailRight
+     (UnionStar.tailLeft (UnionStar.refl _) (Step.etaGlueIntroReduceSecond betaStep))
+     (Step.eta.etaGlueIntro reduct)⟩
+
 end FX1Poly.Core
