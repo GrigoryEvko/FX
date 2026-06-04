@@ -241,6 +241,7 @@ import FX1Poly.Typed.BoundedGrownFundamental
 import FX1Poly.Typed.ClosedBoundedReducibleMember
 import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.OpenStronglyNormalizing
+import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4102,3 +4103,12 @@ gates pin them shut.
 -- instance). Reduces fully-unconditional #546 to ONE residual: reducibleEnvOfWfContext (the identity closing subst
 -- is bound-reducible over a well-formed context — the classical reducible-substitution lemma).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfReducibleEnv
+
+-- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
+-- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
+-- types at a shared flag and the body typed at the codomain under the domain binder. The grown analogue of the
+-- simply-typed `nbda`; the inversion HasTypeDescPi.lean's β-SR docstring names as the gap for fully-general subject
+-- reduction. The conv arm re-threads the classifier Conv through the UNCONDITIONAL raw Conv.trans (no toHasType /
+-- WfContext needed), so the Conv conjunct survives where the type-code inversions dropped it.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertLamGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertLam
