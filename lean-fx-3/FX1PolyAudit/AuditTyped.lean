@@ -62,6 +62,7 @@ import FX1Poly.Typed.SimplyTypedTermConsistencyLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.SimplyTypedMetatheoryViaSconing
+import FX1Poly.Tier0.FxRenamingCategory
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -3622,3 +3623,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.simplyTypedFullMetatheoryViaSconing
 #assert_no_axioms FX1Poly.Typed.simplyTypedReachesNormalForm
 #assert_no_axioms FX1Poly.Typed.simplyTypedConversionDecidableViaSconing
+-- First concrete RawCategory instance for FX (FxRenamingCategory.lean, toward SN-083/084 fxBaseRMC). The Tier-0
+-- categorical interfaces (RawCategory / RepresentableMapCategory / GlobalSections / SconingObject) had NO
+-- concrete FX inhabitant -- every structure was an obligation shape. fxRenamingCategory builds the first: the
+-- renaming (thinning) category, objects = scopes (Nat), morphisms = positional renamings (RawRenaming = Fin
+-- source -> Fin target). All three category laws hold definitionally (function-comp associativity + definitional
+-- eta), so it is a genuine complete category, not a stub. HONEST SCOPE: this is the renaming/thinning base (the
+-- variable-reindexing category NbE presheaf models live over), the underlying-category first piece of fxBaseRMC;
+-- the full RepresentableMapCategory additionally needs term substitutions as morphisms + a representable-map
+-- class with the 3 CwR axioms (pullback-universal-property in particular), deferred. fxRenamingCategory_identity
+-- _eq / _compose_eq: the categorical identity/composition ARE the renaming identity/composition (defeq samples).
+-- All zero-axiom (no funext -- renaming function-equality would pull Quot.sound).
+#assert_no_axioms FX1Poly.Tier0.fxRenamingCategory
+#assert_no_axioms FX1Poly.Tier0.fxRenamingCategory_identity_eq
+#assert_no_axioms FX1Poly.Tier0.fxRenamingCategory_compose_eq
