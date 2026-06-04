@@ -46,6 +46,22 @@ def IsReducibleMemberAtBounded {scope : Nat} (env : Nat → Nat) (bound : Nat)
     (typeCode term : RawTerm scope) : Prop :=
   ∃ candidate : RawTerm scope → Prop, ReducibleTypeAtBounded env bound typeCode candidate ∧ candidate term
 
+/-- **Member cumulativity (bound-carrying).**  A bound-reducible member at `lowerBound` is a bound-reducible
+member at any `higherBound ≥ lowerBound`, with the SAME candidate: the type relation lifts by
+`stepBounded_cumulative` (which preserves the candidate), so the membership witness `candidate term` carries over
+unchanged.  The member analogue of `isReducibleBounded_cumulative`.  This is what reconciles the bounded
+telescope's argument level (the former's decoded OUTPUT level `argLevel`, used by `twoChildMembers`) with the
+uniform environment bound `bound` in the grown-FT `consTelescope` dispatch arm: a domain argument that is a
+member at `argLevel ≤ bound` is consed into the `ReducibleEnvAtBounded` (a `bound`-uniform environment) by lifting
+it here. -/
+theorem IsReducibleMemberAtBounded.cumulative {scope : Nat} {env : Nat → Nat}
+    {lowerBound higherBound : Nat} {typeCode term : RawTerm scope}
+    (member : IsReducibleMemberAtBounded env lowerBound typeCode term)
+    (hle : lowerBound ≤ higherBound) :
+    IsReducibleMemberAtBounded env higherBound typeCode term :=
+  let ⟨candidate, candidateReducible, candidateHolds⟩ := member
+  ⟨candidate, stepBounded_cumulative candidateReducible higherBound hle, candidateHolds⟩
+
 /-- The bound-carrying level-indexed reducible closing-substitution environment: `substitution` sends each
 context variable to a bound-reducible member (at `bound`) of that variable's looked-up type, itself closed by
 the same substitution.  The bounded analogue of `ReducibleEnvAtDenote`, riding on `IsReducibleMemberAtBounded`

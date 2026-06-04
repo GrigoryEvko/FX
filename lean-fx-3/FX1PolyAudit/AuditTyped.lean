@@ -3985,3 +3985,10 @@ gates pin them shut.
 -- Reads the head member off the +1 conclusion (subst_universeCodeCell cancels the closed-code substitution) and
 -- threads the tail premise — uniform in argLevel (the dispatch instantiates it to the former's decoded level).
 #assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtBoundedSucc
+
+-- Member cumulativity (bound-carrying) (DenoteKeyedBoundedReducibleEnv.lean) — a bound-reducible member at
+-- lowerBound is one at any higherBound ≥ lowerBound, SAME candidate (the type relation lifts by
+-- stepBounded_cumulative, which preserves the candidate; the membership witness carries over). The member analogue
+-- of isReducibleBounded_cumulative; reconciles the bounded telescope's argument level (the former's decoded OUTPUT
+-- level, used by twoChildMembers) with the uniform environment bound in the grown-FT consTelescope dispatch arm.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtBounded.cumulative
