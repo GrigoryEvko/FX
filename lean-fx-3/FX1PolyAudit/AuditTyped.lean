@@ -250,6 +250,7 @@ import FX1Poly.Typed.WfContextDecidableConv
 import FX1Poly.Typed.OpenSNSmoke
 import FX1Poly.Typed.ContextValidityFails
 import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
+import FX1Poly.Typed.UniverseFormationStrictness
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4202,6 +4203,17 @@ gates pin them shut.
 -- and the crux's multi-case proof are the genuinely-remaining OSN-1 work, tracked separately.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.componentwiseStronglyNormalizingOfWfContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaReductOfWellTypedIsBetaStronglyNormalizing
+
+-- Universe-formation level-strictness (UniverseFormationStrictness.lean, 0-FP soundness corpus): the universe
+-- rule is level-TIGHT — a universe code is classified by EXACTLY Type@(e+1) up to Conv
+-- (universeCodeClassifierConvToSuccessor, via HasType.uniqueness against universeFormation), so the engine rejects
+-- every level mismatch: no inflation (Type@0 ⊬ Type@2), no deflation (Type@1 ⊬ Type@0), no Type-in-Type
+-- (Type@0 ⊬ Type@0). Each rejection instantiates the inversion at Type@0 + universeCodeCell_inj_of_conv + decide
+-- on closed LevelExpr equality. Strengthens the 0-false-positive defense layer (complements M35-T1 / HasTypeHonesty).
+#assert_no_axioms FX1Poly.Typed.HasType.universeCodeClassifierConvToSuccessor
+#assert_no_axioms FX1Poly.Typed.universeCode_notTypedAboveSuccessor
+#assert_no_axioms FX1Poly.Typed.universeCode_notTypedBelowSuccessor
+#assert_no_axioms FX1Poly.Typed.universeCode_notTypedAtSelf
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
