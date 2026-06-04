@@ -228,6 +228,7 @@ import FX1Poly.Typed.FormerOutputLevelBounds
 import FX1Poly.Typed.BoundedCodomainOpenSN
 import FX1Poly.Typed.BoundedDomainInhabitant
 import FX1Poly.Typed.BoundedGenFormationPiFromTelescope
+import FX1Poly.Typed.BoundedTelescopeConsSucc
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3977,3 +3978,10 @@ gates pin them shut.
 -- pieces: twoChildMembers + gate-extraction + variableZeroMember + levelMax_lt + belowOutput + codomainOpenSN +
 -- piReducibleAtLevelFromComponentsBounded + universeMembershipIntroAtBounded. The hardest dispatch arm.
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiFromTelescopeAtBoundedSucc
+
+-- The +1-closing cons telescope companion (BoundedTelescopeConsSucc.lean) — the cons recursor-arm body for the
+-- bounded grown-FT motive_2. Mirrors fundamentalTelescopeConsAtBounded but the head child's IH is the +1-closing
+-- FundamentalConclusionAtBoundedSucc (the recursor's motive_1) and the closing substitution targets targetScope+1.
+-- Reads the head member off the +1 conclusion (subst_universeCodeCell cancels the closed-code substitution) and
+-- threads the tail premise — uniform in argLevel (the dispatch instantiates it to the former's decoded level).
+#assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtBoundedSucc
