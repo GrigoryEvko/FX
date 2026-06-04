@@ -260,6 +260,7 @@ import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.HasTypeDescPiCongruence
 import FX1Poly.Typed.HasTypeDescPiFormerCongruence
+import FX1Poly.Typed.HasTypeDescContextConversion
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
@@ -4305,6 +4306,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormationViaGenArm
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congPiCodomain
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congSigmaCodomain
+
+-- CONTEXT-CONVERSION for the FORMATION engine (HasTypeDescContextConversion.lean, #814 part 1): typing stable
+-- under a pointwise-Conv-replaced context, the leaf fragment (the clean wf-free half; the grown HasTypeDescPi
+-- version's ofFormation arm delegates here, and its piIntro/piElim need wf-validity — the deferred half). The
+-- EXISTENTIAL formulation (∃ T', Conv T T' ∧ ... Γ' t T') keeps the var arm honest (no old-entry-under-new-ctx
+-- circularity). convContext ⋈ convTelescope mutual; convBackToUniverseCode + convContextCondition_cons helpers.
+-- This is the former-DOMAIN SR-cong unblocker (#558/SN-055): codomain re-types under a Conv-replaced binder.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.convBackToUniverseCode
+#assert_no_axioms FX1Poly.Typed.convContextCondition_cons
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.convContext
+#assert_no_axioms FX1Poly.Typed.DescTelescope.convTelescope
 
 -- Conv-KEEPING Π/Σ-code former inversion (HasTypeDescPiFormerInversion.lean, the former head for the SR cong arm
 -- #458). inversionPiCodeComponents drops the classifier Conv (its telescope workhorse discards _convToCode/_converts),
