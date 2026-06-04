@@ -206,6 +206,7 @@ import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedCumulativityObstruction
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
+import FX1Poly.Typed.DenoteKeyedNonDependentArrowMemberSN
 import FX1Poly.Typed.DenoteKeyedCodomainMemberWiring
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
@@ -3561,3 +3562,16 @@ gates pin them shut.
 -- ESTABLISHING the codomain reducibility uniformly across levels — no member of the fragment is the obstacle.
 #assert_no_axioms FX1Poly.Typed.universeDomainPiCandidateIsReducibilityCandidate
 #assert_no_axioms FX1Poly.Typed.universeDomainPiMemberStronglyNormalizing
+-- Member-SN companion to the shipped type-level non-dependent universe-domain arrow (universeDomainNonDependent
+-- Arrow): the MEMBER half of the unconditional slice of #752 (DenoteKeyedNonDependentArrowMemberSN.lean). A
+-- non-dependent arrow Type@e -> codomainBase has its codomain cross the binder as a pure weakening, so the
+-- weaken-cancellation (RawTerm.weaken_subst_singleton) collapses SN-D7's per-argument codomain obligation to a
+-- constant -- the domain candidate's per-level DRIFT (the #752 obstruction) is never consumed. universeDomainNon
+-- DependentArrowMemberStronglyNormalizing: the general member-companion (codomainBase reducible-at-level with a CR
+-- => members of Type@e -> codomainBase are SN). universeToUniverseArrowMemberStronglyNormalizing: the fully-
+-- UNCONDITIONAL concrete witness -- a reducible member of Type@e -> Type@e' (function between two universes) is SN
+-- at any level above both decoded levels, NO codomain hypotheses. First unconditional universe-domain function-
+-- type member-SN in the denote model; completes the unconditional #752 slice (type + member). Only the genuinely
+-- DEPENDENT composite-domain Pi stays gated on #752/#753. Both zero-axiom.
+#assert_no_axioms FX1Poly.Typed.universeDomainNonDependentArrowMemberStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.universeToUniverseArrowMemberStronglyNormalizing
