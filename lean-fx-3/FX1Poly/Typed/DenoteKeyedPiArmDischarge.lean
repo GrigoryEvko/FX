@@ -1,0 +1,70 @@
+import FX1Poly.Typed.DenoteKeyedPiFormerAtLevel
+import FX1Poly.Typed.DenoteKeyedReducibleTypeLevelLift
+
+/-! # FX1Poly/Typed/DenoteKeyedPiArmDischarge
+    — discharging `reducibleTypeLevelLift`'s `piArmLift` hypothesis, case by case (toward SN-043/#752)
+
+`reducibleTypeLevelLift` (DenoteKeyedReducibleTypeLevelLift) lifts a reducibility derivation from `lowerAt` to a
+single fixed `highLevel`, with the `piType` arm isolated as the `piArmLift` hypothesis.  To make the child-lift
+unconditional, `piArmLift` must be discharged for every domain shape the induction can encounter: neutral
+(type-variable / stuck), universe code, and threshold-drift composite.  This file accrues those discharges; the
+neutral and universe shapes are the FREE-lift cases (reducible at every level, member-stable), the composite is
+the deep member-stability-above-threshold residual.
+
+`neutralDomainPiArmLift`: the NEUTRAL-domain case.  When the Π's domain is neutral (weak-head-normal, non-Π,
+non-universe — a context type variable or a stuck application), the lift's `piType` conclusion holds:
+
+  * the domain is reducible at `highLevel` for FREE via the `neutral` constructor (its strong-normalization
+    candidate references neither `lowerAt` nor the level);
+  * the member-stability bridge — needed because the codomain hypothesis is keyed on the lower `domainCandidate`
+    while `piFormerReducibleAtLevel`'s codomain premise is keyed on the canonical highLevel member-predicate —
+    pivots through `candidateIffStronglyNormalizing` at BOTH levels.  For a neutral type EVERY candidate is
+    pointwise-iff `IsStronglyNormalizing` (`ReducibleTypeStepDenote.candidateIffStronglyNormalizing`), so a
+    member at `highLevel` is `IsStronglyNormalizing`, which the lower `domainReducible`'s own
+    `candidateIffStronglyNormalizing` converts back into `domainCandidate` membership.  `IsStronglyNormalizing`
+    is the common, fully level-irrelevant pivot.
+
+## Zero-axiom verification
+
+`piFormerReducibleAtLevel` applied to the `neutral` constructor and a codomain premise whose only nontrivial step
+is two `candidateIffStronglyNormalizing` rewrites (`.mp` then `.mpr`) through the SN pivot.  No `induction`, no
+`funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
+Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+-/
+
+namespace FX1Poly.Typed
+
+open FX1Poly.Core FX1Poly.Universe
+open StepStar
+
+/-- **The neutral-domain discharge of `reducibleTypeLevelLift`'s `piArmLift`.**  For a neutral domain, the Π
+former is reducible at `highLevel`: the domain is reducible there for free (the `neutral` constructor), and the
+member-stability bridge from the canonical highLevel member-predicate back to the lower `domainCandidate` pivots
+through `candidateIffStronglyNormalizing` at both levels (member → `IsStronglyNormalizing` → `domainCandidate`).
+The first of the three `piArmLift` domain-shape cases (neutral / universe / composite); combined with the
+universe and composite cases it makes the single-level child-lift unconditional on a neutral spine. -/
+theorem neutralDomainPiArmLift {scope : Nat} {env : Nat → Nat} (highLevel : Nat)
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm scope → Prop}
+    (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
+    (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (domainReducible : ReducibleTypeStepDenote env lowerAt domainCode domainCandidate)
+    (codomainLiftedPerMember : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsReducibleTypeAtDenote env highLevel (RawTerm.subst0 codomainCode argument)) :
+    IsReducibleTypeAtDenote env highLevel
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
+  piFormerReducibleAtLevel env highLevel
+    ⟨IsStronglyNormalizing, ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse⟩
+    (fun argument argumentMember =>
+      let ⟨_memberCandidate, memberCandidateReducible, argumentInMemberCandidate⟩ := argumentMember
+      have argumentStronglyNormalizing : IsStronglyNormalizing argument :=
+        (memberCandidateReducible.candidateIffStronglyNormalizing
+          noWeakHeadStep notPiType notUniverse argument).mp argumentInMemberCandidate
+      have argumentInDomainCandidate : domainCandidate argument :=
+        (domainReducible.candidateIffStronglyNormalizing
+          noWeakHeadStep notPiType notUniverse argument).mpr argumentStronglyNormalizing
+      codomainLiftedPerMember argument argumentInDomainCandidate)
+
+end FX1Poly.Typed

@@ -173,6 +173,7 @@ import FX1Poly.Typed.DenoteKeyedUniformPiCandidate
 import FX1Poly.Typed.DenoteKeyedUniformPiAboveThreshold
 import FX1Poly.Typed.DenoteKeyedPiFormerAtLevel
 import FX1Poly.Typed.DenoteKeyedReducibleTypeLevelLift
+import FX1Poly.Typed.DenoteKeyedPiArmDischarge
 import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
 import FX1Poly.Typed.DenoteKeyedApplicationMember
 import FX1Poly.Typed.DenoteKeyedConvMember
@@ -3090,6 +3091,16 @@ gates pin them shut.
 -- uniformDomainPi_memberStableAboveThreshold) rather than the unachievable all-level gate. The route correction
 -- for #752 crystallised into reusable infrastructure.
 #assert_no_axioms FX1Poly.Typed.reducibleTypeLevelLift
+
+-- DenoteKeyedPiArmDischarge (#752/#744 — discharging reducibleTypeLevelLift's piArmLift, case by case): the
+-- lift isolates the piType arm as a hypothesis dischargeable per domain shape (neutral / universe / composite).
+-- neutralDomainPiArmLift: the NEUTRAL-domain case. The domain is reducible at highLevel for free (the neutral
+-- constructor's SN candidate references neither lowerAt nor the level); the member-stability bridge from the
+-- canonical highLevel member-predicate back to the lower domainCandidate pivots through
+-- candidateIffStronglyNormalizing at BOTH levels (member → IsStronglyNormalizing → domainCandidate, the fully
+-- level-irrelevant SN pivot). The first of the three piArmLift shape cases; with the universe and composite
+-- cases it makes the single-level child-lift unconditional on a neutral spine.
+#assert_no_axioms FX1Poly.Typed.neutralDomainPiArmLift
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
