@@ -3070,6 +3070,12 @@ gates pin them shut.
 -- obstruction entirely.
 #assert_no_axioms FX1Poly.Typed.piFormerReducibleAtLevel
 #assert_no_axioms FX1Poly.Typed.universeDomainPiFormerReducibleAtLevel
+-- neutralDomainPiFormerReducibleAtLevel: the neutral/type-variable-domain instance (the common FT case
+-- Π(x:X).C[x] with X a context type variable) — neutral domains are reducible at every level (the neutral arm,
+-- free lift), so piFormerReducibleAtLevel applies directly. With the universe instance this covers the FREE-LIFT
+-- domain shapes; threshold-drift composites lift via the above-threshold uniform candidate (shipped) as the
+-- domain premise. Completes the genFormationPi piArm INGREDIENTS; only the telescope/recursor wiring remains.
+#assert_no_axioms FX1Poly.Typed.neutralDomainPiFormerReducibleAtLevel
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended

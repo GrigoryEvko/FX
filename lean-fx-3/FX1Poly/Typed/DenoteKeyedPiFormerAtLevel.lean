@@ -35,6 +35,7 @@ from existence; `universeDomainPiFormerReducibleAtLevel` instantiates it with
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
+open StepStar
 
 /-- **The single-level piType assembly primitive.**  `Π domainCode codomainCode` is denote-reducible at `level`
 given the domain reducible at `level` and the codomain reducible at `level` for every domain member.  The
@@ -73,5 +74,28 @@ theorem universeDomainPiFormerReducibleAtLevel {scope : Nat} (env : Nat → Nat)
           (.childCons codomainCode .childNil))) :=
   piFormerReducibleAtLevel env level
     (universeCode_isReducibleAtDenote env level levelExpr flag) codomainReducible
+
+/-- **The neutral/type-variable-domain Π former, reducible at a single level.**  When the domain is neutral
+(weak-head-normal non-Π non-universe — a context type variable or stuck application), it is reducible at the
+level directly via the `neutral` constructor (with the strong-normalization candidate, which references neither
+the lower family nor the level), so `piFormerReducibleAtLevel` applies.  This is the common fundamental-theorem
+case `Π (x : X). C[x]` where `X` is a context type variable; together with
+`universeDomainPiFormerReducibleAtLevel` it covers the FREE-LIFT domain shapes (universe / neutral — both
+reducible at every level), completing the genFormationPi piArm ingredient set.  The remaining domain shape,
+threshold-drift composites, lifts via the above-threshold uniform candidate (shipped) supplied as the
+`piFormerReducibleAtLevel` domain premise — no separate lemma. -/
+theorem neutralDomainPiFormerReducibleAtLevel {scope : Nat} (env : Nat → Nat) (level : Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
+    (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (codomainReducible : ∀ argument : RawTerm scope,
+      IsReducibleMemberAtDenote env level domainCode argument →
+      IsReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)) :
+    IsReducibleTypeAtDenote env level
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
+  piFormerReducibleAtLevel env level
+    ⟨IsStronglyNormalizing, ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse⟩
+    codomainReducible
 
 end FX1Poly.Typed
