@@ -248,6 +248,7 @@ import FX1Poly.Typed.ReducibleEnvOfWfContext
 import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Typed.WfContextDecidableConv
 import FX1Poly.Typed.OpenSNSmoke
+import FX1Poly.Typed.ContextValidityFails
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4180,6 +4181,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.openContextVariable_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.openIdentityLambda_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.openBetaRedex_stronglyNormalizing
+
+-- OB-6 (ContextValidityFails.lean): the WfContext hypothesis in open SN-043 is NECESSARY. A lamCell is never a
+-- type (lamCell_isNotType, via subjectIsVariableOrTypeFormerCode + Generator.noConfusion head-mismatch), so
+-- Γ = (.empty).cons (λx.x) is ill-formed; yet the bespoke var rule (bridged) types var 0 in it
+-- (wellTypedInIllFormedContext) — refuting HasTypeDescPi Γ t T → WfContext Γ (contextValidityPresuppositionFails).
+-- The honest negative result: OB-5's WfContext qualifier is an irreducible presupposition, not a removable
+-- artifact (the closed Γ=.empty instance consumed by canonicity/consistency is trivially well-formed).
+#assert_no_axioms FX1Poly.Typed.lamCell_isNotType
+#assert_no_axioms FX1Poly.Typed.wellTypedInIllFormedContext
+#assert_no_axioms FX1Poly.Typed.contextValidityPresuppositionFails
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
