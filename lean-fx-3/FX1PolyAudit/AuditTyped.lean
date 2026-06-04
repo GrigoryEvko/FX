@@ -215,6 +215,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedReducibility
 import FX1Poly.Typed.DenoteKeyedBoundedReducibleEnv
 import FX1Poly.Typed.DenoteKeyedBoundedFundamentalMotive
 import FX1Poly.Typed.DenoteKeyedBoundedConvArm
+import FX1Poly.Typed.DenoteKeyedBoundedPiElimArm
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3442,6 +3443,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.memberConvAtBounded
 #assert_no_axioms FX1Poly.Typed.convMemberUnderClosingSubstitutionBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalConvAtBounded
+-- THE BOUNDED FT PI-ELIM ARM (DenoteKeyedBoundedPiElimArm): the bound-carrying application member + FT arm. Unlike
+-- the conv arm, the application member's OUTPUT carries a BOUNDED codomain derivation the forget bridge cannot
+-- recover, so candidatePiShape is a DIRECT 5-arm induction port (the derivation-producing side of the dichotomy);
+-- ReducibleTypeAtBounded.deterministic (bridge-transferred) supplies the argument-candidate alignment.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.candidatePiShape
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.piTypeInversion
+#assert_no_axioms FX1Poly.Typed.applicationMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.applicationMemberUnderClosingSubstitutionBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalPiElimAtBounded
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
