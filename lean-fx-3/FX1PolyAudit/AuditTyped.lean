@@ -3076,6 +3076,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtDenote.weakHeadForward
 #assert_no_axioms FX1Poly.Typed.whnfExpandDomainMemberStableToOuter
 
+-- compositeDomainMemberStableToOuter (#752 — the RECURSIVE HEART, threshold-drift composite domains): Π dom cod
+-- is member-stable to outerLevel from the components' all-levels both-directions member-stability (domainStable /
+-- codomainStable, the recursion IHs). A function member at sourceLevel maps source-dom-members to
+-- source-cod-members (piTypeInversion); an outer-dom argument is pulled back to source (domainStable
+-- outer→source, candidate via deterministic), fed to the function's source property, and the codomain image
+-- pushed forward to outerLevel (codomainStable source→outer, candidate via deterministic). The drift is absorbed
+-- entirely into the components' member-stability — the Π former composes with NO extra threshold reasoning. The
+-- recursion bottoms out at neutral/universe/whnf-redex leaves; only the universe leaves carry the threshold gate.
+#assert_no_axioms FX1Poly.Typed.compositeDomainMemberStableToOuter
+
 -- DenoteKeyedUniverseDomainPiArm (#752 — the universeCode arm of the ofReducibleTypeStepDenote piArm case-split):
 -- the domain is a universe code Type@innerLevelExpr whose membership candidate DRIFTS (empty below the inner
 -- decoded level, real above), so the neutral/uniform adapters cannot reach it. The two decode lemmas split the

@@ -226,4 +226,56 @@ theorem whnfExpandDomainMemberStableToOuter {scope : Nat} (env : Nat → Nat) (o
     (reductStable sourceLevel argument
       (IsReducibleMemberAtDenote.weakHeadForward weakHeadStep memberAtSource))
 
+/-- **The composite (piType) domain arm of the #752 `memberStableToOuter` dispatcher — the recursive heart.**
+`Π domainCode codomainCode` is member-stable to `outerLevel` GIVEN its components' all-levels both-directions
+member-stability (`domainStable` / `codomainStable`, the recursion's IHs).  A function member `functionTerm` at
+`sourceLevel` maps source-domain-members to source-codomain-members (`piTypeInversion` exposes the source
+domain/codomain candidates); to show it maps OUTER-domain-members to OUTER-codomain-members, an outer-domain
+`argument` is pulled back to a source-domain-member (`domainStable` outer→source, candidate bridged by
+`deterministic`), fed to the function's source property, and the resulting codomain image pushed forward to
+`outerLevel` (`codomainStable` source→outer, candidate bridged by `deterministic`).  This is the structural
+content of the denote #672 threshold-drift composite: the drift is absorbed entirely into the components'
+member-stability, so the Π former composes with NO extra threshold reasoning of its own.  The recursion bottoms
+out at the neutral / universe / whnf-redex leaves; only the universe leaves carry the genuine threshold gate. -/
+theorem compositeDomainMemberStableToOuter {scope : Nat} (env : Nat → Nat) (outerLevel : Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {piCandidateOuter : RawTerm scope → Prop}
+    (piReducibleAtOuter : ReducibleTypeAtDenote env outerLevel
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) piCandidateOuter)
+    (domainStable : ∀ (sourceLevel targetLevel : Nat) (argument : RawTerm scope),
+        IsReducibleMemberAtDenote env sourceLevel domainCode argument →
+        IsReducibleMemberAtDenote env targetLevel domainCode argument)
+    (codomainStable : ∀ (argument : RawTerm scope) (sourceLevel targetLevel : Nat) (image : RawTerm scope),
+        IsReducibleMemberAtDenote env sourceLevel (RawTerm.subst0 codomainCode argument) image →
+        IsReducibleMemberAtDenote env targetLevel (RawTerm.subst0 codomainCode argument) image)
+    (sourceLevel : Nat) (functionTerm : RawTerm scope)
+    (memberAtSource : IsReducibleMemberAtDenote env sourceLevel
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) functionTerm) :
+    IsReducibleMemberAtDenote env outerLevel
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) functionTerm := by
+  obtain ⟨piCandidateSource, piReducibleSource, functionInSource⟩ := memberAtSource
+  obtain ⟨domainCandidateSource, codomainCandidateSource, domainReducibleSource,
+    codomainReducibleSource, piShapeSource⟩ := ReducibleTypeAtDenote.piTypeInversion piReducibleSource
+  obtain ⟨domainCandidateOuter, codomainCandidateOuter, domainReducibleOuter,
+    codomainReducibleOuter, piShapeOuter⟩ := ReducibleTypeAtDenote.piTypeInversion piReducibleAtOuter
+  have functionSourceProperty := (piShapeSource functionTerm).mp functionInSource
+  refine ⟨piCandidateOuter, piReducibleAtOuter, (piShapeOuter functionTerm).mpr ?_⟩
+  intro argument argumentInDomainOuter
+  have argumentMemberOuter : IsReducibleMemberAtDenote env outerLevel domainCode argument :=
+    ⟨domainCandidateOuter, domainReducibleOuter, argumentInDomainOuter⟩
+  obtain ⟨domainCandidateBack, domainReducibleBack, argumentInDomainBack⟩ :=
+    domainStable outerLevel sourceLevel argument argumentMemberOuter
+  have argumentInDomainSource : domainCandidateSource argument :=
+    (ReducibleTypeAtDenote.deterministic domainReducibleBack domainReducibleSource argument).mp
+      argumentInDomainBack
+  have imageMemberSource : IsReducibleMemberAtDenote env sourceLevel
+      (RawTerm.subst0 codomainCode argument)
+      (.mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil))) :=
+    ⟨codomainCandidateSource argument, codomainReducibleSource argument argumentInDomainSource,
+      functionSourceProperty argument argumentInDomainSource⟩
+  obtain ⟨codomainCandidateForward, codomainReducibleForward, imageInForward⟩ :=
+    codomainStable argument sourceLevel outerLevel _ imageMemberSource
+  exact (ReducibleTypeAtDenote.deterministic codomainReducibleForward
+    (codomainReducibleOuter argument argumentInDomainOuter) _).mp imageInForward
+
 end FX1Poly.Typed
