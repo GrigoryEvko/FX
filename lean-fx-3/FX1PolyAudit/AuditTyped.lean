@@ -222,6 +222,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiDischarge
 import FX1Poly.Typed.DenoteKeyedBoundedAssemblyBridge
 import FX1Poly.Typed.DenoteKeyedBoundedTelescopeReducible
+import FX1Poly.Typed.DenoteKeyedBoundedTelescopeFundamental
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3923,3 +3924,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded.nil
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded.twoChild
+
+-- Bound-carrying telescope fundamental-theorem companion arms (DenoteKeyedBoundedTelescopeFundamental.lean) — the
+-- nil/cons minor-premise bodies that PRODUCE TelescopeReducibleAtBounded, the bound-carrying analogue of
+-- fundamentalTelescopeNil/ConsAtDenote. nil is True.intro; cons reads the head member off its
+-- FundamentalConclusionAtBounded (head member at `bound` via subst_universeCodeCell) and threads the tail premise
+-- (argument at `argLevel`). Non-recursive minor-premise bodies the eventual HasTypeDescPi/DescTelescopePi FT
+-- recursor discharges; no induction, no funext.
+#assert_no_axioms FX1Poly.Typed.fundamentalTelescopeNilAtBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtBounded
