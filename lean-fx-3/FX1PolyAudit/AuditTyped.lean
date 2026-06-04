@@ -249,6 +249,7 @@ import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Typed.WfContextDecidableConv
 import FX1Poly.Typed.OpenSNSmoke
 import FX1Poly.Typed.ContextValidityFails
+import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4191,6 +4192,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.lamCell_isNotType
 #assert_no_axioms FX1Poly.Typed.wellTypedInIllFormedContext
 #assert_no_axioms FX1Poly.Typed.contextValidityPresuppositionFails
+
+-- OSN-1 scaffolding (OpenStronglyNormalizingBetaEta.lean): the precise remaining crux for open βη-SN +
+-- the complete pieces it enables. Well-typed open terms are β-SN (OB-5) AND η-SN (unconditional, since η shrinks
+-- RawTerm.size) separately (componentwiseStronglyNormalizingOfWfContext). The UNION βη-SN is NOT their
+-- conjunction (β/η interleave; constructive SN-of-union needs lex/ordinal-rank infra beyond Init); its sole
+-- missing ingredient is η-postponement over β, isolated as EtaPreservesBetaStronglyNormalizing, whose payoff for
+-- well-typed terms is etaReductOfWellTypedIsBetaStronglyNormalizing. No sorry/placeholder — the union assembly
+-- and the crux's multi-case proof are the genuinely-remaining OSN-1 work, tracked separately.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.componentwiseStronglyNormalizingOfWfContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaReductOfWellTypedIsBetaStronglyNormalizing
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
