@@ -198,6 +198,7 @@ import FX1Poly.Typed.DenoteKeyedTelescopeFundamental
 import FX1Poly.Typed.DenoteKeyedSigmaFormation
 import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.DenoteKeyedGenFormationSigmaArm
+import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3176,6 +3177,14 @@ gates pin them shut.
 -- free neutral arm); the codomain SN is the deferred premise (its production needs var-0 mining at the weakened
 -- scope = the Kripke-obstructed SN-040). The direct analogue of fundamentalPiIntroAtDenote for genFormationPi/Σ.
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationSigmaAtDenote
+
+-- SN-D5d (the genFormationPi Π FT arm, premise-isolating — the Π twin of the Σ arm, completing the 2-case
+-- split): domain universe membership (CR1 → domain SN) + codomain under-binder SN + the Π former's
+-- reducible-as-type at the decoded output level (the #752 threshold residual, isolated as a premise) ⟹ the Π
+-- former's FundamentalConclusionAtDenote. Routes through fundamentalTypeFormerAtDenote; Π former SN is
+-- piTyCode_isStronglyNormalizing_of_domain_codomain. Both genFormationPi branches are now premise-complete, the
+-- two #672-family walls cleanly isolated: codomain SN (denote SN-040, shared) + Π reducible-as-type (#752).
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiAtDenote
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
