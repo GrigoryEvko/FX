@@ -3105,6 +3105,12 @@ gates pin them shut.
 -- gated on inner < outerLevel. A member at source forces inner < source (else empty), decodes to SN ∧
 -- reducible-at-inner, the same predicate as the outerLevel candidate (also above inner) — so it transports.
 #assert_no_axioms FX1Poly.Typed.universeDomainMemberStableToOuter
+-- universeCodeNotAllLevelsMemberStable (#672 RESIDUAL BOUNDARY, §27.2-style negative witness): a universe code
+-- Type@inner is NOT all-levels member-stable — var index is a reducible member just above the inner level (SN +
+-- neutral reducible) but the candidate at level 0 is empty. So a composite domain with a universe-code COMPONENT
+-- canNOT satisfy compositeDomainMemberStableToOuter's all-levels component-stability premise; threshold-drift
+-- composites are the open #672 residual, NOT closed by the member-stability route (corrects the prior overclaim).
+#assert_no_axioms FX1Poly.Typed.universeCodeNotAllLevelsMemberStable
 
 -- DenoteKeyedUniformPiCandidate (#752 — composite member-stability, the recursive step): a Π over uniform-
 -- candidate components has a SINGLE uniform candidate, because the piType candidate
