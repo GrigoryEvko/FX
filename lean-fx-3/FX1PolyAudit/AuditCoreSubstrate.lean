@@ -237,6 +237,12 @@ per-decl list.  It also re-checks the native infra under
 -- scrutinee recovery; the contractum is a child (no subst), image = the child's recovered renaming. ι leaf arms.
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaBoolTrue
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaBoolFalse
+-- The pair-projection ι arms of arbitrary-ρ Step reflection (Step.reflectIotaFstPair/SndPair):
+-- rename ρ term = fst/snd (pair first second) → ∃ t', Step term t' ∧ rename ρ t' = first/second. Two-level
+-- recovery: gen_fst/gen_snd head (rename_eq_mkGen) + concrete rfl-distribution + injection, then gen_pair
+-- scrutinee recovery + inner rfl-distribution + injection; the projected child IS the contractum (no subst).
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaFstPair
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaSndPair
 
 -- SN-040 (WIP): the neutral LEAF of the stratified ReducibleTypeStep rename-closure (type + member level).
 -- The piType arm is genuinely Kripke-obstructed (see StratifiedReducibleTypeRename docstring); this is the

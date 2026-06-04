@@ -171,6 +171,84 @@ theorem Step.reflectIotaBoolFalse {sourceScope targetScope : Nat}
       | (), .childNil =>
           exact ⟨elseBranch, Step.iotaBoolFalse, elseEq⟩
 
+/-- **The `fst`-on-`pair` ι arm of arbitrary-renaming `Step` reflection.**  If `rename rho term` is the ι-redex
+`fst (pair firstValue secondValue)`, then `term` is the source redex `fst (pair sourceFst sourceSnd)` (the
+`gen_fst` head and the nested `gen_pair` scrutinee head both recovered by `rename_eq_mkGen`), it ι-reduces to
+its first component, and that source first component renames to `firstValue`.  A two-level child-projection ι
+arm (the inner `gen_pair` constructor has two components to recover, vs `boolElim`'s nullary scrutinee), same
+recipe: head recovery + concrete rfl-distributions at `gen_fst` then `gen_pair` + injection; contractum is a
+child (no substitution). -/
+theorem Step.reflectIotaFstPair {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedFirst renamedSecond : RawTerm targetScope}
+    (renameEquation : RawTerm.rename rho term =
+      .mkGen .gen_fst ()
+        (.childCons
+          (.mkGen .gen_pair () (.childCons renamedFirst (.childCons renamedSecond .childNil)))
+          .childNil)) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      Step term sourceReduct ∧ RawTerm.rename rho sourceReduct = renamedFirst := by
+  obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
+  subst termEq
+  match payload, children with
+  | (), .childCons pairChild .childNil =>
+      rw [show RawTerm.rename rho (.mkGen .gen_fst () (.childCons pairChild .childNil)) =
+            (.mkGen .gen_fst () (.childCons (RawTerm.rename rho pairChild) .childNil)
+              : RawTerm targetScope) from rfl] at renameEquation
+      injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
+      injection childrenEq with _ _ _ pairChildEq _nilEq
+      obtain ⟨pairPayload, pairChildren, pairTermEq⟩ := RawTerm.rename_eq_mkGen rho pairChildEq
+      subst pairTermEq
+      match pairPayload, pairChildren with
+      | (), .childCons firstValue (.childCons secondValue .childNil) =>
+          rw [show RawTerm.rename rho
+                (.mkGen .gen_pair () (.childCons firstValue (.childCons secondValue .childNil))) =
+                (.mkGen .gen_pair ()
+                  (.childCons (RawTerm.rename rho firstValue)
+                    (.childCons (RawTerm.rename rho secondValue) .childNil))
+                  : RawTerm targetScope) from rfl] at pairChildEq
+          injection pairChildEq with _scopeEq2 _generatorEq2 _payloadEq2 pairChildrenEq
+          injection pairChildrenEq with _ _ _ firstEq tailEq
+          injection tailEq with _ _ _ _secondEq _nilEq2
+          exact ⟨firstValue, Step.iotaFstPair, firstEq⟩
+
+/-- **The `snd`-on-`pair` ι arm of arbitrary-renaming `Step` reflection.**  The symmetric twin of
+`reflectIotaFstPair`: a `snd (pair firstValue secondValue)` ι-redex reflects to the source redex projecting its
+SECOND component, returned with its recovered renaming as the contractum image. -/
+theorem Step.reflectIotaSndPair {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedFirst renamedSecond : RawTerm targetScope}
+    (renameEquation : RawTerm.rename rho term =
+      .mkGen .gen_snd ()
+        (.childCons
+          (.mkGen .gen_pair () (.childCons renamedFirst (.childCons renamedSecond .childNil)))
+          .childNil)) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      Step term sourceReduct ∧ RawTerm.rename rho sourceReduct = renamedSecond := by
+  obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
+  subst termEq
+  match payload, children with
+  | (), .childCons pairChild .childNil =>
+      rw [show RawTerm.rename rho (.mkGen .gen_snd () (.childCons pairChild .childNil)) =
+            (.mkGen .gen_snd () (.childCons (RawTerm.rename rho pairChild) .childNil)
+              : RawTerm targetScope) from rfl] at renameEquation
+      injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
+      injection childrenEq with _ _ _ pairChildEq _nilEq
+      obtain ⟨pairPayload, pairChildren, pairTermEq⟩ := RawTerm.rename_eq_mkGen rho pairChildEq
+      subst pairTermEq
+      match pairPayload, pairChildren with
+      | (), .childCons firstValue (.childCons secondValue .childNil) =>
+          rw [show RawTerm.rename rho
+                (.mkGen .gen_pair () (.childCons firstValue (.childCons secondValue .childNil))) =
+                (.mkGen .gen_pair ()
+                  (.childCons (RawTerm.rename rho firstValue)
+                    (.childCons (RawTerm.rename rho secondValue) .childNil))
+                  : RawTerm targetScope) from rfl] at pairChildEq
+          injection pairChildEq with _scopeEq2 _generatorEq2 _payloadEq2 pairChildrenEq
+          injection pairChildrenEq with _ _ _ _firstEq tailEq
+          injection tailEq with _ _ _ secondEq _nilEq2
+          exact ⟨secondValue, Step.iotaSndPair, secondEq⟩
+
 /-- **Pull a `Step` back along an injective renaming.**  If the `forwardRenaming`-renamed `sourceTerm`
 takes a reduction to `renamedReduct`, then `sourceTerm` itself reduces to `rename leftInverseRenaming
 renamedReduct` — the source reduct recovered by the left-inverse.  The confinement-free `Step` half of
