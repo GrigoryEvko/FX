@@ -246,6 +246,7 @@ import FX1Poly.Typed.BoundedUniverseInversion
 import FX1Poly.Typed.BoundedBindingTypeReducible
 import FX1Poly.Typed.ReducibleEnvOfWfContext
 import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
+import FX1Poly.Typed.WfContextDecidableConv
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4150,6 +4151,14 @@ gates pin them shut.
 -- at a common SUM bound, fed to stronglyNormalizingOfReducibleEnv (reflects SN internally). The OB-1..OB-5
 -- capstone — reached with NO #672, NO KB merged candidate, NO renaming closure. Closes #546.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfWfContext
+
+-- SN-051 / SN-046-uncond (WfContextDecidableConv.lean): the open-SN-043 harvest. Two well-typed subjects in a
+-- well-formed context have DECIDABLE Conv (no typed-SN hypothesis — each OB-5 SN witness feeds the parameter-free
+-- decider Conv.decidableOfStronglyNormalizing), and global confluence holds (per-term Newman on the OB-5 SN
+-- witness). The qualifier moves from "assume typed-SN" to "assume WfContext" (a decidable presupposition; the
+-- unqualified typed-SN interface is unprovable since the var rule types in any context).
+#assert_no_axioms FX1Poly.Typed.Conv.decidableOfWellTypedInWfContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectConfluenceOfWfContext
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
