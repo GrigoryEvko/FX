@@ -30,6 +30,7 @@ import FX1Poly.Core.WeakHeadStepNormalForms
 import FX1Poly.Core.WeakHeadStepSubst
 import FX1Poly.Core.WeakHeadStepRename
 import FX1Poly.Core.WeakHeadStepRenameReflect
+import FX1Poly.Core.StepRenameReflect
 import FX1Poly.Core.WeakHeadStepCommute
 import FX1Poly.Core.WeakHeadNormalPreservation
 import FX1Poly.Core.ReducibleTypeForwardClosure
@@ -209,6 +210,16 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.RawTerm.rename_leftInverse_roundTrip
 #assert_no_axioms FX1Poly.Core.WeakHeadStep.rename_reflects_of_leftInverse
 #assert_no_axioms FX1Poly.Core.WeakHeadStep.rename_preserves_weakHeadNormal_of_leftInverse
+
+-- SN-040/Kripke-CR3 (WIP): pull a FULL `Step` (not just weak-head) BACK along an injective renaming —
+-- the confinement-free half of full rename-reflection-with-image. The left-inverse property holds at EVERY
+-- index, so the round-trip rename⁻¹∘rename = id collapses definitionally (same chain as
+-- isStronglyNormalizing_rename_of_leftInverse); Step.rename (forward) transports the step. The image half
+-- (rename ρ f' = h) needs free-variable confinement and is a separate brick. Unblocks the Kripke arrow CR3
+-- (#670 → #671) head-step case (KripkeCandidateRenameClosure.lean:63).
+#assert_no_axioms FX1Poly.Core.Step.renamePullbackOfLeftInverse
+#assert_no_axioms FX1Poly.Core.Step.renameReflectsExistsOfLeftInverse
+#assert_no_axioms FX1Poly.Core.StepStar.renamePullbackOfLeftInverse
 
 -- SN-040 (WIP): the neutral LEAF of the stratified ReducibleTypeStep rename-closure (type + member level).
 -- The piType arm is genuinely Kripke-obstructed (see StratifiedReducibleTypeRename docstring); this is the
