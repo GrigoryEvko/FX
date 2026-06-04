@@ -62,4 +62,80 @@ theorem etaLamQuasiCommutesOverBeta {scope : Nat}
    Step.etaLamSourceCongruence betaStep,
    UnionStar.tailRight (UnionStar.refl _) (Step.eta.etaLam reduct)⟩
 
+/-! ## etaModIntro (OSN-B4, the single-strip case)
+
+`etaModIntroSource m = modIntro[ modElim[ m ] ]` — a structural strip with no binder and no weakening, so
+the postponement is etaLam's shape minus the weaken: lift the β/ι-step through two congruence layers, then
+one etaModIntro η-contraction.  Single copy of `m`, so the βη-tail is a single η-step. -/
+
+/-- Lift a β/ι-step under the etaModIntro source context `modIntro[ modElim[ _ ] ]`. -/
+theorem Step.etaModIntroSourceCongruence {scope : Nat}
+    {modalTerm reduct : RawTerm scope}
+    (betaStep : Step modalTerm reduct) :
+    Step (RawTerm.etaModIntroSource modalTerm) (RawTerm.etaModIntroSource reduct) :=
+  Step.cong .gen_modIntro ()
+    (StepChildren.here .childNil
+      (Step.cong .gen_modElim ()
+        (StepChildren.here .childNil betaStep)))
+
+/-- **etaModIntro quasi-commutes over β (OSN-B4).**  The etaModIntro case of
+`QuasiCommutesRightOverLeft Step Step.eta`: common reduct `etaModIntroSource reduct`, reached by the
+congruence lift and reaching `reduct` by one etaModIntro η-contraction. -/
+theorem etaModIntroQuasiCommutesOverBeta {scope : Nat}
+    {modalTerm reduct : RawTerm scope}
+    (betaStep : Step modalTerm reduct) :
+    ∃ commonReduct, Step (RawTerm.etaModIntroSource modalTerm) commonReduct ∧
+      UnionStar Step Step.eta commonReduct reduct :=
+  ⟨RawTerm.etaModIntroSource reduct,
+   Step.etaModIntroSourceCongruence betaStep,
+   UnionStar.tailRight (UnionStar.refl _) (Step.eta.etaModIntro reduct)⟩
+
+/-! ## etaPair (OSN-B4, the DUPLICATING case)
+
+`etaPairSource p = pair[ fst p, snd p ]` holds TWO copies of `p`.  A β/ι-step `p → c` cannot be mirrored by
+a single step on the source — one step reduces only one copy.  So the postponement genuinely uses the
+multi-step βη-tail: β-reduce the `fst` copy (the single forward step), then β-reduce the `snd` copy, then
+η-contract.  This is the case where `UnionStar`'s multi-step capacity is load-bearing (Klop-style
+duplication, absorbed by quasi-commutation — strong commutation would fail here). -/
+
+/-- etaPair reduce-fst: step the `fst p` copy inside `pair[ fst p, snd p ]` to `pair[ fst c, snd p ]`. -/
+theorem Step.etaPairSourceReduceFst {scope : Nat}
+    {pairTerm reduct : RawTerm scope}
+    (betaStep : Step pairTerm reduct) :
+    Step (RawTerm.etaPairSource pairTerm)
+      (.mkGen .gen_pair ()
+        (.childCons (.mkGen .gen_fst () (.childCons reduct .childNil))
+          (.childCons (.mkGen .gen_snd () (.childCons pairTerm .childNil)) .childNil))) :=
+  Step.cong .gen_pair ()
+    (StepChildren.here _
+      (Step.cong .gen_fst () (StepChildren.here .childNil betaStep)))
+
+/-- etaPair reduce-snd: step the remaining `snd p` copy to reach `etaPairSource reduct = pair[ fst c, snd c ]`. -/
+theorem Step.etaPairSourceReduceSnd {scope : Nat}
+    {pairTerm reduct : RawTerm scope}
+    (betaStep : Step pairTerm reduct) :
+    Step
+      (.mkGen .gen_pair ()
+        (.childCons (.mkGen .gen_fst () (.childCons reduct .childNil))
+          (.childCons (.mkGen .gen_snd () (.childCons pairTerm .childNil)) .childNil)))
+      (RawTerm.etaPairSource reduct) :=
+  Step.cong .gen_pair ()
+    (StepChildren.there _
+      (StepChildren.here .childNil
+        (Step.cong .gen_snd () (StepChildren.here .childNil betaStep))))
+
+/-- **etaPair quasi-commutes over β (OSN-B4).**  The etaPair case of `QuasiCommutesRightOverLeft Step
+Step.eta`: common reduct `pair[ fst c, snd p ]` (one β/ι-step on the source), then the βη-tail β-reduces the
+second copy and η-contracts — a multi-step `UnionStar` (`tailLeft` then `tailRight`). -/
+theorem etaPairQuasiCommutesOverBeta {scope : Nat}
+    {pairTerm reduct : RawTerm scope}
+    (betaStep : Step pairTerm reduct) :
+    ∃ commonReduct, Step (RawTerm.etaPairSource pairTerm) commonReduct ∧
+      UnionStar Step Step.eta commonReduct reduct :=
+  ⟨_,
+   Step.etaPairSourceReduceFst betaStep,
+   UnionStar.tailRight
+     (UnionStar.tailLeft (UnionStar.refl _) (Step.etaPairSourceReduceSnd betaStep))
+     (Step.eta.etaPair reduct)⟩
+
 end FX1Poly.Core

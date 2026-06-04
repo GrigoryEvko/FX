@@ -736,3 +736,14 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- η-then-β reorders to β-then-(one η) ⊆ βη*. The etaLam obligation of EtaQuasiCommutesOverBeta (OSN-B6).
 #assert_no_axioms FX1Poly.Core.Step.etaLamSourceCongruence
 #assert_no_axioms FX1Poly.Core.etaLamQuasiCommutesOverBeta
+
+-- OSN-B4 (EtaPostponementOverBeta.lean): etaModIntro (single strip modIntro[modElim[_]], etaLam's shape
+-- minus the weaken) + etaPair (the DUPLICATING case). etaPair source pair[fst p, snd p] holds two copies
+-- of p, so one β/ι-step reduces only the fst copy (reduceFst) — the βη-tail then β-reduces the snd copy
+-- (reduceSnd) and η-contracts, a genuine multi-step UnionStar (tailLeft + tailRight). This is where the
+-- Geser criterion's multi-step quasi-commutation is load-bearing (Klop-style duplication absorbed).
+#assert_no_axioms FX1Poly.Core.Step.etaModIntroSourceCongruence
+#assert_no_axioms FX1Poly.Core.etaModIntroQuasiCommutesOverBeta
+#assert_no_axioms FX1Poly.Core.Step.etaPairSourceReduceFst
+#assert_no_axioms FX1Poly.Core.Step.etaPairSourceReduceSnd
+#assert_no_axioms FX1Poly.Core.etaPairQuasiCommutesOverBeta
