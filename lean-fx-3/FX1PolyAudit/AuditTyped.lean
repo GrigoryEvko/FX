@@ -3278,6 +3278,15 @@ gates pin them shut.
 -- all-levels drift; sidesteps the #752 all-levels piArm for the genFormationPi reducible-as-type half.
 #assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromComponentReducibility
 
+-- piReducibleAsTypeFromUniformLevelMember (fully-uniform genFormationPi reducible-as-type, lift-free): for the
+-- Π whose domain AND codomain are classified at the SAME universe levelExpr as the Π's own output
+-- (levelExpr = lmaxAll [levelExpr, levelExpr]), the piReducibleAsType premise is discharged from the children's
+-- raw universe-MEMBERSHIPS (the natural FT output) with NO cumulativity lift: each member of Type@levelExpr
+-- decodes to a reducible TYPE at denote levelExpr env directly (universeMemberReducibleAsTypeAtDecodedLevel,
+-- decoded level = the Π's level), fed to the connector. The non-uniform cases (levelExpr strictly above one
+-- child's universe) need the level-bounded TYPE-reducibility cumulativity (the documented multi-lemma residual).
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniformLevelMember
+
 -- SN-D5d (the SN-040-FREE codomain-member wiring — CORRECTS the ticks #18/#19 SN-040 claim): the codomain's
 -- universe membership at `cons headTerm σ` (var0 → a domain member, σ tail UN-RENAMED) comes from the codomain
 -- IH via ReducibleEnvAtDenote.cons — NO renaming-closure (SN-040). The `cons` (prepend) vs `lift` (weaken-rename)

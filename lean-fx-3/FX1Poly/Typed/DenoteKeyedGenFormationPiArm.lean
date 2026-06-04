@@ -115,4 +115,49 @@ theorem piReducibleAsTypeFromComponentReducibility {profile : PolyProfile} {scop
     (domainReducibleAtDecoded substitution envReducible)
     (codomainReducibleAtDecoded substitution envReducible)
 
+/-- **Discharge `piReducibleAsType` from the children's universe-MEMBERSHIPS for the fully-uniform Π fragment.**
+The fully-uniform Π `Π (A : Type@levelExpr). (B : Type@levelExpr)` — domain AND codomain classified at the SAME
+universe `levelExpr` as the Π's own output (`levelExpr = lmaxAll [levelExpr, levelExpr]`) — has its
+`piReducibleAsType` premise dischargeable WITHOUT any level lift.  Each child arrives from the fundamental-theorem
+recursion as a reducible MEMBER of `Type@levelExpr` (the natural FT output), and a member of `Type@levelExpr`
+decodes to a reducible TYPE at `denote levelExpr env` directly via `universeMemberReducibleAsTypeAtDecodedLevel`
+— the decoded level is exactly the Π's level, so NO cumulativity is needed.  Composes
+`piReducibleAsTypeFromComponentReducibility` (the connector) with `universeMemberReducibleAsTypeAtDecodedLevel`
+on BOTH children.
+
+This closes the fully-uniform fragment of `fundamentalGenFormationPiAtDenote`'s `piReducibleAsType`.  The
+remaining NON-uniform cases — where `levelExpr = lmaxAll [domainLevel, codomainLevel]` STRICTLY exceeds one
+child's classifying universe (so that child is reducible only at its lower decoded level and must lift UP to
+`denote levelExpr env`) — are the level-bounded TYPE-reducibility cumulativity residual
+(`IsReducibleTypeAtDenote env lowerLevel D → IsReducibleTypeAtDenote env levelExpr D` for `lowerLevel ≤ levelExpr`,
+both above `D`'s internal universe thresholds), which is genuinely a multi-lemma effort (a universe-level-bound
+predicate threaded through substitution-by-a-bounded-member), NOT a drift the member-stability route closes. -/
+theorem piReducibleAsTypeFromUniformLevelMember {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
+    (level : Nat) (context : TypingContext profile scope)
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)} (levelExpr : LevelExpr)
+    (domainFlag codomainFlag : UniverseFlag)
+    (levelAbove : LevelExpr.denote levelExpr env < level)
+    (domainMember : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleMemberAtDenote env level
+          (universeCodeCell levelExpr domainFlag) (RawTerm.subst substitution domain))
+    (codomainMember : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        ∀ argument : RawTerm targetScope,
+          IsReducibleMemberAtDenote env (LevelExpr.denote levelExpr env)
+            (RawTerm.subst substitution domain) argument →
+          IsReducibleMemberAtDenote env level
+            (universeCodeCell levelExpr codomainFlag)
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomain) argument)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env)
+          (RawTerm.subst substitution (piTyCodeCell domain codomain)) :=
+  piReducibleAsTypeFromComponentReducibility env level context levelExpr
+    (fun substitution envReducible =>
+      universeMemberReducibleAsTypeAtDecodedLevel (domainMember substitution envReducible) levelAbove)
+    (fun substitution envReducible argument argumentMember =>
+      universeMemberReducibleAsTypeAtDecodedLevel
+        (codomainMember substitution envReducible argument argumentMember) levelAbove)
+
 end FX1Poly.Typed
