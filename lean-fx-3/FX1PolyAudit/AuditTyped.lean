@@ -264,6 +264,7 @@ import FX1Poly.Typed.HasTypeDescContextConversion
 import FX1Poly.Typed.HasTypeDescPiContextConversion
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
+import FX1Poly.Typed.HasTypeDescPiRootGeneric
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4368,3 +4369,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natElimCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.idJCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pairCellHasNoTyping
+
+-- Table-generic root classification (HasTypeDescPiRootGeneric.lean, the cascade-death brick for typed root
+-- inversion toward the generic typing layer, polycell.md §3.16.19). subjectRootGenerator HARD-CODES the
+-- formation table (enumerates gen_piTyCode/gen_sigmaTyCode, proving typingRuleDescOf=none for all else), so a
+-- new formation row breaks it. subjectRootGeneratorGeneric instead concludes "four non-former heads (var/
+-- universeCode/lam/app) ∨ ∃ rule, typingRuleDescOf root = some rule" — the genFormationPi arm becomes a
+-- one-liner ⟨rule, isFormation⟩ (witness already in the arm), pi/sigma absorbed via the typingRuleDescOf_*
+-- table facts, so adding a formation row leaves it intact. cellHasNoTypingWhenRootGenericallyExcluded is the
+-- future-proof refutation (data ctors/elims have typingRuleDescOf=none permanently, refuted for all time).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectRootGeneratorGeneric
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded
