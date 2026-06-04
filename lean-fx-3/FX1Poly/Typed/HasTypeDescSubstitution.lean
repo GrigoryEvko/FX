@@ -2,6 +2,7 @@ import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeDescWeakening
 import FX1Poly.Typed.HasTypeSubstitution
 import FX1Poly.Core.RawTermSubst0
+import FX1Poly.Core.RawTermFoldNonVarCommute
 import FX1Poly.Core.RawTermSubst0Commute
 import FX1Poly.Core.ConvSubstRename
 
@@ -94,38 +95,28 @@ theorem HasTypeDesc.substRespectingContext {profile : PolyProfile}
         exact HasTypeDesc.universeFormation targetContext levelExpr flag
   | .genFormation _sourceContext generator payload children levels flag rule
       isFormation premises => fun targetContext substitution substitutionTyped => by
-      -- Hoist the companion cross-call on PRISTINE `premises` BEFORE the `by_cases`, so the
-      -- structural-recursion checker recognises it as a sub-derivation (the `toHasType`
-      -- discipline).  The substituted premises do not depend on the generator.
+      -- Hoist the companion cross-call on PRISTINE `premises` FIRST, so the structural-recursion
+      -- checker recognises it as a sub-derivation; the substituted premises do not depend on the
+      -- generator (the `toHasType` discipline).
       have substPremises :=
         DescTelescope.substRespectingTelescope premises targetContext substitution
           substitutionTyped
-      by_cases hPi : generator = .gen_piTyCode
-      · subst hPi
-        obtain rfl : rule = { outputType := universeFormerOutput } :=
-          Option.some.inj isFormation.symm
-        show HasTypeDesc profile targetContext
-          (RawTerm.subst substitution (RawTerm.mkGen .gen_piTyCode payload children))
-          (RawTerm.subst substitution (universeCodeCell (lmaxAll levels) flag))
-        rw [subst_universeCodeCell]
-        exact HasTypeDesc.genFormation targetContext .gen_piTyCode payload
-          (RawTermChildren.subst substitution children) levels flag
-          { outputType := universeFormerOutput } typingRuleDescOf_piTyCode substPremises
-      · by_cases hSigma : generator = .gen_sigmaTyCode
-        · subst hSigma
-          obtain rfl : rule = { outputType := universeFormerOutput } :=
-            Option.some.inj isFormation.symm
-          show HasTypeDesc profile targetContext
-            (RawTerm.subst substitution (RawTerm.mkGen .gen_sigmaTyCode payload children))
-            (RawTerm.subst substitution (universeCodeCell (lmaxAll levels) flag))
-          rw [subst_universeCodeCell]
-          exact HasTypeDesc.genFormation targetContext .gen_sigmaTyCode payload
-            (RawTermChildren.subst substitution children) levels flag
-            { outputType := universeFormerOutput } typingRuleDescOf_sigmaTyCode substPremises
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg hPi, if_neg hSigma] at isFormation
-          contradiction
+      -- TABLE-GENERIC (no `by_cases pi/sigma`): `formationRuleImpliesNotVariable` discharges the
+      -- non-`gen_var` side condition, `formationRuleIsUniverseFormer` makes `rule` concrete, and the
+      -- generic `RawTerm.subst_mkGen_of_ne_var` distributes the substitution over the ABSTRACT
+      -- formation cell (the non-var commutation substrate).  A new formation row absorbs here with
+      -- zero edits — reconstruction carries the ORIGINAL `generator`/`isFormation`.
+      have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
+      obtain rfl : rule = { outputType := universeFormerOutput } :=
+        formationRuleIsUniverseFormer isFormation
+      show HasTypeDesc profile targetContext
+        (RawTerm.subst substitution (RawTerm.mkGen generator payload children))
+        (RawTerm.subst substitution (universeCodeCell (lmaxAll levels) flag))
+      rw [subst_universeCodeCell, RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+      exact HasTypeDesc.genFormation targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.subst substitution children) levels flag
+        { outputType := universeFormerOutput } isFormation substPremises
 
 /-- Companion: substitute the premise spine.  Structural recursion on the telescope; the
 `cons` arm fires the head recursion through `HasTypeDesc.substRespectingContext` (the

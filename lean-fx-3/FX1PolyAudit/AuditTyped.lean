@@ -702,6 +702,14 @@ gates pin them shut.
 -- universeFormerOutput row (data type code) is absorbed by adding one by_cases case HERE. First consumer
 -- migrated: HasTypeDescValidity.genFormation arm (now table-generic). ~14 consumers remain to migrate.
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_outputIsUniverseFormer
+-- Cell-RECONSTRUCTION helpers (HasTypeDesc.lean, the category-C consumer substrate). The validity
+-- consumers were output-only; the rest RECONSTRUCT formation cells. formationRuleImpliesNotVariable
+-- discharges the generator ≠ gen_var side condition of RawTerm.subst/rename_mkGen_of_ne_var (typingRuleDescOf
+-- gen_var = none). formationRuleIsUniverseFormer upgrades the output equation to the full structure equation
+-- (rule = {outputType := universeFormerOutput}) so `obtain rfl` makes rule concrete — the generic successor
+-- of the per-branch Option.some.inj. First reconstruction consumer migrated: HasTypeDescSubstitution.
+#assert_no_axioms FX1Poly.Typed.formationRuleImpliesNotVariable
+#assert_no_axioms FX1Poly.Typed.formationRuleIsUniverseFormer
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc
 #assert_no_axioms FX1Poly.Typed.DescTelescope
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_piFormation_viaGenArm

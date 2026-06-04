@@ -202,6 +202,36 @@ theorem typingRuleDescOf_outputIsUniverseFormer {generator : Generator} {rule : 
       rw [if_neg hPi, if_neg hSigma] at isFormation
       contradiction
 
+/-- **A formation generator is never the variable generator.**  `typingRuleDescOf .gen_var = none`
+(the variable is not a type former), so any generator carrying a formation rule is non-`gen_var`.  The
+discharge for the `generator ≠ .gen_var` side condition of `RawTerm.subst_mkGen_of_ne_var` /
+`rename_mkGen_of_ne_var`: every formation-family consumer that reconstructs a formation cell over an
+ABSTRACT generator obtains the non-variable witness from HERE.  Zero-axiom (the established
+`unfold`/`if_neg`/`contradiction` non-former branch; the `.gen_var ≠` inequalities are
+`Generator.noConfusion`). -/
+theorem formationRuleImpliesNotVariable {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule) :
+    generator ≠ Generator.gen_var := by
+  intro isVariable
+  subst isVariable
+  unfold typingRuleDescOf at isFormation
+  rw [if_neg (fun isPi => Generator.noConfusion isPi),
+    if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
+  cases isFormation
+
+/-- **A formation rule IS the universe-former rule (full structure).**  The single-field strengthening of
+`typingRuleDescOf_outputIsUniverseFormer`: since `TypingRuleDesc` has exactly the `outputType` field, the
+output-type equation upgrades to a structure equation `rule = { outputType := universeFormerOutput }`.  This
+is what a cell-RECONSTRUCTION consumer needs — `obtain rfl` makes `rule` concrete (replacing the old
+per-branch `Option.some.inj`), so the reconstructed `genFormation` cell carries `isFormation` directly. -/
+theorem formationRuleIsUniverseFormer {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule) :
+    rule = { outputType := universeFormerOutput } := by
+  have outputIsFormer : rule.outputType = universeFormerOutput :=
+    typingRuleDescOf_outputIsUniverseFormer isFormation
+  cases rule
+  rw [← outputIsFormer]
+
 /-- Reconstruction: the generic `genFormation` arm derives Π-formation.  Domain
 typed at `Type@(domainLevel, flag)`, codomain at `Type@(codomainLevel, flag)`
 UNDER the domain binder ⟹ `piTyCodeCell` inhabits `Type@(lmax domainLevel
