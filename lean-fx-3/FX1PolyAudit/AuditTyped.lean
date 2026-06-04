@@ -186,6 +186,7 @@ import FX1Poly.Typed.DenoteKeyedFundamentalPiIntro
 import FX1Poly.Typed.DenoteKeyedClosedMember
 import FX1Poly.Typed.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.DenoteKeyedUniformReducible
+import FX1Poly.Typed.DenoteKeyedUniverseMembershipIntro
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3127,6 +3128,18 @@ gates pin them shut.
 -- universe-membership→ambient bridge (carrying denote levelExpr env < level). piIntro's domain hits the SAME
 -- bridge; piElim sidesteps it.
 #assert_no_axioms FX1Poly.Typed.fundamentalConvAtDenote
+
+-- DenoteKeyedUniverseMembershipIntro (SN-D5d step (b)): the universe-membership INTRODUCTION — the converse of
+-- the A2 decode bridge (#751). universeMembershipIntroAtDenote: a denote-reducible SN type AT its decoded level
+-- is a denote-reducible MEMBER of its universe code Type@levelExpr at any higher ambient level. It IS the
+-- headline universe candidate (universeMembership_levelIrrelevant, whose decode-set is SN ∧ reducible-at-decoded)
+-- repackaged as an intro, no new induction; universeFormationMemberAtDenote is its closed-universe-code instance.
+-- fundamentalTypeFormerAtDenote: the type-former FT arm (universeFormation/piFormation/genFormationPi) MODULO
+-- route-A reducibility — the closed universe classifier is subst-fixed so the conclusion lands on the intro,
+-- isolating the former's TYPE-reducibility (route A / the A2 composite-domain piArm #752) as the single premise,
+-- the same isolation discipline fundamentalConvAtDenote uses.
+#assert_no_axioms FX1Poly.Typed.universeMembershipIntroAtDenote
+#assert_no_axioms FX1Poly.Typed.fundamentalTypeFormerAtDenote
 
 -- DenoteKeyedAmbientLevelBridge (SN-D5-A2bridge): the single shared deep ingredient of the denote FT's
 -- conv/piIntro arms. universeMemberReducibleAtLevel turns a universe MEMBERSHIP at the ambient level into the
