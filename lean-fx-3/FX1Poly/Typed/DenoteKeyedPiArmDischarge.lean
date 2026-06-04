@@ -193,4 +193,29 @@ theorem compositeDomainPiArmLift {scope : Nat} {env : Nat → Nat} (threshold hi
       innerCodomainCandidate innerCodomainUniform)
     codomainLiftedPerMember
 
+/-- **The universe-domain former, re-derived THROUGH the general engine — the clean P-keyed form.**  Feeds
+`universeMembership_levelIrrelevant` (the universe code reducible above its decoded level with the FIXED predicate
+`fun member => IsStronglyNormalizing member ∧ IsReducibleTypeAtDenote env (denote levelExpr env) member`) as the
+engine's `domainUniform`, with `threshold := denote levelExpr env`.  This both validates that
+`aboveThresholdDomainPiArmLift` genuinely subsumes the universe case (cf. the bespoke `universeDomainPiArmLift`)
+and exposes the codomain key in the CLEAN fixed-predicate form `SN ∧ reducible-at-the-decoded-level` rather than
+the raw `universeDenotePredicate` — the form the genFormationPi assembly prefers, since the decoded-level
+membership is exactly what the telescope's universe-membership intro supplies.  The single threshold condition
+`denote levelExpr env < highLevel` is the only side-condition (the impredicative obstruction is the threshold, not
+the universe code itself). -/
+theorem universeDomainPiFormerViaEngine {scope : Nat} {env : Nat → Nat} (highLevel : Nat)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) {codomainCode : RawTerm (scope + 1)}
+    (domainBelowHigh : LevelExpr.denote levelExpr env < highLevel)
+    (codomainLiftedPerMember : ∀ argument : RawTerm scope,
+      (IsStronglyNormalizing argument ∧
+        IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env) argument) →
+      IsReducibleTypeAtDenote env highLevel (RawTerm.subst0 codomainCode argument)) :
+    IsReducibleTypeAtDenote env highLevel
+      (.mkGen .gen_piTyCode ()
+        (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+          (.childCons codomainCode .childNil))) :=
+  aboveThresholdDomainPiArmLift (LevelExpr.denote levelExpr env) highLevel domainBelowHigh
+    (fun level levelAbove => universeMembership_levelIrrelevant env level levelExpr flag levelAbove)
+    codomainLiftedPerMember
+
 end FX1Poly.Typed

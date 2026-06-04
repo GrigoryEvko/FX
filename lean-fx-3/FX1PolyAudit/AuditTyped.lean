@@ -3125,6 +3125,12 @@ gates pin them shut.
 -- genFormationPi arm needs (the former's decoded level sits above its components' thresholds). With neutral and
 -- universe it discharges piArmLift on every domain shape.
 #assert_no_axioms FX1Poly.Typed.compositeDomainPiArmLift
+-- universeDomainPiFormerViaEngine: the universe-domain former re-derived THROUGH the general engine, feeding
+-- universeMembership_levelIrrelevant as domainUniform (threshold = denote levelExpr env). Validates the engine
+-- subsumes the universe case AND exposes the codomain key in the CLEAN fixed-predicate form (SN ∧ reducible at
+-- the decoded level) — the form the genFormationPi assembly prefers (the telescope's universe-membership intro
+-- supplies exactly the decoded-level membership). Only side-condition: denote levelExpr env < highLevel.
+#assert_no_axioms FX1Poly.Typed.universeDomainPiFormerViaEngine
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
