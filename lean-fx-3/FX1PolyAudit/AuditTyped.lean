@@ -170,6 +170,7 @@ import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
 import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
 import FX1Poly.Typed.DenoteKeyedGeneralDomainPiArm
 import FX1Poly.Typed.DenoteKeyedUniformPiCandidate
+import FX1Poly.Typed.DenoteKeyedUniformPiAboveThreshold
 import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
 import FX1Poly.Typed.DenoteKeyedApplicationMember
 import FX1Poly.Typed.DenoteKeyedConvMember
@@ -3042,6 +3043,19 @@ gates pin them shut.
 -- uniform), needing the threshold-split.
 #assert_no_axioms FX1Poly.Typed.uniformDomainPi_hasUniformCandidate
 #assert_no_axioms FX1Poly.Typed.uniformDomainPi_memberStable
+
+-- DenoteKeyedUniformPiAboveThreshold (#752 — the threshold-drift composite handler): the ABOVE-THRESHOLD twins
+-- of the uniform-composite lemmas, for composites CONTAINING universe codes (Type@0 → Type@0) whose components
+-- are uniform only ABOVE the inner codes' decoded level (universeMembership_levelIrrelevant gives the fixed
+-- candidate there). The all-level reducibility such composites would need is unachievable (the Π fails below
+-- threshold), but the FT never needs it — a former's components live in universes strictly below the former's,
+-- so the former's decoded level sits above every component threshold, exactly this regime.
+-- uniformType_memberStableAboveThreshold: bounded leaf member-stability. uniformDomainPi_hasUniformCandidate-
+-- AboveThreshold: Π reducible with the fixed candidate above threshold (one piType per above-threshold level).
+-- uniformDomainPi_memberStableAboveThreshold: composite member-stability above threshold.
+#assert_no_axioms FX1Poly.Typed.uniformType_memberStableAboveThreshold
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_hasUniformCandidateAboveThreshold
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_memberStableAboveThreshold
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
