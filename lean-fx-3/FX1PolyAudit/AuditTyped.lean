@@ -238,6 +238,7 @@ import FX1Poly.Typed.BoundedFormationDispatch
 import FX1Poly.Typed.BoundExceedsPi
 import FX1Poly.Typed.BoundExceedsPiDischarge
 import FX1Poly.Typed.BoundedGrownFundamental
+import FX1Poly.Typed.ClosedBoundedReducibleMember
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4078,3 +4079,9 @@ gates pin them shut.
 -- discharging BFT-6's formationFundamental premise inline; every other arm mirrors BFT-6 (budgets unused). With
 -- BoundExceedsPi.existsBound (BFT-12b) this is one closed-corollary step (BFT-13) from SN-043.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalAtBoundedSucc
+
+-- The closed-term bounded-reducibility corollary (ClosedBoundedReducibleMember.lean, BFT-13). Composes
+-- BoundExceedsPi.existsBound (BFT-12b) → HasTypeDescPi.fundamentalAtBoundedSucc (BFT-12c) → the empty-context env
+-- witness, instantiated at the unique closing substitution Fin.elim0 : RawTermSubst 0 1. Turns the
+-- budget-conditional grown FT into an UNCONDITIONAL closed-reducibility fact; feeds the member→SN bridge (BFT-14).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedBoundedReducibleMember
