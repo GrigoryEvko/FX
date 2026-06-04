@@ -187,6 +187,7 @@ import FX1Poly.Typed.DenoteKeyedClosedMember
 import FX1Poly.Typed.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.DenoteKeyedUniformReducible
 import FX1Poly.Typed.DenoteKeyedUniverseMembershipIntro
+import FX1Poly.Typed.DenoteKeyedTelescopeFundamental
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3185,6 +3186,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote.nil
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote.twoChild
+
+-- DenoteKeyedTelescopeFundamental (SN-D5d step 1): the telescope FT companion arms that BUILD
+-- TelescopeReducibleAtDenote from the typed DescTelescopePi + per-child fundamentals — the denote analogues of
+-- the fuel fundamentalTelescopeNilAtAll/fundamentalTelescopeConsAtAll (FundamentalAtAllTelescope), single-level
+-- (no ∀ level over the head member). nil = True.intro at count 0; cons = the relation's cons conjunction
+-- (head member from headFundamental σ reducibleEnv, subst_universeCodeCell cancelling subst on the closed code;
+-- tail passed through). These are the DescTelescopePi.nil/.cons minor-premise bodies the eventual mutual FT
+-- recursor discharges; the genFormationPi arm reads the produced telescope for its children's reducibility.
+#assert_no_axioms FX1Poly.Typed.fundamentalTelescopeNilAtDenote
+#assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtDenote
 
 -- DenoteKeyedUniformReducible (#752 foundation): the uniform-candidate-above-threshold motive
 -- UniformlyReducibleAboveDenote — the STRENGTHENING that breaks the piType circularity in the level-irrelevance
