@@ -235,6 +235,7 @@ import FX1Poly.Typed.BoundedFormationLeafArms
 import FX1Poly.Typed.BoundExceedsDesc
 import FX1Poly.Typed.BoundExceedsDischarge
 import FX1Poly.Typed.BoundedFormationDispatch
+import FX1Poly.Typed.BoundExceedsPi
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4051,3 +4052,11 @@ gates pin them shut.
 -- motive_2 wrapper (BFT-10).
 #assert_no_axioms FX1Poly.Typed.IsFormationTelescopeReducibleAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.fundamentalAtBoundedSucc
+
+-- The GROWN-engine per-derivation budget (BoundExceedsPi.lean, BFT-12a). Mutual inductive Prop over HasTypeDescPi /
+-- DescTelescopePi. The grown engine has NO universeFormation leaf, so this carries NO belowBound of its own — the
+-- ofFormation ctor carries the embedded BoundExceeds (where the fuel lives), every other ctor threads
+-- sub-BoundExceedsPi (conv/piIntro/piElim) or the telescope budget (genFormationPi). Foundation for the BFT-12c
+-- grown FT discharge (BoundExceedsPi.rec, ofFormation arm → BFT-11) at a single fixed bound.
+#assert_no_axioms FX1Poly.Typed.BoundExceedsPi
+#assert_no_axioms FX1Poly.Typed.BoundExceedsPiTelescope
