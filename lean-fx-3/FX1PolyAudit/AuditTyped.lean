@@ -225,6 +225,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedTelescopeReducible
 import FX1Poly.Typed.DenoteKeyedBoundedTelescopeFundamental
 import FX1Poly.Typed.DenoteKeyedBoundedTelescopeProjection
 import FX1Poly.Typed.FormerOutputLevelBounds
+import FX1Poly.Typed.BoundedCodomainOpenSN
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3951,3 +3952,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.lmaxAll_pair
 #assert_no_axioms FX1Poly.Typed.denote_domainLevel_le_lmaxAll_pair
 #assert_no_axioms FX1Poly.Typed.denote_codomainLevel_le_lmaxAll_pair
+
+-- Open-codomain SN from a bounded FILLED codomain member (BoundedCodomainOpenSN.lean) — the genFormationPi
+-- codomainSN premise. The bounded telescope gives the codomain filled at an argument (subst0 (subst (lift σ)
+-- codomain) arg); bounded CR1 (stronglyNormalizing_of_memberAtBoundedSucc) → SN of the instance; the
+-- relation-agnostic IsStronglyNormalizing.ofSubst0Body reflects it to the OPEN body subst (lift σ) codomain.
+-- The hardest sub-piece of the genFormationPi recursor arm (BFT-4), via shipped primitives only.
+#assert_no_axioms FX1Poly.Typed.codomainOpenStronglyNormalizing_ofBoundedFilledMember
