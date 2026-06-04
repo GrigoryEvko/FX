@@ -195,6 +195,7 @@ import FX1Poly.Typed.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.DenoteKeyedUniformReducible
 import FX1Poly.Typed.DenoteKeyedUniverseMembershipIntro
 import FX1Poly.Typed.DenoteKeyedTelescopeFundamental
+import FX1Poly.Typed.DenoteKeyedSigmaFormation
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3147,6 +3148,15 @@ gates pin them shut.
 -- half of the genFormationPi reducible-as-type ingredient (non-Π non-universe formers are reducible types; only
 -- the Π case routes through the piType arm and constrains its children).
 #assert_no_axioms FX1Poly.Typed.smoke_sigmaFormer_isReducibleAtDenote
+
+-- sigmaFormationMemberAtDenote (SN-D5d, the Σ case of the genFormationPi denote-FT arm; denote analogue of the
+-- fuel IsReducibleMemberAt.sigmaFormationUnderSubst): under a closing substitution, Σ domain. codomain is a
+-- denote-reducible MEMBER of its universe Type@levelExpr given its substituted children are SN. The FIRST
+-- genFormationPi denote-FT arm closing FULLY (both conjuncts), unconditional — the Σ case carries NO threshold
+-- hypothesis exactly because its reducible-as-type half is the FREE neutral arm (smoke_sigmaFormer); SN via the
+-- two-child former-SN, packaged by universeMembershipIntroAtDenote. typingRuleDescOf is some only for {Π, Σ},
+-- so this + the Π piType arm (the #752 threshold residual) cover the whole 2-case genFormationPi split.
+#assert_no_axioms FX1Poly.Typed.sigmaFormationMemberAtDenote
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
