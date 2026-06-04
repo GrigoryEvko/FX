@@ -223,6 +223,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiDischarge
 import FX1Poly.Typed.DenoteKeyedBoundedAssemblyBridge
 import FX1Poly.Typed.DenoteKeyedBoundedTelescopeReducible
 import FX1Poly.Typed.DenoteKeyedBoundedTelescopeFundamental
+import FX1Poly.Typed.DenoteKeyedBoundedTelescopeProjection
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3933,3 +3934,9 @@ gates pin them shut.
 -- recursor discharges; no induction, no funext.
 #assert_no_axioms FX1Poly.Typed.fundamentalTelescopeNilAtBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtBounded
+
+-- Two-child bounded telescope projection (DenoteKeyedBoundedTelescopeProjection.lean) — reads the domain +
+-- codomain bound-reducible universe-members off the depth-0/count-2 Π/Σ telescope in the EXACT shape
+-- piReducibleAsTypeFromNonUniformLevelMemberBounded consumes; codomain reshaped subst(cons)→subst0(subst(lift))
+-- via RawTerm.subst_cons_eq_subst0_lift. The telescope→discharge bridge for the genFormationPi recursor arm.
+#assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded.twoChildMembers
