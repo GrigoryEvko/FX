@@ -232,6 +232,7 @@ import FX1Poly.Typed.BoundedGenFormationSigmaFromTelescope
 import FX1Poly.Typed.BoundedTelescopeConsSucc
 import FX1Poly.Typed.BoundedGrownDispatch
 import FX1Poly.Typed.BoundedFormationLeafArms
+import FX1Poly.Typed.BoundExceedsDesc
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4019,3 +4020,11 @@ gates pin them shut.
 -- supplies). The conv arm (BFT-8) is already fundamentalConvArmBoundedSucc; genFormation (BFT-10) reuses BFT-4+Σ-twin.
 #assert_no_axioms FX1Poly.Typed.fundamentalVarAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtBoundedSucc
+
+-- The per-derivation universe-level budget (BoundExceedsDesc.lean) — the BFT-11/12 fuel. An INDUCTIVE Prop family
+-- indexed by the HasTypeDesc derivation (a budget FUNCTION over the Prop derivation would be large elimination,
+-- forbidden), mutual with the telescope budget. `bound` exceeds the denoted lsucc-level of every universeFormation
+-- leaf; conv/genFormation carry sub-budgets by construction (sidestepping a term-syntactic budget's inner-classifier
+-- obstruction). Foundation for the bounded formation FT dispatch (BFT-11) + the ∃-bound discharge (BFT-12).
+#assert_no_axioms FX1Poly.Typed.BoundExceeds
+#assert_no_axioms FX1Poly.Typed.BoundExceedsTelescope
