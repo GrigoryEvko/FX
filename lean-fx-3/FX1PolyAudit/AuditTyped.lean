@@ -228,6 +228,7 @@ import FX1Poly.Typed.FormerOutputLevelBounds
 import FX1Poly.Typed.BoundedCodomainOpenSN
 import FX1Poly.Typed.BoundedDomainInhabitant
 import FX1Poly.Typed.BoundedGenFormationPiFromTelescope
+import FX1Poly.Typed.BoundedGenFormationSigmaFromTelescope
 import FX1Poly.Typed.BoundedTelescopeConsSucc
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
@@ -3992,3 +3993,10 @@ gates pin them shut.
 -- of isReducibleBounded_cumulative; reconciles the bounded telescope's argument level (the former's decoded OUTPUT
 -- level, used by twoChildMembers) with the uniform environment bound in the grown-FT consTelescope dispatch arm.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtBounded.cumulative
+
+-- The Σ twin of BFT-4 (BoundedGenFormationSigmaFromTelescope.lean) — a two-child Σ former is a +1-closing
+-- fundamental member of Type@(lmaxAll levels) from the SAME telescope IH. Σ is classified by the relation's
+-- `neutral` arm (SN candidate; no sigmaType arm), so the former reducible-as-type needs only former SN, NOT the
+-- per-component cumulative lifts the Π arm needs; domain/codomain SN + level bounds + var-0 instantiation are
+-- identical to the Π arm. The Σ-branch body of the eventual HasTypeDescPi.rec dispatch (BFT-6) + formation FT.
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationSigmaFromTelescopeAtBoundedSucc
