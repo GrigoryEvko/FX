@@ -3337,6 +3337,21 @@ gates pin them shut.
 -- child's universe) need the level-bounded TYPE-reducibility cumulativity (the documented multi-lemma residual).
 #assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniformLevelMember
 
+-- piReducibleAsTypeFromUniverseDomainCodomainReducibility (the NON-uniform DOMAIN twin, anti-vacuity sidestep):
+-- when the Π domain is a literal universe code Type@domainLevel (the type-of-type-families shape), the domain is
+-- reducible-as-type at the Π's decoded output level FOR FREE via universeCode_isReducibleAtDenote (anti-vacuity,
+-- EVERY level) — NO cumulativity even when denote domainLevel env < denote levelExpr env (the non-uniform case
+-- piReducibleAsTypeFromUniformLevelMember cannot reach). The #752/#753 obstruction bites only the universe MEMBER
+-- candidate (vacuous below its decoded level), never universe-code TYPE reducibility; residual isolated to codomain.
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniverseDomainCodomainReducibility
+
+-- piReducibleAsTypeFromUniverseCodeComponents (BOTH children universe codes — Π (A:Type@a). Type@b): the
+-- constant-codomain type-family former's piReducibleAsType is discharged UNCONDITIONALLY (no hypotheses) — both
+-- children anti-vacuously reducible at the output level, codomain a CLOSED universe code unchanged by subst/subst0.
+-- Closes the NON-uniform a ≠ b case entirely via anti-vacuity — the type-half witness that the obstruction is a
+-- member-candidate phenomenon, not a type-reducibility one.
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniverseCodeComponents
+
 -- gapUniverseDomainPiVacuouslyReducibleAtLowLevel (the cumulativity-obstruction WITNESS): at lowLevel ≤
 -- denote gapLevel env, Type@gapLevel has the EMPTY member candidate (denoteBelowFamily empty at index ≥
 -- lowLevel), so Π(Type@gapLevel) codomain is reducible-as-type at lowLevel for ANY codomain (vacuous codomain

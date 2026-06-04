@@ -160,4 +160,62 @@ theorem piReducibleAsTypeFromUniformLevelMember {profile : PolyProfile} {scope :
       universeMemberReducibleAsTypeAtDecodedLevel
         (codomainMember substitution envReducible argument argumentMember) levelAbove)
 
+/-- **Discharge `piReducibleAsType` for a universe-DOMAIN Π via anti-vacuity — the non-uniform domain twin.**  When
+the Π's domain is a literal universe code `Type@domainLevel` (the type-of-type-families shape `Π (A : Type@domainLevel).
+codomain`), the domain is reducible-as-type at the Π's decoded output level `denote levelExpr env` FOR FREE — a
+universe code is anti-vacuously reducible at EVERY level (`universeCode_isReducibleAtDenote`), so NO cumulativity is
+needed even when `denote domainLevel env` is STRICTLY below `denote levelExpr env` (the non-uniform case).  This is
+the genuine sidestep of the #753/SN-D5e bound-carrying obstruction for the universe-domain shape: the obstruction
+bites only the universe MEMBER candidate (which goes vacuous below its decoded level), never the universe-code TYPE
+reducibility, which is total.  Contrast `piReducibleAsTypeFromUniformLevelMember`, which supplies the domain by going
+through `universeMemberReducibleAsTypeAtDecodedLevel` and so is pinned to the uniform `domainLevel = levelExpr` case.
+The residual is isolated entirely to the CODOMAIN premise (`codomainReducibleAtDecoded`, the dependent codomain at the
+decoded level per domain member) — for a universe-code codomain that too is free (see `piReducibleAsTypeFromUniverseCode\
+Components`); for a genuinely dependent codomain it is the remaining bound-carrying work. -/
+theorem piReducibleAsTypeFromUniverseDomainCodomainReducibility {profile : PolyProfile} {scope : Nat}
+    (env : Nat → Nat) (level : Nat) (context : TypingContext profile scope)
+    (domainLevel levelExpr : LevelExpr) (domainFlag : UniverseFlag) {codomain : RawTerm (scope + 1)}
+    (codomainReducibleAtDecoded : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        ∀ argument : RawTerm targetScope,
+          IsReducibleMemberAtDenote env (LevelExpr.denote levelExpr env)
+            (universeCodeCell domainLevel domainFlag) argument →
+          IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env)
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) codomain) argument)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env)
+          (RawTerm.subst substitution (piTyCodeCell (universeCodeCell domainLevel domainFlag) codomain)) :=
+  piReducibleAsTypeFromComponentReducibility env level context levelExpr
+    (fun substitution _envReducible => by
+      rw [subst_universeCodeCell]
+      exact universeCode_isReducibleAtDenote env (LevelExpr.denote levelExpr env) domainLevel domainFlag)
+    codomainReducibleAtDecoded
+
+/-- **Discharge `piReducibleAsType` UNCONDITIONALLY for a Π of two universe codes — `Π (A : Type@a). Type@b`.**  The
+constant-codomain type-family former `Π (A : Type@domainLevel). Type@codomainLevel` (output universe `levelExpr =
+lmaxAll [lsucc domainLevel, lsucc codomainLevel]`) has its `piReducibleAsType` premise discharged with NO hypotheses
+at all: both children are universe codes, each anti-vacuously reducible-as-type at the decoded output level
+(`universeCode_isReducibleAtDenote`), and the codomain is a CLOSED universe code unchanged by `subst`/`subst0` — so it
+is reducible at the output level for EVERY domain member regardless of the argument.  This closes the NON-uniform case
+`a ≠ b` (where `levelExpr` strictly exceeds one child's classifying universe) that `piReducibleAsTypeFromUniformLevel\
+Member` cannot reach, entirely via anti-vacuity — the type-half witness that the #752/#753 obstruction is a member-
+candidate phenomenon, not a type-reducibility one.  Corollary of `piReducibleAsTypeFromUniverseDomainCodomain\
+Reducibility` with the codomain supplied by anti-vacuity. -/
+theorem piReducibleAsTypeFromUniverseCodeComponents {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
+    (level : Nat) (context : TypingContext profile scope)
+    (domainLevel codomainLevel levelExpr : LevelExpr) (domainFlag codomainFlag : UniverseFlag) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtDenote env (LevelExpr.denote levelExpr env)
+          (RawTerm.subst substitution
+            (piTyCodeCell (universeCodeCell domainLevel domainFlag)
+              (universeCodeCell codomainLevel codomainFlag))) :=
+  piReducibleAsTypeFromUniverseDomainCodomainReducibility env level context domainLevel levelExpr domainFlag
+    (fun _substitution _envReducible argument _argumentInDomain => by
+      rw [subst_universeCodeCell,
+        show (universeCodeCell codomainLevel codomainFlag).subst0 argument
+          = universeCodeCell codomainLevel codomainFlag from rfl]
+      exact universeCode_isReducibleAtDenote env (LevelExpr.denote levelExpr env) codomainLevel codomainFlag)
+
 end FX1Poly.Typed
