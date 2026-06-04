@@ -61,6 +61,7 @@ import FX1Poly.Typed.SimplyTypedTermCanonicityLevelFree
 import FX1Poly.Typed.SimplyTypedTermConsistencyLevelFree
 import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
+import FX1Poly.Typed.SimplyTypedMetatheoryViaSconing
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
@@ -3606,3 +3607,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.conversionDecidableViaSconing
 #assert_no_axioms FX1Poly.Core.conversionIffNormalizeEqViaSconing
 #assert_no_axioms FX1Poly.Core.reducibilityFullMetatheoryViaSconing
+-- First CONCRETE UNCONDITIONAL instantiation of the metatheory capstone (SimplyTypedMetatheoryViaSconing.lean):
+-- the closed simply-typed fragment's full decidable metatheory via the sconing route. reducibilityFullMetatheory
+-- ViaSconing was parametric in (candidate, fundamental) -- this exhibits a real inhabitant with NO SN-043 dep:
+-- candidate = the SN reducibility candidate (isStronglyNormalizing_isReducibilityCandidate); fundamental = the
+-- unconditional simply-typed SN theorem simplyTypedBareClosedStronglyNormalizing (Milestone-A0 floor). Genuine +
+-- non-circular: fundamental is "closed simply-typed => SN" (isWellTyped != candidate), then the capstone carries
+-- SN => {reaches NF, decidable Conv}. IsClosedSimplyTyped: well-typedness as a bare RawTerm 0 predicate.
+-- simplyTypedFullMetatheoryViaSconing: the capstone instance (SN + WN + decidable Conv, unconditional).
+-- simplyTypedReachesNormalForm: the WN headline for the fragment (genuinely new). simplyTypedConversionDecidable
+-- ViaSconing: decidable Conv via the sconing route (cross-checks the direct Conv.decidableOfSimplyTypedBareClosed).
+-- All zero-axiom. Proves the metatheory capstone is inhabited, not a vacuous interface.
+#assert_no_axioms FX1Poly.Typed.IsClosedSimplyTyped
+#assert_no_axioms FX1Poly.Typed.simplyTypedFullMetatheoryViaSconing
+#assert_no_axioms FX1Poly.Typed.simplyTypedReachesNormalForm
+#assert_no_axioms FX1Poly.Typed.simplyTypedConversionDecidableViaSconing
