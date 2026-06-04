@@ -245,6 +245,7 @@ import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.HasTypeDescPiCongruence
+import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4143,3 +4144,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congLamBody
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congFunction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.congArgument
+
+-- Conv-KEEPING Π/Σ-code former inversion (HasTypeDescPiFormerInversion.lean, the former head for the SR cong arm
+-- #458). inversionPiCodeComponents drops the classifier Conv (its telescope workhorse discards _convToCode/_converts),
+-- which suffices for output validity but NOT for re-assembling piTyCodeCell domainCode' codomainCode at the ORIGINAL
+-- classifier. invertPiTyCode/invertSigmaTyCode keep it: ofFormation is HANDLED via inversionPiCodeWithConvGeneral
+-- (a former IS a formation term, unlike λ/app), conv re-threads via Conv.trans converts.sym recursiveConv, piIntro/
+-- piElim refuted by headGenerator clash, and genFormationPi is the match (output definitionally universeCodeCell
+-- (lmaxAll levels) flag once the rule is pinned by typingRuleDescOf_piTyCode, so the Conv is Conv.refl). The corollary
+-- destructures the two-entry telescope and yields domain/codomain typings + Conv classifier (universeCodeCell
+-- (lmaxAll [domainLevel, codomainLevel]) flag). The former analogue of invertLam (#454) / invertApp (#769).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertPiCodeTelescopeWithConvGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertPiTyCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertSigmaCodeTelescopeWithConvGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertSigmaTyCode
