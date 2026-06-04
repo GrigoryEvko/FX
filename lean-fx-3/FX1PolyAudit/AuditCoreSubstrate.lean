@@ -221,6 +221,13 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.smoke_unit_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_identityRedex_isStronglyNormalizing
 
+-- SN-D5d (genFormationPi codomain-SN extraction): the RELATION-AGNOSTIC pure-SN binder reconciliation, the
+-- substitution-algebra core factored out of openBodyOfConsSubstMember (which now delegates to it). SN of the
+-- LIFTED-substitution body from SN of its cons-instantiation (binder-split keystone + ofSubst0Body); mentions
+-- no reducibility relation, so the fuel (IsReducibleMemberAt) and denote (IsReducibleMemberAtDenote) routes
+-- both reduce the codomain-under-binder SN obligation to this one fact once their CR1 supplies the member's SN.
+#assert_no_axioms FX1Poly.Core.IsStronglyNormalizing.openBodyOfConsSubst
+
 -- SN-081: one closed strong-normalization witness per raw former family, plus two nested
 -- compositional witnesses (closures compose with correct de Bruijn scope threading through the
 -- under-binder slots).  Each exercises one Step.from_<former> congruence injection on a concrete cell.

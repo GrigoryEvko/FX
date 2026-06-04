@@ -58,26 +58,42 @@ theorem IsStronglyNormalizing.ofSubst0Body {scope : Nat}
           (currentEquation ▸ instantiationStep) candidateReduct rfl
   exact reflectAccessibility instantiationNormalizing body rfl
 
+/-- **An open body is strongly normalizing when its `cons`-instantiation is (RELATION-AGNOSTIC).**  The pure
+substitution-algebra core: strong normalization of a binder's body under the LIFTED substitution
+`RawTerm.subst (lift substitution) body` follows from strong normalization of the same body under the
+`cons`-instantiation `RawTerm.subst (cons argument substitution) body` — by the binder-split keystone
+`RawTerm.subst_cons_eq_subst0_lift` (the `cons`-substitution IS `subst0 (lifted body) argument`) and
+`IsStronglyNormalizing.ofSubst0Body` (which reflects the instantiation's SN back to the open lifted body).
+This mentions NO reducibility relation, so it serves the fuel route (`IsReducibleMemberAt`, via
+`openBodyOfConsSubstMember` below) and the denote route (`IsReducibleMemberAtDenote`) alike — the genFormationPi
+codomain-SN extraction at any reducibility layer reduces to this one fact once the codomain member is turned
+into strong normalization by its own layer's CR1. -/
+theorem IsStronglyNormalizing.openBodyOfConsSubst {scope targetScope : Nat}
+    {body : RawTerm (scope + 1)} {argument : RawTerm (targetScope + 1)}
+    {substitution : RawTermSubst scope (targetScope + 1)}
+    (consSubstNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.cons argument substitution) body)) :
+    IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) body) := by
+  rw [RawTerm.subst_cons_eq_subst0_lift] at consSubstNormalizing
+  exact IsStronglyNormalizing.ofSubst0Body consSubstNormalizing
+
 /-- **An open body is strongly normalizing when its `cons`-instantiation is a reducible member.**  The
 fundamental theorem's `genFormationPi` arm needs strong normalization of a binder's body (the Π/Σ codomain)
 under the LIFTED substitution `RawTerm.subst (lift substitution) body`, but only has the body's
 reducibility-membership after `cons`-instantiating the binder with a concrete argument (its own
 fundamental-theorem IH under a `cons`-extended environment).  The two are bridged WITHOUT a binder-lifted
 reducible environment (and so without renaming-stability of the reducibility relation): the membership is
-strongly normalizing by CR1 (`IsReducibleMemberAt.stronglyNormalizing`); the binder-split keystone
-`RawTerm.subst_cons_eq_subst0_lift` rewrites the `cons`-substitution as `subst0 (lifted body) argument`; and
-`IsStronglyNormalizing.ofSubst0Body` reflects that instantiation's strong normalization back to the open
-lifted body.  This is exactly the `codomainNormalizing` premise of the under-substitution Π/Σ-former
-membership rules, discharged from the `codomainExists`-style instantiated IH. -/
+strongly normalizing by CR1 (`IsReducibleMemberAt.stronglyNormalizing`), and the relation-agnostic
+`openBodyOfConsSubst` discharges the rest (binder-split keystone + `ofSubst0Body`).  This is exactly the
+`codomainNormalizing` premise of the under-substitution Π/Σ-former membership rules, discharged from the
+`codomainExists`-style instantiated IH. -/
 theorem IsStronglyNormalizing.openBodyOfConsSubstMember {scope targetScope : Nat} {predLevel : Nat}
     {classifier : RawTerm (targetScope + 1)} {body : RawTerm (scope + 1)}
     {argument : RawTerm (targetScope + 1)}
     {substitution : RawTermSubst scope (targetScope + 1)}
     (member : IsReducibleMemberAt (predLevel + 1) classifier
       (RawTerm.subst (RawTermSubst.cons argument substitution) body)) :
-    IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) body) := by
-  have instantiationNormalizing := member.stronglyNormalizing
-  rw [RawTerm.subst_cons_eq_subst0_lift] at instantiationNormalizing
-  exact IsStronglyNormalizing.ofSubst0Body instantiationNormalizing
+    IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) body) :=
+  IsStronglyNormalizing.openBodyOfConsSubst member.stronglyNormalizing
 
 end FX1Poly.Core
