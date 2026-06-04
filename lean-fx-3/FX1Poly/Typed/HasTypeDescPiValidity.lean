@@ -69,23 +69,12 @@ theorem HasTypeDescPi.classifierIsTypeDesc {profile : PolyProfile} {scope : Nat}
         (functionTyped.classifierIsTypeDesc wellFormed) argumentTyped wellFormed
   | .genFormationPi context generator _payload _children levels flag rule isFormation
       _premises => by
-      by_cases hPi : generator = Generator.gen_piTyCode
-      · subst hPi
-        obtain rfl : rule = { outputType := universeFormerOutput } :=
-          Option.some.inj isFormation.symm
-        exact ⟨(lmaxAll levels).lsucc, flag,
-          HasTypeDescPi.ofFormation
-            (HasTypeDesc.universeFormation context (lmaxAll levels) flag)⟩
-      · by_cases hSigma : generator = Generator.gen_sigmaTyCode
-        · subst hSigma
-          obtain rfl : rule = { outputType := universeFormerOutput } :=
-            Option.some.inj isFormation.symm
-          exact ⟨(lmaxAll levels).lsucc, flag,
-            HasTypeDescPi.ofFormation
-              (HasTypeDesc.universeFormation context (lmaxAll levels) flag)⟩
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg hPi, if_neg hSigma] at isFormation
-          contradiction
+      -- Table-generic: the FORMATION-FAMILY invariant gives `rule.outputType = universeFormerOutput` for ANY
+      -- current or future row, so the output is the universe code `Type@(lmaxAll levels)` with no per-generator
+      -- (pi/sigma) enumeration here — a new `universeFormerOutput` row is absorbed for free.
+      rw [typingRuleDescOf_outputIsUniverseFormer isFormation]
+      exact ⟨(lmaxAll levels).lsucc, flag,
+        HasTypeDescPi.ofFormation
+          (HasTypeDesc.universeFormation context (lmaxAll levels) flag)⟩
 
 end FX1Poly.Typed
