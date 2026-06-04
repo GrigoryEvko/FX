@@ -240,6 +240,7 @@ import FX1Poly.Typed.BoundExceedsPiDischarge
 import FX1Poly.Typed.BoundedGrownFundamental
 import FX1Poly.Typed.ClosedBoundedReducibleMember
 import FX1Poly.Typed.ClosedStronglyNormalizing
+import FX1Poly.Typed.OpenStronglyNormalizing
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4094,3 +4095,10 @@ gates pin them shut.
 -- terms; what closed-term canonicity (SN-047/048/049) and consistency (SN-050) consume. Arbitrary-context SN-043
 -- (#546) additionally needs the neutral-variable open-term closing env — tracked separately.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedStronglyNormalizing
+
+-- SN-for-well-typed, OPEN form / the SN-043 wiring (OpenStronglyNormalizing.lean). Any grown derivation in an
+-- arbitrary context is SN GIVEN a BoundExceedsPi budget + a bound-reducible closing environment. Same
+-- member→SN→reflect composition as BFT-14, parameterized over an arbitrary closing env (closed = the .empty
+-- instance). Reduces fully-unconditional #546 to ONE residual: reducibleEnvOfWfContext (the identity closing subst
+-- is bound-reducible over a well-formed context — the classical reducible-substitution lemma).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfReducibleEnv
