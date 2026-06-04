@@ -171,6 +171,7 @@ import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
 import FX1Poly.Typed.DenoteKeyedGeneralDomainPiArm
 import FX1Poly.Typed.DenoteKeyedUniformPiCandidate
 import FX1Poly.Typed.DenoteKeyedUniformPiAboveThreshold
+import FX1Poly.Typed.DenoteKeyedPiFormerAtLevel
 import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
 import FX1Poly.Typed.DenoteKeyedApplicationMember
 import FX1Poly.Typed.DenoteKeyedConvMember
@@ -3056,6 +3057,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.uniformType_memberStableAboveThreshold
 #assert_no_axioms FX1Poly.Typed.uniformDomainPi_hasUniformCandidateAboveThreshold
 #assert_no_axioms FX1Poly.Typed.uniformDomainPi_memberStableAboveThreshold
+
+-- DenoteKeyedPiFormerAtLevel (#752 — the single-level route's foundational primitive): the FT genFormationPi
+-- arm needs the former reducible at its DECODED level (a SINGLE level), not all levels (the all-level backbone
+-- is unachievable for threshold-drift composite-domain Π and unneeded — a former's decoded level sits above all
+-- component thresholds). piFormerReducibleAtLevel: Π reducible at level L from domain reducible at L + codomain
+-- reducible at L per L-member, choice-free via reducibleMemberCandidate (one piType at one level, NO all-level /
+-- member-stability / threshold machinery). universeDomainPiFormerReducibleAtLevel: the impredicative case
+-- Π(X:Type@e).C[X] becomes TRIVIAL at a single level — Type@e is reducible at EVERY level
+-- (universeCode_isReducibleAtDenote), so NO threshold-split (contrast the all-level
+-- universeDomainPi_reducibleFromCodomainExistence). The single-level route sidesteps the impredicative
+-- obstruction entirely.
+#assert_no_axioms FX1Poly.Typed.piFormerReducibleAtLevel
+#assert_no_axioms FX1Poly.Typed.universeDomainPiFormerReducibleAtLevel
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
