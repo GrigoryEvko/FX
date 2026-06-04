@@ -178,4 +178,64 @@ theorem fundamentalPiIntroAtBoundedSucc {profile : PolyProfile} {scope : Nat} (e
       bodyConclusion (RawTermSubst.cons argument substitution)
         (ReducibleEnvAtBounded.cons envReducible argumentMember))
 
+/-- **The +1 A2 bridge.**  The `FundamentalConclusionAtBoundedSucc` analogue of
+`reducibleTypeAtBoundUnderSubstFromMembershipBounded`: a classifier whose +1-closing fundamental conclusion is a
+universe member is reducible-as-type at the bound under every +1-closing substitution.  The member-level steps
+(`subst_universeCodeCell`, the A2 bridge) are scope-parametric, so this mirrors the arbitrary-scope version at the
+`targetScope + 1` substitution. -/
+theorem reducibleTypeAtBoundUnderSubstFromMembershipBoundedSucc {profile : PolyProfile} {scope : Nat}
+    (env : Nat → Nat) (bound : Nat) (context : TypingContext profile scope)
+    {classifier : RawTerm scope} (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (belowBound : LevelExpr.denote levelExpr env < bound)
+    (classifierConclusion : FundamentalConclusionAtBoundedSucc env bound context classifier
+      (universeCodeCell levelExpr flag)) :
+    ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        IsReducibleTypeAtBounded env bound (RawTerm.subst substitution classifier) := by
+  intro _targetScope substitution envReducible
+  have member := classifierConclusion substitution envReducible
+  rw [subst_universeCodeCell] at member
+  exact reducibleTypeAtBoundFromUniverseMemberBounded env bound member belowBound
+
+/-- **The +1-closing `conv` recursor arm.**  The `FundamentalConclusionAtBoundedSucc` analogue of
+`fundamentalConvArmBounded`: from the subject's and reclassifier's +1-closing conclusions and a conversion, the
+subject satisfies the +1-closing conclusion at the reclassifier.  Mirrors the arbitrary-scope arm at the
+`targetScope + 1` substitution via the scope-parametric `convMemberUnderClosingSubstitutionBounded` + the +1 A2
+bridge. -/
+theorem fundamentalConvArmBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
+    (context : TypingContext profile scope) {subject classifier reclassifier : RawTerm scope}
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (belowBound : LevelExpr.denote levelExpr env < bound)
+    (converts : Conv classifier reclassifier)
+    (subjectConclusion : FundamentalConclusionAtBoundedSucc env bound context subject classifier)
+    (reclassifierConclusion : FundamentalConclusionAtBoundedSucc env bound context reclassifier
+      (universeCodeCell levelExpr flag)) :
+    FundamentalConclusionAtBoundedSucc env bound context subject reclassifier := by
+  intro _targetScope substitution envReducible
+  exact convMemberUnderClosingSubstitutionBounded env bound
+    (subjectConclusion substitution envReducible)
+    (reducibleTypeAtBoundUnderSubstFromMembershipBoundedSucc env bound context levelExpr flag belowBound
+      reclassifierConclusion substitution envReducible)
+    converts
+
+/-- **The +1-closing `piElim` (application) recursor arm.**  The `FundamentalConclusionAtBoundedSucc` analogue of
+`fundamentalPiElimAtBounded`: from the function's and argument's +1-closing conclusions, the application satisfies
+the +1-closing conclusion at the substituted codomain.  Mirrors the arbitrary-scope arm at the `targetScope + 1`
+substitution via the scope-parametric `applicationMemberUnderClosingSubstitutionBounded`.  No A2 bridge needed (no
+universe-membership inversion in the application rule). -/
+theorem fundamentalPiElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
+    (context : TypingContext profile scope)
+    {functionTerm argument domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (functionConclusion :
+      FundamentalConclusionAtBoundedSucc env bound context functionTerm
+        (piTyCodeCell domainCode codomainCode))
+    (argumentConclusion :
+      FundamentalConclusionAtBoundedSucc env bound context argument domainCode) :
+    FundamentalConclusionAtBoundedSucc env bound context (appCell functionTerm argument)
+      (RawTerm.subst0 codomainCode argument) := by
+  intro _targetScope substitution envReducible
+  exact applicationMemberUnderClosingSubstitutionBounded env bound
+    (functionConclusion substitution envReducible)
+    (argumentConclusion substitution envReducible)
+
 end FX1Poly.Typed

@@ -3525,6 +3525,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtBounded.toSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtBoundedSucc
 
+-- The +1-closing conv + piElim recursor arms (+ the +1 A2 bridge). Mechanical mirrors of the shipped arbitrary-scope
+-- arms at the targetScope+1 substitution -- the member-level lemmas (convMember.../applicationMember...) are scope-
+-- parametric. With fundamentalPiIntroAtBoundedSucc, the grown-FT arms conv/piIntro/piElim are now all +1-available;
+-- only the genFormationPi +1-arm + the formation FT + the HasTypeDescPi.rec dispatch remain.
+#assert_no_axioms FX1Poly.Typed.reducibleTypeAtBoundUnderSubstFromMembershipBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalConvArmBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalPiElimAtBoundedSucc
+
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
 -- lowerAt only at the fixed index denote e, which the below-family coherence (denoteBelowFamily_eq_reducible)
