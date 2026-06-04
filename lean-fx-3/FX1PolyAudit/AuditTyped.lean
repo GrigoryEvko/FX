@@ -227,6 +227,7 @@ import FX1Poly.Typed.DenoteKeyedBoundedTelescopeProjection
 import FX1Poly.Typed.FormerOutputLevelBounds
 import FX1Poly.Typed.BoundedCodomainOpenSN
 import FX1Poly.Typed.BoundedDomainInhabitant
+import FX1Poly.Typed.BoundedGenFormationPiFromTelescope
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3968,3 +3969,11 @@ gates pin them shut.
 -- IsReducibilityCandidate.containsVariable). The argument the genFormationPi arm feeds the codomain telescope.
 #assert_no_axioms FX1Poly.Typed.levelMax_lt
 #assert_no_axioms FX1Poly.Typed.variableZeroMemberOfBoundedUniverseMember
+
+-- The bounded genFormationPi recursor arm (BoundedGenFormationPiFromTelescope.lean) — a two-child Π/Σ former is a
+-- +1-closing fundamental member of Type@(lmaxAll levels) from the telescope IH. Builds the universe member INSIDE
+-- the ∀ (resolving the belowBound threading: every level bound extracted per-substitution, no canonical env),
+-- lifting children to the output level by free bounded cumulativity (the non-uniform case). Composes ALL the BFT
+-- pieces: twoChildMembers + gate-extraction + variableZeroMember + levelMax_lt + belowOutput + codomainOpenSN +
+-- piReducibleAtLevelFromComponentsBounded + universeMembershipIntroAtBounded. The hardest dispatch arm.
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiFromTelescopeAtBoundedSucc
