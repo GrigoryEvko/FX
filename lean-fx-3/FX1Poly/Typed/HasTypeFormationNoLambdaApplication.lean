@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescPiConsistency
+import FX1Poly.Typed.HasTypeDescPiRootGeneric
 
 /-! # FX1Poly/Typed/HasTypeFormationNoLambdaApplication
     - lambda/application exclusion for the native and description formation engines
@@ -31,15 +32,14 @@ theorem HasTypeDesc.subjectRootGenerator_ne_lam {profile : PolyProfile} {scope :
     (typed : HasTypeDesc profile context subject classifier) :
     subject.rootGenerator ≠ Generator.gen_lam := by
   intro rootIsLam
-  rcases typed.subjectRootGenerator with rootIsVar | rootIsUniverse | rootIsPi | rootIsSigma
+  rcases typed.subjectRootGeneratorGeneric with rootIsVar | rootIsUniverse | ⟨_rule, isFormer⟩
   · rw [rootIsVar] at rootIsLam
     cases rootIsLam
   · rw [rootIsUniverse] at rootIsLam
     cases rootIsLam
-  · rw [rootIsPi] at rootIsLam
-    cases rootIsLam
-  · rw [rootIsSigma] at rootIsLam
-    cases rootIsLam
+  · -- the root carries a formation rule, but `gen_lam` has `typingRuleDescOf = none`
+    rw [rootIsLam] at isFormer
+    cases isFormer
 
 /-- A description-formation subject never has application root.  Application subjects live only in the grown
 `HasTypeDescPi` judgment. -/
@@ -48,15 +48,14 @@ theorem HasTypeDesc.subjectRootGenerator_ne_app {profile : PolyProfile} {scope :
     (typed : HasTypeDesc profile context subject classifier) :
     subject.rootGenerator ≠ Generator.gen_app := by
   intro rootIsApp
-  rcases typed.subjectRootGenerator with rootIsVar | rootIsUniverse | rootIsPi | rootIsSigma
+  rcases typed.subjectRootGeneratorGeneric with rootIsVar | rootIsUniverse | ⟨_rule, isFormer⟩
   · rw [rootIsVar] at rootIsApp
     cases rootIsApp
   · rw [rootIsUniverse] at rootIsApp
     cases rootIsApp
-  · rw [rootIsPi] at rootIsApp
-    cases rootIsApp
-  · rw [rootIsSigma] at rootIsApp
-    cases rootIsApp
+  · -- the root carries a formation rule, but `gen_app` has `typingRuleDescOf = none`
+    rw [rootIsApp] at isFormer
+    cases isFormer
 
 /-- The description formation engine cannot type a lambda subject. -/
 theorem HasTypeDesc.subjectCannotBeLambda {profile : PolyProfile} {scope : Nat}

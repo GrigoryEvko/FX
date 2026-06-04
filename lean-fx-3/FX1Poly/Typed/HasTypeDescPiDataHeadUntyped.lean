@@ -23,13 +23,14 @@ The subject-reduction master dispatcher (`HasTypeDescPi.subjectReduction`, SN-05
 `iotaIdJRefl`, …) has a redex `.mkGen ELIM_GEN _ _` rooted at a data eliminator.  In each such case the
 dispatcher holds `HasTypeDescPi … (.mkGen ELIM_GEN …) …`; the generic refutation below turns that into
 `False`, discharging the entire iota family vacuously — the grown engine simply does not type the redexes
-those rules fire on.  The dispatcher cites `cellHasNoTypingWhenRootNotGrownHead` once per iota case.
+those rules fire on.  The dispatcher cites the table-generic `cellHasNoTypingWhenRootGenericallyExcluded`
+(`HasTypeDescPiRootGeneric`) once per iota case.
 
 ## What this file ships
 
-  * `HasTypeDescPi.cellHasNoTypingWhenRootNotGrownHead` — the reusable refutation: a cell whose root
-    generator differs from all six grown-introducible heads cannot be grown-typed.  The contrapositive of
-    `subjectRootGenerator`, packaged for the dispatcher's negative use.
+  * The reusable refutation itself — `HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded` — now lives in
+    `HasTypeDescPiRootGeneric` (the table-generic successor; this file's earlier six-inequality
+    `cellHasNoTypingWhenRootNotGrownHead` was retired as unsound once the formation table grows).
   * A representative smoke corpus proving the refutation FIRES on the real iota-redex heads across every
     eliminator shape class — branch selection (`gen_boolElim`), projection (`gen_fst`), recursion
     (`gen_natElim`), path induction (`gen_idJ`) — and on a data constructor (`gen_pair`), witnessing that
@@ -50,37 +51,12 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core
 
-/-- **No grown typing for a cell whose root is none of the six grown heads.**  A grown-typed subject is
-rooted at `gen_var` / `gen_universeCode` / `gen_piTyCode` / `gen_sigmaTyCode` / `gen_lam` / `gen_app`
-(`subjectRootGenerator`); so a cell whose root generator differs from all six has no grown typing
-derivation.  `(.mkGen generator …).rootGenerator` is `generator` definitionally, so each disjunct of
-`subjectRootGenerator` reduces to `generator = gen_X` and contradicts the matching inequality.  The
-contrapositive of `subjectRootGenerator`, the reusable refutation the SR dispatcher's iota cases cite.
-
-SUPERSEDED by `cellHasNoTypingWhenRootGenericallyExcluded` (`HasTypeDescPiRootGeneric`): this six-inequality
-form is UNSOUND once the formation table grows — a new type-former's generator differs from all six heads yet
-its cell IS typed (via `genFormationPi`), so the conclusion would be false.  The generic successor requires
-`typingRuleDescOf generator = none` (true permanently for data constructors/eliminators) instead of the six
-inequalities, and the smoke corpus below now cites it.  Retained (unused) pending retirement green-light. -/
-theorem HasTypeDescPi.cellHasNoTypingWhenRootNotGrownHead {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {generator : Generator}
-    {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
-    {classifier : RawTerm scope}
-    (rootNotVar : generator ≠ Generator.gen_var)
-    (rootNotUniverse : generator ≠ Generator.gen_universeCode)
-    (rootNotPi : generator ≠ Generator.gen_piTyCode)
-    (rootNotSigma : generator ≠ Generator.gen_sigmaTyCode)
-    (rootNotLam : generator ≠ Generator.gen_lam)
-    (rootNotApp : generator ≠ Generator.gen_app)
-    (typed : HasTypeDescPi profile context (.mkGen generator payload children) classifier) :
-    False := by
-  rcases typed.subjectRootGenerator with isVar | isUniverse | isPi | isSigma | isLam | isApp
-  · exact rootNotVar isVar
-  · exact rootNotUniverse isUniverse
-  · exact rootNotPi isPi
-  · exact rootNotSigma isSigma
-  · exact rootNotLam isLam
-  · exact rootNotApp isApp
+-- The six-inequality refutation `cellHasNoTypingWhenRootNotGrownHead` was RETIRED here: it was unsound once
+-- the formation table grows (a new former's generator differs from all six heads yet its cell IS typed via
+-- `genFormationPi`, so the conclusion would be false).  Its table-generic successor
+-- `HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded` (`HasTypeDescPiRootGeneric`, which requires
+-- `typingRuleDescOf generator = none` — permanent for data constructors/eliminators) is what the smoke
+-- corpus below cites.
 
 /-- **`gen_boolElim` (branch-selection eliminator) is untyped in the grown engine.**  The redex head of the
 `iotaBoolTrue` / `iotaBoolFalse` reductions; the grown engine types no `boolElim` cell. -/

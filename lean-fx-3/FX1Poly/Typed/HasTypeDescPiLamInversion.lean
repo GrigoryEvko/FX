@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescPiConsistency
+import FX1Poly.Typed.HasTypeDescPiRootGeneric
 import FX1Poly.Core.RawConfluence
 
 /-! # FX1Poly/Typed/HasTypeDescPiLamInversion — Π-INTRODUCTION (λ) inversion for the GROWN engine
@@ -72,9 +73,14 @@ theorem HasTypeDescPi.invertLamGeneral {profile : PolyProfile}
     | .ofFormation formationTyped => fun subjectEq => by
         have rootIsLam : subject.rootGenerator = Generator.gen_lam := by
           rw [subjectEq]; rfl
-        rcases formationTyped.subjectRootGenerator with isRoot | isRoot | isRoot | isRoot <;>
-          · rw [rootIsLam] at isRoot
-            exact Generator.noConfusion isRoot
+        rcases formationTyped.subjectRootGeneratorGeneric with isRoot | isRoot | ⟨_rule, isFormer⟩
+        · rw [rootIsLam] at isRoot
+          exact Generator.noConfusion isRoot
+        · rw [rootIsLam] at isRoot
+          exact Generator.noConfusion isRoot
+        · -- the root carries a formation rule, but `gen_lam` has `typingRuleDescOf = none`
+          rw [rootIsLam] at isFormer
+          cases isFormer
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped => fun subjectEq => by
         obtain ⟨domainCode, codomainCode, domainLevel, codomainLevel, flag,
             recursiveConv, domainTyped, codomainTyped, bodyTyped⟩ :=

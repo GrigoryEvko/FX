@@ -2024,13 +2024,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormationUnderSubst
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormationUnderSubst
 
-/-! ### Grown-engine closed-subject shape characterization (the consistency-spine inversion leg).
-    A well-typed grown subject is rooted at one of the six grown-engine generators; in the empty context
-    consistency reduces to the `gen_app` case the fundamental theorem's SN rules out.  Term-mode structural
-    recursion sidesteps the HasTypeDescPi/DescTelescopePi mutual-induction rejection. -/
-#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGenerator
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectRootGenerator
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectRootGenerator
+-- The hard-coded root-classification lemmas (HasTypeDesc/HasTypeDescPi.subjectRootGenerator,
+-- HasTypeDescPi.closedSubjectRootGenerator) were RETIRED — they enumerated gen_piTyCode/gen_sigmaTyCode and
+-- could not survive a new formation row.  Superseded by the table-generic family in HasTypeDescPiRootGeneric
+-- (subjectRootGeneratorGeneric / closedSubjectRootGeneratorGeneric, gated below).  Their ne_lam/ne_app
+-- corollaries survive (proofs migrated to the generic classification).
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGenerator_ne_lam
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGenerator_ne_app
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectCannotBeLambda
@@ -4355,15 +4353,12 @@ gates pin them shut.
 
 -- Grown-engine canonical-forms boundary (HasTypeDescPiDataHeadUntyped.lean, the SR dispatcher's iota-vacuity
 -- leg toward SN-055/#558). The grown engine types no data constructor and no data eliminator — it is the pure
--- Π/formation fragment. cellHasNoTypingWhenRootNotGrownHead is the contrapositive of subjectRootGenerator (a
--- grown-typed subject is rooted at one of var/universeCode/piTyCode/sigmaTyCode/lam/app): a cell rooted
--- elsewhere has no grown typing. The SR dispatcher cites it once per Step.iota* case — every iota redex
--- (.mkGen ELIM_GEN …) is refuted, discharging the iota family vacuously. The smoke corpus instantiates it on
--- the real iota-redex heads across the eliminator shape classes (boolElim branch-select / fst projection /
--- natElim recursion / idJ path-induction) and on a data constructor (pair), each via the generic lemma + a
--- six-way distinct-constructor refutation. The remaining eliminator heads (snd/natRec/listElim/optionMatch/
--- eitherMatch/idStrictRec) and all other constructors fall to the identical one-line application.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.cellHasNoTypingWhenRootNotGrownHead
+-- Π/formation fragment. The smoke corpus cites the table-generic refutation
+-- HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded (HasTypeDescPiRootGeneric, requires
+-- typingRuleDescOf gen = none): every Step.iota* redex (.mkGen ELIM_GEN …) is refuted, discharging the iota
+-- family vacuously. Instantiated on the real iota-redex heads across the eliminator shape classes (boolElim
+-- branch-select / fst projection / natElim recursion / idJ path-induction) and on a data constructor (pair).
+-- (The earlier six-inequality cellHasNoTypingWhenRootNotGrownHead was RETIRED — unsound post-table-growth.)
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.boolElimCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fstCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natElimCellHasNoTyping
