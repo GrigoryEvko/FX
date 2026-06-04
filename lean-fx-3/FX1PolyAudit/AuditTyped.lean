@@ -242,6 +242,7 @@ import FX1Poly.Typed.ClosedBoundedReducibleMember
 import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.OpenStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescPiLamInversion
+import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4112,3 +4113,12 @@ gates pin them shut.
 -- WfContext needed), so the Conv conjunct survives where the type-code inversions dropped it.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertLamGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertLam
+
+-- Π-elimination (app) inversion for the GROWN engine (HasTypeDescPiAppInversion.lean, TY-INVN #454/#769, dual of
+-- invertLam). An `appCell f a` typed at `classifier` has f : piTyCodeCell dom cod, a : dom, and classifier Conv to
+-- the dependent output RawTerm.subst0 cod a. The OUTER inversion fully-general β-SR consumes; with invertLam,
+-- app(lam b,a):T → f=lam b:Π dom cod, a:dom, T Conv subst0 cod a → invertLam(lam b) → inject Π-Conv → subst lemma.
+-- Same subject-generalised recipe; piElim is the match (two-child appCell injection via the nlication drilling),
+-- ofFormation/piIntro/genFormationPi refuted, conv re-threads via the unconditional raw Conv.trans.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertAppGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertApp
