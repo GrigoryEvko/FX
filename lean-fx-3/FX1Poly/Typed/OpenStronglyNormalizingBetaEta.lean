@@ -1,6 +1,7 @@
 import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StrongNormalizationBetaEtaUnion
+import FX1Poly.Core.EtaPostponementOverBeta
 
 /-! # FX1Poly/Typed/OpenStronglyNormalizingBetaEta
     — OSN-1 scaffolding: the precise remaining crux for open βη strong normalization
@@ -100,5 +101,22 @@ theorem HasTypeDescPi.betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes
     Step.betaEtaStar.IsStronglyNormalizing subject :=
   accUnionBetaEta etaQuasiCommutes
     (HasTypeDescPi.stronglyNormalizingOfWfContext contextWellFormed typed)
+
+/-- **★ Open βη strong normalization (OSN-1, #796) — UNCONDITIONAL.**  Every well-typed term in a
+well-formed context is strongly normalizing under the FULL βη relation `Step.betaEta = Step ∪ Step.eta`
+(really βιη, since `Step` carries β and ι).  This is the conditional
+`betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes` fed by the now-DISCHARGED η-postponement crux
+`etaQuasiCommutesOverBeta` (OSN-B6, the per-η-constructor critical-pair assembly).  The three ingredients:
+β-SN is OB-5 (`HasTypeDescPi.stronglyNormalizingOfWfContext`, the Tait reducibility argument); η-SN is the
+shipped unconditional `Step.etaStar.isStronglyNormalizing` (η strictly shrinks `RawTerm.size`); the union is
+the Geser SN-of-union criterion (`accUnionBetaEta`).  Zero-axiom throughout. -/
+theorem HasTypeDescPi.betaEtaStronglyNormalizingOfWfContext
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContext context)
+    (typed : HasTypeDescPi profile context subject classifier) :
+    Step.betaEtaStar.IsStronglyNormalizing subject :=
+  HasTypeDescPi.betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes
+    etaQuasiCommutesOverBeta contextWellFormed typed
 
 end FX1Poly.Typed

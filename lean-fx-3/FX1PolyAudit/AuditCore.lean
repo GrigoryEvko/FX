@@ -757,3 +757,9 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Step.etaGlueIntroReduceElim
 #assert_no_axioms FX1Poly.Core.Step.etaGlueIntroReduceSecond
 #assert_no_axioms FX1Poly.Core.etaGlueIntroQuasiCommutesOverBeta
+
+-- OSN-B6 (EtaPostponementOverBeta.lean): the DISCHARGED crux. `cases` on the indexed Step.eta with
+-- free-variable indices (pure-substitution unification, no noConfusion) dispatches each of the 5 η ctors to
+-- its postponement lemma — propext-clean. etaQuasiCommutesOverBeta : EtaQuasiCommutesOverBeta is now a
+-- THEOREM, so OSN-B1's accUnionBetaEta hypothesis is dischargeable (→ unconditional open βη-SN, OSN-B7).
+#assert_no_axioms FX1Poly.Core.etaQuasiCommutesOverBeta

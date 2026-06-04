@@ -1,4 +1,5 @@
 import FX1Poly.Core.StrongNormalizationUnion
+import FX1Poly.Core.StrongNormalizationBetaEtaUnion
 import FX1Poly.Core.StepEta
 import FX1Poly.Core.StepSubst
 
@@ -212,5 +213,25 @@ theorem etaGlueIntroQuasiCommutesOverBeta {scope : Nat}
    UnionStar.tailRight
      (UnionStar.tailLeft (UnionStar.refl _) (Step.etaGlueIntroReduceSecond betaStep))
      (Step.eta.etaGlueIntro reduct)⟩
+
+/-! ## Assembly (OSN-B6): the full crux EtaQuasiCommutesOverBeta
+
+Casing on the η-step dispatches to the five per-constructor lemmas above.  The `cases` is over the indexed
+`Step.eta` with FREE-variable indices (`a`, `b` were just introduced), so index unification is pure
+substitution — no impossible cases, no `noConfusion`, propext-clean (verified by the per-decl gate). -/
+
+/-- **η quasi-commutes over β (OSN-B6) — the discharged crux.**  The full `EtaQuasiCommutesOverBeta`: every
+η-step followed by a β/ι-step reorders into a β/ι-step followed by a βη-star reduction.  Assembled by casing
+on the η constructor (etaLam, etaPair, etaPathLam, etaModIntro, etaGlueIntro), each closed by its
+postponement lemma.  This discharges the lone hypothesis of the open βη-SN assembly (`accUnionBetaEta`,
+OSN-B1) — making open βη-SN UNCONDITIONAL for well-typed terms (OSN-B7, #796). -/
+theorem etaQuasiCommutesOverBeta : EtaQuasiCommutesOverBeta := by
+  intro scope a b c etaStep betaStep
+  cases etaStep with
+  | etaLam innerFunction => exact etaLamQuasiCommutesOverBeta betaStep
+  | etaPair pairTerm => exact etaPairQuasiCommutesOverBeta betaStep
+  | etaPathLam innerPath => exact etaPathLamQuasiCommutesOverBeta betaStep
+  | etaModIntro modalTerm => exact etaModIntroQuasiCommutesOverBeta betaStep
+  | etaGlueIntro gluedTerm => exact etaGlueIntroQuasiCommutesOverBeta betaStep
 
 end FX1Poly.Core
