@@ -230,6 +230,7 @@ import FX1Poly.Typed.BoundedDomainInhabitant
 import FX1Poly.Typed.BoundedGenFormationPiFromTelescope
 import FX1Poly.Typed.BoundedGenFormationSigmaFromTelescope
 import FX1Poly.Typed.BoundedTelescopeConsSucc
+import FX1Poly.Typed.BoundedGrownDispatch
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -4000,3 +4001,12 @@ gates pin them shut.
 -- per-component cumulative lifts the Π arm needs; domain/codomain SN + level bounds + var-0 instantiation are
 -- identical to the Π arm. The Σ-branch body of the eventual HasTypeDescPi.rec dispatch (BFT-6) + formation FT.
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationSigmaFromTelescopeAtBoundedSucc
+
+-- The bounded grown-engine fundamental theorem BFT-6 (BoundedGrownDispatch.lean) — the HasTypeDescPi.rec dispatch
+-- with motive_1 = FundamentalConclusionAtBoundedSucc, motive_2 = IsTelescopeReducibleAtBoundedSucc (the +1
+-- telescope wrapper carrying the argLevel≤bound cumulativity gate), conditional on a bounded HasTypeDesc formation
+-- premise. Pure assembly of shipped arms: ofFormation[premise]/conv[inline]/piIntro/piElim/genFormationPi
+-- [BFT-4 Π + Σ-twin, double-applying premisesFundamental to gate-extract output<bound]/nil/consTelescope[cons
+-- companion + member cumulativity]. The +1-closing analogue of the denote HasTypeDescPi.fundamentalVectorFromFormation.
+#assert_no_axioms FX1Poly.Typed.IsTelescopeReducibleAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fundamentalAtBoundedSuccFromFormation
