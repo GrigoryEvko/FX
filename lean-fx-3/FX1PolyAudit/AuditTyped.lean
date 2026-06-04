@@ -214,6 +214,7 @@ import FX1Poly.Typed.DenoteKeyedCumulativityObstruction
 import FX1Poly.Typed.DenoteKeyedBoundedReducibility
 import FX1Poly.Typed.DenoteKeyedBoundedReducibleEnv
 import FX1Poly.Typed.DenoteKeyedBoundedFundamentalMotive
+import FX1Poly.Typed.DenoteKeyedBoundedConvArm
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3433,6 +3434,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalVarAtBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtBounded
+-- THE BOUNDED FT CONV ARM (DenoteKeyedBoundedConvArm): the bound-carrying analogue of the denote conv member arm +
+-- FT arm. convTransfer is a ~3-line FORGET-BRIDGE transfer (bounded forgets to denote at the same lowerAt, and
+-- ReducibleTypeStepDenote.convTransfer is lowerAt-parametric) — the canonical economy the forget bridge provides for
+-- facts-about-candidates. The FT arm is premise-isolating (carries the A2 ambient-bound reducibility premise).
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.convTransfer
+#assert_no_axioms FX1Poly.Typed.memberConvAtBounded
+#assert_no_axioms FX1Poly.Typed.convMemberUnderClosingSubstitutionBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalConvAtBounded
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
