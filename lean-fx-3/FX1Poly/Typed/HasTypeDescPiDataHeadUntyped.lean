@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescPiConsistency
+import FX1Poly.Typed.HasTypeDescPiRootGeneric
 
 /-! # FX1Poly/Typed/HasTypeDescPiDataHeadUntyped
     — the grown engine types no data constructor and no data eliminator (the canonical-forms
@@ -54,7 +55,13 @@ rooted at `gen_var` / `gen_universeCode` / `gen_piTyCode` / `gen_sigmaTyCode` / 
 (`subjectRootGenerator`); so a cell whose root generator differs from all six has no grown typing
 derivation.  `(.mkGen generator …).rootGenerator` is `generator` definitionally, so each disjunct of
 `subjectRootGenerator` reduces to `generator = gen_X` and contradicts the matching inequality.  The
-contrapositive of `subjectRootGenerator`, the reusable refutation the SR dispatcher's iota cases cite. -/
+contrapositive of `subjectRootGenerator`, the reusable refutation the SR dispatcher's iota cases cite.
+
+SUPERSEDED by `cellHasNoTypingWhenRootGenericallyExcluded` (`HasTypeDescPiRootGeneric`): this six-inequality
+form is UNSOUND once the formation table grows — a new type-former's generator differs from all six heads yet
+its cell IS typed (via `genFormationPi`), so the conclusion would be false.  The generic successor requires
+`typingRuleDescOf generator = none` (true permanently for data constructors/eliminators) instead of the six
+inequalities, and the smoke corpus below now cites it.  Retained (unused) pending retirement green-light. -/
 theorem HasTypeDescPi.cellHasNoTypingWhenRootNotGrownHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {generator : Generator}
     {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
@@ -84,7 +91,7 @@ theorem HasTypeDescPi.boolElimCellHasNoTyping {profile : PolyProfile} {scope : N
     {classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context (.mkGen .gen_boolElim payload children) classifier) :
     False := by
-  apply typed.cellHasNoTypingWhenRootNotGrownHead <;> (intro contra; cases contra)
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
 
 /-- **`gen_fst` (projection eliminator) is untyped in the grown engine.**  The redex head of the
 `iotaFstPair` reduction; the grown engine types no `fst` cell. -/
@@ -95,7 +102,7 @@ theorem HasTypeDescPi.fstCellHasNoTyping {profile : PolyProfile} {scope : Nat}
     {classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context (.mkGen .gen_fst payload children) classifier) :
     False := by
-  apply typed.cellHasNoTypingWhenRootNotGrownHead <;> (intro contra; cases contra)
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
 
 /-- **`gen_natElim` (recursive eliminator) is untyped in the grown engine.**  The redex head of the
 `iotaNatElimZero` / `iotaNatElimSucc` reductions; the grown engine types no `natElim` cell. -/
@@ -106,7 +113,7 @@ theorem HasTypeDescPi.natElimCellHasNoTyping {profile : PolyProfile} {scope : Na
     {classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context (.mkGen .gen_natElim payload children) classifier) :
     False := by
-  apply typed.cellHasNoTypingWhenRootNotGrownHead <;> (intro contra; cases contra)
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
 
 /-- **`gen_idJ` (path-induction eliminator) is untyped in the grown engine.**  The redex head of the
 `iotaIdJRefl` reduction; the grown engine types no `idJ` cell. -/
@@ -117,7 +124,7 @@ theorem HasTypeDescPi.idJCellHasNoTyping {profile : PolyProfile} {scope : Nat}
     {classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context (.mkGen .gen_idJ payload children) classifier) :
     False := by
-  apply typed.cellHasNoTypingWhenRootNotGrownHead <;> (intro contra; cases contra)
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
 
 /-- **`gen_pair` (data constructor) is untyped in the grown engine.**  Witnesses that the boundary excludes
 data CONSTRUCTORS as well as eliminators — the grown engine types no `pair` cell (pair lives in the data
@@ -129,6 +136,6 @@ theorem HasTypeDescPi.pairCellHasNoTyping {profile : PolyProfile} {scope : Nat}
     {classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context (.mkGen .gen_pair payload children) classifier) :
     False := by
-  apply typed.cellHasNoTypingWhenRootNotGrownHead <;> (intro contra; cases contra)
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
 
 end FX1Poly.Typed
