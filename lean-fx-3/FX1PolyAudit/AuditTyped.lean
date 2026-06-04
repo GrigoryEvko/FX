@@ -213,6 +213,7 @@ import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedCumulativityObstruction
 import FX1Poly.Typed.DenoteKeyedBoundedReducibility
 import FX1Poly.Typed.DenoteKeyedBoundedReducibleEnv
+import FX1Poly.Typed.DenoteKeyedBoundedFundamentalMotive
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3420,6 +3421,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtBounded.lookupReducible
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtBounded.empty
 #assert_no_axioms FX1Poly.Typed.ReducibleEnvAtBounded.cons
+-- THE BOUNDED FT MOTIVE + LEAF ARMS (DenoteKeyedBoundedFundamentalMotive): the bound-carrying analogue of
+-- FundamentalConclusionAtDenote + var/universeFormation, built over the label-AWARE ReducibleTypeAtBounded. The
+-- universe-membership machinery (isReducibleAtBounded / membership level-irrelevance) threads the universeCode gate;
+-- the universeFormation arm's new gate vs denote is denote e < denote (lsucc e) (denote_lt_lsucc). This is where the
+-- bounded FT begins replacing the denote FT, whose non-uniform genFormationPi arm is model-obstructed.
+#assert_no_axioms FX1Poly.Typed.universeCode_isReducibleAtBounded
+#assert_no_axioms FX1Poly.Typed.universeMembershipBounded_levelIrrelevant
+#assert_no_axioms FX1Poly.Typed.universeFormationMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.universeFormationMemberUnderClosingSubstitutionBounded
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalVarAtBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtBounded
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
