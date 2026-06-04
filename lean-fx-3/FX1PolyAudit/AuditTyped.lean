@@ -199,6 +199,7 @@ import FX1Poly.Typed.DenoteKeyedSigmaFormation
 import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.DenoteKeyedGenFormationSigmaArm
 import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
+import FX1Poly.Typed.DenoteKeyedCodomainMemberWiring
 import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
@@ -3185,6 +3186,13 @@ gates pin them shut.
 -- piTyCode_isStronglyNormalizing_of_domain_codomain. Both genFormationPi branches are now premise-complete, the
 -- two #672-family walls cleanly isolated: codomain SN (denote SN-040, shared) + Π reducible-as-type (#752).
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiAtDenote
+
+-- SN-D5d (the SN-040-FREE codomain-member wiring — CORRECTS the ticks #18/#19 SN-040 claim): the codomain's
+-- universe membership at `cons headTerm σ` (var0 → a domain member, σ tail UN-RENAMED) comes from the codomain
+-- IH via ReducibleEnvAtDenote.cons — NO renaming-closure (SN-040). The `cons` (prepend) vs `lift` (weaken-rename)
+-- distinction is the whole point. Consequence: the genFormationPi residual UNIFIES to #752 alone (the domain
+-- member var0 routes through the A2 bridge = #752; there is NO separate SN-040 Kripke wall).
+#assert_no_axioms FX1Poly.Typed.codomainMemberFromIH
 
 -- DenoteKeyedPiFormationUnderSubst (the denote FT's Π-formation binder arm, denote #493): from a uniform
 -- domain candidate for the substituted domain + the codomain reducible-at-all-levels under the cons-extended
