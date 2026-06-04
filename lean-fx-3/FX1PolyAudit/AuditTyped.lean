@@ -212,6 +212,7 @@ import FX1Poly.Typed.DenoteKeyedGenFormationSigmaArm
 import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
 import FX1Poly.Typed.DenoteKeyedCumulativityObstruction
 import FX1Poly.Typed.DenoteKeyedBoundedReducibility
+import FX1Poly.Typed.DenoteKeyedBoundedReducibleEnv
 import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
 import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
@@ -3409,6 +3410,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamilyBounded_neutralInclusion_of_lt
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.isReducibilityCandidate
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.isReducibilityCandidate
+-- THE BOUNDED FT FOUNDATIONAL LAYER (DenoteKeyedBoundedReducibleEnv): the bound-carrying member predicate +
+-- closing-substitution environment the bounded fundamental theorem consumes. Character-identical to the denote
+-- env (DenoteKeyedReducibleEnv) with bound riding where level rode; cons is the Fin-position split + the
+-- weakening cancellation. The env the bounded FT uses to discharge the non-uniform genFormationPi piReducibleAsType
+-- that the denote relation leaves model-obstructed (DenoteKeyedCumulativityObstruction).
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtBounded
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtBounded.lookupReducible
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtBounded.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAtBounded.cons
 
 -- POSITIVE complement to the obstruction (DenoteKeyedUniverseBoundedCumulativity): in the BOUNDED regime
 -- (denote levelExpr env < ambient), the universe candidate is level-STABLE -- universeDenotePredicate reaches
