@@ -3024,6 +3024,13 @@ gates pin them shut.
 -- non-universe analogue of universeDomainPi_memberStableAcrossDenoteLevels (which holds only above denote e).
 #assert_no_axioms FX1Poly.Typed.uniformType_memberStableAcrossDenoteLevels
 #assert_no_axioms FX1Poly.Typed.neutralType_memberStableAcrossDenoteLevels
+-- Member-stability lifted from leaf types to the Π FORMER: a uniform-domain Π's own candidate
+-- (fun f => forall arg, domCand arg -> codCand arg (app f arg)) is itself level-uniform, so
+-- uniformType_memberStableAcrossDenoteLevels applies. uniformDomainPiType_ + the neutral-domain witnessing
+-- instance neutralDomainPiType_ extend the member-stable #672 fragment to dependent arrows over member-stable
+-- domains -- the non-universe-domain case the cumulativity obstruction does NOT block.
+#assert_no_axioms FX1Poly.Typed.uniformDomainPiType_memberStableAcrossDenoteLevels
+#assert_no_axioms FX1Poly.Typed.neutralDomainPiType_memberStableAcrossDenoteLevels
 
 -- DenoteKeyedReducibleEnv (route C toward the denote fundamental theorem): the denote analogue of
 -- ReducibleEnvAt, riding on IsReducibleMemberAtDenote. def + var-projection + empty + binder-cons; the cons

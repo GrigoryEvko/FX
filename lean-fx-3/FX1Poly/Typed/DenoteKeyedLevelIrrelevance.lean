@@ -212,4 +212,56 @@ theorem neutralType_memberStableAcrossDenoteLevels {scope : Nat} (env : Nat → 
     (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
     memberAtSource targetLevel
 
+/-- **Member-stability for a uniform-domain Π TYPE.**  If the domain `domainCode` is reducible with a
+single level-uniform candidate at every level, and the codomain is reducible (under domain membership)
+with a level-uniform candidate function, then the Π type's OWN candidate
+`fun functionTerm => ∀ argument, domainCandidate argument → codomainCandidate argument (app …)` is itself
+level-uniform — so `uniformType_memberStableAcrossDenoteLevels` applies and a reducible member at one
+level is reducible at every level.  This lifts member-stability from the neutral/uniform LEAF types
+(`neutralType_/uniformType_memberStableAcrossDenoteLevels`) to the Π FORMER, for the non-universe-domain
+case the cumulativity obstruction (`DenoteKeyedCumulativityObstruction`) does NOT block — the member-stable
+fragment of the denote #672 member-extension, now covering dependent arrows over member-stable domains. -/
+theorem uniformDomainPiType_memberStableAcrossDenoteLevels {scope : Nat} (env : Nat → Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainCandidate : RawTerm scope → Prop)
+    (domainReducible : ∀ level : Nat, ReducibleTypeAtDenote env level domainCode domainCandidate)
+    (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
+    (codomainReducible : ∀ (level : Nat) (argument : RawTerm scope), domainCandidate argument →
+      ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
+        (codomainCandidate argument))
+    {term : RawTerm scope} {sourceLevel : Nat}
+    (memberAtSource : IsReducibleMemberAtDenote env sourceLevel
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) term)
+    (targetLevel : Nat) :
+    IsReducibleMemberAtDenote env targetLevel
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) term :=
+  uniformType_memberStableAcrossDenoteLevels env
+    (fun level => ReducibleTypeStepDenote.piType codomainCandidate (domainReducible level)
+      (fun argument argumentInDomain => codomainReducible level argument argumentInDomain))
+    memberAtSource targetLevel
+
+/-- **Neutral-domain Π member-stability (the witnessing instance).**  A weak-head-normal non-Π non-universe
+DOMAIN has the literally-uniform candidate `IsStronglyNormalizing` at every level (the `neutral` arm), so
+the uniform-domain Π member-stability applies.  The member-level analogue of
+`neutralDomainPi_reducibleAtEveryDenoteLevel`; dependent arrows whose domain is a type variable or stuck
+application have level-stable members. -/
+theorem neutralDomainPiType_memberStableAcrossDenoteLevels {scope : Nat} (env : Nat → Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
+    (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
+    (codomainReducible : ∀ (level : Nat) (argument : RawTerm scope), IsStronglyNormalizing argument →
+      ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
+        (codomainCandidate argument))
+    {term : RawTerm scope} {sourceLevel : Nat}
+    (memberAtSource : IsReducibleMemberAtDenote env sourceLevel
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) term)
+    (targetLevel : Nat) :
+    IsReducibleMemberAtDenote env targetLevel
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) term :=
+  uniformDomainPiType_memberStableAcrossDenoteLevels env IsStronglyNormalizing
+    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
+    codomainCandidate codomainReducible memberAtSource targetLevel
+
 end FX1Poly.Typed
