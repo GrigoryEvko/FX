@@ -3040,6 +3040,17 @@ gates pin them shut.
 -- fails below threshold), needing the threshold-split.
 #assert_no_axioms FX1Poly.Typed.generalDomainPi_reducibleFromMemberStability
 
+-- DenoteKeyedGeneralDomainPiArm adapters (#752 — the uniform/neutral arms of the ofReducibleTypeStepDenote
+-- piArm case-split): the backbone piArm supplies its codomain IH as an EXISTENTIAL-candidate all-level
+-- reducibility keyed on the step's domainCandidate; the shipped uniform/neutral instances consume a CONCRETE
+-- per-level codomain candidate. uniformDomainPiArmFromInductiveHypotheses bridges the two for a uniform domain
+-- candidate, routing through generalDomainPi_reducibleFromMemberStability with member-stability from
+-- uniformType_memberStableAcrossDenoteLevels and the codomain-IH candidate reconciled via determinism at level 0
+-- (choice-free). neutralDomainPiArmFromInductiveHypotheses is its weak-head-normal non-Π non-universe instance,
+-- in exactly the shape the backbone supplies its premises. Remaining piArm arms: universe-code + composite.
+#assert_no_axioms FX1Poly.Typed.uniformDomainPiArmFromInductiveHypotheses
+#assert_no_axioms FX1Poly.Typed.neutralDomainPiArmFromInductiveHypotheses
+
 -- DenoteKeyedUniformPiCandidate (#752 — composite member-stability, the recursive step): a Π over uniform-
 -- candidate components has a SINGLE uniform candidate, because the piType candidate
 -- (fun f => ∀ arg, domCand arg → codCand arg (f arg)) is level-INDEPENDENT when its components are. So uniform

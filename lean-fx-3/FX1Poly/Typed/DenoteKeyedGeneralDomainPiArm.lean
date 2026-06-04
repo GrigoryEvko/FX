@@ -78,4 +78,54 @@ theorem generalDomainPi_reducibleFromMemberStability {scope : Nat} (env : Nat �
         (fun memberLevel => domainMemberStable level memberLevel argument argumentInDomain)
         level).reducibleMemberCandidate)⟩
 
+/-- **The uniform-candidate piArm ADAPTER — consuming the backbone's own existential-candidate codomain IH.**
+The `ofReducibleTypeStepDenote` piArm (`DenoteKeyedLevelIrrelevance.lean`) supplies the codomain induction
+hypothesis as `∀ argument, domainCandidate argument → IsReducibleTypeAtAllDenoteLevels env (subst0 codomainCode
+argument)` — an EXISTENTIAL-candidate all-level reducibility keyed on the step's `domainCandidate`.  The shipped
+`uniformDomainPi_reducibleAtEveryDenoteLevel` instead consumes a CONCRETE per-level codomain candidate, so it
+cannot be plugged into the backbone piArm directly.  This adapter bridges the two for a UNIFORM domain candidate
+(reducible at every level with one fixed `domainCandidate`): it routes through `generalDomainPi_reducibleFrom
+MemberStability`, supplying member-stability from `uniformType_memberStableAcrossDenoteLevels`, and discharging
+the member-stability lemma's all-level-member gate by reconciling its candidate with the codomain IH's
+`domainCandidate` via `ReducibleTypeAtDenote.deterministic` at level 0.  Choice-free — the level-0 member's
+candidate is pinned to `domainCandidate`, so the codomain IH fires with no `Classical`. -/
+theorem uniformDomainPiArmFromInductiveHypotheses {scope : Nat} (env : Nat → Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainCandidate : RawTerm scope → Prop}
+    (domainUniform : ∀ level : Nat, ReducibleTypeAtDenote env level domainCode domainCandidate)
+    (codomainInductiveHypothesis : ∀ argument : RawTerm scope, domainCandidate argument →
+      IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst0 codomainCode argument)) :
+    IsReducibleTypeAtAllDenoteLevels env
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
+  generalDomainPi_reducibleFromMemberStability env
+    (fun level => ⟨domainCandidate, domainUniform level⟩)
+    (fun _sourceLevel targetLevel _argument memberAtSource =>
+      uniformType_memberStableAcrossDenoteLevels env domainUniform memberAtSource targetLevel)
+    (fun argument memberAllLevels => by
+      obtain ⟨sourceCandidate, sourceReducible, memberInSource⟩ := memberAllLevels 0
+      exact codomainInductiveHypothesis argument
+        ((ReducibleTypeAtDenote.deterministic sourceReducible (domainUniform 0) argument).mp
+          memberInSource))
+
+/-- **The neutral-domain piArm adapter (witnessing instance).**  A weak-head-normal non-Π non-universe DOMAIN
+has the literally-uniform candidate `IsStronglyNormalizing` at every level (the `neutral` step references
+neither the lower family nor the level), so `uniformDomainPiArmFromInductiveHypotheses` applies.  This is the
+neutral arm of the `ofReducibleTypeStepDenote` piArm case-split, in exactly the shape the backbone supplies its
+premises — the codomain IH is keyed on argument strong-normalization (= `domainCandidate` in the neutral case),
+matching the backbone's `codomainInductiveHypothesis` definitionally.  The remaining arms of the case-split are
+the universe-code domain (`DenoteKeyedUniverseDomainPi`) and the composite/threshold-drift domain (the open
+#752 residual). -/
+theorem neutralDomainPiArmFromInductiveHypotheses {scope : Nat} (env : Nat → Nat)
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
+    (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
+    (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (codomainInductiveHypothesis : ∀ argument : RawTerm scope, IsStronglyNormalizing argument →
+      IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst0 codomainCode argument)) :
+    IsReducibleTypeAtAllDenoteLevels env
+      (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
+  uniformDomainPiArmFromInductiveHypotheses env
+    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
+    codomainInductiveHypothesis
+
 end FX1Poly.Typed
