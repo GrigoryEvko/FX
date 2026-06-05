@@ -1204,6 +1204,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_sigmaTyCode
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_universeCode
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_not_universeCode
+-- a former is never Conv-equal to a VARIABLE either (same shapeStable/noStep_var mechanism): the conv-arm
+-- dispatch fact the formation-engine totalBridge reads for the vacuous case "a Π/Σ-code subject reclassified
+-- to a type variable" (a former never converts to the variable, so that branch has no hypotheses).
+#assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_variableCell
+#assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_not_variableCell
 -- emptyTypeCell is a FOURTH distinct type former (EmptyTypeCodeConvRigidity.lean): never Conv-equal to a
 -- Π/Σ/universe code. Same SN-free mechanism, with Step.no_step_from_emptyCode (the empty code is a step
 -- normal form) for the empty leg. The Conv-side companion to emptyHasNoClosedMember (#680): a closed value's

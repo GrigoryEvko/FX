@@ -254,4 +254,36 @@ theorem Conv.sigmaTyCode_not_universeCode {scope : Nat}
     (congrArg RawTerm.headGenerator rightCommonEq :
       Generator.gen_sigmaTyCode = Generator.gen_universeCode)
 
+/-- A Π-code is never convertible to a variable cell.  Same head-stability mechanism: the steppable Π-code is
+shape-stable (`StepStar.shapeStable_piTyCode` — every reduct stays a Π-code), the variable is a normal leaf
+(`StepStar.noStep_var` — it steps nowhere, so `StepStar.eq_of_noStep` pins its reduct to itself), so a shared
+reduct would carry both `gen_piTyCode` and `gen_var` — `Generator.noConfusion`.  The conv-arm dispatch fact the
+formation-engine totalBridge reads for the vacuous case "a Π-code subject reclassified to a type variable". -/
+theorem Conv.piTyCode_not_variableCell {scope : Nat}
+    {piDomain : RawTerm scope} {piCodomain : RawTerm (scope + 1)} {index : Fin scope}
+    (convertibility : Conv (piTyCodeCell piDomain piCodomain) (variableCell index)) :
+    False := by
+  obtain ⟨commonReduct, leftChain, rightChain⟩ := convertibility
+  obtain ⟨_, _, leftCommonEq, _, _⟩ := StepStar.shapeStable_piTyCode leftChain
+  have rightCommonEq :=
+    StepStar.eq_of_noStep (fun _reduct step => StepStar.noStep_var index step) rightChain
+  rw [leftCommonEq] at rightCommonEq
+  exact Generator.noConfusion
+    (congrArg RawTerm.headGenerator rightCommonEq :
+      Generator.gen_piTyCode = Generator.gen_var)
+
+/-- A Σ-code is never convertible to a variable cell (the Σ dual of `Conv.piTyCode_not_variableCell`). -/
+theorem Conv.sigmaTyCode_not_variableCell {scope : Nat}
+    {sigmaDomain : RawTerm scope} {sigmaCodomain : RawTerm (scope + 1)} {index : Fin scope}
+    (convertibility : Conv (sigmaTyCodeCell sigmaDomain sigmaCodomain) (variableCell index)) :
+    False := by
+  obtain ⟨commonReduct, leftChain, rightChain⟩ := convertibility
+  obtain ⟨_, _, leftCommonEq, _, _⟩ := StepStar.shapeStable_sigmaTyCode leftChain
+  have rightCommonEq :=
+    StepStar.eq_of_noStep (fun _reduct step => StepStar.noStep_var index step) rightChain
+  rw [leftCommonEq] at rightCommonEq
+  exact Generator.noConfusion
+    (congrArg RawTerm.headGenerator rightCommonEq :
+      Generator.gen_sigmaTyCode = Generator.gen_var)
+
 end FX1Poly.Typed
