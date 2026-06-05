@@ -46,6 +46,7 @@ import FX1Poly.Core.NatElimNeutralScrutineeMember
 import FX1Poly.Core.ListElimNeutralScrutineeMember
 import FX1Poly.Core.DirectIotaEliminatorNeutralScrutineeMember
 import FX1Poly.Core.MatchEliminatorNeutralScrutineeMember
+import FX1Poly.Core.NeutralEliminatorMemberSmoke
 import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.ListElimValueMember
 import FX1Poly.Core.ApplicationStrongNormalizationForward
@@ -693,6 +694,21 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.eitherMatch_neutralScrutinee_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.optionMatchNeutralScrutineeMember
 #assert_no_axioms FX1Poly.Core.eitherMatchNeutralScrutineeMember
+
+-- NON-VACUOUS regression corpus for the completed eliminator-neutral arc: each shipped neutral member,
+-- instantiated at the SN candidate with `var index` as the genuinely-neutral principal child, gives a CONCRETE
+-- strong-normalization fact for the stuck eliminator. Guards the arc against silently regressing to vacuity or
+-- losing zero-axiom status. Parametric over an arbitrary Fin scope index.
+#assert_no_axioms FX1Poly.Core.natElimNeutralVarSmoke
+#assert_no_axioms FX1Poly.Core.natRecNeutralVarSmoke
+#assert_no_axioms FX1Poly.Core.listElimNeutralVarSmoke
+#assert_no_axioms FX1Poly.Core.optionMatchNeutralVarSmoke
+#assert_no_axioms FX1Poly.Core.eitherMatchNeutralVarSmoke
+#assert_no_axioms FX1Poly.Core.boolElimNeutralVarSmoke
+#assert_no_axioms FX1Poly.Core.fstNeutralVarSmoke
+#assert_no_axioms FX1Poly.Core.sndNeutralVarSmoke
+#assert_no_axioms FX1Poly.Core.idJNeutralVarSmoke
+#assert_no_axioms FX1Poly.Core.idStrictRecNeutralVarSmoke
 
 -- VALUE-CASE of listElim recursor reducibility (SN-064), the list analogue of the Nat recursor value-case:
 -- listElim on a LIST-VALUE scrutinee lands in the result candidate by IsListValue structural induction firing
