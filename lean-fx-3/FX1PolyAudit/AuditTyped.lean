@@ -274,6 +274,7 @@ import FX1Poly.Typed.NullaryFormerFormation
 import FX1Poly.Typed.UniverseFormationStrictness
 import FX1Poly.Typed.FormerFormationStrictness
 import FX1Poly.Typed.GrownEngineHonesty
+import FX1Poly.Typed.GrownUniverseConsistency
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4795,6 +4796,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.lam_notTypedAtVariableCell
 #assert_no_axioms FX1Poly.Typed.piTyCode_notTypedAtPiTyCode
 #assert_no_axioms FX1Poly.Typed.sigmaTyCode_notTypedAtPiTyCode
+
+-- GROWN-engine universe consistency (GrownUniverseConsistency.lean, SN-140 L1): the HasTypeDescPi parity twin of
+-- the formation UniverseFormationStrictness corpus (self/above/below) plus a novel flag-rigidity probe. A universe
+-- code Type@(e, flag) receives ONLY classifiers Conv to its strict predicative successor Type@(lsucc e, flag)
+-- (inversionUniverseCode); universeCodeCell_inj_of_conv collapses that to level+flag equality, then the
+-- predicativity guards refute the mis-classifications: no Type:Type (e = lsucc e, ne_lsucc_self — the §27.2
+-- Girard-paradox rejection), no inflation (lsucc(lsucc e) = lsucc e), no deflation (e = lsucc (lsucc e),
+-- ne_lsuccLsucc_self), flag rigidity (classifierFlag = subjectFlag from inj, refuting the disequality). The §11.8.2
+-- universe-consistency guarantee at the engine the kernel metatheory runs on.
+#assert_no_axioms FX1Poly.Typed.grownUniverseCode_notTypedAtSelf
+#assert_no_axioms FX1Poly.Typed.grownUniverseCode_notTypedAboveSuccessor
+#assert_no_axioms FX1Poly.Typed.grownUniverseCode_notTypedBelowSuccessor
+#assert_no_axioms FX1Poly.Typed.grownUniverseCode_notTypedAtFlagMismatchedSuccessor
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
