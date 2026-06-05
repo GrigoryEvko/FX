@@ -284,6 +284,7 @@ import FX1Poly.Typed.UniverseFormationStrictness
 import FX1Poly.Typed.GrownUniverseFormationStrictness
 import FX1Poly.Typed.FormerFormationStrictness
 import FX1Poly.Typed.GrownFormerFormationStrictness
+import FX1Poly.Typed.GrownTypingNotUnique
 import FX1Poly.Typed.GrownEngineHonesty
 import FX1Poly.Typed.GrownUniverseConsistency
 import FX1Poly.Typed.GrownVariableHonesty
@@ -4913,6 +4914,15 @@ gates pin them shut.
 -- formation-family level-strictness (universe + Π + Σ) for the engine that carries SN-043/consistency/safety.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piTyCode_notTypedAtZero
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaTyCode_notTypedAtZero
+-- GROWN TYPING NON-UNIQUENESS (GrownTypingNotUnique.lean, metatheory guard / PI-1 spike verdict): the grown
+-- engine's lamCell is CURRY-style (domain-free, one child), so piIntro picks the domain freely and the SAME
+-- closed identity λ(var 0) types at Π(Type@0).Type@0 AND Π(Type@1).Type@1 (two instances of the shipped
+-- closedIdentityLambdaTyping). grownTypingNotUnique exhibits the two non-Conv classifiers — refuted convertible
+-- via the SHIPPED Conv.piTyCode_inj (Π-injectivity, a pure raw-confluence corollary, separable from GCC-5) +
+-- universeCodeCell_inj_of_conv + LevelExpr.ne_lsucc_self. Permanent guard: grown FULL uniqueness is FALSE (so the
+-- bidirectional checker is check-mode against a target, not infer-mode); any exact-classifier result must restrict
+-- to TYPE-CODE subjects. Confirms reflection conclusion #1 (injectivity is free) and refutes conclusion #2.
+#assert_no_axioms FX1Poly.Typed.grownTypingNotUnique
 
 -- GROWN-engine 0-FP honesty (GrownEngineHonesty.lean): the HasTypeDescPi analog of the formation strictness,
 -- pinning a classifier's SHAPE from its subject's. A λ inhabits ONLY a Π type (invertLam forces classifier Conv
