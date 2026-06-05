@@ -50,6 +50,7 @@ import FX1Poly.Typed.EmptyTypeValueInversion
 import FX1Poly.Typed.FormationCanonicalForms
 import FX1Poly.Typed.PiTypeFunctionInversion
 import FX1Poly.Typed.GrownCanonicalForms
+import FX1Poly.Typed.GrownTypeSafety
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDescPi
@@ -1273,6 +1274,15 @@ gates pin them shut.
 -- so the syntactic route is the tractable one. subjectReductionStar = the iterated SN-055 master dispatcher
 -- (SRD-1/SRD-3, blocked on WFG-3/the WfContext↔WfContextDescPi bundle); once it lands this is unconditional SN-050.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.consistencyOfSubjectReductionStarToEmptyType
+-- GROWN TYPE SAFETY (GrownTypeSafety.lean, five-layer-defense L4 §27.3): the named preservation/progress safety
+-- statements over the grown engine. closedProgress = PROGRESS unconditional (a closed grown-typed term is a
+-- canonical value — canonical head + normal — or it steps; no stuck closed terms; typing is load-bearing in the
+-- normal case via closedNormalSubjectHead). closedTypeSafetyOfSubjectReductionStar = TYPE SAFETY conditional on
+-- SR-along-↝* (every closed grown-typed term evaluates to a canonical value: OB-5 SN + weak normalization + the
+-- preservation hypothesis + canonical forms), the lone gate being the SN-055 master dispatcher, exactly as the
+-- consistency route.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedProgress
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar
 -- CASCADE-FREE FORMER STEP-INVERSION (FormerStepInversionGeneric.lean, TG-1): a step out of any formation-rule
 -- cell (typingRuleDescOf generator = some rule) is a child congruence, proven WITHOUT enumerating the formation
 -- table — `cases step` with generator free (propext-clean), each of the 17 root-redex cases refuted because the
