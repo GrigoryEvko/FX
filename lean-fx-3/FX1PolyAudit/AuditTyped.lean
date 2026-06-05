@@ -59,6 +59,7 @@ import FX1Poly.Typed.GrownOpenCanonicalFormsByClassifier
 import FX1Poly.Typed.GrownOpenTypeSafety
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
+import FX1Poly.Typed.WfContextDesc
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
@@ -1374,6 +1375,19 @@ gates pin them shut.
 -- genFormationPi at the unchanged rule.outputType. No formation generator is named — a new formation row is
 -- absorbed zero-touch. The master dispatcher (TG-3) routes its genFormationPi case through this one arm.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtFormerGeneric
+-- FORMATION CONTEXT WELL-FORMEDNESS (WfContextDesc.lean, HT-A0-wf): the IsTypeDesc-based twin of WfContext — the
+-- linchpin for decoupling the formation-engine metatheory from HasType. WfContext stores IsType (HasType-based)
+-- bindings, so every formation theorem that extends/looks-up a binding imports HasType data via toHasType; this
+-- predicate stores IsTypeDesc bindings instead, keeping lookups + extensions inside HasTypeDesc. Lighter than the
+-- grown WfContextDescPi (formation IsTypeDesc < grown IsTypeDescPi). ofWfContext is the easy bridge
+-- (WfContext → WfContextDesc via HasType.toHasTypeDesc) for migrating consumers one site at a time.
+#assert_no_axioms FX1Poly.Typed.WfContextDesc
+#assert_no_axioms FX1Poly.Typed.WfContextDesc.emptyIsWellFormed
+#assert_no_axioms FX1Poly.Typed.WfContextDesc.tailWellFormed
+#assert_no_axioms FX1Poly.Typed.WfContextDesc.headIsTypeDesc
+#assert_no_axioms FX1Poly.Typed.WfContextDesc.cons
+#assert_no_axioms FX1Poly.Typed.WfContextDesc.ofWfContext
+#assert_no_axioms FX1Poly.Typed.wfContextDesc_universeBinding
 -- GROWN CONTEXT WELL-FORMEDNESS (WfContextDescPi.lean, WFG-1): the structural-parity twin of WfContext via the
 -- grown IsTypeDescPi. WfContext is HasType-based, hence UN-extendable at a grown piIntro binder (no
 -- HasTypeDescPi → IsType bridge); WfContextDescPi IS extendable (a grown domain typing is an IsTypeDescPi), the
