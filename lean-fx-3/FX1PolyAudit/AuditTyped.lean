@@ -302,6 +302,7 @@ import FX1Poly.Typed.HasTypeDescPiUniverseCodeInversion
 import FX1Poly.Typed.HasTypeDescPiCheckUniverseCode
 import FX1Poly.Typed.HasTypeDescPiApplicationUniqueness
 import FX1Poly.Typed.HasTypeDescPiCheckApplication
+import FX1Poly.Typed.HasTypeDescPiFormationUniqueness
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4271,6 +4272,13 @@ gates pin them shut.
 -- argument's check against the domain. isTrue: piElim + substituteUnderBinding + applicationTypeUniqueGivenFunction
 -- + COMPARE step; isFalse: invertApp + Conv.piTyCode_inj + conv show the application cannot be typed at all.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckApplicationGivenFunction
+-- SN-052 Π/Σ-FORMATION uniqueness ingredient: the COMPARE-step uniqueAtSubject at a former position,
+-- PARAMETERIZED over the components' type uniqueness (a former's type universeCodeCell (lmaxAll [domLevel,
+-- codLevel]) flag is pinned by the components' levels/flags; invertPiTyCode/invertSigmaTyCode force both
+-- components at the SAME flag, levelFlag_eq_of_conv gives SYNTACTIC level/flag equality, subst aligns the
+-- output universe codes). The former analogue of applicationTypeUniqueGivenFunction.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piFormationTypeUniqueGivenComponents
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormationTypeUniqueGivenComponents
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
