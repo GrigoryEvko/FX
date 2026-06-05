@@ -43,6 +43,7 @@ import FX1Poly.Core.StrongNormalizationLinearFormers
 import FX1Poly.Core.NatElimValueReducibility
 import FX1Poly.Core.NatElimValueMember
 import FX1Poly.Core.NatElimNeutralScrutineeMember
+import FX1Poly.Core.ListElimNeutralScrutineeMember
 import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.ListElimValueMember
 import FX1Poly.Core.ApplicationStrongNormalizationForward
@@ -655,6 +656,16 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.natRec_neutralScrutinee_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.natElimNeutralScrutineeMember
 #assert_no_axioms FX1Poly.Core.natRecNeutralScrutineeMember
+
+-- NEUTRAL-SCRUTINEE regime of the List recursor (toward SN-064): the listElim mirror of the Nat regime,
+-- bringing the three recursive recursors (natElim/natRec/listElim) to neutral-coverage parity. A NEUTRAL
+-- scrutinee is never a List constructor and stays neutral under Step, so listElim NEVER ι-fires; the cell is a
+-- stuck neutral, member of any candidate by the reusable memberOfStronglyNormalizingNeutral. Discriminators
+-- rootGenerator_ne_listNil/listCons + the triple-Acc cell-SN recursor (ι cases VACUOUS by neutrality).
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_listNil
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_listCons
+#assert_no_axioms FX1Poly.Core.listElim_neutralScrutinee_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.listElimNeutralScrutineeMember
 
 -- VALUE-CASE of listElim recursor reducibility (SN-064), the list analogue of the Nat recursor value-case:
 -- listElim on a LIST-VALUE scrutinee lands in the result candidate by IsListValue structural induction firing
