@@ -4430,6 +4430,10 @@ gates pin them shut.
 -- SN-050 is now stated at the real cell, sole residual the candidateBridge AT emptyTypeCell. Confirms a FORMATION
 -- arm (CON-A2 route-E/F) is OFF the critical path — consistency refutes typings AT emptyTypeCell, not constructs one.
 #assert_no_axioms FX1Poly.Typed.emptyTypeCellConsistencyFromCandidateBridge
+-- Residual reduced further: wires the SHIPPED FT closed-member corollary (closedBoundedReducibleMember) +
+-- subst_emptyTypeCell + emptyHasNoClosedMember, so SN-050's residual drops from the full candidateBridge to the
+-- cleaner memberBridge = CON-A3 core (a bounded-reducible member of emptyTypeCell is an empty-candidate member).
+#assert_no_axioms FX1Poly.Typed.emptyConsistencyFromReducibleMemberBridge
 
 -- Canonicity target signature (CanonicityTargetSignature.lean): the SN-047/048/049 twin of CON-A0. Engine
 -- canonicity reduces to the SAME data-candidate bridge as consistency, making the Phase-A boundary uniform.

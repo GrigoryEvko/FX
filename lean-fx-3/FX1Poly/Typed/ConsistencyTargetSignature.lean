@@ -1,5 +1,7 @@
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Core.ConsistencyViaSconing
+import FX1Poly.Typed.ClosedBoundedReducibleMember
+import FX1Poly.Typed.HasTypeSubstitution
 
 /-! # FX1Poly/Typed/ConsistencyTargetSignature
     — SN-050 target signature: engine consistency from the empty-candidate bridge (CON-A0 spike verdict)
@@ -102,5 +104,38 @@ theorem emptyTypeCellConsistencyFromCandidateBridge {profile : PolyProfile}
         closedTerm emptyTypeCell) :
     False :=
   consistencyFromEmptyCandidateBridge candidateBridge closedTerm typed
+
+/-- **SN-050 residual reduced to the CANDIDATE IDENTITY (CON-A3 core), wiring the shipped
+FT closed-member corollary.**  `emptyTypeCellConsistencyFromCandidateBridge` left
+`candidateBridge` (closed engine-typing AT `emptyTypeCell` ⟹ empty-candidate membership) as
+the residual.  Here we discharge HALF of it with the SHIPPED
+`HasTypeDescPi.closedBoundedReducibleMember` (the BFT closed-member corollary: a closed term
+engine-typed at a closed classifier is a bounded-reducible member of that classifier under the
+unique closing weakening), so the residual drops to the cleaner `memberBridge` — CON-A3 core:
+a bounded-reducible member of `emptyTypeCell` is an empty-candidate member.
+
+Given `memberBridge`, no closed term is engine-typed at `emptyTypeCell`.  Proof: the FT
+closed-member corollary gives a bounded-reducible member at `subst Fin.elim0 emptyTypeCell`,
+which `subst_emptyTypeCell` (the closed nullary leaf is substitution-invariant) simplifies to
+`emptyTypeCell`; `memberBridge` carries it to an empty-candidate member of the closed term,
+contradicting `emptyHasNoClosedMember` (#680).
+
+`memberBridge` IS CON-A3 — the engine↔candidate representation identity (`emptyTypeCell`'s
+FT-reducibility candidate is the empty candidate, #483/#485-487), now SN-050's sole remaining
+residual with every other piece (FT closed-member, `subst_emptyTypeCell`, `emptyHasNoClosedMember`)
+shipped and wired. -/
+theorem emptyConsistencyFromReducibleMemberBridge {profile : PolyProfile} (env : Nat → Nat)
+    (memberBridge : ∀ (closedTerm : RawTerm 0) (bound : Nat),
+      IsReducibleMemberAtBounded env bound emptyTypeCell
+          (RawTerm.subst (Fin.elim0 : RawTermSubst 0 1) closedTerm) →
+        CanonicalFormsPredicate emptyIsValue closedTerm)
+    (closedTerm : RawTerm 0)
+    (typed :
+      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
+        closedTerm emptyTypeCell) :
+    False := by
+  obtain ⟨bound, member⟩ := HasTypeDescPi.closedBoundedReducibleMember env typed
+  rw [subst_emptyTypeCell] at member
+  exact emptyHasNoClosedMember (memberBridge closedTerm bound member)
 
 end FX1Poly.Typed
