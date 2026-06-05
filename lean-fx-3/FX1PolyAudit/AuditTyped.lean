@@ -276,6 +276,7 @@ import FX1Poly.Typed.UniverseFormationStrictness
 import FX1Poly.Typed.FormerFormationStrictness
 import FX1Poly.Typed.GrownEngineHonesty
 import FX1Poly.Typed.GrownUniverseConsistency
+import FX1Poly.Typed.GrownVariableHonesty
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4820,6 +4821,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.grownUniverseCode_notTypedAboveSuccessor
 #assert_no_axioms FX1Poly.Typed.grownUniverseCode_notTypedBelowSuccessor
 #assert_no_axioms FX1Poly.Typed.grownUniverseCode_notTypedAtFlagMismatchedSuccessor
+
+-- GROWN-engine VARIABLE honesty (GrownVariableHonesty.lean, SN-140 L1): the variable leaf of the grown 0-FP shape
+-- discipline, completing the triad with GrownEngineHonesty (λ/type-code) + GrownUniverseConsistency (universe-code).
+-- Unlike the λ leaf (classifier shape fixed by the λ itself), a variable's classifier shape is fixed by its CONTEXT
+-- LOOKUP, so the honesty is relative: inversionVariable pins any classifier Conv to context.lookup index, and the
+-- general rejection is its contrapositive (var not typed at a Conv-distinct classifier). The concrete instances
+-- compose it with the conv-rigidity family for a known-shape lookup: a Π-typed variable is not a type (not at a
+-- universe code); a type variable (universe-code lookup) is not a function/pair (not at a Π/Σ-type code).
+#assert_no_axioms FX1Poly.Typed.variable_notTypedAtNonConvLookup
+#assert_no_axioms FX1Poly.Typed.piTypedVariable_notTypedAtUniverseCode
+#assert_no_axioms FX1Poly.Typed.universeTypedVariable_notTypedAtPiTyCode
+#assert_no_axioms FX1Poly.Typed.universeTypedVariable_notTypedAtSigmaTyCode
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
