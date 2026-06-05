@@ -273,6 +273,7 @@ import FX1Poly.Typed.CanonicityTargetSignature
 import FX1Poly.Typed.NullaryFormerFormation
 import FX1Poly.Typed.UniverseFormationStrictness
 import FX1Poly.Typed.FormerFormationStrictness
+import FX1Poly.Typed.GrownEngineHonesty
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4782,6 +4783,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasType.sigmaTyCodeClassifierConv
 #assert_no_axioms FX1Poly.Typed.closedPi_notTypedAtZero
 #assert_no_axioms FX1Poly.Typed.closedSigma_notTypedAtZero
+
+-- GROWN-engine 0-FP honesty (GrownEngineHonesty.lean): the HasTypeDescPi analog of the formation strictness,
+-- pinning a classifier's SHAPE from its subject's. A λ inhabits ONLY a Π type (invertLam forces classifier Conv
+-- to a piTyCode, refuted against universe/sigma/variable by the conv-rigidity family) — it is not a type, not a
+-- pair-typed thing, not a stuck variable. A Π/Σ-type CODE inhabits ONLY a universe (invertPiTyCode/invertSigmaTyCode
+-- force classifier Conv to a universe code, refuted against a Π-type classifier). The §1.4 "a function is not a
+-- type, a type is not a function" impossibilities at the grown engine.
+#assert_no_axioms FX1Poly.Typed.lam_notTypedAtUniverseCode
+#assert_no_axioms FX1Poly.Typed.lam_notTypedAtSigmaTyCode
+#assert_no_axioms FX1Poly.Typed.lam_notTypedAtVariableCell
+#assert_no_axioms FX1Poly.Typed.piTyCode_notTypedAtPiTyCode
+#assert_no_axioms FX1Poly.Typed.sigmaTyCode_notTypedAtPiTyCode
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
