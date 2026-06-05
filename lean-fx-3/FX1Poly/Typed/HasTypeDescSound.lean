@@ -88,11 +88,14 @@ theorem HasTypeDesc.toHasType {profile : PolyProfile} {scope : Nat}
   | .genFormation context generator _payload _children _levels flag rule
       isFormation premises => by
       have telescope := DescTelescope.toHasTypeTelescope premises
+      -- recover the rule's output TABLE-GENERICALLY (no per-shape `by_cases`): every formation row carries
+      -- `universeFormerOutput` (`typingRuleDescOf_outputIsUniverseFormer`, the shared formation-family
+      -- invariant).  The RESIDUAL `by_cases` below is intrinsic — it dispatches the bespoke PER-SHAPE
+      -- `HasType.piFormation` / `sigmaFormation` (the soundness target has no generic `genFormation` arm; that
+      -- is `#282`), NOT a cascade artifact of the rule-recovery.
+      rw [typingRuleDescOf_outputIsUniverseFormer isFormation]
       by_cases hPi : generator = .gen_piTyCode
       · subst hPi
-        have hRule : rule = { outputType := universeFormerOutput } :=
-          Option.some.inj isFormation.symm
-        subst hRule
         cases telescope with
         | cons _ domain domainLevel _ _ _ domainTyped restTelescope =>
             cases restTelescope with
@@ -103,9 +106,6 @@ theorem HasTypeDesc.toHasType {profile : PolyProfile} {scope : Nat}
                       codomainLevel flag domainTyped codomainTyped
       · by_cases hSigma : generator = .gen_sigmaTyCode
         · subst hSigma
-          have hRule : rule = { outputType := universeFormerOutput } :=
-            Option.some.inj isFormation.symm
-          subst hRule
           cases telescope with
           | cons _ domain domainLevel _ _ _ domainTyped restTelescope =>
               cases restTelescope with
