@@ -46,6 +46,7 @@ import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.EmptyTypeCodeConvRigidity
 import FX1Poly.Typed.EmptyTypeValueInversion
+import FX1Poly.Typed.FormationCanonicalForms
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1187,6 +1188,13 @@ gates pin them shut.
 -- SN-052 checker leaf). λ / Π-former / Σ-former / universe-code are ALL the canonical values the grown engine
 -- types — so no canonical value is typed at emptyTypeCell (the value-case half of consistency, done).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCodeNotTypedAtEmptyType
+-- FORMATION-ENGINE CANONICAL FORMS (FormationCanonicalForms.lean): the formation engine has no intro/elim
+-- forms, so a CLOSED formation-typed subject's head is exactly gen_piTyCode / gen_sigmaTyCode /
+-- gen_universeCode (the variable disjunct vacuous at Fin 0). The structural progress fact the closed-canonicity
+-- / closed-consistency arguments consume, and the ofFormation foundation of the grown canonical forms. Proved by
+-- the propext-free mutual recursor (trivial telescope motive) — zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectIsVariableOrFormerHead
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectHeadIsFormerOrUniverse
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
