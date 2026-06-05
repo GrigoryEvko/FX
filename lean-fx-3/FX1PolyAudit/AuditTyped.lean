@@ -301,6 +301,7 @@ import FX1Poly.Typed.HasTypeDescPiCheckVariable
 import FX1Poly.Typed.HasTypeDescPiUniverseCodeInversion
 import FX1Poly.Typed.HasTypeDescPiCheckUniverseCode
 import FX1Poly.Typed.HasTypeDescPiApplicationUniqueness
+import FX1Poly.Typed.HasTypeDescPiCheckApplication
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4264,6 +4265,12 @@ gates pin them shut.
 -- many Π types); given the function is unique up to Conv, invertApp + Conv.piTyCode_inj + Conv.subst0 push the
 -- codomain Conv through the SAME argument to make the dependent output subst0 codomainCode argument unique.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.applicationTypeUniqueGivenFunction
+-- SN-052 APPLICATION checker case, factored over the SR-gated function exposure: given the function's Π-typing
+-- + type-uniqueness + the Π-components' universe-typings (threaded as input — the eventual recursive inference
+-- delivers them once the SR exposure lands), the application check against a known-type target reduces to the
+-- argument's check against the domain. isTrue: piElim + substituteUnderBinding + applicationTypeUniqueGivenFunction
+-- + COMPARE step; isFalse: invertApp + Conv.piTyCode_inj + conv show the application cannot be typed at all.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckApplicationGivenFunction
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
