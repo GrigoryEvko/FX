@@ -1,4 +1,7 @@
 import FX1Poly.Typed.ValidTyping
+import FX1Poly.Typed.HasTypeWeakening
+import FX1Poly.Typed.UniverseCodeShape
+import FX1Poly.Core.CandidateInterpretationRename
 
 /-! # FX1Poly/Typed/ConsistentStratification
     — the level-inference invariant for the route-A leveling-bridge assembly (toward SN-027/#662)
@@ -35,7 +38,7 @@ or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
 /-- **The level-inference invariant** a totalBridge `contextLevels` must satisfy: every binding whose type is
 a TYPE VARIABLE `variableCell typeIndex` sits exactly one level below that type variable.  This is the static
@@ -75,5 +78,29 @@ theorem ConsistentStratification.noSelfType {profile : PolyProfile} {scope : Nat
     context.lookup index ≠ variableCell index := by
   intro isSelfType
   exact absurd (consistent.strictlyBelowType isSelfType) (Nat.lt_irrefl _)
+
+/-- **Rename-variable inversion** — the binder-extension key lemma.  If a RENAMED term is a variable cell,
+the ORIGINAL term was a variable cell whose renamed index is the observed one.  Assembled from
+`RawTerm.rename_rootGenerator` (rename preserves the head generator), `eq_variableCell_of_headGenerator`
+(a head-`gen_var` cell IS a variable), `rename_variableCell` (the forward action), and `mkGen` injectivity.
+
+This is exactly what the cons-preservation step of the totalBridge needs: a context's `lookup` weakens its
+stored type by `RawTerm.rename RawRenaming.weaken`, so deciding whether `(context.cons d).lookup index` is a
+variable — to discharge / use the stratification constraint — reduces (via this inversion) to whether the
+underlying stored type was a variable. -/
+theorem rename_eq_variableCell_inversion {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {typeIndex : Fin targetScope}
+    (isVar : RawTerm.rename rawRenaming term = variableCell typeIndex) :
+    ∃ sourceIndex : Fin sourceScope,
+      term = variableCell sourceIndex ∧ rawRenaming sourceIndex = typeIndex := by
+  have headIsVariable : RawTerm.headGenerator term = Generator.gen_var := by
+    have renamedHead : (RawTerm.rename rawRenaming term).rootGenerator = Generator.gen_var := by
+      rw [isVar]; rfl
+    rwa [RawTerm.rename_rootGenerator] at renamedHead
+  obtain ⟨sourceIndex, termIsVariable⟩ := eq_variableCell_of_headGenerator headIsVariable
+  refine ⟨sourceIndex, termIsVariable, ?_⟩
+  rw [termIsVariable, rename_variableCell] at isVar
+  injection isVar with _generatorEq indexEq
 
 end FX1Poly.Typed
