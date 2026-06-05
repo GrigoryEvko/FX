@@ -47,6 +47,7 @@ import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.EmptyTypeCodeConvRigidity
 import FX1Poly.Typed.EmptyTypeValueInversion
 import FX1Poly.Typed.FormationCanonicalForms
+import FX1Poly.Typed.PiTypeFunctionInversion
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1201,6 +1202,15 @@ gates pin them shut.
 -- head (subjectIsVariableOrFormerHead, variable disjunct killed by closedness); none is gen_emptyCode. The
 -- FORMATION half of SN-050; no reconstruction, no value-inversion. Zero-axiom (recursor + Generator.noConfusion).
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.noClosedFormationTermAtEmptyType
+-- PIELIM-KILLING TOOLKIT (PiTypeFunctionInversion.lean): the ingredients for the grown closed-canonical-forms
+-- piElim case. eq_lamCell_of_headGenerator = the 4th head→shape reconstruction (λ companion to pi/sigma/
+-- universe/var). The three *NotTypedAtPiType inversions = a type former / universe code is not a member of a
+-- Π-type (its classifier is Conv a universe code, which a Π-code is not) — the Π-classifier analogue of the
+-- *NotTypedAtEmptyType value inversions. Together they discharge every non-λ shape the app function can take.
+#assert_no_axioms FX1Poly.Typed.eq_lamCell_of_headGenerator
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piFormerNotTypedAtPiType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormerNotTypedAtPiType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCodeNotTypedAtPiType
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
