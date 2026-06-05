@@ -1968,6 +1968,11 @@ gates pin them shut.
 -- the binder-extension key lemma: a renamed term equal to a variable cell WAS a variable cell (lookup
 -- weakens its stored type by rename, so the cons-preservation constraint reduces through this inversion).
 #assert_no_axioms FX1Poly.Typed.rename_eq_variableCell_inversion
+-- the binder-extension PRESERVATION: a consistent stratification stays consistent across a cons (under the
+-- local edge condition that a variable domain type sits one level above the fresh head), via the rename-
+-- variable inversion + the rfl-closed levelCons_weaken computation over the propext-free Fin-position split.
+#assert_no_axioms FX1Poly.Typed.levelCons_weaken
+#assert_no_axioms FX1Poly.Typed.ConsistentStratification.cons
 -- SN-027 refined-motive PRODUCERS (#656/#657): a type code is LEVEL-FLEXIBLE (valid as a universe member at
 -- every positive level) because the ValidTyping formers produce it at ANY predLevel. IsLevelFlexibleTypeCode +
 -- the three former arms (universeFormation immediate; pi/sigma given all-level domain + level-flexible codomain)

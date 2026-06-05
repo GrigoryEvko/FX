@@ -28,12 +28,19 @@ multi-fire steps of #662 (the binder-extension case needs the `weaken`/`lookup_c
   * `ConsistentStratification.strictlyBelowType` — a binding sits STRICTLY below its type variable.
   * `ConsistentStratification.noSelfType` — no binding is its own type (`lookup index = var index` is
     impossible: it would force `contextLevels index = contextLevels index + 1`).
+  * `rename_eq_variableCell_inversion` — a renamed term equal to a variable cell WAS a variable cell whose
+    renamed index is the observed one (the key lemma for the binder-extension step).
+  * `levelCons_weaken` — `levelCons` at a `weaken`-shifted index reads the tail vector at the original index.
+  * `ConsistentStratification.cons` — the binder-extension preservation: extending a consistent stratification
+    by one binder (whose type, if a variable, sits one level below the fresh head level) stays consistent.
 
 ## Zero-axiom verification
 
 Direct `Nat` arithmetic (`Nat.lt_succ_self` / `Nat.lt_irrefl`) over the invariant + `Fin.elim0` for the empty
-base.  No induction, no `funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+base; the binder-extension step is the propext-free `⟨0,_⟩`/`⟨k+1,_⟩` `Fin`-position match (mirroring
+`ReducibleEnvVec.cons`, NOT `Fin.cases`) feeding the rename-variable inversion + the `rfl`-closed
+`levelCons_weaken` computation.  No `funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -102,5 +109,54 @@ theorem rename_eq_variableCell_inversion {sourceScope targetScope : Nat}
   refine ⟨sourceIndex, termIsVariable, ?_⟩
   rw [termIsVariable, rename_variableCell] at isVar
   injection isVar with _generatorEq indexEq
+
+/-- `levelCons` at a `weaken`-shifted index reads the tail vector at the original index.  `weaken` sends
+`index` to `Fin.succ index`, which `levelCons` matches in its `priorValue + 1` arm and projects back to
+`tailLevels index` (the residual `Fin` proof is irrelevant, so the equality is definitional).  This is the
+computation the binder-extension preservation needs after the inversion pins a looked-up type variable's
+index to `weaken sourceIndex`. -/
+theorem levelCons_weaken {scope : Nat} (headLevel : Nat)
+    (tailLevels : Fin scope → Nat) (index : Fin scope) :
+    levelCons headLevel tailLevels (RawRenaming.weaken index) = tailLevels index :=
+  rfl
+
+/-- **Binder-extension preservation** — a consistent stratification stays consistent when the context is
+extended by one binder whose own type, if it is a type variable, sits one level below the fresh head level.
+
+Given `consistent : ConsistentStratification contextLevels context` and the local edge condition
+`domainConstraint` (when the new binding's type `domainCode` IS a variable `var sourceIndex`, that source sits
+at `headLevel + 1`), the extended context `context.cons domainCode` is consistently stratified by
+`levelCons headLevel contextLevels`.  Both lookup positions reduce through the rename-variable inversion:
+the newest binding (index 0) looks up `weaken domainCode`, so its type variable comes from `domainCode` and
+the constraint applies; an older binding (index `position + 1`) looks up `weaken (context.lookup …)`, so its
+type variable comes from the tail and `consistent` applies.  In both cases the looked-up type variable's
+index is `weaken sourceIndex`, on which `levelCons` reads the original `contextLevels sourceIndex`
+(`levelCons_weaken`), leaving exactly the `+ 1` edge each branch supplies. -/
+theorem ConsistentStratification.cons {profile : PolyProfile} {scope : Nat}
+    {contextLevels : Fin scope → Nat} {context : TypingContext profile scope}
+    (consistent : ConsistentStratification contextLevels context)
+    {headLevel : Nat} {domainCode : RawTerm scope}
+    (domainConstraint : ∀ sourceIndex : Fin scope,
+      domainCode = variableCell sourceIndex → contextLevels sourceIndex = headLevel + 1) :
+    ConsistentStratification (levelCons headLevel contextLevels) (context.cons domainCode) := by
+  intro termIndex typeIndex isVarType
+  match termIndex with
+  | ⟨0, isLt⟩ =>
+      rw [TypingContext.lookup_cons_zero context domainCode isLt] at isVarType
+      obtain ⟨sourceIndex, domainIsVariable, weakenedIndexEq⟩ :=
+        rename_eq_variableCell_inversion RawRenaming.weaken isVarType
+      rw [← weakenedIndexEq]
+      show levelCons headLevel contextLevels (RawRenaming.weaken sourceIndex) = headLevel + 1
+      rw [levelCons_weaken]
+      exact domainConstraint sourceIndex domainIsVariable
+  | ⟨position + 1, isLtSucc⟩ =>
+      rw [TypingContext.lookup_cons_succ context domainCode position isLtSucc] at isVarType
+      obtain ⟨sourceIndex, lookupIsVariable, weakenedIndexEq⟩ :=
+        rename_eq_variableCell_inversion RawRenaming.weaken isVarType
+      rw [← weakenedIndexEq]
+      show levelCons headLevel contextLevels (RawRenaming.weaken sourceIndex)
+        = contextLevels ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩ + 1
+      rw [levelCons_weaken]
+      exact consistent ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩ sourceIndex lookupIsVariable
 
 end FX1Poly.Typed
