@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.HasTypeDescPiAppInversion
+import FX1Poly.Typed.HasTypeDescPiFormerCongruence
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.ConvSubstRename
 
@@ -92,5 +93,75 @@ theorem HasTypeDescPi.subjectReductionPiElimArm {profile : PolyProfile} {scope :
     obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ :=
       (HasTypeDescPi.piElim functionTyped argumentTyped).classifierIsTypeDesc wellFormed
     exact HasTypeDescPi.conv classifierLevel classifierFlag rebuilt convMovedOutput classifierTyped
+
+/-- **Dispatcher Π-former arm (specific-IH).**  Given the components' universe-typings, each child's SR at its
+specific universe, and the codomain re-typing under a stepped domain, a `Step (piTyCodeCell domainCode
+codomainCode) reduct` rebuilds `reduct` at the canonical `Type@(lmax domainLevel codomainLevel)` via
+`piFormationViaGenArm` — domain step uses `domainSR` + `codomainReTyping`; codomain step uses `codomainSR`. -/
+theorem HasTypeDescPi.subjectReductionPiFormerArm {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag} {reduct : RawTerm scope}
+    (domainTyped : HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
+    (codomainTyped : HasTypeDescPi profile (context.cons domainCode) codomainCode
+      (universeCodeCell codomainLevel flag))
+    (step : Step (piTyCodeCell domainCode codomainCode) reduct)
+    (domainSR : ∀ {domainReduct : RawTerm scope},
+      Step domainCode domainReduct →
+        HasTypeDescPi profile context domainReduct (universeCodeCell domainLevel flag))
+    (codomainSR : ∀ {codomainReduct : RawTerm (scope + 1)},
+      Step codomainCode codomainReduct →
+        HasTypeDescPi profile (context.cons domainCode) codomainReduct
+          (universeCodeCell codomainLevel flag))
+    (codomainReTyping : ∀ {domainReduct : RawTerm scope},
+      Step domainCode domainReduct →
+        HasTypeDescPi profile (context.cons domainCode) codomainCode
+            (universeCodeCell codomainLevel flag) →
+          HasTypeDescPi profile (context.cons domainReduct) codomainCode
+            (universeCodeCell codomainLevel flag)) :
+    HasTypeDescPi profile context reduct
+      (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) := by
+  rcases Step.from_piTyCode step with ⟨domainAfter, reductEq, domainStep⟩ |
+      ⟨codomainAfter, reductEq, codomainStep⟩
+  · subst reductEq
+    exact HasTypeDescPi.piFormationViaGenArm context domainAfter codomainCode domainLevel
+      codomainLevel flag (domainSR domainStep) (codomainReTyping domainStep codomainTyped)
+  · subst reductEq
+    exact HasTypeDescPi.piFormationViaGenArm context domainCode codomainAfter domainLevel
+      codomainLevel flag domainTyped (codomainSR codomainStep)
+
+/-- **Dispatcher Σ-former arm (specific-IH)** — the Σ dual of `subjectReductionPiFormerArm`, via
+`Step.from_sigmaTyCode` + `sigmaFormationViaGenArm`. -/
+theorem HasTypeDescPi.subjectReductionSigmaFormerArm {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag} {reduct : RawTerm scope}
+    (domainTyped : HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
+    (codomainTyped : HasTypeDescPi profile (context.cons domainCode) codomainCode
+      (universeCodeCell codomainLevel flag))
+    (step : Step (sigmaTyCodeCell domainCode codomainCode) reduct)
+    (domainSR : ∀ {domainReduct : RawTerm scope},
+      Step domainCode domainReduct →
+        HasTypeDescPi profile context domainReduct (universeCodeCell domainLevel flag))
+    (codomainSR : ∀ {codomainReduct : RawTerm (scope + 1)},
+      Step codomainCode codomainReduct →
+        HasTypeDescPi profile (context.cons domainCode) codomainReduct
+          (universeCodeCell codomainLevel flag))
+    (codomainReTyping : ∀ {domainReduct : RawTerm scope},
+      Step domainCode domainReduct →
+        HasTypeDescPi profile (context.cons domainCode) codomainCode
+            (universeCodeCell codomainLevel flag) →
+          HasTypeDescPi profile (context.cons domainReduct) codomainCode
+            (universeCodeCell codomainLevel flag)) :
+    HasTypeDescPi profile context reduct
+      (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) := by
+  rcases Step.from_sigmaTyCode step with ⟨domainAfter, reductEq, domainStep⟩ |
+      ⟨codomainAfter, reductEq, codomainStep⟩
+  · subst reductEq
+    exact HasTypeDescPi.sigmaFormationViaGenArm context domainAfter codomainCode domainLevel
+      codomainLevel flag (domainSR domainStep) (codomainReTyping domainStep codomainTyped)
+  · subst reductEq
+    exact HasTypeDescPi.sigmaFormationViaGenArm context domainCode codomainAfter domainLevel
+      codomainLevel flag domainTyped (codomainSR codomainStep)
 
 end FX1Poly.Typed

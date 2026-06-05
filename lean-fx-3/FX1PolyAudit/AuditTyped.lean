@@ -4324,6 +4324,12 @@ gates pin them shut.
 -- / piElim with fn IH / piElim with arg IH + Conv.subst0 output-move). These are called verbatim with the IHs.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionPiIntroArm
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionPiElimArm
+-- SN-055 assembly-usable FORMER arms (specific-IH): Step.from_piTyCode/sigmaTyCode → {pi,sigma}FormationViaGenArm
+-- at the canonical Type@(lmax) — domain step uses domainSR + codomainReTyping, codomain step uses codomainSR.
+-- The dispatcher's genFormationPi case calls these with the children IHs; codomainReTyping = formationCodomainReTyping
+-- for a formation codomain (unconditional), the grown-codomain case = the bundle.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionPiFormerArm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionSigmaFormerArm
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
