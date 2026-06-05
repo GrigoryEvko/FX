@@ -305,6 +305,7 @@ import FX1Poly.Typed.HasTypeDescPiCheckApplication
 import FX1Poly.Typed.HasTypeDescPiFormationUniqueness
 import FX1Poly.Typed.HasTypeDescPiCheckFormation
 import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
+import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4293,6 +4294,12 @@ gates pin them shut.
 -- UNCONDITIONAL via the part-2a convContextOfFormation + convBackToUniverseCode (no grown-context-conversion
 -- bundle). Pointwise context-Conv: index 0 via Conv.rename weaken; successors via Conv.refl.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.formationCodomainReTyping
+-- SN-055: the UNCONDITIONAL former-domain SR rebuild for a FORMATION codomain (completes the formation-codomain
+-- former-domain case). {pi,sigma}FormationViaGenArm reassembles the former from the stepped domain + the
+-- re-typed codomain (formationCodomainReTyping), at the canonical Type@(lmax domLevel codLevel). The dispatcher
+-- converts to the former's classifier via the invertPiTyCode Conv. No grown context-conversion bundle.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piFormerStepDomainFormationCodomain
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormerStepDomainFormationCodomain
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
