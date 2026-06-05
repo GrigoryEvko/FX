@@ -272,6 +272,7 @@ import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CanonicityTargetSignature
 import FX1Poly.Typed.NullaryFormerFormation
 import FX1Poly.Typed.UniverseFormationStrictness
+import FX1Poly.Typed.FormerFormationStrictness
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4772,6 +4773,15 @@ gates pin them shut.
 -- general no-deflation (Type@(e+1) ⊬ Type@e at all levels/contexts), via the double-successor guard
 -- LevelExpr.ne_lsuccLsucc_self — completes the general level-strictness corpus (self / above / below).
 #assert_no_axioms FX1Poly.Typed.universeCode_notTypedBelowSuccessor_general
+-- DEPENDENT-FORMER level strictness (FormerFormationStrictness.lean): the Π/Σ analog of the universe
+-- strictness — a Π/Σ-type code is classified by EXACTLY Type@(lmax domainLevel codomainLevel) up to Conv
+-- (uniqueness against the canonical piFormation/sigmaFormation derivation), completing the formation-family
+-- level-tightness (universe + Π + Σ). The two concrete rejections show a closed Π/Σ-type code is rejected at
+-- the wrong level (Π(Type@0).Type@0 sits at Type@(lmax 1 1), not Type@0).
+#assert_no_axioms FX1Poly.Typed.HasType.piTyCodeClassifierConv
+#assert_no_axioms FX1Poly.Typed.HasType.sigmaTyCodeClassifierConv
+#assert_no_axioms FX1Poly.Typed.closedPi_notTypedAtZero
+#assert_no_axioms FX1Poly.Typed.closedSigma_notTypedAtZero
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown
