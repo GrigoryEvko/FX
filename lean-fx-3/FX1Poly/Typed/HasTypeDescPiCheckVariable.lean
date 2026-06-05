@@ -1,0 +1,62 @@
+import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
+import FX1Poly.Typed.HasTypeDescPiVariableInversion
+import FX1Poly.Typed.IsTypeDecidable
+import FX1Poly.Typed.HasTypeValidity
+
+/-! # FX1Poly/Typed/HasTypeDescPiCheckVariable
+    — the VARIABLE case of the bidirectional grown-engine checker (SN-052), in CHECK mode
+
+The first COMPLETE case of the SN-052 decidable checker, and the first to compose the shipped bricks
+end-to-end.  Deciding `variableCell index : targetType` (given the target's typehood threaded as input — the
+CHECK-mode discipline that avoids deciding grown-typehood in the recursion, and SR-free since there is no λ)
+reduces to deciding `Conv (context.lookup index) targetType`:
+
+  * INFERENCE: the variable's principal type is `context.lookup index`, derived directly by
+    `.ofFormation (HasTypeDesc.var …)`;
+  * the principal type's own typehood (`lookup index : Type`) — the COMPARE step needs it as DATA, so it is
+    extracted via `IsType.decideWithWitness` (which returns a `PSum` carrying the typing witness); the
+    impossible `.inr` branch is refuted by `WfContext.lookupIsType` (a well-formed context's entries ARE
+    types);
+  * UNIQUENESS: `HasTypeDescPi.inversionVariable` — every type a variable receives is `Conv` to its lookup;
+  * the COMPARE step `HasTypeDescPi.decidableCheckOfInferredUniqueAtType` assembles these into the decision.
+
+This is the template the other infer-mode positions (application) will follow once their inference +
+per-subject uniqueness land; the introduction position (λ) is the separate CHECK-mode half (gated on exposing
+the target's Π-components, i.e. on subject reduction).
+
+## Zero-axiom verification
+
+A `match` on `IsType.decideWithWitness` feeding the shipped COMPARE step + variable inversion; the `.inr`
+branch is `absurd … WfContext.lookupIsType`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, `omega`.  Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
+-/
+
+namespace FX1Poly.Typed
+
+open FX1Poly.Core FX1Poly.Universe
+
+/-- **Decidable checking of a variable against a known-type target.**  `variableCell index : targetType` is
+decided by `Conv (context.lookup index) targetType` (the COMPARE step), the variable's inferred type being its
+context lookup and its per-subject uniqueness being `inversionVariable`.  The target's typehood
+`targetTyped` is threaded as input (CHECK mode); the lookup's typehood is recovered as data via
+`IsType.decideWithWitness`, its impossible non-type branch refuted by `WfContext.lookupIsType`. -/
+def HasTypeDescPi.decidableCheckVariableAtType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    (wellFormed : WfContext context)
+    (index : Fin scope)
+    {targetType : RawTerm scope} {targetLevel : LevelExpr} {targetFlag : UniverseFlag}
+    (targetTyped :
+      HasTypeDescPi profile context targetType (universeCodeCell targetLevel targetFlag)) :
+    Decidable (HasTypeDescPi profile context (variableCell index) targetType) :=
+  match IsType.decideWithWitness wellFormed (context.lookup index) with
+  | .inl ⟨_lookupLevel, _lookupFlag, lookupTypedBespoke⟩ =>
+      HasTypeDescPi.decidableCheckOfInferredUniqueAtType wellFormed
+        (inferred := .ofFormation (HasTypeDesc.var context index))
+        (inferredTypeTyped := .ofFormation (HasType.toHasTypeDesc lookupTypedBespoke))
+        (targetTyped := targetTyped)
+        (uniqueAtSubject := fun derivation =>
+          (HasTypeDescPi.inversionVariable derivation wellFormed).sym)
+  | .inr notType =>
+      absurd (WfContext.lookupIsType context wellFormed index) notType
+
+end FX1Poly.Typed

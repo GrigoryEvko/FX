@@ -297,6 +297,7 @@ import FX1Poly.Typed.SimplyTypedTermReducibility
 import FX1Poly.Typed.HasTypeDescPiTypingNonUnique
 import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
 import FX1Poly.Typed.HasTypeDescPiVariableInversion
+import FX1Poly.Typed.HasTypeDescPiCheckVariable
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4239,6 +4240,11 @@ gates pin them shut.
 -- chains via unconditional Conv.trans; piIntro/piElim/genFormationPi impossible on a variable subject.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionVariableGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionVariable
+-- SN-052 first COMPLETE checker case: deciding a VARIABLE against a known-type target (CHECK mode, SR-free)
+-- composes the COMPARE step + variable inversion + variable inference + context validity
+-- (IsType.decideWithWitness for the lookup's typehood-as-data, WfContext.lookupIsType refuting the impossible
+-- non-type branch). The template for the application infer-mode case.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckVariableAtType
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
