@@ -298,6 +298,8 @@ import FX1Poly.Typed.HasTypeDescPiTypingNonUnique
 import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
 import FX1Poly.Typed.HasTypeDescPiVariableInversion
 import FX1Poly.Typed.HasTypeDescPiCheckVariable
+import FX1Poly.Typed.HasTypeDescPiUniverseCodeInversion
+import FX1Poly.Typed.HasTypeDescPiCheckUniverseCode
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4245,6 +4247,16 @@ gates pin them shut.
 -- (IsType.decideWithWitness for the lookup's typehood-as-data, WfContext.lookupIsType refuting the impossible
 -- non-type branch). The template for the application infer-mode case.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckVariableAtType
+-- SN-052 universe-code leaf: grown universe-code inversion (any classifier a universe code receives is Conv to
+-- the next universe) — the per-subject UNIQUENESS the COMPARE step consumes at a universe-code position. Same
+-- recipe as the variable inversion with the universe-formation model: ofFormation delegates; conv chains via
+-- unconditional Conv.trans; piIntro/piElim/genFormationPi impossible on a universe-code subject.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionUniverseCodeGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionUniverseCode
+-- SN-052 second COMPLETE checker case (closes the SR-free leaf fragment): deciding a UNIVERSE CODE against a
+-- known-type target (CHECK mode, SR-free). Strictly simpler than the variable case — both the inference and
+-- its classifier-typing are direct universeFormation constructors, so no IsType.decideWithWitness is needed.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckUniverseCodeAtType
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
