@@ -303,6 +303,7 @@ import FX1Poly.Typed.HasTypeDescPiCheckUniverseCode
 import FX1Poly.Typed.HasTypeDescPiApplicationUniqueness
 import FX1Poly.Typed.HasTypeDescPiCheckApplication
 import FX1Poly.Typed.HasTypeDescPiFormationUniqueness
+import FX1Poly.Typed.HasTypeDescPiCheckFormation
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4279,6 +4280,13 @@ gates pin them shut.
 -- output universe codes). The former analogue of applicationTypeUniqueGivenFunction.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piFormationTypeUniqueGivenComponents
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormationTypeUniqueGivenComponents
+-- SN-052 Π/Σ-FORMATION checker cases (closes the infer-mode SR-free combinator coverage): deciding a former
+-- against a known-type target given its components' universe-typings + uniqueness (threaded as input — the
+-- recursive component-inference delivers them). SR-free: a former needs no exposure (its components are already
+-- type codes), so the whole decision is the COMPARE step. {pi,sigma}FormationViaGenArm infers, universeFormation
+-- types the inferred universe, {pi,sigma}FormationTypeUniqueGivenComponents supplies uniqueAtSubject.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckPiFormationGivenComponents
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckSigmaFormationGivenComponents
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
