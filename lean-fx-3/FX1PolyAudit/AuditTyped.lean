@@ -30,6 +30,7 @@ import FX1Poly.Typed.HasTypeDescValidity
 import FX1Poly.Typed.HasTypeDescStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescClosedForms
 import FX1Poly.Typed.HasTypeDescInversion
+import FX1Poly.Typed.HasTypeDescFormerTelescopeInversion
 import FX1Poly.Typed.HasTypeDescUniqueness
 import FX1Poly.Typed.HasTypeDescWeakening
 import FX1Poly.Typed.HasTypeDescSubstitution
@@ -827,6 +828,13 @@ gates pin them shut.
 -- genFormation arm `obtain rfl`s the TypingRuleDesc (children-independent), NEVER substing the generator.
 -- Empirically isolates the wall to the telescope-extraction (the residual hard half).
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionFormerClassifierGeneric
+-- Generic former-TELESCOPE inversion (HasTypeDescFormerTelescopeInversion.lean): the wall-bearing half
+-- of the generic former inversion — recover the children DescTelescope for ANY formation generator. The
+-- documented dependent-subst wall (free generator vs arm generator) turned out NAVIGABLE in the
+-- free-subject+thread-Eq shape: subst generatorAgree (the free-generator subst) SUCCEEDS, then injection
+-- subjectEq + subst_vars aligns the children — the same propext-free idiom the per-former inversions use.
+-- Unblocks HasTypeDescUniqueness (GTL-09) + the arity-bound reducibility arms.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionFormerTelescopeGeneric
 
 /-! ### Leaf inversions (`var`, `universeCode`) for the description engine — the two
     NON-compound subjects, completing the per-shape inversion suite (var / universeCode
