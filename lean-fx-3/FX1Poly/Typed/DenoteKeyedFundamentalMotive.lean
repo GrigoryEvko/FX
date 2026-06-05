@@ -4,6 +4,13 @@ import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 /-! # FX1Poly/Typed/DenoteKeyedFundamentalMotive
     — the denote fundamental theorem's conclusion motive + the two LEAF member arms (SN-D4; toward SN-043/#672)
 
+**OFF-PATH CROSSCHECK (supersession map, 2026-06-05): the UNBOUNDED denote fundamental-theorem assembly (SN-D5,
+#744/#750/#752/#753) toward SN-043 via the all-level/#672 route — SUPERSEDED by the BFT BOUNDED route
+(`DenoteKeyedBoundedReducibility`, OB-5 `closedStronglyNormalizing` / `stronglyNormalizingOfWfContext`), which
+closed SN-043 without completing this unbounded FT.  Verified off-path: this FT-assembly is NOT imported by any
+`*Bounded` file (the unbounded CORE `DenoteKeyedReducibility` IS shared/load-bearing; this assembly is not).
+Retained as a crosscheck, not critical-path.**
+
 The denote analogue of `FundamentalConclusionLevelIndexed` (`FundamentalLevelIndexed.lean:60`): the conclusion
 shape of the denote fundamental theorem, plus the two genuine LEAF arms (no induction hypothesis) — `var` and
 `universeFormation`.  The recursive arms (`conv`, `piIntro`, `piElim`, `genFormationPi`) carry sub-derivation

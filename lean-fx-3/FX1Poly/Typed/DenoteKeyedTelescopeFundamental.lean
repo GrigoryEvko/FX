@@ -5,6 +5,10 @@ import FX1Poly.Typed.HasTypeSubstitution
 /-! # FX1Poly/Typed/DenoteKeyedTelescopeFundamental
     — the denote telescope fundamental-theorem companion arms (nil + cons; SN-D5d step 1; toward SN-043)
 
+**OFF-PATH CROSSCHECK (supersession map, 2026-06-05): part of the UNBOUNDED denote fundamental-theorem assembly
+(SN-D5, #744/#750/#752/#753) — SUPERSEDED by the BFT BOUNDED route, which closed SN-043 without it.  Verified
+off-path: not imported by any `*Bounded` file.  Retained as a crosscheck.**
+
 The denote fundamental theorem's `genFormationPi` arm receives a former's children as a `DescTelescopePi`
 telescope and must produce their joint denote-reducibility as a `TelescopeReducibleAtDenote`
 (`DenoteKeyedTelescopeReducible.lean`).  That production is a structural recursion on the telescope whose two
