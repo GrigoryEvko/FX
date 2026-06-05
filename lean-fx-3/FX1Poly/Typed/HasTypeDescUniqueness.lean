@@ -17,7 +17,8 @@ structure:
 
 * `var` / `universeFormation` invert the SECOND derivation with the INTRINSIC leaf
   inversions and `.sym`;
-* `conv` recurses INTRINSICALLY through `Conv.trans_of_typedMiddle`;
+* `conv` recurses INTRINSICALLY through the unconditional raw `Conv.trans` (the
+  raw-confluence harvest — no typed middle, no `HasType`);
 * `genFormation` inverts the SECOND derivation with the GENERIC
   `inversionFormerWithConvGeneric` (GTL-08, no per-former `by_cases`), then forces the two
   formation telescopes to agree on `levels`/`flag` via `DescTelescope.uniquenessAgree`, after
@@ -25,14 +26,18 @@ structure:
   `levels ≠ []` is discharged generically by `DescTelescope.levels_ne_nil_of_isFormation` for the
   ≥1-child formation family (a nullary `Empty` former is the documented future branch).
 
-The remaining coupling is ONE LEAF: `uniquenessAgree` settles each HEAD CHILD's
-universe level/flag through the verified bespoke `HasType.uniqueness` (via
-`HasTypeDesc.toHasType`), because as a STANDALONE (non-mutual) recursion it cannot call
-the intrinsic uniqueness it precedes.  A fully intrinsic version would make the two a
-MUTUAL recursion (the `HasTypeDesc.toHasType`/`DescTelescope.toHasTypeTelescope` shape)
-so head children recurse into the intrinsic uniqueness, with termination needing the
-careful scope-index phrasing of the soundness pair.  The formation SPINE — inversion +
-telescope agreement — is intrinsic; only the per-child leaf is bespoke.
+The remaining coupling is the `genFormation` LEAF, routing through `HasType` in two
+spots that are BOTH inherent to `WfContext` being bespoke-`IsType`-based (it stores
+`IsType` bindings, so extending or comparing them imports `HasType` data): (1)
+`uniquenessAgree` settles each HEAD CHILD's universe level/flag through the verified
+bespoke `HasType.uniqueness` (via `HasTypeDesc.toHasType`), because as a STANDALONE
+(non-mutual) recursion it cannot call the intrinsic uniqueness it precedes; (2) its
+rest-telescope recursion extends the context via `WfContext.cons`, which demands a
+bespoke `IsType` binding (`HasTypeDesc.toHasType` of the head typing).  A fully intrinsic
+leaf needs BOTH a MUTUAL `uniqueness`/`uniquenessAgree` recursion (the
+`toHasType`/`toHasTypeTelescope` shape) AND a `WfContext` migrated to carry `IsTypeDesc`
+bindings.  The formation SPINE — inversion + telescope agreement + the `conv` arm (now
+the unconditional raw `Conv.trans`) — is intrinsic; only the per-child leaf is bespoke.
 
 ## `uniquenessAgree`: separate children + a threaded equality
 
@@ -55,8 +60,9 @@ non-empty.
 ## Zero-axiom
 
 Term-mode recursion + the propext-free inversions + `injection` /
-`RawTermChildren.noConfusion` + the verified `Conv.trans_of_typedMiddle` /
-`HasType.uniqueness` / `levelFlag_eq_of_conv_universeCodeCell`.  No `axiom`, `sorry`,
+`RawTermChildren.noConfusion` + the unconditional raw `Conv.trans` (raw-confluence
+harvest) / the verified `HasType.uniqueness` / `levelFlag_eq_of_conv_universeCodeCell`.
+No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated.
 -/
 
@@ -118,8 +124,7 @@ theorem HasTypeDesc.uniqueness {profile : PolyProfile} {scope : Nat}
       (HasTypeDesc.inversionVariable secondDerivation wellFormed).sym
   | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
       fun secondDerivation =>
-        Conv.trans_of_typedMiddle
-          (HasType.classifierIsType wellFormed (HasTypeDesc.toHasType typedPremise))
+        Conv.trans
           converts.sym
           (HasTypeDesc.uniqueness typedPremise wellFormed secondDerivation)
   | .universeFormation _context _levelExpr _flag => fun secondDerivation =>
