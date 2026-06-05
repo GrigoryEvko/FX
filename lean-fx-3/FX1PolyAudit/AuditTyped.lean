@@ -115,6 +115,7 @@ import FX1Poly.Core.ReducibilityNormalizationViaSconing
 import FX1Poly.Core.ReducibilityConversionViaSconing
 import FX1Poly.Core.ConsistencyViaSconing
 import FX1Poly.Core.DataEliminatorProgressViaSconing
+import FX1Poly.Core.RecursiveEliminatorProgressViaSconing
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.UnitCanonicalFormsCandidate
@@ -2827,6 +2828,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.eitherMatchProgressViaSconing
 #assert_no_axioms FX1Poly.Core.idJProgressViaSconing
 #assert_no_axioms FX1Poly.Core.idStrictRecProgressViaSconing
+-- Progress for the RECURSIVE data eliminators (RecursiveEliminatorProgressViaSconing.lean, SN-061/SN-064): lifts
+-- the exclusion noted above. The recursive succ/cons ι re-invokes the eliminator, which the prior progress file
+-- said "needs Tait" — that Tait piece is RecursorClosedMembership (natElim/natRec/listElimClosedIsMember, the
+-- #672-free scrutinee-reduction half, fed the honest recursor-SN IH-premise). Threads the sconing fundamental
+-- (well-typed Nat/List scrutinee -> data-candidate member) into the scrutinee position and reads off
+-- closedReducesToValue: a well-typed recursor with a reducible branch interface REDUCES TO A VALUE. The SN-061/
+-- SN-064 canonicity payoff via the sconing leg, closing the recursive corner of the eliminator-progress track.
+#assert_no_axioms FX1Poly.Core.natElimProgressViaSconing
+#assert_no_axioms FX1Poly.Core.natRecProgressViaSconing
+#assert_no_axioms FX1Poly.Core.listElimProgressViaSconing
 -- A normal value is a member of its candidate (the generic constructor-reducibility helper).
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfValue
 -- RECURSIVE data candidate — Nat (SN-060/062): IsNatValue is the inductive numeral predicate; numerals are
