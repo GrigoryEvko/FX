@@ -296,6 +296,7 @@ import FX1Poly.Typed.UniverseCumulativity
 import FX1Poly.Typed.SimplyTypedTermReducibility
 import FX1Poly.Typed.HasTypeDescPiTypingNonUnique
 import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
+import FX1Poly.Typed.HasTypeDescPiVariableInversion
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4233,6 +4234,11 @@ gates pin them shut.
 -- subject's per-term uniqueness (holds for every non-λ subject). Typing witnesses threaded explicitly (data),
 -- since Decidable cannot large-eliminate the Prop-valued IsTypeDesc existential.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckOfInferredUniqueAtType
+-- SN-052 variable leaf: grown variable inversion (any classifier a variable receives is Conv to its context
+-- lookup) — the per-subject UNIQUENESS the COMPARE step consumes at a variable. ofFormation delegates; conv
+-- chains via unconditional Conv.trans; piIntro/piElim/genFormationPi impossible on a variable subject.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionVariableGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionVariable
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
