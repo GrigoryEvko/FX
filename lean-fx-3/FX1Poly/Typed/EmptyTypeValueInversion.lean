@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
+import FX1Poly.Typed.HasTypeDescPiUniverseCodeInversion
 import FX1Poly.Typed.EmptyTypeCodeConvRigidity
 
 /-! # FX1Poly/Typed/EmptyTypeValueInversion — no canonical VALUE is typed at the empty type, SN-FREE.
@@ -66,5 +67,19 @@ theorem HasTypeDescPi.sigmaFormerNotTypedAtEmptyType {profile : PolyProfile} {sc
   obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped, convToUniverseCode⟩ :=
     HasTypeDescPi.invertSigmaTyCode typed wellFormed
   exact Conv.universeCode_not_emptyTypeCode convToUniverseCode.sym
+
+/-- **A universe code is never typed at the empty type** — completing the value-case family.  A universe
+code `Type@(e, flag)`'s classifier is `Conv` the next universe `Type@(lsucc e, flag)`
+(`HasTypeDescPi.inversionUniverseCode`), which is not `Conv`-equal to `emptyTypeCell`.  With λ / Π-former /
+Σ-former / universe-code covered, NO canonical value the grown engine types is typed at the empty type. -/
+theorem HasTypeDescPi.universeCodeNotTypedAtEmptyType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (typed :
+      HasTypeDescPi profile context (universeCodeCell levelExpr flag)
+        (emptyTypeCell (scope := scope)))
+    (wellFormed : WfContext context) :
+    False :=
+  Conv.universeCode_not_emptyTypeCode
+    (HasTypeDescPi.inversionUniverseCode typed wellFormed).sym
 
 end FX1Poly.Typed

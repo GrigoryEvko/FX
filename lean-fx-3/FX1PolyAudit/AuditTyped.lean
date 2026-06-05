@@ -1182,6 +1182,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.lambdaNotTypedAtEmptyType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piFormerNotTypedAtEmptyType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormerNotTypedAtEmptyType
+-- Family COMPLETED: the universe-code value case (via the shipped HasTypeDescPi.inversionUniverseCode, the
+-- SN-052 checker leaf). λ / Π-former / Σ-former / universe-code are ALL the canonical values the grown engine
+-- types — so no canonical value is typed at emptyTypeCell (the value-case half of consistency, done).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCodeNotTypedAtEmptyType
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
