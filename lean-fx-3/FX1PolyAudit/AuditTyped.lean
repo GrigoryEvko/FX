@@ -53,6 +53,7 @@ import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiLookup
+import FX1Poly.Typed.WfContextDescPiValidity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1259,6 +1260,13 @@ gates pin them shut.
 -- HasType-based WfContext).
 #assert_no_axioms FX1Poly.Typed.IsTypeDescPi.weakenUnderBinding
 #assert_no_axioms FX1Poly.Typed.WfContextDescPi.lookupIsType
+-- GROWN CLASSIFIER-VALIDITY, formation leaf (WfContextDescPiValidity.lean, WFG-3a): a FORMATION-typed cell's
+-- classifier is a grown type (IsTypeDescPi) under the grown well-formedness WfContextDescPi. The var arm reads
+-- WfContextDescPi.lookupIsType directly (under a grown context a formation variable's type is grown); the rest
+-- lift the formation universe-typing via ofFormation. The formation-engine leaf of grown classifier-validity;
+-- the grown HasTypeDescPi.classifierIsTypeDescPi + the piCodeInstantiationIsType/betaSR WfContextDescPi twins
+-- (the broad mechanical WfContext→WfContextDescPi swap) follow toward the master SR (TG-3).
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDescPi
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
