@@ -56,6 +56,7 @@ import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
 import FX1Poly.Typed.GrownBetaRedexInAction
 import FX1Poly.Typed.GrownOpenProgress
 import FX1Poly.Typed.GrownOpenCanonicalFormsByClassifier
+import FX1Poly.Typed.GrownOpenTypeSafety
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDescPi
@@ -1344,6 +1345,17 @@ gates pin them shut.
 -- dichotomy (TY-CONV-quote / η-M15 line). #672-independent — pure inversion, no SR, no SN.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openNormalTypeIsFormerOrNeutral
+-- OPEN TYPE SAFETY + DETERMINISM (GrownOpenTypeSafety.lean, five-layer-defense L4 §27.3): the open analogues of the
+-- three GrownTypeSafety statements, resting on OB-5 open SN (stronglyNormalizingOfWfContext, any WfContext) + open
+-- progress (openNormalSubjectCanonicalOrNeutral), with the neutral disjunct. openHasUniqueNormalForm = OPEN
+-- EVALUATION DETERMINISM (unconditional — OB-5 SN any context ⤳ exists_unique_normalForm; NO SR, NO closedness):
+-- evaluation of an open grown-typed term is a well-defined single-valued total function.
+-- openTypeSafetyOfSubjectReductionStar / openTypeSafetyUniqueOfSubjectReductionStar = OPEN TYPE SAFETY (conditional
+-- on SR-along-↝*): every open grown-typed term evaluates to a (unique) canonical-or-neutral normal form. Completes
+-- the open metatheory triple (progress + canonical forms + safety). #672-independent (OB-5 is unconditional open SN).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openHasUniqueNormalForm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openTypeSafetyOfSubjectReductionStar
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openTypeSafetyUniqueOfSubjectReductionStar
 -- CASCADE-FREE FORMER STEP-INVERSION (FormerStepInversionGeneric.lean, TG-1): a step out of any formation-rule
 -- cell (typingRuleDescOf generator = some rule) is a child congruence, proven WITHOUT enumerating the formation
 -- table — `cases step` with generator free (propext-clean), each of the 17 root-redex cases refuted because the
