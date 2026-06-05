@@ -44,6 +44,7 @@ import FX1Poly.Typed.HasTypeDescPiInversion
 import FX1Poly.Typed.HasTypeDescPiApplication
 import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
+import FX1Poly.Typed.EmptyTypeCodeConvRigidity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1165,6 +1166,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_sigmaTyCode
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_universeCode
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_not_universeCode
+-- emptyTypeCell is a FOURTH distinct type former (EmptyTypeCodeConvRigidity.lean): never Conv-equal to a
+-- Π/Σ/universe code. Same SN-free mechanism, with Step.no_step_from_emptyCode (the empty code is a step
+-- normal form) for the empty leg. The Conv-side companion to emptyHasNoClosedMember (#680): a closed value's
+-- natural classifier (Π for a λ, a universe code for a former) is never Conv-equal to Empty — the consistency/
+-- canonicity inversion ingredient (no closed value is typed at the empty type).
+#assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_emptyTypeCode
+#assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_not_emptyTypeCode
+#assert_no_axioms FX1Poly.Typed.Conv.universeCode_not_emptyTypeCode
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
