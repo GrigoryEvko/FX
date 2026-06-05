@@ -85,6 +85,7 @@ import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.BoolElimCanonicalComputation
 import FX1Poly.Core.BoolElimClosedMembership
+import FX1Poly.Core.DataEliminatorMembershipSmoke
 import FX1Poly.Core.SigmaProjectionCanonicalComputation
 import FX1Poly.Core.IdentityEliminatorCanonicalComputation
 import FX1Poly.Core.IdEliminatorClosedMembership
@@ -2407,6 +2408,11 @@ gates pin them shut.
 -- (ofStepStarReachingValue, #735) lifts membership back to the cell. The recursor lands in the candidate, not
 -- merely normalizes — closed-layer assembly, no fundamental theorem.
 #assert_no_axioms FX1Poly.Core.boolElimClosedIsMember
+-- Concrete eliminator-membership regression (DataEliminatorMembershipSmoke, SN-149 corpus seed): a CONCRETE
+-- closed boolElim on canonical bool members is itself a bool-candidate member — boolElimClosedIsMember fed the
+-- shipped concrete value-members compose into an actual closed inhabitant (not an alias). The data-eliminator
+-- membership layer (bool/Σ/option/either/idJ/idStrictRec/refl + recursive nat/list) is complete; this exercises it.
+#assert_no_axioms FX1Poly.Core.boolElimClosedMembershipSmoke
 -- Sigma PROJECTION canonicity (#672-free, SN-058 path): fst/snd on a CANONICAL pair scrutinee PROJECT to the
 -- components. StepStar.fstScrutinee/sndScrutinee = the unary scrutinee-position chain congruences (generic
 -- StepStar.congAt + Step.cong (StepChildren.here ...) at the sole child). pairCanonicalScrutineeProjectsTo-
