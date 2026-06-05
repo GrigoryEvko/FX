@@ -5,6 +5,13 @@ import FX1Poly.Typed.ConsistencyConditionalOnSubjectReduction
     — iterated (multi-step) subject reduction + ★ SN-050 consistency, both conditional on EXACTLY the
       single `piElim` crux (SRD-3 `#846`, CON-A5wire `#848` / SN-050 `#553` / `#812`)
 
+**STATUS (2026-06-05): the SN-050 consistency HERE is SUPERSEDED for TODAY's engine by
+`HasTypeDescPi.emptyTypeConsistency` (`EmptyTypeConsistencyUnconditional.lean`, commit f7172cfa) — an
+UNCONDITIONAL two-line validity proof (`classifierIsTypeDescPi` + `emptyTypeCellHasNoTyping`), no `piElim`
+crux.  This conditional route is RETAINED as the SUBSTANTIVE-Empty FUTURE route: when CON-A1's `gen_emptyCode`
+formation row lands (emptyTypeCell becomes a real type, typed at a universe), the validity route BREAKS and
+consistency must come from SR/canonicity — i.e. THIS file.  Not dead; do not delete.**
+
 This file collapses the grown-engine consistency theorem onto the SAME single residual that the grown master
 subject reduction (`HasTypeDescPiSubjectReductionMutual.lean`, SRD-2 `#845`) and the grown context-conversion
 (`HasTypeDescPiContextConversionConditional.lean`, GCC-5 `#842`) are conditional on: the lone `piElim`

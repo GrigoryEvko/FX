@@ -5,6 +5,11 @@ import FX1Poly.Core.WeakNormalization
 /-! # FX1Poly/Typed/ConsistencyConditionalOnSubjectReduction
     — the SN-050 consistency route made concrete, gated on exactly one residual: SR-along-`↝*`
 
+**STATUS (2026-06-05): SUPERSEDED for TODAY's engine by `HasTypeDescPi.emptyTypeConsistency`
+(`EmptyTypeConsistencyUnconditional.lean`, commit f7172cfa) — UNCONDITIONAL via validity, no SR hypothesis.
+RETAINED as the SUBSTANTIVE-Empty FUTURE route: once CON-A1's `gen_emptyCode` formation row makes emptyTypeCell
+a real type, the validity route breaks and consistency needs THIS SR/canonicity link.  Not dead; do not delete.**
+
 `GrownCanonicalForms.noClosedNormalTermAtEmptyType` proved that no closed NORMAL term inhabits the empty
 type.  Strong normalization (open SN-043, `HasTypeDescPi.stronglyNormalizingOfWfContext`, OB-5/`#794`) reduces
 an ARBITRARY closed `t : EmptyType` to a normal form.  The only missing link is subject reduction along the
