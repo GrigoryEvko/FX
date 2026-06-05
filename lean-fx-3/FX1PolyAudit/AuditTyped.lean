@@ -308,6 +308,7 @@ import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionInlineArms
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4316,6 +4317,13 @@ gates pin them shut.
 -- genFormationPi/ofFormation-former cases.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtPiFormer
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtSigmaFormer
+-- SN-055 ASSEMBLY-USABLE (specific-IH) λ/app SR arms: the dispatcher inducts on the TYPING with the
+-- step-quantified motive, so each child's IH is its SR at the CHILD'S SPECIFIC classifier — NOT the general
+-- childPreserves the cong arms want. So the dispatcher reconstructs DIRECTLY: subjectReductionPiIntroArm
+-- (Step.from_lam + piIntro with the body IH); subjectReductionPiElimArm (Step.from_app 3-way → betaSubjectReduction
+-- / piElim with fn IH / piElim with arg IH + Conv.subst0 output-move). These are called verbatim with the IHs.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionPiIntroArm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionPiElimArm
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
