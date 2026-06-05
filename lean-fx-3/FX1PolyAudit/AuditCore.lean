@@ -42,6 +42,7 @@ import FX1Poly.Core.StrongNormalizationMatch
 import FX1Poly.Core.StrongNormalizationLinearFormers
 import FX1Poly.Core.NatElimValueReducibility
 import FX1Poly.Core.NatElimValueMember
+import FX1Poly.Core.NatElimNeutralScrutineeMember
 import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.ListElimValueMember
 import FX1Poly.Core.ApplicationStrongNormalizationForward
@@ -640,6 +641,20 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- Step.from_natRec inversion matching natElim's.
 #assert_no_axioms FX1Poly.Core.natRecNormalScrutineeCellStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.natRecValueMember
+
+-- NEUTRAL-SCRUTINEE regime of the Nat recursor (toward SN-061): the dual of the value case. A NEUTRAL
+-- scrutinee is never a numeral and stays neutral under Step, so natElim/natRec NEVER ι-fires and the cell is a
+-- stuck neutral -- which inhabits every candidate by CR3. memberOfStronglyNormalizingNeutral is the abstract
+-- reusable bridge (SN neutral -> member of any candidate, generalizing the CanonicalFormsPredicate-only
+-- version); rootGenerator_ne_natZero/natSucc are the ι-vacuity discriminators; the cell-SN recursors are a
+-- triple Acc induction with the two ι cases VACUOUS by neutrality. #672-independent (fixed result candidate).
+#assert_no_axioms FX1Poly.Core.IsReducibilityCandidate.memberOfStronglyNormalizingNeutral
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_natZero
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_natSucc
+#assert_no_axioms FX1Poly.Core.natElim_neutralScrutinee_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.natRec_neutralScrutinee_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.natElimNeutralScrutineeMember
+#assert_no_axioms FX1Poly.Core.natRecNeutralScrutineeMember
 
 -- VALUE-CASE of listElim recursor reducibility (SN-064), the list analogue of the Nat recursor value-case:
 -- listElim on a LIST-VALUE scrutinee lands in the result candidate by IsListValue structural induction firing
