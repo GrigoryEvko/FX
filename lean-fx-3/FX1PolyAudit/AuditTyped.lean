@@ -56,6 +56,7 @@ import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
 import FX1Poly.Typed.HasTypeDescPiClassifierValidity
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionDescPi
+import FX1Poly.Typed.HasTypeDescPiSubjectReduction
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1310,6 +1311,15 @@ gates pin them shut.
 -- separate grown context-conversion / GCC bundle).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaSubjectReductionDescPi
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionPiElimArmDescPi
+-- MASTER SR DISPATCHER for the grown engine, conditional on the grown telescope SR (SRD-1 / SN-055,
+-- HasTypeDescPiSubjectReduction.lean): inducts on the grown derivation threading the EXTENDABLE WfContextDescPi.
+-- ofFormation is VACUOUS (subjectAdmitsNoStep: formation subjects are normal), conv recurses, piIntro/piElim use
+-- the shipped function-space arms with children SR obtained recursively (extending well-formedness at the λ
+-- binder via WfContextDescPi.cons + the domain's IsTypeDescPi), genFormationPi decomposes via former_step_inv +
+-- the telescopeSR hypothesis. The telescopeSR hypothesis = the grown telescope SR (DescTelescopePi.subjectReduction,
+-- gated on grown context-conversion / GCC #838-843) is the LONE residual; SRD-2 (#845) discharges it for the
+-- unconditional master SR. Mirrors the UB-SD conditional-package discipline (#664).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionOfGrownTelescopeSR
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
