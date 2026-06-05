@@ -6,6 +6,12 @@ import FX1Poly.Core.SubstPreservationProbes
 /-! # FX1Poly/Typed/SimplyTypedTermFundamentalLevelFree
     — the LEVEL-FREE simply-typed term fundamental theorem (and its strong-normalization corollary)
 
+**OFF-PATH CROSSCHECK (supersession map, 2026-06-05): the LEVEL-FREE simply-typed line is a self-contained
+STLC SN/canonicity/consistency proof that does NOT bridge to the kernel engine (semantic-vs-syntactic gap;
+type-variable domains dead-end).  It is an INDEPENDENT crosscheck leg, NOT the kernel's SN-043 / canonicity /
+SN-050 (those live on `HasTypeDescPi` via the BFT bounded route + `emptyTypeConsistency`).  Retained as a
+crosscheck; do not confuse with the kernel results, and do not treat as critical-path.**
+
 The capstone of the level-free simply-typed line: a term judgment + the Girard-Tait fundamental theorem +
 strong normalization for closed simply-typed terms.  This is the wall-free analogue, for the simply-typed
 fragment, of the dependent fundamental theorem (which is blocked at the universe-domain wall): it closes
