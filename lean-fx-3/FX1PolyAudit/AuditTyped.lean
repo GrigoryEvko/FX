@@ -60,6 +60,7 @@ import FX1Poly.Typed.GrownOpenTypeSafety
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDesc
+import FX1Poly.Typed.WfContextDescLookup
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
@@ -1388,6 +1389,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.cons
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.ofWfContext
 #assert_no_axioms FX1Poly.Typed.wfContextDesc_universeBinding
+-- FORMATION LOOKUP-VALIDITY (WfContextDescLookup.lean, HT-A0-wf): in a formation-well-formed context every
+-- variable's type is a formation type (IsTypeDesc) in the full context — the var-arm engine that lets
+-- classifierIsTypeDesc read its variable case off WfContextDesc with no HasType round-trip. Structural context
+-- induction + HasTypeDesc.weakenUnderBinding (the universe code renames to itself). Formation mirror of
+-- WfContext.lookupIsType / WfContextDescPi.lookupIsType.
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.weakenUnderBinding
+#assert_no_axioms FX1Poly.Typed.WfContextDesc.lookupIsTypeDesc
 -- GROWN CONTEXT WELL-FORMEDNESS (WfContextDescPi.lean, WFG-1): the structural-parity twin of WfContext via the
 -- grown IsTypeDescPi. WfContext is HasType-based, hence UN-extendable at a grown piIntro binder (no
 -- HasTypeDescPi → IsType bridge); WfContextDescPi IS extendable (a grown domain typing is an IsTypeDescPi), the
