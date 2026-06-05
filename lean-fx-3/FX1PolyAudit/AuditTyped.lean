@@ -45,6 +45,7 @@ import FX1Poly.Typed.HasTypeDescPiApplication
 import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.EmptyTypeCodeConvRigidity
+import FX1Poly.Typed.EmptyTypeValueInversion
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1174,6 +1175,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_emptyTypeCode
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_not_emptyTypeCode
 #assert_no_axioms FX1Poly.Typed.Conv.universeCode_not_emptyTypeCode
+-- VALUE-CASE inversions (EmptyTypeValueInversion.lean): the typing-layer consequence of the rigidity — NONE of
+-- the grown engine's canonical values is typed at emptyTypeCell. A λ's classifier is Conv a Π-code (invertLam),
+-- a Π/Σ-former's classifier is Conv a universe code (invertPiTyCode/invertSigmaTyCode); neither is Conv-equal to
+-- emptyTypeCell. The value-case half of consistency (with SN + SR a closed t:Empty reduces to such a value).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.lambdaNotTypedAtEmptyType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piFormerNotTypedAtEmptyType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormerNotTypedAtEmptyType
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
