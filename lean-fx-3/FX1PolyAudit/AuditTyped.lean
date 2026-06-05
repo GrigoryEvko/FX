@@ -321,6 +321,7 @@ import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionInlineArms
 import FX1Poly.Typed.HasTypeDescSubjectReduction
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionConvOfFormationArms
 import FX1Poly.Typed.FormationNormalSmoke
 
 /-! # Tools/AuditAll/AuditTyped
@@ -4499,6 +4500,15 @@ gates pin them shut.
 -- for a formation codomain (unconditional), the grown-codomain case = the bundle.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionPiFormerArm
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionSigmaFormerArm
+-- SN-055 the LAST TWO routing arms (non-function-space, non-former positions), completing the per-arm routing
+-- inventory for all FIVE grown-engine typing heads: subjectReductionAtOfFormation (the ofFormation case — a
+-- FORMATION-typed subject admits no Step via subjectAdmitsNoStep, so SR is vacuous: absurd) and
+-- subjectReductionAtConv (the conv case — re-wrap the already-SR'd inner reduct at the reclassifier via the conv
+-- constructor). Both trivial (no child-SR, no WfContext). With these the routing set is exhaustive; the residual
+-- to CLOSE the recursive dispatcher is the fundamental-metatheory bundle (WfContext↔WfContextDescPi / WFG-3),
+-- recorded in the file docstring.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtOfFormation
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtConv
 
 -- SN-055 FORMATION-ENGINE subject reduction (HasTypeDescSubjectReduction.lean): the dispatcher's ofFormation
 -- arm carries a HasTypeDesc premise (var/conv/universeFormation/genFormation), which must itself be SR-closed.
