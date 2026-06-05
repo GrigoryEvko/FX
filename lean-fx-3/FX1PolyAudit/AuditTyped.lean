@@ -49,6 +49,7 @@ import FX1Poly.Typed.EmptyTypeValueInversion
 import FX1Poly.Typed.FormationCanonicalForms
 import FX1Poly.Typed.PiTypeFunctionInversion
 import FX1Poly.Typed.GrownCanonicalForms
+import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1220,6 +1221,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.appNormal_functionNormal
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedNormalSubjectHead
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEmptyType
+-- CASCADE-FREE FORMER STEP-INVERSION (FormerStepInversionGeneric.lean, TG-1): a step out of any formation-rule
+-- cell (typingRuleDescOf generator = some rule) is a child congruence, proven WITHOUT enumerating the formation
+-- table — `cases step` with generator free (propext-clean), each of the 17 root-redex cases refuted because the
+-- redex forces generator to a redex head (gen_app / gen_boolElim / ...) whose typingRuleDescOf = none (a
+-- permanent table fact no future formation row disturbs). The table-invariant foundation of the cascade-free
+-- former metatheory (TG-2 generic former SR + TG-3 cascade-free dispatcher build on it); zero-touch successor to
+-- the enumerating former_step_inv.
+#assert_no_axioms FX1Poly.Typed.formerCellStepIsChildCongruence
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
