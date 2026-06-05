@@ -2010,6 +2010,11 @@ gates pin them shut.
 -- predLevel) — NO hypothesis. A binder pins its variable's level, so the coordination is automatic; this is where
 -- the assembly's level synthesis bottoms out (deeper variables thread the eq through the levelCons tail).
 #assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.convBoundVariableReclassifier
+-- the DEEPER tower step (#662): a subject var termIndex whose looked-up type IS the reclassifier type-variable
+-- (lookup termIndex = variableCell index, the x:A:Type tower). The leveling eq contextLevels index =
+-- contextLevels termIndex + 1 is discharged by the ConsistentStratification invariant at that looked-up edge —
+-- this is where the assembly's synthesized level vector pays off (no per-derivation hypothesis).
+#assert_no_axioms FX1Poly.Typed.TotalBridgeConclusion.convVariableReclassifierOfStratified
 -- the revised-motive TERM wrapper: a single-level-valid subject whose classifier is not convertible to any
 -- universe code satisfies the motive (conjunct-2 vacuous via the unsatisfiable convertibility guard). The
 -- binder/elim term-output arms consume it with Conv.piTyCode_not_universeCode / Conv.sigmaTyCode_not_universeCode.

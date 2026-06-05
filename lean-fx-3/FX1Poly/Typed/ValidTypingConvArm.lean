@@ -1,5 +1,6 @@
 import FX1Poly.Typed.ValidTypingRefinedMotive
 import FX1Poly.Typed.LevelingBridge
+import FX1Poly.Typed.ConsistentStratification
 
 /-! # FX1Poly/Typed/ValidTypingConvArm
     — the conv-VARIABLE arm of the total-bridge motive (SN-027; ingredient of the assembly #662)
@@ -22,6 +23,10 @@ modulo the leveling equation.
 * `TotalBridgeConclusion.convVariableReclassifier` — the variable-reclassifier conv arm: conjunct-1 via
   `validTypingBridgeConvPinnedReclassifier` (consuming the leveling equation), conjunct-2 vacuous (a variable is
   never convertible to a universe code, `variableCell_not_conv_universeCodeCell`).
+* `TotalBridgeConclusion.convBoundVariableReclassifier` — the freshly-bound `⟨0,_⟩` base case (equation `rfl`).
+* `TotalBridgeConclusion.convVariableReclassifierOfStratified` — the deeper tower step: a subject `var termIndex`
+  whose looked-up type IS the reclassifier type variable, with the leveling equation discharged by the
+  `ConsistentStratification` invariant (the assembly's synthesized-level payoff for the `x : A : Type` tower).
 
 ## Zero-axiom verification
 
@@ -78,5 +83,32 @@ theorem TotalBridgeConclusion.convBoundVariableReclassifier {profile : PolyProfi
       subject (variableCell ⟨0, isLt⟩) :=
   TotalBridgeConclusion.convVariableReclassifier (levelCons (predLevel + 1) tailLevels) predLevel
     subjectValid converts reclassifierIsUniverse rfl
+
+/-- **The conv-variable arm for a DEEPER type-tower variable — the leveling equation discharged by the
+stratification invariant.**  Where `convBoundVariableReclassifier` handles the freshly-bound `⟨0,_⟩` variable
+(equation `rfl` by `levelCons`), this handles the general tower step: a SUBJECT that is itself a term variable
+`var termIndex` whose looked-up type IS the reclassifier type variable (`lookup termIndex = variableCell index`,
+e.g. `x : A` with `x = termIndex`, `A = index`).  The subject is typed at `contextLevels termIndex` by
+`ValidTyping.var` (its classifier `lookup termIndex` rewritten to `variableCell index`), and the leveling
+equation `contextLevels index = contextLevels termIndex + 1` that `convVariableReclassifier` consumes is
+exactly the `ConsistentStratification` invariant at this edge.  This is the arm where the assembly's synthesized
+level vector pays off: the tower `x : A : Type` is leveled `A ↦ k+1, x ↦ k`, and consistency reads that `+1` off
+the looked-up type-variable edge — no per-derivation hypothesis, just the static stratification. -/
+theorem TotalBridgeConclusion.convVariableReclassifierOfStratified {profile : PolyProfile} {scope : Nat}
+    (contextLevels : Fin scope → Nat) {context : TypingContext profile scope}
+    (consistent : ConsistentStratification contextLevels context)
+    {termIndex index : Fin scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (subjectTypeIsReclassifier : context.lookup termIndex = variableCell index)
+    (reclassifierIsUniverse : context.lookup index = universeCodeCell levelExpr flag) :
+    TotalBridgeConclusion profile contextLevels context
+      (variableCell termIndex) (variableCell index) := by
+  refine TotalBridgeConclusion.convVariableReclassifier contextLevels (contextLevels termIndex)
+    (classifier := variableCell index) ?subjectValid ?converts reclassifierIsUniverse
+    (consistent termIndex index subjectTypeIsReclassifier)
+  case subjectValid =>
+    rw [← subjectTypeIsReclassifier]
+    exact ValidTyping.var contextLevels context termIndex
+  case converts =>
+    exact Conv.refl _
 
 end FX1Poly.Typed
