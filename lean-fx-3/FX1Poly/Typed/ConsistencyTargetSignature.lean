@@ -171,4 +171,37 @@ theorem emptyTypeCell_isReducibleType {scope : Nat} (env : Nat → Nat) (bound :
     (by show Generator.gen_emptyCode ≠ Generator.gen_piTyCode; decide)
     (by show Generator.gen_emptyCode ≠ Generator.gen_universeCode; decide)⟩
 
+/-- **The CON-A3 obstruction made AIRTIGHT: `emptyTypeCell`'s reducibility candidate is not merely
+SN-by-default but FORCED to be the whole SN set.**  `emptyTypeCell_isReducibleType` exhibits ONE candidate
+(`IsStronglyNormalizing`, via the `neutral` arm); this strengthens it to UNIQUENESS — ANY `candidate` with
+`ReducibleTypeAtBounded env bound emptyTypeCell candidate` is `PointwiseIff IsStronglyNormalizing`, by the
+shipped family-level determinism (`ReducibleTypeAtBounded.deterministic`) against that neutral-derived SN
+candidate.
+
+This closes the obstruction airtight: the `memberBridge` premise in `emptyConsistencyFromReducibleMemberBridge`
+is UNCONDITIONALLY false in the current model.  There is NO escape via a smarter candidate — not even through
+the congruence-closure `ofPointwiseIff` arm — because every candidate collapses (up to `PointwiseIff`) onto the
+SN set, and the SN set contains closed VALUES (a closed `gen_lam`) that are never empty-candidate members
+(`emptyHasNoClosedMember`, #680).  So `memberBridge` cannot be re-derived inside `ReducibleTypeStepBounded`; it
+MANDATES the structural edit (a `rootGenerator ≠ gen_emptyCode` side-condition on `neutral` PLUS a dedicated
+arm pinning `emptyTypeCell` to the empty Tait candidate), cascading through the forget bridge into
+`ReducibleTypeStepDenote` and its consumers (#483/#485-487, the §5 engine↔candidate representation decision).
+This is the precise certificate that CON-A3 is not a grind but a model change. -/
+theorem emptyTypeCell_candidate_forcedStronglyNormalizing {scope : Nat} (env : Nat → Nat) (bound : Nat)
+    {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeAtBounded env bound (emptyTypeCell (scope := scope)) candidate) :
+    PointwiseIff candidate StepStar.IsStronglyNormalizing := by
+  have noWeakHeadStep : ∀ reduct : RawTerm scope,
+      ¬ WeakHeadStep (emptyTypeCell (scope := scope)) reduct := by
+    intro reduct weakHeadStep
+    dsimp only [emptyTypeCell] at weakHeadStep
+    cases weakHeadStep with
+    | rootIota iotaStep => cases iotaStep
+  have stronglyNormalizingReducible :
+      ReducibleTypeAtBounded env bound (emptyTypeCell (scope := scope)) StepStar.IsStronglyNormalizing :=
+    ReducibleTypeStepBounded.neutral noWeakHeadStep
+      (by show Generator.gen_emptyCode ≠ Generator.gen_piTyCode; decide)
+      (by show Generator.gen_emptyCode ≠ Generator.gen_universeCode; decide)
+  exact ReducibleTypeAtBounded.deterministic reducible stronglyNormalizingReducible
+
 end FX1Poly.Typed

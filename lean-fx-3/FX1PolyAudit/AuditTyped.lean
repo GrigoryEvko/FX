@@ -4439,6 +4439,11 @@ gates pin them shut.
 -- empty candidate. So CON-A3/memberBridge is false under the default interpretation; closing it needs a structural
 -- ReducibleTypeStepBounded edit (exclude data type codes from neutral + dedicated empty-candidate arm), the #483 work.
 #assert_no_axioms FX1Poly.Typed.emptyTypeCell_isReducibleType
+-- The obstruction made AIRTIGHT: emptyTypeCell's candidate is not merely SN-by-default but FORCED to be the
+-- whole SN set — ANY candidate for it is PointwiseIff IsStronglyNormalizing (ReducibleTypeAtBounded.deterministic
+-- against the neutral-derived SN candidate). So memberBridge is UNCONDITIONALLY false in the current model (no
+-- smarter candidate escapes — not even via ofPointwiseIff); CON-A3 is a MODEL CHANGE, not a grind.
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_candidate_forcedStronglyNormalizing
 
 -- Canonicity target signature (CanonicityTargetSignature.lean): the SN-047/048/049 twin of CON-A0. Engine
 -- canonicity reduces to the SAME data-candidate bridge as consistency, making the Phase-A boundary uniform.
