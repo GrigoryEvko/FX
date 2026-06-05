@@ -2510,6 +2510,12 @@ gates pin them shut.
 -- shipped concrete value-members compose into an actual closed inhabitant (not an alias). The data-eliminator
 -- membership layer (bool/Σ/option/either/idJ/idStrictRec/refl + recursive nat/list) is complete; this exercises it.
 #assert_no_axioms FX1Poly.Core.boolElimClosedMembershipSmoke
+-- Concrete idJ / idStrictRec membership regression (DataEliminatorMembershipSmoke, SN-149 corpus): the closed
+-- idJ / idStrictRec cells with base case boolTrue and witness (refl boolTrue) are themselves bool-candidate
+-- members via idJClosedIsMember / idStrictRecClosedIsMember fed the refl member (witness inner term step-normal
+-- by decide) and boolTrueCell_isMember — extending the concrete eliminator-membership corpus past boolElim.
+#assert_no_axioms FX1Poly.Core.idJClosedMembershipSmoke
+#assert_no_axioms FX1Poly.Core.idStrictRecClosedMembershipSmoke
 -- Sigma PROJECTION canonicity (#672-free, SN-058 path): fst/snd on a CANONICAL pair scrutinee PROJECT to the
 -- components. StepStar.fstScrutinee/sndScrutinee = the unary scrutinee-position chain congruences (generic
 -- StepStar.congAt + Step.cong (StepChildren.here ...) at the sole child). pairCanonicalScrutineeProjectsTo-

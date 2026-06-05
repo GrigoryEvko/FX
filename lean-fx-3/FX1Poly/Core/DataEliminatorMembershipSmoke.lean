@@ -1,4 +1,6 @@
 import FX1Poly.Core.BoolElimClosedMembership
+import FX1Poly.Core.IdEliminatorClosedMembership
+import FX1Poly.Core.ReflCanonicalFormsCandidate
 
 /-! # FX1Poly/Core/DataEliminatorMembershipSmoke
     — concrete closed-witness regression for the data-eliminator MEMBERSHIP family (SN-149 corpus seed).
@@ -29,5 +31,23 @@ theorem boolElimClosedMembershipSmoke :
       (.mkGen .gen_boolElim ()
         (.childCons boolTrueCell (.childCons boolTrueCell (.childCons boolFalseCell .childNil)))) :=
   boolElimClosedIsMember boolTrueCell_isMember boolTrueCell_isMember boolFalseCell_isMember
+
+/-- **Concrete idJ membership regression.**  The closed `idJ` cell with base case `boolTrue` and witness
+`refl boolTrue` — the base case a canonical bool member, the witness a canonical refl member — is itself a
+member of the bool candidate.  The SN-068 elimination half exercised at a closed witness via
+`idJClosedIsMember` fed `boolTrueCell_isMember` and the refl member `isReflValue_isMember` (the witness'
+inner term `boolTrue` is step-normal by `decide`). -/
+theorem idJClosedMembershipSmoke :
+    CanonicalFormsPredicate (boolIsValue (scope := 0))
+      (.mkGen .gen_idJ () (.childCons boolTrueCell (.childCons (reflCell boolTrueCell) .childNil))) :=
+  idJClosedIsMember (isReflValue_isMember ⟨boolTrueCell, rfl, by decide⟩) boolTrueCell_isMember
+
+/-- **Concrete idStrictRec membership regression.**  Identical to `idJClosedMembershipSmoke` at the strict
+identity recursor `gen_idStrictRec` — the SN-069 elimination half at a closed witness via
+`idStrictRecClosedIsMember`. -/
+theorem idStrictRecClosedMembershipSmoke :
+    CanonicalFormsPredicate (boolIsValue (scope := 0))
+      (.mkGen .gen_idStrictRec () (.childCons boolTrueCell (.childCons (reflCell boolTrueCell) .childNil))) :=
+  idStrictRecClosedIsMember (isReflValue_isMember ⟨boolTrueCell, rfl, by decide⟩) boolTrueCell_isMember
 
 end FX1Poly.Core
