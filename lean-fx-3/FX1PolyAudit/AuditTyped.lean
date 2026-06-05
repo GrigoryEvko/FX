@@ -1283,6 +1283,14 @@ gates pin them shut.
 -- consistency route.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedProgress
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar
+-- EVALUATION DETERMINISM (GrownTypeSafety.lean): closedHasUniqueNormalForm = UNCONDITIONAL — a closed grown-typed
+-- term has a UNIQUE normal form (OB-5 SN ⤳ exists_unique_normalForm_of_isStronglyNormalizing: existence by weak
+-- normalization, uniqueness by raw confluence #420; NO SR), so evaluation is a well-defined single-valued total
+-- function. closedTypeSafetyUniqueOfSubjectReductionStar = CONDITIONAL — that unique normal form is moreover a
+-- canonical VALUE (closedNormalSubjectHead at the SR-typed normal form): the full "evaluates to THE canonical
+-- value" statement, progress + preservation + confluence combined.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedHasUniqueNormalForm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedTypeSafetyUniqueOfSubjectReductionStar
 -- CASCADE-FREE FORMER STEP-INVERSION (FormerStepInversionGeneric.lean, TG-1): a step out of any formation-rule
 -- cell (typingRuleDescOf generator = some rule) is a child congruence, proven WITHOUT enumerating the formation
 -- table — `cases step` with generator free (propext-clean), each of the 17 root-redex cases refuted because the

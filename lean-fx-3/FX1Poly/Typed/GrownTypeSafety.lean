@@ -1,6 +1,7 @@
 import FX1Poly.Typed.GrownCanonicalForms
 import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Core.WeakNormalization
+import FX1Poly.Core.NormalFormUnique
 
 /-! # FX1Poly/Typed/GrownTypeSafety — syntactic type safety for the grown engine `HasTypeDescPi`
     (five-layer-defense L4, §27.3: progress + the SN-conditional safety capstone)
@@ -36,6 +37,20 @@ Preservation for the FULL grown engine (`piElim` included) is the SN-055 master 
 and the whole formation family (`TG-2`/`#852`) are already unconditional; only the iterated full-engine
 `↝*` preservation at an arbitrary classifier is gated.  Exposing it as a hypothesis ships the safety capstone
 now and names the lone gate precisely, exactly as the consistency route does for `EmptyType`.
+
+The DETERMINISM layer — evaluation lands at a UNIQUE value, the punchline that makes "the value" well defined:
+
+  * `HasTypeDescPi.closedHasUniqueNormalForm` — **EVALUATION DETERMINISM (unconditional).**  A closed grown-typed
+    term has a UNIQUE normal form: it reaches one, and every normal form it reaches is that same one.  Just OB-5
+    strong normalization fed to `exists_unique_normalForm_of_isStronglyNormalizing` (existence by weak
+    normalization, uniqueness by raw confluence, the `#420` harvest) — NO subject reduction needed.  Evaluation of
+    a closed grown-typed term is a well-defined partial function made total by SN.
+
+  * `HasTypeDescPi.closedTypeSafetyUniqueOfSubjectReductionStar` — **TYPE SAFETY + DETERMINISM (conditional on
+    SR-along-`↝*`).**  The unique normal form of a closed grown-typed term is moreover a canonical VALUE: it
+    reaches a unique normal form (determinism) whose head is canonical (`closedNormalSubjectHead` via the SR
+    hypothesis).  The full "evaluates to THE canonical value" statement — progress + preservation + confluence
+    combined.
 
 ## Zero-axiom verification
 
@@ -91,6 +106,43 @@ theorem HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar {profile : PolyProf
     HasTypeDescPi.stronglyNormalizingOfWfContext WfContext.emptyIsWellFormed typed
   obtain ⟨value, reaches, valueNormal⟩ := exists_normalForm_of_isStronglyNormalizing terminates
   refine ⟨value, reaches, valueNormal, ?canonicalHead⟩
+  exact HasTypeDescPi.closedNormalSubjectHead (subjectReductionStar typed reaches)
+    WfContext.emptyIsWellFormed valueNormal (fun emptyIndex => emptyIndex.elim0)
+
+/-- **Evaluation determinism (unconditional).**  A closed grown-typed term has a UNIQUE normal form: it reaches
+one normal form, and every normal form it reaches equals that one.  OB-5 strong-normalizes the subject; the
+unique-normal-form package (`exists_unique_normalForm_of_isStronglyNormalizing` — existence by weak normalization,
+uniqueness by raw confluence, the `#420` harvest) delivers both halves.  No subject reduction needed: evaluation
+of a closed grown-typed term is a well-defined function of the term (total by SN, single-valued by confluence). -/
+theorem HasTypeDescPi.closedHasUniqueNormalForm {profile : PolyProfile} {subject classifier : RawTerm 0}
+    (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject classifier) :
+    ∃ value : RawTerm 0,
+      (StepStar subject value ∧ RawTerm.isStepNormalForm value) ∧
+      ∀ otherForm : RawTerm 0,
+        StepStar subject otherForm → RawTerm.isStepNormalForm otherForm → otherForm = value :=
+  exists_unique_normalForm_of_isStronglyNormalizing
+    (HasTypeDescPi.stronglyNormalizingOfWfContext WfContext.emptyIsWellFormed typed)
+
+/-- **Type safety + determinism (conditional on SR-along-`↝*`).**  The unique normal form of a closed grown-typed
+term is moreover a canonical VALUE: the subject reaches a UNIQUE normal form (determinism, by confluence + SN)
+whose head is canonical (`closedNormalSubjectHead` applied at the normal form, typed there via the
+`subjectReductionStar` hypothesis).  The full "evaluates to THE canonical value" statement — progress,
+preservation, and confluence combined into one. -/
+theorem HasTypeDescPi.closedTypeSafetyUniqueOfSubjectReductionStar {profile : PolyProfile}
+    {subject classifier : RawTerm 0}
+    (subjectReductionStar : ∀ {start finish : RawTerm 0},
+      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) start classifier →
+      StepStar start finish →
+      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) finish classifier)
+    (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject classifier) :
+    ∃ value : RawTerm 0,
+      (StepStar subject value ∧ RawTerm.isStepNormalForm value ∧ RawTerm.IsGrownCanonicalHead value) ∧
+      ∀ otherForm : RawTerm 0,
+        StepStar subject otherForm → RawTerm.isStepNormalForm otherForm → otherForm = value := by
+  obtain ⟨value, ⟨reaches, valueNormal⟩, valueUnique⟩ :=
+    exists_unique_normalForm_of_isStronglyNormalizing
+      (HasTypeDescPi.stronglyNormalizingOfWfContext WfContext.emptyIsWellFormed typed)
+  refine ⟨value, ⟨reaches, valueNormal, ?canonicalHead⟩, valueUnique⟩
   exact HasTypeDescPi.closedNormalSubjectHead (subjectReductionStar typed reaches)
     WfContext.emptyIsWellFormed valueNormal (fun emptyIndex => emptyIndex.elim0)
 
