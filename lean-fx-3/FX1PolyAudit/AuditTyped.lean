@@ -62,6 +62,7 @@ import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDesc
 import FX1Poly.Typed.WfContextDescLookup
 import FX1Poly.Typed.WfContextDescValidity
+import FX1Poly.Typed.WfContextDescStronglyNormalizing
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
@@ -1403,6 +1404,11 @@ gates pin them shut.
 -- no HasType.toHasTypeDesc. The migration TARGET that supersedes classifierIsTypeDesc once consumers thread
 -- WfContextDesc (and the canonical formation validity after the bespoke engine is deleted, HT-C).
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDescNative
+-- FORMATION CLASSIFIER-SN over WfContextDesc, HasType-FREE (WfContextDescStronglyNormalizing.lean, HT-A3): the
+-- classifier of a HasTypeDesc-typed cell is strongly normalizing, routed through the native
+-- classifierIsTypeDescNative (no HasType) then IsTypeDesc.isStronglyNormalizing. The first CONSUMER of the
+-- native validity target (confirms it is usable, not merely gated).
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierStronglyNormalizingNative
 -- GROWN CONTEXT WELL-FORMEDNESS (WfContextDescPi.lean, WFG-1): the structural-parity twin of WfContext via the
 -- grown IsTypeDescPi. WfContext is HasType-based, hence UN-extendable at a grown piIntro binder (no
 -- HasTypeDescPi → IsType bridge); WfContextDescPi IS extendable (a grown domain typing is an IsTypeDescPi), the
