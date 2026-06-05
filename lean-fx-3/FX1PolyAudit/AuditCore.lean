@@ -43,6 +43,7 @@ import FX1Poly.Core.StrongNormalizationLinearFormers
 import FX1Poly.Core.NatElimValueReducibility
 import FX1Poly.Core.NatElimValueMember
 import FX1Poly.Core.NatElimNeutralScrutineeMember
+import FX1Poly.Core.RecursorReducibleScrutineeMember
 import FX1Poly.Core.ListElimNeutralScrutineeMember
 import FX1Poly.Core.DirectIotaEliminatorNeutralScrutineeMember
 import FX1Poly.Core.MatchEliminatorNeutralScrutineeMember
@@ -659,6 +660,18 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.natRec_neutralScrutinee_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.natElimNeutralScrutineeMember
 #assert_no_axioms FX1Poly.Core.natRecNeutralScrutineeMember
+
+-- GENERAL-SCRUTINEE regime of the Nat recursor: the full SN-061 outer recursion. The Nat data candidate
+-- CanonicalFormsPredicate IsNatValue BUILDS IN the value-or-neutral dichotomy (SN AND neutral-or-reaches-a-
+-- numeral), so a reducible scrutinee splits exactly into the two shipped regimes: neutral -> the stuck cell is
+-- a member by CR3; value -> natElimValueReducibility lands the numeral cell, ofStepStarReachingValue lifts it
+-- back through the scrutinee congruence (the lift needs the numeral cell to REACH a value, extracted by
+-- refuting its neutrality via <recursor>_notNeutral_ofNatValueScrutinee). The open-scope generalization of the
+-- closed natElimClosedIsMember (where the neutral disjunct is vacuous). #672-independent — pure Tait dispatch.
+#assert_no_axioms FX1Poly.Core.natElim_notNeutral_ofNatValueScrutinee
+#assert_no_axioms FX1Poly.Core.natRec_notNeutral_ofNatValueScrutinee
+#assert_no_axioms FX1Poly.Core.natElimReducibleScrutineeMember
+#assert_no_axioms FX1Poly.Core.natRecReducibleScrutineeMember
 
 -- NEUTRAL-SCRUTINEE regime of the List recursor (toward SN-064): the listElim mirror of the Nat regime,
 -- bringing the three recursive recursors (natElim/natRec/listElim) to neutral-coverage parity. A NEUTRAL
