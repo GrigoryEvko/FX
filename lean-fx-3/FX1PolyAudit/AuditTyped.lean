@@ -1259,6 +1259,12 @@ gates pin them shut.
 -- WfContextDescPi (next master-SR prerequisite — the dispatcher threads WfContextDescPi, not the non-extendable
 -- HasType-based WfContext).
 #assert_no_axioms FX1Poly.Typed.IsTypeDescPi.weakenUnderBinding
+-- GROWN TYPE-STABILITY, substitution dual (WfContextDescPiLookup.lean): IsTypeDescPi survives single-
+-- substitution (the subst dual of weakenUnderBinding), so a grown type in a cons-context becomes a grown type
+-- in the prefix after substituting a typed argument. The universe-code witness is subst-invariant (same
+-- definitional fact that makes IsType.substituteUnderBinding a 2-liner); completes the grown type-stability
+-- pair (weaken + subst) the dependent Π-elimination output classifier needs.
+#assert_no_axioms FX1Poly.Typed.IsTypeDescPi.substituteUnderBinding
 #assert_no_axioms FX1Poly.Typed.WfContextDescPi.lookupIsType
 -- GROWN CLASSIFIER-VALIDITY, formation leaf (WfContextDescPiValidity.lean, WFG-3a): a FORMATION-typed cell's
 -- classifier is a grown type (IsTypeDescPi) under the grown well-formedness WfContextDescPi. The var arm reads

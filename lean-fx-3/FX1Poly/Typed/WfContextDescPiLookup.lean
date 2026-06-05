@@ -1,5 +1,6 @@
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.HasTypeDescPiWeakening
+import FX1Poly.Typed.HasTypeDescPiSubstitution
 
 /-! # FX1Poly/Typed/WfContextDescPiLookup — lookup-validity for the grown context well-formedness
 
@@ -36,6 +37,20 @@ theorem IsTypeDescPi.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
       (RawTerm.rename RawRenaming.weaken classifier) := by
   obtain ⟨levelExpr, flag, typed⟩ := isType
   exact ⟨levelExpr, flag, typed.weakenUnderBinding newBinding⟩
+
+/-- `IsTypeDescPi` survives single-substitution (the substitution dual of `weakenUnderBinding`): if `classifier`
+is a grown type in `context.cons argType` and `argument : argType`, the substituted classifier is a grown type
+in `context`.  The universe-code witness is `subst`-invariant.  Completes the grown type-stability pair (weaken
++ subst), the engine `piCodeInstantiationIsType` inlines for the dependent Π-elimination output. -/
+theorem IsTypeDescPi.substituteUnderBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {argType : RawTerm scope}
+    {classifier : RawTerm (scope + 1)}
+    (isType : IsTypeDescPi profile (context.cons argType) classifier)
+    (argument : RawTerm scope)
+    (argumentTyped : HasTypeDescPi profile context argument argType) :
+    IsTypeDescPi profile context (RawTerm.subst0 classifier argument) := by
+  obtain ⟨levelExpr, flag, typed⟩ := isType
+  exact ⟨levelExpr, flag, typed.substituteUnderBinding argument argumentTyped⟩
 
 /-- Lookup-validity for grown well-formedness: in a grown-well-formed context, the type of every variable is a
 grown type in the full context.  Structural induction on the context (the head binding via `headIsType`, a
