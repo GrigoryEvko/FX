@@ -52,6 +52,7 @@ import FX1Poly.Typed.GrownCanonicalForms
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDescPi
+import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1251,6 +1252,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.WfContextDescPi.cons
 #assert_no_axioms FX1Poly.Typed.WfContextDescPi.ofWfContext
 #assert_no_axioms FX1Poly.Typed.wfContextDescPi_universeBinding
+-- GROWN LOOKUP-VALIDITY (WfContextDescPiLookup.lean, WFG-2): in a grown-well-formed context every variable's
+-- type is a grown type (IsTypeDescPi). The grown mirror of WfContext.lookupIsType (structural context induction
+-- + grown weakening IsTypeDescPi.weakenUnderBinding); the var-arm engine of grown classifier-validity over
+-- WfContextDescPi (next master-SR prerequisite — the dispatcher threads WfContextDescPi, not the non-extendable
+-- HasType-based WfContext).
+#assert_no_axioms FX1Poly.Typed.IsTypeDescPi.weakenUnderBinding
+#assert_no_axioms FX1Poly.Typed.WfContextDescPi.lookupIsType
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
