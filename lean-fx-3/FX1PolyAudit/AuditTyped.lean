@@ -54,6 +54,7 @@ import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
+import FX1Poly.Typed.HasTypeDescPiClassifierValidity
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1288,6 +1289,17 @@ gates pin them shut.
 -- the grown HasTypeDescPi.classifierIsTypeDescPi + the piCodeInstantiationIsType/betaSR WfContextDescPi twins
 -- (the broad mechanical WfContext→WfContextDescPi swap) follow toward the master SR (TG-3).
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDescPi
+-- GROWN CLASSIFIER-VALIDITY, the grown-engine payoff (HasTypeDescPiClassifierValidity.lean, WFG-3): a grown-typed
+-- subject's classifier is a grown type (IsTypeDescPi) under the EXTENDABLE WfContextDescPi — the leg the master SR
+-- dispatcher (SN-055/TG-3) consumes (WfContext can't extend at a grown piIntro binder; WfContextDescPi can). The
+-- piElim arm's Pi-code inversion is broken free of the WfContext entanglement by routing through the Conv-free,
+-- WfContext-free formation inversion inversionPiCodeGeneral: this yields an UNCONDITIONAL grown Pi-code inversion
+-- chain (Telescope/Components/piCodeInstantiationIsType, no well-formedness), so classifierIsTypeDescPi needs only
+-- WfContextDescPi with no Conv.trans/HasType.classifierIsType obstruction.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionPiCodeTelescopeUnconditional
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionPiCodeComponentsUnconditional
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piCodeInstantiationIsTypeUnconditional
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.classifierIsTypeDescPi
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
