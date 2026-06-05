@@ -295,6 +295,7 @@ import FX1Poly.Typed.FirstOrderSimplyTypedSubsumption
 import FX1Poly.Typed.UniverseCumulativity
 import FX1Poly.Typed.SimplyTypedTermReducibility
 import FX1Poly.Typed.HasTypeDescPiTypingNonUnique
+import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4227,6 +4228,11 @@ gates pin them shut.
 -- the given target), NOT infer-then-compare. The non-uniqueness witness, pinning that design constraint.
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_identityLambda_atUniverse
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_typing_notUnique
+-- SN-052 COMPARE step: checking a subject against a KNOWN-TYPE target reduces to deciding Conv (SN-051) — the
+-- load-bearing infer-mode step of the bidirectional checker. isTrue via the grown conv rule; isFalse via the
+-- subject's per-term uniqueness (holds for every non-λ subject). Typing witnesses threaded explicitly (data),
+-- since Decidable cannot large-eliminate the Prop-valued IsTypeDesc existential.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckOfInferredUniqueAtType
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
