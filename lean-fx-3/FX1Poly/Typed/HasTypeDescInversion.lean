@@ -498,4 +498,70 @@ theorem HasTypeDesc.inversionSigmaCodeComponents {profile : PolyProfile} {scope 
               exact ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped,
                 convToCode⟩
 
+/-- **Generic former-CLASSIFIER inversion (the wall-free half).**  For ANY formation generator
+(`typingRuleDescOf generator = some rule`, no concrete `gen_piTyCode`/`gen_sigmaTyCode` pinning), a
+typed formation cell's classifier converts to the canonical universe code `Type@(lmaxAll levels, flag)`
+— WITHOUT extracting the children telescope.
+
+This is the half of the GENERIC former inversion that AVOIDS the dependent-`subst` wall this file's
+header documents: the wall is `subst generatorAgree` against a FREE generator, needed ONLY to align the
+arm's children spine with the target's for the TELESCOPE conjunct.  The CLASSIFIER is
+`rule.outputType = universeFormerOutput` (children-INDEPENDENT), so the `genFormation` arm reads it off
+without touching the children at all — `subst`-ing only the `TypingRuleDesc` (against
+`formationRuleIsUniverseFormer`), never the generator.  Shipping this empirically isolates the wall to
+the telescope-extraction (the residual GTL-08/10 hard half).
+
+Term-mode recursive `match` (the propext-free structural form): non-former roots are refuted via
+`typingRuleDescOf … = none`; `conv` composes `Conv`s through the premise classifier (a type by
+validity) via `Conv.trans_of_typedMiddle`; `genFormation` reads the output via the formation
+invariant.  Zero-axiom. -/
+theorem HasTypeDesc.inversionFormerClassifierGeneric {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
+    (wellFormed : WfContext generalContext)
+    {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule) :
+    ∀ {payload : generator.payload generalScope}
+      {children : RawTermChildren generator.binderShifts generalScope},
+      subject = RawTerm.mkGen generator payload children →
+        ∃ (levels : List LevelExpr) (flag : UniverseFlag),
+          Conv reachedClassifier (universeCodeCell (lmaxAll levels) flag) :=
+  fun {_payloadImplicit} {_childrenImplicit} =>
+    match derivation with
+    | .var _armContext _armIndex => fun subjectEq => by
+        have rootEq : Generator.gen_var = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [← rootEq] at isFormation
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg (fun isPi => Generator.noConfusion isPi),
+          if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
+        cases isFormation
+    | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
+        fun subjectEq => by
+          obtain ⟨levels, flag, convToCode⟩ :=
+            HasTypeDesc.inversionFormerClassifierGeneric typedPremise wellFormed isFormation
+              subjectEq
+          exact ⟨levels, flag,
+            Conv.trans_of_typedMiddle
+              (HasType.classifierIsType wellFormed
+                (HasTypeDesc.toHasType typedPremise))
+              converts.sym convToCode⟩
+    | .universeFormation _armContext _armLevel _armFlag => fun subjectEq => by
+        have rootEq : Generator.gen_universeCode = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [← rootEq] at isFormation
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg (fun isPi => Generator.noConfusion isPi),
+          if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
+        cases isFormation
+    | .genFormation _armContext armGenerator _armPayload _armChildren armLevels armFlag
+        armRule armIsFormation _armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [generatorAgree] at armIsFormation
+        obtain rfl : armRule = { outputType := universeFormerOutput } :=
+          formationRuleIsUniverseFormer armIsFormation
+        exact ⟨armLevels, armFlag, Conv.refl _⟩
+
 end FX1Poly.Typed

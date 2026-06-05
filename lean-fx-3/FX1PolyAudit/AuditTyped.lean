@@ -820,6 +820,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeWithConv
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeWithConvGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeWithConv
+-- Generic former-CLASSIFIER inversion (HasTypeDescInversion.lean): the WALL-FREE half of the generic
+-- former inversion (GTL-08/10 down-payment). Generic over the formation generator (no concrete pi/sigma
+-- pinning) — a typed formation cell's classifier converts to Type@(lmaxAll levels, flag). Sidesteps the
+-- dependent-subst wall (the file header's documented blocker) by extracting the CLASSIFIER only: the
+-- genFormation arm `obtain rfl`s the TypingRuleDesc (children-independent), NEVER substing the generator.
+-- Empirically isolates the wall to the telescope-extraction (the residual hard half).
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionFormerClassifierGeneric
 
 /-! ### Leaf inversions (`var`, `universeCode`) for the description engine — the two
     NON-compound subjects, completing the per-shape inversion suite (var / universeCode
