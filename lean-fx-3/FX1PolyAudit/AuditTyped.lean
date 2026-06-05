@@ -304,6 +304,7 @@ import FX1Poly.Typed.HasTypeDescPiApplicationUniqueness
 import FX1Poly.Typed.HasTypeDescPiCheckApplication
 import FX1Poly.Typed.HasTypeDescPiFormationUniqueness
 import FX1Poly.Typed.HasTypeDescPiCheckFormation
+import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4287,6 +4288,11 @@ gates pin them shut.
 -- types the inferred universe, {pi,sigma}FormationTypeUniqueGivenComponents supplies uniqueAtSubject.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckPiFormationGivenComponents
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckSigmaFormationGivenComponents
+-- SN-055 toward the former-domain SR: re-type a FORMATION codomain under a Conv-stepped domain — the
+-- dischargeable half of congPiDomain/congSigmaDomain's codomainReTyping (the common formation-codomain case),
+-- UNCONDITIONAL via the part-2a convContextOfFormation + convBackToUniverseCode (no grown-context-conversion
+-- bundle). Pointwise context-Conv: index 0 via Conv.rename weaken; successors via Conv.refl.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.formationCodomainReTyping
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
