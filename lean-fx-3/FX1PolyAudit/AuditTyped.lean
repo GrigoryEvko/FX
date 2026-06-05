@@ -720,6 +720,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescope.levels_length_eq_binderShifts
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_binderShiftsNonEmpty
 #assert_no_axioms FX1Poly.Typed.DescTelescope.levels_ne_nil_of_isFormation
+-- The "current formation table = {pi, sigma}" enumeration (the former-tag tool a dispatch consumer reads
+-- from isFormation). Docstring records the GTL-05/06 boundary: the reducibility-FT genFormation arm's
+-- by_cases is entangled with generator-ARITY (2-child spine ill-typed over abstract generator) + dual
+-- telescope inductives, so the former-membership dispatch needs the arity-generic candidate-bridge
+-- (BFT-15/CON-A3), not this enumeration. Typing layer = table-generic; reducibility former-closure = deep.
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_isPiOrSigma
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc
 #assert_no_axioms FX1Poly.Typed.DescTelescope
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_piFormation_viaGenArm

@@ -270,6 +270,35 @@ theorem typingRuleDescOf_binderShiftsNonEmpty {generator : Generator} {rule : Ty
       rw [if_neg hPi, if_neg hSigma] at isFormation
       contradiction
 
+/-- **The CURRENT formation table is exactly `{gen_piTyCode, gen_sigmaTyCode}`.**  Any generator carrying a
+formation rule is one of the two dependent type-formers.  This is the canonical "enumerate the current
+formers" companion to `typingRuleDescOf_binderShiftsNonEmpty`: the tool a former-DISPATCH consumer (e.g. the
+reducibility-FT `genFormation` arm's `toPiMember` / `toSigmaMember` choice) uses to obtain its former tag from
+`isFormation`.  Like the binder-shift fact, this is a CURRENT-TABLE enumeration, NOT a permanent cascade
+invariant — every new formation row (a data type code) adds one disjunct here.  Zero-axiom (`by_cases` +
+`if_neg` non-former branch).
+
+NOTE (GTL-05/06 boundary): this fact alone does NOT genericize the reducibility-FT `genFormation` arm.  That
+arm's `by_cases` is irreducibly entangled with generator-ARITY — the conclusion's subject
+`mkGen generator payload (childCons domain (childCons codomain childNil))` is a 2-child spine that is
+ill-typed over an ABSTRACT generator (the spine forces `generator.binderShifts = [0,1]` and fixes the child
+scopes), and the two consumers operate over DIFFERENT telescope inductives (`DescTelescope` vs
+`DescTelescopePi`).  Factoring `toPiMember`/`toSigmaMember` into a generic `toFormerMember` dispatch therefore
+requires the arity-generic telescope→member candidate-bridge (BFT-15 / CON-A3), not a table enumeration.  The
+TYPING-layer metatheory (validity / subst / weaken / inversion / uniqueness) is fully table-generic; the
+REDUCIBILITY-layer former-closure is the deep residual. -/
+theorem typingRuleDescOf_isPiOrSigma {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule) :
+    generator = Generator.gen_piTyCode ∨ generator = Generator.gen_sigmaTyCode := by
+  by_cases hPi : generator = .gen_piTyCode
+  · exact Or.inl hPi
+  · by_cases hSigma : generator = .gen_sigmaTyCode
+    · exact Or.inr hSigma
+    · exfalso
+      unfold typingRuleDescOf at isFormation
+      rw [if_neg hPi, if_neg hSigma] at isFormation
+      contradiction
+
 /-- **A formation cell's telescope levels are non-empty.**  Combines the length equality with the
 shift-non-emptiness: the consumer-facing form for `HasTypeDesc.uniqueness`'s flag-uniqueness guard, generic
 over the formation generator (no per-former `by_cases`).  Zero-axiom. -/
