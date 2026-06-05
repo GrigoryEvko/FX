@@ -2524,6 +2524,18 @@ gates pin them shut.
 -- outputs) pins the component to the canonical bool value. The value-PROJECTING half of the corpus, concrete.
 #assert_no_axioms FX1Poly.Core.fstClosedMembershipSmoke
 #assert_no_axioms FX1Poly.Core.sndClosedMembershipSmoke
+-- Concrete optionMatch / eitherMatch BRANCH-APPLYING membership regression (DataEliminatorMembershipSmoke,
+-- SN-149 corpus): the closed optionMatch (on none) / eitherMatch (on inl boolTrue) over the constant branch
+-- λ_. boolTrue are bool-candidate members via optionMatchClosedIsMember / eitherMatchClosedIsMember. The
+-- branch-respect-SN obligation (branch applied to an arbitrary SN argument lands in the candidate) is
+-- discharged by constLamBoolTrue_respectsSN: app (λ_. boolTrue) value β-reduces (WeakHeadStep.beta.toStep,
+-- subst0 boolTrue value = boolTrue definitional) to the bool value boolTrue, SN by appLamBoolTrue..., lifted by
+-- ofStepStarReachingValue. The "constant-branch weak-head expansion" — completes the non-recursive eliminator
+-- smoke corpus (only recursive natElim/natRec/listElim remain deferred).
+#assert_no_axioms FX1Poly.Core.constLamBoolTrue_app_stepStar
+#assert_no_axioms FX1Poly.Core.constLamBoolTrue_respectsSN
+#assert_no_axioms FX1Poly.Core.optionMatchClosedMembershipSmoke
+#assert_no_axioms FX1Poly.Core.eitherMatchClosedMembershipSmoke
 -- Sigma PROJECTION canonicity (#672-free, SN-058 path): fst/snd on a CANONICAL pair scrutinee PROJECT to the
 -- components. StepStar.fstScrutinee/sndScrutinee = the unary scrutinee-position chain congruences (generic
 -- StepStar.congAt + Step.cong (StepChildren.here ...) at the sole child). pairCanonicalScrutineeProjectsTo-
