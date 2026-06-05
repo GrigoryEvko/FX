@@ -1293,6 +1293,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.closedIdentityAppRedexTyping
 #assert_no_axioms FX1Poly.Typed.closedIdentityAppRedex_betaStep
 #assert_no_axioms FX1Poly.Typed.closedIdentityAppRedex_safety
+-- EVALUATION DETERMINISM IN ACTION: the redex's UNIQUE normal form is exactly Type@0 (StepStar.single of the
+-- β-step reaches it; closedHasUniqueNormalForm — OB-5 SN + raw confluence — forces uniqueness). The concrete
+-- computation of an evaluation result through the determinism theorem, the one safety theorem the preceding
+-- three witnesses did not exercise.
+#assert_no_axioms FX1Poly.Typed.closedIdentityAppRedex_evaluation
 -- SN-050 CONSISTENCY made concrete, gated on exactly SR-along-↝* (ConsistencyConditionalOnSubjectReduction.lean):
 -- OB-5 (stronglyNormalizingOfWfContext) normalizes a closed t : EmptyType to a reachable normal form; the explicit
 -- subjectReductionStar hypothesis carries the EmptyType classifier along the chain; noClosedNormalTermAtEmptyType

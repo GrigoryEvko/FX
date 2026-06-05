@@ -1,5 +1,6 @@
 import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
 import FX1Poly.Typed.HasTypeDescPiBetaSR
+import FX1Poly.Typed.GrownTypeSafety
 
 /-! # FX1Poly/Typed/GrownBetaRedexInAction — type safety in action on a concrete reducing closed term
 
@@ -26,6 +27,13 @@ firing TOGETHER on one term.  The witness is the application of the identity to 
 This complements the abstract safety statements (`GrownTypeSafety`) and the non-reducing non-vacuity witnesses
 (`GrownCanonicalFormsNonVacuity`): here the term genuinely reduces, `Step.beta` genuinely fires, and
 `betaSubjectReduction` is genuinely exercised end-to-end.  `#672`-independent.
+
+  * `closedIdentityAppRedex_evaluation` — EVALUATION DETERMINISM IN ACTION: the redex's UNIQUE normal form is
+    exactly `Type@0`.  It reaches `Type@0` (via the single β-step lifted by `StepStar.single`), `Type@0` is
+    normal, and EVERY normal form it reaches equals `Type@0` — because `closedHasUniqueNormalForm` (the
+    unconditional determinism theorem, OB-5 SN + raw confluence) gives a unique normal form, which `Type@0`
+    instantiates.  The concrete computation of an evaluation result via the determinism theorem — the one safety
+    theorem the preceding three witnesses did not exercise.
 
 ## Zero-axiom verification
 
@@ -83,5 +91,38 @@ theorem closedIdentityAppRedex_safety {profile : PolyProfile} :
     HasTypeDescPi.betaSubjectReduction closedIdentityAppRedexTyping WfContext.emptyIsWellFormed
   refine ⟨reductTyped, ?_⟩
   exact HasTypeDescPi.closedNormalTypeIsFormer reductTyped (by decide)
+
+/-- **Evaluation determinism in action.**  The redex `(λ (x : Type@1). x) (Type@0)`'s UNIQUE normal form is
+exactly `Type@0`: it reaches `Type@0` (the single β-step lifted by `StepStar.single`), `Type@0` is normal, and
+every normal form it reaches equals `Type@0`.  The uniqueness comes from `closedHasUniqueNormalForm` (the
+unconditional evaluation-determinism theorem — OB-5 strong normalization + raw confluence): its unique normal
+form is instantiated to the reachable normal `Type@0`.  The concrete computation of an evaluation result through
+the determinism theorem. -/
+theorem closedIdentityAppRedex_evaluation {profile : PolyProfile} :
+    StepStar (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (universeCodeCell LevelExpr.lzero UniverseFlag.standard) : RawTerm 0)
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard) ∧
+    RawTerm.isStepNormalForm (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0) ∧
+    ∀ otherForm : RawTerm 0,
+      StepStar (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+          (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) otherForm →
+      RawTerm.isStepNormalForm otherForm →
+      otherForm = universeCodeCell LevelExpr.lzero UniverseFlag.standard := by
+  obtain ⟨_value, ⟨_reaches, _valueNormal⟩, valueUnique⟩ :=
+    HasTypeDescPi.closedHasUniqueNormalForm (profile := profile) closedIdentityAppRedexTyping
+  have redexReachesType0 :
+      StepStar (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+          (universeCodeCell LevelExpr.lzero UniverseFlag.standard) : RawTerm 0)
+        (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
+    StepStar.single closedIdentityAppRedex_betaStep
+  have type0Normal :
+      RawTerm.isStepNormalForm (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0) := by
+    decide
+  have type0EqValue :
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0) = _value :=
+    valueUnique _ redexReachesType0 type0Normal
+  refine ⟨redexReachesType0, type0Normal, ?_⟩
+  intro otherForm reachesOther otherNormal
+  exact (valueUnique otherForm reachesOther otherNormal).trans type0EqValue.symm
 
 end FX1Poly.Typed
