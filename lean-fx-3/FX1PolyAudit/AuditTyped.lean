@@ -294,6 +294,7 @@ import FX1Poly.Typed.DependentlyTypedNeutralDomainFragment
 import FX1Poly.Typed.FirstOrderSimplyTypedSubsumption
 import FX1Poly.Typed.UniverseCumulativity
 import FX1Poly.Typed.SimplyTypedTermReducibility
+import FX1Poly.Typed.HasTypeDescPiTypingNonUnique
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4221,6 +4222,11 @@ gates pin them shut.
 -- unqualified typed-SN interface is unprovable since the var rule types in any context).
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfWellTypedInWfContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectConfluenceOfWfContext
+-- SN-052 design fact: grown-engine typing is NON-UNIQUE for a bare Curry-style λ (the identity λ inhabits
+-- Π(Type@e)(Type@e) for every e), so decidable typed CHECKING must be BIDIRECTIONAL (CHECK mode at λ against
+-- the given target), NOT infer-then-compare. The non-uniqueness witness, pinning that design constraint.
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_identityLambda_atUniverse
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_typing_notUnique
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
