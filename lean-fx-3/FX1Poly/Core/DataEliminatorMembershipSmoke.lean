@@ -6,6 +6,9 @@ import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.MatchClosedMembership
 import FX1Poly.Core.OptionCanonicalFormsCandidate
 import FX1Poly.Core.EitherCanonicalFormsCandidate
+import FX1Poly.Core.RecursorClosedMembership
+import FX1Poly.Core.NatCanonicalFormsCandidate
+import FX1Poly.Core.ListCanonicalFormsCandidate
 import FX1Poly.Core.StrongNormalizationRedexes
 import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Core.StrongNormalizationLeaves
@@ -45,8 +48,13 @@ the constant branch `λ_. boolTrue` through `constLamBoolTrue_respectsSN` — th
 expansion this docstring named (`app (λ_. boolTrue) value` β-reduces to the bool value `boolTrue` for any
 argument, SN by `appLamBoolTrue_isStronglyNormalizing_of_argument`).
 
-The recursive `natElim` / `natRec` / `listElim` eliminators (with an IH side condition) remain the lone
-deferred concrete witnesses — their MEMBERSHIP THEOREMS are shipped and audit-gated.
+The recursive `natElim` / `natRec` / `listElim` eliminators are shipped at their BASE case
+(`natElimZeroClosedMembershipSmoke` / `natRecZeroClosedMembershipSmoke` / `listElimNilClosedMembershipSmoke`):
+on the base constructor (`natZero` / `listNil`) the recursor fires ι to the base branch with NO recursion, so
+the cell is SN by the branch-SN-only helper (`natElimZero_isStronglyNormalizing_of_branches` and twins) and
+`ofStepStarReachingValue` lifts the base-branch membership.  The IH-carrying SUCCESSOR/CONS case
+(`natElim (natSucc n) …` whose contractum re-invokes the recursor) genuinely needs the well-founded recursor SN
+and remains the lone deferred concrete witness — its MEMBERSHIP THEOREM is shipped and audit-gated.
 
 ## Zero-axiom
 
@@ -196,5 +204,55 @@ theorem eitherMatchClosedMembershipSmoke :
     (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing)
     constLamBoolTrue_respectsSN
     constLamBoolTrue_respectsSN
+
+/-! ## Recursive eliminators — base case (natElim/natRec on natZero, listElim on listNil)
+
+The recursive eliminators reduce to the BASE branch with NO recursion when the scrutinee is the base
+constructor (`natElim natZero z s ↝ z`, `listElim listNil n c ↝ n`).  So at the base scrutinee they avoid
+the IH-carrying recursor-SN hypothesis entirely: the cell is SN via the no-recursion helper
+(`natElimZero_isStronglyNormalizing_of_branches` and twins — branch-SN only, no per-predecessor obligation),
+the root-ι step reaches the base branch, and `ofStepStarReachingValue` lifts the base-branch membership back to
+the cell.  The IH-carrying SUCCESSOR/CONS case (`natElim (natSucc n) …`, `listElim (listCons h t) …`), whose
+contractum re-invokes the recursor, genuinely needs the well-founded recursor SN and remains the lone deferral. -/
+
+/-- **Concrete `natElim`-on-`natZero` base-case membership regression.**  `natElim natZero boolTrue boolTrue`
+fires ι to the zero-branch `boolTrue` (a bool member); the cell is SN by
+`natElimZero_isStronglyNormalizing_of_branches` (branch-SN only — natZero fires without recursion).  The SN-061
+base half at a concrete witness. -/
+theorem natElimZeroClosedMembershipSmoke :
+    CanonicalFormsPredicate (boolIsValue (scope := 0))
+      (.mkGen .gen_natElim ()
+        (.childCons natZeroCell (.childCons boolTrueCell (.childCons boolTrueCell .childNil)))) :=
+  CanonicalFormsPredicate.ofStepStarReachingValue
+    (StepStar.trans Step.iotaNatElimZero (StepStar.refl _))
+    (natElimZero_isStronglyNormalizing_of_branches
+      boolTrue_isStronglyNormalizing boolTrue_isStronglyNormalizing)
+    boolTrueCell_isMember.closedReducesToValue
+
+/-- **Concrete `natRec`-on-`natZero` base-case membership regression.**  The dependent-recursor twin of
+`natElimZeroClosedMembershipSmoke` at `gen_natRec` via `Step.iotaNatRecZero` /
+`natRecZero_isStronglyNormalizing_of_branches`. -/
+theorem natRecZeroClosedMembershipSmoke :
+    CanonicalFormsPredicate (boolIsValue (scope := 0))
+      (.mkGen .gen_natRec ()
+        (.childCons natZeroCell (.childCons boolTrueCell (.childCons boolTrueCell .childNil)))) :=
+  CanonicalFormsPredicate.ofStepStarReachingValue
+    (StepStar.trans Step.iotaNatRecZero (StepStar.refl _))
+    (natRecZero_isStronglyNormalizing_of_branches
+      boolTrue_isStronglyNormalizing boolTrue_isStronglyNormalizing)
+    boolTrueCell_isMember.closedReducesToValue
+
+/-- **Concrete `listElim`-on-`listNil` base-case membership regression.**  `listElim listNil boolTrue boolTrue`
+fires ι to the nil-branch `boolTrue`; SN by `listElimNil_isStronglyNormalizing_of_branches`.  The SN-064 base
+half at a concrete witness. -/
+theorem listElimNilClosedMembershipSmoke :
+    CanonicalFormsPredicate (boolIsValue (scope := 0))
+      (.mkGen .gen_listElim ()
+        (.childCons listNilCell (.childCons boolTrueCell (.childCons boolTrueCell .childNil)))) :=
+  CanonicalFormsPredicate.ofStepStarReachingValue
+    (StepStar.trans Step.iotaListElimNil (StepStar.refl _))
+    (listElimNil_isStronglyNormalizing_of_branches
+      boolTrue_isStronglyNormalizing boolTrue_isStronglyNormalizing)
+    boolTrueCell_isMember.closedReducesToValue
 
 end FX1Poly.Core

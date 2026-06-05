@@ -2536,6 +2536,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.constLamBoolTrue_respectsSN
 #assert_no_axioms FX1Poly.Core.optionMatchClosedMembershipSmoke
 #assert_no_axioms FX1Poly.Core.eitherMatchClosedMembershipSmoke
+-- Concrete recursive-eliminator BASE-CASE membership regression (DataEliminatorMembershipSmoke, SN-149 corpus):
+-- natElim/natRec on natZero and listElim on listNil fire root-ι to the base branch with NO recursion, so the
+-- cell is SN by the branch-SN-only helper (natElimZero_isStronglyNormalizing_of_branches and twins — no
+-- per-predecessor recursor-SN obligation), and ofStepStarReachingValue lifts the base-branch member. The SN-061/
+-- 062/064 base half at concrete witnesses; the IH-carrying succ/cons case remains the lone deferral.
+#assert_no_axioms FX1Poly.Core.natElimZeroClosedMembershipSmoke
+#assert_no_axioms FX1Poly.Core.natRecZeroClosedMembershipSmoke
+#assert_no_axioms FX1Poly.Core.listElimNilClosedMembershipSmoke
 -- Sigma PROJECTION canonicity (#672-free, SN-058 path): fst/snd on a CANONICAL pair scrutinee PROJECT to the
 -- components. StepStar.fstScrutinee/sndScrutinee = the unary scrutinee-position chain congruences (generic
 -- StepStar.congAt + Step.cong (StepChildren.here ...) at the sole child). pairCanonicalScrutineeProjectsTo-
