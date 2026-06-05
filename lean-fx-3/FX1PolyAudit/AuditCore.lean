@@ -44,6 +44,7 @@ import FX1Poly.Core.NatElimValueReducibility
 import FX1Poly.Core.NatElimValueMember
 import FX1Poly.Core.NatElimNeutralScrutineeMember
 import FX1Poly.Core.RecursorReducibleScrutineeMember
+import FX1Poly.Core.DataEliminatorReducibleScrutineeMember
 import FX1Poly.Core.ListElimNeutralScrutineeMember
 import FX1Poly.Core.DirectIotaEliminatorNeutralScrutineeMember
 import FX1Poly.Core.MatchEliminatorNeutralScrutineeMember
@@ -680,6 +681,18 @@ a `.type` classifier) and guard against reintroducing an MLTT
 -- extracted by listElim_notNeutral_ofListValueScrutinee. #672-independent.
 #assert_no_axioms FX1Poly.Core.listElim_notNeutral_ofListValueScrutinee
 #assert_no_axioms FX1Poly.Core.listElimReducibleScrutineeMember
+
+-- GENERAL-SCRUTINEE regime of the NON-recursive data eliminators (starting with boolElim): the open-scope value
+-- regime + general dispatch the non-recursive eliminators lacked (they had only closed membership + neutral).
+-- boolElimValueReducibility is the genuinely-new piece (the boolElim analogue of natElimValueReducibility, no IH
+-- / no successor application); the dispatch mirrors the recursive case on the bool candidate's value-or-neutral
+-- disjunct. rootGenerator_ne_boolTrue/False are the ι-vacuity discriminators. #672-independent.
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_boolTrue
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_boolFalse
+#assert_no_axioms FX1Poly.Core.boolElim_notNeutral_ofBoolValueScrutinee
+#assert_no_axioms FX1Poly.Core.boolValue_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.boolElimValueReducibility
+#assert_no_axioms FX1Poly.Core.boolElimReducibleScrutineeMember
 
 -- NEUTRAL-SCRUTINEE regime of the List recursor (toward SN-064): the listElim mirror of the Nat regime,
 -- bringing the three recursive recursors (natElim/natRec/listElim) to neutral-coverage parity. A NEUTRAL
