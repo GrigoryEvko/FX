@@ -306,6 +306,7 @@ import FX1Poly.Typed.HasTypeDescPiFormationUniqueness
 import FX1Poly.Typed.HasTypeDescPiCheckFormation
 import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4300,6 +4301,13 @@ gates pin them shut.
 -- converts to the former's classifier via the invertPiTyCode Conv. No grown context-conversion bundle.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piFormerStepDomainFormationCodomain
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormerStepDomainFormationCodomain
+-- SN-055 per-shape ROUTING arms of the SR dispatcher (the non-former positions): turn a Step AT a λ / app head
+-- into the SR conclusion, given the children's SR threaded as recursive hypotheses. subjectReductionAtLam =
+-- Step.from_lam + congLamBody (λ heads no redex); subjectReductionAtApp = Step.from_app's 3-way (β →
+-- betaSubjectReduction, fn-cong → congFunction, arg-cong → congArgument + one-step Conv). Unconditional. These
+-- are the dispatcher's piIntro/piElim cases; the genFormationPi grown-codomain domain-cong still awaits the bundle.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtLam
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtApp
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
