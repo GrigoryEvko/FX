@@ -309,6 +309,7 @@ import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionInlineArms
+import FX1Poly.Typed.HasTypeDescSubjectReduction
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4330,6 +4331,21 @@ gates pin them shut.
 -- for a formation codomain (unconditional), the grown-codomain case = the bundle.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionPiFormerArm
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionSigmaFormerArm
+
+-- SN-055 FORMATION-ENGINE subject reduction (HasTypeDescSubjectReduction.lean): the dispatcher's ofFormation
+-- arm carries a HasTypeDesc premise (var/conv/universeFormation/genFormation), which must itself be SR-closed.
+-- GENUINELY non-vacuous: the formation engine types the Π/Σ-former CODES, whose Step is a domain/codomain
+-- congruence (unlike the bespoke leaf-only HasType, whose subjectReduction is a no-Step lemma). A MUTUAL pair
+-- mirroring convContext/convTelescope: HasTypeDesc.subjectReduction (var/universe normal via no_step_from_var/
+-- _universeCode, conv recursive, genFormation via former_step_inv + the telescope SR) ⋈ DescTelescope.subject-
+-- Reduction (here = head SR + convTelescope re-typing the tail under the stepped binding via convContext-
+-- Condition_consStep; there = tail recursion). former_step_inv rules out root redexes generically over the
+-- formation family (typingRuleDescOf_isPiOrSigma), so a future ≥1-child formation row extends with no cascade.
+#assert_no_axioms FX1Poly.Typed.Step.no_step_from_universeCode
+#assert_no_axioms FX1Poly.Typed.former_step_inv
+#assert_no_axioms FX1Poly.Typed.convContextCondition_consStep
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectReduction
+#assert_no_axioms FX1Poly.Typed.DescTelescope.subjectReduction
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
