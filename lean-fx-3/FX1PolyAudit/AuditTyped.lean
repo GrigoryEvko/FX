@@ -300,6 +300,7 @@ import FX1Poly.Typed.HasTypeDescPiVariableInversion
 import FX1Poly.Typed.HasTypeDescPiCheckVariable
 import FX1Poly.Typed.HasTypeDescPiUniverseCodeInversion
 import FX1Poly.Typed.HasTypeDescPiCheckUniverseCode
+import FX1Poly.Typed.HasTypeDescPiApplicationUniqueness
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4257,6 +4258,12 @@ gates pin them shut.
 -- known-type target (CHECK mode, SR-free). Strictly simpler than the variable case — both the inference and
 -- its classifier-typing are direct universeFormation constructors, so no IsType.decideWithWitness is needed.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckUniverseCodeAtType
+-- SN-052 application uniqueness ingredient: the COMPARE-step `uniqueAtSubject` at an APPLICATION position,
+-- PARAMETERIZED over the function's type uniqueness. Unlike the var/universeCode leaves, an application's type
+-- is not unconditionally unique (it inherits the function's non-uniqueness — a bare λ in function position has
+-- many Π types); given the function is unique up to Conv, invertApp + Conv.piTyCode_inj + Conv.subst0 push the
+-- codomain Conv through the SAME argument to make the dependent output subst0 codomainCode argument unique.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.applicationTypeUniqueGivenFunction
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
