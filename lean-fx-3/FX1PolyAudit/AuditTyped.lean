@@ -310,6 +310,7 @@ import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionInlineArms
 import FX1Poly.Typed.HasTypeDescSubjectReduction
+import FX1Poly.Typed.FormationNormalSmoke
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4353,6 +4354,12 @@ gates pin them shut.
 -- (absurd step via no-step), NOT the heavier vacuous subjectReduction.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectAdmitsNoStep
 #assert_no_axioms FX1Poly.Typed.DescTelescope.childrenAdmitNoStep
+-- FormationNormalSmoke: a NON-VACUOUS regression for subjectAdmitsNoStep on a concrete closed two-child
+-- former — the Π-code Π(Type@0).Type@0, formation-typed via the genFormation arm, provably admits no Step.
+-- Exercises the genFormation + telescope arms of the no-step mutual on a real former (not a leaf); the
+-- formation-engine analogue of the SN smoke corpora.
+#assert_no_axioms FX1Poly.Typed.formationNormalSmoke_piCodeTyped
+#assert_no_axioms FX1Poly.Typed.formationNormalSmoke_piCodeAdmitsNoStep
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
