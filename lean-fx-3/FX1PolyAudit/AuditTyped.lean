@@ -55,6 +55,7 @@ import FX1Poly.Typed.GrownCanonicalFormsByClassifier
 import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
 import FX1Poly.Typed.GrownBetaRedexInAction
 import FX1Poly.Typed.GrownOpenProgress
+import FX1Poly.Typed.GrownOpenCanonicalFormsByClassifier
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDescPi
@@ -1334,6 +1335,15 @@ gates pin them shut.
 -- stuck terms in ANY context. #672-independent — pure inversion, no SR, no SN.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openNormalSubjectCanonicalOrNeutral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openProgress
+-- OPEN CANONICAL FORMS PER TYPE (GrownOpenCanonicalFormsByClassifier.lean, five-layer-defense L4 §27.3): the open
+-- generalizations of closedNormalFunctionIsLambda / closedNormalTypeIsFormer, admitting the neutral disjunct.
+-- openNormalFunctionIsLambdaOrNeutral = a normal grown-typed term at a Π type in ANY WfContext is a λ or a
+-- Core.IsNeutral (the type-former heads refuted at a Π classifier by the *NotTypedAtPiType inversions).
+-- openNormalTypeIsFormerOrNeutral = a normal grown-typed term at a universe in ANY WfContext is a type former or a
+-- Core.IsNeutral (the λ head refuted by lam_notTypedAtUniverseCode). Exactly the type-directed NbE / η-long readback
+-- dichotomy (TY-CONV-quote / η-M15 line). #672-independent — pure inversion, no SR, no SN.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openNormalTypeIsFormerOrNeutral
 -- CASCADE-FREE FORMER STEP-INVERSION (FormerStepInversionGeneric.lean, TG-1): a step out of any formation-rule
 -- cell (typingRuleDescOf generator = some rule) is a child congruence, proven WITHOUT enumerating the formation
 -- table — `cases step` with generator free (propext-clean), each of the 17 root-redex cases refuted because the
