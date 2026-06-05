@@ -84,6 +84,26 @@ theorem CanonicalFormsPredicate.containsVariable {scope : Nat}
   CanonicalFormsPredicate.neutralExpansion (IsNeutral.var index)
     (fun _reduct stepFromVar => (noStep_var index stepFromVar).elim)
 
+/-- **Every strongly-normalizing NEUTRAL term is a member of every canonical-forms candidate.**  The full CR3
+neutral leaf: `containsVariable` is the special vacuous case (a variable has no reducts), this is the general
+case where a neutral may reduce into its children.  Well-founded recursion on the term's SN accessibility — at
+each term, every reduct stays neutral (`IsNeutral.closedUnderStep`) and is SN-smaller, so the inductive
+hypothesis makes it a member, and `neutralExpansion` lifts membership back to the term.  No appeal to `isValue`,
+so it holds for every data value predicate uniformly — the reducibility leaf any neutral-eliminator member
+argument (a stuck `app` / `fst` / `boolElim …` over a neutral head) consumes. -/
+theorem CanonicalFormsPredicate.memberOfStronglyNormalizingNeutral {scope : Nat}
+    {isValue : RawTerm scope → Prop} {term : RawTerm scope}
+    (termStronglyNormalizing : IsStronglyNormalizing term)
+    (termIsNeutral : IsNeutral term) :
+    CanonicalFormsPredicate isValue term := by
+  revert termIsNeutral
+  induction termStronglyNormalizing with
+  | intro _currentTerm _accessibility inductiveHypothesis =>
+      intro currentIsNeutral
+      exact CanonicalFormsPredicate.neutralExpansion currentIsNeutral
+        (fun reduct stepToReduct =>
+          inductiveHypothesis reduct stepToReduct (currentIsNeutral.closedUnderStep stepToReduct))
+
 /-- **CR2 for the canonical-forms candidate**, the formerly-deferred forward-closure leg — discharged from the
 two genuinely-provable data-specific facts.  A member's reduct stays a member: it is strongly normalizing (the
 shipped SN candidate's CR2), and its "neutral or reduces-to-value" disjunct is preserved:

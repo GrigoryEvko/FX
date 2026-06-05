@@ -2454,6 +2454,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.stronglyNormalizing
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.neutralExpansion
 #assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.containsVariable
+-- The full CR3 neutral leaf (generalizes containsVariable past the vacuous variable case): a STRONGLY-
+-- NORMALIZING NEUTRAL term is a member of every canonical-forms candidate, by well-founded recursion on its SN
+-- accessibility (reducts stay neutral via closedUnderStep, are SN-smaller, hence members by IH; neutralExpansion
+-- lifts). The reducibility leaf any neutral-eliminator (stuck app/fst/boolElim over a neutral head) member
+-- argument consumes; isValue-agnostic.
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.memberOfStronglyNormalizingNeutral
 -- CR2 NOW DISCHARGED (was deferred last tick): closedUnderStep — a member's reduct stays a member, the disjunct
 -- preserved by neutralClosedUnderStep (neutral case) or per-term confluence + value rigidity (reduces-to-value
 -- case: value is an NF, confluence_of_localJoin_and_accessible joins the reduct with the value-chain,
