@@ -4834,6 +4834,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natElimCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.idJCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pairCellHasNoTyping
+-- COMPLETED iota-redex-head corpus: the remaining data eliminators (snd projection / natRec+listElim recursion /
+-- optionMatch+eitherMatch branch / idStrictRec strict path recursion) + the Empty TYPE-CODE cell gen_emptyCode
+-- (typingRuleDescOf = none, CON-A1's deferred row). Every β+ι iota-redex head is now an EXPLICIT shipped
+-- refutation. emptyTypeCellHasNoTyping additionally yields noConvReclassifierAtEmptyType — the conv arm of the
+-- SN-050 consistency inversion (the residual is the piElim arm, the SR/model crux GCC-5/CON-A3).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sndCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natRecCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listElimCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.optionMatchCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.eitherMatchCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.idStrictRecCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.emptyTypeCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noConvReclassifierAtEmptyType
 
 -- Table-generic root classification (HasTypeDescPiRootGeneric.lean, the cascade-death brick for typed root
 -- inversion toward the generic typing layer, polycell.md §3.16.19). subjectRootGenerator HARD-CODES the

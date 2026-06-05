@@ -31,12 +31,13 @@ those rules fire on.  The dispatcher cites the table-generic `cellHasNoTypingWhe
   * The reusable refutation itself — `HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded` — now lives in
     `HasTypeDescPiRootGeneric` (the table-generic successor; this file's earlier six-inequality
     `cellHasNoTypingWhenRootNotGrownHead` was retired as unsound once the formation table grows).
-  * A representative smoke corpus proving the refutation FIRES on the real iota-redex heads across every
-    eliminator shape class — branch selection (`gen_boolElim`), projection (`gen_fst`), recursion
-    (`gen_natElim`), path induction (`gen_idJ`) — and on a data constructor (`gen_pair`), witnessing that
-    the boundary excludes constructors as well as eliminators.  The remaining eliminator heads
-    (`gen_snd` / `gen_natRec` / `gen_listElim` / `gen_optionMatch` / `gen_eitherMatch` / `gen_idStrictRec`)
-    and all other data constructors are refuted by the identical one-line application of the generic lemma.
+  * The COMPLETE iota-redex-head corpus proving the refutation FIRES on every eliminator shape class — branch
+    selection (`gen_boolElim`), projection (`gen_fst` / `gen_snd`), recursion (`gen_natElim` / `gen_natRec` /
+    `gen_listElim`), non-recursive branch matching (`gen_optionMatch` / `gen_eitherMatch`), path induction
+    (`gen_idJ` / `gen_idStrictRec`) — on a data constructor (`gen_pair`, witnessing the boundary excludes
+    constructors too), and on the Empty TYPE-CODE cell (`gen_emptyCode`, the CON-A1 deferred-row generator).
+    Every redex head the β+ι iota family fires on is now an EXPLICIT shipped refutation.  The Empty case
+    additionally yields `noConvReclassifierAtEmptyType` — the `conv` arm of the SN-050 consistency inversion.
 
 ## Zero-axiom verification
 
@@ -113,5 +114,105 @@ theorem HasTypeDescPi.pairCellHasNoTyping {profile : PolyProfile} {scope : Nat}
     (typed : HasTypeDescPi profile context (.mkGen .gen_pair payload children) classifier) :
     False := by
   apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-! ### Completing the canonical-forms boundary — the deferred eliminator heads + the Empty type code.
+
+The representative smoke corpus above (`boolElim` / `fst` / `natElim` / `idJ` / `pair`) is extended below to the
+remaining data ELIMINATORS — projection (`gen_snd`), recursion (`gen_natRec` / `gen_listElim`), non-recursive
+branch matching (`gen_optionMatch` / `gen_eitherMatch`), and strict path recursion (`gen_idStrictRec`) — and to
+the Empty TYPE-CODE cell (`gen_emptyCode`, whose `typingRuleDescOf` is `none` — CON-A1's deferred-row generator).
+Every redex head of the β+ι system's iota family is now an EXPLICIT shipped refutation, not a docstring promise.
+Each is the SAME one-line application of `cellHasNoTypingWhenRootGenericallyExcluded`. -/
+
+/-- **`gen_snd` (projection eliminator) is untyped in the grown engine.**  Redex head of `iotaSndPair`. -/
+theorem HasTypeDescPi.sndCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {payload : Generator.gen_snd.payload scope}
+    {children : RawTermChildren Generator.gen_snd.binderShifts scope}
+    {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (.mkGen .gen_snd payload children) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **`gen_natRec` (dependent recursive eliminator) is untyped in the grown engine.**  Redex head of
+`iotaNatRecZero` / `iotaNatRecSucc`; the `natElim` twin. -/
+theorem HasTypeDescPi.natRecCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {payload : Generator.gen_natRec.payload scope}
+    {children : RawTermChildren Generator.gen_natRec.binderShifts scope}
+    {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (.mkGen .gen_natRec payload children) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **`gen_listElim` (recursive eliminator) is untyped in the grown engine.**  Redex head of `iotaListElimNil`
+/ `iotaListElimCons`. -/
+theorem HasTypeDescPi.listElimCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {payload : Generator.gen_listElim.payload scope}
+    {children : RawTermChildren Generator.gen_listElim.binderShifts scope}
+    {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (.mkGen .gen_listElim payload children) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **`gen_optionMatch` (non-recursive branch eliminator) is untyped in the grown engine.**  Redex head of
+`iotaOptionMatchSome` / `iotaOptionMatchNone`. -/
+theorem HasTypeDescPi.optionMatchCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {payload : Generator.gen_optionMatch.payload scope}
+    {children : RawTermChildren Generator.gen_optionMatch.binderShifts scope}
+    {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (.mkGen .gen_optionMatch payload children) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **`gen_eitherMatch` (non-recursive branch eliminator) is untyped in the grown engine.**  Redex head of
+`iotaEitherMatchLeft` / `iotaEitherMatchRight`. -/
+theorem HasTypeDescPi.eitherMatchCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {payload : Generator.gen_eitherMatch.payload scope}
+    {children : RawTermChildren Generator.gen_eitherMatch.binderShifts scope}
+    {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (.mkGen .gen_eitherMatch payload children) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **`gen_idStrictRec` (strict path recursor) is untyped in the grown engine.**  Redex head of
+`iotaIdStrictRecRefl`; the `idJ` twin. -/
+theorem HasTypeDescPi.idStrictRecCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {payload : Generator.gen_idStrictRec.payload scope}
+    {children : RawTermChildren Generator.gen_idStrictRec.binderShifts scope}
+    {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (.mkGen .gen_idStrictRec payload children) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **The Empty TYPE-CODE cell `emptyTypeCell` is untyped in the grown engine.**  `gen_emptyCode`'s
+`typingRuleDescOf` is `none` (CON-A1's deferred row), so no `genFormation` / `genFormationPi` fires; it is
+neither `gen_var`, `gen_universeCode`, `gen_lam`, nor `gen_app`.  Distinct from the data CONSTRUCTORS/eliminators
+above, this is the type-CODE for the empty type — the grown engine does not name it as a type (the CON-A0
+engine↔candidate finding, mechanized). -/
+theorem HasTypeDescPi.emptyTypeCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (emptyTypeCell (scope := scope)) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **The `conv`-rule route to `_ : emptyTypeCell` is impossible (toward SN-050).**  The grown `conv` rule
+concludes `subject : reclassifier` only with a premise `reclassifier : universeCodeCell _ _`.  At
+`reclassifier = emptyTypeCell` that premise is `HasTypeDescPi … emptyTypeCell (universeCodeCell …)`, refuted by
+`emptyTypeCellHasNoTyping`.  So a closed term cannot acquire the classifier `emptyTypeCell` through `conv` — the
+`conv` arm of the consistency (SN-050) inversion is discharged; the residual is the `piElim` arm (the SR/model
+crux GCC-5 / CON-A3). -/
+theorem HasTypeDescPi.noConvReclassifierAtEmptyType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {levelExpr : FX1Poly.Universe.LevelExpr}
+    {flag : FX1Poly.Universe.UniverseFlag}
+    (reclassifierTyped :
+      HasTypeDescPi profile context (emptyTypeCell (scope := scope))
+        (universeCodeCell levelExpr flag)) :
+    False :=
+  reclassifierTyped.emptyTypeCellHasNoTyping
 
 end FX1Poly.Typed
