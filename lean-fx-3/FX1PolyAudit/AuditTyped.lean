@@ -292,6 +292,7 @@ import FX1Poly.Typed.ClassifierLevelSpike
 import FX1Poly.Typed.SNStrategy
 import FX1Poly.Typed.LogRelSpec
 import FX1Poly.Typed.LevelingBridge
+import FX1Poly.Typed.ConsistentStratification
 import FX1Poly.Typed.ValidTypingLevelFlexible
 import FX1Poly.Typed.ValidTypingRefinedMotive
 import FX1Poly.Typed.ValidTypingConvArm
@@ -1955,6 +1956,15 @@ gates pin them shut.
 -- an over-demanding motive (flexibility for ALL universe-classified subjects), not a real obstruction: the
 -- type-variable conv case closes inside ValidTyping under level-consistency, NOT via the reducibility detour.
 #assert_no_axioms FX1Poly.Typed.validTypingBridgeConvPinnedReclassifier
+-- SN-027 #662 leveling-bridge invariant (ConsistentStratification.lean): the STATIC level-inference
+-- invariant a totalBridge contextLevels must satisfy for the conv-pinned arm above — a binding whose type
+-- is a type variable sits one level below it — plus its two acyclicity consequences (strictly-below the
+-- type-variable edge; no binding is its own type). The binder-extension preservation + full assembly are
+-- the subsequent multi-fire #662 steps.
+#assert_no_axioms FX1Poly.Typed.ConsistentStratification
+#assert_no_axioms FX1Poly.Typed.consistentStratification_empty
+#assert_no_axioms FX1Poly.Typed.ConsistentStratification.strictlyBelowType
+#assert_no_axioms FX1Poly.Typed.ConsistentStratification.noSelfType
 -- SN-027 refined-motive PRODUCERS (#656/#657): a type code is LEVEL-FLEXIBLE (valid as a universe member at
 -- every positive level) because the ValidTyping formers produce it at ANY predLevel. IsLevelFlexibleTypeCode +
 -- the three former arms (universeFormation immediate; pi/sigma given all-level domain + level-flexible codomain)
