@@ -307,6 +307,7 @@ import FX1Poly.Typed.HasTypeDescPiCheckFormation
 import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -4308,6 +4309,13 @@ gates pin them shut.
 -- are the dispatcher's piIntro/piElim cases; the genFormationPi grown-codomain domain-cong still awaits the bundle.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtLam
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtApp
+-- SN-055 FORMER routing arms (completes the routing-arm set for the 4 typed positions): Step.from_piTyCode /
+-- from_sigmaTyCode's 2-way (domain-cong → congPiDomain/congSigmaDomain with codomainReTyping; codomain-cong →
+-- congPiCodomain/congSigmaCodomain). codomainReTyping is threaded parameterized over the domain step (formation
+-- codomain dischargeable via formationCodomainReTyping; grown codomain awaits the bundle). The dispatcher's
+-- genFormationPi/ofFormation-former cases.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtPiFormer
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtSigmaFormer
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
