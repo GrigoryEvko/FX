@@ -14,6 +14,19 @@ canonical value-member witnesses compose end-to-end into an actual closed inhabi
 
 A permanent regression: if a refactor breaks `boolElimClosedIsMember` or `boolTrueCell_isMember`, this fails.
 
+## Corpus coverage (clean-signature slice complete)
+
+Concrete smoke witnesses are shipped for every eliminator whose closed-membership lemma takes ONLY
+`CanonicalFormsPredicate`-member hypotheses — no `↝*`-inversion, no `respectsSN` side condition:
+`boolElimClosedMembershipSmoke` (#736), `idJClosedMembershipSmoke` / `idStrictRecClosedMembershipSmoke`
+(#691, fed the `refl` value member).  The value-PROJECTING (`fstClosedIsMember` / `sndClosedIsMember`,
+whose `firstComponentMember` quantifies over `scrutinee ↝* pairCell _ _`) and branch-APPLYING
+(`optionMatch` / `eitherMatch`, with a `someBranchRespectsSN` obligation; the recursive `natElim` / `natRec`
+/ `listElim` with an IH side) eliminators need closed-layer reduction-inversion machinery (the
+StepStar-from-normal-form `StepStar.eq_of_noStep` plus a `childCons` injection, or a constant-branch
+application weak-head expansion) to instantiate at a concrete witness — their MEMBERSHIP THEOREMS are
+shipped and audit-gated; only the concrete regression witnesses await that inversion and are deferred.
+
 ## Zero-axiom
 
 A single application of the shipped `boolElimClosedIsMember` to the shipped concrete bool value-members.  No
