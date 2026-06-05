@@ -1266,6 +1266,11 @@ gates pin them shut.
 -- pair (weaken + subst) the dependent Π-elimination output classifier needs.
 #assert_no_axioms FX1Poly.Typed.IsTypeDescPi.substituteUnderBinding
 #assert_no_axioms FX1Poly.Typed.WfContextDescPi.lookupIsType
+-- FORMATION→GROWN TYPE EMBEDDING (WfContextDescPiValidity.lean): the IsType-level functoriality mirror of the
+-- term-level HasTypeDesc.toHasTypeDescPi — a formation type (IsTypeDesc) is a grown type (IsTypeDescPi) via
+-- ofFormation. The named extraction of the .ofFormation-arm re-wrap recurring across the grown classifier-
+-- validity twins, so the WfContext→WfContextDescPi swap batch lifts formation-type outputs uniformly.
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.toIsTypeDescPi
 -- GROWN CLASSIFIER-VALIDITY, formation leaf (WfContextDescPiValidity.lean, WFG-3a): a FORMATION-typed cell's
 -- classifier is a grown type (IsTypeDescPi) under the grown well-formedness WfContextDescPi. The var arm reads
 -- WfContextDescPi.lookupIsType directly (under a grown context a formation variable's type is grown); the rest

@@ -37,6 +37,18 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
+/-- The IsType-level functoriality of the formation→grown embedding: a formation type is a grown type.  The
+type-level mirror of the shipped term-level `HasTypeDesc.toHasTypeDescPi` — lifts the universe-typing witness
+through `HasTypeDescPi.ofFormation`.  The named extraction of the `.ofFormation`-arm pattern recurring across the
+grown classifier-validity twins (a formation inversion yields an `IsTypeDesc`; the grown consumer wants an
+`IsTypeDescPi`), so the WfContext→WfContextDescPi swap batch can re-wrap formation-type outputs uniformly. -/
+theorem IsTypeDesc.toIsTypeDescPi {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (isType : IsTypeDesc profile context classifier) :
+    IsTypeDescPi profile context classifier := by
+  obtain ⟨levelExpr, flag, universeTyped⟩ := isType
+  exact ⟨levelExpr, flag, HasTypeDescPi.ofFormation universeTyped⟩
+
 /-- A FORMATION-typed cell's classifier is a GROWN type (`IsTypeDescPi`) under the grown well-formedness
 `WfContextDescPi`.  The `var` arm concludes `IsTypeDescPi` directly via `WfContextDescPi.lookupIsType`; the
 remaining arms lift the formation universe-typing through `ofFormation`.  The grown mirror of
