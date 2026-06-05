@@ -56,6 +56,7 @@ import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
 import FX1Poly.Typed.HasTypeDescPiClassifierValidity
+import FX1Poly.Typed.HasTypeDescPiFunctionComponentValidity
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionDescPi
 import FX1Poly.Typed.HasTypeDescPiSubjectReduction
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionMutual
@@ -1335,6 +1336,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionPiCodeComponentsUnconditional
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piCodeInstantiationIsTypeUnconditional
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.classifierIsTypeDescPi
+-- FUNCTION-COMPONENT VALIDITY presuppositions (HasTypeDescPiFunctionComponentValidity.lean): a function's DOMAIN
+-- and CODOMAIN are types. Composes classifierIsTypeDescPi (the function's Pi classifier is a type) with the
+-- unconditional inversionPiCodeComponentsUnconditional (whose two conjuncts ARE the domain/codomain typings). The
+-- load-bearing presuppositions the SR congruence arms + the grown context-conversion piElim residual (GCC-5)
+-- consume to context-convert / re-type a function's components — named so they cite a presupposition, not the
+-- composite.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.functionDomainIsType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.functionCodomainIsType
 -- FUNCTION-SPACE SR ARMS over the GROWN well-formedness (HasTypeDescPiSubjectReductionDescPi.lean, toward SN-055):
 -- the WfContextDescPi twins of betaSubjectReduction + subjectReductionPiElimArm, now that the grown
 -- classifierIsTypeDescPi (WFG-3) is available. Each is a one-site swap (the lone WfContext use = the
