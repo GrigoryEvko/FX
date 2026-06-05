@@ -283,6 +283,7 @@ import FX1Poly.Typed.NullaryFormerFormation
 import FX1Poly.Typed.UniverseFormationStrictness
 import FX1Poly.Typed.GrownUniverseFormationStrictness
 import FX1Poly.Typed.FormerFormationStrictness
+import FX1Poly.Typed.GrownFormerFormationStrictness
 import FX1Poly.Typed.GrownEngineHonesty
 import FX1Poly.Typed.GrownUniverseConsistency
 import FX1Poly.Typed.GrownVariableHonesty
@@ -4903,6 +4904,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasType.sigmaTyCodeClassifierConv
 #assert_no_axioms FX1Poly.Typed.closedPi_notTypedAtZero
 #assert_no_axioms FX1Poly.Typed.closedSigma_notTypedAtZero
+-- GROWN-ENGINE dependent-former level strictness (GrownFormerFormationStrictness.lean, SN-140 L1): the Π/Σ analog
+-- of the grown universe strictness, for the LIVE engine HasTypeDescPi. A grown Π/Σ-type code is NEVER classified
+-- by the bottom universe Type@0 — in ANY context, with ANY components: invertPiTyCode/invertSigmaTyCode expose the
+-- true classifier as Conv to Type@(lmaxAll [dL,cL]) = Type@(lmax dL cL) (definitionally), universeCodeCell_inj_of_conv
+-- forces lzero = lmax dL cL, refuted by LevelExpr.noConfusion. Strictly STRONGER than the formation-engine
+-- closedPi/closedSigma_notTypedAtZero (any context, any components, no level-pinning) — completes the grown
+-- formation-family level-strictness (universe + Π + Σ) for the engine that carries SN-043/consistency/safety.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piTyCode_notTypedAtZero
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaTyCode_notTypedAtZero
 
 -- GROWN-engine 0-FP honesty (GrownEngineHonesty.lean): the HasTypeDescPi analog of the formation strictness,
 -- pinning a classifier's SHAPE from its subject's. A λ inhabits ONLY a Π type (invertLam forces classifier Conv
