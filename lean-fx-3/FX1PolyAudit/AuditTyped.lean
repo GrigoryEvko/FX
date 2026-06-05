@@ -50,6 +50,7 @@ import FX1Poly.Typed.FormationCanonicalForms
 import FX1Poly.Typed.PiTypeFunctionInversion
 import FX1Poly.Typed.GrownCanonicalForms
 import FX1Poly.Typed.FormerStepInversionGeneric
+import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1229,6 +1230,13 @@ gates pin them shut.
 -- former metatheory (TG-2 generic former SR + TG-3 cascade-free dispatcher build on it); zero-touch successor to
 -- the enumerating former_step_inv.
 #assert_no_axioms FX1Poly.Typed.formerCellStepIsChildCongruence
+-- CASCADE-FREE GENERIC FORMER SR (SubjectReductionAtFormerGeneric.lean, TG-2): ONE former subject-reduction arm
+-- over typingRuleDescOf, replacing the piTyCode/sigmaTyCode-specific subjectReductionAtPiFormer/SigmaFormer. By
+-- TG-1 a former's step is a child congruence; re-type the premise telescope (telescopeSR, the mutual-partner
+-- DescTelescopePi SR whose here-case consumes grown context-conversion #814 pt2b) and reassemble via the generic
+-- genFormationPi at the unchanged rule.outputType. No formation generator is named — a new formation row is
+-- absorbed zero-touch. The master dispatcher (TG-3) routes its genFormationPi case through this one arm.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtFormerGeneric
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
