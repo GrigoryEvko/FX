@@ -6,6 +6,12 @@ import FX1Poly.Typed.ReducibleTypeAtAllLevelsLeaves
 /-! # FX1Poly/Typed/FirstOrderSimplyTypedReducibility
     — the universe member-extension principle, ASSEMBLED for the first-order simply-typed fragment
 
+**OFF-PATH CROSSCHECK (supersession map, 2026-06-05): this is a ROUTE-A all-level fragment — it discharges the
+universe member-extension principle (`HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes`, #672) for
+a sub-fragment.  That principle was the route-A SN-043 gate, but the BFT BOUNDED route (OB-5 /
+`ValidTyping.closedStronglyNormalizing`) closed SN-043 WITHOUT it.  Off the kernel critical path; retained as a
+crosscheck, not critical-path.**
+
 This is the assembly capstone of the member-extension arm family.  The operational principle
 `HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes` (a member of a strongly-normalizing all-levels
 type at one positive fuel is a member at every positive fuel) is OPEN in general — its `piType` arm bottoms

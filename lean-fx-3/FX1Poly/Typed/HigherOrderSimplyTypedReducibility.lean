@@ -3,6 +3,11 @@ import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
 /-! # FX1Poly/Typed/HigherOrderSimplyTypedReducibility
     — Tait reducibility + member-extension for the FULL higher-order simply-typed fragment
 
+**OFF-PATH CROSSCHECK (supersession map, 2026-06-05): ROUTE-A all-level fragment (extends
+`FirstOrderSimplyTypedReducibility`'s #672 member-extension to higher-order domains).  Off the kernel critical
+path — the BFT bounded route closed SN-043 without the all-level member-extension principle.  Retained as a
+crosscheck.**
+
 `FirstOrderSimplyTypedReducibility` proved the universe member-extension principle for the FIRST-ORDER
 simply-typed fragment: neutral/data leaves and non-dependent arrows whose DOMAIN is a leaf (curried
 first-order functions `A₁ → … → Aₙ → B` over base types).  Its `arrow` constructor restricts the domain to a
