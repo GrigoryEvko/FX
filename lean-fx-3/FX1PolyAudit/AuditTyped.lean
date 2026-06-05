@@ -322,6 +322,7 @@ import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionInlineArms
 import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionConvOfFormationArms
+import FX1Poly.Typed.ConsistencyConditionalOnSubjectReduction
 import FX1Poly.Typed.FormationNormalSmoke
 
 /-! # Tools/AuditAll/AuditTyped
@@ -1226,6 +1227,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.appNormal_functionNormal
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedNormalSubjectHead
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEmptyType
+-- SN-050 CONSISTENCY made concrete, gated on exactly SR-along-↝* (ConsistencyConditionalOnSubjectReduction.lean):
+-- OB-5 (stronglyNormalizingOfWfContext) normalizes a closed t : EmptyType to a reachable normal form; the explicit
+-- subjectReductionStar hypothesis carries the EmptyType classifier along the chain; noClosedNormalTermAtEmptyType
+-- refutes the closed normal endpoint. The bounded SN model CANNOT discharge this (its emptyTypeCell candidate is
+-- the coarse IsStronglyNormalizing via the neutral arm, NOT the empty candidate — CON-A3 needs a canonicity model),
+-- so the syntactic route is the tractable one. subjectReductionStar = the iterated SN-055 master dispatcher
+-- (SRD-1/SRD-3, blocked on WFG-3/the WfContext↔WfContextDescPi bundle); once it lands this is unconditional SN-050.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.consistencyOfSubjectReductionStarToEmptyType
 -- CASCADE-FREE FORMER STEP-INVERSION (FormerStepInversionGeneric.lean, TG-1): a step out of any formation-rule
 -- cell (typingRuleDescOf generator = some rule) is a child congruence, proven WITHOUT enumerating the formation
 -- table — `cases step` with generator free (propext-clean), each of the 17 root-redex cases refuted because the
