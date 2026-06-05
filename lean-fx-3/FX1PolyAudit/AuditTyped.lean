@@ -277,6 +277,7 @@ import FX1Poly.Typed.HasTypeDescPiCongruence
 import FX1Poly.Typed.HasTypeDescPiFormerCongruence
 import FX1Poly.Typed.HasTypeDescContextConversion
 import FX1Poly.Typed.HasTypeDescPiContextConversion
+import FX1Poly.Typed.HasTypeDescPiContextConversionConditional
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
@@ -4763,6 +4764,15 @@ gates pin them shut.
 -- the COMMON case (a former whose codomain is a FORMATION type): convBackToUniverseCode + the ofFormation arm.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convBackToUniverseCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextOfFormation
+-- GROWN context-conversion mutual pair, conditional on the lone piElim arm (HasTypeDescPiContextConversion
+-- Conditional.lean, GCC-1/2/3/4/6): the SRD-1 conditional-package discipline (#664) applied to GCC. ALL five
+-- non-piElim arms discharged — ofFormation (convContextOfFormation), conv (recurse+compose), piIntro
+-- VALIDITY-FREE (components conv-backed to universe codes; body via the recursively-obtained codomain re-typing),
+-- genFormationPi (mutual convTelescope), telescope nil/cons. The piElim arm (type-Conv-closure, circular with SR
+-- = the mutual fundamental-metatheory bundle GCC-5) is the LONE explicit hypothesis. convTelescopeOfPiElimArm =
+-- the grown telescope context-conversion (GCC-3) the grown telescope SR consumes ⟹ SRD-2 ⟹ unconditional SN-055.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextOfPiElimArm
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.convTelescopeOfPiElimArm
 
 -- Conv-KEEPING Π/Σ-code former inversion (HasTypeDescPiFormerInversion.lean, the former head for the SR cong arm
 -- #458). inversionPiCodeComponents drops the classifier Conv (its telescope workhorse discards _convToCode/_converts),
