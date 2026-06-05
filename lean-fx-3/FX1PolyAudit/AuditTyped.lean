@@ -53,6 +53,7 @@ import FX1Poly.Typed.GrownCanonicalForms
 import FX1Poly.Typed.GrownTypeSafety
 import FX1Poly.Typed.GrownCanonicalFormsByClassifier
 import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
+import FX1Poly.Typed.GrownBetaRedexInAction
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDescPi
@@ -1284,6 +1285,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.closedIdentityLambdaTyping
 #assert_no_axioms FX1Poly.Typed.closedNormalTypeIsFormer_nonVacuous
 #assert_no_axioms FX1Poly.Typed.closedNormalFunctionIsLambda_nonVacuous
+-- TYPE SAFETY IN ACTION (GrownBetaRedexInAction.lean): a concrete closed REDUCING term threaded through the
+-- safety pipeline. closedIdentityAppRedexTyping = (λ(x:Type@1).x)(Type@0) : Type@1 (piElim). betaStep = it
+-- Step.beta's to Type@0. safety = the reduct Type@0 is STILL typed at Type@1 (betaSubjectReduction PRESERVATION)
+-- AND is a canonical value (closedNormalTypeIsFormer) — progress + preservation + canonical forms on one
+-- reducing closed term, the concrete instantiation of "a well-typed term steps to a well-typed value".
+#assert_no_axioms FX1Poly.Typed.closedIdentityAppRedexTyping
+#assert_no_axioms FX1Poly.Typed.closedIdentityAppRedex_betaStep
+#assert_no_axioms FX1Poly.Typed.closedIdentityAppRedex_safety
 -- SN-050 CONSISTENCY made concrete, gated on exactly SR-along-↝* (ConsistencyConditionalOnSubjectReduction.lean):
 -- OB-5 (stronglyNormalizingOfWfContext) normalizes a closed t : EmptyType to a reachable normal form; the explicit
 -- subjectReductionStar hypothesis carries the EmptyType classifier along the chain; noClosedNormalTermAtEmptyType
