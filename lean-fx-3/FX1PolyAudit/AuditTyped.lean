@@ -51,6 +51,7 @@ import FX1Poly.Typed.FormationCanonicalForms
 import FX1Poly.Typed.PiTypeFunctionInversion
 import FX1Poly.Typed.GrownCanonicalForms
 import FX1Poly.Typed.GrownTypeSafety
+import FX1Poly.Typed.GrownCanonicalFormsByClassifier
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDescPi
@@ -1266,6 +1267,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.appNormal_functionNormal
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedNormalSubjectHead
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEmptyType
+-- CANONICAL FORMS PER TYPE (GrownCanonicalFormsByClassifier.lean): the classifier-sharp refinement of
+-- closedNormalSubjectHead. closedNormalFunctionIsLambda = a closed normal FUNCTION-typed term (Π classifier) is a
+-- λ with body extracted (the three type-former heads refuted by the *NotTypedAtPiType inversions). closedNormalTypeIsFormer
+-- = a closed normal TYPE (universe classifier) is a type FORMER head piTy/sigmaTy/univ, never λ (lam refuted by
+-- lam_notTypedAtUniverseCode). #672-independent, no SR — pure inversion over the closed-canonical-forms recursor.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedNormalFunctionIsLambda
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedNormalTypeIsFormer
 -- SN-050 CONSISTENCY made concrete, gated on exactly SR-along-↝* (ConsistencyConditionalOnSubjectReduction.lean):
 -- OB-5 (stronglyNormalizingOfWfContext) normalizes a closed t : EmptyType to a reachable normal form; the explicit
 -- subjectReductionStar hypothesis carries the EmptyType classifier along the chain; noClosedNormalTermAtEmptyType
