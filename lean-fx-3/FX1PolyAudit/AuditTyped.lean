@@ -51,6 +51,7 @@ import FX1Poly.Typed.PiTypeFunctionInversion
 import FX1Poly.Typed.GrownCanonicalForms
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
+import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1237,6 +1238,19 @@ gates pin them shut.
 -- genFormationPi at the unchanged rule.outputType. No formation generator is named — a new formation row is
 -- absorbed zero-touch. The master dispatcher (TG-3) routes its genFormationPi case through this one arm.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtFormerGeneric
+-- GROWN CONTEXT WELL-FORMEDNESS (WfContextDescPi.lean, WFG-1): the structural-parity twin of WfContext via the
+-- grown IsTypeDescPi. WfContext is HasType-based, hence UN-extendable at a grown piIntro binder (no
+-- HasTypeDescPi → IsType bridge); WfContextDescPi IS extendable (a grown domain typing is an IsTypeDescPi), the
+-- substrate prerequisite the master SR dispatcher (TG-3/SN-055) threads through binders. Mirrors WfContext.lean
+-- (structural-recursion def + And-projection inversions, propext-free). ofWfContext is the easy bridge
+-- (WfContext → WfContextDescPi via ofFormation ∘ HasType.toHasTypeDesc).
+#assert_no_axioms FX1Poly.Typed.WfContextDescPi
+#assert_no_axioms FX1Poly.Typed.WfContextDescPi.emptyIsWellFormed
+#assert_no_axioms FX1Poly.Typed.WfContextDescPi.tailWellFormed
+#assert_no_axioms FX1Poly.Typed.WfContextDescPi.headIsType
+#assert_no_axioms FX1Poly.Typed.WfContextDescPi.cons
+#assert_no_axioms FX1Poly.Typed.WfContextDescPi.ofWfContext
+#assert_no_axioms FX1Poly.Typed.wfContextDescPi_universeBinding
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
