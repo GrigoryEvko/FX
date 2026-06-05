@@ -4762,6 +4762,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeCode_notTypedAboveSuccessor
 #assert_no_axioms FX1Poly.Typed.universeCode_notTypedBelowSuccessor
 #assert_no_axioms FX1Poly.Typed.universeCode_notTypedAtSelf
+-- the GENERAL (all-level, all-WfContext) strictness corpus (SN-140 five-layer-defense L1): the closed Type@0
+-- rejections above generalize to EVERY level and EVERY well-formed context, refuting decide against the
+-- structural predicativity guard LevelExpr.ne_lsucc_self. universeCode_notTypedAtSelf_general is the §1.4
+-- Type:Type / Girard's-paradox structurally-impossible claim in FULL generality — the §27.2 dependent-type
+-- known-unsoundness rejection, the universe-axis L1 anchor.
+#assert_no_axioms FX1Poly.Typed.universeCode_notTypedAtSelf_general
+#assert_no_axioms FX1Poly.Typed.universeCode_notTypedAboveSuccessor_general
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown

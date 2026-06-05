@@ -81,4 +81,45 @@ theorem universeCode_notTypedAtSelf {profile : PolyProfile} (flag : UniverseFlag
       WfContext.emptyIsWellFormed typed
   exact absurd (universeCodeCell_inj_of_conv conv).1 (by decide)
 
+/-! ## The general (all-level, all-WfContext) level-strictness corpus.
+
+The three rejections above are pinned at `Type@0` in the EMPTY context (closed by `decide` on closed levels).
+These two generalize the load-bearing ones to EVERY level and EVERY well-formed context, refuting the closed
+`decide` against the structural predicativity guard `LevelExpr.ne_lsucc_self` (`levelExpr ≠ lsucc levelExpr`,
+size-free).  `universeCode_notTypedAtSelf_general` is the §1.4 "Type:Type / Girard's paradox structurally
+impossible" claim in FULL generality — the headline §27.2 dependent-type known-unsoundness rejection, the
+five-layer-defense L1 anchor for the universe axis. -/
+
+/-- **0-FP: no Type-in-Type, in FULL generality (SN-140 L1).**  `Type@e` is NOT typed at `Type@e` at ANY level
+`e` in ANY well-formed context — the universe sits strictly above itself everywhere.  This is the §1.4
+"Type:Type / Girard's-paradox structurally impossible" claim in full generality (the closed-`Type@0` probe
+`universeCode_notTypedAtSelf` is its empty-context instance): a self-classified universe forces `e = lsucc e`,
+refuted by the predicativity guard `LevelExpr.ne_lsucc_self`. -/
+theorem universeCode_notTypedAtSelf_general {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    (contextWellFormed : WfContext context)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    ¬ HasType profile context (universeCodeCell levelExpr flag)
+        (universeCodeCell levelExpr flag) := by
+  intro typed
+  have conv : Conv (universeCodeCell levelExpr flag : RawTerm scope)
+      (universeCodeCell levelExpr.lsucc flag) :=
+    HasType.universeCodeClassifierConvToSuccessor levelExpr flag contextWellFormed typed
+  exact absurd (universeCodeCell_inj_of_conv conv).1 (LevelExpr.ne_lsucc_self levelExpr)
+
+/-- **0-FP: no level inflation, in full generality.**  `Type@e` is NOT typed at `Type@(e+2)` at ANY level in
+ANY well-formed context — only at `Type@(e+1)`.  The inversion forces `lsucc (lsucc e) = lsucc e`, i.e.
+`lsucc e = lsucc (lsucc e)`, refuted by `LevelExpr.ne_lsucc_self` at `lsucc e`. -/
+theorem universeCode_notTypedAboveSuccessor_general {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    (contextWellFormed : WfContext context)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    ¬ HasType profile context (universeCodeCell levelExpr flag)
+        (universeCodeCell levelExpr.lsucc.lsucc flag) := by
+  intro typed
+  have conv : Conv (universeCodeCell levelExpr.lsucc.lsucc flag : RawTerm scope)
+      (universeCodeCell levelExpr.lsucc flag) :=
+    HasType.universeCodeClassifierConvToSuccessor levelExpr flag contextWellFormed typed
+  exact absurd (universeCodeCell_inj_of_conv conv).1 (LevelExpr.ne_lsucc_self levelExpr.lsucc).symm
+
 end FX1Poly.Typed
