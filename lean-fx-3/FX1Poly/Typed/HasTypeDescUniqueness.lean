@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescInversion
+import FX1Poly.Typed.HasTypeDescFormerTelescopeInversion
 import FX1Poly.Typed.HasTypeInversion
 
 /-! # FX1Poly/Typed/HasTypeDescUniqueness — uniqueness of typing (P7) for the
@@ -17,10 +18,12 @@ structure:
 * `var` / `universeFormation` invert the SECOND derivation with the INTRINSIC leaf
   inversions and `.sym`;
 * `conv` recurses INTRINSICALLY through `Conv.trans_of_typedMiddle`;
-* `genFormation` inverts the SECOND derivation with the INTRINSIC
-  `inversion{Pi,Sigma}CodeWithConvGeneral`, then forces the two formation telescopes to
-  agree on `levels`/`flag` via `DescTelescope.uniquenessAgree`, after which both
-  classifiers reduce to the SAME canonical universe code.
+* `genFormation` inverts the SECOND derivation with the GENERIC
+  `inversionFormerWithConvGeneric` (GTL-08, no per-former `by_cases`), then forces the two
+  formation telescopes to agree on `levels`/`flag` via `DescTelescope.uniquenessAgree`, after
+  which both classifiers reduce to the SAME canonical universe code.  The flag-uniqueness guard
+  `levels ≠ []` is discharged generically by `DescTelescope.levels_ne_nil_of_isFormation` for the
+  ≥1-child formation family (a nullary `Empty` former is the documented future branch).
 
 The remaining coupling is ONE LEAF: `uniquenessAgree` settles each HEAD CHILD's
 universe level/flag through the verified bespoke `HasType.uniqueness` (via
@@ -123,42 +126,23 @@ theorem HasTypeDesc.uniqueness {profile : PolyProfile} {scope : Nat}
       (HasTypeDesc.inversionUniverseCode secondDerivation wellFormed).sym
   | .genFormation _context generator _payload _children levels flag rule
       isFormation premises => fun secondDerivation => by
-      -- NOTE (GTL-09): the SECOND-derivation inversion genericizes via
-      -- `inversionFormerWithConvGeneric` (GTL-08), but the flag-uniqueness guard `levels ≠ []` needs
-      -- `generator.binderShifts ≠ []` (the former has ≥1 child) — true for pi/sigma/list/option but NOT
-      -- a nullary former (Empty), so it is NOT a clean cascade invariant.  Kept per-former pending the
-      -- nullary-former flag-uniqueness treatment.
-      by_cases hPi : generator = .gen_piTyCode
-      · subst hPi
-        have hRule : rule = { outputType := universeFormerOutput } :=
-          Option.some.inj isFormation.symm
-        subst hRule
-        obtain ⟨secondLevels, secondFlag, secondTelescope, secondConv⟩ :=
-          HasTypeDesc.inversionPiCodeWithConvGeneral secondDerivation wellFormed rfl
-        obtain ⟨levelsEq, flagImplication⟩ :=
-          DescTelescope.uniquenessAgree premises secondTelescope wellFormed rfl
-        have levelsNonEmpty : levels ≠ [] := by
-          cases premises; exact List.cons_ne_nil _ _
-        have flagEq : flag = secondFlag := flagImplication levelsNonEmpty
-        rw [levelsEq, flagEq]
-        exact secondConv.sym
-      · by_cases hSigma : generator = .gen_sigmaTyCode
-        · subst hSigma
-          have hRule : rule = { outputType := universeFormerOutput } :=
-            Option.some.inj isFormation.symm
-          subst hRule
-          obtain ⟨secondLevels, secondFlag, secondTelescope, secondConv⟩ :=
-            HasTypeDesc.inversionSigmaCodeWithConvGeneral secondDerivation wellFormed rfl
-          obtain ⟨levelsEq, flagImplication⟩ :=
-            DescTelescope.uniquenessAgree premises secondTelescope wellFormed rfl
-          have levelsNonEmpty : levels ≠ [] := by
-            cases premises; exact List.cons_ne_nil _ _
-          have flagEq : flag = secondFlag := flagImplication levelsNonEmpty
-          rw [levelsEq, flagEq]
-          exact secondConv.sym
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg hPi, if_neg hSigma] at isFormation
-          contradiction
+      -- GTL-09: the SECOND-derivation inversion + the flag-uniqueness guard are now GENERIC over the
+      -- formation generator (no per-former `by_cases`).  `inversionFormerWithConvGeneric` (GTL-08)
+      -- recovers the second telescope + classifier `Conv` at consistent `levels`/`flag`;
+      -- `DescTelescope.levels_ne_nil_of_isFormation` discharges the `levels ≠ []` guard for the ≥1-child
+      -- formation family (pi/sigma/list/option/...).  A NULLARY former (Empty, CON-A1) is the one
+      -- documented future branch: its flag is pinned by the formation RULE, not by a head child, so it
+      -- needs a separate nil-telescope flag-uniqueness argument.
+      obtain rfl : rule = { outputType := universeFormerOutput } :=
+        formationRuleIsUniverseFormer isFormation
+      obtain ⟨secondLevels, secondFlag, secondTelescope, secondConv⟩ :=
+        HasTypeDesc.inversionFormerWithConvGeneric secondDerivation wellFormed isFormation rfl
+      obtain ⟨levelsEq, flagImplication⟩ :=
+        DescTelescope.uniquenessAgree premises secondTelescope wellFormed rfl
+      have levelsNonEmpty : levels ≠ [] :=
+        DescTelescope.levels_ne_nil_of_isFormation isFormation premises
+      have flagEq : flag = secondFlag := flagImplication levelsNonEmpty
+      rw [levelsEq, flagEq]
+      exact secondConv.sym
 
 end FX1Poly.Typed

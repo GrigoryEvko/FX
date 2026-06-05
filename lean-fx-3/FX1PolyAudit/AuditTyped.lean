@@ -711,6 +711,15 @@ gates pin them shut.
 -- of the per-branch Option.some.inj. First reconstruction consumer migrated: HasTypeDescSubstitution.
 #assert_no_axioms FX1Poly.Typed.formationRuleImpliesNotVariable
 #assert_no_axioms FX1Poly.Typed.formationRuleIsUniverseFormer
+-- FLAG-UNIQUENESS substrate (GTL-09): the `levels ≠ []` guard of HasTypeDesc.uniqueness, made generic over
+-- the formation generator. levels_length_eq_binderShifts is a structural telescope recursion (level list and
+-- shift list have equal length); typingRuleDescOf_binderShiftsNonEmpty is the ≥1-child-family table fact
+-- (pi/sigma both carry [0,1]) — extends by ONE by_cases row per ≥1-child data type code, breaks ONLY on a
+-- nullary Empty former (CON-A1, the documented future branch); levels_ne_nil_of_isFormation is the combined
+-- consumer-facing form. This retires the last per-former by_cases in the formation-family metatheory.
+#assert_no_axioms FX1Poly.Typed.DescTelescope.levels_length_eq_binderShifts
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_binderShiftsNonEmpty
+#assert_no_axioms FX1Poly.Typed.DescTelescope.levels_ne_nil_of_isFormation
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc
 #assert_no_axioms FX1Poly.Typed.DescTelescope
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_piFormation_viaGenArm

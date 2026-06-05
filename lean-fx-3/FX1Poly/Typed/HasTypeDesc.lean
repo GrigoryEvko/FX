@@ -232,6 +232,62 @@ theorem formationRuleIsUniverseFormer {generator : Generator} {rule : TypingRule
   cases rule
   rw [← outputIsFormer]
 
+/-- **A formation telescope's level list and the generator's shift list have equal length.**  Structural
+recursion on the telescope (`DescTelescope` is mutual with `HasTypeDesc`, so `induction` is unavailable —
+term-mode `match` recurses through the `restTyped` field; `cons` prepends exactly one shift and one level).
+The cascade-death substrate for the flag-uniqueness guard of `HasTypeDesc.uniqueness`: a non-empty shift
+list forces a non-empty level list, which pins the formation flag through the telescope's head child.
+Zero-axiom (`congrArg Nat.succ` over the structural recursion). -/
+theorem DescTelescope.levels_length_eq_binderShifts {profile : PolyProfile}
+    {baseScope currentDepth : Nat} {binderShifts : List Nat}
+    {context : TypingContext profile (baseScope + currentDepth)}
+    {levels : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren binderShifts baseScope}
+    (telescope : DescTelescope profile context levels flag children) :
+    levels.length = binderShifts.length :=
+  match telescope with
+  | .nil _ _ => rfl
+  | .cons _ _ _ _ _ _ _ restTyped =>
+      congrArg Nat.succ (DescTelescope.levels_length_eq_binderShifts restTyped)
+
+/-- **Every formation generator carries a non-empty shift list (≥1-child family).**  The CURRENT
+`typingRuleDescOf` table maps exactly the dependent type-formers (`gen_piTyCode` / `gen_sigmaTyCode`), each
+with `binderShifts = consecutiveShifts 0 2 = [0, 1]`.  This is the shape invariant the flag-uniqueness guard
+needs.  NOTE: this is a ≥1-CHILD-FAMILY fact, NOT a permanent cascade invariant — a NULLARY former (an
+`Empty` type code with `binderShifts = []`, CON-A1) would break it, at which point a nullary former's flag
+must be pinned by the formation RULE itself (the documented future branch).  Adding a ≥1-child data type
+code (`listCode` / `optionCode` / ...) extends this lemma by ONE `by_cases` row in the table home, with no
+consumer cascade.  Zero-axiom (`decide` on the closed shift lists + the non-former `if_neg` branch). -/
+theorem typingRuleDescOf_binderShiftsNonEmpty {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule) :
+    generator.binderShifts ≠ [] := by
+  by_cases hPi : generator = .gen_piTyCode
+  · subst hPi; decide
+  · by_cases hSigma : generator = .gen_sigmaTyCode
+    · subst hSigma; decide
+    · exfalso
+      unfold typingRuleDescOf at isFormation
+      rw [if_neg hPi, if_neg hSigma] at isFormation
+      contradiction
+
+/-- **A formation cell's telescope levels are non-empty.**  Combines the length equality with the
+shift-non-emptiness: the consumer-facing form for `HasTypeDesc.uniqueness`'s flag-uniqueness guard, generic
+over the formation generator (no per-former `by_cases`).  Zero-axiom. -/
+theorem DescTelescope.levels_ne_nil_of_isFormation {profile : PolyProfile}
+    {baseScope currentDepth : Nat}
+    {context : TypingContext profile (baseScope + currentDepth)}
+    {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    {levels : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren generator.binderShifts baseScope}
+    (telescope : DescTelescope profile context levels flag children) :
+    levels ≠ [] := by
+  intro emptyLevels
+  have lengthEq := DescTelescope.levels_length_eq_binderShifts telescope
+  rw [emptyLevels] at lengthEq
+  exact typingRuleDescOf_binderShiftsNonEmpty isFormation
+    (List.eq_nil_of_length_eq_zero lengthEq.symm)
+
 /-- Reconstruction: the generic `genFormation` arm derives Π-formation.  Domain
 typed at `Type@(domainLevel, flag)`, codomain at `Type@(codomainLevel, flag)`
 UNDER the domain binder ⟹ `piTyCodeCell` inhabits `Type@(lmax domainLevel
