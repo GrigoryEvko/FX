@@ -328,6 +328,7 @@ import FX1Poly.Typed.HasTypeDescPiSubjectReductionInlineArms
 import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionConvOfFormationArms
 import FX1Poly.Typed.ConsistencyConditionalOnSubjectReduction
+import FX1Poly.Typed.ConsistencyOfPiElimArm
 import FX1Poly.Typed.FormationNormalSmoke
 
 /-! # Tools/AuditAll/AuditTyped
@@ -1330,6 +1331,17 @@ gates pin them shut.
 -- required for Lean mutual-recursion implicit inference. Discharging the piElim arm ⟹ unconditional SN-055.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionOfPiElimArm
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.subjectReductionOfPiElimArm
+-- ITERATED SR + ★ SN-050 CONSISTENCY, both conditional on EXACTLY the single piElim crux
+-- (ConsistencyOfPiElimArm.lean, SRD-3 #846 + CON-A5wire #848 / SN-050 #553 / #812). subjectReductionStarOfPiElimArm
+-- iterates the single-step master SR along a StepStar chain (structural recursion: refl unchanged, trans re-types
+-- the one-step reduct then recurses under the same well-formedness — classifier+context invariant under reduction).
+-- consistencyOfPiElimArm instantiates the iterated SR at the empty context (WfContextDescPi.emptyIsWellFormed) to
+-- supply the SR-along-↝* hypothesis of consistencyOfSubjectReductionStarToEmptyType — so grown consistency is now
+-- conditional on the SAME ONE lemma (piElim) as the master SR and context-conversion: Milestone-A consistency is one
+-- lemma away. The BFT bounded model CANNOT prove this (its emptyTypeCell candidate is the coarse IsStronglyNormalizing
+-- neutral arm); the syntactic SR-to-normal-form route is the tractable one.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionStarOfPiElimArm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.consistencyOfPiElimArm
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
