@@ -100,6 +100,16 @@ def universeCodeCell {scope : Nat}
     (levelExpr : LevelExpr) (flag : UniverseFlag) : RawTerm scope :=
   .mkGen .gen_universeCode (levelExpr, flag) .childNil
 
+/-- The empty-type code cell `Empty` — the `.type`-sorted nullary `gen_emptyCode`
+cell (the bottom type, fx_design §3.9 `never`).  No payload data (`Unit`), no
+children (`binderShifts = []`, hence `childNil`): a closed nullary type-former
+leaf, structurally like `universeCodeCell` but at a distinct generator.  The
+formation subject of CON-A2's dedicated `emptyFormation` arm (`Empty : Type@0`)
+and the type whose reducibility candidate is the empty candidate (CON-A3), the
+substrate of typed consistency (SN-050). -/
+def emptyTypeCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_emptyCode () .childNil
+
 /-- The variable cell at de Bruijn position `index`. -/
 def variableCell {scope : Nat} (index : Fin scope) : RawTerm scope :=
   .mkGen .gen_var index .childNil

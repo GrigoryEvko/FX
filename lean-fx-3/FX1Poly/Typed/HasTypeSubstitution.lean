@@ -65,6 +65,17 @@ theorem subst_universeCodeCell {sourceScope targetScope : Nat}
       = universeCodeCell levelExpr flag :=
   rfl
 
+/-- Substituting at the empty-type code cell leaves it unchanged — `emptyTypeCell`
+is a closed nullary leaf.  Holds by `rfl` for the same reason as
+`subst_universeCodeCell`: `RawTerm.subst` is `fold GenAlgebra.canonical`, which
+over the literal `childNil` rebuilds the same cell.  The substrate of CON-A2
+route E's `emptyFormation` substitution arm. -/
+theorem subst_emptyTypeCell {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    RawTerm.subst substitution (emptyTypeCell (scope := sourceScope))
+      = emptyTypeCell :=
+  rfl
+
 /-- Substituting at a Π-type code cell distributes over the two children: the
 domain (child shift `0`) is substituted by the substitution itself, the codomain
 (child shift `1`, under one fresh binder) by the substitution lifted once

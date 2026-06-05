@@ -340,6 +340,7 @@ gates pin them shut.
 /-! ### HasType engine — type-formation arms (var / conv / universe / Π / Σ) + IsType -/
 
 #assert_no_axioms FX1Poly.Typed.universeCodeCell
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell
 #assert_no_axioms FX1Poly.Typed.variableCell
 #assert_no_axioms FX1Poly.Typed.piTyCodeCell
 #assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell
@@ -367,6 +368,7 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.rename_variableCell
 #assert_no_axioms FX1Poly.Typed.rename_universeCodeCell
+#assert_no_axioms FX1Poly.Typed.rename_emptyTypeCell
 #assert_no_axioms FX1Poly.Typed.HasType.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasType.weakenUnderBinding
 
@@ -374,6 +376,7 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.subst_variableCell
 #assert_no_axioms FX1Poly.Typed.subst_universeCodeCell
+#assert_no_axioms FX1Poly.Typed.subst_emptyTypeCell
 #assert_no_axioms FX1Poly.Typed.subst_singleton_renameWeaken_cancel
 #assert_no_axioms FX1Poly.Typed.HasType.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasType.substituteUnderBinding
@@ -4343,6 +4346,7 @@ gates pin them shut.
 -- Condition_consStep; there = tail recursion). former_step_inv rules out root redexes generically over the
 -- formation family (typingRuleDescOf_isPiOrSigma), so a future ≥1-child formation row extends with no cascade.
 #assert_no_axioms FX1Poly.Typed.Step.no_step_from_universeCode
+#assert_no_axioms FX1Poly.Typed.Step.no_step_from_emptyCode
 #assert_no_axioms FX1Poly.Typed.former_step_inv
 #assert_no_axioms FX1Poly.Typed.convContextCondition_consStep
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectReduction

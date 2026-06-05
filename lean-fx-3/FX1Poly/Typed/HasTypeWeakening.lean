@@ -34,6 +34,17 @@ theorem rename_universeCodeCell {sourceScope targetScope : Nat}
       = universeCodeCell levelExpr flag :=
   rfl
 
+/-- Renaming the empty-type code cell leaves it unchanged — `emptyTypeCell` is a
+closed nullary leaf (no payload data, no children).  Holds by `rfl` for the same
+reason as `rename_universeCodeCell`: `RawTerm.rename` is `fold GenAlgebra.canonical`,
+which over the literal `childNil` rebuilds the same cell.  The substrate of
+CON-A2 route E's `emptyFormation` weakening arm. -/
+theorem rename_emptyTypeCell {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming (emptyTypeCell (scope := sourceScope))
+      = emptyTypeCell :=
+  rfl
+
 /-- Renaming a Π-type code cell distributes over the two children: the domain
 (child shift `0`) is renamed by the renaming itself, the codomain (child shift
 `1`, living under one fresh binder) by the renaming lifted once
