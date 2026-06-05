@@ -2516,6 +2516,14 @@ gates pin them shut.
 -- by decide) and boolTrueCell_isMember — extending the concrete eliminator-membership corpus past boolElim.
 #assert_no_axioms FX1Poly.Core.idJClosedMembershipSmoke
 #assert_no_axioms FX1Poly.Core.idStrictRecClosedMembershipSmoke
+-- Concrete fst / snd PROJECTION membership regression (DataEliminatorMembershipSmoke, SN-149 corpus): the closed
+-- fst / snd cells over the canonical pair (boolTrue, boolFalse) are bool-candidate members via fstClosedIsMember /
+-- sndClosedIsMember. The component obligation (∀ first second, scrutinee ↝* pairCell _ _ → member) is discharged by
+-- inversion: the pair is a structural normal form (isStepNormalForm_blocks_step on `by decide`), so eq_of_noStep
+-- forces the reach reflexive and the mkGen/childCons injection (scope/shift/restShifts/childHead/childTail, five
+-- outputs) pins the component to the canonical bool value. The value-PROJECTING half of the corpus, concrete.
+#assert_no_axioms FX1Poly.Core.fstClosedMembershipSmoke
+#assert_no_axioms FX1Poly.Core.sndClosedMembershipSmoke
 -- Sigma PROJECTION canonicity (#672-free, SN-058 path): fst/snd on a CANONICAL pair scrutinee PROJECT to the
 -- components. StepStar.fstScrutinee/sndScrutinee = the unary scrutinee-position chain congruences (generic
 -- StepStar.congAt + Step.cong (StepChildren.here ...) at the sole child). pairCanonicalScrutineeProjectsTo-
