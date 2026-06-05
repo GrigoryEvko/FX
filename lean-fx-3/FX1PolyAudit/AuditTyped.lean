@@ -61,6 +61,7 @@ import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDesc
 import FX1Poly.Typed.WfContextDescLookup
+import FX1Poly.Typed.WfContextDescValidity
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
@@ -1396,6 +1397,12 @@ gates pin them shut.
 -- WfContext.lookupIsType / WfContextDescPi.lookupIsType.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.weakenUnderBinding
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.lookupIsTypeDesc
+-- FORMATION VALIDITY over WfContextDesc, HasType-FREE (WfContextDescValidity.lean, HT-A2): a HasTypeDesc-typed
+-- cell's classifier is a formation type (IsTypeDesc), proved over WfContextDesc — identical to the WfContext
+-- classifierIsTypeDesc EXCEPT the var arm reads WfContextDesc.lookupIsTypeDesc directly, so the whole proof has
+-- no HasType.toHasTypeDesc. The migration TARGET that supersedes classifierIsTypeDesc once consumers thread
+-- WfContextDesc (and the canonical formation validity after the bespoke engine is deleted, HT-C).
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDescNative
 -- GROWN CONTEXT WELL-FORMEDNESS (WfContextDescPi.lean, WFG-1): the structural-parity twin of WfContext via the
 -- grown IsTypeDescPi. WfContext is HasType-based, hence UN-extendable at a grown piIntro binder (no
 -- HasTypeDescPi → IsType bridge); WfContextDescPi IS extendable (a grown domain typing is an IsTypeDescPi), the
