@@ -54,6 +54,7 @@ import FX1Poly.Typed.GrownTypeSafety
 import FX1Poly.Typed.GrownCanonicalFormsByClassifier
 import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
 import FX1Poly.Typed.GrownBetaRedexInAction
+import FX1Poly.Typed.GrownOpenProgress
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDescPi
@@ -1323,6 +1324,16 @@ gates pin them shut.
 -- value" statement, progress + preservation + confluence combined.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedHasUniqueNormalForm
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedTypeSafetyUniqueOfSubjectReductionStar
+-- OPEN PROGRESS (GrownOpenProgress.lean, five-layer-defense L4 §27.3): the OPEN generalization of closedProgress
+-- off the empty context. openNormalSubjectCanonicalOrNeutral = OPEN CANONICAL FORMS — a grown-typed NORMAL term in
+-- ANY well-formed context is a canonical head (IsGrownCanonicalHead) or a Core.IsNeutral term; the recursor mirrors
+-- closedNormalSubjectHead but drops the (Fin scope → False) premise, rerouting the two leaves closedness eliminated
+-- (var → IsNeutral.var, neutral-function app → IsNeutral.app, where variableCell/appCell are definitionally the
+-- mkGen gen_var/gen_app cells the constructors expect). openProgress = OPEN PROGRESS unconditional — a grown-typed
+-- term in any context is a normal canonical-value-or-neutral or it steps (by_cases on decidable normality), no
+-- stuck terms in ANY context. #672-independent — pure inversion, no SR, no SN.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openNormalSubjectCanonicalOrNeutral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openProgress
 -- CASCADE-FREE FORMER STEP-INVERSION (FormerStepInversionGeneric.lean, TG-1): a step out of any formation-rule
 -- cell (typingRuleDescOf generator = some rule) is a child congruence, proven WITHOUT enumerating the formation
 -- table — `cases step` with generator free (propext-clean), each of the 17 root-redex cases refuted because the
