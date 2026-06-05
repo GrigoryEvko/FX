@@ -38,6 +38,7 @@ import FX1Poly.Typed.HasTypeDescElimWeakening
 import FX1Poly.Typed.HasTypeDescElimSubstitution
 import FX1Poly.Typed.HasTypeDescApplication
 import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Typed.HasTypeDescPiEtaCoherence
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.HasTypeDescPiSubstitution
 import FX1Poly.Typed.HasTypeDescPiInversion
@@ -1050,6 +1051,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsTypeDescPi
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.toHasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaCoherence_formationBody
+-- η-COHERENCE for formation-component functions (HasTypeDescPiEtaCoherence.lean, PAR-2): the η-twin of
+-- betaCoherence_formationBody. From the formation typings of D, C, and f : piTyCodeCell D C, BOTH the η-redex
+-- etaLamSource f = λ. (weaken f @ var 0) and its η-reduct f type at the SAME piTyCodeCell D C. Forward build (no
+-- inversion / grown strengthening): reduct via ofFormation; redex via piIntro over the formation-embedded D/C with
+-- the body weaken f @ var 0 typed by piElim — the weakened function (weakenUnderBinding + rename_piTyCodeCell), the
+-- newest var (HasTypeDesc.var + lookup_cons_zero), and the app's result classifier collapsed to C by THE η identity
+-- subst0_iterateLiftWeaken_newestVar (the de Bruijn law that makes function η typecheck — composite subst∘rename is
+-- pointwise the identity substitution). First step of the grown η-SR arc; fully-general inverted η-SR additionally
+-- needs grown strengthening (not yet shipped).
+#assert_no_axioms FX1Poly.Typed.RawTerm.subst0_iterateLiftWeaken_newestVar
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaCoherence_formationFunction
 
 /-! ### Grown-engine renaming/weakening (P6, the cartesian-lift leg) — `HasTypeDescPiWeakening`.
     polycell.md §11.8.5 P6 applied to the grown engine `HasTypeDescPi`: its cartesian-lift
