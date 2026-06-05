@@ -74,4 +74,33 @@ theorem consistencyFromEmptyCandidateBridge {profile : PolyProfile}
     False :=
   consistencyViaSconing candidateBridge closedTerm typed
 
+/-- **SN-050 at the CONCRETE `emptyTypeCell` (CON-A1's cell).**  The abstract
+`consistencyFromEmptyCandidateBridge` specialized to the SHIPPED empty-type code
+cell `emptyTypeCell` (`mkGen gen_emptyCode () childNil`, CON-A1): if every closed
+term engine-typed at `emptyTypeCell` is a member of the empty reducibility
+candidate (`candidateBridge`), then no closed term is engine-typed at
+`emptyTypeCell`.  Pins the abstract `emptyTypeCode` to the actual cell, so the
+SN-050 statement is now CONCRETE — its sole residual the `candidateBridge` AT
+`emptyTypeCell` (= `HasTypeDescPi.closedBoundedReducibleMember`, shipped, composed
+with CON-A3 "the reducibility candidate of `emptyTypeCell` IS the empty
+candidate", the #483/#485-487 engine↔candidate representation decision).
+
+ARCHITECTURE NOTE (corrects the prior CON-A2 route-E/F formation-arm pursuit):
+per this file's header, a FORMATION typing of `emptyTypeCell` (`Empty : Type@0`,
+an inductive `emptyFormation` arm) is NOT on the SN-050 critical path.  The
+consistency statement REFUTES typings AT `emptyTypeCell`; it does not construct
+one.  The sole residual is the `candidateBridge` — the engine↔candidate
+correspondence — not a formation cell. -/
+theorem emptyTypeCellConsistencyFromCandidateBridge {profile : PolyProfile}
+    (candidateBridge : ∀ closedTerm : RawTerm 0,
+      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
+          closedTerm emptyTypeCell →
+        CanonicalFormsPredicate emptyIsValue closedTerm)
+    (closedTerm : RawTerm 0)
+    (typed :
+      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
+        closedTerm emptyTypeCell) :
+    False :=
+  consistencyFromEmptyCandidateBridge candidateBridge closedTerm typed
+
 end FX1Poly.Typed

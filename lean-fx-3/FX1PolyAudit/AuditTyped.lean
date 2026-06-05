@@ -4426,6 +4426,10 @@ gates pin them shut.
 -- BFT closedBoundedReducibleMember + "emptyTypeCode's candidate is the empty candidate"). Plan's CON-A1/A2
 -- (gen_empty cascade) mismodel the architecture; the gap is the engine data-representation (#483/#485-487).
 #assert_no_axioms FX1Poly.Typed.consistencyFromEmptyCandidateBridge
+-- The abstract target specialized to the CONCRETE emptyTypeCell (CON-A1's cell, mkGen gen_emptyCode () childNil):
+-- SN-050 is now stated at the real cell, sole residual the candidateBridge AT emptyTypeCell. Confirms a FORMATION
+-- arm (CON-A2 route-E/F) is OFF the critical path — consistency refutes typings AT emptyTypeCell, not constructs one.
+#assert_no_axioms FX1Poly.Typed.emptyTypeCellConsistencyFromCandidateBridge
 
 -- Canonicity target signature (CanonicityTargetSignature.lean): the SN-047/048/049 twin of CON-A0. Engine
 -- canonicity reduces to the SAME data-candidate bridge as consistency, making the Phase-A boundary uniform.
