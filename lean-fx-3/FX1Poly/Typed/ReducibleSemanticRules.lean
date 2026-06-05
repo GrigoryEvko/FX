@@ -290,27 +290,35 @@ non-Π formation formers (`gen_sigmaTyCode` and any future data former added as 
 so the fundamental theorem's `genFormationPi` arm classifies the substituted former by strong normalization
 in the Tarski universe with no per-former weak-head-normality proof at the induction site.  The `gen_piTyCode`
 case is handled separately (the arrow candidate via `piTypeCanonicalUnderSubst`); this lemma covers the
-weak-head-normality both share.  Proof: the formation generator is `gen_piTyCode` or `gen_sigmaTyCode` (else
-`typingRuleDescOf` is `none`, contradicting `isFormation`), and each is weak-head normal by
-`cases` on the step leaving only the vacuous `rootIota`/`IotaHeadStep`. -/
+weak-head-normality both share.  Proof (CASCADE-FREE, the TG-1 `formerCellStepIsChildCongruence` idiom, no
+formation generator enumerated): `cases weakHeadStep` over the 13 constructors; every redex arm
+(`beta`/`appCongruence` rooted at `gen_app`, the ten `scrutinee*` rooted at their eliminators, and each
+`rootIota` `IotaHeadStep` arm after a nested `cases`) pins `generator` to a FIXED redex head whose
+`typingRuleDescOf` is the PERMANENT `none`, contradicting `isFormation` via
+`nomatch (… : none = some rule)`.  No `gen_piTyCode`/`gen_sigmaTyCode` is named, so a future formation row
+(`listCode`/cubical/HIT) is absorbed zero-touch. -/
 theorem formationGenerator_noWeakHeadStep {scope : Nat} {generator : Generator}
     {payload : generator.payload scope}
     {children : RawTermChildren generator.binderShifts scope}
     {rule : TypingRuleDesc} (isFormation : typingRuleDescOf generator = some rule) :
     ∀ reduct : RawTerm scope,
       ¬ WeakHeadStep (.mkGen generator payload children) reduct := by
-  by_cases isPiFormer : generator = .gen_piTyCode
-  · subst isPiFormer
-    intro _reduct weakHeadStep
-    cases weakHeadStep with
-    | rootIota iotaStep => cases iotaStep
-  · by_cases isSigmaFormer : generator = .gen_sigmaTyCode
-    · subst isSigmaFormer
-      intro _reduct weakHeadStep
-      cases weakHeadStep with
-      | rootIota iotaStep => cases iotaStep
-    · simp only [typingRuleDescOf, if_neg isPiFormer, if_neg isSigmaFormer] at isFormation
-      nomatch isFormation
+  intro _reduct weakHeadStep
+  cases weakHeadStep with
+  | beta => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | appCongruence _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | rootIota iotaStep =>
+      cases iotaStep <;> nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeBoolElim _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeFst _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeSnd _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeNatElim _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeNatRec _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeListElim _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeOptionMatch _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeEitherMatch _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeIdJ _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeIdStrictRec _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
 
 /-- **Semantic Σ-former formation under a closing substitution (the `genFormationPi` data-former arm for
 `gen_sigmaTyCode`).**  Under a closing `substitution`, the Σ-type code `Σ domain. codomain` is a reducible
