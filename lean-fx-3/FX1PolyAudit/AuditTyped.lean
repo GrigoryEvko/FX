@@ -330,6 +330,7 @@ import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionConvOfFormationArms
 import FX1Poly.Typed.ConsistencyConditionalOnSubjectReduction
 import FX1Poly.Typed.ConsistencyOfPiElimArm
+import FX1Poly.Typed.EmptyTypeConsistencyUnconditional
 import FX1Poly.Typed.FormationNormalSmoke
 
 /-! # Tools/AuditAll/AuditTyped
@@ -1354,6 +1355,13 @@ gates pin them shut.
 -- neutral arm); the syntactic SR-to-normal-form route is the tractable one.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionStarOfPiElimArm
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.consistencyOfPiElimArm
+-- ★ SN-050 UNCONDITIONAL (EmptyTypeConsistencyUnconditional.lean): emptyTypeConsistency DROPS the piElim/SR
+-- conditionality above. Once emptyTypeCellHasNoTyping (the data-head boundary, last commit) existed, grown
+-- VALIDITY (classifierIsTypeDescPi, WFG-3) closes consistency in two lines: t : emptyTypeCell forces
+-- emptyTypeCell : universe (validity), refuted by emptyTypeCellHasNoTyping. Honest scope: the current engine,
+-- where emptyTypeCell is not yet a substantive type (typingRuleDescOf gen_emptyCode = none); the
+-- canonicity-grounded consistency for a formation-row Empty (CON-A3) is independent + future.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.emptyTypeConsistency
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
