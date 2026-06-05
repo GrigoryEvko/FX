@@ -281,6 +281,7 @@ import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CanonicityTargetSignature
 import FX1Poly.Typed.NullaryFormerFormation
 import FX1Poly.Typed.UniverseFormationStrictness
+import FX1Poly.Typed.GrownUniverseFormationStrictness
 import FX1Poly.Typed.FormerFormationStrictness
 import FX1Poly.Typed.GrownEngineHonesty
 import FX1Poly.Typed.GrownUniverseConsistency
@@ -4884,6 +4885,15 @@ gates pin them shut.
 -- general no-deflation (Type@(e+1) ⊬ Type@e at all levels/contexts), via the double-successor guard
 -- LevelExpr.ne_lsuccLsucc_self — completes the general level-strictness corpus (self / above / below).
 #assert_no_axioms FX1Poly.Typed.universeCode_notTypedBelowSuccessor_general
+-- GROWN-ENGINE level strictness (GrownUniverseFormationStrictness.lean, SN-140 L1): the same no-Type-in-Type /
+-- no-inflation / no-deflation corpus, but for the LIVE engine HasTypeDescPi (the one carrying piIntro/piElim
+-- through which a Type:Type paradox would encode a fixpoint), via HasTypeDescPi.inversionUniverseCode +
+-- universeCodeCell_inj_of_conv + the predicativity guards. universeCode_notTypedAtSelf is the §1.4 "Type:Type /
+-- Girard's paradox structurally impossible" claim for the engine that actually carries the metatheory (SN-043,
+-- consistency, safety) — the formation-engine twin universeCode_notTypedAtSelf_general is for the frozen HasType.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCode_notTypedAtSelf
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCode_notTypedAboveSuccessor
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCode_notTypedBelowSuccessor
 -- DEPENDENT-FORMER level strictness (FormerFormationStrictness.lean): the Π/Σ analog of the universe
 -- strictness — a Π/Σ-type code is classified by EXACTLY Type@(lmax domainLevel codomainLevel) up to Conv
 -- (uniqueness against the canonical piFormation/sigmaFormation derivation), completing the formation-family
