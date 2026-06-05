@@ -1,17 +1,23 @@
 import FX1Poly.Core.NatElimValueReducibility
 import FX1Poly.Core.NatElimNeutralScrutineeMember
 import FX1Poly.Core.StrongNormalizationNatElim
+import FX1Poly.Core.ListElimValueReducibility
+import FX1Poly.Core.ListElimNeutralScrutineeMember
+import FX1Poly.Core.StrongNormalizationListElim
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
 
 /-! # FX1Poly/Core/RecursorReducibleScrutineeMember
-    — the GENERAL-scrutinee regime of `natElim` / `natRec` recursor reducibility: the full SN-061 dispatch
+    — the GENERAL-scrutinee regime of the recursive eliminators `natElim` / `natRec` / `listElim`: the full
+      SN-061 / SN-064 dispatch
 
-`NatElimValueReducibility` (#732) discharged the VALUE regime (`natElim numeral …` lands in the candidate) and
-`NatElimNeutralScrutineeMember` (the neutral arm) the NEUTRAL regime (`natElim neutral …` is itself neutral, so
+`NatElimValueReducibility` (#732) / `ListElimValueReducibility` (#733) discharged the VALUE regime (`natElim
+numeral …` / `listElim listValue …` lands in the candidate) and `NatElimNeutralScrutineeMember` /
+`ListElimNeutralScrutineeMember` the NEUTRAL regime (the recursor over a neutral scrutinee is itself neutral, so
 a member by CR3).  Both deferred "the scrutinee-reduction outer recursion (a non-value non-neutral scrutinee
-threading down to its numeral)" as the remaining half of SN-061.  This file ships that outer recursion as a
-single GENERAL-scrutinee theorem, completing recursor reducibility over an ARBITRARY reducible Nat scrutinee.
+threading down to its constructor)" as the remaining half of SN-061 / SN-064.  This file ships that outer
+recursion as a single GENERAL-scrutinee theorem per recursor, completing recursive-eliminator reducibility over
+an ARBITRARY reducible scrutinee — bringing the three recursive eliminators to general-scrutinee parity.
 
 The key is that the Nat data candidate `CanonicalFormsPredicate IsNatValue` BUILDS IN the value-or-neutral
 dichotomy: a member is strongly normalizing AND `IsNeutral ∨ ∃ numeral, StepStar scrutinee numeral ∧ IsNatValue
@@ -179,5 +185,83 @@ theorem natRecReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope �
       numeralMember.2.resolve_left (natRec_notNeutral_ofNatValueScrutinee numeralIsNat)
     exact CanonicalFormsPredicate.ofStepStarReachingValue
       (StepStar.natRecScrutinee scrutineeToNumeral) cellStronglyNormalizing numeralCellReachesValue
+
+/-- **A `listElim` over a list-value scrutinee is never neutral** — the list twin of
+`natElim_notNeutral_ofNatValueScrutinee`.  `IsNeutral.listElim` is the unique constructor producing a neutral
+`listElim` cell and it demands a neutral scrutinee, but a list value's head is `listNil` / `listCons` (refuted by
+the `rootGenerator_ne_listNil` / `_ne_listCons` discriminators).  The fact the value-case lift consumes to
+extract "the list-value cell reaches a value" from the cell's candidate membership. -/
+theorem listElim_notNeutral_ofListValueScrutinee {scope : Nat}
+    {value nilBranch consBranch : RawTerm scope}
+    (valueIsList : IsListValue value) :
+    ¬ IsNeutral (listElimCellSpine value nilBranch consBranch) := by
+  intro cellNeutral
+  cases cellNeutral with
+  | listElim scrutineeNeutral =>
+      cases valueIsList with
+      | nil => exact scrutineeNeutral.rootGenerator_ne_listNil rfl
+      | cons _ _ => exact scrutineeNeutral.rootGenerator_ne_listCons rfl
+
+/-- **`listElim` reducibility over a general reducible scrutinee (the SN-064 outer recursion)** — the list twin
+of `natElimReducibleScrutineeMember`, completing recursive-eliminator reducibility for `listElim`.  Given a
+scrutinee that is a member of the List data candidate (so strongly normalizing AND neutral-or-reduces-to-a-list-
+value), reducible branches, and the honest Tait interface (`headExpand`, the 3-argument cons-branch application
+interface, the cons-contractum SN premise), the `listElim` cell is a member of the result candidate.  Dispatches
+on the scrutinee's built-in disjunct: NEUTRAL → the recursor cell is neutral and SN, a member by CR3
+(`memberOfStronglyNormalizingNeutral`); VALUE → the list-value recursor cell is a member
+(`listElimValueReducibility`) that reaches a value (its non-neutrality forces the value side), lifted back
+through the scrutinee congruence by `ofStepStarReachingValue`. -/
+theorem listElimReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope → Prop}
+    {scrutinee nilBranch consBranch : RawTerm scope}
+    (headExpand : ∀ {redexTerm contractum : RawTerm scope},
+        WeakHeadStep redexTerm contractum → CanonicalFormsPredicate isValue contractum →
+        IsStronglyNormalizing redexTerm → CanonicalFormsPredicate isValue redexTerm)
+    (scrutineeMember : CanonicalFormsPredicate IsListValue scrutinee)
+    (nilBranchMember : CanonicalFormsPredicate isValue nilBranch)
+    (consBranchTerminates : IsStronglyNormalizing consBranch)
+    (consBranchApplication : ∀ {head tail result : RawTerm scope},
+        RawTerm.isStepNormalForm head → IsListValue tail → CanonicalFormsPredicate isValue result →
+        CanonicalFormsPredicate isValue
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_app () (.childCons consBranch (.childCons head .childNil)))
+                  (.childCons tail .childNil)))
+              (.childCons result .childNil))))
+    (consContractumTerminates : ∀ head tail : RawTerm scope,
+        IsStronglyNormalizing head → IsStronglyNormalizing tail →
+        IsStronglyNormalizing
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_app () (.childCons consBranch (.childCons head .childNil)))
+                  (.childCons tail .childNil)))
+              (.childCons (listElimCellSpine tail nilBranch consBranch) .childNil)))) :
+    CanonicalFormsPredicate isValue (listElimCellSpine scrutinee nilBranch consBranch) := by
+  have cellStronglyNormalizing :
+      IsStronglyNormalizing (listElimCellSpine scrutinee nilBranch consBranch) :=
+    listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
+      scrutineeMember.stronglyNormalizing nilBranchMember.stronglyNormalizing consBranchTerminates
+  rcases scrutineeMember.2 with scrutineeNeutral | ⟨value, scrutineeToValue, valueIsList⟩
+  · exact CanonicalFormsPredicate.memberOfStronglyNormalizingNeutral cellStronglyNormalizing
+      (IsNeutral.listElim scrutineeNeutral)
+  · have recursorStronglyNormalizing : ∀ {listValue : RawTerm scope}, IsListValue listValue →
+        IsStronglyNormalizing (listElimCellSpine listValue nilBranch consBranch) :=
+      fun listValueIsList =>
+        listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
+          (isListValue_isMember listValueIsList).stronglyNormalizing
+          nilBranchMember.stronglyNormalizing consBranchTerminates
+    have valueMember :
+        CanonicalFormsPredicate isValue (listElimCellSpine value nilBranch consBranch) :=
+      listElimValueReducibility (CanonicalFormsPredicate isValue)
+        headExpand nilBranchMember consBranchApplication recursorStronglyNormalizing valueIsList
+    have valueCellReachesValue :
+        ∃ reached : RawTerm scope,
+          StepStar (listElimCellSpine value nilBranch consBranch) reached ∧ isValue reached :=
+      valueMember.2.resolve_left (listElim_notNeutral_ofListValueScrutinee valueIsList)
+    exact CanonicalFormsPredicate.ofStepStarReachingValue
+      (StepStar.listElimScrutinee scrutineeToValue) cellStronglyNormalizing valueCellReachesValue
 
 end FX1Poly.Core

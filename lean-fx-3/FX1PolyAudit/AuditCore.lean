@@ -673,6 +673,14 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.natElimReducibleScrutineeMember
 #assert_no_axioms FX1Poly.Core.natRecReducibleScrutineeMember
 
+-- GENERAL-SCRUTINEE regime of the List recursor (SN-064 outer recursion): the listElim twin of the Nat
+-- general-scrutinee dispatch, bringing the three recursive eliminators (natElim/natRec/listElim) to
+-- general-scrutinee parity. Same dispatch on the List candidate's value-or-neutral disjunct, via
+-- listElimValueReducibility + ofStepStarReachingValue (StepStar.listElimScrutinee), with the value side
+-- extracted by listElim_notNeutral_ofListValueScrutinee. #672-independent.
+#assert_no_axioms FX1Poly.Core.listElim_notNeutral_ofListValueScrutinee
+#assert_no_axioms FX1Poly.Core.listElimReducibleScrutineeMember
+
 -- NEUTRAL-SCRUTINEE regime of the List recursor (toward SN-064): the listElim mirror of the Nat regime,
 -- bringing the three recursive recursors (natElim/natRec/listElim) to neutral-coverage parity. A NEUTRAL
 -- scrutinee is never a List constructor and stays neutral under Step, so listElim NEVER ι-fires; the cell is a
