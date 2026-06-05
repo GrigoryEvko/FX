@@ -92,10 +92,7 @@ theorem HasTypeDesc.inversionFormerWithConvGeneric {profile : PolyProfile}
         obtain ⟨levels, flag, telescope, convToCode⟩ :=
           HasTypeDesc.inversionFormerWithConvGeneric typedPremise wellFormed isFormation subjectEq
         exact ⟨levels, flag, telescope,
-          Conv.trans_of_typedMiddle
-            (HasType.classifierIsType wellFormed
-              (HasTypeDesc.toHasType typedPremise))
-            converts.sym convToCode⟩
+          Conv.trans converts.sym convToCode⟩
     | .universeFormation _armContext _armLevel _armFlag => fun subjectEq => by
         have rootEq : Generator.gen_universeCode = generator :=
           congrArg RawTerm.headGenerator subjectEq
