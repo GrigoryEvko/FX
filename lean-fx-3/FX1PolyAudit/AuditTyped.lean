@@ -835,6 +835,13 @@ gates pin them shut.
 -- subjectEq + subst_vars aligns the children — the same propext-free idiom the per-former inversions use.
 -- Unblocks HasTypeDescUniqueness (GTL-09) + the arity-bound reducibility arms.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionFormerTelescopeGeneric
+-- Generic former inversion FULL (telescope + classifier Conv at consistent levels/flag), the generic
+-- analogue of inversionPiCodeWithConvGeneral. Merges the classifier + telescope halves off the SAME
+-- genFormation arm — the consistency uniquenessAgree-style consumers need. Zero-axiom (same cracked-wall
+-- idiom). NOTE: HasTypeDescUniqueness can't yet consume it generically — its flag-uniqueness guard
+-- (levels ≠ []) needs binderShifts ≠ [] (former has ≥1 child), NOT a clean cascade invariant (nullary
+-- Empty violates it); kept per-former pending the nullary-former flag-uniqueness treatment.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionFormerWithConvGeneric
 
 /-! ### Leaf inversions (`var`, `universeCode`) for the description engine — the two
     NON-compound subjects, completing the per-shape inversion suite (var / universeCode

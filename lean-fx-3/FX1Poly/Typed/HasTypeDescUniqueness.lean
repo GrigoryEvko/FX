@@ -123,6 +123,11 @@ theorem HasTypeDesc.uniqueness {profile : PolyProfile} {scope : Nat}
       (HasTypeDesc.inversionUniverseCode secondDerivation wellFormed).sym
   | .genFormation _context generator _payload _children levels flag rule
       isFormation premises => fun secondDerivation => by
+      -- NOTE (GTL-09): the SECOND-derivation inversion genericizes via
+      -- `inversionFormerWithConvGeneric` (GTL-08), but the flag-uniqueness guard `levels ≠ []` needs
+      -- `generator.binderShifts ≠ []` (the former has ≥1 child) — true for pi/sigma/list/option but NOT
+      -- a nullary former (Empty), so it is NOT a clean cascade invariant.  Kept per-former pending the
+      -- nullary-former flag-uniqueness treatment.
       by_cases hPi : generator = .gen_piTyCode
       · subst hPi
         have hRule : rule = { outputType := universeFormerOutput } :=

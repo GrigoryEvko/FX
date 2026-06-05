@@ -57,4 +57,62 @@ theorem HasTypeDesc.inversionFormerTelescopeGeneric {profile : PolyProfile}
         subst_vars
         exact ⟨armLevels, armFlag, armPremises⟩
 
+/-- **Generic former inversion (FULL: telescope + classifier `Conv`).**  The generic-over-the-formation-
+generator analogue of `inversionPiCodeWithConvGeneral` / `inversionSigmaCodeWithConvGeneral`: a typed
+formation cell yields BOTH the children `DescTelescope` AND the classifier `Conv` to the canonical
+universe code, at CONSISTENT `levels`/`flag` (both read off the SAME `genFormation` arm).  Merges the
+classifier (`inversionFormerClassifierGeneric`) and telescope (`inversionFormerTelescopeGeneric`) halves
+— the consistency is exactly what `uniquenessAgree`-style consumers (e.g. `HasTypeDesc.uniqueness`) need,
+which two separate existential calls would NOT guarantee.  Zero-axiom (same cracked-wall idiom: `subst`
+the free generator, then `injection`/`subst_vars`). -/
+theorem HasTypeDesc.inversionFormerWithConvGeneric {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
+    (wellFormed : WfContext generalContext)
+    {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule) :
+    ∀ {payload : generator.payload generalScope}
+      {children : RawTermChildren generator.binderShifts generalScope},
+      subject = RawTerm.mkGen generator payload children →
+        ∃ (levels : List LevelExpr) (flag : UniverseFlag),
+          DescTelescope profile (currentDepth := 0) generalContext levels flag children ∧
+          Conv reachedClassifier (universeCodeCell (lmaxAll levels) flag) :=
+  fun {_payloadImplicit} {_childrenImplicit} =>
+    match derivation with
+    | .var _armContext _armIndex => fun subjectEq => by
+        have rootEq : Generator.gen_var = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [← rootEq] at isFormation
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg (fun isPi => Generator.noConfusion isPi),
+          if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
+        cases isFormation
+    | .conv _levelExpr _flag typedPremise converts _reclassifierTyped => fun subjectEq => by
+        obtain ⟨levels, flag, telescope, convToCode⟩ :=
+          HasTypeDesc.inversionFormerWithConvGeneric typedPremise wellFormed isFormation subjectEq
+        exact ⟨levels, flag, telescope,
+          Conv.trans_of_typedMiddle
+            (HasType.classifierIsType wellFormed
+              (HasTypeDesc.toHasType typedPremise))
+            converts.sym convToCode⟩
+    | .universeFormation _armContext _armLevel _armFlag => fun subjectEq => by
+        have rootEq : Generator.gen_universeCode = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [← rootEq] at isFormation
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg (fun isPi => Generator.noConfusion isPi),
+          if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
+        cases isFormation
+    | .genFormation _armContext armGenerator _armPayload armChildren armLevels armFlag
+        armRule armIsFormation armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        subst generatorAgree
+        obtain rfl : armRule = { outputType := universeFormerOutput } :=
+          formationRuleIsUniverseFormer armIsFormation
+        injection subjectEq
+        subst_vars
+        exact ⟨armLevels, armFlag, armPremises, Conv.refl _⟩
+
 end FX1Poly.Typed
