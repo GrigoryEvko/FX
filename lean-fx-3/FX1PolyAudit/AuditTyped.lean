@@ -52,6 +52,7 @@ import FX1Poly.Typed.PiTypeFunctionInversion
 import FX1Poly.Typed.GrownCanonicalForms
 import FX1Poly.Typed.GrownTypeSafety
 import FX1Poly.Typed.GrownCanonicalFormsByClassifier
+import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDescPi
@@ -1274,6 +1275,15 @@ gates pin them shut.
 -- lam_notTypedAtUniverseCode). #672-independent, no SR — pure inversion over the closed-canonical-forms recursor.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedNormalFunctionIsLambda
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedNormalTypeIsFormer
+-- CANONICAL-FORMS NON-VACUITY (GrownCanonicalFormsNonVacuity.lean): concrete closed witnesses showing the
+-- canonical-forms-per-type theorems FIRE. closedUniverseCodeTyping = Type@s : Type@(s+1) (universeFormation);
+-- closedIdentityLambdaTyping = λ(x:Type@s).x : Π(Type@s).Type@s (piIntro + var) — the first NAMED concrete closed
+-- POSITIVE typing derivations (complement to the GrownEngineHonesty 0-FP corpus). The two *_nonVacuous theorems
+-- feed Type@0 / the identity lambda through closedNormalTypeIsFormer / closedNormalFunctionIsLambda.
+#assert_no_axioms FX1Poly.Typed.closedUniverseCodeTyping
+#assert_no_axioms FX1Poly.Typed.closedIdentityLambdaTyping
+#assert_no_axioms FX1Poly.Typed.closedNormalTypeIsFormer_nonVacuous
+#assert_no_axioms FX1Poly.Typed.closedNormalFunctionIsLambda_nonVacuous
 -- SN-050 CONSISTENCY made concrete, gated on exactly SR-along-↝* (ConsistencyConditionalOnSubjectReduction.lean):
 -- OB-5 (stronglyNormalizingOfWfContext) normalizes a closed t : EmptyType to a reachable normal form; the explicit
 -- subjectReductionStar hypothesis carries the EmptyType classifier along the chain; noClosedNormalTermAtEmptyType
