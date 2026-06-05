@@ -487,6 +487,12 @@ gates pin them shut.
 -- equality, then universeCodeCell_inj. The totalBridge conv arm reads this to align a universe-code
 -- reclassifier's level with the classifier it was converted from (the conjunct-2-through-conv residual).
 #assert_no_axioms FX1Poly.Typed.universeCodeCell_inj_of_conv
+-- VARIABLE-CELL CONVERSION INJECTIVITY (variables are conv-rigid): two CONVERTIBLE variable cells share a de
+-- Bruijn index. Same normal-form collapse (both are gen_var/childNil step normal forms → confluence reduces Conv
+-- to syntactic equality → mkGen injectivity). The conv-arm dispatch fact the formation-engine totalBridge reads:
+-- a variable-reclassifier whose subject's classifier is a convertible variable shares its index, so the looked-up
+-- type IS the reclassifier and convVariableReclassifierOfStratified applies.
+#assert_no_axioms FX1Poly.Typed.variableCell_inj_of_conv
 -- A VARIABLE IS NEVER CONVERTIBLE TO A UNIVERSE CODE: both are step normal forms with distinct head generators
 -- (gen_var vs gen_universeCode), so global confluence collapses any conversion to syntactic equality, refuted by
 -- the head distinctness. The conjunct-2-vacuity fact the totalBridge conv-VARIABLE arm reads.
