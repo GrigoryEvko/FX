@@ -44,6 +44,7 @@ import FX1Poly.Core.NatElimValueReducibility
 import FX1Poly.Core.NatElimValueMember
 import FX1Poly.Core.NatElimNeutralScrutineeMember
 import FX1Poly.Core.ListElimNeutralScrutineeMember
+import FX1Poly.Core.DirectIotaEliminatorNeutralScrutineeMember
 import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.ListElimValueMember
 import FX1Poly.Core.ApplicationStrongNormalizationForward
@@ -666,6 +667,17 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_listCons
 #assert_no_axioms FX1Poly.Core.listElim_neutralScrutinee_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.listElimNeutralScrutineeMember
+
+-- NEUTRAL regime of the DIRECT-ι eliminators (boolElim/fst/snd/idJ/idStrictRec): the non-recursive companion
+-- to the natElim/listElim neutral regimes. Each ι-reduct is a branch/component (NOT an application), so the
+-- shipped cell-SN-from-children needs no extra interface and each neutral member is a pure compose with
+-- memberOfStronglyNormalizingNeutral + the IsNeutral.X arm. Brings the direct-ι eliminators to neutral-coverage
+-- parity with the recursive recursors (optionMatch/eitherMatch, application-ι, deferred — need bespoke SN).
+#assert_no_axioms FX1Poly.Core.boolElimNeutralScrutineeMember
+#assert_no_axioms FX1Poly.Core.fstNeutralArgumentMember
+#assert_no_axioms FX1Poly.Core.sndNeutralArgumentMember
+#assert_no_axioms FX1Poly.Core.idJNeutralWitnessMember
+#assert_no_axioms FX1Poly.Core.idStrictRecNeutralWitnessMember
 
 -- VALUE-CASE of listElim recursor reducibility (SN-064), the list analogue of the Nat recursor value-case:
 -- listElim on a LIST-VALUE scrutinee lands in the result candidate by IsListValue structural induction firing
