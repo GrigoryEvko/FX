@@ -60,6 +60,31 @@ theorem DescTelescope.twoChildLevels {profile : PolyProfile} {baseScope : Nat}
           cases tailTelescope with
           | nil => exact ⟨domainLevel, codomainLevel, rfl⟩
 
+/-- **Two-child formation telescope ⟹ both component typings.**  The TYPING companion to `twoChildLevels`
+(which recovers only the levels): a depth-0 `DescTelescope` over the concrete two-child `[0,1]` spine yields
+the head's typing at its universe code under `context` AND the tail head's typing under the binder-extended
+`context.cons child0` — exactly the dependent former shape (domain a type, codomain a type under the domain
+binder).  Composed with the generic `inversionFormerTelescopeGeneric` (GTL-08) this gives generic 2-child
+former component inversion for ANY dependent binary formation former, factoring the telescope-walk half that
+`inversionPiCodeComponents` / `inversionSigmaCodeComponents` each spell out by hand.  Same single-live-`cons`
+discipline as `twoChildLevels` (the child spine fixes the `RawTermChildren` index; `nil` is refuted by that
+index alone), so no `propext` / `Quot.sound` leak. -/
+theorem DescTelescope.twoChildComponents {profile : PolyProfile} {baseScope : Nat}
+    {context : TypingContext profile baseScope} {levels : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren [0, 1] baseScope}
+    (telescope : DescTelescope profile (currentDepth := 0) context levels flag children) :
+    ∃ (child0 : RawTerm baseScope) (child1 : RawTerm (baseScope + 1))
+      (domainLevel codomainLevel : LevelExpr),
+      levels = [domainLevel, codomainLevel] ∧
+      HasTypeDesc profile context child0 (universeCodeCell domainLevel flag) ∧
+      HasTypeDesc profile (context.cons child0) child1 (universeCodeCell codomainLevel flag) := by
+  cases telescope with
+  | cons _context head domainLevel _restLevels _flag _rest domainTyped restTelescope =>
+      cases restTelescope with
+      | cons _context2 head2 codomainLevel _restLevels2 _flag2 _rest2 codomainTyped tailTelescope =>
+          cases tailTelescope with
+          | nil => exact ⟨head, head2, domainLevel, codomainLevel, rfl, domainTyped, codomainTyped⟩
+
 /-- **Cons-shape inversion of the grown premise telescope.**  A `DescTelescopePi` over a non-empty level
 list `headLevel :: restLevels` and a `childCons head rest` child vector came through the `cons`
 constructor, so it splits into the head's `HasTypeDescPi` typing (at `universeCodeCell headLevel flag`) and

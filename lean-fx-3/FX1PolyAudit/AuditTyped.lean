@@ -2231,6 +2231,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMember.atUniverseCode
 #assert_no_axioms FX1Poly.Typed.DescTelescope.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescope.twoChildLevels
+-- GTL-10 substrate: the TYPING companion to twoChildLevels — a 2-child [0,1] formation telescope yields BOTH
+-- component typings (domain a type under context, codomain a type under context.cons child0). Composed with
+-- the generic inversionFormerTelescopeGeneric (GTL-08) it gives generic 2-child former component inversion for
+-- ANY dependent binary formation former, factoring the telescope-walk half of the bespoke pi/sigma component
+-- inversions. Same single-live-cons discipline as twoChildLevels (no propext / Quot.sound).
+#assert_no_axioms FX1Poly.Typed.DescTelescope.twoChildComponents
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormerOfChildMembershipsAtRequiredLevels
