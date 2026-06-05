@@ -48,6 +48,7 @@ import FX1Poly.Typed.EmptyTypeCodeConvRigidity
 import FX1Poly.Typed.EmptyTypeValueInversion
 import FX1Poly.Typed.FormationCanonicalForms
 import FX1Poly.Typed.PiTypeFunctionInversion
+import FX1Poly.Typed.GrownCanonicalForms
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1211,6 +1212,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piFormerNotTypedAtPiType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormerNotTypedAtPiType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCodeNotTypedAtPiType
+-- GROWN CANONICAL FORMS (GrownCanonicalForms.lean): a closed NORMAL grown-typed term has head
+-- gen_lam/gen_piTyCode/gen_sigmaTyCode/gen_universeCode (closedNormalSubjectHead, via the propext-free recursor;
+-- piElim crux killed by appNormal_functionNormal + not_isStepNormalForm_beta_smoke + the *NotTypedAtPiType
+-- inversions). noClosedNormalTermAtEmptyType = grown NORMAL-FORM consistency: no closed normal term inhabits
+-- Empty (canonical forms + the *NotTypedAtEmptyType value inversions, NO SR). Full SN-050 adds SN (OB-5) + SR.
+#assert_no_axioms FX1Poly.Typed.appNormal_functionNormal
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedNormalSubjectHead
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEmptyType
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
