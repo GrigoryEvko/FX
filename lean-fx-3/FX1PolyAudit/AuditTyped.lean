@@ -4346,6 +4346,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.convContextCondition_consStep
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectReduction
 #assert_no_axioms FX1Poly.Typed.DescTelescope.subjectReduction
+-- HONESTY: the formation fragment is NORMAL — subjectAdmitsNoStep is the genuinely content-bearing
+-- characterization (every formation-typed subject admits no Step), making the SR above VACUOUSLY true (an
+-- earlier docstring overclaimed "non-vacuous"; corrected). childrenAdmitNoStep is the mutual telescope
+-- normality witness. subjectAdmitsNoStep is the tool the SN-055 dispatcher's ofFormation arm actually uses
+-- (absurd step via no-step), NOT the heavier vacuous subjectReduction.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectAdmitsNoStep
+#assert_no_axioms FX1Poly.Typed.DescTelescope.childrenAdmitNoStep
 
 -- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
 -- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique

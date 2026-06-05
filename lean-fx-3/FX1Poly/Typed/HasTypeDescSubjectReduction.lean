@@ -21,10 +21,16 @@ This file ships that — the formation-engine subject reduction, as a MUTUAL pai
     stepped binding via `convTelescope` (`convContextCondition_consStep` supplies the
     `cons head ⤳ cons headAfter` context-condition); `there` recurses into the tail.
 
-This is GENUINELY non-vacuous: the formation engine types the Π/Σ-former CODES (`piTyCodeCell` /
-`sigmaTyCodeCell`), and a former-code Step is a domain/codomain congruence — so the `genFormation` arm and the
-telescope `here`/`there` arms all fire on real reductions (unlike the bespoke leaf-only `HasType`, whose
-`subjectReduction` is a no-Step lemma).
+**Honesty correction (the formation fragment is NORMAL — this SR is VACUOUSLY true).**  The formation engine
+types ONLY normal forms.  Its arms are var / universeFormation / conv / `genFormation`, and a Π/Σ-former code's
+components are re-typed at universe codes BY THE SAME ENGINE (the `DescTelescope` premise), hence are
+recursively formation-typed and therefore normal — so the former code itself heads no redex.  The engine has no
+app / eliminator / λ arm, so NO formation-typed subject ever steps.  `HasTypeDesc.subjectAdmitsNoStep` (below)
+is that honest characterization; it makes this `subjectReduction` VACUOUSLY true (the mutual machinery handles
+the structurally-possible child congruences that never fire on a normal subject — exactly like the bespoke
+leaf-only `HasType.subjectReduction`, also a no-step lemma).  The dispatcher's `ofFormation` arm discharges via
+`subjectAdmitsNoStep` (no step → vacuous), NOT via the heavier `subjectReduction`.  (An earlier draft of this
+header overclaimed "genuinely non-vacuous"; corrected here.)
 
 The genFormation arm is generic over the formation generator: `former_step_inv` rules out root redexes for the
 whole formation family (currently `{gen_piTyCode, gen_sigmaTyCode}` via `typingRuleDescOf_isPiOrSigma`), so a
@@ -151,6 +157,58 @@ theorem DescTelescope.subjectReduction {profile : PolyProfile}
             rename_i restAfter
             exact DescTelescope.cons context head headLevel restLevels flag restAfter headTyped
               (DescTelescope.subjectReduction restTyped restAfter restStep)
+
+end
+
+mutual
+
+/-- **The formation fragment is NORMAL: every `HasTypeDesc`-typed subject admits no `Step`.**  This is the
+honest characterization of the formation engine (it types only normal forms), and the genuinely content-bearing
+statement that `subjectReduction` is vacuously true: `var` / `universeFormation` are leaves (no_step_from_var /
+no_step_from_universeCode); `conv` re-uses the premise (same subject); `genFormation` decomposes any candidate
+Step into a child congruence (`former_step_inv`, root-redex-free over the formation family) and contradicts it
+via the mutual telescope normality.  Unlike `subjectReduction` (whose mutual machinery RE-TYPES under a step
+that never fires), this concludes the step is IMPOSSIBLE — so it is the tool the SR dispatcher's `ofFormation`
+arm uses (`absurd step (formationTyped.subjectAdmitsNoStep _)`).  Non-vacuous as a statement: it characterizes
+EVERY formation-typed term as normal. -/
+theorem HasTypeDesc.subjectAdmitsNoStep {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (derivation : HasTypeDesc profile context subject classifier) :
+    ∀ (reduct : RawTerm scope), ¬ Step subject reduct :=
+  match derivation with
+  | .var _context _index => fun _reduct step => Step.no_step_from_var step
+  | .conv _levelExpr _flag typed _converts _reclassifierTyped => fun reduct step =>
+      HasTypeDesc.subjectAdmitsNoStep typed reduct step
+  | .universeFormation _context _levelExpr _flag => fun _reduct step =>
+      Step.no_step_from_universeCode step
+  | .genFormation _context _generator _payload _children _levels _flag _rule isFormation premises =>
+      fun _reduct step => by
+        obtain ⟨children', _reductEq, stepChildren⟩ := former_step_inv isFormation step
+        exact DescTelescope.childrenAdmitNoStep premises children' stepChildren
+
+/-- **A formation premise telescope's children admit no `StepChildren`** — the mutual normality witness for the
+spine: `nil` is empty (`no_step_at_empty_spine`); `cons` contradicts a head Step via the mutual
+`HasTypeDesc.subjectAdmitsNoStep` on `headTyped` and a tail Step via the recursive telescope normality. -/
+theorem DescTelescope.childrenAdmitNoStep {profile : PolyProfile}
+    {baseScope currentDepth : Nat} {binderShifts : List Nat}
+    {context : TypingContext profile (baseScope + currentDepth)}
+    {levels : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren binderShifts baseScope}
+    (telescope : DescTelescope profile context levels flag children) :
+    ∀ (children' : RawTermChildren binderShifts baseScope),
+      ¬ StepChildren children children' :=
+  match telescope with
+  | .nil _context _flag => fun _children' stepChildren =>
+      StepChildren.no_step_at_empty_spine stepChildren
+  | .cons _context _head _headLevel _restLevels _flag _rest headTyped restTyped =>
+      fun _children' stepChildren => by
+        cases stepChildren with
+        | here _rest headStep =>
+            rename_i headAfter
+            exact HasTypeDesc.subjectAdmitsNoStep headTyped headAfter headStep
+        | there _head restStep =>
+            rename_i restAfter
+            exact DescTelescope.childrenAdmitNoStep restTyped restAfter restStep
 
 end
 
