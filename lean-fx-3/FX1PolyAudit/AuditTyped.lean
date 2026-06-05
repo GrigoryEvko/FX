@@ -55,6 +55,7 @@ import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
 import FX1Poly.Typed.HasTypeDescPiClassifierValidity
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionDescPi
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1300,6 +1301,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionPiCodeComponentsUnconditional
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piCodeInstantiationIsTypeUnconditional
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.classifierIsTypeDescPi
+-- FUNCTION-SPACE SR ARMS over the GROWN well-formedness (HasTypeDescPiSubjectReductionDescPi.lean, toward SN-055):
+-- the WfContextDescPi twins of betaSubjectReduction + subjectReductionPiElimArm, now that the grown
+-- classifierIsTypeDescPi (WFG-3) is available. Each is a one-site swap (the lone WfContext use = the
+-- classifier-validity call; all else is well-formedness-free). With the already-WfContext-free
+-- subjectReductionPiIntroArm, the dispatcher's function-space arms all thread WfContextDescPi (which DOES extend
+-- at a grown piIntro binder); the remaining dispatcher residual is the former arms' codomainReTyping (the
+-- separate grown context-conversion / GCC bundle).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaSubjectReductionDescPi
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionPiElimArmDescPi
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
