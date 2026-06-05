@@ -1195,6 +1195,12 @@ gates pin them shut.
 -- the propext-free mutual recursor (trivial telescope motive) — zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectIsVariableOrFormerHead
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectHeadIsFormerOrUniverse
+-- FORMATION-ENGINE CONSISTENCY: no closed formation-engine term inhabits the empty type
+-- (HasTypeDesc .empty t emptyTypeCell → False). Every classifier a closed formation derivation reaches has
+-- head gen_universeCode (universeFormation / genFormation outputs) or — for a conv reclassifier — a Π/Σ/universe
+-- head (subjectIsVariableOrFormerHead, variable disjunct killed by closedness); none is gen_emptyCode. The
+-- FORMATION half of SN-050; no reconstruction, no value-inversion. Zero-axiom (recursor + Generator.noConfusion).
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.noClosedFormationTermAtEmptyType
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
