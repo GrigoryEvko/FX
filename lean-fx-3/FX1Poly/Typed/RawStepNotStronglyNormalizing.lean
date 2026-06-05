@@ -1,6 +1,8 @@
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasType
 import FX1Poly.Core.StepStarConfluence
+import FX1Poly.Core.StepInversion
+import FX1Poly.Core.RawTermNF
 
 /-! # FX1Poly/Typed/RawStepNotStronglyNormalizing
     — the honest NEGATIVE counterpart to SN-043: the RAW β-reduction is NOT strongly normalizing (SN-140 L1)
@@ -27,6 +29,21 @@ raw substrate.
     `Acc StepSuccessor` and `StepSuccessor Ω Ω` holds (the self-step), `notAccessibleOfSelfLoop` refutes it.
   * `rawStep_notStronglyNormalizing` — the headline: `¬ HasStrongNormalization`.  The raw `Step` relation does
     NOT strongly normalize at every scope; `Ω` is the counterexample.
+
+The second half sharpens "not SN" into "no normal form" — `Ω` does not merely fail the accessibility predicate,
+it never reaches a `Step`-normal term along its (unique) reduction path:
+
+  * `selfApplicator_isStepNormalForm` — `λx. x x` is itself a normal form: its body is a variable applied to a
+    variable, a neutral with no redex.  Decided structurally (`by decide`, axiom-free).
+  * `divergentOmega_reductIsSelf` — `Ω`'s ONLY one-step reduct is `Ω`.  `Step.from_app` inversion gives three
+    shapes: β (returns `Ω`, the body being `x x`), a function-step, or an argument-step — the latter two refuted
+    because the self-applicator is normal.
+  * `divergentOmega_starReductIsSelf` — `Ω`'s ONLY `StepStar`-reduct is `Ω`.  Chain induction (both endpoints
+    generalized, the start-is-`Ω` fact carried as an equation): each `trans` step lands back at `Ω`.
+  * `divergentOmega_noNormalForm` — `Ω` has NO normal form: every reachable term equals `Ω`, and `Ω` is a redex,
+    so nothing reachable is `Step`-normal.  This is the exact obstruction a weak-normalization proof faces on raw
+    terms (and overcomes only via the typing restriction): a closed, well-scoped, ill-typed term whose every
+    reduction path diverges.
 
 ## Zero-axiom verification
 
@@ -82,5 +99,69 @@ merely unproved.  §27.3 five-layer-defense L1. -/
 theorem rawStep_notStronglyNormalizing : ¬ HasStrongNormalization :=
   fun globalStrongNormalization =>
     divergentOmega_notStronglyNormalizing (globalStrongNormalization divergentOmegaCell)
+
+/-- **The self-applicator `λx. x x` is a `Step`-normal form.**  Its body `x x` is a variable applied to a
+variable — a neutral application with no redex anywhere — so no `Step` fires.  Decided structurally
+(`by decide`, no `Decidable`-instance axiom leak).  The fact the `Ω`-reduct inversion consumes to refute the two
+congruence shapes of `Step.from_app`. -/
+theorem selfApplicator_isStepNormalForm : RawTerm.isStepNormalForm selfApplicatorCell := by decide
+
+/-- **`Ω`'s only one-step reduct is `Ω`.**  `Step.from_app` inverts a step out of the application
+`(λx. x x)(λx. x x)` into three shapes: a β-contraction, a step inside the function, or a step inside the
+argument.  The β-shape's contractum is `subst0 (x x) (λx. x x) = Ω` (the body forced to `x x` by injecting the
+function equation).  Both congruence shapes are impossible because the self-applicator is a normal form
+(`selfApplicator_isStepNormalForm` ⋈ `isStepNormalForm_blocks_step`).  So the reduct is uniquely `Ω`. -/
+theorem divergentOmega_reductIsSelf :
+    ∀ reduct : RawTerm 0, Step divergentOmegaCell reduct → reduct = divergentOmegaCell := by
+  intro reduct step
+  rcases Step.from_app step with
+      ⟨body, functionEq, reductEq⟩ | ⟨functionAfter, reductEq, functionStep⟩
+      | ⟨argumentAfter, reductEq, argumentStep⟩
+  · -- β-shape: functionEq forces the lambda body to be `x x`, so the contractum is Ω.
+    rw [show selfApplicatorCell
+          = (.mkGen .gen_lam () (.childCons
+              (appCell (variableCell ⟨0, Nat.succ_pos 0⟩) (variableCell ⟨0, Nat.succ_pos 0⟩))
+              .childNil) : RawTerm 0) from rfl] at functionEq
+    injection functionEq with _scopeEq _genEq _payloadEq childrenSpineEq
+    injection childrenSpineEq with _shiftEq _arityEq _restShiftsEq bodyEq _tailEq
+    subst reductEq
+    subst bodyEq
+    rfl
+  · exact absurd functionStep
+      (RawTerm.isStepNormalForm_blocks_step selfApplicator_isStepNormalForm functionAfter)
+  · exact absurd argumentStep
+      (RawTerm.isStepNormalForm_blocks_step selfApplicator_isStepNormalForm argumentAfter)
+
+/-- **`Ω`'s only `StepStar`-reduct is `Ω`.**  Induction on the reduction chain with BOTH endpoints generalized
+and the start-is-`Ω` fact carried as an explicit equation (the standard fixed-start `StepStar`-induction shape —
+the bare `induction` motive cannot abstract the constant first index).  The reflexive case is immediate; each
+`trans` step lands back at `Ω` by `divergentOmega_reductIsSelf`, so the tail chain restarts at `Ω` and the
+inductive hypothesis closes it. -/
+theorem divergentOmega_starReductIsSelf (reached : RawTerm 0)
+    (chain : StepStar divergentOmegaCell reached) : reached = divergentOmegaCell := by
+  suffices generalized :
+      ∀ start finish : RawTerm 0, StepStar start finish →
+        start = divergentOmegaCell → finish = divergentOmegaCell from
+    generalized divergentOmegaCell reached chain rfl
+  intro start finish startChain
+  induction startChain with
+  | refl => exact fun startEq => startEq
+  | trans headStep _restChain tailInductiveHypothesis =>
+      intro firstEq
+      subst firstEq
+      exact tailInductiveHypothesis (divergentOmega_reductIsSelf _ headStep)
+
+/-- **`Ω` has NO normal form.**  Every term reachable from `Ω` equals `Ω` (`divergentOmega_starReductIsSelf`),
+and `Ω` is itself a redex (`divergentOmega_stepsToSelf`), so no reachable term is `Step`-normal: the unique
+reduction path `Ω ⤳ Ω ⤳ …` never halts.  The sharpest divergence statement — not merely "`Ω` is not SN" but
+"`Ω` never reaches a normal form by ANY reduction."  Precisely the obstruction a raw weak-normalization proof
+cannot clear, and the reason SN/WN (SN-043) need the typing restriction: this term is closed and well-scoped yet
+ill-typed.  §27.3 five-layer-defense L1. -/
+theorem divergentOmega_noNormalForm (reached : RawTerm 0)
+    (chain : StepStar divergentOmegaCell reached) : ¬ RawTerm.isStepNormalForm reached := by
+  have reachedEq : reached = divergentOmegaCell := divergentOmega_starReductIsSelf reached chain
+  subst reachedEq
+  exact fun normalForm =>
+    RawTerm.isStepNormalForm_blocks_step normalForm divergentOmegaCell divergentOmega_stepsToSelf
 
 end FX1Poly.Typed

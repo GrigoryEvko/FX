@@ -5007,3 +5007,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.notAccessibleOfSelfLoop
 #assert_no_axioms FX1Poly.Typed.divergentOmega_notStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.rawStep_notStronglyNormalizing
+
+-- Ω HAS NO NORMAL FORM — sharpening "not SN" into "never reaches a Step-normal term." selfApplicator is itself
+-- normal (by decide); Ω's only one-step reduct is Ω (Step.from_app inversion, congruence shapes refuted by the
+-- self-applicator being normal); its only StepStar-reduct is Ω (chain induction, both endpoints generalized);
+-- hence no reachable term is normal. The exact obstruction a raw weak-normalization proof cannot clear — closed,
+-- well-scoped, ill-typed, every reduction path diverges (the reason SN-043/WN need the typing restriction).
+#assert_no_axioms FX1Poly.Typed.selfApplicator_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.divergentOmega_reductIsSelf
+#assert_no_axioms FX1Poly.Typed.divergentOmega_starReductIsSelf
+#assert_no_axioms FX1Poly.Typed.divergentOmega_noNormalForm
