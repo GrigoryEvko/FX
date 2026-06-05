@@ -1344,6 +1344,10 @@ gates pin them shut.
 -- composite.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.functionDomainIsType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.functionCodomainIsType
+-- reclassifyArgumentToFunctionDomain: the first consumer — re-type an argument (Conv to the function's domain) at
+-- the domain itself, with functionDomainIsType supplying the conv rule's universe witness. The argument-retyping
+-- step of the grown β / context-conversion piElim arms (toward GCC-5/SN-055).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.reclassifyArgumentToFunctionDomain
 -- FUNCTION-SPACE SR ARMS over the GROWN well-formedness (HasTypeDescPiSubjectReductionDescPi.lean, toward SN-055):
 -- the WfContextDescPi twins of betaSubjectReduction + subjectReductionPiElimArm, now that the grown
 -- classifierIsTypeDescPi (WFG-3) is available. Each is a one-site swap (the lone WfContext use = the

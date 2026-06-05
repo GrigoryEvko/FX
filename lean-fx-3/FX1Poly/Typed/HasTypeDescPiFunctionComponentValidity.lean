@@ -12,8 +12,11 @@ the function's CLASSIFIER, reached through grown classifier-validity.
 
   * `HasTypeDescPi.functionDomainIsType` — a `function : Π(domain). codomain` has `domain : Type`.
   * `HasTypeDescPi.functionCodomainIsType` — and `codomain : Type` under `context.cons domain`.
+  * `HasTypeDescPi.reclassifyArgumentToFunctionDomain` — the first CONSUMER: re-type an argument whose type is
+    `Conv`-equal to the function's domain at the domain itself, using `functionDomainIsType` as the `conv` rule's
+    universe witness (the argument-retyping step of the grown β / context-conversion `piElim` arms).
 
-Both compose two shipped pieces with no new induction: `HasTypeDescPi.classifierIsTypeDescPi` (WFG-3 — the
+The two validity lemmas compose two shipped pieces with no new induction: `HasTypeDescPi.classifierIsTypeDescPi` (WFG-3 — the
 function's classifier `Π(domain). codomain` is a grown type) feeds its universe witness to
 `HasTypeDescPi.inversionPiCodeComponentsUnconditional` (the well-formedness-free Π-code component inversion),
 whose two conjuncts ARE the domain and codomain typings.  The `WfContextDescPi` premise is exactly the one
@@ -64,5 +67,23 @@ theorem HasTypeDescPi.functionCodomainIsType {profile : PolyProfile} {scope : Na
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped⟩ :=
     HasTypeDescPi.inversionPiCodeComponentsUnconditional piTyped
   exact ⟨codomainLevel, flag, codomainTyped⟩
+
+/-- **Re-type a function's argument to the function's exact domain.**  An argument typed at a type `Conv`-equal to
+the function's domain can be re-classified at the domain itself.  The first consumer of `functionDomainIsType`: it
+supplies the `conv` rule's universe witness for the domain (the domain IS a type), so the argument's `conv`-step
+to the domain has its reclassifier validated.  This is the argument-retyping step the grown β / context-conversion
+`piElim` arms perform — to apply `piElim`/`betaSubjectReduction` one first aligns the argument with the function's
+domain, which needs the domain to be a type.  Named here so those developments (toward GCC-5 / SN-055) cite a
+presupposition-backed re-typing rather than re-derive the `functionDomainIsType ∘ conv` composite. -/
+theorem HasTypeDescPi.reclassifyArgumentToFunctionDomain {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {function argument : RawTerm scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)} {argumentType : RawTerm scope}
+    (functionTyped : HasTypeDescPi profile context function (piTyCodeCell domainCode codomainCode))
+    (argumentTyped : HasTypeDescPi profile context argument argumentType)
+    (convArgumentTypeToDomain : Conv argumentType domainCode)
+    (wellFormed : WfContextDescPi context) :
+    HasTypeDescPi profile context argument domainCode := by
+  obtain ⟨domainLevel, flag, domainTyped⟩ := functionTyped.functionDomainIsType wellFormed
+  exact HasTypeDescPi.conv domainLevel flag argumentTyped convArgumentTypeToDomain domainTyped
 
 end FX1Poly.Typed
