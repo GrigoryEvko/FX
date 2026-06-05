@@ -138,4 +138,37 @@ theorem emptyConsistencyFromReducibleMemberBridge {profile : PolyProfile} (env :
   rw [subst_emptyTypeCell] at member
   exact emptyHasNoClosedMember (memberBridge closedTerm bound member)
 
+/-- **The CON-A3 OBSTRUCTION, mechanized: `emptyTypeCell`'s DEFAULT reducibility candidate is the
+MAXIMAL one (`IsStronglyNormalizing`), NOT the empty candidate.**  `emptyTypeCell` is weak-head-normal
+(no `WeakHeadStep` — `gen_emptyCode` heads no β/ι and has no children: every `WeakHeadStep`
+constructor save the generic `rootIota` pins a concrete eliminable head ≠ `gen_emptyCode`, and
+`rootIota`'s `IotaHeadStep` is uninhabited on `gen_emptyCode`), and its root generator is neither
+`gen_piTyCode` nor `gen_universeCode`.  So the `ReducibleTypeStepBounded.neutral` arm fires and gives
+`emptyTypeCell` the candidate `IsStronglyNormalizing` — the WHOLE SN set.
+
+This is the precise reason CON-A3 (memberBridge in `emptyConsistencyFromReducibleMemberBridge`) is
+FALSE under the default interpretation: `IsStronglyNormalizing` contains closed VALUES (e.g. a closed
+`gen_lam`), which are NOT empty-candidate members (`CanonicalFormsPredicate emptyIsValue` = SN ∧
+neutral-or-False-value = SN ∧ neutral, member-free among closed terms by #680).  So
+`IsReducibleMemberAtBounded env bound emptyTypeCell` is INHABITED (any SN term) ⟹ memberBridge's
+premise holds for closed values whose conclusion fails.  CON-A3 therefore requires an INTERPRETATION
+CHANGE — excluding `emptyTypeCell` (data type codes) from the generic `neutral` arm (add a
+`rootGenerator ≠ gen_emptyCode` side-condition) and a dedicated arm giving it the empty Tait candidate
+— a structural edit to `ReducibleTypeStepBounded` cascading through its consumers (#483/#485-487, the
+§5 engine↔candidate representation decision).  Positive corollary: `emptyTypeCell` IS a reducible
+type (`IsReducibleTypeAtBounded`), the non-vacuity half — in the reducibility model, unlike the
+bespoke `HasType` engine which cannot type it.  (The candidate is existentially hidden here; the
+`neutral` arm pins it to the WHOLE `IsStronglyNormalizing` set — the obstruction described above.) -/
+theorem emptyTypeCell_isReducibleType {scope : Nat} (env : Nat → Nat) (bound : Nat) :
+    IsReducibleTypeAtBounded env bound (emptyTypeCell (scope := scope)) := by
+  have noWeakHeadStep : ∀ reduct : RawTerm scope,
+      ¬ WeakHeadStep (emptyTypeCell (scope := scope)) reduct := by
+    intro reduct weakHeadStep
+    dsimp only [emptyTypeCell] at weakHeadStep
+    cases weakHeadStep with
+    | rootIota iotaStep => cases iotaStep
+  exact ⟨_, ReducibleTypeStepBounded.neutral noWeakHeadStep
+    (by show Generator.gen_emptyCode ≠ Generator.gen_piTyCode; decide)
+    (by show Generator.gen_emptyCode ≠ Generator.gen_universeCode; decide)⟩
+
 end FX1Poly.Typed

@@ -4434,6 +4434,11 @@ gates pin them shut.
 -- subst_emptyTypeCell + emptyHasNoClosedMember, so SN-050's residual drops from the full candidateBridge to the
 -- cleaner memberBridge = CON-A3 core (a bounded-reducible member of emptyTypeCell is an empty-candidate member).
 #assert_no_axioms FX1Poly.Typed.emptyConsistencyFromReducibleMemberBridge
+-- The CON-A3 OBSTRUCTION mechanized: emptyTypeCell IS a reducible type (non-vacuity in the reducibility model),
+-- but via the neutral arm its candidate is the WHOLE IsStronglyNormalizing set (contains closed values) — NOT the
+-- empty candidate. So CON-A3/memberBridge is false under the default interpretation; closing it needs a structural
+-- ReducibleTypeStepBounded edit (exclude data type codes from neutral + dedicated empty-candidate arm), the #483 work.
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_isReducibleType
 
 -- Canonicity target signature (CanonicityTargetSignature.lean): the SN-047/048/049 twin of CON-A0. Engine
 -- canonicity reduces to the SAME data-candidate bridge as consistency, making the Phase-A boundary uniform.
