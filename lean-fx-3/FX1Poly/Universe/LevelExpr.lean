@@ -130,6 +130,24 @@ theorem LevelExpr.ne_lsucc_self (levelExpr : LevelExpr) :
   | limax left right _ _ => intro selfEq; cases selfEq
   | lvar index => intro selfEq; cases selfEq
 
+/-- A level expression is never equal to its own DOUBLE successor: `levelExpr ≠ lsucc (lsucc levelExpr)`.
+The `e ≠ e + 2` predicativity guard — same structural induction as `ne_lsucc_self` (the `lsucc inner` arm
+injects through one `lsucc` and refutes via the IH; every other head clashes with `lsucc`).  Feeds the
+GENERAL no-level-deflation rejection (`universeCode_notTypedBelowSuccessor_general`): `Type@(e+1) : Type@e`
+would force `e = lsucc (lsucc e)`, which this refutes — the deflation twin of the `ne_lsucc_self` no-inflation
+guard, now at every level rather than the closed `decide` at `Type@0`. -/
+theorem LevelExpr.ne_lsuccLsucc_self (levelExpr : LevelExpr) :
+    levelExpr ≠ LevelExpr.lsucc (LevelExpr.lsucc levelExpr) := by
+  induction levelExpr with
+  | lzero => intro selfEq; cases selfEq
+  | lsucc inner ih =>
+      intro selfEq
+      injection selfEq with innerEq
+      exact ih innerEq
+  | lmax left right _ _ => intro selfEq; cases selfEq
+  | limax left right _ _ => intro selfEq; cases selfEq
+  | lvar index => intro selfEq; cases selfEq
+
 /-! ## DecidableEq smoke checks -/
 
 /-- DecidableEq decides equal canonical-form expressions to

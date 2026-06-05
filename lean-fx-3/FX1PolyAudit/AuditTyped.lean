@@ -4769,6 +4769,9 @@ gates pin them shut.
 -- known-unsoundness rejection, the universe-axis L1 anchor.
 #assert_no_axioms FX1Poly.Typed.universeCode_notTypedAtSelf_general
 #assert_no_axioms FX1Poly.Typed.universeCode_notTypedAboveSuccessor_general
+-- general no-deflation (Type@(e+1) ⊬ Type@e at all levels/contexts), via the double-successor guard
+-- LevelExpr.ne_lsuccLsucc_self — completes the general level-strictness corpus (self / above / below).
+#assert_no_axioms FX1Poly.Typed.universeCode_notTypedBelowSuccessor_general
 
 -- Π-introduction (λ) inversion for the GROWN engine (HasTypeDescPiLamInversion.lean, TY-INVN #454). A `lamCell
 -- body` typed at `classifier` in HasTypeDescPi has `classifier` Conv to a Π-code, with the domain/codomain grown

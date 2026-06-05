@@ -71,6 +71,8 @@ full strict-zero-axiom sweep.
 -- structural distinctness `e ≠ lsucc e` (no-Type-in-Type probe support):
 -- size-free structural induction, the predicativity guard at the level algebra
 #assert_no_axioms FX1Poly.Universe.LevelExpr.ne_lsucc_self
+-- the double-successor guard `e ≠ lsucc (lsucc e)` (no-level-deflation support): same induction
+#assert_no_axioms FX1Poly.Universe.LevelExpr.ne_lsuccLsucc_self
 
 /-! ### UniverseFlag Setzer-Rathjen closed enum + canonical-form + DecidableEq -/
 

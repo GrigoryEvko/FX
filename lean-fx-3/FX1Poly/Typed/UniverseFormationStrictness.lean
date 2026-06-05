@@ -122,4 +122,22 @@ theorem universeCode_notTypedAboveSuccessor_general {profile : PolyProfile} {sco
     HasType.universeCodeClassifierConvToSuccessor levelExpr flag contextWellFormed typed
   exact absurd (universeCodeCell_inj_of_conv conv).1 (LevelExpr.ne_lsucc_self levelExpr.lsucc).symm
 
+/-- **0-FP: no level deflation, in full generality.**  `Type@(e+1)` is NOT typed at `Type@e` at ANY level in
+ANY well-formed context — only at `Type@(e+2)`.  Inverting the subject `Type@(e+1)` forces its classifier
+`Type@e` to convert to `Type@(e+2)`, i.e. `e = lsucc (lsucc e)`, refuted by the double-successor predicativity
+guard `LevelExpr.ne_lsuccLsucc_self`.  Completes the general level-strictness corpus (self / above / below) at
+all levels — the universe rule's `conv` uses symmetric `Conv`, not `≤`-cumulativity, so a universe code neither
+climbs nor descends. -/
+theorem universeCode_notTypedBelowSuccessor_general {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    (contextWellFormed : WfContext context)
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    ¬ HasType profile context (universeCodeCell levelExpr.lsucc flag)
+        (universeCodeCell levelExpr flag) := by
+  intro typed
+  have conv : Conv (universeCodeCell levelExpr flag : RawTerm scope)
+      (universeCodeCell levelExpr.lsucc.lsucc flag) :=
+    HasType.universeCodeClassifierConvToSuccessor levelExpr.lsucc flag contextWellFormed typed
+  exact absurd (universeCodeCell_inj_of_conv conv).1 (LevelExpr.ne_lsuccLsucc_self levelExpr)
+
 end FX1Poly.Typed
