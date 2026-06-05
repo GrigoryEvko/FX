@@ -45,6 +45,7 @@ import FX1Poly.Core.NatElimValueMember
 import FX1Poly.Core.NatElimNeutralScrutineeMember
 import FX1Poly.Core.ListElimNeutralScrutineeMember
 import FX1Poly.Core.DirectIotaEliminatorNeutralScrutineeMember
+import FX1Poly.Core.MatchEliminatorNeutralScrutineeMember
 import FX1Poly.Core.ListElimValueReducibility
 import FX1Poly.Core.ListElimValueMember
 import FX1Poly.Core.ApplicationStrongNormalizationForward
@@ -678,6 +679,20 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.sndNeutralArgumentMember
 #assert_no_axioms FX1Poly.Core.idJNeutralWitnessMember
 #assert_no_axioms FX1Poly.Core.idStrictRecNeutralWitnessMember
+
+-- NEUTRAL regime of the APPLICATION-ι match eliminators (optionMatch/eitherMatch): the last 2 of 12 IsNeutral
+-- eliminators, completing the eliminator-neutral-coverage arc. Their ι is an application (optionMatch (some v)
+-- … ↝ app s v), so cell-SN needs the bespoke triple-Acc (the natElim pattern, ι cases vacuous by neutrality)
+-- + constructor discriminators rootGenerator_ne_optionNone/optionSome/eitherInl/eitherInr -- NOT a pure compose
+-- like the direct-ι five. With these, all 12 IsNeutral eliminators are reducible over a neutral principal child.
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_optionNone
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_optionSome
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_eitherInl
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_eitherInr
+#assert_no_axioms FX1Poly.Core.optionMatch_neutralScrutinee_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.eitherMatch_neutralScrutinee_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.optionMatchNeutralScrutineeMember
+#assert_no_axioms FX1Poly.Core.eitherMatchNeutralScrutineeMember
 
 -- VALUE-CASE of listElim recursor reducibility (SN-064), the list analogue of the Nat recursor value-case:
 -- listElim on a LIST-VALUE scrutinee lands in the result candidate by IsListValue structural induction firing
