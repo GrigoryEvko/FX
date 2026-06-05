@@ -57,6 +57,7 @@ import FX1Poly.Typed.WfContextDescPiValidity
 import FX1Poly.Typed.HasTypeDescPiClassifierValidity
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionDescPi
 import FX1Poly.Typed.HasTypeDescPiSubjectReduction
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionMutual
 import FX1Poly.Typed.ReducibleEnv
 import FX1Poly.Typed.ReducibleEnvAt
 import FX1Poly.Typed.ReducibleEnvTypeVariable
@@ -1321,6 +1322,14 @@ gates pin them shut.
 -- gated on grown context-conversion / GCC #838-843) is the LONE residual; SRD-2 (#845) discharges it for the
 -- unconditional master SR. Mirrors the UB-SD conditional-package discipline (#664).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionOfGrownTelescopeSR
+-- MASTER SR ⋈ GROWN TELESCOPE SR mutual pair (HasTypeDescPiSubjectReductionMutual.lean, SRD-2/SRD-4): DISCHARGES
+-- SRD-1's telescopeSR hypothesis by proving the grown telescope SR as the mutual companion of the dispatcher, so
+-- the WHOLE grown SR metatheory is now conditional on the SAME ONE lemma as the grown context-conversion — the
+-- piElim crux (GCC-5). The telescope here/cons arm re-types the tail under the stepped head via the grown telescope
+-- context-conversion convTelescopeOfPiElimArm (carrying the piElim arm). Arg order (telescope BEFORE wellFormed) is
+-- required for Lean mutual-recursion implicit inference. Discharging the piElim arm ⟹ unconditional SN-055.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionOfPiElimArm
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.subjectReductionOfPiElimArm
 
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
