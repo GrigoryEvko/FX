@@ -278,6 +278,7 @@ import FX1Poly.Typed.FormerFormationStrictness
 import FX1Poly.Typed.GrownEngineHonesty
 import FX1Poly.Typed.GrownUniverseConsistency
 import FX1Poly.Typed.GrownVariableHonesty
+import FX1Poly.Typed.RawStepNotStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
@@ -4995,3 +4996,14 @@ gates pin them shut.
 -- whole root-classification family table-generic.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGeneratorGeneric
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectRootGeneratorGeneric
+
+-- RAW NON-SN — the honest NEGATIVE counterpart to SN-043 (five-layer-defense L1, §27.3). SN-043 proves
+-- WELL-TYPED terms are strongly normalizing; this proves the RAW Step relation is NOT (Ω = (λx.x x)(λx.x x)
+-- β-steps to itself, so it is not Acc StepSuccessor), confirming the typing restriction is load-bearing and
+-- that global raw SN (HasStrongNormalization) is FALSE, not merely unproved. The first non-SN witness in the
+-- kernel. notAccessibleOfSelfLoop is the general Acc self-loop fact; divergentOmega_stepsToSelf is Step.beta
+-- (the subst0 of the self-applicator into its body computes to Ω definitionally).
+#assert_no_axioms FX1Poly.Typed.divergentOmega_stepsToSelf
+#assert_no_axioms FX1Poly.Typed.notAccessibleOfSelfLoop
+#assert_no_axioms FX1Poly.Typed.divergentOmega_notStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.rawStep_notStronglyNormalizing
