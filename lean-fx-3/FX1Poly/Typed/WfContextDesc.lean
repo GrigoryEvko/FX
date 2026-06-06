@@ -1,5 +1,4 @@
 import FX1Poly.Typed.HasTypeDescValidity
-import FX1Poly.Typed.WfContext
 
 /-! # FX1Poly/Typed/WfContextDesc — formation-engine context well-formedness (`IsTypeDesc`-based)
 
@@ -26,16 +25,17 @@ the bespoke engine is deleted — at which point `WfContext` is superseded by `W
   * `WfContextDesc` — the predicate (computed by structural recursion, layered over the raw telescope).
   * `emptyIsWellFormed` / `tailWellFormed` / `headIsTypeDesc` / `cons` — the introduction + `And`-projection
     inversions (the primitives a formation metatheorem threads through a binder).
-  * `WfContextDesc.ofWfContext` — the easy bridge: every `HasType`-well-formed context is formation-well-formed
-    (each `IsType` binding embeds via `HasType.toHasTypeDesc`).  Lets the migration consume the shipped
-    `WfContext` hypotheses at the formation layer one site at a time.
   * `wfContextDesc_universeBinding` — non-vacuity: a universe-code binding is formation-well-formed.
+
+The `WfContext → WfContextDesc` bridge (`WfContextDesc.ofWfContext`) lives in the separate
+`WfContextDescFromWfContext.lean` so this file need not import the old `WfContext` / `HasType` engine —
+the structural precondition for the `WfContext := WfContextDesc` rethread.
 
 ## Zero-axiom verification
 
-Structural-recursion `def` + `And` projections + `HasType.toHasTypeDesc` (the easy embedding) + a
-constructor-based witness.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
+Structural-recursion `def` + `And` projections + a constructor-based witness.  No `axiom`, `sorry`,
+`propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -81,18 +81,6 @@ theorem WfContextDesc.cons {profile : PolyProfile} {scope : Nat}
     (bindingIsTypeDesc : IsTypeDesc profile restContext bindingType) :
     WfContextDesc (restContext.cons bindingType) :=
   ⟨restWellFormed, bindingIsTypeDesc⟩
-
-/-- Every `HasType`-well-formed context is formation-well-formed: each `IsType` binding embeds via
-`HasType.toHasTypeDesc`.  The easy bridge (`IsType → IsTypeDesc`); lets the formation metatheory consume the
-shipped `WfContext` hypotheses one migration site at a time. -/
-theorem WfContextDesc.ofWfContext {profile : PolyProfile} :
-    {scope : Nat} → {context : TypingContext profile scope} →
-      WfContext context → WfContextDesc context
-  | _, .empty, _ => trivial
-  | _, .cons _restContext _bindingType, wellFormed =>
-      ⟨WfContextDesc.ofWfContext wellFormed.tailWellFormed,
-        let ⟨levelExpr, flag, hasTypeDeriv⟩ := wellFormed.headIsType
-        ⟨levelExpr, flag, hasTypeDeriv.toHasTypeDesc⟩⟩
 
 /-- `WfContextDesc` is non-vacuous: a context binding a single universe code is formation-well-formed (the
 universe code is a formation type via `universeFormation`). -/

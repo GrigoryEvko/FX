@@ -1,6 +1,7 @@
 import FX1Poly.Typed.HasTypeDescNativeDecidable
 import FX1Poly.Typed.HasTypeDescStronglyNormalizing
 import FX1Poly.Typed.WfContextDesc
+import FX1Poly.Typed.WfContextDescFromWfContext
 import FX1Poly.Core.Normalize
 
 /-! # FX1Poly/Typed/HasTypeDescDecidable — the description engine is DECIDABLE

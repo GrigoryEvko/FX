@@ -2,6 +2,7 @@ import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
 import FX1Poly.Typed.HasTypeDescPiVariableInversion
 import FX1Poly.Typed.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.WfContextDescLookup
+import FX1Poly.Typed.WfContextDescFromWfContext
 
 /-! # FX1Poly/Typed/HasTypeDescPiCheckVariable
     — the VARIABLE case of the bidirectional grown-engine checker (SN-052), in CHECK mode
