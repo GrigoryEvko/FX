@@ -12,6 +12,7 @@ import FX1Poly.Modal.GradedReductionSubstitution
 import FX1Poly.Modal.GradedFundamentalTheorem
 import FX1Poly.Modal.GradedComposition
 import FX1Poly.Modal.GradedReductionConfluence
+import FX1Poly.Modal.GradedNormalization
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -358,3 +359,18 @@ conversion). -/
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.uniqueNormalForm
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.uniqueNormalForm
 #assert_no_axioms FX1Poly.Modal.HasUsage.uniqueNormalForm
+
+/-! ### The verified β-normalizer (CONF stage 3b-i)
+
+`stepOrNormal` (β-progress: every term steps-with-witness or is normal) drives `normalize` via `Acc.rec`
+on the SN accessibility, producing the unique β-NF bundled with `ReducesStar` reachability and
+`IsNormalForm` irreducibility — toward decidable conversion (`normalize a = normalize b`). -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda.lam_isNormalForm
+#assert_no_axioms FX1Poly.Modal.GradedLambda.var_app_isNormalForm
+#assert_no_axioms FX1Poly.Modal.GradedLambda.app_app_isNormalForm
+#assert_no_axioms FX1Poly.Modal.GradedLambda.stepOrNormal
+#assert_no_axioms FX1Poly.Modal.GradedLambda.normalizeWithProof
+#assert_no_axioms FX1Poly.Modal.GradedLambda.normalize
+#assert_no_axioms FX1Poly.Modal.GradedLambda.normalize_reducesStar
+#assert_no_axioms FX1Poly.Modal.GradedLambda.normalize_isNormalForm
