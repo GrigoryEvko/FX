@@ -243,6 +243,7 @@ import FX1Poly.Typed.BoundedCodomainOpenSN
 import FX1Poly.Typed.BoundedDomainInhabitant
 import FX1Poly.Typed.BoundedGenFormationPiFromTelescope
 import FX1Poly.Typed.BoundedGenFormationSigmaFromTelescope
+import FX1Poly.Typed.BoundedGenFormationListFromTelescope
 import FX1Poly.Typed.BoundedTelescopeConsSucc
 import FX1Poly.Typed.BoundedGrownDispatch
 import FX1Poly.Typed.BoundedFormationLeafArms
@@ -4278,6 +4279,10 @@ gates pin them shut.
 -- per-component cumulative lifts the Π arm needs; domain/codomain SN + level bounds + var-0 instantiation are
 -- identical to the Π arm. The Σ-branch body of the eventual HasTypeDescPi.rec dispatch (BFT-6) + formation FT.
 #assert_no_axioms FX1Poly.Typed.fundamentalGenFormationSigmaFromTelescopeAtBoundedSucc
+-- GTL-11 bounded reassembly: the 1-child listCode data-former twin (non-dependent; neutral SN-candidate path,
+-- lmaxAll [elementLevel] = elementLevel collapses the level bookkeeping). The bounded analogue of
+-- listCodeFormationUnderSubst; the last reassembly piece before the atomic landing.
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationListFromTelescopeAtBoundedSucc
 
 -- The bounded grown-engine fundamental theorem BFT-6 (BoundedGrownDispatch.lean) — the HasTypeDescPi.rec dispatch
 -- with motive_1 = FundamentalConclusionAtBoundedSucc, motive_2 = IsTelescopeReducibleAtBoundedSucc (the +1
