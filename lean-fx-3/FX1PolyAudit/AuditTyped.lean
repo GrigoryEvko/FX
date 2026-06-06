@@ -857,8 +857,17 @@ gates pin them shut.
     now the unconditional raw `Conv.trans`, its `IsTypeDesc` premise vacuous).  Still HasType-coupled:
     `IsTypeDesc.toIsType` (the desc->bespoke downgrade) and the `WfContext`-validity-bound classifier-SN
     package (`classifierStronglyNormalizing` / `subjectAndClassifier*` — migrate at HT-B with the
-    `WfContext -> WfContextDesc` rethread).  Scoped to the formation engine; no grown reducibility claim. -/
+    `WfContext -> WfContextDesc` rethread).  Scoped to the formation engine; no grown reducibility claim.
+    TG-6 (cascade-free): `formerCellStronglyNormalizingOfChildren` now routes through the generic
+    `former_step_inv` + the N-child accessibility substrate (`StepChildrenSuccessor` /
+    `accStepChildrenSuccessor_cons` / `accStepChildrenSuccessor_of_allStronglyNormalizing` /
+    `formerCell_isStronglyNormalizing_of_accChildren`) instead of a per-former `by_cases isPi/isSigma` — so a new
+    ≥1-child formation row extends it with no change, mirroring the cascade-free formation `subjectReduction`. -/
 #assert_no_axioms FX1Poly.Core.RawTermChildren.allStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.StepChildrenSuccessor
+#assert_no_axioms FX1Poly.Core.accStepChildrenSuccessor_cons
+#assert_no_axioms FX1Poly.Core.accStepChildrenSuccessor_of_allStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.formerCell_isStronglyNormalizing_of_accChildren
 #assert_no_axioms FX1Poly.Typed.formerCellStronglyNormalizingOfChildren
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectStronglyNormalizingNative
 #assert_no_axioms FX1Poly.Typed.DescTelescope.childrenStronglyNormalizingNative

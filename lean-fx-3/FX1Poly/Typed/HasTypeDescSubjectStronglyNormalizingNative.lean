@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDesc
+import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Core.StrongNormalizationLeaves
 
@@ -21,10 +22,16 @@ are normal leaves; the `conv` arm preserves the subject; a formed cell steps onl
 SN once every child is SN.
 
 * `RawTermChildren.allStronglyNormalizing` — the structural "every child is SN" predicate over a child spine.
-* `formerCellStronglyNormalizingOfChildren` — the NON-recursive assembly: a formation former cell with all
-  children SN is SN.  The formation table currently maps exactly `gen_piTyCode` / `gen_sigmaTyCode` (both
-  two-child formers), discharged by the shipped `piTyCode` / `sigmaTyCode` two-child congruence SN closures; a
-  non-former generator contradicts `isFormation` (`typingRuleDescOf … = none`).
+* `StepChildrenSuccessor` + `accStepChildrenSuccessor_cons` + `accStepChildrenSuccessor_of_allStronglyNormalizing`
+  — the N-child accessibility substrate: an all-SN child spine is `Acc`-essible under the flipped `StepChildren`
+  relation (the spine-level analogue of `StepSuccessor` / `IsStronglyNormalizing`, generalizing
+  `isStronglyNormalizing_of_twoChildCong` to arbitrary arity).
+* `formerCell_isStronglyNormalizing_of_accChildren` — a cell over a congruence-only generator is SN once its
+  child spine is accessible (generic over the generator, parameterized by a uniform child-congruence inversion).
+* `formerCellStronglyNormalizingOfChildren` — the CASCADE-FREE assembly: a formation former cell with all
+  children SN is SN, routed through the GENERIC `former_step_inv` (shared with the formation SR arms — the single
+  isolated `typingRuleDescOf_isPiOrSigma` enumeration site) + the accessibility substrate.  No per-former
+  `by_cases`: a new ≥1-child formation row extends it with no change here.
 * `HasTypeDesc.subjectStronglyNormalizingNative` ⋈ `DescTelescope.childrenStronglyNormalizingNative` — the
   genuine MUTUAL recursion (the `toHasType` shape): the subject recursion bottoms out the `genFormation` arm in
   the telescope recursion, which proves each head child SN by calling the subject recursion (a structural
@@ -33,10 +40,11 @@ SN once every child is SN.
 ## Zero-axiom verification
 
 Term-mode mutual recursion + the propext-free leaf-SN endpoints (`isStronglyNormalizing_of_noStep` +
-`noStep_var` / `noStep_universeCode`) + the two-child congruence SN closures + full-enumeration `cases` over the
-concrete-index `RawTermChildren` spines (clean — no partial match, no `propext`) + `simp only` on the structural
-predicate.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
-Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
+`noStep_var` / `noStep_universeCode`) + the accessibility substrate (`Acc.ndrec` over `StepSuccessor` /
+`StepChildrenSuccessor` + clean full-enumeration `cases` over the concrete-index `StepChildren` spine — `here` /
+`there`, no partial match) + the generic `former_step_inv` + `simp only` on the structural predicate.  No
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Core
@@ -50,50 +58,120 @@ def RawTermChildren.allStronglyNormalizing {binderShifts : List Nat} {baseScope 
   | .childNil => True
   | .childCons head rest => IsStronglyNormalizing head ∧ rest.allStronglyNormalizing
 
+/-- **Flipped child-spine relation for accessibility.**  `laterChildren` sits below `earlierChildren` when the
+earlier spine `StepChildren`-reduces to it — the spine-level analogue of `StepSuccessor`.  A spine is strongly
+normalizing exactly when it is `Acc`-essible under this relation. -/
+def StepChildrenSuccessor {binderShifts : List Nat} {baseScope : Nat}
+    (laterChildren earlierChildren : RawTermChildren binderShifts baseScope) : Prop :=
+  StepChildren earlierChildren laterChildren
+
+/-- **A cons spine is accessible when its head is SN and its tail spine is accessible.**  The spine-level twin
+of `isStronglyNormalizing_of_twoChildCong`: nested `Acc.ndrec` over the head's `StepSuccessor` accessibility and
+the tail's `StepChildrenSuccessor` accessibility, casing a `StepChildren` out of the cons into the head-step
+(`here`) and tail-step (`there`) positions. -/
+theorem accStepChildrenSuccessor_cons {parentScope headShift : Nat} {restShifts : List Nat}
+    {head : RawTerm (parentScope + headShift)}
+    {rest : RawTermChildren restShifts parentScope}
+    (headTerminates : IsStronglyNormalizing head)
+    (restAccessible : Acc StepChildrenSuccessor rest) :
+    Acc StepChildrenSuccessor (RawTermChildren.childCons head rest) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentHead =>
+      ∀ (currentRest : RawTermChildren restShifts parentScope),
+        Acc StepChildrenSuccessor currentRest →
+          Acc StepChildrenSuccessor (RawTermChildren.childCons currentHead currentRest))
+    (m := fun currentHead _ headIH currentRest currentRestAccessible =>
+      Acc.ndrec
+        (r := StepChildrenSuccessor)
+        (C := fun innerRest =>
+          Acc StepChildrenSuccessor (RawTermChildren.childCons currentHead innerRest))
+        (m := fun currentInnerRest currentInnerRestPred restIH =>
+          Acc.intro (RawTermChildren.childCons currentHead currentInnerRest)
+            (fun _predecessor stepRelation => by
+              cases stepRelation with
+              | here _restSame headStep =>
+                  rename_i headAfter
+                  exact headIH headAfter headStep currentInnerRest
+                    (Acc.intro currentInnerRest currentInnerRestPred)
+              | there _headSame restStep =>
+                  rename_i innerRestAfter
+                  exact restIH innerRestAfter restStep))
+        currentRestAccessible)
+    headTerminates)
+    rest restAccessible
+
+/-- **Every all-SN child spine is accessible under `StepChildrenSuccessor`.**  Structural recursion on the
+spine: `childNil` is accessible vacuously (`no_step_at_empty_spine` refutes any entering `StepChildren`), and
+`childCons` combines its head's strong normalization with the tail's accessibility via
+`accStepChildrenSuccessor_cons`. -/
+theorem accStepChildrenSuccessor_of_allStronglyNormalizing
+    {binderShifts : List Nat} {baseScope : Nat}
+    {children : RawTermChildren binderShifts baseScope}
+    (childrenStronglyNormalizing : children.allStronglyNormalizing) :
+    Acc StepChildrenSuccessor children :=
+  match children with
+  | .childNil =>
+      Acc.intro RawTermChildren.childNil
+        (fun _predecessor stepRelation =>
+          (StepChildren.no_step_at_empty_spine stepRelation).elim)
+  | .childCons _head _rest => by
+      simp only [RawTermChildren.allStronglyNormalizing] at childrenStronglyNormalizing
+      exact accStepChildrenSuccessor_cons childrenStronglyNormalizing.1
+        (accStepChildrenSuccessor_of_allStronglyNormalizing childrenStronglyNormalizing.2)
+
+/-- **A cell over a congruence-only generator is SN once its child spine is accessible.**  Generic over the
+generator: the `inversion` hypothesis states that EVERY `Step` out of `mkGen generator payload _` is a child
+congruence (a `StepChildren`), so `Acc.ndrec` over the spine accessibility lifts to cell accessibility — the
+reduct's SN is exactly the spine IH at the stepped spine.  Consumed by `formerCellStronglyNormalizingOfChildren`
+with `inversion := former_step_inv`, replacing the arity-bound per-former dispatch. -/
+theorem formerCell_isStronglyNormalizing_of_accChildren {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope}
+    (inversion :
+      ∀ {currentChildren : RawTermChildren generator.binderShifts scope}
+        {target : RawTerm scope},
+        Step (RawTerm.mkGen generator payload currentChildren) target →
+          ∃ nextChildren, target = RawTerm.mkGen generator payload nextChildren ∧
+            StepChildren currentChildren nextChildren)
+    {children : RawTermChildren generator.binderShifts scope}
+    (childrenAccessible : Acc StepChildrenSuccessor children) :
+    IsStronglyNormalizing (RawTerm.mkGen generator payload children) :=
+  Acc.ndrec
+    (r := StepChildrenSuccessor)
+    (C := fun currentChildren =>
+      IsStronglyNormalizing (RawTerm.mkGen generator payload currentChildren))
+    (m := fun currentChildren _ childrenIH =>
+      Acc.intro (RawTerm.mkGen generator payload currentChildren)
+        (fun _target cellStep => by
+          obtain ⟨nextChildren, targetEq, stepChildren⟩ := inversion cellStep
+          rw [targetEq]
+          exact childrenIH nextChildren stepChildren))
+    childrenAccessible
+
 end FX1Poly.Core
 
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe StepStar
 
-/-- **A formation former cell with all children strongly normalizing is strongly normalizing.**  Non-recursive
-assembly: the formation table maps exactly the two-child dependent type-formers (`gen_piTyCode` /
-`gen_sigmaTyCode`) to a formation rule, so each is discharged by the shipped two-child congruence SN closure
-(`piTyCode` / `sigmaTyCode`) over the destructured child spine; any other generator contradicts `isFormation`
-(its `typingRuleDescOf` is `none`). -/
+/-- **A formation former cell with all children strongly normalizing is strongly normalizing.**  CASCADE-FREE
+generic assembly: a formation generator (`typingRuleDescOf generator = some rule`) heads no root redex
+(`former_step_inv`), so every Step out of the cell is a child congruence; the cell is therefore SN once its
+child spine is accessible, which all-children-SN supplies via `accStepChildrenSuccessor_of_allStronglyNormalizing`.
+This routes through the GENERIC `former_step_inv` (the single isolated `typingRuleDescOf_isPiOrSigma` enumeration
+site, shared with the formation SR arms) rather than re-casing the formation table here — so a new ≥1-child
+formation row (a data type code) extends it with no change to this proof, exactly mirroring the cascade-free
+formation `subjectReduction` / `subjectAdmitsNoStep`. -/
 theorem formerCellStronglyNormalizingOfChildren {scope : Nat} {generator : Generator}
     {rule : TypingRuleDesc}
     {payload : generator.payload scope}
     {children : RawTermChildren generator.binderShifts scope}
     (isFormation : typingRuleDescOf generator = some rule)
     (childrenSN : children.allStronglyNormalizing) :
-    IsStronglyNormalizing (RawTerm.mkGen generator payload children) := by
-  by_cases isPi : generator = Generator.gen_piTyCode
-  · subst isPi
-    cases payload
-    cases children with
-    | childCons _domain rest =>
-        cases rest with
-        | childCons _codomain rest2 =>
-            cases rest2 with
-            | childNil =>
-                simp only [RawTermChildren.allStronglyNormalizing] at childrenSN
-                exact piTyCode_isStronglyNormalizing_of_domain_codomain childrenSN.1 childrenSN.2.1
-  · by_cases isSigma : generator = Generator.gen_sigmaTyCode
-    · subst isSigma
-      cases payload
-      cases children with
-      | childCons _domain rest =>
-          cases rest with
-          | childCons _codomain rest2 =>
-              cases rest2 with
-              | childNil =>
-                  simp only [RawTermChildren.allStronglyNormalizing] at childrenSN
-                  exact sigmaTyCode_isStronglyNormalizing_of_domain_codomain childrenSN.1 childrenSN.2.1
-    · exfalso
-      unfold typingRuleDescOf at isFormation
-      rw [if_neg isPi, if_neg isSigma] at isFormation
-      contradiction
+    IsStronglyNormalizing (RawTerm.mkGen generator payload children) :=
+  formerCell_isStronglyNormalizing_of_accChildren
+    (fun cellStep => former_step_inv isFormation cellStep)
+    (accStepChildrenSuccessor_of_allStronglyNormalizing childrenSN)
 
 mutual
 
