@@ -1,4 +1,5 @@
-import FX1Poly.Typed.HasTypeHonesty
+import FX1Poly.Typed.RawTermHeadGenerator
+import FX1Poly.Typed.CellConstructors
 import FX1Poly.Core.RawTermChildrenUnique
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.RawSize

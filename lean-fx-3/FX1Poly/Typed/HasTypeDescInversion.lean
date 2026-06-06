@@ -1,6 +1,6 @@
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Core.RawConfluence
-import FX1Poly.Typed.HasTypeHonesty
+import FX1Poly.Typed.RawTermHeadGenerator
 import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeValidity
 import FX1Poly.Typed.HasTypeStronglyNormalizing
