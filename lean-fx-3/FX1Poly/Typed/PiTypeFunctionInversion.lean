@@ -65,7 +65,7 @@ theorem HasTypeDescPi.piFormerNotTypedAtPiType {profile : PolyProfile} {scope : 
     (typed :
       HasTypeDescPi profile context (piTyCodeCell innerDomain innerCodomain)
         (piTyCodeCell outerDomain outerCodomain))
-    (wellFormed : WfContext context) :
+    (_wellFormed : WfContext context) :
     False := by
   obtain ⟨_, _, _, _, _, convToUniverseCode⟩ := HasTypeDescPi.invertPiTyCode typed
   exact Conv.piTyCode_not_universeCode convToUniverseCode
@@ -78,7 +78,7 @@ theorem HasTypeDescPi.sigmaFormerNotTypedAtPiType {profile : PolyProfile} {scope
     (typed :
       HasTypeDescPi profile context (sigmaTyCodeCell innerDomain innerCodomain)
         (piTyCodeCell outerDomain outerCodomain))
-    (wellFormed : WfContext context) :
+    (_wellFormed : WfContext context) :
     False := by
   obtain ⟨_, _, _, _, _, convToUniverseCode⟩ := HasTypeDescPi.invertSigmaTyCode typed
   exact Conv.piTyCode_not_universeCode convToUniverseCode

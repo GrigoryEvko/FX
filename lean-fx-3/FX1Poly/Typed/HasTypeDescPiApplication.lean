@@ -45,7 +45,7 @@ theorem HasTypeDescPi.piCodeInstantiationIsType {profile : PolyProfile} {scope :
     {argument : RawTerm scope}
     (piIsType : IsTypeDescPi profile context (piTyCodeCell domainCode codomainCode))
     (argumentTyped : HasTypeDescPi profile context argument domainCode)
-    (wellFormed : WfContext context) :
+    (_wellFormed : WfContext context) :
     IsTypeDescPi profile context (RawTerm.subst0 codomainCode argument) := by
   obtain ⟨_piLevel, _piFlag, piTyped⟩ := piIsType
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped⟩ :=
@@ -64,7 +64,7 @@ theorem HasTypeDescPi.sigmaCodeInstantiationIsType {profile : PolyProfile} {scop
     {firstProjection : RawTerm scope}
     (sigmaIsType : IsTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode))
     (firstProjectionTyped : HasTypeDescPi profile context firstProjection domainCode)
-    (wellFormed : WfContext context) :
+    (_wellFormed : WfContext context) :
     IsTypeDescPi profile context (RawTerm.subst0 codomainCode firstProjection) := by
   obtain ⟨_sigmaLevel, _sigmaFlag, sigmaTyped⟩ := sigmaIsType
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped⟩ :=

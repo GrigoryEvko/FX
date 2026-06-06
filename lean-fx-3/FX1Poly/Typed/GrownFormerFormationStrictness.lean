@@ -47,7 +47,7 @@ structurally by `LevelExpr.noConfusion`.  Strictly stronger than the formation-e
 (any context, any components, no level-pinning). -/
 theorem HasTypeDescPi.piTyCode_notTypedAtZero {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (contextWellFormed : WfContext context)
+    (_contextWellFormed : WfContext context)
     (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode)
         (universeCodeCell LevelExpr.lzero flag) := by
@@ -63,7 +63,7 @@ theorem HasTypeDescPi.piTyCode_notTypedAtZero {profile : PolyProfile} {scope : N
 (Π + Σ), the companion to the grown universe strictness. -/
 theorem HasTypeDescPi.sigmaTyCode_notTypedAtZero {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (contextWellFormed : WfContext context)
+    (_contextWellFormed : WfContext context)
     (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode)
         (universeCodeCell LevelExpr.lzero flag) := by

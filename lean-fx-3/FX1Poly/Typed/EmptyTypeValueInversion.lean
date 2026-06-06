@@ -48,7 +48,7 @@ theorem HasTypeDescPi.piFormerNotTypedAtEmptyType {profile : PolyProfile} {scope
     (typed :
       HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode)
         (emptyTypeCell (scope := scope)))
-    (wellFormed : WfContext context) :
+    (_wellFormed : WfContext context) :
     False := by
   obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped, convToUniverseCode⟩ :=
     HasTypeDescPi.invertPiTyCode typed
@@ -62,7 +62,7 @@ theorem HasTypeDescPi.sigmaFormerNotTypedAtEmptyType {profile : PolyProfile} {sc
     (typed :
       HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode)
         (emptyTypeCell (scope := scope)))
-    (wellFormed : WfContext context) :
+    (_wellFormed : WfContext context) :
     False := by
   obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped, convToUniverseCode⟩ :=
     HasTypeDescPi.invertSigmaTyCode typed

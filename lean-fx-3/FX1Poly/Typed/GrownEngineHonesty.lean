@@ -79,7 +79,7 @@ theorem piTyCode_notTypedAtPiTyCode {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (classifierDomain : RawTerm scope) (classifierCodomain : RawTerm (scope + 1))
-    (contextWellFormed : WfContext context) :
+    (_contextWellFormed : WfContext context) :
     ¬ HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode)
         (piTyCodeCell classifierDomain classifierCodomain) := by
   intro typed
@@ -93,7 +93,7 @@ theorem sigmaTyCode_notTypedAtPiTyCode {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (classifierDomain : RawTerm scope) (classifierCodomain : RawTerm (scope + 1))
-    (contextWellFormed : WfContext context) :
+    (_contextWellFormed : WfContext context) :
     ¬ HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode)
         (piTyCodeCell classifierDomain classifierCodomain) := by
   intro typed

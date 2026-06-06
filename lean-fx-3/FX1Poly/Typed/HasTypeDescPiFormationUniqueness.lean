@@ -49,7 +49,7 @@ theorem HasTypeDescPi.piFormationTypeUniqueGivenComponents {profile : PolyProfil
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
-    (wellFormed : WfContext context)
+    (_wellFormed : WfContext context)
     (domainUnique :
       ∀ {otherDomainType : RawTerm scope},
         HasTypeDescPi profile context domainCode otherDomainType →
@@ -81,7 +81,7 @@ theorem HasTypeDescPi.sigmaFormationTypeUniqueGivenComponents {profile : PolyPro
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
-    (wellFormed : WfContext context)
+    (_wellFormed : WfContext context)
     (domainUnique :
       ∀ {otherDomainType : RawTerm scope},
         HasTypeDescPi profile context domainCode otherDomainType →
