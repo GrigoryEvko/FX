@@ -3,7 +3,7 @@ import FX1Poly.Modal.UsageDiscipline
 /-! # FX1Poly/Modal/GradedSubstitutionAlgebra — the parallel-substitution σ-algebra
 
 The orthogonal-composition thesis reduces graded strong normalization to the TYPE dimension's
-STLC strong normalization (`HasSimpleType → SN`, then the trivial `HasUsage.erase` transfer).  That
+STLC strong normalization (`HasSimpleType → SN`, then the trivial `HasGradeOver.erase` transfer).  That
 Tait argument's binder case (the abstraction lemma) needs a substitution that goes under λ — which in
 de Bruijn form means a *parallel* substitution whose `lift` composes correctly.  This file builds
 that σ-algebra for `GradedLambda`.

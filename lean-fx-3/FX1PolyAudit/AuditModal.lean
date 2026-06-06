@@ -3,19 +3,16 @@ import FX1Poly.Modal.ResourceGraded
 import FX1Poly.Modal.GradeVector
 import FX1Poly.Modal.GradeVectorGeneric
 import FX1Poly.Modal.UsageDiscipline
-import FX1Poly.Modal.GradedTyping
 import FX1Poly.Modal.GradedTypingGeneric
 import FX1Poly.Modal.GradeErasureGeneric
 import FX1Poly.Modal.GradedWeakeningGeneric
 import FX1Poly.Modal.GradedSubstitutionGeneric
 import FX1Poly.Modal.GradedSubjectReductionGeneric
 import FX1Poly.Modal.GradedCompositionGeneric
-import FX1Poly.Modal.GradeErasure
 import FX1Poly.Modal.SimpleStrongNormalization
 import FX1Poly.Modal.GradedSubstitutionAlgebra
 import FX1Poly.Modal.GradedReductionSubstitution
 import FX1Poly.Modal.GradedFundamentalTheorem
-import FX1Poly.Modal.GradedStrongNormalization
 import FX1Poly.Modal.GradedReductionConfluence
 import FX1Poly.Modal.GradedNormalization
 
@@ -223,9 +220,8 @@ per-declaration discipline as the rest of the kernel.
 
 `HasGradeOver R` — the §6.2 grade-checking judgment (corrected Wood/Atkey Lam + App scaling), generic
 over the ordered semiring, on the generic grade vector.  Structural metatheory (3 inversions + the
-length-coherence invariant) is shared with the usage judgment verbatim.  The witnesses type the linear
-identity + K combinator at BOTH usage and security — the orthogonal-composition thesis at the JUDGMENT
-layer. -/
+length-coherence invariant) is generic over R.  The witnesses type the linear identity + K combinator
+at BOTH usage and security — the orthogonal-composition thesis at the JUDGMENT layer. -/
 
 #assert_no_axioms FX1Poly.Modal.GTypeOver
 #assert_no_axioms FX1Poly.Modal.GTypeOver.lookup
@@ -243,10 +239,10 @@ layer. -/
 
 /-! ### Generic grade erasure + SN-transfer over any OrderedGradeSemiring (security + dims 6–21)
 
-`HasGradeOver R` erases to the SAME grade-free `HasSimpleType` that `HasUsage` erases to, so STLC strong
-normalization (the Tait fundamental theorem) transfers to the generic judgment for ANY dimension R — no
-graded-reducibility re-proof.  The orthogonal-composition thesis (SN survives erasure) at the judgment
-layer for all 21 dimensions at once. -/
+`HasGradeOver R` erases to the grade-free `HasSimpleType`, so STLC strong normalization (the Tait
+fundamental theorem) transfers to the generic judgment for ANY dimension R — no graded-reducibility
+re-proof.  The orthogonal-composition thesis (SN survives erasure) at the judgment layer for all 21
+dimensions at once. -/
 
 #assert_no_axioms FX1Poly.Modal.eraseGTypeOver
 #assert_no_axioms FX1Poly.Modal.lookup_map_eraseGTypeOver
@@ -341,29 +337,11 @@ subst+β-SR → composition). -/
 #assert_no_axioms FX1Poly.Modal.usageOmegaScalingRedex_typed
 #assert_no_axioms FX1Poly.Modal.usageOmegaScalingRedex_reductKeepsGrade
 
-/-! ### The SOUND graded typing judgment: type-coupled HasUsage with App scaling -/
-
-#assert_no_axioms FX1Poly.Modal.GType
-#assert_no_axioms FX1Poly.Modal.GType.lookup
-#assert_no_axioms FX1Poly.Modal.HasUsage
-#assert_no_axioms FX1Poly.Modal.linearIdentity_typed
-#assert_no_axioms FX1Poly.Modal.kCombinator_typed
-
--- HasUsage structural metatheory (inversion / length / weakening) is subsumed by the GENERIC
--- HasGradeOver R metatheory above (insertTypeAtOver / GradeVectorOver.insertAt / hasGradeOver_weakening).
-
--- HasUsage β subject reduction (substInto algebra + substitution + β-preservation) is subsumed by the
--- GENERIC hasGradeOver_substitution / hasGradeOver_betaPreservation above (over any OrderedGradeSemiring).
-
-/-! ### Grade erasure: the usage dimension is a conservative refinement of simple typing -/
+/-! ### Grade-free simple typing: the type dimension underneath the graded judgments -/
 
 #assert_no_axioms FX1Poly.Modal.SimpleType
-#assert_no_axioms FX1Poly.Modal.eraseType
 #assert_no_axioms FX1Poly.Modal.SimpleType.lookup
 #assert_no_axioms FX1Poly.Modal.HasSimpleType
-#assert_no_axioms FX1Poly.Modal.lookup_map_eraseType
-#assert_no_axioms FX1Poly.Modal.HasUsage.erase
-#assert_no_axioms FX1Poly.Modal.linearIdentity_erases
 
 /-! ### STLC strong normalization substrate: β-reduction + Acc-SN + structural lemmas -/
 
@@ -422,12 +400,12 @@ composition handles the binder bookkeeping once. -/
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.substAt
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofSubstAt
 
-/-! ### Tait SN + the graded-SN transfer: the orthogonal-composition payoff
+/-! ### Tait SN: the STLC fundamental theorem
 
 The STLC fundamental theorem (abstraction lemma → fundamental → every well-typed term reducible →
-SN) proved ONCE, and the headline `HasUsage.stronglyNormalizing`: graded-SN transfers from
-type-dimension SN through grade erasure with no graded-reducibility re-proof.  Concrete non-vacuous
-witnesses (linear identity, K combinator). -/
+SN) proved ONCE.  Graded-SN transfers from this type-dimension SN through grade erasure with no
+graded-reducibility re-proof — for ANY dimension R, via the generic `HasGradeOver.stronglyNormalizing`
+gated in the generic erasure section above. -/
 
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.lam
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.abstraction
@@ -436,9 +414,6 @@ witnesses (linear identity, K combinator). -/
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.fundamental
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.reducible
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.stronglyNormalizing
-#assert_no_axioms FX1Poly.Modal.HasUsage.stronglyNormalizing
-#assert_no_axioms FX1Poly.Modal.linearIdentity_stronglyNormalizing
-#assert_no_axioms FX1Poly.Modal.kCombinator_stronglyNormalizing
 
 -- The usage composition ledger (graded-SR over full β + the SN∧graded-SR metatheory bundle + the ω-scaling
 -- regression witnesses) is subsumed by the GENERIC HasGradeOver.preservedByReduces / .metatheoryBundle +
@@ -462,18 +437,17 @@ the local-confluence critical-pair analysis. -/
 
 The 9-case β critical-pair analysis (`WeaklyConfluent Reduces`), then the relation-generic `newmanAux`
 (per-term `Acc` = `IsStronglyNormalizing`) gives confluence on the SN fragment — and hence on every
-well-(simply/usage-)typed `GradedLambda` term (SN from the Tait fundamental theorem / grade erasure). -/
+well-simply-typed `GradedLambda` term (SN from the Tait fundamental theorem). -/
 
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.localConfluent
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.weaklyConfluent
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.confluent
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.confluent
-#assert_no_axioms FX1Poly.Modal.HasUsage.confluent
 
 /-! ### Unique normal forms
 
 Confluence + "a normal form admits no step" ⟹ a strongly-normalizing term has at most one β-NF; hence
-every well-(simply/usage-)typed `GradedLambda` term has a unique normal form (the bridge to decidable
+every well-simply-typed `GradedLambda` term has a unique normal form (the bridge to decidable
 conversion). -/
 
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsNormalForm
@@ -481,7 +455,6 @@ conversion). -/
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsNormalForm.eq_of_reducesStar
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.uniqueNormalForm
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.uniqueNormalForm
-#assert_no_axioms FX1Poly.Modal.HasUsage.uniqueNormalForm
 
 /-! ### The verified β-normalizer
 
@@ -501,16 +474,15 @@ on the SN accessibility, producing the unique β-NF bundled with `ReducesStar` r
 /-! ### Decidable β-conversion (completes the substrate)
 
 Conversion (`Joinable Reduces`) = normal-form equality on the SN fragment, so it is decidable via
-`GradedLambda`'s `DecidableEq` on normal forms.  Every well-(simply/usage-)typed term pair has
-decidable convertibility — the GradedLambda STLC is a full reference calculus with decidable
-definitional equality. -/
+`GradedLambda`'s `DecidableEq` on normal forms.  Every well-simply-typed term pair has decidable
+convertibility — the GradedLambda STLC is a full reference calculus with decidable definitional
+equality. -/
 
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofReducesStar
 #assert_no_axioms FX1Poly.Modal.GradedLambda.normalize_of_isNormalForm
 #assert_no_axioms FX1Poly.Modal.GradedLambda.joinable_iff_normalize_eq
 #assert_no_axioms FX1Poly.Modal.GradedLambda.decidableJoinable
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.decidableConv
-#assert_no_axioms FX1Poly.Modal.HasUsage.decidableConv
 #assert_no_axioms FX1Poly.Modal.GradedLambda.var_notJoinable_of_ne
 
 /-! ### β-conversion is an equivalence relation (definitional-equality justification)
@@ -524,4 +496,3 @@ definitional equality. -/
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.joinable_trans
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.beta_joinable
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.joinable_trans
-#assert_no_axioms FX1Poly.Modal.HasUsage.joinable_trans

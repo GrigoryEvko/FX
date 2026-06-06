@@ -3,21 +3,21 @@ import FX1Poly.Modal.GradedLambdaTerm
 
 /-! # FX1Poly/Modal/GradedTypingGeneric — the GENERIC graded-typing judgment (all graded dimensions)
 
-The usage dimension's grade-checking judgment `HasUsage` (`GradedTyping.lean`) is hardcoded to
-the usage carrier (`UsageGrade` arrows, `GradeVector` usage vectors).  But the §6.2 grade-checking rules
-— the corrected Wood/Atkey Lam (the lambda records its binder grade in the arrow type) and the App
-SCALING (`functionGrades + binderGrade · argumentGrades`) — are the SAME for every dimension: they depend
-only on the ordered semiring `R = (Carrier, 0, 1, +, *, ≤)`, never on WHICH dimension it is.  This file
-ships that judgment ONCE, generic over any `OrderedGradeSemiring`, on top of the generic vector
-(`GradeVectorOver R`, `GradeVectorGeneric.lean`).  The usage and security dimensions (and the remaining
-17) instantiate it for free — no per-dimension re-proof of the judgment or its structural metatheory.
+The §6.2 grade-checking rules — the corrected Wood/Atkey Lam (the lambda records its binder grade in
+the arrow type) and the App SCALING (`functionGrades + binderGrade · argumentGrades`) — are the SAME for
+every dimension: they depend only on the ordered semiring `R = (Carrier, 0, 1, +, *, ≤)`, never on WHICH
+dimension it is.  This file ships that judgment ONCE, generic over any `OrderedGradeSemiring`, on top of
+the generic vector (`GradeVectorOver R`, `GradeVectorGeneric.lean`).  The usage and security dimensions
+(and the remaining 17) instantiate it for free — no per-dimension re-proof of the judgment or its
+structural metatheory.  (This generic `HasGradeOver R` IS the usage engine; there is no separate bespoke
+usage judgment.)
 
   * `GTypeOver R` — graded simple types over `R`: a base type and a graded arrow
     `dom -(binderGrade)-> cod`, where `binderGrade : R.Carrier` is the grade at which the function
     consumes its argument (the usage `arrow UsageGrade …`, generic).
 
   * `GTypeOver.lookup` — context lookup by de Bruijn index (structural recursion; the `l[i]?` /
-    `getElem?` notation routes through `propext`, so it is avoided, exactly as `GType.lookup`).
+    `getElem?` notation routes through `propext`, so it is avoided).
 
   * `HasGradeOver R Γ p t T` — the typing-and-grade judgment: in type context `Γ`, term `t` has type
     `T` and uses the bindings with grade vector `p`.  The three rules mirror the usage judgment generically: VAR
@@ -57,15 +57,15 @@ namespace FX1Poly.Modal
 
 /-- Graded simple types over the ordered semiring `R`: a base type and a graded arrow
 `dom -(binderGrade)-> cod`, where `binderGrade : R.Carrier` records how many times (at which §6.1
-grade) the function uses its argument.  The generic analogue of `GType`; `DecidableEq` is not derived
-because the carrier's `DecidableEq` is a structure field (`R.carrierDecEq`), not an instance — the
-`GradeVectorOver` gotcha — and the judgment does not need it. -/
+grade) the function uses its argument.  `DecidableEq` is not derived because the carrier's `DecidableEq`
+is a structure field (`R.carrierDecEq`), not an instance — the `GradeVectorOver` gotcha — and the
+judgment does not need it. -/
 inductive GTypeOver (R : OrderedGradeSemiring) where
   | base : GTypeOver R
   | arrow : R.Carrier → GTypeOver R → GTypeOver R → GTypeOver R
 
 /-- Look up a variable's type in the context by de Bruijn index.  Structural recursion — the `l[i]?`
-(`getElem?`) `List` instance routes through `propext`, so it is avoided, exactly as `GType.lookup`. -/
+(`getElem?`) `List` instance routes through `propext`, so it is avoided. -/
 def GTypeOver.lookup {R : OrderedGradeSemiring} : List (GTypeOver R) → Nat → Option (GTypeOver R)
   | [], _ => none
   | headType :: _, 0 => some headType

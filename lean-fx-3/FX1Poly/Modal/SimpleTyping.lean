@@ -3,10 +3,10 @@ import FX1Poly.Modal.GradedLambdaTerm
 /-! # FX1Poly/Modal/SimpleTyping — the grade-free STLC typing over the shared GradedLambda carrier
 
 `SimpleType` (grade-free simple types) and the simple-typing judgment `HasSimpleType` over the shared
-`GradedLambda` carrier — the type dimension that the usage dimension (and every other graded dimension)
-refines.  Carrying it in its own module keeps the STLC strong-normalization substrate free of any
-usage-specific import: the grade-ERASURE bridge (`eraseType : GType → SimpleType`, `HasUsage.erase`)
-stays in `GradeErasure.lean`, which imports this module.
+`GradedLambda` carrier — the type dimension that every graded dimension refines.  Carrying it in its
+own module keeps the STLC strong-normalization substrate free of any graded-judgment import: the
+grade-ERASURE bridge (`eraseGTypeOver : GTypeOver R → SimpleType`, `HasGradeOver.erase`) stays in
+`GradeErasureGeneric.lean`, which imports this module.
 
 ## Zero-axiom verification
 
@@ -18,13 +18,15 @@ Per-declaration gated in `FX1PolyAudit/AuditModal.lean`.
 
 namespace FX1Poly.Modal
 
-/-- Grade-free simple types: the type dimension underneath `GType` (the arrow drops its binder grade). -/
+/-- Grade-free simple types: the type dimension underneath `GTypeOver R` (the arrow drops its binder
+grade). -/
 inductive SimpleType where
   | base : SimpleType
   | arrow : SimpleType → SimpleType → SimpleType
   deriving DecidableEq, Repr
 
-/-- Context lookup for simple types (structural recursion, propext-free — same care as `GType.lookup`). -/
+/-- Context lookup for simple types (structural recursion, propext-free — same care as
+`GTypeOver.lookup`). -/
 def SimpleType.lookup : List SimpleType → Nat → Option SimpleType
   | [], _ => none
   | headType :: _, 0 => some headType

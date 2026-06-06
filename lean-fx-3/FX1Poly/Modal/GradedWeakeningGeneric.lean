@@ -2,11 +2,10 @@ import FX1Poly.Modal.GradedTypingGeneric
 
 /-! # FX1Poly/Modal/GradedWeakeningGeneric — generic weakening for `HasGradeOver R` (all graded dimensions)
 
-The usage dimension's weakening (`GradedTypingMetatheory.lean`) is hardcoded to `GType` /
-`HasUsage` / `GradeVector`.  But weakening — `HasGradeOver R` is stable under `GradedLambda.shift`,
-inserting a `R.zero` (ghost / unused) grade for the freshly-inserted binding — is the SAME de Bruijn
-argument for every dimension.  This file ships that argument ONCE, generic over any
-`OrderedGradeSemiring`, from the generic judgment `HasGradeOver R`.
+Weakening — `HasGradeOver R` is stable under `GradedLambda.shift`, inserting a `R.zero` (ghost /
+unused) grade for the freshly-inserted binding — is the SAME de Bruijn argument for every dimension.
+This file ships that argument ONCE, generic over any `OrderedGradeSemiring`, from the generic judgment
+`HasGradeOver R`.
 
   * `insertTypeAtOver` / `GradeVectorOver.insertAt` — insert a type / a grade at de Bruijn position
     `cutDepth` (parallel insertions: the new binding's type and its inserted `R.zero` grade).

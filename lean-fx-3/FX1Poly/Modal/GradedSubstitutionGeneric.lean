@@ -2,11 +2,9 @@ import FX1Poly.Modal.GradedWeakeningGeneric
 
 /-! # FX1Poly/Modal/GradedSubstitutionGeneric — generic substInto grade-algebra (all graded dimensions)
 
-The usage dimension's subject-reduction machinery (`GradedSubjectReduction.lean`) is hardcoded
-to `GType` / `GradeVector`.  But the GRADE TRANSFORMATION that β performs — drop the substituted
-binding's grade, then add the argument grades scaled by it — is the SAME for every dimension.  This
-file ships that grade-algebra ONCE, generic over any `OrderedGradeSemiring`, on top of the
-generic vector.  It is the prerequisite for the generic substitution lemma; on its own it is
+The GRADE TRANSFORMATION that β performs — drop the substituted binding's grade, then add the argument
+grades scaled by it — is the SAME for every dimension.  This file ships that grade-algebra ONCE,
+generic over any `OrderedGradeSemiring`, on top of the generic vector.  It is the prerequisite for the generic substitution lemma; on its own it is
 the "substitution grade-algebra" — how `removeAt` / `gradeAt` / `substInto` interact with the zero
 vector, the var-rule singleton, scaling, and addition.
 

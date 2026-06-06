@@ -22,9 +22,9 @@ irreducible (`IsNormalForm`).
   * `normalize_of_isNormalForm` — normalizing a normal form returns it unchanged.
   * `joinable_iff_normalize_eq` — **conversion = normal-form equality**: two SN terms are β-convertible
     (join at a common reduct) iff their normal forms coincide.
-  * `decidableJoinable` + `HasSimpleType.decidableConv` + `HasUsage.decidableConv` — **decidable
-    β-conversion**: any two well-typed terms have decidable convertibility (it reduces to `DecidableEq`
-    on their normal forms).
+  * `decidableJoinable` + `HasSimpleType.decidableConv` — **decidable β-conversion**: any two
+    well-simply-typed terms have decidable convertibility (it reduces to `DecidableEq` on their normal
+    forms).
   * `var_notJoinable_of_ne` — non-vacuity: the decider genuinely distinguishes (distinct variables are
     not convertible).
 
@@ -194,14 +194,6 @@ def HasSimpleType.decidableConv {typeContextA typeContextB : List SimpleType} {a
     Decidable (Joinable GradedLambda.Reduces a b) :=
   GradedLambda.decidableJoinable typedA.stronglyNormalizing typedB.stronglyNormalizing
 
-/-- **Decidable β-conversion on the usage-typed fragment** — inherited through grade erasure, with no
-separate decision procedure. -/
-def HasUsage.decidableConv {typeContextA typeContextB : List GType} {gradesA gradesB : GradeVector}
-    {a b : GradedLambda} {typeA typeB : GType} (typedA : HasUsage typeContextA gradesA a typeA)
-    (typedB : HasUsage typeContextB gradesB b typeB) :
-    Decidable (Joinable GradedLambda.Reduces a b) :=
-  GradedLambda.decidableJoinable typedA.stronglyNormalizing typedB.stronglyNormalizing
-
 /-- Non-vacuity: the decision procedure genuinely DISTINGUISHES — distinct variables are not
 β-convertible (each is its own normal form). -/
 theorem GradedLambda.var_notJoinable_of_ne {indexA indexB : Nat} (hne : indexA ≠ indexB) :
@@ -258,14 +250,6 @@ theorem GradedLambda.Reduces.beta_joinable (body argument : GradedLambda) :
 is a genuine equivalence on well-typed terms. -/
 theorem HasSimpleType.joinable_trans {typeContext : List SimpleType} {a b c : GradedLambda}
     {middleType : SimpleType} (typedMiddle : HasSimpleType typeContext b middleType)
-    (convAB : Joinable GradedLambda.Reduces a b) (convBC : Joinable GradedLambda.Reduces b c) :
-    Joinable GradedLambda.Reduces a c :=
-  typedMiddle.stronglyNormalizing.joinable_trans convAB convBC
-
-/-- **Transitivity on the usage-typed fragment** — the middle term's usage typing supplies SN. -/
-theorem HasUsage.joinable_trans {typeContext : List GType} {grades : GradeVector}
-    {a b c : GradedLambda} {middleType : GType}
-    (typedMiddle : HasUsage typeContext grades b middleType)
     (convAB : Joinable GradedLambda.Reduces a b) (convBC : Joinable GradedLambda.Reduces b c) :
     Joinable GradedLambda.Reduces a c :=
   typedMiddle.stronglyNormalizing.joinable_trans convAB convBC

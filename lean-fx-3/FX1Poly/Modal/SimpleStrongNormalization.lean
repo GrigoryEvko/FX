@@ -2,11 +2,11 @@ import FX1Poly.Modal.SimpleTyping
 
 /-! # FX1Poly/Modal/SimpleStrongNormalization — STLC strong normalization
 
-The orthogonal-composition thesis: the usage dimension does NOT need its own strong-
+The orthogonal-composition thesis: a graded dimension does NOT need its own strong-
 normalization argument; graded-SN rides on the TYPE dimension's SN through grade erasure
-(`HasUsage.erase`), because the term and the β-reduction are grade-AGNOSTIC.  So the only
+(`HasGradeOver.erase`), because the term and the β-reduction are grade-AGNOSTIC.  So the only
 SN obligation is the TYPE dimension's: `HasSimpleType Γ t T → IsStronglyNormalizing t` (the classic
-STLC Tait result), proved ONCE.  Graded-SN is then the trivial corollary `HasUsage → erase → SN`.
+STLC Tait result), proved ONCE.  Graded-SN is then the trivial corollary `HasGradeOver → erase → SN`.
 
 This file builds that STLC-SN.  **The reduction + SN substrate** the Tait
 reducibility argument consumes:

@@ -2,11 +2,10 @@ import FX1Poly.Modal.GradedSubstitutionGeneric
 
 /-! # FX1Poly/Modal/GradedSubjectReductionGeneric — generic substitution + β SR (all graded dimensions)
 
-The usage dimension's subject-reduction headline (`GradedSubjectReduction.lean`) is hardcoded to
-`GType` / `HasUsage`.  But the SUBSTITUTION lemma and β subject reduction are the SAME argument for
-every dimension — they thread the `substInto` grade-algebra through the typing derivation.  This
-file ships them ONCE, generic over any `OrderedGradeSemiring`, completing the generic reduction
-metatheory (weakening and the substInto grade-algebra).
+The SUBSTITUTION lemma and β subject reduction are the SAME argument for every dimension — they thread
+the `substInto` grade-algebra through the typing derivation.  This file ships them ONCE, generic over
+any `OrderedGradeSemiring`, completing the generic reduction metatheory (weakening and the substInto
+grade-algebra).
 
   * `hasGradeOver_substitution` — **graded substitution**: substituting `argTerm` (typed at grade vector
     `argGrades` in the context with the cut binding removed) for the variable at `cutDepth` in `subject`

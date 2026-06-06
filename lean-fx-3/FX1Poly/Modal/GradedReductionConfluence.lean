@@ -1,5 +1,4 @@
 import FX1Poly.Modal.GradedFundamentalTheorem
-import FX1Poly.Modal.GradedStrongNormalization
 import FX1Poly.Core.Newman
 
 /-! # FX1Poly/Modal/GradedReductionConfluence — β-confluence for GradedLambda
@@ -31,8 +30,8 @@ critical-pair analysis consumes:
     the subterm IH + a cong-star; disjoint left-vs-right cong joined in one step each).
   * `IsStronglyNormalizing.confluent` — **confluence on the SN fragment** via the relation-generic
     `newmanAux` (the per-term `Acc` IS `IsStronglyNormalizing`), so untyped Ω is no obstacle.
-  * `HasSimpleType.confluent` / `HasUsage.confluent` — the payoff: **every well-(simply/usage-)typed
-    `GradedLambda` term is confluent** (SN supplied by the Tait fundamental theorem / grade erasure).
+  * `HasSimpleType.confluent` — the payoff: **every well-simply-typed `GradedLambda` term is
+    confluent** (SN supplied by the Tait fundamental theorem).
 
 **Unique normal forms:**
 
@@ -40,8 +39,8 @@ critical-pair analysis consumes:
     refl-reduces) + `var_isNormalForm` (non-vacuity anchor).
   * `IsStronglyNormalizing.uniqueNormalForm` — an SN term reduces to at most one normal form (confluence
     joins two NFs; each only refl-reduces, so each equals the join point).
-  * `HasSimpleType.uniqueNormalForm` / `HasUsage.uniqueNormalForm` — every well-typed term has a unique
-    β-NF (the bridge to decidable conversion).
+  * `HasSimpleType.uniqueNormalForm` — every well-simply-typed term has a unique β-NF (the bridge to
+    decidable conversion).
 
 The normalizer (`fireRedex?` + `Acc.rec` on SN) and decidable `Conv` (`normalize a = normalize b`) on
 the typed fragment live in `GradedNormalization.lean`.
@@ -273,15 +272,6 @@ theorem HasSimpleType.confluent {typeContext : List SimpleType} {term : GradedLa
         Joinable GradedLambda.Reduces leftReduct rightReduct :=
   typed.stronglyNormalizing.confluent
 
-/-- **Every well-usage-typed `GradedLambda` term is confluent** — the usage dimension inherits
-confluence through grade erasure (`HasUsage.stronglyNormalizing`), with no separate confluence proof. -/
-theorem HasUsage.confluent {typeContext : List GType} {grades : GradeVector} {term : GradedLambda}
-    {resultType : GType} (typed : HasUsage typeContext grades term resultType) :
-    ∀ {leftReduct rightReduct : GradedLambda},
-      GradedLambda.ReducesStar term leftReduct → GradedLambda.ReducesStar term rightReduct →
-        Joinable GradedLambda.Reduces leftReduct rightReduct :=
-  typed.stronglyNormalizing.confluent
-
 /-- A term is a **β-normal form** when it admits no reduction step. -/
 def GradedLambda.IsNormalForm (term : GradedLambda) : Prop :=
   ∀ {reduct : GradedLambda}, ¬ GradedLambda.Reduces term reduct
@@ -317,17 +307,6 @@ theorem GradedLambda.IsStronglyNormalizing.uniqueNormalForm {term firstNF second
 fundamental theorem). -/
 theorem HasSimpleType.uniqueNormalForm {typeContext : List SimpleType} {term : GradedLambda}
     {resultType : SimpleType} (typed : HasSimpleType typeContext term resultType)
-    {firstNF secondNF : GradedLambda}
-    (firstStar : GradedLambda.ReducesStar term firstNF)
-    (secondStar : GradedLambda.ReducesStar term secondNF)
-    (firstIsNF : GradedLambda.IsNormalForm firstNF) (secondIsNF : GradedLambda.IsNormalForm secondNF) :
-    firstNF = secondNF :=
-  typed.stronglyNormalizing.uniqueNormalForm firstStar secondStar firstIsNF secondIsNF
-
-/-- **Every well-usage-typed `GradedLambda` term has a unique normal form** — the usage dimension
-inherits unique normal forms through grade erasure, with no separate proof. -/
-theorem HasUsage.uniqueNormalForm {typeContext : List GType} {grades : GradeVector}
-    {term : GradedLambda} {resultType : GType} (typed : HasUsage typeContext grades term resultType)
     {firstNF secondNF : GradedLambda}
     (firstStar : GradedLambda.ReducesStar term firstNF)
     (secondStar : GradedLambda.ReducesStar term secondNF)

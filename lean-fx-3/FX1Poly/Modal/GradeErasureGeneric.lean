@@ -3,21 +3,19 @@ import FX1Poly.Modal.GradedFundamentalTheorem
 
 /-! # FX1Poly/Modal/GradeErasureGeneric — generic grade erasure + SN-transfer (all graded dimensions)
 
-The usage dimension's erasure (`GradeErasure.lean`) is hardcoded to `GType` / `HasUsage`; the
-SN-transfer (`GradedFundamentalTheorem.lean`) is hardcoded to `HasUsage`.  But the
-projection is the SAME for every dimension: forget the binder grades and a well-graded term is just a
-well-typed term of the underlying grade-free STLC, whose strong normalization is already proved (the
-Tait fundamental theorem, `HasSimpleType.stronglyNormalizing`).  This file ships that projection ONCE,
-generic over any `OrderedGradeSemiring`, from the generic judgment `HasGradeOver R`.
+Grade erasure is the SAME projection for every dimension: forget the binder grades and a well-graded
+term is just a well-typed term of the underlying grade-free STLC, whose strong normalization is already
+proved (the Tait fundamental theorem, `HasSimpleType.stronglyNormalizing`).  This file ships that
+projection ONCE, generic over any `OrderedGradeSemiring`, from the generic judgment `HasGradeOver R` —
+so it IS the usage dimension's erasure, with no bespoke usage version.
 
   * `eraseGTypeOver : GTypeOver R → SimpleType` — forget every arrow's binder grade.  The output type
-    is grade-FREE (`SimpleType`, shared with the usage erasure), so it does not mention `R` — every
-    dimension's graded types erase into the SAME simple-type system.
+    is grade-FREE (`SimpleType`), so it does not mention `R` — every dimension's graded types erase into
+    the SAME simple-type system.
   * `HasGradeOver.erase` — grade erasure preserves typing: every `HasGradeOver R`-typed term is
     `HasSimpleType`-typed after forgetting the grades.  The generically-graded layer PROJECTS onto the
-    SAME grade-free STLC that the usage dimension projects onto (`HasUsage.erase`); the grades only ADD
-    constraints atop a well-typed term (forward/erasure direction only — the converse lift is neither
-    claimed nor needed).
+    grade-free STLC; the grades only ADD constraints atop a well-typed term (forward/erasure direction
+    only — the converse lift is neither claimed nor needed).
   * `HasGradeOver.stronglyNormalizing` — **THE headline.**  For ANY ordered semiring `R`, a well-graded
     term is β-strongly-normalizing, obtained by erasing to STLC and invoking the shipped
     `HasSimpleType.stronglyNormalizing` — NO graded-reducibility re-proof.  This is the

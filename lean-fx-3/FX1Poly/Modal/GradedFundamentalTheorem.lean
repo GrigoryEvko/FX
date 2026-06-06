@@ -4,9 +4,9 @@ import FX1Poly.Modal.GradedReductionSubstitution
 
 The orthogonal-composition thesis closed end-to-end.  The TYPE dimension's strong-normalization
 obligation (`HasSimpleType → SN`, the classic STLC Tait result) is proved ONCE via the logical
-relation; graded strong normalization (`HasUsage → SN`) is then the TRIVIAL corollary through grade
-erasure, because the term and the β-reduction are grade-AGNOSTIC — adding the usage dimension does NOT
-require redoing the SN metatheory.
+relation; graded strong normalization (`HasGradeOver R → SN`) is then the TRIVIAL corollary through
+grade erasure, because the term and the β-reduction are grade-AGNOSTIC — adding a graded dimension does
+NOT require redoing the SN metatheory.
 
   * `GradedLambda.IsStronglyNormalizing.lam` — SN of a body lifts to SN of its lambda.
   * `GradedLambda.Reducible.abstraction` — **the Tait abstraction lemma**: if every reducible
@@ -20,9 +20,9 @@ require redoing the SN metatheory.
     lemma and rewrites the β-reduct via the composition (★) from iii-b into the extended environment).
   * `HasSimpleType.reducible` / `HasSimpleType.stronglyNormalizing` — every well-typed term is
     reducible (identity substitution + `applySubstitution_id`), hence strongly normalizing (CR1).
-  (The bespoke usage corollary `HasUsage.stronglyNormalizing` — graded-SN via `HasUsage.erase` +
-  STLC-SN — and its `linearIdentity`/`kCombinator` witnesses live in `GradedStrongNormalization.lean`,
-  keeping this shared STLC fundamental theorem free of any usage-specific import.)
+  (Graded-SN for any dimension R — `HasGradeOver.stronglyNormalizing`, graded-SN via
+  `HasGradeOver.erase` + STLC-SN — is the generic corollary, kept in `GradeErasureGeneric.lean` so this
+  shared STLC fundamental theorem carries no graded-judgment import.)
 
 ## Zero-axiom verification
 
@@ -158,8 +158,8 @@ theorem HasSimpleType.stronglyNormalizing {typeContext : List SimpleType} {term 
     GradedLambda.IsStronglyNormalizing term :=
   typed.reducible.sn
 
--- Graded SN (`HasUsage.stronglyNormalizing` + the linearIdentity/kCombinator witnesses) is the bespoke
--- usage corollary, split into `GradedStrongNormalization.lean` so this shared STLC fundamental theorem
--- carries no usage-specific (`GradeErasure`/`GradedTyping`) import.
+-- Graded SN (`HasGradeOver.stronglyNormalizing` + the linearIdentity/kCombinator witnesses) is the
+-- generic corollary for any dimension R, kept in `GradeErasureGeneric.lean` so this shared STLC
+-- fundamental theorem carries no graded-judgment import.
 
 end FX1Poly.Modal
