@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.HasTypeDescInversion
+import FX1Poly.Typed.HasTypeDescPiRootGeneric
 import FX1Poly.Typed.WfContextDescLookup
 import FX1Poly.Typed.UniverseCodeShape
 
@@ -32,9 +33,17 @@ ships those leaves natively.
   (`WfContextDesc.lookupIsTypeDesc` makes the lookup a type, so the `Conv` is an `Eq`); backward by the
   universe-code destructor + the variable rule `HasTypeDesc.var`.
 
-NOT here (deferred to subsequent HT-A4 bricks): the non-type-former refutation leaf
-(`subjectRootGeneratorGeneric`-driven), the recursive Π/Σ `decideWithWitness`, and the `Decidable`
-assembly.
+* `IsTypeDesc.not_of_rootGenerator` — a cell whose root is **neither** `gen_var`, **nor** `gen_universeCode`,
+  **nor** a formation former (`typingRuleDescOf root = none`) is **not** a formation type.  The decider's
+  default leaf — refutes by `HasTypeDesc.subjectRootGeneratorGeneric` (a formation-typed subject's root is one
+  of those three), contradicting each disjunct.  TABLE-GENERIC (no `gen_piTyCode`/`gen_sigmaTyCode`
+  enumeration): a future formation row is absorbed into the `typingRuleDescOf = some` disjunct, so this leaf
+  needs no per-former change — strictly cleaner than the old `IsType.not_of_headGenerator` (which lists four
+  explicit head inequalities).
+
+NOT here (deferred to the recursive decider brick): the recursive Π/Σ `decideWithWitness` (needs telescope
+unpacking — the native `HasTypeDesc.inversionPiCode` returns a `DescTelescope`, not the unpacked child
+typings the old engine's inversion gave) and the `Decidable` assembly.
 
 ## Zero-axiom verification
 
@@ -116,5 +125,29 @@ theorem IsTypeDesc.variableCell_iff_lookupIsUniverseCode {profile : PolyProfile}
     refine ⟨levelExpr, flag, ?_⟩
     rw [← lookupEqualsCode]
     exact HasTypeDesc.var context index
+
+/-- **A cell with a non-type-former root is not a formation type.**  If `classifier`'s root generator is
+neither `gen_var`, nor `gen_universeCode`, nor a formation former (`typingRuleDescOf root = none`), then
+`classifier` inhabits no universe per the formation engine.  The decider's default ("else") leaf.
+
+Refutes via `HasTypeDesc.subjectRootGeneratorGeneric`: a formation-typed subject's root is one of `gen_var`,
+`gen_universeCode`, or carries a formation rule — each disjunct contradicted by a hypothesis (the third by
+`Option.noConfusion` against `notFormer`).  TABLE-GENERIC: the formation-former case is the single
+`typingRuleDescOf = some` disjunct, so a future formation row is absorbed with no change here — strictly
+cleaner than the bespoke `IsType.not_of_headGenerator`, which enumerates `gen_piTyCode`/`gen_sigmaTyCode`
+explicitly. -/
+theorem IsTypeDesc.not_of_rootGenerator {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (notVariable : classifier.rootGenerator ≠ Generator.gen_var)
+    (notUniverseCode : classifier.rootGenerator ≠ Generator.gen_universeCode)
+    (notFormer : typingRuleDescOf classifier.rootGenerator = none) :
+    ¬ IsTypeDesc profile context classifier := by
+  rintro ⟨levelExpr, flag, typed⟩
+  rcases typed.subjectRootGeneratorGeneric with
+    isVariable | isUniverseCode | ⟨rule, isFormer⟩
+  · exact notVariable isVariable
+  · exact notUniverseCode isUniverseCode
+  · rw [notFormer] at isFormer
+    nomatch isFormer
 
 end FX1Poly.Typed

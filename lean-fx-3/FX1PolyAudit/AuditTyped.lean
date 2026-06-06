@@ -5248,3 +5248,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.eq_of_isTypeDesc
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.ofUniverseCodeCell
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.variableCell_iff_lookupIsUniverseCode
+-- not_of_rootGenerator = the decider's default leaf: a cell whose root is neither gen_var nor gen_universeCode
+-- nor a formation former (typingRuleDescOf = none) is NOT a formation type. Table-generic via
+-- subjectRootGeneratorGeneric — the formation-former case is the single typingRuleDescOf=some disjunct, so a
+-- future formation row needs no change here (cleaner than the bespoke 4-head IsType.not_of_headGenerator).
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.not_of_rootGenerator
