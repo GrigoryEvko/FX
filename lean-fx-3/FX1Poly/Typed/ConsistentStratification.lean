@@ -1,5 +1,5 @@
 import FX1Poly.Typed.ValidTyping
-import FX1Poly.Typed.HasTypeWeakening
+import FX1Poly.Typed.CellRenaming
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Core.CandidateInterpretationRename
 

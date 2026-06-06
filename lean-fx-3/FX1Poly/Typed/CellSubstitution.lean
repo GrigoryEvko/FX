@@ -1,4 +1,5 @@
 import FX1Poly.Typed.CellConstructors
+import FX1Poly.Typed.CellRenaming
 import FX1Poly.Core.RawTermRename
 import FX1Poly.Core.RawTermSubst0
 import FX1Poly.Core.RawTermSubst0Commute

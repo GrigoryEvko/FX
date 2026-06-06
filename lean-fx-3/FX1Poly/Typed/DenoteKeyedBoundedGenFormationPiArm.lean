@@ -1,6 +1,6 @@
 import FX1Poly.Typed.DenoteKeyedBoundedPiIntroArm
 import FX1Poly.Typed.DenoteKeyedBoundedFormerEngine
-import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.CellSubstitution
 import FX1Poly.Core.StrongNormalizationConstructors
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedGenFormationPiArm

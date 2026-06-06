@@ -1,7 +1,7 @@
 import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.SimplyTypedTypeExprClosureLevelFree
 import FX1Poly.Typed.HasTypeDescPiWeakening
-import FX1Poly.Typed.HasTypeWeakening
+import FX1Poly.Typed.CellRenaming
 
 /-! # FX1Poly/Typed/SimplyTypedTermRenameLevelFree
     — `SimplyTypedTermLF` is preserved by any context-respecting renaming (and its weakening corollary).

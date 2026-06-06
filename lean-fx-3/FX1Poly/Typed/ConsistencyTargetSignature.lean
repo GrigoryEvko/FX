@@ -1,7 +1,7 @@
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Core.ConsistencyViaSconing
 import FX1Poly.Typed.ClosedBoundedReducibleMember
-import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.CellSubstitution
 
 /-! # FX1Poly/Typed/ConsistencyTargetSignature
     — SN-050 target signature: engine consistency from the empty-candidate bridge (CON-A0 spike verdict)

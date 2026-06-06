@@ -1,6 +1,6 @@
 import FX1Poly.Typed.DenoteKeyedBoundedTelescopeReducible
 import FX1Poly.Typed.DenoteKeyedBoundedFundamentalMotive
-import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.CellSubstitution
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedTelescopeFundamental
     — the bound-carrying telescope fundamental-theorem companion arms (nil + cons)

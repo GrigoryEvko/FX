@@ -1,6 +1,6 @@
 import FX1Poly.Typed.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.DenoteKeyedFundamentalMotive
-import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.CellSubstitution
 
 /-! # FX1Poly/Typed/DenoteKeyedTelescopeFundamental
     — the denote telescope fundamental-theorem companion arms (nil + cons; SN-D5d step 1; toward SN-043)

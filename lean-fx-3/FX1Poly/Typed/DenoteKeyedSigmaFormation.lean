@@ -1,6 +1,6 @@
 import FX1Poly.Typed.DenoteKeyedUniverseMembershipIntro
 import FX1Poly.Typed.DenoteKeyedReducibilitySmoke
-import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.CellSubstitution
 import FX1Poly.Core.StrongNormalizationConstructors
 
 /-! # FX1Poly/Typed/DenoteKeyedSigmaFormation

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.HasTypeDesc
-import FX1Poly.Typed.HasTypeWeakening
+import FX1Poly.Typed.CellRenaming
 import FX1Poly.Core.ConvSubstRename
 import FX1Poly.Core.RawTermFoldNonVarCommute
 

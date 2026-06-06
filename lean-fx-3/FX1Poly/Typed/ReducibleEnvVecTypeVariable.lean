@@ -1,5 +1,5 @@
 import FX1Poly.Typed.ReducibleEnvVec
-import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.CellSubstitution
 import FX1Poly.Core.StratifiedReducibleUniverseDecode
 import FX1Poly.Core.StratifiedReducibleMemberNeutral
 

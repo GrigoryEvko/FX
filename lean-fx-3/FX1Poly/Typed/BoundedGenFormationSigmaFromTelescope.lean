@@ -1,5 +1,5 @@
 import FX1Poly.Typed.BoundedGenFormationPiFromTelescope
-import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.CellSubstitution
 import FX1Poly.Core.WeakHeadStepNormalForms
 
 /-! # FX1Poly/Typed/BoundedGenFormationSigmaFromTelescope

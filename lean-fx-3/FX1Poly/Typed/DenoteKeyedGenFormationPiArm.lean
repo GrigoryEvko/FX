@@ -1,6 +1,6 @@
 import FX1Poly.Typed.DenoteKeyedUniverseMembershipIntro
 import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
-import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.CellSubstitution
 import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Typed.DenoteKeyedSingleLevelPi
 import FX1Poly.Typed.DenoteKeyedUniverseFormationMember

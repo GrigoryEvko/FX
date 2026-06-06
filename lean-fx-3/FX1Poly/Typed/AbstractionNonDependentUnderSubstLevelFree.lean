@@ -1,5 +1,5 @@
 import FX1Poly.Core.ReducibleTypeWellFormed
-import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.CellSubstitution
 import FX1Poly.Typed.HasTypeDescPi
 
 /-! # FX1Poly/Typed/AbstractionNonDependentUnderSubstLevelFree

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
-import FX1Poly.Typed.HasTypeSubstitution
+import FX1Poly.Typed.CellSubstitution
 
 /-! # FX1Poly/Typed/ReducibleEnvAtAllLevelsWithTypeValueCandidates
     -- strengthened all-level environments for type-valued variables
