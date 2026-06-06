@@ -42,8 +42,7 @@ lookup.  Generalising the subject (rather than matching the variable index direc
 theorem HasTypeDescPi.inversionVariableGeneral {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
-    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext) :
+    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier) :
     ∀ {targetIndex : Fin generalScope},
       subject = variableCell targetIndex →
         Conv reachedClassifier (generalContext.lookup targetIndex) :=
@@ -53,7 +52,7 @@ theorem HasTypeDescPi.inversionVariableGeneral {profile : PolyProfile}
         HasTypeDesc.inversionVariableGeneral formationTyped subjectEq
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped => fun subjectEq =>
         Conv.trans converts.sym
-          (HasTypeDescPi.inversionVariableGeneral typedPremise wellFormed subjectEq)
+          (HasTypeDescPi.inversionVariableGeneral typedPremise subjectEq)
     | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
         fun subjectEq =>
         Generator.noConfusion
@@ -76,9 +75,8 @@ and the per-subject uniqueness the SN-052 COMPARE step consumes at a variable. -
 theorem HasTypeDescPi.inversionVariable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {index : Fin scope} {classifier : RawTerm scope}
-    (typed : HasTypeDescPi profile context (variableCell index) classifier)
-    (wellFormed : WfContext context) :
+    (typed : HasTypeDescPi profile context (variableCell index) classifier) :
     Conv classifier (context.lookup index) :=
-  HasTypeDescPi.inversionVariableGeneral typed wellFormed rfl
+  HasTypeDescPi.inversionVariableGeneral typed rfl
 
 end FX1Poly.Typed

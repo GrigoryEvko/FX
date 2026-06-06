@@ -44,24 +44,24 @@ open FX1Poly.Core FX1Poly.Universe
 of `HasTypeDescPi.inversionVariable`: if a classifier is NOT `Conv` to the variable's context lookup, the
 variable is not typed at it.  Every concrete leaf rejection is an instance. -/
 theorem variable_notTypedAtNonConvLookup {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (wellFormed : WfContext context)
+    {context : TypingContext profile scope} (_wellFormed : WfContext context)
     {index : Fin scope} {classifier : RawTerm scope}
     (classifierNotConvLookup : ¬ Conv classifier (context.lookup index)) :
     ¬ HasTypeDescPi profile context (variableCell index) classifier :=
-  fun typed => classifierNotConvLookup (HasTypeDescPi.inversionVariable typed wellFormed)
+  fun typed => classifierNotConvLookup (HasTypeDescPi.inversionVariable typed)
 
 /-- **A Π-typed variable is never typed at a universe code.**  A variable whose context lookup is a Π-type code
 `piTyCodeCell …` is a function-typed term, not a type: `inversionVariable` `Conv`s the universe code to the
 Π-type lookup, refuted by `Conv.piTyCode_not_universeCode`. -/
 theorem piTypedVariable_notTypedAtUniverseCode {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (wellFormed : WfContext context) {index : Fin scope}
+    {context : TypingContext profile scope} (_wellFormed : WfContext context) {index : Fin scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (lookupIsPi : context.lookup index = piTyCodeCell domainCode codomainCode)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (variableCell index) (universeCodeCell levelExpr flag) := by
   intro typed
   have conv : Conv (universeCodeCell levelExpr flag : RawTerm scope) (context.lookup index) :=
-    HasTypeDescPi.inversionVariable typed wellFormed
+    HasTypeDescPi.inversionVariable typed
   rw [lookupIsPi] at conv
   exact Conv.piTyCode_not_universeCode conv.sym
 
@@ -70,28 +70,28 @@ theorem piTypedVariable_notTypedAtUniverseCode {profile : PolyProfile} {scope : 
 `inversionVariable` `Conv`s the Π-type code to the universe-code lookup, refuted by
 `Conv.piTyCode_not_universeCode`. -/
 theorem universeTypedVariable_notTypedAtPiTyCode {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (wellFormed : WfContext context) {index : Fin scope}
+    {context : TypingContext profile scope} (_wellFormed : WfContext context) {index : Fin scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag}
     (lookupIsUniverse : context.lookup index = universeCodeCell levelExpr flag)
     (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
     ¬ HasTypeDescPi profile context (variableCell index) (piTyCodeCell domainCode codomainCode) := by
   intro typed
   have conv : Conv (piTyCodeCell domainCode codomainCode : RawTerm scope) (context.lookup index) :=
-    HasTypeDescPi.inversionVariable typed wellFormed
+    HasTypeDescPi.inversionVariable typed
   rw [lookupIsUniverse] at conv
   exact Conv.piTyCode_not_universeCode conv
 
 /-- **A type variable is never typed at a Σ-type code** (the Σ dual of `universeTypedVariable_notTypedAtPiTyCode`):
 a universe-typed variable is not classified by a Σ type, refuted by `Conv.sigmaTyCode_not_universeCode`. -/
 theorem universeTypedVariable_notTypedAtSigmaTyCode {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (wellFormed : WfContext context) {index : Fin scope}
+    {context : TypingContext profile scope} (_wellFormed : WfContext context) {index : Fin scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag}
     (lookupIsUniverse : context.lookup index = universeCodeCell levelExpr flag)
     (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
     ¬ HasTypeDescPi profile context (variableCell index) (sigmaTyCodeCell domainCode codomainCode) := by
   intro typed
   have conv : Conv (sigmaTyCodeCell domainCode codomainCode : RawTerm scope) (context.lookup index) :=
-    HasTypeDescPi.inversionVariable typed wellFormed
+    HasTypeDescPi.inversionVariable typed
   rw [lookupIsUniverse] at conv
   exact Conv.sigmaTyCode_not_universeCode conv
 

@@ -67,7 +67,7 @@ def HasTypeDescPi.decidableCheckVariableAtType {profile : PolyProfile} {scope : 
         (inferredTypeTyped := .ofFormation lookupTypedNative)
         (targetTyped := targetTyped)
         (uniqueAtSubject := fun derivation =>
-          (HasTypeDescPi.inversionVariable derivation wellFormed).sym)
+          (HasTypeDescPi.inversionVariable derivation).sym)
   | .inr notType =>
       absurd
         (WfContextDesc.lookupIsTypeDesc context (WfContextDesc.ofWfContext wellFormed) index)
