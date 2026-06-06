@@ -61,10 +61,6 @@ import FX1Poly.Core.StrongNormalizationBetaEtaUnion
 import FX1Poly.Core.EtaPostponementOverBeta
 import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.UniverseModeBridgeReducibility
-import FX1Poly.Core.CubicalOperatorReducibility
-import FX1Poly.Core.CubicalTransportReducibility
-import FX1Poly.Core.CubicalEliminatorReducibility
-import FX1Poly.Core.CubicalPathAlgebraReducibility
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -617,79 +613,11 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.StepStar.liftInnerToOuter_isStronglyNormalizing_of_candidateMember
 #assert_no_axioms FX1Poly.Core.StepStar.lowerOuterToInner_isStronglyNormalizing_of_candidateMembers
 
--- The CCHM cubical Kan operators gen_transp (path, source) + gen_hcomp (sides, cap) are two-child
--- congruence-only/non-neutral with no beta+iota rule (the Kan computation rules are not in the current
--- substrate), so the SN candidate is the ceiling, the same shape as the mode bridges.  Inversions + forward
--- two-child SN closures + per-child reflections (reusing the generic one-child reflection lemma by slicing) +
--- biconditionals + candidate-framing.
-#assert_no_axioms FX1Poly.Core.Step.from_transp
-#assert_no_axioms FX1Poly.Core.Step.from_hcomp
-#assert_no_axioms FX1Poly.Core.StepStar.transp_isStronglyNormalizing_of_children
-#assert_no_axioms FX1Poly.Core.StepStar.hcomp_isStronglyNormalizing_of_children
-#assert_no_axioms FX1Poly.Core.StepStar.transp_path_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.transp_source_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.hcomp_sides_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.hcomp_cap_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.transp_isStronglyNormalizing_iff
-#assert_no_axioms FX1Poly.Core.StepStar.hcomp_isStronglyNormalizing_iff
-#assert_no_axioms FX1Poly.Core.StepStar.transp_isStronglyNormalizing_of_candidateMembers
-#assert_no_axioms FX1Poly.Core.StepStar.hcomp_isStronglyNormalizing_of_candidateMembers
-
--- The two remaining transport variants gen_transpHigherDim (2-child: pathFamily, source) + gen_transpFill
--- (3-child: pathTy, currentInterval, source), congruence-only/non-neutral like transp/hcomp.  transpFill uses
--- the three-child forward closure (threeChildCong) + three one-child reflection slices (the source slice
--- threads StepChildren.there twice past the held pathTy + interval).  All four transport/composition Kan
--- operators have congruence-only SN coverage.
-#assert_no_axioms FX1Poly.Core.Step.from_transpHigherDim
-#assert_no_axioms FX1Poly.Core.Step.from_transpFill
-#assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_isStronglyNormalizing_of_children
-#assert_no_axioms FX1Poly.Core.StepStar.transpFill_isStronglyNormalizing_of_children
-#assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_family_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_source_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.transpFill_ty_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.transpFill_interval_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.transpFill_source_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_isStronglyNormalizing_iff
-#assert_no_axioms FX1Poly.Core.StepStar.transpFill_isStronglyNormalizing_iff
-#assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_isStronglyNormalizing_of_candidateMembers
-#assert_no_axioms FX1Poly.Core.StepStar.transpFill_isStronglyNormalizing_of_candidateMembers
-
--- The two cubical eliminators gen_pathApp (2-child: pathTerm, intervalArg) + gen_glueElim (1-child:
--- gluedValue), congruence-only/non-neutral (the path-beta and Glue collapse rules are not in the current
--- substrate).  glueElim mirrors the modElim 1-child pattern; pathApp the transp 2-child pattern.  With
--- glueIntro's SN, this covers the Glue and path-eliminator congruence-only SN.
-#assert_no_axioms FX1Poly.Core.Step.from_glueElim
-#assert_no_axioms FX1Poly.Core.Step.from_pathApp
-#assert_no_axioms FX1Poly.Core.StepStar.glueElim_isStronglyNormalizing_of_child
-#assert_no_axioms FX1Poly.Core.StepStar.glueElim_isStronglyNormalizing_child_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.glueElim_isStronglyNormalizing_iff
-#assert_no_axioms FX1Poly.Core.StepStar.glueElim_isStronglyNormalizing_of_candidateMember
-#assert_no_axioms FX1Poly.Core.StepStar.pathApp_isStronglyNormalizing_of_children
-#assert_no_axioms FX1Poly.Core.StepStar.pathApp_pathTerm_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.pathApp_intervalArg_isStronglyNormalizing_of_parent
-#assert_no_axioms FX1Poly.Core.StepStar.pathApp_isStronglyNormalizing_iff
-#assert_no_axioms FX1Poly.Core.StepStar.pathApp_isStronglyNormalizing_of_candidateMembers
-
--- The five path infinity-groupoid / cubical-composition operators gen_pathCompose (2-child) +
--- gen_pathInverse (1-child) + gen_pathWhiskerLeft/Right (2-child) + gen_compCubical (2-child), all
--- congruence-only/non-neutral.  Forward SN content (inversion + forward closure + candidate-framing); the
--- reflections follow the generic one-child reflection pattern.  This covers the cubical layer's
--- congruence-only SN (Kan + transport + eliminators + path-algebra).
-#assert_no_axioms FX1Poly.Core.Step.from_pathInverse
-#assert_no_axioms FX1Poly.Core.Step.from_pathCompose
-#assert_no_axioms FX1Poly.Core.Step.from_pathWhiskerLeft
-#assert_no_axioms FX1Poly.Core.Step.from_pathWhiskerRight
-#assert_no_axioms FX1Poly.Core.Step.from_compCubical
-#assert_no_axioms FX1Poly.Core.StepStar.pathInverse_isStronglyNormalizing_of_child
-#assert_no_axioms FX1Poly.Core.StepStar.pathInverse_isStronglyNormalizing_of_candidateMember
-#assert_no_axioms FX1Poly.Core.StepStar.pathCompose_isStronglyNormalizing_of_children
-#assert_no_axioms FX1Poly.Core.StepStar.pathCompose_isStronglyNormalizing_of_candidateMembers
-#assert_no_axioms FX1Poly.Core.StepStar.pathWhiskerLeft_isStronglyNormalizing_of_children
-#assert_no_axioms FX1Poly.Core.StepStar.pathWhiskerLeft_isStronglyNormalizing_of_candidateMembers
-#assert_no_axioms FX1Poly.Core.StepStar.pathWhiskerRight_isStronglyNormalizing_of_children
-#assert_no_axioms FX1Poly.Core.StepStar.pathWhiskerRight_isStronglyNormalizing_of_candidateMembers
-#assert_no_axioms FX1Poly.Core.StepStar.compCubical_isStronglyNormalizing_of_children
-#assert_no_axioms FX1Poly.Core.StepStar.compCubical_isStronglyNormalizing_of_candidateMembers
+-- Cubical-former congruence-only SN is covered GENERICALLY by the former-congruence SN closures
+-- (`isStronglyNormalizing_of_{one,two,three}ChildCong`): every cubical former with no beta+iota rule
+-- is just a non-neutral node whose SN follows from its children's SN, with no per-former content.  When
+-- the cubical computation rules (transp/hcomp/Kan/path-beta/Glue-collapse) land, their SN routes through
+-- the generic operator machinery — not a per-former wrapper file.
 
 -- Universe-mode bridge beta+iota SN coverage: gen_liftInnerToOuter (1-child inner-to-outer lift) and
 -- gen_lowerOuterToInner (2-child outer-to-inner lower) are congruence-only (no iota root rule; the mode-bridge
