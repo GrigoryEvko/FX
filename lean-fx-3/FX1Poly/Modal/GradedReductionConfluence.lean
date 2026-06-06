@@ -22,9 +22,18 @@ critical-pair analysis consumes:
     result (many steps: the body may have several occurrences of the substituted variable).  The
     binder case shifts the argument (`Reduces.shift`) and re-substitutes under the bumped index.
 
-Still to come (next installments): local confluence (`WeaklyConfluent Reduces`, the 9-case β
-critical-pair analysis), confluence for SN terms via `newmanAux`, and unique normal forms / decidable
-`Conv` on the `HasSimpleType` fragment.
+**This second installment (CONF stage 2) adds local confluence and Newman:**
+
+  * `Reduces.localConfluent` / `Reduces.weaklyConfluent` — **`WeaklyConfluent Reduces`**, the 9-case β
+    critical-pair analysis on `app` (beta×beta same reduct; beta-vs-cong nested redexes joined via
+    `Reduces.substAt` / `substReducedArg` against a residual `Reduces.beta`; same-side cong-vs-cong via
+    the subterm IH + a cong-star; disjoint left-vs-right cong joined in one step each).
+  * `IsStronglyNormalizing.confluent` — **confluence on the SN fragment** via the relation-generic
+    `newmanAux` (the per-term `Acc` IS `IsStronglyNormalizing`), so untyped Ω is no obstacle.
+  * `HasSimpleType.confluent` / `HasUsage.confluent` — the payoff: **every well-(simply/usage-)typed
+    `GradedLambda` term is confluent** (SN supplied by the Tait fundamental theorem / grade erasure).
+
+Still to come (next installment): unique normal forms + decidable `Conv` on the typed fragment.
 
 ## Zero-axiom verification
 
@@ -37,7 +46,7 @@ induction with explicit `if`-reduction (`rw [if_pos]`/`if_neg]`, never `simp` on
 
 namespace FX1Poly.Modal
 
-open FX1Poly.Core (ReflTransClosure)
+open FX1Poly.Core (ReflTransClosure Joinable WeaklyConfluent)
 
 /-- Multi-step β-reduction: the reflexive-transitive closure of `Reduces`. -/
 abbrev GradedLambda.ReducesStar : GradedLambda → GradedLambda → Prop :=
@@ -149,5 +158,117 @@ theorem GradedLambda.Reduces.substReducedArg {replacement replacement' : GradedL
         (GradedLambda.app (GradedLambda.substAt cut replacement' function) (GradedLambda.substAt cut replacement' argument))
       exact (GradedLambda.ReducesStar.congAppLeft (functionIH step cut)).trans
         (GradedLambda.ReducesStar.congAppRight (argumentIH step cut))
+
+/-- **Local (weak) confluence of β**: two divergent single steps from the same term join.  The 9-case
+critical-pair analysis on `app` (the only redex shape is `app (lam body) arg`): `beta×beta` is the same
+reduct; `beta`-vs-`congAppLeft` joins at the substitution of the reduced body (`Reduces.substAt`)
+against a residual `Reduces.beta`; `beta`-vs-`congAppRight` joins at the substitution of the reduced
+argument (`substReducedArg`, possibly many steps) against a residual `Reduces.beta`; same-side
+`cong`-vs-`cong` uses the subterm IH and a cong-star; disjoint `congAppLeft`-vs-`congAppRight` joins in
+one step each.  `var` does not reduce; `lam` is handled by the body IH + `ReducesStar.congLam`. -/
+theorem GradedLambda.Reduces.localConfluent :
+    ∀ (source : GradedLambda) {leftReduct rightReduct : GradedLambda},
+      GradedLambda.Reduces source leftReduct → GradedLambda.Reduces source rightReduct →
+        Joinable GradedLambda.Reduces leftReduct rightReduct := by
+  intro source
+  induction source with
+  | var index => intro _ _ leftStep _; cases leftStep
+  | lam body ihBody =>
+      intro _ _ leftStep rightStep
+      cases leftStep with
+      | congLam _ leftBody leftStepBody =>
+          cases rightStep with
+          | congLam _ rightBody rightStepBody =>
+              obtain ⟨joinBody, leftToJoin, rightToJoin⟩ := ihBody leftStepBody rightStepBody
+              exact ⟨.lam joinBody, GradedLambda.ReducesStar.congLam leftToJoin,
+                GradedLambda.ReducesStar.congLam rightToJoin⟩
+  | app function argument ihFunction ihArgument =>
+      intro _ _ leftStep rightStep
+      cases leftStep with
+      | beta leftBody _ =>
+          cases rightStep with
+          | beta _ _ =>
+              exact ⟨GradedLambda.substAt 0 argument leftBody,
+                ReflTransClosure.refl _, ReflTransClosure.refl _⟩
+          | congAppLeft _ rightFn _ rightStepFn =>
+              cases rightStepFn with
+              | congLam _ rightBody rightStepBody =>
+                  exact ⟨GradedLambda.substAt 0 argument rightBody,
+                    ReflTransClosure.single (rightStepBody.substAt 0 argument),
+                    ReflTransClosure.single (GradedLambda.Reduces.beta rightBody argument)⟩
+          | congAppRight _ _ rightArg rightStepArg =>
+              exact ⟨GradedLambda.substAt 0 rightArg leftBody,
+                rightStepArg.substReducedArg 0 leftBody,
+                ReflTransClosure.single (GradedLambda.Reduces.beta leftBody rightArg)⟩
+      | congAppLeft _ leftFn _ leftStepFn =>
+          cases rightStep with
+          | beta rightBody _ =>
+              cases leftStepFn with
+              | congLam _ leftBody leftStepBody =>
+                  exact ⟨GradedLambda.substAt 0 argument leftBody,
+                    ReflTransClosure.single (GradedLambda.Reduces.beta leftBody argument),
+                    ReflTransClosure.single (leftStepBody.substAt 0 argument)⟩
+          | congAppLeft _ rightFn _ rightStepFn =>
+              obtain ⟨joinFn, leftToJoin, rightToJoin⟩ := ihFunction leftStepFn rightStepFn
+              exact ⟨GradedLambda.app joinFn argument,
+                GradedLambda.ReducesStar.congAppLeft leftToJoin,
+                GradedLambda.ReducesStar.congAppLeft rightToJoin⟩
+          | congAppRight _ _ rightArg rightStepArg =>
+              exact ⟨GradedLambda.app leftFn rightArg,
+                ReflTransClosure.single
+                  (GradedLambda.Reduces.congAppRight leftFn argument rightArg rightStepArg),
+                ReflTransClosure.single
+                  (GradedLambda.Reduces.congAppLeft function leftFn rightArg leftStepFn)⟩
+      | congAppRight _ _ leftArg leftStepArg =>
+          cases rightStep with
+          | beta rightBody _ =>
+              exact ⟨GradedLambda.substAt 0 leftArg rightBody,
+                ReflTransClosure.single (GradedLambda.Reduces.beta rightBody leftArg),
+                leftStepArg.substReducedArg 0 rightBody⟩
+          | congAppLeft _ rightFn _ rightStepFn =>
+              exact ⟨GradedLambda.app rightFn leftArg,
+                ReflTransClosure.single
+                  (GradedLambda.Reduces.congAppLeft function rightFn leftArg rightStepFn),
+                ReflTransClosure.single
+                  (GradedLambda.Reduces.congAppRight rightFn argument leftArg leftStepArg)⟩
+          | congAppRight _ _ rightArg rightStepArg =>
+              obtain ⟨joinArg, leftToJoin, rightToJoin⟩ := ihArgument leftStepArg rightStepArg
+              exact ⟨GradedLambda.app function joinArg,
+                GradedLambda.ReducesStar.congAppRight leftToJoin,
+                GradedLambda.ReducesStar.congAppRight rightToJoin⟩
+
+/-- β-reduction on `GradedLambda` is **weakly confluent**. -/
+theorem GradedLambda.Reduces.weaklyConfluent : WeaklyConfluent GradedLambda.Reduces := by
+  intro source _ _ leftStep rightStep
+  exact GradedLambda.Reduces.localConfluent source leftStep rightStep
+
+/-- **Confluence on the strongly-normalizing fragment** (Newman's lemma): a β-SN term's divergent
+multi-step reductions join.  `FX1Poly.Core.newmanAux` is relation-generic and consumes exactly the
+per-term `Acc` that `IsStronglyNormalizing` packages, so confluence is derived FROM SN — untyped Ω
+(which is not SN) is no obstacle. -/
+theorem GradedLambda.IsStronglyNormalizing.confluent {source : GradedLambda}
+    (sn : GradedLambda.IsStronglyNormalizing source) :
+    ∀ {leftReduct rightReduct : GradedLambda},
+      GradedLambda.ReducesStar source leftReduct → GradedLambda.ReducesStar source rightReduct →
+        Joinable GradedLambda.Reduces leftReduct rightReduct :=
+  FX1Poly.Core.newmanAux GradedLambda.Reduces.weaklyConfluent source sn
+
+/-- **Every well-simply-typed `GradedLambda` term is confluent.**  SN — hence (Newman) confluence — is
+supplied by the Tait fundamental theorem (`HasSimpleType.stronglyNormalizing`). -/
+theorem HasSimpleType.confluent {typeContext : List SimpleType} {term : GradedLambda}
+    {resultType : SimpleType} (typed : HasSimpleType typeContext term resultType) :
+    ∀ {leftReduct rightReduct : GradedLambda},
+      GradedLambda.ReducesStar term leftReduct → GradedLambda.ReducesStar term rightReduct →
+        Joinable GradedLambda.Reduces leftReduct rightReduct :=
+  typed.stronglyNormalizing.confluent
+
+/-- **Every well-usage-typed `GradedLambda` term is confluent** — the usage dimension inherits
+confluence through grade erasure (`HasUsage.stronglyNormalizing`), with no separate confluence proof. -/
+theorem HasUsage.confluent {typeContext : List GType} {grades : GradeVector} {term : GradedLambda}
+    {resultType : GType} (typed : HasUsage typeContext grades term resultType) :
+    ∀ {leftReduct rightReduct : GradedLambda},
+      GradedLambda.ReducesStar term leftReduct → GradedLambda.ReducesStar term rightReduct →
+        Joinable GradedLambda.Reduces leftReduct rightReduct :=
+  typed.stronglyNormalizing.confluent
 
 end FX1Poly.Modal

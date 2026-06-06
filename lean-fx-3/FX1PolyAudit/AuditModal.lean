@@ -333,3 +333,15 @@ argument-substitutivity — the inputs to the local-confluence critical-pair ana
 #assert_no_axioms FX1Poly.Modal.GradedLambda.ReducesStar.congAppLeft
 #assert_no_axioms FX1Poly.Modal.GradedLambda.ReducesStar.congAppRight
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.substReducedArg
+
+/-! ### β-confluence (CONF stage 2): local confluence + Newman → confluence on the typed fragment
+
+The 9-case β critical-pair analysis (`WeaklyConfluent Reduces`), then the relation-generic `newmanAux`
+(per-term `Acc` = `IsStronglyNormalizing`) gives confluence on the SN fragment — and hence on every
+well-(simply/usage-)typed `GradedLambda` term (SN from the Tait FT / grade erasure). -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.localConfluent
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.weaklyConfluent
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.confluent
+#assert_no_axioms FX1Poly.Modal.HasSimpleType.confluent
+#assert_no_axioms FX1Poly.Modal.HasUsage.confluent
