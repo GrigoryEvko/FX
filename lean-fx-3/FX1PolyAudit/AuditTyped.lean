@@ -361,6 +361,7 @@ import FX1Poly.Typed.GrownNoTypeInType
 import FX1Poly.Typed.IsTypeDescRigidity
 import FX1Poly.Typed.IsTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescNativeDecidable
+import FX1Poly.Typed.DescTelescopeDecidable
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5273,3 +5274,10 @@ gates pin them shut.
 -- rule forward + uniquenessNative refute. The native twin of the toHasType-routed HasTypeDesc.decidableOfWellFormed.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inferWithWitness
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormedNative
+-- DescTelescopeDecidable = the ARITY-GENERIC recursive telescope-typing decider (GTL-10 substrate, FRAME-2
+-- extensibility gate). decideAtFlag structurally recurses on the children spine (so the dependent binderShifts
+-- index peels off, dodging the GTL-08 arity-bound transport wall), decides each child a type at a SHARED flag
+-- via IsTypeDesc.decideWithWitness + WfContextDesc.cons, synthesises the level list, and refutes (no telescope)
+-- on a shift/depth mismatch, a non-type child, or a flag clash (via uniquenessNative). Names NO formation
+-- generator — a future formation row (listCode / data codes) is absorbed zero-touch.
+#assert_no_axioms FX1Poly.Typed.DescTelescope.decideAtFlag
