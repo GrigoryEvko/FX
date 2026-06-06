@@ -1,27 +1,26 @@
-import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeDescValidity
-import FX1Poly.Typed.HasTypeStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizingNative
 import FX1Poly.Core.RawConfluence
 
 /-! # FX1Poly/Typed/HasTypeDescStronglyNormalizing
     — strong normalization and typed conversion for the description formation engine
 
-The description formation engine `HasTypeDesc` is equivalent to the native pi/sigma-formation
-`HasType` core (`HasType.toHasTypeDesc` / `HasTypeDesc.toHasType`).  This file records the
-normalization and typed-conversion consequences on the `HasTypeDesc` side explicitly, without claiming
-anything about the grown `HasTypeDescPi` engine with lambda/application.
+The description formation engine `HasTypeDesc` records normalization and typed-conversion consequences
+on its own structure, without claiming anything about the grown `HasTypeDescPi` engine with
+lambda/application.
 
-These theorems are intentionally scoped to the description formation engine: their proofs route through the
-already-gated soundness map into native `HasType`, whose subjects are non-stepping and therefore strongly
-normalizing.  The reducibility-based theorem for `HasTypeDescPi` remains the separate open assembly.
+These theorems are scoped to the description formation engine and are proved NATIVELY (HT-B): SN comes
+from `HasTypeDesc.subjectStronglyNormalizingNative` (the formation subject is non-stepping by its own
+structure), and typed-conversion transitivity from the unconditional raw `Conv.trans` (the
+raw-confluence harvest).  No routing through the retired `HasType` soundness/completeness bridges; the
+reducibility-based theorem for `HasTypeDescPi` remains the separate open assembly.
 
 ## Zero-axiom verification
 
 Each proof is a direct composition of already-gated zero-axiom declarations:
-`HasTypeDesc.toHasType`, `HasType.isStronglyNormalizing`, `IsType.isStronglyNormalizing`, and
-`Conv.trans_of_typedMiddle`.  No recursion, no proof search, and no use of `propext`, `Quot.sound`,
-`Classical`, `native_decide`, or `omega`.
+`HasTypeDesc.subjectStronglyNormalizingNative`, `HasTypeDesc.classifierIsTypeDesc`, and `Conv.trans`.
+No recursion, no proof search, and no use of `propext`, `Quot.sound`, `Classical`, `native_decide`, or
+`omega`.
 -/
 
 namespace FX1Poly.Typed
@@ -37,15 +36,6 @@ theorem HasTypeDesc.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     (typed : HasTypeDesc profile context subject classifier) :
     StepStar.IsStronglyNormalizing subject :=
   typed.subjectStronglyNormalizingNative
-
-/-- Convert an intrinsic description-engine type witness into the corresponding native `IsType` witness.
-This is the type-level form of `HasTypeDesc.toHasType`. -/
-theorem IsTypeDesc.toIsType {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {classifier : RawTerm scope}
-    (isTypeDesc : IsTypeDesc profile context classifier) :
-    IsType profile context classifier := by
-  obtain ⟨levelExpr, flag, typed⟩ := isTypeDesc
-  exact ⟨levelExpr, flag, HasTypeDesc.toHasType typed⟩
 
 /-- A description-engine type is strongly normalizing.  HT-A3: native — the `IsTypeDesc` witness is a
 `HasTypeDesc` derivation whose SUBJECT is the classifier, so `HasTypeDesc.subjectStronglyNormalizingNative`

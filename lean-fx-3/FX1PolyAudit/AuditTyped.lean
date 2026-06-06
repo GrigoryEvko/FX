@@ -865,10 +865,11 @@ gates pin them shut.
     HT-A3 native (HasType-FREE): subject SN (`subjectStronglyNormalizingNative`, the public
     `isStronglyNormalizing` delegating to it), type SN (`IsTypeDesc.isStronglyNormalizing` — the `IsTypeDesc`
     witness's subject IS the classifier), and typed-middle transitivity (`Conv.trans_of_hasTypeDescMiddle` —
-    now the unconditional raw `Conv.trans`, its `IsTypeDesc` premise vacuous).  Still HasType-coupled:
-    `IsTypeDesc.toIsType` (the desc->bespoke downgrade) and the `WfContext`-validity-bound classifier-SN
-    package (`classifierStronglyNormalizing` / `subjectAndClassifier*` — migrate at HT-B with the
-    `WfContext -> WfContextDesc` rethread).  Scoped to the formation engine; no grown reducibility claim.
+    now the unconditional raw `Conv.trans`, its `IsTypeDesc` premise vacuous).  HT-B: the dead
+    `IsTypeDesc.toIsType` desc->bespoke downgrade is REMOVED (this file no longer imports the `HasType`
+    soundness/SN bridges).  The remaining `WfContext`-validity-bound classifier-SN package
+    (`classifierStronglyNormalizing` / `subjectAndClassifier*`) migrates with the
+    `WfContext -> WfContextDesc` rethread.  Scoped to the formation engine; no grown reducibility claim.
     TG-6 (cascade-free): `formerCellStronglyNormalizingOfChildren` now routes through the generic
     `former_step_inv` + the N-child accessibility substrate (`StepChildrenSuccessor` /
     `accStepChildrenSuccessor_cons` / `accStepChildrenSuccessor_of_allStronglyNormalizing` /
@@ -883,7 +884,6 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectStronglyNormalizingNative
 #assert_no_axioms FX1Poly.Typed.DescTelescope.childrenStronglyNormalizingNative
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.isStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.IsTypeDesc.toIsType
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectAndClassifierStronglyNormalizing
