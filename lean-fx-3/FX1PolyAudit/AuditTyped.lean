@@ -5311,6 +5311,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideTypeGeneric
 #assert_no_axioms FX1Poly.Typed.DescTelescope.decideSynthGeneric
 #assert_no_axioms FX1Poly.Typed.DescTelescope.decideAtFlagGeneric
+-- The cascade-free Decidable instance — the typeclass form of decideTypeGeneric (cascade-free twin of
+-- decidableOfWellFormed), the canonical decidability for the formation type-hood judgment.
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decidableOfWellFormedGeneric
 -- IsTypeDescGenericSmoke = non-vacuity + definitional-computation corpus for decideTypeGeneric: each fixture is
 -- `by rfl` (the kernel REDUCES the whole structural mutual recursion to the right constructor), proving the
 -- decider is a genuine computable function that returns .inl on Π/Σ/nested-Π/universe types and .inr on

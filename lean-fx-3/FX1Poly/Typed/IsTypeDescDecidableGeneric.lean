@@ -212,4 +212,17 @@ def DescTelescope.decideAtFlagGeneric {profile : PolyProfile} {baseScope : Nat}
 
 end
 
+/-- **Native cascade-free `Decidable (IsTypeDesc Γ T)`.**  The typeclass form of the structural mutual decider:
+the `Type`-valued `decideTypeGeneric` witness PSum becomes the `Prop`-valued `Decidable` (the `.inl` universe
+witness is `isTrue`, the `.inr` refutation is `isFalse`).  The cascade-free twin of
+`IsTypeDesc.decidableOfWellFormed` (which routes through the Π/Σ-enumerating `decideWithWitness`): this one
+decides ANY classifier with NO `typingRuleDescOf_isPiOrSigma` enumeration, so a future formation row is absorbed
+zero-touch.  The canonical decidability for the formation type-hood judgment. -/
+def IsTypeDesc.decidableOfWellFormedGeneric {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} (wellFormed : WfContextDesc context)
+    (classifier : RawTerm scope) : Decidable (IsTypeDesc profile context classifier) :=
+  match IsTypeDesc.decideTypeGeneric wellFormed classifier with
+  | .inl ⟨levelExpr, flag, typed⟩ => isTrue ⟨levelExpr, flag, typed⟩
+  | .inr notType => isFalse notType
+
 end FX1Poly.Typed
