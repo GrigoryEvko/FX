@@ -92,8 +92,8 @@ theorem HasTypeDescPi.universeCodeNotTypedAtPiType {profile : PolyProfile} {scop
     (typed :
       HasTypeDescPi profile context (universeCodeCell levelExpr flag)
         (piTyCodeCell outerDomain outerCodomain))
-    (wellFormed : WfContext context) :
+    (_wellFormed : WfContext context) :
     False :=
-  Conv.piTyCode_not_universeCode (HasTypeDescPi.inversionUniverseCode typed wellFormed)
+  Conv.piTyCode_not_universeCode (HasTypeDescPi.inversionUniverseCode typed)
 
 end FX1Poly.Typed

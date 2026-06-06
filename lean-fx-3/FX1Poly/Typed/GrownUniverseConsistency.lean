@@ -54,28 +54,28 @@ classified by itself in the grown engine — `inversionUniverseCode` forces any 
 strict predicative successor `Type@(lsucc e, flag)`, so self-classification forces `e = lsucc e`, refuted by
 `ne_lsucc_self`.  The grown twin of `universeCode_notTypedAtSelf_general`. -/
 theorem grownUniverseCode_notTypedAtSelf {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (contextWellFormed : WfContext context)
+    {context : TypingContext profile scope} (_contextWellFormed : WfContext context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr flag) := by
   intro typed
   have conv : Conv (universeCodeCell levelExpr flag : RawTerm scope)
       (universeCodeCell levelExpr.lsucc flag) :=
-    HasTypeDescPi.inversionUniverseCode typed contextWellFormed
+    HasTypeDescPi.inversionUniverseCode typed
   exact absurd (universeCodeCell_inj_of_conv conv).1 (LevelExpr.ne_lsucc_self levelExpr)
 
 /-- **Grown no-inflation.**  `Type@(e, flag)` is NOT classified by `Type@(lsucc (lsucc e), flag)` (two predicative
 levels up) — only by `Type@(lsucc e, flag)`.  The inversion forces `lsucc (lsucc e) = lsucc e`, refuted by
 `ne_lsucc_self` at `lsucc e`.  The grown twin of `universeCode_notTypedAboveSuccessor_general`. -/
 theorem grownUniverseCode_notTypedAboveSuccessor {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (contextWellFormed : WfContext context)
+    {context : TypingContext profile scope} (_contextWellFormed : WfContext context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr.lsucc.lsucc flag) := by
   intro typed
   have conv : Conv (universeCodeCell levelExpr.lsucc.lsucc flag : RawTerm scope)
       (universeCodeCell levelExpr.lsucc flag) :=
-    HasTypeDescPi.inversionUniverseCode typed contextWellFormed
+    HasTypeDescPi.inversionUniverseCode typed
   exact absurd (universeCodeCell_inj_of_conv conv).1 (LevelExpr.ne_lsucc_self levelExpr.lsucc).symm
 
 /-- **Grown no-deflation.**  The successor universe `Type@(lsucc e, flag)` is NOT classified by the base
@@ -84,14 +84,14 @@ universe `Type@(e, flag)` — the base sits two predicative levels below its tru
 A universe never sinks into a strictly-lower one.  The grown twin of
 `universeCode_notTypedBelowSuccessor_general`. -/
 theorem grownUniverseCode_notTypedBelowSuccessor {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (contextWellFormed : WfContext context)
+    {context : TypingContext profile scope} (_contextWellFormed : WfContext context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr.lsucc flag)
         (universeCodeCell levelExpr flag) := by
   intro typed
   have conv : Conv (universeCodeCell levelExpr flag : RawTerm scope)
       (universeCodeCell levelExpr.lsucc.lsucc flag) :=
-    HasTypeDescPi.inversionUniverseCode typed contextWellFormed
+    HasTypeDescPi.inversionUniverseCode typed
   exact absurd (universeCodeCell_inj_of_conv conv).1 (LevelExpr.ne_lsuccLsucc_self levelExpr)
 
 /-- **Grown universe-flag rigidity** (novel — no formation twin).  When the admission flags differ
@@ -101,7 +101,7 @@ carries `subjectFlag`; `inversionUniverseCode` forces the received classifier `C
 `Type@(lsucc e, subjectFlag)`, and `universeCodeCell_inj_of_conv` exposes `classifierFlag = subjectFlag`,
 refuting the disequality. -/
 theorem grownUniverseCode_notTypedAtFlagMismatchedSuccessor {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (contextWellFormed : WfContext context)
+    {context : TypingContext profile scope} (_contextWellFormed : WfContext context)
     (levelExpr : LevelExpr) (subjectFlag classifierFlag : UniverseFlag)
     (flagsDiffer : subjectFlag ≠ classifierFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr subjectFlag)
@@ -109,7 +109,7 @@ theorem grownUniverseCode_notTypedAtFlagMismatchedSuccessor {profile : PolyProfi
   intro typed
   have conv : Conv (universeCodeCell levelExpr.lsucc classifierFlag : RawTerm scope)
       (universeCodeCell levelExpr.lsucc subjectFlag) :=
-    HasTypeDescPi.inversionUniverseCode typed contextWellFormed
+    HasTypeDescPi.inversionUniverseCode typed
   exact absurd (universeCodeCell_inj_of_conv conv).2.symm flagsDiffer
 
 end FX1Poly.Typed

@@ -43,8 +43,7 @@ recursive `conv` arm well-typed. -/
 theorem HasTypeDescPi.inversionUniverseCodeGeneral {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
-    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext) :
+    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier) :
     ∀ {targetLevel : LevelExpr} {targetFlag : UniverseFlag},
       subject = universeCodeCell targetLevel targetFlag →
         Conv reachedClassifier (universeCodeCell targetLevel.lsucc targetFlag) :=
@@ -54,7 +53,7 @@ theorem HasTypeDescPi.inversionUniverseCodeGeneral {profile : PolyProfile}
         HasTypeDesc.inversionUniverseCodeGeneral formationTyped subjectEq
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped => fun subjectEq =>
         Conv.trans converts.sym
-          (HasTypeDescPi.inversionUniverseCodeGeneral typedPremise wellFormed subjectEq)
+          (HasTypeDescPi.inversionUniverseCodeGeneral typedPremise subjectEq)
     | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
         fun subjectEq =>
         Generator.noConfusion
@@ -78,9 +77,8 @@ universe-code position. -/
 theorem HasTypeDescPi.inversionUniverseCode {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag} {classifier : RawTerm scope}
-    (typed : HasTypeDescPi profile context (universeCodeCell levelExpr flag) classifier)
-    (wellFormed : WfContext context) :
+    (typed : HasTypeDescPi profile context (universeCodeCell levelExpr flag) classifier) :
     Conv classifier (universeCodeCell levelExpr.lsucc flag) :=
-  HasTypeDescPi.inversionUniverseCodeGeneral typed wellFormed rfl
+  HasTypeDescPi.inversionUniverseCodeGeneral typed rfl
 
 end FX1Poly.Typed

@@ -48,14 +48,14 @@ paradox structurally impossible" claim for the LIVE engine `HasTypeDescPi` (the 
 predicativity guard `LevelExpr.ne_lsucc_self`. -/
 theorem HasTypeDescPi.universeCode_notTypedAtSelf {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (contextWellFormed : WfContext context)
+    (_contextWellFormed : WfContext context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr flag) := by
   intro typed
   have conv : Conv (universeCodeCell levelExpr flag : RawTerm scope)
       (universeCodeCell levelExpr.lsucc flag) :=
-    HasTypeDescPi.inversionUniverseCode typed contextWellFormed
+    HasTypeDescPi.inversionUniverseCode typed
   exact absurd (universeCodeCell_inj_of_conv conv).1 (LevelExpr.ne_lsucc_self levelExpr)
 
 /-- **No level inflation for the grown engine.**  `Type@e` is NOT grown-typed at `Type@(e+2)` at ANY level in ANY
@@ -63,14 +63,14 @@ well-formed context — only at `Type@(e+1)`.  The inversion forces `lsucc (lsuc
 `LevelExpr.ne_lsucc_self` at `lsucc e`. -/
 theorem HasTypeDescPi.universeCode_notTypedAboveSuccessor {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (contextWellFormed : WfContext context)
+    (_contextWellFormed : WfContext context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr.lsucc.lsucc flag) := by
   intro typed
   have conv : Conv (universeCodeCell levelExpr.lsucc.lsucc flag : RawTerm scope)
       (universeCodeCell levelExpr.lsucc flag) :=
-    HasTypeDescPi.inversionUniverseCode typed contextWellFormed
+    HasTypeDescPi.inversionUniverseCode typed
   exact absurd (universeCodeCell_inj_of_conv conv).1 (LevelExpr.ne_lsucc_self levelExpr.lsucc).symm
 
 /-- **No level deflation for the grown engine.**  `Type@(e+1)` is NOT grown-typed at `Type@e` at ANY level in ANY
@@ -80,14 +80,14 @@ convert to `Type@(e+2)`, i.e. `e = lsucc (lsucc e)`, refuted by the double-succe
 the formation engine's. -/
 theorem HasTypeDescPi.universeCode_notTypedBelowSuccessor {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (contextWellFormed : WfContext context)
+    (_contextWellFormed : WfContext context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr.lsucc flag)
         (universeCodeCell levelExpr flag) := by
   intro typed
   have conv : Conv (universeCodeCell levelExpr flag : RawTerm scope)
       (universeCodeCell levelExpr.lsucc.lsucc flag) :=
-    HasTypeDescPi.inversionUniverseCode typed contextWellFormed
+    HasTypeDescPi.inversionUniverseCode typed
   exact absurd (universeCodeCell_inj_of_conv conv).1 (LevelExpr.ne_lsuccLsucc_self levelExpr)
 
 end FX1Poly.Typed

@@ -54,9 +54,9 @@ theorem HasTypeDescPi.universeClassifierLevelIsSucc {profile : PolyProfile} {sco
     {levelExpr classifierLevel : LevelExpr} {flag classifierFlag : UniverseFlag}
     (typed : HasTypeDescPi profile context (universeCodeCell levelExpr flag)
       (universeCodeCell classifierLevel classifierFlag))
-    (wellFormed : WfContext context) :
+    (_wellFormed : WfContext context) :
     classifierLevel = levelExpr.lsucc ∧ classifierFlag = flag :=
-  universeCodeCell_inj_of_conv (typed.inversionUniverseCode wellFormed)
+  universeCodeCell_inj_of_conv typed.inversionUniverseCode
 
 /-- **★ No `Type : Type` (§27.2 Girard rejection).**  No universe code is grown-typed at ITSELF, in any
 well-formed context: `HasTypeDescPi Γ (universeCodeCell e flag) (universeCodeCell e flag) → False`.  The

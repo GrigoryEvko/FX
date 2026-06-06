@@ -54,6 +54,6 @@ def HasTypeDescPi.decidableCheckUniverseCodeAtType {profile : PolyProfile} {scop
     (inferredTypeTyped := .ofFormation (HasTypeDesc.universeFormation context levelExpr.lsucc flag))
     (targetTyped := targetTyped)
     (uniqueAtSubject := fun derivation =>
-      (HasTypeDescPi.inversionUniverseCode derivation wellFormed).sym)
+      (HasTypeDescPi.inversionUniverseCode derivation).sym)
 
 end FX1Poly.Typed

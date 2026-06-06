@@ -77,9 +77,9 @@ theorem HasTypeDescPi.universeCodeNotTypedAtEmptyType {profile : PolyProfile} {s
     (typed :
       HasTypeDescPi profile context (universeCodeCell levelExpr flag)
         (emptyTypeCell (scope := scope)))
-    (wellFormed : WfContext context) :
+    (_wellFormed : WfContext context) :
     False :=
   Conv.universeCode_not_emptyTypeCode
-    (HasTypeDescPi.inversionUniverseCode typed wellFormed).sym
+    (HasTypeDescPi.inversionUniverseCode typed).sym
 
 end FX1Poly.Typed
