@@ -70,4 +70,26 @@ theorem HasTypeDescPi.stronglyNormalizingOfWfContext {profile : PolyProfile} {sc
     (fun index => (environmentReducible index).cumulative
       (Nat.le_add_left boundEnvironment boundDerivation))
 
+/-- **★ SN-043 (open), BRIDGE-FREE over `WfContextDesc`** — the `WfContextDesc` twin of
+`stronglyNormalizingOfWfContext`, spine-step 2 of the `WfContext → WfContextDesc` open-SN migration (HT-B).
+Identical four-step composition, but the reducible closing environment comes from the native bridge-free
+`reducibleEnvOfWfContextDesc` (no `WfContext.headIsType`, no `HasType.toHasTypeDesc`, no `ofWfContext`) — so the
+whole open-SN capstone now has a route through the `HasTypeDesc`-defined context-wellformedness predicate, with
+NO `HasType` dependency anywhere on the path.  The `WfContextDesc Γ` hypothesis is genuinely external (since
+`HasTypeDescPi Γ t T → WfContext Γ` provably FAILS, `ContextValidityFails`), so it is re-based from the
+`HasType`-defined `WfContext` rather than derived.  The bridge-free target the SN-051/052/055 qualifier-drops
+migrate onto before HT-C deletes the engine. -/
+theorem HasTypeDescPi.stronglyNormalizingOfWfContextDesc {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContextDesc context)
+    (d : HasTypeDescPi profile context subject classifier) :
+    StepStar.IsStronglyNormalizing subject := by
+  obtain ⟨boundDerivation, budgetDerivation⟩ := BoundExceedsPi.existsBound (env := fun _ => 0) d
+  obtain ⟨boundEnvironment, substitution, environmentReducible⟩ :=
+    reducibleEnvOfWfContextDesc (fun _ => 0) context contextWellFormed
+  exact d.stronglyNormalizingOfReducibleEnv
+    (BoundExceedsPi.monotoneInBound (Nat.le_add_right boundDerivation boundEnvironment) budgetDerivation)
+    (fun index => (environmentReducible index).cumulative
+      (Nat.le_add_left boundEnvironment boundDerivation))
+
 end FX1Poly.Typed

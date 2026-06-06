@@ -4722,6 +4722,12 @@ gates pin them shut.
 -- at a common SUM bound, fed to stronglyNormalizingOfReducibleEnv (reflects SN internally). The OB-1..OB-5
 -- capstone — reached with NO #672, NO KB merged candidate, NO renaming closure. Closes #546.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfWfContext
+-- The BRIDGE-FREE WfContextDesc twin (HT-B spine-step 2): identical composition but the reducible closing env
+-- comes from reducibleEnvOfWfContextDesc (native WfContextDesc.headIsTypeDesc + HasTypeDesc.toHasTypeDescPi) — so
+-- the whole open-SN capstone now has a route with NO HasType dependency. The wf-hypothesis stays external (since
+-- HasTypeDescPi → WfContext provably FAILS, ContextValidityFails); the SN-051/052/055 qualifier-drops migrate onto
+-- this before HT-C deletes the engine.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfWfContextDesc
 
 -- SN-051 / SN-046-uncond (WfContextDecidableConv.lean): the open-SN-043 harvest. Two well-typed subjects in a
 -- well-formed context have DECIDABLE Conv (no typed-SN hypothesis — each OB-5 SN witness feeds the parameter-free
