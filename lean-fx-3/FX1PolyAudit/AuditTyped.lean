@@ -2232,6 +2232,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescope.twoChildComponents
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
+-- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
+-- single-live-cons-then-nil discipline, no propext / Quot.sound; feeds the FT data-former branch.
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.oneChildLevel
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormerOfChildMembershipsAtRequiredLevels
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormerOfChildMemberships
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormerOfChildMembershipsAtRequiredLevel

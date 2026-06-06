@@ -123,4 +123,22 @@ theorem DescTelescopePi.twoChildLevels {profile : PolyProfile} {baseScope : Nat}
           cases tailTelescope with
           | nil => exact ⟨domainLevel, codomainLevel, rfl⟩
 
+/-- **One-child former telescope ⟹ one-element level list.**  The one-child (`binderShifts = [0]`) analogue of
+`twoChildLevels`, for the data type-code formers (`listCode` / `optionCode`): a depth-0 premise telescope over
+the concrete one-child spine `childCons _ childNil` carries exactly a one-element level list.  The child spine
+fixes the `RawTermChildren [0]` index, so a single live `cons` arm then the `nil` closes it — no refuted-arm
+discrimination, no `propext` / `Quot.sound` leak (same discipline as `twoChildLevels`).  Consumed by the
+`genFormationPi` fundamental-theorem arm's data-former branch to recover `levels = [elementLevel]` (needed to
+state the `IsReducibleMemberAt.listCodeFormationUnderSubst` conclusion) WITHOUT casing the premise telescope as
+a recursion target. -/
+theorem DescTelescopePi.oneChildLevel {profile : PolyProfile} {baseScope : Nat}
+    {context : TypingContext profile baseScope} {levelsList : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren [0] baseScope}
+    (telescope : DescTelescopePi profile (currentDepth := 0) context levelsList flag children) :
+    ∃ elementLevel, levelsList = [elementLevel] := by
+  cases telescope with
+  | cons _context _head elementLevel _restLevels _flag _rest _headTyped restTyped =>
+      cases restTyped with
+      | nil => exact ⟨elementLevel, rfl⟩
+
 end FX1Poly.Typed
