@@ -230,3 +230,12 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofAppRight
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofLam
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofReduces
+
+/-! ### Tait reducibility candidates (DIM2-5 ii): Reducible + CR1/CR2/CR3 -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible
+#assert_no_axioms FX1Poly.Modal.GradedLambda.reducibilityConditions
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.sn
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.ofReduces
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.ofNeutral
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.var
