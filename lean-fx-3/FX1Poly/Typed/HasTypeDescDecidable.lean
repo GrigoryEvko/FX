@@ -1,5 +1,7 @@
 import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeDecidable
+import FX1Poly.Typed.HasTypeDescStronglyNormalizing
+import FX1Poly.Core.Normalize
 
 /-! # FX1Poly/Typed/HasTypeDescDecidable — the description engine is DECIDABLE
     (the P11 "0-FN" payoff of the `HasTypeDesc ⟺ HasType` equivalence)
@@ -57,11 +59,12 @@ def HasTypeDesc.decidableOfWellFormed {profile : PolyProfile} {scope : Nat}
         bespokeRefutation (HasTypeDesc.toHasType descDerivation))
 
 /-- **Decidable typed classifier conversion for the description engine.**  If two subjects are typed by
-`HasTypeDesc`, their classifiers' convertibility is decidable by transporting both derivations through the
-proved soundness map `HasTypeDesc.toHasType` and using the native typed-conversion decider
-`Conv.decidableOfTyped`.  This is the description-engine typed-Conv leg paired with
-`HasTypeDesc.decidableOfWellFormed`: checking and classifier conversion are now exposed for the same
-formation judgment, not only for its native `HasType` counterpart. -/
+`HasTypeDesc`, their classifiers' convertibility is decidable.  HasType-FREE (HT-A4): each classifier is
+strongly normalizing by the native `HasTypeDesc.classifierStronglyNormalizing` (its intrinsic validity turns
+the classifier into an `IsTypeDesc`, whose subject — the classifier — is then SN), and the parameter-free
+SN-fragment decider `Conv.decidableOfStronglyNormalizing` decides by normalizing each side and comparing normal
+forms.  No `HasTypeDesc.toHasType`, no bespoke `Conv.decidableOfTyped`.  The description-engine typed-Conv leg
+paired with `HasTypeDesc.decidableOfWellFormed`. -/
 def Conv.decidableOfHasTypeDesc {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {firstSubject firstClassifier secondSubject secondClassifier : RawTerm scope}
@@ -69,7 +72,8 @@ def Conv.decidableOfHasTypeDesc {profile : PolyProfile} {scope : Nat}
     (firstTyped : HasTypeDesc profile context firstSubject firstClassifier)
     (secondTyped : HasTypeDesc profile context secondSubject secondClassifier) :
     Decidable (Conv firstClassifier secondClassifier) :=
-  Conv.decidableOfTyped wellFormed
-    (HasTypeDesc.toHasType firstTyped) (HasTypeDesc.toHasType secondTyped)
+  Conv.decidableOfStronglyNormalizing
+    (firstTyped.classifierStronglyNormalizing wellFormed)
+    (secondTyped.classifierStronglyNormalizing wellFormed)
 
 end FX1Poly.Typed

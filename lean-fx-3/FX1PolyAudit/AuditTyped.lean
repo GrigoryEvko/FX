@@ -812,11 +812,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeTelescope
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.toHasType
 #assert_no_axioms FX1Poly.Typed.DescTelescope.toHasTypeTelescope
--- DECIDABILITY (P11 0-FN) of the description engine, transported across the
--- proven ⟺ equivalence from the bespoke `HasType.decidableOfWellFormed`: the
--- cascade-free description-driven `gen` arm is a genuine DECIDABLE typechecker on
--- the native pi/sigma-formation HasType core.  Hand-built (match on the bespoke decision + the two
--- equivalence maps), no `decidable_of_iff`/`Iff`, so propext-free.
+-- DECIDABILITY (P11 0-FN) of the description engine.  `decidableOfWellFormed` is still
+-- transported across the proven ⟺ equivalence from the bespoke `HasType.decidableOfWellFormed`
+-- (hand-built match on the bespoke decision + the two equivalence maps, no `decidable_of_iff`/`Iff`,
+-- propext-free) — the HT-A4 residual: a native formation decision procedure (a from-scratch native
+-- formation type-checker, ~the bespoke decider rebuilt on HasTypeDesc) is deferred.
+-- `Conv.decidableOfHasTypeDesc` is now HasType-FREE (HT-A4): each classifier is SN by the native
+-- `HasTypeDesc.classifierStronglyNormalizing`, fed to the parameter-free `Conv.decidableOfStronglyNormalizing`
+-- — no `HasTypeDesc.toHasType`, no bespoke `Conv.decidableOfTyped`.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormed
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfHasTypeDesc
 
