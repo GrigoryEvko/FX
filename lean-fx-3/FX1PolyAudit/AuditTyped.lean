@@ -3,6 +3,7 @@ import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.UniverseCodeConversion
 import FX1Poly.Typed.SigmaCodeShape
+import FX1Poly.Typed.ListCodeShape
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescElim
@@ -492,6 +493,9 @@ gates pin them shut.
 
 #assert_no_axioms FX1Poly.Typed.headGenerator_sigmaTyCodeCell
 #assert_no_axioms FX1Poly.Typed.eq_sigmaTyCodeCell_of_headGenerator
+-- GTL-11 canonical-forms substrate: the one-child listCode head→children reconstruction (the data-former twin
+-- of eq_sigmaTyCodeCell_of_headGenerator) the formation canonical-forms consumers need for the listCode head.
+#assert_no_axioms FX1Poly.Typed.eq_listCodeCell_of_headGenerator
 #assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_inj
 #assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_noStep_of_childrenNoStep
 #assert_no_axioms FX1Poly.Typed.rename_sigmaTyCodeCell
@@ -2257,6 +2261,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.TelescopeReducible
 #assert_no_axioms FX1Poly.Typed.Generator.gen_piTyCode_binderShifts_eq
 #assert_no_axioms FX1Poly.Typed.Generator.gen_sigmaTyCode_binderShifts_eq
+-- GTL-11: the one-child listCode binderShifts = consecutiveShifts 0 1 bridge for the FT data-former branch.
+#assert_no_axioms FX1Poly.Typed.Generator.gen_listCode_binderShifts_eq
 
 -- Universe-domain member-extension reduction: the cons-arm's last hard case (the type-polymorphic binder
 -- `Π (A : Type@e). …`) is EXACTLY type-level positive level-irrelevance — the membership/SN layer stripped
