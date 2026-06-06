@@ -288,6 +288,13 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.smoke_polyFunctor_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_nestedLamNatSucc_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_nestedPiSigma_isStronglyNormalizing
+-- Modal core + universe-mode bridge family (congruence-only operators, post-SN-081): one closed SN
+-- witness per operator, so a regression in any single congruence closure fails its own gated witness.
+#assert_no_axioms FX1Poly.Core.smoke_modElim_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_subsume_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_liftInnerToOuter_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_lowerOuterToInner_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.smoke_modElimLiftInnerToOuter_isStronglyNormalizing
 
 -- SN-070/071: the type-code-former family inhabits its neutral universe as a reducible member (the
 -- conv-complete IsReducibleMember layer the fundamental theorem assembles over).  atNeutralClassifier is

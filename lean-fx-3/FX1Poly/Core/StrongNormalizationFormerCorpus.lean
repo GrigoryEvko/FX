@@ -1,5 +1,7 @@
 import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Core.StrongNormalizationSmokeCorpus
+import FX1Poly.Core.StrongNormalizationModalEliminators
+import FX1Poly.Core.StrongNormalizationUniverseModeBridges
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationFormerCorpus
     — one closed strong-normalization witness per raw former family (SN-081)
@@ -240,5 +242,58 @@ theorem smoke_nestedPiSigma_isStronglyNormalizing {scope : Nat} :
     smoke_unit_isStronglyNormalizing
     (sigmaTyCode_isStronglyNormalizing_of_domain_codomain
       smoke_unit_isStronglyNormalizing smoke_unit_isStronglyNormalizing)
+
+/-! ## Modal core + universe-mode bridge family — congruence-only operators
+
+The modal eliminators (`gen_modElim` / `gen_subsume`) and the 2LTT universe-mode bridges
+(`gen_liftInnerToOuter` / `gen_lowerOuterToInner`) carry no β+ι root rule — their only collapses
+(`modIntro (modElim m) ↝ m`, `lower (lift x) ↝ x`) are raw η / mode-bridge rules outside the β+ι
+substrate — so each ships a congruence-only forward SN closure in `StrongNormalizationModalEliminators`
+/ `StrongNormalizationUniverseModeBridges`.  These witnesses pin one closed cell per operator, exactly
+as the per-former corpus does for the data/type-code formers, so a regression in any single congruence
+closure fails its own gated witness.  (Added after SN-081, which predates these operators.) -/
+
+/-- **Smoke: modal elimination of the unit leaf is strongly normalizing.** -/
+theorem smoke_modElim_isStronglyNormalizing {scope : Nat} :
+    IsStronglyNormalizing
+      (.mkGen .gen_modElim ()
+        (.childCons (.mkGen .gen_unit () .childNil) .childNil) : RawTerm scope) :=
+  modElim_isStronglyNormalizing_of_child smoke_unit_isStronglyNormalizing
+
+/-- **Smoke: modal subsumption of the unit leaf is strongly normalizing.** -/
+theorem smoke_subsume_isStronglyNormalizing {scope : Nat} :
+    IsStronglyNormalizing
+      (.mkGen .gen_subsume ()
+        (.childCons (.mkGen .gen_unit () .childNil) .childNil) : RawTerm scope) :=
+  subsume_isStronglyNormalizing_of_child smoke_unit_isStronglyNormalizing
+
+/-- **Smoke: the inner→outer universe-mode lift of the unit leaf is strongly normalizing.** -/
+theorem smoke_liftInnerToOuter_isStronglyNormalizing {scope : Nat} :
+    IsStronglyNormalizing
+      (.mkGen .gen_liftInnerToOuter ()
+        (.childCons (.mkGen .gen_unit () .childNil) .childNil) : RawTerm scope) :=
+  liftInnerToOuter_isStronglyNormalizing_of_child smoke_unit_isStronglyNormalizing
+
+/-- **Smoke: the outer→inner universe-mode lower of two unit leaves (outer term + cofibrancy witness)
+is strongly normalizing.**  Exercises the two-child congruence closure of the mode-bridge lower. -/
+theorem smoke_lowerOuterToInner_isStronglyNormalizing {scope : Nat} :
+    IsStronglyNormalizing
+      (.mkGen .gen_lowerOuterToInner ()
+        (.childCons (.mkGen .gen_unit () .childNil)
+          (.childCons (.mkGen .gen_unit () .childNil) .childNil)) : RawTerm scope) :=
+  lowerOuterToInner_isStronglyNormalizing_of_children
+    smoke_unit_isStronglyNormalizing smoke_unit_isStronglyNormalizing
+
+/-- **Smoke: modal elimination of an inner→outer lift is strongly normalizing.**  Nests two
+congruence-only modal / mode-bridge closures (`modElim` over `liftInnerToOuter` over the unit leaf)
+to show they compose, every child living at the ambient scope. -/
+theorem smoke_modElimLiftInnerToOuter_isStronglyNormalizing {scope : Nat} :
+    IsStronglyNormalizing
+      (.mkGen .gen_modElim ()
+        (.childCons
+          (.mkGen .gen_liftInnerToOuter ()
+            (.childCons (.mkGen .gen_unit () .childNil) .childNil))
+          .childNil) : RawTerm scope) :=
+  modElim_isStronglyNormalizing_of_child smoke_liftInnerToOuter_isStronglyNormalizing
 
 end FX1Poly.Core
