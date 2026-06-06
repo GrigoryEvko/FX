@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Modal.ResourceGraded
 import FX1Poly.Modal.GradeVector
+import FX1Poly.Modal.UsageDiscipline
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -104,3 +105,22 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.GradeVector.IsPointwiseBelow.scale_mono
 #assert_no_axioms FX1Poly.Modal.GradeVector.IsPointwiseBelow.add_mono
 #assert_no_axioms FX1Poly.Modal.GradeVector.contextDivide_residuation
+
+/-! ### Var-rule singleton + binder stripping (single / tail) -/
+
+#assert_no_axioms FX1Poly.Modal.GradeVector.single
+#assert_no_axioms FX1Poly.Modal.GradeVector.tail
+#assert_no_axioms FX1Poly.Modal.GradeVector.single_length
+
+/-! ### The usage grade check + the Atkey-2018 broken-Lam rejection (DIM2-6 / §27.1 / §27.2) -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda
+#assert_no_axioms FX1Poly.Modal.GradedLambda.usage
+#assert_no_axioms FX1Poly.Modal.GradedLambda.WellGraded
+#assert_no_axioms FX1Poly.Modal.atkeyClosure
+#assert_no_axioms FX1Poly.Modal.linearClosure
+#assert_no_axioms FX1Poly.Modal.linearContext
+#assert_no_axioms FX1Poly.Modal.atkey_usage
+#assert_no_axioms FX1Poly.Modal.linear_usage
+#assert_no_axioms FX1Poly.Modal.atkey_rejected
+#assert_no_axioms FX1Poly.Modal.linear_accepted

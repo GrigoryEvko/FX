@@ -376,4 +376,36 @@ theorem GradeVector.contextDivide_residuation (divisorGrade : UsageGrade)
             (fun ⟨headBelow, restBelow⟩ =>
               ⟨headIff.mpr headBelow, (restIH dividendRest).mpr restBelow⟩)
 
+/-! ## Singleton and tail — the var-rule usage vector and binder stripping
+
+A variable's usage vector is `single scope position 1` (grade `1` at its de Bruijn position, `0`
+elsewhere); a binder's usage of the outer context drops the binder's own grade (`tail`).  These are
+exactly the operations the per-binding occurrence usage (`UsageDiscipline`) is built from. -/
+
+/-- A singleton grade vector of length `scope`: `grade` at `position`, `0` elsewhere (and all-zero
+if `position ≥ scope`).  The var rule's usage vector. -/
+def GradeVector.single : (scope : Nat) → (position : Nat) → UsageGrade → GradeVector
+  | 0, _, _ => .nil
+  | scope + 1, 0, grade => .cons grade (GradeVector.zero scope)
+  | scope + 1, pos + 1, grade => .cons UsageGrade.zero (GradeVector.single scope pos grade)
+
+/-- Drop the newest binding's grade (the head): the outer-context usage of a binder from its body. -/
+def GradeVector.tail : GradeVector → GradeVector
+  | .nil => .nil
+  | .cons _ restGrades => restGrades
+
+/-- A singleton vector has exactly `scope` bindings (it is the var rule's full-length usage). -/
+theorem GradeVector.single_length (scope position : Nat) (grade : UsageGrade) :
+    (GradeVector.single scope position grade).length = scope := by
+  induction scope generalizing position with
+  | zero => rfl
+  | succ scope restIH =>
+      cases position with
+      | zero =>
+          show (GradeVector.zero scope).length + 1 = scope + 1
+          rw [GradeVector.zero_length]
+      | succ position =>
+          show (GradeVector.single scope position grade).length + 1 = scope + 1
+          rw [restIH]
+
 end FX1Poly.Modal

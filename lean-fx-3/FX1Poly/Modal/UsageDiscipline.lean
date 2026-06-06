@@ -1,0 +1,110 @@
+import FX1Poly.Modal.GradeVector
+
+/-! # FX1Poly/Modal/UsageDiscipline — the usage grade check + the Atkey-2018 broken-Lam rejection
+   (DIM2-3 occurrence realization; DIM2-6 / §27.1 / §27.2)
+
+The usage dimension's job is to reject programs that use a resource more than its declared grade
+allows.  FX's usage semiring `{0, 1, ω}` (§6.1) with `1 + 1 = ω` IS occurrence-counting: a variable
+used twice has grade `1 + 1 = ω`, which exceeds a linear (`1`) declaration.  So the usage check has
+an unambiguous, computational realization — the *co-effect* reading, dual to the McBride
+context-division presentation whose adjunction `GradeVector.contextDivide_residuation` was shipped
+separately:
+
+  * `GradedLambda` — a minimal graded λ-calculus (var / lam / app, de Bruijn).
+  * `GradedLambda.usage` — the per-free-variable occurrence multiplicity (a length-`scope` grade
+    vector): a variable contributes `1`; application ADDS its operands' usages (so two uses of one
+    variable combine to `1 + 1 = ω`); a λ drops its binder's grade (`tail`).
+  * `GradedLambda.WellGraded` — the check `usage ≤ declaredGrades` (pointwise, via the partial order
+    `GradeVector.IsPointwiseBelow`): every free variable is used no more than its declared grade.
+
+## The §27.1/§27.2 demonstration (the headline)
+
+The Atkey-2018 broken Lam rule allowed capturing a linear variable in a closure that uses it
+twice — `λf. λx. f (f x)` — which is unsound (a linear resource consumed twice).  The Wood/Atkey
+2022 correction rejects it.  Here that rejection is COMPUTED, not postulated:
+
+  * `atkey_rejected` — `λx. f (f x)` (with `f` free and declared linear) is NOT `WellGraded`: `f`'s
+    occurrence usage is `ω`, and `ω ≤ 1` is false.  This is the permanent `test_theory` corpus
+    entry for the Atkey-2018 grade bug (§27.2).
+  * `linear_accepted` — `λx. f x` (with `f` declared linear) IS `WellGraded`: `f` is used once,
+    `1 ≤ 1`.
+
+The two together show the check is non-trivial: it accepts the linear use and rejects the
+double-use, exactly distinguishing the sound program from the unsound one.
+
+## Zero-axiom verification
+
+`GradedLambda` is a plain inductive; `usage` is structural; the checks reduce to concrete `Bool`
+comparisons closed by `rfl` / `Bool.noConfusion`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, `omega` (verified by `#print axioms` in scratch before landing).
+Per-declaration gated in `FX1PolyAudit/AuditModal.lean`.
+-/
+
+namespace FX1Poly.Modal
+
+/-- A minimal graded λ-calculus (de Bruijn indices): the carrier on which the usage discipline is
+demonstrated.  Distinct from the kernel's `RawTerm` — this is the focused object of study for the
+usage dimension's metatheory; connecting the two (grade erasure) is DIM2-4. -/
+inductive GradedLambda where
+  | var : Nat → GradedLambda
+  | lam : GradedLambda → GradedLambda
+  | app : GradedLambda → GradedLambda → GradedLambda
+  deriving DecidableEq, Repr
+
+/-- Per-free-variable occurrence usage of a term over `scope` free variables (a length-`scope` grade
+vector).  A variable contributes grade `1` at its position; applications ADD their operands' usages
+(two uses of one variable combine `1 + 1 = ω`, the §6.1 usage semiring); a λ drops its binder's own
+grade (`tail`), leaving the outer-context usage of the closure. -/
+def GradedLambda.usage : Nat → GradedLambda → GradeVector
+  | scope, .var index => GradeVector.single scope index UsageGrade.one
+  | scope, .app function argument =>
+      GradeVector.add (GradedLambda.usage scope function) (GradedLambda.usage scope argument)
+  | scope, .lam body => GradeVector.tail (GradedLambda.usage (scope + 1) body)
+
+/-- **The usage check.**  A term is well-graded in a context of declared grades iff every free
+variable is used no more than its declared grade — `usage ≤ declaredGrades` pointwise, via the
+partial order `GradeVector.IsPointwiseBelow`.  Decidable in principle (the order is decidable on the
+finite grade lattice); the concrete witnesses below exhibit it accepting / rejecting. -/
+def GradedLambda.WellGraded (scope : Nat) (term : GradedLambda)
+    (declaredGrades : GradeVector) : Prop :=
+  GradeVector.IsPointwiseBelow (GradedLambda.usage scope term) declaredGrades
+
+/-! ## The §27.1 / §27.2 Atkey-2018 demonstration -/
+
+/-- The Atkey-2018 counterexample's inner closure `λx. f (f x)` with `f` free (`f` is de Bruijn `1`
+under the inner `λx`).  `f` is used TWICE in the body — the unsound double-use of a linear resource
+the broken Lam rule permitted. -/
+def atkeyClosure : GradedLambda := .lam (.app (.var 1) (.app (.var 1) (.var 0)))
+
+/-- The linear-discipline-respecting closure `λx. f x` with `f` free: `f` is used ONCE. -/
+def linearClosure : GradedLambda := .lam (.app (.var 1) (.var 0))
+
+/-- The declared-linear context for a single free variable `f :_1`. -/
+def linearContext : GradeVector := GradeVector.cons UsageGrade.one GradeVector.nil
+
+/-- Computed: `f`'s occurrence usage in the Atkey closure is `ω` (it is used twice). -/
+theorem atkey_usage :
+    GradedLambda.usage 1 atkeyClosure = GradeVector.cons UsageGrade.omega GradeVector.nil :=
+  rfl
+
+/-- Computed: `f`'s occurrence usage in the linear closure is `1` (it is used once). -/
+theorem linear_usage :
+    GradedLambda.usage 1 linearClosure = GradeVector.cons UsageGrade.one GradeVector.nil :=
+  rfl
+
+/-- **The Atkey-2018 broken-Lam rejection (§27.1 / §27.2).**  `λx. f (f x)` is NOT well-graded when
+`f` is declared linear: `f`'s occurrence usage is `ω`, and `ω ≤ 1` is false.  The Wood/Atkey 2022
+corrected discipline rejects capturing a linear variable in a closure that uses it twice — the
+permanent regression witness for the Atkey-2018 grade-corpus bug. -/
+theorem atkey_rejected : ¬ GradedLambda.WellGraded 1 atkeyClosure linearContext := by
+  intro wellGraded
+  obtain ⟨headBelow, _⟩ := wellGraded
+  exact Bool.noConfusion headBelow
+
+/-- **The linear use is accepted.**  `λx. f x` IS well-graded with `f` declared linear: `f`'s
+occurrence usage is `1`, and `1 ≤ 1`.  Paired with `atkey_rejected`, this shows the check is
+non-vacuous — it draws the line exactly between the sound and unsound programs. -/
+theorem linear_accepted : GradedLambda.WellGraded 1 linearClosure linearContext :=
+  ⟨rfl, True.intro⟩
+
+end FX1Poly.Modal
