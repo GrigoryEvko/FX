@@ -4,6 +4,7 @@ import FX1Poly.Modal.GradeVector
 import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTyping
 import FX1Poly.Modal.GradedTypingMetatheory
+import FX1Poly.Modal.GradedSubjectReduction
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -176,3 +177,33 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.add_length_eq
 #assert_no_axioms FX1Poly.Modal.hasUsage_length
 #assert_no_axioms FX1Poly.Modal.hasUsage_weakening
+
+/-! ### β subject reduction (DIM2-3 soundness payoff): graded substitution + β-preservation -/
+
+#assert_no_axioms FX1Poly.Modal.removeTypeAt
+#assert_no_axioms FX1Poly.Modal.GradeVector.removeAt
+#assert_no_axioms FX1Poly.Modal.GradeVector.gradeAt
+#assert_no_axioms FX1Poly.Modal.GradeVector.substInto
+#assert_no_axioms FX1Poly.Modal.substInto_succ_cons
+#assert_no_axioms FX1Poly.Modal.removeTypeAt_length
+#assert_no_axioms FX1Poly.Modal.lookup_removeTypeAt_lt
+#assert_no_axioms FX1Poly.Modal.lookup_removeTypeAt_ge
+#assert_no_axioms FX1Poly.Modal.gradeAt_nil
+#assert_no_axioms FX1Poly.Modal.gradeAt_zero
+#assert_no_axioms FX1Poly.Modal.removeAt_zero
+#assert_no_axioms FX1Poly.Modal.gradeAt_single_self
+#assert_no_axioms FX1Poly.Modal.gradeAt_single_ne
+#assert_no_axioms FX1Poly.Modal.removeAt_single_self
+#assert_no_axioms FX1Poly.Modal.removeAt_single_lt
+#assert_no_axioms FX1Poly.Modal.removeAt_single_gt
+#assert_no_axioms FX1Poly.Modal.removeAt_add
+#assert_no_axioms FX1Poly.Modal.removeAt_scale
+#assert_no_axioms FX1Poly.Modal.gradeAt_scale
+#assert_no_axioms FX1Poly.Modal.gradeAt_add
+#assert_no_axioms FX1Poly.Modal.add_interchange
+#assert_no_axioms FX1Poly.Modal.substInto_single_self
+#assert_no_axioms FX1Poly.Modal.substInto_single_lt
+#assert_no_axioms FX1Poly.Modal.substInto_single_gt
+#assert_no_axioms FX1Poly.Modal.substInto_appGrade
+#assert_no_axioms FX1Poly.Modal.hasUsage_substitution
+#assert_no_axioms FX1Poly.Modal.hasUsage_betaPreservation
