@@ -1,6 +1,7 @@
 import FX1Poly.Typed.HasTypeDescInversion
 import FX1Poly.Typed.HasTypeDescFormerTelescopeInversion
 import FX1Poly.Typed.HasTypeInversion
+import FX1Poly.Typed.HasTypeDescSound
 
 /-! # FX1Poly/Typed/HasTypeDescUniqueness — uniqueness of typing (P7) for the
     description engine.

@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescInversion
+import FX1Poly.Typed.WfContext
 
 /-! # FX1Poly/Typed/HasTypeDescFormerTelescopeInversion — generic former TELESCOPE inversion (GTL-08 probe)
 

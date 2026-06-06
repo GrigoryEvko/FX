@@ -1,9 +1,6 @@
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Core.RawConfluence
 import FX1Poly.Typed.RawTermHeadGenerator
-import FX1Poly.Typed.HasTypeDescSound
-import FX1Poly.Typed.HasTypeValidity
-import FX1Poly.Typed.HasTypeStronglyNormalizing
 
 /-! # FX1Poly/Typed/HasTypeDescInversion — INVERSION (P8 descent) for the description engine.
 

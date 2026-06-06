@@ -1,4 +1,5 @@
 import FX1Poly.Typed.PiTypeFunctionInversion
+import FX1Poly.Typed.SigmaCodeShape
 import FX1Poly.Typed.FormationCanonicalForms
 import FX1Poly.Core.ExistsStepOfNotNormal
 
