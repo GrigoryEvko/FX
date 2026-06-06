@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Modal.ResourceGraded
 import FX1Poly.Modal.GradeVector
+import FX1Poly.Modal.GradeVectorGeneric
 import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTyping
 import FX1Poly.Modal.GradedTypingMetatheory
@@ -179,6 +180,40 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.dupRedex_wellGraded
 #assert_no_axioms FX1Poly.Modal.dupReduct_illGraded
 #assert_no_axioms FX1Poly.Modal.usage_check_fails_subject_reduction
+
+/-! ### Generic grade-vector substrate over any OrderedGradeSemiring (DIM5-2 + dims 6–21) -/
+
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.length
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.zero
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.add
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.scale
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.zero_length
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.scale_length
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.add_comm
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.add_assoc
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.add_zero
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.zero_add
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.scale_zero_scalar
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.scale_one_scalar
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.scale_add
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.scale_scale
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.scale_add_scalar
+#assert_no_axioms FX1Poly.Modal.IsLawfulOrderedGradeSemiring.add_le_add
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.IsPointwiseBelow
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.IsPointwiseBelow.refl
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.IsPointwiseBelow.trans
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.IsPointwiseBelow.antisymm
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.IsPointwiseBelow.scale_mono
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.IsPointwiseBelow.add_mono
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.isPointwiseBelowBool
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.isPointwiseBelowBool_correct
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.single
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.tail
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.single_length
+#assert_no_axioms FX1Poly.Modal.usageGradeVector_scale_add
+#assert_no_axioms FX1Poly.Modal.securityGradeVector_add_comm
+#assert_no_axioms FX1Poly.Modal.securityGradeVector_below_refl
 
 /-! ### The SOUND graded typing judgment (DIM2-3): type-coupled HasUsage with App scaling -/
 
