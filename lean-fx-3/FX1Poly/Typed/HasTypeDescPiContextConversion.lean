@@ -23,8 +23,11 @@ under `Γ'`) must be conv-backed to the EXACT syntactic `Π D C`, whose `conv`-r
 typed under `Γ'`".  Obtaining that needs `classifierIsTypeDesc` on a derivation that is NOT a structural
 sub-derivation (the Pi's validity), i.e. a "typing a `Conv`-equal type" step — which IS subject reduction.
 There is no `type-Conv-closure` lemma (it would be circular with SR).  So the full grown context-conversion
-is part of the mutual FUNDAMENTAL-METATHEORY bundle (type-correctness + context-conversion + Π-injectivity +
-SR), a deliberate multi-fire development — NOT a clean single-fire brick.
+is part of the mutual FUNDAMENTAL-METATHEORY bundle (type-correctness + context-conversion + SR), a deliberate
+multi-fire development — NOT a clean single-fire brick.  (Π/Σ-code injectivity is NOT a member of this bundle:
+it is shipped SEPARATELY and unconditionally as the raw-confluence corollary `Conv.piTyCode_injective` /
+`Conv.sigmaTyCode_injective` (PI-1/PI-2/PI-3, `#864`–`#866`), so it is an independently-available INPUT the
+bundle may cite, not a bundle OUTPUT.)
 
 ## What this file ships (and what it already enables)
 

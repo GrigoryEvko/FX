@@ -26,8 +26,11 @@ arms are all here:
   * **telescope `nil`/`cons`** — `cons` re-types the head via the mutual `convContext`, conv-backed through
     `convBackToUniverseCode`, and recurses the tail under the extended context.
 
-Discharging `piElimArm` (GCC-5, the mutual fundamental-metatheory bundle: type-correctness + Π-injectivity +
-SR) yields unconditional grown context-conversion — and `convTelescopeOfPiElimArm` is exactly the grown telescope
+Discharging `piElimArm` (GCC-5, the mutual fundamental-metatheory bundle: type-correctness + context-conversion +
+SR — Π/Σ-code injectivity is NOT a bundle member: it ships SEPARATELY as the unconditional raw-confluence
+corollary `Conv.piTyCode_injective` / `Conv.sigmaTyCode_injective`, PI-1/PI-2/PI-3, `#864`–`#866`, an
+independently-available INPUT the bundle may cite) yields unconditional grown context-conversion — and
+`convTelescopeOfPiElimArm` is exactly the grown telescope
 context-conversion (GCC-3) the grown telescope SR consumes for its tail re-typing, which in turn discharges the
 SR dispatcher's `telescopeSR` hypothesis (SRD-2, `#845`) toward unconditional SN-055.
 
