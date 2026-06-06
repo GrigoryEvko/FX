@@ -352,6 +352,56 @@ theorem fxUsageSemiring_isLawful : IsLawfulOrderedGradeSemiring fxUsageSemiring 
   mul_le_mul_left := fun scaleGrade _ _ firstBelowSecond =>
     UsageGrade.mul_le_mul_left scaleGrade firstBelowSecond
 
+/-! ## Grade division — the residual of multiplication (toward DIM2-3's corrected Lam rule)
+
+`div a b = max { d : d * b ≤ a }` is the residual (right adjoint) of `* b` — the largest grade
+whose product with `b` stays below `a`.  Context division `G / p` (§6.2) divides each binding's
+grade by a closure's replication grade `p`; the defining fact `1 / ω = 0` is the Wood/Atkey 2022
+correction (§27.1) that erases a linear variable from a replicable closure, blocking the broken
+Atkey-2018 Lam rule.  `div_residuation` proves the 3×3 table IS the genuine residual (the universal
+property both ways); `mul_div_le` is the counit — scaling the divided context back up stays below
+the original. -/
+
+/-- Grade division `div a b = max { d : d * b ≤ a }` — the residual of `* b`.  Full 3×3
+enumeration; propext-free. -/
+def UsageGrade.div : UsageGrade → UsageGrade → UsageGrade
+  | .zero,  .zero  => .omega
+  | .one,   .zero  => .omega
+  | .omega, .zero  => .omega
+  | .zero,  .one   => .zero
+  | .one,   .one   => .one
+  | .omega, .one   => .omega
+  | .zero,  .omega => .zero
+  | .one,   .omega => .zero
+  | .omega, .omega => .omega
+
+/-- **Residuation: `d * b ≤ a ↔ d ≤ a / b`.**  Division is the right adjoint of multiplication —
+the defining universal property that makes the 3×3 table the genuine residual (not an ad-hoc
+inverse).  Closes by `Iff.rfl` per case: both sides reduce to the same concrete `Bool` equality. -/
+theorem UsageGrade.div_residuation (dividendGrade divisorGrade quotientCandidate : UsageGrade) :
+    (UsageGrade.le (UsageGrade.mul quotientCandidate divisorGrade) dividendGrade = true) ↔
+      (UsageGrade.le quotientCandidate (UsageGrade.div dividendGrade divisorGrade) = true) := by
+  cases dividendGrade <;> cases divisorGrade <;> cases quotientCandidate <;> exact Iff.rfl
+
+/-- **The Wood/Atkey 2022 correction: `1 / ω = 0`** (§27.1).  A linear variable (grade `1`) divided
+by a replicable closure's `ω` erases to `0` — so the corrected Lam rule cannot capture a linear
+variable in an unrestricted closure (the broken Atkey-2018 rule allowed exactly this). -/
+theorem UsageGrade.one_div_omega :
+    UsageGrade.div UsageGrade.one UsageGrade.omega = UsageGrade.zero := rfl
+
+/-- Division by the unit is the identity: `a / 1 = a`. -/
+theorem UsageGrade.div_one (someGrade : UsageGrade) :
+    UsageGrade.div someGrade UsageGrade.one = someGrade := by
+  cases someGrade <;> rfl
+
+/-- Counit / soundness: `b * (a / b) ≤ a` — scaling the divided grade back up (scalar `b` on the
+left, matching `GradeVector.scale`) never exceeds the original.  The fact the corrected Lam rule
+relies on for soundness; the `←` direction of `div_residuation` at the reflexive quotient. -/
+theorem UsageGrade.mul_div_le (divisorGrade dividendGrade : UsageGrade) :
+    UsageGrade.le (UsageGrade.mul divisorGrade (UsageGrade.div dividendGrade divisorGrade))
+      dividendGrade = true := by
+  cases divisorGrade <;> cases dividendGrade <;> rfl
+
 /-! ## Security-instance multiplication caveat (flagged, not changed)
 
 `fxSecuritySemiring` above wires `mul := SecurityGrade.add` (JOIN).  Per §6.1 security

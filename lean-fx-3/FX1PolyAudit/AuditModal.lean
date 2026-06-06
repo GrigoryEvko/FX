@@ -79,3 +79,18 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.GradeVector.scale_add
 #assert_no_axioms FX1Poly.Modal.GradeVector.scale_scale
 #assert_no_axioms FX1Poly.Modal.GradeVector.scale_add_scalar
+
+/-! ### Grade division — the residual of multiplication (toward DIM2-3's corrected Lam rule) -/
+
+#assert_no_axioms FX1Poly.Modal.UsageGrade.div
+#assert_no_axioms FX1Poly.Modal.UsageGrade.div_residuation
+#assert_no_axioms FX1Poly.Modal.UsageGrade.one_div_omega
+#assert_no_axioms FX1Poly.Modal.UsageGrade.div_one
+#assert_no_axioms FX1Poly.Modal.UsageGrade.mul_div_le
+
+/-! ### Context division `G / p` (the corrected Lam rule's capture discipline) -/
+
+#assert_no_axioms FX1Poly.Modal.GradeVector.contextDivide
+#assert_no_axioms FX1Poly.Modal.GradeVector.contextDivide_length
+#assert_no_axioms FX1Poly.Modal.GradeVector.IsPointwiseBelow
+#assert_no_axioms FX1Poly.Modal.GradeVector.scale_contextDivide_below

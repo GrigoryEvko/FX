@@ -197,4 +197,51 @@ theorem GradeVector.scale_add_scalar (firstScale secondScale : UsageGrade) (some
       simp only [GradeVector.scale, GradeVector.add]
       rw [UsageGrade.right_distrib firstScale secondScale headGrade, restIH]
 
+/-! ## Context division `G / p` — the corrected Lam rule's capture discipline (§6.2/§27.1)
+
+The Wood/Atkey Lam rule forms a closure of grade `p` by dividing the captured context `G` by `p`:
+`G / p`, pointwise `· / p` over `UsageGrade.div` (the residual of multiplication, `ResourceGraded`).
+Its soundness — you can never recover more than you had — is `scale p (G / p) ≤ G` pointwise,
+proved here against a pointwise-`≤` predicate (so it needs no new vector order). -/
+
+/-- Context division `G / p`: divide every binding's grade by the scalar `divisorGrade` (§6.2 — the
+corrected Lam rule's capture discipline).  Pointwise `· / divisorGrade`. -/
+def GradeVector.contextDivide (divisorGrade : UsageGrade) : GradeVector → GradeVector
+  | .nil => .nil
+  | .cons headGrade restGrades =>
+      .cons (UsageGrade.div headGrade divisorGrade)
+        (GradeVector.contextDivide divisorGrade restGrades)
+
+/-- Context division preserves the binding count. -/
+theorem GradeVector.contextDivide_length (divisorGrade : UsageGrade) (someVector : GradeVector) :
+    (GradeVector.contextDivide divisorGrade someVector).length = someVector.length := by
+  induction someVector with
+  | nil => rfl
+  | cons headGrade restGrades restIH =>
+      show (GradeVector.contextDivide divisorGrade restGrades).length + 1 = restGrades.length + 1
+      rw [restIH]
+
+/-- Pointwise order on equal-length grade vectors: `firstVector ≤ secondVector` binding-by-binding
+(via `UsageGrade.le`).  A local predicate so context-division soundness needs no global vector
+order; vectors of different lengths are incomparable (`False`). -/
+def GradeVector.IsPointwiseBelow : GradeVector → GradeVector → Prop
+  | .nil, .nil => True
+  | .nil, .cons _ _ => False
+  | .cons _ _, .nil => False
+  | .cons firstHead firstRest, .cons secondHead secondRest =>
+      (UsageGrade.le firstHead secondHead = true) ∧
+        GradeVector.IsPointwiseBelow firstRest secondRest
+
+/-- **Context-division soundness (the vector counit): `scale p (G / p) ≤ G` pointwise.**  Scaling
+the divided context back up by `p` never exceeds the original `G` — the fact the corrected Lam rule
+relies on.  Lifts `UsageGrade.mul_div_le` binding-by-binding. -/
+theorem GradeVector.scale_contextDivide_below (divisorGrade : UsageGrade) (someVector : GradeVector) :
+    GradeVector.IsPointwiseBelow
+      (GradeVector.scale divisorGrade (GradeVector.contextDivide divisorGrade someVector))
+      someVector := by
+  induction someVector with
+  | nil => exact True.intro
+  | cons headGrade restGrades restIH =>
+      exact ⟨UsageGrade.mul_div_le divisorGrade headGrade, restIH⟩
+
 end FX1Poly.Modal
