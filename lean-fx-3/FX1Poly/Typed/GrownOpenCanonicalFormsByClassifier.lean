@@ -61,13 +61,13 @@ theorem HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral {profile : PolyProfile
   · exact Or.inl (eq_lamCell_of_headGenerator headLam)
   · obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
     rw [piEq] at typed
-    exact (HasTypeDescPi.piFormerNotTypedAtPiType typed wellFormed).elim
+    exact (HasTypeDescPi.piFormerNotTypedAtPiType typed).elim
   · obtain ⟨_innerDomain, _innerCodomain, sigmaEq⟩ := eq_sigmaTyCodeCell_of_headGenerator headSigma
     rw [sigmaEq] at typed
-    exact (HasTypeDescPi.sigmaFormerNotTypedAtPiType typed wellFormed).elim
+    exact (HasTypeDescPi.sigmaFormerNotTypedAtPiType typed).elim
   · obtain ⟨_levelExpr, _flag, universeEq⟩ := eq_universeCodeCell_of_headGenerator headUniverse
     rw [universeEq] at typed
-    exact (HasTypeDescPi.universeCodeNotTypedAtPiType typed wellFormed).elim
+    exact (HasTypeDescPi.universeCodeNotTypedAtPiType typed).elim
   · exact Or.inr neutral
 
 /-- **Open canonical forms at a universe.**  A normal grown-typed term whose classifier is a universe

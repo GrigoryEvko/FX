@@ -18,7 +18,7 @@ universe-code.  This file ships the two ingredients that close that case:
   is a TYPE, classified by a universe code, and a Π-code is not `Conv` a universe code
   (`Conv.piTyCode_not_universeCode`).  These are the Π-classifier analogues of the empty-type value-case
   inversions in `EmptyTypeValueInversion` (`*NotTypedAtEmptyType`), via the SAME grown inversions
-  (`invertPiTyCode` / `invertSigmaTyCode` / `inversionUniverseCode`, all requiring `WfContext`).
+  (`invertPiTyCode` / `invertSigmaTyCode` / `inversionUniverseCode`, all context-free).
 
 Together with the formation-engine canonical forms (`FormationCanonicalForms.lean`) and β-redex
 non-normality, these discharge every non-λ shape `f` can take in the `piElim` case — so a closed normal
@@ -64,8 +64,7 @@ theorem HasTypeDescPi.piFormerNotTypedAtPiType {profile : PolyProfile} {scope : 
     {outerDomain : RawTerm scope} {outerCodomain : RawTerm (scope + 1)}
     (typed :
       HasTypeDescPi profile context (piTyCodeCell innerDomain innerCodomain)
-        (piTyCodeCell outerDomain outerCodomain))
-    (_wellFormed : WfContext context) :
+        (piTyCodeCell outerDomain outerCodomain)) :
     False := by
   obtain ⟨_, _, _, _, _, convToUniverseCode⟩ := HasTypeDescPi.invertPiTyCode typed
   exact Conv.piTyCode_not_universeCode convToUniverseCode
@@ -77,8 +76,7 @@ theorem HasTypeDescPi.sigmaFormerNotTypedAtPiType {profile : PolyProfile} {scope
     {outerDomain : RawTerm scope} {outerCodomain : RawTerm (scope + 1)}
     (typed :
       HasTypeDescPi profile context (sigmaTyCodeCell innerDomain innerCodomain)
-        (piTyCodeCell outerDomain outerCodomain))
-    (_wellFormed : WfContext context) :
+        (piTyCodeCell outerDomain outerCodomain)) :
     False := by
   obtain ⟨_, _, _, _, _, convToUniverseCode⟩ := HasTypeDescPi.invertSigmaTyCode typed
   exact Conv.piTyCode_not_universeCode convToUniverseCode
@@ -91,8 +89,7 @@ theorem HasTypeDescPi.universeCodeNotTypedAtPiType {profile : PolyProfile} {scop
     {outerDomain : RawTerm scope} {outerCodomain : RawTerm (scope + 1)}
     (typed :
       HasTypeDescPi profile context (universeCodeCell levelExpr flag)
-        (piTyCodeCell outerDomain outerCodomain))
-    (_wellFormed : WfContext context) :
+        (piTyCodeCell outerDomain outerCodomain)) :
     False :=
   Conv.piTyCode_not_universeCode (HasTypeDescPi.inversionUniverseCode typed)
 

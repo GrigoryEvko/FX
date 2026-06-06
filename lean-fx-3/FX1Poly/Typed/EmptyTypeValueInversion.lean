@@ -41,14 +41,13 @@ theorem HasTypeDescPi.lambdaNotTypedAtEmptyType {profile : PolyProfile} {scope :
 
 /-- **A Π-type former is never typed at the empty type.**  `invertPiTyCode` exposes the former's
 classifier as `Conv` a universe code; `Conv.universeCode_not_emptyTypeCode` refutes that against
-`emptyTypeCell`.  Requires `WfContext` (the former inversion's well-formedness premise). -/
+`emptyTypeCell`.  No well-formedness premise needed (the grown former inversion is context-free). -/
 theorem HasTypeDescPi.piFormerNotTypedAtEmptyType {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (typed :
       HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode)
-        (emptyTypeCell (scope := scope)))
-    (_wellFormed : WfContext context) :
+        (emptyTypeCell (scope := scope))) :
     False := by
   obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped, convToUniverseCode⟩ :=
     HasTypeDescPi.invertPiTyCode typed
@@ -61,8 +60,7 @@ theorem HasTypeDescPi.sigmaFormerNotTypedAtEmptyType {profile : PolyProfile} {sc
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (typed :
       HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode)
-        (emptyTypeCell (scope := scope)))
-    (_wellFormed : WfContext context) :
+        (emptyTypeCell (scope := scope))) :
     False := by
   obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped, convToUniverseCode⟩ :=
     HasTypeDescPi.invertSigmaTyCode typed
@@ -76,8 +74,7 @@ theorem HasTypeDescPi.universeCodeNotTypedAtEmptyType {profile : PolyProfile} {s
     {context : TypingContext profile scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
     (typed :
       HasTypeDescPi profile context (universeCodeCell levelExpr flag)
-        (emptyTypeCell (scope := scope)))
-    (_wellFormed : WfContext context) :
+        (emptyTypeCell (scope := scope))) :
     False :=
   Conv.universeCode_not_emptyTypeCode
     (HasTypeDescPi.inversionUniverseCode typed).sym

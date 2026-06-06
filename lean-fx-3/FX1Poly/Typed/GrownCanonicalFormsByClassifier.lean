@@ -51,18 +51,18 @@ theorem HasTypeDescPi.closedNormalFunctionIsLambda {profile : PolyProfile} {subj
       (piTyCodeCell outerDomain outerCodomain))
     (normal : RawTerm.isStepNormalForm subject) :
     ∃ body : RawTerm 1, subject = lamCell body := by
-  rcases HasTypeDescPi.closedNormalSubjectHead typed WfContext.emptyIsWellFormed normal
+  rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with headLam | headPi | headSigma | headUniverse
   · exact eq_lamCell_of_headGenerator headLam
   · obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
     rw [piEq] at typed
-    exact (HasTypeDescPi.piFormerNotTypedAtPiType typed WfContext.emptyIsWellFormed).elim
+    exact (HasTypeDescPi.piFormerNotTypedAtPiType typed).elim
   · obtain ⟨_innerDomain, _innerCodomain, sigmaEq⟩ := eq_sigmaTyCodeCell_of_headGenerator headSigma
     rw [sigmaEq] at typed
-    exact (HasTypeDescPi.sigmaFormerNotTypedAtPiType typed WfContext.emptyIsWellFormed).elim
+    exact (HasTypeDescPi.sigmaFormerNotTypedAtPiType typed).elim
   · obtain ⟨_levelExpr, _flag, universeEq⟩ := eq_universeCodeCell_of_headGenerator headUniverse
     rw [universeEq] at typed
-    exact (HasTypeDescPi.universeCodeNotTypedAtPiType typed WfContext.emptyIsWellFormed).elim
+    exact (HasTypeDescPi.universeCodeNotTypedAtPiType typed).elim
 
 /-- **Canonical forms at a universe.**  A closed normal term whose classifier is a universe
 (`universeCodeCell levelExpr flag`) — i.e. a closed normal TYPE — is a type FORMER: its head is `gen_piTyCode`,
@@ -77,7 +77,7 @@ theorem HasTypeDescPi.closedNormalTypeIsFormer {profile : PolyProfile} {subject 
     RawTerm.headGenerator subject = Generator.gen_piTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_universeCode := by
-  rcases HasTypeDescPi.closedNormalSubjectHead typed WfContext.emptyIsWellFormed normal
+  rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with headLam | rest
   · obtain ⟨body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [lamEq] at typed

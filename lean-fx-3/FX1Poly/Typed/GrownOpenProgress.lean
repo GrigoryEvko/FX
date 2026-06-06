@@ -87,15 +87,15 @@ theorem HasTypeDescPi.openNormalSubjectCanonicalOrNeutral {profile : PolyProfile
     · exfalso
       obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
       rw [piEq] at functionTyped
-      exact HasTypeDescPi.piFormerNotTypedAtPiType functionTyped armWf
+      exact HasTypeDescPi.piFormerNotTypedAtPiType functionTyped
     · exfalso
       obtain ⟨_innerDomain, _innerCodomain, sigmaEq⟩ := eq_sigmaTyCodeCell_of_headGenerator headSigma
       rw [sigmaEq] at functionTyped
-      exact HasTypeDescPi.sigmaFormerNotTypedAtPiType functionTyped armWf
+      exact HasTypeDescPi.sigmaFormerNotTypedAtPiType functionTyped
     · exfalso
       obtain ⟨_levelExpr, _flag, universeEq⟩ := eq_universeCodeCell_of_headGenerator headUniverse
       rw [universeEq] at functionTyped
-      exact HasTypeDescPi.universeCodeNotTypedAtPiType functionTyped armWf
+      exact HasTypeDescPi.universeCodeNotTypedAtPiType functionTyped
     · exact Or.inr (IsNeutral.app functionNeutral)
   · intro _armScope _armContext generator _payload _children _levels _flag _rule isFormation _premises
       _premisesIH _armWf _armNormal

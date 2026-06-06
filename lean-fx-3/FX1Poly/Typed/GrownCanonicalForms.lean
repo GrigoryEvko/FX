@@ -18,7 +18,7 @@ analogue and its empty-type consistency corollary.
 
 * `HasTypeDescPi.closedNormalSubjectHead` — **grown closed canonical forms**: a CLOSED NORMAL grown-typed
   term has head `gen_lam` / `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode`.  Proved by the propext-free
-  mutual recursor with closedness threaded as `Fin scope → False` and a `WfContext` premise.  The only hard
+  mutual recursor with closedness threaded as `Fin scope → False`.  The only hard
   arm is `piElim` (application): the function is closed, normal (by the subterm lemma) and typed at a Π-code, so
   by the IH its head is one of the four shapes — but a λ head makes the application a β-redex (not normal,
   `not_isStepNormalForm_beta_smoke`), and a former / universe-code head is impossible at a Π classifier
@@ -64,7 +64,6 @@ impossible, killed by β-redex non-normality and the type-former-not-a-Π-member
 theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context subject classifier)
-    (wellFormed : WfContext context)
     (normal : RawTerm.isStepNormalForm subject)
     (closed : Fin scope → False) :
     RawTerm.headGenerator subject = Generator.gen_lam ∨
@@ -72,45 +71,45 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
     RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_universeCode := by
   refine HasTypeDescPi.rec
-    (motive_1 := fun {armScope} armContext armSubject _armClassifier _armTyped =>
-      WfContext armContext → RawTerm.isStepNormalForm armSubject → (Fin armScope → False) →
+    (motive_1 := fun {armScope} _armContext armSubject _armClassifier _armTyped =>
+      RawTerm.isStepNormalForm armSubject → (Fin armScope → False) →
       (RawTerm.headGenerator armSubject = Generator.gen_lam ∨
        RawTerm.headGenerator armSubject = Generator.gen_piTyCode ∨
        RawTerm.headGenerator armSubject = Generator.gen_sigmaTyCode ∨
        RawTerm.headGenerator armSubject = Generator.gen_universeCode))
     (motive_2 := fun _armContext _armLevels _armFlag _armChildren _armTelescope => True)
     ?ofFormation ?conv ?piIntro ?piElim ?genFormationPi ?nilTelescope ?consTelescope
-    typed wellFormed normal closed
-  · intro _armScope _armContext _armSubject _armClassifier formationTyped _armWf _armNormal armClosed
+    typed normal closed
+  · intro _armScope _armContext _armSubject _armClassifier formationTyped _armNormal armClosed
     rcases HasTypeDesc.subjectIsVariableOrFormerHead formationTyped with ⟨index, _⟩ | rest
     · exact (armClosed index).elim
     · exact Or.inr rest
   · intro _armScope _armContext _armSubject _armClassifier _reclassifier _levelExpr _flag _typed
-      _converts _reclassifierTyped subjectIH _reclassifierIH armWf armNormal armClosed
-    exact subjectIH armWf armNormal armClosed
+      _converts _reclassifierTyped subjectIH _reclassifierIH armNormal armClosed
+    exact subjectIH armNormal armClosed
   · intro _armScope _armContext _domainCode _codomainCode _body _domainLevel _codomainLevel _flag
-      _domainTyped _codomainTyped _bodyTyped _domainIH _codomainIH _bodyIH _armWf _armNormal _armClosed
+      _domainTyped _codomainTyped _bodyTyped _domainIH _codomainIH _bodyIH _armNormal _armClosed
     exact Or.inl rfl
   · intro _armScope _armContext functionTerm argument _domainCode _codomainCode functionTyped
-      _argumentTyped functionIH _argumentIH armWf armNormal armClosed
+      _argumentTyped functionIH _argumentIH armNormal armClosed
     exfalso
     have functionNormal : RawTerm.isStepNormalForm functionTerm :=
       appNormal_functionNormal functionTerm argument armNormal
-    rcases functionIH armWf functionNormal armClosed with headLam | headPi | headSigma | headUniverse
+    rcases functionIH functionNormal armClosed with headLam | headPi | headSigma | headUniverse
     · obtain ⟨body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
       rw [bodyEq] at armNormal
       exact RawTerm.not_isStepNormalForm_beta_smoke body argument armNormal
     · obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
       rw [piEq] at functionTyped
-      exact HasTypeDescPi.piFormerNotTypedAtPiType functionTyped armWf
+      exact HasTypeDescPi.piFormerNotTypedAtPiType functionTyped
     · obtain ⟨_innerDomain, _innerCodomain, sigmaEq⟩ := eq_sigmaTyCodeCell_of_headGenerator headSigma
       rw [sigmaEq] at functionTyped
-      exact HasTypeDescPi.sigmaFormerNotTypedAtPiType functionTyped armWf
+      exact HasTypeDescPi.sigmaFormerNotTypedAtPiType functionTyped
     · obtain ⟨_levelExpr, _flag, universeEq⟩ := eq_universeCodeCell_of_headGenerator headUniverse
       rw [universeEq] at functionTyped
-      exact HasTypeDescPi.universeCodeNotTypedAtPiType functionTyped armWf
+      exact HasTypeDescPi.universeCodeNotTypedAtPiType functionTyped
   · intro _armScope _armContext generator _payload _children _levels _flag _rule isFormation _premises
-      _premisesIH _armWf _armNormal _armClosed
+      _premisesIH _armNormal _armClosed
     by_cases isPi : generator = Generator.gen_piTyCode
     · exact Or.inr (Or.inl (by subst isPi; rfl))
     · by_cases isSigma : generator = Generator.gen_sigmaTyCode
@@ -134,19 +133,19 @@ theorem HasTypeDescPi.noClosedNormalTermAtEmptyType {profile : PolyProfile} {sub
       (emptyTypeCell (scope := 0)))
     (normal : RawTerm.isStepNormalForm subject) :
     False := by
-  rcases HasTypeDescPi.closedNormalSubjectHead typed WfContext.emptyIsWellFormed normal
+  rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with headLam | headPi | headSigma | headUniverse
   · obtain ⟨_body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [bodyEq] at typed
     exact HasTypeDescPi.lambdaNotTypedAtEmptyType typed
   · obtain ⟨_domain, _codomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
     rw [piEq] at typed
-    exact HasTypeDescPi.piFormerNotTypedAtEmptyType typed WfContext.emptyIsWellFormed
+    exact HasTypeDescPi.piFormerNotTypedAtEmptyType typed
   · obtain ⟨_domain, _codomain, sigmaEq⟩ := eq_sigmaTyCodeCell_of_headGenerator headSigma
     rw [sigmaEq] at typed
-    exact HasTypeDescPi.sigmaFormerNotTypedAtEmptyType typed WfContext.emptyIsWellFormed
+    exact HasTypeDescPi.sigmaFormerNotTypedAtEmptyType typed
   · obtain ⟨_levelExpr, _flag, universeEq⟩ := eq_universeCodeCell_of_headGenerator headUniverse
     rw [universeEq] at typed
-    exact HasTypeDescPi.universeCodeNotTypedAtEmptyType typed WfContext.emptyIsWellFormed
+    exact HasTypeDescPi.universeCodeNotTypedAtEmptyType typed
 
 end FX1Poly.Typed

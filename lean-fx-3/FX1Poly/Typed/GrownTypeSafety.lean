@@ -84,7 +84,7 @@ theorem HasTypeDescPi.closedProgress {profile : PolyProfile} {subject classifier
     ∨ (∃ reduct : RawTerm 0, Step subject reduct) := by
   by_cases isNormal : RawTerm.isStepNormalForm subject
   · refine Or.inl ⟨?canonicalHead, isNormal⟩
-    exact HasTypeDescPi.closedNormalSubjectHead typed WfContext.emptyIsWellFormed isNormal
+    exact HasTypeDescPi.closedNormalSubjectHead typed isNormal
       (fun emptyIndex => emptyIndex.elim0)
   · exact Or.inr (exists_step_of_not_isStepNormalForm isNormal)
 
@@ -107,7 +107,7 @@ theorem HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar {profile : PolyProf
   obtain ⟨value, reaches, valueNormal⟩ := exists_normalForm_of_isStronglyNormalizing terminates
   refine ⟨value, reaches, valueNormal, ?canonicalHead⟩
   exact HasTypeDescPi.closedNormalSubjectHead (subjectReductionStar typed reaches)
-    WfContext.emptyIsWellFormed valueNormal (fun emptyIndex => emptyIndex.elim0)
+    valueNormal (fun emptyIndex => emptyIndex.elim0)
 
 /-- **Evaluation determinism (unconditional).**  A closed grown-typed term has a UNIQUE normal form: it reaches
 one normal form, and every normal form it reaches equals that one.  OB-5 strong-normalizes the subject; the
@@ -144,6 +144,6 @@ theorem HasTypeDescPi.closedTypeSafetyUniqueOfSubjectReductionStar {profile : Po
       (HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed)
   refine ⟨value, ⟨reaches, valueNormal, ?canonicalHead⟩, valueUnique⟩
   exact HasTypeDescPi.closedNormalSubjectHead (subjectReductionStar typed reaches)
-    WfContext.emptyIsWellFormed valueNormal (fun emptyIndex => emptyIndex.elim0)
+    valueNormal (fun emptyIndex => emptyIndex.elim0)
 
 end FX1Poly.Typed
