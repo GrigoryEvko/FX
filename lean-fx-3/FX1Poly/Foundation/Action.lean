@@ -75,12 +75,10 @@ are `rfl` after `simp only [identity, compose, headIndex]`.
 
 ## Layer
 
-This file is at the **Foundation** layer — depends only on `Mathlib.Init`-
-style Nat/Fin primitives and on `LeanFX2.Foundation.{Ty,RawTerm}` for
-the `Ty` and `RawTerm` types that `ActionTarget` will instantiate.
-However, the typeclass itself parameterises over `ActionTarget`, so it
-does NOT pin to a specific `Ty`/`RawTerm` — it works for any
-syntax-with-binding the project later defines.
+This file is at the **Foundation** layer — depends only on `Init`-style
+Nat/Fin primitives.  The typeclass parameterises over `ActionTarget`, so
+it does NOT pin to a specific carrier — it works for any
+syntax-with-binding the project defines (e.g. `FX1Poly.Core.RawTerm`).
 
 ## Audit
 

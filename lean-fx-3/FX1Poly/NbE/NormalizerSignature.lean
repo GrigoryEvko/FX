@@ -96,8 +96,8 @@ Downstream NbE consumers write theorems generic over any
 structure Normalizer where
   /-- The normalizer function: `RawTerm scope → RawTerm scope`
   per the hybrid design (raw layer outputs RawTerm in β-NF, no
-  separate ValueTerm).  Fully-qualified to avoid the
-  competing `LeanFX2.RawTerm` namespace shadow. -/
+  separate ValueTerm).  Written fully-qualified as
+  `FX1Poly.Core.RawTerm`. -/
   normalize : ∀ {scope : Nat},
     FX1Poly.Core.RawTerm scope →
     FX1Poly.Core.RawTerm scope

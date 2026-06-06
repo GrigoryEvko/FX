@@ -1,18 +1,16 @@
 import Lake
 open Lake DSL
 
-/-! # lean-fx-3 — PolyCell kernel, clean-cut from lean-fx-2
+/-! # lean-fx-3 — PolyCell kernel
 
 Two-tier verification architecture (MM0-flavored trust split):
 
 * `FX1Poly`     — the RICH Lean-verified PolyCell kernel.  Proof-carrying,
-                  zero-axiom, the full Generator-table cell calculus migrated
-                  out of lean-fx-2's `LeanFX2.Foundation.PolyCell`.  This is
-                  the elaborator that PRODUCES certificates.
+                  zero-axiom, the full Generator-table cell calculus.  This
+                  is the elaborator that PRODUCES certificates.
 * `FX1PolyAudit`— the zero-axiom audit engine: the `#assert_no_axioms` macro
-                  plus per-declaration gate files.  Mirrors lean-fx-2's
-                  `LeanFX2` / `LeanFX2Audit` two-target split so the inner
-                  loop (`lake build FX1Poly`) never pays the audit
+                  plus per-declaration gate files.  A two-target split keeps
+                  the inner loop (`lake build FX1Poly`) from paying the audit
                   elaboration tax.
 * `FX0Poly`     — the Metamath-Zero–flavored MINIMAL external checker
                   (greenfield).  A tiny, independently-auditable verifier

@@ -78,11 +78,10 @@ is the spine of the "morphisms on terms, types, contexts, grades"
 design: a 1-cell is `PolyCell fxProfile sort 1 …` for any `sort`, so
 the sort vocabulary is the foundational brick.
 
-Typed sort markers: `FX1Poly.Typed.hasType*Sort` pin the native
-cells-classify-cells typing discipline (a `.term` subject classified by
-a `.type` classifier) and guard against reintroducing an MLTT
-`Foundation.Ty` classifier.  (The `HasType` inductive itself is gated in
-`AuditTyped.lean`.)
+The native typing discipline — `HasTypeDesc` (formation) and
+`HasTypeDescPi` (grown) — classifies cells by cells: a `.term` subject by
+a `.type` classifier over `CellSort`, with no MLTT `Foundation.Ty`
+classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 -/
 
 #assert_no_axioms FX1Poly.Core.CellSort

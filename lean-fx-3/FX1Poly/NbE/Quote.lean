@@ -79,8 +79,7 @@ Four fields:
 * `quote_preserves_isNF` — output preserves NF predicate.
 * `quote_round_trip` — NF input is a fixed point.
 
-Fully-qualified field types because `LeanFX2.RawTerm` shadows the
-intended `FX1Poly.Core.RawTerm`. -/
+Field types are fully-qualified as `FX1Poly.Core.RawTerm`. -/
 structure Quote where
   /-- The quote function: identity at raw layer per hybrid design. -/
   quote : ∀ {scope : Nat},
