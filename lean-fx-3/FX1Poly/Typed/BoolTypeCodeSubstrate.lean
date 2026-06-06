@@ -1,4 +1,3 @@
-import FX1Poly.Typed.HasType
 import FX1Poly.Core.GeneratorAdmission
 import FX1Poly.Core.GeneratorMetadata
 

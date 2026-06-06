@@ -1,5 +1,4 @@
 import FX1Poly.Typed.HasTypeDescPi
-import FX1Poly.Typed.HasType
 import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.RawTermNF

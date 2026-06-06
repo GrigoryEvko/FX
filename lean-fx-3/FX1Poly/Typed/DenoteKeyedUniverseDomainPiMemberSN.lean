@@ -1,5 +1,4 @@
 import FX1Poly.Typed.DenoteKeyedUniverseDomainPi
-import FX1Poly.Typed.HasType
 import FX1Poly.Core.DependentArrowReducibilityCandidate
 import FX1Poly.Core.StratifiedReducibleTypeCandidate
 import FX1Poly.Core.StrongNormalizationLeaves

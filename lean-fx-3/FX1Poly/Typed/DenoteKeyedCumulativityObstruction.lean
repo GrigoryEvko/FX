@@ -1,5 +1,4 @@
 import FX1Poly.Typed.DenoteKeyedReducibility
-import FX1Poly.Typed.HasType
 
 /-! # FX1Poly/Typed/DenoteKeyedCumulativityObstruction
     — the committed witness that denote-keyed TYPE-reducibility does NOT lift across levels (the

@@ -1,7 +1,6 @@
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.FireRootRedex
-import FX1Poly.Typed.HasType
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeHonesty
 
