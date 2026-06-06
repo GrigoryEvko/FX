@@ -362,6 +362,7 @@ import FX1Poly.Typed.IsTypeDescRigidity
 import FX1Poly.Typed.IsTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescNativeDecidable
 import FX1Poly.Typed.DescTelescopeDecidable
+import FX1Poly.Typed.IsTypeDescDecidableGeneric
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5299,3 +5300,13 @@ gates pin them shut.
 -- The Decidable-instance form (isTrue/isFalse wrapper) — the cascade-free twin of decidableOfWellFormed for the
 -- former case, completing the non-leaf decision API.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.decidableMkGenOfNonLeaf
+-- IsTypeDescDecidableGeneric = the FULLY cascade-free IsTypeDesc decider (GTL-10/11 payoff): a 3-function
+-- STRUCTURAL mutual recursion over RawTerm/RawTermChildren (no size measure, no termination_by) that retires
+-- decideWithWitness's Π/Σ enumeration + typingRuleDescOf_isPiOrSigma else. decideTypeGeneric does the var/universe
+-- leaves + a typingRuleDescOf dispatch (some → decideSynthGeneric → genFormation; none → not_of_rootGenerator);
+-- decideSynthGeneric synthesises the shared flag (ASSEMBLE form, recurses on childTail); decideAtFlagGeneric is
+-- the fixed-flag spine. subst eliminates currentDepth (not childHead's shift), keeping it structural. A future
+-- formation row is absorbed zero-touch — the FRAME-2 extensibility property, realized for the decider.
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideTypeGeneric
+#assert_no_axioms FX1Poly.Typed.DescTelescope.decideSynthGeneric
+#assert_no_axioms FX1Poly.Typed.DescTelescope.decideAtFlagGeneric
