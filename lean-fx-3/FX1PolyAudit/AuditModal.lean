@@ -7,6 +7,7 @@ import FX1Poly.Modal.GradedTypingMetatheory
 import FX1Poly.Modal.GradedSubjectReduction
 import FX1Poly.Modal.GradeErasure
 import FX1Poly.Modal.SimpleStrongNormalization
+import FX1Poly.Modal.GradedSubstitutionAlgebra
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -239,3 +240,22 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.ofReduces
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.ofNeutral
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.var
+
+/-! ### Parallel-substitution σ-algebra (DIM2-5 iii-a): renaming + substitution fusion laws
+
+The funext-free de Bruijn substitution infrastructure for the STLC-SN fundamental theorem: a renaming
+sublayer makes `lift` compose definitionally, and the four σ-monoid fusion laws + identity drop out
+by structural induction with pointwise-agreement congruences (never `funext`/`Quot.sound`). -/
+
+#assert_no_axioms FX1Poly.Modal.incrementIndex
+#assert_no_axioms FX1Poly.Modal.liftRenaming
+#assert_no_axioms FX1Poly.Modal.GradedLambda.renameTerm
+#assert_no_axioms FX1Poly.Modal.liftSubstitution
+#assert_no_axioms FX1Poly.Modal.GradedLambda.applySubstitution
+#assert_no_axioms FX1Poly.Modal.GradedLambda.renameTerm_congr
+#assert_no_axioms FX1Poly.Modal.GradedLambda.applySubstitution_congr
+#assert_no_axioms FX1Poly.Modal.GradedLambda.renameTerm_renameTerm
+#assert_no_axioms FX1Poly.Modal.GradedLambda.applySubstitution_renameTerm
+#assert_no_axioms FX1Poly.Modal.GradedLambda.renameTerm_applySubstitution
+#assert_no_axioms FX1Poly.Modal.GradedLambda.applySubstitution_applySubstitution
+#assert_no_axioms FX1Poly.Modal.GradedLambda.applySubstitution_id
