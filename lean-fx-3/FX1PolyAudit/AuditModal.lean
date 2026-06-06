@@ -3,6 +3,7 @@ import FX1Poly.Modal.ResourceGraded
 import FX1Poly.Modal.GradeVector
 import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTyping
+import FX1Poly.Modal.GradedTypingMetatheory
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -155,3 +156,23 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.HasUsage
 #assert_no_axioms FX1Poly.Modal.linearIdentity_typed
 #assert_no_axioms FX1Poly.Modal.kCombinator_typed
+
+/-! ### HasUsage structural metatheory (DIM2-3): inversion + length invariant + weakening -/
+
+#assert_no_axioms FX1Poly.Modal.HasUsage.invertVar
+#assert_no_axioms FX1Poly.Modal.HasUsage.invertLam
+#assert_no_axioms FX1Poly.Modal.HasUsage.invertApp
+#assert_no_axioms FX1Poly.Modal.insertTypeAt
+#assert_no_axioms FX1Poly.Modal.GradeVector.insertAt
+#assert_no_axioms FX1Poly.Modal.length_insertTypeAt
+#assert_no_axioms FX1Poly.Modal.lookup_some_lt
+#assert_no_axioms FX1Poly.Modal.lookup_insertTypeAt_lt
+#assert_no_axioms FX1Poly.Modal.lookup_insertTypeAt_ge
+#assert_no_axioms FX1Poly.Modal.insertAt_zero
+#assert_no_axioms FX1Poly.Modal.single_insertAt_lt
+#assert_no_axioms FX1Poly.Modal.single_insertAt_ge
+#assert_no_axioms FX1Poly.Modal.insertAt_scale
+#assert_no_axioms FX1Poly.Modal.insertAt_add
+#assert_no_axioms FX1Poly.Modal.add_length_eq
+#assert_no_axioms FX1Poly.Modal.hasUsage_length
+#assert_no_axioms FX1Poly.Modal.hasUsage_weakening
