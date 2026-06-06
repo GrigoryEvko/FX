@@ -142,7 +142,7 @@ theorem removeAt_zero :
     ∀ (cutDepth scope : Nat), cutDepth ≤ scope →
       GradeVector.removeAt cutDepth (GradeVector.zero (scope + 1)) = GradeVector.zero scope
   | 0, _, _ => rfl
-  | cutDepth + 1, 0, le => absurd le (Nat.not_succ_le_zero _)
+  | _cutDepth + 1, 0, le => absurd le (Nat.not_succ_le_zero _)
   | cutDepth + 1, scope + 1, le =>
       congrArg (GradeVector.cons UsageGrade.zero) (removeAt_zero cutDepth scope (Nat.le_of_succ_le_succ le))
 
@@ -175,7 +175,7 @@ theorem removeAt_single_self :
       GradeVector.removeAt cutDepth (GradeVector.single (resultLen + 1) cutDepth grade) =
         GradeVector.zero resultLen
   | 0, _, _, _ => rfl
-  | cutDepth + 1, 0, _, le => absurd le (Nat.not_succ_le_zero _)
+  | _cutDepth + 1, 0, _, le => absurd le (Nat.not_succ_le_zero _)
   | cutDepth + 1, resultLen + 1, grade, le =>
       congrArg (GradeVector.cons UsageGrade.zero)
         (removeAt_single_self cutDepth resultLen grade (Nat.le_of_succ_le_succ le))

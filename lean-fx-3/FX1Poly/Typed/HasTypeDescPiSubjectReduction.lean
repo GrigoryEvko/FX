@@ -80,14 +80,14 @@ theorem HasTypeDescPi.subjectReductionOfGrownTelescopeSR {profile : PolyProfile}
       HasTypeDescPi.conv levelExpr flag
         (HasTypeDescPi.subjectReductionOfGrownTelescopeSR telescopeSR wellFormed typed reduct step)
         converts reclassifierTyped
-  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel codomainLevel flag
-      domainTyped codomainTyped bodyTyped => fun reduct step =>
+  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel _codomainLevel flag
+      domainTyped codomainTyped bodyTyped => fun _reduct step =>
       HasTypeDescPi.subjectReductionPiIntroArm domainTyped codomainTyped step
         (fun {bodyReduct} bodyStep =>
           HasTypeDescPi.subjectReductionOfGrownTelescopeSR telescopeSR
             (WfContextDescPi.cons wellFormed ⟨domainLevel, flag, domainTyped⟩)
             bodyTyped bodyReduct bodyStep)
-  | .piElim functionTyped argumentTyped => fun reduct step =>
+  | .piElim functionTyped argumentTyped => fun _reduct step =>
       HasTypeDescPi.subjectReductionPiElimArmDescPi functionTyped argumentTyped step
         (fun {functionReduct} functionStep =>
           HasTypeDescPi.subjectReductionOfGrownTelescopeSR telescopeSR wellFormed functionTyped
