@@ -63,6 +63,7 @@ import FX1Poly.Core.EtaPostponementOverBeta
 import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.UniverseModeBridgeReducibility
 import FX1Poly.Core.CubicalOperatorReducibility
+import FX1Poly.Core.CubicalTransportReducibility
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -659,6 +660,26 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.hcomp_isStronglyNormalizing_iff
 #assert_no_axioms FX1Poly.Core.StepStar.transp_isStronglyNormalizing_of_candidateMembers
 #assert_no_axioms FX1Poly.Core.StepStar.hcomp_isStronglyNormalizing_of_candidateMembers
+
+-- SN-146 installment cont'd (CubicalTransportReducibility.lean): the two remaining shipped TRANSPORT variants
+-- gen_transpHigherDim (2-child: pathFamily, source) + gen_transpFill (3-child: pathTy, currentInterval, source),
+-- congruence-only/non-neutral like transp/hcomp. transpFill uses the three-child forward closure
+-- (threeChildCong) + three one-child reflection slices (the source slice threads StepChildren.there TWICE past
+-- the held pathTy + interval). All four shipped transport/composition Kan operators now have congruence-only SN
+-- coverage; Kan-rule robustness + Glue remain for full SN-146.
+#assert_no_axioms FX1Poly.Core.Step.from_transpHigherDim
+#assert_no_axioms FX1Poly.Core.Step.from_transpFill
+#assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_isStronglyNormalizing_of_children
+#assert_no_axioms FX1Poly.Core.StepStar.transpFill_isStronglyNormalizing_of_children
+#assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_family_isStronglyNormalizing_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_source_isStronglyNormalizing_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.transpFill_ty_isStronglyNormalizing_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.transpFill_interval_isStronglyNormalizing_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.transpFill_source_isStronglyNormalizing_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_isStronglyNormalizing_iff
+#assert_no_axioms FX1Poly.Core.StepStar.transpFill_isStronglyNormalizing_iff
+#assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_isStronglyNormalizing_of_candidateMembers
+#assert_no_axioms FX1Poly.Core.StepStar.transpFill_isStronglyNormalizing_of_candidateMembers
 
 -- Universe-mode bridge β+ι SN coverage (precursor to SN-077): gen_liftInnerToOuter (1-child inner→outer lift)
 -- and gen_lowerOuterToInner (2-child outer→inner lower) are congruence-only (no iota root rule; the mode-bridge
