@@ -389,3 +389,16 @@ definitional equality. -/
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.decidableConv
 #assert_no_axioms FX1Poly.Modal.HasUsage.decidableConv
 #assert_no_axioms FX1Poly.Modal.GradedLambda.var_notJoinable_of_ne
+
+/-! ### β-conversion is an equivalence relation (definitional-equality justification)
+
+`Joinable Reduces` is reflexive + symmetric unconditionally, transitive when the middle term is SN
+(confluence), and contains reduction — a genuine decidable equivalence on the typed fragment. -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.joinable_refl
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.joinable_symm
+#assert_no_axioms FX1Poly.Modal.GradedLambda.ReducesStar.joinable
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.joinable_trans
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.beta_joinable
+#assert_no_axioms FX1Poly.Modal.HasSimpleType.joinable_trans
+#assert_no_axioms FX1Poly.Modal.HasUsage.joinable_trans

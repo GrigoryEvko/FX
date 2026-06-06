@@ -214,4 +214,60 @@ theorem GradedLambda.var_notJoinable_of_ne {indexA indexB : Nat} (hne : indexA �
     GradedLambda.normalize_of_isNormalForm _ (GradedLambda.var_isNormalForm indexB)] at normalFormsEqual
   exact hne (GradedLambda.var.inj normalFormsEqual)
 
+/-! ## β-conversion is an equivalence relation
+
+The decidable relation `Joinable Reduces` deserves the name "definitional equality" only because it is
+a genuine equivalence: reflexive and symmetric unconditionally, transitive whenever the middle term is
+strongly normalizing (confluence joins the two reducts it reaches).  It also contains reduction. -/
+
+/-- β-conversion is **reflexive** (every term joins with itself in zero steps). -/
+theorem GradedLambda.Reduces.joinable_refl (term : GradedLambda) :
+    Joinable GradedLambda.Reduces term term :=
+  ⟨term, ReflTransClosure.refl term, ReflTransClosure.refl term⟩
+
+/-- β-conversion is **symmetric** (swap the two reduction chains to the common reduct). -/
+theorem GradedLambda.Reduces.joinable_symm {a b : GradedLambda}
+    (conv : Joinable GradedLambda.Reduces a b) : Joinable GradedLambda.Reduces b a := by
+  obtain ⟨commonReduct, aToCommon, bToCommon⟩ := conv
+  exact ⟨commonReduct, bToCommon, aToCommon⟩
+
+/-- **Reduction implies conversion**: a multi-step reduct is convertible with its source. -/
+theorem GradedLambda.ReducesStar.joinable {a b : GradedLambda}
+    (star : GradedLambda.ReducesStar a b) : Joinable GradedLambda.Reduces a b :=
+  ⟨b, star, ReflTransClosure.refl b⟩
+
+/-- β-conversion is **transitive** whenever the middle term is strongly normalizing: confluence joins
+the two reducts the middle reaches, and the outer chains compose.  Only the middle term needs SN. -/
+theorem GradedLambda.IsStronglyNormalizing.joinable_trans {a b c : GradedLambda}
+    (snB : GradedLambda.IsStronglyNormalizing b)
+    (convAB : Joinable GradedLambda.Reduces a b) (convBC : Joinable GradedLambda.Reduces b c) :
+    Joinable GradedLambda.Reduces a c := by
+  obtain ⟨leftReduct, aToLeft, bToLeft⟩ := convAB
+  obtain ⟨rightReduct, bToRight, cToRight⟩ := convBC
+  obtain ⟨meet, leftToMeet, rightToMeet⟩ := snB.confluent bToLeft bToRight
+  exact ⟨meet, aToLeft.trans leftToMeet, cToRight.trans rightToMeet⟩
+
+/-- **A β-redex is convertible with its contractum** — conversion contains β (a concrete witness that
+the conversion relation is non-trivial). -/
+theorem GradedLambda.Reduces.beta_joinable (body argument : GradedLambda) :
+    Joinable GradedLambda.Reduces (.app (.lam body) argument)
+      (GradedLambda.substAt 0 argument body) :=
+  GradedLambda.ReducesStar.joinable (ReflTransClosure.single (GradedLambda.Reduces.beta body argument))
+
+/-- **Transitivity on the simply-typed fragment**: the middle term's typing supplies SN, so conversion
+is a genuine equivalence on well-typed terms. -/
+theorem HasSimpleType.joinable_trans {typeContext : List SimpleType} {a b c : GradedLambda}
+    {middleType : SimpleType} (typedMiddle : HasSimpleType typeContext b middleType)
+    (convAB : Joinable GradedLambda.Reduces a b) (convBC : Joinable GradedLambda.Reduces b c) :
+    Joinable GradedLambda.Reduces a c :=
+  typedMiddle.stronglyNormalizing.joinable_trans convAB convBC
+
+/-- **Transitivity on the usage-typed fragment** — the middle term's usage typing supplies SN. -/
+theorem HasUsage.joinable_trans {typeContext : List GType} {grades : GradeVector}
+    {a b c : GradedLambda} {middleType : GType}
+    (typedMiddle : HasUsage typeContext grades b middleType)
+    (convAB : Joinable GradedLambda.Reduces a b) (convBC : Joinable GradedLambda.Reduces b c) :
+    Joinable GradedLambda.Reduces a c :=
+  typedMiddle.stronglyNormalizing.joinable_trans convAB convBC
+
 end FX1Poly.Modal
