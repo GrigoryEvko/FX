@@ -283,6 +283,17 @@ theorem UsageGrade.mul_le_mul_left {firstGrade secondGrade : UsageGrade}
   cases scaleGrade <;> cases firstGrade <;> cases secondGrade <;>
     first | rfl | exact Bool.noConfusion firstBelowSecond
 
+/-- Order compatibility — two-sided: `a ≤ a' → b ≤ b' → a + b ≤ a' + b'` (`+` is monotone in both
+arguments).  Companion to `add_le_add_left`; `GradeVector.IsPointwiseBelow.add_mono` lifts it
+pointwise. -/
+theorem UsageGrade.add_le_add {firstGrade firstBound secondGrade secondBound : UsageGrade}
+    (firstBelow : UsageGrade.le firstGrade firstBound = true)
+    (secondBelow : UsageGrade.le secondGrade secondBound = true) :
+    UsageGrade.le (UsageGrade.add firstGrade secondGrade)
+      (UsageGrade.add firstBound secondBound) = true := by
+  cases firstGrade <;> cases firstBound <;> cases secondGrade <;> cases secondBound <;>
+    first | rfl | exact Bool.noConfusion firstBelow | exact Bool.noConfusion secondBelow
+
 /-- **The ordered-semiring law bundle (§6.1).**  A `Prop` predicate asserting that an
 `OrderedGradeSemiring` satisfies every law of `(R, +, *, 0, 1, ≤)`: commutative monoid `(+, 0)`,
 monoid `(*, 1)`, distributivity, annihilation, and a partial order `≤` compatible with both

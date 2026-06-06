@@ -94,3 +94,13 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.GradeVector.contextDivide_length
 #assert_no_axioms FX1Poly.Modal.GradeVector.IsPointwiseBelow
 #assert_no_axioms FX1Poly.Modal.GradeVector.scale_contextDivide_below
+
+/-! ### Grade-vector order: IsPointwiseBelow partial order + monotonicity + the Galois connection -/
+
+#assert_no_axioms FX1Poly.Modal.UsageGrade.add_le_add
+#assert_no_axioms FX1Poly.Modal.GradeVector.IsPointwiseBelow.refl
+#assert_no_axioms FX1Poly.Modal.GradeVector.IsPointwiseBelow.trans
+#assert_no_axioms FX1Poly.Modal.GradeVector.IsPointwiseBelow.antisymm
+#assert_no_axioms FX1Poly.Modal.GradeVector.IsPointwiseBelow.scale_mono
+#assert_no_axioms FX1Poly.Modal.GradeVector.IsPointwiseBelow.add_mono
+#assert_no_axioms FX1Poly.Modal.GradeVector.contextDivide_residuation
