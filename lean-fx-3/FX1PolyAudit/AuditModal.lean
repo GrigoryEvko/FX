@@ -10,6 +10,7 @@ import FX1Poly.Modal.SimpleStrongNormalization
 import FX1Poly.Modal.GradedSubstitutionAlgebra
 import FX1Poly.Modal.GradedReductionSubstitution
 import FX1Poly.Modal.GradedFundamentalTheorem
+import FX1Poly.Modal.GradedComposition
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -297,3 +298,15 @@ witnesses (linear identity, K combinator). -/
 #assert_no_axioms FX1Poly.Modal.HasUsage.stronglyNormalizing
 #assert_no_axioms FX1Poly.Modal.linearIdentity_stronglyNormalizing
 #assert_no_axioms FX1Poly.Modal.kCombinator_stronglyNormalizing
+
+/-! ### DIM2 composition ledger (DIM2-7): orthogonal composition validated
+
+Graded subject reduction lifted to the full β-reduction, then the metatheory bundle conjoining
+type-dimension SN (transferred) with usage-dimension graded-SR on the same reduction — the two
+dimensions compose without collision.  Concrete `(λx.x) z ↝ z` grade-preservation witness. -/
+
+#assert_no_axioms FX1Poly.Modal.HasUsage.preservedByReduces
+#assert_no_axioms FX1Poly.Modal.HasUsage.metatheoryBundle
+#assert_no_axioms FX1Poly.Modal.appliedIdentity
+#assert_no_axioms FX1Poly.Modal.appliedIdentity_typed
+#assert_no_axioms FX1Poly.Modal.appliedIdentity_reductKeepsGrade
