@@ -4736,6 +4736,14 @@ gates pin them shut.
 -- unqualified typed-SN interface is unprovable since the var rule types in any context).
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfWellTypedInWfContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectConfluenceOfWfContext
+-- The BRIDGE-FREE WfContextDesc twins (HT-B spine step 3): the whole decidable-Conv / convergence leg, routed
+-- through the HasTypeDesc-defined WfContextDesc via the bridge-free stronglyNormalizingOfWfContextDesc — NO
+-- HasType dependency on the path. The SN-051/052 qualifier-drop targets migrate onto these before HT-C.
+#assert_no_axioms FX1Poly.Typed.Conv.decidableOfWellTypedInWfContextDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectConfluenceOfWfContextDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectWeaklyNormalizesOfWfContextDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueNormalFormOfWfContextDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convergencePackageOfWfContextDesc
 -- SN-052 design fact: grown-engine typing is NON-UNIQUE for a bare Curry-style λ (the identity λ inhabits
 -- Π(Type@e)(Type@e) for every e), so decidable typed CHECKING must be BIDIRECTIONAL (CHECK mode at λ against
 -- the given target), NOT infer-then-compare. The non-uniqueness witness, pinning that design constraint.
