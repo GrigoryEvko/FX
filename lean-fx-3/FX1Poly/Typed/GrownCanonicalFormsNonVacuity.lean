@@ -1,6 +1,5 @@
 import FX1Poly.Typed.GrownCanonicalFormsByClassifier
 import FX1Poly.Typed.HasTypeDescClosedForms
-import FX1Poly.Typed.WfContext
 
 /-! # FX1Poly/Typed/GrownCanonicalFormsNonVacuity — the canonical-forms-per-type theorems are NON-VACUOUS
 
@@ -47,8 +46,7 @@ def closedUniverseCodeTyping {profile : PolyProfile} (subjectLevel : LevelExpr) 
     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
       (universeCodeCell subjectLevel flag) (universeCodeCell subjectLevel.lsucc flag) :=
   HasTypeDesc.toHasTypeDescPi
-    (HasType.toHasTypeDesc
-      (HasType.universeFormation (TypingContext.empty : TypingContext profile 0) subjectLevel flag))
+    (HasTypeDesc.universeFormation (TypingContext.empty : TypingContext profile 0) subjectLevel flag)
 
 /-- **Closed identity-lambda typing.**  `λ (x : Type@s). x : Π (Type@s). Type@s` at the empty context, by
 `piIntro` (domain + codomain by `universeFormation`, body by the `var` rule) — a concrete closed term inhabiting
@@ -64,11 +62,11 @@ def closedIdentityLambdaTyping {profile : PolyProfile} (subjectLevel : LevelExpr
     (body := variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
     (domainLevel := subjectLevel.lsucc) (codomainLevel := subjectLevel.lsucc) (flag := flag)
     (HasTypeDesc.toHasTypeDescPi
-      (HasType.toHasTypeDesc (HasType.universeFormation _ subjectLevel flag)))
+      (HasTypeDesc.universeFormation _ subjectLevel flag))
     (HasTypeDesc.toHasTypeDescPi
-      (HasType.toHasTypeDesc (HasType.universeFormation _ subjectLevel flag)))
+      (HasTypeDesc.universeFormation _ subjectLevel flag))
     (HasTypeDesc.toHasTypeDescPi
-      (HasType.toHasTypeDesc (HasType.var _ (⟨0, Nat.succ_pos 0⟩ : Fin 1))))
+      (HasTypeDesc.var _ (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
 
 /-- **`closedNormalTypeIsFormer` is non-vacuous.**  There EXISTS a closed normal term inhabiting a universe whose
 head is a type former — `Type@0`, typed at `Type@1` by `closedUniverseCodeTyping` and fed through
