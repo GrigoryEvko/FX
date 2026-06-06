@@ -69,6 +69,10 @@ inductive HasTypeTelescope (profile : PolyProfile) :
 
 mutual
 
+-- TODO: remove in HT-C (the HasType-engine delete).  Bridge 2 of 3 (soundness).  This ENTIRE file is in
+-- the delete-cluster — it exists only to map the native engine back to the bespoke `HasType` — so the whole
+-- `HasTypeDescSound.lean` is deleted once every consumer is rerouted to native rules and the old `HasType`
+-- engine is gone.
 /-- Soundness: a description-engine derivation maps to the trusted bespoke
 `HasType`.  Equation-compiler `match` form (NOT `by cases`) so the mutual
 recursion is recognised as structural — the recursive calls sit on `match`-bound

@@ -368,6 +368,9 @@ theorem hasTypeDesc_sigmaFormation_viaGenArm
     codomainLevel [] flag .childNil codomainTyped
     (DescTelescope.nil (currentDepth := 2) (context.cons domain |>.cons codomain) flag)
 
+-- TODO: remove in HT-C (the HasType-engine delete).  Bridge 1 of 3 (completeness).  NOTE: this file
+-- SURVIVES — it defines the native `HasTypeDesc` engine — so delete only THIS theorem, not the file,
+-- once every consumer is rerouted to native `HasTypeDesc` rules and the old `HasType` engine is gone.
 /-- COMPLETENESS of the description engine wrt the bespoke `HasType`:
 every `HasType` derivation on the native pi/sigma-formation HasType core has a `HasTypeDesc`
 counterpart.  A single induction on `HasType` (NOT mutual — `HasType`'s premises
