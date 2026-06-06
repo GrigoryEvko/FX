@@ -54,4 +54,21 @@ theorem TelescopeReducibleAtBounded.twoChildMembers {baseScope targetScope : Nat
      have codomainMember := (telescope.2 argument argumentMember).1
      rwa [RawTerm.subst_cons_eq_subst0_lift] at codomainMember⟩
 
+/-- **Project the one-child data-former bounded telescope into the element member.**  The one-child
+(`consecutiveShifts 0 1`, `[0]` binderShifts) analogue of `twoChildMembers`, for the data type-code formers
+(`listCode` / `optionCode`): from the depth-0/count-1 `TelescopeReducibleAtBounded` over `[elementLevel]` and the
+one-child spine `childCons _ childNil`, read off the element as a bound-reducible member of `Type@elementLevel`.
+A pure projection (`telescope.1`) — the depth-0/count-1 telescope reduces definitionally to the `And` whose
+first conjunct is the head member, with NO codomain reshaping (the data former is non-dependent, unlike Π/Σ).
+Consumed by the bounded `genFormationPi` arm's data-former branch. -/
+theorem TelescopeReducibleAtBounded.oneChildMember {baseScope targetScope : Nat} {env : Nat → Nat}
+    {bound argLevel : Nat} {flag : UniverseFlag} {substitution : RawTermSubst baseScope targetScope}
+    {elementLevel : LevelExpr} {element : RawTerm baseScope}
+    (telescope : TelescopeReducibleAtBounded env bound argLevel flag 0 1 substitution
+      [elementLevel]
+      (.childCons element .childNil)) :
+    IsReducibleMemberAtBounded env bound (universeCodeCell elementLevel flag)
+      (RawTerm.subst substitution element) :=
+  telescope.1
+
 end FX1Poly.Typed

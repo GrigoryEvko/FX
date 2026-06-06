@@ -4220,6 +4220,10 @@ gates pin them shut.
 -- piReducibleAsTypeFromNonUniformLevelMemberBounded consumes; codomain reshaped subst(cons)→subst0(subst(lift))
 -- via RawTerm.subst_cons_eq_subst0_lift. The telescope→discharge bridge for the genFormationPi recursor arm.
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded.twoChildMembers
+-- GTL-11 bounded substrate: the one-child [0] data-former analogue (listCode / optionCode) — a pure
+-- telescope.1 projection (no codomain reshaping, the data former is non-dependent), feeding the bounded
+-- genFormationPi data-former arm.
+#assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded.oneChildMember
 
 -- Π/Σ-former output-level bounds (FormerOutputLevelBounds.lean) — the genFormationPi belowOutput premises:
 -- each child level ≤ the former's lmaxAll output level. lmaxAll [a,b] = lmax a b (definitional fold collapse);
