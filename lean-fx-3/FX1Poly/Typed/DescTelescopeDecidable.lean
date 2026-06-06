@@ -197,4 +197,31 @@ def IsTypeDesc.decideFormerType {profile : PolyProfile} {scope : Nat}
           HasTypeDesc.inversionFormerWithConvGeneric typed isFormation rfl
         exact noTelescopeAtAnyFlag telFlag levels telescope)
 
+/-- **Cascade-free non-leaf `IsTypeDesc` decision (the GTL-10 former dispatch).**  Decides whether a
+`mkGen generator payload children` whose root is NEITHER `gen_var` NOR `gen_universeCode` inhabits some
+universe — the exact cascade-free replacement for `IsTypeDesc.decideWithWitness`'s hand-written Π / Σ branches
+PLUS its `typingRuleDescOf_isPiOrSigma` `else` refutation.  It dispatches the formation table directly:
+`typingRuleDescOf generator = some rule` routes to the arity-generic `decideFormerType`; `= none` refutes
+table-generically via `not_of_rootGenerator` (a non-var non-universe non-formation root is never a formation
+type).  Names NO formation generator — a future formation row (`listCode`/…) is absorbed into the `some`
+branch with zero new arms, the FRAME-2 extensibility property.  The two leaf exclusions arrive as hypotheses:
+this is the NON-LEAF half of the eventual cascade-free `decideWithWitness`, factored out so it depends only on
+already-defined deciders (no mutual recursion — the leaf `var`/`universeCode` recursion stays in
+`decideWithWitness`). -/
+def IsTypeDesc.decideMkGenOfNonLeaf {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} (wellFormed : WfContextDesc context)
+    {generator : Generator}
+    (notVariable : generator ≠ Generator.gen_var)
+    (notUniverseCode : generator ≠ Generator.gen_universeCode)
+    (payload : generator.payload scope)
+    (children : RawTermChildren generator.binderShifts scope) :
+    PSum
+      (Σ' levelExpr : LevelExpr, Σ' flag : UniverseFlag,
+        HasTypeDesc profile context (.mkGen generator payload children)
+          (universeCodeCell levelExpr flag))
+      (IsTypeDesc profile context (.mkGen generator payload children) → False) :=
+  match hGen : typingRuleDescOf generator with
+  | some _rule => IsTypeDesc.decideFormerType wellFormed hGen payload children
+  | none => .inr (IsTypeDesc.not_of_rootGenerator notVariable notUniverseCode hGen)
+
 end FX1Poly.Typed

@@ -5291,3 +5291,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescope.headTypedAtSharedFlag
 #assert_no_axioms FX1Poly.Typed.DescTelescope.decideWithSynthesizedFlag
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideFormerType
+-- The cascade-free NON-LEAF dispatch: for a mkGen whose root is neither var nor universeCode, dispatch
+-- typingRuleDescOf (some → decideFormerType; none → not_of_rootGenerator). This is the exact cascade-free
+-- replacement for decideWithWitness's Π/Σ branches + typingRuleDescOf_isPiOrSigma else, depending only on
+-- already-defined deciders (no mutual recursion). A future formation row lands in the `some` branch, zero arms.
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideMkGenOfNonLeaf
