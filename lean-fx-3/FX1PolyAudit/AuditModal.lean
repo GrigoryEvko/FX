@@ -133,3 +133,16 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.GradedLambda.wellGradedCheck_correct
 #assert_no_axioms FX1Poly.Modal.atkey_check_false
 #assert_no_axioms FX1Poly.Modal.linear_check_true
+
+/-! ### Naive occurrence check fails subject reduction — the (λx.x x) g counterexample (§27.2/§27.3) -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda.shift
+#assert_no_axioms FX1Poly.Modal.GradedLambda.substAt
+#assert_no_axioms FX1Poly.Modal.GradedLambda.BetaStep
+#assert_no_axioms FX1Poly.Modal.dupRedex
+#assert_no_axioms FX1Poly.Modal.dupReduct
+#assert_no_axioms FX1Poly.Modal.linearG
+#assert_no_axioms FX1Poly.Modal.dupRedex_beta
+#assert_no_axioms FX1Poly.Modal.dupRedex_wellGraded
+#assert_no_axioms FX1Poly.Modal.dupReduct_illGraded
+#assert_no_axioms FX1Poly.Modal.usage_check_fails_subject_reduction

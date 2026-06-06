@@ -134,4 +134,78 @@ procedure agrees with `linear_accepted`, by `rfl`. -/
 theorem linear_check_true :
     GradedLambda.wellGradedCheck 1 linearClosure linearContext = true := rfl
 
+/-! ## The occurrence check is NOT subject-reduction-closed (§27.2 / §27.3)
+
+The check correctly DECIDES well-gradedness — but well-gradedness is not preserved under
+β-reduction.  The witness is the classic linearity violation `(λx. x x) g`: a linear `g` fed to a
+self-duplicating function is well-graded (`g` appears ONCE syntactically), yet its β-reduct `g g`
+uses `g` twice (`ω`).  The naive `usage ≤ Γ` check under-counts a linear resource that a function
+consumes multiply INSIDE its body — precisely the unsoundness the Wood/Atkey discipline fixes by
+tracking the lambda's binder grade and scaling the argument's usage by it in the App rule (which
+this occurrence check omits).  So a sound graded judgment CANNOT be the bare occurrence check; this
+is the concrete reason the corrected Lam rule (DIM2-3, the contextDivide/`1/ω=0` machinery) is
+needed.  `substAt` + `BetaStep` below are the de Bruijn machinery that lets the β-reduct be a
+THEOREM rather than an assertion. -/
+
+/-- de Bruijn lift: increment every free index `≥ cutoff`. -/
+def GradedLambda.shift (cutoff : Nat) : GradedLambda → GradedLambda
+  | .var index => if index < cutoff then .var index else .var (index + 1)
+  | .lam body => .lam (GradedLambda.shift (cutoff + 1) body)
+  | .app function argument =>
+      .app (GradedLambda.shift cutoff function) (GradedLambda.shift cutoff argument)
+
+/-- de Bruijn substitution: replace variable `index` by `replacement`, decrementing higher indices
+(shifting `replacement` under each binder).  `substAt 0` is the β-substitution `b[0 := a]`. -/
+def GradedLambda.substAt (index : Nat) (replacement : GradedLambda) : GradedLambda → GradedLambda
+  | .var varIndex =>
+      if varIndex < index then .var varIndex
+      else if varIndex = index then replacement
+      else .var (varIndex - 1)
+  | .lam body =>
+      .lam (GradedLambda.substAt (index + 1) (GradedLambda.shift 0 replacement) body)
+  | .app function argument =>
+      .app (GradedLambda.substAt index replacement function)
+        (GradedLambda.substAt index replacement argument)
+
+/-- Root β-reduction `(λ. b) a ↝ b[0 := a]`. -/
+inductive GradedLambda.BetaStep : GradedLambda → GradedLambda → Prop where
+  | beta (body argument : GradedLambda) :
+      GradedLambda.BetaStep (.app (.lam body) argument) (GradedLambda.substAt 0 argument body)
+
+/-- `(λx. x x) g` — `g` (de Bruijn `0`) fed to a self-duplicating function. -/
+def dupRedex : GradedLambda := .app (.lam (.app (.var 0) (.var 0))) (.var 0)
+
+/-- Its β-reduct `g g`. -/
+def dupReduct : GradedLambda := .app (.var 0) (.var 0)
+
+/-- The declared-linear context `g :_1`. -/
+def linearG : GradeVector := GradeVector.cons UsageGrade.one GradeVector.nil
+
+/-- `(λx. x x) g` really does β-reduce to `g g` (the reduct is the computed substitution). -/
+theorem dupRedex_beta : GradedLambda.BetaStep dupRedex dupReduct :=
+  GradedLambda.BetaStep.beta (.app (.var 0) (.var 0)) (.var 0)
+
+/-- The redex IS well-graded: `g` is used ONCE syntactically — its two uses are hidden inside the
+function, which only the binder grade would expose. -/
+theorem dupRedex_wellGraded : GradedLambda.WellGraded 1 dupRedex linearG :=
+  ⟨rfl, True.intro⟩
+
+/-- The reduct is NOT well-graded: after β, `g` is used twice (`ω`), exceeding its linear `1`. -/
+theorem dupReduct_illGraded : ¬ GradedLambda.WellGraded 1 dupReduct linearG := by
+  intro wellGraded
+  obtain ⟨headBelow, _⟩ := wellGraded
+  exact Bool.noConfusion headBelow
+
+/-- **The occurrence-usage check is NOT subject-reduction-closed.**  There is a well-graded term
+whose β-reduct is ill-graded: `(λx. x x) g ↝ g g` with `g` linear.  Hence the bare occurrence check
+is unsound under reduction; a sound graded judgment must track binder grades and scale arguments in
+App (the Wood/Atkey correction).  The permanent regression witness for this naive-grade-check
+limitation (§27.2 / §27.3). -/
+theorem usage_check_fails_subject_reduction :
+    ∃ (redex reduct : GradedLambda) (declared : GradeVector),
+      GradedLambda.BetaStep redex reduct ∧
+        GradedLambda.WellGraded 1 redex declared ∧
+        ¬ GradedLambda.WellGraded 1 reduct declared :=
+  ⟨dupRedex, dupReduct, linearG, dupRedex_beta, dupRedex_wellGraded, dupReduct_illGraded⟩
+
 end FX1Poly.Modal
