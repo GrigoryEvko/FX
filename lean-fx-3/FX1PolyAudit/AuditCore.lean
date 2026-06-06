@@ -60,6 +60,7 @@ import FX1Poly.Core.LinearFormerUniverseMembership
 import FX1Poly.Core.StrongNormalizationUnion
 import FX1Poly.Core.StrongNormalizationBetaEtaUnion
 import FX1Poly.Core.EtaPostponementOverBeta
+import FX1Poly.Core.ModalEliminatorReducibility
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -608,6 +609,21 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Step.from_subsume
 #assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_of_child
 #assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_of_child
+
+-- SN-074 / SN-075 (ModalEliminatorReducibility.lean): the REFLECTION direction + reducibility-framing
+-- completing modElim/subsume reducibility. isStronglyNormalizing_child_of_oneChildCong is the reusable
+-- converse of the forward one-child-cong SN closure (SN reflects through a congruence wrapper). modElim/subsume
+-- being non-neutral with no iota rule (by design, NeutralTerm.lean), the SN candidate is the honest ceiling:
+-- the operators send candidate members to SN-candidate members; the box-member capstone ties modElim back to
+-- SN-073's shipped modIntroCanonicalFormsCandidate.
+#assert_no_axioms FX1Poly.Core.StepStar.isStronglyNormalizing_child_of_oneChildCong
+#assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_child_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_child_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_iff
+#assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_iff
+#assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_of_candidateMember
+#assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_of_candidateMember
+#assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_ofBoxMember
 
 -- Universe-mode bridge β+ι SN coverage (precursor to SN-077): gen_liftInnerToOuter (1-child inner→outer lift)
 -- and gen_lowerOuterToInner (2-child outer→inner lower) are congruence-only (no iota root rule; the mode-bridge
