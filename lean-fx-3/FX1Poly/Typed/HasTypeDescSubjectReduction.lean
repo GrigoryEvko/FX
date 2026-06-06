@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescContextConversion
+import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Core.StepInversion
 
 /-! # FX1Poly/Typed/HasTypeDescSubjectReduction
@@ -32,15 +33,17 @@ leaf-only `HasType.subjectReduction`, also a no-step lemma).  The dispatcher's `
 `subjectAdmitsNoStep` (no step → vacuous), NOT via the heavier `subjectReduction`.  (An earlier draft of this
 header overclaimed "genuinely non-vacuous"; corrected here.)
 
-The genFormation arm is generic over the formation generator: `former_step_inv` rules out root redexes for the
-whole formation family (currently `{gen_piTyCode, gen_sigmaTyCode}` via `typingRuleDescOf_isPiOrSigma`), so a
-new ≥1-child formation row (a data type code) extends it with no per-consumer cascade.
+The genFormation arm is generic over the formation generator: `former_step_inv` (now delegating to the
+cascade-free `formerCellStepIsChildCongruence`, TG-1) rules out root redexes for the whole formation family
+WITHOUT enumerating the table, so a new ≥1-child formation row (a data type code) is absorbed with no
+per-consumer cascade.
 
 ## Zero-axiom verification
 
 The per-cell Step inversions (`no_step_from_var` / `no_step_from_universeCode` / `no_step_at_empty_spine`) +
-the formation-table enumeration (`typingRuleDescOf_isPiOrSigma`) + the shipped formation context-conversion
-(`convTelescope`) + `Conv.rename` of a one-step `Conv`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+the cascade-free former step-inversion (`formerCellStepIsChildCongruence`, TG-1 — `former_step_inv` delegates
+to it, no formation-table enumeration) + the shipped formation context-conversion (`convTelescope`) +
+`Conv.rename` of a one-step `Conv`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -72,23 +75,21 @@ theorem Step.no_step_from_emptyCode {scope : Nat} {target : RawTerm scope} :
   | cong _ _ childStep => exact StepChildren.no_step_at_empty_spine childStep
 
 /-- **A formation cell heads no root redex, so any Step is a child congruence.**  A formation generator
-(`typingRuleDescOf generator = some rule` ⟹ `gen_piTyCode` or `gen_sigmaTyCode`, by
-`typingRuleDescOf_isPiOrSigma`) is a TYPE-FORMER code, not an eliminable/applicable cell — no `beta`, no
-`iota*` fires on it.  So a `Step (mkGen generator payload children) target` can only be `cong`, exposing a
-`StepChildren children children'` with `target = mkGen generator payload children'`.  The generic
-step-decomposition the `genFormation` SR arm consumes; adding a future ≥1-child formation row extends the
-`isPiOrSigma` enumeration by one disjunct, with no change here. -/
+(`typingRuleDescOf generator = some rule`) is a TYPE-FORMER code, not an eliminable/applicable cell — no
+`beta`, no `iota*` fires on it — so a `Step (mkGen generator payload children) target` can only be `cong`,
+exposing a `StepChildren children children'` with `target = mkGen generator payload children'`.  Delegates to
+the CASCADE-FREE `formerCellStepIsChildCongruence` (TG-1), which discharges the 17 root-redex arms by the
+`none`-valuation of each redex head WITHOUT enumerating the formation table — so a future ≥1-child formation
+row (a data type code) is absorbed here zero-touch, with no `typingRuleDescOf_isPiOrSigma` disjunct to extend.
+This file's `former_step_inv` name and signature are preserved (its three consumers are unaffected); only the
+proof is now table-generic. -/
 theorem former_step_inv {scope : Nat} {generator : Generator}
     {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
     {rule : TypingRuleDesc} {target : RawTerm scope}
     (isFormation : typingRuleDescOf generator = some rule)
     (step : Step (.mkGen generator payload children) target) :
-    ∃ children', target = .mkGen generator payload children' ∧ StepChildren children children' := by
-  rcases typingRuleDescOf_isPiOrSigma isFormation with rfl | rfl
-  · cases step with
-    | cong _ _ childStep => exact ⟨_, rfl, childStep⟩
-  · cases step with
-    | cong _ _ childStep => exact ⟨_, rfl, childStep⟩
+    ∃ children', target = .mkGen generator payload children' ∧ StepChildren children children' :=
+  formerCellStepIsChildCongruence isFormation step
 
 /-- **The context-condition for re-typing a telescope tail when the binding head steps.**  When a telescope
 binding `head ⤳ headAfter`, the tail — typed under `context.cons head` — must be re-typed under
