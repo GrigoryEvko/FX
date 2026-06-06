@@ -5,6 +5,7 @@ import FX1Poly.Modal.GradeVectorGeneric
 import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTyping
 import FX1Poly.Modal.GradedTypingGeneric
+import FX1Poly.Modal.GradeErasureGeneric
 import FX1Poly.Modal.GradedTypingMetatheory
 import FX1Poly.Modal.GradedSubjectReduction
 import FX1Poly.Modal.GradeErasure
@@ -236,6 +237,21 @@ K combinator at BOTH usage and security — the orthogonal-composition thesis at
 #assert_no_axioms FX1Poly.Modal.usageLinearIdentity_typedViaGeneric
 #assert_no_axioms FX1Poly.Modal.securityLinearIdentity_typedViaGeneric
 #assert_no_axioms FX1Poly.Modal.securityKCombinator_typedViaGeneric
+
+/-! ### Generic grade erasure + SN-transfer over any OrderedGradeSemiring (DIM5-4 + dims 6–21)
+
+`HasGradeOver R` erases to the SAME grade-free `HasSimpleType` that `HasUsage` erases to, so STLC strong
+normalization (the shipped Tait FT) transfers to the generic judgment for ANY dimension R — no
+graded-reducibility re-proof.  The generic DIM2-4/DIM2-5; the orthogonal-composition thesis (SN survives
+erasure) at the judgment layer for all 21 dimensions at once. -/
+
+#assert_no_axioms FX1Poly.Modal.eraseGTypeOver
+#assert_no_axioms FX1Poly.Modal.lookup_map_eraseGTypeOver
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.erase
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.stronglyNormalizing
+#assert_no_axioms FX1Poly.Modal.linearIdentityOver_stronglyNormalizing
+#assert_no_axioms FX1Poly.Modal.securityLinearIdentity_stronglyNormalizingViaGeneric
+#assert_no_axioms FX1Poly.Modal.securityKCombinator_stronglyNormalizingViaGeneric
 
 /-! ### The SOUND graded typing judgment (DIM2-3): type-coupled HasUsage with App scaling -/
 
