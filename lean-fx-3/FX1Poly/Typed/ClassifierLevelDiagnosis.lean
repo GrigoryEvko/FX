@@ -1,5 +1,5 @@
 import FX1Poly.Core.StratifiedReducibleUniverseDecode
-import FX1Poly.Typed.HasType
+import FX1Poly.Typed.CellConstructors
 import FX1Poly.Universe.LevelExprSimplify
 
 /-! # FX1Poly/Typed/ClassifierLevelDiagnosis
