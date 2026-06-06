@@ -15,8 +15,8 @@ The context `Γ` is non-empty and genuinely well-formed (`wfContext_universeBind
 `Type@e` is a type in the empty prefix via `universeFormation`).  The four entries span the grown engine:
 
   * `openUniverseCode_stronglyNormalizing` — a universe code `Type@s` typed by `ofFormation` in `Γ`;
-  * `openContextVariable_stronglyNormalizing` — the context variable `var 0`, typed by the bespoke `var`
-    rule bridged into the grown engine (`HasType.var` ⟶ `toHasTypeDesc` ⟶ `ofFormation`): the entry that
+  * `openContextVariable_stronglyNormalizing` — the context variable `var 0`, typed by the NATIVE formation
+    `var` rule lifted into the grown engine (`HasTypeDesc.var` ⟶ `ofFormation`): the entry that
     genuinely CONSUMES the context binding;
   * `openIdentityLambda_stronglyNormalizing` — the identity lambda `λ (x : Type@(s+1)). x` typed by `piIntro`
     in `Γ`: a BINDER under the open context (the body's `var` lives at `Γ.cons _`, scope 2);
@@ -53,10 +53,9 @@ theorem openUniverseCode_stronglyNormalizing {profile : PolyProfile}
   HasTypeDescPi.stronglyNormalizingOfWfContext
     (wfContext_universeBinding levelExpr flag)
     (HasTypeDesc.toHasTypeDescPi
-      (HasType.toHasTypeDesc
-        (HasType.universeFormation
-          ((TypingContext.empty : TypingContext profile 0).cons
-            (universeCodeCell levelExpr flag)) subjectLevel flag)))
+      (HasTypeDesc.universeFormation
+        ((TypingContext.empty : TypingContext profile 0).cons
+          (universeCodeCell levelExpr flag)) subjectLevel flag))
 
 /-- **Open-context SN of a context variable.**  In `Γ = (.empty).cons (Type@e)`, the variable `var 0` (typed
 by the bespoke `var` rule at `Γ.lookup 0`, bridged into the grown engine) is strongly normalizing via open
@@ -68,11 +67,10 @@ theorem openContextVariable_stronglyNormalizing {profile : PolyProfile}
   HasTypeDescPi.stronglyNormalizingOfWfContext
     (wfContext_universeBinding levelExpr flag)
     (HasTypeDesc.toHasTypeDescPi
-      (HasType.toHasTypeDesc
-        (HasType.var
-          ((TypingContext.empty : TypingContext profile 0).cons
-            (universeCodeCell levelExpr flag))
-          (⟨0, Nat.succ_pos 0⟩ : Fin 1))))
+      (HasTypeDesc.var
+        ((TypingContext.empty : TypingContext profile 0).cons
+          (universeCodeCell levelExpr flag))
+        (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
 
 /-- **Open-context SN of an identity lambda.**  In `Γ = (.empty).cons (Type@e)`, the lambda
 `λ (x : Type@(s+1)). x` (typed by `piIntro`: domain + codomain by `universeFormation`, body by the `var` rule
@@ -93,11 +91,11 @@ theorem openIdentityLambda_stronglyNormalizing {profile : PolyProfile}
       (body := variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))
       (domainLevel := subjectLevel.lsucc.lsucc) (codomainLevel := subjectLevel.lsucc.lsucc) (flag := flag)
       (HasTypeDesc.toHasTypeDescPi
-        (HasType.toHasTypeDesc (HasType.universeFormation _ subjectLevel.lsucc flag)))
+        (HasTypeDesc.universeFormation _ subjectLevel.lsucc flag))
       (HasTypeDesc.toHasTypeDescPi
-        (HasType.toHasTypeDesc (HasType.universeFormation _ subjectLevel.lsucc flag)))
+        (HasTypeDesc.universeFormation _ subjectLevel.lsucc flag))
       (HasTypeDesc.toHasTypeDescPi
-        (HasType.toHasTypeDesc (HasType.var _ (⟨0, Nat.succ_pos 1⟩ : Fin 2)))))
+        (HasTypeDesc.var _ (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
 
 /-- **Open-context SN of a β-redex — the NON-VACUOUS entry.**  In `Γ = (.empty).cons (Type@e)`, the
 application `(λ (x : Type@(s+1)). x) (Type@s)` (typed by `piElim` over the identity lambda and the argument
@@ -123,12 +121,12 @@ theorem openBetaRedex_stronglyNormalizing {profile : PolyProfile}
         (domainLevel := subjectLevel.lsucc.lsucc) (codomainLevel := subjectLevel.lsucc.lsucc)
         (flag := flag)
         (HasTypeDesc.toHasTypeDescPi
-          (HasType.toHasTypeDesc (HasType.universeFormation _ subjectLevel.lsucc flag)))
+          (HasTypeDesc.universeFormation _ subjectLevel.lsucc flag))
         (HasTypeDesc.toHasTypeDescPi
-          (HasType.toHasTypeDesc (HasType.universeFormation _ subjectLevel.lsucc flag)))
+          (HasTypeDesc.universeFormation _ subjectLevel.lsucc flag))
         (HasTypeDesc.toHasTypeDescPi
-          (HasType.toHasTypeDesc (HasType.var _ (⟨0, Nat.succ_pos 1⟩ : Fin 2)))))
+          (HasTypeDesc.var _ (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
       (HasTypeDesc.toHasTypeDescPi
-        (HasType.toHasTypeDesc (HasType.universeFormation _ subjectLevel flag))))
+        (HasTypeDesc.universeFormation _ subjectLevel flag)))
 
 end FX1Poly.Typed
