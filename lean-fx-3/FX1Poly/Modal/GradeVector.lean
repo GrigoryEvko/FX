@@ -408,4 +408,54 @@ theorem GradeVector.single_length (scope position : Nat) (grade : UsageGrade) :
           show (GradeVector.single scope position grade).length + 1 = scope + 1
           rw [restIH]
 
+/-! ## Decidable pointwise order — the computable usage-check decision procedure
+
+The grade-checker doesn't run the `Prop`-valued `IsPointwiseBelow`; it runs this Boolean version.
+`isPointwiseBelowBool_correct` proves the two agree (soundness + completeness), so the computable
+check is a faithful decision procedure for the pointwise order. -/
+
+/-- Computable pointwise-`≤` on grade vectors (truncating; `false` on length mismatch).  The
+Boolean realization of `IsPointwiseBelow` — what a grade-checker actually runs. -/
+def GradeVector.isPointwiseBelowBool : GradeVector → GradeVector → Bool
+  | .nil, .nil => true
+  | .nil, .cons _ _ => false
+  | .cons _ _, .nil => false
+  | .cons firstHead firstRest, .cons secondHead secondRest =>
+      (UsageGrade.le firstHead secondHead) && (GradeVector.isPointwiseBelowBool firstRest secondRest)
+
+/-- **Soundness + completeness of the Boolean check:** `isPointwiseBelowBool a b = true ↔
+IsPointwiseBelow a b` — the decision procedure exactly decides the pointwise order.  Proved
+propext-free: the iff is built by explicit `Iff.intro` with `Eq`-rewrites only (rewriting WITH an
+`Iff` — e.g. `Bool.and_eq_true` — would pull `propext`; here `&&` is split by casing the head). -/
+theorem GradeVector.isPointwiseBelowBool_correct (firstVector secondVector : GradeVector) :
+    GradeVector.isPointwiseBelowBool firstVector secondVector = true ↔
+      GradeVector.IsPointwiseBelow firstVector secondVector := by
+  induction firstVector generalizing secondVector with
+  | nil =>
+      cases secondVector with
+      | nil => exact ⟨fun _ => True.intro, fun _ => rfl⟩
+      | cons _ _ => exact ⟨fun contra => Bool.noConfusion contra, fun contra => contra.elim⟩
+  | cons firstHead firstRest restIH =>
+      cases secondVector with
+      | nil => exact ⟨fun contra => Bool.noConfusion contra, fun contra => contra.elim⟩
+      | cons secondHead secondRest =>
+          show (UsageGrade.le firstHead secondHead &&
+                GradeVector.isPointwiseBelowBool firstRest secondRest) = true ↔
+              (UsageGrade.le firstHead secondHead = true) ∧
+                GradeVector.IsPointwiseBelow firstRest secondRest
+          constructor
+          · intro hbool
+            have headOk : UsageGrade.le firstHead secondHead = true := by
+              cases hle : UsageGrade.le firstHead secondHead with
+              | true => rfl
+              | false => rw [hle] at hbool; exact Bool.noConfusion hbool
+            have restBool : GradeVector.isPointwiseBelowBool firstRest secondRest = true := by
+              rw [headOk] at hbool; exact hbool
+            exact ⟨headOk, (restIH secondRest).mp restBool⟩
+          · intro hprop
+            have restBool : GradeVector.isPointwiseBelowBool firstRest secondRest = true :=
+              (restIH secondRest).mpr hprop.2
+            rw [hprop.1]
+            exact restBool
+
 end FX1Poly.Modal

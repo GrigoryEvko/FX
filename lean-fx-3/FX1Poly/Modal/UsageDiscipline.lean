@@ -107,4 +107,31 @@ non-vacuous — it draws the line exactly between the sound and unsound programs
 theorem linear_accepted : GradedLambda.WellGraded 1 linearClosure linearContext :=
   ⟨rfl, True.intro⟩
 
+/-! ## The usage check as a verified decision procedure -/
+
+/-- The usage check as a computable Boolean: `usage ≤ declaredGrades`.  This is what a grade-checker
+actually runs (the `Prop`-valued `WellGraded` is its specification). -/
+def GradedLambda.wellGradedCheck (scope : Nat) (term : GradedLambda)
+    (declaredGrades : GradeVector) : Bool :=
+  GradeVector.isPointwiseBelowBool (GradedLambda.usage scope term) declaredGrades
+
+/-- **Correctness of the usage check:** `wellGradedCheck = true ↔ WellGraded` — the computable check
+decides well-gradedness.  A direct corollary of `GradeVector.isPointwiseBelowBool_correct`, so the
+usage dimension's check is a genuine, verified decision procedure (not just a `Prop`). -/
+theorem GradedLambda.wellGradedCheck_correct (scope : Nat) (term : GradedLambda)
+    (declaredGrades : GradeVector) :
+    GradedLambda.wellGradedCheck scope term declaredGrades = true ↔
+      GradedLambda.WellGraded scope term declaredGrades :=
+  GradeVector.isPointwiseBelowBool_correct (GradedLambda.usage scope term) declaredGrades
+
+/-- The check COMPUTES `false` on the Atkey closure (`f` used at `ω`, declared linear) — the
+decision procedure agrees with `atkey_rejected`, by `rfl`. -/
+theorem atkey_check_false :
+    GradedLambda.wellGradedCheck 1 atkeyClosure linearContext = false := rfl
+
+/-- The check COMPUTES `true` on the linear closure (`f` used once, declared linear) — the decision
+procedure agrees with `linear_accepted`, by `rfl`. -/
+theorem linear_check_true :
+    GradedLambda.wellGradedCheck 1 linearClosure linearContext = true := rfl
+
 end FX1Poly.Modal

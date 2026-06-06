@@ -124,3 +124,12 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.linear_usage
 #assert_no_axioms FX1Poly.Modal.atkey_rejected
 #assert_no_axioms FX1Poly.Modal.linear_accepted
+
+/-! ### The usage check as a verified Boolean decision procedure -/
+
+#assert_no_axioms FX1Poly.Modal.GradeVector.isPointwiseBelowBool
+#assert_no_axioms FX1Poly.Modal.GradeVector.isPointwiseBelowBool_correct
+#assert_no_axioms FX1Poly.Modal.GradedLambda.wellGradedCheck
+#assert_no_axioms FX1Poly.Modal.GradedLambda.wellGradedCheck_correct
+#assert_no_axioms FX1Poly.Modal.atkey_check_false
+#assert_no_axioms FX1Poly.Modal.linear_check_true
