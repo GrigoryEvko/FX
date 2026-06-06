@@ -11,6 +11,7 @@ import FX1Poly.Modal.GradedSubstitutionAlgebra
 import FX1Poly.Modal.GradedReductionSubstitution
 import FX1Poly.Modal.GradedFundamentalTheorem
 import FX1Poly.Modal.GradedComposition
+import FX1Poly.Modal.GradedReductionConfluence
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -310,3 +311,17 @@ dimensions compose without collision.  Concrete `(λx.x) z ↝ z` grade-preserva
 #assert_no_axioms FX1Poly.Modal.appliedIdentity
 #assert_no_axioms FX1Poly.Modal.appliedIdentity_typed
 #assert_no_axioms FX1Poly.Modal.appliedIdentity_reductKeepsGrade
+
+/-! ### β-confluence infrastructure (CONF stage 1): reduction-substitutivity for GradedLambda
+
+Toward completing the substrate into a full reference STLC (SN + SR + confluence → unique NF).
+Reduction under renaming/shift (via `Reduces.applySubstitution`), multi-step congruence closures, and
+argument-substitutivity — the inputs to the local-confluence critical-pair analysis (next). -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda.renameTerm_eq_applySubstitution_var
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.renameTerm
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.shift
+#assert_no_axioms FX1Poly.Modal.GradedLambda.ReducesStar.congLam
+#assert_no_axioms FX1Poly.Modal.GradedLambda.ReducesStar.congAppLeft
+#assert_no_axioms FX1Poly.Modal.GradedLambda.ReducesStar.congAppRight
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.substReducedArg
