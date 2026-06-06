@@ -1,4 +1,5 @@
 import FX1Poly.Modal.GradeVector
+import FX1Poly.Modal.GradedLambdaTerm
 
 /-! # FX1Poly/Modal/UsageDiscipline — the usage grade check + the Atkey-2018 broken-Lam rejection
    (§27.1 / §27.2)
@@ -42,14 +43,7 @@ Per-declaration gated in `FX1PolyAudit/AuditModal.lean`.
 
 namespace FX1Poly.Modal
 
-/-- A minimal graded λ-calculus (de Bruijn indices): the carrier on which the usage discipline is
-demonstrated.  Distinct from the kernel's `RawTerm` — this is the focused object of study for the
-usage dimension's metatheory; connecting the two (grade erasure) is `GradeErasure.lean`. -/
-inductive GradedLambda where
-  | var : Nat → GradedLambda
-  | lam : GradedLambda → GradedLambda
-  | app : GradedLambda → GradedLambda → GradedLambda
-  deriving DecidableEq, Repr
+-- `GradedLambda` (the shared carrier) + `shift` / `substAt` live in `GradedLambdaTerm.lean`.
 
 /-- Per-free-variable occurrence usage of a term over `scope` free variables (a length-`scope` grade
 vector).  A variable contributes grade `1` at its position; applications ADD their operands' usages
@@ -147,25 +141,6 @@ is the concrete reason the corrected Lam rule (the contextDivide/`1/ω=0` machin
 needed.  `substAt` + `BetaStep` below are the de Bruijn machinery that lets the β-reduct be a
 THEOREM rather than an assertion. -/
 
-/-- de Bruijn lift: increment every free index `≥ cutoff`. -/
-def GradedLambda.shift (cutoff : Nat) : GradedLambda → GradedLambda
-  | .var index => if index < cutoff then .var index else .var (index + 1)
-  | .lam body => .lam (GradedLambda.shift (cutoff + 1) body)
-  | .app function argument =>
-      .app (GradedLambda.shift cutoff function) (GradedLambda.shift cutoff argument)
-
-/-- de Bruijn substitution: replace variable `index` by `replacement`, decrementing higher indices
-(shifting `replacement` under each binder).  `substAt 0` is the β-substitution `b[0 := a]`. -/
-def GradedLambda.substAt (index : Nat) (replacement : GradedLambda) : GradedLambda → GradedLambda
-  | .var varIndex =>
-      if varIndex < index then .var varIndex
-      else if varIndex = index then replacement
-      else .var (varIndex - 1)
-  | .lam body =>
-      .lam (GradedLambda.substAt (index + 1) (GradedLambda.shift 0 replacement) body)
-  | .app function argument =>
-      .app (GradedLambda.substAt index replacement function)
-        (GradedLambda.substAt index replacement argument)
 
 /-- Root β-reduction `(λ. b) a ↝ b[0 := a]`. -/
 inductive GradedLambda.BetaStep : GradedLambda → GradedLambda → Prop where

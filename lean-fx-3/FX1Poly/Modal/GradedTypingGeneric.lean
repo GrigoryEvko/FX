@@ -1,5 +1,5 @@
 import FX1Poly.Modal.GradeVectorGeneric
-import FX1Poly.Modal.UsageDiscipline
+import FX1Poly.Modal.GradedLambdaTerm
 
 /-! # FX1Poly/Modal/GradedTypingGeneric — the GENERIC graded-typing judgment (all graded dimensions)
 
