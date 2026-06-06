@@ -2,6 +2,7 @@ import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeDescValidity
 import FX1Poly.Typed.HasTypeStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizingNative
+import FX1Poly.Core.RawConfluence
 
 /-! # FX1Poly/Typed/HasTypeDescStronglyNormalizing
     — strong normalization and typed conversion for the description formation engine
@@ -46,12 +47,15 @@ theorem IsTypeDesc.toIsType {profile : PolyProfile} {scope : Nat}
   obtain ⟨levelExpr, flag, typed⟩ := isTypeDesc
   exact ⟨levelExpr, flag, HasTypeDesc.toHasType typed⟩
 
-/-- A description-engine type is strongly normalizing. -/
+/-- A description-engine type is strongly normalizing.  HT-A3: native — the `IsTypeDesc` witness is a
+`HasTypeDesc` derivation whose SUBJECT is the classifier, so `HasTypeDesc.subjectStronglyNormalizingNative`
+normalizes it directly (no `HasTypeDesc.toHasType`). -/
 theorem IsTypeDesc.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope}
     (isTypeDesc : IsTypeDesc profile context classifier) :
-    StepStar.IsStronglyNormalizing classifier :=
-  isTypeDesc.toIsType.isStronglyNormalizing
+    StepStar.IsStronglyNormalizing classifier := by
+  obtain ⟨_levelExpr, _flag, classifierTyped⟩ := isTypeDesc
+  exact classifierTyped.subjectStronglyNormalizingNative
 
 /-- The classifier of a description-engine typing derivation is strongly normalizing in every
 well-formed context.  This is the classifier-side companion to `HasTypeDesc.isStronglyNormalizing`:
@@ -86,15 +90,17 @@ theorem HasTypeDesc.closedSubjectAndClassifierStronglyNormalizing {profile : Pol
   typed.subjectAndClassifierStronglyNormalizing
     (WfContext.emptyIsWellFormed (profile := profile))
 
-/-- Typed conversion transitivity through a description-engine middle type.  This is the
-`HasTypeDesc`-side wrapper around the native typed-middle Newman bridge. -/
+/-- Typed conversion transitivity through a description-engine middle type.  HT-A3: native — raw `Conv` is
+an unconditional equivalence relation (`Conv.trans`, the raw-confluence harvest #714/#420), so transitivity
+needs no typed middle at all; the `IsTypeDesc` premise is now vacuous (retained for API stability, no longer
+routed through `HasTypeDesc.toHasType` / `Conv.trans_of_typedMiddle`). -/
 theorem Conv.trans_of_hasTypeDescMiddle {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {firstType middleType lastType : RawTerm scope}
-    (middleIsTypeDesc : IsTypeDesc profile context middleType)
+    (_middleIsTypeDesc : IsTypeDesc profile context middleType)
     (firstConv : Conv firstType middleType)
     (middleConv : Conv middleType lastType) :
     Conv firstType lastType :=
-  Conv.trans_of_typedMiddle middleIsTypeDesc.toIsType firstConv middleConv
+  Conv.trans firstConv middleConv
 
 end FX1Poly.Typed

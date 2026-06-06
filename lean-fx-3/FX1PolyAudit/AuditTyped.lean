@@ -851,11 +851,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDesc
 
 /-! ### Strong normalization and typed conversion for the description formation engine.
-    Subject SN is now the HasType-FREE native twin (HT-A3, `subjectStronglyNormalizingNative` via the mutual
-    telescope recursion + the `formerCellStronglyNormalizingOfChildren` assembly over the
-    `allStronglyNormalizing` child predicate); the public `isStronglyNormalizing` delegates to it.  The
-    remaining type-SN / typed-middle entries still route through the `HasTypeDesc -> HasType` soundness map.
-    Scoped to the description formation engine; no grown lambda/application reducibility claim. -/
+    HT-A3 native (HasType-FREE): subject SN (`subjectStronglyNormalizingNative`, the public
+    `isStronglyNormalizing` delegating to it), type SN (`IsTypeDesc.isStronglyNormalizing` — the `IsTypeDesc`
+    witness's subject IS the classifier), and typed-middle transitivity (`Conv.trans_of_hasTypeDescMiddle` —
+    now the unconditional raw `Conv.trans`, its `IsTypeDesc` premise vacuous).  Still HasType-coupled:
+    `IsTypeDesc.toIsType` (the desc->bespoke downgrade) and the `WfContext`-validity-bound classifier-SN
+    package (`classifierStronglyNormalizing` / `subjectAndClassifier*` — migrate at HT-B with the
+    `WfContext -> WfContextDesc` rethread).  Scoped to the formation engine; no grown reducibility claim. -/
 #assert_no_axioms FX1Poly.Core.RawTermChildren.allStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.formerCellStronglyNormalizingOfChildren
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectStronglyNormalizingNative
