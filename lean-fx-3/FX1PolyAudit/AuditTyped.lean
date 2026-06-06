@@ -51,6 +51,7 @@ import FX1Poly.Typed.FormationCanonicalForms
 import FX1Poly.Typed.PiTypeFunctionInversion
 import FX1Poly.Typed.GrownCanonicalForms
 import FX1Poly.Typed.GrownTypeSafety
+import FX1Poly.Typed.FormationTypeSafety
 import FX1Poly.Typed.GrownCanonicalFormsByClassifier
 import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
 import FX1Poly.Typed.GrownBetaRedexInAction
@@ -1359,6 +1360,15 @@ gates pin them shut.
 -- value" statement, progress + preservation + confluence combined.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedHasUniqueNormalForm
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedTypeSafetyUniqueOfSubjectReductionStar
+-- FORMATION TYPE SAFETY (FormationTypeSafety.lean, five-layer-defense L4 §27.3): the UNCONDITIONAL half of the
+-- preservation/progress parity.  The formation engine HasTypeDesc types only normal forms (subjectAdmitsNoStep),
+-- so closedFormationProgress is a canonical value with NO "or it steps" disjunct, and closedFormationTypeSafety
+-- evaluates to the term ITSELF (StepStar.refl) with NO subjectReductionStar hypothesis — the SR gate the grown
+-- closedTypeSafetyOfSubjectReductionStar carries is ELIMINATED here.
+#assert_no_axioms FX1Poly.Typed.RawTerm.IsFormationCanonicalHead
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedFormationSubjectIsNormal
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedFormationProgress
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedFormationTypeSafety
 -- OPEN PROGRESS (GrownOpenProgress.lean, five-layer-defense L4 §27.3): the OPEN generalization of closedProgress
 -- off the empty context. openNormalSubjectCanonicalOrNeutral = OPEN CANONICAL FORMS — a grown-typed NORMAL term in
 -- ANY well-formed context is a canonical head (IsGrownCanonicalHead) or a Core.IsNeutral term; the recursor mirrors
