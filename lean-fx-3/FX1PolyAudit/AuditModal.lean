@@ -7,6 +7,7 @@ import FX1Poly.Modal.GradedTyping
 import FX1Poly.Modal.GradedTypingGeneric
 import FX1Poly.Modal.GradeErasureGeneric
 import FX1Poly.Modal.GradedWeakeningGeneric
+import FX1Poly.Modal.GradedSubstitutionGeneric
 import FX1Poly.Modal.GradedTypingMetatheory
 import FX1Poly.Modal.GradedSubjectReduction
 import FX1Poly.Modal.GradeErasure
@@ -274,6 +275,40 @@ substitution → subject reduction. -/
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver.insertAt_scale
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver.insertAt_add
 #assert_no_axioms FX1Poly.Modal.hasGradeOver_weakening
+
+/-! ### Generic substInto grade-algebra over any OrderedGradeSemiring (DIM5-6 + dims 6–21)
+
+The grade transformation β performs, generic over R: `substInto cut q p = removeAt cut p + (gradeAt cut
+p)·q`.  Mirrors DIM2's `GradedSubjectReduction` machinery; the lawful bundle is threaded into the lemmas
+whose grade arithmetic an abstract semiring cannot compute (`substInto_succ_cons`, `gradeAt_scale`/`_add`,
+`add_interchange`, the `substInto_single_*`/`substInto_appGrade` var/App identities).  The prerequisite
+for the generic substitution lemma (DIM5-7). -/
+
+#assert_no_axioms FX1Poly.Modal.removeTypeAtOver
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.removeAt
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.gradeAt
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto_succ_cons
+#assert_no_axioms FX1Poly.Modal.removeTypeAtOver_length
+#assert_no_axioms FX1Poly.Modal.lookup_removeTypeAtOver_lt
+#assert_no_axioms FX1Poly.Modal.lookup_removeTypeAtOver_ge
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.gradeAt_nil
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.gradeAt_zero
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.removeAt_zero
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.gradeAt_single_self
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.gradeAt_single_ne
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.removeAt_single_self
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.removeAt_single_lt
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.removeAt_single_gt
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.removeAt_add
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.removeAt_scale
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.gradeAt_scale
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.gradeAt_add
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.add_interchange
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto_single_self
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto_single_lt
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto_single_gt
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto_appGrade
 
 /-! ### The SOUND graded typing judgment (DIM2-3): type-coupled HasUsage with App scaling -/
 
