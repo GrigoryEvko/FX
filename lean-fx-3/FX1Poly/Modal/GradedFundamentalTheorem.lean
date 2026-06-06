@@ -1,4 +1,5 @@
 import FX1Poly.Modal.GradedReductionSubstitution
+import FX1Poly.Modal.GradeErasure
 
 /-! # FX1Poly/Modal/GradedFundamentalTheorem — Tait SN + the graded-SN transfer
 

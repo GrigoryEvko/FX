@@ -1,4 +1,4 @@
-import FX1Poly.Modal.GradeErasure
+import FX1Poly.Modal.SimpleTyping
 
 /-! # FX1Poly/Modal/SimpleStrongNormalization — STLC strong normalization
 
