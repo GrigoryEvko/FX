@@ -100,4 +100,41 @@ theorem HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContext {profile : PolyProfile}
   have rightEqApex : normalFormRight = apex := Step.betaEtaStar.eq_of_noBetaEtaStep rightNoStep rightToApex
   exact leftEqApex.trans rightEqApex.symm
 
+/-! ## Bridge-free `WfContextDesc` twins (HT-B spine step 4 — the βη-confluence leg)
+
+The Geuvers βη-CR + unique-βη-NF results, ported to the `HasTypeDesc`-defined `WfContextDesc` by routing the
+βη-SN witness through the bridge-free `betaEtaStronglyNormalizingOfWfContextDesc` — the raw βη-Newman bridge +
+star-rigidity are context-predicate-agnostic, so no `HasType` appears on the path. -/
+
+/-- **βη Church-Rosser, bridge-free over `WfContextDesc`** — the twin of `subjectBetaEtaConfluenceOfWfContext`. -/
+theorem HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContextDesc context)
+    (typed : HasTypeDescPi profile context subject classifier)
+    {leftReduct rightReduct : RawTerm scope}
+    (subjectToLeft : Step.betaEtaStar subject leftReduct)
+    (subjectToRight : Step.betaEtaStar subject rightReduct) :
+    Step.betaEtaStar.Join leftReduct rightReduct :=
+  Step.betaEtaStar.confluence_of_localJoin_and_accessible
+    (HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc contextWellFormed typed)
+    subjectToLeft subjectToRight
+
+/-- **Unique βη-normal-forms, bridge-free over `WfContextDesc`** — the twin of
+`uniqueBetaEtaNormalFormOfWfContext`, via the confluence twin + βη star-rigidity. -/
+theorem HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContextDesc {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContextDesc context)
+    (typed : HasTypeDescPi profile context subject classifier)
+    {normalFormLeft normalFormRight : RawTerm scope}
+    (subjectToLeft : Step.betaEtaStar subject normalFormLeft)
+    (leftNoStep : ∀ reduct : RawTerm scope, ¬ Step.betaEta normalFormLeft reduct)
+    (subjectToRight : Step.betaEtaStar subject normalFormRight)
+    (rightNoStep : ∀ reduct : RawTerm scope, ¬ Step.betaEta normalFormRight reduct) :
+    normalFormLeft = normalFormRight := by
+  obtain ⟨apex, leftToApex, rightToApex⟩ :=
+    HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc contextWellFormed typed subjectToLeft subjectToRight
+  have leftEqApex : normalFormLeft = apex := Step.betaEtaStar.eq_of_noBetaEtaStep leftNoStep leftToApex
+  have rightEqApex : normalFormRight = apex := Step.betaEtaStar.eq_of_noBetaEtaStep rightNoStep rightToApex
+  exact leftEqApex.trans rightEqApex.symm
+
 end FX1Poly.Typed

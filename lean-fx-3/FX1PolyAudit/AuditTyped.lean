@@ -4930,6 +4930,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.Step.betaEtaStar.eq_of_noBetaEtaStep
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectBetaEtaConfluenceOfWfContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContext
+-- The BRIDGE-FREE WfContextDesc twins (HT-B spine step 4 — the βη leg): the componentwise + conditional +
+-- headline open βη-SN (OpenStronglyNormalizingBetaEta.lean) and the Geuvers βη-CR + unique-βη-NF
+-- (WfContextBetaEtaConfluence.lean), all routed through the bridge-free stronglyNormalizingOfWfContextDesc — the
+-- η-SN component + the Geser union criterion + the βη-Newman bridge are context-predicate-agnostic, so NO
+-- HasType on the path. The βη qualifier-drop targets migrate onto these before HT-C.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.componentwiseStronglyNormalizingOfWfContextDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc_of_etaQuasiCommutes
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContextDesc
 
 -- CON-A0 (ConsistencyTargetSignature.lean): the SN-050 spike verdict. The data types are value-predicate
 -- candidates, NOT engine cells (no gen_empty); HasTypeDescPi doesn't type data (typingRuleDescOf = some only

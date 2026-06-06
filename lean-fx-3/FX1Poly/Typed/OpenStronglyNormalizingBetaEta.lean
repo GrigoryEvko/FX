@@ -119,4 +119,47 @@ theorem HasTypeDescPi.betaEtaStronglyNormalizingOfWfContext
   HasTypeDescPi.betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes
     etaQuasiCommutesOverBeta contextWellFormed typed
 
+/-! ## Bridge-free `WfContextDesc` twins (HT-B spine step 4 — the βη leg)
+
+The componentwise + conditional + headline open βη-SN results, ported to the `HasTypeDesc`-defined
+`WfContextDesc` by routing the β-SN component through the bridge-free `stronglyNormalizingOfWfContextDesc`
+(spine step 2) — the η-SN component (`Step.etaStar.isStronglyNormalizing`) and the Geser union criterion
+(`accUnionBetaEta`) are context-predicate-agnostic, so no `HasType` appears on the path. -/
+
+/-- **Componentwise open SN under β and η, bridge-free over `WfContextDesc`** — the twin of
+`componentwiseStronglyNormalizingOfWfContext`. -/
+theorem HasTypeDescPi.componentwiseStronglyNormalizingOfWfContextDesc {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContextDesc context)
+    (typed : HasTypeDescPi profile context subject classifier) :
+    StepStar.IsStronglyNormalizing subject ∧ Step.etaStar.IsStronglyNormalizing subject :=
+  ⟨HasTypeDescPi.stronglyNormalizingOfWfContextDesc contextWellFormed typed,
+   Step.etaStar.isStronglyNormalizing subject⟩
+
+/-- **Conditional open βη-SN, bridge-free over `WfContextDesc`** — the twin of
+`betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes`: the Geser SN-of-union (`accUnionBetaEta`) fed the
+`WfContextDesc` β-SN witness + the η-postponement crux. -/
+theorem HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc_of_etaQuasiCommutes
+    (etaQuasiCommutes : EtaQuasiCommutesOverBeta)
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContextDesc context)
+    (typed : HasTypeDescPi profile context subject classifier) :
+    Step.betaEtaStar.IsStronglyNormalizing subject :=
+  accUnionBetaEta etaQuasiCommutes
+    (HasTypeDescPi.stronglyNormalizingOfWfContextDesc contextWellFormed typed)
+
+/-- **★ Open βη strong normalization (OSN-1), bridge-free over `WfContextDesc`** — the twin of the OSN-1 headline
+`betaEtaStronglyNormalizingOfWfContext`: the conditional twin fed the discharged `etaQuasiCommutesOverBeta`, with
+the β-SN component now routed through `stronglyNormalizingOfWfContextDesc`.  The βη open-SN spine point the
+βη-convergence leg + the SN-051/052 βη qualifier-drops migrate onto before HT-C. -/
+theorem HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContextDesc context)
+    (typed : HasTypeDescPi profile context subject classifier) :
+    Step.betaEtaStar.IsStronglyNormalizing subject :=
+  HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc_of_etaQuasiCommutes
+    etaQuasiCommutesOverBeta contextWellFormed typed
+
 end FX1Poly.Typed
