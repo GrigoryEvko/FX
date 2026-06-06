@@ -359,6 +359,7 @@ import FX1Poly.Typed.FormationNormalSmoke
 import FX1Poly.Typed.BoolTypeCodeSubstrate
 import FX1Poly.Typed.GrownNoTypeInType
 import FX1Poly.Typed.IsTypeDescRigidity
+import FX1Poly.Typed.IsTypeDescDecidable
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5253,3 +5254,13 @@ gates pin them shut.
 -- subjectRootGeneratorGeneric — the formation-former case is the single typingRuleDescOf=some disjunct, so a
 -- future formation row needs no change here (cleaner than the bespoke 4-head IsType.not_of_headGenerator).
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.not_of_rootGenerator
+-- IsTypeDescDecidable = native Decidable (IsTypeDesc Γ T) (HT-A4 B1c+B1d), off the old HasType engine.
+-- inversionPiCodeChildren/inversionSigmaCodeChildren = WfContext-FREE concrete-children unpacking (vs the
+-- existing WfContext-carrying ...Components); decideWithWitness = the PSum recursive decider (universe/var
+-- leaves + Π/Σ recursion + not_of_rootGenerator default, RawTerm.size termination); decidableOfWellFormed =
+-- the Decidable wrapper over WfContextDesc. uniquenessNative + universeCodeCell_inj_of_conv discharge the
+-- flag-mismatch refutation; hasTypeDesc_{pi,sigma}Formation_viaGenArm build the positive Π/Σ witnesses.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeChildren
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeChildren
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideWithWitness
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decidableOfWellFormed
