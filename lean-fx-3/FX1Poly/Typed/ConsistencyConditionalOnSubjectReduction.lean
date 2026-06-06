@@ -72,7 +72,7 @@ theorem HasTypeDescPi.consistencyOfSubjectReductionStarToEmptyType {profile : Po
       (emptyTypeCell (scope := 0))) :
     False := by
   have terminates : IsStronglyNormalizing subject :=
-    HasTypeDescPi.stronglyNormalizingOfWfContext WfContext.emptyIsWellFormed typed
+    HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed
   obtain ⟨normalForm, reachesNormalForm, normalFormIsNormal⟩ :=
     exists_normalForm_of_isStronglyNormalizing terminates
   exact HasTypeDescPi.noClosedNormalTermAtEmptyType

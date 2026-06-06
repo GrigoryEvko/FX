@@ -103,7 +103,7 @@ theorem HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar {profile : PolyProf
     ∃ value : RawTerm 0,
       StepStar subject value ∧ RawTerm.isStepNormalForm value ∧ RawTerm.IsGrownCanonicalHead value := by
   have terminates : IsStronglyNormalizing subject :=
-    HasTypeDescPi.stronglyNormalizingOfWfContext WfContext.emptyIsWellFormed typed
+    HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed
   obtain ⟨value, reaches, valueNormal⟩ := exists_normalForm_of_isStronglyNormalizing terminates
   refine ⟨value, reaches, valueNormal, ?canonicalHead⟩
   exact HasTypeDescPi.closedNormalSubjectHead (subjectReductionStar typed reaches)
@@ -121,7 +121,7 @@ theorem HasTypeDescPi.closedHasUniqueNormalForm {profile : PolyProfile} {subject
       ∀ otherForm : RawTerm 0,
         StepStar subject otherForm → RawTerm.isStepNormalForm otherForm → otherForm = value :=
   exists_unique_normalForm_of_isStronglyNormalizing
-    (HasTypeDescPi.stronglyNormalizingOfWfContext WfContext.emptyIsWellFormed typed)
+    (HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed)
 
 /-- **Type safety + determinism (conditional on SR-along-`↝*`).**  The unique normal form of a closed grown-typed
 term is moreover a canonical VALUE: the subject reaches a UNIQUE normal form (determinism, by confluence + SN)
@@ -141,7 +141,7 @@ theorem HasTypeDescPi.closedTypeSafetyUniqueOfSubjectReductionStar {profile : Po
         StepStar subject otherForm → RawTerm.isStepNormalForm otherForm → otherForm = value := by
   obtain ⟨value, ⟨reaches, valueNormal⟩, valueUnique⟩ :=
     exists_unique_normalForm_of_isStronglyNormalizing
-      (HasTypeDescPi.stronglyNormalizingOfWfContext WfContext.emptyIsWellFormed typed)
+      (HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed)
   refine ⟨value, ⟨reaches, valueNormal, ?canonicalHead⟩, valueUnique⟩
   exact HasTypeDescPi.closedNormalSubjectHead (subjectReductionStar typed reaches)
     WfContext.emptyIsWellFormed valueNormal (fun emptyIndex => emptyIndex.elim0)
