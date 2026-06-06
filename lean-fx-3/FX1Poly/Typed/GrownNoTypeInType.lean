@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPiUniverseCodeInversion
 import FX1Poly.Typed.UniverseCodeConversion
+import FX1Poly.Typed.ClassifierLevelMeasure
 
 /-! # FX1Poly/Typed/GrownNoTypeInType
     — the grown engine is PREDICATIVE: no universe is a member of itself (§27.2 / SN-140 L1)
@@ -78,5 +79,22 @@ theorem HasTypeDescPi.noClosedUniverseInItself {profile : PolyProfile}
       (universeCodeCell levelExpr flag) (universeCodeCell levelExpr flag)) :
     False :=
   HasTypeDescPi.noUniverseInItself typed WfContext.emptyIsWellFormed
+
+/-- **The universe hierarchy is SEMANTICALLY strict.**  If `Type@(e, flag)` is grown-typed at another
+universe code `Type@(e', flag')`, then `e` denotes to a STRICTLY SMALLER level than `e'`, in every level
+environment: `denote e env < denote e' env`.  The semantic predicativity — a universe genuinely sits below
+its own classifier universe (no level cycle, no fixpoint).  Strengthens the syntactic
+`universeClassifierLevelIsSucc` (`e' = e+1`) to the semantic order via `denote_lt_lsucc` (the SN-003
+predicative-decrease fact `denote e env < denote (e+1) env`).  `noUniverseInItself` is the degenerate
+`e' = e` case (a level cannot be `< itself`). -/
+theorem HasTypeDescPi.universeStrictlyBelowClassifierLevel {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {levelExpr classifierLevel : LevelExpr} {flag classifierFlag : UniverseFlag} (env : Nat → Nat)
+    (typed : HasTypeDescPi profile context (universeCodeCell levelExpr flag)
+      (universeCodeCell classifierLevel classifierFlag))
+    (wellFormed : WfContext context) :
+    LevelExpr.denote levelExpr env < LevelExpr.denote classifierLevel env := by
+  rw [(typed.universeClassifierLevelIsSucc wellFormed).1]
+  exact denote_lt_lsucc levelExpr env
 
 end FX1Poly.Typed

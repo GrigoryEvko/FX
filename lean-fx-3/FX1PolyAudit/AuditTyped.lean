@@ -5233,3 +5233,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeClassifierLevelIsSucc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noUniverseInItself
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedUniverseInItself
+-- universeStrictlyBelowClassifierLevel = the SEMANTIC strict hierarchy: Type@e : Type@e' ⟹ denote e env <
+-- denote e' env (every env). Strengthens the syntactic universeClassifierLevelIsSucc (e' = e+1) to the semantic
+-- order via denote_lt_lsucc (SN-003). noUniverseInItself is the degenerate e' = e case (level not < itself).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeStrictlyBelowClassifierLevel
