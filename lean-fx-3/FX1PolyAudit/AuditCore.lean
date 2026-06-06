@@ -65,6 +65,7 @@ import FX1Poly.Core.UniverseModeBridgeReducibility
 import FX1Poly.Core.CubicalOperatorReducibility
 import FX1Poly.Core.CubicalTransportReducibility
 import FX1Poly.Core.CubicalEliminatorReducibility
+import FX1Poly.Core.CubicalPathAlgebraReducibility
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -697,6 +698,27 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.pathApp_intervalArg_isStronglyNormalizing_of_parent
 #assert_no_axioms FX1Poly.Core.StepStar.pathApp_isStronglyNormalizing_iff
 #assert_no_axioms FX1Poly.Core.StepStar.pathApp_isStronglyNormalizing_of_candidateMembers
+
+-- SN-146 installment cont'd (CubicalPathAlgebraReducibility.lean): the five path ∞-groupoid / cubical-comp
+-- operators gen_pathCompose (2-child) + gen_pathInverse (1-child) + gen_pathWhiskerLeft/Right (2-child) +
+-- gen_compCubical (2-child), all congruence-only/non-neutral. Essential forward SN content (inversion + forward
+-- closure + candidate-framing); reflections follow the generic SN-074 pattern (omitted for concision). This
+-- COMPLETES the cubical layer's congruence-only-stage SN coverage (Kan + transport + eliminators + path-algebra).
+#assert_no_axioms FX1Poly.Core.Step.from_pathInverse
+#assert_no_axioms FX1Poly.Core.Step.from_pathCompose
+#assert_no_axioms FX1Poly.Core.Step.from_pathWhiskerLeft
+#assert_no_axioms FX1Poly.Core.Step.from_pathWhiskerRight
+#assert_no_axioms FX1Poly.Core.Step.from_compCubical
+#assert_no_axioms FX1Poly.Core.StepStar.pathInverse_isStronglyNormalizing_of_child
+#assert_no_axioms FX1Poly.Core.StepStar.pathInverse_isStronglyNormalizing_of_candidateMember
+#assert_no_axioms FX1Poly.Core.StepStar.pathCompose_isStronglyNormalizing_of_children
+#assert_no_axioms FX1Poly.Core.StepStar.pathCompose_isStronglyNormalizing_of_candidateMembers
+#assert_no_axioms FX1Poly.Core.StepStar.pathWhiskerLeft_isStronglyNormalizing_of_children
+#assert_no_axioms FX1Poly.Core.StepStar.pathWhiskerLeft_isStronglyNormalizing_of_candidateMembers
+#assert_no_axioms FX1Poly.Core.StepStar.pathWhiskerRight_isStronglyNormalizing_of_children
+#assert_no_axioms FX1Poly.Core.StepStar.pathWhiskerRight_isStronglyNormalizing_of_candidateMembers
+#assert_no_axioms FX1Poly.Core.StepStar.compCubical_isStronglyNormalizing_of_children
+#assert_no_axioms FX1Poly.Core.StepStar.compCubical_isStronglyNormalizing_of_candidateMembers
 
 -- Universe-mode bridge β+ι SN coverage (precursor to SN-077): gen_liftInnerToOuter (1-child inner→outer lift)
 -- and gen_lowerOuterToInner (2-child outer→inner lower) are congruence-only (no iota root rule; the mode-bridge
