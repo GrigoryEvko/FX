@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Modal.ResourceGraded
+import FX1Poly.Modal.GradeVector
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -59,3 +60,22 @@ under the same per-declaration discipline as the rest of the kernel.
 
 #assert_no_axioms FX1Poly.Modal.IsLawfulOrderedGradeSemiring
 #assert_no_axioms FX1Poly.Modal.fxUsageSemiring_isLawful
+
+/-! ### Grade-vector substrate (DIM2-2): the per-binding usage grade vector + its semimodule laws -/
+
+#assert_no_axioms FX1Poly.Modal.GradeVector
+#assert_no_axioms FX1Poly.Modal.GradeVector.length
+#assert_no_axioms FX1Poly.Modal.GradeVector.zero
+#assert_no_axioms FX1Poly.Modal.GradeVector.add
+#assert_no_axioms FX1Poly.Modal.GradeVector.scale
+#assert_no_axioms FX1Poly.Modal.GradeVector.zero_length
+#assert_no_axioms FX1Poly.Modal.GradeVector.scale_length
+#assert_no_axioms FX1Poly.Modal.GradeVector.add_comm
+#assert_no_axioms FX1Poly.Modal.GradeVector.add_assoc
+#assert_no_axioms FX1Poly.Modal.GradeVector.add_zero
+#assert_no_axioms FX1Poly.Modal.GradeVector.zero_add
+#assert_no_axioms FX1Poly.Modal.GradeVector.scale_zero_scalar
+#assert_no_axioms FX1Poly.Modal.GradeVector.scale_one_scalar
+#assert_no_axioms FX1Poly.Modal.GradeVector.scale_add
+#assert_no_axioms FX1Poly.Modal.GradeVector.scale_scale
+#assert_no_axioms FX1Poly.Modal.GradeVector.scale_add_scalar
