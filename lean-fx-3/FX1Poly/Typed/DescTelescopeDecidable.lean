@@ -224,4 +224,20 @@ def IsTypeDesc.decideMkGenOfNonLeaf {profile : PolyProfile} {scope : Nat}
   | some _rule => IsTypeDesc.decideFormerType wellFormed hGen payload children
   | none => .inr (IsTypeDesc.not_of_rootGenerator notVariable notUniverseCode hGen)
 
+/-- **Cascade-free `Decidable (IsTypeDesc (mkGen …))` for a non-leaf former.**  The `Decidable`-instance form of
+`decideMkGenOfNonLeaf` — the cascade-free twin of `IsTypeDesc.decidableOfWellFormed` for the former case: the
+witness PSum's `.inl` becomes `isTrue`, its `.inr` refutation becomes `isFalse`.  Decides the former through the
+table-generic dispatch (no `typingRuleDescOf_isPiOrSigma`), so a future formation row needs no new branch. -/
+def IsTypeDesc.decidableMkGenOfNonLeaf {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} (wellFormed : WfContextDesc context)
+    {generator : Generator}
+    (notVariable : generator ≠ Generator.gen_var)
+    (notUniverseCode : generator ≠ Generator.gen_universeCode)
+    (payload : generator.payload scope)
+    (children : RawTermChildren generator.binderShifts scope) :
+    Decidable (IsTypeDesc profile context (.mkGen generator payload children)) :=
+  match IsTypeDesc.decideMkGenOfNonLeaf wellFormed notVariable notUniverseCode payload children with
+  | .inl ⟨levelExpr, flag, typed⟩ => isTrue ⟨levelExpr, flag, typed⟩
+  | .inr notType => isFalse notType
+
 end FX1Poly.Typed

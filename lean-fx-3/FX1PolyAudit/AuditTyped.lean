@@ -5296,3 +5296,6 @@ gates pin them shut.
 -- replacement for decideWithWitness's Π/Σ branches + typingRuleDescOf_isPiOrSigma else, depending only on
 -- already-defined deciders (no mutual recursion). A future formation row lands in the `some` branch, zero arms.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideMkGenOfNonLeaf
+-- The Decidable-instance form (isTrue/isFalse wrapper) — the cascade-free twin of decidableOfWellFormed for the
+-- former case, completing the non-leaf decision API.
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decidableMkGenOfNonLeaf
