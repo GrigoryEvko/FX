@@ -6,6 +6,7 @@ import FX1Poly.Modal.GradedTyping
 import FX1Poly.Modal.GradedTypingMetatheory
 import FX1Poly.Modal.GradedSubjectReduction
 import FX1Poly.Modal.GradeErasure
+import FX1Poly.Modal.SimpleStrongNormalization
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -218,3 +219,14 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.lookup_map_eraseType
 #assert_no_axioms FX1Poly.Modal.HasUsage.erase
 #assert_no_axioms FX1Poly.Modal.linearIdentity_erases
+
+/-! ### STLC strong normalization substrate (DIM2-5): β-reduction + Acc-SN + structural lemmas -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsNeutral
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.var
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofAppLeft
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofAppRight
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofLam
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofReduces
