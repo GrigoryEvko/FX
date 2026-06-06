@@ -546,6 +546,17 @@ gates pin them shut.
 -- by_cases is entangled with generator-ARITY (2-child spine ill-typed over abstract generator) + dual
 -- telescope inductives, so the former-membership dispatch needs the arity-generic candidate-bridge
 -- (BFT-15/CON-A3), not this enumeration. Typing layer = table-generic; reducibility former-closure = deep.
+-- BUILD-CONFIRMED (GTL-11 spike, reverted 2026-06-07): adding a `gen_listCode` formation row to
+-- typingRuleDescOf COMPILES the TYPING engine (validity / subst / weaken / inversion / uniqueness absorb it
+-- one-case each, exactly as typingRuleDescOf_outputIsUniverseFormer's docstring predicts) but breaks EXACTLY
+-- four reducibility / canonical-forms consumers: FundamentalLevelIndexed, BoundedGrownDispatch,
+-- HasTypeDescPiFundamentalVectorFromFormation (their per-former toPiMember / toSigmaMember reassembly is
+-- 2-child-ONLY; listCode is 1-child) and FormationCanonicalForms (the head-generator disjunction). So
+-- GTL-11/12/13 (data type-code rows) are NOT independent — the FT / bounded genFormation arm needs a
+-- POSITIVE-former (data) reducibility candidate + 1-child `.toDataMember` reassembly. SPIKE-pending which
+-- candidate: FORMATION/SN needs only the CR3-closed clause (member = neutral OR reduces-to-constructor-of-
+-- reducible-parts; non-empty, fine — List A IS SN), a tractable standard-TT extension; canonicity SN-047/48/49
+-- needs the SEPARATE empty-candidate / closed-term model (CON-A3 #810, the sconing leg) — distinct theorems.
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_isPiOrSigma
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc
 #assert_no_axioms FX1Poly.Typed.DescTelescope
