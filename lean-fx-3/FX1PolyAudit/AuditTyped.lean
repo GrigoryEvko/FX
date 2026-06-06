@@ -162,6 +162,7 @@ import FX1Poly.Typed.HasTypeDescPiConsistency
 import FX1Poly.Typed.HasTypeFormationNoLambdaApplication
 import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.ListCodeFormationUnderSubst
+import FX1Poly.Typed.ListFormerMemberLevelIndexed
 import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.PiFormerMembership
@@ -2206,6 +2207,10 @@ gates pin them shut.
 -- GTL-11 spike GO (proven by construction): the listCode data-former universe-membership under a closing
 -- substitution, the one-child twin of sigmaFormationUnderSubst via the arity-generic dataFormerInUniverse.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.listCodeFormationUnderSubst
+-- GTL-11 level-indexed reassembly: the listCode former-membership FROM the one-child telescope (the
+-- level-indexed twin of the bounded fundamentalGenFormationListFromTelescopeAtBoundedSucc; CR1 element-SN +
+-- listCodeFormationUnderSubst). Makes the FundamentalLevelIndexed + vector arms one-line calls.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.listFormerFromTelescope
 
 -- Root-classification corollaries: a formation-typed subject's root generator is neither lam nor app. The
 -- table-generic family in HasTypeDescPiRootGeneric (subjectRootGeneratorGeneric /
