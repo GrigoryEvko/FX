@@ -1,4 +1,4 @@
-import FX1Poly.Typed.HasTypeDescValidity
+import FX1Poly.Typed.IsTypeDesc
 
 /-! # FX1Poly/Typed/WfContextDesc — formation-engine context well-formedness (`IsTypeDesc`-based)
 

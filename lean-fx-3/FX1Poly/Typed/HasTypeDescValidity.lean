@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeValidity
+import FX1Poly.Typed.IsTypeDesc
 
 /-! # FX1Poly/Typed/HasTypeDescValidity — INTRINSIC validity of the description engine
     (the first brick of the HasTypeDesc-from-HasType DECOUPLE).
@@ -52,14 +53,13 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- INTRINSIC "`classifier` inhabits some universe, per the description engine":
-the `HasTypeDesc` analogue of the bespoke `IsType` (`∃ ℓ f, HasType Γ T (Type@ℓ,f)`).
-Decoupled from `HasType` — depends only on `HasTypeDesc`. -/
-def IsTypeDesc (profile : PolyProfile) {scope : Nat}
-    (context : TypingContext profile scope) (classifier : RawTerm scope) :
-    Prop :=
-  ∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
-    HasTypeDesc profile context classifier (universeCodeCell levelExpr flag)
+-- The intrinsic native type-predicate `IsTypeDesc` was extracted to `FX1Poly.Typed.IsTypeDesc`
+-- (imported above) so the native `WfContextDesc` can depend on the predicate ALONE, without this
+-- file's `HasTypeValidity` (old-engine) coupling — the cycle-break prerequisite for the
+-- `WfContext := WfContextDesc` rethread.  `classifierIsTypeDesc` below is the OLD bridge-routed
+-- validity (its `var` arm reads `WfContext.lookupIsType` + lifts via `HasType.toHasTypeDesc`) and
+-- stays here as a rethread/HT-C target; the native twin is `classifierIsTypeDescNative`
+-- (`WfContextDescValidity.lean`).
 
 /-- VALIDITY (P3) for the description engine, proved INTRINSICALLY (by case analysis
 on `HasTypeDesc`, not via `HasType`): the classifier of any `HasTypeDesc`-typed cell
