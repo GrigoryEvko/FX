@@ -55,8 +55,8 @@ theorem lamCell_isNotType {profile : PolyProfile} {scope : Nat}
 
 /-- **A grown-engine typing derivation in a genuinely ill-formed context.**  In `Γ = (.empty).cons (λx.x)`
 — ill-formed because its binding `λx.x` is not a type (`lamCell_isNotType`) — the variable `var 0` is
-grown-engine-typed at `Γ.lookup 0` (the bespoke `var` rule, which ignores binding well-formedness, bridged
-through `HasType.toHasTypeDesc` ∘ `HasTypeDesc.toHasTypeDescPi`).  The concrete counterexample to the
+grown-engine-typed at `Γ.lookup 0` (the native `HasTypeDesc.var` rule, which ignores binding well-formedness,
+lifted to the grown engine by `HasTypeDesc.toHasTypeDescPi` — no `HasType` bridge).  The concrete counterexample to the
 context-validity presupposition. -/
 theorem wellTypedInIllFormedContext {profile : PolyProfile} :
     ∃ (context : TypingContext profile 1) (subject classifier : RawTerm 1),
@@ -66,11 +66,10 @@ theorem wellTypedInIllFormedContext {profile : PolyProfile} :
    variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1),
    _,
    HasTypeDesc.toHasTypeDescPi
-     (HasType.toHasTypeDesc
-       (HasType.var
-         ((TypingContext.empty : TypingContext profile 0).cons
-           (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))))
-         (⟨0, Nat.succ_pos 0⟩ : Fin 1))),
+     (HasTypeDesc.var
+       ((TypingContext.empty : TypingContext profile 0).cons
+         (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))))
+       (⟨0, Nat.succ_pos 0⟩ : Fin 1)),
    fun contextWellFormed => lamCell_isNotType contextWellFormed.2⟩
 
 /-- **OB-6, the honest answer: the context-validity presupposition FAILS.**  `HasTypeDescPi Γ t T → WfContext Γ`
