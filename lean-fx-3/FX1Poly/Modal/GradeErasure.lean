@@ -1,4 +1,5 @@
 import FX1Poly.Modal.GradedTyping
+import FX1Poly.Modal.SimpleTyping
 
 /-! # FX1Poly/Modal/GradeErasure — grade erasure
 
@@ -32,36 +33,10 @@ constructor cases discharge via `GradedLambda.noConfusion`).  The var-case looku
 
 namespace FX1Poly.Modal
 
-/-- Grade-free simple types: the type dimension underneath `GType` (the arrow drops its binder grade). -/
-inductive SimpleType where
-  | base : SimpleType
-  | arrow : SimpleType → SimpleType → SimpleType
-  deriving DecidableEq, Repr
-
 /-- Grade erasure on types: forget every arrow's binder grade. -/
 def eraseType : GType → SimpleType
   | .base => .base
   | .arrow _ domain codomain => .arrow (eraseType domain) (eraseType codomain)
-
-/-- Context lookup for simple types (structural recursion, propext-free — same care as `GType.lookup`). -/
-def SimpleType.lookup : List SimpleType → Nat → Option SimpleType
-  | [], _ => none
-  | headType :: _, 0 => some headType
-  | _ :: restTypes, position + 1 => SimpleType.lookup restTypes position
-
-/-- **The grade-free STLC judgment** over the same `GradedLambda` terms — the type dimension that the
-usage dimension refines. -/
-inductive HasSimpleType : List SimpleType → GradedLambda → SimpleType → Prop where
-  | var (typeContext : List SimpleType) (index : Nat) (varType : SimpleType)
-      (lookupOk : SimpleType.lookup typeContext index = some varType) :
-      HasSimpleType typeContext (.var index) varType
-  | lam (typeContext : List SimpleType) (domain codomain : SimpleType) (body : GradedLambda)
-      (bodyTyped : HasSimpleType (domain :: typeContext) body codomain) :
-      HasSimpleType typeContext (.lam body) (.arrow domain codomain)
-  | app (typeContext : List SimpleType) (domain codomain : SimpleType) (function argument : GradedLambda)
-      (functionTyped : HasSimpleType typeContext function (.arrow domain codomain))
-      (argumentTyped : HasSimpleType typeContext argument domain) :
-      HasSimpleType typeContext (.app function argument) codomain
 
 /-- Erasure commutes with context lookup. -/
 theorem lookup_map_eraseType :
