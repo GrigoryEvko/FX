@@ -11,10 +11,9 @@ STLC strong normalization through this erasure, with NO graded-reducibility re-p
 TERM and the β-reduction are grade-AGNOSTIC (`GradedLambda` carries no grade annotations; the erased
 term IS the same `GradedLambda`).
 
-  * `SimpleType` — grade-free simple types (the type dimension beneath `GType`; the arrow drops its
-    §6.1 binder grade).
+  (`SimpleType` and the grade-free STLC judgment `HasSimpleType` live in `SimpleTyping.lean`, imported
+  here.)  This file is the `GType`→STLC erasure bridge:
   * `eraseType : GType → SimpleType` — forget every arrow's binder grade.
-  * `HasSimpleType` — the grade-free STLC judgment over the same `GradedLambda` terms.
   * `HasUsage.erase` — **grade erasure preserves typing**: every `HasUsage`-typed term is
     `HasSimpleType`-typed after forgetting the grades (the grade vector is discarded).  Witnesses
     that the usage dimension PROJECTS onto simple typing — the grades only ADD usage constraints atop

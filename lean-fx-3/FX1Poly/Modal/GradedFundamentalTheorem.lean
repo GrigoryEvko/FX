@@ -20,10 +20,9 @@ require redoing the SN metatheory.
     lemma and rewrites the β-reduct via the composition (★) from iii-b into the extended environment).
   * `HasSimpleType.reducible` / `HasSimpleType.stronglyNormalizing` — every well-typed term is
     reducible (identity substitution + `applySubstitution_id`), hence strongly normalizing (CR1).
-  * `HasUsage.stronglyNormalizing` — **the headline**: every `HasUsage`-typed term is
-    strongly normalizing, via `HasUsage.erase` + STLC-SN.  Graded-SN rides on type-dimension
-    SN with no graded re-proof.  `linearIdentity_stronglyNormalizing` / `kCombinator_stronglyNormalizing`
-    are concrete non-vacuous witnesses.
+  (The bespoke usage corollary `HasUsage.stronglyNormalizing` — graded-SN via `HasUsage.erase` +
+  STLC-SN — and its `linearIdentity`/`kCombinator` witnesses live in `GradedStrongNormalization.lean`,
+  keeping this shared STLC fundamental theorem free of any usage-specific import.)
 
 ## Zero-axiom verification
 
