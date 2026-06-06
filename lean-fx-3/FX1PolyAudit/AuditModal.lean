@@ -9,6 +9,7 @@ import FX1Poly.Modal.GradeErasure
 import FX1Poly.Modal.SimpleStrongNormalization
 import FX1Poly.Modal.GradedSubstitutionAlgebra
 import FX1Poly.Modal.GradedReductionSubstitution
+import FX1Poly.Modal.GradedFundamentalTheorem
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -278,3 +279,21 @@ composition handles the binder bookkeeping once. -/
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.applySubstitution
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.substAt
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofSubstAt
+
+/-! ### Tait SN + the graded-SN transfer (DIM2-5 iii-c / SN-056): the orthogonal-composition payoff
+
+The STLC fundamental theorem (abstraction lemma → fundamental → every well-typed term reducible →
+SN) proved ONCE, and the headline `HasUsage.stronglyNormalizing`: graded-SN transfers from
+type-dimension SN through grade erasure with no graded-reducibility re-proof.  Concrete non-vacuous
+witnesses (linear identity, K combinator). -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.lam
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.abstraction
+#assert_no_axioms FX1Poly.Modal.ReducibleSubstitution
+#assert_no_axioms FX1Poly.Modal.ReducibleSubstitution.cons
+#assert_no_axioms FX1Poly.Modal.HasSimpleType.fundamental
+#assert_no_axioms FX1Poly.Modal.HasSimpleType.reducible
+#assert_no_axioms FX1Poly.Modal.HasSimpleType.stronglyNormalizing
+#assert_no_axioms FX1Poly.Modal.HasUsage.stronglyNormalizing
+#assert_no_axioms FX1Poly.Modal.linearIdentity_stronglyNormalizing
+#assert_no_axioms FX1Poly.Modal.kCombinator_stronglyNormalizing
