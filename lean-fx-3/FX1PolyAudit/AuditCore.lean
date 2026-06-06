@@ -64,6 +64,7 @@ import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.UniverseModeBridgeReducibility
 import FX1Poly.Core.CubicalOperatorReducibility
 import FX1Poly.Core.CubicalTransportReducibility
+import FX1Poly.Core.CubicalEliminatorReducibility
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -680,6 +681,22 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.transpFill_isStronglyNormalizing_iff
 #assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_isStronglyNormalizing_of_candidateMembers
 #assert_no_axioms FX1Poly.Core.StepStar.transpFill_isStronglyNormalizing_of_candidateMembers
+
+-- SN-146 installment cont'd (CubicalEliminatorReducibility.lean): the two cubical ELIMINATORS gen_pathApp
+-- (2-child: pathTerm, intervalArg) + gen_glueElim (1-child: gluedValue), congruence-only/non-neutral (path-β +
+-- Glue collapse await M62/M66). glueElim mirrors the modElim 1-child pattern; pathApp the transp 2-child pattern.
+-- With glueIntro's shipped SN, this advances SN-146's "Glue" coverage + adds the path eliminator.
+#assert_no_axioms FX1Poly.Core.Step.from_glueElim
+#assert_no_axioms FX1Poly.Core.Step.from_pathApp
+#assert_no_axioms FX1Poly.Core.StepStar.glueElim_isStronglyNormalizing_of_child
+#assert_no_axioms FX1Poly.Core.StepStar.glueElim_isStronglyNormalizing_child_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.glueElim_isStronglyNormalizing_iff
+#assert_no_axioms FX1Poly.Core.StepStar.glueElim_isStronglyNormalizing_of_candidateMember
+#assert_no_axioms FX1Poly.Core.StepStar.pathApp_isStronglyNormalizing_of_children
+#assert_no_axioms FX1Poly.Core.StepStar.pathApp_pathTerm_isStronglyNormalizing_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.pathApp_intervalArg_isStronglyNormalizing_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.pathApp_isStronglyNormalizing_iff
+#assert_no_axioms FX1Poly.Core.StepStar.pathApp_isStronglyNormalizing_of_candidateMembers
 
 -- Universe-mode bridge β+ι SN coverage (precursor to SN-077): gen_liftInnerToOuter (1-child inner→outer lift)
 -- and gen_lowerOuterToInner (2-child outer→inner lower) are congruence-only (no iota root rule; the mode-bridge
