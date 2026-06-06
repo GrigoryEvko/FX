@@ -21,9 +21,16 @@ the App rule SCALES the argument's usage by that grade.  This file builds that s
         naive occurrence check omitted, exactly accounting for a function consuming its argument
         `binderGrade` times.
 
-This is sound under reduction precisely because it is type-coupled: the `(λx. x x) g` counterexample
-is UNTYPABLE here (self-application `x x` needs `x`'s type to equal its own arrow type — an infinite
-type, impossible in finite `GType`), so the SR-breaking term never enters the judgment.
+This is sound under reduction for two complementary reasons.  The PRIMARY reason is the grade
+arithmetic, not the types: the Atkey-2018 double-capture `λf. f (f x)` IS simply-typeable (`f` only
+needs `f : A -(r)-> A`), but the App rule scales the NESTED occurrence of `f` by its own binder grade
+`r`, so `f`'s context grade computes to `1 + r·1` — which is `ω` whenever `f` actually consumes its
+argument (`r ≥ 1`).  The Lam rule then pins the arrow's binder grade to that `ω`, so the term is
+UNTYPABLE with `f` declared linear; it types only at grade `ω`.  SECONDARILY, type-coupling also
+excludes the occurrence-check SR-breaker `(λx. x x) g`: self-application `x x` needs `x`'s type to
+equal its own arrow type — an infinite type, impossible in finite `GType` — so that term never enters
+the judgment at all.  So it is the grade discipline (not type finiteness) that rejects the linear-`f`
+double-use; the occurs obstruction is a separate, additional guard.
 
 The two witnesses show grades track usage exactly: `linearIdentity_typed` (`x` used once → arrow
 grade `1`) and `kCombinator_typed` (`x` used once → `1`, `y` discarded → `0`).

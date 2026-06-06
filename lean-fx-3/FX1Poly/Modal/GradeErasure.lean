@@ -16,7 +16,9 @@ term IS the same `GradedLambda`).
   * `HasSimpleType` — the grade-free STLC judgment over the same `GradedLambda` terms.
   * `HasUsage.erase` — **grade erasure preserves typing**: every `HasUsage`-typed term is
     `HasSimpleType`-typed after forgetting the grades (the grade vector is discarded).  Witnesses
-    that the usage dimension never changes what is *typable*; it only adds usage constraints.
+    that the usage dimension PROJECTS onto simple typing — the grades only ADD usage constraints atop
+    a well-typed term.  (This is the forward/erasure direction; the converse — that every simply-typed
+    term lifts to some grade vector — is not claimed, and is not needed for the SN transfer.)
 
 ## Zero-axiom verification
 
@@ -71,10 +73,10 @@ theorem lookup_map_eraseType :
   | _ :: restTypes, index + 1 => lookup_map_eraseType restTypes index
 
 /-- **Grade erasure preserves typing**: every `HasUsage`-typed term is `HasSimpleType`-typed after
-forgetting the grades (the grade vector `grades` is discarded).  Witnesses that the usage dimension
-is a conservative refinement — it adds usage constraints atop simple typing, never changes what is
-typable.  This is the projection that carries STLC metatheory (SN, …) up to the graded layer
-(DIM2-5 / SN-056). -/
+forgetting the grades (the grade vector `grades` is discarded).  This PROJECTS the graded layer onto
+simple typing — the grades only ADD usage constraints atop a well-typed term (forward/erasure
+direction only; the converse lift is neither claimed nor needed).  It is the projection that carries
+STLC metatheory (SN, …) up to the graded layer (DIM2-5 / SN-056). -/
 theorem HasUsage.erase {typeContext : List GType} {grades : GradeVector} {term : GradedLambda}
     {resultType : GType} (typed : HasUsage typeContext grades term resultType) :
     HasSimpleType (typeContext.map eraseType) term (eraseType resultType) := by

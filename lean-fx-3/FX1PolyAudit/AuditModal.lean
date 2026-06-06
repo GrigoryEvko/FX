@@ -304,13 +304,21 @@ witnesses (linear identity, K combinator). -/
 
 Graded subject reduction lifted to the full β-reduction, then the metatheory bundle conjoining
 type-dimension SN (transferred) with usage-dimension graded-SR on the same reduction — the two
-dimensions compose without collision.  Concrete `(λx.x) z ↝ z` grade-preservation witness. -/
+dimensions compose without collision (Usage × Type is a sound pointwise composition, not a §6.8
+collision pair).  Concrete grade-preservation β witnesses: `(λx.x) z ↝ z` at scaling `r = 1`, and the
+non-trivial `(λx.(g x) x) z ↝ (g z) z` at `r = ω` (the regression test for the `ρ + r·σ` law). -/
 
 #assert_no_axioms FX1Poly.Modal.HasUsage.preservedByReduces
 #assert_no_axioms FX1Poly.Modal.HasUsage.metatheoryBundle
 #assert_no_axioms FX1Poly.Modal.appliedIdentity
 #assert_no_axioms FX1Poly.Modal.appliedIdentity_typed
 #assert_no_axioms FX1Poly.Modal.appliedIdentity_reductKeepsGrade
+#assert_no_axioms FX1Poly.Modal.omegaScalingBinaryType
+#assert_no_axioms FX1Poly.Modal.omegaScalingRedex
+#assert_no_axioms FX1Poly.Modal.omegaScalingContractum
+#assert_no_axioms FX1Poly.Modal.omegaScalingRedex_typed
+#assert_no_axioms FX1Poly.Modal.omegaScalingRedex_reductKeepsGrade
+#assert_no_axioms FX1Poly.Modal.omegaScalingContractum_typedDirectly
 
 /-! ### β-confluence infrastructure (CONF stage 1): reduction-substitutivity for GradedLambda
 
