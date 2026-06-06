@@ -374,3 +374,18 @@ on the SN accessibility, producing the unique β-NF bundled with `ReducesStar` r
 #assert_no_axioms FX1Poly.Modal.GradedLambda.normalize
 #assert_no_axioms FX1Poly.Modal.GradedLambda.normalize_reducesStar
 #assert_no_axioms FX1Poly.Modal.GradedLambda.normalize_isNormalForm
+
+/-! ### Decidable β-conversion (CONF stage 3b-ii — completes the substrate)
+
+Conversion (`Joinable Reduces`) = normal-form equality on the SN fragment, so it is decidable via
+`GradedLambda`'s `DecidableEq` on normal forms.  Every well-(simply/usage-)typed term pair has
+decidable convertibility — the GradedLambda STLC is now a full reference calculus with decidable
+definitional equality. -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofReducesStar
+#assert_no_axioms FX1Poly.Modal.GradedLambda.normalize_of_isNormalForm
+#assert_no_axioms FX1Poly.Modal.GradedLambda.joinable_iff_normalize_eq
+#assert_no_axioms FX1Poly.Modal.GradedLambda.decidableJoinable
+#assert_no_axioms FX1Poly.Modal.HasSimpleType.decidableConv
+#assert_no_axioms FX1Poly.Modal.HasUsage.decidableConv
+#assert_no_axioms FX1Poly.Modal.GradedLambda.var_notJoinable_of_ne

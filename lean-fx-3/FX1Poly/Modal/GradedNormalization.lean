@@ -16,8 +16,20 @@ irreducible (`IsNormalForm`).
   * `normalize` + `normalize_reducesStar` + `normalize_isNormalForm` — the normalizer and its two
     correctness projections.
 
-Next installment (CONF stage 3b-ii): decidable `Conv` via `normalize a = normalize b` (the unique-NF
-bridge), completing the substrate into a full reference calculus with decidable definitional equality.
+**Decidable conversion (CONF stage 3b-ii) completes the substrate:**
+
+  * `IsStronglyNormalizing.ofReducesStar` — SN preserved along multi-step reduction.
+  * `normalize_of_isNormalForm` — normalizing a normal form returns it unchanged.
+  * `joinable_iff_normalize_eq` — **conversion = normal-form equality**: two SN terms are β-convertible
+    (join at a common reduct) iff their normal forms coincide.
+  * `decidableJoinable` + `HasSimpleType.decidableConv` + `HasUsage.decidableConv` — **decidable
+    β-conversion**: any two well-typed terms have decidable convertibility (it reduces to `DecidableEq`
+    on their normal forms).
+  * `var_notJoinable_of_ne` — non-vacuity: the decider genuinely distinguishes (distinct variables are
+    not convertible).
+
+With this the GradedLambda STLC substrate is a **full reference calculus**: SN + graded SR + confluence
++ unique normal forms + a verified normalizer + decidable definitional equality, all zero-axiom.
 
 ## Zero-axiom verification
 
@@ -30,7 +42,7 @@ with a motive constant in the accessibility proof.  No `axiom`, `sorry`, `propex
 
 namespace FX1Poly.Modal
 
-open FX1Poly.Core (ReflTransClosure)
+open FX1Poly.Core (ReflTransClosure Joinable)
 
 /-- A lambda whose body is normal is itself normal (its only possible step is `congLam`). -/
 theorem GradedLambda.lam_isNormalForm {body : GradedLambda} (bodyNF : GradedLambda.IsNormalForm body) :
@@ -123,5 +135,83 @@ theorem GradedLambda.normalize_isNormalForm (term : GradedLambda)
     (sn : GradedLambda.IsStronglyNormalizing term) :
     GradedLambda.IsNormalForm (GradedLambda.normalize term sn) :=
   (GradedLambda.normalizeWithProof term sn).property.2
+
+/-- Strong normalization is preserved along a multi-step reduction (iterated forward closure of
+`IsStronglyNormalizing.ofReduces`). -/
+theorem GradedLambda.IsStronglyNormalizing.ofReducesStar {term reduct : GradedLambda}
+    (star : GradedLambda.ReducesStar term reduct) :
+    GradedLambda.IsStronglyNormalizing term → GradedLambda.IsStronglyNormalizing reduct := by
+  induction star with
+  | refl => exact fun sn => sn
+  | head firstStep _ ih => exact fun sn => ih (sn.ofReduces firstStep)
+
+/-- Normalizing a normal form returns it unchanged (a normal form only refl-reduces). -/
+theorem GradedLambda.normalize_of_isNormalForm {term : GradedLambda}
+    (sn : GradedLambda.IsStronglyNormalizing term) (nf : GradedLambda.IsNormalForm term) :
+    GradedLambda.normalize term sn = term :=
+  (nf.eq_of_reducesStar (GradedLambda.normalize_reducesStar term sn)).symm
+
+/-- **Conversion = normal-form equality**: two strongly-normalizing terms are β-convertible (join at a
+common reduct) iff their normal forms coincide.  Forward: confluence joins each term's reduct with its
+normal form; a normal form only refl-reduces, so the join point IS the normal form, and uniqueness of
+normal forms at the shared reduct equates them.  Backward: both terms reduce to the (common) normal
+form. -/
+theorem GradedLambda.joinable_iff_normalize_eq {a b : GradedLambda}
+    (snA : GradedLambda.IsStronglyNormalizing a) (snB : GradedLambda.IsStronglyNormalizing b) :
+    Joinable GradedLambda.Reduces a b ↔
+      GradedLambda.normalize a snA = GradedLambda.normalize b snB := by
+  constructor
+  · rintro ⟨commonReduct, aToCommon, bToCommon⟩
+    have aToNfA := GradedLambda.normalize_reducesStar a snA
+    have nfA_NF : GradedLambda.IsNormalForm (GradedLambda.normalize a snA) :=
+      GradedLambda.normalize_isNormalForm a snA
+    have bToNfB := GradedLambda.normalize_reducesStar b snB
+    have nfB_NF : GradedLambda.IsNormalForm (GradedLambda.normalize b snB) :=
+      GradedLambda.normalize_isNormalForm b snB
+    obtain ⟨meetA, commonToMeetA, nfAToMeetA⟩ := snA.confluent aToCommon aToNfA
+    obtain ⟨meetB, commonToMeetB, nfBToMeetB⟩ := snB.confluent bToCommon bToNfB
+    have commonToNfA : GradedLambda.ReducesStar commonReduct (GradedLambda.normalize a snA) := by
+      rw [nfA_NF.eq_of_reducesStar nfAToMeetA]; exact commonToMeetA
+    have commonToNfB : GradedLambda.ReducesStar commonReduct (GradedLambda.normalize b snB) := by
+      rw [nfB_NF.eq_of_reducesStar nfBToMeetB]; exact commonToMeetB
+    exact (snA.ofReducesStar aToCommon).uniqueNormalForm commonToNfA commonToNfB nfA_NF nfB_NF
+  · intro normalFormsEqual
+    exact ⟨GradedLambda.normalize a snA, GradedLambda.normalize_reducesStar a snA,
+      by rw [normalFormsEqual]; exact GradedLambda.normalize_reducesStar b snB⟩
+
+/-- **Decidable β-conversion** for strongly-normalizing terms: convertibility reduces to deciding the
+equality of normal forms (`GradedLambda` has `DecidableEq`). -/
+def GradedLambda.decidableJoinable {a b : GradedLambda}
+    (snA : GradedLambda.IsStronglyNormalizing a) (snB : GradedLambda.IsStronglyNormalizing b) :
+    Decidable (Joinable GradedLambda.Reduces a b) :=
+  decidable_of_iff _ (GradedLambda.joinable_iff_normalize_eq snA snB).symm
+
+/-- **Decidable β-conversion on the simply-typed fragment**: any two well-typed terms have decidable
+convertibility (SN supplied by the Tait fundamental theorem). -/
+def HasSimpleType.decidableConv {typeContextA typeContextB : List SimpleType} {a b : GradedLambda}
+    {typeA typeB : SimpleType} (typedA : HasSimpleType typeContextA a typeA)
+    (typedB : HasSimpleType typeContextB b typeB) :
+    Decidable (Joinable GradedLambda.Reduces a b) :=
+  GradedLambda.decidableJoinable typedA.stronglyNormalizing typedB.stronglyNormalizing
+
+/-- **Decidable β-conversion on the usage-typed fragment** — inherited through grade erasure, with no
+separate decision procedure. -/
+def HasUsage.decidableConv {typeContextA typeContextB : List GType} {gradesA gradesB : GradeVector}
+    {a b : GradedLambda} {typeA typeB : GType} (typedA : HasUsage typeContextA gradesA a typeA)
+    (typedB : HasUsage typeContextB gradesB b typeB) :
+    Decidable (Joinable GradedLambda.Reduces a b) :=
+  GradedLambda.decidableJoinable typedA.stronglyNormalizing typedB.stronglyNormalizing
+
+/-- Non-vacuity: the decision procedure genuinely DISTINGUISHES — distinct variables are not
+β-convertible (each is its own normal form). -/
+theorem GradedLambda.var_notJoinable_of_ne {indexA indexB : Nat} (hne : indexA ≠ indexB) :
+    ¬ Joinable GradedLambda.Reduces (.var indexA) (.var indexB) := by
+  intro joined
+  have normalFormsEqual := (GradedLambda.joinable_iff_normalize_eq
+    (GradedLambda.IsStronglyNormalizing.var indexA)
+    (GradedLambda.IsStronglyNormalizing.var indexB)).mp joined
+  rw [GradedLambda.normalize_of_isNormalForm _ (GradedLambda.var_isNormalForm indexA),
+    GradedLambda.normalize_of_isNormalForm _ (GradedLambda.var_isNormalForm indexB)] at normalFormsEqual
+  exact hne (GradedLambda.var.inj normalFormsEqual)
 
 end FX1Poly.Modal
