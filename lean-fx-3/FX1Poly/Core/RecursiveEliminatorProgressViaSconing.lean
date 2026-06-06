@@ -1,24 +1,24 @@
 import FX1Poly.Core.RecursorClosedMembership
 
 /-! # FX1Poly/Core/RecursiveEliminatorProgressViaSconing
-    — operational PROGRESS for the RECURSIVE data eliminators via the sconing fundamental (SN-061/SN-064)
+    — operational PROGRESS for the RECURSIVE data eliminators via the sconing fundamental
 
-`DataEliminatorProgressViaSconing` covered the NON-recursive data eliminators (`boolElim`, `fst`/`snd`,
-`optionMatch`/`eitherMatch`, `idJ`/`idStrictRec`) and explicitly EXCLUDED the recursive ones
+`DataEliminatorProgressViaSconing` covers the NON-recursive data eliminators (`boolElim`, `fst`/`snd`,
+`optionMatch`/`eitherMatch`, `idJ`/`idStrictRec`) and EXCLUDES the recursive ones
 (`natElim`/`natRec`/`listElim`) on the grounds that their `succ`/`cons` ι re-invokes the eliminator on the
-predecessor/tail and so "needs Tait".  That Tait piece is now shipped `#672`-free: `RecursorClosedMembership`
-(`natElimClosedIsMember` / `natRecClosedIsMember` / `listElimClosedIsMember`, the deferred scrutinee-reduction
-halves of SN-061/SN-064) lands a closed recursor on a MEMBER scrutinee in the result candidate, fed the honest
+predecessor/tail and so "needs Tait".  That Tait piece ships fundamental-free in `RecursorClosedMembership`
+(`natElimClosedIsMember` / `natRecClosedIsMember` / `listElimClosedIsMember`, the scrutinee-reduction
+halves) which lands a closed recursor on a MEMBER scrutinee in the result candidate, fed the honest
 recursor-SN IH-premise the eventual full WF recursion discharges.  This file lifts the exclusion: it threads the
-sconing FUNDAMENTAL (closed well-typed Nat / List ⟹ data-candidate member — the shared `#672` obligation,
+sconing FUNDAMENTAL (closed well-typed Nat / List ⟹ data-candidate member — the shared fundamental obligation,
 parameterised over an abstract `isWellTyped`, exactly as the non-recursive progress file does) into the SCRUTINEE
 position of those membership theorems, and reads off the operational payoff via `closedReducesToValue`:
 
   * `natElimProgressViaSconing` / `natRecProgressViaSconing` — a `natElim` / `natRec` whose scrutinee is
     well-typed (Nat) and whose branches are reducible (the Tait branch interface) REDUCES TO A VALUE — it is
-    never stuck.  This is the SN-061 canonicity payoff via the sconing leg: the recursor cell normalises to a
+    never stuck.  The canonicity payoff via the sconing leg: the recursor cell normalises to a
     `isValue` result.
-  * `listElimProgressViaSconing` — the List twin (SN-064): a `listElim` on a well-typed (List) scrutinee with
+  * `listElimProgressViaSconing` — the List twin: a `listElim` on a well-typed (List) scrutinee with
     reducible branches reduces to a value.
 
 The branch behaviours (`zeroBranchMember` / `succBranchApplication` / `succContractumTerminates`, and the `cons`
@@ -27,7 +27,7 @@ branches inhabit DIFFERENT motive types (`zeroBranch : Motive[zero]`, `succBranc
 List `isWellTyped` predicate does not classify them.  This mirrors `RecursorClosedMembership` exactly; the ONLY
 move this file makes is replacing its `scrutineeMember` (the scrutinee is already a member) with
 `fundamental + scrutineeTyped` (the scrutinee is well-typed, and the fundamental makes it a member) — the same
-`#672`-obligation packaging the non-recursive progress file uses, now closing the recursive corner of the
+fundamental-obligation packaging the non-recursive progress file uses, now closing the recursive corner of the
 eliminator-progress track.
 
 ## Zero-axiom verification
@@ -57,11 +57,11 @@ private abbrev natRecCellOn (scrutinee zeroBranch succBranch : RawTerm 0) : RawT
 private abbrev listElimCellOn (scrutinee nilBranch consBranch : RawTerm 0) : RawTerm 0 :=
   .mkGen .gen_listElim () (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)))
 
-/-- **`natElim` progress on a well-typed scrutinee (SN-061).**  Given the sconing fundamental (closed well-typed
+/-- **`natElim` progress on a well-typed scrutinee.**  Given the sconing fundamental (closed well-typed
 Nat ⟹ Nat-candidate member) and a well-typed scrutinee, plus the Tait branch interface (zero branch a member,
 succ branch SN, succ-branch application landing in the candidate, succ-contractum SN), the `natElim` cell reduces
 to an `isValue` value — it is never stuck.  Composition of the fundamental with `natElimClosedIsMember` (the
-`#672`-free scrutinee-reduction half) read off via `closedReducesToValue`. -/
+fundamental-free scrutinee-reduction half) read off via `closedReducesToValue`. -/
 theorem natElimProgressViaSconing {isWellTyped isValue : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate IsNatValue term)
     {scrutinee zeroBranch succBranch : RawTerm 0}
@@ -84,7 +84,7 @@ theorem natElimProgressViaSconing {isWellTyped isValue : RawTerm 0 → Prop}
   (natElimClosedIsMember (fundamental scrutinee scrutineeTyped) zeroBranchMember
     succBranchTerminates succBranchApplication succContractumTerminates).closedReducesToValue
 
-/-- **`natRec` progress on a well-typed scrutinee (SN-061).**  The dependent-recursor twin of
+/-- **`natRec` progress on a well-typed scrutinee.**  The dependent-recursor twin of
 `natElimProgressViaSconing`: a `natRec` on a well-typed (Nat) scrutinee with the Tait branch interface reduces to
 an `isValue` value.  Composition of the fundamental with `natRecClosedIsMember` read off via
 `closedReducesToValue`. -/
@@ -110,7 +110,7 @@ theorem natRecProgressViaSconing {isWellTyped isValue : RawTerm 0 → Prop}
   (natRecClosedIsMember (fundamental scrutinee scrutineeTyped) zeroBranchMember
     succBranchTerminates succBranchApplication succContractumTerminates).closedReducesToValue
 
-/-- **`listElim` progress on a well-typed scrutinee (SN-064).**  Given the sconing fundamental (closed well-typed
+/-- **`listElim` progress on a well-typed scrutinee.**  Given the sconing fundamental (closed well-typed
 List ⟹ List-candidate member), a well-typed scrutinee, and the Tait branch interface (nil branch a member, cons
 branch SN, cons-branch application landing in the candidate with the head a step-NF and the tail an `IsListValue`,
 cons-contractum SN), the `listElim` cell reduces to an `isValue` value — never stuck.  The List twin of

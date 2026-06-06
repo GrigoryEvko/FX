@@ -4,9 +4,9 @@ import FX1Poly.Core.WeakHeadStepSubsumes
 /-! # FX1Poly/Core/ListElimValueReducibility
     — the VALUE-CASE of `listElim` recursor reducibility (the list analogue of `NatElimValueReducibility`)
 
-The list counterpart of `NatElimValueReducibility` (the value-case of SN-061): `listElim v nilBranch consBranch`
+The list counterpart of `NatElimValueReducibility` (the value-case of recursor reducibility): `listElim v nilBranch consBranch`
 on a LIST-VALUE scrutinee `v` lands in the result candidate, by structural induction on `IsListValue`.  This
-is the computational core of SN-064 (list reducibility + `listElim`): where the two ι rules fire —
+is the computational core of list reducibility + `listElim`: where the two ι rules fire —
 `listElim listNil n c ↝ n` (nil) and `listElim (listCons head tail) n c ↝ app (app (app c head) tail)
 (listElim tail n c)` (cons) — and where the recursion descends on the tail (the `IsListValue` structural IH).
 Each ι is a weak-head step (`IotaHeadStep`, `toWeakHeadStep`), so the recursor cell's membership follows from

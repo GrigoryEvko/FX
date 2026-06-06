@@ -31,8 +31,8 @@ metatheory of the SN fragment".
 
 ## Honest scope boundary
 
-Parametric in the `fundamental` obligation (the fundamental theorem of the logical relation — gated on SN-043
-for the full kernel, discharged on the proven fragments).  This is the LOGICAL-PREDICATE capstone; it does not
+Parametric in the `fundamental` obligation (the fundamental theorem of the logical relation —
+discharged on the proven fragments).  This is the LOGICAL-PREDICATE capstone; it does not
 construct the categorical decision procedure over `fxBaseRMC`.  It is also NOT the BKS parametricity leg
 (genuine parametricity needs a BINARY logical relation, a separate construction the unary candidate cannot
 supply); decidable conversion is a distinct, derived metatheorem (normalization + per-term confluence) that

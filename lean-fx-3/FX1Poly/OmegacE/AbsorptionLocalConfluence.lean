@@ -1,7 +1,7 @@
 import FX1Poly.OmegacE.AbsorptionConfluence
 
 /-! # FX1Poly/OmegacE/AbsorptionLocalConfluence
-    — local + global confluence of the two-rule absorption system (SN-119 progress 2b-ii(b), #622)
+    — local + global confluence of the two-rule absorption system
 
 The confluence capstone, assembled from the building blocks in `AbsorptionConfluence` (decomposition, the
 `[v,s,v]` critical-pair join, the disjoint-commute helper):
@@ -15,8 +15,8 @@ The confluence capstone, assembled from the building blocks in `AbsorptionConflu
   the eight leaves to `absorptionJoinableWhenLeftShorter` (or its `.symm`).
 * `absorptionHasConfluence` — `newman` on the local confluence plus the shipped `absorptionSystem_isTerminating`.
   This makes the absorption system the FIRST fully-CONFLUENT two-rule presentation with genuine inter-rule
-  critical pairs (the SN-119 Newman demonstration).  Only the decidable word problem (a two-rule `WordReducer`,
-  progress 3) remains to close SN-119.
+  critical pairs (the Newman demonstration).  Only the decidable word problem (a two-rule `WordReducer`)
+  remains to close the system.
 
 ## Zero-axiom verification
 

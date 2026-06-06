@@ -115,7 +115,7 @@ kernel's `gen_universeCode (LevelExpr × UniverseFlag)` codes: the `universeCode
 produces `universeReducibilityPredicate lower` for ANY `(levelExpr, flag)` payload, so the relation's `Nat`
 fuel — the META-level stratification of the logical relation — is DECOUPLED from the kernel's `LevelExpr`
 OBJECT-level universe levels.  This decoupling is sound because the no-Type-in-Type level discipline is
-enforced by the TYPING rules (`HasType` universe formation: `Type@e : Type@(lsucc e)`), NOT re-derived in
+enforced by the TYPING rules (`HasTypeDesc` universe formation: `Type@e : Type@(lsucc e)`), NOT re-derived in
 the reducibility model — the model is a permissive semantic interpretation whose job is "every well-typed
 term is reducible", not "reject the ill-typed". -/
 theorem IsReducibleTypeAt.universeCode {scope : Nat} (level : Nat)
@@ -135,7 +135,7 @@ universe classifier.
 
 The reducibility fuel `predLevel + 1` is DECOUPLED from the syntactic level `e`: `tarskiEncode` accepts any
 classifier universe code, the `lsucc`-level discipline being the typing rules' responsibility, not the
-model's.  (The model would equally accept `Type@e : Type@e'` for any `e'` — it is the `HasType` rule, not
+model's.  (The model would equally accept `Type@e : Type@e'` for any `e'` — it is the `HasTypeDesc` rule, not
 the reducibility relation, that pins the classifier to `lsucc e`.) -/
 theorem IsReducibleMemberAt.universeFormation {scope : Nat} (predLevel : Nat)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :

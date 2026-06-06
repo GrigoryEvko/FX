@@ -3,7 +3,7 @@ import FX0Poly.StructuralRecheck
 /-!
 # FX0Poly — recursive certificate re-check driver
 
-`StructuralRecheck` gave the single-node admission rule (`recheckNode`).  This file ships the RECURSIVE
+`StructuralRecheck` defines the single-node admission rule (`recheckNode`).  This file ships the RECURSIVE
 DRIVER that folds it over a whole certificate tree: re-check every child, then apply the per-node rule to
 the node's tag and its children's verdicts.
 
@@ -14,7 +14,8 @@ data structures, only this re-serializable record.  The descent is purely struct
 discipline of a tiny total checker.
 
 This file ships the driver, its length-preservation invariant, and a recursive-descent non-vacuity corpus.
-The full recursive soundness (`recheck` accepts exactly the structurally-valid trees) is the next increment.
+The full recursive soundness (`recheck` accepts exactly the structurally-valid trees) lives in
+`CertRecheckSound`.
 
 ## Zero-axiom verification
 

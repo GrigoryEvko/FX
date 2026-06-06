@@ -360,10 +360,11 @@ environment — by composing the bridge with the UNCONDITIONAL `ValidTyping.subs
 
 The point: this routes SN entirely through the assembled `ValidTyping.fundamental` (which discharges the
 composite-domain Π formation via its env-extension codomain IH, no impredicative member-extension), so the ONLY
-residual between here and unconditional SN-043 is the leveling bridge (the `totalBridge` induction, SN-027/#662).
-It does NOT depend on the superseded fuel-route gate
-`HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes` (#672): the per-level `ValidTyping` route closes
-the universe/composite-domain cases that the fuel all-levels route stalls on, so #672 is OFF this critical path. -/
+residual between here and unconditional strong normalization is the leveling bridge (the `totalBridge`
+induction).  It does NOT depend on the fuel-route gate
+`HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes`: the per-level `ValidTyping` route closes
+the universe/composite-domain cases that the fuel all-levels route stalls on, so that gate is OFF this critical
+path. -/
 theorem hasTypeDescPiStronglyNormalizingFromTotalBridge {profile : PolyProfile}
     (totalBridge :
       ∀ {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope},
@@ -446,22 +447,21 @@ theorem validTypingBridgeConvFromAllLevelReclassifier {profile : PolyProfile} {s
   ⟨subjectLevel,
     ValidTyping.conv contextLevels subjectLevel subjectTyped converts (reclassifierAllLevel subjectLevel)⟩
 
-/-- **Conv-arm coordination with a PINNED (type-variable) reclassifier — the complement that resolves the
-refined-motive wall.**  When the conv reclassifier is a bare type VARIABLE `var index` (its looked-up type a
+/-- **Conv-arm coordination with a PINNED (type-variable) reclassifier — the complement for the
+type-variable case.**  When the conv reclassifier is a bare type VARIABLE `var index` (its looked-up type a
 universe code), `validTypingBridgeConvFromAllLevelReclassifier` does NOT apply: a type variable is NOT
-level-flexible (`typeVariableNotLevelFlexible`), so it cannot be supplied at every level.  This was read as the
-wall for the total-bridge induction's type-variable case.
+level-flexible (`typeVariableNotLevelFlexible`), so it cannot be supplied at every level.
 
-It is NOT a wall.  `ValidTyping.conv` needs the reclassifier at exactly `subjectLevel + 1`, and a type variable
-`var index` IS valid there — at its PINNED level `contextLevels index` (`ValidTyping.var`) — PROVIDED the
-leveling is CONSISTENT: `contextLevels index = subjectLevel + 1`.  That equation is not an extra assumption to
-be wished for; it is the LEVELING DISCIPLINE itself — a type variable `var index : Type@e` inhabits a universe
-one level above the subject it classifies, so its context level is exactly the subject's level plus one.  Under
-that consistency the type-variable conv case discharges directly (`ValidTyping.var` rewritten to the matching
-level + universe-code classifier).
+That is no obstruction.  `ValidTyping.conv` needs the reclassifier at exactly `subjectLevel + 1`, and a type
+variable `var index` IS valid there — at its PINNED level `contextLevels index` (`ValidTyping.var`) — PROVIDED
+the leveling is CONSISTENT: `contextLevels index = subjectLevel + 1`.  That equation is not an extra assumption
+to be wished for; it is the LEVELING DISCIPLINE itself — a type variable `var index : Type@e` inhabits a
+universe one level above the subject it classifies, so its context level is exactly the subject's level plus
+one.  Under that consistency the type-variable conv case discharges directly (`ValidTyping.var` rewritten to the
+matching level + universe-code classifier).
 
-So the refined-motive blockage was an OVER-DEMANDING motive (it required `IsLevelFlexibleTypeCode` for ALL
-universe-classified subjects, which a type variable cannot satisfy), not a fundamental obstruction.  The
+A motive demanding `IsLevelFlexibleTypeCode` for ALL universe-classified subjects would over-demand (a type
+variable cannot satisfy it), but that is not a fundamental obstruction.  The
 total-bridge assembly should synthesize `contextLevels` so this consistency holds at every variable usage
 (level inference), then this lemma — not the reducibility-neutrality detour — closes the type-variable conv arm
 inside `ValidTyping`. -/

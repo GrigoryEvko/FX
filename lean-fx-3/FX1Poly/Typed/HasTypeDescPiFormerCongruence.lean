@@ -1,5 +1,5 @@
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
-import FX1Poly.Typed.HasTypeDescPiValidity
+import FX1Poly.Typed.HasTypeDescPiClassifierValidity
 
 /-! # FX1Poly/Typed/HasTypeDescPiFormerCongruence — grown-engine FORMER codomain-congruence arms
     (the type-former `Step.cong` cases of subject reduction, modulo the codomain's SR; toward #458/SN-055)
@@ -43,7 +43,7 @@ precisely the shape `Step.subjectReduction`'s "preserves ANY classifier" provide
 
 The reconstructions are direct `genFormationPi` applications (output reduces through `universeFormerOutput`
 + `lmaxAll` to `universeCodeCell (lmax …) flag` definitionally).  The cong arms compose shipped zero-axiom
-results (`invertPiTyCode`/`invertSigmaTyCode`, `classifierIsTypeDesc`, the `conv` rule).  No `axiom`,
+results (`invertPiTyCode`/`invertSigmaTyCode`, `classifierIsTypeDescPi`, the `conv` rule).  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated.
 -/
 
@@ -104,7 +104,7 @@ theorem HasTypeDescPi.sigmaFormationViaGenArm {profile : PolyProfile} {scope : N
 any domain binder), gives `piTyCodeCell domainCode codomainCode'` typed at the SAME `classifier`.  The
 `Step.cong`-into-a-Π-codomain case of subject reduction, modulo the codomain's SR (`childPreserves`).
 `invertPiTyCode` exposes the domain/codomain typings + `Conv classifier (Type@(lmax …))`;
-`piFormationViaGenArm` rebuilds at `Type@(lmax …)`; `classifierIsTypeDesc` + `conv` returns to
+`piFormationViaGenArm` rebuilds at `Type@(lmax …)`; `classifierIsTypeDescPi` + `conv` returns to
 `classifier`.  No context-conversion (the `cons domainCode` context is unchanged). -/
 theorem HasTypeDescPi.congPiCodomain {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
@@ -115,7 +115,7 @@ theorem HasTypeDescPi.congPiCodomain {profile : PolyProfile} {scope : Nat}
     (childPreserves : ∀ {bindingType : RawTerm scope} {codomainClassifier : RawTerm (scope + 1)},
       HasTypeDescPi profile (context.cons bindingType) codomainCode codomainClassifier →
         HasTypeDescPi profile (context.cons bindingType) codomainCode' codomainClassifier)
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode') classifier := by
   obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped, convClassifierToCode⟩ :=
     typed.invertPiTyCode
@@ -124,7 +124,7 @@ theorem HasTypeDescPi.congPiCodomain {profile : PolyProfile} {scope : Nat}
         (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) :=
     HasTypeDescPi.piFormationViaGenArm context domainCode codomainCode' domainLevel codomainLevel
       flag domainTyped (childPreserves codomainTyped)
-  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDesc wellFormed
+  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDescPi wellFormed
   exact HasTypeDescPi.conv classifierLevel classifierFlag rebuilt convClassifierToCode.sym
     classifierTyped
 
@@ -139,7 +139,7 @@ theorem HasTypeDescPi.congSigmaCodomain {profile : PolyProfile} {scope : Nat}
     (childPreserves : ∀ {bindingType : RawTerm scope} {codomainClassifier : RawTerm (scope + 1)},
       HasTypeDescPi profile (context.cons bindingType) codomainCode codomainClassifier →
         HasTypeDescPi profile (context.cons bindingType) codomainCode' codomainClassifier)
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode') classifier := by
   obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped, convClassifierToCode⟩ :=
     typed.invertSigmaTyCode
@@ -148,7 +148,7 @@ theorem HasTypeDescPi.congSigmaCodomain {profile : PolyProfile} {scope : Nat}
         (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) :=
     HasTypeDescPi.sigmaFormationViaGenArm context domainCode codomainCode' domainLevel codomainLevel
       flag domainTyped (childPreserves codomainTyped)
-  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDesc wellFormed
+  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDescPi wellFormed
   exact HasTypeDescPi.conv classifierLevel classifierFlag rebuilt convClassifierToCode.sym
     classifierTyped
 
@@ -176,7 +176,7 @@ theorem HasTypeDescPi.congPiDomain {profile : PolyProfile} {scope : Nat}
           (universeCodeCell codomainLevel codomainFlag) →
         HasTypeDescPi profile (context.cons domainCode') codomainCode
           (universeCodeCell codomainLevel codomainFlag))
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context (piTyCodeCell domainCode' codomainCode) classifier := by
   obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped, convClassifierToCode⟩ :=
     typed.invertPiTyCode
@@ -185,7 +185,7 @@ theorem HasTypeDescPi.congPiDomain {profile : PolyProfile} {scope : Nat}
         (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) :=
     HasTypeDescPi.piFormationViaGenArm context domainCode' codomainCode domainLevel codomainLevel
       flag (domainPreserves domainTyped) (codomainReTyping codomainTyped)
-  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDesc wellFormed
+  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDescPi wellFormed
   exact HasTypeDescPi.conv classifierLevel classifierFlag rebuilt convClassifierToCode.sym
     classifierTyped
 
@@ -206,7 +206,7 @@ theorem HasTypeDescPi.congSigmaDomain {profile : PolyProfile} {scope : Nat}
           (universeCodeCell codomainLevel codomainFlag) →
         HasTypeDescPi profile (context.cons domainCode') codomainCode
           (universeCodeCell codomainLevel codomainFlag))
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context (sigmaTyCodeCell domainCode' codomainCode) classifier := by
   obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped, convClassifierToCode⟩ :=
     typed.invertSigmaTyCode
@@ -215,7 +215,7 @@ theorem HasTypeDescPi.congSigmaDomain {profile : PolyProfile} {scope : Nat}
         (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) :=
     HasTypeDescPi.sigmaFormationViaGenArm context domainCode' codomainCode domainLevel codomainLevel
       flag (domainPreserves domainTyped) (codomainReTyping codomainTyped)
-  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDesc wellFormed
+  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDescPi wellFormed
   exact HasTypeDescPi.conv classifierLevel classifierFlag rebuilt convClassifierToCode.sym
     classifierTyped
 

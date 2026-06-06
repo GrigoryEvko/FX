@@ -26,7 +26,7 @@ Six results:
     with SN branches is SN, by a triple accessibility recursion whose two ι-reduct cases are vacuous.
   * `optionMatchNeutralScrutineeMember` / `eitherMatchNeutralScrutineeMember` — the member arms.
 
-`#672`-independent (fixed result candidate, the pure Tait neutral-eliminator argument).
+Fundamental-independent (fixed result candidate, the pure Tait neutral-eliminator argument).
 
 ## Zero-axiom verification
 

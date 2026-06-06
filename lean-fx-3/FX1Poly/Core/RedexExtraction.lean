@@ -11,7 +11,7 @@ check fires, the cell genuinely takes a `Step`, and the proof PRODUCES the reduc
 
 This is the missing ingredient for WEAK NORMALIZATION from strong normalization (the `Acc StepSuccessor`
 descent must, at a non-normal term, extract an actual reduct to recurse on), which in turn feeds decidable
-conversion on the strongly-normalizing fragment (#267) and the WHNF migration (#374).  The grind is one brick
+conversion on the strongly-normalizing fragment and the WHNF migration.  The grind is one brick
 per root-redex shape, and this file now covers ALL of them: FUNCTION (beta), PRODUCT (fst/snd), BOOLEAN
 (boolElim), NATURAL (natElim / natRec), LIST (listElim), OPTION (optionMatch), EITHER (eitherMatch), and
 IDENTITY (idJ / idStrictRec).  With every `hasXxxRoot`-shape covered, the next step is the assembly

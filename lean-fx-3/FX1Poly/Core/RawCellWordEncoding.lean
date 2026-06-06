@@ -1,11 +1,11 @@
 import FX1Poly.Core.RawCell
 
 /-! # FX1Poly/Core/RawCellWordEncoding
-    — the dim-1 free-monoid rule-word encoding of the RawCell composite layer (SN-125, #628)
+    — the dim-1 free-monoid rule-word encoding of the RawCell composite layer
 
 The Leg-3 (Makkai/Forest) word-problem route decides FX `Conv` as word equality in the free omega-category
-over a generating polygraph (polycell.md §2.3 / §3.9).  SN-118/119/120 demonstrated the decision on concrete
-toy polygraphs; SN-123/124 presented the FX kernel's 194 term-formers as a finite polygraph.  This file starts
+over a generating polygraph (polycell.md §2.3 / §3.9).  The OmegacE toy polygraphs demonstrate the decision on
+concrete systems; `GeneratorFinitePolygraph` presents the FX kernel's 194 term-formers as a finite polygraph.  This file starts
 the ACTUAL FX-Conv-to-word bridge: it encodes the `RawCell` composite layer into the free monoid of its
 generating-cell rule ids — the dimension-1 free monoid whose letters are the FX REWRITE RULES.
 
@@ -14,7 +14,7 @@ generating-cell rule ids — the dimension-1 free monoid whose letters are the F
 The abstract scaffold `OmegacECell` (`OmegacEAt.lean`) has exactly two generators per dimension (the walking
 equivalence) — the wrong alphabet for FX.  The faithful dim-1 free monoid here is over the FX rewrite-rule
 alphabet: a `RawCell.generatingCell` carries a `ruleId : Nat` naming the FX reduction it instantiates, and these
-generating cells ARE the dim-1 (and higher) generators of the REWRITING polygraph — distinct from SN-123/124's
+generating cells ARE the dim-1 (and higher) generators of the REWRITING polygraph — distinct from the
 194 term-FORMERS (the term polygraph).  So the word of a cell is the ordered sequence of rule ids in its
 composite expression — exactly a reduction-path word, which is what the `Conv`-to-word problem ranges over.
 
@@ -37,9 +37,9 @@ monoid structure (the laws reproved locally, propext-free, as in `WordFreeMonoid
   generating-cell content: the word length equals the number of generating-cell leaves (a real structural
   induction, so the encoding is not collapsing the rewrite content).
 
-This is the lift of the dim-1 free monoid to dim-2 cells.  SN-126 maps each `generatingCell`'s source/target
-(themselves cells, recovered by `encodeRuleWord`) to a rewrite RULE `source-word ⇒ target-word`; SN-127+ prove
-`Step a b ⟹ RewritesOneStep` (bridge soundness), which is gated on typed SN per `core_raw_sn_false_natrec`
+This is the lift of the dim-1 free monoid to dim-2 cells.  `StepRewriteRuleMap` maps each `generatingCell`'s
+source/target (themselves cells, recovered by `encodeRuleWord`) to a rewrite RULE `source-word ⇒ target-word`;
+the bridge soundness `Step a b ⟹ RewritesOneStep` is gated on typed SN per `core_raw_sn_false_natrec`
 (raw `Step` is not globally terminating).  Here we build only the encoding and its monoid/faithfulness laws.
 
 ## Zero-axiom verification
@@ -84,7 +84,7 @@ private theorem listLengthAppendLocal {elementType : Type _}
 expression.  Objects (`termBase`) and identities (`identityCell`) contribute the empty word (the monoid unit);
 a `generatingCell` contributes the one-letter word of its rule id; the composites concatenate.  The
 generating cell's source/target boundaries are NOT descended into — they are the (lower-dimensional) boundary
-of the rule, handled separately by the SN-126 rule map. -/
+of the rule, handled separately by the `StepRewriteRuleMap` rule map. -/
 def RawCell.encodeRuleWord {scope : Nat} : RawCell scope → List Nat
   | .termBase _ => []
   | .generatingCell ruleId _ _ => [ruleId]

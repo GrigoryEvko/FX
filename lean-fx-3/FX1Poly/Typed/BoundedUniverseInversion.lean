@@ -1,7 +1,7 @@
 import FX1Poly.Typed.DenoteKeyedBoundedReducibility
 
 /-! # FX1Poly/Typed/BoundedUniverseInversion
-    — the universe gate inversion (OB-2a, toward OPEN SN-043)
+    — the universe gate inversion (toward open strong normalization)
 
 `belowBound_of_reducibleUniverse`: if a universe code `Type@levelExpr` is bound-reducible-as-type at `bound`
 (with some candidate), then its decoded level is strictly below the bound — `denote levelExpr env < bound`.
@@ -22,13 +22,14 @@ code forces four of them shut:
     recovered after a payload `injection` pins `levelExpr' = levelExpr`.
   * **ofPointwiseIff** — wraps an inner derivation of the SAME index; the induction recurses.
 
-## Why OB-2 needs it
+## Why the bounded fundamental theorem needs it
 
 The decode lemma `universeMemberReducibleAsTypeAtDecodedLevelBounded` (the universe-member → reducible-type
-bridge) takes `belowBound` as a premise.  A context binding type's reducibility (OB-2) comes from the grown FT
-applied to its `IsType` (= `HasType … (universeCodeCell …)`) derivation, which yields a universe MEMBER whose
-candidate is a `ReducibleTypeAtBounded` of the universe code — and THIS inversion extracts the `belowBound` the
-decode then consumes (and cumulativity reuses to lift the decoded-level reducibility to the uniform bound).
+bridge) takes `belowBound` as a premise.  A context binding type's reducibility comes from the grown FT
+applied to its `IsTypeDescPi` (= `HasTypeDescPi … (universeCodeCell …)`) derivation, which yields a universe
+MEMBER whose candidate is a `ReducibleTypeAtBounded` of the universe code — and THIS inversion extracts the
+`belowBound` the decode then consumes (and cumulativity reuses to lift the decoded-level reducibility to the
+uniform bound).
 
 ## Zero-axiom verification
 
@@ -43,11 +44,11 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 open StepStar
 
-/-- **OB-2a: the universe gate inversion.**  A bound-reducible-as-type universe code `Type@levelExpr` has its
+/-- **The universe gate inversion.**  A bound-reducible-as-type universe code `Type@levelExpr` has its
 decoded level strictly below the bound: `denote levelExpr env < bound`.  The four non-universe arms are
 impossible for a universe code (weak-head-normal, not neutral, not a Π cell); the `universeCode` arm carries the
 gate directly; `ofPointwiseIff` recurses.  Recovers the `belowBound` premise the universe-member decode
-(`universeMemberReducibleAsTypeAtDecodedLevelBounded`) consumes in OB-2. -/
+(`universeMemberReducibleAsTypeAtDecodedLevelBounded`) consumes. -/
 theorem belowBound_of_reducibleUniverse {scope : Nat} {env : Nat → Nat} {bound : Nat}
     {levelExpr : LevelExpr} {flag : UniverseFlag} {candidate : RawTerm scope → Prop}
     (reducible : ReducibleTypeAtBounded env bound

@@ -49,16 +49,16 @@ open FX1Poly.Core FX1Poly.Universe
 canonical head (`IsGrownCanonicalHead`) or a neutral (`Core.IsNeutral`).  The open analogue of
 `closedNormalSubjectHead`: dropping closedness admits the variable leaf (`IsNeutral.var`) and the neutral
 application (`IsNeutral.app`).  Proof by the `HasTypeDescPi` recursor — the same arm structure as the closed
-version, rerouting the two leaves that closedness previously eliminated. -/
+version, routing the two leaves that closedness would eliminate. -/
 theorem HasTypeDescPi.openNormalSubjectCanonicalOrNeutral {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context subject classifier)
-    (wellFormed : WfContext context)
+    (wellFormed : WfContextDesc context)
     (normal : RawTerm.isStepNormalForm subject) :
     RawTerm.IsGrownCanonicalHead subject ∨ IsNeutral subject := by
   refine HasTypeDescPi.rec
     (motive_1 := fun {armScope} armContext armSubject _armClassifier _armTyped =>
-      WfContext armContext → RawTerm.isStepNormalForm armSubject →
+      WfContextDesc armContext → RawTerm.isStepNormalForm armSubject →
       (RawTerm.IsGrownCanonicalHead armSubject ∨ IsNeutral armSubject))
     (motive_2 := fun _armContext _armLevels _armFlag _armChildren _armTelescope => True)
     ?ofFormation ?conv ?piIntro ?piElim ?genFormationPi ?nilTelescope ?consTelescope
@@ -122,7 +122,7 @@ disjunct. -/
 theorem HasTypeDescPi.openProgress {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context subject classifier)
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDesc context) :
     ((RawTerm.IsGrownCanonicalHead subject ∨ IsNeutral subject) ∧ RawTerm.isStepNormalForm subject)
     ∨ (∃ reduct : RawTerm scope, Step subject reduct) := by
   by_cases isNormal : RawTerm.isStepNormalForm subject

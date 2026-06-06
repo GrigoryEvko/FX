@@ -7,9 +7,8 @@ import FX1Poly.Universe.LevelExprSerialize
 import FX1Poly.Universe.UniverseFlagSerialize
 import FX1Poly.Universe.UniversePayloadSerialize
 
-/-! # Tools/AuditAll/AuditUniverse
-   — persistent per-declaration zero-axiom gate for the Phase Z₀
-     universe layer
+/-! # FX1PolyAudit/AuditUniverse
+   — persistent per-declaration zero-axiom gate for the universe layer
 
 The universe layer (LevelExpr inductive, UniverseFlag enum, and the
 full LevelExprSimplify normalization / canonical-form / decision-

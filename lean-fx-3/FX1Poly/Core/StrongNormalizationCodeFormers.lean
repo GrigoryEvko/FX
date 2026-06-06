@@ -1,13 +1,13 @@
 import FX1Poly.Core.StrongNormalizationConstructors
 
 /-! # FX1Poly/Core/StrongNormalizationCodeFormers
-    — structural SN closure for the remaining universe-code formers (toward SN-071)
+    — structural SN closure for the remaining universe-code formers
 
 `StrongNormalizationConstructors.lean` ships the congruence-only structural strong-normalization closures for
 the two-child universe-code formers (`arrowCode`, `productCode`, `sumCode`, `eitherCode`, `equivCode`,
 `piTyCode`, `sigmaTyCode`, `polyFunctor`) via `isStronglyNormalizing_of_twoChildCong`, and for the one-child
-constructors via `isStronglyNormalizing_of_oneChildCong`.  Three universe-code formers were missing from that
-coverage:
+constructors via `isStronglyNormalizing_of_oneChildCong`.  Three further universe-code formers are covered
+here:
 
 * `gen_listCode` — one child (the element type code);
 * `gen_optionCode` — one child (the element type code);
@@ -16,9 +16,9 @@ coverage:
 This file completes the universe-code family.  The two one-child formers reuse the shipped
 `isStronglyNormalizing_of_oneChildCong`; `idCode` is the FIRST three-child pure-former, so it needs a new
 reusable combinator `isStronglyNormalizing_of_threeChildCong` — the three-child analogue of the shipped
-one/two-child congruence closures.  All are the SN-half ingredient of "the code is a reducible member of `El`"
-(SN-071); SN is a fuel-independent raw property, so none of this touches the stratified reducibility candidate
-or the universe-domain-Π fundamental theorem (the open #672 crux).
+one/two-child congruence closures.  All are the SN-half ingredient of "the code is a reducible member of `El`";
+SN is a fuel-independent raw property, so none of this touches the stratified reducibility candidate
+or the universe-domain-Π fundamental theorem (the open crux).
 
 Each former is congruence-only: `gen_listCode` / `gen_optionCode` / `gen_idCode` are type-code formers, not
 eliminators, so no `beta`/`iota` rule has them as the outer redex head — a `Step` out of the parent reduces

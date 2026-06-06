@@ -4,7 +4,7 @@ import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
 
 /-! # FX1Poly/Core/SigmaProjectionClosedMembership
     — a closed `fst` / `snd` on a member pair with a member projected component is a data-candidate member
-      (the elimination half of SN-058)
+      (the elimination half of Σ-projection reducibility)
 
 `BoolElimClosedMembership`, `IdEliminatorClosedMembership`, and `MatchClosedMembership` closed the elimination
 MEMBERSHIP for the BRANCH eliminators (`boolElim` / `idJ` / `idStrictRec` / `optionMatch` / `eitherMatch`).  This
@@ -21,7 +21,7 @@ candidate `isPairValue` records component STRUCTURAL NORMALITY (not result-candi
 of the projected component is supplied as a hypothesis — conditional on the scrutinee actually producing that
 pair (`∀ first second, scrutinee ↝* pairCell first second → member (the relevant component)`).  This is exactly
 the shape the eventual Tait Σ-elimination supplies (the pair is reducible at Σ, so each projection is reducible
-at the corresponding component type); it is `#672`-free at the closed layer.
+at the corresponding component type); it is fundamental-free at the closed layer.
 
 ## Why this assembles
 
@@ -29,14 +29,14 @@ The scrutinee is a canonical Σ member, so it reduces to `pairCell first second`
 `fst`/`snd` ι-fire to project the component:
 
 1. The cell is SN — `fst/snd_isStronglyNormalizing_of_argument` on the scrutinee's CR1 SN.
-2. The cell reduces to the component — `pairCanonicalScrutineeProjectsToComponents` (#690): the scrutinee
+2. The cell reduces to the component — `pairCanonicalScrutineeProjectsToComponents`: the scrutinee
    reaches `pairCell first second`, the projection congruence carries that under `fst`/`snd`, and the ι rule
    (`Step.iotaFstPair` / `Step.iotaSndPair`) projects out `first` / `second`.
 3. The projected component reaches a value — the `firstComponentMember` / `secondComponentMember` hypothesis
    (applied at the witnessed `scrutinee ↝* pairCell first second`) is a member, so `closedReducesToValue`.
 
 Steps 2 + 3 give `cell ↝* component ↝* value`; with step 1 that is value-reaching weak-head expansion
-`CanonicalFormsPredicate.ofStepStarReachingValue` (#735).
+`CanonicalFormsPredicate.ofStepStarReachingValue`.
 
 ## Zero-axiom verification
 
@@ -55,7 +55,7 @@ The Σ-projection analogue of `boolElimClosedIsMember`: the cell is SN (`fst_isS
 on the scrutinee's CR1 SN), reduces to the first component (`pairCanonicalScrutineeProjectsToComponents`), and
 that component — a member of the result candidate by `firstComponentMember` — reaches a value
 (`closedReducesToValue`); `ofStepStarReachingValue` lifts membership to the cell.  The first-projection half of
-SN-058, closed-layer, `#672`-independent. -/
+Σ-projection reducibility, closed-layer, fundamental-independent. -/
 theorem fstClosedIsMember {isValue : RawTerm 0 → Prop} {scrutinee : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isPairValue scrutinee)
     (firstComponentMember : ∀ first second : RawTerm 0,
@@ -71,7 +71,7 @@ theorem fstClosedIsMember {isValue : RawTerm 0 → Prop} {scrutinee : RawTerm 0}
 
 /-- **A closed `snd` on a member pair whose second component is a member is a member of the result candidate.**
 Symmetric to `fstClosedIsMember`, projecting the second component via `snd_isStronglyNormalizing_of_argument`
-and `Step.iotaSndPair`.  The second-projection half of SN-058, closed-layer, `#672`-independent. -/
+and `Step.iotaSndPair`.  The second-projection half of Σ-projection reducibility, closed-layer, fundamental-independent. -/
 theorem sndClosedIsMember {isValue : RawTerm 0 → Prop} {scrutinee : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isPairValue scrutinee)
     (secondComponentMember : ∀ first second : RawTerm 0,

@@ -1,18 +1,18 @@
 import FX1Poly.Modal.GradedTypingGeneric
 import FX1Poly.Modal.GradedFundamentalTheorem
 
-/-! # FX1Poly/Modal/GradeErasureGeneric — generic grade erasure + SN-transfer (DIM5-4 + dims 6–21)
+/-! # FX1Poly/Modal/GradeErasureGeneric — generic grade erasure + SN-transfer (all graded dimensions)
 
-The usage dimension's erasure (`GradeErasure.lean`, DIM2-4) is hardcoded to `GType` / `HasUsage`; the
-SN-transfer (`GradedFundamentalTheorem.lean`, DIM2-5 / SN-056) is hardcoded to `HasUsage`.  But the
+The usage dimension's erasure (`GradeErasure.lean`) is hardcoded to `GType` / `HasUsage`; the
+SN-transfer (`GradedFundamentalTheorem.lean`) is hardcoded to `HasUsage`.  But the
 projection is the SAME for every dimension: forget the binder grades and a well-graded term is just a
 well-typed term of the underlying grade-free STLC, whose strong normalization is already proved (the
 Tait fundamental theorem, `HasSimpleType.stronglyNormalizing`).  This file ships that projection ONCE,
-generic over any `OrderedGradeSemiring`, from the DIM5-3 generic judgment `HasGradeOver R`.
+generic over any `OrderedGradeSemiring`, from the generic judgment `HasGradeOver R`.
 
   * `eraseGTypeOver : GTypeOver R → SimpleType` — forget every arrow's binder grade.  The output type
-    is grade-FREE (`SimpleType`, shared with DIM2-4), so it does not mention `R` — every dimension's
-    graded types erase into the SAME simple-type system.
+    is grade-FREE (`SimpleType`, shared with the usage erasure), so it does not mention `R` — every
+    dimension's graded types erase into the SAME simple-type system.
   * `HasGradeOver.erase` — grade erasure preserves typing: every `HasGradeOver R`-typed term is
     `HasSimpleType`-typed after forgetting the grades.  The generically-graded layer PROJECTS onto the
     SAME grade-free STLC that the usage dimension projects onto (`HasUsage.erase`); the grades only ADD
@@ -21,7 +21,7 @@ generic over any `OrderedGradeSemiring`, from the DIM5-3 generic judgment `HasGr
   * `HasGradeOver.stronglyNormalizing` — **THE headline.**  For ANY ordered semiring `R`, a well-graded
     term is β-strongly-normalizing, obtained by erasing to STLC and invoking the shipped
     `HasSimpleType.stronglyNormalizing` — NO graded-reducibility re-proof.  This is the
-    orthogonal-composition thesis (DIM2-7 / SN-056) at the JUDGMENT layer, for ALL 21 dimensions at
+    orthogonal-composition thesis at the JUDGMENT layer, for ALL 21 dimensions at
     once: SN survives grade erasure regardless of which dimension `R` is, because the term and its
     β-reduction are grade-AGNOSTIC (the erased term IS the same `GradedLambda`).
 
@@ -44,7 +44,7 @@ namespace FX1Poly.Modal
 
 /-- Grade erasure on generic graded types: forget every arrow's binder grade.  The output `SimpleType`
 is grade-FREE and `R`-independent — every dimension's graded types erase into the SAME simple types
-(the shared `SimpleType` of DIM2-4). -/
+(the shared `SimpleType` of the usage erasure). -/
 def eraseGTypeOver {R : OrderedGradeSemiring} : GTypeOver R → SimpleType
   | .base => .base
   | .arrow _ domain codomain => .arrow (eraseGTypeOver domain) (eraseGTypeOver codomain)
@@ -79,7 +79,7 @@ theorem HasGradeOver.erase {R : OrderedGradeSemiring} {typeContext : List (GType
       exact HasSimpleType.app (typeContext.map eraseGTypeOver) (eraseGTypeOver domain)
         (eraseGTypeOver codomain) function argument functionIH argumentIH
 
-/-- **The generic SN-transfer (DIM5-4 / generic SN-056).**  For ANY ordered semiring `R`, a well-graded
+/-- **The generic SN-transfer.**  For ANY ordered semiring `R`, a well-graded
 term (in the generic judgment `HasGradeOver R`) is β-strongly-normalizing — obtained by erasing to STLC
 (`HasGradeOver.erase`) and invoking the shipped Tait SN (`HasSimpleType.stronglyNormalizing`), with NO
 graded-reducibility re-proof.  The orthogonal-composition thesis at the JUDGMENT layer, for ALL 21
@@ -98,13 +98,13 @@ theorem linearIdentityOver_stronglyNormalizing (R : OrderedGradeSemiring) :
     GradedLambda.IsStronglyNormalizing (.lam (.var 0)) :=
   (linearIdentityOver_typed R).stronglyNormalizing
 
-/-- **DIM5-4: the security dimension's identity is β-SN via the shared transfer.**  No security-specific
-SN proof — `securityLinearIdentity_typedViaGeneric` (DIM5-3) fed through `HasGradeOver.stronglyNormalizing`. -/
+/-- **The security dimension's identity is β-SN via the shared transfer.**  No security-specific
+SN proof — `securityLinearIdentity_typedViaGeneric` fed through `HasGradeOver.stronglyNormalizing`. -/
 theorem securityLinearIdentity_stronglyNormalizingViaGeneric :
     GradedLambda.IsStronglyNormalizing (.lam (.var 0)) :=
   securityLinearIdentity_typedViaGeneric.stronglyNormalizing
 
-/-- DIM5-4: the security dimension's K combinator is β-SN via the shared transfer (a second
+/-- The security dimension's K combinator is β-SN via the shared transfer (a second
 second-dimension SN witness, again with no per-dimension proof). -/
 theorem securityKCombinator_stronglyNormalizingViaGeneric :
     GradedLambda.IsStronglyNormalizing (.lam (.lam (.var 1))) :=

@@ -2,7 +2,7 @@ import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Core.ReducibilityCandidate
 
 /-! # FX1Poly/Core/CubicalPathAlgebraReducibility
-    — cubical path-algebra (∞-groupoid) operator SN coverage, completing the cubical layer (SN-146), zero-axiom
+    — cubical path-algebra (∞-groupoid) operator SN coverage, completing the cubical layer, zero-axiom
 
 The cubical layer's path ∞-groupoid structure ships five more operators beyond the Kan transport/composition
 core (`CubicalOperatorReducibility` / `CubicalTransportReducibility`) and the eliminators
@@ -23,7 +23,7 @@ non-neutral, so the SN candidate is the honest ceiling — exactly as for the Ka
 * `*_isStronglyNormalizing_of_candidateMember(s)` — the reducibility-framing (candidate members → SN-candidate
   members).
 
-The parent→child REFLECTIONS and biconditionals follow the established generic-lemma pattern (the SN-074
+The parent→child REFLECTIONS and biconditionals follow the established generic-lemma pattern (the
 `isStronglyNormalizing_child_of_oneChildCong` per child slice, demonstrated in full for the Kan operators) and
 are omitted here: the forward closure + candidate-framing is the load-bearing SN content the fundamental
 theorem / canonicity machinery consumes.

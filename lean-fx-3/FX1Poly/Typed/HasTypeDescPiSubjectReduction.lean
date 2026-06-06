@@ -5,27 +5,25 @@ import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 
 /-! # FX1Poly/Typed/HasTypeDescPiSubjectReduction
-    — the master subject-reduction dispatcher for the GROWN engine (SRD-1 / SN-055), conditional on the grown
-      telescope SR
+    — the master subject-reduction dispatcher for the GROWN engine, conditional on the grown telescope SR
 
 The grown engine `HasTypeDescPi` adds λ (`piIntro`) and application (`piElim`) over the formation engine.  Its
 subject reduction `HasTypeDescPi Γ subject classifier → Step subject reduct → HasTypeDescPi Γ reduct classifier`
-inducts on the typing derivation, with the well-formedness threaded as the EXTENDABLE `WfContextDescPi` (WFG-1)
-so it can reach under a grown `piIntro` binder — where the `HasType`-based `WfContext` cannot (no `HasTypeDescPi
-→ IsType` bridge); `WfContextDescPi.cons` extends because the binder's domain typing IS its `IsTypeDescPi`.
+inducts on the typing derivation, with the well-formedness threaded as the EXTENDABLE `WfContextDescPi`
+so it can reach under a grown `piIntro` binder; `WfContextDescPi.cons` extends because the binder's domain
+typing IS its `IsTypeDescPi`.
 
-Every arm is now SHIPPED except the `genFormationPi` case (a grown former `mkGen generator () children`, whose
+Every arm is assembled here except the `genFormationPi` case (a grown former `mkGen generator () children`, whose
 children are grown-typed and so CAN step — unlike the formation engine, whose formers have formation-typed,
 hence normal, children).  That case is ROUTED through the ONE table-generic former arm
-`subjectReductionAtFormerGeneric` (TG-2) — which decomposes the step (root-redex-free over the formation
+`subjectReductionAtFormerGeneric` — which decomposes the step (root-redex-free over the formation
 family) and re-types the premise telescope — which needs the grown telescope SR
 `DescTelescopePi.subjectReduction`, itself gated on grown telescope context-conversion (`DescTelescopePi.
-convTelescope`, GCC-3 `#840`, the grown context-conversion bundle `#838`-`#843`).  So this file ships the
-dispatcher with that grown telescope SR as the LONE explicit hypothesis (`telescopeSR`) — the UB-SD
-conditional-package discipline (`#664`): bundle the shipped machinery, expose the single residual.  SRD-2
-(`#845`) discharges `telescopeSR` once GCC lands, yielding the unconditional master SR (closes SN-055).
+convTelescope`).  So this file ships the dispatcher with that grown telescope SR as the LONE explicit hypothesis
+(`telescopeSR`): bundle the assembled machinery, expose the single residual.  Discharging `telescopeSR` once
+grown context-conversion lands yields the unconditional master SR.
 
-## The arms (all shipped, assembled here)
+## The arms (assembled here)
 
   * **`ofFormation`** — VACUOUS: a formation-typed subject admits no step (`HasTypeDesc.subjectAdmitsNoStep`;
     the formation engine types only normal forms), so `absurd step (subjectAdmitsNoStep _)`.
@@ -34,10 +32,10 @@ conditional-package discipline (`#664`): bundle the shipped machinery, expose th
     `WfContextDescPi.cons wellFormed (domain's IsTypeDescPi)`.
   * **`piElim`** — `subjectReductionPiElimArmDescPi` with the function / argument SR obtained recursively, plus
     `wellFormed` (the grown β / output-move classifier validity).
-  * **`genFormationPi`** — routed through the ONE table-generic `subjectReductionAtFormerGeneric` (TG-2): it
+  * **`genFormationPi`** — routed through the ONE table-generic `subjectReductionAtFormerGeneric`: it
     decomposes the former step, re-types the premise telescope via the `telescopeSR` hypothesis, and
     reassembles via the generic `genFormationPi`.  The dispatcher names NO formation generator, so a new
-    formation row is absorbed by that single arm (the cascade-free TG-3 design).
+    formation row is absorbed by that single arm (the cascade-free design).
 
 ## Zero-axiom verification
 
@@ -55,10 +53,10 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 A grown-typed subject is preserved under a `Step`, at the SAME classifier, given the grown telescope SR
 `telescopeSR` (re-typing a premise telescope under a child step — the lone GCC-gated residual).  Inducts on the
 derivation, threading the EXTENDABLE `WfContextDescPi`; `ofFormation` is vacuous (formation subjects are
-normal), `conv` recurses, `piIntro` / `piElim` use the shipped function-space arms with the children's SR
+normal), `conv` recurses, `piIntro` / `piElim` use the function-space arms with the children's SR
 obtained recursively (extending well-formedness at the λ binder), `genFormationPi` routes through the
-table-generic `subjectReductionAtFormerGeneric` (TG-2), re-typing the telescope via `telescopeSR`.  Discharging
-`telescopeSR` (SRD-2, once grown context-conversion lands) yields the unconditional master SR (SN-055). -/
+table-generic `subjectReductionAtFormerGeneric`, re-typing the telescope via `telescopeSR`.  Discharging
+`telescopeSR` (once grown context-conversion lands) yields the unconditional master SR. -/
 theorem HasTypeDescPi.subjectReductionOfGrownTelescopeSR {profile : PolyProfile}
     (telescopeSR : ∀ {baseScope currentDepth : Nat} {binderShifts : List Nat}
         {telescopeContext : TypingContext profile (baseScope + currentDepth)}

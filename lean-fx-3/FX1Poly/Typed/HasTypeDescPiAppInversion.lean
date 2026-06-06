@@ -3,22 +3,22 @@ import FX1Poly.Typed.HasTypeDescPiRootGeneric
 import FX1Poly.Core.RawConfluence
 
 /-! # FX1Poly/Typed/HasTypeDescPiAppInversion — Π-ELIMINATION (app) inversion for the GROWN engine
-    (the OUTER inversion general β-subject-reduction needs; TY-INVN #454/#769, dual of invertLam)
+    (the OUTER inversion general β-subject-reduction needs; dual of invertLam)
 
 For an `appCell functionTerm argument` SUBJECT typed in the grown engine `HasTypeDescPi`, this file
 recovers the piElim premises: the function is typed at a Π-code `piTyCodeCell domainCode codomainCode`,
 the argument is typed at the domain, and the classifier is convertible to the dependent output
 `RawTerm.subst0 codomainCode argument`.  Together with `HasTypeDescPi.invertLam` (the Π-introduction
-inversion) this is everything fully-general β-subject-reduction (TY-SR-beta, #474) consumes:
+inversion) this is everything fully-general β-subject-reduction consumes:
 `app (lam b) a : T` ⟹ invertApp gives `lam b : Π dom cod`, `a : dom`, `T Conv subst0 cod a`; invertLam
 gives `b : cod'` under `cons dom'` with `Π dom cod Conv Π dom' cod'`; injecting that Π-`Conv` aligns
-domain/codomain and the substitution lemma (#457) retypes `subst0 b a`.
+domain/codomain and the substitution lemma retypes `subst0 b a`.
 
 ## Why the `Conv` conjunct survives (same reason as invertLam)
 
 Raw `Conv` is an UNCONDITIONAL equivalence relation (`Conv.trans` / `Conv.sym`, harvested from raw
-confluence #420/#714), so the `conv` arm composes `converts.sym` with the recursive `Conv` — no
-`toHasType`, no `IsType`, no `WfContext`.
+confluence), so the `conv` arm composes `converts.sym` with the recursive `Conv` — no well-formedness
+hypothesis.
 
 ## The recipe (propext-free, the dual of invertLam)
 

@@ -12,7 +12,8 @@ Every prior file built one ingredient:
 * `exists_normalForm_of_isStronglyNormalizing` (∃) / `normalForm_unique` — an SN term has a unique normal form;
 * `Conv.decidableOfNormalForms_of_isStronglyNormalizing` — given the normal forms, conversion is decidable.
 
-This file ties them off.  `RawTerm.normalize` IS the normal-form *function* (no longer an existential): it
+This file ties them off.  `RawTerm.normalize` IS the normal-form *function* (the computational form, not the
+existential `exists_normalForm_of_isStronglyNormalizing`): it
 iterates `reduceOnce` along the accessibility witness `Acc StepSuccessor` until the reducer halts.  Because
 `reduceOnce` is sound (each step is a real `Step`, so the successor stays accessible — the descent) and
 complete (it halts only at a structural normal form — the right place to stop), the two correctness

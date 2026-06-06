@@ -1,6 +1,7 @@
 import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiFormerCongruence
+import FX1Poly.Typed.HasTypeDescPiClassifierValidity
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.ConvSubstRename
 
@@ -28,7 +29,7 @@ dispatcher's induction calls them with the IHs verbatim:
 ## Zero-axiom verification
 
 `Step.from_lam` / `Step.from_app` + `piIntro` / `piElim` / `betaSubjectReduction` + `Conv.subst0` + a one-step
-`Conv` + `classifierIsTypeDesc`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+`Conv` + `classifierIsTypeDescPi`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 `omega`.  Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -71,7 +72,7 @@ theorem HasTypeDescPi.subjectReductionPiElimArm {profile : PolyProfile} {scope :
         HasTypeDescPi profile context functionReduct (piTyCodeCell domainCode codomainCode))
     (argumentSR : ∀ {argumentReduct : RawTerm scope},
       Step argument argumentReduct → HasTypeDescPi profile context argumentReduct domainCode)
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context reduct (RawTerm.subst0 codomainCode argument) := by
   rcases Step.from_app step with ⟨body, functionEq, reductEq⟩ |
       ⟨functionAfter, reductEq, functionStep⟩ | ⟨argumentAfter, reductEq, argumentStep⟩
@@ -91,7 +92,7 @@ theorem HasTypeDescPi.subjectReductionPiElimArm {profile : PolyProfile} {scope :
       Conv.subst0 (Conv.refl codomainCode)
         ⟨argumentAfter, StepStar.refl _, StepStar.single argumentStep⟩
     obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ :=
-      (HasTypeDescPi.piElim functionTyped argumentTyped).classifierIsTypeDesc wellFormed
+      (HasTypeDescPi.piElim functionTyped argumentTyped).classifierIsTypeDescPi wellFormed
     exact HasTypeDescPi.conv classifierLevel classifierFlag rebuilt convMovedOutput classifierTyped
 
 /-- **Dispatcher Π-former arm (specific-IH).**  Given the components' universe-typings, each child's SR at its

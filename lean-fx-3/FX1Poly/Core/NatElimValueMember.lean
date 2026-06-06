@@ -5,10 +5,10 @@ import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 
 /-! # FX1Poly/Core/NatElimValueMember
-    — value-case `natElim` / `natRec` reducibility with the recursor-SN obligation DISCHARGED (toward SN-061)
+    — value-case `natElim` / `natRec` reducibility with the recursor-SN obligation DISCHARGED
 
-`NatElimValueReducibility` (#732) proved the value case of `natElim` recursor reducibility — `natElim numeral
-zeroBranch succBranch` lands in the result candidate — but took `redexStronglyNormalizing` (the recursor cell at
+`NatElimValueReducibility` proves the value case of `natElim` recursor reducibility — `natElim numeral
+zeroBranch succBranch` lands in the result candidate — but takes `redexStronglyNormalizing` (the recursor cell at
 a numeral is strongly normalizing) as a bespoke per-use HYPOTHESIS, discharged downstream by the
 SN-from-SN-branches recursor fed the honest `succContractumTerminates` IH-premise.
 
@@ -32,9 +32,9 @@ Two theorems:
   induction on `IsNatValue`, the cell SN comes from the helper (its succ-ι-reduct membership supplied by the
   `IsNatValue` membership IH), and the membership itself by weak-head expansion of the ι-reduct.
 
-`#672`-independent: the result candidate is a fixed (non-universe-domain) candidate; this is the pure
+Fundamental-independent: the result candidate is a fixed (non-universe-domain) candidate; this is the pure
 computational Tait recursor argument for the value case.  The scrutinee-reduction and neutral regimes are the
-remaining outer recursion of SN-061, shared with the closed-membership track.
+remaining outer recursion, shared with the closed-membership track.
 
 ## Zero-axiom verification
 

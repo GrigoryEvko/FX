@@ -1,7 +1,7 @@
 import FX1Poly.OmegacE.OmegacEAt
 
 /-! # FX1Poly/OmegacE/OmegacEFiniteType
-    — the ωcE polygraph is a BINARY FINITE-TYPE family (SN-122 core, #625)
+    — the ωcE polygraph is a BINARY FINITE-TYPE family
 
 The walking-coherent-equivalence generator family `OmegacECell` (`OmegacEAt.lean`, HLOR Construction 1.22) is
 **finite-type**: at every dimension there are finitely many — in fact exactly two — generating cells, and they
@@ -28,7 +28,7 @@ This ships the full finite-type-family witness (enumeration + exhaustiveness + d
 stability) — a genuine, standalone ωcE structural theorem package.  It does NOT bump
 `fxOmegacEConstructionLevel`: the linear `OmegacEConstructionLevel` ladder places `finiteTypeFamily` above
 `boundaryPresented`/`hlorPushoutConstruction`, and those rungs (the generator BOUNDARY data + the HLOR pushout)
-remain the deferred Axis-9 construction (SN-121).  The finite-type theorems here are independent of those rungs
+remain the deferred Axis-9 construction.  The finite-type theorems here are independent of those rungs
 and stand on their own.
 
 ## Zero-axiom verification
@@ -115,7 +115,7 @@ theorem slotOf_atSlot_general (dimension : Nat) (slot : Fin 2) :
   | ⟨counterValue + 2, isLessThanTwo⟩ =>
       exact absurd isLessThanTwo (Nat.not_lt.mpr (Nat.le_add_left 2 counterValue))
 
-/-- **Suspension preserves the slot** — the "+ Suspend" half of SN-122.  A generator and its once-suspended image
+/-- **Suspension preserves the slot** — the "+ Suspend" half of the finite-type-family witness.  A generator and its once-suspended image
 occupy the same of the two slots, so the binary finite-type structure is STABLE under the suspension `Σ`: the two
 slots at dimension `n` map to the two slots at dimension `n+1`.  Immediate from `OmegacECell.suspend`'s definition
 (`atSlot (n+1) (slotOf cell)`) and the general round-trip `slotOf_atSlot_general`. -/

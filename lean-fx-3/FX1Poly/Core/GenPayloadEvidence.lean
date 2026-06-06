@@ -101,7 +101,7 @@ uniform across the two layers.
 * `genPayloadEvidence` is the total, fxProfile-default constructor —
   every payload admitted, returns the trivial witness `()`.
 
-* `genPayloadEvidence?` is the Option-valued decision (#142).  Under
+* `genPayloadEvidence?` is the Option-valued decision.  Under
   fxProfile, always `some ()`.  Restricted profiles return `none` for
   rejected payloads.  Wrapping in Option keeps the certifier's
   per-profile interface uniform.
@@ -136,7 +136,7 @@ is the unconditional admission, the `?` form is the Option wrapper. -/
     GenPayloadEvidence generator scope payload :=
   ()
 
-/-- Option-valued payload-admission decision (#142).  Under
+/-- Option-valued payload-admission decision.  Under
 `fxProfile`, always `some ()` (every payload admitted).  Restricted
 profiles return `none` for rejected payloads.
 

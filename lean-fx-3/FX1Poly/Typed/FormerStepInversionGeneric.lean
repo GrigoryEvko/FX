@@ -35,8 +35,8 @@ disjunct) applied to step inversion — the cascade-free successor `former_step_
 ## Zero-axiom verification
 
 `cases step` with `generator` FREE stays propext-clean (the impossible redex cases are discharged by the
-explicit `nomatch`, not by leaked impossible-case equation lemmas — the raw-routing-inversion concern was
-checked and does not arise here).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+explicit `nomatch`, not by leaked impossible-case equation lemmas — the raw-routing-inversion concern does not
+arise here).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 

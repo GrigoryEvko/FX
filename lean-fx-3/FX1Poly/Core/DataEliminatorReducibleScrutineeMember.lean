@@ -10,9 +10,9 @@ import FX1Poly.Core.WeakHeadStepSubsumes
 general-scrutinee reducibility: the recursor over an ARBITRARY reducible scrutinee is a member of the result
 candidate, by dispatching on the data candidate's built-in value-or-neutral disjunct.  The NON-recursive
 eliminators (`boolElim` / `fst` / `snd` / `optionMatch` / `eitherMatch` / `idJ` / `idStrictRec`) had only the
-CLOSED membership (scope 0, via `closedReducesToValue`) and the NEUTRAL regime; their open-scope value regime and
-general-scrutinee dispatch were never shipped.  This file ships that regime for the non-recursive eliminators,
-beginning with `boolElim` (the canonicity poster child, SN-047/063).
+CLOSED membership (scope 0, via `closedReducesToValue`) and the NEUTRAL regime.  This file ships the open-scope
+value regime and general-scrutinee dispatch for the non-recursive eliminators,
+beginning with `boolElim` (the canonicity poster child).
 
 The dispatch is identical in shape to the recursive case but simpler — no inductive hypothesis, no
 successor-branch application — because the ι contractum is just the SELECTED BRANCH, a member by hypothesis:
@@ -30,7 +30,7 @@ successor-branch application — because the ι contractum is just the SELECTED 
     lifted back through the scrutinee congruence `StepStar.boolElimScrutinee` by `ofStepStarReachingValue`.
 
 The open-scope generalization of `boolElimClosedIsMember` (where the neutral disjunct is vacuous at scope 0).
-`#672`-independent — pure Tait dispatch over the shipped bool candidate regimes.
+Fundamental-independent — pure Tait dispatch over the shipped bool candidate regimes.
 
 ## Zero-axiom verification
 

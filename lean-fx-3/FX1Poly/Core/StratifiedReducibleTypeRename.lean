@@ -6,7 +6,7 @@ import FX1Poly.Core.StrongNormalizationRenameForward
 /-! # Foundation/PolyCell/Core/StratifiedReducibleTypeRename
     — the stratified reducibility step-functor is closed under a left-invertible renaming, NEUTRAL leaf
 
-SN-040 asks that the stratified reducibility relation `ReducibleTypeStep` / `ReducibleTypeAt` be closed
+Renaming-closure asks that the stratified reducibility relation `ReducibleTypeStep` / `ReducibleTypeAt` be closed
 under renaming.  The structural arms (`neutral`, `whnfExpand`, `universeCode`, `ofPointwiseIff`) transport
 along a left-invertible renaming via the renaming substrate shipped for the purpose
 (`isStronglyNormalizing_rename_of_leftInverse`, `WeakHeadStep.rename`,
@@ -71,7 +71,7 @@ theorem ReducibleTypeStep.neutralRename_of_leftInverse {sourceScope targetScope 
 /-- **Member transport for the neutral leaf.**  The `neutral` candidate is `IsStronglyNormalizing` both
 before and after the renaming, so an old member transports to a member of the renamed type by forward
 strong-normalization preservation (`isStronglyNormalizing_rename_of_leftInverse`).  This is the member-level
-companion of `neutralRename_of_leftInverse`, completing the neutral leaf of the SN-040 rename-closure. -/
+companion of `neutralRename_of_leftInverse`, completing the neutral leaf of the rename-closure. -/
 theorem ReducibleTypeStep.neutralRenameMember_of_leftInverse {sourceScope targetScope : Nat}
     (forwardRenaming : RawRenaming sourceScope targetScope)
     (leftInverseRenaming : RawRenaming targetScope sourceScope)

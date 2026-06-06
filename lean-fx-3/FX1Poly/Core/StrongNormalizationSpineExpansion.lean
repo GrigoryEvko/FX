@@ -8,7 +8,7 @@ import FX1Poly.Core.StepSubst
 
 This SUBSUMES the spine-length staircase (`betaRedex_…_of_contractum` = empty spine,
 `betaRedexUnderApp_…` = singleton spine) with ONE theorem parameterised by the spine
-list, so the head-expansion no longer grows one lemma per function order.
+list, so the head-expansion does not grow one lemma per function order.
 
 `applySpineApp head [s₁,…,sₙ] = (… ((head s₁) s₂) …) sₙ` is the standard left-nested
 application spine.  The general head-expansion is

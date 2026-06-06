@@ -1,20 +1,19 @@
-import FX1Poly.Typed.HasType
+import FX1Poly.Typed.TypingContext
+import FX1Poly.Typed.CellConstructors
+import FX1Poly.Core.StepStarConfluence
 
 /-! # FX1Poly/Typed/HasTypeDesc — the description-driven generic typing engine
     (the moonshot core: the Natural-Model display map as a data-driven `gen` arm)
 
 polycell.md §11.8.5 Decision 4 / §5.2: the typing display map `Tm ↠ Ty` realized
 cellularly by a CASCADE-FREE generic `gen` arm — a new feature is one
-`TypingRuleDesc` DATA row, never a new `HasType` arm.  This file carries that arm
+`TypingRuleDesc` DATA row, never a new `HasTypeDesc` arm.  This file carries that arm
 for the dependent-type-FORMER family (the most uniform shape).
 
-`HasTypeDesc` runs alongside the bespoke `HasType`.  Its
-faithfulness wrt `HasType` on the formation fragment is proved in two halves:
-COMPLETENESS (`HasType.toHasTypeDesc`, below — every `HasType` derivation has a
-description-engine counterpart) and SOUNDNESS (`HasTypeDesc.toHasType`, in the
-companion `HasTypeDescSound.lean` — the engine derives nothing the trusted kernel
-wouldn't, 0-FP).  Together they give the full `HasTypeDesc ⟺ HasType` equivalence
-on this fragment.
+`HasTypeDesc` is the formation typing engine.  Its metatheory is proved
+INTRINSICALLY — validity (`HasTypeDesc.classifierIsTypeDescNative`), uniqueness
+(`HasTypeDesc.uniquenessNative`), inversion, and strong normalization are all by
+recursion on `HasTypeDesc` itself over the native well-formedness `WfContextDesc`.
 Arms:
 * `var`, `conv` — the irreducible core (every typed-layer engine has them).
 * `universeFormation` — the nullary universe-code shape.  Genuinely special: its
@@ -320,7 +319,7 @@ theorem DescTelescope.levels_ne_nil_of_isFormation {profile : PolyProfile}
 /-- Reconstruction: the generic `genFormation` arm derives Π-formation.  Domain
 typed at `Type@(domainLevel, flag)`, codomain at `Type@(codomainLevel, flag)`
 UNDER the domain binder ⟹ `piTyCodeCell` inhabits `Type@(lmax domainLevel
-codomainLevel, flag)` — the same conclusion as `HasType.piFormation`, through
+codomainLevel, flag)` — the canonical Π-formation conclusion, through
 the data-driven generic arm (`lmaxAll [domainLevel, codomainLevel]` reduces to
 `lmax domainLevel codomainLevel`). -/
 theorem hasTypeDesc_piFormation_viaGenArm
@@ -367,36 +366,5 @@ theorem hasTypeDesc_sigmaFormation_viaGenArm
   exact DescTelescope.cons (currentDepth := 1) (context.cons domain) codomain
     codomainLevel [] flag .childNil codomainTyped
     (DescTelescope.nil (currentDepth := 2) (context.cons domain |>.cons codomain) flag)
-
--- TODO: remove in HT-C (the HasType-engine delete).  Bridge 1 of 3 (completeness).  NOTE: this file
--- SURVIVES — it defines the native `HasTypeDesc` engine — so delete only THIS theorem, not the file,
--- once every consumer is rerouted to native `HasTypeDesc` rules and the old `HasType` engine is gone.
-/-- COMPLETENESS of the description engine wrt the bespoke `HasType`:
-every `HasType` derivation on the native pi/sigma-formation HasType core has a `HasTypeDesc`
-counterpart.  A single induction on `HasType` (NOT mutual — `HasType`'s premises
-are direct sub-derivations with IHs): `var`/`conv`/`universeFormation` map to the
-matching `HasTypeDesc` arm; `piFormation`/`sigmaFormation` map through the
-generic `genFormation` arm via the reconstruction lemmas.  So the data-driven
-generic engine is at least as strong as the five hand-written arms — the
-cascade-free engine loses nothing. -/
-theorem HasType.toHasTypeDesc {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    {subject classifier : RawTerm scope}
-    (typed : HasType profile context subject classifier) :
-    HasTypeDesc profile context subject classifier := by
-  induction typed with
-  | var context index => exact HasTypeDesc.var context index
-  | conv levelExpr flag _typed converts _reclassifierTyped ihTyped ihReclassifier =>
-      exact HasTypeDesc.conv levelExpr flag ihTyped converts ihReclassifier
-  | universeFormation context levelExpr flag =>
-      exact HasTypeDesc.universeFormation context levelExpr flag
-  | piFormation context domainCode codomainCode domainLevel codomainLevel flag
-      _domainTyped _codomainTyped ihDomain ihCodomain =>
-      exact hasTypeDesc_piFormation_viaGenArm context domainCode codomainCode
-        domainLevel codomainLevel flag ihDomain ihCodomain
-  | sigmaFormation context domainCode codomainCode domainLevel codomainLevel flag
-      _domainTyped _codomainTyped ihDomain ihCodomain =>
-      exact hasTypeDesc_sigmaFormation_viaGenArm context domainCode codomainCode
-        domainLevel codomainLevel flag ihDomain ihCodomain
 
 end FX1Poly.Typed

@@ -1,14 +1,14 @@
 import FX1Poly.Modal.GradeVectorGeneric
 import FX1Poly.Modal.UsageDiscipline
 
-/-! # FX1Poly/Modal/GradedTypingGeneric — the GENERIC graded-typing judgment (DIM5-3 + dims 6–21)
+/-! # FX1Poly/Modal/GradedTypingGeneric — the GENERIC graded-typing judgment (all graded dimensions)
 
-The usage dimension's grade-checking judgment `HasUsage` (`GradedTyping.lean`, DIM2-3) is hardcoded to
+The usage dimension's grade-checking judgment `HasUsage` (`GradedTyping.lean`) is hardcoded to
 the usage carrier (`UsageGrade` arrows, `GradeVector` usage vectors).  But the §6.2 grade-checking rules
 — the corrected Wood/Atkey Lam (the lambda records its binder grade in the arrow type) and the App
 SCALING (`functionGrades + binderGrade · argumentGrades`) — are the SAME for every dimension: they depend
 only on the ordered semiring `R = (Carrier, 0, 1, +, *, ≤)`, never on WHICH dimension it is.  This file
-ships that judgment ONCE, generic over any `OrderedGradeSemiring`, on top of the DIM5-2 generic vector
+ships that judgment ONCE, generic over any `OrderedGradeSemiring`, on top of the generic vector
 (`GradeVectorOver R`, `GradeVectorGeneric.lean`).  The usage and security dimensions (and the remaining
 17) instantiate it for free — no per-dimension re-proof of the judgment or its structural metatheory.
 
@@ -20,7 +20,7 @@ ships that judgment ONCE, generic over any `OrderedGradeSemiring`, on top of the
     `getElem?` notation routes through `propext`, so it is avoided, exactly as `GType.lookup`).
 
   * `HasGradeOver R Γ p t T` — the typing-and-grade judgment: in type context `Γ`, term `t` has type
-    `T` and uses the bindings with grade vector `p`.  The three rules mirror DIM2-3 generically: VAR
+    `T` and uses the bindings with grade vector `p`.  The three rules mirror the usage judgment generically: VAR
     uses its variable at grade `R.one` (`single … R.one`); LAM records the body's head grade as the
     arrow's binder grade and passes the body's outer grades out (the co-effect Lam rule); APP combines
     `functionGrades + binderGrade · argumentGrades` (the App SCALING via `GradeVectorOver.add` +
@@ -37,7 +37,7 @@ The orthogonal-composition payoff: `linearIdentityOver_typed` / `kCombinatorOver
 generically, then instantiated at BOTH `fxUsageSemiring` (arrow grades `ω`/`1`/`0`) AND
 `fxSecuritySemiring` (arrow grades `classified`/`unclassified`).  The SAME judgment types the linear
 identity and the K combinator in two different dimensions with no per-dimension proof — the
-orthogonal-composition thesis (DIM2-7) lifted from the semiring/vector layers (DIM5-1/DIM5-2) to the
+orthogonal-composition thesis lifted from the semiring/vector layers to the
 JUDGMENT layer.  The reduction-based metatheory (weakening / substitution / subject reduction) is the
 next brick; the usage dimension's `GradedTypingMetatheory` / `GradedSubjectReduction` are its concrete
 template.
@@ -73,14 +73,14 @@ def GTypeOver.lookup {R : OrderedGradeSemiring} : List (GTypeOver R) → Nat →
 
 /-- **The generic graded typing-and-grade judgment** `Γ ⊢_p t : T` over the ordered semiring `R`: in
 type context `Γ` (a list of `GTypeOver R`), term `t` has type `T` and uses the bindings with grade
-vector `p : GradeVectorOver R`.  The three rules are DIM2-3's, generic over `R`:
+vector `p : GradeVectorOver R`.  The three rules are the usage judgment's, generic over `R`:
 
   * VAR uses its variable at grade `R.one` (`GradeVectorOver.single … R.one`);
   * LAM records the body's head grade as the arrow's binder grade and passes the body's outer grades
     out (the co-effect Lam rule);
   * APP combines `functionGrades + binderGrade · argumentGrades` — the App SCALING (`add` of the
     function grades and the `scale`-by-binder-grade argument grades), the accounting that makes the
-    judgment subject-reduction-sound (DIM2-3). -/
+    judgment subject-reduction-sound. -/
 inductive HasGradeOver (R : OrderedGradeSemiring) :
     List (GTypeOver R) → GradeVectorOver R → GradedLambda → GTypeOver R → Prop where
   | var (typeContext : List (GTypeOver R)) (index : Nat) (varType : GTypeOver R)
@@ -206,7 +206,7 @@ theorem kCombinatorOver_typed (R : OrderedGradeSemiring) :
       (GradeVectorOver.cons R.one GradeVectorOver.nil) (.var 1)
       (HasGradeOver.var (R := R) [GTypeOver.base, GTypeOver.base] 1 GTypeOver.base rfl))
 
-/-! ## Per-dimension instantiation smokes — the SAME judgment, two dimensions (DIM5-3) -/
+/-! ## Per-dimension instantiation smokes — the SAME judgment, two dimensions -/
 
 /-- Usage-dimension instantiation: the generic judgment types the linear identity at `fxUsageSemiring`
 with arrow grade `UsageGrade.one`. -/
@@ -215,17 +215,17 @@ theorem usageLinearIdentity_typedViaGeneric :
       (.arrow fxUsageSemiring.one GTypeOver.base GTypeOver.base) :=
   linearIdentityOver_typed fxUsageSemiring
 
-/-- **DIM5-3: the security-dimension graded judgment.**  The SAME `HasGradeOver` types the linear
-identity at `fxSecuritySemiring` (DIM5-1) — arrow grade `SecurityGrade.classified` (= `R.one`).  No
+/-- **The security-dimension graded judgment.**  The SAME `HasGradeOver` types the linear
+identity at `fxSecuritySemiring` — arrow grade `SecurityGrade.classified` (= `R.one`).  No
 per-dimension proof: the generic `linearIdentityOver_typed` instantiated at a second semiring.  The
-orthogonal-composition thesis (DIM2-7) at the JUDGMENT layer — a second dimension grade-checked by the
+orthogonal-composition thesis at the JUDGMENT layer — a second dimension grade-checked by the
 shared judgment with no change to it. -/
 theorem securityLinearIdentity_typedViaGeneric :
     HasGradeOver fxSecuritySemiring [] GradeVectorOver.nil (.lam (.var 0))
       (.arrow fxSecuritySemiring.one GTypeOver.base GTypeOver.base) :=
   linearIdentityOver_typed fxSecuritySemiring
 
-/-- DIM5-3: the security dimension's K combinator via the shared judgment — `λx.λy.x` typed at
+/-- The security dimension's K combinator via the shared judgment — `λx.λy.x` typed at
 `fxSecuritySemiring` with the discard binder grade `SecurityGrade.unclassified` (= `R.zero`) on `y`.
 A second witness that the generic judgment carries the full grade discipline (use AND discard) into the
 security dimension unchanged. -/

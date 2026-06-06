@@ -1,12 +1,12 @@
 import FX1Poly.Modal.GradedSubstitutionGeneric
 
-/-! # FX1Poly/Modal/GradedSubjectReductionGeneric — generic substitution + β SR (DIM5-7 + dims 6–21)
+/-! # FX1Poly/Modal/GradedSubjectReductionGeneric — generic substitution + β SR (all graded dimensions)
 
-The usage dimension's subject-reduction headline (`GradedSubjectReduction.lean`, DIM2-3) is hardcoded to
+The usage dimension's subject-reduction headline (`GradedSubjectReduction.lean`) is hardcoded to
 `GType` / `HasUsage`.  But the SUBSTITUTION lemma and β subject reduction are the SAME argument for
-every dimension — they thread the DIM5-6 `substInto` grade-algebra through the typing derivation.  This
+every dimension — they thread the `substInto` grade-algebra through the typing derivation.  This
 file ships them ONCE, generic over any `OrderedGradeSemiring`, completing the generic reduction
-metatheory begun in DIM5-5 (weakening) and DIM5-6 (the substInto grade-algebra).
+metatheory (weakening and the substInto grade-algebra).
 
   * `hasGradeOver_substitution` — **graded substitution**: substituting `argTerm` (typed at grade vector
     `argGrades` in the context with the cut binding removed) for the variable at `cutDepth` in `subject`
@@ -25,18 +25,18 @@ The witness `securityBeta_smoke` exercises β subject reduction in the SECURITY 
 identity applied to itself reduces with its security grade vector preserved, with no security-specific SR
 proof — the orthogonal-composition thesis at the subject-reduction layer.
 
-The lawful bundle is threaded throughout (the substitution lemma consumes the DIM5-6 `substInto_*`
-lemmas and DIM5-5 weakening, all of which take `lawful`); the derivation-structural skeleton (the
-var-trichotomy, the λ/App threading) is identical to DIM2's concrete proof.
+The lawful bundle is threaded throughout (the substitution lemma consumes the `substInto_*`
+lemmas and weakening, all of which take `lawful`); the derivation-structural skeleton (the
+var-trichotomy, the λ/App threading) is identical to the usage dimension's concrete proof.
 
 ## Zero-axiom verification
 
 `hasGradeOver_substitution` is a derivation induction; the var case computes `substAt` with `if_pos`/
-`if_neg` and relocates the grade with the DIM5-6 `substInto_single_*` lemmas; the λ/App cases rewrite
+`if_neg` and relocates the grade with the `substInto_single_*` lemmas; the λ/App cases rewrite
 with `substInto_succ_cons`/`substInto_appGrade` and reassemble via the constructors.
 `hasGradeOver_betaPreservation` inverts + `injection`s the arrow equality + substitutes at cut 0.  The
 Nat lemmas (`Nat.lt_trichotomy`, `Nat.succ_pred_eq_of_pos`, `Nat.lt_irrefl`, `Nat.ne_of_gt`, …) and
-`Option.some.inj` are the same propext-free lemmas DIM2 uses.  No `axiom`, `sorry`, `propext`,
+`Option.some.inj` are the same propext-free lemmas the usage dimension uses.  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, `omega` (every declaration probed with `#print axioms`
 before landing).  Per-declaration gated in `FX1PolyAudit/AuditModal.lean`.
 -/
@@ -161,7 +161,7 @@ theorem hasGradeOver_betaPreservation {R : OrderedGradeSemiring}
   rw [gradesEq]
   exact hasGradeOver_substitution lawful bodyTyped 0 domain argTerm argGrades rfl argTyped
 
-/-- **DIM5-7: β subject reduction in the SECURITY dimension.**  The security identity applied to itself
+/-- **β subject reduction in the SECURITY dimension.**  The security identity applied to itself
 reduces with its security grade vector preserved — no security-specific SR proof, the shared
 `hasGradeOver_betaPreservation` at `fxSecuritySemiring`.  The orthogonal-composition thesis at the
 subject-reduction layer. -/

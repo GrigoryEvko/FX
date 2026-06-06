@@ -15,12 +15,12 @@ import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.WeakHeadStep
 
 /-! # FX1Poly/Core/DataEliminatorMembershipSmoke
-    — concrete closed-witness regression for the data-eliminator MEMBERSHIP family (SN-149 corpus seed).
+    — concrete closed-witness regression for the data-eliminator MEMBERSHIP family.
 
 The data-reducibility-member layer is complete: every data eliminator has a closed-membership theorem
-(`boolElimClosedIsMember` #736, `fstClosedIsMember`/`sndClosedIsMember` #690, `idJClosedIsMember`/
-`idStrictRecClosedIsMember` #691, `optionMatchClosedIsMember`/`eitherMatchClosedIsMember` #692, and the
-recursive `natElim`/`natRec`/`listElim` membership in `RecursorClosedMembership` #732/#733).  This file
+(`boolElimClosedIsMember`, `fstClosedIsMember`/`sndClosedIsMember`, `idJClosedIsMember`/
+`idStrictRecClosedIsMember`, `optionMatchClosedIsMember`/`eitherMatchClosedIsMember`, and the
+recursive `natElim`/`natRec`/`listElim` membership in `RecursorClosedMembership`).  This file
 EXERCISES that family at a CONCRETE closed witness — not an alias — confirming the membership theorem and the
 canonical value-member witnesses compose end-to-end into an actual closed inhabitant of the candidate.
 
@@ -30,8 +30,8 @@ A permanent regression: if a refactor breaks `boolElimClosedIsMember` or `boolTr
 
 Concrete smoke witnesses are shipped for every eliminator whose closed-membership lemma takes ONLY
 `CanonicalFormsPredicate`-member hypotheses — no `↝*`-inversion, no `respectsSN` side condition:
-`boolElimClosedMembershipSmoke` (#736), `idJClosedMembershipSmoke` / `idStrictRecClosedMembershipSmoke`
-(#691, fed the `refl` value member).
+`boolElimClosedMembershipSmoke`, `idJClosedMembershipSmoke` / `idStrictRecClosedMembershipSmoke`
+(fed the `refl` value member).
 
 The value-PROJECTING eliminators (`fstClosedIsMember` / `sndClosedIsMember`, whose component-member
 obligation quantifies over `scrutinee ↝* pairCell _ _`) are shipped at a concrete witness:
@@ -72,7 +72,7 @@ open StepStar
 
 /-- **Concrete data-eliminator membership regression.**  The closed `boolElim` cell with scrutinee
 `boolTrue` and branches `boolTrue` / `boolFalse` — all canonical bool members — is itself a member of the
-bool candidate.  The SN-063 elimination half exercised at a closed witness via `boolElimClosedIsMember` fed
+bool candidate.  The elimination half exercised at a closed witness via `boolElimClosedIsMember` fed
 the shipped `boolTrueCell_isMember` / `boolFalseCell_isMember`. -/
 theorem boolElimClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
@@ -82,7 +82,7 @@ theorem boolElimClosedMembershipSmoke :
 
 /-- **Concrete idJ membership regression.**  The closed `idJ` cell with base case `boolTrue` and witness
 `refl boolTrue` — the base case a canonical bool member, the witness a canonical refl member — is itself a
-member of the bool candidate.  The SN-068 elimination half exercised at a closed witness via
+member of the bool candidate.  The elimination half exercised at a closed witness via
 `idJClosedIsMember` fed `boolTrueCell_isMember` and the refl member `isReflValue_isMember` (the witness'
 inner term `boolTrue` is step-normal by `decide`). -/
 theorem idJClosedMembershipSmoke :
@@ -91,7 +91,7 @@ theorem idJClosedMembershipSmoke :
   idJClosedIsMember (isReflValue_isMember ⟨boolTrueCell, rfl, by decide⟩) boolTrueCell_isMember
 
 /-- **Concrete idStrictRec membership regression.**  Identical to `idJClosedMembershipSmoke` at the strict
-identity recursor `gen_idStrictRec` — the SN-069 elimination half at a closed witness via
+identity recursor `gen_idStrictRec` — the elimination half at a closed witness via
 `idStrictRecClosedIsMember`. -/
 theorem idStrictRecClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
@@ -100,7 +100,7 @@ theorem idStrictRecClosedMembershipSmoke :
 
 /-- **Concrete `fst` projection membership regression.**  The closed `fst` cell over the canonical pair
 `pairCell boolTrue boolFalse` is a member of the bool candidate (its first component `boolTrue` being a
-member).  Exercises the value-PROJECTING half of SN-058 at a concrete witness via `fstClosedIsMember`.  The
+member).  Exercises the value-PROJECTING half at a concrete witness via `fstClosedIsMember`.  The
 component obligation is discharged by inverting the reaching `↝*`: the pair is a structural normal form, so
 `RawTerm.isStepNormalForm_blocks_step` (on `by decide`) forces it reflexive through `StepStar.eq_of_noStep`,
 and the `mkGen`/`childCons` injection pins the first component to `boolTrue`. -/
@@ -175,7 +175,7 @@ theorem constLamBoolTrue_respectsSN :
 
 /-- **Concrete `optionMatch` membership regression.**  The closed `optionMatch` on the `none` scrutinee with
 none-branch `boolTrue` and some-branch `λ_. boolTrue` is a bool-candidate member.  Exercises the branch-applying
-half of SN-065 at a concrete witness via `optionMatchClosedIsMember`: the `none` scrutinee is a canonical option
+half at a concrete witness via `optionMatchClosedIsMember`: the `none` scrutinee is a canonical option
 value, the none-branch is a bool member, and the some-branch terminates (`lam_isStronglyNormalizing_of_body`) and
 respects SN (`constLamBoolTrue_respectsSN`). -/
 theorem optionMatchClosedMembershipSmoke :
@@ -191,7 +191,7 @@ theorem optionMatchClosedMembershipSmoke :
 
 /-- **Concrete `eitherMatch` membership regression.**  The closed `eitherMatch` on the `inl boolTrue` scrutinee
 with both branches `λ_. boolTrue` is a bool-candidate member.  Symmetric to `optionMatchClosedMembershipSmoke`
-but BOTH branches apply (no passive base), so both respect-SN witnesses are consumed.  The SN-066 elimination
+but BOTH branches apply (no passive base), so both respect-SN witnesses are consumed.  The elimination
 half at a concrete witness. -/
 theorem eitherMatchClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
@@ -217,7 +217,7 @@ contractum re-invokes the recursor, genuinely needs the well-founded recursor SN
 
 /-- **Concrete `natElim`-on-`natZero` base-case membership regression.**  `natElim natZero boolTrue boolTrue`
 fires ι to the zero-branch `boolTrue` (a bool member); the cell is SN by
-`natElimZero_isStronglyNormalizing_of_branches` (branch-SN only — natZero fires without recursion).  The SN-061
+`natElimZero_isStronglyNormalizing_of_branches` (branch-SN only — natZero fires without recursion).  The
 base half at a concrete witness. -/
 theorem natElimZeroClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
@@ -243,7 +243,7 @@ theorem natRecZeroClosedMembershipSmoke :
     boolTrueCell_isMember.closedReducesToValue
 
 /-- **Concrete `listElim`-on-`listNil` base-case membership regression.**  `listElim listNil boolTrue boolTrue`
-fires ι to the nil-branch `boolTrue`; SN by `listElimNil_isStronglyNormalizing_of_branches`.  The SN-064 base
+fires ι to the nil-branch `boolTrue`; SN by `listElimNil_isStronglyNormalizing_of_branches`.  The base
 half at a concrete witness. -/
 theorem listElimNilClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))

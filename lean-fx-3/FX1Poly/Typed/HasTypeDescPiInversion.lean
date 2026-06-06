@@ -10,14 +10,8 @@ domain binder.  The grown analogue of the formation engine's `HasTypeDesc.invers
 
 ## Why this inverts cleanly (no `Conv.trans`, no grown validity)
 
-The formation inversion `inversionPiCodeWithConv` ALSO returns the classifier-`Conv` to the canonical
-universe code, and its `conv` arm composes that `Conv` via `Conv.trans_of_typedMiddle` — which needs
-the middle classifier's `IsType`, obtained by routing the premise through `toHasType`.  The GROWN
-engine has NO `toHasType` (it adds `lamCell`/`appCell` no bespoke `HasType` arm types), so that route
-is unavailable.
-
-This inversion therefore DROPS the classifier-`Conv` conjunct and returns ONLY the component
-type-hoods (exactly what `piApplicationOutputIsType` / canonicity consume — they `_`-discard the
+This inversion returns ONLY the component type-hoods, DROPPING the classifier-`Conv` conjunct
+(exactly what `piApplicationOutputIsType` / canonicity consume — they `_`-discard the
 formation inversion's `Conv`).  Without the `Conv` to compose, the `conv` arm just RECURSES on its
 typed premise (the conversion changed the classifier, never the children), so no `Conv.trans` arises.
 

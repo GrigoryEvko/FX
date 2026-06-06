@@ -3,21 +3,21 @@ import FX1Poly.Core.BoolElimStrongNormalization
 import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
 
 /-! # FX1Poly/Core/BoolElimClosedMembership
-    — a closed `boolElim` with member branches is a data-candidate member (the elimination half of SN-063)
+    — a closed `boolElim` with member branches is a data-candidate member (the elimination half of bool reducibility)
 
 The data-canonicity track has, for `bool`:
 * INTRODUCTION membership — `boolTrue` / `boolFalse` are members (`BoolCanonicalFormsCandidate`);
 * SCRUTINEE canonicity — a closed bool member reduces to `boolTrue` / `boolFalse`
   (`boolClosedReducesToTrueOrFalse`);
 * ELIMINATION computation — a closed `boolElim` on a canonical scrutinee reduces to one of its branches
-  (`boolElimCanonicalScrutineeReducesToBranch`, #689).
+  (`boolElimCanonicalScrutineeReducesToBranch`).
 
 This file closes the ELIMINATION MEMBERSHIP: a closed `boolElim` whose scrutinee is a canonical bool member
 and whose branches are members of a result candidate is ITSELF a member of that result candidate.  This is the
-eliminator half of SN-063 (`bool` + `boolElim` reducibility) at the closed layer — the recursor lands in the
+eliminator half of `bool` + `boolElim` reducibility at the closed layer — the recursor lands in the
 candidate, not merely normalizes.
 
-## Why this assembles cleanly (and is `#672`-independent)
+## Why this assembles cleanly (and is fundamental-independent)
 
 bool is the simplest eliminator: non-recursive, two branches, no inductive hypothesis.  The three shipped
 pieces compose directly:
@@ -30,8 +30,8 @@ pieces compose directly:
    non-neutral by `IsNeutral.noClosed`, so its disjunct collapses to reduces-to-value).
 
 Steps 2 + 3 give `boolElim ↝* branch ↝* value`; with step 1 that is exactly the value-reaching weak-head
-expansion `CanonicalFormsPredicate.ofStepStarReachingValue` (#735).  No fundamental theorem, no member
-extension, no `#672` — this is pure closed-canonicity assembly, the regime where data weak-head expansion
+expansion `CanonicalFormsPredicate.ofStepStarReachingValue`.  No fundamental theorem, no member
+extension — this is pure closed-canonicity assembly, the regime where data weak-head expansion
 holds unconditionally.
 
 ## Zero-axiom verification
@@ -51,7 +51,7 @@ scrutinee (a member of the bool candidate) and then/else branches that are membe
 (`boolElim_isStronglyNormalizing_of_strongly_normalizing_branches` on the members' SN), it reduces to the
 selected branch (`boolElimCanonicalScrutineeReducesToBranch`), and that branch — closed and a member — reaches
 a value (`closedReducesToValue`); value-reaching weak-head expansion (`ofStepStarReachingValue`) lifts the
-membership back to the cell.  The eliminator half of SN-063, closed-layer, `#672`-independent. -/
+membership back to the cell.  The eliminator half of bool reducibility, closed-layer, fundamental-independent. -/
 theorem boolElimClosedIsMember {isValue : RawTerm 0 → Prop}
     {scrutinee thenBranch elseBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate boolIsValue scrutinee)

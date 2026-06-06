@@ -1,13 +1,13 @@
 import FX1Poly.OmegacE.TranspositionSystem
 
 /-! # FX1Poly/OmegacE/AbsorptionSystem
-    — the first TWO-rule presentation with GENUINE inter-rule critical pairs (SN-119, #622)
+    — the first TWO-rule presentation with GENUINE inter-rule critical pairs
 
 The idempotent system (`[c,c] → [c]`) and the transposition system (`[a,b] → [b,a]`) are each SINGLE-rule:
-idempotent had a SELF-overlap critical pair (`[c,c,c]`), transposition was ORTHOGONAL (its one-cell overlap is
+idempotent has a SELF-overlap critical pair (`[c,c,c]`), transposition is ORTHOGONAL (its one-cell overlap is
 vacuous, forcing `a = b`).  This file opens the next complexity level — TWO DISTINCT rules whose left-hand
-sides OVERLAP, producing genuine INTER-rule critical pairs that need a real multi-step join (the Newman
-demonstration the roadmap calls for at SN-119).
+sides OVERLAP, producing genuine INTER-rule critical pairs that need a real multi-step join (a Newman
+demonstration).
 
 The system: a `survivingCell` absorbs an adjacent `vanishingCell` on either side.
 
@@ -16,19 +16,18 @@ The system: a `survivingCell` absorbs an adjacent `vanishingCell` on either side
 * `absorptionSystem v s` — the TWO-rule system, membership a DISJUNCTION
   `· = absorptionRuleVanishingLeft v s ∨ · = absorptionRuleVanishingRight v s`.  This disjunction is the
   genuinely new content: every `fire` inversion must `rcases` on which rule fired (contrast the singleton
-  systems, whose membership was a single `rfl`-equality).
+  systems, whose membership is a single `rfl`-equality).
 
-Both rules are LENGTH-PRESERVING (`|lhs| = 2 = |rhs|`), keeping SN-118's achievement; the system is NOT
+Both rules are LENGTH-PRESERVING (`|lhs| = 2 = |rhs|`), like the transposition system; the system is NOT
 length-reducing, so length is no termination measure.  Termination is by the count of `vanishingCell`s: each
 rule eliminates exactly one (the survivingCell absorbs it), so `countOccurrences vanishingCell` strictly
-decreases — a simpler measure than SN-118's inversion count (no cross term), reusing the shipped
+decreases — a simpler measure than the transposition inversion count (no cross term), reusing the shipped
 `countOccurrences` + `countOccurrences_append`.  Distinctness `v ≠ s` is REQUIRED: at `v = s` both rules are
 self-loops `[v,v] → [v,v]`.
 
 ## Honest scope
 
-This ships the SYSTEM + length invariants + non-vacuity + TERMINATION.  The two deferred subsequent atoms
-(SN-119 continuation):
+This ships the SYSTEM + length invariants + non-vacuity + TERMINATION.  The two deferred subsequent atoms:
 
   1. LOCAL CONFLUENCE — the genuine inter-rule critical pairs.  The two LHS `[v,s]` and `[s,v]` overlap by one
      cell in two words: `[v,s,v]` (rule-Left at front, rule-Right at back) and `[s,v,s]` (rule-Right at front,
@@ -40,8 +39,8 @@ This ships the SYSTEM + length invariants + non-vacuity + TERMINATION.  The two 
   2. BOUNDED-SEARCH DECIDABILITY — with `newman` (local confluence + the termination here) giving confluence,
      a two-rule `WordReducer` + `decidableConvertibleModulo_ofConvergent` decides the word problem.
 
-This is the natural predecessor of SN-120 (braid / symmetric — the full sorting / symmetric-group convergent
-presentation, a rule FAMILY over an ordered alphabet).
+This is the natural predecessor of the braid / symmetric sorting system (the full sorting / symmetric-group
+convergent presentation, a rule FAMILY over an ordered alphabet).
 
 ## Zero-axiom verification
 
@@ -130,7 +129,7 @@ theorem absorptionSystem_convertibleModulo_length_preserved {dimension : Nat}
 /-- **A step strictly decreases the vanishingCell count** (requires `vanishingCell ≠ survivingCell`).  The
 termination measure: each rule absorbs exactly one vanishingCell, so the count drops by one.  `fire` `rcases`-es
 the rule disjunction — both `[v,s] ↦ [s,s]` and `[s,v] ↦ [s,s]` give `0 < 1`; context cases split by
-`countOccurrences_append` and lift the inner IH.  Simpler than SN-118's inversion measure (no cross term). -/
+`countOccurrences_append` and lift the inner IH.  Simpler than the transposition inversion measure (no cross term). -/
 theorem vanishingCount_decreases_by_step {dimension : Nat}
     (vanishingCell survivingCell : OmegacECell dimension)
     (distinct : vanishingCell ≠ survivingCell)

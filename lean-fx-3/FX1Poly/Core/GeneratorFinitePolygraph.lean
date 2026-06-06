@@ -2,7 +2,7 @@ import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Core.GeneratorCore
 
 /-! # FX1Poly/Core/GeneratorFinitePolygraph
-    — the FX kernel as a FINITE POLYGRAPH over the 196-Generator table (SN-123, #626)
+    — the FX kernel as a FINITE POLYGRAPH over the 196-Generator table
 
 The FX kernel's term former table `Generator` (196 nullary constructors, `GeneratorCore.lean`) is exactly the
 generating 0-cell set of the kernel's polygraph presentation.  This file packages it as a FINITE polygraph: the
@@ -22,7 +22,7 @@ SHIPPED `Generator.arity` (child count) / `Generator.binderShifts` (boundary) / 
 Then `FiniteKernelPolygraph` bundles (index + injectivity + bound + inverse table + round-trip + range-totality +
 dimension + boundary + coherence) and `fxKernelPolygraph` instantiates it from the kernel's shipped data — the
 witness that the FX kernel IS a finite polygraph over the 196-Generator table.  This is the Leg-3 anchor for the
-later `Generator → polygraph-generator` map (SN-124) and the `RawCell → OmegacEWord` encoding (SN-125).
+`Generator → polygraph-generator` map (`GeneratorPolygraphMap`) and the `RawCell → OmegacEWord` encoding (`RawCellWordEncoding`).
 
 ## Zero-axiom verification
 
@@ -78,7 +78,7 @@ injectively (`toNat_injective`) and boundedly (`toNat_lt`) into `Fin 196`, with 
 `fromTag` (round-trip `fromTag_toNat` + range-totality `fromTag_total_on_range`); each generator carries its
 dimension (`arity` = child count) and boundary (`binderShifts`), coherently (`binderShifts_length_eq_arity`).
 The Leg-3 anchor: the kernel's former table is a finite polygraph presentation, the substrate the
-`Generator → polygraph-generator` map (SN-124) and the `RawCell → OmegacEWord` encoding (SN-125) build on. -/
+`Generator → polygraph-generator` map and the `RawCell → OmegacEWord` encoding build on. -/
 def fxKernelPolygraph : FiniteKernelPolygraph where
   generatorCount := 196
   index := Generator.toNat

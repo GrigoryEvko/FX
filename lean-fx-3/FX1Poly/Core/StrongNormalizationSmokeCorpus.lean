@@ -2,7 +2,7 @@ import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.StrongNormalizationSpineExpansion
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationSmokeCorpus
-    — concrete strong-normalization witnesses (SN-044)
+    — concrete strong-normalization witnesses
 
 A small regression corpus exercising the shipped strong-normalization machinery on representative raw cells:
 a variable leaf (normal-form SN), the unit leaf (normal-form SN), and an identity β-redex (head-expansion

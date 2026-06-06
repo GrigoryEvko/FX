@@ -5,16 +5,14 @@ import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Core.Normalize
 
 /-! # FX1Poly/Typed/HasTypeDescNativeDecidable
-    — native `Decidable (HasTypeDesc Γ t T)` for the formation engine (HT-A4 bricks B2 + B3, off old `HasType`)
+    — native `Decidable (HasTypeDesc Γ t T)` for the formation engine
 
 The full formation typing judgment `HasTypeDesc Γ t T` is DECIDABLE, built ENTIRELY from `HasTypeDesc` pieces
-over `WfContextDesc` — NO `HasType.toHasType` oracle.  The shipped `HasTypeDesc.decidableOfWellFormed`
-(`HasTypeDescDecidable.lean`) still routes through the bespoke `HasType.decidableOfWellFormed`; this file
-supplies the native replacement `HasTypeDesc.decidableOfWellFormedNative`.
+over `WfContextDesc`.  This file supplies `HasTypeDesc.decidableOfWellFormedNative`.
 
-## The two bricks (now CASCADE-FREE)
+## The two bricks (CASCADE-FREE)
 
-* **`HasTypeDesc.inferWithWitness` (B2)** — principal-type synthesis: a subject either has a principal type
+* **`HasTypeDesc.inferWithWitness`** — principal-type synthesis: a subject either has a principal type
   (a `Σ'`-packaged `HasTypeDesc` derivation) or has NO type at any classifier (a `∀ T, HasTypeDesc Γ t T →
   False` refutation).  NON-recursive: `var` synthesises its lookup, `gen_universeCode` its successor universe,
   and EVERY OTHER head delegates to the cascade-free `IsTypeDesc.decideTypeGeneric` — a former's principal
@@ -24,11 +22,11 @@ supplies the native replacement `HasTypeDesc.decidableOfWellFormedNative`.
   formation row (`listCode`/…) is absorbed zero-touch (the FRAME-2 property), with no Π/Σ enumeration and no
   `typingRuleDescOf_isPiOrSigma` else-branch.
 
-* **`HasTypeDesc.decidableOfWellFormedNative` (B3)** — the decision.  Synthesise the subject's principal type
+* **`HasTypeDesc.decidableOfWellFormedNative`** — the decision.  Synthesise the subject's principal type
   `T0` (`inferWithWitness`); then `HasTypeDesc Γ t T ⟺ Conv T0 T` (forward: uniqueness of the principal type;
   backward: the `conv` rule).  The `Conv` is decided by `Conv.decidableOfStronglyNormalizing` — `T0` is SN by
   native validity (`classifierStronglyNormalizingNative`), and `T` is SN once gated through the cascade-free
-  `IsTypeDesc.decidableOfWellFormedGeneric` (B1d): if `T` is NOT a type then `HasTypeDesc Γ t T` is impossible
+  `IsTypeDesc.decidableOfWellFormedGeneric`: if `T` is NOT a type then `HasTypeDesc Γ t T` is impossible
   (`classifierIsTypeDescNative`), and if it IS a type it is SN (`IsTypeDesc.isStronglyNormalizing`).  The
   `isFalse` of a genuine `Conv` mismatch refutes via `uniquenessNative`.
 
@@ -46,7 +44,7 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **Principal-type synthesis for the formation engine** (HT-A4 B2, cascade-free).  Either the subject has a
+/-- **Principal-type synthesis for the formation engine** (cascade-free).  Either the subject has a
 principal type (a `HasTypeDesc` derivation) or it inhabits no type at any classifier.  NON-recursive: `var` →
 its context lookup; `gen_universeCode` → the successor universe code; ANY OTHER head delegates to
 `IsTypeDesc.decideTypeGeneric` — its `.inl` universe witness IS the head's principal type; its `.inr` (the head
@@ -96,14 +94,14 @@ def HasTypeDesc.inferWithWitness {profile : PolyProfile} {scope : Nat}
                   rw [typingRuleDescOf_outputIsUniverseFormer isFormer] at formerTyped
                   exact formerTyped))
 
-/-- **Native `Decidable (HasTypeDesc Γ t T)`** (HT-A4 B3) — decide the full formation typing judgment, off the
-old `HasType` engine.  Synthesise the subject's principal type `T0` (`inferWithWitness`); the typing holds iff
+/-- **Native `Decidable (HasTypeDesc Γ t T)`** — decide the full formation typing judgment.
+Synthesise the subject's principal type `T0` (`inferWithWitness`); the typing holds iff
 `Conv T0 classifier`.  The `Conv` is decided by `Conv.decidableOfStronglyNormalizing` (`T0` SN by
 `classifierStronglyNormalizingNative`; `classifier` SN once gated through the cascade-free
 `IsTypeDesc.decidableOfWellFormedGeneric` — a non-type classifier makes the typing impossible via
 `classifierIsTypeDescNative`).  Forward through the `conv` rule (reclassifying `T0` to the universe-code-typed
-`classifier`); `isFalse` refutes via `uniquenessNative`.  The native twin of the shipped
-`HasTypeDesc.decidableOfWellFormed`. -/
+`classifier`); `isFalse` refutes via `uniquenessNative`.  The decider `HasTypeDesc.decidableOfWellFormed`
+wraps this. -/
 def HasTypeDesc.decidableOfWellFormedNative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} (wellFormed : WfContextDesc context)
     (subject classifier : RawTerm scope) :

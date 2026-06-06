@@ -9,13 +9,13 @@ import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
 
 /-! # FX1Poly/Core/RecursorReducibleScrutineeMember
     — the GENERAL-scrutinee regime of the recursive eliminators `natElim` / `natRec` / `listElim`: the full
-      SN-061 / SN-064 dispatch
+      reducible-scrutinee dispatch
 
-`NatElimValueReducibility` (#732) / `ListElimValueReducibility` (#733) discharged the VALUE regime (`natElim
+`NatElimValueReducibility` / `ListElimValueReducibility` discharge the VALUE regime (`natElim
 numeral …` / `listElim listValue …` lands in the candidate) and `NatElimNeutralScrutineeMember` /
 `ListElimNeutralScrutineeMember` the NEUTRAL regime (the recursor over a neutral scrutinee is itself neutral, so
-a member by CR3).  Both deferred "the scrutinee-reduction outer recursion (a non-value non-neutral scrutinee
-threading down to its constructor)" as the remaining half of SN-061 / SN-064.  This file ships that outer
+a member by CR3).  The remaining half is "the scrutinee-reduction outer recursion (a non-value non-neutral
+scrutinee threading down to its constructor)".  This file ships that outer
 recursion as a single GENERAL-scrutinee theorem per recursor, completing recursive-eliminator reducibility over
 an ARBITRARY reducible scrutinee — bringing the three recursive eliminators to general-scrutinee parity.
 
@@ -26,7 +26,7 @@ numeral`.  So a reducible scrutinee splits exactly into the two shipped regimes,
   * **neutral disjunct** → `CanonicalFormsPredicate.memberOfStronglyNormalizingNeutral` on the recursor cell's SN
     (`natElim_isStronglyNormalizing_of_strongly_normalizing_branches`) and its neutrality (`IsNeutral.natElim`);
   * **value disjunct** (scrutinee reduces to a numeral) → `natElimValueReducibility` lands the numeral recursor
-    cell in the candidate, and `ofStepStarReachingValue` (#735) lifts that membership back through the scrutinee
+    cell in the candidate, and `ofStepStarReachingValue` lifts that membership back through the scrutinee
     congruence `StepStar.natElimScrutinee` to the original cell — but the lift needs the numeral cell to REACH A
     VALUE, which is the value side of ITS disjunct, extracted by refuting its neutrality.
 
@@ -34,8 +34,8 @@ numeral`.  So a reducible scrutinee splits exactly into the two shipped regimes,
 neutral, because `IsNeutral.natElim`/`natRec` is the unique neutral-recursor constructor and demands a neutral
 scrutinee, while a numeral's head is a constructor (`IsNeutral.rootGenerator_ne_natZero` / `_ne_natSucc`).  This
 is the open-scope generalization of `RecursorClosedMembership.natElimClosedIsMember`: at scope 0 the neutral
-disjunct is vacuous (`IsNeutral.noClosed`), so the closed theorem needed no dispatch; here the neutral arm is
-live.  `#672`-independent — pure Tait dispatch over the shipped candidate regimes.
+disjunct is vacuous (`IsNeutral.noClosed`), so the closed theorem needs no dispatch; here the neutral arm is
+live.  Fundamental-independent — pure Tait dispatch over the shipped candidate regimes.
 
 The conditional hypotheses (`headExpand`, the branch interface, `succContractumTerminates`) are exactly the
 honest Tait interface `natElimValueReducibility` already exposes; this file adds the scrutinee dichotomy on top.
@@ -83,15 +83,15 @@ theorem natRec_notNeutral_ofNatValueScrutinee {scope : Nat}
       | zero => exact scrutineeNeutral.rootGenerator_ne_natZero rfl
       | succ _ => exact scrutineeNeutral.rootGenerator_ne_natSucc rfl
 
-/-- **`natElim` reducibility over a general reducible scrutinee (the SN-061 outer recursion).**  Given a
+/-- **`natElim` reducibility over a general reducible scrutinee (the outer recursion).**  Given a
 scrutinee that is a member of the Nat data candidate (so strongly normalizing AND neutral-or-reduces-to-a-
 numeral), reducible branches, and the honest Tait interface (`headExpand` weak-head expansion of the result
 candidate, the succ-branch application interface, the succ-contractum SN premise), the `natElim` cell is a member
 of the result candidate.  Dispatches on the scrutinee's built-in disjunct: NEUTRAL → the recursor cell is neutral
 and SN, hence a member by CR3 (`memberOfStronglyNormalizingNeutral`); VALUE → the numeral recursor cell is a
 member (`natElimValueReducibility`) that reaches a value (its non-neutrality forces the value side of its
-disjunct), lifted back through the scrutinee congruence by `ofStepStarReachingValue`.  Completes SN-061 for
-`natElim`; the closed `natElimClosedIsMember` is the scope-0 special case (neutral disjunct vacuous). -/
+disjunct), lifted back through the scrutinee congruence by `ofStepStarReachingValue`.  Completes general-scrutinee
+reducibility for `natElim`; the closed `natElimClosedIsMember` is the scope-0 special case (neutral disjunct vacuous). -/
 theorem natElimReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope → Prop}
     {scrutinee zeroBranch succBranch : RawTerm scope}
     (headExpand : ∀ {redexTerm contractum : RawTerm scope},
@@ -140,7 +140,7 @@ theorem natElimReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope �
 /-- **`natRec` reducibility over a general reducible scrutinee** — the dependent-recursor twin of
 `natElimReducibleScrutineeMember`.  Identical dispatch on the Nat-candidate disjunct via `natRecValueReducibility`
 and `StepStar.natRecScrutinee`, with `natRec_notNeutral_ofNatValueScrutinee` extracting the value side.  Completes
-SN-061 for `natRec`. -/
+general-scrutinee reducibility for `natRec`. -/
 theorem natRecReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope → Prop}
     {scrutinee zeroBranch succBranch : RawTerm scope}
     (headExpand : ∀ {redexTerm contractum : RawTerm scope},
@@ -202,7 +202,7 @@ theorem listElim_notNeutral_ofListValueScrutinee {scope : Nat}
       | nil => exact scrutineeNeutral.rootGenerator_ne_listNil rfl
       | cons _ _ => exact scrutineeNeutral.rootGenerator_ne_listCons rfl
 
-/-- **`listElim` reducibility over a general reducible scrutinee (the SN-064 outer recursion)** — the list twin
+/-- **`listElim` reducibility over a general reducible scrutinee (the outer recursion)** — the list twin
 of `natElimReducibleScrutineeMember`, completing recursive-eliminator reducibility for `listElim`.  Given a
 scrutinee that is a member of the List data candidate (so strongly normalizing AND neutral-or-reduces-to-a-list-
 value), reducible branches, and the honest Tait interface (`headExpand`, the 3-argument cons-branch application

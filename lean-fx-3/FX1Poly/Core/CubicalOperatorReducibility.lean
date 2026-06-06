@@ -3,18 +3,18 @@ import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.ReducibilityCandidate
 
 /-! # FX1Poly/Core/CubicalOperatorReducibility
-    — cubical transport + homogeneous-composition SN coverage (SN-146 congruence-only installment), zero-axiom
+    — cubical transport + homogeneous-composition SN coverage (congruence-only stage), zero-axiom
 
 The two headline CCHM cubical Kan operators are shipped generators: transport `gen_transp` (two children: the
 path/line and the source term) and homogeneous composition `gen_hcomp` (two children: the sides system and the
-cap).  Their Kan COMPUTATION rules (transport reduction, hcomp filling) are not yet part of the β+ι substrate —
-they await M64/M65 (`#313`/`#314`).  Until then both operators are CONGRUENCE-ONLY under `Step` and NON-NEUTRAL
+cap).  Their Kan COMPUTATION rules (transport reduction, hcomp filling) are not yet part of the β+ι substrate.
+Until then both operators are CONGRUENCE-ONLY under `Step` and NON-NEUTRAL
 (`NeutralTerm.lean` lists `transp`/`hcomp` among the cubical eliminators that "form no neutrals yet").
 
 This file ships their congruence-only-stage SN coverage — forward SN closures, the reflection direction, and the
-reducibility candidate-framing — exactly the pattern established for the modal core (SN-074/075) and the 2LTT
-universe-mode bridges (SN-077).  It is the honest first installment of SN-146 (SN robustness under the cubical
-extension): the Kan-rule robustness, plus `gen_transpFill`/`gen_transpHigherDim`/`gen_unglue`/Glue, remain.
+reducibility candidate-framing — the pattern shared with the modal core and the 2LTT
+universe-mode bridges.  It is the first installment of SN robustness under the cubical
+extension: the Kan-rule robustness, plus `gen_transpFill`/`gen_transpHigherDim`/`gen_unglue`/Glue, remain.
 
 ## Why the strong-normalization candidate is the honest target
 
@@ -31,7 +31,7 @@ send candidate members to SN-candidate members.
 * `transp_isStronglyNormalizing_of_children` / `hcomp_…` — forward SN closures via
   `isStronglyNormalizing_of_twoChildCong`.
 * `transp_path_…` / `transp_source_…` / `hcomp_sides_…` / `hcomp_cap_…` — the per-child reflections, each a
-  one-child SLICE reusing the generic `isStronglyNormalizing_child_of_oneChildCong` (SN-074).
+  one-child SLICE reusing the generic `isStronglyNormalizing_child_of_oneChildCong`.
 * `transp_isStronglyNormalizing_iff` / `hcomp_…` — the biconditionals (parent SN ↔ both children SN).
 * `transp_isStronglyNormalizing_of_candidateMembers` / `hcomp_…` — the reducibility-framing.
 
@@ -48,8 +48,8 @@ child slice (the second-child slice threads `StepChildren.there` past the held f
 namespace FX1Poly.Core
 
 /-- **Inversion for `transp`-rooted Step.**  `gen_transp` is a two-child cubical transport operator with no β+ι
-root rule (its Kan transport rule awaits M64), congruence-only: a `Step` out of it reduces exactly the path
-child or the source child. -/
+root rule (its Kan transport rule is not part of the substrate), congruence-only: a `Step` out of it reduces
+exactly the path child or the source child. -/
 theorem Step.from_transp
     {scope : Nat} {path source : RawTerm scope} {target : RawTerm scope}
     (reduction :
@@ -76,8 +76,8 @@ theorem Step.from_transp
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `hcomp`-rooted Step.**  `gen_hcomp` is a two-child homogeneous-composition operator (sides
-system + cap) with no β+ι root rule (its Kan filling rule awaits M65), congruence-only: a `Step` out of it
-reduces exactly the sides child or the cap child. -/
+system + cap) with no β+ι root rule (its Kan filling rule is not part of the substrate), congruence-only: a
+`Step` out of it reduces exactly the sides child or the cap child. -/
 theorem Step.from_hcomp
     {scope : Nat} {sides cap : RawTerm scope} {target : RawTerm scope}
     (reduction :
@@ -137,7 +137,7 @@ theorem hcomp_isStronglyNormalizing_of_children {scope : Nat}
     (fun parentStep => Step.from_hcomp parentStep)
     sidesTerminates capTerminates
 
-/-- **Transport's PATH child reflects strong normalization (SN-146 installment).**  The one-child slice in the
+/-- **Transport's PATH child reflects strong normalization.**  The one-child slice in the
 path position (source held fixed), via the generic reflection lemma. -/
 theorem transp_path_isStronglyNormalizing_of_parent {scope : Nat}
     {path source : RawTerm scope}
@@ -155,7 +155,7 @@ theorem transp_path_isStronglyNormalizing_of_parent {scope : Nat}
         (StepChildren.here (.childCons source .childNil : RawTermChildren [0] scope) childStep))
     transpTerminates
 
-/-- **Transport's SOURCE child reflects strong normalization (SN-146 installment).**  The one-child slice in the
+/-- **Transport's SOURCE child reflects strong normalization.**  The one-child slice in the
 source position (path held fixed); the `there` shift is pinned with the explicit `@`-form. -/
 theorem transp_source_isStronglyNormalizing_of_parent {scope : Nat}
     {path source : RawTerm scope}
@@ -174,7 +174,7 @@ theorem transp_source_isStronglyNormalizing_of_parent {scope : Nat}
           (StepChildren.here (.childNil : RawTermChildren [] scope) childStep)))
     transpTerminates
 
-/-- **Homogeneous composition's SIDES child reflects strong normalization (SN-146 installment).**  The one-child
+/-- **Homogeneous composition's SIDES child reflects strong normalization.**  The one-child
 slice in the sides position (cap held fixed). -/
 theorem hcomp_sides_isStronglyNormalizing_of_parent {scope : Nat}
     {sides cap : RawTerm scope}
@@ -192,7 +192,7 @@ theorem hcomp_sides_isStronglyNormalizing_of_parent {scope : Nat}
         (StepChildren.here (.childCons cap .childNil : RawTermChildren [0] scope) childStep))
     hcompTerminates
 
-/-- **Homogeneous composition's CAP child reflects strong normalization (SN-146 installment).**  The one-child
+/-- **Homogeneous composition's CAP child reflects strong normalization.**  The one-child
 slice in the cap position (sides held fixed); the `there` shift is pinned with the explicit `@`-form. -/
 theorem hcomp_cap_isStronglyNormalizing_of_parent {scope : Nat}
     {sides cap : RawTerm scope}
@@ -211,7 +211,7 @@ theorem hcomp_cap_isStronglyNormalizing_of_parent {scope : Nat}
           (StepChildren.here (.childNil : RawTermChildren [] scope) childStep)))
     hcompTerminates
 
-/-- **Transport's strong-normalization characterization (SN-146 installment).**  `transp path source` is
+/-- **Transport's strong-normalization characterization.**  `transp path source` is
 strongly normalizing iff both children are. -/
 theorem transp_isStronglyNormalizing_iff {scope : Nat} {path source : RawTerm scope} :
     IsStronglyNormalizing
@@ -223,7 +223,7 @@ theorem transp_isStronglyNormalizing_iff {scope : Nat} {path source : RawTerm sc
    fun ⟨pathTerminates, sourceTerminates⟩ =>
       transp_isStronglyNormalizing_of_children pathTerminates sourceTerminates⟩
 
-/-- **Homogeneous composition's strong-normalization characterization (SN-146 installment).**  `hcomp sides cap`
+/-- **Homogeneous composition's strong-normalization characterization.**  `hcomp sides cap`
 is strongly normalizing iff both children are. -/
 theorem hcomp_isStronglyNormalizing_iff {scope : Nat} {sides cap : RawTerm scope} :
     IsStronglyNormalizing
@@ -235,7 +235,7 @@ theorem hcomp_isStronglyNormalizing_iff {scope : Nat} {sides cap : RawTerm scope
    fun ⟨sidesTerminates, capTerminates⟩ =>
       hcomp_isStronglyNormalizing_of_children sidesTerminates capTerminates⟩
 
-/-- **Transport sends reducibility-candidate members to SN-candidate members (SN-146 installment).**  Both
+/-- **Transport sends reducibility-candidate members to SN-candidate members.**  Both
 children members of (possibly distinct) candidates ⟹ the transport is strongly normalizing, via the two CR1
 fields and the forward closure. -/
 theorem transp_isStronglyNormalizing_of_candidateMembers {scope : Nat}
@@ -250,8 +250,8 @@ theorem transp_isStronglyNormalizing_of_candidateMembers {scope : Nat}
     (pathCandidate.stronglyNormalizing pathMember)
     (sourceCandidate.stronglyNormalizing sourceMember)
 
-/-- **Homogeneous composition sends reducibility-candidate members to SN-candidate members (SN-146
-installment).**  Both children members ⟹ the hcomp is strongly normalizing. -/
+/-- **Homogeneous composition sends reducibility-candidate members to SN-candidate members.**  Both
+children members ⟹ the hcomp is strongly normalizing. -/
 theorem hcomp_isStronglyNormalizing_of_candidateMembers {scope : Nat}
     {sidesPredicate capPredicate : RawTerm scope → Prop}
     (sidesCandidate : IsReducibilityCandidate sidesPredicate)

@@ -2,14 +2,14 @@ import FX1Poly.Core.ReflCanonicalFormsCandidate
 import FX1Poly.Core.WeakHeadStepCommute
 
 /-! # FX1Poly/Core/IdentityEliminatorCanonicalComputation
-    — closed `idJ` / `idStrictRec` on a canonical `refl` witness COMPUTE to the base case (the SN-068/069 core)
+    — closed `idJ` / `idStrictRec` on a canonical `refl` witness COMPUTE to the base case (the identity-eliminator computation core)
 
 `ReflCanonicalFormsCandidate.lean` ships identity data canonicity: a closed member of the identity candidate
 reduces to a `refl` constructor (`reflClosedReducesToValue`).  This file pushes that into the identity
 ELIMINATORS: a closed `idJ` / `idStrictRec` whose witness (the proof argument) is a canonical `refl` member
 reduces to its base case.  The identity-eliminator analog of `BoolElimCanonicalComputation` (branch selection)
-and `SigmaProjectionCanonicalComputation` (component projection), and a `#672`-free step toward `idJ` /
-`idStrictRec` reducibility (SN-068 / SN-069).  These are the last NON-GROWING eliminators — their ι SELECTS the
+and `SigmaProjectionCanonicalComputation` (component projection), and a fundamental-free step toward `idJ` /
+`idStrictRec` reducibility.  These are the last NON-GROWING eliminators — their ι SELECTS the
 base case from the WITNESS position (vs. the growing recursors that apply a branch to a payload).
 
 * `StepStar.idJWitness` / `StepStar.idStrictRecWitness` — the witness-position (second-child) chain congruences:
@@ -71,7 +71,7 @@ theorem StepStar.idStrictRecWitness {scope : Nat} {baseCase witness witnessReduc
 closed-bool elimination canonicity: a closed `idJ` whose witness is a member of the identity candidate
 `StepStar`-reduces to its base case.  The witness reduces to a `refl` (`reflClosedReducesToValue`),
 `StepStar.idJWitness` carries that reduction under the `idJ`, and `Step.iotaIdJRefl` selects the base case.
-`#672`-free — it uses only identity data canonicity plus the witness congruence and the ι rule, no fundamental
+Fundamental-free — it uses only identity data canonicity plus the witness congruence and the ι rule, no fundamental
 theorem. -/
 theorem idJCanonicalWitnessReducesToBase {baseCase witness : RawTerm 0}
     (witnessMember : CanonicalFormsPredicate isReflValue witness) :

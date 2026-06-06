@@ -1,13 +1,14 @@
 import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
 import FX1Poly.Typed.HasTypeDescPiBetaSR
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionDescPi
 import FX1Poly.Typed.GrownTypeSafety
 
 /-! # FX1Poly/Typed/GrownBetaRedexInAction — type safety in action on a concrete reducing closed term
 
-`GrownCanonicalFormsNonVacuity` exhibited concrete closed witnesses for the canonical-forms theorems, but all
-were NORMAL forms — they do not reduce.  This file closes the loop with a concrete closed term that actually
+`GrownCanonicalFormsNonVacuity` exhibits concrete closed witnesses for the canonical-forms theorems, but all
+are NORMAL forms — they do not reduce.  This file closes the loop with a concrete closed term that actually
 REDUCES, threading it through the whole safety pipeline (Π-elimination typing, the real `Step.beta`,
-preservation via `betaSubjectReduction`, and canonical forms) so progress + preservation + canonicity are seen
+preservation via `betaSubjectReductionDescPi`, and canonical forms) so progress + preservation + canonicity are seen
 firing TOGETHER on one term.  The witness is the application of the identity to a type:
 `(λ (x : Type@1). x) (Type@0)`.
 
@@ -20,25 +21,25 @@ firing TOGETHER on one term.  The witness is the application of the identity to 
     (`subst0 (var 0) (Type@0)` is `Type@0`, the body being the bound variable), by `Step.beta` directly.
 
   * `closedIdentityAppRedex_safety` — TYPE SAFETY IN ACTION: the reduct `Type@0` is STILL typed at `Type@1`
-    (PRESERVATION, by `betaSubjectReduction` on the redex), and it is a CANONICAL VALUE (a type former, by
+    (PRESERVATION, by `betaSubjectReductionDescPi` on the redex), and it is a CANONICAL VALUE (a type former, by
     `closedNormalTypeIsFormer`).  The concrete instantiation of "a well-typed term steps to a well-typed value of
     the same type" — progress, preservation, and canonical forms on one reducing closed term.
 
 This complements the abstract safety statements (`GrownTypeSafety`) and the non-reducing non-vacuity witnesses
 (`GrownCanonicalFormsNonVacuity`): here the term genuinely reduces, `Step.beta` genuinely fires, and
-`betaSubjectReduction` is genuinely exercised end-to-end.  `#672`-independent.
+`betaSubjectReductionDescPi` is genuinely exercised end-to-end.  `#672`-independent.
 
   * `closedIdentityAppRedex_evaluation` — EVALUATION DETERMINISM IN ACTION: the redex's UNIQUE normal form is
     exactly `Type@0`.  It reaches `Type@0` (via the single β-step lifted by `StepStar.single`), `Type@0` is
     normal, and EVERY normal form it reaches equals `Type@0` — because `closedHasUniqueNormalForm` (the
-    unconditional determinism theorem, OB-5 SN + raw confluence) gives a unique normal form, which `Type@0`
+    unconditional determinism theorem, open SN + raw confluence) gives a unique normal form, which `Type@0`
     instantiates.  The concrete computation of an evaluation result via the determinism theorem — the one safety
     theorem the preceding three witnesses did not exercise.
 
 ## Zero-axiom verification
 
 `piElim` over the two shipped concrete typing derivations; `Step.beta` directly (the `subst0` of a bound variable
-computes to the argument); `betaSubjectReduction` + `closedNormalTypeIsFormer`; the normal-form side condition is
+computes to the argument); `betaSubjectReductionDescPi` + `closedNormalTypeIsFormer`; the normal-form side condition is
 `by decide` on the closed reduct.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 `omega` (verified by `#print axioms` in scratch before landing).  Per-declaration gated in
 `FX1PolyAudit/AuditTyped.lean`.
@@ -69,7 +70,7 @@ theorem closedIdentityAppRedex_betaStep :
   Step.beta
 
 /-- **Type safety in action.**  After the redex `(λ (x : Type@1). x) (Type@0) : Type@1` β-reduces to `Type@0`,
-PRESERVATION holds — the reduct `Type@0` is still typed at `Type@1` (by `betaSubjectReduction`) — and the reduct
+PRESERVATION holds — the reduct `Type@0` is still typed at `Type@1` (by `betaSubjectReductionDescPi`) — and the reduct
 is a CANONICAL VALUE — a type former (by `closedNormalTypeIsFormer`).  The concrete instantiation of progress +
 preservation + canonical forms on one reducing closed term: a well-typed term steps to a well-typed value of the
 same type. -/
@@ -88,14 +89,15 @@ theorem closedIdentityAppRedex_safety {profile : PolyProfile} :
         (RawTerm.subst0 (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
           (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
         (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard) :=
-    HasTypeDescPi.betaSubjectReduction closedIdentityAppRedexTyping WfContext.emptyIsWellFormed
+    HasTypeDescPi.betaSubjectReductionDescPi closedIdentityAppRedexTyping
+      WfContextDescPi.emptyIsWellFormed
   refine ⟨reductTyped, ?_⟩
   exact HasTypeDescPi.closedNormalTypeIsFormer reductTyped (by decide)
 
 /-- **Evaluation determinism in action.**  The redex `(λ (x : Type@1). x) (Type@0)`'s UNIQUE normal form is
 exactly `Type@0`: it reaches `Type@0` (the single β-step lifted by `StepStar.single`), `Type@0` is normal, and
 every normal form it reaches equals `Type@0`.  The uniqueness comes from `closedHasUniqueNormalForm` (the
-unconditional evaluation-determinism theorem — OB-5 strong normalization + raw confluence): its unique normal
+unconditional evaluation-determinism theorem — open strong normalization + raw confluence): its unique normal
 form is instantiated to the reachable normal `Type@0`.  The concrete computation of an evaluation result through
 the determinism theorem. -/
 theorem closedIdentityAppRedex_evaluation {profile : PolyProfile} :

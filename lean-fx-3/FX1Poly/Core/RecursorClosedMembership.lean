@@ -8,13 +8,13 @@ import FX1Poly.Core.NeutralTerm
 
 /-! # FX1Poly/Core/RecursorClosedMembership
     — a closed `natElim` / `natRec` / `listElim` on a member recursive scrutinee with reducible branches is a
-      data-candidate member (the deferred halves of SN-061 and SN-064)
+      data-candidate member (the recursor scrutinee-reduction halves)
 
-`MatchClosedMembership` / `SigmaProjectionClosedMembership` closed the elimination membership for the
+`MatchClosedMembership` / `SigmaProjectionClosedMembership` close the elimination membership for the
 NON-RECURSIVE eliminators.  This file is the RECURSIVE twin: the elimination membership for the recursors
 `natElim` / `natRec` (whose ι rule on `natSucc` re-invokes the recursor on the predecessor) and `listElim`
-(whose ι rule on `listCons` re-invokes the recursor on the tail).  It is the deferred half of SN-061 / SN-064 —
-`NatElimValueReducibility` (#732) / `ListElimValueReducibility` (#733) supplied the numeral / list-value VALUE
+(whose ι rule on `listCons` re-invokes the recursor on the tail).  It is the scrutinee-reduction half —
+`NatElimValueReducibility` / `ListElimValueReducibility` supply the numeral / list-value VALUE
 case (parameterized over the result candidate); this file discharges the SCRUTINEE-REDUCES-TO-VALUE regime,
 instantiating that value case at the closed data candidate and lifting through the scrutinee reduction.
 
@@ -30,11 +30,11 @@ The assembly consumes the recursive substrate built one step earlier:
   `weakHeadExpansionOfMemberNotNeutral` applies via `WeakHeadStep.toStep`);
 * the scrutinee, a closed Nat-candidate member, reduces to a numeral (`closedReducesToValue` — Nat canonicity),
   the recursor cell follows under the scrutinee congruence (`StepStar.natElimScrutinee` / `natRecScrutinee`), and
-  the numeral cell reaches a value, so `ofStepStarReachingValue` (#735) lifts membership to the original cell.
+  the numeral cell reaches a value, so `ofStepStarReachingValue` lifts membership to the original cell.
 
 `succBranchApplication` is the function-space behaviour of the successor branch (its application to a numeral
 predecessor and a candidate result lands in the candidate) — exactly the Tait interface the recursor arm of the
-fundamental theorem supplies for a reducible succ branch.  `#672`-independent: pure closed-canonicity assembly.
+fundamental theorem supplies for a reducible succ branch.  Fundamental-independent: pure closed-canonicity assembly.
 
 ## Zero-axiom verification
 
@@ -61,12 +61,12 @@ private abbrev natElimSuccContractumClosed (succBranch predecessor zeroBranch : 
       (.childCons (natElimCell predecessor zeroBranch succBranch) .childNil))
 
 /-- **A closed `natElim` on a member Nat scrutinee with reducible branches is a member of the result
-candidate.**  The deferred (scrutinee-reduction) half of SN-061: the scrutinee reduces to a numeral
+candidate.**  The scrutinee-reduction half: the scrutinee reduces to a numeral
 (Nat canonicity), `natElimValueReducibility` lands the numeral recursor cell in the candidate (instantiated at the
 closed data candidate, fed the SN-from-SN-branches recursor for `redexStronglyNormalizing` and the data
 candidate's closed weak-head-expansion for `headExpand`), and `ofStepStarReachingValue` lifts membership through
 the scrutinee congruence to the original cell.  `succContractumTerminates` is the honest recursor-SN IH-premise.
-`#672`-independent. -/
+Fundamental-independent. -/
 theorem natElimClosedIsMember {isValue : RawTerm 0 → Prop}
     {scrutinee zeroBranch succBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate IsNatValue scrutinee)
@@ -172,15 +172,15 @@ private abbrev listElimConsContractumClosed (consBranch head tail nilBranch : Ra
         .childNil))
 
 /-- **A closed `listElim` on a member List scrutinee with reducible branches is a member of the result
-candidate.**  The deferred (scrutinee-reduction) half of SN-064 — the list twin of `natElimClosedIsMember`: the
-scrutinee reduces to a list value (List canonicity), `listElimValueReducibility` (#733) lands the list-value
+candidate.**  The scrutinee-reduction half — the list twin of `natElimClosedIsMember`: the
+scrutinee reduces to a list value (List canonicity), `listElimValueReducibility` lands the list-value
 recursor cell in the candidate (instantiated at the closed data candidate, fed the SN-from-SN-branches recursor
 for `redexStronglyNormalizing` and the data candidate's closed weak-head-expansion for `headExpand`), and
 `ofStepStarReachingValue` lifts membership through the scrutinee congruence to the original cell.
 `consContractumTerminates` is the honest recursor-SN IH-premise (the same conditional-arm discipline
 `listElimValueReducibility` itself uses for `redexStronglyNormalizing`).  `consBranchApplication` takes the head
 in `RawTerm.isStepNormalForm` form (not SN) and the tail as an `IsListValue` — exactly the Tait interface the
-list recursor arm supplies for a reducible cons branch.  `#672`-independent: pure closed-canonicity assembly. -/
+list recursor arm supplies for a reducible cons branch.  Fundamental-independent: pure closed-canonicity assembly. -/
 theorem listElimClosedIsMember {isValue : RawTerm 0 → Prop}
     {scrutinee nilBranch consBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate IsListValue scrutinee)

@@ -2,10 +2,10 @@ import FX1Poly.Core.StepRewriteRuleMap
 import FX1Poly.Core.StepStar
 
 /-! # FX1Poly/Core/StepWordRewriteSoundness
-    — the FX reduction relation embeds into word rewriting over the term-code monoid (SN-127, #630)
+    — the FX reduction relation embeds into word rewriting over the term-code monoid
 
-SN-126 mapped each FX `Step` to a rewrite rule `⟨redex.toCode, reduct.toCode⟩` and assembled the generated rule
-system `fxStepSystem`.  This file builds the one-step / many-step WORD-REWRITING relation that system drives
+`StepRewriteRuleMap` maps each FX `Step` to a rewrite rule `⟨redex.toCode, reduct.toCode⟩` and assembles the
+generated rule system `fxStepSystem`.  This file builds the one-step / many-step WORD-REWRITING relation that system drives
 (over the term-code word monoid `List Nat`), and proves the FORWARD half of the Leg-3 bridge: every FX reduction
 is a word rewrite under `fxStepSystem` — `Step a b ⟹ FxWordRewritesOneStep fxStepSystem a.toCode b.toCode`, and
 its many-step closure `StepStar a b ⟹ FxWordRewritesMany …`.
@@ -19,17 +19,17 @@ construction (the congruence with concatenation).
 
 `fxStepSystem` contains every reduction's FULLY-INSTANTIATED code pair as a top-level rule — including each `cong`
 (in-context) step, whose endpoints are already the in-context redex/reduct codes.  So one-step soundness is a
-single `FxWordRewritesOneStep.fire` of the system rule SN-126 proved is a member.  No context-closure unfolding,
-no substitution analysis, no termination is needed for THIS direction.  The depth — and the typed-SN gate per
-`core_raw_sn_false_natrec` — lives in the REVERSE half (completeness / inversion, SN-128: a word rewrite comes
-from an actual `Step`, which needs decode) and in termination / confluence (SN-131+).
+single `FxWordRewritesOneStep.fire` of the system rule `StepRewriteRuleMap` proves is a member.  No context-closure
+unfolding, no substitution analysis, no termination is needed for THIS direction.  The depth — and the typed-SN gate
+per `core_raw_sn_false_natrec` — lives in the REVERSE half (completeness / inversion: a word rewrite comes
+from an actual `Step`, which needs decode) and in termination / confluence.
 
 ## What is proved
 
 * `FxWordRewritesOneStep` — one-step word rewriting under an `FxTermRewriteRule` system, closed under left/right
   word context (`fire` / `underLeftContext` / `underRightContext`).
 * `Step.toWordRewrite` — **single-step soundness**: `Step a b ⟹ FxWordRewritesOneStep fxStepSystem a.toCode
-  b.toCode` (the `fire` of the SN-126 system rule).
+  b.toCode` (the `fire` of the system rule).
 * `FxWordRewritesMany` — the reflexive-transitive closure (`refl` / `step`), with `single`, `trans`, and the
   many-step context lifts `underLeftContext` / `underRightContext` — a genuine congruence preorder.
 * `StepStar.toWordRewrites` — **many-step soundness**: `StepStar a b ⟹ FxWordRewritesMany fxStepSystem a.toCode
@@ -63,7 +63,7 @@ inductive FxWordRewritesOneStep (system : FxTermRewriteRule → Prop) :
       FxWordRewritesOneStep system (sourceWord ++ suffixWord) (targetWord ++ suffixWord)
 
 /-- **Single-step bridge soundness**: every FX reduction is a one-step word rewrite under the generated system.
-The induced rule `⟨a.toCode, b.toCode⟩` is a member of `fxStepSystem` (SN-126), so it `fire`s. -/
+The induced rule `⟨a.toCode, b.toCode⟩` is a member of `fxStepSystem`, so it `fire`s. -/
 theorem Step.toWordRewrite {scope : Nat} {redex reduct : RawTerm scope}
     (step : Step redex reduct) :
     FxWordRewritesOneStep fxStepSystem redex.toCode reduct.toCode :=

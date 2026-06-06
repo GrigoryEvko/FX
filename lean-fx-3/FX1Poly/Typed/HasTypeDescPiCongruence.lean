@@ -1,6 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
-import FX1Poly.Typed.HasTypeDescPiValidity
+import FX1Poly.Typed.HasTypeDescPiClassifierValidity
 import FX1Poly.Core.ConvSubstRename
 
 /-! # FX1Poly/Typed/HasTypeDescPiCongruence — grown-engine congruence-at-typing building blocks
@@ -23,7 +23,7 @@ argument case — isolated and individually audited.
   * `congLamBody` — replace a λ's body by a same-typed body'.  `invertLam` exposes the λ's own
     `domain`/`codomain` (and `Conv classifier (Π domain codomain)`); `childPreserves` retypes the body
     at the codomain under the domain binder; `piIntro` rebuilds the λ at `Π domain codomain`; validity
-    (`classifierIsTypeDesc`) + `conv` returns it to the original `classifier`.
+    (`classifierIsTypeDescPi`) + `conv` returns it to the original `classifier`.
   * `congFunction` — replace an application's function by a same-typed function'.  `invertApp` exposes
     the Π-code and the dependent output `Conv`; `childPreserves` retypes the function at the SAME Π-code
     (SR preserves type); `piElim` rebuilds at `subst0 codomain argument`; `conv` returns to `classifier`.
@@ -39,7 +39,7 @@ argument case — isolated and individually audited.
 ## Zero-axiom verification
 
 Each lemma composes shipped zero-axiom results (`invertLam` / `invertApp`, `piIntro` / `piElim`, the
-`conv` rule, `classifierIsTypeDesc`, `Conv.subst0` / `Conv.trans` / `Conv.sym`).  No `axiom`, `sorry`,
+`conv` rule, `classifierIsTypeDescPi`, `Conv.subst0` / `Conv.trans` / `Conv.sym`).  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -59,7 +59,7 @@ theorem HasTypeDescPi.congLamBody {profile : PolyProfile} {scope : Nat}
     (childPreserves : ∀ {bindingType : RawTerm scope} {bodyClassifier : RawTerm (scope + 1)},
       HasTypeDescPi profile (context.cons bindingType) body bodyClassifier →
         HasTypeDescPi profile (context.cons bindingType) body' bodyClassifier)
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context (lamCell body') classifier := by
   obtain ⟨domainCode, codomainCode, domainLevel, codomainLevel, flag,
       convClassifierPi, domainTyped, codomainTyped, bodyTyped⟩ := typed.invertLam
@@ -67,7 +67,7 @@ theorem HasTypeDescPi.congLamBody {profile : PolyProfile} {scope : Nat}
       HasTypeDescPi profile context (lamCell body') (piTyCodeCell domainCode codomainCode) :=
     HasTypeDescPi.piIntro domainLevel codomainLevel flag domainTyped codomainTyped
       (childPreserves bodyTyped)
-  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDesc wellFormed
+  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDescPi wellFormed
   exact HasTypeDescPi.conv classifierLevel classifierFlag rebuiltLam convClassifierPi.sym
     classifierTyped
 
@@ -83,7 +83,7 @@ theorem HasTypeDescPi.congFunction {profile : PolyProfile} {scope : Nat}
     (childPreserves : ∀ {functionClassifier : RawTerm scope},
       HasTypeDescPi profile context functionTerm functionClassifier →
         HasTypeDescPi profile context functionTerm' functionClassifier)
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context (appCell functionTerm' argument) classifier := by
   obtain ⟨domainCode, codomainCode, functionTyped, argumentTyped, convClassifierOutput⟩ :=
     typed.invertApp
@@ -91,7 +91,7 @@ theorem HasTypeDescPi.congFunction {profile : PolyProfile} {scope : Nat}
       HasTypeDescPi profile context (appCell functionTerm' argument)
         (RawTerm.subst0 codomainCode argument) :=
     HasTypeDescPi.piElim (childPreserves functionTyped) argumentTyped
-  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDesc wellFormed
+  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDescPi wellFormed
   exact HasTypeDescPi.conv classifierLevel classifierFlag rebuiltApp convClassifierOutput.sym
     classifierTyped
 
@@ -108,7 +108,7 @@ theorem HasTypeDescPi.congArgument {profile : PolyProfile} {scope : Nat}
       HasTypeDescPi profile context argument argumentClassifier →
         HasTypeDescPi profile context argument' argumentClassifier)
     (argumentConverts : Conv argument argument')
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context (appCell functionTerm argument') classifier := by
   obtain ⟨domainCode, codomainCode, functionTyped, argumentTyped, convClassifierOutput⟩ :=
     typed.invertApp
@@ -118,7 +118,7 @@ theorem HasTypeDescPi.congArgument {profile : PolyProfile} {scope : Nat}
     HasTypeDescPi.piElim functionTyped (childPreserves argumentTyped)
   have convMovedOutput : Conv (RawTerm.subst0 codomainCode argument') classifier :=
     Conv.trans (Conv.subst0 (Conv.refl codomainCode) argumentConverts.sym) convClassifierOutput.sym
-  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDesc wellFormed
+  obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDescPi wellFormed
   exact HasTypeDescPi.conv classifierLevel classifierFlag rebuiltApp convMovedOutput classifierTyped
 
 end FX1Poly.Typed

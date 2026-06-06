@@ -1,13 +1,13 @@
 import FX1Poly.Modal.GradeVector
 
 /-! # FX1Poly/Modal/UsageDiscipline — the usage grade check + the Atkey-2018 broken-Lam rejection
-   (DIM2-3 occurrence realization; DIM2-6 / §27.1 / §27.2)
+   (§27.1 / §27.2)
 
 The usage dimension's job is to reject programs that use a resource more than its declared grade
 allows.  FX's usage semiring `{0, 1, ω}` (§6.1) with `1 + 1 = ω` IS occurrence-counting: a variable
 used twice has grade `1 + 1 = ω`, which exceeds a linear (`1`) declaration.  So the usage check has
 an unambiguous, computational realization — the *co-effect* reading, dual to the McBride
-context-division presentation whose adjunction `GradeVector.contextDivide_residuation` was shipped
+context-division presentation whose adjunction `GradeVector.contextDivide_residuation` lives
 separately:
 
   * `GradedLambda` — a minimal graded λ-calculus (var / lam / app, de Bruijn).
@@ -44,7 +44,7 @@ namespace FX1Poly.Modal
 
 /-- A minimal graded λ-calculus (de Bruijn indices): the carrier on which the usage discipline is
 demonstrated.  Distinct from the kernel's `RawTerm` — this is the focused object of study for the
-usage dimension's metatheory; connecting the two (grade erasure) is DIM2-4. -/
+usage dimension's metatheory; connecting the two (grade erasure) is `GradeErasure.lean`. -/
 inductive GradedLambda where
   | var : Nat → GradedLambda
   | lam : GradedLambda → GradedLambda
@@ -143,7 +143,7 @@ uses `g` twice (`ω`).  The naive `usage ≤ Γ` check under-counts a linear res
 consumes multiply INSIDE its body — precisely the unsoundness the Wood/Atkey discipline fixes by
 tracking the lambda's binder grade and scaling the argument's usage by it in the App rule (which
 this occurrence check omits).  So a sound graded judgment CANNOT be the bare occurrence check; this
-is the concrete reason the corrected Lam rule (DIM2-3, the contextDivide/`1/ω=0` machinery) is
+is the concrete reason the corrected Lam rule (the contextDivide/`1/ω=0` machinery) is
 needed.  `substAt` + `BetaStep` below are the de Bruijn machinery that lets the β-reduct be a
 THEOREM rather than an assertion. -/
 

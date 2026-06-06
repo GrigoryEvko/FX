@@ -2,22 +2,22 @@ import FX1Poly.Typed.OpenStronglyNormalizing
 import FX1Poly.Typed.ReducibleEnvOfWfContext
 
 /-! # FX1Poly/Typed/OpenStronglyNormalizingUnconditional
-    — ★ SN-FOR-WELL-TYPED, the OPEN case: every well-typed grown term is strongly normalizing (SN-043, OB-5)
+    — ★ SN-FOR-WELL-TYPED, the OPEN case: every well-typed grown term is strongly normalizing
 
-`HasTypeDescPi.stronglyNormalizingOfWfContext`: for any WELL-FORMED context `Γ` (arbitrary scope) and any grown
-derivation `HasTypeDescPi Γ subject classifier`, `subject` is strongly normalizing — UNCONDITIONALLY, zero-axiom.
-This is **SN-043** (#546): the open generalization of the closed capstone `closedStronglyNormalizing` (BFT-14)
-from `Γ = .empty` to an arbitrary well-formed context.
+`HasTypeDescPi.stronglyNormalizingOfWfContextDesc`: for any WELL-FORMED context `Γ` (arbitrary scope, well-formed
+per the formation predicate `WfContextDesc`) and any grown derivation `HasTypeDescPi Γ subject classifier`,
+`subject` is strongly normalizing — UNCONDITIONALLY, zero-axiom.  The open generalization of the closed capstone
+`closedStronglyNormalizing` from `Γ = .empty` to an arbitrary well-formed context.
 
-## The wire (the OB-1..OB-5 chain bottoms out here)
+## The wire
 
-The conditional open SN (`HasTypeDescPi.stronglyNormalizingOfReducibleEnv`, OpenStronglyNormalizing.lean) already
+The conditional open SN (`HasTypeDescPi.stronglyNormalizingOfReducibleEnv`, OpenStronglyNormalizing.lean)
 gives SN GIVEN a `BoundExceedsPi` budget + a bound-reducible closing environment — reflecting SN through the
 substitution INTERNALLY.  This theorem discharges both inputs:
 
   1. `BoundExceedsPi.existsBound` budgets the derivation at `boundDerivation`;
-  2. `reducibleEnvOfWfContext` (OB-3) supplies the reducible closing environment at `boundEnvironment` (its
-     "every variable to `var 0`" substitution, built from OB-1's variable-membership leaf + OB-2's binding-type
+  2. `reducibleEnvOfWfContextDesc` supplies the reducible closing environment at `boundEnvironment` (its
+     "every variable to `var 0`" substitution, built from the variable-membership leaf + binding-type
      reducibility);
   3. both lift to the common SUM bound `boundDerivation + boundEnvironment` (`BoundExceedsPi.monotoneInBound` +
      `IsReducibleMemberAtBounded.cumulative`; SUM not `max`, since `Nat.le_max_*` depend on `propext`);
@@ -25,19 +25,18 @@ substitution INTERNALLY.  This theorem discharges both inputs:
 
 The universe valuation `env` is irrelevant to SN, so it is fixed to `fun _ => 0` (as in the closed capstone).
 
-## What this route did NOT need
+## What this route does not need
 
-The BFT bounded route reaches SN-043 with NONE of: the fuel-stability gate #672
-(`HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes`), the KB merged-candidate construction, or
-bounded reducibility-under-renaming (the SN-040 analogue) — the "var 0 head" trick in OB-3 sidesteps the last.
-The closed case additionally has an independent second proof (`ValidTyping.closedStronglyNormalizing`, route A).
+The bounded route reaches open SN with NONE of: a fuel-stability gate, a merged-candidate construction, or
+bounded reducibility-under-renaming — the "var 0 head" trick in `reducibleEnvOfWfContextDesc` sidesteps the
+last.  The closed case additionally has an independent second proof (`ValidTyping.closedStronglyNormalizing`).
 
-## Honest scope: WfContext-hypothesized
+## Honest scope: WfContextDesc-hypothesized
 
-The statement carries `WfContext Γ` as a hypothesis — the honest form, since an ill-formed context can type
-nonsense.  Dropping it (if the grown engine presupposes context well-formedness) is the separate OB-6 (#795).
-What the milestone consumes — closed-term canonicity (SN-047/048/049) and consistency (SN-050) — uses the closed
-instance (`Γ = .empty`, `WfContext.empty` trivial); the qualifier-drops (SN-051/052/055) use this open form.
+The statement carries `WfContextDesc Γ` as a hypothesis — the honest form, since an ill-formed context can type
+nonsense.  Dropping it (if the grown engine presupposes context well-formedness) is a separate step.
+Closed-term canonicity and consistency use the closed instance (`Γ = .empty`,
+`WfContextDesc.emptyIsWellFormed` trivial); the conversion-decidability qualifier-drops use this open form.
 
 ## Zero-axiom verification
 
@@ -51,34 +50,16 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 open StepStar
 
-/-- **★ SN-043 (open): every well-typed grown term in a well-formed context is strongly normalizing.**
-`WfContext Γ → HasTypeDescPi Γ subject classifier → IsStronglyNormalizing subject`, unconditionally and
-zero-axiom.  Composes `BoundExceedsPi.existsBound` (the derivation budget) + `reducibleEnvOfWfContext` (OB-3, the
-reducible closing environment) at a common SUM bound, fed to `stronglyNormalizingOfReducibleEnv` (which reflects
-SN through the substitution internally).  The open generalization of `closedStronglyNormalizing` (BFT-14); the
-capstone of the OB-1..OB-5 chain. -/
-theorem HasTypeDescPi.stronglyNormalizingOfWfContext {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (contextWellFormed : WfContext context)
-    (d : HasTypeDescPi profile context subject classifier) :
-    StepStar.IsStronglyNormalizing subject := by
-  obtain ⟨boundDerivation, budgetDerivation⟩ := BoundExceedsPi.existsBound (env := fun _ => 0) d
-  obtain ⟨boundEnvironment, substitution, environmentReducible⟩ :=
-    reducibleEnvOfWfContext (fun _ => 0) context contextWellFormed
-  exact d.stronglyNormalizingOfReducibleEnv
-    (BoundExceedsPi.monotoneInBound (Nat.le_add_right boundDerivation boundEnvironment) budgetDerivation)
-    (fun index => (environmentReducible index).cumulative
-      (Nat.le_add_left boundEnvironment boundDerivation))
-
-/-- **★ SN-043 (open), BRIDGE-FREE over `WfContextDesc`** — the `WfContextDesc` twin of
-`stronglyNormalizingOfWfContext`, spine-step 2 of the `WfContext → WfContextDesc` open-SN migration (HT-B).
-Identical four-step composition, but the reducible closing environment comes from the native bridge-free
-`reducibleEnvOfWfContextDesc` (no `WfContext.headIsType`, no `HasType.toHasTypeDesc`, no `ofWfContext`) — so the
-whole open-SN capstone now has a route through the `HasTypeDesc`-defined context-wellformedness predicate, with
-NO `HasType` dependency anywhere on the path.  The `WfContextDesc Γ` hypothesis is genuinely external (since
-`HasTypeDescPi Γ t T → WfContext Γ` provably FAILS, `ContextValidityFails`), so it is re-based from the
-`HasType`-defined `WfContext` rather than derived.  The bridge-free target the SN-051/052/055 qualifier-drops
-migrate onto before HT-C deletes the engine. -/
+/-- **★ Open SN: every well-typed grown term in a well-formed context is strongly normalizing.**
+`WfContextDesc Γ → HasTypeDescPi Γ subject classifier → IsStronglyNormalizing subject`, unconditionally and
+zero-axiom.  Four-step composition: the reducible closing environment comes from
+`reducibleEnvOfWfContextDesc`, so the whole open-SN capstone routes through the `HasTypeDesc`-defined
+context-wellformedness predicate.  The derivation budget comes from `BoundExceedsPi.existsBound`; both
+lift to a common SUM bound (`monotoneInBound` + `cumulative`) and feed `stronglyNormalizingOfReducibleEnv`,
+which reflects SN through the substitution internally.  The `WfContextDesc Γ` hypothesis is genuinely external
+(since `HasTypeDescPi Γ t T → WfContextDesc Γ` provably FAILS, `ContextValidityFails`), so it is supplied
+externally rather than derived.  The open generalization of `closedStronglyNormalizing`; the target the
+conversion-decidability qualifier-drops use. -/
 theorem HasTypeDescPi.stronglyNormalizingOfWfContextDesc {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (contextWellFormed : WfContextDesc context)

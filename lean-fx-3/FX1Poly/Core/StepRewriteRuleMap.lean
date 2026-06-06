@@ -2,10 +2,10 @@ import FX1Poly.Core.Step
 import FX1Poly.Core.RawCellCode
 
 /-! # FX1Poly/Core/StepRewriteRuleMap
-    — each FX reduction as a rewrite rule over the term-code word monoid (SN-126, #629)
+    — each FX reduction as a rewrite rule over the term-code word monoid
 
-SN-125 encoded the RawCell composite layer into the dim-1 rule-id free monoid (the derivation word: WHICH
-rewrite rules a path applies).  This file encodes the complementary half of the Leg-3 bridge: each FX `Step`
+`RawCellWordEncoding` encodes the RawCell composite layer into the dim-1 rule-id free monoid (the derivation
+word: WHICH rewrite rules a path applies).  This file encodes the complementary half of the Leg-3 bridge: each FX `Step`
 (a single beta / iota / cong reduction on `RawTerm`, `Step.lean`) becomes a REWRITE RULE on the term-code word
 monoid — the rule endpoints.  Together they describe a reduction fully: a derivation word `[r1, r2, ...]` taking
 the term word `encode(a)` to `encode(b)`.
@@ -13,8 +13,8 @@ the term word `encode(a)` to `encode(b)`.
 ## The encoding is the shipped faithful serializer
 
 The bridge `encode` is the SHIPPED `RawTerm.toCode` (`RawCellCode.lean`): `mkGen g p c` maps to
-`g.toNat :: payloadToNat g p :: c.toCode` — head generator tag (the SN-123/124 polygraph tag), the payload
-(variable index / level), then the children's codes.  It is FAITHFUL (records tags AND payloads), unlike SN-125's
+`g.toNat :: payloadToNat g p :: c.toCode` — head generator tag (the polygraph tag), the payload
+(variable index / level), then the children's codes.  It is FAITHFUL (records tags AND payloads), unlike the
 shape-only `encodeRuleWord`.  This file adds the two facts the rule map needs:
 
 * `toCode_mkGen` — the encoder exposes its head tag (a `rfl` computation rule over the shipped mutual `toCode`).
@@ -31,13 +31,13 @@ shape-only `encodeRuleWord`.  This file adds the two facts the rule map needs:
 * `Step.inducedRewriteRule_leftHandSide` / `_rightHandSide` (`rfl`) and `_leftHandSide_ne_nil` /
   `_rightHandSide_ne_nil` (non-degeneracy) — the rule faithfully records the reduction's endpoints.
 * `fxStepSystem` — the rule SYSTEM the FX reductions generate: a rule is in it iff it is the code-pair of some
-  FX reduction (at some scope).  This is the `fxSystem` that SN-127's bridge soundness (`Step a b ⟹
+  FX reduction (at some scope).  This is the `fxSystem` that the bridge soundness (`Step a b ⟹
   RewritesOneStep fxSystem (encode a) (encode b)`) ranges over.
 * `Step.inducedRewriteRule_mem_fxStepSystem` — every FX reduction's induced rule is a rule of the system (the
   map lands in the generated system by construction).
 
-SN-127+ (the soundness `Step a b ⟹ RewritesOneStep fxSystem a.toCode b.toCode`, the inversion, and the
-`Conv ↔ ConvertibleModulo` bridge) need a `RewritesOneStep` infrastructure over `List Nat` and the
+The soundness `Step a b ⟹ RewritesOneStep fxSystem a.toCode b.toCode`, the inversion, and the
+`Conv ↔ ConvertibleModulo` bridge need a `RewritesOneStep` infrastructure over `List Nat` and the
 substitution-tracking analysis; they remain gated on the typed-SN critical path per `core_raw_sn_false_natrec`
 (raw `Step` is not globally terminating).  Here we build only the rule map and its generated system.
 
@@ -102,8 +102,8 @@ theorem Step.inducedRewriteRule_rightHandSide_ne_nil {scope : Nat} {redex reduct
   toCode_ne_nil reduct
 
 /-- **The FX rewriting system**: the set of rules the FX reductions generate.  A rule belongs to the system iff
-it is the term-code pair of some FX reduction (at some scope).  This is the `fxSystem` over which SN-127's bridge
-soundness `Step a b ⟹ RewritesOneStep fxStepSystem a.toCode b.toCode` will range. -/
+it is the term-code pair of some FX reduction (at some scope).  This is the `fxSystem` over which the bridge
+soundness `Step a b ⟹ RewritesOneStep fxStepSystem a.toCode b.toCode` ranges. -/
 def fxStepSystem (rule : FxTermRewriteRule) : Prop :=
   ∃ (scope : Nat) (redex reduct : RawTerm scope),
     Step redex reduct

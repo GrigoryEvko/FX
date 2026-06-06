@@ -4,13 +4,13 @@ import FX1Poly.Core.ReducibilityCandidate
 import FX1Poly.Core.ModIntroCanonicalFormsCandidate
 
 /-! # FX1Poly/Core/ModalEliminatorReducibility
-    — modal elimination + subsumption reducibility (SN-074 / SN-075), unconditional + zero-axiom
+    — modal elimination + subsumption reducibility, unconditional + zero-axiom
 
-`ModIntroCanonicalFormsCandidate.lean` (SN-073) ships the modal box INTRODUCTION reducibility candidate, and
-`StrongNormalizationModalEliminators.lean` (#722) ships the FORWARD strong-normalization closure for the two
+`ModIntroCanonicalFormsCandidate.lean` ships the modal box INTRODUCTION reducibility candidate, and
+`StrongNormalizationModalEliminators.lean` ships the FORWARD strong-normalization closure for the two
 one-child modal operators — `modElim`'s child SN lifts to `modElim`'s SN (`modElim_isStronglyNormalizing_of_child`),
-likewise `subsume`.  This file completes the modal-core reducibility picture with the missing direction and the
-candidate-framing: SN-074 (`modElim` reducibility) and its twin SN-075 (`subsume` reducibility).
+likewise `subsume`.  This file completes the modal-core reducibility picture with the reflection direction and the
+candidate-framing: `modElim` reducibility and its twin `subsume` reducibility.
 
 ## Why the strong-normalization candidate is the honest target
 
@@ -28,7 +28,7 @@ sends every reducibility-candidate member to an SN-candidate member.  Full paylo
 either a β/ι computation rule for `modElim` or its registration as a neutral head — both presently absent, both
 flagged honestly in `NeutralTerm.lean`.
 
-## What this file adds beyond the forward SN closure (#722)
+## What this file adds beyond the forward SN closure
 
 * `isStronglyNormalizing_child_of_oneChildCong` — the REUSABLE converse of
   `isStronglyNormalizing_of_oneChildCong`: strong normalization REFLECTS through any one-child congruence wrapper.
@@ -37,11 +37,11 @@ flagged honestly in `NeutralTerm.lean`.
   generalized to an arbitrary wrapper.
 * `modElim_isStronglyNormalizing_child_of_parent` / `subsume_…` — the reflection at the two modal operators.
 * `modElim_isStronglyNormalizing_iff` / `subsume_…` — the biconditional `IsStronglyNormalizing (op child) ↔
-  IsStronglyNormalizing child` (forward = #722, backward = the new reflection): the complete SN characterization.
+  IsStronglyNormalizing child` (forward = the SN closure, backward = the reflection): the complete SN characterization.
 * `modElim_isStronglyNormalizing_of_candidateMember` / `subsume_…` — the reducibility-framing: a member of any
   reducibility candidate is sent by `modElim` / `subsume` to an SN-candidate member (CR1 on the candidate, then
   the forward closure).
-* `modElim_isStronglyNormalizing_ofBoxMember` — the concrete capstone tying `modElim` back to SN-073's shipped box
+* `modElim_isStronglyNormalizing_ofBoxMember` — the concrete capstone tying `modElim` back to the box
   candidate `modIntroCanonicalFormsCandidate`: `modElim` of a modal-box-candidate member is strongly normalizing.
 
 ## Zero-axiom verification
@@ -89,9 +89,9 @@ theorem isStronglyNormalizing_child_of_oneChildCong
       exact parentInductiveHypothesis
         (wrapParent childAfter) (congParentStep childStep) rfl
 
-/-- **`modElim`'s child reflects strong normalization (SN-074, the new direction).**  Congruence-only under β+ι:
+/-- **`modElim`'s child reflects strong normalization.**  Congruence-only under β+ι:
 each child step lifts to a `modElim` step (`Step.cong` / `StepChildren.here`), so accessibility of `modElim
-modalTerm` descends to `modalTerm`.  The converse of `modElim_isStronglyNormalizing_of_child` (#722). -/
+modalTerm` descends to `modalTerm`.  The converse of `modElim_isStronglyNormalizing_of_child`. -/
 theorem modElim_isStronglyNormalizing_child_of_parent {scope : Nat}
     {modalTerm : RawTerm scope}
     (modElimTerminates :
@@ -107,7 +107,7 @@ theorem modElim_isStronglyNormalizing_child_of_parent {scope : Nat}
         (StepChildren.here (.childNil : RawTermChildren [] scope) childStep))
     modElimTerminates
 
-/-- **`subsume`'s child reflects strong normalization (SN-075, the new direction).**  The modality-subsumption
+/-- **`subsume`'s child reflects strong normalization.**  The modality-subsumption
 twin of `modElim_isStronglyNormalizing_child_of_parent`, identical one-child congruence shape. -/
 theorem subsume_isStronglyNormalizing_child_of_parent {scope : Nat}
     {subsumedTerm : RawTerm scope}
@@ -124,8 +124,8 @@ theorem subsume_isStronglyNormalizing_child_of_parent {scope : Nat}
         (StepChildren.here (.childNil : RawTermChildren [] scope) childStep))
     subsumeTerminates
 
-/-- **`modElim` strong-normalization characterization (SN-074).**  `modElim modalTerm` is strongly normalizing
-iff `modalTerm` is — forward is the #722 closure, backward is the new reflection.  The complete SN picture for
+/-- **`modElim` strong-normalization characterization.**  `modElim modalTerm` is strongly normalizing
+iff `modalTerm` is — forward is the SN closure, backward is the reflection.  The complete SN picture for
 the modal eliminator under β+ι. -/
 theorem modElim_isStronglyNormalizing_iff {scope : Nat} {modalTerm : RawTerm scope} :
     IsStronglyNormalizing
@@ -134,7 +134,7 @@ theorem modElim_isStronglyNormalizing_iff {scope : Nat} {modalTerm : RawTerm sco
   ⟨modElim_isStronglyNormalizing_child_of_parent,
    modElim_isStronglyNormalizing_of_child⟩
 
-/-- **`subsume` strong-normalization characterization (SN-075).**  The subsumption twin of
+/-- **`subsume` strong-normalization characterization.**  The subsumption twin of
 `modElim_isStronglyNormalizing_iff`. -/
 theorem subsume_isStronglyNormalizing_iff {scope : Nat} {subsumedTerm : RawTerm scope} :
     IsStronglyNormalizing
@@ -143,7 +143,7 @@ theorem subsume_isStronglyNormalizing_iff {scope : Nat} {subsumedTerm : RawTerm 
   ⟨subsume_isStronglyNormalizing_child_of_parent,
    subsume_isStronglyNormalizing_of_child⟩
 
-/-- **`modElim` sends reducibility-candidate members to SN-candidate members (SN-074, the reducibility
+/-- **`modElim` sends reducibility-candidate members to SN-candidate members (the reducibility
 framing).**  Given a reducibility candidate `memberPredicate` and a member `modalTerm`, CR1 makes `modalTerm`
 strongly normalizing, so the forward closure makes `modElim modalTerm` strongly normalizing — i.e. a member of
 the base SN reducibility candidate (`isStronglyNormalizing_isReducibilityCandidate`).  This is the honest
@@ -156,7 +156,7 @@ theorem modElim_isStronglyNormalizing_of_candidateMember {scope : Nat}
       (.mkGen .gen_modElim () (.childCons modalTerm .childNil) : RawTerm scope) :=
   modElim_isStronglyNormalizing_of_child (candidate.stronglyNormalizing modalMember)
 
-/-- **`subsume` sends reducibility-candidate members to SN-candidate members (SN-075, the reducibility
+/-- **`subsume` sends reducibility-candidate members to SN-candidate members (the reducibility
 framing).**  The subsumption twin of `modElim_isStronglyNormalizing_of_candidateMember`. -/
 theorem subsume_isStronglyNormalizing_of_candidateMember {scope : Nat}
     {memberPredicate : RawTerm scope → Prop}
@@ -166,8 +166,8 @@ theorem subsume_isStronglyNormalizing_of_candidateMember {scope : Nat}
       (.mkGen .gen_subsume () (.childCons subsumedTerm .childNil) : RawTerm scope) :=
   subsume_isStronglyNormalizing_of_child (candidate.stronglyNormalizing subsumedMember)
 
-/-- **`modElim` of a modal-box-candidate member is strongly normalizing (SN-074 capstone).**  The concrete
-instance tying the modal eliminator back to SN-073's shipped box reducibility candidate
+/-- **`modElim` of a modal-box-candidate member is strongly normalizing (the capstone).**  The concrete
+instance tying the modal eliminator back to the box reducibility candidate
 `modIntroCanonicalFormsCandidate`: any member of the modal box candidate `CanonicalFormsPredicate
 isModIntroValue` is sent by `modElim` to a strongly-normalizing (SN-candidate) term.  The reducibility
 counterpart of `modIntroCanonicalFormsCandidate` for the eliminator side of the modal core. -/

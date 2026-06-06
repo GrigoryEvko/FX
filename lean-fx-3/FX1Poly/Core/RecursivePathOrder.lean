@@ -1,12 +1,12 @@
 import FX1Poly.Core.TerminationOrders
 
 /-! # FX1Poly/Core/RecursivePathOrder
-    — the RPO termination certificate: precedence × argument-order, lexicographically (SN-115, #618)
+    — the RPO termination certificate: precedence × argument-order, lexicographically
 
 The recursive path ordering (RPO) decides termination of a non-length-decreasing rewrite system by comparing
 terms with a PRECEDENCE on the head symbols and, on equal heads, a multiset- or lexicographic-status comparison
 of the arguments.  This file builds the RPO TERMINATION CERTIFICATE: the well-founded lexicographic product of a
-precedence with an argument order (SN-116 multiset or SN-117 lex), and the measure-based termination it yields.
+precedence with an argument order (the multiset or the lex order), and the measure-based termination it yields.
 
 The lexicographic product is formulated as a DISJUNCTION (`LexPair`), not the indexed `Prod.Lex` (whose `cases`
 leaks propext via the pair-index match) — inversion is by `obtain`/`rcases` on the `Or`, clean.
@@ -19,19 +19,19 @@ leaks propext via the pair-index match) — inversion is by `obtain`/`rcases` on
   (the standard nested accessibility: outer on the first component, inner on the second).
 * `wellFounded_of_lexPairMeasure` — termination by a lexicographic-pair measure.
 * `wellFounded_of_precedenceMultisetMeasure` — **the RPO certificate (multiset-status)**: a step terminates if a
-  precedence rank decreases, or stays equal while the SN-116 multiset measure over the arguments decreases.
+  precedence rank decreases, or stays equal while the multiset measure over the arguments decreases.
 * `wellFounded_of_precedenceLexMeasure` — **the RPO certificate (lexicographic-status)**: the same with the
-  SN-117 lexicographic argument order.
+  lexicographic argument order.
 
 These are the precedence-then-status comparison of RPO, made measure-based termination certificates.  The full
 RECURSIVE path ordering on the FX term structure (the recursive subterm comparison, composing these certificates
-through the 194-generator tree) is the downstream `SN-131` construction (typed-SN-gated); this file supplies the
+through the 194-generator tree) is a downstream construction (typed-SN-gated); this file supplies the
 precedence + argument-order core it builds on.
 
 ## Zero-axiom verification
 
 `LexPair` is a `∨`; its WF is nested `Acc` induction with `rcases` on the disjunction (no indexed `cases`); the
-certificates are `Subrelation.wf` + `InvImage.wf` of the lex product, instantiated at the SN-116 / SN-117 orders.
+certificates are `Subrelation.wf` + `InvImage.wf` of the lex product, instantiated at the multiset / lex orders.
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditCore.lean`.
 -/
@@ -106,7 +106,7 @@ theorem wellFounded_of_lexPairMeasure
 
 /-- **The RPO termination certificate (multiset-status)**: a step relation terminates if a precedence rank (a
 well-founded order on the head symbol) decreases, or stays equal while a Dershowitz-Manna multiset measure
-(SN-116) over the arguments decreases.  The precedence-then-multiset-status comparison of the recursive path
+over the arguments decreases.  The precedence-then-multiset-status comparison of the recursive path
 ordering, made a measure-based certificate. -/
 theorem wellFounded_of_precedenceMultisetMeasure
     {stepRel : Carrier → Carrier → Prop}
@@ -122,7 +122,7 @@ theorem wellFounded_of_precedenceMultisetMeasure
   wellFounded_of_lexPairMeasure precedenceWellFounded
     (MultisetRedOne.isWellFounded baseRel baseWellFounded) measureDecreases
 
-/-- **The RPO termination certificate (lexicographic-status)**: the same, with the SN-117 lexicographic argument
+/-- **The RPO termination certificate (lexicographic-status)**: the same, with the lexicographic argument
 order in place of the multiset order. -/
 theorem wellFounded_of_precedenceLexMeasure
     {stepRel : Carrier → Carrier → Prop}

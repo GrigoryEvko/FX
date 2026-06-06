@@ -40,7 +40,7 @@ laws).  The trivial fragment (`add_comm`, `add_zero`, `zero_add`, `mul_one`, `on
 law set — associativity of both operations, distributivity, and the order laws (reflexivity,
 transitivity, antisymmetry, `+`/`*` monotonicity) — plus the `IsLawfulOrderedGradeSemiring`
 verified-semiring bundle and its witness `fxUsageSemiring_isLawful` follow at the bottom of the
-file (DIM2-1, §6.1).
+file (§6.1).
 
 Pattern catalogued in
 `feedback_lean_match_propext_recipe.md`.
@@ -152,7 +152,7 @@ def SecurityGrade.le : SecurityGrade → SecurityGrade → Bool
 `SecurityGrade.mul` (sequential composition with annihilation `classified * unclassified =
 unclassified` — ghost computation on a secret leaks nothing).  `zero = unclassified` is the join
 bottom and the meet annihilator; `one = classified` is the meet top.  The lawful-semiring witness is
-`fxSecuritySemiring_isLawful` (DIM5-1, below). -/
+`fxSecuritySemiring_isLawful` (below). -/
 def fxSecuritySemiring : OrderedGradeSemiring where
   Carrier := SecurityGrade
   zero := .unclassified
@@ -198,7 +198,7 @@ division: 1/ω = 0, so linear vars erased in replicable closures. -/
 theorem UsageGrade.linear_div_omega_eq_zero :
     UsageGrade.mul .one .zero = .zero := rfl
 
-/-! ## The complete ordered-semiring law set (DIM2-1, §6.1)
+/-! ## The complete ordered-semiring law set (§6.1)
 
 The grade algebra of §6.1 is an ORDERED semiring `(R, +, *, 0, 1, ≤)`: `(R, +, 0)` a commutative
 monoid, `(R, *, 1)` a monoid, `*` distributing over `+`, `0` annihilating, and `≤` a partial order
@@ -210,7 +210,7 @@ enumeration: `cases … <;> rfl` for the equational laws; for the order laws,
 (the `≤`-false cases) via `Bool.noConfusion` while `rfl` closes the genuine `true` goals.  All
 propext-free, all zero-axiom. -/
 
-/-- Associativity of usage addition — the commutative-monoid law `(R, +, 0)` was missing. -/
+/-- Associativity of usage addition — the commutative-monoid law `(R, +, 0)`. -/
 theorem UsageGrade.add_assoc (firstGrade secondGrade thirdGrade : UsageGrade) :
     UsageGrade.add (UsageGrade.add firstGrade secondGrade) thirdGrade =
       UsageGrade.add firstGrade (UsageGrade.add secondGrade thirdGrade) := by
@@ -343,9 +343,9 @@ structure IsLawfulOrderedGradeSemiring (semiring : OrderedGradeSemiring) : Prop 
 
 /-- **The FX usage grade algebra `{0, 1, ω}` is a verified ordered semiring.**  Assembles every
 ordered-semiring law (§6.1) into one inhabitant of `IsLawfulOrderedGradeSemiring fxUsageSemiring`.
-This is the non-vacuous DIM2-1 deliverable: `fxUsageSemiring` is not merely a bundle of operations
+This is non-vacuous: `fxUsageSemiring` is not merely a bundle of operations
 but a PROVEN ordered semiring — the algebraic substrate the usage dimension's grade-checking
-judgment (DIM2-3, the Wood/Atkey Lam rule) will consume. -/
+judgment (the Wood/Atkey Lam rule) consumes. -/
 theorem fxUsageSemiring_isLawful : IsLawfulOrderedGradeSemiring fxUsageSemiring where
   add_comm := UsageGrade.add_comm
   add_assoc := UsageGrade.add_assoc
@@ -368,7 +368,7 @@ theorem fxUsageSemiring_isLawful : IsLawfulOrderedGradeSemiring fxUsageSemiring 
   mul_le_mul_left := fun scaleGrade _ _ firstBelowSecond =>
     UsageGrade.mul_le_mul_left scaleGrade firstBelowSecond
 
-/-! ## The security grade algebra `{unclassified < classified}` is a verified ordered semiring (DIM5-1, §6.1/§6.3)
+/-! ## The security grade algebra `{unclassified < classified}` is a verified ordered semiring (§6.1/§6.3)
 
 The Security dimension (dim 5) is the SECOND graded instance of the §6.1 ordered semiring, after the
 usage dimension `{0, 1, ω}`.  Its carrier is the two-point lattice `unclassified < classified`:
@@ -382,9 +382,9 @@ Because `{unclassified < classified}` is a two-element chain it is a DISTRIBUTIV
 distributes over join — the law that makes `(add, mul)` a genuine semiring rather than two unrelated
 monoids.  Every law closes by full 2×2(×2) case enumeration (`cases … <;> rfl` for the equational
 laws; `cases … <;> first | rfl | Bool.noConfusion …` for the order laws), propext-free and zero-axiom,
-exactly as the usage twin.  This is the non-vacuous DIM5-1 deliverable: a SECOND dimension shown to be
+exactly as the usage twin.  This is non-vacuous: a SECOND dimension shown to be
 a lawful ordered semiring with NO change to the type metatheory — the orthogonal-composition thesis
-(DIM2-7) extended past its first witness. -/
+extended past its first witness. -/
 
 /-- Commutativity of security join (combining secrecy is order-independent). -/
 theorem SecurityGrade.add_comm (firstGrade secondGrade : SecurityGrade) :
@@ -502,7 +502,7 @@ theorem SecurityGrade.classified_poisons_add (someGrade : SecurityGrade) :
 /-- **The FX security grade algebra `{unclassified < classified}` is a verified ordered semiring.**
 Assembles every §6.1 ordered-semiring law into one inhabitant of
 `IsLawfulOrderedGradeSemiring fxSecuritySemiring`, with `mul = SecurityGrade.mul` (the MEET).  This is
-DIM5-1: the second graded dimension proven a genuine ordered semiring — `mul_comm` is again ABSENT
+the second graded dimension proven a genuine ordered semiring — `mul_comm` is again ABSENT
 from the bundle (`*` need only be a monoid; the security `*` commutativity is the stronger
 per-instance `SecurityGrade.mul_comm`). -/
 theorem fxSecuritySemiring_isLawful : IsLawfulOrderedGradeSemiring fxSecuritySemiring where
@@ -527,7 +527,7 @@ theorem fxSecuritySemiring_isLawful : IsLawfulOrderedGradeSemiring fxSecuritySem
   mul_le_mul_left := fun scaleGrade _ _ firstBelowSecond =>
     SecurityGrade.mul_le_mul_left scaleGrade firstBelowSecond
 
-/-! ## Grade division — the residual of multiplication (toward DIM2-3's corrected Lam rule)
+/-! ## Grade division — the residual of multiplication (toward the corrected Lam rule)
 
 `div a b = max { d : d * b ≤ a }` is the residual (right adjoint) of `* b` — the largest grade
 whose product with `b` stays below `a`.  Context division `G / p` (§6.2) divides each binding's
@@ -577,11 +577,11 @@ theorem UsageGrade.mul_div_le (divisorGrade dividendGrade : UsageGrade) :
       dividendGrade = true := by
   cases divisorGrade <;> cases dividendGrade <;> rfl
 
-/-! ## Security-instance multiplication: RESOLVED (DIM5-1)
+/-! ## Security-instance multiplication
 
-The earlier `fxSecuritySemiring.mul := SecurityGrade.add` (JOIN) miswiring — which made the instance
-fail `one_mul` and annihilation, so `IsLawfulOrderedGradeSemiring fxSecuritySemiring` was unprovable —
-is now fixed: `mul := SecurityGrade.mul` (the MEET, §6.1/§6.3) with the complete law set and the
-`fxSecuritySemiring_isLawful` witness shipped in the security-grade-algebra section above. -/
+`fxSecuritySemiring.mul := SecurityGrade.mul` (the MEET, §6.1/§6.3) is the multiplication that satisfies
+`one_mul` and annihilation; it carries the complete law set and the `fxSecuritySemiring_isLawful` witness
+shipped in the security-grade-algebra section above.  (The JOIN `SecurityGrade.add` would fail `one_mul`
+and annihilation, so it is not the multiplication.) -/
 
 end FX1Poly.Modal

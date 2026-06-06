@@ -10,7 +10,7 @@ the motive's reducibility candidate, hence strongly normalizing but not necessar
 strengthens the result to SN branches: `boolElim scrutinee thenBranch elseBranch` is strongly normalizing
 whenever all three components are.
 
-This is the iota-head-expansion SN foundation for `boolElim` reducibility (toward SN-063 and the fundamental
+This is the iota-head-expansion SN foundation for `boolElim` reducibility (toward the fundamental
 theorem's `boolElim` arm): a `boolElim`-headed redex whose contractum (the selected branch) is reducible — and
 whose other components are SN — is itself SN, the prerequisite for showing the redex inherits candidate
 membership.
@@ -26,8 +26,8 @@ innermost point the `Step.from_boolElim` inversion splits five ways:
 * **scrutinee / then / else congruence** — the target is a `boolElim` with one component stepped, handled by
   the outer / middle / inner induction hypothesis respectively, fed the unchanged components' SN witnesses.
 
-The branches are no longer required normal because their congruence reducts are now discharged by their own
-accessibility inductions rather than refuted.
+The branches need not be normal: their congruence reducts are discharged by their own
+accessibility inductions.
 
 ## Zero-axiom verification
 

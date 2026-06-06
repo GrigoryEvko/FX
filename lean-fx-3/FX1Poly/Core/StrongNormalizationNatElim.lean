@@ -2,7 +2,7 @@ import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationIotaRedexes
 
 /-! # FX1Poly/Core/StrongNormalizationNatElim
-    — the recursive-eliminator iota-redex SN: natElim successor case (toward SN-061)
+    — the recursive-eliminator iota-redex SN: natElim successor case
 
 `StrongNormalizationIotaRedexes.lean` ships the iota-redex SN closures for the NON-recursive eliminators
 whose ι-contractum is a passive branch (`boolElim`, `idJ`, `idStrictRec`).  `natElim` is the first RECURSIVE
@@ -28,8 +28,8 @@ The `succContractumTerminates` hypothesis is the honest IH-carrying premise — 
 contains the recursive `natElim pred …` call) is SN for every SN predecessor.  This is exactly the obligation
 the eventual well-founded recursion on the numeral structure discharges; here it is taken as a parameter, in
 the same spirit as `appLam_isStronglyNormalizing_of_body_argument_contractum` parameterizes over the β
-contractum.  This is the redex-SN building block toward SN-061 (natElim/natRec reducibility); the
-numeral-WF-recursion tie-up that discharges the hypothesis is the remaining SN-061 content.
+contractum.  This is the redex-SN building block toward natElim/natRec reducibility; the
+numeral-WF-recursion tie-up that discharges the hypothesis is the remaining content.
 
 ## Zero-axiom verification
 
@@ -83,7 +83,7 @@ strongly-normalizing scrutinee is strongly normalizing.  `Acc.ndrec` runs on the
 gives the five arms: ι-zero → the normal `zeroBranch`; ι-succ → the contractum, discharged by
 `succContractumTerminates` at the predecessor (whose SN comes from the subterm lemma applied to the accessible
 `natSucc` scrutinee); scrutinee-congruence → the induction hypothesis; branch-congruences → impossible by
-branch normality.  The first recursive-eliminator iota-redex SN (toward SN-061). -/
+branch normality.  The first recursive-eliminator iota-redex SN. -/
 theorem natElim_isStronglyNormalizing_of_normal_branches {scope : Nat}
     {scrutinee zeroBranch succBranch : RawTerm scope}
     (zeroBranchHasNoStep : ∀ targetZero : RawTerm scope, Step zeroBranch targetZero → False)
@@ -146,7 +146,7 @@ theorem natElim_isStronglyNormalizing_of_normal_branches {scope : Nat}
 mirror of `Step.from_natElim`), so the firing-case argument is identical: `Acc.ndrec` on the scrutinee, with
 ι-succ discharged by `succContractumTerminates` at the `natSucc` predecessor subterm.  This is the normal-branch
 firing-case complement of the shipped neutral-branch `natRecSucc_isStronglyNormalizing_of_neutral_succBranch`,
-completing the firing-case formulation for the Nat recursor pair (toward SN-061). -/
+completing the firing-case formulation for the Nat recursor pair. -/
 theorem natRec_isStronglyNormalizing_of_normal_branches {scope : Nat}
     {scrutinee zeroBranch succBranch : RawTerm scope}
     (zeroBranchHasNoStep : ∀ targetZero : RawTerm scope, Step zeroBranch targetZero → False)
@@ -215,7 +215,7 @@ private abbrev natElimSuccContractum {scope : Nat} (succBranch predecessor zeroB
         .childNil))
 
 /-- **The natElim redex is strongly normalizing from SN (not necessarily normal) branches.**  The SN-branch
-strengthening of `natElim_isStronglyNormalizing_of_normal_branches`, required for recursor REDUCIBILITY (SN-061):
+strengthening of `natElim_isStronglyNormalizing_of_normal_branches`, required for recursor REDUCIBILITY:
 in the Tait/data-candidate argument the branches are MEMBERS (hence SN) but not normal.  A triple nested
 accessibility induction on `(scrutinee, zeroBranch, succBranch)`; the succ-contractum SN hypothesis is THREADED
 through both branch inductions.  Under `zeroBranch`-congruence the update is one hop (the zero branch occurs once

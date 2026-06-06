@@ -2,7 +2,7 @@ import FX1Poly.Core.ParStepSubstRename
 import FX1Poly.Core.RawTermSubst0Commute
 
 /-! # FX1Poly/Core/ParStepSubstPointwise
-    — the parallel substitution lemma and its diagonal corollary (the #420 triangle's β/ι engine).
+    — the parallel substitution lemma and its diagonal corollary (the raw-confluence triangle's β/ι engine).
 
 `ParStepSubstRename.lean` shipped `ParStep.subst` (one fixed substitution applied to both sides) and
 `ParStep.rename`.  The Takahashi triangle `ParStep a b → ParStep b (completeDevelopment a)` needs more

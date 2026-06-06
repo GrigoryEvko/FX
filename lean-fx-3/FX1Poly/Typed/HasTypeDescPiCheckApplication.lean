@@ -10,7 +10,7 @@ import FX1Poly.Typed.ConvCodeInjectivity
 
 The application position `appCell functionTerm argument` is an INFER-mode position, but inferring its type
 requires the function's type as a `Π`-head (`piTyCodeCell domainCode codomainCode`) — and exposing a grown
-function's type as a syntactic `Π` is the SR-gated step (normalize via OB-5 SN, re-type through `conv`, the
+function's type as a syntactic `Π` is the SR-gated step (normalize via open SN, re-type through `conv`, the
 target's `Π`-components recovered by injectivity).  This file ships the SR-FREE remainder: GIVEN the function's
 `Π`-typing + its type-uniqueness + the `Π`-components' universe-typings (all delivered by the eventual
 recursive inference once the exposure lands), the application check against a known-type target is decidable.
@@ -55,7 +55,7 @@ to the target; if the argument does not check, `invertApp` + Π-injectivity + `c
 be typed at all. -/
 def HasTypeDescPi.decidableCheckApplicationGivenFunction {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (wellFormed : WfContext context)
+    (wellFormed : WfContextDesc context)
     {functionTerm argument : RawTerm scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {domainLevel codomainLevel : LevelExpr} {domainFlag codomainFlag : UniverseFlag}

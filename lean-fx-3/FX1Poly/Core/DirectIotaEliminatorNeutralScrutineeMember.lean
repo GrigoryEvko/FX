@@ -28,7 +28,7 @@ The remaining two eliminators — `optionMatch` / `eitherMatch` — are applicat
 pattern) and are deferred to a follow-up; with those, all twelve `IsNeutral` eliminators are reducible over a
 neutral principal child.
 
-`#672`-independent (fixed result candidate, the pure Tait neutral-eliminator argument).
+Fundamental-independent (fixed result candidate, the pure Tait neutral-eliminator argument).
 
 ## Zero-axiom verification
 

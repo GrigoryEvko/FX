@@ -30,7 +30,7 @@ confluence is "disjoint redexes commute" plus the degenerate same-redex case.
 
 This ships CONFLUENCE (local + global).  The decidable word problem (`decidableConvertibleModulo_ofConvergent`)
 additionally needs a `WordReducer (transpositionSystem a b)` — a searchable leftmost-`[a,b]` matcher with
-soundness/completeness (mirroring `idempotentWordReducer`) — the next and final SN-118 atom.
+soundness/completeness (mirroring `idempotentWordReducer`) — the next and final atom.
 
 ## Zero-axiom verification
 

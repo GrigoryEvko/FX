@@ -3,7 +3,7 @@ import FX1Poly.Typed.HasTypeDescPiRootGeneric
 import FX1Poly.Core.RawConfluence
 
 /-! # FX1Poly/Typed/HasTypeDescPiLamInversion — Π-INTRODUCTION (λ) inversion for the GROWN engine
-    (the inversion general β-subject-reduction explicitly needs; TY-INVN, #454)
+    (the inversion general β-subject-reduction explicitly needs)
 
 For a `lamCell body` SUBJECT typed in the grown engine `HasTypeDescPi`, this file recovers the
 piIntro premises modulo the conv arm: the classifier is convertible to a Π-code `piTyCodeCell
@@ -15,13 +15,11 @@ names as the missing ingredient for fully-general subject reduction ("the fully-
 
 ## Why the `Conv` conjunct survives here (where the type-code inversions dropped it)
 
-`HasTypeDescPiInversion.lean` (the Π/Σ-CODE component inversions) DROPPED the classifier-`Conv`
-conjunct because the grown engine has no `toHasType`, so its `conv` arm could not compose the
-conversion via `Conv.trans_of_typedMiddle` (which wants the middle classifier's `IsType`).  Here the
-`Conv` is recovered WITHOUT any typed-middle obligation: raw `Conv` is an UNCONDITIONAL equivalence
-relation (`Conv.trans` / `Conv.sym`, harvested from raw confluence #420/#714), so the `conv` arm
-just composes `converts.sym` with the recursive `Conv` — no `IsType`, no well-formedness premise.
-That is why this inversion needs neither `WfContext` nor `toHasType`.
+`HasTypeDescPiInversion.lean` (the Π/Σ-CODE component inversions) returns only the component
+type-hoods, DROPPING the classifier-`Conv` conjunct.  Here the `Conv` is recovered WITHOUT any
+typed-middle obligation: raw `Conv` is an UNCONDITIONAL equivalence relation (`Conv.trans` /
+`Conv.sym`, harvested from raw confluence), so the `conv` arm just composes `converts.sym` with the
+recursive `Conv` — no well-formedness premise.
 
 ## The recipe (propext-free, per the equation-motive cell-index inversion)
 

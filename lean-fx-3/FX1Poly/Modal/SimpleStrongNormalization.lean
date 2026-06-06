@@ -1,14 +1,14 @@
 import FX1Poly.Modal.GradeErasure
 
-/-! # FX1Poly/Modal/SimpleStrongNormalization — STLC strong normalization (DIM2-5 / SN-056)
+/-! # FX1Poly/Modal/SimpleStrongNormalization — STLC strong normalization
 
-The orthogonal-composition thesis (DIM2): the usage dimension does NOT need its own strong-
+The orthogonal-composition thesis: the usage dimension does NOT need its own strong-
 normalization argument; graded-SN rides on the TYPE dimension's SN through grade erasure
-(`HasUsage.erase`, DIM2-4), because the term and the β-reduction are grade-AGNOSTIC.  So the only
+(`HasUsage.erase`), because the term and the β-reduction are grade-AGNOSTIC.  So the only
 SN obligation is the TYPE dimension's: `HasSimpleType Γ t T → IsStronglyNormalizing t` (the classic
 STLC Tait result), proved ONCE.  Graded-SN is then the trivial corollary `HasUsage → erase → SN`.
 
-This file builds that STLC-SN.  **This first installment is the reduction + SN substrate** the Tait
+This file builds that STLC-SN.  **The reduction + SN substrate** the Tait
 reducibility argument consumes:
 
   * `GradedLambda.Reduces` — full one-step β (root β + congruence everywhere).
@@ -19,9 +19,9 @@ reducibility argument consumes:
   * SN structural lemmas: a variable is SN (`var`); SN passes to subterms (`ofAppLeft` / `ofAppRight`
     / `ofLam`); SN is forward-closed under reduction (`ofReduces`).
 
-Still to come (next installments): the type-indexed reducibility predicate + the candidate
-conditions CR1/CR2/CR3, the fundamental theorem under a closing substitution, the SN corollary, and
-the trivial transfer to graded-SN.
+The type-indexed reducibility predicate + the candidate conditions CR1/CR2/CR3, the fundamental theorem
+under a closing substitution, the SN corollary, and the trivial transfer to graded-SN live in
+`GradedFundamentalTheorem.lean`.
 
 ## Zero-axiom verification
 
@@ -124,7 +124,7 @@ theorem GradedLambda.IsStronglyNormalizing.ofReduces {source reduct : GradedLamb
     GradedLambda.IsStronglyNormalizing reduct :=
   snSource.inv step
 
-/-! ## Tait reducibility candidates (DIM2-5 ii)
+/-! ## Tait reducibility candidates
 
 The type-indexed reducibility predicate + the three candidate conditions.  The arrow candidate
 INCLUDES SN of the term itself (saturated-set formulation), so CR1 is a direct projection rather

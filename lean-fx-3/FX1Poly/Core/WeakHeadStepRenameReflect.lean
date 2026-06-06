@@ -7,7 +7,7 @@ import FX1Poly.Core.RawTermStrengthen
     — weak-head reduction is REFLECTED by a left-invertible renaming (head-normality is rename-stable)
 
 `HeadStepRenameReflect` reflects the β-only head step under any renaming by inverting the renamed redex
-shape (`rename_eq_app` / `rename_eq_lam`).  The stratified `ReducibleTypeStep` rename-closure (SN-040) needs
+shape (`rename_eq_app` / `rename_eq_lam`).  The stratified `ReducibleTypeStep` rename-closure needs
 the FULL `WeakHeadStep` (β + root-ι + scrutinee-congruence) reflected — its `neutral` arm must carry a
 weak-head-NORMAL type (no `WeakHeadStep`) across the renaming.  Re-running the redex-inversion approach
 across the full relation would mean a renaming-inversion lemma per eliminator and per ι-constructor.

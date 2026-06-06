@@ -5,10 +5,10 @@ import FX1Poly.Typed.UniverseCodeConversion
 /-! # FX1Poly/Typed/GrownTypingNotUnique
     — the grown engine's typing is NOT unique (Curry-style λ): a metatheory guard
 
-The formation engine has uniqueness of typing (`HasType.uniqueness`: `Γ ⊢ t : T₁` and `Γ ⊢ t : T₂` force
-`Conv T₁ T₂`) because it types only formation subjects (var / conv / universe / formers), none of which is a
-domain-free binder.  It is tempting to conjecture the GROWN engine `HasTypeDescPi` inherits uniqueness.  **It does
-not.**  This file records the refutation as a permanent theorem so the conjecture is not re-attempted.
+The formation engine has uniqueness of typing (`HasTypeDesc.uniquenessNative`: `Γ ⊢ t : T₁` and `Γ ⊢ t : T₂`
+force `Conv T₁ T₂`) because it types only formation subjects (var / conv / universe / formers), none of which is
+a domain-free binder.  It is tempting to conjecture the GROWN engine `HasTypeDescPi` inherits uniqueness.  **It
+does not.**  This file records the refutation as a permanent theorem so the conjecture is not re-attempted.
 
 The grown `lamCell body` is **Curry-style** — a one-child cell carrying only the body, with NO domain annotation.
 The `piIntro` rule chooses the domain freely, so the SAME closed identity `λ(var 0)` types at `Π(Type@s).Type@s`
@@ -23,14 +23,13 @@ fails.
     context-conversion bundle) composed with `universeCodeCell_inj_of_conv` + the predicativity guard
     `LevelExpr.ne_lsucc_self`.
 
-## Why this matters (the design record)
+## Why this matters
 
-This closes a spike on whether grown uniqueness is "the live engine's missing metatheorem."  Verdict: Π/Σ-code
-injectivity (`Conv.piTyCode_inj` / `…sigmaTyCode_inj`) is already shipped and IS separable from the GCC-5 mutual
-bundle (confirming it is a free confluence corollary); but grown FULL uniqueness is genuinely false under
-Curry-style binders, so the bidirectional checker SYNTHESIZES against a target (check mode), it does not infer a
-unique type for a bare λ.  Any future "exact classifier" result must restrict to TYPE-CODE subjects (where the
-classifier is pinned by the formers' levels), not bare introduction forms.
+Π/Σ-code injectivity (`Conv.piTyCode_inj` / `…sigmaTyCode_inj`) is a free confluence corollary, separable from
+the mutual fundamental-metatheory bundle; but grown FULL uniqueness is genuinely false under Curry-style
+binders, so the bidirectional checker SYNTHESIZES against a target (check mode), it does not infer a unique type
+for a bare λ.  Any "exact classifier" result must restrict to TYPE-CODE subjects (where the classifier is pinned
+by the formers' levels), not bare introduction forms.
 
 ## Zero-axiom verification
 

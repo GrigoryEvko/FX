@@ -9,7 +9,7 @@ The general β-redex `app (lam body) arg` is strongly normalizing once the binde
 ergonomic shape a reducibility / fundamental-theorem lambda arm needs: that arm establishes membership of the
 contractum `subst0 body arg` in a codomain candidate (hence its SN, the neutral candidate being `IsStronglyNormalizing`),
 and needs the redex `app (lam body) arg` to inherit SN.  It is the neutral arm of the denote-layer member
-weak-head β-expansion (the lambda-arm engine toward SN-043 / #672).
+weak-head β-expansion (the lambda-arm engine toward open-term strong normalization).
 
 Two existing siblings in `StrongNormalizationRedexes` are NOT this lemma:
   * `appLam_isStronglyNormalizing_of_normal_body_contractum` fixes a NORMAL (non-stepping) body;

@@ -3,22 +3,21 @@ import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.ReducibilityCandidate
 
 /-! # FX1Poly/Core/CubicalTransportReducibility
-    — transport-variant SN coverage (transpHigherDim + transpFill), completing the transport family for SN-146
+    — transport-variant SN coverage (transpHigherDim + transpFill), completing the transport family
 
-`CubicalOperatorReducibility.lean` shipped the SN coverage for the two headline CCHM Kan operators `gen_transp`
+`CubicalOperatorReducibility.lean` ships the SN coverage for the two headline CCHM Kan operators `gen_transp`
 and `gen_hcomp`.  This file completes the TRANSPORT family with the two remaining shipped transport variants:
 `gen_transpHigherDim` (two children: the higher-dimensional path family + the source) and `gen_transpFill` (three
 children: the path type, the current interval point, and the source — Kan transport FILLING).
 
-Both are congruence-only under `Step` (their Kan computation rules await M64) and non-neutral, exactly like
-`gen_transp`/`gen_hcomp`, so the SN candidate is again the honest ceiling.  The three-child `transpFill` uses the
-three-child forward closure `isStronglyNormalizing_of_threeChildCong` and three one-child reflection SLICES (the
-generic `isStronglyNormalizing_child_of_oneChildCong` from SN-074, the interval/source slices threading
+Both are congruence-only under `Step` (their Kan computation rules are not part of the substrate) and non-neutral,
+exactly like `gen_transp`/`gen_hcomp`, so the SN candidate is again the honest ceiling.  The three-child
+`transpFill` uses the three-child forward closure `isStronglyNormalizing_of_threeChildCong` and three one-child
+reflection SLICES (the generic `isStronglyNormalizing_child_of_oneChildCong`, the interval/source slices threading
 `StepChildren.there` once/twice past the held earlier children).
 
 With this file, all four shipped transport/composition Kan operators (`transp`, `hcomp`, `transpHigherDim`,
-`transpFill`) have congruence-only-stage SN coverage.  The Kan-rule SN robustness + Glue remain for the full
-SN-146.
+`transpFill`) have congruence-only-stage SN coverage.  The Kan-rule SN robustness + Glue remain.
 
 ## Zero-axiom verification
 
@@ -63,7 +62,7 @@ theorem Step.from_transpHigherDim
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `transpFill`-rooted Step.**  Three-child transport filling (path type, current interval,
-source), congruence-only (its Kan filling rule awaits M64): a `Step` reduces exactly one of the three children. -/
+source), congruence-only (its Kan filling rule is not part of the substrate): a `Step` reduces exactly one of the three children. -/
 theorem Step.from_transpFill
     {scope : Nat} {pathTy currentInterval source : RawTerm scope} {target : RawTerm scope}
     (reduction :
@@ -138,7 +137,7 @@ theorem transpFill_isStronglyNormalizing_of_children {scope : Nat}
     (fun parentStep => Step.from_transpFill parentStep)
     tyTerminates intervalTerminates sourceTerminates
 
-/-- **`transpHigherDim`'s family child reflects strong normalization (SN-146 installment).** -/
+/-- **`transpHigherDim`'s family child reflects strong normalization.** -/
 theorem transpHigherDim_family_isStronglyNormalizing_of_parent {scope : Nat}
     {pathFamily source : RawTerm scope}
     (parentTerminates :
@@ -156,7 +155,7 @@ theorem transpHigherDim_family_isStronglyNormalizing_of_parent {scope : Nat}
         (StepChildren.here (.childCons source .childNil : RawTermChildren [0] scope) childStep))
     parentTerminates
 
-/-- **`transpHigherDim`'s source child reflects strong normalization (SN-146 installment).** -/
+/-- **`transpHigherDim`'s source child reflects strong normalization.** -/
 theorem transpHigherDim_source_isStronglyNormalizing_of_parent {scope : Nat}
     {pathFamily source : RawTerm scope}
     (parentTerminates :
@@ -175,7 +174,7 @@ theorem transpHigherDim_source_isStronglyNormalizing_of_parent {scope : Nat}
           (StepChildren.here (.childNil : RawTermChildren [] scope) childStep)))
     parentTerminates
 
-/-- **`transpFill`'s path-type child reflects strong normalization (SN-146 installment).**  The first of three
+/-- **`transpFill`'s path-type child reflects strong normalization.**  The first of three
 one-child slices; the path type is child 0. -/
 theorem transpFill_ty_isStronglyNormalizing_of_parent {scope : Nat}
     {pathTy currentInterval source : RawTerm scope}
@@ -196,7 +195,7 @@ theorem transpFill_ty_isStronglyNormalizing_of_parent {scope : Nat}
           childStep))
     parentTerminates
 
-/-- **`transpFill`'s interval child reflects strong normalization (SN-146 installment).**  The middle slice; the
+/-- **`transpFill`'s interval child reflects strong normalization.**  The middle slice; the
 interval is child 1, reached by one `StepChildren.there` past the held path type. -/
 theorem transpFill_interval_isStronglyNormalizing_of_parent {scope : Nat}
     {pathTy currentInterval source : RawTerm scope}
@@ -216,7 +215,7 @@ theorem transpFill_interval_isStronglyNormalizing_of_parent {scope : Nat}
           (StepChildren.here (.childCons source .childNil : RawTermChildren [0] scope) childStep)))
     parentTerminates
 
-/-- **`transpFill`'s source child reflects strong normalization (SN-146 installment).**  The last slice; the
+/-- **`transpFill`'s source child reflects strong normalization.**  The last slice; the
 source is child 2, reached by two `StepChildren.there` past the held path type and interval. -/
 theorem transpFill_source_isStronglyNormalizing_of_parent {scope : Nat}
     {pathTy currentInterval source : RawTerm scope}
@@ -237,7 +236,7 @@ theorem transpFill_source_isStronglyNormalizing_of_parent {scope : Nat}
             (StepChildren.here (.childNil : RawTermChildren [] scope) childStep))))
     parentTerminates
 
-/-- **`transpHigherDim`'s strong-normalization characterization (SN-146 installment).**  SN iff both children
+/-- **`transpHigherDim`'s strong-normalization characterization.**  SN iff both children
 are. -/
 theorem transpHigherDim_isStronglyNormalizing_iff {scope : Nat} {pathFamily source : RawTerm scope} :
     IsStronglyNormalizing
@@ -250,7 +249,7 @@ theorem transpHigherDim_isStronglyNormalizing_iff {scope : Nat} {pathFamily sour
    fun ⟨familyTerminates, sourceTerminates⟩ =>
       transpHigherDim_isStronglyNormalizing_of_children familyTerminates sourceTerminates⟩
 
-/-- **`transpFill`'s strong-normalization characterization (SN-146 installment).**  SN iff all three children
+/-- **`transpFill`'s strong-normalization characterization.**  SN iff all three children
 are. -/
 theorem transpFill_isStronglyNormalizing_iff {scope : Nat}
     {pathTy currentInterval source : RawTerm scope} :
@@ -266,7 +265,7 @@ theorem transpFill_isStronglyNormalizing_iff {scope : Nat}
    fun ⟨tyTerminates, intervalTerminates, sourceTerminates⟩ =>
       transpFill_isStronglyNormalizing_of_children tyTerminates intervalTerminates sourceTerminates⟩
 
-/-- **`transpHigherDim` sends reducibility-candidate members to SN-candidate members (SN-146 installment).** -/
+/-- **`transpHigherDim` sends reducibility-candidate members to SN-candidate members.** -/
 theorem transpHigherDim_isStronglyNormalizing_of_candidateMembers {scope : Nat}
     {familyPredicate sourcePredicate : RawTerm scope → Prop}
     (familyCandidate : IsReducibilityCandidate familyPredicate)
@@ -280,7 +279,7 @@ theorem transpHigherDim_isStronglyNormalizing_of_candidateMembers {scope : Nat}
     (familyCandidate.stronglyNormalizing familyMember)
     (sourceCandidate.stronglyNormalizing sourceMember)
 
-/-- **`transpFill` sends reducibility-candidate members to SN-candidate members (SN-146 installment).** -/
+/-- **`transpFill` sends reducibility-candidate members to SN-candidate members.** -/
 theorem transpFill_isStronglyNormalizing_of_candidateMembers {scope : Nat}
     {tyPredicate intervalPredicate sourcePredicate : RawTerm scope → Prop}
     (tyCandidate : IsReducibilityCandidate tyPredicate)

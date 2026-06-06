@@ -1,6 +1,7 @@
 import FX1Poly.Typed.HasTypeDescPiUniverseCodeInversion
 import FX1Poly.Typed.UniverseCodeConversion
 import FX1Poly.Typed.ClassifierLevelMeasure
+import FX1Poly.Typed.WfContextDescPi
 
 /-! # FX1Poly/Typed/GrownNoTypeInType
     — the grown engine is PREDICATIVE: no universe is a member of itself (§27.2 / SN-140 L1)
@@ -22,7 +23,7 @@ elimination) can type a universe code at itself.
   underivable in any well-formed context.  Specialises the inversion at `e' = e`, refuted by the
   predicativity guard `LevelExpr.ne_lsucc_self` (`e ≠ e+1`).
 * `HasTypeDescPi.noClosedUniverseInItself` — the closed corollary at `Γ = .empty`
-  (`WfContext.emptyIsWellFormed`), the concrete permanent regression witness.
+  (`WfContextDescPi.emptyIsWellFormed`), the concrete permanent regression witness.
 
 ## Why this is non-vacuous
 
@@ -54,7 +55,7 @@ theorem HasTypeDescPi.universeClassifierLevelIsSucc {profile : PolyProfile} {sco
     {levelExpr classifierLevel : LevelExpr} {flag classifierFlag : UniverseFlag}
     (typed : HasTypeDescPi profile context (universeCodeCell levelExpr flag)
       (universeCodeCell classifierLevel classifierFlag))
-    (_wellFormed : WfContext context) :
+    (_wellFormed : WfContextDescPi context) :
     classifierLevel = levelExpr.lsucc ∧ classifierFlag = flag :=
   universeCodeCell_inj_of_conv typed.inversionUniverseCode
 
@@ -67,18 +68,18 @@ theorem HasTypeDescPi.noUniverseInItself {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
     (typed : HasTypeDescPi profile context (universeCodeCell levelExpr flag)
       (universeCodeCell levelExpr flag))
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     False :=
   LevelExpr.ne_lsucc_self levelExpr (typed.universeClassifierLevelIsSucc wellFormed).1
 
 /-- **No `Type : Type` at the empty context** — the closed permanent regression witness, specialising
-`noUniverseInItself` at `Γ = .empty` via `WfContext.emptyIsWellFormed`. -/
+`noUniverseInItself` at `Γ = .empty` via `WfContextDescPi.emptyIsWellFormed`. -/
 theorem HasTypeDescPi.noClosedUniverseInItself {profile : PolyProfile}
     {levelExpr : LevelExpr} {flag : UniverseFlag}
     (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
       (universeCodeCell levelExpr flag) (universeCodeCell levelExpr flag)) :
     False :=
-  HasTypeDescPi.noUniverseInItself typed WfContext.emptyIsWellFormed
+  HasTypeDescPi.noUniverseInItself typed WfContextDescPi.emptyIsWellFormed
 
 /-- **The universe hierarchy is SEMANTICALLY strict.**  If `Type@(e, flag)` is grown-typed at another
 universe code `Type@(e', flag')`, then `e` denotes to a STRICTLY SMALLER level than `e'`, in every level
@@ -92,7 +93,7 @@ theorem HasTypeDescPi.universeStrictlyBelowClassifierLevel {profile : PolyProfil
     {levelExpr classifierLevel : LevelExpr} {flag classifierFlag : UniverseFlag} (env : Nat → Nat)
     (typed : HasTypeDescPi profile context (universeCodeCell levelExpr flag)
       (universeCodeCell classifierLevel classifierFlag))
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     LevelExpr.denote levelExpr env < LevelExpr.denote classifierLevel env := by
   rw [(typed.universeClassifierLevelIsSucc wellFormed).1]
   exact denote_lt_lsucc levelExpr env

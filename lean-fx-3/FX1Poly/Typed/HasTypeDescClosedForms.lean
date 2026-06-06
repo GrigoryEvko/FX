@@ -18,27 +18,20 @@ closed-context (empty-scope) consequences downstream metatheory consumes:
 The scope is exactly the description formation engine.  These are not claims about the grown
 `HasTypeDescPi` engine with lambda/application.
 
-## HasType-free status (HT-A3 COMPLETE)
+## How the consequences are proved
 
-All THREE closed-form consequences are now proved WITHOUT the `HasTypeDesc.toHasType` soundness bridge or the
-bespoke `HasType` closed-form oracle, on the native formation-engine recursion alone (the closed-forms half of
-the phased `HasType` removal):
+All THREE closed-form consequences are proved on the native formation-engine recursion:
 
 * `closedSubjectIsTypeDesc` recurses on the description engine directly (`var` killed by `Fin 0`, `conv`
   recurses, `universeFormation` is a universe code, `genFormation` reads its output type off the
   `typingRuleDescOf` table) — the scope is generalised to a free variable with a `scope = 0` equation so the
   `conv` recursion is structural;
-* `closedSubjectIsTypeFormer` (the STRUCTURAL shape, with the domain/codomain existentials) composes the native
-  HEAD-generator form `closedSubjectHeadIsFormerOrUniverse` (`FormationCanonicalForms.lean`) with the shipped
+* `closedSubjectIsTypeFormer` (the STRUCTURAL shape, with the domain/codomain existentials) composes the
+  HEAD-generator form `closedSubjectHeadIsFormerOrUniverse` (`FormationCanonicalForms.lean`) with the
   head-to-children reconstructions `eq_{piTyCodeCell,sigmaTyCodeCell,universeCodeCell}_of_headGenerator`
-  (`UniverseCodeShape.lean` / `SigmaCodeShape.lean`, the `childCons` dependent-index drilling) — no `HasType`
-  oracle;
-* `closedClassifierConvUniverseCode` consumes the native `closedSubjectIsTypeDesc` and the native uniqueness
-  `HasTypeDesc.uniquenessNative` (over `WfContextDesc.emptyIsWellFormed`) — no `HasType` oracle.
-
-The `IsType` -> `IsTypeDesc` completeness downgrade that used to live here (`IsType.toIsTypeDesc`, the lone
-`HasType.toHasTypeDesc` residual in this file) is REMOVED (HT-B): it was dead — defined + audit-gated but
-never consumed — so the file is now fully decoupled from the `HasType` engine and its bridges.
+  (`UniverseCodeShape.lean` / `SigmaCodeShape.lean`, the `childCons` dependent-index drilling);
+* `closedClassifierConvUniverseCode` consumes `closedSubjectIsTypeDesc` and the uniqueness
+  `HasTypeDesc.uniquenessNative` (over `WfContextDesc.emptyIsWellFormed`).
 
 ## Zero-axiom verification
 
@@ -77,7 +70,7 @@ theorem HasTypeDesc.closedSubjectIsTypeDescGeneral {profile : PolyProfile} {scop
       rwa [typingRuleDescOf_outputIsUniverseFormer isFormation] at rebuilt
 
 /-- Closed description-engine subjects in the formation engine are themselves description-engine types.
-HasType-free: the native formation recursion via `closedSubjectIsTypeDescGeneral`. -/
+The native formation recursion via `closedSubjectIsTypeDescGeneral`. -/
 theorem HasTypeDesc.closedSubjectIsTypeDesc {profile : PolyProfile}
     {subject classifier : RawTerm 0}
     (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
@@ -87,12 +80,11 @@ theorem HasTypeDesc.closedSubjectIsTypeDesc {profile : PolyProfile}
 /-- Closed-form shape for the description formation engine: a closed description-typed subject is a
 universe, Pi-code, or Sigma-code cell.
 
-HasType-FREE (HT-A3 complete): the native HEAD-generator form `closedSubjectHeadIsFormerOrUniverse`
+The HEAD-generator form `closedSubjectHeadIsFormerOrUniverse`
 (`FormationCanonicalForms.lean`) pins the head to `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode`, and
-the shipped head-to-children reconstructions (`eq_piTyCodeCell_of_headGenerator` /
+the head-to-children reconstructions (`eq_piTyCodeCell_of_headGenerator` /
 `eq_sigmaTyCodeCell_of_headGenerator` / `eq_universeCodeCell_of_headGenerator`, the `childCons` dependent-index
-drilling) lift each head to its full structural existential.  No `HasTypeDesc.toHasType`, no bespoke
-`HasType.closedSubjectIsTypeFormer` oracle. -/
+drilling) lift each head to its full structural existential. -/
 theorem HasTypeDesc.closedSubjectIsTypeFormer {profile : PolyProfile}
     {subject classifier : RawTerm 0}
     (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
@@ -108,10 +100,9 @@ theorem HasTypeDesc.closedSubjectIsTypeFormer {profile : PolyProfile}
   · exact Or.inl (eq_universeCodeCell_of_headGenerator headUniverse)
 
 /-- Consistency-facing classifier shape for the description formation engine: every closed
-description-typed subject has a classifier convertible to a universe code.  HasType-free: the native
-`closedSubjectIsTypeDesc` supplies the subject's universe typing, and the native uniqueness
-`HasTypeDesc.uniquenessNative` (over `WfContextDesc.emptyIsWellFormed`) reconciles it with the actual
-classifier. -/
+description-typed subject has a classifier convertible to a universe code.  `closedSubjectIsTypeDesc`
+supplies the subject's universe typing, and the uniqueness `HasTypeDesc.uniquenessNative` (over
+`WfContextDesc.emptyIsWellFormed`) reconciles it with the actual classifier. -/
 theorem HasTypeDesc.closedClassifierConvUniverseCode {profile : PolyProfile}
     {subject classifier : RawTerm 0}
     (typed : HasTypeDesc profile TypingContext.empty subject classifier) :

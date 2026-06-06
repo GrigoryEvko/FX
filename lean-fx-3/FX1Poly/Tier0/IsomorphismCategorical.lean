@@ -1,11 +1,11 @@
 import FX1Poly.Tier0.RepresentableMapCategory
 
 /-! # FX1Poly/Tier0/IsomorphismCategorical
-    — generic categorical isomorphism infrastructure for the CwR axioms (toward SN-084/085)
+    — generic categorical isomorphism infrastructure for the CwR axioms
 
 `RepresentableMapCategory.lean` defines `IsIsomorphism` and `PullbackSquare` but proves nothing about them.
-`FxRenamingCategory.lean` built the first concrete `RawCategory` for FX (the renaming category).  The next
-step toward a concrete `RepresentableMapCategory` (`fxBaseRMC`, SN-084) is its three CwR axioms (SN-085):
+`FxRenamingCategory.lean` builds the first concrete `RawCategory` for FX (the renaming category).  The next
+step toward a concrete `RepresentableMapCategory` (`fxBaseRMC`) is its three CwR axioms:
 `isomorphismsRepresentable`, `closedUnderComposition`, `closedUnderPullback`.
 
 For the SMALLEST valid representable-map class — the isomorphisms — those axioms reduce to three generic

@@ -2,7 +2,7 @@ import FX1Poly.Core.StratifiedReducibleUniverseDecode
 import FX1Poly.Core.StrongNormalizationConstructors
 
 /-! # FX1Poly/Core/EitherEquivCodeUniverseMembership
-    — either / equiv type codes are reducible members of their universe (completes SN-071)
+    — either / equiv type codes are reducible members of their universe
 
 `ListOptionIdCodeUniverseMembership` placed the one- and three-child data formers (`listCode`, `optionCode`,
 `idCode`) in their universe at the STRATIFIED layer (`IsReducibleMemberAt (predLevel+1)` over a concrete
@@ -13,13 +13,13 @@ code) and `equivCode` (equivalence type code) — at that same stratified layer.
 Both the `Step` inversions (`Step.from_eitherCode` / `Step.from_equivCode`, `StepInversion`) and the two-child
 strong-normalization combinators (`eitherCode_isStronglyNormalizing_of_left_right` /
 `equivCode_isStronglyNormalizing_of_source_target`, `StrongNormalizationConstructors`) are already shipped, so
-this file is just the two `dataFormerInUniverse` instances — the stratified membership statement that was
-missing.  (The NON-indexed neutral-classifier form `IsReducibleMember.eitherFormerInNeutralUniverse` /
+this file is just the two `dataFormerInUniverse` instances — the stratified membership statement for the
+two-child formers.  (The NON-indexed neutral-classifier form `IsReducibleMember.eitherFormerInNeutralUniverse` /
 `equivFormerInNeutralUniverse` is the separate `ReducibleMemberNeutral` layer; this is the fuel-indexed
 concrete-`gen_universeCode` twin.)
 
-With this the entire universe-code-family stratified reducible-membership (SN-070 arrow/product/sum + SN-071
-list/option/either/id/equiv) is closed, `#672`-independent.
+With this the entire universe-code-family stratified reducible-membership (arrow/product/sum +
+list/option/either/id/equiv) is closed, fundamental-independent.
 
 ## Zero-axiom verification
 
@@ -36,7 +36,7 @@ open FX1Poly.Foundation FX1Poly.Universe StepStar
 
 /-- **`eitherCode leftCode rightCode` is a reducible member of its universe** when both summand codes are
 strongly normalizing — a direct `dataFormerInUniverse` instance on the shipped two-child SN combinator
-`eitherCode_isStronglyNormalizing_of_left_right`.  SN-071, stratified layer. -/
+`eitherCode_isStronglyNormalizing_of_left_right`.  Stratified layer. -/
 theorem eitherCode_isReducibleMemberOfUniverse {scope : Nat} {predLevel : Nat}
     (levelExpr : LevelExpr) (flag : UniverseFlag) {leftCode rightCode : RawTerm scope}
     (leftNormalizing : IsStronglyNormalizing leftCode)
@@ -52,7 +52,7 @@ theorem eitherCode_isReducibleMemberOfUniverse {scope : Nat} {predLevel : Nat}
 
 /-- **`equivCode sourceType targetType` is a reducible member of its universe** when both endpoint types are
 strongly normalizing — a direct `dataFormerInUniverse` instance on the shipped two-child SN combinator
-`equivCode_isStronglyNormalizing_of_source_target`.  Completes the SN-071 universe-code family at the
+`equivCode_isStronglyNormalizing_of_source_target`.  Completes the universe-code family at the
 stratified layer. -/
 theorem equivCode_isReducibleMemberOfUniverse {scope : Nat} {predLevel : Nat}
     (levelExpr : LevelExpr) (flag : UniverseFlag) {sourceType targetType : RawTerm scope}

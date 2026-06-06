@@ -8,9 +8,8 @@ import FX1Poly.Core.ExistsStepOfNotNormal
 /-! # FX1Poly/Typed/SimplyTypedTermCanonicityLevelFree
     — canonicity (progress) for the simply-typed fragment: closed normal forms are lambdas.
 
-**OFF-PATH CROSSCHECK (supersession map, 2026-06-05): this is the LEVEL-FREE simply-typed canonicity — an
-independent STLC crosscheck leg, NOT the kernel canonicity (SN-047..049 on `HasTypeDescPi`).  Off the kernel
-critical path; retained, not deleted.**
+**OFF-PATH CROSSCHECK: this is the LEVEL-FREE simply-typed canonicity — an independent STLC crosscheck leg,
+NOT the kernel canonicity (on `HasTypeDescPi`).  Off the kernel critical path.**
 
 The classic STLC capstone, the last piece of the simply-typed metatheory.  In `SimplyTypedTermLF` (var/app/
 lam over universe-code/arrow types, no constants), the only closed normal forms are lambdas — every

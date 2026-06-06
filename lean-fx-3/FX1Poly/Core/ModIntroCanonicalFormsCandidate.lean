@@ -2,7 +2,7 @@ import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.StepInversion
 
 /-! # Foundation/PolyCell/Core/ModIntroCanonicalFormsCandidate
-    — the modal box data reducibility candidate (SN-073 data core), unconditional + zero-axiom
+    — the modal box data reducibility candidate, unconditional + zero-axiom
 
 The data-candidate family (`BoolCanonicalFormsCandidate` … `UnitCanonicalFormsCandidate`) instantiates the
 generic `CanonicalFormsPredicate isValue` Tait candidate at the standard data types.  This file moves into the
@@ -17,8 +17,8 @@ term` holds when `term` is `modIntro payload` with the payload a structural norm
 
 The candidate is over the β+ι reduction relation `Step` (not the separate raw-η `Step.eta`): `modIntro` is a
 constructor, not an eliminator, so no β/ι rule has it as the outer redex head, and a `Step` out of it reduces
-exactly its payload child (`Step.from_modIntro`).  This is the data core of SN-073 (modal modIntro
-reducibility).  The remaining SN-073 content — modal `O`-fire confinement and `modElim` preserving
+exactly its payload child (`Step.from_modIntro`).  This is the data core of modal modIntro
+reducibility.  The remaining modal-modIntro content — modal `O`-fire confinement and `modElim` preserving
 reducibility — is the eliminator-reducibility step that consumes this candidate, separately.
 
 ## Zero-axiom verification
@@ -62,7 +62,7 @@ theorem isModIntroValue_impliesStepNormalForm {scope : Nat} {value : RawTerm sco
 normalizing terms that are neutral or reduce to a modal box value — is a full Girard reducibility candidate
 (CR1+CR2+CR3), unconditionally: the neutral-closure obligation is `IsNeutral.closedUnderStep` and the only
 data fact, value-normality, is `isModIntroValue_impliesStepNormalForm`.  The Tait candidate for the modal box
-type, the data core of SN-073 — the first modal-layer reducibility candidate. -/
+type, the first modal-layer reducibility candidate. -/
 theorem modIntroCanonicalFormsCandidate {scope : Nat} :
     IsReducibilityCandidate (CanonicalFormsPredicate (scope := scope) isModIntroValue) :=
   CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal isModIntroValue_impliesStepNormalForm
@@ -81,8 +81,8 @@ theorem modIntroValue_isMember {scope : Nat} {payload : RawTerm scope}
 /-- **Closed modal-candidate members reduce to a modal box** — canonicity for the modal box, modulo
 membership.  A closed member of the modal candidate is non-neutral (no closed neutral, `IsNeutral.noClosed`),
 so by `CanonicalFormsPredicate.closedReducesToValue` it reduces to a `modIntro` constructor.  Combined with "a
-closed well-typed term of modal box type is a member" (the fundamental theorem, gated on `#672` / SN-043) this
-is the modal slice of canonicity.  The extraction shown here is `#672`-free. -/
+closed well-typed term of modal box type is a member" (the fundamental theorem) this
+is the modal slice of canonicity.  The extraction shown here is fundamental-free. -/
 theorem modIntroClosedReducesToValue {term : RawTerm 0}
     (member : CanonicalFormsPredicate isModIntroValue term) :
     ∃ value : RawTerm 0, StepStar term value ∧ isModIntroValue value :=

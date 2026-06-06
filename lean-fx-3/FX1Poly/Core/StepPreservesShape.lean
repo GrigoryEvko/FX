@@ -15,7 +15,7 @@ The structural subject-reduction umbrella for the v2 substrate: any
 one-step `Step source target` preserves `HasCertifiedCellDim0`.
 
 This is deliberately only structural shape preservation (certified
-dim-0 cell at the same profile/scope), not typed `HasType` subject
+dim-0 cell at the same profile/scope), not typed `HasTypeDesc` subject
 reduction.  Typed subject reduction belongs to the later typed layer.
 -/
 

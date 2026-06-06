@@ -1,15 +1,15 @@
 import FX1Poly.Core.Newman
 
 /-! # FX1Poly/Core/DiamondConfluence
-    — the diamond ⟹ confluence route (strip lemma + parallel-reduction recipe) (M8-S1 core, #420)
+    — the diamond ⟹ confluence route (strip lemma + parallel-reduction recipe)
 
 The SECOND abstract route to confluence, complementing Newman (`Newman.lean`).  Newman derives confluence from
 TERMINATION + weak confluence; this file derives it from the DIAMOND PROPERTY alone — no termination needed.  It
 is the Tait/Martin-Löf/Takahashi method: single-step reduction rarely has the diamond (one β-redex can duplicate
 another), but PARALLEL reduction (contract any set of redexes at once) does, and parallel reduction is sandwiched
 between single-step and its closure — so the single-step relation is confluent.  This is the generic core of
-`#420` (`parStar.confluence via cd_lemma → strip → confluence`): given the FX parallel-reduction diamond (the
-shipped `cd_lemma`, #256), `confluentOfDiamondSimulation` yields raw confluence.
+raw confluence (`parStar.confluence via cd_lemma → strip → confluence`): given the FX parallel-reduction diamond (the
+shipped `cd_lemma`), `confluentOfDiamondSimulation` yields raw confluence.
 
 Reuses the `ReflTransClosure` / `Joinable` / `Confluent` vocabulary from `Newman.lean`.
 

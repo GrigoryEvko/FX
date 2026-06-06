@@ -6,8 +6,8 @@ import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 `SimplyTypedTermLF` is the well-scoped simply-typed lambda calculus over a context: `var`, `app`, `lam`,
 with NO conversion arm.  That tightness is the point of these inversions: because typing is syntax-directed
 (one rule per term shape, no subsumption), a term's type is determined EXACTLY by its shape, so the inversion
-lemmas conclude EQUALITIES rather than the convertibilities the dependent `HasType` layer's inversions must
-settle for.
+lemmas conclude EQUALITIES rather than the convertibilities the dependent `HasTypeDescPi` layer's inversions
+must settle for.
 
 * `SimplyTypedTermLF.inversionVariable` — a variable's type IS its context lookup.
 * `SimplyTypedTermLF.inversionApplication` — an application's type is the function's arrow codomain, with the

@@ -1,7 +1,7 @@
 import FX1Poly.Core.CanonicalFormsCandidate
 
 /-! # Foundation/PolyCell/Core/EmptyCanonicalFormsCandidate
-    — the empty type's reducibility candidate + the consistency core (SN-050/053), zero-axiom
+    — the empty type's reducibility candidate + the consistency core, zero-axiom
 
 The data candidates so far (bool, Nat, pair) interpret types that HAVE value constructors.  The empty type
 (`never` / `Empty`) is the opposite extreme: it has NO value constructors, so NO term is an empty value.  Its
@@ -12,13 +12,13 @@ NEUTRAL terms.  This is the canonical Tait interpretation of the empty type (the
 The payoff is the consistency core: a CLOSED member cannot exist.  A closed candidate member reduces to a
 value (`CanonicalFormsPredicate.closedReducesToValue`, since no closed term is neutral), but an empty value is
 a proof of `False`.  So `CanonicalFormsPredicate (fun _ => False)` has no closed inhabitants — the structural
-heart of "no closed proof of the empty type" (SN-050 consistency / SN-053 milestone spine).
+heart of "no closed proof of the empty type" (consistency).
 
 ## Honest scope
 
-This is the `#672`-FREE half of consistency.  Full consistency (`HasTypeDescPi .empty t Empty → False`) also
+This is the fundamental-FREE half of consistency.  Full consistency (`HasTypeDescPi .empty t Empty → False`) also
 needs "a closed well-typed term of empty type is a member of the empty candidate", which is supplied by the
-typed reducibility fundamental theorem (gated on `#672` / SN-043).  The extraction shown here — no closed
+typed reducibility fundamental theorem.  The extraction shown here — no closed
 member of the empty candidate — is unconditional.
 
 ## Zero-axiom verification
@@ -50,8 +50,8 @@ theorem emptyCanonicalFormsCandidate {scope : Nat} :
 /-- **No closed term inhabits the empty candidate** — the consistency core.  A closed member of the empty
 candidate reduces to a value (`CanonicalFormsPredicate.closedReducesToValue`, since no closed term is
 neutral), but an empty value is a proof of `False`.  Hence the empty candidate has no closed inhabitants.
-Combined with "a closed well-typed term of empty type is a member" (the fundamental theorem, gated on `#672` /
-SN-043) this is SN-050 consistency: no closed proof of the empty type.  The extraction here is `#672`-free. -/
+Combined with "a closed well-typed term of empty type is a member" (the fundamental theorem) this is
+consistency: no closed proof of the empty type.  The extraction here is fundamental-free. -/
 theorem emptyHasNoClosedMember {term : RawTerm 0}
     (member : CanonicalFormsPredicate emptyIsValue term) : False := by
   obtain ⟨_value, _termReducesToValue, valueIsEmpty⟩ :=

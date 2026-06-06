@@ -2,9 +2,9 @@ import FX1Poly.OmegacE.SortingConfluence
 import FX1Poly.OmegacE.IdempotentReducer
 
 /-! # FX1Poly/OmegacE/SortingReducer
-    — the bounded-search reducer + decidable word problem for the sorting/symmetric system (SN-120 capstone, #623)
+    — the bounded-search reducer + decidable word problem for the sorting/symmetric system
 
-This is the FINAL atom of SN-120: the executable normalizer + the decidable word problem for the guarded
+This is the FINAL atom of the sorting system: the executable normalizer + the decidable word problem for the guarded
 sorting / symmetric-group (bubble-sort) system `[a,b] → [b,a]` when `slotValue b < slotValue a`.
 
 The shape mirrors `TranspositionReducer.lean` / `IdempotentReducer.lean`.  The one structural difference is the
@@ -23,7 +23,7 @@ baked into the rule family's membership, so termination holds unconditionally (v
 * `sortingRewrite_implies_reduceCells_isSome` — completeness (induction on the step; `fire` destructures the
   guarded existential membership).
 * `sortingWordReducer` — the bundled `WordReducer` (no distinctness).
-* `decidableConvertibleModulo_sortingSystem` — THE SN-120 CAPSTONE: convergence (`sortingHasLocalConfluence` +
+* `decidableConvertibleModulo_sortingSystem` — THE CAPSTONE: convergence (`sortingHasLocalConfluence` +
   `sortingSystem_isTerminating`) + this reducer, fed through `decidableConvertibleModulo_ofConvergent`.  The
   sorting / symmetric-group presentation — the "graduation" of the OmegacE sequence — is fully decided.
 
@@ -195,12 +195,12 @@ def sortingWordReducer {dimension : Nat} (slotValue : OmegacECell dimension → 
         simp only [Option.map_some] at hnone
         nomatch hnone
 
-/-- **SN-120 CAPSTONE (#623).**  The word problem for the sorting / symmetric-group (bubble-sort) system is
+/-- **The sorting-system capstone.**  The word problem for the sorting / symmetric-group (bubble-sort) system is
 decidable.  Convergence = local confluence (`sortingHasLocalConfluence`, the braid critical pair) + termination
 (`sortingSystem_isTerminating`, the inversion-count measure), fed through
 `decidableConvertibleModulo_ofConvergent` with this bounded-search reducer.  NO distinctness hypothesis — the
 strict-order guard is in the rule family's membership.  The third concrete fully-decided OmegacE presentation
-(after SN-118 transposition and SN-119 absorption), and the genuine symmetric-group word-problem demonstration of
+(after transposition and absorption), and the genuine symmetric-group word-problem demonstration of
 Leg-3 (Makkai/Forest). -/
 def decidableConvertibleModulo_sortingSystem {dimension : Nat}
     (slotValue : OmegacECell dimension → Nat)

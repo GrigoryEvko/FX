@@ -2,7 +2,7 @@ import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.StepInversion
 
 /-! # Foundation/PolyCell/Core/OptionCanonicalFormsCandidate
-    — the option data candidate (SN-065): a nullary + a unary constructor, zero-axiom
+    — the option data candidate: a nullary + a unary constructor, zero-axiom
 
 The option type pairs a NULLARY constructor `none` with a UNARY constructor `some value` whose payload is a
 value of the element type (carried as a structural normal form, not a recursive option).  So `IsOptionValue`
@@ -10,7 +10,7 @@ is a plain disjunction: `none`, or `some value` with `value` normal — combinin
 the `pair`-component normal-child shape, without recursion.
 
 `CanonicalFormsPredicate IsOptionValue` is the Tait reducibility candidate for the option type; every option
-value is a member, and a CLOSED member reduces to `none` or a `some` (option-canonicity, SN-065).
+value is a member, and a CLOSED member reduces to `none` or a `some` (option-canonicity).
 
 ## Zero-axiom verification
 
@@ -55,7 +55,7 @@ theorem isOptionValue_impliesStepNormalForm {scope : Nat} {value : RawTerm scope
 normalizing terms that are neutral or reduce to an option value — is a full Girard reducibility candidate
 (CR1+CR2+CR3), unconditionally: the neutral-closure obligation is `IsNeutral.closedUnderStep` and the
 value-normality fact is `isOptionValue_impliesStepNormalForm`.  The Tait candidate for the option type, the
-data core of SN-065. -/
+data core of option reducibility. -/
 theorem optionCanonicalFormsCandidate {scope : Nat} :
     IsReducibilityCandidate (CanonicalFormsPredicate (scope := scope) isOptionValue) :=
   CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal isOptionValue_impliesStepNormalForm
@@ -71,8 +71,8 @@ theorem isOptionValue_isMember {scope : Nat} {value : RawTerm scope}
 /-- **Closed option-candidate members reduce to `none` or a `some`** — canonicity for options, modulo
 membership.  A closed member of the option candidate is non-neutral (`IsNeutral.noClosed`), so by
 `CanonicalFormsPredicate.closedReducesToValue` it reduces to an option value.  Combined with "a closed
-well-typed term of option type is a member" (the fundamental theorem, gated on `#672` / SN-043) this is SN-049
-closed-option canonicity.  The extraction shown here is `#672`-free. -/
+well-typed term of option type is a member" (the fundamental theorem) this is
+closed-option canonicity.  The extraction shown here is fundamental-free. -/
 theorem optionClosedReducesToValue {term : RawTerm 0}
     (member : CanonicalFormsPredicate isOptionValue term) :
     ∃ value : RawTerm 0, StepStar term value ∧ isOptionValue value :=

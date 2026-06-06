@@ -12,7 +12,7 @@ exactly that — the SN-base strengthening, the identity-eliminator analogue of
 As in the `boolElim` case, the strengthening matters for **eliminator reducibility**: in the Tait argument
 the base case is a MEMBER of the motive's reducibility candidate, hence strongly normalizing but not
 necessarily normal.  These lemmas are the iota-head-expansion SN foundation for `idJ` / `idStrictRec`
-reducibility (toward SN-068 / SN-069).
+reducibility.
 
 ## Proof shape
 
@@ -20,8 +20,8 @@ A double nested accessibility induction on `(witness, baseCase)` — the witness
 form fires the ι-rule `idJ base (refl x) ↝ base`), the base the passive child.  At the innermost point the
 `Step.from_idJ` (resp. `from_idStrictRec`) inversion splits three ways: the ι-fire lands on the current base
 (SN by its own accessibility), base-congruence recurses on the inner (base) induction hypothesis, and
-witness-congruence on the outer (witness) induction hypothesis.  The base is no longer required normal because
-its congruence reduct is now discharged by the base induction rather than refuted.
+witness-congruence on the outer (witness) induction hypothesis.  The base need not be normal: its
+congruence reduct is discharged by the base induction.
 
 ## Zero-axiom verification
 

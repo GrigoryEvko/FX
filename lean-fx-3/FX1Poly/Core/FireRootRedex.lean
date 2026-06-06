@@ -9,7 +9,7 @@ reduct is bound existentially — it cannot be extracted to a `RawTerm` without 
 FUNCTION `RawTerm.fireRootRedex` that computes the reduct directly: `some reduct` exactly when the term is a
 root redex (a β-redex or one of the inductive-eliminator ι-redexes), `none` otherwise.  Its soundness
 (`fireRootRedex_sound`: `= some reduct → Step …`) is the computable companion the weak-normalization
-normalizer FUNCTION (#261/#480) needs to turn the existential `exists_normalForm_of_isStronglyNormalizing`
+normalizer FUNCTION (eval/quote) needs to turn the existential `exists_normalForm_of_isStronglyNormalizing`
 into a real `RawTerm`-valued normalizer, which in turn makes
 `Conv.decidableOfNormalForms_of_isStronglyNormalizing` parameter-free.
 

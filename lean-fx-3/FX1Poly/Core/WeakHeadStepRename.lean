@@ -6,7 +6,7 @@ import FX1Poly.Core.RawTermFresh
 
 `WeakHeadStepSubst` shows the complete weak-head reduction `WeakHeadStep` (β + root-ι +
 scrutinee-congruence) commutes with a parallel substitution.  The reducibility-under-renaming development
-(SN-040) needs the renaming analogue: renaming a weak-head redex by `rawRenaming` weak-head-steps to the
+needs the renaming analogue: renaming a weak-head redex by `rawRenaming` weak-head-steps to the
 renamed contractum.  This is the `whnfExpand`-arm ingredient of the stratified `ReducibleTypeStep`
 rename-closure (the SN-preserving neutral-leaf ingredient `isStronglyNormalizing_rename_of_leftInverse`
 landed alongside).

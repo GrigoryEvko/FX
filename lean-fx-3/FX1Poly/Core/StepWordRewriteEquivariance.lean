@@ -3,10 +3,10 @@ import FX1Poly.Core.StepRename
 import FX1Poly.Core.StepSubst
 
 /-! # FX1Poly/Core/StepWordRewriteEquivariance
-    — rename/subst-equivariance of the Step→word bridge + system-level inversion (SN-128, #631)
+    — rename/subst-equivariance of the Step→word bridge + system-level inversion
 
-SN-127 proved the forward soundness `Step a b ⟹ FxWordRewritesOneStep fxStepSystem a.toCode b.toCode`.  This
-file gives SN-128's two complementary halves:
+The forward soundness `Step a b ⟹ FxWordRewritesOneStep fxStepSystem a.toCode b.toCode` lives in
+`StepWordRewriteSoundness`.  This file gives its two complementary halves:
 
 * **rename/subst-equivariance** — the soundness bridge commutes with the term renaming and substitution actions,
   realized via the shipped `Step.rename` / `Step.subst` / `StepStar.rename` closures; and the generated system
@@ -34,7 +34,7 @@ per `core_raw_sn_false_natrec`).  Stating this honestly rather than proving a fa
 ## Zero-axiom verification
 
 The equivariance lemmas are direct applications of the shipped `Step.rename` / `Step.subst` / `StepStar.rename`
-followed by SN-127's soundness / SN-126's membership; the inversion is the definitional projection of
+followed by the word-rewrite soundness / the rule-map membership; the inversion is the definitional projection of
 `fxStepSystem`; the non-degeneracy is `obtain` + `rw` + `toCode_ne_nil`.  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in `FX1PolyAudit/AuditCore.lean`.
 -/

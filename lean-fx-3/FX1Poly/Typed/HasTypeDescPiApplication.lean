@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPiInversion
 import FX1Poly.Typed.HasTypeDescPiSubstitution
+import FX1Poly.Typed.WfContextDescPi
 
 /-! # FX1Poly/Typed/HasTypeDescPiApplication — the dependent-eliminator OUTPUT is a grown type
     (the validity heart of Π-elimination / Σ-projection, for the GROWN engine).
@@ -15,10 +16,11 @@ universe classifier `subst0 (universeCodeCell ..) argument` IS the universe code
 ## Why the type-former well-formedness is a HYPOTHESIS, not derived
 
 The FORMATION `piApplicationOutputIsType` derives "the Π-code is a type" from the function term's
-typing via validity (`classifierIsTypeDesc`).  Here the type-former's well-formedness
+typing via validity (the grown `classifierIsTypeDescPi`).  Here the type-former's well-formedness
 (`IsTypeDescPi (piTyCodeCell ..)`) is taken as a HYPOTHESIS instead, for LAYERING: this file is
-UPSTREAM of grown validity (`HasTypeDescPiValidity.classifierIsTypeDesc` consumes
-`piCodeInstantiationIsType` in its `piElim` arm), so it cannot call validity without an import cycle.
+UPSTREAM of grown validity (`HasTypeDescPiClassifierValidity.classifierIsTypeDescPi` consumes
+`piCodeInstantiationIsType`'s twin in its `piElim` arm), so it cannot call validity without an import
+cycle.
 The hypothesis IS the genuine output-validity obligation, and it is exactly the witness validity /
 subject-reduction / canonicity carry in hand (they hold the eliminated value's type, hence its
 well-formedness), so the decoupling costs nothing.
@@ -45,7 +47,7 @@ theorem HasTypeDescPi.piCodeInstantiationIsType {profile : PolyProfile} {scope :
     {argument : RawTerm scope}
     (piIsType : IsTypeDescPi profile context (piTyCodeCell domainCode codomainCode))
     (argumentTyped : HasTypeDescPi profile context argument domainCode)
-    (_wellFormed : WfContext context) :
+    (_wellFormed : WfContextDescPi context) :
     IsTypeDescPi profile context (RawTerm.subst0 codomainCode argument) := by
   obtain ⟨_piLevel, _piFlag, piTyped⟩ := piIsType
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped⟩ :=
@@ -64,7 +66,7 @@ theorem HasTypeDescPi.sigmaCodeInstantiationIsType {profile : PolyProfile} {scop
     {firstProjection : RawTerm scope}
     (sigmaIsType : IsTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode))
     (firstProjectionTyped : HasTypeDescPi profile context firstProjection domainCode)
-    (_wellFormed : WfContext context) :
+    (_wellFormed : WfContextDescPi context) :
     IsTypeDescPi profile context (RawTerm.subst0 codomainCode firstProjection) := by
   obtain ⟨_sigmaLevel, _sigmaFlag, sigmaTyped⟩ := sigmaIsType
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped⟩ :=

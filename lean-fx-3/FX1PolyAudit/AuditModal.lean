@@ -22,7 +22,7 @@ import FX1Poly.Modal.GradedReductionConfluence
 import FX1Poly.Modal.GradedNormalization
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
-   (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
+   (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
 
 `FX1Poly.Modal.ResourceGraded` is the substrate for FX's usage dimension — the first graded
 dimension beyond Type (§6.1).  The usage grade algebra `{0, 1, ω}` is proven a genuine ORDERED
@@ -30,8 +30,8 @@ SEMIRING (`IsLawfulOrderedGradeSemiring fxUsageSemiring`): commutative-monoid `+
 distributivity, annihilation, and a partial order compatible with both operations.
 
 Each gate fails the build if its declaration depends on `propext` / `Quot.sound` / `Classical` /
-`sorry` / `native_decide` / `omega`.  This brings the previously-ungated `ResourceGraded` surface
-under the same per-declaration discipline as the rest of the kernel.
+`sorry` / `native_decide` / `omega`, holding the `ResourceGraded` surface to the same
+per-declaration discipline as the rest of the kernel.
 -/
 
 /-! ### Grade-algebra substrate (the ordered-semiring data bundle + the two instances) -/
@@ -59,7 +59,7 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.UsageGrade.zero_mul
 #assert_no_axioms FX1Poly.Modal.UsageGrade.linear_div_omega_eq_zero
 
-/-! ### Usage core semiring laws (associativity / commutativity / distributivity — DIM2-1) -/
+/-! ### Usage core semiring laws (associativity / commutativity / distributivity) -/
 
 #assert_no_axioms FX1Poly.Modal.UsageGrade.add_assoc
 #assert_no_axioms FX1Poly.Modal.UsageGrade.mul_assoc
@@ -75,12 +75,12 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.UsageGrade.add_le_add_left
 #assert_no_axioms FX1Poly.Modal.UsageGrade.mul_le_mul_left
 
-/-! ### The verified-semiring bundle + the usage witness (DIM2-1 headline) -/
+/-! ### The verified-semiring bundle + the usage witness -/
 
 #assert_no_axioms FX1Poly.Modal.IsLawfulOrderedGradeSemiring
 #assert_no_axioms FX1Poly.Modal.fxUsageSemiring_isLawful
 
-/-! ### Security grade-algebra laws + the verified-semiring witness (DIM5-1, the 2nd graded dimension) -/
+/-! ### Security grade-algebra laws + the verified-semiring witness (a second graded dimension) -/
 
 #assert_no_axioms FX1Poly.Modal.SecurityGrade.add_comm
 #assert_no_axioms FX1Poly.Modal.SecurityGrade.add_assoc
@@ -102,7 +102,7 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.SecurityGrade.classified_poisons_add
 #assert_no_axioms FX1Poly.Modal.fxSecuritySemiring_isLawful
 
-/-! ### Grade-vector substrate (DIM2-2): the per-binding usage grade vector + its semimodule laws -/
+/-! ### Grade-vector substrate: the per-binding usage grade vector + its semimodule laws -/
 
 #assert_no_axioms FX1Poly.Modal.GradeVector
 #assert_no_axioms FX1Poly.Modal.GradeVector.length
@@ -121,7 +121,7 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.GradeVector.scale_scale
 #assert_no_axioms FX1Poly.Modal.GradeVector.scale_add_scalar
 
-/-! ### Grade division — the residual of multiplication (toward DIM2-3's corrected Lam rule) -/
+/-! ### Grade division — the residual of multiplication, feeding the corrected Lam rule -/
 
 #assert_no_axioms FX1Poly.Modal.UsageGrade.div
 #assert_no_axioms FX1Poly.Modal.UsageGrade.div_residuation
@@ -152,7 +152,7 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.GradeVector.tail
 #assert_no_axioms FX1Poly.Modal.GradeVector.single_length
 
-/-! ### The usage grade check + the Atkey-2018 broken-Lam rejection (DIM2-6 / §27.1 / §27.2) -/
+/-! ### The usage grade check + the Atkey-2018 broken-Lam rejection (§27.1 / §27.2) -/
 
 #assert_no_axioms FX1Poly.Modal.GradedLambda
 #assert_no_axioms FX1Poly.Modal.GradedLambda.usage
@@ -187,7 +187,7 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.dupReduct_illGraded
 #assert_no_axioms FX1Poly.Modal.usage_check_fails_subject_reduction
 
-/-! ### Generic grade-vector substrate over any OrderedGradeSemiring (DIM5-2 + dims 6–21) -/
+/-! ### Generic grade-vector substrate over any OrderedGradeSemiring (security + dims 6–21) -/
 
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver.length
@@ -221,12 +221,13 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.securityGradeVector_add_comm
 #assert_no_axioms FX1Poly.Modal.securityGradeVector_below_refl
 
-/-! ### The GENERIC graded typing judgment over any OrderedGradeSemiring (DIM5-3 + dims 6–21)
+/-! ### The GENERIC graded typing judgment over any OrderedGradeSemiring (security + dims 6–21)
 
 `HasGradeOver R` — the §6.2 grade-checking judgment (corrected Wood/Atkey Lam + App scaling), generic
-over the ordered semiring, on the DIM5-2 generic vector.  Structural metatheory (3 inversions + the
-length-coherence invariant) transfers from DIM2-3 verbatim.  The witnesses type the linear identity +
-K combinator at BOTH usage and security — the orthogonal-composition thesis at the JUDGMENT layer. -/
+over the ordered semiring, on the generic grade vector.  Structural metatheory (3 inversions + the
+length-coherence invariant) is shared with the usage judgment verbatim.  The witnesses type the linear
+identity + K combinator at BOTH usage and security — the orthogonal-composition thesis at the JUDGMENT
+layer. -/
 
 #assert_no_axioms FX1Poly.Modal.GTypeOver
 #assert_no_axioms FX1Poly.Modal.GTypeOver.lookup
@@ -242,12 +243,12 @@ K combinator at BOTH usage and security — the orthogonal-composition thesis at
 #assert_no_axioms FX1Poly.Modal.securityLinearIdentity_typedViaGeneric
 #assert_no_axioms FX1Poly.Modal.securityKCombinator_typedViaGeneric
 
-/-! ### Generic grade erasure + SN-transfer over any OrderedGradeSemiring (DIM5-4 + dims 6–21)
+/-! ### Generic grade erasure + SN-transfer over any OrderedGradeSemiring (security + dims 6–21)
 
 `HasGradeOver R` erases to the SAME grade-free `HasSimpleType` that `HasUsage` erases to, so STLC strong
-normalization (the shipped Tait FT) transfers to the generic judgment for ANY dimension R — no
-graded-reducibility re-proof.  The generic DIM2-4/DIM2-5; the orthogonal-composition thesis (SN survives
-erasure) at the judgment layer for all 21 dimensions at once. -/
+normalization (the Tait fundamental theorem) transfers to the generic judgment for ANY dimension R — no
+graded-reducibility re-proof.  The orthogonal-composition thesis (SN survives erasure) at the judgment
+layer for all 21 dimensions at once. -/
 
 #assert_no_axioms FX1Poly.Modal.eraseGTypeOver
 #assert_no_axioms FX1Poly.Modal.lookup_map_eraseGTypeOver
@@ -257,10 +258,10 @@ erasure) at the judgment layer for all 21 dimensions at once. -/
 #assert_no_axioms FX1Poly.Modal.securityLinearIdentity_stronglyNormalizingViaGeneric
 #assert_no_axioms FX1Poly.Modal.securityKCombinator_stronglyNormalizingViaGeneric
 
-/-! ### Generic weakening for HasGradeOver R over any OrderedGradeSemiring (DIM5-5 + dims 6–21)
+/-! ### Generic weakening for HasGradeOver R over any OrderedGradeSemiring (security + dims 6–21)
 
 The de Bruijn weakening metatheory generic over R: `HasGradeOver R` survives `GradedLambda.shift` at
-any cut, inserting a `R.zero` grade.  Mirrors DIM2's `GradedTypingMetatheory`; the App-case grade
+any cut, inserting a `R.zero` grade.  Mirrors the usage `GradedTypingMetatheory`; the App-case grade
 arithmetic (`insertAt_add`/`insertAt_scale`) routes through the lawful bundle (`zero_add`/`mul_zero`)
 since an abstract semiring's `R.add R.zero R.zero` does not compute.  The prerequisite for generic
 substitution → subject reduction. -/
@@ -278,13 +279,13 @@ substitution → subject reduction. -/
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver.insertAt_add
 #assert_no_axioms FX1Poly.Modal.hasGradeOver_weakening
 
-/-! ### Generic substInto grade-algebra over any OrderedGradeSemiring (DIM5-6 + dims 6–21)
+/-! ### Generic substInto grade-algebra over any OrderedGradeSemiring (security + dims 6–21)
 
 The grade transformation β performs, generic over R: `substInto cut q p = removeAt cut p + (gradeAt cut
-p)·q`.  Mirrors DIM2's `GradedSubjectReduction` machinery; the lawful bundle is threaded into the lemmas
-whose grade arithmetic an abstract semiring cannot compute (`substInto_succ_cons`, `gradeAt_scale`/`_add`,
-`add_interchange`, the `substInto_single_*`/`substInto_appGrade` var/App identities).  The prerequisite
-for the generic substitution lemma (DIM5-7). -/
+p)·q`.  Mirrors the usage `GradedSubjectReduction` machinery; the lawful bundle is threaded into the
+lemmas whose grade arithmetic an abstract semiring cannot compute (`substInto_succ_cons`,
+`gradeAt_scale`/`_add`, `add_interchange`, the `substInto_single_*`/`substInto_appGrade` var/App
+identities).  The prerequisite for the generic substitution lemma. -/
 
 #assert_no_axioms FX1Poly.Modal.removeTypeAtOver
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver.removeAt
@@ -312,7 +313,7 @@ for the generic substitution lemma (DIM5-7). -/
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto_single_gt
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto_appGrade
 
-/-! ### Generic substitution + β subject reduction for HasGradeOver R (DIM5-7 + dims 6–21)
+/-! ### Generic substitution + β subject reduction for HasGradeOver R (security + dims 6–21)
 
 The headline of the generic reduction metatheory: substituting at a cut preserves typing with the grade
 vector transformed by `substInto`, and β `(λ.body) arg ↝ body[0:=arg]` preserves typing AND the EXACT
@@ -323,13 +324,13 @@ dimension R.  The security witness exercises β SR in a second dimension. -/
 #assert_no_axioms FX1Poly.Modal.hasGradeOver_betaPreservation
 #assert_no_axioms FX1Poly.Modal.securityBeta_smoke
 
-/-! ### Generic composition ledger for HasGradeOver R (DIM5-8 + dims 6–21) — CLOSES the generic track
+/-! ### Generic composition ledger for HasGradeOver R (security + dims 6–21)
 
 Graded subject reduction over the FULL β-reduction `Reduces`, and the metatheory bundle (SN ∧ graded-SR
 on the same relation, for any dimension R).  The usage ω-witness routes the decisive `ρ + r·σ` regression
-(r=ω) through the GENERIC preservedByReduces.  Mirrors DIM2-7's GradedComposition; completes the generic
-reduction metatheory (semiring → vector → judgment → erasure+SN → weakening → substInto → subst+β-SR →
-composition). -/
+(r=ω) through the GENERIC preservedByReduces.  Mirrors the usage `GradedComposition`; completes the
+generic reduction metatheory (semiring → vector → judgment → erasure+SN → weakening → substInto →
+subst+β-SR → composition). -/
 
 #assert_no_axioms FX1Poly.Modal.HasGradeOver.preservedByReduces
 #assert_no_axioms FX1Poly.Modal.HasGradeOver.metatheoryBundle
@@ -342,7 +343,7 @@ composition). -/
 #assert_no_axioms FX1Poly.Modal.usageOmegaScalingRedex_typed
 #assert_no_axioms FX1Poly.Modal.usageOmegaScalingRedex_reductKeepsGrade
 
-/-! ### The SOUND graded typing judgment (DIM2-3): type-coupled HasUsage with App scaling -/
+/-! ### The SOUND graded typing judgment: type-coupled HasUsage with App scaling -/
 
 #assert_no_axioms FX1Poly.Modal.GType
 #assert_no_axioms FX1Poly.Modal.GType.lookup
@@ -350,7 +351,7 @@ composition). -/
 #assert_no_axioms FX1Poly.Modal.linearIdentity_typed
 #assert_no_axioms FX1Poly.Modal.kCombinator_typed
 
-/-! ### HasUsage structural metatheory (DIM2-3): inversion + length invariant + weakening -/
+/-! ### HasUsage structural metatheory: inversion + length invariant + weakening -/
 
 #assert_no_axioms FX1Poly.Modal.HasUsage.invertVar
 #assert_no_axioms FX1Poly.Modal.HasUsage.invertLam
@@ -370,7 +371,7 @@ composition). -/
 #assert_no_axioms FX1Poly.Modal.hasUsage_length
 #assert_no_axioms FX1Poly.Modal.hasUsage_weakening
 
-/-! ### β subject reduction (DIM2-3 soundness payoff): graded substitution + β-preservation -/
+/-! ### β subject reduction (the soundness payoff): graded substitution + β-preservation -/
 
 #assert_no_axioms FX1Poly.Modal.removeTypeAt
 #assert_no_axioms FX1Poly.Modal.GradeVector.removeAt
@@ -400,7 +401,7 @@ composition). -/
 #assert_no_axioms FX1Poly.Modal.hasUsage_substitution
 #assert_no_axioms FX1Poly.Modal.hasUsage_betaPreservation
 
-/-! ### Grade erasure (DIM2-4): the usage dimension is a conservative refinement of simple typing -/
+/-! ### Grade erasure: the usage dimension is a conservative refinement of simple typing -/
 
 #assert_no_axioms FX1Poly.Modal.SimpleType
 #assert_no_axioms FX1Poly.Modal.eraseType
@@ -410,7 +411,7 @@ composition). -/
 #assert_no_axioms FX1Poly.Modal.HasUsage.erase
 #assert_no_axioms FX1Poly.Modal.linearIdentity_erases
 
-/-! ### STLC strong normalization substrate (DIM2-5): β-reduction + Acc-SN + structural lemmas -/
+/-! ### STLC strong normalization substrate: β-reduction + Acc-SN + structural lemmas -/
 
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing
@@ -421,7 +422,7 @@ composition). -/
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofLam
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofReduces
 
-/-! ### Tait reducibility candidates (DIM2-5 ii): Reducible + CR1/CR2/CR3 -/
+/-! ### Tait reducibility candidates: Reducible + CR1/CR2/CR3 -/
 
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible
 #assert_no_axioms FX1Poly.Modal.GradedLambda.reducibilityConditions
@@ -430,7 +431,7 @@ composition). -/
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.ofNeutral
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reducible.var
 
-/-! ### Parallel-substitution σ-algebra (DIM2-5 iii-a): renaming + substitution fusion laws
+/-! ### Parallel-substitution σ-algebra: renaming + substitution fusion laws
 
 The funext-free de Bruijn substitution infrastructure for the STLC-SN fundamental theorem: a renaming
 sublayer makes `lift` compose definitionally, and the four σ-monoid fusion laws + identity drop out
@@ -449,7 +450,7 @@ by structural induction with pointwise-agreement congruences (never `funext`/`Qu
 #assert_no_axioms FX1Poly.Modal.GradedLambda.applySubstitution_applySubstitution
 #assert_no_axioms FX1Poly.Modal.GradedLambda.applySubstitution_id
 
-/-! ### Reduction is substitutive (DIM2-5 iii-b): kernel substAt/shift bridge + Reduces.substAt
+/-! ### Reduction is substitutive: kernel substAt/shift bridge + Reduces.substAt
 
 The kernel `shift`/`substAt` bridged to the σ-algebra, the β-composition (★), and the abstraction-
 lemma engine `Reduces.substAt` (single-step β preserved under substitution) + SN-reflection.  Going
@@ -467,7 +468,7 @@ composition handles the binder bookkeeping once. -/
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.substAt
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofSubstAt
 
-/-! ### Tait SN + the graded-SN transfer (DIM2-5 iii-c / SN-056): the orthogonal-composition payoff
+/-! ### Tait SN + the graded-SN transfer: the orthogonal-composition payoff
 
 The STLC fundamental theorem (abstraction lemma → fundamental → every well-typed term reducible →
 SN) proved ONCE, and the headline `HasUsage.stronglyNormalizing`: graded-SN transfers from
@@ -485,7 +486,7 @@ witnesses (linear identity, K combinator). -/
 #assert_no_axioms FX1Poly.Modal.linearIdentity_stronglyNormalizing
 #assert_no_axioms FX1Poly.Modal.kCombinator_stronglyNormalizing
 
-/-! ### DIM2 composition ledger (DIM2-7): orthogonal composition validated
+/-! ### Usage composition ledger: orthogonal composition validated
 
 Graded subject reduction lifted to the full β-reduction, then the metatheory bundle conjoining
 type-dimension SN (transferred) with usage-dimension graded-SR on the same reduction — the two
@@ -505,11 +506,11 @@ non-trivial `(λx.(g x) x) z ↝ (g z) z` at `r = ω` (the regression test for t
 #assert_no_axioms FX1Poly.Modal.omegaScalingRedex_reductKeepsGrade
 #assert_no_axioms FX1Poly.Modal.omegaScalingContractum_typedDirectly
 
-/-! ### β-confluence infrastructure (CONF stage 1): reduction-substitutivity for GradedLambda
+/-! ### β-confluence infrastructure: reduction-substitutivity for GradedLambda
 
-Toward completing the substrate into a full reference STLC (SN + SR + confluence → unique NF).
-Reduction under renaming/shift (via `Reduces.applySubstitution`), multi-step congruence closures, and
-argument-substitutivity — the inputs to the local-confluence critical-pair analysis (next). -/
+Part of the full reference STLC (SN + SR + confluence → unique NF).  Reduction under renaming/shift (via
+`Reduces.applySubstitution`), multi-step congruence closures, and argument-substitutivity — the inputs to
+the local-confluence critical-pair analysis. -/
 
 #assert_no_axioms FX1Poly.Modal.GradedLambda.renameTerm_eq_applySubstitution_var
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.renameTerm
@@ -519,11 +520,11 @@ argument-substitutivity — the inputs to the local-confluence critical-pair ana
 #assert_no_axioms FX1Poly.Modal.GradedLambda.ReducesStar.congAppRight
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.substReducedArg
 
-/-! ### β-confluence (CONF stage 2): local confluence + Newman → confluence on the typed fragment
+/-! ### β-confluence: local confluence + Newman → confluence on the typed fragment
 
 The 9-case β critical-pair analysis (`WeaklyConfluent Reduces`), then the relation-generic `newmanAux`
 (per-term `Acc` = `IsStronglyNormalizing`) gives confluence on the SN fragment — and hence on every
-well-(simply/usage-)typed `GradedLambda` term (SN from the Tait FT / grade erasure). -/
+well-(simply/usage-)typed `GradedLambda` term (SN from the Tait fundamental theorem / grade erasure). -/
 
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.localConfluent
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.weaklyConfluent
@@ -531,7 +532,7 @@ well-(simply/usage-)typed `GradedLambda` term (SN from the Tait FT / grade erasu
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.confluent
 #assert_no_axioms FX1Poly.Modal.HasUsage.confluent
 
-/-! ### Unique normal forms (CONF stage 3a)
+/-! ### Unique normal forms
 
 Confluence + "a normal form admits no step" ⟹ a strongly-normalizing term has at most one β-NF; hence
 every well-(simply/usage-)typed `GradedLambda` term has a unique normal form (the bridge to decidable
@@ -544,7 +545,7 @@ conversion). -/
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.uniqueNormalForm
 #assert_no_axioms FX1Poly.Modal.HasUsage.uniqueNormalForm
 
-/-! ### The verified β-normalizer (CONF stage 3b-i)
+/-! ### The verified β-normalizer
 
 `stepOrNormal` (β-progress: every term steps-with-witness or is normal) drives `normalize` via `Acc.rec`
 on the SN accessibility, producing the unique β-NF bundled with `ReducesStar` reachability and
@@ -559,11 +560,11 @@ on the SN accessibility, producing the unique β-NF bundled with `ReducesStar` r
 #assert_no_axioms FX1Poly.Modal.GradedLambda.normalize_reducesStar
 #assert_no_axioms FX1Poly.Modal.GradedLambda.normalize_isNormalForm
 
-/-! ### Decidable β-conversion (CONF stage 3b-ii — completes the substrate)
+/-! ### Decidable β-conversion (completes the substrate)
 
 Conversion (`Joinable Reduces`) = normal-form equality on the SN fragment, so it is decidable via
 `GradedLambda`'s `DecidableEq` on normal forms.  Every well-(simply/usage-)typed term pair has
-decidable convertibility — the GradedLambda STLC is now a full reference calculus with decidable
+decidable convertibility — the GradedLambda STLC is a full reference calculus with decidable
 definitional equality. -/
 
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofReducesStar

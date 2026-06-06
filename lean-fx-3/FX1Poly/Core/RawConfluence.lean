@@ -6,17 +6,17 @@ import FX1Poly.Core.RawTermDecEq
 import FX1Poly.Core.PolygraphConvergentDecision
 
 /-! # FX1Poly/Core/RawConfluence
-    — UNCONDITIONAL raw confluence of the FX reduction relation (`#420`, the M8-S1 payoff).
+    — UNCONDITIONAL raw confluence of the FX reduction relation.
 
-This file closes the `#420` pipeline.  `StepStarConfluence.lean` supplied `StepStar.HasConfluence` only
+This file closes the raw-confluence pipeline.  `StepStarConfluence.lean` supplies `StepStar.HasConfluence` only
 CONDITIONALLY (the shipped `cd_lemma` is a single-step LOCAL join, and raw β+ι is NOT strongly normalizing,
 so Newman's lemma cannot promote local to global confluence).  The Tait/Martin-Löf/Takahashi parallel-
 reduction route bypasses termination entirely:
 
-* `ParallelReduction.lean` shipped the parallel reduction `ParStep` with the sandwich
+* `ParallelReduction.lean` ships the parallel reduction `ParStep` with the sandwich
   `Step ⊆ ParStep ⊆ StepStar` (`Step.toParStep`, `ParStep.toStepStar`);
-* `CompleteDevelopment.lean` shipped the Takahashi complete development `completeDevelopment`;
-* `ParStepTriangle.lean` proved the triangle `ParStep.triangle : ParStep a b → ParStep b (completeDevelopment a)`;
+* `CompleteDevelopment.lean` ships the Takahashi complete development `completeDevelopment`;
+* `ParStepTriangle.lean` proves the triangle `ParStep.triangle : ParStep a b → ParStep b (completeDevelopment a)`;
 * `TakahashiTriangle.lean` turns a triangle into a `DiamondProperty` (`DiamondProperty.ofTriangle`);
 * `StepParallelConfluence.lean` turns a sandwiched parallel diamond into `StepStar.HasConfluence`
   (`StepStar.hasConfluence_of_parallelDiamond`, route A).
@@ -26,7 +26,7 @@ This file instantiates that pipeline at the concrete FX `ParStep`:
 * `ParStep.diamond` — the `ParStep` diamond, from the triangle;
 * `StepStar.rawConfluence` — global Church-Rosser for the raw `StepStar`, UNCONDITIONALLY.
 
-`StepStar.rawConfluence` is exactly `#420`: any two `StepStar`-reducts of a common source `Join` (reduce to
+`StepStar.rawConfluence` is exactly global raw confluence: any two `StepStar`-reducts of a common source `Join` (reduce to
 a common term).  No termination hypothesis — the prize strong normalization cannot supply, since raw β+ι is
 not SN (`gen_natRec`/`gen_fixedPoint` give non-terminating raw reductions).
 
@@ -46,15 +46,15 @@ one further parallel step.  No quadratic redex-pair case split, no termination. 
 theorem ParStep.diamond {scope : Nat} : DiamondProperty (@ParStep scope) :=
   DiamondProperty.ofTriangle (@ParStep.triangle scope)
 
-/-- **Unconditional raw confluence (`#420`).**  The FX raw reduction relation `StepStar` is globally
+/-- **Unconditional raw confluence.**  The FX raw reduction relation `StepStar` is globally
 Church-Rosser: any two `StepStar`-reducts of a common source join at a common term.  Discharged through the
 parallel-reduction sandwich `Step ⊆ ParStep ⊆ StepStar` and the `ParStep` diamond — with NO strong-
-normalization assumption (raw β+ι is not SN).  This closes the M8-S1 confluence pipeline. -/
+normalization assumption (raw β+ι is not SN).  This closes the raw-confluence pipeline. -/
 theorem StepStar.rawConfluence : StepStar.HasConfluence :=
   StepStar.hasConfluence_of_parallelDiamond
     (@ParStep) (@Step.toParStep) (@ParStep.toStepStar) (@ParStep.diamond)
 
-/-- **Unconditional raw strip property** (`#377`, the Newman-precursor).  A single `Step` out of a source
+/-- **Unconditional raw strip property** (the Newman-precursor).  A single `Step` out of a source
 joins against ANY `StepStar` chain out of the same source — the asymmetric one-step-vs-many form of
 Church-Rosser.  Discharged from the `ParStep` diamond via route B (`hasStrip_of_parallelDiamond`).  Distinct
 from `rawConfluence` (many-vs-many): `StepStar.confluence_of_strip` turns this into confluence, so `rawStrip`
@@ -82,7 +82,7 @@ theorem Conv.trans {scope : Nat} {firstTerm middleTerm lastTerm : RawTerm scope}
   Conv.trans_of_confluence StepStar.rawConfluence firstMiddle middleLast
 
 /-- **Raw conversion is an equivalence relation** — unconditionally.  Reflexivity/symmetry are structural
-(`Conv.refl` / `Conv.sym`); transitivity is `Conv.trans` via raw confluence (`#420`). -/
+(`Conv.refl` / `Conv.sym`); transitivity is `Conv.trans` via raw confluence. -/
 theorem Conv.equivalence {scope : Nat} : Equivalence (@Conv scope) where
   refl := Conv.refl
   symm := Conv.sym
@@ -97,7 +97,7 @@ instance Conv.instTrans {scope : Nat} : Trans (@Conv scope) (@Conv scope) (@Conv
 
 `NormalFormUnique.lean`'s `normalForm_unique` joins two normal reducts via
 `confluence_of_localJoin_and_accessible`, which needs the source to be strongly normalizing
-(`StepStar.IsStronglyNormalizing sourceTerm`) — the only confluence available before `#420`.  Global
+(`StepStar.IsStronglyNormalizing sourceTerm`) — the SN-conditional confluence.  Global
 `rawConfluence` removes that need: it joins ANY two reductions of a common source, so two normal reducts
 coincide whether or not the source terminates.  This makes "the normal form of a raw term" a well-defined
 *partial* function on ALL raw terms (a possibly-diverging term may reach no normal form, but if it reaches
@@ -187,11 +187,11 @@ def Conv.decidableOfNormalForms {scope : Nat}
 "Conv = normal-form word equality" decider, polycell.md §2.3) take a `Normalizer` AND a
 `StepStar.HasConfluence` hypothesis — its docstring calls them *"precisely WHAT THE FULL DECIDER NEEDS."*
 `rawConfluence` discharges the confluence half, so a `Normalizer` ALONE decides `Conv` — no separate
-confluence side-condition.  This is the SN-113/SN-114 advance: the Path-B decider's two inputs collapse to
+confluence side-condition.  The Path-B decider's two inputs collapse to
 one.  The remaining input — the `Normalizer` (a TOTAL normal-form function with `reducesToNormalForm` for
-every term) — stays the strong-normalization obligation: raw β+ι has no global normalizer (it is not SN),
-so a `Normalizer` exists only for the SN/typed fragment (the Makkai/Forest word construction, #638, is one
-explicit instance).  What this removes is the *separate* confluence assumption — it is no longer a
+every term) — is the strong-normalization obligation: raw β+ι has no global normalizer (it is not SN),
+so a `Normalizer` exists only for the SN/typed fragment (the Makkai/Forest word construction is one
+explicit instance).  The *separate* confluence assumption is not a
 hypothesis the normalizer-construction must also supply. -/
 
 /-- **A normalizer alone characterizes `Conv` as normal-form equality** (confluence discharged).  Drops the

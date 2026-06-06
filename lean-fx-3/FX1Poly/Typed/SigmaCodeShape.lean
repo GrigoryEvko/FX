@@ -15,7 +15,7 @@ so each lemma here is the exact analog of its `piTyCodeCell` counterpart with
 the head generator swapped.
 
 Contents (all over `sigmaTyCodeCell`, the `gen_sigmaTyCode` cell defined in
-`HasType`):
+`CellConstructors`):
 
 * `headGenerator_sigmaTyCodeCell` — the head generator is `gen_sigmaTyCode`.
 * `eq_sigmaTyCodeCell_of_headGenerator` — head `gen_sigmaTyCode` recovers the
@@ -25,7 +25,7 @@ Contents (all over `sigmaTyCodeCell`, the `gen_sigmaTyCode` cell defined in
 * `sigmaTyCodeCell_inj` — injectivity (component extractor for the inversion's
   `sigmaFormation` arm), by `cases` on the cell equality (propext-free).
 * `sigmaTyCodeCell_noStep_of_childrenNoStep` — a Σ cell with non-stepping
-  children is non-stepping (the `subjectHasNoStep` Σ-case crux; Σ-formation is
+  children is non-stepping (the subject-no-step Σ-case crux; Σ-formation is
   a pure type former, every step descends into a child).
 * `size_lt_sigmaTyCodeCell_domain` / `_codomain` — the `RawTerm.size`
   `decreasing_by` bricks a well-founded recursive Σ-formation decider needs,
@@ -96,8 +96,8 @@ theorem sigmaTyCodeCell_inj {scope : Nat}
 Σ-formation is a pure type former (no head redex — `Step.from_sigmaTyCode` has
 only the congruence case), so any step of the cell descends into the domain or
 codomain, each ruled out by hypothesis.  Dual of
-`piTyCodeCell_noStep_of_childrenNoStep`; the inductive crux the Σ-case of
-`HasType.subjectHasNoStep` calls directly. -/
+`piTyCodeCell_noStep_of_childrenNoStep`; the inductive crux for the Σ-case of
+subject-no-step reasoning over formation cells. -/
 theorem sigmaTyCodeCell_noStep_of_childrenNoStep {scope : Nat}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (domainNoStep : ∀ reduct, Step domainCode reduct → False)

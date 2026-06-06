@@ -1,7 +1,7 @@
 import FX1Poly.OmegacE.SortingSystem
 
 /-! # FX1Poly/OmegacE/SortingTermination
-    — the inversion-count measure + TERMINATION for the sorting system (SN-120 progress 2a+2b, #623)
+    — the inversion-count measure + TERMINATION for the sorting system
 
 The bubble-sort termination measure infrastructure.  The sorting system is length-PRESERVING (a swap), so
 length is no measure; termination is by the INVERSION COUNT (the number of out-of-order pairs), which strictly
@@ -13,12 +13,12 @@ decreases by one per descending swap.
 * `crossInversionCount slotValue left right` — the CROSS inversions across an append boundary (each left cell
   pairs with each strictly-smaller right cell); the cross term of the inversion-count append homomorphism.
 * `countBelowThreshold_append` + `countInversions_append` — the two monoid homomorphisms from list append to `ℕ`
-  addition.  Unlike SN-118's single-cell `aBeforeBInversions` (whose cross term was a product), `countInversions`
+  addition.  Unlike the transposition system's single-cell `aBeforeBInversions` (whose cross term is a product), `countInversions`
   has a SUM-fold cross term `crossInversionCount`, so the append-homomorphism's cons case is a five-term `ℕ` AC
   rearrangement `(a+b)+((c+d)+e) = ((a+c)+d)+(b+e)`, discharged by explicit `Nat.add_assoc` / `Nat.add_left_comm`
   (normalizing both sides to `a+(b+(c+(d+e)))`) — NOT `ac_rfl` (which leaks `propext`+`Quot.sound`).
 
-## Termination (progress 2b — now DONE in this file)
+## Termination
 
 * `countBelowThreshold_preserved_by_step` — multiset invariance: a swap preserves the below-threshold count.
 * `crossInversionCount_append_left` — additivity of the cross count in its LEFT argument.
@@ -30,11 +30,11 @@ decreases by one per descending swap.
   CLEANER than `transpositionSystem_isTerminating`: needs NO external `a ≠ b` — the strict-order guard is baked
   into `sortingSystem` membership, so every actual step decreases the measure unconditionally.
 
-## Remaining for SN-120 (separate files, mirroring SN-118/119)
+## Remaining (separate files)
 
 LOCAL CONFLUENCE with the genuine braid `[a,b,c]` critical pair (multi-step join to the sorted `[c,b,a]`) +
 the guarded `WordReducer` (scan for the leftmost descending adjacency) + `decidableConvertibleModulo_ofConvergent`
-close SN-120.
+close the system.
 
 ## Zero-axiom verification
 
@@ -253,7 +253,7 @@ theorem countInversions_decreases {dimension : Nat}
           ← crossInversionCount_preserved_left_by_step slotValue suffixWord.cells inner]
       exact Nat.add_lt_add_right (Nat.add_lt_add_right innerIH _) _
 
-/-- **The sorting system is terminating** — the SN-120 termination headline.  The inversion measure embeds
+/-- **The sorting system is terminating** — the termination headline.  The inversion measure embeds
 reduction into `<` on `ℕ` (well-founded), so every word is accessible.  Unlike `transpositionSystem_isTerminating`
 this needs NO external `firstCell ≠ secondCell`: the strict-order guard `slotValue b < slotValue a` is baked into
 `sortingSystem` membership, so every actual step strictly decreases the measure unconditionally.  Discharges the

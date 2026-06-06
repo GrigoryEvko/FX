@@ -6,7 +6,7 @@ import FX1Poly.Core.NormalFormUnique
 /-! # FX1Poly/Typed/GrownTypeSafety — syntactic type safety for the grown engine `HasTypeDescPi`
     (five-layer-defense L4, §27.3: progress + the SN-conditional safety capstone)
 
-`GrownCanonicalForms.closedNormalSubjectHead` proved CANONICAL FORMS for the grown engine: a closed NORMAL
+`GrownCanonicalForms.closedNormalSubjectHead` establishes CANONICAL FORMS for the grown engine: a closed NORMAL
 grown-typed term has head `gen_lam` / `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode` — a λ value or a
 Π / Σ / universe type code.  Canonical forms is the *ingredient*; the §27.3 five-layer-defense L4 deliverable is
 the named **preservation/progress** safety statements themselves.  This file ships them.
@@ -22,28 +22,27 @@ the named **preservation/progress** safety statements themselves.  This file shi
 
   * `HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar` — **TYPE SAFETY (conditional on SR-along-`↝*`).**
     Every closed grown-typed term *evaluates to a canonical value*: there is a reachable normal form that is a
-    canonical head.  Assembles strong normalization (OB-5, `HasTypeDescPi.stronglyNormalizingOfWfContext`, the
+    canonical head.  Assembles strong normalization (`HasTypeDescPi.stronglyNormalizingOfWfContextDesc`, the
     termination half), weak normalization (`exists_normalForm_of_isStronglyNormalizing`, reaching the normal
     form), the `subjectReductionStar` hypothesis (PRESERVATION — carrying the classifier down the chain), and
     canonical forms (`closedNormalSubjectHead`, the progress half at the normal form).  The lone hypothesis is
-    exactly preservation; this mirrors the conditional-package discipline (`UB-SD-conditionalPackage`/`#664`,
-    `ConsistencyConditionalOnSubjectReduction`).
+    exactly preservation; this mirrors the conditional-package discipline of
+    `ConsistencyConditionalOnSubjectReduction`.
 
 ## Why `subjectReductionStar` is a hypothesis, not discharged
 
-Preservation for the FULL grown engine (`piElim` included) is the SN-055 master SR dispatcher
-(`SRD-1`/`#844`, `TG-3`/`#853`), whose last residual is the grown context-conversion `piElim` arm
-(`GCC-5`/`#842`) — the entangled mutual fundamental-metatheory bundle.  β-step preservation (`TY-SR-beta`/`#474`)
-and the whole formation family (`TG-2`/`#852`) are already unconditional; only the iterated full-engine
+Preservation for the FULL grown engine (`piElim` included) is the master SR dispatcher, whose last residual is
+the grown context-conversion `piElim` arm — the entangled mutual fundamental-metatheory bundle.  β-step
+preservation and the whole formation family are already unconditional; only the iterated full-engine
 `↝*` preservation at an arbitrary classifier is gated.  Exposing it as a hypothesis ships the safety capstone
-now and names the lone gate precisely, exactly as the consistency route does for `EmptyType`.
+and names the lone gate precisely, exactly as the consistency route does for `EmptyType`.
 
 The DETERMINISM layer — evaluation lands at a UNIQUE value, the punchline that makes "the value" well defined:
 
   * `HasTypeDescPi.closedHasUniqueNormalForm` — **EVALUATION DETERMINISM (unconditional).**  A closed grown-typed
-    term has a UNIQUE normal form: it reaches one, and every normal form it reaches is that same one.  Just OB-5
+    term has a UNIQUE normal form: it reaches one, and every normal form it reaches is that same one.  Just open
     strong normalization fed to `exists_unique_normalForm_of_isStronglyNormalizing` (existence by weak
-    normalization, uniqueness by raw confluence, the `#420` harvest) — NO subject reduction needed.  Evaluation of
+    normalization, uniqueness by raw confluence) — NO subject reduction needed.  Evaluation of
     a closed grown-typed term is a well-defined partial function made total by SN.
 
   * `HasTypeDescPi.closedTypeSafetyUniqueOfSubjectReductionStar` — **TYPE SAFETY + DETERMINISM (conditional on
@@ -55,9 +54,9 @@ The DETERMINISM layer — evaluation lands at a UNIQUE value, the punchline that
 ## Zero-axiom verification
 
 `Decidable.em`-free dispatch (`by_cases` on the decidable `isStepNormalForm`) + `closedNormalSubjectHead` +
-`exists_step_of_not_isStepNormalForm` (progress); OB-5 + weak normalization + the SR hypothesis + canonical
-forms (safety).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega` (verified
-by `#print axioms` in scratch before landing).  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+`exists_step_of_not_isStepNormalForm` (progress); open SN + weak normalization + the SR hypothesis + canonical
+forms (safety).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
+Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -89,10 +88,10 @@ theorem HasTypeDescPi.closedProgress {profile : PolyProfile} {subject classifier
   · exact Or.inr (exists_step_of_not_isStepNormalForm isNormal)
 
 /-- **Type safety (conditional on SR-along-`↝*`).**  Every closed grown-typed term evaluates to a canonical
-value: a reachable normal form whose head is canonical.  Strong normalization (OB-5) terminates the subject;
+value: a reachable normal form whose head is canonical.  Open strong normalization terminates the subject;
 weak normalization reaches the normal form; the `subjectReductionStar` hypothesis (preservation) carries the
 classifier down the chain so canonical forms applies at the normal form.  The hypothesis is the lone gate — the
-iterated SN-055 master dispatcher — so this is full grown-engine type safety modulo preservation. -/
+iterated master dispatcher — so this is full grown-engine type safety modulo preservation. -/
 theorem HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar {profile : PolyProfile}
     {subject classifier : RawTerm 0}
     (subjectReductionStar : ∀ {start finish : RawTerm 0},
@@ -110,9 +109,9 @@ theorem HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar {profile : PolyProf
     valueNormal (fun emptyIndex => emptyIndex.elim0)
 
 /-- **Evaluation determinism (unconditional).**  A closed grown-typed term has a UNIQUE normal form: it reaches
-one normal form, and every normal form it reaches equals that one.  OB-5 strong-normalizes the subject; the
-unique-normal-form package (`exists_unique_normalForm_of_isStronglyNormalizing` — existence by weak normalization,
-uniqueness by raw confluence, the `#420` harvest) delivers both halves.  No subject reduction needed: evaluation
+one normal form, and every normal form it reaches equals that one.  Open strong normalization terminates the
+subject; the unique-normal-form package (`exists_unique_normalForm_of_isStronglyNormalizing` — existence by weak
+normalization, uniqueness by raw confluence) delivers both halves.  No subject reduction needed: evaluation
 of a closed grown-typed term is a well-defined function of the term (total by SN, single-valued by confluence). -/
 theorem HasTypeDescPi.closedHasUniqueNormalForm {profile : PolyProfile} {subject classifier : RawTerm 0}
     (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject classifier) :

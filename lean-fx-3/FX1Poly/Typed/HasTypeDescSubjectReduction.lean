@@ -28,21 +28,20 @@ components are re-typed at universe codes BY THE SAME ENGINE (the `DescTelescope
 recursively formation-typed and therefore normal — so the former code itself heads no redex.  The engine has no
 app / eliminator / λ arm, so NO formation-typed subject ever steps.  `HasTypeDesc.subjectAdmitsNoStep` (below)
 is that honest characterization; it makes this `subjectReduction` VACUOUSLY true (the mutual machinery handles
-the structurally-possible child congruences that never fire on a normal subject — exactly like the bespoke
-leaf-only `HasType.subjectReduction`, also a no-step lemma).  The dispatcher's `ofFormation` arm discharges via
-`subjectAdmitsNoStep` (no step → vacuous), NOT via the heavier `subjectReduction`.  (An earlier draft of this
-header overclaimed "genuinely non-vacuous"; corrected here.)
+the structurally-possible child congruences that never fire on a normal subject — a leaf-only no-step lemma).
+The dispatcher's `ofFormation` arm discharges via `subjectAdmitsNoStep` (no step → vacuous), NOT via the
+heavier `subjectReduction`.
 
-The genFormation arm is generic over the formation generator: `former_step_inv` (now delegating to the
-cascade-free `formerCellStepIsChildCongruence`, TG-1) rules out root redexes for the whole formation family
+The genFormation arm is generic over the formation generator: `former_step_inv` (delegating to the
+cascade-free `formerCellStepIsChildCongruence`) rules out root redexes for the whole formation family
 WITHOUT enumerating the table, so a new ≥1-child formation row (a data type code) is absorbed with no
 per-consumer cascade.
 
 ## Zero-axiom verification
 
 The per-cell Step inversions (`no_step_from_var` / `no_step_from_universeCode` / `no_step_at_empty_spine`) +
-the cascade-free former step-inversion (`formerCellStepIsChildCongruence`, TG-1 — `former_step_inv` delegates
-to it, no formation-table enumeration) + the shipped formation context-conversion (`convTelescope`) +
+the cascade-free former step-inversion (`formerCellStepIsChildCongruence` — `former_step_inv` delegates
+to it, no formation-table enumeration) + the formation context-conversion (`convTelescope`) +
 `Conv.rename` of a one-step `Conv`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -78,11 +77,10 @@ theorem Step.no_step_from_emptyCode {scope : Nat} {target : RawTerm scope} :
 (`typingRuleDescOf generator = some rule`) is a TYPE-FORMER code, not an eliminable/applicable cell — no
 `beta`, no `iota*` fires on it — so a `Step (mkGen generator payload children) target` can only be `cong`,
 exposing a `StepChildren children children'` with `target = mkGen generator payload children'`.  Delegates to
-the CASCADE-FREE `formerCellStepIsChildCongruence` (TG-1), which discharges the 17 root-redex arms by the
+the CASCADE-FREE `formerCellStepIsChildCongruence`, which discharges the 17 root-redex arms by the
 `none`-valuation of each redex head WITHOUT enumerating the formation table — so a future ≥1-child formation
 row (a data type code) is absorbed here zero-touch, with no `typingRuleDescOf_isPiOrSigma` disjunct to extend.
-This file's `former_step_inv` name and signature are preserved (its three consumers are unaffected); only the
-proof is now table-generic. -/
+The proof is table-generic. -/
 theorem former_step_inv {scope : Nat} {generator : Generator}
     {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
     {rule : TypingRuleDesc} {target : RawTerm scope}

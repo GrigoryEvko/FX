@@ -11,7 +11,7 @@ structurally normal genuinely takes a `Step`, and the proof EXHIBITS the reduct.
 This is the second ingredient (after the root-redex dispatch `hasRootStepSource_exists_step`) of weak
 normalization: descending a strongly-normalizing term along `Acc StepSuccessor`, at each non-normal node
 this lemma extracts an actual reduct, so the descent terminates at a genuine normal form.  It feeds raw
-decidable conversion (#267) and the WHNF migration (#374).
+decidable conversion and the WHNF migration.
 
 ## Proof shape (mutual, structural, mirrors `blocks_step`)
 

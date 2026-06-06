@@ -1,9 +1,9 @@
 import FX1Poly.Modal.GradedReductionConfluence
 
-/-! # FX1Poly/Modal/GradedNormalization — the verified β-normalizer for GradedLambda (CONF stage 3b-i)
+/-! # FX1Poly/Modal/GradedNormalization — the verified β-normalizer for GradedLambda
 
 The decision-procedure layer atop the reduction theory (SN + SR + confluence + unique normal forms).
-This installment builds the **normalizer**: a function computing the β-normal form of any strongly-
+This file builds the **normalizer**: a function computing the β-normal form of any strongly-
 normalizing `GradedLambda` term, bundled with proofs that the output is reached (`ReducesStar`) and
 irreducible (`IsNormalForm`).
 
@@ -16,7 +16,7 @@ irreducible (`IsNormalForm`).
   * `normalize` + `normalize_reducesStar` + `normalize_isNormalForm` — the normalizer and its two
     correctness projections.
 
-**Decidable conversion (CONF stage 3b-ii) completes the substrate:**
+**Decidable conversion completes the substrate:**
 
   * `IsStronglyNormalizing.ofReducesStar` — SN preserved along multi-step reduction.
   * `normalize_of_isNormalForm` — normalizing a normal form returns it unchanged.

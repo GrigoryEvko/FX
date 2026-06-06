@@ -16,7 +16,7 @@ This is the `neutralClosedUnderStep` obligation that `CanonicalFormsCandidate.le
 (`CanonicalFormsPredicate.closedUnderStep`) and the full `IsReducibilityCandidate` bundle
 (`CanonicalFormsPredicate.isReducibilityCandidate`) take as a hypothesis.  Discharging it here turns the
 neutral half of every canonical-forms candidate unconditional — one of the two remaining data facts on
-the road to unconditional bool reducibility (SN-063) and closed-data canonicity (SN-047/049).
+the road to unconditional bool reducibility and closed-data canonicity.
 
 ## Proof shape
 

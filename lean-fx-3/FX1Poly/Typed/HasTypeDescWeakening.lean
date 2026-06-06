@@ -15,12 +15,10 @@ looked-up type to the target's, commuting with `rename`), and its weakening spec
 
 `HasTypeDesc` is MUTUAL with `DescTelescope`, so this is a MUTUAL recursion — and unlike
 the P7 uniqueness recursion, it has NO second-derivation inversion, so the cross-calls sit
-on PRISTINE `match`-bound subterms (`typedPremise`, `premises`, `headTyped`) exactly like
-the `HasTypeDesc.toHasType` ⋈ `DescTelescope.toHasTypeTelescope` pair.  Lean's structural
+on PRISTINE `match`-bound subterms (`typedPremise`, `premises`, `headTyped`).  Lean's structural
 recursion lands it directly (no `termination_by` needed) once the genFormation arm's
-companion cross-call is HOISTED before the `by_cases` (so `premises` is still pristine —
-the same discipline `toHasType` uses).  Proved BY INDUCTION on `HasTypeDesc`, NOT routed
-through `HasType` (validity/inversion/uniqueness are case-analysis; this is genuine
+companion cross-call is HOISTED before the `by_cases` (so `premises` is still pristine).
+Proved BY INDUCTION on `HasTypeDesc` (validity/inversion/uniqueness are case-analysis; this is genuine
 recursion).
 
 ## The telescope companion
@@ -29,8 +27,8 @@ recursion).
 is stated at the telescope's `currentDepth` via `iterateLiftRaw rawRenaming currentDepth`;
 the `cons` arm fires the head recursion with that depth-`cd` renaming (the condition passes
 verbatim), and recurses on the tail at depth `cd+1` with the LIFTED condition — the
-N-binder generalization of the bespoke `HasType.renameRespectingContext`'s single-binder
-`piFormation` codomain handling.  `iterateLiftRaw ρ (cd+1) ≡ RawRenaming.lift (iterateLiftRaw
+N-binder generalization of single-binder `piFormation` codomain handling.
+`iterateLiftRaw ρ (cd+1) ≡ RawRenaming.lift (iterateLiftRaw
 ρ cd)` (`iterateLiftRaw_succ_unfolds`, defeq), so the lifted condition reduces to
 `rename_lift_weaken_commute` on each looked-up type at every depth.
 
@@ -175,8 +173,7 @@ binding, with subject and classifier shifted by `RawRenaming.weaken`.  The corol
 `renameRespectingContext` whose context-condition holds DEFINITIONALLY (`fun _ => rfl`):
 `weaken index` is `Fin.succ index`, the `cons` telescope's `lookup` fires its successor
 arm, and the `Fin` proof collapses by proof-irrelevance — leaving exactly
-`rename weaken (context.lookup index)`.  Decoupled from `HasType` (no route through the
-`⟺` soundness/completeness maps). -/
+`rename weaken (context.lookup index)`. -/
 theorem HasTypeDesc.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} (newBinding : RawTerm scope)

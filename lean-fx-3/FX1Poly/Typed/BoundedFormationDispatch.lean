@@ -17,8 +17,7 @@ The `universeFormation` LEAF needs `belowBound : denote (lsucc levelExpr) env < 
 the bounded route consumes (every other arm gate-EXTRACTS its level bound from a reducible universe member produced
 by an IH).  Reading `belowBound` off a separately-supplied budget would require INVERTING `BoundExceeds (ctor …)`
 at a fixed `HasTypeDesc` index — and a `match`/`cases` there hits the opaque-index wall (the matcher can't rule out
-the `genFormation` budget-ctor whose index is the opaque `rule.outputType …`; spike `BudgetInversionSpike`,
-2026-06-04).
+the `genFormation` budget-ctor whose index is the opaque `rule.outputType …`).
 
 The resolution: induct on the BUDGET, not on the derivation.  `BoundExceeds.rec` dispatches on the budget's own
 constructor and hands each arm the budget's fields AS NAMED ARGUMENTS — the `universeFormation` arm receives

@@ -2,12 +2,12 @@ import FX1Poly.Typed.DenoteKeyedReducibility
 import FX1Poly.Core.StrongNormalizationLeaves
 
 /-! # FX1Poly/Typed/DenoteKeyedReducibilitySmoke
-    — concrete denote-keyed reducibility witnesses (regression corpus, SN-149-flavored)
+    — concrete denote-keyed reducibility witnesses (regression corpus)
 
 The denote-keyed reducibility relation (`ReducibleTypeStepDenote` / `IsReducibleTypeAtDenote`) and its
-metatheory (anti-vacuity, level-irrelevance, the genFormationPi former engine) are all parameterized; until now
-there was NO concrete witness exercising the relation on actual raw cells.  This file ships the first two — the
-two LEAF cases of the step functor — guarding the load-bearing reducibility entry points against regression:
+metatheory (anti-vacuity, level-irrelevance, the genFormationPi former engine) are parameterized.  This file
+ships concrete witnesses exercising the relation on actual raw cells — the two LEAF cases of the step functor —
+guarding the load-bearing reducibility entry points against regression:
 
   * `smoke_universeCode_isReducibleAtDenote` — the `universeCode` arm: a universe code is a reducible type at
     EVERY ambient level (`universeCode_isReducibleAtDenote`, the anti-vacuity that refutes SN-001's empty fuel-0

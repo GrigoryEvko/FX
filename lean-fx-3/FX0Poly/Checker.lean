@@ -1,5 +1,5 @@
 /-!
-# FX0Poly — Metamath-Zero–flavored minimal checker (greenfield)
+# FX0Poly — Metamath-Zero–flavored minimal checker
 
 `FX0Poly` is the SMALL, independently-auditable verifier that re-checks the
 certificates emitted by the rich `FX1Poly` kernel.  Its design philosophy is
@@ -25,13 +25,14 @@ core — they do not have to trust FX1Poly's elaborator, its tactics, or Lean
 itself beyond the kernel.  Disagreement between the two layers is a bug in
 exactly one of them, surfaced by a cross-check corpus.
 
-## Status
+## This file
 
-This file defines only the verdict vocabulary the checker reports
-(`CheckVerdict` + `wasAccepted`).  It contains NO checking logic: no
-certificate format, no re-check procedure, no soundness theorem, and no
-cross-check corpus.  Nothing here claims soundness.  Zero-axiom discipline
-applies in full once checking logic is added.
+This file defines the verdict vocabulary the checker reports
+(`CheckVerdict` + `wasAccepted`).  The per-node admission rule lives in
+`StructuralRecheck`, the recursive driver in `CertRecheck`, its
+soundness-and-completeness theorem in `CertRecheckSound`, and the concrete
+kernel-fragment arity model in `KernelArity`.  Zero-axiom discipline applies
+in full across the checker.
 -/
 
 namespace FX0Poly

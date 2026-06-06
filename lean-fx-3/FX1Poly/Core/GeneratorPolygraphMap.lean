@@ -1,9 +1,9 @@
 import FX1Poly.Core.GeneratorFinitePolygraph
 
 /-! # FX1Poly/Core/GeneratorPolygraphMap
-    — the explicit Generator → polygraph-generator map presenting each generator's boundary (SN-124, #627)
+    — the explicit Generator → polygraph-generator map presenting each generator's boundary
 
-SN-123 (`GeneratorFinitePolygraph.lean`) established the FX kernel as a finite polygraph by bundling the
+`GeneratorFinitePolygraph.lean` establishes the FX kernel as a finite polygraph by bundling the
 generator data into one record with FUNCTION fields.  This file makes the per-generator POLYGRAPH GENERATOR an
 explicit object — `PolygraphGenerator`, carrying a former's tag (table index), child arity (input dimension),
 and per-child binder shifts (the boundary) — and gives the explicit map `Generator.toPolygraphGenerator`
@@ -11,8 +11,8 @@ presenting each of the 194 generators with its boundary, faithfully.
 
 This is the BOUNDARY-PRESENTED layer for the FX kernel polygraph: every generator is presented as a structured
 polygraph generator with its boundary made explicit, and the presentation is FAITHFUL (injective) and INVERTIBLE
-(the tag recovers the generator via the SN-123 inverse table `fromTag`).  It is the substrate the
-`RawCell → OmegacEWord` encoding (SN-125) lifts the dim-1 free monoid over.
+(the tag recovers the generator via the inverse table `fromTag`).  It is the substrate the
+`RawCell → OmegacEWord` encoding lifts the dim-1 free monoid over.
 
 * `PolygraphGenerator` — a kernel former presented with its boundary structure (tag + child arity + child
   boundary shifts), coherently (`boundaryArityCoherent`).
@@ -71,7 +71,7 @@ theorem Generator.toPolygraphGenerator_boundary (generator : Generator) :
 theorem Generator.toPolygraphGenerator_tag (generator : Generator) :
     generator.toPolygraphGenerator.tag = generator.toNat := rfl
 
-/-- **Invertible presentation**: the SN-123 inverse table recovers the generator from the presented tag, so the
+/-- **Invertible presentation**: the inverse table recovers the generator from the presented tag, so the
 boundary presentation loses no information (the polygraph generator uniquely names its former). -/
 theorem Generator.toPolygraphGenerator_recoversGenerator (generator : Generator) :
     Generator.fromTag generator.toPolygraphGenerator.tag = some generator :=

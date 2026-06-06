@@ -74,7 +74,7 @@ open Core
 pending Gray-tensor semantics (Axis 6).
 
 Direct delegation to `Core.certifyRawCellExact?_compH_rejects`
-(#166) with `profile := fxProfile`.  The FX-profile call is
+with `profile := fxProfile`.  The FX-profile call is
 definitionally the general call with profile fixed, so the base
 theorem applies without rewriting. -/
 theorem certifyFXCellExact?_compH_rejects {scope : Nat}
@@ -89,7 +89,7 @@ theorem certifyFXCellExact?_compH_rejects {scope : Nat}
 to its raw input — the FX-level statement of no-false-positives for
 `certifyFXCellExact?`.
 
-Direct delegation to `Core.certifyRawCellExact?_sound` (#165).
+Direct delegation to `Core.certifyRawCellExact?_sound`.
 The raw-indexed signature pins the input at the type level via
 `CertifiedRawCell fxProfile scope rawCell`, so erasure back to the
 input is `rfl` underneath. -/
@@ -104,8 +104,8 @@ theorem certifyFXCellExact?_sound {scope : Nat}
 /-- Every cell accepted by the existential FX ingress recovers the
 input's computed dimension — `result.cellDimension = raw.dim`.
 
-Direct delegation to `Core.inferRawCellGeneral?_accepted_cellDimension_eq`
-(#167).  The dim is the FIRST projection from the existential
+Direct delegation to `Core.inferRawCellGeneral?_accepted_cellDimension_eq`.
+The dim is the FIRST projection from the existential
 wrapper; this theorem locks it to the input's computed dim, ruling
 out dim-laundering through the type-erasure. -/
 theorem certifyFXCell?_accepted_cellDimension_eq {scope : Nat}
@@ -119,7 +119,7 @@ theorem certifyFXCell?_accepted_cellDimension_eq {scope : Nat}
 certified cell's raw erasure heterogeneously equal to the input —
 the FX-level statement of no-false-positives for `certifyFXCell?`.
 
-Direct delegation to `Core.inferRawCellGeneral?_sound` (#169).
+Direct delegation to `Core.inferRawCellGeneral?_sound`.
 The HEq form rather than Eq is forced by the existential wrapper:
 `result.certifiedCell` has its rawCell as an existentialized index,
 so the rawCell equality is across different types and HEq is the

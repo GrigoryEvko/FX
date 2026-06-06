@@ -2,7 +2,7 @@ import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.StepInversion
 
 /-! # Foundation/PolyCell/Core/ReflCanonicalFormsCandidate
-    — the identity-type introduction candidate (SN-067): the unary `refl` constructor, zero-axiom
+    — the identity-type introduction candidate: the unary `refl` constructor, zero-axiom
 
 The identity type `Id A x y` has a single introduction `refl witness` (the reflexivity proof, with `witness`
 the reflected point — a value of the underlying type carried as a structural normal form).  So `isReflValue`
@@ -10,7 +10,7 @@ is the single unary tagged-payload shape — the same one-child recipe as `optio
 `inl`/`inr`, here as the sole constructor.
 
 `CanonicalFormsPredicate isReflValue` is the Tait reducibility candidate for the identity type; every `refl`
-value is a member, and a CLOSED member reduces to a `refl` (identity-canonicity, SN-067).  This completes the
+value is a member, and a CLOSED member reduces to a `refl` (identity-canonicity).  This completes the
 data-introduction extraction family.
 
 ## Zero-axiom verification
@@ -51,7 +51,7 @@ theorem isReflValue_impliesStepNormalForm {scope : Nat} {value : RawTerm scope}
 normalizing terms that are neutral or reduce to a `refl` value — is a full Girard reducibility candidate
 (CR1+CR2+CR3), unconditionally: the neutral-closure obligation is `IsNeutral.closedUnderStep` and the
 value-normality fact is `isReflValue_impliesStepNormalForm`.  The Tait candidate for the identity type, the
-data core of SN-067. -/
+data core of identity-introduction reducibility. -/
 theorem reflCanonicalFormsCandidate {scope : Nat} :
     IsReducibilityCandidate (CanonicalFormsPredicate (scope := scope) isReflValue) :=
   CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal isReflValue_impliesStepNormalForm
@@ -65,8 +65,8 @@ theorem isReflValue_isMember {scope : Nat} {value : RawTerm scope} (valueIsRefl 
 /-- **Closed identity-candidate members reduce to a `refl`** — canonicity for the identity type, modulo
 membership.  A closed member of the identity candidate is non-neutral (`IsNeutral.noClosed`), so by
 `CanonicalFormsPredicate.closedReducesToValue` it reduces to a `refl` value.  Combined with "a closed
-well-typed term of identity type is a member" (the fundamental theorem, gated on `#672` / SN-043) this is
-closed-identity canonicity.  The extraction shown here is `#672`-free. -/
+well-typed term of identity type is a member" (the fundamental theorem) this is
+closed-identity canonicity.  The extraction shown here is fundamental-free. -/
 theorem reflClosedReducesToValue {term : RawTerm 0}
     (member : CanonicalFormsPredicate isReflValue term) :
     ∃ value : RawTerm 0, StepStar term value ∧ isReflValue value :=

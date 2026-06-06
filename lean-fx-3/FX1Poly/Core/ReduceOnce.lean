@@ -12,7 +12,7 @@ existentially) — `reduceOnce` produces the reduct as a concrete `RawTerm`.
 `reduceOnce_sound` proves every produced reduct is a genuine `Step`: a root firing is
 `fireRootRedex_sound`, a child reduction is `Step.cong` over the spine companion `reduceOnceSpine_sound`
 (itself `StepChildren.here` for a head reduction, `StepChildren.there` for a tail reduction).  This is the
-descent engine the weak-normalization normalizer FUNCTION (#261/#480) iterates along `Acc StepSuccessor`:
+descent engine the weak-normalization normalizer FUNCTION (eval/quote) iterates along `Acc StepSuccessor`:
 each `reduceOnce = some t'` yields `Step t t'`, so `t'` is an accessible successor and the descent provably
 shrinks; pairing this with the (forthcoming) completeness direction `reduceOnce = none → isStepNormalForm`
 turns the existential `exists_normalForm_of_isStronglyNormalizing` into a real `RawTerm`-valued normalizer.

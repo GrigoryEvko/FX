@@ -50,7 +50,7 @@ Each closes by `rfl`: the certifier is a pure computation, and
 the renaming + certification chain reduces to a definite
 `Except.ok` result.
 
-## The universally-quantified structural theorem (#378)
+## The universally-quantified structural theorem
 
 A full close requires proving the universally-quantified
 rename-equivariance statement:

@@ -14,7 +14,7 @@ that direction is not proved in this file."
 This file proves exactly that forward direction, for any renaming that has a LEFT INVERSE — i.e. a
 renaming `leftInverseRenaming` with `leftInverseRenaming (forwardRenaming i) = i` for every source index.
 Every injective renaming has one (in particular every weakening), so this is the forward SN-preservation
-the reducibility-under-renaming development (SN-040) needs for its neutral leaf.
+the reducibility-under-renaming development needs for its neutral leaf.
 
 The proof does NOT redo Step reflection by induction.  Instead it runs the SHIPPED reflection lemma
 `isStronglyNormalizing_of_rename` on the LEFT INVERSE: renaming `rename forwardRenaming sourceTerm` once

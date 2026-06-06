@@ -2,13 +2,13 @@ import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.WeakHeadStepCommute
 
 /-! # FX1Poly/Core/SigmaProjectionCanonicalComputation
-    — closed `fst` / `snd` on a canonical pair scrutinee PROJECT to the components (the SN-058 computation core)
+    — closed `fst` / `snd` on a canonical pair scrutinee PROJECT to the components (the projection computation core)
 
 `PairCanonicalFormsCandidate.lean` ships Σ data canonicity: a closed member of the Σ candidate reduces to a
 `pairCell` constructor (`pairClosedReducesToValue`).  This file pushes that into the PROJECTIONS: a closed `fst`
 / `snd` whose scrutinee is a canonical pair member reduces to the first / second component.  The Σ-projection
-analog of `BoolElimCanonicalComputation` (the boolElim branch-selection analog), and a `#672`-free step toward
-fst/snd reducibility (SN-058).  `fst` / `snd` are the OTHER non-growing eliminators — their ι SELECTS a
+analog of `BoolElimCanonicalComputation` (the boolElim branch-selection analog), and a fundamental-free step toward
+fst/snd reducibility.  `fst` / `snd` are the OTHER non-growing eliminators — their ι SELECTS a
 component (vs. the growing recursors that apply a branch to a payload).
 
 * `StepStar.fstScrutinee` / `StepStar.sndScrutinee` — the scrutinee-position chain congruences for the unary
@@ -63,7 +63,7 @@ theorem StepStar.sndScrutinee {scope : Nat} {scrutinee scrutineeReduct : RawTerm
 of closed-bool elimination canonicity: a closed `fst` / `snd` whose scrutinee is a member of the Σ candidate
 reduces to the first / second component of the pair the scrutinee evaluates to.  The scrutinee reduces to
 `pairCell firstComponent secondComponent` (`pairClosedReducesToValue`), the projection congruences carry that
-reduction under `fst` / `snd`, and the matching ι rules project out the components.  `#672`-free — it uses only
+reduction under `fst` / `snd`, and the matching ι rules project out the components.  Fundamental-free — it uses only
 Σ data canonicity plus the projection congruences and the ι rules, no fundamental theorem. -/
 theorem pairCanonicalScrutineeProjectsToComponents {scrutinee : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isPairValue scrutinee) :

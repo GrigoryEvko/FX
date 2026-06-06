@@ -1,7 +1,7 @@
 import FX1Poly.Tier0.RepresentableMapCategory
 
 /-! # FX1Poly/Tier0/FxThinScopeRMC
-    — the first concrete zero-axiom `RepresentableMapCategory` for FX (toward SN-084/085)
+    — the first concrete zero-axiom `RepresentableMapCategory` for FX
 
 `RepresentableMapCategory.lean` ships the Uemura CwR interface (`RawCategory`, `MorphismClass`,
 `PullbackSquare`, `IsIsomorphism`, `RepresentableMapCategory`) but with NO concrete inhabitant —

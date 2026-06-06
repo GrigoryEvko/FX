@@ -1,11 +1,11 @@
 import FX1Poly.Modal.GradedTyping
 
-/-! # FX1Poly/Modal/GradeErasure — grade erasure (DIM2-4)
+/-! # FX1Poly/Modal/GradeErasure — grade erasure
 
 The usage dimension is a CONSERVATIVE refinement of simple typing: forget every binder grade and a
 well-graded term is just a well-typed term of the underlying simply-typed λ-calculus.  This is the
 projection that carries the type dimension's metatheory up to the graded layer — and the bridge for
-the orthogonal-composition thesis (DIM2-5 / SN-056): graded strong normalization will transfer from
+the orthogonal-composition thesis: graded strong normalization transfers from
 STLC strong normalization through this erasure, with NO graded-reducibility re-proof, because the
 TERM and the β-reduction are grade-AGNOSTIC (`GradedLambda` carries no grade annotations; the erased
 term IS the same `GradedLambda`).
@@ -76,7 +76,7 @@ theorem lookup_map_eraseType :
 forgetting the grades (the grade vector `grades` is discarded).  This PROJECTS the graded layer onto
 simple typing — the grades only ADD usage constraints atop a well-typed term (forward/erasure
 direction only; the converse lift is neither claimed nor needed).  It is the projection that carries
-STLC metatheory (SN, …) up to the graded layer (DIM2-5 / SN-056). -/
+STLC metatheory (SN, …) up to the graded layer. -/
 theorem HasUsage.erase {typeContext : List GType} {grades : GradeVector} {term : GradedLambda}
     {resultType : GType} (typed : HasUsage typeContext grades term resultType) :
     HasSimpleType (typeContext.map eraseType) term (eraseType resultType) := by

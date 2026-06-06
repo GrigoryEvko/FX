@@ -16,19 +16,19 @@ one.  The closed case (`ClosedStronglyNormalizing.lean`) is the instance `substi
 ## What this is, and the one residual for fully-unconditional #546
 
 This theorem IS SN-043 modulo the Tait "reducible substitution" input: a bound-reducible closing environment for the
-context.  Concretely, fully-unconditional `WfContext context → HasTypeDescPi context subject classifier →
+context.  Concretely, fully-unconditional `WfContextDesc context → HasTypeDescPi context subject classifier →
 IsStronglyNormalizing subject` reduces to ONE remaining lemma —
 
-  `reducibleEnvOfWfContext : WfContext context → ∃ bound substitution,
+  `reducibleEnvOfWfContextDesc : WfContextDesc context → ∃ bound substitution,
        BoundExceedsPi env bound d ∧ ReducibleEnvAtBounded env bound context substitution`
 
 — i.e. the identity (renaming) closing substitution is bound-reducible over a well-formed context.  That builder is
 the classical reducible-substitution lemma: by induction on the context telescope, each variable is a reducible
 member of its looked-up type via the candidate's `IsReducibilityCandidate.containsVariable` (the CR3 neutral leaf),
-with the type's reducibility coming from the grown FT applied to its `WfContext.headIsType` derivation under the
-prefix environment, all aligned to a common bound (max of `d`'s budget and the per-entry context budgets, lifted via
-`monotoneInBound` / member cumulativity).  It is tracked as the open extension of BFT-14; the wiring here makes the
-gap precise and small-surface.
+with the type's reducibility coming from the grown FT applied to its `WfContextDesc.headIsTypeDesc` derivation under
+the prefix environment, all aligned to a common bound (max of `d`'s budget and the per-entry context budgets, lifted
+via `monotoneInBound` / member cumulativity).  It is tracked as the open extension of BFT-14; the wiring here makes
+the gap precise and small-surface.
 
 ## Zero-axiom verification
 

@@ -1,14 +1,14 @@
 import FX1Poly.Core.RawCellCode
 
 /-! # FX1Poly/Core/GeneratorTagRoundTrip
-    — the §11.6.4 Generator-table validation: `Generator.toNat` is injective (#230)
+    — the §11.6.4 Generator-table validation: `Generator.toNat` is injective
 
 `Generator.toNat` (RawCellCode.lean) assigns each of the 194 generators a tag
 0–193; it is the head byte of the FX0 prefix-code serialization
 (`RawTerm.toCode`).  For that serialization to be a faithful prefix code the tag
 assignment MUST be collision-free — otherwise two distinct generators encode to
 the same head byte and decoding is ambiguous.  This file proves it, the
-§11.6.4 "Generator table round-trip witness" (#230):
+§11.6.4 "Generator table round-trip witness":
 
 ```
 Generator.toNat_injective : g₁.toNat = g₂.toNat → g₁ = g₂
@@ -139,7 +139,7 @@ theorem Generator.fromTag_toNat (generator : Generator) :
     Generator.fromTag generator.toNat = some generator := by
   cases generator <;> rfl
 
-/-- §11.6.4 table validation (#230): the `Generator.toNat` tag assignment is
+/-- §11.6.4 table validation: the `Generator.toNat` tag assignment is
 collision-free.  The head byte of the FX0 prefix code therefore uniquely
 identifies the generator, so the serialization is unambiguous at the tag level.
 Proved via the left inverse `fromTag` and its round-trip. -/

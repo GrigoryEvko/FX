@@ -1,6 +1,6 @@
 import FX1Poly.Modal.GradedReductionSubstitution
 
-/-! # FX1Poly/Modal/GradedFundamentalTheorem — Tait SN + the graded-SN transfer (DIM2-5 iii-c / SN-056)
+/-! # FX1Poly/Modal/GradedFundamentalTheorem — Tait SN + the graded-SN transfer
 
 The orthogonal-composition thesis closed end-to-end.  The TYPE dimension's strong-normalization
 obligation (`HasSimpleType → SN`, the classic STLC Tait result) is proved ONCE via the logical
@@ -20,8 +20,8 @@ require redoing the SN metatheory.
     lemma and rewrites the β-reduct via the composition (★) from iii-b into the extended environment).
   * `HasSimpleType.reducible` / `HasSimpleType.stronglyNormalizing` — every well-typed term is
     reducible (identity substitution + `applySubstitution_id`), hence strongly normalizing (CR1).
-  * `HasUsage.stronglyNormalizing` — **the headline (SN-056)**: every `HasUsage`-typed term is
-    strongly normalizing, via `HasUsage.erase` (DIM2-4) + STLC-SN.  Graded-SN rides on type-dimension
+  * `HasUsage.stronglyNormalizing` — **the headline**: every `HasUsage`-typed term is
+    strongly normalizing, via `HasUsage.erase` + STLC-SN.  Graded-SN rides on type-dimension
     SN with no graded re-proof.  `linearIdentity_stronglyNormalizing` / `kCombinator_stronglyNormalizing`
     are concrete non-vacuous witnesses.
 
@@ -159,7 +159,7 @@ theorem HasSimpleType.stronglyNormalizing {typeContext : List SimpleType} {term 
     GradedLambda.IsStronglyNormalizing term :=
   typed.reducible.sn
 
-/-- **Graded strong normalization (DIM2-5 / SN-056), the orthogonal-composition payoff**: every
+/-- **Graded strong normalization, the orthogonal-composition payoff**: every
 `HasUsage`-typed term is strongly normalizing — graded-SN TRANSFERS from STLC-SN through grade erasure
 (`HasUsage.erase`) with NO graded-reducibility re-proof, because the term and β-reduction are
 grade-AGNOSTIC.  Adding the usage dimension does not require redoing the SN metatheory. -/

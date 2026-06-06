@@ -2,23 +2,21 @@ import FX1Poly.Typed.HasTypeDescPiConsistency
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
 
 /-! # FX1Poly/Typed/HasTypeFormationNoLambdaApplication
-    - lambda/application exclusion for the native and description formation engines
+    - lambda/application exclusion for the description formation engine
 
-The native pi/sigma-formation `HasType` core and the equivalent description formation engine
-`HasTypeDesc` are formation-only judgments: they type variables, universe codes, and Pi/Sigma type-code
-formers, but not lambda or application subjects.  The grown engine `HasTypeDescPi` is the separate judgment
-that adds `lamCell` and `appCell`.
+The description formation engine `HasTypeDesc` is a formation-only judgment: it types variables, universe
+codes, and Pi/Sigma type-code formers, but not lambda or application subjects.  The grown engine
+`HasTypeDescPi` is the separate judgment that adds `lamCell` and `appCell`.
 
 This file records that separation as kernel theorems.  It is the precise counterpart of the informal
-"formation-only" scope note: any `HasType` or `HasTypeDesc` derivation has subject root
+"formation-only" scope note: any `HasTypeDesc` derivation has subject root
 `gen_var` / `gen_universeCode` / `gen_piTyCode` / `gen_sigmaTyCode`, hence never `gen_lam` or `gen_app`.
 
 ## Zero-axiom verification
 
-`HasTypeDesc` uses the already-gated root characterization from `HasTypeDescPiConsistency`; `HasType`
-transports through `HasType.toHasTypeDesc`.  Cell-level exclusions close because `lamCell` and `appCell`
-have definitional root generators `gen_lam` and `gen_app`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, or `omega`.
+`HasTypeDesc` uses the already-gated root characterization from `HasTypeDescPiConsistency`.  Cell-level
+exclusions close because `lamCell` and `appCell` have definitional root generators `gen_lam` and `gen_app`.
+No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
 -/
 
 namespace FX1Poly.Typed
@@ -69,35 +67,6 @@ theorem HasTypeDesc.subjectCannotBeLambda {profile : PolyProfile} {scope : Nat}
 theorem HasTypeDesc.subjectCannotBeApplication {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {functionTerm argument classifier : RawTerm scope}
     (typed : HasTypeDesc profile context (appCell functionTerm argument) classifier) :
-    False :=
-  typed.subjectRootGenerator_ne_app rfl
-
-/-- A native pi/sigma-formation `HasType` subject never has lambda root. -/
-theorem HasType.subjectRootGenerator_ne_lam {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (typed : HasType profile context subject classifier) :
-    subject.rootGenerator ≠ Generator.gen_lam :=
-  (HasType.toHasTypeDesc typed).subjectRootGenerator_ne_lam
-
-/-- A native pi/sigma-formation `HasType` subject never has application root. -/
-theorem HasType.subjectRootGenerator_ne_app {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (typed : HasType profile context subject classifier) :
-    subject.rootGenerator ≠ Generator.gen_app :=
-  (HasType.toHasTypeDesc typed).subjectRootGenerator_ne_app
-
-/-- The native pi/sigma-formation `HasType` core cannot type a lambda subject. -/
-theorem HasType.subjectCannotBeLambda {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
-    {classifier : RawTerm scope}
-    (typed : HasType profile context (lamCell body) classifier) :
-    False :=
-  typed.subjectRootGenerator_ne_lam rfl
-
-/-- The native pi/sigma-formation `HasType` core cannot type an application subject. -/
-theorem HasType.subjectCannotBeApplication {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {functionTerm argument classifier : RawTerm scope}
-    (typed : HasType profile context (appCell functionTerm argument) classifier) :
     False :=
   typed.subjectRootGenerator_ne_app rfl
 

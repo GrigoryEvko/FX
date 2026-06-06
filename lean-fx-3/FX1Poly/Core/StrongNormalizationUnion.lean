@@ -1,5 +1,5 @@
 /-! # FX1Poly/Core/StrongNormalizationUnion
-    — the abstract Geser strong-normalization-of-union criterion (the OSN-1 / βη-SN crux, OSN-B2)
+    — the abstract Geser strong-normalization-of-union criterion (the βη-SN crux)
 
 Strong normalization is NOT generally preserved by taking the union of two SN relations (β and η
 INTERLEAVE; no single measure decreases on both — β can grow term size, η shrinks it but need not lower
@@ -10,11 +10,11 @@ constructively, Init-only, over arbitrary relations:
   `reduceLeft` SN at `a`  ∧  `reduceRight` SN everywhere  ∧  `reduceRight` quasi-commutes over
   `reduceLeft`   ⇒   `reduceLeft ∪ reduceRight` SN at `a`.
 
-For FX this is instantiated (OSN-B7) with `reduceLeft := Step` (β/ι), `reduceRight := Step.eta` (η) — β-SN
-for well-typed terms is open SN-043 (OB-5), η-SN is unconditional (`Step.etaStar.isStronglyNormalizing`,
+For FX this is instantiated with `reduceLeft := Step` (β/ι), `reduceRight := Step.eta` (η) — β-SN
+for well-typed terms is open βη-SN's β half, η-SN is unconditional (`Step.etaStar.isStronglyNormalizing`,
 every term, since η strictly shrinks `RawTerm.size`), and the η-postponement-over-β quasi-commutation is the
-per-η-constructor critical-pair work (OSN-B3..B6) — yielding open βη-SN (OSN-1, #796).  It is equally the
-reusable substrate for SN-robustness under future extensions (SN-146 cubical, SN-147 HITs).
+per-η-constructor critical-pair work — yielding open βη-SN.  It is equally the
+reusable substrate for SN-robustness under future extensions (cubical, HITs).
 
 ## The proof shape (why it goes through)
 
@@ -93,7 +93,7 @@ theorem accUnionInner {Alpha : Type} {reduceLeft reduceRight : Alpha → Alpha �
 /-- **Geser strong-normalization-of-union.**  If `reduceLeft` is strongly normalizing at `a`,
 `reduceRight` is strongly normalizing everywhere, and `reduceRight` quasi-commutes over `reduceLeft`, then
 the union is strongly normalizing at `a`.  The Bachmair-Dershowitz criterion, constructive and zero-axiom —
-the make-or-break crux for open βη strong normalization (OSN-1). -/
+the make-or-break crux for open βη strong normalization. -/
 theorem accUnion {Alpha : Type} {reduceLeft reduceRight : Alpha → Alpha → Prop}
     (rightStronglyNormalizing :
       ∀ x, Acc (fun later earlier => reduceRight earlier later) x)

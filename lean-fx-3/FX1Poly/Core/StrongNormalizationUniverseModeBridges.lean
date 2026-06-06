@@ -1,7 +1,7 @@
 import FX1Poly.Core.StrongNormalizationConstructors
 
 /-! # FX1Poly/Core/StrongNormalizationUniverseModeBridges
-    — structural SN closure for the 2LTT universe-mode bridge operators (precursor to SN-077)
+    — structural SN closure for the 2LTT universe-mode bridge operators (precursor to their reducibility)
 
 `StrongNormalizationModalEliminators.lean` ships the congruence SN closure for the modal-core operators
 (`gen_modElim` / `gen_subsume`).  This file does the same for the two UNIVERSE-MODE bridge operators of the
@@ -15,9 +15,9 @@ NONE for `gen_liftInnerToOuter` or `gen_lowerOuterToInner` — their mode-bridge
 raw η).  So under `Step` a reduction out of a `liftInnerToOuter`- or `lowerOuterToInner`-rooted term reduces
 exactly its child(ren), and accessibility lifts via the shipped one-child / two-child congruence SN closures.
 
-This is the strong-normalization precursor of SN-077 (universe-mode bridge reducibility); the value-case
-reducibility candidate awaits the mode-bridge ι-rule (M26-Z1 / #434), exactly as the modal `modElim`
-reducibility (SN-074) awaits its ι-rule.
+This is the strong-normalization precursor of universe-mode bridge reducibility; the value-case
+reducibility candidate awaits the mode-bridge ι-rule, exactly as the modal `modElim`
+reducibility awaits its ι-rule.
 
 ## Zero-axiom verification
 

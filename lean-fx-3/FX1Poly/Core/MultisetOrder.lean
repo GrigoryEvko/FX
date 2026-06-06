@@ -1,10 +1,10 @@
 /-! # FX1Poly/Core/MultisetOrder
-    — the Dershowitz-Manna multiset ordering and its well-foundedness (SN-116, #619)
+    — the Dershowitz-Manna multiset ordering and its well-foundedness
 
 The Dershowitz-Manna multiset order is the foundational well-founded termination order: a multiset shrinks when
 one element is replaced by finitely many strictly-smaller ones.  It is the order RPO uses for multiset-status
-function symbols (SN-115) and the natural measure for ι-eliminator termination (a recursor on a constructor
-replaces the redex by sub-computations on smaller arguments — `SN-131`'s certified-fragment termination).
+function symbols and the natural measure for ι-eliminator termination (a recursor on a constructor
+replaces the redex by sub-computations on smaller arguments — the certified-fragment termination).
 
 This file mechanizes it from scratch over `Init` only, ZERO-AXIOM.  A true multiset is the quotient of `List` by
 permutation, but `Quot.sound` is banned under the zero-axiom policy — so the order is formulated as an

@@ -2,7 +2,7 @@ import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.StepInversion
 
 /-! # Foundation/PolyCell/Core/EitherCanonicalFormsCandidate
-    — the either (sum) data candidate (SN-066): two unary tagged constructors, zero-axiom
+    — the either (sum) data candidate: two unary tagged constructors, zero-axiom
 
 The either (sum) type has two UNARY constructors `inl payload` and `inr payload`, each carrying a value of one
 of the two summand types (as a structural normal form).  So `isEitherValue` is the disjunction of the two
@@ -10,7 +10,7 @@ tagged-payload shapes — the two-armed analogue of `option` (`OptionCanonicalFo
 arms unary rather than one nullary and one unary.
 
 `CanonicalFormsPredicate isEitherValue` is the Tait reducibility candidate for the sum type; every either
-value is a member, and a CLOSED member reduces to an `inl` or an `inr` (sum-canonicity, SN-066).  This
+value is a member, and a CLOSED member reduces to an `inl` or an `inr` (sum-canonicity).  This
 completes the tagged-union extraction family (option + either).
 
 ## Zero-axiom verification
@@ -60,7 +60,7 @@ theorem isEitherValue_impliesStepNormalForm {scope : Nat} {value : RawTerm scope
 normalizing terms that are neutral or reduce to a sum value — is a full Girard reducibility candidate
 (CR1+CR2+CR3), unconditionally: the neutral-closure obligation is `IsNeutral.closedUnderStep` and the
 value-normality fact is `isEitherValue_impliesStepNormalForm`.  The Tait candidate for the sum type, the data
-core of SN-066. -/
+core of sum reducibility. -/
 theorem eitherCanonicalFormsCandidate {scope : Nat} :
     IsReducibilityCandidate (CanonicalFormsPredicate (scope := scope) isEitherValue) :=
   CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal isEitherValue_impliesStepNormalForm
@@ -75,8 +75,8 @@ theorem isEitherValue_isMember {scope : Nat} {value : RawTerm scope}
 /-- **Closed either-candidate members reduce to an `inl` or `inr`** — canonicity for sums, modulo membership.
 A closed member of the either candidate is non-neutral (`IsNeutral.noClosed`), so by
 `CanonicalFormsPredicate.closedReducesToValue` it reduces to a sum value.  Combined with "a closed well-typed
-term of sum type is a member" (the fundamental theorem, gated on `#672` / SN-043) this is SN-049 closed-sum
-canonicity.  The extraction shown here is `#672`-free. -/
+term of sum type is a member" (the fundamental theorem) this is closed-sum
+canonicity.  The extraction shown here is fundamental-free. -/
 theorem eitherClosedReducesToValue {term : RawTerm 0}
     (member : CanonicalFormsPredicate isEitherValue term) :
     ∃ value : RawTerm 0, StepStar term value ∧ isEitherValue value :=

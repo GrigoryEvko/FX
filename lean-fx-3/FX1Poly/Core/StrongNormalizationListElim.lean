@@ -2,7 +2,7 @@ import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationIotaRedexes
 
 /-! # FX1Poly/Core/StrongNormalizationListElim
-    — the recursive-eliminator iota-redex SN: listElim cons case (toward SN-064)
+    — the recursive-eliminator iota-redex SN: listElim cons case
 
 `StrongNormalizationNatElim.lean` shipped the first recursive-eliminator iota-redex SN (the `natElim`
 successor case).  This file does the second recursive data type — `List` — whose recursive ι-rule
@@ -27,7 +27,7 @@ contractum is fed BOTH their strong-normalization facts.  This file ships:
 As in the `natElim` case, the `consContractumTerminates` hypothesis is the honest IH-carrying premise — it
 asserts the contractum (which contains the recursive `listElim tail …` call) is SN for every SN head/tail,
 exactly the obligation the eventual well-founded recursion on the list structure discharges.  This is the
-redex-SN building block toward SN-064 (List reducibility + listElim); the list-WF-recursion tie-up is the
+redex-SN building block toward List reducibility + listElim; the list-WF-recursion tie-up is the
 remaining content.
 
 ## Zero-axiom verification
@@ -127,7 +127,7 @@ strongly-normalizing scrutinee is strongly normalizing.  `Acc.ndrec` runs on the
 `Step.from_listElim` gives the five arms: ι-nil → the normal `nilBranch`; ι-cons → the contractum, discharged
 by `consContractumTerminates` at the head/tail subterm-SN projections of the accessible `listCons` scrutinee;
 scrutinee-congruence → the induction hypothesis; branch-congruences → impossible by branch normality.  The
-second recursive-eliminator iota-redex SN (toward SN-064), after `natElim`. -/
+second recursive-eliminator iota-redex SN, after `natElim`. -/
 theorem listElim_isStronglyNormalizing_of_normal_branches {scope : Nat}
     {scrutinee nilBranch consBranch : RawTerm scope}
     (nilBranchHasNoStep : ∀ targetNil : RawTerm scope, Step nilBranch targetNil → False)
@@ -204,8 +204,8 @@ private abbrev listElimConsContractum {scope : Nat} (consBranch head tail nilBra
         .childNil))
 
 /-- **The listElim redex is strongly normalizing from SN (not necessarily normal) branches.**  The SN-branch
-strengthening of `listElim_isStronglyNormalizing_of_normal_branches`, required for recursor REDUCIBILITY
-(SN-064): in the Tait/data-candidate argument the branches are MEMBERS (hence SN) but not normal.  The list twin
+strengthening of `listElim_isStronglyNormalizing_of_normal_branches`, required for recursor REDUCIBILITY:
+in the Tait/data-candidate argument the branches are MEMBERS (hence SN) but not normal.  The list twin
 of `natElim_isStronglyNormalizing_of_strongly_normalizing_branches`: a triple nested accessibility induction on
 `(scrutinee, nilBranch, consBranch)` with the cons-contractum SN hypothesis (now over two values — `head` and
 `tail`) THREADED through both branch inductions.  Under `nilBranch`-congruence the update is one hop (the nil

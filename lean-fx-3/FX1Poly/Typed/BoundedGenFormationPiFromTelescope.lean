@@ -33,7 +33,7 @@ SN is `codomainOpenStronglyNormalizing_ofBoundedFilledMember`, and `piTyCode_isS
 codomain` assembles the former SN; the former's reducibility-as-type at the output level is
 `piReducibleAtLevelFromComponentsBounded` fed the two children lifted from their own decoded levels to the output
 by free bounded cumulativity (`isReducibleBounded_cumulative` + the `denote_*_le_lmaxAll_pair` bounds) — the exact
-non-uniform cumulativity the whole bounded refactor was built for.  `universeMembershipIntroAtBounded` closes it.
+non-uniform cumulativity the bounded layer delivers.  `universeMembershipIntroAtBounded` closes it.
 
 ## Zero-axiom verification
 

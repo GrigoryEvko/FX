@@ -23,7 +23,7 @@ from a bare membership result by level irrelevance.
 
 ## Zero-axiom verification
 
-All proofs are projections from the previously gated positive-candidate layer or from the
+All proofs are projections from the positive-candidate layer or from the
 type-value-candidate environment.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/

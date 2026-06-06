@@ -10,13 +10,12 @@ it are DEGENERATE.  `HasTypeDescPi` is the engine extended with the redex-creati
 ## 0-FP is FREE BY CONSTRUCTION (polycell.md §11.8.5)
 
 §11.8.5: "0 false positives = soundness = intrinsic introduction rules ⇒ empty fiber over the
-unsound.  Free by construction, not a theorem to chase."  The `toHasType ⟺ HasType` map is a
-CROSS-CHECK for the formation fragment, NOT the source of soundness.  So the engine grows past
-formation ADDITIVELY: `HasTypeDescPi` EMBEDS the whole formation fragment (`ofFormation`) and
-adds the Π term-formers, with soundness by-construction (correct intro rules) plus the
-dependent-eliminator output-validity.  This leaves `HasTypeDesc`, `toHasType`,
-`HasTypeDesc.decidableOfWellFormed`, and the uniqueness proofs UNTOUCHED — it sidesteps the
-decidability/uniqueness cascade that a direct `HasTypeDesc` extension would force.
+unsound.  Free by construction, not a theorem to chase."  Soundness is intrinsic to the
+introduction rules, so the engine grows past formation ADDITIVELY: `HasTypeDescPi` EMBEDS the
+whole formation fragment (`ofFormation`) and adds the Π term-formers, with soundness
+by-construction (correct intro rules) plus the dependent-eliminator output-validity.  This
+leaves `HasTypeDesc`, `HasTypeDesc.decidableOfWellFormed`, and the uniqueness proofs UNTOUCHED —
+it sidesteps the decidability/uniqueness cascade that a direct `HasTypeDesc` extension would force.
 
 `HasTypeDesc` cannot type `lamCell`/`appCell` (their generators `gen_lam`/`gen_app` have no
 `typingRuleDescOf` row, so the `genFormation` arm cannot produce them) — so `ofFormation` of a
@@ -90,8 +89,8 @@ formation Π/Σ is a `genFormationPi`.  It makes the grown engine SUBSTITUTION-C
 substituting a grown term into a type-former component yields a former with a grown component,
 typed by `genFormationPi` with no per-former dispatch — a per-former arm would force a
 partial-match on the child telescope (the indexed-inductive propext trap).  This is the §5-endgame
-direction: formation typing GENERIC over the cell table, not bespoke per-former — a new dependent
-former is ONE `typingRuleDescOf` row, ZERO new arms (P13 cascade-freedom), at the grown layer
+direction: formation typing GENERIC over the cell table, not per-former — a new dependent
+former is ONE `typingRuleDescOf` row, ZERO new arms (cascade-freedom), at the grown layer
 too. -/
 inductive HasTypeDescPi (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope →

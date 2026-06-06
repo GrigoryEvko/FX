@@ -7,9 +7,9 @@ import FX1Poly.Typed.SimplyTypedTermCanonicityLevelFree
     — the inhabitation consequences of canonicity: closed simply-typed terms have arrow types, so universe
       codes are uninhabited.
 
-**OFF-PATH CROSSCHECK (supersession map, 2026-06-05): this is the LEVEL-FREE simply-typed consistency — an
-independent STLC crosscheck leg, NOT the kernel SN-050 consistency (that is `HasTypeDescPi.emptyTypeConsistency`,
-`EmptyTypeConsistencyUnconditional.lean`).  Off the kernel critical path; retained, not deleted.**
+**OFF-PATH CROSSCHECK: this is the LEVEL-FREE simply-typed consistency — an independent STLC crosscheck leg,
+NOT the kernel consistency (that is `HasTypeDescPi.emptyTypeConsistency`,
+`EmptyTypeConsistencyUnconditional.lean`).  Off the kernel critical path.**
 
 The final theorem of the simply-typed metatheory.  Canonicity says every closed normal `SimplyTypedTermLF`
 term is a lambda; a lambda's type is an arrow; reduction preserves typing.  Together: a closed simply-typed

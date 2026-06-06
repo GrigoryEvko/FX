@@ -2,12 +2,12 @@ import FX1Poly.OmegacE.SortingTermination
 import FX1Poly.OmegacE.IdempotentConfluence
 
 /-! # FX1Poly/OmegacE/SortingConfluence
-    — the sorting/symmetric system's structural inversion + the BRAID critical-pair join (SN-120 progress 3, #623)
+    — the sorting/symmetric system's structural inversion + the BRAID critical-pair join
 
-`SortingTermination.lean` shipped the guarded sorting system (`[a,b] → [b,a]` when `slotValue b < slotValue a`),
+`SortingTermination.lean` ships the guarded sorting system (`[a,b] → [b,a]` when `slotValue b < slotValue a`),
 its length invariants, and its TERMINATION (inversion-count measure).  This file builds toward CONFLUENCE.
 
-The sorting system is the "graduation" of the OmegacE convergent-system sequence (SN-118 transposition, SN-119
+The sorting system is the "graduation" of the OmegacE convergent-system sequence (transposition,
 absorption): its one-cell overlap is the genuine **braid critical pair**, NOT a vacuous/degenerate case.  Where
 transposition's single-cell overlap forced `a = b` (impossible, `absurd`) and absorption's joined in a single step,
 the sorting system's overlap is a strictly descending triple `[a,b,c]` (`slotValue c < slotValue b < slotValue a`)
@@ -25,13 +25,13 @@ whose two reducts join via genuinely MULTI-step sequences — the braid relation
 
 ## Honest scope / deferred
 
-This ships the decomposition + the bare braid critical-pair join.  The remaining SN-120 confluence atoms:
+This ships the decomposition + the bare braid critical-pair join.  The remaining confluence atoms:
 the CONTEXT lift of the braid join (`A ++ [a,b,c] ++ B`), the disjoint-commute case (two non-overlapping redexes
 commute — structurally identical to the transposition/absorption disjoint case, reduct `[b,a]` length-2), then
 `sortingJoinableWhenLeftShorter` (prefix-split trichotomy: nil = equal reducts / single = braid critical pair /
 cons-cons = disjoint) → `sortingHasLocalConfluence` → `sortingHasConfluence` (`newman` + the shipped
 `sortingSystem_isTerminating`).  Finally the guarded `WordReducer` + `decidableConvertibleModulo_ofConvergent`
-close SN-120.
+close the system.
 
 ## Zero-axiom verification
 
@@ -97,7 +97,7 @@ theorem sortingRewriteOneStep_ofDecomposition {dimension : Nat}
   rw [← listAppendAssoc, ← listAppendAssoc] at fired
   exact fired
 
-/-- **The braid critical-pair join (bare triple)** — the heart of SN-120.  For a strictly descending triple
+/-- **The braid critical-pair join (bare triple)** — the heart of the sorting system.  For a strictly descending triple
 `slotValue c < slotValue b < slotValue a`, the two one-step reducts of `[a,b,c]` — the front swap `[b,a,c]` and
 the back swap `[a,c,b]` — both reduce in TWO steps to the fully sorted `[c,b,a]`.  This is the braid relation
 `aba = bab` of the symmetric group, and the first genuine MULTI-step `RewritesMany` join in the OmegacE sequence
@@ -157,7 +157,7 @@ theorem OmegacEWord.Joinable.inContext {dimension : Nat}
 /-- **The braid critical-pair join in context** — `sortingBraidCriticalPairJoinBare` lifted under an arbitrary
 surrounding context, ready for the one-cell-overlap case of local confluence.  In `sortingJoinableWhenLeftShorter`
 the single-cell overlap `[a,b,c]` produces exactly `⟨leftA ++ [b,a,c] ++ rightB⟩` / `⟨leftA ++ [a,c,b] ++ rightB⟩`,
-which this lemma joins directly (the new content of SN-120, vs the vacuous/absurd one-cell case of transposition). -/
+which this lemma joins directly (the substantive content of the sorting system, vs the vacuous/absurd one-cell case of transposition). -/
 theorem sortingBraidCriticalPairJoin {dimension : Nat}
     (slotValue : OmegacECell dimension → Nat)
     (leftCtx rightCtx : List (OmegacECell dimension))
@@ -307,9 +307,9 @@ theorem sortingHasLocalConfluence {dimension : Nat}
   · exact (sortingJoinableWhenLeftShorter slotValue leftB rightB leftA rightA
       biggerB smallerB biggerA smallerA hB hA hEq.symm hle).symm
 
-/-- **The sorting system is CONFLUENT** — the SN-120 confluence headline.  `newman` applied to the local
+/-- **The sorting system is CONFLUENT** — the confluence headline.  `newman` applied to the local
 confluence here plus the shipped `sortingSystem_isTerminating`: termination + local confluence ⟹ global
-confluence.  The bubble-sort / symmetric-group presentation is convergent; the only remaining SN-120 atom is the
+confluence.  The bubble-sort / symmetric-group presentation is convergent; the only remaining atom is the
 decidable word problem (the guarded `WordReducer`). -/
 theorem sortingHasConfluence {dimension : Nat}
     (slotValue : OmegacECell dimension → Nat) :

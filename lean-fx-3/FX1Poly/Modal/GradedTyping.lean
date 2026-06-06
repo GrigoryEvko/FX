@@ -1,6 +1,6 @@
 import FX1Poly.Modal.UsageDiscipline
 
-/-! # FX1Poly/Modal/GradedTyping — the SOUND graded typing judgment (DIM2-3, §6.2)
+/-! # FX1Poly/Modal/GradedTyping — the SOUND graded typing judgment (§6.2)
    the corrected Wood/Atkey graded STLC, in BGMZ / co-effect presentation
 
 `UsageDiscipline` showed the bare occurrence check `usage ≤ Γ` is NOT subject-reduction-closed: the

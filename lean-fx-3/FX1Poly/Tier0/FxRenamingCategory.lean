@@ -2,14 +2,14 @@ import FX1Poly.Tier0.RepresentableMapCategory
 import FX1Poly.Foundation.RawSubst.RenameDefs
 
 /-! # FX1Poly/Tier0/FxRenamingCategory
-    — the first concrete `RawCategory` instance for FX: the renaming (thinning) category (toward SN-083/084)
+    — the first concrete `RawCategory` instance for FX: the renaming (thinning) category
 
 The Tier-0 categorical substrate (`RepresentableMapCategory.lean`, `InternalSconing.lean`, `CwRExtension.lean`)
 ships the Uemura CwR interfaces — `RawCategory`, `MorphismClass`, `PullbackSquare`, `RepresentableMapCategory`,
 `GlobalSections`, `SconingObject` — but, as their construction-level ledgers record
 (`fxSconingConstructionLevel = .extractionRecordInterfaces`, `fxCwRExtensionConstructionLevel =
 .extensionComposition`), with NO concrete FX instance: every structure is an obligation shape awaiting an
-inhabitant.  The orientation step (SN-083) toward `fxBaseRMC` (SN-084, #210) is to identify what concrete
+inhabitant.  The orientation step toward `fxBaseRMC` is to identify what concrete
 categorical objects FX already supports and build the first one.
 
 This file builds it: `fxRenamingCategory`, the first concrete `RawCategory` for FX.  Objects are scopes
@@ -24,7 +24,7 @@ genuine, complete, zero-axiom category, not a stub.
 This is the RENAMING (thinning) category — the variable-reindexing base over which NbE / possible-worlds
 presheaf models are taken.  It is a legitimate candidate `underlying` for an FX CwR, and the first concrete
 inhabitant of the Tier-0 `RawCategory` interface.  It is NOT yet the full `RepresentableMapCategory`
-(`fxBaseRMC`, SN-084): that additionally requires (a) the category of contexts and TERM SUBSTITUTIONS (renamings
+(`fxBaseRMC`): that additionally requires (a) the category of contexts and TERM SUBSTITUTIONS (renamings
 are the coarser variable-only fragment), and (b) a distinguished class of representable maps satisfying the
 three CwR axioms (closed under pullback with universal property, isomorphisms representable, closed under
 composition).  The pullback axiom in particular needs a genuine pullback construction, deferred.  So this lands

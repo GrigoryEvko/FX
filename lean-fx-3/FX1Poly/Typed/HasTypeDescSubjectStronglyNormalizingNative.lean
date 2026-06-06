@@ -4,15 +4,12 @@ import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Core.StrongNormalizationLeaves
 
 /-! # FX1Poly/Typed/HasTypeDescSubjectStronglyNormalizingNative
-    — native (HasType-free) subject strong normalization for the description formation engine (HT-A3)
+    — native subject strong normalization for the description formation engine
 
-`HasTypeDescStronglyNormalizing.lean` proves `HasTypeDesc.isStronglyNormalizing` (every formation-typed SUBJECT
-is strongly normalizing) by routing through the soundness map `HasTypeDesc.toHasType` into the native
-pi/sigma-formation `HasType` core, whose subjects are SN.  That is a `HasType` coupling.
-
-This file ships the HasType-FREE twin `HasTypeDesc.subjectStronglyNormalizingNative`, proved directly on the
-formation engine's own structure — the migration target the public `isStronglyNormalizing` delegates to (part of
-the phased `HasType` removal, parallel to `HasTypeDesc.uniquenessNative`).
+This file ships `HasTypeDesc.subjectStronglyNormalizingNative`: every formation-typed SUBJECT is strongly
+normalizing, proved directly on the formation engine's own structure.  The public
+`HasTypeDesc.isStronglyNormalizing` (`HasTypeDescStronglyNormalizing.lean`) delegates to it, parallel to
+`HasTypeDesc.uniquenessNative`.
 
 ## Structure
 
@@ -175,12 +172,12 @@ theorem formerCellStronglyNormalizingOfChildren {scope : Nat} {generator : Gener
 
 mutual
 
-/-- **Native subject strong normalization for the description formation engine (HT-A3), HasType-free.**  Every
-formation-typed subject is strongly normalizing, proved on the formation engine's own structure rather than via
-`HasTypeDesc.toHasType`: `var` / `universeFormation` are normal leaves; `conv` preserves the subject; the
+/-- **Native subject strong normalization for the description formation engine.**  Every
+formation-typed subject is strongly normalizing, proved on the formation engine's own structure:
+`var` / `universeFormation` are normal leaves; `conv` preserves the subject; the
 `genFormation` former cell is SN once its telescope children are SN, discharged by
-`formerCellStronglyNormalizingOfChildren` over the mutual telescope recursion.  The migration target the public
-`HasTypeDesc.isStronglyNormalizing` delegates to. -/
+`formerCellStronglyNormalizingOfChildren` over the mutual telescope recursion.  The public
+`HasTypeDesc.isStronglyNormalizing` delegates to it. -/
 theorem HasTypeDesc.subjectStronglyNormalizingNative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}

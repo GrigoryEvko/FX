@@ -1,12 +1,12 @@
 import FX1Poly.Modal.GradedWeakeningGeneric
 
-/-! # FX1Poly/Modal/GradedSubstitutionGeneric — generic substInto grade-algebra (DIM5-6 + dims 6–21)
+/-! # FX1Poly/Modal/GradedSubstitutionGeneric — generic substInto grade-algebra (all graded dimensions)
 
-The usage dimension's subject-reduction machinery (`GradedSubjectReduction.lean`, DIM2-3) is hardcoded
+The usage dimension's subject-reduction machinery (`GradedSubjectReduction.lean`) is hardcoded
 to `GType` / `GradeVector`.  But the GRADE TRANSFORMATION that β performs — drop the substituted
 binding's grade, then add the argument grades scaled by it — is the SAME for every dimension.  This
-file ships that grade-algebra ONCE, generic over any `OrderedGradeSemiring`, on top of the DIM5-2
-generic vector.  It is the prerequisite for the generic substitution lemma (DIM5-7); on its own it is
+file ships that grade-algebra ONCE, generic over any `OrderedGradeSemiring`, on top of the
+generic vector.  It is the prerequisite for the generic substitution lemma; on its own it is
 the "substitution grade-algebra" — how `removeAt` / `gradeAt` / `substInto` interact with the zero
 vector, the var-rule singleton, scaling, and addition.
 
@@ -23,18 +23,18 @@ vector, the var-rule singleton, scaling, and addition.
   * **The App-case** (`substInto_appGrade`): `substInto` distributes over `add (·) (scale binderGrade ·)`
     — the middle-four interchange (`add_interchange`) reorganizes the four summands.
 
-The generic version diverges from DIM2's concrete proof exactly where the GRADE ARITHMETIC must be
-COMPUTED: DIM2's `rfl`s relied on `UsageGrade.add zero zero` / `mul s zero` reducing; an abstract
+The generic version diverges from the usage dimension's concrete proof exactly where the GRADE ARITHMETIC
+must be COMPUTED: the usage `rfl`s rely on `UsageGrade.add zero zero` / `mul s zero` reducing; an abstract
 `R.add R.zero R.zero` / `R.mul s R.zero` do not, so `substInto_succ_cons`, `gradeAt_scale`, `gradeAt_add`,
 `add_interchange`, and the `substInto_single_*`/`substInto_appGrade` lemmas take an
-`IsLawfulOrderedGradeSemiring` witness and route through its fields (and the DIM5-2 vector laws).  The
+`IsLawfulOrderedGradeSemiring` witness and route through its fields (and the generic vector laws).  The
 `removeAt`/`gradeAt`/`lookup` structure that just relocates existing grades is lawfulness-free.
 
 ## Zero-axiom verification
 
 The defs are structural recursion; the lemmas are structural inductions / pattern matches with
 `Nat.noConfusion` / `Nat.not_succ_le_zero` on impossible arms (no `Nat.succ_ne_zero`, which pulls
-`propext`); the lawful-dependent lemmas rewrite with the bundle fields and the DIM5-2 vector laws.  No
+`propext`); the lawful-dependent lemmas rewrite with the bundle fields and the generic vector laws.  No
 `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega` (every declaration
 probed with `#print axioms` before landing).  Per-declaration gated in `FX1PolyAudit/AuditModal.lean`.
 -/

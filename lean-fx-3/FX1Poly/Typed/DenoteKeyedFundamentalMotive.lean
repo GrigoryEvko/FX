@@ -4,12 +4,11 @@ import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
 /-! # FX1Poly/Typed/DenoteKeyedFundamentalMotive
     — the denote fundamental theorem's conclusion motive + the two LEAF member arms (SN-D4; toward SN-043/#672)
 
-**OFF-PATH CROSSCHECK (supersession map, 2026-06-05): the UNBOUNDED denote fundamental-theorem assembly (SN-D5,
-#744/#750/#752/#753) toward SN-043 via the all-level/#672 route — SUPERSEDED by the BFT BOUNDED route
-(`DenoteKeyedBoundedReducibility`, OB-5 `closedStronglyNormalizing` / `stronglyNormalizingOfWfContext`), which
-closed SN-043 without completing this unbounded FT.  Verified off-path: this FT-assembly is NOT imported by any
-`*Bounded` file (the unbounded CORE `DenoteKeyedReducibility` IS shared/load-bearing; this assembly is not).
-Retained as a crosscheck, not critical-path.**
+**OFF-PATH CROSSCHECK: the UNBOUNDED denote fundamental-theorem assembly toward strong normalization via the
+all-level route.  The bounded route (`DenoteKeyedBoundedReducibility`, `closedStronglyNormalizing` /
+`stronglyNormalizingOfWfContext`) reaches strong normalization without completing this unbounded FT.  This
+FT-assembly is NOT imported by any `*Bounded` file (the unbounded CORE `DenoteKeyedReducibility` IS
+shared/load-bearing; this assembly is not).  Retained as a crosscheck, not critical-path.**
 
 The denote analogue of `FundamentalConclusionLevelIndexed` (`FundamentalLevelIndexed.lean:60`): the conclusion
 shape of the denote fundamental theorem, plus the two genuine LEAF arms (no induction hypothesis) — `var` and
@@ -27,9 +26,9 @@ PER-VARIABLE `contextLevels : Fin scope → Nat` vector plus a separate `subject
 LEVEL-IRRELEVANT — a type's candidate is the same decode-set at every level above its decoded universe level —
 so a single ambient `level` suffices for the whole judgment, the binder `cons` threading the SAME `level`
 (`ReducibleEnvAtDenote.cons` extends at the same level).  This is exactly the structural advantage the
-denote re-basing was built to capture: no level vector, no per-rung drift.  The ambient `level` must be taken
+denote re-basing captures: no level vector, no per-rung drift.  The ambient `level` must be taken
 above every decoded universe level appearing in the judgment — the `levelAbove` side conditions surface that
-obligation locally (here on the `universeFormation` arm); the FT (SN-D5) discharges them by running at a
+obligation locally (here on the `universeFormation` arm); the FT discharges them by running at a
 large-enough ambient level (`ClassifierLevelMeasure.denote_lt_lsucc`).
 
 ## The leaf arms

@@ -4,7 +4,7 @@ import FX1Poly.Typed.RawTermHeadGenerator
 
 /-! # FX1Poly/Typed/HasTypeDescInversion — INVERSION (P8 descent) for the description engine.
 
-polycell.md §11.8.5 P8 ("Inversion = descent"): `HasType Γ (mkGen g p ch) T ⇒
+polycell.md §11.8.5 P8 ("Inversion = descent"): `HasTypeDesc Γ (mkGen g p ch) T ⇒
 children typed at the TypingRule's expected types ∧ Conv T (rule.outputType …)`,
 "one lemma per shape; feeds the typechecker and canonicity" — the sheaf/glue
 direction.  This ships the PREMISE half of P8 for the FORMATION shape on the
@@ -32,11 +32,10 @@ the `TypingRuleDesc` (`Option.some.inj`) so the output reduces to `universeCodeC
 (lmaxAll …) …` and `Conv.refl` closes the conjunct.  The premise half stays — it is the
 simpler statement (no `Conv` conjunct).
 
-The `WfContext` parameter is now VACUOUS: the unconditional raw `Conv.trans`
-(raw-confluence harvest) replaced the old typed `Conv.trans_of_typedMiddle ∘
-classifierIsType ∘ toHasType`, so no arm consumes well-formedness — it is threaded only
-into recursive calls, kept for signature parity with the `WfContext`-taking consumers
-(uniqueness, the grown inversions) and a candidate for later removal.
+The well-formedness parameter is VACUOUS: the unconditional raw `Conv.trans`
+(raw-confluence harvest) discharges the `conv` arm, so no arm consumes well-formedness — it is threaded only
+into recursive calls, kept for signature parity with the well-formedness-taking consumers
+(uniqueness, the grown inversions).
 
 Both the Π-formation shape (`piTyCodeCell`) and the Σ shape (`gen_sigmaTyCode`, the
 identical mirror) are covered.  A FULLY generic version (one descent lemma over every
@@ -44,7 +43,7 @@ whitelisted generator, refuting non-formers via `typingRuleDescOf … = none`) i
 blocked by a dependent-`subst` wall: unifying a free generator variable with the arm's
 generator fails Lean's scope/occurs check both directions.  The concrete-former shape
 sidesteps it (`subst armGenerator := gen_piTyCode` against a CONSTANT is clean) — which
-is why the bespoke layer also carries `inversionPiCode`/`inversionSigmaCode` as a pair.
+is why this layer carries `inversionPiCode`/`inversionSigmaCode` as a pair.
 
 ## Recipe (equation-motive, adapted to the MUTUAL engine)
 
@@ -118,9 +117,8 @@ description engine.  Any `HasTypeDesc`-typing of `piTyCodeCell domainCode
 codomainCode` arises — through `conv` — from a `genFormation` whose `DescTelescope`
 premise types the two children as the expected telescope of types.  `Conv`-free (the
 children are fixed by the subject, so `conv` forwards the descent IH verbatim — no
-`Conv.trans`, no `WfContext`); feeds the typechecker and canonicity.  The
-description-engine analogue of the bespoke `inversionPiCode`.  (The Σ shape is the
-mirror over `gen_sigmaTyCode`, below.) -/
+`Conv.trans`, no well-formedness hypothesis); feeds the typechecker and canonicity.
+(The Σ shape is the mirror over `gen_sigmaTyCode`, below.) -/
 theorem HasTypeDesc.inversionPiCode {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
@@ -188,7 +186,7 @@ telescope AND classifier-`Conv`).  Same shape as `inversionPiCodeGeneral`, with 
 deltas: the `conv` arm composes `Conv`s via the unconditional raw `Conv.trans` (the
 raw-confluence harvest); the `genFormation` arm pins the `TypingRuleDesc` so its output
 reduces to the canonical universe code, discharging the `Conv` conjunct with `Conv.refl`.
-The outer `WfContext` is now vacuous (threaded only into recursive calls, kept for caller
+The outer well-formedness hypothesis is vacuous (threaded only into recursive calls, kept for caller
 parity — see the file header). -/
 theorem HasTypeDesc.inversionPiCodeWithConvGeneral {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
@@ -232,11 +230,10 @@ theorem HasTypeDesc.inversionPiCodeWithConvGeneral {profile : PolyProfile}
 /-- **Inversion (P8, FULL) for the Π-type FORMATION shape** on the description engine:
 the premise telescope (children form the expected telescope of types) AND the
 classifier-`Conv` conjunct (the cell's classifier converts to the canonical formation
-output `Type@(lmaxAll levels, flag)`).  The description-engine analogue of the bespoke
-`HasType.inversionPiCode`, wiring typed `Conv.trans` into the engine — the conjunct
+output `Type@(lmaxAll levels, flag)`).  Wires the raw `Conv.trans` into the engine — the conjunct
 intrinsic uniqueness (P7) and the typechecker's conv-check consume.
 Context-wellformedness-FREE: the `conv` arm composes via the unconditional raw `Conv.trans`, so no
-`WfContext`/validity hypothesis is needed (the formerly-threaded `wellFormed` was vacuous — dropped). -/
+well-formedness/validity hypothesis is needed. -/
 theorem HasTypeDesc.inversionPiCodeWithConv {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
@@ -311,8 +308,8 @@ theorem HasTypeDesc.inversionSigmaCodeWithConv {profile : PolyProfile} {scope : 
 
 The two NON-compound subjects: a variable cell's classifier is convertible to its
 context lookup; a universe-code cell's classifier is convertible to the next universe.
-Direct analogues of the bespoke `HasType.inversion{Variable,UniverseCode}`, ported to
-the term-mode recursive `match` (the mutual `HasTypeDesc` rejects `induction`).  These
+The variable / universe-code inversions in term-mode recursive `match`
+(the mutual `HasTypeDesc` rejects `induction`).  These
 complete the per-shape inversion suite for the engine (var / universeCode / Π / Σ) and
 are the leaf cases intrinsic UNIQUENESS (P7) consumes when inverting the SECOND
 derivation.  Recipe identical to `…WithConv`: the `conv` arm composes via the
@@ -357,7 +354,7 @@ theorem HasTypeDesc.inversionVariableGeneral {profile : PolyProfile}
 
 /-- **Inversion for a variable cell** on the description engine.  Any classifier a
 variable cell receives is convertible to the variable's principal type (its context
-lookup).  The `HasTypeDesc` analogue of the bespoke `HasType.inversionVariable`. -/
+lookup). -/
 theorem HasTypeDesc.inversionVariable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {index : Fin scope} {classifier : RawTerm scope}
@@ -403,8 +400,7 @@ theorem HasTypeDesc.inversionUniverseCodeGeneral {profile : PolyProfile}
 
 /-- **Inversion for a universe-code cell** on the description engine.  Any classifier a
 universe-code cell `Type@(e, flag)` receives is convertible to the next universe
-`Type@(e+1, flag)`.  The `HasTypeDesc` analogue of the bespoke
-`HasType.inversionUniverseCode`. -/
+`Type@(e+1, flag)`. -/
 theorem HasTypeDesc.inversionUniverseCode {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag} {classifier : RawTerm scope}
@@ -419,11 +415,9 @@ The `…WithConv` inversions yield the premise TELESCOPE; the typechecker and ca
 actually consume the DOMAIN and CODOMAIN typings directly.  These corollaries case the
 two-child formation telescope (over `RawTermChildren.binderShape`) to project them out,
 alongside the classifier-`Conv` to the canonical `Type@(lmax domainLevel codomainLevel,
-flag)` — the INTRINSIC description-engine analogue of the bespoke `HasType.inversionPiCode`
-(P8 in its component form, the shape the elimination/formation typing rules read).
+flag)` — P8 in its component form, the shape the elimination/formation typing rules read.
 
-The casing is the SAME shape the soundness map (`HasTypeDesc.toHasType`'s `genFormation`
-arm) already performs.  Two definitional facts make the projection transport-free:
+Two definitional facts make the projection transport-free:
 `scope + 0 ≡ scope` (so `binderShape`'s `Nat.add_zero ▸ domainCode` head is just
 `domainCode`) and `lmaxAll [domainLevel, codomainLevel] = lmaxFold domainLevel
 [codomainLevel] = LevelExpr.lmax domainLevel codomainLevel` (so the inverted `Conv`'s
@@ -431,7 +425,7 @@ universe code is already the goal's). -/
 
 /-- Π-FORMATION component descent: a `piTyCodeCell` cell's domain is a type, its codomain
 is a type under the domain binder, and the classifier converts to the canonical Π output
-universe.  INTRINSIC (built on `inversionPiCodeWithConv`, no route through `HasType`). -/
+universe.  INTRINSIC (built on `inversionPiCodeWithConv`). -/
 theorem HasTypeDesc.inversionPiCodeComponents {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}

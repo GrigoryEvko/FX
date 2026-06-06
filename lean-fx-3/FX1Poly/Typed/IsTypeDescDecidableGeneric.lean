@@ -5,14 +5,12 @@ import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Typed.UniverseCodeConversion
 
 /-! # FX1Poly/Typed/IsTypeDescDecidableGeneric
-    — the FULLY CASCADE-FREE native `IsTypeDesc` decider (GTL-10/11 payoff)
+    — the FULLY CASCADE-FREE native `IsTypeDesc` decider
 
-The retired `IsTypeDesc.decideWithWitness` (formerly in IsTypeDescDecidable.lean) decided type-hood by a
-`RawTerm.size` recursion with HAND-WRITTEN Π / Σ branches plus a `typingRuleDescOf_isPiOrSigma` `else`
-refutation — the cascade trap: a new formation row (`listCode`/`optionCode`/…) would force a new branch AND
-break the `else`.  This file is the cascade-free replacement (which supersedes and has replaced it), a
-STRUCTURAL MUTUAL recursion over the `RawTerm` / `RawTermChildren` mutual inductive (no size measure, no
-`termination_by`):
+The cascade-free type-hood decider, a STRUCTURAL MUTUAL recursion over the `RawTerm` / `RawTermChildren` mutual
+inductive (no size measure, no `termination_by`).  Dispatching `typingRuleDescOf` directly avoids the cascade
+trap that hand-written Π / Σ branches + a `typingRuleDescOf_isPiOrSigma` `else` would have: a new formation row
+(`listCode`/`optionCode`/…) is absorbed with no new branch and no `else` to break:
 
   * `IsTypeDesc.decideTypeGeneric` — decides any `mkGen` classifier: `universeCode` ⇒ type (leaf);
     `var` ⇒ type iff the lookup is a universe code (leaf); ANY OTHER head dispatches `typingRuleDescOf`
@@ -22,11 +20,11 @@ STRUCTURAL MUTUAL recursion over the `RawTerm` / `RawTermChildren` mutual induct
     (`decideTypeGeneric`) to fix the shared flag, then decides the TAIL at that flag via `decideAtFlagGeneric`
     and reassembles the `cons` (the ASSEMBLE form — recurses on the strict subterm `childTail`, never the whole
     children, so the mutual recursion stays structural).
-  * `DescTelescope.decideAtFlagGeneric` — the fixed-flag telescope decider (the cascade-free twin of
-    `decideAtFlag`), deciding each child a type at the shared flag via `decideTypeGeneric`.
+  * `DescTelescope.decideAtFlagGeneric` — the cascade-free fixed-flag telescope decider, deciding each child a
+    type at the shared flag via `decideTypeGeneric`.
 
-A future formation row is absorbed with ZERO new arms — the FRAME-2 extensibility property, now realized for the
-decider itself.  This is what unblocks GTL-11 (land `listCode` into `typingRuleDescOf` zero-touch).
+A future formation row is absorbed with ZERO new arms — the extensibility property realized for the decider
+itself, so a new type code (e.g. `listCode`) lands into `typingRuleDescOf` zero-touch.
 
 ## Zero-axiom verification
 

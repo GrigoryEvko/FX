@@ -1,10 +1,10 @@
 /-! # FX1Poly/Core/Newman
-    — the abstract Newman's lemma: terminating + weakly confluent ⟹ confluent (SN-046 core, #549)
+    — the abstract Newman's lemma: terminating + weakly confluent ⟹ confluent
 
-Newman's lemma is the confluence analogue of the termination orders (SN-115/116/117): a generic, reusable
+Newman's lemma is the confluence analogue of the termination orders: a generic, reusable
 metatheorem — a TERMINATING (strongly-normalizing), WEAKLY (locally) confluent relation is CONFLUENT
-(Church-Rosser).  It is the abstract core the confluence arc instantiates: SN-046 applies it to the typed
-fragment (SN + local CR ⟹ global CR, gated on typed SN); SN-133 applies it to the FX word system `fxSystem`.
+(Church-Rosser).  It is the abstract core the confluence arc instantiates: the typed
+fragment applies it (SN + local CR ⟹ global CR, gated on typed SN); the FX word system `fxSystem` applies it too.
 
 The relation is abstract (`Carrier → Carrier → Prop`), so this single proof serves every instantiation.  The
 existing confluence vocabulary in the codebase is system-specific (`StepStar.Join` over `RawTerm`, OmegacE

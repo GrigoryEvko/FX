@@ -3,11 +3,10 @@ import FX1Poly.Core.NeutralStepClosure
 import FX1Poly.Core.StepInversion
 
 /-! # FX1Poly/Core/NatElimNeutralScrutineeMember
-    — the NEUTRAL-scrutinee regime of `natElim` / `natRec` recursor reducibility (toward SN-061)
+    — the NEUTRAL-scrutinee regime of `natElim` / `natRec` recursor reducibility
 
-`NatElimValueMember` (#732) discharged the VALUE-scrutinee regime of the Nat recursor: `natElim numeral
-zeroBranch succBranch` lands in the result candidate.  Its docstring deferred "the scrutinee-reduction and
-neutral regimes" as the remaining outer recursion of SN-061.  This file ships the NEUTRAL-scrutinee regime.
+`NatElimValueMember` discharges the VALUE-scrutinee regime of the Nat recursor: `natElim numeral
+zeroBranch succBranch` lands in the result candidate.  This file ships the NEUTRAL-scrutinee regime.
 
 The key structural fact: `gen_natElim` ι-fires only on a numeral scrutinee (`natZero` / `natSucc`).  A NEUTRAL
 scrutinee is never a numeral and stays neutral under `Step` (`IsNeutral.closedUnderStep`), so the recursor cell
@@ -32,12 +31,12 @@ Five results:
     with SN branches is SN: a triple accessibility recursion over (scrutinee, zeroBranch, succBranch) whose two
     ι-reduct cases are VACUOUS by neutrality (a neutral scrutinee is no numeral) and whose three congruence
     cases recurse.
-  * `natElimNeutralScrutineeMember` / `natRec…` — the SN-061 neutral arm: `natElim`/`natRec` over a neutral SN
+  * `natElimNeutralScrutineeMember` / `natRec…` — the neutral arm: `natElim`/`natRec` over a neutral SN
     scrutinee with reducible branches is a member of the result candidate, by the abstract neutral bridge on the
     cell SN + `IsNeutral.natElim`.
 
-`#672`-independent: the result candidate is a fixed candidate, this is the pure Tait neutral-eliminator
-argument.  The remaining SN-061 regime is the scrutinee-reduction outer recursion (a non-value non-neutral
+Fundamental-independent: the result candidate is a fixed candidate, this is the pure Tait neutral-eliminator
+argument.  The remaining regime is the scrutinee-reduction outer recursion (a non-value non-neutral
 scrutinee threading down to its numeral), shared with the closed-membership track.
 
 ## Zero-axiom verification
@@ -204,7 +203,7 @@ theorem natRec_neutralScrutinee_isStronglyNormalizing {scope : Nat}
         · rw [targetEquation]
           exact succInductiveHypothesis succAfter succStep
 
-/-- **SN-061 neutral regime: `natElim` over a neutral SN scrutinee with reducible branches is a member of the
+/-- **Neutral regime: `natElim` over a neutral SN scrutinee with reducible branches is a member of the
 result candidate.**  The cell is neutral (`IsNeutral.natElim`) and strongly normalizing
 (`natElim_neutralScrutinee_isStronglyNormalizing`, fed the branches' SN by CR1), so it inhabits the candidate by
 the abstract neutral bridge.  The dual of `natElimValueMember`: there the recursor COMPUTES into a member; here
@@ -224,7 +223,7 @@ theorem natElimNeutralScrutineeMember {scope : Nat}
       (candidate.stronglyNormalizing succBranchMember))
     (IsNeutral.natElim scrutineeNeutral)
 
-/-- **SN-061 neutral regime for `natRec`** — the dependent-recursor twin of `natElimNeutralScrutineeMember`. -/
+/-- **Neutral regime for `natRec`** — the dependent-recursor twin of `natElimNeutralScrutineeMember`. -/
 theorem natRecNeutralScrutineeMember {scope : Nat}
     (resultCandidate : RawTerm scope → Prop)
     (candidate : IsReducibilityCandidate resultCandidate)

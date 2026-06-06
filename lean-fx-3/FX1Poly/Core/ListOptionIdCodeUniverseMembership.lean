@@ -2,9 +2,9 @@ import FX1Poly.Core.StratifiedReducibleUniverseDecode
 import FX1Poly.Core.StrongNormalizationCodeFormers
 
 /-! # FX1Poly/Core/ListOptionIdCodeUniverseMembership
-    — list / option / id type codes are reducible members of their universe (SN-071)
+    — list / option / id type codes are reducible members of their universe
 
-The two-child data formers `arrow` / `product` / `sum` codes were already shown reducible members of
+The two-child data formers `arrow` / `product` / `sum` codes are reducible members of
 `Type@levelExpr` (`sigmaFormer_isReducibleMemberOfUniverse` et al.).  This file extends that to the remaining
 shipped one- and three-child formers: `listCode`, `optionCode`, `idCode`.  Each is a direct instance of the
 generic
@@ -14,12 +14,12 @@ semantic form) — no per-former reducibility candidate, exactly as the general 
 The generic lemma needs, per former:
 * strong normalization — supplied by the shipped per-former SN combinators
   (`listCode_isStronglyNormalizing_of_element`, `optionCode_isStronglyNormalizing_of_element`,
-  `idCode_isStronglyNormalizing_of_type_endpoints` from `StrongNormalizationCodeFormers`, #719);
+  `idCode_isStronglyNormalizing_of_type_endpoints` from `StrongNormalizationCodeFormers`);
 * weak-head-normality — a type-code former has no root redex: the only `WeakHeadStep` arm that could unify is
   `rootIota`, and no ι-redex is a type former, so `cases iotaStep` closes it (the uniform former proof);
 * root-distinctness from `gen_piTyCode` and `gen_universeCode` — `Generator` `noConfusion` (`nomatch`).
 
-The two-child `eitherCode` / `equivCode` formers are the remaining SN-071 piece: they still need their own
+The two-child `eitherCode` / `equivCode` formers are the remaining piece: they still need their own
 `Step.from_eitherCode` / `Step.from_equivCode` inversions and two-child SN combinators (the `sumTyCode` /
 `sigmaTyCode` two-child template), deferred to a follow-up.
 
@@ -37,7 +37,7 @@ open FX1Poly.Foundation FX1Poly.Universe StepStar
 
 /-- **`listCode elementCode` is a reducible member of its universe.**  The one-child list type code, with a
 strongly-normalizing element code, is a reducible member of `Type@levelExpr` at `predLevel + 1` via the generic
-data-former-in-universe classifier.  SN-071. -/
+data-former-in-universe classifier. -/
 theorem listCode_isReducibleMemberOfUniverse {scope : Nat} {predLevel : Nat}
     (levelExpr : LevelExpr) (flag : UniverseFlag) {elementCode : RawTerm scope}
     (elementNormalizing : IsStronglyNormalizing elementCode) :
@@ -51,7 +51,7 @@ theorem listCode_isReducibleMemberOfUniverse {scope : Nat} {predLevel : Nat}
     (fun rootEquation => nomatch rootEquation)
 
 /-- **`optionCode elementCode` is a reducible member of its universe.**  The one-child option type code analogue
-of `listCode_isReducibleMemberOfUniverse`.  SN-071. -/
+of `listCode_isReducibleMemberOfUniverse`. -/
 theorem optionCode_isReducibleMemberOfUniverse {scope : Nat} {predLevel : Nat}
     (levelExpr : LevelExpr) (flag : UniverseFlag) {elementCode : RawTerm scope}
     (elementNormalizing : IsStronglyNormalizing elementCode) :
@@ -66,7 +66,7 @@ theorem optionCode_isReducibleMemberOfUniverse {scope : Nat} {predLevel : Nat}
 
 /-- **`idCode typeCode leftRaw rightRaw` is a reducible member of its universe.**  The three-child identity type
 code, with strongly-normalizing type code and both endpoint terms, is a reducible member of `Type@levelExpr` at
-`predLevel + 1`.  SN-071. -/
+`predLevel + 1`. -/
 theorem idCode_isReducibleMemberOfUniverse {scope : Nat} {predLevel : Nat}
     (levelExpr : LevelExpr) (flag : UniverseFlag) {typeCode leftRaw rightRaw : RawTerm scope}
     (typeNormalizing : IsStronglyNormalizing typeCode)

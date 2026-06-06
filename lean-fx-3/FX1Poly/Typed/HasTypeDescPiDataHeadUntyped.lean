@@ -28,9 +28,8 @@ those rules fire on.  The dispatcher cites the table-generic `cellHasNoTypingWhe
 
 ## What this file ships
 
-  * The reusable refutation itself — `HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded` — now lives in
-    `HasTypeDescPiRootGeneric` (the table-generic successor; this file's earlier six-inequality
-    `cellHasNoTypingWhenRootNotGrownHead` was retired as unsound once the formation table grows).
+  * The reusable refutation itself — `HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded` — lives in
+    `HasTypeDescPiRootGeneric` (the table-generic form, which stays sound as the formation table grows).
   * The COMPLETE iota-redex-head corpus proving the refutation FIRES on every eliminator shape class — branch
     selection (`gen_boolElim`), projection (`gen_fst` / `gen_snd`), recursion (`gen_natElim` / `gen_natRec` /
     `gen_listElim`), non-recursive branch matching (`gen_optionMatch` / `gen_eitherMatch`), path induction
@@ -52,12 +51,11 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core
 
--- The six-inequality refutation `cellHasNoTypingWhenRootNotGrownHead` was RETIRED here: it was unsound once
--- the formation table grows (a new former's generator differs from all six heads yet its cell IS typed via
--- `genFormationPi`, so the conclusion would be false).  Its table-generic successor
--- `HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded` (`HasTypeDescPiRootGeneric`, which requires
--- `typingRuleDescOf generator = none` — permanent for data constructors/eliminators) is what the smoke
--- corpus below cites.
+-- The smoke corpus below cites the table-generic refutation
+-- `HasTypeDescPi.cellHasNoTypingWhenRootGenericallyExcluded` (`HasTypeDescPiRootGeneric`), which requires
+-- `typingRuleDescOf generator = none` — permanent for data constructors/eliminators.  A six-inequality
+-- refutation enumerating grown heads would be unsound as the formation table grows (a new former's generator
+-- differs from all six heads yet its cell IS typed via `genFormationPi`, so the conclusion would be false).
 
 /-- **`gen_boolElim` (branch-selection eliminator) is untyped in the grown engine.**  The redex head of the
 `iotaBoolTrue` / `iotaBoolFalse` reductions; the grown engine types no `boolElim` cell. -/

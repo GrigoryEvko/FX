@@ -20,8 +20,7 @@ In the BOUNDED relation cumulativity is FREE (`isReducibleBounded_cumulative`). 
 `piReducibleAsTypeFromNonUniformLevelMemberBounded` lifts each child from its own decoded level
 (`universeMemberReducibleAsTypeAtDecodedLevelBounded`, the member→reducible-type decode) up to the Π output level
 via `isReducibleBounded_cumulative`, then feeds `piReducibleAsTypeFromComponentReducibilityBounded`.  This closes
-the non-uniform genFormationPi `piReducibleAsType` UNCONDITIONALLY — the exact case the whole bounded layer was
-built to reach.
+the non-uniform genFormationPi `piReducibleAsType` UNCONDITIONALLY — the exact case the bounded layer reaches.
 
 ## The five declarations
 

@@ -2,23 +2,13 @@ import FX1Poly.Typed.IsTypeDesc
 
 /-! # FX1Poly/Typed/WfContextDesc — formation-engine context well-formedness (`IsTypeDesc`-based)
 
-`WfContext` (`WfContext.lean`) certifies every binding of a `TypingContext` is a type, but via `IsType`,
-which is `HasType`-based (the bespoke leaf engine).  So every formation-engine metatheorem that EXTENDS or
-LOOKS UP a `WfContext` binding imports `HasType` data through the `HasType.toHasTypeDesc` /
-`HasTypeDesc.toHasType` bridges — the residual `HasType` coupling behind `HasTypeDesc.classifierIsTypeDesc`'s
-`var` arm and `DescTelescope.uniquenessAgree`'s leaf.  That coupling is not removable while the well-formedness
-the formation engine threads is itself `HasType`-defined.
+`WfContextDesc` certifies each binding of a `TypingContext` is a FORMATION type
+(`IsTypeDesc` = `∃ levelExpr flag, HasTypeDesc Γ T (universeCodeCell levelExpr flag)`).  Lookups and
+extensions stay inside `HasTypeDesc`.  It mirrors `WfContextDescPi` exactly (a structural-recursion `def` +
+`And`-projection inversions, propext-free), using the formation `IsTypeDesc` (lighter than the grown
+`IsTypeDescPi` of `WfContextDescPi`).
 
-This file ships the formation-engine twin: `WfContextDesc`, certifying each binding is a FORMATION type
-(`IsTypeDesc` = `∃ levelExpr flag, HasTypeDesc Γ T (universeCodeCell levelExpr flag)`).  Lookups and extensions
-then stay inside `HasTypeDesc` — no `HasType` round-trip.  It mirrors `WfContext` / `WfContextDescPi` exactly (a
-structural-recursion `def` + `And`-projection inversions, propext-free), swapping `IsType` for the formation
-`IsTypeDesc` (lighter than the grown `IsTypeDescPi` of `WfContextDescPi`).
-
-The formation engine `HasTypeDesc` does NOT import `WfContext`, so layering `WfContextDesc` over the same raw
-telescope introduces no cycle.  This is a NEW predicate, not an in-place redefinition of `WfContext`: the
-not-yet-removed bespoke `HasType` engine still consumes `WfContext`'s `IsType` bindings, so both coexist until
-the bespoke engine is deleted — at which point `WfContext` is superseded by `WfContextDesc`.
+The formation engine `HasTypeDesc` and `WfContextDesc` layer over the same raw telescope without any cycle.
 
 ## What this file ships
 
@@ -26,10 +16,6 @@ the bespoke engine is deleted — at which point `WfContext` is superseded by `W
   * `emptyIsWellFormed` / `tailWellFormed` / `headIsTypeDesc` / `cons` — the introduction + `And`-projection
     inversions (the primitives a formation metatheorem threads through a binder).
   * `wfContextDesc_universeBinding` — non-vacuity: a universe-code binding is formation-well-formed.
-
-The `WfContext → WfContextDesc` bridge (`WfContextDesc.ofWfContext`) lives in the separate
-`WfContextDescFromWfContext.lean` so this file need not import the old `WfContext` / `HasType` engine —
-the structural precondition for the `WfContext := WfContextDesc` rethread.
 
 ## Zero-axiom verification
 
@@ -43,8 +29,7 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
 /-- Formation-engine context well-formedness: each binding is a formation type (`IsTypeDesc`) in the prefix
-context that precedes it.  Computed by structural recursion on the telescope; the `HasTypeDesc`-native twin of
-the `HasType`-based `WfContext`. -/
+context that precedes it.  Computed by structural recursion on the telescope, `HasTypeDesc`-native. -/
 def WfContextDesc {profile : PolyProfile} :
     {scope : Nat} → TypingContext profile scope → Prop
   | _, .empty => True
@@ -73,8 +58,7 @@ theorem WfContextDesc.headIsTypeDesc {profile : PolyProfile} {scope : Nat}
 
 /-- Introduction: extending a formation-well-formed context by a binding that is a formation type in the prefix
 yields a formation-well-formed context.  The primitive a formation metatheorem threads into a codomain/body
-checked under `Γ.cons dom` — and unlike `WfContext.cons`, the binding witness is an `IsTypeDesc` read directly
-off the description engine (no `HasType` round-trip). -/
+checked under `Γ.cons dom` — the binding witness is an `IsTypeDesc` read directly off the description engine. -/
 theorem WfContextDesc.cons {profile : PolyProfile} {scope : Nat}
     {restContext : TypingContext profile scope} {bindingType : RawTerm scope}
     (restWellFormed : WfContextDesc restContext)

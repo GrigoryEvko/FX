@@ -15,8 +15,8 @@ packages.  Because `Conv` is definitionally `StepStar.Join`, the confluence outp
 with no glue.
 
 Existence + uniqueness together say: every strongly-normalizing raw term has a *unique* structural normal
-form.  That is the mathematical content a normalizer FUNCTION (the eval/quote line, #261/#480) realizes
-computationally and that decidable conversion on the SN fragment (#267) rests on — convertible SN terms
+form.  That is the mathematical content a normalizer FUNCTION (the eval/quote line) realizes
+computationally and that decidable conversion on the SN fragment rests on — convertible SN terms
 share one normal form, distinct normal forms witness non-conversion.
 
 ## Zero-axiom verification

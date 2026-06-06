@@ -1,8 +1,8 @@
 import FX1Poly.Modal.ResourceGraded
 
-/-! # FX1Poly/Modal/GradeVectorGeneric — the GENERIC grade-vector substrate (DIM5-2 + dims 6–21)
+/-! # FX1Poly/Modal/GradeVectorGeneric — the GENERIC grade-vector substrate (all graded dimensions)
 
-The usage dimension's `GradeVector` (`GradeVector.lean`, DIM2-2) is hardcoded to the usage carrier
+The usage dimension's `GradeVector` (`GradeVector.lean`) is hardcoded to the usage carrier
 `UsageGrade`.  But the §6.2 grade-vector algebra is the SAME for every dimension — it depends only on
 the dimension's ordered semiring `R = (Carrier, 0, 1, +, *, ≤)`, never on which dimension it is.  This
 file ships that algebra ONCE, generic over any `OrderedGradeSemiring`, with every law derived from the
@@ -408,7 +408,7 @@ theorem GradeVectorOver.single_length (R : OrderedGradeSemiring) (scope position
           show (GradeVectorOver.single R scope position grade).length + 1 = scope + 1
           rw [restIH]
 
-/-! ## Per-dimension instantiation smokes — the substrate serves usage (DIM2) and security (DIM5) -/
+/-! ## Per-dimension instantiation smokes — the substrate serves the usage and security dimensions -/
 
 /-- Usage-dimension instantiation: the generic semimodule law holds at `fxUsageSemiring`. -/
 theorem usageGradeVector_scale_add (scaleGrade : UsageGrade)
@@ -418,8 +418,8 @@ theorem usageGradeVector_scale_add (scaleGrade : UsageGrade)
         (GradeVectorOver.scale scaleGrade secondVector) :=
   GradeVectorOver.scale_add fxUsageSemiring_isLawful scaleGrade firstVector secondVector
 
-/-- **DIM5-2: the security-dimension grade vector.**  The generic semimodule + order substrate
-instantiated at `fxSecuritySemiring` (DIM5-1).  Security grade vectors form a left semimodule over the
+/-- **The security-dimension grade vector.**  The generic semimodule + order substrate
+instantiated at `fxSecuritySemiring`.  Security grade vectors form a left semimodule over the
 security semiring with no per-dimension re-proof — the orthogonal-composition thesis at the grade-VECTOR
 layer, for a second dimension. -/
 theorem securityGradeVector_add_comm
@@ -427,7 +427,7 @@ theorem securityGradeVector_add_comm
     GradeVectorOver.add firstVector secondVector = GradeVectorOver.add secondVector firstVector :=
   GradeVectorOver.add_comm fxSecuritySemiring_isLawful firstVector secondVector
 
-/-- DIM5-2: the security pointwise order is a genuine reflexive order (partial-order witness at
+/-- The security pointwise order is a genuine reflexive order (partial-order witness at
 `fxSecuritySemiring`). -/
 theorem securityGradeVector_below_refl (someVector : GradeVectorOver fxSecuritySemiring) :
     GradeVectorOver.IsPointwiseBelow someVector someVector :=

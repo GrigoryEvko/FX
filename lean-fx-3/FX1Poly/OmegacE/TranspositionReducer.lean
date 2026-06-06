@@ -2,9 +2,9 @@ import FX1Poly.OmegacE.TranspositionConfluence
 import FX1Poly.OmegacE.IdempotentReducer
 
 /-!
-# SN-118 — Bounded-search decidability for the transposition word system
+# Bounded-search decidability for the transposition word system
 
-This is the FINAL atom of SN-118 (#621): the executable normalizer + the
+This is the FINAL atom of the transposition system: the executable normalizer + the
 decidable word problem for the length-PRESERVING adjacent-transposition system
 `[firstCell, secondCell] -> [secondCell, firstCell]`.
 
@@ -207,7 +207,7 @@ def transpositionWordReducer {dimension : Nat} (firstCell secondCell : OmegacECe
         simp only [Option.map_some] at hnone
         nomatch hnone
 
-/-- **SN-118 capstone (#621).**  The word problem for the length-preserving
+/-- **The transposition-system capstone.**  The word problem for the length-preserving
 transposition system is decidable.  Convergence = local confluence
 (`transpositionHasLocalConfluence`, orthogonal critical pairs) + termination
 (`transpositionSystem_isTerminating`, inversion-count measure), fed through

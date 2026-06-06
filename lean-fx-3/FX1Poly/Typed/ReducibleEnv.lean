@@ -21,9 +21,8 @@ member of that variable's looked-up type (itself closed by the same substitution
 The ∀-form (rather than a telescopic inductive over `RawTermSubst.cons`) makes the fundamental theorem's
 `var` case IMMEDIATE — it is literally `envReducible index` (`lookupReducible`) — while avoiding any
 function-extensionality on the substitution (no `funext`/`Quot.sound`).  The DEPENDENT membership
-`IsReducibleMember` (not a fixed per-variable candidate à la the superseded `ReducibleSubst`) is what a
-term-indexed type family needs: each variable's type is re-substituted, not transported as a frozen
-candidate.
+`IsReducibleMember` (rather than a fixed per-variable candidate) is what a term-indexed type family needs:
+each variable's type is re-substituted, not transported as a frozen candidate.
 
 The two operations the fundamental theorem performs:
 

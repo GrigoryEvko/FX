@@ -154,11 +154,11 @@ neutral-or-False-value = SN ∧ neutral, member-free among closed terms by #680)
 premise holds for closed values whose conclusion fails.  CON-A3 therefore requires an INTERPRETATION
 CHANGE — excluding `emptyTypeCell` (data type codes) from the generic `neutral` arm (add a
 `rootGenerator ≠ gen_emptyCode` side-condition) and a dedicated arm giving it the empty Tait candidate
-— a structural edit to `ReducibleTypeStepBounded` cascading through its consumers (#483/#485-487, the
+— a structural edit to `ReducibleTypeStepBounded` cascading through its consumers (the
 §5 engine↔candidate representation decision).  Positive corollary: `emptyTypeCell` IS a reducible
-type (`IsReducibleTypeAtBounded`), the non-vacuity half — in the reducibility model, unlike the
-bespoke `HasType` engine which cannot type it.  (The candidate is existentially hidden here; the
-`neutral` arm pins it to the WHOLE `IsStronglyNormalizing` set — the obstruction described above.) -/
+type (`IsReducibleTypeAtBounded`), the non-vacuity half, in the reducibility model.  (The candidate is
+existentially hidden here; the `neutral` arm pins it to the WHOLE `IsStronglyNormalizing` set — the obstruction
+described above.) -/
 theorem emptyTypeCell_isReducibleType {scope : Nat} (env : Nat → Nat) (bound : Nat) :
     IsReducibleTypeAtBounded env bound (emptyTypeCell (scope := scope)) := by
   have noWeakHeadStep : ∀ reduct : RawTerm scope,

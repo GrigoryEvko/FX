@@ -18,20 +18,21 @@ Allais–McBride encoding.
 
 This telescope is RAW: it carries NO typing well-formedness field.  The
 `.type`-cell discipline ("each binding inhabits some universe", the
-`∃ levelCode, HasType context bindingType (universeCell levelCode)`
+`∃ levelExpr flag, HasTypeDesc context bindingType (universeCodeCell levelExpr flag)`
 side condition the §11.8.5 sketch imagines) is DELIBERATELY NOT a `cons`
 field.
 
-**Why no `IsType` field — the mutual-index wall.**  `IsType` is defined
-in terms of `HasType`, and `HasType` is indexed by `TypingContext`.  A
-`cons (_ : IsType context bindingType)` field would make the inductive's
-INDEX signature reference a sibling (`HasType`/`IsType`) that itself
-references `TypingContext` — exactly the sibling-index cycle Lean 4
-rejects (it forbids mutual references in index signatures, not only
-strict-positivity violations).  The resolution: `TypingContext` is the
-RAW spine here; well-formedness is a SEPARATE `WfContext` predicate,
-layered OVER this raw telescope rather than baked into it.  Do not
-"helpfully" add an `IsType` field back — it will not build.
+**Why no `IsTypeDesc` field — the mutual-index wall.**  `IsTypeDesc` is
+defined in terms of `HasTypeDesc`, and `HasTypeDesc` is indexed by
+`TypingContext`.  A `cons (_ : IsTypeDesc context bindingType)` field would
+make the inductive's INDEX signature reference a sibling
+(`HasTypeDesc`/`IsTypeDesc`) that itself references `TypingContext` —
+exactly the sibling-index cycle Lean 4 rejects (it forbids mutual
+references in index signatures, not only strict-positivity violations).
+The resolution: `TypingContext` is the RAW spine here; well-formedness is
+a SEPARATE `WfContextDesc` predicate, layered OVER this raw telescope
+rather than baked into it.  Do not "helpfully" add an `IsTypeDesc` field
+back — it will not build.
 
 ## What is delivered
 
@@ -49,7 +50,7 @@ layered OVER this raw telescope rather than baked into it.  Do not
 ILL-DEFINED: a telescope of `n` bindings IS scope `n`, so it cannot be
 renamed to a different scope while keeping `n` bindings.  The genuine
 weakening is (i) the per-binding `RawRenaming.weaken` shift that `lookup`
-threads internally, here, and (ii) the JUDGMENT-level lemma `HasType`
+threads internally, here, and (ii) the JUDGMENT-level lemma `HasTypeDesc`
 under `RawRenaming.weaken` — which lives with the typed weakening lemma,
 not as a context primitive.
 
@@ -68,7 +69,7 @@ open FX1Poly.Core FX1Poly.Foundation
 /-- A `TypingContext profile scope` is a de Bruijn telescope of exactly
 `scope` binding-type cells.  `cons` stores the new binding's type at the
 scope BEFORE the binding (`RawTerm scope`), so a binding mentions only
-the variables introduced earlier.  RAW spine — no `IsType`
+the variables introduced earlier.  RAW spine — no `IsTypeDesc`
 well-formedness field (see the file header on the mutual-index wall). -/
 inductive TypingContext (profile : PolyProfile) : Nat → Type
   | empty : TypingContext profile 0

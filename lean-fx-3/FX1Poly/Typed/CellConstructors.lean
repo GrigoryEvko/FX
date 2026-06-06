@@ -11,17 +11,13 @@ substrate (`RawTerm.mkGen` + the generator table) — they depend only on `RawTe
 and the universe payload types (`LevelExpr`, `UniverseFlag`), NOT on any typing
 judgment.
 
-## Why this module exists (HT-B/HT-C)
+## Why this module exists
 
-These constructors were originally defined inside `FX1Poly/Typed/HasType.lean`
-alongside the (now-retiring) bespoke `HasType`/`IsType` formation engine.  They are
-used pervasively across the kernel — the reducibility substrate, the grown engine
-`HasTypeDescPi`, the audit corpus — so the old engine cannot be deleted while it
-still HOSTS them.  Extracting them here (HT-B) lets the single-engine cleanup
-(HT-C) delete the `HasType` inductive + its bridges without disturbing the cell
-vocabulary every layer shares.  The fully-qualified names are unchanged
-(`FX1Poly.Typed.universeCodeCell`, …), so all consumers and audit gates are
-unaffected by the move.
+These constructors are used pervasively across the kernel — the reducibility
+substrate, the grown engine `HasTypeDescPi`, the audit corpus.  Housing them in
+their own pure-syntax module (depending only on `RawTerm` and the universe payload
+types) keeps the cell vocabulary every layer shares free of any typing-judgment
+dependency.  The fully-qualified names are `FX1Poly.Typed.universeCodeCell`, ….
 
 ## Zero-axiom verification
 
@@ -54,13 +50,13 @@ def emptyTypeCell {scope : Nat} : RawTerm scope :=
 /-- The bool-type code cell `Bool` — the `.type`-sorted nullary `gen_boolCode`
 cell.  No payload data (`Unit`), no children (`binderShifts = []`, hence
 `childNil`): a closed nullary type-former leaf, structurally identical to
-`emptyTypeCell` but at a distinct generator (the `gen_boolCode` substrate, SN-047).
-The future formation subject of `Bool : Type@0` (via the nullary-former formation
-`hasTypeDescPi_nullaryFormation_viaGenArm` once the `typingRuleDescOf` row lands —
-GTL-11-gated) and the type whose reducibility candidate is the bool data candidate
-(`boolCanonicalFormsCandidate`, #676) — the substrate of bool canonicity (SN-047).
+`emptyTypeCell` but at a distinct generator (the `gen_boolCode` substrate).
+The formation subject of `Bool : Type@0` (via the nullary-former formation
+`hasTypeDescPi_nullaryFormation_viaGenArm` once the `typingRuleDescOf` row lands)
+and the type whose reducibility candidate is the bool data candidate
+(`boolCanonicalFormsCandidate`) — the substrate of bool canonicity.
 Distinct from the VALUE cells `gen_boolTrue` / `gen_boolFalse`: this is the TYPE
-code, which the kernel previously lacked (only the values were generators). -/
+code. -/
 def boolTypeCell {scope : Nat} : RawTerm scope :=
   .mkGen .gen_boolCode () .childNil
 
@@ -90,8 +86,7 @@ def sigmaTyCodeCell {scope : Nat} (domainCode : RawTerm scope)
 
 /-- The unit value cell — the nullary `gen_unit` leaf (no payload data, no
 children).  The canonical inhabitant of the unit type; a `RawTerm` value used by
-the unit canonical-forms / smoke fixtures.  Relocated here from the old
-`HasTypeHonesty` engine file (HT-C) so the unit value stands with the other cell
+the unit canonical-forms / smoke fixtures.  Lives with the other cell
 constructors, independent of any typing engine. -/
 def unitCell {scope : Nat} : RawTerm scope :=
   .mkGen .gen_unit () .childNil

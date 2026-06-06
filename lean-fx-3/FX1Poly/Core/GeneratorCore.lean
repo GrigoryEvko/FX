@@ -128,9 +128,9 @@ inductive Generator : Type
   | gen_eitherCode
   | gen_idCode
   | gen_equivCode
-  -- Empty type code (nullary — the consistency substrate, SN-050/CON-A1)
+  -- Empty type code (nullary — the consistency substrate)
   | gen_emptyCode
-  -- Bool type code (nullary — the bool-canonicity substrate, SN-047)
+  -- Bool type code (nullary — the bool-canonicity substrate)
   | gen_boolCode
   -- Cumulativity marker
   | gen_cumulUpMarker

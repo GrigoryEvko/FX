@@ -5,11 +5,11 @@ import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.RecursiveEliminatorBaseComputation
 
 /-! # FX1Poly/Core/ListElimValueMember
-    — value-case `listElim` reducibility with the recursor-SN obligation DISCHARGED (the SN-064 twin of
+    — value-case `listElim` reducibility with the recursor-SN obligation DISCHARGED (the list twin of
       `NatElimValueMember`)
 
-The list analogue of `NatElimValueMember`: `ListElimValueReducibility` (#733) proved the value case of `listElim`
-recursor reducibility but took `redexStronglyNormalizing` (the recursor cell at a list value is SN) as a bespoke
+The list analogue of `NatElimValueMember`: `ListElimValueReducibility` proves the value case of `listElim`
+recursor reducibility but takes `redexStronglyNormalizing` (the recursor cell at a list value is SN) as a bespoke
 per-use hypothesis.  This file removes it for the value case, deriving the cell SN from the UNIVERSAL
 reducibility-candidate properties — CR1 (`candidateMembersSN`) + CR2 (`candidateForwardClosed`) — plus
 `consBranchTerminates` (the cons branch is SN, CR1 on the reducible cons-branch member).
@@ -21,7 +21,7 @@ constructor carries `headNormal` + `tailIsValue`.  The scrutinee-fixed cell-SN r
 a double `Acc.ndrec` over (nilBranch, consBranch) carrying the branch interface forward under congruence via CR2,
 the scrutinee never steps (it is normal), and the ι-reduct is SN via CR1 on its membership.
 
-`#672`-independent: a fixed (non-universe-domain) result candidate; the pure Tait value-recursor argument for the
+Fundamental-independent: a fixed (non-universe-domain) result candidate; the pure Tait value-recursor argument for the
 list eliminator.
 
 ## Zero-axiom verification
@@ -133,7 +133,7 @@ theorem listElimNormalScrutineeCellStronglyNormalizing {scope : Nat}
                   (Step.cong .gen_app ()
                     (StepChildren.here (.childCons _ .childNil) consStep))))))
 
-/-- **Value-case `listElim` reducibility, UNCONDITIONAL in the cell-SN dimension — the SN-064 twin of
+/-- **Value-case `listElim` reducibility, UNCONDITIONAL in the cell-SN dimension — the list twin of
 `natElimValueMember`.**  CR1 + CR2 + `consBranchTerminates` replace the bespoke `redexStronglyNormalizing`, via
 the `listElim` scrutinee-fixed cell-SN recursor; the cons-ι contractum's membership is supplied by the
 `IsListValue` tail IH through `consBranchApplication`. -/

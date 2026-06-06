@@ -16,7 +16,7 @@ that dissolves the type-variable off-by-one — see `ReducibleEnvAtAllLevels`). 
 This file ships the three NON-recursive / non-telescope arm bodies as standalone, directly-reusable lemmas,
 each validated to close over the ∀-level environment:
 
-  * `fundamentalVarAtAll` — the `var` arm.  THE arm the ∀-level environment was built to unblock: a fixed-level
+  * `fundamentalVarAtAll` — the `var` arm.  THE arm the ∀-level environment unblocks: a fixed-level
     environment cannot match `var`'s demanded `predLevel+1` against a type variable bound at a different level
     (the universe candidate changes per fuel level, no monotonic cast).  Over `ReducibleEnvAtAllLevels` it is
     immediate: instantiate the all-levels family at the conclusion level (`lookupReducible predLevel`), then

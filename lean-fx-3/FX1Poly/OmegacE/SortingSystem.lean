@@ -1,10 +1,10 @@
 import FX1Poly.OmegacE.TranspositionSystem
 
 /-! # FX1Poly/OmegacE/SortingSystem
-    — the braid/symmetric system: the sorting / symmetric-group convergent presentation (SN-120 opener, #623)
+    — the braid/symmetric system: the sorting / symmetric-group convergent presentation
 
-The third concrete decided system — the "graduation".  Where SN-118 (transposition) was a single rule and
-SN-119 (absorption) was a fixed two-rule set, SN-120 is a guarded rule FAMILY: parameterized by a priority
+The third concrete decided system — the "graduation".  Where transposition is a single rule and
+absorption is a fixed two-rule set, the sorting system is a guarded rule FAMILY: parameterized by a priority
 `slotValue : OmegacECell → Nat`, the rule `[a,b] → [b,a]` fires for EVERY pair with `slotValue b < slotValue a`
 (an adjacent descending pair).  This is bubble sort = the symmetric-group word problem (two words are
 convertible iff they are permutations sorting to the same `slotValue`-ascending normal form).
@@ -19,11 +19,11 @@ convertible iff they are permutations sorting to the same `slotValue`-ascending 
 
 ## Honest scope / deferred
 
-This ships the SYSTEM + length invariants + non-vacuity.  The subsequent SN-120 atoms:
+This ships the SYSTEM + length invariants + non-vacuity.  The subsequent atoms:
 
   1. TERMINATION via the INVERSION COUNT over `slotValue` (the number of out-of-order pairs), which strictly
-     decreases by one per swap — the bubble-sort measure (generalizes SN-118's `aBeforeBInversions` to count
-     ALL out-of-order pairs; may consume the SN-115/116/117 RPO / Dershowitz-Manna / LPO orderings).
+     decreases by one per swap — the bubble-sort measure (generalizes the transposition `aBeforeBInversions` to count
+     ALL out-of-order pairs; may consume the RPO / Dershowitz-Manna / LPO orderings).
   2. LOCAL CONFLUENCE with the genuine braid critical pair `[a,b,c]` (`slotValue a > b > c`): the two one-step
      reducts `[b,a,c]` / `[a,c,b]` join to the sorted `[c,b,a]` via MULTI-step sequences (a real `RewritesMany`).
   3. BOUNDED-SEARCH DECIDABILITY: a guarded `WordReducer` (scan for the leftmost descending adjacency) +

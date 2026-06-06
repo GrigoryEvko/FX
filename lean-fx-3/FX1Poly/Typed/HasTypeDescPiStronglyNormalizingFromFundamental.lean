@@ -1,7 +1,7 @@
 import FX1Poly.Typed.FundamentalWithPositiveTypeCandidates
 import FX1Poly.Typed.FundamentalWithTypeValueCandidates
 import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
-import FX1Poly.Typed.HasTypeDescPiValidity
+import FX1Poly.Typed.HasTypeDescPiClassifierValidity
 
 /-! # FX1Poly/Typed/HasTypeDescPiStronglyNormalizingFromFundamental
     — dependent strong-normalization handoff from the exact all-level fundamental theorem
@@ -62,7 +62,7 @@ its classifier to strongly normalizing terms under every all-level reducible clo
 def HasTypeDescPiSubstitutedStrongNormalizationTheorem (profile : PolyProfile) : Prop :=
   ∀ {scope targetScope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope},
-    WfContext context →
+    WfContextDescPi context →
       HasTypeDescPi profile context subject classifier →
         ∀ (substitution : RawTermSubst scope (targetScope + 1)),
           ReducibleEnvAtAllLevels context substitution →
@@ -77,7 +77,7 @@ def HasTypeDescPiPositiveCandidateSubstitutedStrongNormalizationTheorem
     (profile : PolyProfile) : Prop :=
   ∀ {scope targetScope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope},
-    WfContext context →
+    WfContextDescPi context →
       HasTypeDescPi profile context subject classifier →
         ∀ (substitution : RawTermSubst scope (targetScope + 1)),
           ReducibleEnvAtAllLevelsWithPositiveTypeCandidates context substitution →
@@ -93,7 +93,7 @@ def HasTypeDescPiTypeValueCandidateSubstitutedStrongNormalizationTheorem
     (profile : PolyProfile) : Prop :=
   ∀ {scope targetScope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope},
-    WfContext context →
+    WfContextDescPi context →
       HasTypeDescPi profile context subject classifier →
         ∀ (substitution : RawTermSubst scope (targetScope + 1)),
           ReducibleEnvAtAllLevelsWithTypeValueCandidates context substitution →
@@ -290,13 +290,13 @@ theorem HasTypeDescPi.classifierStronglyNormalizingFromAllLevelFundamentalTheore
     (fundamentalTheorem : HasTypeDescPiAllLevelFundamentalTheorem profile)
     {scope targetScope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
-    (contextWellFormed : WfContext context)
+    (contextWellFormed : WfContextDescPi context)
     (typed : HasTypeDescPi profile context subject classifier)
     (substitution : RawTermSubst scope (targetScope + 1))
     (reducibleEnv : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat) :
     IsStronglyNormalizing (RawTerm.subst substitution classifier) := by
   obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
-    typed.classifierIsTypeDesc contextWellFormed
+    typed.classifierIsTypeDescPi contextWellFormed
   exact HasTypeDescPi.subjectStronglyNormalizingFromAllLevelFundamentalTheorem
     fundamentalTheorem classifierTyped substitution reducibleEnv predLevel
 
@@ -324,7 +324,7 @@ theorem HasTypeDescPi.classifierStronglyNormalizingFromPositiveCandidateFundamen
     (fundamentalTheorem : HasTypeDescPiPositiveCandidateFundamentalTheorem profile)
     {scope targetScope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
-    (contextWellFormed : WfContext context)
+    (contextWellFormed : WfContextDescPi context)
     (typed : HasTypeDescPi profile context subject classifier)
     (substitution : RawTermSubst scope (targetScope + 1))
     (envWithCandidates :
@@ -332,7 +332,7 @@ theorem HasTypeDescPi.classifierStronglyNormalizingFromPositiveCandidateFundamen
     (predLevel : Nat) :
     IsStronglyNormalizing (RawTerm.subst substitution classifier) := by
   obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
-    typed.classifierIsTypeDesc contextWellFormed
+    typed.classifierIsTypeDescPi contextWellFormed
   exact HasTypeDescPi.subjectStronglyNormalizingFromPositiveCandidateFundamentalTheorem
     fundamentalTheorem classifierTyped substitution envWithCandidates predLevel
 
@@ -361,7 +361,7 @@ theorem HasTypeDescPi.classifierStronglyNormalizingFromTypeValueCandidateFundame
     (fundamentalTheorem : HasTypeDescPiTypeValueCandidateFundamentalTheorem profile)
     {scope targetScope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
-    (contextWellFormed : WfContext context)
+    (contextWellFormed : WfContextDescPi context)
     (typed : HasTypeDescPi profile context subject classifier)
     (substitution : RawTermSubst scope (targetScope + 1))
     (envWithTypeValueCandidates :
@@ -369,7 +369,7 @@ theorem HasTypeDescPi.classifierStronglyNormalizingFromTypeValueCandidateFundame
     (predLevel : Nat) :
     IsStronglyNormalizing (RawTerm.subst substitution classifier) := by
   obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
-    typed.classifierIsTypeDesc contextWellFormed
+    typed.classifierIsTypeDescPi contextWellFormed
   exact HasTypeDescPi.subjectStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
     fundamentalTheorem classifierTyped substitution envWithTypeValueCandidates predLevel
 
@@ -407,7 +407,7 @@ theorem HasTypeDescPi.closedClassifierSubstStronglyNormalizingFromAllLevelFundam
     (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
     IsStronglyNormalizing (RawTerm.subst substitution classifier) :=
   HasTypeDescPi.classifierStronglyNormalizingFromAllLevelFundamentalTheorem
-    fundamentalTheorem (WfContext.emptyIsWellFormed (profile := profile)) typed
+    fundamentalTheorem (WfContextDescPi.emptyIsWellFormed (profile := profile)) typed
     substitution (ReducibleEnvAtAllLevels.empty substitution) predLevel
 
 /-- **Closed strong normalization from the all-level fundamental theorem.**  This is the downstream final
@@ -430,7 +430,7 @@ theorem HasTypeDescPi.closedClassifierStronglyNormalizingFromAllLevelFundamental
     (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
     IsStronglyNormalizing classifier := by
   obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
-    typed.classifierIsTypeDesc (WfContext.emptyIsWellFormed (profile := profile))
+    typed.classifierIsTypeDescPi (WfContextDescPi.emptyIsWellFormed (profile := profile))
   exact HasTypeDescPi.closedSubjectStronglyNormalizingFromAllLevelFundamentalTheorem
     fundamentalTheorem classifierTyped
 
@@ -473,7 +473,7 @@ theorem HasTypeDescPi.closedClassifierSubstStronglyNormalizingFromPositiveCandid
     (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
     IsStronglyNormalizing (RawTerm.subst substitution classifier) := by
   obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
-    typed.classifierIsTypeDesc (WfContext.emptyIsWellFormed (profile := profile))
+    typed.classifierIsTypeDescPi (WfContextDescPi.emptyIsWellFormed (profile := profile))
   exact HasTypeDescPi.closedSubjectSubstStronglyNormalizingFromPositiveCandidateFundamentalTheorem
     fundamentalTheorem substitution predLevel classifierTyped
 
@@ -507,7 +507,7 @@ theorem HasTypeDescPi.closedClassifierStronglyNormalizingFromPositiveCandidateFu
     (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
     IsStronglyNormalizing classifier := by
   obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
-    typed.classifierIsTypeDesc (WfContext.emptyIsWellFormed (profile := profile))
+    typed.classifierIsTypeDescPi (WfContextDescPi.emptyIsWellFormed (profile := profile))
   exact HasTypeDescPi.closedSubjectStronglyNormalizingFromPositiveCandidateFundamentalTheorem
     fundamentalTheorem classifierTyped
 
@@ -548,7 +548,7 @@ theorem HasTypeDescPi.closedClassifierSubstStronglyNormalizingFromTypeValueCandi
     (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
     IsStronglyNormalizing (RawTerm.subst substitution classifier) := by
   obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
-    typed.classifierIsTypeDesc (WfContext.emptyIsWellFormed (profile := profile))
+    typed.classifierIsTypeDescPi (WfContextDescPi.emptyIsWellFormed (profile := profile))
   exact HasTypeDescPi.closedSubjectSubstStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
     fundamentalTheorem substitution predLevel classifierTyped
 
@@ -582,7 +582,7 @@ theorem HasTypeDescPi.closedClassifierStronglyNormalizingFromTypeValueCandidateF
     (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
     IsStronglyNormalizing classifier := by
   obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
-    typed.classifierIsTypeDesc (WfContext.emptyIsWellFormed (profile := profile))
+    typed.classifierIsTypeDescPi (WfContextDescPi.emptyIsWellFormed (profile := profile))
   exact HasTypeDescPi.closedSubjectStronglyNormalizingFromTypeValueCandidateFundamentalTheorem
     fundamentalTheorem classifierTyped
 

@@ -4,7 +4,7 @@ import FX1Poly.Core.StepSubst
 /-! # FX1Poly/Core/CompleteDevelopment
     — the Takahashi complete-development function, propext-clean via `fireRootRedex`.
 
-`TakahashiTriangle.lean` reduces the FX raw-confluence diamond (`#420`, the prize that strong
+`TakahashiTriangle.lean` reduces the FX raw-confluence diamond (the prize that strong
 normalization cannot supply because raw β+ι is not SN) to exhibiting a complete-development function
 with the triangle / maximal-reduct property: a function that contracts ALL redexes present in a term
 at once (but NOT the redexes created by those contractions), to which every parallel reduct
@@ -132,7 +132,7 @@ mutual
 /-- **The complete development is reachable from the source by `StepStar`.**  Develop all children
 (a congruence chain lifted via `StepStar.ofChildrenStar`), then fire the root redex once
 (`fireRootRedexOrSelf_stepStar`); compose with `StepStar.trans_compose`.  The soundness half of the
-eventual maximal-reduct / triangle property toward raw confluence (`#420`). -/
+eventual maximal-reduct / triangle property toward raw confluence. -/
 theorem RawTerm.completeDevelopment_stepStar {scope : Nat} :
     (term : RawTerm scope) → StepStar term (RawTerm.completeDevelopment term)
   | .mkGen _generator _payload children =>

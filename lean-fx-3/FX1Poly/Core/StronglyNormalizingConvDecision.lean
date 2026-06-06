@@ -23,7 +23,7 @@ for an actual SN term, no global axiom-shaped assumption.
   two normal forms.  Backward: equal normal forms expose a shared reduct, hence a conversion.
 * `Conv.decidableOfNormalForms_of_isStronglyNormalizing` — the decision, `decidable_of_iff` over the
   propext-free `instDecidableEqRawTerm`.  The remaining input is the normal-form witnesses; a normalizer
-  *function* (eval/quote, #261/#480) supplies them, at which point this becomes a parameter-free decider.
+  *function* (eval/quote) supplies them, at which point this becomes a parameter-free decider.
 
 ## Zero-axiom verification
 
@@ -75,7 +75,7 @@ theorem Conv.iff_normalForms_eq_of_isStronglyNormalizing {scope : Nat}
 /-- **Decidable Conv on the SN fragment.**  Given two strongly-normalizing terms together with their normal
 forms (and the reduction chains), conversion is decidable — it is normal-form equality, decided by the
 propext-free `instDecidableEqRawTerm`.  No global confluence, no Normalizer-function assumption; a
-normalizer function (eval/quote, #261/#480) is what supplies the normal-form witnesses to make this a
+normalizer function (eval/quote) is what supplies the normal-form witnesses to make this a
 parameter-free decision. -/
 def Conv.decidableOfNormalForms_of_isStronglyNormalizing {scope : Nat}
     {leftTerm rightTerm leftNormalForm rightNormalForm : RawTerm scope}

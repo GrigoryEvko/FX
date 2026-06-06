@@ -1,12 +1,12 @@
 import FX1Poly.Modal.GradedTypingGeneric
 
-/-! # FX1Poly/Modal/GradedWeakeningGeneric — generic weakening for `HasGradeOver R` (DIM5-5 + dims 6–21)
+/-! # FX1Poly/Modal/GradedWeakeningGeneric — generic weakening for `HasGradeOver R` (all graded dimensions)
 
-The usage dimension's weakening (`GradedTypingMetatheory.lean`, DIM2-3) is hardcoded to `GType` /
+The usage dimension's weakening (`GradedTypingMetatheory.lean`) is hardcoded to `GType` /
 `HasUsage` / `GradeVector`.  But weakening — `HasGradeOver R` is stable under `GradedLambda.shift`,
 inserting a `R.zero` (ghost / unused) grade for the freshly-inserted binding — is the SAME de Bruijn
 argument for every dimension.  This file ships that argument ONCE, generic over any
-`OrderedGradeSemiring`, from the DIM5-3 generic judgment `HasGradeOver R`.
+`OrderedGradeSemiring`, from the generic judgment `HasGradeOver R`.
 
   * `insertTypeAtOver` / `GradeVectorOver.insertAt` — insert a type / a grade at de Bruijn position
     `cutDepth` (parallel insertions: the new binding's type and its inserted `R.zero` grade).
@@ -17,11 +17,11 @@ argument for every dimension.  This file ships that argument ONCE, generic over 
     at any cut `cutDepth ≤ |Γ|`, inserting a `R.zero` grade.  By induction on the derivation: the var
     case splits below / at-or-above the cut, the λ-case threads the cut to `cutDepth + 1`, the App case
     distributes insertion over the App-scaled grade sum.  This is the de Bruijn weakening lemma the
-    (forthcoming) generic substitution lemma's λ-case consumes.
+    generic substitution lemma's λ-case consumes.
 
-The only place the generic version diverges from DIM2's concrete proof is the GRADE ARITHMETIC:
-`R.add R.zero R.zero` and `R.mul scaleGrade R.zero` do NOT compute for an abstract semiring (DIM2's
-`rfl`s relied on `UsageGrade` reduction), so `insertAt_add` / `insertAt_scale` route through the
+The only place the generic version diverges from the usage dimension's concrete proof is the GRADE
+ARITHMETIC: `R.add R.zero R.zero` and `R.mul scaleGrade R.zero` do NOT compute for an abstract semiring
+(the usage `rfl`s rely on `UsageGrade` reduction), so `insertAt_add` / `insertAt_scale` route through the
 `IsLawfulOrderedGradeSemiring` bundle (`zero_add` / `mul_zero`).  The lemma therefore takes a `lawful`
 witness; everything else (the lookup / length / insertion structure) is purely structural and
 lawfulness-free.
@@ -180,7 +180,7 @@ theorem GradeVectorOver.insertAt_scale {R : OrderedGradeSemiring}
 
 /-- Inserting a `R.zero` distributes over pointwise add (the two operands must share a length so
 neither truncates differently; the inserted `R.add R.zero R.zero = R.zero` needs the bundle's
-`zero_add` — DIM2's `rfl` relied on `UsageGrade` reduction, which an abstract semiring lacks). -/
+`zero_add` — the usage `rfl` relies on `UsageGrade` reduction, which an abstract semiring lacks). -/
 theorem GradeVectorOver.insertAt_add {R : OrderedGradeSemiring}
     (lawful : IsLawfulOrderedGradeSemiring R) (cutDepth : Nat) :
     ∀ (firstVector secondVector : GradeVectorOver R), firstVector.length = secondVector.length →

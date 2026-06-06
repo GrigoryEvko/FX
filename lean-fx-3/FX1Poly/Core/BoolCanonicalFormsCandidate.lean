@@ -2,7 +2,7 @@ import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.StepInversion
 
 /-! # Foundation/PolyCell/Core/BoolCanonicalFormsCandidate
-    — the first concrete data reducibility candidate: bool (SN-063 data core), unconditional + zero-axiom
+    — the first concrete data reducibility candidate: bool, unconditional + zero-axiom
 
 `CanonicalFormsCandidate.lean` proved the GENERIC canonical-forms reducibility candidate
 (`CanonicalFormsPredicate isValue` is an `IsReducibilityCandidate` once data values are normal forms, the
@@ -15,9 +15,9 @@ reducibility candidate.
 normalizing terms that are neutral or reduce to a boolean constructor.  Both canonical inhabitants
 (`boolTrueCell`, `boolFalseCell`) are members.
 
-This is the data core of SN-063 (bool reducibility).  The remaining SN-063 content — `boolElim` preserving
+This is the data core of bool reducibility.  The remaining bool-reducibility content — `boolElim` preserving
 reducibility under a dependent motive — is the eliminator-reducibility step that consumes this candidate, and
-SN-047 (closed-bool canonicity) is the cascade of this candidate into the `ReducibleTypeStep` model.
+closed-bool canonicity is the cascade of this candidate into the `ReducibleTypeStep` model.
 
 ## Zero-axiom verification
 
@@ -56,7 +56,7 @@ theorem boolIsValue_impliesStepNormalForm {scope : Nat} {value : RawTerm scope}
 normalizing terms that are neutral or reduce to a boolean constructor — is a full Girard reducibility
 candidate (CR1+CR2+CR3), unconditionally: the neutral-closure obligation is `IsNeutral.closedUnderStep` and
 the only data fact, value-normality, is `boolIsValue_impliesStepNormalForm`.  This is the Tait candidate for
-the boolean type, the data core of SN-063. -/
+the boolean type, the data core of bool reducibility. -/
 theorem boolCanonicalFormsCandidate {scope : Nat} :
     IsReducibilityCandidate (CanonicalFormsPredicate (scope := scope) boolIsValue) :=
   CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal boolIsValue_impliesStepNormalForm
@@ -81,8 +81,8 @@ theorem boolFalseCell_isMember {scope : Nat} :
 /-- **Closed bool-candidate members reduce to `true` or `false`** — canonicity for booleans, modulo
 membership.  A closed member of the bool candidate is non-neutral (no closed neutral, `IsNeutral.noClosed`),
 so by `CanonicalFormsPredicate.closedReducesToValue` it reduces to a boolean value, i.e. to `boolTrueCell` or
-`boolFalseCell`.  Combined with "a closed well-typed term of bool type is a member" (the fundamental theorem,
-gated on `#672` / SN-043) this is SN-047 closed-bool canonicity.  The extraction shown here is `#672`-free. -/
+`boolFalseCell`.  Combined with "a closed well-typed term of bool type is a member" (the fundamental theorem)
+this is closed-bool canonicity.  The extraction shown here is fundamental-free. -/
 theorem boolClosedReducesToTrueOrFalse {term : RawTerm 0}
     (member : CanonicalFormsPredicate boolIsValue term) :
     ∃ value : RawTerm 0, StepStar term value ∧ (value = boolTrueCell ∨ value = boolFalseCell) :=

@@ -18,7 +18,7 @@ preservation β-reduction needs: `(λ. body) arg ↝ body[arg]` keeps its type.
 * `SimplyTypedTermLF.substituteUnderBinding` — the subst0 corollary (the β-engine): given `Γ, A ⊢ subject :
   classifier` and `Γ ⊢ argument : A`, the substituted `subject[argument]` has type `classifier[argument]`.
 
-Mirrors `HasType.substRespectingContext` / `HasTypeDescPi.substRespectingContext` for the syntax-directed
+Mirrors `HasTypeDescPi.substRespectingContext` for the syntax-directed
 `SimplyTypedTermLF` (var/app/lam, no conversion arm):
 
 * `var` — `subst_variableCell` then the substitution-typing hypothesis lands the substituted variable.
@@ -31,9 +31,8 @@ Mirrors `HasType.substRespectingContext` / `HasTypeDescPi.substRespectingContext
   crossing the binder by `subst_lift_weaken_commute`); the `lam` rule's `IsReducibleTypeExprLF` premises
   transport via `IsReducibleTypeExprLF.subst`.
 
-This composes the previous SR-arc steps: `IsReducibleTypeExprLF.subst` (type-expr closure) and
-`SimplyTypedTermLF.weakenUnderBinding` (renaming preservation's weakening corollary) are both consumed here,
-confirming both were on-path.
+This composes `IsReducibleTypeExprLF.subst` (type-expr closure) and
+`SimplyTypedTermLF.weakenUnderBinding` (renaming preservation's weakening corollary).
 
 ## Zero-axiom verification
 

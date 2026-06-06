@@ -8,7 +8,7 @@ import FX1Poly.Core.StrongNormalizationConstructors
 These witnesses exercise the choice-free dependent-reducibility stack (the `ofPointwiseIff` congruence
 closure, the canonical member-predicate, and the choice-free Π formation/introduction) end to end on CLOSED,
 genuinely-well-typed cells, producing strong normalization via CR1 (`IsReducibleMemberAt.stronglyNormalizing`).
-They are baby cases of the SN-for-well-typed fundamental-theorem corollary (#426): "a well-typed term is a
+They are baby cases of the SN-for-well-typed fundamental-theorem corollary: "a well-typed term is a
 reducible member of its type, hence strongly normalizing", instantiated at concrete closed terms so the whole
 pipeline is exercised before the general fundamental-theorem induction lands.
 

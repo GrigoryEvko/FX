@@ -1,29 +1,9 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.TypingContext
-import FX1Poly.Typed.HasType
-import FX1Poly.Typed.HasTypeHonesty
-import FX1Poly.Typed.WfContext
-import FX1Poly.Typed.HasTypeWeakening
-import FX1Poly.Typed.HasTypeSubstitution
-import FX1Poly.Typed.HasTypeValidity
-import FX1Poly.Typed.HasTypeStronglyNormalizing
-import FX1Poly.Typed.HasTypeInversion
-import FX1Poly.Typed.HasTypeDecidableConv
-import FX1Poly.Typed.HasTypeSubjectReduction
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.UniverseCodeConversion
 import FX1Poly.Typed.SigmaCodeShape
-import FX1Poly.Typed.IsTypeDecidable
-import FX1Poly.Typed.HasTypeDecidable
-import FX1Poly.Typed.HasTypeSmokeCorpus
-import FX1Poly.Typed.HasTypeConsistency
-import FX1Poly.Typed.HasTypeInfer
-import FX1Poly.Typed.HasTypeCheck
-import FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate
-import FX1Poly.Typed.HasTypeClosedForms
-import FX1Poly.Typed.WfContextDecidable
 import FX1Poly.Typed.HasTypeDesc
-import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescElim
 import FX1Poly.Typed.HasTypeDescValidity
@@ -66,7 +46,7 @@ import FX1Poly.Typed.WfContextDescValidity
 import FX1Poly.Typed.WfContextDescStronglyNormalizing
 import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Typed.WfContextDescPi
-import FX1Poly.Typed.WfContextDescPiFromWfContext
+import FX1Poly.Typed.WfContextDescPiFromWfContextDesc
 import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
 import FX1Poly.Typed.HasTypeDescPiClassifierValidity
@@ -287,9 +267,7 @@ import FX1Poly.Typed.WfContextBetaEtaConfluence
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CanonicityTargetSignature
 import FX1Poly.Typed.NullaryFormerFormation
-import FX1Poly.Typed.UniverseFormationStrictness
 import FX1Poly.Typed.GrownUniverseFormationStrictness
-import FX1Poly.Typed.FormerFormationStrictness
 import FX1Poly.Typed.GrownFormerFormationStrictness
 import FX1Poly.Typed.GrownTypingNotUnique
 import FX1Poly.Typed.GrownEngineHonesty
@@ -397,33 +375,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.variableCell
 #assert_no_axioms FX1Poly.Typed.piTyCodeCell
 #assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell
-#assert_no_axioms FX1Poly.Typed.HasType
-#assert_no_axioms FX1Poly.Typed.IsType
 
 /-! ### Honesty — 0-false-positive probe (ill-typed cell has no derivation) -/
 
 #assert_no_axioms FX1Poly.Typed.unitCell
-#assert_no_axioms FX1Poly.Typed.appUnitUnit
 #assert_no_axioms FX1Poly.Typed.RawTerm.headGenerator
-#assert_no_axioms FX1Poly.Typed.HasType.subjectIsVariableOrTypeFormerCode
-#assert_no_axioms FX1Poly.Typed.appUnitUnit_hasNoTyping
-
-/-! ### WfContext — well-formedness predicate + inversions + non-vacuity witness -/
-
-#assert_no_axioms FX1Poly.Typed.WfContext
-#assert_no_axioms FX1Poly.Typed.WfContext.emptyIsWellFormed
-#assert_no_axioms FX1Poly.Typed.WfContext.tailWellFormed
-#assert_no_axioms FX1Poly.Typed.WfContext.headIsType
-#assert_no_axioms FX1Poly.Typed.WfContext.cons
-#assert_no_axioms FX1Poly.Typed.wfContext_universeBinding
 
 /-! ### Typed renaming + weakening (the structural cartesian lift) -/
 
 #assert_no_axioms FX1Poly.Typed.rename_variableCell
 #assert_no_axioms FX1Poly.Typed.rename_universeCodeCell
 #assert_no_axioms FX1Poly.Typed.rename_emptyTypeCell
-#assert_no_axioms FX1Poly.Typed.HasType.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasType.weakenUnderBinding
 
 /-! ### Typed substitution (the β-engine) — `subst0` preserves typing -/
 
@@ -431,61 +393,6 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.subst_universeCodeCell
 #assert_no_axioms FX1Poly.Typed.subst_emptyTypeCell
 #assert_no_axioms FX1Poly.Typed.subst_singleton_renameWeaken_cancel
-#assert_no_axioms FX1Poly.Typed.HasType.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasType.substituteUnderBinding
-
-/-! ### Validity (P3) — IsType stability + lookup-is-type + classifier-is-a-type -/
-
-#assert_no_axioms FX1Poly.Typed.IsType.weakenUnderBinding
-#assert_no_axioms FX1Poly.Typed.IsType.substituteUnderBinding
-#assert_no_axioms FX1Poly.Typed.WfContext.lookupIsType
-#assert_no_axioms FX1Poly.Typed.HasType.classifierIsType
-
-/-! ### Fundamental theorem (typed SN, native pi/sigma-formation HasType core) + typed Conv.trans payoff -/
-
-#assert_no_axioms FX1Poly.Typed.HasType.isStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.IsType.isStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.Conv.trans_of_typedMiddle
-
-/-! ### INVERSION (#454, native pi/sigma-formation HasType core) — per-shape classifier characterization -/
-
-#assert_no_axioms FX1Poly.Typed.HasType.inversionVariable
-#assert_no_axioms FX1Poly.Typed.HasType.inversionUniverseCode
--- Π-formation inversion: a typed `piTyCodeCell` exposes both children's
--- universe typings (at one shared flag) + a `Conv` of the classifier to
--- `Type@(lmax …)`.  The decider's refutation arms + `uniqueness`'s Π case feed on
--- it.  Same equation-motive shape as the var / universe inversions, with the
--- `piFormation` arm closed by `piTyCodeCell_inj`.
-#assert_no_axioms FX1Poly.Typed.HasType.inversionPiCode
--- Σ-formation inversion: the dual of `inversionPiCode`.  A typed
--- `sigmaTyCodeCell` exposes both children's universe typings (at one shared
--- flag) + a `Conv` of the classifier to `Type@(lmax …)`.  The Σ arms of the
--- decider + `uniqueness` feed on it.  Same equation-motive shape, with the
--- `piFormation` arm the impossible one (`Generator.noConfusion`) and the
--- `sigmaFormation` arm closed by `sigmaTyCodeCell_inj`.
-#assert_no_axioms FX1Poly.Typed.HasType.inversionSigmaCode
-
-/-! ### UNIQUENESS OF TYPING (#469, native pi/sigma-formation HasType core) -/
-
-#assert_no_axioms FX1Poly.Typed.HasType.uniqueness
-
-/-! ### DECIDABLE TYPE CONVERSION (native pi/sigma-formation HasType core) — normal-form rigidity →
-    decidable Conv.  Core rigidity (`StepStar.eq_of_noStep`, `Conv.eq_of_noStep`,
-    `Conv.iff_eq_of_noStep`) is swept by `#audit_namespace FX1Poly.Core` in
-    `AuditCoreSubstrate.lean`; the typed payoff is pinned per-decl here. -/
-
-#assert_no_axioms FX1Poly.Typed.IsType.hasNoStep
-#assert_no_axioms FX1Poly.Typed.Conv.eq_of_isType
-#assert_no_axioms FX1Poly.Typed.levelFlag_eq_of_conv_universeCodeCell
-#assert_no_axioms FX1Poly.Typed.Conv.iff_eq_of_isType
-#assert_no_axioms FX1Poly.Typed.Conv.decidableOfIsType
-
-/-! ### Typed subject reduction (P4, native pi/sigma-formation HasType core) — `subjectHasNoStep`
-    is the structural invariant (well-typed subjects are normal); SR itself
-    holds vacuously over the redex-free fragment. -/
-
-#assert_no_axioms FX1Poly.Typed.HasType.subjectHasNoStep
-#assert_no_axioms FX1Poly.Typed.HasType.subjectReduction
 
 /-! ### Universe-code cell destructor — recovers
     `universeCodeCell e flag` from `headGenerator = gen_universeCode` via the
@@ -587,171 +494,6 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.size_lt_sigmaTyCodeCell_domain
 #assert_no_axioms FX1Poly.Typed.size_lt_sigmaTyCodeCell_codomain
 
-/-! ### IsType characterization — the decision on the
-    head generator that `Decidable IsType` assembles: universe codes are always
-    types; a variable is a type iff its looked-up classifier is a universe code
-    (forward by `inversionVariable` + rigidity); Π / Σ codes are types iff their
-    children are; any other head is never a type
-    (`subjectIsVariableOrTypeFormerCode`). -/
-
-#assert_no_axioms FX1Poly.Typed.IsType.ofUniverseCodeCell
-#assert_no_axioms FX1Poly.Typed.IsType.variableCell_iff_lookupIsUniverseCode
-#assert_no_axioms FX1Poly.Typed.IsType.not_of_headGenerator
-
-/-! ### Decidable IsType (native pi/sigma-formation HasType core) — the decision procedure
-    assembled over the head-generator cases: case on the cell (payload = index as data),
-    `dite` on the head generator (`DecidableEq Generator`, no `Classical`).  The
-    Π arm makes the procedure RECURSIVE (well-founded on `RawTerm.size`); the
-    data-returning core `decideWithWitness` (a `PSum` of a `Σ'` universe witness
-    or a no-universe proof) carries the children's flag as DATA so the shared-flag
-    side condition is decidable — an `Exists` could not eliminate into the
-    `Type`-valued decision.  `decidableOfWellFormed` is a thin wrapper. -/
-
-#assert_no_axioms FX1Poly.Typed.IsType.decideWithWitness
-#assert_no_axioms FX1Poly.Typed.IsType.decidableOfWellFormed
-
-/-! ### HasType characterization — typed checking collapses to
-    classifier equality: validity makes the classifier normal, so the inversions
-    + rigidity turn `HasType Γ subject T` into `T = (the unique classifier)`.
-    No `Conv` decision / normalizer needed for this fragment. -/
-
-#assert_no_axioms FX1Poly.Typed.HasType.variableCell_iff_classifierEqLookup
-#assert_no_axioms FX1Poly.Typed.HasType.universeCodeCell_iff_classifierEqSucc
-#assert_no_axioms FX1Poly.Typed.HasType.not_of_headGenerator
-
-/-! ### Decidable HasType (native pi/sigma-formation HasType core) — typed checking decision
-    procedure assembled over the classifier-equality characterization; mirror of
-    `IsType.decidableOfWellFormed`, deciding via `DecidableEq RawTerm`. -/
-
-#assert_no_axioms FX1Poly.Typed.HasType.decidableOfWellFormed
-
-/-! ### Decidable typed Conv (native pi/sigma-formation HasType core) — convertibility
-    of the classifiers of two well-typed terms, via validity + rigidity. -/
-
-#assert_no_axioms FX1Poly.Typed.Conv.decidableOfTyped
-
-/-! ### Typed smoke corpus (native pi/sigma-formation HasType core) — non-vacuity /
-    regression witnesses pinning that the deciders DISCRIMINATE: one accepted +
-    one rejected cell per outcome branch (universeCode-isTrue, var-isTrue,
-    outer-reject, universeCode-isFalse). -/
-
-#assert_no_axioms FX1Poly.Typed.headGenerator_unitCell
-#assert_no_axioms FX1Poly.Typed.corpus_universeCode_typedBySucc
-#assert_no_axioms FX1Poly.Typed.corpus_variable_typedByLookup
-#assert_no_axioms FX1Poly.Typed.corpus_unitCell_rejected
-#assert_no_axioms FX1Poly.Typed.corpus_universeCode_notTypedByUnit
-
-/-! ### No-Type-in-Type probe — the headline universe-consistency
-    guarantee: a universe code is NOT classified by itself (`Type@(e,f) :
-    Type@(e,f)` rejected), so there is no `Type : Type` / Girard paradox at the
-    universe level.  Routes through `universeCodeCell_iff_classifierEqSucc` (the
-    classifier-equality characterization) + `universeCodeCell_inj` +
-    `LevelExpr.ne_lsucc_self` (predicativity at the level algebra). -/
-
-#assert_no_axioms FX1Poly.Typed.probe_universe_Type_in_Type_rejected
-
-/-! ### Closed-typing characterization (P10 consistency precursor, native pi/sigma-formation HasType core) — every closed well-typed subject is itself a type.  The
-    type-former-only fragment has NO closed proper terms (the closed `.term`
-    layer below the universe is empty); `subjectIsVariableOrIsType` is the
-    context-general induction engine (each non-`conv` arm witnesses `IsType` from
-    its own conclusion), `closedSubjectIsType` the empty-context corollary
-    (`Fin 0` kills the variable case). -/
-
-#assert_no_axioms FX1Poly.Typed.HasType.subjectIsVariableOrIsType
-#assert_no_axioms FX1Poly.Typed.HasType.closedSubjectIsType
-
-/-! ### Closed-typing characterization, both halves (P10 precursor, native pi/sigma-formation HasType core) — the two complementary halves of "what is a closed typing
-    judgment?".  `closedSubjectIsTypeFormer`: a closed well-typed subject is
-    EXACTLY a universe / Π / Σ type-former code (canonical forms; the `var`
-    disjunct of the 4-way shape classification is killed by `Fin 0`).
-    `closedClassifierConvUniverseCode`: its classifier is Conv to a universe code
-    (via `closedSubjectIsType` + `uniqueness` at the empty `WfContext`) — the
-    consistency content (no closed inhabitant below the universe level), the
-    precursor to ★ #460 (which additionally needs an `Empty` former). -/
-
-#assert_no_axioms FX1Poly.Typed.HasType.closedSubjectIsTypeFormer
-#assert_no_axioms FX1Poly.Typed.HasType.closedClassifierConvUniverseCode
--- The concrete P10 consistency WITNESS (non-vacuity): noClosedTermAtIdentityClassifier — no closed term is
--- typed at the identity function lambda-x.x (a concrete NON-type classifier, the available stand-in for the
--- absent Empty since gen_empty is not in the generator table). Turns the closedClassifierConvUniverseCode
--- INTERFACE into a concrete -> False: a closed term at the identity would make its classifier Conv to a universe
--- code, refuted by closedUniverseCode_not_conv_identity (gen_universeCode vs gen_lam normal-form heads). The
--- shape ★ #460 takes once an Empty former exists (instantiate at El Empty instead of the identity). Zero-axiom.
-#assert_no_axioms FX1Poly.Typed.HasType.noClosedTermAtIdentityClassifier
-
-/-! ### Context well-formedness decision
-    — `WfContext.decidable` decides whether a raw `TypingContext` telescope is
-    well-formed (every binding is a type in its prefix), by structural recursion
-    on the telescope delegating each binding to `IsType.decidableOfWellFormed`
-    under the prefix certificate.  The context-level checker complementing
-    the term-level `Decidable IsType`/`HasType`/`Conv`.  Confirms the indexed
-    two-constructor telescope match stays propext-clean into a `Decidable`
-    motive. -/
-
-#assert_no_axioms FX1Poly.Typed.WfContext.decidable
-
-/-! ### Type synthesis / bidirectional `infer` (native pi/sigma-formation HasType core)
-    — synthesise a subject's classifier + derivation (sound by construction);
-    `var` direct, every other head delegates to `IsType.decideWithWitness`.
-    `infer_succeeds` is totality on the typeable domain (via the
-    `subjectIsVariableOrIsType` classification); `infer_complete` converts the
-    synthesised type to any actual one via `uniqueness`.  The `simp only
-    [HasType.infer, dif_pos/dif_neg]` reductions stay propext-clean (head
-    `dite` on `DecidableEq Generator`, no indexed-match leak). -/
-
-#assert_no_axioms FX1Poly.Typed.HasType.infer
-#assert_no_axioms FX1Poly.Typed.HasType.infer_succeeds
-#assert_no_axioms FX1Poly.Typed.HasType.infer_complete
-
-/-! ### Type checking / bidirectional `check` (native pi/sigma-formation HasType core)
-    — decide whether `subject` has the GIVEN `targetType`: synthesise with
-    `infer`, confirm `targetType` is a type (`decideWithWitness`), decide
-    `Conv synthType targetType`, coerce via the conversion rule on success.
-    Returns `Decidable (HasType …)` (the faithful realisation of the spec's
-    "`Option HasType`" — `Option` of a `Prop` is ill-typed), so it is sound AND
-    complete by construction: `isTrue` carries the derivation, `isFalse` the
-    refutation (`infer = none` ⊥ `infer_succeeds`; non-type target ⊥ validity;
-    `Conv = isFalse` ⊥ uniqueness).  The general bidirectional method rests on
-    `infer` + generic decidable `Conv`, not the fragment-specific collapse; on
-    this fragment it agrees with the direct decider. -/
-
-#assert_no_axioms FX1Poly.Typed.HasType.check
-
-/-! ### Typed checking certificate (native pi/sigma-formation HasType / HasTypeDesc formation core)
-    — explicit record packaging of the already-proved native-pi-sigma HasType typed
-    checking (`decidableOfWellFormed` + bidirectional `check`), equivalent
-    description-engine checking (`HasTypeDesc.decidableOfWellFormed` + the two
-    translation maps), typed classifier conversion (`Conv.decidableOfTyped` /
-    `Conv.decidableOfHasTypeDesc`), validity, and typed SN.
-    This is deliberately scoped to the native pi/sigma-formation `HasType` core; the
-    description-driven `HasTypeDescPi` reducibility assembly remains the next
-    metatheory step. -/
-
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.decideHasTypeDesc
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.translateHasTypeToDesc
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.translateDescToHasType
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.decideHasTypeDescClassifierConv
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveHasTypeDescClassifierIsTypeDesc
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveHasTypeDescSubjectIsStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveHasTypeDescClassifierIsStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveHasTypeDescSubjectAndClassifierStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClassifierIsStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveSubjectAndClassifierStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.rejectHasTypeLambda
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.rejectHasTypeApplication
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.rejectHasTypeDescLambda
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.rejectHasTypeDescApplication
-#assert_no_axioms FX1Poly.Typed.buildHasTypePiSigmaFormationCheckingCertificate
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedSubjectIsType
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedSubjectIsTypeFormer
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedClassifierConvUniverseCode
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedSubjectAndClassifierStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescSubjectIsTypeDesc
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescSubjectIsTypeFormer
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescClassifierConvUniverseCode
-#assert_no_axioms FX1Poly.Typed.HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescSubjectAndClassifierStronglyNormalizing
-
 /-! ### ★ MOONSHOT CORE — the description-driven generic typing engine
     (`HasTypeDesc`, polycell.md §11.8.5 / §5.2: the Natural-Model display map
     `Tm ↠ Ty` realized as a data-driven cascade-free `gen` arm).  `HasTypeDesc`
@@ -779,18 +521,16 @@ gates pin them shut.
 -- Formation-family invariant (HasTypeDesc.lean): every typingRuleDescOf row outputs universeFormerOutput,
 -- enumerated ONCE. The cascade-death substrate for the formation-family metatheory — consumers obtain
 -- rule.outputType = universeFormerOutput from here instead of their own unfold + pi/sigma split, so a new
--- universeFormerOutput row (data type code) is absorbed by adding one by_cases case HERE. First consumer
--- migrated: HasTypeDescValidity.genFormation arm (now table-generic). ~14 consumers remain to migrate.
+-- universeFormerOutput row (data type code) is absorbed by adding one by_cases case HERE.
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_outputIsUniverseFormer
--- Cell-RECONSTRUCTION helpers (HasTypeDesc.lean, the category-C consumer substrate). The validity
--- consumers were output-only; the rest RECONSTRUCT formation cells. formationRuleImpliesNotVariable
+-- Cell-RECONSTRUCTION helpers (HasTypeDesc.lean, the category-C consumer substrate). formationRuleImpliesNotVariable
 -- discharges the generator ≠ gen_var side condition of RawTerm.subst/rename_mkGen_of_ne_var (typingRuleDescOf
 -- gen_var = none). formationRuleIsUniverseFormer upgrades the output equation to the full structure equation
 -- (rule = {outputType := universeFormerOutput}) so `obtain rfl` makes rule concrete — the generic successor
--- of the per-branch Option.some.inj. First reconstruction consumer migrated: HasTypeDescSubstitution.
+-- of the per-branch Option.some.inj.
 #assert_no_axioms FX1Poly.Typed.formationRuleImpliesNotVariable
 #assert_no_axioms FX1Poly.Typed.formationRuleIsUniverseFormer
--- FLAG-UNIQUENESS substrate (GTL-09): the `levels ≠ []` guard of HasTypeDesc.uniqueness, made generic over
+-- FLAG-UNIQUENESS substrate (GTL-09): the `levels ≠ []` guard of HasTypeDesc.uniquenessNative, made generic over
 -- the formation generator. levels_length_eq_binderShifts is a structural telescope recursion (level list and
 -- shift list have equal length); typingRuleDescOf_binderShiftsNonEmpty is the ≥1-child-family table fact
 -- (pi/sigma both carry [0,1]) — extends by ONE by_cases row per ≥1-child data type code, breaks ONLY on a
@@ -809,26 +549,10 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescope
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_piFormation_viaGenArm
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_sigmaFormation_viaGenArm
--- COMPLETENESS: the description engine is at least as strong as the bespoke
--- HasType (every HasType derivation maps to HasTypeDesc; Π/Σ via the generic arm).
-#assert_no_axioms FX1Poly.Typed.HasType.toHasTypeDesc
--- SOUNDNESS (0-FP wrt the trusted engine): every HasTypeDesc derivation maps back
--- to the bespoke HasType — the description engine derives NOTHING the hand-written
--- kernel wouldn't.  Mutual with the premise-spine map; the genFormation case's
--- exfalso branch proves a non-whitelisted generator cannot fire the generic arm.
--- Together with completeness this is the full HasTypeDesc ⟺ HasType equivalence on
--- the formation fragment — the cascade-free engine is a faithful replacement.
-#assert_no_axioms FX1Poly.Typed.HasTypeTelescope
-#assert_no_axioms FX1Poly.Typed.HasTypeDesc.toHasType
-#assert_no_axioms FX1Poly.Typed.DescTelescope.toHasTypeTelescope
--- DECIDABILITY (P11 0-FN) of the description engine.  `decidableOfWellFormed` is still
--- transported across the proven ⟺ equivalence from the bespoke `HasType.decidableOfWellFormed`
--- (hand-built match on the bespoke decision + the two equivalence maps, no `decidable_of_iff`/`Iff`,
--- propext-free) — the HT-A4 residual: a native formation decision procedure (a from-scratch native
--- formation type-checker, ~the bespoke decider rebuilt on HasTypeDesc) is deferred.
--- `Conv.decidableOfHasTypeDesc` is now HasType-FREE (HT-A4): each classifier is SN by the native
--- `HasTypeDesc.classifierStronglyNormalizing`, fed to the parameter-free `Conv.decidableOfStronglyNormalizing`
--- — no `HasTypeDesc.toHasType`, no bespoke `Conv.decidableOfTyped`.
+-- DECIDABILITY (P11 0-FN) of the description engine.  `decidableOfWellFormed` is a native
+-- formation decision procedure.  `Conv.decidableOfHasTypeDesc` decides Conv by SN: each classifier
+-- is SN by the native `HasTypeDesc.classifierStronglyNormalizing`, fed to the parameter-free
+-- `Conv.decidableOfStronglyNormalizing`.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormed
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfHasTypeDesc
 
@@ -837,44 +561,32 @@ gates pin them shut.
     PRIMARY engine `HasTypeDesc`: each child typed at an ARBITRARY classifier (the
     eliminator shape — scrutinee/motive/branches at motive-dependent types, NOT
     universes), the §11.8.5 PREMISE-side seam past formation (the output-side seam
-    was opened by `outputType`).  Non-vacuous: `DescTelescope.toTermTelescope` shows
+    is `outputType`).  Non-vacuous: `DescTelescope.toTermTelescope` shows
     the formation spine is an INSTANCE (so the substrate subsumes formation);
     `descTermTelescope_heterogeneous` witnesses a telescope at arbitrary classifiers
     the universe-only spine cannot express.  Standalone (HasTypeDesc positive in
-    `cons` only); `toTermTelescope` is the propext-free term-mode `match` (mirrors
-    `DescTelescope.toHasTypeTelescope`), self-recursive only. -/
+    `cons` only); `toTermTelescope` is the propext-free term-mode `match`,
+    self-recursive only. -/
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope
 #assert_no_axioms FX1Poly.Typed.DescTelescope.toTermTelescope
 #assert_no_axioms FX1Poly.Typed.descTermTelescope_heterogeneous
 
-/-! ### Intrinsic VALIDITY of the description engine (`HasTypeDescValidity`) — a
-    brick of the HasTypeDesc-from-HasType DECOUPLE.  The ⟺ equivalence
-    (`HasTypeDesc.toHasType`) is total, so it forbids growing the engine with any
-    `gen` row the bespoke `HasType` lacks (would break soundness ⇒ force a bespoke
-    arm = the cascade we kill).  Decoupling = giving `HasTypeDesc` its OWN metatheory.
-    `IsTypeDesc` = the intrinsic "inhabits a universe" (over `HasTypeDesc`, not
-    `HasType`); `classifierIsTypeDesc` = validity (P3) proved by FULL-enumeration
-    term-mode `match` on the engine (the propext-free form of
-    `HasTypeDesc.toHasType`) — `var` lifts the context entry via completeness,
-    `conv` reuses `reclassifierTyped` verbatim (no `Conv.trans`), formation arms
-    re-fire `universeFormation` one level up (genFormation pinned by the same
-    `by_cases`+`exfalso` generator-pin). -/
+/-! ### Intrinsic VALIDITY of the description engine (`HasTypeDescValidity`).
+    `IsTypeDesc` = the intrinsic "inhabits a universe" over `HasTypeDesc`; it gives the
+    description engine its own metatheory.  (Native formation validity lands as
+    `HasTypeDesc.classifierIsTypeDescNative`, gated below.) -/
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc
-#assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDesc
 
 /-! ### Strong normalization and typed conversion for the description formation engine.
-    HT-A3 native (HasType-FREE): subject SN (`subjectStronglyNormalizingNative`, the public
-    `isStronglyNormalizing` delegating to it), type SN (`IsTypeDesc.isStronglyNormalizing` — the `IsTypeDesc`
-    witness's subject IS the classifier), and typed-middle transitivity (`Conv.trans_of_hasTypeDescMiddle` —
-    now the unconditional raw `Conv.trans`, its `IsTypeDesc` premise vacuous).  HT-B: the dead
-    `IsTypeDesc.toIsType` desc->bespoke downgrade is REMOVED (this file no longer imports the `HasType`
-    soundness/SN bridges).  The remaining `WfContext`-validity-bound classifier-SN package
-    (`classifierStronglyNormalizing` / `subjectAndClassifier*`) migrates with the
-    `WfContext -> WfContextDesc` rethread.  Scoped to the formation engine; no grown reducibility claim.
-    TG-6 (cascade-free): `formerCellStronglyNormalizingOfChildren` now routes through the generic
+    Native: subject SN (`subjectStronglyNormalizingNative`, the public `isStronglyNormalizing` delegating to it),
+    type SN (`IsTypeDesc.isStronglyNormalizing` — the `IsTypeDesc` witness's subject IS the classifier), and
+    typed-middle transitivity (`Conv.trans_of_hasTypeDescMiddle` — the unconditional raw `Conv.trans`, its
+    `IsTypeDesc` premise vacuous).  The `WfContext`-validity-bound classifier-SN package
+    (`classifierStronglyNormalizing` / `subjectAndClassifier*`) is scoped to the formation engine; no grown
+    reducibility claim.  Cascade-free: `formerCellStronglyNormalizingOfChildren` routes through the generic
     `former_step_inv` + the N-child accessibility substrate (`StepChildrenSuccessor` /
     `accStepChildrenSuccessor_cons` / `accStepChildrenSuccessor_of_allStronglyNormalizing` /
-    `formerCell_isStronglyNormalizing_of_accChildren`) instead of a per-former `by_cases isPi/isSigma` — so a new
+    `formerCell_isStronglyNormalizing_of_accChildren`) rather than a per-former `by_cases isPi/isSigma` — so a new
     ≥1-child formation row extends it with no change, mirroring the cascade-free formation `subjectReduction`. -/
 #assert_no_axioms FX1Poly.Core.RawTermChildren.allStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.StepChildrenSuccessor
@@ -893,13 +605,11 @@ gates pin them shut.
 
 /-! ### Closed-form consequences for the description formation engine: closed subjects are intrinsic
     description types, have universe/Pi/Sigma type-former shape, and have classifiers convertible to
-    universe codes.  HT-A3 COMPLETE: all three — `closedSubjectIsTypeDesc` (via the scope-generalised
+    universe codes.  All three — `closedSubjectIsTypeDesc` (via the scope-generalised
     `closedSubjectIsTypeDescGeneral` workhorse), the STRUCTURAL `closedSubjectIsTypeFormer` (native
-    `closedSubjectHeadIsFormerOrUniverse` + the shipped `eq_*Cell_of_headGenerator` head-to-children
-    reconstructions), and `closedClassifierConvUniverseCode` (native uniqueness) — are now proved on the
-    native formation recursion WITHOUT the `HasTypeDesc.toHasType` bridge.  HT-B: the dead
-    `IsType.toIsTypeDesc` COMPLETENESS-direction downgrade (the lone `HasType.toHasTypeDesc` residual here) is
-    REMOVED, so this file is now fully HasType-free. -/
+    `closedSubjectHeadIsFormerOrUniverse` + the `eq_*Cell_of_headGenerator` head-to-children
+    reconstructions), and `closedClassifierConvUniverseCode` (native uniqueness) — are proved directly on the
+    native formation recursion. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeDescGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeFormer
@@ -914,7 +624,7 @@ gates pin them shut.
     typechecker + canonicity consume) from the `Conv`-blocked classifier conjunct.
     Term-mode recursive `match` (NOT `induction`, which rejects the mutual
     `HasTypeDesc`) + `injection`/`subst_vars` + `congrArg RawTerm.headGenerator` +
-    `Generator.noConfusion` (the propext-free recipe of the bespoke inversions).
+    `Generator.noConfusion` (the propext-free inversion recipe).
     Covers BOTH the dependent-binary formers (Π over `gen_piTyCode`, Σ over
     `gen_sigmaTyCode`).  `…General` is the subject-generalized recursive workhorse;
     `inversion{Pi,Sigma}Code` the concrete `{pi,sigma}TyCodeCell` entry points. -/
@@ -930,10 +640,9 @@ gates pin them shut.
     canonical formation output.  This is the conjunct intrinsic UNIQUENESS (P7) and the
     typechecker's conv-check consume.  Three deltas over the premise half: a `WfContext`
     parameter (threaded as an OUTER argument — the term-mode `match` keeps the context
-    index fixed, so it need not be reverted into the motive as the bespoke
-    `induction`-based inversion must); the `conv` arm composes `Conv`s via
-    `Conv.trans_of_typedMiddle`, the middle's `IsType` from `classifierIsType ∘
-    toHasType` on the `conv` premise; the `genFormation` arm pins the `TypingRuleDesc`
+    index fixed, so it need not be reverted into the motive); the `conv` arm composes
+    `Conv`s via `Conv.trans_of_typedMiddle`, the middle's validity from the native
+    formation validity on the `conv` premise; the `genFormation` arm pins the `TypingRuleDesc`
     (`Option.some.inj`) so the output reduces to `universeCodeCell (lmaxAll …) …`, then
     `Conv.refl` closes the conjunct.  Both formers (Π + Σ). -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeWithConvGeneral
@@ -982,43 +691,25 @@ gates pin them shut.
 /-! ### Component descent (P8) — projecting the typed CHILDREN of a Π/Σ formation cell
     (`HasTypeDescInversion`).  The `…WithConv` inversions yield the premise telescope; the
     typechecker / canonicity consume the DOMAIN and CODOMAIN typings directly.  These
-    corollaries case the two-child `binderShape` telescope (the SAME shape the soundness
-    map performs) to project `HasTypeDesc Γ domain Type@(dl,f)` ∧ `HasTypeDesc (Γ.cons
-    domain) codomain Type@(cl,f)` ∧ `Conv classifier Type@(lmax dl cl, f)`.  Two definitional
+    corollaries case the two-child `binderShape` telescope to project `HasTypeDesc Γ domain Type@(dl,f)` ∧
+    `HasTypeDesc (Γ.cons domain) codomain Type@(cl,f)` ∧ `Conv classifier Type@(lmax dl cl, f)`.  Two definitional
     facts keep it transport-free: `scope + 0 ≡ scope` (binderShape's `Nat.add_zero ▸ domain`
-    head is just `domain`) and `lmaxAll [dl, cl] ≡ lmax dl cl`.  The INTRINSIC analogue of
-    the bespoke `HasType.inversionPiCode` in component form. -/
+    head is just `domain`) and `lmaxAll [dl, cl] ≡ lmax dl cl`.  The Π-code inversion in
+    component form. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeComponents
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeComponents
-
-/-! ### UNIQUENESS of typing (P7) for the description engine
-    (`HasTypeDescUniqueness`).  polycell.md §11.8.5 P7: any two classifiers a cell
-    receives are convertible.  A recursion on `HasTypeDesc` ITSELF: the `var` /
-    `universeFormation` arms invert the second derivation (INTRINSIC leaf inversions);
-    the `conv` arm recurses INTRINSICALLY through `Conv.trans_of_typedMiddle`; the
-    `genFormation` arm is intrinsic — it inverts the second derivation with the
-    INTRINSIC `inversion{Pi,Sigma}CodeWithConvGeneral`, then forces the two formation
-    telescopes to agree on `levels`/`flag` via `DescTelescope.uniquenessAgree`, after
-    which both classifiers reduce to the SAME canonical universe code.  The ONE remaining
-    leaf coupling is `uniquenessAgree` settling each HEAD CHILD's level/flag through the
-    verified bespoke `HasType.uniqueness` (a standalone recursion cannot call the
-    intrinsic uniqueness it precedes; a fully intrinsic version would make the two
-    MUTUAL).  P7 makes `infer` well-defined and feeds canonicity. -/
-#assert_no_axioms FX1Poly.Typed.DescTelescope.uniquenessAgree
-#assert_no_axioms FX1Poly.Typed.HasTypeDesc.uniqueness
 
 /-! ### INTRINSIC renaming/weakening (P6, the β-engine) for the description engine
     (`HasTypeDescWeakening`).  polycell.md §11.8.5 P6: typing is preserved along a context
     morphism.  `HasTypeDesc.renameRespectingContext` (with its telescope companion
     `DescTelescope.renameRespectingTelescope`) preserves `HasTypeDesc` along any renaming
     respecting the context; `HasTypeDesc.weakenUnderBinding` is the weakening special case.
-    An intrinsic-BY-INDUCTION `HasTypeDesc` metatheorem of the decouple (validity /
-    inversion / uniqueness are case-analysis; this is genuine MUTUAL recursion) — proved
-    NOT through the `⟺` maps.  Lands as a clean mutual recursion because it has NO
-    second-derivation inversion (cross-calls on pristine `match`-bound subterms, like
-    `toHasType`); the genFormation companion cross-call is HOISTED before the `by_cases` so
+    An intrinsic-BY-INDUCTION `HasTypeDesc` metatheorem (validity / inversion / uniqueness are
+    case-analysis; this is genuine MUTUAL recursion).  Lands as a clean mutual recursion because it has NO
+    second-derivation inversion (cross-calls on pristine `match`-bound subterms);
+    the genFormation companion cross-call is HOISTED before the `by_cases` so
     `premises` stays pristine for the structural-recursion checker.  The telescope
-    companion's lifted context-condition is the N-binder generalization of the bespoke
+    companion's lifted context-condition is the N-binder generalization of the
     `piFormation` codomain handling, reusing `rename_lift_weaken_commute` at every depth
     (`iterateLiftRaw ρ (cd+1) ≡ lift (iterateLiftRaw ρ cd)`). -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.renameRespectingContext
@@ -1036,7 +727,7 @@ gates pin them shut.
     COMPOUNDS: the companion's successor case reuses the intrinsic
     `HasTypeDesc.weakenUnderBinding` to weaken the substituent across the binder.  `Conv.subst`
     (#370) rides the `conv` arm — no `Conv.trans`, so the β-engine does not depend on raw
-    confluence.  NOT routed through the `⟺` maps. -/
+    confluence.  A purely intrinsic `HasTypeDesc` recursion. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.DescTelescope.substRespectingTelescope
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.substituteUnderBinding
@@ -1047,16 +738,16 @@ gates pin them shut.
     eliminator `gen`-arm (the non-uniform seam PAST formation) consumes.  This is the
     eliminator spine's cartesian-lift fibration leg.
 
-    NON-breaking: `DescTermTelescope` is a STANDALONE inductive (`HasTypeDesc` appears only
-    positively in `cons`'s `headTyped`), so this touches neither `HasTypeDesc`'s constructors
-    nor the `toHasType` ⟺ soundness map.  SELF-recursive (not a mutual block): the head child's
+    Standalone: `DescTermTelescope` is a STANDALONE inductive (`HasTypeDesc` appears only
+    positively in `cons`'s `headTyped`), so this touches `HasTypeDesc`'s constructors not at all.
+    SELF-recursive (not a mutual block): the head child's
     typing is re-renamed by `HasTypeDesc.renameRespectingContext` on the opaque
     `headTyped`; the only recursion is the strictly-smaller `restTyped`, so Lean's structural
     recursion lands it without `termination_by` — exactly like `DescTelescope.toTermTelescope`.
     The arbitrary classifier renames generically (no universe-code brick); the tail's lifted
     context-condition reuses `rename_lift_weaken_commute` at every depth.  `weakenUnderBinding`
     is the depth-0 corollary whose context-condition holds definitionally (`fun _ => rfl`, via
-    `iterateLiftRaw _ 0 ≡ _` and `lookup_cons_succ`).  NOT routed through the `⟺` maps. -/
+    `iterateLiftRaw _ 0 ≡ _` and `lookup_cons_succ`). -/
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope.renameRespectingTermTelescope
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope.weakenUnderBinding
 
@@ -1071,11 +762,10 @@ gates pin them shut.
     substitutes generically (no `subst_universeCodeCell` brick).  The tail's lifted
     substitution-condition's `0`/successor split is IDENTICAL to the formation spine — `0` →
     fresh `var`, `k+1` → the substituent weakened across the binder via the intrinsic
-    `HasTypeDesc.weakenUnderBinding` (the decouple COMPOUNDS: eliminator-spine subst stands on
-    intrinsic HasTypeDesc weakening, no `HasType`).  `substituteUnderBinding` is the depth-0
+    `HasTypeDesc.weakenUnderBinding` (eliminator-spine subst stands on intrinsic HasTypeDesc
+    weakening).  `substituteUnderBinding` is the depth-0
     `subst0` corollary (singleton-cancel side-condition, symmetric to `weakenUnderBinding`).
-    NON-breaking: `DescTermTelescope` standalone, touches neither `HasTypeDesc` ctors nor the
-    `⟺` maps. -/
+    Standalone: `DescTermTelescope` touches `HasTypeDesc` ctors not at all. -/
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope.substRespectingTermTelescope
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope.substituteUnderBinding
 
@@ -1089,18 +779,17 @@ gates pin them shut.
     (not a degenerate SR/Conv-stability collapse): `piApplicationOutputIsType` —
     `f : Π A.B`, `a : A` ⊢ `B[a]` IsType; `sigmaProjectionOutputIsType` — the Σ mirror.
     `subst0 (universeCodeCell ..) argument ≡ universeCodeCell ..` by defeq (subst0 reducible +
-    subst_universeCodeCell rfl) closes the `IsTypeDesc` witness.  NON-breaking: standalone
-    lemmas, touch neither `HasTypeDesc` ctors nor the `⟺` maps. -/
+    subst_universeCodeCell rfl) closes the `IsTypeDesc` witness.  Standalone lemmas, touching
+    `HasTypeDesc` ctors not at all. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.piApplicationOutputIsType
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.sigmaProjectionOutputIsType
 
 /-! ### The engine past formation + first non-vacuous subject reduction
     (`HasTypeDescPi`).  polycell.md §11.8.5: 0-FP is FREE BY CONSTRUCTION (intrinsic intro rules
-    ⇒ empty fiber over the unsound), so the `toHasType ⟺ HasType` map is a formation-fragment
-    CROSS-CHECK, not the soundness source.  `HasTypeDescPi` ADDITIVELY embeds the formation
+    ⇒ empty fiber over the unsound).  `HasTypeDescPi` ADDITIVELY embeds the formation
     fragment (`ofFormation`) and adds Π-introduction (λ) + Π-elimination (app) + its own `conv`
-    — the first engine that expresses β-redexes.  NON-breaking: leaves `HasTypeDesc`,
-    `toHasType`, `decidableOfWellFormed`, and the uniqueness proofs untouched (sidesteps the
+    — the first engine that expresses β-redexes.  Additive: it leaves `HasTypeDesc`,
+    `decidableOfWellFormed`, and the uniqueness proofs untouched (sidesteps the
     decidability/uniqueness cascade a direct `HasTypeDesc` extension would force); `HasTypeDesc`
     cannot type lamCell/appCell (no `typingRuleDescOf` row for gen_lam/gen_app), so `ofFormation`
     of a redex is impossible and the engine genuinely EXTENDS coverage.
@@ -1137,8 +826,8 @@ gates pin them shut.
     on the strictly-smaller `HasTypeDescPi`
     sub-derivations ⇒ structural recursion w/o `termination_by`.  `piIntro` crosses one binder
     (one-binder context-condition via `rename_lift_weaken_commute`); `piElim`'s output commutes by
-    `rename_subst0_commute`.  `weakenUnderBinding` is the `fun _ => rfl` corollary.  NON-breaking:
-    leaves HasTypeDesc/toHasType/decidability/uniqueness untouched. -/
+    `rename_subst0_commute`.  `weakenUnderBinding` is the `fun _ => rfl` corollary.  Additive:
+    leaves HasTypeDesc/decidability/uniqueness untouched. -/
 #assert_no_axioms FX1Poly.Typed.rename_lamCell
 #assert_no_axioms FX1Poly.Typed.rename_appCell
 #assert_no_axioms FX1Poly.Typed.renameContextCondition_cons
@@ -1202,9 +891,8 @@ gates pin them shut.
     consume.  `HasTypeDescPi.inversionPiCodeComponents` (resp. `…Sigma…`) recovers, from a
     `piTyCodeCell`/`sigmaTyCodeCell` SUBJECT's grown typing, that the domain is a grown type and the
     codomain is a grown type under the domain binder.  The grown analogue of the formation
-    `HasTypeDesc.inversionPiCodeComponents`, with the classifier-`Conv` conjunct DROPPED: the grown
-    engine has no `toHasType`, so the formation inversion's `Conv.trans_of_typedMiddle` route is
-    unavailable — but the consumers `_`-discard that `Conv`, so dropping it lets the `conv` arm simply
+    `HasTypeDesc.inversionPiCodeComponents`, with the classifier-`Conv` conjunct DROPPED: the
+    consumers `_`-discard that `Conv`, so dropping it lets the `conv` arm simply
     recurse (no `Conv.trans`).  The `ofFormation` arm routes through the formation workhorse +
     `toDescTelescopePi`; `genFormationPi` is the base (premise telescope verbatim); `piIntro`/`piElim`
     are refuted by `headGenerator` clash. -/
@@ -1222,16 +910,6 @@ gates pin them shut.
     flag — see the file docstring); it is exactly the witness SR/canonicity carry. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piCodeInstantiationIsType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaCodeInstantiationIsType
-
-/-! ### GROWN VALIDITY (P3) — every classifier is a well-formed grown type.
-    `HasTypeDescPi.classifierIsTypeDesc` — the grown mirror of the formation `classifierIsTypeDesc`,
-    UNBLOCKED by the strengthened `piIntro` (codomain a type at the domain's flag → the Π-formation is
-    reconstructible via genFormationPi without a flag mismatch).  Structural recursion: ofFormation
-    routes to formation validity; conv carries its witness; piIntro rebuilds the Π-code via
-    genFormationPi from domainTyped/codomainTyped; piElim recurses (function validity) + the elimination
-    output-validity; genFormationPi types the universe code one level up.  Gateway to canonicity (#459)
-    + consistency (#460).  One of the three metatheory pillars. -/
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.classifierIsTypeDesc
 
 /-! ### Π/Σ-CODE `Conv` STRUCTURAL CHARACTERIZATION (injectivity + congruence), SN-FREE.
     `Conv (piTyCodeCell A B) (piTyCodeCell A' B') ↔ Conv A A' ∧ Conv B B'` (Σ dual).  Since `Conv` is
@@ -1422,63 +1100,54 @@ gates pin them shut.
 -- genFormationPi at the unchanged rule.outputType. No formation generator is named — a new formation row is
 -- absorbed zero-touch. The master dispatcher (TG-3) routes its genFormationPi case through this one arm.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionAtFormerGeneric
--- FORMATION CONTEXT WELL-FORMEDNESS (WfContextDesc.lean, HT-A0-wf): the IsTypeDesc-based twin of WfContext — the
--- linchpin for decoupling the formation-engine metatheory from HasType. WfContext stores IsType (HasType-based)
--- bindings, so every formation theorem that extends/looks-up a binding imports HasType data via toHasType; this
--- predicate stores IsTypeDesc bindings instead, keeping lookups + extensions inside HasTypeDesc. Lighter than the
--- grown WfContextDescPi (formation IsTypeDesc < grown IsTypeDescPi). ofWfContext is the easy bridge
--- (WfContext → WfContextDesc via HasType.toHasTypeDesc) for migrating consumers one site at a time.
+-- FORMATION CONTEXT WELL-FORMEDNESS (WfContextDesc.lean): the IsTypeDesc-based context predicate. It stores
+-- IsTypeDesc bindings, keeping lookups + extensions inside HasTypeDesc. Lighter than the grown WfContextDescPi
+-- (formation IsTypeDesc < grown IsTypeDescPi).
 #assert_no_axioms FX1Poly.Typed.WfContextDesc
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.emptyIsWellFormed
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.tailWellFormed
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.headIsTypeDesc
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.cons
-#assert_no_axioms FX1Poly.Typed.WfContextDesc.ofWfContext
 #assert_no_axioms FX1Poly.Typed.wfContextDesc_universeBinding
--- FORMATION LOOKUP-VALIDITY (WfContextDescLookup.lean, HT-A0-wf): in a formation-well-formed context every
--- variable's type is a formation type (IsTypeDesc) in the full context — the var-arm engine that lets
--- classifierIsTypeDesc read its variable case off WfContextDesc with no HasType round-trip. Structural context
--- induction + HasTypeDesc.weakenUnderBinding (the universe code renames to itself). Formation mirror of
--- WfContext.lookupIsType / WfContextDescPi.lookupIsType.
+-- FORMATION LOOKUP-VALIDITY (WfContextDescLookup.lean): in a formation-well-formed context every variable's
+-- type is a formation type (IsTypeDesc) in the full context — the var-arm engine that lets
+-- classifierIsTypeDescNative read its variable case off WfContextDesc. Structural context induction +
+-- HasTypeDesc.weakenUnderBinding (the universe code renames to itself). Formation mirror of
+-- WfContextDescPi.lookupIsType.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.weakenUnderBinding
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.lookupIsTypeDesc
--- FORMATION VALIDITY over WfContextDesc, HasType-FREE (WfContextDescValidity.lean, HT-A2): a HasTypeDesc-typed
--- cell's classifier is a formation type (IsTypeDesc), proved over WfContextDesc — identical to the WfContext
--- classifierIsTypeDesc EXCEPT the var arm reads WfContextDesc.lookupIsTypeDesc directly, so the whole proof has
--- no HasType.toHasTypeDesc. The migration TARGET that supersedes classifierIsTypeDesc once consumers thread
--- WfContextDesc (and the canonical formation validity after the bespoke engine is deleted, HT-C).
+-- FORMATION VALIDITY over WfContextDesc (WfContextDescValidity.lean): a HasTypeDesc-typed cell's classifier is a
+-- formation type (IsTypeDesc), proved over WfContextDesc. The var arm reads WfContextDesc.lookupIsTypeDesc
+-- directly. The canonical formation validity.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDescNative
--- FORMATION CLASSIFIER-SN over WfContextDesc, HasType-FREE (WfContextDescStronglyNormalizing.lean, HT-A3): the
--- classifier of a HasTypeDesc-typed cell is strongly normalizing, routed through the native
--- classifierIsTypeDescNative (no HasType) then IsTypeDesc.isStronglyNormalizing. The first CONSUMER of the
--- native validity target (confirms it is usable, not merely gated).
+-- FORMATION CLASSIFIER-SN over WfContextDesc (WfContextDescStronglyNormalizing.lean): the classifier of a
+-- HasTypeDesc-typed cell is strongly normalizing, routed through classifierIsTypeDescNative then
+-- IsTypeDesc.isStronglyNormalizing. A consumer of the native validity target.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierStronglyNormalizingNative
--- FORMATION UNIQUENESS (P7) over WfContextDesc, HasType-FREE (WfContextDescUniqueness.lean, HT-A2): a genuine
--- MUTUAL recursion uniquenessNative/uniquenessAgreeNative — the head child recurses into uniquenessNative
--- itself (no HasType.uniqueness oracle) and the rest extends via WfContextDesc.cons whose IsTypeDesc binding IS
--- the head typing (no toHasType); arms invert via the now-param-free inversions (HT-A2-inv-drop). So the whole
--- mutual pair has no HasType. Closes the native-uniqueness half of HT-A2; the migration target superseding
--- HasTypeDesc.uniqueness once consumers thread WfContextDesc.
+-- FORMATION UNIQUENESS (P7) over WfContextDesc (WfContextDescUniqueness.lean): a genuine MUTUAL recursion
+-- uniquenessNative/uniquenessAgreeNative — the head child recurses into uniquenessNative itself and the rest
+-- extends via WfContextDesc.cons whose IsTypeDesc binding IS the head typing; arms invert via the param-free
+-- inversions. The canonical formation uniqueness.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.uniquenessNative
 #assert_no_axioms FX1Poly.Typed.DescTelescope.uniquenessAgreeNative
--- GROWN CONTEXT WELL-FORMEDNESS (WfContextDescPi.lean, WFG-1): the structural-parity twin of WfContext via the
--- grown IsTypeDescPi. WfContext is HasType-based, hence UN-extendable at a grown piIntro binder (no
--- HasTypeDescPi → IsType bridge); WfContextDescPi IS extendable (a grown domain typing is an IsTypeDescPi), the
--- substrate prerequisite the master SR dispatcher (TG-3/SN-055) threads through binders. Mirrors WfContext.lean
--- (structural-recursion def + And-projection inversions, propext-free). ofWfContext is the easy bridge
--- (WfContext → WfContextDescPi via ofFormation ∘ HasType.toHasTypeDesc).
+-- GROWN CONTEXT WELL-FORMEDNESS (WfContextDescPi.lean, WFG-1): the grown context predicate over IsTypeDescPi. It
+-- IS extendable at a grown piIntro binder (a grown domain typing is an IsTypeDescPi) — the substrate prerequisite
+-- the master SR dispatcher (TG-3/SN-055) threads through binders. Structural-recursion def + And-projection
+-- inversions, propext-free.
 #assert_no_axioms FX1Poly.Typed.WfContextDescPi
 #assert_no_axioms FX1Poly.Typed.WfContextDescPi.emptyIsWellFormed
 #assert_no_axioms FX1Poly.Typed.WfContextDescPi.tailWellFormed
 #assert_no_axioms FX1Poly.Typed.WfContextDescPi.headIsType
 #assert_no_axioms FX1Poly.Typed.WfContextDescPi.cons
-#assert_no_axioms FX1Poly.Typed.WfContextDescPi.ofWfContext
 #assert_no_axioms FX1Poly.Typed.wfContextDescPi_universeBinding
+-- GROWN-FROM-FORMATION CONTEXT LIFT (WfContextDescPiFromWfContextDesc.lean): a formation-well-formed context
+-- (WfContextDesc, IsTypeDesc bindings) lifts to a grown-well-formed one (WfContextDescPi, IsTypeDescPi bindings)
+-- via the native HasTypeDesc.toHasTypeDescPi formation -> grown embed on each binding.
+#assert_no_axioms FX1Poly.Typed.WfContextDescPi.ofWfContextDesc
 -- GROWN LOOKUP-VALIDITY (WfContextDescPiLookup.lean, WFG-2): in a grown-well-formed context every variable's
--- type is a grown type (IsTypeDescPi). The grown mirror of WfContext.lookupIsType (structural context induction
--- + grown weakening IsTypeDescPi.weakenUnderBinding); the var-arm engine of grown classifier-validity over
--- WfContextDescPi (next master-SR prerequisite — the dispatcher threads WfContextDescPi, not the non-extendable
--- HasType-based WfContext).
+-- type is a grown type (IsTypeDescPi). Structural context induction + grown weakening
+-- IsTypeDescPi.weakenUnderBinding; the var-arm engine of grown classifier-validity over WfContextDescPi (the
+-- master SR dispatcher threads WfContextDescPi, which extends at a grown piIntro binder).
 #assert_no_axioms FX1Poly.Typed.IsTypeDescPi.weakenUnderBinding
 -- GROWN TYPE-STABILITY, substitution dual (WfContextDescPiLookup.lean): IsTypeDescPi survives single-
 -- substitution (the subst dual of weakenUnderBinding), so a grown type in a cons-context becomes a grown type
@@ -1490,14 +1159,14 @@ gates pin them shut.
 -- FORMATION→GROWN TYPE EMBEDDING (WfContextDescPiValidity.lean): the IsType-level functoriality mirror of the
 -- term-level HasTypeDesc.toHasTypeDescPi — a formation type (IsTypeDesc) is a grown type (IsTypeDescPi) via
 -- ofFormation. The named extraction of the .ofFormation-arm re-wrap recurring across the grown classifier-
--- validity twins, so the WfContext→WfContextDescPi swap batch lifts formation-type outputs uniformly.
+-- validity family, lifting formation-type outputs uniformly.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.toIsTypeDescPi
 -- GROWN CLASSIFIER-VALIDITY, formation leaf (WfContextDescPiValidity.lean, WFG-3a): a FORMATION-typed cell's
 -- classifier is a grown type (IsTypeDescPi) under the grown well-formedness WfContextDescPi. The var arm reads
 -- WfContextDescPi.lookupIsType directly (under a grown context a formation variable's type is grown); the rest
 -- lift the formation universe-typing via ofFormation. The formation-engine leaf of grown classifier-validity;
 -- the grown HasTypeDescPi.classifierIsTypeDescPi + the piCodeInstantiationIsType/betaSR WfContextDescPi twins
--- (the broad mechanical WfContext→WfContextDescPi swap) follow toward the master SR (TG-3).
+-- feed toward the master SR (TG-3).
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDescPi
 -- GROWN CLASSIFIER-VALIDITY, the grown-engine payoff (HasTypeDescPiClassifierValidity.lean, WFG-3): a grown-typed
 -- subject's classifier is a grown type (IsTypeDescPi) under the EXTENDABLE WfContextDescPi — the leg the master SR
@@ -1570,8 +1239,8 @@ gates pin them shut.
 /-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
     `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
     looked-up (γ-closed) type — the ∀-form makes the fundamental theorem's `var` case
-    `lookupReducible`, and the dependent membership re-substitutes each variable's type (vs the
-    superseded fixed-candidate `ReducibleSubst`).  `empty` is the closed-term base; `cons` is the
+    `lookupReducible`, and the dependent membership re-substitutes each variable's type.  `empty` is the
+    closed-term base; `cons` is the
     Π-introduction binder extension, its weakened lookups cancelled by `RawTerm.weaken_subst_cons`. -/
 #assert_no_axioms FX1Poly.Typed.ReducibleEnv
 #assert_no_axioms FX1Poly.Typed.ReducibleEnv.lookupReducible
@@ -1776,7 +1445,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fundamentalPiFormationWithPositiveTypeCandidatesFromUniverseDomain
 
 /-! ### Dependent fundamental theorem — the NON-telescope arms over the ∀-level environment.  `var` (the arm
-    the ∀-level env was built to unblock: closes by instantiating the all-levels family at the conclusion
+    the ∀-level env unblocks: closes by instantiating the all-levels family at the conclusion
     level, off-by-one-free), `universeFormation` (`Type@e : Type@(lsucc e)`), and `conv` (reclassifier IH one
     level up → `tarskiDecode` → `castAlongConvUnderSubst`) all close with zero axioms over
     `ReducibleEnvAtAllLevels`, validating the env on the leaf/conv fragment.  The `genFormation` / `piIntro`
@@ -1945,7 +1614,7 @@ gates pin them shut.
 -- (FundamentalLevelIndexed.lean:60) — ∀ closing σ, ReducibleEnvVec contextLevels context σ → IsReducibleMemberAt
 -- subjectLevel (subst σ classifier) (subst σ subject) — with subjectLevel a SEPARATE Nat (fuel/depth, NOT denote)
 -- from the env's contextLevels vector; that decoupling lets var conclude at its OWN level and the binder thread the
--- codomain one rung lower. The motive def itself was previously ungated — this gate closes that gap.
+-- codomain one rung lower.
 #assert_no_axioms FX1Poly.Typed.FundamentalConclusionLevelIndexed
 -- SN-014..020 VERIFIED 2026-06-02 (no rebuild): the seven fundamental*LevelIndexed arms that discharge the motive
 -- (assembled by ValidTyping.fundamental) are each gated immediately below — var (own-level direct
@@ -2139,7 +1808,7 @@ gates pin them shut.
 -- hasTypeDescPiReducibleFromTotalBridge, composing the total bridge with the UNCONDITIONAL
 -- ValidTyping.substStronglyNormalizing. Operationalizes the finding that ValidTyping.fundamental is unconditional
 -- (composite-domain Π handled by its env-extension codomain IH), so SN-043's ONLY residual is the leveling bridge
--- (totalBridge / #662) — NOT the superseded fuel gate HasPositiveMemberExtension… (#672), which is OFF this path.
+-- (totalBridge / #662) — NOT the fuel gate HasPositiveMemberExtension… (#672), which is OFF this path.
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPiStronglyNormalizingFromTotalBridge
 -- SN-043 headline (LevelingBridge.lean): hasTypeDescPiClosedStronglyNormalizingFromEmptyBridge — the LITERAL
 -- closed SN-043 shape HasTypeDescPi .empty t T → SN t, modulo the empty-context leveling bridge. Composes with
@@ -2261,7 +1930,7 @@ gates pin them shut.
 -- (reducibility, NOT ValidTyping levels). The grown-engine recursor HasTypeDescPi.fundamentalAtAllFromFormation is
 -- ALREADY proven conditional on the formation-engine FT (HasTypeDesc -> IsFundamentalConclusionAtVector). This
 -- theorem WIRES that single hypothesis to the all-level FT INTERFACE HasTypeDescPiAllLevelFundamentalTheorem, which
--- is consumed (never previously produced) by ~10 downstream SN/canonicity/consistency theorems. So SN-027's sole
+-- is consumed by ~10 downstream SN/canonicity/consistency theorems. So SN-027's sole
 -- residual is now the 4-arm formation-engine FT (#674: var via the all-level env, not pinning; universe/genFormation
 -- formers; conv via Conv-invariance of reducibility) — the var arm is dischargeable here, no level-pinning wall.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiAllLevelFundamentalTheorem.ofFormationFundamental
@@ -2518,19 +2187,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormationUnderSubst
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormationUnderSubst
 
--- The hard-coded root-classification lemmas (HasTypeDesc/HasTypeDescPi.subjectRootGenerator,
--- HasTypeDescPi.closedSubjectRootGenerator) were RETIRED — they enumerated gen_piTyCode/gen_sigmaTyCode and
--- could not survive a new formation row.  Superseded by the table-generic family in HasTypeDescPiRootGeneric
--- (subjectRootGeneratorGeneric / closedSubjectRootGeneratorGeneric, gated below).  Their ne_lam/ne_app
--- corollaries survive (proofs migrated to the generic classification).
+-- Root-classification corollaries: a formation-typed subject's root generator is neither lam nor app. The
+-- table-generic family in HasTypeDescPiRootGeneric (subjectRootGeneratorGeneric /
+-- closedSubjectRootGeneratorGeneric, gated below) drives these ne_lam/ne_app corollaries, so a new formation
+-- row extends them with no change.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGenerator_ne_lam
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectRootGenerator_ne_app
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectCannotBeLambda
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectCannotBeApplication
-#assert_no_axioms FX1Poly.Typed.HasType.subjectRootGenerator_ne_lam
-#assert_no_axioms FX1Poly.Typed.HasType.subjectRootGenerator_ne_app
-#assert_no_axioms FX1Poly.Typed.HasType.subjectCannotBeLambda
-#assert_no_axioms FX1Poly.Typed.HasType.subjectCannotBeApplication
 
 /-! ### FORMATION-ARM BRIDGE: membership at a universe-code classifier ⟺ strong normalization.
     A universe code is a normal leaf (`noStep_universeCode`), hence neutral, so the dependent
@@ -2958,7 +2622,7 @@ gates pin them shut.
 -- #672 fundamental — extraction is free, so Path C adds no obligation beyond Path A's. No fundamental proven here.
 #assert_no_axioms FX1Poly.Core.boolCanonicityScone
 #assert_no_axioms FX1Poly.Core.boolCanonicityViaSconing
--- GENERIC data-canonicity sconing witness (SN-048/049/093): the bool witness above was a SPECIAL CASE.
+-- GENERIC data-canonicity sconing witness (SN-048/049/093): generalizes the bool witness above (a SPECIAL CASE).
 -- EVERY data candidate shares ONE uniform #672-free extraction (CanonicalFormsPredicate.closedReducesToValue,
 -- generic in the value predicate), so dataCanonicityScone is parametric in isValue: computable = data candidate,
 -- extraction = the uniform closedReducesToValue, fundamental (well-typed -> candidate member) the explicit sole
@@ -3325,8 +2989,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfSimplyTypedBareClosed
 
 -- simplyTypedBareClosedStronglyNormalizing (Milestone A0 simply-typed floor, SN half): the standalone reusable
--- form of "a closed simply-typed term is strongly normalizing" — previously only inline inside
--- decidableOfSimplyTypedBareClosed. The simply-typed FT's stronglyNormalizingClosed reflected to the bare term
+-- form of "a closed simply-typed term is strongly normalizing". The simply-typed FT's stronglyNormalizingClosed
+-- reflected to the bare term
 -- via stronglyNormalizing_of_subst. With decidableOfSimplyTypedBareClosed (the decidable-Conv half) this names
 -- the UNCONDITIONAL defensible-kernel floor: the simply-typed fragment has SN PROVEN (not assumed), so typing
 -- alone decides conversion. Honest qualifier boundary: simply-typed fragment ONLY; broader fragments need SN-043.
@@ -3443,7 +3107,7 @@ gates pin them shut.
 -- WEAK NORMALIZATION: a strongly-normalizing term reaches a structural normal form, with the reduction
 -- chain produced by descending the `Acc StepSuccessor` witness and extracting a real Step at every
 -- non-normal node.  The StepStar-existence half of normalization (uniqueness comes from confluence) —
--- the strongly-normalizing-fragment door to decidable Conv (#267) and the WHNF migration (#374).
+-- the strongly-normalizing-fragment door to decidable Conv (#267) and the WHNF normalizer (#374).
 #assert_no_axioms FX1Poly.Core.exists_normalForm_of_isStronglyNormalizing
 
 -- NORMAL-FORM UNIQUENESS: confluence forces two normal reducts of one SN term to coincide, so the SN
@@ -3459,9 +3123,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.Conv.iff_normalForms_eq_of_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.Conv.decidableOfNormalForms_of_isStronglyNormalizing
 
--- GIRARD CR BUNDLE (per-decl gates, migrating the load-bearing reducibility-candidate primitives off
--- sweep-only coverage): the IsReducibilityCandidate triple CR1/CR2/CR3 (structure fields), the base
--- SN-is-a-candidate witness, candidate-congruence under PointwiseIff, and candidate variable-membership.
+-- GIRARD CR BUNDLE (per-decl gates on the load-bearing reducibility-candidate primitives): the
+-- IsReducibilityCandidate triple CR1/CR2/CR3 (structure fields), the base SN-is-a-candidate witness,
+-- candidate-congruence under PointwiseIff, and candidate variable-membership.
 #assert_no_axioms FX1Poly.Core.isStronglyNormalizing_isReducibilityCandidate
 #assert_no_axioms FX1Poly.Core.IsReducibilityCandidate.respectsPointwiseIff
 #assert_no_axioms FX1Poly.Core.IsReducibilityCandidate.containsVariable
@@ -3767,7 +3431,7 @@ gates pin them shut.
 -- Type@inner is NOT all-levels member-stable — var index is a reducible member just above the inner level (SN +
 -- neutral reducible) but the candidate at level 0 is empty. So a composite domain with a universe-code COMPONENT
 -- canNOT satisfy compositeDomainMemberStableToOuter's all-levels component-stability premise; threshold-drift
--- composites are the open #672 residual, NOT closed by the member-stability route (corrects the prior overclaim).
+-- composites are the open #672 residual, NOT closed by the member-stability route.
 #assert_no_axioms FX1Poly.Typed.universeCodeNotAllLevelsMemberStable
 
 -- DenoteKeyedSingleLevelPi (the #672 REFRAME — drift-free single-level toolkit): the all-levels piArm (#752)
@@ -4383,7 +4047,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.isReducibleTypeAboveThreshold
 -- SN-D7 (#746): MEMBER strong-normalization for the universe-domain Π fragment over the denote relation
 -- (DenoteKeyedUniverseDomainPiMemberSN.lean). The TYPE-level half (universeDomainPi_reducibleAtEveryDenoteLevel
--- + member-stability) was shipped; this adds the MEMBER-SN payoff the fragment lacked. The early win that
+-- + member-stability) supplies the type-level half; this adds the MEMBER-SN payoff. The early win that
 -- de-risks SN-D5: it sidesteps the cumulativity obstruction (DenoteKeyedCumulativityObstruction) entirely by
 -- fixing ONE ambient level strictly above denote e — no across-level transport — where the Type@e universe
 -- candidate is a genuine reducibility candidate (the bounded denoteBelowFamily legs hold via denote e < level)
@@ -4438,7 +4102,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.reducibilityFullMetatheoryViaSconing
 -- First CONCRETE UNCONDITIONAL instantiation of the metatheory capstone (SimplyTypedMetatheoryViaSconing.lean):
 -- the closed simply-typed fragment's full decidable metatheory via the sconing route. reducibilityFullMetatheory
--- ViaSconing was parametric in (candidate, fundamental) -- this exhibits a real inhabitant with NO SN-043 dep:
+-- ViaSconing is parametric in (candidate, fundamental); this exhibits a real inhabitant with NO SN-043 dep:
 -- candidate = the SN reducibility candidate (isStronglyNormalizing_isReducibilityCandidate); fundamental = the
 -- unconditional simply-typed SN theorem simplyTypedBareClosedStronglyNormalizing (Milestone-A0 floor). Genuine +
 -- non-circular: fundamental is "closed simply-typed => SN" (isWellTyped != candidate), then the capstone carries
@@ -4452,8 +4116,8 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.simplyTypedReachesNormalForm
 #assert_no_axioms FX1Poly.Typed.simplyTypedConversionDecidableViaSconing
 -- First concrete RawCategory instance for FX (FxRenamingCategory.lean, toward SN-083/084 fxBaseRMC). The Tier-0
--- categorical interfaces (RawCategory / RepresentableMapCategory / GlobalSections / SconingObject) had NO
--- concrete FX inhabitant -- every structure was an obligation shape. fxRenamingCategory builds the first: the
+-- categorical interfaces (RawCategory / RepresentableMapCategory / GlobalSections / SconingObject) are
+-- obligation-shape interfaces; fxRenamingCategory builds the first concrete FX inhabitant: the
 -- renaming (thinning) category, objects = scopes (Nat), morphisms = positional renamings (RawRenaming = Fin
 -- source -> Fin target). All three category laws hold definitionally (function-comp associativity + definitional
 -- eta), so it is a genuine complete category, not a stub. HONEST SCOPE: this is the renaming/thinning base (the
@@ -4702,44 +4366,33 @@ gates pin them shut.
 -- the reducible-closing-environment builder (reducibleEnvOfWfContext, OB-3/OB-4) cons-feeds toward open SN-043.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReducibleAsTypeUnderEnv
 
--- OB-3 (ReducibleEnvOfWfContext.lean): the reducible closing environment for a well-formed context. Every WfContext
--- admits a bound + a closing substitution (every variable ↦ var 0 ∈ scope 1, the "var 0 head" trick that sidesteps
--- renaming closure) under which it is a bound-reducible environment. Telescope induction via ReducibleEnvAtBounded.cons:
--- OB-2 makes each binding type reducible, OB-1 puts var 0 in it, with a SUM bound (Nat.le_add_*, propext-free — the
--- max-based attempt leaked propext via Nat.le_max_*). The env half of the OpenStronglyNormalizing residual; OB-4 bundles
--- the main derivation's budget. Toward unconditional open SN-043 (#546).
-#assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContext
--- The BRIDGE-FREE WfContextDesc twin of OB-4 (HT-B): identical builder over WfContextDesc, reading each binding's
+-- OB-3 (ReducibleEnvOfWfContext.lean): the reducible closing environment for a well-formed context. Every
+-- WfContextDesc admits a bound + a closing substitution (every variable ↦ var 0 ∈ scope 1, the "var 0 head"
+-- trick that sidesteps renaming closure) under which it is a bound-reducible environment. It reads each binding's
 -- type-hood off the native WfContextDesc.headIsTypeDesc (= wellFormed.2) + the native HasTypeDesc.toHasTypeDescPi
--- formation→grown embed — NO WfContext.headIsType, NO HasType.toHasTypeDesc, NO ofWfContext. The first brick of the
--- WfContext→WfContextDesc open-SN spine migration (the wf-hypothesis is genuinely external since HasTypeDescPi→WfContext
--- provably FAILS, ContextValidityFails). The target the open-SN consumers migrate onto before HT-C deletes the engine.
+-- formation -> grown embed. Telescope induction via ReducibleEnvAtBounded.cons: OB-2 makes each binding type
+-- reducible, OB-1 puts var 0 in it, with a SUM bound (Nat.le_add_*, propext-free — the max-based attempt leaked
+-- propext via Nat.le_max_*). The env half of the OpenStronglyNormalizing residual toward unconditional open
+-- SN-043 (#546); the wf-hypothesis is genuinely external since HasTypeDescPi -> WfContext provably FAILS
+-- (ContextValidityFails).
 #assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContextDesc
 
 -- ★ SN-043 OPEN (OpenStronglyNormalizingUnconditional.lean, OB-5): every well-typed grown term in a WELL-FORMED
--- context is strongly normalizing, UNCONDITIONALLY. WfContext Γ → HasTypeDescPi Γ subject classifier →
+-- context is strongly normalizing, UNCONDITIONALLY. WfContextDesc Γ → HasTypeDescPi Γ subject classifier →
 -- IsStronglyNormalizing subject. The open generalization of closedStronglyNormalizing (BFT-14) from .empty to
--- arbitrary WfContext Γ. Composes existsBound (budget) + reducibleEnvOfWfContext (OB-3, the reducible closing env)
--- at a common SUM bound, fed to stronglyNormalizingOfReducibleEnv (reflects SN internally). The OB-1..OB-5
--- capstone — reached with NO #672, NO KB merged candidate, NO renaming closure. Closes #546.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfWfContext
--- The BRIDGE-FREE WfContextDesc twin (HT-B spine-step 2): identical composition but the reducible closing env
--- comes from reducibleEnvOfWfContextDesc (native WfContextDesc.headIsTypeDesc + HasTypeDesc.toHasTypeDescPi) — so
--- the whole open-SN capstone now has a route with NO HasType dependency. The wf-hypothesis stays external (since
--- HasTypeDescPi → WfContext provably FAILS, ContextValidityFails); the SN-051/052/055 qualifier-drops migrate onto
--- this before HT-C deletes the engine.
+-- arbitrary Γ. Composes existsBound (budget) + reducibleEnvOfWfContextDesc (OB-3, the reducible closing env over
+-- the native WfContextDesc.headIsTypeDesc + HasTypeDesc.toHasTypeDescPi) at a common SUM bound, fed to
+-- stronglyNormalizingOfReducibleEnv (reflects SN internally). The OB-1..OB-5 capstone — reached with NO #672, NO
+-- KB merged candidate, NO renaming closure. The wf-hypothesis stays external (since HasTypeDescPi → WfContext
+-- provably FAILS, ContextValidityFails). Closes #546.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfWfContextDesc
 
--- SN-051 / SN-046-uncond (WfContextDecidableConv.lean): the open-SN-043 harvest. Two well-typed subjects in a
--- well-formed context have DECIDABLE Conv (no typed-SN hypothesis — each OB-5 SN witness feeds the parameter-free
--- decider Conv.decidableOfStronglyNormalizing), and global confluence holds (per-term Newman on the OB-5 SN
--- witness). The qualifier moves from "assume typed-SN" to "assume WfContext" (a decidable presupposition; the
--- unqualified typed-SN interface is unprovable since the var rule types in any context).
-#assert_no_axioms FX1Poly.Typed.Conv.decidableOfWellTypedInWfContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectConfluenceOfWfContext
--- The BRIDGE-FREE WfContextDesc twins (HT-B spine step 3): the whole decidable-Conv / convergence leg, routed
--- through the HasTypeDesc-defined WfContextDesc via the bridge-free stronglyNormalizingOfWfContextDesc — NO
--- HasType dependency on the path. The SN-051/052 qualifier-drop targets migrate onto these before HT-C.
+-- SN-051 / SN-046-uncond (WfContextDecidableConv.lean): the open-SN-043 harvest, routed through the
+-- HasTypeDesc-defined WfContextDesc via the bridge-free stronglyNormalizingOfWfContextDesc. Two well-typed
+-- subjects in a well-formed context have DECIDABLE Conv (no typed-SN hypothesis — each OB-5 SN witness feeds the
+-- parameter-free decider Conv.decidableOfStronglyNormalizing), and global confluence holds (per-term Newman on
+-- the OB-5 SN witness). The qualifier is "assume WfContextDesc" (a decidable presupposition; the unqualified
+-- typed-SN interface is unprovable since the var rule types in any context).
 #assert_no_axioms FX1Poly.Typed.Conv.decidableOfWellTypedInWfContextDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectConfluenceOfWfContextDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectWeaklyNormalizesOfWfContextDesc
@@ -4851,8 +4504,7 @@ gates pin them shut.
 
 -- SN-055 FORMATION-ENGINE subject reduction (HasTypeDescSubjectReduction.lean): the dispatcher's ofFormation
 -- arm carries a HasTypeDesc premise (var/conv/universeFormation/genFormation), which must itself be SR-closed.
--- GENUINELY non-vacuous: the formation engine types the Π/Σ-former CODES, whose Step is a domain/codomain
--- congruence (unlike the bespoke leaf-only HasType, whose subjectReduction is a no-Step lemma). A MUTUAL pair
+-- The formation engine types the Π/Σ-former CODES, whose Step is a domain/codomain congruence. A MUTUAL pair
 -- mirroring convContext/convTelescope: HasTypeDesc.subjectReduction (var/universe normal via no_step_from_var/
 -- _universeCode, conv recursive, genFormation via former_step_inv + the telescope SR) ⋈ DescTelescope.subject-
 -- Reduction (here = head SR + convTelescope re-typing the tail under the stepped binding via convContext-
@@ -4865,10 +4517,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectReduction
 #assert_no_axioms FX1Poly.Typed.DescTelescope.subjectReduction
 -- HONESTY: the formation fragment is NORMAL — subjectAdmitsNoStep is the genuinely content-bearing
--- characterization (every formation-typed subject admits no Step), making the SR above VACUOUSLY true (an
--- earlier docstring overclaimed "non-vacuous"; corrected). childrenAdmitNoStep is the mutual telescope
--- normality witness. subjectAdmitsNoStep is the tool the SN-055 dispatcher's ofFormation arm actually uses
--- (absurd step via no-step), NOT the heavier vacuous subjectReduction.
+-- characterization (every formation-typed subject admits no Step), making the SR above VACUOUSLY true.
+-- childrenAdmitNoStep is the mutual telescope normality witness. subjectAdmitsNoStep is the tool the SN-055
+-- dispatcher's ofFormation arm actually uses (absurd step via no-step), NOT the heavier vacuous subjectReduction.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectAdmitsNoStep
 #assert_no_axioms FX1Poly.Typed.DescTelescope.childrenAdmitNoStep
 -- FormationNormalSmoke: a NON-VACUOUS regression for subjectAdmitsNoStep on a concrete closed two-child
@@ -4878,22 +4529,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.formationNormalSmoke_piCodeTyped
 #assert_no_axioms FX1Poly.Typed.formationNormalSmoke_piCodeAdmitsNoStep
 
--- The convergence package unconditional on the WfContext fragment (twin of convergencePackageModuloStrongly-
--- Normalizes, SN hypothesis discharged by OB-5): weak normalization (normalize on the OB-5 SN witness), unique
--- normal form (WN + SN-046-uncond confluence + normal-form rigidity), and the bundled headline. The typed
--- fragment is a convergent rewriting system with canonical representatives per well-typed subject (the Path-A NbE
--- headline), no SN hypothesis — only the honest WfContext presupposition.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectWeaklyNormalizesOfWfContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueNormalFormOfWfContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convergencePackageOfWfContext
-
 -- OSN-2 (OpenSNSmoke.lean): open-context SN regression corpus via open SN-043 (OB-5). Four concrete terms in the
 -- non-empty well-formed context Γ = (.empty).cons (Type@e) — a universe code (ofFormation), the context
--- variable var 0 (var-rule bridge), the identity lambda (piIntro binder), and the β-redex (λx.x) Type@s (piElim)
--- — each discharged to IsStronglyNormalizing by HasTypeDescPi.stronglyNormalizingOfWfContextDesc (the bridge-free
--- OB-5 over the native IsTypeDesc-based WfContextDesc + wfContextDesc_universeBinding). The β-redex entry is the
+-- variable var 0 (var rule), the identity lambda (piIntro binder), and the β-redex (λx.x) Type@s (piElim)
+-- — each discharged to IsStronglyNormalizing by HasTypeDescPi.stronglyNormalizingOfWfContextDesc (OB-5 over the
+-- native IsTypeDesc-based WfContextDesc + wfContextDesc_universeBinding). The β-redex entry is the
 -- NON-VACUOUS one: a term that actually reduces, whose termination OB-5 certifies. The open analogue of
--- ClosedSNSmoke (SN-044). HT-B: this corpus is fully migrated off the HasType engine + the WfContext bridge.
+-- ClosedSNSmoke (SN-044).
 #assert_no_axioms FX1Poly.Typed.openUniverseCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.openContextVariable_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.openIdentityLambda_stronglyNormalizing
@@ -4901,7 +4543,7 @@ gates pin them shut.
 
 -- OB-6 (ContextValidityFails.lean): the WfContext hypothesis in open SN-043 is NECESSARY. A lamCell is never a
 -- type (lamCell_isNotType, via subjectIsVariableOrTypeFormerCode + Generator.noConfusion head-mismatch), so
--- Γ = (.empty).cons (λx.x) is ill-formed; yet the bespoke var rule (bridged) types var 0 in it
+-- Γ = (.empty).cons (λx.x) is ill-formed; yet the var rule types var 0 in it
 -- (wellTypedInIllFormedContext) — refuting HasTypeDescPi Γ t T → WfContext Γ (contextValidityPresuppositionFails).
 -- The honest negative result: OB-5's WfContext qualifier is an irreducible presupposition, not a removable
 -- artifact (the closed Γ=.empty instance consumed by canonicity/consistency is trivially well-formed).
@@ -4909,34 +4551,26 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.wellTypedInIllFormedContext
 #assert_no_axioms FX1Poly.Typed.contextValidityPresuppositionFails
 
--- OSN-1 scaffolding (OpenStronglyNormalizingBetaEta.lean): the precise remaining crux for open βη-SN +
--- the complete pieces it enables. Well-typed open terms are β-SN (OB-5) AND η-SN (unconditional, since η shrinks
--- RawTerm.size) separately (componentwiseStronglyNormalizingOfWfContext). The UNION βη-SN is NOT their
--- conjunction (β/η interleave), but the SN-of-union assembly IS shipped Init-only zero-axiom (the Geser
--- criterion accUnionBetaEta, OSN-B1/B2): betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes wires OB-5
--- (β-SN) + shipped η-SN + that criterion into conditional open βη-SN. Its hypothesis, the η-postponement crux
--- EtaQuasiCommutesOverBeta, is now DISCHARGED (etaQuasiCommutesOverBeta, OSN-B6, the per-η-ctor critical-pair
--- assembly over all 5 η constructors), so betaEtaStronglyNormalizingOfWfContext is UNCONDITIONAL open βη-SN
--- (OSN-B7, closes #796); the weaker EtaPreservesBetaStronglyNormalizing framing's payoff is
--- etaReductOfWellTypedIsBetaStronglyNormalizing. No sorry/placeholder.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.componentwiseStronglyNormalizingOfWfContext
+-- OSN-1 (OpenStronglyNormalizingBetaEta.lean): the η-reduct of a well-typed open term is β-SN. Well-typed open
+-- terms are β-SN (OB-5) AND η-SN (unconditional, since η shrinks RawTerm.size) separately. The UNION βη-SN is
+-- NOT their conjunction (β/η interleave), but the SN-of-union assembly is the Geser criterion accUnionBetaEta;
+-- the η-postponement crux EtaQuasiCommutesOverBeta is discharged (etaQuasiCommutesOverBeta, the per-η-ctor
+-- critical-pair assembly over all 5 η constructors). etaReductOfWellTypedIsBetaStronglyNormalizing is the
+-- EtaPreservesBetaStronglyNormalizing payoff. No sorry/placeholder. (The WfContextDesc open βη-SN twins are
+-- gated below.)
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaReductOfWellTypedIsBetaStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContext_of_etaQuasiCommutes
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContext
 
 -- OSN-B8 (WfContextBetaEtaConfluence.lean): the GEUVERS harvest of OSN-1. Raw βη-CR is false (Nederpelt/Klop),
 -- so CR on the WELL-TYPED fragment is the maximal honest statement (Geuvers LICS'92). Factored as raw local
 -- βη-confluence (cd_lemma) ⊕ typed βη-SN (OSN-1) → typed global CR via Newman; unique-βη-NF is the CR corollary
 -- via star-rigidity. Weak βη-normalization (existence) + decidable βη-Conv are DEFERRED to the Path-A βη
 -- normalizer (not faked from confluence). eq_of_noBetaEtaStep is the raw βη star-rigidity (propext-clean cases).
+-- (The βη-CR / unique-βη-NF over WfContextDesc are gated below.)
 #assert_no_axioms FX1Poly.Core.Step.betaEtaStar.eq_of_noBetaEtaStep
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectBetaEtaConfluenceOfWfContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContext
--- The BRIDGE-FREE WfContextDesc twins (HT-B spine step 4 — the βη leg): the componentwise + conditional +
--- headline open βη-SN (OpenStronglyNormalizingBetaEta.lean) and the Geuvers βη-CR + unique-βη-NF
--- (WfContextBetaEtaConfluence.lean), all routed through the bridge-free stronglyNormalizingOfWfContextDesc — the
--- η-SN component + the Geser union criterion + the βη-Newman bridge are context-predicate-agnostic, so NO
--- HasType on the path. The βη qualifier-drop targets migrate onto these before HT-C.
+-- The WfContextDesc twins (the βη leg): the componentwise + conditional + headline open βη-SN
+-- (OpenStronglyNormalizingBetaEta.lean) and the Geuvers βη-CR + unique-βη-NF (WfContextBetaEtaConfluence.lean),
+-- all routed through the bridge-free stronglyNormalizingOfWfContextDesc — the η-SN component + the Geser union
+-- criterion + the βη-Newman bridge are context-predicate-agnostic, so NO HasType on the path.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.componentwiseStronglyNormalizingOfWfContextDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc_of_etaQuasiCommutes
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc
@@ -4985,51 +4619,23 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeFormerOutput_nil
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_nullaryFormation_viaGenArm
 
--- Universe-formation level-strictness (UniverseFormationStrictness.lean, 0-FP soundness corpus): the universe
--- rule is level-TIGHT — a universe code is classified by EXACTLY Type@(e+1) up to Conv
--- (universeCodeClassifierConvToSuccessor, via HasType.uniqueness against universeFormation), so the engine rejects
--- every level mismatch: no inflation (Type@0 ⊬ Type@2), no deflation (Type@1 ⊬ Type@0), no Type-in-Type
--- (Type@0 ⊬ Type@0). Each rejection instantiates the inversion at Type@0 + universeCodeCell_inj_of_conv + decide
--- on closed LevelExpr equality. Strengthens the 0-false-positive defense layer (complements M35-T1 / HasTypeHonesty).
-#assert_no_axioms FX1Poly.Typed.HasType.universeCodeClassifierConvToSuccessor
-#assert_no_axioms FX1Poly.Typed.universeCode_notTypedAboveSuccessor
-#assert_no_axioms FX1Poly.Typed.universeCode_notTypedBelowSuccessor
-#assert_no_axioms FX1Poly.Typed.universeCode_notTypedAtSelf
--- the GENERAL (all-level, all-WfContext) strictness corpus (SN-140 five-layer-defense L1): the closed Type@0
--- rejections above generalize to EVERY level and EVERY well-formed context, refuting decide against the
--- structural predicativity guard LevelExpr.ne_lsucc_self. universeCode_notTypedAtSelf_general is the §1.4
--- Type:Type / Girard's-paradox structurally-impossible claim in FULL generality — the §27.2 dependent-type
--- known-unsoundness rejection, the universe-axis L1 anchor.
-#assert_no_axioms FX1Poly.Typed.universeCode_notTypedAtSelf_general
-#assert_no_axioms FX1Poly.Typed.universeCode_notTypedAboveSuccessor_general
--- general no-deflation (Type@(e+1) ⊬ Type@e at all levels/contexts), via the double-successor guard
--- LevelExpr.ne_lsuccLsucc_self — completes the general level-strictness corpus (self / above / below).
-#assert_no_axioms FX1Poly.Typed.universeCode_notTypedBelowSuccessor_general
--- GROWN-ENGINE level strictness (GrownUniverseFormationStrictness.lean, SN-140 L1): the same no-Type-in-Type /
--- no-inflation / no-deflation corpus, but for the LIVE engine HasTypeDescPi (the one carrying piIntro/piElim
+-- GROWN-ENGINE level strictness (GrownUniverseFormationStrictness.lean, SN-140 L1): the no-Type-in-Type /
+-- no-inflation / no-deflation corpus for the LIVE engine HasTypeDescPi (the one carrying piIntro/piElim
 -- through which a Type:Type paradox would encode a fixpoint), via HasTypeDescPi.inversionUniverseCode +
 -- universeCodeCell_inj_of_conv + the predicativity guards. universeCode_notTypedAtSelf is the §1.4 "Type:Type /
--- Girard's paradox structurally impossible" claim for the engine that actually carries the metatheory (SN-043,
--- consistency, safety) — the formation-engine twin universeCode_notTypedAtSelf_general is for the frozen HasType.
+-- Girard's paradox structurally impossible" claim (§27.2 dependent-type known-unsoundness rejection) for the
+-- engine that carries the metatheory (SN-043, consistency, safety). In ANY level, ANY context: no Type:Type
+-- (e = lsucc e, ne_lsucc_self), no inflation, no deflation (ne_lsuccLsucc_self).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCode_notTypedAtSelf
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCode_notTypedAboveSuccessor
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCode_notTypedBelowSuccessor
--- DEPENDENT-FORMER level strictness (FormerFormationStrictness.lean): the Π/Σ analog of the universe
--- strictness — a Π/Σ-type code is classified by EXACTLY Type@(lmax domainLevel codomainLevel) up to Conv
--- (uniqueness against the canonical piFormation/sigmaFormation derivation), completing the formation-family
--- level-tightness (universe + Π + Σ). The two concrete rejections show a closed Π/Σ-type code is rejected at
--- the wrong level (Π(Type@0).Type@0 sits at Type@(lmax 1 1), not Type@0).
-#assert_no_axioms FX1Poly.Typed.HasType.piTyCodeClassifierConv
-#assert_no_axioms FX1Poly.Typed.HasType.sigmaTyCodeClassifierConv
-#assert_no_axioms FX1Poly.Typed.closedPi_notTypedAtZero
-#assert_no_axioms FX1Poly.Typed.closedSigma_notTypedAtZero
 -- GROWN-ENGINE dependent-former level strictness (GrownFormerFormationStrictness.lean, SN-140 L1): the Π/Σ analog
 -- of the grown universe strictness, for the LIVE engine HasTypeDescPi. A grown Π/Σ-type code is NEVER classified
 -- by the bottom universe Type@0 — in ANY context, with ANY components: invertPiTyCode/invertSigmaTyCode expose the
 -- true classifier as Conv to Type@(lmaxAll [dL,cL]) = Type@(lmax dL cL) (definitionally), universeCodeCell_inj_of_conv
--- forces lzero = lmax dL cL, refuted by LevelExpr.noConfusion. Strictly STRONGER than the formation-engine
--- closedPi/closedSigma_notTypedAtZero (any context, any components, no level-pinning) — completes the grown
--- formation-family level-strictness (universe + Π + Σ) for the engine that carries SN-043/consistency/safety.
+-- forces lzero = lmax dL cL, refuted by LevelExpr.noConfusion (any context, any components, no level-pinning) —
+-- completes the grown formation-family level-strictness (universe + Π + Σ) for the engine that carries
+-- SN-043/consistency/safety.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piTyCode_notTypedAtZero
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaTyCode_notTypedAtZero
 -- GROWN TYPING NON-UNIQUENESS (GrownTypingNotUnique.lean, metatheory guard / PI-1 spike verdict): the grown
@@ -5186,7 +4792,6 @@ gates pin them shut.
 -- typingRuleDescOf gen = none): every Step.iota* redex (.mkGen ELIM_GEN …) is refuted, discharging the iota
 -- family vacuously. Instantiated on the real iota-redex heads across the eliminator shape classes (boolElim
 -- branch-select / fst projection / natElim recursion / idJ path-induction) and on a data constructor (pair).
--- (The earlier six-inequality cellHasNoTypingWhenRootNotGrownHead was RETIRED — unsound post-table-growth.)
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.boolElimCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.fstCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natElimCellHasNoTyping
@@ -5274,9 +4879,9 @@ gates pin them shut.
 -- denote e' env (every env). Strengthens the syntactic universeClassifierLevelIsSucc (e' = e+1) to the semantic
 -- order via denote_lt_lsucc (SN-003). noUniverseInItself is the degenerate e' = e case (level not < itself).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeStrictlyBelowClassifierLevel
--- IsTypeDescRigidity = the native rigidity + leaf characterization of formation type-hood, toward the native
--- Decidable (IsTypeDesc Γ T) decision procedure (HT-A4 brick B1, off the old HasType engine).
--- hasNoStep = formation types are normal (read off the shipped subjectAdmitsNoStep); eq_of_isTypeDesc =
+-- IsTypeDescRigidity = the native rigidity + leaf characterization of formation type-hood, feeding the native
+-- Decidable (IsTypeDesc Γ T) decision procedure.
+-- hasNoStep = formation types are normal (read off subjectAdmitsNoStep); eq_of_isTypeDesc =
 -- convertible formation types are equal (Conv.eq_of_noStep on the two normal endpoints);
 -- ofUniverseCodeCell = a universe code is a formation type (universeFormation); variableCell_iff = a variable
 -- cell is a type iff its lookup is a universe code (the ONE context-consulting leaf, over WfContextDesc).
@@ -5287,31 +4892,29 @@ gates pin them shut.
 -- not_of_rootGenerator = the decider's default leaf: a cell whose root is neither gen_var nor gen_universeCode
 -- nor a formation former (typingRuleDescOf = none) is NOT a formation type. Table-generic via
 -- subjectRootGeneratorGeneric — the formation-former case is the single typingRuleDescOf=some disjunct, so a
--- future formation row needs no change here (cleaner than the bespoke 4-head IsType.not_of_headGenerator).
+-- future formation row needs no change here.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.not_of_rootGenerator
--- IsTypeDescDecidable = the concrete-children Π/Σ former-code inversions.  The bespoke decideWithWitness /
--- decidableOfWellFormed cascade this file once held (a RawTerm.size recursion with hand-written Π/Σ branches +
--- a typingRuleDescOf_isPiOrSigma else) has been RETIRED in favour of the cascade-free
--- IsTypeDesc.decideTypeGeneric below, which absorbs any future formation row zero-touch.
+-- IsTypeDescDecidable = the concrete-children Π/Σ former-code inversions. The cascade-free
+-- IsTypeDesc.decideTypeGeneric below decides formation type-hood, absorbing any future formation row zero-touch.
 -- inversionPiCodeChildren/inversionSigmaCodeChildren = WfContext-FREE concrete-children unpacking (vs the
 -- WfContext-carrying ...Components and the generic inversionFormerWithConvGeneric, which existentially repack),
--- retained as a reusable inversion API for the dependent type-formers.
+-- a reusable inversion API for the dependent type-formers.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeChildren
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeChildren
--- HasTypeDescNativeDecidable = native Decidable (HasTypeDesc Γ t T) (HT-A4 B2+B3), off the old HasType engine,
--- now CASCADE-FREE. inferWithWitness = principal-type synthesis (non-recursive: var/universe leaves; EVERY other
+-- HasTypeDescNativeDecidable = native Decidable (HasTypeDesc Γ t T), CASCADE-FREE. inferWithWitness =
+-- principal-type synthesis (non-recursive: var/universe leaves; EVERY other
 -- head delegates to IsTypeDesc.decideTypeGeneric — its universe witness IS the head's principal type, its
 -- refutation reconstructs the denied IsTypeDesc witness via subjectRootGeneratorGeneric + the generic former
 -- inversion + genFormation, with NO Π/Σ enumeration and no typingRuleDescOf_isPiOrSigma else-branch).
 -- decidableOfWellFormedNative = the decision via the IsType-gate on the classifier (Conv principal classifier
 -- decided by Conv.decidableOfStronglyNormalizing — principal SN by classifierStronglyNormalizingNative,
 -- classifier SN by IsTypeDesc.isStronglyNormalizing via decidableOfWellFormedGeneric) + conv rule forward +
--- uniquenessNative refute. The native twin of the toHasType-routed HasTypeDesc.decidableOfWellFormed.
+-- uniquenessNative refute. The native twin of HasTypeDesc.decidableOfWellFormed.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inferWithWitness
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormedNative
 -- IsTypeDescDecidableGeneric = the FULLY cascade-free IsTypeDesc decider (GTL-10/11 payoff): a 3-function
--- STRUCTURAL mutual recursion over RawTerm/RawTermChildren (no size measure, no termination_by) that retires
--- decideWithWitness's Π/Σ enumeration + typingRuleDescOf_isPiOrSigma else. decideTypeGeneric does the var/universe
+-- STRUCTURAL mutual recursion over RawTerm/RawTermChildren (no size measure, no termination_by) with no Π/Σ
+-- enumeration and no typingRuleDescOf_isPiOrSigma else. decideTypeGeneric does the var/universe
 -- leaves + a typingRuleDescOf dispatch (some → decideSynthGeneric → genFormation; none → not_of_rootGenerator);
 -- decideSynthGeneric synthesises the shared flag (ASSEMBLE form, recurses on childTail); decideAtFlagGeneric is
 -- the fixed-flag spine. subst eliminates currentDepth (not childHead's shift), keeping it structural. A future

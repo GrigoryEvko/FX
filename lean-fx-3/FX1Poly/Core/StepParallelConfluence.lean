@@ -2,7 +2,7 @@ import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.DiamondConfluence
 
 /-! # FX1Poly/Core/StepParallelConfluence
-    — wiring the abstract diamond/strip confluence to the FX raw `StepStar` (M8-S1, #420)
+    — wiring the abstract diamond/strip confluence to the FX raw `StepStar`
 
 `StepStarConfluence.lean` factors raw global confluence HONESTLY: the shipped `cd_lemma` is only a LOCAL
 (single-step/single-step) join, and `StepStar.HasConfluence` is supplied conditionally — via
@@ -10,7 +10,7 @@ import FX1Poly.Core.DiamondConfluence
 diverge) or via `confluence_of_strip` (needs the strip property `HasStrip`).  The file's own docstring says the
 strip property is meant to be "supplied from a parallel-reduction diamond."
 
-`DiamondConfluence.lean` (the previous task) proves exactly that abstract content — confluence from a DIAMOND with
+`DiamondConfluence.lean` proves exactly that abstract content — confluence from a DIAMOND with
 no termination, the Tait/Martin-Löf/Takahashi method — but as a free-standing metatheorem over an arbitrary
 relation.  This file is the ADAPTER that connects the two: given any parallel relation `ParStep` sandwiched
 `Step ⊆ ParStep ⊆ StepStar` whose `DiamondProperty` holds, it discharges BOTH the FX strip property and FX global
@@ -18,7 +18,7 @@ confluence.  The single remaining mathematical obligation — exhibit a concrete
 diamond (the Takahashi complete-development argument over the 194-generator tree) — is the cleanly-stated
 hypothesis, deferred to a downstream task; it is NOT faked here.
 
-This is the genuine FX-layer realization of `#420` (`parStar.confluence`): the generic diamond core is shipped, and
+This is the genuine FX-layer realization of `parStar.confluence`: the generic diamond core is shipped, and
 this file is the bridge from that core to the concrete `StepStar.HasConfluence` target.  Raw beta+iota confluence is
 UNBLOCKED by this route precisely because it needs confluence, not termination (raw `Step` is not SN).
 

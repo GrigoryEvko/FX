@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPiVariableInversion
 import FX1Poly.Typed.ConvCodeInjectivity
+import FX1Poly.Typed.WfContextDescPi
 
 /-! # FX1Poly/Typed/GrownVariableHonesty
     — 0-FP honesty for a VARIABLE subject in the grown engine `HasTypeDescPi`: a variable inhabits ONLY its
@@ -30,9 +31,10 @@ family for a lookup of known shape.
 ## Zero-axiom verification
 
 Each rejection feeds `HasTypeDescPi.inversionVariable`'s `Conv` witness (rewritten by the lookup hypothesis) to
-a conv-rigidity lemma, the general one directly to the non-`Conv` hypothesis.  The `inversionVariable`
-presupposition is the formation `WfContext`; the empty context (`WfContext.emptyIsWellFormed`) already
-instantiates it.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
+a conv-rigidity lemma, the general one directly to the non-`Conv` hypothesis.  Each probe carries the grown
+well-formedness `WfContextDescPi` as a shape decoration (the honesty is over well-formed contexts); the empty
+context (`WfContextDescPi.emptyIsWellFormed`) already instantiates it.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, or `omega`.
 Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -44,7 +46,7 @@ open FX1Poly.Core FX1Poly.Universe
 of `HasTypeDescPi.inversionVariable`: if a classifier is NOT `Conv` to the variable's context lookup, the
 variable is not typed at it.  Every concrete leaf rejection is an instance. -/
 theorem variable_notTypedAtNonConvLookup {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (_wellFormed : WfContext context)
+    {context : TypingContext profile scope} (_wellFormed : WfContextDescPi context)
     {index : Fin scope} {classifier : RawTerm scope}
     (classifierNotConvLookup : ¬ Conv classifier (context.lookup index)) :
     ¬ HasTypeDescPi profile context (variableCell index) classifier :=
@@ -54,7 +56,7 @@ theorem variable_notTypedAtNonConvLookup {profile : PolyProfile} {scope : Nat}
 `piTyCodeCell …` is a function-typed term, not a type: `inversionVariable` `Conv`s the universe code to the
 Π-type lookup, refuted by `Conv.piTyCode_not_universeCode`. -/
 theorem piTypedVariable_notTypedAtUniverseCode {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (_wellFormed : WfContext context) {index : Fin scope}
+    {context : TypingContext profile scope} (_wellFormed : WfContextDescPi context) {index : Fin scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (lookupIsPi : context.lookup index = piTyCodeCell domainCode codomainCode)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
@@ -70,7 +72,7 @@ theorem piTypedVariable_notTypedAtUniverseCode {profile : PolyProfile} {scope : 
 `inversionVariable` `Conv`s the Π-type code to the universe-code lookup, refuted by
 `Conv.piTyCode_not_universeCode`. -/
 theorem universeTypedVariable_notTypedAtPiTyCode {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (_wellFormed : WfContext context) {index : Fin scope}
+    {context : TypingContext profile scope} (_wellFormed : WfContextDescPi context) {index : Fin scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag}
     (lookupIsUniverse : context.lookup index = universeCodeCell levelExpr flag)
     (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
@@ -84,7 +86,7 @@ theorem universeTypedVariable_notTypedAtPiTyCode {profile : PolyProfile} {scope 
 /-- **A type variable is never typed at a Σ-type code** (the Σ dual of `universeTypedVariable_notTypedAtPiTyCode`):
 a universe-typed variable is not classified by a Σ type, refuted by `Conv.sigmaTyCode_not_universeCode`. -/
 theorem universeTypedVariable_notTypedAtSigmaTyCode {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (_wellFormed : WfContext context) {index : Fin scope}
+    {context : TypingContext profile scope} (_wellFormed : WfContextDescPi context) {index : Fin scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag}
     (lookupIsUniverse : context.lookup index = universeCodeCell levelExpr flag)
     (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :

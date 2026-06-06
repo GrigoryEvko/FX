@@ -1,14 +1,13 @@
 import FX1Poly.Typed.HasTypeDescPiUniverseCodeInversion
 import FX1Poly.Typed.UniverseCodeConversion
+import FX1Poly.Typed.WfContextDescPi
 
 /-! # FX1Poly/Typed/GrownUniverseFormationStrictness
     — the GROWN engine is LEVEL-TIGHT: no Type-in-Type (five-layer-defense L1, §27.2/§1.4)
 
-`UniverseFormationStrictness` proved the universe rule is level-tight for the FORMATION engine `HasType`
-(`universeCode_notTypedAtSelf_general` etc.).  But `HasType` is the frozen bespoke engine; the LIVE metatheory —
-SN-043, consistency, type safety — runs on the GROWN engine `HasTypeDescPi`, the one carrying the `piIntro` /
-`piElim` arms through which a `Type:Type` paradox would actually encode a fixpoint.  This file lifts the
-level-strictness corpus to `HasTypeDescPi`, so the §1.4 / §27.2 "Type:Type / Girard's-paradox structurally
+The universe rule is level-tight for the GROWN engine `HasTypeDescPi` — the one carrying the `piIntro` /
+`piElim` arms through which a `Type:Type` paradox would actually encode a fixpoint.  This file establishes the
+level-strictness corpus on `HasTypeDescPi`, so the §1.4 / §27.2 "Type:Type / Girard's-paradox structurally
 impossible" claim holds for the engine that matters.
 
 The grown engine has its own universe-code inversion `HasTypeDescPi.inversionUniverseCode` (any classifier of
@@ -16,7 +15,7 @@ The grown engine has its own universe-code inversion `HasTypeDescPi.inversionUni
 syntactically equal levels) and the predicativity guards `LevelExpr.ne_lsucc_self` / `ne_lsuccLsucc_self`, it
 rejects every level mismatch in the grown engine exactly as the formation engine does.
 
-  * `HasTypeDescPi.universeCode_notTypedAtSelf` — **no Type-in-Type (SN-140 L1, live engine).**  `Type@e` is NOT
+  * `HasTypeDescPi.universeCode_notTypedAtSelf` — **no Type-in-Type.**  `Type@e` is NOT
     grown-typed at `Type@e` at ANY level in ANY well-formed context.  A self-classified universe forces
     `e = lsucc e`, refuted by `LevelExpr.ne_lsucc_self`.  The headline §1.4 Girard rejection for `HasTypeDescPi`.
   * `HasTypeDescPi.universeCode_notTypedAboveSuccessor` — **no level inflation.**  `Type@e` is NOT grown-typed at
@@ -24,9 +23,9 @@ rejects every level mismatch in the grown engine exactly as the formation engine
   * `HasTypeDescPi.universeCode_notTypedBelowSuccessor` — **no level deflation.**  `Type@(e+1)` is NOT grown-typed
     at `Type@e` — only at `Type@(e+2)`.  Forces `e = lsucc (lsucc e)`, refuted by `ne_lsuccLsucc_self`.
 
-This holds for the same reason as the formation engine: the grown `conv` arm uses symmetric `Conv`, not a
-`≤`-cumulativity, so a universe code neither climbs nor descends.  When cumulativity lands (`@[cumulUpMarker]`,
-M43), the over-shoot rejection becomes a `≤`-bounded statement.
+This holds because the grown `conv` arm uses symmetric `Conv`, not a
+`≤`-cumulativity, so a universe code neither climbs nor descends.  When cumulativity lands
+(`@[cumulUpMarker]`), the over-shoot rejection becomes a `≤`-bounded statement.
 
 ## Zero-axiom verification
 
@@ -41,14 +40,14 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **No Type-in-Type for the grown engine (SN-140 L1).**  `Type@e` is NOT grown-typed at `Type@e` at ANY level
+/-- **No Type-in-Type for the grown engine.**  `Type@e` is NOT grown-typed at `Type@e` at ANY level
 in ANY well-formed context — the universe sits strictly above itself everywhere.  The §1.4 "Type:Type / Girard's
-paradox structurally impossible" claim for the LIVE engine `HasTypeDescPi` (the formation-engine twin is
+paradox structurally impossible" claim for `HasTypeDescPi` (the all-context form is
 `universeCode_notTypedAtSelf_general`): a self-classified universe forces `e = lsucc e`, refuted by the
 predicativity guard `LevelExpr.ne_lsucc_self`. -/
 theorem HasTypeDescPi.universeCode_notTypedAtSelf {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (_contextWellFormed : WfContext context)
+    (_contextWellFormed : WfContextDescPi context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr flag) := by
@@ -63,7 +62,7 @@ well-formed context — only at `Type@(e+1)`.  The inversion forces `lsucc (lsuc
 `LevelExpr.ne_lsucc_self` at `lsucc e`. -/
 theorem HasTypeDescPi.universeCode_notTypedAboveSuccessor {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (_contextWellFormed : WfContext context)
+    (_contextWellFormed : WfContextDescPi context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr.lsucc.lsucc flag) := by
@@ -80,7 +79,7 @@ convert to `Type@(e+2)`, i.e. `e = lsucc (lsucc e)`, refuted by the double-succe
 the formation engine's. -/
 theorem HasTypeDescPi.universeCode_notTypedBelowSuccessor {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (_contextWellFormed : WfContext context)
+    (_contextWellFormed : WfContextDescPi context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr.lsucc flag)
         (universeCodeCell levelExpr flag) := by

@@ -1,6 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.ConvCodeInjectivity
-import FX1Poly.Typed.HasTypeDecidableConv
+import FX1Poly.Typed.UniverseCodeConversion
 
 /-! # FX1Poly/Typed/HasTypeDescPiTypingNonUnique
     — the grown engine's typing is NON-UNIQUE for a bare Curry-style λ (the SN-052 design fact)
@@ -11,10 +11,10 @@ closed identity λ `lamCell (var 0)` inhabits `Π (Type@e) (Type@e)` for EVERY l
 levels give NON-convertible types.  Typing is therefore NOT unique up to `Conv` (unlike the formation
 fragment, where `HasTypeDesc.uniqueness` holds).
 
-## Why this matters: SN-052 must be BIDIRECTIONAL
+## Why this matters: the checker must be BIDIRECTIONAL
 
-Decidable typed CONVERSION (SN-051, `Conv.decidableOfWellTypedInWfContext`) is shipped unconditionally via
-OB-5 strong normalization.  The natural route to decidable typed CHECKING (SN-052) — "synthesize the
+Decidable typed CONVERSION (`Conv.decidableOfWellTypedInWfContextDesc`) is shipped unconditionally via
+open strong normalization.  The natural route to decidable typed CHECKING — "synthesize the
 term's unique type, then compare to the target via `Conv`" — is UNAVAILABLE here: there is no unique type to
 synthesize at a λ.  The grown-engine checker must instead be BIDIRECTIONAL: at a λ it works in CHECK mode,
 normalizing the GIVEN target to expose a `Π`-head (via SN + `Conv.piTyCode_inj`) and recursively checking the
@@ -23,7 +23,7 @@ body against the codomain.  This file is the concrete witness pinning that desig
 ## Zero-axiom verification
 
 The typing derivation is a direct `piIntro` (domain/codomain by `universeFormation`, body by `var`, all via
-`ofFormation`); the non-`Conv` is `Conv.piTyCode_inj` + `levelFlag_eq_of_conv_universeCodeCell` +
+`ofFormation`); the non-`Conv` is `Conv.piTyCode_inj` + `universeCodeCell_inj_of_conv` +
 `LevelExpr.noConfusion`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 `omega`.  Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -62,8 +62,7 @@ theorem hasTypeDescPi_typing_notUnique {profile : PolyProfile} (flag : UniverseF
   intro piTypesConvert
   obtain ⟨domainConvert, _codomainConvert⟩ := Conv.piTyCode_inj piTypesConvert
   obtain ⟨levelsEqual, _flagsEqual⟩ :=
-    levelFlag_eq_of_conv_universeCodeCell (context := (TypingContext.empty : TypingContext profile 0))
-      domainConvert
+    universeCodeCell_inj_of_conv domainConvert
   exact LevelExpr.noConfusion levelsEqual
 
 end FX1Poly.Typed

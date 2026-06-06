@@ -8,7 +8,7 @@ The SN-001 → SN-004 spike arc asked one make-or-break question: can the syntac
 proof be carried by a *reducibility* (Tait/Kripke logical-relations) model whose level is the term's own
 CLASSIFIER universe level `LevelExpr.denote`, rather than an external `Nat` "fuel"?  The arc:
 
-* **SN-001** (`RouteAObstruction`) pinned *why the fuel model is dead at its base*: at fuel `0` the universe
+* **SN-001** (`RouteAObstruction`) pins *why the fuel model is dead at its base*: at fuel `0` the universe
   membership predicate is EMPTY, so a universe-DOMAIN Π type `Π(x:Type@e).C` is reducible at fuel `0` for
   EVERY codomain `C`, VACUOUSLY — its fuel-`0` candidate is the trivial `fun _ => True`.  The degenerate
   `0 ↔ 1` base of any level-irrelevance argument is therefore unbridgeable WITHIN the fuel model.
@@ -25,15 +25,15 @@ CLASSIFIER universe level `LevelExpr.denote`, rather than an external `Nat` "fue
   (`piTypeOfDomainMemberExtension`), supplied by the SN-003 denote-WF induction hypothesis — the fuel-`0`
   empty-membership wall does NOT reappear.
 
-## DECISION: **GO** (locked 2026-06-02)
+## DECISION: **GO**
 
 The classifier-universe-level / validity-derivation-indexed reducibility model is VIABLE.  The premise that
-the fuel model could not discharge — universe-DOMAIN Π-formation at the degenerate base — closes under the
+the fuel model cannot discharge — universe-DOMAIN Π-formation at the degenerate base — closes under the
 denote-keyed predicative measure at the classifier level, with the neutral fragment as a genuinely inhabited
-base.  No premise failed; the make-or-break premise closed at the universe-decode level via SN-003's strict
+base.  No premise fails; the make-or-break premise closes at the universe-decode level via the strict
 `denote` decrease.
 
-## LOCKED STRATEGY (three legs; this fixes their roles, ending the historical Route-A/Route-B oscillation)
+## LOCKED STRATEGY (three legs; this fixes their roles)
 
 * **Leg 2 — PRIMARY syntactic SN path: the validity-relation route (Route B).**  Phase 1 (SN-007 .. SN-030)
   builds the leveled validity context `ValidTyping`, the classifier-level reducible environment, the
@@ -76,7 +76,7 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **SN-005 decision-gate certificate (GO, locked 2026-06-02).**  The strong-normalization strategy is
+/-- **The strong-normalization decision-gate certificate (GO).**  The strong-normalization strategy is
 locked to the classifier-universe-level (denote-keyed) validity-relation route as the PRIMARY syntactic SN
 path, with BKS sconing as the independent second proof and Makkai word-equality as the cross-check (see the
 module docstring).  This theorem records the GO rationale as a checked object: for one and the same
@@ -102,10 +102,10 @@ theorem lockedStrategyGoCertificate {scope : Nat}
    universeDomainPiTrivialCandidateAtZero domainLevel flag
      (RawTerm.weaken (universeCodeCell codomainLevel flag))⟩
 
-/-! ## SN-021 design decision (the generic `genFormationPi` arm for `ValidTyping`) — pinned 2026-06-02
+/-! ## Design decision: the generic `genFormationPi` arm for `ValidTyping`
 
-SN-021 adds the GENERIC table-driven former arm to `ValidTyping` (over `typingRuleDescOf`), so the leveled
-relation matches `HasTypeDescPi`'s cascade-free former coverage (Π / Σ become instances of one arm). The
+The GENERIC table-driven former arm on `ValidTyping` (over `typingRuleDescOf`) makes the leveled
+relation match `HasTypeDescPi`'s cascade-free former coverage (Π / Σ become instances of one arm). The
 discharge target is the shipped `fundamentalGenFormationFormerLevelIndexed` (FundamentalLevelIndexed.lean),
 whose key hypothesis is
 `telescopeFundamental : ∀ σ (env : ReducibleEnvVec contextLevels context σ) shapeEq,
@@ -116,34 +116,34 @@ the MUTUAL recursor `HasTypeDescPi.rec` (`motive_2 := IsTelescopeReducibleAtVect
 `DescTelescopePi`). `ValidTyping` is a SINGLE (non-mutual) inductive, so `ValidTyping.rec` produces no
 telescope IH — the genFormationPi arm cannot synthesize `telescopeFundamental`.
 
-ADOPTED DESIGN (revised 2026-06-02 — option (b), the semantic-premise ctor; LANDED). The
+DESIGN (the semantic-premise ctor). The
 `ValidTyping.genFormationPi` ctor carries exactly `fundamentalGenFormationFormerLevelIndexed`'s premises: the
 structural `premises : DescTelescopePi …` PLUS the `telescopeFundamental` hypothesis (the children telescope is
-reducible under every closing reducible environment). `ValidTyping.fundamental`'s new arm is then a one-liner
-to `fundamentalGenFormationFormerLevelIndexed` — which still does the REAL former-membership work (dispatch
+reducible under every closing reducible environment). `ValidTyping.fundamental`'s arm is then a one-liner
+to `fundamentalGenFormationFormerLevelIndexed` — which does the REAL former-membership work (dispatch
 Π/Σ, invert the two-child spine, build the former's universe membership via `toPiMember`/`toSigmaMember`), so
-the arm is non-vacuous. The reversal of last week's instinct is justified: `ValidTyping` is an Abel VALIDITY
-relation (semantic — see its own docstring), so a former case that ASSUMES component reducibility and DERIVES
-former reducibility is exactly standard logical-relations reasoning, not a wart. The ctor is NON-recursive in
-`ValidTyping`, so it needed NO mutual refactor, is trivially strictly-positive, landed atomically, and the
-shipped `ValidTyping` / `ValidTyping.fundamental` gates now cover it zero-axiom.
+the arm is non-vacuous. `ValidTyping` is an Abel VALIDITY relation (semantic — see its own docstring), so a
+former case that ASSUMES component reducibility and DERIVES former reducibility is exactly standard
+logical-relations reasoning, not a wart. The ctor is NON-recursive in `ValidTyping`, so it needs NO mutual
+inductive, is trivially strictly-positive, and the `ValidTyping` / `ValidTyping.fundamental` gates cover it
+zero-axiom.
 
-WHY NOT the mutual `ValidTelescope` (last tick's plan). It would keep every former arm syntactic (children as
-`ValidTyping` sub-derivations lifted by a mutual recursor) — cleaner in principle, but a heavy core-inductive
-change (mutual inductive + mutual fundamental, with the mutual-recursor propext/Quot.sound risks). Option (b)
+WHY NOT the mutual `ValidTelescope`. It would keep every former arm syntactic (children as `ValidTyping`
+sub-derivations lifted by a mutual recursor) — cleaner in principle, but a heavy core-inductive change (mutual
+inductive + mutual fundamental, with the mutual-recursor propext/Quot.sound risks). The semantic-premise ctor
 achieves the SAME GOAL (cascade-free former coverage over `typingRuleDescOf`) atomically and zero-axiom, so the
-mutual route is UNNECESSARY. The bridge SN-023 supplies `telescopeFundamental` for a constructed
+mutual route is UNNECESSARY. The leveling bridge supplies `telescopeFundamental` for a constructed
 genFormationPi from the children's own fundamentals (recursively bridge children → `ValidTyping`, then apply
-`ValidTyping.fundamental`), so option (b) is bridge-compatible.
+`ValidTyping.fundamental`), so the semantic-premise ctor is bridge-compatible.
 
-STILL REJECTED. Carrying the bare `DescTelescopePi` premise and deriving `telescopeFundamental` INSIDE the arm
-— CIRCULAR: it needs the unconditional `HasTypeDescPi` fundamental, the very thing still under assembly.
+REJECTED. Carrying the bare `DescTelescopePi` premise and deriving `telescopeFundamental` INSIDE the arm
+— CIRCULAR: it needs the unconditional `HasTypeDescPi` fundamental, the very thing under assembly.
 
-## SN-027 residual crux PRECISELY LOCATED (the dependent-former term-variable binder wall) — pinned 2026-06-02
+## The residual crux: the dependent-former term-variable binder wall
 
-A deep trace of the shipped fundamental-theorem machinery relocates SN-027's residual obstruction away from the
-"ValidTyping total-bridge induction" framing. The unconditional close is NOT a recursor-wiring job; it is ONE
-genuine mathematical obstruction, and the conditional reductions around it are all shipped:
+A trace of the fundamental-theorem machinery locates the residual obstruction away from the "ValidTyping
+total-bridge induction" framing. The unconditional close is NOT a recursor-wiring job; it is ONE genuine
+mathematical obstruction, and the conditional reductions around it are all shipped:
 
 * `HasTypeDescPi.fundamentalVectorFromFormation` does the FULL `HasTypeDescPi.rec` assembly; its only open
   premise is the formation-engine VECTOR conclusion, which is provably too strong for `var` (the vector

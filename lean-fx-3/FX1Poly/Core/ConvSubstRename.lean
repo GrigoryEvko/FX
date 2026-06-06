@@ -6,7 +6,7 @@ import FX1Poly.Core.RawTermSubst0
 /-! # Foundation/PolyCell/Core/ConvSubstRename
    — Conv preservation under substitution + renaming + β-redex shape
 
-Ships the Conv-level preservation theorems (#370).  `Step.subst` /
+Ships the Conv-level preservation theorems.  `Step.subst` /
 `StepStar.subst` live in `StepSubst.lean` and `Step.rename` /
 `StepStar.rename` live in `StepRename.lean`; this file provides the
 Conv-layer wrappers as named theorems, giving downstream typed-layer

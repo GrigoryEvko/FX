@@ -3,7 +3,7 @@ import FX1Poly.Core.ParallelReduction
 import FX1Poly.Core.ParStepSubstPointwise
 
 /-! # FX1Poly/Core/ParStepTriangle
-    — the Takahashi triangle `ParStep a b → ParStep b (completeDevelopment a)` (the #420 headline).
+    — the Takahashi triangle `ParStep a b → ParStep b (completeDevelopment a)` (the raw-confluence headline).
 
 `TakahashiTriangle.lean` reduces the FX raw-confluence diamond to `HasMaximalReduct ParStep` — a function
 `completeDevelopment` (shipped in `CompleteDevelopment.lean`) such that EVERY parallel reduct of `a`
@@ -467,7 +467,7 @@ theorem ParStep.triangleCongFires {scope : Nat} (gen : Generator) (payload : gen
 
 /-- **The Takahashi triangle.**  Every parallel reduct `b` of `a` further parallel-reduces to the complete
 development `completeDevelopment a` — the maximal-reduct property that discharges the `ParStep` diamond and
-hence raw confluence (`#420`).  Proved by induction on the `ParStep a b` derivation: the β / branch-selection
+hence raw confluence.  Proved by induction on the `ParStep a b` derivation: the β / branch-selection
 ι arms close by the IHs through the `cd_<redex>_eq` defeq, the recursive ι arms by nested `ParStep.cong`,
 and the `cong` arm splits on `fireRootRedex` — pure congruence when the source is not a redex, else
 `ParStep.triangleCongFires`. -/

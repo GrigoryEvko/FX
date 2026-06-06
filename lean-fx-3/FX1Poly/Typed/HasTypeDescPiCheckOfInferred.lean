@@ -29,7 +29,7 @@ separately (normalize the given target to a Π-head and recurse on the body).
 
 ## Zero-axiom verification
 
-A `match` on `Conv.decidableOfWellTypedInWfContext` (SN-051, the unconditional typed-Conv decider) + the grown
+A `match` on `Conv.decidableOfWellTypedInWfContextDesc` (SN-051, the unconditional typed-Conv decider) + the grown
 `HasTypeDescPi.conv` rule (`isTrue`) + the `uniqueAtSubject` contradiction (`isFalse`).  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -46,7 +46,7 @@ grown `conv` rule; `isFalse` refutes via `uniqueAtSubject` (any type the subject
 up to `Conv` (every non-λ subject). -/
 def HasTypeDescPi.decidableCheckOfInferredUniqueAtType {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (wellFormed : WfContext context)
+    (wellFormed : WfContextDesc context)
     {subject inferredType inferredTypeClassifier targetType : RawTerm scope}
     {targetLevel : LevelExpr} {targetFlag : UniverseFlag}
     (inferred : HasTypeDescPi profile context subject inferredType)
@@ -57,7 +57,7 @@ def HasTypeDescPi.decidableCheckOfInferredUniqueAtType {profile : PolyProfile} {
       ∀ {otherType : RawTerm scope},
         HasTypeDescPi profile context subject otherType → Conv inferredType otherType) :
     Decidable (HasTypeDescPi profile context subject targetType) :=
-  match Conv.decidableOfWellTypedInWfContext wellFormed inferredTypeTyped targetTyped with
+  match Conv.decidableOfWellTypedInWfContextDesc wellFormed inferredTypeTyped targetTyped with
   | isTrue converts =>
       isTrue (HasTypeDescPi.conv targetLevel targetFlag inferred converts targetTyped)
   | isFalse notConvertible =>

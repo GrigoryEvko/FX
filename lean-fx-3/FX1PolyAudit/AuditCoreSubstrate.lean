@@ -195,77 +195,71 @@ per-decl list.  It also re-checks the native infra under
 #audit_namespace FX1Poly.Core
 #audit_namespace FX1Poly.Foundation
 
--- SN-040 (WIP): forward strong-normalization preservation along a left-invertible renaming — the forward
--- direction StrongNormalizationRename.lean explicitly leaves unproven, the neutral-leaf ingredient of the
--- stratified reducibility rename-closure.  Explicit per-decl gate (preferred over sweep-only coverage).
+-- Forward strong-normalization preservation along a left-invertible renaming: the neutral-leaf
+-- ingredient of the stratified reducibility rename-closure.  Explicit per-decl gate.
 #assert_no_axioms FX1Poly.Core.StepStar.isStronglyNormalizing_rename_of_leftInverse
 
--- SN-040 (WIP): the complete weak-head reduction commutes with renaming (the renaming twin of
--- WeakHeadStep.subst) — the whnfExpand-arm ingredient of the stratified ReducibleTypeStep rename-closure.
+-- The complete weak-head reduction commutes with renaming (the renaming twin of WeakHeadStep.subst):
+-- the whnfExpand-arm ingredient of the stratified ReducibleTypeStep rename-closure.
 #assert_no_axioms FX1Poly.Core.IotaHeadStep.rename
 #assert_no_axioms FX1Poly.Core.WeakHeadStep.rename
 
--- SN-040 (WIP): a left-invertible renaming REFLECTS weak-head reduction (hence preserves weak-head
--- normality) — the neutral-arm ingredient of the stratified ReducibleTypeStep rename-closure, derived from
--- WeakHeadStep.rename preservation run on the left inverse + the round-trip (no per-shape inversion grind).
+-- A left-invertible renaming REFLECTS weak-head reduction (hence preserves weak-head normality): the
+-- neutral-arm ingredient of the stratified ReducibleTypeStep rename-closure, derived from WeakHeadStep.rename
+-- preservation run on the left inverse plus the round-trip (no per-shape inversion grind).
 #assert_no_axioms FX1Poly.Core.RawTerm.rename_leftInverse_roundTrip
 #assert_no_axioms FX1Poly.Core.WeakHeadStep.rename_reflects_of_leftInverse
 #assert_no_axioms FX1Poly.Core.WeakHeadStep.rename_preserves_weakHeadNormal_of_leftInverse
 
--- SN-040/Kripke-CR3 (WIP): pull a FULL `Step` (not just weak-head) BACK along an injective renaming —
--- the confinement-free half of full rename-reflection-with-image. The left-inverse property holds at EVERY
--- index, so the round-trip rename⁻¹∘rename = id collapses definitionally (same chain as
--- isStronglyNormalizing_rename_of_leftInverse); Step.rename (forward) transports the step. The image half
--- (rename ρ f' = h) needs free-variable confinement and is a separate brick. Unblocks the Kripke arrow CR3
--- (#670 → #671) head-step case (KripkeCandidateRenameClosure.lean:63).
+-- Pull a full `Step` (not just weak-head) back along an injective renaming: the confinement-free half of
+-- full rename-reflection-with-image.  The left-inverse property holds at every index, so the round-trip
+-- rename-inverse-after-rename = id collapses definitionally; Step.rename (forward) transports the step.
 #assert_no_axioms FX1Poly.Core.Step.renamePullbackOfLeftInverse
 #assert_no_axioms FX1Poly.Core.Step.renameReflectsExistsOfLeftInverse
 #assert_no_axioms FX1Poly.Core.StepStar.renamePullbackOfLeftInverse
--- Generic head-recovery for a renamed cell (RawTerm.rename_eq_mkGen): rename rho term = mkGen gen _ _ → term =
--- mkGen gen _ _. The generator-generic head-recovery half of rename_eq_app/lam; the uniform first step of every
--- arm of full ARBITRARY-renaming Step reflection (the genuine Kripke-arrow-CR3 ingredient, a per-eliminator
--- induction — the injective renamePullback above does NOT serve CR3, which quantifies over all renamings).
+-- Generic head-recovery for a renamed cell (RawTerm.rename_eq_mkGen): rename rho term = mkGen gen _ _ implies
+-- term = mkGen gen _ _.  The generator-generic head-recovery half of rename_eq_app/lam; the uniform first step
+-- of every arm of full arbitrary-renaming Step reflection, a per-eliminator induction (the injective
+-- renamePullback above does not serve the all-renamings Kripke-arrow CR3 closure).
 #assert_no_axioms FX1Poly.Core.RawTerm.rename_eq_mkGen
--- The β arm of arbitrary-ρ Step reflection (Step.reflectBeta): rename ρ term = app (lam renamedBody) renamedArg →
--- ∃ t', Step term t' ∧ rename ρ t' = subst0 renamedBody renamedArg. Recovers the source β-redex via
--- rename_eq_app/rename_eq_lam, β-reduces, and aligns the contractum image by rename_subst0_commute. The
--- substitution leaf arm of full reflection (the Kripke-arrow-CR3 ingredient); a complete standalone case (β is a
--- base case, no sub-reflection hypothesis). The child-projection ι arms + recursive cong arm join it later.
+-- The beta arm of arbitrary-rho Step reflection (Step.reflectBeta): rename rho term = app (lam renamedBody)
+-- renamedArg implies there is t' with Step term t' and rename rho t' = subst0 renamedBody renamedArg.  Recovers
+-- the source beta-redex via rename_eq_app/rename_eq_lam, beta-reduces, and aligns the contractum image by
+-- rename_subst0_commute.  The substitution leaf arm of full reflection; a standalone base case.
 #assert_no_axioms FX1Poly.Core.Step.reflectBeta
--- The boolElim child-projection ι arms of arbitrary-ρ Step reflection (Step.reflectIotaBoolTrue/BoolFalse):
--- rename ρ term = boolElim (boolTrue/boolFalse) then else → ∃ t', Step term t' ∧ rename ρ t' = then/else. Head
--- recovery (rename_eq_mkGen) + concrete gen_boolElim rfl-distribution + injection + gen_boolTrue/boolFalse
--- scrutinee recovery; the contractum is a child (no subst), image = the child's recovered renaming. ι leaf arms.
+-- The boolElim child-projection iota arms of arbitrary-rho Step reflection (Step.reflectIotaBoolTrue/BoolFalse):
+-- rename rho term = boolElim (boolTrue/boolFalse) then else implies there is t' with Step term t' and
+-- rename rho t' = then/else.  Head recovery (rename_eq_mkGen) + concrete gen_boolElim rfl-distribution +
+-- injection + gen_boolTrue/boolFalse scrutinee recovery; the contractum is a child (no subst).
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaBoolTrue
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaBoolFalse
--- The pair-projection ι arms of arbitrary-ρ Step reflection (Step.reflectIotaFstPair/SndPair):
--- rename ρ term = fst/snd (pair first second) → ∃ t', Step term t' ∧ rename ρ t' = first/second. Two-level
--- recovery: gen_fst/gen_snd head (rename_eq_mkGen) + concrete rfl-distribution + injection, then gen_pair
--- scrutinee recovery + inner rfl-distribution + injection; the projected child IS the contractum (no subst).
+-- The pair-projection iota arms of arbitrary-rho Step reflection (Step.reflectIotaFstPair/SndPair):
+-- rename rho term = fst/snd (pair first second) implies there is t' with Step term t' and
+-- rename rho t' = first/second.  Two-level recovery: gen_fst/gen_snd head (rename_eq_mkGen) + concrete
+-- rfl-distribution + injection, then gen_pair scrutinee recovery; the projected child is the contractum.
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaFstPair
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaSndPair
 
--- SN-040 (WIP): the neutral LEAF of the stratified ReducibleTypeStep rename-closure (type + member level).
--- The piType arm is genuinely Kripke-obstructed (see StratifiedReducibleTypeRename docstring); this is the
--- cleanly-shippable structural fragment, off the FT critical path.
+-- The neutral leaf of the stratified ReducibleTypeStep rename-closure (type + member level): the structural
+-- fragment, separate from the Kripke-indexed piType arm (see the StratifiedReducibleTypeRename docstring).
 #assert_no_axioms FX1Poly.Core.ReducibleTypeStep.neutralRename_of_leftInverse
 #assert_no_axioms FX1Poly.Core.ReducibleTypeStep.neutralRenameMember_of_leftInverse
 
--- SN-044: concrete strong-normalization smoke corpus (variable leaf, unit leaf, identity beta-redex).
+-- Concrete strong-normalization smoke corpus (variable leaf, unit leaf, identity beta-redex).
 #assert_no_axioms FX1Poly.Core.smoke_variable_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_unit_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_identityRedex_isStronglyNormalizing
 
--- SN-D5d (genFormationPi codomain-SN extraction): the RELATION-AGNOSTIC pure-SN binder reconciliation, the
--- substitution-algebra core factored out of openBodyOfConsSubstMember (which now delegates to it). SN of the
--- LIFTED-substitution body from SN of its cons-instantiation (binder-split keystone + ofSubst0Body); mentions
--- no reducibility relation, so the fuel (IsReducibleMemberAt) and denote (IsReducibleMemberAtDenote) routes
--- both reduce the codomain-under-binder SN obligation to this one fact once their CR1 supplies the member's SN.
+-- genFormationPi codomain-SN extraction: the relation-agnostic pure-SN binder reconciliation, the
+-- substitution-algebra core of openBodyOfConsSubstMember.  SN of the lifted-substitution body from SN of its
+-- cons-instantiation (binder-split keystone + ofSubst0Body); it mentions no reducibility relation, so the fuel
+-- (IsReducibleMemberAt) and denote (IsReducibleMemberAtDenote) routes both reduce the codomain-under-binder
+-- SN obligation to this one fact once their CR1 supplies the member's SN.
 #assert_no_axioms FX1Poly.Core.IsStronglyNormalizing.openBodyOfConsSubst
 
--- SN-081: one closed strong-normalization witness per raw former family, plus two nested
--- compositional witnesses (closures compose with correct de Bruijn scope threading through the
--- under-binder slots).  Each exercises one Step.from_<former> congruence injection on a concrete cell.
+-- One closed strong-normalization witness per raw former family, plus two nested compositional witnesses
+-- (closures compose with correct de Bruijn scope threading through the under-binder slots).  Each exercises
+-- one Step.from_<former> congruence injection on a concrete cell.
 #assert_no_axioms FX1Poly.Core.smoke_lam_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_pathLam_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_diffLambda_isStronglyNormalizing
@@ -288,17 +282,17 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.smoke_polyFunctor_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_nestedLamNatSucc_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_nestedPiSigma_isStronglyNormalizing
--- Modal core + universe-mode bridge family (congruence-only operators, post-SN-081): one closed SN
--- witness per operator, so a regression in any single congruence closure fails its own gated witness.
+-- Modal core + universe-mode bridge family (congruence-only operators): one closed SN witness per
+-- operator, so a regression in any single congruence closure fails its own gated witness.
 #assert_no_axioms FX1Poly.Core.smoke_modElim_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_subsume_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_liftInnerToOuter_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_lowerOuterToInner_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.smoke_modElimLiftInnerToOuter_isStronglyNormalizing
 
--- SN-070/071: the type-code-former family inhabits its neutral universe as a reducible member (the
--- conv-complete IsReducibleMember layer the fundamental theorem assembles over).  atNeutralClassifier is
--- the characterization (membership at a neutral classifier = strong normalization); the seven formers
+-- The type-code-former family inhabits its neutral universe as a reducible member (the conv-complete
+-- IsReducibleMember layer the fundamental theorem assembles over).  atNeutralClassifier is the
+-- characterization (membership at a neutral classifier = strong normalization); the seven formers
 -- (dependent pi/sigma + non-dependent arrow/product/sum/either/equiv) discharge via their SN closures.
 #assert_no_axioms FX1Poly.Core.IsReducibleMember.atNeutralClassifier
 #assert_no_axioms FX1Poly.Core.IsReducibleMember.piFormerInNeutralUniverse
@@ -309,18 +303,17 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.IsReducibleMember.eitherFormerInNeutralUniverse
 #assert_no_axioms FX1Poly.Core.IsReducibleMember.equivFormerInNeutralUniverse
 
--- SN-045 (base): the SN entry points (variable / unit leaves) are robust under the eta extension
+-- The SN entry points (variable / unit leaves) are robust under the eta extension
 -- (Step.betaEta = Step union Step.eta).  Leaf eta-inversion + the reusable no-betaEta-step Acc base.
--- The formers over normal children are the documented follow-up (cong + StepChildren child-step inversion).
 #assert_no_axioms FX1Poly.Core.noEtaStep_var
 #assert_no_axioms FX1Poly.Core.noEtaStep_unit
 #assert_no_axioms FX1Poly.Core.isStronglyNormalizingBetaEta_of_noBetaEtaStep
 #assert_no_axioms FX1Poly.Core.var_isStronglyNormalizingBetaEta
 #assert_no_axioms FX1Poly.Core.unit_isStronglyNormalizingBetaEta
 
--- SN-045 (formers): the full SN-081 per-former corpus is robust under the eta extension.  Two generic
--- StepChildren-normality helpers + one betaEta-SN witness per former (the formers over unit children are
--- betaEta normal: cong has no normal-child StepChildren, and no Step.eta fires by shape mismatch).
+-- The full per-former corpus is robust under the eta extension.  Two generic StepChildren-normality
+-- helpers + one betaEta-SN witness per former (the formers over unit children are betaEta normal: cong has
+-- no normal-child StepChildren, and no Step.eta fires by shape mismatch).
 #assert_no_axioms FX1Poly.Core.noStepChildren_oneNormalChild
 #assert_no_axioms FX1Poly.Core.noStepChildren_twoNormalChildren
 #assert_no_axioms FX1Poly.Core.smoke_lam_isStronglyNormalizingBetaEta
@@ -347,9 +340,8 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.noStep_lamVar0
 #assert_no_axioms FX1Poly.Core.smoke_identityRedex_isStronglyNormalizingBetaEta
 
--- SN-043 Kripke-refactor seed: Kripke-indexed candidates make arrow rename-closure DEFINITIONAL,
--- dissolving the non-Kripke SN-040 piType obstruction.  Non-dependent proof of concept (presheaf
--- functoriality + the headline arrow rename-closure), not yet wired into ReducibleTypeStep.
+-- Kripke-indexed candidates make arrow rename-closure definitional.  Non-dependent presheaf
+-- functoriality + the arrow rename-closure.
 #assert_no_axioms FX1Poly.Core.transport_transport_pointwise
 #assert_no_axioms FX1Poly.Core.kripkeArrow_transport_pointwise
 -- Dependent Kripke arrow (the Pi case): codomain family transport functoriality + dependent rename-closure.
@@ -370,27 +362,24 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.IsNeutral.rename
 -- A neutral term's one-step reduct is again neutral: a neutral can only step by congruence (no root redex
 -- fires, the principal child being neutral never a constructor), and congruence preserves the stuck shape.
--- Discharges the `neutralClosedUnderStep` hypothesis of `CanonicalFormsPredicate.closedUnderStep` toward
--- unconditional bool reducibility (SN-063).
+-- Discharges the `neutralClosedUnderStep` hypothesis of `CanonicalFormsPredicate.closedUnderStep`.
 #assert_no_axioms FX1Poly.Core.IsNeutral.closedUnderStep
--- ELIMINATOR SN FRONTIER: boolElim s t e is strongly normalizing when its scrutinee AND both branches are SN
--- (strengthening boolElim_isStronglyNormalizing_of_normal_branches from normal to SN branches, via a triple
--- nested accessibility induction absorbing the ι-redex). The iota-head-expansion SN foundation for boolElim
--- reducibility (toward SN-063 + the fundamental theorem's eliminator arm).
+-- boolElim s t e is strongly normalizing when its scrutinee and both branches are SN (the branch-SN form,
+-- via a triple nested accessibility induction absorbing the iota-redex).  The iota-head-expansion SN
+-- foundation for boolElim reducibility and the fundamental theorem's eliminator arm.
 #assert_no_axioms FX1Poly.Core.StepStar.boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
--- ELIMINATOR SN FRONTIER (identity): idJ / idStrictRec base witness is SN when base AND witness are SN
--- (the base merely-SN strengthening the IotaRedexes docstring flags as needing a base×witness 2D induction;
--- the boolElim-style double nested Acc, the analogue of the boolElim triple). Toward SN-068 / SN-069.
+-- Identity eliminators: idJ / idStrictRec base witness is SN when base and witness are SN, via the
+-- boolElim-style double nested accessibility induction over base and witness.
 #assert_no_axioms FX1Poly.Core.StepStar.idJ_isStronglyNormalizing_of_strongly_normalizing_base
 #assert_no_axioms FX1Poly.Core.StepStar.idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base
 
--- Generic NON-VARIABLE cell commutation for fold traversals (RawTermFoldNonVarCommute.lean, the
--- cascade-death substrate for subst/rename through an ABSTRACT formation cell). fold_mkGen_of_ne_var
--- exposes the fold NON-VARIABLE branch for an abstract non-gen_var generator (dsimp [fold] + dif_neg);
--- subst/rename_mkGen_of_ne_var are the traversal corollaries (canonical_algebra_eq_mkGen rebuild). The
--- payload cast is Generator.payload_scope_invariant_of_not_var (the 194-generator enumeration in ONE
--- place). Unblocks the category-C formation-family consumers (HasTypeDescSubstitution/Weakening + grown
--- twins) from their per-generator by_cases pi/sigma — a new formation row touches none of them.
+-- Generic non-variable cell commutation for fold traversals: the substrate for subst/rename through an
+-- abstract formation cell.  fold_mkGen_of_ne_var exposes the fold non-variable branch for an abstract
+-- non-gen_var generator (dsimp [fold] + dif_neg); subst/rename_mkGen_of_ne_var are the traversal corollaries
+-- (canonical_algebra_eq_mkGen rebuild).  The payload cast is
+-- Generator.payload_scope_invariant_of_not_var (the generator enumeration in one place).  The category-C
+-- formation-family consumers (HasTypeDescSubstitution/Weakening + grown twins) discharge their pi/sigma
+-- cases through it generically, so a new formation row touches none of them.
 #assert_no_axioms FX1Poly.Core.fold_mkGen_of_ne_var
 #assert_no_axioms FX1Poly.Core.RawTerm.subst_mkGen_of_ne_var
 #assert_no_axioms FX1Poly.Core.RawTerm.rename_mkGen_of_ne_var

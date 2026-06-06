@@ -9,7 +9,7 @@ import FX1Poly.Core.NeutralStepClosure
 The shipped reducibility model (`ReducibleTypeStep`) gives every NON-Π / non-universe type code the bare
 strong-normalization candidate (`IsStronglyNormalizing`).  That suffices for SN but carries NO canonicity
 content: a closed strongly-normalizing term need not reduce to a CONSTRUCTOR.  Data canonicity (closed bool ↝
-`true`/`false`, closed Empty uninhabited, SN-047/048/049/050/059/062) needs the SHARPER candidate that a member
+`true`/`false`, closed Empty uninhabited) needs the SHARPER candidate that a member
 is strongly normalizing AND is either neutral or reduces to a designated VALUE form.
 
 `CanonicalFormsPredicate isValue` is that candidate, parameterized by an arbitrary value predicate `isValue`
@@ -32,7 +32,7 @@ CR2 (forward closure under one `Step`) is the data-specific residual and is DELI
 `Step.from_X` inversion — neutrals never head-fire because a neutral scrutinee is no constructor) and (ii)
 per-term confluence to carry `StepStar term value` past one `Step` (the value is a normal form, unique by
 `normalForm_unique` on the SN member).  Both prerequisites are shipped substrate; assembling CR2 is the next
-data-candidate task (toward SN-063 bool reducibility).  This file is the honest 2-of-3 foundation, not a full
+data-candidate task (toward bool reducibility).  This file is the honest 2-of-3 foundation, not a full
 candidate — `IsReducibilityCandidate (CanonicalFormsPredicate isValue)` is NOT yet claimed.
 
 ## Zero-axiom verification
@@ -104,7 +104,7 @@ theorem CanonicalFormsPredicate.memberOfStronglyNormalizingNeutral {scope : Nat}
         (fun reduct stepToReduct =>
           inductiveHypothesis reduct stepToReduct (currentIsNeutral.closedUnderStep stepToReduct))
 
-/-- **CR2 for the canonical-forms candidate**, the formerly-deferred forward-closure leg — discharged from the
+/-- **CR2 for the canonical-forms candidate**, the forward-closure leg — discharged from the
 two genuinely-provable data-specific facts.  A member's reduct stays a member: it is strongly normalizing (the
 shipped SN candidate's CR2), and its "neutral or reduces-to-value" disjunct is preserved:
 
@@ -148,7 +148,7 @@ facts (`IsNeutral` closed under `Step` + data values are normal forms).  Bundles
 (`stronglyNormalizing`) and CR3 (`neutralExpansion`) with the now-discharged CR2 (`closedUnderStep`).  Once the
 two facts are supplied for a concrete data type (e.g. `bool` with `isValue := · = boolTrue ∨ · = boolFalse`),
 this is an honest `IsReducibilityCandidate` ready to be the data type's arm of the reducibility model — the
-foundation for unconditional data canonicity (SN-063 bool reducibility / SN-047 bool canonicity). -/
+foundation for unconditional data canonicity (bool reducibility / bool canonicity). -/
 theorem CanonicalFormsPredicate.isReducibilityCandidate {scope : Nat}
     {isValue : RawTerm scope → Prop}
     (neutralClosedUnderStep :
@@ -167,7 +167,7 @@ forms** — the neutral half of the obligation is now discharged unconditionally
 `IsNeutral.closedUnderStep` (`NeutralStepClosure.lean`: a neutral's one-step reduct is again neutral), so a
 concrete data type need only supply `isValueImpliesNormal` for its constructors — trivial, since a
 constructor with normal children admits no `Step`.  This is the form a data type instantiates to obtain its
-arm of the reducibility model (toward SN-063 bool reducibility / SN-047 bool canonicity). -/
+arm of the reducibility model (toward bool reducibility / bool canonicity). -/
 theorem CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal {scope : Nat}
     {isValue : RawTerm scope → Prop}
     (isValueImpliesNormal :
@@ -180,8 +180,8 @@ member (scope 0) cannot be neutral: `IsNeutral.noClosed` refutes the neutral dis
 stuck eliminator — every neutral bottoms out at a variable, of which scope 0 has none).  So the member's
 "neutral OR reduces-to-value" disjunct collapses to its right branch: the member reduces to a designated
 `isValue`.  Combined with a proof that a closed well-typed term is a member (the fundamental theorem), this is
-exactly data canonicity — a closed term of the data type reduces to a constructor (SN-047 / SN-049).  The
-extraction is `#672`-independent; only the membership half awaits the typed reducibility fundamental theorem. -/
+exactly data canonicity — a closed term of the data type reduces to a constructor.  The
+extraction is fundamental-independent; only the membership half awaits the typed reducibility fundamental theorem. -/
 theorem CanonicalFormsPredicate.closedReducesToValue {isValue : RawTerm 0 → Prop} {term : RawTerm 0}
     (member : CanonicalFormsPredicate isValue term) :
     ∃ value : RawTerm 0, StepStar term value ∧ isValue value := by

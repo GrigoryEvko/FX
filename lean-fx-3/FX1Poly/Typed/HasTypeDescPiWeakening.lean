@@ -114,8 +114,7 @@ mutual
 /-- INTRINSIC renaming for the grown engine: `HasTypeDescPi` is preserved along any renaming that
 respects the context (sends each source binding's looked-up type to the target's, commuting with
 `rename`), with subject and classifier renamed.  The grown engine's cartesian-lift fibration leg.
-Decoupled from `HasType` — the `ofFormation` cross-call routes through the intrinsic
-`HasTypeDesc.renameRespectingContext`, not the `⟺` soundness map. -/
+The `ofFormation` cross-call routes through the intrinsic `HasTypeDesc.renameRespectingContext`. -/
 theorem HasTypeDescPi.renameRespectingContext {profile : PolyProfile}
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
@@ -261,8 +260,7 @@ end
 /-- INTRINSIC weakening for the grown engine: a `HasTypeDescPi` derivation survives extending the
 context by one fresh binding, subject and classifier shifted by `RawRenaming.weaken`.  The
 corollary of `renameRespectingContext` whose context-condition holds DEFINITIONALLY
-(`fun _ => rfl`): `weaken index` is `Fin.succ index`, the `cons` `lookup` fires its successor arm.
-Decoupled from `HasType`. -/
+(`fun _ => rfl`): `weaken index` is `Fin.succ index`, the `cons` `lookup` fires its successor arm. -/
 theorem HasTypeDescPi.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} (newBinding : RawTerm scope)

@@ -6,7 +6,7 @@ import FX1Poly.Core.RawTermSubst0Commute
 /-! # Foundation/PolyCell/Core/RawTermSubstConsCommute
     — weakening cancels under a cons-extended substitution
 
-The reducible-substitution environment for the fundamental theorem (the #425 RC environment) extends a
+The reducible-substitution environment for the fundamental theorem (the RC environment) extends a
 closing substitution at a binder via `RawTermSubst.cons headTerm tailSubst`, and looks context types up
 with `TypingContext.lookup`, which WEAKENS each stored binding type by one (`RawRenaming.weaken`).  The
 two interact by CANCELLATION: substituting a `cons`-extended substitution through a once-weakened term

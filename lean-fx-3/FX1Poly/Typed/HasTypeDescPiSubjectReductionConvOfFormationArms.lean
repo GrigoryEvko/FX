@@ -2,13 +2,13 @@ import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescSubjectReduction
 
 /-! # FX1Poly/Typed/HasTypeDescPiSubjectReductionConvOfFormationArms
-    — the two remaining (non-function-space, non-former) routing arms of the grown SR dispatcher (SN-055)
+    — the two remaining (non-function-space, non-former) routing arms of the grown SR dispatcher
 
 The grown-engine subject-reduction dispatcher `HasTypeDescPi Γ s S → Step s s' → HasTypeDescPi Γ s' S` inducts
 on the typing derivation; its FIVE arms route a `Step` at each typing head to the right reconstruction.  Three
-arms are shipped elsewhere — λ (`subjectReductionPiIntroArm`), application (`subjectReductionPiElimArm`), and
+arms live elsewhere — λ (`subjectReductionPiIntroArm`), application (`subjectReductionPiElimArm`), and
 the Π/Σ former (`subjectReductionPiFormerArm` / `subjectReductionSigmaFormerArm`).  This file ships the
-remaining two, both trivial (no children-SR, no `WfContext`):
+remaining two, both trivial (no children-SR, no well-formedness use):
 
   * **`subjectReductionAtOfFormation`** — a FORMATION-typed subject admits NO step (`subjectAdmitsNoStep`: the
     formation engine types only normal forms), so the dispatcher's `ofFormation` case is vacuous (`absurd`).
@@ -17,19 +17,14 @@ remaining two, both trivial (no children-SR, no `WfContext`):
 
 With these the per-arm ROUTING set is complete (all five typing arms have a routing lemma).
 
-## Dispatcher-assembly status (the genuine blocker, sharpened)
+## Dispatcher-assembly status
 
-The remaining work — actually CLOSING the recursive dispatcher `HasTypeDescPi.subjectReduction` — is NOT a
-clean single brick: it is blocked on the fundamental-metatheory bundle, NOT merely on the `genFormationPi`
-former arm.  The recursive `piIntro` / `piElim` arms must thread a context-well-formedness witness through the
-structural recursion, but the shipped routing arms (`subjectReductionPiElimArm` via `betaSubjectReduction` /
-`classifierIsTypeDesc`) consume `WfContext` (the HasType-based well-formedness), whereas a grown `piIntro`
-domain typing only yields `WfContextDescPi` (the grown well-formedness) — the `HasTypeDescPi → IsType` bridge
-that `WfContext.cons` needs does not exist (see `WfContextDescPi.lean` header).  So the dispatcher requires
-either (a) `WfContextDescPi`-form routing arms, which need grown classifier-validity (WFG-3, `#857`,
-itself entangled with `HasType.classifierIsType`), or (b) the bridge.  The SR dispatcher (SN-055), GCC
-context-conversion (`#838`-`#843`), and WFG-3 are one mutually-entangled bundle — a deliberate multi-fire
-mutual development, with no isolated clean entry point.
+Closing the recursive dispatcher `HasTypeDescPi.subjectReduction` is the fundamental-metatheory bundle, not a
+clean single brick.  The recursive `piIntro` / `piElim` arms thread a context-well-formedness witness through
+the structural recursion via the grown `WfContextDescPi`, which extends at a grown `piIntro` binder
+(`WfContextDescPi.cons` + the binder's domain typing IS its `IsTypeDescPi`).  The SR dispatcher, the grown
+context-conversion bundle, and grown classifier-validity are one mutually-entangled bundle — a deliberate
+multi-fire mutual development.
 
 ## Zero-axiom verification
 

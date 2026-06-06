@@ -4,12 +4,12 @@ import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Core.CandidateInterpretationRename
 
 /-! # FX1Poly/Typed/ConsistentStratification
-    — the level-inference invariant for the route-A leveling-bridge assembly (toward SN-027/#662)
+    — the level-inference invariant for the route-A leveling-bridge assembly
 
-**Route-A crosscheck (off the critical path — BFT/OB-5 `#794` already closed SN-043 unconditionally;
-this is the independent ValidTyping-route 2nd proof feeding the SN-150 triangulation).**
+**Route-A crosscheck (off the critical path — the bounded route already closes strong normalization
+unconditionally; this is the independent ValidTyping-route second proof feeding the cross-route triangulation).**
 
-The totalBridge `HasTypeDescPi → ∃ contextLevels predLevel, ValidTyping …` (SN-027/#662) is an induction
+The totalBridge `HasTypeDescPi → ∃ contextLevels predLevel, ValidTyping …` is an induction
 that must SYNTHESIZE a `contextLevels : Fin scope → Nat` from the LEVEL-FREE context.  The make-or-break
 constraint is the conv-to-type-VARIABLE arm (`validTypingBridgeConvPinnedReclassifier`,
 `LevelingBridge.lean`): reclassifying a subject `x` to a bare type variable `var typeIndex` needs that type

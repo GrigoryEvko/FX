@@ -92,7 +92,7 @@ The reduction chain for `.wrongSort`:
 
 1. `checkRawCellAs? .type 0 unitTermRaw`
 2. Calls `inferRawCellGeneral? 0 unitTermRaw`
-3. Unit term cert returns `.ok { cellSort := .term, ... }` (per #170)
+3. Unit term cert returns `.ok { cellSort := .term, ... }`
 4. Sort check: `result.cellSort = .term`, expected `.type`, mismatch
 5. Returns `.error .wrongSort`
 
@@ -113,7 +113,7 @@ namespace FX1Poly.Core
 
 /-- Extract the rejection reason from an Except-valued certified result.
 
-Dual of `certifiedResultSort?` (#170).  Where the positive coverage
+Dual of `certifiedResultSort?`.  Where the positive coverage
 helper projects the sort on acceptance, this helper projects the
 rejection reason on rejection.  Both return `Option` so coverage
 theorems can compare against expected outcomes uniformly via `rfl`. -/

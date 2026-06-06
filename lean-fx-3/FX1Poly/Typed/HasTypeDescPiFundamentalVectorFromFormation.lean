@@ -1,7 +1,7 @@
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
 import FX1Poly.Typed.TelescopeReducible
 import FX1Poly.Typed.DescTelescopeInversion
-import FX1Poly.Typed.HasTypeDescPiValidity
+import FX1Poly.Typed.HasTypeDescPiClassifierValidity
 import FX1Poly.Core.RawTermRenameSubstCommute
 import FX1Poly.Core.StrongNormalizationRename
 
@@ -199,13 +199,13 @@ theorem HasTypeDescPi.classifierStronglyNormalizingFromFormation {profile : Poly
           IsFundamentalConclusionAtVector context subject classifier)
     {scope targetScope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
-    (contextWellFormed : WfContext context)
+    (contextWellFormed : WfContextDescPi context)
     (typed : HasTypeDescPi profile context subject classifier)
     (substitution : RawTermSubst scope (targetScope + 1))
     (env : ReducibleEnvAtAllLevels context substitution) (predLevel : Nat) :
     IsStronglyNormalizing (RawTerm.subst substitution classifier) := by
   obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
-    typed.classifierIsTypeDesc contextWellFormed
+    typed.classifierIsTypeDescPi contextWellFormed
   exact HasTypeDescPi.subjectStronglyNormalizingFromFormation
     formationFundamental classifierTyped substitution env predLevel
 
@@ -257,7 +257,7 @@ theorem HasTypeDescPi.closedClassifierSubstStronglyNormalizingFromFormation {pro
     (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
     IsStronglyNormalizing (RawTerm.subst substitution classifier) :=
   HasTypeDescPi.classifierStronglyNormalizingFromFormation
-    formationFundamental (WfContext.emptyIsWellFormed (profile := profile)) typed
+    formationFundamental (WfContextDescPi.emptyIsWellFormed (profile := profile)) typed
     substitution (ReducibleEnvAtAllLevels.empty substitution) predLevel
 
 /-- **Closed strong normalization from the conditional grown-engine fundamental theorem.**  In the empty
@@ -302,7 +302,7 @@ theorem HasTypeDescPi.closedClassifierStronglyNormalizingFromFormation {profile 
     (typed : HasTypeDescPi profile TypingContext.empty subject classifier) :
     IsStronglyNormalizing classifier := by
   obtain ⟨_levelExpr, _flag, classifierTyped⟩ :=
-    typed.classifierIsTypeDesc (WfContext.emptyIsWellFormed (profile := profile))
+    typed.classifierIsTypeDescPi (WfContextDescPi.emptyIsWellFormed (profile := profile))
   exact HasTypeDescPi.closedSubjectStronglyNormalizingFromFormation
     formationFundamental classifierTyped
 

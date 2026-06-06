@@ -2,14 +2,13 @@ import FX1Poly.Core.GeneratorAdmission
 import FX1Poly.Core.GeneratorMetadata
 
 /-! # FX1Poly/Typed/BoolTypeCodeSubstrate
-    — substrate certificate for the `gen_boolCode` Bool type-code generator (SN-047)
+    — substrate certificate for the `gen_boolCode` Bool type-code generator
 
 The kernel ships VALUE generators `gen_boolTrue` / `gen_boolFalse` (and the eliminator
-`gen_boolElim`) but, like every ground datatype (`nat` / `unit` / `Empty`), had NO TYPE code:
-the type `Bool` was not a nameable cell.  `gen_boolCode` (`GeneratorCore.lean`) is the bespoke
-nullary type-code generator that fills this gap — mirroring `gen_emptyCode` (CON-A1), the
-substrate prerequisite for bool canonicity (SN-047: every closed `t : Bool` reduces to `boolTrue`
-or `boolFalse`).
+`gen_boolElim`); like every ground datatype (`nat` / `unit` / `Empty`), the type `Bool` itself
+needs a dedicated TYPE code to be a nameable cell.  `gen_boolCode` (`GeneratorCore.lean`) is the
+bespoke nullary type-code generator that names it — mirroring `gen_emptyCode` — the substrate
+prerequisite for bool canonicity (every closed `t : Bool` reduces to `boolTrue` or `boolFalse`).
 
 This file is the substrate CERTIFICATE: it pins the generator's shape to exactly the
 nullary-type-code profile the future `Bool : Type@0` formation will consume.  The serialization
@@ -28,12 +27,11 @@ not name.
   so `boolTypeCell` is a structurally admissible kernel cell.
 
 NOT here (deliberately, and honestly): `Bool : Type@0` formation, `boolTrue / boolFalse : Bool`
-typing, and bool canonicity.  Formation needs a `typingRuleDescOf gen_boolCode` row, which is
-gated behind the `by_cases pi/sigma` migration in `HasTypeDescSound.toHasType` (GTL-03/11) exactly
-as `gen_emptyCode`'s `typingRuleDescOf` was deferred in CON-A1 — `typingRuleDescOf gen_boolCode`
-is `none` today, so `boolTypeCell` is (correctly) not yet a typed type.  The reducibility-level
-bool candidate (`boolCanonicalFormsCandidate`, #676) and the canonicity extraction (#677) are
-already shipped; the missing link they await is this type-code plus the BFT-15 bridge (#768).
+typing, and bool canonicity.  Formation needs a `typingRuleDescOf gen_boolCode` row; like
+`gen_emptyCode`, `typingRuleDescOf gen_boolCode` is `none`, so `boolTypeCell` is (correctly) not
+yet a typed type.  The reducibility-level bool candidate (`boolCanonicalFormsCandidate`) and the
+canonicity extraction are shipped; the missing link they await is this type-code plus the
+candidate bridge.
 
 ## Zero-axiom verification
 
@@ -51,7 +49,7 @@ open FX1Poly.Core
 `binderShifts = []` (no bound positions), `cellSort = .type` (a type-former, not a value): the
 same structural profile as `gen_emptyCode`.  These three metadata facts are the precondition the
 nullary-former formation primitive (`hasTypeDescPi_nullaryFormation_viaGenArm`) consumes to derive
-`Bool : Type@0` once the `typingRuleDescOf` row lands (GTL-11-gated). -/
+`Bool : Type@0` once the `typingRuleDescOf` row lands. -/
 theorem gen_boolCode_isNullaryTypeCode :
     Generator.arity .gen_boolCode = 0
       ∧ Generator.binderShifts .gen_boolCode = []

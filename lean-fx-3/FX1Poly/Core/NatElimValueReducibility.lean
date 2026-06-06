@@ -2,9 +2,9 @@ import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.WeakHeadStepSubsumes
 
 /-! # FX1Poly/Core/NatElimValueReducibility
-    — the VALUE-CASE of non-dependent Nat-recursor reducibility (the computational heart of SN-061)
+    — the VALUE-CASE of non-dependent Nat-recursor reducibility (the computational heart of recursor reducibility)
 
-SN-061 is recursor reducibility: `natElim n z s` (and `natRec`) is a reducible member of the result type
+Nat-recursor reducibility: `natElim n z s` (and `natRec`) is a reducible member of the result type
 whenever the scrutinee `n` and the branches are reducible.  The full theorem decomposes into three regimes of
 the scrutinee — neutral (the recursor is itself neutral, CR3), reduces-to-a-numeral, and the numeral VALUE
 itself — with the recursive descent on the numeral predecessor.  This file ships the VALUE case: the recursor
@@ -31,7 +31,7 @@ etc.):
   `natElim`/`natRec` successor-case ι-redex SN, the `*_isStronglyNormalizing_of_normal_branches` family).
 
 The general-member case (scrutinee neutral or reducing to a numeral) — the SN/neutral outer recursion — is the
-remaining half of SN-061, deferred.
+remaining half, deferred.
 
 ## Zero-axiom verification
 
@@ -49,7 +49,7 @@ open StepStar
 structural induction on the numeral: the `zero` ι selects the zero branch (a `C`-member); the `succ` ι yields
 `app (app succBranch predecessor) (natElim predecessor …)`, whose membership comes from `succBranchApplication`
 fed the predecessor's inductive hypothesis — each lifted to the recursor cell by the candidate's weak-head
-expansion.  The computational core of SN-061; the scrutinee-reduction / neutral regimes are the deferred
+expansion.  The computational core of Nat-recursor reducibility; the scrutinee-reduction / neutral regimes are the deferred
 outer recursion. -/
 theorem natElimValueReducibility {scope : Nat}
     {zeroBranch succBranch : RawTerm scope}

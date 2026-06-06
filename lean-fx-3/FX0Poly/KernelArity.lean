@@ -3,18 +3,18 @@ import FX0Poly.CertRecheckSound
 /-!
 # FX0Poly — concrete kernel-fragment arity model + end-to-end cell re-check
 
-`CertRecheck`/`CertRecheckSound` gave the recursive re-checker generic over an abstract tag→arity model.
-This file PINS that model to the FX1Poly kernel's current formation fragment, turning the abstract checker
-into a concrete one that re-checks actual kernel-shaped certificate trees.
+`CertRecheck`/`CertRecheckSound` define the recursive re-checker generic over an abstract tag→arity model.
+This file PINS that model to the FX1Poly kernel's formation fragment, turning the abstract checker into a
+concrete one that re-checks actual kernel-shaped certificate trees.
 
 `fxArity` is FX0Poly's OWN authoritative table of the recognized generator tags and their child arities
 (var / universe-code / Π-code / Σ-code).  It is deliberately self-contained — FX0Poly never imports
-FX1Poly's `Generator` enum; aligning FX1Poly's emitted tags to this table is the (later) cross-check
-bridge's job, not the checker's.  The tag numbers here are FX0Poly's convention.
+FX1Poly's `Generator` enum; aligning FX1Poly's emitted tags to this table is the cross-check bridge's job,
+not the checker's.  The tag numbers here are FX0Poly's convention.
 
-The end-to-end smokes are the FX0Poly side of the "var 0 / Π / Σ re-checks accepted" first milestone:
-a concrete certificate for each formation-fragment generator re-checks `accepted`, and malformed ones
-(wrong arity, unknown tag) re-check `malformed` — exercising the full recursive driver on real cell shapes.
+The end-to-end smokes exercise the full recursive driver on real cell shapes: a concrete certificate for
+each formation-fragment generator (var / Π / Σ) re-checks `accepted`, and malformed ones (wrong arity,
+unknown tag) re-check `malformed`.
 
 ## Zero-axiom verification
 

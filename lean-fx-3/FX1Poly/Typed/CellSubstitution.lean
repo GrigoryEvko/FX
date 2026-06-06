@@ -19,8 +19,8 @@ cell constructors, consumed by every substitution arm in the typed metatheory
 (the β-engine of formation/grown subject reduction, the BFT/denote reducibility
 substrate).
 
-Extracted here from the old `HasTypeSubstitution` so the substitution substrate
-stands on the cell constructors alone, independent of any typing engine.
+The substitution substrate stands on the cell constructors alone, independent of
+any typing engine.
 
 ## Zero-axiom verification
 

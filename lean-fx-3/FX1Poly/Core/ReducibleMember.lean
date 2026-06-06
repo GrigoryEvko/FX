@@ -16,8 +16,8 @@ candidate existentially:
 
   `IsReducibleMember typeCode term := ∃ candidate, ReducibleType typeCode candidate ∧ candidate term`.
 
-This is exactly `HasType Γ t T → IsReducibleMember (T.subst γ) (t.subst γ)` under a reducible closing
-substitution `γ` (the #425 environment, built next).  This file ships the term-level reasoning the
+This is exactly `HasTypeDesc Γ t T → IsReducibleMember (T.subst γ) (t.subst γ)` under a reducible closing
+substitution `γ` (the reducible environment).  This file ships the term-level reasoning the
 fundamental theorem's structural cases consume DIRECTLY, lifted from the candidate-level lemmas to the
 existentially-packaged membership form:
 
@@ -35,7 +35,7 @@ existentially-packaged membership form:
     is itself reducible, via `ReducibleType.convTransfer`.
   * **`IsReducibleMember.stronglyNormalizing`** (CR1) — at a non-empty scope (where the arrow CR1 has a
     domain inhabitant, §`ReducibleType.isReducibilityCandidate`), every member strongly normalizes.  This
-    is the candidate→SN direction the SN-for-closed corollary (#426) consumes.
+    is the candidate→SN direction the SN-for-closed corollary consumes.
 
 ## Zero-axiom verification
 
@@ -52,7 +52,7 @@ open StepStar
 
 /-- **Semantic membership.**  `term` is a reducible member of the type `typeCode` when the type denotes
 some reducibility candidate containing the term.  This is the CONCLUSION shape of the fundamental
-theorem (`HasType Γ t T → IsReducibleMember (T.subst γ) (t.subst γ)` under a reducible environment). -/
+theorem (`HasTypeDesc Γ t T → IsReducibleMember (T.subst γ) (t.subst γ)` under a reducible environment). -/
 def IsReducibleMember {scope : Nat} (typeCode term : RawTerm scope) : Prop :=
   ∃ candidate : RawTerm scope → Prop, ReducibleType typeCode candidate ∧ candidate term
 

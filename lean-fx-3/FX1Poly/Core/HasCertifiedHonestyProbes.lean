@@ -42,11 +42,11 @@ structural layer before claiming type-theoretic SR.
 The semantic layer lives in `FX1Poly/Typed`:
 
   * `TypingContext profile scope` — per-variable types
-  * `HasType ctx term type` — the typing judgment
+  * `HasTypeDesc ctx term type` — the typing judgment
 
 The structural preservation arms are a real result over the
 structural layer; the SEMANTIC SR theorem
-`HasType ctx s T → Step s t → HasType ctx t T` is a separate,
+`HasTypeDesc ctx s T → Step s t → HasTypeDesc ctx t T` is a separate,
 stronger result for the typed fragment.
 
 These probes establish the baseline that prevents the structural

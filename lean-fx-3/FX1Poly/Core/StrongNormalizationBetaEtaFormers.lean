@@ -1,11 +1,11 @@
 import FX1Poly.Core.StrongNormalizationBetaEtaLeaves
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationBetaEtaFormers
-    — the per-former SN corpus is robust under the eta extension (SN-045, formers)
+    — the per-former SN corpus is robust under the eta extension (formers)
 
-SN-045's leaf base (`StrongNormalizationBetaEtaLeaves`) lifted the variable / unit SN entry points to
+The leaf base (`StrongNormalizationBetaEtaLeaves`) lifts the variable / unit SN entry points to
 `Step.betaEtaStar.IsStronglyNormalizing` (over `Step.betaEta = Step ∪ Step.eta`).  This file completes
-SN-045 by lifting the full SN-081 per-former corpus: every former over the (beta-eta-normal) unit leaf
+the eta extension by lifting the full per-former corpus: every former over the (beta-eta-normal) unit leaf
 children is itself beta-eta normal, hence beta-eta strongly normalizing.
 
 Each former-over-unit is beta-eta normal for two independent reasons:
@@ -360,7 +360,7 @@ theorem smoke_polyFunctor_isStronglyNormalizingBetaEta {scope : Nat} :
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
-/-! ## Identity beta-redex — the non-normal-form entry point (completes the SN-044 corpus under betaEta) -/
+/-! ## Identity beta-redex — the non-normal-form entry point (completes the entry-point corpus under betaEta) -/
 
 /-- **The identity lambda is `Step`-normal.**  `lam (var 0)` has no `beta` / `iota` redex (its root is a
 lambda, not an application or eliminator) and its single child `var 0` is `Step`-normal (`noStep_var`), so
@@ -380,7 +380,7 @@ leaf and former witnesses this is NOT beta-eta normal — it carries a redex —
 head-expansion case: its sole beta-eta reduct is the contractum `unit` (beta-eta SN by
 `unit_isStronglyNormalizingBetaEta`), the `cong` congruences are impossible (both children
 `lam (var 0)` / `unit` are `Step`-normal), and no `Step.eta` fires (an application is not an eta redex
-shape).  Completes the SN-044 entry-point corpus (variable / unit / identity redex) under the eta
+shape).  Completes the entry-point corpus (variable / unit / identity redex) under the eta
 extension. -/
 theorem smoke_identityRedex_isStronglyNormalizingBetaEta {scope : Nat} :
     Step.betaEtaStar.IsStronglyNormalizing

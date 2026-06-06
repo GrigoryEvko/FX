@@ -3,7 +3,7 @@ import FX0Poly.CertRecheck
 /-!
 # FX0Poly — recursive re-check soundness (the driver accepts exactly the structurally-valid trees)
 
-`CertRecheck` gave the recursive driver `Cert.recheck`.  This file proves it **sound and complete**: the
+`CertRecheck` defines the recursive driver `Cert.recheck`.  This file proves it **sound and complete**: the
 driver accepts a certificate tree EXACTLY when the tree is structurally valid — every node's generator tag
 has a known arity matching its child count, recursively.
 

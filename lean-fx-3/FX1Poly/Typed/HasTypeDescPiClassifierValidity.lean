@@ -3,25 +3,16 @@ import FX1Poly.Typed.WfContextDescPiValidity
 import FX1Poly.Typed.HasTypeDescPiValidity
 
 /-! # FX1Poly/Typed/HasTypeDescPiClassifierValidity
-    — grown classifier-validity over the GROWN well-formedness `WfContextDescPi` (WFG-3)
+    — grown classifier-validity over the GROWN well-formedness `WfContextDescPi`
 
-`HasTypeDescPi.classifierIsTypeDesc` (`HasTypeDescPiValidity.lean`) threads the `HasType`-based `WfContext`:
-given `WfContext Γ` and a grown derivation, the classifier is a grown type.  That hypothesis is the obstruction
-to the master subject-reduction dispatcher (SN-055 / TG-3), which must EXTEND well-formedness at a grown
-`piIntro` binder where `WfContext` cannot reach (no `HasTypeDescPi → IsType` bridge for the binder).  The fix
-is the GROWN twin `HasTypeDescPi.classifierIsTypeDescPi` over `WfContextDescPi` (WFG-1, which DOES extend at a
-grown binder via `WfContextDescPi.cons`).
+Grown classifier-validity: given `WfContextDescPi Γ` and a grown derivation, the classifier is a grown type.
+`HasTypeDescPi.classifierIsTypeDescPi` threads the GROWN well-formedness `WfContextDescPi`, which EXTENDS at a
+grown `piIntro` binder via `WfContextDescPi.cons` — exactly what the master subject-reduction dispatcher needs.
 
-The earlier obstruction to that swap was the `piElim` arm: it inverts the function's Π-code type, and the
-existing grown Π-code inversion (`HasTypeDescPi.inversionPiCodeComponents`) threads `WfContext` because its
-formation leaf (`HasTypeDesc.inversionPiCodeWithConvGeneral`) KEEPS the classifier `Conv` and so needs
-`Conv.trans_of_typedMiddle` (i.e. `HasType.classifierIsType`, the entangled, `WfContext`-based SN supply).
-
-This file breaks that entanglement.  The grown classifier-validity needs only the component telescope (the
-child typings), NOT the classifier `Conv` — so it routes through the shipped **`Conv`-free, `WfContext`-free**
-formation inversion `HasTypeDesc.inversionPiCodeGeneral` (whose `conv` arm forwards the descent IH verbatim,
-no `Conv.trans`).  That yields an UNCONDITIONAL grown Π-code inversion chain, hence a `WfContextDescPi`-only
-classifier-validity with no entanglement.
+The grown classifier-validity needs only the component telescope (the child typings), NOT the classifier
+`Conv` — so it routes through the **`Conv`-free** formation inversion `HasTypeDesc.inversionPiCodeGeneral`
+(whose `conv` arm forwards the descent IH verbatim, no `Conv.trans`).  That yields an UNCONDITIONAL grown
+Π-code inversion chain, hence a `WfContextDescPi`-only classifier-validity.
 
 ## The chain
 
@@ -38,10 +29,9 @@ classifier-validity with no entanglement.
   * `HasTypeDescPi.classifierIsTypeDescPi` — **the payoff**: a grown-typed subject's classifier is a grown
     type under `WfContextDescPi`.  `ofFormation` delegates to the shipped formation grown classifier-validity
     `HasTypeDesc.classifierIsTypeDescPi`; `conv` reads off the reclassifier typing the `conv` ctor carries
-    directly (no transitivity — unlike the formation engine); `piIntro` / `genFormationPi` build the universe
+    directly (no transitivity); `piIntro` / `genFormationPi` build the universe
     code via `genFormationPi`; `piElim` uses the unconditional instantiation above on the recursively-obtained
-    function classifier.  The grown mirror of `HasTypeDescPi.classifierIsTypeDesc`, now threading the
-    extendable `WfContextDescPi` — the WFG-3 leg the master SR dispatcher consumes.
+    function classifier.  Threads the extendable `WfContextDescPi` — the leg the master SR dispatcher consumes.
 
 ## Zero-axiom verification
 
@@ -57,7 +47,7 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
 /-- **Unconditional grown Π-code telescope inversion.**  A grown derivation whose subject is a `gen_piTyCode`
 cell exposes its children as a grown premise telescope `DescTelescopePi`, with NO well-formedness premise.  Like
-`HasTypeDescPi.inversionPiCodeTelescopeGeneral` but routed through the `Conv`-free, `WfContext`-free formation
+`HasTypeDescPi.inversionPiCodeTelescopeGeneral` but routed through the `Conv`-free, well-formedness-free formation
 inversion `HasTypeDesc.inversionPiCodeGeneral` (the `ofFormation` arm), so the recursion carries no context
 hypothesis.  The substrate that lets grown classifier-validity thread the extendable `WfContextDescPi`. -/
 theorem HasTypeDescPi.inversionPiCodeTelescopeUnconditional {profile : PolyProfile}
@@ -130,10 +120,10 @@ theorem HasTypeDescPi.piCodeInstantiationIsTypeUnconditional {profile : PolyProf
     HasTypeDescPi.inversionPiCodeComponentsUnconditional piTyped
   exact IsTypeDescPi.substituteUnderBinding ⟨codomainLevel, flag, codomainTyped⟩ argument argumentTyped
 
-/-- **Grown classifier-validity over `WfContextDescPi`** (the WFG-3 payoff).  A grown-typed subject's classifier
-is a grown type (`IsTypeDescPi`) under the GROWN well-formedness `WfContextDescPi` — which, unlike the
-`HasType`-based `WfContext` of `HasTypeDescPi.classifierIsTypeDesc`, EXTENDS at a grown `piIntro` binder
-(`WfContextDescPi.cons`), so the master subject-reduction dispatcher can thread it.  `ofFormation` delegates to
+/-- **Grown classifier-validity over `WfContextDescPi`**.  A grown-typed subject's classifier
+is a grown type (`IsTypeDescPi`) under the GROWN well-formedness `WfContextDescPi`, which EXTENDS at a grown
+`piIntro` binder (`WfContextDescPi.cons`), so the master subject-reduction dispatcher can thread it.
+`ofFormation` delegates to
 the shipped formation grown classifier-validity; `conv` reads off the reclassifier typing the `conv` ctor
 carries (no transitivity); `piIntro` / `genFormationPi` build the universe code via `genFormationPi`; `piElim`
 uses the unconditional instantiation on the recursively-obtained function classifier. -/

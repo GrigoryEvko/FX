@@ -1,9 +1,9 @@
 import FX1Poly.Modal.GradedSubstitutionAlgebra
 import FX1Poly.Modal.SimpleStrongNormalization
 
-/-! # FX1Poly/Modal/GradedReductionSubstitution — reduction is substitutive (DIM2-5 iii-b)
+/-! # FX1Poly/Modal/GradedReductionSubstitution — reduction is substitutive
 
-The Tait abstraction lemma (DIM2-5 iii-c) transports the hypothesis "every reducible instantiation of
+The Tait abstraction lemma transports the hypothesis "every reducible instantiation of
 the body is reducible" across a body reduction — which needs `GradedLambda.Reduces.substAt`: a single
 β-step is preserved under the kernel single substitution.  It also needs SN-reflection
 (`IsStronglyNormalizing.ofSubstAt`) to get `SN(body)` from `SN(body[var 0 / 0])`.

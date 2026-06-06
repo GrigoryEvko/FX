@@ -1,11 +1,11 @@
 import FX1Poly.Core.KripkeCandidateRenameClosure
 
 /-! # FX1Poly/Core/KripkeReducibilityCandidate
-    — SN-040, honest unconditional form: a reducibility candidate is closed under renaming
+    — renaming-closure of reducibility, honest unconditional form: a reducibility candidate is closed under renaming
 
-## What SN-040 actually is, honestly
+## What renaming-closure actually is, honestly
 
-SN-040 ("reducibility closed under renaming") has NO unconditional proof for the bare `ReducibleTypeStep`
+"Reducibility closed under renaming" has NO unconditional proof for the bare `ReducibleTypeStep`
 relation — it is FALSE there, not merely hard.  The `ReducibleTypeStep.piType` arm's candidate is
 `fun f => ∀ argument : RawTerm scope, domainCandidate argument → codomainCandidate argument (app f argument)`,
 quantifying over SAME-scope arguments.  A renaming `ρ : scope → scope'` enlarges the scope, and a renamed
@@ -25,10 +25,10 @@ domain/codomain, by `Iff.rfl` (the renaming threads as precomposition on the can
 
 The Kripke candidate is NOT wired into `ReducibleTypeStep` (that is the deliberately-deferred foundational
 refactor), and per `KripkeCandidateRenameClosure.lean`'s calibration, candidate rename-closure is OFF the
-SN-043 critical path — the gate on SN-043 is the SEPARATE fuel-stability premise
+whole-relation-SN critical path — the gate there is the SEPARATE fuel-stability premise
 `HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes` (`FundamentalWithTypeValueCandidates.lean`),
 which rename-closure does not discharge.  This file is the honest, unconditional, hypothesis-free statement of
-SN-040 in the form in which it is TRUE — the bare-relation form being false.
+renaming-closure in the form in which it is TRUE — the bare-relation form being false.
 
 ## Zero-axiom verification
 
@@ -44,7 +44,7 @@ open StepStar
 
 /-- **A Kripke candidate is a reducibility candidate** when, at every index renaming, its members are strongly
 normalizing (CR1) and it is closed under `Step` (CR2).  CR3 (neutral backward closure) is intentionally not a
-field here — it is the deferred Girard arrow case (`KripkeCandidateRenameClosure.lean`, PAUSED), and the
+field here — it is the deferred Girard arrow case (`KripkeCandidateRenameClosure.lean`), and the
 renaming-closure of this CR1+CR2 bundle is provable without it. -/
 structure IsKripkeReducibilityCandidate {scope : Nat} (candidate : KripkeCand scope) : Prop where
   /-- CR1: members of the candidate (at any index renaming) are strongly normalizing. -/
@@ -55,7 +55,7 @@ structure IsKripkeReducibilityCandidate {scope : Nat} (candidate : KripkeCand sc
     {term term' : RawTerm targetScope}, candidate indexRenaming term → Step term term' →
     candidate indexRenaming term'
 
-/-- **SN-040, honest Kripke form: a reducibility candidate is closed under renaming, UNCONDITIONALLY.**
+/-- **Renaming-closure, honest Kripke form: a reducibility candidate is closed under renaming, UNCONDITIONALLY.**
 Transporting a Kripke reducibility candidate along ANY renaming yields a Kripke reducibility candidate — with
 NO hypothesis.  The transport precomposes the renaming onto the candidate's own index, so a member of the
 transported candidate at index `indexRenaming` is definitionally a member of the original at the composed

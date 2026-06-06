@@ -21,13 +21,12 @@ on a `HasTypeDesc` derivation, substitution the full SUBSTITUTION action.  Same 
 shape (`HasTypeDesc.substRespectingContext ⋈ DescTelescope.substRespectingTelescope`) — NO
 second-derivation inversion, so cross-calls sit on PRISTINE `match`-bound subterms and
 Lean's structural recursion lands it without `termination_by` (the genFormation companion
-cross-call HOISTED before `by_cases`).  Proved BY INDUCTION on `HasTypeDesc`, NOT routed
-through the `⟺` maps.  `Conv.subst` (#370) rides the `conv` arm; no `Conv.trans`, so the
-β-engine does not depend on raw confluence.
+cross-call HOISTED before `by_cases`).  Proved BY INDUCTION on `HasTypeDesc`.  `Conv.subst`
+rides the `conv` arm; no `Conv.trans`, so the β-engine does not depend on raw confluence.
 
-The decouple COMPOUNDS: the telescope companion's `cons` successor case reuses the INTRINSIC
+The telescope companion's `cons` successor case reuses the INTRINSIC
 `HasTypeDesc.weakenUnderBinding` to weaken the substituent across the binder —
-intrinsic substitution standing on intrinsic weakening, no `HasType` in either.
+intrinsic substitution standing on intrinsic weakening.
 
 ## The telescope companion's lifted substitution-condition
 
@@ -36,15 +35,15 @@ stated at the telescope's `currentDepth` via `iterateLiftRaw substitution curren
 The `cons` arm fires the head recursion with that depth-`cd` substitution (condition passes
 verbatim) and recurses on the tail at `cd+1` with the LIFTED condition — split `0`/successor
 (fresh `var` at `0`, weakened substituent at `k+1` via `HasTypeDesc.weakenUnderBinding`),
-the N-binder generalization of the bespoke `HasType.substRespectingContext` single-binder
-`piFormation` codomain handling.  `iterateLiftRaw σ (cd+1) ≡ RawTermSubst.lift (iterateLiftRaw
+the N-binder generalization of single-binder `piFormation` codomain handling.
+`iterateLiftRaw σ (cd+1) ≡ RawTermSubst.lift (iterateLiftRaw
 σ cd)` (`iterateLiftRaw_succ_unfolds`; `liftForRaw := RawTermSubst.lift` definitionally), so a
 `show` restates it in `lift` form and `subst_lift_weaken_commute` fires.
 
 ## Zero-axiom
 
-Mutual structural recursion + the reused bespoke `subst_{variableCell,universeCodeCell,
-lift_weaken_commute,singleton_renameWeaken_cancel}` bricks + `Conv.subst` (#370) +
+Mutual structural recursion + the `subst_{variableCell,universeCodeCell,
+lift_weaken_commute,singleton_renameWeaken_cancel}` bricks + `Conv.subst` +
 `HasTypeDesc.weakenUnderBinding` + the nested-`if` generator pin (propext-free via
 `DecidableEq Generator`).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, `omega`.  Audit-gated.
@@ -61,7 +60,7 @@ whose substituents are target-typed at the substituted source-binding types.  Te
 recursive `match` mutual with `DescTelescope.substRespectingTelescope`; the cross-calls sit
 on pristine `match`-bound subterms (`typedPremise`, `premises`), the genFormation companion
 cross-call hoisted before the `by_cases` — so structural recursion lands it (no
-`termination_by`).  Proved NOT through the `⟺` maps. -/
+`termination_by`).  Proved by induction on `HasTypeDesc`. -/
 theorem HasTypeDesc.substRespectingContext {profile : PolyProfile}
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
@@ -194,7 +193,7 @@ well-typed `argument` for de Bruijn 0 preserves `HasTypeDesc`.  The corollary th
 `HasTypeDesc Γ argument argType` give `HasTypeDesc Γ (subject[argument]) (classifier[argument])`.
 The side condition splits `Fin` `0`/successor: position `0` returns the argument
 (`argumentTyped`, after the singleton cancels the weakening), position `k+1` a shifted
-variable (`var`).  INTRINSIC — no route through `HasType`. -/
+variable (`var`).  INTRINSIC. -/
 theorem HasTypeDesc.substituteUnderBinding {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {argType : RawTerm scope}
     {subject classifier : RawTerm (scope + 1)} (argument : RawTerm scope)

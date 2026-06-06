@@ -1,24 +1,24 @@
 import FX1Poly.Modal.GradedFundamentalTheorem
 import FX1Poly.Modal.GradedSubjectReduction
 
-/-! # FX1Poly/Modal/GradedComposition — the DIM2 composition ledger (DIM2-7)
+/-! # FX1Poly/Modal/GradedComposition — the usage-dimension composition ledger
 
 The thesis-validation capstone for the usage dimension.  FX's headline claim (§1.1, §6.8) is that the
-21 graded dimensions compose pointwise.  DIM2 instantiated a SECOND graded dimension (usage `{0,1,ω}`)
-atop the type dimension and showed it composes WITHOUT cascading the type metatheory:
+21 graded dimensions compose pointwise.  The usage dimension is a SECOND graded dimension (usage `{0,1,ω}`)
+atop the type dimension that composes WITHOUT cascading the type metatheory:
 
-  * **No cascade into the type engine** — STRUCTURAL FACT (auditable, not a Lean theorem): every DIM2
-    declaration lives under `FX1Poly/Modal/` over its own `GradedLambda`/`HasUsage`; the kernel's
-    194-generator `FX1Poly.Core` and the dependent type engine `FX1Poly.Typed` received ZERO new arms.
-  * **SN is OBTAINED, not re-proved** — `HasUsage.stronglyNormalizing` (DIM2-5) factors through grade
-    erasure to the type dimension's STLC-SN; no graded-reducibility relation was built.
+  * **No cascade into the type engine** — STRUCTURAL FACT (auditable, not a Lean theorem): every usage-
+    dimension declaration lives under `FX1Poly/Modal/` over its own `GradedLambda`/`HasUsage`; the kernel's
+    194-generator `FX1Poly.Core` and the dependent type engine `FX1Poly.Typed` carry ZERO usage-dimension arms.
+  * **SN is OBTAINED, not re-proved** — `HasUsage.stronglyNormalizing` factors through grade
+    erasure to the type dimension's STLC-SN; no graded-reducibility relation is needed.
   * **The usage dimension's OWN metatheory is orthogonal** — graded subject reduction tracks grades,
-    which the SN/type dimension ignores.  This file lifts DIM2-3's root-β SR to the full β-reduction
+    which the SN/type dimension ignores.  This file lifts the root-β SR to the full β-reduction
     and bundles both dimensions' metatheory on the SAME reduction relation.
 
   * `HasUsage.preservedByReduces` — **graded subject reduction over the full β-reduction `Reduces`**: a
     `HasUsage`-typed term keeps its type AND its exact grade vector along every β-step (root-β via
-    DIM2-3's `hasUsage_betaPreservation`; congruence cases by inversion + grade-preserving reassembly).
+    `hasUsage_betaPreservation`; congruence cases by inversion + grade-preserving reassembly).
   * `HasUsage.metatheoryBundle` — **the capstone**: a typed term satisfies BOTH dimensions' metatheory
     simultaneously and independently — strong normalization (type dimension, transferred) AND graded
     subject reduction (usage dimension, lifted) — on the same `Reduces`.  Neither re-proves the other;
@@ -43,7 +43,7 @@ bundle and smoke witnesses are direct applications.  No `axiom`, `sorry`, `prope
 namespace FX1Poly.Modal
 
 /-- **Graded subject reduction over the full β-reduction**: a `HasUsage`-typed term keeps its type AND
-its EXACT grade vector along every `Reduces` step.  The root-β case is DIM2-3's `hasUsage_betaPreservation`
+its EXACT grade vector along every `Reduces` step.  The root-β case is `hasUsage_betaPreservation`
 (the corrected App-scaling is what makes grades survive substitution); the congruence cases invert the
 typing and reassemble with the IH-preserved grades. -/
 theorem HasUsage.preservedByReduces {source reduct : GradedLambda}
@@ -75,10 +75,10 @@ theorem HasUsage.preservedByReduces {source reduct : GradedLambda}
       exact HasUsage.app typeContext binderGrade domain resultType functionGrades argumentGrades
         function argument' functionTyped (argumentIH argumentTyped)
 
-/-- **The DIM2 metatheory bundle (composition ledger capstone)**: a `HasUsage`-typed term satisfies
-BOTH dimensions' metatheory simultaneously, on the SAME reduction relation, independently derived:
+/-- **The usage-dimension metatheory bundle (composition ledger capstone)**: a `HasUsage`-typed term
+satisfies BOTH dimensions' metatheory simultaneously, on the SAME reduction relation, independently derived:
 strong normalization (TYPE dimension, transferred via grade erasure — `HasUsage.stronglyNormalizing`)
-AND graded subject reduction (USAGE dimension, lifted from DIM2-3 — `preservedByReduces`).  The two
+AND graded subject reduction (USAGE dimension, lifted — `preservedByReduces`).  The two
 dimensions compose without collision (Usage × Type is a SOUND pointwise composition, not a §6.8
 collision pair): SN ignores grades, SR tracks them; neither re-proves the other. -/
 theorem HasUsage.metatheoryBundle {typeContext : List GType} {grades : GradeVector}

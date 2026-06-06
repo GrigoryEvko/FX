@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
-import FX1Poly.Typed.HasTypeDecidableConv
+import FX1Poly.Typed.UniverseCodeConversion
+import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Core.RawConfluence
 
 /-! # FX1Poly/Typed/HasTypeDescPiFormationUniqueness
@@ -25,13 +26,13 @@ premises and these lemmas discharge `uniqueAtSubject` directly.
 universe-typings at `(otherDomainLevel, otherFlag)` / `(otherCodomainLevel, otherFlag)` (the former inversion
 forces BOTH components at the SAME `flag`) and `Conv otherType (universeCodeCell (lmaxAll [otherDomainLevel,
 otherCodomainLevel]) otherFlag)`.  `domainUnique` / `codomainUnique` force the components' levels/flags via
-`levelFlag_eq_of_conv_universeCodeCell` (SYNTACTIC `LevelExpr`/`UniverseFlag` equality — universe codes are
+`universeCodeCell_inj_of_conv` (SYNTACTIC `LevelExpr`/`UniverseFlag` equality — universe codes are
 normal, so `Conv` is structural); substituting aligns the two output universe codes, and the inverted
 classifier `Conv` (`.sym`) closes the goal.
 
 ## Zero-axiom verification
 
-`invertPiTyCode` / `invertSigmaTyCode` + `levelFlag_eq_of_conv_universeCodeCell` + `subst` + the unconditional
+`invertPiTyCode` / `invertSigmaTyCode` + `universeCodeCell_inj_of_conv` + `subst` + the unconditional
 raw `Conv.sym` (#714).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -49,7 +50,7 @@ theorem HasTypeDescPi.piFormationTypeUniqueGivenComponents {profile : PolyProfil
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
-    (_wellFormed : WfContext context)
+    (_wellFormed : WfContextDescPi context)
     (domainUnique :
       ∀ {otherDomainType : RawTerm scope},
         HasTypeDescPi profile context domainCode otherDomainType →
@@ -66,10 +67,9 @@ theorem HasTypeDescPi.piFormationTypeUniqueGivenComponents {profile : PolyProfil
             otherDomainTyped, otherCodomainTyped, otherConv⟩ :=
       HasTypeDescPi.invertPiTyCode otherDeriv
     obtain ⟨domainLevelEq, domainFlagEq⟩ :=
-      levelFlag_eq_of_conv_universeCodeCell (context := context) (domainUnique otherDomainTyped)
+      universeCodeCell_inj_of_conv (domainUnique otherDomainTyped)
     obtain ⟨codomainLevelEq, _codomainFlagEq⟩ :=
-      levelFlag_eq_of_conv_universeCodeCell (context := context.cons domainCode)
-        (codomainUnique otherCodomainTyped)
+      universeCodeCell_inj_of_conv (codomainUnique otherCodomainTyped)
     subst domainLevelEq
     subst codomainLevelEq
     subst domainFlagEq
@@ -81,7 +81,7 @@ theorem HasTypeDescPi.sigmaFormationTypeUniqueGivenComponents {profile : PolyPro
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
-    (_wellFormed : WfContext context)
+    (_wellFormed : WfContextDescPi context)
     (domainUnique :
       ∀ {otherDomainType : RawTerm scope},
         HasTypeDescPi profile context domainCode otherDomainType →
@@ -98,10 +98,9 @@ theorem HasTypeDescPi.sigmaFormationTypeUniqueGivenComponents {profile : PolyPro
             otherDomainTyped, otherCodomainTyped, otherConv⟩ :=
       HasTypeDescPi.invertSigmaTyCode otherDeriv
     obtain ⟨domainLevelEq, domainFlagEq⟩ :=
-      levelFlag_eq_of_conv_universeCodeCell (context := context) (domainUnique otherDomainTyped)
+      universeCodeCell_inj_of_conv (domainUnique otherDomainTyped)
     obtain ⟨codomainLevelEq, _codomainFlagEq⟩ :=
-      levelFlag_eq_of_conv_universeCodeCell (context := context.cons domainCode)
-        (codomainUnique otherCodomainTyped)
+      universeCodeCell_inj_of_conv (codomainUnique otherCodomainTyped)
     subst domainLevelEq
     subst codomainLevelEq
     subst domainFlagEq

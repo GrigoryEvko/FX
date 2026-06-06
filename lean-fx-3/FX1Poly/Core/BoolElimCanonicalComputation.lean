@@ -2,12 +2,12 @@ import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.WeakHeadStepCommute
 
 /-! # FX1Poly/Core/BoolElimCanonicalComputation
-    — closed `boolElim` on a canonical scrutinee COMPUTES to a branch (the elimination analog of SN-047)
+    — closed `boolElim` on a canonical scrutinee COMPUTES to a branch (the elimination analog of closed-bool canonicity)
 
 `BoolCanonicalFormsCandidate.lean` ships data canonicity: a closed member of the bool candidate reduces to
 `boolTrue` or `boolFalse` (`boolClosedReducesToTrueOrFalse`).  This file pushes that one step into the
 ELIMINATOR: a closed `boolElim` whose scrutinee is a canonical bool member reduces to one of its branches.  The
-elimination analog of closed-bool canonicity, and a `#672`-free step toward `boolElim` reducibility (SN-063).
+elimination analog of closed-bool canonicity, and a fundamental-free step toward `boolElim` reducibility.
 
 * `StepStar.boolElimScrutinee` — the scrutinee-position chain congruence: a `StepStar` in the scrutinee lifts to
   the whole `boolElim` cell.  Built from the generic one-hole-context chain lifter `StepStar.congAt` with the
@@ -17,8 +17,8 @@ elimination analog of closed-bool canonicity, and a `#672`-free step toward `boo
   (data canonicity), the congruence carries that under the `boolElim`, and the matching ι rule
   (`Step.iotaBoolTrue` / `Step.iotaBoolFalse`) selects the branch.
 
-NOTE: `gen_boolElim` is the current NON-dependent 3-child form (scrutinee, then, else) — no motive child yet
-(the motive is the pending Z₀ eliminator refactor #437).  The cell shape here matches that 3-child spine.
+NOTE: `gen_boolElim` is the NON-dependent 3-child form (scrutinee, then, else) — no motive child.  The cell
+shape here matches that 3-child spine.
 
 ## Zero-axiom verification
 
@@ -53,10 +53,10 @@ theorem StepStar.boolElimScrutinee {scope : Nat}
     scrutineeChain
 
 /-- **Closed `boolElim` on a canonical scrutinee computes to a branch.**  The elimination analog of closed-bool
-canonicity (SN-047): a closed `boolElim` whose scrutinee is a member of the bool candidate `StepStar`-reduces to
+canonicity: a closed `boolElim` whose scrutinee is a member of the bool candidate `StepStar`-reduces to
 its then-branch or its else-branch.  The scrutinee reduces to `boolTrue`/`boolFalse`
 (`boolClosedReducesToTrueOrFalse`), `StepStar.boolElimScrutinee` carries that reduction under the `boolElim`,
-and the matching ι rule fires to select the branch.  `#672`-free — it uses only data canonicity plus the
+and the matching ι rule fires to select the branch.  Fundamental-free — it uses only data canonicity plus the
 scrutinee congruence and the ι rules, no fundamental theorem. -/
 theorem boolElimCanonicalScrutineeReducesToBranch {scrutinee thenBranch elseBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate boolIsValue scrutinee) :

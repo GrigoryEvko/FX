@@ -2,9 +2,9 @@ import FX1Poly.OmegacE.AbsorptionLocalConfluence
 import FX1Poly.OmegacE.IdempotentReducer
 
 /-! # FX1Poly/OmegacE/AbsorptionReducer
-    — the SN-119 CAPSTONE (#622): decidable word problem for the two-rule absorption system
+    — the absorption-system capstone: decidable word problem for the two-rule absorption system
 
-The final atom that CLOSES SN-119.  A bounded-search `WordReducer` for the two-rule absorption system, fed
+The final atom that CLOSES the absorption system.  A bounded-search `WordReducer` for the two-rule absorption system, fed
 through `decidableConvertibleModulo_ofConvergent` with the shipped convergence
 (`absorptionHasLocalConfluence` + `absorptionSystem_isTerminating`).
 
@@ -17,10 +17,9 @@ through `decidableConvertibleModulo_ofConvergent` with the shipped convergence
   (`…sound`, the fire case `rcases`-es the disjunction CONDITION to pick rule-Left/Right) + completeness
   (`absorptionRewrite_implies_reduceCells_isSome`, the fire case `rcases`-es the rule DISJUNCTION).
 * `absorptionWordReducer` — the bundle (NO distinctness needed; sound + complete hold even at `v=s`).
-* `decidableConvertibleModulo_absorptionSystem` — **the SN-119 capstone**: the word problem for the two-rule
+* `decidableConvertibleModulo_absorptionSystem` — **the capstone**: the word problem for the two-rule
   absorption system is decidable.  Distinctness `v ≠ s` is what the convergence (termination) needs.  This makes
-  the absorption system the FIRST FULLY-DECIDED two-rule presentation with genuine inter-rule critical pairs —
-  SN-119 complete.
+  the absorption system the FIRST FULLY-DECIDED two-rule presentation with genuine inter-rule critical pairs.
 
 ## Zero-axiom verification
 

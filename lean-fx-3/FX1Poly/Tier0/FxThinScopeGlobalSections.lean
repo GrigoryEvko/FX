@@ -9,8 +9,8 @@ scope-inclusion CwR).  The next stage of the Tier-0 sconing pipeline (`InternalS
 `GlobalSections` over a concrete base category — a contravariant functor `sections : Object -> Type`
 (the "terms-in-context" presheaf, `Gamma(A) = closed terms of A`) plus a distinguished object and the
 two functor laws.  This file inhabits that interface over the thin scope category, establishing that
-the `GlobalSections` / `SconingObject` interfaces are inhabitable at zero axioms (previously no
-concrete inhabitant existed) — the global-sections analogue of the RMC-inhabitability result.
+the `GlobalSections` / `SconingObject` interfaces are inhabitable at zero axioms — the
+global-sections analogue of the RMC-inhabitability result.
 
 ## The representable presheaf as the sections functor
 

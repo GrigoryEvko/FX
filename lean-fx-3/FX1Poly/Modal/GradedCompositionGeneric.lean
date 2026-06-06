@@ -1,21 +1,21 @@
 import FX1Poly.Modal.GradeErasureGeneric
 import FX1Poly.Modal.GradedSubjectReductionGeneric
 
-/-! # FX1Poly/Modal/GradedCompositionGeneric — the generic composition ledger (DIM5-8 + dims 6–21)
+/-! # FX1Poly/Modal/GradedCompositionGeneric — the generic composition ledger (all graded dimensions)
 
-The capstone of the generic graded-judgment track.  DIM2-7 (`GradedComposition.lean`) validated the
-21-dimension composition thesis (§1.1, §6.8) for the USAGE dimension by lifting DIM2-3's root-β subject
+The capstone of the generic graded-judgment track.  `GradedComposition.lean` validates the
+21-dimension composition thesis (§1.1, §6.8) for the USAGE dimension by lifting the root-β subject
 reduction to the full β-reduction and bundling both dimensions' metatheory on the same relation.  This
 file ships that capstone ONCE, generic over any `OrderedGradeSemiring`, closing the generic reduction
-metatheory begun in DIM5-5 (weakening), DIM5-6 (substInto grade-algebra) and DIM5-7 (substitution + β SR).
+metatheory (weakening, the substInto grade-algebra, and substitution + β SR).
 
   * `HasGradeOver.preservedByReduces` — **graded subject reduction over the full β-reduction `Reduces`**:
     a `HasGradeOver R`-typed term keeps its type AND its exact grade vector along every β-step (root-β
-    via DIM5-7's `hasGradeOver_betaPreservation`; congruence cases by inversion + grade-preserving
+    via `hasGradeOver_betaPreservation`; congruence cases by inversion + grade-preserving
     reassembly), for ANY dimension R.
   * `HasGradeOver.metatheoryBundle` — **the capstone**: a typed term satisfies BOTH dimensions'
     metatheory simultaneously and independently — strong normalization (TYPE dimension, transferred via
-    grade erasure, DIM5-4 `stronglyNormalizing`) AND graded subject reduction (the GRADED dimension,
+    grade erasure, `stronglyNormalizing`) AND graded subject reduction (the GRADED dimension,
     lifted here) — on the same `Reduces`.  Neither re-proves the other; the two compose without
     collision (a SOUND pointwise composition, not a §6.8 collision pair).
   * `appliedIdentityOver_*` — a concrete β-step `(λx. x) z ↝ z` keeping the EXACT grade
@@ -42,7 +42,7 @@ Per-declaration gated in `FX1PolyAudit/AuditModal.lean`.
 namespace FX1Poly.Modal
 
 /-- **Graded subject reduction over the full β-reduction**: a `HasGradeOver R`-typed term keeps its type
-AND its EXACT grade vector along every `Reduces` step.  The root-β case is DIM5-7's
+AND its EXACT grade vector along every `Reduces` step.  The root-β case is
 `hasGradeOver_betaPreservation` (the corrected App-scaling is what makes grades survive substitution);
 the congruence cases invert the typing and reassemble with the IH-preserved grades. -/
 theorem HasGradeOver.preservedByReduces {R : OrderedGradeSemiring}
@@ -78,7 +78,7 @@ theorem HasGradeOver.preservedByReduces {R : OrderedGradeSemiring}
 /-- **The generic metatheory bundle (composition ledger capstone)**: a `HasGradeOver R`-typed term
 satisfies BOTH dimensions' metatheory simultaneously, on the SAME reduction relation, independently
 derived: strong normalization (TYPE dimension, transferred via grade erasure —
-`HasGradeOver.stronglyNormalizing`, DIM5-4) AND graded subject reduction (the GRADED dimension, lifted —
+`HasGradeOver.stronglyNormalizing`) AND graded subject reduction (the GRADED dimension, lifted —
 `preservedByReduces`).  The two compose without collision (a SOUND pointwise composition): SN ignores
 grades, SR tracks them; neither re-proves the other — for ANY dimension R. -/
 theorem HasGradeOver.metatheoryBundle {R : OrderedGradeSemiring}
@@ -121,7 +121,7 @@ theorem appliedIdentityOver_reductKeepsGrade (R : OrderedGradeSemiring)
     (GradedLambda.Reduces.beta (GradedLambda.var 0) (GradedLambda.var 0))
     (appliedIdentityOver_typed R)
 
-/-- DIM5-8: the SECURITY dimension's `(λx. x) z ↝ z` keeps its security grade — no security-specific
+/-- The SECURITY dimension's `(λx. x) z ↝ z` keeps its security grade — no security-specific
 proof, the generic witness at `fxSecuritySemiring`. -/
 theorem securityAppliedIdentity_reductKeepsGrade :
     HasGradeOver fxSecuritySemiring [GTypeOver.base]
@@ -131,7 +131,7 @@ theorem securityAppliedIdentity_reductKeepsGrade :
       (GradedLambda.var 0) GTypeOver.base :=
   appliedIdentityOver_reductKeepsGrade fxSecuritySemiring fxSecuritySemiring_isLawful
 
-/-- DIM5-8: the USAGE dimension's `(λx. x) z ↝ z` keeps its usage grade — the SAME generic witness at
+/-- The USAGE dimension's `(λx. x) z ↝ z` keeps its usage grade — the SAME generic witness at
 `fxUsageSemiring`.  Two dimensions, one composition ledger. -/
 theorem usageAppliedIdentity_reductKeepsGrade :
     HasGradeOver fxUsageSemiring [GTypeOver.base]
@@ -141,7 +141,7 @@ theorem usageAppliedIdentity_reductKeepsGrade :
       (GradedLambda.var 0) GTypeOver.base :=
   appliedIdentityOver_reductKeepsGrade fxUsageSemiring fxUsageSemiring_isLawful
 
-/-- DIM5-8: the metatheory bundle at the security dimension on `(λx. x) z` — it is SN AND every reduct
+/-- The metatheory bundle at the security dimension on `(λx. x) z` — it is SN AND every reduct
 keeps the grade.  The capstone witness: SN ∧ graded-SR on the same term, in a second dimension. -/
 theorem securityMetatheoryBundle_smoke :
     GradedLambda.IsStronglyNormalizing (.app (.lam (.var 0)) (.var 0)) ∧

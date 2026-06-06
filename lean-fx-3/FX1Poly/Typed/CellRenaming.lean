@@ -12,9 +12,8 @@ judgement — they are statements about `RawTerm.rename` over the cell
 constructors, consumed by every renaming/weakening arm in the typed metatheory
 (formation engine, grown engine, the BFT/denote reducibility substrate).
 
-They were extracted here from the old `HasTypeWeakening` so the substrate stands
-on the cell constructors alone, independent of any typing engine — the engine
-files import THIS, never the other way around.
+The substrate stands on the cell constructors alone, independent of any typing
+engine — the engine files import THIS, never the other way around.
 
 ## Zero-axiom verification
 

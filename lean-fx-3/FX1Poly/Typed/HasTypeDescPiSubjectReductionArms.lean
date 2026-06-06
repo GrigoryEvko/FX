@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPiCongruence
 import FX1Poly.Typed.HasTypeDescPiBetaSR
+import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Core.StepInversion
 
 /-! # FX1Poly/Typed/HasTypeDescPiSubjectReductionArms
@@ -45,7 +46,7 @@ theorem HasTypeDescPi.subjectReductionAtLam {profile : PolyProfile} {scope : Nat
       Step body bodyReduct →
         HasTypeDescPi profile (context.cons bindingType) body bodyClassifier →
           HasTypeDescPi profile (context.cons bindingType) bodyReduct bodyClassifier)
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context reduct classifier := by
   obtain ⟨bodyAfter, reductEq, bodyStep⟩ := Step.from_lam step
   subst reductEq
@@ -68,7 +69,7 @@ theorem HasTypeDescPi.subjectReductionAtApp {profile : PolyProfile} {scope : Nat
       Step argument argumentReduct →
         HasTypeDescPi profile context argument argumentClassifier →
           HasTypeDescPi profile context argumentReduct argumentClassifier)
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context reduct classifier := by
   rcases Step.from_app step with ⟨body, functionEq, reductEq⟩ |
       ⟨functionAfter, reductEq, functionStep⟩ | ⟨argumentAfter, reductEq, argumentStep⟩

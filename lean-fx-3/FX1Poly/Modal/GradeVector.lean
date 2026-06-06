@@ -1,10 +1,10 @@
 import FX1Poly.Modal.ResourceGraded
 
-/-! # FX1Poly/Modal/GradeVector — the per-binding usage grade vector (DIM2-2, §6.2 / §7.7)
+/-! # FX1Poly/Modal/GradeVector — the per-binding usage grade vector (§6.2 / §7.7)
 
 The graded typing judgment `Γ ⊢_p e : A` (§6.2) carries, alongside the type context `Γ`, a grade
 VECTOR `p` recording how each binding is used.  This file ships that vector and its pointwise
-algebra over the usage ordered semiring `fxUsageSemiring` (DIM2-1):
+algebra over the usage ordered semiring `fxUsageSemiring`:
 
   * `GradeVector` — a cons-list of `UsageGrade`s.  Deliberately UNINDEXED (no scope index);
     alignment with the scope-indexed `TypingContext` is by `length` (mirroring
@@ -28,7 +28,7 @@ zero)` is a commutative monoid (`add_comm` / `add_assoc` / `add_zero` / `zero_ad
 a scalar action distributing over both additions and respecting scalar multiplication and unit
 (`scale_add` / `scale_add_scalar` / `scale_scale` / `scale_one_scalar`, with `scale_zero_scalar`
 the annihilation `0 · p = 0`).  These are exactly the operations the Wood/Atkey graded Lam and App
-rules (DIM2-3) consume.
+rules consume.
 
 ## Zero-axiom verification
 
@@ -246,7 +246,7 @@ theorem GradeVector.scale_contextDivide_below (divisorGrade : UsageGrade) (someV
 
 /-! ## Grade-vector order: `IsPointwiseBelow` is a partial order + operation monotonicity
 
-The grade-checking judgment (DIM2-3) compares grade vectors with `IsPointwiseBelow` (the Lam rule's
+The grade-checking judgment compares grade vectors with `IsPointwiseBelow` (the Lam rule's
 premise is a `≤` check).  Here that comparison is shown to be a genuine partial order (reflexive /
 transitive / antisymmetric) under which `add` and `scale` are monotone, and — the headline —
 `contextDivide` is the right adjoint of `scale` (the Galois connection `contextDivide_residuation`),

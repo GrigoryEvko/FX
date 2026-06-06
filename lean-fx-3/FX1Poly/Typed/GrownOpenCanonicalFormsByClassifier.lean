@@ -53,7 +53,7 @@ theorem HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral {profile : PolyProfile
     {context : TypingContext profile scope} {subject : RawTerm scope}
     {outerDomain : RawTerm scope} {outerCodomain : RawTerm (scope + 1)}
     (typed : HasTypeDescPi profile context subject (piTyCodeCell outerDomain outerCodomain))
-    (wellFormed : WfContext context)
+    (wellFormed : WfContextDesc context)
     (normal : RawTerm.isStepNormalForm subject) :
     (∃ body : RawTerm (scope + 1), subject = lamCell body) ∨ IsNeutral subject := by
   rcases HasTypeDescPi.openNormalSubjectCanonicalOrNeutral typed wellFormed normal with
@@ -79,7 +79,7 @@ theorem HasTypeDescPi.openNormalTypeIsFormerOrNeutral {profile : PolyProfile} {s
     {context : TypingContext profile scope} {subject : RawTerm scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag}
     (typed : HasTypeDescPi profile context subject (universeCodeCell levelExpr flag))
-    (wellFormed : WfContext context)
+    (wellFormed : WfContextDesc context)
     (normal : RawTerm.isStepNormalForm subject) :
     (RawTerm.headGenerator subject = Generator.gen_piTyCode ∨
      RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨

@@ -2,7 +2,7 @@ import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationIotaRedexes
 
 /-! # FX1Poly/Core/StrongNormalizationMatch
-    — the non-recursive applied-branch eliminator iota-redex SN: optionMatch / eitherMatch (toward SN-065/066)
+    — the non-recursive applied-branch eliminator iota-redex SN: optionMatch / eitherMatch
 
 `StrongNormalizationNatElim.lean` / `StrongNormalizationListElim.lean` shipped the firing-case
 (`_of_normal_branches`) iota-redex SN for the RECURSIVE eliminators (`natElim` / `natRec` / `listElim`), whose

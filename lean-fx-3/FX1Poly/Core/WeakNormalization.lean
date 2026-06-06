@@ -19,8 +19,8 @@ the step with `StepStar.trans`.  The descent terminates exactly because the term
 
 This is the `StepStar`-existence half of normalization (a normal form is *reachable*); paired with global
 confluence (`confluence_of_localJoin_and_accessible`, also keyed on `IsStronglyNormalizing`) that normal
-form is unique, giving decidable conversion on the strongly-normalizing fragment (#267) and underwriting
-the WHNF migration (#374).
+form is unique, giving decidable conversion on the strongly-normalizing fragment and underwriting
+the WHNF migration.
 
 ## Zero-axiom verification
 

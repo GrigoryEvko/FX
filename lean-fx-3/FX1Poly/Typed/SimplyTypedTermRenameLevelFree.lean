@@ -17,7 +17,7 @@ which is the `weakenUnderBinding` corollary below.
 * `SimplyTypedTermLF.weakenUnderBinding` — the corollary for extending the context by one fresh binding;
   its context condition holds definitionally (`fun _ => rfl`, via the `lookup_cons_succ` unfolder).
 
-The proof mirrors `HasType.renameRespectingContext` but for the syntax-directed `SimplyTypedTermLF` (var/app/
+The proof mirrors `HasTypeDesc.renameRespectingContext` but for the syntax-directed `SimplyTypedTermLF` (var/app/
 lam, no conversion arm, so no Newman bridge):
 
 * `var` — `rename_variableCell` then the context condition lands the renamed lookup.

@@ -1,6 +1,5 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.CellSort
-import FX1Poly.Typed.HasType
 import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Core.GeneratorFinitePolygraph
 import FX1Poly.Core.GeneratorPolygraphMap
@@ -93,13 +92,8 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.CellSort.ofCode?_toCode
 #assert_no_axioms FX1Poly.Core.CellSort.all_length
 
--- Typed-layer sort markers (cells classify cells: .term subject, .type classifier)
-#assert_no_axioms FX1Poly.Typed.hasTypeSubjectSort
-#assert_no_axioms FX1Poly.Typed.hasTypeClassifierSort
-#assert_no_axioms FX1Poly.Typed.hasTypeContextBindingSort
-#assert_no_axioms FX1Poly.Typed.hasType_classifies_term_by_type
 
--- §11.6.4 Generator-table validation (#230): the FX0 prefix-code tag assignment
+-- §11.6.4 Generator-table validation: the FX0 prefix-code tag assignment
 -- `Generator.toNat` is collision-free (injective), proved via the explicit left
 -- inverse `Generator.fromTag` and its per-constructor round-trip.  The head byte
 -- of the cell serialization therefore uniquely identifies the generator.
@@ -107,35 +101,33 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Generator.fromTag_toNat
 #assert_no_axioms FX1Poly.Core.Generator.toNat_injective
 
--- SN-123 (#626): the FX kernel as a FINITE POLYGRAPH over the 196-Generator table. The generators are indexed
--- injectively (toNat_injective) + boundedly (toNat_lt, NEW) into Fin 196, with the total inverse table fromTag
--- (round-trip fromTag_toNat + range-totality fromTag_total_on_range, NEW); each carries its dimension (arity) and
--- boundary (binderShifts), coherently (binderShifts_length_eq_arity). fxKernelPolygraph bundles all of it — the
--- Leg-3 anchor for SN-124 (Generator→polygraph-gen map) + SN-125 (RawCell→OmegacEWord). Zero-axiom (cases+decide,
--- bounded-decide with raised maxRecDepth — plain decide NOT native_decide).
+-- The FX kernel as a finite polygraph over the 196-Generator table.  The generators are indexed injectively
+-- (toNat_injective) and boundedly (toNat_lt) into Fin 196, with the total inverse table fromTag (round-trip
+-- fromTag_toNat + range-totality fromTag_total_on_range); each carries its dimension (arity) and boundary
+-- (binderShifts), coherently (binderShifts_length_eq_arity).  fxKernelPolygraph bundles all of it.  Zero-axiom
+-- via cases + bounded decide with raised maxRecDepth (plain decide, not native_decide).
 #assert_no_axioms FX1Poly.Core.Generator.toNat_lt
 #assert_no_axioms FX1Poly.Core.Generator.fromTag_total_on_range
 #assert_no_axioms FX1Poly.Core.fxKernelPolygraph
 
--- SN-124 (#627): the explicit Generator -> polygraph-generator map. PolygraphGenerator presents each former with
--- its boundary (tag + child arity + child boundary shifts, coherently); toPolygraphGenerator is the presentation
--- map; _injective is FAITHFUL (distinct gens present distinctly, via toNat_injective); _boundary/_tag confirm the
--- presented data IS binderShifts/toNat (rfl); _recoversGenerator is INVERTIBLE (fromTag round-trips the presented
--- tag). The per-generator object SN-125's RawCell->OmegacEWord encoding lifts the dim-1 free monoid over. Zero-axiom
--- (record literal over shipped toNat/arity/binderShifts; rfl projections; congrArg into toNat_injective).
+-- The explicit Generator-to-polygraph-generator map.  PolygraphGenerator presents each former with its
+-- boundary (tag + child arity + child boundary shifts, coherently); toPolygraphGenerator is the presentation
+-- map; _injective is faithful (distinct generators present distinctly, via toNat_injective); _boundary/_tag
+-- confirm the presented data is binderShifts/toNat (rfl); _recoversGenerator is invertible (fromTag
+-- round-trips the presented tag).  Zero-axiom: record literal over toNat/arity/binderShifts; rfl projections;
+-- congrArg into toNat_injective.
 #assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator
 #assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_injective
 #assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_boundary
 #assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_tag
 #assert_no_axioms FX1Poly.Core.Generator.toPolygraphGenerator_recoversGenerator
 
--- SN-125 (#628): the dim-1 free-monoid rule-word encoding of the RawCell composite layer — the FX-Conv-to-word
--- bridge START. encodeRuleWord reads off the ordered generating-cell rule ids (the dim-1 REWRITE-rule alphabet,
--- distinct from SN-124's 194 term-formers): objects/identities to the empty word, generatingCell to [ruleId],
--- composites to ++. The per-ctor rules are rfl; _assoc + _identity_left/_right are the MONOID HOMOMORPHISM onto
--- the free monoid (List ++ / [] with assoc + 2-sided unit); length_eq_generatingCellCount is FAITHFULNESS to the
--- rewrite content. Zero-axiom (structural recursion + local propext-free list/Nat lemmas). SN-126 maps each
--- generatingCell to a source-word ⇒ target-word rule on top of this.
+-- The dim-1 free-monoid rule-word encoding of the RawCell composite layer, the start of the FX-Conv-to-word
+-- bridge.  encodeRuleWord reads off the ordered generating-cell rule ids (the dim-1 rewrite-rule alphabet,
+-- distinct from the term-formers): objects/identities to the empty word, generatingCell to [ruleId],
+-- composites to ++.  The per-constructor rules are rfl; _assoc + _identity_left/_right are the monoid
+-- homomorphism onto the free monoid (List ++ / [] with assoc + two-sided unit); length_eq_generatingCellCount
+-- is faithfulness to the rewrite content.  Zero-axiom: structural recursion + local propext-free list/Nat lemmas.
 #assert_no_axioms FX1Poly.Core.RawCell.encodeRuleWord
 #assert_no_axioms FX1Poly.Core.encodeRuleWord_termBase
 #assert_no_axioms FX1Poly.Core.encodeRuleWord_generatingCell
@@ -148,13 +140,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.RawCell.generatingCellCount
 #assert_no_axioms FX1Poly.Core.encodeRuleWord_length_eq_generatingCellCount
 
--- SN-126 (#629): each FX reduction as a rewrite rule over the term-code word monoid. Uses the SHIPPED faithful
--- RawTerm.toCode (head tag + payload + children) as the bridge encode. toCode_mkGen (rfl head-tag rule) +
--- toCode_ne_nil (every code begins with the head tag, so non-degenerate rules). Step.inducedRewriteRule maps a
--- reduction to the rule (redex.toCode, reduct.toCode); projections rfl + both-sides-non-empty. fxStepSystem is
--- the generated rule system (a rule is in it iff it is some reduction's code-pair); inducedRewriteRule_mem proves
--- every Step lands in it by construction -- the fxSystem SN-127's bridge soundness ranges over. Zero-axiom
--- (rfl / cases+cons_ne_nil / existential-intro with rfl witnesses).
+-- Each FX reduction as a rewrite rule over the term-code word monoid.  Uses the faithful RawTerm.toCode
+-- (head tag + payload + children) as the bridge encode.  toCode_mkGen (rfl head-tag rule) + toCode_ne_nil
+-- (every code begins with the head tag, so non-degenerate rules).  Step.inducedRewriteRule maps a reduction to
+-- the rule (redex.toCode, reduct.toCode); projections rfl + both-sides-non-empty.  fxStepSystem is the
+-- generated rule system (a rule is in it iff it is some reduction's code-pair); inducedRewriteRule_mem proves
+-- every Step lands in it by construction.  Zero-axiom: rfl / cases + cons_ne_nil / existential-intro with rfl
+-- witnesses.
 #assert_no_axioms FX1Poly.Core.toCode_mkGen
 #assert_no_axioms FX1Poly.Core.toCode_ne_nil
 #assert_no_axioms FX1Poly.Core.Step.inducedRewriteRule
@@ -165,13 +157,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.fxStepSystem
 #assert_no_axioms FX1Poly.Core.Step.inducedRewriteRule_mem_fxStepSystem
 
--- SN-127 (#630): the FORWARD half of the Leg-3 bridge -- FX reduction embeds into word rewriting over the
--- term-code monoid. FxWordRewritesOneStep is one-step word rewriting (List Nat) under an FxTermRewriteRule system
--- (fire + left/right context closure). Step.toWordRewrite is single-step SOUNDNESS (the fire of the SN-126 system
--- rule -- NOT gated on typed SN, since fxStepSystem holds every instantiated reduction as a top-level rule).
--- FxWordRewritesMany is the refl-trans closure with single/trans + context lifts (a congruence preorder);
--- StepStar.toWordRewrites is many-step SOUNDNESS by induction over the chain. Zero-axiom (Prop inductives +
--- constructor application + structural inductions).
+-- The forward half of the term-code-word bridge: FX reduction embeds into word rewriting over the
+-- term-code monoid.  FxWordRewritesOneStep is one-step word rewriting (List Nat) under an FxTermRewriteRule
+-- system (fire + left/right context closure).  Step.toWordRewrite is single-step soundness (the fire of the
+-- system rule, with no typed-SN side condition since fxStepSystem holds every instantiated reduction as a
+-- top-level rule).  FxWordRewritesMany is the refl-trans closure with single/trans + context lifts (a
+-- congruence preorder); StepStar.toWordRewrites is many-step soundness by induction over the chain.
+-- Zero-axiom: Prop inductives + constructor application + structural inductions.
 #assert_no_axioms FX1Poly.Core.FxWordRewritesOneStep
 #assert_no_axioms FX1Poly.Core.Step.toWordRewrite
 #assert_no_axioms FX1Poly.Core.FxWordRewritesMany
@@ -181,12 +173,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.FxWordRewritesMany.underRightContext
 #assert_no_axioms FX1Poly.Core.StepStar.toWordRewrites
 
--- SN-128 (#631): rename/subst-equivariance of the Step->word bridge + system-level inversion. The soundness
--- commutes with the term rename/subst actions (Step.toWordRewrite_rename/_subst, StepStar.toWordRewrites_rename,
--- via the shipped Step.rename/Step.subst/StepStar.rename) and the generated system is closed under both
--- (fxStepSystem_rename_mem/_subst_mem). fxStepSystem_imp_step inverts the system (every rule comes from a Step) +
--- _leftHandSide/_rightHandSide_ne_nil (no degenerate rules). FULL word->Step completeness is BLOCKED (free word
--- monoid + toCode payload-collapse on universe codes), honestly deferred -- not faked. Zero-axiom.
+-- Rename/subst-equivariance of the Step-to-word bridge + system-level inversion.  The soundness commutes
+-- with the term rename/subst actions (Step.toWordRewrite_rename/_subst, StepStar.toWordRewrites_rename, via
+-- Step.rename/Step.subst/StepStar.rename) and the generated system is closed under both
+-- (fxStepSystem_rename_mem/_subst_mem).  fxStepSystem_imp_step inverts the system (every rule comes from a
+-- Step) + _leftHandSide/_rightHandSide_ne_nil (no degenerate rules).  The reverse word-to-Step direction is
+-- not part of this gate (the free word monoid and toCode payload-collapse on universe codes make full
+-- completeness non-derivable here).  Zero-axiom.
 #assert_no_axioms FX1Poly.Core.Step.toWordRewrite_rename
 #assert_no_axioms FX1Poly.Core.StepStar.toWordRewrites_rename
 #assert_no_axioms FX1Poly.Core.Step.toWordRewrite_subst
@@ -196,11 +189,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.fxStepSystem_leftHandSide_ne_nil
 #assert_no_axioms FX1Poly.Core.fxStepSystem_rightHandSide_ne_nil
 
--- SN-129 (#632): Conv -> word-joinability bridge (FORWARD half). Conv is term joinability (StepStar.Join =
--- common reduct); FxWordJoinable is the ConvertibleModulo for the FX term-code word monoid (common word reduct).
--- Conv.toWordJoinable maps both StepStar legs via SN-127's StepStar.toWordRewrites with common = commonTerm.toCode.
--- refl/symm shipped (a reflexive-symmetric relation); trans NOT claimed (needs word confluence SN-132/133).
--- REVERSE blocked by SN-128's word->term completeness gap, honestly deferred. Zero-axiom.
+-- The Conv-to-word-joinability bridge (forward half).  Conv is term joinability (StepStar.Join = common
+-- reduct); FxWordJoinable is the ConvertibleModulo for the FX term-code word monoid (common word reduct).
+-- Conv.toWordJoinable maps both StepStar legs via StepStar.toWordRewrites with common = commonTerm.toCode.
+-- refl/symm establish a reflexive-symmetric relation; this gate does not include trans (which needs word
+-- confluence) or the reverse direction (the word-to-term completeness gap).  Zero-axiom.
 #assert_no_axioms FX1Poly.Core.FxWordJoinable
 #assert_no_axioms FX1Poly.Core.FxWordJoinable.refl
 #assert_no_axioms FX1Poly.Core.FxWordJoinable.symm
@@ -208,12 +201,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Conv.toWordJoinable
 #assert_no_axioms FX1Poly.Core.Step.toWordJoinable
 
--- SN-130 (#633): the certified beta/iota/eta word-rewrite system. fxStepSystem (SN-126) was beta/iota only (over
--- Step); eta lives in Step.eta, so this enumerates the FULL system fxBetaEtaStepSystem over Step.betaEta (= Step
--- or Step.eta). Generic membership + single-step soundness (fire) reuse SN-127's generic FxWordRewrites*;
--- fxStepSystem_imp_fxBetaEtaStepSystem embeds the beta/iota system (Or.inl); Step/Step.eta.toBetaEtaWordRewrite
--- certify beta/iota (Or.inl) AND eta (Or.inr) rules -- the eta half is NEW. Step.betaEtaStar.toWordRewrites is the
--- many-step eta-inclusive soundness. Zero-axiom.
+-- The certified beta/iota/eta word-rewrite system.  fxStepSystem covers beta/iota (over Step); eta lives in
+-- Step.eta, so fxBetaEtaStepSystem enumerates the full system over Step.betaEta (= Step or Step.eta).  Generic
+-- membership + single-step soundness (fire) reuse the generic FxWordRewrites*; fxStepSystem_imp_fxBetaEtaStepSystem
+-- embeds the beta/iota system (Or.inl); Step/Step.eta.toBetaEtaWordRewrite certify beta/iota (Or.inl) and eta
+-- (Or.inr) rules.  Step.betaEtaStar.toWordRewrites is the many-step eta-inclusive soundness.  Zero-axiom.
 #assert_no_axioms FX1Poly.Core.fxBetaEtaStepSystem
 #assert_no_axioms FX1Poly.Core.Step.betaEta.inducedRewriteRule
 #assert_no_axioms FX1Poly.Core.Step.betaEta.inducedRewriteRule_mem_fxBetaEtaStepSystem
@@ -223,13 +215,13 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Step.eta.toBetaEtaWordRewrite
 #assert_no_axioms FX1Poly.Core.Step.betaEtaStar.toWordRewrites
 
--- SN-116 (#619): the Dershowitz-Manna multiset ordering + its well-foundedness, the foundational termination
--- order (RPO multiset-status SN-115, ι-eliminator termination SN-131). Mechanized zero-axiom over Init only: a
--- true multiset is the quotient of List by permutation, but Quot.sound is banned, so MultisetRedOne is an
--- EXISTENTIAL on plain List (prefix ++ removed :: suffix shrinks to prefix ++ added ++ suffix, added all below
--- removed). isWellFounded is the DM theorem via the nested-Acc argument (emptyAccessible + consAccessible with
--- the accAppendBelow inner helper). Inversion by obtain + cases prefixList (clean List split, no indexed-cases
--- propext leak). replaceHead/underContext make the order constructible. Zero-axiom.
+-- The Dershowitz-Manna multiset ordering + its well-foundedness, the foundational termination order.
+-- Mechanized zero-axiom over Init only: a true multiset is the quotient of List by permutation, but Quot.sound
+-- is banned, so MultisetRedOne is an existential on plain List (prefix ++ removed :: suffix shrinks to
+-- prefix ++ added ++ suffix, added all below removed).  isWellFounded is the Dershowitz-Manna theorem via the
+-- nested-Acc argument (emptyAccessible + consAccessible with the accAppendBelow inner helper).  Inversion by
+-- obtain + cases prefixList (clean List split, no indexed-cases propext leak).  replaceHead/underContext make
+-- the order constructible.  Zero-axiom.
 #assert_no_axioms FX1Poly.Core.MultisetRedOne
 #assert_no_axioms FX1Poly.Core.MultisetRedOne.replaceHead
 #assert_no_axioms FX1Poly.Core.MultisetRedOne.underContext
@@ -237,13 +229,12 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.MultisetRedOne.consAccessible
 #assert_no_axioms FX1Poly.Core.MultisetRedOne.isWellFounded
 
--- SN-117 (#620): the lexicographic list order + WF (the lex companion to SN-116's multiset order — the comparison
--- LPO uses for arguments, RPO for lex-status symbols) + measure-based termination certificates over BOTH orders.
--- LexListStep is the existential-on-List lex single step (length-matched tails); isWellFounded via length-indexed
--- nested accessibility. wellFounded_of_multisetMeasure/_lexMeasure turn a measure-decrease into WellFounded via
--- InvImage.wf. Zero-axiom: List-existential inversion (cases commonPrefix), defeq length + local length_append,
--- Nat.noConfusion DIRECTLY (absurd+succ_ne_zero leaks propext). The recursive path ordering on FX terms is the
--- downstream SN-131 composition.
+-- The lexicographic list order + well-foundedness (the lex companion to the multiset order, the comparison
+-- LPO uses for arguments and RPO for lex-status symbols) + measure-based termination certificates over both
+-- orders.  LexListStep is the existential-on-List lex single step (length-matched tails); isWellFounded via
+-- length-indexed nested accessibility.  wellFounded_of_multisetMeasure/_lexMeasure turn a measure-decrease
+-- into WellFounded via InvImage.wf.  Zero-axiom: List-existential inversion (cases commonPrefix), defeq length
+-- + local length_append, Nat.noConfusion directly (absurd + succ_ne_zero leaks propext).
 #assert_no_axioms FX1Poly.Core.LexListStep
 #assert_no_axioms FX1Poly.Core.LexListStep.length_eq
 #assert_no_axioms FX1Poly.Core.LexListStep.emptyAccessible
@@ -253,12 +244,12 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.wellFounded_of_multisetMeasure
 #assert_no_axioms FX1Poly.Core.wellFounded_of_lexMeasure
 
--- SN-115 (#618): the RPO termination certificate -- precedence x argument-order, lexicographically. LexPair is the
--- lex product of two relations as a DISJUNCTION (not the indexed Prod.Lex, whose cases leaks propext via the
--- pair-index); isWellFounded by nested Acc with rcases on the Or. wellFounded_of_precedenceMultisetMeasure /
--- _LexMeasure are the RPO certificates for multiset-status (SN-116) / lex-status (SN-117) symbols: a step
--- terminates if the precedence rank decreases OR stays equal while the argument measure decreases. The full
--- recursive path ordering on FX terms is the downstream SN-131 composition. Zero-axiom (Or-inversion + InvImage.wf).
+-- The RPO termination certificate: precedence times argument-order, lexicographically.  LexPair is the lex
+-- product of two relations as a disjunction (not the indexed Prod.Lex, whose cases leaks propext via the
+-- pair-index); isWellFounded by nested Acc with rcases on the Or.  wellFounded_of_precedenceMultisetMeasure /
+-- _LexMeasure are the RPO certificates for multiset-status / lex-status symbols: a step terminates if the
+-- precedence rank decreases or stays equal while the argument measure decreases.  Zero-axiom: Or-inversion +
+-- InvImage.wf.
 #assert_no_axioms FX1Poly.Core.LexPair
 #assert_no_axioms FX1Poly.Core.LexPair.pairAccessible
 #assert_no_axioms FX1Poly.Core.LexPair.isWellFounded
@@ -266,12 +257,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.wellFounded_of_precedenceMultisetMeasure
 #assert_no_axioms FX1Poly.Core.wellFounded_of_precedenceLexMeasure
 
--- SN-046 core (#549): the ABSTRACT Newman's lemma -- terminating + weakly confluent ⟹ confluent -- the
--- confluence analogue of the termination orders, generic over any relation. ReflTransClosure (own RTC, since
--- Relation.ReflTransGen is Mathlib-only) + single/trans; Joinable/WeaklyConfluent/Confluent vocabulary; newmanAux
--- is the WF-induction tiling (WCR on the two first steps, IH at each reduct, compose); newman is the headline.
--- The confluence arc instantiates this: SN-046 typed fragment, SN-133 fxSystem (both gated on typed SN). Zero-axiom
--- (cases on RTC is propext-clean since its indices are free vars, not ctor patterns).
+-- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
+-- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
+-- Relation.ReflTransGen is Mathlib-only) + single/trans; Joinable/WeaklyConfluent/Confluent vocabulary;
+-- newmanAux is the WF-induction tiling (WCR on the two first steps, IH at each reduct, compose); newman is the
+-- headline.  Zero-axiom: cases on RTC is propext-clean since its indices are free vars, not ctor patterns.
 #assert_no_axioms FX1Poly.Core.ReflTransClosure
 #assert_no_axioms FX1Poly.Core.ReflTransClosure.single
 #assert_no_axioms FX1Poly.Core.ReflTransClosure.trans
@@ -281,14 +271,12 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.newmanAux
 #assert_no_axioms FX1Poly.Core.newman
 
--- M8-S1 core (#420): the diamond ⟹ confluence route (strip lemma), the SECOND abstract confluence path
--- complementing Newman -- confluence from the DIAMOND property alone, no termination. ReflTransClosure.monotone/
--- collapse (the sandwich glue) + DiamondProperty + stripLemma (single strips against many) + diamondConfluence +
--- confluentOfDiamondSimulation (the parallel-reduction recipe: rel ⊆ parRel ⊆ RTC rel + parRel diamond ⟹ rel
--- confluent -- how single-step β, which lacks the diamond, is proved confluent via parallel reduction). The
--- generic core of #420 parStar.confluence. NOTE the shipped cd_lemma (#256) is LOCAL confluence (feeds Newman /
--- the strip property), NOT this parallel diamond; the diamond needs a concrete FX parallel reduction (deferred).
--- Zero-axiom.
+-- The diamond-implies-confluence route (strip lemma), the second abstract confluence path complementing
+-- Newman: confluence from the diamond property alone, no termination.  ReflTransClosure.monotone/collapse
+-- (the sandwich glue) + DiamondProperty + stripLemma (single strips against many) + diamondConfluence +
+-- confluentOfDiamondSimulation (the parallel-reduction recipe: rel subset parRel subset RTC rel + parRel
+-- diamond implies rel confluent, the route by which single-step beta, which lacks the diamond, is proved
+-- confluent via parallel reduction).  Zero-axiom.
 #assert_no_axioms FX1Poly.Core.ReflTransClosure.monotone
 #assert_no_axioms FX1Poly.Core.ReflTransClosure.collapse
 #assert_no_axioms FX1Poly.Core.DiamondProperty
@@ -297,21 +285,21 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.diamondConfluence
 #assert_no_axioms FX1Poly.Core.confluentOfDiamondSimulation
 
--- M8-S1 FX-layer wiring (#420): connects the abstract diamond/strip confluence to the concrete raw `StepStar`.
--- StepStar ≅ ReflTransClosure Step (toReflTransClosure / ofReflTransClosure), then hasConfluence_of_parallelDiamond
--- (route A via confluentOfDiamondSimulation) and hasStrip_of_parallelDiamond (route B via stripLemma, realizing
--- StepStarConfluence's `confluence_of_strip`). A sandwiched parallel relation (Step ⊆ ParStep ⊆ StepStar) with the
--- diamond yields raw global confluence; the concrete FX parallel reduction + its diamond is the deferred content.
+-- FX-layer wiring connecting the abstract diamond/strip confluence to the concrete raw `StepStar`.
+-- StepStar is isomorphic to ReflTransClosure Step (toReflTransClosure / ofReflTransClosure), then
+-- hasConfluence_of_parallelDiamond (route A via confluentOfDiamondSimulation) and hasStrip_of_parallelDiamond
+-- (route B via stripLemma, realizing StepStarConfluence's `confluence_of_strip`).  A sandwiched parallel
+-- relation (Step subset ParStep subset StepStar) with the diamond yields raw global confluence.
 #assert_no_axioms FX1Poly.Core.StepStar.toReflTransClosure
 #assert_no_axioms FX1Poly.Core.StepStar.ofReflTransClosure
 #assert_no_axioms FX1Poly.Core.StepStar.hasConfluence_of_parallelDiamond
 #assert_no_axioms FX1Poly.Core.StepStar.hasStrip_of_parallelDiamond
 
--- Takahashi triangle lemma (toward #420): the linear route to the parallel-reduction diamond. A
--- completeDevelopment function with the TriangleProperty (every reduct steps to the source's complete
--- development) yields DiamondProperty.ofTriangle and Confluent.ofTriangle, reducing the deferred parallel
--- diamond above from a quadratic redex-pair join to the single linear "exhibit completeDevelopment + its
--- triangle" obligation (Takahashi 1995). Composes with diamondConfluence + hasConfluence_of_parallelDiamond.
+-- The Takahashi triangle lemma: the linear route to the parallel-reduction diamond.  A completeDevelopment
+-- function with the TriangleProperty (every reduct steps to the source's complete development) yields
+-- DiamondProperty.ofTriangle and Confluent.ofTriangle, reducing the parallel diamond from a quadratic
+-- redex-pair join to the single linear "exhibit completeDevelopment + its triangle" obligation (Takahashi
+-- 1995).  Composes with diamondConfluence + hasConfluence_of_parallelDiamond.
 #assert_no_axioms FX1Poly.Core.DiamondProperty.ofTriangle
 #assert_no_axioms FX1Poly.Core.Confluent.ofTriangle
 -- The existential per-source form (HasMaximalReduct): generalizes the function-based TriangleProperty
@@ -322,41 +310,39 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.DiamondProperty.ofMaximalReduct
 #assert_no_axioms FX1Poly.Core.Confluent.ofMaximalReduct
 
--- The concrete FX parallel reduction (toward #420): ParStep contracts any set of redexes simultaneously
--- (Takahashi), mirroring all 18 Step rules with parallel sub-reduction of the surviving sub-terms; the pointwise
--- ParStepChildren reduces every child at once. ParStep.refl / ParStepChildren.refl give reflexivity by mutual
--- structural recursion (term-mode match, no termination_by — avoids the v4.29.1 WF substitution gap). This is the
--- relation that will discharge HasMaximalReduct -> the diamond -> raw confluence (the prize SN cannot supply).
+-- The concrete FX parallel reduction: ParStep contracts any set of redexes simultaneously (Takahashi),
+-- mirroring all 18 Step rules with parallel sub-reduction of the surviving sub-terms; the pointwise
+-- ParStepChildren reduces every child at once.  ParStep.refl / ParStepChildren.refl give reflexivity by mutual
+-- structural recursion (term-mode match, no termination_by).  This is the relation that discharges
+-- HasMaximalReduct, hence the diamond, hence raw confluence.
 #assert_no_axioms FX1Poly.Core.ParStep.refl
 #assert_no_axioms FX1Poly.Core.ParStepChildren.refl
--- Step subset ParStep (the lower sandwich bound = stepToPar for hasConfluence_of_parallelDiamond): every single
--- reduction is a parallel reduction firing only that redex, surviving sub-terms reflexive; cong maps the
--- single-child StepChildren to a pointwise ParStepChildren. Mutual term-mode structural recursion on the
--- derivation. One of the two arguments the raw-confluence adapter needs; the upper bound ParStep subset StepStar
--- is the next increment.
+-- Step subset ParStep (the lower sandwich bound = stepToPar for hasConfluence_of_parallelDiamond): every
+-- single reduction is a parallel reduction firing only that redex, surviving sub-terms reflexive; cong maps
+-- the single-child StepChildren to a pointwise ParStepChildren.  Mutual term-mode structural recursion on the
+-- derivation.  One of the two sandwich bounds the raw-confluence adapter needs.
 #assert_no_axioms FX1Poly.Core.Step.toParStep
 #assert_no_axioms FX1Poly.Core.StepChildren.toParStepChildren
 -- ParStep subset StepStar (the upper sandwich bound = parToStepStar): every parallel reduction is a finite
--- sequence of single steps. Each arm reduces the redex's surviving sub-terms via StepStar.ofChildrenStar (the
+-- sequence of single steps.  Each arm reduces the redex's surviving sub-terms via StepStar.ofChildrenStar (the
 -- child-spine congruence lifter) then fires the matching root Step; cong lifts the pointwise ParStepChildren
--- through ofChildrenStar. With Step.toParStep above, this COMPLETES the sandwich Step subset ParStep subset
--- StepStar that StepStar.hasConfluence_of_parallelDiamond needs -- only the ParStep DiamondProperty (via
--- HasMaximalReduct) remains for unconditional raw confluence.
+-- through ofChildrenStar.  With Step.toParStep, this completes the sandwich Step subset ParStep subset StepStar
+-- that StepStar.hasConfluence_of_parallelDiamond consumes.
 #assert_no_axioms FX1Poly.Core.ParStep.toStepStar
 #assert_no_axioms FX1Poly.Core.ParStepChildren.toStepChildrenStar
 
--- Takahashi complete development (the maximal-reduct witness toward #420): contract every redex present
--- at once but NOT the redexes created by contraction. Propext-clean because the ~18-redex-shape detection is
--- delegated to the already-clean fireRootRedex (a direct overlapping-nested-pattern match leaks propext and
--- defeats the equation compiler); completeDevelopment itself does only flat mkGen / childNil-childCons matches.
--- completeDevelopment_stepStar = the soundness half (the development is reachable by StepStar): develop the
--- children via ofChildrenStar, then fire the root via fireRootRedex_sound. This is the function the eventual
--- HasMaximalReduct ParStep (triangle) proof maximizes against -> the ParStep diamond -> raw confluence.
+-- The Takahashi complete development (the maximal-reduct witness): contract every redex present at once but
+-- not the redexes created by contraction.  Propext-clean because the redex-shape detection is delegated to
+-- fireRootRedex (a direct overlapping-nested-pattern match leaks propext and defeats the equation compiler);
+-- completeDevelopment itself does only flat mkGen / childNil-childCons matches.  completeDevelopment_stepStar
+-- is the soundness half (the development is reachable by StepStar): develop the children via ofChildrenStar,
+-- then fire the root via fireRootRedex_sound.  This is the function the HasMaximalReduct ParStep (triangle)
+-- proof maximizes against, hence the ParStep diamond, hence raw confluence.
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelf
--- fireRootRedexOrSelfGated: fire on developed children only when the ORIGINAL children form a syntactic
--- redex. This GATE makes completeDevelopment the standard (non-over-firing) Takahashi development: firing
--- on developed children alone would contract redexes CREATED by developing (an inner redex whose
--- contractum is a lam turns a non-lam-headed app into a beta-redex), breaking the triangle's ParStep a (cd a).
+-- fireRootRedexOrSelfGated: fire on developed children only when the original children form a syntactic
+-- redex.  This gate makes completeDevelopment the standard (non-over-firing) Takahashi development: firing on
+-- developed children alone would contract redexes created by developing (an inner redex whose contractum is a
+-- lam turns a non-lam-headed app into a beta-redex), breaking the triangle's ParStep a (cd a).
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelfGated
 #assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment
 #assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopmentChildren
@@ -386,25 +372,24 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.cd_idJRefl_eq
 #assert_no_axioms FX1Poly.Core.cd_idStrictRecRefl_eq
 
--- ParStep stable under substitution + renaming (toward the #420 triangle): the parallel-substitution
--- lemma the triangle ParStep a b -> ParStep b (completeDevelopment a) needs at its beta/iota arms is built
--- on these. ParStep.subst mirrors Step.subst's recursor idiom (all-substitutions motive; beta via
--- subst0_subst_commute, cong via the gen_var split, every iota arm applies its premises' IHs at sigma,
--- the spine lifts sigma by the child binder shift). ParStep.rename is the corollary via the Step.rename
--- rename->subst trick. These are the renaming/substitution substrate the binder case of the eventual
--- parallel substitution lemma requires.
+-- ParStep stable under substitution + renaming: the parallel-substitution lemma the triangle
+-- ParStep a b -> ParStep b (completeDevelopment a) uses at its beta/iota arms is built on these.  ParStep.subst
+-- mirrors Step.subst's recursor idiom (all-substitutions motive; beta via subst0_subst_commute, cong via the
+-- gen_var split, every iota arm applies its premises' IHs at sigma, the spine lifts sigma by the child binder
+-- shift).  ParStep.rename is the corollary via the Step.rename rename-to-subst trick.  These are the
+-- renaming/substitution substrate the binder case of the parallel substitution lemma requires.
 #assert_no_axioms FX1Poly.Core.ParStep.subst
 #assert_no_axioms FX1Poly.Core.ParStepChildren.subst
 #assert_no_axioms FX1Poly.Core.ParStep.rename
 #assert_no_axioms FX1Poly.Core.ParStepChildren.rename
 
--- Parallel substitution lemma (the #420 triangle's beta/iota engine): substituting a parallel-reduced
--- argument into a parallel-reduced body parallel-reduces. ParStep is a single parallel step (not
--- transitive), so the diagonal cannot be composed from two one-sided ParStep.subst applications -- it
--- needs the combined induction varying BOTH the substitution (sigma => tau, related by PointwiseParStep,
--- lifted under binders by ParStep.weaken) AND the term. ParStep.subst0_diagonal instantiates substPointwise
--- at the two singleton substitutions; this is what the triangle's beta arm fires with (and the recursive
--- iota arms whose contractums embed subst0 of developed components).
+-- The parallel substitution lemma (the triangle's beta/iota engine): substituting a parallel-reduced
+-- argument into a parallel-reduced body parallel-reduces.  ParStep is a single parallel step (not transitive),
+-- so the diagonal cannot be composed from two one-sided ParStep.subst applications: it needs the combined
+-- induction varying both the substitution (sigma to tau, related by PointwiseParStep, lifted under binders by
+-- ParStep.weaken) and the term.  ParStep.subst0_diagonal instantiates substPointwise at the two singleton
+-- substitutions; this is what the triangle's beta arm fires with (and the recursive iota arms whose contractums
+-- embed subst0 of developed components).
 #assert_no_axioms FX1Poly.Core.ParStep.weaken
 #assert_no_axioms FX1Poly.Core.RawTermSubst.lift_pointwiseParStep
 #assert_no_axioms FX1Poly.Core.iterateLiftRaw_RawTermSubst_pointwiseParStep
@@ -412,12 +397,12 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.RawTermSubst.singleton_pointwiseParStep
 #assert_no_axioms FX1Poly.Core.ParStep.subst0_diagonal
 
--- ParStep cong-inversion at the non-redex-head constructors: a parallel reduct of mkGen C .. keeps the
--- head C with components reduced (only the cong arm's source unifies; the β/ι arms have app/eliminator
--- sources). These extract the developed sub-components the triangle's β/ι arms need from the cong-reduced
--- children -- the route forced because completeDevelopment dispatches on the 194-ctor generator by
--- by_cases (hiding deep subterms from structural recursion), so completeDevelopment_parStep must recurse
--- only on the direct children spine and extract per-component ParSteps by these inversions.
+-- ParStep cong-inversion at the non-redex-head constructors: a parallel reduct of mkGen C .. keeps the head
+-- C with components reduced (only the cong arm's source unifies; the beta/iota arms have app/eliminator
+-- sources).  These extract the developed sub-components the triangle's beta/iota arms need from the
+-- cong-reduced children: completeDevelopment dispatches on the generator by by_cases (hiding deep subterms
+-- from structural recursion), so completeDevelopment_parStep recurses only on the direct children spine and
+-- extracts per-component ParSteps by these inversions.
 #assert_no_axioms FX1Poly.Core.ParStep.lam_inv
 #assert_no_axioms FX1Poly.Core.ParStep.pair_inv
 #assert_no_axioms FX1Poly.Core.ParStep.natSucc_inv
@@ -425,8 +410,8 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.ParStep.optionSome_inv
 #assert_no_axioms FX1Poly.Core.ParStep.eitherInl_inv
 #assert_no_axioms FX1Poly.Core.ParStep.eitherInr_inv
--- Nullary scrutinee / witness inversions completing the 13-constructor set: the full triangle's cong arm
--- learns from e.g. ParStep boolTrue sc' that sc' = boolTrue, so a cong-reduced redex is still a redex.
+-- Nullary scrutinee / witness inversions completing the 13-constructor set: the triangle's cong arm learns
+-- from e.g. ParStep boolTrue sc' that sc' = boolTrue, so a cong-reduced redex is still a redex.
 #assert_no_axioms FX1Poly.Core.ParStep.boolTrue_inv
 #assert_no_axioms FX1Poly.Core.ParStep.boolFalse_inv
 #assert_no_axioms FX1Poly.Core.ParStep.natZero_inv
@@ -434,126 +419,119 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.ParStep.optionNone_inv
 #assert_no_axioms FX1Poly.Core.ParStep.refl_inv
 
--- completeDevelopment_parStep: every term parallel-reduces to its complete development. The correctness
--- witness for the gated cd (an over-firing cd would FAIL it -- a created redex can't be fired in the same
--- single parallel step) AND the triangle's b:=a instance. Via RawTerm.rec (the by_cases generator dispatch
--- hides deep subterms from structural recursion, so route through the recursor's children-spine IH); none ->
--- cong, some -> per-redex fire with the child IHs extracted by cases. ~350 lines, propext-clean.
+-- completeDevelopment_parStep: every term parallel-reduces to its complete development.  The correctness
+-- witness for the gated cd (an over-firing cd would fail it, since a created redex cannot be fired in the same
+-- single parallel step) and the triangle's b := a instance.  Via RawTerm.rec (the by_cases generator dispatch
+-- hides deep subterms from structural recursion, so it routes through the recursor's children-spine IH):
+-- none implies cong, some implies per-redex fire with the child IHs extracted by cases.  Propext-clean.
 #assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment_parStep
 
--- The Takahashi triangle (the #420 headline): every parallel reduct b of a further parallel-reduces to
--- completeDevelopment a -- the maximal-reduct property that discharges the ParStep DiamondProperty and
--- hence (through the Step subset ParStep subset StepStar sandwich) unconditional raw confluence. Proved by
--- induction on the ParStep a b derivation (ParStep.rec, termination-free): beta/branch-selection iota arms
--- close by IHs through the cd_<redex>_eq defeq, recursive iota by nested cong, cong by triangleCongFires.
--- triangleCongFires is the cong-some workhorse: it dispatches on the 11 redex generators, inverts the
--- cong-reduced scrutinee/function child to learn the post-cong head shape, extracts the per-component
--- development steps from the children IH, and fires the matching ParStep ctor (whose contractum is
--- definitionally fireRootRedexOrSelf's output); non-firing branches reuse fireRootRedex_sound's keys.
+-- The Takahashi triangle: every parallel reduct b of a further parallel-reduces to completeDevelopment a,
+-- the maximal-reduct property that discharges the ParStep DiamondProperty and hence (through the
+-- Step subset ParStep subset StepStar sandwich) unconditional raw confluence.  Proved by induction on the
+-- ParStep a b derivation (ParStep.rec, termination-free): beta/branch-selection iota arms close by IHs through
+-- the cd_<redex>_eq defeq, recursive iota by nested cong, cong by triangleCongFires.  triangleCongFires is the
+-- cong-some workhorse: it dispatches on the 11 redex generators, inverts the cong-reduced scrutinee/function
+-- child to learn the post-cong head shape, extracts the per-component development steps from the children IH,
+-- and fires the matching ParStep ctor (whose contractum is definitionally fireRootRedexOrSelf's output);
+-- non-firing branches reuse fireRootRedex_sound's keys.
 #assert_no_axioms FX1Poly.Core.ParStep.triangleCongFires
 #assert_no_axioms FX1Poly.Core.ParStep.triangle
 
--- The #420 PAYOFF: unconditional raw confluence. ParStep.diamond instantiates DiamondProperty.ofTriangle
--- at ParStep.triangle; StepStar.rawConfluence feeds that diamond + the Step subset ParStep subset StepStar
--- sandwich (Step.toParStep / ParStep.toStepStar) to StepStar.hasConfluence_of_parallelDiamond, yielding
--- global Church-Rosser for the raw StepStar relation -- with NO strong-normalization assumption (raw
--- beta+iota is not SN). This closes the M8-S1 confluence pipeline (StepStarConfluence.lean previously
--- supplied StepStar.HasConfluence only conditionally).
+-- Unconditional raw confluence.  ParStep.diamond instantiates DiamondProperty.ofTriangle at
+-- ParStep.triangle; StepStar.rawConfluence feeds that diamond + the Step subset ParStep subset StepStar
+-- sandwich (Step.toParStep / ParStep.toStepStar) to StepStar.hasConfluence_of_parallelDiamond, yielding global
+-- Church-Rosser for the raw StepStar relation with no strong-normalization assumption (raw beta+iota is not
+-- SN).
 #assert_no_axioms FX1Poly.Core.ParStep.diamond
 #assert_no_axioms FX1Poly.Core.StepStar.rawConfluence
 
--- The Newman-precursor strip property (#377), unconditional via the ParStep diamond (route B,
+-- The Newman-precursor strip property, unconditional via the ParStep diamond (route B,
 -- hasStrip_of_parallelDiamond): a single Step out of a source joins against any StepStar chain out of it.
--- Distinct statement from rawConfluence (one-vs-many vs many-vs-many); confluence_of_strip turns it into
--- the same Church-Rosser result. No SN assumption.
+-- A distinct statement from rawConfluence (one-vs-many vs many-vs-many); confluence_of_strip turns it into the
+-- same Church-Rosser result.  No SN assumption.
 #assert_no_axioms FX1Poly.Core.StepStar.rawStrip
 
--- The harvest of #420: raw Conv (= StepStar.Join) is an UNCONDITIONAL equivalence relation. Conv.refl /
--- Conv.sym were structural (StepStarConfluence); Conv.trans needed Church-Rosser, previously only available
--- conditionally (trans_of_confluence / trans_of_strip / trans_of_strongNormalization, the last UNAVAILABLE
--- since raw beta+iota is not SN). StepStar.rawConfluence discharges the confluence hypothesis, so Conv.trans
--- + Conv.equivalence + the calc-enabling Trans instance are now unconditional -- the foundation the
+-- Raw Conv (= StepStar.Join) is an unconditional equivalence relation.  Conv.refl / Conv.sym are structural;
+-- Conv.trans is the consequence of Church-Rosser, discharged by StepStar.rawConfluence (which supplies the
+-- confluence hypothesis), so Conv.trans + Conv.equivalence + the calc-enabling Trans instance hold
+-- unconditionally, with no strong-normalization premise (raw beta+iota is not SN).  This is the foundation the
 -- raw-layer conversion checker rests on.
 #assert_no_axioms FX1Poly.Core.Conv.trans
 #assert_no_axioms FX1Poly.Core.Conv.equivalence
 #assert_no_axioms FX1Poly.Core.Conv.instTrans
 
--- Uniqueness of normal forms WITHOUT a termination hypothesis. normalForm_unique (NormalFormUnique.lean)
--- joins two normal reducts via confluence_of_localJoin_and_accessible, needing IsStronglyNormalizing
--- sourceTerm (the only confluence available before #420). StepStar.rawConfluence joins ANY two reductions
--- of a common source, so two normal reducts coincide whether or not the source terminates -- making "the
--- normal form" a well-defined partial function on ALL raw terms. The proof reuses Conv.eq_of_noStep +
--- isStepNormalForm_blocks_step, joining via rawConfluence instead of the SN-keyed local confluence.
+-- Uniqueness of normal forms with no termination hypothesis.  StepStar.rawConfluence joins any two
+-- reductions of a common source, so two normal reducts coincide whether or not the source terminates, making
+-- "the normal form" a well-defined partial function on all raw terms.  The proof reuses Conv.eq_of_noStep +
+-- isStepNormalForm_blocks_step, joining via rawConfluence.
 #assert_no_axioms FX1Poly.Core.normalForm_unique_of_confluence
 
--- Conv = normal-form equality with NO SN hypothesis. StronglyNormalizingConvDecision's
--- iff_normalForms_eq_of_isStronglyNormalizing threads both endpoints' IsStronglyNormalizing witnesses,
--- used only for per-term confluence; rawConfluence + normalForm_unique_of_confluence discharge them, so the
--- iff holds for ANY two terms that reduce to normal forms. Separates decidable Conv into existence-of-NFs
--- (the SN obligation, gated) and correctness-of-NF-comparison (pure confluence, now unconditional). The
--- decidable wrapper decides Conv via instDecidableEqRawTerm given the normal-form witnesses, no SN premise.
+-- Conv equals normal-form equality with no SN hypothesis.  rawConfluence + normalForm_unique_of_confluence
+-- discharge the per-term confluence witnesses, so the iff holds for any two terms that reduce to normal forms.
+-- This separates decidable Conv into existence-of-normal-forms (the SN obligation, gated) and
+-- correctness-of-normal-form-comparison (pure confluence, unconditional).  The decidable wrapper decides Conv
+-- via instDecidableEqRawTerm given the normal-form witnesses, no SN premise.
 #assert_no_axioms FX1Poly.Core.Conv.iff_normalForms_eq_of_confluence
 #assert_no_axioms FX1Poly.Core.Conv.decidableOfNormalForms
 
--- Path-B decider (polycell.md §2.3), confluence hypothesis discharged (SN-113/SN-114). Conv.iff_normalForm_eq
--- / Conv.decidableOfNormalizer (PolygraphConvergentDecision) take a Normalizer AND StepStar.HasConfluence;
--- rawConfluence discharges the latter, so a Normalizer ALONE decides Conv as normal-form equality. The
--- Normalizer (a TOTAL normal-form function) stays the SN obligation -- raw beta+iota has no global
--- normalizer; what is removed is the separate confluence assumption the normalizer-construction would
--- otherwise also have to supply.
+-- The Path-B decider (polycell.md §2.3) with the confluence hypothesis discharged.  Conv.iff_normalForm_eq /
+-- Conv.decidableOfNormalizer take a Normalizer and StepStar.HasConfluence; rawConfluence discharges the latter,
+-- so a Normalizer alone decides Conv as normal-form equality.  The Normalizer (a total normal-form function)
+-- remains the SN obligation (raw beta+iota has no global normalizer); the separate confluence assumption a
+-- normalizer construction would otherwise also supply is what this discharges.
 #assert_no_axioms FX1Poly.Core.Normalizer.conv_iff_normalForm_eq
 #assert_no_axioms FX1Poly.Core.Normalizer.decidableConv
 
--- Hindley-Rosen via the diamond (abstract toolkit): the THIRD confluence route after Newman (terminating)
--- and DiamondConfluence (single diamond). Modular -- combines two separately-confluent relations whose
--- diamonds COMMUTE into a confluent union (the intended FX use: beta-parallel diamond + iota-parallel
--- diamond + beta/iota commute, without one monolithic 20-arm ParStep). StronglyCommutes + DiamondProperty.union
--- (4-way case split) + confluentOfUnionDiamonds + confluentUnionOfParallelDiamonds (2-relation generalization
--- of confluentOfDiamondSimulation). Zero-axiom.
+-- Hindley-Rosen via the diamond (abstract toolkit): the third confluence route after Newman (terminating)
+-- and DiamondConfluence (single diamond).  Modular: it combines two separately-confluent relations whose
+-- diamonds commute into a confluent union (the intended FX use: beta-parallel diamond + iota-parallel diamond +
+-- beta/iota commute, without one monolithic 20-arm ParStep).  StronglyCommutes + DiamondProperty.union (4-way
+-- case split) + confluentOfUnionDiamonds + confluentUnionOfParallelDiamonds (the two-relation generalization of
+-- confluentOfDiamondSimulation).  Zero-axiom.
 #assert_no_axioms FX1Poly.Core.StronglyCommutes
 #assert_no_axioms FX1Poly.Core.DiamondProperty.union
 #assert_no_axioms FX1Poly.Core.confluentOfUnionDiamonds
 #assert_no_axioms FX1Poly.Core.confluentUnionOfParallelDiamonds
 
--- Deterministic confluence (abstract toolkit, FOURTH route): a deterministic (functional) relation is confluent
--- -- its reflexive-transitive reducts from a common source are linearly ordered. Determinism does NOT give the
--- strict diamond (a normal form breaks it), so this is its own linear-chain induction. The route for
--- deterministic reduction strategies (weak-head here, the deterministic NbE evaluator M12 downstream).
+-- Deterministic confluence (abstract toolkit, fourth route): a deterministic (functional) relation is
+-- confluent, since its reflexive-transitive reducts from a common source are linearly ordered.  Determinism
+-- does not give the strict diamond (a normal form breaks it), so this is its own linear-chain induction.  The
+-- route for deterministic reduction strategies (weak-head here, the deterministic NbE evaluator downstream).
 -- IsDeterministic + confluentOfDeterministic + the concrete WeakHeadStep.hasConfluence (weak-head reduction is
--- Church-Rosser, from WeakHeadStep.deterministic). Zero-axiom.
+-- Church-Rosser, from WeakHeadStep.deterministic).  Zero-axiom.
 #assert_no_axioms FX1Poly.Core.IsDeterministic
 #assert_no_axioms FX1Poly.Core.confluentOfDeterministicAux
 #assert_no_axioms FX1Poly.Core.confluentOfDeterministic
 #assert_no_axioms FX1Poly.Core.WeakHeadStep.hasConfluence
 
--- SN-040, HONEST unconditional Kripke form: a reducibility candidate is closed under renaming. The bare
--- ReducibleTypeStep SN-040 is FALSE (the piType same-scope argument quantifier has a real counterexample at a
--- renamed Pi-type). The TRUE statement lives at the Kripke-indexed candidate: IsKripkeReducibilityCandidate
--- (CR1 members-SN + CR2 closed-under-Step) survives KripkeCand.transport along ANY renaming with NO hypothesis
--- (the index precomposes; laws read off at the composed index). Predicate-level companion is the shipped
--- kripkeArrowDep_transport_pointwise. Off the SN-043 critical path (that gate is fuel-stability, not renaming).
+-- A reducibility candidate is closed under renaming, in the Kripke-indexed form: IsKripkeReducibilityCandidate
+-- (CR1 members-SN + CR2 closed-under-Step) survives KripkeCand.transport along any renaming with no hypothesis
+-- (the index precomposes; laws read off at the composed index).  The bare same-scope ReducibleTypeStep form is
+-- false (the piType same-scope argument quantifier has a counterexample at a renamed Pi-type), so the Kripke
+-- index is what carries renaming-closure.  Predicate-level companion is kripkeArrowDep_transport_pointwise.
 #assert_no_axioms FX1Poly.Core.IsKripkeReducibilityCandidate
 #assert_no_axioms FX1Poly.Core.IsKripkeReducibilityCandidate.transport
 
--- Pointwise-saturation of the dependent reducibility relation (the level-free FT's choice-free piIntro
--- keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it carries the
--- canonical member-predicate candidate that bare `ReducibleType` cannot.  (New file outside the
--- AuditCoreSubstrate sweep's import closure, so gated per-declaration here.)
+-- Pointwise-saturation of the dependent reducibility relation (the level-free fundamental theorem's
+-- choice-free piIntro keystone): `ReducibleTypeClosed` is closed under pointwise-iff by construction, so it
+-- carries the canonical member-predicate candidate that bare `ReducibleType` does not.  Gated per-declaration
+-- here, outside the AuditCoreSubstrate sweep's import closure.
 #assert_no_axioms FX1Poly.Core.ReducibleTypeClosed
 #assert_no_axioms FX1Poly.Core.ReducibleType.toClosed
 #assert_no_axioms FX1Poly.Core.ReducibleType.closedAtMemberPredicate
 
--- Equivalence-relation algebra of candidate pointwise-iff (the transport algebra the reducibility
--- model threads through every `ReducibleType.deterministic` candidate transfer, and the pending
--- `ReducibleType.ofPointwiseIff` congruence-closure cascade).
+-- Equivalence-relation algebra of candidate pointwise-iff (the transport algebra the reducibility model
+-- threads through every `ReducibleType.deterministic` candidate transfer and the `ReducibleType.ofPointwiseIff`
+-- congruence-closure cascade).
 #assert_no_axioms FX1Poly.Core.PointwiseIff.refl
 #assert_no_axioms FX1Poly.Core.PointwiseIff.symm
 #assert_no_axioms FX1Poly.Core.PointwiseIff.trans
 
 -- Candidate-congruence of the stratified reducibility step-functor under lower-existence-equivalence: the
--- inductive STEP of level-irrelevance (Π case via ofPointwiseIff, universe case via the lower-existence
--- equivalence).  Does NOT bootstrap full irrelevance alone (level-0 degenerate base) — see the module
--- docstring; reusable as the hard core of any future level argument.
+-- inductive step of level-irrelevance (Pi case via ofPointwiseIff, universe case via the lower-existence
+-- equivalence).  The level-0 degenerate base means it does not bootstrap full irrelevance alone (see the module
+-- docstring); it is the hard core a level argument reuses.
 #assert_no_axioms FX1Poly.Core.ReducibleTypeStep.existsCongr
 
 -- Fuel-zero boundary witness: unlike universe-code domains, neutral classifiers can genuinely have
@@ -569,17 +547,16 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.codomain_isStronglyNormalizing_of_sigmaTyCode
 
 -- CR2 / CR3 closure lifted to the semantic-membership layer (the forward-Step, forward-StepStar, and
--- neutral-backward companions of the shipped CR1 membership corollary; the Tait closure bricks the
--- fundamental theorem's neutral and reduction-stable cases consume).
+-- neutral-backward companions of the CR1 membership corollary; the Tait closure bricks the fundamental
+-- theorem's neutral and reduction-stable cases consume).
 #assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.closedUnderStep
 #assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.closedUnderStepStar
 #assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.neutralExpansion
 
 -- Structural SN closure completing the universe-code former family: the one-child listCode/optionCode
--- congruence inversions + SN, the three-child idCode inversion + SN, and the reusable three-child
--- congruence SN combinator (the three-child analogue of the shipped one/two-child versions).  The SN-half
--- ingredient of "the code is a reducible member of El" (SN-071); SN is fuel-independent so this is
--- #672-independent.
+-- congruence inversions + SN, the three-child idCode inversion + SN, and the reusable three-child congruence
+-- SN combinator (the three-child analogue of the one/two-child versions).  The SN half of "the code is a
+-- reducible member of El"; SN is fuel-independent.
 #assert_no_axioms FX1Poly.Core.Step.from_listCode
 #assert_no_axioms FX1Poly.Core.Step.from_optionCode
 #assert_no_axioms FX1Poly.Core.Step.from_idCode
@@ -587,40 +564,37 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.listCode_isStronglyNormalizing_of_element
 #assert_no_axioms FX1Poly.Core.StepStar.optionCode_isStronglyNormalizing_of_element
 #assert_no_axioms FX1Poly.Core.StepStar.idCode_isStronglyNormalizing_of_type_endpoints
--- UNIVERSE MEMBERSHIP of the one/three-child data-type codes (SN-071): list/option/id codes are reducible
--- members of Type@levelExpr, each a direct dataFormerInUniverse instance fed the per-former SN combinator + the
--- uniform weak-head-normal (only rootIota could unify, killed by cases iotaStep) + root-distinctness from
--- piTyCode/universeCode. The two-child eitherCode/equivCode are the remaining SN-071 piece (need 2-child Step
--- inversions). #672-independent.
+-- Universe membership of the one/three-child data-type codes: list/option/id codes are reducible members of
+-- Type@levelExpr, each a direct dataFormerInUniverse instance fed the per-former SN combinator + the uniform
+-- weak-head-normal (only rootIota could unify, killed by cases iotaStep) + root-distinctness from
+-- piTyCode/universeCode.
 #assert_no_axioms FX1Poly.Core.listCode_isReducibleMemberOfUniverse
 #assert_no_axioms FX1Poly.Core.optionCode_isReducibleMemberOfUniverse
 #assert_no_axioms FX1Poly.Core.idCode_isReducibleMemberOfUniverse
--- The two-child either/equiv codes complete the SN-071 family at the stratified layer, reusing the shipped
--- two-child SN combinators (eitherCode/equivCode SN + Step.from_* inversions). Whole universe-code-family
--- stratified membership (arrow/product/sum + list/option/either/id/equiv) now closed, #672-independent.
+-- The two-child either/equiv codes complete the data-code family at the stratified layer, reusing the
+-- two-child SN combinators (eitherCode/equivCode SN + Step.from_* inversions).  The whole universe-code-family
+-- stratified membership (arrow/product/sum + list/option/either/id/equiv) is closed.
 #assert_no_axioms FX1Poly.Core.eitherCode_isReducibleMemberOfUniverse
 #assert_no_axioms FX1Poly.Core.equivCode_isReducibleMemberOfUniverse
--- LINEAR-LOGIC type formers (⊸ / ⊗) inhabit their universe too: linearArrow/tensorProduct are two-child
--- .type formers, classified by dataFormerInUniverse on the shipped two-child SN combinators (linearity is a
--- usage grade, orthogonal to the type-code-in-universe fact). bangModality (!A) deferred (needs its SN
--- substrate). #672-independent.
+-- Linear-logic type formers (linearArrow and tensorProduct) inhabit their universe too: both are two-child
+-- .type formers, classified by dataFormerInUniverse on the two-child SN combinators (linearity is a usage
+-- grade, orthogonal to the type-code-in-universe fact).
 #assert_no_axioms FX1Poly.Core.linearArrow_isReducibleMemberOfUniverse
 #assert_no_axioms FX1Poly.Core.tensorProduct_isReducibleMemberOfUniverse
 
--- Modal-core β+ι SN coverage: gen_modElim / gen_subsume are congruence-only (no iota root rule; the modal
--- collapse is raw η), so their cong inversions + one-child-cong SN closures complete the modal-core SN
+-- Modal-core beta+iota SN coverage: gen_modElim / gen_subsume are congruence-only (no iota root rule; the
+-- modal collapse is raw eta), so their cong inversions + one-child-cong SN closures complete the modal-core SN
 -- coverage alongside modIntro (StrongNormalizationConstructors) and the modIntro reducibility candidate.
 #assert_no_axioms FX1Poly.Core.Step.from_modElim
 #assert_no_axioms FX1Poly.Core.Step.from_subsume
 #assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_of_child
 #assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_of_child
 
--- SN-074 / SN-075 (ModalEliminatorReducibility.lean): the REFLECTION direction + reducibility-framing
--- completing modElim/subsume reducibility. isStronglyNormalizing_child_of_oneChildCong is the reusable
--- converse of the forward one-child-cong SN closure (SN reflects through a congruence wrapper). modElim/subsume
--- being non-neutral with no iota rule (by design, NeutralTerm.lean), the SN candidate is the honest ceiling:
--- the operators send candidate members to SN-candidate members; the box-member capstone ties modElim back to
--- SN-073's shipped modIntroCanonicalFormsCandidate.
+-- The reflection direction + reducibility-framing completing modElim/subsume reducibility.
+-- isStronglyNormalizing_child_of_oneChildCong is the reusable converse of the forward one-child-cong SN
+-- closure (SN reflects through a congruence wrapper).  modElim/subsume being non-neutral with no iota rule (by
+-- design), the SN candidate is the ceiling: the operators send candidate members to SN-candidate members; the
+-- box-member capstone ties modElim back to modIntroCanonicalFormsCandidate.
 #assert_no_axioms FX1Poly.Core.StepStar.isStronglyNormalizing_child_of_oneChildCong
 #assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_child_of_parent
 #assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_child_of_parent
@@ -630,12 +604,12 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_of_candidateMember
 #assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_ofBoxMember
 
--- SN-077 (UniverseModeBridgeReducibility.lean): the 2LTT universe-mode bridge twin of SN-074/075. The lift
--- (one child) + lower (two children: outer + cofibrancy) are congruence-only/non-neutral with no β+ι ι-rule
--- (their lower(lift x)↝x rule awaits M26-Z1/#434), so the SN candidate is the honest ceiling. The lower's two
--- child reflections each slice the two-child operator into a one-child congruence wrapper, reusing SN-074's
+-- The 2LTT universe-mode bridge twin of the modal-eliminator reducibility.  The lift (one child) + lower
+-- (two children: outer + cofibrancy) are congruence-only/non-neutral with no beta+iota iota-rule (their
+-- lower(lift x) collapse is not in the current substrate), so the SN candidate is the ceiling.  The lower's
+-- two child reflections each slice the two-child operator into a one-child congruence wrapper, reusing the
 -- generic isStronglyNormalizing_child_of_oneChildCong (the cofibrancy slice threads StepChildren.there past the
--- held outer child, as in listCons's tail projection). Biconditionals + candidate-framing complete the picture.
+-- held outer child, as in listCons's tail projection).  Biconditionals + candidate-framing complete the picture.
 #assert_no_axioms FX1Poly.Core.StepStar.liftInnerToOuter_isStronglyNormalizing_child_of_parent
 #assert_no_axioms FX1Poly.Core.StepStar.lowerOuterToInner_outer_isStronglyNormalizing_of_parent
 #assert_no_axioms FX1Poly.Core.StepStar.lowerOuterToInner_cofibrancy_isStronglyNormalizing_of_parent
@@ -644,12 +618,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.liftInnerToOuter_isStronglyNormalizing_of_candidateMember
 #assert_no_axioms FX1Poly.Core.StepStar.lowerOuterToInner_isStronglyNormalizing_of_candidateMembers
 
--- SN-146 congruence-only installment (CubicalOperatorReducibility.lean): the CCHM cubical Kan operators
--- gen_transp (path, source) + gen_hcomp (sides, cap) are two-child congruence-only/non-neutral with no β+ι rule
--- (their Kan rules await M64/M65), so the SN candidate is the honest ceiling — same shape as the mode bridges.
--- Inversions + forward two-child SN closures + per-child reflections (reusing SN-074's generic one-child
--- reflection lemma by slicing) + biconditionals + candidate-framing. The Kan-rule robustness + Glue +
--- transpFill/transpHigherDim/unglue remain for the full SN-146.
+-- The CCHM cubical Kan operators gen_transp (path, source) + gen_hcomp (sides, cap) are two-child
+-- congruence-only/non-neutral with no beta+iota rule (the Kan computation rules are not in the current
+-- substrate), so the SN candidate is the ceiling, the same shape as the mode bridges.  Inversions + forward
+-- two-child SN closures + per-child reflections (reusing the generic one-child reflection lemma by slicing) +
+-- biconditionals + candidate-framing.
 #assert_no_axioms FX1Poly.Core.Step.from_transp
 #assert_no_axioms FX1Poly.Core.Step.from_hcomp
 #assert_no_axioms FX1Poly.Core.StepStar.transp_isStronglyNormalizing_of_children
@@ -663,12 +636,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.transp_isStronglyNormalizing_of_candidateMembers
 #assert_no_axioms FX1Poly.Core.StepStar.hcomp_isStronglyNormalizing_of_candidateMembers
 
--- SN-146 installment cont'd (CubicalTransportReducibility.lean): the two remaining shipped TRANSPORT variants
--- gen_transpHigherDim (2-child: pathFamily, source) + gen_transpFill (3-child: pathTy, currentInterval, source),
--- congruence-only/non-neutral like transp/hcomp. transpFill uses the three-child forward closure
--- (threeChildCong) + three one-child reflection slices (the source slice threads StepChildren.there TWICE past
--- the held pathTy + interval). All four shipped transport/composition Kan operators now have congruence-only SN
--- coverage; Kan-rule robustness + Glue remain for full SN-146.
+-- The two remaining transport variants gen_transpHigherDim (2-child: pathFamily, source) + gen_transpFill
+-- (3-child: pathTy, currentInterval, source), congruence-only/non-neutral like transp/hcomp.  transpFill uses
+-- the three-child forward closure (threeChildCong) + three one-child reflection slices (the source slice
+-- threads StepChildren.there twice past the held pathTy + interval).  All four transport/composition Kan
+-- operators have congruence-only SN coverage.
 #assert_no_axioms FX1Poly.Core.Step.from_transpHigherDim
 #assert_no_axioms FX1Poly.Core.Step.from_transpFill
 #assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_isStronglyNormalizing_of_children
@@ -683,10 +655,10 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.transpHigherDim_isStronglyNormalizing_of_candidateMembers
 #assert_no_axioms FX1Poly.Core.StepStar.transpFill_isStronglyNormalizing_of_candidateMembers
 
--- SN-146 installment cont'd (CubicalEliminatorReducibility.lean): the two cubical ELIMINATORS gen_pathApp
--- (2-child: pathTerm, intervalArg) + gen_glueElim (1-child: gluedValue), congruence-only/non-neutral (path-β +
--- Glue collapse await M62/M66). glueElim mirrors the modElim 1-child pattern; pathApp the transp 2-child pattern.
--- With glueIntro's shipped SN, this advances SN-146's "Glue" coverage + adds the path eliminator.
+-- The two cubical eliminators gen_pathApp (2-child: pathTerm, intervalArg) + gen_glueElim (1-child:
+-- gluedValue), congruence-only/non-neutral (the path-beta and Glue collapse rules are not in the current
+-- substrate).  glueElim mirrors the modElim 1-child pattern; pathApp the transp 2-child pattern.  With
+-- glueIntro's SN, this covers the Glue and path-eliminator congruence-only SN.
 #assert_no_axioms FX1Poly.Core.Step.from_glueElim
 #assert_no_axioms FX1Poly.Core.Step.from_pathApp
 #assert_no_axioms FX1Poly.Core.StepStar.glueElim_isStronglyNormalizing_of_child
@@ -699,11 +671,11 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.pathApp_isStronglyNormalizing_iff
 #assert_no_axioms FX1Poly.Core.StepStar.pathApp_isStronglyNormalizing_of_candidateMembers
 
--- SN-146 installment cont'd (CubicalPathAlgebraReducibility.lean): the five path ∞-groupoid / cubical-comp
--- operators gen_pathCompose (2-child) + gen_pathInverse (1-child) + gen_pathWhiskerLeft/Right (2-child) +
--- gen_compCubical (2-child), all congruence-only/non-neutral. Essential forward SN content (inversion + forward
--- closure + candidate-framing); reflections follow the generic SN-074 pattern (omitted for concision). This
--- COMPLETES the cubical layer's congruence-only-stage SN coverage (Kan + transport + eliminators + path-algebra).
+-- The five path infinity-groupoid / cubical-composition operators gen_pathCompose (2-child) +
+-- gen_pathInverse (1-child) + gen_pathWhiskerLeft/Right (2-child) + gen_compCubical (2-child), all
+-- congruence-only/non-neutral.  Forward SN content (inversion + forward closure + candidate-framing); the
+-- reflections follow the generic one-child reflection pattern.  This covers the cubical layer's
+-- congruence-only SN (Kan + transport + eliminators + path-algebra).
 #assert_no_axioms FX1Poly.Core.Step.from_pathInverse
 #assert_no_axioms FX1Poly.Core.Step.from_pathCompose
 #assert_no_axioms FX1Poly.Core.Step.from_pathWhiskerLeft
@@ -720,61 +692,60 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.compCubical_isStronglyNormalizing_of_children
 #assert_no_axioms FX1Poly.Core.StepStar.compCubical_isStronglyNormalizing_of_candidateMembers
 
--- Universe-mode bridge β+ι SN coverage (precursor to SN-077): gen_liftInnerToOuter (1-child inner→outer lift)
--- and gen_lowerOuterToInner (2-child outer→inner lower) are congruence-only (no iota root rule; the mode-bridge
--- collapse `lower (lift x) ↝ x` is not in the current β+ι substrate, like the modal modElim collapse), so their
--- cong inversions + one-/two-child-cong SN closures complete the 2LTT mode-bridge SN coverage.
+-- Universe-mode bridge beta+iota SN coverage: gen_liftInnerToOuter (1-child inner-to-outer lift) and
+-- gen_lowerOuterToInner (2-child outer-to-inner lower) are congruence-only (no iota root rule; the mode-bridge
+-- collapse `lower (lift x)` is not in the current beta+iota substrate, like the modal modElim collapse), so
+-- their cong inversions + one-/two-child-cong SN closures complete the 2LTT mode-bridge SN coverage.
 #assert_no_axioms FX1Poly.Core.Step.from_liftInnerToOuter
 #assert_no_axioms FX1Poly.Core.Step.from_lowerOuterToInner
 #assert_no_axioms FX1Poly.Core.StepStar.liftInnerToOuter_isStronglyNormalizing_of_child
 #assert_no_axioms FX1Poly.Core.StepStar.lowerOuterToInner_isStronglyNormalizing_of_children
 
--- Recursive-eliminator iota-redex SN (toward SN-061): the natSucc one-child subterm-SN lemma (predecessor of
--- an SN natSucc is SN), and the conditional natElim successor-case redex SN (normal branches + the
--- succ-contractum SN for every SN predecessor ⟹ the natElim redex with an SN scrutinee is SN). The
--- succ-contractum hypothesis is the honest IH-carrying premise the numeral WF-recursion eventually discharges.
+-- Recursive-eliminator iota-redex SN: the natSucc one-child subterm-SN lemma (predecessor of an SN natSucc
+-- is SN), and the conditional natElim successor-case redex SN (normal branches + the succ-contractum SN for
+-- every SN predecessor implies the natElim redex with an SN scrutinee is SN).  The succ-contractum hypothesis
+-- is the IH-carrying premise the numeral WF-recursion supplies.
 #assert_no_axioms FX1Poly.Core.StepStar.predecessor_isStronglyNormalizing_of_natSucc
 #assert_no_axioms FX1Poly.Core.StepStar.natElim_isStronglyNormalizing_of_normal_branches
 -- natRec (dependent recursor) firing-case twin, completing the Nat recursor pair.
 #assert_no_axioms FX1Poly.Core.StepStar.natRec_isStronglyNormalizing_of_normal_branches
--- SN-from-SN-BRANCHES strengthening (toward the recursor closed-membership, SN-061): the branches need only be
--- SN (members), not normal — required for the Tait/data-candidate recursor argument. Triple nested accessibility
--- induction on (scrutinee, zeroBranch, succBranch); the succ-contractum SN hypothesis is THREADED through both
--- branch inductions. The recursive analogue of the matcher SN-from-SN-branches: the succ ι-contractum contains a
--- recursive natElim/natRec call, and the succ branch occurs TWICE (in app succBranch pred AND the recursive
+-- The SN-from-SN-branches form for the recursor closed-membership: the branches need only be SN (members),
+-- not normal, as the Tait/data-candidate recursor argument requires.  Triple nested accessibility induction on
+-- (scrutinee, zeroBranch, succBranch); the succ-contractum SN hypothesis is threaded through both branch
+-- inductions.  The recursive analogue of the matcher SN-from-SN-branches: the succ iota-contractum contains a
+-- recursive natElim/natRec call, and the succ branch occurs twice (in app succBranch pred and the recursive
 -- call), so its update under succ-congruence is two app/natElim-cong + IsStronglyNormalizing.inv hops.
 #assert_no_axioms FX1Poly.Core.StepStar.natElim_isStronglyNormalizing_of_strongly_normalizing_branches
 #assert_no_axioms FX1Poly.Core.StepStar.natRec_isStronglyNormalizing_of_strongly_normalizing_branches
 
--- VALUE-CASE of non-dependent Nat-recursor reducibility (the computational heart of SN-061): the recursor on
--- a NUMERAL scrutinee lands in the result candidate, by IsNatValue structural induction firing the two ι rules
--- (zero->z, succ->app(app s pred)(natElim pred z s)) through the candidate's weak-head expansion. Conditional
--- on the honest interface (candidate weak-head-expansion + branch reducibility + SN-of-redex). The
--- scrutinee-reduction/neutral outer regimes are the deferred other half of SN-061.
+-- The value case of non-dependent Nat-recursor reducibility (the computational heart): the recursor on a
+-- numeral scrutinee lands in the result candidate, by IsNatValue structural induction firing the two iota rules
+-- (zero to z, succ to app(app s pred)(natElim pred z s)) through the candidate's weak-head expansion.
+-- Conditional on the interface (candidate weak-head-expansion + branch reducibility + SN-of-redex).
 #assert_no_axioms FX1Poly.Core.natElimValueReducibility
 #assert_no_axioms FX1Poly.Core.natRecValueReducibility
 
--- VALUE-CASE natElim reducibility with the recursor-SN obligation DISCHARGED (toward SN-061): replaces the
--- bespoke redexStronglyNormalizing hypothesis of natElimValueReducibility with the UNIVERSAL candidate
--- properties CR1 (members are SN) + CR2 (membership forward-closed under Step) + succBranchTerminates. The
--- scrutinee-fixed cell-SN recursor (natElimNormalScrutineeCellStronglyNormalizing) does a double Acc induction
--- over the branches, carrying the branch interface forward via CR2, with the ι-reduct SN coming from its
--- membership via CR1 -- so it needs no bespoke succContractumTerminates. #672-independent (fixed result
--- candidate, the pure Tait value-recursor argument).
+-- Value-case natElim reducibility with the recursor-SN obligation discharged: replaces the bespoke
+-- redexStronglyNormalizing hypothesis of natElimValueReducibility with the universal candidate properties CR1
+-- (members are SN) + CR2 (membership forward-closed under Step) + succBranchTerminates.  The scrutinee-fixed
+-- cell-SN recursor (natElimNormalScrutineeCellStronglyNormalizing) does a double Acc induction over the
+-- branches, carrying the branch interface forward via CR2, with the iota-reduct SN coming from its membership
+-- via CR1, so it needs no bespoke succContractumTerminates.  The pure Tait value-recursor argument over a
+-- fixed result candidate (fuel-independent).
 #assert_no_axioms FX1Poly.Core.natElimNormalScrutineeCellStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.natElimValueMember
--- The dependent-recursor twin: identical discharge (CR1+CR2+succBranchTerminates replacing
+-- The dependent-recursor twin: identical discharge (CR1 + CR2 + succBranchTerminates replacing
 -- redexStronglyNormalizing) via the natRec scrutinee-fixed cell-SN recursor, gen_natRec's five-way
 -- Step.from_natRec inversion matching natElim's.
 #assert_no_axioms FX1Poly.Core.natRecNormalScrutineeCellStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.natRecValueMember
 
--- NEUTRAL-SCRUTINEE regime of the Nat recursor (toward SN-061): the dual of the value case. A NEUTRAL
--- scrutinee is never a numeral and stays neutral under Step, so natElim/natRec NEVER ι-fires and the cell is a
--- stuck neutral -- which inhabits every candidate by CR3. memberOfStronglyNormalizingNeutral is the abstract
--- reusable bridge (SN neutral -> member of any candidate, generalizing the CanonicalFormsPredicate-only
--- version); rootGenerator_ne_natZero/natSucc are the ι-vacuity discriminators; the cell-SN recursors are a
--- triple Acc induction with the two ι cases VACUOUS by neutrality. #672-independent (fixed result candidate).
+-- The neutral-scrutinee regime of the Nat recursor, the dual of the value case.  A neutral scrutinee is
+-- never a numeral and stays neutral under Step, so natElim/natRec never iota-fires and the cell is a stuck
+-- neutral, which inhabits every candidate by CR3.  memberOfStronglyNormalizingNeutral is the reusable bridge
+-- (SN neutral implies member of any candidate, generalizing the CanonicalFormsPredicate-only version);
+-- rootGenerator_ne_natZero/natSucc are the iota-vacuity discriminators; the cell-SN recursors are a triple Acc
+-- induction with the two iota cases vacuous by neutrality (fixed result candidate, fuel-independent).
 #assert_no_axioms FX1Poly.Core.IsReducibilityCandidate.memberOfStronglyNormalizingNeutral
 #assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_natZero
 #assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_natSucc
@@ -783,31 +754,31 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.natElimNeutralScrutineeMember
 #assert_no_axioms FX1Poly.Core.natRecNeutralScrutineeMember
 
--- GENERAL-SCRUTINEE regime of the Nat recursor: the full SN-061 outer recursion. The Nat data candidate
--- CanonicalFormsPredicate IsNatValue BUILDS IN the value-or-neutral dichotomy (SN AND neutral-or-reaches-a-
--- numeral), so a reducible scrutinee splits exactly into the two shipped regimes: neutral -> the stuck cell is
--- a member by CR3; value -> natElimValueReducibility lands the numeral cell, ofStepStarReachingValue lifts it
--- back through the scrutinee congruence (the lift needs the numeral cell to REACH a value, extracted by
--- refuting its neutrality via <recursor>_notNeutral_ofNatValueScrutinee). The open-scope generalization of the
--- closed natElimClosedIsMember (where the neutral disjunct is vacuous). #672-independent — pure Tait dispatch.
+-- The general-scrutinee regime of the Nat recursor: the full outer recursion.  The Nat data candidate
+-- CanonicalFormsPredicate IsNatValue builds in the value-or-neutral dichotomy (SN and
+-- neutral-or-reaches-a-numeral), so a reducible scrutinee splits exactly into the two regimes: neutral implies
+-- the stuck cell is a member by CR3; value implies natElimValueReducibility lands the numeral cell, and
+-- ofStepStarReachingValue lifts it back through the scrutinee congruence (the lift needs the numeral cell to
+-- reach a value, extracted by refuting its neutrality via <recursor>_notNeutral_ofNatValueScrutinee).  The
+-- open-scope generalization of the closed natElimClosedIsMember (where the neutral disjunct is vacuous).
 #assert_no_axioms FX1Poly.Core.natElim_notNeutral_ofNatValueScrutinee
 #assert_no_axioms FX1Poly.Core.natRec_notNeutral_ofNatValueScrutinee
 #assert_no_axioms FX1Poly.Core.natElimReducibleScrutineeMember
 #assert_no_axioms FX1Poly.Core.natRecReducibleScrutineeMember
 
--- GENERAL-SCRUTINEE regime of the List recursor (SN-064 outer recursion): the listElim twin of the Nat
--- general-scrutinee dispatch, bringing the three recursive eliminators (natElim/natRec/listElim) to
--- general-scrutinee parity. Same dispatch on the List candidate's value-or-neutral disjunct, via
--- listElimValueReducibility + ofStepStarReachingValue (StepStar.listElimScrutinee), with the value side
--- extracted by listElim_notNeutral_ofListValueScrutinee. #672-independent.
+-- The general-scrutinee regime of the List recursor: the listElim twin of the Nat general-scrutinee
+-- dispatch, bringing the three recursive eliminators (natElim/natRec/listElim) to general-scrutinee parity.
+-- Same dispatch on the List candidate's value-or-neutral disjunct, via listElimValueReducibility +
+-- ofStepStarReachingValue (StepStar.listElimScrutinee), with the value side extracted by
+-- listElim_notNeutral_ofListValueScrutinee.
 #assert_no_axioms FX1Poly.Core.listElim_notNeutral_ofListValueScrutinee
 #assert_no_axioms FX1Poly.Core.listElimReducibleScrutineeMember
 
--- GENERAL-SCRUTINEE regime of the NON-recursive data eliminators (starting with boolElim): the open-scope value
--- regime + general dispatch the non-recursive eliminators lacked (they had only closed membership + neutral).
--- boolElimValueReducibility is the genuinely-new piece (the boolElim analogue of natElimValueReducibility, no IH
--- / no successor application); the dispatch mirrors the recursive case on the bool candidate's value-or-neutral
--- disjunct. rootGenerator_ne_boolTrue/False are the ι-vacuity discriminators. #672-independent.
+-- The general-scrutinee regime of the non-recursive data eliminators (starting with boolElim): the
+-- open-scope value regime + general dispatch alongside the closed membership and neutral regimes.
+-- boolElimValueReducibility is the boolElim analogue of natElimValueReducibility (no IH, no successor
+-- application); the dispatch mirrors the recursive case on the bool candidate's value-or-neutral disjunct.
+-- rootGenerator_ne_boolTrue/False are the iota-vacuity discriminators.
 #assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_boolTrue
 #assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_boolFalse
 #assert_no_axioms FX1Poly.Core.boolElim_notNeutral_ofBoolValueScrutinee
@@ -815,32 +786,32 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.boolElimValueReducibility
 #assert_no_axioms FX1Poly.Core.boolElimReducibleScrutineeMember
 
--- NEUTRAL-SCRUTINEE regime of the List recursor (toward SN-064): the listElim mirror of the Nat regime,
--- bringing the three recursive recursors (natElim/natRec/listElim) to neutral-coverage parity. A NEUTRAL
--- scrutinee is never a List constructor and stays neutral under Step, so listElim NEVER ι-fires; the cell is a
--- stuck neutral, member of any candidate by the reusable memberOfStronglyNormalizingNeutral. Discriminators
--- rootGenerator_ne_listNil/listCons + the triple-Acc cell-SN recursor (ι cases VACUOUS by neutrality).
+-- The neutral-scrutinee regime of the List recursor: the listElim mirror of the Nat regime, bringing the
+-- three recursive recursors (natElim/natRec/listElim) to neutral-coverage parity.  A neutral scrutinee is never
+-- a List constructor and stays neutral under Step, so listElim never iota-fires; the cell is a stuck neutral,
+-- member of any candidate by memberOfStronglyNormalizingNeutral.  Discriminators
+-- rootGenerator_ne_listNil/listCons + the triple-Acc cell-SN recursor (iota cases vacuous by neutrality).
 #assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_listNil
 #assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_listCons
 #assert_no_axioms FX1Poly.Core.listElim_neutralScrutinee_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.listElimNeutralScrutineeMember
 
--- NEUTRAL regime of the DIRECT-ι eliminators (boolElim/fst/snd/idJ/idStrictRec): the non-recursive companion
--- to the natElim/listElim neutral regimes. Each ι-reduct is a branch/component (NOT an application), so the
--- shipped cell-SN-from-children needs no extra interface and each neutral member is a pure compose with
--- memberOfStronglyNormalizingNeutral + the IsNeutral.X arm. Brings the direct-ι eliminators to neutral-coverage
--- parity with the recursive recursors (optionMatch/eitherMatch, application-ι, deferred — need bespoke SN).
+-- The neutral regime of the direct-iota eliminators (boolElim/fst/snd/idJ/idStrictRec): the non-recursive
+-- companion to the natElim/listElim neutral regimes.  Each iota-reduct is a branch/component (not an
+-- application), so the cell-SN-from-children needs no extra interface and each neutral member is a pure compose
+-- with memberOfStronglyNormalizingNeutral + the IsNeutral.X arm.
 #assert_no_axioms FX1Poly.Core.boolElimNeutralScrutineeMember
 #assert_no_axioms FX1Poly.Core.fstNeutralArgumentMember
 #assert_no_axioms FX1Poly.Core.sndNeutralArgumentMember
 #assert_no_axioms FX1Poly.Core.idJNeutralWitnessMember
 #assert_no_axioms FX1Poly.Core.idStrictRecNeutralWitnessMember
 
--- NEUTRAL regime of the APPLICATION-ι match eliminators (optionMatch/eitherMatch): the last 2 of 12 IsNeutral
--- eliminators, completing the eliminator-neutral-coverage arc. Their ι is an application (optionMatch (some v)
--- … ↝ app s v), so cell-SN needs the bespoke triple-Acc (the natElim pattern, ι cases vacuous by neutrality)
--- + constructor discriminators rootGenerator_ne_optionNone/optionSome/eitherInl/eitherInr -- NOT a pure compose
--- like the direct-ι five. With these, all 12 IsNeutral eliminators are reducible over a neutral principal child.
+-- The neutral regime of the application-iota match eliminators (optionMatch/eitherMatch): the last 2 of 12
+-- IsNeutral eliminators, completing the eliminator-neutral-coverage set.  Their iota is an application
+-- (optionMatch (some v) ... to app s v), so cell-SN needs the bespoke triple-Acc (the natElim pattern, iota
+-- cases vacuous by neutrality) + constructor discriminators
+-- rootGenerator_ne_optionNone/optionSome/eitherInl/eitherInr, not a pure compose like the direct-iota five.
+-- With these, all 12 IsNeutral eliminators are reducible over a neutral principal child.
 #assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_optionNone
 #assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_optionSome
 #assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_eitherInl
@@ -850,10 +821,10 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.optionMatchNeutralScrutineeMember
 #assert_no_axioms FX1Poly.Core.eitherMatchNeutralScrutineeMember
 
--- NON-VACUOUS regression corpus for the completed eliminator-neutral arc: each shipped neutral member,
--- instantiated at the SN candidate with `var index` as the genuinely-neutral principal child, gives a CONCRETE
--- strong-normalization fact for the stuck eliminator. Guards the arc against silently regressing to vacuity or
--- losing zero-axiom status. Parametric over an arbitrary Fin scope index.
+-- Non-vacuous regression corpus for the eliminator-neutral set: each neutral member, instantiated at the SN
+-- candidate with `var index` as the genuinely-neutral principal child, gives a concrete strong-normalization
+-- fact for the stuck eliminator.  Guards the set against silently regressing to vacuity or losing zero-axiom
+-- status.  Parametric over an arbitrary Fin scope index.
 #assert_no_axioms FX1Poly.Core.natElimNeutralVarSmoke
 #assert_no_axioms FX1Poly.Core.natRecNeutralVarSmoke
 #assert_no_axioms FX1Poly.Core.listElimNeutralVarSmoke
@@ -865,125 +836,127 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.idJNeutralVarSmoke
 #assert_no_axioms FX1Poly.Core.idStrictRecNeutralVarSmoke
 
--- VALUE-CASE of listElim recursor reducibility (SN-064), the list analogue of the Nat recursor value-case:
--- listElim on a LIST-VALUE scrutinee lands in the result candidate by IsListValue structural induction firing
--- the two ι rules (nil->nilBranch; cons->app(app(app c head)tail)(listElim tail n c)) through the candidate's
--- weak-head expansion. Same conditional interface (weak-head-expansion + branch reducibility + SN-of-redex);
--- the scrutinee-reduction/neutral outer regime is the deferred shared other half.
+-- The value case of listElim recursor reducibility, the list analogue of the Nat recursor value-case:
+-- listElim on a list-value scrutinee lands in the result candidate by IsListValue structural induction firing
+-- the two iota rules (nil to nilBranch; cons to app(app(app c head)tail)(listElim tail n c)) through the
+-- candidate's weak-head expansion.  Same conditional interface (weak-head-expansion + branch reducibility +
+-- SN-of-redex).
 #assert_no_axioms FX1Poly.Core.listElimValueReducibility
 
--- VALUE-CASE listElim reducibility with the recursor-SN obligation DISCHARGED (SN-064 twin of
+-- Value-case listElim reducibility with the recursor-SN obligation discharged (the twin of
 -- natElimValueMember): CR1 + CR2 + consBranchTerminates replace the bespoke redexStronglyNormalizing, via the
--- listElim scrutinee-fixed cell-SN recursor. Cons branch is the three-deep app (head + tail), recovered by two
--- childCons injection drills; otherwise identical to the Nat recursor discharge.
+-- listElim scrutinee-fixed cell-SN recursor.  The cons branch is the three-deep app (head + tail), recovered by
+-- two childCons injection drills; otherwise identical to the Nat recursor discharge.
 #assert_no_axioms FX1Poly.Core.listElimNormalScrutineeCellStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.listElimValueMember
 
--- SN of an APPLICATION under the β-contraction side-condition (the member weak-head-expansion unblocker):
--- app f a is SN given f SN, a SN, AND every β-contraction body[a] (for f ↝* lam body) SN. The side-condition
--- is essential — SN of the two positions alone does NOT give SN of the application (the Ω term loops). This is
--- the honest "application preserves SN" and the load-bearing Π arm of the recursor-value `headExpand` premise.
--- `descendStepStar` is the StepStar-iterated forward SN closure (every reduct of an SN term is SN).
+-- SN of an application under the beta-contraction side-condition (the member weak-head-expansion brick):
+-- app f a is SN given f SN, a SN, and every beta-contraction body[a] (for f reducing to lam body) SN.  The
+-- side-condition is essential, since SN of the two positions alone does not give SN of the application (the
+-- Omega term loops).  This is "application preserves SN" and the load-bearing Pi arm of the recursor-value
+-- `headExpand` premise.  `descendStepStar` is the StepStar-iterated forward SN closure (every reduct of an SN
+-- term is SN).
 #assert_no_axioms FX1Poly.Core.IsStronglyNormalizing.descendStepStar
 #assert_no_axioms FX1Poly.Core.isStronglyNormalizing_applicationCell_aux
 #assert_no_axioms FX1Poly.Core.isStronglyNormalizing_applicationCell_ofBetaContractionsStronglyNormalizing
 
--- Recursive-eliminator iota-redex SN, second data type — List (toward SN-064): the two listCons
--- subterm-SN projections (head/tail of an SN cons are SN) and the conditional listElim cons-case redex SN
--- (normal branches + the triple-app cons-contractum SN for every SN head/tail ⟹ the listElim redex with an
--- SN scrutinee is SN). Same honest IH-carrying contractum premise as natElim; the cons scrutinee is 2-child.
+-- Recursive-eliminator iota-redex SN, second data type (List): the two listCons subterm-SN projections
+-- (head/tail of an SN cons are SN) and the conditional listElim cons-case redex SN (normal branches + the
+-- triple-app cons-contractum SN for every SN head/tail implies the listElim redex with an SN scrutinee is SN).
+-- Same IH-carrying contractum premise as natElim; the cons scrutinee is 2-child.
 #assert_no_axioms FX1Poly.Core.StepStar.headValue_isStronglyNormalizing_of_listCons
 #assert_no_axioms FX1Poly.Core.StepStar.tailValue_isStronglyNormalizing_of_listCons
 #assert_no_axioms FX1Poly.Core.StepStar.listElim_isStronglyNormalizing_of_normal_branches
--- SN-from-SN-BRANCHES strengthening (toward the listElim closed-membership, SN-064): the list twin of the
--- natElim SN-from-SN-branches recursor. Triple nested accessibility induction; the cons-contractum SN hypothesis
--- (over head + tail) is THREADED through both branch inductions — nilBranch one hop (recursive listElim),
--- consBranch two hops (app (app consBranch head) tail, three app layers deep, AND the recursive listElim).
+-- The SN-from-SN-branches form for the listElim closed-membership: the list twin of the natElim
+-- SN-from-SN-branches recursor.  Triple nested accessibility induction; the cons-contractum SN hypothesis (over
+-- head + tail) is threaded through both branch inductions: nilBranch one hop (recursive listElim), consBranch
+-- two hops (app (app consBranch head) tail, three app layers deep, and the recursive listElim).
 #assert_no_axioms FX1Poly.Core.StepStar.listElim_isStronglyNormalizing_of_strongly_normalizing_branches
 
--- Non-recursive applied-branch eliminator iota-redex SN — optionMatch / eitherMatch (toward SN-065/066): the
--- three one-child value subterm-SN lemmas (value of an SN optionSome/eitherInl/eitherInr is SN), and the two
--- conditional firing-case redex SN (normal branches + the applied `app branch value` contractum SN for every
--- SN value ⟹ the matcher redex with an SN scrutinee is SN). Completes the firing-case eliminator-SN
--- formulation across passive/recursive/applied-non-recursive shapes. #672-independent.
+-- Non-recursive applied-branch eliminator iota-redex SN (optionMatch / eitherMatch): the three one-child
+-- value subterm-SN lemmas (value of an SN optionSome/eitherInl/eitherInr is SN), and the two conditional
+-- firing-case redex SN (normal branches + the applied `app branch value` contractum SN for every SN value
+-- implies the matcher redex with an SN scrutinee is SN).  Covers the firing-case eliminator SN across
+-- passive/recursive/applied-non-recursive shapes.
 #assert_no_axioms FX1Poly.Core.StepStar.value_isStronglyNormalizing_of_optionSome
 #assert_no_axioms FX1Poly.Core.StepStar.value_isStronglyNormalizing_of_eitherInl
 #assert_no_axioms FX1Poly.Core.StepStar.value_isStronglyNormalizing_of_eitherInr
 #assert_no_axioms FX1Poly.Core.StepStar.optionMatch_isStronglyNormalizing_of_normal_branches
 #assert_no_axioms FX1Poly.Core.StepStar.eitherMatch_isStronglyNormalizing_of_normal_branches
--- SN-from-SN-BRANCHES strengthening (toward the optionMatch/eitherMatch closed-membership, SN-065/066): the
--- branches need only be SN (members), not normal — required for the Tait/data-candidate eliminator argument.
--- Triple nested accessibility induction; the applied-branch contractum SN hypothesis (∀ value, SN value →
--- SN (app branch value)) is THREADED through the branch induction, updated under branch-congruence via
--- app-head Step.cong + IsStronglyNormalizing.inv. eitherMatch threads BOTH left and right contractums.
+-- The SN-from-SN-branches form for the optionMatch/eitherMatch closed-membership: the branches need only be
+-- SN (members), not normal, as the Tait/data-candidate eliminator argument requires.  Triple nested
+-- accessibility induction; the applied-branch contractum SN hypothesis (for all value, SN value implies
+-- SN (app branch value)) is threaded through the branch induction, updated under branch-congruence via
+-- app-head Step.cong + IsStronglyNormalizing.inv.  eitherMatch threads both left and right contractums.
 #assert_no_axioms FX1Poly.Core.StepStar.optionMatch_isStronglyNormalizing_of_strongly_normalizing_branches
 #assert_no_axioms FX1Poly.Core.StepStar.eitherMatch_isStronglyNormalizing_of_strongly_normalizing_branches
 
--- Linear-logic type-former SN (congruence-only, no β+ι root rule): linearArrow (⊸) and tensorProduct (⊗),
--- two-child formers structurally identical to arrowCode/productCode. Cong inversions + twoChildCong SN.
--- Extends the former-SN coverage to the linear generator family. #672-independent.
+-- Linear-logic type-former SN (congruence-only, no beta+iota root rule): linearArrow and tensorProduct,
+-- two-child formers structurally identical to arrowCode/productCode.  Cong inversions + twoChildCong SN.
+-- Extends the former-SN coverage to the linear generator family.
 #assert_no_axioms FX1Poly.Core.Step.from_linearArrow
 #assert_no_axioms FX1Poly.Core.Step.from_tensorProduct
 #assert_no_axioms FX1Poly.Core.StepStar.linearArrow_isStronglyNormalizing_of_source_target
 #assert_no_axioms FX1Poly.Core.StepStar.tensorProduct_isStronglyNormalizing_of_factors
 
--- Single-contractum β-redex SN (neutral arm of the member weak-head β-expansion, the denote lambda-arm
--- engine toward SN-043/#672): app (lam body) arg is SN given lam body, arg, and the SINGLE contractum
--- subst0 body arg are SN (body free to step). Unlike the existing appLam family — which fixes a NORMAL body
--- or demands a UNIFORM contractum-SN over all reducts — this needs only the single contractum, recovering the
--- body-reduct contractums by descendStepStar along StepStar.subst0Body. stepStarLamInversion (a StepStar chain
--- out of a lambda lands on a lambda, body chain recovered) is the reusable supporting substrate.
+-- Single-contractum beta-redex SN (neutral arm of the member weak-head beta-expansion, the denote
+-- lambda-arm engine): app (lam body) arg is SN given lam body, arg, and the single contractum subst0 body arg
+-- are SN (body free to step).  Unlike the appLam family that fixes a normal body or demands a uniform
+-- contractum-SN over all reducts, this needs only the single contractum, recovering the body-reduct contractums
+-- by descendStepStar along StepStar.subst0Body.  stepStarLamInversion (a StepStar chain out of a lambda lands
+-- on a lambda, body chain recovered) is the reusable supporting substrate.
 #assert_no_axioms FX1Poly.Core.stepStarLamInversion
 #assert_no_axioms FX1Poly.Core.stepStarLamBodyChain
 #assert_no_axioms FX1Poly.Core.appLam_isStronglyNormalizing_of_contractum
 
--- OSN-B2 (StrongNormalizationUnion.lean): the abstract Geser SN-of-union criterion — reduceLeft SN at a +
--- reduceRight SN everywhere + reduceRight quasi-commutes over reduceLeft ⇒ (reduceLeft ∪ reduceRight) SN at a.
--- Constructive, Init-only, zero-axiom: nested Acc (outer on reduceLeft-Acc, inner on reduceRight-Acc with the
--- outer IH carried in the motive; quasi-commutation reconstructs the right-descendant's left-predecessors).
--- The make-or-break crux for open βη-SN (OSN-1); reusable for SN-146/147 SN-robustness.
+-- The abstract Geser SN-of-union criterion: reduceLeft SN at a + reduceRight SN everywhere + reduceRight
+-- quasi-commutes over reduceLeft implies (reduceLeft union reduceRight) SN at a.  Constructive, Init-only,
+-- zero-axiom: nested Acc (outer on reduceLeft-Acc, inner on reduceRight-Acc with the outer IH carried in the
+-- motive; quasi-commutation reconstructs the right-descendant's left-predecessors).  The crux for open beta-eta
+-- SN, reusable for cubical SN-robustness.
 #assert_no_axioms FX1Poly.Core.accDownwardUnionStar
 #assert_no_axioms FX1Poly.Core.accUnionInner
 #assert_no_axioms FX1Poly.Core.accUnion
 
--- OSN-B1 (StrongNormalizationBetaEtaUnion.lean): instantiate the abstract criterion at the FX βη relations.
--- Step.betaEtaSuccessor IS UnionSuccessor Step Step.eta by defeq (betaEtaSuccessor_eq_unionSuccessor = rfl),
--- so accUnionBetaEta lands the Geser criterion on Step.betaEtaStar.IsStronglyNormalizing: β-SN + shipped η-SN
--- + the EtaQuasiCommutesOverBeta crux ⇒ βη-SN. The crux (η-postponement, OSN-B3..B6) is the sole remaining gap.
+-- Instantiation of the abstract criterion at the FX beta-eta relations.  Step.betaEtaSuccessor is
+-- UnionSuccessor Step Step.eta by defeq (betaEtaSuccessor_eq_unionSuccessor = rfl), so accUnionBetaEta lands
+-- the Geser criterion on Step.betaEtaStar.IsStronglyNormalizing: beta-SN + eta-SN + the
+-- EtaQuasiCommutesOverBeta crux implies beta-eta-SN.  The crux is the eta-postponement family below.
 #assert_no_axioms FX1Poly.Core.EtaQuasiCommutesOverBeta
 #assert_no_axioms FX1Poly.Core.betaEtaSuccessor_eq_unionSuccessor
 #assert_no_axioms FX1Poly.Core.accUnionBetaEta
 
--- OSN-B3 (EtaPostponementOverBeta.lean): the etaLam case of the η-postponement crux. A β/ι-step inside the
--- function lifts (Step.weaken + Step.cong/StepChildren through lam ∘ app) to a single step on the etaLam
--- source (etaLamSourceCongruence); then one etaLam η-contraction reaches the original reduct — so etaLam
--- η-then-β reorders to β-then-(one η) ⊆ βη*. The etaLam obligation of EtaQuasiCommutesOverBeta (OSN-B6).
+-- The etaLam case of the eta-postponement crux.  A beta/iota-step inside the function lifts (Step.weaken +
+-- Step.cong/StepChildren through lam composed with app) to a single step on the etaLam source
+-- (etaLamSourceCongruence); then one etaLam eta-contraction reaches the original reduct, so etaLam eta-then-beta
+-- reorders to beta-then-(one eta), inside beta-eta-star.  The etaLam obligation of EtaQuasiCommutesOverBeta.
 #assert_no_axioms FX1Poly.Core.Step.etaLamSourceCongruence
 #assert_no_axioms FX1Poly.Core.etaLamQuasiCommutesOverBeta
 
--- OSN-B4 (EtaPostponementOverBeta.lean): etaModIntro (single strip modIntro[modElim[_]], etaLam's shape
--- minus the weaken) + etaPair (the DUPLICATING case). etaPair source pair[fst p, snd p] holds two copies
--- of p, so one β/ι-step reduces only the fst copy (reduceFst) — the βη-tail then β-reduces the snd copy
--- (reduceSnd) and η-contracts, a genuine multi-step UnionStar (tailLeft + tailRight). This is where the
--- Geser criterion's multi-step quasi-commutation is load-bearing (Klop-style duplication absorbed).
+-- etaModIntro (single strip modIntro[modElim[_]], etaLam's shape minus the weaken) + etaPair (the
+-- duplicating case).  The etaPair source pair[fst p, snd p] holds two copies of p, so one beta/iota-step reduces
+-- only the fst copy (reduceFst); the beta-eta tail then beta-reduces the snd copy (reduceSnd) and eta-contracts,
+-- a multi-step UnionStar (tailLeft + tailRight).  This is where the Geser criterion's multi-step
+-- quasi-commutation is load-bearing (Klop-style duplication absorbed).
 #assert_no_axioms FX1Poly.Core.Step.etaModIntroSourceCongruence
 #assert_no_axioms FX1Poly.Core.etaModIntroQuasiCommutesOverBeta
 #assert_no_axioms FX1Poly.Core.Step.etaPairSourceReduceFst
 #assert_no_axioms FX1Poly.Core.Step.etaPairSourceReduceSnd
 #assert_no_axioms FX1Poly.Core.etaPairQuasiCommutesOverBeta
 
--- OSN-B5 (EtaPostponementOverBeta.lean): the last two η constructors, closing the 5. etaPathLam is etaLam's
--- binder shape over gen_pathLam/gen_pathApp (single copy, scope+1 ascription). etaGlueIntro is the second
--- DUPLICATING case: glueIntro[glueElim g, g] records g twice (the second directly), so it follows etaPair's
--- reduce-first/reduce-second/η multi-step UnionStar pattern. All 5 per-η-ctor obligations now in hand for B6.
+-- The last two eta constructors, closing the five.  etaPathLam is etaLam's binder shape over
+-- gen_pathLam/gen_pathApp (single copy, scope+1 ascription).  etaGlueIntro is the second duplicating case:
+-- glueIntro[glueElim g, g] records g twice (the second directly), so it follows etaPair's
+-- reduce-first/reduce-second/eta multi-step UnionStar pattern.  All five per-eta-constructor obligations are in
+-- hand.
 #assert_no_axioms FX1Poly.Core.Step.etaPathLamSourceCongruence
 #assert_no_axioms FX1Poly.Core.etaPathLamQuasiCommutesOverBeta
 #assert_no_axioms FX1Poly.Core.Step.etaGlueIntroReduceElim
 #assert_no_axioms FX1Poly.Core.Step.etaGlueIntroReduceSecond
 #assert_no_axioms FX1Poly.Core.etaGlueIntroQuasiCommutesOverBeta
 
--- OSN-B6 (EtaPostponementOverBeta.lean): the DISCHARGED crux. `cases` on the indexed Step.eta with
--- free-variable indices (pure-substitution unification, no noConfusion) dispatches each of the 5 η ctors to
--- its postponement lemma — propext-clean. etaQuasiCommutesOverBeta : EtaQuasiCommutesOverBeta is now a
--- THEOREM, so OSN-B1's accUnionBetaEta hypothesis is dischargeable (→ unconditional open βη-SN, OSN-B7).
+-- The discharged crux.  `cases` on the indexed Step.eta with free-variable indices (pure-substitution
+-- unification, no noConfusion) dispatches each of the five eta constructors to its postponement lemma,
+-- propext-clean.  etaQuasiCommutesOverBeta proves EtaQuasiCommutesOverBeta as a theorem, so accUnionBetaEta's
+-- hypothesis is discharged and open beta-eta-SN holds unconditionally.
 #assert_no_axioms FX1Poly.Core.etaQuasiCommutesOverBeta

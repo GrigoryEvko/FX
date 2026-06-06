@@ -1,25 +1,16 @@
 import FX1Poly.Typed.HasTypeDescUniqueness
 import FX1Poly.Typed.WfContextDescLookup
+import FX1Poly.Typed.UniverseCodeConversion
 
-/-! # FX1Poly/Typed/WfContextDescUniqueness — uniqueness of typing (P7) over WfContextDesc (HasType-free)
+/-! # FX1Poly/Typed/WfContextDescUniqueness — uniqueness of typing (P7) over WfContextDesc
 
-`HasTypeDesc.uniqueness` (`HasTypeDescUniqueness.lean`) proves P7 — any two classifiers a cell receives are
-convertible — but its `genFormation` leaf bottoms out in `DescTelescope.uniquenessAgree`, which settles each
-head child's level/flag through the verified bespoke `HasType.uniqueness` oracle (because, as a STANDALONE
-non-mutual recursion, it cannot call the intrinsic uniqueness it precedes) AND extends the context via
-`WfContext.cons`, demanding a bespoke `IsType` binding (`HasTypeDesc.toHasType` of the head typing).  Both are
-`HasType` couplings, inherent to that leaf being standalone + `WfContext`-threaded.
+Uniqueness of typing (P7 — any two classifiers a cell receives are convertible) over the `WfContextDesc`
+substrate, as a genuine MUTUAL recursion `uniquenessNative` / `uniquenessAgreeNative`: the head child recurses
+into `uniquenessNative` itself, and the rest-telescope recursion extends the context via `WfContextDesc.cons`,
+whose `IsTypeDesc` binding IS the head typing directly.  The arms invert the second derivation with the
+formation inversions, param-free.  The canonical uniqueness, threaded by consumers over `WfContextDesc`.
 
-This file ships the HasType-FREE twin over the `WfContextDesc` substrate, as a genuine MUTUAL recursion
-`uniquenessNative` / `uniquenessAgreeNative` (the `toHasType` / `toHasTypeTelescope` shape): the head child
-recurses into `uniquenessNative` itself (no `HasType.uniqueness` oracle), and the rest-telescope recursion
-extends the context via `WfContextDesc.cons`, whose `IsTypeDesc` binding IS the head typing directly (no
-`HasTypeDesc.toHasType`).  The arms invert the second derivation with the formation inversions, now param-free
-(HT-A2-inv-drop dropped their vacuous `WfContext`).  So the whole mutual pair contains no `HasType`.  The
-migration TARGET that supersedes `HasTypeDesc.uniqueness` once consumers thread `WfContextDesc`; canonical after
-the bespoke engine is deleted (HT-C).
-
-## Mutual structure (the `toHasType` shape)
+## Mutual structure (`uniquenessNative` / `uniquenessAgreeNative`)
 
   * `uniquenessNative` — recursion on the FIRST derivation: `var` / `universeFormation` invert the second
     derivation with `inversionVariable` / `inversionUniverseCode` and `.sym`; `conv` recurses via the
@@ -34,7 +25,7 @@ the bespoke engine is deleted (HT-C).
 ## Zero-axiom verification
 
 Term-mode mutual recursion + the param-free propext-free inversions + `injection` /
-`RawTermChildren.noConfusion` + the unconditional raw `Conv.trans` + `levelFlag_eq_of_conv_universeCodeCell` +
+`RawTermChildren.noConfusion` + the unconditional raw `Conv.trans` + `universeCodeCell_inj_of_conv` +
 `WfContextDesc.cons` (the `IsTypeDesc` binding is the head typing itself).  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/AuditTyped.lean`.
@@ -46,10 +37,10 @@ open FX1Poly.Core FX1Poly.Universe
 
 mutual
 
-/-- **Uniqueness of typing (P7) over `WfContextDesc`, HasType-free.**  Any two classifiers a description-engine
+/-- **Uniqueness of typing (P7) over `WfContextDesc`.**  Any two classifiers a description-engine
 cell receives are convertible.  Recursion on the FIRST derivation; the `genFormation` head children are settled
-by `uniquenessNative` itself (mutual with `uniquenessAgreeNative`), so there is no `HasType.uniqueness` oracle.
-The migration target superseding `HasTypeDesc.uniqueness` once consumers thread `WfContextDesc`. -/
+by `uniquenessNative` itself (mutual with `uniquenessAgreeNative`).  The canonical uniqueness, threaded by
+consumers over `WfContextDesc`. -/
 theorem HasTypeDesc.uniquenessNative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject firstClassifier : RawTerm scope}
@@ -82,10 +73,10 @@ theorem HasTypeDesc.uniquenessNative {profile : PolyProfile} {scope : Nat}
       exact secondConv.sym
 
 /-- Two formation telescopes over CONVERTIBLY-EQUAL children agree on `levels`, and — when non-empty — on
-`flag`, over `WfContextDesc`, HasType-free.  STANDALONE-shaped recursion on the first telescope but MUTUAL with
+`flag`, over `WfContextDesc`.  STANDALONE-shaped recursion on the first telescope but MUTUAL with
 `uniquenessNative`: each head child's level/flag is settled by `uniquenessNative` (the head child is a structural
-sub-derivation), replacing the bespoke `HasType.uniqueness` oracle; the rest extends via `WfContextDesc.cons`
-whose `IsTypeDesc` binding is the head typing itself (no `HasTypeDesc.toHasType`). -/
+sub-derivation); the rest extends via `WfContextDesc.cons` whose `IsTypeDesc` binding is the head typing
+itself. -/
 theorem DescTelescope.uniquenessAgreeNative {profile : PolyProfile}
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
     {context : TypingContext profile (baseScope + currentDepth)}
@@ -108,7 +99,7 @@ theorem DescTelescope.uniquenessAgreeNative {profile : PolyProfile}
             Conv (universeCodeCell headLevel1 flag1) (universeCodeCell headLevel2 flag2) :=
           HasTypeDesc.uniquenessNative headTyped1 wellFormed headTyped2
         obtain ⟨headLevelEq, flagEq⟩ :=
-          levelFlag_eq_of_conv_universeCodeCell (context := context) headConv
+          universeCodeCell_inj_of_conv headConv
         obtain ⟨restLevelsEq, _restFlagImplication⟩ :=
           DescTelescope.uniquenessAgreeNative restTyped1 restTyped2
             (WfContextDesc.cons wellFormed ⟨headLevel1, flag1, headTyped1⟩) rfl

@@ -13,7 +13,7 @@ re-type under `cons domain'`.
 The full grown-engine version (`HasTypeDescPi`) needs the Π-reconstruction validity (its `piIntro` /
 `piElim` arms) and, for its `ofFormation` arm, THIS lemma — the FORMATION engine's context-conversion.
 `HasTypeDesc` is the leaf fragment (only `var` / `conv` / `universeFormation` / `genFormation`; no
-`piIntro` / `piElim` / `ofFormation`), so its context-conversion needs NO `WfContext` and no Π
+`piIntro` / `piElim` / `ofFormation`), so its context-conversion needs NO well-formedness hypothesis and no Π
 reconstruction — the clean half, shipped here; the grown half follows.
 
 ## The existential formulation

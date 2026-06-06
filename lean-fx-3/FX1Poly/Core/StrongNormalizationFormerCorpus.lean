@@ -4,10 +4,10 @@ import FX1Poly.Core.StrongNormalizationModalEliminators
 import FX1Poly.Core.StrongNormalizationUniverseModeBridges
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationFormerCorpus
-    — one closed strong-normalization witness per raw former family (SN-081)
+    — one closed strong-normalization witness per raw former family
 
-`StrongNormalizationSmokeCorpus` (SN-044) pins the three SN entry points the typed engine reduces to:
-the variable leaf, the unit leaf, and the identity beta redex.  SN-081 widens that into a complete
+`StrongNormalizationSmokeCorpus` pins the three SN entry points the typed engine reduces to:
+the variable leaf, the unit leaf, and the identity beta redex.  This file widens that into a complete
 per-former regression corpus: one closed witness for every raw former that ships a forward
 strong-normalization closure lemma in `StrongNormalizationConstructors`.  Each witness applies that
 former's `..._isStronglyNormalizing_of_...` closure to the universal strongly-normalizing leaf
@@ -251,7 +251,7 @@ The modal eliminators (`gen_modElim` / `gen_subsume`) and the 2LTT universe-mode
 substrate — so each ships a congruence-only forward SN closure in `StrongNormalizationModalEliminators`
 / `StrongNormalizationUniverseModeBridges`.  These witnesses pin one closed cell per operator, exactly
 as the per-former corpus does for the data/type-code formers, so a regression in any single congruence
-closure fails its own gated witness.  (Added after SN-081, which predates these operators.) -/
+closure fails its own gated witness. -/
 
 /-- **Smoke: modal elimination of the unit leaf is strongly normalizing.** -/
 theorem smoke_modElim_isStronglyNormalizing {scope : Nat} :

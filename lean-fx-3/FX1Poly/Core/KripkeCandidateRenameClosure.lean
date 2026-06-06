@@ -4,7 +4,7 @@ import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StepRename
 
 /-! # Foundation/PolyCell/Core/KripkeCandidateRenameClosure
-    — Kripke-indexed reducibility candidates make arrow rename-closure DEFINITIONAL (SN-043 refactor seed)
+    — Kripke-indexed reducibility candidates make arrow rename-closure DEFINITIONAL
 
 ## The obstruction this resolves
 
@@ -15,21 +15,21 @@ The stratified `ReducibleTypeStep.piType` arm's arrow candidate quantifies over 
 
 Renaming `ρ : scope → scope'` ENLARGES the scope, so rebuilding the arm at `scope'` demands the codomain
 reducible under EVERY `scope'`-argument — including fresh-variable arguments outside `rename ρ`'s image,
-which the inner induction hypothesis cannot supply.  This is the precise wall blocking SN-040 (reducibility
-closed under renaming) at the `piType` arm.  See `StratifiedReducibleTypeRename` for the obstruction
+which the inner induction hypothesis cannot supply.  This is the precise wall blocking reducibility
+closed under renaming at the `piType` arm.  See `StratifiedReducibleTypeRename` for the obstruction
 write-up.
 
-CALIBRATION (do not overclaim): the non-Kripke arrow candidate causes TWO distinct obstructions, and this
-POC addresses only the FIRST.  (1) The RENAME obstruction (SN-040), resolved by Kripke-indexing over future
+CALIBRATION: the non-Kripke arrow candidate causes TWO distinct obstructions, and this
+proof of concept addresses only the FIRST.  (1) The RENAME obstruction, resolved by Kripke-indexing over future
 renamings — what this file builds.  (2) The FUEL-STABILITY obstruction (one-level reducibility → all-levels),
-which is the actual gate on SN-043: it is exactly the premise
+which is the actual gate on whole-relation strong normalization: it is exactly the premise
 `HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes`
 (`FundamentalWithTypeValueCandidates.lean`), and candidate rename-closure does NOT discharge it.  A FULL
-Kripke refactor would have to quantify the arrow over future renamings AND future fuel (Abel/Adjedj); this
-POC does the renaming dimension only.  Moreover the PRIMARY (locked, SN-005) fundamental-theorem route is
-env-based (`ReducibleEnvAtAllLevels`), which sidesteps candidate rename-closure altogether — so SN-040 is
-OFF that critical path.  Net: finishing this POC's CR bundle is a sound standalone construction but does not
-by itself unblock SN-043.
+Kripke refactor quantifies the arrow over future renamings AND future fuel (Abel/Adjedj); this
+proof of concept does the renaming dimension only.  The env-based fundamental-theorem route
+(`ReducibleEnvAtAllLevels`) sidesteps candidate rename-closure altogether — so renaming-closure is
+OFF that critical path.  Net: finishing this proof of concept's CR bundle is a sound standalone construction
+that does not by itself unblock whole-relation strong normalization.
 
 ## The Kripke resolution (validated here)
 
@@ -47,14 +47,14 @@ that the non-Kripke `piType` arm CANNOT prove, here closing by `Iff.rfl`.
 
 ## Scope (honest boundary)
 
-This is the NON-DEPENDENT arrow proof of concept, NOT yet wired into `ReducibleTypeStep`.  The remaining
-(large, foundational) refactor to actually unblock SN-043 is: (1) the dependent Kripke arrow (codomain
-indexed by the argument), (2) the reducibility-candidate bundle (CR1/CR2/CR3) for the Kripke arrow,
-(3) re-indexing `ReducibleTypeStep` / `ReducibleTypeAt` over Kripke candidates, (4) re-threading the
+This is the NON-DEPENDENT arrow proof of concept, NOT wired into `ReducibleTypeStep`.  The
+(large, foundational) refactor to actually unblock whole-relation strong normalization is: (1) the dependent
+Kripke arrow (codomain indexed by the argument), (2) the reducibility-candidate bundle (CR1/CR2/CR3) for the
+Kripke arrow, (3) re-indexing `ReducibleTypeStep` / `ReducibleTypeAt` over Kripke candidates, (4) re-threading the
 fundamental theorem.  This seed proves the KEY enabling fact — that Kripke-indexing trivializes
-rename-closure — so step (3)'s `piType` rename arm will discharge definitionally rather than hit the wall.
+rename-closure — so step (3)'s `piType` rename arm discharges definitionally rather than hitting the wall.
 
-## STATUS: PAUSED at CR3 (off the SN-043 critical path)
+## Scope: the non-dependent arrow, paused at CR3
 
 Shipped + gated, all zero-axiom: rename-closure (`Iff.rfl`), presheaf functoriality, the dependent Kripke
 arrow, CR1 (`kripkeArrow_stronglyNormalizing` / `kripkeArrowDep_stronglyNormalizing`), CR2
@@ -64,13 +64,10 @@ case) — needs a full-`Step` rename-reflection-with-image
 `Step (rename ρ f) h → ∃ f', Step f f' ∧ rename ρ f' = h` for the neutral-head case, which in turn needs
 free-variable Step-monotonicity plus a rename-respects-used-positions lemma — a multi-lemma sub-effort.
 
-Per the CALIBRATION above, completing CR3 unblocks nothing downstream (SN-043 is gated on the SEPARATE
-fuel-stability premise, and the primary FT route is env-based).  This POC is therefore deliberately PAUSED:
-a future agent should NOT resume grinding CR3 in micro-ticks.  Resume only as part of a deliberately-scoped
-deep push that ALSO Kripke-indexes over fuel (the dimension that actually gates SN-043), or if a downstream
-genuinely consumes standalone candidate rename-closure.  Between deep pushes, prefer tractable unblocked SN
-tasks (the additive Leg-3 termination/word constructions SN-115..136, or the §27.3 five-layer-defense corpus
-SN-140..144) over extending this seed.
+Per the CALIBRATION above, completing CR3 unblocks nothing downstream (whole-relation strong normalization
+is gated on the SEPARATE fuel-stability premise, and the env-based fundamental-theorem route sidesteps it).
+This file is a self-contained construction of standalone candidate rename-closure; the dependent/fuel-indexed
+Kripke refactor is a separate, deliberately-scoped development.
 
 ## Zero-axiom verification
 
@@ -131,7 +128,7 @@ def kripkeArrow {sourceScope : Nat} (domainCandidate codomainCandidate : KripkeC
 
 /-- **The Kripke arrow is closed under renaming, DEFINITIONALLY (headline).**  Transporting the arrow along
 `forwardRenaming` equals the arrow of the transported domain / codomain.  This is the property whose
-non-Kripke analogue is the unprovable SN-040 `piType` rename arm — here it closes by `Iff.rfl`, because the
+non-Kripke analogue is the unprovable `piType` rename arm — here it closes by `Iff.rfl`, because the
 renaming threads through purely as composition-associativity on the candidate index.  Concretely both sides
 quantify `∀ furtherRenaming argument, domain (...) → codomain (...)` with index
 `(forwardRenaming ; indexRenaming) ; furtherRenaming` on the left and

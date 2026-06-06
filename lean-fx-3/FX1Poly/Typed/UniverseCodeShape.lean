@@ -15,8 +15,8 @@ collapse the cell: its nullary child-spine is `childNil`
 its payload is a `LevelExpr x UniverseFlag` pair (Prod-eta is definitional), so
 once the spine is `childNil` the reconstruction is by reflexivity.
 
-This is the raw destructor `Decidable IsType` needs: to confirm a candidate type
-is a universe code — and apply `HasType.universeFormation` — the decision procedure
+This is the raw destructor `Decidable (IsTypeDesc Γ T)` needs: to confirm a candidate type
+is a universe code — and apply `HasTypeDesc.universeFormation` — the decision procedure
 must turn `headGenerator = gen_universeCode` into a concrete `universeCodeCell e
 flag`.
 
@@ -53,7 +53,7 @@ theorem eq_universeCodeCell_of_headGenerator {scope : Nat}
 nullary child-spine collapse (`RawTermChildren.eq_childNil`, since
 `gen_var.binderShifts = []`) as the universe-code case, with the cell's payload
 serving directly as the de Bruijn index.  This is the second raw destructor
-`Decidable IsType` (#303) needs — to case on a `gen_var` cell and recover its
+`Decidable (IsTypeDesc Γ T)` needs — to case on a `gen_var` cell and recover its
 index as data (`Exists` admits no large elimination, so the index must come from
 destructuring the cell, not from an existential witness). -/
 theorem eq_variableCell_of_headGenerator {scope : Nat}
@@ -182,7 +182,7 @@ substrate tactic that `RawTermDecEq` uses to compare `mkGen` cells (raw
 spine).  `cases` unifies the two `childCons … childNil` spines, substituting the
 second domain/codomain by the first, leaving `⟨rfl, rfl⟩`.
 
-The component extractor the `piFormation` arm of `HasType.inversionPiCode`
+The component extractor the `piFormation` arm of `HasTypeDesc.inversionPiCode`
 needs: it aligns the inducted arm's own `domainCode` / `codomainCode` with the
 `piTyCodeCell` targeted by the inversion. -/
 theorem piTyCodeCell_inj {scope : Nat}
@@ -200,7 +200,7 @@ formation is a pure type former (no head redex — `Step.from_piTyCode` has only
 congruence case), so any step of the cell descends into the domain or codomain,
 each ruled out by hypothesis.
 
-This is the inductive crux the `HasType.subjectHasNoStep` Π-case calls directly
+This is the inductive crux for the Π-case of subject-no-step reasoning
 (`exact piTyCodeCell_noStep_of_childrenNoStep IH_domain IH_codomain`): the
 load-bearing invariant is "typed subject is NORMAL", not "typed subject is a
 non-stepping LEAF" — a piTyCodeCell is not a leaf but is still normal when its

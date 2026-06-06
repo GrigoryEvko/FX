@@ -8,7 +8,7 @@ Step (mkGen gen_Xxx () children) target`).  This file assembles them into the si
 boolean root-redex detector `RawTerm.hasRootStepSource` fires, the term genuinely takes a `Step`, and the proof
 PRODUCES the reduct.  This is the converse of `RawTerm.isStepNormalForm`'s root half and the missing ingredient
 for weak normalization (the `Acc StepSuccessor` descent extracts an actual reduct at a non-normal term),
-feeding raw decidable conversion (#267) and the WHNF migration (#374).
+feeding raw decidable conversion and the WHNF migration.
 
 The proof mirrors `hasRootStepSource`'s own definition: a chain of `dite generator = gen_Xxx`.  After reducing
 the definition (`dsimp only [hasRootStepSource]`) the dependent-if chain is peeled one generator at a time

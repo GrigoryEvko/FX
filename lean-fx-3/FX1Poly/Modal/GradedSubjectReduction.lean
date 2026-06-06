@@ -1,6 +1,6 @@
 import FX1Poly.Modal.GradedTypingMetatheory
 
-/-! # FX1Poly/Modal/GradedSubjectReduction — β subject reduction for the graded judgment (DIM2-3)
+/-! # FX1Poly/Modal/GradedSubjectReduction — β subject reduction for the graded judgment
 
 `UsageDiscipline.usage_check_fails_subject_reduction` showed the bare occurrence check is NOT
 subject-reduction-closed: `(λx. x x) g` is well-graded yet its β-reduct `g g` is ill-graded.  This

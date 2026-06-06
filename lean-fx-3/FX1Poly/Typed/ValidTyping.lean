@@ -5,9 +5,9 @@ import FX1Poly.Typed.ClosedLevelIndexed
     — the level-annotated typing (Abel validity-derivation-indexed relation): the recursor, var/universe/conv/Π/Σ core
 
 The level-indexed fundamental theorem has all its per-constructor ARMS shipped as standalone lemmas
-(`FundamentalLevelIndexed.lean`), but the RECURSOR that assembles them was blocked: a single level-free motive
-cannot serve both `var` (concludes at its env-fixed level `contextLevels index`) and `conv` (needs the
-reclassifier reducible one level ABOVE the subject) — the documented var/conv coordination wall.
+(`FundamentalLevelIndexed.lean`).  The RECURSOR that assembles them must work around the var/conv coordination
+wall: a single level-free motive cannot serve both `var` (concludes at its env-fixed level `contextLevels
+index`) and `conv` (needs the reclassifier reducible one level ABOVE the subject).
 
 The Abel/Adjedj resolution (arXiv:2310.06376) is to index the relation by a VALIDITY DERIVATION carrying each
 node's level.  `ValidTyping` realizes this directly: it is the formation typing with the level annotated INTO
@@ -47,7 +47,7 @@ SN-for-well-typed: (1) the GENERIC `genFormation` arm — the table-driven forme
 formers here are the concrete instances; (2) the LEVELING bridge `HasTypeDescPi → ValidTyping` (every level-free
 derivation admits a consistent leveling — `var` at the context's recorded level, `conv`'s reclassifier re-leveled
 one up since universe-code members are level-polymorphic).  This file establishes that, once levels are
-annotated, the recursor assembles through the binder AND former arms — the design that was the open crux.
+annotated, the recursor assembles through the binder AND former arms.
 
 ## Zero-axiom verification
 
@@ -261,9 +261,9 @@ theorem validTyping_sigmaBetweenUniverses_stronglyNormalizing {profile : PolyPro
 /-! ## Open-context handoffs (UNCONDITIONAL)
 
 The closed-SN handoffs in `ClosedLevelIndexed.lean` (`closedSubject{Reducible,StronglyNormalizing}FromLevelIndexed`)
-take the level-indexed fundamental conclusion as an explicit HYPOTHESIS — they were stated before any recursor
-assembled it.  Over `ValidTyping` the fundamental theorem is PROVED (`ValidTyping.fundamental`), so the
-corresponding handoffs are UNCONDITIONAL, and they hold in ANY context (not just the empty one): a ValidTyping
+take the level-indexed fundamental conclusion as an explicit HYPOTHESIS.  Over `ValidTyping` the fundamental
+theorem is PROVED (`ValidTyping.fundamental`), so the corresponding handoffs are UNCONDITIONAL, and they hold in
+ANY context (not just the empty one): a ValidTyping
 subject is a reducible member — hence strongly normalizing — under EVERY reducible closing environment.
 `ValidTyping.closedStronglyNormalizing` is the empty-context special case (vacuous environment). -/
 

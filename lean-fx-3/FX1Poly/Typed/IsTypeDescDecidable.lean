@@ -5,19 +5,16 @@ import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.SigmaCodeShape
 
 /-! # FX1Poly/Typed/IsTypeDescDecidable
-    — concrete-children former-code inversions for the formation engine (off old `HasType`)
+    — concrete-children former-code inversions for the formation engine
 
-This file once carried the bespoke `IsTypeDesc.decideWithWitness` / `IsTypeDesc.decidableOfWellFormed`
-type-hood decider — a `RawTerm.size` recursion with HAND-WRITTEN Π / Σ branches plus a
-`typingRuleDescOf_isPiOrSigma` enumeration `else`.  That cascade decider has been RETIRED in favour of the
-fully cascade-free structural-mutual decider `IsTypeDesc.decideTypeGeneric`
-(`IsTypeDescDecidableGeneric.lean`), which absorbs any future formation row zero-touch.
+The cascade-free structural-mutual type-hood decider is `IsTypeDesc.decideTypeGeneric`
+(`IsTypeDescDecidableGeneric.lean`), which absorbs any new formation row zero-touch.
 
-What remains here are the two CONCRETE-CHILDREN former-code inversions — `WfContext`-free, keeping the
+This file carries the two CONCRETE-CHILDREN former-code inversions — keeping the
 `domainCode` / `codomainCode` concrete (unlike the generic `DescTelescope.twoChildComponents` and the generic
 `HasTypeDesc.inversionFormerWithConvGeneric`, which existentially repack the children).  They state the clean
 metatheory fact that a typed `piTyCodeCell` / `sigmaTyCodeCell` has both children typed at universe codes at a
-shared flag, and are retained as a reusable inversion API for the dependent type-formers.
+shared flag, a reusable inversion API for the dependent type-formers.
 
 ## Zero-axiom verification
 

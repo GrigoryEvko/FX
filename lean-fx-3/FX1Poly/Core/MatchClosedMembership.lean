@@ -5,7 +5,7 @@ import FX1Poly.Core.ApplicationStrongNormalizationForward
 
 /-! # FX1Poly/Core/MatchClosedMembership
     — a closed `optionMatch` / `eitherMatch` with member-respecting branches is a data-candidate member
-      (the elimination half of SN-065 / SN-066)
+      (the elimination half of option/sum reducibility)
 
 `BoolElimClosedMembership.lean` and `IdEliminatorClosedMembership.lean` closed the elimination MEMBERSHIP for the
 PASSIVE-branch eliminators (`boolElim`, `idJ`, `idStrictRec`) — whose ι selects a branch DIRECTLY.  This file is
@@ -23,14 +23,14 @@ for the some/inl/inr branch).  The `∀ SN value` quantification — rather than
 forced by the cell-SN lemma's `someContractumTerminates : ∀ value, SN value → SN (app branch value)` premise; it
 is the honest cost of the unparameterized closed-layer data candidate.
 
-## Why this assembles (and is `#672`-independent)
+## Why this assembles (and is fundamental-independent)
 
 For each ι-arm the scrutinee is a canonical member, so it reduces to its constructor (option/either data
 canonicity), the matcher ι fires to `app branch payload`, and:
 
 1. The cell is SN — the SN-from-SN-branches matcher lemma fed the scrutinee's CR1 SN, the branches' SN, and the
    contractum-SN derived from `branchRespectsSN` (member ⟹ SN by CR1).
-2. The cell reduces to `app branch payload` — `optionMatch/eitherMatchCanonicalScrutineeReduces` (#692).
+2. The cell reduces to `app branch payload` — `optionMatch/eitherMatchCanonicalScrutineeReduces`.
 3. The payload is SN — the canonical scrutinee `↝* some/inl/inr payload`, which is SN
    (`IsStronglyNormalizing.descendStepStar` from the scrutinee's SN), and the wrapped payload is a subterm
    (`value_isStronglyNormalizing_of_optionSome` / `_of_eitherInl` / `_of_eitherInr`).
@@ -38,8 +38,8 @@ canonicity), the matcher ι fires to `app branch payload`, and:
    (`closedReducesToValue`).
 
 Steps 2 + 4 give `cell ↝* app branch payload ↝* value`; with step 1 that is value-reaching weak-head expansion
-`CanonicalFormsPredicate.ofStepStarReachingValue` (#735).  No fundamental theorem, no member extension, no
-`#672` — pure closed-canonicity assembly.
+`CanonicalFormsPredicate.ofStepStarReachingValue`.  No fundamental theorem, no member extension —
+pure closed-canonicity assembly.
 
 ## Zero-axiom verification
 
@@ -59,7 +59,7 @@ result-candidate members (`someBranchRespectsSN`), the closed `optionMatch` cell
 (`optionMatch_isStronglyNormalizing_of_strongly_normalizing_branches`), reduces to the none-branch or to
 `app someBranch payload` (`optionMatchCanonicalScrutineeReduces`), and that contractum reaches a value
 (`noneBranchMember`/`someBranchRespectsSN` ⟹ `closedReducesToValue`); `ofStepStarReachingValue` lifts membership
-to the cell.  The elimination half of SN-065, closed-layer, `#672`-independent. -/
+to the cell.  The elimination half of option reducibility, closed-layer, fundamental-independent. -/
 theorem optionMatchClosedIsMember {isValue : RawTerm 0 → Prop}
     {scrutinee noneBranch someBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isOptionValue scrutinee)
@@ -94,7 +94,7 @@ right-branch respect-SN hypotheses are consumed.  The cell is SN
 (`eitherMatch_isStronglyNormalizing_of_strongly_normalizing_branches` on both contractum-SN witnesses), reduces
 to `app leftBranch payload` or `app rightBranch payload` (`eitherMatchCanonicalScrutineeReduces`), and that
 contractum reaches a value (`leftBranchRespectsSN`/`rightBranchRespectsSN` ⟹ `closedReducesToValue`).  The
-elimination half of SN-066, closed-layer, `#672`-independent. -/
+elimination half of sum reducibility, closed-layer, fundamental-independent. -/
 theorem eitherMatchClosedIsMember {isValue : RawTerm 0 → Prop}
     {scrutinee leftBranch rightBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isEitherValue scrutinee)

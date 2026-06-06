@@ -53,9 +53,8 @@ preserved along ANY renaming that respects the context (sends each source bindin
 looked-up type to the target's, commuting with `rename`), with the context-condition
 stated at the spine's `currentDepth` via `iterateLiftRaw`.  Self-recursive — the head
 child's typing is re-renamed by `HasTypeDesc.renameRespectingContext`; the
-tail recurses at depth `currentDepth + 1` with the LIFTED condition.  Decoupled from
-`HasType` (the cross-call routes through the intrinsic `HasTypeDesc` renamer, not the
-`⟺` soundness map). -/
+tail recurses at depth `currentDepth + 1` with the LIFTED condition.  The cross-call routes through the
+intrinsic `HasTypeDesc` renamer. -/
 theorem DescTermTelescope.renameRespectingTermTelescope {profile : PolyProfile}
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
     {sourceContext : TypingContext profile (baseScope + currentDepth)}

@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescPiFormerCongruence
+import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Core.StepInversion
 
 /-! # FX1Poly/Typed/HasTypeDescPiSubjectReductionFormerArms
@@ -54,7 +55,7 @@ theorem HasTypeDescPi.subjectReductionAtPiFormer {profile : PolyProfile} {scope 
               (universeCodeCell codomainLevel codomainFlag) →
             HasTypeDescPi profile (context.cons domainReduct) codomainCode
               (universeCodeCell codomainLevel codomainFlag))
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context reduct classifier := by
   rcases Step.from_piTyCode step with ⟨domainAfter, reductEq, domainStep⟩ |
       ⟨codomainAfter, reductEq, codomainStep⟩
@@ -90,7 +91,7 @@ theorem HasTypeDescPi.subjectReductionAtSigmaFormer {profile : PolyProfile} {sco
               (universeCodeCell codomainLevel codomainFlag) →
             HasTypeDescPi profile (context.cons domainReduct) codomainCode
               (universeCodeCell codomainLevel codomainFlag))
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context reduct classifier := by
   rcases Step.from_sigmaTyCode step with ⟨domainAfter, reductEq, domainStep⟩ |
       ⟨codomainAfter, reductEq, codomainStep⟩

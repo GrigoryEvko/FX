@@ -4,10 +4,10 @@ import FX1Poly.Core.Normalize
 /-! # FX1Poly/Typed/ClosedConvDecision
     — the first lane crossing: FT-derived strong normalization feeds the SN-fragment conversion decider
 
-The level-indexed fundamental theorem (Route 2, the Tait reducibility lane) was built to deliver strong
-normalization — and `ClosedSNSmoke.lean` shipped the first UNCONDITIONAL `IsStronglyNormalizing` results for
+The level-indexed fundamental theorem (Route 2, the Tait reducibility lane) delivers strong
+normalization — and `ClosedSNSmoke.lean` ships UNCONDITIONAL `IsStronglyNormalizing` results for
 concrete closed terms (a universe code, a Π type code, the identity function, a β-redex) by composing the FT
-arms at the empty context.  The payoff of strong normalization is DECIDABLE CONVERSION: the WN-grind spine
+arms at the empty context.  The payoff of strong normalization is DECIDABLE CONVERSION: the normalizer spine
 (`FX1Poly/Core/Normalize.lean`) ships `Conv.decidableOfStronglyNormalizing` — given `IsStronglyNormalizing`
 witnesses for two terms, it normalizes each and compares the normal forms, yielding `Decidable (Conv _ _)`
 with no `Normalizer` structure and no global-confluence hypothesis.

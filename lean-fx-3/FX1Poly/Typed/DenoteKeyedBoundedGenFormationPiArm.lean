@@ -24,7 +24,7 @@ universe CODES (anti-vacuously reducible).
 The NON-UNIFORM case (a child classified strictly BELOW the output level, so it is reducible only at its lower
 decoded level and must lift up) is the residual that the denote relation leaves MODEL-OBSTRUCTED
 (`DenoteKeyedCumulativityObstruction`).  In the BOUNDED relation it CLOSES via `isReducibleBounded_cumulative`
-(free cumulativity) — the payoff the whole bounded refactor was built for.  This file ships the skeleton (arm +
+(free cumulativity) — the payoff the bounded layer delivers.  This file ships the skeleton (arm +
 connector + single-level blocks); the cumulativity discharge of the non-uniform case is the next brick.
 
 ## Zero-axiom verification

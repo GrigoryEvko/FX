@@ -2,13 +2,11 @@ import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.StepInversion
 
 /-! # Foundation/PolyCell/Core/UnitCanonicalFormsCandidate
-    — the unit data reducibility candidate (the last SN-049 data type), unconditional + zero-axiom
+    — the unit data reducibility candidate, unconditional + zero-axiom
 
 The data-candidate family (`BoolCanonicalFormsCandidate` … `PairCanonicalFormsCandidate`) instantiates the
-generic `CanonicalFormsPredicate isValue` Tait candidate at each standard data type.  SN-049 (closed-data
-canonicity) enumerates List / Option / Either / Pair / Sum / Unit; every entry has a shipped candidate
-EXCEPT unit (`Sum` is `Either`, already covered by `EitherCanonicalFormsCandidate`).  This file closes that
-last gap with the SIMPLEST possible data candidate: the unit type has a single nullary constructor.
+generic `CanonicalFormsPredicate isValue` Tait candidate at each standard data type.  This file provides the
+instance for the SIMPLEST possible data candidate: the unit type has a single nullary constructor.
 
 `isUnitValue term` holds when `term` is the unit constructor cell `gen_unit ()`.  The candidate
 `CanonicalFormsPredicate isUnitValue` is the Tait reducibility set for the unit type: the strongly-normalizing
@@ -16,9 +14,9 @@ terms that are neutral or reduce to the unit value.  Because unit has exactly on
 canonicity is sharper than for the other data types — a closed candidate member reduces to THE unit cell, not
 merely to "some value" (`unitClosedReducesToUnitCell`).
 
-This is the data core of unit canonicity (the unit slice of SN-049 / SN-053).  Like the other data
-candidates, the `#672`-gated half ("a closed well-typed term of unit type is a member", via the fundamental
-theorem) is NOT claimed here; the canonical-form extraction shown is `#672`-free.
+This is the data core of unit canonicity.  Like the other data
+candidates, the fundamental-gated half ("a closed well-typed term of unit type is a member", via the fundamental
+theorem) is NOT claimed here; the canonical-form extraction shown is fundamental-free.
 
 ## Zero-axiom verification
 
@@ -54,7 +52,7 @@ theorem isUnitValue_impliesStepNormalForm {scope : Nat} {value : RawTerm scope}
 normalizing terms that are neutral or reduce to the unit constructor — is a full Girard reducibility
 candidate (CR1+CR2+CR3), unconditionally: the neutral-closure obligation is `IsNeutral.closedUnderStep` and
 the only data fact, value-normality, is `isUnitValue_impliesStepNormalForm`.  The Tait candidate for the unit
-type, completing the SN-049 data-candidate family. -/
+type. -/
 theorem unitCanonicalFormsCandidate {scope : Nat} :
     IsReducibilityCandidate (CanonicalFormsPredicate (scope := scope) isUnitValue) :=
   CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal isUnitValue_impliesStepNormalForm
@@ -71,8 +69,8 @@ theorem unitCell_isMember {scope : Nat} :
 /-- **Closed unit-candidate members reduce to a unit value** — canonicity for unit, modulo membership.  A
 closed member of the unit candidate is non-neutral (no closed neutral, `IsNeutral.noClosed`), so by
 `CanonicalFormsPredicate.closedReducesToValue` it reduces to the unit constructor.  Combined with "a closed
-well-typed term of unit type is a member" (the fundamental theorem, gated on `#672` / SN-043) this is the
-unit slice of SN-049.  The extraction shown here is `#672`-free. -/
+well-typed term of unit type is a member" (the fundamental theorem) this is the
+unit slice of closed-data canonicity.  The extraction shown here is fundamental-free. -/
 theorem unitClosedReducesToValue {term : RawTerm 0}
     (member : CanonicalFormsPredicate isUnitValue term) :
     ∃ value : RawTerm 0, StepStar term value ∧ isUnitValue value :=

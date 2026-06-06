@@ -4,7 +4,7 @@ import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepStarConfluence
 
 /-! # FX1Poly/Core/StrongNormalizationBetaEtaUnion
-    — instantiate the abstract Geser SN-of-union (OSN-B2) at the concrete FX βη relations (OSN-B1)
+    — instantiate the abstract Geser SN-of-union at the concrete FX βη relations
 
 The abstract criterion `FX1Poly.Core.accUnion` (`StrongNormalizationUnion`) states: if `reduceLeft` is
 strongly normalizing at a point, `reduceRight` is strongly normalizing everywhere, and `reduceRight`
@@ -25,10 +25,9 @@ relation-transport glue.
   * `Step.etaStar.isStronglyNormalizing` (every raw term — η strictly shrinks `RawTerm.size`,
     `Step.eta.size_decreases`) supplies the `reduceRight`-SN-everywhere premise UNCONDITIONALLY.
   * `StepStar.IsStronglyNormalizing subject` (β-SN at the subject) is the remaining input — for well-typed
-    open terms this is open SN-043 (OB-5, `HasTypeDescPi.stronglyNormalizingOfWfContext`).
+    open terms this is `HasTypeDescPi.stronglyNormalizingOfWfContextDesc`.
   * `EtaQuasiCommutesOverBeta` (η-postponement over β) is the sole hypothesis still owed; the per-η-constructor
-    critical-pair analysis (OSN-B3..B6) discharges it, after which the open βη-SN wire (OSN-B7) is
-    unconditional, closing #796.
+    critical-pair analysis discharges it, after which the open βη-SN wire is unconditional.
 
 ## Zero-axiom verification
 
@@ -42,8 +41,8 @@ namespace FX1Poly.Core
 /-- **The η-postponement crux for open βη-SN.**  η quasi-commutes over β at every scope: an η-step followed
 by a β-step reorders into a β-step followed by a βη-star reduction (`QuasiCommutesRightOverLeft Step
 Step.eta`).  Stated as a `∀`-scope bundle because the postponement is scope-uniform (each η constructor's
-critical-pair resolution holds at every scope).  Discharged by OSN-B3..B6; consumed by the open βη-SN
-assembly (`accUnionBetaEta`, OSN-B7). -/
+critical-pair resolution holds at every scope).  Discharged by the per-η-constructor postponement lemmas;
+consumed by the open βη-SN assembly (`accUnionBetaEta`). -/
 def EtaQuasiCommutesOverBeta : Prop :=
   ∀ {scope : Nat}, QuasiCommutesRightOverLeft (@Step scope) (@Step.eta scope)
 

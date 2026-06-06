@@ -28,8 +28,8 @@ analogue and its empty-type consistency corollary.
 * `HasTypeDescPi.noClosedNormalTermAtEmptyType` — **grown normal-form consistency**: no closed NORMAL term
   inhabits the empty type.  Canonical forms make the subject λ / Π / Σ / universe; each is refuted at
   `emptyTypeCell` by the banked `EmptyTypeValueInversion` value-case inversions.  This needs NO subject
-  reduction.  Full SN-050 consistency for an ARBITRARY closed `t : Empty` adds strong normalization (OB-5,
-  `#794`) to reach a normal form and subject reduction (the SN-055 dispatcher) to keep it typed at `Empty` — SR
+  reduction.  Full consistency for an ARBITRARY closed `t : Empty` adds strong normalization (open SN)
+  to reach a normal form and subject reduction (the master dispatcher) to keep it typed at `Empty` — SR
   is the sole remaining gate.
 
 ## Zero-axiom verification
@@ -126,7 +126,7 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
 
 /-- **No closed NORMAL term inhabits the empty type.**  Grown normal-form consistency: by the canonical forms
 the subject is λ / Π / Σ / universe, each refuted at `emptyTypeCell` by the banked value-case inversions.  No
-subject reduction needed; full SN-050 consistency adds SN (OB-5) + SR to reduce an arbitrary closed `t:Empty`
+subject reduction needed; full consistency adds open SN + SR to reduce an arbitrary closed `t:Empty`
 to its normal form. -/
 theorem HasTypeDescPi.noClosedNormalTermAtEmptyType {profile : PolyProfile} {subject : RawTerm 0}
     (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject

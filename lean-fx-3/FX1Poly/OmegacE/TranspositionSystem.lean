@@ -136,7 +136,7 @@ This subsection ships the MEASURE + its append-homomorphism, then the full termi
 `aBeforeBInversions_decreases` (a swap strictly decreases the inversion count — `a ≠ b` in the `fire` case,
 count-preservation + the append homomorphism in the context cases) → `transpositionSystem_isTerminating` (via
 `Subrelation` into `InvImage (· < ·) measure`, mirroring `IsTerminating_of_lengthReducing`).  TERMINATION is
-thus complete — the genuine non-length certificate for the length-preserving class.  Remaining SN-118 atoms:
+thus complete — the genuine non-length certificate for the length-preserving class.  Remaining atoms:
 orthogonal local confluence (no self-overlap ⟹ `newman`) + bounded-search decidability.
 
 REUSABLE ZERO-AXIOM FINDING: `Nat.add_mul` leaks `propext` (verified by `#print axioms`); use
@@ -299,7 +299,7 @@ theorem aBeforeBInversions_decreases {dimension : Nat}
           countOccurrences_preserved_by_step firstCell secondCell firstCell inner]
       exact Nat.add_lt_add_right (Nat.add_lt_add_right innerIH _) _
 
-/-- **The transposition system is terminating** (requires `firstCell ≠ secondCell`) — the SN-118 headline.
+/-- **The transposition system is terminating** (requires `firstCell ≠ secondCell`) — the termination headline.
 The inversion measure embeds reduction into `<` on `ℕ` (pulled back along the measure), which is well-founded,
 so every word is accessible.  This is the genuine NON-LENGTH termination certificate for the length-preserving
 class (the complement of the idempotent system's `IsTerminating_of_lengthReducing`), discharging the

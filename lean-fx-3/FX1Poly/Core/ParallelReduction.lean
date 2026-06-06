@@ -3,7 +3,7 @@ import FX1Poly.Core.RawTermSubst0
 import FX1Poly.Core.StepSubst
 
 /-! # FX1Poly/Core/ParallelReduction
-    — the FX parallel reduction relation + reflexivity (toward the Takahashi diamond / raw confluence, #420)
+    — the FX parallel reduction relation + reflexivity (toward the Takahashi diamond / raw confluence)
 
 `StepParallelConfluence.lean` reduces raw confluence to exhibiting a parallel reduction sandwiched
 `Step ⊆ ParStep ⊆ StepStar` whose `DiamondProperty` holds, and `TakahashiTriangle.lean` reduces THAT

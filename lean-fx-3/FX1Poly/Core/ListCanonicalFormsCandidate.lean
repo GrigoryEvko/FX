@@ -2,7 +2,7 @@ import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.StepInversion
 
 /-! # Foundation/PolyCell/Core/ListCanonicalFormsCandidate
-    — the richest data candidate: lists (SN-064), combining nullary + binary-recursive constructors
+    — the richest data candidate: lists, combining nullary + binary-recursive constructors
 
 Lists combine every structure the earlier data candidates exhibited separately: a NULLARY constructor `nil`
 (like `bool`'s `true`/`false`), and a BINARY constructor `cons head tail` whose `tail` recurses into the list
@@ -11,7 +11,7 @@ predicate (like `Nat`'s `succ`) while its `head` is a normal value of an arbitra
 structural normal form and `tail` a list value.
 
 `CanonicalFormsPredicate IsListValue` is the Tait reducibility candidate for the list type; every list value
-is a member, and a CLOSED member reduces to a list constructor (list-canonicity, SN-064).  The `listElim`
+is a member, and a CLOSED member reduces to a list constructor (list-canonicity).  The `listElim`
 eliminator-reducibility consumes this candidate.
 
 ## Zero-axiom verification
@@ -66,7 +66,7 @@ theorem isListValue_impliesStepNormalForm {scope : Nat} {value : RawTerm scope}
 normalizing terms that are neutral or reduce to a list value — is a full Girard reducibility candidate
 (CR1+CR2+CR3), unconditionally: the neutral-closure obligation is `IsNeutral.closedUnderStep` and the
 value-normality fact is `isListValue_impliesStepNormalForm`.  The Tait candidate for the list type, the data
-core of SN-064. -/
+core of list reducibility. -/
 theorem listCanonicalFormsCandidate {scope : Nat} :
     IsReducibilityCandidate (CanonicalFormsPredicate (scope := scope) IsListValue) :=
   CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal isListValue_impliesStepNormalForm
@@ -81,8 +81,8 @@ theorem isListValue_isMember {scope : Nat} {value : RawTerm scope} (valueIsList 
 /-- **Closed list-candidate members reduce to a list constructor** — canonicity for lists, modulo membership.
 A closed member of the list candidate is non-neutral (`IsNeutral.noClosed`), so by
 `CanonicalFormsPredicate.closedReducesToValue` it reduces to a list value (`nil` or a `cons`).  Combined with
-"a closed well-typed term of list type is a member" (the fundamental theorem, gated on `#672` / SN-043) this
-is SN-049 closed-list canonicity.  The extraction shown here is `#672`-free. -/
+"a closed well-typed term of list type is a member" (the fundamental theorem) this
+is closed-list canonicity.  The extraction shown here is fundamental-free. -/
 theorem listClosedReducesToValue {term : RawTerm 0}
     (member : CanonicalFormsPredicate IsListValue term) :
     ∃ value : RawTerm 0, StepStar term value ∧ IsListValue value :=

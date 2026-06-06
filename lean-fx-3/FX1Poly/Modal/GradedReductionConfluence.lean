@@ -1,16 +1,16 @@
 import FX1Poly.Modal.GradedFundamentalTheorem
 import FX1Poly.Core.Newman
 
-/-! # FX1Poly/Modal/GradedReductionConfluence — β-confluence for GradedLambda (CONF, stage 1)
+/-! # FX1Poly/Modal/GradedReductionConfluence — β-confluence for GradedLambda
 
-Completing the DIM2 `GradedLambda` STLC substrate into a full reference calculus: alongside strong
-normalization (DIM2-5) and subject reduction (DIM2-3/7), β-reduction is CONFLUENT on the strongly-
+Completing the usage-dimension `GradedLambda` STLC substrate into a full reference calculus: alongside
+strong normalization and subject reduction, β-reduction is CONFLUENT on the strongly-
 normalizing (= simply-typed) fragment — so every term has a UNIQUE normal form (toward decidable
 definitional equality).  This reuses the abstract, relation-generic Newman's lemma
 `FX1Poly.Core.newmanAux` (per-term confluence from local confluence + the term's `Acc`, which is
 exactly `IsStronglyNormalizing`), so untyped Ω is no obstacle — confluence is derived FROM SN.
 
-**This first installment is the reduction-substitutivity infrastructure** the local-confluence
+**The reduction-substitutivity infrastructure** the local-confluence
 critical-pair analysis consumes:
 
   * `GradedLambda.ReducesStar` — multi-step β-reduction (the `ReflTransClosure` of `Reduces`).
@@ -22,7 +22,7 @@ critical-pair analysis consumes:
     result (many steps: the body may have several occurrences of the substituted variable).  The
     binder case shifts the argument (`Reduces.shift`) and re-substitutes under the bumped index.
 
-**This second installment (CONF stage 2) adds local confluence and Newman:**
+**Local confluence and Newman:**
 
   * `Reduces.localConfluent` / `Reduces.weaklyConfluent` — **`WeaklyConfluent Reduces`**, the 9-case β
     critical-pair analysis on `app` (beta×beta same reduct; beta-vs-cong nested redexes joined via
@@ -33,7 +33,7 @@ critical-pair analysis consumes:
   * `HasSimpleType.confluent` / `HasUsage.confluent` — the payoff: **every well-(simply/usage-)typed
     `GradedLambda` term is confluent** (SN supplied by the Tait fundamental theorem / grade erasure).
 
-**This third installment (CONF stage 3a) adds unique normal forms:**
+**Unique normal forms:**
 
   * `IsNormalForm` (a term admits no step) + `IsNormalForm.eq_of_reducesStar` (a normal form only
     refl-reduces) + `var_isNormalForm` (non-vacuity anchor).
@@ -42,8 +42,8 @@ critical-pair analysis consumes:
   * `HasSimpleType.uniqueNormalForm` / `HasUsage.uniqueNormalForm` — every well-typed term has a unique
     β-NF (the bridge to decidable conversion).
 
-Still to come (next installment, CONF stage 3b): a normalizer (`fireRedex?` + `Acc.rec` on SN) and
-decidable `Conv` (`normalize a = normalize b`) on the typed fragment.
+The normalizer (`fireRedex?` + `Acc.rec` on SN) and decidable `Conv` (`normalize a = normalize b`) on
+the typed fragment live in `GradedNormalization.lean`.
 
 ## Zero-axiom verification
 

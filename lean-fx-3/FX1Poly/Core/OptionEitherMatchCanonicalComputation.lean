@@ -3,7 +3,7 @@ import FX1Poly.Core.EitherCanonicalFormsCandidate
 import FX1Poly.Core.WeakHeadStepCommute
 
 /-! # FX1Poly/Core/OptionEitherMatchCanonicalComputation
-    — closed `optionMatch` / `eitherMatch` on a canonical scrutinee COMPUTE to a branch (the SN-065/066 core)
+    — closed `optionMatch` / `eitherMatch` on a canonical scrutinee COMPUTE to a branch (the match computation core)
 
 `OptionCanonicalFormsCandidate.lean` / `EitherCanonicalFormsCandidate.lean` ship option/sum data canonicity: a
 closed member of the option / either candidate reduces to a `none` / `some` / `inl` / `inr` constructor.  This
@@ -14,7 +14,7 @@ non-recursive types), so — like `boolElim` (branch selection), `fst`/`snd` (pr
 APPLIES the `some` / `inl` / `inr` branch to the wrapped payload (`app branch payload`).  Completing these closes
 the canonical-computation track for ALL non-recursive eliminators; only the recursive `natElim`/`natRec`/
 `listElim` (whose ι reappears the eliminator on a smaller scrutinee) remain, and those need full Tait
-reducibility.  `#672`-free.
+reducibility.  Fundamental-free.
 
 * `StepStar.optionMatchScrutinee` / `StepStar.eitherMatchScrutinee` — the scrutinee-position (head-child) chain
   congruences (`StepStar.congAt` + `Step.cong … (StepChildren.here …)`, as for `boolElim`).
@@ -81,7 +81,7 @@ analog of closed-bool elimination canonicity: a closed `optionMatch` whose scrut
 candidate `StepStar`-reduces to its none-branch (if the scrutinee evaluates to `none`) or to `someBranch`
 applied to the wrapped payload (if it evaluates to `some payload`).  The scrutinee reduces to a `none`/`some`
 value (`optionClosedReducesToValue`), `StepStar.optionMatchScrutinee` carries that under the `optionMatch`, and
-`Step.iotaOptionMatchNone` / `Step.iotaOptionMatchSome` fire to select the branch.  `#672`-free — no fundamental
+`Step.iotaOptionMatchNone` / `Step.iotaOptionMatchSome` fire to select the branch.  Fundamental-free — no fundamental
 theorem. -/
 theorem optionMatchCanonicalScrutineeReduces {scrutinee noneBranch someBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isOptionValue scrutinee) :
@@ -107,7 +107,7 @@ theorem optionMatchCanonicalScrutineeReduces {scrutinee noneBranch someBranch : 
 candidate `StepStar`-reduces to `leftBranch` applied to the wrapped payload (if the scrutinee evaluates to
 `inl payload`) or to `rightBranch` applied to the wrapped payload (if it evaluates to `inr payload`), via
 `eitherClosedReducesToValue` + `StepStar.eitherMatchScrutinee` + `Step.iotaEitherMatchInl` /
-`Step.iotaEitherMatchInr`.  `#672`-free. -/
+`Step.iotaEitherMatchInr`.  Fundamental-free. -/
 theorem eitherMatchCanonicalScrutineeReduces {scrutinee leftBranch rightBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isEitherValue scrutinee) :
     (∃ payload : RawTerm 0,

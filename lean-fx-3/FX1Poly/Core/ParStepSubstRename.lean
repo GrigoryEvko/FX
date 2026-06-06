@@ -6,7 +6,7 @@ import FX1Poly.Core.RawTermSubst0Commute
     — parallel reduction is stable under substitution and renaming.
 
 `ParallelReduction.lean` defines `ParStep` (Takahashi parallel reduction) and the shipped sandwich
-`Step ⊆ ParStep ⊆ StepStar`.  The remaining obligation for unconditional raw confluence (`#420`) is the
+`Step ⊆ ParStep ⊆ StepStar`.  The remaining obligation for unconditional raw confluence is the
 `ParStep` diamond, which `TakahashiTriangle.lean` reduces to the one-sided triangle
 `ParStep a b → ParStep b (completeDevelopment a)`.  That triangle's β/ι arms need the **parallel
 substitution lemma** — substituting a parallel-reduced argument into a parallel-reduced body parallel-

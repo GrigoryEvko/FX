@@ -31,14 +31,14 @@ classifier is just `RawTerm.subst (iterateLiftRaw substitution currentDepth) hea
 TYPING (substituents are terms that must be typed); its `0`/successor split is IDENTICAL to
 the formation spine — `0` → fresh `var`, `k+1` → the substituent weakened across the binder
 via the INTRINSIC `HasTypeDesc.weakenUnderBinding`.  So intrinsic eliminator-spine
-substitution stands on intrinsic `HasTypeDesc` weakening, no `HasType` anywhere.
+substitution stands on intrinsic `HasTypeDesc` weakening.
 `iterateLiftRaw σ (cd+1) ≡ RawTermSubst.lift (iterateLiftRaw σ cd)` (defeq), so a `show`
 restates each lifted lookup in `lift` form and `subst_lift_weaken_commute` fires.
 
 ## Zero-axiom
 
 Self-recursion + `HasTypeDesc.substRespectingContext` +
-`HasTypeDesc.weakenUnderBinding` + the bespoke `subst_{lift_weaken_commute,
+`HasTypeDesc.weakenUnderBinding` + the `subst_{lift_weaken_commute,
 singleton_renameWeaken_cancel}` bricks.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Audit-gated.
 -/
@@ -52,7 +52,7 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 at the substituted source-binding types (condition stated at the spine's `currentDepth` via
 `iterateLiftRaw`).  Self-recursive — the head child's typing is re-substituted by
 `HasTypeDesc.substRespectingContext`; the tail recurses at depth `currentDepth + 1` with the
-LIFTED substitution-condition.  Decoupled from `HasType`. -/
+LIFTED substitution-condition. -/
 theorem DescTermTelescope.substRespectingTermTelescope {profile : PolyProfile}
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
     {sourceContext : TypingContext profile (baseScope + currentDepth)}

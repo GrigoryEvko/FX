@@ -2,7 +2,7 @@ import FX1Poly.OmegacE.AbsorptionSystem
 import FX1Poly.OmegacE.IdempotentConfluence
 
 /-! # FX1Poly/OmegacE/AbsorptionConfluence
-    — structural inversion for the two-rule absorption system (SN-119 progress 2a, #622)
+    — structural inversion for the two-rule absorption system
 
 The decomposition layer for the absorption system's confluence: an absorption step IS "rewrite a mixed pair
 to `[s,s]` in some context".  Because the system has TWO rules, the inversion carries a DISJUNCTION on the
@@ -20,7 +20,7 @@ list-append helpers (`listAppendAssoc` …) are reused from `IdempotentConfluenc
 
 ## Honest scope / deferred
 
-This ships ONLY the decomposition layer.  The LOCAL CONFLUENCE proof is the next increment (SN-119 progress 2b):
+This ships ONLY the decomposition layer.  The LOCAL CONFLUENCE proof is the next increment:
 the `listPrefixSplit` trichotomy on the two redex positions, with the genuine inter-rule critical pairs in the
 one-cell-overlap case — `[v,s,v]` (reducts `[s,s,v]` / `[v,s,s]`, joining via one step EACH to `[s,s,s]`: the
 genuinely-new multi-step join, NOT vacuous like transposition's overlap, NOT trivially-equal) and `[s,v,s]`
@@ -119,14 +119,14 @@ theorem tripleConsAppend {alpha : Type _} (firstCell secondCell thirdCell : alph
     [firstCell, secondCell, thirdCell] ++ rest = firstCell :: secondCell :: thirdCell :: rest :=
   rfl
 
-/-- **The genuine inter-rule critical pair join** (the mathematical heart of SN-119).  The overlap word
+/-- **The genuine inter-rule critical pair join** (the mathematical heart of the absorption system).  The overlap word
 `[v,s,v]` has two one-step reducts: `[s,s,v]` (rule-Left fired at the front `[v,s]`) and `[v,s,s]` (rule-Right
 fired at the back `[s,v]`).  Both reduce in ONE further step to the common all-surviving word `[s,s,s]` —
 `[s,s,v]` by firing rule-Right on its `[s,v]` suffix, `[v,s,s]` by firing rule-Left on its `[v,s]` prefix.
 
 This is the join that is NOT vacuous (unlike transposition's one-cell overlap, which forced `a = b`) and NOT
 trivially-equal (unlike the idempotent `[c,c,c]` overlap, whose reducts coincide).  It is the genuinely-new
-multi-step critical-pair resolution that SN-119 contributes.  (The other overlap word `[s,v,s]` has both
+multi-step critical-pair resolution that the absorption system contributes.  (The other overlap word `[s,v,s]` has both
 one-step reducts already equal to `[s,s,s]`, so it joins by reflexivity — no lemma needed.) -/
 theorem absorptionCriticalPairJoinLeftRight {dimension : Nat}
     (vanishingCell survivingCell : OmegacECell dimension)
@@ -183,7 +183,7 @@ non-overlapping redexes separated by `mid'`: firing the left one (`pairA → [s,
 (`pairB → [s,s]`) both reach the common all-`[s,s]` word.  The crucial economy: the word equalities are PURE
 associativity (the pairs stay opaque as `++ pairA` / `++ pairB`, never cons-collapsed), so this SINGLE helper
 covers all four rule combinations — the rule disjunction is consumed only at the two `_ofDecomposition` fires.
-This is exactly the SN-118 disjoint-commute case generalized to two distinct rules with no extra case-blowup. -/
+This is exactly the transposition disjoint-commute case generalized to two distinct rules with no extra case-blowup. -/
 theorem absorptionJoinableDisjoint {dimension : Nat}
     (vanishingCell survivingCell : OmegacECell dimension)
     (leftA mid' rightB pairA pairB : List (OmegacECell dimension))

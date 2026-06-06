@@ -116,7 +116,7 @@ strict order, never a fixpoint) — by structural induction: the `lsucc inner` a
 injects `lsucc inner = lsucc (lsucc inner)` to `inner = lsucc inner` (refuted by
 the IH), and every other head clashes with `lsucc`.  Size-free so it lives with
 the inductive (the `size` measure is downstream in `LevelExprSimplify`).  Feeds
-the no-Type-in-Type honesty probe (#442): a universe classified by itself would
+the no-Type-in-Type honesty probe: a universe classified by itself would
 force `e = lsucc e`, which this refutes. -/
 theorem LevelExpr.ne_lsucc_self (levelExpr : LevelExpr) :
     levelExpr ≠ LevelExpr.lsucc levelExpr := by

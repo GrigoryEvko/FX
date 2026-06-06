@@ -1,6 +1,7 @@
 import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
 import FX1Poly.Typed.HasTypeDescPiFormationUniqueness
 import FX1Poly.Typed.HasTypeDescPiFormerCongruence
+import FX1Poly.Typed.WfContextDescPiFromWfContextDesc
 
 /-! # FX1Poly/Typed/HasTypeDescPiCheckFormation
     — the Π/Σ-FORMATION cases of the bidirectional grown-engine checker (SN-052)
@@ -46,7 +47,7 @@ COMPARE step against the former's inferred type `Type@(lmax domainLevel codomain
 former needs no exposure (its components are already type codes). -/
 def HasTypeDescPi.decidableCheckPiFormationGivenComponents {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (wellFormed : WfContext context)
+    (wellFormed : WfContextDesc context)
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
     (domainTyped : HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
@@ -74,14 +75,15 @@ def HasTypeDescPi.decidableCheckPiFormationGivenComponents {profile : PolyProfil
         (LevelExpr.lmax domainLevel codomainLevel) flag))
     (targetTyped := targetTyped)
     (uniqueAtSubject :=
-      HasTypeDescPi.piFormationTypeUniqueGivenComponents wellFormed domainUnique codomainUnique)
+      HasTypeDescPi.piFormationTypeUniqueGivenComponents
+        (WfContextDescPi.ofWfContextDesc wellFormed) domainUnique codomainUnique)
 
 /-- **Decidable checking of a Σ-formation cell against a known-type target, given the components** — the Σ dual
 of `decidableCheckPiFormationGivenComponents`, identical recipe over `sigmaTyCodeCell`,
 `sigmaFormationViaGenArm`, and `sigmaFormationTypeUniqueGivenComponents`. -/
 def HasTypeDescPi.decidableCheckSigmaFormationGivenComponents {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (wellFormed : WfContext context)
+    (wellFormed : WfContextDesc context)
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {domainLevel codomainLevel : LevelExpr} {flag : UniverseFlag}
     (domainTyped : HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
@@ -109,6 +111,7 @@ def HasTypeDescPi.decidableCheckSigmaFormationGivenComponents {profile : PolyPro
         (LevelExpr.lmax domainLevel codomainLevel) flag))
     (targetTyped := targetTyped)
     (uniqueAtSubject :=
-      HasTypeDescPi.sigmaFormationTypeUniqueGivenComponents wellFormed domainUnique codomainUnique)
+      HasTypeDescPi.sigmaFormationTypeUniqueGivenComponents
+        (WfContextDescPi.ofWfContextDesc wellFormed) domainUnique codomainUnique)
 
 end FX1Poly.Typed

@@ -4,7 +4,7 @@ import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
 
 /-! # FX1Poly/Core/IdEliminatorClosedMembership
     — a closed `idJ` / `idStrictRec` with a member base case is a data-candidate member (the elimination half of
-      SN-068 / SN-069)
+      identity-eliminator reducibility)
 
 `BoolElimClosedMembership.lean` closed the elimination MEMBERSHIP for `bool`: a closed `boolElim` on a canonical
 scrutinee with member branches is itself a member of the result candidate.  This file is the identity-eliminator
@@ -15,13 +15,13 @@ The identity track has, mirroring `bool`:
 * INTRODUCTION membership — `refl` is a member (`ReflCanonicalFormsCandidate`);
 * WITNESS canonicity — a closed identity member reduces to a `refl` constructor (`reflClosedReducesToValue`);
 * ELIMINATION computation — a closed `idJ` / `idStrictRec` on a canonical `refl` witness reduces to its base
-  case (`idJCanonicalWitnessReducesToBase` / `idStrictRecCanonicalWitnessReducesToBase`, #691).
+  case (`idJCanonicalWitnessReducesToBase` / `idStrictRecCanonicalWitnessReducesToBase`).
 
 This file closes the ELIMINATION MEMBERSHIP: a closed `idJ` / `idStrictRec` whose witness is a canonical identity
 member and whose base case is a member of a result candidate is ITSELF a member of that result candidate — the
 recursor lands in the candidate, not merely normalizes.
 
-## Why this assembles exactly like `boolElim` (and is `#672`-independent)
+## Why this assembles exactly like `boolElim` (and is fundamental-independent)
 
 `idJ` / `idStrictRec` are the path-induction analogues of the simplest eliminator shape: their single ι rule
 `idJ base (refl w) ↝ base` (resp. `idStrictRec base (refl w) ↝ base`) selects the base case DIRECTLY from the
@@ -39,8 +39,8 @@ base case IS the contractum, and the three shipped pieces compose verbatim with 
    non-neutral by `IsNeutral.noClosed`, so its disjunct collapses to reaches-a-value).
 
 Steps 2 + 3 give `idJ ↝* base ↝* value`; with step 1 that is exactly the value-reaching weak-head expansion
-`CanonicalFormsPredicate.ofStepStarReachingValue` (#735).  No fundamental theorem, no member extension, no
-`#672` — pure closed-canonicity assembly, the regime where data weak-head expansion holds unconditionally.
+`CanonicalFormsPredicate.ofStepStarReachingValue`.  No fundamental theorem, no member extension —
+pure closed-canonicity assembly, the regime where data weak-head expansion holds unconditionally.
 
 ## Zero-axiom verification
 
@@ -60,7 +60,7 @@ the closed `idJ` cell is itself a member.  The cell is SN
 (`idJ_isStronglyNormalizing_of_strongly_normalizing_base` on the members' SN), it reduces to the base case
 (`idJCanonicalWitnessReducesToBase`), and that base case — closed and a member — reaches a value
 (`closedReducesToValue`); value-reaching weak-head expansion (`ofStepStarReachingValue`) lifts the membership back
-to the cell.  The elimination half of SN-068, closed-layer, `#672`-independent. -/
+to the cell.  The elimination half of `idJ` reducibility, closed-layer, fundamental-independent. -/
 theorem idJClosedIsMember {isValue : RawTerm 0 → Prop}
     {baseCase witness : RawTerm 0}
     (witnessMember : CanonicalFormsPredicate isReflValue witness)
@@ -81,7 +81,7 @@ theorem idJClosedIsMember {isValue : RawTerm 0 → Prop}
 rule (`idStrictRec base (refl w) ↝ base`), so the cell-SN (`idStrictRec_isStronglyNormalizing_of_strongly_
 normalizing_base`), the witness computation (`idStrictRecCanonicalWitnessReducesToBase`), and the base case's
 reaches-a-value (`closedReducesToValue`) compose by `ofStepStarReachingValue` into membership.  The elimination
-half of SN-069, closed-layer, `#672`-independent. -/
+half of `idStrictRec` reducibility, closed-layer, fundamental-independent. -/
 theorem idStrictRecClosedIsMember {isValue : RawTerm 0 → Prop}
     {baseCase witness : RawTerm 0}
     (witnessMember : CanonicalFormsPredicate isReflValue witness)

@@ -14,9 +14,9 @@ It is the prerequisite for destructuring a nullary-spine cell — in particular 
 `gen_universeCode` cell `mkGen gen_universeCode (e, flag) children`, whose
 `children : RawTermChildren gen_universeCode.binderShifts scope` reduces to
 `RawTermChildren [] scope`.  Reconstructing `t = universeCodeCell e flag` (to
-apply `HasType.universeFormation`) needs exactly `children = childNil`, which is
-this lemma.  That reconstruction is a prerequisite for `Decidable IsType`
-(#303) and thence decidable typed checking.
+apply `HasTypeDesc.universeFormation`) needs exactly `children = childNil`, which is
+this lemma.  That reconstruction is a prerequisite for `Decidable IsTypeDesc`
+and thence decidable typed checking.
 
 ## Zero-axiom verification
 

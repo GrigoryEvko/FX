@@ -1,9 +1,9 @@
 import FX1Poly.Typed.IsTypeDescDecidableGeneric
 
 /-! # FX1Poly/Typed/IsTypeDescGenericSmoke
-    — non-vacuity + definitional-computation smoke corpus for the cascade-free decider (GTL-10/11)
+    — non-vacuity + definitional-computation smoke corpus for the cascade-free decider
 
-The cascade-free `IsTypeDesc.decideTypeGeneric` (`IsTypeDescDecidableGeneric.lean`, commit 0a9b5a42) is a
+The cascade-free `IsTypeDesc.decideTypeGeneric` (`IsTypeDescDecidableGeneric.lean`) is a
 GENUINE total decision procedure — but a `PSum`-valued decider could in principle be vacuous (always `.inr`) or
 fail to COMPUTE (block on a `by`-tactic-generated term).  This file closes both gaps with closed-cell fixtures,
 each proved `by rfl` — so the kernel actually REDUCES the whole structural mutual recursion to the right

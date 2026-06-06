@@ -3,18 +3,17 @@ import FX1Poly.Typed.HasTypeDescWeakening
 
 /-! # FX1Poly/Typed/WfContextDescLookup — lookup-validity for the formation context well-formedness
 
-The formation twin of `WfContext.lookupIsType` (`HasTypeValidity.lean`) and of the grown
-`WfContextDescPi.lookupIsType` (WFG-2): in a formation-well-formed context, the type of EVERY variable — not
-just the most-recent binding — is a formation type (`IsTypeDesc`) in the full context.  This is the `var`-arm
-engine that lets `HasTypeDesc.classifierIsTypeDesc` read its variable case off `WfContextDesc` directly, with no
-`HasType` round-trip (the residual coupling the formation-engine decouple removes).
+The formation twin of the grown `WfContextDescPi.lookupIsType`: in a formation-well-formed context, the type of
+EVERY variable — not just the most-recent binding — is a formation type (`IsTypeDesc`) in the full context.
+This is the `var`-arm engine that lets `HasTypeDesc.classifierIsTypeDescNative` read its variable case off
+`WfContextDesc` directly.
 
   * `IsTypeDesc.weakenUnderBinding` — `IsTypeDesc` survives a binding extension (the formation weakening of the
     universe-typing witness, via `HasTypeDesc.weakenUnderBinding`; the universe code renames to itself).
   * `WfContextDesc.lookupIsTypeDesc` — structural induction on the context: the head binding is a formation type
     by `headIsTypeDesc` (weakened over itself); a deeper binding by the IH on the prefix (weakened through the
-    new binding).  Mirrors `WfContext.lookupIsType` / `WfContextDescPi.lookupIsType`, with the weakening at the
-    formation `IsTypeDesc` / `HasTypeDesc` layer.
+    new binding).  Mirrors `WfContextDescPi.lookupIsType`, with the weakening at the formation `IsTypeDesc` /
+    `HasTypeDesc` layer.
 
 ## Zero-axiom verification
 
@@ -41,8 +40,7 @@ theorem IsTypeDesc.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
 /-- Lookup-validity for formation well-formedness: in a formation-well-formed context, the type of every
 variable is a formation type in the full context.  Structural induction on the context (the head binding via
 `headIsTypeDesc`, a deeper binding via the IH on the prefix), each weakened through the intervening binding.
-The formation mirror of `WfContext.lookupIsType`; the `var`-arm engine of formation classifier-validity over
-`WfContextDesc`. -/
+The `var`-arm engine of formation classifier-validity over `WfContextDesc`. -/
 theorem WfContextDesc.lookupIsTypeDesc {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) :
     WfContextDesc context →

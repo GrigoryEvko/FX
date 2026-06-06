@@ -14,12 +14,12 @@ the point is DETERMINISM.  At a fixed eliminator-headed code with a constructor 
 rule fires and its contractum is unique — the root generator plus the scrutinee constructor pick the
 rule, and the rule's contractum is a function of the redex.  That determinism is what a weak-head-normal
 dispatching reducibility relation needs to stay functional once large elimination lets an eliminator
-appear AS A TYPE-CODE (`natRec`-at-a-universe, roadmap #435/#436): such a code is NOT `HeadStep`-reducible
+appear AS A TYPE-CODE (`natRec`-at-a-universe, a roadmap item): such a code is NOT `HeadStep`-reducible
 (it is `gen_natRec`-rooted, not `gen_app`-rooted) yet it is a genuine root redex, so the
 `ReducibleType.neutral` arm (`¬ HeadStep ∧ root ≠ piTyCode → SN`) would mis-classify it.  `IotaHeadStep`
 is the substrate the large-elimination-ready `iotaExpand` companion arm will dispatch on, exactly as
 `headExpand` dispatches on `HeadStep`.  It is also the reduction characterization the typed ι subject-
-reduction (#475/#476), the weak-head normalizer, and the Path-B convergent rewrite presentation consume.
+reduction, the weak-head normalizer, and the Path-B convergent rewrite presentation consume.
 
 The sixteen rules are the same redex/contractum pairs as `Step`'s ι constructors (§11.6.1 SHAPE 1-5),
 restricted to the root: SHAPE 1 branch-selection (bool×2 / nat-zero×2 / list-nil / option-none / idJ-refl

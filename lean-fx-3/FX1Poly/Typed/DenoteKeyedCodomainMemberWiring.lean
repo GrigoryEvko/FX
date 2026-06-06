@@ -8,16 +8,16 @@ import FX1Poly.Typed.HasTypeDescPi
 
 The genFormationPi Σ/Π fundamental-theorem arms (`DenoteKeyedGenFormationSigmaArm.lean` /
 `DenoteKeyedGenFormationPiArm.lean`) carry the codomain's under-binder strong normalization as a deferred
-premise.  The earlier ledger analysis (ticks #18/#19) claimed that PRODUCING that codomain SN from the
-telescope IH needs the denote reducibility relation's renaming-closure (SN-040), which is Kripke-obstructed.
+premise.  Producing that codomain SN from the telescope IH needs NO renaming-closure on the denote
+reducibility relation.
 
-**That claim was WRONG, and this file corrects it.**  The codomain's universe membership is needed at the
-substitution `RawTermSubst.cons headTerm substitution` — variable 0 mapped to a domain member `headTerm`, the
-ORIGINAL `substitution` kept as the tail.  `ReducibleEnvAtDenote.cons` extends the environment with EXACTLY this
-shape (`DenoteKeyedReducibleEnv.lean:84` — the `position+1` case applies `tailReducible` to the UN-RENAMED
+The codomain's universe membership is needed at the substitution `RawTermSubst.cons headTerm substitution` —
+variable 0 mapped to a domain member `headTerm`, the ORIGINAL `substitution` kept as the tail.
+`ReducibleEnvAtDenote.cons` extends the environment with EXACTLY this shape
+(`DenoteKeyedReducibleEnv.lean:84` — the `position+1` case applies `tailReducible` to the UN-RENAMED
 `substitution`-image, never a `rename shift (...)`).  So the codomain member at `cons headTerm substitution`
 comes straight from the codomain IH applied to `ReducibleEnvAtDenote.cons envReducible headMember` — NO
-renaming-closure, NO SN-040.  The binder-discharge uses `cons` (prepend), not `lift` (weaken-and-rename), and
+renaming-closure.  The binder-discharge uses `cons` (prepend), not `lift` (weaken-and-rename), and
 that is the whole difference.
 
 CONSEQUENCE for the residual: with SN-040 off the table, the genFormationPi codomain SN reduces (via the shipped

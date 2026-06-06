@@ -3,18 +3,19 @@ import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.ReducibilityCandidate
 
 /-! # FX1Poly/Core/CubicalEliminatorReducibility
-    — cubical path + Glue eliminator SN coverage (SN-146 installment), zero-axiom
+    — cubical path + Glue eliminator SN coverage, zero-axiom
 
 `CubicalOperatorReducibility.lean` + `CubicalTransportReducibility.lean` cover the four Kan transport/composition
 operators (transp / hcomp / transpHigherDim / transpFill).  This file covers the two cubical ELIMINATORS: the
 path application `gen_pathApp` (two children: the path term + the interval argument) and the Glue elimination
 `gen_glueElim` (one child: the glued value).  Together with the already-shipped glue INTRODUCTION SN
-(`glueIntro_isStronglyNormalizing_of_components`), this advances SN-146's "Glue" coverage and adds the path
+(`glueIntro_isStronglyNormalizing_of_components`), this advances the "Glue" coverage and adds the path
 eliminator.
 
 Both are congruence-only under `Step` (their computation rules — path-β `pathApp (pathLam b) r ↝ b[r]` and the
-Glue collapse — await M62/M66) and non-neutral (`NeutralTerm.lean` lists the cubical eliminators as forming no
-neutrals yet), so the SN candidate is the honest ceiling, exactly as for `gen_modElim` and the Kan operators.
+Glue collapse — are not part of the substrate) and non-neutral (`NeutralTerm.lean` lists the cubical eliminators
+as forming no neutrals yet), so the SN candidate is the honest ceiling, exactly as for `gen_modElim` and the Kan
+operators.
 
 ## Contents
 
@@ -22,7 +23,7 @@ neutrals yet), so the SN candidate is the honest ceiling, exactly as for `gen_mo
 * `pathApp_isStronglyNormalizing_of_children` (twoChildCong) / `glueElim_isStronglyNormalizing_of_child`
   (oneChildCong) — forward SN closures.
 * `glueElim_…child_of_parent` / `pathApp_pathTerm_…` / `pathApp_intervalArg_…` — the reflections (one-child
-  slices reusing the generic `isStronglyNormalizing_child_of_oneChildCong`, SN-074).
+  slices reusing the generic `isStronglyNormalizing_child_of_oneChildCong`).
 * `…_isStronglyNormalizing_iff` — the biconditionals.
 * `…_of_candidateMember(s)` — the reducibility-framing.
 
@@ -38,7 +39,7 @@ reflections instantiate the generic one-child reflection per slice (the pathApp 
 namespace FX1Poly.Core
 
 /-- **Inversion for `glueElim`-rooted Step.**  `gen_glueElim` is a one-child Glue eliminator with no β+ι root
-rule (its Glue collapse awaits M66), congruence-only: a `Step` reduces exactly its glued-value child. -/
+rule (its Glue collapse is not part of the substrate), congruence-only: a `Step` reduces exactly its glued-value child. -/
 theorem Step.from_glueElim
     {scope : Nat} {gluedValue : RawTerm scope} {target : RawTerm scope}
     (reduction :
@@ -56,7 +57,7 @@ theorem Step.from_glueElim
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `pathApp`-rooted Step.**  `gen_pathApp` is a two-child cubical path application (path term +
-interval argument) with no β+ι root rule (its path-β rule awaits M62), congruence-only: a `Step` reduces exactly
+interval argument) with no β+ι root rule (its path-β rule is not part of the substrate), congruence-only: a `Step` reduces exactly
 one child. -/
 theorem Step.from_pathApp
     {scope : Nat} {pathTerm intervalArg : RawTerm scope} {target : RawTerm scope}
@@ -102,7 +103,7 @@ theorem glueElim_isStronglyNormalizing_of_child {scope : Nat}
     (fun parentStep => Step.from_glueElim parentStep)
     gluedTerminates
 
-/-- **Glue elimination's child reflects strong normalization (SN-146 installment).**  The converse of the
+/-- **Glue elimination's child reflects strong normalization.**  The converse of the
 forward closure, via the generic one-child reflection lemma. -/
 theorem glueElim_isStronglyNormalizing_child_of_parent {scope : Nat}
     {gluedValue : RawTerm scope}
@@ -119,14 +120,14 @@ theorem glueElim_isStronglyNormalizing_child_of_parent {scope : Nat}
         (StepChildren.here (.childNil : RawTermChildren [] scope) childStep))
     glueElimTerminates
 
-/-- **Glue elimination's strong-normalization characterization (SN-146 installment).**  SN iff the child is. -/
+/-- **Glue elimination's strong-normalization characterization.**  SN iff the child is. -/
 theorem glueElim_isStronglyNormalizing_iff {scope : Nat} {gluedValue : RawTerm scope} :
     IsStronglyNormalizing
         (.mkGen .gen_glueElim () (.childCons gluedValue .childNil) : RawTerm scope)
       ↔ IsStronglyNormalizing gluedValue :=
   ⟨glueElim_isStronglyNormalizing_child_of_parent, glueElim_isStronglyNormalizing_of_child⟩
 
-/-- **Glue elimination sends reducibility-candidate members to SN-candidate members (SN-146 installment).** -/
+/-- **Glue elimination sends reducibility-candidate members to SN-candidate members.** -/
 theorem glueElim_isStronglyNormalizing_of_candidateMember {scope : Nat}
     {memberPredicate : RawTerm scope → Prop}
     (candidate : IsReducibilityCandidate memberPredicate)
@@ -152,7 +153,7 @@ theorem pathApp_isStronglyNormalizing_of_children {scope : Nat}
     (fun parentStep => Step.from_pathApp parentStep)
     pathTerminates intervalTerminates
 
-/-- **Path application's path-term child reflects strong normalization (SN-146 installment).** -/
+/-- **Path application's path-term child reflects strong normalization.** -/
 theorem pathApp_pathTerm_isStronglyNormalizing_of_parent {scope : Nat}
     {pathTerm intervalArg : RawTerm scope}
     (pathAppTerminates :
@@ -170,7 +171,7 @@ theorem pathApp_pathTerm_isStronglyNormalizing_of_parent {scope : Nat}
         (StepChildren.here (.childCons intervalArg .childNil : RawTermChildren [0] scope) childStep))
     pathAppTerminates
 
-/-- **Path application's interval-argument child reflects strong normalization (SN-146 installment).**  The
+/-- **Path application's interval-argument child reflects strong normalization.**  The
 `there` shift is pinned with the explicit `@`-form since `binderShifts = [0, 0]` does not auto-reduce. -/
 theorem pathApp_intervalArg_isStronglyNormalizing_of_parent {scope : Nat}
     {pathTerm intervalArg : RawTerm scope}
@@ -190,7 +191,7 @@ theorem pathApp_intervalArg_isStronglyNormalizing_of_parent {scope : Nat}
           (StepChildren.here (.childNil : RawTermChildren [] scope) childStep)))
     pathAppTerminates
 
-/-- **Path application's strong-normalization characterization (SN-146 installment).**  SN iff both children
+/-- **Path application's strong-normalization characterization.**  SN iff both children
 are. -/
 theorem pathApp_isStronglyNormalizing_iff {scope : Nat} {pathTerm intervalArg : RawTerm scope} :
     IsStronglyNormalizing
@@ -203,7 +204,7 @@ theorem pathApp_isStronglyNormalizing_iff {scope : Nat} {pathTerm intervalArg : 
    fun ⟨pathTerminates, intervalTerminates⟩ =>
       pathApp_isStronglyNormalizing_of_children pathTerminates intervalTerminates⟩
 
-/-- **Path application sends reducibility-candidate members to SN-candidate members (SN-146 installment).** -/
+/-- **Path application sends reducibility-candidate members to SN-candidate members.** -/
 theorem pathApp_isStronglyNormalizing_of_candidateMembers {scope : Nat}
     {pathPredicate intervalPredicate : RawTerm scope → Prop}
     (pathCandidate : IsReducibilityCandidate pathPredicate)

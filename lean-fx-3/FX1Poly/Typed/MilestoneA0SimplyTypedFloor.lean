@@ -17,8 +17,8 @@ alone decides.  This is the concrete "defensible kernel" floor the A0 milestone 
 already-decidable fragment.
 
 Two declarations:
-  * `simplyTypedBareClosedStronglyNormalizing` — the standalone reusable form of the SN half (previously only
-    inline inside `Conv.decidableOfSimplyTypedBareClosed`): a closed simply-typed term is strongly normalizing,
+  * `simplyTypedBareClosedStronglyNormalizing` — the standalone reusable form of the SN half (also used inline
+    inside `Conv.decidableOfSimplyTypedBareClosed`): a closed simply-typed term is strongly normalizing,
     via the fundamental theorem's `stronglyNormalizingClosed` reflected to the bare term through
     `StepStar.stronglyNormalizing_of_subst`.
   * `Conv.decidableOfSimplyTypedBareClosed` (shipped, `SimplyTypedConvDecision.lean`) is the decidable-Conv half.
@@ -44,8 +44,8 @@ open FX1Poly.Core FX1Poly.Universe StepStar
 floor).  The simply-typed fundamental theorem gives strong normalization of the term closed by the canonical
 empty substitution; `StepStar.stronglyNormalizing_of_subst` reflects that back to the bare term.  Typing alone
 proves SN — no hypothesis — which is exactly what makes the simply-typed fragment's conversion decidable
-unconditionally (`Conv.decidableOfSimplyTypedBareClosed`).  The reusable form of the reflection previously only
-available inline inside that decider. -/
+unconditionally (`Conv.decidableOfSimplyTypedBareClosed`).  The reusable standalone form of the reflection
+that decider also uses inline. -/
 theorem simplyTypedBareClosedStronglyNormalizing {profile : PolyProfile}
     {term type : RawTerm 0}
     (typed : SimplyTypedTermLF (TypingContext.empty : TypingContext profile 0) term type) :

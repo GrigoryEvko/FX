@@ -65,9 +65,9 @@ namespace FX1Poly.Core
 admission + payload evidence + recursive spine certification +
 packaging.
 
-Used by the recursive certifier (#162) when it encounters a raw
+Used by the recursive certifier when it encounters a raw
 `.termBase (.mkGen ...)`.  The `recursiveCertifier` is the
-forward-declared callback that #162 ties to itself.
+forward-declared callback that the recursive certifier ties to itself.
 
 Implementation: three-step dispatch.  No `▸` transports — the
 coherence equation is passed as data to `certifyTermSpine?`

@@ -1,7 +1,7 @@
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiSubstitution
-import FX1Poly.Typed.HasTypeDescPiValidity
+import FX1Poly.Typed.HasTypeDescPiClassifierValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Core.ConvSubstRename
 
@@ -35,14 +35,14 @@ the original `classifier`.
      ⟹ `subst0 body argument : subst0 cod' argument`.
   6. `Conv.subst0 (Conv cod' cod) (refl argument)` then `Conv.trans` with `(Conv classifier (subst0 cod
      argument)).sym` ⟹ `Conv (subst0 cod' argument) classifier`.
-  7. validity (`classifierIsTypeDesc`, the `WfContext` consumer) ⟹ `classifier : Type`, so the final
-     `conv` retypes `subst0 body argument` at `classifier`.
+  7. validity (`classifierIsTypeDescPi`, the `WfContextDescPi` consumer) ⟹ `classifier : Type`, so the
+     final `conv` retypes `subst0 body argument` at `classifier`.
 
 ## Zero-axiom verification
 
 A composition of shipped zero-axiom results (`invertApp`, `invertLam`, `Conv.piTyCode_inj`,
 `HasTypeDescPi.substituteUnderBinding`, `Conv.subst0`, `Conv.trans`/`Conv.sym`,
-`HasTypeDescPi.classifierIsTypeDesc`) + the grown `conv` rule.  No `axiom`, `sorry`, `propext`,
+`HasTypeDescPi.classifierIsTypeDescPi`) + the grown `conv` rule.  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -62,7 +62,7 @@ theorem HasTypeDescPi.betaSubjectReduction {profile : PolyProfile} {scope : Nat}
     {body : RawTerm (scope + 1)} {argument classifier : RawTerm scope}
     (redexTyped :
       HasTypeDescPi profile context (appCell (lamCell body) argument) classifier)
-    (wellFormed : WfContext context) :
+    (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context (RawTerm.subst0 body argument) classifier := by
   obtain ⟨domainCode, codomainCode, functionTyped, argumentTyped, convClassifierToOutput⟩ :=
     redexTyped.invertApp
@@ -81,7 +81,7 @@ theorem HasTypeDescPi.betaSubjectReduction {profile : PolyProfile} {scope : Nat}
       Conv (RawTerm.subst0 lamCodomainCode argument) classifier :=
     Conv.trans (Conv.subst0 convCodomain.sym (Conv.refl argument)) convClassifierToOutput.sym
   obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ :=
-    redexTyped.classifierIsTypeDesc wellFormed
+    redexTyped.classifierIsTypeDescPi wellFormed
   exact HasTypeDescPi.conv classifierLevel classifierFlag reductTyped
     convReductOutputToClassifier classifierTyped
 

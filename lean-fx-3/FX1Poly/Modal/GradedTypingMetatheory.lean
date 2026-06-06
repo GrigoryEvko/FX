@@ -1,6 +1,6 @@
 import FX1Poly.Modal.GradedTyping
 
-/-! # FX1Poly/Modal/GradedTypingMetatheory — structural metatheory of the graded judgment (DIM2-3)
+/-! # FX1Poly/Modal/GradedTypingMetatheory — structural metatheory of the graded judgment
 
 The sound graded typing judgment `HasUsage Γ p t T` (`GradedTyping`) records grades coupled to types
 so that subject reduction holds (unlike the bare occurrence check, which `UsageDiscipline` showed

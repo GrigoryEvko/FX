@@ -5,23 +5,23 @@ import FX1Poly.Core.OptionEitherMatchCanonicalComputation
 import FX1Poly.Core.IdentityEliminatorCanonicalComputation
 
 /-! # FX1Poly/Core/DataEliminatorProgressViaSconing
-    — operational PROGRESS for the non-recursive data eliminators via the sconing fundamental (SN-058/063)
+    — operational PROGRESS for the non-recursive data eliminators via the sconing fundamental
 
 The canonicity files answer "what value does a closed well-typed data term reduce TO".  Their operational
 COMPLEMENT is progress: a closed well-typed eliminator does not get STUCK — it reduces to a result.  This
-file composes the two `#672`-free halves already shipped:
+file composes the two halves:
 
 * the sconing FUNDAMENTAL (closed well-typed term ⟹ data-candidate member) — the explicit hypothesis,
-  the Path-A fundamental theorem (`#672` / SN-043), the SAME obligation the canonicity files carry; and
+  the Path-A fundamental theorem, the SAME obligation the canonicity files carry; and
 * the eliminator COMPUTATION (a canonical-scrutinee eliminator reduces to a result —
-  `boolElimCanonicalScrutineeReducesToBranch`, `pairCanonicalScrutineeProjectsToComponents`), shipped
-  `#672`-free.
+  `boolElimCanonicalScrutineeReducesToBranch`, `pairCanonicalScrutineeProjectsToComponents`), proved
+  outright.
 
 Composing them: a well-typed SCRUTINEE makes the eliminator make progress.  This file covers ALL the
 NON-RECURSIVE eliminators (`boolElim` branch selection, `fst`/`snd` projection, `optionMatch`/`eitherMatch`
 case selection, `idJ`/`idStrictRec` base selection), whose ι fires once with no recursive sub-term — so the
-computation half is fully `#672`-free.  (The recursive eliminators `natElim`/`natRec`/`listElim` only
-progress `#672`-free on their base constructor; their `succ`/`cons` step grows and needs Tait, so they are
+computation half needs no fundamental.  (The recursive eliminators `natElim`/`natRec`/`listElim` only
+progress on their base constructor; their `succ`/`cons` step grows and needs Tait, so they are
 excluded here.)
 
 * `boolElimProgressViaSconing` — a `boolElim` whose scrutinee is well-typed (bool) reduces to its
@@ -35,7 +35,7 @@ excluded here.)
   well-typed (an identity proof) reduces to its base case.
 
 These are the progress corner of type safety: combined with the canonicity files (value shape) they say
-EVERY non-recursive data eliminator is never stuck on well-typed input — modulo the one shared `#672`
+EVERY non-recursive data eliminator is never stuck on well-typed input — modulo the one shared
 fundamental.
 
 ## Zero-axiom verification
@@ -66,10 +66,10 @@ private abbrev fstCell {scope : Nat} (scrutinee : RawTerm scope) : RawTerm scope
 private abbrev sndCell {scope : Nat} (scrutinee : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_snd () (.childCons scrutinee .childNil)
 
-/-- **`boolElim` progress on a well-typed scrutinee (SN-063).**  Given the fundamental obligation (closed
+/-- **`boolElim` progress on a well-typed scrutinee.**  Given the fundamental obligation (closed
 well-typed bool ⟹ bool-candidate member) and a well-typed scrutinee, the `boolElim` reduces to its
-then-branch or its else-branch — it is never stuck.  Composition of the fundamental with the `#672`-free
-`boolElimCanonicalScrutineeReducesToBranch`.  The fundamental is the sole `#672` obligation. -/
+then-branch or its else-branch — it is never stuck.  Composition of the fundamental with the
+fundamental-free `boolElimCanonicalScrutineeReducesToBranch`.  The fundamental is the sole obligation. -/
 theorem boolElimProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate boolIsValue term)
     {scrutinee thenBranch elseBranch : RawTerm 0}
@@ -78,11 +78,11 @@ theorem boolElimProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
       StepStar (boolElimCellOn scrutinee thenBranch elseBranch) elseBranch :=
   boolElimCanonicalScrutineeReducesToBranch (fundamental scrutinee scrutineeTyped)
 
-/-- **`fst`/`snd` projection progress on a well-typed scrutinee (SN-058).**  Given the fundamental
+/-- **`fst`/`snd` projection progress on a well-typed scrutinee.**  Given the fundamental
 obligation (closed well-typed pair ⟹ pair-candidate member) and a well-typed scrutinee, the scrutinee
 reduces to a `pair` cell and `fst`/`snd` reduce to its two components — the projections are never stuck.
-Composition of the fundamental with the `#672`-free `pairCanonicalScrutineeProjectsToComponents`.  The
-fundamental is the sole `#672` obligation. -/
+Composition of the fundamental with the fundamental-free `pairCanonicalScrutineeProjectsToComponents`.  The
+fundamental is the sole obligation. -/
 theorem pairProjectionProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isPairValue term)
     {scrutinee : RawTerm 0}
@@ -118,10 +118,10 @@ private abbrev idJCellOn {scope : Nat} (baseCase witness : RawTerm scope) : RawT
 private abbrev idStrictRecCellOn {scope : Nat} (baseCase witness : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_idStrictRec () (.childCons baseCase (.childCons witness .childNil))
 
-/-- **`optionMatch` progress on a well-typed scrutinee (SN-065).**  Given the fundamental obligation
+/-- **`optionMatch` progress on a well-typed scrutinee.**  Given the fundamental obligation
 (closed well-typed option ⟹ option-candidate member) and a well-typed scrutinee, the `optionMatch` reduces
 to its none-branch or to its some-branch applied to the wrapped payload — never stuck.  Composition of the
-fundamental with the `#672`-free `optionMatchCanonicalScrutineeReduces`. -/
+fundamental with the fundamental-free `optionMatchCanonicalScrutineeReduces`. -/
 theorem optionMatchProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isOptionValue term)
     {scrutinee noneBranch someBranch : RawTerm 0}
@@ -133,10 +133,10 @@ theorem optionMatchProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
             (applyCell someBranch payload) :=
   optionMatchCanonicalScrutineeReduces (fundamental scrutinee scrutineeTyped)
 
-/-- **`eitherMatch` progress on a well-typed scrutinee (SN-066).**  Given the fundamental obligation
+/-- **`eitherMatch` progress on a well-typed scrutinee.**  Given the fundamental obligation
 (closed well-typed either ⟹ either-candidate member) and a well-typed scrutinee, the `eitherMatch` reduces
 to its left-branch or right-branch applied to the wrapped payload — never stuck.  Composition of the
-fundamental with the `#672`-free `eitherMatchCanonicalScrutineeReduces`. -/
+fundamental with the fundamental-free `eitherMatchCanonicalScrutineeReduces`. -/
 theorem eitherMatchProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isEitherValue term)
     {scrutinee leftBranch rightBranch : RawTerm 0}
@@ -151,9 +151,9 @@ theorem eitherMatchProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
             (applyCell rightBranch payload) :=
   eitherMatchCanonicalScrutineeReduces (fundamental scrutinee scrutineeTyped)
 
-/-- **`idJ` progress on a well-typed witness (SN-068).**  Given the fundamental obligation (closed
+/-- **`idJ` progress on a well-typed witness.**  Given the fundamental obligation (closed
 well-typed identity proof ⟹ refl-candidate member) and a well-typed witness, the `idJ` reduces to its base
-case — never stuck.  Composition of the fundamental with the `#672`-free
+case — never stuck.  Composition of the fundamental with the fundamental-free
 `idJCanonicalWitnessReducesToBase`. -/
 theorem idJProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isReflValue term)
@@ -162,9 +162,9 @@ theorem idJProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     StepStar (idJCellOn baseCase witness) baseCase :=
   idJCanonicalWitnessReducesToBase (fundamental witness witnessTyped)
 
-/-- **`idStrictRec` progress on a well-typed witness (SN-069).**  Symmetric to `idJProgressViaSconing`:
+/-- **`idStrictRec` progress on a well-typed witness.**  Symmetric to `idJProgressViaSconing`:
 given the fundamental obligation and a well-typed witness, the `idStrictRec` reduces to its base case.
-Composition of the fundamental with the `#672`-free `idStrictRecCanonicalWitnessReducesToBase`. -/
+Composition of the fundamental with the fundamental-free `idStrictRecCanonicalWitnessReducesToBase`. -/
 theorem idStrictRecProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isReflValue term)
     {baseCase witness : RawTerm 0}

@@ -125,7 +125,7 @@ theorem RawRenaming.lift_pointwise {sourceScope targetScope : Nat}
 /-- Iterated lift respects pointwise equality on renamings.
 
 Induction on `binderDepth`.  The succ case threads via
-`RawRenaming.lift_pointwise` over the IH (mirroring #181a's
+`RawRenaming.lift_pointwise` over the IH (mirroring
 `iterateLiftRaw_RawTermSubst_pointwise` exactly). -/
 theorem iterateLiftRaw_RawRenaming_pointwise {sourceScope targetScope : Nat}
     {firstRenaming secondRenaming :

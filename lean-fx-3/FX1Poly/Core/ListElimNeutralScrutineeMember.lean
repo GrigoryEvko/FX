@@ -1,10 +1,10 @@
 import FX1Poly.Core.NatElimNeutralScrutineeMember
 
 /-! # FX1Poly/Core/ListElimNeutralScrutineeMember
-    — the NEUTRAL-scrutinee regime of `listElim` recursor reducibility (toward SN-064)
+    — the NEUTRAL-scrutinee regime of `listElim` recursor reducibility
 
 The `listElim` mirror of `NatElimNeutralScrutineeMember`.  `ListElimValueReducibility` / `listElimValueMember`
-(#733) discharged the VALUE-scrutinee regime of the List recursor (`listElim value nilBranch consBranch` lands
+discharge the VALUE-scrutinee regime of the List recursor (`listElim value nilBranch consBranch` lands
 in the result candidate by `IsListValue` structural induction).  This file ships the NEUTRAL-scrutinee regime,
 bringing the three RECURSIVE recursors (`natElim`, `natRec`, `listElim`) to neutral-coverage parity.
 
@@ -23,10 +23,10 @@ Four results:
   * `listElim_neutralScrutinee_isStronglyNormalizing` — the recursor cell at a neutral SN scrutinee with SN
     branches is SN, by a triple accessibility recursion whose two ι-reduct cases are VACUOUS by neutrality and
     whose three congruence cases recurse.
-  * `listElimNeutralScrutineeMember` — the SN-064 neutral arm: `listElim` over a neutral SN scrutinee with
+  * `listElimNeutralScrutineeMember` — the neutral arm: `listElim` over a neutral SN scrutinee with
     reducible branches is a member of the result candidate, via the abstract neutral bridge + `IsNeutral.listElim`.
 
-`#672`-independent (fixed result candidate, the pure Tait neutral-eliminator argument).  The remaining
+Fundamental-independent (fixed result candidate, the pure Tait neutral-eliminator argument).  The remaining
 scrutinee-reduction regime is the shared recursor outer-recursion (a non-value non-neutral scrutinee threading
 down to its List value), the List twin of the Nat residual.
 
@@ -117,7 +117,7 @@ theorem listElim_neutralScrutinee_isStronglyNormalizing {scope : Nat}
         · rw [targetEquation]
           exact consInductiveHypothesis consAfter consStep
 
-/-- **SN-064 neutral regime: `listElim` over a neutral SN scrutinee with reducible branches is a member of the
+/-- **Neutral regime: `listElim` over a neutral SN scrutinee with reducible branches is a member of the
 result candidate.**  The cell is neutral (`IsNeutral.listElim`) and strongly normalizing
 (`listElim_neutralScrutinee_isStronglyNormalizing`, fed the branches' SN by CR1), so it inhabits the candidate by
 the abstract neutral bridge.  The List twin of `natElimNeutralScrutineeMember`. -/

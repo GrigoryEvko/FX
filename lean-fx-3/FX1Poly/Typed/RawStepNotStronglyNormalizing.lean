@@ -4,10 +4,11 @@ import FX1Poly.Core.StepInversion
 import FX1Poly.Core.RawTermNF
 
 /-! # FX1Poly/Typed/RawStepNotStronglyNormalizing
-    — the honest NEGATIVE counterpart to SN-043: the RAW β-reduction is NOT strongly normalizing (SN-140 L1)
+    — the honest NEGATIVE counterpart to SN-for-well-typed: the RAW β-reduction is NOT strongly normalizing
 
-SN-043 (`HasTypeDescPi Γ t T → IsStronglyNormalizing t`, OB-5 `#794`) proves every WELL-TYPED term is strongly
-normalizing.  That theorem is only non-vacuous if the typing restriction is genuinely LOAD-BEARING — i.e. if the
+Strong normalization for well-typed terms (`HasTypeDescPi Γ t T → IsStronglyNormalizing t`) proves every
+WELL-TYPED term is strongly normalizing.  That theorem is only non-vacuous if the typing restriction is
+genuinely LOAD-BEARING — i.e. if the
 RAW (untyped) `Step` relation is NOT itself strongly normalizing.  This file proves exactly that, exhibiting the
 classic diverging combinator and confirming `Step` has an infinite reduction sequence on a (well-scoped but
 ill-typed) raw cell.

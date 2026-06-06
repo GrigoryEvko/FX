@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescValidity
+import FX1Poly.Typed.WfContextDescValidity
 import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizingNative
 import FX1Poly.Core.RawConfluence
 
@@ -9,18 +10,17 @@ The description formation engine `HasTypeDesc` records normalization and typed-c
 on its own structure, without claiming anything about the grown `HasTypeDescPi` engine with
 lambda/application.
 
-These theorems are scoped to the description formation engine and are proved NATIVELY (HT-B): SN comes
+These theorems are scoped to the description formation engine and are proved NATIVELY: SN comes
 from `HasTypeDesc.subjectStronglyNormalizingNative` (the formation subject is non-stepping by its own
 structure), and typed-conversion transitivity from the unconditional raw `Conv.trans` (the
-raw-confluence harvest).  No routing through the retired `HasType` soundness/completeness bridges; the
-reducibility-based theorem for `HasTypeDescPi` remains the separate open assembly.
+raw-confluence harvest).  The reducibility-based theorem for `HasTypeDescPi` is the separate open assembly.
 
 ## Zero-axiom verification
 
 Each proof is a direct composition of already-gated zero-axiom declarations:
-`HasTypeDesc.subjectStronglyNormalizingNative`, `HasTypeDesc.classifierIsTypeDesc`, and `Conv.trans`.
-No recursion, no proof search, and no use of `propext`, `Quot.sound`, `Classical`, `native_decide`, or
-`omega`.
+`HasTypeDesc.subjectStronglyNormalizingNative`, `HasTypeDesc.classifierStronglyNormalizingNative` (the native
+formation-validity SN twin over `WfContextDesc`), and `Conv.trans`.  No recursion, no proof search, and no use
+of `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
 -/
 
 namespace FX1Poly.Typed
@@ -28,8 +28,8 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
 /-- Strong normalization for the description formation engine: every formation-typed SUBJECT is strongly
-normalizing.  HT-A3: delegates to the HasType-FREE native twin `HasTypeDesc.subjectStronglyNormalizingNative`
-(proved directly on the formation engine's structure), no longer routing through `HasTypeDesc.toHasType`. -/
+normalizing.  Delegates to `HasTypeDesc.subjectStronglyNormalizingNative`, proved directly on the formation
+engine's structure. -/
 theorem HasTypeDesc.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
@@ -37,9 +37,9 @@ theorem HasTypeDesc.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     StepStar.IsStronglyNormalizing subject :=
   typed.subjectStronglyNormalizingNative
 
-/-- A description-engine type is strongly normalizing.  HT-A3: native — the `IsTypeDesc` witness is a
+/-- A description-engine type is strongly normalizing.  The `IsTypeDesc` witness is a
 `HasTypeDesc` derivation whose SUBJECT is the classifier, so `HasTypeDesc.subjectStronglyNormalizingNative`
-normalizes it directly (no `HasTypeDesc.toHasType`). -/
+normalizes it directly. -/
 theorem IsTypeDesc.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope}
     (isTypeDesc : IsTypeDesc profile context classifier) :
@@ -49,24 +49,27 @@ theorem IsTypeDesc.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
 
 /-- The classifier of a description-engine typing derivation is strongly normalizing in every
 well-formed context.  This is the classifier-side companion to `HasTypeDesc.isStronglyNormalizing`:
-intrinsic validity first turns the classifier into an `IsTypeDesc`, and the type-level SN projection then
-normalizes it. -/
+intrinsic validity (native, over `WfContextDesc`) first turns the classifier into an `IsTypeDesc`, and the
+type-level SN projection then normalizes it.  Composes `classifierIsTypeDescNative` (formation validity, from
+`WfContextDescValidity`) with the local `IsTypeDesc.isStronglyNormalizing`, threading `WfContextDesc`.
+(Inlined rather than delegating to the equivalent `classifierStronglyNormalizingNative`, which imports this
+file for `IsTypeDesc.isStronglyNormalizing` and so cannot be imported back without a cycle.) -/
 theorem HasTypeDesc.classifierStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
-    (wellFormed : WfContext context)
+    (wellFormed : WfContextDesc context)
     (typed : HasTypeDesc profile context subject classifier) :
     StepStar.IsStronglyNormalizing classifier :=
-  (typed.classifierIsTypeDesc wellFormed).isStronglyNormalizing
+  (typed.classifierIsTypeDescNative wellFormed).isStronglyNormalizing
 
 /-- Formation-engine subject and classifier strong normalization, packaged in the shape consumed by the
-first metatheory spine.  This is deliberately scoped to `HasTypeDesc`: it routes through the proven
-formation-engine equivalence with `HasType`, not through the open dependent reducibility theorem for
-`HasTypeDescPi`. -/
+first metatheory spine.  This is deliberately scoped to `HasTypeDesc`: it routes through the native
+formation-engine SN twins (`subjectStronglyNormalizingNative` / `classifierStronglyNormalizingNative` over
+`WfContextDesc`), not through the open dependent reducibility theorem for `HasTypeDescPi`. -/
 theorem HasTypeDesc.subjectAndClassifierStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
-    (wellFormed : WfContext context)
+    (wellFormed : WfContextDesc context)
     (typed : HasTypeDesc profile context subject classifier) :
     StepStar.IsStronglyNormalizing subject ∧ StepStar.IsStronglyNormalizing classifier :=
   ⟨typed.isStronglyNormalizing, typed.classifierStronglyNormalizing wellFormed⟩
@@ -78,12 +81,11 @@ theorem HasTypeDesc.closedSubjectAndClassifierStronglyNormalizing {profile : Pol
     (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
     StepStar.IsStronglyNormalizing subject ∧ StepStar.IsStronglyNormalizing classifier :=
   typed.subjectAndClassifierStronglyNormalizing
-    (WfContext.emptyIsWellFormed (profile := profile))
+    (WfContextDesc.emptyIsWellFormed (profile := profile))
 
-/-- Typed conversion transitivity through a description-engine middle type.  HT-A3: native — raw `Conv` is
-an unconditional equivalence relation (`Conv.trans`, the raw-confluence harvest #714/#420), so transitivity
-needs no typed middle at all; the `IsTypeDesc` premise is now vacuous (retained for API stability, no longer
-routed through `HasTypeDesc.toHasType` / `Conv.trans_of_typedMiddle`). -/
+/-- Typed conversion transitivity through a description-engine middle type.  Raw `Conv` is
+an unconditional equivalence relation (`Conv.trans`, the raw-confluence harvest), so transitivity
+needs no typed middle at all; the `IsTypeDesc` premise is vacuous (retained for API stability). -/
 theorem Conv.trans_of_hasTypeDescMiddle {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {firstType middleType lastType : RawTerm scope}

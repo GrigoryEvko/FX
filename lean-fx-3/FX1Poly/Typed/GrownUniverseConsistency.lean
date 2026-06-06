@@ -1,16 +1,17 @@
 import FX1Poly.Typed.HasTypeDescPiUniverseCodeInversion
 import FX1Poly.Typed.UniverseCodeConversion
+import FX1Poly.Typed.WfContextDescPi
 
 /-! # FX1Poly/Typed/GrownUniverseConsistency
     — universe consistency for the GROWN engine `HasTypeDescPi`: no `Type : Type`, no inflation, no deflation,
-      flag rigidity (SN-140 L1, the §27.2 Girard's-paradox known-unsoundness witness at the grown engine)
+      flag rigidity (the §27.2 Girard's-paradox known-unsoundness witness at the grown engine)
 
-`UniverseFormationStrictness` pinned the level-strictness corpus (`universeCode_notTypedAtSelf_general` /
-`…AboveSuccessor_general` / `…BelowSuccessor_general`) for the FORMATION engine `HasType`.  This file is the
-GROWN-engine (`HasTypeDescPi` — the engine carrying piIntro/piElim, where SN/SR/consistency live) parity twin
-plus a novel flag-rigidity probe: the predicative universe discipline holds structurally at the engine the
-kernel's metatheory actually runs on.  These are the §11.8.2 universe-consistency guarantees — no `Type : Type`,
-hence no Girard paradox at the universe level (§27.2 "Dependent type (Type:Type / Girard's paradox)").
+The level-strictness corpus (`universeCode_notTypedAtSelf_general` / `…AboveSuccessor_general` /
+`…BelowSuccessor_general`) for the GROWN engine `HasTypeDescPi` — the engine carrying piIntro/piElim, where
+SN/SR/consistency live — plus a flag-rigidity probe: the predicative universe discipline holds structurally at
+the engine the kernel's metatheory runs on.  These are the §11.8.2 universe-consistency guarantees — no
+`Type : Type`, hence no Girard paradox at the universe level (§27.2 "Dependent type (Type:Type / Girard's
+paradox)").
 
 Each rejection reads off the single shipped grown inversion `HasTypeDescPi.inversionUniverseCode`: a universe
 code `Type@(e, flag)` receives ONLY classifiers `Conv`-equal to its strict predicative successor
@@ -32,8 +33,9 @@ so a grown universe code neither climbs nor descends nor changes flag.
     `f1 ≠ f2`, `Type@(e, f1)` is NOT classified by the flag-mismatched successor `Type@(lsucc e, f2)`: universe
     formation preserves the admission FLAG, so `universeCodeCell_inj_of_conv` exposes `f2 = f1`, refuting `f1 ≠ f2`.
 
-The well-formed context is `inversionUniverseCode`'s presupposition; the empty context
-(`WfContext.emptyIsWellFormed`) already instantiates it, so each probe is NON-vacuous.  Together with
+Each probe carries the grown well-formedness `WfContextDescPi` as a shape decoration (the consistency is over
+well-formed contexts); the empty context (`WfContextDescPi.emptyIsWellFormed`) already instantiates it, so each
+probe is NON-vacuous.  Together with
 `GrownEngineHonesty` (a λ inhabits only Π; a type code only a universe) this completes the grown engine's 0-FP
 shape/level/flag discipline, in parity with the formation engine's.
 
@@ -54,7 +56,7 @@ classified by itself in the grown engine — `inversionUniverseCode` forces any 
 strict predicative successor `Type@(lsucc e, flag)`, so self-classification forces `e = lsucc e`, refuted by
 `ne_lsucc_self`.  The grown twin of `universeCode_notTypedAtSelf_general`. -/
 theorem grownUniverseCode_notTypedAtSelf {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (_contextWellFormed : WfContext context)
+    {context : TypingContext profile scope} (_contextWellFormed : WfContextDescPi context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr flag) := by
@@ -68,7 +70,7 @@ theorem grownUniverseCode_notTypedAtSelf {profile : PolyProfile} {scope : Nat}
 levels up) — only by `Type@(lsucc e, flag)`.  The inversion forces `lsucc (lsucc e) = lsucc e`, refuted by
 `ne_lsucc_self` at `lsucc e`.  The grown twin of `universeCode_notTypedAboveSuccessor_general`. -/
 theorem grownUniverseCode_notTypedAboveSuccessor {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (_contextWellFormed : WfContext context)
+    {context : TypingContext profile scope} (_contextWellFormed : WfContextDescPi context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr.lsucc.lsucc flag) := by
@@ -84,7 +86,7 @@ universe `Type@(e, flag)` — the base sits two predicative levels below its tru
 A universe never sinks into a strictly-lower one.  The grown twin of
 `universeCode_notTypedBelowSuccessor_general`. -/
 theorem grownUniverseCode_notTypedBelowSuccessor {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (_contextWellFormed : WfContext context)
+    {context : TypingContext profile scope} (_contextWellFormed : WfContextDescPi context)
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr.lsucc flag)
         (universeCodeCell levelExpr flag) := by
@@ -101,7 +103,7 @@ carries `subjectFlag`; `inversionUniverseCode` forces the received classifier `C
 `Type@(lsucc e, subjectFlag)`, and `universeCodeCell_inj_of_conv` exposes `classifierFlag = subjectFlag`,
 refuting the disequality. -/
 theorem grownUniverseCode_notTypedAtFlagMismatchedSuccessor {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} (_contextWellFormed : WfContext context)
+    {context : TypingContext profile scope} (_contextWellFormed : WfContextDescPi context)
     (levelExpr : LevelExpr) (subjectFlag classifierFlag : UniverseFlag)
     (flagsDiffer : subjectFlag ≠ classifierFlag) :
     ¬ HasTypeDescPi profile context (universeCodeCell levelExpr subjectFlag)

@@ -12,8 +12,8 @@ they are LEVEL-FLEXIBLE, valid as a universe member at every positive level, bec
 
 This file ships that producer side: the `IsLevelFlexibleTypeCode` predicate and the three former arms that
 build it, plus the connector showing a level-flexible reclassifier directly discharges the refined `conv`
-bridge `validTypingBridgeConvFromAllLevelReclassifier`.  The `conv` arm of the refined motive was the first
-payoff already shipped in `LevelingBridge.lean`; these are the level-flexible WITNESSES it consumes.
+bridge `validTypingBridgeConvFromAllLevelReclassifier`.  The `conv` arm of the refined motive lives in
+`LevelingBridge.lean`; these are the level-flexible WITNESSES it consumes.
 
 ## What is proved
 

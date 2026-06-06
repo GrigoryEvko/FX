@@ -4,18 +4,15 @@ import FX1Poly.Typed.HasTypeDescPiSubstitution
 
 /-! # FX1Poly/Typed/WfContextDescPiLookup — lookup-validity for the grown context well-formedness
 
-The grown twin of `WfContext.lookupIsType` (`HasTypeValidity.lean`): in a grown-well-formed context, the type
-of EVERY variable — not just the most-recent binding — is a grown type (`IsTypeDescPi`) in the full context.
-This is the `var`-arm engine of grown classifier-validity over `WfContextDescPi` (the next step toward the
-master subject-reduction dispatcher, which threads `WfContextDescPi` rather than the non-extendable
-`HasType`-based `WfContext`).
+Lookup-validity for the grown context: in a grown-well-formed context, the type of EVERY variable — not just
+the most-recent binding — is a grown type (`IsTypeDescPi`) in the full context.  This is the `var`-arm engine
+of grown classifier-validity over `WfContextDescPi`, which the master subject-reduction dispatcher threads.
 
   * `IsTypeDescPi.weakenUnderBinding` — `IsTypeDescPi` survives a binding extension (the grown weakening of the
     universe-typing witness, via `HasTypeDescPi.weakenUnderBinding`).
   * `WfContextDescPi.lookupIsType` — structural induction on the context: the head binding is grown-well-formed
     by `headIsType` (weakened over itself); a deeper binding by the IH on the prefix (weakened through the new
-    binding).  Mirrors `WfContext.lookupIsType` exactly, with `IsType`/`HasType` weakening replaced by the grown
-    `IsTypeDescPi`/`HasTypeDescPi` weakening.
+    binding), with the weakening at the grown `IsTypeDescPi`/`HasTypeDescPi` layer.
 
 ## Zero-axiom verification
 
@@ -54,8 +51,8 @@ theorem IsTypeDescPi.substituteUnderBinding {profile : PolyProfile} {scope : Nat
 
 /-- Lookup-validity for grown well-formedness: in a grown-well-formed context, the type of every variable is a
 grown type in the full context.  Structural induction on the context (the head binding via `headIsType`, a
-deeper binding via the IH on the prefix), each weakened through the intervening binding.  The grown mirror of
-`WfContext.lookupIsType`; the `var`-arm engine of grown classifier-validity over `WfContextDescPi`. -/
+deeper binding via the IH on the prefix), each weakened through the intervening binding.  The `var`-arm engine
+of grown classifier-validity over `WfContextDescPi`. -/
 theorem WfContextDescPi.lookupIsType {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) :
     WfContextDescPi context →

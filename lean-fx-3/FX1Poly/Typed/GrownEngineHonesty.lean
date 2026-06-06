@@ -1,17 +1,16 @@
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.ConvCodeInjectivity
-import FX1Poly.Typed.HasType
+import FX1Poly.Typed.WfContextDescPi
 
 /-! # FX1Poly/Typed/GrownEngineHonesty
     — 0-FP honesty for the GROWN engine `HasTypeDescPi` (a λ inhabits ONLY a Π type; a type code inhabits ONLY a
     universe)
 
-The formation-engine strictness corpus (`UniverseFormationStrictness`, `FormerFormationStrictness`) pinned the
-universe/Π/Σ FORMATION rules of the bespoke `HasType` engine.  This file is the GROWN-engine
-(`HasTypeDescPi` — the engine carrying piIntro/piElim where SN/SR/consistency live) analog: it pins the SHAPE of
-a classifier from the shape of its subject, rejecting the cross-shape mismatches structurally.  These are the
-§1.4 "a function is not a type, a type is not a function" impossibilities, made precise at the grown engine.
+0-FP honesty for the GROWN engine `HasTypeDescPi` — the engine carrying piIntro/piElim where SN/SR/consistency
+live.  This file pins the SHAPE of a classifier from the shape of its subject, rejecting the cross-shape
+mismatches structurally.  These are the §1.4 "a function is not a type, a type is not a function"
+impossibilities, made precise at the grown engine.
 
   * `lam_notTypedAtUniverseCode` / `…AtSigmaTyCode` / `…AtVariableCell` — a `lamCell body` (a function value) is
     NEVER typed at a universe code, a Σ-type code, or a variable.  `HasTypeDescPi.invertLam` forces its
@@ -23,7 +22,7 @@ a classifier from the shape of its subject, rejecting the cross-shape mismatches
     classifier `Conv` to a universe code; `Conv.piTyCode_not_universeCode` refutes a Π-type classifier.  So a
     type code inhabits ONLY a universe — a type is not classified by a function type.
 
-Like the formation-engine strictness, these hold because `conv` uses symmetric `Conv` (no `≤`-cumulativity yet):
+These hold because `conv` uses symmetric `Conv` (no `≤`-cumulativity yet):
 a subject's classifier is pinned to its exact shape up to conversion, and the conv-rigidity family makes the
 distinct type-code/universe/variable shapes pairwise non-convertible.
 
@@ -31,9 +30,9 @@ distinct type-code/universe/variable shapes pairwise non-convertible.
 
 Each rejection is one grown inversion (`invertLam` / `invertPiTyCode` / `invertSigmaTyCode`) feeding the
 `Conv`-witness to a conv-rigidity lemma (with `Conv.sym` to orient the λ cases).  The `invertPiTyCode` /
-`invertSigmaTyCode` route consumes a `WfContext` hypothesis (the former-inversion presupposition).  No `axiom`,
-`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditTyped.lean`.
+`invertSigmaTyCode` type-code rejections carry the grown well-formedness `WfContextDescPi` as a shape decoration
+(the honesty is over well-formed contexts).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -79,7 +78,7 @@ theorem piTyCode_notTypedAtPiTyCode {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (classifierDomain : RawTerm scope) (classifierCodomain : RawTerm (scope + 1))
-    (_contextWellFormed : WfContext context) :
+    (_contextWellFormed : WfContextDescPi context) :
     ¬ HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode)
         (piTyCodeCell classifierDomain classifierCodomain) := by
   intro typed
@@ -93,7 +92,7 @@ theorem sigmaTyCode_notTypedAtPiTyCode {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     (classifierDomain : RawTerm scope) (classifierCodomain : RawTerm (scope + 1))
-    (_contextWellFormed : WfContext context) :
+    (_contextWellFormed : WfContextDescPi context) :
     ¬ HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode)
         (piTyCodeCell classifierDomain classifierCodomain) := by
   intro typed

@@ -4,14 +4,14 @@ import FX1Poly.Core.WeakHeadStepCommute
 
 /-! # FX1Poly/Core/RecursiveEliminatorBaseComputation
     — the recursive eliminators COMPUTE on their base constructor (`natElim`/`natRec` on `zero`, `listElim` on
-      `nil`) — the `#672`-free BASE-CASE half of SN-061/062/064
+      `nil`) — the fundamental-free BASE-CASE half
 
 The non-recursive eliminators (`boolElim`, `fst`/`snd`, `idJ`/`idStrictRec`, `optionMatch`/`eitherMatch`) all
 have closed-canonical-scrutinee computation theorems: their ι fires once with NO recursive sub-term.  The
 recursive eliminators `natElim` / `natRec` / `listElim` SPLIT: on the BASE constructor (`zero` / `nil`) the ι
-selects the base branch — non-growing, computable here `#672`-free — but on the STEP constructor (`succ` /
+selects the base branch — non-growing, computable here fundamental-free — but on the STEP constructor (`succ` /
 `cons`) the ι reappears the eliminator on the predecessor / tail (`app (app succBranch n) (natElim n …)`),
-GROWING the term, and proving that terminates needs the full Tait reducibility argument (the `#672`-gated
+GROWING the term, and proving that terminates needs the full Tait reducibility argument (the fundamental-gated
 machinery).  This file ships the clean base-case half.
 
 * `StepStar.natElimScrutinee` / `natRecScrutinee` / `listElimScrutinee` — the scrutinee-position (head-child)
@@ -83,7 +83,7 @@ theorem StepStar.listElimScrutinee {scope : Nat}
     (fun stepInScrutinee => Step.cong .gen_listElim () (StepChildren.here _ stepInScrutinee))
     scrutineeChain
 
-/-- **`natElim` on a zero-reducing scrutinee computes to the zero-branch.**  The `#672`-free base-case half of
+/-- **`natElim` on a zero-reducing scrutinee computes to the zero-branch.**  The fundamental-free base-case half of
 `natElim` canonicity: when the scrutinee reduces to `natZero`, the scrutinee congruence carries that under the
 `natElim`, and the base ι `Step.iotaNatElimZero` selects the zero-branch.  (The `succ` step case grows — the ι
 reappears `natElim` on the predecessor — and needs Tait.) -/
@@ -101,7 +101,7 @@ theorem natRecZeroScrutineeReducesToBranch {scope : Nat}
     StepStar (natRecCellOn scrutinee zeroBranch succBranch) zeroBranch :=
   StepStar.transLast (StepStar.natRecScrutinee scrutineeReducesToZero) Step.iotaNatRecZero
 
-/-- **`listElim` on a nil-reducing scrutinee computes to the nil-branch.**  The `#672`-free base-case half of
+/-- **`listElim` on a nil-reducing scrutinee computes to the nil-branch.**  The fundamental-free base-case half of
 `listElim` canonicity: when the scrutinee reduces to `listNil`, the scrutinee congruence carries that under the
 `listElim`, and the base ι `Step.iotaListElimNil` selects the nil-branch.  (The `cons` step case grows — the ι
 reappears `listElim` on the tail — and needs Tait.) -/

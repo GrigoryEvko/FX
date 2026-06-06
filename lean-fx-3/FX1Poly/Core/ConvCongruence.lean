@@ -4,7 +4,7 @@ import FX1Poly.Core.StepSubst
 /-! # Foundation/PolyCell/Core/ConvCongruence
    — generic Conv-as-congruence lifter (one theorem for all 194 generators)
 
-Ships the per-generator Conv-level congruence rules (#369).  The
+Ships the per-generator Conv-level congruence rules.  The
 surrounding substrate provides:
 
 * `Conv.refl` + `Conv.sym` at `StepStarConfluence.lean`.
@@ -12,7 +12,7 @@ surrounding substrate provides:
 * Three hand-coded StepStar-level congruence helpers:
   `StepStar.appFunction`, `StepStar.appArgument`, `StepStar.lamBody`.
 
-A Conv-level congruence rule is what `HasType.conv`, typed SR, and
+A Conv-level congruence rule is what `HasTypeDesc.conv`, typed SR, and
 Conv-respecting term-replacement reasoning all build on.
 
 ## What this file ships

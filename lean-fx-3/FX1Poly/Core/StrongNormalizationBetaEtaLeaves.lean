@@ -2,11 +2,11 @@ import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.StrongNormalizationLeaves
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationBetaEtaLeaves
-    — the SN entry points (variable / unit leaves) are robust under the eta extension (SN-045)
+    — the SN entry points (variable / unit leaves) are robust under the eta extension
 
 The decidable-conversion endgame runs over the full conversion relation `Step.betaEta = Step ∪ Step.eta`
-(beta + iota + eta), not just `Step` (beta + iota).  SN-044 / SN-081 established strong normalization of
-the leaves and formers over `Step`; this file opens SN-045 by lifting the SN ENTRY POINTS — the variable
+(beta + iota + eta), not just `Step` (beta + iota).  The smoke and former corpora establish strong normalization of
+the leaves and formers over `Step`; this file lifts the SN ENTRY POINTS — the variable
 and unit leaves the typed engine's SN handoffs bottom out at — to `Step.betaEtaStar.IsStronglyNormalizing`
 (`Acc Step.betaEtaSuccessor`).
 
@@ -19,7 +19,7 @@ the `Acc.intro` base case `isStronglyNormalizingBetaEta_of_noBetaEtaStep`, the b
 
 Scope note: the FORMERS over normal children (e.g. `lam unit`, `pair unit unit`) are likewise beta-eta
 normal, but proving their no-`Step` leg needs the `cong` + `StepChildren` child-step inversion (the shipped
-`Step.from_<former>` derived inversions feeding `noStep_unit`); that is the documented SN-045 follow-up.  The
+`Step.from_<former>` derived inversions feeding `noStep_unit`); that is the documented follow-up.  The
 eta-inversion leg already generalizes cleanly (former eta-inversion is the same axiom-free `cases`).
 
 ## Zero-axiom verification
