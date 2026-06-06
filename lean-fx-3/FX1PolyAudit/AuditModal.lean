@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Modal.ResourceGraded
 import FX1Poly.Modal.GradeVector
 import FX1Poly.Modal.UsageDiscipline
+import FX1Poly.Modal.GradedTyping
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -146,3 +147,11 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.dupRedex_wellGraded
 #assert_no_axioms FX1Poly.Modal.dupReduct_illGraded
 #assert_no_axioms FX1Poly.Modal.usage_check_fails_subject_reduction
+
+/-! ### The SOUND graded typing judgment (DIM2-3): type-coupled HasUsage with App scaling -/
+
+#assert_no_axioms FX1Poly.Modal.GType
+#assert_no_axioms FX1Poly.Modal.GType.lookup
+#assert_no_axioms FX1Poly.Modal.HasUsage
+#assert_no_axioms FX1Poly.Modal.linearIdentity_typed
+#assert_no_axioms FX1Poly.Modal.kCombinator_typed
