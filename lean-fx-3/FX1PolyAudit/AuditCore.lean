@@ -36,6 +36,7 @@ import FX1Poly.Core.StratifiedReducibleMemberStepClosure
 import FX1Poly.Core.StrongNormalizationSubterm
 import FX1Poly.Core.StrongNormalizationCodeFormers
 import FX1Poly.Core.StrongNormalizationModalEliminators
+import FX1Poly.Core.StrongNormalizationUniverseModeBridges
 import FX1Poly.Core.StrongNormalizationNatElim
 import FX1Poly.Core.StrongNormalizationListElim
 import FX1Poly.Core.StrongNormalizationMatch
@@ -607,6 +608,15 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Step.from_subsume
 #assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_of_child
 #assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_of_child
+
+-- Universe-mode bridge β+ι SN coverage (precursor to SN-077): gen_liftInnerToOuter (1-child inner→outer lift)
+-- and gen_lowerOuterToInner (2-child outer→inner lower) are congruence-only (no iota root rule; the mode-bridge
+-- collapse `lower (lift x) ↝ x` is not in the current β+ι substrate, like the modal modElim collapse), so their
+-- cong inversions + one-/two-child-cong SN closures complete the 2LTT mode-bridge SN coverage.
+#assert_no_axioms FX1Poly.Core.Step.from_liftInnerToOuter
+#assert_no_axioms FX1Poly.Core.Step.from_lowerOuterToInner
+#assert_no_axioms FX1Poly.Core.StepStar.liftInnerToOuter_isStronglyNormalizing_of_child
+#assert_no_axioms FX1Poly.Core.StepStar.lowerOuterToInner_isStronglyNormalizing_of_children
 
 -- Recursive-eliminator iota-redex SN (toward SN-061): the natSucc one-child subterm-SN lemma (predecessor of
 -- an SN natSucc is SN), and the conditional natElim successor-case redex SN (normal branches + the
