@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasType
+import FX1Poly.Typed.RawTermHeadGenerator
 
 /-! # FX1Poly/Typed/HasTypeHonesty — the 0-false-positive probe corpus
 
@@ -42,12 +43,6 @@ argument.  A perfectly good RAW cell (`gen_app` has two same-scope term
 children); only the TYPING rejects it. -/
 def appUnitUnit {scope : Nat} : RawTerm scope :=
   .mkGen .gen_app () (.childCons unitCell (.childCons unitCell .childNil))
-
-/-- The head generator of a cell (the first field of `mkGen`).  Used to
-refute equalities between cells with distinct head generators without
-dependent-`injection` pain on the payload. -/
-def RawTerm.headGenerator {scope : Nat} : RawTerm scope → Generator
-  | .mkGen generator _ _ => generator
 
 /-- In the var/conv/universe/Π-formation/Σ-formation core, every typed subject
 is a variable cell, a universe-code cell, a Π-type code cell, or a Σ-type code
