@@ -73,6 +73,28 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.IsLawfulOrderedGradeSemiring
 #assert_no_axioms FX1Poly.Modal.fxUsageSemiring_isLawful
 
+/-! ### Security grade-algebra laws + the verified-semiring witness (DIM5-1, the 2nd graded dimension) -/
+
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.add_comm
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.add_assoc
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.add_zero
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.zero_add
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.mul_assoc
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.mul_one
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.one_mul
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.mul_zero
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.zero_mul
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.mul_comm
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.left_distrib
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.right_distrib
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.le_refl
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.le_trans
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.le_antisymm
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.add_le_add_left
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.mul_le_mul_left
+#assert_no_axioms FX1Poly.Modal.SecurityGrade.classified_poisons_add
+#assert_no_axioms FX1Poly.Modal.fxSecuritySemiring_isLawful
+
 /-! ### Grade-vector substrate (DIM2-2): the per-binding usage grade vector + its semimodule laws -/
 
 #assert_no_axioms FX1Poly.Modal.GradeVector

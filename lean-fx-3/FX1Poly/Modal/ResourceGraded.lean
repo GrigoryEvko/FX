@@ -147,13 +147,18 @@ def SecurityGrade.le : SecurityGrade → SecurityGrade → Bool
   | .classified,   .unclassified => false
   | .classified,   .classified   => true
 
-/-- The FX security semiring instance. -/
+/-- The FX security semiring instance.  Per §6.1/§6.3 (dim 5): `add` is the JOIN (combining secrecy
+— `unclassified + classified = classified`, no implicit downgrade) and `mul` is the MEET
+`SecurityGrade.mul` (sequential composition with annihilation `classified * unclassified =
+unclassified` — ghost computation on a secret leaks nothing).  `zero = unclassified` is the join
+bottom and the meet annihilator; `one = classified` is the meet top.  The lawful-semiring witness is
+`fxSecuritySemiring_isLawful` (DIM5-1, below). -/
 def fxSecuritySemiring : OrderedGradeSemiring where
   Carrier := SecurityGrade
   zero := .unclassified
   one := .classified
   add := SecurityGrade.add
-  mul := fun firstGrade secondGrade => SecurityGrade.add firstGrade secondGrade
+  mul := SecurityGrade.mul
   le := SecurityGrade.le
   carrierDecEq := instDecidableEqSecurityGrade
 
@@ -363,6 +368,165 @@ theorem fxUsageSemiring_isLawful : IsLawfulOrderedGradeSemiring fxUsageSemiring 
   mul_le_mul_left := fun scaleGrade _ _ firstBelowSecond =>
     UsageGrade.mul_le_mul_left scaleGrade firstBelowSecond
 
+/-! ## The security grade algebra `{unclassified < classified}` is a verified ordered semiring (DIM5-1, §6.1/§6.3)
+
+The Security dimension (dim 5) is the SECOND graded instance of the §6.1 ordered semiring, after the
+usage dimension `{0, 1, ω}`.  Its carrier is the two-point lattice `unclassified < classified`:
+`+` is the JOIN (combining secrecy — any classified input poisons the result, the noninterference
+combine rule), `*` is the MEET (`SecurityGrade.mul`, sequential composition with annihilation
+`classified * unclassified = unclassified`, the §6.3 "ghost computation on a secret leaks nothing"
+fact).  `zero = unclassified` is simultaneously the join bottom and the meet annihilator; `one =
+classified` is the meet top.
+
+Because `{unclassified < classified}` is a two-element chain it is a DISTRIBUTIVE lattice, so meet
+distributes over join — the law that makes `(add, mul)` a genuine semiring rather than two unrelated
+monoids.  Every law closes by full 2×2(×2) case enumeration (`cases … <;> rfl` for the equational
+laws; `cases … <;> first | rfl | Bool.noConfusion …` for the order laws), propext-free and zero-axiom,
+exactly as the usage twin.  This is the non-vacuous DIM5-1 deliverable: a SECOND dimension shown to be
+a lawful ordered semiring with NO change to the type metatheory — the orthogonal-composition thesis
+(DIM2-7) extended past its first witness. -/
+
+/-- Commutativity of security join (combining secrecy is order-independent). -/
+theorem SecurityGrade.add_comm (firstGrade secondGrade : SecurityGrade) :
+    SecurityGrade.add firstGrade secondGrade = SecurityGrade.add secondGrade firstGrade := by
+  cases firstGrade <;> cases secondGrade <;> rfl
+
+/-- Associativity of security join — the commutative-monoid law `(R, +, 0)`. -/
+theorem SecurityGrade.add_assoc (firstGrade secondGrade thirdGrade : SecurityGrade) :
+    SecurityGrade.add (SecurityGrade.add firstGrade secondGrade) thirdGrade =
+      SecurityGrade.add firstGrade (SecurityGrade.add secondGrade thirdGrade) := by
+  cases firstGrade <;> cases secondGrade <;> cases thirdGrade <;> rfl
+
+/-- `unclassified` is the join bottom (right identity). -/
+theorem SecurityGrade.add_zero (someGrade : SecurityGrade) :
+    SecurityGrade.add someGrade .unclassified = someGrade := by cases someGrade <;> rfl
+
+/-- `unclassified` is the join bottom (left identity). -/
+theorem SecurityGrade.zero_add (someGrade : SecurityGrade) :
+    SecurityGrade.add .unclassified someGrade = someGrade := by cases someGrade <;> rfl
+
+/-- Associativity of security meet — the monoid law `(R, *, 1)`. -/
+theorem SecurityGrade.mul_assoc (firstGrade secondGrade thirdGrade : SecurityGrade) :
+    SecurityGrade.mul (SecurityGrade.mul firstGrade secondGrade) thirdGrade =
+      SecurityGrade.mul firstGrade (SecurityGrade.mul secondGrade thirdGrade) := by
+  cases firstGrade <;> cases secondGrade <;> cases thirdGrade <;> rfl
+
+/-- `classified` is the meet top (right identity). -/
+theorem SecurityGrade.mul_one (someGrade : SecurityGrade) :
+    SecurityGrade.mul someGrade .classified = someGrade := by cases someGrade <;> rfl
+
+/-- `classified` is the meet top (left identity). -/
+theorem SecurityGrade.one_mul (someGrade : SecurityGrade) :
+    SecurityGrade.mul .classified someGrade = someGrade := by cases someGrade <;> rfl
+
+/-- **Annihilation `a * unclassified = unclassified`** (§6.3: ghost computation on a secret leaks
+nothing — `classified * 0 = 0`).  `unclassified` is the meet bottom, so it absorbs under `*`. -/
+theorem SecurityGrade.mul_zero (someGrade : SecurityGrade) :
+    SecurityGrade.mul someGrade .unclassified = .unclassified := by cases someGrade <;> rfl
+
+/-- Left annihilation `unclassified * a = unclassified`. -/
+theorem SecurityGrade.zero_mul (someGrade : SecurityGrade) :
+    SecurityGrade.mul .unclassified someGrade = .unclassified := by cases someGrade <;> rfl
+
+/-- Commutativity of security meet (sequential secrecy composition is order-independent).  Security
+is a COMMUTATIVE semiring; §6.1 only requires `*` to be a monoid, so this is a bonus per-instance law
+beyond the general bundle. -/
+theorem SecurityGrade.mul_comm (firstGrade secondGrade : SecurityGrade) :
+    SecurityGrade.mul firstGrade secondGrade = SecurityGrade.mul secondGrade firstGrade := by
+  cases firstGrade <;> cases secondGrade <;> rfl
+
+/-- Left distributivity `a * (b + c) = a * b + a * c` — meet over join in the distributive 2-chain.
+Without it `fxSecuritySemiring` would be two unrelated monoids, not a semiring. -/
+theorem SecurityGrade.left_distrib (firstGrade secondGrade thirdGrade : SecurityGrade) :
+    SecurityGrade.mul firstGrade (SecurityGrade.add secondGrade thirdGrade) =
+      SecurityGrade.add (SecurityGrade.mul firstGrade secondGrade)
+        (SecurityGrade.mul firstGrade thirdGrade) := by
+  cases firstGrade <;> cases secondGrade <;> cases thirdGrade <;> rfl
+
+/-- Right distributivity `(a + b) * c = a * c + b * c`. -/
+theorem SecurityGrade.right_distrib (firstGrade secondGrade thirdGrade : SecurityGrade) :
+    SecurityGrade.mul (SecurityGrade.add firstGrade secondGrade) thirdGrade =
+      SecurityGrade.add (SecurityGrade.mul firstGrade thirdGrade)
+        (SecurityGrade.mul secondGrade thirdGrade) := by
+  cases firstGrade <;> cases secondGrade <;> cases thirdGrade <;> rfl
+
+/-- Reflexivity of the security order `unclassified ≤ classified`. -/
+theorem SecurityGrade.le_refl (someGrade : SecurityGrade) :
+    SecurityGrade.le someGrade someGrade = true := by cases someGrade <;> rfl
+
+/-- Transitivity of the security order. -/
+theorem SecurityGrade.le_trans {firstGrade secondGrade thirdGrade : SecurityGrade}
+    (firstBelowSecond : SecurityGrade.le firstGrade secondGrade = true)
+    (secondBelowThird : SecurityGrade.le secondGrade thirdGrade = true) :
+    SecurityGrade.le firstGrade thirdGrade = true := by
+  cases firstGrade <;> cases secondGrade <;> cases thirdGrade <;>
+    first
+      | rfl
+      | exact Bool.noConfusion firstBelowSecond
+      | exact Bool.noConfusion secondBelowThird
+
+/-- Antisymmetry — the security order is a PARTIAL order. -/
+theorem SecurityGrade.le_antisymm {firstGrade secondGrade : SecurityGrade}
+    (firstBelowSecond : SecurityGrade.le firstGrade secondGrade = true)
+    (secondBelowFirst : SecurityGrade.le secondGrade firstGrade = true) :
+    firstGrade = secondGrade := by
+  cases firstGrade <;> cases secondGrade <;>
+    first
+      | rfl
+      | exact Bool.noConfusion firstBelowSecond
+      | exact Bool.noConfusion secondBelowFirst
+
+/-- Order compatibility with join: `b ≤ c → a + b ≤ a + c`. -/
+theorem SecurityGrade.add_le_add_left {firstGrade secondGrade : SecurityGrade}
+    (scaleGrade : SecurityGrade) (firstBelowSecond : SecurityGrade.le firstGrade secondGrade = true) :
+    SecurityGrade.le (SecurityGrade.add scaleGrade firstGrade)
+      (SecurityGrade.add scaleGrade secondGrade) = true := by
+  cases scaleGrade <;> cases firstGrade <;> cases secondGrade <;>
+    first | rfl | exact Bool.noConfusion firstBelowSecond
+
+/-- Order compatibility with meet: `b ≤ c → a * b ≤ a * c`. -/
+theorem SecurityGrade.mul_le_mul_left {firstGrade secondGrade : SecurityGrade}
+    (scaleGrade : SecurityGrade) (firstBelowSecond : SecurityGrade.le firstGrade secondGrade = true) :
+    SecurityGrade.le (SecurityGrade.mul scaleGrade firstGrade)
+      (SecurityGrade.mul scaleGrade secondGrade) = true := by
+  cases scaleGrade <;> cases firstGrade <;> cases secondGrade <;>
+    first | rfl | exact Bool.noConfusion firstBelowSecond
+
+/-- **The noninterference combine fact: `classified + a = classified`** (§12.2).  A classified grade
+poisons the join — mixing secret with anything yields secret, so an unclassified output can never
+depend on a classified input without an explicit `declassify`.  The grade-level core of the
+information-flow discipline (the security analogue of usage's `one_div_omega` Atkey-correction fact). -/
+theorem SecurityGrade.classified_poisons_add (someGrade : SecurityGrade) :
+    SecurityGrade.add .classified someGrade = .classified := by cases someGrade <;> rfl
+
+/-- **The FX security grade algebra `{unclassified < classified}` is a verified ordered semiring.**
+Assembles every §6.1 ordered-semiring law into one inhabitant of
+`IsLawfulOrderedGradeSemiring fxSecuritySemiring`, with `mul = SecurityGrade.mul` (the MEET).  This is
+DIM5-1: the second graded dimension proven a genuine ordered semiring — `mul_comm` is again ABSENT
+from the bundle (`*` need only be a monoid; the security `*` commutativity is the stronger
+per-instance `SecurityGrade.mul_comm`). -/
+theorem fxSecuritySemiring_isLawful : IsLawfulOrderedGradeSemiring fxSecuritySemiring where
+  add_comm := SecurityGrade.add_comm
+  add_assoc := SecurityGrade.add_assoc
+  add_zero := SecurityGrade.add_zero
+  zero_add := SecurityGrade.zero_add
+  mul_assoc := SecurityGrade.mul_assoc
+  mul_one := SecurityGrade.mul_one
+  one_mul := SecurityGrade.one_mul
+  mul_zero := SecurityGrade.mul_zero
+  zero_mul := SecurityGrade.zero_mul
+  left_distrib := SecurityGrade.left_distrib
+  right_distrib := SecurityGrade.right_distrib
+  le_refl := SecurityGrade.le_refl
+  le_trans := fun _ _ _ firstBelowSecond secondBelowThird =>
+    SecurityGrade.le_trans firstBelowSecond secondBelowThird
+  le_antisymm := fun _ _ firstBelowSecond secondBelowFirst =>
+    SecurityGrade.le_antisymm firstBelowSecond secondBelowFirst
+  add_le_add_left := fun scaleGrade _ _ firstBelowSecond =>
+    SecurityGrade.add_le_add_left scaleGrade firstBelowSecond
+  mul_le_mul_left := fun scaleGrade _ _ firstBelowSecond =>
+    SecurityGrade.mul_le_mul_left scaleGrade firstBelowSecond
+
 /-! ## Grade division — the residual of multiplication (toward DIM2-3's corrected Lam rule)
 
 `div a b = max { d : d * b ≤ a }` is the residual (right adjoint) of `* b` — the largest grade
@@ -413,15 +577,11 @@ theorem UsageGrade.mul_div_le (divisorGrade dividendGrade : UsageGrade) :
       dividendGrade = true := by
   cases divisorGrade <;> cases dividendGrade <;> rfl
 
-/-! ## Security-instance multiplication caveat (flagged, not changed)
+/-! ## Security-instance multiplication: RESOLVED (DIM5-1)
 
-`fxSecuritySemiring` above wires `mul := SecurityGrade.add` (JOIN).  Per §6.1 security
-multiplication is the MEET (`classified * 0 = 0` annihilation) — the dedicated `SecurityGrade.mul`.
-With `mul := add`, the instance fails `one_mul` (`one = classified`; `classified ∨ unclassified =
-classified ≠ unclassified`) and annihilation, so it is NOT a semiring: `IsLawfulOrderedGradeSemiring
-fxSecuritySemiring` is unprovable as written.  The one-line fix is `mul := SecurityGrade.mul`, after
-which the bundle holds (confirmed in scratch).  Left unchanged here, since this DIM2-1 task scopes
-the USAGE semiring and `fxSecuritySemiring` is a pre-existing committed definition belonging to the
-separate Security dimension — the fix lands together with the security-semiring bundle. -/
+The earlier `fxSecuritySemiring.mul := SecurityGrade.add` (JOIN) miswiring — which made the instance
+fail `one_mul` and annihilation, so `IsLawfulOrderedGradeSemiring fxSecuritySemiring` was unprovable —
+is now fixed: `mul := SecurityGrade.mul` (the MEET, §6.1/§6.3) with the complete law set and the
+`fxSecuritySemiring_isLawful` witness shipped in the security-grade-algebra section above. -/
 
 end FX1Poly.Modal
