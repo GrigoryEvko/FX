@@ -4,6 +4,7 @@ import FX1Poly.Modal.GradeVector
 import FX1Poly.Modal.GradeVectorGeneric
 import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTyping
+import FX1Poly.Modal.GradedTypingGeneric
 import FX1Poly.Modal.GradedTypingMetatheory
 import FX1Poly.Modal.GradedSubjectReduction
 import FX1Poly.Modal.GradeErasure
@@ -214,6 +215,27 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.usageGradeVector_scale_add
 #assert_no_axioms FX1Poly.Modal.securityGradeVector_add_comm
 #assert_no_axioms FX1Poly.Modal.securityGradeVector_below_refl
+
+/-! ### The GENERIC graded typing judgment over any OrderedGradeSemiring (DIM5-3 + dims 6–21)
+
+`HasGradeOver R` — the §6.2 grade-checking judgment (corrected Wood/Atkey Lam + App scaling), generic
+over the ordered semiring, on the DIM5-2 generic vector.  Structural metatheory (3 inversions + the
+length-coherence invariant) transfers from DIM2-3 verbatim.  The witnesses type the linear identity +
+K combinator at BOTH usage and security — the orthogonal-composition thesis at the JUDGMENT layer. -/
+
+#assert_no_axioms FX1Poly.Modal.GTypeOver
+#assert_no_axioms FX1Poly.Modal.GTypeOver.lookup
+#assert_no_axioms FX1Poly.Modal.HasGradeOver
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.add_length_eq
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.invertVar
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.invertLam
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.invertApp
+#assert_no_axioms FX1Poly.Modal.hasGradeOver_length
+#assert_no_axioms FX1Poly.Modal.linearIdentityOver_typed
+#assert_no_axioms FX1Poly.Modal.kCombinatorOver_typed
+#assert_no_axioms FX1Poly.Modal.usageLinearIdentity_typedViaGeneric
+#assert_no_axioms FX1Poly.Modal.securityLinearIdentity_typedViaGeneric
+#assert_no_axioms FX1Poly.Modal.securityKCombinator_typedViaGeneric
 
 /-! ### The SOUND graded typing judgment (DIM2-3): type-coupled HasUsage with App scaling -/
 
