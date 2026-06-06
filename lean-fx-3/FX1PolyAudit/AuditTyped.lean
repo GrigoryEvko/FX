@@ -326,6 +326,7 @@ import FX1Poly.Typed.HasTypeDescPiFormationUniqueness
 import FX1Poly.Typed.HasTypeDescPiCheckFormation
 import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
 import FX1Poly.Typed.IntroRuleDesc
+import FX1Poly.Typed.ElimRuleDesc
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
@@ -4954,3 +4955,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.introRuleDescOf_outputIsPiIntro
 #assert_no_axioms FX1Poly.Typed.introRuleDescOf_isLam
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_piIntro_viaIntroDesc
+
+-- GTL-17 (#831): the ELIMINATION-rule description table — the elim twin of IntroRuleDesc (GTL-15).
+-- KEY: the eliminator output is CHILDREN-DEPENDENT (`subst0 codomainCode argument` = motive applied to
+-- scrutinee), so `ElimRuleDesc.outputType` reads off a CHILD (the argument) — the genuinely-new part of
+-- the §11.8.5 non-uniform-output seam that formation (level-output) and introduction (parameter-output)
+-- never exercise.  `elimRuleDescOf` is the one-row (`gen_app`) table; the metadata lemmas mirror the
+-- intro/formation cascade-death lemmas; `hasTypeDescPi_piElim_viaElimDesc` is the NON-VACUOUS
+-- reconstruction (a real application types at the scrutinee-dependent rule-data output).  Additive: it
+-- does NOT modify `HasTypeDescPi` (the engine fold of `piElim` into a generic `genElim` row is GTL-18).
+#assert_no_axioms FX1Poly.Typed.ElimRuleDesc
+#assert_no_axioms FX1Poly.Typed.piElimOutput
+#assert_no_axioms FX1Poly.Typed.elimRuleDescOf
+#assert_no_axioms FX1Poly.Typed.elimRuleDescOf_app
+#assert_no_axioms FX1Poly.Typed.elimRuleDescOf_outputIsPiElim
+#assert_no_axioms FX1Poly.Typed.elimRuleDescOf_isApp
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_piElim_viaElimDesc
