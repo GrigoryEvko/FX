@@ -1,8 +1,0 @@
-import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.Precompose
-import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.SubstPointwise
-import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.Composition
-import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.CastHEq
-import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.SingletonPrecompose
-import LeanFX2.Term.Pointwise.PointwiseAndCompositionInfrastructure.LiftCompose
-
-/-! Public umbrella for typed pointwise substitution and composition infrastructure. -/
