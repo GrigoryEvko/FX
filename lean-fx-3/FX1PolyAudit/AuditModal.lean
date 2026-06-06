@@ -10,14 +10,11 @@ import FX1Poly.Modal.GradedWeakeningGeneric
 import FX1Poly.Modal.GradedSubstitutionGeneric
 import FX1Poly.Modal.GradedSubjectReductionGeneric
 import FX1Poly.Modal.GradedCompositionGeneric
-import FX1Poly.Modal.GradedTypingMetatheory
-import FX1Poly.Modal.GradedSubjectReduction
 import FX1Poly.Modal.GradeErasure
 import FX1Poly.Modal.SimpleStrongNormalization
 import FX1Poly.Modal.GradedSubstitutionAlgebra
 import FX1Poly.Modal.GradedReductionSubstitution
 import FX1Poly.Modal.GradedFundamentalTheorem
-import FX1Poly.Modal.GradedComposition
 import FX1Poly.Modal.GradedReductionConfluence
 import FX1Poly.Modal.GradedNormalization
 
@@ -351,55 +348,11 @@ subst+β-SR → composition). -/
 #assert_no_axioms FX1Poly.Modal.linearIdentity_typed
 #assert_no_axioms FX1Poly.Modal.kCombinator_typed
 
-/-! ### HasUsage structural metatheory: inversion + length invariant + weakening -/
+-- HasUsage structural metatheory (inversion / length / weakening) is subsumed by the GENERIC
+-- HasGradeOver R metatheory above (insertTypeAtOver / GradeVectorOver.insertAt / hasGradeOver_weakening).
 
-#assert_no_axioms FX1Poly.Modal.HasUsage.invertVar
-#assert_no_axioms FX1Poly.Modal.HasUsage.invertLam
-#assert_no_axioms FX1Poly.Modal.HasUsage.invertApp
-#assert_no_axioms FX1Poly.Modal.insertTypeAt
-#assert_no_axioms FX1Poly.Modal.GradeVector.insertAt
-#assert_no_axioms FX1Poly.Modal.length_insertTypeAt
-#assert_no_axioms FX1Poly.Modal.lookup_some_lt
-#assert_no_axioms FX1Poly.Modal.lookup_insertTypeAt_lt
-#assert_no_axioms FX1Poly.Modal.lookup_insertTypeAt_ge
-#assert_no_axioms FX1Poly.Modal.insertAt_zero
-#assert_no_axioms FX1Poly.Modal.single_insertAt_lt
-#assert_no_axioms FX1Poly.Modal.single_insertAt_ge
-#assert_no_axioms FX1Poly.Modal.insertAt_scale
-#assert_no_axioms FX1Poly.Modal.insertAt_add
-#assert_no_axioms FX1Poly.Modal.add_length_eq
-#assert_no_axioms FX1Poly.Modal.hasUsage_length
-#assert_no_axioms FX1Poly.Modal.hasUsage_weakening
-
-/-! ### β subject reduction (the soundness payoff): graded substitution + β-preservation -/
-
-#assert_no_axioms FX1Poly.Modal.removeTypeAt
-#assert_no_axioms FX1Poly.Modal.GradeVector.removeAt
-#assert_no_axioms FX1Poly.Modal.GradeVector.gradeAt
-#assert_no_axioms FX1Poly.Modal.GradeVector.substInto
-#assert_no_axioms FX1Poly.Modal.substInto_succ_cons
-#assert_no_axioms FX1Poly.Modal.removeTypeAt_length
-#assert_no_axioms FX1Poly.Modal.lookup_removeTypeAt_lt
-#assert_no_axioms FX1Poly.Modal.lookup_removeTypeAt_ge
-#assert_no_axioms FX1Poly.Modal.gradeAt_nil
-#assert_no_axioms FX1Poly.Modal.gradeAt_zero
-#assert_no_axioms FX1Poly.Modal.removeAt_zero
-#assert_no_axioms FX1Poly.Modal.gradeAt_single_self
-#assert_no_axioms FX1Poly.Modal.gradeAt_single_ne
-#assert_no_axioms FX1Poly.Modal.removeAt_single_self
-#assert_no_axioms FX1Poly.Modal.removeAt_single_lt
-#assert_no_axioms FX1Poly.Modal.removeAt_single_gt
-#assert_no_axioms FX1Poly.Modal.removeAt_add
-#assert_no_axioms FX1Poly.Modal.removeAt_scale
-#assert_no_axioms FX1Poly.Modal.gradeAt_scale
-#assert_no_axioms FX1Poly.Modal.gradeAt_add
-#assert_no_axioms FX1Poly.Modal.add_interchange
-#assert_no_axioms FX1Poly.Modal.substInto_single_self
-#assert_no_axioms FX1Poly.Modal.substInto_single_lt
-#assert_no_axioms FX1Poly.Modal.substInto_single_gt
-#assert_no_axioms FX1Poly.Modal.substInto_appGrade
-#assert_no_axioms FX1Poly.Modal.hasUsage_substitution
-#assert_no_axioms FX1Poly.Modal.hasUsage_betaPreservation
+-- HasUsage β subject reduction (substInto algebra + substitution + β-preservation) is subsumed by the
+-- GENERIC hasGradeOver_substitution / hasGradeOver_betaPreservation above (over any OrderedGradeSemiring).
 
 /-! ### Grade erasure: the usage dimension is a conservative refinement of simple typing -/
 
@@ -486,25 +439,9 @@ witnesses (linear identity, K combinator). -/
 #assert_no_axioms FX1Poly.Modal.linearIdentity_stronglyNormalizing
 #assert_no_axioms FX1Poly.Modal.kCombinator_stronglyNormalizing
 
-/-! ### Usage composition ledger: orthogonal composition validated
-
-Graded subject reduction lifted to the full β-reduction, then the metatheory bundle conjoining
-type-dimension SN (transferred) with usage-dimension graded-SR on the same reduction — the two
-dimensions compose without collision (Usage × Type is a sound pointwise composition, not a §6.8
-collision pair).  Concrete grade-preservation β witnesses: `(λx.x) z ↝ z` at scaling `r = 1`, and the
-non-trivial `(λx.(g x) x) z ↝ (g z) z` at `r = ω` (the regression test for the `ρ + r·σ` law). -/
-
-#assert_no_axioms FX1Poly.Modal.HasUsage.preservedByReduces
-#assert_no_axioms FX1Poly.Modal.HasUsage.metatheoryBundle
-#assert_no_axioms FX1Poly.Modal.appliedIdentity
-#assert_no_axioms FX1Poly.Modal.appliedIdentity_typed
-#assert_no_axioms FX1Poly.Modal.appliedIdentity_reductKeepsGrade
-#assert_no_axioms FX1Poly.Modal.omegaScalingBinaryType
-#assert_no_axioms FX1Poly.Modal.omegaScalingRedex
-#assert_no_axioms FX1Poly.Modal.omegaScalingContractum
-#assert_no_axioms FX1Poly.Modal.omegaScalingRedex_typed
-#assert_no_axioms FX1Poly.Modal.omegaScalingRedex_reductKeepsGrade
-#assert_no_axioms FX1Poly.Modal.omegaScalingContractum_typedDirectly
+-- The usage composition ledger (graded-SR over full β + the SN∧graded-SR metatheory bundle + the ω-scaling
+-- regression witnesses) is subsumed by the GENERIC HasGradeOver.preservedByReduces / .metatheoryBundle +
+-- the usage{Applied,OmegaScaling}* witnesses gated in the generic composition section above.
 
 /-! ### β-confluence infrastructure: reduction-substitutivity for GradedLambda
 
