@@ -1,5 +1,4 @@
 import FX1Poly.Typed.HasTypeDescInversion
-import FX1Poly.Typed.WfContext
 
 /-! # FX1Poly/Typed/HasTypeDescFormerTelescopeInversion — generic former TELESCOPE inversion (GTL-08 probe)
 
@@ -21,7 +20,6 @@ theorem HasTypeDesc.inversionFormerTelescopeGeneric {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
     (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext)
     {generator : Generator} {rule : TypingRuleDesc}
     (isFormation : typingRuleDescOf generator = some rule) :
     ∀ {payload : generator.payload generalScope}
@@ -40,7 +38,7 @@ theorem HasTypeDesc.inversionFormerTelescopeGeneric {profile : PolyProfile}
           if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
         cases isFormation
     | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped => fun subjectEq =>
-        HasTypeDesc.inversionFormerTelescopeGeneric typedPremise wellFormed isFormation subjectEq
+        HasTypeDesc.inversionFormerTelescopeGeneric typedPremise isFormation subjectEq
     | .universeFormation _armContext _armLevel _armFlag => fun subjectEq => by
         have rootEq : Generator.gen_universeCode = generator :=
           congrArg RawTerm.headGenerator subjectEq
