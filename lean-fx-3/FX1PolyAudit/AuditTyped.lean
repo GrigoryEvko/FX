@@ -325,6 +325,7 @@ import FX1Poly.Typed.HasTypeDescPiCheckApplication
 import FX1Poly.Typed.HasTypeDescPiFormationUniqueness
 import FX1Poly.Typed.HasTypeDescPiCheckFormation
 import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
+import FX1Poly.Typed.IntroRuleDesc
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
@@ -4936,3 +4937,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.decideTypeGeneric_smoke_nestedPi
 #assert_no_axioms FX1Poly.Typed.decideTypeGeneric_smoke_unit
 #assert_no_axioms FX1Poly.Typed.decideTypeGeneric_smoke_emptyCodeDeferred
+
+-- GTL-15 (#829): the INTRODUCTION-rule description table — the intro analogue of the formation
+-- `typingRuleDescOf` machinery.  `IntroRuleDesc.outputType` carries the introduced TYPE as rule-DATA
+-- (a function of the rule's type-parameters), realizing the §11.8.5 non-uniform-output seam for
+-- INTRODUCTION (formation output was a universe code from levels; intro output is a built type).
+-- `introRuleDescOf` is the one-row (`gen_lam`) table; the metadata lemmas are the cascade-death
+-- substrate mirroring `typingRuleDescOf_outputIsUniverseFormer` / `_isPiOrSigma`; and
+-- `hasTypeDescPi_piIntro_viaIntroDesc` is the NON-VACUOUS reconstruction (a real λ types at the
+-- rule-data output — the intro twin of `hasTypeDesc_piFormation_viaGenArm`).  Additive: it does NOT
+-- modify `HasTypeDescPi` (the engine-level fold of `piIntro` into a generic `genIntro` row is GTL-16).
+#assert_no_axioms FX1Poly.Typed.IntroRuleDesc
+#assert_no_axioms FX1Poly.Typed.piIntroOutput
+#assert_no_axioms FX1Poly.Typed.introRuleDescOf
+#assert_no_axioms FX1Poly.Typed.introRuleDescOf_lam
+#assert_no_axioms FX1Poly.Typed.introRuleDescOf_outputIsPiIntro
+#assert_no_axioms FX1Poly.Typed.introRuleDescOf_isLam
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_piIntro_viaIntroDesc
