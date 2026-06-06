@@ -1,5 +1,6 @@
 import FX1Poly.Typed.IsTypeDescDecidable
 import FX1Poly.Typed.DescTelescopeInversion
+import FX1Poly.Typed.HasTypeDescFormerTelescopeInversion
 
 /-! # FX1Poly/Typed/DescTelescopeDecidable
     — the ARITY-GENERIC recursive telescope-typing decider (GTL-10 substrate, the extensibility gate)
@@ -98,5 +99,102 @@ def DescTelescope.decideAtFlag {profile : PolyProfile} {baseScope : Nat}
           cases telescope with
           | cons _ctx _hd _headLevel _restLevels _flg _rst _headTyped _restTyped =>
               exact hShift rfl)
+
+/-- A telescope over `childCons` exposes its head typed at the SHARED flag.  Extracted via a single `cons`
+case (the `nil` case is index-impossible, propext-clean exactly as in `decideAtFlag`'s refutations).  Used by
+the flag-synthesizing decider to compare the synthesized head flag against an arbitrary telescope flag. -/
+theorem DescTelescope.headTypedAtSharedFlag {profile : PolyProfile} {baseScope : Nat}
+    {restShifts : List Nat} {context : TypingContext profile baseScope}
+    {levels : List LevelExpr} {flag : UniverseFlag}
+    {childHead : RawTerm (baseScope + 0)} {childTail : RawTermChildren restShifts baseScope}
+    (telescope : DescTelescope profile (currentDepth := 0) context levels flag
+      (.childCons childHead childTail)) :
+    ∃ headLevel : LevelExpr,
+      HasTypeDesc profile context childHead (universeCodeCell headLevel flag) := by
+  cases telescope with
+  | cons _armContext _armHead headLevel _restLevels _armFlag _armRest headTyped _restTyped =>
+      exact ⟨headLevel, headTyped⟩
+
+/-- **Flag-synthesizing telescope decider** — the bridge that lets the arity-generic `decideAtFlag` be called
+WITHOUT knowing the shared universe flag in advance.  A former's children carry a stuck `generator.binderShifts`
+index, so the former-type decider cannot pattern-match them; this helper takes a FREE `binderShifts` (matchable)
+and SYNTHESISES the flag: `childNil` is a telescope at every flag (we report the canonical `.standard`);
+`childCons` peeks the head (its binder shift must equal the telescope depth `0`, then its type fixes the shared
+flag via `decideWithWitness`) and DELEGATES the whole-children telescope decision to `decideAtFlag` at that
+synthesised flag.  Non-recursive — the spine recursion lives entirely in `decideAtFlag`.  The refutation is
+flag-universal: no flag admits a telescope (the head's typing uniqueness collapses any candidate flag to the
+synthesised one, where `decideAtFlag` already refuted). -/
+def DescTelescope.decideWithSynthesizedFlag {profile : PolyProfile} {baseScope : Nat}
+    {context : TypingContext profile baseScope} (wellFormed : WfContextDesc context) :
+    {binderShifts : List Nat} → (children : RawTermChildren binderShifts baseScope) →
+    PSum
+      (Σ' flag : UniverseFlag, Σ' levels : List LevelExpr,
+        DescTelescope profile (currentDepth := 0) context levels flag children)
+      ((flag : UniverseFlag) → (levels : List LevelExpr) →
+        DescTelescope profile (currentDepth := 0) context levels flag children → False)
+  | _, .childNil =>
+      .inl ⟨UniverseFlag.standard, [],
+        DescTelescope.nil (baseScope := baseScope) (currentDepth := 0) context UniverseFlag.standard⟩
+  | _, @RawTermChildren.childCons _ shift _ childHead childTail =>
+      if hShift : shift = 0 then by
+        subst hShift
+        exact (match IsTypeDesc.decideWithWitness wellFormed childHead with
+          | .inr headNotType =>
+              .inr (fun flag _levels telescope => by
+                cases telescope with
+                | cons _ctx _hd headLevel _rl _fl _rst headTyped _rt =>
+                    exact headNotType ⟨headLevel, flag, headTyped⟩)
+          | .inl ⟨headLevel, headFlag, headTyped⟩ =>
+              match DescTelescope.decideAtFlag headFlag (currentDepth := 0) context wellFormed
+                  (.childCons childHead childTail) with
+              | .inl ⟨levels, telescope⟩ =>
+                  .inl ⟨headFlag, levels, telescope⟩
+              | .inr noTelescopeAtHeadFlag =>
+                  .inr (fun _flag levels telescope => by
+                    obtain ⟨_telHeadLevel, telHeadTyped⟩ := telescope.headTypedAtSharedFlag
+                    obtain ⟨_, flagAgree⟩ :=
+                      universeCodeCell_inj_of_conv
+                        (HasTypeDesc.uniquenessNative telHeadTyped wellFormed headTyped)
+                    subst flagAgree
+                    exact noTelescopeAtHeadFlag levels telescope))
+      else by
+        exact .inr (fun _flag _levels telescope => by
+          cases telescope with
+          | cons _ctx _hd _headLevel _restLevels _flg _rst _headTyped _restTyped =>
+              exact hShift rfl)
+
+/-- **Arity-generic former-type decider (GTL-10 heart).**  Decides whether a formation former
+`mkGen generator payload children` (with `typingRuleDescOf generator = some rule`) inhabits some universe — the
+cascade-free replacement for the hand-written Π / Σ branches plus the `typingRuleDescOf_isPiOrSigma` refutation
+`else` in `IsTypeDesc.decideWithWitness`.  Names NO formation generator: it asks `decideWithSynthesizedFlag`
+whether the children form a telescope at some shared flag, then either reassembles the former via the generic
+`HasTypeDesc.genFormation` arm (rewriting the rule output to the universe code via
+`typingRuleDescOf_outputIsUniverseFormer`) or refutes — any putative typing inverts (generically, via
+`inversionFormerWithConvGeneric`) to a telescope at SOME flag, which the flag-universal refutation rejects.  A
+new formation row (`listCode`/`optionCode`/…) is absorbed with zero new arms. -/
+def IsTypeDesc.decideFormerType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} (wellFormed : WfContextDesc context)
+    {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    (payload : generator.payload scope)
+    (children : RawTermChildren generator.binderShifts scope) :
+    PSum
+      (Σ' levelExpr : LevelExpr, Σ' flag : UniverseFlag,
+        HasTypeDesc profile context (.mkGen generator payload children)
+          (universeCodeCell levelExpr flag))
+      (IsTypeDesc profile context (.mkGen generator payload children) → False) :=
+  match DescTelescope.decideWithSynthesizedFlag wellFormed children with
+  | .inl ⟨flag, levels, telescope⟩ =>
+      .inl ⟨lmaxAll levels, flag, by
+        have formerTyped :=
+          HasTypeDesc.genFormation context generator payload children levels flag rule isFormation telescope
+        rw [typingRuleDescOf_outputIsUniverseFormer isFormation] at formerTyped
+        exact formerTyped⟩
+  | .inr noTelescopeAtAnyFlag =>
+      .inr (fun isType => by
+        obtain ⟨_levelExpr, _flag, typed⟩ := isType
+        obtain ⟨levels, telFlag, telescope, _convToCode⟩ :=
+          HasTypeDesc.inversionFormerWithConvGeneric typed isFormation rfl
+        exact noTelescopeAtAnyFlag telFlag levels telescope)
 
 end FX1Poly.Typed

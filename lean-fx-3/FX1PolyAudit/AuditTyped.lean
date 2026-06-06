@@ -5281,3 +5281,13 @@ gates pin them shut.
 -- on a shift/depth mismatch, a non-type child, or a flag clash (via uniquenessNative). Names NO formation
 -- generator — a future formation row (listCode / data codes) is absorbed zero-touch.
 #assert_no_axioms FX1Poly.Typed.DescTelescope.decideAtFlag
+-- The flag-synthesizing bridge + the cascade-free former-type decider (GTL-10 heart). A former's children carry
+-- a STUCK generator.binderShifts index, un-matchable directly (Lean's equation compiler will not generalize a
+-- stuck index), so decideWithSynthesizedFlag takes a FREE binderShifts, peeks the head for the shared flag, and
+-- delegates the whole-children telescope decision to decideAtFlag — making decideFormerType a thin wrapper that
+-- reassembles the former via the generic genFormation arm or refutes flag-universally via the generic former
+-- inversion. No Π/Σ enumeration: the cascade-free replacement for decideWithWitness's typingRuleDescOf_isPiOrSigma
+-- else-branch. headTypedAtSharedFlag extracts a telescope head's typing (propext-clean single cons-case).
+#assert_no_axioms FX1Poly.Typed.DescTelescope.headTypedAtSharedFlag
+#assert_no_axioms FX1Poly.Typed.DescTelescope.decideWithSynthesizedFlag
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideFormerType
