@@ -61,6 +61,7 @@ import FX1Poly.Core.StrongNormalizationUnion
 import FX1Poly.Core.StrongNormalizationBetaEtaUnion
 import FX1Poly.Core.EtaPostponementOverBeta
 import FX1Poly.Core.ModalEliminatorReducibility
+import FX1Poly.Core.UniverseModeBridgeReducibility
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -624,6 +625,20 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_of_candidateMember
 #assert_no_axioms FX1Poly.Core.StepStar.subsume_isStronglyNormalizing_of_candidateMember
 #assert_no_axioms FX1Poly.Core.StepStar.modElim_isStronglyNormalizing_ofBoxMember
+
+-- SN-077 (UniverseModeBridgeReducibility.lean): the 2LTT universe-mode bridge twin of SN-074/075. The lift
+-- (one child) + lower (two children: outer + cofibrancy) are congruence-only/non-neutral with no β+ι ι-rule
+-- (their lower(lift x)↝x rule awaits M26-Z1/#434), so the SN candidate is the honest ceiling. The lower's two
+-- child reflections each slice the two-child operator into a one-child congruence wrapper, reusing SN-074's
+-- generic isStronglyNormalizing_child_of_oneChildCong (the cofibrancy slice threads StepChildren.there past the
+-- held outer child, as in listCons's tail projection). Biconditionals + candidate-framing complete the picture.
+#assert_no_axioms FX1Poly.Core.StepStar.liftInnerToOuter_isStronglyNormalizing_child_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.lowerOuterToInner_outer_isStronglyNormalizing_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.lowerOuterToInner_cofibrancy_isStronglyNormalizing_of_parent
+#assert_no_axioms FX1Poly.Core.StepStar.liftInnerToOuter_isStronglyNormalizing_iff
+#assert_no_axioms FX1Poly.Core.StepStar.lowerOuterToInner_isStronglyNormalizing_iff
+#assert_no_axioms FX1Poly.Core.StepStar.liftInnerToOuter_isStronglyNormalizing_of_candidateMember
+#assert_no_axioms FX1Poly.Core.StepStar.lowerOuterToInner_isStronglyNormalizing_of_candidateMembers
 
 -- Universe-mode bridge β+ι SN coverage (precursor to SN-077): gen_liftInnerToOuter (1-child inner→outer lift)
 -- and gen_lowerOuterToInner (2-child outer→inner lower) are congruence-only (no iota root rule; the mode-bridge
