@@ -8,6 +8,7 @@ import FX1Poly.Modal.GradedSubjectReduction
 import FX1Poly.Modal.GradeErasure
 import FX1Poly.Modal.SimpleStrongNormalization
 import FX1Poly.Modal.GradedSubstitutionAlgebra
+import FX1Poly.Modal.GradedReductionSubstitution
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -259,3 +260,21 @@ by structural induction with pointwise-agreement congruences (never `funext`/`Qu
 #assert_no_axioms FX1Poly.Modal.GradedLambda.renameTerm_applySubstitution
 #assert_no_axioms FX1Poly.Modal.GradedLambda.applySubstitution_applySubstitution
 #assert_no_axioms FX1Poly.Modal.GradedLambda.applySubstitution_id
+
+/-! ### Reduction is substitutive (DIM2-5 iii-b): kernel substAt/shift bridge + Reduces.substAt
+
+The kernel `shift`/`substAt` bridged to the σ-algebra, the β-composition (★), and the abstraction-
+lemma engine `Reduces.substAt` (single-step β preserved under substitution) + SN-reflection.  Going
+through the σ-algebra (rather than a direct de Bruijn substitution-swap) keeps it short: `lift`
+composition handles the binder bookkeeping once. -/
+
+#assert_no_axioms FX1Poly.Modal.shiftRenaming
+#assert_no_axioms FX1Poly.Modal.shift_eq_renameTerm
+#assert_no_axioms FX1Poly.Modal.shift_zero_eq_renameTerm
+#assert_no_axioms FX1Poly.Modal.singleSubstitution
+#assert_no_axioms FX1Poly.Modal.substAt_eq_applySubstitution
+#assert_no_axioms FX1Poly.Modal.consSubstitution
+#assert_no_axioms FX1Poly.Modal.substAt_zero_applySubstitution_lift
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.applySubstitution
+#assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.substAt
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.ofSubstAt
