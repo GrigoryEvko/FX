@@ -363,6 +363,7 @@ import FX1Poly.Typed.IsTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescNativeDecidable
 import FX1Poly.Typed.DescTelescopeDecidable
 import FX1Poly.Typed.IsTypeDescDecidableGeneric
+import FX1Poly.Typed.IsTypeDescGenericSmoke
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5310,3 +5311,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideTypeGeneric
 #assert_no_axioms FX1Poly.Typed.DescTelescope.decideSynthGeneric
 #assert_no_axioms FX1Poly.Typed.DescTelescope.decideAtFlagGeneric
+-- IsTypeDescGenericSmoke = non-vacuity + definitional-computation corpus for decideTypeGeneric: each fixture is
+-- `by rfl` (the kernel REDUCES the whole structural mutual recursion to the right constructor), proving the
+-- decider is a genuine computable function that returns .inl on Π/Σ/nested-Π/universe types and .inr on
+-- unitCell (a value) + emptyTypeCell (the GTL-11-deferred row, which FLIPS to .inl zero-touch when it lands).
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decidesAsTypeBool
+#assert_no_axioms FX1Poly.Typed.decideTypeGeneric_smoke_universeCode
+#assert_no_axioms FX1Poly.Typed.decideTypeGeneric_smoke_pi
+#assert_no_axioms FX1Poly.Typed.decideTypeGeneric_smoke_sigma
+#assert_no_axioms FX1Poly.Typed.decideTypeGeneric_smoke_nestedPi
+#assert_no_axioms FX1Poly.Typed.decideTypeGeneric_smoke_unit
+#assert_no_axioms FX1Poly.Typed.decideTypeGeneric_smoke_emptyCodeDeferred
