@@ -9,6 +9,7 @@ import FX1PolyAudit.AuditNbE
 import FX1PolyAudit.AuditUniverse
 import FX1PolyAudit.AuditTyped
 import FX1PolyAudit.AuditOmegacE
+import FX1PolyAudit.AuditModal
 import FX1PolyAudit.AuditFX0Poly
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
@@ -59,6 +60,9 @@ The second invariant is the one a release gate actually needs.
 * `AuditOmegacE`        — the ωcE / Makkai word-problem leg (Path B): the
   dimension-1 free-monoid structure on scaffold words (the word-equality
   recursion base).
+* `AuditModal`          — the resource-graded doctrine (the SECOND graded
+  dimension): the usage `{0, 1, ω}` and security ordered-semiring substrate
+  + the `IsLawfulOrderedGradeSemiring fxUsageSemiring` verified-semiring witness.
 
 ## Deliberately EXCLUDED — do NOT re-add
 
