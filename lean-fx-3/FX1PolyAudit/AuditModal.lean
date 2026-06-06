@@ -15,6 +15,7 @@ import FX1Poly.Modal.SimpleStrongNormalization
 import FX1Poly.Modal.GradedSubstitutionAlgebra
 import FX1Poly.Modal.GradedReductionSubstitution
 import FX1Poly.Modal.GradedFundamentalTheorem
+import FX1Poly.Modal.GradedStrongNormalization
 import FX1Poly.Modal.GradedReductionConfluence
 import FX1Poly.Modal.GradedNormalization
 

@@ -1,5 +1,4 @@
 import FX1Poly.Modal.GradedReductionSubstitution
-import FX1Poly.Modal.GradeErasure
 
 /-! # FX1Poly/Modal/GradedFundamentalTheorem — Tait SN + the graded-SN transfer
 
@@ -160,24 +159,8 @@ theorem HasSimpleType.stronglyNormalizing {typeContext : List SimpleType} {term 
     GradedLambda.IsStronglyNormalizing term :=
   typed.reducible.sn
 
-/-- **Graded strong normalization, the orthogonal-composition payoff**: every
-`HasUsage`-typed term is strongly normalizing — graded-SN TRANSFERS from STLC-SN through grade erasure
-(`HasUsage.erase`) with NO graded-reducibility re-proof, because the term and β-reduction are
-grade-AGNOSTIC.  Adding the usage dimension does not require redoing the SN metatheory. -/
-theorem HasUsage.stronglyNormalizing {typeContext : List GType} {grades : GradeVector}
-    {term : GradedLambda} {resultType : GType}
-    (typed : HasUsage typeContext grades term resultType) :
-    GradedLambda.IsStronglyNormalizing term :=
-  typed.erase.stronglyNormalizing
-
-/-- Smoke: the linear identity `λx. x` is strongly normalizing via the graded transfer (non-vacuous). -/
-theorem linearIdentity_stronglyNormalizing :
-    GradedLambda.IsStronglyNormalizing (GradedLambda.lam (GradedLambda.var 0)) :=
-  linearIdentity_typed.stronglyNormalizing
-
-/-- Smoke: the K combinator `λx. λy. x` is strongly normalizing via the graded transfer. -/
-theorem kCombinator_stronglyNormalizing :
-    GradedLambda.IsStronglyNormalizing (GradedLambda.lam (GradedLambda.lam (GradedLambda.var 1))) :=
-  kCombinator_typed.stronglyNormalizing
+-- Graded SN (`HasUsage.stronglyNormalizing` + the linearIdentity/kCombinator witnesses) is the bespoke
+-- usage corollary, split into `GradedStrongNormalization.lean` so this shared STLC fundamental theorem
+-- carries no usage-specific (`GradeErasure`/`GradedTyping`) import.
 
 end FX1Poly.Modal
