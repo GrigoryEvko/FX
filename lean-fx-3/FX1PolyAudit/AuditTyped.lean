@@ -862,11 +862,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectAndClassifierStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.Conv.trans_of_hasTypeDescMiddle
 
-/-! ### Closed-form consequences for the description formation engine.  These expose the native
-    closed-form facts through the proven `HasTypeDesc <-> HasType` bridge: closed subjects are intrinsic
+/-! ### Closed-form consequences for the description formation engine: closed subjects are intrinsic
     description types, have universe/Pi/Sigma type-former shape, and have classifiers convertible to
-    universe codes. -/
+    universe codes.  HT-A3: `closedSubjectIsTypeDesc` (via the scope-generalised
+    `closedSubjectIsTypeDescGeneral` workhorse) and `closedClassifierConvUniverseCode` are now proved on
+    the native formation recursion + native uniqueness, WITHOUT the `HasTypeDesc.toHasType` bridge; only
+    the STRUCTURAL `closedSubjectIsTypeFormer` still routes through the bridge (the head-to-children
+    reconstruction is a separable sub-brick). -/
 #assert_no_axioms FX1Poly.Typed.IsType.toIsTypeDesc
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeDescGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeFormer
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedClassifierConvUniverseCode

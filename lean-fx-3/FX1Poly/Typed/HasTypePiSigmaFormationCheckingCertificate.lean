@@ -219,17 +219,17 @@ theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedSubjectAndClassifi
   checkingCertificate.proveSubjectAndClassifierStronglyNormalizing typed
 
 /-- Description-engine empty-context subject regularity exposed through the checking certificate.  The proof
-uses the certificate's soundness map from `HasTypeDesc` to the native pi/sigma-formation `HasType` core, then
-transports the resulting native type witness back to `IsTypeDesc`. -/
+is now the native formation-engine closed form `HasTypeDesc.closedSubjectIsTypeDesc` (HT-A3, no longer routed
+through the certificate's `translateDescToHasType` soundness map). -/
 theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescSubjectIsTypeDesc
     {profile : PolyProfile}
-    (checkingCertificate :
+    (_checkingCertificate :
       HasTypePiSigmaFormationCheckingCertificate
         (TypingContext.empty : TypingContext profile 0))
     {subject classifier : RawTerm 0}
     (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
     IsTypeDesc profile TypingContext.empty subject :=
-  (HasType.closedSubjectIsType (checkingCertificate.translateDescToHasType typed)).toIsTypeDesc
+  HasTypeDesc.closedSubjectIsTypeDesc typed
 
 /-- Description-engine empty-context canonical-form shape exposed through the checking certificate: after
 transporting to the native pi/sigma-formation `HasType` core, a closed `HasTypeDesc` subject is a universe,
@@ -249,19 +249,20 @@ theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescSubject
         subject = sigmaTyCodeCell domainCode codomainCode) :=
   HasType.closedSubjectIsTypeFormer (checkingCertificate.translateDescToHasType typed)
 
-/-- Description-engine empty-context classifier shape exposed through the checking certificate: after
-transporting to the native pi/sigma-formation `HasType` core, every closed `HasTypeDesc` subject's
-classifier is convertible to a universe code. -/
+/-- Description-engine empty-context classifier shape exposed through the checking certificate: every closed
+`HasTypeDesc` subject's classifier is convertible to a universe code.  The proof is now the native
+formation-engine closed form `HasTypeDesc.closedClassifierConvUniverseCode` (HT-A3, no longer routed through
+the certificate's `translateDescToHasType` soundness map; the native form consumes `uniquenessNative`). -/
 theorem HasTypePiSigmaFormationCheckingCertificate.proveClosedHasTypeDescClassifierConvUniverseCode
     {profile : PolyProfile}
-    (checkingCertificate :
+    (_checkingCertificate :
       HasTypePiSigmaFormationCheckingCertificate
         (TypingContext.empty : TypingContext profile 0))
     {subject classifier : RawTerm 0}
     (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
     ∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
       Conv classifier (universeCodeCell levelExpr flag) :=
-  HasType.closedClassifierConvUniverseCode (checkingCertificate.translateDescToHasType typed)
+  HasTypeDesc.closedClassifierConvUniverseCode typed
 
 /-- Description-engine empty-context subject/classifier strong normalization exposed through the checking
 certificate.  This is the closed specialization of the certificate's description-engine normalization
