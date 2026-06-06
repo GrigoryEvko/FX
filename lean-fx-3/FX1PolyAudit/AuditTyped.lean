@@ -161,6 +161,7 @@ import FX1Poly.Typed.ReducibleEnvVecTypeVariable
 import FX1Poly.Typed.HasTypeDescPiConsistency
 import FX1Poly.Typed.HasTypeFormationNoLambdaApplication
 import FX1Poly.Typed.ReducibleSemanticRules
+import FX1Poly.Typed.ListCodeFormationUnderSubst
 import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.PiFormerMembership
@@ -552,11 +553,13 @@ gates pin them shut.
 -- four reducibility / canonical-forms consumers: FundamentalLevelIndexed, BoundedGrownDispatch,
 -- HasTypeDescPiFundamentalVectorFromFormation (their per-former toPiMember / toSigmaMember reassembly is
 -- 2-child-ONLY; listCode is 1-child) and FormationCanonicalForms (the head-generator disjunction). So
--- GTL-11/12/13 (data type-code rows) are NOT independent — the FT / bounded genFormation arm needs a
--- POSITIVE-former (data) reducibility candidate + 1-child `.toDataMember` reassembly. SPIKE-pending which
--- candidate: FORMATION/SN needs only the CR3-closed clause (member = neutral OR reduces-to-constructor-of-
--- reducible-parts; non-empty, fine — List A IS SN), a tractable standard-TT extension; canonicity SN-047/48/49
--- needs the SEPARATE empty-candidate / closed-term model (CON-A3 #810, the sconing leg) — distinct theorems.
+-- GTL-11/12/13 (data type-code rows) are NOT independent — the FT / bounded genFormation arm needs the data
+-- former classified as a reducible member of its universe. SPIKE RESOLVED (GO, proven by construction): this
+-- routes through the EXISTING arity-generic IsReducibleMemberAt.dataFormerInUniverse (cf. the shipped
+-- listCode_isReducibleMemberOfUniverse + the built one-child wrapper IsReducibleMemberAt.listCodeFormation-
+-- UnderSubst, the exact twin of sigmaFormationUnderSubst) — a tractable WIRING (route the FT arm's non-Π
+-- branch + the FormationCanonicalForms head disjunct), NOT new metatheory and NOT the model-change. Only
+-- canonicity SN-047/48/49 needs the SEPARATE empty-candidate / closed-term model (CON-A3 #810, sconing leg).
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_isPiOrSigma
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc
 #assert_no_axioms FX1Poly.Typed.DescTelescope
@@ -2199,6 +2202,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.formationGenerator_noWeakHeadStep
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormationUnderSubst
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormationUnderSubst
+-- GTL-11 spike GO (proven by construction): the listCode data-former universe-membership under a closing
+-- substitution, the one-child twin of sigmaFormationUnderSubst via the arity-generic dataFormerInUniverse.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.listCodeFormationUnderSubst
 
 -- Root-classification corollaries: a formation-typed subject's root generator is neither lam nor app. The
 -- table-generic family in HasTypeDescPiRootGeneric (subjectRootGeneratorGeneric /
