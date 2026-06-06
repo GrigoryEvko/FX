@@ -6,6 +6,7 @@ import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTyping
 import FX1Poly.Modal.GradedTypingGeneric
 import FX1Poly.Modal.GradeErasureGeneric
+import FX1Poly.Modal.GradedWeakeningGeneric
 import FX1Poly.Modal.GradedTypingMetatheory
 import FX1Poly.Modal.GradedSubjectReduction
 import FX1Poly.Modal.GradeErasure
@@ -252,6 +253,27 @@ erasure) at the judgment layer for all 21 dimensions at once. -/
 #assert_no_axioms FX1Poly.Modal.linearIdentityOver_stronglyNormalizing
 #assert_no_axioms FX1Poly.Modal.securityLinearIdentity_stronglyNormalizingViaGeneric
 #assert_no_axioms FX1Poly.Modal.securityKCombinator_stronglyNormalizingViaGeneric
+
+/-! ### Generic weakening for HasGradeOver R over any OrderedGradeSemiring (DIM5-5 + dims 6–21)
+
+The de Bruijn weakening metatheory generic over R: `HasGradeOver R` survives `GradedLambda.shift` at
+any cut, inserting a `R.zero` grade.  Mirrors DIM2's `GradedTypingMetatheory`; the App-case grade
+arithmetic (`insertAt_add`/`insertAt_scale`) routes through the lawful bundle (`zero_add`/`mul_zero`)
+since an abstract semiring's `R.add R.zero R.zero` does not compute.  The prerequisite for generic
+substitution → subject reduction. -/
+
+#assert_no_axioms FX1Poly.Modal.insertTypeAtOver
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.insertAt
+#assert_no_axioms FX1Poly.Modal.length_insertTypeAtOver
+#assert_no_axioms FX1Poly.Modal.lookup_some_ltOver
+#assert_no_axioms FX1Poly.Modal.lookup_insertTypeAtOver_lt
+#assert_no_axioms FX1Poly.Modal.lookup_insertTypeAtOver_ge
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.insertAt_zero
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.single_insertAt_lt
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.single_insertAt_ge
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.insertAt_scale
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.insertAt_add
+#assert_no_axioms FX1Poly.Modal.hasGradeOver_weakening
 
 /-! ### The SOUND graded typing judgment (DIM2-3): type-coupled HasUsage with App scaling -/
 
