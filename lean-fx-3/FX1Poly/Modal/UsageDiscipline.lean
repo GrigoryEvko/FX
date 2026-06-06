@@ -138,7 +138,7 @@ consumes multiply INSIDE its body — precisely the unsoundness the Wood/Atkey d
 tracking the lambda's binder grade and scaling the argument's usage by it in the App rule (which
 this occurrence check omits).  So a sound graded judgment CANNOT be the bare occurrence check; this
 is the concrete reason the corrected Lam rule (the contextDivide/`1/ω=0` machinery) is
-needed.  `substAt` + `BetaStep` below are the de Bruijn machinery that lets the β-reduct be a
+needed.  The `GradedLambdaTerm` substitution `substAt` plus the `BetaStep` relation below are the de Bruijn machinery that lets the β-reduct be a
 THEOREM rather than an assertion. -/
 
 
