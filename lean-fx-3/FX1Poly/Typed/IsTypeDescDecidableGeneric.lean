@@ -1,13 +1,18 @@
-import FX1Poly.Typed.DescTelescopeDecidable
+import FX1Poly.Typed.DescTelescopeInversion
+import FX1Poly.Typed.HasTypeDescFormerTelescopeInversion
+import FX1Poly.Typed.IsTypeDescRigidity
+import FX1Poly.Typed.WfContextDescUniqueness
+import FX1Poly.Typed.UniverseCodeConversion
 
 /-! # FX1Poly/Typed/IsTypeDescDecidableGeneric
     — the FULLY CASCADE-FREE native `IsTypeDesc` decider (GTL-10/11 payoff)
 
-`IsTypeDesc.decideWithWitness` (IsTypeDescDecidable.lean) decides type-hood by a `RawTerm.size` recursion with
-HAND-WRITTEN Π / Σ branches plus a `typingRuleDescOf_isPiOrSigma` `else` refutation — the cascade trap: a new
-formation row (`listCode`/`optionCode`/…) forces a new branch AND breaks the `else`.  This file ships the
-cascade-free replacement as a STRUCTURAL MUTUAL recursion over the `RawTerm` / `RawTermChildren` mutual
-inductive (no size measure, no `termination_by`):
+The retired `IsTypeDesc.decideWithWitness` (formerly in IsTypeDescDecidable.lean) decided type-hood by a
+`RawTerm.size` recursion with HAND-WRITTEN Π / Σ branches plus a `typingRuleDescOf_isPiOrSigma` `else`
+refutation — the cascade trap: a new formation row (`listCode`/`optionCode`/…) would force a new branch AND
+break the `else`.  This file is the cascade-free replacement (which supersedes and has replaced it), a
+STRUCTURAL MUTUAL recursion over the `RawTerm` / `RawTermChildren` mutual inductive (no size measure, no
+`termination_by`):
 
   * `IsTypeDesc.decideTypeGeneric` — decides any `mkGen` classifier: `universeCode` ⇒ type (leaf);
     `var` ⇒ type iff the lookup is a universe code (leaf); ANY OTHER head dispatches `typingRuleDescOf`

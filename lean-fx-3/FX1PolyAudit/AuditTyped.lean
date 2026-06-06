@@ -361,7 +361,6 @@ import FX1Poly.Typed.GrownNoTypeInType
 import FX1Poly.Typed.IsTypeDescRigidity
 import FX1Poly.Typed.IsTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescNativeDecidable
-import FX1Poly.Typed.DescTelescopeDecidable
 import FX1Poly.Typed.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.IsTypeDescGenericSmoke
 
@@ -5258,49 +5257,26 @@ gates pin them shut.
 -- subjectRootGeneratorGeneric — the formation-former case is the single typingRuleDescOf=some disjunct, so a
 -- future formation row needs no change here (cleaner than the bespoke 4-head IsType.not_of_headGenerator).
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.not_of_rootGenerator
--- IsTypeDescDecidable = native Decidable (IsTypeDesc Γ T) (HT-A4 B1c+B1d), off the old HasType engine.
+-- IsTypeDescDecidable = the concrete-children Π/Σ former-code inversions.  The bespoke decideWithWitness /
+-- decidableOfWellFormed cascade this file once held (a RawTerm.size recursion with hand-written Π/Σ branches +
+-- a typingRuleDescOf_isPiOrSigma else) has been RETIRED in favour of the cascade-free
+-- IsTypeDesc.decideTypeGeneric below, which absorbs any future formation row zero-touch.
 -- inversionPiCodeChildren/inversionSigmaCodeChildren = WfContext-FREE concrete-children unpacking (vs the
--- existing WfContext-carrying ...Components); decideWithWitness = the PSum recursive decider (universe/var
--- leaves + Π/Σ recursion + not_of_rootGenerator default, RawTerm.size termination); decidableOfWellFormed =
--- the Decidable wrapper over WfContextDesc. uniquenessNative + universeCodeCell_inj_of_conv discharge the
--- flag-mismatch refutation; hasTypeDesc_{pi,sigma}Formation_viaGenArm build the positive Π/Σ witnesses.
+-- WfContext-carrying ...Components and the generic inversionFormerWithConvGeneric, which existentially repack),
+-- retained as a reusable inversion API for the dependent type-formers.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionPiCodeChildren
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeChildren
-#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideWithWitness
-#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decidableOfWellFormed
--- HasTypeDescNativeDecidable = native Decidable (HasTypeDesc Γ t T) (HT-A4 B2+B3), off the old HasType engine.
--- inferWithWitness = principal-type synthesis (non-recursive: var/universe leaves + Π/Σ reuse decideWithWitness
--- + subjectRootGeneratorGeneric refutation); decidableOfWellFormedNative = the decision via the IsType-gate on
--- the classifier (Conv principal classifier decided by Conv.decidableOfStronglyNormalizing — principal SN by
--- classifierStronglyNormalizingNative, classifier SN by IsTypeDesc.isStronglyNormalizing once gated) + conv
--- rule forward + uniquenessNative refute. The native twin of the toHasType-routed HasTypeDesc.decidableOfWellFormed.
+-- HasTypeDescNativeDecidable = native Decidable (HasTypeDesc Γ t T) (HT-A4 B2+B3), off the old HasType engine,
+-- now CASCADE-FREE. inferWithWitness = principal-type synthesis (non-recursive: var/universe leaves; EVERY other
+-- head delegates to IsTypeDesc.decideTypeGeneric — its universe witness IS the head's principal type, its
+-- refutation reconstructs the denied IsTypeDesc witness via subjectRootGeneratorGeneric + the generic former
+-- inversion + genFormation, with NO Π/Σ enumeration and no typingRuleDescOf_isPiOrSigma else-branch).
+-- decidableOfWellFormedNative = the decision via the IsType-gate on the classifier (Conv principal classifier
+-- decided by Conv.decidableOfStronglyNormalizing — principal SN by classifierStronglyNormalizingNative,
+-- classifier SN by IsTypeDesc.isStronglyNormalizing via decidableOfWellFormedGeneric) + conv rule forward +
+-- uniquenessNative refute. The native twin of the toHasType-routed HasTypeDesc.decidableOfWellFormed.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inferWithWitness
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormedNative
--- DescTelescopeDecidable = the ARITY-GENERIC recursive telescope-typing decider (GTL-10 substrate, FRAME-2
--- extensibility gate). decideAtFlag structurally recurses on the children spine (so the dependent binderShifts
--- index peels off, dodging the GTL-08 arity-bound transport wall), decides each child a type at a SHARED flag
--- via IsTypeDesc.decideWithWitness + WfContextDesc.cons, synthesises the level list, and refutes (no telescope)
--- on a shift/depth mismatch, a non-type child, or a flag clash (via uniquenessNative). Names NO formation
--- generator — a future formation row (listCode / data codes) is absorbed zero-touch.
-#assert_no_axioms FX1Poly.Typed.DescTelescope.decideAtFlag
--- The flag-synthesizing bridge + the cascade-free former-type decider (GTL-10 heart). A former's children carry
--- a STUCK generator.binderShifts index, un-matchable directly (Lean's equation compiler will not generalize a
--- stuck index), so decideWithSynthesizedFlag takes a FREE binderShifts, peeks the head for the shared flag, and
--- delegates the whole-children telescope decision to decideAtFlag — making decideFormerType a thin wrapper that
--- reassembles the former via the generic genFormation arm or refutes flag-universally via the generic former
--- inversion. No Π/Σ enumeration: the cascade-free replacement for decideWithWitness's typingRuleDescOf_isPiOrSigma
--- else-branch. headTypedAtSharedFlag extracts a telescope head's typing (propext-clean single cons-case).
-#assert_no_axioms FX1Poly.Typed.DescTelescope.headTypedAtSharedFlag
-#assert_no_axioms FX1Poly.Typed.DescTelescope.decideWithSynthesizedFlag
-#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideFormerType
--- The cascade-free NON-LEAF dispatch: for a mkGen whose root is neither var nor universeCode, dispatch
--- typingRuleDescOf (some → decideFormerType; none → not_of_rootGenerator). This is the exact cascade-free
--- replacement for decideWithWitness's Π/Σ branches + typingRuleDescOf_isPiOrSigma else, depending only on
--- already-defined deciders (no mutual recursion). A future formation row lands in the `some` branch, zero arms.
-#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideMkGenOfNonLeaf
--- The Decidable-instance form (isTrue/isFalse wrapper) — the cascade-free twin of decidableOfWellFormed for the
--- former case, completing the non-leaf decision API.
-#assert_no_axioms FX1Poly.Typed.IsTypeDesc.decidableMkGenOfNonLeaf
 -- IsTypeDescDecidableGeneric = the FULLY cascade-free IsTypeDesc decider (GTL-10/11 payoff): a 3-function
 -- STRUCTURAL mutual recursion over RawTerm/RawTermChildren (no size measure, no termination_by) that retires
 -- decideWithWitness's Π/Σ enumeration + typingRuleDescOf_isPiOrSigma else. decideTypeGeneric does the var/universe
