@@ -851,9 +851,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDesc
 
 /-! ### Strong normalization and typed conversion for the description formation engine.
-    These are the `HasTypeDesc`-side consequences of the proven `HasTypeDesc -> HasType` soundness map:
-    subject SN, type SN, and typed-middle conversion transitivity.  They are scoped to the description
-    formation engine and do not claim the grown lambda/application reducibility theorem. -/
+    Subject SN is now the HasType-FREE native twin (HT-A3, `subjectStronglyNormalizingNative` via the mutual
+    telescope recursion + the `formerCellStronglyNormalizingOfChildren` assembly over the
+    `allStronglyNormalizing` child predicate); the public `isStronglyNormalizing` delegates to it.  The
+    remaining type-SN / typed-middle entries still route through the `HasTypeDesc -> HasType` soundness map.
+    Scoped to the description formation engine; no grown lambda/application reducibility claim. -/
+#assert_no_axioms FX1Poly.Core.RawTermChildren.allStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.formerCellStronglyNormalizingOfChildren
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectStronglyNormalizingNative
+#assert_no_axioms FX1Poly.Typed.DescTelescope.childrenStronglyNormalizingNative
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.toIsType
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.isStronglyNormalizing

@@ -1,6 +1,7 @@
 import FX1Poly.Typed.HasTypeDescSound
 import FX1Poly.Typed.HasTypeDescValidity
 import FX1Poly.Typed.HasTypeStronglyNormalizing
+import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizingNative
 
 /-! # FX1Poly/Typed/HasTypeDescStronglyNormalizing
     — strong normalization and typed conversion for the description formation engine
@@ -26,15 +27,15 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- Strong normalization for the description formation engine.  A `HasTypeDesc` derivation maps to the
-native pi/sigma-formation `HasType` core by soundness, and native typed subjects are strongly normalizing
-because that core has no redex-creating subject constructors. -/
+/-- Strong normalization for the description formation engine: every formation-typed SUBJECT is strongly
+normalizing.  HT-A3: delegates to the HasType-FREE native twin `HasTypeDesc.subjectStronglyNormalizingNative`
+(proved directly on the formation engine's structure), no longer routing through `HasTypeDesc.toHasType`. -/
 theorem HasTypeDesc.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (typed : HasTypeDesc profile context subject classifier) :
     StepStar.IsStronglyNormalizing subject :=
-  (HasTypeDesc.toHasType typed).isStronglyNormalizing
+  typed.subjectStronglyNormalizingNative
 
 /-- Convert an intrinsic description-engine type witness into the corresponding native `IsType` witness.
 This is the type-level form of `HasTypeDesc.toHasType`. -/
