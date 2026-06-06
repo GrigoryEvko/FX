@@ -9,6 +9,7 @@ import FX1Poly.Modal.GradeErasureGeneric
 import FX1Poly.Modal.GradedWeakeningGeneric
 import FX1Poly.Modal.GradedSubstitutionGeneric
 import FX1Poly.Modal.GradedSubjectReductionGeneric
+import FX1Poly.Modal.GradedCompositionGeneric
 import FX1Poly.Modal.GradedTypingMetatheory
 import FX1Poly.Modal.GradedSubjectReduction
 import FX1Poly.Modal.GradeErasure
@@ -321,6 +322,25 @@ dimension R.  The security witness exercises β SR in a second dimension. -/
 #assert_no_axioms FX1Poly.Modal.hasGradeOver_substitution
 #assert_no_axioms FX1Poly.Modal.hasGradeOver_betaPreservation
 #assert_no_axioms FX1Poly.Modal.securityBeta_smoke
+
+/-! ### Generic composition ledger for HasGradeOver R (DIM5-8 + dims 6–21) — CLOSES the generic track
+
+Graded subject reduction over the FULL β-reduction `Reduces`, and the metatheory bundle (SN ∧ graded-SR
+on the same relation, for any dimension R).  The usage ω-witness routes the decisive `ρ + r·σ` regression
+(r=ω) through the GENERIC preservedByReduces.  Mirrors DIM2-7's GradedComposition; completes the generic
+reduction metatheory (semiring → vector → judgment → erasure+SN → weakening → substInto → subst+β-SR →
+composition). -/
+
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.preservedByReduces
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.metatheoryBundle
+#assert_no_axioms FX1Poly.Modal.appliedIdentityOver_typed
+#assert_no_axioms FX1Poly.Modal.appliedIdentityOver_reductKeepsGrade
+#assert_no_axioms FX1Poly.Modal.securityAppliedIdentity_reductKeepsGrade
+#assert_no_axioms FX1Poly.Modal.usageAppliedIdentity_reductKeepsGrade
+#assert_no_axioms FX1Poly.Modal.securityMetatheoryBundle_smoke
+#assert_no_axioms FX1Poly.Modal.omegaScalingBinaryTypeUsage
+#assert_no_axioms FX1Poly.Modal.usageOmegaScalingRedex_typed
+#assert_no_axioms FX1Poly.Modal.usageOmegaScalingRedex_reductKeepsGrade
 
 /-! ### The SOUND graded typing judgment (DIM2-3): type-coupled HasUsage with App scaling -/
 
