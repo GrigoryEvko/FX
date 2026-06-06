@@ -110,6 +110,19 @@ substrate of typed consistency (SN-050). -/
 def emptyTypeCell {scope : Nat} : RawTerm scope :=
   .mkGen .gen_emptyCode () .childNil
 
+/-- The bool-type code cell `Bool` — the `.type`-sorted nullary `gen_boolCode`
+cell.  No payload data (`Unit`), no children (`binderShifts = []`, hence
+`childNil`): a closed nullary type-former leaf, structurally identical to
+`emptyTypeCell` but at a distinct generator (the `gen_boolCode` substrate, SN-047).
+The future formation subject of `Bool : Type@0` (via the nullary-former formation
+`hasTypeDescPi_nullaryFormation_viaGenArm` once the `typingRuleDescOf` row lands —
+GTL-11-gated) and the type whose reducibility candidate is the bool data candidate
+(`boolCanonicalFormsCandidate`, #676) — the substrate of bool canonicity (SN-047).
+Distinct from the VALUE cells `gen_boolTrue` / `gen_boolFalse`: this is the TYPE
+code, which the kernel previously lacked (only the values were generators). -/
+def boolTypeCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_boolCode () .childNil
+
 /-- The variable cell at de Bruijn position `index`. -/
 def variableCell {scope : Nat} (index : Fin scope) : RawTerm scope :=
   .mkGen .gen_var index .childNil

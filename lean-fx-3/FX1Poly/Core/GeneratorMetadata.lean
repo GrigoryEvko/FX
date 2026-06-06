@@ -193,6 +193,7 @@ def Generator.cellSort : Generator → CellSort
   | .gen_idCode       => .type
   | .gen_equivCode    => .type
   | .gen_emptyCode    => .type
+  | .gen_boolCode     => .type
   -- Cumulativity marker on a type code
   | .gen_cumulUpMarker => .type
   -- Univalence-to-equiv vocabulary — term-level operations
@@ -506,6 +507,8 @@ def Generator.childSpecs : Generator → List ChildSpec
   | .gen_universeCode => []
   -- Empty type code (nullary)
   | .gen_emptyCode    => []
+  -- Bool type code (nullary)
+  | .gen_boolCode     => []
   -- Per-shape type codes (atom-shape)
   | .gen_arrowCode    =>
     [ChildSpec.typeSameScope, ChildSpec.typeSameScope]

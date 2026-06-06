@@ -111,6 +111,7 @@ def Generator.toNat : Generator → Nat
   | .gen_reversibleOp => 190
   | .gen_bigOh => 191 | .gen_polyTimeWitness => 192 | .gen_npComplete => 193
   | .gen_emptyCode => 194
+  | .gen_boolCode => 195
 
 -- Payload to Nat (for serialization)
 def payloadToNat (generator : Generator) (scope : Nat)

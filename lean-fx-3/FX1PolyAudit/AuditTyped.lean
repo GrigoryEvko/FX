@@ -356,6 +356,7 @@ import FX1Poly.Typed.ConsistencyConditionalOnSubjectReduction
 import FX1Poly.Typed.ConsistencyOfPiElimArm
 import FX1Poly.Typed.EmptyTypeConsistencyUnconditional
 import FX1Poly.Typed.FormationNormalSmoke
+import FX1Poly.Typed.BoolTypeCodeSubstrate
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5199,6 +5200,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.notAccessibleOfSelfLoop
 #assert_no_axioms FX1Poly.Typed.divergentOmega_notStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.rawStep_notStronglyNormalizing
+
+-- BOOL TYPE-CODE SUBSTRATE (BoolTypeCodeSubstrate.lean / HasType.lean, SN-047 prerequisite). gen_boolCode is the
+-- bespoke nullary type-code generator filling the Bool-type gap (the kernel had VALUE gens gen_boolTrue/
+-- gen_boolFalse but no TYPE code, like every ground datatype). boolTypeCell = mkGen gen_boolCode () childNil
+-- mirrors emptyTypeCell (CON-A1). gen_boolCode_isNullaryTypeCode pins the metadata shape (arity 0, binderShifts
+-- [], cellSort .type) the future Bool:Type@0 formation will consume; gen_boolCode_isAdmitted is the
+-- SupportedGenerator witness. The serialization round-trip (toNat_injective/fromTag_toNat) + finite-polygraph
+-- bound (toNat_lt over Fin 196) already re-verify gen_boolCode uniformly. typingRuleDescOf gen_boolCode = none
+-- today (formation GTL-11-gated), so boolTypeCell is correctly not yet typed.
+#assert_no_axioms FX1Poly.Typed.boolTypeCell
+#assert_no_axioms FX1Poly.Typed.gen_boolCode_isNullaryTypeCode
+#assert_no_axioms FX1Poly.Typed.gen_boolCode_isAdmitted
 
 -- Ω HAS NO NORMAL FORM — sharpening "not SN" into "never reaches a Step-normal term." selfApplicator is itself
 -- normal (by decide); Ω's only one-step reduct is Ω (Step.from_app inversion, congruence shapes refuted by the

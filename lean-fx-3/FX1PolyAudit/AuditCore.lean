@@ -107,8 +107,8 @@ a `.type` classifier) and guard against reintroducing an MLTT
 #assert_no_axioms FX1Poly.Core.Generator.fromTag_toNat
 #assert_no_axioms FX1Poly.Core.Generator.toNat_injective
 
--- SN-123 (#626): the FX kernel as a FINITE POLYGRAPH over the 194-Generator table. The generators are indexed
--- injectively (toNat_injective) + boundedly (toNat_lt, NEW) into Fin 194, with the total inverse table fromTag
+-- SN-123 (#626): the FX kernel as a FINITE POLYGRAPH over the 196-Generator table. The generators are indexed
+-- injectively (toNat_injective) + boundedly (toNat_lt, NEW) into Fin 196, with the total inverse table fromTag
 -- (round-trip fromTag_toNat + range-totality fromTag_total_on_range, NEW); each carries its dimension (arity) and
 -- boundary (binderShifts), coherently (binderShifts_length_eq_arity). fxKernelPolygraph bundles all of it — the
 -- Leg-3 anchor for SN-124 (Generator→polygraph-gen map) + SN-125 (RawCell→OmegacEWord). Zero-axiom (cases+decide,

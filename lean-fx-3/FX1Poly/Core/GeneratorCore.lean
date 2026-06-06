@@ -130,6 +130,8 @@ inductive Generator : Type
   | gen_equivCode
   -- Empty type code (nullary — the consistency substrate, SN-050/CON-A1)
   | gen_emptyCode
+  -- Bool type code (nullary — the bool-canonicity substrate, SN-047)
+  | gen_boolCode
   -- Cumulativity marker
   | gen_cumulUpMarker
   -- Univalence-to-equiv vocabulary
@@ -412,6 +414,7 @@ def Generator.arity : Generator → Nat
   | .gen_idCode       => 3  -- typeCode, leftRaw, rightRaw
   | .gen_equivCode    => 2  -- leftTypeCode, rightTypeCode
   | .gen_emptyCode    => 0  -- nullary type code (Empty)
+  | .gen_boolCode     => 0  -- nullary type code (Bool)
   -- Cumulativity marker
   | .gen_cumulUpMarker => 1 -- innerCodeRaw
   -- Univalence-to-equiv vocabulary
@@ -711,6 +714,7 @@ def Generator.binderShifts : Generator → List Nat
   | .gen_idCode       => [0, 0, 0]
   | .gen_equivCode    => [0, 0]
   | .gen_emptyCode    => []
+  | .gen_boolCode     => []
   -- Cumulativity marker
   | .gen_cumulUpMarker => [0]
   -- Univalence-to-equiv vocabulary
@@ -944,6 +948,7 @@ def Generator.payload : Generator → Nat → Type
   | .gen_idCode, _ => Unit
   | .gen_equivCode, _ => Unit
   | .gen_emptyCode, _ => Unit
+  | .gen_boolCode, _ => Unit
   | .gen_cumulUpMarker, _ => Unit
   | .gen_uaToEquiv, _ => Unit
   | .gen_equivApply, _ => Unit
