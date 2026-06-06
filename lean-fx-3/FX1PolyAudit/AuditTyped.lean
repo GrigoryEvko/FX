@@ -63,6 +63,7 @@ import FX1Poly.Typed.WfContextDesc
 import FX1Poly.Typed.WfContextDescLookup
 import FX1Poly.Typed.WfContextDescValidity
 import FX1Poly.Typed.WfContextDescStronglyNormalizing
+import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
@@ -1409,6 +1410,14 @@ gates pin them shut.
 -- classifierIsTypeDescNative (no HasType) then IsTypeDesc.isStronglyNormalizing. The first CONSUMER of the
 -- native validity target (confirms it is usable, not merely gated).
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierStronglyNormalizingNative
+-- FORMATION UNIQUENESS (P7) over WfContextDesc, HasType-FREE (WfContextDescUniqueness.lean, HT-A2): a genuine
+-- MUTUAL recursion uniquenessNative/uniquenessAgreeNative — the head child recurses into uniquenessNative
+-- itself (no HasType.uniqueness oracle) and the rest extends via WfContextDesc.cons whose IsTypeDesc binding IS
+-- the head typing (no toHasType); arms invert via the now-param-free inversions (HT-A2-inv-drop). So the whole
+-- mutual pair has no HasType. Closes the native-uniqueness half of HT-A2; the migration target superseding
+-- HasTypeDesc.uniqueness once consumers thread WfContextDesc.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.uniquenessNative
+#assert_no_axioms FX1Poly.Typed.DescTelescope.uniquenessAgreeNative
 -- GROWN CONTEXT WELL-FORMEDNESS (WfContextDescPi.lean, WFG-1): the structural-parity twin of WfContext via the
 -- grown IsTypeDescPi. WfContext is HasType-based, hence UN-extendable at a grown piIntro binder (no
 -- HasTypeDescPi → IsType bridge); WfContextDescPi IS extendable (a grown domain typing is an IsTypeDescPi), the

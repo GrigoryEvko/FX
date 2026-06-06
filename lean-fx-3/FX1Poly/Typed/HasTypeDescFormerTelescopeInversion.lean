@@ -69,7 +69,6 @@ theorem HasTypeDesc.inversionFormerWithConvGeneric {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
     (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext)
     {generator : Generator} {rule : TypingRuleDesc}
     (isFormation : typingRuleDescOf generator = some rule) :
     ∀ {payload : generator.payload generalScope}
@@ -90,7 +89,7 @@ theorem HasTypeDesc.inversionFormerWithConvGeneric {profile : PolyProfile}
         cases isFormation
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped => fun subjectEq => by
         obtain ⟨levels, flag, telescope, convToCode⟩ :=
-          HasTypeDesc.inversionFormerWithConvGeneric typedPremise wellFormed isFormation subjectEq
+          HasTypeDesc.inversionFormerWithConvGeneric typedPremise isFormation subjectEq
         exact ⟨levels, flag, telescope,
           Conv.trans converts.sym convToCode⟩
     | .universeFormation _armContext _armLevel _armFlag => fun subjectEq => by

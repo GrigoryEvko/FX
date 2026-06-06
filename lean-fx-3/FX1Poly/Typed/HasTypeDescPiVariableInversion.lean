@@ -50,7 +50,7 @@ theorem HasTypeDescPi.inversionVariableGeneral {profile : PolyProfile}
   fun {_targetIndexImplicit} =>
     match derivation with
     | .ofFormation formationTyped => fun subjectEq =>
-        HasTypeDesc.inversionVariableGeneral formationTyped wellFormed subjectEq
+        HasTypeDesc.inversionVariableGeneral formationTyped subjectEq
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped => fun subjectEq =>
         Conv.trans converts.sym
           (HasTypeDescPi.inversionVariableGeneral typedPremise wellFormed subjectEq)

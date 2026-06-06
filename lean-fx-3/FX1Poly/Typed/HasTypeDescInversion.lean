@@ -333,8 +333,7 @@ unconditional raw `Conv.trans` (the raw-confluence harvest); the
 theorem HasTypeDesc.inversionVariableGeneral {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
-    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext) :
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier) :
     ∀ {targetIndex : Fin generalScope},
       subject = variableCell targetIndex →
         Conv reachedClassifier (generalContext.lookup targetIndex) :=
@@ -348,7 +347,7 @@ theorem HasTypeDesc.inversionVariableGeneral {profile : PolyProfile}
         fun subjectEq =>
           Conv.trans
             converts.sym
-            (HasTypeDesc.inversionVariableGeneral typedPremise wellFormed subjectEq)
+            (HasTypeDesc.inversionVariableGeneral typedPremise subjectEq)
     | .universeFormation _armContext _armLevel _armFlag => fun subjectEq =>
         Generator.noConfusion
           (congrArg RawTerm.headGenerator subjectEq :
@@ -368,17 +367,15 @@ lookup).  The `HasTypeDesc` analogue of the bespoke `HasType.inversionVariable`.
 theorem HasTypeDesc.inversionVariable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {index : Fin scope} {classifier : RawTerm scope}
-    (typed : HasTypeDesc profile context (variableCell index) classifier)
-    (wellFormed : WfContext context) :
+    (typed : HasTypeDesc profile context (variableCell index) classifier) :
     Conv classifier (context.lookup index) :=
-  HasTypeDesc.inversionVariableGeneral typed wellFormed rfl
+  HasTypeDesc.inversionVariableGeneral typed rfl
 
 /-- Subject-generalized recursive workhorse for universe-code-cell inversion. -/
 theorem HasTypeDesc.inversionUniverseCodeGeneral {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
-    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext) :
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier) :
     ∀ {targetLevel : LevelExpr} {targetFlag : UniverseFlag},
       subject = universeCodeCell targetLevel targetFlag →
         Conv reachedClassifier (universeCodeCell targetLevel.lsucc targetFlag) :=
@@ -392,7 +389,7 @@ theorem HasTypeDesc.inversionUniverseCodeGeneral {profile : PolyProfile}
         fun subjectEq =>
           Conv.trans
             converts.sym
-            (HasTypeDesc.inversionUniverseCodeGeneral typedPremise wellFormed subjectEq)
+            (HasTypeDesc.inversionUniverseCodeGeneral typedPremise subjectEq)
     | .universeFormation _armContext armLevel armFlag => fun subjectEq => by
         have payloadEq :
             (armLevel, armFlag) = (targetLevelImplicit, targetFlagImplicit) := by
@@ -418,10 +415,9 @@ theorem HasTypeDesc.inversionUniverseCode {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag} {classifier : RawTerm scope}
     (typed :
-      HasTypeDesc profile context (universeCodeCell levelExpr flag) classifier)
-    (wellFormed : WfContext context) :
+      HasTypeDesc profile context (universeCodeCell levelExpr flag) classifier) :
     Conv classifier (universeCodeCell levelExpr.lsucc flag) :=
-  HasTypeDesc.inversionUniverseCodeGeneral typed wellFormed rfl
+  HasTypeDesc.inversionUniverseCodeGeneral typed rfl
 
 /-! ### Component descent (P8) — projecting the typed children of a formation cell
 

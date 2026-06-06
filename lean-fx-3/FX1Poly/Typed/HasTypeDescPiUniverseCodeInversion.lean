@@ -51,7 +51,7 @@ theorem HasTypeDescPi.inversionUniverseCodeGeneral {profile : PolyProfile}
   fun {_targetLevelImplicit} {_targetFlagImplicit} =>
     match derivation with
     | .ofFormation formationTyped => fun subjectEq =>
-        HasTypeDesc.inversionUniverseCodeGeneral formationTyped wellFormed subjectEq
+        HasTypeDesc.inversionUniverseCodeGeneral formationTyped subjectEq
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped => fun subjectEq =>
         Conv.trans converts.sym
           (HasTypeDescPi.inversionUniverseCodeGeneral typedPremise wellFormed subjectEq)

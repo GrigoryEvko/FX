@@ -121,14 +121,14 @@ theorem HasTypeDesc.uniqueness {profile : PolyProfile} {scope : Nat}
         Conv firstClassifier secondClassifier :=
   match derivation with
   | .var _context _index => fun secondDerivation =>
-      (HasTypeDesc.inversionVariable secondDerivation wellFormed).sym
+      (HasTypeDesc.inversionVariable secondDerivation).sym
   | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
       fun secondDerivation =>
         Conv.trans
           converts.sym
           (HasTypeDesc.uniqueness typedPremise wellFormed secondDerivation)
   | .universeFormation _context _levelExpr _flag => fun secondDerivation =>
-      (HasTypeDesc.inversionUniverseCode secondDerivation wellFormed).sym
+      (HasTypeDesc.inversionUniverseCode secondDerivation).sym
   | .genFormation _context generator _payload _children levels flag rule
       isFormation premises => fun secondDerivation => by
       -- GTL-09: the SECOND-derivation inversion + the flag-uniqueness guard are now GENERIC over the
@@ -141,7 +141,7 @@ theorem HasTypeDesc.uniqueness {profile : PolyProfile} {scope : Nat}
       obtain rfl : rule = { outputType := universeFormerOutput } :=
         formationRuleIsUniverseFormer isFormation
       obtain ⟨secondLevels, secondFlag, secondTelescope, secondConv⟩ :=
-        HasTypeDesc.inversionFormerWithConvGeneric secondDerivation wellFormed isFormation rfl
+        HasTypeDesc.inversionFormerWithConvGeneric secondDerivation isFormation rfl
       obtain ⟨levelsEq, flagImplication⟩ :=
         DescTelescope.uniquenessAgree premises secondTelescope wellFormed rfl
       have levelsNonEmpty : levels ≠ [] :=
