@@ -358,6 +358,7 @@ import FX1Poly.Typed.EmptyTypeConsistencyUnconditional
 import FX1Poly.Typed.FormationNormalSmoke
 import FX1Poly.Typed.BoolTypeCodeSubstrate
 import FX1Poly.Typed.GrownNoTypeInType
+import FX1Poly.Typed.IsTypeDescRigidity
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5237,3 +5238,13 @@ gates pin them shut.
 -- denote e' env (every env). Strengthens the syntactic universeClassifierLevelIsSucc (e' = e+1) to the semantic
 -- order via denote_lt_lsucc (SN-003). noUniverseInItself is the degenerate e' = e case (level not < itself).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeStrictlyBelowClassifierLevel
+-- IsTypeDescRigidity = the native rigidity + leaf characterization of formation type-hood, toward the native
+-- Decidable (IsTypeDesc Γ T) decision procedure (HT-A4 brick B1, off the old HasType engine).
+-- hasNoStep = formation types are normal (read off the shipped subjectAdmitsNoStep); eq_of_isTypeDesc =
+-- convertible formation types are equal (Conv.eq_of_noStep on the two normal endpoints);
+-- ofUniverseCodeCell = a universe code is a formation type (universeFormation); variableCell_iff = a variable
+-- cell is a type iff its lookup is a universe code (the ONE context-consulting leaf, over WfContextDesc).
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.hasNoStep
+#assert_no_axioms FX1Poly.Typed.Conv.eq_of_isTypeDesc
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.ofUniverseCodeCell
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.variableCell_iff_lookupIsUniverseCode
