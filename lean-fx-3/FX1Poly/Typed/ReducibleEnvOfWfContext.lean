@@ -2,6 +2,7 @@ import FX1Poly.Typed.BoundedBindingTypeReducible
 import FX1Poly.Typed.BoundedNeutralMember
 import FX1Poly.Typed.BoundExceedsPiDischarge
 import FX1Poly.Typed.WfContext
+import FX1Poly.Typed.WfContextDesc
 import FX1Poly.Typed.HasTypeDescClosedForms
 
 /-! # FX1Poly/Typed/ReducibleEnvOfWfContext
@@ -68,6 +69,49 @@ theorem reducibleEnvOfWfContext {profile : PolyProfile} (env : Nat → Nat) :
       obtain ⟨levelExpr, flag, hasTypeDeriv⟩ := WfContext.headIsType wf
       have descPiDeriv : HasTypeDescPi profile restContext bindingType (universeCodeCell levelExpr flag) :=
         (HasType.toHasTypeDesc hasTypeDeriv).toHasTypeDescPi
+      obtain ⟨boundBinding, budget⟩ := BoundExceedsPi.existsBound (env := env) descPiDeriv
+      have envRestLifted :
+          ReducibleEnvAtBounded env (boundRest + boundBinding) restContext substRest :=
+        fun index => (envRest index).cumulative (Nat.le_add_right boundRest boundBinding)
+      have budgetLifted : BoundExceedsPi env (boundRest + boundBinding) descPiDeriv :=
+        BoundExceedsPi.monotoneInBound (Nat.le_add_left boundBinding boundRest) budget
+      have typeReducible : IsReducibleTypeAtBounded env (boundRest + boundBinding)
+          (RawTerm.subst substRest bindingType) :=
+        descPiDeriv.subjectReducibleAsTypeUnderEnv budgetLifted envRestLifted
+      have headMember : IsReducibleMemberAtBounded env (boundRest + boundBinding)
+          (RawTerm.subst substRest bindingType)
+          (.mkGen .gen_var ⟨0, Nat.zero_lt_one⟩ .childNil) :=
+        IsReducibleMemberAtBounded.ofVariable ⟨0, Nat.zero_lt_one⟩ typeReducible
+      exact ⟨boundRest + boundBinding,
+        RawTermSubst.cons (.mkGen .gen_var ⟨0, Nat.zero_lt_one⟩ .childNil) substRest,
+        ReducibleEnvAtBounded.cons envRestLifted headMember⟩
+
+/-- **OB-4, NATIVE (bridge-free) over `WfContextDesc`** — the `WfContextDesc` twin of `reducibleEnvOfWfContext`,
+the first brick of the `WfContext → WfContextDesc` open-SN spine migration (HT-B).  Builds a reducible closing
+environment for any GROWN-well-formed context, identically to the `WfContext` form, but reading each binding's
+type-hood off the native `WfContextDesc.headIsTypeDesc` (`= wellFormed.2`, an `IsTypeDesc` the grown engine
+already supplies) and lifting it through the NATIVE formation→grown embedding `HasTypeDesc.toHasTypeDescPi` —
+with NO `WfContext.headIsType`, NO `HasType.toHasTypeDesc`, NO `WfContextDesc.ofWfContext`.  Since the grown
+context-validity presupposition provably FAILS (`HasTypeDescPi Γ t T → WfContext Γ` is false — there are
+ill-formed contexts that still type a subject, `ContextValidityFails`), the wf-hypothesis is genuinely
+external, so the migration re-bases it from the `HasType`-defined `WfContext` to the `HasTypeDesc`-defined
+`WfContextDesc` rather than deriving it away.  This is the bridge-free target the open-SN consumers migrate
+onto; once the spine is fully `WfContextDesc`-based, the `HasType` engine + the bridges delete (HT-C). -/
+theorem reducibleEnvOfWfContextDesc {profile : PolyProfile} (env : Nat → Nat) :
+    ∀ {scope : Nat} (context : TypingContext profile scope), WfContextDesc context →
+      ∃ bound : Nat, ∃ substitution : RawTermSubst scope 1,
+        ReducibleEnvAtBounded env bound context substitution := by
+  intro scope context
+  induction context with
+  | empty =>
+      intro _wf
+      exact ⟨0, Fin.elim0, ReducibleEnvAtBounded.empty (Fin.elim0 : RawTermSubst 0 1)⟩
+  | cons restContext bindingType ih =>
+      intro wf
+      obtain ⟨boundRest, substRest, envRest⟩ := ih (WfContextDesc.tailWellFormed wf)
+      obtain ⟨levelExpr, flag, hasTypeDescDeriv⟩ := WfContextDesc.headIsTypeDesc wf
+      have descPiDeriv : HasTypeDescPi profile restContext bindingType (universeCodeCell levelExpr flag) :=
+        hasTypeDescDeriv.toHasTypeDescPi
       obtain ⟨boundBinding, budget⟩ := BoundExceedsPi.existsBound (env := env) descPiDeriv
       have envRestLifted :
           ReducibleEnvAtBounded env (boundRest + boundBinding) restContext substRest :=

@@ -4708,6 +4708,12 @@ gates pin them shut.
 -- max-based attempt leaked propext via Nat.le_max_*). The env half of the OpenStronglyNormalizing residual; OB-4 bundles
 -- the main derivation's budget. Toward unconditional open SN-043 (#546).
 #assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContext
+-- The BRIDGE-FREE WfContextDesc twin of OB-4 (HT-B): identical builder over WfContextDesc, reading each binding's
+-- type-hood off the native WfContextDesc.headIsTypeDesc (= wellFormed.2) + the native HasTypeDesc.toHasTypeDescPi
+-- formation→grown embed — NO WfContext.headIsType, NO HasType.toHasTypeDesc, NO ofWfContext. The first brick of the
+-- WfContext→WfContextDesc open-SN spine migration (the wf-hypothesis is genuinely external since HasTypeDescPi→WfContext
+-- provably FAILS, ContextValidityFails). The target the open-SN consumers migrate onto before HT-C deletes the engine.
+#assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContextDesc
 
 -- ★ SN-043 OPEN (OpenStronglyNormalizingUnconditional.lean, OB-5): every well-typed grown term in a WELL-FORMED
 -- context is strongly normalizing, UNCONDITIONALLY. WfContext Γ → HasTypeDescPi Γ subject classifier →
