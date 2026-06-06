@@ -881,11 +881,12 @@ gates pin them shut.
 
 /-! ### Closed-form consequences for the description formation engine: closed subjects are intrinsic
     description types, have universe/Pi/Sigma type-former shape, and have classifiers convertible to
-    universe codes.  HT-A3: `closedSubjectIsTypeDesc` (via the scope-generalised
-    `closedSubjectIsTypeDescGeneral` workhorse) and `closedClassifierConvUniverseCode` are now proved on
-    the native formation recursion + native uniqueness, WITHOUT the `HasTypeDesc.toHasType` bridge; only
-    the STRUCTURAL `closedSubjectIsTypeFormer` still routes through the bridge (the head-to-children
-    reconstruction is a separable sub-brick). -/
+    universe codes.  HT-A3 COMPLETE: all three — `closedSubjectIsTypeDesc` (via the scope-generalised
+    `closedSubjectIsTypeDescGeneral` workhorse), the STRUCTURAL `closedSubjectIsTypeFormer` (native
+    `closedSubjectHeadIsFormerOrUniverse` + the shipped `eq_*Cell_of_headGenerator` head-to-children
+    reconstructions), and `closedClassifierConvUniverseCode` (native uniqueness) — are now proved on the
+    native formation recursion WITHOUT the `HasTypeDesc.toHasType` bridge.  Only `IsType.toIsTypeDesc` (the
+    COMPLETENESS-direction downgrade) still cites `HasType.toHasTypeDesc`, retired separately at HT-B. -/
 #assert_no_axioms FX1Poly.Typed.IsType.toIsTypeDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeDescGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeDesc
