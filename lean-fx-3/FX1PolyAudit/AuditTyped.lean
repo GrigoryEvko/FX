@@ -4890,20 +4890,14 @@ gates pin them shut.
 -- OSN-2 (OpenSNSmoke.lean): open-context SN regression corpus via open SN-043 (OB-5). Four concrete terms in the
 -- non-empty well-formed context Γ = (.empty).cons (Type@e) — a universe code (ofFormation), the context
 -- variable var 0 (var-rule bridge), the identity lambda (piIntro binder), and the β-redex (λx.x) Type@s (piElim)
--- — each discharged to IsStronglyNormalizing by HasTypeDescPi.stronglyNormalizingOfWfContext. The β-redex entry
--- is the NON-VACUOUS one: a term that actually reduces, whose termination OB-5 certifies. The open analogue of
--- ClosedSNSmoke (SN-044), demonstrating the open milestone result fires on genuinely open terms.
+-- — each discharged to IsStronglyNormalizing by HasTypeDescPi.stronglyNormalizingOfWfContextDesc (the bridge-free
+-- OB-5 over the native IsTypeDesc-based WfContextDesc + wfContextDesc_universeBinding). The β-redex entry is the
+-- NON-VACUOUS one: a term that actually reduces, whose termination OB-5 certifies. The open analogue of
+-- ClosedSNSmoke (SN-044). HT-B: this corpus is fully migrated off the HasType engine + the WfContext bridge.
 #assert_no_axioms FX1Poly.Typed.openUniverseCode_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.openContextVariable_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.openIdentityLambda_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.openBetaRedex_stronglyNormalizing
--- The BRIDGE-FREE twins (HT-B): the SAME four grown derivations routed through the native
--- stronglyNormalizingOfWfContextDesc + wfContextDesc_universeBinding (IsTypeDesc-based) instead of the
--- HasType-based stronglyNormalizingOfWfContext — the open-SN regression corpus no longer touches the HasType engine.
-#assert_no_axioms FX1Poly.Typed.openUniverseCode_stronglyNormalizingViaWfContextDesc
-#assert_no_axioms FX1Poly.Typed.openContextVariable_stronglyNormalizingViaWfContextDesc
-#assert_no_axioms FX1Poly.Typed.openIdentityLambda_stronglyNormalizingViaWfContextDesc
-#assert_no_axioms FX1Poly.Typed.openBetaRedex_stronglyNormalizingViaWfContextDesc
 
 -- OB-6 (ContextValidityFails.lean): the WfContext hypothesis in open SN-043 is NECESSARY. A lamCell is never a
 -- type (lamCell_isNotType, via subjectIsVariableOrTypeFormerCode + Generator.noConfusion head-mismatch), so
