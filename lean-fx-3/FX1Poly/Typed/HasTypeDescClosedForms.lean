@@ -1,4 +1,3 @@
-import FX1Poly.Typed.HasTypeClosedForms
 import FX1Poly.Typed.HasTypeDescStronglyNormalizing
 import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Typed.FormationCanonicalForms
@@ -37,8 +36,9 @@ the phased `HasType` removal):
 * `closedClassifierConvUniverseCode` consumes the native `closedSubjectIsTypeDesc` and the native uniqueness
   `HasTypeDesc.uniquenessNative` (over `WfContextDesc.emptyIsWellFormed`) — no `HasType` oracle.
 
-`IsType.toIsTypeDesc` (the `IsType` -> `IsTypeDesc` downgrade) still cites `HasType.toHasTypeDesc`; it is the
-COMPLETENESS direction, retired separately with the bridge migration (HT-B), not a closed-forms residual.
+The `IsType` -> `IsTypeDesc` completeness downgrade that used to live here (`IsType.toIsTypeDesc`, the lone
+`HasType.toHasTypeDesc` residual in this file) is REMOVED (HT-B): it was dead — defined + audit-gated but
+never consumed — so the file is now fully decoupled from the `HasType` engine and its bridges.
 
 ## Zero-axiom verification
 
@@ -51,14 +51,6 @@ reconstructions.  No `propext`, `Quot.sound`, `Classical`, `native_decide`, or `
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
-
-/-- Convert a native type witness into the corresponding intrinsic description-engine type witness. -/
-theorem IsType.toIsTypeDesc {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {classifier : RawTerm scope}
-    (isType : IsType profile context classifier) :
-    IsTypeDesc profile context classifier := by
-  obtain ⟨levelExpr, flag, typed⟩ := isType
-  exact ⟨levelExpr, flag, HasType.toHasTypeDesc typed⟩
 
 /-- **Scope-generalised workhorse for the closed subject-regularity fact.**  A description-typed subject at
 scope `0` (threaded as the free `scope` with a `scope = 0` equation, so the `conv` recursion is structural over

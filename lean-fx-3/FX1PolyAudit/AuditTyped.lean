@@ -896,9 +896,9 @@ gates pin them shut.
     `closedSubjectIsTypeDescGeneral` workhorse), the STRUCTURAL `closedSubjectIsTypeFormer` (native
     `closedSubjectHeadIsFormerOrUniverse` + the shipped `eq_*Cell_of_headGenerator` head-to-children
     reconstructions), and `closedClassifierConvUniverseCode` (native uniqueness) — are now proved on the
-    native formation recursion WITHOUT the `HasTypeDesc.toHasType` bridge.  Only `IsType.toIsTypeDesc` (the
-    COMPLETENESS-direction downgrade) still cites `HasType.toHasTypeDesc`, retired separately at HT-B. -/
-#assert_no_axioms FX1Poly.Typed.IsType.toIsTypeDesc
+    native formation recursion WITHOUT the `HasTypeDesc.toHasType` bridge.  HT-B: the dead
+    `IsType.toIsTypeDesc` COMPLETENESS-direction downgrade (the lone `HasType.toHasTypeDesc` residual here) is
+    REMOVED, so this file is now fully HasType-free. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeDescGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectIsTypeFormer

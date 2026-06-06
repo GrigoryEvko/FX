@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeCheck
+import FX1Poly.Typed.HasTypeClosedForms
 import FX1Poly.Typed.HasTypeDescClosedForms
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescStronglyNormalizing
