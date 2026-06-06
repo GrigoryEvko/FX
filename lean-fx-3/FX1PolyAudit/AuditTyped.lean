@@ -360,6 +360,7 @@ import FX1Poly.Typed.BoolTypeCodeSubstrate
 import FX1Poly.Typed.GrownNoTypeInType
 import FX1Poly.Typed.IsTypeDescRigidity
 import FX1Poly.Typed.IsTypeDescDecidable
+import FX1Poly.Typed.HasTypeDescNativeDecidable
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5264,3 +5265,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionSigmaCodeChildren
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.decideWithWitness
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.decidableOfWellFormed
+-- HasTypeDescNativeDecidable = native Decidable (HasTypeDesc Γ t T) (HT-A4 B2+B3), off the old HasType engine.
+-- inferWithWitness = principal-type synthesis (non-recursive: var/universe leaves + Π/Σ reuse decideWithWitness
+-- + subjectRootGeneratorGeneric refutation); decidableOfWellFormedNative = the decision via the IsType-gate on
+-- the classifier (Conv principal classifier decided by Conv.decidableOfStronglyNormalizing — principal SN by
+-- classifierStronglyNormalizingNative, classifier SN by IsTypeDesc.isStronglyNormalizing once gated) + conv
+-- rule forward + uniquenessNative refute. The native twin of the toHasType-routed HasTypeDesc.decidableOfWellFormed.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inferWithWitness
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormedNative
