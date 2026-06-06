@@ -4896,6 +4896,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.openContextVariable_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.openIdentityLambda_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.openBetaRedex_stronglyNormalizing
+-- The BRIDGE-FREE twins (HT-B): the SAME four grown derivations routed through the native
+-- stronglyNormalizingOfWfContextDesc + wfContextDesc_universeBinding (IsTypeDesc-based) instead of the
+-- HasType-based stronglyNormalizingOfWfContext — the open-SN regression corpus no longer touches the HasType engine.
+#assert_no_axioms FX1Poly.Typed.openUniverseCode_stronglyNormalizingViaWfContextDesc
+#assert_no_axioms FX1Poly.Typed.openContextVariable_stronglyNormalizingViaWfContextDesc
+#assert_no_axioms FX1Poly.Typed.openIdentityLambda_stronglyNormalizingViaWfContextDesc
+#assert_no_axioms FX1Poly.Typed.openBetaRedex_stronglyNormalizingViaWfContextDesc
 
 -- OB-6 (ContextValidityFails.lean): the WfContext hypothesis in open SN-043 is NECESSARY. A lamCell is never a
 -- type (lamCell_isNotType, via subjectIsVariableOrTypeFormerCode + Generator.noConfusion head-mismatch), so

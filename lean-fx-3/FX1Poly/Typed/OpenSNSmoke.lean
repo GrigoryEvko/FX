@@ -1,6 +1,7 @@
 import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Typed.HasTypeDescClosedForms
 import FX1Poly.Typed.WfContext
+import FX1Poly.Typed.WfContextDesc
 
 /-! # FX1Poly/Typed/OpenSNSmoke
     — OPEN-CONTEXT strong-normalization regression corpus via open SN-043 (OSN-2)
@@ -110,6 +111,91 @@ theorem openBetaRedex_stronglyNormalizing {profile : PolyProfile}
         (universeCodeCell subjectLevel flag) : RawTerm 1) :=
   HasTypeDescPi.stronglyNormalizingOfWfContext
     (wfContext_universeBinding levelExpr flag)
+    (HasTypeDescPi.piElim
+      (context := (TypingContext.empty : TypingContext profile 0).cons
+        (universeCodeCell levelExpr flag))
+      (functionTerm := lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
+      (argument := universeCodeCell subjectLevel flag)
+      (domainCode := universeCodeCell subjectLevel.lsucc flag)
+      (codomainCode := universeCodeCell subjectLevel.lsucc flag)
+      (HasTypeDescPi.piIntro
+        (domainLevel := subjectLevel.lsucc.lsucc) (codomainLevel := subjectLevel.lsucc.lsucc)
+        (flag := flag)
+        (HasTypeDesc.toHasTypeDescPi
+          (HasTypeDesc.universeFormation _ subjectLevel.lsucc flag))
+        (HasTypeDesc.toHasTypeDescPi
+          (HasTypeDesc.universeFormation _ subjectLevel.lsucc flag))
+        (HasTypeDesc.toHasTypeDescPi
+          (HasTypeDesc.var _ (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (HasTypeDesc.toHasTypeDescPi
+        (HasTypeDesc.universeFormation _ subjectLevel flag)))
+
+/-! ## Bridge-free `WfContextDesc` twins (HT-B — open-SN regression corpus off the `HasType` bridge)
+
+The four open-SN regressions above discharge through `stronglyNormalizingOfWfContext`, whose context-well-formedness
+witness `wfContext_universeBinding` is the `HasType`-based `WfContext`.  These twins route the SAME concrete
+grown-engine derivations through the bridge-free `stronglyNormalizingOfWfContextDesc` (HT-B spine step 2) fed the
+native `wfContextDesc_universeBinding` (the `IsTypeDesc`-based single-universe-binding witness) — so the open-SN
+regression corpus no longer touches the `HasType` engine.  The grown derivations are unchanged; only the
+context-wellformedness predicate is re-based, demonstrating the spine migration on real non-vacuous terms. -/
+
+/-- **Open-context SN of a universe code, bridge-free** — the `WfContextDesc` twin of
+`openUniverseCode_stronglyNormalizing`. -/
+theorem openUniverseCode_stronglyNormalizingViaWfContextDesc {profile : PolyProfile}
+    (levelExpr subjectLevel : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing (universeCodeCell subjectLevel flag : RawTerm 1) :=
+  HasTypeDescPi.stronglyNormalizingOfWfContextDesc
+    (wfContextDesc_universeBinding levelExpr flag)
+    (HasTypeDesc.toHasTypeDescPi
+      (HasTypeDesc.universeFormation
+        ((TypingContext.empty : TypingContext profile 0).cons
+          (universeCodeCell levelExpr flag)) subjectLevel flag))
+
+/-- **Open-context SN of a context variable, bridge-free** — the `WfContextDesc` twin of
+`openContextVariable_stronglyNormalizing` (the entry that consumes the context binding). -/
+theorem openContextVariable_stronglyNormalizingViaWfContextDesc {profile : PolyProfile}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1) : RawTerm 1) :=
+  HasTypeDescPi.stronglyNormalizingOfWfContextDesc
+    (wfContextDesc_universeBinding levelExpr flag)
+    (HasTypeDesc.toHasTypeDescPi
+      (HasTypeDesc.var
+        ((TypingContext.empty : TypingContext profile 0).cons
+          (universeCodeCell levelExpr flag))
+        (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+
+/-- **Open-context SN of an identity lambda, bridge-free** — the `WfContextDesc` twin of
+`openIdentityLambda_stronglyNormalizing` (the `piIntro` binder arm under a non-empty context). -/
+theorem openIdentityLambda_stronglyNormalizingViaWfContextDesc {profile : PolyProfile}
+    (levelExpr subjectLevel : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)) : RawTerm 1) :=
+  HasTypeDescPi.stronglyNormalizingOfWfContextDesc
+    (wfContextDesc_universeBinding levelExpr flag)
+    (HasTypeDescPi.piIntro
+      (context := (TypingContext.empty : TypingContext profile 0).cons
+        (universeCodeCell levelExpr flag))
+      (domainCode := universeCodeCell subjectLevel.lsucc flag)
+      (codomainCode := universeCodeCell subjectLevel.lsucc flag)
+      (body := variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))
+      (domainLevel := subjectLevel.lsucc.lsucc) (codomainLevel := subjectLevel.lsucc.lsucc) (flag := flag)
+      (HasTypeDesc.toHasTypeDescPi
+        (HasTypeDesc.universeFormation _ subjectLevel.lsucc flag))
+      (HasTypeDesc.toHasTypeDescPi
+        (HasTypeDesc.universeFormation _ subjectLevel.lsucc flag))
+      (HasTypeDesc.toHasTypeDescPi
+        (HasTypeDesc.var _ (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+
+/-- **Open-context SN of a β-redex, bridge-free — the NON-VACUOUS twin** — the `WfContextDesc` twin of
+`openBetaRedex_stronglyNormalizing`: a term that actually REDUCES, certified terminating via the bridge-free
+open-SN spine. -/
+theorem openBetaRedex_stronglyNormalizingViaWfContextDesc {profile : PolyProfile}
+    (levelExpr subjectLevel : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
+        (universeCodeCell subjectLevel flag) : RawTerm 1) :=
+  HasTypeDescPi.stronglyNormalizingOfWfContextDesc
+    (wfContextDesc_universeBinding levelExpr flag)
     (HasTypeDescPi.piElim
       (context := (TypingContext.empty : TypingContext profile 0).cons
         (universeCodeCell levelExpr flag))
