@@ -8,6 +8,7 @@ import FX1Poly.Modal.GradedTypingGeneric
 import FX1Poly.Modal.GradeErasureGeneric
 import FX1Poly.Modal.GradedWeakeningGeneric
 import FX1Poly.Modal.GradedSubstitutionGeneric
+import FX1Poly.Modal.GradedSubjectReductionGeneric
 import FX1Poly.Modal.GradedTypingMetatheory
 import FX1Poly.Modal.GradedSubjectReduction
 import FX1Poly.Modal.GradeErasure
@@ -309,6 +310,17 @@ for the generic substitution lemma (DIM5-7). -/
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto_single_lt
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto_single_gt
 #assert_no_axioms FX1Poly.Modal.GradeVectorOver.substInto_appGrade
+
+/-! ### Generic substitution + β subject reduction for HasGradeOver R (DIM5-7 + dims 6–21)
+
+The headline of the generic reduction metatheory: substituting at a cut preserves typing with the grade
+vector transformed by `substInto`, and β `(λ.body) arg ↝ body[0:=arg]` preserves typing AND the EXACT
+grade vector — the corrected Wood/Atkey App scaling making the judgment sound under reduction, for ANY
+dimension R.  The security witness exercises β SR in a second dimension. -/
+
+#assert_no_axioms FX1Poly.Modal.hasGradeOver_substitution
+#assert_no_axioms FX1Poly.Modal.hasGradeOver_betaPreservation
+#assert_no_axioms FX1Poly.Modal.securityBeta_smoke
 
 /-! ### The SOUND graded typing judgment (DIM2-3): type-coupled HasUsage with App scaling -/
 
