@@ -196,8 +196,7 @@ parity — see the file header). -/
 theorem HasTypeDesc.inversionPiCodeWithConvGeneral {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
-    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext) :
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier) :
     ∀ {payload : Generator.gen_piTyCode.payload generalScope}
       {children : RawTermChildren Generator.gen_piTyCode.binderShifts generalScope},
       subject = RawTerm.mkGen Generator.gen_piTyCode payload children →
@@ -214,7 +213,7 @@ theorem HasTypeDesc.inversionPiCodeWithConvGeneral {profile : PolyProfile}
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
         fun subjectEq => by
           obtain ⟨levels, flag, telescope, convToCode⟩ :=
-            HasTypeDesc.inversionPiCodeWithConvGeneral typedPremise wellFormed subjectEq
+            HasTypeDesc.inversionPiCodeWithConvGeneral typedPremise subjectEq
           exact ⟨levels, flag, telescope,
             Conv.trans converts.sym convToCode⟩
     | .universeFormation _armContext _armLevel _armFlag => fun subjectEq =>
@@ -239,19 +238,19 @@ classifier-`Conv` conjunct (the cell's classifier converts to the canonical form
 output `Type@(lmaxAll levels, flag)`).  The description-engine analogue of the bespoke
 `HasType.inversionPiCode`, wiring typed `Conv.trans` into the engine — the conjunct
 intrinsic uniqueness (P7) and the typechecker's conv-check consume.
-Needs `WfContext` (the `conv` arm's `Conv` composition uses validity). -/
+Context-wellformedness-FREE: the `conv` arm composes via the unconditional raw `Conv.trans`, so no
+`WfContext`/validity hypothesis is needed (the formerly-threaded `wellFormed` was vacuous — dropped). -/
 theorem HasTypeDesc.inversionPiCodeWithConv {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {classifier : RawTerm scope}
     (typed :
-      HasTypeDesc profile context (piTyCodeCell domainCode codomainCode) classifier)
-    (wellFormed : WfContext context) :
+      HasTypeDesc profile context (piTyCodeCell domainCode codomainCode) classifier) :
     ∃ (levels : List LevelExpr) (flag : UniverseFlag),
       DescTelescope profile (currentDepth := 0) context levels flag
         (RawTermChildren.binderShape domainCode codomainCode) ∧
       Conv classifier (universeCodeCell (lmaxAll levels) flag) :=
-  HasTypeDesc.inversionPiCodeWithConvGeneral typed wellFormed rfl
+  HasTypeDesc.inversionPiCodeWithConvGeneral typed rfl
 
 /-- The Σ mirror of `inversionPiCodeWithConvGeneral` — IDENTICAL recipe over
 `gen_sigmaTyCode`.  Completes the FULL P8 (premise telescope + classifier-`Conv`) for
@@ -259,8 +258,7 @@ the dependent-binary formation family. -/
 theorem HasTypeDesc.inversionSigmaCodeWithConvGeneral {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
-    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext) :
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier) :
     ∀ {payload : Generator.gen_sigmaTyCode.payload generalScope}
       {children : RawTermChildren Generator.gen_sigmaTyCode.binderShifts generalScope},
       subject = RawTerm.mkGen Generator.gen_sigmaTyCode payload children →
@@ -277,7 +275,7 @@ theorem HasTypeDesc.inversionSigmaCodeWithConvGeneral {profile : PolyProfile}
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
         fun subjectEq => by
           obtain ⟨levels, flag, telescope, convToCode⟩ :=
-            HasTypeDesc.inversionSigmaCodeWithConvGeneral typedPremise wellFormed
+            HasTypeDesc.inversionSigmaCodeWithConvGeneral typedPremise
               subjectEq
           exact ⟨levels, flag, telescope,
             Conv.trans converts.sym convToCode⟩
@@ -305,13 +303,12 @@ theorem HasTypeDesc.inversionSigmaCodeWithConv {profile : PolyProfile} {scope : 
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {classifier : RawTerm scope}
     (typed :
-      HasTypeDesc profile context (sigmaTyCodeCell domainCode codomainCode) classifier)
-    (wellFormed : WfContext context) :
+      HasTypeDesc profile context (sigmaTyCodeCell domainCode codomainCode) classifier) :
     ∃ (levels : List LevelExpr) (flag : UniverseFlag),
       DescTelescope profile (currentDepth := 0) context levels flag
         (RawTermChildren.binderShape domainCode codomainCode) ∧
       Conv classifier (universeCodeCell (lmaxAll levels) flag) :=
-  HasTypeDesc.inversionSigmaCodeWithConvGeneral typed wellFormed rfl
+  HasTypeDesc.inversionSigmaCodeWithConvGeneral typed rfl
 
 /-! ### Leaf inversions (`var`, `universeCode`) for the description engine
 
@@ -443,8 +440,7 @@ theorem HasTypeDesc.inversionPiCodeComponents {profile : PolyProfile} {scope : N
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {classifier : RawTerm scope}
     (typed :
-      HasTypeDesc profile context (piTyCodeCell domainCode codomainCode) classifier)
-    (wellFormed : WfContext context) :
+      HasTypeDesc profile context (piTyCodeCell domainCode codomainCode) classifier) :
     ∃ (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeDesc profile context domainCode (universeCodeCell domainLevel flag) ∧
         HasTypeDesc profile (context.cons domainCode) codomainCode
@@ -452,7 +448,7 @@ theorem HasTypeDesc.inversionPiCodeComponents {profile : PolyProfile} {scope : N
         Conv classifier
           (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) := by
   obtain ⟨levels, flag, telescope, convToCode⟩ :=
-    HasTypeDesc.inversionPiCodeWithConv typed wellFormed
+    HasTypeDesc.inversionPiCodeWithConv typed
   cases telescope with
   | cons _ _domain domainLevel _restLevels _flag _rest domainTyped restTelescope =>
       cases restTelescope with
@@ -470,8 +466,7 @@ theorem HasTypeDesc.inversionSigmaCodeComponents {profile : PolyProfile} {scope 
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {classifier : RawTerm scope}
     (typed :
-      HasTypeDesc profile context (sigmaTyCodeCell domainCode codomainCode) classifier)
-    (wellFormed : WfContext context) :
+      HasTypeDesc profile context (sigmaTyCodeCell domainCode codomainCode) classifier) :
     ∃ (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeDesc profile context domainCode (universeCodeCell domainLevel flag) ∧
         HasTypeDesc profile (context.cons domainCode) codomainCode
@@ -479,7 +474,7 @@ theorem HasTypeDesc.inversionSigmaCodeComponents {profile : PolyProfile} {scope 
         Conv classifier
           (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) := by
   obtain ⟨levels, flag, telescope, convToCode⟩ :=
-    HasTypeDesc.inversionSigmaCodeWithConv typed wellFormed
+    HasTypeDesc.inversionSigmaCodeWithConv typed
   cases telescope with
   | cons _ _domain domainLevel _restLevels _flag _rest domainTyped restTelescope =>
       cases restTelescope with
@@ -510,7 +505,6 @@ theorem HasTypeDesc.inversionFormerClassifierGeneric {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
     (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext)
     {generator : Generator} {rule : TypingRuleDesc}
     (isFormation : typingRuleDescOf generator = some rule) :
     ∀ {payload : generator.payload generalScope}
@@ -531,7 +525,7 @@ theorem HasTypeDesc.inversionFormerClassifierGeneric {profile : PolyProfile}
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
         fun subjectEq => by
           obtain ⟨levels, flag, convToCode⟩ :=
-            HasTypeDesc.inversionFormerClassifierGeneric typedPremise wellFormed isFormation
+            HasTypeDesc.inversionFormerClassifierGeneric typedPremise isFormation
               subjectEq
           exact ⟨levels, flag,
             Conv.trans converts.sym convToCode⟩

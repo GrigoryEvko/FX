@@ -65,7 +65,7 @@ theorem HasTypeDescPi.invertPiCodeTelescopeWithConvGeneral {profile : PolyProfil
     match derivation with
     | .ofFormation formationTyped => fun subjectEq => by
         obtain ⟨levels, flag, telescope, convToCode⟩ :=
-          HasTypeDesc.inversionPiCodeWithConvGeneral formationTyped wellFormed subjectEq
+          HasTypeDesc.inversionPiCodeWithConvGeneral formationTyped subjectEq
         exact ⟨levels, flag, telescope.toDescTelescopePi, convToCode⟩
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped => fun subjectEq => by
         obtain ⟨levels, flag, telescope, recursiveConv⟩ :=
@@ -137,7 +137,7 @@ theorem HasTypeDescPi.invertSigmaCodeTelescopeWithConvGeneral {profile : PolyPro
     match derivation with
     | .ofFormation formationTyped => fun subjectEq => by
         obtain ⟨levels, flag, telescope, convToCode⟩ :=
-          HasTypeDesc.inversionSigmaCodeWithConvGeneral formationTyped wellFormed subjectEq
+          HasTypeDesc.inversionSigmaCodeWithConvGeneral formationTyped subjectEq
         exact ⟨levels, flag, telescope.toDescTelescopePi, convToCode⟩
     | .conv _levelExpr _flag typedPremise converts _reclassifierTyped => fun subjectEq => by
         obtain ⟨levels, flag, telescope, recursiveConv⟩ :=

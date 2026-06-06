@@ -60,7 +60,7 @@ theorem HasTypeDesc.piApplicationOutputIsType {profile : PolyProfile} {scope : N
     IsTypeDesc profile context (RawTerm.subst0 codomainCode argument) := by
   obtain ⟨_piLevel, _piFlag, piTyped⟩ := functionTyped.classifierIsTypeDesc wellFormed
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped, _convToPiCode⟩ :=
-    HasTypeDesc.inversionPiCodeComponents piTyped wellFormed
+    HasTypeDesc.inversionPiCodeComponents piTyped
   have substituted :=
     HasTypeDesc.substituteUnderBinding argument codomainTyped argumentTyped
   exact ⟨codomainLevel, flag, substituted⟩
@@ -81,7 +81,7 @@ theorem HasTypeDesc.sigmaProjectionOutputIsType {profile : PolyProfile} {scope :
     IsTypeDesc profile context (RawTerm.subst0 codomainCode firstProjection) := by
   obtain ⟨_sigmaLevel, _sigmaFlag, sigmaTyped⟩ := pairTyped.classifierIsTypeDesc wellFormed
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped, _convToSigmaCode⟩ :=
-    HasTypeDesc.inversionSigmaCodeComponents sigmaTyped wellFormed
+    HasTypeDesc.inversionSigmaCodeComponents sigmaTyped
   have substituted :=
     HasTypeDesc.substituteUnderBinding firstProjection codomainTyped firstProjectionTyped
   exact ⟨codomainLevel, flag, substituted⟩
