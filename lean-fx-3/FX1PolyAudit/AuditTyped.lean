@@ -357,6 +357,7 @@ import FX1Poly.Typed.ConsistencyOfPiElimArm
 import FX1Poly.Typed.EmptyTypeConsistencyUnconditional
 import FX1Poly.Typed.FormationNormalSmoke
 import FX1Poly.Typed.BoolTypeCodeSubstrate
+import FX1Poly.Typed.GrownNoTypeInType
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5222,3 +5223,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.divergentOmega_reductIsSelf
 #assert_no_axioms FX1Poly.Typed.divergentOmega_starReductIsSelf
 #assert_no_axioms FX1Poly.Typed.divergentOmega_noNormalForm
+
+-- NO Type:Type — the grown engine is PREDICATIVE (GrownNoTypeInType.lean, §27.2 / SN-140 L1). Girard's paradox
+-- needs a self-containing universe (Type@e : Type@e); the grown engine rejects it by ANY derivation route.
+-- universeClassifierLevelIsSucc = the predicativity inversion (Type@e : Type@e' forces e' = e+1 ∧ flag' = flag),
+-- via the grown universe inversion + universeCodeCell_inj_of_conv. noUniverseInItself specialises at e' = e,
+-- refuted by LevelExpr.ne_lsucc_self (e ≠ e+1). noClosedUniverseInItself = the closed permanent witness. The
+-- §27.3 L1 Type:Type corpus entry for the grown engine (twin of #442 M35-T1's old-engine no-Type-in-Type probe).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeClassifierLevelIsSucc
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noUniverseInItself
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedUniverseInItself
