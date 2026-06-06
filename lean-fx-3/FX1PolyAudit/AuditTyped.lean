@@ -66,6 +66,7 @@ import FX1Poly.Typed.WfContextDescValidity
 import FX1Poly.Typed.WfContextDescStronglyNormalizing
 import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Typed.WfContextDescPi
+import FX1Poly.Typed.WfContextDescPiFromWfContext
 import FX1Poly.Typed.WfContextDescPiLookup
 import FX1Poly.Typed.WfContextDescPiValidity
 import FX1Poly.Typed.HasTypeDescPiClassifierValidity

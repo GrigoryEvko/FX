@@ -1,5 +1,4 @@
 import FX1Poly.Typed.HasTypeDescPi
-import FX1Poly.Typed.WfContext
 
 /-! # FX1Poly/Typed/WfContextDescPi — grown context well-formedness (the structural-parity twin of WfContext)
 
@@ -22,16 +21,17 @@ structural-recursion `def` + `And`-projection inversions, propext-free), swappin
   * `WfContextDescPi` — the predicate (computed by structural recursion, layered over the raw telescope).
   * `emptyIsWellFormed` / `tailWellFormed` / `headIsType` / `cons` — the introduction + `And`-projection
     inversions (the primitives the master SR threads through a `piIntro` codomain binder).
-  * `WfContextDescPi.ofWfContext` — the easy bridge: every `HasType`-well-formed context is grown-well-formed
-    (each `HasType` binding embeds via `ofFormation` after `HasType.toHasTypeDesc`).  Lets grown metatheory
-    consume the shipped `WfContext` hypotheses (e.g. OB-5's) at the grown layer.
   * `wfContextDescPi_universeBinding` — non-vacuity: a universe-code binding is grown-well-formed.
+
+The `WfContext → WfContextDescPi` bridge (`WfContextDescPi.ofWfContext`) lives in the separate
+`WfContextDescPiFromWfContext.lean` so this predicate file need not import the old `WfContext` / `HasType`
+engine — keeping the grown wf predicate (and its consumers) off the old engine.
 
 ## Zero-axiom verification
 
-Structural-recursion `def` + `And` projections + `ofFormation` ∘ `HasType.toHasTypeDesc` (the easy embedding) +
-a constructor-based witness.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
+Structural-recursion `def` + `And` projections + `HasTypeDescPi.ofFormation ∘ universeFormation` (the
+non-vacuity witness) + a constructor-based witness.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -77,17 +77,11 @@ theorem WfContextDescPi.cons {profile : PolyProfile} {scope : Nat}
     WfContextDescPi (restContext.cons bindingType) :=
   ⟨restWellFormed, bindingIsType⟩
 
-/-- Every `HasType`-well-formed context is grown-well-formed: each `HasType` binding embeds via `ofFormation`
-(after `HasType.toHasTypeDesc`).  The easy bridge (`IsType → IsTypeDescPi`); lets grown metatheory consume the
-shipped `WfContext` hypotheses (e.g. OB-5's) at the grown layer. -/
-theorem WfContextDescPi.ofWfContext {profile : PolyProfile} :
-    {scope : Nat} → {context : TypingContext profile scope} →
-      WfContext context → WfContextDescPi context
-  | _, .empty, _ => trivial
-  | _, .cons _restContext _bindingType, wellFormed =>
-      ⟨WfContextDescPi.ofWfContext wellFormed.tailWellFormed,
-        let ⟨levelExpr, flag, hasTypeDeriv⟩ := wellFormed.headIsType
-        ⟨levelExpr, flag, HasTypeDescPi.ofFormation hasTypeDeriv.toHasTypeDesc⟩⟩
+-- The `WfContext → WfContextDescPi` bridge `WfContextDescPi.ofWfContext` was extracted to
+-- `FX1Poly.Typed.WfContextDescPiFromWfContext` so this GROWN well-formedness predicate stands on the grown
+-- description engine alone (no old `WfContext`/`HasType` import, so consumers of the grown wf predicate no
+-- longer transitively drag the old engine).  At the `WfContext := WfContextDesc` flip that bridge is a
+-- KEEPER — rewritten to the `WfContextDesc → WfContextDescPi` formation→grown lift (see its file header).
 
 /-- `WfContextDescPi` is non-vacuous: a context binding a single universe code is grown-well-formed (the
 universe code is a grown type via `ofFormation ∘ universeFormation`). -/
