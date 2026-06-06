@@ -5,6 +5,7 @@ import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTyping
 import FX1Poly.Modal.GradedTypingMetatheory
 import FX1Poly.Modal.GradedSubjectReduction
+import FX1Poly.Modal.GradeErasure
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the SECOND graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -207,3 +208,13 @@ under the same per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.substInto_appGrade
 #assert_no_axioms FX1Poly.Modal.hasUsage_substitution
 #assert_no_axioms FX1Poly.Modal.hasUsage_betaPreservation
+
+/-! ### Grade erasure (DIM2-4): the usage dimension is a conservative refinement of simple typing -/
+
+#assert_no_axioms FX1Poly.Modal.SimpleType
+#assert_no_axioms FX1Poly.Modal.eraseType
+#assert_no_axioms FX1Poly.Modal.SimpleType.lookup
+#assert_no_axioms FX1Poly.Modal.HasSimpleType
+#assert_no_axioms FX1Poly.Modal.lookup_map_eraseType
+#assert_no_axioms FX1Poly.Modal.HasUsage.erase
+#assert_no_axioms FX1Poly.Modal.linearIdentity_erases
