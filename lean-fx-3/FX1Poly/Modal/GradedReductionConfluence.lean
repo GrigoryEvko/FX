@@ -33,7 +33,17 @@ critical-pair analysis consumes:
   * `HasSimpleType.confluent` / `HasUsage.confluent` — the payoff: **every well-(simply/usage-)typed
     `GradedLambda` term is confluent** (SN supplied by the Tait fundamental theorem / grade erasure).
 
-Still to come (next installment): unique normal forms + decidable `Conv` on the typed fragment.
+**This third installment (CONF stage 3a) adds unique normal forms:**
+
+  * `IsNormalForm` (a term admits no step) + `IsNormalForm.eq_of_reducesStar` (a normal form only
+    refl-reduces) + `var_isNormalForm` (non-vacuity anchor).
+  * `IsStronglyNormalizing.uniqueNormalForm` — an SN term reduces to at most one normal form (confluence
+    joins two NFs; each only refl-reduces, so each equals the join point).
+  * `HasSimpleType.uniqueNormalForm` / `HasUsage.uniqueNormalForm` — every well-typed term has a unique
+    β-NF (the bridge to decidable conversion).
+
+Still to come (next installment, CONF stage 3b): a normalizer (`fireRedex?` + `Acc.rec` on SN) and
+decidable `Conv` (`normalize a = normalize b`) on the typed fragment.
 
 ## Zero-axiom verification
 
@@ -270,5 +280,58 @@ theorem HasUsage.confluent {typeContext : List GType} {grades : GradeVector} {te
       GradedLambda.ReducesStar term leftReduct → GradedLambda.ReducesStar term rightReduct →
         Joinable GradedLambda.Reduces leftReduct rightReduct :=
   typed.stronglyNormalizing.confluent
+
+/-- A term is a **β-normal form** when it admits no reduction step. -/
+def GradedLambda.IsNormalForm (term : GradedLambda) : Prop :=
+  ∀ {reduct : GradedLambda}, ¬ GradedLambda.Reduces term reduct
+
+/-- Every variable is a normal form (no rule reduces a bare variable) — a non-vacuity anchor showing
+`IsNormalForm` is genuinely inhabited. -/
+theorem GradedLambda.var_isNormalForm (index : Nat) :
+    GradedLambda.IsNormalForm (.var index) := by
+  intro reduct step; cases step
+
+/-- A normal form multi-reduces only to itself: `ReducesStar` from a normal form is reflexive. -/
+theorem GradedLambda.IsNormalForm.eq_of_reducesStar {term reduct : GradedLambda}
+    (nf : GradedLambda.IsNormalForm term) (star : GradedLambda.ReducesStar term reduct) :
+    term = reduct := by
+  cases star with
+  | refl => rfl
+  | head firstStep _ => exact (nf firstStep).elim
+
+/-- **Uniqueness of normal forms** on the strongly-normalizing fragment: if a β-SN term reduces (in
+many steps) to two normal forms, they are equal.  Confluence joins the two normal forms at a common
+reduct; a normal form only refl-reduces, so each normal form equals that join point, hence each
+other. -/
+theorem GradedLambda.IsStronglyNormalizing.uniqueNormalForm {term firstNF secondNF : GradedLambda}
+    (sn : GradedLambda.IsStronglyNormalizing term)
+    (firstStar : GradedLambda.ReducesStar term firstNF)
+    (secondStar : GradedLambda.ReducesStar term secondNF)
+    (firstIsNF : GradedLambda.IsNormalForm firstNF) (secondIsNF : GradedLambda.IsNormalForm secondNF) :
+    firstNF = secondNF := by
+  obtain ⟨joinPoint, firstToJoin, secondToJoin⟩ := sn.confluent firstStar secondStar
+  rw [firstIsNF.eq_of_reducesStar firstToJoin, secondIsNF.eq_of_reducesStar secondToJoin]
+
+/-- **Every well-simply-typed `GradedLambda` term has a unique normal form** (SN from the Tait
+fundamental theorem). -/
+theorem HasSimpleType.uniqueNormalForm {typeContext : List SimpleType} {term : GradedLambda}
+    {resultType : SimpleType} (typed : HasSimpleType typeContext term resultType)
+    {firstNF secondNF : GradedLambda}
+    (firstStar : GradedLambda.ReducesStar term firstNF)
+    (secondStar : GradedLambda.ReducesStar term secondNF)
+    (firstIsNF : GradedLambda.IsNormalForm firstNF) (secondIsNF : GradedLambda.IsNormalForm secondNF) :
+    firstNF = secondNF :=
+  typed.stronglyNormalizing.uniqueNormalForm firstStar secondStar firstIsNF secondIsNF
+
+/-- **Every well-usage-typed `GradedLambda` term has a unique normal form** — the usage dimension
+inherits unique normal forms through grade erasure, with no separate proof. -/
+theorem HasUsage.uniqueNormalForm {typeContext : List GType} {grades : GradeVector}
+    {term : GradedLambda} {resultType : GType} (typed : HasUsage typeContext grades term resultType)
+    {firstNF secondNF : GradedLambda}
+    (firstStar : GradedLambda.ReducesStar term firstNF)
+    (secondStar : GradedLambda.ReducesStar term secondNF)
+    (firstIsNF : GradedLambda.IsNormalForm firstNF) (secondIsNF : GradedLambda.IsNormalForm secondNF) :
+    firstNF = secondNF :=
+  typed.stronglyNormalizing.uniqueNormalForm firstStar secondStar firstIsNF secondIsNF
 
 end FX1Poly.Modal

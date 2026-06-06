@@ -345,3 +345,16 @@ well-(simply/usage-)typed `GradedLambda` term (SN from the Tait FT / grade erasu
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.confluent
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.confluent
 #assert_no_axioms FX1Poly.Modal.HasUsage.confluent
+
+/-! ### Unique normal forms (CONF stage 3a)
+
+Confluence + "a normal form admits no step" ⟹ a strongly-normalizing term has at most one β-NF; hence
+every well-(simply/usage-)typed `GradedLambda` term has a unique normal form (the bridge to decidable
+conversion). -/
+
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsNormalForm
+#assert_no_axioms FX1Poly.Modal.GradedLambda.var_isNormalForm
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsNormalForm.eq_of_reducesStar
+#assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.uniqueNormalForm
+#assert_no_axioms FX1Poly.Modal.HasSimpleType.uniqueNormalForm
+#assert_no_axioms FX1Poly.Modal.HasUsage.uniqueNormalForm
