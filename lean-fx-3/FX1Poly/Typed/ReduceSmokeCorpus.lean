@@ -2,7 +2,7 @@ import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.FireRootRedex
 import FX1Poly.Typed.HasTypeDescPi
-import FX1Poly.Typed.HasTypeHonesty
+import FX1Poly.Typed.CellConstructors
 
 /-! # FX1Poly/Typed/ReduceSmokeCorpus
     — the WN-grind reducer COMPUTES: concrete reduction fixtures, `rfl`-checked.

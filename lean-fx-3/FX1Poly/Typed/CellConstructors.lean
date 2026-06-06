@@ -88,4 +88,12 @@ def sigmaTyCodeCell {scope : Nat} (domainCode : RawTerm scope)
     (codomainCode : RawTerm (scope + 1)) : RawTerm scope :=
   .mkGen .gen_sigmaTyCode () (.childCons domainCode (.childCons codomainCode .childNil))
 
+/-- The unit value cell — the nullary `gen_unit` leaf (no payload data, no
+children).  The canonical inhabitant of the unit type; a `RawTerm` value used by
+the unit canonical-forms / smoke fixtures.  Relocated here from the old
+`HasTypeHonesty` engine file (HT-C) so the unit value stands with the other cell
+constructors, independent of any typing engine. -/
+def unitCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_unit () .childNil
+
 end FX1Poly.Typed

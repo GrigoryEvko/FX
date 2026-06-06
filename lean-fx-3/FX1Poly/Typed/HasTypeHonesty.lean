@@ -34,10 +34,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The unit cell. -/
-def unitCell {scope : Nat} : RawTerm scope :=
-  .mkGen .gen_unit () .childNil
-
 /-- The ill-typed witness `app(unit, unit)` — a non-function applied to an
 argument.  A perfectly good RAW cell (`gen_app` has two same-scope term
 children); only the TYPING rejects it. -/
