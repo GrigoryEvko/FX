@@ -55,8 +55,7 @@ The `conv` arm recurses (the conversion never touches the children), so no `Conv
 theorem HasTypeDescPi.inversionPiCodeTelescopeGeneral {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
-    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext) :
+    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier) :
     ∀ {payload : Generator.gen_piTyCode.payload generalScope}
       {children : RawTermChildren Generator.gen_piTyCode.binderShifts generalScope},
       subject = RawTerm.mkGen Generator.gen_piTyCode payload children →
@@ -69,7 +68,7 @@ theorem HasTypeDescPi.inversionPiCodeTelescopeGeneral {profile : PolyProfile}
           HasTypeDesc.inversionPiCodeWithConvGeneral formationTyped subjectEq
         exact ⟨levels, flag, telescope.toDescTelescopePi⟩
     | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped => fun subjectEq =>
-        HasTypeDescPi.inversionPiCodeTelescopeGeneral typedPremise wellFormed subjectEq
+        HasTypeDescPi.inversionPiCodeTelescopeGeneral typedPremise subjectEq
     | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
         fun subjectEq =>
         Generator.noConfusion
@@ -97,14 +96,13 @@ theorem HasTypeDescPi.inversionPiCodeComponents {profile : PolyProfile} {scope :
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {classifier : RawTerm scope}
     (typed :
-      HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode) classifier)
-    (wellFormed : WfContext context) :
+      HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode) classifier) :
     ∃ (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag) ∧
         HasTypeDescPi profile (context.cons domainCode) codomainCode
           (universeCodeCell codomainLevel flag) := by
   obtain ⟨levels, flag, telescope⟩ :=
-    HasTypeDescPi.inversionPiCodeTelescopeGeneral typed wellFormed rfl
+    HasTypeDescPi.inversionPiCodeTelescopeGeneral typed rfl
   cases telescope with
   | cons _ _domain domainLevel _restLevels _flag _rest domainTyped restTelescope =>
       cases restTelescope with
@@ -119,8 +117,7 @@ theorem HasTypeDescPi.inversionPiCodeComponents {profile : PolyProfile} {scope :
 theorem HasTypeDescPi.inversionSigmaCodeTelescopeGeneral {profile : PolyProfile}
     {generalScope : Nat} {generalContext : TypingContext profile generalScope}
     {subject reachedClassifier : RawTerm generalScope}
-    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier)
-    (wellFormed : WfContext generalContext) :
+    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier) :
     ∀ {payload : Generator.gen_sigmaTyCode.payload generalScope}
       {children : RawTermChildren Generator.gen_sigmaTyCode.binderShifts generalScope},
       subject = RawTerm.mkGen Generator.gen_sigmaTyCode payload children →
@@ -133,7 +130,7 @@ theorem HasTypeDescPi.inversionSigmaCodeTelescopeGeneral {profile : PolyProfile}
           HasTypeDesc.inversionSigmaCodeWithConvGeneral formationTyped subjectEq
         exact ⟨levels, flag, telescope.toDescTelescopePi⟩
     | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped => fun subjectEq =>
-        HasTypeDescPi.inversionSigmaCodeTelescopeGeneral typedPremise wellFormed subjectEq
+        HasTypeDescPi.inversionSigmaCodeTelescopeGeneral typedPremise subjectEq
     | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
         fun subjectEq =>
         Generator.noConfusion
@@ -159,14 +156,13 @@ theorem HasTypeDescPi.inversionSigmaCodeComponents {profile : PolyProfile} {scop
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {classifier : RawTerm scope}
     (typed :
-      HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode) classifier)
-    (wellFormed : WfContext context) :
+      HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode) classifier) :
     ∃ (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag) ∧
         HasTypeDescPi profile (context.cons domainCode) codomainCode
           (universeCodeCell codomainLevel flag) := by
   obtain ⟨levels, flag, telescope⟩ :=
-    HasTypeDescPi.inversionSigmaCodeTelescopeGeneral typed wellFormed rfl
+    HasTypeDescPi.inversionSigmaCodeTelescopeGeneral typed rfl
   cases telescope with
   | cons _ _domain domainLevel _restLevels _flag _rest domainTyped restTelescope =>
       cases restTelescope with

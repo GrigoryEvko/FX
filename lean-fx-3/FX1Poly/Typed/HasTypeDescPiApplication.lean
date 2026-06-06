@@ -49,7 +49,7 @@ theorem HasTypeDescPi.piCodeInstantiationIsType {profile : PolyProfile} {scope :
     IsTypeDescPi profile context (RawTerm.subst0 codomainCode argument) := by
   obtain ⟨_piLevel, _piFlag, piTyped⟩ := piIsType
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped⟩ :=
-    HasTypeDescPi.inversionPiCodeComponents piTyped wellFormed
+    HasTypeDescPi.inversionPiCodeComponents piTyped
   have substituted :=
     HasTypeDescPi.substituteUnderBinding argument codomainTyped argumentTyped
   exact ⟨codomainLevel, flag, substituted⟩
@@ -68,7 +68,7 @@ theorem HasTypeDescPi.sigmaCodeInstantiationIsType {profile : PolyProfile} {scop
     IsTypeDescPi profile context (RawTerm.subst0 codomainCode firstProjection) := by
   obtain ⟨_sigmaLevel, _sigmaFlag, sigmaTyped⟩ := sigmaIsType
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped⟩ :=
-    HasTypeDescPi.inversionSigmaCodeComponents sigmaTyped wellFormed
+    HasTypeDescPi.inversionSigmaCodeComponents sigmaTyped
   have substituted :=
     HasTypeDescPi.substituteUnderBinding firstProjection codomainTyped firstProjectionTyped
   exact ⟨codomainLevel, flag, substituted⟩

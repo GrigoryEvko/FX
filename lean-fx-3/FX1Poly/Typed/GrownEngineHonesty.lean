@@ -84,7 +84,7 @@ theorem piTyCode_notTypedAtPiTyCode {profile : PolyProfile} {scope : Nat}
         (piTyCodeCell classifierDomain classifierCodomain) := by
   intro typed
   obtain ⟨_domainLevel, _codomainLevel, _flag, _, _, conv⟩ :=
-    HasTypeDescPi.invertPiTyCode typed contextWellFormed
+    HasTypeDescPi.invertPiTyCode typed
   exact Conv.piTyCode_not_universeCode conv
 
 /-- **Grown 0-FP: a Σ-type code is never typed at a Π type** (the Σ dual of `piTyCode_notTypedAtPiTyCode`; a
@@ -98,7 +98,7 @@ theorem sigmaTyCode_notTypedAtPiTyCode {profile : PolyProfile} {scope : Nat}
         (piTyCodeCell classifierDomain classifierCodomain) := by
   intro typed
   obtain ⟨_domainLevel, _codomainLevel, _flag, _, _, conv⟩ :=
-    HasTypeDescPi.invertSigmaTyCode typed contextWellFormed
+    HasTypeDescPi.invertSigmaTyCode typed
   exact Conv.piTyCode_not_universeCode conv
 
 end FX1Poly.Typed

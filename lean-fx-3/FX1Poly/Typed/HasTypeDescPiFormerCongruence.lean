@@ -118,7 +118,7 @@ theorem HasTypeDescPi.congPiCodomain {profile : PolyProfile} {scope : Nat}
     (wellFormed : WfContext context) :
     HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode') classifier := by
   obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped, convClassifierToCode⟩ :=
-    typed.invertPiTyCode wellFormed
+    typed.invertPiTyCode
   have rebuilt :
       HasTypeDescPi profile context (piTyCodeCell domainCode codomainCode')
         (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) :=
@@ -142,7 +142,7 @@ theorem HasTypeDescPi.congSigmaCodomain {profile : PolyProfile} {scope : Nat}
     (wellFormed : WfContext context) :
     HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode') classifier := by
   obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped, convClassifierToCode⟩ :=
-    typed.invertSigmaTyCode wellFormed
+    typed.invertSigmaTyCode
   have rebuilt :
       HasTypeDescPi profile context (sigmaTyCodeCell domainCode codomainCode')
         (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) :=
@@ -179,7 +179,7 @@ theorem HasTypeDescPi.congPiDomain {profile : PolyProfile} {scope : Nat}
     (wellFormed : WfContext context) :
     HasTypeDescPi profile context (piTyCodeCell domainCode' codomainCode) classifier := by
   obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped, convClassifierToCode⟩ :=
-    typed.invertPiTyCode wellFormed
+    typed.invertPiTyCode
   have rebuilt :
       HasTypeDescPi profile context (piTyCodeCell domainCode' codomainCode)
         (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) :=
@@ -209,7 +209,7 @@ theorem HasTypeDescPi.congSigmaDomain {profile : PolyProfile} {scope : Nat}
     (wellFormed : WfContext context) :
     HasTypeDescPi profile context (sigmaTyCodeCell domainCode' codomainCode) classifier := by
   obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped, convClassifierToCode⟩ :=
-    typed.invertSigmaTyCode wellFormed
+    typed.invertSigmaTyCode
   have rebuilt :
       HasTypeDescPi profile context (sigmaTyCodeCell domainCode' codomainCode)
         (universeCodeCell (LevelExpr.lmax domainLevel codomainLevel) flag) :=

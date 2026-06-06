@@ -53,7 +53,7 @@ theorem HasTypeDescPi.piTyCode_notTypedAtZero {profile : PolyProfile} {scope : N
         (universeCodeCell LevelExpr.lzero flag) := by
   intro typed
   obtain ⟨domainLevel, codomainLevel, _convFlag, _domainTyped, _codomainTyped, conv⟩ :=
-    HasTypeDescPi.invertPiTyCode typed contextWellFormed
+    HasTypeDescPi.invertPiTyCode typed
   have levelEq : (LevelExpr.lzero : LevelExpr) = LevelExpr.lmax domainLevel codomainLevel :=
     (universeCodeCell_inj_of_conv conv).1
   exact LevelExpr.noConfusion levelEq
@@ -69,7 +69,7 @@ theorem HasTypeDescPi.sigmaTyCode_notTypedAtZero {profile : PolyProfile} {scope 
         (universeCodeCell LevelExpr.lzero flag) := by
   intro typed
   obtain ⟨domainLevel, codomainLevel, _convFlag, _domainTyped, _codomainTyped, conv⟩ :=
-    HasTypeDescPi.invertSigmaTyCode typed contextWellFormed
+    HasTypeDescPi.invertSigmaTyCode typed
   have levelEq : (LevelExpr.lzero : LevelExpr) = LevelExpr.lmax domainLevel codomainLevel :=
     (universeCodeCell_inj_of_conv conv).1
   exact LevelExpr.noConfusion levelEq

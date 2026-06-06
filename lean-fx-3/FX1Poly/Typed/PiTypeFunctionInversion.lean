@@ -67,7 +67,7 @@ theorem HasTypeDescPi.piFormerNotTypedAtPiType {profile : PolyProfile} {scope : 
         (piTyCodeCell outerDomain outerCodomain))
     (wellFormed : WfContext context) :
     False := by
-  obtain ⟨_, _, _, _, _, convToUniverseCode⟩ := HasTypeDescPi.invertPiTyCode typed wellFormed
+  obtain ⟨_, _, _, _, _, convToUniverseCode⟩ := HasTypeDescPi.invertPiTyCode typed
   exact Conv.piTyCode_not_universeCode convToUniverseCode
 
 /-- **A Σ-type former is not a member of a Π-type** — the Σ dual of `piFormerNotTypedAtPiType`. -/
@@ -80,7 +80,7 @@ theorem HasTypeDescPi.sigmaFormerNotTypedAtPiType {profile : PolyProfile} {scope
         (piTyCodeCell outerDomain outerCodomain))
     (wellFormed : WfContext context) :
     False := by
-  obtain ⟨_, _, _, _, _, convToUniverseCode⟩ := HasTypeDescPi.invertSigmaTyCode typed wellFormed
+  obtain ⟨_, _, _, _, _, convToUniverseCode⟩ := HasTypeDescPi.invertSigmaTyCode typed
   exact Conv.piTyCode_not_universeCode convToUniverseCode
 
 /-- **A universe code is not a member of a Π-type.**  Inverting the universe code

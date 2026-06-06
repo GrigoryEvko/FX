@@ -51,7 +51,7 @@ theorem HasTypeDescPi.piFormerNotTypedAtEmptyType {profile : PolyProfile} {scope
     (wellFormed : WfContext context) :
     False := by
   obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped, convToUniverseCode⟩ :=
-    HasTypeDescPi.invertPiTyCode typed wellFormed
+    HasTypeDescPi.invertPiTyCode typed
   exact Conv.universeCode_not_emptyTypeCode convToUniverseCode.sym
 
 /-- **A Σ-type former is never typed at the empty type** — the Σ dual of
@@ -65,7 +65,7 @@ theorem HasTypeDescPi.sigmaFormerNotTypedAtEmptyType {profile : PolyProfile} {sc
     (wellFormed : WfContext context) :
     False := by
   obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped, convToUniverseCode⟩ :=
-    HasTypeDescPi.invertSigmaTyCode typed wellFormed
+    HasTypeDescPi.invertSigmaTyCode typed
   exact Conv.universeCode_not_emptyTypeCode convToUniverseCode.sym
 
 /-- **A universe code is never typed at the empty type** — completing the value-case family.  A universe

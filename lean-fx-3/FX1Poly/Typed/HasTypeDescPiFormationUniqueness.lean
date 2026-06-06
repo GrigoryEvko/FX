@@ -64,7 +64,7 @@ theorem HasTypeDescPi.piFormationTypeUniqueGivenComponents {profile : PolyProfil
   fun {_otherType} otherDeriv => by
     obtain ⟨_otherDomainLevel, _otherCodomainLevel, _otherFlag,
             otherDomainTyped, otherCodomainTyped, otherConv⟩ :=
-      HasTypeDescPi.invertPiTyCode otherDeriv wellFormed
+      HasTypeDescPi.invertPiTyCode otherDeriv
     obtain ⟨domainLevelEq, domainFlagEq⟩ :=
       levelFlag_eq_of_conv_universeCodeCell (context := context) (domainUnique otherDomainTyped)
     obtain ⟨codomainLevelEq, _codomainFlagEq⟩ :=
@@ -96,7 +96,7 @@ theorem HasTypeDescPi.sigmaFormationTypeUniqueGivenComponents {profile : PolyPro
   fun {_otherType} otherDeriv => by
     obtain ⟨_otherDomainLevel, _otherCodomainLevel, _otherFlag,
             otherDomainTyped, otherCodomainTyped, otherConv⟩ :=
-      HasTypeDescPi.invertSigmaTyCode otherDeriv wellFormed
+      HasTypeDescPi.invertSigmaTyCode otherDeriv
     obtain ⟨domainLevelEq, domainFlagEq⟩ :=
       levelFlag_eq_of_conv_universeCodeCell (context := context) (domainUnique otherDomainTyped)
     obtain ⟨codomainLevelEq, _codomainFlagEq⟩ :=
