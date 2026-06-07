@@ -5,6 +5,10 @@ import FX1Poly.Typed.UniverseCodeConversion
 import FX1Poly.Typed.SigmaCodeShape
 import FX1Poly.Typed.ListCodeShape
 import FX1Poly.Typed.ListFormationSmoke
+import FX1Poly.Typed.OptionCodeShape
+import FX1Poly.Typed.OptionCodeFormationUnderSubst
+import FX1Poly.Typed.OptionFormerMemberLevelIndexed
+import FX1Poly.Typed.BoundedGenFormationOptionFromTelescope
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescElim
@@ -504,6 +508,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listFormerNotTypedAtPiType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listFormerNotTypedAtEmptyType
 #assert_no_axioms FX1Poly.Typed.DescTelescope.oneChildLevel
+-- GTL-13 part 1: the row-INDEPENDENT optionCode reducibility/shape substrate (the "reducibility-candidate
+-- identification" half) — the one-child optionCode twins of the listCode shape reconstruction, the under-subst
+-- universe-membership, the level-indexed telescope member, and the bounded genFormationPi recursor arm. They
+-- land ahead of the typingRuleDescOf optionCode row (the formation row + ~18-site canonical-forms cascade follow).
+#assert_no_axioms FX1Poly.Typed.eq_optionCodeCell_of_headGenerator
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.optionCodeFormationUnderSubst
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.optionFormerFromTelescope
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationOptionFromTelescopeAtBoundedSucc
 -- GTL-14: the reusable one-child data-former formation reconstruction (the grown twin of piFormation/sigma-
 -- FormationViaGenArm) + a CONCRETE non-vacuous witness that the grown engine types a real `List (Type@0) :
 -- Type@1` — the honest GTL-11 payoff exhibited (not merely "compiles"), locked in as regression protection.
