@@ -357,6 +357,7 @@ import FX1Poly.Typed.IsTypeDescGenericSmoke
 import FX1Poly.Typed.KnownUnsoundnessCorpus
 import FX1Poly.Typed.MetatheoryFuzz
 import FX1Poly.Typed.MechanizedProofCrossReference
+import FX1Poly.Typed.FormalReviewGate
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5123,3 +5124,34 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.strongNormalization_hasClassicalPrecedent
 #assert_no_axioms FX1Poly.Typed.gradedDimensionOrthogonality_isFxOriginal
 #assert_no_axioms FX1Poly.Typed.polyCellSubstrate_isFxOriginal
+
+-- §27.3 Layer-5 defense: the per-rule formal-review gate (provenance + positive + negative + metatheory +
+-- fuzz + corpus = the six obligations, mapping onto the other four layers).  Two CONCRETE worked instances
+-- (corrected Lam, universe formation) with each obligation ANCHORED (`…_<obligation> := @<shippedWitness>`)
+-- to a real zero-axiom witness — re-certified zero-axiom by these gates — and `…ReviewGate_passes := rfl`.
+-- The non-vacuity proof `incompleteReview_fails` shows the checker actually discriminates (a missing
+-- obligation FAILS), so `passesReview = true` is a real certificate.  Completes the five-layer defense (L1-L5).
+#assert_no_axioms FX1Poly.Typed.FormalReviewObligation
+#assert_no_axioms FX1Poly.Typed.FormalReviewObligation.describe
+#assert_no_axioms FX1Poly.Typed.FormalReviewGate
+#assert_no_axioms FX1Poly.Typed.FormalReviewGate.isObligationSatisfied
+#assert_no_axioms FX1Poly.Typed.FormalReviewGate.passesReview
+#assert_no_axioms FX1Poly.Typed.correctedLamReview_provenance
+#assert_no_axioms FX1Poly.Typed.correctedLamReview_positiveTest
+#assert_no_axioms FX1Poly.Typed.correctedLamReview_negativeTest
+#assert_no_axioms FX1Poly.Typed.correctedLamReview_metatheoryReProof
+#assert_no_axioms FX1Poly.Typed.correctedLamReview_fuzzRun
+#assert_no_axioms FX1Poly.Typed.correctedLamReview_corpusCheck
+#assert_no_axioms FX1Poly.Typed.correctedLamReviewGate
+#assert_no_axioms FX1Poly.Typed.correctedLamReviewGate_passes
+#assert_no_axioms FX1Poly.Typed.universeFormationReview_provenance
+#assert_no_axioms FX1Poly.Typed.universeFormationReview_positiveTest
+#assert_no_axioms FX1Poly.Typed.universeFormationReview_negativeTest
+#assert_no_axioms FX1Poly.Typed.universeFormationReview_metatheoryReProof
+#assert_no_axioms FX1Poly.Typed.universeFormationReview_fuzzRun
+#assert_no_axioms FX1Poly.Typed.universeFormationReview_corpusCheck
+#assert_no_axioms FX1Poly.Typed.universeFormationReviewGate
+#assert_no_axioms FX1Poly.Typed.universeFormationReviewGate_passes
+#assert_no_axioms FX1Poly.Typed.incompleteReviewGate
+#assert_no_axioms FX1Poly.Typed.incompleteReview_fails
+#assert_no_axioms FX1Poly.Typed.incompleteReview_missingNegativeTest
