@@ -224,8 +224,13 @@ native `if`.) -/
 theorem implicitFlowBug_isPending :
     KnownTypeTheoryBug.implicitFlowBranchOnSecret.isEncodableNow = false := rfl
 
-/-- Ledger fact (HONEST pending): the constant-time secret-memory-access bug is NOT yet encodable — there
-is no constant-time effect tracking secret-dependent memory access. -/
+/-- Ledger fact (HONEST pending): the constant-time secret-memory-access bug is NOT yet encodable AS THE
+CATALOGED NATIVE-CT BUG — there is no `with CT` effect tracking secret-dependent memory access.  (The
+constant-time MECHANISM — a secret-dependent memory ADDRESS leaking through the access TRACE — IS now
+defended in its trace form: see Part 8's `secretIndexAccessViolatesConstantTime` and
+`constantTimeStrictlyStrongerThanNoninterference`, where the address-trace noninterference property is
+violated by a secret index EVEN WHEN value-noninterference holds.  The pending surface is specifically the
+native `with CT` effect, exactly as Part 5 keeps the native `if` and Part 7 the native session type pending.) -/
 theorem constantTimeBug_isPending :
     KnownTypeTheoryBug.constantTimeSecretMemoryAccess.isEncodableNow = false := rfl
 
@@ -485,5 +490,125 @@ theorem endpointAliasingPermittedIffUnrestricted :
     GradedLambda.WellGraded 1 dupReduct unrestrictedEndpointContext :=
   ⟨corpusRejectsErasedEndpointAliasing, corpusRejectsLinearEndpointAliasing,
     unrestrictedEndpointAliasingAccepted⟩
+
+/-! ## Part 8 — the constant-time mechanism: address-trace noninterference (constant-time strictly
+       stronger than value noninterference)
+
+The `constantTimeSecretMemoryAccess` row (§12.5; Barthe et al. constant-time crypto) stays pending for the
+NATIVE constant-time surface — a `with CT` effect tracking secret-dependent memory access — which the kernel
+does not yet have.  But the bug's MECHANISM is witnessable now, and it is genuinely DISTINCT from the Part-5
+information-flow witnesses: constant-time constrains the execution TRACE (which memory ADDRESS is touched —
+the timing/access-pattern channel), not the output VALUE.  A secret-dependent ADDRESS leaks even when no
+secret-dependent VALUE ever reaches an output — so constant-time is STRICTLY STRONGER than value
+noninterference.
+
+This part models a memory access by its two observables — the ADDRESS it touches (`addressTrace`, the index)
+and the VALUE it reads (`valueObservable`) — each as a function of the secret input.  Constant-time is
+address-trace noninterference (`isConstantTime`: the address is secret-independent); value noninterference
+(`isValueNoninterfering`: the value is secret-independent) is the Part-5-style property.  Mirroring Parts 5
+and 7 (which defend the implicit-flow and session-aliasing MECHANISMS in their encodable forms while the
+native surfaces stay pending), this defends the constant-time mechanism in its trace form.
+
+  * `publicConstantIndexAccessIsConstantTime` — the GOOD case: a public constant index (address `0`
+    regardless of the secret) is constant-time.  The discipline does not over-reject.
+  * **`secretIndexAccessViolatesConstantTime`** — the BUG: indexing AT the secret makes the address trace
+    BE the secret (`addressTrace s = s`), so two secrets `0 ≠ 1` give different traces — not constant-time.
+  * `secretIndexConstantArrayIsValueNoninterfering` — the secret-indexed read of a CONSTANT (public) array
+    is value-noninterference-CLEAN: the array ignores the index, so the secret cannot affect the VALUE read.
+  * **`constantTimeStrictlyStrongerThanNoninterference`** — ★ the headline: that very access is
+    value-noninterference-clean YET violates constant-time — a term that leaks the secret through the address
+    channel while leaking nothing through the value channel.  Exactly the timing/access-pattern leak the
+    §27.2 / §12.5 entry warns about.  (The secret index is also `classified`-graded by Part 5's security
+    semiring, so a native `with CT` discipline forbidding classified indices would reject it; the trace-level
+    strictness is what makes constant-time a distinct, stronger property than value noninterference.)
+  * `corpusConstantTimeMechanismWitnessed` — non-vacuity: the good case IS constant-time, the bug is NOT, and
+    the bug is value-noninterference-clean.  Layer-1 carries the constant-time mechanism, not a placeholder.
+-/
+
+/-- A memory address (an index into memory). -/
+abbrev MemoryAddress := Nat
+
+/-- A memory access, modeled by its two observables as functions of the secret input: `indexOf` is the
+ADDRESS it touches (the index, the constant-time-relevant channel) and `arrayContents` is the (public)
+memory whose cell it reads.  Pure data (no kernel term) — strictly positive, like the session/permission
+algebras. -/
+structure SecretDependentAccess where
+  indexOf : Nat → MemoryAddress
+  arrayContents : MemoryAddress → Nat
+
+/-- The ADDRESS-TRACE observable: which memory address the access touches, as a function of the secret —
+the constant-time channel (§12.5: the access pattern must not depend on secret inputs). -/
+def SecretDependentAccess.addressTrace (access : SecretDependentAccess) (secret : Nat) : MemoryAddress :=
+  access.indexOf secret
+
+/-- The VALUE observable: the contents read at the touched address, as a function of the secret — the
+information-flow channel that value noninterference (Part 5) constrains. -/
+def SecretDependentAccess.valueObservable (access : SecretDependentAccess) (secret : Nat) : Nat :=
+  access.arrayContents (access.indexOf secret)
+
+/-- **Constant-time = address-trace noninterference (§12.5).**  The access is constant-time iff the address
+it touches does not depend on the secret — the execution trace (which memory location) is secret-independent. -/
+def SecretDependentAccess.isConstantTime (access : SecretDependentAccess) : Prop :=
+  ∀ firstSecret secondSecret : Nat, access.addressTrace firstSecret = access.addressTrace secondSecret
+
+/-- **Value noninterference (§12.2).**  The access is value-noninterfering iff the value it reads does not
+depend on the secret — the Part-5-style information-flow property on the VALUE channel. -/
+def SecretDependentAccess.isValueNoninterfering (access : SecretDependentAccess) : Prop :=
+  ∀ firstSecret secondSecret : Nat,
+    access.valueObservable firstSecret = access.valueObservable secondSecret
+
+/-- A constant public index: touch address `0` regardless of the secret (the constant-time-clean access). -/
+def publicConstantIndexAccess (contents : MemoryAddress → Nat) : SecretDependentAccess :=
+  { indexOf := fun _ => 0, arrayContents := contents }
+
+/-- A secret-dependent index: touch the address that IS the secret (the constant-time-violating access). -/
+def secretIndexAccess (contents : MemoryAddress → Nat) : SecretDependentAccess :=
+  { indexOf := fun secret => secret, arrayContents := contents }
+
+/-- **The good case is constant-time (no over-rejection).**  A public constant index touches address `0`
+for every secret, so its address trace is secret-independent — constant-time. -/
+theorem publicConstantIndexAccessIsConstantTime (contents : MemoryAddress → Nat) :
+    (publicConstantIndexAccess contents).isConstantTime :=
+  fun _ _ => rfl
+
+/-- **Corpus entry — secret-dependent memory access violates constant-time (security/constant-time, §27.2 /
+§12.5; Barthe et al.).**  Indexing AT the secret makes the address trace BE the secret
+(`addressTrace s = s`), so secrets `0` and `1` touch different addresses — the access pattern leaks the
+secret.  Not constant-time. -/
+theorem secretIndexAccessViolatesConstantTime (contents : MemoryAddress → Nat) :
+    ¬ (secretIndexAccess contents).isConstantTime := by
+  intro isCT
+  exact Nat.noConfusion (isCT 0 1)
+
+/-- The secret-indexed read of a CONSTANT (public) array is value-noninterference-CLEAN: the array ignores
+the index (every cell holds `fixedValue`), so the secret cannot affect the VALUE read — no information flows
+through the value channel. -/
+theorem secretIndexConstantArrayIsValueNoninterfering (fixedValue : Nat) :
+    (secretIndexAccess (fun _ => fixedValue)).isValueNoninterfering :=
+  fun _ _ => rfl
+
+/-- ★ **Constant-time is STRICTLY STRONGER than value noninterference (§27.2 / §12.5).**  The secret-indexed
+read of a constant public array is value-noninterference-CLEAN (the value never changes with the secret) yet
+VIOLATES constant-time (the ADDRESS it touches IS the secret) — a term that leaks the secret through the
+access-pattern/timing channel while leaking nothing through the value channel.  This is precisely why
+constant-time is a distinct, stronger discipline than information-flow noninterference: noninterference would
+accept this access (the output is secret-independent), but constant-time rejects it (the address is not). -/
+theorem constantTimeStrictlyStrongerThanNoninterference (fixedValue : Nat) :
+    (secretIndexAccess (fun _ => fixedValue)).isValueNoninterfering ∧
+    ¬ (secretIndexAccess (fun _ => fixedValue)).isConstantTime :=
+  ⟨secretIndexConstantArrayIsValueNoninterfering fixedValue,
+    secretIndexAccessViolatesConstantTime (fun _ => fixedValue)⟩
+
+/-- **The constant-time mechanism witness is non-vacuous.**  The public constant-index access IS
+constant-time, the secret-index access is NOT, and that secret-index access is value-noninterference-clean —
+all concrete.  Layer-1 of the §27.3 defense carries the constant-time mechanism, not a placeholder; the
+native `with CT` surface stays pending (`constantTimeBug_isPending`). -/
+theorem corpusConstantTimeMechanismWitnessed (fixedValue : Nat) :
+    (publicConstantIndexAccess (fun _ => fixedValue)).isConstantTime ∧
+    ¬ (secretIndexAccess (fun _ => fixedValue)).isConstantTime ∧
+    (secretIndexAccess (fun _ => fixedValue)).isValueNoninterfering :=
+  ⟨publicConstantIndexAccessIsConstantTime (fun _ => fixedValue),
+    secretIndexAccessViolatesConstantTime (fun _ => fixedValue),
+    secretIndexConstantArrayIsValueNoninterfering fixedValue⟩
 
 end FX1Poly.Typed

@@ -5855,6 +5855,23 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.corpusRejectsErasedEndpointAliasing
 #assert_no_axioms FX1Poly.Typed.unrestrictedEndpointAliasingAccepted
 #assert_no_axioms FX1Poly.Typed.endpointAliasingPermittedIffUnrestricted
+-- Part 8 — the constant-time MECHANISM (§27.2 / §12.5): constant-time = address-trace noninterference (which
+-- memory ADDRESS is touched is secret-independent), genuinely distinct from Part 5's value noninterference.
+-- secretIndexAccessViolatesConstantTime: indexing AT the secret leaks via the address trace; ★ constantTime
+-- StrictlyStrongerThanNoninterference: a secret-indexed read of a CONSTANT array is value-NI-clean yet NOT
+-- constant-time — CT strictly stronger. Native `with CT` surface stays pending (constantTimeBug_isPending).
+#assert_no_axioms FX1Poly.Typed.SecretDependentAccess
+#assert_no_axioms FX1Poly.Typed.SecretDependentAccess.addressTrace
+#assert_no_axioms FX1Poly.Typed.SecretDependentAccess.valueObservable
+#assert_no_axioms FX1Poly.Typed.SecretDependentAccess.isConstantTime
+#assert_no_axioms FX1Poly.Typed.SecretDependentAccess.isValueNoninterfering
+#assert_no_axioms FX1Poly.Typed.publicConstantIndexAccess
+#assert_no_axioms FX1Poly.Typed.secretIndexAccess
+#assert_no_axioms FX1Poly.Typed.publicConstantIndexAccessIsConstantTime
+#assert_no_axioms FX1Poly.Typed.secretIndexAccessViolatesConstantTime
+#assert_no_axioms FX1Poly.Typed.secretIndexConstantArrayIsValueNoninterfering
+#assert_no_axioms FX1Poly.Typed.constantTimeStrictlyStrongerThanNoninterference
+#assert_no_axioms FX1Poly.Typed.corpusConstantTimeMechanismWitnessed
 
 -- §27.2 / §1.4 Girard-acyclicity STRENGTHENING (UniverseClassificationAcyclic.lean): the corpus ships the
 -- Type:Type entry as length-1 (corpusRejectsTypeInType) + length-2 (grownUniverseTypingHasNoTwoCycle), but
