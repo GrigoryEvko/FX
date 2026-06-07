@@ -189,6 +189,7 @@ import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
+import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -6038,3 +6039,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.reachedNormalForm_eq_normalForm
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalForm_eq_self_of_isStepNormalForm
 #assert_no_axioms FX1Poly.Typed.identityNormalForm_eq
+-- IDENTITY TOWER (IdentityTowerFamily): a uniformly-typed INFINITE family idTower e flag n = (λx.x)^n (Type@e),
+-- complementing the §27.3 L2 constant-function tower (metatheoryFuzzFamily) with an identity tower. idTower_has
+-- TypeDescPi: every height types uniformly at Type@(e+1) — base universeFormation, step RECURSIVE piElim of the
+-- identity at Type@(e+1) against the IH (the rule fires n times in the n-th derivation; piElim result subst0
+-- Type@(e+1) (idTower n) is defeq Type@(e+1), constant codomain). idTower_stronglyNormalizing: SN for all heights
+-- via SN-043 uniformly. idTower_reducesToValue: β-reduces to Type@e in exactly n identity contractions ((λx.x)t ↝
+-- t via Step.beta subst0 (var 0) t = t, StepStar.trans chain). idTowerUniformlyTypedReducesToValue packages the
+-- headline — the typing engine + SN-043 scale to an INFINITE uniformly-typed family, not just finite fixtures.
+#assert_no_axioms FX1Poly.Typed.idTower_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.idTower_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.idTower_reducesToValue
+#assert_no_axioms FX1Poly.Typed.idTowerUniformlyTypedReducesToValue
