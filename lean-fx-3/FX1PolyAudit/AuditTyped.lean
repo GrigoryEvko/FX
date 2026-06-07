@@ -356,6 +356,7 @@ import FX1Poly.Typed.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.IsTypeDescGenericSmoke
 import FX1Poly.Typed.KnownUnsoundnessCorpus
 import FX1Poly.Typed.MetatheoryFuzz
+import FX1Poly.Typed.MechanizedProofCrossReference
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5097,3 +5098,28 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_base_isNormal
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_succ_isNotNormal
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamilySound
+
+-- §27.3 Layer-3 defense: every core metatheory rule cross-referenced to a PUBLISHED MECHANIZED proof and
+-- ANCHORED to the real kernel theorem that realizes it.  The `crossRef_*` anchors (`def := @kernelTheorem`)
+-- verify each cited rule EXISTS and — via these gates — RE-CERTIFY each classical rule's kernel proof is
+-- zero-axiom.  `KernelMetatheoryRule` + `mechanizedSource`/`hasClassicalPrecedent`/`kernelAnchor` is the
+-- machine-checked catalog; the `…_hasClassicalPrecedent`/`…_isFxOriginal` rfl-facts pin the honest
+-- classical-vs-FX-original split (9 classical anchored + 2 FX-original).
+#assert_no_axioms FX1Poly.Typed.KernelMetatheoryRule
+#assert_no_axioms FX1Poly.Typed.KernelMetatheoryRule.mechanizedSource
+#assert_no_axioms FX1Poly.Typed.KernelMetatheoryRule.hasClassicalPrecedent
+#assert_no_axioms FX1Poly.Typed.KernelMetatheoryRule.kernelAnchor
+#assert_no_axioms FX1Poly.Typed.crossRef_correctedLam
+#assert_no_axioms FX1Poly.Typed.crossRef_subjectReductionBeta
+#assert_no_axioms FX1Poly.Typed.crossRef_strongNormalization
+#assert_no_axioms FX1Poly.Typed.crossRef_progress
+#assert_no_axioms FX1Poly.Typed.crossRef_consistency
+#assert_no_axioms FX1Poly.Typed.crossRef_universePredicativity
+#assert_no_axioms FX1Poly.Typed.crossRef_uniqueNormalForm
+#assert_no_axioms FX1Poly.Typed.crossRef_decidableConversion
+#assert_no_axioms FX1Poly.Typed.crossRef_newmanLemma
+#assert_no_axioms FX1Poly.Typed.subjectReductionBeta_hasClassicalPrecedent
+#assert_no_axioms FX1Poly.Typed.consistency_hasClassicalPrecedent
+#assert_no_axioms FX1Poly.Typed.strongNormalization_hasClassicalPrecedent
+#assert_no_axioms FX1Poly.Typed.gradedDimensionOrthogonality_isFxOriginal
+#assert_no_axioms FX1Poly.Typed.polyCellSubstrate_isFxOriginal
