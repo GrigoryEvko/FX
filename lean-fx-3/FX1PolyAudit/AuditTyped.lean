@@ -1920,6 +1920,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.identityOnUniverse_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.constantTypeLambda_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.identityOnUniverse_stronglyNormalizing
+-- The ELIMINATION (application) form + concrete subject reduction (TypedLambdaDerivations, extending the
+-- piIntro derivations above): identityApplicationOnUniverseCode applies the identity at Type@(e+1) to the
+-- universe code Type@e (which inhabits Type@(e+1) by universeFormation — no data-code machinery), typed by
+-- piElim; the result-type subst0 Type@(e+1) Type@e is defeq Type@(e+1) (constant codomain ignores the arg).
+-- identityApplication_subjectReduction: the redex β-reduces to its argument Type@e and BOTH redex and reduct
+-- type at the SAME Type@(e+1) — concrete subject reduction on an honest piElim derivation.
+#assert_no_axioms FX1Poly.Typed.identityApplicationOnUniverseCode_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.identityApplicationOnUniverseCode_betaReducesToArgument
+#assert_no_axioms FX1Poly.Typed.identityApplication_subjectReduction
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the

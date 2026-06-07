@@ -34,9 +34,21 @@ And one bridge to the metatheory:
     `IsStronglyNormalizing` for the λ-term, demonstrating the
     typing → strong-normalization pipeline on a concrete closed program.
 
+And the elimination (application) form, with a concrete subject-reduction
+witness:
+
+  * `identityApplicationOnUniverseCode_hasTypeDescPi` — applying the identity at
+    `Type@(e+1)` to the universe code `Type@e` (which inhabits `Type@(e+1)`),
+    typed by `piElim`.  The result type `subst0 Type@(e+1) Type@e` is
+    definitionally `Type@(e+1)` (the constant codomain ignores the argument).
+
+  * `identityApplication_subjectReduction` — the redex β-reduces to its argument
+    `Type@e`, and BOTH the redex and the reduct are typed at the same type
+    `Type@(e+1)` — concrete subject reduction for an honest application.
+
 Zero-axiom: every derivation is a direct constructor application; the only
-non-trivial step is the `var`-lookup defeq, which holds by computation on the
-nullary leaf.
+non-trivial steps are the `var`-lookup defeq and the constant-codomain `subst0`,
+both of which hold by computation on nullary leaves.
 -/
 
 namespace FX1Poly.Typed
@@ -92,5 +104,54 @@ theorem identityOnUniverse_stronglyNormalizing
       (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing
     (identityOnUniverse_hasTypeDescPi (profile := profile) levelExpr flag)
+
+/-- `(λ(x : Type@(e+1)). x) (Type@e) : Type@(e+1)` — the identity at the universe
+`Type@(e+1)` applied to the universe code `Type@e` (which inhabits `Type@(e+1)`),
+typed by the grown engine's `piElim`.  The result type `subst0 Type@(e+1) Type@e`
+is definitionally `Type@(e+1)`: the identity's codomain is constant, so the
+substitution ignores the argument. -/
+theorem identityApplicationOnUniverseCode_hasTypeDescPi
+    {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    HasTypeDescPi profile TypingContext.empty
+      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (universeCodeCell levelExpr flag))
+      (universeCodeCell levelExpr.lsucc flag) :=
+  HasTypeDescPi.piElim
+    (identityOnUniverse_hasTypeDescPi (profile := profile) levelExpr.lsucc flag)
+    (HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty levelExpr flag))
+
+/-- The identity application β-reduces to its argument `Type@e` (the body `x`
+substituted by the argument). -/
+theorem identityApplicationOnUniverseCode_betaReducesToArgument
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    Step
+      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (universeCodeCell levelExpr flag))
+      (universeCodeCell levelExpr flag) :=
+  Step.beta
+
+/-- ★ Concrete subject reduction for an honest application.  The identity
+application `(λ(x : Type@(e+1)). x) (Type@e)` β-reduces to its argument `Type@e`,
+and BOTH the redex and the reduct are typed at the SAME type `Type@(e+1)` — the
+β-step preserves the type.  This is subject reduction exhibited on a concrete
+closed `piElim` derivation, not a general lemma. -/
+theorem identityApplication_subjectReduction
+    {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    Step
+      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (universeCodeCell levelExpr flag))
+      (universeCodeCell levelExpr flag) ∧
+    HasTypeDescPi profile TypingContext.empty
+      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (universeCodeCell levelExpr flag))
+      (universeCodeCell levelExpr.lsucc flag) ∧
+    HasTypeDescPi profile TypingContext.empty
+      (universeCodeCell levelExpr flag)
+      (universeCodeCell levelExpr.lsucc flag) :=
+  ⟨identityApplicationOnUniverseCode_betaReducesToArgument levelExpr flag,
+    identityApplicationOnUniverseCode_hasTypeDescPi (profile := profile) levelExpr flag,
+    HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty levelExpr flag)⟩
 
 end FX1Poly.Typed
