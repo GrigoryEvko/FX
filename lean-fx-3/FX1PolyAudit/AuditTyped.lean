@@ -5781,6 +5781,22 @@ gates pin them shut.
 -- which does NOT fitsWhole).  fractionalPermissionBug_isEncodableNow flips the ledger (was _isPending).
 #assert_no_axioms FX1Poly.Typed.corpusRejectsFractionalOverallocation
 #assert_no_axioms FX1Poly.Typed.corpusNaiveFractionalOverallocates
+-- Part 7: the linearity-MECHANISM defense of session-endpoint aliasing (the `sessionEndpointAliased` row stays
+-- pending for the native session-typed surface, mirroring Part 5's native-`if` treatment).  A session endpoint
+-- IS a linear resource and aliasing it IS using it twice, so the usage dimension already rejects the mechanism:
+-- aliasedLinearEndpointUsageIsOmega (g g uses the endpoint at ω=1+1) + corpusRejectsLinearEndpointAliasing
+-- (ω ≰ 1, re-exported from dupReduct_illGraded) + corpusRejectsErasedEndpointAliasing (ω ≰ 0) +
+-- unrestrictedEndpointAliasingAccepted (ω ≤ ω, no over-rejection) + endpointAliasingPermittedIffUnrestricted
+-- (the line is EXACTLY at ω).  The witnessed `g g` is the usage-calculus image of δ=λx.x x's body — the same
+-- self-application whose self-application is Ω, so one syntactic root drives both non-termination (type dim)
+-- and resource-aliasing (usage dim).
+#assert_no_axioms FX1Poly.Typed.erasedEndpointContext
+#assert_no_axioms FX1Poly.Typed.unrestrictedEndpointContext
+#assert_no_axioms FX1Poly.Typed.aliasedLinearEndpointUsageIsOmega
+#assert_no_axioms FX1Poly.Typed.corpusRejectsLinearEndpointAliasing
+#assert_no_axioms FX1Poly.Typed.corpusRejectsErasedEndpointAliasing
+#assert_no_axioms FX1Poly.Typed.unrestrictedEndpointAliasingAccepted
+#assert_no_axioms FX1Poly.Typed.endpointAliasingPermittedIffUnrestricted
 
 -- §27.2 / §1.4 Girard-acyclicity STRENGTHENING (UniverseClassificationAcyclic.lean): the corpus ships the
 -- Type:Type entry as length-1 (corpusRejectsTypeInType) + length-2 (grownUniverseTypingHasNoTwoCycle), but

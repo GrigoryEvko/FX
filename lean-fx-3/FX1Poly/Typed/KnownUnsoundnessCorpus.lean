@@ -20,7 +20,13 @@ application-form implicit-flow rejection (a secret selector's secrecy cannot be 
 selection).  The native-`if` surface of the cataloged implicit-flow bug stays honestly pending.  And —
 now that the §6.4 fractional-permission algebra ships (`FX1Poly.Modal.Permission`) — it adds the
 fractional-permission OVERALLOCATION rejection (Part 6): the guarded add never produces an over-full
-share (Boyland 2003), flipping that catalog entry to encodable.
+share (Boyland 2003), flipping that catalog entry to encodable.  Finally — since a session endpoint IS
+a linear resource and aliasing it IS using it twice — it adds the linearity-MECHANISM defense of
+session-endpoint aliasing (Part 7): the self-application `g g` (occurrence usage `ω = 1 + 1`) is
+rejected at a linear AND an erased declaration and accepted only at an unrestricted one, so the usage
+discipline permits endpoint aliasing iff the endpoint is declared unrestricted.  The native
+session-typed surface (send/recv protocol state) stays honestly pending, exactly as Part 5 keeps the
+native `if` pending.
 
 ## The §27.2 catalog (`KnownTypeTheoryBug`)
 
@@ -194,8 +200,12 @@ theorem atkeyBug_isEncodableNow :
 theorem girardBug_isEncodableNow :
     KnownTypeTheoryBug.typeInTypeGirard.isEncodableNow = true := rfl
 
-/-- Ledger fact (HONEST pending): session-endpoint aliasing is NOT yet encodable — the protocol/session
-dimension is not engine-typed. -/
+/-- Ledger fact (HONEST pending): session-endpoint aliasing is NOT yet encodable AS THE CATALOGED
+NATIVE-SESSION BUG — the protocol/session dimension (send/recv endpoints carrying protocol state) is
+not engine-typed.  (The aliasing MECHANISM — a linear endpoint used twice — IS already defended in its
+linearity form: see Part 7's `corpusRejectsLinearEndpointAliasing`, where the usage discipline rejects
+the self-application `g g` at a linear declaration.  The pending surface is specifically the native
+session type, exactly as `implicitFlowBug_isPending`'s pending surface is the native `if`.) -/
 theorem sessionBug_isPending :
     KnownTypeTheoryBug.sessionEndpointAliased.isEncodableNow = false := rfl
 
@@ -396,5 +406,84 @@ theorem corpusNaiveFractionalOverallocates :
     Permission.naiveAdd (.frac 2 3) (.frac 2 3) = .frac 12 9 ∧
     (Permission.naiveAdd (.frac 2 3) (.frac 2 3)).fitsWhole = false :=
   ⟨Permission.naiveAddOverallocates, Permission.naiveOverallocationDoesNotFit⟩
+
+/-! ## Part 7 — the linearity mechanism of session-endpoint aliasing (the first protocol-adjacent entry)
+
+The `sessionEndpointAliased` row stays pending for the NATIVE session-typed surface (send/recv endpoints
+carrying protocol state — a dimension the kernel does not yet type).  But the bug's MECHANISM is pure
+linearity: a session endpoint is a linear resource, and "aliasing" it is using it twice — exactly the
+violation the usage dimension already rejects.  So, mirroring Part 5 (which defends the implicit-flow
+MECHANISM in application form while the native `if` stays pending), this part adds the linearity-form
+defense of endpoint aliasing, re-using the shipped usage substrate (`FX1Poly.Modal.dupReduct` = `g g`,
+the §27.2 self-application whose β-reduct uses its argument twice).
+
+The witnessed term `g g` is the usage-calculus image of the body of `δ = λx. x x` — the very
+self-application whose application to itself is the Ω combinator (`UntypedOmegaNotStronglyNormalizing`).
+The SAME syntactic shape that breaks strong normalization in the TYPE dimension breaks linearity in the
+USAGE dimension: `δ` admits no linear function type because its binder is used twice.  The two
+pathologies — non-termination and resource-aliasing — share one syntactic root.
+
+  * `aliasedLinearEndpointUsageIsOmega` — the endpoint's occurrence multiplicity from two uses is `ω`
+    (`= 1 + 1`), computed.
+  * **`corpusRejectsLinearEndpointAliasing`** — a LINEAR endpoint used twice is rejected (`ω ≰ 1`).  The
+    linearity core of session-endpoint aliasing (re-exported from `dupReduct_illGraded`).
+  * `corpusRejectsErasedEndpointAliasing` — even an ERASED (ghost, grade-`0`) endpoint cannot be aliased
+    (`ω ≰ 0`).
+  * `unrestrictedEndpointAliasingAccepted` — an UNRESTRICTED (grade-`ω`) resource CAN be aliased
+    (`ω ≤ ω`): the discipline does not over-reject.
+  * **`endpointAliasingPermittedIffUnrestricted`** — the line is drawn EXACTLY at `ω`: aliasing rejected
+    at grades `0` and `1`, accepted only at `ω`.  The usage discipline permits endpoint aliasing iff the
+    endpoint is declared unrestricted — the precise linearity content of "a linear channel cannot be
+    aliased".
+-/
+
+/-- An ERASED (ghost, grade-`0`) declared context for a single endpoint resource. -/
+def erasedEndpointContext : GradeVector := GradeVector.cons UsageGrade.zero GradeVector.nil
+
+/-- An UNRESTRICTED (grade-`ω`) declared context for a single endpoint resource. -/
+def unrestrictedEndpointContext : GradeVector := GradeVector.cons UsageGrade.omega GradeVector.nil
+
+/-- The endpoint's occurrence multiplicity from being used twice (`g g`) is `ω` (`= 1 + 1`, the §6.1
+usage semiring) — computed by `rfl`.  The quantitative reason aliasing a linear endpoint is unsound. -/
+theorem aliasedLinearEndpointUsageIsOmega :
+    GradedLambda.usage 1 dupReduct = GradeVector.cons UsageGrade.omega GradeVector.nil :=
+  rfl
+
+/-- **Corpus entry — linear session-endpoint aliasing rejected (usage/linearity, §27.2 / §11; the
+linearity mechanism of "session endpoint aliased").**  A LINEAR endpoint used twice (`g g`) is NOT
+well-graded: its occurrence usage is `ω` and `ω ≤ 1` is false.  This is the linearity core of
+session-endpoint aliasing (a session channel is a linear resource; aliasing = double use).  Re-exported
+from the usage dimension's `dupReduct_illGraded`; the native session-typed surface stays pending
+(`sessionBug_isPending`). -/
+theorem corpusRejectsLinearEndpointAliasing :
+    ¬ GradedLambda.WellGraded 1 dupReduct linearG :=
+  dupReduct_illGraded
+
+/-- Even an ERASED (ghost, grade-`0`) endpoint cannot be aliased: `g g` uses it `ω` times and `ω ≤ 0`
+is false.  Aliasing escapes every sub-unrestricted declaration, not just the linear one. -/
+theorem corpusRejectsErasedEndpointAliasing :
+    ¬ GradedLambda.WellGraded 1 dupReduct erasedEndpointContext := by
+  intro wellGraded
+  obtain ⟨headBelow, _⟩ := wellGraded
+  exact Bool.noConfusion headBelow
+
+/-- An UNRESTRICTED (grade-`ω`) resource CAN be aliased: `g g` uses it `ω` times and `ω ≤ ω`.  The
+discipline does not over-reject — duplication is exactly what the unrestricted grade grants. -/
+theorem unrestrictedEndpointAliasingAccepted :
+    GradedLambda.WellGraded 1 dupReduct unrestrictedEndpointContext :=
+  ⟨rfl, True.intro⟩
+
+/-- **The usage discipline permits endpoint aliasing iff the endpoint is unrestricted.**  Aliasing
+(`g g`) is rejected at the erased (`0`) and linear (`1`) declarations and accepted only at the
+unrestricted (`ω`) one — the line is drawn EXACTLY at `ω`.  This is the precise linearity content of
+"a linear session channel cannot be aliased", and it is non-vacuous: both rejections and the acceptance
+are concrete.  (The native session-typed surface — send/recv protocol state — stays pending; this is
+the linearity-mechanism defense the usage dimension already provides.) -/
+theorem endpointAliasingPermittedIffUnrestricted :
+    (¬ GradedLambda.WellGraded 1 dupReduct erasedEndpointContext) ∧
+    (¬ GradedLambda.WellGraded 1 dupReduct linearG) ∧
+    GradedLambda.WellGraded 1 dupReduct unrestrictedEndpointContext :=
+  ⟨corpusRejectsErasedEndpointAliasing, corpusRejectsLinearEndpointAliasing,
+    unrestrictedEndpointAliasingAccepted⟩
 
 end FX1Poly.Typed
