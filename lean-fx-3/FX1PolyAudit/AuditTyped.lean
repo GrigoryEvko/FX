@@ -194,6 +194,7 @@ import FX1Poly.Typed.ListFormerMemberLevelIndexed
 import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
+import FX1Poly.Typed.FlatDescTelescope
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2332,6 +2333,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescope.binderShiftsAreCumulativeFromZero
 #assert_no_axioms FX1Poly.Typed.DescTelescope.noFlatTwoChildTelescope
 #assert_no_axioms FX1Poly.Typed.DescTelescope.productCodeFormationTelescopeImpossible
+-- FLAT telescope (FlatDescTelescope): the non-cumulative premise shape for the [0,0] data formers — a STANDALONE
+-- (non-mutual) inductive, all children typed under the same base context (shift 0). binderShiftsAreAllZero
+-- (direct induction, the flat twin of binderShiftsAreCumulative); twoChildComponents projection;
+-- productTypeZeroFlatPremise (product (Type@0)(Type@0)'s children DO form a flat telescope);
+-- productChildrenFlatButNotCumulative bundles it with noFlatTwoChildTelescope = the "strictly more expressive on
+-- the [0,0] shape" payoff. The #934 substrate first increment (engine arm deferred).
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.binderShiftsAreAllZero
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.twoChildComponents
+#assert_no_axioms FX1Poly.Typed.productTypeZeroFlatPremise
+#assert_no_axioms FX1Poly.Typed.productChildrenFlatButNotCumulative
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
