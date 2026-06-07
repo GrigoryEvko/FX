@@ -672,9 +672,13 @@ join-semilattices).  `Permission` (carrier) + the guarded partial `add` + the un
 `add_comm`); the SOUNDNESS theorem `add_neverOverallocates` (combining two fitting shares never yields an
 over-full share — the guard prevents over-allocation); and the §27.2 / Boyland-2003 over-allocation BUG
 (`naiveAddOverallocates` / `naiveOverallocationDoesNotFit`) vs its REJECTION
-(`soundAddRejectsOverallocation`).  Associativity-where-defined is deferred (true, but intricate
-cross-multiplied Nat reasoning).  All propext-free (full-enumeration matches, Bool-`bif` guard,
-`Nat.add_comm`/`Nat.mul_comm`, `injection`/`noConfusion`, `rfl` witnesses). -/
+(`soundAddRejectsOverallocation`).  ASSOCIATIVITY-where-defined (`add_assoc`, gated by positive outer
+denominators `hasPositiveDenom`) closes the fractional core into a genuine lawful PARTIAL commutative monoid
+— proved by a triple normal-form argument (both association orders reduce to `bif (triple fits) then triple
+else conflict`), with a non-vacuity smoke (`add_assoc_smoke`, `1/4+1/4+1/4`).  All propext-free
+(full-enumeration matches, Bool-`bif` guard, `Nat.add_comm`/`Nat.mul_comm`, `injection`/`noConfusion`, `rfl`
+witnesses; the cross-multiplied Nat algebra reuses `ComplexitySemiring`'s clean `natMulAssoc`/`natRightDistrib`
+— `Nat.mul_assoc`/right-`Nat.add_mul` themselves leak propext). -/
 
 #assert_no_axioms FX1Poly.Modal.Permission.fitsWhole
 #assert_no_axioms FX1Poly.Modal.Permission.add
@@ -691,3 +695,6 @@ cross-multiplied Nat reasoning).  All propext-free (full-enumeration matches, Bo
 #assert_no_axioms FX1Poly.Modal.Permission.fracExactlyFullAdmitted
 #assert_no_axioms FX1Poly.Modal.Permission.fracExactlyFullFits
 #assert_no_axioms FX1Poly.Modal.Permission.fracPartialAdmitted
+#assert_no_axioms FX1Poly.Modal.Permission.hasPositiveDenom
+#assert_no_axioms FX1Poly.Modal.Permission.add_assoc
+#assert_no_axioms FX1Poly.Modal.Permission.add_assoc_smoke
