@@ -196,6 +196,7 @@ import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
 import FX1Poly.Typed.HasTypeDescFlat
+import FX1Poly.Typed.HasTypeDescFlatInversion
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2353,6 +2354,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_productCode_none
 #assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_outputIsUniverseFormer
 #assert_no_axioms FX1Poly.Typed.productFlatFormationSmoke
+-- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
+-- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
+-- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
+-- Type@(lmax [firstLevel,secondLevel]) via the gen_productCode row.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.inversion
+#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.inversionProductCodeComponents
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
