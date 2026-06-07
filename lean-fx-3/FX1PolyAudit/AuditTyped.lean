@@ -6051,3 +6051,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.idTower_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.idTower_reducesToValue
 #assert_no_axioms FX1Poly.Typed.idTowerUniformlyTypedReducesToValue
+-- ID-TOWER COLLAPSE (IdentityTowerFamily, appended): the family collapses to one canonical value via conversion
+-- + the SN-112 normalizer. universeCodeCell_isStepNormalForm: Type@e is a step-NF (rfl over the Bool normality
+-- check, free level/flag — nullary leaf, payload-independent). idTower_convToValue: each member converts to Type@e
+-- (Conv.fromStepStar of idTower_reducesToValue). idTower_allConvertible: all members mutually convertible (one
+-- Conv-class joined through Type@e, trans+sym). idTower_normalForm_eq_value: the computed normalForm of every
+-- member = Type@e (firing-72 reachedNormalForm_eq_normalForm on the reduction to the normal value).
+-- idTowerCollapsesToCanonicalValue: ★ infinitely many syntactically-distinct well-typed terms, all definitionally
+-- equal, all normalizing to the single canonical value — the conversion/normalization face of the typed family.
+#assert_no_axioms FX1Poly.Typed.universeCodeCell_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.idTower_convToValue
+#assert_no_axioms FX1Poly.Typed.idTower_allConvertible
+#assert_no_axioms FX1Poly.Typed.idTower_normalForm_eq_value
+#assert_no_axioms FX1Poly.Typed.idTowerCollapsesToCanonicalValue

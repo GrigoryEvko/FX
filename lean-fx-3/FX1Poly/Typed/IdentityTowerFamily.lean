@@ -1,4 +1,5 @@
 import FX1Poly.Typed.TypedLambdaDerivations
+import FX1Poly.Typed.TypedNormalizer
 
 /-! # Foundation/PolyCell/Typed/IdentityTowerFamily
     — a uniformly-typed infinite identity-application family (recursive piElim + SN + β-chain to value)
@@ -84,5 +85,56 @@ theorem idTowerUniformlyTypedReducesToValue {profile : PolyProfile}
   ⟨idTower_hasTypeDescPi levelExpr flag towerHeight,
     idTower_stronglyNormalizing (profile := profile) levelExpr flag towerHeight,
     idTower_reducesToValue levelExpr flag towerHeight⟩
+
+/-! ## The family collapses to one canonical value (conversion + normalization)
+
+The whole tower reduces to `Type@e`, so — through the conversion relation and the SN-112 normalizer — the
+infinitely many syntactically-distinct members are all definitionally ONE thing.  This connects the family
+to firings' `Conv` (`Conv.fromStepStar`) and the computed normalizer (`HasTypeDescPi.normalForm` +
+`reachedNormalForm_eq_normalForm`). -/
+
+/-- The universe code `Type@e` is a step-normal form — a nullary leaf with no redex root, structurally
+normal regardless of its level/flag payload (`rfl` over the Boolean normality check). -/
+theorem universeCodeCell_isStepNormalForm (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    RawTerm.isStepNormalForm (universeCodeCell levelExpr flag : RawTerm 0) :=
+  rfl
+
+/-- Every tower member converts to the value `Type@e` — its reduction chain lifts to `Conv`. -/
+theorem idTower_convToValue (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    ∀ towerHeight, Conv (idTower levelExpr flag towerHeight) (universeCodeCell levelExpr flag) :=
+  fun towerHeight => Conv.fromStepStar (idTower_reducesToValue levelExpr flag towerHeight)
+
+/-- All tower members are mutually convertible — the whole family is one conversion class, joined through
+the common value `Type@e`. -/
+theorem idTower_allConvertible (levelExpr : LevelExpr) (flag : UniverseFlag) (heightA heightB : Nat) :
+    Conv (idTower levelExpr flag heightA) (idTower levelExpr flag heightB) :=
+  Conv.trans (idTower_convToValue levelExpr flag heightA)
+    (Conv.sym (idTower_convToValue levelExpr flag heightB))
+
+/-- The SN-112 normalizer maps every tower member to the canonical value `Type@e` — the computed normal
+form of each member is exactly `Type@e` (`reachedNormalForm_eq_normalForm` applied to the reduction to the
+normal value). -/
+theorem idTower_normalForm_eq_value {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (towerHeight : Nat) :
+    (idTower_hasTypeDescPi (profile := profile) levelExpr flag towerHeight).normalForm =
+      universeCodeCell levelExpr flag :=
+  ((idTower_hasTypeDescPi (profile := profile) levelExpr flag towerHeight).reachedNormalForm_eq_normalForm
+    (idTower_reducesToValue levelExpr flag towerHeight)
+    (universeCodeCell_isStepNormalForm levelExpr flag)).symm
+
+/-- ★ **The identity tower collapses to one canonical value.**  All members are mutually convertible and the
+normalizer maps each to `Type@e` — infinitely many syntactically-distinct well-typed terms, all
+definitionally equal, all normalizing to the single canonical value.  The conversion/normalization face of
+the uniformly-typed family. -/
+theorem idTowerCollapsesToCanonicalValue {profile : PolyProfile} (levelExpr : LevelExpr)
+    (flag : UniverseFlag) (heightA heightB : Nat) :
+    Conv (idTower levelExpr flag heightA) (idTower levelExpr flag heightB) ∧
+    (idTower_hasTypeDescPi (profile := profile) levelExpr flag heightA).normalForm =
+      universeCodeCell levelExpr flag ∧
+    (idTower_hasTypeDescPi (profile := profile) levelExpr flag heightB).normalForm =
+      universeCodeCell levelExpr flag :=
+  ⟨idTower_allConvertible levelExpr flag heightA heightB,
+    idTower_normalForm_eq_value levelExpr flag heightA,
+    idTower_normalForm_eq_value levelExpr flag heightB⟩
 
 end FX1Poly.Typed
