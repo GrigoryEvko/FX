@@ -93,6 +93,7 @@ dependent former is one more row here — never a new `HasTypeDesc` arm (P13). -
 def typingRuleDescOf (generator : Generator) : Option TypingRuleDesc :=
   if generator = .gen_piTyCode then some { outputType := universeFormerOutput }
   else if generator = .gen_sigmaTyCode then some { outputType := universeFormerOutput }
+  else if generator = .gen_listCode then some { outputType := universeFormerOutput }
   else none
 
 mutual
@@ -171,6 +172,12 @@ check). -/
 theorem typingRuleDescOf_sigmaTyCode :
     typingRuleDescOf .gen_sigmaTyCode = some { outputType := universeFormerOutput } := rfl
 
+/-- `gen_listCode`'s description is the `universeFormerOutput` rule (metadata
+check).  The data-type-code former (GTL-11): `List A` lives at the universe of its
+element `A`, exactly the `universeFormerOutput` rule the dependent formers carry. -/
+theorem typingRuleDescOf_listCode :
+    typingRuleDescOf .gen_listCode = some { outputType := universeFormerOutput } := rfl
+
 /-- **Formation-family invariant: every formation rule outputs a universe code.**  The `typingRuleDescOf`
 table currently maps EXACTLY the dependent type-formers (`gen_piTyCode` / `gen_sigmaTyCode`) to the SHARED
 `universeFormerOutput` rule (a former lives at the `lmax` of its children's levels).  This lemma enumerates
@@ -196,10 +203,14 @@ theorem typingRuleDescOf_outputIsUniverseFormer {generator : Generator} {rule : 
     · subst hSigma
       have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
       rw [hRule]
-    · exfalso
-      unfold typingRuleDescOf at isFormation
-      rw [if_neg hPi, if_neg hSigma] at isFormation
-      contradiction
+    · by_cases hList : generator = .gen_listCode
+      · subst hList
+        have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+        rw [hRule]
+      · exfalso
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg hPi, if_neg hSigma, if_neg hList] at isFormation
+        contradiction
 
 /-- **A formation generator is never the variable generator.**  `typingRuleDescOf .gen_var = none`
 (the variable is not a type former), so any generator carrying a formation rule is non-`gen_var`.  The
@@ -215,7 +226,8 @@ theorem formationRuleImpliesNotVariable {generator : Generator} {rule : TypingRu
   subst isVariable
   unfold typingRuleDescOf at isFormation
   rw [if_neg (fun isPi => Generator.noConfusion isPi),
-    if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
+    if_neg (fun isSigma => Generator.noConfusion isSigma),
+    if_neg (fun isList => Generator.noConfusion isList)] at isFormation
   cases isFormation
 
 /-- **A formation rule IS the universe-former rule (full structure).**  The single-field strengthening of
@@ -264,10 +276,12 @@ theorem typingRuleDescOf_binderShiftsNonEmpty {generator : Generator} {rule : Ty
   · subst hPi; decide
   · by_cases hSigma : generator = .gen_sigmaTyCode
     · subst hSigma; decide
-    · exfalso
-      unfold typingRuleDescOf at isFormation
-      rw [if_neg hPi, if_neg hSigma] at isFormation
-      contradiction
+    · by_cases hList : generator = .gen_listCode
+      · subst hList; decide
+      · exfalso
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg hPi, if_neg hSigma, if_neg hList] at isFormation
+        contradiction
 
 /-- **The CURRENT formation table is exactly `{gen_piTyCode, gen_sigmaTyCode}`.**  Any generator carrying a
 formation rule is one of the two dependent type-formers.  This is the canonical "enumerate the current
@@ -286,17 +300,20 @@ scopes), and the two consumers operate over DIFFERENT telescope inductives (`Des
 requires the arity-generic telescope→member candidate-bridge (BFT-15 / CON-A3), not a table enumeration.  The
 TYPING-layer metatheory (validity / subst / weaken / inversion / uniqueness) is fully table-generic; the
 REDUCIBILITY-layer former-closure is the deep residual. -/
-theorem typingRuleDescOf_isPiOrSigma {generator : Generator} {rule : TypingRuleDesc}
+theorem typingRuleDescOf_isPiOrSigmaOrListCode {generator : Generator} {rule : TypingRuleDesc}
     (isFormation : typingRuleDescOf generator = some rule) :
-    generator = Generator.gen_piTyCode ∨ generator = Generator.gen_sigmaTyCode := by
+    generator = Generator.gen_piTyCode ∨ generator = Generator.gen_sigmaTyCode ∨
+      generator = Generator.gen_listCode := by
   by_cases hPi : generator = .gen_piTyCode
   · exact Or.inl hPi
   · by_cases hSigma : generator = .gen_sigmaTyCode
-    · exact Or.inr hSigma
-    · exfalso
-      unfold typingRuleDescOf at isFormation
-      rw [if_neg hPi, if_neg hSigma] at isFormation
-      contradiction
+    · exact Or.inr (Or.inl hSigma)
+    · by_cases hList : generator = .gen_listCode
+      · exact Or.inr (Or.inr hList)
+      · exfalso
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg hPi, if_neg hSigma, if_neg hList] at isFormation
+        contradiction
 
 /-- **A formation cell's telescope levels are non-empty.**  Combines the length equality with the
 shift-non-emptiness: the consumer-facing form for `HasTypeDesc.uniqueness`'s flag-uniqueness guard, generic

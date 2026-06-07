@@ -3,6 +3,7 @@ import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Typed.FormationCanonicalForms
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.SigmaCodeShape
+import FX1Poly.Typed.ListCodeShape
 
 /-! # FX1Poly/Typed/HasTypeDescClosedForms
     — closed-form consequences for the description formation engine
@@ -93,11 +94,15 @@ theorem HasTypeDesc.closedSubjectIsTypeFormer {profile : PolyProfile}
       (∃ (domainCode : RawTerm 0) (codomainCode : RawTerm 1),
         subject = piTyCodeCell domainCode codomainCode) ∨
       (∃ (domainCode : RawTerm 0) (codomainCode : RawTerm 1),
-        subject = sigmaTyCodeCell domainCode codomainCode) := by
-  rcases HasTypeDesc.closedSubjectHeadIsFormerOrUniverse typed with headPi | headSigma | headUniverse
+        subject = sigmaTyCodeCell domainCode codomainCode) ∨
+      (∃ element : RawTerm 0,
+        subject = .mkGen .gen_listCode () (.childCons element .childNil)) := by
+  rcases HasTypeDesc.closedSubjectHeadIsFormerOrUniverse typed with
+    headPi | headSigma | headUniverse | headList
   · exact Or.inr (Or.inl (eq_piTyCodeCell_of_headGenerator headPi))
-  · exact Or.inr (Or.inr (eq_sigmaTyCodeCell_of_headGenerator headSigma))
+  · exact Or.inr (Or.inr (Or.inl (eq_sigmaTyCodeCell_of_headGenerator headSigma)))
   · exact Or.inl (eq_universeCodeCell_of_headGenerator headUniverse)
+  · exact Or.inr (Or.inr (Or.inr (eq_listCodeCell_of_headGenerator headList)))
 
 /-- Consistency-facing classifier shape for the description formation engine: every closed
 description-typed subject has a classifier convertible to a universe code.  `closedSubjectIsTypeDesc`

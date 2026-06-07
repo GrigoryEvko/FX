@@ -64,14 +64,18 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 open StepStar
 
-/-- **The canonical-value-head predicate for the grown engine.**  The four head shapes a closed grown-typed
-normal form can take: a λ value (`gen_lam`) or a Π / Σ / universe type code.  `closedNormalSubjectHead`
-returns exactly this disjunction; this names it for the safety statements. -/
+/-- **The canonical-value-head predicate for the grown engine.**  The five head shapes a closed grown-typed
+normal form can take: a λ value (`gen_lam`) or a Π / Σ / universe / list type code.  `closedNormalSubjectHead`
+returns exactly this disjunction; this names it for the safety statements.  The `gen_listCode` disjunct is the
+forward-compatible slot for the data-type-code formation row (GTL-11): once `gen_listCode` joins
+`typingRuleDescOf`, a closed normal grown-typed `List A` head lands here; until then the disjunct is sound but
+unreached, so the canonical-forms cascade is widened one commit ahead of the row. -/
 abbrev RawTerm.IsGrownCanonicalHead {scope : Nat} (term : RawTerm scope) : Prop :=
   RawTerm.headGenerator term = Generator.gen_lam ∨
   RawTerm.headGenerator term = Generator.gen_piTyCode ∨
   RawTerm.headGenerator term = Generator.gen_sigmaTyCode ∨
-  RawTerm.headGenerator term = Generator.gen_universeCode
+  RawTerm.headGenerator term = Generator.gen_universeCode ∨
+  RawTerm.headGenerator term = Generator.gen_listCode
 
 /-- **Progress (unconditional).**  A closed grown-typed term is a canonical value (a canonical head AND a normal
 form) or it takes a `Step` — there are no stuck closed grown-typed terms.  Dispatches on decidable normality: a

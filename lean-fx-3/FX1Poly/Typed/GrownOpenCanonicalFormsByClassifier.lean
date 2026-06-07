@@ -57,7 +57,7 @@ theorem HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral {profile : PolyProfile
     (normal : RawTerm.isStepNormalForm subject) :
     (∃ body : RawTerm (scope + 1), subject = lamCell body) ∨ IsNeutral subject := by
   rcases HasTypeDescPi.openNormalSubjectCanonicalOrNeutral typed wellFormed normal with
-      (headLam | headPi | headSigma | headUniverse) | neutral
+      (headLam | headPi | headSigma | headUniverse | headList) | neutral
   · exact Or.inl (eq_lamCell_of_headGenerator headLam)
   · obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
     rw [piEq] at typed
@@ -68,6 +68,9 @@ theorem HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral {profile : PolyProfile
   · obtain ⟨_levelExpr, _flag, universeEq⟩ := eq_universeCodeCell_of_headGenerator headUniverse
     rw [universeEq] at typed
     exact (HasTypeDescPi.universeCodeNotTypedAtPiType typed).elim
+  · obtain ⟨_element, listEq⟩ := eq_listCodeCell_of_headGenerator headList
+    rw [listEq] at typed
+    exact (HasTypeDescPi.listFormerNotTypedAtPiType typed).elim
   · exact Or.inr neutral
 
 /-- **Open canonical forms at a universe.**  A normal grown-typed term whose classifier is a universe
@@ -83,7 +86,8 @@ theorem HasTypeDescPi.openNormalTypeIsFormerOrNeutral {profile : PolyProfile} {s
     (normal : RawTerm.isStepNormalForm subject) :
     (RawTerm.headGenerator subject = Generator.gen_piTyCode ∨
      RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
-     RawTerm.headGenerator subject = Generator.gen_universeCode) ∨ IsNeutral subject := by
+     RawTerm.headGenerator subject = Generator.gen_universeCode ∨
+     RawTerm.headGenerator subject = Generator.gen_listCode) ∨ IsNeutral subject := by
   rcases HasTypeDescPi.openNormalSubjectCanonicalOrNeutral typed wellFormed normal with
       (headLam | rest) | neutral
   · obtain ⟨body, lamEq⟩ := eq_lamCell_of_headGenerator headLam

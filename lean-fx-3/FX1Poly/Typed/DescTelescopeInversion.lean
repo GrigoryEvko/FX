@@ -60,6 +60,21 @@ theorem DescTelescope.twoChildLevels {profile : PolyProfile} {baseScope : Nat}
           cases tailTelescope with
           | nil => exact ⟨domainLevel, codomainLevel, rfl⟩
 
+/-- **One-child formation telescope ⟹ one-element level list.**  The formation-engine (`DescTelescope`)
+sibling of `DescTelescopePi.oneChildLevel`: the one-child (`binderShifts = [0]`) data type-code analogue of
+`DescTelescope.twoChildLevels`.  A depth-0 premise telescope over the one-child spine `childCons _ childNil`
+carries exactly a one-element level list — one live `cons` arm then `nil`, no propext / Quot.sound leak.
+Consumed by the FORMATION vector-assembly fundamental-theorem arm's `gen_listCode` branch. -/
+theorem DescTelescope.oneChildLevel {profile : PolyProfile} {baseScope : Nat}
+    {context : TypingContext profile baseScope} {levelsList : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren [0] baseScope}
+    (telescope : DescTelescope profile (currentDepth := 0) context levelsList flag children) :
+    ∃ elementLevel, levelsList = [elementLevel] := by
+  cases telescope with
+  | cons _context _head elementLevel _restLevels _flag _rest _headTyped restTyped =>
+      cases restTyped with
+      | nil => exact ⟨elementLevel, rfl⟩
+
 /-- **Two-child formation telescope ⟹ both component typings.**  The TYPING companion to `twoChildLevels`
 (which recovers only the levels): a depth-0 `DescTelescope` over the concrete two-child `[0,1]` spine yields
 the head's typing at its universe code under `context` AND the tail head's typing under the binder-extended

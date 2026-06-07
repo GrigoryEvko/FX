@@ -4,6 +4,7 @@ import FX1Poly.Typed.ReducibleSemanticRules
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.DescTelescopeInversion
+import FX1Poly.Typed.ListFormerMemberLevelIndexed
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
 
 /-! # FX1Poly/Typed/FundamentalLevelIndexed
@@ -291,10 +292,20 @@ theorem fundamentalGenFormationFormerLevelIndexed {profile : PolyProfile} {scope
           rw [subst_universeCodeCell]
           exact (FormerChildrenReducible.ofTelescopeReducible predLevel
             (telescopeFundamental substitution env Generator.gen_sigmaTyCode_binderShifts_eq)).toSigmaMember
-    · exfalso
-      unfold typingRuleDescOf at isFormation
-      rw [if_neg isPiFormer, if_neg isSigmaFormer] at isFormation
-      contradiction
+    · by_cases isListFormer : generator = .gen_listCode
+      · subst isListFormer
+        obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+        match children with
+        | .childCons _element .childNil =>
+            obtain ⟨_elementLevel, levelsShape⟩ := DescTelescopePi.oneChildLevel premises
+            subst levelsShape
+            dsimp only [universeFormerOutput]
+            exact IsReducibleMemberAt.listFormerFromTelescope predLevel
+              (telescopeFundamental substitution env Generator.gen_listCode_binderShifts_eq)
+      · exfalso
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer] at isFormation
+        contradiction
 
 /-- **The vector fundamental conclusion IS the level-indexed conclusion, universally quantified over the
 env's level vector and a positive conclusion level.**  `IsFundamentalConclusionAtVector` fixes the conclusion

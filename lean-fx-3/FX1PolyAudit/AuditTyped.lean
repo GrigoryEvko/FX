@@ -496,6 +496,13 @@ gates pin them shut.
 -- GTL-11 canonical-forms substrate: the one-child listCode head→children reconstruction (the data-former twin
 -- of eq_sigmaTyCodeCell_of_headGenerator) the formation canonical-forms consumers need for the listCode head.
 #assert_no_axioms FX1Poly.Typed.eq_listCodeCell_of_headGenerator
+-- GTL-11 LANDED: the grown head-agnostic former-classifier inversion + the listCode piElim/empty refutations
+-- (the grown twin of HasTypeDesc.inversionFormerWithConvGeneric); the one-child formation telescope level
+-- projection (the DescTelescope sibling of DescTelescopePi.oneChildLevel) the formation vector-assembly arm uses.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.formerClassifierConvUniverseGeneric
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listFormerNotTypedAtPiType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listFormerNotTypedAtEmptyType
+#assert_no_axioms FX1Poly.Typed.DescTelescope.oneChildLevel
 #assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_inj
 #assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_noStep_of_childrenNoStep
 #assert_no_axioms FX1Poly.Typed.rename_sigmaTyCodeCell
@@ -553,20 +560,26 @@ gates pin them shut.
 -- by_cases is entangled with generator-ARITY (2-child spine ill-typed over abstract generator) + dual
 -- telescope inductives, so the former-membership dispatch needs the arity-generic candidate-bridge
 -- (BFT-15/CON-A3), not this enumeration. Typing layer = table-generic; reducibility former-closure = deep.
--- BUILD-CONFIRMED (GTL-11 spike, reverted 2026-06-07): adding a `gen_listCode` formation row to
--- typingRuleDescOf COMPILES the TYPING engine (validity / subst / weaken / inversion / uniqueness absorb it
--- one-case each, exactly as typingRuleDescOf_outputIsUniverseFormer's docstring predicts) but breaks EXACTLY
--- four reducibility / canonical-forms consumers: FundamentalLevelIndexed, BoundedGrownDispatch,
--- HasTypeDescPiFundamentalVectorFromFormation (their per-former toPiMember / toSigmaMember reassembly is
--- 2-child-ONLY; listCode is 1-child) and FormationCanonicalForms (the head-generator disjunction). So
--- GTL-11/12/13 (data type-code rows) are NOT independent — the FT / bounded genFormation arm needs the data
--- former classified as a reducible member of its universe. SPIKE RESOLVED (GO, proven by construction): this
--- routes through the EXISTING arity-generic IsReducibleMemberAt.dataFormerInUniverse (cf. the shipped
--- listCode_isReducibleMemberOfUniverse + the built one-child wrapper IsReducibleMemberAt.listCodeFormation-
--- UnderSubst, the exact twin of sigmaFormationUnderSubst) — a tractable WIRING (route the FT arm's non-Π
--- branch + the FormationCanonicalForms head disjunct), NOT new metatheory and NOT the model-change. Only
--- canonicity SN-047/48/49 needs the SEPARATE empty-candidate / closed-term model (CON-A3 #810, sconing leg).
-#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_isPiOrSigma
+-- GTL-11 LANDED (2026-06-07): `gen_listCode` IS a `typingRuleDescOf` row — `List A : Type@(level A)` types in
+-- BOTH the formation and grown engines, zero-axiom. The TYPING-judgment metatheory absorbed it one-case each
+-- (validity / subst / weaken / inversion / uniqueness, exactly as typingRuleDescOf_outputIsUniverseFormer's
+-- docstring predicts). The MEASURED cascade was a bounded ~18-site, two-layer fan-out (NOT the §5 model-change
+-- the spike feared): (a) reducibility-FT — the 6 genFormationPi dispatch arms (FundamentalLevelIndexed,
+-- HasTypeDescPiFundamentalVectorFromFormation, FormationEngineFundamentalAssembly, BoundedGrownDispatch,
+-- BoundedFormationDispatch, BoundedGrownFundamental) each gained a 1-child listCode branch routing through the
+-- arity-generic IsReducibleMemberAt.dataFormerInUniverse (the listFormerFromTelescope /
+-- fundamentalGenFormationListFromTelescopeAtBoundedSucc bricks); (b) canonical-forms — the var/former head
+-- disjunction (FormationCanonicalForms.subjectIsVariableOrFormerHead + the grown closedNormalSubjectHead) gained
+-- a `head = gen_listCode` disjunct, cascading to ~10 consumers (closed/open canonical forms, type safety,
+-- progress, non-vacuity, beta-redex-in-action), the genuinely-content piElim crux discharged by the new
+-- head-agnostic GROWN former-classifier inversion (formerClassifierConvUniverseGeneric → listFormerNotTypedAt-
+-- {Pi,Empty}Type). HONEST TG-5 finding: cascade-freedom is PARTIAL — the typing judgment is table-generic, but
+-- the reducibility-FT and canonical-forms layers cost bounded per-former bricks (every consumer noConfusion-s /
+-- reconstructs each head, so the head enumeration is CORRECT, not accidental). optionCode (GTL-13) is now a
+-- near-mechanical clone of these same sites. Canonicity SN-047/48/49 still needs the SEPARATE empty-candidate
+-- model (CON-A3 #810, sconing leg) — data FORMATION (this) is distinct from data CANONICITY.
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_isPiOrSigmaOrListCode
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_listCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc
 #assert_no_axioms FX1Poly.Typed.DescTelescope
 #assert_no_axioms FX1Poly.Typed.hasTypeDesc_piFormation_viaGenArm

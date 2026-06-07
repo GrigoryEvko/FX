@@ -1,6 +1,7 @@
 import FX1Poly.Typed.PiTypeFunctionInversion
 import FX1Poly.Typed.SigmaCodeShape
 import FX1Poly.Typed.FormationCanonicalForms
+import FX1Poly.Typed.GrownFormerClassifierConv
 import FX1Poly.Core.ExistsStepOfNotNormal
 
 /-! # FX1Poly/Typed/GrownCanonicalForms — canonical forms for the grown engine `HasTypeDescPi`
@@ -69,14 +70,16 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
     RawTerm.headGenerator subject = Generator.gen_lam ∨
     RawTerm.headGenerator subject = Generator.gen_piTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
-    RawTerm.headGenerator subject = Generator.gen_universeCode := by
+    RawTerm.headGenerator subject = Generator.gen_universeCode ∨
+    RawTerm.headGenerator subject = Generator.gen_listCode := by
   refine HasTypeDescPi.rec
     (motive_1 := fun {armScope} _armContext armSubject _armClassifier _armTyped =>
       RawTerm.isStepNormalForm armSubject → (Fin armScope → False) →
       (RawTerm.headGenerator armSubject = Generator.gen_lam ∨
        RawTerm.headGenerator armSubject = Generator.gen_piTyCode ∨
        RawTerm.headGenerator armSubject = Generator.gen_sigmaTyCode ∨
-       RawTerm.headGenerator armSubject = Generator.gen_universeCode))
+       RawTerm.headGenerator armSubject = Generator.gen_universeCode ∨
+       RawTerm.headGenerator armSubject = Generator.gen_listCode))
     (motive_2 := fun _armContext _armLevels _armFlag _armChildren _armTelescope => True)
     ?ofFormation ?conv ?piIntro ?piElim ?genFormationPi ?nilTelescope ?consTelescope
     typed normal closed
@@ -95,7 +98,8 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
     exfalso
     have functionNormal : RawTerm.isStepNormalForm functionTerm :=
       appNormal_functionNormal functionTerm argument armNormal
-    rcases functionIH functionNormal armClosed with headLam | headPi | headSigma | headUniverse
+    rcases functionIH functionNormal armClosed with
+      headLam | headPi | headSigma | headUniverse | headList
     · obtain ⟨body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
       rw [bodyEq] at armNormal
       exact RawTerm.not_isStepNormalForm_beta_smoke body argument armNormal
@@ -108,16 +112,21 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
     · obtain ⟨_levelExpr, _flag, universeEq⟩ := eq_universeCodeCell_of_headGenerator headUniverse
       rw [universeEq] at functionTyped
       exact HasTypeDescPi.universeCodeNotTypedAtPiType functionTyped
+    · obtain ⟨_element, listEq⟩ := eq_listCodeCell_of_headGenerator headList
+      rw [listEq] at functionTyped
+      exact HasTypeDescPi.listFormerNotTypedAtPiType functionTyped
   · intro _armScope _armContext generator _payload _children _levels _flag _rule isFormation _premises
       _premisesIH _armNormal _armClosed
     by_cases isPi : generator = Generator.gen_piTyCode
     · exact Or.inr (Or.inl (by subst isPi; rfl))
     · by_cases isSigma : generator = Generator.gen_sigmaTyCode
       · exact Or.inr (Or.inr (Or.inl (by subst isSigma; rfl)))
-      · exfalso
-        unfold typingRuleDescOf at isFormation
-        rw [if_neg isPi, if_neg isSigma] at isFormation
-        contradiction
+      · by_cases isList : generator = Generator.gen_listCode
+        · exact Or.inr (Or.inr (Or.inr (Or.inr (by subst isList; rfl))))
+        · exfalso
+          unfold typingRuleDescOf at isFormation
+          rw [if_neg isPi, if_neg isSigma, if_neg isList] at isFormation
+          contradiction
   · intro _armBaseScope _armCurrentDepth _armContext _armFlag
     exact True.intro
   · intro _armBaseScope _armCurrentDepth _armRestShifts _armContext _armHead _armHeadLevel
@@ -134,7 +143,8 @@ theorem HasTypeDescPi.noClosedNormalTermAtEmptyType {profile : PolyProfile} {sub
     (normal : RawTerm.isStepNormalForm subject) :
     False := by
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
-      (fun emptyIndex => emptyIndex.elim0) with headLam | headPi | headSigma | headUniverse
+      (fun emptyIndex => emptyIndex.elim0) with
+      headLam | headPi | headSigma | headUniverse | headList
   · obtain ⟨_body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [bodyEq] at typed
     exact HasTypeDescPi.lambdaNotTypedAtEmptyType typed
@@ -147,5 +157,8 @@ theorem HasTypeDescPi.noClosedNormalTermAtEmptyType {profile : PolyProfile} {sub
   · obtain ⟨_levelExpr, _flag, universeEq⟩ := eq_universeCodeCell_of_headGenerator headUniverse
     rw [universeEq] at typed
     exact HasTypeDescPi.universeCodeNotTypedAtEmptyType typed
+  · obtain ⟨_element, listEq⟩ := eq_listCodeCell_of_headGenerator headList
+    rw [listEq] at typed
+    exact HasTypeDescPi.listFormerNotTypedAtEmptyType typed
 
 end FX1Poly.Typed
