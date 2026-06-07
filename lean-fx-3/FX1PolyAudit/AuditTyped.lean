@@ -99,6 +99,7 @@ import FX1Poly.Tier0.FxBaseSubstComprehension
 import FX1Poly.Tier0.FxBaseSubstSingleton
 import FX1Poly.Tier0.FxBaseSubstGlobalSections
 import FX1Poly.Tier0.FxBaseSubstScone
+import FX1Poly.Tier0.FxBaseSubstWitnessScone
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4531,6 +4532,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstClosedTermScone_realizationInjective
 #assert_no_axioms FX1Poly.Tier0.closedTermSconeToTautological
 #assert_no_axioms FX1Poly.Tier0.tautologicalToClosedTermScone
+-- The Path-A witness → Tier-0 categorical scone bridge (FxBaseSubstWitnessScone.lean, brick 8). FX has TWO sconing
+-- framings: CONCRETE (Core/SconingWitness.lean — a SconingWitness isWellTyped isCanonical = the Path-A logical
+-- relation: computable predicate + fundamental obligation + extraction obligation, whose composite is canonicity;
+-- reducibilityScone builds one from a reducibility candidate) and ABSTRACT (Tier0/InternalSconing.lean — the
+-- categorical SconingObject). witnessScone bridges them: ANY closed-scope SconingWitness induces a Tier-0
+-- SconingObject over the term base, semantic domain = the COMPUTABLE (hence canonical) subset { t : RawTerm 0 //
+-- witness.computable t }, realization = closedTermAsSection∘Subtype.val. The FIRST predicate-carrying Tier-0 scone
+-- (SUBSTVEC-7's carried bare RawTerm 0). _realizationInjective (FAITHFUL, via Subtype.ext+closedTermAsSection_injective)
+-- + _semanticIsCanonical (the semantic domain consists of CANONICAL closed terms, = witness.extraction applied to
+-- .property — the categorical scone CARRIES the canonicity content) + witnessSconeToClosedTermScone (embeds into
+-- fxBaseSubstClosedTermScone via Subtype.val, commutes by mapsIdentity = SUB-scone). The term-base instance of the
+-- "sconing is enough" thesis (SN-110): the reducibility witness IS a categorical sconing object. All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.witnessScone
+#assert_no_axioms FX1Poly.Tier0.witnessScone_realizationInjective
+#assert_no_axioms FX1Poly.Tier0.witnessScone_semanticIsCanonical
+#assert_no_axioms FX1Poly.Tier0.witnessSconeToClosedTermScone
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
