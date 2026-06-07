@@ -20,9 +20,14 @@ Of the grown engine's six arms, FIVE are validity-free:
 
 The LONE hard arm is `piElim`: to rebuild `appCell function argument`, the function (typed at `F' ≡ Π D C`
 under `Γ'`) must be conv-backed to the EXACT syntactic `Π D C`, whose `conv`-rule reclassifier is "`Π D C`
-typed under `Γ'`".  Obtaining that needs `classifierIsTypeDesc` on a derivation that is NOT a structural
-sub-derivation (the Pi's validity), i.e. a "typing a `Conv`-equal type" step — which IS subject reduction.
-There is no `type-Conv-closure` lemma (it would be circular with SR).  So the full grown context-conversion
+typed under `Γ'`".  ROOT CAUSE (verified against the rule — `HasTypeDescPi.piElim` carries NO `D : Type` /
+`C : Type` typing premises, only `function : Π D C` and `argument : D`): `Π D C`'s validity is NOT a structural
+sub-derivation, so the conv-back needs `type-Conv-closure` (`IsType` respects `Conv`: `IsType T → Conv T S →
+IsType S`).  That is NOT a subject-reduction corollary — via confluence it would need subject EXPANSION on the
+`S`-side (`S ⤳* R`, then `IsType R ⊢ IsType S`), which is FALSE in general — so it must come from
+VALIDITY-via-the-fundamental-theorem, strictly STRONGER than SR.  (Closest shipped tool: `SN-034` Conv-
+invariance of REDUCIBILITY, `#537`; the gap is its reducible→typed reverse, the FT run backwards.)  So the full
+grown context-conversion
 is part of the mutual FUNDAMENTAL-METATHEORY bundle (type-correctness + context-conversion + SR), a deliberate
 multi-fire development — NOT a clean single-fire brick.  (Π/Σ-code injectivity is NOT a member of this bundle:
 it is shipped SEPARATELY and unconditionally as the raw-confluence corollary `Conv.piTyCode_injective` /
