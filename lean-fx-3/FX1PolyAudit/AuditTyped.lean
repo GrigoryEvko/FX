@@ -1929,6 +1929,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.identityApplicationOnUniverseCode_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.identityApplicationOnUniverseCode_betaReducesToArgument
 #assert_no_axioms FX1Poly.Typed.identityApplication_subjectReduction
+-- THE POLYMORPHIC IDENTITY (TypedLambdaDerivations capstone): λ(A:Type@0).λ(x:A).x : Π(A:Type@0).Π(x:A).A —
+-- the canonical dependently-typed term, typed by the grown engine via NESTED piIntro with a type-VARIABLE inner
+-- domain. dependentArrowOverTypeVariable is the genuine Π-FORMATION with VARIABLE children (genFormationPi + a
+-- DescTelescopePi typing var0/var1 each at Type@0 by the var rule; cumulative-lookup classifiers defeq Type@0).
+-- stronglyNormalizing feeds it through SN-043. Tactic-mode refine threads the profile/contexts via goal-driven
+-- unification (term-mode re-introduces TypingContext.empty with fresh profile metavars).
+#assert_no_axioms FX1Poly.Typed.dependentArrowOverTypeVariable_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentity_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentity_stronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
