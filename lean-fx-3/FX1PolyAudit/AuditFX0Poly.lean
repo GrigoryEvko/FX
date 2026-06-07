@@ -4,6 +4,7 @@ import FX0Poly.CertRecheck
 import FX0Poly.CertRecheckSound
 import FX0Poly.KernelArity
 import FX0Poly.CertSerialize
+import FX0Poly.CertDeserialize
 
 /-! # FX1PolyAudit/AuditFX0Poly
    — per-declaration zero-axiom gate for the FX0Poly minimal external checker
@@ -71,3 +72,17 @@ Each gate fails the build if its declaration depends on `propext` / `Quot.sound`
 #assert_no_axioms FX0Poly.Cert.encode_injective
 #assert_no_axioms FX0Poly.Cert.encode_smoke
 #assert_no_axioms FX0Poly.Cert.encode_distinguishes
+
+-- CertDeserialize.lean — the .fx0c parser (FX0-PC.2 parser half). The Cert decoder is STRUCTURAL ON A FUEL
+-- Nat (every recursive call, incl. per-child, decrements it), so it compiles to recursors — propext/
+-- Quot.sound-free AND rfl-computing — UNLIKE a WellFounded.fix decoder, which leaks both and does not reduce.
+-- Cert.budget is a SUM-based fuel measure (avoids the propext-tainted Nat.max). ★ Cert.decode_encode is the
+-- round-trip: decode c.budget (encode c) = some (c, []) — encode then decode is the identity.
+#assert_no_axioms FX0Poly.Cert.decode
+#assert_no_axioms FX0Poly.Cert.decodeChildren
+#assert_no_axioms FX0Poly.Cert.decode_smoke
+#assert_no_axioms FX0Poly.Cert.budget
+#assert_no_axioms FX0Poly.Cert.childrenBudget
+#assert_no_axioms FX0Poly.Cert.decode_encodeAux
+#assert_no_axioms FX0Poly.Cert.decodeChildren_encodeChildrenAux
+#assert_no_axioms FX0Poly.Cert.decode_encode
