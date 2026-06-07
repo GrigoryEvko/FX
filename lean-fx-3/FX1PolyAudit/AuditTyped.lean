@@ -100,6 +100,7 @@ import FX1Poly.Tier0.FxBaseSubstSingleton
 import FX1Poly.Tier0.FxBaseSubstGlobalSections
 import FX1Poly.Tier0.FxBaseSubstScone
 import FX1Poly.Tier0.FxBaseSubstWitnessScone
+import FX1Poly.Tier0.FxBaseSubstConcreteScone
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4548,6 +4549,24 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.witnessScone_realizationInjective
 #assert_no_axioms FX1Poly.Tier0.witnessScone_semanticIsCanonical
 #assert_no_axioms FX1Poly.Tier0.witnessSconeToClosedTermScone
+-- Concrete data-canonicity scones over the term base (FxBaseSubstConcreteScone.lean, brick 9, capstone of the
+-- term-carrying CwR arc). Grounds the SUBSTVEC-8 generic witnessScone bridge in the shipped data-reducibility
+-- candidates (DataReducibilityCoverage.lean, SN-082): each candidate becomes a reducibilityScone (SN-092, identity
+-- fundamental — candidate membership IS the well-typed predicate, the honest "candidate member ⟹ SN" witness via
+-- CR1) and witnessScone lifts it to a concrete predicate-carrying categorical scone. boolValueScone = the scone
+-- whose semantic domain is the BOOL-canonical closed terms (CanonicalFormsPredicate boolIsValue); its
+-- _semanticIsStronglyNormalizing (the domain is SN closed terms, via witnessScone_semanticIsCanonical = CR1) +
+-- _inhabited (NON-VACUITY: boolTrueCell is a member, so not an empty predicate). emptyValueScone = the CONSISTENCY
+-- scone whose semantic domain is the EMPTY-canonical closed terms; its _semanticIsUninhabited (the domain is EMPTY,
+-- via emptyFamilyCandidateHasNoClosedMember = the categorical consistency core, a non-trivial sconing object whose
+-- semantic domain is the genuine bottom). The term-base categorical analog of the Core track's bool-canonicity /
+-- consistency-via-sconing. Honest scope: identity fundamental (isWellTyped := candidate), NOT HasTypeDescPi typing;
+-- IsStronglyNormalizing lives in FX1Poly.Core.StepStar. All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.boolValueScone
+#assert_no_axioms FX1Poly.Tier0.boolValueScone_semanticIsStronglyNormalizing
+#assert_no_axioms FX1Poly.Tier0.boolValueScone_inhabited
+#assert_no_axioms FX1Poly.Tier0.emptyValueScone
+#assert_no_axioms FX1Poly.Tier0.emptyValueScone_semanticIsUninhabited
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
