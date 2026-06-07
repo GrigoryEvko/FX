@@ -183,6 +183,7 @@ import FX1Poly.Typed.LeveledContext
 import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Typed.UntypedOmegaNotStronglyNormalizing
 import FX1Poly.Typed.WeaklyNormalizingNotStronglyNormalizing
+import FX1Poly.Typed.StepNonDeterministic
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -1894,6 +1895,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.discardingApplicationOnOmega_argumentSelfLoop
 #assert_no_axioms FX1Poly.Typed.discardingApplicationOnOmega_notStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.weaklyNormalizingDoesNotImplyStronglyNormalizing
+-- Step is NON-DETERMINISTIC, yet the diamond closes (StepNonDeterministic): the concrete witness that raw
+-- confluence #420 (Church-Rosser) is NOT vacuous. (λx.boolTrue) ((λy.y) unit) has two DISTINCT one-step reducts
+-- — boolTrue (outerStep, head β discards the arg) and (λx.boolTrue) unit (innerStep, the uniform Step.cong rule
+-- reducing the argument redex via StepChildren.there) — distinct at the root generator (gen_boolTrue vs gen_app,
+-- refuted by Generator.noConfusion∘rootGenerator in outerReduct_ne_innerReduct). YET both →* boolTrue
+-- (reachesCommon pair: outer is already normal, inner takes one more β). The headline packages it. This is the
+-- complement to the SN/normalization pathologies above: confluence is the non-trivial fact that the genuinely
+-- branching single-step relation always reconverges.
+#assert_no_axioms FX1Poly.Typed.nondeterministicTerm_outerStep
+#assert_no_axioms FX1Poly.Typed.nondeterministicTerm_innerStep
+#assert_no_axioms FX1Poly.Typed.outerReduct_ne_innerReduct
+#assert_no_axioms FX1Poly.Typed.outerReduct_reachesCommon
+#assert_no_axioms FX1Poly.Typed.innerReduct_reachesCommon
+#assert_no_axioms FX1Poly.Typed.stepIsNonDeterministicButDiamondCloses
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
