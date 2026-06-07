@@ -23,6 +23,7 @@ import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
 import FX1Poly.Modal.FractionalPermission
 import FX1Poly.Modal.ClockDomainLatticeDimension
+import FX1Poly.Modal.ProvenanceLatticeDimension
 import FX1Poly.Modal.MutationChainLatticeDimension
 import FX1Poly.Modal.PreorderDimension
 import FX1Poly.Modal.DimensionRepetitionContrast
@@ -957,3 +958,46 @@ injection + noConfusion). -/
 #assert_no_axioms FX1Poly.Modal.nonDualChannelDeadlocks
 #assert_no_axioms FX1Poly.Modal.dualPartnerFixesTheMismatchedDeadlock
 #assert_no_axioms FX1Poly.Modal.dualityIsNecessaryForDeadlockFreedom
+
+/-! ## §6.3 Dim 8 / §1.1 provenance dimension — the FIRST INFINITE FULL LATTICE M_omega
+(`ProvenanceLatticeDimension`)
+
+Combines the two prior lattice advances: clock shipped the INFINITE carrier (but join-only); overflow shipped
+the FULL lattice (but a FINITE M3).  Provenance `{opaqueOrigin (bottom), source (originId : Nat), unknown (top)}`
+is the first lattice BOTH infinite AND full — the kernel's first concrete M_omega (infinitely many origin atoms,
+all joining to `unknown` and meeting to `opaqueOrigin`).  The `source`-`source` join/meet laws reuse the clock
+`Nat.beq` facts; the meet (`provenanceMeet_comm`/`_assoc`) + absorption (`provenanceJoinMeetAbsorb`/`provenance
+MeetJoinAbsorb`) upgrade the join-semilattice to a full lattice; `provenanceIsNonDistributive` is the concrete
+M3-sublattice failure (M_omega contains M3).  The GENUINELY-NEW SEMANTIC content: unlike clock's `crossDomain
+Error` (a type error), provenance's `unknown` is a LEGITIMATE value a sink rejects — `isKnownSource` accepts
+`source _`, rejects `unknown`/`opaqueOrigin`, and `provenanceKnownSourceLostOnDistinctMerge` shows the
+known-origin property is LOST when two distinct origins merge (the §25.5 supply-chain guarantee).  `provenance
+ClockProductIsLawful` is the FIRST composition of TWO infinite-antichain dimensions.  All propext-free; general
+symbolic modularity deferred (the concrete non-distributivity pins it as genuinely non-distributive). -/
+
+#assert_no_axioms FX1Poly.Modal.ProvenanceGrade.join
+#assert_no_axioms FX1Poly.Modal.ProvenanceGrade.meet
+#assert_no_axioms FX1Poly.Modal.provenanceJoinSourceWithSelf
+#assert_no_axioms FX1Poly.Modal.provenanceLattice
+#assert_no_axioms FX1Poly.Modal.provenanceJoinCommutes
+#assert_no_axioms FX1Poly.Modal.provenanceJoinAssociates
+#assert_no_axioms FX1Poly.Modal.provenanceIsLawfulBoundedJoinSemilattice
+#assert_no_axioms FX1Poly.Modal.provenanceSourceIncomparableOfDistinct
+#assert_no_axioms FX1Poly.Modal.provenanceSource01Incomparable
+#assert_no_axioms FX1Poly.Modal.provenanceOpaqueIsLeast
+#assert_no_axioms FX1Poly.Modal.provenanceUnknownIsGreatest
+#assert_no_axioms FX1Poly.Modal.provenanceMeetSourceWithSelf
+#assert_no_axioms FX1Poly.Modal.provenanceMeet_comm
+#assert_no_axioms FX1Poly.Modal.provenanceMeet_assoc
+#assert_no_axioms FX1Poly.Modal.provenanceJoinMeetAbsorb
+#assert_no_axioms FX1Poly.Modal.provenanceMeetJoinAbsorb
+#assert_no_axioms FX1Poly.Modal.provenanceMeetDistinctIsOpaque
+#assert_no_axioms FX1Poly.Modal.provenanceIsNonDistributive
+#assert_no_axioms FX1Poly.Modal.ProvenanceGrade.isKnownSource
+#assert_no_axioms FX1Poly.Modal.provenanceKnownSourceAccepts
+#assert_no_axioms FX1Poly.Modal.provenanceUnknownRejected
+#assert_no_axioms FX1Poly.Modal.provenanceOpaqueRejected
+#assert_no_axioms FX1Poly.Modal.provenanceJoinDistinctSourcesIsUnknown
+#assert_no_axioms FX1Poly.Modal.provenanceKnownSourceLostOnDistinctMerge
+#assert_no_axioms FX1Poly.Modal.provenanceClockProductLattice
+#assert_no_axioms FX1Poly.Modal.provenanceClockProductIsLawful
