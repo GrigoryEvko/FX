@@ -29,6 +29,7 @@ import FX1Poly.Modal.DimensionRepetitionContrast
 import FX1Poly.Modal.DimensionMultiplicationContrast
 import FX1Poly.Modal.LatticeDistributivityClassification
 import FX1Poly.Modal.SessionDualityDimension
+import FX1Poly.Modal.SessionCommunication
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -921,3 +922,24 @@ rfl + congrArg + noConfusion + decide). -/
 #assert_no_axioms FX1Poly.Modal.SessionType.dual_injective
 #assert_no_axioms FX1Poly.Modal.selfDual_iff_endSession
 #assert_no_axioms FX1Poly.Modal.sessionDualityIsInvolutionButNotIdentity
+
+/-! ## Session-type OPERATIONAL semantics (§11.3 / §11.11) — communication preserves duality + no deadlock
+(`SessionCommunication`)
+
+The dynamics over the duality algebra. CommStep (6-arm: matched send/receive exchange + select/branch resolution
+left/right + the mirror) is one synchronized communication on a PAIR of endpoints (a channel = a dual pair,
+§11.2). ★ CommStep.preservesDuality: session FIDELITY — a DUAL pair steps to a DUAL pair (the core safety:
+well-formed channels never reach a mismatched state; the dual hypothesis forces matched continuations, by cases +
+injection auto-subst). dualPairProgresses: a non-end dual channel can always step. dualChannelProgressesOrIsDone:
+the PROGRESS dichotomy — a dual channel either steps or IS the terminal (end,end), so no stuck states except
+completion (§11.11 deadlock-freedom for a single channel). endChannelIsTerminal: (end,end) has no step.
+concreteChannelStep: non-vacuity (send 0.end / receive 0.end actually exchanges). Builds on firing-82's
+SessionDualityDimension; complements L1-SESSION (#959). All zero-axiom (inductive Prop relation + cases +
+injection + noConfusion). -/
+
+#assert_no_axioms FX1Poly.Modal.CommStep
+#assert_no_axioms FX1Poly.Modal.CommStep.preservesDuality
+#assert_no_axioms FX1Poly.Modal.dualPairProgresses
+#assert_no_axioms FX1Poly.Modal.dualChannelProgressesOrIsDone
+#assert_no_axioms FX1Poly.Modal.endChannelIsTerminal
+#assert_no_axioms FX1Poly.Modal.concreteChannelStep
