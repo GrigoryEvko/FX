@@ -1,5 +1,6 @@
 import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTypingGeneric
+import FX1Poly.Modal.FractionalPermission
 import FX1Poly.Typed.GrownUniverseConsistency
 
 /-! # FX1Poly/Typed/KnownUnsoundnessCorpus
@@ -16,7 +17,10 @@ with genuinely-new acyclicity content (Part 1), and — now that the security gr
 (`FX1Poly.Modal.HasGradeOver` over `fxSecuritySemiring`) — adds the FIRST security-dimension noninterference
 witnesses (Part 5): the explicit-flow rejection (no laundering a secret to public by direct use) and the
 application-form implicit-flow rejection (a secret selector's secrecy cannot be laundered through a
-selection).  The native-`if` surface of the cataloged implicit-flow bug stays honestly pending.
+selection).  The native-`if` surface of the cataloged implicit-flow bug stays honestly pending.  And —
+now that the §6.4 fractional-permission algebra ships (`FX1Poly.Modal.Permission`) — it adds the
+fractional-permission OVERALLOCATION rejection (Part 6): the guarded add never produces an over-full
+share (Boyland 2003), flipping that catalog entry to encodable.
 
 ## The §27.2 catalog (`KnownTypeTheoryBug`)
 
@@ -28,12 +32,13 @@ selection).  The native-`if` surface of the cataloged implicit-flow bug stays ho
   | Type:Type / Girard's paradox          | type (universe hierarchy)       | YES           |
   | implicit flow via branch on secret    | security (information flow)     | no            |
   | constant-time secret memory access    | security (constant-time)        | no            |
-  | fractional-permission overallocation  | usage (fractional permissions)  | no            |
+  | fractional-permission overallocation  | usage (fractional permissions)  | YES           |
 
-The two `YES` rows have shipped, gated, zero-axiom rejections (the usage dimension's Atkey check and the grown
-engine's universe strictness); the five `no` rows await the dimension that would let them even be STATED
-(sessions, ML-style mutable references, a branch construct over secret-graded data, a constant-time effect, a
-fractional-permission PCM).  `isEncodableNow` records this split as data, so the ledger cannot silently drift.
+The three `YES` rows have shipped, gated, zero-axiom rejections (the usage dimension's Atkey check, the grown
+engine's universe strictness, and the §6.4 fractional-permission overallocation guard); the four `no` rows
+await the dimension that would let them even be STATED (sessions, ML-style mutable references, a native branch
+construct over secret-graded data, a constant-time effect).  `isEncodableNow` records this split as data, so
+the ledger cannot silently drift.
 
 ## Genuinely-new content — universe-typing acyclicity (Part 1)
 
@@ -155,7 +160,7 @@ def KnownTypeTheoryBug.isEncodableNow : KnownTypeTheoryBug → Bool
   | .mlValueRestriction => false
   | .implicitFlowBranchOnSecret => false
   | .constantTimeSecretMemoryAccess => false
-  | .fractionalPermissionOverallocation => false
+  | .fractionalPermissionOverallocation => true
 
 /-! ## Part 3 — the rejection witnesses, corpus-cited -/
 
@@ -212,10 +217,10 @@ is no constant-time effect tracking secret-dependent memory access. -/
 theorem constantTimeBug_isPending :
     KnownTypeTheoryBug.constantTimeSecretMemoryAccess.isEncodableNow = false := rfl
 
-/-- Ledger fact (HONEST pending): fractional-permission overallocation is NOT yet encodable — there is no
-fractional-permission PCM in the kernel yet. -/
-theorem fractionalPermissionBug_isPending :
-    KnownTypeTheoryBug.fractionalPermissionOverallocation.isEncodableNow = false := rfl
+/-- Ledger fact: fractional-permission overallocation is NOW encodable — the §6.4 permission algebra
+(`FX1Poly.Modal.Permission`) ships, and its guarded add rejects over-the-whole combines (Part 6). -/
+theorem fractionalPermissionBug_isEncodableNow :
+    KnownTypeTheoryBug.fractionalPermissionOverallocation.isEncodableNow = true := rfl
 
 /-- **The corpus is non-vacuous.**  Both currently-encodable cataloged bugs are concretely rejected: the
 Atkey-2018 broken Lam (`f` linear, used twice) is not well-graded, and `Type@0 : Type@0` (the Girard
@@ -358,5 +363,36 @@ theorem securityNoninterferenceWitnessed :
         (GradedLambda.app (GradedLambda.var 1) (GradedLambda.var 0)) GTypeOver.base) :=
   ⟨securitySelectorAppResultIsClassified, securityDirectUseCannotBePublic,
     securitySelectorAppCannotLaunderSelector⟩
+
+/-! ## Part 6 — the fractional-permission overallocation rejection (the §27.2 usage/fractional entry)
+
+The last `no` usage row — fractional-permission overallocation (Boyland 2003) — flips to encodable now
+that the §6.4 separation-logic permission algebra ships (`FX1Poly.Modal.Permission`).  The bug: combining
+two fractional ownership shares whose total exceeds the whole (`2/3 + 2/3 = 4/3 > 1`) and treating the
+result as a valid share — overallocating, so two parties both believe they hold more than the whole.  The
+sound algebra's guarded `add` rejects it (→ `conflict`), and its soundness theorem
+(`Permission.add_neverOverallocates`) guarantees a fitting combine never yields an over-full share.  These
+re-export the shipped witnesses, corpus-cited.
+
+  * `corpusRejectsFractionalOverallocation` — the REJECTION: the sound `add` of `2/3 + 2/3` is
+    `conflict`, not an over-full share.
+  * `corpusNaiveFractionalOverallocates` — the BUG: the unguarded `naiveAdd` of `2/3 + 2/3` produces an
+    over-full share (`frac 12 9`) that does NOT fit the whole.
+-/
+
+/-- **Corpus entry — fractional-permission overallocation rejected (usage/fractional, §27.2 / §6.4;
+Boyland 2003).**  The sound guarded `add` of `2/3 + 2/3` (a total exceeding the whole) yields `conflict`,
+not an over-full share.  Re-exported from `FX1Poly.Modal.Permission.soundAddRejectsOverallocation`; backed
+by `Permission.add_neverOverallocates` (a fitting combine never overallocates). -/
+theorem corpusRejectsFractionalOverallocation :
+    Permission.add (.frac 2 3) (.frac 2 3) = .conflict :=
+  Permission.soundAddRejectsOverallocation
+
+/-- The unsound NAIVE combine (the bug) over-allocates: `naiveAdd (2/3) (2/3) = frac 12 9` (= 4/3 > 1), an
+over-full share that does NOT fit the whole.  The contrast that makes the guard load-bearing. -/
+theorem corpusNaiveFractionalOverallocates :
+    Permission.naiveAdd (.frac 2 3) (.frac 2 3) = .frac 12 9 ∧
+    (Permission.naiveAdd (.frac 2 3) (.frac 2 3)).fitsWhole = false :=
+  ⟨Permission.naiveAddOverallocates, Permission.naiveOverallocationDoesNotFit⟩
 
 end FX1Poly.Typed

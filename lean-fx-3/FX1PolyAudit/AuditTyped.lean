@@ -5438,7 +5438,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.mlValueRestrictionBug_isPending
 #assert_no_axioms FX1Poly.Typed.implicitFlowBug_isPending
 #assert_no_axioms FX1Poly.Typed.constantTimeBug_isPending
-#assert_no_axioms FX1Poly.Typed.fractionalPermissionBug_isPending
+#assert_no_axioms FX1Poly.Typed.fractionalPermissionBug_isEncodableNow
 #assert_no_axioms FX1Poly.Typed.corpusNonVacuous
 -- Part 5: the FIRST security-dimension noninterference witnesses (now that the security graded judgment
 -- HasGradeOver over fxSecuritySemiring ships).  The var rule fixes a used variable's grade to R.one =
@@ -5456,6 +5456,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.securitySelectorAppResultIsClassified
 #assert_no_axioms FX1Poly.Typed.securitySelectorAppCannotLaunderSelector
 #assert_no_axioms FX1Poly.Typed.securityNoninterferenceWitnessed
+-- Part 6: the fractional-permission OVERALLOCATION rejection (the last usage `no` row, flipped to YES now
+-- that the §6.4 permission algebra FX1Poly.Modal.Permission ships).  corpusRejectsFractionalOverallocation
+-- (sound guarded add of 2/3+2/3 = conflict, not an over-full share; backed by Permission.add_neverOver-
+-- allocates) + corpusNaiveFractionalOverallocates (the bug: the unguarded naiveAdd produces frac 12 9 = 4/3
+-- which does NOT fitsWhole).  fractionalPermissionBug_isEncodableNow flips the ledger (was _isPending).
+#assert_no_axioms FX1Poly.Typed.corpusRejectsFractionalOverallocation
+#assert_no_axioms FX1Poly.Typed.corpusNaiveFractionalOverallocates
 
 -- §27.3 Layer-2 property-based metatheory fuzzer: a TOTAL deterministic generator of well-typed terms
 -- (`metatheoryFuzzFamily`, the depth-n β-redex tower `(λx.x)ⁿ Type@0`) with the four Layer-2 properties

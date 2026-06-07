@@ -21,6 +21,7 @@ import FX1Poly.Modal.OverflowLatticeDimension
 import FX1Poly.Modal.BoundedJoinSemilatticeUniversal
 import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
+import FX1Poly.Modal.FractionalPermission
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -660,3 +661,33 @@ equality. -/
 #assert_no_axioms FX1Poly.Modal.GradedLambda.IsStronglyNormalizing.joinable_trans
 #assert_no_axioms FX1Poly.Modal.GradedLambda.Reduces.beta_joinable
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.joinable_trans
+
+/-! ## §6.4 separation-logic permission algebra — the first PARTIAL grade structure (`FractionalPermission`)
+
+§6.4 makes separation logic an instance of the usage grade: ownership is a fractional share `Frac of p :
+rational {0 < p ≤ 1}`, and `Frac(p) + Frac(q) = Frac(p+q)` when `p+q ≤ 1`, else CONFLICT (over-allocation).
+This is the FIRST partial grade structure (the shipped graded dims are total ordered semirings / bounded
+join-semilattices).  `Permission` (carrier) + the guarded partial `add` + the unguarded buggy `naiveAdd` +
+`fitsWhole`; the lawful-monoid fragment (`zero_add` / `add_zero` / `conflict_add` / `add_conflict` /
+`add_comm`); the SOUNDNESS theorem `add_neverOverallocates` (combining two fitting shares never yields an
+over-full share — the guard prevents over-allocation); and the §27.2 / Boyland-2003 over-allocation BUG
+(`naiveAddOverallocates` / `naiveOverallocationDoesNotFit`) vs its REJECTION
+(`soundAddRejectsOverallocation`).  Associativity-where-defined is deferred (true, but intricate
+cross-multiplied Nat reasoning).  All propext-free (full-enumeration matches, Bool-`bif` guard,
+`Nat.add_comm`/`Nat.mul_comm`, `injection`/`noConfusion`, `rfl` witnesses). -/
+
+#assert_no_axioms FX1Poly.Modal.Permission.fitsWhole
+#assert_no_axioms FX1Poly.Modal.Permission.add
+#assert_no_axioms FX1Poly.Modal.Permission.naiveAdd
+#assert_no_axioms FX1Poly.Modal.Permission.zero_add
+#assert_no_axioms FX1Poly.Modal.Permission.add_zero
+#assert_no_axioms FX1Poly.Modal.Permission.conflict_add
+#assert_no_axioms FX1Poly.Modal.Permission.add_conflict
+#assert_no_axioms FX1Poly.Modal.Permission.add_comm
+#assert_no_axioms FX1Poly.Modal.Permission.add_neverOverallocates
+#assert_no_axioms FX1Poly.Modal.Permission.naiveAddOverallocates
+#assert_no_axioms FX1Poly.Modal.Permission.naiveOverallocationDoesNotFit
+#assert_no_axioms FX1Poly.Modal.Permission.soundAddRejectsOverallocation
+#assert_no_axioms FX1Poly.Modal.Permission.fracExactlyFullAdmitted
+#assert_no_axioms FX1Poly.Modal.Permission.fracExactlyFullFits
+#assert_no_axioms FX1Poly.Modal.Permission.fracPartialAdmitted
