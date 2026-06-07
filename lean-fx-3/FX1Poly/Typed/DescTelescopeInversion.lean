@@ -100,6 +100,27 @@ theorem DescTelescope.twoChildComponents {profile : PolyProfile} {baseScope : Na
           cases tailTelescope with
           | nil => exact ⟨head, head2, domainLevel, codomainLevel, rfl, domainTyped, codomainTyped⟩
 
+/-- **One-child formation telescope ⟹ the element typing.**  The arity-1 TYPING companion to
+`twoChildComponents` (which recovers both component typings for the 2-child Π/Σ formers): a depth-0
+`DescTelescope` over the one-child `[0]` spine (the `listCode` / `optionCode` data-former shape) yields the
+element child's typing at its universe code, with the level list pinned to the single `[elementLevel]`.
+Completes the formation-engine telescope-projection family across arities (`oneChildLevel` gave only the
+level shape; this adds the typing), the substrate the data-former inversion corollaries
+(`HasTypeDesc.inversionListCode` / `inversionOptionCode`) consume.  Same single-live-`cons`-then-`nil`
+discipline as `twoChildComponents` — the `[0]` child spine refutes the impossible `nil`/extra-`cons` arms by
+the `RawTermChildren` index alone, so no `propext` / `Quot.sound` leak. -/
+theorem DescTelescope.oneChildComponent {profile : PolyProfile} {baseScope : Nat}
+    {context : TypingContext profile baseScope} {levels : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren [0] baseScope}
+    (telescope : DescTelescope profile (currentDepth := 0) context levels flag children) :
+    ∃ (elementChild : RawTerm baseScope) (elementLevel : LevelExpr),
+      levels = [elementLevel] ∧
+      HasTypeDesc profile context elementChild (universeCodeCell elementLevel flag) := by
+  cases telescope with
+  | cons _context head elementLevel _restLevels _flag _rest elementTyped restTelescope =>
+      cases restTelescope with
+      | nil => exact ⟨head, elementLevel, rfl, elementTyped⟩
+
 /-- **Cons-shape inversion of the grown premise telescope.**  A `DescTelescopePi` over a non-empty level
 list `headLevel :: restLevels` and a `childCons head rest` child vector came through the `cons`
 constructor, so it splits into the head's `HasTypeDescPi` typing (at `universeCodeCell headLevel flag`) and

@@ -20,6 +20,7 @@ import FX1Poly.Typed.HasTypeDescStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescClosedForms
 import FX1Poly.Typed.HasTypeDescInversion
 import FX1Poly.Typed.HasTypeDescFormerTelescopeInversion
+import FX1Poly.Typed.DataFormerInversion
 import FX1Poly.Typed.HasTypeDescUniqueness
 import FX1Poly.Typed.HasTypeDescWeakening
 import FX1Poly.Typed.HasTypeDescSubstitution
@@ -757,6 +758,16 @@ gates pin them shut.
 -- (levels ≠ []) needs binderShifts ≠ [] (former has ≥1 child), NOT a clean cascade invariant (nullary
 -- Empty violates it); kept per-former pending the nullary-former flag-uniqueness treatment.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionFormerWithConvGeneric
+
+-- GTL-10 (DataFormerInversion): per-former inversion corollaries for the one-child DATA type-code formers,
+-- giving them inversion parity with the two-child Π / Σ formers (inversionPiCodeWithConv / inversionSigma-
+-- CodeWithConv). A typed listCode / optionCode cell recovers the element child's typing and the classifier
+-- Conv to Type@(lmaxAll [elementLevel]) — by specializing inversionFormerWithConvGeneric at the listCode /
+-- optionCode row and projecting the one-child telescope (DescTelescope.oneChildComponent's inline twin). With
+-- these the per-former inversion family is complete across the two shipped formation arities (1: list/option;
+-- 2: pi/sigma); everything else in the formation metatheory is already table-generic (the GTL-07/08/09 census).
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionListCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionOptionCode
 
 /-! ### Leaf inversions (`var`, `universeCode`) for the description engine — the two
     NON-compound subjects, completing the per-shape inversion suite (var / universeCode
@@ -2305,6 +2316,10 @@ gates pin them shut.
 -- ANY dependent binary formation former, factoring the telescope-walk half of the bespoke pi/sigma component
 -- inversions. Same single-live-cons discipline as twoChildLevels (no propext / Quot.sound).
 #assert_no_axioms FX1Poly.Typed.DescTelescope.twoChildComponents
+-- GTL-10: the arity-1 TYPING companion (the data-former [0] analogue of twoChildComponents) — a 1-child
+-- formation telescope yields the element child's typing at its level. Completes the formation telescope-
+-- projection family across arities; substrate of the data-former inversion corollaries (DataFormerInversion).
+#assert_no_axioms FX1Poly.Typed.DescTelescope.oneChildComponent
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
