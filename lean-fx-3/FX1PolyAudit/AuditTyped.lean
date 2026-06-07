@@ -193,6 +193,7 @@ import FX1Poly.Typed.ListCodeFormationUnderSubst
 import FX1Poly.Typed.ListFormerMemberLevelIndexed
 import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
+import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2320,6 +2321,17 @@ gates pin them shut.
 -- formation telescope yields the element child's typing at its level. Completes the formation telescope-
 -- projection family across arities; substrate of the data-former inversion corollaries (DataFormerInversion).
 #assert_no_axioms FX1Poly.Typed.DescTelescope.oneChildComponent
+-- Telescope REACH (DescTelescopeReach): a formation telescope forces its children's binderShifts to be the
+-- cumulative sequence [depth, depth+1, ...] (structural recursion over the mutual telescope). Consequence:
+-- the non-dependent [0,0] type-code formers (product/sum/either/arrow/equiv) are OUTSIDE genFormation's reach
+-- (noFlatTwoChildTelescope / productCodeFormationTelescopeImpossible) — they need a flat-telescope
+-- generalization, not a listCode-style row addition. cumulativeShifts_length via Nat induction; the [0,0]
+-- refutation via plain List injection + Nat.noConfusion (no indexed-cases propext leak).
+#assert_no_axioms FX1Poly.Typed.cumulativeShifts_length
+#assert_no_axioms FX1Poly.Typed.DescTelescope.binderShiftsAreCumulative
+#assert_no_axioms FX1Poly.Typed.DescTelescope.binderShiftsAreCumulativeFromZero
+#assert_no_axioms FX1Poly.Typed.DescTelescope.noFlatTwoChildTelescope
+#assert_no_axioms FX1Poly.Typed.DescTelescope.productCodeFormationTelescopeImpossible
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
