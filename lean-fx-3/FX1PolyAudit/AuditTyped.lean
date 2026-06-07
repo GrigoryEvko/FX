@@ -202,6 +202,7 @@ import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescFlatWeakening
 import FX1Poly.Typed.HasTypeDescFlatSubstitution
 import FX1Poly.Typed.HasTypeDescFlatValidity
+import FX1Poly.Typed.HasTypeDescFlatFormerInversion
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2427,6 +2428,13 @@ gates pin them shut.
 -- second-derivation injection — needs a propext-free flat inversionFormerWithConv analogue).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.classifierIsTypeDescNative
 #assert_no_axioms FX1Poly.Typed.FlatDescTelescope.uniquenessAgree
+-- FLAT FORMER INVERSION (#940 substrate): the propext-free generic flat-former inversion (telescope + classifier
+-- Conv), flat twin of HasTypeDesc.ln. flatFormerBinderShifts = flat former arity [0,0]. inversionFormerWithConv
+-- aligns the generator via congrArg headGenerator + subst BEFORE injection (cracked-wall idiom), avoiding the
+-- dependent-mkGen propext leak. The uniqueness HEADLINE remains deferred: getting the flat classifier concrete
+-- propext-free needs term-mode match, which won't elaborate for the single-constructor flat family.
+#assert_no_axioms FX1Poly.Typed.flatFormerBinderShifts
+#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.inversionFormerWithConv
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
