@@ -84,6 +84,7 @@ import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.SimplyTypedMetatheoryViaSconing
 import FX1Poly.Tier0.FxRenamingCategory
 import FX1Poly.Tier0.FxBaseRenamingCategory
+import FX1Poly.Tier0.FxBaseRenamingVecCategory
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4252,6 +4253,37 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingCategory
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingCategory_identity_eq
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingCategory_compose_eq
+-- The EXTENSIONAL data-morphism renaming category (FxBaseRenamingVecCategory.lean, SN-084) — the base that
+-- finally proves lookup-extensionality, the lemma RenamingTo above had to AVOID. Same morphism content (a
+-- length-source tuple of Fin target images), but reified as a PRODUCT recursion (RenamingVec target 0 = PUnit,
+-- ... (source+1) = Fin target x ...) instead of an indexed inductive. Products have DEFINITIONAL eta, so ext
+-- (two vectors with equal lookups are equal) falls out of a structural induction with NO impossible-case eqn
+-- lemmas and NO propext -- the exact lemma RenamingTo could not prove, and the lemma the CwR pullback's universal
+-- property needs (conclude morphism equality from pointwise-equal lookups). With ext the three category laws go
+-- DIRECTLY pointwise (compose_assoc via a lookup_compose calc chain; identity_compose/_identity via
+-- lookup_compose + identity_lookup), no mapImages fusion. weakening_unique: the display map is UNIQUELY
+-- characterized by its action (ext-powered, unstatable over RenamingTo) -- the shape the CwR representable-map
+-- axioms need. faithful: ext at the category level (lookup determines the morphism; the reification is faithful).
+-- ADDITIVE: RenamingTo / fxBaseRenamingCategory retained untouched; RenamingVec is the strictly-more-capable
+-- sibling carrying the extensional content. HONEST SCOPE: the extensional underlying-category base of fxBaseRMC;
+-- the pullback rung (now POSSIBLE here, unlike over RenamingTo) + the 3 CwR axioms are the next task. All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.lookup
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.lookup_zero
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.lookup_succ
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.ext
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.lookup_mapImages
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.lookup_compose
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.identity_lookup
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.compose_assoc
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.identity_compose
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.compose_identity
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.weakening_lookup
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.identity_succ_eq
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.weakening_unique
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecCategory
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecCategory_identity_eq
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecCategory_compose_eq
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecCategory_faithful
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
