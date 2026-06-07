@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.FX0Bridge
 import FX1PolyAudit.FX0CrossCheck
+import FX1PolyAudit.FX0CrossCheckCertified
 import FX0Poly.StructuralRecheck
 import FX0Poly.CertRecheck
 import FX0Poly.CertRecheckSound
@@ -130,3 +131,12 @@ end to end. -/
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_smoke_rejectsTruncated
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_var0
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_universeCode
+
+/-! ### FX0CrossCheckCertified — the FX0 cross-check of SN-certified terms (SN-148).  ★
+`externalVerify_accepts_certified` pairs the structural acceptance (`externalVerify_encodeCell`) with open
+SN-043 (`stronglyNormalizingOfWfContextDesc`): every term the rich kernel CERTIFIES is BOTH strongly
+normalizing AND accepted by the independent external verifier — the two Metamath-Zero trust guarantees jointly.
+The companion shows the typing hypothesis is essential (Ω is accepted structurally yet is not SN). -/
+
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_certified
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_omega_but_omega_notStronglyNormalizing
