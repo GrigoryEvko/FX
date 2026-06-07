@@ -1,6 +1,7 @@
 import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.ClosedConvDecision
+import FX1Poly.Typed.GrownTypeSafety
 import FX1Poly.Core.NormalizeMeta
 
 /-! # Foundation/PolyCell/Typed/TypedNormalizer (SN-112)
@@ -120,5 +121,46 @@ theorem identityApplicationNormalForm_convReduct {profile : PolyProfile}
   Conv.trans
     (Conv.sym (betaRedexConvertsToReduct levelExpr flag))
     (HasTypeDescPi.normalForm_conv _)
+
+/-! ## The computed normal form IS the unique normal form (determinism connector)
+
+`GrownTypeSafety.HasTypeDescPi.closedHasUniqueNormalForm` already proves, UNCONDITIONALLY, that a closed
+grown-well-typed term has a unique normal form — but EXISTENTIALLY (there exists a value reached by every
+reduction-to-normal-form).  These lemmas identify the COMPUTED `normalForm` above as exactly that unique
+value: the normalizer does not merely produce *a* normal form, it produces *the* canonical one. -/
+
+/-- **The computed normal form is THE unique normal form.**  Any normal form reachable from a closed
+grown-well-typed subject equals `typing.normalForm` — both equal the unique value that
+`closedHasUniqueNormalForm` asserts exists.  So the computed normalizer agrees with the abstract
+determinism result: it computes the canonical normal form, not an arbitrary one. -/
+theorem HasTypeDescPi.reachedNormalForm_eq_normalForm {profile : PolyProfile}
+    {subject classifier : RawTerm 0}
+    (typing : HasTypeDescPi profile TypingContext.empty subject classifier)
+    {reachedNormalForm : RawTerm 0}
+    (reaches : StepStar subject reachedNormalForm)
+    (reachedIsNormal : RawTerm.isStepNormalForm reachedNormalForm) :
+    reachedNormalForm = typing.normalForm := by
+  obtain ⟨_value, _, uniq⟩ := HasTypeDescPi.closedHasUniqueNormalForm typing
+  exact (uniq reachedNormalForm reaches reachedIsNormal).trans
+    (uniq typing.normalForm typing.normalForm_reducesTo typing.normalForm_isStepNormalForm).symm
+
+/-- **Already-normal subjects are fixed points of the normalizer.**  If a closed grown-well-typed subject
+is itself structurally normal, the normalizer returns it unchanged — the reflexive instance of
+`reachedNormalForm_eq_normalForm`. -/
+theorem HasTypeDescPi.normalForm_eq_self_of_isStepNormalForm {profile : PolyProfile}
+    {subject classifier : RawTerm 0}
+    (typing : HasTypeDescPi profile TypingContext.empty subject classifier)
+    (subjectIsNormal : RawTerm.isStepNormalForm subject) :
+    typing.normalForm = subject :=
+  (typing.reachedNormalForm_eq_normalForm (StepStar.refl subject) subjectIsNormal).symm
+
+/-- Non-vacuity smoke: the identity `λx. x` (firing-63 derivation, already normal) normalizes to itself —
+the normalizer is a genuine fixed point on a concrete grown-typed normal form (`by decide` confirms the
+structural normality). -/
+theorem identityNormalForm_eq {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    (identityOnUniverse_hasTypeDescPi (profile := profile) levelExpr flag).normalForm =
+      lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) :=
+  (identityOnUniverse_hasTypeDescPi (profile := profile) levelExpr flag).normalForm_eq_self_of_isStepNormalForm
+    (by decide)
 
 end FX1Poly.Typed

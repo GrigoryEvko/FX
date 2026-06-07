@@ -6028,3 +6028,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.conv_iff_normalForm_eq
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedConvDecidable
 #assert_no_axioms FX1Poly.Typed.identityApplicationNormalForm_convReduct
+-- DETERMINISM CONNECTOR (TypedNormalizer, appended): identify the COMPUTED normalForm (SN-112) as THE unique
+-- normal form. closedHasUniqueNormalForm (GrownTypeSafety) proves a closed grown-typed term has a unique NF
+-- EXISTENTIALLY; reachedNormalForm_eq_normalForm pins it to the computed function — any reached NF = typing.
+-- normalForm (both = the unique value, via closedHasUniqueNormalForm's ∀-uniqueness on normalForm_reducesTo +
+-- normalForm_isStepNormalForm). normalForm_eq_self_of_isStepNormalForm: already-normal subjects are fixed
+-- points (reflexive instance). identityNormalForm_eq: the identity λx.x normalizes to itself (by decide on
+-- isStepNormalForm). The normalizer computes THE canonical NF, not an arbitrary one.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.reachedNormalForm_eq_normalForm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalForm_eq_self_of_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.identityNormalForm_eq
