@@ -383,6 +383,7 @@ import FX1Poly.Typed.ElimRuleDesc
 import FX1Poly.Typed.TypingRoleClassifier
 import FX1Poly.Typed.TypingRoleEngineBridge
 import FX1Poly.Typed.CertifiedWordReductionTermination
+import FX1Poly.Typed.CertifiedWordReductionConfluence
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
@@ -5856,6 +5857,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.certifiedReductionInducesWordChain
 #assert_no_axioms FX1Poly.Typed.typedRootWordReductionTerminates
 #assert_no_axioms FX1Poly.Typed.untypedWordReductionDiverges
+
+-- CertifiedWordReductionConfluence (SN-132): Leg-3 word-rewrite CONFLUENCE on the certified fragment, the
+-- companion to SN-131's termination. certifiedWordLocalConfluence is the literal SN-132 ask — two single
+-- Steps from a common term have toCode-images that JOIN as fxStepSystem word reductions, via the term cd_lemma
+-- local join (StepStar.localJoin_of_cdLemma) lifted through StepStar.toWordRewrites (NO string-rewriting
+-- critical-pair analysis — the full word system isn't even terminating per SN-131). certifiedWordConfluence is
+-- the GLOBAL upgrade on the certified fragment: two StepStar reductions from a WELL-TYPED root join, combining
+-- the SN-131 ingredient (typed SN / stronglyNormalizingOfWfContextDesc, SN-043) with term-layer Newman
+-- (StepStar.confluence_of_localJoin_and_accessible) lifted through toWordRewrites — so the certified fragment
+-- is terminating (SN-131) AND confluent (here), Newman's two ingredients, reflected to the word layer; needs
+-- the ROOT typed only (GCC-5-free). All zero-axiom (obtain the term join, toWordRewrites each leg).
+#assert_no_axioms FX1Poly.Typed.certifiedWordLocalConfluence
+#assert_no_axioms FX1Poly.Typed.certifiedWordConfluence
 
 -- §27.3 Layer-1 known-unsoundness corpus: every cataloged §27.2 type-theory bug is a permanent rejection
 -- test (or an honest pending-ledger entry).  GENUINELY-NEW content: universe-typing acyclicity — the
