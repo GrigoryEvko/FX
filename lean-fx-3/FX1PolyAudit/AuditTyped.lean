@@ -1802,6 +1802,13 @@ gates pin them shut.
 -- The closed β-redex (λx.x) Type@e is unconditionally SN — first such result with an APPLICATION, composing
 -- piElim over (piIntro + var) and universeFormation; exercises the subst0 in piElim's conclusion end-to-end.
 #assert_no_axioms FX1Poly.Typed.closedIdentityApplication_stronglyNormalizing
+-- Corpus extension: the Σ-formation arm end-to-end (first unconditional SN exercising fundamentalSigma-
+-- FormationLevelIndexed — the Σ twin of closedPiBetweenUniverses, non-vacuous + hypothesis-free), plus the
+-- argument-DISCARDING β path: the constant λx.Type@0 (var-free piIntro body) and its erasing application
+-- (λx.Type@0) Type@e (piElim where subst0 discards the argument) — the complement of the substituting identity.
+#assert_no_axioms FX1Poly.Typed.closedSigmaBetweenUniverses_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.closedConstantLambda_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.closedConstantApplication_stronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the

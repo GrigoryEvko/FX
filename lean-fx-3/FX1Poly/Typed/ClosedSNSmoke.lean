@@ -125,4 +125,91 @@ theorem closedIdentityApplication_stronglyNormalizing {profile : PolyProfile}
       (fundamentalUniverseFormationLevelIndexed emptyLevelVector 0
         (TypingContext.empty : TypingContext profile 0) levelExpr flag))
 
+/-- **UNCONDITIONAL strong normalization of a closed Σ type code between universe codes.**  The Σ twin of
+`closedPiBetweenUniverses_stronglyNormalizing`: composes the Σ-former arm (domain + codomain both the
+`universeFormation` arm) at the empty context with the closed-SN handoff.  This is the FIRST end-to-end,
+hypothesis-free SN result exercising `fundamentalSigmaFormationLevelIndexed` — demonstrating the Σ-formation
+arm is non-vacuous and composes through to plain `IsStronglyNormalizing`, exactly as the Π-formation arm does.
+Unlike Π's codomain premise (a `∀ headLevel` family), Σ's codomain premise is a single conclusion fixed at
+`headLevel = predLevel + 1`. -/
+theorem closedSigmaBetweenUniverses_stronglyNormalizing {profile : PolyProfile}
+    (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (sigmaTyCodeCell (universeCodeCell domainLevel flag)
+        (universeCodeCell codomainLevel flag) : RawTerm 0) :=
+  closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
+    (fundamentalSigmaFormationLevelIndexed emptyLevelVector 0
+      (domainLevel := domainLevel.lsucc) (codomainLevel := codomainLevel.lsucc)
+      (formerLevel := LevelExpr.lmax domainLevel.lsucc codomainLevel.lsucc) (flag := flag)
+      (fun aboveLevel =>
+        fundamentalUniverseFormationLevelIndexed emptyLevelVector aboveLevel
+          (TypingContext.empty : TypingContext profile 0) domainLevel flag)
+      (fundamentalUniverseFormationLevelIndexed (levelCons (0 + 1) emptyLevelVector) 0
+        ((TypingContext.empty : TypingContext profile 0).cons
+          (universeCodeCell domainLevel flag)) codomainLevel flag))
+
+/-- **UNCONDITIONAL strong normalization of the closed CONSTANT function on a universe.**  The term
+`λ (x : Type@e). Type@0 = lamCell (universeCodeCell 0 flag)`, at type `Π (Type@e). Type@1`, is
+`IsStronglyNormalizing` — the discarding companion to `closedIdentityOnUniverse_stronglyNormalizing`: the body
+IGNORES the bound variable (it is `Type@0`, not the `var`), so the `piIntro` arm's BODY premise is supplied by
+the `universeFormation` arm at the extended context rather than the `var` arm.  Exercises the var-free body
+case of `fundamentalPiIntroLevelIndexed` end-to-end, hypothesis-free — the piIntro arm fires whether the body
+uses the binder or discards it. -/
+theorem closedConstantLambda_stronglyNormalizing {profile : PolyProfile}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (lamCell (universeCodeCell LevelExpr.lzero flag) : RawTerm 0) :=
+  closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
+    (fundamentalPiIntroLevelIndexed (context := (TypingContext.empty : TypingContext profile 0))
+      emptyLevelVector 0
+      (domainCode := universeCodeCell levelExpr flag)
+      (codomainCode := universeCodeCell LevelExpr.lzero.lsucc flag)
+      (body := universeCodeCell LevelExpr.lzero flag)
+      (domainLevel := levelExpr.lsucc) (codomainLevel := LevelExpr.lzero.lsucc.lsucc) (flag := flag)
+      (fundamentalUniverseFormationLevelIndexed emptyLevelVector (0 + 1)
+        (TypingContext.empty : TypingContext profile 0) levelExpr flag)
+      (fundamentalUniverseFormationLevelIndexed (levelCons (0 + 1) emptyLevelVector) (0 + 1)
+        ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell levelExpr flag))
+        LevelExpr.lzero.lsucc flag)
+      (fundamentalUniverseFormationLevelIndexed (levelCons (0 + 1) emptyLevelVector) 0
+        ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell levelExpr flag))
+        LevelExpr.lzero flag))
+
+/-- **UNCONDITIONAL strong normalization of a closed argument-DISCARDING β-redex.**  The application
+`(λ (x : Type@(e+1)). Type@0) (Type@e)` is `IsStronglyNormalizing` — the discarding companion to
+`closedIdentityApplication_stronglyNormalizing`: the function's body ignores its argument, so the β-contractum
+`subst0 (Type@0) (Type@e)` ERASES the argument and yields `Type@0` (by defeq, the body being closed).  Composes
+the `piElim` arm over the constant function (itself the discarding-`piIntro` + `universeFormation` composition)
+and the argument `Type@e : Type@(e+1)`, then the closed-SN handoff.  Exercises `fundamentalPiElimLevelIndexed`
+on the ERASING β-case end-to-end, hypothesis-free — the complement of the identity application's substituting
+β-case. -/
+theorem closedConstantApplication_stronglyNormalizing {profile : PolyProfile}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (appCell (lamCell (universeCodeCell LevelExpr.lzero flag))
+        (universeCodeCell levelExpr flag) : RawTerm 0) :=
+  closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
+    (fundamentalPiElimLevelIndexed (context := (TypingContext.empty : TypingContext profile 0))
+      emptyLevelVector (0 + 1)
+      (functionTerm := lamCell (universeCodeCell LevelExpr.lzero flag))
+      (argument := universeCodeCell levelExpr flag)
+      (domainCode := universeCodeCell levelExpr.lsucc flag)
+      (codomainCode := universeCodeCell LevelExpr.lzero.lsucc flag)
+      (fundamentalPiIntroLevelIndexed (context := (TypingContext.empty : TypingContext profile 0))
+        emptyLevelVector 0
+        (domainCode := universeCodeCell levelExpr.lsucc flag)
+        (codomainCode := universeCodeCell LevelExpr.lzero.lsucc flag)
+        (body := universeCodeCell LevelExpr.lzero flag)
+        (domainLevel := levelExpr.lsucc.lsucc) (codomainLevel := LevelExpr.lzero.lsucc.lsucc) (flag := flag)
+        (fundamentalUniverseFormationLevelIndexed emptyLevelVector (0 + 1)
+          (TypingContext.empty : TypingContext profile 0) levelExpr.lsucc flag)
+        (fundamentalUniverseFormationLevelIndexed (levelCons (0 + 1) emptyLevelVector) (0 + 1)
+          ((TypingContext.empty : TypingContext profile 0).cons
+            (universeCodeCell levelExpr.lsucc flag)) LevelExpr.lzero.lsucc flag)
+        (fundamentalUniverseFormationLevelIndexed (levelCons (0 + 1) emptyLevelVector) 0
+          ((TypingContext.empty : TypingContext profile 0).cons
+            (universeCodeCell levelExpr.lsucc flag)) LevelExpr.lzero flag))
+      (fundamentalUniverseFormationLevelIndexed emptyLevelVector 0
+        (TypingContext.empty : TypingContext profile 0) levelExpr flag))
+
 end FX1Poly.Typed
