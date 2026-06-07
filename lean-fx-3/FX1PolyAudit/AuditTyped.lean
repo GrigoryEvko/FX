@@ -382,6 +382,7 @@ import FX1Poly.Typed.IntroRuleDesc
 import FX1Poly.Typed.ElimRuleDesc
 import FX1Poly.Typed.TypingRoleClassifier
 import FX1Poly.Typed.TypingRoleEngineBridge
+import FX1Poly.Typed.CertifiedWordReductionTermination
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
@@ -5842,6 +5843,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectHeadHasRoleOrIsUniverseCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.cellUntypedWhenRolelessAndNonBespoke
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.boolTrueCellUntypedViaRole
+
+-- CertifiedWordReductionTermination (SN-131): Leg-3 word-rewrite termination on the CERTIFIED fragment.
+-- certifiedReductionInducesWordChain is the bridge (a Step sequence's toCode images form an fxStepSystem
+-- word-rewrite chain via Step.toWordRewrite). typedRootWordReductionTerminates is the headline — a reduction
+-- sequence rooted at a WELL-TYPED term cannot be infinite (notStronglyNormalizing_of_infiniteReduction +
+-- stronglyNormalizingOfWfContextDesc / SN-043), so the induced certified word chain terminates — consuming
+-- ROOT SN only, NO subject reduction (GCC-5-free). untypedWordReductionDiverges is the necessity: the FULL
+-- word system diverges on an UNTYPED word (growingDivergentTerm.toCode), whose source is non-SN — the
+-- word-layer mirror of SN-NECESSITY (#950). All zero-axiom (Step.toWordRewrite pointwise; apply + rw + the
+-- SN-043 witness; the concrete growing-divergence sequence images).
+#assert_no_axioms FX1Poly.Typed.certifiedReductionInducesWordChain
+#assert_no_axioms FX1Poly.Typed.typedRootWordReductionTerminates
+#assert_no_axioms FX1Poly.Typed.untypedWordReductionDiverges
 
 -- §27.3 Layer-1 known-unsoundness corpus: every cataloged §27.2 type-theory bug is a permanent rejection
 -- test (or an honest pending-ledger entry).  GENUINELY-NEW content: universe-typing acyclicity — the
