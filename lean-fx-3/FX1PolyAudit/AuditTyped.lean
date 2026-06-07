@@ -85,6 +85,7 @@ import FX1Poly.Typed.SimplyTypedMetatheoryViaSconing
 import FX1Poly.Tier0.FxRenamingCategory
 import FX1Poly.Tier0.FxBaseRenamingCategory
 import FX1Poly.Tier0.FxBaseRenamingVecCategory
+import FX1Poly.Tier0.FxBaseRenamingVecIsomorphism
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4284,6 +4285,26 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecCategory_identity_eq
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecCategory_compose_eq
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecCategory_faithful
+-- The categorical isomorphisms of the EXTENSIONAL renaming base (FxBaseRenamingVecIsomorphism.lean, SN-085) — the
+-- iso-class CwR-axiom CONTENT. isomorphismOfLookupInverse is the ext-powered iso constructor: forward + backward +
+-- two pointwise round-trips ⟹ IsIsomorphism, the inverse laws (morphism equalities) discharged by RenamingVec.ext
+-- (over the function base this would need funext/Quot.sound; over RenamingTo it leaks propext — so this is the
+-- direct payoff of the extensional base). swapTwo/_involutive/IsIsomorphism: a concrete NON-IDENTITY iso (var-0/1
+-- swap on scope 2, self-inverse) — non-vacuity (the iso class ⊋ {identity}), Fin 2 matched structurally (no
+-- Fin.cases). IsCategoricalIsomorphism + _identity/_compose/_pullback: the THREE iso-class CwR-axiom contents
+-- (contains identity, closed under composition via generic IsIsomorphism.comp, closed under pullback via generic
+-- pullbackAlong with identity right-projection), Nonempty witnesses extracted by Prop-matching (no Classical).
+-- HONEST SCOPE: this is the CwR-axiom CONTENT, not yet the RepresentableMapCategory RECORD — that needs a
+-- MorphismClass whose memberDecidable decides Nonempty (IsIsomorphism ...) = whether a RenamingVec is a finite
+-- bijection, a separate Init-only propext-risky Fin-combinatorics sub-problem, the ONLY remaining piece. The iso
+-- class is the right representable class precisely because its pullbacks exist GENERICALLY (pullbackAlong). All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.isomorphismOfLookupInverse
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.swapTwo
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.swapTwo_involutive
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.swapTwoIsIsomorphism
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.isCategoricalIsomorphism_identity
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.isCategoricalIsomorphism_compose
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.isCategoricalIsomorphism_pullback
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
