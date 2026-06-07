@@ -24,6 +24,7 @@ import FX1Poly.Modal.UnifiedGradeMonoid
 import FX1Poly.Modal.FractionalPermission
 import FX1Poly.Modal.ClockDomainLatticeDimension
 import FX1Poly.Modal.MutationChainLatticeDimension
+import FX1Poly.Modal.PreorderDimension
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -752,3 +753,33 @@ infinite-antichain clock (two opposite order shapes) via the shipped `productIsL
 #assert_no_axioms FX1Poly.Modal.mutationImmutableIsLeast
 #assert_no_axioms FX1Poly.Modal.mutationReadWriteIsGreatest
 #assert_no_axioms FX1Poly.Modal.mutationClockProductIsLawful
+
+/-! ## The PREORDER structural class + §6.3 Dim 7 lifetime (`PreorderDimension`) — the THIRD dimension shape
+
+After the ordered semirings (HasGradeOver) and the bounded join-semilattices (all antisymmetric partial
+orders), the preorder is the third structural class FX dimensions take: order-only (le_refl + le_trans), NOT
+necessarily antisymmetric.  `PreorderDimension` + the induced equivalence KERNEL (equiv_refl/symm/trans = the
+kernel is an equivalence relation) + IsAntisymmetric + product.  `boundedJoinSemilatticeToPreorder` +
+`latticePreorderIsAntisymmetric` show every lattice forgets to a PARTIAL order (antisymmetric); the §6.3 Dim7
+LIFETIME instance (regions ordered by outlives, static outlives all) is the FIRST dimension that is NOT a
+partial order — `lifetimeRegionsEquivalentButDistinct` (distinct equal-extent regions mutually outlive) ⟹
+`lifetimeIsNotAntisymmetric`.  Completes FX's dimension structural taxonomy.  All term-proofs over
+le_refl/le_trans/le_antisymm + Nat.le_refl/le_trans + injection/noConfusion, propext-free. -/
+
+#assert_no_axioms FX1Poly.Modal.PreorderDimension.equiv
+#assert_no_axioms FX1Poly.Modal.PreorderDimension.equiv_refl
+#assert_no_axioms FX1Poly.Modal.PreorderDimension.equiv_symm
+#assert_no_axioms FX1Poly.Modal.PreorderDimension.equiv_trans
+#assert_no_axioms FX1Poly.Modal.PreorderDimension.IsAntisymmetric
+#assert_no_axioms FX1Poly.Modal.PreorderDimension.product
+#assert_no_axioms FX1Poly.Modal.boundedJoinSemilatticeToPreorder
+#assert_no_axioms FX1Poly.Modal.latticePreorderIsAntisymmetric
+#assert_no_axioms FX1Poly.Modal.effectInducedPreorderIsAntisymmetric
+#assert_no_axioms FX1Poly.Modal.LifetimeGrade.outlives
+#assert_no_axioms FX1Poly.Modal.lifetimeOutlivesRefl
+#assert_no_axioms FX1Poly.Modal.lifetimeOutlivesTrans
+#assert_no_axioms FX1Poly.Modal.lifetimePreorder
+#assert_no_axioms FX1Poly.Modal.lifetimeStaticOutlivesAll
+#assert_no_axioms FX1Poly.Modal.lifetimeRegionsEquivalentButDistinct
+#assert_no_axioms FX1Poly.Modal.lifetimeIsNotAntisymmetric
+#assert_no_axioms FX1Poly.Modal.lifetimeProductPreorder
