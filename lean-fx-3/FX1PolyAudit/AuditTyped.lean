@@ -184,6 +184,7 @@ import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Typed.UntypedOmegaNotStronglyNormalizing
 import FX1Poly.Typed.WeaklyNormalizingNotStronglyNormalizing
 import FX1Poly.Typed.StepNonDeterministic
+import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -1909,6 +1910,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.outerReduct_reachesCommon
 #assert_no_axioms FX1Poly.Typed.innerReduct_reachesCommon
 #assert_no_axioms FX1Poly.Typed.stepIsNonDeterministicButDiamondCloses
+-- Concrete HasTypeDescPi TYPING-ENGINE derivations of λ-terms (TypedLambdaDerivations): the first concrete
+-- witnesses of the actual typing judgment HasTypeDescPi for honest λ-abstractions (the closed-SN smokes go
+-- through the FT/reducibility layer's fundamentalPiIntroLevelIndexed, NOT the typing engine). identityOn
+-- Universe: λ(x:Type@e).x : Π(Type@e).Type@e via piIntro + var (through ofFormation) — the var-lookup classifier
+-- rename-weaken Type@e is defeq Type@e (nullary leaf). constantTypeLambda: λ(x:Type@e).Type@e : Π(Type@e).
+-- Type@(e+1) via piIntro with a universeFormation body. stronglyNormalizing feeds the concrete identity
+-- derivation through SN-043 (closedStronglyNormalizing) — the typing→SN pipeline on a concrete closed program.
+#assert_no_axioms FX1Poly.Typed.identityOnUniverse_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.constantTypeLambda_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.identityOnUniverse_stronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
