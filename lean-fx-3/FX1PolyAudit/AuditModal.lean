@@ -25,6 +25,7 @@ import FX1Poly.Modal.FractionalPermission
 import FX1Poly.Modal.ClockDomainLatticeDimension
 import FX1Poly.Modal.MutationChainLatticeDimension
 import FX1Poly.Modal.PreorderDimension
+import FX1Poly.Modal.DimensionRepetitionContrast
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -783,3 +784,23 @@ le_refl/le_trans/le_antisymm + Nat.le_refl/le_trans + injection/noConfusion, pro
 #assert_no_axioms FX1Poly.Modal.lifetimeRegionsEquivalentButDistinct
 #assert_no_axioms FX1Poly.Modal.lifetimeIsNotAntisymmetric
 #assert_no_axioms FX1Poly.Modal.lifetimeProductPreorder
+
+/-! ## The FIRST cross-dimension comparison (`DimensionRepetitionContrast`) — usage vs security on repetition
+
+The DIM track built each dimension's algebra in isolation; this is the first theorem CONTRASTING two
+dimensions' check behaviors.  At the unit `R.one` (`semiringUnits_eq`: usage one = `.one`, security one =
+`.classified`), usage `+` is NON-idempotent (`usageAddUnitUnit_eq_omega`: `1+1 = ω ≠ 1` — occurrence
+counting, repetition PENALIZED, so `usageRepetitionExceedsLinear`: `ω ≰ 1`) while security `+` IS idempotent
+(`securityAddUnitUnit_idempotent`: `classified+classified = classified` — flow join, repetition NOT
+penalized, so `securityRepetitionStaysWithinUnit`: `classified ≤ classified`).  usageAndSecurityDifferOn
+Repetition: the SAME combine-with-itself operation exceeds the usage bound but stays within the security
+bound — composing pointwise in one grade vector (§6.1), each dimension enforces its own discipline
+(linearity vs information flow), the algebraic root of §6.8's "the dimensions are NOT orthogonal".  All rfl
+over the propext-free enum tables UsageGrade/SecurityGrade .add/.le. -/
+
+#assert_no_axioms FX1Poly.Modal.semiringUnits_eq
+#assert_no_axioms FX1Poly.Modal.usageAddUnitUnit_eq_omega
+#assert_no_axioms FX1Poly.Modal.usageRepetitionExceedsLinear
+#assert_no_axioms FX1Poly.Modal.securityAddUnitUnit_idempotent
+#assert_no_axioms FX1Poly.Modal.securityRepetitionStaysWithinUnit
+#assert_no_axioms FX1Poly.Modal.usageAndSecurityDifferOnRepetition
