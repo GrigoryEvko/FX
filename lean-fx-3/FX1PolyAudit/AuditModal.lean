@@ -362,6 +362,31 @@ annihilator (`join impure pure = impure ≠ pure`), upgrading the informal DIM5-
 #assert_no_axioms FX1Poly.Modal.overflowExactIsLeast
 #assert_no_axioms FX1Poly.Modal.overflowEffectProductLattice
 #assert_no_axioms FX1Poly.Modal.overflowEffectProductIsLawful
+-- The overflow MEET — completing the diamond M3 to the kernel's FIRST FULL bounded lattice
+-- (OverflowLatticeDimension.lean, bottom). OverflowGrade.meet (diamond infimum, dual to join: conflict top is the
+-- meet identity, distinct modes meet DOWN to the exact bottom) + meet-semilattice laws (comm/assoc/idempotent/
+-- top-identity/exact-absorb, the cases<;>rfl mirror of the join laws) + the two ABSORPTION laws (join a (meet a b)
+-- = a / meet a (join a b) = a) that upgrade two semilattices into a genuine bounded LATTICE — the kernel's first
+-- full lattice (every prior dim built only the join half). Dual conflict-mixing (overflowMeet_{wrap_trap,
+-- wrap_saturate,trap_saturate} = exact). THE TWO HEADLINES: overflowIsNonDistributive (canonical M3 failure
+-- wrap∧(trap∨saturate)=wrap ≠ exact=(wrap∧trap)∨(wrap∧saturate), by decide — overflow is richer than the
+-- distributive chains) + overflowIsModular (a≤c → a∨(b∧c)=(a∨b)∧c holds, the le-guard's impossible cases refuted
+-- by noConfusion) — pinning overflow precisely as M3 (diamond, modular non-distributive), NOT N5 (pentagon,
+-- non-modular). All zero-axiom (cases<;>rfl + decide + noConfusion guard-discharge, no funext/propext).
+#assert_no_axioms FX1Poly.Modal.OverflowGrade.meet
+#assert_no_axioms FX1Poly.Modal.overflowMeet_comm
+#assert_no_axioms FX1Poly.Modal.overflowMeet_assoc
+#assert_no_axioms FX1Poly.Modal.overflowMeet_idempotent
+#assert_no_axioms FX1Poly.Modal.overflowTopMeet
+#assert_no_axioms FX1Poly.Modal.overflowMeetTop
+#assert_no_axioms FX1Poly.Modal.overflowExactMeet
+#assert_no_axioms FX1Poly.Modal.overflowJoinMeetAbsorb
+#assert_no_axioms FX1Poly.Modal.overflowMeetJoinAbsorb
+#assert_no_axioms FX1Poly.Modal.overflowMeet_wrap_trap
+#assert_no_axioms FX1Poly.Modal.overflowMeet_wrap_saturate
+#assert_no_axioms FX1Poly.Modal.overflowMeet_trap_saturate
+#assert_no_axioms FX1Poly.Modal.overflowIsNonDistributive
+#assert_no_axioms FX1Poly.Modal.overflowIsModular
 -- The join-semilattice UNIVERSAL PROPERTY + decidable order (BoundedJoinSemilatticeUniversal.lean) — the genuine
 -- lattice content the DIM-CLASS-order layer (#912) was missing: le_join_left/le_join_right (join a b is an UPPER
 -- bound of both, via assoc+idempotent) + join_le (it is the LEAST upper bound — any common bound dominates it,

@@ -1,7 +1,8 @@
 import FX1Poly.Modal.EffectLatticeClassification
 
 /-! # FX1Poly/Modal/OverflowLatticeDimension
-    — the OVERFLOW dimension (§6.3 Dim 16) as the FIRST NON-CHAIN bounded join-semilattice (diamond M3)
+    — the OVERFLOW dimension (§6.3 Dim 16) as the FIRST NON-CHAIN bounded join-semilattice, and (bottom of
+      file) the kernel's FIRST FULL bounded LATTICE: the diamond M3, modular but non-distributive
 
 `EffectLatticeClassification.lean` shipped the lattice-graded engine for the §6.8 effect-family dimensions —
 `BoundedJoinSemilattice` + `IsLawfulBoundedJoinSemilattice` + the pointwise product (`productIsLawful`) + the
@@ -194,5 +195,136 @@ theorem overflowEffectProductIsLawful :
     IsLawfulBoundedJoinSemilattice overflowEffectProductLattice :=
   BoundedJoinSemilattice.productIsLawful overflowIsLawfulBoundedJoinSemilattice
     effectIsLawfulBoundedJoinSemilattice
+
+/-! ## The MEET — completing the diamond to the kernel's FIRST FULL bounded lattice (M3: modular, non-distributive)
+
+Everything above makes overflow a bounded JOIN-semilattice (the join half only).  But the diamond M3 is a full
+LATTICE: it also has MEETS (infima).  This section adds `OverflowGrade.meet` — the diamond infimum, dual to
+`join` under the bottom↔top swap: `conflictGrade` (the top) is the meet IDENTITY, two equal modes meet to
+themselves, two DISTINCT fixed-width modes meet DOWN to the `exactGrade` bottom, and `exactGrade` ABSORBS — and
+the two **absorption laws** `a ∨ (a ∧ b) = a` / `a ∧ (a ∨ b) = a`.  Absorption is exactly what upgrades "two
+unrelated semilattices" into a genuine bounded LATTICE; this is the kernel's FIRST full lattice (every prior
+lattice dimension — effect/trust/security/overflow-join/clock/mutation — built only the join half).
+
+Because M3 is the textbook diamond, it is also the kernel's FIRST non-distributive AND first modular lattice:
+
+  * `overflowIsNonDistributive` — the canonical M3 distribution failure: `wrap ∧ (trap ∨ saturate) = wrap ∧
+    conflict = wrap`, but `(wrap ∧ trap) ∨ (wrap ∧ saturate) = exact ∨ exact = exact`, and `wrap ≠ exact`.
+    Distribution FAILS — overflow is genuinely richer than the distributive CHAINS (effect/trust/security/
+    mutation are chains, hence automatically distributive).  This is the algebraic face of §6.3's "the three
+    modes are incomparable": three pairwise-incomparable atoms with a common top and bottom is precisely M3,
+    and M3 is the smallest non-distributive lattice.
+  * `overflowIsModular` — yet M3 satisfies the MODULAR law `a ≤ c → a ∨ (b ∧ c) = (a ∨ b) ∧ c`.  This pins
+    overflow down precisely as M3 (the diamond), NOT N5 (the pentagon, the canonical NON-modular lattice):
+    the diamond is modular-but-not-distributive, the pentagon is neither.  The `a ≤ c` guard is essential —
+    drop it and the equation fails (e.g. `a = trap`, `c = wrap`, `b = saturate`), which is exactly why
+    modularity is strictly weaker than distributivity.
+
+`meet` mirrors `join` dualized, so the meet-semilattice laws close by the same `cases <;> rfl` (the
+associativity is the 125-leaf full enumeration); absorption is a 25-case `cases <;> rfl`; non-distributivity is
+a concrete `decide` witness (`wrap ≠ exact` after both sides compute); modularity is `cases … <;> first | rfl |
+exact OverflowGrade.noConfusion hac` — the impossible `le a c` cases are refuted by `noConfusion` (the induced
+`le` reduces to a false `conflictGrade = _`-style equality), the genuine `a ≤ c` cases close by `rfl`.  All
+zero-axiom; per-declaration gated in `FX1PolyAudit/AuditModal.lean`. -/
+
+/-- Overflow MEET — the diamond M3 infimum, dual to `OverflowGrade.join` under the bottom↔top swap.
+`conflictGrade` (top) is the identity; two equal modes meet to themselves; any two DISTINCT fixed-width modes
+meet to `exactGrade` (the bottom — losing all mode information); `exactGrade` absorbs.  Full 25-case
+enumeration, propext-free. -/
+def OverflowGrade.meet : OverflowGrade → OverflowGrade → OverflowGrade
+  | .exactGrade, _ => .exactGrade
+  | .wrapGrade, .exactGrade => .exactGrade
+  | .wrapGrade, .wrapGrade => .wrapGrade
+  | .wrapGrade, .trapGrade => .exactGrade
+  | .wrapGrade, .saturateGrade => .exactGrade
+  | .wrapGrade, .conflictGrade => .wrapGrade
+  | .trapGrade, .exactGrade => .exactGrade
+  | .trapGrade, .wrapGrade => .exactGrade
+  | .trapGrade, .trapGrade => .trapGrade
+  | .trapGrade, .saturateGrade => .exactGrade
+  | .trapGrade, .conflictGrade => .trapGrade
+  | .saturateGrade, .exactGrade => .exactGrade
+  | .saturateGrade, .wrapGrade => .exactGrade
+  | .saturateGrade, .trapGrade => .exactGrade
+  | .saturateGrade, .saturateGrade => .saturateGrade
+  | .saturateGrade, .conflictGrade => .saturateGrade
+  | .conflictGrade, .exactGrade => .exactGrade
+  | .conflictGrade, .wrapGrade => .wrapGrade
+  | .conflictGrade, .trapGrade => .trapGrade
+  | .conflictGrade, .saturateGrade => .saturateGrade
+  | .conflictGrade, .conflictGrade => .conflictGrade
+
+/-- Meet is commutative (the meet-semilattice mirror of `join_comm`). -/
+theorem overflowMeet_comm (firstGrade secondGrade : OverflowGrade) :
+    OverflowGrade.meet firstGrade secondGrade = OverflowGrade.meet secondGrade firstGrade := by
+  cases firstGrade <;> cases secondGrade <;> rfl
+
+/-- Meet is associative (125-leaf full enumeration, the mirror of `join_assoc`). -/
+theorem overflowMeet_assoc (firstGrade secondGrade thirdGrade : OverflowGrade) :
+    OverflowGrade.meet (OverflowGrade.meet firstGrade secondGrade) thirdGrade =
+      OverflowGrade.meet firstGrade (OverflowGrade.meet secondGrade thirdGrade) := by
+  cases firstGrade <;> cases secondGrade <;> cases thirdGrade <;> rfl
+
+/-- Meet is idempotent. -/
+theorem overflowMeet_idempotent (grade : OverflowGrade) : OverflowGrade.meet grade grade = grade := by
+  cases grade <;> rfl
+
+/-- `conflictGrade` (the top) is the meet IDENTITY on the left — the dual of `exact` being the join identity. -/
+theorem overflowTopMeet (grade : OverflowGrade) :
+    OverflowGrade.meet OverflowGrade.conflictGrade grade = grade := by cases grade <;> rfl
+
+/-- `conflictGrade` is the meet identity on the right. -/
+theorem overflowMeetTop (grade : OverflowGrade) :
+    OverflowGrade.meet grade OverflowGrade.conflictGrade = grade := by cases grade <;> rfl
+
+/-- `exactGrade` (the bottom) ABSORBS under meet — the dual of `conflict` absorbing under join. -/
+theorem overflowExactMeet (grade : OverflowGrade) :
+    OverflowGrade.meet OverflowGrade.exactGrade grade = OverflowGrade.exactGrade := by cases grade <;> rfl
+
+/-- **Absorption (join over meet): `a ∨ (a ∧ b) = a`.**  One of the two laws that make join + meet a genuine
+bounded LATTICE rather than two unrelated semilattices. -/
+theorem overflowJoinMeetAbsorb (firstGrade secondGrade : OverflowGrade) :
+    OverflowGrade.join firstGrade (OverflowGrade.meet firstGrade secondGrade) = firstGrade := by
+  cases firstGrade <;> cases secondGrade <;> rfl
+
+/-- **Absorption (meet over join): `a ∧ (a ∨ b) = a`.**  The second lattice-absorption law. -/
+theorem overflowMeetJoinAbsorb (firstGrade secondGrade : OverflowGrade) :
+    OverflowGrade.meet firstGrade (OverflowGrade.join firstGrade secondGrade) = firstGrade := by
+  cases firstGrade <;> cases secondGrade <;> rfl
+
+/-! ### Dual conflict-mixing — distinct modes MEET to the exact bottom (dual of join-to-conflict) -/
+
+/-- `wrap ∧ trap = exact`: meeting distinct modes loses all mode information (dual of `overflowJoin_wrap_trap`). -/
+theorem overflowMeet_wrap_trap :
+    OverflowGrade.meet OverflowGrade.wrapGrade OverflowGrade.trapGrade = OverflowGrade.exactGrade := rfl
+
+/-- `wrap ∧ saturate = exact`. -/
+theorem overflowMeet_wrap_saturate :
+    OverflowGrade.meet OverflowGrade.wrapGrade OverflowGrade.saturateGrade = OverflowGrade.exactGrade := rfl
+
+/-- `trap ∧ saturate = exact`. -/
+theorem overflowMeet_trap_saturate :
+    OverflowGrade.meet OverflowGrade.trapGrade OverflowGrade.saturateGrade = OverflowGrade.exactGrade := rfl
+
+/-- ★ **M3 is NON-DISTRIBUTIVE** — the canonical diamond witness `wrap / trap / saturate`:
+`wrap ∧ (trap ∨ saturate) = wrap ∧ conflict = wrap` but `(wrap ∧ trap) ∨ (wrap ∧ saturate) = exact ∨ exact =
+exact`, and `wrap ≠ exact`.  The overflow dimension is genuinely richer than the distributive chains. -/
+theorem overflowIsNonDistributive :
+    ∃ firstGrade secondGrade thirdGrade : OverflowGrade,
+      OverflowGrade.meet firstGrade (OverflowGrade.join secondGrade thirdGrade) ≠
+        OverflowGrade.join (OverflowGrade.meet firstGrade secondGrade)
+          (OverflowGrade.meet firstGrade thirdGrade) :=
+  ⟨OverflowGrade.wrapGrade, OverflowGrade.trapGrade, OverflowGrade.saturateGrade, by decide⟩
+
+/-- ★ **M3 IS MODULAR** — the modular law `a ≤ c → a ∨ (b ∧ c) = (a ∨ b) ∧ c` holds.  This pins overflow down
+as M3 (the diamond, modular but not distributive), NOT N5 (the pentagon, the canonical non-modular lattice).
+The `a ≤ c` guard is essential: its impossible cases are refuted by `noConfusion`, the genuine cases close by
+`rfl`. -/
+theorem overflowIsModular (firstGrade secondGrade thirdGrade : OverflowGrade)
+    (firstBelowThird : overflowLattice.le firstGrade thirdGrade) :
+    OverflowGrade.join firstGrade (OverflowGrade.meet secondGrade thirdGrade) =
+      OverflowGrade.meet (OverflowGrade.join firstGrade secondGrade) thirdGrade := by
+  cases firstGrade <;> cases secondGrade <;> cases thirdGrade <;>
+    first | rfl | exact OverflowGrade.noConfusion firstBelowThird
 
 end FX1Poly.Modal
