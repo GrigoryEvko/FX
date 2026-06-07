@@ -17,6 +17,7 @@ import FX1Poly.Modal.GradedReductionConfluence
 import FX1Poly.Modal.GradedNormalization
 import FX1Poly.Modal.ComplexitySemiring
 import FX1Poly.Modal.EffectLatticeClassification
+import FX1Poly.Modal.UnifiedGradeMonoid
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -327,6 +328,24 @@ annihilator (`join impure pure = impure ≠ pure`), upgrading the informal DIM5-
 #assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.bottom_le
 #assert_no_axioms FX1Poly.Modal.effectLe_pure_impure
 #assert_no_axioms FX1Poly.Modal.trustLe_trusted_untrusted
+-- The UNIFIED grade VECTOR across BOTH families (UnifiedGradeMonoid.lean) — the honest §1.3/§6.1/§6.8 "21
+-- dimensions compose", resolving the §6.1-vs-DIM-CLASS tension: the vector is NOT a pure semiring product
+-- (effect/trust aren't semirings) but a product of COMMUTATIVE GRADE MONOIDS (the §6.1 parallel-combine layer
+-- both families share). CommutativeGradeMonoid + IsLawful; OrderedGradeSemiring.toCommutativeGradeMonoid (resource
+-- dims project, laws = add comm-monoid) + BoundedJoinSemilattice.toCommutativeGradeMonoid (effect-family dims
+-- project, laws = join comm-monoid); product + productIsLawful (the vector, componentwise, no re-proof); and the
+-- FIRST cross-family witness securityEffectGradeMonoid(+IsLawful) — a semiring dim x a lattice dim in ONE vector.
+-- All zero-axiom (record literals + field re-export + the shipped pairEqOfComponents glue).
+#assert_no_axioms FX1Poly.Modal.CommutativeGradeMonoid
+#assert_no_axioms FX1Poly.Modal.IsLawfulCommutativeGradeMonoid
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.toCommutativeGradeMonoid
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.toCommutativeGradeMonoid_isLawful
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.toCommutativeGradeMonoid
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.toCommutativeGradeMonoid_isLawful
+#assert_no_axioms FX1Poly.Modal.CommutativeGradeMonoid.product
+#assert_no_axioms FX1Poly.Modal.CommutativeGradeMonoid.productIsLawful
+#assert_no_axioms FX1Poly.Modal.securityEffectGradeMonoid
+#assert_no_axioms FX1Poly.Modal.securityEffectGradeMonoidIsLawful
 #assert_no_axioms FX1Poly.Modal.DimensionGradeAlgebra
 #assert_no_axioms FX1Poly.Modal.GradedDimensionName
 #assert_no_axioms FX1Poly.Modal.GradedDimensionName.gradeAlgebraOf
