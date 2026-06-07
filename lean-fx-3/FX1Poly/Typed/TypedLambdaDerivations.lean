@@ -1,6 +1,8 @@
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Typed.ClosedStronglyNormalizing
+import FX1Poly.Typed.IntroRuleDesc
+import FX1Poly.Typed.ElimRuleDesc
 
 /-! # Foundation/PolyCell/Typed/TypedLambdaDerivations
     - concrete `HasTypeDescPi` typing-engine derivations of real λ-terms
@@ -582,5 +584,85 @@ theorem genFormationPiTypesBothPiAndSigmaFormers
         (universeCodeCell (lmaxAll [LevelExpr.lzero, LevelExpr.lzero]) flag) :=
   ⟨dependentArrowOverTypeVariable_hasTypeDescPi flag,
    dependentPairTypeOverTypeVariable_hasTypeDescPi flag⟩
+
+/-! ## The introduction and elimination rule TABLES drive a concrete term end-to-end
+
+The Σ-formation block above showed the FORMATION table (`typingRuleDescOf`) is former-generic.  The
+INTRODUCTION and ELIMINATION rules are table-driven the same way: `introRuleDescOf` / `elimRuleDescOf`
+carry the rule's output as DATA (`IntroRuleDesc.outputType` / `ElimRuleDesc.outputType`), and
+`hasTypeDescPi_piIntro_viaIntroDesc` / `hasTypeDescPi_piElim_viaElimDesc` reconstruct the shipped
+`piIntro` / `piElim` output FROM those tables.  Those reconstructions are proved in isolation; here
+they COMPOSE on one concrete closed term — the identity application
+`identityApplicationOnUniverseCode` `(λ(x : Type@(e+1)). x) (Type@e)` above — typed end-to-end through
+BOTH rule tables.  Together with the formation demonstration this exhibits all three rule classes
+(formation / introduction / elimination) as DATA-driven: growing the engine with a new former,
+constructor, or eliminator is a table ROW, never a new `HasTypeDescPi` arm. -/
+
+/-- The identity `λ(x : Type@(e+1)). x` typed through the INTRODUCTION table: its output is the intro
+rule's DATA output `piIntroOutput 0 (Type@(e+1)) (Type@(e+1)) = piTyCodeCell (Type@(e+1)) (Type@(e+1))`,
+obtained from `introRuleDescOf .gen_lam` (not hardwired).  The domain and codomain type by
+`universeFormation`, the body `x` by the `var` rule. -/
+theorem identityLambdaViaIntroTable
+    {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    HasTypeDescPi profile TypingContext.empty
+      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (piIntroOutput 0 (universeCodeCell levelExpr.lsucc flag)
+        (universeCodeCell levelExpr.lsucc flag)) :=
+  hasTypeDescPi_piIntro_viaIntroDesc levelExpr.lsucc.lsucc levelExpr.lsucc.lsucc flag
+    { outputType := piIntroOutput } introRuleDescOf_lam
+    (HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty levelExpr.lsucc flag))
+    (HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation (TypingContext.empty.cons _) levelExpr.lsucc flag))
+    (HasTypeDescPi.ofFormation
+      (HasTypeDesc.var (TypingContext.empty.cons _) (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+
+/-- ★ The application `(λ(x : Type@(e+1)). x) (Type@e)` typed end-to-end through BOTH rule tables: the
+function position by the INTRODUCTION table (`identityLambdaViaIntroTable`), the application by the
+ELIMINATION table (`hasTypeDescPi_piElim_viaElimDesc`).  The output is the elim rule's
+children-DEPENDENT DATA output `piElimOutput 0 (Type@(e+1)) (Type@e) = subst0 (Type@(e+1)) (Type@e)` —
+the codomain substituted by the scrutinee, read from `elimRuleDescOf .gen_app`.  Neither rule output
+is hardwired; both are reconstructed from the data tables, exhibiting the cascade-free typing thesis
+across introduction AND elimination (the formation half is the Σ block above). -/
+theorem identityApplicationViaRuleTables
+    {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    HasTypeDescPi profile TypingContext.empty
+      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (universeCodeCell levelExpr flag))
+      (piElimOutput 0 (universeCodeCell levelExpr.lsucc flag)
+        (universeCodeCell levelExpr flag)) :=
+  hasTypeDescPi_piElim_viaElimDesc { outputType := piElimOutput } elimRuleDescOf_app
+    (identityLambdaViaIntroTable (profile := profile) levelExpr flag)
+    (HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty levelExpr flag))
+
+/-- The elimination table's children-dependent output resolves to `Type@(e+1)`: the identity's
+codomain is constant, so `subst0` ignores the argument (`piElimOutput 0 (Type@(e+1)) (Type@e) =
+Type@(e+1)` by `rfl`). -/
+theorem ruleTableApplicationOutput_resolvesToUniverse (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    piElimOutput 0 (universeCodeCell levelExpr.lsucc flag) (universeCodeCell levelExpr flag)
+      = universeCodeCell levelExpr.lsucc flag := rfl
+
+/-- The table-driven derivation therefore lands at exactly the explicit-engine classifier
+`Type@(e+1)` of `identityApplicationOnUniverseCode_hasTypeDescPi` — the rule tables RECONSTRUCT the
+shipped typing judgment on a concrete closed term, at the very same type (defeq through the
+elim-output resolution above). -/
+theorem identityApplicationViaRuleTables_atResolvedType
+    {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    HasTypeDescPi profile TypingContext.empty
+      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (universeCodeCell levelExpr flag))
+      (universeCodeCell levelExpr.lsucc flag) :=
+  identityApplicationViaRuleTables (profile := profile) levelExpr flag
+
+/-- The table-driven application is strongly normalizing — SN-043 on the rule-table derivation,
+exactly as for the explicit-engine derivation. -/
+theorem identityApplicationViaRuleTables_stronglyNormalizing
+    {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (universeCodeCell levelExpr flag) : RawTerm 0) :=
+  HasTypeDescPi.closedStronglyNormalizing
+    (identityApplicationViaRuleTables (profile := profile) levelExpr flag)
 
 end FX1Poly.Typed

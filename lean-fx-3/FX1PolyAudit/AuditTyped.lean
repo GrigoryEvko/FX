@@ -2008,6 +2008,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.closedDependentPairType_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.closedDependentPairType_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.genFormationPiTypesBothPiAndSigmaFormers
+-- INTRODUCTION + ELIMINATION rule TABLES drive a concrete term: the identity application
+-- (λ(x:Type@(e+1)).x)(Type@e) typed end-to-end through hasTypeDescPi_piIntro_viaIntroDesc (the intro
+-- table) composed with hasTypeDescPi_piElim_viaElimDesc (the elim table). Output is the elim rule-DATA
+-- output piElimOutput, resolving (rfl) to Type@(e+1) = the explicit-engine classifier; SN via SN-043.
+-- Completes the formation/intro/elim cascade-free-typing demonstration trio (Σ-formation is above).
+#assert_no_axioms FX1Poly.Typed.identityLambdaViaIntroTable
+#assert_no_axioms FX1Poly.Typed.identityApplicationViaRuleTables
+#assert_no_axioms FX1Poly.Typed.ruleTableApplicationOutput_resolvesToUniverse
+#assert_no_axioms FX1Poly.Typed.identityApplicationViaRuleTables_atResolvedType
+#assert_no_axioms FX1Poly.Typed.identityApplicationViaRuleTables_stronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
