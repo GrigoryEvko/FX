@@ -201,6 +201,7 @@ import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
 import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescFlatWeakening
 import FX1Poly.Typed.HasTypeDescFlatSubstitution
+import FX1Poly.Typed.HasTypeDescFlatValidity
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2418,6 +2419,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.FlatDescTelescope.substRespectingTelescope
 #assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.substituteUnderBinding
+-- FLAT-ENGINE VALIDITY + TELESCOPE AGREEMENT (#939): formation-engine-parity properties.
+-- classifierIsTypeDescNative = flat regularity (UNCONDITIONAL — flat has no var arm, classifier always a universe
+-- code; lighter than the formation twin which needs WfContextDesc). FlatDescTelescope.uniquenessAgree = two flat
+-- telescopes over equal children agree on levels/flag (the uniqueness substrate; flat rest-recursion keeps the
+-- SAME context, no WfContextDesc.cons). The uniqueness headline itself is DEFERRED (propext via dependent mkGen
+-- second-derivation injection — needs a propext-free flat inversionFormerWithConv analogue).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.classifierIsTypeDescNative
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.uniquenessAgree
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
