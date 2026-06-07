@@ -23,6 +23,7 @@ import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
 import FX1Poly.Modal.FractionalPermission
 import FX1Poly.Modal.ClockDomainLatticeDimension
+import FX1Poly.Modal.MutationChainLatticeDimension
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -729,3 +730,25 @@ transitively by the lattice/antichain theorems but listed explicitly for provena
 #assert_no_axioms FX1Poly.Modal.clockCombinationalIsLeast
 #assert_no_axioms FX1Poly.Modal.clockCrossDomainIsGreatest
 #assert_no_axioms FX1Poly.Modal.clockOverflowProductIsLawful
+
+/-! ## §6.3 Dim 18 mutation dimension — the first proper TOTAL-ORDER chain (`MutationChainLatticeDimension`)
+
+Completes the lattice-shape spanning set: alongside the trivial 2-chains (effect/trust/security), the finite
+antichain (overflow M3) and the infinite antichain (clock), mutation `immutable < appendOnly < monotonic <
+readWrite` is the FIRST proper total-order chain.  Its distinct content is `mutationIsTotalOrder` (every pair
+comparable — NO antichain, the structural opposite of overflow/clock); the covering chain + four-distinct
+witness a genuine four-element chain; `mutationClockProductIsLawful` composes the proper chain with the
+infinite-antichain clock (two opposite order shapes) via the shipped `productIsLawful`.  All finite-enum
+`cases <;> rfl` (the total order via `first | Or.inl rfl | Or.inr rfl`), propext-free. -/
+
+#assert_no_axioms FX1Poly.Modal.MutationGrade.join
+#assert_no_axioms FX1Poly.Modal.mutationLattice
+#assert_no_axioms FX1Poly.Modal.mutationIsLawfulBoundedJoinSemilattice
+#assert_no_axioms FX1Poly.Modal.mutationIsTotalOrder
+#assert_no_axioms FX1Poly.Modal.mutationImmutableBelowAppendOnly
+#assert_no_axioms FX1Poly.Modal.mutationAppendOnlyBelowMonotonic
+#assert_no_axioms FX1Poly.Modal.mutationMonotonicBelowReadWrite
+#assert_no_axioms FX1Poly.Modal.mutationChainHasFourDistinct
+#assert_no_axioms FX1Poly.Modal.mutationImmutableIsLeast
+#assert_no_axioms FX1Poly.Modal.mutationReadWriteIsGreatest
+#assert_no_axioms FX1Poly.Modal.mutationClockProductIsLawful
