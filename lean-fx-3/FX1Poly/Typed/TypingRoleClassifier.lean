@@ -26,8 +26,10 @@ three tables are PAIRWISE DISJOINT, so a generator carries AT MOST ONE typing ru
     never a per-consumer cascade (P13 cascade-freedom, now spanning all three families).
   * `typingRoleOf_formation_of` / `_intro_of` / `_elim_of` — COMPLETENESS: every table-member is classified
     with its role (the intro/elim directions consume the disjointness, since the classifier checks formation
-    first).  `typingRoleOf_isNone_iff` — a generator has NO typing role iff it is in NONE of the three tables
-    (the data constructors / eliminators the formation-only engine leaves untyped).
+    first).  `typingRoleOf_isNone_iff` — a generator has NO typing role iff it is in NONE of the three tables.
+    NOTE: roleless does NOT mean untyped — the engine also types two BESPOKE non-table heads, `gen_var` (the
+    `var` arm) and `gen_universeCode` (the `universeFormation` arm), both roleless yet typed; `typingRoleOf`
+    covers only the table-driven heads (see `TypingRoleEngineBridge` for the engine-coherence bridge).
   * `typingRoleOf_*_smoke` — concrete witnesses: `gen_piTyCode ↦ formation`, `gen_lam ↦ intro`,
     `gen_app ↦ elim`, `gen_boolTrue ↦ none`.
 
@@ -140,9 +142,12 @@ theorem typingRoleOf_elim_of {generator : Generator} {rule : ElimRuleDesc}
   rw [formationNone, Option.isSome_none, if_neg (by decide), introNone, Option.isSome_none,
     if_neg (by decide), isElim, Option.isSome_some, if_pos rfl]
 
-/-- **A generator has NO typing role iff it is in NONE of the three tables.**  The "the engine leaves it
-untyped" characterization: the data constructors / eliminators (which `HasTypeDescPiDataHeadUntyped` proves
-untyped) are exactly the generators with `typingRoleOf = none`. -/
+/-- **A generator has NO typing role iff it is in NONE of the three tables.**  The roleless generators split
+into two kinds: the genuinely-UNTYPED data constructors / eliminators (`HasTypeDescPiDataHeadUntyped`), AND the
+two BESPOKE typed heads `gen_var` / `gen_universeCode` (typed by the `var` / `universeFormation` arms, which are
+not table rows).  So `typingRoleOf = none` means "not a table-driven typed head", NOT "untyped";
+`TypingRoleEngineBridge.cellUntypedWhenRolelessAndNonBespoke` recovers untyping by additionally excluding the
+two bespoke heads. -/
 theorem typingRoleOf_isNone_iff (generator : Generator) :
     typingRoleOf generator = none ↔
       typingRuleDescOf generator = none ∧ introRuleDescOf generator = none ∧

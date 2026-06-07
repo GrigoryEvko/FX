@@ -381,6 +381,7 @@ import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
 import FX1Poly.Typed.IntroRuleDesc
 import FX1Poly.Typed.ElimRuleDesc
 import FX1Poly.Typed.TypingRoleClassifier
+import FX1Poly.Typed.TypingRoleEngineBridge
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
@@ -5825,6 +5826,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.typingRoleOf_lam_smoke
 #assert_no_axioms FX1Poly.Typed.typingRoleOf_app_smoke
 #assert_no_axioms FX1Poly.Typed.typingRoleOf_boolTrue_smoke
+
+-- TypingRoleEngineBridge: the classifier ↔ engine coherence (GTL-ROLE follow-up). subjectHeadHasRoleOrBespoke
+-- is the COMPLETENESS of typingRoleOf w.r.t. the engine — every grown-typed subject's head either carries a
+-- typingRoleOf role OR is one of the two BESPOKE non-table typed heads (gen_var via the var arm,
+-- gen_universeCode via ofFormation∘universeFormation). closedSubjectHeadHasRoleOrIsUniverseCode drops the
+-- gen_var disjunct in the empty context (Fin 0 var payload). cellUntypedWhenRolelessAndNonBespoke is the
+-- contrapositive — the HONEST untyping criterion: roleless (typingRoleOf = none) AND neither bespoke head ⟹
+-- no grown typing (routing typingRoleOf_isNone_iff into the table-generic refutation). The notGenLam/notGenApp
+-- helpers convert introNone/elimNone into the head-distinctness the refutation needs. All zero-axiom (rcases on
+-- subjectRootGeneratorGeneric + the #985 completeness lemmas; subst + table-rfl + cases on some = none).
+#assert_no_axioms FX1Poly.Typed.notGenLam_ofIntroRuleDescNone
+#assert_no_axioms FX1Poly.Typed.notGenApp_ofElimRuleDescNone
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectHeadHasRoleOrBespoke
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectHeadHasRoleOrIsUniverseCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.cellUntypedWhenRolelessAndNonBespoke
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.boolTrueCellUntypedViaRole
 
 -- §27.3 Layer-1 known-unsoundness corpus: every cataloged §27.2 type-theory bug is a permanent rejection
 -- test (or an honest pending-ledger entry).  GENUINELY-NEW content: universe-typing acyclicity — the
