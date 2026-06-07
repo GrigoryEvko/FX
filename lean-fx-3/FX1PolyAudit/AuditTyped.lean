@@ -90,6 +90,7 @@ import FX1Poly.Tier0.FxBaseRenamingVecTabulate
 import FX1Poly.Tier0.FxBaseRenamingVecPreimage
 import FX1Poly.Tier0.FxBaseRenamingVecTryTabulate
 import FX1Poly.Tier0.FxBaseRenamingVecRMC
+import FX1Poly.Tier0.FxBaseRenamingVecGlobalSections
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4366,6 +4367,23 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.decideIsCategoricalIsomorphism
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecRepresentableMaps
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecRMC
+-- The GlobalSections instance over the extensional renaming base (FxBaseRenamingVecGlobalSections.lean, SN-089,
+-- #592). The canonical global-sections functor is the REPRESENTABLE presheaf Hom(-, T): sections X = Morphism X T,
+-- sectionMap = precomposition, functoriality = the category's identity/assoc laws. GlobalSections.representable =
+-- this presheaf over ANY RawCategory (mapsIdentity = identityLeft, mapsComposition = composeAssoc), reusable for
+-- any future CwR base. In the renaming category the terminal object is scope 1 (Hom(X,1) singleton — every source
+-- var maps to var 0; scope 0 is NOT terminal, Hom(X,0) empty for X>0): finOneIsZero = Fin 1 subsingleton by
+-- structural index split (no Fin.cases); fxBaseRenamingVecScopeOneTerminal = terminality via RenamingVec.ext +
+-- finOneIsZero; fxBaseRenamingVecGlobalSections = the instance at scope 1; the subsingleton smoke = "exactly one
+-- closed renaming into the terminal". Honest scope: the standard representable-at-terminal global-sections shape
+-- (the structural prerequisite the SconingObject/SconingPreservation ladder parameterizes over); NOT a
+-- non-vacuous canonicity-extracting realization presheaf (that needs a term-carrying CwR base, SN-086/088). All
+-- zero-axiom (no funext, no Fin.cases, (1:Nat) ascription fixes the Object-projection OfNat).
+#assert_no_axioms FX1Poly.Tier0.GlobalSections.representable
+#assert_no_axioms FX1Poly.Tier0.finOneIsZero
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecScopeOneTerminal
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecGlobalSections
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecGlobalSections_terminal_subsingleton
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
