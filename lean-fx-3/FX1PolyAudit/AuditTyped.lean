@@ -380,6 +380,7 @@ import FX1Poly.Typed.HasTypeDescPiCheckFormation
 import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
 import FX1Poly.Typed.IntroRuleDesc
 import FX1Poly.Typed.ElimRuleDesc
+import FX1Poly.Typed.TypingRoleClassifier
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
@@ -5796,6 +5797,34 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.elimRuleDescOf_outputIsPiElim
 #assert_no_axioms FX1Poly.Typed.elimRuleDescOf_isApp
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_piElim_viaElimDesc
+
+-- GTL-19 (#985): the UNIFIED typing-role classifier over the three rule tables (TypingRoleClassifier).
+-- typingRoleOf consults typingRuleDescOf (formation) / introRuleDescOf (intro) / elimRuleDescOf (elim) in
+-- order; the ROLE-UNIQUENESS core (typingRuleDescOf_excludesIntro / _excludesElim / introRuleDescOf_excludes
+-- Elim + the symmetric elimRuleDescOf_excludesIntro) proves the three tables are PAIRWISE DISJOINT — a
+-- generator carries at most one typing rule, so its role is unique and the consultation order is immaterial.
+-- Each disjointness is the enumeration-lemma (introRuleDescOf_isLam / elimRuleDescOf_isApp) + rfl-reduction of
+-- the excluded table to none on the now-concrete former (gen_lam/gen_app are not formation formers, and
+-- gen_lam ≠ gen_app). typingRoleOf_{formation,intro,elim}_of are the COMPLETENESS directions (every
+-- table-member is classified, the intro/elim directions consuming the disjointness since formation is checked
+-- first); typingRoleOf_isNone_iff characterizes the untyped generators (NO role iff in NONE of the tables —
+-- the data constructors/eliminators). The substrate a unified GTL-20 fundamental-metatheory bundle + the
+-- SN-055 SR master dispatcher route over (which table to consult per generator). All zero-axiom (enumeration
+-- + subst + rfl; unfold + if_pos/if_neg over the Option.isSome guards; decide over the structural DecidableEq).
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_excludesIntro
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_excludesElim
+#assert_no_axioms FX1Poly.Typed.introRuleDescOf_excludesElim
+#assert_no_axioms FX1Poly.Typed.elimRuleDescOf_excludesIntro
+#assert_no_axioms FX1Poly.Typed.TypingRole
+#assert_no_axioms FX1Poly.Typed.typingRoleOf
+#assert_no_axioms FX1Poly.Typed.typingRoleOf_formation_of
+#assert_no_axioms FX1Poly.Typed.typingRoleOf_intro_of
+#assert_no_axioms FX1Poly.Typed.typingRoleOf_elim_of
+#assert_no_axioms FX1Poly.Typed.typingRoleOf_isNone_iff
+#assert_no_axioms FX1Poly.Typed.typingRoleOf_piTyCode_smoke
+#assert_no_axioms FX1Poly.Typed.typingRoleOf_lam_smoke
+#assert_no_axioms FX1Poly.Typed.typingRoleOf_app_smoke
+#assert_no_axioms FX1Poly.Typed.typingRoleOf_boolTrue_smoke
 
 -- §27.3 Layer-1 known-unsoundness corpus: every cataloged §27.2 type-theory bug is a permanent rejection
 -- test (or an honest pending-ledger entry).  GENUINELY-NEW content: universe-typing acyclicity — the
