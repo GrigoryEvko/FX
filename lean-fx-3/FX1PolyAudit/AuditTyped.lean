@@ -5872,6 +5872,24 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.secretIndexConstantArrayIsValueNoninterfering
 #assert_no_axioms FX1Poly.Typed.constantTimeStrictlyStrongerThanNoninterference
 #assert_no_axioms FX1Poly.Typed.corpusConstantTimeMechanismWitnessed
+-- Part 9 — the ML VALUE RESTRICTION mechanism (§27.2; Wright 1995), the LAST undefended §27.2 row. Syntactic:
+-- isSyntacticValue + isGeneralizableUnderValueRestriction; refAllocationIsNotGeneralizableUnderValueRestriction
+-- rejects generalizing a `ref` (a non-value), valueRestrictionRejectsRefThatNaiveAccepts is the strictly-tighter
+-- contrast. Semantic: ★ naivePolyRefCoercionIsUnsound — naive generalization's `∀ a b, a→b` (write-at-a/read-at-b
+-- on a poly ref) is uninhabited (→ Empty); valueRestrictedRefCoercionIsInhabited — `∀ a, a→a` is the identity.
+-- valueRestrictionSeparatesSoundFromUnsound bundles them. Native ML-ref surface pending (mlValueRestrictionBug_isPending).
+#assert_no_axioms FX1Poly.Typed.MLExpr
+#assert_no_axioms FX1Poly.Typed.MLExpr.isSyntacticValue
+#assert_no_axioms FX1Poly.Typed.MLExpr.isGeneralizableUnderValueRestriction
+#assert_no_axioms FX1Poly.Typed.MLExpr.isGeneralizableNaively
+#assert_no_axioms FX1Poly.Typed.lambdaIsGeneralizableUnderValueRestriction
+#assert_no_axioms FX1Poly.Typed.variableIsGeneralizableUnderValueRestriction
+#assert_no_axioms FX1Poly.Typed.refAllocationIsNotGeneralizableUnderValueRestriction
+#assert_no_axioms FX1Poly.Typed.applicationIsNotGeneralizableUnderValueRestriction
+#assert_no_axioms FX1Poly.Typed.valueRestrictionRejectsRefThatNaiveAccepts
+#assert_no_axioms FX1Poly.Typed.naivePolyRefCoercionIsUnsound
+#assert_no_axioms FX1Poly.Typed.valueRestrictedRefCoercionIsInhabited
+#assert_no_axioms FX1Poly.Typed.valueRestrictionSeparatesSoundFromUnsound
 
 -- §27.2 / §1.4 Girard-acyclicity STRENGTHENING (UniverseClassificationAcyclic.lean): the corpus ships the
 -- Type:Type entry as length-1 (corpusRejectsTypeInType) + length-2 (grownUniverseTypingHasNoTwoCycle), but

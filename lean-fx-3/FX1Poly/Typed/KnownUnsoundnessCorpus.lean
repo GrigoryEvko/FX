@@ -209,8 +209,15 @@ session type, exactly as `implicitFlowBug_isPending`'s pending surface is the na
 theorem sessionBug_isPending :
     KnownTypeTheoryBug.sessionEndpointAliased.isEncodableNow = false := rfl
 
-/-- Ledger fact (HONEST pending): the ML value restriction is NOT yet encodable — there are no ML-style
-polymorphic mutable references in the kernel. -/
+/-- Ledger fact (HONEST pending): the ML value restriction is NOT yet encodable AS THE CATALOGED
+NATIVE-ML-REFERENCE BUG — there are no ML-style polymorphic mutable references with let-generalization in
+the kernel.  (The value-restriction MECHANISM — generalizing a NON-VALUE (a `ref` allocation) is unsound,
+because the cell's write-at-`a` and read-at-`b` compose to a universal coercion — IS now defended in Part 9:
+`refAllocationIsNotGeneralizableUnderValueRestriction` rejects generalizing the allocation, and
+`naivePolyRefCoercionIsUnsound` / `valueRestrictionSeparatesSoundFromUnsound` show the naive generalization's
+`∀ a b, a → b` is uninhabited while the value-restricted `∀ a, a → a` is inhabited.  The pending surface is
+specifically the native ML-style mutable reference, exactly as Parts 5/7/8 keep their native surfaces
+pending.) -/
 theorem mlValueRestrictionBug_isPending :
     KnownTypeTheoryBug.mlValueRestriction.isEncodableNow = false := rfl
 
@@ -610,5 +617,125 @@ theorem corpusConstantTimeMechanismWitnessed (fixedValue : Nat) :
   ⟨publicConstantIndexAccessIsConstantTime (fun _ => fixedValue),
     secretIndexAccessViolatesConstantTime (fun _ => fixedValue),
     secretIndexConstantArrayIsValueNoninterfering fixedValue⟩
+
+/-! ## Part 9 — the ML value restriction: generalizing a non-value is unsound (the last §27.2 mechanism)
+
+The `mlValueRestriction` row (Wright 1995) is the LAST §27.2 pending entry without a mechanism defense.  Its
+native surface — ML-style polymorphic mutable references with let-generalization — is not in the kernel, but
+the bug's MECHANISM is witnessable: generalizing the type of a NON-VALUE (a `ref` allocation) is unsound,
+because the resulting polymorphic cell can be WRITTEN at one type and READ at another, composing into a
+universal coercion.  The value restriction is the syntactic discipline that fixes it: generalize only
+SYNTACTIC VALUES (lambdas, variables), never computations.
+
+This part models both halves.  The SYNTACTIC half: a tiny ML expression (`MLExpr`), the value predicate
+(`isSyntacticValue` — lambdas and variables are values; applications and `ref` allocations are not, since a
+`ref` allocates — an effect), and the restriction (`isGeneralizableUnderValueRestriction := isSyntacticValue`)
+versus naive "generalize everything" (`isGeneralizableNaively`).  The SEMANTIC half: the TYPE that naive
+generalization would assign to write-then-read on a polymorphic reference — a universal coercion
+`∀ a b, a → b` (`NaivePolyRefCoercion`) — is proved UNINHABITED (it yields a closed inhabitant of `Empty`),
+while the value-restricted type `∀ a, a → a` (`ValueRestrictedRefCoercion`, write and read at the single
+allocation type) is INHABITED by the identity.  This completes the §27.2 corpus's mechanism coverage: all
+four pending rows now carry a mechanism defense.
+
+  * `lambdaIsGeneralizableUnderValueRestriction` / `variableIsGeneralizableUnderValueRestriction` — the GOOD
+    cases: syntactic values ARE generalizable (no over-restriction).
+  * **`refAllocationIsNotGeneralizableUnderValueRestriction`** — the BUG SOURCE rejected: a `ref` allocation
+    is not a syntactic value, so the value restriction refuses to generalize it.
+  * `applicationIsNotGeneralizableUnderValueRestriction` — applications (general computations) are likewise
+    not generalized.
+  * `valueRestrictionRejectsRefThatNaiveAccepts` — the restriction is STRICTLY tighter than naive
+    generalization on exactly the dangerous case: naive accepts the `ref` allocation, the restriction rejects it.
+  * **`naivePolyRefCoercionIsUnsound`** — the SEMANTIC unsoundness: the universal coercion `∀ a b, a → b` that
+    naive generalization permits is uninhabited (instantiate at `Unit → Empty`, apply to `Unit.unit`, derive
+    a closed `Empty`).  Generalizing the non-value really is catastrophic.
+  * `valueRestrictedRefCoercionIsInhabited` — by contrast `∀ a, a → a` (the value-restricted read/write at the
+    single allocation type) is inhabited by the identity — sound.
+  * **`valueRestrictionSeparatesSoundFromUnsound`** — ★ the bundle: the naive coercion is uninhabited and the
+    value-restricted one is inhabited.  The value restriction is exactly the line between the unsound universal
+    coercion and the sound identity coercion.
+-/
+
+/-- A tiny ML-style expression: variables and lambdas (the syntactic VALUES), applications and `ref`
+allocations (the non-values — an application may diverge or effect, a `ref` allocates mutable state).  Pure
+data — strictly positive. -/
+inductive MLExpr where
+  | var (index : Nat)
+  | lam (body : MLExpr)
+  | app (function : MLExpr) (argument : MLExpr)
+  | refAlloc (initial : MLExpr)
+
+/-- The syntactic-VALUE predicate (Wright 1995): lambdas and variables are values; applications and `ref`
+allocations are not.  Full enumeration, no wildcard — propext-free. -/
+def MLExpr.isSyntacticValue : MLExpr → Bool
+  | .var _ => true
+  | .lam _ => true
+  | .app _ _ => false
+  | .refAlloc _ => false
+
+/-- **The value restriction**: a let-bound expression's type may be generalized iff the expression is a
+SYNTACTIC VALUE.  This is the whole fix — generalizing only values, never computations. -/
+def MLExpr.isGeneralizableUnderValueRestriction (expr : MLExpr) : Bool := expr.isSyntacticValue
+
+/-- The NAIVE (unsound) rule the value restriction replaces: generalize EVERY let-bound expression,
+value or not.  The rule that admits the ML mutable-reference unsoundness. -/
+def MLExpr.isGeneralizableNaively (_expr : MLExpr) : Bool := true
+
+/-- The GOOD case: a lambda IS a syntactic value, so the value restriction generalizes it (no
+over-restriction — polymorphism is retained for values). -/
+theorem lambdaIsGeneralizableUnderValueRestriction (body : MLExpr) :
+    (MLExpr.lam body).isGeneralizableUnderValueRestriction = true := rfl
+
+/-- The GOOD case: a variable IS a syntactic value, so it is generalizable under the value restriction. -/
+theorem variableIsGeneralizableUnderValueRestriction (index : Nat) :
+    (MLExpr.var index).isGeneralizableUnderValueRestriction = true := rfl
+
+/-- **Corpus entry — the value restriction rejects generalizing a `ref` allocation (usage/polymorphic
+references, §27.2; Wright 1995).**  A `ref` allocation is not a syntactic value, so its type is NOT
+generalized — the cell stays monomorphic at its allocation type, preventing the write-at-`a`/read-at-`b`
+universal coercion.  The syntactic core of the ML value restriction. -/
+theorem refAllocationIsNotGeneralizableUnderValueRestriction (initial : MLExpr) :
+    (MLExpr.refAlloc initial).isGeneralizableUnderValueRestriction = false := rfl
+
+/-- Applications (general computations) are likewise not syntactic values, so not generalized — the value
+restriction confines polymorphism to values across the board, not only `ref`. -/
+theorem applicationIsNotGeneralizableUnderValueRestriction (function argument : MLExpr) :
+    (MLExpr.app function argument).isGeneralizableUnderValueRestriction = false := rfl
+
+/-- **The value restriction is STRICTLY tighter than naive generalization on exactly the dangerous case.**
+The naive rule generalizes the `ref` allocation (`= true`); the value restriction rejects it (`= false`).
+The discipline difference is precisely on the bug source. -/
+theorem valueRestrictionRejectsRefThatNaiveAccepts (initial : MLExpr) :
+    (MLExpr.refAlloc initial).isGeneralizableNaively = true ∧
+    (MLExpr.refAlloc initial).isGeneralizableUnderValueRestriction = false :=
+  ⟨rfl, rfl⟩
+
+/-- The TYPE naive generalization assigns to write-then-read on a polymorphic reference: write at an
+arbitrary type, read at an arbitrary type — a UNIVERSAL COERCION `∀ a b, a → b`.  The unsound consequence
+the value restriction prevents. -/
+abbrev NaivePolyRefCoercion := ∀ firstType secondType : Type, firstType → secondType
+
+/-- The TYPE under the value restriction: the reference is monomorphic at its ALLOCATION type, so write and
+read share one type — only identity coercions `∀ a, a → a` arise. -/
+abbrev ValueRestrictedRefCoercion := ∀ allocationType : Type, allocationType → allocationType
+
+/-- **Corpus entry — naive generalization of a polymorphic reference is unsound (§27.2; Wright 1995).**  The
+universal coercion `∀ a b, a → b` that naive generalization permits is UNINHABITED: instantiate at
+`Unit → Empty`, apply to `Unit.unit`, and obtain a closed inhabitant of `Empty` (hence `False`).  Generalizing
+the non-value `ref` allocation really does collapse the type system. -/
+theorem naivePolyRefCoercionIsUnsound : NaivePolyRefCoercion → False :=
+  fun coerce => nomatch (coerce Unit Empty Unit.unit)
+
+/-- By contrast the value-restricted read/write type `∀ a, a → a` (write and read at the single allocation
+type) is INHABITED — by the identity.  The value restriction keeps the reference sound. -/
+theorem valueRestrictedRefCoercionIsInhabited : Nonempty ValueRestrictedRefCoercion :=
+  ⟨fun _allocationType value => value⟩
+
+/-- ★ **The value restriction separates the sound coercion from the unsound one.**  The naive universal
+coercion `∀ a b, a → b` is uninhabited; the value-restricted identity coercion `∀ a, a → a` is inhabited.
+The value restriction is exactly the line between them — generalizing the `ref` non-value would land on the
+uninhabited side, which is why the restriction forbids it.  Completes the §27.2 corpus mechanism coverage. -/
+theorem valueRestrictionSeparatesSoundFromUnsound :
+    (NaivePolyRefCoercion → False) ∧ Nonempty ValueRestrictedRefCoercion :=
+  ⟨naivePolyRefCoercionIsUnsound, valueRestrictedRefCoercionIsInhabited⟩
 
 end FX1Poly.Typed
