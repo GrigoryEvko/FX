@@ -3,6 +3,7 @@ import FX0Poly.StructuralRecheck
 import FX0Poly.CertRecheck
 import FX0Poly.CertRecheckSound
 import FX0Poly.KernelArity
+import FX0Poly.CertSerialize
 
 /-! # FX1PolyAudit/AuditFX0Poly
    — per-declaration zero-axiom gate for the FX0Poly minimal external checker
@@ -56,3 +57,17 @@ Each gate fails the build if its declaration depends on `propext` / `Quot.sound`
 #assert_no_axioms FX0Poly.recheck_fxArity_smoke_sigma
 #assert_no_axioms FX0Poly.recheck_fxArity_smoke_piWrongArity
 #assert_no_axioms FX0Poly.recheck_fxArity_smoke_unknownTag
+
+-- CertSerialize.lean — the .fx0c binary certificate serializer (FX0-PC.2 serializer half). The flat,
+-- self-delimiting List Nat encoding (tag :: childCount :: children...) is difference-list / accumulator-
+-- threaded (cons-only, NO List.append — whose core append_assoc/append_nil are not propext-free), so the
+-- serializer + its INJECTIVITY (Cert.encode_injective: distinct certs ⟹ distinct byte streams ⟹ unambiguous
+-- external decode) stay zero-axiom. Injectivity is mutual structural injection + Nat.noConfusion.
+#assert_no_axioms FX0Poly.Cert.encodeAux
+#assert_no_axioms FX0Poly.Cert.encodeChildrenAux
+#assert_no_axioms FX0Poly.Cert.encode
+#assert_no_axioms FX0Poly.Cert.encodeAux_inj
+#assert_no_axioms FX0Poly.Cert.encodeChildrenAux_inj
+#assert_no_axioms FX0Poly.Cert.encode_injective
+#assert_no_axioms FX0Poly.Cert.encode_smoke
+#assert_no_axioms FX0Poly.Cert.encode_distinguishes
