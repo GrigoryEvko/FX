@@ -197,6 +197,7 @@ import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
 import FX1Poly.Typed.HasTypeDescFlat
 import FX1Poly.Typed.HasTypeDescFlatInversion
+import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2360,6 +2361,15 @@ gates pin them shut.
 -- Type@(lmax [firstLevel,secondLevel]) via the gen_productCode row.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.inversion
 #assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.inversionProductCodeComponents
+-- FLAT-ENGINE SUBJECT REDUCTION (#935, next increment): the flat twin of HasTypeDesc.subjectReduction.
+-- flatFormerCellStepIsChildCongruence = the flat-former cell heads no root redex (18-arm cases keyed on
+-- flatTypingRuleDescOf, every redex arm contradicted by some-rule ≠ none); FlatDescTelescope.subjectReduction
+-- re-types the premise under stepped children (simpler than the cumulative one — flat cons doesn't extend the
+-- context, so no convTelescope); HasTypeDescFlat.subjectReduction rebuilds flatFormation at the unchanged
+-- classifier (a child step touches neither generator nor levels).
+#assert_no_axioms FX1Poly.Typed.flatFormerCellStepIsChildCongruence
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.subjectReduction
+#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.subjectReduction
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
