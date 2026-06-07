@@ -188,6 +188,7 @@ import FX1Poly.Typed.ConvValueDiscrimination
 import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
+import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -6011,3 +6012,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.growingDivergentTerm_notStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.growingFirstReduct_ne_source
 #assert_no_axioms FX1Poly.Typed.nonSelfLoopingDivergenceExists
+-- SN-112 (TypedNormalizer): the term-layer normalizer keyed DIRECTLY on the grown HasTypeDescPi judgment —
+-- SN-043 (closedStronglyNormalizing) supplies RawTerm.normalize's Acc witness, so typing IS the termination
+-- certificate (no Acc passed by hand). Distinct from firing 67's level-indexed route, the SimplyTypedTermLF
+-- normalForm_typed, and SN-051's formation-engine classifier-side Conv.decidableOfHasTypeDesc. normalForm (the
+-- NF fn) + normalForm_reducesTo (StepStar) + normalForm_isStepNormalForm + normalForm_conv (Conv to NF) +
+-- conv_iff_normalForm_eq (NF is a COMPLETE conversion invariant) + closedConvDecidable (grown-keyed closed-
+-- subject Conv decider, UNCONDITIONAL — grown twin of decidableOfHasTypeDesc). identityApplicationNormalForm
+-- _convReduct = non-vacuity: the normalizer takes the closed β-redex (λx.x)(Type@e) to a NF convertible to its
+-- reduct Type@e (real reduction work on firing 64's piElim derivation). Closes SN-112 (#615).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalForm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalForm_reducesTo
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalForm_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalForm_conv
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.conv_iff_normalForm_eq
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedConvDecidable
+#assert_no_axioms FX1Poly.Typed.identityApplicationNormalForm_convReduct
