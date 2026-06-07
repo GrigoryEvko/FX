@@ -4240,6 +4240,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.RenamingTo.identity_lookup
 #assert_no_axioms FX1Poly.Tier0.RenamingTo.identity_compose
 #assert_no_axioms FX1Poly.Tier0.RenamingTo.compose_identity
+-- The display / weakening renaming scope -> scope+1 (the data-morphism analogue of RawRenaming.weaken): shifts
+-- every variable past the freshly-bound var 0, built as the shift of the identity (so it IS the successor
+-- identity's tail, identity_succ_eq by rfl). weakening_lookup: its action is shiftImage (index -> index+1), via
+-- lookup_mapImages + identity_lookup. The canonical context-PROJECTION morphism = the genuine display-map
+-- representable candidate (not the degenerate iso class). Clean: rides on the shipped mapImages/identity algebra,
+-- needs NO lookup-extensionality (which is the deferred propext-frontier crux for the RMC round-trip laws).
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.weakening
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.weakening_lookup
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.identity_succ_eq
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingCategory
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingCategory_identity_eq
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingCategory_compose_eq

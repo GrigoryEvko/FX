@@ -192,6 +192,29 @@ theorem RenamingTo.compose_identity {sourceScope targetScope : Nat}
   rw [RenamingTo.mapImages_congr (RenamingTo.identity_lookup targetScope) dataRenaming]
   exact RenamingTo.mapImages_id dataRenaming
 
+/-- **The display / weakening renaming `scope ⟶ scope + 1`.**  Shifts every variable past the freshly-bound
+variable 0 — the DATA-morphism analogue of the function-side `RawRenaming.weaken`, built as the shift of the
+identity (so it IS the tail of the successor identity).  This is the canonical context-PROJECTION morphism, the
+representable-map candidate for an eventual representable-map class over `fxBaseRenamingCategory` (the genuine
+display maps, as opposed to the degenerate isomorphism class).  Clean (no lookup-extensionality): its definition
+and laws ride entirely on the shipped `mapImages` / `identity` algebra. -/
+def RenamingTo.weakening (scope : Nat) : RenamingTo (scope + 1) scope :=
+  (RenamingTo.identity scope).mapImages RenamingTo.shiftImage
+
+/-- The weakening renaming reindexes every variable to its successor (`shiftImage`): variable `index` of the
+base scope becomes variable `index + 1` of the extended scope. -/
+theorem RenamingTo.weakening_lookup (scope : Nat) (index : Fin scope) :
+    (RenamingTo.weakening scope).lookup index = RenamingTo.shiftImage index := by
+  show ((RenamingTo.identity scope).mapImages RenamingTo.shiftImage).lookup index =
+    RenamingTo.shiftImage index
+  rw [lookup_mapImages, identity_lookup scope index]
+
+/-- The successor identity decomposes as `cons var0 (weakening scope)` — the identity keeps the freshly-bound
+variable 0 fixed and weakens (shifts) the rest.  Definitional, exhibiting the weakening as the identity's tail. -/
+theorem RenamingTo.identity_succ_eq (scope : Nat) :
+    RenamingTo.identity (scope + 1) =
+      .cons ⟨0, Nat.succ_pos scope⟩ (RenamingTo.weakening scope) := rfl
+
 /-- **The DATA-morphism FX renaming category.**  Objects are scopes (`Nat`), morphisms `source ⟶ target` are
 reified renamings (`RenamingTo target source`).  All three category laws hold STRUCTURALLY (`compose_assoc` /
 `identity_compose` / `compose_identity` by induction over the vector, no `funext`), so — unlike the
