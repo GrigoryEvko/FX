@@ -2040,6 +2040,15 @@ gates pin them shut.
 -- lifting fold, only fully computes on concrete args). Zero-axiom: Step.cong/Step.beta chain + StepStar.refl.
 #assert_no_axioms FX1Poly.Typed.churchTrue_selectsThenBranch
 #assert_no_axioms FX1Poly.Typed.churchFalse_selectsElseBranch
+-- CHURCH-BOOLEAN NON-CONVERTIBILITY (TypedChurchBooleans): the computational distinction is also a DEFINITIONAL
+-- one. churchTrue ≢ churchFalse, proved NOT through their syntax (the bodies differ only in a de Bruijn index,
+-- a propext-risky payload distinction) but through observable behaviour: were they convertible, three layers of
+-- app-congruence (Conv.app_cong) plus the selections would force the non-equal universe codes Type@0 ≡ Type@1,
+-- refuted because distinct universe levels are distinct no-step normal forms (Conv collapses to Eq via
+-- Conv.iff_eq_of_noStep, refuted by the propext-free DecidableEq + decide). The universe-level non-degeneracy
+-- churchTypeZeroCode ≢ churchTypeOneCode is the supporting lemma (the Type@e analogue of boolTrue ≢ boolFalse).
+#assert_no_axioms FX1Poly.Typed.churchTypeZeroCode_notConvertible_churchTypeOneCode
+#assert_no_axioms FX1Poly.Typed.churchTrue_notConvertible_churchFalse
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the

@@ -1,4 +1,5 @@
 import FX1Poly.Typed.TypedLambdaDerivations
+import FX1Poly.Core.ConvCongruence
 
 /-! # Foundation/PolyCell/Typed/TypedChurchBooleans
     — the Church-boolean encoding, typed by the grown engine
@@ -25,9 +26,10 @@ encodings are strongly normalizing.
 
 The significance: the formation-only typed fragment, despite rejecting the primitive boolean constructors,
 DOES type the Church-encoded booleans and proves them terminating — the Π-fragment is computationally
-expressive enough to encode the data it cannot primitively introduce.  (The corresponding β-SELECTION — that
-`churchTrue` applied to `A t f` β-reduces to `t` and `churchFalse` to `f` — and the non-convertibility of the
-two encodings are natural follow-ups; this file establishes the typing + normalization core.)
+expressive enough to encode the data it cannot primitively introduce.  This file then closes the arc: the
+β-SELECTION (`churchTrue` applied to `A t f` β-reduces to `t`, `churchFalse` to `f`) and the resulting
+NON-CONVERTIBILITY `churchTrue ≢ churchFalse` — definitional equality genuinely distinguishes the two
+encodings, through their computation rather than their syntax.
 
 Zero-axiom: every derivation is a direct constructor application; the only non-trivial steps are the nested
 `lmaxAll` level threading (the codomain `Π(t:A).Π(f:A).A` lives at `lmax 0 (lmax 0 0)`) and the `var`-lookup
@@ -166,9 +168,9 @@ A de Bruijn subtlety governs how far this generalizes: `churchFalse`'s body is t
 (`var 0`), which the final `subst0` replaces DIRECTLY, so the selection holds for ARBITRARY (even symbolic)
 branches by computation.  `churchTrue`'s body is the NON-innermost `var 1`, whose resolution threads the
 `subst0` lifting fold — which only fully reduces on CONCRETE closed arguments (it stays stuck on a symbolic
-branch); hence the concrete branches here.  (The universal `churchTrue` selection — provable via a
-substitution lemma rather than computation — and the non-convertibility corollary `churchTrue ≢ churchFalse`
-that follows from the distinct selections are natural follow-ups.)
+branch); hence the concrete branches here.  The non-convertibility corollary `churchTrue ≢ churchFalse` that
+follows from these distinct selections is discharged below; the universal `churchTrue` selection (for ARBITRARY
+branches, provable via a substitution lemma rather than computation) remains a natural follow-up.
 -/
 
 /-- ★ `churchTrue` applied to `Type@0` and the two branches `Type@0` / `Type@1` β-reduces (three steps) to
@@ -222,5 +224,77 @@ theorem churchFalse_selectsElseBranch (flag : UniverseFlag) :
           ((.childCons (universeCodeCell LevelExpr.lzero.lsucc flag) .childNil) : RawTermChildren [0] 0)
           Step.beta))
       (StepStar.trans Step.beta (StepStar.refl _)))
+
+/-! ## Non-convertibility — the two encodings are definitionally distinct
+
+The β-selections show `churchTrue` and `churchFalse` COMPUTE different results on identical inputs.  That
+computational difference forces the two encodings to be NON-CONVERTIBLE, and the proof routes through the
+observable behaviour rather than through the syntax of the two lambda bodies (which differ only in a de Bruijn
+index — a payload distinction that would need a `propext`-risky variable-index inspection to expose directly):
+
+  * applied to identical arguments `Type@0 / Type@0 / Type@1`, were `churchTrue ≡ churchFalse`, congruence of
+    conversion (`Conv.app_cong`, three layers) would make the two applications convertible;
+  * the selections then reduce those applications to `Type@0` and `Type@1` respectively, so transitivity would
+    force `Type@0 ≡ Type@1`;
+  * but distinct universe levels are NOT definitionally equal — their codes are distinct no-step normal forms,
+    so `Conv` collapses to syntactic `Eq` (`Conv.iff_eq_of_noStep`), which the `propext`-free
+    `DecidableEq (RawTerm 0)` refutes.
+
+So the kernel genuinely distinguishes the two Church booleans — through their computational behaviour, the
+value-level discrimination canonicity rests on (compare `ConvValueDiscrimination` for the primitive values).
+Zero-axiom: the only non-`rfl` steps are `Conv.iff_eq_of_noStep`, `noStep_universeCode`, the conversion
+equivalence/congruence lemmas, and a `decide` over the structural `DecidableEq` (no `native_decide`).
+-/
+
+/-- The bare Church-`true` lambda term `λ(A:Type@0). λ(t:A). λ(f:A). t` (body the non-innermost `var 1`). -/
+abbrev churchTrueLambda : RawTerm 0 :=
+  lamCell (lamCell (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))))
+
+/-- The bare Church-`false` lambda term `λ(A:Type@0). λ(t:A). λ(f:A). f` (body the innermost `var 0`). -/
+abbrev churchFalseLambda : RawTerm 0 :=
+  lamCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))
+
+/-- The universe code `Type@0` at the `standard` flag — the type argument and the `then` branch of the
+selection fixtures. -/
+abbrev churchTypeZeroCode : RawTerm 0 := universeCodeCell LevelExpr.lzero UniverseFlag.standard
+
+/-- The universe code `Type@1` at the `standard` flag — the `else` branch of the selection fixtures. -/
+abbrev churchTypeOneCode : RawTerm 0 := universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard
+
+/-- The universe codes `Type@0` and `Type@1` are NOT convertible: distinct universe levels are not
+definitionally equal.  Both are no-step normal forms, so `Conv` collapses to syntactic equality
+(`Conv.iff_eq_of_noStep`), which the `propext`-free `DecidableEq (RawTerm 0)` refutes — the universe-level
+analogue of `boolTrue ≢ boolFalse`. -/
+theorem churchTypeZeroCode_notConvertible_churchTypeOneCode : ¬ Conv churchTypeZeroCode churchTypeOneCode :=
+  fun convertibility =>
+    absurd
+      ((Conv.iff_eq_of_noStep
+          (fun _ step => noStep_universeCode _ step)
+          (fun _ step => noStep_universeCode _ step)).mp convertibility)
+      (by decide)
+
+/-- ★ `churchTrue` and `churchFalse` are NOT convertible — definitional equality distinguishes the two Church
+booleans.  Not because their lambda bodies differ syntactically (`var 1` vs `var 0`, a de Bruijn payload
+distinction), but because they COMPUTE differently: applied to `Type@0 / Type@0 / Type@1` they select `Type@0`
+vs `Type@1`, so a hypothetical `churchTrue ≡ churchFalse` would — by three layers of application congruence
+plus the selections — force the non-equal universe codes `Type@0 ≡ Type@1`, contradicting
+`churchTypeZeroCode_notConvertible_churchTypeOneCode`.  The computational distinction the booleans exist to express is thus
+also a definitional one. -/
+theorem churchTrue_notConvertible_churchFalse : ¬ Conv churchTrueLambda churchFalseLambda := by
+  intro convFunctions
+  have convApplied :
+      Conv (appCell (appCell (appCell churchTrueLambda churchTypeZeroCode) churchTypeZeroCode) churchTypeOneCode)
+           (appCell (appCell (appCell churchFalseLambda churchTypeZeroCode) churchTypeZeroCode) churchTypeOneCode) :=
+    Conv.app_cong
+      (Conv.app_cong
+        (Conv.app_cong convFunctions (Conv.refl _))
+        (Conv.refl _))
+      (Conv.refl _)
+  have convOutputs : Conv churchTypeZeroCode churchTypeOneCode :=
+    Conv.trans
+      (Conv.sym (Conv.fromStepStar (churchTrue_selectsThenBranch UniverseFlag.standard)))
+      (Conv.trans convApplied
+        (Conv.fromStepStar (churchFalse_selectsElseBranch UniverseFlag.standard)))
+  exact churchTypeZeroCode_notConvertible_churchTypeOneCode convOutputs
 
 end FX1Poly.Typed
