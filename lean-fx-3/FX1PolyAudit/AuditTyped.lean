@@ -93,6 +93,7 @@ import FX1Poly.Tier0.FxBaseRenamingVecRMC
 import FX1Poly.Tier0.FxBaseRenamingVecGlobalSections
 import FX1Poly.Tier0.FxBaseRenamingVecSconingPreservation
 import FX1Poly.Tier0.FxBaseSubstVec
+import FX1Poly.Tier0.FxBaseSubstCategory
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4421,6 +4422,28 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.SubstVec.tabulate_lookup
 #assert_no_axioms FX1Poly.Tier0.SubstVec.toRawTermSubst
 #assert_no_axioms FX1Poly.Tier0.SubstVec.toRawTermSubst_tabulate
+-- The TERM-CARRYING RawCategory of contexts-and-substitutions (FxBaseSubstCategory.lean, brick 2 of the
+-- term-carrying CwR arc). Lifts the function-level RawTermSubst algebra onto SubstVec via lookup/ext and assembles
+-- fxBaseSubstCategory : RawCategory (objects = scopes, morphisms source⟶target = SubstVec target source carrying
+-- real RawTerm content — unlike the renaming base's variable reindexings). SubstVec.identity(+identity_lookup) +
+-- compose(+lookup_compose, the genuine subst action: subst secondVec into firstVec's image) + the 3 category laws
+-- via ext: identity_compose (LEFT id = subst-of-var rfl, needs explicit rfl after the reducible-only rw),
+-- compose_identity (RIGHT id via subst_pointwise bridging identity.toRawTermSubst≐RawTermSubst.identity +
+-- subst_identity_apply), compose_assoc (the shipped RawTerm.subst_compose subst-then-subst law + subst_pointwise).
+-- fxBaseSubstCategory + _identity_eq/_compose_eq defeq-sample bridges (the shape the sconing ladder consumes).
+-- Honest scope: the underlying TERM-carrying RawCategory; the representable-map class + CwR axioms + sconing
+-- instances over THIS base are later bricks. All zero-axiom (tabulate/lookup_tabulate + shipped subst lemmas, NO
+-- funext — the whole point of SubstVec).
+#assert_no_axioms FX1Poly.Tier0.SubstVec.identity
+#assert_no_axioms FX1Poly.Tier0.SubstVec.identity_lookup
+#assert_no_axioms FX1Poly.Tier0.SubstVec.compose
+#assert_no_axioms FX1Poly.Tier0.SubstVec.lookup_compose
+#assert_no_axioms FX1Poly.Tier0.SubstVec.identity_compose
+#assert_no_axioms FX1Poly.Tier0.SubstVec.compose_identity
+#assert_no_axioms FX1Poly.Tier0.SubstVec.compose_assoc
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstCategory
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstCategory_identity_eq
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstCategory_compose_eq
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
