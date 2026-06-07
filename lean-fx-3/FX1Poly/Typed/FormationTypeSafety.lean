@@ -59,7 +59,8 @@ abbrev RawTerm.IsFormationCanonicalHead {scope : Nat} (term : RawTerm scope) : P
   RawTerm.headGenerator term = Generator.gen_piTyCode ∨
   RawTerm.headGenerator term = Generator.gen_sigmaTyCode ∨
   RawTerm.headGenerator term = Generator.gen_universeCode ∨
-  RawTerm.headGenerator term = Generator.gen_listCode
+  RawTerm.headGenerator term = Generator.gen_listCode ∨
+  RawTerm.headGenerator term = Generator.gen_optionCode
 
 /-- **A closed formation-typed subject is a step-normal-form.**  The contrapositive of
 `exists_step_of_not_isStepNormalForm` (not-normal ⟹ exists a step) against `HasTypeDesc.subjectAdmitsNoStep`

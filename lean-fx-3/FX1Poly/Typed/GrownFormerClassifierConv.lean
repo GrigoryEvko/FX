@@ -130,4 +130,35 @@ theorem HasTypeDescPi.listFormerNotTypedAtEmptyType {profile : PolyProfile} {sco
     HasTypeDescPi.formerClassifierConvUniverseGeneric typed typingRuleDescOf_listCode rfl
   exact Conv.universeCode_not_emptyTypeCode convToUniverseCode.sym
 
+/-- **An `optionCode` data former is not a member of a Π-type.**  The `gen_optionCode` specialization of the
+grown generic inversion (GTL-13): a closed `Option element` is a TYPE (classifier `Conv` a universe code), and a
+Π-code is not `Conv` a universe code.  The one-child option twin of `listFormerNotTypedAtPiType`, via the
+head-agnostic `formerClassifierConvUniverseGeneric` (no bespoke `invertOptionCode`). -/
+theorem HasTypeDescPi.optionFormerNotTypedAtPiType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {element : RawTerm scope}
+    {outerDomain : RawTerm scope} {outerCodomain : RawTerm (scope + 1)}
+    (typed :
+      HasTypeDescPi profile context (.mkGen .gen_optionCode () (.childCons element .childNil))
+        (piTyCodeCell outerDomain outerCodomain)) :
+    False := by
+  obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
+    HasTypeDescPi.formerClassifierConvUniverseGeneric typed typingRuleDescOf_optionCode rfl
+  exact Conv.piTyCode_not_universeCode convToUniverseCode
+
+/-- **An `optionCode` data former is not a member of the empty type.**  The empty-type twin of
+`optionFormerNotTypedAtPiType`: an `Option element` classifier `Conv` a universe code refutes against the
+empty-type classifier (`Conv.universeCode_not_emptyTypeCode`).  The one-child option arm (GTL-13) of the grown
+closed-consistency canonical forms. -/
+theorem HasTypeDescPi.optionFormerNotTypedAtEmptyType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {element : RawTerm scope}
+    (typed :
+      HasTypeDescPi profile context (.mkGen .gen_optionCode () (.childCons element .childNil))
+        (emptyTypeCell (scope := scope))) :
+    False := by
+  obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
+    HasTypeDescPi.formerClassifierConvUniverseGeneric typed typingRuleDescOf_optionCode rfl
+  exact Conv.universeCode_not_emptyTypeCode convToUniverseCode.sym
+
 end FX1Poly.Typed

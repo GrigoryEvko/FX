@@ -182,10 +182,32 @@ theorem HasTypeDescPi.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Na
                   exact premisesFundamental substitution
                     (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt outputBelowBound)
                     envReducible Generator.gen_listCode_binderShifts_eq)
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer] at isFormation
-          contradiction
+        · by_cases isOptionFormer : generator = .gen_optionCode
+          · subst isOptionFormer
+            obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+            match children with
+            | .childCons element .childNil =>
+                obtain ⟨elementLevel, levelsShape⟩ := DescTelescopePi.oneChildLevel premises
+                subst levelsShape
+                dsimp only [universeFormerOutput]
+                exact fundamentalGenFormationOptionFromTelescopeAtBoundedSucc env bound _context
+                  elementLevel flag
+                  (fun substitution envReducible => by
+                    have memberTelescope := premisesFundamental substitution bound (Nat.le_refl bound)
+                      envReducible Generator.gen_optionCode_binderShifts_eq
+                    have elementMember := memberTelescope.oneChildMember
+                    have elementBelowBound : LevelExpr.denote elementLevel env < bound := by
+                      obtain ⟨_, elementReducible, _⟩ := elementMember
+                      exact universeCodeReducibleAtBounded_belowBound elementReducible
+                    have outputBelowBound :
+                        LevelExpr.denote (lmaxAll [elementLevel]) env < bound := elementBelowBound
+                    exact premisesFundamental substitution
+                      (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt outputBelowBound)
+                      envReducible Generator.gen_optionCode_binderShifts_eq)
+          · exfalso
+            unfold typingRuleDescOf at isFormation
+            rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer] at isFormation
+            contradiction
   · -- nilTelescope
     intro _baseScope _currentDepth _context _flag
     intro _targetScope _substitution _argLevel _argLevelLeBound _env _shapeEq

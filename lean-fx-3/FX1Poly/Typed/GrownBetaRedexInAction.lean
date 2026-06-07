@@ -85,7 +85,9 @@ theorem closedIdentityAppRedex_safety {profile : PolyProfile} :
       RawTerm.headGenerator (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0)
         = Generator.gen_universeCode ∨
       RawTerm.headGenerator (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0)
-        = Generator.gen_listCode) := by
+        = Generator.gen_listCode ∨
+      RawTerm.headGenerator (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0)
+        = Generator.gen_optionCode) := by
   have reductTyped :
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
         (RawTerm.subst0 (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))

@@ -9,6 +9,7 @@ import FX1Poly.Typed.OptionCodeShape
 import FX1Poly.Typed.OptionCodeFormationUnderSubst
 import FX1Poly.Typed.OptionFormerMemberLevelIndexed
 import FX1Poly.Typed.BoundedGenFormationOptionFromTelescope
+import FX1Poly.Typed.OptionFormationSmoke
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescElim
@@ -521,6 +522,14 @@ gates pin them shut.
 -- Type@1` — the honest GTL-11 payoff exhibited (not merely "compiles"), locked in as regression protection.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listFormationViaGenArm
 #assert_no_axioms FX1Poly.Typed.listFormationSmoke
+-- GTL-13 part 2: the optionCode formation row landed (typingRuleDescOf + the ~18-site canonical-forms cascade);
+-- the grown engine now types `Option A : Type@(level A)`.  The reconstruction + concrete `Option (Type@0) :
+-- Type@1` witness, the option twin of listFormationViaGenArm/listFormationSmoke.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.optionFormationViaGenArm
+#assert_no_axioms FX1Poly.Typed.optionFormationSmoke
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_optionCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.optionFormerNotTypedAtPiType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.optionFormerNotTypedAtEmptyType
 #assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_inj
 #assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_noStep_of_childrenNoStep
 #assert_no_axioms FX1Poly.Typed.rename_sigmaTyCodeCell
@@ -596,7 +605,7 @@ gates pin them shut.
 -- reconstructs each head, so the head enumeration is CORRECT, not accidental). optionCode (GTL-13) is now a
 -- near-mechanical clone of these same sites. Canonicity SN-047/48/49 still needs the SEPARATE empty-candidate
 -- model (CON-A3 #810, sconing leg) — data FORMATION (this) is distinct from data CANONICITY.
-#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_isPiOrSigmaOrListCode
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_isPiOrSigmaOrListOrOptionCode
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_listCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc
 #assert_no_axioms FX1Poly.Typed.DescTelescope

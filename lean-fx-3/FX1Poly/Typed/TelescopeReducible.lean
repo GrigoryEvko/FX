@@ -87,4 +87,11 @@ the relation. -/
 theorem Generator.gen_listCode_binderShifts_eq :
     Generator.gen_listCode.binderShifts = consecutiveShifts 0 1 := rfl
 
+/-- **An `optionCode` former's children spine is `consecutiveShifts`-indexed.**  The one-child option twin of
+`gen_listCode_binderShifts_eq`: `gen_optionCode.binderShifts = [0] = consecutiveShifts 0 1` definitionally — the
+bridge the `genFormationPi` arm's `gen_optionCode` branch (GTL-13) uses to feed the option former's one-child
+telescope into the relation. -/
+theorem Generator.gen_optionCode_binderShifts_eq :
+    Generator.gen_optionCode.binderShifts = consecutiveShifts 0 1 := rfl
+
 end FX1Poly.Typed

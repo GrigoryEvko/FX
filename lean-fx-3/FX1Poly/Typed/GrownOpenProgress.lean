@@ -79,7 +79,7 @@ theorem HasTypeDescPi.openNormalSubjectCanonicalOrNeutral {profile : PolyProfile
     have functionNormal : RawTerm.isStepNormalForm functionTerm :=
       appNormal_functionNormal functionTerm argument armNormal
     rcases functionIH armWf functionNormal with
-        (headLam | headPi | headSigma | headUniverse | headList) | functionNeutral
+        (headLam | headPi | headSigma | headUniverse | headList | headOption) | functionNeutral
     · exfalso
       obtain ⟨body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
       rw [bodyEq] at armNormal
@@ -100,6 +100,10 @@ theorem HasTypeDescPi.openNormalSubjectCanonicalOrNeutral {profile : PolyProfile
       obtain ⟨_element, listEq⟩ := eq_listCodeCell_of_headGenerator headList
       rw [listEq] at functionTyped
       exact HasTypeDescPi.listFormerNotTypedAtPiType functionTyped
+    · exfalso
+      obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
+      rw [optionEq] at functionTyped
+      exact HasTypeDescPi.optionFormerNotTypedAtPiType functionTyped
     · exact Or.inr (IsNeutral.app functionNeutral)
   · intro _armScope _armContext generator _payload _children _levels _flag _rule isFormation _premises
       _premisesIH _armWf _armNormal
@@ -108,11 +112,13 @@ theorem HasTypeDescPi.openNormalSubjectCanonicalOrNeutral {profile : PolyProfile
     · by_cases isSigma : generator = Generator.gen_sigmaTyCode
       · exact Or.inl (Or.inr (Or.inr (Or.inl (by subst isSigma; rfl))))
       · by_cases isList : generator = Generator.gen_listCode
-        · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (by subst isList; rfl)))))
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg isPi, if_neg isSigma, if_neg isList] at isFormation
-          contradiction
+        · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by subst isList; rfl))))))
+        · by_cases isOption : generator = Generator.gen_optionCode
+          · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isOption; rfl))))))
+          · exfalso
+            unfold typingRuleDescOf at isFormation
+            rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption] at isFormation
+            contradiction
   · intro _armBaseScope _armCurrentDepth _armContext _armFlag
     exact True.intro
   · intro _armBaseScope _armCurrentDepth _armRestShifts _armContext _armHead _armHeadLevel

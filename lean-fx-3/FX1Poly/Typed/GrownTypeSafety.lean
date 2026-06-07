@@ -75,7 +75,8 @@ abbrev RawTerm.IsGrownCanonicalHead {scope : Nat} (term : RawTerm scope) : Prop 
   RawTerm.headGenerator term = Generator.gen_piTyCode ∨
   RawTerm.headGenerator term = Generator.gen_sigmaTyCode ∨
   RawTerm.headGenerator term = Generator.gen_universeCode ∨
-  RawTerm.headGenerator term = Generator.gen_listCode
+  RawTerm.headGenerator term = Generator.gen_listCode ∨
+  RawTerm.headGenerator term = Generator.gen_optionCode
 
 /-- **Progress (unconditional).**  A closed grown-typed term is a canonical value (a canonical head AND a normal
 form) or it takes a `Step` — there are no stuck closed grown-typed terms.  Dispatches on decidable normality: a

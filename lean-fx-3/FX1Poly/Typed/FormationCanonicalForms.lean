@@ -51,14 +51,16 @@ theorem HasTypeDesc.subjectIsVariableOrFormerHead {profile : PolyProfile} {scope
     RawTerm.headGenerator subject = Generator.gen_piTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_universeCode ∨
-    RawTerm.headGenerator subject = Generator.gen_listCode := by
+    RawTerm.headGenerator subject = Generator.gen_listCode ∨
+    RawTerm.headGenerator subject = Generator.gen_optionCode := by
   refine HasTypeDesc.rec
     (motive_1 := fun {_scope} _context subject _classifier _typed =>
       (∃ index : Fin _scope, subject = variableCell index) ∨
       RawTerm.headGenerator subject = Generator.gen_piTyCode ∨
       RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
       RawTerm.headGenerator subject = Generator.gen_universeCode ∨
-      RawTerm.headGenerator subject = Generator.gen_listCode)
+      RawTerm.headGenerator subject = Generator.gen_listCode ∨
+      RawTerm.headGenerator subject = Generator.gen_optionCode)
     (motive_2 := fun _context _levels _flag _children _telescope => True)
     ?var ?conv ?universeFormation ?genFormation ?nilTelescope ?consTelescope typed
   · intro _scope _context index
@@ -74,11 +76,13 @@ theorem HasTypeDesc.subjectIsVariableOrFormerHead {profile : PolyProfile} {scope
     · by_cases isSigma : generator = Generator.gen_sigmaTyCode
       · exact Or.inr (Or.inr (Or.inl (by subst isSigma; rfl)))
       · by_cases isList : generator = Generator.gen_listCode
-        · exact Or.inr (Or.inr (Or.inr (Or.inr (by subst isList; rfl))))
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg isPi, if_neg isSigma, if_neg isList] at isFormation
-          contradiction
+        · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by subst isList; rfl)))))
+        · by_cases isOption : generator = Generator.gen_optionCode
+          · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isOption; rfl)))))
+          · exfalso
+            unfold typingRuleDescOf at isFormation
+            rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption] at isFormation
+            contradiction
   · intro _baseScope _currentDepth _context _flag
     exact True.intro
   · intro _baseScope _currentDepth _restShifts _context _head _headLevel _restLevels _flag _rest
@@ -96,7 +100,8 @@ theorem HasTypeDesc.closedSubjectHeadIsFormerOrUniverse {profile : PolyProfile}
     RawTerm.headGenerator subject = Generator.gen_piTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_universeCode ∨
-    RawTerm.headGenerator subject = Generator.gen_listCode := by
+    RawTerm.headGenerator subject = Generator.gen_listCode ∨
+    RawTerm.headGenerator subject = Generator.gen_optionCode := by
   rcases HasTypeDesc.subjectIsVariableOrFormerHead typed with ⟨index, _⟩ | rest
   · exact index.elim0
   · exact rest
@@ -130,11 +135,12 @@ theorem HasTypeDesc.noClosedFormationTermAtEmptyType {profile : PolyProfile} {su
       reclassifierTyped _subjectIH _reclassifierIH headEq closed
     rcases HasTypeDesc.subjectIsVariableOrFormerHead reclassifierTyped with ⟨index, _⟩ | headIsFormer
     · exact closed index
-    · rcases headIsFormer with isPi | isSigma | isUniverse | isList
+    · rcases headIsFormer with isPi | isSigma | isUniverse | isList | isOption
       · exact Generator.noConfusion (headEq ▸ isPi)
       · exact Generator.noConfusion (headEq ▸ isSigma)
       · exact Generator.noConfusion (headEq ▸ isUniverse)
       · exact Generator.noConfusion (headEq ▸ isList)
+      · exact Generator.noConfusion (headEq ▸ isOption)
   · intro _scope _context _levelExpr _flag headEq _closed
     exact Generator.noConfusion headEq
   · intro _scope _context generator _payload _children levels flag rule isFormation _premises

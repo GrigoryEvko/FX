@@ -46,12 +46,13 @@ theorem lamCell_isNotType {profile : PolyProfile} {scope : Nat}
     ¬ IsTypeDesc profile context (lamCell body) := by
   rintro ⟨levelExpr, flag, typed⟩
   rcases HasTypeDesc.subjectIsVariableOrFormerHead typed with
-    ⟨index, subjectEq⟩ | headIsPi | headIsSigma | headIsUniverse | headIsList
+    ⟨index, subjectEq⟩ | headIsPi | headIsSigma | headIsUniverse | headIsList | headIsOption
   · exact Generator.noConfusion (congrArg RawTerm.headGenerator subjectEq)
   · exact Generator.noConfusion headIsPi
   · exact Generator.noConfusion headIsSigma
   · exact Generator.noConfusion headIsUniverse
   · exact Generator.noConfusion headIsList
+  · exact Generator.noConfusion headIsOption
 
 /-- **A grown-engine typing derivation in a genuinely ill-formed context.**  In `Γ = (.empty).cons (λx.x)`
 — ill-formed because its binding `λx.x` is not a formation type (`lamCell_isNotType`) — the variable `var 0` is

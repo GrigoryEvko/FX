@@ -145,10 +145,21 @@ theorem formationFundamentalVectorOfAllVariablesPositive {profile : PolyProfile}
               exact IsReducibleMemberAt.listFormerFromTelescope predLevel
                 (premisesFundamental substitution predLevel env
                   Generator.gen_listCode_binderShifts_eq)
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer] at isFormation
-          contradiction
+        · by_cases isOptionFormer : generator = .gen_optionCode
+          · subst isOptionFormer
+            obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+            match children with
+            | .childCons _element .childNil =>
+                obtain ⟨_elementLevel, levelsShape⟩ := DescTelescope.oneChildLevel premises
+                subst levelsShape
+                dsimp only [universeFormerOutput]
+                exact IsReducibleMemberAt.optionFormerFromTelescope predLevel
+                  (premisesFundamental substitution predLevel env
+                    Generator.gen_optionCode_binderShifts_eq)
+          · exfalso
+            unfold typingRuleDescOf at isFormation
+            rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer] at isFormation
+            contradiction
   · -- nilTelescope: the empty telescope is trivially reducible
     intro _baseScope _currentDepth _context _flag
     intro _targetScope _substitution _envLevels _predLevel _env _shapeEq

@@ -53,7 +53,7 @@ theorem HasTypeDescPi.closedNormalFunctionIsLambda {profile : PolyProfile} {subj
     ∃ body : RawTerm 1, subject = lamCell body := by
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with
-      headLam | headPi | headSigma | headUniverse | headList
+      headLam | headPi | headSigma | headUniverse | headList | headOption
   · exact eq_lamCell_of_headGenerator headLam
   · obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
     rw [piEq] at typed
@@ -67,6 +67,9 @@ theorem HasTypeDescPi.closedNormalFunctionIsLambda {profile : PolyProfile} {subj
   · obtain ⟨_element, listEq⟩ := eq_listCodeCell_of_headGenerator headList
     rw [listEq] at typed
     exact (HasTypeDescPi.listFormerNotTypedAtPiType typed).elim
+  · obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
+    rw [optionEq] at typed
+    exact (HasTypeDescPi.optionFormerNotTypedAtPiType typed).elim
 
 /-- **Canonical forms at a universe.**  A closed normal term whose classifier is a universe
 (`universeCodeCell levelExpr flag`) — i.e. a closed normal TYPE — is a type FORMER: its head is `gen_piTyCode`,
@@ -81,7 +84,8 @@ theorem HasTypeDescPi.closedNormalTypeIsFormer {profile : PolyProfile} {subject 
     RawTerm.headGenerator subject = Generator.gen_piTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_universeCode ∨
-    RawTerm.headGenerator subject = Generator.gen_listCode := by
+    RawTerm.headGenerator subject = Generator.gen_listCode ∨
+    RawTerm.headGenerator subject = Generator.gen_optionCode := by
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with headLam | rest
   · obtain ⟨body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
