@@ -181,6 +181,7 @@ import FX1Poly.Typed.ClosedLevelIndexed
 import FX1Poly.Typed.TypeFundamentalLevelIndexed
 import FX1Poly.Typed.LeveledContext
 import FX1Poly.Typed.ClosedSNSmoke
+import FX1Poly.Typed.UntypedOmegaNotStronglyNormalizing
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -1865,6 +1866,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.closedNestedPiOverSigma_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.closedNestedSigmaOverPi_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.closedNestedPiOverPi_stronglyNormalizing
+-- The SN-043 TYPING HYPOTHESIS IS ESSENTIAL (UntypedOmegaNotStronglyNormalizing): the closed smokes above
+-- show every well-typed closed term is SN; this is the converse witness that typing is doing real work. The
+-- raw Ω = (λx.x x)(λx.x x) is a closed RAW term that β-steps to itself (omegaCombinator_betaSelfStep), hence
+-- is NOT SN (omegaCombinator_notStronglyNormalizing, via accessibleElementNotSelfRelated: a self-looping
+-- element cannot be Acc). Ω is untypable, so SN-043 rightly excludes it. The headline records the sharper
+-- non-closure fact: λx.x x IS SN (selfApplicationLambda_stronglyNormalizing — a closed normal form) yet its
+-- self-application is not, so SN is NOT preserved under application — the β-redex side condition discharged by
+-- the reducibility argument is load-bearing, not decoration.
+#assert_no_axioms FX1Poly.Typed.accessibleElementNotSelfRelated
+#assert_no_axioms FX1Poly.Typed.omegaCombinator_betaSelfStep
+#assert_no_axioms FX1Poly.Typed.omegaCombinator_notStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.selfApplicationBody_noStep
+#assert_no_axioms FX1Poly.Typed.selfApplicationLambda_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.applicationOfStronglyNormalizingNotAlwaysStronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
