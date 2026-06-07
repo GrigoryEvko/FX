@@ -150,4 +150,77 @@ theorem churchFalse_stronglyNormalizing {profile : PolyProfile} (flag : Universe
       (lamCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))) : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing (churchFalse_hasTypeDescPi (profile := profile) flag)
 
+/-! ## β-selection — the Church booleans COMPUTE the correct branch
+
+Beyond typing and normalization, the Church booleans must COMPUTE: applied to a type and two branches, the
+encoding selects the right one.  This is the genuine point of the encoding — the polymorphic Π-fragment
+expresses booleans AND its β-reduction realizes the eliminator.
+
+Applied to `Type@0` (the type argument), `Type@0` (the `then` branch) and `Type@1` (the `else` branch), the
+two encodings reduce — in three β-steps each (two under the application's function-position congruence, then
+the outer β) — to DIFFERENT results: `churchTrue` to the `then` branch `Type@0`, `churchFalse` to the `else`
+branch `Type@1`.  So on identical inputs the two encodings compute distinct selections — the booleans are
+computationally distinguished, not merely distinct syntax.
+
+A de Bruijn subtlety governs how far this generalizes: `churchFalse`'s body is the INNERMOST variable
+(`var 0`), which the final `subst0` replaces DIRECTLY, so the selection holds for ARBITRARY (even symbolic)
+branches by computation.  `churchTrue`'s body is the NON-innermost `var 1`, whose resolution threads the
+`subst0` lifting fold — which only fully reduces on CONCRETE closed arguments (it stays stuck on a symbolic
+branch); hence the concrete branches here.  (The universal `churchTrue` selection — provable via a
+substitution lemma rather than computation — and the non-convertibility corollary `churchTrue ≢ churchFalse`
+that follows from the distinct selections are natural follow-ups.)
+-/
+
+/-- ★ `churchTrue` applied to `Type@0` and the two branches `Type@0` / `Type@1` β-reduces (three steps) to
+the FIRST branch `Type@0` — the encoding selects the `then` branch.  Concrete branches: the non-innermost
+body `var 1` only resolves through the `subst0` fold on concrete closed arguments. -/
+theorem churchTrue_selectsThenBranch (flag : UniverseFlag) :
+    StepStar
+      (appCell (appCell (appCell
+          (lamCell (lamCell (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3)))))
+          (universeCodeCell LevelExpr.lzero flag))
+          (universeCodeCell LevelExpr.lzero flag))
+        (universeCodeCell LevelExpr.lzero.lsucc flag))
+      (universeCodeCell LevelExpr.lzero flag) :=
+  StepStar.trans
+    (Step.cong .gen_app ()
+      (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
+        ((.childCons (universeCodeCell LevelExpr.lzero.lsucc flag) .childNil) : RawTermChildren [0] 0)
+        (Step.cong .gen_app ()
+          (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
+            ((.childCons (universeCodeCell LevelExpr.lzero flag) .childNil) : RawTermChildren [0] 0)
+            Step.beta))))
+    (StepStar.trans
+      (Step.cong .gen_app ()
+        (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
+          ((.childCons (universeCodeCell LevelExpr.lzero.lsucc flag) .childNil) : RawTermChildren [0] 0)
+          Step.beta))
+      (StepStar.trans Step.beta (StepStar.refl _)))
+
+/-- ★ `churchFalse` applied to the SAME arguments β-reduces (three steps) to the SECOND branch `Type@1` — the
+encoding selects the `else` branch.  Together with `churchTrue_selectsThenBranch`, on identical inputs the two
+encodings compute DIFFERENT results (`Type@0` vs `Type@1`): the booleans are computationally distinguished. -/
+theorem churchFalse_selectsElseBranch (flag : UniverseFlag) :
+    StepStar
+      (appCell (appCell (appCell
+          (lamCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
+          (universeCodeCell LevelExpr.lzero flag))
+          (universeCodeCell LevelExpr.lzero flag))
+        (universeCodeCell LevelExpr.lzero.lsucc flag))
+      (universeCodeCell LevelExpr.lzero.lsucc flag) :=
+  StepStar.trans
+    (Step.cong .gen_app ()
+      (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
+        ((.childCons (universeCodeCell LevelExpr.lzero.lsucc flag) .childNil) : RawTermChildren [0] 0)
+        (Step.cong .gen_app ()
+          (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
+            ((.childCons (universeCodeCell LevelExpr.lzero flag) .childNil) : RawTermChildren [0] 0)
+            Step.beta))))
+    (StepStar.trans
+      (Step.cong .gen_app ()
+        (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
+          ((.childCons (universeCodeCell LevelExpr.lzero.lsucc flag) .childNil) : RawTermChildren [0] 0)
+          Step.beta))
+      (StepStar.trans Step.beta (StepStar.refl _)))
+
 end FX1Poly.Typed

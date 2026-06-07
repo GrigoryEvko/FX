@@ -2032,6 +2032,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchTrue_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.churchFalse_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.churchFalse_stronglyNormalizing
+-- CHURCH-BOOLEAN β-SELECTION (TypedChurchBooleans): beyond typing+SN, the encodings COMPUTE the right branch.
+-- Applied to Type@0 and branches Type@0/Type@1, churchTrue β-reduces (3 steps: 2 under app-function congruence
+-- + outer β) to the THEN branch Type@0, churchFalse to the ELSE branch Type@1 — DIFFERENT results on identical
+-- inputs, so the booleans are computationally distinguished. De Bruijn note: churchFalse's body is the
+-- innermost var 0 (substitutes directly, holds symbolically); churchTrue's body is var 1 (threads the subst0
+-- lifting fold, only fully computes on concrete args). Zero-axiom: Step.cong/Step.beta chain + StepStar.refl.
+#assert_no_axioms FX1Poly.Typed.churchTrue_selectsThenBranch
+#assert_no_axioms FX1Poly.Typed.churchFalse_selectsElseBranch
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
