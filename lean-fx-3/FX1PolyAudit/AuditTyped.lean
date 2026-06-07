@@ -36,6 +36,7 @@ import FX1Poly.Typed.HasTypeDescPiApplication
 import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ConvFlatCodeInjectivity
+import FX1Poly.Typed.ConvDataCodeInjectivity
 import FX1Poly.Typed.EmptyTypeCodeConvRigidity
 import FX1Poly.Typed.EmptyTypeValueInversion
 import FX1Poly.Typed.FormationCanonicalForms
@@ -1070,6 +1071,25 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.equivCode_inj
 #assert_no_axioms FX1Poly.Typed.Conv.equivCode_cong
 #assert_no_axioms FX1Poly.Typed.Conv.equivCode_iff
+-- COMPLETING the Conv-injectivity arc over the type-code formers: the UNARY data formers list/option
+-- (one child) and the TERNARY identity former id (type code + two endpoint terms). Same SN-free recipe
+-- (head-stability via Step.from_<former> + StepStar.Join unpack + Conv.ofChildren). With the Π/Σ
+-- (#865/866) and flat-binary (#947) files, every congruence-only type-code former now has Conv-inj/cong/iff.
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_listCodeGeneral
+#assert_no_axioms FX1Poly.Typed.listCodeCell_inj
+#assert_no_axioms FX1Poly.Typed.Conv.listCode_inj
+#assert_no_axioms FX1Poly.Typed.Conv.listCode_cong
+#assert_no_axioms FX1Poly.Typed.Conv.listCode_iff
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_optionCodeGeneral
+#assert_no_axioms FX1Poly.Typed.optionCodeCell_inj
+#assert_no_axioms FX1Poly.Typed.Conv.optionCode_inj
+#assert_no_axioms FX1Poly.Typed.Conv.optionCode_cong
+#assert_no_axioms FX1Poly.Typed.Conv.optionCode_iff
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_idCodeGeneral
+#assert_no_axioms FX1Poly.Typed.idCodeCell_inj
+#assert_no_axioms FX1Poly.Typed.Conv.idCode_inj
+#assert_no_axioms FX1Poly.Typed.Conv.idCode_cong
+#assert_no_axioms FX1Poly.Typed.Conv.idCode_iff
 
 /-! ### TYPE-CODE DISJOINTNESS (rigidity), SN-FREE — distinct type formers are non-convertible.
     The companion to injectivity: together they give full type-code RIGIDITY (the canonicity
