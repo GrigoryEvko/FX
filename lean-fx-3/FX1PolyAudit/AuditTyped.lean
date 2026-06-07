@@ -200,6 +200,7 @@ import FX1Poly.Typed.HasTypeDescFlatInversion
 import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
 import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescFlatWeakening
+import FX1Poly.Typed.HasTypeDescFlatSubstitution
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2408,6 +2409,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.FlatDescTelescope.renameRespectingTelescope
 #assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.weakenUnderBinding
+-- FLAT-ENGINE SUBSTITUTION (#938, P6 β-engine): the flat twin of HasTypeDescSubstitution, completing the flat
+-- structural-metatheory quartet (SR/SN/weakening/substitution). FlatDescTelescope.substRespectingTelescope is
+-- DRAMATICALLY lighter than the cumulative one — flat cons doesn't extend the context, so NO iterateLiftRaw, NO
+-- 0/successor split, NO weakenUnderBinding (the tail recurses with the SAME substitution-condition);
+-- HasTypeDescFlat.substRespectingContext reuses it + reconstructs the cell table-generically;
+-- substituteUnderBinding is the subst0 β-corollary (ambient singleton split, mirrors the cumulative proof).
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.substRespectingTelescope
+#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.substituteUnderBinding
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
