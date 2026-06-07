@@ -1,4 +1,5 @@
 import FX1Poly.Modal.UsageDiscipline
+import FX1Poly.Modal.GradedTypingGeneric
 import FX1Poly.Typed.GrownUniverseConsistency
 
 /-! # FX1Poly/Typed/KnownUnsoundnessCorpus
@@ -10,8 +11,12 @@ rejected test."  §27.2 catalogs the known type-theory unsoundnesses from the li
 corpus a single regression set that grows-never-shrinks and blocks all releases.  This file IS that corpus
 for the FX1Poly kernel: it assembles the shipped zero-axiom REJECTION witnesses for every cataloged bug the
 current kernel can express, records the remaining catalog entries as an HONEST machine-checked pending ledger
-(their dimension is not yet engine-typed — not a silent omission), and strengthens the dependent-type entry
-with genuinely-new acyclicity content.
+(their dimension is not yet engine-typed — not a silent omission), strengthens the dependent-type entry
+with genuinely-new acyclicity content (Part 1), and — now that the security graded judgment ships
+(`FX1Poly.Modal.HasGradeOver` over `fxSecuritySemiring`) — adds the FIRST security-dimension noninterference
+witnesses (Part 5): the explicit-flow rejection (no laundering a secret to public by direct use) and the
+application-form implicit-flow rejection (a secret selector's secrecy cannot be laundered through a
+selection).  The native-`if` surface of the cataloged implicit-flow bug stays honestly pending.
 
 ## The §27.2 catalog (`KnownTypeTheoryBug`)
 
@@ -192,8 +197,13 @@ polymorphic mutable references in the kernel. -/
 theorem mlValueRestrictionBug_isPending :
     KnownTypeTheoryBug.mlValueRestriction.isEncodableNow = false := rfl
 
-/-- Ledger fact (HONEST pending): implicit flow via branch on secret is NOT yet encodable — the graded
-engine has no branch construct over secret-graded data. -/
+/-- Ledger fact (HONEST pending): implicit flow via branch on secret is NOT yet encodable AS THE
+CATALOGED NATIVE-BRANCH BUG — the graded engine has no native `if` construct whose grade rule joins the
+scrutinee's security grade into the branches.  (The implicit-flow MECHANISM — a secret SELECTOR
+controlling the result — IS already defended in its application form: see Part 5's
+`securitySelectorAppCannotLaunderSelector`, where the App-scaling rule propagates a classified selector's
+grade into the result so it cannot be laundered to public.  The pending surface is specifically the
+native `if`.) -/
 theorem implicitFlowBug_isPending :
     KnownTypeTheoryBug.implicitFlowBranchOnSecret.isEncodableNow = false := rfl
 
@@ -220,5 +230,133 @@ theorem corpusNonVacuous :
   ⟨atkey_rejected,
     fun profile =>
       corpusRejectsTypeInType (profile := profile) LevelExpr.lzero UniverseFlag.standard⟩
+
+/-! ## Part 5 — security-dimension noninterference witnesses (the first §27.2 security entries)
+
+Until now the §27.2 corpus carried witnesses only for the usage and type dimensions; the three security
+rows (`implicitFlowBranchOnSecret`, `constantTimeSecretMemoryAccess`) stayed pending for lack of a
+dimension that could even STATE them.  With the security graded judgment shipped
+(`FX1Poly.Modal.HasGradeOver` over `fxSecuritySemiring`, `unclassified < classified`), the
+NONINTERFERENCE core IS now witnessable — these are the first security-dimension rejections in the
+corpus.  They are positive metatheory content (like Part 1's universe acyclicity), not new catalog
+constructors.
+
+The security grade vector records the secrecy level at which each binding is used; the var rule fixes a
+used variable's grade to `R.one = classified` (no subsumption can lower it), and the App-scaling rule
+`functionGrades + binderGrade · argumentGrades` adds the function's grades directly — so a classified
+SELECTOR's secrecy `+`-poisons the result (`classified + a = classified`).  Together: a secret cannot be
+laundered to public, neither by direct use (explicit flow) nor by controlling a selection (the
+application form of implicit flow).
+
+  * `securityVarUsedIsClassified` — baseline: a directly-used variable IS graded `classified` (the var
+    rule at `fxSecuritySemiring`).
+  * **`securityDirectUseCannotBePublic`** — the EXPLICIT-flow rejection (Denning-Denning's direct case):
+    that same used variable canNOT be graded `unclassified`; `invertVar` forces the grade to `R.one =
+    classified` and `unclassified ≠ classified`.  No laundering a secret to public by direct use.
+  * `securitySelectorAppResultIsClassified` — the IMPLICIT-flow mechanism, positive: applying a
+    classified selector `s` (a Church-style chooser at function type) to a public value grades the
+    result `classified` at the selector position — the App-scaling rule propagates the selector's
+    secrecy into the result.
+  * **`securitySelectorAppCannotLaunderSelector`** — the IMPLICIT-flow rejection: that application
+    canNOT be graded with the selector position `unclassified`; the App-scaled position-1 grade is
+    `one + binderGrade · zero = classified` (poisoned), so the secret that controlled the selection
+    cannot be laundered to public.  This is the application form of "implicit flow via branch on secret"
+    (`if` is Church-encoded as application); the native-`if` catalog surface stays pending
+    (`implicitFlowBug_isPending`).
+-/
+
+/-- Baseline: a directly-used variable IS graded `classified` (`= R.one`) at `fxSecuritySemiring` — the
+var rule with the security semiring's unit. -/
+theorem securityVarUsedIsClassified :
+    HasGradeOver fxSecuritySemiring [GTypeOver.base]
+        (GradeVectorOver.single fxSecuritySemiring 1 0 SecurityGrade.classified)
+        (GradedLambda.var 0) GTypeOver.base :=
+  HasGradeOver.var (R := fxSecuritySemiring) [GTypeOver.base] 0 GTypeOver.base rfl
+
+/-- **Corpus entry — explicit information-flow leak rejected (security, §27.2 / §12.2; Denning-Denning
+1977).**  A directly-used secret variable canNOT be graded `unclassified` (public): the var rule fixes
+its grade to `R.one = classified` and there is no subsumption to lower it, so `unclassified =
+classified` — refuted by `SecurityGrade.noConfusion`.  The grade-level noninterference baseline: a
+secret cannot be laundered to public by direct use (only an explicit `declassify`, absent from this
+calculus, could). -/
+theorem securityDirectUseCannotBePublic :
+    ¬ HasGradeOver fxSecuritySemiring [GTypeOver.base]
+        (GradeVectorOver.single fxSecuritySemiring 1 0 SecurityGrade.unclassified)
+        (GradedLambda.var 0) GTypeOver.base := by
+  intro typed
+  obtain ⟨_lookupOk, gradesEq⟩ := HasGradeOver.invertVar typed
+  have headEq : SecurityGrade.unclassified = fxSecuritySemiring.one := by
+    have reduced :
+        GradeVectorOver.cons SecurityGrade.unclassified GradeVectorOver.nil =
+          GradeVectorOver.cons fxSecuritySemiring.one GradeVectorOver.nil := gradesEq
+    exact (GradeVectorOver.cons.inj reduced).1
+  exact SecurityGrade.noConfusion headEq
+
+/-- The implicit-flow MECHANISM, positive: applying a classified selector `s` (index 1, a chooser at
+function type) to a public base value `a` (index 0) grades the result `classified` at the selector
+position — the App-scaling rule `functionGrades + binderGrade · argumentGrades` carries the selector's
+secrecy into the result.  `s a` grades both positions `classified`. -/
+theorem securitySelectorAppResultIsClassified :
+    HasGradeOver fxSecuritySemiring
+        [GTypeOver.base, GTypeOver.arrow SecurityGrade.classified GTypeOver.base GTypeOver.base]
+        (GradeVectorOver.cons SecurityGrade.classified
+          (GradeVectorOver.cons SecurityGrade.classified GradeVectorOver.nil))
+        (GradedLambda.app (GradedLambda.var 1) (GradedLambda.var 0)) GTypeOver.base :=
+  HasGradeOver.app (R := fxSecuritySemiring)
+    [GTypeOver.base, GTypeOver.arrow SecurityGrade.classified GTypeOver.base GTypeOver.base]
+    SecurityGrade.classified GTypeOver.base GTypeOver.base
+    (GradeVectorOver.single fxSecuritySemiring 2 1 fxSecuritySemiring.one)
+    (GradeVectorOver.single fxSecuritySemiring 2 0 fxSecuritySemiring.one)
+    (GradedLambda.var 1) (GradedLambda.var 0)
+    (HasGradeOver.var (R := fxSecuritySemiring) _ 1
+      (GTypeOver.arrow SecurityGrade.classified GTypeOver.base GTypeOver.base) rfl)
+    (HasGradeOver.var (R := fxSecuritySemiring) _ 0 GTypeOver.base rfl)
+
+/-- **Corpus entry — implicit information-flow leak rejected (security, §27.2 / §12.2; the application
+form of "implicit flow via branch on secret").**  The selector-application `s a` canNOT be graded with
+the selector position `unclassified`: `invertApp` + `invertVar` fix the App-scaled position-1 grade to
+`one + binderGrade · zero`, which `classified`-poisons to `classified` for EVERY binder grade — so the
+claimed `unclassified` forces `unclassified = classified`, refuted by `SecurityGrade.noConfusion`.  A
+secret that CONTROLS a selection (Church-encoded branching is application) cannot be laundered to public
+through the result.  The native-`if` catalog surface remains pending (`implicitFlowBug_isPending`); this
+is the application-form defense the App-scaling rule already provides. -/
+theorem securitySelectorAppCannotLaunderSelector :
+    ¬ HasGradeOver fxSecuritySemiring
+        [GTypeOver.base, GTypeOver.arrow SecurityGrade.classified GTypeOver.base GTypeOver.base]
+        (GradeVectorOver.cons SecurityGrade.classified
+          (GradeVectorOver.cons SecurityGrade.unclassified GradeVectorOver.nil))
+        (GradedLambda.app (GradedLambda.var 1) (GradedLambda.var 0)) GTypeOver.base := by
+  intro typed
+  obtain ⟨binderGrade, _domain, _functionGrades, _argumentGrades, functionTyped, argumentTyped,
+    gradesEq⟩ := HasGradeOver.invertApp typed
+  obtain ⟨_fnLookup, fnGradesEq⟩ := HasGradeOver.invertVar functionTyped
+  obtain ⟨_argLookup, argGradesEq⟩ := HasGradeOver.invertVar argumentTyped
+  subst fnGradesEq argGradesEq
+  -- casing the abstract binder grade makes scale/add concrete; injection exposes the position-1
+  -- equality `unclassified = classified` (the selector is `+`-poisoned), refuted by noConfusion
+  cases binderGrade <;>
+    · injection gradesEq with _headEq tailEq
+      injection tailEq with selectorEq _
+      exact SecurityGrade.noConfusion selectorEq
+
+/-- **The security noninterference witnesses are non-vacuous.**  The classified selector genuinely types
+(positive), and BOTH laundering attempts — direct-use-to-public and selector-to-public — are concretely
+rejected.  The first security-dimension entries in the §27.2 corpus are load-bearing, not placeholders. -/
+theorem securityNoninterferenceWitnessed :
+    HasGradeOver fxSecuritySemiring
+        [GTypeOver.base, GTypeOver.arrow SecurityGrade.classified GTypeOver.base GTypeOver.base]
+        (GradeVectorOver.cons SecurityGrade.classified
+          (GradeVectorOver.cons SecurityGrade.classified GradeVectorOver.nil))
+        (GradedLambda.app (GradedLambda.var 1) (GradedLambda.var 0)) GTypeOver.base ∧
+    (¬ HasGradeOver fxSecuritySemiring [GTypeOver.base]
+        (GradeVectorOver.single fxSecuritySemiring 1 0 SecurityGrade.unclassified)
+        (GradedLambda.var 0) GTypeOver.base) ∧
+    (¬ HasGradeOver fxSecuritySemiring
+        [GTypeOver.base, GTypeOver.arrow SecurityGrade.classified GTypeOver.base GTypeOver.base]
+        (GradeVectorOver.cons SecurityGrade.classified
+          (GradeVectorOver.cons SecurityGrade.unclassified GradeVectorOver.nil))
+        (GradedLambda.app (GradedLambda.var 1) (GradedLambda.var 0)) GTypeOver.base) :=
+  ⟨securitySelectorAppResultIsClassified, securityDirectUseCannotBePublic,
+    securitySelectorAppCannotLaunderSelector⟩
 
 end FX1Poly.Typed

@@ -5440,6 +5440,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.constantTimeBug_isPending
 #assert_no_axioms FX1Poly.Typed.fractionalPermissionBug_isPending
 #assert_no_axioms FX1Poly.Typed.corpusNonVacuous
+-- Part 5: the FIRST security-dimension noninterference witnesses (now that the security graded judgment
+-- HasGradeOver over fxSecuritySemiring ships).  The var rule fixes a used variable's grade to R.one =
+-- classified (no subsumption lowers it), and the App-scaling rule adds the function's grades directly so a
+-- classified SELECTOR `+`-poisons the result (classified + a = classified).  securityVarUsedIsClassified
+-- (baseline) + securityDirectUseCannotBePublic (EXPLICIT-flow rejection: a used secret can't be graded
+-- public, Denning-Denning's direct case) + securitySelectorAppResultIsClassified (the implicit-flow
+-- mechanism, positive: a classified selector's secrecy flows to the app result) +
+-- securitySelectorAppCannotLaunderSelector (IMPLICIT-flow rejection, the application form of "branch on
+-- secret": the App-scaled selector grade one+binder·zero poisons to classified, so it can't be laundered to
+-- public) + securityNoninterferenceWitnessed (non-vacuity bundle).  The native-`if` surface of the cataloged
+-- implicit-flow bug stays pending (implicitFlowBug_isPending refined to point here).
+#assert_no_axioms FX1Poly.Typed.securityVarUsedIsClassified
+#assert_no_axioms FX1Poly.Typed.securityDirectUseCannotBePublic
+#assert_no_axioms FX1Poly.Typed.securitySelectorAppResultIsClassified
+#assert_no_axioms FX1Poly.Typed.securitySelectorAppCannotLaunderSelector
+#assert_no_axioms FX1Poly.Typed.securityNoninterferenceWitnessed
 
 -- §27.3 Layer-2 property-based metatheory fuzzer: a TOTAL deterministic generator of well-typed terms
 -- (`metatheoryFuzzFamily`, the depth-n β-redex tower `(λx.x)ⁿ Type@0`) with the four Layer-2 properties
