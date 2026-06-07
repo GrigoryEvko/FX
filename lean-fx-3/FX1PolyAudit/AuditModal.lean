@@ -18,6 +18,7 @@ import FX1Poly.Modal.GradedNormalization
 import FX1Poly.Modal.ComplexitySemiring
 import FX1Poly.Modal.EffectLatticeClassification
 import FX1Poly.Modal.OverflowLatticeDimension
+import FX1Poly.Modal.BoundedJoinSemilatticeUniversal
 import FX1Poly.Modal.UnifiedGradeMonoid
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
@@ -354,6 +355,24 @@ annihilator (`join impure pure = impure ≠ pure`), upgrading the informal DIM5-
 #assert_no_axioms FX1Poly.Modal.overflowExactIsLeast
 #assert_no_axioms FX1Poly.Modal.overflowEffectProductLattice
 #assert_no_axioms FX1Poly.Modal.overflowEffectProductIsLawful
+-- The join-semilattice UNIVERSAL PROPERTY + decidable order (BoundedJoinSemilatticeUniversal.lean) — the genuine
+-- lattice content the DIM-CLASS-order layer (#912) was missing: le_join_left/le_join_right (join a b is an UPPER
+-- bound of both, via assoc+idempotent) + join_le (it is the LEAST upper bound — any common bound dominates it,
+-- via assoc) + join_isLeastUpperBound (the three bundled = join a b IS the lub of {a,b}, the defining lattice fact
+-- holding for EVERY lattice dimension with no per-dim proof) + decidableLe (the induced order is DECIDABLE
+-- straight from carrierDecEq, since le := join=upper). Concrete diamond payoff:
+-- overflowConflictIsLeastUpperBoundOfWrapTrap (conflict is the lub of wrap,trap) +
+-- overflowOnlyConflictBoundsWrapTrap (THE diamond consequence: the ONLY common upper bound of two distinct modes
+-- is the conflict TOP — the precise formalization of §6.3 "mixing overflow modes is a type error", dual to
+-- firing-21's antichain). All zero-axiom (calc over the shipped join laws + carrierDecEq + le_antisymm; the ▸
+-- rewrite via overflowJoin_wrap_trap; no funext).
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.le_join_left
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.le_join_right
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.join_le
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.join_isLeastUpperBound
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.decidableLe
+#assert_no_axioms FX1Poly.Modal.overflowConflictIsLeastUpperBoundOfWrapTrap
+#assert_no_axioms FX1Poly.Modal.overflowOnlyConflictBoundsWrapTrap
 -- The UNIFIED grade VECTOR across BOTH families (UnifiedGradeMonoid.lean) — the honest §1.3/§6.1/§6.8 "21
 -- dimensions compose", resolving the §6.1-vs-DIM-CLASS tension: the vector is NOT a pure semiring product
 -- (effect/trust aren't semirings) but a product of COMMUTATIVE GRADE MONOIDS (the §6.1 parallel-combine layer
