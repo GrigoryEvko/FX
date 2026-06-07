@@ -35,6 +35,7 @@ import FX1Poly.Typed.HasTypeDescPiInversion
 import FX1Poly.Typed.HasTypeDescPiApplication
 import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
+import FX1Poly.Typed.ConvFlatCodeInjectivity
 import FX1Poly.Typed.EmptyTypeCodeConvRigidity
 import FX1Poly.Typed.EmptyTypeValueInversion
 import FX1Poly.Typed.FormationCanonicalForms
@@ -1040,6 +1041,35 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_cong
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_iff
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_iff
+-- FLAT (non-dependent, binary) twin: the same SN-free Conv structural characterization for the five flat
+-- data type-code formers — arrow/product/sum/either/equiv (the [0,0]-binderShift formers HasTypeDescFlat
+-- types). Both children at the SAME scope (no binder), so lighter than Π/Σ. Per former: head-stability +
+-- cell injectivity + Conv-inj (the inversion ingredient) + Conv-cong + Conv-iff.
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_arrowCodeGeneral
+#assert_no_axioms FX1Poly.Typed.arrowCodeCell_inj
+#assert_no_axioms FX1Poly.Typed.Conv.arrowCode_inj
+#assert_no_axioms FX1Poly.Typed.Conv.arrowCode_cong
+#assert_no_axioms FX1Poly.Typed.Conv.arrowCode_iff
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_productCodeGeneral
+#assert_no_axioms FX1Poly.Typed.productCodeCell_inj
+#assert_no_axioms FX1Poly.Typed.Conv.productCode_inj
+#assert_no_axioms FX1Poly.Typed.Conv.productCode_cong
+#assert_no_axioms FX1Poly.Typed.Conv.productCode_iff
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_sumCodeGeneral
+#assert_no_axioms FX1Poly.Typed.sumCodeCell_inj
+#assert_no_axioms FX1Poly.Typed.Conv.sumCode_inj
+#assert_no_axioms FX1Poly.Typed.Conv.sumCode_cong
+#assert_no_axioms FX1Poly.Typed.Conv.sumCode_iff
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_eitherCodeGeneral
+#assert_no_axioms FX1Poly.Typed.eitherCodeCell_inj
+#assert_no_axioms FX1Poly.Typed.Conv.eitherCode_inj
+#assert_no_axioms FX1Poly.Typed.Conv.eitherCode_cong
+#assert_no_axioms FX1Poly.Typed.Conv.eitherCode_iff
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_equivCodeGeneral
+#assert_no_axioms FX1Poly.Typed.equivCodeCell_inj
+#assert_no_axioms FX1Poly.Typed.Conv.equivCode_inj
+#assert_no_axioms FX1Poly.Typed.Conv.equivCode_cong
+#assert_no_axioms FX1Poly.Typed.Conv.equivCode_iff
 
 /-! ### TYPE-CODE DISJOINTNESS (rigidity), SN-FREE — distinct type formers are non-convertible.
     The companion to injectivity: together they give full type-code RIGIDITY (the canonicity
