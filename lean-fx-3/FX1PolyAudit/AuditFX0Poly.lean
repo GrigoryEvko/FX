@@ -1,4 +1,5 @@
 import FX1PolyAudit.DependencyAudit
+import FX1PolyAudit.FX0Bridge
 import FX0Poly.StructuralRecheck
 import FX0Poly.CertRecheck
 import FX0Poly.CertRecheckSound
@@ -86,3 +87,29 @@ Each gate fails the build if its declaration depends on `propext` / `Quot.sound`
 #assert_no_axioms FX0Poly.Cert.decode_encodeAux
 #assert_no_axioms FX0Poly.Cert.decodeChildren_encodeChildrenAux
 #assert_no_axioms FX0Poly.Cert.decode_encode
+
+/-! ### FX0Bridge — the rich→minimal certificate bridge (FX0-PC.7).  `encodeCell` maps a rich `FX1Poly.RawTerm`
+to a flat `FX0Poly.Cert` (native `Generator.toNat` tag + structurally-encoded children); `bridgeArity` is the
+checker's arity model pinned to FX1Poly's native tags (via `Generator.fromTag`); ★ `encodeCell_recheck_accepted`
+is the structural soundness — the independent minimal checker ACCEPTS the encoding of every well-formed cell,
+because the `RawTermChildren generator.binderShifts` index discipline forces each node's child count to match
+its `bridgeArity`.  This file (FX1PolyAudit-side, the only library seeing both stacks) holds the bridge to the
+same per-decl zero-axiom discipline as the rest of the checker. -/
+
+#assert_no_axioms FX1Poly.FX0Bridge.encodeCell
+#assert_no_axioms FX1Poly.FX0Bridge.encodeCellChildren
+#assert_no_axioms FX1Poly.FX0Bridge.bridgeArity
+#assert_no_axioms FX1Poly.FX0Bridge.bridgeArity_toNat
+#assert_no_axioms FX1Poly.FX0Bridge.natBeqSelfTrue
+#assert_no_axioms FX1Poly.FX0Bridge.encodeCellChildren_length
+#assert_no_axioms FX1Poly.FX0Bridge.encodeCell_isValidB
+#assert_no_axioms FX1Poly.FX0Bridge.encodeCellChildren_allValidB
+#assert_no_axioms FX1Poly.FX0Bridge.verdict_eq_accepted_of_wasAccepted
+#assert_no_axioms FX1Poly.FX0Bridge.encodeCell_recheck_accepted
+#assert_no_axioms FX1Poly.FX0Bridge.bridgeArity_smoke_var
+#assert_no_axioms FX1Poly.FX0Bridge.bridgeArity_smoke_lam
+#assert_no_axioms FX1Poly.FX0Bridge.bridgeArity_smoke_piTyCode
+#assert_no_axioms FX1Poly.FX0Bridge.bridgeArity_smoke_unknownTag
+#assert_no_axioms FX1Poly.FX0Bridge.encodeCell_smoke_universeCode
+#assert_no_axioms FX1Poly.FX0Bridge.encodeCell_smoke_piTyCode
+#assert_no_axioms FX1Poly.FX0Bridge.recheck_smoke_universeCode
