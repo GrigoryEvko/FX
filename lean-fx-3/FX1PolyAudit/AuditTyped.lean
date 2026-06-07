@@ -89,6 +89,7 @@ import FX1Poly.Tier0.FxBaseRenamingVecIsomorphism
 import FX1Poly.Tier0.FxBaseRenamingVecTabulate
 import FX1Poly.Tier0.FxBaseRenamingVecPreimage
 import FX1Poly.Tier0.FxBaseRenamingVecTryTabulate
+import FX1Poly.Tier0.FxBaseRenamingVecRMC
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4345,6 +4346,26 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.tryTabulate_succ_eq
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.tryTabulate_lookup
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.tryTabulate_none
+-- ★ THE COMPLETE RepresentableMapCategory over the extensional renaming base (FxBaseRenamingVecRMC.lean,
+-- SN-085a/SN-085/SN-084, closes #210/#914). The finite-bijectivity decider, PIGEONHOLE-FREE: tryInverse :=
+-- tryTabulate ∘ findPreimage (some backward iff surjective); tryInverse_rightInverse(_composed) = the candidate is
+-- a RIGHT inverse by construction; tryInverse_none_notSurjective = failure exhibits an unhit index;
+-- isIsomorphism_inverse_rightInverse = extract the pointwise inverse from an IsIsomorphism witness;
+-- tryInverse_unique = INVERSE UNIQUENESS by pure function-algebra (backward = backward∘id = backward∘(forward∘g) =
+-- (backward∘forward)∘g = id∘g = g — NO cardinality); decideIsCategoricalIsomorphism = the decider (none ⟹ isFalse
+-- via a hypothetical iso's preimage; some ⟹ decEq the left inverse, isTrue ⟹ isomorphismOfLookupInverse, isFalse ⟹
+-- inverse-uniqueness). fxBaseRenamingVecRepresentableMaps = the MorphismClass; fxBaseRenamingVecRMC = THE record
+-- (3 CwR axioms wired to isCategoricalIsomorphism_{pullback,identity,compose}). First genuine non-degenerate
+-- data-morphism extensional CwR for FX. All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tryInverse
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tryInverse_rightInverse
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tryInverse_rightInverse_composed
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tryInverse_none_notSurjective
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.isIsomorphism_inverse_rightInverse
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tryInverse_unique
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.decideIsCategoricalIsomorphism
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecRepresentableMaps
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecRMC
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
