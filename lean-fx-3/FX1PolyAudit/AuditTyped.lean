@@ -87,6 +87,7 @@ import FX1Poly.Tier0.FxBaseRenamingCategory
 import FX1Poly.Tier0.FxBaseRenamingVecCategory
 import FX1Poly.Tier0.FxBaseRenamingVecIsomorphism
 import FX1Poly.Tier0.FxBaseRenamingVecTabulate
+import FX1Poly.Tier0.FxBaseRenamingVecPreimage
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4318,6 +4319,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.tabulate_lookup_self
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.decEq
 #assert_no_axioms FX1Poly.Tier0.instDecidableEqRenamingVec
+-- The preimage search over a RenamingVec (FxBaseRenamingVecPreimage.lean, SN-085a search core toward #914's
+-- memberDecidable). findPreimage walks the product structure for the first position whose image = targetIndex
+-- (reconstructed as a Fin source), none if unhit; the candidate inverse of an iso is tabulate of this preimage
+-- function. findPreimage_succ_eq = the rfl reduction equation (so proofs avoid unfold). findPreimage_some =
+-- SOUNDNESS (found position maps to the target ⟹ candidate is a right-inverse section). findPreimage_none =
+-- COMPLETENESS (none ⟹ target unhit ⟹ the decider's not-surjective isFalse branch, since an iso's inverse would
+-- supply a preimage). Head compared by Nat.decEq match (not if/by_cases = Classical); proofs case on it + a
+-- computed reduced equation (no unfold/simp), nomatch for impossible Options, Fin index split structurally (no
+-- Fin.cases). All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.findPreimage
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.findPreimage_succ_eq
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.findPreimage_some
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.findPreimage_none
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
