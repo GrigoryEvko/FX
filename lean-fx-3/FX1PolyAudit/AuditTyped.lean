@@ -88,6 +88,7 @@ import FX1Poly.Tier0.FxBaseRenamingVecCategory
 import FX1Poly.Tier0.FxBaseRenamingVecIsomorphism
 import FX1Poly.Tier0.FxBaseRenamingVecTabulate
 import FX1Poly.Tier0.FxBaseRenamingVecPreimage
+import FX1Poly.Tier0.FxBaseRenamingVecTryTabulate
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4332,6 +4333,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.findPreimage_succ_eq
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.findPreimage_some
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.findPreimage_none
+-- The Option-valued tabulate (FxBaseRenamingVecTryTabulate.lean, SN-085a candidate-inverse core toward #914).
+-- tryTabulate (imageOf : Fin length → Option (Fin target)) : Option (RenamingVec target length) succeeds iff
+-- every image is some; composed with findPreimage it builds the candidate inverse (some backward iff surjective).
+-- tryTabulate_succ_eq = rfl reduction. tryTabulate_lookup = SOUNDNESS (success ⟹ every image agrees with the
+-- built vector's lookup ⟹ candidate is a right-inverse SECTION). tryTabulate_none = COMPLETENESS (failure ⟹ some
+-- image was none ⟹ the not-surjective isFalse branch). Reasoned propext-clean via rw [succ_eq] at h; split at h
+-- (split REDUCES the matcher where rw won't), case h_1/h_2 for naming, Option.map_none/_some rfl-lemmas, nomatch
+-- for impossible Options, Fin index split structurally. All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tryTabulate
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tryTabulate_succ_eq
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tryTabulate_lookup
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tryTabulate_none
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
