@@ -97,6 +97,7 @@ import FX1Poly.Tier0.FxBaseSubstCategory
 import FX1Poly.Tier0.FxBaseSubstWeakening
 import FX1Poly.Tier0.FxBaseSubstComprehension
 import FX1Poly.Tier0.FxBaseSubstSingleton
+import FX1Poly.Tier0.FxBaseSubstGlobalSections
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4495,6 +4496,24 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_compose_singleton
 #assert_no_axioms FX1Poly.Tier0.SubstVec.singleton_toRawTermSubst
 #assert_no_axioms FX1Poly.Tier0.SubstVec.subst_singleton_eq_subst0
+-- The closed-terms GlobalSections over the term base (FxBaseSubstGlobalSections.lean, brick 6 of the term-carrying
+-- CwR arc). The renaming base's GlobalSections (SN-089) is Hom(-, 1) at the TERMINAL object — a subsingleton, NOT
+-- a closed-terms functor (the renaming category has no term content). The subst category has NO terminal object
+-- (SubstVec target X never a singleton for X≥1) but HAS an INITIAL object scope 0, so the canonical functor is the
+-- representable Hom(-, 0): sections X = Morphism X 0 = SubstVec 0 X = the X closed terms closing an X-var context.
+-- fxBaseSubstGlobalSections (= GlobalSections.representable at scope 0, reusing the generic def) +
+-- sections_eq (sections X = SubstVec 0 X, rfl). closedTermAsSection/sectionAsClosedTerm + the two round-trips
+-- (rfl, via cons_lookup_zero + product/PUnit eta) = the iso sections 1 ≅ RawTerm 0 (global elements ARE closed
+-- terms). closedTermAsSection_injective = the NON-VACUITY witness: the closed-terms presheaf faithfully embeds
+-- RawTerm 0 (contrast the renaming base's subsingleton-at-terminal) — the FIRST canonicity-relevant GlobalSections
+-- for FX. All zero-axiom. [Section index 1 on the concrete SubstVec 0 1 to dodge OfNat-on-Object.]
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstGlobalSections
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstGlobalSections_sections_eq
+#assert_no_axioms FX1Poly.Tier0.closedTermAsSection
+#assert_no_axioms FX1Poly.Tier0.sectionAsClosedTerm
+#assert_no_axioms FX1Poly.Tier0.sectionAsClosedTerm_closedTermAsSection
+#assert_no_axioms FX1Poly.Tier0.closedTermAsSection_sectionAsClosedTerm
+#assert_no_axioms FX1Poly.Tier0.closedTermAsSection_injective
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
