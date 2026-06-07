@@ -16,6 +16,7 @@ import FX1Poly.Modal.GradedFundamentalTheorem
 import FX1Poly.Modal.GradedReductionConfluence
 import FX1Poly.Modal.GradedNormalization
 import FX1Poly.Modal.ComplexitySemiring
+import FX1Poly.Modal.EffectLatticeClassification
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -271,6 +272,34 @@ SN proof. -/
 #assert_no_axioms FX1Poly.Modal.complexityAddNotIdempotent
 #assert_no_axioms FX1Poly.Modal.complexityLinearIdentity_typed
 #assert_no_axioms FX1Poly.Modal.complexityLinearIdentity_stronglyNormalizingViaGeneric
+
+/-! ### The EFFECT-family boundary: bounded join-semilattice, NOT an ordered grade semiring
+
+Which dimensions the generic `HasGradeOver` semiring engine COVERS, formally delimited.  The resource /
+co-effect dims (usage, security, complexity/space/precision) are ordered semirings (distinct annihilating
+`mul`); the EFFECT family is a bounded join-semilattice (single idempotent op, no annihilator), so it does NOT
+fit — `effectIsNotLawfulOrderedGradeSemiring` proves the §9.3 monotone-accumulation `mul = join` has no
+annihilator (`join impure pure = impure ≠ pure`), upgrading the informal DIM5-era memory note to a theorem.
+`effectIsLawfulBoundedJoinSemilattice` is the positive structure; `gradeAlgebraOf` is the classification. -/
+#assert_no_axioms FX1Poly.Modal.EffectGrade
+#assert_no_axioms FX1Poly.Modal.EffectGrade.join
+#assert_no_axioms FX1Poly.Modal.EffectGrade.le
+#assert_no_axioms FX1Poly.Modal.effectSemiringCandidate
+#assert_no_axioms FX1Poly.Modal.effectJoinAnnihilation_concretelyFails
+#assert_no_axioms FX1Poly.Modal.effectIsNotLawfulOrderedGradeSemiring
+#assert_no_axioms FX1Poly.Modal.securityHasAnnihilation
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice
+#assert_no_axioms FX1Poly.Modal.IsLawfulBoundedJoinSemilattice
+#assert_no_axioms FX1Poly.Modal.effectLattice
+#assert_no_axioms FX1Poly.Modal.effectIsLawfulBoundedJoinSemilattice
+#assert_no_axioms FX1Poly.Modal.DimensionGradeAlgebra
+#assert_no_axioms FX1Poly.Modal.GradedDimensionName
+#assert_no_axioms FX1Poly.Modal.GradedDimensionName.gradeAlgebraOf
+#assert_no_axioms FX1Poly.Modal.usage_isOrderedSemiring
+#assert_no_axioms FX1Poly.Modal.security_isOrderedSemiring
+#assert_no_axioms FX1Poly.Modal.complexity_isOrderedSemiring
+#assert_no_axioms FX1Poly.Modal.effect_isBoundedSemilattice
+#assert_no_axioms FX1Poly.Modal.trust_isBoundedSemilattice
 
 /-! ### Generic weakening for HasGradeOver R over any OrderedGradeSemiring (security + dims 6–21)
 
