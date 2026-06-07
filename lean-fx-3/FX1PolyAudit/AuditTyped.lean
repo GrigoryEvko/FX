@@ -1921,6 +1921,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.boolTrueValue_notConvertible_boolFalseValue
 #assert_no_axioms FX1Poly.Typed.boolTrueValue_notConvertible_unitValue
 #assert_no_axioms FX1Poly.Typed.convIsNonDegenerate
+-- Conv on the NORMAL FRAGMENT is DECIDABLE and the decider EXECUTES (ConvValueDiscrimination, constructive
+-- companion to the non-degeneracy facts): convDecidableOfBothNoStep packages the ConvNormalForm seed as an
+-- actual Decidable (decidable_of_iff (left=right) ∘ Conv.iff_eq_of_noStep, over the propext-free DecidableEq
+-- RawTerm — no normalizer). The convDecider_* equations are `@decide … = true/false` by rfl: the decider RUNS
+-- and computes the right boolean (Conv boolTrue boolTrue → true; boolTrue/boolFalse, boolTrue/unit → false). No
+-- native_decide; the evaluations reduce over the structural DecidableEq.
+#assert_no_axioms FX1Poly.Typed.convDecidableOfBothNoStep
+#assert_no_axioms FX1Poly.Typed.convDecider_boolTrueValue_self_isTrue
+#assert_no_axioms FX1Poly.Typed.convDecider_boolTrueValue_boolFalseValue_isFalse
+#assert_no_axioms FX1Poly.Typed.convDecider_boolTrueValue_unitValue_isFalse
 -- Concrete HasTypeDescPi TYPING-ENGINE derivations of λ-terms (TypedLambdaDerivations): the first concrete
 -- witnesses of the actual typing judgment HasTypeDescPi for honest λ-abstractions (the closed-SN smokes go
 -- through the FT/reducibility layer's fundamentalPiIntroLevelIndexed, NOT the typing engine). identityOn

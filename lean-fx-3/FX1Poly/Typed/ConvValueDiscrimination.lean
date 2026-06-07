@@ -28,9 +28,22 @@ formers (which decomposes `Conv (formerCell …) (formerCell …)` into
 component-wise conversion) — here the two terms have DIFFERENT heads, so they do
 not convert at all.
 
+And the constructive companion — `Conv` on the normal fragment is DECIDABLE, and
+the decider executes:
+
+  * `convDecidableOfBothNoStep` — `Conv` on two no-step endpoints collapses to
+    `Eq` (`Conv.iff_eq_of_noStep`), which the propext-free
+    `DecidableEq (RawTerm scope)` decides, no normalizer required — fulfilling
+    the decidable-`Conv` seed the `ConvNormalForm` docstring promises.
+  * `convDecider_*` — the decider RUNS (the `@decide … = true / false` equations
+    hold by `rfl`): it decides `Conv boolTrue boolTrue` to `true`, and
+    `Conv boolTrue boolFalse` / `Conv boolTrue unit` to `false`.  The decision
+    procedure is not merely a `Prop` but computes the right boolean.
+
 Everything is about the raw `Conv` (= `StepStar.Join`); no typing derivation is
 consulted.  Zero-axiom: the only non-`rfl` steps are `Conv.eq_of_noStep` and
-`Generator.noConfusion` on the distinct head generators.
+`Generator.noConfusion` on the distinct head generators; the decider evaluations
+are `rfl` over the structural `DecidableEq` (no `native_decide`).
 -/
 
 namespace FX1Poly.Typed
@@ -87,5 +100,38 @@ value-level sanity property canonicity rests on. -/
 theorem convIsNonDegenerate :
     ∃ leftTerm rightTerm : RawTerm 0, ¬ Conv leftTerm rightTerm :=
   ⟨boolTrueValue, boolFalseValue, boolTrueValue_notConvertible_boolFalseValue⟩
+
+/-- `Conv` on two no-step (normal) endpoints is decidable WITHOUT a normalizer:
+it collapses to `Eq` (`Conv.iff_eq_of_noStep`), which the propext-free
+`DecidableEq (RawTerm scope)` decides.  This is the decidable-`Conv` seed the
+`ConvNormalForm` docstring promises, packaged as an actual `Decidable`. -/
+def convDecidableOfBothNoStep {scope : Nat} {leftTerm rightTerm : RawTerm scope}
+    (leftHasNoStep : ∀ reduct : RawTerm scope, Step leftTerm reduct → False)
+    (rightHasNoStep : ∀ reduct : RawTerm scope, Step rightTerm reduct → False) :
+    Decidable (Conv leftTerm rightTerm) :=
+  decidable_of_iff (leftTerm = rightTerm)
+    (Conv.iff_eq_of_noStep leftHasNoStep rightHasNoStep).symm
+
+/-- The decider RUNS: it decides `Conv boolTrue boolTrue` to `true` (by `rfl`
+over the structural `DecidableEq`). -/
+theorem convDecider_boolTrueValue_self_isTrue :
+    @decide (Conv boolTrueValue boolTrueValue)
+      (convDecidableOfBothNoStep
+        (fun _ step => noStep_boolTrue step) (fun _ step => noStep_boolTrue step)) = true :=
+  rfl
+
+/-- The decider RUNS: it decides `Conv boolTrue boolFalse` to `false`. -/
+theorem convDecider_boolTrueValue_boolFalseValue_isFalse :
+    @decide (Conv boolTrueValue boolFalseValue)
+      (convDecidableOfBothNoStep
+        (fun _ step => noStep_boolTrue step) (fun _ step => noStep_boolFalse step)) = false :=
+  rfl
+
+/-- The decider RUNS: it decides `Conv boolTrue unit` to `false`. -/
+theorem convDecider_boolTrueValue_unitValue_isFalse :
+    @decide (Conv boolTrueValue unitValue)
+      (convDecidableOfBothNoStep
+        (fun _ step => noStep_boolTrue step) (fun _ step => noStep_unit step)) = false :=
+  rfl
 
 end FX1Poly.Typed
