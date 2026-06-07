@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.FX0Bridge
+import FX1PolyAudit.FX0CrossCheck
 import FX0Poly.StructuralRecheck
 import FX0Poly.CertRecheck
 import FX0Poly.CertRecheckSound
@@ -113,3 +114,19 @@ same per-decl zero-axiom discipline as the rest of the checker. -/
 #assert_no_axioms FX1Poly.FX0Bridge.encodeCell_smoke_universeCode
 #assert_no_axioms FX1Poly.FX0Bridge.encodeCell_smoke_piTyCode
 #assert_no_axioms FX1Poly.FX0Bridge.recheck_smoke_universeCode
+
+/-! ### FX0CrossCheck — the end-to-end external-verification pipeline (FX0-PC.5).  `externalVerify bytes fuel`
+decodes a `.fx0c` stream and re-checks the recovered cert against `bridgeArity`; ★ `externalVerify_encodeCell`
+is the end-to-end soundness — the standalone external verifier accepts the serialized encoding of EVERY
+well-formed cell (composing the `Cert.decode_encode` round-trip with the bridge soundness), closing the
+structural FX0 cross-check loop through the actual byte channel.  Negative smokes show it discriminates
+(wrong arity / unknown tag / truncated → malformed); positive fixtures run `var 0` and a universe-code cell
+end to end. -/
+
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_encodeCell
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_smoke_rejectsWrongArity
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_smoke_rejectsUnknownTag
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_smoke_rejectsTruncated
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_var0
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_universeCode
