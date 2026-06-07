@@ -1963,6 +1963,23 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.dependentArrowOverTypeVariable_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentity_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentity_stronglyNormalizing
+-- DEPENDENT TYPE-INSTANTIATION (TypedLambdaDerivations): applying a polymorphic function to a type. The level-0
+-- poly-id CANNOT be applied to a closed arg (no closed inhabitant of Type@0 in the formation-only engine), so the
+-- LEVEL-1 twin Λ(A:Type@1).λ(x:A).x (same term, domain climbs to Type@1) is instantiated at the closed Type@0
+-- (Type@0:Type@1 by universe formation). polymorphicIdentityInstantiatedAtTypeZero: piElim gives Π(x:Type@0).
+-- Type@0 — the result-type subst0 (Π(x:A).A) Type@0 computes by defeq to Π(x:Type@0).Type@0, the dependent
+-- codomain genuinely specializing (the FIRST application witness whose codomain depends on the argument, vs the
+-- ID-TOWER's constant codomain). betaReducesToIdentity: the redex β-reduces to the monomorphic identity λx.x
+-- (subst0 leaves the A-free inner lambda unchanged, defeq). subjectReduction: redex + reduct type at the SAME
+-- Π(x:Type@0).Type@0 (the reduct via identityOnUniverse at lzero). stronglyNormalizing via SN-043. All zero-axiom
+-- (direct constructor applications + defeq subst0; the level-1 twins mirror the level-0 derivations with lsucc
+-- bumps).
+#assert_no_axioms FX1Poly.Typed.dependentArrowOverTypeVariableAtLevelOne_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityAtLevelOne_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityInstantiatedAtTypeZero_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityInstantiation_betaReducesToIdentity
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityInstantiation_subjectReduction
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityInstantiation_stronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the

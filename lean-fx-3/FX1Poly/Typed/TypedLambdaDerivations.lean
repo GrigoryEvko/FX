@@ -224,4 +224,128 @@ theorem polymorphicIdentity_stronglyNormalizing
   HasTypeDescPi.closedStronglyNormalizing
     (polymorphicIdentity_hasTypeDescPi (profile := profile) flag)
 
+/-! ## Dependent type-instantiation — applying a polymorphic function to a type
+
+`polymorphicIdentity_hasTypeDescPi` types the polymorphic identity but cannot be
+APPLIED to a closed argument: its domain is `Type@0`, and the formation-only engine
+has NO closed inhabitant of `Type@0` (every typed type is a former needing a
+level-0 component, and there is no typed nullary base).  The fix is to climb ONE
+universe: the LEVEL-1 polymorphic identity `Λ(A : Type@1). λ(x : A). x` has domain
+`Type@1`, which the closed universe code `Type@0` DOES inhabit (`Type@0 : Type@1`
+by universe formation).  Instantiating it at `Type@0` is the first DEPENDENT
+application whose codomain genuinely depends on the argument — unlike the
+identity-application above (and the ID-TOWER family), whose codomain is constant.
+The dependent codomain `Π(x : A). A` truly specializes under the substitution. -/
+
+/-- In context `[A : Type@1]`, the dependent function type `Π(x : A). A` is a type
+at `Type@(lmax 1 1)` — the level-1 twin of `dependentArrowOverTypeVariable_hasType
+DescPi`, with the child levels bumped from `lzero` to `lzero.lsucc`.  The
+`DescTelescopePi` premise types the domain `A` (= `var 0`) and shifted codomain `A`
+(= `var 1`) each at `Type@1` by the `var` rule. -/
+theorem dependentArrowOverTypeVariableAtLevelOne_hasTypeDescPi
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    HasTypeDescPi profile
+      (TypingContext.empty.cons (universeCodeCell LevelExpr.lzero.lsucc flag))
+      (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+      (universeCodeCell (lmaxAll [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc]) flag) := by
+  refine HasTypeDescPi.genFormationPi _ .gen_piTyCode () _
+    [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc] flag { outputType := universeFormerOutput }
+    rfl ?premises
+  refine DescTelescopePi.cons _ _ _ _ _ _ ?domainTyped ?codomainTelescope
+  · exact HasTypeDescPi.ofFormation (HasTypeDesc.var _ (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+  · refine DescTelescopePi.cons _ _ _ _ _ _ ?codomainTyped ?nilTelescope
+    · exact HasTypeDescPi.ofFormation
+        (HasTypeDesc.var _ (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+    · exact DescTelescopePi.nil _ _
+
+/-- The LEVEL-1 polymorphic identity `λ(A : Type@1). λ(x : A). x` is typed at
+`Π(A : Type@1). Π(x : A). A` — the level-1 twin of `polymorphicIdentity_hasType
+DescPi` (the term is IDENTICAL `λA. λx. x`; only the universe of the type variable
+climbs from `Type@0` to `Type@1`, so its domain admits the closed argument
+`Type@0`).  Via nested `piIntro` with the type-VARIABLE inner domain. -/
+theorem polymorphicIdentityAtLevelOne_hasTypeDescPi
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    HasTypeDescPi profile TypingContext.empty
+      (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero.lsucc flag)
+        (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))) := by
+  refine HasTypeDescPi.piIntro LevelExpr.lzero.lsucc.lsucc
+    (lmaxAll [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc]) flag
+    ?domainTyped ?codomainTyped ?bodyTyped
+  · exact HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero.lsucc flag)
+  · exact dependentArrowOverTypeVariableAtLevelOne_hasTypeDescPi flag
+  · refine HasTypeDescPi.piIntro LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc flag
+      ?innerDomainTyped ?innerCodomainTyped ?innerBodyTyped
+    · exact HasTypeDescPi.ofFormation (HasTypeDesc.var _ (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+    · exact HasTypeDescPi.ofFormation
+        (HasTypeDesc.var _ (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+    · exact HasTypeDescPi.ofFormation (HasTypeDesc.var _ (⟨0, Nat.succ_pos 1⟩ : Fin 2))
+
+/-- ★ The DEPENDENT TYPE-INSTANTIATION `(Λ(A : Type@1). λ(x : A). x) (Type@0)` is
+typed at `Π(x : Type@0). Type@0` — the monomorphic identity on `Type@0`.  Typed by
+`piElim`: the function is the level-1 polymorphic identity, the argument is
+`Type@0 : Type@1` (universe formation), and the result type
+`subst0 (Π(x : A). A) Type@0` computes by defeq to `Π(x : Type@0). Type@0` — the
+dependent codomain genuinely specializes (the bound `A` is replaced by `Type@0` in
+BOTH the domain and the body of the inner Π).  The first application witness whose
+codomain truly depends on the argument. -/
+theorem polymorphicIdentityInstantiatedAtTypeZero_hasTypeDescPi
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    HasTypeDescPi profile TypingContext.empty
+      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero flag))
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+        (universeCodeCell LevelExpr.lzero flag)) :=
+  HasTypeDescPi.piElim
+    (polymorphicIdentityAtLevelOne_hasTypeDescPi (profile := profile) flag)
+    (HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
+
+/-- The instantiation β-reduces to the MONOMORPHIC identity `λx. x`: the inner
+lambda `λ(x : A). x` survives `subst0` unchanged (it does not mention `A`), so
+`subst0 (λx. x) Type@0` is defeq `λx. x`. -/
+theorem polymorphicIdentityInstantiation_betaReducesToIdentity (flag : UniverseFlag) :
+    Step
+      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero flag))
+      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) :=
+  Step.beta
+
+/-- ★ Concrete subject reduction for the dependent type-instantiation.  The redex
+`(Λ(A : Type@1). λ(x : A). x) (Type@0)` β-reduces to the monomorphic identity
+`λx. x`, and BOTH are typed at the SAME type `Π(x : Type@0). Type@0` — the reduct's
+typing is `identityOnUniverse_hasTypeDescPi` at level `lzero`.  Dependent
+type-application followed by β, with the type preserved end-to-end. -/
+theorem polymorphicIdentityInstantiation_subjectReduction
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    Step
+      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero flag))
+      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) ∧
+    HasTypeDescPi profile TypingContext.empty
+      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero flag))
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+        (universeCodeCell LevelExpr.lzero flag)) ∧
+    HasTypeDescPi profile TypingContext.empty
+      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+        (universeCodeCell LevelExpr.lzero flag)) :=
+  ⟨polymorphicIdentityInstantiation_betaReducesToIdentity flag,
+    polymorphicIdentityInstantiatedAtTypeZero_hasTypeDescPi (profile := profile) flag,
+    identityOnUniverse_hasTypeDescPi (profile := profile) LevelExpr.lzero flag⟩
+
+/-- The dependent type-instantiation is strongly normalizing — SN-043 on the
+concrete `piElim` derivation. -/
+theorem polymorphicIdentityInstantiation_stronglyNormalizing
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero flag) : RawTerm 0) :=
+  HasTypeDescPi.closedStronglyNormalizing
+    (polymorphicIdentityInstantiatedAtTypeZero_hasTypeDescPi (profile := profile) flag)
+
 end FX1Poly.Typed
