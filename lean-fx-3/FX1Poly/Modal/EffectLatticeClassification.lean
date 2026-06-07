@@ -283,4 +283,69 @@ asserted by analogy.  add = mul = `min`, the weakest-link minimum, the single-id
 theorem trust_isBoundedSemilattice :
     GradedDimensionName.trust.gradeAlgebraOf = .boundedSemilattice := rfl
 
+/-! ## Lattice-family composition — the lattice dimensions compose POINTWISE
+
+The multi-dimensional thesis (§1.3 / §6.8: "twenty-one dimensions compose in one signature") for the LATTICE
+family — the analogue of the resource family's grade VECTOR (the `OrderedGradeSemiring` product behind
+`HasGradeOver`).  The §6.8 effect / trust / ... bounded-join-semilattice dimensions combine componentwise: the
+product of two bounded join-semilattices is a bounded join-semilattice, and its laws follow from the two
+components' WITHOUT re-proof.  So any tuple of lawful lattice dimensions is itself one lawful lattice dimension —
+graded composition for the lattice family, mirroring the no-cascade composition the resource family already has. -/
+
+/-- Init-only pair congruence (no `congrArg₂` outside Mathlib): a product equality from its two component
+equalities.  The lattice-product laws are all componentwise, so this is the only glue they need. -/
+theorem pairEqOfComponents {firstType secondType : Type}
+    {firstLeft firstRight : firstType} {secondLeft secondRight : secondType}
+    (firstComponentEq : firstLeft = firstRight) (secondComponentEq : secondLeft = secondRight) :
+    (firstLeft, secondLeft) = (firstRight, secondRight) := by
+  rw [firstComponentEq, secondComponentEq]
+
+/-- **The pointwise product of two bounded join-semilattices.**  Carrier is the product, bottom is the pair of
+bottoms, join is componentwise.  The composite of two lattice dimensions into one — the lattice-family analogue
+of the resource grade vector. -/
+def BoundedJoinSemilattice.product (firstLattice secondLattice : BoundedJoinSemilattice) :
+    BoundedJoinSemilattice where
+  Carrier := firstLattice.Carrier × secondLattice.Carrier
+  bottom := (firstLattice.bottom, secondLattice.bottom)
+  join := fun firstPair secondPair =>
+    (firstLattice.join firstPair.1 secondPair.1, secondLattice.join firstPair.2 secondPair.2)
+  carrierDecEq := by
+    haveI := firstLattice.carrierDecEq
+    haveI := secondLattice.carrierDecEq
+    exact inferInstance
+
+/-- **Lattice composition is law-preserving (no re-proof).**  The pointwise product of two LAWFUL bounded
+join-semilattices is itself lawful — every law (comm / assoc / idempotent / bottom-identity) holds componentwise,
+so it follows from the two components' laws with only the pair-congruence glue.  This is the formal "the lattice
+dimensions compose" theorem: a grade vector over any tuple of effect-family dimensions is a single lawful lattice
+dimension, exactly as the resource grade vector composes the semiring dimensions. -/
+theorem BoundedJoinSemilattice.productIsLawful
+    {firstLattice secondLattice : BoundedJoinSemilattice}
+    (firstLawful : IsLawfulBoundedJoinSemilattice firstLattice)
+    (secondLawful : IsLawfulBoundedJoinSemilattice secondLattice) :
+    IsLawfulBoundedJoinSemilattice (firstLattice.product secondLattice) where
+  join_comm := fun firstPair secondPair =>
+    pairEqOfComponents (firstLawful.join_comm firstPair.1 secondPair.1)
+      (secondLawful.join_comm firstPair.2 secondPair.2)
+  join_assoc := fun firstPair secondPair thirdPair =>
+    pairEqOfComponents (firstLawful.join_assoc firstPair.1 secondPair.1 thirdPair.1)
+      (secondLawful.join_assoc firstPair.2 secondPair.2 thirdPair.2)
+  join_idempotent := fun pair =>
+    pairEqOfComponents (firstLawful.join_idempotent pair.1) (secondLawful.join_idempotent pair.2)
+  bottom_join := fun pair =>
+    pairEqOfComponents (firstLawful.bottom_join pair.1) (secondLawful.bottom_join pair.2)
+  join_bottom := fun pair =>
+    pairEqOfComponents (firstLawful.join_bottom pair.1) (secondLawful.join_bottom pair.2)
+
+/-- The concrete `effect × trust` composite lattice — two genuine §6.8 lattice dimensions composed. -/
+def effectTrustProductLattice : BoundedJoinSemilattice :=
+  effectLattice.product trustLattice
+
+/-- **Effect × trust IS a lawful bounded join-semilattice** — the first concrete witness that two real §6.8
+lattice dimensions compose into one lawful lattice dimension, via `productIsLawful` with no per-product proof. -/
+theorem effectTrustProductIsLawful :
+    IsLawfulBoundedJoinSemilattice effectTrustProductLattice :=
+  BoundedJoinSemilattice.productIsLawful effectIsLawfulBoundedJoinSemilattice
+    trustIsLawfulBoundedJoinSemilattice
+
 end FX1Poly.Modal

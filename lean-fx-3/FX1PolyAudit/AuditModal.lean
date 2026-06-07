@@ -305,6 +305,16 @@ annihilator (`join impure pure = impure ≠ pure`), upgrading the informal DIM5-
 #assert_no_axioms FX1Poly.Modal.trustIsNotLawfulOrderedGradeSemiring
 #assert_no_axioms FX1Poly.Modal.trustLattice
 #assert_no_axioms FX1Poly.Modal.trustIsLawfulBoundedJoinSemilattice
+-- Lattice-family COMPOSITION (the §1.3/§6.8 "dimensions compose" thesis for the lattice family, analogue of the
+-- resource grade vector): BoundedJoinSemilattice.product (pointwise product) + productIsLawful (product of two
+-- LAWFUL lattices is lawful, every law componentwise, no re-proof) + the concrete effectTrustProductLattice +
+-- effectTrustProductIsLawful witness (two real §6.8 lattice dims compose). pairEqOfComponents = the Init-only
+-- pair-congruence glue (no congrArg2 outside Mathlib). All zero-axiom.
+#assert_no_axioms FX1Poly.Modal.pairEqOfComponents
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.product
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.productIsLawful
+#assert_no_axioms FX1Poly.Modal.effectTrustProductLattice
+#assert_no_axioms FX1Poly.Modal.effectTrustProductIsLawful
 #assert_no_axioms FX1Poly.Modal.DimensionGradeAlgebra
 #assert_no_axioms FX1Poly.Modal.GradedDimensionName
 #assert_no_axioms FX1Poly.Modal.GradedDimensionName.gradeAlgebraOf
