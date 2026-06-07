@@ -95,6 +95,7 @@ import FX1Poly.Tier0.FxBaseRenamingVecSconingPreservation
 import FX1Poly.Tier0.FxBaseSubstVec
 import FX1Poly.Tier0.FxBaseSubstCategory
 import FX1Poly.Tier0.FxBaseSubstWeakening
+import FX1Poly.Tier0.FxBaseSubstComprehension
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4461,6 +4462,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_lookup_eq_rename
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_unique
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_subst_eq_rename
+-- The context-extension / comprehension structure (FxBaseSubstComprehension.lean, brick 4 of the term-carrying
+-- CwR arc). The dual of the display map: SubstVec.cons headTerm tailVec : SubstVec target (source+1) extends a
+-- substitution with a head term (literally the product pair) — the morphism source+1⟶target sending the fresh
+-- variable 0 to headTerm and i+1 to tailVec i; the extensional analogue of RawTermSubst.cons. cons_lookup_zero
+-- (v-law, head recovery, rfl) + cons_lookup_succ (tail recovery, rfl). weakening_compose_cons is the p-law /
+-- comprehension β-cancellation: weakening.compose (cons head tail) = tail (the display map projects the extended
+-- context onto its base) — via ext + lookup_compose + weakening_lookup + subst-of-var rfl. cons_unique is the
+-- comprehension UNIVERSAL PROPERTY: the extension is the UNIQUE morphism whose display-projection is the tail and
+-- whose zeroth lookup is the head (ext + projecting projectsToTail at each succ position). cons_toRawTermSubst:
+-- SubstVec.cons IS RawTermSubst.cons pointwise (the β-engine's binder-extension). All zero-axiom (no funext).
+#assert_no_axioms FX1Poly.Tier0.SubstVec.cons
+#assert_no_axioms FX1Poly.Tier0.SubstVec.cons_lookup_zero
+#assert_no_axioms FX1Poly.Tier0.SubstVec.cons_lookup_succ
+#assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_compose_cons
+#assert_no_axioms FX1Poly.Tier0.SubstVec.cons_toRawTermSubst
+#assert_no_axioms FX1Poly.Tier0.SubstVec.cons_unique
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
