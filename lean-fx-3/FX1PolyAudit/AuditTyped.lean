@@ -186,6 +186,7 @@ import FX1Poly.Typed.WeaklyNormalizingNotStronglyNormalizing
 import FX1Poly.Typed.StepNonDeterministic
 import FX1Poly.Typed.ConvValueDiscrimination
 import FX1Poly.Typed.TypedLambdaDerivations
+import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -5963,3 +5964,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.subjectReduction_grownConditionalOnBundle
 #assert_no_axioms FX1Poly.Typed.parity_discriminates_weakening_vs_subjectReduction
 #assert_no_axioms FX1Poly.Typed.parity_discriminates_strongNormalization_vs_subjectReduction
+-- TYPING RULES OUT NON-TERMINATION (TypedFragmentAcyclicity): the SN-043 contrapositive discharging the
+-- English remark in UntypedOmegaNotStronglyNormalizing that "Ω is untypable". closedWellTypedTerm_notStepSelfLoop:
+-- no closed well-typed term β-steps to itself — a self-loop makes the term non-accessible under the
+-- one-step-successor relation (accessibleElementNotSelfRelated), contradicting closedStronglyNormalizing; typed
+-- reduction is acyclic. ★ omegaCombinator_notClosedWellTyped: Ω has NO closed type — were it typed, SN-043 would
+-- force it strongly normalizing, but it self-steps forever; so the typing rules genuinely REJECT the prototypical
+-- divergence (untypability proven, not observed). typingRulesOutSelfLooping packages the contrast: a closed
+-- β-self-looping untypable term (Ω) exists, while every closed well-typed term has no self-loop — typing is
+-- exactly the separator. Reuses the Step t t defeq StepSuccessor t t identity (IsStronglyNormalizing = Acc Step).
+#assert_no_axioms FX1Poly.Typed.closedWellTypedTerm_notStepSelfLoop
+#assert_no_axioms FX1Poly.Typed.omegaCombinator_notClosedWellTyped
+#assert_no_axioms FX1Poly.Typed.typingRulesOutSelfLooping
