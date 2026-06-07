@@ -184,6 +184,7 @@ import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Typed.UntypedOmegaNotStronglyNormalizing
 import FX1Poly.Typed.WeaklyNormalizingNotStronglyNormalizing
 import FX1Poly.Typed.StepNonDeterministic
+import FX1Poly.Typed.ConvValueDiscrimination
 import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
@@ -1910,6 +1911,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.outerReduct_reachesCommon
 #assert_no_axioms FX1Poly.Typed.innerReduct_reachesCommon
 #assert_no_axioms FX1Poly.Typed.stepIsNonDeterministicButDiamondCloses
+-- Conv VALUE NON-DEGENERACY (ConvValueDiscrimination): the contrapositive of Conv.eq_of_noStep — distinct closed
+-- normal-form values are NOT convertible. normalLeavesNotConvertibleOfDistinctRoot: two no-step terms with
+-- distinct head generators ⟹ ¬Conv (Conv.eq_of_noStep collapses Conv→Eq, congrArg rootGenerator refutes).
+-- boolTrue ≢ boolFalse + boolTrue ≢ unit concretely; convIsNonDegenerate (★ ∃ a b, ¬Conv a b) is the value-
+-- discrimination sanity property canonicity rests on (if Conv collapsed values, every type would be inhabited
+-- and the theory inconsistent). Distinct from Conv-INJECTIVITY (#947/948, same-head decomposition).
+#assert_no_axioms FX1Poly.Typed.normalLeavesNotConvertibleOfDistinctRoot
+#assert_no_axioms FX1Poly.Typed.boolTrueValue_notConvertible_boolFalseValue
+#assert_no_axioms FX1Poly.Typed.boolTrueValue_notConvertible_unitValue
+#assert_no_axioms FX1Poly.Typed.convIsNonDegenerate
 -- Concrete HasTypeDescPi TYPING-ENGINE derivations of λ-terms (TypedLambdaDerivations): the first concrete
 -- witnesses of the actual typing judgment HasTypeDescPi for honest λ-abstractions (the closed-SN smokes go
 -- through the FT/reducibility layer's fundamentalPiIntroLevelIndexed, NOT the typing engine). identityOn
