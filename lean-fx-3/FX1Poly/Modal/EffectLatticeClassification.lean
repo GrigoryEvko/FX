@@ -348,4 +348,60 @@ theorem effectTrustProductIsLawful :
   BoundedJoinSemilattice.productIsLawful effectIsLawfulBoundedJoinSemilattice
     trustIsLawfulBoundedJoinSemilattice
 
+/-! ## The induced partial order — the algebra recovers the §6.3 dimension order
+
+Every §6.3 lattice dimension is PRESENTED as an order (`opaque < transparent`, `Tot` is the bottom, ...).  This
+section proves the algebra and that presentation AGREE: the bounded-join-semilattice induces the standard
+join-order (`lower ≤ upper ⟺ join lower upper = upper`), and the order laws are THEOREMS derived from the join
+laws — so the spec's order view of each lattice dimension is recovered from its algebra, no separate axioms. -/
+
+/-- The partial order a bounded join-semilattice induces: `lower ≤ upper` iff their join is `upper` (`upper`
+already absorbs `lower`).  The standard join-order — the §6.3 dimension order presented algebraically. -/
+def BoundedJoinSemilattice.le (lattice : BoundedJoinSemilattice) (lower upper : lattice.Carrier) : Prop :=
+  lattice.join lower upper = upper
+
+/-- Reflexivity of the induced order — directly the join's idempotence. -/
+theorem BoundedJoinSemilattice.le_refl {lattice : BoundedJoinSemilattice}
+    (lawful : IsLawfulBoundedJoinSemilattice lattice) (element : lattice.Carrier) :
+    lattice.le element element :=
+  lawful.join_idempotent element
+
+/-- Transitivity of the induced order — by associativity: `join lower upper` reassociates through `middle`. -/
+theorem BoundedJoinSemilattice.le_trans {lattice : BoundedJoinSemilattice}
+    (lawful : IsLawfulBoundedJoinSemilattice lattice)
+    {lower middle upper : lattice.Carrier}
+    (lowerLeMiddle : lattice.le lower middle) (middleLeUpper : lattice.le middle upper) :
+    lattice.le lower upper :=
+  calc lattice.join lower upper
+      = lattice.join lower (lattice.join middle upper) := by rw [middleLeUpper]
+    _ = lattice.join (lattice.join lower middle) upper := (lawful.join_assoc lower middle upper).symm
+    _ = lattice.join middle upper := by rw [lowerLeMiddle]
+    _ = upper := middleLeUpper
+
+/-- Antisymmetry of the induced order — by commutativity: each direction's join IS the other endpoint. -/
+theorem BoundedJoinSemilattice.le_antisymm {lattice : BoundedJoinSemilattice}
+    (lawful : IsLawfulBoundedJoinSemilattice lattice)
+    {first second : lattice.Carrier}
+    (firstLeSecond : lattice.le first second) (secondLeFirst : lattice.le second first) :
+    first = second :=
+  calc first
+      = lattice.join second first := secondLeFirst.symm
+    _ = lattice.join first second := lawful.join_comm second first
+    _ = second := firstLeSecond
+
+/-- The bottom is least — directly the `bottom`-identity law. -/
+theorem BoundedJoinSemilattice.bottom_le {lattice : BoundedJoinSemilattice}
+    (lawful : IsLawfulBoundedJoinSemilattice lattice) (element : lattice.Carrier) :
+    lattice.le lattice.bottom element :=
+  lawful.bottom_join element
+
+/-- Concrete: the §6.3 effect order — `pureEffect` (Tot, the bottom) is below `impureEffect`, recovered as a
+theorem from `effectLattice`'s algebra. -/
+theorem effectLe_pure_impure : effectLattice.le EffectGrade.pureEffect EffectGrade.impureEffect := rfl
+
+/-- Concrete: the trust lattice's induced (join) order — `trustedGrade` (the combine identity / bottom) is below
+`untrustedGrade`.  This is the order-DUAL of the §6.3 trust order (where Verified is the TOP): trust is presented
+here as the weakest-link combine in join form, so its bottom is the trusted identity. -/
+theorem trustLe_trusted_untrusted : trustLattice.le TrustGrade.trustedGrade TrustGrade.untrustedGrade := rfl
+
 end FX1Poly.Modal

@@ -315,6 +315,18 @@ annihilator (`join impure pure = impure ≠ pure`), upgrading the informal DIM5-
 #assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.productIsLawful
 #assert_no_axioms FX1Poly.Modal.effectTrustProductLattice
 #assert_no_axioms FX1Poly.Modal.effectTrustProductIsLawful
+-- The induced partial ORDER (the algebra recovers the §6.3 dimension order): BoundedJoinSemilattice.le (lower ≤
+-- upper iff join = upper) + le_refl/le_trans/le_antisymm/bottom_le (the partial-order laws DERIVED from the join
+-- laws, not separate axioms) + effectLe_pure_impure (the §6.3 effect order Tot ≤ impure) + trustLe_trusted_
+-- untrusted (the trust dual order). Shows the spec's order presentation of each lattice dimension agrees with
+-- its algebra. All zero-axiom (calc via the shipped join laws).
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.le
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.le_refl
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.le_trans
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.le_antisymm
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.bottom_le
+#assert_no_axioms FX1Poly.Modal.effectLe_pure_impure
+#assert_no_axioms FX1Poly.Modal.trustLe_trusted_untrusted
 #assert_no_axioms FX1Poly.Modal.DimensionGradeAlgebra
 #assert_no_axioms FX1Poly.Modal.GradedDimensionName
 #assert_no_axioms FX1Poly.Modal.GradedDimensionName.gradeAlgebraOf
