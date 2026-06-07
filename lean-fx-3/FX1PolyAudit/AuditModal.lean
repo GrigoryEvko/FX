@@ -22,6 +22,7 @@ import FX1Poly.Modal.BoundedJoinSemilatticeUniversal
 import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
 import FX1Poly.Modal.FractionalPermission
+import FX1Poly.Modal.ClockDomainLatticeDimension
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -698,3 +699,33 @@ witnesses; the cross-multiplied Nat algebra reuses `ComplexitySemiring`'s clean 
 #assert_no_axioms FX1Poly.Modal.Permission.hasPositiveDenom
 #assert_no_axioms FX1Poly.Modal.Permission.add_assoc
 #assert_no_axioms FX1Poly.Modal.Permission.add_assoc_smoke
+
+/-! ## §6.3 Dim 12 / §18.7 clock-domain dimension — the first PARAMETERIZED (infinite-carrier) lattice
+(`ClockDomainLatticeDimension`)
+
+Every prior lattice dimension (effect/trust/security 2-chains, overflow's finite diamond M3) has a FINITE
+enum carrier.  The clock domain `{combinational (bottom), sync (clockId : Nat), crossDomainError (top)}` is
+the FIRST with an INFINITE carrier, hence the first INFINITE ANTICHAIN (`sync a` / `sync b` pairwise
+incomparable for all distinct clocks).  The parameterized `sync`-`sync` join laws need the three propext-clean
+`Nat.beq` facts (`natBeqReflexive` / `natEqOfBeqTrue` / `natBeqCommutes`, hand-rolled by structural
+recursion); `clockJoinCommutes` / `clockJoinAssociates` route through them (`Bool.cond_true`/`_false` discharge
+the guard residues).  `clockSyncIncomparableOfDistinct` is the genuinely-new infinite-antichain content;
+`clockOverflowProductIsLawful` composes the infinite-antichain dimension with the finite diamond via the
+shipped `productIsLawful` (cardinality-agnostic composition).  All propext-free; the Nat helpers are gated
+transitively by the lattice/antichain theorems but listed explicitly for provenance. -/
+
+#assert_no_axioms FX1Poly.Modal.natBeqReflexive
+#assert_no_axioms FX1Poly.Modal.natEqOfBeqTrue
+#assert_no_axioms FX1Poly.Modal.natBeqCommutes
+#assert_no_axioms FX1Poly.Modal.ClockGrade.join
+#assert_no_axioms FX1Poly.Modal.clockJoinSyncWithSelf
+#assert_no_axioms FX1Poly.Modal.clockLattice
+#assert_no_axioms FX1Poly.Modal.clockJoinCommutes
+#assert_no_axioms FX1Poly.Modal.clockJoinAssociates
+#assert_no_axioms FX1Poly.Modal.clockIsLawfulBoundedJoinSemilattice
+#assert_no_axioms FX1Poly.Modal.clockSyncIncomparableOfDistinct
+#assert_no_axioms FX1Poly.Modal.clockSyncJoinDistinctIsCrossDomain
+#assert_no_axioms FX1Poly.Modal.clockSync01Incomparable
+#assert_no_axioms FX1Poly.Modal.clockCombinationalIsLeast
+#assert_no_axioms FX1Poly.Modal.clockCrossDomainIsGreatest
+#assert_no_axioms FX1Poly.Modal.clockOverflowProductIsLawful
