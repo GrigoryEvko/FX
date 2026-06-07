@@ -59,6 +59,22 @@ def flatTypingRuleDescOf (generator : Generator) : Option TypingRuleDesc :=
 theorem flatTypingRuleDescOf_productCode :
     flatTypingRuleDescOf .gen_productCode = some { outputType := universeFormerOutput } := rfl
 
+/-- `gen_sumCode` is a flat former (metadata check). -/
+theorem flatTypingRuleDescOf_sumCode :
+    flatTypingRuleDescOf .gen_sumCode = some { outputType := universeFormerOutput } := rfl
+
+/-- `gen_eitherCode` is a flat former (metadata check). -/
+theorem flatTypingRuleDescOf_eitherCode :
+    flatTypingRuleDescOf .gen_eitherCode = some { outputType := universeFormerOutput } := rfl
+
+/-- `gen_arrowCode` is a flat former (metadata check). -/
+theorem flatTypingRuleDescOf_arrowCode :
+    flatTypingRuleDescOf .gen_arrowCode = some { outputType := universeFormerOutput } := rfl
+
+/-- `gen_equivCode` is a flat former (metadata check). -/
+theorem flatTypingRuleDescOf_equivCode :
+    flatTypingRuleDescOf .gen_equivCode = some { outputType := universeFormerOutput } := rfl
+
 /-- **The flat/cumulative partition.**  `gen_productCode` is NOT a cumulative former — `typingRuleDescOf`
 returns `none` for it (it lives in `flatTypingRuleDescOf` instead).  Witnesses that the two engines cover the
 type-formers without overlap. -/
@@ -121,6 +137,52 @@ theorem productFlatFormationSmoke (profile : PolyProfile) (flag : UniverseFlag) 
   HasTypeDescFlat.flatFormation TypingContext.empty .gen_productCode ()
     (flatProductTypeZeroChildren flag) [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc] flag
     { outputType := universeFormerOutput } flatTypingRuleDescOf_productCode
+    (productTypeZeroFlatPremise profile flag)
+
+/-- **`sum (Type@0) (Type@0)` TYPES** at `Type@(lmax 1 1)` in the flat engine — the `gen_sumCode` twin of
+`productFlatFormationSmoke`.  The children (`flatProductTypeZeroChildren`) and the premise
+(`productTypeZeroFlatPremise`) are FORMER-AGNOSTIC — they type two `Type@0` codes under the base context, never
+mentioning the generator — so the same witnesses feed every flat former; only the generator and its
+`flatTypingRuleDescOf` row differ. -/
+theorem sumFlatFormationSmoke (profile : PolyProfile) (flag : UniverseFlag) :
+    HasTypeDescFlat profile TypingContext.empty
+      (.mkGen .gen_sumCode () (flatProductTypeZeroChildren flag))
+      (universeCodeCell (lmaxAll [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc]) flag) :=
+  HasTypeDescFlat.flatFormation TypingContext.empty .gen_sumCode ()
+    (flatProductTypeZeroChildren flag) [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc] flag
+    { outputType := universeFormerOutput } flatTypingRuleDescOf_sumCode
+    (productTypeZeroFlatPremise profile flag)
+
+/-- **`either (Type@0) (Type@0)` TYPES** at `Type@(lmax 1 1)` in the flat engine (the `gen_eitherCode` twin). -/
+theorem eitherFlatFormationSmoke (profile : PolyProfile) (flag : UniverseFlag) :
+    HasTypeDescFlat profile TypingContext.empty
+      (.mkGen .gen_eitherCode () (flatProductTypeZeroChildren flag))
+      (universeCodeCell (lmaxAll [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc]) flag) :=
+  HasTypeDescFlat.flatFormation TypingContext.empty .gen_eitherCode ()
+    (flatProductTypeZeroChildren flag) [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc] flag
+    { outputType := universeFormerOutput } flatTypingRuleDescOf_eitherCode
+    (productTypeZeroFlatPremise profile flag)
+
+/-- **`arrow (Type@0) (Type@0)` TYPES** at `Type@(lmax 1 1)` in the flat engine — the non-dependent function-type
+code (`gen_arrowCode`, distinct from the dependent `piTyCode`). -/
+theorem arrowFlatFormationSmoke (profile : PolyProfile) (flag : UniverseFlag) :
+    HasTypeDescFlat profile TypingContext.empty
+      (.mkGen .gen_arrowCode () (flatProductTypeZeroChildren flag))
+      (universeCodeCell (lmaxAll [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc]) flag) :=
+  HasTypeDescFlat.flatFormation TypingContext.empty .gen_arrowCode ()
+    (flatProductTypeZeroChildren flag) [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc] flag
+    { outputType := universeFormerOutput } flatTypingRuleDescOf_arrowCode
+    (productTypeZeroFlatPremise profile flag)
+
+/-- **`equiv (Type@0) (Type@0)` TYPES** at `Type@(lmax 1 1)` in the flat engine (the `gen_equivCode` twin) —
+completing the five-former flat-formation corpus (product / sum / either / arrow / equiv all TYPE). -/
+theorem equivFlatFormationSmoke (profile : PolyProfile) (flag : UniverseFlag) :
+    HasTypeDescFlat profile TypingContext.empty
+      (.mkGen .gen_equivCode () (flatProductTypeZeroChildren flag))
+      (universeCodeCell (lmaxAll [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc]) flag) :=
+  HasTypeDescFlat.flatFormation TypingContext.empty .gen_equivCode ()
+    (flatProductTypeZeroChildren flag) [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc] flag
+    { outputType := universeFormerOutput } flatTypingRuleDescOf_equivCode
     (productTypeZeroFlatPremise profile flag)
 
 end FX1Poly.Typed

@@ -198,6 +198,7 @@ import FX1Poly.Typed.FlatDescTelescope
 import FX1Poly.Typed.HasTypeDescFlat
 import FX1Poly.Typed.HasTypeDescFlatInversion
 import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
+import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2370,6 +2371,31 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.flatFormerCellStepIsChildCongruence
 #assert_no_axioms FX1Poly.Typed.FlatDescTelescope.subjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.subjectReduction
+-- FLAT-FORMER FAMILY COMPLETION (#935): the other four flat formers (sum/either/arrow/equiv) TYPE — each a row
+-- lemma (rfl) + a formation smoke (the children + premise are former-agnostic, only the generator/row differ),
+-- completing the five-former flat-formation corpus alongside the existing productFlatFormationSmoke.
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_sumCode
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_eitherCode
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_arrowCode
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_equivCode
+#assert_no_axioms FX1Poly.Typed.sumFlatFormationSmoke
+#assert_no_axioms FX1Poly.Typed.eitherFlatFormationSmoke
+#assert_no_axioms FX1Poly.Typed.arrowFlatFormationSmoke
+#assert_no_axioms FX1Poly.Typed.equivFlatFormationSmoke
+-- FLAT-ENGINE STRONG NORMALIZATION (#935, next increment): the flat twin of
+-- HasTypeDesc.subjectStronglyNormalizingNative. flatFormerCellStronglyNormalizingOfChildren reuses the GENERIC
+-- Core accessibility substrate (formerCell_isStronglyNormalizing_of_accChildren) with the firing-45 congruence-
+-- only inversion swapped in; FlatDescTelescope.childrenStronglyNormalizing is a plain (non-mutual) structural
+-- recursion calling HasTypeDesc.subjectStronglyNormalizingNative on each head; HasTypeDescFlat.subjectStronglyNormalizing
+-- is the headline; the five closed witnesses show each flat former TYPES and is SN.
+#assert_no_axioms FX1Poly.Typed.flatFormerCellStronglyNormalizingOfChildren
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.childrenStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.subjectStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.productFlatTypeStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.sumFlatTypeStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.eitherFlatTypeStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.arrowFlatTypeStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.equivFlatTypeStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
