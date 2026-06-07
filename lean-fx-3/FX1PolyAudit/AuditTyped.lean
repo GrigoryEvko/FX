@@ -83,6 +83,7 @@ import FX1Poly.Typed.SimplyTypedConvDecision
 import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.SimplyTypedMetatheoryViaSconing
 import FX1Poly.Tier0.FxRenamingCategory
+import FX1Poly.Tier0.FxBaseRenamingCategory
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4215,6 +4216,33 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.fxRenamingCategory
 #assert_no_axioms FX1Poly.Tier0.fxRenamingCategory_identity_eq
 #assert_no_axioms FX1Poly.Tier0.fxRenamingCategory_compose_eq
+-- The DATA-morphism renaming category (FxBaseRenamingCategory.lean, SN-084) — the base the function-morphism
+-- fxRenamingCategory above CANNOT be. fxRenamingCategory's morphisms are bare functions (Fin source -> Fin
+-- target), so every downstream CwR equality (pullback commutes/universal, iso inverse laws) is a FUNCTION
+-- equality needing funext (Quot.sound); the thin RMC escapes only by going degenerate (Prop-morphisms). This
+-- file reifies a renaming as DATA: RenamingTo target source = the length-source vector of Fin target images, so
+-- morphism equality is STRUCTURAL. All three category laws hold by induction over the vector (compose_assoc via
+-- mapImages fusion + lookup_mapImages; identity_compose / compose_identity via the identity-lookup algebra), NO
+-- funext -- so this base CAN host a zero-axiom RMC. lookup: the faithful bridge back to the function world
+-- (RawRenaming); lookup_compose: lookup is a FUNCTOR (carries composition to function composition pointwise).
+-- The propext trap (lookup-extensionality, a simultaneous two-renaming indexed match) is AVOIDED -- identity
+-- _compose binds the cons subscope via @RenamingTo.cons _ source ... rather than matching the Nat index as
+-- source+1. HONEST SCOPE: the underlying-category data-morphism base of fxBaseRMC; NOT yet the RMC (the
+-- representable-map class + 3 CwR axioms, now structurally expressible, are the next rung, deferred). All
+-- zero-axiom. _identity_eq / _compose_eq: the categorical identity/composition ARE the data-renaming ops (defeq).
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.lookup
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.mapImages_mapImages
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.lookup_mapImages
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.mapImages_congr
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.mapImages_id
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.compose_assoc
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.lookup_compose
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.identity_lookup
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.identity_compose
+#assert_no_axioms FX1Poly.Tier0.RenamingTo.compose_identity
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingCategory
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingCategory_identity_eq
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingCategory_compose_eq
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
