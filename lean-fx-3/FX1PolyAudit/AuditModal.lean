@@ -943,3 +943,17 @@ injection + noConfusion). -/
 #assert_no_axioms FX1Poly.Modal.dualChannelProgressesOrIsDone
 #assert_no_axioms FX1Poly.Modal.endChannelIsTerminal
 #assert_no_axioms FX1Poly.Modal.concreteChannelStep
+-- WHY DUALITY IS NECESSARY (SessionCommunication, §27.2-flavored necessity completing the session arc): the
+-- complement of dualChannelProgressesOrIsDone — drop the duality hypothesis and deadlock returns. A mismatched
+-- send/send channel (send 0.end, send 0.end) is STUCK (sendSendStuck — no CommStep arm matches two senders) yet
+-- not terminal, and exactly NON-dual (sendSendIsNotDual). nonDualChannelDeadlocks: ∃ a non-dual stuck non-terminal
+-- config. dualPartnerFixesTheMismatchedDeadlock: the SAME first endpoint deadlocks with a mismatched partner but
+-- COMMUNICATES with its dual partner (via concreteChannelStep) — duality IS the fix. ★ dualityIsNecessaryForDead
+-- lockFreedom: dual channels never deadlock but a non-dual one can, so the duality hypothesis is ESSENTIAL (the
+-- session analogue of SN-NECESSITY #950: the discipline rules out the bad behavior). Caps the session arc (82
+-- algebra / 83 safety / 84 necessity). All zero-axiom (cases-impossibility + decide + cite).
+#assert_no_axioms FX1Poly.Modal.sendSendStuck
+#assert_no_axioms FX1Poly.Modal.sendSendIsNotDual
+#assert_no_axioms FX1Poly.Modal.nonDualChannelDeadlocks
+#assert_no_axioms FX1Poly.Modal.dualPartnerFixesTheMismatchedDeadlock
+#assert_no_axioms FX1Poly.Modal.dualityIsNecessaryForDeadlockFreedom

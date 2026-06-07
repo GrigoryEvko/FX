@@ -124,4 +124,61 @@ theorem concreteChannelStep :
       (SessionType.endSession, SessionType.endSession) :=
   CommStep.exchangeSendReceive 0 SessionType.endSession SessionType.endSession
 
+/-! ## Why duality is NECESSARY — a non-dual channel can deadlock (§27.2-flavored necessity)
+
+`dualChannelProgressesOrIsDone` shows a DUAL channel never deadlocks (it steps or is done).  This section is
+the complementary NECESSITY: drop the duality hypothesis and deadlock returns.  A mismatched channel where both
+endpoints try to `send` — `(send 0 . end, send 0 . end)` — has NO communication step (no arm matches two
+senders) yet is NOT terminal: a genuine stuck state.  And it is exactly NON-dual (`send 0 . end ≠ dual (send 0 .
+end) = receive 0 . end`).  So the duality hypothesis in the progress theorem is ESSENTIAL — without it channels
+can deadlock mid-protocol.  This is the session analogue of "untyped Ω is not SN" (`SN-NECESSITY`): the
+discipline is what rules out the bad behavior. -/
+
+/-- A mismatched `send`/`send` channel is STUCK — no `CommStep` applies (the exchange arm needs one sender and
+one receiver; two senders never match). -/
+theorem sendSendStuck :
+    ¬ ∃ result, CommStep (SessionType.send 0 SessionType.endSession,
+      SessionType.send 0 SessionType.endSession) result := by
+  rintro ⟨result, step⟩; cases step
+
+/-- The mismatched `send`/`send` channel is NOT dual — its second endpoint differs from the dual of its first
+(`send 0 . end ≠ receive 0 . end`).  This is exactly the channel that deadlocks. -/
+theorem sendSendIsNotDual :
+    SessionType.send 0 SessionType.endSession ≠ (SessionType.send 0 SessionType.endSession).dual := by
+  decide
+
+/-- ★ A non-dual channel can DEADLOCK — there is a configuration that is non-dual, stuck (no step), and not the
+terminal `(end, end)`.  The bad behavior the duality discipline rules out. -/
+theorem nonDualChannelDeadlocks :
+    ∃ first second : SessionType,
+      second ≠ first.dual ∧
+      (¬ ∃ result, CommStep (first, second) result) ∧
+      (first, second) ≠ (SessionType.endSession, SessionType.endSession) :=
+  ⟨SessionType.send 0 SessionType.endSession, SessionType.send 0 SessionType.endSession,
+   sendSendIsNotDual, sendSendStuck, by decide⟩
+
+/-- The duality discipline is precisely the FIX: the SAME first endpoint `send 0 . end` DEADLOCKS with a
+mismatched partner `send 0 . end`, but COMMUNICATES with its dual partner `receive 0 . end` (`concreteChannel
+Step`).  Duality is exactly the condition that turns a stuck channel into a progressing one. -/
+theorem dualPartnerFixesTheMismatchedDeadlock :
+    (¬ ∃ result, CommStep (SessionType.send 0 SessionType.endSession,
+      SessionType.send 0 SessionType.endSession) result) ∧
+    (∃ result, CommStep (SessionType.send 0 SessionType.endSession,
+      SessionType.receive 0 SessionType.endSession) result) :=
+  ⟨sendSendStuck, ⟨_, concreteChannelStep⟩⟩
+
+/-- ★ **Duality is necessary for deadlock-freedom.**  A DUAL channel always progresses or is done
+(`dualChannelProgressesOrIsDone`), but a NON-dual channel can deadlock (`nonDualChannelDeadlocks`).  So the
+duality hypothesis is essential to the §11.11 deadlock-freedom guarantee — it is exactly what session typing
+enforces, and exactly what rules out stuck channels. -/
+theorem dualityIsNecessaryForDeadlockFreedom :
+    (∀ session : SessionType,
+      (∃ result, CommStep (session, session.dual) result) ∨
+      (session, session.dual) = (SessionType.endSession, SessionType.endSession)) ∧
+    (∃ first second : SessionType,
+      second ≠ first.dual ∧
+      (¬ ∃ result, CommStep (first, second) result) ∧
+      (first, second) ≠ (SessionType.endSession, SessionType.endSession)) :=
+  ⟨dualChannelProgressesOrIsDone, nonDualChannelDeadlocks⟩
+
 end FX1Poly.Modal
