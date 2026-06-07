@@ -388,6 +388,7 @@ import FX1Poly.Typed.IsTypeDescGenericSmoke
 import FX1Poly.Typed.KnownUnsoundnessCorpus
 import FX1Poly.Typed.UniverseClassificationAcyclic
 import FX1Poly.Modal.SecurityNoninterferenceGeneral
+import FX1Poly.Modal.GradedApplicationFlow
 import FX1Poly.Typed.MetatheoryFuzz
 import FX1Poly.Typed.MechanizedProofCrossReference
 import FX1Poly.Typed.FormalReviewGate
@@ -5603,6 +5604,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Modal.securityApplicationGradeAt
 #assert_no_axioms FX1Poly.Modal.securityClassifiedFunctionPoisonsApplication
 #assert_no_axioms FX1Poly.Modal.securityClassifiedArgumentPoisonsApplication
+-- GENERIC App-scaling flow law (GradedApplicationFlow.lean): the dimension-agnostic generalization of the
+-- security flow law above, over ANY IsLawfulOrderedGradeSemiring (all 21 graded dimensions).  get_add_lawful
+-- / get_scale_lawful (generic get-commutations, nil arm via lawful.add_zero / mul_zero) feed
+-- HasGradeOver.applicationGradeAt = the §6.2 App rule read pointwise for any R; applicationGradePoisonsOf-
+-- Absorbing = the generic poison (an R.add-absorbing grade in the function position poisons the result).
+-- securityFunctionPoison_viaGeneric instantiates at fxSecuritySemiring + classified to recover the firing-52
+-- security poison — every dimension's flow-soundness is now a corollary.
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.get_add_lawful
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.get_scale_lawful
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.applicationGradeAt
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.applicationGradePoisonsOfAbsorbing
+#assert_no_axioms FX1Poly.Modal.securityFunctionPoison_viaGeneric
 -- Part 6: the fractional-permission OVERALLOCATION rejection (the last usage `no` row, flipped to YES now
 -- that the §6.4 permission algebra FX1Poly.Modal.Permission ships).  corpusRejectsFractionalOverallocation
 -- (sound guarded add of 2/3+2/3 = conflict, not an over-full share; backed by Permission.add_neverOver-
