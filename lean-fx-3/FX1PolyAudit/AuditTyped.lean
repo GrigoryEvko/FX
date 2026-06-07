@@ -96,6 +96,7 @@ import FX1Poly.Tier0.FxBaseSubstVec
 import FX1Poly.Tier0.FxBaseSubstCategory
 import FX1Poly.Tier0.FxBaseSubstWeakening
 import FX1Poly.Tier0.FxBaseSubstComprehension
+import FX1Poly.Tier0.FxBaseSubstSingleton
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4478,6 +4479,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_compose_cons
 #assert_no_axioms FX1Poly.Tier0.SubstVec.cons_toRawTermSubst
 #assert_no_axioms FX1Poly.Tier0.SubstVec.cons_unique
+-- The single-substitution / β-contraction section (FxBaseSubstSingleton.lean, brick 5 of the term-carrying CwR
+-- arc). The most important INSTANCE of comprehension: SubstVec.singleton rawArg := cons rawArg (identity scope) :
+-- SubstVec scope (scope+1), the morphism scope+1⟶scope sending fresh var 0 to rawArg and shifting the rest down —
+-- EXACTLY the substitution canonical β-reduction runs (app (lam body) arg ↝ subst0 body arg). singleton_lookup_zero
+-- (head = arg, rfl). weakening_compose_singleton is the genuine CwF content: the β-contraction is a SECTION of the
+-- display map (weakening.compose (singleton arg) = identity, the SUBSTVEC-4 p-law at the identity tail).
+-- singleton_toRawTermSubst: the categorical singleton IS RawTermSubst.singleton pointwise (match: head rfl, tail
+-- identity_lookup). subst_singleton_eq_subst0 is THE operational β bridge: subst via the categorical singleton =
+-- RawTerm.subst0 (the de Bruijn β-reduct the Step relation references), via subst_pointwise (subst0 @[reducible] =
+-- subst singleton). All zero-axiom (no funext). [Full fxBaseSubstRMC deferred: subst-iso decider is multi-step;
+-- term base has NO terminal object so its GlobalSections differs from the renaming base — see file docstring.]
+#assert_no_axioms FX1Poly.Tier0.SubstVec.singleton
+#assert_no_axioms FX1Poly.Tier0.SubstVec.singleton_lookup_zero
+#assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_compose_singleton
+#assert_no_axioms FX1Poly.Tier0.SubstVec.singleton_toRawTermSubst
+#assert_no_axioms FX1Poly.Tier0.SubstVec.subst_singleton_eq_subst0
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
