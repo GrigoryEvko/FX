@@ -163,4 +163,57 @@ theorem universeClassificationChain_twoStep_nonVacuous {profile : PolyProfile} {
     (.single (HasTypeDescPi.ofFormation
       (HasTypeDesc.universeFormation context LevelExpr.lzero.lsucc flag)))
 
+/-! ## Well-foundedness — the order-theoretic companion to acyclicity
+
+Acyclicity (above) rules out classification CYCLES; well-foundedness rules out infinite DESCENDING
+classification chains.  They are distinct: a relation can be acyclic yet not well-founded (e.g. `n ↦ n+1`
+on `Int`).  Here both hold, and together they make the universe hierarchy a strict well-founded order — the
+foundation for well-founded induction/recursion over universe levels.  Well-foundedness reduces to the same
+`LevelExpr.size` rank that drives `subjectSizeLtClassifier`: every classification edge strictly increases the
+size, so the single-step classification relation is a SUBRELATION of `InvImage Nat.lt LevelExpr.size`, which
+is well-founded. -/
+
+/-- **The single-step universe-classification relation on levels.**  `UniverseClassifies a b` holds when
+`Type@a` (at some flag) is grown-classified by `Type@b` (at some flag).  The level-only edge relation whose
+well-foundedness is established below. -/
+def UniverseClassifies (profile : PolyProfile) {scope : Nat}
+    (context : TypingContext profile scope) (subjectLevel classifierLevel : LevelExpr) : Prop :=
+  ∃ (subjectFlag classifierFlag : UniverseFlag),
+    HasTypeDescPi profile context (universeCodeCell subjectLevel subjectFlag)
+      (universeCodeCell classifierLevel classifierFlag)
+
+/-- **A classification edge strictly increases level size.**  `Type@a : Type@b` forces `b = a.lsucc`
+(`grownUniverseTypingForcesSuccessor`), so `size a < size b`.  The single-edge specialization of
+`UniverseClassificationChain.subjectSizeLtClassifier`; the subrelation witness for well-foundedness. -/
+theorem universeClassifies_size_lt {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subjectLevel classifierLevel : LevelExpr}
+    (edge : UniverseClassifies profile context subjectLevel classifierLevel) :
+    subjectLevel.size < classifierLevel.size := by
+  obtain ⟨_subjectFlag, _classifierFlag, derivation⟩ := edge
+  obtain ⟨classifierEq, _flagEq⟩ := grownUniverseTypingForcesSuccessor derivation
+  subst classifierEq
+  show LevelExpr.size _ < LevelExpr.size (LevelExpr.lsucc _)
+  exact Nat.lt_succ_self _
+
+/-- **Universe classification is well-founded (§27.2 / §1.4).**  There is no infinite descending chain of
+classifications `⋯ : Type@a₂ : Type@a₁ : Type@a₀` — the single-step `UniverseClassifies` relation is a
+SUBRELATION of `InvImage Nat.lt LevelExpr.size` (every edge strictly increases size,
+`universeClassifies_size_lt`), and that is well-founded (`InvImage.wf` of `Nat.lt`).  Distinct from
+`grownUniverseTypingHasNoCycleOfAnyLength` (acyclicity rules out cycles, well-foundedness rules out infinite
+descent); together the universe hierarchy is a strict well-founded order — the foundation for well-founded
+induction over universe levels. -/
+theorem grownUniverseClassificationIsWellFounded {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    WellFounded (UniverseClassifies profile context) :=
+  Subrelation.wf (fun edge => universeClassifies_size_lt edge)
+    (InvImage.wf LevelExpr.size Nat.lt_wfRel.wf)
+
+/-- **Non-vacuity: the classification relation is inhabited.**  `Type@0 : Type@1` is a real edge (via
+`HasTypeDescPi.ofFormation ∘ HasTypeDesc.universeFormation`), so the well-foundedness above is over an
+INHABITED relation, not vacuously true over an empty one. -/
+theorem universeClassifies_nonVacuous {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (flag : UniverseFlag) :
+    UniverseClassifies profile context LevelExpr.lzero LevelExpr.lzero.lsucc :=
+  ⟨flag, flag, HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context LevelExpr.lzero flag)⟩
+
 end FX1Poly.Typed

@@ -5639,6 +5639,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.grownUniverseTypingHasNoTwoCycleViaChain
 #assert_no_axioms FX1Poly.Typed.universeClassificationChain_nonVacuous
 #assert_no_axioms FX1Poly.Typed.universeClassificationChain_twoStep_nonVacuous
+-- Well-foundedness — the order-theoretic companion to acyclicity.  UniverseClassifies = the single-step
+-- level-classification relation; universeClassifies_size_lt = each edge strictly increases LevelExpr.size;
+-- grownUniverseClassificationIsWellFounded = WellFounded via Subrelation of InvImage Nat.lt size (no infinite
+-- DESCENDING classification chain — distinct from acyclicity's no-cycle).  Together: strict well-founded order.
+#assert_no_axioms FX1Poly.Typed.UniverseClassifies
+#assert_no_axioms FX1Poly.Typed.universeClassifies_size_lt
+#assert_no_axioms FX1Poly.Typed.grownUniverseClassificationIsWellFounded
+#assert_no_axioms FX1Poly.Typed.universeClassifies_nonVacuous
 
 -- §27.3 Layer-2 property-based metatheory fuzzer: a TOTAL deterministic generator of well-typed terms
 -- (`metatheoryFuzzFamily`, the depth-n β-redex tower `(λx.x)ⁿ Type@0`) with the four Layer-2 properties
