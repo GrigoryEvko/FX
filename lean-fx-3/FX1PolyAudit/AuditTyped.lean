@@ -1999,6 +1999,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityTwoArgReducesToTypeZero
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityTwoArg_subjectReduction
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityTwoArg_stronglyNormalizing
+-- Σ-FORMATION in the typing engine: the generic genFormationPi arm types a dependent PAIR type, not
+-- only Π. The reducibility layer already had Σ formation (fundamentalSigmaFormationLevelIndexed); these
+-- are the first in the TYPING judgment (HasTypeDescPi). genFormationPiTypesBothPiAndSigmaFormers bundles
+-- Π and Σ at one identical context+classifier — the conjuncts differ only in the head former, i.e. only
+-- in the Generator argument to the same arm: the cascade-free typing thesis, a former is a table row.
+#assert_no_axioms FX1Poly.Typed.dependentPairTypeOverTypeVariable_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.closedDependentPairType_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.closedDependentPairType_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.genFormationPiTypesBothPiAndSigmaFormers
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the

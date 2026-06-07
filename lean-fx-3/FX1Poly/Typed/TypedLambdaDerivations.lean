@@ -491,4 +491,96 @@ theorem polymorphicIdentityTwoArg_stronglyNormalizing
   HasTypeDescPi.closedStronglyNormalizing
     (polymorphicIdentityAppliedToTypeOneThenTypeZero_hasTypeDescPi (profile := profile) flag)
 
+/-! ## Dependent PAIR-type formation — the generic `genFormationPi` arm types Σ, not only Π
+
+Every derivation above heads a Π former (`piTyCodeCell`).  But the engine's
+generic `genFormationPi` arm is FORMER-AGNOSTIC: it dispatches through
+`typingRuleDescOf`, whose `gen_sigmaTyCode` row carries the SAME
+`{ outputType := universeFormerOutput }` payload as the `gen_piTyCode` row.  So
+the identical proof script — `genFormationPi _ <generator> () _ <levels> flag
+{ outputType := universeFormerOutput } rfl` followed by a two-entry
+`DescTelescopePi` premise — types a dependent PAIR type `Σ(x : A). A` by swapping
+ONLY the `Generator` argument from `.gen_piTyCode` to `.gen_sigmaTyCode`.  These
+are the first Σ-FORMATION derivations in the TYPING ENGINE (`HasTypeDescPi`); the
+closed-SN smoke corpus exercises Σ only through the LEVEL-INDEXED reducibility
+layer (`fundamentalSigmaFormationLevelIndexed`), never the typing judgment. -/
+
+/-- In context `[A : Type@0]`, the dependent pair type `Σ(x : A). A` (codes
+`sigmaTyCodeCell (var 0) (var 1)`) is a type at `Type@(lmax 0 0)` — the Σ twin of
+`dependentArrowOverTypeVariable_hasTypeDescPi`, via the SAME `genFormationPi` arm
+with `.gen_sigmaTyCode` in place of `.gen_piTyCode`.  The `DescTelescopePi`
+premise types the domain `A` (= `var 0`) and the shifted codomain `A` (= `var 1`)
+each at `Type@0` by the `var` rule. -/
+theorem dependentPairTypeOverTypeVariable_hasTypeDescPi
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    HasTypeDescPi profile
+      (TypingContext.empty.cons (universeCodeCell LevelExpr.lzero flag))
+      (sigmaTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+      (universeCodeCell (lmaxAll [LevelExpr.lzero, LevelExpr.lzero]) flag) := by
+  refine HasTypeDescPi.genFormationPi _ .gen_sigmaTyCode () _
+    [LevelExpr.lzero, LevelExpr.lzero] flag { outputType := universeFormerOutput }
+    rfl ?premises
+  refine DescTelescopePi.cons _ _ _ _ _ _ ?domainTyped ?codomainTelescope
+  · exact HasTypeDescPi.ofFormation (HasTypeDesc.var _ (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+  · refine DescTelescopePi.cons _ _ _ _ _ _ ?codomainTyped ?nilTelescope
+    · exact HasTypeDescPi.ofFormation
+        (HasTypeDesc.var _ (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+    · exact DescTelescopePi.nil _ _
+
+/-- A CLOSED dependent pair type `Σ(_ : Type@0). Type@0` (codes
+`sigmaTyCodeCell (universeCode 0) (universeCode 0)`) is a type at
+`Type@(lmax (0+1) (0+1))`, typed by the same `genFormationPi` arm at the
+`gen_sigmaTyCode` row — the Σ twin of the closed Π formations above.  Each
+universe-code component is typed by `universeFormation` (`Type@0 : Type@1`), so
+the telescope premises live one level up, exactly as in the Π case. -/
+theorem closedDependentPairType_hasTypeDescPi
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    HasTypeDescPi profile TypingContext.empty
+      (sigmaTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+        (universeCodeCell LevelExpr.lzero flag))
+      (universeCodeCell (lmaxAll [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc]) flag) := by
+  refine HasTypeDescPi.genFormationPi _ .gen_sigmaTyCode () _
+    [LevelExpr.lzero.lsucc, LevelExpr.lzero.lsucc] flag { outputType := universeFormerOutput }
+    rfl ?premises
+  refine DescTelescopePi.cons _ _ _ _ _ _ ?domainTyped ?codomainTelescope
+  · exact HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag)
+  · refine DescTelescopePi.cons _ _ _ _ _ _ ?codomainTyped ?nilTelescope
+    · exact HasTypeDescPi.ofFormation
+        (HasTypeDesc.universeFormation (TypingContext.empty.cons _) LevelExpr.lzero flag)
+    · exact DescTelescopePi.nil _ _
+
+/-- The closed dependent pair type is strongly normalizing — SN-043 on the
+concrete `genFormationPi` Σ derivation. -/
+theorem closedDependentPairType_stronglyNormalizing
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (sigmaTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+        (universeCodeCell LevelExpr.lzero flag) : RawTerm 0) :=
+  HasTypeDescPi.closedStronglyNormalizing
+    (closedDependentPairType_hasTypeDescPi (profile := profile) flag)
+
+/-- ★ The generic `genFormationPi` arm types BOTH the Π and the Σ former at one
+identical context and output classifier — the two conjuncts differ ONLY in the
+head former (`piTyCodeCell` vs `sigmaTyCodeCell`), hence ONLY in the `Generator`
+argument fed to the same arm (`.gen_piTyCode` vs `.gen_sigmaTyCode`).  This is the
+cascade-free typing thesis made concrete: a new type former is a
+`typingRuleDescOf` table ROW, never a new `HasTypeDescPi` constructor. -/
+theorem genFormationPiTypesBothPiAndSigmaFormers
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    HasTypeDescPi profile
+        (TypingContext.empty.cons (universeCodeCell LevelExpr.lzero flag))
+        (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+        (universeCodeCell (lmaxAll [LevelExpr.lzero, LevelExpr.lzero]) flag)
+      ∧
+    HasTypeDescPi profile
+        (TypingContext.empty.cons (universeCodeCell LevelExpr.lzero flag))
+        (sigmaTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+        (universeCodeCell (lmaxAll [LevelExpr.lzero, LevelExpr.lzero]) flag) :=
+  ⟨dependentArrowOverTypeVariable_hasTypeDescPi flag,
+   dependentPairTypeOverTypeVariable_hasTypeDescPi flag⟩
+
 end FX1Poly.Typed
