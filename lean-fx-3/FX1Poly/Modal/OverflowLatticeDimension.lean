@@ -327,4 +327,71 @@ theorem overflowIsModular (firstGrade secondGrade thirdGrade : OverflowGrade)
   cases firstGrade <;> cases secondGrade <;> cases thirdGrade <;>
     first | rfl | exact OverflowGrade.noConfusion firstBelowThird
 
+/-! ## The MEET universal property — `meet a b` is the GREATEST LOWER BOUND (the glb dual of the shipped lub)
+
+`BoundedJoinSemilatticeUniversal.lean` proved the JOIN's universal property — `join a b` is the LEAST UPPER
+BOUND — generically, and specialized it to the overflow diamond (`overflowConflictIsLeastUpperBoundOfWrapTrap`
+/ `overflowOnlyConflictBoundsWrapTrap`: the unique common UPPER bound of two distinct modes is the conflict top).
+This section proves the DUAL for the meet built above: `meet a b` is the GREATEST LOWER BOUND of `a` and `b`.
+Together with the shipped lub, this completes M3's lattice characterization — it has BOTH universal properties,
+and the antichain is bounded from both sides (conflict above, exact below).
+
+The lub was proved generically (over the abstract join laws) because `BoundedJoinSemilattice` carries `join`;
+the meet here is concrete to overflow, so the glb is proved by concrete enumeration (`cases <;> rfl` / the
+`le`-guard `noConfusion` discharge) — lighter than the generic `calc`, since `OverflowGrade.le lowerBound x`
+is defeq to the computable equality `join lowerBound x = x`.  All zero-axiom; gated in `AuditModal.lean`. -/
+
+/-- **`meet a b` is a LOWER bound of the left operand** — `meet a b ≤ a` (the dual of `le_join_left`). -/
+theorem overflowMeetLeLeft (firstGrade secondGrade : OverflowGrade) :
+    overflowLattice.le (OverflowGrade.meet firstGrade secondGrade) firstGrade := by
+  cases firstGrade <;> cases secondGrade <;> rfl
+
+/-- **`meet a b` is a LOWER bound of the right operand** — `meet a b ≤ b` (the dual of `le_join_right`). -/
+theorem overflowMeetLeRight (firstGrade secondGrade : OverflowGrade) :
+    overflowLattice.le (OverflowGrade.meet firstGrade secondGrade) secondGrade := by
+  cases firstGrade <;> cases secondGrade <;> rfl
+
+/-- **`meet a b` is the GREATEST lower bound** — any common lower bound `c` (`c ≤ a` and `c ≤ b`) is dominated
+by `meet a b` (`c ≤ meet a b`).  The dual of `join_le`; the impossible `le`-guard cases are refuted by
+`noConfusion`, the genuine ones close by `rfl`. -/
+theorem overflowLeMeet {firstGrade secondGrade lowerBound : OverflowGrade}
+    (firstLower : overflowLattice.le lowerBound firstGrade)
+    (secondLower : overflowLattice.le lowerBound secondGrade) :
+    overflowLattice.le lowerBound (OverflowGrade.meet firstGrade secondGrade) := by
+  cases firstGrade <;> cases secondGrade <;> cases lowerBound <;>
+    first | rfl | exact OverflowGrade.noConfusion firstLower | exact OverflowGrade.noConfusion secondLower
+
+/-- **The meet universal property.**  `meet a b` is the GREATEST LOWER BOUND of `{a, b}`: a lower bound of both,
+dominating every common lower bound.  The dual of `BoundedJoinSemilattice.join_isLeastUpperBound`; with that
+shipped lub, the overflow diamond now carries BOTH lattice universal properties. -/
+theorem overflowMeetIsGreatestLowerBound (firstGrade secondGrade : OverflowGrade) :
+    overflowLattice.le (OverflowGrade.meet firstGrade secondGrade) firstGrade ∧
+    overflowLattice.le (OverflowGrade.meet firstGrade secondGrade) secondGrade ∧
+    ∀ lowerBound : OverflowGrade,
+      overflowLattice.le lowerBound firstGrade → overflowLattice.le lowerBound secondGrade →
+        overflowLattice.le lowerBound (OverflowGrade.meet firstGrade secondGrade) :=
+  ⟨overflowMeetLeLeft firstGrade secondGrade, overflowMeetLeRight firstGrade secondGrade,
+   fun _lowerBound firstLower secondLower => overflowLeMeet firstLower secondLower⟩
+
+/-- **Concrete: `exactGrade` is the GREATEST lower bound of `wrap` and `trap`** — their `meet` (via `overflowLe
+Meet` + the `overflowMeet_wrap_trap` rewrite).  The dual of `overflowConflictIsLeastUpperBoundOfWrapTrap`. -/
+theorem overflowExactIsGreatestLowerBoundOfWrapTrap (lowerBound : OverflowGrade)
+    (wrapGe : overflowLattice.le lowerBound OverflowGrade.wrapGrade)
+    (trapGe : overflowLattice.le lowerBound OverflowGrade.trapGrade) :
+    overflowLattice.le lowerBound OverflowGrade.exactGrade :=
+  overflowMeet_wrap_trap ▸ overflowLeMeet wrapGe trapGe
+
+/-- **THE dual diamond consequence — the ONLY common lower bound of two distinct overflow modes is the exact
+bottom.**  Any grade below both `wrap` and `trap` IS `exactGrade` (`le_antisymm` of "exact is least" and "exact
+is the greatest lower bound").  The mirror of `overflowOnlyConflictBoundsWrapTrap`: the antichain `{wrap, trap,
+saturate}` is pinched to the exact bottom from below exactly as it escapes to the conflict top from above — the
+complete glb/lub picture of the diamond. -/
+theorem overflowOnlyExactBoundsWrapTrap (lowerBound : OverflowGrade)
+    (wrapGe : overflowLattice.le lowerBound OverflowGrade.wrapGrade)
+    (trapGe : overflowLattice.le lowerBound OverflowGrade.trapGrade) :
+    lowerBound = OverflowGrade.exactGrade :=
+  BoundedJoinSemilattice.le_antisymm overflowIsLawfulBoundedJoinSemilattice
+    (overflowExactIsGreatestLowerBoundOfWrapTrap lowerBound wrapGe trapGe)
+    (overflowExactIsLeast lowerBound)
+
 end FX1Poly.Modal

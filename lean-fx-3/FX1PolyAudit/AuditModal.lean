@@ -387,6 +387,22 @@ annihilator (`join impure pure = impure ≠ pure`), upgrading the informal DIM5-
 #assert_no_axioms FX1Poly.Modal.overflowMeet_trap_saturate
 #assert_no_axioms FX1Poly.Modal.overflowIsNonDistributive
 #assert_no_axioms FX1Poly.Modal.overflowIsModular
+-- The overflow MEET universal property — meet a b is the GREATEST LOWER BOUND (the glb dual of the shipped lub
+-- in BoundedJoinSemilatticeUniversal.lean, completing M3's lattice characterization with BOTH universal
+-- properties). overflowMeetLeLeft/Right (meet is a lower bound of each operand) + overflowLeMeet (any common
+-- lower bound is dominated by the meet — the greatest part, le-guard impossible cases by noConfusion) +
+-- overflowMeetIsGreatestLowerBound (the bundled universal property). Sharp diamond glb corollaries:
+-- overflowExactIsGreatestLowerBoundOfWrapTrap (exact is the glb of two distinct modes) +
+-- overflowOnlyExactBoundsWrapTrap (THE dual consequence — the ONLY common lower bound of two distinct modes is
+-- the exact bottom, mirror of overflowOnlyConflictBoundsWrapTrap: the antichain is pinched to exact below
+-- exactly as it escapes to conflict above). All zero-axiom (cases<;>rfl + noConfusion guard-discharge +
+-- le_antisymm + the overflowMeet_wrap_trap ▸ rewrite, no funext/propext).
+#assert_no_axioms FX1Poly.Modal.overflowMeetLeLeft
+#assert_no_axioms FX1Poly.Modal.overflowMeetLeRight
+#assert_no_axioms FX1Poly.Modal.overflowLeMeet
+#assert_no_axioms FX1Poly.Modal.overflowMeetIsGreatestLowerBound
+#assert_no_axioms FX1Poly.Modal.overflowExactIsGreatestLowerBoundOfWrapTrap
+#assert_no_axioms FX1Poly.Modal.overflowOnlyExactBoundsWrapTrap
 -- The join-semilattice UNIVERSAL PROPERTY + decidable order (BoundedJoinSemilatticeUniversal.lean) — the genuine
 -- lattice content the DIM-CLASS-order layer (#912) was missing: le_join_left/le_join_right (join a b is an UPPER
 -- bound of both, via assoc+idempotent) + join_le (it is the LEAST upper bound — any common bound dominates it,
