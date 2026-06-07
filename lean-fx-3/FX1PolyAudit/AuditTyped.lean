@@ -383,6 +383,7 @@ import FX1Poly.Typed.ElimRuleDesc
 import FX1Poly.Typed.TypingRoleClassifier
 import FX1Poly.Typed.TypingRoleEngineBridge
 import FX1Poly.Typed.UntypableHeadDecision
+import FX1Poly.Typed.TypingHeadKindClassifier
 import FX1Poly.Typed.CertifiedWordReductionTermination
 import FX1Poly.Typed.CertifiedWordReductionConfluence
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
@@ -5865,6 +5866,29 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.isUntypableHead_universeCode_false
 #assert_no_axioms FX1Poly.Typed.isUntypableHead_lam_false
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natElimCellUntypedViaDecision
+
+-- TypingHeadKindClassifier (GTL-ROLE capstone): the COMPLETE decidable 6-way head-kind taxonomy. TypingHeadKind
+-- (formation/introduction/elimination/bespokeVariable/bespokeUniverse/untypable) + typingHeadKindOf totally
+-- partition all 196 generators (bespoke heads split first since they are roleless yet typed, then dispatch on
+-- typingRoleOf). The six headKind_* rfl witnesses exhibit one head of each kind. headKind_untypable_imp/of_
+-- isUntypableHead characterize the untypable kind as EXACTLY #987's isUntypableHead (both directions);
+-- headKind_untypable_sound is the engine tie (untypable kind ⟹ no grown typing via isUntypableHead_sound);
+-- headKind_bespoke{Variable,Universe}_imp pin the two roleless-yet-typed heads to gen_var / gen_universeCode.
+-- All zero-axiom (if/match + rfl; of_decide_eq_true/decide_eq_true bridging isUntypableHead; by_cases over the
+-- head guards + cases on the typingRoleOf Option and TypingHeadKind ctor mismatches).
+#assert_no_axioms FX1Poly.Typed.TypingHeadKind
+#assert_no_axioms FX1Poly.Typed.typingHeadKindOf
+#assert_no_axioms FX1Poly.Typed.headKind_piTyCode
+#assert_no_axioms FX1Poly.Typed.headKind_lam
+#assert_no_axioms FX1Poly.Typed.headKind_app
+#assert_no_axioms FX1Poly.Typed.headKind_var
+#assert_no_axioms FX1Poly.Typed.headKind_universeCode
+#assert_no_axioms FX1Poly.Typed.headKind_boolTrue
+#assert_no_axioms FX1Poly.Typed.headKind_untypable_imp_isUntypableHead
+#assert_no_axioms FX1Poly.Typed.headKind_untypable_of_isUntypableHead
+#assert_no_axioms FX1Poly.Typed.headKind_untypable_sound
+#assert_no_axioms FX1Poly.Typed.headKind_bespokeVariable_imp
+#assert_no_axioms FX1Poly.Typed.headKind_bespokeUniverse_imp
 
 -- CertifiedWordReductionTermination (SN-131): Leg-3 word-rewrite termination on the CERTIFIED fragment.
 -- certifiedReductionInducesWordChain is the bridge (a Step sequence's toCode images form an fxStepSystem
