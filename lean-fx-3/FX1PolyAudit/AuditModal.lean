@@ -27,6 +27,7 @@ import FX1Poly.Modal.MutationChainLatticeDimension
 import FX1Poly.Modal.PreorderDimension
 import FX1Poly.Modal.DimensionRepetitionContrast
 import FX1Poly.Modal.DimensionMultiplicationContrast
+import FX1Poly.Modal.LatticeDistributivityClassification
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -869,3 +870,25 @@ admits a strict over-grade, security's does not — so the 21-dim product is het
 #assert_no_axioms FX1Poly.Modal.usageMulAnnihilatesAtZero
 #assert_no_axioms FX1Poly.Modal.securityMulAnnihilatesAtUnclassified
 #assert_no_axioms FX1Poly.Modal.usageAndSecurityDifferOnUnitMaximality
+
+/-! ## The chain-vs-diamond DISTRIBUTIVITY dichotomy (`LatticeDistributivityClassification`)
+
+The structural capstone of the lattice-family work: classify FX's bounded-lattice dimensions by distributivity,
+the deepest lattice-theoretic invariant.  MutationGrade.meet (the chain MIN, dual to the shipped chain-max join)
++ meet-semilattice laws (comm/assoc/idempotent) + the two absorption laws (mutationJoinMeetAbsorb /
+mutationMeetJoinAbsorb) establish the mutation 4-chain is a genuine bounded LATTICE.  mutationIsDistributive: the
+4-chain satisfies `a ∧ (b ∨ c) = (a ∧ b) ∨ (a ∧ c)` (chains are always distributive; min distributes over max,
+64-leaf cases<;>rfl — a non-trivial chain, not a 2-element triviality).  ★ mutationChainDistributesButOverflow
+DiamondDoesNot: the dichotomy — mutation distributes but the overflow diamond M3 does NOT (citing the shipped
+overflowIsNonDistributive).  Among FX's lattice dimensions, distributivity tracks the order shape exactly: the
+chains are distributive, only the antichain-bearing diamond M3 is non-distributive — §6.8 heterogeneity at the
+deepest lattice level.  All zero-axiom (cases<;>rfl + the shipped overflowIsNonDistributive). -/
+
+#assert_no_axioms FX1Poly.Modal.MutationGrade.meet
+#assert_no_axioms FX1Poly.Modal.mutationMeet_comm
+#assert_no_axioms FX1Poly.Modal.mutationMeet_assoc
+#assert_no_axioms FX1Poly.Modal.mutationMeet_idempotent
+#assert_no_axioms FX1Poly.Modal.mutationJoinMeetAbsorb
+#assert_no_axioms FX1Poly.Modal.mutationMeetJoinAbsorb
+#assert_no_axioms FX1Poly.Modal.mutationIsDistributive
+#assert_no_axioms FX1Poly.Modal.mutationChainDistributesButOverflowDiamondDoesNot
