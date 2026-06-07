@@ -86,6 +86,7 @@ import FX1Poly.Tier0.FxRenamingCategory
 import FX1Poly.Tier0.FxBaseRenamingCategory
 import FX1Poly.Tier0.FxBaseRenamingVecCategory
 import FX1Poly.Tier0.FxBaseRenamingVecIsomorphism
+import FX1Poly.Tier0.FxBaseRenamingVecTabulate
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4305,6 +4306,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.isCategoricalIsomorphism_identity
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.isCategoricalIsomorphism_compose
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.isCategoricalIsomorphism_pullback
+-- Reification ≅ function-space bijection + decidable equality for RenamingVec (FxBaseRenamingVecTabulate.lean,
+-- SN-085a substrate). tabulate = the constructive companion to lookup (build a RenamingVec from an image function);
+-- tabulate_lookup (lookup∘tabulate=id) + tabulate_lookup_self (tabulate∘lookup=id via ext) exhibit RenamingVec
+-- target source ≅ (Fin source → Fin target). decEq + instance = structural zero-axiom DecidableEq (head via
+-- Nat.decEq on .val + Fin.eq_of_val_eq, dodging Fin.decEq/Fin.cases propext). These are the foundation the
+-- finite-bijectivity iso-decider (#914) builds on: the candidate inverse of an iso is tabulate of its preimage
+-- function, the round-trip checks are RenamingVec equalities decided by the instance. All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tabulate
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tabulate_lookup
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.tabulate_lookup_self
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.decEq
+#assert_no_axioms FX1Poly.Tier0.instDecidableEqRenamingVec
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
