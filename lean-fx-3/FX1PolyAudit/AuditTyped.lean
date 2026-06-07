@@ -5658,6 +5658,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_base_isNormal
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_succ_isNotNormal
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamilySound
+-- The SECOND fuzz family (constant function `λx.Type@0`): the argument-DISCARDING β tower, complementing the
+-- identity tower's argument-SUBSTITUTING β.  Every member reduces to Type@0 in ONE step (erasing the entire
+-- inner redex stack), exercising that SN / confluence handle ERASED redexes.  Same four §27.3-L2 properties +
+-- eval + the metatheoryFuzzConstantFamilySound bundle.
+#assert_no_axioms FX1Poly.Typed.closedConstantLambdaTyping
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_typed
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_betaStep
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_betaPreservation
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_progress
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_reducesToType0
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_uniqueNormalForm
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_base_isNormal
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_succ_isNotNormal
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamilySound
 
 -- §27.3 Layer-3 defense: every core metatheory rule cross-referenced to a PUBLISHED MECHANIZED proof and
 -- ANCHORED to the real kernel theorem that realizes it.  The `crossRef_*` anchors (`def := @kernelTheorem`)
