@@ -4,6 +4,7 @@ import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.UniverseCodeConversion
 import FX1Poly.Typed.SigmaCodeShape
 import FX1Poly.Typed.ListCodeShape
+import FX1Poly.Typed.ListFormationSmoke
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescElim
@@ -503,6 +504,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listFormerNotTypedAtPiType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listFormerNotTypedAtEmptyType
 #assert_no_axioms FX1Poly.Typed.DescTelescope.oneChildLevel
+-- GTL-14: the reusable one-child data-former formation reconstruction (the grown twin of piFormation/sigma-
+-- FormationViaGenArm) + a CONCRETE non-vacuous witness that the grown engine types a real `List (Type@0) :
+-- Type@1` — the honest GTL-11 payoff exhibited (not merely "compiles"), locked in as regression protection.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listFormationViaGenArm
+#assert_no_axioms FX1Poly.Typed.listFormationSmoke
 #assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_inj
 #assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_noStep_of_childrenNoStep
 #assert_no_axioms FX1Poly.Typed.rename_sigmaTyCodeCell
