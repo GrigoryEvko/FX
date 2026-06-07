@@ -187,6 +187,7 @@ import FX1Poly.Typed.StepNonDeterministic
 import FX1Poly.Typed.ConvValueDiscrimination
 import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.TypedFragmentAcyclicity
+import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -5992,3 +5993,21 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.closedWellTypedTerm_notStepSelfLoop
 #assert_no_axioms FX1Poly.Typed.omegaCombinator_notClosedWellTyped
 #assert_no_axioms FX1Poly.Typed.typingRulesOutSelfLooping
+-- NON-SN BY UNBOUNDED GROWTH (UnboundedGrowthNotStronglyNormalizing): the SECOND archetype of untyped
+-- divergence, qualitatively different from Ω's 1-step self-loop. accessibleElementHasNoInfiniteChain is the
+-- general well-foundedness fact (sibling of accessibleElementNotSelfRelated, which is its 1-cycle special
+-- case) — an Acc element admits no infinite descending chain, via Acc.rec with the shifted tail.
+-- notStronglyNormalizing_of_infiniteReduction is its reduction face: ANY infinite Step chain ⟹ ¬SN of the head
+-- (the canonical non-SN characterization, reusable). The witness tripler=λx.(x x)x, growingDivergentTerm=
+-- (tripler)(tripler) β-reduces to (self) tripler — one application LARGER — so growingReductionSequence strictly
+-- grows; growingReductionSequence_steps proves each step (root β index 0 via the nullary-subst defeq that makes
+-- Ω's self-step bare Step.beta, function-child congruence index n+1). growingDivergentTerm_notStronglyNormalizing
+-- feeds it to the general lemma; growingFirstReduct_ne_source (decide, propext-free RawTermDecEq) shows the
+-- reduct DIFFERS from the source — NOT a self-loop, so the general lemma (not accessibleElementNotSelfRelated)
+-- is required. nonSelfLoopingDivergenceExists packages the contrast with Ω; both archetypes excluded by SN-043.
+#assert_no_axioms FX1Poly.Typed.accessibleElementHasNoInfiniteChain
+#assert_no_axioms FX1Poly.Typed.notStronglyNormalizing_of_infiniteReduction
+#assert_no_axioms FX1Poly.Typed.growingReductionSequence_steps
+#assert_no_axioms FX1Poly.Typed.growingDivergentTerm_notStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.growingFirstReduct_ne_source
+#assert_no_axioms FX1Poly.Typed.nonSelfLoopingDivergenceExists
