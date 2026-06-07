@@ -15,6 +15,7 @@ import FX1Poly.Modal.GradedReductionSubstitution
 import FX1Poly.Modal.GradedFundamentalTheorem
 import FX1Poly.Modal.GradedReductionConfluence
 import FX1Poly.Modal.GradedNormalization
+import FX1Poly.Modal.ComplexitySemiring
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -251,6 +252,25 @@ dimensions at once. -/
 #assert_no_axioms FX1Poly.Modal.linearIdentityOver_stronglyNormalizing
 #assert_no_axioms FX1Poly.Modal.securityLinearIdentity_stronglyNormalizingViaGeneric
 #assert_no_axioms FX1Poly.Modal.securityKCombinator_stronglyNormalizingViaGeneric
+
+/-! ### DIM3: the complexity / space N-semiring — the THIRD graded dimension over `HasGradeOver`
+
+The unbounded, non-idempotent-`+` `Nat` semiring (§6.3 dim 13 / dim 15), after usage `{0,1,ω}` and security
+`{unclass<class}`.  `complexityAddNotIdempotent` (`1+1 != 1`) marks it a genuinely NEW semiring shape; its
+`mul_assoc`/`right_distrib` are hand-rolled axiom-clean (`natMulAssoc`/`natRightDistrib`) since the stdlib
+`Nat.mul_assoc`/`Nat.right_distrib` leak propext.  SN transfers to the third dimension for FREE via
+`complexityLinearIdentity_stronglyNormalizingViaGeneric` — the orthogonal-composition thesis, no per-dimension
+SN proof. -/
+
+#assert_no_axioms FX1Poly.Modal.natBle_self
+#assert_no_axioms FX1Poly.Modal.natMulComm
+#assert_no_axioms FX1Poly.Modal.natMulAssoc
+#assert_no_axioms FX1Poly.Modal.natRightDistrib
+#assert_no_axioms FX1Poly.Modal.fxComplexitySemiring
+#assert_no_axioms FX1Poly.Modal.fxComplexitySemiring_isLawful
+#assert_no_axioms FX1Poly.Modal.complexityAddNotIdempotent
+#assert_no_axioms FX1Poly.Modal.complexityLinearIdentity_typed
+#assert_no_axioms FX1Poly.Modal.complexityLinearIdentity_stronglyNormalizingViaGeneric
 
 /-! ### Generic weakening for HasGradeOver R over any OrderedGradeSemiring (security + dims 6–21)
 
