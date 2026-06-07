@@ -28,6 +28,7 @@ import FX1Poly.Modal.PreorderDimension
 import FX1Poly.Modal.DimensionRepetitionContrast
 import FX1Poly.Modal.DimensionMultiplicationContrast
 import FX1Poly.Modal.LatticeDistributivityClassification
+import FX1Poly.Modal.SessionDualityDimension
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -892,3 +893,31 @@ deepest lattice level.  All zero-axiom (cases<;>rfl + the shipped overflowIsNonD
 #assert_no_axioms FX1Poly.Modal.mutationMeetJoinAbsorb
 #assert_no_axioms FX1Poly.Modal.mutationIsDistributive
 #assert_no_axioms FX1Poly.Modal.mutationChainDistributesButOverflowDiamondDoesNot
+
+/-! ## The session-type dimension (§6.3 Dim 6 / §11) — the first INVOLUTION-structured dimension
+(`SessionDualityDimension`)
+
+Every prior dimension is an order/algebra (semiring / lattice / PCM / preorder); the PROTOCOL dimension is
+structurally different — its defining operation is DUALITY, an INVOLUTION (the protocol of the opposite
+endpoint), not a binary combine.  SessionType (5-ctor: endSession / send / receive / selectChoice / branchOffer)
++ SessionType.dual (§11.2: send↔receive, select↔branch, end self-dual, payload-agnostic) + the 5 per-ctor duality
+equations (rfl). ★ SessionType.dual_involutive: dual(dual S)=S (the headline — the structural signature of Dim 6;
+a channel's two endpoints are mutually dual, §11.2). SessionType.dual_injective: duality is INJECTIVE hence a
+BIJECTION on the protocol space (involution ⟹ bijective). selfDual_iff_endSession: endSession is the UNIQUE
+self-dual protocol (any communicating protocol's head ctor flips under duality, so it has a DISTINCT dual). ★
+sessionDualityIsInvolutionButNotIdentity: an involution but NOT the identity (a send is not its own dual) — the
+genuine reversal distinguishing this dimension from the order/algebra ones. Complements L1-SESSION (#959, the
+§27.2 linearity-mechanism witness) with the session-type ALGEBRA. All zero-axiom (plain-inductive recursor +
+rfl + congrArg + noConfusion + decide). -/
+
+#assert_no_axioms FX1Poly.Modal.SessionType
+#assert_no_axioms FX1Poly.Modal.SessionType.dual
+#assert_no_axioms FX1Poly.Modal.dual_endSession
+#assert_no_axioms FX1Poly.Modal.dual_send
+#assert_no_axioms FX1Poly.Modal.dual_receive
+#assert_no_axioms FX1Poly.Modal.dual_selectChoice
+#assert_no_axioms FX1Poly.Modal.dual_branchOffer
+#assert_no_axioms FX1Poly.Modal.SessionType.dual_involutive
+#assert_no_axioms FX1Poly.Modal.SessionType.dual_injective
+#assert_no_axioms FX1Poly.Modal.selfDual_iff_endSession
+#assert_no_axioms FX1Poly.Modal.sessionDualityIsInvolutionButNotIdentity
