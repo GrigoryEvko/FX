@@ -111,6 +111,34 @@ theorem flatTypingRuleDescOf_outputIsUniverseFormer {generator : Generator} {rul
             rw [if_neg hProduct, if_neg hSum, if_neg hEither, if_neg hArrow, if_neg hEquiv] at isFlatFormation
             contradiction
 
+/-- **A flat formation rule's generator is not `gen_var`.**  The flat twin of `formationRuleImpliesNotVariable`:
+`gen_var` is not one of the five flat formers, so `flatTypingRuleDescOf gen_var = none ≠ some rule`.  Consumed by
+the flat renaming/weakening cell-reconstruction (`RawTerm.rename_mkGen_of_ne_var` needs `generator ≠ gen_var`). -/
+theorem flatFormationRuleImpliesNotVariable {generator : Generator} {rule : TypingRuleDesc}
+    (isFlatFormation : flatTypingRuleDescOf generator = some rule) :
+    generator ≠ Generator.gen_var := by
+  intro isVariable
+  subst isVariable
+  unfold flatTypingRuleDescOf at isFlatFormation
+  rw [if_neg (fun isProduct => Generator.noConfusion isProduct),
+    if_neg (fun isSum => Generator.noConfusion isSum),
+    if_neg (fun isEither => Generator.noConfusion isEither),
+    if_neg (fun isArrow => Generator.noConfusion isArrow),
+    if_neg (fun isEquiv => Generator.noConfusion isEquiv)] at isFlatFormation
+  cases isFlatFormation
+
+/-- **A flat formation rule IS the universe-former rule (full structure).**  The flat twin of
+`formationRuleIsUniverseFormer`: since `TypingRuleDesc` has exactly the `outputType` field, the output-type
+equation (`flatTypingRuleDescOf_outputIsUniverseFormer`) upgrades to the structure equation
+`rule = { outputType := universeFormerOutput }`, what a cell-RECONSTRUCTION consumer needs (`obtain rfl`). -/
+theorem flatFormationRuleIsUniverseFormer {generator : Generator} {rule : TypingRuleDesc}
+    (isFlatFormation : flatTypingRuleDescOf generator = some rule) :
+    rule = { outputType := universeFormerOutput } := by
+  have outputIsFormer : rule.outputType = universeFormerOutput :=
+    flatTypingRuleDescOf_outputIsUniverseFormer isFlatFormation
+  cases rule
+  rw [← outputIsFormer]
+
 /-- **The flat-former typing judgment.**  A standalone layer (NOT mutual with `HasTypeDesc`, mirroring the grown
 `HasTypeDescPi`) that types the non-dependent `[0,0]` type-code formers via a `FlatDescTelescope` premise — each
 child a type under the SAME base context.  The children's typings flow through the main `HasTypeDesc` (inside the

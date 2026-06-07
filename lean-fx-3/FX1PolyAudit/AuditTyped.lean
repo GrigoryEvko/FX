@@ -199,6 +199,7 @@ import FX1Poly.Typed.HasTypeDescFlat
 import FX1Poly.Typed.HasTypeDescFlatInversion
 import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
 import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
+import FX1Poly.Typed.HasTypeDescFlatWeakening
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2396,6 +2397,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.eitherFlatTypeStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.arrowFlatTypeStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.equivFlatTypeStronglyNormalizing
+-- FLAT-ENGINE WEAKENING (#937, P6 structural metatheory): the flat twin of HasTypeDescWeakening. The two flat
+-- former-table helpers (flatFormationRuleImpliesNotVariable / flatFormationRuleIsUniverseFormer) mirror the
+-- cumulative formationRule* helpers. FlatDescTelescope.renameRespectingTelescope is LIGHTER than the cumulative
+-- one (flat cons doesn't extend the context, so NO iterateLiftRaw — tail recurses with the SAME context-condition);
+-- HasTypeDescFlat.renameRespectingContext reuses it + reconstructs the cell table-generically; weakenUnderBinding
+-- instantiates at RawRenaming.weaken (context-condition fun _ => rfl).
+#assert_no_axioms FX1Poly.Typed.flatFormationRuleImpliesNotVariable
+#assert_no_axioms FX1Poly.Typed.flatFormationRuleIsUniverseFormer
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.renameRespectingTelescope
+#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.renameRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.weakenUnderBinding
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
