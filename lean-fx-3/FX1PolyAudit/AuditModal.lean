@@ -19,6 +19,7 @@ import FX1Poly.Modal.ComplexitySemiring
 import FX1Poly.Modal.EffectLatticeClassification
 import FX1Poly.Modal.OverflowLatticeDimension
 import FX1Poly.Modal.BoundedJoinSemilatticeUniversal
+import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
@@ -373,6 +374,21 @@ annihilator (`join impure pure = impure ≠ pure`), upgrading the informal DIM5-
 #assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.decidableLe
 #assert_no_axioms FX1Poly.Modal.overflowConflictIsLeastUpperBoundOfWrapTrap
 #assert_no_axioms FX1Poly.Modal.overflowOnlyConflictBoundsWrapTrap
+-- Join MONOTONICITY + the product order is COMPONENTWISE (BoundedJoinSemilatticeProductOrder.lean) — the
+-- order-theoretic completion of lattice-family grade-vector composition (product lattice #911 + lub #916 + NOW
+-- the product ORDER). join_mono (a≤a', b≤b' ⟹ join a b ≤ join a' b', generic, via le_trans+le_join+join_le —
+-- combining stronger grades yields a stronger result) + productLe_iff (THE headline: the product/grade-vector
+-- order IS the conjunction of per-dimension orders — §6.2 subsumption decomposes dimension-by-dimension, no
+-- cross-dim coupling; forward via congrArg Prod.fst/snd since product le is a pair equality, backward via the
+-- shipped pairEqOfComponents — NO Prod.mk.injEq which is propext-backed). Concrete: effectTrustProductLe_iff +
+-- overflowEffectProductLe_iff (the latter has the NON-CHAIN overflow diamond as a factor — decomposition is
+-- shape-agnostic) + effectTrustVectorSubsumes ((pure,trusted)≤(impure,untrusted) via both components). All
+-- zero-axiom (composed order/lub lemmas + congrArg + pairEqOfComponents, no funext, no propext).
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.join_mono
+#assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.productLe_iff
+#assert_no_axioms FX1Poly.Modal.effectTrustProductLe_iff
+#assert_no_axioms FX1Poly.Modal.overflowEffectProductLe_iff
+#assert_no_axioms FX1Poly.Modal.effectTrustVectorSubsumes
 -- The UNIFIED grade VECTOR across BOTH families (UnifiedGradeMonoid.lean) — the honest §1.3/§6.1/§6.8 "21
 -- dimensions compose", resolving the §6.1-vs-DIM-CLASS tension: the vector is NOT a pure semiring product
 -- (effect/trust aren't semirings) but a product of COMMUTATIVE GRADE MONOIDS (the §6.1 parallel-combine layer
