@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.DataReducibilityCoverage
+import FX1Poly.Typed.MetatheoryParityLedger
 import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.UniverseCodeConversion
@@ -5168,3 +5169,29 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.DataFormerFamily.coveredCount_correct
 #assert_no_axioms FX1Poly.Core.boolFamilyCandidateInhabited
 #assert_no_axioms FX1Poly.Core.emptyFamilyCandidateHasNoClosedMember
+
+-- PAR-1 (MetatheoryParityLedger): formation↔grown reduction-metatheory parity. Weakening + substitution at
+-- FULL parity (both unconditional, anchored both engines); SN both hold (grown carries the decidable WF-ctx
+-- presupposition); SR is the ASYMMETRY — formation unconditional MASTER, grown only unconditional ARMS, its
+-- master conditional on the GCC-5 bundle (#842/#845). The parityAnchor_* defs re-certify each engine's proof
+-- is zero-axiom + break if renamed; the discrimination theorems prove the benign WF presupposition is kept
+-- DISTINCT from the real SR blocker (no overstatement).
+#assert_no_axioms FX1Poly.Typed.MetatheoryProperty
+#assert_no_axioms FX1Poly.Typed.EngineParityStatus
+#assert_no_axioms FX1Poly.Typed.MetatheoryProperty.parityStatus
+#assert_no_axioms FX1Poly.Typed.parityAnchor_weakening_formation
+#assert_no_axioms FX1Poly.Typed.parityAnchor_weakening_grown
+#assert_no_axioms FX1Poly.Typed.parityAnchor_substitution_formation
+#assert_no_axioms FX1Poly.Typed.parityAnchor_substitution_grown
+#assert_no_axioms FX1Poly.Typed.parityAnchor_strongNormalization_formation
+#assert_no_axioms FX1Poly.Typed.parityAnchor_strongNormalization_grown
+#assert_no_axioms FX1Poly.Typed.parityAnchor_subjectReduction_formation
+#assert_no_axioms FX1Poly.Typed.parityAnchor_subjectReduction_grownFormerArm
+#assert_no_axioms FX1Poly.Typed.parityAnchor_subjectReduction_grownConvArm
+#assert_no_axioms FX1Poly.Typed.parityAnchor_subjectReduction_grownOfFormationArm
+#assert_no_axioms FX1Poly.Typed.weakening_atFullParity
+#assert_no_axioms FX1Poly.Typed.substitution_atFullParity
+#assert_no_axioms FX1Poly.Typed.strongNormalization_grownNeedsWfContext
+#assert_no_axioms FX1Poly.Typed.subjectReduction_grownConditionalOnBundle
+#assert_no_axioms FX1Poly.Typed.parity_discriminates_weakening_vs_subjectReduction
+#assert_no_axioms FX1Poly.Typed.parity_discriminates_strongNormalization_vs_subjectReduction
