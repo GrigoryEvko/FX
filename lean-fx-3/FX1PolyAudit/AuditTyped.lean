@@ -182,6 +182,7 @@ import FX1Poly.Typed.TypeFundamentalLevelIndexed
 import FX1Poly.Typed.LeveledContext
 import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Typed.UntypedOmegaNotStronglyNormalizing
+import FX1Poly.Typed.WeaklyNormalizingNotStronglyNormalizing
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -1880,6 +1881,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.selfApplicationBody_noStep
 #assert_no_axioms FX1Poly.Typed.selfApplicationLambda_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.applicationOfStronglyNormalizingNotAlwaysStronglyNormalizing
+-- WEAK ≠ STRONG normalization in the raw calculus (WeaklyNormalizingNotStronglyNormalizing): sharper than Ω
+-- above (Ω has NO normalizing path; this term DOES). The Barendregt separating example (λx.Type@0) Ω has a
+-- terminating β-path to the normal form Type@0 (betaReachesBody — subst0 is identity on the nullary universe-
+-- code body by computation, no cancellation lemma) AND a divergent path looping in the discarded Ω argument
+-- (argumentSelfLoop, the uniform Step.cong rule stepping the second app child via StepChildren.there, fed the
+-- Step Ω Ω self-step). So weakly-normalizing does NOT imply strongly-normalizing — the headline. This is WHY
+-- SN-043 proves STRONG normalization: weak normalization alone permits the adversarial "reduce the discarded
+-- argument forever" strategy, which typing must (and does) rule out.
+#assert_no_axioms FX1Poly.Typed.discardingApplicationOnOmega_betaReachesBody
+#assert_no_axioms FX1Poly.Typed.discardedBody_isNormalForm
+#assert_no_axioms FX1Poly.Typed.discardingApplicationOnOmega_argumentSelfLoop
+#assert_no_axioms FX1Poly.Typed.discardingApplicationOnOmega_notStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.weaklyNormalizingDoesNotImplyStronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
