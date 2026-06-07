@@ -387,6 +387,7 @@ import FX1Poly.Typed.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.IsTypeDescGenericSmoke
 import FX1Poly.Typed.KnownUnsoundnessCorpus
 import FX1Poly.Typed.UniverseClassificationAcyclic
+import FX1Poly.Modal.SecurityNoninterferenceGeneral
 import FX1Poly.Typed.MetatheoryFuzz
 import FX1Poly.Typed.MechanizedProofCrossReference
 import FX1Poly.Typed.FormalReviewGate
@@ -5588,6 +5589,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.securitySelectorAppResultIsClassified
 #assert_no_axioms FX1Poly.Typed.securitySelectorAppCannotLaunderSelector
 #assert_no_axioms FX1Poly.Typed.securityNoninterferenceWitnessed
+-- GENERAL App-rule security-flow law (SecurityNoninterferenceGeneral.lean): the §12.2 noninterference
+-- backbone lifting Part 5's two fixed-term WITNESSES to a THEOREM over ALL applications.  GradeVectorOver.get
+-- (positional lookup) + getAddSecurity/getScaleSecurity (the get-commutations) feed securityApplicationGradeAt
+-- = the §6.2 App-scaling rule read pointwise (grades.get i = functionGrades.get i + binderGrade · argument-
+-- Grades.get i).  Corollaries: a classified function-position (securityClassifiedFunctionPoisonsApplication,
+-- generalizing securitySelectorAppCannotLaunderSelector) OR a classified binder + classified argument-position
+-- (securityClassifiedArgumentPoisonsApplication) poisons the result to classified — secrets can't be laundered
+-- through application.
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.get
+#assert_no_axioms FX1Poly.Modal.getAddSecurity
+#assert_no_axioms FX1Poly.Modal.getScaleSecurity
+#assert_no_axioms FX1Poly.Modal.securityApplicationGradeAt
+#assert_no_axioms FX1Poly.Modal.securityClassifiedFunctionPoisonsApplication
+#assert_no_axioms FX1Poly.Modal.securityClassifiedArgumentPoisonsApplication
 -- Part 6: the fractional-permission OVERALLOCATION rejection (the last usage `no` row, flipped to YES now
 -- that the §6.4 permission algebra FX1Poly.Modal.Permission ships).  corpusRejectsFractionalOverallocation
 -- (sound guarded add of 2/3+2/3 = conflict, not an over-full share; backed by Permission.add_neverOver-
