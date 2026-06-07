@@ -212,4 +212,109 @@ theorem closedConstantApplication_stronglyNormalizing {profile : PolyProfile}
       (fundamentalUniverseFormationLevelIndexed emptyLevelVector 0
         (TypingContext.empty : TypingContext profile 0) levelExpr flag))
 
+/-! ## Nested formers — the FT arms COMPOSE end-to-end
+
+All witnesses above (and the original four) are formers whose CHILDREN are universe codes.  These three
+exercise a former whose CHILD is itself a FORMER: the level-indexed Π- and Σ-formation arms compose into
+hypothesis-free SN.  The inner former arm supplies the outer arm's codomain premise (at the binder-extended
+context), so the closed-SN handoff still discharges to plain `IsStronglyNormalizing` with no recursor and no
+hypothesis — demonstrating the arms NEST, not just fire individually. -/
+
+/-- **UNCONDITIONAL strong normalization of a closed Π whose codomain is a Σ-former.**  The type
+`Π (Type@0). Σ (Type@0). Type@0` is `IsStronglyNormalizing` — the Π-formation arm's codomain premise (a
+`∀ headLevel` family at the binder-extended context) is supplied by the Σ-formation arm rather than a bare
+`universeFormation`, so the two formation arms compose end-to-end.  First unconditional SN for a former with a
+FORMER child. -/
+theorem closedNestedPiOverSigma_stronglyNormalizing {profile : PolyProfile} (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+        (sigmaTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+          (universeCodeCell LevelExpr.lzero flag)) : RawTerm 0) :=
+  closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
+    (fundamentalPiFormationLevelIndexed emptyLevelVector 0
+      (domainLevel := LevelExpr.lzero.lsucc)
+      (codomainLevel := LevelExpr.lmax LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc)
+      (formerLevel := LevelExpr.lmax LevelExpr.lzero.lsucc
+        (LevelExpr.lmax LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc)) (flag := flag)
+      (fun aboveLevel =>
+        fundamentalUniverseFormationLevelIndexed emptyLevelVector aboveLevel
+          (TypingContext.empty : TypingContext profile 0) LevelExpr.lzero flag)
+      (fun headLevel =>
+        fundamentalSigmaFormationLevelIndexed (levelCons headLevel emptyLevelVector) 0
+          (domainLevel := LevelExpr.lzero.lsucc) (codomainLevel := LevelExpr.lzero.lsucc)
+          (formerLevel := LevelExpr.lmax LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc) (flag := flag)
+          (fun aboveLevel2 =>
+            fundamentalUniverseFormationLevelIndexed (levelCons headLevel emptyLevelVector) aboveLevel2
+              ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell LevelExpr.lzero flag))
+              LevelExpr.lzero flag)
+          (fundamentalUniverseFormationLevelIndexed
+            (levelCons (0 + 1) (levelCons headLevel emptyLevelVector)) 0
+            (((TypingContext.empty : TypingContext profile 0).cons
+              (universeCodeCell LevelExpr.lzero flag)).cons (universeCodeCell LevelExpr.lzero flag))
+            LevelExpr.lzero flag)))
+
+/-- **UNCONDITIONAL strong normalization of a closed Σ whose codomain is a Π-former.**  The type
+`Σ (Type@0). Π (Type@0). Type@0` is `IsStronglyNormalizing` — the dual nesting of
+`closedNestedPiOverSigma`: the Σ-formation arm's codomain premise (a single conclusion) is supplied by the
+Π-formation arm at the binder-extended context. -/
+theorem closedNestedSigmaOverPi_stronglyNormalizing {profile : PolyProfile} (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (sigmaTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+        (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+          (universeCodeCell LevelExpr.lzero flag)) : RawTerm 0) :=
+  closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
+    (fundamentalSigmaFormationLevelIndexed emptyLevelVector 0
+      (domainLevel := LevelExpr.lzero.lsucc)
+      (codomainLevel := LevelExpr.lmax LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc)
+      (formerLevel := LevelExpr.lmax LevelExpr.lzero.lsucc
+        (LevelExpr.lmax LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc)) (flag := flag)
+      (fun aboveLevel =>
+        fundamentalUniverseFormationLevelIndexed emptyLevelVector aboveLevel
+          (TypingContext.empty : TypingContext profile 0) LevelExpr.lzero flag)
+      (fundamentalPiFormationLevelIndexed (levelCons (0 + 1) emptyLevelVector) 0
+        (domainLevel := LevelExpr.lzero.lsucc) (codomainLevel := LevelExpr.lzero.lsucc)
+        (formerLevel := LevelExpr.lmax LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc) (flag := flag)
+        (fun aboveLevel2 =>
+          fundamentalUniverseFormationLevelIndexed (levelCons (0 + 1) emptyLevelVector) aboveLevel2
+            ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell LevelExpr.lzero flag))
+            LevelExpr.lzero flag)
+        (fun headLevel2 =>
+          fundamentalUniverseFormationLevelIndexed
+            (levelCons headLevel2 (levelCons (0 + 1) emptyLevelVector)) 0
+            (((TypingContext.empty : TypingContext profile 0).cons
+              (universeCodeCell LevelExpr.lzero flag)).cons (universeCodeCell LevelExpr.lzero flag))
+            LevelExpr.lzero flag)))
+
+/-- **UNCONDITIONAL strong normalization of a closed binary function type.**  The type
+`Π (Type@0). Π (Type@0). Type@0` (a two-argument type former) is `IsStronglyNormalizing` — the Π-formation
+arm nested inside its own codomain premise, the deepest of the three nestings: two binder-extended contexts. -/
+theorem closedNestedPiOverPi_stronglyNormalizing {profile : PolyProfile} (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+        (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+          (universeCodeCell LevelExpr.lzero flag)) : RawTerm 0) :=
+  closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
+    (fundamentalPiFormationLevelIndexed emptyLevelVector 0
+      (domainLevel := LevelExpr.lzero.lsucc)
+      (codomainLevel := LevelExpr.lmax LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc)
+      (formerLevel := LevelExpr.lmax LevelExpr.lzero.lsucc
+        (LevelExpr.lmax LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc)) (flag := flag)
+      (fun aboveLevel =>
+        fundamentalUniverseFormationLevelIndexed emptyLevelVector aboveLevel
+          (TypingContext.empty : TypingContext profile 0) LevelExpr.lzero flag)
+      (fun headLevel =>
+        fundamentalPiFormationLevelIndexed (levelCons headLevel emptyLevelVector) 0
+          (domainLevel := LevelExpr.lzero.lsucc) (codomainLevel := LevelExpr.lzero.lsucc)
+          (formerLevel := LevelExpr.lmax LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc) (flag := flag)
+          (fun aboveLevel2 =>
+            fundamentalUniverseFormationLevelIndexed (levelCons headLevel emptyLevelVector) aboveLevel2
+              ((TypingContext.empty : TypingContext profile 0).cons (universeCodeCell LevelExpr.lzero flag))
+              LevelExpr.lzero flag)
+          (fun headLevel2 =>
+            fundamentalUniverseFormationLevelIndexed
+              (levelCons headLevel2 (levelCons headLevel emptyLevelVector)) 0
+              (((TypingContext.empty : TypingContext profile 0).cons
+                (universeCodeCell LevelExpr.lzero flag)).cons (universeCodeCell LevelExpr.lzero flag))
+              LevelExpr.lzero flag)))
+
 end FX1Poly.Typed

@@ -1859,6 +1859,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.closedSigmaBetweenUniverses_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.closedConstantLambda_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.closedConstantApplication_stronglyNormalizing
+-- NESTED formers: a former whose CHILD is itself a former — the Π/Σ formation arms COMPOSE end-to-end into
+-- hypothesis-free SN (the inner arm supplies the outer arm's binder-extended codomain premise). Π-over-Σ,
+-- Σ-over-Π (the dual), and Π-over-Π (the binary function type, deepest nesting).
+#assert_no_axioms FX1Poly.Typed.closedNestedPiOverSigma_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.closedNestedSigmaOverPi_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.closedNestedPiOverPi_stronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
