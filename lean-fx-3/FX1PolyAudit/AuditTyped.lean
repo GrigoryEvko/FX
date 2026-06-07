@@ -195,6 +195,7 @@ import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
+import FX1Poly.Typed.HasTypeDescFlat
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2343,6 +2344,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.FlatDescTelescope.twoChildComponents
 #assert_no_axioms FX1Poly.Typed.productTypeZeroFlatPremise
 #assert_no_axioms FX1Poly.Typed.productChildrenFlatButNotCumulative
+-- FLAT-FORMER TYPING (HasTypeDescFlat): the #934 CAPABILITY — the non-dependent [0,0] type-code formers now TYPE
+-- via a STANDALONE judgment (mirrors the grown HasTypeDescPi; NOT a HasTypeDesc mutual-block arm, so zero
+-- cascade). flatTypingRuleDescOf table (product/sum/either/arrow/equiv → universeFormerOutput); the partition
+-- fact (typingRuleDescOf_productCode_none: product is NOT cumulative); flatTypingRuleDescOf_outputIsUniverseFormer
+-- metadata; HasTypeDescFlat inductive; productFlatFormationSmoke = product (Type@0)(Type@0) : Type@(lmax 1 1).
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_productCode
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_productCode_none
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_outputIsUniverseFormer
+#assert_no_axioms FX1Poly.Typed.productFlatFormationSmoke
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.twoChildLevels
 -- GTL-11 substrate: the one-child [0] analogue (data type-code formers listCode / optionCode) — same
