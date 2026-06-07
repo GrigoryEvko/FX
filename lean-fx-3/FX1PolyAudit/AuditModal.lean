@@ -292,6 +292,19 @@ annihilator (`join impure pure = impure ≠ pure`), upgrading the informal DIM5-
 #assert_no_axioms FX1Poly.Modal.IsLawfulBoundedJoinSemilattice
 #assert_no_axioms FX1Poly.Modal.effectLattice
 #assert_no_axioms FX1Poly.Modal.effectIsLawfulBoundedJoinSemilattice
+-- The TRUST dual (order-dual of effect: add = mul = weakest-link min): TrustGrade + weakestLink + le; the
+-- negative result trustIsNotLawfulOrderedGradeSemiring (min has no annihilator, mirror of effect) + the
+-- positive trustIsLawfulBoundedJoinSemilattice. Upgrades the trust dimension from "classified by analogy" to a
+-- machine-checked proof on par with effect, so BOTH semilattice-family dims are now proven (closes the
+-- DIM-CLASS trust hand-wave). Full 2x2 enumeration / decide, propext-free.
+#assert_no_axioms FX1Poly.Modal.TrustGrade
+#assert_no_axioms FX1Poly.Modal.TrustGrade.weakestLink
+#assert_no_axioms FX1Poly.Modal.TrustGrade.le
+#assert_no_axioms FX1Poly.Modal.trustSemiringCandidate
+#assert_no_axioms FX1Poly.Modal.trustWeakestLinkAnnihilation_concretelyFails
+#assert_no_axioms FX1Poly.Modal.trustIsNotLawfulOrderedGradeSemiring
+#assert_no_axioms FX1Poly.Modal.trustLattice
+#assert_no_axioms FX1Poly.Modal.trustIsLawfulBoundedJoinSemilattice
 #assert_no_axioms FX1Poly.Modal.DimensionGradeAlgebra
 #assert_no_axioms FX1Poly.Modal.GradedDimensionName
 #assert_no_axioms FX1Poly.Modal.GradedDimensionName.gradeAlgebraOf

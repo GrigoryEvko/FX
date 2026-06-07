@@ -21,8 +21,8 @@ A grade semiring needs `add` (parallel combine) AND a distinct `mul` (sequential
 §9.3 makes effects MONOTONIC — sequential composition ACCUMULATES, never removes, so the only sound `mul` is
 the JOIN itself.  With `mul = add = join`, annihilation fails: `mul impure pure = join impure pure = impure ≠
 pure`.  `effectIsNotLawfulOrderedGradeSemiring` proves exactly this.  (Trust is the order-DUAL: add = mul =
-`min`, the weakest-link minimum — same single-idempotent-op structure, same non-fit; classified as a
-semilattice here, proof analogous.)
+`min`, the weakest-link minimum — same single-idempotent-op structure, same non-fit; PROVEN below on par with
+effect via `trustIsNotLawfulOrderedGradeSemiring` + `trustIsLawfulBoundedJoinSemilattice`.)
 
 ## What effect IS
 
@@ -92,7 +92,9 @@ theorem effectJoinAnnihilation_concretelyFails :
 /-- **Effect is NOT a lawful ordered grade semiring** (the §6.3 / §9.3 boundary of the `HasGradeOver` engine).
 If it were lawful, `mul_zero impure` would force `join impure pure = pure`, but the join accumulates
 (`= impure`).  Sequential effect composition is the join, which has no annihilator — so the effect family
-cannot ride the semiring `HasGradeOver` engine; it needs a lattice-graded one. -/
+cannot ride the semiring `HasGradeOver` engine; it needs a lattice-graded one.  (Trust is the order-DUAL —
+add = mul = `min`, the weakest-link minimum — and is PROVEN below on par with effect, via
+`trustIsNotLawfulOrderedGradeSemiring` + `trustIsLawfulBoundedJoinSemilattice`, not merely asserted.) -/
 theorem effectIsNotLawfulOrderedGradeSemiring :
     ¬ IsLawfulOrderedGradeSemiring effectSemiringCandidate := by
   intro lawful
@@ -146,6 +148,89 @@ theorem effectIsLawfulBoundedJoinSemilattice : IsLawfulBoundedJoinSemilattice ef
   bottom_join := fun someGrade => by cases someGrade <;> rfl
   join_bottom := fun someGrade => by cases someGrade <;> rfl
 
+/-! ## The trust dual — same boundary, order-dual combine (weakest-link minimum)
+
+Trust (§6.3 Dim 9: `Verified > Tested > Sorry > Assumed > External`) propagates as the MINIMUM through the call
+graph — the weakest link wins.  This is the order-DUAL of effect: where effect ACCUMULATES upward from a pure
+bottom, trust DEGRADES downward from a trusted top, both via a single idempotent commutative op with no
+annihilating second operation.  So trust meets the same semiring boundary as effect and inhabits the same
+bounded-idempotent-commutative-monoid structure — here PROVEN, not (as the dimension classification previously
+recorded) merely asserted by analogy. -/
+
+/-- A minimal trust grade: `trustedGrade` (Verified-like — the TOP of the trust order, the combine identity)
+and `untrustedGrade` (External-like — the absorbing element).  Two elements suffice to exhibit the
+semilattice-vs-semiring boundary, with the order dualized relative to `EffectGrade`. -/
+inductive TrustGrade where
+  | trustedGrade
+  | untrustedGrade
+  deriving DecidableEq
+
+/-- Trust combine — the weakest link wins (§6.3: trust propagates as the minimum).  Any `untrustedGrade` input
+makes the whole `untrustedGrade`; `trustedGrade` is the identity.  Full 2x2 enumeration, propext-free. -/
+def TrustGrade.weakestLink : TrustGrade → TrustGrade → TrustGrade
+  | .trustedGrade, .trustedGrade => .trustedGrade
+  | .trustedGrade, .untrustedGrade => .untrustedGrade
+  | .untrustedGrade, .trustedGrade => .untrustedGrade
+  | .untrustedGrade, .untrustedGrade => .untrustedGrade
+
+/-- Trust order: `untrustedGrade ≤ trustedGrade` (External is the bottom of the trust order — the order-dual of
+`EffectGrade.le`). -/
+def TrustGrade.le : TrustGrade → TrustGrade → Bool
+  | .trustedGrade, .trustedGrade => true
+  | .trustedGrade, .untrustedGrade => false
+  | .untrustedGrade, .trustedGrade => true
+  | .untrustedGrade, .untrustedGrade => true
+
+/-- The candidate ordered-semiring structure over `TrustGrade`: `add` (parallel) AND `mul` (sequential) are
+BOTH the weakest-link minimum — the order-dual of the effect join.  Trust likewise has no distinct annihilating
+second operation. -/
+def trustSemiringCandidate : OrderedGradeSemiring where
+  Carrier := TrustGrade
+  zero := .trustedGrade
+  one := .untrustedGrade
+  add := TrustGrade.weakestLink
+  mul := TrustGrade.weakestLink
+  le := TrustGrade.le
+  carrierDecEq := instDecidableEqTrustGrade
+
+/-- Concrete witness: the weakest-link minimum does not annihilate — `weakestLink untrusted trusted = untrusted
+≠ trusted`.  (The combine identity is `trustedGrade`; degrading back to it would require discarding the
+untrusted input, which trust never does — the dual of the effect non-annihilation.) -/
+theorem trustWeakestLinkAnnihilation_concretelyFails :
+    TrustGrade.weakestLink TrustGrade.untrustedGrade TrustGrade.trustedGrade ≠ TrustGrade.trustedGrade := by
+  decide
+
+/-- **Trust is NOT a lawful ordered grade semiring** — the order-dual of the effect boundary.  If it were
+lawful, `mul_zero untrusted` would force `weakestLink untrusted trusted = trusted`, but the weakest link
+degrades (`= untrusted`).  Sequential trust composition is the minimum, which has no annihilator — so the trust
+family cannot ride the semiring `HasGradeOver` engine either; it needs the lattice-graded one. -/
+theorem trustIsNotLawfulOrderedGradeSemiring :
+    ¬ IsLawfulOrderedGradeSemiring trustSemiringCandidate := by
+  intro lawful
+  have annihilationFails : TrustGrade.untrustedGrade = TrustGrade.trustedGrade :=
+    lawful.mul_zero TrustGrade.untrustedGrade
+  exact absurd annihilationFails (by decide)
+
+/-- The trust bounded join-semilattice: the weakest-link combine presented as the monoid op, with the trusted
+top `trustedGrade` as the identity (`bottom`).  The same bounded-idempotent-commutative-monoid structure as
+effect, order-dualized. -/
+def trustLattice : BoundedJoinSemilattice where
+  Carrier := TrustGrade
+  bottom := .trustedGrade
+  join := TrustGrade.weakestLink
+  carrierDecEq := instDecidableEqTrustGrade
+
+/-- **Trust IS a verified bounded join-semilattice** — commutative, associative, idempotent combine with the
+trusted identity.  This upgrades the trust dimension from the earlier "classified by analogy" note to a proof on
+par with `effectIsLawfulBoundedJoinSemilattice`: BOTH semilattice-family dimensions are now machine-checked. -/
+theorem trustIsLawfulBoundedJoinSemilattice : IsLawfulBoundedJoinSemilattice trustLattice where
+  join_comm := fun firstGrade secondGrade => by cases firstGrade <;> cases secondGrade <;> rfl
+  join_assoc := fun firstGrade secondGrade thirdGrade => by
+    cases firstGrade <;> cases secondGrade <;> cases thirdGrade <;> rfl
+  join_idempotent := fun someGrade => by cases someGrade <;> rfl
+  bottom_join := fun someGrade => by cases someGrade <;> rfl
+  join_bottom := fun someGrade => by cases someGrade <;> rfl
+
 /-! ## The dimension classification -/
 
 /-- The two graded-algebra classes a §6 dimension can carry. -/
@@ -192,8 +277,9 @@ theorem complexity_isOrderedSemiring :
 theorem effect_isBoundedSemilattice :
     GradedDimensionName.effect.gradeAlgebraOf = .boundedSemilattice := rfl
 
-/-- Ledger: trust is a bounded semilattice (the order-dual of effect: add = mul = `min`, the weakest-link
-minimum — same single-idempotent-op non-fit; classified by analogy to the proved effect case). -/
+/-- Ledger (the order-dual BOUNDARY): trust is a bounded semilattice, NOT a semiring — now MACHINE-CHECKED on
+par with effect (`trustIsNotLawfulOrderedGradeSemiring` + `trustIsLawfulBoundedJoinSemilattice`), no longer
+asserted by analogy.  add = mul = `min`, the weakest-link minimum, the single-idempotent-op non-fit. -/
 theorem trust_isBoundedSemilattice :
     GradedDimensionName.trust.gradeAlgebraOf = .boundedSemilattice := rfl
 
