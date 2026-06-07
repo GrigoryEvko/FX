@@ -98,6 +98,7 @@ import FX1Poly.Tier0.FxBaseSubstWeakening
 import FX1Poly.Tier0.FxBaseSubstComprehension
 import FX1Poly.Tier0.FxBaseSubstSingleton
 import FX1Poly.Tier0.FxBaseSubstGlobalSections
+import FX1Poly.Tier0.FxBaseSubstScone
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4514,6 +4515,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.sectionAsClosedTerm_closedTermAsSection
 #assert_no_axioms FX1Poly.Tier0.closedTermAsSection_sectionAsClosedTerm
 #assert_no_axioms FX1Poly.Tier0.closedTermAsSection_injective
+-- The first non-trivial sconing OBJECT over the term base (FxBaseSubstScone.lean, brick 7 of the term-carrying CwR
+-- arc). SconingObject (InternalSconing.lean) needs only a GlobalSections (the RMC-gated parts are
+-- SconingLift/SconingPreservation), so it's buildable over the term base NOW. fxBaseSubstClosedTermScone glues the
+-- closed terms RawTerm 0 onto the global sections of the single-variable context via the SUBSTVEC-6 iso
+-- closedTermAsSection (a genuine syntactic-term realization, NOT the tautological id the renaming base was limited
+-- to) — the first sconing object for FX whose semantic domain is a real term type realized into real closed-term
+-- sections. _realizationInjective = FAITHFUL (non-degenerate, via closedTermAsSection_injective).
+-- closedTermSconeToTautological/tautologicalToClosedTermScone = mutually-inverse SconingMorphisms to/from the
+-- tautological scone at scope 1, exhibiting the closed-term scone as the RawTerm 0-presentation of the canonical
+-- global-sections scone (commutes via mapsIdentity; reverse first rw's the round-trip). [comp=identity NOT proved:
+-- SconingMorphism eq compares semanticMaps as functions = funext-leaks-Quot.sound; the SUBSTVEC-6 round-trips
+-- witness mutual-inverseness pointwise instead.] All zero-axiom. Section index 1 = (1 : Nat) ascription.
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstClosedTermScone
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstClosedTermScone_realizationInjective
+#assert_no_axioms FX1Poly.Tier0.closedTermSconeToTautological
+#assert_no_axioms FX1Poly.Tier0.tautologicalToClosedTermScone
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
