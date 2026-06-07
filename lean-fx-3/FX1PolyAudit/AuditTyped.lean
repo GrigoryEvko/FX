@@ -1,4 +1,5 @@
 import FX1PolyAudit.DependencyAudit
+import FX1Poly.Core.DataReducibilityCoverage
 import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Typed.UniverseCodeConversion
@@ -5155,3 +5156,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.incompleteReviewGate
 #assert_no_axioms FX1Poly.Typed.incompleteReview_fails
 #assert_no_axioms FX1Poly.Typed.incompleteReview_missingNegativeTest
+
+-- SN-082 (DataReducibilityCoverage): the reducibility-coverage gate over the ten data-former families.
+-- `hasReducibilityCandidate` is the total dependent dispatch — every family's CanonicalFormsPredicate is a
+-- full Girard candidate (each arm its OWN shipped candidate, indexed by valuePredicate so no cross-family
+-- discharge). A regression gate: adding a DataFormerFamily ctor without a candidate fails to compile.
+-- Non-vacuity: bool's candidate is inhabited (boolTrueCell); empty's is the bottom (no closed member).
+#assert_no_axioms FX1Poly.Core.DataFormerFamily.valuePredicate
+#assert_no_axioms FX1Poly.Core.DataFormerFamily.hasReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.DataFormerFamily.coveredCount
+#assert_no_axioms FX1Poly.Core.DataFormerFamily.coveredCount_correct
+#assert_no_axioms FX1Poly.Core.boolFamilyCandidateInhabited
+#assert_no_axioms FX1Poly.Core.emptyFamilyCandidateHasNoClosedMember
