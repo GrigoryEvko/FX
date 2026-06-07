@@ -87,8 +87,10 @@ theorem grownUniverseTypingForcesSuccessor {profile : PolyProfile} {scope : Nat}
 /-- **No Girard 2-cycle in universe typing.**  There is no pair of universes each classified by the other:
 `Type@a : Type@b` forces `b = a+1`, and `Type@b : Type@a` forces `a = b+1`, so `a = a+2`, refuted by the
 double-successor predicativity guard `LevelExpr.ne_lsuccLsucc_self`.  The first genuinely-new acyclicity
-obstruction beyond the shipped length-1 no-`Type:Type` — the honest "no Girard cycle of any length"
-guarantee for the grown engine. -/
+obstruction beyond the shipped length-1 no-`Type:Type`.  (The FULL "no Girard cycle of any length" guarantee —
+length-3 and beyond — is `grownUniverseTypingHasNoCycleOfAnyLength` in `UniverseClassificationAcyclic.lean`,
+which generalizes this finite obstruction via the transitive closure + a strictly-increasing size measure;
+that file's `grownUniverseTypingHasNoTwoCycleViaChain` re-derives this 2-cycle as its length-2 instance.) -/
 theorem grownUniverseTypingHasNoTwoCycle {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {levelA levelB : LevelExpr} {flagA flagB : UniverseFlag}

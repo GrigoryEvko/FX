@@ -386,6 +386,7 @@ import FX1Poly.Typed.HasTypeDescNativeDecidable
 import FX1Poly.Typed.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.IsTypeDescGenericSmoke
 import FX1Poly.Typed.KnownUnsoundnessCorpus
+import FX1Poly.Typed.UniverseClassificationAcyclic
 import FX1Poly.Typed.MetatheoryFuzz
 import FX1Poly.Typed.MechanizedProofCrossReference
 import FX1Poly.Typed.FormalReviewGate
@@ -5594,6 +5595,22 @@ gates pin them shut.
 -- which does NOT fitsWhole).  fractionalPermissionBug_isEncodableNow flips the ledger (was _isPending).
 #assert_no_axioms FX1Poly.Typed.corpusRejectsFractionalOverallocation
 #assert_no_axioms FX1Poly.Typed.corpusNaiveFractionalOverallocates
+
+-- §27.2 / §1.4 Girard-acyclicity STRENGTHENING (UniverseClassificationAcyclic.lean): the corpus ships the
+-- Type:Type entry as length-1 (corpusRejectsTypeInType) + length-2 (grownUniverseTypingHasNoTwoCycle), but
+-- its docstring promises "no Girard cycle of any length".  This delivers the general statement: the
+-- TRANSITIVE CLOSURE of universe classification (UniverseClassificationChain: single edge + step) is
+-- irreflexive — each edge forces classifier = subject.lsucc so LevelExpr.size strictly increases along the
+-- chain (subjectSizeLtClassifier), and a cycle gives size < itself (Nat.lt_irrefl).  trans confirms genuine
+-- transitive closure; HasNoTwoCycleViaChain re-derives the shipped 2-cycle as the length-2 instance;
+-- nonVacuous / twoStep_nonVacuous witness real length-1 and length-2 chains (Type@0:Type@1[:Type@2]).
+#assert_no_axioms FX1Poly.Typed.UniverseClassificationChain
+#assert_no_axioms FX1Poly.Typed.UniverseClassificationChain.subjectSizeLtClassifier
+#assert_no_axioms FX1Poly.Typed.UniverseClassificationChain.trans
+#assert_no_axioms FX1Poly.Typed.grownUniverseTypingHasNoCycleOfAnyLength
+#assert_no_axioms FX1Poly.Typed.grownUniverseTypingHasNoTwoCycleViaChain
+#assert_no_axioms FX1Poly.Typed.universeClassificationChain_nonVacuous
+#assert_no_axioms FX1Poly.Typed.universeClassificationChain_twoStep_nonVacuous
 
 -- §27.3 Layer-2 property-based metatheory fuzzer: a TOTAL deterministic generator of well-typed terms
 -- (`metatheoryFuzzFamily`, the depth-n β-redex tower `(λx.x)ⁿ Type@0`) with the four Layer-2 properties
