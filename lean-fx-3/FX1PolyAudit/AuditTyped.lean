@@ -3080,6 +3080,12 @@ gates pin them shut.
 -- (simplyTypedBareClosedStronglyNormalizing + Conv.decidableOfSimplyTypedBareClosed). The formal declaration of
 -- Milestone A0 over the simply-typed fragment, NOT gated on SN-043 (no SN hypothesis carried). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.simplyTypedDefensibleKernel
+-- WfContextDefensibleKernel + wfContextDefensibleKernel (#484): the SN-043 WIDENING of the floor from the
+-- simply-typed fragment to EVERY well-formed context. SN proven (stronglyNormalizingOfWfContextDesc) + Conv
+-- decidable (decidableOfWellTypedInWfContextDesc) with the WF presupposition alone, NO SN and NO SR hypothesis
+-- (the milestone-ledger correction: SR is not a decidability ingredient; the joint canonicity apex stays open).
+#assert_no_axioms FX1Poly.Typed.WfContextDefensibleKernel
+#assert_no_axioms FX1Poly.Typed.wfContextDefensibleKernel
 
 -- CANONICAL NORMAL FORM for closed simply-typed terms — the NORMALIZE companion to the bare-closed DECIDE.
 -- stronglyNormalizingBare: bare SN (the sole use site of stronglyNormalizing_of_subst); normalForm: the
