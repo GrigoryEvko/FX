@@ -17,6 +17,7 @@ import FX1Poly.Modal.GradedReductionConfluence
 import FX1Poly.Modal.GradedNormalization
 import FX1Poly.Modal.ComplexitySemiring
 import FX1Poly.Modal.EffectLatticeClassification
+import FX1Poly.Modal.OverflowLatticeDimension
 import FX1Poly.Modal.UnifiedGradeMonoid
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
@@ -328,6 +329,31 @@ annihilator (`join impure pure = impure ≠ pure`), upgrading the informal DIM5-
 #assert_no_axioms FX1Poly.Modal.BoundedJoinSemilattice.bottom_le
 #assert_no_axioms FX1Poly.Modal.effectLe_pure_impure
 #assert_no_axioms FX1Poly.Modal.trustLe_trusted_untrusted
+-- The OVERFLOW dimension (§6.3 Dim 16, OverflowLatticeDimension.lean) — the FIRST NON-CHAIN bounded
+-- join-semilattice: the diamond M3 (exactGrade bottom; wrap/trap/saturate ANTICHAIN; conflictGrade top = the
+-- "mixing overflow modes is a type error" rejected state). OverflowGrade (5-ctor) + join (25-case diamond) +
+-- overflowLattice + overflowIsLawfulBoundedJoinSemilattice (laws by cases-rfl, incl. 125-leaf assoc). The
+-- conflict-mixing facts overflowJoin_{wrap_trap,wrap_saturate,trap_saturate} (any two distinct modes join to
+-- conflict, rfl). The genuinely-new NON-CHAIN content: overflow{WrapTrap,WrapSaturate,TrapSaturate}Incomparable
+-- (the 3 modes pairwise incomparable in the induced order — no chain lattice has this; the engine's antisymmetric
+-- le exercised on a real antichain), via the defeq noConfusion route. overflowConflictIsGreatest (top) +
+-- overflowExactIsLeast (bottom via generic bottom_le). overflowEffectProductLattice + overflowEffectProductIsLawful
+-- (a NON-CHAIN dim composes with a CHAIN dim via the shipped productIsLawful, no re-proof — composition is
+-- shape-agnostic). All zero-axiom (full-enum match + cases-rfl + noConfusion + reused productIsLawful, no funext).
+#assert_no_axioms FX1Poly.Modal.OverflowGrade
+#assert_no_axioms FX1Poly.Modal.OverflowGrade.join
+#assert_no_axioms FX1Poly.Modal.overflowLattice
+#assert_no_axioms FX1Poly.Modal.overflowIsLawfulBoundedJoinSemilattice
+#assert_no_axioms FX1Poly.Modal.overflowJoin_wrap_trap
+#assert_no_axioms FX1Poly.Modal.overflowJoin_wrap_saturate
+#assert_no_axioms FX1Poly.Modal.overflowJoin_trap_saturate
+#assert_no_axioms FX1Poly.Modal.overflowWrapTrapIncomparable
+#assert_no_axioms FX1Poly.Modal.overflowWrapSaturateIncomparable
+#assert_no_axioms FX1Poly.Modal.overflowTrapSaturateIncomparable
+#assert_no_axioms FX1Poly.Modal.overflowConflictIsGreatest
+#assert_no_axioms FX1Poly.Modal.overflowExactIsLeast
+#assert_no_axioms FX1Poly.Modal.overflowEffectProductLattice
+#assert_no_axioms FX1Poly.Modal.overflowEffectProductIsLawful
 -- The UNIFIED grade VECTOR across BOTH families (UnifiedGradeMonoid.lean) — the honest §1.3/§6.1/§6.8 "21
 -- dimensions compose", resolving the §6.1-vs-DIM-CLASS tension: the vector is NOT a pure semiring product
 -- (effect/trust aren't semirings) but a product of COMMUTATIVE GRADE MONOIDS (the §6.1 parallel-combine layer
