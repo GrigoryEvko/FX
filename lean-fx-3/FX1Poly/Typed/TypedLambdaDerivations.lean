@@ -348,4 +348,147 @@ theorem polymorphicIdentityInstantiation_stronglyNormalizing
   HasTypeDescPi.closedStronglyNormalizing
     (polymorphicIdentityInstantiatedAtTypeZero_hasTypeDescPi (profile := profile) flag)
 
+/-! ## Curried 2-argument application — parametric polymorphism in action
+
+The instantiation above stops at the type-application: `(ΛA. λx. x) (Type@0)` is the
+SPECIALIZED identity, but it cannot then be applied to a value, because `Type@0` has
+no closed inhabitant.  Climbing ONE more universe fixes this: the LEVEL-2 polymorphic
+identity `Λ(A : Type@2). λ(x : A). x`, instantiated at `Type@1`, yields the identity on
+`Type@1` (`Π(x : Type@1). Type@1`), which DOES accept the closed value `Type@0 : Type@1`.
+So the curried application `(Λ(A : Type@2). λ(x : A). x) (Type@1) (Type@0)` typechecks
+end-to-end — the first ARGUMENT instantiates the polymorphic `A`, the second is the
+actual value passed to the specialized identity — and reduces in TWO β-steps (an inner
+contraction under the outer application's function position, then the outer β) to the
+value `Type@0`.  This is parametric polymorphism exercised in full: instantiate, then
+apply. -/
+
+/-- In context `[A : Type@2]`, `Π(x : A). A` is a type at `Type@(lmax 2 2)` — the level-2
+twin of `dependentArrowOverTypeVariableAtLevelOne_hasTypeDescPi` (child levels bumped to
+`lzero.lsucc.lsucc`). -/
+theorem dependentArrowOverTypeVariableAtLevelTwo_hasTypeDescPi
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    HasTypeDescPi profile
+      (TypingContext.empty.cons (universeCodeCell LevelExpr.lzero.lsucc.lsucc flag))
+      (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+      (universeCodeCell (lmaxAll [LevelExpr.lzero.lsucc.lsucc, LevelExpr.lzero.lsucc.lsucc]) flag) := by
+  refine HasTypeDescPi.genFormationPi _ .gen_piTyCode () _
+    [LevelExpr.lzero.lsucc.lsucc, LevelExpr.lzero.lsucc.lsucc] flag
+    { outputType := universeFormerOutput } rfl ?premises
+  refine DescTelescopePi.cons _ _ _ _ _ _ ?domainTyped ?codomainTelescope
+  · exact HasTypeDescPi.ofFormation (HasTypeDesc.var _ (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+  · refine DescTelescopePi.cons _ _ _ _ _ _ ?codomainTyped ?nilTelescope
+    · exact HasTypeDescPi.ofFormation
+        (HasTypeDesc.var _ (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+    · exact DescTelescopePi.nil _ _
+
+/-- The LEVEL-2 polymorphic identity `λ(A : Type@2). λ(x : A). x` is typed at
+`Π(A : Type@2). Π(x : A). A` — the level-2 twin of `polymorphicIdentityAtLevelOne_hasType
+DescPi` (same term; the type-variable universe climbs to `Type@2` so that instantiating at
+`Type@1` leaves room to apply the result to `Type@0 : Type@1`). -/
+theorem polymorphicIdentityAtLevelTwo_hasTypeDescPi
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    HasTypeDescPi profile TypingContext.empty
+      (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero.lsucc.lsucc flag)
+        (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))) := by
+  refine HasTypeDescPi.piIntro LevelExpr.lzero.lsucc.lsucc.lsucc
+    (lmaxAll [LevelExpr.lzero.lsucc.lsucc, LevelExpr.lzero.lsucc.lsucc]) flag
+    ?domainTyped ?codomainTyped ?bodyTyped
+  · exact HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero.lsucc.lsucc flag)
+  · exact dependentArrowOverTypeVariableAtLevelTwo_hasTypeDescPi flag
+  · refine HasTypeDescPi.piIntro LevelExpr.lzero.lsucc.lsucc LevelExpr.lzero.lsucc.lsucc flag
+      ?innerDomainTyped ?innerCodomainTyped ?innerBodyTyped
+    · exact HasTypeDescPi.ofFormation (HasTypeDesc.var _ (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+    · exact HasTypeDescPi.ofFormation
+        (HasTypeDesc.var _ (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+    · exact HasTypeDescPi.ofFormation (HasTypeDesc.var _ (⟨0, Nat.succ_pos 1⟩ : Fin 2))
+
+/-- The level-2 polymorphic identity instantiated at `Type@1` — `(Λ(A : Type@2). λ(x : A).
+x) (Type@1)` is typed at `Π(x : Type@1). Type@1`, the identity on `Type@1` (the `piElim`
+result `subst0 (Π(x : A). A) Type@1` specializes by defeq).  The intermediate partial
+application of the curried use below. -/
+theorem polymorphicIdentityInstantiatedAtTypeOne_hasTypeDescPi
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    HasTypeDescPi profile TypingContext.empty
+      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero.lsucc flag))
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero.lsucc flag)
+        (universeCodeCell LevelExpr.lzero.lsucc flag)) :=
+  HasTypeDescPi.piElim
+    (polymorphicIdentityAtLevelTwo_hasTypeDescPi (profile := profile) flag)
+    (HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero.lsucc flag))
+
+/-- ★ The CURRIED 2-ARGUMENT application `(Λ(A : Type@2). λ(x : A). x) (Type@1) (Type@0)` is
+typed at `Type@1` — a nested `piElim`: the first argument `Type@1` instantiates the
+polymorphic `A` (giving the identity on `Type@1`), the second argument `Type@0 : Type@1` is
+the actual value.  The outer `piElim` result `subst0 Type@1 Type@0` is defeq `Type@1` (the
+specialized identity's codomain is the constant `Type@1`).  Parametric polymorphism applied
+in full: instantiate, then apply. -/
+theorem polymorphicIdentityAppliedToTypeOneThenTypeZero_hasTypeDescPi
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    HasTypeDescPi profile TypingContext.empty
+      (appCell (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero.lsucc flag)) (universeCodeCell LevelExpr.lzero flag))
+      (universeCodeCell LevelExpr.lzero.lsucc flag) :=
+  HasTypeDescPi.piElim
+    (polymorphicIdentityInstantiatedAtTypeOne_hasTypeDescPi (profile := profile) flag)
+    (HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
+
+/-- ★ The curried application reduces in TWO β-steps to the value `Type@0`: first a
+CONGRUENCE step contracts the inner type-application `(ΛA. λx. x) (Type@1) ↝ λx. x` under
+the outer application's function position (`Step.cong .gen_app` + `StepChildren.here`),
+leaving `(λx. x) (Type@0)`; then the outer β contracts that to `Type@0` (`subst0 (var 0)
+Type@0 = Type@0`). -/
+theorem polymorphicIdentityTwoArgReducesToTypeZero (flag : UniverseFlag) :
+    StepStar
+      (appCell (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero.lsucc flag)) (universeCodeCell LevelExpr.lzero flag))
+      (universeCodeCell LevelExpr.lzero flag) :=
+  StepStar.trans
+    (Step.cong .gen_app ()
+      (StepChildren.here
+        (parentScope := 0) (headShift := 0) (restShifts := [0])
+        ((.childCons (universeCodeCell LevelExpr.lzero flag) .childNil) : RawTermChildren [0] 0)
+        Step.beta))
+    (StepStar.trans Step.beta (StepStar.refl _))
+
+/-- ★ Subject reduction for the curried 2-argument application.  The redex
+`(Λ(A : Type@2). λ(x : A). x) (Type@1) (Type@0)` reduces (in two β-steps) to the value
+`Type@0`, and BOTH the redex and the reduct are typed at the SAME type `Type@1` (the reduct
+`Type@0 : Type@1` by universe formation).  Curried polymorphic application followed by a
+multi-step reduction, with the type preserved end-to-end. -/
+theorem polymorphicIdentityTwoArg_subjectReduction
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    StepStar
+      (appCell (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero.lsucc flag)) (universeCodeCell LevelExpr.lzero flag))
+      (universeCodeCell LevelExpr.lzero flag) ∧
+    HasTypeDescPi profile TypingContext.empty
+      (appCell (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero.lsucc flag)) (universeCodeCell LevelExpr.lzero flag))
+      (universeCodeCell LevelExpr.lzero.lsucc flag) ∧
+    HasTypeDescPi profile TypingContext.empty
+      (universeCodeCell LevelExpr.lzero flag)
+      (universeCodeCell LevelExpr.lzero.lsucc flag) :=
+  ⟨polymorphicIdentityTwoArgReducesToTypeZero flag,
+    polymorphicIdentityAppliedToTypeOneThenTypeZero_hasTypeDescPi (profile := profile) flag,
+    HasTypeDescPi.ofFormation
+      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag)⟩
+
+/-- The curried 2-argument application is strongly normalizing — SN-043 on the concrete
+nested-`piElim` derivation. -/
+theorem polymorphicIdentityTwoArg_stronglyNormalizing
+    {profile : PolyProfile} (flag : UniverseFlag) :
+    IsStronglyNormalizing
+      (appCell (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+        (universeCodeCell LevelExpr.lzero.lsucc flag)) (universeCodeCell LevelExpr.lzero flag)
+        : RawTerm 0) :=
+  HasTypeDescPi.closedStronglyNormalizing
+    (polymorphicIdentityAppliedToTypeOneThenTypeZero_hasTypeDescPi (profile := profile) flag)
+
 end FX1Poly.Typed

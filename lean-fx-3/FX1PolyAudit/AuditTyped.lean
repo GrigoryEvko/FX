@@ -1980,6 +1980,25 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityInstantiation_betaReducesToIdentity
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityInstantiation_subjectReduction
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityInstantiation_stronglyNormalizing
+-- CURRIED 2-ARGUMENT application (TypedLambdaDerivations): parametric polymorphism in action. The single
+-- instantiation above stops at the type-application (Type@0 has no closed inhabitant to apply to); climbing ONE
+-- more universe, the LEVEL-2 poly-id Λ(A:Type@2).λ(x:A).x instantiated at Type@1 gives the identity on Type@1
+-- (Π(x:Type@1).Type@1), which DOES accept the closed value Type@0:Type@1. polymorphicIdentityAppliedToTypeOne
+-- ThenTypeZero: the nested piElim (ΛA.λx.x)(Type@1)(Type@0):Type@1 — first arg instantiates the polymorphic A,
+-- second arg is the actual value; outer piElim result subst0 Type@1 Type@0 is defeq Type@1. twoArgReducesToType
+-- Zero: 2-step StepStar to Type@0 — a CONGRUENCE step (Step.cong .gen_app + StepChildren.here) contracting the
+-- inner type-application under the outer function position, then the outer β. subjectReduction: redex + reduct
+-- both type at the SAME Type@1 (reduct Type@0:Type@1 by universe formation). stronglyNormalizing via SN-043. All
+-- zero-axiom (constructor applications + defeq subst0 + the growingReductionSequence congruence template). The
+-- level-2 twins (dependentArrowOverTypeVariableAtLevelTwo, polymorphicIdentityAtLevelTwo) climb the firing-80
+-- recipe once more (lzero -> lzero.lsucc.lsucc in domain positions).
+#assert_no_axioms FX1Poly.Typed.dependentArrowOverTypeVariableAtLevelTwo_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityAtLevelTwo_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityInstantiatedAtTypeOne_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityAppliedToTypeOneThenTypeZero_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityTwoArgReducesToTypeZero
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityTwoArg_subjectReduction
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityTwoArg_stronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
