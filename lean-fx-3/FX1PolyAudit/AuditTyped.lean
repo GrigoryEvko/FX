@@ -378,6 +378,7 @@ import FX1Poly.Typed.KnownUnsoundnessCorpus
 import FX1Poly.Typed.MetatheoryFuzz
 import FX1Poly.Typed.MechanizedProofCrossReference
 import FX1Poly.Typed.FormalReviewGate
+import FX1Poly.Typed.SelfVerifiedMetatheory
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5538,6 +5539,36 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.incompleteReviewGate
 #assert_no_axioms FX1Poly.Typed.incompleteReview_fails
 #assert_no_axioms FX1Poly.Typed.incompleteReview_missingNegativeTest
+
+-- §27.3 Layer-4 defense (SelfVerifiedMetatheory): the bundled self-verified-metatheory layer — preservation +
+-- progress as anchored FX theorems, the peer assembly Layers 1/2/3/5 each already had.  Each guarantee
+-- ANCHORED (`…_<guarantee> := @<shippedWitness>`).  formationIsUnconditionallySelfVerified (both guarantees
+-- unconditional) vs grownIsSelfVerified + grownNotUnconditionallySelfVerified (the honest GCC-5 boundary: the
+-- grown preservation MASTER `subjectReductionOfGrownTelescopeSR` is telescope-SR-conditional, #842/#845).
+-- Non-vacuity: incompleteMetatheory missing progress is NOT self-verified.  Closes SN-143 — five-layer arc
+-- L1-L5 now each has a dedicated assembly file.
+#assert_no_axioms FX1Poly.Typed.MetatheoryGuarantee
+#assert_no_axioms FX1Poly.Typed.MetatheoryGuarantee.describe
+#assert_no_axioms FX1Poly.Typed.SelfVerifiedMetatheory
+#assert_no_axioms FX1Poly.Typed.SelfVerifiedMetatheory.guaranteed
+#assert_no_axioms FX1Poly.Typed.SelfVerifiedMetatheory.isSelfVerified
+#assert_no_axioms FX1Poly.Typed.SelfVerifiedMetatheory.isUnconditionallySelfVerified
+#assert_no_axioms FX1Poly.Typed.formationMetatheory_preservation
+#assert_no_axioms FX1Poly.Typed.formationMetatheory_progress
+#assert_no_axioms FX1Poly.Typed.grownMetatheory_progress
+#assert_no_axioms FX1Poly.Typed.grownMetatheory_preservationBeta
+#assert_no_axioms FX1Poly.Typed.grownMetatheory_preservationFormerArm
+#assert_no_axioms FX1Poly.Typed.grownMetatheory_preservationConvArm
+#assert_no_axioms FX1Poly.Typed.grownMetatheory_preservationOfFormationArm
+#assert_no_axioms FX1Poly.Typed.grownMetatheory_preservationConditionalMaster
+#assert_no_axioms FX1Poly.Typed.formationSelfVerifiedMetatheory
+#assert_no_axioms FX1Poly.Typed.grownSelfVerifiedMetatheory
+#assert_no_axioms FX1Poly.Typed.formationIsUnconditionallySelfVerified
+#assert_no_axioms FX1Poly.Typed.grownIsSelfVerified
+#assert_no_axioms FX1Poly.Typed.grownNotUnconditionallySelfVerified
+#assert_no_axioms FX1Poly.Typed.incompleteMetatheory
+#assert_no_axioms FX1Poly.Typed.incompleteMetatheory_notSelfVerified
+#assert_no_axioms FX1Poly.Typed.incompleteMetatheory_missingProgress
 
 -- SN-082 (DataReducibilityCoverage): the reducibility-coverage gate over the ten data-former families.
 -- `hasReducibilityCandidate` is the total dependent dispatch — every family's CanonicalFormsPredicate is a
