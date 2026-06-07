@@ -354,6 +354,7 @@ import FX1Poly.Typed.IsTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescNativeDecidable
 import FX1Poly.Typed.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.IsTypeDescGenericSmoke
+import FX1Poly.Typed.KnownUnsoundnessCorpus
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5051,3 +5052,28 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.elimRuleDescOf_outputIsPiElim
 #assert_no_axioms FX1Poly.Typed.elimRuleDescOf_isApp
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_piElim_viaElimDesc
+
+-- §27.3 Layer-1 known-unsoundness corpus: every cataloged §27.2 type-theory bug is a permanent rejection
+-- test (or an honest pending-ledger entry).  GENUINELY-NEW content: universe-typing acyclicity — the
+-- relation `Type@a : Type@b` is exactly the successor function (`grownUniverseTypingForcesSuccessor`),
+-- hence has no Girard 2-cycle (`grownUniverseTypingHasNoTwoCycle`), strengthening the shipped length-1
+-- no-`Type:Type`.  The catalog (`KnownTypeTheoryBug` + `dimension`/`literatureSource`/`isEncodableNow`) is
+-- machine-checked data; the re-exported witnesses (`corpusRejectsAtkeyBrokenLam` / `…NaiveGradeCheck`) and
+-- the `…_isEncodableNow` / `…_isPending` ledger facts pin which bugs are rejected vs await their dimension.
+#assert_no_axioms FX1Poly.Typed.grownUniverseTypingForcesSuccessor
+#assert_no_axioms FX1Poly.Typed.grownUniverseTypingHasNoTwoCycle
+#assert_no_axioms FX1Poly.Typed.corpusRejectsTypeInType
+#assert_no_axioms FX1Poly.Typed.KnownTypeTheoryBug
+#assert_no_axioms FX1Poly.Typed.KnownTypeTheoryBug.dimension
+#assert_no_axioms FX1Poly.Typed.KnownTypeTheoryBug.literatureSource
+#assert_no_axioms FX1Poly.Typed.KnownTypeTheoryBug.isEncodableNow
+#assert_no_axioms FX1Poly.Typed.corpusRejectsAtkeyBrokenLam
+#assert_no_axioms FX1Poly.Typed.corpusRejectsNaiveGradeCheck
+#assert_no_axioms FX1Poly.Typed.atkeyBug_isEncodableNow
+#assert_no_axioms FX1Poly.Typed.girardBug_isEncodableNow
+#assert_no_axioms FX1Poly.Typed.sessionBug_isPending
+#assert_no_axioms FX1Poly.Typed.mlValueRestrictionBug_isPending
+#assert_no_axioms FX1Poly.Typed.implicitFlowBug_isPending
+#assert_no_axioms FX1Poly.Typed.constantTimeBug_isPending
+#assert_no_axioms FX1Poly.Typed.fractionalPermissionBug_isPending
+#assert_no_axioms FX1Poly.Typed.corpusNonVacuous
