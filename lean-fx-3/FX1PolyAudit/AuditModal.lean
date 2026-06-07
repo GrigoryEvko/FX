@@ -26,6 +26,7 @@ import FX1Poly.Modal.ClockDomainLatticeDimension
 import FX1Poly.Modal.MutationChainLatticeDimension
 import FX1Poly.Modal.PreorderDimension
 import FX1Poly.Modal.DimensionRepetitionContrast
+import FX1Poly.Modal.DimensionMultiplicationContrast
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -804,3 +805,26 @@ over the propext-free enum tables UsageGrade/SecurityGrade .add/.le. -/
 #assert_no_axioms FX1Poly.Modal.securityAddUnitUnit_idempotent
 #assert_no_axioms FX1Poly.Modal.securityRepetitionStaysWithinUnit
 #assert_no_axioms FX1Poly.Modal.usageAndSecurityDifferOnRepetition
+
+/-! ## The MULTIPLICATIVE cross-dimension contrast (`DimensionMultiplicationContrast`) — usage vs security
+on the `(R, ×, 1)` monoid + where its unit sits in the order
+
+The multiplicative sibling of `DimensionRepetitionContrast` (which contrasted `+`).  The two dimensions'
+MULTIPLICATIVE units sit at OPPOSITE order positions: usage's `×`-unit `1` is SUB-MAXIMAL
+(`usageUnitIsSubMaximal`: `1 ≤ ω ∧ 1 ≠ ω` — unrestricted use strictly exceeds linear, usage GRANTS a
+beyond-unit `@[copy]` capability) while security's `×`-unit `classified` is MAXIMAL
+(`securityUnitIsMaximal`: `classified ≰ unclassified`, `unclassified ≤ classified` — the top secrecy, no
+"beyond classified").  The `×`-annihilator (= additive `0`, the universal semiring law `r × 0 = 0`)
+differs in MEANING: usage's `0` is erased/ghost (`usageMulAnnihilatesAtZero`: `0 × ω = 0`, the §1.5
+erasure / §6.2 `1/ω = 0` context division) while security's `0` is `unclassified`/public
+(`securityMulAnnihilatesAtUnclassified`: `classified × unclassified = unclassified` — "ghost computation
+on a secret leaks nothing", §6.3 dim 5).  usageAndSecurityDifferOnUnitMaximality: composing pointwise in
+one grade vector (§6.1), each dimension's `(R, ×, 1)` relates to its order differently — usage's unit
+admits a strict over-grade, security's does not — so the 21-dim product is heterogeneous on `×`/`≤` too
+(§6.8).  All rfl/decide over the propext-free enum tables UsageGrade/SecurityGrade .mul/.le. -/
+
+#assert_no_axioms FX1Poly.Modal.usageUnitIsSubMaximal
+#assert_no_axioms FX1Poly.Modal.securityUnitIsMaximal
+#assert_no_axioms FX1Poly.Modal.usageMulAnnihilatesAtZero
+#assert_no_axioms FX1Poly.Modal.securityMulAnnihilatesAtUnclassified
+#assert_no_axioms FX1Poly.Modal.usageAndSecurityDifferOnUnitMaximality
