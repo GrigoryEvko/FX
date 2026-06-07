@@ -186,6 +186,7 @@ import FX1Poly.Typed.WeaklyNormalizingNotStronglyNormalizing
 import FX1Poly.Typed.StepNonDeterministic
 import FX1Poly.Typed.ConvValueDiscrimination
 import FX1Poly.Typed.TypedLambdaDerivations
+import FX1Poly.Typed.TypedChurchBooleans
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
@@ -2018,6 +2019,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ruleTableApplicationOutput_resolvesToUniverse
 #assert_no_axioms FX1Poly.Typed.identityApplicationViaRuleTables_atResolvedType
 #assert_no_axioms FX1Poly.Typed.identityApplicationViaRuleTables_stronglyNormalizing
+-- CHURCH-BOOLEAN ENCODING (TypedChurchBooleans): the formation-only engine proves the data CONSTRUCTORS
+-- (boolTrue/boolFalse) untyped, yet the polymorphic Π-fragment TYPES the Church encoding of booleans.
+-- churchTrue λA.λt.λf.t and churchFalse λA.λt.λf.f are both typed at Π(A:Type@0).Π(t:A).Π(f:A).A via three
+-- nested piIntro over the nested dependent codomain Π(t:A).Π(f:A).A (churchOuterArrow nesting churchInner
+-- Arrow, at lmax 0 (lmax 0 0)); churchTrue's body t is the NON-innermost var (deeper de Bruijn lookup than
+-- the poly-identity). Both SN via SN-043. The Π-fragment is expressive enough to encode the data it cannot
+-- primitively introduce. Zero-axiom: constructor applications + nested lmaxAll threading + var-lookup defeqs.
+#assert_no_axioms FX1Poly.Typed.churchInnerArrow
+#assert_no_axioms FX1Poly.Typed.churchOuterArrow
+#assert_no_axioms FX1Poly.Typed.churchTrue_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.churchTrue_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.churchFalse_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.churchFalse_stronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
