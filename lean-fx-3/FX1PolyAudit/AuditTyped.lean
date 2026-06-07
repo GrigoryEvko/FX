@@ -94,6 +94,7 @@ import FX1Poly.Tier0.FxBaseRenamingVecGlobalSections
 import FX1Poly.Tier0.FxBaseRenamingVecSconingPreservation
 import FX1Poly.Tier0.FxBaseSubstVec
 import FX1Poly.Tier0.FxBaseSubstCategory
+import FX1Poly.Tier0.FxBaseSubstWeakening
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4444,6 +4445,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstCategory
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstCategory_identity_eq
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstCategory_compose_eq
+-- The display / weakening substitution (FxBaseSubstWeakening.lean, brick 3 of the term-carrying CwR arc). The
+-- first distinguished morphism the comprehension structure needs: SubstVec.weakening scope : SubstVec (scope+1)
+-- scope, the substitution scope⟶scope+1 sending each variable i to the term var(i+1) (past the freshly-bound
+-- variable 0) — the term-carrying analogue of RenamingVec.weakening. weakening_lookup (the shifted-var term, via
+-- lookup_tabulate) + weakening_lookup_eq_rename (lookup agrees with the weakening RENAMING on a variable) +
+-- weakening_unique (uniquely characterized by its action, via ext). weakening_subst_eq_rename is the DEEP
+-- coherence: the weakening SUBSTITUTION acts on EVERY term as the weakening renaming (subst weakening = rename
+-- weaken on the whole term algebra, not merely on variable lookups) — via subst_identity_apply +
+-- rename_subst_commute (folding rename into weaken.thenSubst identity) + subst_pointwise against weakening_lookup.
+-- Honest scope: the display map ITSELF + its renaming coherence; the cons comprehension + the universal property
+-- (β/weakening cancellation) are the next brick. All zero-axiom (no funext).
+#assert_no_axioms FX1Poly.Tier0.SubstVec.weakening
+#assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_lookup
+#assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_lookup_eq_rename
+#assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_unique
+#assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_subst_eq_rename
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
