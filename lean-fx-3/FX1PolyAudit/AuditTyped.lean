@@ -382,6 +382,7 @@ import FX1Poly.Typed.IntroRuleDesc
 import FX1Poly.Typed.ElimRuleDesc
 import FX1Poly.Typed.TypingRoleClassifier
 import FX1Poly.Typed.TypingRoleEngineBridge
+import FX1Poly.Typed.UntypableHeadDecision
 import FX1Poly.Typed.CertifiedWordReductionTermination
 import FX1Poly.Typed.CertifiedWordReductionConfluence
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
@@ -5844,6 +5845,26 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectHeadHasRoleOrIsUniverseCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.cellUntypedWhenRolelessAndNonBespoke
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.boolTrueCellUntypedViaRole
+
+-- UntypableHeadDecision (GTL-ROLE follow-up): the DECIDABLE cascade-free untypability decision procedure.
+-- isUntypableHead is a pure-syntax Bool — decide (typingRoleOf g = none ∧ g ≠ gen_var ∧ g ≠ gen_universeCode)
+-- — and isUntypableHead_sound is THE cascade-free untypability theorem: isUntypableHead g = true ⟹ a cell
+-- rooted at g has no grown typing (of_decide_eq_true → cellUntypedWhenRolelessAndNonBespoke). A new data
+-- former's untypability becomes a rfl-check, never a new proof. The witnesses show the procedure ACCEPTS every
+-- untyped-head shape (boolTrue constructor / fst projection / natElim recursor / emptyCode deferred type-code,
+-- all = true by rfl) and REJECTS the typed heads (var/universeCode bespoke + lam table-driven, all = false);
+-- natElimCellUntypedViaDecision rederives the bespoke untyping through the single decidable route. All
+-- zero-axiom (decide over flat-enum DecidableEq + of_decide_eq_true, NOT decide_eq_true_eq which pulls propext).
+#assert_no_axioms FX1Poly.Typed.isUntypableHead
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_sound
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_boolTrue
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_fst
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_natElim
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_emptyCode
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_var_false
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_universeCode_false
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_lam_false
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natElimCellUntypedViaDecision
 
 -- CertifiedWordReductionTermination (SN-131): Leg-3 word-rewrite termination on the CERTIFIED fragment.
 -- certifiedReductionInducesWordChain is the bridge (a Step sequence's toCode images form an fxStepSystem
