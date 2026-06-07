@@ -355,6 +355,7 @@ import FX1Poly.Typed.HasTypeDescNativeDecidable
 import FX1Poly.Typed.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.IsTypeDescGenericSmoke
 import FX1Poly.Typed.KnownUnsoundnessCorpus
+import FX1Poly.Typed.MetatheoryFuzz
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -5077,3 +5078,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.constantTimeBug_isPending
 #assert_no_axioms FX1Poly.Typed.fractionalPermissionBug_isPending
 #assert_no_axioms FX1Poly.Typed.corpusNonVacuous
+
+-- §27.3 Layer-2 property-based metatheory fuzzer: a TOTAL deterministic generator of well-typed terms
+-- (`metatheoryFuzzFamily`, the depth-n β-redex tower `(λx.x)ⁿ Type@0`) with the four Layer-2 properties
+-- PROVEN over the whole infinite family — preservation (β-SR, `…_betaPreservation`), progress
+-- (`…_progress`), strong normalization (`…_stronglyNormalizing`, ⊇ reducibility via CR1), plus the concrete
+-- evaluation results (`…_reducesToType0` / `…_uniqueNormalForm`).  The zero-axiom, no-`native_decide`
+-- realization of "fuzz": systematic total generation + proof over the family, strictly stronger than a
+-- randomized sample.  `metatheoryFuzzFamilySound` is the bundled "fuzz run passes" verdict.
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_typed
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_betaStep
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_betaPreservation
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_progress
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_reducesToType0
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_uniqueNormalForm
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_base_isNormal
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_succ_isNotNormal
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamilySound
