@@ -91,6 +91,7 @@ import FX1Poly.Tier0.FxBaseRenamingVecPreimage
 import FX1Poly.Tier0.FxBaseRenamingVecTryTabulate
 import FX1Poly.Tier0.FxBaseRenamingVecRMC
 import FX1Poly.Tier0.FxBaseRenamingVecGlobalSections
+import FX1Poly.Tier0.FxBaseRenamingVecSconingPreservation
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4384,6 +4385,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecScopeOneTerminal
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecGlobalSections
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecGlobalSections_terminal_subsingleton
+-- The concrete SconingPreservation instance over the extensional renaming base
+-- (FxBaseRenamingVecSconingPreservation.lean, SN-090, #593). The first concrete BKS SconingPreservation witness
+-- for a genuine FX CwR (fxBaseRenamingVecRMC). liftsRepresentable = the REINDEXING lift: for f : A ⟶ B, the
+-- source sconing object (A, Γ(B), sectionMap f) reindexes tautological-B along f, target = tautological-B (id),
+-- semantic map = id, gluing square = rfl (uniform over ALL base morphisms — the representability hypothesis is
+-- unused, a strengthening). liftsPullbacks = the tautological object over square.pullbackObject
+-- (projectsToPullback = rfl). Honest scope: existence-level preservation witness (SconingPreservation carries
+-- only projectsToPullback, no inter-lift coherence, so it's inhabitable over any (RMC, GlobalSections) — the
+-- content is realizing it correctly over the FX renaming base); the canonicity/normalization/parametricity
+-- TRANSFER strength lives in the extraction records' laws (SN-093..096), and this file deliberately does NOT
+-- advance fxSconingConstructionLevel (it tracks the full FX base; renaming is a precursor). Zero-axiom: structure
+-- population over sectionMap (SN-089) + SconingObject.tautological + two rfl laws, no funext.
+#assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecSconingPreservation
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
