@@ -92,6 +92,7 @@ import FX1Poly.Tier0.FxBaseRenamingVecTryTabulate
 import FX1Poly.Tier0.FxBaseRenamingVecRMC
 import FX1Poly.Tier0.FxBaseRenamingVecGlobalSections
 import FX1Poly.Tier0.FxBaseRenamingVecSconingPreservation
+import FX1Poly.Tier0.FxBaseSubstVec
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -4398,6 +4399,28 @@ gates pin them shut.
 -- advance fxSconingConstructionLevel (it tracks the full FX base; renaming is a precursor). Zero-axiom: structure
 -- population over sectionMap (SN-089) + SconingObject.tautological + two rfl laws, no funext.
 #assert_no_axioms FX1Poly.Tier0.fxBaseRenamingVecSconingPreservation
+-- The EXTENSIONAL substitution representation (FxBaseSubstVec.lean) — the FIRST brick of the TERM-CARRYING CwR
+-- base (the contexts-and-substitutions category the sconing ladder SN-086/088/091/093-096 needs; the renaming
+-- base carries no term content). RawTermSubst source target := Fin source → RawTerm target is FUNCTION-typed, so
+-- its morphism extensionality (∀i, s1 i = s2 i → s1 = s2) IS funext (leaks Quot.sound) — the EXACT trap the
+-- RenamingVec arc solved for renamings. SubstVec is the substitution analogue: same length-source tuple but of
+-- RawTerm target payloads, PRODUCT-recursive (PUnit / RawTerm × SubstVec), so ext falls out via definitional
+-- product eta with NO funext. SubstVec + lookup (+zero/succ) + ext (THE lemma RawTermSubst can't get zero-axiom) +
+-- tabulate (build from a function) + lookup_tabulate (function round-trips, pointwise to avoid funext) +
+-- tabulate_lookup (vec round-trips via ext, zero-axiom) + toRawTermSubst bridge (+ round-trip) exhibiting
+-- SubstVec ≅ RawTermSubst. SUBSTRATE only — the substitution CATEGORY (identity/compose/laws) + RMC + sconing
+-- instances are LATER bricks of this multi-firing arc. All zero-axiom (RenamingVec port, Prod.ext + structural
+-- induction, no funext).
+#assert_no_axioms FX1Poly.Tier0.SubstVec
+#assert_no_axioms FX1Poly.Tier0.SubstVec.lookup
+#assert_no_axioms FX1Poly.Tier0.SubstVec.lookup_zero
+#assert_no_axioms FX1Poly.Tier0.SubstVec.lookup_succ
+#assert_no_axioms FX1Poly.Tier0.SubstVec.ext
+#assert_no_axioms FX1Poly.Tier0.SubstVec.tabulate
+#assert_no_axioms FX1Poly.Tier0.SubstVec.lookup_tabulate
+#assert_no_axioms FX1Poly.Tier0.SubstVec.tabulate_lookup
+#assert_no_axioms FX1Poly.Tier0.SubstVec.toRawTermSubst
+#assert_no_axioms FX1Poly.Tier0.SubstVec.toRawTermSubst_tabulate
 -- Generic categorical isomorphism infrastructure for the CwR axioms (IsomorphismCategorical.lean, toward
 -- SN-084/085). For the smallest valid representable-map class -- the isomorphisms -- the three CwR axioms reduce
 -- to three BASE-INDEPENDENT generic facts (hold in any RawCategory, reusable whether fxBaseRMC ends up over the
