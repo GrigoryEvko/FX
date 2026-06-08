@@ -398,6 +398,7 @@ import FX1Poly.Typed.RawStepNotStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.HasTypeDescPiVarInversion
+import FX1Poly.Typed.VarHeadedAppContextConversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.HasTypeDescPiCongruence
 import FX1Poly.Typed.HasTypeDescPiFormerCongruence
@@ -6242,6 +6243,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.invertVarFormationGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertVarGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertVar
+-- VAR-HEADED Abel-reflection piElim arm (VarHeadedAppContextConversion.lean): the GrownCtxConv-5 (#842) crux for
+-- a var-headed neutral application. varConvertedUnderContextConv = the reflection LEAF (a variable's typing
+-- converts under context conversion: invertVar #1118 + Conv.trans the context-conv premise + the var rule under
+-- tgt — NO recursion, the var leaf looks up). varHeadedAppReassemblyUnderContextConv = the assembled
+-- reconstruction: (var f)(var a) reassembles under the converted target via reassembleApplicationUnderContext
+-- Conversion (#1092), with both functionConverted/argumentConverted DISCHARGED by the leaf, REDUCED to the single
+-- piValidityTarget = IsTypeDescPi tgt (Π D C) — exactly the named residual ConvContextPreservesPiValidity the
+-- typed-LR semantic route supplies. The application reassembly + both spine re-typings are now FREE for var heads.
+-- Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.varConvertedUnderContextConv
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.varHeadedAppReassemblyUnderContextConv
 
 -- Fully-general β subject reduction (HasTypeDescPiBetaSR.lean, TY-SR-β #474). For ANY grown derivation of a β-redex
 -- appCell (lamCell body) argument at classifier (over a well-formed context), the β-reduct subst0 body argument is
