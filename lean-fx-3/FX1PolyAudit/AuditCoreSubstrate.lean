@@ -31,6 +31,7 @@ import FX1Poly.Core.WeakHeadStepSubst
 import FX1Poly.Core.WeakHeadStepRename
 import FX1Poly.Core.WeakHeadStepRenameReflect
 import FX1Poly.Core.StepRenameReflect
+import FX1Poly.Core.StepRenameReflectEliminatorIota
 import FX1Poly.Core.WeakHeadStepCommute
 import FX1Poly.Core.WeakHeadNormalPreservation
 import FX1Poly.Core.ReducibleTypeForwardClosure
@@ -239,6 +240,18 @@ per-decl list.  It also re-checks the native infra under
 -- rfl-distribution + injection, then gen_pair scrutinee recovery; the projected child is the contractum.
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaFstPair
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaSndPair
+-- The base-case ELIMINATOR child-projection iota arms of arbitrary-rho Step reflection (KRIPKE-REFLECT-ELIM,
+-- StepRenameReflectEliminatorIota.lean): natElim/natRec on natZero, listElim on listNil, optionMatch on optionNone
+-- each eliminate a NULLARY value and project the matching branch. rename rho term = elim (nullaryValue) b1 b2
+-- implies there is t' with Step term t' and rename rho t' = b1 (the projected branch). Structurally identical to
+-- reflectIotaBoolTrue: gen-elim head recovery (rename_eq_mkGen) + concrete rfl-distribution + injection + nullary
+-- scrutinee recovery + the matching Step.iota constructor. Advances the full Step rename-reflection toward
+-- Kripke-arrow CR3 (KripkeCandidateRenameClosure.lean), the renaming dimension of the dependent-arrow reducibility
+-- candidate the open-context (Kripke) logical relation needs.
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaNatElimZero
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaNatRecZero
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaListElimNil
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaOptionMatchNone
 
 -- The neutral leaf of the stratified ReducibleTypeStep rename-closure (type + member level): the structural
 -- fragment, separate from the Kripke-indexed piType arm (see the StratifiedReducibleTypeRename docstring).
