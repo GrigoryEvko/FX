@@ -197,6 +197,7 @@ import FX1Poly.Typed.TypedChurchNumeralFaithful
 import FX1Poly.Typed.TypedChurchNumeralTyping
 import FX1Poly.Typed.TypedChurchNumeralInhabitants
 import FX1Poly.Typed.TypedChurchNumeralComputeGeneral
+import FX1Poly.Typed.TypedChurchNumeralAddition
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.CurryFixpointDivergence
@@ -2221,6 +2222,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchNumeral_substType
 #assert_no_axioms FX1Poly.Typed.churchNumeral_substStep
 #assert_no_axioms FX1Poly.Typed.churchNumeral_appliedReducesToIterate_general
+-- CHURCH-ADD (#1029): the term model COMPUTES arithmetic. iteratedApplication_add = the arithmetic heart
+-- (f^(m+n) x = f^m (f^n x), structural induction + Nat.zero_add/succ_add, both propext-free). Step.appArgCong =
+-- the argument-position single-step congruence (StepChildren.there/here). ★ churchAdditionBodyComputes: the
+-- Church-addition body m A f (n A f x) ↝* f^(m+n) x for general m,n + symbolic A/f/x — the computational content
+-- of Church addition, via the shipped general-compute #1009 twice + StepStar.congAt + the add lemma.
+-- churchTwoPlusThreeComputes = the concrete 2+3=5 smoke. Pairs with #1006 (ℕ injects) for adequacy of (ℕ,+).
+#assert_no_axioms FX1Poly.Typed.iteratedApplication_add
+#assert_no_axioms FX1Poly.Typed.Step.appArgCong
+#assert_no_axioms FX1Poly.Typed.churchAdditionBodyComputes
+#assert_no_axioms FX1Poly.Typed.churchTwoPlusThreeComputes
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
