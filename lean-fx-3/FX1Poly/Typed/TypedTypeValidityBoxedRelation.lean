@@ -21,10 +21,14 @@ arm CAN read a sub-derivation's box index — so the Π-former threads `domainBo
 (`piType` arm).  The candidate is now a genuine INDEX, recoverable from outside the relation
 (`indexCandidate`) — exactly what the first cut could not do.
 
-## The arms (this firing)
+## The arms
 
   * `neutral` — a NEUTRAL type code is typed-valid at the SN Kripke candidate (`snKripkeCand`, #1108) boxed.
-    The base case of the open type-level neutral reflection.
+    The base case of the open type-level neutral reflection (inhabited at scope ≥ 1, by variables).
+  * `universe` — a UNIVERSE code `Type@e` is typed-valid at the SN Kripke candidate boxed.  The other base
+    case, and the one that gives the relation its first CLOSED (scope-0) inhabitant
+    (`smoke_closedUniverseIsBoxedTypedValid`) — the prerequisite for a non-vacuous WfContext-indexed
+    typed-LR-validity predicate (the Abel-reflection well-formed-context base).
   * `piType` — a `Π` type code is typed-valid at the dependent-arrow candidate
     `kripkeArrowDep domainBox.run codomainFamily`, built by THREADING the domain sub-derivation's exposed
     candidate.  This is the arm the candidate-as-argument design (#1109) structurally could not express.
@@ -79,6 +83,20 @@ inductive TypedTypeValidityBoxed (profile : PolyProfile) :
       (neutralCode : IsNeutral typeCode)
       (validity : IsTypeDescPi profile context typeCode) :
       TypedTypeValidityBoxed profile context typeCode (KripkeCandBox.mk snKripkeCand)
+  /-- A UNIVERSE code `Type@levelExpr` is typed-valid at the SN Kripke candidate (`snKripkeCand`, #1108) boxed,
+  together with its `IsTypeDescPi` typing witness (`Type@e : Type@(e+1)`).  The other base case: a universe code
+  is the simplest CLOSED type, so this arm gives the relation its first scope-0 inhabitant (the `neutral` arm is
+  only inhabited at scope ≥ 1, by variables) — exactly what a WfContext-indexed validity predicate over this
+  relation needs to be non-vacuous.  `snKripkeCand` is sound here as the SAME context-invariant over-approximation
+  the `neutral` arm uses: every member of `Type@e` is a type code, hence strongly normalizing (SN-043), and the
+  candidate is rename/context-INVARIANT so it transports freely under context conversion.  (The PRECISE universe
+  candidate — reducible type codes at level `e` — is reserved for the member-level/canonicity semantics, off the
+  GrownCtxConv-5 type-validity critical path, exactly as the SN codomain family is for the Π-former; file header.) -/
+  | universeType {scope : Nat} {context : TypingContext profile scope}
+      {levelExpr : LevelExpr} {flag : UniverseFlag}
+      (validity : IsTypeDescPi profile context (universeCodeCell levelExpr flag)) :
+      TypedTypeValidityBoxed profile context (universeCodeCell levelExpr flag)
+        (KripkeCandBox.mk snKripkeCand)
   /-- A `Π` type code is typed-valid at the dependent-arrow candidate `kripkeArrowDep domainBox.run
   codomainFamily`, built by THREADING the domain sub-derivation's exposed candidate `domainBox.run` (the
   capability the boxed INDEX unlocks).  `codomainFamily` is currently free data alongside the codomain
@@ -106,6 +124,7 @@ theorem TypedTypeValidityBoxed.toIsTypeDescPi {profile : PolyProfile} {scope : N
     IsTypeDescPi profile context typeCode := by
   cases relation with
   | neutral _ validity => exact validity
+  | universeType validity => exact validity
   | piType _ _ _ validity => exact validity
 
 /-- **The candidate is a readable INDEX** (the design-A unlock).  The boxed candidate is visible in the
@@ -126,6 +145,33 @@ theorem smoke_variableTypeIsBoxedTypedValid {profile : PolyProfile} {scope : Nat
     TypedTypeValidityBoxed profile context (.mkGen .gen_var index .childNil)
       (KripkeCandBox.mk snKripkeCand) :=
   TypedTypeValidityBoxed.neutral (IsNeutral.var index) validity
+
+/-- **Non-vacuity: a universe code with a validity witness is typed-valid** at the boxed SN candidate (the
+universe-arm twin of `smoke_variableTypeIsBoxedTypedValid`).  The other base leaf of the relation. -/
+theorem smoke_universeTypeIsBoxedTypedValid {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (validity : IsTypeDescPi profile context (universeCodeCell levelExpr flag)) :
+    TypedTypeValidityBoxed profile context (universeCodeCell levelExpr flag)
+      (KripkeCandBox.mk snKripkeCand) :=
+  TypedTypeValidityBoxed.universeType validity
+
+/-- **★ The relation's first CLOSED (scope-0) inhabitant** (the genuine payoff of the universe arm).  In the
+EMPTY context `Type@levelExpr` is typed-valid at the boxed SN candidate, with its validity constructed from
+scratch (`Type@e : Type@(e+1)` via `ofFormation ∘ universeFormation`, the exact witness shape of the proven
+`wfContextDescPi_universeBinding`).  Before the universe arm the boxed relation had NO scope-0 inhabitant (the
+`neutral` arm needs a variable, hence scope ≥ 1; the `piType` arm recurses to that same base) — so a
+WfContext-indexed typed-LR-validity predicate over it would be vacuous beyond the empty context.  This witness
+is the foundation that unblocks that predicate (the Abel-reflection well-formed-context base case). -/
+theorem smoke_closedUniverseIsBoxedTypedValid {profile : PolyProfile}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    TypedTypeValidityBoxed (profile := profile)
+      (TypingContext.empty : TypingContext profile 0)
+      (universeCodeCell levelExpr flag) (KripkeCandBox.mk snKripkeCand) :=
+  TypedTypeValidityBoxed.universeType
+    ⟨levelExpr.lsucc, flag,
+      HasTypeDescPi.ofFormation
+        (HasTypeDesc.universeFormation (TypingContext.empty : TypingContext profile 0)
+          levelExpr flag)⟩
 
 /-! ## The canonical codomain family — closing the Π-former's free-family gap (the firing-20 next brick)
 

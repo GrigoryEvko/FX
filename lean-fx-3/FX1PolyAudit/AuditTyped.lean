@@ -6398,6 +6398,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.toIsTypeDescPi
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.indexCandidate
 #assert_no_axioms FX1Poly.Typed.smoke_variableTypeIsBoxedTypedValid
+-- UNIVERSE ARM: a universe code Type@e is typed-valid at snKripkeCand (the other base case beside `neutral`).
+-- smoke_universeTypeIsBoxedTypedValid = non-vacuity from a validity hypothesis; smoke_closedUniverseIsBoxedTypedValid
+-- = the relation's FIRST CLOSED (scope-0) inhabitant (validity built from ofFormation∘universeFormation, Type@e :
+-- Type@(e+1)). Before this arm the boxed relation had no scope-0 inhabitant (neutral needs scope ≥ 1, piType recurses
+-- to that base), so a WfContext-indexed typed-LR-validity predicate over it would be vacuous beyond empty — this is the
+-- foundation that unblocks the Abel-reflection well-formed-context base. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.smoke_universeTypeIsBoxedTypedValid
+#assert_no_axioms FX1Poly.Typed.smoke_closedUniverseIsBoxedTypedValid
 -- TYPED-LR-CODFAMILY: close the Π-former's free-codomainFamily gap (the firing-20 next brick). snKripkeCodFamily
 -- is the SN codomain family (codomain analogue of snKripkeCand #1108) — the CANONICAL codomain family for the
 -- type-VALIDITY relation (which only needs the family to EXIST + TRANSPORT, not to depend on the argument: the
