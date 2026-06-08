@@ -222,6 +222,7 @@ import FX1Poly.Typed.ChurchSums
 import FX1Poly.Typed.ChurchSumsDisjoint
 import FX1Poly.Typed.ChurchSumsGeneral
 import FX1Poly.Typed.ChurchLists
+import FX1Poly.Typed.ChurchListIsEmpty
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -7213,3 +7214,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchCons_subst_consHandler
 #assert_no_axioms FX1Poly.Typed.foldCons
 #assert_no_axioms FX1Poly.Typed.foldSingleton
+-- CHURCH LIST IS-EMPTY (ChurchListIsEmpty, CHURCH-LIST-ISEMPTY): the FIRST defined OPERATION on Church lists —
+-- isEmpty list = fold (λh.λacc. false) true list, the null predicate as a right-fold, connecting the list encoding
+-- (#1081/#1082) to the Church BOOLEAN encoding (#981); the list analogue of churchIsZero (#1055). isEmptyHandler_const:
+-- isEmptyHandler h acc ↝* false (constant-false handler discards both args — h via #1023 double-weaken collapse, acc via
+-- single-weaken). isEmptyNil (★): isEmpty nil ↝* true, directly via foldNil. isEmptyConsNil (★): isEmpty (cons h nil) ↝*
+-- false, via foldSingleton then the constant handler. isEmptyDistinguishes (★): ¬ Conv (isEmpty nil) (isEmpty (cons h
+-- nil)) — the predicate genuinely separates empty from non-empty (else true ≡ false, refuted by #983). Raw Step/Conv; no
+-- typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.isEmptyHandler_const
+#assert_no_axioms FX1Poly.Typed.isEmptyNil
+#assert_no_axioms FX1Poly.Typed.isEmptyConsNil
+#assert_no_axioms FX1Poly.Typed.isEmptyDistinguishes
