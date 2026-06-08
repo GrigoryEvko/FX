@@ -256,6 +256,7 @@ import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
 import FX1Poly.Typed.HasTypeDescBaseType
 import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
+import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3067,6 +3068,23 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.standaloneBoolCanonicalForms
 #assert_no_axioms FX1Poly.Typed.standaloneEmptyUninhabited
 #assert_no_axioms FX1Poly.Typed.dataIntroAndBaseTypeSubjectsDisjoint
+-- COMBINED BOOL CANONICAL FORMS (CombinedBoolCanonicalForms, CANON-1 #1048): the grown disjunct ruled out for
+-- NORMAL subjects, UNCONDITIONALLY (no GCC-5 #842, no §5). The grown engine has no closed-normal inhabitant of
+-- boolCode: closedNormalSubjectHead gives λ / Π / Σ / universe / list / option, each refuted at boolTypeCell —
+-- a λ's classifier is Conv a Π-code (boolTypeCell_not_piTyCode), a former's is Conv a universe code
+-- (boolTypeCell_not_universeCode). ★ noClosedNormalTermAtBoolType = the grown vacuity; the 6 *NotTypedAtBoolType
+-- are the per-head refutations (boolType twins of *NotTypedAtEmptyType). ★ closedNormalBoolCanonicalForms = the
+-- 3-engine combined: a closed-NORMAL term typed at boolCode by ANY engine is boolTrue/boolFalse. Unconditional
+-- since the classifier is read only at an already-normal subject (no reduction step typed → no piElim conv arm).
+-- Residual for full canonicity: reduce arbitrary closed t to NF preserving the classifier (SN-043 + SR / #842).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.lambdaNotTypedAtBoolType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piFormerNotTypedAtBoolType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaFormerNotTypedAtBoolType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeCodeNotTypedAtBoolType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listFormerNotTypedAtBoolType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.optionFormerNotTypedAtBoolType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtBoolType
+#assert_no_axioms FX1Poly.Typed.closedNormalBoolCanonicalForms
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
