@@ -410,6 +410,7 @@ import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.ConvContextPiValidityModelNeutral
 import FX1Poly.Typed.TypedTypeValidityRelation
+import FX1Poly.Typed.TypedTypeValidityBoxedRelation
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
@@ -6385,6 +6386,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidity.toIsTypeDescPi
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidity.carriesSnCandidate
 #assert_no_axioms FX1Poly.Typed.smoke_variableTypeIsTypedValid
+-- TYPED-LR-BOXED (TypedTypeValidityBoxedRelation.lean): the CANDIDATE-INDEXED relation resolving the firing-19
+-- spike — ★ DESIGN A (GO): wrap KripkeCand in the first-order structure KripkeCandBox so it can be a dependent
+-- INDEX (a structure-valued index dodges the function-valued-index dependent-elimination failure). The candidate
+-- is now a readable INDEX (indexCandidate), so the Π-FORMER arm (piType) can THREAD the domain sub-derivation's
+-- exposed candidate domainBox.run into kripkeArrowDep — the capability the candidate-as-argument first cut
+-- (#1109) structurally could NOT express. toIsTypeDescPi = soundness over BOTH arms (cases FIRES on the boxed
+-- index); smoke_variableTypeIsBoxedTypedValid = non-vacuity. Zero-axiom. (Next brick: tie codomainFamily to the
+-- codomain candidate via the scope+1→family candidate-instantiation op, then transport + the fundamental theorem.)
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.toIsTypeDescPi
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.indexCandidate
+#assert_no_axioms FX1Poly.Typed.smoke_variableTypeIsBoxedTypedValid
 
 -- GCC-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
 -- Reduction.lean, GCC-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
