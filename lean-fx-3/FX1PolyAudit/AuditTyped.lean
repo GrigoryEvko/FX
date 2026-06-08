@@ -407,6 +407,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
 import FX1Poly.Typed.HasTypeDescPiContextConversionWf
 import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
 import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
+import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
@@ -6340,6 +6341,21 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.masterSubjectReductionFromPiValidity
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.subjectReductionFromPiValidity
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.grownMutualMetatheoryFromPiValidity
+
+-- GCC-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
+-- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
+-- a piTyCodeCell D C that is a FORMATION type (IsTypeDesc, no type-level computation) context-converts to a grown
+-- type (IsTypeDescPi) under any pointwise-Conv-related target, via the shipped unconditional formation
+-- context-conversion convContextOfFormation (HasTypeDesc.convContext re-embedded through ofFormation) +
+-- convBackToUniverseCode — NO semantic input. Together with #1095 (the validity-respects-reduction twin is likewise
+-- free for the formation fragment), this LOCALIZES the residual's genuinely-open core precisely to the
+-- GENUINELY-GROWN Π-codes: open NEUTRAL type-level applications ((var f)(var a) at a universe) / type-level λ, typed
+-- via piElim/piIntro at the type level, NOT via ofFormation/genFormationPi-from-formation. That open-neutral case IS
+-- GCC-5 itself (context-converting a neutral type-level application is the piElim context-conversion), so the
+-- residual's hard core is irreducibly the open semantic-model obligation (Kripke/sconing logical relation — the
+-- bounded reducibility model is closed-substitution-based, unfit; reflection fails at the neutral base). No further
+-- syntactic fragment to peel. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextPreservesPiValidityForFormationCode
 
 -- GCC-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
 -- Reduction.lean, GCC-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
