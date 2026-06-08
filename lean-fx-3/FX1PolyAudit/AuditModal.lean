@@ -31,6 +31,7 @@ import FX1Poly.Modal.DimensionMultiplicationContrast
 import FX1Poly.Modal.LatticeDistributivityClassification
 import FX1Poly.Modal.SessionDualityDimension
 import FX1Poly.Modal.SessionCommunication
+import FX1Poly.Modal.SelfApplicationUntypable
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -1001,3 +1002,16 @@ symbolic modularity deferred (the concrete non-distributivity pins it as genuine
 #assert_no_axioms FX1Poly.Modal.provenanceKnownSourceLostOnDistinctMerge
 #assert_no_axioms FX1Poly.Modal.provenanceClockProductLattice
 #assert_no_axioms FX1Poly.Modal.provenanceClockProductIsLawful
+
+/-! ### Self-application untypability — the occurs-check that excludes `Ω` from the typed calculus
+
+`λx. x x` has no `HasGradeOver R` derivation in any graded dimension: self-application would force the
+binder type `D = (D -> codomain)`, impossible for the finite `GTypeOver R`.  This is the metatheoretic
+reason the typed graded calculus is SN despite `Ω` diverging untyped (#950/#960) — the SR-breaking term
+is excluded at the typing layer.  Generic over `R`, instantiated at usage + security. -/
+
+#assert_no_axioms FX1Poly.Modal.gTypeOver_ne_self_arrow
+#assert_no_axioms FX1Poly.Modal.selfApplicationLambda_untypableOver
+#assert_no_axioms FX1Poly.Modal.omegaCombinator_untypableOver
+#assert_no_axioms FX1Poly.Modal.usageSelfApp_untypable
+#assert_no_axioms FX1Poly.Modal.securitySelfApp_untypable
