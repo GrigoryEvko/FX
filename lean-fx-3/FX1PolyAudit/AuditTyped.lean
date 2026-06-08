@@ -405,6 +405,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversion
 import FX1Poly.Typed.HasTypeDescPiContextConversionConditional
 import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
 import FX1Poly.Typed.HasTypeDescPiContextConversionWf
+import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
@@ -6317,6 +6318,22 @@ gates pin them shut.
 -- theorem orders (telescope)(wf) so the baseScope/currentDepth split is pinned before the sum-only wf. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextWfOfPiValidity
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.convTelescopeWfOfPiValidity
+
+-- GCC-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
+-- Reduction.lean, GCC-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
+-- obstruction: a context-conversion bundle's piElim arm must re-type the function under tgt at SOME Π-code. EXACT
+-- motive (re-type at the original Π D C) closes piElim (#1092 reassembly) but var needs IsType-respects-Conv
+-- (FALSE #1058); FLEXIBLE motive (any Conv-equal Π-code) closes var (WfContextDescPi.lookupIsType gives the tgt
+-- binding's validity) but piElim needs validity-survives-reduction. Both bridges = the same SR-grade fact, routing
+-- through the logical relation. TypeCodeValidityRespectsReduction = the flexible residual (IsTypeDescPi ctx S →
+-- StepStar S T → IsTypeDescPi ctx T, single-context "subject reduction for type codes"). reassembleApplication
+-- FromConvEqualPiValidity generalizes #1092's reassembly to a Conv-equal Π reductD reductC (via Conv.piTyCode_cong
+-- + Conv.subst0). piElimArmFromValidityRespectsReduction: from the function's flexible classifier-transfer IH +
+-- reducesToPiTyCode (PC' ⤳* Π reductD reductC) + the residual + the generalized reassembly. Triangulates the GCC-5
+-- residual with #1092/#1093 (exact ConvContextPreservesPiValidity vs flexible TypeCodeValidityRespectsReduction,
+-- inter-derivable, both logical-relation-discharged). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.reassembleApplicationFromConvEqualPiValidity
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimArmFromValidityRespectsReduction
 
 -- Conv-KEEPING Π/Σ-code former inversion (HasTypeDescPiFormerInversion.lean, the former head for the SR cong arm
 -- #458). inversionPiCodeComponents drops the classifier Conv (its telescope workhorse discards _convToCode/_converts),
