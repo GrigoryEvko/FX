@@ -263,6 +263,7 @@ import FX1Poly.Typed.HasTypeDescPairIntro
 import FX1Poly.Typed.HasTypeDescEitherIntro
 import FX1Poly.Typed.ProductEitherCanonicalForms
 import FX1Poly.Typed.HasTypeDescBoolElim
+import FX1Poly.Typed.HasTypeDescEitherMatch
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3157,6 +3158,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.subjectIsBoolElim
 #assert_no_axioms FX1Poly.Typed.boolElimTrueIotaComputesTyped
 #assert_no_axioms FX1Poly.Typed.boolElimFalseIotaComputesTyped
+-- EITHER ELIMINATOR + TYPED APP-CHAIN ι-COMPUTATION (HasTypeDescEitherMatch, DI-5 second brick): the coproduct
+-- eliminator, the FIRST with the app-chain ι shape. boolElim's ι SELECTS a branch (boolElim(boolTrue,t,e) ↝ t);
+-- eitherMatch's ι APPLIES the matching handler to the wrapped payload (eitherMatch(eitherInl(v),l,r) ↝ app(l,v),
+-- Step.iotaEitherMatchInl), so the branches are FUNCTIONS l:A→C / r:B→C and the reduct is an APPLICATION typed by
+-- piElim. The standalone non-dependent judgment (scrutinee:either(A,B) via the either-intro engine + branches at
+-- the non-dependent arrows piTyCodeCell A/B (weaken C) via grown). subjectIsEitherMatch = free-index inversion.
+-- ★ eitherMatchInl/InrIotaComputesTyped = the typed app-chain ι-computation: a typed eitherMatch on an injection
+-- ι-reduces to app(branch, payload), typed at C via piElim with the non-dependent codomain (weaken C).subst0 v
+-- collapsing to C (RawTerm.weaken_subst_singleton). Constructor-side, so SR-free + propext-free (full SR is the
+-- GCC-5-gated branch-congruence deferral). Advances DI-5 #1047 (eitherMatch brick, the second eliminator shape).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherMatch.subjectIsEitherMatch
+#assert_no_axioms FX1Poly.Typed.eitherMatchInlIotaComputesTyped
+#assert_no_axioms FX1Poly.Typed.eitherMatchInrIotaComputesTyped
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
