@@ -198,6 +198,7 @@ import FX1Poly.Typed.TypedChurchNumeralTyping
 import FX1Poly.Typed.TypedChurchNumeralInhabitants
 import FX1Poly.Typed.TypedChurchNumeralComputeGeneral
 import FX1Poly.Typed.TypedChurchNumeralAddition
+import FX1Poly.Typed.TypedChurchNumeralMultiplication
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.CurryFixpointDivergence
@@ -2232,6 +2233,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Step.appArgCong
 #assert_no_axioms FX1Poly.Typed.churchAdditionBodyComputes
 #assert_no_axioms FX1Poly.Typed.churchTwoPlusThreeComputes
+-- CHURCH-MUL (#1030): the term model computes MULTIPLICATION, completing (ℕ,+,×) as a faithful model (with #1006
+-- faithfulness + #1029 addition). churchMultiplicationStepIterate = the multiplicative induction (iterating the
+-- n-fold step (n A f) outer-many times = f^(outer*n) x, via Step.appArgCong + general-compute #1009 per step +
+-- iteratedApplication_add #1029 + Nat.succ_mul/add_comm, all propext-free). ★ churchMultiplicationBodyComputes:
+-- m A (n A f) x ↝* f^(m*n) x for general m,n + symbolic A/f/x. churchTwoTimesThreeComputes = the 2*3=6 smoke.
+#assert_no_axioms FX1Poly.Typed.churchMultiplicationStepIterate
+#assert_no_axioms FX1Poly.Typed.churchMultiplicationBodyComputes
+#assert_no_axioms FX1Poly.Typed.churchTwoTimesThreeComputes
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
