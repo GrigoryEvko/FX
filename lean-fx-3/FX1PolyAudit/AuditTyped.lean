@@ -45,6 +45,7 @@ import FX1Poly.Typed.GrownCanonicalForms
 import FX1Poly.Typed.GrownTypeSafety
 import FX1Poly.Typed.FormationTypeSafety
 import FX1Poly.Typed.GrownCanonicalFormsByClassifier
+import FX1Poly.Typed.GrownClosedProgressByClassifier
 import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
 import FX1Poly.Typed.GrownBetaRedexInAction
 import FX1Poly.Typed.GrownOpenProgress
@@ -1217,6 +1218,16 @@ gates pin them shut.
 -- consistency route.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedProgress
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar
+-- CLOSED PROGRESS PER TYPE (GrownClosedProgressByClassifier.lean): the missing "closed + per-classifier +
+-- progress" cell, read at the classifier. closedFunctionStepsOrIsLambda = a closed grown-typed term of Π type
+-- STEPS or IS a λ (body extracted) — the operational form the function position of an application consumes, the
+-- dependent analogue of the graded closedWellTypedProgress sharpened to the exact λ shape. closedTypeStepsOrIsFormer
+-- = a closed grown-typed TYPE (universe classifier) STEPS or its head is a type FORMER (Π/Σ/universe/list/option
+-- code), never a stuck λ. Both UNCONDITIONAL: the classifier is read only at the already-normal subject (via
+-- closedNormalFunctionIsLambda / closedNormalTypeIsFormer), so no reduction step is typed — no SR, no GCC-5 #842,
+-- no §5; the non-normal case only asserts a step EXISTS. The per-classifier progress refinements of closedProgress.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedFunctionStepsOrIsLambda
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedTypeStepsOrIsFormer
 -- EVALUATION DETERMINISM (GrownTypeSafety.lean): closedHasUniqueNormalForm = UNCONDITIONAL — a closed grown-typed
 -- term has a UNIQUE normal form (OB-5 SN ⤳ exists_unique_normalForm_of_isStronglyNormalizing: existence by weak
 -- normalization, uniqueness by raw confluence #420; NO SR), so evaluation is a well-defined single-valued total
