@@ -4,6 +4,7 @@ import FX1Poly.Modal.GradeVector
 import FX1Poly.Modal.GradeVectorGeneric
 import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTypingGeneric
+import FX1Poly.Modal.GradedGradeExactness
 import FX1Poly.Modal.GradeErasureGeneric
 import FX1Poly.Modal.GradedWeakeningGeneric
 import FX1Poly.Modal.GradedSubstitutionGeneric
@@ -258,6 +259,20 @@ at BOTH usage and security — the orthogonal-composition thesis at the JUDGMENT
 #assert_no_axioms FX1Poly.Modal.usageLinearIdentity_typedViaGeneric
 #assert_no_axioms FX1Poly.Modal.securityLinearIdentity_typedViaGeneric
 #assert_no_axioms FX1Poly.Modal.securityKCombinator_typedViaGeneric
+
+/-! ### Grade EXACTNESS — the synthesised binder grade is forced, not chosen (grade honesty)
+
+The CONVERSE of the positive `linearIdentityOver_typed` / `kCombinatorOver_typed` witnesses: a derivation
+pins the binder grade EXACTLY (no subsumption rule ⟹ grades are synthesised).  `identityBinderGradeForcedOne`
+= `λx.x : base-(g)->base` forces `g = R.one` (use is exact); `kSecondBinderGradeForcedZero` = `λx.λy.x`
+forces the dropped `g₂ = R.zero` (discard is exact).  `usage`/`securityIdentityNotDiscardable` = the
+concrete payoff: the identity cannot be typed as a discard (grade `R.zero`) because that forces `0 = 1`,
+refuted by `UsageGrade`/`SecurityGrade` no-confusion — grade forgery is structurally rejected. -/
+
+#assert_no_axioms FX1Poly.Modal.identityBinderGradeForcedOne
+#assert_no_axioms FX1Poly.Modal.kSecondBinderGradeForcedZero
+#assert_no_axioms FX1Poly.Modal.usageIdentityNotDiscardable
+#assert_no_axioms FX1Poly.Modal.securityIdentityNotDiscardable
 
 /-! ### Generic grade erasure + SN-transfer over any OrderedGradeSemiring (security + dims 6–21)
 
