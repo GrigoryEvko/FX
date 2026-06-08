@@ -224,6 +224,7 @@ import FX1Poly.Typed.ChurchSumsGeneral
 import FX1Poly.Typed.ChurchLists
 import FX1Poly.Typed.ChurchListIsEmpty
 import FX1Poly.Typed.ChurchListAny
+import FX1Poly.Typed.ChurchListAll
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -7241,3 +7242,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.anyConsFalseNil
 #assert_no_axioms FX1Poly.Typed.anyConsFalseConsTrueNil
 #assert_no_axioms FX1Poly.Typed.anyDistinguishesByContent
+-- CHURCH LIST ALL (ChurchListAll, CHURCH-LIST-ALL): the conjunction fold all = fold and true — the UNIVERSAL
+-- quantifier (∀) over a boolean list, dual to any (∃, #1084). Cons-handler is the shipped churchAndLambda (#1056)
+-- applied directly. allNil: all nil ↝* true (vacuous truth, foldNil). allConsTrueNil: all [true] ↝* true
+-- (foldSingleton + churchAnd_trueTrue). allConsFalseNil: all [false] ↝* false (foldSingleton + churchAnd_falseAnything).
+-- allConsFalseConsTrueNil (★): all [false,true] ↝* false — the FALSE-strict short-circuit (foldCons + churchAnd_-
+-- falseAnything, NO tail reduction; dual to any's true-strict short-circuit which DOES reduce the tail).
+-- allDistinguishesByContent: ¬ Conv (all [true]) (all [false]). anyAllDifferOnMixed (★): ¬ Conv (any [false,true])
+-- (all [false,true]) — ∃ and ∀ are DISTINCT operations (∃→true, ∀→false on the same mixed list; else true≡false,
+-- refuted #983). The quantifier-pair completion. No new de Bruijn reshape. Raw Step/Conv; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.allNil
+#assert_no_axioms FX1Poly.Typed.allConsTrueNil
+#assert_no_axioms FX1Poly.Typed.allConsFalseNil
+#assert_no_axioms FX1Poly.Typed.allConsFalseConsTrueNil
+#assert_no_axioms FX1Poly.Typed.allDistinguishesByContent
+#assert_no_axioms FX1Poly.Typed.anyAllDifferOnMixed
