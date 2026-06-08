@@ -270,6 +270,7 @@ import FX1Poly.Typed.OptionCanonicalForms
 import FX1Poly.Typed.HasTypeDescSigmaProjection
 import FX1Poly.Typed.HasTypeDescIdIntro
 import FX1Poly.Typed.HasTypeDescIdElim
+import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3243,6 +3244,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescIdElim.idJOfUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescIdElim.subjectIsIdJ
 #assert_no_axioms FX1Poly.Typed.idJReflIotaComputesTyped
+-- LIST INTRODUCTION (HasTypeDescListIntro, DI-2e): the FIRST RECURSIVE data constructor. nil:List(A) is the
+-- NULLARY-free arm (free element type A, type-formedness premise, like optionNone); cons(h,t):List(A) is the
+-- RECURSIVE arm — head h:A (pins A) + tail t:List(A) typed BY THE SAME judgment (the first self-referential
+-- standalone data-intro arm, strictly positive). listNilOfUniverseCodeTyped = nil:List(Type@0).
+-- listConsOfUniverseCodesTyped = the one-element list cons(Type@0,nil):List(Type@1) EXERCISING the recursive arm
+-- (tail nil typed by the same engine). subjectIsListConstructor/classifierIsList = the SR-free closed-forms
+-- inversions (subject is a nil/cons cell, classifier a listTypeCell). The scrutinee-typing prerequisite for the
+-- list ELIMINATOR (listElim, the first RECURSIVE eliminator, a future brick). SR quartet GCC-5-deferred.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.listNilOfUniverseCodeTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.listConsOfUniverseCodesTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.subjectIsListConstructor
+#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.classifierIsList
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
