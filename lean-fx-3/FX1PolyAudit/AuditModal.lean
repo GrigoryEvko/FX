@@ -19,6 +19,7 @@ import FX1Poly.Modal.GradedNormalization
 import FX1Poly.Modal.ComplexitySemiring
 import FX1Poly.Modal.EffectLatticeClassification
 import FX1Poly.Modal.OverflowLatticeDimension
+import FX1Poly.Modal.PrecisionOverflowCollision
 import FX1Poly.Modal.BoundedJoinSemilatticeUniversal
 import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
@@ -1107,3 +1108,29 @@ determinism (`closedConvertibleSameValue`) and the usage/security orthogonal-com
 #assert_no_axioms FX1Poly.Modal.closedConvertibleSameValue
 #assert_no_axioms FX1Poly.Modal.usageClosedNormalizesToLam
 #assert_no_axioms FX1Poly.Modal.securityClosedNormalizesToLam
+
+/-! ## PrecisionOverflowCollision — the FIRST §6.8 CROSS-DIMENSION soundness collision (`decimal × overflow(wrap)`)
+
+§6.8 (the "dimensions are NOT orthogonal" catalog, distinct from the §27.2 known-unsoundness corpus) lists
+`decimal × overflow(wrap)` among the cross-dimension collisions.  Built on the shipped `OverflowGrade`:
+`PrecisionGrade {exact,inexact}` + `OverflowGrade.isExactnessPreserving` (exact/trap true; wrap/saturate/conflict
+false) + `forcedPrecision` (dual view, coherent via `forcedPrecision_exactPrecision_iff_isExactnessPreserving`).
+`IsJointlyConsistent precision overflow := precision = exact → overflow.isExactnessPreserving`.  THE COLLISION:
+`exactPrecisionCollidesWithWrapOverflow` (★) — exact precision (decimal) and wrap overflow are NOT jointly
+consistent (wrap silently yields a `mod 2^n` value ≠ the true result); + the `saturate` twin.  SPECIFIC, not
+blanket: exact precision composes with the exactness-preserving modes (exact/trap), inexact precision with every
+mode.  FULL characterization: `exactPrecisionCollision_iff_notPreserving` (collision set = exactly the
+non-preserving modes) + `isJointlyConsistent_iff` (consistent ↔ inexact ∨ preserving).  The §6.8 thesis made
+concrete: precision and overflow cannot be chosen independently.  All zero-axiom (Bool.noConfusion /
+PrecisionGrade.noConfusion / cases-rfl, no propext). -/
+
+#assert_no_axioms FX1Poly.Modal.OverflowGrade.isExactnessPreserving
+#assert_no_axioms FX1Poly.Modal.OverflowGrade.forcedPrecision
+#assert_no_axioms FX1Poly.Modal.forcedPrecision_exactPrecision_iff_isExactnessPreserving
+#assert_no_axioms FX1Poly.Modal.exactPrecisionCollidesWithWrapOverflow
+#assert_no_axioms FX1Poly.Modal.exactPrecisionCollidesWithSaturateOverflow
+#assert_no_axioms FX1Poly.Modal.exactPrecisionConsistentWithExactOverflow
+#assert_no_axioms FX1Poly.Modal.exactPrecisionConsistentWithTrapOverflow
+#assert_no_axioms FX1Poly.Modal.inexactPrecisionConsistentWithEveryOverflow
+#assert_no_axioms FX1Poly.Modal.exactPrecisionCollision_iff_notPreserving
+#assert_no_axioms FX1Poly.Modal.isJointlyConsistent_iff
