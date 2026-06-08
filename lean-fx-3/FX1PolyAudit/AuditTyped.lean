@@ -404,6 +404,7 @@ import FX1Poly.Typed.HasTypeDescContextConversion
 import FX1Poly.Typed.HasTypeDescPiContextConversion
 import FX1Poly.Typed.HasTypeDescPiContextConversionConditional
 import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
+import FX1Poly.Typed.HasTypeDescPiContextConversionWf
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
@@ -6301,6 +6302,21 @@ gates pin them shut.
 -- fundamental-metatheory bundle (GTL-20) or the semantic route. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.reassembleApplicationUnderContextConversion
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimArmFromPiValidityTransfer
+
+-- GCC-5 WfContext-threaded context-conversion conditional on the MINIMAL residual (HasTypeDescPiContextConversion
+-- Wf.lean, GCC-5-WFTHREAD, toward #842). convContextWfOfPiValidity / convTelescopeWfOfPiValidity: a
+-- WfContextDescPi-threaded grown context-conversion mutual pair conditional on ConvContextPreservesPiValidity (the
+-- minimal type-formation residual from #1092) INSTEAD of the opaque full piElimArm. The piElim arm is INLINED via
+-- piElimArmFromPiValidityTransfer (threaded wfSrc → classifierIsTypeDescPi/WFG-3 source Pi-validity → residual
+-- transfers it → reassembly) using the recursive convContext IH on the function/argument children. WfContextDescPi
+-- (a structural def) is extended at each binder from the SOURCE-side domain/head typing via WfContextDescPi.cons --
+-- every recursive call's well-formedness is discharged from premises already present. Strictly improves on
+-- convContextOfPiElimArm: residual is now the minimal Pi-type-code-validity-is-context-conversion-stable fact,
+-- WfContext is threaded (the SR consumers have it), the piElim arm is demonstrably inlinable. Leaves
+-- ConvContextPreservesPiValidity as the single open obligation (GTL-20 bundle / semantic-reflection). The telescope
+-- theorem orders (telescope)(wf) so the baseScope/currentDepth split is pinned before the sum-only wf. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextWfOfPiValidity
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.convTelescopeWfOfPiValidity
 
 -- Conv-KEEPING Π/Σ-code former inversion (HasTypeDescPiFormerInversion.lean, the former head for the SR cong arm
 -- #458). inversionPiCodeComponents drops the classifier Conv (its telescope workhorse discards _convToCode/_converts),
