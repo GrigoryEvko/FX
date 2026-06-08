@@ -203,6 +203,7 @@ import FX1Poly.Typed.CurryFixpointCombinator
 import FX1Poly.Typed.CombinatoryLogic
 import FX1Poly.Typed.CombinatoryCompleteness
 import FX1Poly.Typed.ChurchPairs
+import FX1Poly.Typed.ChurchPairsInjective
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -6591,3 +6592,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.pairFst_reduces
 #assert_no_axioms FX1Poly.Typed.pairSnd_reduces
 #assert_no_axioms FX1Poly.Typed.pairProjectionsRecover
+-- CHURCH PAIR INJECTIVE (ChurchPairsInjective): faithfulness companion to #1017. pair_conv_injective (★): Conv
+-- (pair a b)(pair c d) → Conv a c ∧ Conv b d — convertible pairs have convertible components. Apply churchFst/Snd
+-- to both sides (Conv.app_cong, ConvCongruence.lean:193, + Conv.refl on the projector), the projections #1017 give
+-- Conv (fst (pair a b)) a / Conv (fst (pair c d)) c, then Conv.trans∘Conv.sym∘Conv.fromStepStar collapse to Conv a
+-- c (pairFst_conv_injective; pairSnd dual). With #1017's pairProjectionsRecover (recover), the Church pair is a
+-- FAITHFUL product encoding: stores + recovers + distinguishes both components — the product universal property in
+-- the pure Π-fragment.
+#assert_no_axioms FX1Poly.Typed.pairFst_conv_injective
+#assert_no_axioms FX1Poly.Typed.pairSnd_conv_injective
+#assert_no_axioms FX1Poly.Typed.pair_conv_injective
