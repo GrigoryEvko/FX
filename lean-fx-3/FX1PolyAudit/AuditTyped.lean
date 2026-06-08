@@ -202,6 +202,7 @@ import FX1Poly.Typed.CurryFixpointDivergence
 import FX1Poly.Typed.CurryFixpointCombinator
 import FX1Poly.Typed.CombinatoryLogic
 import FX1Poly.Typed.CombinatoryCompleteness
+import FX1Poly.Typed.ChurchPairs
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -6578,3 +6579,15 @@ gates pin them shut.
 -- rfl). SKK=I is combinatory completeness in miniature.
 #assert_no_axioms FX1Poly.Typed.skkReducesToIdentity
 #assert_no_axioms FX1Poly.Typed.skkApplied_conv_identityApplied
+-- CHURCH PAIRS (ChurchPairs): products in the Π-fragment via polymorphism, complementing Church bool (#981)/nat
+-- (#989). pairTerm a b = λf. f a b; churchFst = λp. p K; churchSnd = λp. p secondProjector (= λx.λy.y).
+-- secondProjector_reduces: (λx.λy.y) a b ↝* b — (λx.λy.y) a discards x → λy.y = I by RFL (x absent from body),
+-- then I-rule. pairFst_reduces: fst (pair a b) ↝* a — β to (pair a b) K, β to K a b (symbolic components re-emerge
+-- via subst0 (weaken a) K = a, named subst0-typed weaken_subst_singleton cancellation so the rw matches), K-rule
+-- #1015. pairSnd_reduces: snd (pair a b) ↝* b (dual). pairProjectionsRecover (★): ∀ a b, fst (pair a b) ↝* a ∧
+-- snd (pair a b) ↝* b — the pair faithfully STORES+RECOVERS both components, SYMBOLIC a,b. Products realized in the
+-- pure Π-fragment, no primitive Σ.
+#assert_no_axioms FX1Poly.Typed.secondProjector_reduces
+#assert_no_axioms FX1Poly.Typed.pairFst_reduces
+#assert_no_axioms FX1Poly.Typed.pairSnd_reduces
+#assert_no_axioms FX1Poly.Typed.pairProjectionsRecover
