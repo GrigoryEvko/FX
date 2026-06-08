@@ -200,6 +200,7 @@ import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
+import FX1Poly.Typed.TypedUniverseTower
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -6482,3 +6483,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.idTower_allConvertible
 #assert_no_axioms FX1Poly.Typed.idTower_normalForm_eq_value
 #assert_no_axioms FX1Poly.Typed.idTowerCollapsesToCanonicalValue
+-- UNIVERSE TOWER (TypedUniverseTower): the predicative universe hierarchy is an infinite NON-COLLAPSING tower —
+-- the POSITIVE complement of L1-GIRARD-ACYCLIC (#941, irreflexivity: no Girard cycle of any length). universe
+-- LevelOfNat is the n-fold-lsucc family ℕ→LevelExpr; universeLevelOfNat_injective injects ℕ into the level
+-- algebra (induction generalizing: lzero/lsucc cross-cases by `cases` no-confusion, lsucc/lsucc by injection +
+-- congrArg Nat.succ). universeLevelTower flag n = Type@n as a closed RawTerm 0. universeLevelTower_hasTypeDescPi:
+-- each rung types at the next (Type@n : Type@(n+1)) — ofFormation of the universeFormation rule, the .lsucc output
+-- DEFEQ to universeLevelOfNat (n+1) (no coercion). universeLevelTower_notConvertible_of_ne: distinct rungs are
+-- non-convertible — universeCodeCell_inj_of_conv (conv-rigid step-NF universe codes, global confluence) reduces
+-- Conv to level equality, refuted by level injectivity. universeHierarchy_isInfiniteNonCollapsingTower (★) bundles
+-- the family: an injection ℕ ↪ a strictly-ascending classification chain — the hierarchy genuinely ascends and
+-- never collapses (the antithesis of impredicative Type:Type). Contrasts #941 (no collapse) with real ascent.
+#assert_no_axioms FX1Poly.Typed.universeLevelOfNat_injective
+#assert_no_axioms FX1Poly.Typed.universeLevelTower_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.universeLevelTower_notConvertible_of_ne
+#assert_no_axioms FX1Poly.Typed.universeHierarchy_isInfiniteNonCollapsingTower
