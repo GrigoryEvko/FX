@@ -244,6 +244,7 @@ import FX1Poly.Typed.HasTypeDescFlatWeakening
 import FX1Poly.Typed.HasTypeDescFlatSubstitution
 import FX1Poly.Typed.HasTypeDescFlatValidity
 import FX1Poly.Typed.HasTypeDescFlatFormerInversion
+import FX1Poly.Typed.HasTypeDescDataIntro
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2867,6 +2868,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_productCode_none
 #assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_outputIsUniverseFormer
 #assert_no_axioms FX1Poly.Typed.productFlatFormationSmoke
+-- DATA-INTRO ENGINE (HasTypeDescDataIntro, DI-1): the standalone data-CONSTRUCTOR typing judgment, FLAT pattern
+-- (references nothing of HasTypeDescPi in the nullary arm; a NEW relation, so the grown engine's data-head-
+-- untyped refutations stay true — boolTrue is still untyped in HasTypeDescPi). Nullary arm + dataIntroNullary
+-- RuleDescOf table (boolTrue/boolFalse -> boolCode); the constructors the grown engine PROVES untyped now have a
+-- typing in the dedicated judgment. boolTrueTyped/boolFalseTyped = the two closed bool canonical members; the
+-- partition witness typingRuleDescOf_boolTrue_none documents that ONLY this engine types boolTrue (it is a VALUE,
+-- not a type-former). First brick toward non-vacuous bool canonicity (link-4, CANON-1). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_boolTrue
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_boolFalse
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.boolTrueTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.boolFalseTyped
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolTrue_none
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
