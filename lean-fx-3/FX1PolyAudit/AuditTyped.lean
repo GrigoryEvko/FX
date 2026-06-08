@@ -412,6 +412,7 @@ import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
 import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimEquivalence
 import FX1Poly.Typed.HasTypeDescPiContextStepConversion
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionUnconditional
+import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimUnderWf
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormerStep
 import FX1Poly.Typed.GenFormerValidityContextConversion
@@ -6457,6 +6458,16 @@ gates pin them shut.
 -- once master SR is unconditional (SR-U4), the residual #1094 called "routes through the logical relation" is NOT
 -- logical-relation-hard — only well-formed-context-gated.  Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.typeValiditySurvivesReductionUnderWf
+
+-- piElimArmUnderWfTarget: the flexible grown context-conversion piElim arm, UNCONDITIONAL under target
+-- well-formedness — the FIRST unconditional discharge of the obstruction every prior context-conversion firing left
+-- "reduced to the Π-validity residual."  The well-formed-context twin of piElimArmFromValidityRespectsReduction
+-- (#1094): same Conv.reducesToPiTyCode + reassembleApplicationFromConvEqualPiValidity, but the global
+-- TypeCodeValidityRespectsReduction residual application is replaced by typeValiditySurvivesReductionUnderWf at the
+-- (well-formed) target.  It is the IH-consuming piElim CASE of a flexible context-conversion mutual: functionFlexible
+-- is NOT a separate recursion — under the target wf it derives from functionConverted via classifierIsTypeDescPi, so a
+-- flexible mutual built on this arm needs only the single term-conversion recursion.  Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimArmUnderWfTarget
 
 -- GrownCtxConv-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
 -- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
