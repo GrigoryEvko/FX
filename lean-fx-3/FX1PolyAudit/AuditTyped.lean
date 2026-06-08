@@ -225,6 +225,7 @@ import FX1Poly.Typed.ChurchLists
 import FX1Poly.Typed.ChurchListIsEmpty
 import FX1Poly.Typed.ChurchListAny
 import FX1Poly.Typed.ChurchListAll
+import FX1Poly.Typed.ChurchBooleanComplementLaws
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -7257,3 +7258,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.allConsFalseConsTrueNil
 #assert_no_axioms FX1Poly.Typed.allDistinguishesByContent
 #assert_no_axioms FX1Poly.Typed.anyAllDifferOnMixed
+-- CHURCH BOOLEAN COMPLEMENT LAWS (ChurchBooleanComplementLaws, CHURCH-BOOL-COMPLEMENT): the orthocomplementation
+-- laws completing the Church booleans into a BOOLEAN ALGEBRA — law of NON-CONTRADICTION (b ∧ ¬b ↝* false) + law of
+-- EXCLUDED MIDDLE (b ∨ ¬b ↝* true), at both booleans, computed in the term model. The bool analogue of #1031
+-- (Church-numeral commutative-semiring laws). No new de Bruijn work — chains shipped negation (#1038) + AND/OR
+-- (#1056) reductions via StepStar.appArgument / trans_compose. The proof SHAPES expose the dual short-circuit
+-- structure: nonContradiction_true reduces ¬true first (and-true not strict); nonContradiction_false short-circuits
+-- (and-false strict); excludedMiddle_true short-circuits (or-true strict); excludedMiddle_false reduces ¬false after
+-- (or-false not strict). churchBooleanComplementLaws bundles all four. Raw Step; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.nonContradiction_true
+#assert_no_axioms FX1Poly.Typed.nonContradiction_false
+#assert_no_axioms FX1Poly.Typed.excludedMiddle_true
+#assert_no_axioms FX1Poly.Typed.excludedMiddle_false
+#assert_no_axioms FX1Poly.Typed.churchBooleanComplementLaws
