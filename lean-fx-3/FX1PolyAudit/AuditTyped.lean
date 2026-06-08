@@ -191,6 +191,7 @@ import FX1Poly.Typed.StepNonDeterministic
 import FX1Poly.Typed.ConvValueDiscrimination
 import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.TypedChurchBooleans
+import FX1Poly.Typed.TypedChurchNegation
 import FX1Poly.Typed.TypedChurchNumerals
 import FX1Poly.Typed.TypedChurchNumeralIteration
 import FX1Poly.Typed.TypedChurchNumeralDiscrimination
@@ -2125,6 +2126,25 @@ gates pin them shut.
 -- churchTypeZeroCode ≢ churchTypeOneCode is the supporting lemma (the Type@e analogue of boolTrue ≢ boolFalse).
 #assert_no_axioms FX1Poly.Typed.churchTypeZeroCode_notConvertible_churchTypeOneCode
 #assert_no_axioms FX1Poly.Typed.churchTrue_notConvertible_churchFalse
+-- CHURCH-NEGATION (TypedChurchNegation): the term model COMPUTES Boolean negation, and negation is an
+-- INVOLUTION. churchNot = λb. b A churchFalse churchTrue applies the bound boolean as a selector over the
+-- FLIPPED candidate pair. churchNotBody_substitutesToFlippedApplication: the β-contractum reshape — subst0
+-- collapses the weakened constants (weaken_subst_singleton) and resolves the head var 0 to the argument.
+-- churchTrueOnFlippedBranches_reducesToFalse / churchFalseOnFlippedBranches_reducesToTrue: the flipped
+-- selection (concrete closed branches, so churchTrue's non-innermost var 1 body resolves fully through the
+-- subst0 fold — the symbolic wall flagged in TypedChurchBooleans does not bite). churchNot_negatesTrue/
+-- negatesFalse (★): not true ↝* false, not false ↝* true — one outer β + the selection. churchNot_double
+-- NegatesTrue/False (★): not (not b) =Conv b — the double-negation involution, via Conv.app_cong (congruence
+-- under application) + Conv.fromStepStar + Conv.trans. Parallel to the session-duality involution dual(dualS)=S,
+-- a second self-inverse kernel operation, here by COMPUTATION. Zero-axiom: Step.cong/Step.beta chains closing
+-- by StepStar.refl + the conversion-congruence package; no propext/Quot.sound/Classical/sorry.
+#assert_no_axioms FX1Poly.Typed.churchNotBody_substitutesToFlippedApplication
+#assert_no_axioms FX1Poly.Typed.churchTrueOnFlippedBranches_reducesToFalse
+#assert_no_axioms FX1Poly.Typed.churchFalseOnFlippedBranches_reducesToTrue
+#assert_no_axioms FX1Poly.Typed.churchNot_negatesTrue
+#assert_no_axioms FX1Poly.Typed.churchNot_negatesFalse
+#assert_no_axioms FX1Poly.Typed.churchNot_doubleNegatesTrue
+#assert_no_axioms FX1Poly.Typed.churchNot_doubleNegatesFalse
 -- TypedChurchNumerals (CHURCH-NAT): the Church-NUMERAL encoding typed by the grown engine, extending the
 -- booleans to the recursive datum. churchNatArrow/churchNatRest/churchNatCodomain are the arrow-headed
 -- formation helpers (the Church Nat type's middle binder is the FUNCTION type A→A, not the variable A — richer
