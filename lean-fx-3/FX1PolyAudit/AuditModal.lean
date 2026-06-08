@@ -35,6 +35,7 @@ import FX1Poly.Modal.SelfApplicationUntypable
 import FX1Poly.Modal.GradedProgress
 import FX1Poly.Modal.GradedEvaluation
 import FX1Poly.Modal.VersionCategoryDimension
+import FX1Poly.Modal.GradedNormalizerValue
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -1064,3 +1065,14 @@ DATA, not a bare order. -/
 #assert_no_axioms FX1Poly.Modal.userApiV3_refines_v1
 #assert_no_axioms FX1Poly.Modal.migrateDropField_addField
 #assert_no_axioms FX1Poly.Modal.migrateAddField_injective_inDefault
+
+/-! ### The verified normalizer evaluates well-typed terms to values
+
+`GradedLambda.normalize` computes a `.lam` value for every closed well-typed term
+(`closedNormalizesToLam`) — the executable payoff of progress + full-β SR + SN; plus typed evaluation
+determinism (`closedConvertibleSameValue`) and the usage/security orthogonal-composition smokes. -/
+
+#assert_no_axioms FX1Poly.Modal.closedNormalizesToLam
+#assert_no_axioms FX1Poly.Modal.closedConvertibleSameValue
+#assert_no_axioms FX1Poly.Modal.usageClosedNormalizesToLam
+#assert_no_axioms FX1Poly.Modal.securityClosedNormalizesToLam
