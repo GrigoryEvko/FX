@@ -257,6 +257,7 @@ import FX1Poly.Typed.HasTypeDescBaseType
 import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
+import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3085,6 +3086,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.optionFormerNotTypedAtBoolType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtBoolType
 #assert_no_axioms FX1Poly.Typed.closedNormalBoolCanonicalForms
+-- GROWN CLOSED-NORMAL CLASSIFIER SHAPE (GrownClosedNormalClassifierShape, CANON-1 generalization): the POSITIVE
+-- characterization behind every data-classifier rule-out. ★ closedNormalClassifierIsFunctionOrType = a closed
+-- normal grown-typed term's classifier is Conv a Π-code OR Conv a universe code (the grown engine inhabits only
+-- FUNCTION types via λ + UNIVERSES via formers, nothing else — dual of closedNormalFunctionIsLambda/TypeIsFormer).
+-- noClosedNormalTermAtDataClassifier = the rule-out corollary (classifier Conv neither → no closed-normal grown
+-- inhabitant), the reusable engine subsuming boolType/emptyType. ★ noClosedNormalTermAtSigmaType = NEW Σ instance
+-- (grown has Σ-formation, no Σ-introduction). closedNormalSigmaTypeUninhabited = combined 3-engine: no engine
+-- inhabits a Σ-type yet (honest current state until DI-2 Σ-intro). Unconditional (classifier read at normal subject).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedNormalClassifierIsFunctionOrType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtDataClassifier
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtSigmaType
+#assert_no_axioms FX1Poly.Typed.closedNormalSigmaTypeUninhabited
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
