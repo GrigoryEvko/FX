@@ -413,6 +413,7 @@ import FX1Poly.Typed.TypedTypeValidityRelation
 import FX1Poly.Typed.TypedTypeValidityBoxedRelation
 import FX1Poly.Typed.WfContextTypedLrValid
 import FX1Poly.Typed.TypedTypeValidityBoxedRename
+import FX1Poly.Typed.WfContextTypedLrValidLookup
 import FX1Poly.Typed.PiElimClassifierConvResidual
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
@@ -6433,6 +6434,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsTypeDescPi.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.renameRespectingContextExists
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.weakenUnderBinding
+-- TYPED-LR LOOKUP: in a WfContextTypedLrValid context, every variable's type (the looked-up entry,
+-- iterated-weakened to the full scope) is TYPED-LR-VALID. The typed-LR analogue of WfContextDescPi.lookupIsType,
+-- by structural induction folding weakenUnderBinding (#1116) down the telescope (each cons descended re-weakens
+-- the carried derivation once, matching the de Bruijn shift lookup accumulates). The lookup leg the Abel-reflection
+-- neutral arm of GrownCtxConv-5 (#842) consumes — a neutral application's typing reconstructs from the looked-up
+-- function-variable's LR-valid type. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.lookupLrValid
 -- TYPED-LR-CODFAMILY: close the Π-former's free-codomainFamily gap (the firing-20 next brick). snKripkeCodFamily
 -- is the SN codomain family (codomain analogue of snKripkeCand #1108) — the CANONICAL codomain family for the
 -- type-VALIDITY relation (which only needs the family to EXIST + TRANSPORT, not to depend on the argument: the
