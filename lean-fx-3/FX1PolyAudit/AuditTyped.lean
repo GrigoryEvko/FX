@@ -29,6 +29,7 @@ import FX1Poly.Typed.HasTypeDescElimSubstitution
 import FX1Poly.Typed.HasTypeDescApplication
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescPiEtaCoherence
+import FX1Poly.Typed.HasTypeDescPiEtaExpansionGrown
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.HasTypeDescPiSubstitution
 import FX1Poly.Typed.HasTypeDescPiInversion
@@ -973,6 +974,14 @@ gates pin them shut.
 -- needs grown strengthening (not yet shipped).
 #assert_no_axioms FX1Poly.Typed.RawTerm.subst0_iterateLiftWeaken_newestVar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaCoherence_formationFunction
+-- TY-ETA-GROWN (#1033): generalize the forward η-coherence from formation-typed f (effectively only variables of
+-- function type) to ANY grown-typed f — λ-terms, applications, Church numerals. etaExpansionPreservesTypingGrown
+-- (★): well-formed grown context + f : piTyCode D C ⟹ etaLamSource f : piTyCode D C, via validity +
+-- invertPiTyCode (grown domain/codomain) + grown weakenUnderBinding + rename_piTyCodeCell + the η identity +
+-- piIntro/piElim. etaCoherenceGrown = the redex/reduct coherence pair. The forward half of grown η-SR (#477);
+-- the inverted half still needs grown strengthening. Zero-axiom (same de Bruijn substrate as the formation twin).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaExpansionPreservesTypingGrown
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaCoherenceGrown
 
 /-! ### Grown-engine renaming/weakening (P6, the cartesian-lift leg) — `HasTypeDescPiWeakening`.
     polycell.md §11.8.5 P6 applied to the grown engine `HasTypeDescPi`: its cartesian-lift
