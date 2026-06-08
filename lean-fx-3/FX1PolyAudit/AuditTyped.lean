@@ -267,6 +267,7 @@ import FX1Poly.Typed.HasTypeDescEitherMatch
 import FX1Poly.Typed.HasTypeDescOptionIntro
 import FX1Poly.Typed.HasTypeDescOptionMatch
 import FX1Poly.Typed.OptionCanonicalForms
+import FX1Poly.Typed.HasTypeDescSigmaProjection
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3211,6 +3212,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescOptionMatch.subjectIsOptionMatch
 #assert_no_axioms FX1Poly.Typed.optionMatchNoneIotaComputesTyped
 #assert_no_axioms FX1Poly.Typed.optionMatchSomeIotaComputesTyped
+-- Σ-PROJECTION ELIMINATOR + the THIRD ι shape (HasTypeDescSigmaProjection, DI-5d): completes the Σ/pair data story
+-- (intro DI-2a + canon DI-2-canon + this elim). fst/snd carry the CONTENT-PROJECTION ι (fst(pair(a,b)) ↝ a;
+-- snd(pair(a,b)) ↝ b) — the reduct is a CHILD of the SCRUTINEE, not a branch (boolElim) nor a handler-applied-to-
+-- payload (eitherMatch). The SIMPLEST typed ι: the reduct's typing IS one of the pair's component typings directly
+-- (no branch, no piElim, no subst0). The 2-arm judgment (scrutinee:product(A,B) via the pair-intro engine → fst:A /
+-- snd:B). fstOfUniverseCodesTyped = the smoke fst(pair(Type@0,Type@0)):Type@1. subjectIsSigmaProjection = free-index
+-- inversion. ★ fst/sndProjectionIotaComputesTyped = the typed content-projection ι. Constructor-side, SR-free +
+-- propext-free (full scrutinee-congruence SR GCC-5-deferred). All THREE non-recursive ι shapes now typed-and-
+-- computing across the data eliminators. Advances DI-5 #1047 / SN-058 (#446, Σ projections).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.fstOfUniverseCodesTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.subjectIsSigmaProjection
+#assert_no_axioms FX1Poly.Typed.fstProjectionIotaComputesTyped
+#assert_no_axioms FX1Poly.Typed.sndProjectionIotaComputesTyped
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
