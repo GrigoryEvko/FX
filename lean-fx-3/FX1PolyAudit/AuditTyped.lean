@@ -6409,6 +6409,20 @@ gates pin them shut.
 -- the universe classifier is closed so weakening fixes it); index k+1: the weakened old condition. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.ConvContextWithOldValid.cons
 
+-- ★ SR-U2 (the grown half, the crux): HasTypeDescPi.contextConversionExact ⋈ DescTelescopePi.contextConversionTelescopeExact
+-- — the GROWN directed context conversion under the enriched condition, EXACT classifier. Mirrors the shipped conditional
+-- convContextOfPiElimArm ⋈ convTelescopeOfPiElimArm BUT unconditional: exact conclusion (not up-to-Conv), enriched
+-- condition, and ★ the piElim arm RECURSES INLINE (re-type fn+arg by the EXACT IH, reform via native HasTypeDescPi.piElim)
+-- instead of the factored-out piElimArm hypothesis. No residual arises because the var arm conv's back to the LITERAL
+-- looked-up type (enriched validity), so the IH delivers the function at the LITERAL piTyCodeCell — exactly what the
+-- up-to-Conv convContextOfPiElimArm could NOT do (its conv-back to a literal Π-code needed the Π-validity residual = the
+-- logical relation). This STRUCTURALLY discharges the piElimArm core that was believed to require the intrinsic LR. The
+-- binder arms lift via ConvContextWithOldValid.cons; cleaner than the shipped existential (no convBackToUniverseCode).
+-- The directed-step instance (SR-U3) + master SR (SR-U4, closes #845/#558) + GTL-20 firing (SR-U5, closes #842) follow.
+-- Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.contextConversionExact
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.contextConversionTelescopeExact
+
 -- GrownCtxConv-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
 -- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
 -- a piTyCodeCell D C that is a FORMATION type (IsTypeDesc, no type-level computation) context-converts to a grown

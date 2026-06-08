@@ -127,4 +127,94 @@ theorem ConvContextWithOldValid.cons {profile : PolyProfile} {scope : Nat}
         have weakened := HasTypeDescPi.weakenUnderBinding bindingType entryTyped
         rwa [rename_universeCodeCell] at weakened
 
+/-! ## SR-U2: the GROWN directed context conversion under the enriched condition, EXACT classifier
+
+The grown mutual `HasTypeDescPi.contextConversionExact ⋈ DescTelescopePi.contextConversionTelescopeExact`.  Mirrors the
+shipped conditional pair `convContextOfPiElimArm ⋈ convTelescopeOfPiElimArm` (`HasTypeDescPiContextConversionConditional`)
+EXCEPT for three changes that make it UNCONDITIONAL:
+
+  * the conclusion is EXACT (`HasTypeDescPi targetContext subject classifier`, the SAME classifier) rather than
+    up-to-`Conv` (`∃ classifier', Conv classifier classifier' ∧ …`);
+  * the hypothesis is the ENRICHED condition `ConvContextWithOldValid` rather than the plain pointwise `Conv`;
+  * ★ the `piElim` arm RECURSES INLINE — re-type the function and argument by the IH (EXACTLY, since the var arm conv's
+    back to the exact looked-up type via the enriched validity) and reform with the native `HasTypeDescPi.piElim`.  This
+    is the move `convContextOfPiElimArm` could NOT make (it factored `piElim` out as a hypothesis because its up-to-`Conv`
+    IH forces a conv-back to a literal `Π`-code, needing the `Π`-validity residual = the logical relation).  Under the
+    enriched/EXACT discipline the IH delivers the function at the LITERAL `piTyCodeCell domainCode codomainCode`, so the
+    reform is direct and NO residual arises.
+
+The `piIntro` / `genFormationPi` binder-crossing arms lift the enriched condition with `ConvContextWithOldValid.cons`,
+supplying the new binder's target-validity from the recursively re-typed domain/head; they are CLEANER than the shipped
+existential version (no `convBackToUniverseCode`, because the exact IH already lands the codomain/body at their literal
+classifiers).
+
+## Zero-axiom verification
+
+Structural recursion on the grown derivation / telescope.  ofFormation = `convContextExactToGrown`; conv = recurse +
+grown `conv`; piIntro = recurse domain + `ConvContextWithOldValid.cons` + recurse codomain/body + `piIntro`; piElim =
+recurse fn + arg + native `piElim`; genFormationPi = recurse the mutual telescope.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`. -/
+
+mutual
+
+/-- **★ The grown directed context conversion under the enriched condition, EXACT classifier.**  A grown derivation
+re-types under a context whose entries are `Conv`-related to the originals AND whose originals remain valid in it
+(`ConvContextWithOldValid`), preserving the classifier EXACTLY.  The `piElim` arm recurses inline and reforms via native
+`piElim` — no residual, no logical relation — because the exact IH (rooted at the var arm's exact conv-back) delivers the
+function at its literal `Π`-code.  Mutual with the telescope companion. -/
+theorem HasTypeDescPi.contextConversionExact {profile : PolyProfile} {scope : Nat}
+    {sourceContext : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (derivation : HasTypeDescPi profile sourceContext subject classifier) :
+    ∀ (targetContext : TypingContext profile scope),
+      ConvContextWithOldValid sourceContext targetContext →
+      HasTypeDescPi profile targetContext subject classifier :=
+  match derivation with
+  | .ofFormation formationTyped => fun targetContext enriched =>
+      HasTypeDesc.convContextExactToGrown formationTyped targetContext enriched
+  | .conv levelExpr flag typed converts reclassifierTyped => fun targetContext enriched =>
+      HasTypeDescPi.conv levelExpr flag
+        (HasTypeDescPi.contextConversionExact typed targetContext enriched)
+        converts
+        (HasTypeDescPi.contextConversionExact reclassifierTyped targetContext enriched)
+  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel codomainLevel flag
+      domainTyped codomainTyped bodyTyped => fun targetContext enriched =>
+      let domainTyped' := HasTypeDescPi.contextConversionExact domainTyped targetContext enriched
+      let liftedEnriched := ConvContextWithOldValid.cons domainCode enriched
+        ⟨domainLevel, flag, domainTyped'⟩
+      HasTypeDescPi.piIntro domainLevel codomainLevel flag domainTyped'
+        (HasTypeDescPi.contextConversionExact codomainTyped (targetContext.cons domainCode) liftedEnriched)
+        (HasTypeDescPi.contextConversionExact bodyTyped (targetContext.cons domainCode) liftedEnriched)
+  | .piElim functionTyped argumentTyped => fun targetContext enriched =>
+      HasTypeDescPi.piElim
+        (HasTypeDescPi.contextConversionExact functionTyped targetContext enriched)
+        (HasTypeDescPi.contextConversionExact argumentTyped targetContext enriched)
+  | .genFormationPi _formerContext generator payload children levels flag rule isFormation premises =>
+      fun targetContext enriched =>
+      HasTypeDescPi.genFormationPi targetContext generator payload children levels flag rule isFormation
+        (DescTelescopePi.contextConversionTelescopeExact premises targetContext enriched)
+
+/-- **The grown premise-telescope companion (EXACT).**  Re-types each head by the mutual `contextConversionExact` and
+recurses the tail under the cons-lifted enriched condition (the head's target-validity supplied by the recursively
+re-typed head).  EXACT — no `convBackToUniverseCode` (the head IH already lands at its literal universe code). -/
+theorem DescTelescopePi.contextConversionTelescopeExact {profile : PolyProfile}
+    {baseScope currentDepth : Nat} {binderShifts : List Nat}
+    {sourceContext : TypingContext profile (baseScope + currentDepth)}
+    {levels : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren binderShifts baseScope}
+    (telescope : DescTelescopePi profile sourceContext levels flag children) :
+    ∀ (targetContext : TypingContext profile (baseScope + currentDepth)),
+      ConvContextWithOldValid sourceContext targetContext →
+      DescTelescopePi profile targetContext levels flag children :=
+  match telescope with
+  | .nil _sourceContext flag => fun targetContext _enriched =>
+      DescTelescopePi.nil targetContext flag
+  | .cons _sourceContext head headLevel restLevels flag rest headTyped restTyped =>
+      fun targetContext enriched =>
+      let headTyped' := HasTypeDescPi.contextConversionExact headTyped targetContext enriched
+      DescTelescopePi.cons targetContext head headLevel restLevels flag rest headTyped'
+        (DescTelescopePi.contextConversionTelescopeExact restTyped (targetContext.cons head)
+          (ConvContextWithOldValid.cons head enriched ⟨headLevel, flag, headTyped'⟩))
+
+end
+
 end FX1Poly.Typed
