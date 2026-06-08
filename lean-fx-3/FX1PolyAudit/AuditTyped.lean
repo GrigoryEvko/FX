@@ -264,6 +264,7 @@ import FX1Poly.Typed.HasTypeDescEitherIntro
 import FX1Poly.Typed.ProductEitherCanonicalForms
 import FX1Poly.Typed.HasTypeDescBoolElim
 import FX1Poly.Typed.HasTypeDescEitherMatch
+import FX1Poly.Typed.HasTypeDescOptionIntro
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3132,6 +3133,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.eitherInrOfUniverseCodeTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.subjectIsEitherInjection
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.classifierIsEither
+-- OPTION INTRODUCTION (HasTypeDescOptionIntro, DI-2c): the standalone option judgment typing the option VALUES
+-- optionNone / optionSome(a) : option(A). The optionNone arm carries a type-formedness premise for the FREE
+-- element type A (the None asymmetry — None carries no payload, exactly like eitherInl's free un-injected side);
+-- the optionSome arm a value premise a:A that PINS A. The scrutinee-typing prerequisite for the option ELIMINATOR
+-- (DI-5c, next). optionNone/SomeOfUniverseCodeTyped = the smokes optionNone:option(Type@0) /
+-- optionSome(Type@0):option(Type@1). subjectIsOptionConstructor/classifierIsOption = the SR-free closed-forms
+-- inversions (subject is a none/some cell, classifier an optionTypeCell). SR quartet GCC-5-deferred.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.optionNoneOfUniverseCodeTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.optionSomeOfUniverseCodeTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.subjectIsOptionConstructor
+#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.classifierIsOption
 -- Σ/COPRODUCT CANONICAL FORMS (ProductEitherCanonicalForms, the DI-2 payoff): NON-VACUOUS closed-normal
 -- canonicity for product/either types, unconditional (no GCC-5/§5). NEW rigidity Conv.product/eitherCode_not_
 -- universeCode (flat-former twin of boolTypeCell_not_universeCode, via shapeStable + universe leaf + noConfusion)
