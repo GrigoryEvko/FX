@@ -202,6 +202,7 @@ import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
 import FX1Poly.Typed.TypedUniverseNoTop
+import FX1Poly.Typed.TypedUniversePredicative
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -6512,3 +6513,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeCodeClassifierIsSuccessor
 #assert_no_axioms FX1Poly.Typed.universeCodeClassifierUnique
 #assert_no_axioms FX1Poly.Typed.universeHierarchyHasNoTop
+-- UNIVERSE PREDICATIVE (TypedUniversePredicative): the CAPSTONE of the universe arc — universe-code classification
+-- IS the successor relation (both directions), and the engine is predicative (non-cumulative).
+-- universeClassificationCharacterization (★): HasTypeDescPi Γ (Type@m,sf) (Type@n,cf) ↔ (n = m.lsucc ∧ cf = sf) —
+-- forward = #1011 universeCodeClassifierIsSuccessor, backward = ofFormation∘universeFormation (the formation rule
+-- is the ONLY way a universe code classifies into another). universeClassificationNotTransitive: Type@0:Type@1 ∧
+-- Type@1:Type@2 ∧ ¬Type@0:Type@2 (predicativity as non-transitivity; positive rungs = #1010, negative = exact
+-- char + level injectivity + decide ¬(2=1)). universeNotCumulativeBySkip (★): ∀ e flag, ¬ Type@e : Type@(e+2) —
+-- the engine NEVER lets a universe code skip a level (mechanizes FX §1.1's predicative-hierarchy commitment), via
+-- the exact char forcing e.lsucc.lsucc = e.lsucc, refuted by LevelExpr.ne_lsucc_self. With #941 (irreflexive),
+-- #945 (well-founded), #1010 (inhabited), #1011 (rigid/top-less): the universe-code _:_ relation is now COMPLETELY
+-- characterized as the successor relation on ℕ — every property distinguishing a predicative tower from Type:Type.
+#assert_no_axioms FX1Poly.Typed.universeClassificationCharacterization
+#assert_no_axioms FX1Poly.Typed.universeClassificationNotTransitive
+#assert_no_axioms FX1Poly.Typed.universeNotCumulativeBySkip
