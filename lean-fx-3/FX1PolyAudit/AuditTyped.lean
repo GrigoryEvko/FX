@@ -411,6 +411,7 @@ import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.ConvContextPiValidityModelNeutral
 import FX1Poly.Typed.TypedTypeValidityRelation
 import FX1Poly.Typed.TypedTypeValidityBoxedRelation
+import FX1Poly.Typed.WfContextTypedLrValid
 import FX1Poly.Typed.PiElimClassifierConvResidual
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
@@ -6406,6 +6407,21 @@ gates pin them shut.
 -- foundation that unblocks the Abel-reflection well-formed-context base. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.smoke_universeTypeIsBoxedTypedValid
 #assert_no_axioms FX1Poly.Typed.smoke_closedUniverseIsBoxedTypedValid
+-- WfContextTypedLrValid: typed-LR well-formedness of a context — each binding is TYPED-LR-VALID (in
+-- TypedTypeValidityBoxed at some candidate box) in its prefix. STRENGTHENS WfContextDescPi (which only says each
+-- binding IsTypeDescPi) by pairing each entry's grown validity with a reducibility candidate — the well-formed
+-- context the Abel-reflection neutral arm of GrownCtxConv-5 (#842) needs (the transportNeutralArm finding #1112
+-- said neutral-app typing must reconstruct from a var-spine under a context where each entry is itself LR-valid).
+-- Non-vacuous only because the universe arm gave the LR a closed inhabitant (#1114, used by the universeBinding
+-- witness). toWfContextDescPi = ★ soundness: typed-LR-validity REFINES formation-validity (each entry's
+-- toIsTypeDescPi), so a typed-LR-valid context is grown-well-formed. Zero-axiom. (Next brick: the LOOKUP lemma,
+-- which needs LR-weakening under context extension — a genuinely new proof, not a projection.)
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.emptyIsWellFormed
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.tailValid
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.headLrValid
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.cons
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.toWfContextDescPi
+#assert_no_axioms FX1Poly.Typed.wfContextTypedLrValid_universeBinding
 -- TYPED-LR-CODFAMILY: close the Π-former's free-codomainFamily gap (the firing-20 next brick). snKripkeCodFamily
 -- is the SN codomain family (codomain analogue of snKripkeCand #1108) — the CANONICAL codomain family for the
 -- type-VALIDITY relation (which only needs the family to EXIST + TRANSPORT, not to depend on the argument: the
