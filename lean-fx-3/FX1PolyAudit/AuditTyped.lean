@@ -200,6 +200,7 @@ import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.CurryFixpointDivergence
 import FX1Poly.Typed.CurryFixpointCombinator
+import FX1Poly.Typed.CombinatoryLogic
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -6554,3 +6555,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.fixCombinator_reducesToUnfolding
 #assert_no_axioms FX1Poly.Typed.fixCombinator_isFixpoint
 #assert_no_axioms FX1Poly.Typed.fixCombinator_applied_notStronglyNormalizing
+-- SKI COMBINATORS (CombinatoryLogic): the combinator basis I=λx.x, K=λx.λy.x, S=λx.λy.λz.(xz)(yz) lives in the
+-- λ-fragment. combinator{I,K,S}_stronglyNormalizing: each is a closed step-NORMAL-FORM value ⇒ SN, via
+-- isStronglyNormalizing_of_noStep + isStepNormalForm_blocks_step (by decide — CLEAN, isStepNormalForm inspects
+-- generators/structure, never Fin indices, so no propext leak). combinatorI_reduces: I a ↝ a (bare Step.beta).
+-- combinatorK_reduces: K a b ↝* a — function-position Step.cong .gen_app () β reduces K a → λy.(weaken a) (the
+-- under-binder subst0 (λy.x) a = λy.(weaken a) computes by RFL), then outer β + weaken_subst_singleton cancellation.
+-- The S-rule (S a b c ↝* ac(bc)) + SKK=I are DEFERRED to #1016 (3-binder nested weakenings). Combinatory logic.
+#assert_no_axioms FX1Poly.Typed.combinatorI_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.combinatorK_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.combinatorS_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.combinatorI_reduces
+#assert_no_axioms FX1Poly.Typed.combinatorK_reduces
