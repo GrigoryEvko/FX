@@ -201,6 +201,7 @@ import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
+import FX1Poly.Typed.TypedUniverseNoTop
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.ClosedNormalForm
 import FX1Poly.Typed.ClosedNonConvertibility
@@ -6498,3 +6499,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeLevelTower_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.universeLevelTower_notConvertible_of_ne
 #assert_no_axioms FX1Poly.Typed.universeHierarchy_isInfiniteNonCollapsingTower
+-- UNIVERSE NO-TOP (TypedUniverseNoTop): sharpen #1010 — the universe-code classifier is EXACTLY the successor,
+-- and the tower has NO TOP. Engine input = the shipped grown inversion HasTypeDescPi.inversionUniverseCode (any
+-- classifier a universe code receives is Conv to Type@(e+1)). universeCodeClassifierIsSuccessor: a universe code
+-- typed at ANOTHER universe code pins classifierLevel = subjectLevel.lsucc ∧ flags agree (no conv slack) — via
+-- inversion + universeCodeCell_inj_of_conv. universeCodeClassifierUnique: classifier uniqueness at a universe code
+-- (concrete #469 — both classifiers Conv to Type@(subject+1), trans+sym). universeHierarchyHasNoTop (★): ¬∃ closed
+-- topClassifier classifying the whole tower — instantiate at n=0,1, inversion gives Conv to Type@1 AND Type@2, so
+-- Type@1 ≡ Type@2 (trans+sym), refuted by universeCodeCell_inj_of_conv + universeLevelOfNat_injective + decide ¬(1=2).
+-- The antithesis of impredicative Type:Type (self-classifying top → Girard). Sits with #941 (irreflexive) + #945
+-- (well-founded): the universe-code classification relation is a strict, rigid, well-founded, top-less ℕ-copy.
+#assert_no_axioms FX1Poly.Typed.universeCodeClassifierIsSuccessor
+#assert_no_axioms FX1Poly.Typed.universeCodeClassifierUnique
+#assert_no_axioms FX1Poly.Typed.universeHierarchyHasNoTop
