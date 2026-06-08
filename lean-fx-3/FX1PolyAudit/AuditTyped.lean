@@ -208,6 +208,7 @@ import FX1Poly.Typed.TypedChurchNumeralAddition
 import FX1Poly.Typed.TypedChurchNumeralMultiplication
 import FX1Poly.Typed.TypedChurchNumeralSemiringLaws
 import FX1Poly.Typed.TypedChurchNumeralIsZero
+import FX1Poly.Typed.TypedChurchBooleanOperations
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.CurryFixpointDivergence
@@ -2374,6 +2375,42 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchIsZero_onZero
 #assert_no_axioms FX1Poly.Typed.churchIsZero_onSucc
 #assert_no_axioms FX1Poly.Typed.churchIsZero_discriminates
+-- CHURCH-BOOL-OPS (#1056, TypedChurchBooleanOperations): the term model COMPUTES conjunction and disjunction,
+-- completing the Boolean operations (with CHURCH-NOT #1038). churchAnd = λa.λb. a P b churchFalse; churchOr =
+-- λa.λb. a P churchTrue b. churchFalseSelectsElse (symbolic, var-0 innermost) / churchTrueSelectsConcrete{True,
+-- False} (var-1 needs concrete first branch) are the selection helpers; *Body_subst_a (subst_lift_singleton_
+-- weaken_weaken + rfl var resolutions) + *PartialBody_subst_b are the two β reshapes; *_reducesToApplied chains
+-- them. ★ THE SYMBOLIC-LEFT-STRICTNESS FINDING: churchOr_trueAnything (or true _ ↝* true) + churchOr_falseAnything
+-- (or false b ↝* b) determine OR symbolically by its FIRST arg, while churchAnd_falseAnything (and false _ ↝*
+-- false) is symbolic but `and true b` needs CONCRETE b (churchAnd_trueTrue/trueFalse). The asymmetry is
+-- structural: churchTrue's body is the non-innermost var 1 (stuck on a symbolic branch), churchFalse's is the
+-- innermost var 0 (resolves symbolically), so an op reduces symbolically exactly when the selected branch is the
+-- SECOND/else (or false→b, and false→churchFalse) or a CONCRETE first (or true→churchTrue). deMorgan_and_{trueTrue,
+-- trueFalse,falseTrue,falseFalse}: ¬(a∧b) =Conv (¬a)∨(¬b) on every truth-table input (both sides compute to the
+-- same bool, via Conv.app_cong over the negation reductions). churchAnd_discriminates: and true true ≢ and true
+-- false. COMPUTATIONAL not typed (same predicativity wall as CHURCH-ISZERO #1055: ChurchBool : Type@1 can't
+-- instantiate the selector's A:Type@0; the type arg is the inert branchMotivePlaceholder). Zero-axiom:
+-- Step.beta/cong + StepStar.trans/trans_compose + Conv.app_cong/fromStepStar/trans/sym; no propext/Quot.sound/
+-- Classical/sorry/native_decide/omega.
+#assert_no_axioms FX1Poly.Typed.churchFalseSelectsElse
+#assert_no_axioms FX1Poly.Typed.churchTrueSelectsConcreteTrue
+#assert_no_axioms FX1Poly.Typed.churchTrueSelectsConcreteFalse
+#assert_no_axioms FX1Poly.Typed.churchAndBody_subst_a
+#assert_no_axioms FX1Poly.Typed.churchAndPartialBody_subst_b
+#assert_no_axioms FX1Poly.Typed.churchAnd_reducesToApplied
+#assert_no_axioms FX1Poly.Typed.churchAnd_falseAnything
+#assert_no_axioms FX1Poly.Typed.churchAnd_trueTrue
+#assert_no_axioms FX1Poly.Typed.churchAnd_trueFalse
+#assert_no_axioms FX1Poly.Typed.churchOrBody_subst_a
+#assert_no_axioms FX1Poly.Typed.churchOrPartialBody_subst_b
+#assert_no_axioms FX1Poly.Typed.churchOr_reducesToApplied
+#assert_no_axioms FX1Poly.Typed.churchOr_trueAnything
+#assert_no_axioms FX1Poly.Typed.churchOr_falseAnything
+#assert_no_axioms FX1Poly.Typed.deMorgan_and_trueTrue
+#assert_no_axioms FX1Poly.Typed.deMorgan_and_trueFalse
+#assert_no_axioms FX1Poly.Typed.deMorgan_and_falseTrue
+#assert_no_axioms FX1Poly.Typed.deMorgan_and_falseFalse
+#assert_no_axioms FX1Poly.Typed.churchAnd_discriminates
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
