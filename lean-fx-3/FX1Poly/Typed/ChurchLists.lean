@@ -1,5 +1,6 @@
 import FX1Poly.Typed.CombinatoryLogic
 import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Core.RawTermSubstLiftWeaken
 
 /-! # FX1Poly/Typed/ChurchLists — Church-encoded (Boehm-Berarducci) lists in the λ-fragment
 
@@ -21,21 +22,28 @@ nested polymorphic application (exactly Church numeral SUCC carrying a payload).
     the pure Π-fragment with no primitive list type.
   * **`churchNil_isValue` / `churchCons_isValue`** — both encodings are λ-VALUES (their head is `gen_lam`, a
     closed normal canonical inhabitant of the encoded list type), the data-value witnesses.
-
-The recursive CONS-fold computation `fold c n (cons h t) ↝* c h (t c n)` is DEFERRED: its contractum threads the
-cons-handler `c` through TWO binders into both the head-handler position AND the recursively-folded tail, so the
-under-binder `weaken·/subst0` cancellations run one binder deeper than the `ChurchSums` `case`-selection and need
-the same weaken/subst commutation that the symbolic Church-sum payload (#1025) and the general S-rule (#1024)
-deferred.  The base case (`foldNil`) and the value witnesses are the clean fragment; the recursive computation is
-the documented next brick (the de Bruijn cons-fold, parallel to the symbolic-payload deferral).  Everything here
-is the raw `Step` relation; no typing derivation is consulted.
+  * **`foldCons` (★)** — `fold c n (cons h t) ↝* c h (t c n)`: the RECURSIVE cons-fold.  Folding a cons cell
+    applies the cons-handler `c` to the head `h` and the RECURSIVELY-folded tail `t c n` — the inductive
+    eliminator computing one constructor deep.  The contractum threads the cons-handler `c` through TWO binders
+    into both the head-handler position AND the tail, so the first β-step weakens `c` TWICE; the doubly-weakened
+    stored values (head, tail) collapse one level by `RawTerm.subst_lift_singleton_weaken_weaken` (#1023) — the
+    same double-weaken cancellation the symbolic Church-sum payload (#1025) and general S-rule (#1024) used.
+  * **`foldSingleton` (★)** — `fold c n (cons h nil) ↝* c h n`: the fold of a CONCRETE one-element list, the
+    recursion BOTTOMING OUT.  Composes `foldCons` (reaching `c h (nil c n)`) with `foldNil` (the folded tail
+    `nil c n ↝* n`) lifted through the application's argument position (`StepStar.appArgument`) — the non-vacuous
+    demonstration that the Boehm-Berarducci fold computes a finite list to its folded value.
 
 ## Zero-axiom verification
 
 `foldNil` is two `Step.beta` (lifted by one `Step.cong .gen_app` congruence) whose `subst0` contracta are the
 `rfl`-clean innermost-variable substitutions; the value witnesses read the `gen_lam` head off the `lamCell`
-definitions by `rfl`.  No `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, or `omega`.  Gated
-per-decl in `FX1PolyAudit/AuditTyped.lean`.
+definitions by `rfl`.  `foldCons` mirrors the `ChurchSums` symbolic case-selection (#1025): the β1 reshape
+`churchCons_subst_consHandler` is a `show`-push (distribute `subst` through the nested `appCell`s, exposing the
+doubly-weakened head/tail) + `rw [subst_lift_singleton_weaken_weaken …]` + `rfl`, then the function-position
+congruence lifts the reshaped β1, the second β cancels the single weakens (`weaken_subst_singleton`), composed by
+`StepStar.trans`.  `foldSingleton` is `StepStar.trans_compose` of `foldCons` with `StepStar.appArgument`-lifted
+`foldNil`.  No `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, or `omega`.  Gated per-decl in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -88,5 +96,104 @@ theorem churchNil_isValue : churchNil.rootGenerator = Generator.gen_lam := rfl
 constructor is a function value (it abstracts the two fold-handlers before computing). -/
 theorem churchCons_isValue (head tail : RawTerm 0) :
     (churchCons head tail).rootGenerator = Generator.gen_lam := rfl
+
+/-- **β1 contractum reshape (cons-fold).**  Substituting the cons-handler into `churchCons`'s inner body collapses
+each doubly-weakened stored value (`head`, `tail`) one level (`subst_lift_singleton_weaken_weaken`, #1023) to
+`weaken …` and turns the two `c`-references (`var 1`) into `weaken consHandler`; the `n`-reference (`var 0`) stays.
+The cons analogue of `ChurchSumsGeneral.leftInjection_subst_handlerL`, with two stored values instead of one. -/
+theorem churchCons_subst_consHandler (head tail consHandler : RawTerm 0) :
+    RawTerm.subst0
+        (lamCell
+          (appCell
+            (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+              (RawTerm.weaken (RawTerm.weaken head)))
+            (appCell
+              (appCell (RawTerm.weaken (RawTerm.weaken tail))
+                (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+              (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))) consHandler
+      = lamCell
+          (appCell
+            (appCell (RawTerm.weaken consHandler) (RawTerm.weaken head))
+            (appCell
+              (appCell (RawTerm.weaken tail) (RawTerm.weaken consHandler))
+              (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) := by
+  unfold RawTerm.subst0
+  show lamCell
+      (appCell
+        (appCell _ (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton consHandler))
+          (RawTerm.weaken (RawTerm.weaken head))))
+        (appCell
+          (appCell (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton consHandler))
+            (RawTerm.weaken (RawTerm.weaken tail))) _)
+          _)) = _
+  rw [RawTerm.subst_lift_singleton_weaken_weaken head consHandler,
+      RawTerm.subst_lift_singleton_weaken_weaken tail consHandler]
+  rfl
+
+/-- **★ `fold c n (cons h t) ↝* c h (t c n)`** — the RECURSIVE cons-fold computation.  Folding a cons cell applies
+the cons-handler `c` to the head `h` and the RECURSIVELY-folded tail `t c n`: `churchCons h t = λc.λn. c h (t c n)`
+applied to `c` (the β1 reshape `churchCons_subst_consHandler`, where the cons-handler is weakened twice and the two
+stored values collapse via #1023) then to `n` (the second β, single-weaken cancellations).  The inductive
+eliminator computing one constructor deep, faithful for ARBITRARY head and tail. -/
+theorem foldCons (head tail consHandler nilHandler : RawTerm 0) :
+    StepStar (churchFold consHandler nilHandler (churchCons head tail))
+      (appCell (appCell consHandler head)
+        (appCell (appCell tail consHandler) nilHandler)) := by
+  have functionBeta : Step (appCell (churchCons head tail) consHandler)
+      (lamCell
+        (appCell
+          (appCell (RawTerm.weaken consHandler) (RawTerm.weaken head))
+          (appCell
+            (appCell (RawTerm.weaken tail) (RawTerm.weaken consHandler))
+            (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))))) := by
+    rw [← churchCons_subst_consHandler head tail consHandler]
+    exact Step.beta
+  have congStep : Step (churchFold consHandler nilHandler (churchCons head tail))
+      (appCell
+        (lamCell
+          (appCell
+            (appCell (RawTerm.weaken consHandler) (RawTerm.weaken head))
+            (appCell
+              (appCell (RawTerm.weaken tail) (RawTerm.weaken consHandler))
+              (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))))
+        nilHandler) :=
+    Step.cong .gen_app ()
+      (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
+        (.childCons nilHandler .childNil) functionBeta)
+  have outerBeta : Step
+      (appCell
+        (lamCell
+          (appCell
+            (appCell (RawTerm.weaken consHandler) (RawTerm.weaken head))
+            (appCell
+              (appCell (RawTerm.weaken tail) (RawTerm.weaken consHandler))
+              (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))))
+        nilHandler)
+      (appCell
+        (appCell (RawTerm.subst0 (RawTerm.weaken consHandler) nilHandler)
+          (RawTerm.subst0 (RawTerm.weaken head) nilHandler))
+        (appCell
+          (appCell (RawTerm.subst0 (RawTerm.weaken tail) nilHandler)
+            (RawTerm.subst0 (RawTerm.weaken consHandler) nilHandler))
+          nilHandler)) := Step.beta
+  have cancelConsHandler : RawTerm.subst0 (RawTerm.weaken consHandler) nilHandler = consHandler :=
+    RawTerm.weaken_subst_singleton consHandler nilHandler
+  have cancelHead : RawTerm.subst0 (RawTerm.weaken head) nilHandler = head :=
+    RawTerm.weaken_subst_singleton head nilHandler
+  have cancelTail : RawTerm.subst0 (RawTerm.weaken tail) nilHandler = tail :=
+    RawTerm.weaken_subst_singleton tail nilHandler
+  rw [cancelConsHandler, cancelHead, cancelTail] at outerBeta
+  exact StepStar.trans congStep (StepStar.trans outerBeta (StepStar.refl _))
+
+/-- **★ `fold c n (cons h nil) ↝* c h n`** — the fold of a CONCRETE one-element list, the recursion BOTTOMING OUT.
+`foldCons` reaches `c h (nil c n)`; the folded tail `nil c n` reduces by `foldNil` (lifted through the application's
+argument position via `StepStar.appArgument`) to the nil-handler `n`.  The non-vacuous demonstration that the
+Boehm-Berarducci fold computes a finite list to its folded value. -/
+theorem foldSingleton (head consHandler nilHandler : RawTerm 0) :
+    StepStar (churchFold consHandler nilHandler (churchCons head churchNil))
+      (appCell (appCell consHandler head) nilHandler) :=
+  StepStar.trans_compose
+    (foldCons head churchNil consHandler nilHandler)
+    (StepStar.appArgument (appCell consHandler head) (foldNil consHandler nilHandler))
 
 end FX1Poly.Typed

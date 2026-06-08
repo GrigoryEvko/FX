@@ -7199,10 +7199,17 @@ gates pin them shut.
 -- Church-zero λf.λx.x carrying the fold, so the two β-contractions are the clean innermost-variable subst0
 -- (one Step.cong .gen_app over the outer β, then the inner β; both subst0 contracta rfl-clean). churchNil_isValue /
 -- churchCons_isValue: both encodings are gen_lam-headed λ-VALUES (closed weak-head-normal canonical inhabitants of
--- the encoded list type Π R.(A→R→R)→R→R). The recursive cons-fold computation fold c n (cons h t) ↝* c h (t c n) is
--- DEFERRED: the contractum threads the cons-handler through TWO binders into both the head-handler AND the
--- recursively-folded tail, needing the same weaken/subst commutation deferred by the symbolic Church-sum payload
--- (#1025) and the general S-rule (#1024). Raw Step throughout; no typing derivation consulted. Zero-axiom.
+-- the encoded list type Π R.(A→R→R)→R→R). foldCons (★): the RECURSIVE cons-fold fold c n (cons h t) ↝* c h (t c n) —
+-- folding a cons cell applies the cons-handler to the head AND the recursively-folded tail; the β1 reshape
+-- churchCons_subst_consHandler weakens the cons-handler TWICE and collapses the two doubly-weakened stored values via
+-- RawTerm.subst_lift_singleton_weaken_weaken (#1023) — the SAME double-weaken cancellation the symbolic Church-sum
+-- payload (#1025) and the general S-rule (#1024) used; the second β cancels the single weakens. foldSingleton (★):
+-- fold c n (cons h nil) ↝* c h n — the fold of a CONCRETE one-element list, the recursion bottoming out, composing
+-- foldCons with foldNil (StepStar.appArgument-lifted through the folded-tail position). Raw Step throughout; no typing
+-- derivation consulted. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.foldNil
 #assert_no_axioms FX1Poly.Typed.churchNil_isValue
 #assert_no_axioms FX1Poly.Typed.churchCons_isValue
+#assert_no_axioms FX1Poly.Typed.churchCons_subst_consHandler
+#assert_no_axioms FX1Poly.Typed.foldCons
+#assert_no_axioms FX1Poly.Typed.foldSingleton
