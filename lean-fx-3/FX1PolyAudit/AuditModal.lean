@@ -34,6 +34,7 @@ import FX1Poly.Modal.SessionCommunication
 import FX1Poly.Modal.SelfApplicationUntypable
 import FX1Poly.Modal.GradedProgress
 import FX1Poly.Modal.GradedEvaluation
+import FX1Poly.Modal.GradedLogicalConsistency
 import FX1Poly.Modal.VersionCategoryDimension
 import FX1Poly.Modal.GradedNormalizerValue
 
@@ -1044,6 +1045,21 @@ programs evaluate — generic over every dimension. -/
 #assert_no_axioms FX1Poly.Modal.hasGradeOver_reducesStarPreservation
 #assert_no_axioms FX1Poly.Modal.closedReducesToLam
 #assert_no_axioms FX1Poly.Modal.usageLinearIdentity_reducesToLam
+
+/-! ### Logical consistency — the Curry-Howard conclusion of the graded type-safety story
+
+Reading `GTypeOver R` as a proposition and `HasGradeOver R [] _ term T` as a closed proof of `T`, the
+graded calculus is CONSISTENT: its atomic proposition `GTypeOver.base` has no closed proof
+(`closedBaseTypeUninhabited`), over EVERY dimension `R` at once.  A closed base-typed term would
+evaluate to a `.lam` (`closedReducesToLam`), which stays base-typed by SR-over-↝* yet a `.lam` is only
+arrow-typed (`invertLam`) — a constructor clash.  `closedTermIsArrowTyped` is the positive reading
+(every closed inhabitant is a function); `usageBaseTypeUninhabited` instantiates at the linear
+`{0,1,ω}` semiring.  The graded analogue of the grown SN-050 `EmptyType` consistency — atom vs
+dedicated empty type. -/
+
+#assert_no_axioms FX1Poly.Modal.closedBaseTypeUninhabited
+#assert_no_axioms FX1Poly.Modal.closedTermIsArrowTyped
+#assert_no_axioms FX1Poly.Modal.usageBaseTypeUninhabited
 
 /-! ### Version dimension — the first CATEGORY-structured dimension (§6.3 Tier V / §15)
 
