@@ -194,6 +194,7 @@ import FX1Poly.Typed.TypedChurchNumeralIteration
 import FX1Poly.Typed.TypedChurchNumeralDiscrimination
 import FX1Poly.Typed.TypedChurchNumeralThree
 import FX1Poly.Typed.TypedChurchNumeralFaithful
+import FX1Poly.Typed.TypedChurchNumeralTyping
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
@@ -2168,6 +2169,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchNumeralLambda_two_eq
 #assert_no_axioms FX1Poly.Typed.churchNumeralLambda_three_eq
 #assert_no_axioms FX1Poly.Typed.churchNumerals_pairwiseNotConvertible_general
+-- TypedChurchNumeralTyping (CHURCH-NAT-TYPED-GENERAL): the TYPING capstone of the Church arc (complements the
+-- faithfulness #1006) — every churchNumeralLambda n is well-typed at the Church Nat type Π(A:Type@0).Π(f:A→A).
+-- Π(x:A).A, for ALL n. iteratedApplicationBody_hasTypeDescPi: in [A:Type@0, f:A→A, x:A], iteratedApplication n
+-- f x : A (var2) by induction (n=0 = var-x rule; succ = piElim of f:A→A against the IH — the piElim's subst0
+-- codomain is A ARGUMENT-INDEPENDENTLY since the arrow codomain A is a free var). churchNumeralLambda_hasType
+-- DescPi (★): 3 nested piIntros over churchNatArrow/Rest/Codomain wrapping the iterate body. _stronglyNormalizing
+-- via SN-043. churchOneLambda_hasTypeDescPi_viaGeneral = the n=1 instance (churchNumeralLambda 1 = churchOneLambda
+-- defeq), so the general typing subsumes the concrete numeral typings.
+#assert_no_axioms FX1Poly.Typed.iteratedApplicationBody_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.churchNumeralLambda_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.churchNumeralLambda_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.churchOneLambda_hasTypeDescPi_viaGeneral
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
