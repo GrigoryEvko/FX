@@ -24,6 +24,7 @@ import FX1Poly.Modal.SoundnessCollisionSchema
 import FX1Poly.Modal.ThreeWayCollisionClassifiedAsyncSession
 import FX1Poly.Modal.FlagshipMultiDimensionSignature
 import FX1Poly.Modal.SoundnessCollisionCatalog
+import FX1Poly.Modal.SoundnessCollisionCatalogComplete
 import FX1Poly.Modal.BoundedJoinSemilatticeUniversal
 import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
@@ -1242,3 +1243,25 @@ Bool.noConfusion / fun _ => rfl). -/
 #assert_no_axioms FX1Poly.Modal.borrowEscapeIntoUnscopedSpawnCollision
 #assert_no_axioms FX1Poly.Modal.borrowIntoScopedSpawnConsistent
 #assert_no_axioms FX1Poly.Modal.catalogHasTwoCollisionClasses
+
+/-! ### §6.8 collision catalog COMPLETE — the last 3 entries (#1032 DIM-COLLISION-CATALOG-COMPLETE,
+    SoundnessCollisionCatalogComplete.lean)
+
+The final three §6.8 entries, all control-refined: CT×Async (constantTimeCollidesWithSecretDependentAsync +
+constantTimeConsistentWithSecretIndependentAsync + variableTimeConsistentWithAnyAsync), classified×Fail
+(secretControlledFailureCollidesWithObservableFailure + secretControlledFailureConsistentWithClassifiedFailure +
+secretIndependentFailureConsistentWithAnyObservability), CT×Fail-on-secret (constantTimeCollidesWithSecret
+DependentFailure + constantTimeConsistentWithSecretIndependentFailure). ★ sec68RemainingCatalogControlRefined =
+all three co-occur soundly when the control is withheld. Completes the entire 9-entry §6.8 catalog (3 co-occurrence
++ 6 control-refined). All SoundnessCollisionSchema instances, zero-axiom (notConsistent_iff.mpr ⟨rfl,rfl⟩ /
+Bool.noConfusion / fun _ => rfl). -/
+
+#assert_no_axioms FX1Poly.Modal.constantTimeCollidesWithSecretDependentAsync
+#assert_no_axioms FX1Poly.Modal.constantTimeConsistentWithSecretIndependentAsync
+#assert_no_axioms FX1Poly.Modal.variableTimeConsistentWithAnyAsync
+#assert_no_axioms FX1Poly.Modal.secretControlledFailureCollidesWithObservableFailure
+#assert_no_axioms FX1Poly.Modal.secretControlledFailureConsistentWithClassifiedFailure
+#assert_no_axioms FX1Poly.Modal.secretIndependentFailureConsistentWithAnyObservability
+#assert_no_axioms FX1Poly.Modal.constantTimeCollidesWithSecretDependentFailure
+#assert_no_axioms FX1Poly.Modal.constantTimeConsistentWithSecretIndependentFailure
+#assert_no_axioms FX1Poly.Modal.sec68RemainingCatalogControlRefined
