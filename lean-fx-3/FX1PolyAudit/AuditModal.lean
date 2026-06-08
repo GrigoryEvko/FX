@@ -22,6 +22,7 @@ import FX1Poly.Modal.OverflowLatticeDimension
 import FX1Poly.Modal.PrecisionOverflowCollision
 import FX1Poly.Modal.SoundnessCollisionSchema
 import FX1Poly.Modal.ThreeWayCollisionClassifiedAsyncSession
+import FX1Poly.Modal.FlagshipMultiDimensionSignature
 import FX1Poly.Modal.BoundedJoinSemilatticeUniversal
 import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
@@ -1190,3 +1191,30 @@ structurally: 2-way reducible + this 3-way irreducible. All zero-axiom. -/
 #assert_no_axioms FX1Poly.Modal.asyncSession_admissibleWithoutClassified
 #assert_no_axioms FX1Poly.Modal.classifiedAsyncSessionIrreducible
 #assert_no_axioms FX1Poly.Modal.isAdmissible_iff
+
+/-! ### §1.3 flagship `encrypt_and_send` — jointly §6.8-admissible multi-dimension grade configuration
+    (#1027 DIM-FLAGSHIP, FlagshipMultiDimensionSignature.lean)
+
+The POSITIVE counterpart to the §6.8 collision corpus: a real multi-dimension signature lands in the
+admissible region across every relevant collision at once. IsImplicitFlowAdmissible REFINES #1026's
+co-occurrence 3-way collision per §12.2 (the collision fires only when the classified value CONTROLS
+the async session scheduling, not when it merely co-occurs): encryptAndSendImplicitFlowAdmissible
+admits the flagship (secret flows to CT encryption, not scheduling); secretControlsSchedulingCollision
+keeps the genuine attack rejected; implicitFlowAdmissible_ofCoOccurrenceAdmissible = soundness of the
+refinement; flagshipDistinguishesModels = it is strictly more permissive on the flagship itself.
+encryptAndSendGradeMonoidIsLawful = the concrete usage×security×effect 3-factor grade vector is lawful
+(free from productIsLawful); encryptAndSendJointlyAdmissible (★) = the signature satisfies the 3-way
+implicit-flow + monotonic×concurrent + decimal×overflow constraints SIMULTANEOUSLY. All zero-axiom
+(Bool.noConfusion / structure projections / shipped productIsLawful + sequentialConsistentWithEvery-
+Mutation). -/
+
+#assert_no_axioms FX1Poly.Modal.IsImplicitFlowAdmissible
+#assert_no_axioms FX1Poly.Modal.encryptAndSendImplicitFlowAdmissible
+#assert_no_axioms FX1Poly.Modal.secretControlsSchedulingCollision
+#assert_no_axioms FX1Poly.Modal.implicitFlowAdmissible_ofCoOccurrenceAdmissible
+#assert_no_axioms FX1Poly.Modal.flagshipDistinguishesModels
+#assert_no_axioms FX1Poly.Modal.encryptAndSendGradeMonoidIsLawful
+#assert_no_axioms FX1Poly.Modal.encryptAndSendKeyGrade_combine_identity
+#assert_no_axioms FX1Poly.Modal.encryptAndSendMutationConcurrencyConsistent
+#assert_no_axioms FX1Poly.Modal.encryptAndSendPrecisionOverflowConsistent
+#assert_no_axioms FX1Poly.Modal.encryptAndSendJointlyAdmissible
