@@ -230,6 +230,7 @@ import FX1Poly.Typed.ChurchBoolXor
 import FX1Poly.Typed.ChurchListFirstOr
 import FX1Poly.Typed.ChurchSucc
 import FX1Poly.Typed.ChurchSuccApplies
+import FX1Poly.Typed.ChurchListLength
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -7333,3 +7334,26 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchSucc_applies
 #assert_no_axioms FX1Poly.Typed.churchSucc_iteratesOneMore
 #assert_no_axioms FX1Poly.Typed.churchSuccZero_appliesToOne
+
+-- CHURCH LIST LENGTH + PARITY (ChurchListLength, CHURCH-LIST-LENGTH): the list-length fold and its
+-- iteration-semantics faithfulness. churchListLength = fold (λhead.λacc. churchSucc acc) churchZero, so a
+-- k-element list builds the successor-tower churchSucc^k churchZero (= numeral k). The two reshapes follow the
+-- proven succ_step*_reshape idiom (unfold subst0 → show distributed → rw weaken-cancellations → trailing rfl on
+-- the variable-leaf substs). lengthConsConsNil lifts the tail-fold through churchSucc· via appArgument.
+-- succTowerOneParity/succTowerTwoParity apply a height-k tower to (motive, churchNot, churchTrue): odd height ↦
+-- churchFalse, even ↦ churchTrue (the numeral ITERATES churchNot k times). lengthDistinguishesByParity: length
+-- [h] and length [h,s], each applied to the parity probe, are non-Conv (false vs true) — length genuinely
+-- separates length-parity, via the iteration semantics + #983 churchTrue ≢ churchFalse. Raw Step/Conv; no typing
+-- consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.churchZero_applies
+#assert_no_axioms FX1Poly.Typed.lengthConsHandlerInnerSubst
+#assert_no_axioms FX1Poly.Typed.lengthConsHandlerOuterSubst
+#assert_no_axioms FX1Poly.Typed.lengthConsHandler_reduces
+#assert_no_axioms FX1Poly.Typed.lengthNil
+#assert_no_axioms FX1Poly.Typed.lengthConsNil
+#assert_no_axioms FX1Poly.Typed.lengthConsConsNil
+#assert_no_axioms FX1Poly.Typed.succTowerOneParity
+#assert_no_axioms FX1Poly.Typed.succTowerTwoParity
+#assert_no_axioms FX1Poly.Typed.lengthOneAppliedParity
+#assert_no_axioms FX1Poly.Typed.lengthTwoAppliedParity
+#assert_no_axioms FX1Poly.Typed.lengthDistinguishesByParity
