@@ -405,4 +405,45 @@ theorem kripkeArrow_neutralBackwardClosure {scope : Nat}
         exact argumentInductiveHypothesis argumentAfter argumentStep
           (domainClosedUnderStep furtherRenaming argumentFocusMember argumentStep)
 
+/-! ## The SN Kripke candidate — the Kripke-model interpretation of a NEUTRAL type code
+
+`ReducibleTypeStep.neutral` interprets a weak-head-normal non-Π non-universe type code as the
+strong-normalization candidate (`IsStronglyNormalizing`).  Lifting that to the Kripke-indexed setting gives
+the index-IGNORING candidate `snKripkeCand`, the Kripke-model neutral-type interpretation.  Its defining
+feature — and the reason context conversion is FREE on the semantic side of the open `GCC-5` (#842)
+type-validity residual — is that it does not consult its renaming index, so transporting it along ANY
+renaming (a change of Kripke world = a context conversion) acts as the IDENTITY.  The type-level analogue of
+the term-level Kripke-arrow transport laws above, and the Kripke-model home of the firing-15/16 finding that
+semantic neutral-type validity is context-free (`neutralTypeCodeSemanticReducibilityIsContextFree`). -/
+
+/-- **The strong-normalization Kripke candidate.**  The index-ignoring Kripke candidate whose members at
+every renaming index are exactly the strongly-normalizing terms — the Kripke-model interpretation of a
+neutral type code (the `ReducibleTypeStep.neutral` SN candidate, lifted to the renaming-indexed family). -/
+def snKripkeCand {scope : Nat} : KripkeCand scope :=
+  fun {_targetScope} _indexRenaming term => IsStronglyNormalizing term
+
+/-- **The SN Kripke candidate is rename-INVARIANT (the neutral-type interpretation's context-uniformity).**
+Transporting `snKripkeCand` along any `forwardRenaming` leaves it unchanged, pointwise — because it ignores
+its index, so precomposing the index with `forwardRenaming` changes nothing.  This is the type-level analogue
+of `kripkeArrow_transport_pointwise`: where the arrow's rename-closure threads through as composition-
+associativity, the neutral interpretation's is the STRONGER statement that the renaming is invisible entirely
+(`Iff.rfl`).  Context conversion (= a change of Kripke index) acts as the identity on the neutral-type
+interpretation — the semantic side of the open type-validity residual, free. -/
+theorem snKripkeCand_transport_pointwise {scope renamedScope : Nat}
+    (forwardRenaming : RawRenaming scope renamedScope)
+    {targetScope : Nat} (indexRenaming : RawRenaming renamedScope targetScope)
+    (term : RawTerm targetScope) :
+    KripkeCand.transport forwardRenaming (snKripkeCand) indexRenaming term ↔
+      snKripkeCand indexRenaming term :=
+  Iff.rfl
+
+/-- **CR1 for the SN Kripke candidate: its members are strongly normalizing** — definitionally (a member IS
+an `IsStronglyNormalizing` witness).  The neutral-type Kripke interpretation trivially satisfies the first
+reducibility-candidate property, completing it as a genuine candidate; the Kripke-model analogue of
+`ReducibleTypeStep.neutral`'s candidate being `IsStronglyNormalizing`. -/
+theorem snKripkeCand_stronglyNormalizing {scope targetScope : Nat}
+    (indexRenaming : RawRenaming scope targetScope) {term : RawTerm targetScope}
+    (membership : snKripkeCand indexRenaming term) : IsStronglyNormalizing term :=
+  membership
+
 end FX1Poly.Core

@@ -413,6 +413,15 @@ per-decl list.  It also re-checks the native infra under
 -- COMPLETES the non-dependent Kripke arrow CR bundle (CR1/CR2/CR3) — a prerequisite ingredient for the open
 -- Kripke logical relation that the GCC-5 (#842) context-conversion piElim residual requires.
 #assert_no_axioms FX1Poly.Core.kripkeArrow_neutralBackwardClosure
+-- The SN Kripke candidate (the Kripke-model interpretation of a NEUTRAL type code): the index-IGNORING
+-- candidate whose members at every renaming index are exactly the strongly-normalizing terms (the
+-- `ReducibleTypeStep.neutral` SN candidate lifted to the renaming-indexed family).  Rename-INVARIANT
+-- (transport along any renaming is the IDENTITY, `Iff.rfl`) — the semantic reason context conversion is FREE
+-- on the neutral-type interpretation of the open GCC-5 (#842) type-validity residual — plus CR1 (members are
+-- strongly normalizing, definitionally).  Wires the Kripke arrow substrate to the type-level neutral
+-- interpretation, the first concrete piece of the open typed logical-relation model.
+#assert_no_axioms FX1Poly.Core.snKripkeCand_transport_pointwise
+#assert_no_axioms FX1Poly.Core.snKripkeCand_stronglyNormalizing
 -- CR3 structural ingredient: neutrality is preserved by renaming (needed so the applied fresh-var head
 -- `rename furtherRenaming functionTerm` stays neutral in the Kripke arrow's neutral backward closure).
 #assert_no_axioms FX1Poly.Core.IsNeutral.rename
