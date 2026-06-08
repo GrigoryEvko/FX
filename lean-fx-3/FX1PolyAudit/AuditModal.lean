@@ -11,6 +11,7 @@ import FX1Poly.Modal.GradedSubstitutionGeneric
 import FX1Poly.Modal.GradedSubjectReductionGeneric
 import FX1Poly.Modal.GradedCompositionGeneric
 import FX1Poly.Modal.GradeSemiringProduct
+import FX1Poly.Modal.GradeSemiringMonoidal
 import FX1Poly.Modal.SimpleStrongNormalization
 import FX1Poly.Modal.GradedSubstitutionAlgebra
 import FX1Poly.Modal.GradedReductionSubstitution
@@ -140,6 +141,23 @@ per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurity_variableCarriesBothGrades
 #assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurity_metatheoryFree
 #assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurity_appliedIdentity_metatheoryFree
+-- DIM-PRODUCT-MONOIDAL (#1036): the grade-semiring product is SYMMETRIC MONOIDAL — commutative and associative
+-- up to STRICT grade-semiring isomorphism, so "product of all forms the grade vector" is well-defined for N≥3
+-- dimensions regardless of order/grouping. swapGrade (★): product A B ≅ product B A, preserving zero/one/add/mul
+-- (rfl) + le (Bool-AND comm) + involutive. assocGrade/unassocGrade: product (product A B) C ≅ product A (product
+-- B C), operations rfl + le (Bool-AND assoc) + mutually inverse. fxUsageTimesSecurityTimesComplexity = a concrete
+-- 3-dimension instance (usage×security×complexity), lawful by NESTED product + metatheoryFree (★, SN+SR for free).
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.swapGrade_add
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.swapGrade_mul
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.swapGrade_le
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.swapGrade_involutive
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.assocGrade_add
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.assocGrade_mul
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.assocGrade_le
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.assocGrade_unassocGrade
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.unassocGrade_assocGrade
+#assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurityTimesComplexitySemiring_isLawful
+#assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurityTimesComplexity_metatheoryFree
 
 /-! ### Grade-vector substrate: the per-binding usage grade vector + its semimodule laws -/
 
