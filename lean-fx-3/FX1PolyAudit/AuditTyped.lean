@@ -207,6 +207,7 @@ import FX1Poly.Typed.TypedChurchNumeralComputeGeneral
 import FX1Poly.Typed.TypedChurchNumeralAddition
 import FX1Poly.Typed.TypedChurchNumeralMultiplication
 import FX1Poly.Typed.TypedChurchNumeralSemiringLaws
+import FX1Poly.Typed.TypedChurchNumeralIsZero
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.CurryFixpointDivergence
@@ -2352,6 +2353,27 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchMulOneIsIdentity
 #assert_no_axioms FX1Poly.Typed.churchMulZeroAnnihilates
 #assert_no_axioms FX1Poly.Typed.churchMultiplicationDistributesOverAddition
+-- CHURCH-ISZERO (#1055, TypedChurchNumeralIsZero): the term model COMPUTES the first PREDICATE on the Church
+-- numerals — isZero, a ChurchNat → ChurchBool decision. churchIsZero = λn. n placeholder (λ_. churchFalse)
+-- churchTrue feeds the numeral the constant-false step over the base churchTrue. constFalseStep_appReducesToFalse:
+-- the const-false collapse — (λ_. churchFalse) arg ↝ churchFalse (weaken_subst_singleton, the body ignores the
+-- argument). churchIsZeroBody_substitutes: the outer β-contractum, three weakened constants cancelled (mirrors
+-- CHURCH-NOT). ★ churchIsZero_onZero: isZero (numeral 0) ↝* churchTrue (the empty iterate is the base). ★
+-- churchIsZero_onSucc: isZero (numeral (k+1)) ↝* churchFalse for EVERY k — the iteration lemma (#1009) reduces
+-- the numeral to (const churchFalse)^(k+1) churchTrue, whose OUTERMOST application collapses to churchFalse in one
+-- β-step (inner iterate discarded). churchIsZero_discriminates: the two outputs are non-Conv (churchTrue ≢
+-- churchFalse, #983), so the predicate genuinely separates zero from nonzero. Ships as a COMPUTATIONAL result, not
+-- a typed one: a typed isZero : ChurchNat → ChurchBool would instantiate the numeral's A:Type@0 binder at
+-- A := ChurchBool, but ChurchBool : Type@1 (one universe above), which the predicative non-cumulative engine
+-- (UNIV-PREDICATIVE #1012) forbids — the impredicativity System-F Church recursion relies on and FX rejects. The
+-- type arg is the inert branchMotivePlaceholder; the predicate is genuinely COMPUTED, only its predicatively-typed
+-- packaging is unavailable. Zero-axiom: Step.beta/cong + StepStar.trans/trans_compose + Conv.fromStepStar; no
+-- propext/Quot.sound/Classical/sorry/native_decide/omega.
+#assert_no_axioms FX1Poly.Typed.constFalseStep_appReducesToFalse
+#assert_no_axioms FX1Poly.Typed.churchIsZeroBody_substitutes
+#assert_no_axioms FX1Poly.Typed.churchIsZero_onZero
+#assert_no_axioms FX1Poly.Typed.churchIsZero_onSucc
+#assert_no_axioms FX1Poly.Typed.churchIsZero_discriminates
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
