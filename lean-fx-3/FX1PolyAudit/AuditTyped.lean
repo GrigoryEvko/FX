@@ -440,6 +440,7 @@ import FX1Poly.Typed.IntroRuleDesc
 import FX1Poly.Typed.ElimRuleDesc
 import FX1Poly.Typed.TypingRoleClassifier
 import FX1Poly.Typed.TypingRoleEngineBridge
+import FX1Poly.Typed.TypingRoleCoverage
 import FX1Poly.Typed.UntypableHeadDecision
 import FX1Poly.Typed.TypingHeadKindClassifier
 import FX1Poly.Typed.CertifiedWordReductionTermination
@@ -6517,6 +6518,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectHeadHasRoleOrIsUniverseCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.cellUntypedWhenRolelessAndNonBespoke
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.boolTrueCellUntypedViaRole
+-- TypingRoleCoverage (GTL-19 coverage capstone): the exhaustive FIVE-class head-classification of grown-typed
+-- mkGen cells — every typed head is a formation former / intro former / elim former / bespoke gen_var /
+-- bespoke gen_universeCode. Resolves the existential role of subjectHeadHasRoleOrBespoke into the three concrete
+-- TypingRole ctors and reads the head off the mkGen index (rootGenerator = generator by rfl). The exhaustive-
+-- partition coherence headline of the cascade-free extensibility gate (FRAME-2): the 3 rule tables + 2 bespoke
+-- arms cover EVERY typed head, so a new former is one new table row, never a partition change. closed* drops
+-- the gen_var class in the empty context (Fin 0 var payload) → the four-way closed taxonomy.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.headClassificationExhaustive
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedHeadClassificationExhaustive
 
 -- UntypableHeadDecision (GTL-ROLE follow-up): the DECIDABLE cascade-free untypability decision procedure.
 -- isUntypableHead is a pure-syntax Bool — decide (typingRoleOf g = none ∧ g ≠ gen_var ∧ g ≠ gen_universeCode)
