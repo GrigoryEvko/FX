@@ -254,6 +254,7 @@ import FX1Poly.Typed.HasTypeDescDataIntro
 import FX1Poly.Typed.HasTypeDescDataIntroInversion
 import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
 import FX1Poly.Typed.HasTypeDescBaseType
+import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3040,6 +3041,21 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.emptyCodeTyped
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolCode_none
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_emptyCode_none
+-- BASE-TYPE METATHEORY (HasTypeDescBaseTypeMetatheory, #1062 / DI-1b-meta): inversion + determinism + SR/SN,
+-- the DI-4 analogue for the type-FORMER judgment. ★ classifierDetermined = the PROOF the flag-pinning design
+-- works (two derivations of one subject reach the SAME classifier — not just Conv, EQUAL — the determinism a
+-- free flag would have broken); a propext-free corollary of classifierIsType0 (each pins Type@0 independently,
+-- no cases-on-both / mkGen-index unification). subjectIsBaseTypeCode = closed forms (boolTypeCell/emptyTypeCell).
+-- subjectHasNoStep/StronglyNormalizing = type codes are no-step normal-form leaves (isStepNormalForm by rfl).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.inversion
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_isBoolOrEmptyCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectIsBaseTypeCode
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_outputIsType0
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.classifierIsType0
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.classifierDetermined
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectHasNoStep
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectReduction
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectStronglyNormalizing
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
