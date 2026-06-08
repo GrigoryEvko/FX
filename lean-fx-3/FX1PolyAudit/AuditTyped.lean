@@ -226,6 +226,7 @@ import FX1Poly.Typed.ChurchListIsEmpty
 import FX1Poly.Typed.ChurchListAny
 import FX1Poly.Typed.ChurchListAll
 import FX1Poly.Typed.ChurchBooleanComplementLaws
+import FX1Poly.Typed.ChurchBoolXor
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -7271,3 +7272,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.excludedMiddle_true
 #assert_no_axioms FX1Poly.Typed.excludedMiddle_false
 #assert_no_axioms FX1Poly.Typed.churchBooleanComplementLaws
+-- CHURCH XOR (ChurchBoolXor, CHURCH-BOOL-XOR): the exclusive-or, completing the binary Boolean connectives {∧, ∨, ⊕}
+-- and demonstrating the Boolean RING GF(2) (⊕ = addition, ∧ = multiplication). xor a b = (a ∨ b) ∧ ¬(a ∧ b),
+-- defined from the shipped connectives — NO new λ / de Bruijn reshape (a meta-combination like churchListAny=fold or).
+-- The 4-row truth table (false/true/true/false) chains shipped OR/AND/NOT reductions through StepStar.appFunction /
+-- appArgument; xorSelfInverse (b ⊕ b ↝* false) is the GF(2) additive self-inverse x+x=0; xorFalseIdentity
+-- (b ⊕ false ↝* b) is the additive unit x+0=x; xorDiffersFromAnd / xorDiffersFromOr show ⊕ is a genuinely NEW
+-- connective (true⊕true ↝* false while true∧true / true∨true ↝* true), so {∧,∨,⊕} has three distinct members.
+-- Conv discriminations via churchTrue_notConvertible_churchFalse (#983). Raw Step/Conv; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.xorTrueTrue
+#assert_no_axioms FX1Poly.Typed.xorTrueFalse
+#assert_no_axioms FX1Poly.Typed.xorFalseTrue
+#assert_no_axioms FX1Poly.Typed.xorFalseFalse
+#assert_no_axioms FX1Poly.Typed.xorSelfInverse
+#assert_no_axioms FX1Poly.Typed.xorFalseIdentity
+#assert_no_axioms FX1Poly.Typed.xorDiffersFromAnd
+#assert_no_axioms FX1Poly.Typed.xorDiffersFromOr
