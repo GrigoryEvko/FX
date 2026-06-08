@@ -204,6 +204,7 @@ import FX1Poly.Typed.CombinatoryLogic
 import FX1Poly.Typed.CombinatoryCompleteness
 import FX1Poly.Typed.ChurchPairs
 import FX1Poly.Typed.ChurchPairsInjective
+import FX1Poly.Typed.ChurchSums
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -6602,3 +6603,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.pairFst_conv_injective
 #assert_no_axioms FX1Poly.Typed.pairSnd_conv_injective
 #assert_no_axioms FX1Poly.Typed.pair_conv_injective
+-- CHURCH SUMS (ChurchSums): coproducts (Either) in the Π-fragment, dual to Church pairs (#1017), completing the
+-- data-encoding story (bool #981 / nat #989 / products #1017 / SUMS). leftInjection a = λl.λr. l a (left handler,
+-- var 1); rightInjection b = λl.λr. r b (right handler, var 0); a Church sum IS its own eliminator and its tag =
+-- which handler it applies. caseLeft_selectsLeftHandler: case (inl I) l r ↝* l I — outer-binder β discards the
+-- unselected handler r (left injection's body never mentions inner binder), lifted via function-position
+-- Step.cong .gen_app () + StepChildren.here, then inner β recovers handlerL + the stored value through named
+-- subst0-typed weaken_subst_singleton cancellations. caseRight_selectsRightHandler: case (inr I) l r ↝* r I
+-- (dual, discards handlerL). caseSelectsByTag (★): both selections at once — the two injections distinguished
+-- operationally by which handler case fires (the coproduct universal property syntactically). CONCRETE stored
+-- value combinatorI (symbolic payload's weaken²a→weaken a is NOT rfl, needs a weaken/subst commutation lemma —
+-- same deferral as CombinatoryCompleteness SKK / the general S-rule); symbolic-payload generalization deferred.
+#assert_no_axioms FX1Poly.Typed.caseLeft_selectsLeftHandler
+#assert_no_axioms FX1Poly.Typed.caseRight_selectsRightHandler
+#assert_no_axioms FX1Poly.Typed.caseSelectsByTag
