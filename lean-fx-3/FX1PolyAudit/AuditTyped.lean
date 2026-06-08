@@ -30,6 +30,7 @@ import FX1Poly.Typed.HasTypeDescApplication
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescPiEtaCoherence
 import FX1Poly.Typed.HasTypeDescPiEtaExpansionGrown
+import FX1Poly.Typed.HasTypeDescPiEtaExpansionComputes
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.HasTypeDescPiSubstitution
 import FX1Poly.Typed.HasTypeDescPiInversion
@@ -982,6 +983,17 @@ gates pin them shut.
 -- the inverted half still needs grown strengthening. Zero-axiom (same de Bruijn substrate as the formation twin).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaExpansionPreservesTypingGrown
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaCoherenceGrown
+-- TY-ETA-COMPUTES (#1034): the OPERATIONAL content of η on top of forward η typing. etaLamSourceApplication (★):
+-- (etaLamSource f) a ↝β f a for ANY scope/f/a — applying an η-expansion β-steps to applying the original (raw,
+-- via subst0_etaLamSource_body's weaken/var-0 cancellations). etaExpansionTypedAndOperational bundles the static
+-- (typing-preserved) and dynamic (application-preserved) halves into η-coherence. The two Church witnesses make it
+-- concrete: η-expanding churchNumeralLambda n preserves BOTH its Church-Nat type (∘ #1007) AND its computed iterate
+-- f^n x (∘ #1009, one leading admin β-step). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.subst0_etaLamSource_body
+#assert_no_axioms FX1Poly.Typed.Step.etaLamSourceApplication
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaExpansionTypedAndOperational
+#assert_no_axioms FX1Poly.Typed.etaExpandedChurchNumeral_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.etaExpandedChurchNumeral_appliedReducesToIterate
 
 /-! ### Grown-engine renaming/weakening (P6, the cartesian-lift leg) — `HasTypeDescPiWeakening`.
     polycell.md §11.8.5 P6 applied to the grown engine `HasTypeDescPi`: its cartesian-lift
