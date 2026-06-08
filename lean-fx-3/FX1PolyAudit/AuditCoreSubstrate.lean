@@ -261,6 +261,17 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaOptionMatchSome
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaEitherMatchInl
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaEitherMatchInr
+-- The identity-eliminator (idJ/idStrictRec on refl) + recursive Nat-recursor (natElim/natRec on natSucc) iota arms
+-- (KRIPKE-REFLECT-IDREC). Identity: idJ/idStrictRec project the base-case branch past the refl scrutinee (contractum
+-- at child-0, refl value at child-1). Recursive Nat: natElim/natRec on natSucc build a nested app-chain containing a
+-- RECURSIVE call on the predecessor (natElim (natSucc p) z s ↝ app (app s p) (natElim p z s)); the deep
+-- rename-over-(app/app/elim) image collapses to rfl after substituting the recovered predecessor/zero/succ
+-- renamings. Remaining reflection arms after these: the 3-arg recursive listElimCons (same recipe, deeper app
+-- nest), and the recursive cong arm (general congruence — needs the sub-reflection IH — the substantive last piece).
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaIdJRefl
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaIdStrictRecRefl
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaNatElimSucc
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaNatRecSucc
 
 -- The neutral leaf of the stratified ReducibleTypeStep rename-closure (type + member level): the structural
 -- fragment, separate from the Kripke-indexed piType arm (see the StratifiedReducibleTypeRename docstring).

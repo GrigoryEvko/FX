@@ -26,9 +26,11 @@ the wrapped value (constructed `app` contractum + two-level scrutinee injection)
 
 These advance the full `Step` rename-reflection toward Kripke-arrow CR3
 (`KripkeCandidateRenameClosure.lean:63`), the renaming dimension of the dependent-arrow reducibility
-candidate the open-context (Kripke) logical relation requires.  Remaining for the full reflection: the
-recursive ι arms (`natElimSucc` / `natRecSucc` / `listElimCons`), the identity ι arms (`idJRefl` /
-`idStrictRecRefl`), and the recursive `cong` arm (the general congruence case, needs the sub-reflection IH).
+candidate the open-context (Kripke) logical relation requires.  This file ALSO ships the identity-eliminator
+ι arms (`idJRefl` / `idStrictRecRefl`, projection past the `refl` scrutinee) and the recursive Nat-recursor
+ι arms (`natElimSucc` / `natRecSucc`, nested app-chain with a recursive call) below.  Remaining for the full
+reflection: the 3-arg recursive `listElimCons` arm (same recipe, deeper app nest) and the recursive `cong`
+arm (the general congruence case, needs the sub-reflection IH).
 
 ## Zero-axiom verification
 
@@ -340,5 +342,192 @@ theorem Step.reflectIotaEitherMatchInr {sourceScope targetScope : Nat}
                   (.childCons (RawTerm.rename rho rightBranch)
                     (.childCons (RawTerm.rename rho value) .childNil))
                   : RawTerm targetScope) from rfl, rightEq, valueEq]
+
+/-! ## The identity-eliminator ι arms (projection past the `refl` scrutinee)
+
+`idJ` / `idStrictRec` on a `refl` witness project the BASE-CASE branch: `idJ baseCase (refl w) ↝ baseCase`.
+Unlike the data eliminators above, the eliminated value (`refl`) sits at child-1 and the projected
+contractum (`baseCase`) sits at child-0; the `refl` scrutinee is unary (carries the witness) but the
+witness is irrelevant to the contractum, so after recovering the `refl` shape the base-case child's own
+recovered renaming IS the contractum image. -/
+
+/-- **The `idJ`-on-`refl` ι arm of arbitrary-renaming `Step` reflection.**  Reflects the ι-redex `idJ
+renamedBase (refl renamedWitness)` to the source redex `idJ baseCase (refl witness)` projecting its
+base-case branch, recovered with the base-case's own renaming as the contractum image. -/
+theorem Step.reflectIotaIdJRefl {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedBase renamedWitness : RawTerm targetScope}
+    (renameEquation : RawTerm.rename rho term =
+      .mkGen .gen_idJ ()
+        (.childCons renamedBase
+          (.childCons (.mkGen .gen_refl () (.childCons renamedWitness .childNil)) .childNil))) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      Step term sourceReduct ∧ RawTerm.rename rho sourceReduct = renamedBase := by
+  obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
+  subst termEq
+  match payload, children with
+  | (), .childCons baseCase (.childCons reflChild .childNil) =>
+      rw [show RawTerm.rename rho
+            (.mkGen .gen_idJ () (.childCons baseCase (.childCons reflChild .childNil))) =
+            (.mkGen .gen_idJ ()
+              (.childCons (RawTerm.rename rho baseCase)
+                (.childCons (RawTerm.rename rho reflChild) .childNil))
+              : RawTerm targetScope) from rfl] at renameEquation
+      injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
+      injection childrenEq with _ _ _ baseEq tailEq
+      injection tailEq with _ _ _ reflEq _nilEq
+      obtain ⟨_reflPayload, _reflChildren, reflTermEq⟩ := RawTerm.rename_eq_mkGen rho reflEq
+      subst reflTermEq
+      match _reflPayload, _reflChildren with
+      | (), .childCons witness .childNil =>
+          exact ⟨baseCase, Step.iotaIdJRefl, baseEq⟩
+
+/-- **The `idStrictRec`-on-`refl` ι arm of arbitrary-renaming `Step` reflection.**  The strict
+identity-eliminator twin of `reflectIotaIdJRefl` (same arity / projection shape). -/
+theorem Step.reflectIotaIdStrictRecRefl {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedBase renamedWitness : RawTerm targetScope}
+    (renameEquation : RawTerm.rename rho term =
+      .mkGen .gen_idStrictRec ()
+        (.childCons renamedBase
+          (.childCons (.mkGen .gen_refl () (.childCons renamedWitness .childNil)) .childNil))) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      Step term sourceReduct ∧ RawTerm.rename rho sourceReduct = renamedBase := by
+  obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
+  subst termEq
+  match payload, children with
+  | (), .childCons baseCase (.childCons reflChild .childNil) =>
+      rw [show RawTerm.rename rho
+            (.mkGen .gen_idStrictRec () (.childCons baseCase (.childCons reflChild .childNil))) =
+            (.mkGen .gen_idStrictRec ()
+              (.childCons (RawTerm.rename rho baseCase)
+                (.childCons (RawTerm.rename rho reflChild) .childNil))
+              : RawTerm targetScope) from rfl] at renameEquation
+      injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
+      injection childrenEq with _ _ _ baseEq tailEq
+      injection tailEq with _ _ _ reflEq _nilEq
+      obtain ⟨_reflPayload, _reflChildren, reflTermEq⟩ := RawTerm.rename_eq_mkGen rho reflEq
+      subst reflTermEq
+      match _reflPayload, _reflChildren with
+      | (), .childCons witness .childNil =>
+          exact ⟨baseCase, Step.iotaIdStrictRecRefl, baseEq⟩
+
+/-! ## The recursive (step-case) Nat-recursor ι arms
+
+`natElim` / `natRec` on `natSucc predecessor` build a NESTED app-chain containing a RECURSIVE call on the
+predecessor: `natElim (natSucc p) z s ↝ app (app s p) (natElim p z s)`.  The contractum re-uses the
+ELIMINATOR over the predecessor, so the image equation is a deep `rename`-over-(`app`/`app`/`natElim`)
+distribution; after recovering the predecessor (from the unary `natSucc` scrutinee, two-level injection)
+and the zero/succ branches, substituting the three recovered renamings collapses the image to `rfl`. -/
+
+/-- **The `natElim`-on-`natSucc` ι arm of arbitrary-renaming `Step` reflection.**  Reflects the ι-redex
+`natElim (natSucc renamedPred) renamedZero renamedSucc` to the source redex reducing to `app (app
+succBranch predecessor) (natElim predecessor zeroBranch succBranch)`, the contractum recovered by
+substituting the predecessor/zero/succ renamings into the nested-app image (closing by `rfl`). -/
+theorem Step.reflectIotaNatElimSucc {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedPred renamedZero renamedSucc : RawTerm targetScope}
+    (renameEquation : RawTerm.rename rho term =
+      .mkGen .gen_natElim ()
+        (.childCons (.mkGen .gen_natSucc () (.childCons renamedPred .childNil))
+          (.childCons renamedZero (.childCons renamedSucc .childNil)))) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      Step term sourceReduct ∧
+        RawTerm.rename rho sourceReduct =
+          .mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app () (.childCons renamedSucc (.childCons renamedPred .childNil)))
+              (.childCons
+                (.mkGen .gen_natElim ()
+                  (.childCons renamedPred (.childCons renamedZero (.childCons renamedSucc .childNil))))
+                .childNil)) := by
+  obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
+  subst termEq
+  match payload, children with
+  | (), .childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)) =>
+      rw [show RawTerm.rename rho
+            (.mkGen .gen_natElim ()
+              (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)))) =
+            (.mkGen .gen_natElim ()
+              (.childCons (RawTerm.rename rho scrutinee)
+                (.childCons (RawTerm.rename rho zeroBranch)
+                  (.childCons (RawTerm.rename rho succBranch) .childNil)))
+              : RawTerm targetScope) from rfl] at renameEquation
+      injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
+      injection childrenEq with _ _ _ scrutineeEq tailEq
+      injection tailEq with _ _ _ zeroEq tail2Eq
+      injection tail2Eq with _ _ _ succEq _nilEq
+      obtain ⟨_scrutPayload, _scrutChildren, scrutTermEq⟩ := RawTerm.rename_eq_mkGen rho scrutineeEq
+      subst scrutTermEq
+      match _scrutPayload, _scrutChildren with
+      | (), .childCons predecessor .childNil =>
+          rw [show RawTerm.rename rho (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) =
+                (.mkGen .gen_natSucc () (.childCons (RawTerm.rename rho predecessor) .childNil)
+                  : RawTerm targetScope) from rfl] at scrutineeEq
+          injection scrutineeEq with _ _ _ scrutChildrenEq
+          injection scrutChildrenEq with _ _ _ predEq _nilEq2
+          subst predEq; subst zeroEq; subst succEq
+          exact ⟨.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
+                (.childCons
+                  (.mkGen .gen_natElim ()
+                    (.childCons predecessor (.childCons zeroBranch (.childCons succBranch .childNil))))
+                  .childNil)),
+            Step.iotaNatElimSucc, rfl⟩
+
+/-- **The `natRec`-on-`natSucc` ι arm of arbitrary-renaming `Step` reflection.**  The dependent-recursor
+twin of `reflectIotaNatElimSucc` (`gen_natRec` shares `gen_natElim`'s arity and step-case ι shape). -/
+theorem Step.reflectIotaNatRecSucc {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedPred renamedZero renamedSucc : RawTerm targetScope}
+    (renameEquation : RawTerm.rename rho term =
+      .mkGen .gen_natRec ()
+        (.childCons (.mkGen .gen_natSucc () (.childCons renamedPred .childNil))
+          (.childCons renamedZero (.childCons renamedSucc .childNil)))) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      Step term sourceReduct ∧
+        RawTerm.rename rho sourceReduct =
+          .mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app () (.childCons renamedSucc (.childCons renamedPred .childNil)))
+              (.childCons
+                (.mkGen .gen_natRec ()
+                  (.childCons renamedPred (.childCons renamedZero (.childCons renamedSucc .childNil))))
+                .childNil)) := by
+  obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
+  subst termEq
+  match payload, children with
+  | (), .childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)) =>
+      rw [show RawTerm.rename rho
+            (.mkGen .gen_natRec ()
+              (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)))) =
+            (.mkGen .gen_natRec ()
+              (.childCons (RawTerm.rename rho scrutinee)
+                (.childCons (RawTerm.rename rho zeroBranch)
+                  (.childCons (RawTerm.rename rho succBranch) .childNil)))
+              : RawTerm targetScope) from rfl] at renameEquation
+      injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
+      injection childrenEq with _ _ _ scrutineeEq tailEq
+      injection tailEq with _ _ _ zeroEq tail2Eq
+      injection tail2Eq with _ _ _ succEq _nilEq
+      obtain ⟨_scrutPayload, _scrutChildren, scrutTermEq⟩ := RawTerm.rename_eq_mkGen rho scrutineeEq
+      subst scrutTermEq
+      match _scrutPayload, _scrutChildren with
+      | (), .childCons predecessor .childNil =>
+          rw [show RawTerm.rename rho (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) =
+                (.mkGen .gen_natSucc () (.childCons (RawTerm.rename rho predecessor) .childNil)
+                  : RawTerm targetScope) from rfl] at scrutineeEq
+          injection scrutineeEq with _ _ _ scrutChildrenEq
+          injection scrutChildrenEq with _ _ _ predEq _nilEq2
+          subst predEq; subst zeroEq; subst succEq
+          exact ⟨.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
+                (.childCons
+                  (.mkGen .gen_natRec ()
+                    (.childCons predecessor (.childCons zeroBranch (.childCons succBranch .childNil))))
+                  .childNil)),
+            Step.iotaNatRecSucc, rfl⟩
 
 end FX1Poly.Core
