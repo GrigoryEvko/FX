@@ -246,6 +246,7 @@ import FX1Poly.Typed.HasTypeDescFlatValidity
 import FX1Poly.Typed.HasTypeDescFlatFormerInversion
 import FX1Poly.Typed.HasTypeDescDataIntro
 import FX1Poly.Typed.HasTypeDescDataIntroInversion
+import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2890,6 +2891,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.inversion
 #assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_isBoolConstructor
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectIsBoolConstructor
+-- DATA-INTRO SR + SN METATHEORY (HasTypeDescDataIntroMetatheory, DI-4 substantive half). subjectHasNoStep =
+-- the shared substrate: a data-intro subject blocks every Step (it is a bool value -> normal form, via
+-- subjectIsBoolConstructor =def boolIsValue + boolIsValue_impliesStepNormalForm + isStepNormalForm_blocks_step).
+-- subjectReduction = SR (vacuous: a value has no reduct). subjectStronglyNormalizing (★) = SN via
+-- isStronglyNormalizing_of_noStep (a closed data-intro-typed term is a normal-form value — the canonicity fact).
+-- classifierIsBoolTypeCell = the classifier twin of subjectIsBoolConstructor (Option.some.inj recovers the rule).
+-- Weakening/subst are DEGENERATE here (closed variable-free subjects) -> folded into DI-2's open n-ary subjects.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectHasNoStep
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectReduction
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.classifierIsBoolTypeCell
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
