@@ -411,6 +411,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
 import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormerStep
+import FX1Poly.Typed.GenFormerValidityContextConversion
 import FX1Poly.Typed.ConvContextPiValidityModelNeutral
 import FX1Poly.Typed.TypedTypeValidityRelation
 import FX1Poly.Typed.TypedTypeValidityBoxedRelation
@@ -6410,6 +6411,19 @@ gates pin them shut.
 -- (decompose via inversionSigmaCodeComponents at a common flag, transport each via the IHs with the cons-lifted
 -- convContextCondition_cons, re-form via sigmaFormationViaGenArm). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaCodeValidityContextConversionFormerStep
+-- GrownCtxConv-5-GENFORMERSTEP (#1122): the TABLE-GENERIC genFormationPi former step
+-- (GenFormerValidityContextConversion.lean) — ONE theorem covering EVERY genFormationPi type-code former (Π, Σ,
+-- list, option, id, equiv, and any future typingRuleDescOf row), the cascade-free consolidation of the per-former
+-- Π (#1120) and Σ (#1121) steps. convTelescopeFromChildIH: the reusable telescope-validity transport — a grown
+-- premise telescope transports across a pointwise-Conv context conversion GIVEN a scope-polymorphic,
+-- universe-code-PRESERVING per-child IH (each head re-types via the IH, each tail recurses under the cons-lifted
+-- convContextCondition_cons); the validity-rebuild analogue of convTelescopeOfPiElimArm gated on the recursive
+-- type-code IH rather than the general piElimArm. genFormerValidityContextConversion: re-form a genFormationPi
+-- former under the converted target by transporting its premise telescope and re-firing genFormationPi (same
+-- rule.outputType). FRAME-2 cascade-freedom: a new type-code former needs ZERO new context-conversion arms.
+-- Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.convTelescopeFromChildIH
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.genFormerValidityContextConversion
 -- GrownCtxConv-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
 -- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
 -- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
