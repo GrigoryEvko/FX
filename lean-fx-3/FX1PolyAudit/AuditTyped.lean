@@ -191,6 +191,7 @@ import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.TypedChurchBooleans
 import FX1Poly.Typed.TypedChurchNumerals
 import FX1Poly.Typed.TypedChurchNumeralIteration
+import FX1Poly.Typed.TypedChurchNumeralDiscrimination
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
@@ -2113,6 +2114,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchTwo_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.churchTwo_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.churchTwo_appliedReducesToIterate
+-- TypedChurchNumeralDiscrimination (CHURCH-NAT-DISCRIM): the Church numerals are FAITHFULLY DISTINCT —
+-- churchOne ≢ churchTwo — the Nat analogue of churchTrue ≢ churchFalse (#983). Via the COMPUTATIONAL route, not
+-- a de Bruijn payload inspection: applied to Type@0/Type@0/Type@1 the numerals reduce (the shipped
+-- churchOne/Two_appliedReducesToIterate) to the distinct iterates f x = app(Type@0,Type@1) vs f (f x) =
+-- app(Type@0, app(Type@0,Type@1)); churchOneIterate_notConvertible_churchTwoIterate proves those non-convertible
+-- (both no-step normal forms via isStepNormalForm_blocks_step on a decide'd normality + Conv.iff_eq_of_noStep +
+-- decide — the iterates differ at their SECOND child, distinct root generators, so decide never compares Fin
+-- indices, keeping it propext-free). churchOne_notConvertible_churchTwo (★) then forces a contradiction via
+-- Conv.app_cong ×3 + the two iteration reductions. So the encoding distinguishes the iteration COUNT 1 from 2.
+#assert_no_axioms FX1Poly.Typed.churchOneIterate_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.churchTwoIterate_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.churchOneIterate_notConvertible_churchTwoIterate
+#assert_no_axioms FX1Poly.Typed.churchOne_notConvertible_churchTwo
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
