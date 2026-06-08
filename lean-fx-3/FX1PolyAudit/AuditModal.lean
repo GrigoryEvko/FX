@@ -34,6 +34,7 @@ import FX1Poly.Modal.SessionCommunication
 import FX1Poly.Modal.SelfApplicationUntypable
 import FX1Poly.Modal.GradedProgress
 import FX1Poly.Modal.GradedEvaluation
+import FX1Poly.Modal.VersionCategoryDimension
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -1042,3 +1043,24 @@ programs evaluate — generic over every dimension. -/
 #assert_no_axioms FX1Poly.Modal.hasGradeOver_reducesStarPreservation
 #assert_no_axioms FX1Poly.Modal.closedReducesToLam
 #assert_no_axioms FX1Poly.Modal.usageLinearIdentity_reducesToLam
+
+/-! ### Version dimension — the first CATEGORY-structured dimension (§6.3 Tier V / §15)
+
+Version labels + total migration adapters form a genuine category: composition + identity + the
+category laws (`Migration.compose_assoc`/`identity_compose`/`compose_identity`), `refines` as the induced
+reachability preorder, the §14.1 UserApi v1→v2→v3 chain, the §14.2 add/remove retraction pair, and
+non-thin hom-sets (proof-relevant adapters).  The first dimension whose grades carry composable morphism
+DATA, not a bare order. -/
+
+#assert_no_axioms FX1Poly.Modal.Migration.identity
+#assert_no_axioms FX1Poly.Modal.Migration.compose
+#assert_no_axioms FX1Poly.Modal.Migration.identity_compose
+#assert_no_axioms FX1Poly.Modal.Migration.compose_identity
+#assert_no_axioms FX1Poly.Modal.Migration.compose_assoc
+#assert_no_axioms FX1Poly.Modal.migrateAddField
+#assert_no_axioms FX1Poly.Modal.migrateUserV1toV3_apply
+#assert_no_axioms FX1Poly.Modal.Refines.refl
+#assert_no_axioms FX1Poly.Modal.Refines.trans
+#assert_no_axioms FX1Poly.Modal.userApiV3_refines_v1
+#assert_no_axioms FX1Poly.Modal.migrateDropField_addField
+#assert_no_axioms FX1Poly.Modal.migrateAddField_injective_inDefault
