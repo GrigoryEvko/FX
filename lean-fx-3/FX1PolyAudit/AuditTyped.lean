@@ -245,6 +245,7 @@ import FX1Poly.Typed.HasTypeDescFlatSubstitution
 import FX1Poly.Typed.HasTypeDescFlatValidity
 import FX1Poly.Typed.HasTypeDescFlatFormerInversion
 import FX1Poly.Typed.HasTypeDescDataIntro
+import FX1Poly.Typed.HasTypeDescDataIntroInversion
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -2880,6 +2881,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.boolTrueTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.boolFalseTyped
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolTrue_none
+-- DATA-INTRO INVERSION + BOOL CANONICAL FORMS (HasTypeDescDataIntroInversion, DI-1/DI-4 inversion slice). The
+-- twin of HasTypeDescFlatInversion: inversion = single-arm cases (nullaryIntro context is the auto-index, binds 5);
+-- dataIntroNullaryRuleDescOf_isBoolConstructor = the table holds exactly boolTrue/boolFalse. subjectIsBoolConstructor
+-- (★) = the closed-canonical-forms content CANON-1 (link-4) consumes: a data-intro-typed subject IS boolTrueCell or
+-- boolFalseCell (combined with SN+SR -> closed t:boolCode reduces to a bool value). Cell normalization: cases payload
+-- (Unit -> ()) + cases children (RawTermChildren [] -> childNil), rfl each branch. Refines as DI-2/DI-3 add ctors.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.inversion
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_isBoolConstructor
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectIsBoolConstructor
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
