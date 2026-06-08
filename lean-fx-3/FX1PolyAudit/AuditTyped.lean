@@ -227,6 +227,7 @@ import FX1Poly.Typed.ChurchListAny
 import FX1Poly.Typed.ChurchListAll
 import FX1Poly.Typed.ChurchBooleanComplementLaws
 import FX1Poly.Typed.ChurchBoolXor
+import FX1Poly.Typed.ChurchListFirstOr
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -7288,3 +7289,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.xorFalseIdentity
 #assert_no_axioms FX1Poly.Typed.xorDiffersFromAnd
 #assert_no_axioms FX1Poly.Typed.xorDiffersFromOr
+-- CHURCH LIST FIRSTOR (ChurchListFirstOr, CHURCH-LIST-FIRSTOR): the head accessor — the first list op that PROJECTS
+-- a stored ELEMENT out (returns data, not a derived boolean). firstOr d list = fold (λh.λrest. h) d list — the
+-- cons-handler returns its FIRST bound argument (head) and DISCARDS the second (tail-fold). firstOrHandler_returnsHead
+-- is the new handler shape (projection): β1 reshape is rfl (lift-on-head-index computes to weaken head), outer β cancels
+-- the single weaken (forward rw at the hypothesis to avoid over-rewriting the free head). firstOrNil/ConsNil/ConsConsNil
+-- compute via foldNil/Singleton/Cons; ConsConsNil is the HEAD-STRICT short-circuit (returns the head WITHOUT reducing
+-- the tail). firstOrSeesHead: ¬Conv firstOr[true,x] firstOr[false,x] — separates by HEAD at equal length (where any/all
+-- inspect all elements). firstOrDefaultIsFallback: the default fires on nil, a cons overrides it. Discriminations via
+-- churchTrue_notConvertible_churchFalse (#983). Raw Step/Conv; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.firstOrHandlerInnerSubst
+#assert_no_axioms FX1Poly.Typed.firstOrHandler_returnsHead
+#assert_no_axioms FX1Poly.Typed.firstOrNil
+#assert_no_axioms FX1Poly.Typed.firstOrConsNil
+#assert_no_axioms FX1Poly.Typed.firstOrConsConsNil
+#assert_no_axioms FX1Poly.Typed.firstOrSeesHead
+#assert_no_axioms FX1Poly.Typed.firstOrDefaultIsFallback
