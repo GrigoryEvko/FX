@@ -223,6 +223,7 @@ import FX1Poly.Typed.ChurchSumsDisjoint
 import FX1Poly.Typed.ChurchSumsGeneral
 import FX1Poly.Typed.ChurchLists
 import FX1Poly.Typed.ChurchListIsEmpty
+import FX1Poly.Typed.ChurchListAny
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -7226,3 +7227,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.isEmptyNil
 #assert_no_axioms FX1Poly.Typed.isEmptyConsNil
 #assert_no_axioms FX1Poly.Typed.isEmptyDistinguishes
+-- CHURCH LIST ANY (ChurchListAny, CHURCH-LIST-ANY): the disjunction fold any list = fold or false list — "does the
+-- list contain a true?", the existential quantifier over a boolean list. Unlike isEmpty (constant handler, sees only
+-- SHAPE), the cons-handler is the shipped churchOrLambda (#1056) applied directly, so any inspects element VALUES.
+-- anyNil: any nil ↝* false (foldNil). anyConsTrueNil (★): any [true] ↝* true (foldSingleton + churchOr_trueAnything).
+-- anyConsFalseNil: any [false] ↝* false (foldSingleton + churchOr_falseAnything). anyConsFalseConsTrueNil (★): any
+-- [false,true] ↝* true — the RECURSIVE disjunction at depth 2 (foldCons + StepStar.appArgument-lifted inner fold +
+-- churchOr_falseAnything; false ∨ (true ∨ false) = true). anyDistinguishesByContent (★): ¬ Conv (any [true]) (any
+-- [false]) — same SHAPE, different CONTENT, distinguished (else true ≡ false, refuted by #983). No new de Bruijn
+-- reshape — chains the shipped fold lemmas + shipped OR reductions. Raw Step/Conv; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.anyNil
+#assert_no_axioms FX1Poly.Typed.anyConsTrueNil
+#assert_no_axioms FX1Poly.Typed.anyConsFalseNil
+#assert_no_axioms FX1Poly.Typed.anyConsFalseConsTrueNil
+#assert_no_axioms FX1Poly.Typed.anyDistinguishesByContent
