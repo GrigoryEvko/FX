@@ -196,6 +196,7 @@ import FX1Poly.Typed.TypedChurchNumeralThree
 import FX1Poly.Typed.TypedChurchNumeralFaithful
 import FX1Poly.Typed.TypedChurchNumeralTyping
 import FX1Poly.Typed.TypedChurchNumeralInhabitants
+import FX1Poly.Typed.TypedChurchNumeralComputeGeneral
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.CurryFixpointDivergence
@@ -2203,6 +2204,21 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.subst_iteratedApplication
 #assert_no_axioms FX1Poly.Typed.rename_iteratedApplication
 #assert_no_axioms FX1Poly.Typed.churchNatType_hasInfinitelyManyDistinctInhabitants
+-- CHURCH-NAT-COMPUTE-GENERAL (TypedChurchNumeralComputeGeneral, #1009 — NO LONGER DEFERRED): the general
+-- iteration computation. ★ churchNumeral_appliedReducesToIterate_general: ∀ n, ANY closed typeA/handlerF/baseX,
+-- (churchNumeralLambda n) typeA handlerF baseX ↝* iteratedApplication n handlerF baseX (= f^n x) — the iterator
+-- iterates its step n times over its base, for an ARBITRARY step+base (subsumes the concrete churchOne/Two/Three
+-- fixtures). THREE β-steps, each contractum reshaped via the shipped subst_iteratedApplication (#1008): R1
+-- churchNumeral_substType (A-binder discard, A unused), R2 churchNumeral_substStep (f-subst → weaken handlerF), R3
+-- iteratedApplication_subst0_weaken_step (the symbolic HEART: subst0 ((weaken f)^n var0) base = f^n base via
+-- weaken_subst_singleton + innermost-var). KEY CORRECTION: NO double-weaken (each bound var weakened ≤ once), so it
+-- is pure ASSEMBLY over shipped subst metatheory — NOT the "multi-lemma de Bruijn wall" the task was deferred as.
+-- iteratedApplication_subst0_weaken_step is the reusable symbolic-heart reshape. All rfl-after-subst_iterated
+-- Application / weaken_subst_singleton; zero-axiom.
+#assert_no_axioms FX1Poly.Typed.iteratedApplication_subst0_weaken_step
+#assert_no_axioms FX1Poly.Typed.churchNumeral_substType
+#assert_no_axioms FX1Poly.Typed.churchNumeral_substStep
+#assert_no_axioms FX1Poly.Typed.churchNumeral_appliedReducesToIterate_general
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
