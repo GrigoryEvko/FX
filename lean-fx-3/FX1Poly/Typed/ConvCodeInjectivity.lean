@@ -197,6 +197,43 @@ theorem Conv.sigmaTyCode_iff {scope : Nat}
   ⟨Conv.sigmaTyCode_inj,
     fun ⟨domainConv, codomainConv⟩ => Conv.sigmaTyCode_cong domainConv codomainConv⟩
 
+/-- **`Conv` to a Π-code ⟹ `StepStar`-reduction to a Π-code with convertible components.**  A subject
+convertible to a `piTyCodeCell` itself `StepStar`-reduces to a `piTyCodeCell` whose two components are
+`Conv` to the originals: the shared common reduct (the `Join` witness inside `Conv`) is `piTyCode`-headed
+by head-stability, and the subject reduces TO that reduct.  This is the SR / context-conversion ingredient
+that recovers a concrete Π-type SHAPE from a conv-disguised classifier — e.g. when a function's classifier
+is known only up to `Conv` (`Conv functionClassifier (piTyCodeCell domain codomain)`) and the eliminator
+needs an honest `piTyCodeCell` to fire (flip with `Conv.sym` first).  SN-free, like the injectivity. -/
+theorem Conv.reducesToPiTyCode {scope : Nat}
+    {subject : RawTerm scope} {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (convertibility : Conv subject (piTyCodeCell domain codomain)) :
+    ∃ (domainReduct : RawTerm scope) (codomainReduct : RawTerm (scope + 1)),
+      StepStar subject (piTyCodeCell domainReduct codomainReduct) ∧
+      Conv domain domainReduct ∧ Conv codomain codomainReduct := by
+  obtain ⟨_commonReduct, subjectChain, piChain⟩ := convertibility
+  obtain ⟨domainReduct, codomainReduct, commonEq, domainStar, codomainStar⟩ :=
+    StepStar.shapeStable_piTyCode piChain
+  refine ⟨domainReduct, codomainReduct, ?_, ?_, ?_⟩
+  · rw [commonEq] at subjectChain; exact subjectChain
+  · exact ⟨domainReduct, domainStar, StepStar.refl _⟩
+  · exact ⟨codomainReduct, codomainStar, StepStar.refl _⟩
+
+/-- **`Conv` to a Σ-code ⟹ `StepStar`-reduction to a Σ-code with convertible components** — the Σ dual of
+`Conv.reducesToPiTyCode`. -/
+theorem Conv.reducesToSigmaTyCode {scope : Nat}
+    {subject : RawTerm scope} {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (convertibility : Conv subject (sigmaTyCodeCell domain codomain)) :
+    ∃ (domainReduct : RawTerm scope) (codomainReduct : RawTerm (scope + 1)),
+      StepStar subject (sigmaTyCodeCell domainReduct codomainReduct) ∧
+      Conv domain domainReduct ∧ Conv codomain codomainReduct := by
+  obtain ⟨_commonReduct, subjectChain, sigmaChain⟩ := convertibility
+  obtain ⟨domainReduct, codomainReduct, commonEq, domainStar, codomainStar⟩ :=
+    StepStar.shapeStable_sigmaTyCode sigmaChain
+  refine ⟨domainReduct, codomainReduct, ?_, ?_, ?_⟩
+  · rw [commonEq] at subjectChain; exact subjectChain
+  · exact ⟨domainReduct, domainStar, StepStar.refl _⟩
+  · exact ⟨codomainReduct, codomainStar, StepStar.refl _⟩
+
 /-! ## Type-code DISJOINTNESS (rigidity): distinct type formers are non-convertible.
 
 The companion to injectivity — together they give full type-code RIGIDITY, the canonicity

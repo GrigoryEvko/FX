@@ -1120,6 +1120,11 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_cong
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_iff
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_iff
+-- Conv-to-former REDUCTION corollaries: a subject Conv to a Π/Σ-code StepStar-reduces to that former with
+-- Conv-related components (the GCC-5 / context-conversion ingredient that recovers an honest piTyCode shape
+-- from a conv-disguised classifier; Join-unpack + shapeStable, SN-free).
+#assert_no_axioms FX1Poly.Typed.Conv.reducesToPiTyCode
+#assert_no_axioms FX1Poly.Typed.Conv.reducesToSigmaTyCode
 -- FLAT (non-dependent, binary) twin: the same SN-free Conv structural characterization for the five flat
 -- data type-code formers — arrow/product/sum/either/equiv (the [0,0]-binderShift formers HasTypeDescFlat
 -- types). Both children at the SAME scope (no binder), so lighter than Π/Σ. Per former: head-stability +
