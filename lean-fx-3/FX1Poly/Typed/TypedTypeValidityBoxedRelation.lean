@@ -179,4 +179,39 @@ theorem piTypeViaSnCodFamily {profile : PolyProfile} {scope : Nat}
       (KripkeCandBox.mk (kripkeArrowDep domainBox.run snKripkeCodFamily)) :=
   TypedTypeValidityBoxed.piType snKripkeCodFamily domainValid codomainValid validity
 
+/-! ## Transport across context conversion — the neutral arm, and the architectural finding
+
+The release-blocking residual is discharged by `soundness ∘ transport ∘ completeness`, where `transport` is
+context conversion ON the relation: `TypedTypeValidityBoxed src T box → (pointwise Conv src tgt) →
+TypedTypeValidityBoxed tgt T box`.  The SEMANTIC side (the candidate `box`) transports for FREE — it is the
+SAME box in source and target (it is determined by the type code's structure, NOT the context; `snKripkeCand`
+for neutrals is rename/context-INVARIANT, #1108).  So the only cross-context obligation is the TYPING witness.
+
+★ ARCHITECTURAL FINDING (durable, the honest verdict on the black-box-validity design): the `neutral` arm
+carries `validity : IsTypeDescPi src T` as a BLACK BOX, so transporting it is exactly the grown context-
+conversion of `T` — and for a NEUTRAL APPLICATION `(var f)(var a)` used as a type, that IS `GCC-5` (#842), the
+open crux.  Hence the black-box-validity LR (this design, #1110) RE-PACKAGES `GCC-5` rather than dissolving it:
+its neutral transport reduces to the typing transport.  To genuinely DISCHARGE `GCC-5`, the neutral arm must
+RECONSTRUCT the typing from the neutral's STRUCTURE (the var-headed spine) under a WELL-FORMED CONTEXT (each
+context entry itself LR-valid), à la Abel reflection — so a neutral app's typing re-derives compositionally
+from the looked-up function-variable type (which transports by the var rule + the pointwise-`Conv` leaf) plus
+`piElim` reassembly, NOT from a carried black box.  That well-formed-context-indexed LR (with derived, not
+carried, validity) is the genuine architectural next step; `piTypeViaSnCodFamily`'s structural sub-derivations
+already show the Π case derives its validity from parts (so the Π case is NOT the obstruction — the neutral-app
+case is). -/
+
+/-- **The neutral arm of context-conversion transport.**  A neutral type code valid in the TARGET context is
+in the relation at the target carrying the SAME candidate (`snKripkeCand`) — the candidate is context-
+INVARIANT (#1108), so the neutral-arm transport's SOLE obligation is the target typing `targetValid` (the
+grown context-conversion of the typing witness).  For a neutral APPLICATION subject that target typing is
+`GCC-5` (#842) itself; for a bare variable it is the shipped `GCC-1` (#838) var arm.  Makes explicit that the
+semantic side of context conversion is free and isolates the residual to the typing transport (see the
+architectural finding above). -/
+theorem TypedTypeValidityBoxed.transportNeutralArm {profile : PolyProfile} {scope : Nat}
+    {targetContext : TypingContext profile scope} {typeCode : RawTerm scope}
+    (neutralCode : IsNeutral typeCode)
+    (targetValid : IsTypeDescPi profile targetContext typeCode) :
+    TypedTypeValidityBoxed profile targetContext typeCode (KripkeCandBox.mk snKripkeCand) :=
+  TypedTypeValidityBoxed.neutral neutralCode targetValid
+
 end FX1Poly.Typed

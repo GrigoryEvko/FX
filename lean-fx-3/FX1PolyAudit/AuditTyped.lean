@@ -6408,6 +6408,15 @@ gates pin them shut.
 -- reserved for member-level canonicity, OFF the GCC-5 critical path. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.snKripkeCodFamily_transport_pointwise
 #assert_no_axioms FX1Poly.Typed.piTypeViaSnCodFamily
+-- TYPED-LR-TRANSPORT-NEUTRAL: the neutral arm of context-conversion transport on TypedTypeValidityBoxed. The
+-- candidate (snKripkeCand) is context-INVARIANT (#1108), so the neutral-arm transport's SOLE obligation is the
+-- target typing targetValid (the semantic side is free). ★ ARCHITECTURAL FINDING: the neutral arm carries
+-- validity as a BLACK BOX, so transporting it for a NEUTRAL APP (var f)(var a) IS GCC-5 (#842) — the black-box
+-- LR RE-PACKAGES GCC-5, not dissolves it. Genuine discharge needs DERIVED (not carried) validity: a well-formed-
+-- context-indexed LR where a neutral app's typing reconstructs from the looked-up function-var type (var rule +
+-- pointwise-Conv leaf) + piElim reassembly (Abel reflection). The Π case already derives validity from parts
+-- (piTypeViaSnCodFamily), so the neutral-APP case is the sole obstruction. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.transportNeutralArm
 
 -- GCC-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
 -- Reduction.lean, GCC-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
