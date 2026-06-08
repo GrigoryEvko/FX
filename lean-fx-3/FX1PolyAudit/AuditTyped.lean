@@ -265,6 +265,7 @@ import FX1Poly.Typed.ProductEitherCanonicalForms
 import FX1Poly.Typed.HasTypeDescBoolElim
 import FX1Poly.Typed.HasTypeDescEitherMatch
 import FX1Poly.Typed.HasTypeDescOptionIntro
+import FX1Poly.Typed.HasTypeDescOptionMatch
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3183,6 +3184,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherMatch.subjectIsEitherMatch
 #assert_no_axioms FX1Poly.Typed.eitherMatchInlIotaComputesTyped
 #assert_no_axioms FX1Poly.Typed.eitherMatchInrIotaComputesTyped
+-- OPTION ELIMINATOR + the FIRST MIXED-ι typed computation (HasTypeDescOptionMatch, DI-5c): optionMatch is the
+-- first eliminator whose two ι rules have DIFFERENT shapes — optionMatch(optionNone,n,sm) ↝ n is branch-SELECTION
+-- (boolElim shape, the None branch n is a VALUE at C); optionMatch(optionSome(v),n,sm) ↝ app(sm,v) is APP-CHAIN
+-- (eitherMatch shape, the Some branch sm is a FUNCTION A→C). So the judgment carries a value branch (n:C) AND a
+-- function branch (sm at piTyCodeCell A (weaken C)), scrutinee:option(A) via the option-intro engine (DI-2c).
+-- subjectIsOptionMatch = free-index inversion. ★ optionMatchNoneIotaComputesTyped = the branch-selection typed ι
+-- (reduct IS the selected value branch; needs the element-type-formedness witness for the optionNone scrutinee);
+-- ★ optionMatchSomeIotaComputesTyped = the app-chain typed ι (reduct app(sm,v):C via piElim + the (weaken C).subst0
+-- v → C collapse). Constructor-side, so SR-free + propext-free (full branch-congruence SR GCC-5-deferred). ONE
+-- eliminator now demonstrates BOTH ι shapes typed-and-computing. Advances DI-5 #1047 (third eliminator brick).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionMatch.subjectIsOptionMatch
+#assert_no_axioms FX1Poly.Typed.optionMatchNoneIotaComputesTyped
+#assert_no_axioms FX1Poly.Typed.optionMatchSomeIotaComputesTyped
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
