@@ -228,6 +228,7 @@ import FX1Poly.Typed.ChurchListAll
 import FX1Poly.Typed.ChurchBooleanComplementLaws
 import FX1Poly.Typed.ChurchBoolXor
 import FX1Poly.Typed.ChurchListFirstOr
+import FX1Poly.Typed.ChurchSucc
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -7305,3 +7306,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.firstOrConsConsNil
 #assert_no_axioms FX1Poly.Typed.firstOrSeesHead
 #assert_no_axioms FX1Poly.Typed.firstOrDefaultIsFallback
+-- CHURCH SUCC (ChurchSucc, CHURCH-SUCC): the Church successor churchSucc = λn.λA.λf.λx. f (n A f x) — the missing
+-- successor operation on the shipped numerals (#1007/#1009), foundational for numeral-valued computations (a future
+-- length : ChurchList → ChurchNat folds with succ). This increment ships the CONSTRUCTOR + value + first β-step:
+-- churchSucc_isStepNormalForm (closed value, by decide); succ_step1_reshape (n-binder subst computes by rfl);
+-- churchSucc_betaUnfold (churchSucc n ↝ λA.λf.λx. f ((weaken³ n) A f x), the single β exposing the successor
+-- abstraction). The fully-applied iteration churchSucc n A f x ↝* f (n A f x) needs the weaken-tower cancellation
+-- (weaken³ n → weaken² n → … across the 3 inner β-steps, NOT rfl) and is the next increment. Raw Step; zero-axiom.
+#assert_no_axioms FX1Poly.Typed.churchSucc
+#assert_no_axioms FX1Poly.Typed.succ_step1_reshape
+#assert_no_axioms FX1Poly.Typed.churchSucc_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.churchSucc_betaUnfold
