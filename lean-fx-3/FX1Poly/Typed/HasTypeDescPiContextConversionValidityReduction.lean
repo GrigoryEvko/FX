@@ -1,6 +1,8 @@
 import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Core.ConvSubstRename
+import FX1Poly.Typed.HasTypeDescSubjectReduction
+import FX1Poly.Typed.IsTypeDesc
 
 /-! # FX1Poly/Typed/HasTypeDescPiContextConversionValidityReduction
     — the SECOND piElim-arm reduction: to `TypeCodeValidityRespectsReduction` (GCC-5-VALRED, toward #842)
@@ -140,5 +142,42 @@ theorem HasTypeDescPi.piElimArmFromValidityRespectsReduction {profile : PolyProf
     validityRespectsReduction flexValid flexReducesToPi
   exact HasTypeDescPi.reassembleApplicationFromConvEqualPiValidity functionConverted argumentConverted
     convDomainReduct convCodomainReduct piReductValid
+
+/-! ## The formation base of the residual (UNCONDITIONAL)
+
+`TypeCodeValidityRespectsReduction` is genuinely open for the GROWN engine (the type-level-computation
+fragment).  But the FORMATION engine satisfies it UNCONDITIONALLY — because the formation subject reduction
+`HasTypeDesc.subjectReduction` PRESERVES the classifier and is itself unconditional (its telescope arm re-types a
+former's codomain under a stepped domain binder via the UNCONDITIONAL formation context-conversion
+`convTelescope` — exactly the move the grown engine cannot make, which is why GCC-5 is open).  So validity
+survives reduction for free on the formation-typed fragment, precisely localizing the genuinely-open residual to
+the genuinely-grown (type-level-computing) type codes. -/
+
+/-- **Formation validity survives reduction — UNCONDITIONALLY.**  If `subjectType` is a formation type
+(`IsTypeDesc`) and it reduces to `reductType`, then `reductType` is a formation type.  `HasTypeDesc.subjectReduction`
+preserves the universe classifier at each step, iterated along the `StepStar` chain. -/
+theorem IsTypeDesc.respectsReductionStar {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subjectType reductType : RawTerm scope}
+    (isType : IsTypeDesc profile context subjectType)
+    (reduces : StepStar subjectType reductType) :
+    IsTypeDesc profile context reductType := by
+  induction reduces with
+  | refl _ => exact isType
+  | trans firstStep _restChain restIH =>
+      obtain ⟨levelExpr, flag, subjectTyped⟩ := isType
+      exact restIH ⟨levelExpr, flag, HasTypeDesc.subjectReduction subjectTyped _ firstStep⟩
+
+/-- **The grown corollary: `TypeCodeValidityRespectsReduction` for formation-typed subjects.**  A formation-typed
+type code that reduces stays GROWN-valid (`IsTypeDescPi`): `IsTypeDesc.respectsReductionStar` re-types the reduct
+in the formation engine, then `ofFormation` lifts it to the grown engine.  This discharges the grown residual on
+the formation fragment; only the genuinely-grown (type-level-computing) type codes remain — the logical-relation
+obligation. -/
+theorem HasTypeDescPi.validityRespectsReductionOfFormation {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subjectType reductType : RawTerm scope}
+    (isType : IsTypeDesc profile context subjectType)
+    (reduces : StepStar subjectType reductType) :
+    IsTypeDescPi profile context reductType := by
+  obtain ⟨levelExpr, flag, reductTyped⟩ := IsTypeDesc.respectsReductionStar isType reduces
+  exact ⟨levelExpr, flag, HasTypeDescPi.ofFormation reductTyped⟩
 
 end FX1Poly.Typed

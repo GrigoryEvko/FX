@@ -6335,6 +6335,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.reassembleApplicationFromConvEqualPiValidity
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimArmFromValidityRespectsReduction
 
+-- GCC-5 formation BASE of the validity-respects-reduction residual (same file, GCC-5-FORMBASE, toward #842).
+-- IsTypeDesc.respectsReductionStar: formation type validity survives reduction UNCONDITIONALLY -- HasTypeDesc
+-- .subjectReduction preserves the universe classifier and is itself unconditional (its telescope arm re-types a
+-- former's codomain under a stepped domain binder via the UNCONDITIONAL formation convTelescope, the exact move the
+-- grown engine cannot make = why GCC-5 is open), iterated along StepStar. validityRespectsReductionOfFormation: the
+-- grown corollary (formation-typed type code, S⤳*T ⟹ grown IsTypeDescPi T, via ofFormation). This discharges the
+-- grown residual TypeCodeValidityRespectsReduction (#1094) on the FORMATION fragment for free, precisely localizing
+-- the genuinely-open part to the type-level-computing (genuinely-grown) type codes -- the logical-relation
+-- obligation. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.IsTypeDesc.respectsReductionStar
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.validityRespectsReductionOfFormation
+
 -- Conv-KEEPING Π/Σ-code former inversion (HasTypeDescPiFormerInversion.lean, the former head for the SR cong arm
 -- #458). inversionPiCodeComponents drops the classifier Conv (its telescope workhorse discards _convToCode/_converts),
 -- which suffices for output validity but NOT for re-assembling piTyCodeCell domainCode' codomainCode at the ORIGINAL
