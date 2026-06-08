@@ -192,6 +192,7 @@ import FX1Poly.Typed.TypedChurchBooleans
 import FX1Poly.Typed.TypedChurchNumerals
 import FX1Poly.Typed.TypedChurchNumeralIteration
 import FX1Poly.Typed.TypedChurchNumeralDiscrimination
+import FX1Poly.Typed.TypedChurchNumeralThree
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
@@ -2127,6 +2128,23 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchTwoIterate_isStepNormalForm
 #assert_no_axioms FX1Poly.Typed.churchOneIterate_notConvertible_churchTwoIterate
 #assert_no_axioms FX1Poly.Typed.churchOne_notConvertible_churchTwo
+-- TypedChurchNumeralThree (CHURCH-NAT-3): the third numeral + the {1,2,3} pairwise-non-convertibility
+-- ANTICHAIN. churchThree = λA.λf.λx. f (f (f x)) typed at the Church Nat type via a TRIPLE-nested piElim (clone
+-- of churchTwo's double nesting, the outer f applied to the churchTwo body); SN via SN-043; its iterate
+-- reduction three A f x ↝* f (f (f x)) is the same 3-β peel as one/two. churchOne/Two_notConvertible_churchThree
+-- by the firing-119 iterate route (the iterates f x / f (f x) / f (f (f x)) are pairwise distinct no-step normal
+-- forms — they bottom out in Type@1 vs an application, distinct root generators, so decide is propext-free).
+-- churchNumerals_oneTwoThree_pairwiseNotConvertible (★) bundles the 3-antichain — a concrete sample of the
+-- general faithfulness (ℕ injects into the term model up to Conv).
+#assert_no_axioms FX1Poly.Typed.churchThree_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.churchThree_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.churchThreeIterate_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.churchThree_appliedReducesToIterate
+#assert_no_axioms FX1Poly.Typed.churchOneIterate_notConvertible_churchThreeIterate
+#assert_no_axioms FX1Poly.Typed.churchTwoIterate_notConvertible_churchThreeIterate
+#assert_no_axioms FX1Poly.Typed.churchOne_notConvertible_churchThree
+#assert_no_axioms FX1Poly.Typed.churchTwo_notConvertible_churchThree
+#assert_no_axioms FX1Poly.Typed.churchNumerals_oneTwoThree_pairwiseNotConvertible
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
