@@ -410,6 +410,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionWf
 import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
 import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
+import FX1Poly.Typed.ConvContextPreservesPiValidityFormerStep
 import FX1Poly.Typed.ConvContextPiValidityModelNeutral
 import FX1Poly.Typed.TypedTypeValidityRelation
 import FX1Poly.Typed.TypedTypeValidityBoxedRelation
@@ -6387,6 +6388,20 @@ gates pin them shut.
 -- bounded reducibility model is closed-substitution-based, unfit; reflection fails at the neutral base). No further
 -- syntactic fragment to peel. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextPreservesPiValidityForFormationCode
+-- GrownCtxConv-5-FORMERSTEP (#1120): the Π-FORMER recursion step of the residual — its inductive ENGINE, between the
+-- formation base (#1099 above) and the var-headed neutral leaf (#1119). ConvContextPreservesPiValidityFormerStep.lean.
+-- piCodeValidityContextConversionFormerStep: given the universe-code-PRESERVING context conversions of the domain
+-- (at sourceContext) and codomain (at sourceContext.cons domainCode) type-codes — the structural IHs — a Π domainCode
+-- codomainCode's grown validity transports across any pointwise-Conv context conversion: inversionPiCodeComponents
+-- Unconditional decomposes the source Π-validity into its component universe-typings (at a COMMON flag), the IHs
+-- transport each (the codomain under the cons-lifted condition convContextCondition_cons, PRESERVING that common
+-- flag — essential since piFormationViaGenArm needs the domain+codomain flags to match), and piFormationViaGenArm
+-- re-forms the Π-code validity under the target. "Semantic types are Conv-closed by construction" made concrete for
+-- the Π-former: the validity is REBUILT from its transported parts, never carried as a black box. With the base
+-- (#1099), this engine, and the var-spine leaf (#1119) in place, the residual's genuinely-open core is precisely the
+-- APP-HEADED neutral leaf (arbitrary-term argument → general-term context conversion = the GTL-20 mutual bundle).
+-- Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piCodeValidityContextConversionFormerStep
 -- GrownCtxConv-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
 -- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
 -- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
