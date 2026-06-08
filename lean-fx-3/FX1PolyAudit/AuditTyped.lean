@@ -199,6 +199,7 @@ import FX1Poly.Typed.TypedChurchNumeralInhabitants
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.CurryFixpointDivergence
+import FX1Poly.Typed.CurryFixpointCombinator
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -6540,3 +6541,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.curryOmega_step
 #assert_no_axioms FX1Poly.Typed.curryDivergentSequence_steps
 #assert_no_axioms FX1Poly.Typed.curryOmega_notStronglyNormalizing
+-- CURRY Y COMBINATOR (CurryFixpointCombinator): the actual fixpoint combinator fix = λf. (λx. f(xx))(λx. f(xx))
+-- on the curryOmega substrate (#1013). fixCombinator_applied_step: appCell fix g ↝ Ω_g via Step.beta — the
+-- UNDER-BINDER subst0 fixInnerHalf g = curryHalf g computes by RFL (the lifted singleton sends inner de Bruijn 1
+-- to weaken g; verified empirically, no lemma needed). fixCombinator_reducesToUnfolding: fix g ↝* g(Ω_g) (2 steps).
+-- fixCombinator_isFixpoint (★): Conv (fix g) (g (fix g)) — the DEFINING fixpoint equation, both sides reduce to the
+-- common g(Ω_g) (Conv.fromStepStar + trans/sym; right side = 1 argument-congruence Step.cong .gen_app () via
+-- StepChildren.there/here). fixCombinator_applied_notStronglyNormalizing: fix g diverges via Acc.inv (SN = Acc of
+-- the REVERSED step, so a reduct of an SN term is SN) against #1013. The untyped FX calculus has general recursion
+-- (Turing-complete) and every fix g diverges — exactly why typing is indispensable for SN-043 (#546).
+#assert_no_axioms FX1Poly.Typed.fixCombinator_applied_step
+#assert_no_axioms FX1Poly.Typed.fixCombinator_reducesToUnfolding
+#assert_no_axioms FX1Poly.Typed.fixCombinator_isFixpoint
+#assert_no_axioms FX1Poly.Typed.fixCombinator_applied_notStronglyNormalizing
