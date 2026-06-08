@@ -193,6 +193,7 @@ import FX1Poly.Typed.TypedChurchNumerals
 import FX1Poly.Typed.TypedChurchNumeralIteration
 import FX1Poly.Typed.TypedChurchNumeralDiscrimination
 import FX1Poly.Typed.TypedChurchNumeralThree
+import FX1Poly.Typed.TypedChurchNumeralFaithful
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
@@ -2145,6 +2146,28 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchOne_notConvertible_churchThree
 #assert_no_axioms FX1Poly.Typed.churchTwo_notConvertible_churchThree
 #assert_no_axioms FX1Poly.Typed.churchNumerals_oneTwoThree_pairwiseNotConvertible
+-- TypedChurchNumeralFaithful (CHURCH-NAT-FAITHFUL-GENERAL): ★ the GENERAL faithfulness — ℕ injects into the FX
+-- term model up to Conv. iteratedApplication n stepFn base = f^n base; churchNumeralLambda n = λA.λf.λx. f^n x.
+-- churchNumeralLambda_notConvertible_of_ne (★): ∀ m≠n, churchNumeral m ≢ churchNumeral n — uniform in n, no
+-- per-numeral case work. ROUTE = the structural SIZE measure (avoids the de-Bruijn-payload decide + childCons
+-- drilling): iteratedApplication_isStepNormalForm (a var-headed app is not a β-redex, appCell NF eqn is rfl) ⟹
+-- churchNumeralLambda_isStepNormalForm (every numeral is a closed normal form); iteratedApplication_size_var
+-- (size = 4n+1, each app adds 4 nodes) ⟹ churchNumeralLambda_size (4n+7); churchNumeralLambda_injective (size
+-- injective via Nat.succ.inj ×7 to strip +7 — Nat.add_right_cancel LEAKS propext, avoided — + Nat.eq_of_mul_eq_
+-- mul_left, both clean). The headline = Conv.iff_eq_of_noStep on the two normal forms + injectivity. The general
+-- construction defeq-specializes to the concrete numerals (churchNumeralLambda_{one,two,three}_eq = rfl), so it
+-- SUBSUMES the {1,2,3} antichain (churchNumerals_pairwiseNotConvertible_general).
+#assert_no_axioms FX1Poly.Typed.iteratedApplication_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.iteratedApplication_size_var
+#assert_no_axioms FX1Poly.Typed.lamCell_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.churchNumeralLambda_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.churchNumeralLambda_size
+#assert_no_axioms FX1Poly.Typed.churchNumeralLambda_injective
+#assert_no_axioms FX1Poly.Typed.churchNumeralLambda_notConvertible_of_ne
+#assert_no_axioms FX1Poly.Typed.churchNumeralLambda_one_eq
+#assert_no_axioms FX1Poly.Typed.churchNumeralLambda_two_eq
+#assert_no_axioms FX1Poly.Typed.churchNumeralLambda_three_eq
+#assert_no_axioms FX1Poly.Typed.churchNumerals_pairwiseNotConvertible_general
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
