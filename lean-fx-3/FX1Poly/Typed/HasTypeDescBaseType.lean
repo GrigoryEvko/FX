@@ -1,0 +1,132 @@
+import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Typed.CellConstructors
+
+/-! # FX1Poly/Typed/HasTypeDescBaseType — the standalone NULLARY base-type formation judgment
+    (`Bool : Type@0` / `Empty : Type@0`, with the universe flag PINNED by the rule).
+
+The dependent type-formers (`piTyCode` / `sigmaTyCode` / `listCode` / `optionCode`) are typed at a
+universe through the generic `genFormation` arm over `typingRuleDescOf`, whose `universeFormerOutput`
+row sends a former to `universeCodeCell (lmaxAll levels) flag` — the universe FLAG is a free parameter
+of `genFormation` that, for a ≥1-child former, is PINNED by the telescope's head child.  A NULLARY
+type-former (`boolCode` / `emptyCode`, `binderShifts = []`) has NO head child, so routing it through
+`genFormation` would leave its flag free — `genFormation` could type `boolCode` at `Type@0(standard)`
+AND `Type@0(strict)`, two non-`Conv` classifiers, BREAKING `HasTypeDesc.uniqueness` (and, for
+`emptyCode`, contradicting `HasTypeDescPi.emptyTypeCellHasNoTyping`, the refutation the SN-050
+consistency proof relies on).  This is the future branch flagged at `HasTypeDesc.lean:281-283`:
+"a nullary former's flag must be pinned by the formation RULE itself."
+
+This file ships that as the established cascade-free standalone pattern (mirroring `HasTypeDescFlat`
+and `HasTypeDescDataIntro`): a brand-new judgment `HasTypeDescBaseType` — NOT mutual with, NOT an arm
+of, `HasTypeDescPi` — that types each nullary base type-code at a FIXED universe code through the
+table `baseTypeRuleDescOf`.  Because the table FIXES the output (`Type@0(standard)`) with no free flag
+parameter, the flag is pinned by construction: there is no uniqueness ambiguity, and the grown engine's
+data-head refutations stay true (this is a different judgment about a different relation).
+
+## What this gives
+
+  * `Bool : Type@0` — the FORMATION half of bool canonicity (the type whose closed members the
+    `boolCanonicalFormsCandidate` / `HasTypeDescDataIntro` value side ranges over).
+  * `Empty : Type@0` — the FORMATION half of SN-050 (`Empty` IS a type — its NON-VACUITY), concretizing
+    `NullaryFormerFormation`'s parametric `hasTypeDescPi_nullaryFormation_viaGenArm` along the route that
+    does NOT collide with the consistency refutation.  Together with SN-050 (no closed inhabitant in the
+    grown engine) this is the complete "`Empty` is an uninhabited type" story.
+
+The n-ary / recursive type-code formers keep going through their own engines; this judgment's rows are
+exactly the childless (nullary) base type-codes.
+
+## Zero-axiom
+
+`baseTypeRuleDescOf` is a pure-syntax `Option` table (metadata lemmas `rfl` on the diagonal); the
+inductive is a single positive arm; the smokes are direct `baseFormation` applications with `rfl` table
+lookups; the partition witnesses are `rfl`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
+-/
+
+namespace FX1Poly.Typed
+
+open FX1Poly.Core FX1Poly.Universe
+
+/-- A formation-rule description for a NULLARY base type-former: the FIXED output universe code (a
+function of the scope), with the universe flag pinned INSIDE the description — `boolCode` and `emptyCode`
+both output `Type@0(standard)`.  Pure syntax (no `HasTypeDescPi`), strictly positive, mirroring
+`TypingRuleDesc` / `DataIntroNullaryRuleDesc`. -/
+structure BaseTypeRuleDesc where
+  outputUniverse : (scope : Nat) → RawTerm scope
+
+/-- The per-generator NULLARY base-type formation table.  Its rows are exactly the childless type-code
+formers (`binderShifts = []`); `boolCode` and `emptyCode` both form a member of `Type@0(standard)` — the
+flag is FIXED here, never a free parameter, so the formation is flag-deterministic.  A future nullary
+base type code (a `unit` type code, once it lands) is ONE more row, never a new arm. -/
+def baseTypeRuleDescOf (generator : Generator) : Option BaseTypeRuleDesc :=
+  if generator = .gen_boolCode then
+    some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
+  else if generator = .gen_emptyCode then
+    some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
+  else none
+
+/-- `gen_boolCode` forms a member of `Type@0(standard)` (metadata check, `rfl` on the diagonal). -/
+theorem baseTypeRuleDescOf_boolCode :
+    baseTypeRuleDescOf .gen_boolCode
+      = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
+  rfl
+
+/-- `gen_emptyCode` forms a member of `Type@0(standard)` (metadata check). -/
+theorem baseTypeRuleDescOf_emptyCode :
+    baseTypeRuleDescOf .gen_emptyCode
+      = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
+  rfl
+
+/-- **The nullary base-type formation judgment.**  A standalone layer (NOT mutual with / NOT an arm of
+`HasTypeDescPi`, mirroring `HasTypeDescFlat` / `HasTypeDescDataIntro`) typing the nullary base type-codes
+at their FIXED universe code.  The single arm: a childless former in `baseTypeRuleDescOf` forms a member
+of its tabled (flag-pinned) output universe — no premise telescope (there are no children).  Because the
+table fixes the flag, the formation is flag-DETERMINISTIC by construction. -/
+inductive HasTypeDescBaseType (profile : PolyProfile) :
+    {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
+  | baseFormation {scope : Nat} (context : TypingContext profile scope)
+      (generator : Generator) (payload : generator.payload scope)
+      (children : RawTermChildren generator.binderShifts scope)
+      (rule : BaseTypeRuleDesc)
+      (isBaseType : baseTypeRuleDescOf generator = some rule) :
+      HasTypeDescBaseType profile context (.mkGen generator payload children)
+        (rule.outputUniverse scope)
+
+/-- **★ `Bool : Type@0` in the base-type engine.**  The bool TYPE code is formed at `Type@0(standard)` —
+the formation half of bool canonicity (the type whose closed members the data-intro value side, `boolTrue`
+/ `boolFalse : boolCode`, ranges over).  The flag is pinned by the rule, so there is no uniqueness
+ambiguity (the obstruction that blocked routing `boolCode` through the generic `genFormation` arm). -/
+theorem HasTypeDescBaseType.boolCodeTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeDescBaseType profile context boolTypeCell
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
+  HasTypeDescBaseType.baseFormation context .gen_boolCode () .childNil
+    { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl
+
+/-- **★ `Empty : Type@0` in the base-type engine.**  The empty TYPE code is formed at `Type@0(standard)`
+— the formation half of SN-050 (`Empty` IS a type; its NON-VACUITY).  This is the standalone-judgment
+concretization of `NullaryFormerFormation`'s parametric target, taking the route that does NOT collide
+with `HasTypeDescPi.emptyTypeCellHasNoTyping` (the grown-engine refutation the consistency PROOF
+consumes): typing `Empty` here is a different relation from the grown engine, so consistency stays
+intact.  `Empty : Type@0` (here) + no closed grown inhabitant (SN-050) = the uninhabited-type story. -/
+theorem HasTypeDescBaseType.emptyCodeTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeDescBaseType profile context emptyTypeCell
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
+  HasTypeDescBaseType.baseFormation context .gen_emptyCode () .childNil
+    { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl
+
+/-- **Partition witness: `boolCode` is NOT a generic formation former.**  `typingRuleDescOf gen_boolCode
+= none` (the bool type code carries NO generic `genFormation` row — it is a nullary base type formed by
+THIS judgment, not the ≥1-child generic engine), so the base-type judgment's domain is disjoint from the
+generic formation table.  The base-type judgment is the engine that forms `boolCode`. -/
+theorem typingRuleDescOf_boolCode_none :
+    typingRuleDescOf .gen_boolCode = none := rfl
+
+/-- **Partition witness: `emptyCode` is NOT a generic formation former.**  `typingRuleDescOf gen_emptyCode
+= none` — `emptyCode`'s generic-engine row is DELIBERATELY absent (adding it would let `genFormation` type
+`emptyTypeCell` at a universe, contradicting `HasTypeDescPi.emptyTypeCellHasNoTyping` and breaking SN-050).
+`Empty`'s type-ness lives in the standalone base-type judgment instead. -/
+theorem typingRuleDescOf_emptyCode_none :
+    typingRuleDescOf .gen_emptyCode = none := rfl
+
+end FX1Poly.Typed

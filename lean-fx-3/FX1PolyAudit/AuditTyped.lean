@@ -253,6 +253,7 @@ import FX1Poly.Typed.HasTypeDescFlatFormerInversion
 import FX1Poly.Typed.HasTypeDescDataIntro
 import FX1Poly.Typed.HasTypeDescDataIntroInversion
 import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
+import FX1Poly.Typed.HasTypeDescBaseType
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3024,6 +3025,21 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.classifierIsBoolTypeCell
+-- BASE-TYPE FORMATION ENGINE (HasTypeDescBaseType, #1061 / DI-1b-flagpin): the standalone NULLARY type-FORMER
+-- judgment, the FORMATION twin of HasTypeDescDataIntro (which types the VALUES). A new relation (not an arm of
+-- HasTypeDescPi), so the grown-engine refutations stay true. The single baseFormation arm + baseTypeRuleDescOf
+-- table (boolCode/emptyCode -> Type@0(standard)) PINS the universe flag IN the rule — the fix for the obstruction
+-- that blocked routing nullary formers through the generic genFormation arm (a free flag breaks uniqueness, and
+-- for emptyCode contradicts emptyTypeCellHasNoTyping / SN-050). boolCodeTyped = Bool:Type@0 (bool-canonicity
+-- formation half); emptyCodeTyped = Empty:Type@0 (SN-050 formation half / non-vacuity, the standalone-route
+-- concretization of NullaryFormerFormation's parametric target). The typingRuleDescOf_*_none partition witnesses
+-- document that the generic table deliberately excludes these (emptyCode's exclusion KEEPS consistency). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_boolCode
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_emptyCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.boolCodeTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.emptyCodeTyped
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolCode_none
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_emptyCode_none
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
