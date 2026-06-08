@@ -2,6 +2,10 @@ import FX1Poly.Core.StratifiedReducibleType
 import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StepRename
+import FX1Poly.Core.StepRenameReflectAssembly
+import FX1Poly.Core.NeutralTermRename
+import FX1Poly.Core.StepInversion
+import FX1Poly.Core.ReducibilityCandidateArrow
 
 /-! # Foundation/PolyCell/Core/KripkeCandidateRenameClosure
     — Kripke-indexed reducibility candidates make arrow rename-closure DEFINITIONAL
@@ -54,15 +58,17 @@ Kripke arrow, (3) re-indexing `ReducibleTypeStep` / `ReducibleTypeAt` over Kripk
 fundamental theorem.  This seed proves the KEY enabling fact — that Kripke-indexing trivializes
 rename-closure — so step (3)'s `piType` rename arm discharges definitionally rather than hitting the wall.
 
-## Scope: the non-dependent arrow, paused at CR3
+## Scope: the non-dependent arrow CR bundle COMPLETE (CR1/CR2/CR3)
 
 Shipped + gated, all zero-axiom: rename-closure (`Iff.rfl`), presheaf functoriality, the dependent Kripke
 arrow, CR1 (`kripkeArrow_stronglyNormalizing` / `kripkeArrowDep_stronglyNormalizing`), CR2
-(`kripkeArrow_forwardStep` / `kripkeArrowDep_forwardStep`), and the CR3 prerequisite `IsNeutral.rename`
-(`NeutralTermRename.lean`).  The remaining property — CR3 (neutral backward closure, Girard's hard arrow
-case) — needs a full-`Step` rename-reflection-with-image
-`Step (rename ρ f) h → ∃ f', Step f f' ∧ rename ρ f' = h` for the neutral-head case, which in turn needs
-free-variable Step-monotonicity plus a rename-respects-used-positions lemma — a multi-lemma sub-effort.
+(`kripkeArrow_forwardStep` / `kripkeArrowDep_forwardStep`), and now CR3 — the neutral backward closure
+(Girard's hard arrow case) — for the non-dependent arrow, `kripkeArrow_neutralBackwardClosure` below.  CR3
+was the PAUSED brick: it needs the full-`Step` rename-reflection-with-image
+`Step (rename ρ f) h → ∃ f', Step f f' ∧ rename ρ f' = h` for the neutral-head case, which is now shipped as
+`Step.reflectRename` (`StepRenameReflectAssembly.lean`).  With it, the non-dependent Kripke arrow's
+reducibility-candidate bundle is complete.  The DEPENDENT-arrow CR3 (`kripkeArrowDep`) is deferred — its
+argument-dependent codomain family needs an extra family-coherence hypothesis across argument steps.
 
 Per the CALIBRATION above, completing CR3 unblocks nothing downstream (whole-relation strong normalization
 is gated on the SEPARATE fuel-stability premise, and the env-based fundamental-theorem route sidesteps it).
@@ -297,5 +303,106 @@ theorem kripkeArrowDep_forwardStep {scope : Nat}
   exact codomainClosedUnderStep _ argument
     (membership furtherRenaming argument domainMember)
     (appFunctionCongStep (Step.rename furtherRenaming functionStep))
+
+/-! ## CR3 for the Kripke arrow — neutral backward closure (Girard's hard arrow case)
+
+The third reducibility-candidate property: a NEUTRAL function term whose every one-step `Step`-reduct is
+already in the arrow is itself in the arrow.  This was the PAUSED brick — it needs the full arbitrary-renaming
+`Step` reflection-with-image `Step (rename ρ f) h → ∃ f', Step f f' ∧ rename ρ f' = h`
+(`Step.reflectRename`, `StepRenameReflectAssembly.lean`) for the neutral-head case, now shipped.
+
+The classical Tait/Girard argument, run under the Kripke index: to show `app (rename furtherRenaming
+functionTerm) argument` lands in the codomain at the composite index, observe the application is NEUTRAL
+(`IsNeutral.app` of the renamed neutral head, `IsNeutral.rename`), so codomain-CR3 reduces it to: every
+`Step`-reduct of the application is in the codomain.  `Step.from_app` splits those reducts three ways — β
+(impossible: a neutral head is never a λ, `IsNeutral.not_lam`), a HEAD step, or an ARGUMENT step:
+
+  * **Head step** `app N argument ↝ app N' argument` with `Step N N'` (`N = rename furtherRenaming
+    functionTerm`): `Step.reflectRename furtherRenaming` pulls the renamed-head step back to a source step
+    `Step functionTerm sourceReduct` with `rename furtherRenaming sourceReduct = N'`; the all-reducts
+    hypothesis puts `sourceReduct` in the arrow, whose membership applied at `furtherRenaming` / `argument`
+    lands `app N' argument` in the codomain.  THIS is the use of the reflection.
+  * **Argument step** `app N argument ↝ app N argument'` with `Step argument argument'`: an inner
+    accessibility (Tait) induction on the argument's strong normalization — the argument is SN by domain-CR1,
+    `argument'` stays in the domain by domain-CR2, and the inner IH lands `app N argument'` in the codomain.
+
+This COMPLETES the non-dependent Kripke arrow's reducibility-candidate bundle (CR1 `kripkeArrow_stronglyNormalizing`,
+CR2 `kripkeArrow_forwardStep`, CR3 here) — a self-contained construction.  Per the CALIBRATION at the top of
+this file it does not by itself unblock whole-relation strong normalization (that is gated on the separate
+fuel-stability premise, and the env-based fundamental-theorem route sidesteps candidate rename-closure); it is
+a prerequisite ingredient for the open-context (Kripke) logical relation that the `GCC-5` (#842)
+context-conversion `piElim` residual requires.  The DEPENDENT-arrow CR3 (`kripkeArrowDep`) is deferred: its
+argument-dependent codomain family needs an extra family-coherence hypothesis across argument steps.
+
+The hypotheses are explicit (matching CR1/CR2's style) rather than packaged as a `KripkeCand`-is-a-candidate
+bundle: domain members are strongly normalizing (CR1), the domain is `Step`-closed (CR2), the codomain has its
+own neutral backward closure (CR3), all at the composite index, plus the all-reducts-in-arrow premise. -/
+
+/-- **CR3 for the non-dependent Kripke arrow** — neutral backward closure.  A neutral `functionTerm` all of
+whose `Step`-reducts are in the arrow at `indexRenaming` is itself in the arrow at `indexRenaming`, given the
+domain's CR1 (members strongly normalizing) and CR2 (`Step`-closure) and the codomain's own CR3, all at the
+composite index.  The head-step case consumes `Step.reflectRename`; the argument-step case runs the inner Tait
+accessibility induction on the (domain-CR1) strongly-normalizing argument. -/
+theorem kripkeArrow_neutralBackwardClosure {scope : Nat}
+    {domainCandidate codomainCandidate : KripkeCand scope}
+    {targetScope : Nat} {indexRenaming : RawRenaming scope targetScope}
+    {functionTerm : RawTerm targetScope}
+    (functionNeutral : IsNeutral functionTerm)
+    (domainMembersStronglyNormalizing :
+      ∀ {argScope : Nat} (furtherRenaming : RawRenaming targetScope argScope)
+        (argument : RawTerm argScope),
+        domainCandidate (RawRenaming.compose indexRenaming furtherRenaming) argument →
+          IsStronglyNormalizing argument)
+    (domainClosedUnderStep :
+      ∀ {argScope : Nat} (furtherRenaming : RawRenaming targetScope argScope)
+        {argument argument' : RawTerm argScope},
+        domainCandidate (RawRenaming.compose indexRenaming furtherRenaming) argument →
+          Step argument argument' →
+            domainCandidate (RawRenaming.compose indexRenaming furtherRenaming) argument')
+    (codomainNeutralBackwardClosure :
+      ∀ {argScope : Nat} (furtherRenaming : RawRenaming targetScope argScope)
+        (neutralTerm : RawTerm argScope),
+        IsNeutral neutralTerm →
+        (∀ reduct : RawTerm argScope, Step neutralTerm reduct →
+            codomainCandidate (RawRenaming.compose indexRenaming furtherRenaming) reduct) →
+          codomainCandidate (RawRenaming.compose indexRenaming furtherRenaming) neutralTerm)
+    (reductsInArrow :
+      ∀ functionReduct : RawTerm targetScope, Step functionTerm functionReduct →
+        kripkeArrow domainCandidate codomainCandidate indexRenaming functionReduct) :
+    kripkeArrow domainCandidate codomainCandidate indexRenaming functionTerm := by
+  intro argScope furtherRenaming argument domainMember
+  have renamedFunctionNeutral : IsNeutral (RawTerm.rename furtherRenaming functionTerm) :=
+    IsNeutral.rename furtherRenaming functionNeutral
+  suffices general :
+      ∀ {currentArgument : RawTerm argScope}, Acc StepSuccessor currentArgument →
+        domainCandidate (RawRenaming.compose indexRenaming furtherRenaming) currentArgument →
+          codomainCandidate (RawRenaming.compose indexRenaming furtherRenaming)
+            (.mkGen .gen_app ()
+              (.childCons (RawTerm.rename furtherRenaming functionTerm)
+                (.childCons currentArgument .childNil))) from
+    general (domainMembersStronglyNormalizing furtherRenaming argument domainMember) domainMember
+  intro currentArgument argumentAccessible
+  induction argumentAccessible with
+  | intro argumentFocus _argumentPredecessors argumentInductiveHypothesis =>
+      intro argumentFocusMember
+      refine codomainNeutralBackwardClosure furtherRenaming
+        (.mkGen .gen_app ()
+          (.childCons (RawTerm.rename furtherRenaming functionTerm)
+            (.childCons argumentFocus .childNil)))
+        (IsNeutral.app renamedFunctionNeutral) ?_
+      intro reduct reductionStep
+      rcases Step.from_app reductionStep with
+        ⟨_body, functionEqualsLam, _targetEq⟩ |
+        ⟨functionAfter, reductEquals, functionStep⟩ |
+        ⟨argumentAfter, reductEquals, argumentStep⟩
+      · exact (IsNeutral.not_lam (functionEqualsLam ▸ renamedFunctionNeutral)).elim
+      · obtain ⟨sourceReduct, sourceStep, renameEquation⟩ :=
+          Step.reflectRename furtherRenaming functionStep
+        rw [reductEquals, ← renameEquation]
+        exact reductsInArrow sourceReduct sourceStep furtherRenaming argumentFocus
+          argumentFocusMember
+      · rw [reductEquals]
+        exact argumentInductiveHypothesis argumentAfter argumentStep
+          (domainClosedUnderStep furtherRenaming argumentFocusMember argumentStep)
 
 end FX1Poly.Core

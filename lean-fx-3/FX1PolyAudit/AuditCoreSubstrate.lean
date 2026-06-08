@@ -405,6 +405,14 @@ per-decl list.  It also re-checks the native infra under
 -- CR2 for the Kripke arrow (non-dependent + dependent): forward Step closure.
 #assert_no_axioms FX1Poly.Core.kripkeArrow_forwardStep
 #assert_no_axioms FX1Poly.Core.kripkeArrowDep_forwardStep
+-- CR3 for the non-dependent Kripke arrow: Girard neutral backward closure — the PAUSED brick, now unblocked
+-- by the full arbitrary-renaming Step reflection-with-image (Step.reflectRename, StepRenameReflectAssembly).
+-- A neutral function all of whose Step-reducts are in the arrow is in the arrow: app of neutral head is
+-- neutral, codomain-CR3 closes it, head-steps reflect via Step.reflectRename + the all-reducts hypothesis,
+-- arg-steps run the inner Tait accessibility induction on the domain-CR1 strongly-normalizing argument. This
+-- COMPLETES the non-dependent Kripke arrow CR bundle (CR1/CR2/CR3) — a prerequisite ingredient for the open
+-- Kripke logical relation that the GCC-5 (#842) context-conversion piElim residual requires.
+#assert_no_axioms FX1Poly.Core.kripkeArrow_neutralBackwardClosure
 -- CR3 structural ingredient: neutrality is preserved by renaming (needed so the applied fresh-var head
 -- `rename furtherRenaming functionTerm` stays neutral in the Kripke arrow's neutral backward closure).
 #assert_no_axioms FX1Poly.Core.IsNeutral.rename
