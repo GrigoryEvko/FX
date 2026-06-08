@@ -271,6 +271,7 @@ import FX1Poly.Typed.HasTypeDescSigmaProjection
 import FX1Poly.Typed.HasTypeDescIdIntro
 import FX1Poly.Typed.HasTypeDescIdElim
 import FX1Poly.Typed.HasTypeDescListIntro
+import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3256,6 +3257,21 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.listConsOfUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.subjectIsListConstructor
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.classifierIsList
+-- LIST CANONICAL FORMS (ListCanonicalForms, the DI-2e payoff): NON-VACUOUS closed-normal list canonical forms — a
+-- closed-normal term typed at List(A) by the list-intro engine OR the grown engine is nil/cons. Like option/bool
+-- (and unlike product/either FLAT-table codes), gen_listCode is a FORMATION-table former (typingRuleDescOf, GTL-11),
+-- so the rule-outs use the FORMATION substrate: listCode_not_universeCode = head-stable(shapeStable_listCodeGeneral)-
+-- vs-leaf(universe) rigidity (one-child twin of optionCode_not_universeCode); listCode_not_piTyCode = the within-
+-- formation-table rigidity (formationFormersNotConvOfDistinct, gen_listCode≠gen_piTyCode). noClosedNormalTermAtList
+-- Type = the CANON-1c grown rule-out instance. closedNormalListCanonicalForms = the headline (list-intro disjunct
+-- via subjectIsListConstructor, grown ruled out). NOTE: the list ELIMINATOR (listElim) typed-ι is GCC-5-class blocked
+-- — its cons-ι reduct app(app(app(consBranch,h),t), listElim(t,...)) applies consBranch to the TAIL t (a list value)
+-- and the RECURSIVE listElim (elim-engine-typed), NEITHER grown-typed, so piElim can't type them (recursive
+-- eliminators are engine-separation-blocked, unlike the non-recursive ones). Full canonicity needs master SR / #842.
+#assert_no_axioms FX1Poly.Typed.Conv.listCode_not_universeCode
+#assert_no_axioms FX1Poly.Typed.Conv.listCode_not_piTyCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtListType
+#assert_no_axioms FX1Poly.Typed.closedNormalListCanonicalForms
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
