@@ -199,6 +199,7 @@ import FX1Poly.Typed.TypedChurchNumeralInhabitants
 import FX1Poly.Typed.TypedChurchNumeralComputeGeneral
 import FX1Poly.Typed.TypedChurchNumeralAddition
 import FX1Poly.Typed.TypedChurchNumeralMultiplication
+import FX1Poly.Typed.TypedChurchNumeralSemiringLaws
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.CurryFixpointDivergence
@@ -2241,6 +2242,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchMultiplicationStepIterate
 #assert_no_axioms FX1Poly.Typed.churchMultiplicationBodyComputes
 #assert_no_axioms FX1Poly.Typed.churchTwoTimesThreeComputes
+-- CHURCH-SEMIRING-LAWS (#1031): the algebraic capstone (§16.6) — the Church-encoded +/× satisfy the commutative-
+-- semiring AXIOMS up to definitional equality (Conv = StepStar.Join). Each law = ⟨commonIterate, leftComputes,
+-- natLaw ▸ rightComputes⟩: both operation-bodies reduce (via #1029/#1030/#1009) to a common iterate, equated by
+-- the corresponding Nat law (add_comm/add_assoc/mul_comm/mul_one/mul_add, all propext-free). Seven axioms:
+-- add comm/assoc/zero-identity, mul comm/one-identity/zero-annihilation, ★ left-distributivity. With #1006
+-- (numerals distinct) this is the FULL "Church encoding ⊨ commutative semiring (ℕ,+,·,0,1)" both ways.
+#assert_no_axioms FX1Poly.Typed.churchAdditionCommutes
+#assert_no_axioms FX1Poly.Typed.churchAdditionAssociates
+#assert_no_axioms FX1Poly.Typed.churchAddZeroIsIdentity
+#assert_no_axioms FX1Poly.Typed.churchMultiplicationCommutes
+#assert_no_axioms FX1Poly.Typed.churchMulOneIsIdentity
+#assert_no_axioms FX1Poly.Typed.churchMulZeroAnnihilates
+#assert_no_axioms FX1Poly.Typed.churchMultiplicationDistributesOverAddition
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
