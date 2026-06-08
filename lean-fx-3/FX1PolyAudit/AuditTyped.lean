@@ -403,6 +403,7 @@ import FX1Poly.Typed.HasTypeDescPiFormerCongruence
 import FX1Poly.Typed.HasTypeDescContextConversion
 import FX1Poly.Typed.HasTypeDescPiContextConversion
 import FX1Poly.Typed.HasTypeDescPiContextConversionConditional
+import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
@@ -6285,6 +6286,21 @@ gates pin them shut.
 -- the grown telescope context-conversion (GCC-3) the grown telescope SR consumes ⟹ SRD-2 ⟹ unconditional SN-055.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextOfPiElimArm
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.convTelescopeOfPiElimArm
+
+-- GCC-5 piElim arm REDUCED to one pure type-formation residual (HasTypeDescPiContextConversionPiElimReduction
+-- .lean, GCC-5-REASSEMBLY, toward #842). reassembleApplicationUnderContextConversion: the piElim arm's reassembly
+-- (rebuild appCell function argument under the target at a Conv-equal classifier) follows from the function-IH
+-- output, the argument-IH output, and the SINGLE residual piValidityTarget : IsTypeDescPi tgt (Π D C) — NO
+-- WfContextDescPi tgt, because that one Π-validity supplies BOTH the conv reclassifier for the function AND
+-- (via inversionPiCodeComponentsUnconditional) the domain typing for the argument. ConvContextPreservesPiValidity
+-- NAMES the residual (a Π-type-code's validity is context-conversion-stable — pure type-formation, no elimination).
+-- piElimArmFromPiValidityTransfer: under that residual + WfContextDescPi src (master-SR-threaded) + the convContext
+-- IH, the full GCC-5 arm holds (classifierIsTypeDescPi/WFG-3 → residual transfer → reassembly). FINDING: the
+-- residual itself is NOT discharged — it context-converts a Π-validity derivation that classifierIsTypeDescPi can
+-- make TALLER (non-structural), and master SR is gated on the same arm (circular), so closure is the mutual
+-- fundamental-metatheory bundle (GTL-20) or the semantic route. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.reassembleApplicationUnderContextConversion
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimArmFromPiValidityTransfer
 
 -- Conv-KEEPING Π/Σ-code former inversion (HasTypeDescPiFormerInversion.lean, the former head for the SR cong arm
 -- #458). inversionPiCodeComponents drops the classifier Conv (its telescope workhorse discards _convToCode/_converts),
