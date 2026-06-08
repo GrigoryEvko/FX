@@ -2,6 +2,8 @@ import FX1PolyAudit.FX0CrossCheckCertified
 import FX1Poly.Typed.TypedChurchBooleans
 import FX1Poly.Typed.TypedChurchNumerals
 import FX1Poly.Typed.TypedChurchNumeralIteration
+import FX1Poly.Typed.TypedChurchNumeralTyping
+import FX1Poly.Typed.TypedLambdaDerivations
 
 /-!
 # FX1PolyAudit/FX0CrossCheckCorpus — the FX0 cross-check on the kernel's flagship CERTIFIED typed terms (FX0-PC.8)
@@ -39,11 +41,12 @@ namespace FX1Poly.FX0CrossCheck
 
 open FX1Poly.Core (RawTerm PolyProfile)
 open FX1Poly.FX0Bridge (encodeCell)
-open FX1Poly.Typed (lamCell appCell variableCell HasTypeDescPi WfContextDesc churchTrueLambda
-  churchFalseLambda churchTrue_hasTypeDescPi churchFalse_hasTypeDescPi churchOne_hasTypeDescPi
-  churchTwo_hasTypeDescPi)
+open FX1Poly.Typed (lamCell appCell variableCell piTyCodeCell universeCodeCell HasTypeDescPi WfContextDesc
+  churchTrueLambda churchFalseLambda churchTrue_hasTypeDescPi churchFalse_hasTypeDescPi
+  churchOne_hasTypeDescPi churchTwo_hasTypeDescPi churchNumeralLambda churchNumeralLambda_hasTypeDescPi
+  polymorphicIdentity_hasTypeDescPi churchNatType_formation)
 open FX1Poly.Core.StepStar (IsStronglyNormalizing)
-open FX1Poly.Universe (UniverseFlag)
+open FX1Poly.Universe (UniverseFlag LevelExpr)
 
 /-- The Church-numeral-one subject `λA.λf.λx. f x` (mirrors `churchOne_hasTypeDescPi`'s subject). -/
 abbrev churchOneSubject : RawTerm 0 :=
@@ -89,5 +92,49 @@ theorem externalVerify_accepts_churchTwo {profile : PolyProfile} :
       ∧ IsStronglyNormalizing churchTwoSubject :=
   externalVerify_accepts_certified WfContextDesc.emptyIsWellFormed
     (churchTwo_hasTypeDescPi (profile := profile) UniverseFlag.standard)
+
+/-- ★ **The external verifier accepts EVERY certified Church numeral.**  For ALL `n`, the Church numeral
+`churchNumeralLambda n` (typed at the Church Nat type by `churchNumeralLambda_hasTypeDescPi`) is accepted by the
+independent minimal external verifier and is strongly normalizing.  This lifts the cross-check from the concrete
+fixtures `churchOne`/`churchTwo` to the WHOLE infinite numeral family in one theorem — the small auditable
+verifier agrees with the rich kernel on every Church numeral. -/
+theorem externalVerify_accepts_churchNumeral {profile : PolyProfile} (n : Nat) :
+    externalVerify (FX0Poly.Cert.encode (encodeCell (churchNumeralLambda n)))
+        (encodeCell (churchNumeralLambda n)).budget = FX0Poly.CheckVerdict.accepted
+      ∧ IsStronglyNormalizing (churchNumeralLambda n) :=
+  externalVerify_accepts_certified WfContextDesc.emptyIsWellFormed
+    (churchNumeralLambda_hasTypeDescPi (profile := profile) UniverseFlag.standard n)
+
+/-- The polymorphic identity subject `λ(A:Type@0). λ(x:A). x` (mirrors `polymorphicIdentity_hasTypeDescPi`). -/
+abbrev polymorphicIdentitySubject : RawTerm 0 :=
+  lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
+
+/-- The external verifier accepts the certified polymorphic identity `λA.λx. x` (a distinct λ-shape from the
+selectors and iterators — the dependent identity), and it is strongly normalizing. -/
+theorem externalVerify_accepts_polymorphicIdentity {profile : PolyProfile} :
+    externalVerify (FX0Poly.Cert.encode (encodeCell polymorphicIdentitySubject))
+        (encodeCell polymorphicIdentitySubject).budget = FX0Poly.CheckVerdict.accepted
+      ∧ IsStronglyNormalizing polymorphicIdentitySubject :=
+  externalVerify_accepts_certified WfContextDesc.emptyIsWellFormed
+    (polymorphicIdentity_hasTypeDescPi (profile := profile) UniverseFlag.standard)
+
+/-- The Church Nat TYPE-code subject `Π(A:Type@0). Π(f:A→A). Π(x:A). A` (mirrors `churchNatType_formation`). -/
+abbrev churchNatTypeSubject : RawTerm 0 :=
+  piTyCodeCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (piTyCodeCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+      (piTyCodeCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+        (variableCell (⟨2, Nat.succ_lt_succ (Nat.succ_lt_succ (Nat.succ_pos 0))⟩ : Fin 3))))
+
+/-- ★ The external verifier accepts the certified Church Nat TYPE code — a `piTyCode`-headed type FORMER (typed
+at a universe), not a `λ`-term.  This broadens the cross-check beyond term introductions to the type-code
+encoding path: the small verifier agrees on a type the rich kernel forms, and the type code is strongly
+normalizing. -/
+theorem externalVerify_accepts_churchNatType {profile : PolyProfile} :
+    externalVerify (FX0Poly.Cert.encode (encodeCell churchNatTypeSubject))
+        (encodeCell churchNatTypeSubject).budget = FX0Poly.CheckVerdict.accepted
+      ∧ IsStronglyNormalizing churchNatTypeSubject :=
+  externalVerify_accepts_certified WfContextDesc.emptyIsWellFormed
+    (churchNatType_formation (profile := profile) UniverseFlag.standard)
 
 end FX1Poly.FX0CrossCheck

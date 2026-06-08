@@ -152,3 +152,11 @@ external-verifier soundness — an A₀-release ingredient (#464). -/
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchFalse
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchOne
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchTwo
+-- FX0-PC.8 corpus extension: ★ externalVerify_accepts_churchNumeral lifts the cross-check to EVERY Church
+-- numeral (∀ n, via churchNumeralLambda_hasTypeDescPi #1007) — the whole infinite numeral family in one theorem.
+-- externalVerify_accepts_polymorphicIdentity adds the dependent identity λA.λx.x (a distinct λ-shape).
+-- externalVerify_accepts_churchNatType adds the Church Nat TYPE code (a piTyCode-headed type FORMER typed at a
+-- universe, not a λ-term) — broadening from term introductions to the type-code encoding path.
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchNumeral
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_polymorphicIdentity
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchNatType
