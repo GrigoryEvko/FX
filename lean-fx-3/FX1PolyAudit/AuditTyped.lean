@@ -258,6 +258,7 @@ import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
+import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3098,6 +3099,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtDataClassifier
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtSigmaType
 #assert_no_axioms FX1Poly.Typed.closedNormalSigmaTypeUninhabited
+-- EMPTY-TYPE COMBINED CONSISTENCY (ClosedNormalEmptyConsistency, CANON-1c instance): the consistency-type twin of
+-- closedNormalSigmaTypeUninhabited. noClosedNormalTermAtEmptyTypeViaGeneric = the grown empty rule-out re-derived
+-- via the CANON-1c corollary noClosedNormalTermAtDataClassifier (emptyTypeCell Conv neither Π nor universe code,
+-- via Conv.piTyCode_not_emptyTypeCode/.universeCode_not_emptyTypeCode + .sym) — demonstrates the abstraction
+-- subsumes the concrete noClosedNormalTermAtEmptyType. ★ closedNormalEmptyTypeUninhabited = combined 3-engine: NO
+-- engine (data-intro/base-type/grown) inhabits Empty for closed-normal subjects → the new standalone engines
+-- PRESERVE consistency. Unconditional (classifier read at normal subject). Full closed consistency = SN-050/CON-A5.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEmptyTypeViaGeneric
+#assert_no_axioms FX1Poly.Typed.closedNormalEmptyTypeUninhabited
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
