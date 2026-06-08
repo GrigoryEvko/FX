@@ -406,6 +406,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionConditional
 import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
 import FX1Poly.Typed.HasTypeDescPiContextConversionWf
 import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
+import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
@@ -6319,6 +6320,26 @@ gates pin them shut.
 -- theorem orders (telescope)(wf) so the baseScope/currentDepth split is pinned before the sum-only wf. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextWfOfPiValidity
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.convTelescopeWfOfPiValidity
+
+-- GTL-20 (#1098): the grown mutual fundamental-metatheory bundle, conditional on the SINGLE residual
+-- (GrownMutualMetatheoryFromPiValidity.lean, toward #834). PROVES that ConvContextPreservesPiValidity discharges BOTH
+-- open grown-metatheory release blockers: grown context-conversion (GCC-5/#842) AND the grown master subject
+-- reduction (SRD-2/#845/SN-055/#558). grownContextConversionFromPiValidity = the clean top-level GCC-5 closure (wraps
+-- #1093). masterSubjectReductionFromPiValidity ⋈ DescTelescopePi.subjectReductionFromPiValidity = the Wf-THREADING
+-- master SR re-statement: the shipped subjectReductionOfPiElimArm is conditional on the WHOLE grown context-conversion
+-- piElim arm as a WfContextDescPi-FREE hypothesis, which CANNOT be discharged from the residual (the route needs
+-- WfContextDescPi to expose the function's Π-classifier validity, and HasTypeDescPi → WfContextDesc is REFUTED by
+-- ContextValidityFails — the var rule types in ill-formed contexts — so Wf can't be recovered inside the arm). The
+-- shipped master SR consumes its piElim arm in EXACTLY ONE place (the telescope here arm's convTelescopeOfPiElimArm);
+-- replacing that ONE call with #1093's Wf-threading convTelescopeWfOfPiValidity (source Wf from WfContextDescPi.cons)
+-- re-bases the whole mutual block on the residual, every other arm unchanged — a mechanical re-statement, not a new
+-- proof. grownMutualMetatheoryFromPiValidity = the explicit unification: ONE residual ⟹ BOTH. So GCC-5 and SRD-2
+-- provably share a single obligation; discharging it (syntactic GTL-21 OR the semantic/reducibility route) closes
+-- both. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.grownContextConversionFromPiValidity
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.masterSubjectReductionFromPiValidity
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.subjectReductionFromPiValidity
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.grownMutualMetatheoryFromPiValidity
 
 -- GCC-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
 -- Reduction.lean, GCC-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
