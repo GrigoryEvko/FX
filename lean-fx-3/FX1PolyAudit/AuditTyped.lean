@@ -410,6 +410,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionWf
 import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
 import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
 import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimEquivalence
+import FX1Poly.Typed.HasTypeDescPiContextStepConversion
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormerStep
 import FX1Poly.Typed.GenFormerValidityContextConversion
@@ -6391,6 +6392,16 @@ gates pin them shut.
 -- single lynchpin of the grown metatheory. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.piValidityFromPiElimArm
 #assert_no_axioms FX1Poly.Typed.masterSubjectReductionFromPiElimArm
+
+-- HasTypeDescPiContextStepConversion (SR-U1, the unconditional DIRECTED context-conversion route toward #842/#845/#558):
+-- ConvContextWithOldValid Γ Γ' := ∀ i, Conv (Γ.lookup i) (Γ'.lookup i) ∧ IsTypeDescPi Γ' (Γ.lookup i) — old entries Conv
+-- to new AND valid in new (FREE for a directed step / unchanged prefix; FAILS for arbitrary Conv = the residual).
+-- convContextExactToGrown: a FORMATION subject re-types EXACTLY into the GROWN engine under the enriched condition. var
+-- conv's back to the EXACT old classifier via the enriched validity (the linchpin that arbitrary-Conv convContext can't
+-- make — its docstring names "type the OLD entry under the NEW context" as the sinking circularity); universe/conv/
+-- genFormation are universe-classified/free (genFormation via the shipped exact DescTelescope.convTelescope on the .1
+-- projection). This is the ofFormation leaf of the grown directed context conversion (SR-U2 next). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.convContextExactToGrown
 
 -- GrownCtxConv-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
 -- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
