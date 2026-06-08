@@ -423,6 +423,7 @@ import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionConvOfFormationArms
 import FX1Poly.Typed.ConsistencyConditionalOnSubjectReduction
 import FX1Poly.Typed.ConsistencyOfPiElimArm
+import FX1Poly.Typed.PiElimUpToClassifierConv
 import FX1Poly.Typed.EmptyTypeConsistencyUnconditional
 import FX1Poly.Typed.FormationNormalSmoke
 import FX1Poly.Typed.BoolTypeCodeSubstrate
@@ -1435,6 +1436,15 @@ gates pin them shut.
 -- composite.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.functionDomainIsType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.functionCodomainIsType
+-- GCC-5 REDUCTION (PiElimUpToClassifierConv, VAL-1 #1039): the grown context-conversion piElim arm — the
+-- entangled crux #842 — closes given EXACTLY ONE property, classifierRespectsConv (type-Conv-closure: IsTypeDescPi
+-- respects Conv). piElimUpToClassifierConv rebuilds appCell fn arg from the mutual-IH re-typings (fn at a type
+-- Conv to piTyCodeCell D C, arg at a type Conv to D) using ONLY shipped pieces: classifierIsTypeDescPi (validity,
+-- unconditional) + classifierRespectsConv (the lone residual hypothesis) + two conv-rule re-ascriptions
+-- (universe witnesses from the Pi-code's IsType + inversionPiCodeComponents) + piElim, landing at subst0 C arg
+-- on the nose. So GCC-5 = one lemma; the reflect (reducible-type -> typed) is the VAL-2 residual (the universe
+-- candidate IS IsReducibleType, Conv-invariant via #537). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimUpToClassifierConv
 -- reclassifyArgumentToFunctionDomain: the first consumer — re-type an argument (Conv to the function's domain) at
 -- the domain itself, with functionDomainIsType supplying the conv rule's universe witness. The argument-retyping
 -- step of the grown β / context-conversion piElim arms (toward GCC-5/SN-055).
