@@ -8,7 +8,7 @@ import FX1Poly.Typed.ConvFormationFormerRigidity
 DI-2e typed the list VALUES `nil` / `cons` (in `HasTypeDescListIntro` — the first recursive data-intro).  This
 file proves the closed-NORMAL canonical-forms theorem that engine makes NON-VACUOUS: a closed normal term typed
 at `List(A)` is a `nil` or `cons` — across BOTH the standalone list-intro engine AND the grown engine,
-unconditionally (no GCC-5, no §5).
+unconditionally (no GrownCtxConv-5, no §5).
 
 The grown engine contributes nothing — it has no closed-normal inhabitant of a `List` type code (it types
 `List`-FORMATION, never `List`-INTRODUCTION).  This is an instance of the CANON-1c rule-out corollary
@@ -35,7 +35,7 @@ the FORMATION-table substrate:
 
 These are the canonical-forms (closed-NORMAL) statements — SR-free.  Full canonicity (every closed `t :
 List(A)`, not just every normal one, reduces to a list value) still needs the grown master SR (`SN-055` /
-GCC-5 #842) to reduce-to-normal while preserving the classifier; that is the deferred half.
+GrownCtxConv-5 #842) to reduce-to-normal while preserving the classifier; that is the deferred half.
 
 ## Zero-axiom
 

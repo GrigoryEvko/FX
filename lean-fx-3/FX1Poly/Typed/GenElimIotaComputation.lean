@@ -25,7 +25,7 @@ redex was typed at; composed with the GTL-17 reconstruction that classifier IS t
     GTL-17 reconstruction) AND its ι-contractum (`subst0 body argument`, via the ι-rule) type at the one
     rule-DATA output — i.e. the eliminator computes TYPE-STABLY.  This is precisely the elimination-side
     ingredient the mutual bundle pairs against the introduction reconstruction (GTL-16) and the formation
-    `genFormationPi` arm to discharge the grown context-conversion piElim residual (GCC-5 / #842 via
+    `genFormationPi` arm to discharge the grown context-conversion piElim residual (GrownCtxConv-5 / #842 via
     GTL-21 / #835).
 
 ADDITIVE — it does NOT modify `HasTypeDescPi`.  Like `ElimRuleDesc`/`IntroRuleDesc` it reads the
@@ -57,7 +57,7 @@ rule-DATA output (`HasTypeDescPi.piElim`, the reconstruction) and carrying its c
 output by the shipped fully-general β subject reduction (`HasTypeDescPi.betaSubjectReduction`, #474).
 NON-VACUOUS (a genuine β/ι-redex's contractum types at the table output), table-DRIVEN, and the
 elimination-side ingredient the GTL-20 mutual fundamental-metatheory bundle pairs against the formation
-and introduction reconstructions to discharge the GCC-5 piElim residual. -/
+and introduction reconstructions to discharge the GrownCtxConv-5 piElim residual. -/
 theorem hasTypeDescPi_genElimIota_viaElimDesc {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {body : RawTerm (scope + 1)} {argument domainCode : RawTerm scope}

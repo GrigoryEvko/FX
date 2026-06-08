@@ -8,7 +8,7 @@ import FX1Poly.Typed.ConvCodeInjectivity
 DI-2d typed the reflexivity VALUE `refl(x) : Id(A, x, x)` (in `HasTypeDescIdIntro`); DI-5e added the eliminator
 `idJ`.  This file proves the closed-NORMAL canonical-forms theorem that makes the identity-intro engine
 NON-VACUOUS: a closed normal term typed at `Id(A, left, right)` is a `refl` — across BOTH the standalone
-id-intro engine AND the grown engine, unconditionally (no GCC-5, no §5).  It completes the identity data story
+id-intro engine AND the grown engine, unconditionally (no GrownCtxConv-5, no §5).  It completes the identity data story
 (intro + elim + canon), mirroring `OptionCanonicalForms` / `ListCanonicalForms`.
 
 ## The novel rigidity route — idCode is NOT a formation-table former
@@ -39,7 +39,7 @@ non-convertibilities use the HEAD-STABLE route directly:
 
 These are the canonical-forms (closed-NORMAL) statements — SR-free.  Full canonicity (every closed
 `t : Id(A, l, r)`, not just every normal one, reduces to a `refl`) still needs the grown master SR
-(`SN-055` / GCC-5 #842) to reduce-to-normal while preserving the classifier; that is the deferred half.
+(`SN-055` / GrownCtxConv-5 #842) to reduce-to-normal while preserving the classifier; that is the deferred half.
 
 ## Zero-axiom
 

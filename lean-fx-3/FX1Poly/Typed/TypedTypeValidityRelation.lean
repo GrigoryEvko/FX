@@ -3,12 +3,12 @@ import FX1Poly.Core.KripkeCandidateRenameClosure
 import FX1Poly.Core.NeutralTerm
 
 /-! # FX1Poly/Typed/TypedTypeValidityRelation
-    — the typed type-validity logical relation (the open-context model object for GCC-5 #842)
+    — the typed type-validity logical relation (the open-context model object for GrownCtxConv-5 #842)
 
 ## What this file is
 
 The single open release blocker is the residual `ConvContextPreservesPiValidity` (#1092): a `Π`-type code's
-GROWN validity (`IsTypeDescPi`) is stable under pointwise context conversion.  Both GCC-5 (grown
+GROWN validity (`IsTypeDescPi`) is stable under pointwise context conversion.  Both GrownCtxConv-5 (grown
 context-conversion, #842) and SRD-2 (master subject reduction, #845) reduce to it (#1098).  Its
 genuinely-open core (#1099) is the type-level NEUTRAL applications `(var f) (var a)` typed via `piElim` at a
 universe; discharging it needs an OPEN-CONTEXT typed logical relation pairing a reducibility candidate with a
@@ -75,7 +75,7 @@ def KripkeCandPointwiseIff {scope : Nat} (first second : KripkeCand scope) : Pro
 pairing a reducibility candidate with the grown typing witness.  Indexed by `(context, typeCode)` ONLY (the
 candidate is a stored ARGUMENT, not an index — see the file header's design finding on why a function-valued
 `KripkeCand` index breaks dependent elimination).  The neutral arm is the base case of the open type-level
-neutral reflection on which the GCC-5 (#842) residual `ConvContextPreservesPiValidity` bottoms out. -/
+neutral reflection on which the GrownCtxConv-5 (#842) residual `ConvContextPreservesPiValidity` bottoms out. -/
 inductive TypedTypeValidity (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → Prop where
   /-- A NEUTRAL type code (variable / neutral elimination form used as a type) is typed-valid, carrying the
@@ -90,7 +90,7 @@ inductive TypedTypeValidity (profile : PolyProfile) :
       TypedTypeValidity profile context typeCode
 
 /-- **Soundness: the relation carries the grown type validity.**  A typed-valid type code inhabits some
-universe in the grown engine (`IsTypeDescPi`).  This is the half that feeds the GCC-5 residual: once transport
+universe in the grown engine (`IsTypeDescPi`).  This is the half that feeds the GrownCtxConv-5 residual: once transport
 across context conversion is proved ON the relation, `IsTypeDescPi sourceCtx (Π D C)` → (completeness) the
 relation → (transport) the relation at the target → (this soundness) `IsTypeDescPi targetCtx (Π D C)`.
 Single-arm `cases`; the candidate being a stored argument (not a function index) is exactly what lets `cases`
@@ -119,7 +119,7 @@ code — a bare de Bruijn variable used as a type — is in the relation, carryi
 pointwise field by `Iff.rfl`).  The base leaf of the open type-level neutral reflection: under context
 conversion a variable's typing transfers by the var rule + the pointwise `Conv` on the looked-up classifier
 (the non-circular leaf), whereas the neutral APPLICATION `(var f)(var a)` re-assembles the type-level `piElim`
-(the genuinely-open residual = GCC-5).  Demonstrates the relation is inhabited (not a vacuous definition). -/
+(the genuinely-open residual = GrownCtxConv-5).  Demonstrates the relation is inhabited (not a vacuous definition). -/
 theorem smoke_variableTypeIsTypedValid {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} (index : Fin scope)
     (validity : IsTypeDescPi profile context (.mkGen .gen_var index .childNil)) :

@@ -3,10 +3,10 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionConditional
 import FX1Poly.Typed.WfContextDescPi
 
 /-! # FX1Poly/Typed/HasTypeDescPiContextConversionWf
-    — WfContext-threaded grown context-conversion, conditional on the MINIMAL Pi-validity residual (GCC-5-WFTHREAD)
+    — WfContext-threaded grown context-conversion, conditional on the MINIMAL Pi-validity residual (GrownCtxConv-5-WFTHREAD)
 
-The conditional grown context-conversion (`HasTypeDescPi.convContextOfPiElimArm`, GCC-1..4/#838-841) is
-conditional on the OPAQUE full `piElimArm` hypothesis — the entire elimination arm.  `#1092` (GCC-5-REASSEMBLY)
+The conditional grown context-conversion (`HasTypeDescPi.convContextOfPiElimArm`, GrownCtxConv-1..4/#838-841) is
+conditional on the OPAQUE full `piElimArm` hypothesis — the entire elimination arm.  `#1092` (GrownCtxConv-5-REASSEMBLY)
 showed the piElim arm reduces to a SINGLE pure type-formation residual,
 `ConvContextPreservesPiValidity` (a `Π`-type-code's validity is context-conversion-stable), modulo source
 well-formedness `WfContextDescPi` and the convContext IH.  This file delivers the consequence: a grown
@@ -16,7 +16,7 @@ context-conversion mutual pair conditional on that MINIMAL residual instead of t
 This strictly improves on `convContextOfPiElimArm`:
 
   * **the residual shrinks** from the whole `piElimArm` (function + argument + reassembly) to the single
-    type-formation fact `ConvContextPreservesPiValidity` — clearly what remains for GCC-5 (`#842`);
+    type-formation fact `ConvContextPreservesPiValidity` — clearly what remains for GrownCtxConv-5 (`#842`);
   * **`WfContextDescPi` is threaded**, which the master subject-reduction dispatcher already carries, so the
     result is directly consumable;
   * **the piElim arm is inlined** via `piElimArmFromPiValidityTransfer` (#1092) — using the threaded `wfSrc`

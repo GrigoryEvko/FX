@@ -12,7 +12,7 @@ HYPOTHESIS (`Conv.decidableOfStronglyNormalizing`), but that hypothesis is now D
 once-feared universe-domain-Π cumulativity obstruction), so decidable typed Conv is UNCONDITIONAL on the whole
 WfContext fragment (`Conv.decidableOfWellTypedInWfContextDesc`, the `wfContextDefensibleKernel` floor below).
 HONEST LEDGER (#484): decidability is DONE; SUBJECT REDUCTION is NOT a decidability ingredient (the decider
-routes through SN + confluence, never SR — SR / GCC-5 #842 gates canonicity-PROGRESS, not Conv-decidability); the
+routes through SN + confluence, never SR — SR / GrownCtxConv-5 #842 gates canonicity-PROGRESS, not Conv-decidability); the
 0-false-positive / 0-false-negative honesty is PER-FRAGMENT, not joint; and the one genuinely-OPEN piece is the
 JOINT APEX — full canonicity across the data fragments — gated on the §5 EmptyType candidate model-change
 (#810/#768).
@@ -84,7 +84,7 @@ structure SimplyTypedDefensibleKernel (profile : PolyProfile) : Type where
 `convDecidable` is `Conv.decidableOfSimplyTypedBareClosed` (the FT's SN feeding the normalizer-based decider).
 So Milestone A0 over the simply-typed fragment HOLDS, zero-axiom, with no SN hypothesis AND no context
 presupposition — the honest defensible-kernel floor.  (The broader `wfContextDefensibleKernel` below extends this
-to EVERY well-formed context via the now-shipped SN-043; only the joint canonicity apex stays open, on §5 / GCC-5.) -/
+to EVERY well-formed context via the now-shipped SN-043; only the joint canonicity apex stays open, on §5 / GrownCtxConv-5.) -/
 def simplyTypedDefensibleKernel {profile : PolyProfile} : SimplyTypedDefensibleKernel profile :=
   { stronglyNormalizing := simplyTypedBareClosedStronglyNormalizing
     convDecidable := Conv.decidableOfSimplyTypedBareClosed }
@@ -96,7 +96,7 @@ with the well-formedness presupposition alone — no separate SN hypothesis.  Th
 above from the level-free first-order fragment to the WHOLE well-formed-context fragment, the correction the
 now-shipped SN-043 makes possible (the file's earlier "open SN-043" framing was stale).  SUBJECT REDUCTION is
 NOT an ingredient: the decider routes through SN + confluence, so Conv-decidability does NOT wait on the grown SR
-bundle (GCC-5).  `Type`-valued because `convDecidable` is decision DATA. -/
+bundle (GrownCtxConv-5).  `Type`-valued because `convDecidable` is decision DATA. -/
 structure WfContextDefensibleKernel (profile : PolyProfile) : Type where
   /-- Well-typed terms in a well-formed context are strongly normalizing — the shipped open SN-043, no
   hypothesis beyond well-formedness. -/
@@ -118,7 +118,7 @@ structure WfContextDefensibleKernel (profile : PolyProfile) : Type where
 `convDecidable` is `Conv.decidableOfWellTypedInWfContextDesc` (that SN feeding the normalizer-based decider).  So
 Milestone-A0 decidability holds over EVERY well-formed context, zero-axiom — the honest current floor, broader
 than the simply-typed one, with neither SR nor canonicity among its ingredients (the joint canonicity apex stays
-open on §5 / GCC-5). -/
+open on §5 / GrownCtxConv-5). -/
 def wfContextDefensibleKernel {profile : PolyProfile} : WfContextDefensibleKernel profile :=
   { stronglyNormalizing := fun contextWellFormed typed =>
       HasTypeDescPi.stronglyNormalizingOfWfContextDesc contextWellFormed typed

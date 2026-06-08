@@ -38,7 +38,7 @@ ONE positive characterization those proofs all factor through:
     `sigmaTyCode`; the grown disjunct is the Σ rule-out).  Honest current-state fact: Σ-values arrive only
     when a standalone Σ-introduction judgment lands (DI-2).
 
-## Unconditional (no GCC-5 / §5)
+## Unconditional (no GrownCtxConv-5 / §5)
 
 The classifier is read only at an ALREADY-normal subject — we invert the typing of a normal term, never
 TYPE a reduction step, so no subject reduction (hence no grown context-conversion `piElim` arm, #842) is

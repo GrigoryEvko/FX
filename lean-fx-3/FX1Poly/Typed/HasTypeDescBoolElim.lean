@@ -31,10 +31,10 @@ NOT an arm of any existing engine).
 
 The FULL subject reduction of `boolElim` (any step preserves typing) is NOT SR-free: a step can be a
 congruence on a branch (`thenBranch ↝ thenBranch'`), whose re-typing consumes the grown master SR (`SN-055`
-/ GCC-5 #842).  And extracting the branch premise from a derivation at the literal `boolElimCell boolTrue …`
+/ GrownCtxConv-5 #842).  And extracting the branch premise from a derivation at the literal `boolElimCell boolTrue …`
 subject is the cons-index propext trap.  The constructor-side ι-computation theorems sidestep BOTH: they take
 the branch typings as hypotheses and exhibit the typed reduct directly.  That is the genuinely new, landable
-content — typed eliminator computation — with the full SR deferred to the GCC-5 endgame.
+content — typed eliminator computation — with the full SR deferred to the GrownCtxConv-5 endgame.
 
 ## Zero-axiom
 

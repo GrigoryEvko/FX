@@ -330,7 +330,7 @@ This COMPLETES the non-dependent Kripke arrow's reducibility-candidate bundle (C
 CR2 `kripkeArrow_forwardStep`, CR3 here) — a self-contained construction.  Per the CALIBRATION at the top of
 this file it does not by itself unblock whole-relation strong normalization (that is gated on the separate
 fuel-stability premise, and the env-based fundamental-theorem route sidesteps candidate rename-closure); it is
-a prerequisite ingredient for the open-context (Kripke) logical relation that the `GCC-5` (#842)
+a prerequisite ingredient for the open-context (Kripke) logical relation that the `GrownCtxConv-5` (#842)
 context-conversion `piElim` residual requires.  The DEPENDENT-arrow CR3 (`kripkeArrowDep`) is deferred: its
 argument-dependent codomain family needs an extra family-coherence hypothesis across argument steps.
 
@@ -410,7 +410,7 @@ theorem kripkeArrow_neutralBackwardClosure {scope : Nat}
 `ReducibleTypeStep.neutral` interprets a weak-head-normal non-Π non-universe type code as the
 strong-normalization candidate (`IsStronglyNormalizing`).  Lifting that to the Kripke-indexed setting gives
 the index-IGNORING candidate `snKripkeCand`, the Kripke-model neutral-type interpretation.  Its defining
-feature — and the reason context conversion is FREE on the semantic side of the open `GCC-5` (#842)
+feature — and the reason context conversion is FREE on the semantic side of the open `GrownCtxConv-5` (#842)
 type-validity residual — is that it does not consult its renaming index, so transporting it along ANY
 renaming (a change of Kripke world = a context conversion) acts as the IDENTITY.  The type-level analogue of
 the term-level Kripke-arrow transport laws above, and the Kripke-model home of the firing-15/16 finding that

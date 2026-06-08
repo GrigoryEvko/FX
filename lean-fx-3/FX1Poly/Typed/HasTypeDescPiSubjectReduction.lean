@@ -51,7 +51,7 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
 /-- **The master subject-reduction dispatcher for the grown engine, conditional on the grown telescope SR.**
 A grown-typed subject is preserved under a `Step`, at the SAME classifier, given the grown telescope SR
-`telescopeSR` (re-typing a premise telescope under a child step — the lone GCC-gated residual).  Inducts on the
+`telescopeSR` (re-typing a premise telescope under a child step — the lone GrownCtxConv-gated residual).  Inducts on the
 derivation, threading the EXTENDABLE `WfContextDescPi`; `ofFormation` is vacuous (formation subjects are
 normal), `conv` recurses, `piIntro` / `piElim` use the function-space arms with the children's SR
 obtained recursively (extending well-formedness at the λ binder), `genFormationPi` routes through the

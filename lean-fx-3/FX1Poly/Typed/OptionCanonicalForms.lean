@@ -8,7 +8,7 @@ import FX1Poly.Typed.ConvFormationFormerRigidity
 DI-2c typed the option VALUES `optionNone` / `optionSome` (in `HasTypeDescOptionIntro`); DI-5c typed and
 computed the option ELIMINATOR.  This file proves the closed-NORMAL canonical-forms theorem those engines make
 NON-VACUOUS: a closed normal term typed at `option(A)` is an `optionNone` or `optionSome` — across BOTH the
-standalone option-intro engine AND the grown engine, unconditionally (no GCC-5, no §5).
+standalone option-intro engine AND the grown engine, unconditionally (no GrownCtxConv-5, no §5).
 
 The grown engine contributes nothing — it has no closed-normal inhabitant of an `option` type code (it types
 `option`-FORMATION, never `option`-INTRODUCTION).  This is an instance of the CANON-1c rule-out corollary
@@ -36,7 +36,7 @@ the product/either canonical forms (whose codes are FLAT-table formers, so they 
 
 These are the canonical-forms (closed-NORMAL) statements — SR-free.  Full canonicity (every closed `t :
 option(A)`, not just every normal one, reduces to an option value) still needs the grown master SR (`SN-055` /
-GCC-5 #842) to reduce-to-normal while preserving the classifier; that is the deferred half.
+GrownCtxConv-5 #842) to reduce-to-normal while preserving the classifier; that is the deferred half.
 
 ## Zero-axiom
 

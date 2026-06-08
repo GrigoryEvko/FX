@@ -29,8 +29,8 @@ is UNCONDITIONAL (not gated on an open conjecture).  The two FX engines differ e
     (`subjectReductionAtFormerGeneric`), conv (`subjectReductionAtConv`), ofFormation
     (`subjectReductionAtOfFormation`) — are unconditional; but the MASTER dispatcher
     (`subjectReductionOfGrownTelescopeSR`) takes the telescope-SR / context-conversion premise that is the
-    GCC-5 crux (#842 / SRD-2 #845).  So `grownIsSelfVerified` holds while `grownNotUnconditionallySelfVerified`
-    records that grown preservation is not yet unconditional — the precise, honest GCC-5 boundary, the same
+    GrownCtxConv-5 crux (#842 / SRD-2 #845).  So `grownIsSelfVerified` holds while `grownNotUnconditionallySelfVerified`
+    records that grown preservation is not yet unconditional — the precise, honest GrownCtxConv-5 boundary, the same
     asymmetry the `MetatheoryParityLedger` documents.
 
 So the self-verification flag is `true` for both engines, and the `isUnconditionallySelfVerified` flag is the
@@ -69,7 +69,7 @@ def MetatheoryGuarantee.describe : MetatheoryGuarantee → String
   | .progress => "progress: a closed well-typed term is a canonical value (or steps)"
 
 /-- **The per-engine self-verified-metatheory bundle.**  Records whether preservation and progress hold, and
-whether preservation is UNCONDITIONAL (not gated on an open conjecture — the GCC-5 boundary). -/
+whether preservation is UNCONDITIONAL (not gated on an open conjecture — the GrownCtxConv-5 boundary). -/
 structure SelfVerifiedMetatheory where
   engineName : String
   hasPreservation : Bool
@@ -89,7 +89,7 @@ def SelfVerifiedMetatheory.isSelfVerified (metatheory : SelfVerifiedMetatheory) 
   metatheory.hasPreservation && metatheory.hasProgress
 
 /-- **The unconditional-self-verification checker.**  Self-verified AND preservation unconditional — the
-strongest Layer-4 guarantee, satisfied only when no open conjecture (GCC-5) gates preservation. -/
+strongest Layer-4 guarantee, satisfied only when no open conjecture (GrownCtxConv-5) gates preservation. -/
 def SelfVerifiedMetatheory.isUnconditionallySelfVerified (metatheory : SelfVerifiedMetatheory) : Bool :=
   metatheory.isSelfVerified && metatheory.preservationIsUnconditional
 
@@ -119,7 +119,7 @@ def grownMetatheory_preservationConvArm := @HasTypeDescPi.subjectReductionAtConv
 def grownMetatheory_preservationOfFormationArm := @HasTypeDescPi.subjectReductionAtOfFormation
 
 /-- Grown preservation — the MASTER dispatcher, CONDITIONAL on the telescope-SR / context-conversion premise
-(the GCC-5 crux, #842 / SRD-2 #845).  Anchored to give the unconditionality flag its teeth: the master exists
+(the GrownCtxConv-5 crux, #842 / SRD-2 #845).  Anchored to give the unconditionality flag its teeth: the master exists
 and is proved, but only conditionally. -/
 def grownMetatheory_preservationConditionalMaster := @HasTypeDescPi.subjectReductionOfGrownTelescopeSR
 
@@ -133,7 +133,7 @@ def formationSelfVerifiedMetatheory : SelfVerifiedMetatheory :=
     preservationIsUnconditional := true }
 
 /-- **The grown engine's self-verified-metatheory bundle** — preservation + progress hold, but preservation's
-master is GCC-5-conditional (`preservationIsUnconditional := false`). -/
+master is GrownCtxConv-5-conditional (`preservationIsUnconditional := false`). -/
 def grownSelfVerifiedMetatheory : SelfVerifiedMetatheory :=
   { engineName := "grown engine (HasTypeDescPi)",
     hasPreservation := true,
@@ -149,7 +149,7 @@ theorem formationIsUnconditionallySelfVerified :
 theorem grownIsSelfVerified : grownSelfVerifiedMetatheory.isSelfVerified = true := rfl
 
 /-- **But the grown engine is NOT yet unconditionally self-verified** — preservation's master is gated on the
-GCC-5 telescope-SR premise (#842 / SRD-2 #845).  This is the precise, honest boundary of the one open piece. -/
+GrownCtxConv-5 telescope-SR premise (#842 / SRD-2 #845).  This is the precise, honest boundary of the one open piece. -/
 theorem grownNotUnconditionallySelfVerified :
     grownSelfVerifiedMetatheory.isUnconditionallySelfVerified = false := rfl
 

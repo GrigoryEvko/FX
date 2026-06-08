@@ -8,7 +8,7 @@ This file assembles the COMPLETE arbitrary-renaming `Step` reflection-with-image
 
   `Step (rename rho t) u → ∃ t', Step t t' ∧ rename rho t' = u`
 
-(the Kripke-arrow-CR3 ingredient the open-context logical relation `GCC-5` needs) out of the
+(the Kripke-arrow-CR3 ingredient the open-context logical relation `GrownCtxConv-5` needs) out of the
 per-redex leaf arms shipped in `StepRenameReflect.lean` / `StepRenameReflectEliminatorIota.lean`
 plus the recursive `cong` / children-`here` / children-`there` cases.
 
@@ -42,7 +42,7 @@ recursor's 18 `Step` cases + 2 `StepChildren` cases then split exactly:
     `StepChildren.there`.
 
 With this, the full reflection assembles → Kripke-arrow CR3 → the open-context (Kripke) logical
-relation that discharges `GCC-5` (#842), the grown context-conversion `piElim` crux.
+relation that discharges `GrownCtxConv-5` (#842), the grown context-conversion `piElim` crux.
 
 ## Zero-axiom verification
 
@@ -64,7 +64,7 @@ skeleton, so every reduct of the renamed term is the image of a reduct of the so
 `Step.rec` mutual recursion (the `Step.subst` template run backward): 18 redex-leaf cases delegate to
 the shipped `Step.reflect*` arms, and the recursive `cong` / `here` / `there` cases thread the lifted
 renaming through the children spine.  The Kripke-arrow-CR3 ingredient for the open-context logical
-relation (`GCC-5`, #842). -/
+relation (`GrownCtxConv-5`, #842). -/
 theorem Step.reflectRename {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope) {sourceTerm : RawTerm sourceScope}
     {targetReduct : RawTerm targetScope}

@@ -32,7 +32,7 @@ shapes respectively.  Following the established cascade-free pattern (a brand-ne
 
 Constructor-side: each elim is BUILT from the branch typings, the reduct's typing is the branch typing
 (None case) or `piElim` from the same hypotheses (Some case).  No derivation casing (no cons-index propext
-trap), no branch-congruence (the full SR consumes the grown master SR / GCC-5 #842).  The genuinely-new content
+trap), no branch-congruence (the full SR consumes the grown master SR / GrownCtxConv-5 #842).  The genuinely-new content
 is that ONE eliminator now demonstrates BOTH ι shapes typed-and-computing.
 
 ## Zero-axiom

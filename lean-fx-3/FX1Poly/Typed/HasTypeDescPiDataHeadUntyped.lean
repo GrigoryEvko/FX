@@ -203,7 +203,7 @@ concludes `subject : reclassifier` only with a premise `reclassifier : universeC
 `reclassifier = emptyTypeCell` that premise is `HasTypeDescPi … emptyTypeCell (universeCodeCell …)`, refuted by
 `emptyTypeCellHasNoTyping`.  So a closed term cannot acquire the classifier `emptyTypeCell` through `conv` — the
 `conv` arm of the consistency (SN-050) inversion is discharged; the residual is the `piElim` arm (the SR/model
-crux GCC-5 / CON-A3). -/
+crux GrownCtxConv-5 / CON-A3). -/
 theorem HasTypeDescPi.noConvReclassifierAtEmptyType {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {levelExpr : FX1Poly.Universe.LevelExpr}
     {flag : FX1Poly.Universe.UniverseFlag}

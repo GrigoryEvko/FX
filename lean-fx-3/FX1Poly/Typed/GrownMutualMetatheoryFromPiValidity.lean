@@ -4,14 +4,14 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionWf
 /-! # FX1Poly/Typed/GrownMutualMetatheoryFromPiValidity
     — the grown mutual fundamental-metatheory bundle, conditional on the SINGLE residual (GTL-20 / #834)
 
-`HasTypeDescPiContextConversionPiElimReduction.lean` (`#1092`) named the lone GCC-5 residual,
+`HasTypeDescPiContextConversionPiElimReduction.lean` (`#1092`) named the lone GrownCtxConv-5 residual,
 `ConvContextPreservesPiValidity` (a `Π`-type-code's validity is stable under context conversion), and
 proved that the grown context-conversion piElim arm reduces to it.  `#1093` threaded `WfContextDescPi`
 through the grown context-conversion mutual pair conditional on that residual.  This file is the GTL-20
 "state + open the mutual fundamental-metatheory bundle" capstone: it proves that the SAME single residual
 discharges BOTH open release-blocker metatheory tasks —
 
-  * **grown context-conversion** (GCC-5, `#842`) — `grownContextConversionFromPiValidity`, and
+  * **grown context-conversion** (GrownCtxConv-5, `#842`) — `grownContextConversionFromPiValidity`, and
   * **the grown master subject reduction** (SRD-2, `#845` / SN-055 / `#558`) —
     `masterSubjectReductionFromPiValidity ⋈ DescTelescopePi.subjectReductionFromPiValidity`.
 
@@ -38,7 +38,7 @@ unchanged.  A mechanical re-statement, NOT a new proof.
 
 ## The bundle
 
-  * `HasTypeDescPi.grownContextConversionFromPiValidity` — the clean top-level GCC-5 closure modulo the
+  * `HasTypeDescPi.grownContextConversionFromPiValidity` — the clean top-level GrownCtxConv-5 closure modulo the
     residual (a `#1093` consequence: residual + `WfContextDescPi` ⟹ context-conversion at a `Conv`-equal
     classifier).
   * `HasTypeDescPi.masterSubjectReductionFromPiValidity` ⋈ `DescTelescopePi.subjectReductionFromPiValidity`
@@ -63,10 +63,10 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
-/-- **GCC-5 closure modulo the single residual.**  Under `ConvContextPreservesPiValidity` and source
+/-- **GrownCtxConv-5 closure modulo the single residual.**  Under `ConvContextPreservesPiValidity` and source
 well-formedness `WfContextDescPi sourceContext`, a grown derivation survives replacing the context by any
 pointwise-`Conv`-related one, at a `Conv`-equal classifier.  The clean top-level form of the `#1093`
-`WfContextDescPi`-threaded mutual context-conversion — the grown context-conversion (`#814` / GCC-5,
+`WfContextDescPi`-threaded mutual context-conversion — the grown context-conversion (`#814` / GrownCtxConv-5,
 `#842`) reduced to the lone obligation `ConvContextPreservesPiValidity`. -/
 theorem HasTypeDescPi.grownContextConversionFromPiValidity {profile : PolyProfile}
     (piValidityTransfers : ConvContextPreservesPiValidity profile)
@@ -168,7 +168,7 @@ end
 
 /-- **The grown mutual fundamental-metatheory bundle, conditional on the single residual** (GTL-20).  The
 ONE obligation `ConvContextPreservesPiValidity` discharges BOTH open grown-metatheory release blockers at
-once: grown context-conversion (GCC-5, `#842`) AND the grown master subject reduction (SRD-2, `#845` /
+once: grown context-conversion (GrownCtxConv-5, `#842`) AND the grown master subject reduction (SRD-2, `#845` /
 SN-055).  The explicit statement that the two frontier tasks share a single residual — the precise,
 green, zero-axiom hand-off for either the syntactic discharge (GTL-21) or the semantic/reducibility
 route. -/

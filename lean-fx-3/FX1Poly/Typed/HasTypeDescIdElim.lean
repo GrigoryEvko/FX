@@ -28,7 +28,7 @@ judgment), consuming `HasTypeDescIdIntro` (DI-2d) for the witness premise.
 
 Constructor-side: the elim is BUILT from the witness + base-case premises, the reduct's typing IS the base-case
 typing.  No derivation casing (no cons-index propext trap), no witness-congruence (the full SR consumes the grown
-master SR / GCC-5 #842).  The genuinely-new content is the identity eliminator typed-and-computing.
+master SR / GrownCtxConv-5 #842).  The genuinely-new content is the identity eliminator typed-and-computing.
 
 ## Zero-axiom
 

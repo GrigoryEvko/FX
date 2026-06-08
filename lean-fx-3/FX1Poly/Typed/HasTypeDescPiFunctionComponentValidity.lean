@@ -23,7 +23,7 @@ whose two conjuncts ARE the domain and codomain typings.  The `WfContextDescPi` 
 `classifierIsTypeDescPi` consumes; the inversion adds none.
 
 These are the load-bearing presuppositions the subject-reduction congruence arms and the grown context-conversion
-`piElim` arm (GCC-5, the SN-055 residual) need — to context-convert / re-type a function's domain and codomain,
+`piElim` arm (GrownCtxConv-5, the SN-055 residual) need — to context-convert / re-type a function's domain and codomain,
 one first needs them to BE types.  Named here so those developments cite a presupposition rather than re-derive
 the `classifierIsTypeDescPi ∘ inversionPiCodeComponentsUnconditional` composite at each site.
 
@@ -73,7 +73,7 @@ the function's domain can be re-classified at the domain itself.  The first cons
 supplies the `conv` rule's universe witness for the domain (the domain IS a type), so the argument's `conv`-step
 to the domain has its reclassifier validated.  This is the argument-retyping step the grown β / context-conversion
 `piElim` arms perform — to apply `piElim`/`betaSubjectReduction` one first aligns the argument with the function's
-domain, which needs the domain to be a type.  Named here so those developments (toward GCC-5 / SN-055) cite a
+domain, which needs the domain to be a type.  Named here so those developments (toward GrownCtxConv-5 / SN-055) cite a
 presupposition-backed re-typing rather than re-derive the `functionDomainIsType ∘ conv` composite. -/
 theorem HasTypeDescPi.reclassifyArgumentToFunctionDomain {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {function argument : RawTerm scope}

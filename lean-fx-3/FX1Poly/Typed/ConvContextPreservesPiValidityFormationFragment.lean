@@ -6,8 +6,8 @@ import FX1Poly.Typed.IsTypeDesc
     — the residual `ConvContextPreservesPiValidity` is UNCONDITIONALLY free for FORMATION-valid Π-codes
 
 `ConvContextPreservesPiValidity` (`#1092`) is the single residual to which both open grown-metatheory
-release blockers reduce (GCC-5 context-conversion `#842` AND SRD-2 master SR `#845`, unified in `#1098`):
-a `Π`-type-code's GROWN validity is stable under context conversion.  The seven prior GCC-5 firings
+release blockers reduce (GrownCtxConv-5 context-conversion `#842` AND SRD-2 master SR `#845`, unified in `#1098`):
+a `Π`-type-code's GROWN validity is stable under context conversion.  The seven prior GrownCtxConv-5 firings
 established it is the genuine fixpoint of the mutual recursion (the function's `Π`-classifier validity is
 NOT a structural premise of `piElim`, and `classifierIsTypeDescPi` can return an unbounded-height
 derivation), so no well-founded measure breaks it; its honest discharge is the OPEN-context semantic
@@ -26,7 +26,7 @@ formation fragment, via the unconditional formation subject reduction), this LOC
 genuinely-open core precisely: it is exactly the GENUINELY-GROWN `Π`-codes — those whose domain or codomain
 is an OPEN NEUTRAL type-level application (`(var f) (var a)` at a universe) or a type-level `λ`, typed via
 `piElim` / `piIntro` at the type level, NOT via `ofFormation` / `genFormationPi`-from-formation.  And that
-open-neutral case IS GCC-5 itself (context-converting a neutral type-level application is the piElim
+open-neutral case IS GrownCtxConv-5 itself (context-converting a neutral type-level application is the piElim
 context-conversion), so the residual's hard core is irreducibly the open semantic-model obligation — there
 is no further syntactic fragment to peel off.
 
@@ -50,7 +50,7 @@ discharged with NO semantic input: the shipped unconditional formation context-c
 `HasTypeDescPi.convContextOfFormation` re-types the formation-valid code under the target at a `Conv`-equal
 classifier, and `convBackToUniverseCode` collapses that back to the universe code.  This isolates the
 residual's genuinely-open core to the GENUINELY-GROWN (non-`ofFormation`) `Π`-codes — the open-neutral
-type-level applications that are GCC-5 itself. -/
+type-level applications that are GrownCtxConv-5 itself. -/
 theorem HasTypeDescPi.convContextPreservesPiValidityForFormationCode {profile : PolyProfile} {scope : Nat}
     {sourceContext : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}

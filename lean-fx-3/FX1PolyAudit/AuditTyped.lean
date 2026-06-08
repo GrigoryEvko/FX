@@ -411,6 +411,7 @@ import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.ConvContextPiValidityModelNeutral
 import FX1Poly.Typed.TypedTypeValidityRelation
 import FX1Poly.Typed.TypedTypeValidityBoxedRelation
+import FX1Poly.Typed.PiElimClassifierConvResidual
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
@@ -1161,7 +1162,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_iff
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_iff
 -- Conv-to-former REDUCTION corollaries: a subject Conv to a Π/Σ-code StepStar-reduces to that former with
--- Conv-related components (the GCC-5 / context-conversion ingredient that recovers an honest piTyCode shape
+-- Conv-related components (the GrownCtxConv-5 / context-conversion ingredient that recovers an honest piTyCode shape
 -- from a conv-disguised classifier; Join-unpack + shapeStable, SN-free).
 #assert_no_axioms FX1Poly.Typed.Conv.reducesToPiTyCode
 #assert_no_axioms FX1Poly.Typed.Conv.reducesToSigmaTyCode
@@ -1367,7 +1368,7 @@ gates pin them shut.
 -- dependent analogue of the graded closedWellTypedProgress sharpened to the exact λ shape. closedTypeStepsOrIsFormer
 -- = a closed grown-typed TYPE (universe classifier) STEPS or its head is a type FORMER (Π/Σ/universe/list/option
 -- code), never a stuck λ. Both UNCONDITIONAL: the classifier is read only at the already-normal subject (via
--- closedNormalFunctionIsLambda / closedNormalTypeIsFormer), so no reduction step is typed — no SR, no GCC-5 #842,
+-- closedNormalFunctionIsLambda / closedNormalTypeIsFormer), so no reduction step is typed — no SR, no GrownCtxConv-5 #842,
 -- no §5; the non-normal case only asserts a step EXISTS. The per-classifier progress refinements of closedProgress.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedFunctionStepsOrIsLambda
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedTypeStepsOrIsFormer
@@ -1414,7 +1415,7 @@ gates pin them shut.
 -- generalizations of the closed{Function,Type}Steps… twin (admitting the neutral leaf variables introduce). The
 -- 3-way disjunction (steps ∨ canonical-at-classifier ∨ neutral) IS the type-directed η-long readback case split
 -- (TY-CONV-quote / η-M15). UNCONDITIONAL: the classifier is read only at the already-normal subject (via the open
--- per-classifier canonical-forms lemmas), so no reduction step is typed — no SR, no GCC-5 #842, no §5.
+-- per-classifier canonical-forms lemmas), so no reduction step is typed — no SR, no GrownCtxConv-5 #842, no §5.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openFunctionStepsOrIsLambdaOrNeutral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openTypeStepsOrIsFormerOrNeutral
 -- OPEN TYPE SAFETY + DETERMINISM (GrownOpenTypeSafety.lean, five-layer-defense L4 §27.3): the open analogues of the
@@ -1525,21 +1526,21 @@ gates pin them shut.
 -- FUNCTION-COMPONENT VALIDITY presuppositions (HasTypeDescPiFunctionComponentValidity.lean): a function's DOMAIN
 -- and CODOMAIN are types. Composes classifierIsTypeDescPi (the function's Pi classifier is a type) with the
 -- unconditional inversionPiCodeComponentsUnconditional (whose two conjuncts ARE the domain/codomain typings). The
--- load-bearing presuppositions the SR congruence arms + the grown context-conversion piElim residual (GCC-5)
+-- load-bearing presuppositions the SR congruence arms + the grown context-conversion piElim residual (GrownCtxConv-5)
 -- consume to context-convert / re-type a function's components — named so they cite a presupposition, not the
 -- composite.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.functionDomainIsType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.functionCodomainIsType
--- GCC-5 REDUCTION (PiElimUpToClassifierConv, VAL-1 #1039): the grown context-conversion piElim arm — the
+-- GrownCtxConv-5 REDUCTION (PiElimUpToClassifierConv, VAL-1 #1039): the grown context-conversion piElim arm — the
 -- entangled crux #842 — closes given EXACTLY ONE property, classifierRespectsConv (type-Conv-closure: IsTypeDescPi
 -- respects Conv). piElimUpToClassifierConv rebuilds appCell fn arg from the mutual-IH re-typings (fn at a type
 -- Conv to piTyCodeCell D C, arg at a type Conv to D) using ONLY shipped pieces: classifierIsTypeDescPi (validity,
 -- unconditional) + classifierRespectsConv (the lone residual hypothesis) + two conv-rule re-ascriptions
 -- (universe witnesses from the Pi-code's IsType + inversionPiCodeComponents) + piElim, landing at subst0 C arg
--- on the nose. So GCC-5 = one lemma; the reflect (reducible-type -> typed) is the VAL-2 residual (the universe
+-- on the nose. So GrownCtxConv-5 = one lemma; the reflect (reducible-type -> typed) is the VAL-2 residual (the universe
 -- candidate IS IsReducibleType, Conv-invariant via #537). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimUpToClassifierConv
--- GCC-5-REFUTE (#1058, ClassifierRespectsConvRefuted): ★ classifierRespectsConv_isFalse — the VAL-1 GCC-5
+-- GrownCtxConv-5-REFUTE (#1058, ClassifierRespectsConvRefuted): ★ classifierRespectsConv_isFalse — the VAL-1 GrownCtxConv-5
 -- reduction target (classifierRespectsConv : IsType A → Conv A B → IsType B) is PROVABLY FALSE.
 -- Counterexample: A = Type@0 (a type), B = (λ_.Type@0) Ω. B β-reduces to A (classifierConvCounterexampleRedex_
 -- stepsToType: the body Type@0 discards Ω), so Conv A B; A isType (classifierConvCounterexampleType_isType, via
@@ -1547,7 +1548,7 @@ gates pin them shut.
 -- discarded argument Ω, contradicting omegaCombinator_notClosedWellTyped #958). So VAL-2 as planned is impossible.
 -- DEEP FINDING: grown typing requires EVERY subterm typed (even a discarded argument), so IsTypeDescPi is NOT
 -- Conv-invariant. REDIRECT: the real piElim arm keeps the SOURCE fn:piTyCode D C derivation (D,C genuinely typed
--- by validity) and context-converts that formation (GCC-4), NOT the lossy Conv-to-piTyCode. Zero-axiom: Step.beta
+-- by validity) and context-converts that formation (GrownCtxConv-4), NOT the lossy Conv-to-piTyCode. Zero-axiom: Step.beta
 -- + invertApp + omega-untypable + universeFormation + Conv.fromStepStar.
 #assert_no_axioms FX1Poly.Typed.classifierConvCounterexampleRedex_stepsToType
 #assert_no_axioms FX1Poly.Typed.classifierConvCounterexampleType_isType
@@ -1555,7 +1556,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.classifierRespectsConv_isFalse
 -- reclassifyArgumentToFunctionDomain: the first consumer — re-type an argument (Conv to the function's domain) at
 -- the domain itself, with functionDomainIsType supplying the conv rule's universe witness. The argument-retyping
--- step of the grown β / context-conversion piElim arms (toward GCC-5/SN-055).
+-- step of the grown β / context-conversion piElim arms (toward GrownCtxConv-5/SN-055).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.reclassifyArgumentToFunctionDomain
 -- FUNCTION-SPACE SR ARMS over the GROWN well-formedness (HasTypeDescPiSubjectReductionDescPi.lean, toward SN-055):
 -- the WfContextDescPi twins of betaSubjectReduction + subjectReductionPiElimArm, now that the grown
@@ -1563,7 +1564,7 @@ gates pin them shut.
 -- classifier-validity call; all else is well-formedness-free). With the already-WfContext-free
 -- subjectReductionPiIntroArm, the dispatcher's function-space arms all thread WfContextDescPi (which DOES extend
 -- at a grown piIntro binder); the remaining dispatcher residual is the former arms' codomainReTyping (the
--- separate grown context-conversion / GCC bundle).
+-- separate grown context-conversion / GrownCtxConv bundle).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaSubjectReductionDescPi
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionPiElimArmDescPi
 -- MASTER SR DISPATCHER for the grown engine, conditional on the grown telescope SR (SRD-1 / SN-055,
@@ -1572,13 +1573,13 @@ gates pin them shut.
 -- the shipped function-space arms with children SR obtained recursively (extending well-formedness at the λ
 -- binder via WfContextDescPi.cons + the domain's IsTypeDescPi), genFormationPi decomposes via former_step_inv +
 -- the telescopeSR hypothesis. The telescopeSR hypothesis = the grown telescope SR (DescTelescopePi.subjectReduction,
--- gated on grown context-conversion / GCC #838-843) is the LONE residual; SRD-2 (#845) discharges it for the
+-- gated on grown context-conversion / GrownCtxConv #838-843) is the LONE residual; SRD-2 (#845) discharges it for the
 -- unconditional master SR. Mirrors the UB-SD conditional-package discipline (#664).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionOfGrownTelescopeSR
 -- MASTER SR ⋈ GROWN TELESCOPE SR mutual pair (HasTypeDescPiSubjectReductionMutual.lean, SRD-2/SRD-4): DISCHARGES
 -- SRD-1's telescopeSR hypothesis by proving the grown telescope SR as the mutual companion of the dispatcher, so
 -- the WHOLE grown SR metatheory is now conditional on the SAME ONE lemma as the grown context-conversion — the
--- piElim crux (GCC-5). The telescope here/cons arm re-types the tail under the stepped head via the grown telescope
+-- piElim crux (GrownCtxConv-5). The telescope here/cons arm re-types the tail under the stepped head via the grown telescope
 -- context-conversion convTelescopeOfPiElimArm (carrying the piElim arm). Arg order (telescope BEFORE wellFormed) is
 -- required for Lean mutual-recursion implicit inference. Discharging the piElim arm ⟹ unconditional SN-055.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionOfPiElimArm
@@ -3105,7 +3106,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.standaloneEmptyUninhabited
 #assert_no_axioms FX1Poly.Typed.dataIntroAndBaseTypeSubjectsDisjoint
 -- COMBINED BOOL CANONICAL FORMS (CombinedBoolCanonicalForms, CANON-1 #1048): the grown disjunct ruled out for
--- NORMAL subjects, UNCONDITIONALLY (no GCC-5 #842, no §5). The grown engine has no closed-normal inhabitant of
+-- NORMAL subjects, UNCONDITIONALLY (no GrownCtxConv-5 #842, no §5). The grown engine has no closed-normal inhabitant of
 -- boolCode: closedNormalSubjectHead gives λ / Π / Σ / universe / list / option, each refuted at boolTypeCell —
 -- a λ's classifier is Conv a Π-code (boolTypeCell_not_piTyCode), a former's is Conv a universe code
 -- (boolTypeCell_not_universeCode). ★ noClosedNormalTermAtBoolType = the grown vacuity; the 6 *NotTypedAtBoolType
@@ -3147,7 +3148,7 @@ gates pin them shut.
 -- (cascade-free, mirroring HasTypeDescBaseType, NOT an arm of HasTypeDescDataIntro/HasTypeDescPi). pairOfUniverse
 -- CodesTyped = the smoke pair(Type@0,Type@0) : product(Type@1,Type@1). subjectIsPair/classifierIsProduct = the
 -- SR-free closed-forms inversions (subject is a pairCell, classifier a productTypeCell). The SR/SN quartet is the
--- GCC-5-entangled deferral (pair steps when a component steps → consumes grown master SR / #842).
+-- GrownCtxConv-5-entangled deferral (pair steps when a component steps → consumes grown master SR / #842).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.pairOfUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.subjectIsPair
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.classifierIsProduct
@@ -3156,7 +3157,7 @@ gates pin them shut.
 -- for the un-injected (free) component (the asymmetry vs pair, whose two components are both value-pinned).
 -- eitherInl/InrOfUniverseCodeTyped = the smokes eitherInl/Inr(Type@0) : either(Type@1,Type@1). subjectIsEither
 -- Injection/classifierIsEither = the SR-free closed-forms inversions (subject is an inl/inr cell, classifier an
--- eitherTypeCell). Completes the DI-2 "pair / eitherInl / eitherInr" value-typing scope (SR quartet GCC-5-deferred).
+-- eitherTypeCell). Completes the DI-2 "pair / eitherInl / eitherInr" value-typing scope (SR quartet GrownCtxConv-5-deferred).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.eitherInlOfUniverseCodeTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.eitherInrOfUniverseCodeTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.subjectIsEitherInjection
@@ -3167,13 +3168,13 @@ gates pin them shut.
 -- the optionSome arm a value premise a:A that PINS A. The scrutinee-typing prerequisite for the option ELIMINATOR
 -- (DI-5c, next). optionNone/SomeOfUniverseCodeTyped = the smokes optionNone:option(Type@0) /
 -- optionSome(Type@0):option(Type@1). subjectIsOptionConstructor/classifierIsOption = the SR-free closed-forms
--- inversions (subject is a none/some cell, classifier an optionTypeCell). SR quartet GCC-5-deferred.
+-- inversions (subject is a none/some cell, classifier an optionTypeCell). SR quartet GrownCtxConv-5-deferred.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.optionNoneOfUniverseCodeTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.optionSomeOfUniverseCodeTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.subjectIsOptionConstructor
 #assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.classifierIsOption
 -- Σ/COPRODUCT CANONICAL FORMS (ProductEitherCanonicalForms, the DI-2 payoff): NON-VACUOUS closed-normal
--- canonicity for product/either types, unconditional (no GCC-5/§5). NEW rigidity Conv.product/eitherCode_not_
+-- canonicity for product/either types, unconditional (no GrownCtxConv-5/§5). NEW rigidity Conv.product/eitherCode_not_
 -- universeCode (flat-former twin of boolTypeCell_not_universeCode, via shapeStable + universe leaf + noConfusion)
 -- + Conv.piTyCode_not_conv_eitherCode (cross-table). noClosedNormalTermAtProduct/EitherType = CANON-1c rule-out
 -- instances (grown engine inhabits no product/either type — Σ/coproduct formation but no introduction). ★ closed
@@ -3205,7 +3206,7 @@ gates pin them shut.
 -- s:boolCode via data-intro + branches t,e:C via grown). boolElimOfUniverseCodesTyped = the smoke boolElim(boolTrue,
 -- Type@0,Type@0):Type@1. subjectIsBoolElim = free-index inversion. ★ boolElimTrue/FalseIotaComputesTyped = the
 -- TYPED ι-COMPUTATION: a typed boolElim on a value ι-reduces (Step.iotaBoolTrue/False) to the typed branch — the
--- eliminator COMPUTES and PRESERVES TYPING (constructor-side, so SR-free + propext-free; full SR is the GCC-5-gated
+-- eliminator COMPUTES and PRESERVES TYPING (constructor-side, so SR-free + propext-free; full SR is the GrownCtxConv-5-gated
 -- branch-congruence deferral). Advances DI-5 #1047 (boolElim brick).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.boolElimOfUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.subjectIsBoolElim
@@ -3220,7 +3221,7 @@ gates pin them shut.
 -- ★ eitherMatchInl/InrIotaComputesTyped = the typed app-chain ι-computation: a typed eitherMatch on an injection
 -- ι-reduces to app(branch, payload), typed at C via piElim with the non-dependent codomain (weaken C).subst0 v
 -- collapsing to C (RawTerm.weaken_subst_singleton). Constructor-side, so SR-free + propext-free (full SR is the
--- GCC-5-gated branch-congruence deferral). Advances DI-5 #1047 (eitherMatch brick, the second eliminator shape).
+-- GrownCtxConv-5-gated branch-congruence deferral). Advances DI-5 #1047 (eitherMatch brick, the second eliminator shape).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherMatch.subjectIsEitherMatch
 #assert_no_axioms FX1Poly.Typed.eitherMatchInlIotaComputesTyped
 #assert_no_axioms FX1Poly.Typed.eitherMatchInrIotaComputesTyped
@@ -3232,7 +3233,7 @@ gates pin them shut.
 -- subjectIsOptionMatch = free-index inversion. ★ optionMatchNoneIotaComputesTyped = the branch-selection typed ι
 -- (reduct IS the selected value branch; needs the element-type-formedness witness for the optionNone scrutinee);
 -- ★ optionMatchSomeIotaComputesTyped = the app-chain typed ι (reduct app(sm,v):C via piElim + the (weaken C).subst0
--- v → C collapse). Constructor-side, so SR-free + propext-free (full branch-congruence SR GCC-5-deferred). ONE
+-- v → C collapse). Constructor-side, so SR-free + propext-free (full branch-congruence SR GrownCtxConv-5-deferred). ONE
 -- eliminator now demonstrates BOTH ι shapes typed-and-computing. Advances DI-5 #1047 (third eliminator brick).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescOptionMatch.subjectIsOptionMatch
 #assert_no_axioms FX1Poly.Typed.optionMatchNoneIotaComputesTyped
@@ -3244,7 +3245,7 @@ gates pin them shut.
 -- (no branch, no piElim, no subst0). The 2-arm judgment (scrutinee:product(A,B) via the pair-intro engine → fst:A /
 -- snd:B). fstOfUniverseCodesTyped = the smoke fst(pair(Type@0,Type@0)):Type@1. subjectIsSigmaProjection = free-index
 -- inversion. ★ fst/sndProjectionIotaComputesTyped = the typed content-projection ι. Constructor-side, SR-free +
--- propext-free (full scrutinee-congruence SR GCC-5-deferred). All THREE non-recursive ι shapes now typed-and-
+-- propext-free (full scrutinee-congruence SR GrownCtxConv-5-deferred). All THREE non-recursive ι shapes now typed-and-
 -- computing across the data eliminators. Advances DI-5 #1047 / SN-058 (#446, Σ projections).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.fstOfUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.subjectIsSigmaProjection
@@ -3258,7 +3259,7 @@ gates pin them shut.
 -- on refl its ι SELECTS the base case (idJ(b,refl(x)) ↝ b, Step.iotaIdJRefl) — the BRANCH-SELECTION shape (the
 -- boolElim shape reused on identity). idJOfUniverseCodesTyped = the smoke idJ(Type@0,refl(Type@0)):Type@1.
 -- subjectIsIdJ = free-index inversion. ★ idJReflIotaComputesTyped = the typed branch-selection ι (reduct IS the
--- base case, typed verbatim). Constructor-side → SR-free + propext-free (full witness-congruence SR GCC-5-deferred).
+-- base case, typed verbatim). Constructor-side → SR-free + propext-free (full witness-congruence SR GrownCtxConv-5-deferred).
 -- Completes the identity data story (intro + elim). Advances DI-5 #1047 / SN-067/068 (#450, refl + idJ).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescIdIntro.reflOfUniverseCodeTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescIdIntro.subjectIsRefl
@@ -3273,7 +3274,7 @@ gates pin them shut.
 -- listConsOfUniverseCodesTyped = the one-element list cons(Type@0,nil):List(Type@1) EXERCISING the recursive arm
 -- (tail nil typed by the same engine). subjectIsListConstructor/classifierIsList = the SR-free closed-forms
 -- inversions (subject is a nil/cons cell, classifier a listTypeCell). The scrutinee-typing prerequisite for the
--- list ELIMINATOR (listElim, the first RECURSIVE eliminator, a future brick). SR quartet GCC-5-deferred.
+-- list ELIMINATOR (listElim, the first RECURSIVE eliminator, a future brick). SR quartet GrownCtxConv-5-deferred.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.listNilOfUniverseCodeTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.listConsOfUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.subjectIsListConstructor
@@ -3285,7 +3286,7 @@ gates pin them shut.
 -- vs-leaf(universe) rigidity (one-child twin of optionCode_not_universeCode); listCode_not_piTyCode = the within-
 -- formation-table rigidity (formationFormersNotConvOfDistinct, gen_listCode≠gen_piTyCode). noClosedNormalTermAtList
 -- Type = the CANON-1c grown rule-out instance. closedNormalListCanonicalForms = the headline (list-intro disjunct
--- via subjectIsListConstructor, grown ruled out). NOTE: the list ELIMINATOR (listElim) typed-ι is GCC-5-class blocked
+-- via subjectIsListConstructor, grown ruled out). NOTE: the list ELIMINATOR (listElim) typed-ι is GrownCtxConv-5-class blocked
 -- — its cons-ι reduct app(app(app(consBranch,h),t), listElim(t,...)) applies consBranch to the TAIL t (a list value)
 -- and the RECURSIVE listElim (elim-engine-typed), NEITHER grown-typed, so piElim can't type them (recursive
 -- eliminators are engine-separation-blocked, unlike the non-recursive ones). Full canonicity needs master SR / #842.
@@ -6166,7 +6167,7 @@ gates pin them shut.
 -- engine's lamCell is CURRY-style (domain-free, one child), so piIntro picks the domain freely and the SAME
 -- closed identity λ(var 0) types at Π(Type@0).Type@0 AND Π(Type@1).Type@1 (two instances of the shipped
 -- closedIdentityLambdaTyping). grownTypingNotUnique exhibits the two non-Conv classifiers — refuted convertible
--- via the SHIPPED Conv.piTyCode_inj (Π-injectivity, a pure raw-confluence corollary, separable from GCC-5) +
+-- via the SHIPPED Conv.piTyCode_inj (Π-injectivity, a pure raw-confluence corollary, separable from GrownCtxConv-5) +
 -- universeCodeCell_inj_of_conv + LevelExpr.ne_lsucc_self. Permanent guard: grown FULL uniqueness is FALSE (so the
 -- bidirectional checker is check-mode against a target, not infer-mode); any exact-classifier result must restrict
 -- to TYPE-CODE subjects. Confirms reflection conclusion #1 (injectivity is free) and refutes conclusion #2.
@@ -6286,32 +6287,32 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convBackToUniverseCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextOfFormation
 -- GROWN context-conversion mutual pair, conditional on the lone piElim arm (HasTypeDescPiContextConversion
--- Conditional.lean, GCC-1/2/3/4/6): the SRD-1 conditional-package discipline (#664) applied to GCC. ALL five
+-- Conditional.lean, GrownCtxConv-1/2/3/4/6): the SRD-1 conditional-package discipline (#664) applied to GrownCtxConv. ALL five
 -- non-piElim arms discharged — ofFormation (convContextOfFormation), conv (recurse+compose), piIntro
 -- VALIDITY-FREE (components conv-backed to universe codes; body via the recursively-obtained codomain re-typing),
 -- genFormationPi (mutual convTelescope), telescope nil/cons. The piElim arm (type-Conv-closure, circular with SR
--- = the mutual fundamental-metatheory bundle GCC-5) is the LONE explicit hypothesis. convTelescopeOfPiElimArm =
--- the grown telescope context-conversion (GCC-3) the grown telescope SR consumes ⟹ SRD-2 ⟹ unconditional SN-055.
+-- = the mutual fundamental-metatheory bundle GrownCtxConv-5) is the LONE explicit hypothesis. convTelescopeOfPiElimArm =
+-- the grown telescope context-conversion (GrownCtxConv-3) the grown telescope SR consumes ⟹ SRD-2 ⟹ unconditional SN-055.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextOfPiElimArm
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.convTelescopeOfPiElimArm
 
--- GCC-5 piElim arm REDUCED to one pure type-formation residual (HasTypeDescPiContextConversionPiElimReduction
--- .lean, GCC-5-REASSEMBLY, toward #842). reassembleApplicationUnderContextConversion: the piElim arm's reassembly
+-- GrownCtxConv-5 piElim arm REDUCED to one pure type-formation residual (HasTypeDescPiContextConversionPiElimReduction
+-- .lean, GrownCtxConv-5-REASSEMBLY, toward #842). reassembleApplicationUnderContextConversion: the piElim arm's reassembly
 -- (rebuild appCell function argument under the target at a Conv-equal classifier) follows from the function-IH
 -- output, the argument-IH output, and the SINGLE residual piValidityTarget : IsTypeDescPi tgt (Π D C) — NO
 -- WfContextDescPi tgt, because that one Π-validity supplies BOTH the conv reclassifier for the function AND
 -- (via inversionPiCodeComponentsUnconditional) the domain typing for the argument. ConvContextPreservesPiValidity
 -- NAMES the residual (a Π-type-code's validity is context-conversion-stable — pure type-formation, no elimination).
 -- piElimArmFromPiValidityTransfer: under that residual + WfContextDescPi src (master-SR-threaded) + the convContext
--- IH, the full GCC-5 arm holds (classifierIsTypeDescPi/WFG-3 → residual transfer → reassembly). FINDING: the
+-- IH, the full GrownCtxConv-5 arm holds (classifierIsTypeDescPi/WFG-3 → residual transfer → reassembly). FINDING: the
 -- residual itself is NOT discharged — it context-converts a Π-validity derivation that classifierIsTypeDescPi can
 -- make TALLER (non-structural), and master SR is gated on the same arm (circular), so closure is the mutual
 -- fundamental-metatheory bundle (GTL-20) or the semantic route. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.reassembleApplicationUnderContextConversion
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimArmFromPiValidityTransfer
 
--- GCC-5 WfContext-threaded context-conversion conditional on the MINIMAL residual (HasTypeDescPiContextConversion
--- Wf.lean, GCC-5-WFTHREAD, toward #842). convContextWfOfPiValidity / convTelescopeWfOfPiValidity: a
+-- GrownCtxConv-5 WfContext-threaded context-conversion conditional on the MINIMAL residual (HasTypeDescPiContextConversion
+-- Wf.lean, GrownCtxConv-5-WFTHREAD, toward #842). convContextWfOfPiValidity / convTelescopeWfOfPiValidity: a
 -- WfContextDescPi-threaded grown context-conversion mutual pair conditional on ConvContextPreservesPiValidity (the
 -- minimal type-formation residual from #1092) INSTEAD of the opaque full piElimArm. The piElim arm is INLINED via
 -- piElimArmFromPiValidityTransfer (threaded wfSrc → classifierIsTypeDescPi/WFG-3 source Pi-validity → residual
@@ -6327,8 +6328,8 @@ gates pin them shut.
 
 -- GTL-20 (#1098): the grown mutual fundamental-metatheory bundle, conditional on the SINGLE residual
 -- (GrownMutualMetatheoryFromPiValidity.lean, toward #834). PROVES that ConvContextPreservesPiValidity discharges BOTH
--- open grown-metatheory release blockers: grown context-conversion (GCC-5/#842) AND the grown master subject
--- reduction (SRD-2/#845/SN-055/#558). grownContextConversionFromPiValidity = the clean top-level GCC-5 closure (wraps
+-- open grown-metatheory release blockers: grown context-conversion (GrownCtxConv-5/#842) AND the grown master subject
+-- reduction (SRD-2/#845/SN-055/#558). grownContextConversionFromPiValidity = the clean top-level GrownCtxConv-5 closure (wraps
 -- #1093). masterSubjectReductionFromPiValidity ⋈ DescTelescopePi.subjectReductionFromPiValidity = the Wf-THREADING
 -- master SR re-statement: the shipped subjectReductionOfPiElimArm is conditional on the WHOLE grown context-conversion
 -- piElim arm as a WfContextDescPi-FREE hypothesis, which CANNOT be discharged from the residual (the route needs
@@ -6337,7 +6338,7 @@ gates pin them shut.
 -- shipped master SR consumes its piElim arm in EXACTLY ONE place (the telescope here arm's convTelescopeOfPiElimArm);
 -- replacing that ONE call with #1093's Wf-threading convTelescopeWfOfPiValidity (source Wf from WfContextDescPi.cons)
 -- re-bases the whole mutual block on the residual, every other arm unchanged — a mechanical re-statement, not a new
--- proof. grownMutualMetatheoryFromPiValidity = the explicit unification: ONE residual ⟹ BOTH. So GCC-5 and SRD-2
+-- proof. grownMutualMetatheoryFromPiValidity = the explicit unification: ONE residual ⟹ BOTH. So GrownCtxConv-5 and SRD-2
 -- provably share a single obligation; discharging it (syntactic GTL-21 OR the semantic/reducibility route) closes
 -- both. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.grownContextConversionFromPiValidity
@@ -6345,7 +6346,7 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.subjectReductionFromPiValidity
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.grownMutualMetatheoryFromPiValidity
 
--- GCC-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
+-- GrownCtxConv-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
 -- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
 -- a piTyCodeCell D C that is a FORMATION type (IsTypeDesc, no type-level computation) context-converts to a grown
 -- type (IsTypeDescPi) under any pointwise-Conv-related target, via the shipped unconditional formation
@@ -6354,18 +6355,18 @@ gates pin them shut.
 -- free for the formation fragment), this LOCALIZES the residual's genuinely-open core precisely to the
 -- GENUINELY-GROWN Π-codes: open NEUTRAL type-level applications ((var f)(var a) at a universe) / type-level λ, typed
 -- via piElim/piIntro at the type level, NOT via ofFormation/genFormationPi-from-formation. That open-neutral case IS
--- GCC-5 itself (context-converting a neutral type-level application is the piElim context-conversion), so the
+-- GrownCtxConv-5 itself (context-converting a neutral type-level application is the piElim context-conversion), so the
 -- residual's hard core is irreducibly the open semantic-model obligation (Kripke/sconing logical relation — the
 -- bounded reducibility model is closed-substitution-based, unfit; reflection fails at the neutral base). No further
 -- syntactic fragment to peel. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextPreservesPiValidityForFormationCode
--- GCC-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
+-- GrownCtxConv-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
 -- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
 -- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
 -- semantic neutral-type interpretation is IDENTICAL under both sides of the residual's pointwise-Conv context
 -- conversion — context conversion is invisible to the semantic side. This isolates the genuinely-open residual
 -- entirely to the SYNTACTIC reflection carrying the IsTypeDescPi typing WITNESS across the conversion (the typed
--- logical relation's neutral reflection, re-assembling the type-level piElim for (var f)(var a) = GCC-5). Substrate
+-- logical relation's neutral reflection, re-assembling the type-level piElim for (var f)(var a) = GrownCtxConv-5). Substrate
 -- in hand for the typed model: Step.reflectRename + kripkeArrow_neutralBackwardClosure (firings 13/14) +
 -- Conv.piTyCode_injective (#865). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.neutralTypeCodeSemanticReducibilityIsContextFree
@@ -6373,7 +6374,7 @@ gates pin them shut.
 -- reducible context-free — the non-circular leaf the open type-level neutral reflection bottoms out at.
 #assert_no_axioms FX1Poly.Typed.smoke_variableTypeCodeSemanticReducibilityIsContextFree
 -- TYPED-TYPE-VALIDITY RELATION (TypedTypeValidityRelation.lean): the open-context typed logical-relation OBJECT
--- for GCC-5 (#842), the Kripke-model interpretation of a valid type code, PAIRING a reducibility candidate
+-- for GrownCtxConv-5 (#842), the Kripke-model interpretation of a valid type code, PAIRING a reducibility candidate
 -- (KripkeCand) with the IsTypeDescPi typing witness. The `neutral` arm: a neutral type code is typed-valid,
 -- carrying snKripkeCand (#1108) + its IsTypeDescPi witness — the base case of the open type-level neutral
 -- reflection on which the residual ConvContextPreservesPiValidity bottoms out. ★ DESIGN FINDING: a
@@ -6405,21 +6406,29 @@ gates pin them shut.
 -- at the call site) — the form the fundamental theorem's Π case will use. ★ FINDING: a genuinely-dependent codomain
 -- family needs to INSTANTIATE a KripkeCand (scope+1) with a TERM argument, but KripkeCand is RENAMING-indexed
 -- (Fin→Fin, can't encode a term subst) — so the dependent instantiation needs a substitution-Kripke refactor,
--- reserved for member-level canonicity, OFF the GCC-5 critical path. Zero-axiom.
+-- reserved for member-level canonicity, OFF the GrownCtxConv-5 critical path. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.snKripkeCodFamily_transport_pointwise
 #assert_no_axioms FX1Poly.Typed.piTypeViaSnCodFamily
 -- TYPED-LR-TRANSPORT-NEUTRAL: the neutral arm of context-conversion transport on TypedTypeValidityBoxed. The
 -- candidate (snKripkeCand) is context-INVARIANT (#1108), so the neutral-arm transport's SOLE obligation is the
 -- target typing targetValid (the semantic side is free). ★ ARCHITECTURAL FINDING: the neutral arm carries
--- validity as a BLACK BOX, so transporting it for a NEUTRAL APP (var f)(var a) IS GCC-5 (#842) — the black-box
--- LR RE-PACKAGES GCC-5, not dissolves it. Genuine discharge needs DERIVED (not carried) validity: a well-formed-
+-- validity as a BLACK BOX, so transporting it for a NEUTRAL APP (var f)(var a) IS GrownCtxConv-5 (#842) — the black-box
+-- LR RE-PACKAGES GrownCtxConv-5, not dissolves it. Genuine discharge needs DERIVED (not carried) validity: a well-formed-
 -- context-indexed LR where a neutral app's typing reconstructs from the looked-up function-var type (var rule +
 -- pointwise-Conv leaf) + piElim reassembly (Abel reflection). The Π case already derives validity from parts
 -- (piTypeViaSnCodFamily), so the neutral-APP case is the sole obstruction. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.transportNeutralArm
+-- GrownCtxConv-5-RESIDUAL-SIGNATURE: the PRECISELY-LOCATED residual of GrownCtxConv-5's piElim arm (#842), verified against the
+-- rule (HasTypeDescPi.piElim carries NO D:Type/C:Type premises, so the conv-back of the function needs IsType to
+-- respect Conv). After WfContext-threading (#1059 uses classifierIsTypeDescPi/WFG-3 for target validity), the
+-- context conversion discharges and the residual is pure type-Conv-closure at a FIXED context — SN-restricted to
+-- exclude the #1058 non-SN counterexample (λ.Type@0)Ω. This is the FT-ESCAPE (reducible→typed, run backwards),
+-- the dual of the shipped FORWARD ReducibleTypeStep.convInvariant (#537). smoke_residualRefl = non-vacuity.
+-- Zero-axiom (Prop def + Conv.refl-shaped smoke).
+#assert_no_axioms FX1Poly.Typed.smoke_residualRefl
 
--- GCC-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
--- Reduction.lean, GCC-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
+-- GrownCtxConv-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
+-- Reduction.lean, GrownCtxConv-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
 -- obstruction: a context-conversion bundle's piElim arm must re-type the function under tgt at SOME Π-code. EXACT
 -- motive (re-type at the original Π D C) closes piElim (#1092 reassembly) but var needs IsType-respects-Conv
 -- (FALSE #1058); FLEXIBLE motive (any Conv-equal Π-code) closes var (WfContextDescPi.lookupIsType gives the tgt
@@ -6428,17 +6437,17 @@ gates pin them shut.
 -- StepStar S T → IsTypeDescPi ctx T, single-context "subject reduction for type codes"). reassembleApplication
 -- FromConvEqualPiValidity generalizes #1092's reassembly to a Conv-equal Π reductD reductC (via Conv.piTyCode_cong
 -- + Conv.subst0). piElimArmFromValidityRespectsReduction: from the function's flexible classifier-transfer IH +
--- reducesToPiTyCode (PC' ⤳* Π reductD reductC) + the residual + the generalized reassembly. Triangulates the GCC-5
+-- reducesToPiTyCode (PC' ⤳* Π reductD reductC) + the residual + the generalized reassembly. Triangulates the GrownCtxConv-5
 -- residual with #1092/#1093 (exact ConvContextPreservesPiValidity vs flexible TypeCodeValidityRespectsReduction,
 -- inter-derivable, both logical-relation-discharged). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.reassembleApplicationFromConvEqualPiValidity
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimArmFromValidityRespectsReduction
 
--- GCC-5 formation BASE of the validity-respects-reduction residual (same file, GCC-5-FORMBASE, toward #842).
+-- GrownCtxConv-5 formation BASE of the validity-respects-reduction residual (same file, GrownCtxConv-5-FORMBASE, toward #842).
 -- IsTypeDesc.respectsReductionStar: formation type validity survives reduction UNCONDITIONALLY -- HasTypeDesc
 -- .subjectReduction preserves the universe classifier and is itself unconditional (its telescope arm re-types a
 -- former's codomain under a stepped domain binder via the UNCONDITIONAL formation convTelescope, the exact move the
--- grown engine cannot make = why GCC-5 is open), iterated along StepStar. validityRespectsReductionOfFormation: the
+-- grown engine cannot make = why GrownCtxConv-5 is open), iterated along StepStar. validityRespectsReductionOfFormation: the
 -- grown corollary (formation-typed type code, S⤳*T ⟹ grown IsTypeDescPi T, via ofFormation). This discharges the
 -- grown residual TypeCodeValidityRespectsReduction (#1094) on the FORMATION fragment for free, precisely localizing
 -- the genuinely-open part to the type-level-computing (genuinely-grown) type codes -- the logical-relation
@@ -6446,14 +6455,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.respectsReductionStar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.validityRespectsReductionOfFormation
 
--- GCC-5 formation/grown BOUNDARY, named (same file, GCC-5-FORMBOUND, toward #842). HasTypeDesc.codomainReTyping
+-- GrownCtxConv-5 formation/grown BOUNDARY, named (same file, GrownCtxConv-5-FORMBOUND, toward #842). HasTypeDesc.codomainReTyping
 -- OfFormationStep: codomain re-typing under a stepped domain binder is UNCONDITIONAL for FORMATION codomains -- the
 -- single domain Step gives Conv domain domainReduct (Conv.fromStepStar), hence the pointwise context-conversion
 -- condition (convContextCondition_consStep), and the UNCONDITIONAL formation HasTypeDesc.convContext re-types the
 -- codomain (conv-backed to the same universe code). This is the formation analogue of the grown codomainReTyping
--- (GCC-6 #843) but UNCONDITIONAL where the grown one is gated on GCC-5. It IS exactly the move the grown engine
+-- (GrownCtxConv-6 #843) but UNCONDITIONAL where the grown one is gated on GrownCtxConv-5. It IS exactly the move the grown engine
 -- cannot make for genuinely-grown codomains -- that single asymmetry (formation context-conversion unconditional,
--- grown not) is the ENTIRE content of why GCC-5 / master-SR genFormationPi / TypeCodeValidityRespectsReduction
+-- grown not) is the ENTIRE content of why GrownCtxConv-5 / master-SR genFormationPi / TypeCodeValidityRespectsReduction
 -- remain open and need the FX logical relation. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.codomainReTypingOfFormationStep
 
@@ -6487,7 +6496,7 @@ gates pin them shut.
 -- optionMatch+eitherMatch branch / idStrictRec strict path recursion) + the Empty TYPE-CODE cell gen_emptyCode
 -- (typingRuleDescOf = none, CON-A1's deferred row). Every β+ι iota-redex head is now an EXPLICIT shipped
 -- refutation. emptyTypeCellHasNoTyping additionally yields noConvReclassifierAtEmptyType — the conv arm of the
--- SN-050 consistency inversion (the residual is the piElim arm, the SR/model crux GCC-5/CON-A3).
+-- SN-050 consistency inversion (the residual is the piElim arm, the SR/model crux GrownCtxConv-5/CON-A3).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sndCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natRecCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.listElimCellHasNoTyping
@@ -6669,7 +6678,7 @@ gates pin them shut.
 -- then carrying the contractum to the same output by the shipped TY-SR-β `betaSubjectReduction` / #474).
 -- hasTypeDescPi_genElim_computesTypeStably bundles BOTH the redex and its ι-contractum at the one
 -- rule-DATA output — the elimination arm in the exact shape the GTL-20 mutual fundamental-metatheory
--- bundle consumes to discharge the grown context-conversion piElim residual (GCC-5 / #842 via GTL-21).
+-- bundle consumes to discharge the grown context-conversion piElim residual (GrownCtxConv-5 / #842 via GTL-21).
 -- Additive: no `HasTypeDescPi` arm; reads the existing engine through the elim table.
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_genElimIota_viaElimDesc
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_genElim_computesTypeStably
@@ -6775,7 +6784,7 @@ gates pin them shut.
 -- word-rewrite chain via Step.toWordRewrite). typedRootWordReductionTerminates is the headline — a reduction
 -- sequence rooted at a WELL-TYPED term cannot be infinite (notStronglyNormalizing_of_infiniteReduction +
 -- stronglyNormalizingOfWfContextDesc / SN-043), so the induced certified word chain terminates — consuming
--- ROOT SN only, NO subject reduction (GCC-5-free). untypedWordReductionDiverges is the necessity: the FULL
+-- ROOT SN only, NO subject reduction (GrownCtxConv-5-free). untypedWordReductionDiverges is the necessity: the FULL
 -- word system diverges on an UNTYPED word (growingDivergentTerm.toCode), whose source is non-SN — the
 -- word-layer mirror of SN-NECESSITY (#950). All zero-axiom (Step.toWordRewrite pointwise; apply + rw + the
 -- SN-043 witness; the concrete growing-divergence sequence images).
@@ -6792,7 +6801,7 @@ gates pin them shut.
 -- the SN-131 ingredient (typed SN / stronglyNormalizingOfWfContextDesc, SN-043) with term-layer Newman
 -- (StepStar.confluence_of_localJoin_and_accessible) lifted through toWordRewrites — so the certified fragment
 -- is terminating (SN-131) AND confluent (here), Newman's two ingredients, reflected to the word layer; needs
--- the ROOT typed only (GCC-5-free). All zero-axiom (obtain the term join, toWordRewrites each leg).
+-- the ROOT typed only (GrownCtxConv-5-free). All zero-axiom (obtain the term join, toWordRewrites each leg).
 #assert_no_axioms FX1Poly.Typed.certifiedWordLocalConfluence
 #assert_no_axioms FX1Poly.Typed.certifiedWordConfluence
 
@@ -7080,7 +7089,7 @@ gates pin them shut.
 -- §27.3 Layer-4 defense (SelfVerifiedMetatheory): the bundled self-verified-metatheory layer — preservation +
 -- progress as anchored FX theorems, the peer assembly Layers 1/2/3/5 each already had.  Each guarantee
 -- ANCHORED (`…_<guarantee> := @<shippedWitness>`).  formationIsUnconditionallySelfVerified (both guarantees
--- unconditional) vs grownIsSelfVerified + grownNotUnconditionallySelfVerified (the honest GCC-5 boundary: the
+-- unconditional) vs grownIsSelfVerified + grownNotUnconditionallySelfVerified (the honest GrownCtxConv-5 boundary: the
 -- grown preservation MASTER `subjectReductionOfGrownTelescopeSR` is telescope-SR-conditional, #842/#845).
 -- Non-vacuity: incompleteMetatheory missing progress is NOT self-verified.  Closes SN-143 — five-layer arc
 -- L1-L5 now each has a dedicated assembly file.
@@ -7122,7 +7131,7 @@ gates pin them shut.
 -- PAR-1 (MetatheoryParityLedger): formation↔grown reduction-metatheory parity. Weakening + substitution at
 -- FULL parity (both unconditional, anchored both engines); SN both hold (grown carries the decidable WF-ctx
 -- presupposition); SR is the ASYMMETRY — formation unconditional MASTER, grown only unconditional ARMS, its
--- master conditional on the GCC-5 bundle (#842/#845). The parityAnchor_* defs re-certify each engine's proof
+-- master conditional on the GrownCtxConv-5 bundle (#842/#845). The parityAnchor_* defs re-certify each engine's proof
 -- is zero-axiom + break if renamed; the discrimination theorems prove the benign WF presupposition is kept
 -- DISTINCT from the real SR blocker (no overstatement).
 #assert_no_axioms FX1Poly.Typed.MetatheoryProperty

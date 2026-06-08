@@ -2,10 +2,10 @@ import FX1Poly.Typed.HasTypeDescPiFunctionComponentValidity
 import FX1Poly.Typed.HasTypeDescPiContextConversion
 
 /-! # FX1Poly/Typed/HasTypeDescPiContextConversionPiElimReduction
-    — the GCC-5 piElim arm reduced to ONE pure type-formation residual (GCC-5-REASSEMBLY, toward #842)
+    — the GrownCtxConv-5 piElim arm reduced to ONE pure type-formation residual (GrownCtxConv-5-REASSEMBLY, toward #842)
 
-Grown-engine context-conversion (`HasTypeDescPi.convContextOfPiElimArm`, GCC-1..4/#838-841) is conditional on
-its lone hard arm `piElimArm` (GCC-5, `#842` — "the entangled crux").  This file does NOT discharge that arm
+Grown-engine context-conversion (`HasTypeDescPi.convContextOfPiElimArm`, GrownCtxConv-1..4/#838-841) is conditional on
+its lone hard arm `piElimArm` (GrownCtxConv-5, `#842` — "the entangled crux").  This file does NOT discharge that arm
 (it genuinely needs the mutual fundamental-metatheory bundle, GTL-20/`#834` — see the finding below), but it
 ISOLATES the residual: it proves that the piElim arm's REASSEMBLY (rebuild `appCell function argument` under the
 target context, at a `Conv`-equal classifier) reduces to a SINGLE pure type-formation fact —
@@ -31,13 +31,13 @@ at `subst0 C argument` under the target.  The key economy: that ONE `Π`-validit
 
 Then `piElim` fires directly.  The classifier is `subst0 C argument` itself (`Conv.refl`).
 
-## The discharge shape (what closes GCC-5)
+## The discharge shape (what closes GrownCtxConv-5)
 
 `HasTypeDescPi.piElimArmFromPiValidityTransfer`: under the residual `ConvContextPreservesPiValidity` and source
 well-formedness `WfContextDescPi src` (which the master SR dispatcher already threads), the full piElim arm
 follows from the two convContext IH outputs.  Proof: `classifierIsTypeDescPi` (WFG-3, `#857`) gives
 `IsTypeDescPi src (Π D C)`; the residual transfers it to the target; `reassembleApplicationUnderContextConversion`
-finishes.  So the EXACT GCC-5 obligation, once `WfContextDescPi` is threaded, is `ConvContextPreservesPiValidity`.
+finishes.  So the EXACT GrownCtxConv-5 obligation, once `WfContextDescPi` is threaded, is `ConvContextPreservesPiValidity`.
 
 ## Why the residual is not itself discharged here (the well-founded-vs-semantic finding)
 
@@ -64,11 +64,11 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
-/-- **The GCC-5 residual, named.**  A `Π`-type-code's validity is stable under context conversion: if
+/-- **The GrownCtxConv-5 residual, named.**  A `Π`-type-code's validity is stable under context conversion: if
 `piTyCodeCell domainCode codomainCode` is a grown type under `sourceContext`, then it is a grown type under any
 pointwise-`Conv`-related `targetContext`.  This is a PURE type-formation fact (no term elimination), and — per
 `piElimArmFromPiValidityTransfer` below — it is the exact obligation whose discharge turns the conditional grown
-context-conversion (GCC-1..4) unconditional (GCC-5, `#842`). -/
+context-conversion (GrownCtxConv-1..4) unconditional (GrownCtxConv-5, `#842`). -/
 def ConvContextPreservesPiValidity (profile : PolyProfile) : Prop :=
   ∀ {scope : Nat} {sourceContext targetContext : TypingContext profile scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)},
@@ -117,7 +117,7 @@ master SR dispatcher already threads), the grown context-conversion piElim arm h
 (WFG-3) exposes the function's `Π`-classifier as a source type, the residual transfers that validity to the
 target, and `reassembleApplicationUnderContextConversion` rebuilds the application.  The two `…Converted`
 hypotheses are exactly the convContext IH outputs on the function and argument sub-derivations — so this is the
-GCC-5 piElim arm modulo the single residual `piValidityTransfers`. -/
+GrownCtxConv-5 piElim arm modulo the single residual `piValidityTransfers`. -/
 theorem HasTypeDescPi.piElimArmFromPiValidityTransfer {profile : PolyProfile}
     (piValidityTransfers : ConvContextPreservesPiValidity profile)
     {scope : Nat} {sourceContext targetContext : TypingContext profile scope}

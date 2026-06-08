@@ -27,7 +27,7 @@ and reassembling via the GENERIC `HasTypeDescPi.genFormationPi` at the unchanged
 goal.  Every step here is generic over the `typingRuleDescOf` table — adding a formation row is absorbed
 zero-touch.  The `telescopeSR` premise is the genuine deferral: it is the grown telescope SR
 (`DescTelescopePi.subjectReduction`, SRD-4), mutual with the master dispatcher, whose `here` (binding-head-steps)
-case consumes the grown context-conversion (#814 pt2b / GCC) — exactly as the specific
+case consumes the grown context-conversion (#814 pt2b / GrownCtxConv) — exactly as the specific
 `subjectReductionPiFormerArm` takes its `codomainReTyping` premise.  The master dispatcher (TG-3) supplies
 `telescopeSR` via that mutual recursion and routes its `genFormationPi` case through this ONE generic arm.
 

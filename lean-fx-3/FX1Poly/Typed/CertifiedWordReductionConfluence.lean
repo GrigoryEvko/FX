@@ -59,7 +59,7 @@ have `toCode`-images that JOIN as `fxStepSystem` word reductions.  Combines the 
 confluence (`StepStar.confluence_of_localJoin_and_accessible`), lifted through `StepStar.toWordRewrites`.  On
 the certified fragment the `fxStepSystem` is therefore terminating (SN-131) AND confluent: the two ingredients
 the Newman theorem assembles into convergence, reflected to the word layer.  Needs the ROOT typed only — the
-intermediate reducts need not stay typed (GCC-5-free, exactly as in SN-131). -/
+intermediate reducts need not stay typed (GrownCtxConv-5-free, exactly as in SN-131). -/
 theorem certifiedWordConfluence {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {rootTerm rootType : RawTerm scope}
     {leftReduct rightReduct : RawTerm scope}

@@ -27,7 +27,7 @@ Following the established cascade-free pattern (a brand-new standalone judgment)
 
 Constructor-side: the elim is BUILT from the branch typings, the reduct's typing is BUILT by `piElim` from
 the same hypotheses.  No derivation casing (no cons-index propext trap), no branch-congruence (the full SR
-consumes the grown master SR / GCC-5 #842).  The genuinely-new content here vs DI-5a is the app-chain ι shape
+consumes the grown master SR / GrownCtxConv-5 #842).  The genuinely-new content here vs DI-5a is the app-chain ι shape
 — the reduct is an application, not a directly-selected branch.
 
 ## Zero-axiom

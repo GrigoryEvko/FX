@@ -25,7 +25,7 @@ of `closedNormalBoolCanonicalForms`.
     `emptyCode`); the grown disjunct by the via-generic rule-out.  The multi-engine normal-form consistency
     statement: adding the data engines did not break `Empty`'s emptiness.
 
-## Unconditional (no GCC-5 / §5)
+## Unconditional (no GrownCtxConv-5 / §5)
 
 The grown classifier is read only at an ALREADY-normal subject (the corollary inverts the typing of a normal
 term; it never types a reduction step), so no `piElim` context-conversion (#842) is invoked — exactly as the

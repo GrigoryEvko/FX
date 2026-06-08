@@ -30,7 +30,7 @@ previous term, seeded at `Type@0`:
 so the family is `Type@0`, `(λx.x) Type@0`, `(λx.x) ((λx.x) Type@0)`, …  — a depth-`n` β-redex tower that
 exercises the grown engine's universe codes, λ, application, and a genuine `n`-step β-reduction.
 
-## The four §27.3-L2 properties, over the whole family (all unconditional, GCC-5-independent)
+## The four §27.3-L2 properties, over the whole family (all unconditional, GrownCtxConv-5-independent)
 
   * `metatheoryFuzzFamily_typed` — every member is well-typed at `Type@1` (by construction).
   * `metatheoryFuzzFamily_betaPreservation` — PRESERVATION (β-SR): the β-reduct of each redex stays typed at
@@ -94,7 +94,7 @@ theorem metatheoryFuzzFamily_betaStep : ∀ n,
 /-- **Preservation (β subject reduction) over the family.**  The β-reduct of every redex
 `metatheoryFuzzFamily (n+1)` is still typed at `Type@1` (`betaSubjectReductionDescPi`) — and the reduct IS
 `metatheoryFuzzFamily n` (by defeq), so preservation closes the family back into itself.  Unconditional: β-SR
-does not route through the GCC-5-gated master dispatcher. -/
+does not route through the GrownCtxConv-5-gated master dispatcher. -/
 theorem metatheoryFuzzFamily_betaPreservation {profile : PolyProfile} : ∀ n,
     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
       (metatheoryFuzzFamily n) (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard) :=
@@ -155,7 +155,7 @@ theorem metatheoryFuzzFamily_succ_isNotNormal :
 /-- **The fuzz run passes.**  For every generated term the four §27.3-Layer-2 properties hold together:
 well-typed at `Type@1`, strongly normalizing, makes progress (value-or-steps), and evaluates to the canonical
 value `Type@0`.  The bundled "metatheory fuzzer is green over its entire generated family" statement —
-unconditional and zero-axiom (no GCC-5, no `native_decide`). -/
+unconditional and zero-axiom (no GrownCtxConv-5, no `native_decide`). -/
 theorem metatheoryFuzzFamilySound {profile : PolyProfile} (n : Nat) :
     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
         (metatheoryFuzzFamily n) (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard) ∧
@@ -232,7 +232,7 @@ theorem metatheoryFuzzConstantFamily_betaStep : ∀ n,
 
 /-- **Preservation (β subject reduction) over the constant family.**  The β-reduct of every redex
 `metatheoryFuzzConstantFamily (n+1)` — which is `Type@0` — is still typed at `Type@1`
-(`betaSubjectReductionDescPi`).  Unconditional: β-SR does not route through the GCC-5-gated master dispatcher. -/
+(`betaSubjectReductionDescPi`).  Unconditional: β-SR does not route through the GrownCtxConv-5-gated master dispatcher. -/
 theorem metatheoryFuzzConstantFamily_betaPreservation {profile : PolyProfile} : ∀ _n : Nat,
     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard)

@@ -29,9 +29,9 @@ pinned by their values): each Either arm has ONE value premise and ONE type-form
 
 ## SR deferral (same as DI-2a)
 
-Judgment + smokes + inversions are SR-free.  The SR/SN quartet is GCC-5-ENTANGLED (an injection steps when
+Judgment + smokes + inversions are SR-free.  The SR/SN quartet is GrownCtxConv-5-ENTANGLED (an injection steps when
 its value/type component steps, re-typing only via the grown master subject-reduction dispatcher, `SN-055` /
-GCC-5 #842) — the deliberate deferral.
+GrownCtxConv-5 #842) — the deliberate deferral.
 
 ## Zero-axiom
 

@@ -12,7 +12,7 @@ closed term typed at `boolTypeCell` by `HasTypeDescDataIntro` (data values) or `
 type codes) is `boolTrueCell` / `boolFalseCell`.  The remaining CANON-1 residual was the GROWN engine
 `HasTypeDescPi`: could it type some closed term at `boolTypeCell` that ISN'T a Boolean value?
 
-This file answers NO — for NORMAL subjects, **unconditionally** (no GCC-5 #842, no §5 candidate bridge
+This file answers NO — for NORMAL subjects, **unconditionally** (no GrownCtxConv-5 #842, no §5 candidate bridge
 #768).  The grown engine is formation-only for data: it never introduces `boolTrue` / `boolFalse`
 (`HasTypeDescPi.boolTrueCellHasNoTyping`), and its closed-normal canonical forms
 (`closedNormalSubjectHead`) are exactly the SIX heads `gen_lam` / `gen_piTyCode` / `gen_sigmaTyCode` /
@@ -43,7 +43,7 @@ half), the empty-type twin of this bool-type rule-out.
 The ONLY gap remaining for full closed canonicity (every closed `t : boolCode` is a Boolean value, not
 just every NORMAL one) is reducing an arbitrary closed `t` to its normal form WHILE preserving the
 `boolTypeCell` classifier — i.e. grown SN (`SN-043`, shipped) plus the master subject-reduction dispatcher
-(`SN-055` / `#842`, the GCC-5-gated blocker).  This file precisely localizes that dependency: canonicity
+(`SN-055` / `#842`, the GrownCtxConv-5-gated blocker).  This file precisely localizes that dependency: canonicity
 for NORMAL subjects is unconditional; only the "reduce-to-normal" step needs SR.
 
 ## Zero-axiom
@@ -136,7 +136,7 @@ theorem HasTypeDescPi.optionFormerNotTypedAtBoolType {profile : PolyProfile} {sc
 /-- **★ No closed-NORMAL grown term is typed at `boolCode`.**  Grown bool-type vacuity: by the closed
 canonical forms (`closedNormalSubjectHead`) the subject is λ / Π / Σ / universe / list / option, each refuted
 at `boolTypeCell` by the per-head `*NotTypedAtBoolType` lemmas.  No subject reduction needed (the classifier
-is read only at the already-normal subject) — so unconditional on GCC-5 / §5.  The grown disjunct of
+is read only at the already-normal subject) — so unconditional on GrownCtxConv-5 / §5.  The grown disjunct of
 combined bool canonicity is empty for normal subjects; full canonicity adds grown SN (SN-043, shipped) plus
 the SR dispatcher (SN-055 / #842) to reduce an arbitrary closed `t : boolCode` to its normal form. -/
 theorem HasTypeDescPi.noClosedNormalTermAtBoolType {profile : PolyProfile} {subject : RawTerm 0}
@@ -170,7 +170,7 @@ theorem HasTypeDescPi.noClosedNormalTermAtBoolType {profile : PolyProfile} {subj
 `boolTypeCell` by `HasTypeDescDataIntro` OR `HasTypeDescBaseType` OR `HasTypeDescPi` is `boolTrueCell` /
 `boolFalseCell`.  The two standalone disjuncts delegate to `standaloneBoolCanonicalForms` (#1063); the grown
 disjunct is ruled out by `noClosedNormalTermAtBoolType` (vacuous — the grown engine has no closed-normal
-inhabitant of `boolCode`).  Unconditional: no GCC-5, no §5.  The CANON-1 (#1048) normal-subject headline —
+inhabitant of `boolCode`).  Unconditional: no GrownCtxConv-5, no §5.  The CANON-1 (#1048) normal-subject headline —
 the closed-normal inhabitants of `boolCode` across the whole kernel are exactly the two Boolean values. -/
 theorem closedNormalBoolCanonicalForms {profile : PolyProfile} {subject : RawTerm 0}
     (normal : RawTerm.isStepNormalForm subject)

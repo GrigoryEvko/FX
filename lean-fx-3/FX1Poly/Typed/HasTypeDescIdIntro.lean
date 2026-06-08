@@ -26,8 +26,8 @@ same term).
 
 ## SR deferral (same as the other intros)
 
-Judgment + smoke + inversions are SR-free.  The SR/SN quartet is GCC-5-ENTANGLED (a `refl` steps when its witness
-steps, re-typing only via the grown master subject-reduction dispatcher, `SN-055` / GCC-5 #842) — the deliberate
+Judgment + smoke + inversions are SR-free.  The SR/SN quartet is GrownCtxConv-5-ENTANGLED (a `refl` steps when its witness
+steps, re-typing only via the grown master subject-reduction dispatcher, `SN-055` / GrownCtxConv-5 #842) — the deliberate
 deferral.
 
 ## Zero-axiom

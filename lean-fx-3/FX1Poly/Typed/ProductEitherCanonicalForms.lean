@@ -11,7 +11,7 @@ DI-2a/DI-2b typed the Σ-value `pair` and the coproduct-values `eitherInl` / `ei
 `HasTypeDescPairIntro` / `HasTypeDescEitherIntro`).  This file proves the closed-NORMAL canonical-forms
 theorems those engines make NON-VACUOUS: a closed normal term typed at `product(A, B)` is a `pair`, and at
 `either(A, B)` is an `eitherInl` / `eitherInr` — across BOTH the standalone intro engine AND the grown engine,
-unconditionally (no GCC-5, no §5).
+unconditionally (no GrownCtxConv-5, no §5).
 
 The grown engine contributes nothing — it has no closed-normal inhabitant of a `product` / `either` type code
 (it types neither pairs nor injections).  This is an instance of the CANON-1c rule-out corollary
@@ -39,7 +39,7 @@ The grown engine contributes nothing — it has no closed-normal inhabitant of a
 
 These are the canonical-forms (closed-NORMAL) statements — SR-free.  Full canonicity (every closed `t :
 product(A,B)`, not just every normal one, reduces to a pair) still needs the grown master SR (`SN-055` /
-GCC-5 #842) to reduce-to-normal while preserving the classifier; that is the deferred half.
+GrownCtxConv-5 #842) to reduce-to-normal while preserving the classifier; that is the deferred half.
 
 ## Zero-axiom
 

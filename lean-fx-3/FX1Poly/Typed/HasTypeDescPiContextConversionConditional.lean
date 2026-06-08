@@ -2,7 +2,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversion
 import FX1Poly.Typed.HasTypeDescContextConversion
 
 /-! # FX1Poly/Typed/HasTypeDescPiContextConversionConditional
-    — the grown-engine context-conversion mutual pair, conditional on the lone `piElim` crux (GCC-1/2/3/4/6)
+    — the grown-engine context-conversion mutual pair, conditional on the lone `piElim` crux (GrownCtxConv-1/2/3/4/6)
 
 Context-conversion for the GROWN engine `HasTypeDescPi` (typing stable under a pointwise-`Conv`-replaced
 context) is the brick the grown telescope SR — hence the master SR dispatcher's `genFormationPi` arm (SN-055,
@@ -13,7 +13,7 @@ FUNDAMENTAL-METATHEORY bundle, because its `piElim` arm needs "typing a `Conv`-e
 
 This file ships the rest: the full mutual pair `HasTypeDescPi.convContext ⋈ DescTelescopePi.convTelescope`
 with EVERY validity-free arm discharged, isolating the `piElim` arm as a single explicit hypothesis
-(`piElimArm`) — the SRD-1 conditional-package discipline (`#664`/`#844`) applied to GCC.  The five non-`piElim`
+(`piElimArm`) — the SRD-1 conditional-package discipline (`#664`/`#844`) applied to GrownCtxConv.  The five non-`piElim`
 arms are all here:
 
   * **`ofFormation`** — delegate to `convContextOfFormation` (formation context-conversion, re-embedded).
@@ -26,12 +26,12 @@ arms are all here:
   * **telescope `nil`/`cons`** — `cons` re-types the head via the mutual `convContext`, conv-backed through
     `convBackToUniverseCode`, and recurses the tail under the extended context.
 
-Discharging `piElimArm` (GCC-5, the mutual fundamental-metatheory bundle: type-correctness + context-conversion +
+Discharging `piElimArm` (GrownCtxConv-5, the mutual fundamental-metatheory bundle: type-correctness + context-conversion +
 SR — Π/Σ-code injectivity is NOT a bundle member: it ships SEPARATELY as the unconditional raw-confluence
 corollary `Conv.piTyCode_injective` / `Conv.sigmaTyCode_injective`, PI-1/PI-2/PI-3, `#864`–`#866`, an
 independently-available INPUT the bundle may cite) yields unconditional grown context-conversion — and
 `convTelescopeOfPiElimArm` is exactly the grown telescope
-context-conversion (GCC-3) the grown telescope SR consumes for its tail re-typing, which in turn discharges the
+context-conversion (GrownCtxConv-3) the grown telescope SR consumes for its tail re-typing, which in turn discharges the
 SR dispatcher's `telescopeSR` hypothesis (SRD-2, `#845`) toward unconditional SN-055.
 
 ## Zero-axiom verification
@@ -106,7 +106,7 @@ theorem HasTypeDescPi.convContextOfPiElimArm {profile : PolyProfile}
 /-- **Grown premise-telescope context-conversion, conditional on the `piElim` arm** (the mutual companion).
 Re-types each head via the mutual `convContextOfPiElimArm` (conv-backed to its universe code through
 `convBackToUniverseCode`) and recurses the tail under the extended context (`convContextCondition_cons`).  This
-is the grown telescope context-conversion (GCC-3) the grown telescope SR consumes for its tail re-typing. -/
+is the grown telescope context-conversion (GrownCtxConv-3) the grown telescope SR consumes for its tail re-typing. -/
 theorem DescTelescopePi.convTelescopeOfPiElimArm {profile : PolyProfile}
     (piElimArm : ∀ {armScope : Nat} {armSrc : TypingContext profile armScope}
         {fn arg armDomain : RawTerm armScope} {armCodomain : RawTerm (armScope + 1)},

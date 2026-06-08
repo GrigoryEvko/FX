@@ -1,10 +1,10 @@
 import FX1Poly.Typed.HasTypeDescPiApplication
 import FX1Poly.Typed.HasTypeDescPiClassifierValidity
 
-/-! # FX1Poly/Typed/PiElimUpToClassifierConv — the GCC-5 reduction: the piElim arm closes
+/-! # FX1Poly/Typed/PiElimUpToClassifierConv — the GrownCtxConv-5 reduction: the piElim arm closes
     given exactly ONE property, `IsTypeDescPi` respects `Conv` (type-Conv-closure).
 
-GCC-5 (`#842`, "the grown context-conversion piElim arm — the entangled crux") has gated the
+GrownCtxConv-5 (`#842`, "the grown context-conversion piElim arm — the entangled crux") has gated the
 subject-reduction / canonicity apex for the grown engine.  The conditional dispatchers
 (`HasTypeDescPiContextConversionConditional`, `HasTypeDescPiSubjectReductionMutual`,
 `ConsistencyOfPiElimArm`) all factor out the SAME residual: a `piElimArm` hypothesis that re-types
@@ -32,7 +32,7 @@ The proof uses ONLY shipped pieces — the SOLE genuinely-new ingredient is `cla
   4. **`piElim`** assembles the application, landing at `subst0 codomainCode argument` on the nose
      (no `Conv` wiggle on the output).
 
-So GCC-5 reduces to `classifierRespectsConv : IsTypeDescPi Γ A → Conv A B → IsTypeDescPi Γ B`.
+So GrownCtxConv-5 reduces to `classifierRespectsConv : IsTypeDescPi Γ A → Conv A B → IsTypeDescPi Γ B`.
 Everything else — `classifierIsTypeDescPi`, the `conv` rule, `inversionPiCodeComponents`,
 `Conv.piTyCode_inj` — is shipped and unconditional.
 
@@ -53,11 +53,11 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **GCC-5 reduced to one property.**  The grown Π-elimination arm of context-conversion: given the
+/-- **GrownCtxConv-5 reduced to one property.**  The grown Π-elimination arm of context-conversion: given the
 function re-typed at `functionType ≡ piTyCodeCell domainCode codomainCode` and the argument re-typed
 at `argumentType ≡ domainCode` (the mutual-induction hypotheses), plus `classifierRespectsConv`
 (type-Conv-closure: `IsTypeDescPi` respects `Conv` at this context), the application
-`appCell functionTerm argument` types at `subst0 codomainCode argument`.  Pins the GCC-5 residual to
+`appCell functionTerm argument` types at `subst0 codomainCode argument`.  Pins the GrownCtxConv-5 residual to
 the single lemma `classifierRespectsConv`; all else is shipped + unconditional. -/
 theorem HasTypeDescPi.piElimUpToClassifierConv {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}

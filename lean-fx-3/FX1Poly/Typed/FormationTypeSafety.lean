@@ -8,7 +8,7 @@ import FX1Poly.Core.ExistsStepOfNotNormal
 `GrownTypeSafety.lean` ships the §27.3 five-layer-defense L4 deliverable for the GROWN engine
 `HasTypeDescPi`: progress is unconditional, but full type safety (the closed term *evaluates to a canonical
 value*) is CONDITIONAL on `subjectReductionStar` — the iterated `↝*` preservation whose lone residual is the
-grown context-conversion `piElim` arm (`GCC-5`/`#842`), the entangled mutual fundamental-metatheory bundle.
+grown context-conversion `piElim` arm (`GrownCtxConv-5`/`#842`), the entangled mutual fundamental-metatheory bundle.
 
 The FORMATION engine `HasTypeDesc` (the moonshot core: `var` / `conv` / `universeFormation` / the generic
 `genFormation` former arm) has a parallel type-safety statement, and here it is **UNCONDITIONAL** — there is no

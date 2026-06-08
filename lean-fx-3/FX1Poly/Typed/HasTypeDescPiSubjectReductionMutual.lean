@@ -11,7 +11,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionConditional
 `HasTypeDescPiSubjectReduction.lean` (SRD-1) shipped the master SR dispatcher conditional on the grown TELESCOPE
 SR as an explicit hypothesis.  This file DISCHARGES that hypothesis by proving the telescope SR as the mutual
 companion of the dispatcher — leaving a single, sharper residual: the grown context-conversion `piElim` arm
-(GCC-5), which is ALSO the lone residual of `HasTypeDescPiContextConversionConditional.lean`.  So the entire
+(GrownCtxConv-5), which is ALSO the lone residual of `HasTypeDescPiContextConversionConditional.lean`.  So the entire
 grown subject-reduction metatheory is now conditional on the SAME ONE lemma as the grown context-conversion: the
 mutual fundamental-metatheory crux (type-correctness + Π-injectivity + SR + context-conversion proven together).
 
@@ -52,7 +52,7 @@ mutual
 
 /-- **The grown-engine master subject reduction, conditional on the grown context-conversion `piElim` arm.**
 A grown-typed subject is preserved under a `Step`, at the SAME classifier, given the lone `piElim`
-context-conversion arm (`piElimArm`, the GCC-5 fundamental-metatheory crux).  Threads the EXTENDABLE
+context-conversion arm (`piElimArm`, the GrownCtxConv-5 fundamental-metatheory crux).  Threads the EXTENDABLE
 `WfContextDescPi`; `ofFormation` is vacuous, `conv` recurses, `piIntro` / `piElim` use the shipped
 function-space arms with the children's SR obtained recursively, `genFormationPi` re-types its premise telescope
 via the mutual `DescTelescopePi.subjectReductionOfPiElimArm`.  Discharging `piElimArm` yields the unconditional

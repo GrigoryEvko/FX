@@ -7,7 +7,7 @@ import FX1Poly.Core.NeutralTerm
 
 ## Where this sits
 
-`TypedTypeValidityRelation.lean` (#1109) DEFINED the typed type-validity logical relation for GCC-5 (#842)
+`TypedTypeValidityRelation.lean` (#1109) DEFINED the typed type-validity logical relation for GrownCtxConv-5 (#842)
 with the candidate as a stored ARGUMENT, because a function-valued `KripkeCand` cannot be a dependent index
 (Lean's dependent eliminator fails to unify the eta-expanded `fun {ts} => candidate`).  That first cut
 REVEALED the design constraint but is a DEAD END for the Π-FORMER arm: with the candidate an argument (not an
@@ -74,7 +74,7 @@ inductive TypedTypeValidityBoxed (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → KripkeCandBox scope → Prop where
   /-- A NEUTRAL type code is typed-valid at the SN Kripke candidate (`snKripkeCand`, #1108) boxed, together
   with its `IsTypeDescPi` typing witness.  The base case of the open type-level neutral reflection on which the
-  GCC-5 residual bottoms out; context conversion is free here because `snKripkeCand` is rename-invariant. -/
+  GrownCtxConv-5 residual bottoms out; context conversion is free here because `snKripkeCand` is rename-invariant. -/
   | neutral {scope : Nat} {context : TypingContext profile scope} {typeCode : RawTerm scope}
       (neutralCode : IsNeutral typeCode)
       (validity : IsTypeDescPi profile context typeCode) :
@@ -96,7 +96,7 @@ inductive TypedTypeValidityBoxed (profile : PolyProfile) :
         (KripkeCandBox.mk (kripkeArrowDep domainBox.run codomainFamily))
 
 /-- **Soundness: the relation carries the grown type validity**, over BOTH arms (neutral + Π-former).  The
-half that feeds the GCC-5 residual: once transport across context conversion is proved ON the relation,
+half that feeds the GrownCtxConv-5 residual: once transport across context conversion is proved ON the relation,
 `IsTypeDescPi sourceCtx (Π D C)` → (completeness) the relation → (transport) the relation at the target →
 (this soundness) `IsTypeDescPi targetCtx (Π D C)`.  The two-arm `cases` FIRES — the boxed (structure-valued)
 index does not trigger the dependent-elimination failure that the function-valued candidate index would. -/
@@ -130,7 +130,7 @@ theorem smoke_variableTypeIsBoxedTypedValid {profile : PolyProfile} {scope : Nat
 /-! ## The canonical codomain family — closing the Π-former's free-family gap (the firing-20 next brick)
 
 The `piType` arm leaves `codomainFamily : KripkeCodFamily scope` as a parameter.  For the type-VALIDITY logical
-relation (which is what the GCC-5 residual `ConvContextPreservesPiValidity` needs — `Π D C` inhabits a
+relation (which is what the GrownCtxConv-5 residual `ConvContextPreservesPiValidity` needs — `Π D C` inhabits a
 universe, NOT the membership semantics of `Π`'s inhabitants) the codomain family does NOT have to depend on
 the argument: it only has to EXIST and TRANSPORT.  The canonical choice is the SN codomain family
 `snKripkeCodFamily`, the codomain analogue of the SN Kripke candidate `snKripkeCand` (#1108) — so the Π-former
@@ -143,7 +143,7 @@ candidate is `kripkeArrowDep domainBox.run snKripkeCodFamily`, DERIVED, no longe
 indexed Kripke candidate is structurally UNABLE to be instantiated with a term.  A substitution-indexed Kripke
 candidate would be a separate, larger refactor of the shipped Kripke substrate (#1104-1108).  For type
 validity the SN family suffices; the substitution-Kripke generalization is reserved for the member-level
-(canonicity) semantics, off the GCC-5 critical path. -/
+(canonicity) semantics, off the GrownCtxConv-5 critical path. -/
 
 /-- **The SN codomain family** — the index-and-argument-ignoring codomain family whose members at every
 renaming and argument are exactly the strongly-normalizing terms (the codomain analogue of `snKripkeCand`,
@@ -189,9 +189,9 @@ for neutrals is rename/context-INVARIANT, #1108).  So the only cross-context obl
 
 ★ ARCHITECTURAL FINDING (durable, the honest verdict on the black-box-validity design): the `neutral` arm
 carries `validity : IsTypeDescPi src T` as a BLACK BOX, so transporting it is exactly the grown context-
-conversion of `T` — and for a NEUTRAL APPLICATION `(var f)(var a)` used as a type, that IS `GCC-5` (#842), the
-open crux.  Hence the black-box-validity LR (this design, #1110) RE-PACKAGES `GCC-5` rather than dissolving it:
-its neutral transport reduces to the typing transport.  To genuinely DISCHARGE `GCC-5`, the neutral arm must
+conversion of `T` — and for a NEUTRAL APPLICATION `(var f)(var a)` used as a type, that IS `GrownCtxConv-5` (#842), the
+open crux.  Hence the black-box-validity LR (this design, #1110) RE-PACKAGES `GrownCtxConv-5` rather than dissolving it:
+its neutral transport reduces to the typing transport.  To genuinely DISCHARGE `GrownCtxConv-5`, the neutral arm must
 RECONSTRUCT the typing from the neutral's STRUCTURE (the var-headed spine) under a WELL-FORMED CONTEXT (each
 context entry itself LR-valid), à la Abel reflection — so a neutral app's typing re-derives compositionally
 from the looked-up function-variable type (which transports by the var rule + the pointwise-`Conv` leaf) plus
@@ -204,7 +204,7 @@ case is). -/
 in the relation at the target carrying the SAME candidate (`snKripkeCand`) — the candidate is context-
 INVARIANT (#1108), so the neutral-arm transport's SOLE obligation is the target typing `targetValid` (the
 grown context-conversion of the typing witness).  For a neutral APPLICATION subject that target typing is
-`GCC-5` (#842) itself; for a bare variable it is the shipped `GCC-1` (#838) var arm.  Makes explicit that the
+`GrownCtxConv-5` (#842) itself; for a bare variable it is the shipped `GrownCtxConv-1` (#838) var arm.  Makes explicit that the
 semantic side of context conversion is free and isolates the residual to the typing transport (see the
 architectural finding above). -/
 theorem TypedTypeValidityBoxed.transportNeutralArm {profile : PolyProfile} {scope : Nat}

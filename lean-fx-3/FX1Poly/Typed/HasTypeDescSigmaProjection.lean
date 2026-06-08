@@ -32,7 +32,7 @@ Following the established cascade-free pattern (a brand-new standalone judgment)
 
 Constructor-side: each projection is BUILT from the pair's component typings, the reduct's typing IS the matching
 component typing.  No derivation casing (no cons-index propext trap), no scrutinee-congruence (the full SR
-consumes the grown master SR / GCC-5 #842).  The genuinely-new content is the third ι shape (content projection)
+consumes the grown master SR / GrownCtxConv-5 #842).  The genuinely-new content is the third ι shape (content projection)
 typed-and-computing.
 
 ## Zero-axiom

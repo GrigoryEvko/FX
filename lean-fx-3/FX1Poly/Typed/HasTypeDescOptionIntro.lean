@@ -30,9 +30,9 @@ mirror of `eitherInlIntro`'s pinned `leftValue` vs free `rightType`).
 
 ## SR deferral (same as DI-2b)
 
-Judgment + smokes + inversions are SR-free.  The SR/SN quartet is GCC-5-ENTANGLED (an option value steps when its
+Judgment + smokes + inversions are SR-free.  The SR/SN quartet is GrownCtxConv-5-ENTANGLED (an option value steps when its
 value/type component steps, re-typing only via the grown master subject-reduction dispatcher, `SN-055` /
-GCC-5 #842) — the deliberate deferral.
+GrownCtxConv-5 #842) — the deliberate deferral.
 
 ## Zero-axiom
 

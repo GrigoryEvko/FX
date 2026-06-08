@@ -26,10 +26,10 @@ Both dispatch on decidable normality: a NORMAL subject is pinned by the per-clas
 (`closedNormalFunctionIsLambda` / `closedNormalTypeIsFormer`); a NON-normal subject steps by
 `exists_step_of_not_isStepNormalForm`.  No subject reduction, no SN, no closedness-of-the-codomain hypothesis —
 so, unlike `closedTypeSafetyOfSubjectReductionStar` (which carries the classifier down a reduction chain and is
-gated on the SN-055 master dispatcher / GCC-5), these are UNCONDITIONAL.  They are the one-step progress
+gated on the SN-055 master dispatcher / GrownCtxConv-5), these are UNCONDITIONAL.  They are the one-step progress
 refinements, not the iterated evaluation statement.
 
-## Why unconditional (no GCC-5 / §5 dependence)
+## Why unconditional (no GrownCtxConv-5 / §5 dependence)
 
 The classifier is read only at the ALREADY-normal subject, where `closedNormalFunctionIsLambda` /
 `closedNormalTypeIsFormer` invert directly over the closed-canonical-forms recursor plus the classifier-mismatch

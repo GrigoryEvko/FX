@@ -17,7 +17,7 @@ it holds only on the CERTIFIED fragment — words that are `toCode`-images of re
 WELL-TYPED term.  And there it consumes ONLY root strong normalization (SN-043 /
 `stronglyNormalizingOfWfContextDesc`), NOT subject reduction: the root being typed makes EVERY reduction
 sequence from it finite (`IsStronglyNormalizing` is `Acc StepSuccessor`, an all-paths property), regardless
-of whether the intermediate reducts are themselves well-typed.  This is why Leg-3 termination is GCC-5-free
+of whether the intermediate reducts are themselves well-typed.  This is why Leg-3 termination is GrownCtxConv-5-free
 — it never needs the reduct to stay typed, only the root.
 
   * **`certifiedReductionInducesWordChain`** — the bridge: a `Step` reduction sequence's `toCode` images form
@@ -65,7 +65,7 @@ word-rewrite chain it induces (via `certifiedReductionInducesWordChain`) termina
 (`stronglyNormalizingOfWfContextDesc`) on the ROOT only: an infinite `Step` sequence from the root would
 contradict `IsStronglyNormalizing rootTerm` (which is `Acc StepSuccessor`, ruling out every infinite
 descending chain), so NO subject reduction is needed — the reducts need not stay typed.  This is the
-GCC-5-free Leg-3 termination leg. -/
+GrownCtxConv-5-free Leg-3 termination leg. -/
 theorem typedRootWordReductionTerminates {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {rootTerm rootType : RawTerm scope}
     (contextWellFormed : WfContextDesc context)

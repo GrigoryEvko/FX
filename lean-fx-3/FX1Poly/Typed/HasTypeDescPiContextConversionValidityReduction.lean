@@ -6,13 +6,13 @@ import FX1Poly.Typed.IsTypeDesc
 import FX1Poly.Typed.HasTypeDescContextConversion
 
 /-! # FX1Poly/Typed/HasTypeDescPiContextConversionValidityReduction
-    — the SECOND piElim-arm reduction: to `TypeCodeValidityRespectsReduction` (GCC-5-VALRED, toward #842)
+    — the SECOND piElim-arm reduction: to `TypeCodeValidityRespectsReduction` (GrownCtxConv-5-VALRED, toward #842)
 
-`#1092` (GCC-5-REASSEMBLY) reduced GCC-5's piElim arm to `ConvContextPreservesPiValidity` via the EXACT route
+`#1092` (GrownCtxConv-5-REASSEMBLY) reduced GrownCtxConv-5's piElim arm to `ConvContextPreservesPiValidity` via the EXACT route
 (re-type the function at the *original* `Π domainCode codomainCode`).  This file gives a SECOND, independent
 reduction via the FLEXIBLE route, isolating a DIFFERENT — and more standard — residual.
 
-## The flexible-vs-exact tension (the fine-grained GCC-5 obstruction)
+## The flexible-vs-exact tension (the fine-grained GrownCtxConv-5 obstruction)
 
 A grown context-conversion bundle must, at the piElim arm, re-type the applied function under the target context
 at SOME `Π`-code.  Two motives:
@@ -46,7 +46,7 @@ residual.
     `Conv.reducesToPiTyCode` exposes `PC' ⤳* Π reductD reductC`, the residual `validityRespectsReduction` yields
     `IsTypeDescPi tgt (Π reductD reductC)`, and the generalized reassembly finishes.
 
-Together with `#1092`/`#1093` this TRIANGULATES the GCC-5 residual: the same obstruction (re-typing a dependent
+Together with `#1092`/`#1093` this TRIANGULATES the GrownCtxConv-5 residual: the same obstruction (re-typing a dependent
 former's components across a binder change) appears as `ConvContextPreservesPiValidity` (exact),
 `TypeCodeValidityRespectsReduction` (flexible), and the master-SR `genFormationPi` arm — all inter-derivable, all
 discharged by the logical relation.
@@ -63,11 +63,11 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
-/-- **The flexible-route GCC-5 residual: type validity survives reduction.**  If `subjectType` is a grown type
+/-- **The flexible-route GrownCtxConv-5 residual: type validity survives reduction.**  If `subjectType` is a grown type
 (`IsTypeDescPi`) and it reduces to `reductType`, then `reductType` is a grown type.  A single-context statement
 ("subject reduction for type codes") — more standard than the context-conversion residual
 `ConvContextPreservesPiValidity` (`#1092`), and the obligation the flexible context-conversion bundle's piElim arm
-needs.  Genuinely open (gated on the same master-SR `genFormationPi` arm / logical relation as the other GCC-5
+needs.  Genuinely open (gated on the same master-SR `genFormationPi` arm / logical relation as the other GrownCtxConv-5
 residuals — see the file header). -/
 def TypeCodeValidityRespectsReduction (profile : PolyProfile) : Prop :=
   ∀ {scope : Nat} {context : TypingContext profile scope} {subjectType reductType : RawTerm scope},
@@ -150,7 +150,7 @@ theorem HasTypeDescPi.piElimArmFromValidityRespectsReduction {profile : PolyProf
 fragment).  But the FORMATION engine satisfies it UNCONDITIONALLY — because the formation subject reduction
 `HasTypeDesc.subjectReduction` PRESERVES the classifier and is itself unconditional (its telescope arm re-types a
 former's codomain under a stepped domain binder via the UNCONDITIONAL formation context-conversion
-`convTelescope` — exactly the move the grown engine cannot make, which is why GCC-5 is open).  So validity
+`convTelescope` — exactly the move the grown engine cannot make, which is why GrownCtxConv-5 is open).  So validity
 survives reduction for free on the formation-typed fragment, precisely localizing the genuinely-open residual to
 the genuinely-grown (type-level-computing) type codes. -/
 
@@ -189,11 +189,11 @@ hence a pointwise context-conversion condition (`convContextCondition_consStep`)
 context-conversion `HasTypeDesc.convContext` re-types the codomain (conv-backed to the same universe code via
 `convBackToUniverseCode`).
 
-This is the formation analogue of the grown `codomainReTyping` (GCC-6, `#843`) — but UNCONDITIONAL, where the
-grown one is gated on GCC-5 (`#842`).  It IS the precise move the formation telescope subject reduction makes
+This is the formation analogue of the grown `codomainReTyping` (GrownCtxConv-6, `#843`) — but UNCONDITIONAL, where the
+grown one is gated on GrownCtxConv-5 (`#842`).  It IS the precise move the formation telescope subject reduction makes
 internally, and it is EXACTLY the operation the grown engine cannot perform for genuinely-grown
 (type-level-computing) codomains: that single asymmetry — formation context-conversion is unconditional, grown is
-not — is the entire content of why GCC-5 / the master-SR `genFormationPi` arm / `TypeCodeValidityRespectsReduction`
+not — is the entire content of why GrownCtxConv-5 / the master-SR `genFormationPi` arm / `TypeCodeValidityRespectsReduction`
 remain open and require the FX logical relation. Named here so the boundary is a citable presupposition. -/
 theorem HasTypeDesc.codomainReTypingOfFormationStep {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {domain domainReduct : RawTerm scope}

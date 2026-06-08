@@ -23,7 +23,7 @@ metatheory holds on WHICH engine — and, crucially, where the two diverge.
 | Weakening           | `renameRespectingContext` (uncond) | `renameRespectingContext` (uncond)                     |
 | Substitution        | `substRespectingContext` (uncond)  | `substRespectingContext` (uncond)                      |
 | Strong normalization| `isStronglyNormalizing` (uncond)   | `stronglyNormalizingOfWfContextDesc` (WF-ctx presup.)  |
-| Subject reduction   | `subjectReduction` (uncond MASTER) | unconditional ARMS only; MASTER conditional on GCC-5   |
+| Subject reduction   | `subjectReduction` (uncond MASTER) | unconditional ARMS only; MASTER conditional on GrownCtxConv-5   |
 
 `MetatheoryProperty.parityStatus` records the three honest outcomes:
 
@@ -36,7 +36,7 @@ metatheory holds on WHICH engine — and, crucially, where the two diverge.
     (`HasTypeDesc.subjectReduction` routes `genFormation` via the generic former arm); the grown engine has only
     the unconditional ARMS (`subjectReductionAtFormerGeneric` / `…AtConv` / `…AtOfFormation`).  Its MASTER
     dispatcher needs the piElim arm, which needs context-conversion of the function's exact Π classifier =
-    "typing a Conv-equal type" = type-Conv-closure, circular with SR — the GCC-5 mutual fundamental-metatheory
+    "typing a Conv-equal type" = type-Conv-closure, circular with SR — the GrownCtxConv-5 mutual fundamental-metatheory
     bundle (#842 / #845).  THIS is the precisely-scoped Milestone-A SR blocker.
 
 The point the ledger makes auditable: the grown SN presupposition (`grownNeedsWfContext`) is a BENIGN decidable
@@ -74,7 +74,7 @@ inductive EngineParityStatus where
   | bothUnconditional
   /-- Both hold; the grown theorem carries the (decidable) well-formed-context presupposition. -/
   | grownNeedsWfContext
-  /-- Formation unconditional; grown only as unconditional ARMS, its MASTER conditional on the GCC-5 bundle. -/
+  /-- Formation unconditional; grown only as unconditional ARMS, its MASTER conditional on the GrownCtxConv-5 bundle. -/
   | grownConditionalOnBundle
   deriving DecidableEq
 
@@ -127,7 +127,7 @@ well-formed-context presupposition. -/
 theorem strongNormalization_grownNeedsWfContext :
     MetatheoryProperty.strongNormalization.parityStatus = .grownNeedsWfContext := rfl
 
-/-- Subject reduction is the ASYMMETRY: formation unconditional, grown master conditional on the GCC-5
+/-- Subject reduction is the ASYMMETRY: formation unconditional, grown master conditional on the GrownCtxConv-5
 mutual fundamental-metatheory bundle (#842 / #845) — the precisely-scoped Milestone-A SR blocker. -/
 theorem subjectReduction_grownConditionalOnBundle :
     MetatheoryProperty.subjectReduction.parityStatus = .grownConditionalOnBundle := rfl
@@ -142,7 +142,7 @@ theorem parity_discriminates_weakening_vs_subjectReduction :
   rw [weakening_atFullParity, subjectReduction_grownConditionalOnBundle] at statusEq
   exact EngineParityStatus.noConfusion statusEq
 
-/-- **The honest distinction:** the grown SN's well-formed-context presupposition is NOT the GCC-5 blocker.
+/-- **The honest distinction:** the grown SN's well-formed-context presupposition is NOT the GrownCtxConv-5 blocker.
 The ledger keeps `grownNeedsWfContext` (a benign decidable precondition) distinct from
 `grownConditionalOnBundle` (the real SR blocker) — so "grown SN needs WF context" is never conflated with
 "grown SR is blocked". -/

@@ -285,7 +285,7 @@ per-decl list.  It also re-checks the native infra under
 -- Step.rec mutual recursion (the Step.subst template run backward). The 18 redex-leaf cases delegate to
 -- the shipped reflect arms above; the recursive cong/here/there cases thread the lifted renaming
 -- (iterateLiftRaw) through the children spine. This is the Kripke-arrow-CR3 ingredient the open-context
--- (Kripke) logical relation needs to discharge GCC-5 (#842), the grown context-conversion piElim crux.
+-- (Kripke) logical relation needs to discharge GrownCtxConv-5 (#842), the grown context-conversion piElim crux.
 #assert_no_axioms FX1Poly.Core.Step.reflectRename
 
 -- The neutral leaf of the stratified ReducibleTypeStep rename-closure (type + member level): the structural
@@ -411,13 +411,13 @@ per-decl list.  It also re-checks the native infra under
 -- neutral, codomain-CR3 closes it, head-steps reflect via Step.reflectRename + the all-reducts hypothesis,
 -- arg-steps run the inner Tait accessibility induction on the domain-CR1 strongly-normalizing argument. This
 -- COMPLETES the non-dependent Kripke arrow CR bundle (CR1/CR2/CR3) — a prerequisite ingredient for the open
--- Kripke logical relation that the GCC-5 (#842) context-conversion piElim residual requires.
+-- Kripke logical relation that the GrownCtxConv-5 (#842) context-conversion piElim residual requires.
 #assert_no_axioms FX1Poly.Core.kripkeArrow_neutralBackwardClosure
 -- The SN Kripke candidate (the Kripke-model interpretation of a NEUTRAL type code): the index-IGNORING
 -- candidate whose members at every renaming index are exactly the strongly-normalizing terms (the
 -- `ReducibleTypeStep.neutral` SN candidate lifted to the renaming-indexed family).  Rename-INVARIANT
 -- (transport along any renaming is the IDENTITY, `Iff.rfl`) — the semantic reason context conversion is FREE
--- on the neutral-type interpretation of the open GCC-5 (#842) type-validity residual — plus CR1 (members are
+-- on the neutral-type interpretation of the open GrownCtxConv-5 (#842) type-validity residual — plus CR1 (members are
 -- strongly normalizing, definitionally).  Wires the Kripke arrow substrate to the type-level neutral
 -- interpretation, the first concrete piece of the open typed logical-relation model.
 #assert_no_axioms FX1Poly.Core.snKripkeCand_transport_pointwise

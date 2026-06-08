@@ -33,7 +33,7 @@ stop at the neutral).  The closed firing-112 statements are the empty-context sp
 disjunct is vacuous; these open forms carry the neutral leaf the readback recursion actually needs in non-empty
 contexts.
 
-## Why unconditional (no GCC-5 / §5 dependence)
+## Why unconditional (no GrownCtxConv-5 / §5 dependence)
 
 As with the closed twin, the classifier is read only at the already-NORMAL subject (via the open per-classifier
 canonical-forms lemmas, which invert over the open canonical-forms recursor plus the context-general

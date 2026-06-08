@@ -31,9 +31,9 @@ they were leaves (childless), the pair carries two grown sub-derivations.
 ## Scope and the SR deferral
 
 This file ships the JUDGMENT, the smoke, and the inversions — all SR-free (no reduction step is typed).  The
-structural metatheory (SR / SN) of a pair is GCC-5-ENTANGLED: `pair(a, b)` steps when a component steps
+structural metatheory (SR / SN) of a pair is GrownCtxConv-5-ENTANGLED: `pair(a, b)` steps when a component steps
 (`a ↝ a'`), and the reduct `pair(a', b)` re-types only if `a' : A` holds — i.e. it consumes the GROWN master
-subject-reduction dispatcher (`SN-055` / GCC-5 #842), the known blocker.  So the SR/SN quartet is the
+subject-reduction dispatcher (`SN-055` / GrownCtxConv-5 #842), the known blocker.  So the SR/SN quartet is the
 deliberate deferral; the canonicity-relevant inversions are here and unconditional.
 
 ## Zero-axiom
