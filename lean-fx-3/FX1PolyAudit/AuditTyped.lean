@@ -208,6 +208,7 @@ import FX1Poly.Typed.ChurchPairs
 import FX1Poly.Typed.ChurchPairsInjective
 import FX1Poly.Typed.ChurchSums
 import FX1Poly.Typed.ChurchSumsDisjoint
+import FX1Poly.Typed.ChurchSumsGeneral
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -6660,3 +6661,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.handlerToIdentity_app_I
 #assert_no_axioms FX1Poly.Typed.leftInjection_not_conv_rightInjection
 #assert_no_axioms FX1Poly.Typed.rightInjection_not_conv_leftInjection
+-- SYMBOLIC CHURCH SUMS (ChurchSumsGeneral, #1025): generalize #1019's case selection off the concrete combinatorI
+-- to an ARBITRARY symbolic payload, unblocked by the #1023 double-weaken substrate. caseLeft_selectsLeftHandler_
+-- general (★): ∀ payload l r, case (inl payload) l r ↝* l payload; caseRight twin; caseSelectsByTag_general bundle.
+-- The ONLY change from #1019's concrete proof is the β1 contractum reshape (leftInjection_subst_handlerL /
+-- rightInjection_subst_handlerL): the payload sits under TWO handler binders so it is weakened TWICE; substituting
+-- the left handler collapses weaken²payload → weaken payload via subst_lift_singleton_weaken_weaken (#1023) +
+-- show-push/rw/rfl — the step a concrete payload got by rfl. The rest mirrors #1019 (weaken_subst_singleton on both
+-- handler and payload). SUBSUMES #1019's concrete theorems (instances at payload=combinatorI): the coproduct
+-- encoding is faithful for arbitrary stored data. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.leftInjection_subst_handlerL
+#assert_no_axioms FX1Poly.Typed.rightInjection_subst_handlerL
+#assert_no_axioms FX1Poly.Typed.caseLeft_selectsLeftHandler_general
+#assert_no_axioms FX1Poly.Typed.caseRight_selectsRightHandler_general
+#assert_no_axioms FX1Poly.Typed.caseSelectsByTag_general
