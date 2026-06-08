@@ -10,6 +10,7 @@ import FX1Poly.Modal.GradedWeakeningGeneric
 import FX1Poly.Modal.GradedSubstitutionGeneric
 import FX1Poly.Modal.GradedSubjectReductionGeneric
 import FX1Poly.Modal.GradedCompositionGeneric
+import FX1Poly.Modal.GradeSemiringProduct
 import FX1Poly.Modal.SimpleStrongNormalization
 import FX1Poly.Modal.GradedSubstitutionAlgebra
 import FX1Poly.Modal.GradedReductionSubstitution
@@ -125,6 +126,20 @@ per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.SecurityGrade.mul_le_mul_left
 #assert_no_axioms FX1Poly.Modal.SecurityGrade.classified_poisons_add
 #assert_no_axioms FX1Poly.Modal.fxSecuritySemiring_isLawful
+-- DIM-PRODUCT (#1035): §6 "Product of all forms the grade vector". OrderedGradeSemiring.product is the
+-- componentwise product; IsLawfulOrderedGradeSemiring.product (★) proves the 16 ordered-semiring laws of the
+-- product from the factors' (equational laws by Prod.ext, order laws by propext-free Bool-AND helpers). So
+-- lawfulness is preserved under product, and the generic metatheory (which consumes exactly a lawfulness
+-- witness) transfers to any composite dimension. fxUsageTimesSecuritySemiring = usage{0,1,ω} × security
+-- {unclass<class}; a variable carries BOTH grades in one judgment; metatheoryFree (★) = SN+SR for the
+-- composed dimension FOR FREE (metatheoryBundle ∘ product-lawful), generalizing DIM2-7/#880 to a product.
+#assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.product
+#assert_no_axioms FX1Poly.Modal.IsLawfulOrderedGradeSemiring.product
+#assert_no_axioms FX1Poly.Modal.fxUsageTimesSecuritySemiring_isLawful
+#assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurity_one_isPair
+#assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurity_variableCarriesBothGrades
+#assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurity_metatheoryFree
+#assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurity_appliedIdentity_metatheoryFree
 
 /-! ### Grade-vector substrate: the per-binding usage grade vector + its semimodule laws -/
 
