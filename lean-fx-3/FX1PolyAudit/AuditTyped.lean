@@ -6402,6 +6402,14 @@ gates pin them shut.
 -- APP-HEADED neutral leaf (arbitrary-term argument → general-term context conversion = the GTL-20 mutual bundle).
 -- Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piCodeValidityContextConversionFormerStep
+-- GrownCtxConv-5-SIGMASTEP (#1121): the Σ-former recursion step, the exact twin of the Π step (#1120 above) over
+-- sigmaTyCodeCell / inversionSigmaCodeComponents / sigmaFormationViaGenArm. A genuinely-needed companion, NOT a
+-- separate concern: the residual's Π-engine recurses on the component type-codes, which can THEMSELVES be Σ-codes.
+-- sigmaCodeValidityContextConversionFormerStep: given the universe-code-preserving context conversions of the
+-- domain + codomain type-codes, a Σ D C's grown validity transports across any pointwise-Conv context conversion
+-- (decompose via inversionSigmaCodeComponents at a common flag, transport each via the IHs with the cons-lifted
+-- convContextCondition_cons, re-form via sigmaFormationViaGenArm). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.sigmaCodeValidityContextConversionFormerStep
 -- GrownCtxConv-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
 -- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
 -- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the

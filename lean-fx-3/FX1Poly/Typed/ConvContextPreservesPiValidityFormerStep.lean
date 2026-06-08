@@ -1,9 +1,10 @@
 import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
 import FX1Poly.Typed.HasTypeDescPiFormerCongruence
 import FX1Poly.Typed.HasTypeDescPiClassifierValidity
+import FX1Poly.Typed.HasTypeDescPiInversion
 
 /-! # FX1Poly/Typed/ConvContextPreservesPiValidityFormerStep
-    — the Π-FORMER recursion step of the GrownCtxConv-5 residual `ConvContextPreservesPiValidity`
+    — the binary-former (Π and Σ) recursion steps of the GrownCtxConv-5 residual `ConvContextPreservesPiValidity`
 
 `ConvContextPreservesPiValidity` (`#1092`) — a `Π`-type-code's grown validity is stable under context
 conversion — is the single residual to which both open grown-metatheory release blockers reduce (GrownCtxConv-5
@@ -92,6 +93,45 @@ theorem HasTypeDescPi.piCodeValidityContextConversionFormerStep {profile : PolyP
     codomainConverts codomainTyped (convContextCondition_cons domainCode contextConv)
   exact ⟨LevelExpr.lmax domainLevel codomainLevel, flag,
     HasTypeDescPi.piFormationViaGenArm targetContext domainCode codomainCode
+      domainLevel codomainLevel flag domainTyped' codomainTyped'⟩
+
+/-- **The Σ-former recursion step of the residual** (the exact twin of the Π-former step).  The residual's
+Π-engine (`piCodeValidityContextConversionFormerStep`) recurses on the component type-codes `domainCode` /
+`codomainCode`, which can THEMSELVES be `Σ`-codes — so the `Σ`-former step is a genuinely-needed companion, not
+a separate concern.  Given the universe-code-PRESERVING context conversions of the domain (at `sourceContext`)
+and codomain (at `sourceContext.cons domainCode`) type-codes, a `Σ domainCode codomainCode`'s grown validity
+transports across any pointwise-`Conv` context conversion: `inversionSigmaCodeComponents` decomposes the source
+`Σ`-validity into its component universe-typings (at a COMMON flag), the IHs transport each (the codomain under
+the cons-lifted condition `convContextCondition_cons`, preserving that common flag), and `sigmaFormationViaGenArm`
+re-forms.  Identical recipe to the `Π` step over `sigmaTyCodeCell` / `inversionSigmaCodeComponents` /
+`sigmaFormationViaGenArm`. -/
+theorem HasTypeDescPi.sigmaCodeValidityContextConversionFormerStep {profile : PolyProfile} {scope : Nat}
+    {sourceContext targetContext : TypingContext profile scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainConverts : ∀ {domainLevel : LevelExpr} {domainFlag : UniverseFlag},
+      HasTypeDescPi profile sourceContext domainCode (universeCodeCell domainLevel domainFlag) →
+      (∀ index : Fin scope, Conv (sourceContext.lookup index) (targetContext.lookup index)) →
+      HasTypeDescPi profile targetContext domainCode (universeCodeCell domainLevel domainFlag))
+    (codomainConverts : ∀ {codomainLevel : LevelExpr} {codomainFlag : UniverseFlag},
+      HasTypeDescPi profile (sourceContext.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel codomainFlag) →
+      (∀ index : Fin (scope + 1),
+        Conv ((sourceContext.cons domainCode).lookup index)
+          ((targetContext.cons domainCode).lookup index)) →
+      HasTypeDescPi profile (targetContext.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel codomainFlag))
+    (sigmaValidity : IsTypeDescPi profile sourceContext (sigmaTyCodeCell domainCode codomainCode))
+    (contextConv : ∀ index : Fin scope,
+      Conv (sourceContext.lookup index) (targetContext.lookup index)) :
+    IsTypeDescPi profile targetContext (sigmaTyCodeCell domainCode codomainCode) := by
+  obtain ⟨_sigmaLevel, _sigmaFlag, sigmaTyped⟩ := sigmaValidity
+  obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped⟩ :=
+    HasTypeDescPi.inversionSigmaCodeComponents sigmaTyped
+  have domainTyped' := domainConverts domainTyped contextConv
+  have codomainTyped' :=
+    codomainConverts codomainTyped (convContextCondition_cons domainCode contextConv)
+  exact ⟨LevelExpr.lmax domainLevel codomainLevel, flag,
+    HasTypeDescPi.sigmaFormationViaGenArm targetContext domainCode codomainCode
       domainLevel codomainLevel flag domainTyped' codomainTyped'⟩
 
 end FX1Poly.Typed
