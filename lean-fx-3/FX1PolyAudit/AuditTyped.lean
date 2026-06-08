@@ -272,6 +272,7 @@ import FX1Poly.Typed.HasTypeDescIdIntro
 import FX1Poly.Typed.HasTypeDescIdElim
 import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.ListCanonicalForms
+import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3272,6 +3273,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.listCode_not_piTyCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtListType
 #assert_no_axioms FX1Poly.Typed.closedNormalListCanonicalForms
+-- IDENTITY CANONICAL FORMS (IdCanonicalForms, the DI-2d/5e payoff): NON-VACUOUS closed-normal identity canonical
+-- forms — a closed-normal term typed at Id(A,left,right) by the id-intro engine OR the grown engine is a refl. THE
+-- NOVEL RIGIDITY ROUTE: gen_idCode is NOT in typingRuleDescOf and CANNOT be (universeFormerOutput types every child
+-- as a universe code, but idCode's children [typeCode,left,right] have left/right as TERMS not types), so the within-
+-- formation-table rigidity (formationFormersNotConvOfDistinct) does NOT apply. idCode_not_universeCode = head-stable
+-- (shapeStable_idCodeGeneral, 3-child) vs leaf(universe); idCode_not_piTyCode = the TWO-HEAD-STABLE route (BOTH idCode
+-- and piTyCode head-stable → shared reduct carries both heads → noConfusion — the cleaner primitive needing no table
+-- membership, vs the data-canon files' formationFormersNotConvOfDistinct). noClosedNormalTermAtIdType = CANON-1c grown
+-- rule-out. closedNormalIdCanonicalForms = the headline (id-intro disjunct via subjectIsRefl, grown ruled out); stated
+-- for a GENERAL idTypeCell (rigidities+subjectIsRefl endpoint-agnostic), refl populates only the reflexive left=right.
+#assert_no_axioms FX1Poly.Typed.Conv.idCode_not_universeCode
+#assert_no_axioms FX1Poly.Typed.Conv.idCode_not_piTyCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtIdType
+#assert_no_axioms FX1Poly.Typed.closedNormalIdCanonicalForms
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
