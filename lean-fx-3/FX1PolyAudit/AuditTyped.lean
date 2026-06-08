@@ -261,6 +261,7 @@ import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
 import FX1Poly.Typed.HasTypeDescEitherIntro
+import FX1Poly.Typed.ProductEitherCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3129,6 +3130,21 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.eitherInrOfUniverseCodeTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.subjectIsEitherInjection
 #assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.classifierIsEither
+-- Σ/COPRODUCT CANONICAL FORMS (ProductEitherCanonicalForms, the DI-2 payoff): NON-VACUOUS closed-normal
+-- canonicity for product/either types, unconditional (no GCC-5/§5). NEW rigidity Conv.product/eitherCode_not_
+-- universeCode (flat-former twin of boolTypeCell_not_universeCode, via shapeStable + universe leaf + noConfusion)
+-- + Conv.piTyCode_not_conv_eitherCode (cross-table). noClosedNormalTermAtProduct/EitherType = CANON-1c rule-out
+-- instances (grown engine inhabits no product/either type — Σ/coproduct formation but no introduction). ★ closed
+-- NormalProduct/EitherCanonicalForms = a closed-normal term at product/either by the intro engine OR grown is a
+-- pairCell / eitherInl-or-Inr cell. The non-vacuous Σ/coproduct canonicity (values exist via DI-2a/b + every
+-- closed-normal inhabitant is one). Full canonicity (all closed terms) still needs the master SR / #842.
+#assert_no_axioms FX1Poly.Typed.Conv.productCode_not_universeCode
+#assert_no_axioms FX1Poly.Typed.Conv.eitherCode_not_universeCode
+#assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_conv_eitherCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtProductType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEitherType
+#assert_no_axioms FX1Poly.Typed.closedNormalProductCanonicalForms
+#assert_no_axioms FX1Poly.Typed.closedNormalEitherCanonicalForms
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
