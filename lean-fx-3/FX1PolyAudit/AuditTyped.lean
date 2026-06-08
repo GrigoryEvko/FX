@@ -203,6 +203,7 @@ import FX1Poly.Typed.CurryFixpointDivergence
 import FX1Poly.Typed.CurryFixpointCombinator
 import FX1Poly.Typed.CombinatoryLogic
 import FX1Poly.Typed.CombinatoryCompleteness
+import FX1Poly.Typed.SymbolicSCombinatorRule
 import FX1Poly.Typed.ChurchPairs
 import FX1Poly.Typed.ChurchPairsInjective
 import FX1Poly.Typed.ChurchSums
@@ -6598,6 +6599,17 @@ gates pin them shut.
 -- rfl). SKK=I is combinatory completeness in miniature.
 #assert_no_axioms FX1Poly.Typed.skkReducesToIdentity
 #assert_no_axioms FX1Poly.Typed.skkApplied_conv_identityApplied
+-- SYMBOLIC-S-RULE (SymbolicSCombinatorRule, #1024): the general S-combinator law S a b c ↝* (ac)(bc) for SYMBOLIC
+-- a/b/c — closes the unmet half of #1016 (which shipped only concrete SKK=I; its docstring deferred the symbolic
+-- S-rule because subst (lift (singleton b))(weaken² a) ≠ weaken a by rfl). Now ASSEMBLY via the #1023 double-weaken
+-- substrate: combinatorS_reduces (★) chains 3 β-steps reusing shipped combinatorS/saTerm/sabTerm. β1 (x-discard →
+-- saTerm) is Step.beta directly (rfl). β2 saTermBody_subst_b (saTerm→sabTerm) USES subst_lift_singleton_weaken_weaken
+-- (#1023) for weaken²a→weaken a, via the show-push (subst over appCell/lamCell is DEFEQ) + rw + rfl idiom. β3
+-- sabTermBody_subst_c via weaken_subst_singleton. DEMONSTRATES the de Bruijn substrate is complete (single+double
+-- weaken). Zero-axiom (Step.beta + show/rw/rfl + StepStar.trans congruences).
+#assert_no_axioms FX1Poly.Typed.saTermBody_subst_b
+#assert_no_axioms FX1Poly.Typed.sabTermBody_subst_c
+#assert_no_axioms FX1Poly.Typed.combinatorS_reduces
 -- CHURCH PAIRS (ChurchPairs): products in the Π-fragment via polymorphism, complementing Church bool (#981)/nat
 -- (#989). pairTerm a b = λf. f a b; churchFst = λp. p K; churchSnd = λp. p secondProjector (= λx.λy.y).
 -- secondProjector_reduces: (λx.λy.y) a b ↝* b — (λx.λy.y) a discards x → λy.y = I by RFL (x absent from body),
