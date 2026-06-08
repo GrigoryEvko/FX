@@ -221,6 +221,7 @@ import FX1Poly.Typed.ChurchPairsInjective
 import FX1Poly.Typed.ChurchSums
 import FX1Poly.Typed.ChurchSumsDisjoint
 import FX1Poly.Typed.ChurchSumsGeneral
+import FX1Poly.Typed.ChurchLists
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -7190,3 +7191,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.caseLeft_selectsLeftHandler_general
 #assert_no_axioms FX1Poly.Typed.caseRight_selectsRightHandler_general
 #assert_no_axioms FX1Poly.Typed.caseSelectsByTag_general
+-- CHURCH LISTS (ChurchLists, CHURCH-LISTS): the first RECURSIVE / inductive Church (Boehm-Berarducci) data shape —
+-- LISTS as their own right-fold. nil = λc.λn.n; cons h t = λc.λn. c h (t c n); fold c n list = list c n. Lists are
+-- the first Church encoding past finite tagged unions (bool #981 / numerals #989 / products #1017 / coproducts #1019):
+-- a list IS its parametric inductive eliminator, the recursive tail folded as nested polymorphic application
+-- (structurally Church-SUCC carrying a payload). foldNil (★): fold c n nil ↝* n for ARBITRARY handlers — nil is the
+-- Church-zero λf.λx.x carrying the fold, so the two β-contractions are the clean innermost-variable subst0
+-- (one Step.cong .gen_app over the outer β, then the inner β; both subst0 contracta rfl-clean). churchNil_isValue /
+-- churchCons_isValue: both encodings are gen_lam-headed λ-VALUES (closed weak-head-normal canonical inhabitants of
+-- the encoded list type Π R.(A→R→R)→R→R). The recursive cons-fold computation fold c n (cons h t) ↝* c h (t c n) is
+-- DEFERRED: the contractum threads the cons-handler through TWO binders into both the head-handler AND the
+-- recursively-folded tail, needing the same weaken/subst commutation deferred by the symbolic Church-sum payload
+-- (#1025) and the general S-rule (#1024). Raw Step throughout; no typing derivation consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.foldNil
+#assert_no_axioms FX1Poly.Typed.churchNil_isValue
+#assert_no_axioms FX1Poly.Typed.churchCons_isValue
