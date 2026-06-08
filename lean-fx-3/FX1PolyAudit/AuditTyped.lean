@@ -409,6 +409,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
 import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.ConvContextPiValidityModelNeutral
+import FX1Poly.Typed.TypedTypeValidityRelation
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
@@ -6370,6 +6371,20 @@ gates pin them shut.
 -- Concrete smoke: the simplest neutral type code (a bare variable `var index` used as a type) is semantically
 -- reducible context-free — the non-circular leaf the open type-level neutral reflection bottoms out at.
 #assert_no_axioms FX1Poly.Typed.smoke_variableTypeCodeSemanticReducibilityIsContextFree
+-- TYPED-TYPE-VALIDITY RELATION (TypedTypeValidityRelation.lean): the open-context typed logical-relation OBJECT
+-- for GCC-5 (#842), the Kripke-model interpretation of a valid type code, PAIRING a reducibility candidate
+-- (KripkeCand) with the IsTypeDescPi typing witness. The `neutral` arm: a neutral type code is typed-valid,
+-- carrying snKripkeCand (#1108) + its IsTypeDescPi witness — the base case of the open type-level neutral
+-- reflection on which the residual ConvContextPreservesPiValidity bottoms out. ★ DESIGN FINDING: a
+-- function-valued KripkeCand CANNOT be a dependent index (Lean's dependent `cases` fails to unify the
+-- eta-expanded `fun {ts} => candidate`), so the candidate is a stored ARGUMENT recoverable by `cases`, not an
+-- index. toIsTypeDescPi = soundness (relation ⟹ grown validity, the half feeding the residual);
+-- carriesSnCandidate = the candidate-pairing recovered; smoke_variableTypeIsTypedValid = non-vacuity (a
+-- variable type code is in the relation). Zero-axiom. (Π-FORMER arm + transport-across-context-conversion
+-- are the next spike: candidate-as-argument means the Π-former can't read sub-candidates inside a ctor.)
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidity.toIsTypeDescPi
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidity.carriesSnCandidate
+#assert_no_axioms FX1Poly.Typed.smoke_variableTypeIsTypedValid
 
 -- GCC-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
 -- Reduction.lean, GCC-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
