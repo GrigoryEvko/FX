@@ -6418,13 +6418,15 @@ gates pin them shut.
 -- pointwise-Conv leaf) + piElim reassembly (Abel reflection). The Π case already derives validity from parts
 -- (piTypeViaSnCodFamily), so the neutral-APP case is the sole obstruction. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.transportNeutralArm
--- GrownCtxConv-5-RESIDUAL-SIGNATURE: the PRECISELY-LOCATED residual of GrownCtxConv-5's piElim arm (#842), verified against the
--- rule (HasTypeDescPi.piElim carries NO D:Type/C:Type premises, so the conv-back of the function needs IsType to
--- respect Conv). After WfContext-threading (#1059 uses classifierIsTypeDescPi/WFG-3 for target validity), the
--- context conversion discharges and the residual is pure type-Conv-closure at a FIXED context — SN-restricted to
--- exclude the #1058 non-SN counterexample (λ.Type@0)Ω. This is the FT-ESCAPE (reducible→typed, run backwards),
--- the dual of the shipped FORWARD ReducibleTypeStep.convInvariant (#537). smoke_residualRefl = non-vacuity.
--- Zero-axiom (Prop def + Conv.refl-shaped smoke).
+-- GrownCtxConv-5-RESIDUAL ★ NEGATIVE RESULT (firing-24 correction of firing-23): the SN-only type-Conv-closure
+-- IsTypeDescPiRespectsConvOnStronglyNormalizing is FALSE (NOT the residual). Counterexample T=Type@0, S=(λx.
+-- Type@0)(λz.zz): λz.zz is a NORMAL FORM (zz is a neutral var-app, no redex), so S β-reduces in one step to
+-- Type@0 — S is SN and Conv Type@0 — yet S is UNTYPED (λz.zz untypable by occurs-check). So SN (and context-free
+-- reducibility, which head-expands S to the universe) does NOT imply typedness. GrownCtxConv-5 is therefore NOT
+-- reducible to an SN/reducibility Conv-closure; its genuine residual stays the context conversion of Π-validity
+-- (ConvContextPreservesPiValidity #1092), discharged only by the TYPED logical relation (TypedTypeValidityBoxed
+-- #1110) with validity DERIVED. File retained as a guardrail against re-deriving the false simplification.
+-- smoke_residualRefl = the sole true (reflexive) instance. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.smoke_residualRefl
 
 -- GrownCtxConv-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
