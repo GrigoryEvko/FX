@@ -259,6 +259,7 @@ import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
+import FX1Poly.Typed.HasTypeDescPairIntro
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3108,6 +3109,15 @@ gates pin them shut.
 -- PRESERVE consistency. Unconditional (classifier read at normal subject). Full closed consistency = SN-050/CON-A5.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEmptyTypeViaGeneric
 #assert_no_axioms FX1Poly.Typed.closedNormalEmptyTypeUninhabited
+-- PAIR INTRODUCTION (HasTypeDescPairIntro, DI-2): the standalone n-ary data-constructor judgment typing the Σ
+-- VALUE pair(a,b) : product(A,B) from grown components a:A, b:B — the first non-vacuous Σ-value the kernel types
+-- (cascade-free, mirroring HasTypeDescBaseType, NOT an arm of HasTypeDescDataIntro/HasTypeDescPi). pairOfUniverse
+-- CodesTyped = the smoke pair(Type@0,Type@0) : product(Type@1,Type@1). subjectIsPair/classifierIsProduct = the
+-- SR-free closed-forms inversions (subject is a pairCell, classifier a productTypeCell). The SR/SN quartet is the
+-- GCC-5-entangled deferral (pair steps when a component steps → consumes grown master SR / #842).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.pairOfUniverseCodesTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.subjectIsPair
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.classifierIsProduct
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
