@@ -229,6 +229,7 @@ import FX1Poly.Typed.ChurchBooleanComplementLaws
 import FX1Poly.Typed.ChurchBoolXor
 import FX1Poly.Typed.ChurchListFirstOr
 import FX1Poly.Typed.ChurchSucc
+import FX1Poly.Typed.ChurchSuccApplies
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -7317,3 +7318,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.succ_step1_reshape
 #assert_no_axioms FX1Poly.Typed.churchSucc_isStepNormalForm
 #assert_no_axioms FX1Poly.Typed.churchSucc_betaUnfold
+-- CHURCH SUCC APPLIES (ChurchSuccApplies, CHURCH-SUCC-APPLIES): the operational successor — the fully-applied 4-binder
+-- reduction churchSucc n A f x ↝* f (n A f x), deferred from #1089. succ_step2/3/4_reshape are the per-binder β-contractum
+-- reshapes: each unfolds subst0+body, `show`s the fully-distributed form (subst distributes over appCell/lamCell by rfl,
+-- exposing the weaken-tower leaf), then rw's the cancellation lemmas (subst_lift_weaken / subst_lift_singleton_weaken_weaken
+-- / weaken_subst_singleton) — the weaken-tower (weaken³ n → weaken² → weaken → ∅) collapses one level per binder.
+-- churchSucc_applies chains the 4 β-steps (step1 = the shipped #1089 betaUnfold) lifted through the outer apps via
+-- Step.cong .gen_app. churchSucc_iteratesOneMore: churchSucc (numeral d) A f x ↝* f^(d+1) x — succ genuinely implements
+-- n↦n+1 on the numerals (via churchSucc_applies + the #1009 iteration). churchSuccZero_appliesToOne: depth-0 smoke. Raw
+-- Step; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.succ_step2_reshape
+#assert_no_axioms FX1Poly.Typed.succ_step3_reshape
+#assert_no_axioms FX1Poly.Typed.succ_step4_reshape
+#assert_no_axioms FX1Poly.Typed.churchSucc_applies
+#assert_no_axioms FX1Poly.Typed.churchSucc_iteratesOneMore
+#assert_no_axioms FX1Poly.Typed.churchSuccZero_appliesToOne
