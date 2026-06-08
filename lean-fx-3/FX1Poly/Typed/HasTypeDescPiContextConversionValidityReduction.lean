@@ -2,6 +2,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Core.ConvSubstRename
 import FX1Poly.Typed.HasTypeDescSubjectReduction
+import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.IsTypeDesc
 import FX1Poly.Typed.HasTypeDescContextConversion
 
@@ -207,5 +208,35 @@ theorem HasTypeDesc.codomainReTypingOfFormationStep {profile : PolyProfile} {sco
       (convContextCondition_consStep
         (Conv.fromStepStar (StepStar.trans domainStep (StepStar.refl _))))
   exact codomainUnderReduct.convBackToUniverseCode convToReached
+
+/-! ## The head-β extension of the unconditional fragment
+
+`validityRespectsReductionOfFormation` (#1095) discharges `TypeCodeValidityRespectsReduction` for FORMATION-typed
+subjects (`IsTypeDesc`).  A β-redex type code `(λ.body) arg` is NOT formation-typed (the formation engine types
+neither `λ` nor application — those are the grown `piIntro` / `piElim` rules), so it lies OUTSIDE that fragment.
+The shipped `HasTypeDescPi.betaSubjectReduction` (unconditional mod `WfContextDescPi`) discharges exactly this
+HEAD-β case, extending the unconditionally-discharged fragment from "formation-typed" to "formation-typed OR
+head-β-redex" type codes.
+
+This is the precise unconditional boundary of the residual: a grown type code's only HEAD redex is β (the engine
+types no type-level eliminators — a grown type code heads as a formation code, a `Π`-code, or an application), and
+head-β is now discharged.  Everything still open is CONGRUENCE into a child — a former's codomain re-typed across a
+stepped domain binder, or an argument reduced in a dependent position — i.e. exactly the grown context-conversion
+`piElim` arm (`#842`) / the FX logical relation, per this file's header. -/
+
+/-- **Grown head-β validity survives reduction — UNCONDITIONALLY (mod `WfContextDescPi`).**  A β-redex type code's
+validity survives the contraction.  The grown head-computation companion to `validityRespectsReductionOfFormation`
+(`#1095`, the formation fragment): a direct wrap of the shipped `HasTypeDescPi.betaSubjectReduction`, which re-types
+the contractum at the redex's classifier via the substitution lemma + `classifierIsTypeDescPi`, no logical relation
+needed.  Together with `#1095` this is the full UNCONDITIONAL fragment of `TypeCodeValidityRespectsReduction`; the
+genuinely-open remainder is congruence into a type-level-computing child. -/
+theorem HasTypeDescPi.validityRespectsBetaRedex {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {body : RawTerm (scope + 1)} {argument : RawTerm scope}
+    (isType : IsTypeDescPi profile context (appCell (lamCell body) argument))
+    (wellFormed : WfContextDescPi context) :
+    IsTypeDescPi profile context (RawTerm.subst0 body argument) := by
+  obtain ⟨level, flag, redexTyped⟩ := isType
+  exact ⟨level, flag, HasTypeDescPi.betaSubjectReduction redexTyped wellFormed⟩
 
 end FX1Poly.Typed

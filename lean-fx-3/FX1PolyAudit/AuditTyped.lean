@@ -6608,6 +6608,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.respectsReductionStar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.validityRespectsReductionOfFormation
 
+-- The HEAD-β extension of the unconditional fragment (same file, toward #842). validityRespectsBetaRedex: a β-redex
+-- type code (λ.body)(arg)'s validity survives the contraction to subst0 body arg, UNCONDITIONALLY mod WfContextDescPi --
+-- a direct wrap of the shipped betaSubjectReduction (substitution lemma + classifierIsTypeDescPi, no logical relation).
+-- A β-redex is NOT formation-typed (formation types neither λ nor app), so this lies OUTSIDE #1095's formation fragment:
+-- together they form the FULL unconditional fragment of TypeCodeValidityRespectsReduction. The unconditional boundary is
+-- precise: a grown type code's only HEAD redex is β (the engine types no type-level eliminators), and head-β is now
+-- discharged; everything open is CONGRUENCE into a type-level-computing child = the GrownCtxConv-5 piElim arm / FX
+-- logical relation. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.validityRespectsBetaRedex
+
 -- GrownCtxConv-5 formation/grown BOUNDARY, named (same file, GrownCtxConv-5-FORMBOUND, toward #842). HasTypeDesc.codomainReTyping
 -- OfFormationStep: codomain re-typing under a stepped domain binder is UNCONDITIONAL for FORMATION codomains -- the
 -- single domain Step gives Conv domain domainReduct (Conv.fromStepStar), hence the pointwise context-conversion
