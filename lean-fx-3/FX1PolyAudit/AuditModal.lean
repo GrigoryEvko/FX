@@ -32,6 +32,7 @@ import FX1Poly.Modal.LatticeDistributivityClassification
 import FX1Poly.Modal.SessionDualityDimension
 import FX1Poly.Modal.SessionCommunication
 import FX1Poly.Modal.SelfApplicationUntypable
+import FX1Poly.Modal.GradedProgress
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -1015,3 +1016,16 @@ is excluded at the typing layer.  Generic over `R`, instantiated at usage + secu
 #assert_no_axioms FX1Poly.Modal.omegaCombinator_untypableOver
 #assert_no_axioms FX1Poly.Modal.usageSelfApp_untypable
 #assert_no_axioms FX1Poly.Modal.securitySelfApp_untypable
+
+/-! ### Progress / canonical forms — the second half of type safety for the graded engine
+
+A closed well-typed `HasGradeOver R` term is never stuck: it β-reduces or is a `.lam` value
+(`closedWellTypedProgress`), the structural core being canonical forms (a closed normal form is a
+`.lam`, `closedNormalFormIsLam`).  With β SR (preservation, #905/#906) and SN (#878) this completes the
+safety kit; base type has no closed values (`closedBaseTypeAlwaysSteps`).  Generic over every graded
+dimension. -/
+
+#assert_no_axioms FX1Poly.Modal.closedNormalFormIsLam
+#assert_no_axioms FX1Poly.Modal.closedWellTypedProgress
+#assert_no_axioms FX1Poly.Modal.closedBaseTypeAlwaysSteps
+#assert_no_axioms FX1Poly.Modal.usageLinearIdentity_isValue
