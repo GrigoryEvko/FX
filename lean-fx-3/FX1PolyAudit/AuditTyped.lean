@@ -188,6 +188,7 @@ import FX1Poly.Typed.ConvValueDiscrimination
 import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.TypedChurchBooleans
 import FX1Poly.Typed.TypedChurchNumerals
+import FX1Poly.Typed.TypedChurchNumeralIteration
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
@@ -2074,6 +2075,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchNatType_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.churchOne_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.churchOne_stronglyNormalizing
+-- TypedChurchNumeralIteration (CHURCH-NAT-2): the Church numerals COMPUTE their iteration. churchOne_applied
+-- ReducesToIterate: one A f x β-reduces (3 steps) to f x (the step applied ONCE) — numeral analogue of the
+-- boolean β-selection. churchTwo_hasTypeDescPi: two = λA.λf.λx. f (f x) typed at the Church Nat type via a
+-- NESTED piElim (outer f applied to the inner f x) — extends churchOne's single piElim; churchTwo SN via
+-- SN-043. churchTwo_appliedReducesToIterate: two A f x β-reduces to f (f x) (applied TWICE). So one/two compute
+-- distinct iterates (f x vs f (f x)) — the iteration COUNT. (churchZero omitted: its raw term is churchFalse,
+-- and grownTypingNotUnique already records the Curry-style non-uniqueness, so churchZero-at-Nat is redundant.)
+-- All zero-axiom (StepStar.trans of Step.beta under gen_app congruence; nested piElim with reduced-form
+-- ascriptions).
+#assert_no_axioms FX1Poly.Typed.churchOne_appliedReducesToIterate
+#assert_no_axioms FX1Poly.Typed.churchTwo_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.churchTwo_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.churchTwo_appliedReducesToIterate
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
