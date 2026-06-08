@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.FX0Bridge
 import FX1PolyAudit.FX0CrossCheck
 import FX1PolyAudit.FX0CrossCheckCertified
+import FX1PolyAudit.FX0CrossCheckCorpus
 import FX0Poly.StructuralRecheck
 import FX0Poly.CertRecheck
 import FX0Poly.CertRecheckSound
@@ -140,3 +141,14 @@ The companion shows the typing hypothesis is essential (Ω is accepted structura
 
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_certified
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_omega_but_omega_notStronglyNormalizing
+
+/-! ### FX0CrossCheckCorpus — the cross-check on the kernel's flagship CERTIFIED TYPED terms (FX0-PC.8).
+The generic `externalVerify_accepts_certified` instantiated on the Church-boolean + Church-numeral
+encodings: the independent external verifier accepts the serialized encodings of the kernel's actual
+certified `λ`-terms, and they are strongly normalizing.  Connects the typed-derivation thread to the
+external-verifier soundness — an A₀-release ingredient (#464). -/
+
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchTrue
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchFalse
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchOne
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchTwo
