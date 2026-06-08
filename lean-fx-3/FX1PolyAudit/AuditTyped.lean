@@ -262,6 +262,7 @@ import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
 import FX1Poly.Typed.HasTypeDescEitherIntro
 import FX1Poly.Typed.ProductEitherCanonicalForms
+import FX1Poly.Typed.HasTypeDescBoolElim
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3145,6 +3146,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEitherType
 #assert_no_axioms FX1Poly.Typed.closedNormalProductCanonicalForms
 #assert_no_axioms FX1Poly.Typed.closedNormalEitherCanonicalForms
+-- BOOL ELIMINATOR + TYPED ι-COMPUTATION (HasTypeDescBoolElim, DI-5 first brick): the kernel's data story from
+-- INTRODUCTION to ELIMINATION. The standalone non-dependent boolElim judgment (boolElim(s,t,e):C from scrutinee
+-- s:boolCode via data-intro + branches t,e:C via grown). boolElimOfUniverseCodesTyped = the smoke boolElim(boolTrue,
+-- Type@0,Type@0):Type@1. subjectIsBoolElim = free-index inversion. ★ boolElimTrue/FalseIotaComputesTyped = the
+-- TYPED ι-COMPUTATION: a typed boolElim on a value ι-reduces (Step.iotaBoolTrue/False) to the typed branch — the
+-- eliminator COMPUTES and PRESERVES TYPING (constructor-side, so SR-free + propext-free; full SR is the GCC-5-gated
+-- branch-congruence deferral). Advances DI-5 #1047 (boolElim brick).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.boolElimOfUniverseCodesTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.subjectIsBoolElim
+#assert_no_axioms FX1Poly.Typed.boolElimTrueIotaComputesTyped
+#assert_no_axioms FX1Poly.Typed.boolElimFalseIotaComputesTyped
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
