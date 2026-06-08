@@ -266,6 +266,7 @@ import FX1Poly.Typed.HasTypeDescBoolElim
 import FX1Poly.Typed.HasTypeDescEitherMatch
 import FX1Poly.Typed.HasTypeDescOptionIntro
 import FX1Poly.Typed.HasTypeDescOptionMatch
+import FX1Poly.Typed.OptionCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3160,6 +3161,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEitherType
 #assert_no_axioms FX1Poly.Typed.closedNormalProductCanonicalForms
 #assert_no_axioms FX1Poly.Typed.closedNormalEitherCanonicalForms
+-- OPTION CANONICAL FORMS (OptionCanonicalForms, the DI-2c payoff): NON-VACUOUS closed-normal option canonical
+-- forms — a closed-normal term typed at option(A) by the option-intro engine OR the grown engine is optionNone /
+-- optionSome. Unlike product/either (FLAT-table codes), gen_optionCode is a FORMATION-table former (typingRuleDescOf,
+-- via GTL-13) — like boolCode/sigmaTyCode — so the rule-outs use the FORMATION substrate: optionCode_not_universeCode
+-- = the new head-stable(shapeStable_optionCodeGeneral)-vs-leaf(universe) rigidity (one-child twin of productCode_not_
+-- universeCode); optionCode_not_piTyCode = the within-formation-table rigidity (formationFormersNotConvOfDistinct,
+-- gen_optionCode≠gen_piTyCode). noClosedNormalTermAtOptionType = the CANON-1c grown rule-out instance.
+-- closedNormalOptionCanonicalForms = the headline (option-intro disjunct via subjectIsOptionConstructor, grown ruled
+-- out). Completes the option data story (intro DI-2c + elim DI-5c + canon). Full canonicity needs master SR / #842.
+#assert_no_axioms FX1Poly.Typed.Conv.optionCode_not_universeCode
+#assert_no_axioms FX1Poly.Typed.Conv.optionCode_not_piTyCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtOptionType
+#assert_no_axioms FX1Poly.Typed.closedNormalOptionCanonicalForms
 -- BOOL ELIMINATOR + TYPED ι-COMPUTATION (HasTypeDescBoolElim, DI-5 first brick): the kernel's data story from
 -- INTRODUCTION to ELIMINATION. The standalone non-dependent boolElim judgment (boolElim(s,t,e):C from scrutinee
 -- s:boolCode via data-intro + branches t,e:C via grown). boolElimOfUniverseCodesTyped = the smoke boolElim(boolTrue,
