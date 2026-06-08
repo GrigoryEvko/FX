@@ -413,6 +413,7 @@ import FX1Poly.Modal.SecurityNoninterferenceGeneral
 import FX1Poly.Modal.GradedApplicationFlow
 import FX1Poly.Typed.MetatheoryFuzz
 import FX1Poly.Typed.FuzzCorpusConvertibility
+import FX1Poly.Typed.FuzzCorpusNormalizes
 import FX1Poly.Typed.MechanizedProofCrossReference
 import FX1Poly.Typed.FormalReviewGate
 import FX1Poly.Typed.SelfVerifiedMetatheory
@@ -6168,6 +6169,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_intraConvertible
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzz_crossFamilyConvertible
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_notConvToType1
+
+-- FUZZ CORPUS NORMALIZES (FuzzCorpusNormalizes.lean): the verified SN-normalizer (HasTypeDescPi.normalForm,
+-- SN-112) COMPUTES every member of both L2 fuzz families to the canonical value Type@0 — the computational
+-- sharpening of the Conv capstone (the actual normalizer OUTPUT is pinned, not just Conv). Via
+-- reachedNormalForm_eq_normalForm fed *_reducesToType0 + Type@0's normality. metatheoryFuzz_normalFormsAgree =
+-- both families' computed normal forms coincide (Type@0), the decidable witness (conv_iff_normalForm_eq) under
+-- the cross-family convertibility: substitute-path and erase-path identified by the normalizer's actual output.
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_normalizesToType0
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_normalizesToType0
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzz_normalFormsAgree
 
 -- §27.3 Layer-3 defense: every core metatheory rule cross-referenced to a PUBLISHED MECHANIZED proof and
 -- ANCHORED to the real kernel theorem that realizes it.  The `crossRef_*` anchors (`def := @kernelTheorem`)
