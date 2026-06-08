@@ -153,4 +153,25 @@ theorem HasTypeDescPi.subjectReductionStar {profile : PolyProfile}
       HasTypeDescPi.subjectReductionStar wellFormed
         (HasTypeDescPi.subjectReduction typed wellFormed _ firstStep) rest
 
+/-- **Grown type validity survives reduction — for the FULL grown engine, under `WfContextDescPi`.**  If
+`subjectType` is a grown type code (`IsTypeDescPi`) in a well-formed context and it reduces to `reductType`, then
+`reductType` is a grown type code, at the SAME universe classifier.  A direct corollary of `subjectReductionStar`
+(the universe classifier is preserved at every step).  This is the FULL-engine, well-formed-context form of the
+flexible context-conversion residual `TypeCodeValidityRespectsReduction` (type validity survives reduction): it
+subsumes the formation-fragment `validityRespectsReductionOfFormation` and the head-β `validityRespectsBetaRedex`
+over the ENTIRE grown type-code fragment — INCLUDING type-level-computing applications — at the cost of carrying the
+well-formed-context presupposition.  That presupposition is irreducible (`HasTypeDescPi → WfContextDesc` is refuted),
+but BENIGN: it is exactly the premise the flexible grown context-conversion bundle already carries (its `var` arm
+reads the target binding's validity off `WfContextDescPi.lookupIsType`).  So the residual that was believed to "route
+through the logical relation" is not logical-relation-hard once master subject reduction is unconditional — only
+well-formed-context-gated. -/
+theorem HasTypeDescPi.typeValiditySurvivesReductionUnderWf {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subjectType reductType : RawTerm scope}
+    (wellFormed : WfContextDescPi context)
+    (isType : IsTypeDescPi profile context subjectType)
+    (reduces : StepStar subjectType reductType) :
+    IsTypeDescPi profile context reductType := by
+  obtain ⟨levelExpr, flag, subjectTyped⟩ := isType
+  exact ⟨levelExpr, flag, HasTypeDescPi.subjectReductionStar wellFormed subjectTyped reduces⟩
+
 end FX1Poly.Typed

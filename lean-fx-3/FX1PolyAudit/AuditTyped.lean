@@ -6447,6 +6447,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.subjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionStar
 
+-- typeValiditySurvivesReductionUnderWf: the FULL-engine, well-formed-context form of the flexible-route residual
+-- TypeCodeValidityRespectsReduction (#1094) — a direct corollary of subjectReductionStar (the universe classifier is
+-- preserved at every step).  Subsumes the formation-fragment validityRespectsReductionOfFormation (#1095) and the
+-- head-β validityRespectsBetaRedex (#1127) over the ENTIRE grown type-code fragment (incl. type-level-computing
+-- applications).  The cost is the well-formed-context presupposition, which is IRREDUCIBLE (HasTypeDescPi →
+-- WfContextDesc is refuted in ContextValidityFails.lean) but BENIGN — exactly what the flexible grown
+-- context-conversion bundle already carries (its var arm reads target validity off WfContextDescPi.lookupIsType).  So
+-- once master SR is unconditional (SR-U4), the residual #1094 called "routes through the logical relation" is NOT
+-- logical-relation-hard — only well-formed-context-gated.  Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.typeValiditySurvivesReductionUnderWf
+
 -- GrownCtxConv-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
 -- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
 -- a piTyCodeCell D C that is a FORMATION type (IsTypeDesc, no type-level computation) context-converts to a grown
