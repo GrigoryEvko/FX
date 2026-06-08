@@ -416,6 +416,7 @@ import FX1Poly.Typed.ConvContextPiValidityModelNeutral
 import FX1Poly.Typed.TypedTypeValidityRelation
 import FX1Poly.Typed.TypedTypeValidityBoxedRelation
 import FX1Poly.Typed.TypedTypeValidityLeveled
+import FX1Poly.Typed.TypedTypeValidityLeveledTransport
 import FX1Poly.Typed.WfContextTypedLrValid
 import FX1Poly.Typed.TypedTypeValidityBoxedRename
 import FX1Poly.Typed.WfContextTypedLrValidLookup
@@ -6443,6 +6444,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.toHasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.toIsTypeDescPi
 #assert_no_axioms FX1Poly.Typed.smoke_closedUniverseLeveled
+-- TYPED-LR-LEVELED-TRANSPORT (#1125): the LEVELED transport across context conversion (route B payoff,
+-- TypedTypeValidityLeveledTransport.lean) — the firing-35 flag-matching resolution HARVESTED. transport: by
+-- induction on the leveled relation — universeType arm FREE (universe codes context-free, rebuilt via
+-- universeFormation under tgt); piType arm RECURSES on domain+codomain (codomain under the cons-lifted
+-- convContextCondition_cons) and REBUILDS Π-validity via piFormationViaGenArm — the rebuild's flag-matching is
+-- DISCHARGED by the leveled index (transported domain+codomain share the flag); neutral arm = the lone
+-- conditional Abel-reflection reconstruction hypothesis neutralRecon. transportValidity: a leveled-valid type
+-- code's EXACT universe-code typing transports across context conversion (conditional on neutralRecon) —
+-- specialized to a Π-code this is precisely the ConvContextPreservesPiValidity residual shape, discharged for
+-- LEVELED-VALID Π-codes conditional ONLY on the neutral reconstruction. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.transport
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.transportValidity
 -- GrownCtxConv-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
 -- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
 -- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
