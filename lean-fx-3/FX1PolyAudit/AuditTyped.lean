@@ -409,6 +409,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
 import FX1Poly.Typed.HasTypeDescPiContextConversionWf
 import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
 import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
+import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimEquivalence
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormerStep
 import FX1Poly.Typed.GenFormerValidityContextConversion
@@ -6376,6 +6377,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.masterSubjectReductionFromPiValidity
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.subjectReductionFromPiValidity
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.grownMutualMetatheoryFromPiValidity
+
+-- HasTypeDescPiContextConversionPiElimEquivalence: the REVERSE direction `piElimArm → residual`, completing the
+-- equivalence `ConvContextPreservesPiValidity ⟺ piElimArm`. piElimArmFromPiValidityTransfer (#1092) gives the forward
+-- (residual + source Wf ⟹ piElimArm — the conv rule re-types the function at the literal Π-code, needing IsTypeDescPi
+-- tgt (Π D C)). piValidityFromPiElimArm gives the reverse with NO Wf premise: convContextOfPiElimArm transports the
+-- Π-CODE's universe typing, and the conv-back to the literal universe code is FREE (the conv rule's reclassifierTyped
+-- obligation is here the universe code's OWN validity via ofFormation∘universeFormation, not a Π-code's — so the
+-- circularity that blocks the application case does NOT arise for the type-code case). Together: GrownCtxConv-5's entire
+-- remaining content IS the single piElim arm. masterSubjectReductionFromPiElimArm = the capstone: piElimArm alone yields
+-- master SR (chaining the reverse through GTL-20's masterSubjectReductionFromPiValidity); combined with
+-- convContextOfPiElimArm (grown context conversion from piElimArm, no extra premise) this exhibits piElimArm as the
+-- single lynchpin of the grown metatheory. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.piValidityFromPiElimArm
+#assert_no_axioms FX1Poly.Typed.masterSubjectReductionFromPiElimArm
 
 -- GrownCtxConv-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
 -- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
