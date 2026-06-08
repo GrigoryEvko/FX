@@ -3,6 +3,7 @@ import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Core.ConvSubstRename
 import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.IsTypeDesc
+import FX1Poly.Typed.HasTypeDescContextConversion
 
 /-! # FX1Poly/Typed/HasTypeDescPiContextConversionValidityReduction
     — the SECOND piElim-arm reduction: to `TypeCodeValidityRespectsReduction` (GCC-5-VALRED, toward #842)
@@ -179,5 +180,32 @@ theorem HasTypeDescPi.validityRespectsReductionOfFormation {profile : PolyProfil
     IsTypeDescPi profile context reductType := by
   obtain ⟨levelExpr, flag, reductTyped⟩ := IsTypeDesc.respectsReductionStar isType reduces
   exact ⟨levelExpr, flag, HasTypeDescPi.ofFormation reductTyped⟩
+
+/-- **The formation/grown boundary, named: codomain re-typing under a stepped domain binder is UNCONDITIONAL
+for FORMATION codomains.**  If a codomain is a formation type under `context.cons domain` and the `domain`
+steps to `domainReduct`, then the codomain is a formation type under `context.cons domainReduct`, at the SAME
+universe classifier.  Proof: the single domain `Step` induces a `Conv domain domainReduct` (`Conv.fromStepStar`),
+hence a pointwise context-conversion condition (`convContextCondition_consStep`), and the UNCONDITIONAL formation
+context-conversion `HasTypeDesc.convContext` re-types the codomain (conv-backed to the same universe code via
+`convBackToUniverseCode`).
+
+This is the formation analogue of the grown `codomainReTyping` (GCC-6, `#843`) — but UNCONDITIONAL, where the
+grown one is gated on GCC-5 (`#842`).  It IS the precise move the formation telescope subject reduction makes
+internally, and it is EXACTLY the operation the grown engine cannot perform for genuinely-grown
+(type-level-computing) codomains: that single asymmetry — formation context-conversion is unconditional, grown is
+not — is the entire content of why GCC-5 / the master-SR `genFormationPi` arm / `TypeCodeValidityRespectsReduction`
+remain open and require the FX logical relation. Named here so the boundary is a citable presupposition. -/
+theorem HasTypeDesc.codomainReTypingOfFormationStep {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {domain domainReduct : RawTerm scope}
+    {codomain : RawTerm (scope + 1)} {level : LevelExpr} {flag : UniverseFlag}
+    (codomainTyped : HasTypeDesc profile (context.cons domain) codomain
+      (universeCodeCell level flag))
+    (domainStep : Step domain domainReduct) :
+    HasTypeDesc profile (context.cons domainReduct) codomain (universeCodeCell level flag) := by
+  obtain ⟨reachedClassifier, convToReached, codomainUnderReduct⟩ :=
+    HasTypeDesc.convContext codomainTyped (context.cons domainReduct)
+      (convContextCondition_consStep
+        (Conv.fromStepStar (StepStar.trans domainStep (StepStar.refl _))))
+  exact codomainUnderReduct.convBackToUniverseCode convToReached
 
 end FX1Poly.Typed

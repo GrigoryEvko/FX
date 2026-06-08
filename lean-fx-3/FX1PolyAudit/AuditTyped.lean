@@ -6347,6 +6347,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.respectsReductionStar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.validityRespectsReductionOfFormation
 
+-- GCC-5 formation/grown BOUNDARY, named (same file, GCC-5-FORMBOUND, toward #842). HasTypeDesc.codomainReTyping
+-- OfFormationStep: codomain re-typing under a stepped domain binder is UNCONDITIONAL for FORMATION codomains -- the
+-- single domain Step gives Conv domain domainReduct (Conv.fromStepStar), hence the pointwise context-conversion
+-- condition (convContextCondition_consStep), and the UNCONDITIONAL formation HasTypeDesc.convContext re-types the
+-- codomain (conv-backed to the same universe code). This is the formation analogue of the grown codomainReTyping
+-- (GCC-6 #843) but UNCONDITIONAL where the grown one is gated on GCC-5. It IS exactly the move the grown engine
+-- cannot make for genuinely-grown codomains -- that single asymmetry (formation context-conversion unconditional,
+-- grown not) is the ENTIRE content of why GCC-5 / master-SR genFormationPi / TypeCodeValidityRespectsReduction
+-- remain open and need the FX logical relation. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.codomainReTypingOfFormationStep
+
 -- Conv-KEEPING Π/Σ-code former inversion (HasTypeDescPiFormerInversion.lean, the former head for the SR cong arm
 -- #458). inversionPiCodeComponents drops the classifier Conv (its telescope workhorse discards _convToCode/_converts),
 -- which suffices for output validity but NOT for re-assembling piTyCodeCell domainCode' codomainCode at the ORIGINAL
