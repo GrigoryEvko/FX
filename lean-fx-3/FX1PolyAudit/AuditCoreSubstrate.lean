@@ -252,6 +252,15 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaNatRecZero
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaListElimNil
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaOptionMatchNone
+-- The app-chain (step-case) ELIMINATOR iota arms (KRIPKE-REFLECT-APPCHAIN): optionMatch on optionSome, eitherMatch
+-- on eitherInl/eitherInr match a UNARY value and reduce to the branch APPLIED to the wrapped value
+-- (optionMatch (optionSome v) n s ↝ app s v). rename rho term = elim (unaryValue renamedV) b1 b2 implies there is
+-- t' with Step term t' and rename rho t' = app renamedBranch renamedV. The contractum is a constructed app cell, so
+-- the image eq closes by rename-over-app rfl-distribution + the recovered branch/value renamings; the unary scrutinee
+-- needs a TWO-level injection (the optionSome/eitherInl/eitherInr mkGen then its childCons) to expose the value.
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaOptionMatchSome
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaEitherMatchInl
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaEitherMatchInr
 
 -- The neutral leaf of the stratified ReducibleTypeStep rename-closure (type + member level): the structural
 -- fragment, separate from the Kripke-indexed piType arm (see the StratifiedReducibleTypeRename docstring).
