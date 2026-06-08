@@ -413,6 +413,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimEquivalence
 import FX1Poly.Typed.HasTypeDescPiContextStepConversion
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimUnderWf
+import FX1Poly.Typed.HasTypeDescPiContextConversionFlexibleUnderWf
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormerStep
 import FX1Poly.Typed.GenFormerValidityContextConversion
@@ -6468,6 +6469,21 @@ gates pin them shut.
 -- is NOT a separate recursion — under the target wf it derives from functionConverted via classifierIsTypeDescPi, so a
 -- flexible mutual built on this arm needs only the single term-conversion recursion.  Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimArmUnderWfTarget
+
+-- ★ convContextUnderWf ⋈ convTelescopeUnderWf — the GROWN context conversion, UNCONDITIONAL under target
+-- well-formedness: the structural closure of GrownCtxConv-5/#842 (the piElim context-conversion arm that resisted
+-- 40+ firings).  A faithful transform of the conditional convContextOfPiElimArm ⋈ convTelescopeOfPiElimArm with the
+-- piElimArm hypothesis DROPPED: the piElim arm uses piElimArmUnderWfTarget (functionFlexible derived from
+-- functionConverted via classifierIsTypeDescPi), the var-style leaves are wf-FREE (the var rule types
+-- unconditionally), and target wf is threaded + extended at piIntro/telescope-cons via WfContextDescPi.cons.  The
+-- wf-FREE arbitrary-Conv version is genuinely LR-bound (the source→target wf bridge is circular with the theorem,
+-- and classifierRespectsConv is refuted #1058); carrying TARGET wf cuts the knot, reading every needed target
+-- validity off lookupIsType/classifierIsTypeDescPi.  So this is the MAXIMAL structural closure — unconditional
+-- modulo a presupposition of exactly SN-043's benign character (HasTypeDescPi → WfContextDesc is itself refuted).
+-- Master SR does NOT consume this (SR-U4 routed through the EXACT directed conversion); this is the standalone
+-- GrownCtxConv-5 result.  Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextUnderWf
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.convTelescopeUnderWf
 
 -- GrownCtxConv-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
 -- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
