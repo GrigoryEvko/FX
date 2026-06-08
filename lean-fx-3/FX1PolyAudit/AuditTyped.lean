@@ -50,6 +50,7 @@ import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
 import FX1Poly.Typed.GrownBetaRedexInAction
 import FX1Poly.Typed.GrownOpenProgress
 import FX1Poly.Typed.GrownOpenCanonicalFormsByClassifier
+import FX1Poly.Typed.GrownOpenProgressByClassifier
 import FX1Poly.Typed.GrownOpenTypeSafety
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
@@ -1264,6 +1265,16 @@ gates pin them shut.
 -- dichotomy (TY-CONV-quote / η-M15 line). #672-independent — pure inversion, no SR, no SN.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openNormalTypeIsFormerOrNeutral
+-- OPEN PROGRESS PER TYPE (GrownOpenProgressByClassifier.lean): the eighth and last cell of the grown progress/
+-- canonical-forms matrix {closed,open}×{general,per-classifier}×{canonical-forms,progress}. openFunctionStepsOrIsLambdaOrNeutral
+-- = a grown-typed term of Π type in ANY WfContext STEPS or IS a λ or is Core.IsNeutral; openTypeStepsOrIsFormerOrNeutral
+-- = a grown-typed TYPE (universe classifier) STEPS or has a type-former head or is Core.IsNeutral. The open
+-- generalizations of the closed{Function,Type}Steps… twin (admitting the neutral leaf variables introduce). The
+-- 3-way disjunction (steps ∨ canonical-at-classifier ∨ neutral) IS the type-directed η-long readback case split
+-- (TY-CONV-quote / η-M15). UNCONDITIONAL: the classifier is read only at the already-normal subject (via the open
+-- per-classifier canonical-forms lemmas), so no reduction step is typed — no SR, no GCC-5 #842, no §5.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openFunctionStepsOrIsLambdaOrNeutral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openTypeStepsOrIsFormerOrNeutral
 -- OPEN TYPE SAFETY + DETERMINISM (GrownOpenTypeSafety.lean, five-layer-defense L4 §27.3): the open analogues of the
 -- three GrownTypeSafety statements, resting on OB-5 open SN (stronglyNormalizingOfWfContext, any WfContext) + open
 -- progress (openNormalSubjectCanonicalOrNeutral), with the neutral disjunct. openHasUniqueNormalForm = OPEN
