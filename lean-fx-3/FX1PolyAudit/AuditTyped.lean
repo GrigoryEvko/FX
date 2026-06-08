@@ -433,6 +433,7 @@ import FX1Poly.Typed.HasTypeDescPiSubjectReductionConvOfFormationArms
 import FX1Poly.Typed.ConsistencyConditionalOnSubjectReduction
 import FX1Poly.Typed.ConsistencyOfPiElimArm
 import FX1Poly.Typed.PiElimUpToClassifierConv
+import FX1Poly.Typed.ClassifierRespectsConvRefuted
 import FX1Poly.Typed.EmptyTypeConsistencyUnconditional
 import FX1Poly.Typed.FormationNormalSmoke
 import FX1Poly.Typed.BoolTypeCodeSubstrate
@@ -1493,6 +1494,20 @@ gates pin them shut.
 -- on the nose. So GCC-5 = one lemma; the reflect (reducible-type -> typed) is the VAL-2 residual (the universe
 -- candidate IS IsReducibleType, Conv-invariant via #537). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piElimUpToClassifierConv
+-- GCC-5-REFUTE (#1058, ClassifierRespectsConvRefuted): ★ classifierRespectsConv_isFalse — the VAL-1 GCC-5
+-- reduction target (classifierRespectsConv : IsType A → Conv A B → IsType B) is PROVABLY FALSE.
+-- Counterexample: A = Type@0 (a type), B = (λ_.Type@0) Ω. B β-reduces to A (classifierConvCounterexampleRedex_
+-- stepsToType: the body Type@0 discards Ω), so Conv A B; A isType (classifierConvCounterexampleType_isType, via
+-- universe-formation); but B is NOT a type (classifierConvCounterexampleRedex_notType: invertApp would type the
+-- discarded argument Ω, contradicting omegaCombinator_notClosedWellTyped #958). So VAL-2 as planned is impossible.
+-- DEEP FINDING: grown typing requires EVERY subterm typed (even a discarded argument), so IsTypeDescPi is NOT
+-- Conv-invariant. REDIRECT: the real piElim arm keeps the SOURCE fn:piTyCode D C derivation (D,C genuinely typed
+-- by validity) and context-converts that formation (GCC-4), NOT the lossy Conv-to-piTyCode. Zero-axiom: Step.beta
+-- + invertApp + omega-untypable + universeFormation + Conv.fromStepStar.
+#assert_no_axioms FX1Poly.Typed.classifierConvCounterexampleRedex_stepsToType
+#assert_no_axioms FX1Poly.Typed.classifierConvCounterexampleType_isType
+#assert_no_axioms FX1Poly.Typed.classifierConvCounterexampleRedex_notType
+#assert_no_axioms FX1Poly.Typed.classifierRespectsConv_isFalse
 -- reclassifyArgumentToFunctionDomain: the first consumer — re-type an argument (Conv to the function's domain) at
 -- the domain itself, with functionDomainIsType supplying the conv rule's universe witness. The argument-retyping
 -- step of the grown β / context-conversion piElim arms (toward GCC-5/SN-055).
