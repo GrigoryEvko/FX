@@ -54,7 +54,7 @@ Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Foundation
 
 /-- **A first-order box around a Kripke candidate.**  Wrapping `KripkeCand` (which is FUNCTION-valued,
 `∀ {targetScope}, RawRenaming … → RawTerm … → Prop`) in a structure makes it a first-order value, so it can
@@ -126,5 +126,57 @@ theorem smoke_variableTypeIsBoxedTypedValid {profile : PolyProfile} {scope : Nat
     TypedTypeValidityBoxed profile context (.mkGen .gen_var index .childNil)
       (KripkeCandBox.mk snKripkeCand) :=
   TypedTypeValidityBoxed.neutral (IsNeutral.var index) validity
+
+/-! ## The canonical codomain family — closing the Π-former's free-family gap (the firing-20 next brick)
+
+The `piType` arm leaves `codomainFamily : KripkeCodFamily scope` as a parameter.  For the type-VALIDITY logical
+relation (which is what the GCC-5 residual `ConvContextPreservesPiValidity` needs — `Π D C` inhabits a
+universe, NOT the membership semantics of `Π`'s inhabitants) the codomain family does NOT have to depend on
+the argument: it only has to EXIST and TRANSPORT.  The canonical choice is the SN codomain family
+`snKripkeCodFamily`, the codomain analogue of the SN Kripke candidate `snKripkeCand` (#1108) — so the Π-former
+candidate is `kripkeArrowDep domainBox.run snKripkeCodFamily`, DERIVED, no longer free data.
+
+★ Why the SN family and not a genuine codomain-instantiation: a genuinely-dependent codomain family
+`fun ρ arg t => t ∈ ⟦codomain[binder ↦ arg]⟧` would need to INSTANTIATE the codomain candidate (a
+`KripkeCand (scope + 1)`) with the TERM argument `arg`.  But `KripkeCand` is indexed by RENAMINGS
+(`RawRenaming = Fin → Fin`, variable↦variable), which cannot encode a term substitution — so the renaming-
+indexed Kripke candidate is structurally UNABLE to be instantiated with a term.  A substitution-indexed Kripke
+candidate would be a separate, larger refactor of the shipped Kripke substrate (#1104-1108).  For type
+validity the SN family suffices; the substitution-Kripke generalization is reserved for the member-level
+(canonicity) semantics, off the GCC-5 critical path. -/
+
+/-- **The SN codomain family** — the index-and-argument-ignoring codomain family whose members at every
+renaming and argument are exactly the strongly-normalizing terms (the codomain analogue of `snKripkeCand`,
+#1108).  The canonical codomain family for the type-validity logical relation. -/
+def snKripkeCodFamily {scope : Nat} : KripkeCodFamily scope :=
+  fun {_targetScope} _indexRenaming _argument term => IsStronglyNormalizing term
+
+/-- **Rename-invariance of the SN codomain family** (transport = IDENTITY, `Iff.rfl`).  The codomain-family
+twin of `snKripkeCand_transport_pointwise` (#1108): context conversion (a change of renaming index) acts as
+the identity on the SN codomain family, so the Π-former candidate built from it transports freely. -/
+theorem snKripkeCodFamily_transport_pointwise {scope renamedScope : Nat}
+    (forwardRenaming : RawRenaming scope renamedScope)
+    {targetScope : Nat} (indexRenaming : RawRenaming renamedScope targetScope)
+    (argument term : RawTerm targetScope) :
+    KripkeCodFamily.transport forwardRenaming (snKripkeCodFamily) indexRenaming argument term ↔
+      snKripkeCodFamily indexRenaming argument term :=
+  Iff.rfl
+
+/-- **The Π-former with its codomain family DERIVED from the canonical SN family** (closes the free-`codomainFamily`
+gap for type validity).  A `Π` type code is typed-valid at `kripkeArrowDep domainBox.run snKripkeCodFamily`,
+built from the domain sub-derivation's exposed candidate and the CANONICAL SN codomain family — no free family
+data at the call site.  The codomain-family-instantiated specialization of the `piType` arm; the form the
+fundamental theorem's Π case will use to construct the relation for `Π D C` from D's and C's validities. -/
+theorem piTypeViaSnCodFamily {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {domainCode : RawTerm scope}
+    {codomainCode : RawTerm (scope + 1)}
+    {domainBox : KripkeCandBox scope} {codomainBox : KripkeCandBox (scope + 1)}
+    (domainValid : TypedTypeValidityBoxed profile context domainCode domainBox)
+    (codomainValid :
+      TypedTypeValidityBoxed profile (context.cons domainCode) codomainCode codomainBox)
+    (validity : IsTypeDescPi profile context (piTyCodeCell domainCode codomainCode)) :
+    TypedTypeValidityBoxed profile context (piTyCodeCell domainCode codomainCode)
+      (KripkeCandBox.mk (kripkeArrowDep domainBox.run snKripkeCodFamily)) :=
+  TypedTypeValidityBoxed.piType snKripkeCodFamily domainValid codomainValid validity
 
 end FX1Poly.Typed

@@ -6397,6 +6397,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.toIsTypeDescPi
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.indexCandidate
 #assert_no_axioms FX1Poly.Typed.smoke_variableTypeIsBoxedTypedValid
+-- TYPED-LR-CODFAMILY: close the Π-former's free-codomainFamily gap (the firing-20 next brick). snKripkeCodFamily
+-- is the SN codomain family (codomain analogue of snKripkeCand #1108) — the CANONICAL codomain family for the
+-- type-VALIDITY relation (which only needs the family to EXIST + TRANSPORT, not to depend on the argument: the
+-- residual is Π-type validity, not Π-member semantics). snKripkeCodFamily_transport_pointwise = rename-invariance
+-- (Iff.rfl). piTypeViaSnCodFamily = the Π-former with codomainFamily DERIVED from snKripkeCodFamily (no free data
+-- at the call site) — the form the fundamental theorem's Π case will use. ★ FINDING: a genuinely-dependent codomain
+-- family needs to INSTANTIATE a KripkeCand (scope+1) with a TERM argument, but KripkeCand is RENAMING-indexed
+-- (Fin→Fin, can't encode a term subst) — so the dependent instantiation needs a substitution-Kripke refactor,
+-- reserved for member-level canonicity, OFF the GCC-5 critical path. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.snKripkeCodFamily_transport_pointwise
+#assert_no_axioms FX1Poly.Typed.piTypeViaSnCodFamily
 
 -- GCC-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
 -- Reduction.lean, GCC-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
