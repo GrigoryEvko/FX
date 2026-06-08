@@ -20,6 +20,7 @@ import FX1Poly.Modal.ComplexitySemiring
 import FX1Poly.Modal.EffectLatticeClassification
 import FX1Poly.Modal.OverflowLatticeDimension
 import FX1Poly.Modal.PrecisionOverflowCollision
+import FX1Poly.Modal.SoundnessCollisionSchema
 import FX1Poly.Modal.BoundedJoinSemilatticeUniversal
 import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
@@ -1134,3 +1135,37 @@ PrecisionGrade.noConfusion / cases-rfl, no propext). -/
 #assert_no_axioms FX1Poly.Modal.inexactPrecisionConsistentWithEveryOverflow
 #assert_no_axioms FX1Poly.Modal.exactPrecisionCollision_iff_notPreserving
 #assert_no_axioms FX1Poly.Modal.isJointlyConsistent_iff
+
+/-! ## SoundnessCollisionSchema — the §6.8 collision FORM abstracted; two collisions as ONE schema
+
+The §6.8 catalog is instances of one pattern: a strong GUARANTEE-demand meeting a CAPABILITY that fails to
+preserve the invariant.  SoundnessCollisionSchema (Demand/Capability/isStrongDemand/preservesInvariant) +
+IsConsistent (strongDemand ⟹ preserved) + the generic notConsistent_iff (collision ⟺ strong ∧ ¬preserving) /
+consistent_iff, proved once via Bool helpers notImplies_iff/implies_iff.  INSTANCE 1 decimalOverflowSchema
+RECOVERS #1021 (decimalOverflowSchema_recovers_collision) and decimalOverflowSchema_consistent_iff_jointly
+Consistent proves the schema SUBSUMES the bespoke IsJointlyConsistent (via isExact_eq_true_iff).  INSTANCE 2 (NEW)
+monotonicConcurrentSchema over the shipped MutationGrade chain: concurrentCollidesWithMonotonic (★) — monotonic
+mutation is unsound under unsynchronized concurrent access (out-of-order commits break the forward-only
+invariant) + appendOnly/readWrite twins (all need sequencing); concurrentConsistentWithImmutable (read-only safe);
+sequentialConsistentWithEveryMutation (no demand → no collision).  PAYOFF: two §6.8 collisions across four
+dimensions (precision/overflow/mutation/concurrency) are the SAME theorem twice.  All zero-axiom (cases-Bool +
+noConfusion + (notConsistent_iff _ _).mpr ⟨rfl,rfl⟩). -/
+
+#assert_no_axioms FX1Poly.Modal.notImplies_iff
+#assert_no_axioms FX1Poly.Modal.implies_iff
+#assert_no_axioms FX1Poly.Modal.SoundnessCollisionSchema.IsConsistent
+#assert_no_axioms FX1Poly.Modal.SoundnessCollisionSchema.notConsistent_iff
+#assert_no_axioms FX1Poly.Modal.SoundnessCollisionSchema.consistent_iff
+#assert_no_axioms FX1Poly.Modal.PrecisionGrade.isExact
+#assert_no_axioms FX1Poly.Modal.decimalOverflowSchema
+#assert_no_axioms FX1Poly.Modal.decimalOverflowSchema_recovers_collision
+#assert_no_axioms FX1Poly.Modal.isExact_eq_true_iff
+#assert_no_axioms FX1Poly.Modal.decimalOverflowSchema_consistent_iff_jointlyConsistent
+#assert_no_axioms FX1Poly.Modal.ConcurrencyGrade.isConcurrent
+#assert_no_axioms FX1Poly.Modal.MutationGrade.isConcurrencySafe
+#assert_no_axioms FX1Poly.Modal.monotonicConcurrentSchema
+#assert_no_axioms FX1Poly.Modal.concurrentCollidesWithMonotonic
+#assert_no_axioms FX1Poly.Modal.concurrentCollidesWithAppendOnly
+#assert_no_axioms FX1Poly.Modal.concurrentCollidesWithReadWrite
+#assert_no_axioms FX1Poly.Modal.concurrentConsistentWithImmutable
+#assert_no_axioms FX1Poly.Modal.sequentialConsistentWithEveryMutation
