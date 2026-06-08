@@ -412,6 +412,7 @@ import FX1Poly.Typed.ConvContextPiValidityModelNeutral
 import FX1Poly.Typed.TypedTypeValidityRelation
 import FX1Poly.Typed.TypedTypeValidityBoxedRelation
 import FX1Poly.Typed.WfContextTypedLrValid
+import FX1Poly.Typed.TypedTypeValidityBoxedRename
 import FX1Poly.Typed.PiElimClassifierConvResidual
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
@@ -6422,6 +6423,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.cons
 #assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.toWfContextDescPi
 #assert_no_axioms FX1Poly.Typed.wfContextTypedLrValid_universeBinding
+-- LR-WEAKENING: the boxed typed LR respects context renaming — the genuinely-new proof the lookup lemma needs (a
+-- context entry typed at a prefix scope transports to the full scope). renameRespectingContextExists mirrors
+-- HasTypeDescPi.renameRespectingContext over the 3 LR arms (existential box): neutral via IsNeutral.rename, universe
+-- via rename_universeCodeCell, piType via the lift-ρ codomain recursion + piTypeViaSnCodFamily reassembly (the lift
+-- is why a weaken-only statement is insufficient — weakening descends the binder). IsTypeDescPi.renameRespectingContext
+-- = the grown-validity rename helper each arm delegates to. weakenUnderBinding = the single-step corollary (ρ=weaken,
+-- condition definitional) the lookup threads down a context telescope. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.IsTypeDescPi.renameRespectingContext
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.renameRespectingContextExists
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.weakenUnderBinding
 -- TYPED-LR-CODFAMILY: close the Π-former's free-codomainFamily gap (the firing-20 next brick). snKripkeCodFamily
 -- is the SN codomain family (codomain analogue of snKripkeCand #1108) — the CANONICAL codomain family for the
 -- type-VALIDITY relation (which only needs the family to EXIST + TRANSPORT, not to depend on the argument: the
