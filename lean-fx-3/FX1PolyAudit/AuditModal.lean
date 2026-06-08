@@ -23,6 +23,7 @@ import FX1Poly.Modal.PrecisionOverflowCollision
 import FX1Poly.Modal.SoundnessCollisionSchema
 import FX1Poly.Modal.ThreeWayCollisionClassifiedAsyncSession
 import FX1Poly.Modal.FlagshipMultiDimensionSignature
+import FX1Poly.Modal.SoundnessCollisionCatalog
 import FX1Poly.Modal.BoundedJoinSemilatticeUniversal
 import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
@@ -1218,3 +1219,26 @@ Mutation). -/
 #assert_no_axioms FX1Poly.Modal.encryptAndSendMutationConcurrencyConsistent
 #assert_no_axioms FX1Poly.Modal.encryptAndSendPrecisionOverflowConsistent
 #assert_no_axioms FX1Poly.Modal.encryptAndSendJointlyAdmissible
+
+/-! ### §6.8 collision catalog — completed + classified into co-occurrence vs scoping-refined
+    (#1028 DIM-COLLISION-CATALOG, SoundnessCollisionCatalog.lean)
+
+Generalizes #1027's implicit-flow insight into a whole structural CLASS. ghost×runtime = the clean
+CO-OCCURRENCE entry (ghostObservedAtRuntimeCollision = grade-0 observed at runtime collides
+unconditionally; runtimePresentValueObservable + unobservedGhostConsistent pin the specificity).
+borrow×Async + borrow×unscoped-spawn = SCOPING-REFINED (the demand is the ESCAPE control, not presence):
+borrowEscapeUnderAsyncCollision / borrowEscapeIntoUnscopedSpawnCollision collide, but confinedBorrowUnder
+AsyncConsistent / borrowIntoScopedSpawnConsistent show a CONFINED borrow co-occurs soundly (= why
+encrypt_and_send borrows under async, #1027). ★ catalogHasTwoCollisionClasses = the structural dichotomy
+(co-occurrence collides on joint presence; scoping-refined is consistent on joint presence + respected
+scope). All SoundnessCollisionSchema instances, zero-axiom (notConsistent_iff.mpr ⟨rfl,rfl⟩ /
+Bool.noConfusion / fun _ => rfl). -/
+
+#assert_no_axioms FX1Poly.Modal.ghostObservedAtRuntimeCollision
+#assert_no_axioms FX1Poly.Modal.runtimePresentValueObservable
+#assert_no_axioms FX1Poly.Modal.unobservedGhostConsistent
+#assert_no_axioms FX1Poly.Modal.borrowEscapeUnderAsyncCollision
+#assert_no_axioms FX1Poly.Modal.confinedBorrowUnderAsyncConsistent
+#assert_no_axioms FX1Poly.Modal.borrowEscapeIntoUnscopedSpawnCollision
+#assert_no_axioms FX1Poly.Modal.borrowIntoScopedSpawnConsistent
+#assert_no_axioms FX1Poly.Modal.catalogHasTwoCollisionClasses
