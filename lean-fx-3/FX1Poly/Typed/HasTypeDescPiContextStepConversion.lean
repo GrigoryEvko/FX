@@ -1,5 +1,7 @@
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescContextConversion
+import FX1Poly.Typed.HasTypeDescPiWeakening
+import FX1Poly.Typed.CellRenaming
 import FX1Poly.Typed.IsTypeDesc
 
 /-! # FX1Poly/Typed/HasTypeDescPiContextStepConversion
@@ -83,5 +85,46 @@ theorem HasTypeDesc.convContextExactToGrown {profile : PolyProfile} {scope : Nat
       HasTypeDescPi.ofFormation
         (HasTypeDesc.genFormation targetContext generator payload children levels flag rule isFormation
           (DescTelescope.convTelescope premises targetContext (fun index => (enriched index).1)))
+
+/-- **The enriched condition LIFTS under a shared binder.**  Consing the SAME `bindingType` on both contexts
+preserves `ConvContextWithOldValid`, given that `bindingType` is valid in the target.  Index `0`: both sides look
+up the weakened `bindingType` (`Conv.refl`), and its validity comes from weakening `bindingValid` (`weakenUnderBinding`
++ `rename_universeCodeCell` — the universe classifier is closed, so weakening fixes it).  Index `k+1`: the weakened old
+condition (`Conv.rename` for the conversion, `weakenUnderBinding` for the validity).  This is the binder-crossing
+closure the grown directed context conversion (SR-U2) needs at its `piIntro` / `genFormationPi` arms — where the new
+binder's validity is supplied by the recursively re-typed domain. -/
+theorem ConvContextWithOldValid.cons {profile : PolyProfile} {scope : Nat}
+    {sourceContext targetContext : TypingContext profile scope} (bindingType : RawTerm scope)
+    (enriched : ConvContextWithOldValid sourceContext targetContext)
+    (bindingValid : IsTypeDescPi profile targetContext bindingType) :
+    ConvContextWithOldValid (sourceContext.cons bindingType) (targetContext.cons bindingType) := by
+  intro index
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      refine ⟨?_, ?_⟩
+      · show Conv (RawTerm.rename RawRenaming.weaken bindingType)
+          (RawTerm.rename RawRenaming.weaken bindingType)
+        exact Conv.refl _
+      · show IsTypeDescPi profile (targetContext.cons bindingType)
+          (RawTerm.rename RawRenaming.weaken bindingType)
+        obtain ⟨level, flag, bindingTyped⟩ := bindingValid
+        refine ⟨level, flag, ?_⟩
+        have weakened := HasTypeDescPi.weakenUnderBinding bindingType bindingTyped
+        rwa [rename_universeCodeCell] at weakened
+  | succ k =>
+      refine ⟨?_, ?_⟩
+      · show Conv (RawTerm.rename RawRenaming.weaken
+            (sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+          (RawTerm.rename RawRenaming.weaken
+            (targetContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+        exact Conv.rename RawRenaming.weaken (enriched ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩).1
+      · show IsTypeDescPi profile (targetContext.cons bindingType)
+          (RawTerm.rename RawRenaming.weaken
+            (sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+        obtain ⟨level, flag, entryTyped⟩ := (enriched ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩).2
+        refine ⟨level, flag, ?_⟩
+        have weakened := HasTypeDescPi.weakenUnderBinding bindingType entryTyped
+        rwa [rename_universeCodeCell] at weakened
 
 end FX1Poly.Typed

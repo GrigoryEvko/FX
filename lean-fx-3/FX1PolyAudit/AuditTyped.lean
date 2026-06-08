@@ -6403,6 +6403,12 @@ gates pin them shut.
 -- projection). This is the ofFormation leaf of the grown directed context conversion (SR-U2 next). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.convContextExactToGrown
 
+-- ConvContextWithOldValid.cons (SR-U2 infra): the enriched condition LIFTS under a shared binder — the binder-crossing
+-- closure the grown directed context conversion needs at its piIntro / genFormationPi arms. index 0: both sides look up
+-- the weakened binder (Conv.refl) + its validity from weakening bindingValid (weakenUnderBinding + rename_universeCodeCell,
+-- the universe classifier is closed so weakening fixes it); index k+1: the weakened old condition. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.ConvContextWithOldValid.cons
+
 -- GrownCtxConv-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
 -- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
 -- a piTyCodeCell D C that is a FORMATION type (IsTypeDesc, no type-level computation) context-converts to a grown
