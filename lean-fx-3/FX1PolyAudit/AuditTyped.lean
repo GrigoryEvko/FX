@@ -268,6 +268,8 @@ import FX1Poly.Typed.HasTypeDescOptionIntro
 import FX1Poly.Typed.HasTypeDescOptionMatch
 import FX1Poly.Typed.OptionCanonicalForms
 import FX1Poly.Typed.HasTypeDescSigmaProjection
+import FX1Poly.Typed.HasTypeDescIdIntro
+import FX1Poly.Typed.HasTypeDescIdElim
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3225,6 +3227,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.subjectIsSigmaProjection
 #assert_no_axioms FX1Poly.Typed.fstProjectionIotaComputesTyped
 #assert_no_axioms FX1Poly.Typed.sndProjectionIotaComputesTyped
+-- IDENTITY DATA STORY (HasTypeDescIdIntro DI-2d + HasTypeDescIdElim DI-5e): reflexivity intro + idJ eliminator.
+-- INTRO: refl(x):Id(A,x,x) is the PINNED reflexive intro (witness x:A pins A and BOTH endpoints, which are EQUAL).
+-- reflOfUniverseCodeTyped = the smoke refl(Type@0):Id(Type@1,Type@0,Type@0). subjectIsRefl + classifierIsReflexiveId
+-- = the SR-free inversions (subject is a reflCell, classifier a REFLEXIVE idTypeCell — both endpoints same term).
+-- ELIM: the substrate's gen_idJ is the SIMPLIFIED two-child J (idJ(baseCase,witness), motive in the profile layer);
+-- on refl its ι SELECTS the base case (idJ(b,refl(x)) ↝ b, Step.iotaIdJRefl) — the BRANCH-SELECTION shape (the
+-- boolElim shape reused on identity). idJOfUniverseCodesTyped = the smoke idJ(Type@0,refl(Type@0)):Type@1.
+-- subjectIsIdJ = free-index inversion. ★ idJReflIotaComputesTyped = the typed branch-selection ι (reduct IS the
+-- base case, typed verbatim). Constructor-side → SR-free + propext-free (full witness-congruence SR GCC-5-deferred).
+-- Completes the identity data story (intro + elim). Advances DI-5 #1047 / SN-067/068 (#450, refl + idJ).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescIdIntro.reflOfUniverseCodeTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescIdIntro.subjectIsRefl
+#assert_no_axioms FX1Poly.Typed.HasTypeDescIdIntro.classifierIsReflexiveId
+#assert_no_axioms FX1Poly.Typed.HasTypeDescIdElim.idJOfUniverseCodesTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescIdElim.subjectIsIdJ
+#assert_no_axioms FX1Poly.Typed.idJReflIotaComputesTyped
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
