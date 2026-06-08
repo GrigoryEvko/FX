@@ -195,6 +195,7 @@ import FX1Poly.Typed.TypedChurchNumeralDiscrimination
 import FX1Poly.Typed.TypedChurchNumeralThree
 import FX1Poly.Typed.TypedChurchNumeralFaithful
 import FX1Poly.Typed.TypedChurchNumeralTyping
+import FX1Poly.Typed.TypedChurchNumeralInhabitants
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
@@ -2181,6 +2182,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.churchNumeralLambda_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.churchNumeralLambda_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.churchOneLambda_hasTypeDescPi_viaGeneral
+-- TypedChurchNumeralInhabitants (CHURCH-NAT-INHABITANTS-INFINITE): ★ the EXPRESSIVENESS capstone — the
+-- formation-only Π-fragment's Church Nat type Π(A:Type@0).Π(f:A→A).Π(x:A).A has INFINITELY MANY definitionally-
+-- distinct closed inhabitants. churchNatType_hasInfinitelyManyDistinctInhabitants bundles an injective family
+-- ℕ→RawTerm 0 (the Church numerals) all typed at ChurchNat (#1007) and pairwise non-convertible (#1006). Plus
+-- the reusable iteratedApplication substitution metatheory: subst_iteratedApplication / rename_iteratedApplication
+-- (subst/rename distribute over the iterate by induction; the appCell subst/rename equation is rfl) — the
+-- substitution backbone for the deferred general iteration computation (#1009).
+#assert_no_axioms FX1Poly.Typed.subst_iteratedApplication
+#assert_no_axioms FX1Poly.Typed.rename_iteratedApplication
+#assert_no_axioms FX1Poly.Typed.churchNatType_hasInfinitelyManyDistinctInhabitants
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
