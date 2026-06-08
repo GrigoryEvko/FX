@@ -397,6 +397,7 @@ import FX1Poly.Typed.GrownVariableHonesty
 import FX1Poly.Typed.RawStepNotStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiAppInversion
+import FX1Poly.Typed.HasTypeDescPiVarInversion
 import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.HasTypeDescPiCongruence
 import FX1Poly.Typed.HasTypeDescPiFormerCongruence
@@ -6230,6 +6231,17 @@ gates pin them shut.
 -- ofFormation/piIntro/genFormationPi refuted, conv re-threads via the unconditional raw Conv.trans.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertAppGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertApp
+-- VARIABLE inversion for the grown engine (HasTypeDescPiVarInversion.lean): a variableCell index typed at
+-- classifier has Conv classifier (context.lookup index). The spine-re-typing prerequisite for the
+-- Abel-reflection neutral-application reconstruction of GrownCtxConv-5 (#842): invertVar on the source typing
+-- (Conv classifier (src.lookup j)) + the context-conversion premise (Conv (src.lookup j) (tgt.lookup j)) + the
+-- var rule under tgt produces the functionConverted that reassembleApplicationUnderContextConversion (#1092)
+-- consumes. Same subject-generalised recipe as invertApp at BOTH engine layers; var is the real case (Conv.refl
+-- after the subject injection), conv re-threads via the unconditional Conv.trans, universeFormation/piIntro/
+-- piElim refuted by headGenerator clash, genFormation(Pi) by typingRuleDescOf gen_var = none. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.invertVarFormationGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertVarGeneral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertVar
 
 -- Fully-general β subject reduction (HasTypeDescPiBetaSR.lean, TY-SR-β #474). For ANY grown derivation of a β-redex
 -- appCell (lamCell body) argument at classifier (over a well-formed context), the β-reduct subst0 body argument is
