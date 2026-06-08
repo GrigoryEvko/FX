@@ -412,6 +412,7 @@ import FX1Poly.Typed.UniverseClassificationAcyclic
 import FX1Poly.Modal.SecurityNoninterferenceGeneral
 import FX1Poly.Modal.GradedApplicationFlow
 import FX1Poly.Typed.MetatheoryFuzz
+import FX1Poly.Typed.FuzzCorpusConvertibility
 import FX1Poly.Typed.MechanizedProofCrossReference
 import FX1Poly.Typed.FormalReviewGate
 import FX1Poly.Typed.SelfVerifiedMetatheory
@@ -6154,6 +6155,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_base_isNormal
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_succ_isNotNormal
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamilySound
+
+-- FUZZ CORPUS CONVERTIBILITY (FuzzCorpusConvertibility.lean): the two §27.3-L2 fuzz families form ONE PROPER
+-- Conv class. Both families convert to Type@0 (Conv.fromStepStar on the shipped *_reducesToType0); so any two
+-- members convert (Conv.sym/trans). metatheoryFuzz_crossFamilyConvertible = the SUBSTITUTE-path (identity tower)
+-- and ERASE-path (constant tower) members are mutually convertible — definitional equality does not distinguish
+-- the two β-paths despite their different step counts. metatheoryFuzzFamily_notConvToType1 = the class is PROPER
+-- (no member converts to Type@1, via universeCodeCell_inj_of_conv + LevelExpr no-confusion: lzero ≠ lsucc lzero) —
+-- the non-degeneracy making the convertibility content meaningful.
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_convToType0
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_convToType0
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_intraConvertible
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzz_crossFamilyConvertible
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_notConvToType1
 
 -- §27.3 Layer-3 defense: every core metatheory rule cross-referenced to a PUBLISHED MECHANIZED proof and
 -- ANCHORED to the real kernel theorem that realizes it.  The `crossRef_*` anchors (`def := @kernelTheorem`)
