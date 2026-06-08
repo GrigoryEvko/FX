@@ -80,4 +80,16 @@ theorem neutralTypeCodeSemanticReducibilityIsContextFree {scope : Nat}
     ∃ candidate : RawTerm scope → Prop, ReducibleTypeStep lowerReducible typeCode candidate :=
   ReducibleTypeStep.reducibleOfNeutral neutral
 
+/-- **Smoke: a variable type code is semantically reducible, context-free.**  The simplest neutral type code
+— a bare de Bruijn variable `var index` used as a type — is `ReducibleTypeStep`-reducible with NO typing
+context, so its semantic validity is identical under any two `Conv`-related contexts.  A variable is the base
+case the open type-level neutral reflection bottoms out at: under context conversion its typing transfers by
+the var rule + the pointwise `Conv` on the looked-up classifier (the non-circular leaf), whereas the neutral
+APPLICATION `(var f)(var a)` re-assembles the type-level `piElim` (the genuinely-open residual = GCC-5). -/
+theorem smoke_variableTypeCodeSemanticReducibilityIsContextFree {scope : Nat}
+    {lowerReducible : RawTerm scope → (RawTerm scope → Prop) → Prop} (index : Fin scope) :
+    ∃ candidate : RawTerm scope → Prop,
+      ReducibleTypeStep lowerReducible (.mkGen .gen_var index .childNil) candidate :=
+  neutralTypeCodeSemanticReducibilityIsContextFree (IsNeutral.var index)
+
 end FX1Poly.Typed

@@ -6367,6 +6367,9 @@ gates pin them shut.
 -- in hand for the typed model: Step.reflectRename + kripkeArrow_neutralBackwardClosure (firings 13/14) +
 -- Conv.piTyCode_injective (#865). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.neutralTypeCodeSemanticReducibilityIsContextFree
+-- Concrete smoke: the simplest neutral type code (a bare variable `var index` used as a type) is semantically
+-- reducible context-free — the non-circular leaf the open type-level neutral reflection bottoms out at.
+#assert_no_axioms FX1Poly.Typed.smoke_variableTypeCodeSemanticReducibilityIsContextFree
 
 -- GCC-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
 -- Reduction.lean, GCC-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
