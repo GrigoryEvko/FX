@@ -411,6 +411,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
 import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
 import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimEquivalence
 import FX1Poly.Typed.HasTypeDescPiContextStepConversion
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormerStep
 import FX1Poly.Typed.GenFormerValidityContextConversion
@@ -6432,6 +6433,19 @@ gates pin them shut.
 -- SRD-2/#845 → SN-055/#558). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.ConvContextWithOldValid.ofHeadStep
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.codomainReTypingStep
+
+-- ★ SR-U4 — the UNCONDITIONAL grown master subject reduction (closes SRD-2 / SN-055).
+-- HasTypeDescPi.subjectReduction ⋈ DescTelescopePi.subjectReduction: the mutual master SR + grown telescope SR,
+-- mirroring the conditional subjectReductionOfPiElimArm pair but with the piElim context-conversion hypothesis
+-- DROPPED.  The lone use of that hypothesis — the telescope here-arm tail re-typing across a stepped binding — is
+-- discharged UNCONDITIONALLY by the EXACT directed context conversion contextConversionTelescopeExact (SR-U2) fed
+-- the head-step enriched condition ofHeadStep (SR-U3): a head step keeps the PREFIX FIXED, so the directed case the
+-- master SR actually needs never touches the arbitrary-Conv logical-relation residual that gated the believed crux.
+-- subjectReductionStar lifts it along a whole StepStar chain — the preservation form the grown closed / open
+-- type-safety theorems consume as a hypothesis, now dischargeable.  Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReduction
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.subjectReduction
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionStar
 
 -- GrownCtxConv-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
 -- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
