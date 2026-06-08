@@ -32,6 +32,7 @@ import FX1Poly.Core.WeakHeadStepRename
 import FX1Poly.Core.WeakHeadStepRenameReflect
 import FX1Poly.Core.StepRenameReflect
 import FX1Poly.Core.StepRenameReflectEliminatorIota
+import FX1Poly.Core.StepRenameReflectAssembly
 import FX1Poly.Core.WeakHeadStepCommute
 import FX1Poly.Core.WeakHeadNormalPreservation
 import FX1Poly.Core.ReducibleTypeForwardClosure
@@ -279,6 +280,13 @@ per-decl list.  It also re-checks the native infra under
 -- Step reflection-with-image; the ONLY remaining arm is the recursive cong arm (general congruence — needs the
 -- sub-reflection IH — the substantive last piece).
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaListElimCons
+-- THE FULL ASSEMBLY (StepRenameReflectAssembly.lean): the complete arbitrary-renaming Step
+-- reflection-with-image Step (rename rho t) u → ∃ t', Step t t' ∧ rename rho t' = u, built as the
+-- Step.rec mutual recursion (the Step.subst template run backward). The 18 redex-leaf cases delegate to
+-- the shipped reflect arms above; the recursive cong/here/there cases thread the lifted renaming
+-- (iterateLiftRaw) through the children spine. This is the Kripke-arrow-CR3 ingredient the open-context
+-- (Kripke) logical relation needs to discharge GCC-5 (#842), the grown context-conversion piElim crux.
+#assert_no_axioms FX1Poly.Core.Step.reflectRename
 
 -- The neutral leaf of the stratified ReducibleTypeStep rename-closure (type + member level): the structural
 -- fragment, separate from the Kripke-indexed piType arm (see the StratifiedReducibleTypeRename docstring).

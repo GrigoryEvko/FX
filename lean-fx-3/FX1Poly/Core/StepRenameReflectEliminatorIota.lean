@@ -31,8 +31,8 @@ candidate the open-context (Kripke) logical relation requires.  This file ALSO s
 ι arms (`natElimSucc` / `natRecSucc`, nested app-chain with a recursive call), and the deepest reduct —
 `listElimCons` (`Step.reflectIotaListElimCons`, a TRIPLE-curried application of the cons-branch to head, tail,
 and the recursive `listElim` over the tail, with a binary `listCons` scrutinee) below.  With it, every
-REDEX-LEAF arm of arbitrary-`rho` reflection is shipped; the ONLY remaining arm for the full reflection is the
-recursive `cong` arm (the general congruence case, needs the sub-reflection IH — the substantive last piece).
+REDEX-LEAF arm of arbitrary-`rho` reflection is shipped; the recursive `cong` / `here` / `there` cases and the
+final `Step.rec` assembly into the complete `Step.reflectRename` live in `StepRenameReflectAssembly.lean`.
 
 ## Zero-axiom verification
 
