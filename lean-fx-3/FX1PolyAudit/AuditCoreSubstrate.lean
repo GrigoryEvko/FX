@@ -266,12 +266,19 @@ per-decl list.  It also re-checks the native infra under
 -- at child-0, refl value at child-1). Recursive Nat: natElim/natRec on natSucc build a nested app-chain containing a
 -- RECURSIVE call on the predecessor (natElim (natSucc p) z s ↝ app (app s p) (natElim p z s)); the deep
 -- rename-over-(app/app/elim) image collapses to rfl after substituting the recovered predecessor/zero/succ
--- renamings. Remaining reflection arms after these: the 3-arg recursive listElimCons (same recipe, deeper app
--- nest), and the recursive cong arm (general congruence — needs the sub-reflection IH — the substantive last piece).
+-- renamings.
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaIdJRefl
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaIdStrictRecRefl
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaNatElimSucc
 #assert_no_axioms FX1Poly.Core.Step.reflectIotaNatRecSucc
+-- The deepest redex-leaf arm (KRIPKE-REFLECT-LISTCONS): listElim on listCons. listElim (listCons h t) n c ↝
+-- app (app (app c h) t) (listElim t n c) — a TRIPLE-curried application of the cons-branch to head, tail, and a
+-- RECURSIVE listElim over the tail. The listCons scrutinee is BINARY (head + tail), so a two-level injection
+-- recovers both; substituting the four recovered renamings (head/tail/nil-branch/cons-branch) collapses the
+-- deep rename-over-(app/app/app/listElim) image to rfl. This COMPLETES every redex-leaf arm of arbitrary-rho
+-- Step reflection-with-image; the ONLY remaining arm is the recursive cong arm (general congruence — needs the
+-- sub-reflection IH — the substantive last piece).
+#assert_no_axioms FX1Poly.Core.Step.reflectIotaListElimCons
 
 -- The neutral leaf of the stratified ReducibleTypeStep rename-closure (type + member level): the structural
 -- fragment, separate from the Kripke-indexed piType arm (see the StratifiedReducibleTypeRename docstring).

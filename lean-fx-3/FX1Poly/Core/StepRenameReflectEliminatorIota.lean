@@ -27,10 +27,12 @@ the wrapped value (constructed `app` contractum + two-level scrutinee injection)
 These advance the full `Step` rename-reflection toward Kripke-arrow CR3
 (`KripkeCandidateRenameClosure.lean:63`), the renaming dimension of the dependent-arrow reducibility
 candidate the open-context (Kripke) logical relation requires.  This file ALSO ships the identity-eliminator
-ι arms (`idJRefl` / `idStrictRecRefl`, projection past the `refl` scrutinee) and the recursive Nat-recursor
-ι arms (`natElimSucc` / `natRecSucc`, nested app-chain with a recursive call) below.  Remaining for the full
-reflection: the 3-arg recursive `listElimCons` arm (same recipe, deeper app nest) and the recursive `cong`
-arm (the general congruence case, needs the sub-reflection IH).
+ι arms (`idJRefl` / `idStrictRecRefl`, projection past the `refl` scrutinee), the recursive Nat-recursor
+ι arms (`natElimSucc` / `natRecSucc`, nested app-chain with a recursive call), and the deepest reduct —
+`listElimCons` (`Step.reflectIotaListElimCons`, a TRIPLE-curried application of the cons-branch to head, tail,
+and the recursive `listElim` over the tail, with a binary `listCons` scrutinee) below.  With it, every
+REDEX-LEAF arm of arbitrary-`rho` reflection is shipped; the ONLY remaining arm for the full reflection is the
+recursive `cong` arm (the general congruence case, needs the sub-reflection IH — the substantive last piece).
 
 ## Zero-axiom verification
 
@@ -529,5 +531,76 @@ theorem Step.reflectIotaNatRecSucc {sourceScope targetScope : Nat}
                     (.childCons predecessor (.childCons zeroBranch (.childCons succBranch .childNil))))
                   .childNil)),
             Step.iotaNatRecSucc, rfl⟩
+
+/-- **The `listElim`-on-`listCons` ι arm of arbitrary-renaming `Step` reflection.**  The deepest reduct in
+the design: `listElim (listCons h t) n c ↝ app (app (app c h) t) (listElim t n c)` — a TRIPLE-curried
+application of the cons-branch to head, tail, and the recursive call.  The `listCons` scrutinee is BINARY
+(head + tail, so a two-level injection recovers both), and the contractum re-uses the eliminator over the
+tail; substituting the four recovered renamings (head / tail / nil-branch / cons-branch) collapses the
+deep `rename`-over-(`app`/`app`/`app`/`listElim`) image to `rfl`.  With the base / app-chain / identity /
+recursive-Nat arms above, this completes every REDEX-LEAF arm of arbitrary-`rho` `Step`
+reflection-with-image; the recursive `cong` arm (general congruence) is the remaining inductive backbone. -/
+theorem Step.reflectIotaListElimCons {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedHead renamedTail renamedNil renamedCons : RawTerm targetScope}
+    (renameEquation : RawTerm.rename rho term =
+      .mkGen .gen_listElim ()
+        (.childCons
+          (.mkGen .gen_listCons () (.childCons renamedHead (.childCons renamedTail .childNil)))
+          (.childCons renamedNil (.childCons renamedCons .childNil)))) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      Step term sourceReduct ∧
+        RawTerm.rename rho sourceReduct =
+          .mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_app () (.childCons renamedCons (.childCons renamedHead .childNil)))
+                  (.childCons renamedTail .childNil)))
+              (.childCons
+                (.mkGen .gen_listElim ()
+                  (.childCons renamedTail (.childCons renamedNil (.childCons renamedCons .childNil))))
+                .childNil)) := by
+  obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
+  subst termEq
+  match payload, children with
+  | (), .childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)) =>
+      rw [show RawTerm.rename rho
+            (.mkGen .gen_listElim ()
+              (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)))) =
+            (.mkGen .gen_listElim ()
+              (.childCons (RawTerm.rename rho scrutinee)
+                (.childCons (RawTerm.rename rho nilBranch)
+                  (.childCons (RawTerm.rename rho consBranch) .childNil)))
+              : RawTerm targetScope) from rfl] at renameEquation
+      injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
+      injection childrenEq with _ _ _ scrutineeEq restEq
+      injection restEq with _ _ _ nilBEq rest2Eq
+      injection rest2Eq with _ _ _ consEq _nilEq
+      obtain ⟨_scrutPayload, _scrutChildren, scrutTermEq⟩ := RawTerm.rename_eq_mkGen rho scrutineeEq
+      subst scrutTermEq
+      match _scrutPayload, _scrutChildren with
+      | (), .childCons headVal (.childCons tailVal .childNil) =>
+          rw [show RawTerm.rename rho
+                (.mkGen .gen_listCons () (.childCons headVal (.childCons tailVal .childNil))) =
+                (.mkGen .gen_listCons ()
+                  (.childCons (RawTerm.rename rho headVal)
+                    (.childCons (RawTerm.rename rho tailVal) .childNil))
+                  : RawTerm targetScope) from rfl] at scrutineeEq
+          injection scrutineeEq with _ _ _ scrutChildrenEq
+          injection scrutChildrenEq with _ _ _ headEq scrutTail1Eq
+          injection scrutTail1Eq with _ _ _ tailEqV _nilEq2
+          subst headEq; subst tailEqV; subst nilBEq; subst consEq
+          exact ⟨.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app ()
+                  (.childCons
+                    (.mkGen .gen_app () (.childCons consBranch (.childCons headVal .childNil)))
+                    (.childCons tailVal .childNil)))
+                (.childCons
+                  (.mkGen .gen_listElim ()
+                    (.childCons tailVal (.childCons nilBranch (.childCons consBranch .childNil))))
+                  .childNil)),
+            Step.iotaListElimCons, rfl⟩
 
 end FX1Poly.Core
