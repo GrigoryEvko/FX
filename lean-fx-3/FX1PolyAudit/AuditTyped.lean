@@ -451,6 +451,7 @@ import FX1Poly.Typed.HasTypeDescPiCheckFormation
 import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
 import FX1Poly.Typed.IntroRuleDesc
 import FX1Poly.Typed.ElimRuleDesc
+import FX1Poly.Typed.GenElimIotaComputation
 import FX1Poly.Typed.TypingRoleClassifier
 import FX1Poly.Typed.TypingRoleEngineBridge
 import FX1Poly.Typed.TypingRoleCoverage
@@ -6556,6 +6557,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.elimRuleDescOf_outputIsPiElim
 #assert_no_axioms FX1Poly.Typed.elimRuleDescOf_isApp
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_piElim_viaElimDesc
+
+-- GTL-18 (#1097): the generic ι-computation typing rule — the COMPUTATION half of the elimination story
+-- (GTL-17's reconstruction is the introduction half: an eliminator application TYPES at the rule-DATA
+-- output).  hasTypeDescPi_genElimIota_viaElimDesc: an eliminator's ι-contractum types at the SAME
+-- table-driven output (built by typing the redex via the GTL-17 reconstruction `HasTypeDescPi.piElim`,
+-- then carrying the contractum to the same output by the shipped TY-SR-β `betaSubjectReduction` / #474).
+-- hasTypeDescPi_genElim_computesTypeStably bundles BOTH the redex and its ι-contractum at the one
+-- rule-DATA output — the elimination arm in the exact shape the GTL-20 mutual fundamental-metatheory
+-- bundle consumes to discharge the grown context-conversion piElim residual (GCC-5 / #842 via GTL-21).
+-- Additive: no `HasTypeDescPi` arm; reads the existing engine through the elim table.
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_genElimIota_viaElimDesc
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_genElim_computesTypeStably
 
 -- GTL-19 (#985): the UNIFIED typing-role classifier over the three rule tables (TypingRoleClassifier).
 -- typingRoleOf consults typingRuleDescOf (formation) / introRuleDescOf (intro) / elimRuleDescOf (elim) in
