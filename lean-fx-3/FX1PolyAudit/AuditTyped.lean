@@ -187,6 +187,7 @@ import FX1Poly.Typed.StepNonDeterministic
 import FX1Poly.Typed.ConvValueDiscrimination
 import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.TypedChurchBooleans
+import FX1Poly.Typed.TypedChurchNumerals
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.TypedNormalizer
@@ -2055,6 +2056,24 @@ gates pin them shut.
 -- churchTypeZeroCode ≢ churchTypeOneCode is the supporting lemma (the Type@e analogue of boolTrue ≢ boolFalse).
 #assert_no_axioms FX1Poly.Typed.churchTypeZeroCode_notConvertible_churchTypeOneCode
 #assert_no_axioms FX1Poly.Typed.churchTrue_notConvertible_churchFalse
+-- TypedChurchNumerals (CHURCH-NAT): the Church-NUMERAL encoding typed by the grown engine, extending the
+-- booleans to the recursive datum. churchNatArrow/churchNatRest/churchNatCodomain are the arrow-headed
+-- formation helpers (the Church Nat type's middle binder is the FUNCTION type A→A, not the variable A — richer
+-- than the booleans' all-variable binders). churchNatType_formation: the polymorphic iterator type
+-- Π(A:Type@0).Π(f:A→A).Π(x:A).A is well-formed at Type@(lmax 1 (lmax (lmax 0 0)(lmax 0 0))); its code is SN
+-- (churchNatType_stronglyNormalizing). churchOne_hasTypeDescPi: λA.λf.λx. f x typed at the Church Nat type —
+-- the body f x types by piElim (f's arrow type applied to x), the first Church-encoding whose body USES a bound
+-- function (cannot be a re-typed boolean; churchZero is omitted as it shares churchFalse's raw term and would
+-- hit uniqueness-of-typing #469). churchOne is SN (churchOne_stronglyNormalizing). All zero-axiom (direct
+-- constructor applications + lmaxAll level threading + piElim with the looked-up arrow/var types ascribed to
+-- their reduced piTyCode/var forms so the implicit domain/codomain unify).
+#assert_no_axioms FX1Poly.Typed.churchNatArrow
+#assert_no_axioms FX1Poly.Typed.churchNatRest
+#assert_no_axioms FX1Poly.Typed.churchNatCodomain
+#assert_no_axioms FX1Poly.Typed.churchNatType_formation
+#assert_no_axioms FX1Poly.Typed.churchNatType_stronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.churchOne_hasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.churchOne_stronglyNormalizing
 -- FIRST LANE CROSSING: the FT-derived SN results discharge the SN-fragment conversion decider
 -- (Conv.decidableOfStronglyNormalizing — normalize each, compare NF), yielding UNCONDITIONAL decidable Conv
 -- for concrete closed terms (β-redex vs reduct, β-redex vs identity). The general bridge is conditional on the
