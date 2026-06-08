@@ -3,6 +3,7 @@ import FX1Poly.Typed.HasTypeDescContextConversion
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.CellRenaming
 import FX1Poly.Typed.IsTypeDesc
+import FX1Poly.Typed.WfContextDescPiLookup
 
 /-! # FX1Poly/Typed/HasTypeDescPiContextStepConversion
     — DIRECTED context conversion under the ENRICHED condition, EXACT classifier (the SR-U route, toward #842/#845/#558)
@@ -216,5 +217,64 @@ theorem DescTelescopePi.contextConversionTelescopeExact {profile : PolyProfile}
           (ConvContextWithOldValid.cons head enriched ⟨headLevel, flag, headTyped'⟩))
 
 end
+
+/-! ## SR-U3: the directed-step instance — grown `codomainReTyping`, UNCONDITIONAL
+
+The enriched condition holds FREE for a head domain step `domain ⤳ domainReduct` (the prefix `restContext` is
+UNCHANGED): index `0` is `Conv (weaken domain) (weaken domainReduct)` (from the step) paired with `domain`'s validity in
+the prefix (`headIsType`) weakened; index `k+1` is reflexive (the prefix entries are syntactically unchanged) paired with
+`restContext.lookup k`'s validity (`lookupIsType`) weakened.  This is EXACTLY where the directed case beats arbitrary
+`Conv`: the prefix doesn't change, so every old entry's target-validity is free by weakening.  Feeding it to
+`contextConversionExact` re-types a codomain across the stepped binder — the grown twin of the shipped FORMATION
+`HasTypeDesc.codomainReTypingOfFormationStep` (`#1096`), but now UNCONDITIONAL (it was gated on GrownCtxConv-5).  This IS
+the grown `codomainReTyping` the master-SR `genFormationPi` / former-congruence arm consumes (SRD-1 `#844`'s residual). -/
+
+/-- **The enriched condition for a head domain step** (`domain ⤳ domainReduct`, prefix unchanged) — built FREE from
+context well-formedness: the prefix entries keep their validity by weakening, and the head's `Conv` comes from the step. -/
+theorem ConvContextWithOldValid.ofHeadStep {profile : PolyProfile} {scope : Nat}
+    {restContext : TypingContext profile scope} {domain domainReduct : RawTerm scope}
+    (wellFormed : WfContextDescPi (restContext.cons domain))
+    (domainStep : Step domain domainReduct) :
+    ConvContextWithOldValid (restContext.cons domain) (restContext.cons domainReduct) := by
+  intro index
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      refine ⟨?_, ?_⟩
+      · show Conv (RawTerm.rename RawRenaming.weaken domain)
+          (RawTerm.rename RawRenaming.weaken domainReduct)
+        exact Conv.rename RawRenaming.weaken
+          (Conv.fromStepStar (StepStar.trans domainStep (StepStar.refl _)))
+      · show IsTypeDescPi profile (restContext.cons domainReduct)
+          (RawTerm.rename RawRenaming.weaken domain)
+        exact (WfContextDescPi.headIsType wellFormed).weakenUnderBinding domainReduct
+  | succ k =>
+      refine ⟨?_, ?_⟩
+      · show Conv (RawTerm.rename RawRenaming.weaken
+            (restContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+          (RawTerm.rename RawRenaming.weaken
+            (restContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+        exact Conv.refl _
+      · show IsTypeDescPi profile (restContext.cons domainReduct)
+          (RawTerm.rename RawRenaming.weaken
+            (restContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+        exact (WfContextDescPi.lookupIsType restContext (WfContextDescPi.tailWellFormed wellFormed)
+          ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding domainReduct
+
+/-- **★ Grown codomain re-typing across a stepped domain binder — UNCONDITIONAL.**  A codomain typed under
+`restContext.cons domain` re-types under `restContext.cons domainReduct` when `domain ⤳ domainReduct`, at the SAME
+classifier.  `contextConversionExact` (SR-U2) applied to the head-step enriched condition (`ofHeadStep`).  The grown twin
+of the shipped FORMATION `HasTypeDesc.codomainReTypingOfFormationStep` (`#1096`) — discharging the grown `codomainReTyping`
+residual that gated master SR (SRD-1 `#844` / SN-055 `#558`). -/
+theorem HasTypeDescPi.codomainReTypingStep {profile : PolyProfile} {scope : Nat}
+    {restContext : TypingContext profile scope} {domain domainReduct : RawTerm scope}
+    {codomain codomainClassifier : RawTerm (scope + 1)}
+    (wellFormed : WfContextDescPi (restContext.cons domain))
+    (codomainTyped :
+      HasTypeDescPi profile (restContext.cons domain) codomain codomainClassifier)
+    (domainStep : Step domain domainReduct) :
+    HasTypeDescPi profile (restContext.cons domainReduct) codomain codomainClassifier :=
+  HasTypeDescPi.contextConversionExact codomainTyped (restContext.cons domainReduct)
+    (ConvContextWithOldValid.ofHeadStep wellFormed domainStep)
 
 end FX1Poly.Typed

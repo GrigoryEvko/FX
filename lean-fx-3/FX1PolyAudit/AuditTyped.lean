@@ -6423,6 +6423,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.contextConversionExact
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.contextConversionTelescopeExact
 
+-- SR-U3 (the directed-step instance): ConvContextWithOldValid.ofHeadStep builds the enriched condition FREE for a head
+-- domain step (domain ↝ domainReduct, prefix UNCHANGED): index 0 = Conv (weaken domain) (weaken domainReduct) from the
+-- step + domain's prefix-validity (headIsType) weakened; index k+1 = refl (prefix entries unchanged) + lookupIsType
+-- weakened. ★ HasTypeDescPi.codomainReTypingStep = contextConversionExact ∘ ofHeadStep: a codomain re-types across a
+-- stepped domain binder at the SAME classifier, UNCONDITIONALLY — the grown twin of the shipped FORMATION
+-- codomainReTypingOfFormationStep (#1096), discharging the grown codomainReTyping that gated master SR (SRD-1/#844 →
+-- SRD-2/#845 → SN-055/#558). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.ConvContextWithOldValid.ofHeadStep
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.codomainReTypingStep
+
 -- GrownCtxConv-5-FORMFRAG (#1099): the residual ConvContextPreservesPiValidity is UNCONDITIONALLY free for FORMATION-valid
 -- Π-codes (ConvContextPreservesPiValidityFormationFragment.lean). convContextPreservesPiValidityForFormationCode:
 -- a piTyCodeCell D C that is a FORMATION type (IsTypeDesc, no type-level computation) context-converts to a grown
