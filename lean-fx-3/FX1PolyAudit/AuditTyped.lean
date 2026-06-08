@@ -39,6 +39,7 @@ import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ConvBoolCodeRigidity
 import FX1Poly.Typed.ConvFormationFormerRigidity
+import FX1Poly.Typed.ConvFlatFormerRigidity
 import FX1Poly.Typed.ConvFlatCodeInjectivity
 import FX1Poly.Typed.ConvDataCodeInjectivity
 import FX1Poly.Typed.EmptyTypeCodeConvRigidity
@@ -1205,6 +1206,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.formationFormerGeneratorEq
 #assert_no_axioms FX1Poly.Typed.Conv.formationFormersNotConvOfDistinct
 #assert_no_axioms FX1Poly.Typed.Conv.listCode_not_conv_optionCode
+-- FLAT-TABLE twin (ConvFlatFormerRigidity.lean): the SAME cascade-free discrimination keyed on the FLAT table
+-- (flatTypingRuleDescOf) for the binary non-dependent data formers product/sum/either/arrow/equiv (typed by the
+-- standalone HasTypeDescFlat engine, NOT typingRuleDescOf). Lifts flatFormerCellStepIsChildCongruence instead of
+-- formerCellStepIsChildCongruence. Together with the typingRuleDescOf version this gives complete cross-former
+-- "no confusion" for every data type-code former — the SN-049 (pair/sum/either canonicity) rule-out substrate.
+-- productCode_not_conv_sumCode = a concrete NEW discrimination (A × B is never A + B), by-free non-vacuity.
+#assert_no_axioms FX1Poly.Typed.StepStar.flatFormationFormerHeadStableGeneral
+#assert_no_axioms FX1Poly.Typed.Conv.flatFormationFormerGeneratorEq
+#assert_no_axioms FX1Poly.Typed.Conv.flatFormationFormersNotConvOfDistinct
+#assert_no_axioms FX1Poly.Typed.Conv.productCode_not_conv_sumCode
 -- VALUE-CASE inversions (EmptyTypeValueInversion.lean): the typing-layer consequence of the rigidity — NONE of
 -- the grown engine's canonical values is typed at emptyTypeCell. A λ's classifier is Conv a Π-code (invertLam),
 -- a Π/Σ-former's classifier is Conv a universe code (invertPiTyCode/invertSigmaTyCode); neither is Conv-equal to
