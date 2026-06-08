@@ -415,6 +415,7 @@ import FX1Poly.Typed.GenFormerValidityContextConversion
 import FX1Poly.Typed.ConvContextPiValidityModelNeutral
 import FX1Poly.Typed.TypedTypeValidityRelation
 import FX1Poly.Typed.TypedTypeValidityBoxedRelation
+import FX1Poly.Typed.TypedTypeValidityLeveled
 import FX1Poly.Typed.WfContextTypedLrValid
 import FX1Poly.Typed.TypedTypeValidityBoxedRename
 import FX1Poly.Typed.WfContextTypedLrValidLookup
@@ -6431,6 +6432,17 @@ gates pin them shut.
 -- The unconditional bare-variable case of the per-child IH childConverts that genFormerValidityContextConversion
 -- consumes. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.variableTypeCodeContextConversion
+-- TYPED-LR-LEVELED (#1124): the UNIVERSE-TRACKING refined typed type-validity LR (GrownCtxConv-5 route B,
+-- TypedTypeValidityLeveled.lean). Carries the universe (level, flag) in the INDEX, so the piType arm FORCES the
+-- domain at (domainLevel, flag) and codomain at (codomainLevel, flag) to share the flag — resolving the
+-- flag-matching obstacle (firing 34) that blocked the unindexed TypedTypeValidityBoxed (#1110) from rebuilding
+-- Π-validity via piFormationViaGenArm. toHasTypeDescPi is UNIVERSE-PRESERVING (returns the EXACT
+-- universeCodeCell level flag typing, not an existential) — the soundness shape the transport's piType rebuild
+-- consumes; toIsTypeDescPi forgets the level/flag to bridge to the unindexed shape; smoke_closedUniverseLeveled
+-- is the first scope-0 inhabitant. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.toHasTypeDescPi
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.toIsTypeDescPi
+#assert_no_axioms FX1Poly.Typed.smoke_closedUniverseLeveled
 -- GrownCtxConv-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
 -- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
 -- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
