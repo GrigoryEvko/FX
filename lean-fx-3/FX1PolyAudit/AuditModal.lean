@@ -21,6 +21,7 @@ import FX1Poly.Modal.EffectLatticeClassification
 import FX1Poly.Modal.OverflowLatticeDimension
 import FX1Poly.Modal.PrecisionOverflowCollision
 import FX1Poly.Modal.SoundnessCollisionSchema
+import FX1Poly.Modal.ThreeWayCollisionClassifiedAsyncSession
 import FX1Poly.Modal.BoundedJoinSemilatticeUniversal
 import FX1Poly.Modal.BoundedJoinSemilatticeProductOrder
 import FX1Poly.Modal.UnifiedGradeMonoid
@@ -1169,3 +1170,23 @@ noConfusion + (notConsistent_iff _ _).mpr ⟨rfl,rfl⟩). -/
 #assert_no_axioms FX1Poly.Modal.concurrentCollidesWithReadWrite
 #assert_no_axioms FX1Poly.Modal.concurrentConsistentWithImmutable
 #assert_no_axioms FX1Poly.Modal.sequentialConsistentWithEveryMutation
+
+/-! ## ThreeWayCollisionClassifiedAsyncSession — §6.8's genuinely THREE-WAY collision (irreducible to any pair)
+
+§6.8's catalog is eight TWO-WAY collisions (each a single dimension pair, captured by SoundnessCollisionSchema
+#1022) PLUS one genuinely THREE-WAY collision: classified × async × session (a classified value's ordering leaks
+through async session interleaving). IsClassifiedAsyncSessionAdmissible (c a s : Bool) := ¬(c ∧ a ∧ s). ★
+classifiedAsyncSessionCollision: ¬admissible(true,true,true). The HEADLINE structural fact —
+classifiedAsyncSessionIrreducible: each PAIR (third capability withheld) IS admissible (true,true,false /
+true,false,true / false,true,true), so NO proper subset collides — the collision is genuinely 3-way, unlike the
+2-way #1021/#1022 which collide on a single pair (no SoundnessCollisionSchema over any pair captures it).
+isAdmissible_iff: admissible ↔ ≥1 capability withheld (De Morgan, cases + Bool.noConfusion). Spans §6.8
+structurally: 2-way reducible + this 3-way irreducible. All zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Modal.IsClassifiedAsyncSessionAdmissible
+#assert_no_axioms FX1Poly.Modal.classifiedAsyncSessionCollision
+#assert_no_axioms FX1Poly.Modal.classifiedAsync_admissibleWithoutSession
+#assert_no_axioms FX1Poly.Modal.classifiedSession_admissibleWithoutAsync
+#assert_no_axioms FX1Poly.Modal.asyncSession_admissibleWithoutClassified
+#assert_no_axioms FX1Poly.Modal.classifiedAsyncSessionIrreducible
+#assert_no_axioms FX1Poly.Modal.isAdmissible_iff
