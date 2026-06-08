@@ -414,6 +414,7 @@ import FX1Poly.Modal.GradedApplicationFlow
 import FX1Poly.Typed.MetatheoryFuzz
 import FX1Poly.Typed.FuzzCorpusConvertibility
 import FX1Poly.Typed.FuzzCorpusNormalizes
+import FX1Poly.Typed.LambdaValueFuzzFamily
 import FX1Poly.Typed.MechanizedProofCrossReference
 import FX1Poly.Typed.FormalReviewGate
 import FX1Poly.Typed.SelfVerifiedMetatheory
@@ -6179,6 +6180,24 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_normalizesToType0
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzConstantFamily_normalizesToType0
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzz_normalFormsAgree
+
+-- LAMBDA-VALUE FUZZ FAMILY (LambdaValueFuzzFamily.lean): the THIRD §27.3-L2 fuzz family — one that EVALUATES TO
+-- A FUNCTION value (a λ at a Π type), completing the corpus's canonical-forms coverage (the identity/constant
+-- towers both reach the universe code Type@0; this reaches the constant lambda λy.Type@0). arrowType1Type1 =
+-- Π(Type@1,Type@1):Type@2 formation (universe-code analogue of churchNatArrow); nestedConstantLambdaTyping =
+-- λx.λy.Type@0 : Π(Type@1,Π(Type@1,Type@1)) (returns the constant lambda, discarding its arg). ★
+-- metatheoryFuzzLambdaFamily_evaluatesToFunction = every member's normal form is a λ (via firing-117
+-- reachedNormalForm_eq_normalForm on the single discarding β-step). progress via firing-112
+-- closedFunctionStepsOrIsLambda (steps-or-is-λ at the Π type); SN via SN-043.
+#assert_no_axioms FX1Poly.Typed.arrowType1Type1
+#assert_no_axioms FX1Poly.Typed.nestedConstantLambdaTyping
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzLambdaFamily_typed
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzLambdaFamily_betaStep
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzLambdaFamily_reducesToLambdaValue
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzLambdaFamily_normalizesToLambda
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzLambdaFamily_evaluatesToFunction
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzLambdaFamily_progress
+#assert_no_axioms FX1Poly.Typed.metatheoryFuzzLambdaFamily_stronglyNormalizing
 
 -- §27.3 Layer-3 defense: every core metatheory rule cross-referenced to a PUBLISHED MECHANIZED proof and
 -- ANCHORED to the real kernel theorem that realizes it.  The `crossRef_*` anchors (`def := @kernelTheorem`)
