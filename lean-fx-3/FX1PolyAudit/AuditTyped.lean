@@ -260,6 +260,7 @@ import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
+import FX1Poly.Typed.HasTypeDescEitherIntro
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3118,6 +3119,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.pairOfUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.subjectIsPair
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.classifierIsProduct
+-- EITHER INTRODUCTION (HasTypeDescEitherIntro, DI-2 sum half): the standalone coproduct judgment typing the sum
+-- VALUES eitherInl(a) / eitherInr(b) : either(A,B) — each arm has ONE value premise + ONE type-formedness premise
+-- for the un-injected (free) component (the asymmetry vs pair, whose two components are both value-pinned).
+-- eitherInl/InrOfUniverseCodeTyped = the smokes eitherInl/Inr(Type@0) : either(Type@1,Type@1). subjectIsEither
+-- Injection/classifierIsEither = the SR-free closed-forms inversions (subject is an inl/inr cell, classifier an
+-- eitherTypeCell). Completes the DI-2 "pair / eitherInl / eitherInr" value-typing scope (SR quartet GCC-5-deferred).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.eitherInlOfUniverseCodeTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.eitherInrOfUniverseCodeTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.subjectIsEitherInjection
+#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.classifierIsEither
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
