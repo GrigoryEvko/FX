@@ -130,4 +130,35 @@ theorem hasTypeDescPi_piIntro_viaIntroDesc {profile : PolyProfile} {scope : Nat}
   subst hRule
   exact HasTypeDescPi.piIntro domainLevel codomainLevel flag domainTyped codomainTyped bodyTyped
 
+/-- **The generic introduction-DISPATCH consumer: route an ARBITRARY intro-carrying generator through the
+table.**  For ANY `generator` whose `introRuleDescOf generator = some rule` (currently only `gen_lam`, but
+stated generically over the generator so a new introduction former needs ZERO change here), the introduced
+member `lamCell body` types at the rule-DATA output `rule.outputType scope domainCode codomainCode`.  The
+consumer obtains the generator's identity from the table (`introRuleDescOf_isLam` ⟹ `generator = gen_lam`)
+rather than performing its own per-generator `by_cases` split, then routes to the shipped reconstruction
+`hasTypeDescPi_piIntro_viaIntroDesc` — the cascade-death CONSUMER shape (mirroring how every formation
+consumer routes through `typingRuleDescOf` rather than its own split).  This is the consumer-side brick of the
+generic `genIntro` fold (GTL-16): a new introduction row extends `introRuleDescOf` + `introRuleDescOf_isLam`
+by one case, and this dispatcher absorbs it with no cascade.  NON-VACUOUS (a genuine λ types at the rule-data
+output).  The remaining GTL-16 work is the fully-abstract engine-level `genIntro` ARM over
+`mkGen generator payload children` (arity-entangled exactly as the formation `genFormationPi` arm). -/
+theorem hasTypeDescPi_genIntro_dispatchViaTable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {generator : Generator} {rule : IntroRuleDesc}
+    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
+    (isIntro : introRuleDescOf generator = some rule)
+    (domainTyped :
+      HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
+    (codomainTyped :
+      HasTypeDescPi profile (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag))
+    (bodyTyped :
+      HasTypeDescPi profile (context.cons domainCode) body codomainCode) :
+    HasTypeDescPi profile context (lamCell body)
+      (rule.outputType scope domainCode codomainCode) := by
+  have hLam : generator = Generator.gen_lam := introRuleDescOf_isLam isIntro
+  subst hLam
+  exact hasTypeDescPi_piIntro_viaIntroDesc domainLevel codomainLevel flag rule isIntro
+    domainTyped codomainTyped bodyTyped
+
 end FX1Poly.Typed

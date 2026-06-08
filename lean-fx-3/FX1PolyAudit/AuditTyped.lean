@@ -6592,6 +6592,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.introRuleDescOf_outputIsPiIntro
 #assert_no_axioms FX1Poly.Typed.introRuleDescOf_isLam
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_piIntro_viaIntroDesc
+-- GTL-16 dispatch consumer: route an ARBITRARY intro-carrying generator through the table. Generic over the
+-- generator (not hardwired to gen_lam), it obtains the generator identity from introRuleDescOf_isLam and routes
+-- to the piIntro reconstruction — the cascade-death CONSUMER shape (a new intro row extends the table +
+-- introRuleDescOf_isLam by one case, this dispatcher absorbs it with no cascade). The consumer-side brick of
+-- the generic genIntro fold; the remaining GTL-16 work is the abstract engine-level genIntro arm. Non-vacuous.
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_genIntro_dispatchViaTable
 
 -- GTL-17 (#831): the ELIMINATION-rule description table — the elim twin of IntroRuleDesc (GTL-15).
 -- KEY: the eliminator output is CHILDREN-DEPENDENT (`subst0 codomainCode argument` = motive applied to
