@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPiContextConversion
 import FX1Poly.Typed.HasTypeDescContextConversion
+import FX1Poly.Typed.HasTypeDescPiVarInversion
 
 /-! # FX1Poly/Typed/GenFormerValidityContextConversion
     — the TABLE-GENERIC genFormationPi former step of the GrownCtxConv-5 residual
@@ -117,5 +118,21 @@ theorem HasTypeDescPi.genFormerValidityContextConversion {profile : PolyProfile}
       (rule.outputType scope levels flag) :=
   HasTypeDescPi.genFormationPi targetContext generator payload children levels flag rule isFormation
     (DescTelescopePi.convTelescopeFromChildIH childConverts premises targetContext contextConv)
+
+/-- **The universe-preserving bare-variable `childConverts` case.**  A variable typed AS A TYPE CODE (at a
+universe) under the source is typed at the SAME universe code under any pointwise-`Conv` target: `invertVar`
+(`#1118`) gives `Conv (universe level flag) (sourceContext.lookup index)`, composed with the context-conversion
+`Conv` at `index` and re-applying the var rule under the target, then `convBackToUniverseCode` pins the
+classifier back to the exact universe code.  The unconditional bare-variable case of the per-child IH
+`childConverts` that `genFormerValidityContextConversion` consumes — a type variable's universe membership
+transports under context conversion. -/
+theorem HasTypeDescPi.variableTypeCodeContextConversion {profile : PolyProfile} {scope : Nat}
+    {sourceContext targetContext : TypingContext profile scope}
+    {index : Fin scope} {level : LevelExpr} {flag : UniverseFlag}
+    (typed : HasTypeDescPi profile sourceContext (variableCell index) (universeCodeCell level flag))
+    (contextConv : ∀ idx : Fin scope, Conv (sourceContext.lookup idx) (targetContext.lookup idx)) :
+    HasTypeDescPi profile targetContext (variableCell index) (universeCodeCell level flag) :=
+  (HasTypeDescPi.ofFormation (HasTypeDesc.var targetContext index)).convBackToUniverseCode
+    (Conv.trans typed.invertVar (contextConv index))
 
 end FX1Poly.Typed

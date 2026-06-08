@@ -6424,6 +6424,13 @@ gates pin them shut.
 -- Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.convTelescopeFromChildIH
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.genFormerValidityContextConversion
+-- GrownCtxConv-5-VARLEAF (#1123): the universe-preserving bare-variable childConverts case
+-- (variableTypeCodeContextConversion, GenFormerValidityContextConversion.lean) — a variable typed AS A TYPE CODE
+-- (at a universe) transports to the SAME universe code under any pointwise-Conv target: invertVar (#1118) +
+-- Conv.trans the context-conv premise + the var rule under tgt + convBackToUniverseCode (pin the classifier).
+-- The unconditional bare-variable case of the per-child IH childConverts that genFormerValidityContextConversion
+-- consumes. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.variableTypeCodeContextConversion
 -- GrownCtxConv-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
 -- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
 -- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
