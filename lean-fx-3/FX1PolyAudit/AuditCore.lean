@@ -61,6 +61,7 @@ import FX1Poly.Core.StrongNormalizationBetaEtaUnion
 import FX1Poly.Core.EtaPostponementOverBeta
 import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.UniverseModeBridgeReducibility
+import FX1Poly.Core.RawTermSubstLiftWeaken
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -887,3 +888,16 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 -- propext-clean.  etaQuasiCommutesOverBeta proves EtaQuasiCommutesOverBeta as a theorem, so accUnionBetaEta's
 -- hypothesis is discharged and open beta-eta-SN holds unconditionally.
 #assert_no_axioms FX1Poly.Core.etaQuasiCommutesOverBeta
+
+/-! ## RawTermSubstLiftWeaken — the double-weaken cancellation that cracks the symbolic-S / Church-sum wall
+
+The single-weaken cancellation (weaken_subst_singleton) handles β-redexes where each bound variable is weakened
+≤ once (the #1009 case). A variable under TWO binders is weakened twice; the resulting subst (lift σ)(weaken² a)
+= weaken a cancellation was the last deferred de Bruijn obstruction (symbolic S-rule, symbolic Church sums). It is
+NOT a wall: subst_lift_weaken (★, the lift-weaken NATURALITY subst (lift σ)(weaken t) = weaken (subst σ t)) follows
+from weaken_eq_rename + the shipped rename_subst_commute (LHS) + subst_rename_commute (RHS) + subst_pointwise (both
+composites send k ↦ weaken(σ k)); subst_lift_singleton_weaken_weaken (the double-weaken cancellation) is then two
+rw's (subst_lift_weaken peels one weaken, weaken_subst_singleton cancels the inner singleton). Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Core.RawTerm.subst_lift_weaken
+#assert_no_axioms FX1Poly.Core.RawTerm.subst_lift_singleton_weaken_weaken
