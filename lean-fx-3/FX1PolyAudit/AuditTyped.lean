@@ -37,6 +37,7 @@ import FX1Poly.Typed.HasTypeDescPiInversion
 import FX1Poly.Typed.HasTypeDescPiApplication
 import FX1Poly.Typed.HasTypeDescPiValidity
 import FX1Poly.Typed.ConvCodeInjectivity
+import FX1Poly.Typed.ConvBoolCodeRigidity
 import FX1Poly.Typed.ConvFlatCodeInjectivity
 import FX1Poly.Typed.ConvDataCodeInjectivity
 import FX1Poly.Typed.EmptyTypeCodeConvRigidity
@@ -1183,6 +1184,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_emptyTypeCode
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_not_emptyTypeCode
 #assert_no_axioms FX1Poly.Typed.Conv.universeCode_not_emptyTypeCode
+-- boolTypeCell is the data-type-code sibling (ConvBoolCodeRigidity.lean): never Conv-equal to a Π/Σ/universe
+-- code. Same SN-free head-stability mechanism (boolTypeCell is a no-step LEAF, isStepNormalForm by rfl;
+-- shapeStable_piTyCode/_sigmaTyCode + noStep_universeCode for the right legs; Generator.noConfusion on the
+-- forced head equality). These ARE the CANON-1 (#1048) bool-canonicity rule-outs: a closed normal t:boolCode
+-- has head in {lam,piTyCode,sigmaTyCode,universeCode,listCode,optionCode}, and uniqueness-of-typing forces
+-- boolCode Conv to lam's classifier (a piTyCode) or a former's classifier (universeCode) — both refuted here.
+#assert_no_axioms FX1Poly.Typed.Conv.boolTypeCell_not_piTyCode
+#assert_no_axioms FX1Poly.Typed.Conv.boolTypeCell_not_sigmaTyCode
+#assert_no_axioms FX1Poly.Typed.Conv.boolTypeCell_not_universeCode
 -- VALUE-CASE inversions (EmptyTypeValueInversion.lean): the typing-layer consequence of the rigidity — NONE of
 -- the grown engine's canonical values is typed at emptyTypeCell. A λ's classifier is Conv a Π-code (invertLam),
 -- a Π/Σ-former's classifier is Conv a universe code (invertPiTyCode/invertSigmaTyCode); neither is Conv-equal to
