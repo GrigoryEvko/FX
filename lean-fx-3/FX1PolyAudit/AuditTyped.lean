@@ -408,6 +408,7 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionWf
 import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
 import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
+import FX1Poly.Typed.ConvContextPiValidityModelNeutral
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
@@ -6356,6 +6357,16 @@ gates pin them shut.
 -- bounded reducibility model is closed-substitution-based, unfit; reflection fails at the neutral base). No further
 -- syntactic fragment to peel. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextPreservesPiValidityForFormationCode
+-- GCC-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
+-- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
+-- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
+-- semantic neutral-type interpretation is IDENTICAL under both sides of the residual's pointwise-Conv context
+-- conversion — context conversion is invisible to the semantic side. This isolates the genuinely-open residual
+-- entirely to the SYNTACTIC reflection carrying the IsTypeDescPi typing WITNESS across the conversion (the typed
+-- logical relation's neutral reflection, re-assembling the type-level piElim for (var f)(var a) = GCC-5). Substrate
+-- in hand for the typed model: Step.reflectRename + kripkeArrow_neutralBackwardClosure (firings 13/14) +
+-- Conv.piTyCode_injective (#865). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.neutralTypeCodeSemanticReducibilityIsContextFree
 
 -- GCC-5 SECOND piElim-arm reduction, to TypeCodeValidityRespectsReduction (HasTypeDescPiContextConversionValidity
 -- Reduction.lean, GCC-5-VALRED, toward #842). The FLEXIBLE route, twin of #1092's exact route. The fine-grained
