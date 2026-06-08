@@ -33,6 +33,7 @@ import FX1Poly.Modal.SessionDualityDimension
 import FX1Poly.Modal.SessionCommunication
 import FX1Poly.Modal.SelfApplicationUntypable
 import FX1Poly.Modal.GradedProgress
+import FX1Poly.Modal.GradedEvaluation
 
 /-! # FX1PolyAudit/AuditModal — per-declaration zero-axiom gate for the resource-graded doctrine
    (the second graded dimension: Usage `{0, 1, ω}` and Security `{unclassified < classified}`)
@@ -1029,3 +1030,15 @@ dimension. -/
 #assert_no_axioms FX1Poly.Modal.closedWellTypedProgress
 #assert_no_axioms FX1Poly.Modal.closedBaseTypeAlwaysSteps
 #assert_no_axioms FX1Poly.Modal.usageLinearIdentity_isValue
+
+/-! ### Full-β subject reduction + evaluation — the graded type-safety capstone
+
+Lifts SR from root-β to the FULL congruence-closed β-reduction (`hasGradeOver_reducesPreservation`,
+grades exact) + its `ReducesStar` closure, and combines preservation + progress + SN into EVALUATION:
+every closed well-typed term β-reduces to a `.lam` value (`closedReducesToLam`).  Well-typed graded
+programs evaluate — generic over every dimension. -/
+
+#assert_no_axioms FX1Poly.Modal.hasGradeOver_reducesPreservation
+#assert_no_axioms FX1Poly.Modal.hasGradeOver_reducesStarPreservation
+#assert_no_axioms FX1Poly.Modal.closedReducesToLam
+#assert_no_axioms FX1Poly.Modal.usageLinearIdentity_reducesToLam
