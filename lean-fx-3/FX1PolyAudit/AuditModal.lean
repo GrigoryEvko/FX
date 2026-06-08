@@ -12,6 +12,7 @@ import FX1Poly.Modal.GradedSubjectReductionGeneric
 import FX1Poly.Modal.GradedCompositionGeneric
 import FX1Poly.Modal.GradeSemiringProduct
 import FX1Poly.Modal.GradeSemiringMonoidal
+import FX1Poly.Modal.GradeSemiringFunctorial
 import FX1Poly.Modal.SimpleStrongNormalization
 import FX1Poly.Modal.GradedSubstitutionAlgebra
 import FX1Poly.Modal.GradedReductionSubstitution
@@ -158,6 +159,21 @@ per-declaration discipline as the rest of the kernel.
 #assert_no_axioms FX1Poly.Modal.OrderedGradeSemiring.unassocGrade_assocGrade
 #assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurityTimesComplexitySemiring_isLawful
 #assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurityTimesComplexity_metatheoryFree
+-- DIM-FUNCTORIAL (#1037): the §6 "dimensions checked INDEPENDENTLY/pointwise" content. GTypeOver/GradeVectorOver
+-- .mapGrade push grades along f : R.Carrier → S.Carrier; commutation lemmas with zero/single/add/scale + lookup.
+-- mapHom (★): a grade-semiring HOMOMORPHISM f (preserving zero/one/add/mul) lifts ANY HasGradeOver R derivation
+-- to HasGradeOver S, by 3-arm induction (var via single-commute+fOne+lookup_map, app via add/scale-commute on
+-- p1+r·p2) — HasGradeOver is a functor on grade semirings. projectFirst/projectSecond = mapHom at Prod.fst/Prod.snd
+-- (the product's projection homs, every law rfl): a 2-dim derivation decomposes into per-dimension derivations.
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.mapGrade_single
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.mapGrade_add
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.mapGrade_scale
+#assert_no_axioms FX1Poly.Modal.GTypeOver.lookup_map
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.mapHom
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.projectFirst
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.projectSecond
+#assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurity_variableProjectsToUsage
+#assert_no_axioms FX1Poly.Modal.fxUsageTimesSecurity_variableProjectsToSecurity
 
 /-! ### Grade-vector substrate: the per-binding usage grade vector + its semimodule laws -/
 
