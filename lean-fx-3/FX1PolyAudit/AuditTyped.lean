@@ -205,6 +205,7 @@ import FX1Poly.Typed.CombinatoryCompleteness
 import FX1Poly.Typed.ChurchPairs
 import FX1Poly.Typed.ChurchPairsInjective
 import FX1Poly.Typed.ChurchSums
+import FX1Poly.Typed.ChurchSumsDisjoint
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -6617,3 +6618,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.caseLeft_selectsLeftHandler
 #assert_no_axioms FX1Poly.Typed.caseRight_selectsRightHandler
 #assert_no_axioms FX1Poly.Typed.caseSelectsByTag
+-- CHURCH SUM DISJOINT (ChurchSumsDisjoint): the coproduct FAITHFULNESS capstone, dual to Church-pair injectivity
+-- (#1018). Case-selection (#1019) alone is not a coproduct; the defining property is that the two injections are
+-- DISJOINT. leftInjection_not_conv_rightInjection (★): ¬ Conv (inl I)(inr I). Operational proof = the coproduct
+-- universal property backwards: were they convertible, applying both to distinguishing handlers handlerToUniverse
+-- (λx. Type@0) / handlerToIdentity (λx. I) and reducing via the shipped caseLeft/caseRight (#1019) forces
+-- Conv (universeCode)(identity) — refuted by the shipped closedUniverseCode_not_conv_identity (distinct closed NFs,
+-- different head generators). Conv.app_cong ×2 over hConv + StepStar.trans_compose with the two handler β-reductions
+-- (handlerTo·_app_I, each one Step.beta + named subst0-typed weaken_subst_singleton cancellation). The sum-side
+-- analogue of #983 (churchTrue ≢ churchFalse): two closed values kept operationally apart. rightInjection_not_conv_
+-- leftInjection = symmetric via Conv.sym. Concrete payload combinatorI (as #1019); tags differ regardless.
+#assert_no_axioms FX1Poly.Typed.handlerToUniverse_app_I
+#assert_no_axioms FX1Poly.Typed.handlerToIdentity_app_I
+#assert_no_axioms FX1Poly.Typed.leftInjection_not_conv_rightInjection
+#assert_no_axioms FX1Poly.Typed.rightInjection_not_conv_leftInjection
