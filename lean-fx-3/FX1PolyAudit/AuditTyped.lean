@@ -201,6 +201,7 @@ import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Typed.CurryFixpointDivergence
 import FX1Poly.Typed.CurryFixpointCombinator
 import FX1Poly.Typed.CombinatoryLogic
+import FX1Poly.Typed.CombinatoryCompleteness
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -6567,3 +6568,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.combinatorS_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.combinatorI_reduces
 #assert_no_axioms FX1Poly.Typed.combinatorK_reduces
+-- COMBINATORY COMPLETENESS (CombinatoryCompleteness): the classic SKK=I. skkReducesToIdentity (★): S K K x ↝* x —
+-- S K K x β-reduces through Sa=λy.λz.(Kz)(yz) and Sab=λz.(Kz)(Kz) (intermediate reducts saTerm/sabTerm compute by
+-- RFL because K is CONCRETE+closed: the under-binder subst-through-weaken collapses definitionally, where general
+-- S a b c would need a weaken/subst commutation lemma), then K x (K x) ↝* x via combinatorK_reduces (#1015). Three
+-- Step.beta lifted through function-position Step.cong .gen_app () + StepChildren.here (explicit scopes), chained by
+-- StepStar.trans. skkApplied_conv_identityApplied: Conv (S K K x) (I x) — both reduce to x. The GENERAL S-rule
+-- (S a b c ↝* ac(bc), symbolic a,b,c) stays deferred (needs subst (lift (singleton b)) (weaken² a) = weaken a, NOT
+-- rfl). SKK=I is combinatory completeness in miniature.
+#assert_no_axioms FX1Poly.Typed.skkReducesToIdentity
+#assert_no_axioms FX1Poly.Typed.skkApplied_conv_identityApplied
