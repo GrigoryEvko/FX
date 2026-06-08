@@ -198,6 +198,7 @@ import FX1Poly.Typed.TypedChurchNumeralTyping
 import FX1Poly.Typed.TypedChurchNumeralInhabitants
 import FX1Poly.Typed.TypedFragmentAcyclicity
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
+import FX1Poly.Typed.CurryFixpointDivergence
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
 import FX1Poly.Typed.TypedUniverseTower
@@ -6527,3 +6528,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.universeClassificationCharacterization
 #assert_no_axioms FX1Poly.Typed.universeClassificationNotTransitive
 #assert_no_axioms FX1Poly.Typed.universeNotCumulativeBySkip
+-- CURRY FIXPOINT DIVERGENCE (CurryFixpointDivergence): generalize bare Ω (#950/#960) to the Curry fixpoint core
+-- Ω_g = (λx. g(xx))(λx. g(xx)) over an arbitrary closed g. curryOmega_step (★): Ω_g ↝ g(Ω_g) in ONE β-step — the
+-- fixpoint UNFOLDING (Curry's fix g = g(fix g) at the self-replicating core); contractum via weaken_subst_singleton
+-- (the subst0 (weaken g) arg = g cancellation, RawTermSubst0Commute.lean:39) keeping the weakened g + var0 recopy.
+-- curryDivergentSequence + _steps: the strictly-growing g^n(Ω_g) chain (index 0 = unfolding, index k+1 = ARGUMENT-
+-- position congruence Step.cong .gen_app () + StepChildren.there/here with EXPLICIT parentScope/headShift/restShifts
+-- — the scope of `there`'s head is otherwise an unsolvable ?+?=0 metavar). curryOmega_notStronglyNormalizing (★):
+-- ∀ g, ¬IsStronglyNormalizing (Ω_g) via notStronglyNormalizing_of_infiniteReduction (#960). Every term carries a
+-- non-terminating fixpoint — exactly why a fixpoint operator is untypable in the SN engine (SN-043 #546).
+#assert_no_axioms FX1Poly.Typed.curryOmega_step
+#assert_no_axioms FX1Poly.Typed.curryDivergentSequence_steps
+#assert_no_axioms FX1Poly.Typed.curryOmega_notStronglyNormalizing
