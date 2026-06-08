@@ -255,6 +255,7 @@ import FX1Poly.Typed.HasTypeDescDataIntroInversion
 import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
 import FX1Poly.Typed.HasTypeDescBaseType
 import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
+import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.PiFormerMembership
 import FX1Poly.Typed.FormerChildrenReducible
 import FX1Poly.Typed.TelescopeReducible
@@ -3056,6 +3057,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectHasNoStep
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectStronglyNormalizing
+-- STANDALONE-ENGINE CANONICITY (StandaloneEngineCanonicity, CANON-1 increment): combined closed-canonical-forms
+-- over the two NON-grown engines (data-intro values + base-type codes). ★ standaloneBoolCanonicalForms = a
+-- subject typed at boolTypeCell by EITHER engine is boolTrue/boolFalse (data-intro gives it; base-type is ruled
+-- out since its classifier is Type@0 != boolCode, via classifierIsType0 + headGenerator/Generator.noConfusion).
+-- standaloneEmptyUninhabited = nothing typed at emptyTypeCell by either engine (standalone half of SN-050).
+-- dataIntroAndBaseTypeSubjectsDisjoint = the value layer and type layer never type the same term (disjoint heads).
+-- The grown disjunct (HasTypeDescPi at boolCode via conv/piElim) is the remaining CANON-1 residual. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.standaloneBoolCanonicalForms
+#assert_no_axioms FX1Poly.Typed.standaloneEmptyUninhabited
+#assert_no_axioms FX1Poly.Typed.dataIntroAndBaseTypeSubjectsDisjoint
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
