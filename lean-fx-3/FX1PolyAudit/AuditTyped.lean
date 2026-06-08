@@ -40,6 +40,7 @@ import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Typed.ConvBoolCodeRigidity
 import FX1Poly.Typed.ConvFormationFormerRigidity
 import FX1Poly.Typed.ConvFlatFormerRigidity
+import FX1Poly.Typed.ConvCrossTableFormerRigidity
 import FX1Poly.Typed.ConvFlatCodeInjectivity
 import FX1Poly.Typed.ConvDataCodeInjectivity
 import FX1Poly.Typed.EmptyTypeCodeConvRigidity
@@ -1216,6 +1217,15 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.flatFormationFormerGeneratorEq
 #assert_no_axioms FX1Poly.Typed.Conv.flatFormationFormersNotConvOfDistinct
 #assert_no_axioms FX1Poly.Typed.Conv.productCode_not_conv_sumCode
+-- CROSS-TABLE discrimination (ConvCrossTableFormerRigidity.lean): completes the cross-former no-confusion —
+-- a typingRuleDescOf-former (Π/Σ/list/option) is never Conv to a flatTypingRuleDescOf-former
+-- (product/sum/either/arrow/equiv). NO disjointness helper needed: the LEFT uses formationFormerHeadStable
+-- General, the RIGHT uses flatFormationFormerHeadStableGeneral, then per-instance g1 != g2 (Generator.no
+-- Confusion). THIS is the load-bearing SN-049 rule-out: a closed normal t:productCode has head in
+-- {lam,piTyCode,...} (all typingRuleDescOf-classified), and piTyCode_not_conv_productCode etc. refute each.
+#assert_no_axioms FX1Poly.Typed.Conv.crossTableFormersNotConvOfDistinct
+#assert_no_axioms FX1Poly.Typed.Conv.piTyCode_not_conv_productCode
+#assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_not_conv_eitherCode
 -- VALUE-CASE inversions (EmptyTypeValueInversion.lean): the typing-layer consequence of the rigidity — NONE of
 -- the grown engine's canonical values is typed at emptyTypeCell. A λ's classifier is Conv a Π-code (invertLam),
 -- a Π/Σ-former's classifier is Conv a universe code (invertPiTyCode/invertSigmaTyCode); neither is Conv-equal to
