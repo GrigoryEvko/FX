@@ -8536,7 +8536,7 @@ pinned-reflection whnf dispatcher, whose motive carries exactly this wf. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfWfContextDescPi
 
 /- The piElim-residual whnf DISPATCHER (PinnedReflectionPiElimDispatcher): the FULL residual
-reduces to the two head-specific residuals (λ-after-whnf + neutral-spine-after-whnf, the latter's
+reduces to the two head-specific residuals (λ-after-whnf + neutral-reduct-after-whnf, the latter's
 bare-var instance pre-discharged) via grown-wf SN → normalize → SR-star → the wf-FREE canonical
 forms (copies of the shipped open canonical forms with the vestigial formation-wf premise
 deleted). -/
@@ -8577,8 +8577,8 @@ reflection at a smaller bound + substitution-lemma codomain instantiation); the 
 finishes through pinnedReflectionPiElimCore.  Harvest: pinnedReflectionNormal — the FULL pinned
 reflection for every NORMAL grown-typed subject. -/
 
-#assert_no_axioms FX1Poly.Typed.pinExtractFormationClassifier
-#assert_no_axioms FX1Poly.Typed.pinExtractNeutralClassifier
-#assert_no_axioms FX1Poly.Typed.plateauResidualGuardedUpTo
-#assert_no_axioms FX1Poly.Typed.plateauResidualGuarded
+#assert_no_axioms FX1Poly.Typed.formationClassifierPinned
+#assert_no_axioms FX1Poly.Typed.normalNonLambdaClassifierPinned
+#assert_no_axioms FX1Poly.Typed.piElimResidualGuardedWithinBudget
+#assert_no_axioms FX1Poly.Typed.piElimResidualGuardedAtEveryBound
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionNormal

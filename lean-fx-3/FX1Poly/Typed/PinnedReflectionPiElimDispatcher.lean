@@ -8,9 +8,9 @@ import FX1Poly.Core.Normalize
 THE structural decomposition of the pinned reflection's one open arm: the FULL
 `PinnedReflectionPiElimResidual` reduces to two HEAD-SPECIFIC residuals —
 
-  * `PinnedReflectionPiElimLamResidual` — the function whnf-reduces to a normal λ (the genuinely
+  * `PinnedReflectionPiElimLamReductResidual` — the function whnf-reduces to a normal λ (the genuinely
     open analysis: the contracted application is covered by no premise IH);
-  * `PinnedReflectionPiElimNeutralSpineResidual` — the function whnf-reduces to a normal neutral
+  * `PinnedReflectionPiElimNeutralReductResidual` — the function whnf-reduces to a normal neutral
     (var-headed spine or stuck eliminator); the bare-VARIABLE instance is ALREADY DISCHARGED by
     `pinnedReflectionPiElimReducesToVarArm`, so the open content is the 11 composite heads.
 
@@ -140,7 +140,7 @@ theorem HasTypeDescPi.normalFunctionIsLambdaOrNeutralOfTyping {profile : PolyPro
 /-- **The λ-headed-after-whnf residual**: the residual conclusion when the function
 `StepStar`-reduces to a NORMAL λ — the genuinely open analysis (the contracted application is not
 covered by any premise IH). -/
-def PinnedReflectionPiElimLamResidual (profile : PolyProfile) : Prop :=
+def PinnedReflectionPiElimLamReductResidual (profile : PolyProfile) : Prop :=
   ∀ {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     {functionTerm argument domainCode : RawTerm targetScope}
     {codomainCode lamBody : RawTerm (targetScope + 1)},
@@ -160,7 +160,7 @@ def PinnedReflectionPiElimLamResidual (profile : PolyProfile) : Prop :=
 spine-recursion analysis (the spine components are reduct subterms not covered by any premise IH).
 NOTE: the bare-VARIABLE instance of this residual is ALREADY DISCHARGED
 (`pinnedReflectionPiElimReducesToVarArm`); the open content is the 11 composite-neutral heads. -/
-def PinnedReflectionPiElimNeutralSpineResidual (profile : PolyProfile) : Prop :=
+def PinnedReflectionPiElimNeutralReductResidual (profile : PolyProfile) : Prop :=
   ∀ {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     {functionTerm argument domainCode reduct : RawTerm targetScope}
     {codomainCode : RawTerm (targetScope + 1)},
@@ -178,11 +178,11 @@ def PinnedReflectionPiElimNeutralSpineResidual (profile : PolyProfile) : Prop :=
 
 /-- **The whnf dispatcher**: the FULL piElim residual reduces to the two head-specific residuals.
 Grown-wf open SN normalizes the function; SR-star types the normal reduct; the wf-free canonical
-forms split its head: a λ routes to the λ residual, a neutral routes to the spine residual
+forms split its head: a λ routes to the λ residual, a neutral routes to the neutral-reduct residual
 (whose bare-variable instance is pre-discharged by `pinnedReflectionPiElimReducesToVarArm`). -/
 theorem pinnedReflectionPiElimResidualOfHeadResiduals (profile : PolyProfile)
-    (lamResidual : PinnedReflectionPiElimLamResidual profile)
-    (neutralSpineResidual : PinnedReflectionPiElimNeutralSpineResidual profile) :
+    (lamResidual : PinnedReflectionPiElimLamReductResidual profile)
+    (neutralReductResidual : PinnedReflectionPiElimNeutralReductResidual profile) :
     PinnedReflectionPiElimResidual profile := by
   intro targetScope targetContext functionTerm argument domainCode codomainCode
     functionTyped argumentTyped functionIH argumentIH
@@ -205,7 +205,7 @@ theorem pinnedReflectionPiElimResidualOfHeadResiduals (profile : PolyProfile)
     exact lamResidual functionTyped argumentTyped functionReduces reductNormal
       functionIH argumentIH targetWellFormed rho sourceContext rhoInjective condition wellFormed
       subjectInImage pinned pinBaseTyped
-  · exact neutralSpineResidual functionTyped argumentTyped functionReduces reductNeutral
+  · exact neutralReductResidual functionTyped argumentTyped functionReduces reductNeutral
       reductNormal functionIH argumentIH targetWellFormed rho sourceContext rhoInjective
       condition wellFormed subjectInImage pinned pinBaseTyped
 

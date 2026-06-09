@@ -7,13 +7,13 @@ import FX1Poly.Typed.CellSubstitution
 
 /-! # FX1Poly/Typed/PlateauPinnedReflection — THE PLATEAU INDUCTION + THE PLATEAU MASTER
 
-The guarded piElim residual holds at EVERY bound (`plateauResidualGuarded`), closing the
+The guarded piElim residual holds at EVERY bound (`piElimResidualGuardedAtEveryBound`), closing the
 strengthening campaign's recursion knot, and hence the full pinned reflection holds for every
 NORMAL grown-typed subject (`HasTypeDescPi.pinnedReflectionNormal` — THE PLATEAU MASTER).
 
-  * `pinExtractFormationClassifier` — a formation classifier is pinned: variable classifiers by
+  * `formationClassifierPinned` — a formation classifier is pinned: variable classifiers by
     the Kripke condition + `lookupIsType`; universe/former classifiers by rename-invariance.
-  * `pinExtractNeutralClassifier` — THE SPINE PIN-EXTRACTION: the classifier of a NORMAL, non-λ,
+  * `normalNonLambdaClassifierPinned` — THE SPINE PIN-EXTRACTION: the classifier of a NORMAL, non-λ,
     in-image grown-typed term is pinned.  Derivation-structural; the piElim arm pins the nested
     function recursively (a subderivation), reflects the nested ARGUMENT via the guarded master
     at a strictly smaller bound (the strong-induction supply, since the argument is a reduct
@@ -22,7 +22,7 @@ NORMAL grown-typed subject (`HasTypeDescPi.pinnedReflectionNormal` — THE PLATE
     source-typedness by `HasTypeDescPi.substituteUnderBinding` on the inverted codomain (the
     universe classifier collapses under `subst0` by `rfl`).  The freely-chosen-domain problem
     CANNOT arise here: every recursive subject's pin ARRIVES through the spine/inversion flow.
-  * `plateauResidualGuardedUpTo` / `plateauResidualGuarded` — the plateau induction: structural
+  * `piElimResidualGuardedWithinBudget` / `piElimResidualGuardedAtEveryBound` — the plateau induction: structural
     on a budget; at each budget the residual's function is NEUTRAL normal (a normal application
     is never β: `not_isStepNormalForm_beta_smoke` kills the λ case), its Π classifier pins by the
     spine extraction, and the shipped `pinnedReflectionPiElimCore` finishes with the premise IHs.
@@ -42,7 +42,7 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
 /-- Formation-side pin extraction: a formation classifier is pinned — variable classifiers by the
 Kripke condition + `lookupIsType`, universe/former classifiers by rename-invariance. -/
-theorem pinExtractFormationClassifier {profile : PolyProfile}
+theorem formationClassifierPinned {profile : PolyProfile}
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     {subject classifier : RawTerm targetScope}
     (derivation : HasTypeDesc profile targetContext subject classifier)
@@ -64,7 +64,7 @@ theorem pinExtractFormationClassifier {profile : PolyProfile}
         WfContextDescPi.lookupIsType sourceContext wellFormed sourceIndex⟩
   | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
       let ⟨base, pinConv, baseTyped⟩ :=
-        pinExtractFormationClassifier typedPremise rho sourceContext condition
+        formationClassifierPinned typedPremise rho sourceContext condition
           wellFormed subjectInImage
       ⟨base, converts.sym.trans pinConv, baseTyped⟩
   | .universeFormation _targetContext levelExpr flag => by
@@ -89,8 +89,8 @@ theorem pinExtractFormationClassifier {profile : PolyProfile}
 pinned.  Derivation-structural; the piElim arm pins the nested function recursively, reflects the
 nested argument via the guarded master at a strictly smaller bound (the strong-induction supply),
 and assembles the instantiated-codomain pin via the substitution lemma. -/
-theorem pinExtractNeutralClassifier {profile : PolyProfile} {budget : Nat}
-    (residualBelow : ∀ {smallBound : Nat}, smallBound ≤ budget →
+theorem normalNonLambdaClassifierPinned {profile : PolyProfile} {budget : Nat}
+    (residualWithinBudget : ∀ {smallBound : Nat}, smallBound ≤ budget →
       PinnedReflectionPiElimResidualGuarded profile smallBound)
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     {subject classifier : RawTerm targetScope}
@@ -111,11 +111,11 @@ theorem pinExtractNeutralClassifier {profile : PolyProfile} {budget : Nat}
       IsTypeDescPi profile sourceContext base :=
   match derivation with
   | .ofFormation formationTyped =>
-      pinExtractFormationClassifier formationTyped rho sourceContext condition
+      formationClassifierPinned formationTyped rho sourceContext condition
         wellFormed subjectInImage
   | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
       let ⟨base, pinConv, baseTyped⟩ :=
-        pinExtractNeutralClassifier residualBelow typedPremise subjectNormal hNotLam
+        normalNonLambdaClassifierPinned residualWithinBudget typedPremise subjectNormal hNotLam
           subjectSize targetWellFormed rho sourceContext rhoInjective condition
           wellFormed subjectInImage
       ⟨base, converts.sym.trans pinConv, baseTyped⟩
@@ -136,7 +136,7 @@ theorem pinExtractNeutralClassifier {profile : PolyProfile} {budget : Nat}
         Nat.le_of_lt
           (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_function _ _) subjectSize)
       obtain ⟨piBase, piPinned, piBaseTyped⟩ :=
-        pinExtractNeutralClassifier residualBelow nestedFunctionTyped
+        normalNonLambdaClassifierPinned residualWithinBudget nestedFunctionTyped
           nestedFunctionNormal hNotLamNested nestedFunctionSize targetWellFormed rho
           sourceContext rhoInjective condition wellFormed hNestedFunction
       obtain ⟨domainBase, codomainBase, sourceChain, domainConv, codomainConv⟩ :=
@@ -149,8 +149,8 @@ theorem pinExtractNeutralClassifier {profile : PolyProfile} {budget : Nat}
       have nestedArgumentSize : _ ≤ budget :=
         Nat.le_of_lt
           (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_argument _ _) subjectSize)
-      obtain ⟨argumentReflClassifier, argumentClassConv, sourceArgumentTyped⟩ :=
-        HasTypeDescPi.pinnedReflectionGuarded (residualBelow nestedArgumentSize)
+      obtain ⟨argumentReflectedClassifier, argumentClassConv, sourceArgumentTyped⟩ :=
+        HasTypeDescPi.pinnedReflectionGuarded (residualWithinBudget nestedArgumentSize)
           nestedArgumentTyped (Nat.le_refl _) nestedArgumentNormal
           targetWellFormed rho sourceContext rhoInjective condition wellFormed
           hNestedArgument domainConv ⟨domainLevel, componentFlag, domainTyped⟩
@@ -180,7 +180,7 @@ theorem pinExtractNeutralClassifier {profile : PolyProfile} {budget : Nat}
 /-- **The plateau induction**: the guarded piElim residual holds at every bound within a budget,
 by structural induction on the budget — the spine pin-extraction's master calls land at strictly
 smaller bounds, supplied by the induction hypothesis. -/
-theorem plateauResidualGuardedUpTo (profile : PolyProfile) :
+theorem piElimResidualGuardedWithinBudget (profile : PolyProfile) :
     ∀ (budget : Nat) (bound : Nat), bound ≤ budget →
       PinnedReflectionPiElimResidualGuarded profile bound
   | 0 => by
@@ -206,8 +206,8 @@ theorem plateauResidualGuardedUpTo (profile : PolyProfile) :
         Nat.le_of_lt_succ (Nat.lt_of_lt_of_le
           (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_function _ _) sizeBound) hBound)
       obtain ⟨piBase', piPinned', piBaseTyped'⟩ :=
-        pinExtractNeutralClassifier
-          (fun {smallBound} h => plateauResidualGuardedUpTo profile budget smallBound h)
+        normalNonLambdaClassifierPinned
+          (fun {smallBound} h => piElimResidualGuardedWithinBudget profile budget smallBound h)
           functionTyped functionNormal hNotLamF functionSize targetWellFormed rho
           sourceContext rhoInjective condition wellFormed hFunction
       exact pinnedReflectionPiElimCore profile functionIH argumentIH rho sourceContext
@@ -215,9 +215,9 @@ theorem plateauResidualGuardedUpTo (profile : PolyProfile) :
         piPinned' piBaseTyped'
 
 /-- The guarded residual holds at EVERY bound. -/
-theorem plateauResidualGuarded (profile : PolyProfile) (bound : Nat) :
+theorem piElimResidualGuardedAtEveryBound (profile : PolyProfile) (bound : Nat) :
     PinnedReflectionPiElimResidualGuarded profile bound :=
-  plateauResidualGuardedUpTo profile bound bound (Nat.le_refl bound)
+  piElimResidualGuardedWithinBudget profile bound bound (Nat.le_refl bound)
 
 /-- **THE PLATEAU MASTER**: the full pinned reflection for every NORMAL grown-typed subject —
 the guarded master at the subject's own size, with the plateau-induction residual. -/
@@ -227,7 +227,7 @@ theorem HasTypeDescPi.pinnedReflectionNormal {profile : PolyProfile}
     (derivation : HasTypeDescPi profile targetContext subject classifier)
     (subjectNormal : RawTerm.isStepNormalForm subject) :
     PinnedReflectionConclusion profile targetContext subject classifier :=
-  HasTypeDescPi.pinnedReflectionGuarded (plateauResidualGuarded profile subject.size)
+  HasTypeDescPi.pinnedReflectionGuarded (piElimResidualGuardedAtEveryBound profile subject.size)
     derivation (Nat.le_refl _) subjectNormal
 
 end FX1Poly.Typed
