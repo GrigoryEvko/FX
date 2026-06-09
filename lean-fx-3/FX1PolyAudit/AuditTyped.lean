@@ -271,6 +271,7 @@ import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.CanonicitySyntacticRoute
 import FX1Poly.Typed.GrownRigidityCanonicity
+import FX1Poly.Typed.ClosedNatCanonicity
 import FX1Poly.Typed.BoolElimClosedNormalForms
 import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
 import FX1Poly.Typed.BoolElimValueCanonicity
@@ -3189,6 +3190,22 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.dataCanonicityFromGrownRigidity
 #assert_no_axioms FX1Poly.Typed.boolCanonicityViaGrownRigidity
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedGrownTermAtSigmaType
+-- ★ SN-048: CLOSED NAT CANONICITY (ClosedNatCanonicity, the first per-type instance of the generic grown-rigidity
+-- packaging, unblocked by DI-3's gen_natCode + HasTypeDescNatIntro). IsNatNumeral = the recursive value predicate
+-- (natZero, or natSucc of a numeral — Nat has infinitely many, unlike bool's two). subjectIsNatNumeral = every
+-- nat-intro-typed subject IS a numeral (two-arm induction, no reduction — nat-intro terms are already values).
+-- Conv.natTypeCell_not_{piTyCode,sigmaTyCode,universeCode} = the cross-former rigidities (no-step-leaf +
+-- shapeStable/noStep + noConfusion, mirror of the bool rigidities). ★ closedNatCanonicalForms = SN-048: a closed
+-- term typed at natTypeCell by the nat-intro OR grown engine reduces to a numeral (standalone arm =
+-- standaloneNatCanonicalForms; grown arm derived via noClosedGrownTermAtDataClassifier). natOne = non-vacuity
+-- (succ 0 canonical). The recursive natElim-computing canonicity (#1138) is the follow-on. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.subjectIsNatNumeral
+#assert_no_axioms FX1Poly.Typed.standaloneNatCanonicalForms
+#assert_no_axioms FX1Poly.Typed.Conv.natTypeCell_not_piTyCode
+#assert_no_axioms FX1Poly.Typed.Conv.natTypeCell_not_sigmaTyCode
+#assert_no_axioms FX1Poly.Typed.Conv.natTypeCell_not_universeCode
+#assert_no_axioms FX1Poly.Typed.closedNatCanonicalForms
+#assert_no_axioms FX1Poly.Typed.closedNatCanonicalForms.natOne
 -- ELIMINATOR-ENGINE CLOSED-NORMAL VACUITY (BoolElimClosedNormalForms, the first concrete piece of #1138): the
 -- bool ELIMINATOR engine (HasTypeDescBoolElim, the 4th engine) contributes a VACUOUS disjunct to closed-normal
 -- canonical forms — a closed eliminator on a closed VALUE scrutinee always ι-fires, so it is never normal.
