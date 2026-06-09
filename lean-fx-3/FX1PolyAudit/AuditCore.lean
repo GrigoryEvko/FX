@@ -18,6 +18,7 @@ import FX1Poly.Core.RecursiveIotaSizeGrowth
 import FX1Poly.Core.RecursivePathOrderInductive
 import FX1Poly.Core.RawIotaRpoBridge
 import FX1Poly.Core.RawIotaRpoAssembly
+import FX1Poly.Core.RawIotaFullStepSN
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -357,6 +358,19 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.iotaGenRpoWellFounded
 #assert_no_axioms FX1Poly.Core.IotaHeadStep.rpoEmbeds
 #assert_no_axioms FX1Poly.Core.iotaHeadStep_wellFounded
+
+-- Full ι-reduction SN (firing-74): lift root-ι SN (firing-73) to the COMPATIBLE CLOSURE of IotaHeadStep —
+-- ι at the root OR ι inside ANY child context (IotaStep/IotaStepChildren, mirroring Step/StepChildren). The
+-- congruence case finally CONSUMES firing-72's rpo_congruence: an ι step inside child position i changes
+-- eraseChildren only at that position (prefix ++ child :: suffix → prefix ++ child' :: suffix, the child
+-- RPO-decreasing by IH), and rpo_congruence lifts that to a node RPO-decrease. The here/there spine walk
+-- builds the prefix ([] at head, eraseToRose head :: prefix one step in). Proven via the explicit mutual
+-- recursor IotaStep.rec (the Step.subst pattern). IotaStep.toStep: sound sub-relation of the live Step.
+-- iotaFullStep_wellFounded: the GENUINE ι-fragment SN (not just root), Tait-free (β imported, η shipped #357).
+#assert_no_axioms FX1Poly.Core.IotaStep.rpoEmbeds
+#assert_no_axioms FX1Poly.Core.IotaStep.toStep
+#assert_no_axioms FX1Poly.Core.iotaFullStep_wellFounded
+#assert_no_axioms FX1Poly.Core.IotaStep.congSmoke
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
