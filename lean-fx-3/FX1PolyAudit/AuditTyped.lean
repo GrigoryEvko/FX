@@ -565,6 +565,7 @@ import FX1Poly.Typed.PinnedReflectionPiElimDispatcher
 import FX1Poly.Typed.PlateauDescentSubstrate
 import FX1Poly.Typed.GuardedPinnedReflection
 import FX1Poly.Typed.PlateauPinnedReflection
+import FX1Poly.Typed.NeutralReductResidualDischarge
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8582,3 +8583,12 @@ reflection for every NORMAL grown-typed subject. -/
 #assert_no_axioms FX1Poly.Typed.piElimResidualGuardedWithinBudget
 #assert_no_axioms FX1Poly.Typed.piElimResidualGuardedAtEveryBound
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionNormal
+
+/- The NEUTRAL-REDUCT head residual HOLDS (NeutralReductResidualDischarge): a neutral is never a
+λ (12-arm head discrimination), the whnf reduct is in-image and keeps the Π classifier by subject
+reduction, the plateau pin-extraction pins it (the ∀-bound guarded residual frees the budget
+guard), and the pinned-function core finishes with the original premise reflections.  One
+λ-reduct residual now remains before the full piElim residual discharges. -/
+
+#assert_no_axioms FX1Poly.Typed.IsNeutral.ne_lamCell
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimNeutralReductResidualHolds
