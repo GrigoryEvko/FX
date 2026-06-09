@@ -569,6 +569,7 @@ import FX1Poly.Typed.NeutralReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionLamClassifierResidual
 import FX1Poly.Typed.FlagCoherentReflectionCondition
 import FX1Poly.Typed.UniverseClassificationUnique
+import FX1Poly.Typed.NeutralClassifierUnique
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8625,3 +8626,13 @@ validated at the variable leaf via inversionVariable.  The flag negotiation clos
 
 #assert_no_axioms FX1Poly.Typed.Conv.universeCode_injective
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.variableUniverseClassificationUnique
+
+/- Enrichment brick E2.6 (NeutralClassifierUnique): neutral classifier-class uniqueness,
+table-generic and UNCONDITIONAL — the generic non-grown-root refutation (one corollary of
+subjectRootGeneratorGeneric covering all 10 eliminator neutrals, formation-table-growth-proof),
+the var+app spine induction (inversionVariable / invertApp + Π-injectivity + Conv.subst), and
+the universe corollary the flag-coherent extraction consumes. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.untypedAtNonGrownRoot
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.neutralClassifierUnique
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.neutralUniverseClassificationUnique
