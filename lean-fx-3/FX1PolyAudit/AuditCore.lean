@@ -13,6 +13,7 @@ import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.RecursiveEliminatorTermination
+import FX1Poly.Core.IotaNonRecursiveTermination
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -267,6 +268,19 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.elimStep_decreasesMultiset
 #assert_no_axioms FX1Poly.Core.recursiveEliminatorTerminates
 #assert_no_axioms FX1Poly.Core.recursiveEliminatorTerminates.smoke
+-- ★ #1139 (Leg 3): the NON-recursive ι fragment over the REAL kernel terminates by RawTerm.size,
+-- INDEPENDENT of β and typed-SN. The 13 non-recursive ι arms (branch-selection bool/nat/list/option-none,
+-- fst/snd projection, idJ/idStrictRec base, optionSome/eitherInl/eitherInr applied-branch) strictly
+-- decrease size; toStep ties the fragment to the live Step relation (NOT a toy like the recursive RecTerm
+-- model); SN via Subrelation.wf + InvImage.wf RawTerm.size — the EXACT shape of the shipped η-SN. The 3
+-- recursive arms (RecursiveEliminatorTermination above) and η-SN (Step.etaStar) complete Leg-3 ι/η; the β
+-- boundary stays honestly Tait-imported. AC-normalization is explicit Nat.add_right_comm (simp-AC + ac_rfl
+-- both leak propext).
+#assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.toStep
+#assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.size_decreases
+#assert_no_axioms FX1Poly.Core.iotaNonRecursiveStep_wellFounded
+#assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.isStronglyNormalizing.smoke
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
