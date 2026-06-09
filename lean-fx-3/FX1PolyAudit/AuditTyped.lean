@@ -546,6 +546,7 @@ import FX1Poly.Typed.LambdaValueFuzzFamily
 import FX1Poly.Typed.MechanizedProofCrossReference
 import FX1Poly.Typed.FormalReviewGate
 import FX1Poly.Typed.SelfVerifiedMetatheory
+import FX1Poly.Typed.GrownStrengthening
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8346,3 +8347,12 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.lengthOneAppliedParity
 #assert_no_axioms FX1Poly.Typed.lengthTwoAppliedParity
 #assert_no_axioms FX1Poly.Typed.lengthDistinguishesByParity
+
+/- Variable arm of grown strengthening (GrownStrengthening): the inverse of weakenUnderBinding for the
+non-recursive (var) leaf — the base case of strengthenUnderBinding and first consumer of Conv.reflectWeaken
+(#1167). strengthenVariableClassifier strips the weaken off a var's classifier Conv; strengthenVariableUnderBinding
+re-types the var at the strengthened classifier given its validity. Toward grown η-contraction SR (#477/PAR-2). -/
+
+#assert_no_axioms FX1Poly.Typed.lookupConsSuccEqWeaken
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.strengthenVariableClassifier
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.strengthenVariableUnderBinding
