@@ -556,6 +556,7 @@ import FX1Poly.Typed.ConvExistentialStrengtheningRefutation
 import FX1Poly.Typed.PinnedPiImageComponents
 import FX1Poly.Typed.PinnedPiRenameImage
 import FX1Poly.Typed.PinnedReflectionContext
+import FX1Poly.Typed.PinnedReflectionPiIntro
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8473,3 +8474,11 @@ the motive's conclusion shape. -/
 #assert_no_axioms FX1Poly.Typed.renameEqUniverseCodeCellInversion
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.varArmPinnedReflection
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.universeArmPinnedReflection
+
+/- THE route-H reflection motive + its piIntro arm (PinnedReflectionPiIntro) — the historical
+strengthening wall (the freely-chosen-domain binder case behind the STR-1/STR-5b refutations),
+closed under the pinned motive: λ-subject inversion → pinning analysis with source chain → source
+SR + Π-formation inversion (source-side universe premises) → Kripke context extension → body IH at
+lift ρ → injective Conv reflection re-pins the reflected body classifier → piIntro rebuild. -/
+
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiIntroArm
