@@ -558,6 +558,7 @@ import FX1Poly.Typed.PinnedPiRenameImage
 import FX1Poly.Typed.PinnedReflectionContext
 import FX1Poly.Typed.PinnedReflectionPiIntro
 import FX1Poly.Typed.FormationPinnedReflection
+import FX1Poly.Typed.GrownPinnedReflection
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8494,3 +8495,15 @@ rule); renameEqMkGenInversion the non-var subject destructuring; the telescope l
 #assert_no_axioms FX1Poly.Typed.renameEqMkGenInversion
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.pinnedReflection
 #assert_no_axioms FX1Poly.Typed.DescTelescope.pinnedReflectionTelescope
+
+/- THE CONDITIONAL GROWN MASTER reflection (GrownPinnedReflection): the full pinned reflection over
+HasTypeDescPi/DescTelescopePi with ofFormation (pin-free formation master) / conv (re-pin through
+the conversion) / piIntro (the brick-6 arm) / genFormationPi (grown telescope leg, heads pinned by
+rename-invariant universe codes) all discharged — piElim is the ONE explicit residual
+(PinnedReflectionPiElimResidual, the function-Π float, the campaign's open core). -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.retypeAtUniverse
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionOfFormationArm
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionConvArm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionConditional
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.pinnedReflectionTelescopeConditional
