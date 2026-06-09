@@ -21,6 +21,7 @@ import FX1Poly.Core.RawIotaRpoAssembly
 import FX1Poly.Core.RawIotaFullStepSN
 import FX1Poly.Core.EraseToRoseRenameInvariant
 import FX1Poly.Core.EtaRpoEmbedding
+import FX1Poly.Core.RawIotaEtaFullStepSN
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -394,6 +395,19 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 -- etaGlueIntro is a direct child (one subtermEq); the rest reach a grandchild (subtermStrict ∘ subtermEq).
 -- Proven via the explicit Step.eta.rec recursor (propext-clean), mirroring IotaStep.rpoEmbeds.
 #assert_no_axioms FX1Poly.Core.Step.eta.rpoEmbeds
+
+-- ★ #1139 Leg-3 TERM ENDPOINT: the FULL ι∪η reduction (root + congruence) is strongly normalizing by ONE RPO,
+-- Tait-free.  IotaEtaStep = compatible closure of (IotaHeadStep ∨ Step.eta), mirroring firing-74's IotaStep.
+-- IotaEtaStep.rpoEmbeds: root via Or.elim (ι→firing-73, η→firing-76, both at iotaGenPrecedence), congruence via
+-- firing-72's rpo_congruence.  iotaEtaFullStep_wellFounded: SN via Subrelation.wf + InvImage.wf over
+-- iotaGenRpoWellFounded — the ι/η fragment terminates on its OWN order, NOT through Tait (β stays imported,
+-- #950).  toIotaEta: both fragments inject at the head.  etaCongSmoke: non-vacuity (η inside a congruence).
+#assert_no_axioms FX1Poly.Core.IotaEtaStep.rpoEmbeds
+#assert_no_axioms FX1Poly.Core.iotaEtaFullStep_wellFounded
+#assert_no_axioms FX1Poly.Core.IotaEtaStep.isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.IotaHeadStep.toIotaEta
+#assert_no_axioms FX1Poly.Core.Step.eta.toIotaEta
+#assert_no_axioms FX1Poly.Core.IotaEtaStep.etaCongSmoke
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
