@@ -559,6 +559,7 @@ import FX1Poly.Typed.PinnedReflectionContext
 import FX1Poly.Typed.PinnedReflectionPiIntro
 import FX1Poly.Typed.FormationPinnedReflection
 import FX1Poly.Typed.GrownPinnedReflection
+import FX1Poly.Typed.PinnedReflectionPiElimCore
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8508,3 +8509,13 @@ rename-invariant universe codes) all discharged — piElim is the ONE explicit r
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionConvArm
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionConditional
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.pinnedReflectionTelescopeConditional
+
+/- THE piElim residual's CORE + first concrete instance (PinnedReflectionPiElimCore): the residual
+conclusion holds whenever the FUNCTION's Π classifier is pinned (the consumer shape for every head
+analysis — pin analysis with source chain → source SR + Π-formation inversion → reflect function +
+argument via the premise IHs → injective-Conv re-pins → piElim rebuild → rename_subst0_commute
+output Conv); and the var-headed producer, whose Π pin is free from invertVar + the Kripke context
+condition + lookupIsType. -/
+
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimCore
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimVarArm
