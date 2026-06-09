@@ -554,6 +554,7 @@ import FX1Poly.Typed.GrownCheckContextConversion
 import FX1Poly.Typed.GrownCheckSoundnessRefutation
 import FX1Poly.Typed.ConvExistentialStrengtheningRefutation
 import FX1Poly.Typed.PinnedPiImageComponents
+import FX1Poly.Typed.PinnedPiRenameImage
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8449,3 +8450,11 @@ every binder arm of the route-H pinned reflection consumes; under the pinned pre
 floating-domain wall hands the piIntro arm an exact in-image representative. -/
 
 #assert_no_axioms FX1Poly.Typed.Conv.pinnedPiComponentsInWeakenImage
+
+/- The pinning analysis over an arbitrary renaming (PinnedPiRenameImage) — under binders the route-H
+reflection works at lift ρ, so the weaken-specific analysis generalizes over the renaming; plus the
+λ-head rename inversion (the subject-destructuring step of the reflection's piIntro arm: an image λ
+comes from a λ with the body an exact lift-image). -/
+
+#assert_no_axioms FX1Poly.Typed.Conv.pinnedPiComponentsInRenameImage
+#assert_no_axioms FX1Poly.Typed.renameEqLamCellInversion
