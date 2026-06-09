@@ -550,6 +550,7 @@ import FX1Poly.Typed.SelfVerifiedMetatheory
 import FX1Poly.Typed.GrownStrengthening
 import FX1Poly.Typed.GrownStrengtheningRefutation
 import FX1Poly.Typed.GrownCheck
+import FX1Poly.Typed.GrownCheckContextConversion
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8399,3 +8400,17 @@ reclassifier's GrownCheck-reachability (why the reflection conclusion is the Con
 #assert_no_axioms FX1Poly.Typed.GrownCheck.universeCodeSoundAtTypedTarget
 #assert_no_axioms FX1Poly.Typed.grownCheckIdentityLambdaSmoke
 #assert_no_axioms FX1Poly.Typed.grownCheckEscapingReclassifierSmoke
+
+/- GrownCheck structural helpers (GrownCheckContextConversion): EXACT-target context conversion under
+pointwise-Conv contexts (raw relation → no wf needed, contrast convContextUnderWf) + the Conv-related-binders
+cons condition + the binder-swap corollary (the reflection's swap-the-floating-binder ingredient) + the
+target-side Π exposure (reducesToPiTyCode ∘ subjectReductionStar ∘ invertPiTyCode, wf-conditional) + the
+lam/app soundness reassembly shapes consumed by the STR-5 soundness induction. -/
+
+#assert_no_axioms FX1Poly.Typed.convContextCondition_consConv
+#assert_no_axioms FX1Poly.Typed.GrownCheck.convContext
+#assert_no_axioms FX1Poly.Typed.GrownCheckTelescope.convContext
+#assert_no_axioms FX1Poly.Typed.GrownCheck.convBinder
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piTargetExposure
+#assert_no_axioms FX1Poly.Typed.GrownCheck.lamSoundGivenBodyTyped
+#assert_no_axioms FX1Poly.Typed.GrownCheck.appSoundGivenComponentsTyped
