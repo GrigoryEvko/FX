@@ -8594,12 +8594,15 @@ guard), and the pinned-function core finishes with the original premise reflecti
 #assert_no_axioms FX1Poly.Typed.IsNeutral.ne_lamCell
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimNeutralReductResidualHolds
 
-/- The campaign's open core NAMED and the whole route collapsed onto it
-(PinnedReflectionLamClassifierResidual): the λ-classifier pin residual — a normal, in-image,
-grown-typed λ has a pinned classifier — implies the λ-reduct head (mirror of the neutral
-discharge), hence the full piElim residual (dispatcher), hence the full pinned-reflection MASTER.
-One statement now stands between here and strengthening. -/
+/- The bare λ-classifier pin factorization (PinnedReflectionLamClassifierResidual): the residual
+implies the λ-reduct head (mirror of the neutral discharge), hence the full piElim residual,
+hence the MASTER — sound implications, but the residual itself is REFUTED on the STR-1 witness
+(an UNAPPLIED λ's classifier genuinely floats: the weakened identity λ types at
+`Π (var 0). (var 1)`, which no weakening pins).  The fence stands mechanically; the surviving
+route is discharging the λ-reduct residual DIRECTLY, where the output-pin premise excludes the
+refuting shape. -/
 
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimLamReductResidualOfLamClassifierResidual
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimResidualOfLamClassifierResidual
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionOfLamClassifierResidual
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionLamClassifierResidual_isFalse

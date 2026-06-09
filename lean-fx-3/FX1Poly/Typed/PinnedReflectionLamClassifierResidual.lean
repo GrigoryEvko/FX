@@ -1,28 +1,39 @@
 import FX1Poly.Typed.PinnedReflectionPiElimDispatcher
 import FX1Poly.Typed.PlateauPinnedReflection
 import FX1Poly.Typed.NeutralReductResidualDischarge
+import FX1Poly.Typed.ConvExistentialStrengtheningRefutation
 
-/-! # FX1Poly/Typed/PinnedReflectionLamClassifierResidual — the campaign's open core, named
-     (route-H reflection, λ-reduct reduction)
+/-! # FX1Poly/Typed/PinnedReflectionLamClassifierResidual — the bare λ-classifier pin: named,
+     reduced onto, and REFUTED (route-H reflection, λ-reduct factorization fence)
 
 With the neutral-reduct head residual discharged (`NeutralReductResidualDischarge`), the pinned
 reflection's remaining open content is the λ-reduct head: the function whnf-reduces to a normal λ,
 whose classifier — unlike a neutral's — has no spine to extract a pin from (`piIntro` classifiers
-live under arbitrary `conv`).  This file names that open content as ONE residual and collapses the
-whole campaign onto it:
+live under arbitrary `conv`).  This file names the OBVIOUS factorization of that head — pin every
+normal in-image λ's classifier — proves the reduction theorems, and then REFUTES the factorization:
 
   * `PinnedReflectionLamClassifierResidual` — a NORMAL, IN-IMAGE, grown-typed λ has a pinned
     classifier.  The λ-complement of the shipped `normalNonLambdaClassifierPinned`.
-  * `pinnedReflectionPiElimLamReductResidualOfLamClassifierResidual` — given the pin, the λ-reduct
-    head discharges as the exact mirror of the neutral one: the reduct is in-image
-    (`StepStar.reflectRename`), keeps the Π classifier (`subjectReductionStar`), the residual pins
-    it, and `pinnedReflectionPiElimCore` finishes with the original premise reflections.
-  * `pinnedReflectionPiElimResidualOfLamClassifierResidual` — the FULL piElim residual conditional
-    on the λ-classifier pin alone (dispatcher composition with the discharged neutral head).
-  * `HasTypeDescPi.pinnedReflectionOfLamClassifierResidual` — the pinned-reflection MASTER
-    conditional on the λ-classifier pin alone.
+  * `pinnedReflectionPiElimLamReductResidualOfLamClassifierResidual` /
+    `pinnedReflectionPiElimResidualOfLamClassifierResidual` /
+    `HasTypeDescPi.pinnedReflectionOfLamClassifierResidual` — the λ-reduct head, the full piElim
+    residual, and the MASTER, each conditional on the λ-classifier pin (mirrors of the neutral
+    discharge through the dispatcher and the conditional master).
+  * `pinnedReflectionLamClassifierResidual_isFalse` — ★ the residual is FALSE.  The STR-1 witness
+    (the weakened identity λ, grown-typed at `Π (var 0). (var 1)` in `[Type@0]`) satisfies EVERY
+    premise — normal, in-image, both contexts wf, vacuous condition, vacuously-injective empty
+    renaming — yet `variableDomainPi_notConvWeakenImage` shows its classifier has no pin.
 
-The strengthening campaign's open core is now exactly one statement.
+## Consequence (the route fence)
+
+The reduction theorems above are sound implications but can NEVER fire — this factorization is a
+dead end, mechanically fenced like the three STR refutations before it.  An UNAPPLIED λ's
+classifier genuinely floats outside the image.  The surviving route is discharging
+`PinnedReflectionPiElimLamReductResidual` DIRECTLY: there the λ is the whnf of an APPLIED
+function, and the conclusion's OUTPUT-PIN premise (`Conv (subst0 codomainCode argument) (rename
+rho pinBase)`) excludes exactly this witness — its instantiated codomain is the fresh variable
+itself, unpinnable, so the premises are unsatisfiable on the refuting shape.  The output pin and
+the argument premises are load-bearing, not conveniences.
 
 ## Zero-axiom verification
 
@@ -93,9 +104,9 @@ theorem pinnedReflectionPiElimResidualOfLamClassifierResidual (profile : PolyPro
       lamClassifierResidual)
     (pinnedReflectionPiElimNeutralReductResidualHolds profile)
 
-/-- **The pinned-reflection master conditional on the λ-classifier pin alone** — the whole
-strengthening campaign's open core is now ONE statement: pin the classifier of a normal in-image
-λ. -/
+/-- **The pinned-reflection master conditional on the λ-classifier pin** — a sound implication,
+permanently VACUOUS by the refutation below: the hypothesis is false, so this route never fires.
+Kept as the mechanical fence record of the factorization attempt. -/
 theorem HasTypeDescPi.pinnedReflectionOfLamClassifierResidual {profile : PolyProfile}
     (lamClassifierResidual : PinnedReflectionLamClassifierResidual profile)
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
@@ -105,5 +116,39 @@ theorem HasTypeDescPi.pinnedReflectionOfLamClassifierResidual {profile : PolyPro
   HasTypeDescPi.pinnedReflectionConditional
     (pinnedReflectionPiElimResidualOfLamClassifierResidual profile lamClassifierResidual)
     derivation
+
+/-- ★ **The bare λ-classifier pin residual is FALSE.**  The STR-1 witness instantiates every
+premise: the weakened identity λ is normal, in the (empty-source) weaken image, grown-typed at
+`Π (var 0). (var 1)` in the well-formed `[Type@0]`, with the vacuous reflection condition and the
+vacuously-injective scope-0 renaming — and `variableDomainPi_notConvWeakenImage` denies the
+concluded pin.  An UNAPPLIED λ's classifier genuinely floats; only the λ-REDUCT residual (whose
+output-pin premise excludes this witness) remains dischargeable. -/
+theorem pinnedReflectionLamClassifierResidual_isFalse (profile : PolyProfile) :
+    ¬ PinnedReflectionLamClassifierResidual profile := by
+  intro residual
+  have subjectEq : RawTerm.weaken identityLambda
+      = lamCell (variableCell (⟨0, Nat.zero_lt_succ 1⟩ : Fin 2)) := rfl
+  have lamTyped : HasTypeDescPi profile
+      ((TypingContext.empty (profile := profile)).cons (typeZeroCode 0))
+      (lamCell (variableCell (⟨0, Nat.zero_lt_succ 1⟩ : Fin 2))) variableDomainPi := by
+    have weakenedTyping := weakenedIdentityTypedAtVariableDomainPi profile
+    rwa [subjectEq] at weakenedTyping
+  have lamNormal : RawTerm.isStepNormalForm
+      (lamCell (variableCell (⟨0, Nat.zero_lt_succ 1⟩ : Fin 2))) := by decide
+  have targetWellFormed : WfContextDescPi
+      ((TypingContext.empty (profile := profile)).cons (typeZeroCode 0)) :=
+    ⟨trivial, LevelExpr.lzero.lsucc, UniverseFlag.standard,
+      HasTypeDescPi.ofFormation
+        (HasTypeDesc.universeFormation .empty LevelExpr.lzero UniverseFlag.standard)⟩
+  have weakenInjectiveAtZero :
+      Function.Injective (RawRenaming.weaken : RawRenaming 0 1) :=
+    fun {leftIndex} _rightIndex _imagesAgree => leftIndex.elim0
+  obtain ⟨base, classifierPinned, _baseValid⟩ :=
+    residual lamTyped lamNormal targetWellFormed RawRenaming.weaken TypingContext.empty
+      weakenInjectiveAtZero
+      (ContextReflectsRename.ofWeakenCons profile TypingContext.empty (typeZeroCode 0))
+      WfContextDescPi.emptyIsWellFormed
+      (sourceLam := identityLambda) subjectEq.symm
+  exact variableDomainPi_notConvWeakenImage base classifierPinned
 
 end FX1Poly.Typed
