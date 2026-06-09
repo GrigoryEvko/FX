@@ -552,6 +552,7 @@ import FX1Poly.Typed.GrownStrengtheningRefutation
 import FX1Poly.Typed.GrownCheck
 import FX1Poly.Typed.GrownCheckContextConversion
 import FX1Poly.Typed.GrownCheckSoundnessRefutation
+import FX1Poly.Typed.ConvExistentialStrengtheningRefutation
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8429,3 +8430,14 @@ annotated judgment (campaign log carries the surviving routes). -/
 #assert_no_axioms FX1Poly.Typed.selfApplicationChecksAtRecursiveType
 #assert_no_axioms FX1Poly.Typed.omegaChecksAtTypeZero
 #assert_no_axioms FX1Poly.Typed.grownCheckRawSoundness_isFalse
+
+/- The CONV-existential strengthening is ALSO false unpinned (ConvExistentialStrengtheningRefutation):
+the weakened identity λ is grown-typed at Π(var 0)(var 1) in [Type@0] — a NORMAL classifier not Conv to
+ANY weakening (the domain IS the fresh variable). Completes the three-refutation fence: the strengthening
+reflection MUST carry the image-pinned-classifier premise. -/
+
+#assert_no_axioms FX1Poly.Typed.variableDomainPi
+#assert_no_axioms FX1Poly.Typed.variableDomainPi_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.weakenedIdentityTypedAtVariableDomainPi
+#assert_no_axioms FX1Poly.Typed.variableDomainPi_notConvWeakenImage
+#assert_no_axioms FX1Poly.Typed.convExistentialStrengthening_isFalse
