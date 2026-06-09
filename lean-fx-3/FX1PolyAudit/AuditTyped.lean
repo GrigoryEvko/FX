@@ -268,6 +268,7 @@ import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
+import FX1Poly.Typed.CanonicitySyntacticRoute
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
@@ -3149,6 +3150,15 @@ gates pin them shut.
 -- follow-on (needs GTL-18 to fold DataElim into the grown table). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedGrownTermAtBoolType
 #assert_no_axioms FX1Poly.Typed.closedBoolCanonicalForms
+-- SYNTACTIC-ROUTE CANONICITY TARGET SIGNATURE (CanonicitySyntacticRoute, the candidate-bridge-free twin of
+-- CanonicityTargetSignature.dataCanonicityFromCandidateBridge). ★ dataCanonicityFromSyntacticRoute = generic
+-- SN-047/048/049 signature: standalone-engine canonicity (value engines) + grown vacuity ⟹ 3-engine canonicity,
+-- with NO §5 candidate bridge (the grown vacuity is grown SN + SR-U4 + closed-normal forms, all shipped). Nat
+-- (SN-048) / data (SN-049) instantiate it once their standalone canonicity + grown vacuity land.
+-- boolCanonicityViaSyntacticRoute = the first instance, witnessing non-vacuity (= closedBoolCanonicalForms).
+-- Eliminator-computing canonicity (4th engine HasTypeDescDataElim) is the follow-on, off this signature. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.dataCanonicityFromSyntacticRoute
+#assert_no_axioms FX1Poly.Typed.boolCanonicityViaSyntacticRoute
 -- GROWN CLOSED-NORMAL CLASSIFIER SHAPE (GrownClosedNormalClassifierShape, CANON-1 generalization): the POSITIVE
 -- characterization behind every data-classifier rule-out. ★ closedNormalClassifierIsFunctionOrType = a closed
 -- normal grown-typed term's classifier is Conv a Π-code OR Conv a universe code (the grown engine inhabits only
