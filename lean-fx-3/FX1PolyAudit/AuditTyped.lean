@@ -561,6 +561,7 @@ import FX1Poly.Typed.FormationPinnedReflection
 import FX1Poly.Typed.GrownPinnedReflection
 import FX1Poly.Typed.PinnedReflectionPiElimCore
 import FX1Poly.Typed.GrownWfOpenStronglyNormalizing
+import FX1Poly.Typed.PinnedReflectionPiElimDispatcher
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8530,3 +8531,13 @@ pinned-reflection whnf dispatcher, whose motive carries exactly this wf. -/
 
 #assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContextDescPi
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfWfContextDescPi
+
+/- The piElim-residual whnf DISPATCHER (PinnedReflectionPiElimDispatcher): the FULL residual
+reduces to the two head-specific residuals (λ-after-whnf + neutral-spine-after-whnf, the latter's
+bare-var instance pre-discharged) via grown-wf SN → normalize → SR-star → the wf-FREE canonical
+forms (copies of the shipped open canonical forms with the vestigial formation-wf premise
+deleted). -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalSubjectCanonicalOrNeutralOfTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalFunctionIsLambdaOrNeutralOfTyping
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimResidualOfHeadResiduals
