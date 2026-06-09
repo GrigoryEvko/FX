@@ -17,6 +17,7 @@ import FX1Poly.Core.IotaNonRecursiveTermination
 import FX1Poly.Core.RecursiveIotaSizeGrowth
 import FX1Poly.Core.RecursivePathOrderInductive
 import FX1Poly.Core.RawIotaRpoBridge
+import FX1Poly.Core.RawIotaRpoAssembly
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -341,6 +342,21 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.rpo_orients_iotaNatRecSucc
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.rpo_orients_iotaListElimCons
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.realGenRpoWellFounded
+
+-- Full root-ι SN assembly (firing-73): unify firing-67's 13 non-recursive arms + firing-71's 3 recursive
+-- arms into ONE order over the CANONICAL FX1Poly.Core.IotaHeadStep (no duplicate relation — it already
+-- carries toStep + deterministic; this adds the missing SN leg). iotaGenRank bumps optionMatch/eitherMatch
+-- to rank 2 (their reduct app(branch,value) has head gen_app, which outranks the redex head under firing-71's
+-- realGenPrecedence — wrong direction; the bump fixes it); the other 11 arms need no rank change (recursive
+-- already ranked, 10 subterm-reduct arms need no precedence). rpoOrientsAppliedFirst/Second orient the 3
+-- applied-branch arms; IotaHeadStep.rpoEmbeds covers all 16. iotaHeadStep_wellFounded: the canonical root-ι
+-- fragment is SN by ONE RPO via Subrelation.wf + InvImage.wf eraseToRose, Tait-free (the unification).
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.iotaGenPrecedence_wellFounded
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.rpoOrientsAppliedFirst
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.rpoOrientsAppliedSecond
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.iotaGenRpoWellFounded
+#assert_no_axioms FX1Poly.Core.IotaHeadStep.rpoEmbeds
+#assert_no_axioms FX1Poly.Core.iotaHeadStep_wellFounded
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
