@@ -271,6 +271,7 @@ import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.CanonicitySyntacticRoute
 import FX1Poly.Typed.GrownRigidityCanonicity
 import FX1Poly.Typed.BoolElimClosedNormalForms
+import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
@@ -3185,6 +3186,17 @@ gates pin them shut.
 -- follow-on. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.noClosedNormalBoolElim
 #assert_no_axioms FX1Poly.Typed.closedNormalBoolCanonicalFormsWithElim
+-- ARBITRARY-SUBJECT 4-ENGINE BOOL CANONICITY (BoolElimArbitrarySubjectCanonicity): upgrades the closed-normal
+-- 4-engine forms OFF the `normal` hypothesis. ★ KEY: the bool-elim engine's branches are GROWN-typed and the
+-- grown engine has no closed boolCode inhabitant, so a closed boolElim AT boolTypeCell is impossible by inverting
+-- to a branch + noClosedGrownTermAtBoolType — NO SN/SR. ★ noClosedBoolElimAtBoolType = the eliminator vacuity at
+-- boolCode (arbitrary subject). ★ closedBoolCanonicalFormsWithElim = the 4-engine arbitrary-subject bool canonicity
+-- (DataIntro∨BaseType∨Pi∨BoolElim ⟹ ↝* boolTrue/boolFalse). HONEST FINDING: the current eliminator requires
+-- grown branches so it cannot type boolElim b true false : Bool (data-value branches) — eliminator-computing
+-- canonicity AT a data type is VACUOUS for it; the non-vacuous version needs a stronger combined intro/elim engine
+-- (deferred #1138 / GTL table-residency). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.noClosedBoolElimAtBoolType
+#assert_no_axioms FX1Poly.Typed.closedBoolCanonicalFormsWithElim
 -- GROWN CLOSED-NORMAL CLASSIFIER SHAPE (GrownClosedNormalClassifierShape, CANON-1 generalization): the POSITIVE
 -- characterization behind every data-classifier rule-out. ★ closedNormalClassifierIsFunctionOrType = a closed
 -- normal grown-typed term's classifier is Conv a Π-code OR Conv a universe code (the grown engine inhabits only
