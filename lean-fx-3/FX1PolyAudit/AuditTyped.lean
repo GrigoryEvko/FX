@@ -508,6 +508,7 @@ import FX1Poly.Typed.HasTypeDescPiSubjectReductionInlineArms
 import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionConvOfFormationArms
 import FX1Poly.Typed.ConsistencyConditionalOnSubjectReduction
+import FX1Poly.Typed.EmptyTypeConsistencySyntactic
 import FX1Poly.Typed.ConsistencyOfPiElimArm
 import FX1Poly.Typed.PiElimUpToClassifierConv
 import FX1Poly.Typed.ClassifierRespectsConvRefuted
@@ -1390,6 +1391,11 @@ gates pin them shut.
 -- so the syntactic route is the tractable one. subjectReductionStar = the iterated SN-055 master dispatcher
 -- (SRD-1/SRD-3, blocked on WFG-3/the WfContext↔WfContextDescPi bundle); once it lands this is unconditional SN-050.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.consistencyOfSubjectReductionStarToEmptyType
+-- That SR-along-↝* residual is now DISCHARGED: HasTypeDescPi.subjectReductionStar is unconditional (SR-U4),
+-- so emptyTypeConsistencySyntactic instantiates it at the empty context (WfContextDescPi.emptyIsWellFormed)
+-- and EmptyType classifier — the UNCONDITIONAL syntactic-route empty consistency, the twin of the
+-- candidate-route emptyTypeConsistency that survives into the substantive-Empty regime.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.emptyTypeConsistencySyntactic
 -- GROWN TYPE SAFETY (GrownTypeSafety.lean, five-layer-defense L4 §27.3): the named preservation/progress safety
 -- statements over the grown engine. closedProgress = PROGRESS unconditional (a closed grown-typed term is a
 -- canonical value — canonical head + normal — or it steps; no stuck closed terms; typing is load-bearing in the
