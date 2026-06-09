@@ -76,6 +76,7 @@ import FX1Poly.Core.UniverseModeBridgeReducibility
 import FX1Poly.Core.RawTermSubstLiftWeaken
 import FX1Poly.Typed.ConvergentCanonicityBoundary
 import FX1Poly.Core.SconingTaitCrossLeg
+import FX1Poly.Core.SconingSNObjectUnique
 import FX1Poly.Typed.RawBetaNotRpoOrientable
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
@@ -472,6 +473,16 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.sconingScone_and_normalizationScone_share_computable
 #assert_no_axioms FX1Poly.Core.sconingScone_extraction_eq_candidateCR1
 #assert_no_axioms FX1Poly.Core.sconingSN_eq_taitComposition
+
+-- Generalization of the cross-leg triangulation to the WHOLE class of SN-scones: IsStronglyNormalizing is a
+-- Prop, so by definitional proof irrelevance any two sconing witnesses extract the IDENTICAL SN proof
+-- (sconingSN_objectUnique), hence any SN-scone's extracted SN IS the Tait CR1∘fundamental witness
+-- (anySconingSN_eq_taitComposition), recovering sconingSN_eq_taitComposition as an instance
+-- (sconingSN_eq_taitComposition_ofGeneral).  No sconing construction is an independent SN object — the cell is
+-- bridgedToTait by theorem; independence can only live in the `computable` predicate, which is STC-blocked.
+#assert_no_axioms FX1Poly.Core.sconingSN_objectUnique
+#assert_no_axioms FX1Poly.Core.anySconingSN_eq_taitComposition
+#assert_no_axioms FX1Poly.Core.sconingSN_eq_taitComposition_ofGeneral
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
