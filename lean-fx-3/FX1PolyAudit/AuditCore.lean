@@ -20,6 +20,7 @@ import FX1Poly.Core.RawIotaRpoBridge
 import FX1Poly.Core.RawIotaRpoAssembly
 import FX1Poly.Core.RawIotaFullStepSN
 import FX1Poly.Core.EraseToRoseRenameInvariant
+import FX1Poly.Core.EtaRpoEmbedding
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -384,6 +385,15 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.eraseToRose_rename
 #assert_no_axioms FX1Poly.Core.eraseChildren_rename
 #assert_no_axioms FX1Poly.Core.eraseToRose_weaken
+
+-- Raw eta-contraction embeds into the eraseToRose RPO (the eta-analogue of IotaHeadStep.rpoEmbeds): every eta
+-- source wraps its target in 1-2 generator layers, so the target is a SUBTERM of the source's rose image and
+-- the source is Rpo-above it.  Precedence-agnostic (subtermEq/subtermStrict ignore prec) → holds for
+-- iotaGenPrecedence, so eta decreases the SAME well-founded order ι uses (firings 72-74) — the union's shared
+-- measure.  etaLam/etaPathLam consume eraseToRose_weaken (target under one binder via RawTerm.weaken);
+-- etaGlueIntro is a direct child (one subtermEq); the rest reach a grandchild (subtermStrict ∘ subtermEq).
+-- Proven via the explicit Step.eta.rec recursor (propext-clean), mirroring IotaStep.rpoEmbeds.
+#assert_no_axioms FX1Poly.Core.Step.eta.rpoEmbeds
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
