@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.DataReducibilityCoverage
 import FX1Poly.Core.DataTaitCandidate
 import FX1Poly.Typed.MilestoneASpineValueLayer
+import FX1Poly.Typed.MilestoneAEliminatorLayerSpine
 import FX1Poly.Typed.BoolElimComputingCanonicity
 import FX1Poly.Typed.MatchElimComputingCanonicityTyped
 import FX1Poly.Typed.MetatheoryParityLedger
@@ -3214,6 +3215,15 @@ gates pin them shut.
 -- unconditional theorem at the empty context; zero-axiom. Honest scope: eliminator-layer canonicity (CANON-1)
 -- and the joint-decidability apex (O-NORM) remain the named open frontier (see the file docstring).
 #assert_no_axioms FX1Poly.Typed.milestoneAValueLayerSpineHolds
+-- ★ MILESTONE-A ELIMINATOR-LAYER SPINE: discharges the eliminator-layer frontier the VALUE-layer spine deferred.
+-- Five fields, one per data eliminator, each a shipped unconditional computing-canonicity theorem: bool
+-- (boolElimValueCanonicity, value-branch engine, one ι-step), nat (natElimCopyComputesToNumeral, RECURSIVE
+-- IH-threaded copy fold), list (listElimLengthComputesToNumeral, RECURSIVE length fold), option/either
+-- (closedOption/EitherMatchIntoBoolComputes, firing-64 typed match-into-bool). Every closed well-formed
+-- eliminator instance reduces to a canonical value; zero-axiom. Honest scope: this is the per-eliminator
+-- computing layer, NOT a unified eliminator:dataType judgment (the combined intro/elim table-residency, whose
+-- formation/grown half GTL-18/20 is shipped, data-elim half open). Advances #556/#1138.
+#assert_no_axioms FX1Poly.Typed.eliminatorLayerCanonicitySpineHolds
 -- GENERIC GROWN-RIGIDITY CANONICITY ENGINE (GrownRigidityCanonicity): lifts #1065's normal-only
 -- noClosedNormalTermAtDataClassifier to ARBITRARY subjects, making every data canonicity a per-type one-liner.
 -- ★ noClosedGrownTermAtDataClassifier = generic arbitrary-subject grown vacuity (grown SN + SR-U4 + #1065);
