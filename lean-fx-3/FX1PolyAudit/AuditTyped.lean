@@ -564,6 +564,7 @@ import FX1Poly.Typed.GrownWfOpenStronglyNormalizing
 import FX1Poly.Typed.PinnedReflectionPiElimDispatcher
 import FX1Poly.Typed.PlateauDescentSubstrate
 import FX1Poly.Typed.GuardedPinnedReflection
+import FX1Poly.Typed.PlateauPinnedReflection
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8567,3 +8568,17 @@ by strong induction (the plateau master). -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionGuarded
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.pinnedReflectionTelescopeGuarded
+
+/- ★ THE PLATEAU INDUCTION (PlateauPinnedReflection): the guarded piElim residual holds at EVERY
+bound — the strengthening campaign's recursion knot CLOSES.  The spine pin-extraction pins the
+classifier of every normal non-λ in-image subject (formation classifiers by condition/
+rename-invariance; application classifiers by recursive head pin + guarded-master argument
+reflection at a smaller bound + substitution-lemma codomain instantiation); the residual then
+finishes through pinnedReflectionPiElimCore.  Harvest: pinnedReflectionNormal — the FULL pinned
+reflection for every NORMAL grown-typed subject. -/
+
+#assert_no_axioms FX1Poly.Typed.pinExtractFormationClassifier
+#assert_no_axioms FX1Poly.Typed.pinExtractNeutralClassifier
+#assert_no_axioms FX1Poly.Typed.plateauResidualGuardedUpTo
+#assert_no_axioms FX1Poly.Typed.plateauResidualGuarded
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionNormal
