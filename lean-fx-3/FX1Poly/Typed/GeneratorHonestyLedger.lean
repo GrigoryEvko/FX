@@ -1,6 +1,9 @@
 import FX1Poly.Typed.SemanticTierSoundness
 import FX1Poly.Typed.ClassifierRefinement
 import FX1Poly.Typed.ValueElimHostFold
+import FX1Poly.Typed.GeneratorHonestyOverview
+import FX1Poly.Typed.TypingHeadKindClassifier
+import FX1Poly.Core.EtaRootClassifier
 
 /-! # FX1Poly/Typed/GeneratorHonestyLedger — the honesty-arc capstone (HON-17)
 
@@ -24,9 +27,11 @@ honestly classified, and here is the bundled proof":
   * **`axesComplementary`** (NON-VACUITY, HON-3) — neither classifier axis alone suffices: `natElim` reduces but
     is statically reserved, `boolTrue` is typed but not a redex head — both LIVE, caught by complementary axes.
 
-`generatorHonestyLedgerHolds` proves the ledger, each pillar discharged by its shipped theorem.  A build-time
-`#eval` prints the capstone status on every default build, alongside the HON-4 count overview — the two together
-report both the SCOPE (how much of the table is live) and the GUARANTEE (the live part is honestly classified).
+`generatorHonestyLedgerHolds` proves the ledger, each pillar discharged by its shipped theorem.  Build-time
+`#eval`s print the ACTUAL per-metric COUNTS on every default build — for each verification metric, how many of
+the 197 generators satisfy it (typed / redex-head / eta-head / live / reserved / untypable, with the grown-vs-
+standalone and typed-vs-reduces cross-cuts).  The counts are the SCOPE (how much of the table carries meaning);
+`generatorHonestyLedgerHolds` is the GUARANTEE (the classifiers folded into those counts are sound).
 
 What this ledger does NOT assert: the exact generator count (HON-9 count-pin is deferred — kernel-reducing a
 197-element filter is heavyweight; the HON-4 `#eval` reports it by compiled execution), nor faithfulness of every
@@ -83,10 +88,18 @@ theorem generatorHonestyLedgerHolds : GeneratorHonestyLedger :=
     boolElimFaithful := fun selector thenBranch elseBranch => boolElimHostFold selector thenBranch elseBranch
     axesComplementary := ⟨natElim_reducesButUntyped_stillLive, boolTrue_typedNotRedex_stillLive⟩ }
 
--- ★ Build-time capstone printout.  Fires on every default build that (re)elaborates this file, alongside the
--- HON-4 count overview — the GUARANTEE line to its SCOPE line.  Backed by `generatorHonestyLedgerHolds` above:
--- this file does not compile unless the capstone proof kernel-checks.  (A `#eval` print command takes no doc
--- comment, so this is a plain line comment.)
-#eval IO.println "FX1Poly generator-honesty CAPSTONE met: reserved=>dead (sound) | union strictly refines grown (refinement) | live eliminators compute host folds (faithful) | both classifier axes load-bearing (complementary)"
+/-- Count the generators (of the 197) satisfying a `Bool` metric. -/
+private def countWhere (metric : Generator → Bool) : Nat := (allGenerators.filter metric).length
+
+-- ★ Build-time honesty COUNTS.  Fires on every default build that (re)elaborates this file: the ACTUAL number of
+-- the 197 generators checked against each verification metric (not a slogan).  Every count folds a shipped
+-- zero-axiom classifier over the full `Generator.fromTag` enumeration; `generatorHonestyLedgerHolds` above proves
+-- those classifiers SOUND.  (A `#eval` print command takes no doc comment, so these are plain line comments.)
+#eval IO.println s!"FX1Poly generator-honesty counts (of {allGenerators.length} generators):"
+#eval IO.println s!"  typed by some engine (hasSomeTypingRule) : {countWhere hasSomeTypingRule}  [grown {countWhere (fun g => hasSomeTypingRule g && !isUntypableHead g)} | standalone-only {countWhere (fun g => hasSomeTypingRule g && isUntypableHead g)}]"
+#eval IO.println s!"  beta/iota redex head (hasRedexHead)      : {countWhere (·.hasRedexHead)}  [also-typed {countWhere (fun g => hasSomeTypingRule g && g.hasRedexHead)} | reduces-but-untyped {countWhere (fun g => g.hasRedexHead && !hasSomeTypingRule g)}]"
+#eval IO.println s!"  eta source head (hasEtaSourceHead)       : {countWhere (·.hasEtaSourceHead)}    beta/iota/eta union : {countWhere (·.hasRedexHeadBetaEta)}"
+#eval IO.println s!"  semantically LIVE (typed or reduces)     : {countWhere (fun g => decide (semanticTier g = .live))}    RESERVED (neither) : {countWhere (fun g => decide (semanticTier g = .reserved))}"
+#eval IO.println s!"  grown engine proves UNTYPABLE            : {countWhere isUntypableHead}  (= {allGenerators.length} - {countWhere (fun g => hasSomeTypingRule g && !isUntypableHead g)} grown-typed)"
 
 end FX1Poly.Typed
