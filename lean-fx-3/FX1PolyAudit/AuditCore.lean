@@ -79,6 +79,7 @@ import FX1Poly.Core.SconingTaitCrossLeg
 import FX1Poly.Core.SconingSNObjectUnique
 import FX1Poly.Typed.RawBetaNotRpoOrientable
 import FX1Poly.Typed.SnTriangulationBundle
+import FX1Poly.Typed.HonestCapstoneSignoff
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -371,6 +372,15 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.ParityMatrix.snConfirmSconingBridged
 #assert_no_axioms FX1Poly.Core.ParityMatrix.snConfirmRpoFragment
 #assert_no_axioms FX1Poly.Core.ParityMatrix.snRpoBetaBoundary
+
+-- Honest capstone sign-off: the honest Milestone-A criterion (Tait proves all 3 endpoints; SN triangulated
+-- twice — sconing bridged + RPO fragment) is MET (honestCapstoneMet_holds, rfl on the ledger), WHILE the naive
+-- three-independent-ways criterion is NOT (and cannot be, per the SN NO-GOs) —
+-- honestCapstone_met_while_threeWay_unreachable. The sconing-consistency cell is now bridgedToTait (the honesty
+-- fix), so the ledger column stays honest.
+#assert_no_axioms FX1Poly.Core.ParityMatrix.honestCapstoneMet
+#assert_no_axioms FX1Poly.Core.ParityMatrix.honestCapstoneMet_holds
+#assert_no_axioms FX1Poly.Core.ParityMatrix.honestCapstone_met_while_threeWay_unreachable
 
 -- Full root-ι SN assembly: unify the 13 non-recursive arms + the 3 recursive
 -- arms into ONE order over the CANONICAL FX1Poly.Core.IotaHeadStep (no duplicate relation — it already

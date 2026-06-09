@@ -13,7 +13,9 @@ Milestone A (strong normalization / canonicity / consistency) is targeted by THR
   2. `sconingViaSTC` — the categorical glued-model / Sterling-Tait-computability route.  Its SN is the SAME
      reducibility object as Tait (reducibility IS a sconing witness), so the SN endpoint is BRIDGED-to-Tait,
      not an independent second proof.  Canonicity ships on the DATA axis (sconing data-canonicity
-     witnesses).  Consistency ships (consistency via the sconing leg).
+     witnesses).  Consistency ships but is likewise BRIDGED-to-Tait — the sconing consistency reuses the same
+     candidate + fundamental as its SN (consistency is `… → False`, a `Prop`, so by proof irrelevance the
+     extracted witness IS the Tait one), a confirmation rather than an independent proof.
   3. `rpoWordRewriting` — the combinatorial recursive-path-order / convergent-word-system route.  Its SN
      endpoint is PROVEN for the ι∪η FRAGMENT, Tait-FREE (the full ι∪η reduction is well-founded by one
      recursive path order over the rose erasure), but raw β is non-SN (the Ω combinator), so β stays
@@ -76,7 +78,7 @@ def parityCell : MilestoneLeg → MilestoneEndpoint → CellStatus
   | .taitReducibility, .consistency => .provenIndependent
   | .sconingViaSTC, .strongNormalization => .bridgedToTait
   | .sconingViaSTC, .canonicity => .partialFragment
-  | .sconingViaSTC, .consistency => .provenIndependent
+  | .sconingViaSTC, .consistency => .bridgedToTait
   | .rpoWordRewriting, .strongNormalization => .partialFragment
   | .rpoWordRewriting, .canonicity => .openResearch
   | .rpoWordRewriting, .consistency => .openResearch
