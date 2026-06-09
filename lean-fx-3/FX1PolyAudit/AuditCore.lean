@@ -14,6 +14,7 @@ import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.RecursiveEliminatorTermination
 import FX1Poly.Core.IotaNonRecursiveTermination
+import FX1Poly.Core.RecursiveIotaSizeGrowth
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -281,6 +282,19 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.iotaNonRecursiveStep_wellFounded
 #assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.isStronglyNormalizing.smoke
+-- ★ #1139 (Leg 3) contrast: the RECURSIVE ι arm natElimSucc INCREASES RawTerm.size by branchSize + 5
+-- (grows with the branch) over the REAL kernel, because it DUPLICATES the arbitrary branch s. So the
+-- firing-67 size route (IotaNonRecursiveStep.size_decreases) does NOT extend to the recursive arms, and
+-- NO flat measure dominated by size survives branch-duplication. Honest correction: firing-66's RecTerm
+-- model duplicated only the recursive CALL (flat scrutinee-multiset sufficed); the real arm duplicates an
+-- independent branch eliminator of arbitrary size. The resolution is a full recursive RPO (precedence
+-- eliminator > app); the shipped single-level lex/multiset certificates do not recurse into subterms, so
+-- they are insufficient for the congruence-closed recursive ι (the named multi-firing build). β stays
+-- Tait-imported (SN-NECESSITY #950).
+#assert_no_axioms FX1Poly.Core.natElimSucc_isRealStep
+#assert_no_axioms FX1Poly.Core.natElimSuccReduct_size_eq
+#assert_no_axioms FX1Poly.Core.natElimSucc_size_increases
+#assert_no_axioms FX1Poly.Core.natElimSucc_size_increase_at_least_branch
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
