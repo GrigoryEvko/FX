@@ -570,6 +570,7 @@ import FX1Poly.Typed.PinnedReflectionLamClassifierResidual
 import FX1Poly.Typed.FlagCoherentReflectionCondition
 import FX1Poly.Typed.UniverseClassificationUnique
 import FX1Poly.Typed.NeutralClassifierUnique
+import FX1Poly.Typed.NormalAppNeutral
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8636,3 +8637,10 @@ the universe corollary the flag-coherent extraction consumes. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.untypedAtNonGrownRoot
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.neutralClassifierUnique
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.neutralUniverseClassificationUnique
+
+/- E2.7 app-arm closure (NormalAppNeutral): a normal grown-typed application is NEUTRAL (λ
+function would be a β-redex), so classifier-class uniqueness extends to all normal apps.
+Remaining E2.7 piece: the row-bearing former arm (telescope determinism by child recursion). -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalAppIsNeutral
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalAppClassifierUnique
