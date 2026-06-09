@@ -287,6 +287,7 @@ import FX1Poly.Typed.BoolElimValueCanonicity
 import FX1Poly.Typed.NatElimComputingCanonicity
 import FX1Poly.Typed.NatElimFaithfulArithmetic
 import FX1Poly.Typed.ListElimComputingCanonicity
+import FX1Poly.Typed.ListElimFaithfulLength
 import FX1Poly.Typed.MatchElimComputingCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
@@ -3384,6 +3385,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.lengthNatStepProduces
 #assert_no_axioms FX1Poly.Typed.listElimLengthComputesToNumeral
 #assert_no_axioms FX1Poly.Typed.listElimLengthComputesToNumeral.two
+-- ★ FAITHFUL list-length (ListElimFaithfulLength, HON-12): SHARPENS listElimLengthComputesToNumeral from "reaches
+-- A numeral" to the EXACT host List.length — listElim(rawListReplicate n, natZero, lengthStep) ↝* natNumeral n
+-- for ALL n (the n-element list folds to the numeral n), so gen_listElim truthfully encodes List.length. The
+-- list analogue of natElimAddFaithful (native natElim = exact Nat.add). Structural recursion on n: iotaListElimNil
+-- projects natZero; iotaListElimCons + IH (StepStar.appArgument over the tail recursor) + lengthNatStepComputesExact
+-- (3 β, simple natSucc body — no subst0 wall) wraps one natSucc, natSucc(natNumeral n) ≡ natNumeral (n+1). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.rawListReplicate_isListValue
+#assert_no_axioms FX1Poly.Typed.lengthNatStepComputesExact
+#assert_no_axioms FX1Poly.Typed.listElimLengthFaithful
+#assert_no_axioms FX1Poly.Typed.listElimLengthFaithful.three
 -- ★ NON-RECURSIVE function-branch eliminator-computing canonicity (MatchElimComputingCanonicity), COMPLETING
 -- the eliminator-computing-canonicity coverage across all four structural shapes: bool (projection/value),
 -- nat+list (recursive function), option+either (non-recursive function, HERE). optionMatch/eitherMatch fire a
