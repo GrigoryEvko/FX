@@ -270,6 +270,7 @@ import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.CanonicitySyntacticRoute
 import FX1Poly.Typed.GrownRigidityCanonicity
+import FX1Poly.Typed.BoolElimClosedNormalForms
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
@@ -3173,6 +3174,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.dataCanonicityFromGrownRigidity
 #assert_no_axioms FX1Poly.Typed.boolCanonicityViaGrownRigidity
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedGrownTermAtSigmaType
+-- ELIMINATOR-ENGINE CLOSED-NORMAL VACUITY (BoolElimClosedNormalForms, the first concrete piece of #1138): the
+-- bool ELIMINATOR engine (HasTypeDescBoolElim, the 4th engine) contributes a VACUOUS disjunct to closed-normal
+-- canonical forms — a closed eliminator on a closed VALUE scrutinee always ι-fires, so it is never normal.
+-- ★ noClosedNormalBoolElim = the eliminator vacuity (classifier-agnostic): scrutinee is data-intro-typed at
+-- boolCode ⟹ boolTrue/boolFalse (standaloneBoolCanonicalForms) ⟹ boolElim is an ι-redex ⟹ `cases normal` refutes
+-- (NF checker computes false on the head redex). ★ closedNormalBoolCanonicalFormsWithElim = the FOUR-engine
+-- closed-normal bool canonical forms, extending closedNormalBoolCanonicalForms (#1064, 3 engines) with the
+-- eliminator as the vacuous 4th disjunct. The arbitrary-subject 4-engine upgrade (combined SN/SR) is the #1138
+-- follow-on. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.noClosedNormalBoolElim
+#assert_no_axioms FX1Poly.Typed.closedNormalBoolCanonicalFormsWithElim
 -- GROWN CLOSED-NORMAL CLASSIFIER SHAPE (GrownClosedNormalClassifierShape, CANON-1 generalization): the POSITIVE
 -- characterization behind every data-classifier rule-out. ★ closedNormalClassifierIsFunctionOrType = a closed
 -- normal grown-typed term's classifier is Conv a Π-code OR Conv a universe code (the grown engine inhabits only
