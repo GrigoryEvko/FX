@@ -500,6 +500,7 @@ import FX1Poly.Typed.TypingRoleEngineBridge
 import FX1Poly.Typed.TypingRoleCoverage
 import FX1Poly.Typed.UntypableHeadDecision
 import FX1Poly.Typed.TypingHeadKindClassifier
+import FX1Poly.Typed.TypedBySomeEngine
 import FX1Poly.Typed.CertifiedWordReductionTermination
 import FX1Poly.Typed.CertifiedWordReductionConfluence
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
@@ -7379,6 +7380,32 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.headKind_untypable_sound
 #assert_no_axioms FX1Poly.Typed.headKind_bespokeVariable_imp
 #assert_no_axioms FX1Poly.Typed.headKind_bespokeUniverse_imp
+
+-- TypedBySomeEngine (HON-1): the honest TOTAL static-typing classifier. hasSomeTypingRule consults EVERY typing
+-- engine's selector (grown trio + flat + base + dataIntroNullary + the 16 standalone intro/elim heads + the 2
+-- bespoke heads), so it computes the honest UNION — unlike typingRoleOf/typingHeadKindOf/isUntypableHead, which
+-- are grown-engine-only and brand genuinely-typed data heads (gen_boolTrue/gen_fst) "untypable", conflating them
+-- with reserved names (gen_hilbertSpace). The isUntypableHead_overclaims_* theorems pin that overclaim
+-- (untypable=true ∧ hasSomeTypingRule=true), and classifiersAgree_hilbertSpace shows the two agree on a genuinely
+-- reserved head. All zero-axiom (Option.isSome over pure-syntax selectors + decide over DecidableEq Generator,
+-- NO wildcard match; every witness rfl / ⟨rfl,rfl⟩).
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_piTyCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_arrowCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_boolCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_boolTrue
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_natZero
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_fst
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_lam
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_var
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_hilbertSpace
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_natElim
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_idCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_unit
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_quantumGate
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_overclaims_boolTrue
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_overclaims_fst
+#assert_no_axioms FX1Poly.Typed.classifiersAgree_hilbertSpace
 
 -- CertifiedWordReductionTermination (SN-131): Leg-3 word-rewrite termination on the CERTIFIED fragment.
 -- certifiedReductionInducesWordChain is the bridge (a Step sequence's toCode images form an fxStepSystem
