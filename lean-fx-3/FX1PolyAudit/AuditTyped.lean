@@ -272,6 +272,7 @@ import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.CanonicitySyntacticRoute
 import FX1Poly.Typed.GrownRigidityCanonicity
 import FX1Poly.Typed.ClosedNatCanonicity
+import FX1Poly.Typed.ClosedDataCanonicity
 import FX1Poly.Typed.BoolElimClosedNormalForms
 import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
 import FX1Poly.Typed.BoolElimValueCanonicity
@@ -3206,6 +3207,25 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.Conv.natTypeCell_not_universeCode
 #assert_no_axioms FX1Poly.Typed.closedNatCanonicalForms
 #assert_no_axioms FX1Poly.Typed.closedNatCanonicalForms.natOne
+-- ★ SN-049: CLOSED DATA CANONICITY for Option/List/Product(Σ)/Either(Sum) (ClosedDataCanonicity, the bulk of the
+-- closed-data-canonicity family after bool SN-047 + nat SN-048). Each is the SAME per-type instantiation of the
+-- generic grown-rigidity packaging (dataCanonicityFromGrownRigidity): the standalone arm is the shipped
+-- subjectIs<Type>Constructor inversion (the data-intro term IS a constructor, so StepStar.refl), and the two
+-- Conv-rigidities are the shipped <code>_not_piTyCode / _not_universeCode from the closed-NORMAL companions
+-- (OptionCanonicalForms / ListCanonicalForms / ProductEitherCanonicalForms). Product/Either use piTyCode_not_conv
+-- flipped (.sym) since they are FLAT-table formers. The grown-vacuity disjunct is derived inside. ★ the four
+-- closed<X>CanonicalForms = SN-049: a closed term at the data type code (intro OR grown engine) reduces to a
+-- constructor. The .smoke witnesses (optionNone / nil / pair / eitherInl of universe codes) prove non-vacuity.
+-- Unit deferred (its type-code rule-out not yet landed; reducibility-route candidate shipped #720). The recursive
+-- eliminator-computing canonicity (#1138) is the follow-on. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.closedOptionCanonicalForms
+#assert_no_axioms FX1Poly.Typed.closedOptionCanonicalForms.smoke
+#assert_no_axioms FX1Poly.Typed.closedListCanonicalForms
+#assert_no_axioms FX1Poly.Typed.closedListCanonicalForms.smoke
+#assert_no_axioms FX1Poly.Typed.closedProductCanonicalForms
+#assert_no_axioms FX1Poly.Typed.closedProductCanonicalForms.smoke
+#assert_no_axioms FX1Poly.Typed.closedEitherCanonicalForms
+#assert_no_axioms FX1Poly.Typed.closedEitherCanonicalForms.smoke
 -- ELIMINATOR-ENGINE CLOSED-NORMAL VACUITY (BoolElimClosedNormalForms, the first concrete piece of #1138): the
 -- bool ELIMINATOR engine (HasTypeDescBoolElim, the 4th engine) contributes a VACUOUS disjunct to closed-normal
 -- canonical forms — a closed eliminator on a closed VALUE scrutinee always ι-fires, so it is never normal.
