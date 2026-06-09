@@ -509,6 +509,7 @@ import FX1Poly.Typed.GeneratorSemanticTier
 import FX1Poly.Typed.GeneratorHonestyOverview
 import FX1Poly.Typed.StaticTypingSoundness
 import FX1Poly.Typed.SemanticTierSoundness
+import FX1Poly.Typed.ClassifierRefinement
 import FX1Poly.Typed.CertifiedWordReductionTermination
 import FX1Poly.Typed.CertifiedWordReductionConfluence
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
@@ -3481,6 +3482,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.reservedTierUntypedByGrownEngine
 #assert_no_axioms FX1Poly.Typed.reservedTierUntypedByEveryEngine
 #assert_no_axioms FX1Poly.Typed.semanticTierReservedSound
+-- ★ CLASSIFIER REFINEMENT (ClassifierRefinement): the full-union static classifier hasSomeTypingRule STRICTLY
+-- refines the grown-only untypability decision isUntypableHead. Refinement (union-reserved ⟹ grown-untypable =
+-- the HON-5 bridge) + containment (grown-typable ⟹ union-typed, Bool-contrapositive) + STRICT witness
+-- (gen_boolTrue: grown-untypable yet union-typed, since the standalone HasTypeDescDataIntro engine types it).
+-- The union's typed-set strictly contains the grown-typable set — the standalone data engines genuinely EXTEND
+-- typability beyond the grown core, so the honest 197-table classifier is not the grown decision in disguise.
+-- Zero-axiom (cite HON-5 bridge + cases/rw/Bool.noConfusion + ⟨rfl, rfl⟩ witness).
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_refines_isUntypableHead
+#assert_no_axioms FX1Poly.Typed.grownTypable_imp_unionTyped
+#assert_no_axioms FX1Poly.Typed.boolTrue_grownUntypableButUnionTyped
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRuleStrictlyRefinesUntypableHead
 -- ★ NON-RECURSIVE function-branch eliminator-computing canonicity (MatchElimComputingCanonicity), COMPLETING
 -- the eliminator-computing-canonicity coverage across all four structural shapes: bool (projection/value),
 -- nat+list (recursive function), option+either (non-recursive function, HERE). optionMatch/eitherMatch fire a
