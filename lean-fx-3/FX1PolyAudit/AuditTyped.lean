@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.DataReducibilityCoverage
 import FX1Poly.Core.DataTaitCandidate
+import FX1Poly.Typed.MilestoneASpineValueLayer
 import FX1Poly.Typed.MetatheoryParityLedger
 import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.UniverseCodeShape
@@ -3186,6 +3187,12 @@ gates pin them shut.
 -- Eliminator-computing canonicity (4th engine HasTypeDescDataElim) is the follow-on, off this signature. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.dataCanonicityFromSyntacticRoute
 #assert_no_axioms FX1Poly.Typed.boolCanonicityViaSyntacticRoute
+-- ★ MILESTONE-A VALUE-LAYER SPINE: the three now-unconditional soundness pillars of the grown typed kernel
+-- bundled as ONE record — SN-043 (every closed grown-typed term is SN), SN-050 (no closed grown inhabitant
+-- of emptyType), SN-047 value-layer (a closed bool reduces to boolTrue/boolFalse). Each field is the shipped
+-- unconditional theorem at the empty context; zero-axiom. Honest scope: eliminator-layer canonicity (CANON-1)
+-- and the joint-decidability apex (O-NORM) remain the named open frontier (see the file docstring).
+#assert_no_axioms FX1Poly.Typed.milestoneAValueLayerSpineHolds
 -- GENERIC GROWN-RIGIDITY CANONICITY ENGINE (GrownRigidityCanonicity): lifts #1065's normal-only
 -- noClosedNormalTermAtDataClassifier to ARBITRARY subjects, making every data canonicity a per-type one-liner.
 -- ★ noClosedGrownTermAtDataClassifier = generic arbitrary-subject grown vacuity (grown SN + SR-U4 + #1065);
