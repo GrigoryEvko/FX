@@ -136,6 +136,7 @@ inductive SupportedGenerator : Generator → Type where
   | gen_equivCode    : SupportedGenerator .gen_equivCode
   | gen_emptyCode    : SupportedGenerator .gen_emptyCode
   | gen_boolCode     : SupportedGenerator .gen_boolCode
+  | gen_natCode      : SupportedGenerator .gen_natCode
   | gen_cumulUpMarker : SupportedGenerator .gen_cumulUpMarker
   | gen_uaToEquiv    : SupportedGenerator .gen_uaToEquiv
   | gen_equivApply   : SupportedGenerator .gen_equivApply
@@ -355,6 +356,7 @@ def supportedGenerator : (generator : Generator) →
   | .gen_equivCode    => .gen_equivCode
   | .gen_emptyCode    => .gen_emptyCode
   | .gen_boolCode     => .gen_boolCode
+  | .gen_natCode      => .gen_natCode
   | .gen_cumulUpMarker => .gen_cumulUpMarker
   | .gen_uaToEquiv    => .gen_uaToEquiv
   | .gen_equivApply   => .gen_equivApply

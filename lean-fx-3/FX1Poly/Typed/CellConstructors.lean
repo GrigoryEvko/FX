@@ -60,6 +60,18 @@ code. -/
 def boolTypeCell {scope : Nat} : RawTerm scope :=
   .mkGen .gen_boolCode () .childNil
 
+/-- The nat-type code cell `Nat` — the `.type`-sorted nullary `gen_natCode`
+cell.  No payload data (`Unit`), no children (`binderShifts = []`, hence
+`childNil`): a closed nullary type-former leaf, structurally identical to
+`boolTypeCell` / `emptyTypeCell` but at the distinct `gen_natCode` generator.
+The formation subject of `Nat : Type@0` (via the nullary base-type formation
+`HasTypeDescBaseType` once the `baseTypeRuleDescOf` row lands) and the type
+whose closed members the nat data-intro value side (`natZero` / `natSucc`)
+ranges over — the substrate of nat canonicity.  Distinct from the VALUE cells
+`gen_natZero` / `gen_natSucc`: this is the TYPE code. -/
+def natTypeCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_natCode () .childNil
+
 /-- The variable cell at de Bruijn position `index`. -/
 def variableCell {scope : Nat} (index : Fin scope) : RawTerm scope :=
   .mkGen .gen_var index .childNil

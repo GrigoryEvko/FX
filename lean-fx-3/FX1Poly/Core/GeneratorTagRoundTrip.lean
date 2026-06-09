@@ -129,6 +129,7 @@ def Generator.fromTag : Nat → Option Generator
   | 191 => some .gen_bigOh | 192 => some .gen_polyTimeWitness | 193 => some .gen_npComplete
   | 194 => some .gen_emptyCode
   | 195 => some .gen_boolCode
+  | 196 => some .gen_natCode
   | _ => none
 
 /-- Round-trip: `fromTag` recovers every generator from its `toNat` tag.  Each

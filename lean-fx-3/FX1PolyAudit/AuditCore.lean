@@ -97,8 +97,8 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.Generator.fromTag_toNat
 #assert_no_axioms FX1Poly.Core.Generator.toNat_injective
 
--- The FX kernel as a finite polygraph over the 196-Generator table.  The generators are indexed injectively
--- (toNat_injective) and boundedly (toNat_lt) into Fin 196, with the total inverse table fromTag (round-trip
+-- The FX kernel as a finite polygraph over the 197-Generator table.  The generators are indexed injectively
+-- (toNat_injective) and boundedly (toNat_lt) into Fin 197, with the total inverse table fromTag (round-trip
 -- fromTag_toNat + range-totality fromTag_total_on_range); each carries its dimension (arity) and boundary
 -- (binderShifts), coherently (binderShifts_length_eq_arity).  fxKernelPolygraph bundles all of it.  Zero-axiom
 -- via cases + bounded decide with raised maxRecDepth (plain decide, not native_decide).

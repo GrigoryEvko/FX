@@ -288,6 +288,7 @@ import FX1Poly.Typed.HasTypeDescSigmaProjection
 import FX1Poly.Typed.HasTypeDescIdIntro
 import FX1Poly.Typed.HasTypeDescIdElim
 import FX1Poly.Typed.HasTypeDescListIntro
+import FX1Poly.Typed.HasTypeDescNatIntro
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -499,6 +500,7 @@ import FX1Poly.Typed.ClassifierRespectsConvRefuted
 import FX1Poly.Typed.EmptyTypeConsistencyUnconditional
 import FX1Poly.Typed.FormationNormalSmoke
 import FX1Poly.Typed.BoolTypeCodeSubstrate
+import FX1Poly.Typed.NatTypeCodeSubstrate
 import FX1Poly.Typed.GrownNoTypeInType
 import FX1Poly.Typed.IsTypeDescRigidity
 import FX1Poly.Typed.IsTypeDescDecidable
@@ -3380,6 +3382,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.listConsOfUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.subjectIsListConstructor
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.classifierIsList
+-- NAT INTRODUCTION (HasTypeDescNatIntro, DI-3): the nat constructors at the nat type code natTypeCell. natZero:Nat
+-- is the NULLARY arm with NO premise (Nat is a closed ground type, simpler than listNil's free element type);
+-- natSucc(p):Nat is the RECURSIVE arm — predecessor p:Nat typed BY THE SAME judgment (strictly positive, the nat
+-- twin of listConsIntro). natZeroTyped = 0:Nat; natOneTyped = succ 0:Nat (EXERCISING the recursive arm);
+-- natTwoTyped = succ(succ 0):Nat (recursion nested twice). subjectIsNatConstructor/classifierIsNat = the SR-free
+-- closed-forms inversions (subject a natZero/natSucc cell, classifier natTypeCell). Cascade-free standalone
+-- judgment using natTypeCell as a RAW classifier (no Nat:Type@0 base-type-formation dependency). The
+-- scrutinee-typing prerequisite for the nat ELIMINATORS (natElim/natRec) + nat canonicity (SN-048). SR quartet
+-- engine-separation-deferred (#1078).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.natZeroTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.natOneTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.natTwoTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.subjectIsNatConstructor
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.classifierIsNat
 -- LIST CANONICAL FORMS (ListCanonicalForms, the DI-2e payoff): NON-VACUOUS closed-normal list canonical forms — a
 -- closed-normal term typed at List(A) by the list-intro engine OR the grown engine is nil/cons. Like option/bool
 -- (and unlike product/either FLAT-table codes), gen_listCode is a FORMATION-table former (typingRuleDescOf, GTL-11),
@@ -6893,6 +6909,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.boolTypeCell
 #assert_no_axioms FX1Poly.Typed.gen_boolCode_isNullaryTypeCode
 #assert_no_axioms FX1Poly.Typed.gen_boolCode_isAdmitted
+
+-- NAT TYPE-CODE SUBSTRATE (NatTypeCodeSubstrate.lean, SN-048/DI-3 prerequisite). gen_natCode is the bespoke
+-- nullary type-code generator filling the Nat-type gap (the kernel had VALUE gens gen_natZero/gen_natSucc but no
+-- TYPE code, like every ground datatype). natTypeCell = mkGen gen_natCode () childNil mirrors boolTypeCell /
+-- emptyTypeCell. gen_natCode_isNullaryTypeCode pins the metadata shape (arity 0, binderShifts [], cellSort .type);
+-- gen_natCode_isAdmitted is the SupportedGenerator witness. The serialization round-trip (toNat_injective/
+-- fromTag_toNat) + finite-polygraph bound (toNat_lt over Fin 197) already re-verify gen_natCode uniformly.
+-- baseTypeRuleDescOf gen_natCode = none today (Nat:Type@0 base-type formation deferred to keep the
+-- baseTypeRuleDescOf two-way enumeration cascade-free); natTypeCell is a raw classifier for HasTypeDescNatIntro.
+#assert_no_axioms FX1Poly.Typed.natTypeCell
+#assert_no_axioms FX1Poly.Typed.gen_natCode_isNullaryTypeCode
+#assert_no_axioms FX1Poly.Typed.gen_natCode_isAdmitted
 
 -- Ω HAS NO NORMAL FORM — sharpening "not SN" into "never reaches a Step-normal term." selfApplicator is itself
 -- normal (by decide); Ω's only one-step reduct is Ω (Step.from_app inversion, congruence shapes refuted by the
