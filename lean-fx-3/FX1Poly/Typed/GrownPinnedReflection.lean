@@ -83,7 +83,7 @@ theorem pinnedReflectionOfFormationArm (profile : PolyProfile)
     {subject classifier : RawTerm targetScope}
     (formationTyped : HasTypeDesc profile targetContext subject classifier) :
     PinnedReflectionConclusion profile targetContext subject classifier := by
-  intro sourceScope rho sourceContext rhoInjective condition _wellFormed
+  intro _targetWellFormed sourceScope rho sourceContext rhoInjective condition _wellFormed
     sourceSubject pinBase subjectInImage pinned pinBaseTyped
   obtain ⟨reflectedClassifier, classifierConv, reflectedTyped⟩ :=
     HasTypeDesc.pinnedReflection formationTyped rho sourceContext rhoInjective
@@ -97,10 +97,10 @@ theorem pinnedReflectionConvArm (profile : PolyProfile)
     (converts : Conv classifier reclassifier)
     (premiseIH : PinnedReflectionConclusion profile targetContext subject classifier) :
     PinnedReflectionConclusion profile targetContext subject reclassifier := by
-  intro sourceScope rho sourceContext rhoInjective condition wellFormed
+  intro targetWellFormed sourceScope rho sourceContext rhoInjective condition wellFormed
     sourceSubject pinBase subjectInImage pinned pinBaseTyped
   obtain ⟨reflectedClassifier, classifierConv, reflectedTyped⟩ :=
-    premiseIH rho sourceContext rhoInjective condition wellFormed
+    premiseIH targetWellFormed rho sourceContext rhoInjective condition wellFormed
       subjectInImage (converts.trans pinned) pinBaseTyped
   exact ⟨reflectedClassifier, converts.sym.trans classifierConv, reflectedTyped⟩
 
@@ -120,8 +120,8 @@ theorem HasTypeDescPi.pinnedReflectionConditional {profile : PolyProfile}
   | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
       pinnedReflectionConvArm profile converts
         (HasTypeDescPi.pinnedReflectionConditional residual typedPremise)
-  | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped bodyTyped =>
-      pinnedReflectionPiIntroArm profile
+  | .piIntro domainLevel _codomainLevel flag domainTyped _codomainTyped bodyTyped =>
+      pinnedReflectionPiIntroArm profile ⟨domainLevel, flag, domainTyped⟩
         (HasTypeDescPi.pinnedReflectionConditional residual bodyTyped)
   | .piElim functionTyped argumentTyped =>
       residual functionTyped argumentTyped
@@ -129,8 +129,8 @@ theorem HasTypeDescPi.pinnedReflectionConditional {profile : PolyProfile}
         (HasTypeDescPi.pinnedReflectionConditional residual argumentTyped)
   | .genFormationPi _targetContext generator payload children levels flag rule
       isFormation premises => by
-      intro rho sourceContext rhoInjective condition wellFormed
-        sourceSubject pinBase subjectInImage pinned pinBaseTyped
+      intro targetWellFormed sourceScope rho sourceContext rhoInjective condition
+        wellFormed sourceSubject pinBase subjectInImage pinned pinBaseTyped
       have hNotVar : generator ≠ Generator.gen_var :=
         formationRuleImpliesNotVariable isFormation
       obtain rfl : rule = { outputType := universeFormerOutput } :=
@@ -139,8 +139,9 @@ theorem HasTypeDescPi.pinnedReflectionConditional {profile : PolyProfile}
         renameEqMkGenInversion rho hNotVar subjectInImage.symm
       subst hSource
       have sourceTelescope :=
-        DescTelescopePi.pinnedReflectionTelescopeConditional residual premises rho
-          sourceContext rhoInjective condition wellFormed hChildren
+        DescTelescopePi.pinnedReflectionTelescopeConditional residual premises
+          targetWellFormed rho sourceContext rhoInjective condition wellFormed
+          hChildren
       refine ⟨universeFormerOutput _ levels flag, ?_, ?_⟩
       · show Conv (universeCodeCell (lmaxAll levels) flag)
           (RawTerm.rename rho (universeCodeCell (lmaxAll levels) flag))
@@ -160,6 +161,7 @@ theorem DescTelescopePi.pinnedReflectionTelescopeConditional {profile : PolyProf
     {levels : List LevelExpr} {flag : UniverseFlag}
     {children : RawTermChildren binderShifts baseScope}
     (telescope : DescTelescopePi profile targetContext levels flag children) :
+    WfContextDescPi targetContext →
     ∀ {sourceBaseScope : Nat} (rho : RawRenaming sourceBaseScope baseScope)
       (sourceContext : TypingContext profile (sourceBaseScope + currentDepth)),
       Function.Injective rho →
@@ -170,15 +172,15 @@ theorem DescTelescopePi.pinnedReflectionTelescopeConditional {profile : PolyProf
         children = RawTermChildren.rename rho sourceChildren →
         DescTelescopePi profile sourceContext levels flag sourceChildren :=
   match telescope with
-  | .nil _targetContext flag =>
-      fun rho sourceContext _rhoInjective _condition _wellFormed sourceChildren
-          hChildren => by
-        cases sourceChildren with
-        | childNil => exact DescTelescopePi.nil sourceContext flag
-  | .cons _targetContext head headLevel restLevels flag rest headTyped restTyped =>
-      fun rho sourceContext rhoInjective condition wellFormed sourceChildren
-          hChildren => by
-        cases sourceChildren with
+  | .nil _targetContext flag => by
+      intro _targetWellFormed sourceBaseScope rho sourceContext _rhoInjective
+        _condition _wellFormed sourceChildren hChildren
+      cases sourceChildren with
+      | childNil => exact DescTelescopePi.nil sourceContext flag
+  | .cons _targetContext head headLevel restLevels flag rest headTyped restTyped => by
+      intro targetWellFormed sourceBaseScope rho sourceContext rhoInjective condition
+        wellFormed sourceChildren hChildren
+      cases sourceChildren with
         | childCons sourceHead sourceRest =>
           have hChildrenReduced :
               RawTermChildren.childCons head rest =
@@ -194,7 +196,7 @@ theorem DescTelescopePi.pinnedReflectionTelescopeConditional {profile : PolyProf
             exact Conv.refl _
           obtain ⟨reflectedClassifier, classifierConv, reflectedTyped⟩ :=
             HasTypeDescPi.pinnedReflectionConditional residual headTyped
-              (iterateLiftRaw rho currentDepth) sourceContext
+              targetWellFormed (iterateLiftRaw rho currentDepth) sourceContext
               (RawRenaming.iterateLiftRaw_injective rhoInjective currentDepth)
               condition wellFormed hHead headPin
               ⟨headLevel.lsucc, flag,
@@ -216,11 +218,13 @@ theorem DescTelescopePi.pinnedReflectionTelescopeConditional {profile : PolyProf
             ContextReflectsRename.consConv profile condition headPinned
           have wellFormed' : WfContextDescPi (sourceContext.cons sourceHead) :=
             ⟨wellFormed, headLevel, flag, sourceHeadTyped⟩
+          have targetWellFormed' : WfContextDescPi (_targetContext.cons head) :=
+            ⟨targetWellFormed, headLevel, flag, headTyped⟩
           exact DescTelescopePi.cons sourceContext sourceHead headLevel restLevels
             flag sourceRest sourceHeadTyped
             (DescTelescopePi.pinnedReflectionTelescopeConditional residual restTyped
-              rho (sourceContext.cons sourceHead) rhoInjective condition'
-              wellFormed' hTail)
+              targetWellFormed' rho (sourceContext.cons sourceHead) rhoInjective
+              condition' wellFormed' hTail)
 
 end -- mutual
 

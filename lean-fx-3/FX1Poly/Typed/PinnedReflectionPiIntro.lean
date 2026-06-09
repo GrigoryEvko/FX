@@ -37,14 +37,18 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
-/-- **The route-H pinned-reflection motive.**  For a target judgment `Δ ⊢ subject : classifier`:
-for every Fin-injective renaming `ρ` and source context `Γ` satisfying the Kripke image condition
-(`ContextReflectsRename`, with `Γ` well-formed), if the subject is an EXACT `ρ`-image and the
-classifier is `Conv`-PINNED to a `ρ`-image of a source-TYPED base, then the source subject is typed
-at a source classifier whose image is `Conv` to the original classifier. -/
+/-- **The route-H pinned-reflection motive.**  For a target judgment `Δ ⊢ subject : classifier`
+in a WELL-FORMED target context: for every Fin-injective renaming `ρ` and source context `Γ`
+satisfying the Kripke image condition (`ContextReflectsRename`, with `Γ` well-formed), if the
+subject is an EXACT `ρ`-image and the classifier is `Conv`-PINNED to a `ρ`-image of a source-TYPED
+base, then the source subject is typed at a source classifier whose image is `Conv` to the original
+classifier.  Target-side well-formedness is the leading premise: the piElim residual's discharge
+routes (whnf-to-head-rigid, the Abel-reflection spine) need TARGET-side SN and subject reduction,
+both `WfContextDescPi`-conditional; STR-9's strengthening instance has it freely. -/
 def PinnedReflectionConclusion (profile : PolyProfile) {targetScope : Nat}
     (targetContext : TypingContext profile targetScope)
     (subject classifier : RawTerm targetScope) : Prop :=
+  WfContextDescPi targetContext →
   ∀ {sourceScope : Nat} (rho : RawRenaming sourceScope targetScope)
     (sourceContext : TypingContext profile sourceScope),
     Function.Injective rho →
@@ -59,15 +63,18 @@ def PinnedReflectionConclusion (profile : PolyProfile) {targetScope : Nat}
         HasTypeDescPi profile sourceContext sourceSubject reflectedClassifier
 
 /-- **The piIntro arm of the pinned reflection** — the historical strengthening wall, closed by the
-brick-1..5 kit (see the module docstring for the six-step composition). -/
+brick-1..5 kit (see the module docstring for the six-step composition).  The domain's target-side
+type validity (`targetDomainIsType`, the rule's own domain premise) extends target well-formedness
+under the binder for the body IH. -/
 theorem pinnedReflectionPiIntroArm (profile : PolyProfile)
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     {domainCode : RawTerm targetScope} {codomainCode body : RawTerm (targetScope + 1)}
+    (targetDomainIsType : IsTypeDescPi profile targetContext domainCode)
     (bodyIH :
       PinnedReflectionConclusion profile (targetContext.cons domainCode) body codomainCode) :
     PinnedReflectionConclusion profile targetContext
       (lamCell body) (piTyCodeCell domainCode codomainCode) := by
-  intro sourceScope rho sourceContext rhoInjective condition wellFormed
+  intro targetWellFormed sourceScope rho sourceContext rhoInjective condition wellFormed
     sourceSubject pinBase subjectInImage pinned pinBaseTyped
   obtain ⟨sourceBody, hSubject, hBody⟩ := renameEqLamCellInversion rho subjectInImage.symm
   subst hSubject
@@ -85,8 +92,11 @@ theorem pinnedReflectionPiIntroArm (profile : PolyProfile)
     ContextReflectsRename.consConv profile condition domainConv
   have wellFormed' : WfContextDescPi (sourceContext.cons domainBase) :=
     ⟨wellFormed, domainLevel, flag, domainTyped⟩
+  obtain ⟨targetDomainLevel, targetDomainFlag, targetDomainTyped⟩ := targetDomainIsType
+  have targetWellFormed' : WfContextDescPi (targetContext.cons domainCode) :=
+    ⟨targetWellFormed, targetDomainLevel, targetDomainFlag, targetDomainTyped⟩
   obtain ⟨reflectedCodomain, codomainConvReflected, bodyTyped⟩ :=
-    bodyIH (RawRenaming.lift rho) (sourceContext.cons domainBase)
+    bodyIH targetWellFormed' (RawRenaming.lift rho) (sourceContext.cons domainBase)
       (RawRenaming.lift_injective rhoInjective) condition' wellFormed'
       hBody codomainConv ⟨codomainLevel, flag, codomainTyped⟩
   have imagesConv :
