@@ -80,6 +80,7 @@ import FX1Poly.Typed.ConvergentCanonicityBoundary
 import FX1Poly.Core.SconingTaitCrossLeg
 import FX1Poly.Core.SconingSNObjectUnique
 import FX1Poly.Core.EtaRootClassifier
+import FX1Poly.Core.ConvRenameReflection
 import FX1Poly.Typed.RawBetaNotRpoOrientable
 import FX1Poly.Typed.SnTriangulationBundle
 import FX1Poly.Typed.HonestCapstoneSignoff
@@ -1217,3 +1218,14 @@ rw's (subst_lift_weaken peels one weaken, weaken_subst_singleton cancels the inn
 
 #assert_no_axioms FX1Poly.Core.RawTerm.subst_lift_weaken
 #assert_no_axioms FX1Poly.Core.RawTerm.subst_lift_singleton_weaken_weaken
+
+/- `Conv` reflects an injective renaming (ConvRenameReflection): lift `Step.reflectRename` over a whole
+`StepStar` chain, prove `weaken` injective from its partial left inverse `strengthen`, and reflect both
+join-legs of a `Conv` through the renaming.  `Conv.reflectWeaken` is the reflection primitive grown
+strengthening (the inverse of `weakenUnderBinding`, blocking grown η-contraction SR #477/PAR-2) needs in
+every arm: strip a `weaken` off a `Conv` classifier to descend a scope.  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Core.StepStar.reflectRename
+#assert_no_axioms FX1Poly.Core.RawTerm.weaken_injective
+#assert_no_axioms FX1Poly.Core.Conv.reflectRename
+#assert_no_axioms FX1Poly.Core.Conv.reflectWeaken
