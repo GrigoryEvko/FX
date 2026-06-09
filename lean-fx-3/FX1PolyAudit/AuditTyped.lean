@@ -281,6 +281,7 @@ import FX1Poly.Typed.GrownRigidityCanonicity
 import FX1Poly.Typed.ClosedNatCanonicity
 import FX1Poly.Typed.ClosedDataCanonicity
 import FX1Poly.Typed.BoolElimClosedNormalForms
+import FX1Poly.Typed.MatchClosedNormalForms
 import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
 import FX1Poly.Typed.BoolElimValueCanonicity
 import FX1Poly.Typed.NatElimComputingCanonicity
@@ -3296,6 +3297,14 @@ gates pin them shut.
 -- follow-on. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.noClosedNormalBoolElim
 #assert_no_axioms FX1Poly.Typed.closedNormalBoolCanonicalFormsWithElim
+-- MATCH-ENGINE CLOSED-NORMAL VACUITY (MatchClosedNormalForms): the option/either MATCH eliminator engines
+-- (HasTypeDescOptionMatch / HasTypeDescEitherMatch) are likewise VACUOUS disjuncts — a closed match on a closed
+-- constructor scrutinee always ι-fires, so it is never normal. Same structural argument as the bool case:
+-- scrutinee is option/either-intro-typed ⟹ a constructor (subjectIsOptionConstructor / subjectIsEitherInjection)
+-- ⟹ the match is a ι-redex ⟹ `cases normal` refutes. Extends the per-classifier eliminator rule-out from bool
+-- to the match family. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionMatch.noClosedNormalOptionMatch
+#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherMatch.noClosedNormalEitherMatch
 -- ARBITRARY-SUBJECT 4-ENGINE BOOL CANONICITY (BoolElimArbitrarySubjectCanonicity): upgrades the closed-normal
 -- 4-engine forms OFF the `normal` hypothesis. ★ KEY: the bool-elim engine's branches are GROWN-typed and the
 -- grown engine has no closed boolCode inhabitant, so a closed boolElim AT boolTypeCell is impossible by inverting
