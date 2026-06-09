@@ -745,8 +745,12 @@ published and what's not.
 **Net for MILESTONE A:** Path A (NbE) is on the critical path
 because K12 + K13 work is already in flight and follows the
 Adjedj et al. recipe.  Path B (Makkai) is the backup + semantic
-alignment with the certified PolyCell substrate; if Path A hits an unforeseen Lean
-mechanization wall, Path B is independently sufficient.  Both
+alignment with the certified PolyCell substrate.  Its independence is
+PARTIAL: the forward `Conv → word-joinable` ships (`Conv.toWordJoinable`),
+but the reverse `word → Conv` is blocked (`RawTerm.toCode` is
+non-injective) and Path-B termination CONSUMES typed-SN (raw β is
+non-SN) — so Path B is a semantic CROSS-CHECK on the convergent
+fragment, not a fully independent decider.  On their shared fragment both
 paths converge on the same `Decidable (Conv a b)` instance.
 CONVTRANS-D, K12.28, K13.20 collapse via Path A's standard
 recipe.
@@ -1006,7 +1010,15 @@ hierarchy with a uniform universal property.
 #### 3.0.2 Internal sconing — metatheory by explicit witness
 
 The BKS thesis (FSCD 2023): **sconing alone (not general gluing) is
-enough for the metatheory**.  Two key moves:
+enough for the metatheory** — where "sconing" is the logical-relation
+method itself *re-packaged* boilerplate-free (BKS §4: the displayed
+model's types ARE logical predicates `Tm(1,A) → Set`), NOT a proof
+independent of logical relations.  In FX this is literal: the sconing
+witness's `computable` predicate is `rfl`-equal to the Path-A Tait
+candidate (`sconingSN_eq_taitComposition`), so the sconing leg is a
+categorical RE-PACKAGING / cross-check whose SN endpoint is
+`bridgedToTait` by design — not an independent second proof.  Two key
+moves:
 
 * Restrict to a single global-section functor (the sconing functor),
   not arbitrary gluing.
@@ -1017,9 +1029,14 @@ The payoff, after the witness is actually constructed:
 
 * **Canonicity** is derived from one boilerplate-free induction
   principle.
-* **Normalization** is derived from another (Uemura
-  `arXiv:2212.11764` refines this via substitution-mode +
-  renaming-mode separation).
+* **Normalization** — NbE-style (unique normal form via eval+quote),
+  NOT reduction-strong-normalization — is derived from another (Uemura
+  `arXiv:2212.11764` refines this via substitution-mode + renaming-mode
+  separation).  FX's reduction-SN (`Acc`, SN-043) is the separate
+  Tait/Girard argument; an *independent* SN-via-sconing would need the
+  Sterling STC closed modality (a higher-inductive quotient →
+  `Quot.sound`, zero-axiom-blocked in Init-only Lean) — a moonshot, not
+  a capstone prerequisite.
 * **Syntactic parametricity** is derived as a third.
 
 For each FX axis, the metatheory obligation reduces to: provide a
@@ -1028,40 +1045,6 @@ axis.  Per axis ~1K LoC.  This is a smaller proof obligation than
 per-construction STC / gluing arguments, but it is still a proof
 obligation; no arbitrary profile gets canonicity or normalization by
 being merely named in the table.
-
-**Honest scope (2026-06-09, after re-reading BKS `arXiv:2302.05190` §4
-against the FX kernel).** Sconing is the logical-relation method
-*re-packaged*, NOT a logically-independent proof.  In BKS the displayed
-model's types ARE logical predicates — `Ty^•(A) ≜ Tm(1,A) → Set`, a
-Set-valued predicate over closed terms (§4); the Π-case asks functions
-to *preserve* the predicate; the normalization displayed model (§5) is
-the `Nf`/`Ne` triple with quote/unquote.  So the sconing witness's
-"computability" component IS the reducibility data, and in the FX kernel
-the witness's `computable` predicate is provably EQUAL (by `rfl`) to the
-Path-A Tait candidate (`sconingSN_eq_taitComposition`).  This is not a
-defect — it is exactly what BKS's construction is.  Consequences for the
-honest Milestone-A capstone (`MilestoneAParityMatrix`):
-
-* The sconing "leg" is a categorical RE-PACKAGING (boilerplate-free
-  framework + uniform canonicity / normalization / parametricity) — a
-  genuine triangulation / cross-check, NOT an independent second proof
-  of the same fact.  Its SN endpoint is `bridgedToTait`, by design.
-* "canonicity, normalization, and parametricity from one witness" means
-  the FRAMEWORK is enough (sconing replaces general gluing); each
-  metatheorem still has its OWN displayed model (its own logical
-  relation).  It is not one proof yielding three.
-* BKS proves NbE-style normalization (unique normal form via eval +
-  quote) and canonicity — NOT reduction-strong-normalization.  FX's
-  reduction-SN is the Tait/Girard `Acc` argument (SN-043); an
-  *independent* SN-via-sconing would need the Sterling STC
-  closed-modality (a higher-inductive quotient), which in Init-only Lean
-  pulls `Quot.sound` and breaks the zero-axiom discipline — hence it is
-  recorded as a moonshot, not a capstone prerequisite.
-
-Neither BKS nor FX overclaims; the misread to avoid is treating sconing
-as a proof *independent of* logical relations.  The genuine value of the
-sconing axis is boilerplate elimination + a uniform per-axis framework,
-which is precisely BKS's stated contribution.
 
 The BKS earlier paper "Relative induction principles" (`arXiv:2102.11649`)
 provides the framework: induction principles that operate relative to
