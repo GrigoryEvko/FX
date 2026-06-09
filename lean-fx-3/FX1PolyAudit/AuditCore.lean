@@ -81,6 +81,7 @@ import FX1Poly.Core.SconingTaitCrossLeg
 import FX1Poly.Core.SconingSNObjectUnique
 import FX1Poly.Core.EtaRootClassifier
 import FX1Poly.Core.ConvRenameReflection
+import FX1Poly.Core.RawTermRenameInjective
 import FX1Poly.Typed.RawBetaNotRpoOrientable
 import FX1Poly.Typed.SnTriangulationBundle
 import FX1Poly.Typed.HonestCapstoneSignoff
@@ -1230,3 +1231,16 @@ every arm: strip a `weaken` off a `Conv` classifier to descend a scope.  Zero-ax
 #assert_no_axioms FX1Poly.Core.Conv.reflectRename
 #assert_no_axioms FX1Poly.Core.Conv.reflectWeaken
 #assert_no_axioms FX1Poly.Core.RawRenaming.lift_injective
+
+/- Term-level rename injectivity from Fin-injectivity (RawTermRenameInjective): the general statement
+behind `weaken_injective` — a Fin-injective renaming is term-injective, by the term/spine mutual
+structural induction (var heads via Fin-injectivity, non-var heads strip the scope-invariance payload
+cast and recurse at the lifted renaming).  `Conv.reflectLiftRename` is the binder instance the route-H
+pinned reflection's piIntro arm consumes (`Conv` reflects `lift rho`).  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Core.eqRecTypeCast_injective
+#assert_no_axioms FX1Poly.Core.RawRenaming.iterateLiftRaw_injective
+#assert_no_axioms FX1Poly.Core.RawTerm.rename_injective
+#assert_no_axioms FX1Poly.Core.RawTermChildren.rename_injective
+#assert_no_axioms FX1Poly.Core.Conv.reflectRenameOfFinInjective
+#assert_no_axioms FX1Poly.Core.Conv.reflectLiftRename
