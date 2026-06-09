@@ -3,6 +3,7 @@ import FX1Poly.Core.DataReducibilityCoverage
 import FX1Poly.Core.DataTaitCandidate
 import FX1Poly.Typed.MilestoneASpineValueLayer
 import FX1Poly.Typed.BoolElimComputingCanonicity
+import FX1Poly.Typed.MatchElimComputingCanonicityTyped
 import FX1Poly.Typed.MetatheoryParityLedger
 import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.UniverseCodeShape
@@ -3195,6 +3196,18 @@ gates pin them shut.
 -- precisely the eliminator the vacuous standalone HasTypeDescBoolElim cannot type (value branches). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.closedBoolElimComputesToValue
 #assert_no_axioms FX1Poly.Typed.closedBoolElimComputesToValue.smoke
+-- ★ TYPED option/either MATCH eliminator-computing canonicity (MatchElimComputingCanonicityTyped), extending
+-- the boolElim result to the PAYLOAD-CARRYING match family via the scrutinee congruence: a closed
+-- optionMatch(scrutinee, boolTrue, λ_.boolTrue) / eitherMatch(scrutinee, λ_.boolTrue, λ_.boolFalse) with a typed
+-- option/either scrutinee reduces to boolTrue/boolFalse. The scrutinee reduces to a constructor value
+-- (closedOption/EitherCanonicalForms), the congruence carries it under the match, ι selects+applies the branch,
+-- and the constant bool branch β-reduces PAST any SOME/INL/INR payload (sidestepping the payload-normality
+-- requirement of the general operational optionMatchComputesToValue). Non-vacuous (smokes on optionNone /
+-- eitherInl(Type@0)). Constant-branch corner; general-branch case is the named CANON-1 follow-on. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.closedOptionMatchIntoBoolComputes
+#assert_no_axioms FX1Poly.Typed.closedEitherMatchIntoBoolComputes
+#assert_no_axioms FX1Poly.Typed.closedOptionMatchIntoBoolComputes.smoke
+#assert_no_axioms FX1Poly.Typed.closedEitherMatchIntoBoolComputes.smoke
 -- ★ MILESTONE-A VALUE-LAYER SPINE: the three now-unconditional soundness pillars of the grown typed kernel
 -- bundled as ONE record — SN-043 (every closed grown-typed term is SN), SN-050 (no closed grown inhabitant
 -- of emptyType), SN-047 value-layer (a closed bool reduces to boolTrue/boolFalse). Each field is the shipped
