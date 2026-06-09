@@ -563,6 +563,7 @@ import FX1Poly.Typed.PinnedReflectionPiElimCore
 import FX1Poly.Typed.GrownWfOpenStronglyNormalizing
 import FX1Poly.Typed.PinnedReflectionPiElimDispatcher
 import FX1Poly.Typed.PlateauDescentSubstrate
+import FX1Poly.Typed.GuardedPinnedReflection
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8557,3 +8558,12 @@ cannot reduce). -/
 #assert_no_axioms FX1Poly.Typed.RawTerm.isStepNormalForm_childrenNormal
 #assert_no_axioms FX1Poly.Typed.RawTermChildren.areStepNormalFormsBool_head
 #assert_no_axioms FX1Poly.Typed.RawTermChildren.areStepNormalFormsBool_tail
+
+/- The SIZE-GUARDED conditional master (GuardedPinnedReflection) — the knot-cutting form: the
+conditional master with (size ≤ bound) + normality threaded through the mutual, residual parameter
+weakened to the bound-guarded normal-application form.  The guarded residual at bound N only ever
+consumes the guarded master at strictly smaller pieces, making ∀ bound, ResidualGuarded provable
+by strong induction (the plateau master). -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionGuarded
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.pinnedReflectionTelescopeGuarded
