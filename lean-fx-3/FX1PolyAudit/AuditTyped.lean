@@ -510,6 +510,7 @@ import FX1Poly.Typed.GeneratorHonestyOverview
 import FX1Poly.Typed.StaticTypingSoundness
 import FX1Poly.Typed.SemanticTierSoundness
 import FX1Poly.Typed.ClassifierRefinement
+import FX1Poly.Typed.GeneratorHonestyLedger
 import FX1Poly.Typed.CertifiedWordReductionTermination
 import FX1Poly.Typed.CertifiedWordReductionConfluence
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
@@ -3493,6 +3494,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.grownTypable_imp_unionTyped
 #assert_no_axioms FX1Poly.Typed.boolTrue_grownUntypableButUnionTyped
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRuleStrictlyRefinesUntypableHead
+-- ★ THE HONESTY-ARC CAPSTONE (GeneratorHonestyLedger): one machine-checked ledger bundling the arc's four
+-- pillars over the 197-generator table — SOUNDNESS (reserved ⟹ semantically dead, via semanticTierReservedSound),
+-- REFINEMENT (the union classifier strictly refines the grown untypability decision), FAITHFULNESS (a live
+-- eliminator computes its exact host fold: boolElim ↝ cond), NON-VACUITY (the two classifier axes are
+-- complementary). generatorHonestyLedgerHolds discharges every pillar by its shipped zero-axiom theorem — the
+-- single object certifying the table is honestly classified. A build-time #eval prints the capstone status on
+-- every default build alongside the HON-4 count overview (GUARANTEE line to its SCOPE line). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.generatorHonestyLedgerHolds
 -- ★ NON-RECURSIVE function-branch eliminator-computing canonicity (MatchElimComputingCanonicity), COMPLETING
 -- the eliminator-computing-canonicity coverage across all four structural shapes: bool (projection/value),
 -- nat+list (recursive function), option+either (non-recursive function, HERE). optionMatch/eitherMatch fire a
