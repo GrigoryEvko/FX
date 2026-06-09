@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.DataReducibilityCoverage
 import FX1Poly.Core.DataTaitCandidate
 import FX1Poly.Typed.MilestoneASpineValueLayer
+import FX1Poly.Typed.BoolElimComputingCanonicity
 import FX1Poly.Typed.MetatheoryParityLedger
 import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.UniverseCodeShape
@@ -3187,6 +3188,13 @@ gates pin them shut.
 -- Eliminator-computing canonicity (4th engine HasTypeDescDataElim) is the follow-on, off this signature. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.dataCanonicityFromSyntacticRoute
 #assert_no_axioms FX1Poly.Typed.boolCanonicityViaSyntacticRoute
+-- ★ ELIMINATOR-LAYER bool canonicity (the deferred CANON-1 follow-on, via the COMPONENT-typing route):
+-- a closed boolElim(scrutinee, then, else) with a 3-engine-typed scrutinee at boolType AND data-VALUE-typed
+-- branches reduces to boolTrue/boolFalse -- the eliminator genuinely COMPUTES (scrutinee canonicity +
+-- StepStar.boolElimScrutinee congruence + ι + branch value). Non-vacuous (smoke: boolElim(true,true,false)),
+-- precisely the eliminator the vacuous standalone HasTypeDescBoolElim cannot type (value branches). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.closedBoolElimComputesToValue
+#assert_no_axioms FX1Poly.Typed.closedBoolElimComputesToValue.smoke
 -- ★ MILESTONE-A VALUE-LAYER SPINE: the three now-unconditional soundness pillars of the grown typed kernel
 -- bundled as ONE record — SN-043 (every closed grown-typed term is SN), SN-050 (no closed grown inhabitant
 -- of emptyType), SN-047 value-layer (a closed bool reduces to boolTrue/boolFalse). Each field is the shipped
