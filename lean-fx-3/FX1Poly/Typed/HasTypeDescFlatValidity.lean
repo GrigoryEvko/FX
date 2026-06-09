@@ -25,8 +25,8 @@ needed.
 keeps the SAME context (the flat `cons` does not extend it, so no `WfContextDesc.cons`).  Each head child's
 level/flag is settled by the main-engine `HasTypeDesc.uniquenessNative` (+ `universeCodeCell_inj_of_conv`); it
 still needs `WfContextDesc context` (to run the main-engine uniqueness on each child).  This is the substrate the
-flat uniqueness headline (`HasTypeDescFlat.uniquenessNative`, deferred — it requires a propext-free `mkGen`
-second-derivation inversion) will consume.
+flat uniqueness headline (`HasTypeDescFlat.uniquenessNative`, in `HasTypeDescFlatUniqueness`) consumes — it
+inverts both derivations to flat telescopes over the same children, then this agreement settles levels and flag.
 
 ## Zero-axiom verification
 
