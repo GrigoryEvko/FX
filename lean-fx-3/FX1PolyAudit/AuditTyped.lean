@@ -285,6 +285,7 @@ import FX1Poly.Typed.MatchClosedNormalForms
 import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
 import FX1Poly.Typed.BoolElimValueCanonicity
 import FX1Poly.Typed.NatElimComputingCanonicity
+import FX1Poly.Typed.NatElimFaithfulArithmetic
 import FX1Poly.Typed.ListElimComputingCanonicity
 import FX1Poly.Typed.MatchElimComputingCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
@@ -3355,6 +3356,14 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.copyNatStepProduces
 #assert_no_axioms FX1Poly.Typed.natElimCopyComputesToNumeral
 #assert_no_axioms FX1Poly.Typed.natElimCopyComputesToNumeral.two
+-- Native natElim computes binary ADDITION FAITHFULLY (NatElimFaithfulArithmetic): sharpens "computes to A
+-- numeral" to the EXACT result — natElim(numeral n, numeral m, copyStep) ↝* numeral (m+n), agreeing with the
+-- host's Nat addition. natNumeralCell is the reusable native numeral builder; the proof is structural recursion
+-- on the scrutinee composing ι-steps + the copy-step β-pair (Nat.add_zero / Nat.add_succ for the arithmetic).
+#assert_no_axioms FX1Poly.Typed.natNumeralCell
+#assert_no_axioms FX1Poly.Typed.natNumeralCell_isNumeral
+#assert_no_axioms FX1Poly.Typed.natElimAddFaithful
+#assert_no_axioms FX1Poly.Typed.natElimAddFaithful.twoPlusThree
 -- ★ RECURSIVE list-eliminator computing canonicity (ListElimComputingCanonicity), completing the
 -- recursive-eliminator computing-canonicity family (nat + list). listElim's cons ι-rule is a TRIPLE-nested app
 -- (the cons branch is a 3-arg curried function Elt→List→C→C) reintroducing a listElim over the tail. ★
