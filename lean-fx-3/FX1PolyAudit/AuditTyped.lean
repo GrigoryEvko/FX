@@ -560,6 +560,7 @@ import FX1Poly.Typed.PinnedReflectionPiIntro
 import FX1Poly.Typed.FormationPinnedReflection
 import FX1Poly.Typed.GrownPinnedReflection
 import FX1Poly.Typed.PinnedReflectionPiElimCore
+import FX1Poly.Typed.GrownWfOpenStronglyNormalizing
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8520,3 +8521,12 @@ condition + lookupIsType. -/
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimCore
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimVarArm
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimReducesToVarArm
+
+/- Open SN under GROWN context well-formedness (GrownWfOpenStronglyNormalizing): the
+WfContextDescPi-keyed twins of the formation-wf open SN — the reducible closing environment reads
+each binding's grown universe typing directly off the grown wf's cons component (no
+formation→grown embedding), and the SN assembly is the identical wire.  The SN supply for the
+pinned-reflection whnf dispatcher, whose motive carries exactly this wf. -/
+
+#assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContextDescPi
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.stronglyNormalizingOfWfContextDescPi
