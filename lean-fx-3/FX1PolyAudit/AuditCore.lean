@@ -16,6 +16,7 @@ import FX1Poly.Core.RecursiveEliminatorTermination
 import FX1Poly.Core.IotaNonRecursiveTermination
 import FX1Poly.Core.RecursiveIotaSizeGrowth
 import FX1Poly.Core.RecursivePathOrderInductive
+import FX1Poly.Core.RawIotaRpoBridge
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -316,6 +317,21 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 -- firing-68 obstruction arm (oriented by rpo_orients_natElim) sits in a genuine well-founded order.
 #assert_no_axioms FX1Poly.Core.RpoInductive.rpoWellFounded
 #assert_no_axioms FX1Poly.Core.RpoInductive.fxRpoWellFounded
+
+-- RawTerm RPO bridge (firing-71): the generic rose-tree RPO instantiated at the REAL kernel. eraseToRose
+-- forgets RawTerm's scope/binder-shift structure to a RoseTerm Generator; realGenPrecedence ranks the three
+-- recursive eliminators above gen_app. The three recursive ι arms (Step.iotaNatElimSucc / iotaNatRecSucc /
+-- iotaListElimCons — the firing-68 obstruction that defeats every flat measure) have their erased redex
+-- RPO-dominate their erased reduct, and realGenRpoWellFounded gives the order is well-founded — the complete
+-- termination certificate for those arms on the real kernel. The <arm>Raw_isStep witnesses confirm the
+-- redex/reduct pairs really are the live Step constructors. β stays Tait-imported (raw β non-SN, #950).
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.natElimSuccRaw_isStep
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.natRecSuccRaw_isStep
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.listElimConsRaw_isStep
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.rpo_orients_iotaNatElimSucc
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.rpo_orients_iotaNatRecSucc
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.rpo_orients_iotaListElimCons
+#assert_no_axioms FX1Poly.Core.RawIotaRpo.realGenRpoWellFounded
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
