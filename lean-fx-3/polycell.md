@@ -1029,6 +1029,40 @@ per-construction STC / gluing arguments, but it is still a proof
 obligation; no arbitrary profile gets canonicity or normalization by
 being merely named in the table.
 
+**Honest scope (2026-06-09, after re-reading BKS `arXiv:2302.05190` §4
+against the FX kernel).** Sconing is the logical-relation method
+*re-packaged*, NOT a logically-independent proof.  In BKS the displayed
+model's types ARE logical predicates — `Ty^•(A) ≜ Tm(1,A) → Set`, a
+Set-valued predicate over closed terms (§4); the Π-case asks functions
+to *preserve* the predicate; the normalization displayed model (§5) is
+the `Nf`/`Ne` triple with quote/unquote.  So the sconing witness's
+"computability" component IS the reducibility data, and in the FX kernel
+the witness's `computable` predicate is provably EQUAL (by `rfl`) to the
+Path-A Tait candidate (`sconingSN_eq_taitComposition`).  This is not a
+defect — it is exactly what BKS's construction is.  Consequences for the
+honest Milestone-A capstone (`MilestoneAParityMatrix`):
+
+* The sconing "leg" is a categorical RE-PACKAGING (boilerplate-free
+  framework + uniform canonicity / normalization / parametricity) — a
+  genuine triangulation / cross-check, NOT an independent second proof
+  of the same fact.  Its SN endpoint is `bridgedToTait`, by design.
+* "canonicity, normalization, and parametricity from one witness" means
+  the FRAMEWORK is enough (sconing replaces general gluing); each
+  metatheorem still has its OWN displayed model (its own logical
+  relation).  It is not one proof yielding three.
+* BKS proves NbE-style normalization (unique normal form via eval +
+  quote) and canonicity — NOT reduction-strong-normalization.  FX's
+  reduction-SN is the Tait/Girard `Acc` argument (SN-043); an
+  *independent* SN-via-sconing would need the Sterling STC
+  closed-modality (a higher-inductive quotient), which in Init-only Lean
+  pulls `Quot.sound` and breaks the zero-axiom discipline — hence it is
+  recorded as a moonshot, not a capstone prerequisite.
+
+Neither BKS nor FX overclaims; the misread to avoid is treating sconing
+as a proof *independent of* logical relations.  The genuine value of the
+sconing axis is boilerplate elimination + a uniform per-axis framework,
+which is precisely BKS's stated contribution.
+
 The BKS earlier paper "Relative induction principles" (`arXiv:2102.11649`)
 provides the framework: induction principles that operate relative to
 a functor INTO the syntax, with conclusion in the functor's codomain
