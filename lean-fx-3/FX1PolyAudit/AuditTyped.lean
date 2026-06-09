@@ -502,6 +502,7 @@ import FX1Poly.Typed.UntypableHeadDecision
 import FX1Poly.Typed.TypingHeadKindClassifier
 import FX1Poly.Typed.TypedBySomeEngine
 import FX1Poly.Typed.GeneratorSemanticTier
+import FX1Poly.Typed.GeneratorHonestyOverview
 import FX1Poly.Typed.CertifiedWordReductionTermination
 import FX1Poly.Typed.CertifiedWordReductionConfluence
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
@@ -7427,6 +7428,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.natElim_reducesButUntyped_stillLive
 #assert_no_axioms FX1Poly.Typed.boolTrue_typedNotRedex_stillLive
 #assert_no_axioms FX1Poly.Typed.semanticTier_discriminates
+
+-- GeneratorHonestyOverview (HON-4): the build-time honesty dashboard. allGenerators enumerates all 197 via the
+-- total tag-inverse Generator.fromTag over 0..196; the four count defs fold the HON-1/HON-2/HON-3 classifiers
+-- over it (statically-typed 34 / operational redex-heads 11 / semantically-live 38 / RESERVED 159). A #eval in
+-- the file prints the dashboard on every build that re-elaborates it — the forcing function keeping the gap
+-- visible. The s!-interpolation lives in the #eval COMMAND (not a gated decl), so its toString-propext never
+-- touches a kernel theorem; the count DEFS below are pure List.filter/length over the zero-axiom classifiers.
+#assert_no_axioms FX1Poly.Typed.allGenerators
+#assert_no_axioms FX1Poly.Typed.typedGeneratorCount
+#assert_no_axioms FX1Poly.Typed.redexHeadGeneratorCount
+#assert_no_axioms FX1Poly.Typed.liveGeneratorCount
+#assert_no_axioms FX1Poly.Typed.reservedGeneratorCount
 
 -- CertifiedWordReductionTermination (SN-131): Leg-3 word-rewrite termination on the CERTIFIED fragment.
 -- certifiedReductionInducesWordChain is the bridge (a Step sequence's toCode images form an fxStepSystem
