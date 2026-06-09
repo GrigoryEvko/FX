@@ -86,13 +86,13 @@ theorem pinnedReflectionPiElimCore (profile : PolyProfile)
     functionClassifierConv.sym.trans piPinned
   have reflectedToPiBase : Conv reflectedFunctionClassifier piBase :=
     Conv.reflectRenameOfFinInjective rho rhoInjective piImagesConv
-  have piBaseToPiCell : Conv piBase (piTyCodeCell domainBase codomainBase) :=
+  have piBaseToPiTyCode : Conv piBase (piTyCodeCell domainBase codomainBase) :=
     ⟨piTyCodeCell domainBase codomainBase, sourceChain, StepStar.refl _⟩
   have functionAtSourcePi :
       HasTypeDescPi profile sourceContext sourceFunction
         (piTyCodeCell domainBase codomainBase) :=
     HasTypeDescPi.conv piLevel piFlag functionReflected
-      (reflectedToPiBase.trans piBaseToPiCell) piTyped
+      (reflectedToPiBase.trans piBaseToPiTyCode) piTyped
   obtain ⟨reflectedArgumentClassifier, argumentClassifierConv, argumentReflected⟩ :=
     argumentIH targetWellFormed rho sourceContext rhoInjective condition wellFormed
       argumentInImage domainConv ⟨domainLevel, flag, domainTyped⟩

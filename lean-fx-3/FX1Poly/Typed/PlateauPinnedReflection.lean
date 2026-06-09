@@ -132,12 +132,12 @@ theorem normalNonLambdaClassifierPinned {profile : PolyProfile} {budget : Nat}
       obtain ⟨sourceNestedFunction, sourceNestedArgument, hSourceSubject,
           hNestedFunction, hNestedArgument⟩ :=
         renameEqAppCellInversion rho subjectInImage.symm
-      have nestedFunctionSize : _ ≤ budget :=
+      have nestedFunctionSizeBound : _ ≤ budget :=
         Nat.le_of_lt
           (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_function _ _) subjectSize)
       obtain ⟨piBase, piPinned, piBaseTyped⟩ :=
         normalNonLambdaClassifierPinned residualWithinBudget nestedFunctionTyped
-          nestedFunctionNormal hNotLamNested nestedFunctionSize targetWellFormed rho
+          nestedFunctionNormal hNotLamNested nestedFunctionSizeBound targetWellFormed rho
           sourceContext rhoInjective condition wellFormed hNestedFunction
       obtain ⟨domainBase, codomainBase, sourceChain, domainConv, codomainConv⟩ :=
         Conv.pinnedPiComponentsWithSourceChain rho piPinned
@@ -146,11 +146,11 @@ theorem normalNonLambdaClassifierPinned {profile : PolyProfile} {budget : Nat}
         HasTypeDescPi.subjectReductionStar wellFormed piBaseAt sourceChain
       obtain ⟨domainLevel, codomainLevel, componentFlag, domainTyped, codomainTyped,
           _convToOutput⟩ := HasTypeDescPi.invertPiTyCode piReductTyped
-      have nestedArgumentSize : _ ≤ budget :=
+      have nestedArgumentSizeBound : _ ≤ budget :=
         Nat.le_of_lt
           (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_argument _ _) subjectSize)
       obtain ⟨argumentReflectedClassifier, argumentClassConv, sourceArgumentTyped⟩ :=
-        HasTypeDescPi.pinnedReflectionGuarded (residualWithinBudget nestedArgumentSize)
+        HasTypeDescPi.pinnedReflectionGuarded (residualWithinBudget nestedArgumentSizeBound)
           nestedArgumentTyped (Nat.le_refl _) nestedArgumentNormal
           targetWellFormed rho sourceContext rhoInjective condition wellFormed
           hNestedArgument domainConv ⟨domainLevel, componentFlag, domainTyped⟩
@@ -202,13 +202,13 @@ theorem piElimResidualGuardedWithinBudget (profile : PolyProfile) :
         intro body hEq
         rw [hEq] at appNormal
         exact RawTerm.not_isStepNormalForm_beta_smoke body argument appNormal
-      have functionSize : functionTerm.size ≤ budget :=
+      have functionSizeBound : functionTerm.size ≤ budget :=
         Nat.le_of_lt_succ (Nat.lt_of_lt_of_le
           (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_function _ _) sizeBound) hBound)
       obtain ⟨piBase', piPinned', piBaseTyped'⟩ :=
         normalNonLambdaClassifierPinned
           (fun {smallBound} h => piElimResidualGuardedWithinBudget profile budget smallBound h)
-          functionTyped functionNormal hNotLamF functionSize targetWellFormed rho
+          functionTyped functionNormal hNotLamF functionSizeBound targetWellFormed rho
           sourceContext rhoInjective condition wellFormed hFunction
       exact pinnedReflectionPiElimCore profile functionIH argumentIH rho sourceContext
         targetWellFormed rhoInjective condition wellFormed hFunction hArgument

@@ -47,16 +47,16 @@ theorem reducibleEnvOfWfContextDescPi {profile : PolyProfile} (env : Nat → Nat
   | cons restContext bindingType ih =>
       intro wf
       obtain ⟨boundRest, substRest, envRest⟩ := ih (WfContextDescPi.tailWellFormed wf)
-      obtain ⟨levelExpr, flag, descPiDeriv⟩ := WfContextDescPi.headIsType wf
-      obtain ⟨boundBinding, budget⟩ := BoundExceedsPi.existsBound (env := env) descPiDeriv
+      obtain ⟨levelExpr, flag, bindingTyped⟩ := WfContextDescPi.headIsType wf
+      obtain ⟨boundBinding, budget⟩ := BoundExceedsPi.existsBound (env := env) bindingTyped
       have envRestLifted :
           ReducibleEnvAtBounded env (boundRest + boundBinding) restContext substRest :=
         fun index => (envRest index).cumulative (Nat.le_add_right boundRest boundBinding)
-      have budgetLifted : BoundExceedsPi env (boundRest + boundBinding) descPiDeriv :=
+      have budgetLifted : BoundExceedsPi env (boundRest + boundBinding) bindingTyped :=
         BoundExceedsPi.monotoneInBound (Nat.le_add_left boundBinding boundRest) budget
       have typeReducible : IsReducibleTypeAtBounded env (boundRest + boundBinding)
           (RawTerm.subst substRest bindingType) :=
-        descPiDeriv.subjectReducibleAsTypeUnderEnv budgetLifted envRestLifted
+        bindingTyped.subjectReducibleAsTypeUnderEnv budgetLifted envRestLifted
       have headMember : IsReducibleMemberAtBounded env (boundRest + boundBinding)
           (RawTerm.subst substRest bindingType)
           (.mkGen .gen_var ⟨0, Nat.zero_lt_one⟩ .childNil) :=
