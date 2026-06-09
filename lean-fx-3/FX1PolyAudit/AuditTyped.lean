@@ -548,6 +548,7 @@ import FX1Poly.Typed.MechanizedProofCrossReference
 import FX1Poly.Typed.FormalReviewGate
 import FX1Poly.Typed.SelfVerifiedMetatheory
 import FX1Poly.Typed.GrownStrengthening
+import FX1Poly.Typed.GrownStrengtheningRefutation
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8370,3 +8371,15 @@ re-types the var at the strengthened classifier given its validity. Toward grown
 #assert_no_axioms FX1Poly.Typed.lookupConsSuccEqWeaken
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.strengthenVariableClassifier
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.strengthenVariableUnderBinding
+
+/- Existential-form grown strengthening REFUTED (GrownStrengtheningRefutation): the grown conv arm
+reclassifies a weakened subject at a β-expansion mentioning the fresh variable, so a weakened subject's
+classifier is NOT forced into the weaken image. Pins GrownStrengtheningUnderBindingTarget (both subject
+and classifier weakened) as the campaign target — proven via checker completeness ∘ rename-equivariance ∘
+soundness, not derivation induction. -/
+
+#assert_no_axioms FX1Poly.Typed.escapingReclassifier
+#assert_no_axioms FX1Poly.Typed.weakenedSubjectGrownTypedAtEscapingClassifier
+#assert_no_axioms FX1Poly.Typed.escapingReclassifier_isOutsideWeakenImage
+#assert_no_axioms FX1Poly.Typed.grownStrengtheningExistentialForm_isFalse
+#assert_no_axioms FX1Poly.Typed.GrownStrengtheningUnderBindingTarget
