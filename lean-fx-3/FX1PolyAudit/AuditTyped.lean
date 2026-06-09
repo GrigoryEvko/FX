@@ -286,6 +286,7 @@ import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
 import FX1Poly.Typed.BoolElimValueCanonicity
 import FX1Poly.Typed.NatElimComputingCanonicity
 import FX1Poly.Typed.NatElimFaithfulArithmetic
+import FX1Poly.Typed.ClosedNumeralSubstInvariant
 import FX1Poly.Typed.ListElimComputingCanonicity
 import FX1Poly.Typed.ListElimFaithfulLength
 import FX1Poly.Typed.MatchElimComputingCanonicity
@@ -3368,6 +3369,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.natNumeralCell_isNumeral
 #assert_no_axioms FX1Poly.Typed.natElimAddFaithful
 #assert_no_axioms FX1Poly.Typed.natElimAddFaithful.twoPlusThree
+-- ClosedNumeralSubstInvariant (HON-13 Nat.mul crack): the substrate breaking the subst-no-compute wall that
+-- blocks native Nat.mul faithfulness. mulStep embeds the multiplicand numeral under binders; its β-reduction
+-- must push subst through a SYMBOLIC numeral, which is a stuck match (no rfl). natNumeralAt_subst proves a closed
+-- numeral is fixed by ANY substitution by induction on m (subst_natSucc_reduces exposes the succ, IH closes),
+-- so the mulStep β-reduct is rewritten explicitly. natNumeralAt = scope-general numeral (the existing
+-- natNumeralCell is scope-0 only; under binders it lives at scope 2); the _zero bridge connects to
+-- natElimAddFaithful for the eventual Nat.mul induction. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.natNumeralAt
+#assert_no_axioms FX1Poly.Typed.natNumeralAt_subst
+#assert_no_axioms FX1Poly.Typed.natNumeralAt_zero_eq_natNumeralCell
 -- ★ RECURSIVE list-eliminator computing canonicity (ListElimComputingCanonicity), completing the
 -- recursive-eliminator computing-canonicity family (nat + list). listElim's cons ι-rule is a TRIPLE-nested app
 -- (the cons branch is a 3-arg curried function Elt→List→C→C) reintroducing a listElim over the tail. ★
