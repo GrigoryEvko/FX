@@ -551,6 +551,7 @@ import FX1Poly.Typed.GrownStrengthening
 import FX1Poly.Typed.GrownStrengtheningRefutation
 import FX1Poly.Typed.GrownCheck
 import FX1Poly.Typed.GrownCheckContextConversion
+import FX1Poly.Typed.GrownCheckSoundnessRefutation
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8414,3 +8415,17 @@ lam/app soundness reassembly shapes consumed by the STR-5 soundness induction. -
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piTargetExposure
 #assert_no_axioms FX1Poly.Typed.GrownCheck.lamSoundGivenBodyTyped
 #assert_no_axioms FX1Poly.Typed.GrownCheck.appSoundGivenComponentsTyped
+
+/- Raw-relation SOUNDNESS REFUTED (GrownCheckSoundnessRefutation): the Curry fix-point TYPE
+X := curryOmega (λT. Π T. Type@0) — with X ~Conv~ Π X. Type@0 — threads the app arm's floating Π-code, so
+Ω = (λx.xx)(λx.xx) CHECKS at the typed target Type@0 while being untypable (SN-043). The
+completeness ∘ reflection ∘ soundness pipeline cannot run over the RAW relation; typehood must enter via an
+annotated judgment (campaign log carries the surviving routes). -/
+
+#assert_no_axioms FX1Poly.Typed.recursivePiType
+#assert_no_axioms FX1Poly.Typed.recursivePiType_convPi
+#assert_no_axioms FX1Poly.Typed.selfApplicationBodyChecks
+#assert_no_axioms FX1Poly.Typed.selfApplicationChecksAtPi
+#assert_no_axioms FX1Poly.Typed.selfApplicationChecksAtRecursiveType
+#assert_no_axioms FX1Poly.Typed.omegaChecksAtTypeZero
+#assert_no_axioms FX1Poly.Typed.grownCheckRawSoundness_isFalse
