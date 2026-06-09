@@ -8463,6 +8463,7 @@ comes from a λ with the body an exact lift-image). -/
 #assert_no_axioms FX1Poly.Typed.Conv.pinnedPiComponentsInRenameImage
 #assert_no_axioms FX1Poly.Typed.Conv.pinnedPiComponentsWithSourceChain
 #assert_no_axioms FX1Poly.Typed.renameEqLamCellInversion
+#assert_no_axioms FX1Poly.Typed.renameEqAppCellInversion
 
 /- The pinned reflection's context condition + leaf arms (PinnedReflectionContext): the
 Kripke/Conv-relaxed image context condition (exact-image base instance for strengthening + the
