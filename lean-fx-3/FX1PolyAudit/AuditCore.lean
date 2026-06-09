@@ -308,6 +308,15 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.RpoInductive.rpo_orients_natElim
 #assert_no_axioms FX1Poly.Core.RpoInductive.fxPrecedence_wellFounded
 
+-- RPO well-foundedness (firing-70): the Nipkow/Buchholz nested-accessibility theorem, zero-axiom and with
+-- NO size measure. acc_node uses the rose-tree recursor twice (top-level wrapper + the predecessor's
+-- predAcc, which supplies the precedence/multiset cases their children accessible — breaking the apparent
+-- circularity); the four-clause Rpo inversion via `cases` is propext-clean. rpoWellFounded :
+-- WellFounded prec → WellFounded (RpoBelow prec); fxRpoWellFounded instantiates it at fxPrecedence, so the
+-- firing-68 obstruction arm (oriented by rpo_orients_natElim) sits in a genuine well-founded order.
+#assert_no_axioms FX1Poly.Core.RpoInductive.rpoWellFounded
+#assert_no_axioms FX1Poly.Core.RpoInductive.fxRpoWellFounded
+
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
 -- Relation.ReflTransGen is Mathlib-only) + single/trans; Joinable/WeaklyConfluent/Confluent vocabulary;

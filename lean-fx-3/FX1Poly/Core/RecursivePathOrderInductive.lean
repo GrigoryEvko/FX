@@ -48,15 +48,22 @@ Two kernel obstructions, both solved:
     `MultisetRedOne` def is rejected by the strict-positivity checker (it cannot see the positive use).
     Inlined, every `Rpo` occurrence sits strictly positively to the right of `∀`/`→`.
 
-## The named WF crux (next, multi-firing)
+## Well-foundedness (the Nipkow/Buchholz nested accessibility — PROVED here)
 
-The full RPO WELL-FOUNDEDNESS theorem `WellFounded (fun small big => Rpo prec big small)` (given
-`WellFounded prec`) is the Nipkow/Buchholz nested-accessibility proof: `acc_node` by induction on the head's
-precedence-accessibility (outer) and the children's multiset-accessibility (inner, supplied by the shipped
-`MultisetRedOne.consAccessible` from each child's accessibility), discharging the four clauses.  That is the
-genuinely large remaining proof; this file supplies its definition, its orientation obligation (the
-per-arm decrease), and its precedence-WF ingredient.  The β boundary stays honestly Tait-imported (raw β is
-non-SN — Ω, SN-NECESSITY #950); #1139 separates the terminating ι/η fragment from it.
+**`rpoWellFounded` (★)**: `WellFounded prec → WellFounded (RpoBelow prec)` where `RpoBelow prec small big :=
+Rpo prec big small`.  The proof needs no `size` measure: it uses the rose-tree recursor TWICE.  `acc_node`
+(a node with all children RPO-accessible is accessible) is proved by outer induction on the head's
+precedence-accessibility and inner induction on the children's MULTISET accessibility (supplied by the
+shipped `MultisetRedOne.consAccessible` from each child's accessibility); the `Acc.intro` body `predAcc` is
+then built by the rose-tree recursor on the PREDECESSOR, so the precedence/multiset cases get the
+predecessor's children accessible — breaking the apparent circularity structurally.  `fxRpoWellFounded`
+instantiates it at `fxPrecedence`, so the eliminator-fragment RPO (which `rpo_orients_natElim` shows orients
+the firing-68 obstruction arm) is a genuine well-founded order — the complete termination certificate for
+that arm.  The β boundary stays honestly Tait-imported (raw β is non-SN — Ω, SN-NECESSITY #950); #1139
+separates the terminating ι/η fragment from it.
+
+The `Rpo` inversion (`cases` on a doubly-`node`-indexed `Rpo` proof) is propext-clean here (verified), so the
+four-clause case analysis in `acc_node_mult` introduces no axioms.
 
 ## Zero-axiom verification
 
@@ -194,5 +201,106 @@ theorem rpo_orients_natElim (predScrut zeroBranch succBranch : FxTerm) :
 `precedenceRank` is below a bigger, so `fxPrecedence` is the inverse image of `Nat.lt` under the rank. -/
 theorem fxPrecedence_wellFounded : WellFounded fxPrecedence :=
   InvImage.wf precedenceRank Nat.lt_wfRel.wf
+
+variable {prec : Symbol → Symbol → Prop}
+
+/-- `RpoBelow prec small big` = `small` is RPO-below `big` (the order whose well-foundedness we prove).
+Reducible so `cases` sees through it to the `Rpo` constructors during inversion. -/
+@[reducible] def RpoBelow (prec : Symbol → Symbol → Prop) (small big : RoseTerm Symbol) : Prop :=
+  Rpo prec big small
+
+/-- Children all accessible ⟹ the children-list is multiset-accessible (fold of `consAccessible`). -/
+theorem childrenMultisetAcc {children : List (RoseTerm Symbol)}
+    (accChildren : ∀ child, child ∈ children → Acc (RpoBelow prec) child) :
+    Acc (MultisetRedOne (RpoBelow prec)) children := by
+  induction children with
+  | nil => exact MultisetRedOne.emptyAccessible _
+  | cons headChild tailChildren ih =>
+      exact MultisetRedOne.consAccessible _ headChild
+        (accChildren headChild (List.Mem.head _)) tailChildren
+        (ih (fun child membership => accChildren child (List.Mem.tail _ membership)))
+
+/-- The genuine `acc_node`, parameterized on the precedence IH and the children's MULTISET accessibility
+(inducted on as the inner argument).  `predAcc` (the `Acc.intro` body) is built by the rose-tree recursor on
+the predecessor, so the precedence/multiset cases get the predecessor's children accessible — breaking the
+apparent circularity without any `size` measure. -/
+theorem acc_node_mult (headSym : Symbol)
+    (ihPrec : ∀ otherSym, prec otherSym headSym → ∀ otherChildren,
+      (∀ child, child ∈ otherChildren → Acc (RpoBelow prec) child) →
+      Acc (RpoBelow prec) (.node otherSym otherChildren))
+    (children : List (RoseTerm Symbol))
+    (accMult : Acc (MultisetRedOne (RpoBelow prec)) children) :
+    (∀ child, child ∈ children → Acc (RpoBelow prec) child) →
+    Acc (RpoBelow prec) (.node headSym children) := by
+  induction accMult with
+  | intro children _accMultPred ihMult =>
+    intro accChildren
+    apply Acc.intro
+    refine RoseTerm.rec
+      (motive_1 := fun term => RpoBelow prec term (.node headSym children) → Acc (RpoBelow prec) term)
+      (motive_2 := fun childList => ∀ child, child ∈ childList →
+        (RpoBelow prec child (.node headSym children) → Acc (RpoBelow prec) child))
+      ?nodeCase ?nilCase ?consCase
+    case nodeCase =>
+      intro smallSym smallChildren predChildren hBelow
+      cases hBelow with
+      | subtermEq _ _ _ membership => exact accChildren _ membership
+      | subtermStrict _ _ _ subtermChild membership inner =>
+          exact Acc.inv (accChildren subtermChild membership) inner
+      | precedence _ _ _ _ precProof reductChildrenBelow =>
+          exact ihPrec smallSym precProof smallChildren
+            (fun child membership => predChildren child membership (reductChildrenBelow child membership))
+      | multiset _ _ _ removed prefixChildren suffixChildren addedChildren
+          bigEq smallEq addedSmaller reductChildrenBelow =>
+          exact ihMult smallChildren
+            ⟨removed, prefixChildren, suffixChildren, addedChildren, bigEq, smallEq, addedSmaller⟩
+            (fun child membership => predChildren child membership (reductChildrenBelow child membership))
+    case nilCase => intro child membership; nomatch membership
+    case consCase =>
+      intro headChild tailChildren headInductive tailInductive child membership
+      rcases membership with _ | ⟨_, memberTail⟩
+      · exact headInductive
+      · exact tailInductive child memberTail
+
+/-- **`acc_node`**: a node with all children RPO-accessible is itself RPO-accessible — outer induction on the
+head's precedence-accessibility, supplying `acc_node_mult` with the children's multiset accessibility. -/
+theorem acc_node (headSym : Symbol) (accPrec : Acc prec headSym) :
+    ∀ children, (∀ child, child ∈ children → Acc (RpoBelow prec) child) →
+    Acc (RpoBelow prec) (.node headSym children) := by
+  induction accPrec with
+  | intro headSym _accPrecPred ihPrec =>
+    intro children accChildren
+    exact acc_node_mult headSym ihPrec children (childrenMultisetAcc accChildren) accChildren
+
+/-- The structural wrapper: RPO well-foundedness follows from `acc_node`, by the rose-tree recursor. -/
+theorem rpoBelow_wellFoundedOfAccNode
+    (accNode : ∀ (headSym : Symbol) (children : List (RoseTerm Symbol)),
+      (∀ child, child ∈ children → Acc (RpoBelow prec) child) →
+      Acc (RpoBelow prec) (.node headSym children)) :
+    WellFounded (RpoBelow prec) :=
+  WellFounded.intro fun term =>
+    RoseTerm.rec
+      (motive_1 := fun t => Acc (RpoBelow prec) t)
+      (motive_2 := fun cs => ∀ child, child ∈ cs → Acc (RpoBelow prec) child)
+      (fun headSym children childrenAcc => accNode headSym children childrenAcc)
+      (fun child membership => nomatch membership)
+      (fun _headChild tailChildren headAcc tailAcc child membership => by
+        rcases membership with _ | ⟨_, memberTail⟩
+        · exact headAcc
+        · exact tailAcc child memberTail)
+      term
+
+/-- **★ RPO well-foundedness**: the recursive path order over a well-founded precedence is well-founded.
+The genuinely-hard Nipkow/Buchholz nested-accessibility theorem, zero-axiom, no `size` measure. -/
+theorem rpoWellFounded (precWellFounded : WellFounded prec) :
+    WellFounded (RpoBelow prec) :=
+  rpoBelow_wellFoundedOfAccNode fun headSym children accChildren =>
+    acc_node headSym (precWellFounded.apply headSym) children accChildren
+
+/-- **★ The eliminator-fragment RPO is well-founded**: instantiating `rpoWellFounded` at `fxPrecedence`.
+Together with `rpo_orients_natElim`, the firing-68 obstruction arm sits in a genuine well-founded order —
+the complete termination certificate for it. -/
+theorem fxRpoWellFounded : WellFounded (RpoBelow fxPrecedence) :=
+  rpoWellFounded fxPrecedence_wellFounded
 
 end FX1Poly.Core.RpoInductive
