@@ -568,6 +568,7 @@ import FX1Poly.Typed.PlateauPinnedReflection
 import FX1Poly.Typed.NeutralReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionLamClassifierResidual
 import FX1Poly.Typed.FlagCoherentReflectionCondition
+import FX1Poly.Typed.UniverseClassificationUnique
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8617,3 +8618,10 @@ Kripke extension step. -/
 #assert_no_axioms FX1Poly.Typed.ContextReflectsRenameFlagCoherent.toContextReflectsRename
 #assert_no_axioms FX1Poly.Typed.ContextReflectsRenameFlagCoherent.ofWeakenCons
 #assert_no_axioms FX1Poly.Typed.ContextReflectsRenameFlagCoherent.consConv
+
+/- Enrichment spike E2.5 GO (UniverseClassificationUnique): a Conv-class contains at most one
+universe code (rigidity), so universe classifications drawn from one Conv-class coincide —
+validated at the variable leaf via inversionVariable.  The flag negotiation closes at leaves. -/
+
+#assert_no_axioms FX1Poly.Typed.Conv.universeCode_injective
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.variableUniverseClassificationUnique
