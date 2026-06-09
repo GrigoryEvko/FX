@@ -269,6 +269,7 @@ import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.CanonicitySyntacticRoute
+import FX1Poly.Typed.GrownRigidityCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
@@ -3159,6 +3160,19 @@ gates pin them shut.
 -- Eliminator-computing canonicity (4th engine HasTypeDescDataElim) is the follow-on, off this signature. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.dataCanonicityFromSyntacticRoute
 #assert_no_axioms FX1Poly.Typed.boolCanonicityViaSyntacticRoute
+-- GENERIC GROWN-RIGIDITY CANONICITY ENGINE (GrownRigidityCanonicity): lifts #1065's normal-only
+-- noClosedNormalTermAtDataClassifier to ARBITRARY subjects, making every data canonicity a per-type one-liner.
+-- ★ noClosedGrownTermAtDataClassifier = generic arbitrary-subject grown vacuity (grown SN + SR-U4 + #1065);
+-- subsumes noClosedGrownTermAtBoolType. ★ dataCanonicityFromGrownRigidity = generic packaging deriving the grown
+-- vacuity from two shipped Conv-rigidities (strengthens dataCanonicityFromSyntacticRoute, which assumed it).
+-- boolCanonicityViaGrownRigidity = bool through the engine (non-vacuity). noClosedGrownTermAtSigmaType = the Σ
+-- arbitrary-subject grown vacuity (grown half of future Σ-canonicity, arbitrary-subject twin of #1065's
+-- normal-only version). Two type families (nullary classifier + binary former) = genuinely generic. SN-049
+-- per-type instances now one-liners; eliminator engine (#1138) is the follow-on. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedGrownTermAtDataClassifier
+#assert_no_axioms FX1Poly.Typed.dataCanonicityFromGrownRigidity
+#assert_no_axioms FX1Poly.Typed.boolCanonicityViaGrownRigidity
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedGrownTermAtSigmaType
 -- GROWN CLOSED-NORMAL CLASSIFIER SHAPE (GrownClosedNormalClassifierShape, CANON-1 generalization): the POSITIVE
 -- characterization behind every data-classifier rule-out. ★ closedNormalClassifierIsFunctionOrType = a closed
 -- normal grown-typed term's classifier is Conv a Π-code OR Conv a universe code (the grown engine inhabits only
