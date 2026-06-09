@@ -549,6 +549,7 @@ import FX1Poly.Typed.FormalReviewGate
 import FX1Poly.Typed.SelfVerifiedMetatheory
 import FX1Poly.Typed.GrownStrengthening
 import FX1Poly.Typed.GrownStrengtheningRefutation
+import FX1Poly.Typed.GrownCheck
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8383,3 +8384,18 @@ soundness, not derivation induction. -/
 #assert_no_axioms FX1Poly.Typed.escapingReclassifier_isOutsideWeakenImage
 #assert_no_axioms FX1Poly.Typed.grownStrengtheningExistentialForm_isFalse
 #assert_no_axioms FX1Poly.Typed.GrownStrengtheningUnderBindingTarget
+
+/- The syntax-directed grown checking RELATION (GrownCheck): one arm per subject head shape, recursive
+premises only on strict subterms, Conv only at compare leaves, no typehood premises — the
+grown-strengthening campaign's central object (completeness ∘ rename-reflection ∘ soundness). absorbConv is
+the recursion-free conv-absorption (completeness's conv-arm discharge); the leaf soundness lemmas
+reconstruct typing at a typed target; the smokes pin the identity-λ check and the STR-1 escaping
+reclassifier's GrownCheck-reachability (why the reflection conclusion is the Conv-existential). -/
+
+#assert_no_axioms FX1Poly.Typed.GrownCheck
+#assert_no_axioms FX1Poly.Typed.GrownCheckTelescope
+#assert_no_axioms FX1Poly.Typed.GrownCheck.absorbConv
+#assert_no_axioms FX1Poly.Typed.GrownCheck.variableSoundAtTypedTarget
+#assert_no_axioms FX1Poly.Typed.GrownCheck.universeCodeSoundAtTypedTarget
+#assert_no_axioms FX1Poly.Typed.grownCheckIdentityLambdaSmoke
+#assert_no_axioms FX1Poly.Typed.grownCheckEscapingReclassifierSmoke
