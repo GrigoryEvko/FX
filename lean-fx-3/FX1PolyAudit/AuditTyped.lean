@@ -5,6 +5,7 @@ import FX1Poly.Typed.MilestoneASpineValueLayer
 import FX1Poly.Typed.MilestoneAEliminatorLayerSpine
 import FX1Poly.Typed.BoolElimComputingCanonicity
 import FX1Poly.Typed.MatchElimComputingCanonicityTyped
+import FX1Poly.Typed.MatchGeneralBranchCanonicity
 import FX1Poly.Typed.MetatheoryParityLedger
 import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.UniverseCodeShape
@@ -3210,6 +3211,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.closedEitherMatchIntoBoolComputes
 #assert_no_axioms FX1Poly.Typed.closedOptionMatchIntoBoolComputes.smoke
 #assert_no_axioms FX1Poly.Typed.closedEitherMatchIntoBoolComputes.smoke
+-- ★ GENERAL-BRANCH option/either match canonicity (MatchGeneralBranchCanonicity): the structural reduction
+-- abstracted over the branch canonicity, so it covers ARBITRARY (payload-using) branches, not just constant ones.
+-- closedOption/EitherMatchComputes discharge the scrutinee part (canonical forms + congruence + ι) and take branch
+-- canonicity as a hypothesis; the prior constant-branch result is recovered as a corollary
+-- (closedOptionMatchIntoBoolFromGeneral). The identity-branch witnesses (closedOption/EitherMatchIdentityIntoBool)
+-- CONSUME the stored payload and re-emit it — past the constant-branch corner the prior file flagged. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.closedOptionMatchComputes
+#assert_no_axioms FX1Poly.Typed.closedEitherMatchComputes
+#assert_no_axioms FX1Poly.Typed.closedOptionMatchIntoBoolFromGeneral
+#assert_no_axioms FX1Poly.Typed.closedOptionMatchIdentityIntoBool
+#assert_no_axioms FX1Poly.Typed.closedEitherMatchIdentityIntoBool
 -- ★ MILESTONE-A VALUE-LAYER SPINE: the three now-unconditional soundness pillars of the grown typed kernel
 -- bundled as ONE record — SN-043 (every closed grown-typed term is SN), SN-050 (no closed grown inhabitant
 -- of emptyType), SN-047 value-layer (a closed bool reduces to boolTrue/boolFalse). Each field is the shipped
