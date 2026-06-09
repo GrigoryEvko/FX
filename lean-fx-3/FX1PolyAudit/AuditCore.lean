@@ -23,6 +23,7 @@ import FX1Poly.Core.EraseToRoseRenameInvariant
 import FX1Poly.Core.EtaRpoEmbedding
 import FX1Poly.Core.RawIotaEtaFullStepSN
 import FX1Poly.Typed.RawIotaEtaOperationalSN
+import FX1Poly.Typed.MilestoneAParityMatrix
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -420,6 +421,17 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.irreflexive
 #assert_no_axioms FX1Poly.Core.alternatingSequence_steps
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.no_two_cycle
+
+-- ★ #1140 PARITY-MATRIX: the 3-leg (Tait / sconing-via-STC / RPO-word) × 3-endpoint (SN / canonicity /
+-- consistency) ledger + the HONEST capstone criterion for #653.  parityCell is the honest 9-cell status
+-- table; capstone_currentlyClosedOneWay (rfl): exactly ONE leg (Tait) is fully+independently proven across
+-- all three endpoints; threeWayCapstone_not_yet_met (decide): the three-way capstone is NOT yet closed
+-- (sconing SN bridged-to-Tait, RPO leg owns only the SN endpoint — Tait-free ι∪η, β imported, canon/consist
+-- open).  rpoStrongNormalizationEndpoint: NON-VACUOUS witness (the firing-78 theorem behind the RPO×SN cell).
+#assert_no_axioms FX1Poly.Core.ParityMatrix.capstone_currentlyClosedOneWay
+#assert_no_axioms FX1Poly.Core.ParityMatrix.legBreakdown
+#assert_no_axioms FX1Poly.Core.ParityMatrix.threeWayCapstone_not_yet_met
+#assert_no_axioms FX1Poly.Core.ParityMatrix.rpoStrongNormalizationEndpoint
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
