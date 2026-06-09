@@ -19,9 +19,14 @@
 > maximal-power apex kernel (~207K thirteen-axis + Tier-0 (∞,ω)
 > substrate + ~63K Phase-Z typed/cubical/HIIRT/21-dim apex; ~230K net
 > after the §7/§8 cascade-obsolescence + migration deletions), over
-> 2–4 years.  **~25K is already in place** — the PolyCell substrate
-> (RawTerm / RawCell / PolyCell + 194-`Generator` table + certifier +
-> Allais fold) plus the reducibility + strengthening foundation.
+> 2–4 years — forecast figures.  **Measured 2026-06-09: 181,843 LoC
+> across 971 files in FX1Poly plus 14,191 LoC of FX0Poly +
+> FX1PolyAudit, zero-axiom, per-declaration audit-gated** — the
+> PolyCell substrate (RawTerm / RawCell / PolyCell + 197-`Generator`
+> table + certifier + Allais fold), the full typed-layer metatheory,
+> the SN/canonicity/consistency stack, the graded-dimension program,
+> and the honesty-ledger machinery.  See the Document Status header
+> below for the delivered/target reconciliation.
 > Delivered in full, this is simultaneously the FIRST
 > mechanization of (∞,ω)-categories in any proof assistant AND the
 > strongest sound type theory with decidable typechecking ever
@@ -36,8 +41,9 @@
 > so the checker can reject it.  Certified `PolyCell π sort dim scope
 > boundary raw` is the kernel layer and has constructors only for
 > sorted, scoped, boundary-compatible cells, collapsed to one generic
-> `gen` constructor over the 194-entry generator table (expanding to
-> ~400–500 entries at MILESTONE D per §3.16).  FX kernel objects
+> `gen` constructor over the 197-entry generator table (197 as of
+> 2026-06, pinned by the HON-9 audit guard; expanding to ~400–500
+> entries at MILESTONE D per §3.16).  FX kernel objects
 > become projections of certified cells over one `PolyProfile π`; raw
 > nonsense must map to `none` / `rejected reason`, never to a
 > certificate.
@@ -50,6 +56,60 @@
 > Ozornova–Rovelli `arXiv:2404.14509` (ωcE polygraph = universal
 > coherent ω-equivalence classifier).  Without those three, this doc is
 > hand-wavy; with them it's mechanizable.
+
+---
+
+## Document status (2026-06-09 reconciliation)
+
+This contract was written ahead of the build.  As of this header the
+lean-fx-3 tree has DELIVERED, zero-axiom and per-declaration
+audit-gated (`lake build FX1Poly FX1PolyAudit`, 999 jobs green):
+
+* **Substrate (Tier 1)** — RawTerm/RawCell/PolyCell + the 197-entry
+  Generator table + certifier + Allais fold (one rename/subst
+  instance each).
+* **Reduction metatheory** — confluence via the Takahashi triangle
+  (complete development, gated root-redexes), raw Conv as a full
+  equivalence, unique normal forms WITHOUT a termination hypothesis,
+  decidable Conv on the normal fragment; βη local confluence and the
+  (ι×η) critical-pair matrix.
+* **Typed layer** — the engine family (formation `HasTypeDesc`,
+  grown `HasTypeDescPi`, flat `HasTypeDescFlat`, base-type, 7
+  data-intro and 6 eliminator standalone engines; rule tables
+  typingRuleDescOf / flatTypingRuleDescOf / baseTypeRuleDescOf /
+  intro / elim) with: unconditional typed subject reduction +
+  SR-star; grown context conversion under target well-formedness;
+  open+closed type safety; inversions; uniqueness; weakening +
+  substitution; progress by classifier.
+* **Normalization** — SN for well-typed terms (closed unconditional;
+  open under WfContext; βη under WfContext via Geser-union +
+  η-postponement); the SN-backed total normalizer with unique-NF
+  identification; SN triangulated (Tait primary; sconing
+  bridged-by-construction; convergent fragment) with an honest
+  bridged-vs-independent parity ledger.
+* **Canonicity & consistency** — closed bool/nat/data canonicity at
+  value level + combined-engine closed-normal canonical forms;
+  consistency by three routes; complete cross-former Conv
+  no-confusion (within and across rule tables).
+* **Decidability (★ A₀ pillars)** — decidable typed checking and
+  typed conversion on the live fragment; FX0 cross-check of flagship
+  typed terms; the .fx0c certificate round-trip.
+* **Dimensions** — the generic graded engine + lattice-class
+  taxonomy + erasure-SN-transfer + the complete §6.8 collision
+  catalog (on a side calculus; cell-integration open).
+* **Governance** — the honesty ledger: 197 generators = 34 typed
+  [8 grown + 26 standalone] / 11 redex-heads / 5 η-sources / 38 LIVE
+  / 159 RESERVED-with-proven-deadness; faithfulness: all 10
+  eliminators compute their named host folds.
+
+Measured size: FX1Poly 181,843 LoC / 971 files; FX0Poly + audit
+14,191 LoC.  Open headline obligations (unchanged): joint-apex
+O-NORM/O-CONF/O-CANON; motive-spine refactor (Z₀); single assembled
+grown checker + grown strengthening/η-SR (STR campaign);
+per-classifier canonicity assembly (CANON-1); TotalityClass
+enforcement; Step.eqType univalence; marking/saturation layer;
+13-axis profile assembly.  Inline status vocabulary throughout:
+DELIVERED / PARTIAL / TARGET (default) / HISTORICAL / SUPERSEDED.
 
 ---
 
@@ -74,15 +134,17 @@ strongest available theory per layer):
   instead of 5-15K LoC bespoke cascade work.  ~12K Lean LoC, first
   Lean port of this framework in any proof assistant.
 
-* **Tier 1 — POLYCELL CORE** (~15K LoC, §4) — **SHIPPED**.
+* **Tier 1 — POLYCELL CORE** (§4) — **SHIPPED**.
   A two-layer core: permissive raw `RawTerm` + `RawCell` (scope-
   indexed, dimension computed) for input data, plus intrinsic certified
   `PolyCell` indexed by sort, dimension, scope, boundary, and raw
-  syntax, with one generic `gen` constructor over the 194-entry
+  syntax, with one generic `gen` constructor over the 197-entry
   generator table.  All V2 suffixes dropped per V2-mig.11–14.  Each
   axis is one Tier-0 obligation witness attached to the profile, not
   a new raw constructor family.  See §3.16 for the apex generator
-  inventory (~400–500 entries at MILESTONE D).
+  inventory (~400–500 entries at MILESTONE D).  The typed layer
+  (§11.8.5) and its metatheory have ALSO shipped on this substrate —
+  see the Document Status header above.
 
 * **Tier 2 — PROFILE AXES + EXTENSION CALCULUS** (13 profile axes,
   §3.1-§3.13, plus the extension calculus in §3.14)
@@ -263,10 +325,15 @@ text names the concrete proof obligation that must replace it in Lean.
 The implementation rule remains stricter than the prose: no shipped
 kernel declaration may contain placeholders, `sorry`, `axiom`,
 `noncomputable`, `Classical.*`, or hypothesis-as-postulate patterns.
+Blocks narrated as SHIPPED must contain only declarations that exist
+in the tree; mixed blocks must split into a shipped part and a
+target part.
 
-FX is currently a 140-KLoC zero-axiom Lean 4 mechanization of a 21-dimensional
-graded modal dependent type theory.  The current kernel is structured as a
-disjoint union of independently-built layers: `Term`, `Ty`, `Step`, `Step.par`,
+FX's pre-pivot kernel (the retired lean-fx-2 tree — HISTORICAL
+motivation; the cascade described here is dead) was a 140-KLoC
+zero-axiom Lean 4 mechanization of a 21-dimensional graded modal
+dependent type theory, structured as a disjoint union of
+independently-built layers: `Term`, `Ty`, `Step`, `Step.par`,
 `StepStar`, `Conv`, `cd_lemma`, eight modal modalities, cubical, observational,
 strict identity, equivalence, refinement, record, codata, session, effect,
 universe cumulativity.  Each layer has its own cascade tax — adding one new
@@ -280,7 +347,7 @@ HITs) takes weeks of cascade work per ctor.
 The v2 structural re-foundation is **SHIPPED** as of 2026-05-27.
 `RawTerm scope` + `RawCell scope` (un-indexed by dimension, dimension
 computed via `RawCell.dim`) are the canonical raw layer.  The
-194-entry `Generator` enum + `binderShifts` + `payload` family +
+197-entry `Generator` enum + `binderShifts` + `payload` family +
 `generatorChildSpecs` table is the Allais universe-of-syntaxes
 descriptor over which the certifier, fold (`rename` + `subst` as
 ONE generic instance each per V2-L2.4/L2.6), `cd_lemma`, and
@@ -319,8 +386,10 @@ universe at (∞,ω); HLOR ωcE polygraph (Axis 9) supplies the
 universal coherent walking ω-equivalence; Uemura representable map
 categories + BKS internal sconing (Tier 0) bind every axis under
 one universal substrate.  Every axis grounded in published
-literature, every axis Lean-mechanizable at zero axioms, every
-axis giving FX a capability no other proof assistant has.  The
+literature, every axis Lean-mechanizable at zero axioms (with the
+§3.0.2 closed-modality boundary as the one known exception, handled
+by the non-HIT variant), every axis giving FX a capability no other
+proof assistant has.  The
 (∞,ω)-categorical universe is FX's SEMANTIC ambition: this would be
 the first mechanization of (∞,ω)-categories in any proof assistant
 if shipped.
@@ -561,9 +630,11 @@ This is the "quantale-enriched (∞,∞)-category of types" Object the
 mechanizable AND — through §11.8 — pushes it to the apex of what
 mathematics currently knows how to mechanize soundly.
 
-The cost is honest: ~270K gross zero-axiom Lean 4 LoC (~230K net),
-~245K still to write after the ~25K shipped foundation, 2–4 years of
-focused work, and the **first mechanization of (∞,ω)-categories
+The cost is honest: ~270K gross zero-axiom Lean 4 LoC (~230K net)
+forecast — with ~196K already measured in the lean-fx-3 tree as of
+2026-06-09 (overlapping but not coextensive with the forecast's
+categories) — 2–4 years of focused work, and the **first
+mechanization of (∞,ω)-categories
 internalized in any proof assistant** AND the **strongest sound type
 theory with decidable typechecking ever shipped** if all committed
 stages land.  FX simultaneously becomes a programming language kernel
@@ -629,7 +700,11 @@ raw inductive constructor or per-consumer proof arms.  The proof work
 moves to generator metadata, checker soundness, and profile-extension
 admission obligations.  Downstream consumers (rename, subst, cd_lemma,
 etc.) should eventually recurse once over the generic cell structure
-plus generator table, not once per feature constructor.
+plus generator table, not once per feature constructor.  (DELIVERED:
+the v2 substrate killed the raw-inductive cascade as predicted; the
+typed layer additionally avoided a typed-arm cascade via the rule
+tables + engine-family pattern — see the §11.8.5 shipped-architecture
+note.)
 
 ### 2.2 The Prop→Type wall and the wrong scope
 
@@ -656,15 +731,22 @@ substrate carry both the cells AND the markings**:
 So **the per-ctor cd_lemma cascade collapses to one theorem per
 profile**.  Adding a new ctor doesn't grow the cascade because the
 new ctor is just a new Generator value classified by the existing
-marking.
+marking.  (DELIVERED — but by a different mechanism than this section
+predicted: the shipped collapse is the generator-generic
+parallel-reduction route — the Takahashi triangle + gated complete
+development (#700–#713) and the generic cd theorem M7 (#256) — over
+the one-fold substrate, with the live `Conv` being `StepStar.Join`.
+The marking/saturation presentation here remains the TARGET semantic
+re-packaging (Axes 3–4); its construction level is tracked in
+`FX1Poly/Stratification/Thin.lean` and is currently at the
+cellIdentifierPredicates rung only.)
 
 ### 2.3 Conv decidability — two independent published paths
 
 Decidability of Conv has TWO concrete published decision procedures
-under the certified PolyCell target.  Either suffices for
-`★ MILESTONE A`; we ship both
-as redundant paths because the first one we hit may reveal Lean
-mechanization issues, and having a backup avoids pivot collapse.
+under the certified PolyCell target.  Path A is primary; Path B is a
+PARTIALLY-independent semantic cross-check (see the reconciliation
+paragraph below) — the two are NOT redundant independent deciders.
 
 **Path A — convergent-rewrite NbE** (the pragmatic path, already
 24/30 supporting lemmas shipped):
@@ -678,10 +760,16 @@ DecidableEq on η-long NF  ─→  Conv.decide via NF equality
 * Reference algorithm: Adjedj-Lennon-Bertrand-Maillard-Pédrot-Pujet,
   "Martin-Löf à la Coq", `arXiv:2310.06376` (2024) — full mechanized
   decidable conv for MLTT-with-inductives in Coq, ~12 months of work.
-  FX is a direct adaptation.
-* Status: K12.1–K12.19 + K12.23 already shipped (Tait reducibility
-  base cases + HOTT cases); K12.20–K12.30 + K13.x pending.  See
-  `LeanFX2/Reducibility/`.
+  The reference recipe; FX's shipped route reached decidability via
+  parallel-reduction confluence + NF-uniqueness (Takahashi) rather
+  than a direct port.
+* Status: DELIVERED in lean-fx-3 — raw-layer NbE-NF substrate
+  (#260/#262), decidable Conv on the normal fragment WITHOUT a
+  termination hypothesis (#715/#716/#957, unique NFs via the
+  Takahashi triangle), the SN-backed term normalizer + decidable Conv
+  on the well-typed fragment (#615/#617,
+  `Conv.decidableOfNormalizer`), typed NF equality + decidable typed
+  Conv (#462), and the WfContext βη-Conv decider (#806).
 * Soundness: standard MLTT subject-reduction + SN proof technique
   (Tait 1967 Kripke logical relations, Wood-Atkey 2022 corrected
   Lam rule).
@@ -758,7 +846,8 @@ recipe.
 **Apex extension (§11.8 commitment).**  Under the maximal-power
 kernel commitment, raw-reduction Conv decidability (the original
 MILESTONE A target) is **a sub-result of typed Conv decidability**,
-not the endpoint.  The revised milestone scale (§11.8.12):
+not the endpoint.  The revised milestone scale (§11.8.12; the A₀
+"defensible kernel" release gate below revised A is §11.8.12.0):
 
 * **MILESTONE A (revised)** = decidable typed conversion + decidable
   typed checking for the ~30-generator semantic core, via cubical
@@ -772,9 +861,11 @@ not the endpoint.  The revised milestone scale (§11.8.12):
 Every decision procedure invoked at any milestone is INTERNAL and
 fully verified — no external SMT, no LLM oracle, no `Classical.dec`
 escape hatch.  §11.8.7 catalogs each decider with its complexity
-bound; the strict harness's `STRICT-COMPLEXITY` gate verifies the
-bound on every decidable kernel theorem (closing the "decidable
-but EXP-tower" loophole).  Path A's NbE engine generalizes to the
+bound; the strict harness's `STRICT-COMPLEXITY` gate is the TARGET
+enforcement — not yet in force: no shipped Decidable carries a
+Complexity witness as of 2026-06 (hook #391; first instances #268 /
+#471 / #648) — closing the "decidable but EXP-tower" loophole once
+live.  Path A's NbE engine generalizes to the
 typed cubical setting (Mörtberg 2023); Path B's Makkai/Forest word
 equality remains available as semantic cross-check on the typed
 polygraph projection.
@@ -878,11 +969,14 @@ For FX, this means: the universe `Ty.universe` in the current kernel
 becomes a certified universe `PolyCell` over a dim-0 `RawCell`
 (`termBase`) input, and its
 universal property (functors-to-it ≃ type-families) holds STRUCTURALLY,
-not by postulation.  Univalence is a theorem; `Step.eqType` becomes
-a reduction inside the universe cell.
+not by postulation.  Univalence is TARGETED as a theorem via the
+`Step.eqType` reduction inside the universe cell — a rule NOT yet
+present in the lean-fx-3 kernel (the `UniverseConfig`
+construction-level ledger records operational univalence absent).
 
-This makes FX **the first proof assistant where univalence is a
-structural theorem rather than an axiom or a postulated `Step` rule**.
+If delivered, this makes FX **the first proof assistant where
+univalence is a structural theorem rather than an axiom or a
+postulated `Step` rule**.
 
 ### 2.7 The math automation hypothesis
 
@@ -896,8 +990,12 @@ This is implementable in the certified PolyCell target: Mathlib's ~1.5M LoC of m
 maps to a sequence of `Generator` value extensions, with each
 Mathlib theorem becoming one dim-1 certified cell over
 `RawCell` raw syntax.
-The conversion is mostly mechanical; the win is that FX-extensions
-inherit Mathlib's full mathematical content.
+The conversion's cell-composition side is mechanical ONCE the §3.0.7
+universal property lands; per §3.0.7 (T8), each library import
+additionally requires its own proof-object translation,
+consistency-strength accounting, and per-import conservativity
+proofs — each import is its own project.  The win is that
+FX-extensions inherit Mathlib's full mathematical content.
 
 ### 2.8 First-of-its-kind mechanization
 
@@ -1017,8 +1115,12 @@ independent of logical relations.  In FX this is literal: the sconing
 witness's `computable` predicate is `rfl`-equal to the Path-A Tait
 candidate (`sconingSN_eq_taitComposition`), so the sconing leg is a
 categorical RE-PACKAGING / cross-check whose SN endpoint is
-`bridgedToTait` by design — not an independent second proof.  Two key
-moves:
+`bridgedToTait` by design — not an independent second proof.
+DELIVERED instances: the concrete InternalSconing witness (#211),
+canonicity extraction (#212), sconing-leg bool/data canonicity +
+consistency (#694–#697), the candidate-backed-scones generalization
+(#1144), and the term-carrying SUBSTVEC CwR bricks 1–9 (#918–#926).
+Two key moves:
 
 * Restrict to a single global-section functor (the sconing functor),
   not arbitrary gluing.
@@ -1128,12 +1230,12 @@ The Tier 0 substrate is **novel Lean work for FX**.  Estimated cost:
 
 | Component | Lean LoC | Status |
 |---|---|---|
-| Representable map category core | ~3K | Novel Lean |
-| Sconing functor + internal presheaf | ~3K | Novel Lean |
-| Three Uemura theorems (bi-initial, internal language, bi-equivalence) | ~2K | Novel Lean |
-| Fire Triangle constraint encoding | ~1K | Novel Lean |
-| Sconing-induction-principle generic + canonicity/normalization/parametricity instances | ~3K | Novel Lean |
-| **Total** | **~12K** | Novel Lean |
+| Representable map category core | ~3K | PARTIAL — fxBaseRMC + the three CwR axioms delivered (#587/#588); RenamingVec finite-bijectivity decider (#914) |
+| Sconing functor + internal presheaf | ~3K | PARTIAL — GlobalSections (#592), SconingPreservation (#593), reducibilityScone bridge (#595) |
+| Three Uemura theorems (bi-initial, internal language, bi-equivalence) | ~2K | TARGET — not mechanized; Uemura bijection tracked as SN-088 |
+| Fire Triangle constraint encoding | ~1K | PARTIAL — constraint cite + effect/eval-axis restriction (#607) |
+| Sconing-induction-principle generic + canonicity/normalization/parametricity instances | ~3K | PARTIAL — data-axis bundling capstone (#696); extraction-ledger instances pending (SN-093..096) |
+| **Total** | **~12K** | Mixed — see per-row status |
 
 Per-axis sconing-witness writeup: ~1K LoC; per-axis representable-map
 signature: ~500 LoC; per-axis Fire Triangle accounting: trivial.  Net
@@ -1352,8 +1454,10 @@ result is available; this section flags FX's intended direction.
 **Lean target signature (NOT shipped; sketch only):**  The block below
 is a Lean *target signature* indicating the intended type of each
 (T*) statement once mechanized.  Bodies are placeholders.  These
-declarations DO NOT EXIST in the lean-fx-2 tree as of this commit;
-shipping them is the research program §3.0.7 describes.
+declarations DO NOT EXIST in the lean-fx-3 tree as of this commit
+(only the bilaxCompatibility witness scaffolding for one extension,
+#219, exists); shipping them is the research program §3.0.7
+describes.
 
 ```lean
 -- Lean target sketch — proof bodies are NOT written; this is the
@@ -1818,11 +1922,12 @@ theorem distributiveLawFromUnivalence (u : FullPolynomialUniverse) :
   -- and target.
   univalenceDistributivityProof u
 
-/-- FX kernel's algebraic structure as a polynomial universe instance.
-The fxProfile's 78 Generators each represent one polynomial; the
+/-- FX kernel's algebraic structure as a polynomial universe instance
+(TARGET — no such declaration exists in the lean-fx-3 tree).
+The fxProfile's 197 Generators each represent one polynomial; the
 universe is the supremum (terminal among all of them). -/
 def fxPolynomialUniverse : FullPolynomialUniverse := {
-  poly := fxKernelPolynomial,  -- the 78-generator polynomial
+  poly := fxKernelPolynomial,  -- the 197-generator polynomial
   isUniv := fxIsSubterminal,  -- proved via Cartesian-lens unique
   topClosed := { eta := Term.unit_intro_lens },
   sigmaClosed := { mu := Term.pair_lens },
@@ -1871,8 +1976,10 @@ direct translation; the Agda code is the working template.
   enough HoTT for univalent-polynomial machinery (function
   extensionality + path induction in Lean's `Eq` type).  The
   isUnivalent predicate only requires Π-equality of Cartesian
-  lenses, which is decidable when the polynomial has finitely
-  many generators (fxPolynomialUniverse).
+  lenses; whether it is decidable for the finite-generator instance
+  (fxPolynomialUniverse) is an OPEN implementation question —
+  subterminality quantifies over arbitrary polynomials and lenses,
+  so finiteness of generators alone does not establish it.
 * The "distributive law from univalence" trick (Theorem 4.2) is
   THE key — what would normally be 4 commuting diagrams (DL1-DL4)
   becomes ONE univalence application.
@@ -1944,6 +2051,13 @@ structure Stratification
   This is per-profile; arbitrary profiles do not get it for free. -/
   thinDecidable : ∀ d a, Decidable (thin d a)
 ```
+
+**Status:** TARGET — ledger-tracked, unimplemented.  The live tree
+carries only the construction-level ledger
+(`FX1Poly/Stratification/Thin.lean`,
+`StratificationConstructionLevel`, at the hasCellIdentifierPredicates
+rung as of 2026-06); the operative confluence/equality engine is
+§2.2's delivered Takahashi route.
 
 **Lean LoC estimate:** ~5K LoC.  The structure is simple; the work
 is in proving the closure axioms hold for the canonical FX
@@ -2083,7 +2197,8 @@ theorem cubicalNewman (X_C : pARS C) (noeth : X_C.IsNoetherian)
 
 /-- The saturated marking on fxProfile's polygraph, derived from
 the contraction structure given by FX's convergent rewrite system
-(termination via K12 SN + confluence via cd_lemma). -/
+(termination via K12 SN + confluence via cd_lemma).
+TARGET — no such declaration exists in the lean-fx-3 tree. -/
 def fxSaturationViaContractions : Saturation fxStratification where
   level := .omegaSat
   isMaximal := fxIsMaximal  -- proved by Theorem 3.2.5 applied to FX
@@ -2094,8 +2209,10 @@ def fxSaturationViaContractions : Saturation fxStratification where
 
 * Replaces the abstract "saturation = thinness predicate that exists
   somehow" with a CONSTRUCTIVE saturation built from FX's convergent
-  rewrite system.  K12 SN + cd_lemma confluence + contraction
-  structure ⇒ saturated marking is COMPUTABLE.
+  rewrite system.  The INGREDIENTS are delivered (typed SN #546,
+  raw confluence #420, the generic cd theorem M7 #256); the
+  contraction/marking packaging itself is TARGET, not built — the
+  live confluence engine is the Takahashi route of §2.2.
 * Newman + Church-Rosser + Squier all derive from the cubical
   contraction structure — no need for separate per-rule confluence
   / coherence proofs at the saturation layer.  Existing FX cd_lemma
@@ -2335,22 +2452,6 @@ Loubaton 2207.08504 §3.1.5.4 (complicial Gray module); Gray 1974
 "Formal Category Theory" (original Gray tensor); Al-Agl-Brown-Steiner
 2002 (Gray tensor on ω-cats).
 
-**Why FX needs it:**
-
-- The Gray tensor `⊗` is the "right" tensor product on (∞,ω)-cats,
-  asymmetric (not symmetric monoidal): `A ⊗ B` distinguishes
-  horizontal vs vertical composition.
-
-- Concurrent execution = horizontal composition with disjoint footprint.
-  Frame rule = interchange (Loubaton 3.1.4.8 + ABGMMM K11.6 already
-  shipped).
-
-- Polarization (∂CBPV, Levy CBPV) is encoded via complicial Gray:
-  positive cells are thin under `_⋆[1]`, negative cells under `[1]⋆_`.
-
-- Cubical operations (transp, hcomp, Kan filling) factor through Gray
-  cylinder + Gray cone + Gray ◦-cone (Loubaton 2207.08504 §2.2.3).
-
 **Lean signature:**
 
 ```lean
@@ -2397,7 +2498,9 @@ delivers the strict-ω-cat Gray tensor + vertical/horizontal
 composition + interchange, which is enough for FX's concurrency +
 frame-rule + polarization use cases.
 
-**Stage 1 (✅ SHIPPED in `Foundation/Polygraph/`):**
+**Stage 1 (✅ SHIPPED — HISTORICAL: lean-fx-2 tree's
+`Foundation/Polygraph/` paths; the lean-fx-3 polygraph carriers are
+the SN-123/124 finite-polygraph + boundary-map modules):**
 
 | Component | File | Status |
 |---|---|---|
@@ -2411,7 +2514,9 @@ Total Stage 1 LoC: ~840 LoC ALREADY IN TREE, zero-axiom under
 strict harness.  This is the operational Gray-tensor + interchange
 machinery that FX needs for concurrency + frame-rule + polarization.
 
-**Stage 2 (REQUIRED follow-on, ~15K LoC):**
+**Stage 2 (required for the full Axis-10 univalence strength;
+droppable under the §12 feature-flag fallback at that strength's
+cost; ~15K LoC):**
 
 The complicial (∞,ω) extension per Loubaton 2207.08504 §3.1.5.4 +
 Verity 2008 §6 explicit formulas.  Stage 2 adds:
@@ -2552,7 +2657,12 @@ the multi-focus discipline; its Lean port is the
   Plus Region/Lifetime/Provenance/Trust/Observability/Clock-
   domain/Version (~5-7 more) which are a mix of structural +
   grading.  Total: 21 dimensions, but only **4 are true cohesive
-  focuses** in the Myers-Riley sense.
+  focuses** in the Myers-Riley sense.  (DELIVERED refinement: the
+  lattice-shape spanning set of the DIM-CLASS series #874–#994 —
+  ordered grade semirings, bounded join-semilattices, preorder,
+  involution, category, full lattice M_ω — supersedes this
+  five-bucket coarse taxonomy for the algebraic dims; the
+  cohesive-focus count of 4 stands.)
 
   The honest orthogonality matrix is NOT C(21,2) = 210 pairs but
   rather a small set of cross-category interactions: cohesive ↔
@@ -3071,13 +3181,17 @@ categorical apex — I0-strength self-similarity via sequential ESR
 Phase Z₆ kickoff**, with `exacting`/`ultraexacting` as same-phase
 stretch targets.
 
-**Operational reference:** `Step.eqType` reduction rule in FX
-kernel (per lean-fx-2/CLAUDE.md mandate).  Univalence ships as a
+**Operational reference (TARGET — NOT in the lean-fx-3 kernel):**
+the `Step.eqType` reduction rule.  Univalence is to ship as a
 **definitional reduction**, not an axiom: `Step.eqType : Step
-(Ty.id (Ty.universe l) A B) (Ty.equiv A B)`.  The theorem
+(Ty.id (Ty.universe l) A B) (Ty.equiv A B)`, with the theorem
 `Univalence : Conv (Ty.id Univ A B) (Ty.equiv A B) := Conv.fromStep
-Step.eqType` is a real body, zero-axiom under
-`#assert_no_axioms`.  Under the apex commitment this generalizes
+Step.eqType` as a real zero-axiom body once the rule lands.  Status:
+the rule is ABSENT — the live Step relation is β + 16 ι + 5 η, the
+`UniverseConfig` construction-level ledger records operational
+univalence as not constructed, and the retired lean-fx-2 tree's D2.6
+work does not carry over (`gen_equivCode` exists only as a type code,
+#738).  Under the apex commitment this generalizes
 to full CCHM cubical operations (Phase Z₄): `gen_path` / `gen_transp`
 / `gen_hcomp` / `gen_glue` / `gen_unglue` / `gen_face` / `gen_dimI`
 make univalence COMPUTATIONAL, not just an operational shortcut on
@@ -3109,11 +3223,10 @@ mechanized in FX (no proof-assistant precedent for the
 
 **Two coherent views, one operational rule:**
 
-* **Operational view:** `Step.eqType` makes universe paths reduce
-  to equivalences.  Univalence as theorem, not axiom.  Per
-  lean-fx-2/CLAUDE.md HOTT/Univalence.lean discipline — the body
-  of `Univalence` MUST be `Conv.fromStep Step.eqType`, not a
-  postulated axiom.
+* **Operational view (TARGET):** `Step.eqType` makes universe paths
+  reduce to equivalences — univalence as theorem, not axiom; the
+  body of `Univalence` MUST be `Conv.fromStep Step.eqType`, never a
+  postulated axiom.  Not yet in the kernel.
 * **Structural view:** Aberlé-Spivak polynomial universes prove
   univalence as a structural property — being subterminal in
   `Poly^Cart`.  For any polynomial closed under unit + Σ + Π,
@@ -3160,8 +3273,8 @@ def universeCell.fullClosure (π : PolyProfile) (n : Nat) :
     sigmaClosed := ⟨Term.pair_lens⟩,
     piClosed   := ⟨Term.lam_lens⟩ }
 
-/-- The OPERATIONAL univalence theorem in FX kernel (per
-lean-fx-2/CLAUDE.md mandate): every closed body, zero axioms. -/
+/-- The OPERATIONAL univalence theorem (TARGET — `Step.eqType` is
+not yet in the kernel): every closed body, zero axioms. -/
 theorem Univalence (n : Nat) (A B : Ty (Ty.universe n) scope) :
     Conv (Ty.id (Ty.universe n) A B) (Ty.equiv A B) :=
   Conv.fromStep Step.eqType
@@ -3181,9 +3294,10 @@ theorem polyTermUnivalence (π : PolyProfile) (n : Nat) (A B : Ty (Ty.universe n
 
 **FX impact:**
 
-* `Step.eqType` (already in lean-fx-2 kernel via D2.6 plan) stays as
-  the operational reduction.  Body of `Univalence` theorem is real;
-  no axiom.
+* `Step.eqType` is the committed operational reduction (TARGET —
+  absent from the lean-fx-3 kernel; the lean-fx-2 D2.6 work was
+  retired with that tree).  When it lands, the `Univalence` body is
+  real; no axiom.
 * Aberlé-Spivak polynomial universes provide the structural
   justification: subterminality + Π-closure = distributive law
   DL1–DL4 = univalence-style coherence.  Agda template exists.
@@ -3198,7 +3312,8 @@ theorem polyTermUnivalence (π : PolyProfile) (n : Nat) (A B : Ty (Ty.universe n
 * Awodey-Newstead pseudomonad/pseudoalgebra coverage for the
   remaining type formers: ~2K LoC.
 * Shulman ∞-topos interpretation hooks: ~1K LoC.
-* Operational `Step.eqType` rule is already shipped via D2.6.
+* Operational `Step.eqType` rule: TARGET — not in the lean-fx-3
+  kernel (tracked absent by the UniverseConfig ledger).
 
 **Mechanizability:**
 
@@ -3440,12 +3555,16 @@ def OpenModality (A : Type u) : Type u :=
 def OpenModality.unit (a : A) : OpenModality A :=
   fun _ => a
 
-/-- Closed modality ●: projects out the semantic phase.
-`●A` is the pushout / quotient making elements equal under syn. -/
-inductive ClosedModality (A : Type u) : Type u where
-  | eta : A → ClosedModality A
-  | star : syn → ClosedModality A
-  | law : ∀ (a : A) (z : syn), eta a = star z
+/-- Closed modality ● — sketch of the LITERAL Istari shape, which is
+NOT legal as a Lean inductive: the `law` constructor concludes in an
+equation (a HIT/quotient), exactly the `Quot.sound` blocker §3.0.2
+names.  The SHIPPED variant is the non-HIT closed modality (#600):
+the open/closed phase pair WITHOUT the quotient law; the law-carrying
+form remains the zero-axiom-blocked moonshot boundary. -/
+-- inductive ClosedModality (A : Type u) : Type u where
+--   | eta : A → ClosedModality A
+--   | star : syn → ClosedModality A
+--   | law : ∀ (a : A) (z : syn), eta a = star z  -- HIT: illegal in Init-only Lean
 
 /-- Strict glue type: a syntactic A glued to a semantic B(a).
 Open equations `○((a:A) ⋊ B(a) = A)` hold definitionally. -/
@@ -4154,12 +4273,14 @@ to the table never adds a `RawTerm` or `PolyCell` constructor.
 
 #### 3.16.3 Universe-mode generators (Z₀ + Z₆)
 
-The current `gen_universeCode` has payload `Unit` — the Codex audit
-(`feedback_polycell_structural_vs_semantic`) flagged this as the
+`gen_universeCode`'s payload WAS `Unit` until M24 — the Codex audit
+(`feedback_polycell_structural_vs_semantic`) flagged that as the
 seven-gap audit's gap #1 (universe-mode under-specification ⇒
-Type-in-Type at the admission level).  §11.8.2 commits to **4
-universe modes** with a `LevelExpr × UniverseFlag` payload + SProp
-+ 2 lifting directions.
+Type-in-Type at the admission level).  DELIVERED: the payload is now
+`LevelExpr × UniverseFlag` (#273/#432, with DecidableEq +
+payloadValid + serializer).  §11.8.2 further commits to **4 universe
+modes** + SProp + 2 lifting directions (#433/#434, pending) — today
+ONE `gen_universeCode` carries the structured payload.
 
 Apex universe generators:
 
@@ -4188,9 +4309,11 @@ inductive LevelExpr where
 ```
 
 Equality of `LevelExpr` up to algebra (`lmax e e = e`, `lmax lzero
-e = e`, …) is decidable in **polynomial time** via the Mörtberg-
-Sterling 2024 normalization algorithm — one of the deciders
-listed in §11.8.7's matrix.
+e = e`, …) is decidable on the closed/limax-handled fragment
+(`decideDenoteEquiv`, #472 — open-term denoteEquiv with
+value-dependent limax collapse is NOT decidable in general); the
+polynomial-time bound via the Mörtberg-Sterling 2024 normalization
+algorithm is the #471 obligation, not yet witnessed.
 
 `UniverseFlag` carries the structural-reflection-degree ladder per
 §11.8.2 — a CATEGORICAL hierarchy, not a set-theoretic one (no V, no
@@ -4326,9 +4449,8 @@ Cavallo-Mörtberg-2020 well-formedness witness.
 QIITs (Quotient Inductive-Inductive Types per Altenkirch-Capriotti-
 Dijkstra-Forsberg FoSSaCS 2018) share the same template but with
 the constraint that the type former and value former are mutually
-inductive at the Generator level (via the `mutual` keyword in the
-Generator table — admissible because Generator is a finite enum, not
-a recursive inductive).
+inductive at the Generator level.  (The finite enum does NOT make
+this admissible by itself — see the O-II paragraph next.)
 
 **The induction-induction tension is real and not closed by the
 finite enum (O-II, §11.8.0).**  A QIIT *is* induction-induction: a
@@ -4737,7 +4859,12 @@ variants:
 No structural change to `ChildSpec` itself — the apex commitments
 reuse the existing record by interpreting `scopeShift` polymorphically
 across term / interval / clock binders.  The `binderShifts` list per
-generator stays a `List Nat` (just `scopeShift` values).
+generator stays a `List Nat` (just `scopeShift` values).  Amendment
+(TELESCOPE-REACH #933): the formation telescope's binder shifts are
+necessarily CUMULATIVE, so typing the non-dependent [0,0] data formers
+required a FLAT (non-cumulative) telescope variant (#934) — a
+TYPED-layer structure (`HasTypeDescFlat`), leaving `ChildSpec` itself
+unchanged but refuting any "one telescope shape suffices" reading.
 
 #### 3.16.17 Payload type extensions
 
@@ -4865,11 +4992,14 @@ Plus uniform gates that span all phases:
 * `STRICT-SO` (per §11.7.5) — SiteOpenness compatibility on
   extension admission.
 * `STRICT-COMPLEXITY` (per §11.8.7) — every `Decidable` instance
-  ships with a verified complexity bound.
+  ships with a verified complexity bound.  TARGET — not yet in force:
+  no shipped Decidable carries a Complexity witness as of 2026-06
+  (hook #391; first instances #268 / #471 / #648).
 
-These gates LIVE under `LeanFX2/Tools/AuditAll/AuditPolyCell.lean`
-+ family-specific audit files (per the existing AuditPolyCell
-convention).  Each new Generator addition adds its
+These gates LIVE under `FX1PolyAudit/` (AuditCore.lean +
+AuditTyped.lean + the phase-Z honest ledgers) — the phase gates ship
+as HONEST LEDGERS recording delivery status (#380/#381), never as
+passing placeholders.  Each new Generator addition adds its
 `#assert_no_axioms` entry; each new admission witness adds its
 `STRICT-*` family gate entry; each new complexity bound adds its
 `STRICT-COMPLEXITY` entry.
@@ -4946,9 +5076,12 @@ PolyCell profile sort dim scope b raw -- intrinsic certified cell
 The profile-extension calculus (§3.14) lives over admissible profiles;
 it is not another constructor family inside the raw layer.
 
-The Lean block below shows the SHIPPED v2 substrate shape (modulo
-late-binding axis-7 / axis-9 / etc. structures still under construction
-per §10 phasing).  Each invariant is audited; the dim-indexed v1
+The Lean block below mixes two statuses, per the §1 split rule: the
+RawTerm / RawCell / PolyCell / certifier declarations are the SHIPPED
+v2 substrate shape; the 13-field `PolyProfile` bundle is the apex
+TARGET — the live `PolyProfile` (`FX1Poly/Core/PolyProfile.lean`)
+carries the minimal v2 fields, with axis fields added as each axis
+constructs (tracked in the per-axis construction-level ledgers).  Each invariant is audited; the dim-indexed v1
 `PolyTerm` proving ground (sentinel-payload atoms + five per-fixture
 certified constructors) is **DELETED** per commit ef079829 (V2-mig.18
 final audit), its convergence theorems were ported to v2 before
@@ -4956,10 +5089,12 @@ deletion, and its commit history lives in §10's POLY-TCB ledger as
 historical record only.
 
 ```lean
-namespace LeanFX2.Foundation.PolyCell.Core
+namespace FX1Poly.Core
 
-/-- The PolyProfile bundles all thirteen axes.  Each axis is a structure
-field; consistency constraints link them. -/
+/-- TARGET (apex profile bundle — NOT the shipped PolyProfile; the
+live record is the minimal v2 PolyProfile): bundles all thirteen
+axes.  Each axis is a structure field; consistency constraints link
+them. -/
 structure PolyProfile where
   /-- AXIS 1: Per-dim shape family. -/
   shapes : Nat → CellShape
@@ -5298,7 +5433,7 @@ def checkRawCellAs? {profile : PolyProfile}
     Except CellCheckRejection
       (CertifiedRawCellResult profile expectedScope) := ...
 
-end LeanFX2.Foundation.PolyCell.Core
+end FX1Poly.Core
 ```
 
 Feature operations are **not** raw constructors.  Universe
@@ -5456,7 +5591,9 @@ Putting it all together — FX's kernel is one specific `PolyProfile`:
 ```lean
 namespace LeanFX2
 
-/-- The FX kernel profile.  All thirteen axes specialized. -/
+/-- The FX kernel profile — TARGET instance (no such declaration
+exists in the lean-fx-3 tree; the live profile is the minimal v2
+PolyProfile).  All thirteen axes specialized. -/
 def fxProfile : PolyProfile where
 
   -- AXIS 1: Shapes per dim
@@ -5555,7 +5692,9 @@ def fxProfile : PolyProfile where
     --                         Overflow, FP-order
     -- (FX structural) Mutation, Reentrancy, Size
     -- (FX evolution) Version
-    -- Total: 21 modal adjunctions.
+    -- Total: 4 cohesive focuses + the heterogeneous doctrine stack
+    -- (§3.7) — NOT 21 modal adjunctions; the non-cohesive dimensions
+    -- enter as grades / lattices / doctrines.
 
   -- AXIS 8: Profile fibration.
   -- FX is a root profile; no parent.
@@ -5602,8 +5741,13 @@ def FXCell :=
 end LeanFX2
 ```
 
-The existing FX kernel layers are projections of certified cells, not
-post-hoc predicates on raw Nat payloads:
+The existing FX kernel layers become projections of certified cells,
+not post-hoc predicates on raw Nat payloads (TARGET view layer — the
+live tree's typed layer judges `RawTerm` directly via the §11.8.5
+engine family plus the cell constructors in `CellConstructors.lean`;
+re-basing the typed judgments over certified `PolyCell` inhabitants,
+including the stacking lemma `HasTypeDescPi Γ t T →
+HasCertifiedCellDim0 t`, is the open O-STACK integration obligation):
 
 ```lean
 namespace LeanFX2
@@ -5715,7 +5859,10 @@ so they are conscious decisions, not silent gaps.
     (§3.0.1), the cellular tensor universal property (§3.0.7), the
     profile fibration (§3.8), BKS sconing in the presheaf topos
     (§11.8.0), and profile-of-profiles (§3.16.14) are all c = 2.
-    Today c = 2 is AMBIENT (proven in Lean about FX); INTERNALIZING it
+    Today c = 2 is AMBIENT and PARTIALLY proven in Lean (the CwR
+    axioms #588, the sconing witness #211, canonicity extraction #212;
+    the bi-initial model and the cellular-tensor universal property
+    remain targets); INTERNALIZING it
     (FX reasoning about its own profiles inside FX) is the
     Self-Hosting Kernel FX meta-profile (§3.15).  So the
     categorification ladder is the formal measure of **self-hosting /
@@ -5799,7 +5946,10 @@ Two strata, **one construction at two dimensions** (Decision 7, §11.8.5):
   over its `.type` cell.  Soundness = the cartesian lift through the display
   map exists; the fiber over an ill-typed raw cell is *empty*, so ill-typed
   terms are unconstructable *at the typed layer* even though they are
-  constructable at the raw layer.  Decided in full in **§11.8.5**.
+  constructable at the raw layer.  Decided in full in **§11.8.5**.  (The
+  stacking arrow p₂ — typing factoring through certification — is currently
+  unrealized in code; the shipped engine family judges `RawTerm` directly.
+  O-STACK.)
 * **dim-1 (paths) — the MARKING WRAPPER.**  A reduction / `Conv` path is
   sound iff it is *thin* in the saturation marking (§3.3–§3.4).  Same
   mechanism, one dimension up; the named bridge
@@ -5819,8 +5969,9 @@ two-number guarantee, and the numbers have categorical names:
   cartesian lifts along `Step`).  Honest scope: 0 FN is reached **per
   fragment** — as each generator's `Conv` decidability lands — never claimed
   jointly; the whole-kernel joint 0 FN is the open **O-NORM** obligation
-  (§11.8.0), not discharged.  (Today only the leaf fragment is at 0/0; see
-  the typed-layer status in §11.8.5.)
+  (§11.8.0), not discharged.  (Status 2026-06: 0 FP holds globally; 0 FN
+  holds on the live typed fragment — 34 of 197 generators typed per the
+  build-time honesty counts; the joint whole-kernel 0 FN remains O-NORM.)
 
 Put together: **the typing display map is a *decidable fibration*** — a
 fibration (SR) with decidable fibers (CR + SN ⇒ decidable `Conv`).  That is
@@ -5830,7 +5981,8 @@ typechecking theorem **factored into three distinct roles, not a single
 implication**: intro-rules ⇒ 0 FP (free); SR ⇒ the fibration leg (cartesian
 lifts, no error-rate content); CR + SN ⇒ decidable `Conv` ⇒ 0 FN.  Reading
 the slogan as "SR helps decide typechecking" is the error the factoring
-prevents.
+prevents.  (This discipline is MECHANIZED as the milestone-ledger
+correction #484.)
 
 The type level is therefore not a bolt-on judgment beside the cell calculus —
 it is the **dim-0 stratum of the same fibrant-membership soundness engine**
@@ -5851,19 +6003,19 @@ status unless a row explicitly says "shipped".
 | Capability | Before | After | Mechanism |
 |---|---|---|---|
 | Add new typed ctor | 80-arm cascade across 13 files | 3 entries: Generator + payload + outputType | Polynomial monad axis 2 |
-| Conv decidability | K13 NbE + Conv.decide (~6K LoC, 6+ months) | Same path KEPT (Path A); Makkai algorithm on FX-polygraph as backup (Path B, ~5K LoC) — both decidable via PUBLISHED algorithms, not handwaved | Axis 9 + K12 reducibility (already shipped 24/30 arms) |
-| Conv.trans | CONVTRANS-D cascade (pending) | Composition of polygraph morphisms when Path A or B is fully shipped; until then, follow accelerate-* roadmap | axis 9 + cd_lemma (K11.17 shipped) |
-| cd_lemma per-rule | D2.5.x cascade tax (~470 LoC per ctor) | One generic theorem per profile | axes 3, 4 |
-| Univalence | Postulated as `Step.eqType` | Structural theorem | Loubaton thesis §6.1.4 + axis 10 |
+| Conv decidability | K13 NbE + Conv.decide (~6K LoC, 6+ months) | DELIVERED, multiple carriers: raw NbE-NF decider (#267), NF-fragment decider WITHOUT termination hypothesis (#715/#716/#957), SN-backed typed decider (#615/#617), typed NF decider (#462), WfContext βη decider (#806); Path B = partial cross-check (#621–#636) | Takahashi confluence route + axis 9 |
+| Conv.trans | CONVTRANS-D cascade (pending) | DELIVERED unconditionally (#421; raw Conv full equivalence relation #714) | Takahashi triangle (#700–#713) |
+| cd_lemma per-rule | D2.5.x cascade tax (~470 LoC per ctor) | One generic theorem per profile — DELIVERED (generic cd M7 #256 + Takahashi #700–#713) | axes 3, 4 |
+| Univalence | Absent (no `Step.eqType` in the kernel) | Operational rule + structural theorem (TARGET) | Loubaton thesis §6.1.4 + axis 10 |
 | Cubical operations | Per-ctor `transp`/`hcomp`/`glue` + cascades | Topos op on cubical-shape cells | axes 1, 7 |
 | HITs | K10 deferred; needs axiom or `Step` rule | Polygraph cells with stratification | axis 3, axis 6 |
 | Modal modalities | 8 hardcoded; new modality = adjunction by hand | List of ModalAdjunctions in topos | axis 7 |
 | Cohesive modalities ♭ ⊣ ♯ | D4.4-D4.6 pending | Topos modality entry | axis 7 |
 | Polarization (Levy CBPV) | Not implemented | Stratification on Gray cells | axes 3, 6 |
-| Linearity | Grade dim + decorator | Stratification entry + polynomial monad arity | axes 2, 3 |
+| Linearity | Grade dim + decorator | Substantially DELIVERED on the side-calculus (HasGradeOver + corrected Wood-Atkey Lam #876, erasure-SN transfer #878) | axes 2, 3 |
 | Guarded recursion ▷ | Not implemented | Topos modality entry | axis 7 |
-| Universe cumulativity | Per-shape type code family + 11 cumul rules | universe ctor + cumul ctor | axis 10 |
-| NbE eval | K13 pending (~5K LoC) | Polygraph fold | axes 5, 6 |
+| Universe cumulativity | Per-shape type code family + 11 cumul rules | universe ctor + explicit lift markers (the SHIPPED engine is NON-cumulative — classification IS the successor, #1012; see §11.8.2) | axis 10 |
+| NbE eval | K13 pending (~5K LoC) | Hybrid DELIVERED (#260/#262/#267) + the typed normalizer (#961/#962) | axes 5, 6 |
 | EGraph extraction | K14 pending (~3K LoC) | Cell-set quotient of certified cells, not raw syntax alone | axes 2, 3 |
 | Reflection | K15 pending | Reflection after the profile fibration and certified bridge exist | axes 2, 8 |
 | FX-in-FX bootstrap | K20 pending | FX kernel = profile instance, FX0 = simpler instance | axis 8 |
@@ -5898,14 +6050,14 @@ not "already implemented in the current raw scaffold."
 |---|---|
 | P0.1 Step.eta | **Committed in two layers**: raw structural eta will ship in the current M8 cascade as a sibling relation `Step.eta`, with binder eta guarded by `RawTerm.strengthen`; typed eta remains the type-directed eta-long NbE/readback layer.  Long-term, eta rules are still profile metadata, but the current SN/CR route must see raw eta explicitly before the master theorem closes. |
 | P0.2 Step.par.eta + Compat/cd arms | **Deferred through Axis 6**: raw parallel cells are representable now; certified parallel reduction waits for real Gray boundary/disjointness. |
-| P0.3 Reducible.rename_equivariant (T7) | **Subsumed**: renaming is a polygraph morphism, equivariance is structural. |
-| P0.4 Reducible.cr3 + U2 compound arms | **Subsumed after certification**: Reducible over certified PolyCells inherits CR3 only after the saturation discipline is proved for the profile. |
-| P0.5 ReducibleSubst.lift | **Subsumed**: substitution is the polynomial-monad multiplication. |
-| P0.6 fundamental_lam (Wood/Atkey 2022) | **Direct port**: the Wood-Atkey corrected rule lives at the toposOp axis (axis 7). |
+| P0.3 Reducible.rename_equivariant (T7) | DELIVERED (#378 certifier rename-equivariance; #543 reducibility-under-renaming): renaming is a polygraph morphism, equivariance is structural. |
+| P0.4 Reducible.cr3 + U2 compound arms | DELIVERED (#536 CR3 head-expansion + #1105 Kripke CR3). |
+| P0.5 ReducibleSubst.lift | DELIVERED (#544): substitution is the polynomial-monad multiplication. |
+| P0.6 fundamental_lam (Wood/Atkey 2022) | DELIVERED (#876) — landed in the GRADED engine (HasGradeOver, context division 1/ω=0), not the topos axis as predicted. |
 | P0.7 fundamental_betaRedex | **Subsumed**: β-redex cases are uniform across Generator values. |
 | P0.8 fundamental_iota | **Subsumed**: ι-cases are uniform across Generator values. |
 | P0.9 fundamental_cubical_modal_advanced | **Subsumed**: cubical + modal cases factor through their topos / cubical-shape axes. |
-| P0.10 Term.strong_normalization (M04) | **Direct port**: SN is a property of the polygraph at saturation, provable once per profile. |
+| P0.10 Term.strong_normalization (M04) | DELIVERED (#546 closed unconditional; #794 open under WfContext; #796 βη): SN for well-typed terms, provable once per profile. |
 | P0.11 Step.iotaOeqJRefl | **Subsumed**: one Generator value + reduction. |
 | P0.12 Term.emptyElim | **Subsumed**: one Generator value at dim 0. |
 
@@ -5934,112 +6086,29 @@ eta remain reserved until Phase Z7/Z8 extends the generator table with
 `gen_clockAbs`/`gen_clockApp` and `gen_paramAbs`/`gen_paramApp`;
 those slots must not be simulated by unrelated generators.
 
-Current shipped eta slice: `#350` adds the raw strengthening
-substrate, `#351` adds the current-generator raw `Step.eta` sibling
-relation, and `#352` adds audited subject-reduction arms for the
-structural eta sources that need no freshness side condition:
-`pair (fst p) (snd p)`, `modIntro (modElim m)`, and
-`glueIntro (glueElim g) g`.  `#353` adds audited
-subject-reduction arms for the current binder eta sources:
-`lam (app (weaken f) newestVar)` and
-`pathLam (pathApp (weaken p) newestVar)`.  The binder proof projects
-the certified weakened child, then cancels the weakening by singleton
-substitution (`weaken_subst_singleton`), avoiding any inverse-renamer
-assumption.  `#354` adds the beta+iota/eta subject-reduction umbrella:
-`Step.eta.preservesShape` dispatches over the five current eta
-constructors, and `Step.betaEta.preservesShape` keeps the legacy
-beta+iota `Step.preservesShape` theorem unchanged while exposing the
-opt-in union needed by the upcoming CR/SN eta tasks.  The first `#355`
-slice adds the betaEta local-join target and embeds the shipped
-beta+iota `cd_lemma` into it.  It also records a formal frontier fact:
-current root eta heads are `gen_lam`, `gen_pair`, `gen_pathLam`,
-`gen_modIntro`, and `gen_glueIntro`, while beta's root head is
-`gen_app`; therefore the current one-step relation has no same-root
-beta/eta overlap.  The same slice starts the real eta-root versus
-beta+iota-congruence work with audited eta-pair diamonds for reducing
-inside the `fst p` or `snd p` occurrence before contracting
-`pair (fst p) (snd p)`.  The next #355 slice extends that same
-current-generator family to `modIntro (modElim m)` and both Glue
-occurrences in `glueIntro (glueElim g) g`, again as explicit audited
-betaEta joins.  The next binder slice adds a one-step weakening replay
-lemma and audited `lam`/`pathLam` joins for congruence steps that come
-from an actual source-level step in the underlying function/path term.
-It also adds resolver-facing strengthened variants: if an arbitrary
-under-binder reduct strengthens back to a source-scope reduct and the
-corresponding source-level step is supplied, the betaEta join follows.
-The latest #355 slice proves the source-step half of that inversion:
-`Step.weaken_substTarget` replays any step out of `weaken source` at
-source scope by substituting canonical `unit` for the fresh variable.
-The `lam` and `pathLam` strengthened resolver wrappers now need only
-the freshness/strengthening witness for the arbitrary under-binder
-reduct; the corresponding source-level step is derived internally.
-The next lifted-binder substrate slice adds
-`RawTerm.strengthen_iterateLiftRaw_weaken`,
-`RawTerm.strengthen_iterateLiftRaw_sound`, children-spine
-strengthening siblings, lifted singleton-substitution cancellation
-for terms and children, and `StepChildren.weaken_substTarget`.  This
-is the binder-depth substrate needed for the congruence case of the
-freshness inversion, where the target step may occur inside a child
-spine under additional binders.  The following root-case subslice
-isolates `RawTerm.weaken_subst0` and
-`RawTerm.strengthen_weakened_subst0`: a beta contractum of a weakened
-redex is itself a weakening, and strengthening it recovers the
-source-scope contractum.  The latest #355 slice folds the root-case and
-child-spine ingredients into the freshness inversion:
-`Step.preserves_isFreshFor` proves every beta+iota step preserves an
-arbitrary substitution/renaming retraction, and
-`Step.weaken_strengthenTarget` specializes it to arbitrary reducts of
-`weaken source`.  The binder betaEta resolver wrappers
-`etaLamArbitraryUnderBinderCong` and
-`etaPathLamArbitraryUnderBinderCong` now consume only the under-binder
-step; strengthening and the source-level replay step are derived
-internally.  The next #355 slice closes the eta-pair projection-iota
-overlaps explicitly: `etaPairFirstProjectionIota` and
-`etaPairSecondProjectionIota` join
-`pair (fst (pair a b)) (snd (pair a b))` against root eta-pair, and
-`etaPairLeftStep` / `etaPairRightStep` package every beta+iota `Step`
-leaving an eta-pair source into one resolver-facing arm.  The following
-#355 slice does the same packaging for the remaining structural
-non-binder eta roots: `etaModIntroLeftStep` / `etaModIntroRightStep`
-and `etaGlueIntroLeftStep` / `etaGlueIntroRightStep` cover every
-beta+iota `Step` leaving the current modal and Glue eta sources.
-The final #355 slice wires the binder roots and mixed dispatcher:
-`RawTerm.weaken_lam`,
-`RawTerm.weaken_eq_lam_implies_source_lam`, and
-`RawTerm.subst0_lift_weaken_newestVar` isolate the eta-lambda root
-beta overlap, `etaLamLeftStep` / `etaLamRightStep` and
-`etaPathLamLeftStep` / `etaPathLamRightStep` package every beta+iota
-`Step` leaving the current binder eta sources, and
-`cd_lemma_step_eta` / `cd_lemma_eta_step` prove the mixed
-beta+iota-vs-root-eta local Church-Rosser quadrants for every current
-eta constructor.  This completes #355's honest boundary.  #356 then
-closes the eta-vs-eta quadrant in
-`StepEtaEtaCriticalPairs.lean`: because the current `Step.eta`
-relation is root-only and has no eta congruence constructor, nested
-eta examples are not one-step branchings yet.  The shipped theorem
-`Step.eta.deterministic` proves two root eta steps from the same source
-have the same reduct, `cd_lemma_eta_eta` closes the eta/eta local join,
-and `cd_lemma_betaEta` now inhabits the full
-`CdLemmaStatementBetaEta` for the current beta+iota+root-eta relation.
-The first #357 slice adds the honest conditional Newman bridge in
-`StepBetaEtaConfluence.lean`: `Step.betaEtaStar.Join`,
-`Step.betaEtaStar.HasConfluence`,
-`Step.betaEtaStar.IsStronglyNormalizing`, and
-`Step.betaEtaStar.confluence_of_strongNormalization` mirror the
-beta+iota-only bridge but consume the shipped `cd_lemma_betaEta`
-dispatcher.  This is deliberately not a claim of global beta+eta SN:
-the theorem is conditional on a future
-`Step.betaEtaStar.HasStrongNormalization` witness, and the actual SN
-accessibility lifts remain blocked behind #258's unfinished master SN
-work.  The second #357 slice adds the eta-only SN substrate in
-`StrongNormalizationEta.lean`: renaming and weakening preserve
-`RawTerm.size`, every current root eta constructor strictly decreases
-that size, and `Step.etaStar.hasStrongNormalization` follows by
-well-foundedness of the size measure.  This closes eta-only
-accessibility; it still does not prove the beta+iota-to-betaEta SN
-transfer needed for unconditional beta+eta confluence.  Record, clock,
-and parametricity eta remain generator-frontier work, not placeholders
-in the current raw relation.
+Shipped η record (slices #350–#358, summarized; per-slice history in
+git log + the project-memory firing log): the raw strengthening
+substrate (#350); the 5-constructor root-only `Step.eta` sibling
+relation — lam / pair / pathLam / modIntro / glueIntro,
+by-construction gated (#351); audited SR-η arms for all five sources,
+structural (#352) and binder (#353 — weakening cancelled by singleton
+substitution, no inverse-renamer assumption); the `Step.betaEta`
+umbrella + extended `preservesShape` (#354); the complete
+β/ι-vs-root-η critical-pair closure, including the eta-pair
+projection-ι overlaps, the freshness inversion
+(`Step.preserves_isFreshFor` / `Step.weaken_strengthenTarget`), and
+per-root resolver arms, with the formal frontier fact that root η
+heads and β's root head (`gen_app`) never overlap same-root (#355);
+the η-vs-η quadrant — `Step.eta.deterministic`, `cd_lemma_eta_eta`,
+and the full `cd_lemma_betaEta` local-join dispatcher (#356); the
+conditional Newman bridge + η-only SN via the size measure (#357);
+and the STRICT-ETA-DISCIPLINE coverage gate (#358).  SUPERSEDED tail:
+the "SN accessibility lifts remain blocked behind #258" caveat is
+dead — typed SN shipped (#546), βη-SN on the WfContext fragment
+shipped via the Geser union argument + η-postponement
+(#796/#798–#805), and the decidable βη-Conv harvest landed (#806).
+Record, clock, and parametricity eta remain generator-frontier work,
+not placeholders in the current raw relation.
 
 ### Phase 1 — Allais Kit
 
@@ -6075,17 +6144,17 @@ only a precursor.
 
 | Task | Status |
 |---|---|
-| P3.1 PolyTerm.subject_reduction | **Subsumed**: SR is a profile-level theorem, one per profile. |
-| P3.2 PolyTerm.strong_normalization | **Subsumed**: SN ditto. |
-| P3.3 Step.parStar.confluent | **Subsumed**: confluence is the saturation Property of axis 4. |
+| P3.1 PolyTerm.subject_reduction | DELIVERED (typed SR unconditional, SR-U4 #1132 + star #846; structural SR #234/#253). |
+| P3.2 PolyTerm.strong_normalization | DELIVERED (#546 / #794 / #796). |
+| P3.3 Step.parStar.confluent | DELIVERED (#420 via the Takahashi triangle, not the axis-4 saturation). |
 | P3.4 PolyStep dim-1 generators | **Subsumed**: dim-1 certified cells over raw `RawCell` endpoints. |
 | P3.5 PolyStep.cd / cd_lemma generic | **Subsumed after proof**: cd_lemma is the per-profile theorem at dim 2 once saturation supplies the certified fillers. |
 | P3.6/P3.7 RawValueTerm / ValueTerm | **Subsumed**: values are normal-form predicates on `RawTerm`. |
 | P3.8 PolyTerm.eval | **Subsumed**: NbE = polygraph fold. |
 | P3.9 ValueTerm.quote | **Subsumed**: quote = inverse of fold. |
 | P3.10 nbe roundtrip | **Subsumed**: polygraph fold + unfold composition. |
-| P3.11 Conv.decide | **Path A or Path B only**: NbE normal-form equality, or Makkai/Forest word equality over the finite certified polygraph. ωcE remains the semantic coherent-equivalence classifier, not the decision engine. |
-| **P3.12 typecheck_decidable (★ MILESTONE A)** | **After Conv.decide plus the certified raw-to-kernel bridge.** |
+| P3.11 Conv.decide | DELIVERED carriers (#267 raw NbE-NF, #715/#716 NF-fragment without termination hypothesis, #615/#617 SN-backed, #462 typed, #806 βη); Path B partial cross-check (#621–#636). ωcE remains the semantic classifier, not the decision engine. |
+| **P3.12 typecheck_decidable (★ MILESTONE A)** | DELIVERED for the live typed fragment (#461/#462 carriers; see §11.8.5 status + §11.8.12). |
 
 **Phase 3 target collapse:** typechecking is one certified checker
 pipeline only after Conv.decide is supplied by Path A or Path B and
@@ -6145,7 +6214,11 @@ capability wins.
 
 ---
 
-## 8. Migration plan
+## 8. Migration plan (HISTORICAL)
+
+Superseded by the lean-fx-3 clean-cut (#466): the new tree was built
+fresh, and this LeanFX2-file mapping was never executed as written.
+Retained only for the LoC-delta rationale.
 
 Existing files → certified PolyCell target.
 
@@ -6258,13 +6331,20 @@ all thirteen axes + the Tier-0 meta-framework + the extension calculus
 
 Net of the §8 migration deletions (~40K) and the §7 cascade-
 obsolescence collapse, the full apex kernel lands near **~230K net**,
-matching the §11.8.9 apex figure.  Of this, **~25K is already in
-place**: the PolyCell substrate (RawTerm / RawCell / PolyCell +
-194-`Generator` table + certifier + Allais fold) plus the reducibility
-+ strengthening foundation.
+matching the §11.8.9 apex figure.  **Measured 2026-06-09: 181,843 LoC
+across 971 files in FX1Poly (zero-axiom, per-declaration audit-gated)
+plus 14,191 LoC of FX0Poly + FX1PolyAudit** — including the full
+typed-layer metatheory, the SN/canonicity/consistency stack, the
+graded-dimension program, and the honesty-ledger machinery, none of
+which this budget table anticipated as already in place.  The
+per-axis forecast rows above are retained as the original cost model
+(HISTORICAL); actuals show the agentic execution model outperforming
+the LoC-proportional estimate on metatheory — the typed
+Z₁–Z₃-class content shipped on the Tier-1 substrate alone, without
+the POLY-γ/δ/ε substrates the model assumed prerequisite (§10.0).
 
 Comparison points:
-- Current FX kernel (Lean): ~140K LoC — the v2 substrate is folded in
+- lean-fx-3 kernel: ~196K LoC measured (FX1Poly + FX0Poly + audit)
 - Lean 4 stdlib: ~280K LoC
 - Mathlib4: ~1.5M LoC (a LIBRARY of theorems, not one sound kernel)
 - HoTT-Coq library: ~30K LoC of Coq (mostly (∞,1))
@@ -6289,7 +6369,38 @@ For comparison with the abandoned path:
 
 ## 10. Phased rollout
 
-Realistic ship plan in dependency order.
+### §10.0 Two-tier timeline + the as-executed roadmap (2026-06)
+
+**Tier 1 (shipped horizon)** — everything in the Document Status
+header's delivered list.  **Tier 2 (apex horizon)** — the POLY-α..η +
+Z₀..Z₉ program below, retained as the apex cost model (HISTORICAL
+where superseded).
+
+The work that delivered Tier 1 did NOT follow the POLY phasing.  The
+as-executed decomposition, for the record and for future planning:
+the M-series (substrate + first metatheory + the typed-layer
+prototype), the η-M8 series (raw η + βη critical pairs), PathA /
+STLC-FT / WN (stratified reducibility + fragment deciders), SN-001..150
+(the powerful-SN program: leveling bridges, bounded grown FT,
+open-context SN, βη-SN, per-family candidates + canonicity, the
+sconing SUBSTVEC leg, the convergent ωcE-word leg, five-layer defense,
+triangulation ledgers), GTL (rule-table genericization), HT (the
+engine migration that deleted the prototype HasType), GrownCtxConv-5 /
+VAL / SR-U (the piElim context-conversion crux through to
+unconditional master SR), DI / CANON / CON (standalone data engines,
+canonical forms, consistency three ways), DIM2/DIM5/DIM-CLASS (the
+graded-dimension program + collision catalog), HON / HCAP / PAR
+(honesty ledger, capstone counts, parity matrices), and STR (current:
+grown strengthening → η-SR → βη master SR).
+
+Planning lesson recorded: the typed core shipped on the Tier-1
+substrate alone — the POLY-γ/δ/ε/ζ axes were NOT prerequisites for
+Milestone-A-class results; they remain prerequisites only for their
+own apex features (Gray/compH, ∞-topos semantics, enrichment, the
+13-axis bundle).
+
+Realistic ship plan in dependency order (HISTORICAL plan below; the
+absolute month numbers are the original forecast).
 
 ### Phase POLY-TCB — raw/certified trust boundary (immediate, ~4K NEW LoC)
 
@@ -6299,7 +6410,12 @@ certified layer that makes ill-sorted, ill-scoped, and
 boundary-incompatible cells unconstructable.  Raw nonsense must be
 representable and computably rejected.
 
-**Already shipped in this direction:**
+**Already shipped in this direction (HISTORICAL — retired-v1 commit
+ledger, lean-fx-2-era; what survives of the v1 proving ground: the
+certified boundary-layer design, the negative-probe ratchet
+discipline, and the propext-leak diagnosis that motivated v2's
+un-indexing.  The table is retained as history; git holds it
+regardless):**
 
 | Task | Commit | Provides |
 |---|---|---|
@@ -6615,18 +6731,21 @@ constructor has its named exact-family probe ratchet (V2-L1cert.16).
   commitments).  TCB itself certifies shape/sort/scope and vertical
   boundary structure only — that floor is reached.
 
-**Verification gate (in force on every PolyCell commit):** every new
-declaration added to `LeanFX2/Tools/AuditAll/AuditPolyCell.lean`;
-`lake build LeanFX2.Foundation.PolyCell.*` kernel green; `lake build
-LeanFX2 LeanFX2Audit` full-strict zero-axiom sweep green;
-forbidden-token scan (no `axiom` / `sorry` / `noncomputable` /
-`propext` / `Quot.sound` / `Classical.choice` / `@[extern]` /
-`@[implemented_by]`) over touched PolyCell files.
+**Verification gate (in force on every commit, lean-fx-3 form):**
+every new declaration gated per-declaration by `#assert_no_axioms` in
+`FX1PolyAudit/AuditTyped.lean` or `FX1PolyAudit/AuditCore.lean`;
+namespace sweeps via `#audit_namespace`; `lake build FX1Poly
+FX1PolyAudit` full-strict zero-axiom sweep green; forbidden-token
+scan (no `axiom` / `sorry` / `noncomputable` / `propext` /
+`Quot.sound` / `Classical.choice` / `@[extern]` /
+`@[implemented_by]`) over touched files.
 
 ### Phase POLY-0 — already shipped foundation (~7K LoC done)
 
-**Status:** ~7K LoC live in `LeanFX2/Foundation/Polygraph/` as of
-2026-05-23.  All zero-axiom under `lake build LeanFX2 LeanFX2Audit`.
+**Status (HISTORICAL — lean-fx-2-era tree and paths; the lean-fx-3
+inventory is 197 generators and β+16ι+5η = 22 step rules):** ~7K LoC
+live in `LeanFX2/Foundation/Polygraph/` as of 2026-05-23.  All
+zero-axiom under `lake build LeanFX2 LeanFX2Audit`.
 
 **Already shipped (counted against POLY-α LoC budget):**
 
@@ -6843,7 +6962,9 @@ green; downstream consumers (FX1, FX1.LeanKernel, ULB) unchanged.
 
 **Total: 36 months, ~165K net LoC delta** (~190K added, ~25K
 deleted), arriving at:
-- Decidable typecheck (★ MILESTONE A) at month 6 (POLY-α complete)
+- Decidable typecheck at month 6 (POLY-α complete) — HISTORICAL: this
+  row used the pre-revision raw-Conv MILESTONE A definition; see
+  §11.8.12 for the operative scale
 - Generic Generator extension at month 9 (POLY-β complete)
 - Concurrent + frame-rule typed at month 15 (POLY-γ complete)
 - Cohesive + modal at month 21 (POLY-δ complete)
@@ -6908,6 +7029,11 @@ discipline is **de-scoped** — `--type-in-type` is absolutely banned
 even as a flag; external SMT is absolutely banned even with a
 "trust" annotation; LLM-driven proof generation INSIDE the kernel is
 absolutely banned even with "verification gates."
+
+Scope note: these bans constrain FX-the-object-language and its
+kernel; the Lean METAtheory development freely uses Lean tactics —
+the discipline gates are `#assert_no_axioms` on the RESULTS, not the
+proof style.
 
 Per-axis discipline rules follow.  Each axis stays zero-axiom under
 the specific patterns named below, with the umbrella + closed-system
@@ -7055,17 +7181,17 @@ target.
 | Axis | Claim | Decision procedure | Reference | Lean status |
 |---|---|---|---|---|
 | 1 | `DecidableEq (CellShape)` | Closed enum, `deriving DecidableEq` | — | Shippable; PolyCell already has it |
-| 1 | `DecidableEq (PolyCell n s t)` | Hand-rolled, propext-free | feedback_lean_indexed_partial_match | ✅ SHIPPED (`Polygraph/DecEq.lean`) |
-| 2 | `Decidable (Generator.eq g1 g2)` | Closed 78-enum cases | — | Shippable; `Generator.deriving DecidableEq` |
+| 1 | `DecidableEq (PolyCell n s t)` | Hand-rolled, propext-free | feedback_lean_indexed_partial_match | HISTORICAL v1 artifact (retired with v1); live: propext-free `DecidableEq RawTerm` (V2-L0.11) + typed NF DecidableEq (#462) |
+| 2 | `Decidable (Generator.eq g1 g2)` | Closed 197-enum cases | — | SHIPPED; `Generator.deriving DecidableEq` |
 | 3 | `Decidable (Stratification.thin d c)` | Per-profile field; required at struct definition | Verity 2008 marking axioms | Required field in `Stratification` |
 | 4 | `Decidable (Saturation level)` | Closed `SaturationLevel` enum | — | Shippable |
 | 5 | Enrichment ladder `materialize` | Recursive function on closed inductive | — | Shippable per `cases <;> rfl` |
 | 6 | `Decidable (compH-disjoint footprint)` | Permission-semiring lookup | O'Hearn 2007 separation logic | Shippable per K11.5 already shipped |
 | 7 | `Decidable (ModalAdjunction.applies dim)` | Per-modality dim-vector | — | Shippable per Modal layer |
 | 8 | `Decidable (Conv on cisinskiLocalize tower)` | Beke-Smith combinatorial ω-localization on polygraph-presented profiles | Beke 2000 + Smith small-object argument | Shippable per §12 in-scope commit; ~10K LoC |
-| 9 | `Decidable (Conv a b)` Path A | NbE NF equality + K12 SN | Adjedj et al. arXiv:2310.06376 | In flight; K12 24/30 + K13 pending |
-| 9 | `Decidable (Conv a b)` Path B | Makkai word equality on F(fxProfile) | Makkai 2021 + Forest 2022 | New ~5K LoC under POLY-α |
-| 10 | Universe cumulativity + univalence Step | `Step.eqType` reduction rule per CLAUDE.md | Loubaton 2307.11931 §6.1.4 semantic justification | Required by FX discipline |
+| 9 | `Decidable (Conv a b)` Path A | NbE NF equality + Takahashi NF-uniqueness | Adjedj et al. arXiv:2310.06376 | DELIVERED carriers: #267 raw, #715/#716 NF-fragment (no termination hypothesis), #615/#617 SN-backed, #462 typed, #806 βη |
+| 9 | `Decidable (Conv a b)` Path B | Makkai word equality on F(fxProfile) | Makkai 2021 + Forest 2022 | PARTIAL: ωcE-word substrate + fxSystem encode/soundness/termination-on-certified/confluence shipped (#621–#636); WordReducer + decideViaMakkai pending (#637/#638) |
+| 10 | Universe univalence Step | `Step.eqType` reduction rule | Loubaton 2307.11931 §6.1.4 semantic justification | TARGET — not in the kernel; note the shipped engine is NON-cumulative (#1012) |
 
 ### What is NOT decidable / NOT shippable
 
@@ -7076,8 +7202,8 @@ target.
   separately as a hypothesis of the decision procedure.
 * Loubaton thesis §6.1.4.2 functorial Grothendieck as **Lean
   theorem** — used as semantic justification only.  Univalence in
-  FX ships via `Step.eqType` reduction rule (per lean-fx-2/CLAUDE.md
-  mandate); Loubaton's Grothendieck construction explains WHY the
+  FX is TARGETED via the `Step.eqType` reduction rule (not yet in
+  the kernel); Loubaton's Grothendieck construction explains WHY the
   Step rule is sound but is not itself Lean-mechanized.
 * **GWB TT_⊠ as Lean theorem** — an earlier draft incorrectly claimed
   "rzk-prototyped"; correction: no TT_⊠ mechanization exists in
@@ -7133,10 +7259,10 @@ get right, and reserves the Div-fragment integration point for later.
 
 | Property | v2 statement | What must be shipped |
 |---|---|---|
-| **Subject Reduction (SR)** | If `PolyCell profile sort 0 scope () raw` (a certified dim-0 cell = typed term) and a dim-1 generating cell certifies a step from `raw` to `raw'`, then `PolyCell profile sort 0 scope () raw'` (the target is also certified at the same sort). | The **substitution lemma at every dimension**: applying subst σ to a dim-1 cell preserves its source/target boundary. For `generatingCell ruleId source target`, `(generatingCell ruleId source target).subst σ` must be `generatingCell ruleId (source.subst σ) (target.subst σ)` with the HasEqualDim and SupportedRuleSpec witnesses preserved through the substitution. This is the cell-level analog of the v1 `Step.par.Compat` cascade (~3K LoC) — the Allais fold (V2-L2.8) replaces the cascade, but the boundary-preservation property must still be PROVED as a theorem over `fold`, not merely assumed. |
-| **Confluence (CR)** | If `raw →* raw₁` and `raw →* raw₂` (via chains of dim-1 cells), then ∃ `raw₃` with `raw₁ →* raw₃` and `raw₂ →* raw₃`. | Generic cd_lemma as ONE theorem per profile (the §2.2 collapse): for every pair of dim-1 generating cells with the same source (a critical pair), a dim-2 cell (confluence filler) exists. The MMS cubical coherent confluence substrate (arXiv:2511.16852 §4 Newman + Church-Rosser) supplies the machinery; the Generator table supplies the critical-pair enumeration. The proof is ONE structural induction over the Generator table, not a per-constructor cascade. |
-| **Strong Normalization (SN)** | Every certified dim-0 cell reduces to a normal form in finitely many dim-1 steps under any reduction strategy. | Tait reducibility over `RawTerm` (a Prop-valued `RC : CellSort → RawCell scope → Prop` with one arm per Generator, per Era S Day 41–43 of the extended-roadmap). The v2 substrate simplifies the argument: the Allais fold gives eval (NbE), the generic `Gen` constructor means the fundamental theorem is ONE induction over Generators rather than a per-Term-constructor 75-arm proof. BUT: the RC predicate must be defined over `RawTerm`, not legacy `Term` — either re-prove on v2 or lift through the bridge (V2-bridge.4). |
-| **Decidable Type-Checking** | `Decidable (certifyRawCellExact? scope raw = Except.ok _)` for all raw cells; and for the Tot fragment, `Decidable (Conv a b)` via NF equality. | The certifier `certifyRawCellExact?` is ALREADY a computable decision procedure returning `Except.ok` or `Except.error` — so decidability of certification is STRUCTURAL (it's a computable function; it always terminates by structural recursion). Decidable Conv requires SN (terms normalize) + CR (NFs unique) + the comparison `DecidableEq` on NFs. The comparison is shipped (V2-L0.11/12); SN + CR are the metatheory obligations above. Path A (NbE via `fold` + quote + DecidableEq on NFs) or Path B (Makkai word equality on the finite Generator-presented polygraph) gives the procedure. |
+| **Subject Reduction (SR)** | If `PolyCell profile sort 0 scope () raw` (a certified dim-0 cell = typed term) and a dim-1 generating cell certifies a step from `raw` to `raw'`, then `PolyCell profile sort 0 scope () raw'` (the target is also certified at the same sort). | The **substitution lemma at every dimension**: applying subst σ to a dim-1 cell preserves its source/target boundary. For `generatingCell ruleId source target`, `(generatingCell ruleId source target).subst σ` must be `generatingCell ruleId (source.subst σ) (target.subst σ)` with the HasEqualDim and SupportedRuleSpec witnesses preserved through the substitution. This is the cell-level analog of the v1 `Step.par.Compat` cascade (~3K LoC) — the Allais fold (V2-L2.8) replaces the cascade, but the boundary-preservation property must still be PROVED as a theorem over `fold`, not merely assumed.  STATUS: the STRUCTURAL half is DELIVERED (#234, #253 `Step.preservesShape`); TYPED SR — `HasTypeDescPi Γ t T → Step t t' → HasTypeDescPi Γ t' T` — is DELIVERED unconditionally (SR-U4 #1132 + star #846); the βη extension is OPEN (PAR-2 #850, pending strengthening #1168). |
+| **Confluence (CR)** | If `raw →* raw₁` and `raw →* raw₂` (via chains of dim-1 cells), then ∃ `raw₃` with `raw₁ →* raw₃` and `raw₂ →* raw₃`. | Generic cd_lemma as ONE theorem per profile (the §2.2 collapse): for every pair of dim-1 generating cells with the same source (a critical pair), a dim-2 cell (confluence filler) exists. The MMS cubical coherent confluence substrate (arXiv:2511.16852 §4 Newman + Church-Rosser) supplies the machinery; the Generator table supplies the critical-pair enumeration. The proof is ONE structural induction over the Generator table, not a per-constructor cascade.  STATUS: DELIVERED — raw confluence via the Takahashi triangle + gated complete development (#420, #700–#713); the generic cd theorem is M7 (#256). |
+| **Strong Normalization (SN)** | Every certified dim-0 cell reduces to a normal form in finitely many dim-1 steps under any reduction strategy. | Tait reducibility over `RawTerm` (a Prop-valued `RC : CellSort → RawCell scope → Prop` with one arm per Generator, per Era S Day 41–43 of the extended-roadmap). The v2 substrate simplifies the argument: the Allais fold gives eval (NbE), the generic `Gen` constructor means the fundamental theorem is ONE induction over Generators rather than a per-Term-constructor 75-arm proof. BUT: the RC predicate must be defined over `RawTerm`, not legacy `Term` — either re-prove on v2 or lift through the bridge (V2-bridge.4).  STATUS: DELIVERED natively for well-typed terms (#546 closed unconditional; #794 open under WfContext; #796 βη) — the re-prove-vs-lift guidance is obsolete; raw β alone is NOT globally SN (#950/#960). |
+| **Decidable Type-Checking** | `Decidable (certifyRawCellExact? scope raw = Except.ok _)` for all raw cells; and for the Tot fragment, `Decidable (Conv a b)` via NF equality. | The certifier `certifyRawCellExact?` is ALREADY a computable decision procedure returning `Except.ok` or `Except.error` — so decidability of certification is STRUCTURAL (it's a computable function; it always terminates by structural recursion). Decidable Conv requires SN (terms normalize) + CR (NFs unique) + the comparison `DecidableEq` on NFs. The comparison is shipped (V2-L0.11/12); SN + CR are the metatheory obligations above. Path A (NbE via `fold` + quote + DecidableEq on NFs) or Path B (Makkai word equality on the finite Generator-presented polygraph) gives the procedure.  STATUS: DELIVERED for the live typed fragment (#461/#462 carriers; §11.8.5 status). |
 
 **The quartet has a thermodynamic reading (O-THERMO, §11.9.2.2).**  SN
 is not merely "terminates": assign each cell a free energy
@@ -7208,6 +7334,7 @@ glue between "the fold is correct" and "the certifier agrees."
 Off-by-one in the lift-by-shift vs the certifier's scope+shift
 creates a silent scope mismatch that passes on closed terms and
 fails on open terms under binders — the classic de Bruijn bug.
+STATUS: DELIVERED (#378, certifier rename-equivariance).
 
 ### 11.6.4 Generator table validation (TCB boundary)
 
@@ -7237,7 +7364,10 @@ cross-implementation catches implementation bugs (wrong code), and
 probes catch boundary bugs (accepting what should reject or vice
 versa).  The table is still trusted data (not self-validating), but
 the trust surface is ~300 lines of lookup tables audited by three
-independent mechanisms.
+independent mechanisms.  STATUS: round-trip witnesses DELIVERED
+(#230); cross-implementation agreement PARTIAL (#996/#1057 flagship
+typed cross-checks shipped; external implementation #225 + full
+corpus #227 pending); coverage + negative probes DELIVERED.
 
 ### 11.6.5 horizontalComposite admission staging (inductive extension discipline)
 
@@ -7357,6 +7487,14 @@ inductive ConsistencyStrength where
   deriving DecidableEq
 ```
 
+**DRIFT note (2026-06):** the tree carries two related enums — the
+10-ctor `UniverseFlag` ladder (#272, enum-only with DecidableEq, NO
+admission predicates) and a separate 6-ctor core consistency-strength
+enum — neither matching this sketch.  Reconcile in code to ONE
+strength enum + the flag ladder, then update this block; until then
+this block is TARGET, and the "decidable admission predicate" claims
+here and in §11.8.2/§3.16.3 are pending (flags are catalogue-only).
+
 **Integration into ProfileExtension (§3.14):**
 
 Every `ProfileExtension` carries:
@@ -7471,6 +7609,8 @@ This is checked COMPUTABLY by the certifier (a comparison on the
 TotalityClass enum per child — ~3 lines of logic in the
 per-child reconciliation V2-L1cert.2).  The FX0-PolyCell verifier
 checks the same constraint from the serialized Generator table.
+STATUS: the metadata is present; the certifier-side enforcement is
+NOT yet wired (gap 7, §11.8.1).
 
 **What this buys:**
 - The Tot fragment is a DECIDABLE sub-language: SN holds (every
@@ -7759,15 +7899,15 @@ risk register and §11.8.14.1's stated open problems.
 Codex audit M-2026-05-27 (second pass, evening) identified seven
 foundational gaps relative to the diabolic-apex target:
 
-| # | Gap | Severity | Fix in §11.8 |
+| # | Gap | Original severity | Status 2026-06 |
 |---|-----|----------|--------------|
-| 1 | `gen_universe`'s payload is `Unit` ⇒ `Universe : Universe` syntactically (Girard's paradox at the admission level) | SEVERE | §11.8.2 universe-level payload |
-| 2 | Eliminators have no motive children ⇒ non-dependent only | BLOCKING | §11.8.3 motive children in spine |
-| 3 | `SupportedGenerator` admits all 194 + `GenPayloadEvidence = Unit` | HIGH | §11.8.4 syntactic vs semantic admission |
-| 4 | No typing judgment (`HasType` absent) | HIGH | §11.8.5 typed layer |
-| 5 | Only dim 1 (type) modeled; 20 other FX dimensions absent | HIGH | §11.8.6 21-dim integration |
-| 6 | Consistency unprovable without typed metatheory | FOUNDATIONAL | §11.8.8 canonicity + consistency |
-| 7 | `TotalityClass` metadata exists but unenforced | MEDIUM | §11.8.4 admission gating |
+| 1 | `gen_universe`'s payload is `Unit` ⇒ `Universe : Universe` syntactically (Girard's paradox at the admission level) | SEVERE | FIXED — payload = `LevelExpr × UniverseFlag` (M24 #273/#432); no-Type-in-Type probe (#442); Girard-acyclicity at every cycle length (#941); predicative non-collapsing tower + no-top + classification-is-successor (#1010–#1012) |
+| 2 | Eliminators have no motive children ⇒ non-dependent only | BLOCKING | OPEN, routed around — generator spines still motive-less (Z0-DECIDE pending); dependent-eliminator TYPING shipped anyway via the standalone eliminator engines (DI-5a–e + ι-computation theorems), refuting the "blocking" claim; the spine refactor remains desirable for spec alignment, with the 16 SR-ι arms + reducibility refresh as its known cost (#435–#441) |
+| 3 | `SupportedGenerator` admits all 197 + `GenPayloadEvidence = Unit` | HIGH | OPEN, ledgered — substance unchanged (HON-11 pending) but the risk is managed: `semanticTier` classifies 38 live / 159 reserved with PROVEN reserved-soundness (HON-5/6/7), so blanket admission no longer masquerades as semantic support |
+| 4 | No typing judgment (`HasType` absent) | HIGH | FIXED — the engine family of §11.8.5 (17 judgments, full metatheory; see the refreshed status there) |
+| 5 | Only dim 1 (type) modeled; 20 other FX dimensions absent | HIGH | PARTIAL — generic graded engine `HasGradeOver R` + lattice-class dims + product/functoriality + erasure-SN-transfer shipped (#899–#917, #1035–#1037); demonstrated on a SIDE-CALCULUS with erasure to STLC, not yet as judgments on PolyCell cells (the fiber-product integration of §11.8.5 Decision 5 is the open O-DIM-CELLS) |
+| 6 | Consistency unprovable without typed metatheory | FOUNDATIONAL | FIXED — zero-axiom consistency by three routes (#812 Tait-candidate, #837/#848/#1149 syntactic, #697 sconing-bridged) |
+| 7 | `TotalityClass` metadata exists but unenforced | MEDIUM | OPEN — metadata present, certifier-side child-constraint enforcement still absent |
 
 ### 11.8.2 Universe policy — maximal power
 
@@ -8604,18 +8744,43 @@ this type*, making ill-typed terms unconstructable **at the typed layer**
 single categorical object — **a decidable fibration** — and the rest of this
 subsection commits the forks, the shape, and the properties that realize it.
 
-**Status (honest, per the §1 snippet discipline).**  The type wrapper is
-**scaffold-only today**.  `FX1Poly/Typed/HasType.lean` pins the native shape
-(a `.term` subject classified by a `.type` classifier over a
-`TypingContext`); `TypingContext` + `lookup` + the `var` rule are shipped
-(M31/M32/M34); the `conv` / `universe` / `gen` rules, the property ledger
-below, and typed SR are **NOT built**.  The honesty probes
-(`probe_app_unit_unit` + siblings, memory
-`feedback_polycell_structural_vs_semantic`) prove the gap this wrapper
-closes: `app(unit, unit)` is *structurally* admitted today (0 FP on
-STRUCTURE via `HasCertifiedCellDim0`), yet has no typing derivation — adding
-0 FP on TYPING is exactly the type wrapper's job.  Nothing below is claimed
-delivered before its body ships.
+**Status (honest, per the §1 snippet discipline; refreshed 2026-06-09).**
+The type wrapper is BUILT and zero-axiom for the live fragment, along a
+different architecture than the sketch below originally prescribed — see
+"The shipped architecture" note after Decision 7.  The original scaffold
+(`HasType.lean`) was grown to full strength and then DELETED (HT-C #890)
+in favor of a native engine family: the formation engine `HasTypeDesc`
+(var / conv / universeFormation / generic genFormation over the
+`typingRuleDescOf` table, premises via `DescTelescope`) and the grown
+engine `HasTypeDescPi` (ofFormation / conv / piIntro / piElim / generic
+genFormationPi over `DescTelescopePi`), flanked by the flat engine
+`HasTypeDescFlat` (non-cumulative telescopes for the [0,0] data formers,
+forced by the TELESCOPE-REACH impossibility #933/#934) and 13 standalone
+data-introduction / eliminator engines.  Delivered, all
+`#assert_no_axioms`-gated in FX1PolyAudit: unconditional typed subject
+reduction (`HasTypeDescPi.subjectReduction` + star, SR-U4 #1132/#846),
+grown context conversion under target well-formedness
+(`convContextUnderWf`, SR-U5 #1133), open+closed type safety
+(#1134/#1135), SN for well-typed terms (#546 closed; #794 open under
+WfContext; #796 βη), canonicity for closed bool/nat/data at value level
+with combined-engine closed-normal canonical forms (#550–#552, #1064,
+#1069, #1074, #1078), consistency by three routes (#812 Tait, #837/#848
+syntactic, #697 sconing-bridged), uniqueness of typing (#823/#885,
+#940), the inversion family (#454/#455, #769, #822, #1118), decidable
+typed conversion and checking on the live fragment (#461/#462 carriers
+post-HT-C: the native formation decider, the per-shape grown checkers,
+the SN-backed normalizer decider #615/#617, the WfContext βη decider
+#806), and the FX0 cross-check on flagship typed terms (#996/#1057).
+Coverage honesty (build-time counts): of 197 generators, 34 are typed
+(8 grown-core, 26 standalone-engine-only); 159 are reserved and PROVEN
+both untyped-by-every-engine and operationally inert (HON-5/6/7).
+Open at this layer: the eliminator motive-spine refactor (gap 2,
+Z0-DECIDE), assembly of ONE total whnf-directed grown checker from the
+per-shape pieces (the STR campaign), grown η-subject-reduction pending
+the strengthening theorem (#1168/PAR-2 #850), the per-classifier
+canonicity assembly (CANON-1 #1048), and — unchanged — the joint-apex
+O-NORM obligation.  Nothing in this paragraph claims beyond the gated
+theorems named.
 
 #### The seven decided forks
 
@@ -8680,7 +8845,52 @@ delivered before its body ships.
   `Sound dim sort`.  The dim-1 wrapper is §3.3–§3.4 + the named
   `fxConvConfluenceThinnessBridge`.
 
-#### The shape (Lean sketch — NOT shipped)
+**The shipped architecture (2026-06 amendment to Decisions 4–5).**
+Decision 4's single-judgment design was prototyped to full strength
+(the HasType engine, M35–M55) and then REPLACED: folding the
+intro/elim rows into one judgment regenerates the host recursor on
+every table change — the cascade Decision 4 was meant to kill
+reappears as recompilation + arm-refresh of the single inductive (the
+GTL-16/GTL-18 fold rejection).  The delivered design factors the
+wrapper into an ENGINE FAMILY, each engine cascade-free in its own
+table: `HasTypeDesc` (formation — var / conv / universeFormation /
+ONE generic genFormation arm over `typingRuleDescOf`, premises by
+`DescTelescope` with cumulative binder shifts); `HasTypeDescPi`
+(grown — ofFormation / conv with EXACT universe-code reclassifier /
+piIntro / piElim / ONE generic genFormationPi arm with
+`DescTelescopePi`); `HasTypeDescFlat` (flat non-cumulative telescopes
+for the [0,0] data formers — forced by TELESCOPE-REACH: the formation
+telescope's binderShifts are necessarily cumulative, so non-dependent
+binary formers are unreachable in it); `HasTypeDescBaseType` (nullary
+base-type codes); the standalone data-introduction engines
+(`HasTypeDescDataIntro` + per-family PairIntro / EitherIntro /
+OptionIntro / ListIntro / IdIntro / NatIntro — each referencing the
+core engines only in premises, strictly positive, so the grown
+engine's untypability refutations remain TRUE when a data feature
+lands); and the standalone eliminator engines (BoolElim(+Value) /
+EitherMatch / OptionMatch / SigmaProjection / IdElim — carrying the
+typed ι-computation theorems).  Coherence machinery replacing the
+single-judgment guarantees: `hasSomeTypingRule` (union classifier
+over all 17 engines) with reserved-soundness (untyped by ALL engines
+∧ root-inert), the strict refinement theorem over the grown-only
+untypability decision, the formation↔grown PARITY ledger, and
+combined-engine canonical-form / consistency statements.  "A fully
+typed cell" (Decision 5's fiber product) is realized per-feature as
+the conjunction of the relevant engine judgments; re-basing the
+family over certified PolyCell inhabitants (the stacking lemma
+`HasTypeDescPi Γ t T → HasCertifiedCellDim0 t`) is the open O-STACK
+integration obligation.  Cost profile achieved: a new data feature =
+table rows + (at most) one new standalone engine + audit gates — no
+arm is ever added to an existing engine (demonstrated at listCode,
+optionCode, boolCode, natCode).
+
+#### The shape (Lean sketch — SUPERSEDED by the shipped architecture
+note above; retained as the original design record.  Two shipped
+improvements over this sketch: the live grown `conv` requires the
+EXACT universe-code reclassifier typing, not the existential
+`IsType`; and the live `TypingContext` is PROOF-FREE — cons without
+`TIsType` — with well-formedness as the separate `WfContextDesc` /
+`WfContextDescPi` predicates)
 
 ```lean
 -- the .context wrapper (sibling): bindings are .type cells typed in prefix
