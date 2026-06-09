@@ -6,6 +6,7 @@ import FX1Poly.Universe.LevelExprSimplify
 import FX1Poly.Universe.LevelExprSerialize
 import FX1Poly.Universe.UniverseFlagSerialize
 import FX1Poly.Universe.UniversePayloadSerialize
+import FX1Poly.Universe.LevelExprImpredicativeClosure
 
 /-! # FX1PolyAudit/AuditUniverse
    — persistent per-declaration zero-axiom gate for the universe layer
@@ -167,6 +168,13 @@ full strict-zero-axiom sweep.
 #assert_no_axioms FX1Poly.Universe.LevelExpr.limax_denote_eq_lmax_when_codomain_nonzero
 #assert_no_axioms FX1Poly.Universe.LevelExpr.limax_lzero_right_denoteEquiv
 #assert_no_axioms FX1Poly.Universe.LevelExpr.limax_lzero_left_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.bothBoolTrue
+#assert_no_axioms FX1Poly.Universe.LevelExpr.isClosed
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denote_closed_env_independent
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denoteEquiv_closed_iff
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decidableDenoteEquivClosed
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_denoteEquiv_lmax_of_codomainPos
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_denoteEquiv_lzero_of_codomainZero
 #assert_no_axioms FX1Poly.Universe.LevelExpr.compareNat
 #assert_no_axioms FX1Poly.Universe.LevelExpr.compareNat_refl
 #assert_no_axioms FX1Poly.Universe.LevelExpr.compareNat_swap
