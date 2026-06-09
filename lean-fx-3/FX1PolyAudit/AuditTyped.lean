@@ -501,6 +501,7 @@ import FX1Poly.Typed.TypingRoleCoverage
 import FX1Poly.Typed.UntypableHeadDecision
 import FX1Poly.Typed.TypingHeadKindClassifier
 import FX1Poly.Typed.TypedBySomeEngine
+import FX1Poly.Typed.GeneratorSemanticTier
 import FX1Poly.Typed.CertifiedWordReductionTermination
 import FX1Poly.Typed.CertifiedWordReductionConfluence
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
@@ -7406,6 +7407,26 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.isUntypableHead_overclaims_boolTrue
 #assert_no_axioms FX1Poly.Typed.isUntypableHead_overclaims_fst
 #assert_no_axioms FX1Poly.Typed.classifiersAgree_hilbertSpace
+
+-- GeneratorSemanticTier (HON-3): the unified live/reserved ledger. semanticTier g = live iff hasSomeTypingRule g
+-- (HON-1 static axis) OR g.hasRedexHead (HON-2 operational axis); else reserved. The two axes are genuinely
+-- complementary: natElim_reducesButUntyped_stillLive (natElim REDUCES yet is statically reserved — caught by the
+-- operational axis) + boolTrue_typedNotRedex_stillLive (a typed value, not a redex head — caught by the static
+-- axis) prove neither axis alone suffices. semanticTier_discriminates is the non-vacuity guard (noConfusion, NOT
+-- decide-on-Ne). Reserved-soundness (reserved ⟹ untyped ∧ inert) is HON-7. Zero-axiom (if-over-Bool || ; rfl
+-- witnesses; rw + SemanticTier.noConfusion).
+#assert_no_axioms FX1Poly.Typed.semanticTier
+#assert_no_axioms FX1Poly.Typed.semanticTier_app
+#assert_no_axioms FX1Poly.Typed.semanticTier_boolTrue
+#assert_no_axioms FX1Poly.Typed.semanticTier_natElim
+#assert_no_axioms FX1Poly.Typed.semanticTier_piTyCode
+#assert_no_axioms FX1Poly.Typed.semanticTier_hilbertSpace
+#assert_no_axioms FX1Poly.Typed.semanticTier_unit
+#assert_no_axioms FX1Poly.Typed.semanticTier_idCode
+#assert_no_axioms FX1Poly.Typed.semanticTier_quantumGate
+#assert_no_axioms FX1Poly.Typed.natElim_reducesButUntyped_stillLive
+#assert_no_axioms FX1Poly.Typed.boolTrue_typedNotRedex_stillLive
+#assert_no_axioms FX1Poly.Typed.semanticTier_discriminates
 
 -- CertifiedWordReductionTermination (SN-131): Leg-3 word-rewrite termination on the CERTIFIED fragment.
 -- certifiedReductionInducesWordChain is the bridge (a Step sequence's toCode images form an fxStepSystem
