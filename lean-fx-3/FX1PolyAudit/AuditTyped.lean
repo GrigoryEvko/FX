@@ -506,6 +506,7 @@ import FX1Poly.Typed.TypingHeadKindClassifier
 import FX1Poly.Typed.TypedBySomeEngine
 import FX1Poly.Typed.GeneratorSemanticTier
 import FX1Poly.Typed.GeneratorHonestyOverview
+import FX1Poly.Typed.StaticTypingSoundness
 import FX1Poly.Typed.CertifiedWordReductionTermination
 import FX1Poly.Typed.CertifiedWordReductionConfluence
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
@@ -3393,6 +3394,33 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.mulStepFires
 #assert_no_axioms FX1Poly.Typed.natElimMulFaithful
 #assert_no_axioms FX1Poly.Typed.natElimMulFaithful.threeTimesTwo
+-- ★ HON-5 NEGATIVE soundness of the honest static-typing classifier: a head hasSomeTypingRule reports RESERVED
+-- (= false) is typed by NO engine. Grown leg = the propext-free bridge hasSomeTypingRule_false_imp_isUntypableHead
+-- (peels the 24-disjunct || chain via orEqFalse_left/rightFalse, reduces typingRoleOf via if_neg, discharges with
+-- decide_eq_true) feeding the shipped isUntypableHead_sound; the 14 standalone legs consume each engine's shipped
+-- subjectIs… inversion + Bool.noConfusion (Flat keys on a symbolic generator, so collapses the chain via
+-- Bool.or_true/true_or). reservedHeadUntypedByEveryEngine bundles all 15. Turns hasSomeTypingRule = false from a
+-- Bool into a TRUTHFUL "statically reserved" verdict.
+#assert_no_axioms FX1Poly.Typed.orEqFalse_leftFalse
+#assert_no_axioms FX1Poly.Typed.orEqFalse_rightFalse
+#assert_no_axioms FX1Poly.Typed.notEqTrue_ofEqFalse
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_false_imp_isUntypableHead
+#assert_no_axioms FX1Poly.Typed.grownReservedUntyped
+#assert_no_axioms FX1Poly.Typed.flatReservedUntyped
+#assert_no_axioms FX1Poly.Typed.baseTypeReservedUntyped
+#assert_no_axioms FX1Poly.Typed.dataIntroReservedUntyped
+#assert_no_axioms FX1Poly.Typed.natIntroReservedUntyped
+#assert_no_axioms FX1Poly.Typed.idIntroReservedUntyped
+#assert_no_axioms FX1Poly.Typed.optionIntroReservedUntyped
+#assert_no_axioms FX1Poly.Typed.eitherIntroReservedUntyped
+#assert_no_axioms FX1Poly.Typed.pairIntroReservedUntyped
+#assert_no_axioms FX1Poly.Typed.listIntroReservedUntyped
+#assert_no_axioms FX1Poly.Typed.boolElimReservedUntyped
+#assert_no_axioms FX1Poly.Typed.idElimReservedUntyped
+#assert_no_axioms FX1Poly.Typed.optionMatchReservedUntyped
+#assert_no_axioms FX1Poly.Typed.eitherMatchReservedUntyped
+#assert_no_axioms FX1Poly.Typed.sigmaProjectionReservedUntyped
+#assert_no_axioms FX1Poly.Typed.reservedHeadUntypedByEveryEngine
 -- ★ RECURSIVE list-eliminator computing canonicity (ListElimComputingCanonicity), completing the
 -- recursive-eliminator computing-canonicity family (nat + list). listElim's cons ι-rule is a TRIPLE-nested app
 -- (the cons branch is a 3-arg curried function Elt→List→C→C) reintroducing a listElim over the tail. ★
