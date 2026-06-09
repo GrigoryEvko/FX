@@ -12,6 +12,7 @@ import FX1Poly.Core.BetaEtaWordSystem
 import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder
+import FX1Poly.Core.RecursiveEliminatorTermination
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -252,6 +253,20 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.wellFounded_of_lexPairMeasure
 #assert_no_axioms FX1Poly.Core.wellFounded_of_precedenceMultisetMeasure
 #assert_no_axioms FX1Poly.Core.wellFounded_of_precedenceLexMeasure
+-- ★ #1139 SPIKE: the RECURSIVE-eliminator ι-pattern terminates via the shipped multiset RPO certificate,
+-- INDEPENDENT of β and typed-SN (the Leg-3 "β-imported boundary"). The fxSystem termination (SN-131) imports
+-- typed-SN because it encodes β (raw β is non-terminating, SN-NECESSITY); η-SN is shipped; the open ι piece
+-- splits — non-recursive ι is size-decreasing, the RECURSIVE eliminator (natElim-succ DUPLICATES the recursive
+-- call on a SMALLER scrutinee) needs the multiset (Dershowitz-Manna) RPO. This models that hard core: ElimStep
+-- elim(k+1) ↝ branch(elim k, elim k), terminated by recScrutineeMultiset over Nat.lt via
+-- wellFounded_of_precedenceMultisetMeasure — NO β, NO Tait. listAppendAssoc is propext-free (List.append_assoc
+-- DEPENDS ON propext). De-risking model; the real Step ι-arms over RawTerm are the multi-firing follow-on.
+#assert_no_axioms FX1Poly.Core.listAppendAssoc
+#assert_no_axioms FX1Poly.Core.MultisetRedOne.appendRight
+#assert_no_axioms FX1Poly.Core.MultisetRedOne.appendLeft
+#assert_no_axioms FX1Poly.Core.elimStep_decreasesMultiset
+#assert_no_axioms FX1Poly.Core.recursiveEliminatorTerminates
+#assert_no_axioms FX1Poly.Core.recursiveEliminatorTerminates.smoke
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
