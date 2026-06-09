@@ -508,6 +508,7 @@ import FX1Poly.Typed.TypedBySomeEngine
 import FX1Poly.Typed.GeneratorSemanticTier
 import FX1Poly.Typed.GeneratorHonestyOverview
 import FX1Poly.Typed.StaticTypingSoundness
+import FX1Poly.Typed.SemanticTierSoundness
 import FX1Poly.Typed.CertifiedWordReductionTermination
 import FX1Poly.Typed.CertifiedWordReductionConfluence
 import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
@@ -3467,6 +3468,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.idJHostFold
 #assert_no_axioms FX1Poly.Typed.boolElimHostFold.selectsThen
 #assert_no_axioms FX1Poly.Typed.optionMatchHostFold.firesSome
+-- ★ SEMANTIC-TIER soundness (SemanticTierSoundness): the unified live/reserved ledger's RESERVED verdict is
+-- TRUTHFUL. semanticTier g = .reserved decomposes (semanticTier_reserved_imp_both_false) into BOTH classifier
+-- Bools false — were the || true the tier if would yield .live, refuted by SemanticTier.noConfusion — feeding
+-- the HON-5 static leg (reserved ⟹ untyped by every engine; grown representative + full-15 bundle) and the
+-- HON-6 operational leg (reserved ⟹ no root redex). semanticTierReservedSound is the headline: a reserved
+-- generator is semantically dead (grown-untyped AND operationally inert). The soundness that makes the honest
+-- 197-generator partition a VERIFIED ledger, not an unchecked Bool. Zero-axiom (cases on the || + if_pos + the
+-- shipped HON-5/HON-6 legs).
+#assert_no_axioms FX1Poly.Typed.semanticTier_reserved_imp_both_false
+#assert_no_axioms FX1Poly.Typed.reservedTierOperationallyInert
+#assert_no_axioms FX1Poly.Typed.reservedTierUntypedByGrownEngine
+#assert_no_axioms FX1Poly.Typed.reservedTierUntypedByEveryEngine
+#assert_no_axioms FX1Poly.Typed.semanticTierReservedSound
 -- ★ NON-RECURSIVE function-branch eliminator-computing canonicity (MatchElimComputingCanonicity), COMPLETING
 -- the eliminator-computing-canonicity coverage across all four structural shapes: bool (projection/value),
 -- nat+list (recursive function), option+either (non-recursive function, HERE). optionMatch/eitherMatch fire a
