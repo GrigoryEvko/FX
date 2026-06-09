@@ -78,6 +78,7 @@ import FX1Poly.Typed.ConvergentCanonicityBoundary
 import FX1Poly.Core.SconingTaitCrossLeg
 import FX1Poly.Core.SconingSNObjectUnique
 import FX1Poly.Typed.RawBetaNotRpoOrientable
+import FX1Poly.Typed.SnTriangulationBundle
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -359,6 +360,17 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 -- This forces the rose-tree-word-rewriting leg to cover strong normalization only as a partial fragment;
 -- full β-SN routes through Tait (Ω is untypable), exactly as RawIotaRpoBridge already imports.
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.betaNotOrientableByErasure
+
+-- SN triangulation bundle: "SN proven once (Tait), triangulated twice" consolidated against the parity
+-- ledger. snColumnIsHonest pins the SN column = (provenIndependent, bridgedToTait, partialFragment) by rfl;
+-- snPrimaryTait is Leg 1 (Tait, the one independent proof); snConfirmSconingBridged is Leg 2 (sconing = Tait
+-- object, proof irrelevance); snConfirmRpoFragment + snRpoBetaBoundary are Leg 3 (ι∪η fragment SN, Tait-free,
+-- with β provably non-orientable so β stays Tait-imported).
+#assert_no_axioms FX1Poly.Core.ParityMatrix.snColumnIsHonest
+#assert_no_axioms FX1Poly.Core.ParityMatrix.snPrimaryTait
+#assert_no_axioms FX1Poly.Core.ParityMatrix.snConfirmSconingBridged
+#assert_no_axioms FX1Poly.Core.ParityMatrix.snConfirmRpoFragment
+#assert_no_axioms FX1Poly.Core.ParityMatrix.snRpoBetaBoundary
 
 -- Full root-ι SN assembly: unify the 13 non-recursive arms + the 3 recursive
 -- arms into ONE order over the CANONICAL FX1Poly.Core.IotaHeadStep (no duplicate relation — it already
