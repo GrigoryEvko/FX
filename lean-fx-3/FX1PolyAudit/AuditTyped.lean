@@ -272,6 +272,7 @@ import FX1Poly.Typed.CanonicitySyntacticRoute
 import FX1Poly.Typed.GrownRigidityCanonicity
 import FX1Poly.Typed.BoolElimClosedNormalForms
 import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
+import FX1Poly.Typed.BoolElimValueCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
@@ -3197,6 +3198,20 @@ gates pin them shut.
 -- (deferred #1138 / GTL table-residency). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.noClosedBoolElimAtBoolType
 #assert_no_axioms FX1Poly.Typed.closedBoolCanonicalFormsWithElim
+-- ★ NON-VACUOUS ELIMINATOR-COMPUTING CANONICITY (BoolElimValueCanonicity): the FIRST canonicity in which the
+-- eliminator genuinely COMPUTES (not a vacuity). The four prior firings (45-48) found the eliminator VACUOUS at a
+-- data type because the existing HasTypeDescBoolElim has GROWN branches (can't type boolElim b true false : Bool).
+-- ★ HasTypeDescBoolElimValue = the bool eliminator INTO Bool with DATA-VALUE branches (data-intro at boolCode), so
+-- boolElim b true false : Bool IS typeable. smoke = boolElim(boolTrue,boolTrue,boolFalse) : Bool (non-vacuous
+-- typing). boolElimValueTrue/FalseIotaTyped = typed ι-computation (the eliminator fires + the branch stays typed,
+-- SR value-case). ★ boolElimValueCanonicity = a closed boolElim b t e : Bool COMPUTES by one ι-step to a bool
+-- value (scrutinee is boolTrue/boolFalse, eliminator fires to the selected branch which is a bool value). The
+-- principled unification (one combined intro/elim engine for general eliminators with nested-computation branches)
+-- remains the deferred GTL table-residency work (#832/#1138). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElimValue.smoke
+#assert_no_axioms FX1Poly.Typed.boolElimValueTrueIotaTyped
+#assert_no_axioms FX1Poly.Typed.boolElimValueFalseIotaTyped
+#assert_no_axioms FX1Poly.Typed.boolElimValueCanonicity
 -- GROWN CLOSED-NORMAL CLASSIFIER SHAPE (GrownClosedNormalClassifierShape, CANON-1 generalization): the POSITIVE
 -- characterization behind every data-classifier rule-out. ★ closedNormalClassifierIsFunctionOrType = a closed
 -- normal grown-typed term's classifier is Conv a Π-code OR Conv a universe code (the grown engine inhabits only
