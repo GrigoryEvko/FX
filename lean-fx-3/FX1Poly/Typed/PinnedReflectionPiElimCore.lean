@@ -144,4 +144,48 @@ theorem pinnedReflectionPiElimVarArm (profile : PolyProfile)
   exact pinnedReflectionPiElimCore profile functionIH argumentIH rho sourceContext
     targetWellFormed rhoInjective condition wellFormed rfl hArgument piPinned piBaseTyped
 
+/-- **The reduces-to-variable producer** — the first whnf-route case, strictly generalizing the
+var arm: a function that `StepStar`-REDUCES to a variable pins its Π through target-side subject
+reduction (the exact consumer of the motive's target-wf premise) + `invertVar` on the reduct + the
+Kripke context condition.  The reduct is automatically in-image (`StepStar.reflectRename` on the
+in-image function), so the source index exists; the core then finishes with the ORIGINAL premise
+IHs — the reduction only serves to REVEAL the pin, which is a property of the shared classifier. -/
+theorem pinnedReflectionPiElimReducesToVarArm (profile : PolyProfile)
+    {targetScope : Nat} {targetContext : TypingContext profile targetScope}
+    {functionTerm argument domainCode : RawTerm targetScope}
+    {codomainCode : RawTerm (targetScope + 1)} {index : Fin targetScope}
+    (functionTyped : HasTypeDescPi profile targetContext functionTerm
+      (piTyCodeCell domainCode codomainCode))
+    (functionReduces : StepStar functionTerm (variableCell index))
+    (functionIH : PinnedReflectionConclusion profile targetContext functionTerm
+      (piTyCodeCell domainCode codomainCode))
+    (argumentIH : PinnedReflectionConclusion profile targetContext argument domainCode) :
+    PinnedReflectionConclusion profile targetContext
+      (appCell functionTerm argument)
+      (RawTerm.subst0 codomainCode argument) := by
+  intro targetWellFormed sourceScope rho sourceContext rhoInjective condition wellFormed
+    sourceSubject pinBase subjectInImage _pinned _pinBaseTyped
+  obtain ⟨sourceFunction, sourceArgument, hSubject, hFunction, hArgument⟩ :=
+    renameEqAppCellInversion rho subjectInImage.symm
+  subst hSubject
+  rw [hFunction] at functionReduces
+  obtain ⟨sourceReduct, _sourceChain, imageEq⟩ :=
+    StepStar.reflectRename rho functionReduces
+  obtain ⟨sourceIndex, _hSourceReduct, hIndex⟩ :=
+    renameEqVariableCellInversion rho imageEq
+  subst hIndex
+  have varTyped : HasTypeDescPi profile targetContext (variableCell (rho sourceIndex))
+      (piTyCodeCell domainCode codomainCode) := by
+    rw [hFunction] at functionTyped
+    exact HasTypeDescPi.subjectReductionStar targetWellFormed functionTyped functionReduces
+  have piPinned :
+      Conv (piTyCodeCell domainCode codomainCode)
+        (RawTerm.rename rho (sourceContext.lookup sourceIndex)) :=
+    (HasTypeDescPi.invertVar varTyped).trans (condition sourceIndex)
+  have piBaseTyped :
+      IsTypeDescPi profile sourceContext (sourceContext.lookup sourceIndex) :=
+    WfContextDescPi.lookupIsType sourceContext wellFormed sourceIndex
+  exact pinnedReflectionPiElimCore profile functionIH argumentIH rho sourceContext
+    targetWellFormed rhoInjective condition wellFormed hFunction hArgument piPinned piBaseTyped
+
 end FX1Poly.Typed

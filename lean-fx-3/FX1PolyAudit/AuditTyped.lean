@@ -8519,3 +8519,4 @@ condition + lookupIsType. -/
 
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimCore
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimVarArm
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimReducesToVarArm
