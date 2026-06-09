@@ -303,4 +303,88 @@ the complete termination certificate for it. -/
 theorem fxRpoWellFounded : WellFounded (RpoBelow fxPrecedence) :=
   rpoWellFounded fxPrecedence_wellFounded
 
+/-! ### RPO congruence (compatibility with contexts)
+
+The well-founded order above orients root redexes.  To use it as a *rewrite* termination certificate we also
+need it to be a **congruence**: replacing one child of a node by an RPO-smaller child makes the whole node
+RPO-smaller.  This is the monotonicity that lifts a child-context ι step (`StepChildren`) to a node-level RPO
+decrease.  Proved via the `multiset` clause — the single child replacement is a Dershowitz-Manna multiset
+decrease — with the unchanged children dominated as subterms and the replacement dominated through the larger
+child.  The four `List` helpers below are propext-clean re-proofs of the `Init` append/membership facts the
+clause needs (`List.append_assoc` and friends leak `propext`). -/
+
+/-- Propext-clean `(prefix ++ [x]) ++ suffix = prefix ++ x :: suffix` (the `List.append_assoc` route leaks
+propext; this is a `congrArg` induction on the prefix). -/
+private theorem appendSingletonMiddle {Elem : Type} (prefixList : List Elem) (singleElem : Elem)
+    (suffixList : List Elem) :
+    (prefixList ++ [singleElem]) ++ suffixList = prefixList ++ singleElem :: suffixList := by
+  induction prefixList with
+  | nil => rfl
+  | cons headElem _tailList ih => exact congrArg (headElem :: ·) ih
+
+/-- `x ∈ l1 → x ∈ l1 ++ l2` (propext-clean, `List.Mem` induction on the left list). -/
+private theorem memAppendOfMemLeft {Elem : Type} {element : Elem} {rightList : List Elem} :
+    ∀ {leftList : List Elem}, element ∈ leftList → element ∈ leftList ++ rightList := by
+  intro leftList
+  induction leftList with
+  | nil => intro membership; nomatch membership
+  | cons _headElem _tailList ih =>
+      intro membership
+      rcases membership with _ | ⟨_, membershipTail⟩
+      · exact List.Mem.head _
+      · exact List.Mem.tail _ (ih membershipTail)
+
+/-- `x ∈ l2 → x ∈ l1 ++ l2` (propext-clean). -/
+private theorem memAppendOfMemRight {Elem : Type} {element : Elem} {rightList : List Elem}
+    (membership : element ∈ rightList) : ∀ {leftList : List Elem}, element ∈ leftList ++ rightList := by
+  intro leftList
+  induction leftList with
+  | nil => exact membership
+  | cons _headElem _tailList ih => exact List.Mem.tail _ ih
+
+/-- `x ∈ l1 ++ l2 → x ∈ l1 ∨ x ∈ l2` (propext-clean). -/
+private theorem memAppendCases {Elem : Type} {element : Elem} {rightList : List Elem} :
+    ∀ {leftList : List Elem}, element ∈ leftList ++ rightList → element ∈ leftList ∨ element ∈ rightList := by
+  intro leftList
+  induction leftList with
+  | nil => intro membership; exact Or.inr membership
+  | cons _headElem _tailList ih =>
+      intro membership
+      rcases membership with _ | ⟨_, membershipTail⟩
+      · exact Or.inl (List.Mem.head _)
+      · rcases ih membershipTail with inLeft | inRight
+        · exact Or.inl (List.Mem.tail _ inLeft)
+        · exact Or.inr inRight
+
+/-- **★ The RPO is a congruence**: replacing one child `bigChild` of a node by an RPO-smaller `smallChild`
+makes the whole node RPO-smaller.  Via the multiset clause (the argument multiset Dershowitz-Manna-decreases
+by the single replacement), with the unchanged children dominated as subterms and `smallChild` dominated
+through `bigChild`.  This is the monotonicity / compatibility-with-contexts of RPO — the property that turns
+it from a root-redex order into a genuine rewrite order. -/
+theorem rpo_congruence (headSym : Symbol)
+    (prefixChildren suffixChildren : List (RoseTerm Symbol))
+    (bigChild smallChild : RoseTerm Symbol) (hstep : Rpo prec bigChild smallChild) :
+    Rpo prec (.node headSym (prefixChildren ++ bigChild :: suffixChildren))
+      (.node headSym (prefixChildren ++ smallChild :: suffixChildren)) := by
+  refine Rpo.multiset headSym _ _ bigChild prefixChildren suffixChildren [smallChild] rfl
+    (appendSingletonMiddle prefixChildren smallChild suffixChildren).symm ?_ ?_
+  · intro addedChild addedMembership
+    rcases addedMembership with _ | ⟨_, addedEmpty⟩
+    · exact hstep
+    · nomatch addedEmpty
+  · intro reductChild reductMembership
+    rcases memAppendCases reductMembership with inPrefix | inSmallSuffix
+    · exact Rpo.subtermEq headSym _ reductChild (memAppendOfMemLeft inPrefix)
+    · rcases inSmallSuffix with _ | ⟨_, inSuffix⟩
+      · exact Rpo.subtermStrict headSym _ smallChild bigChild
+          (memAppendOfMemRight (List.Mem.head _)) hstep
+      · exact Rpo.subtermEq headSym _ reductChild (memAppendOfMemRight (List.Mem.tail _ inSuffix))
+
+/-- The head-child special case (`prefix = []`): if the FIRST child steps RPO-down, the node steps RPO-down.
+The form the kernel's `StepChildren` head-step maps to. -/
+theorem rpo_congruence_head (headSym : Symbol) (restChildren : List (RoseTerm Symbol))
+    (bigChild smallChild : RoseTerm Symbol) (hstep : Rpo prec bigChild smallChild) :
+    Rpo prec (.node headSym (bigChild :: restChildren)) (.node headSym (smallChild :: restChildren)) :=
+  rpo_congruence headSym [] restChildren bigChild smallChild hstep
+
 end FX1Poly.Core.RpoInductive

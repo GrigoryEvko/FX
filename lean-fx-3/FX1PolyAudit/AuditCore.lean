@@ -318,6 +318,15 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.RpoInductive.rpoWellFounded
 #assert_no_axioms FX1Poly.Core.RpoInductive.fxRpoWellFounded
 
+-- RPO congruence (firing-72): the order is a CONGRUENCE — replacing one child by an RPO-smaller child makes
+-- the node RPO-smaller (via the multiset clause: a single Dershowitz-Manna decrease, unchanged children
+-- dominated as subterms, the replacement dominated through the larger child). This is the monotonicity /
+-- compatibility-with-contexts that turns the root-redex order into a genuine REWRITE order — the load-bearing
+-- ingredient that lifts a child-context ι step to a node-level RPO decrease. The four List append/membership
+-- helpers it consumes are propext-clean re-proofs (Init's List.append_assoc and friends leak propext).
+#assert_no_axioms FX1Poly.Core.RpoInductive.rpo_congruence
+#assert_no_axioms FX1Poly.Core.RpoInductive.rpo_congruence_head
+
 -- RawTerm RPO bridge (firing-71): the generic rose-tree RPO instantiated at the REAL kernel. eraseToRose
 -- forgets RawTerm's scope/binder-shift structure to a RoseTerm Generator; realGenPrecedence ranks the three
 -- recursive eliminators above gen_app. The three recursive ι arms (Step.iotaNatElimSucc / iotaNatRecSucc /
