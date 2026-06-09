@@ -58,6 +58,7 @@ import FX1Poly.Typed.GrownOpenProgress
 import FX1Poly.Typed.GrownOpenCanonicalFormsByClassifier
 import FX1Poly.Typed.GrownOpenProgressByClassifier
 import FX1Poly.Typed.GrownOpenTypeSafety
+import FX1Poly.Typed.GrownTypeSafetyUnconditional
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDesc
@@ -1449,6 +1450,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openHasUniqueNormalForm
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openTypeSafetyOfSubjectReductionStar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openTypeSafetyUniqueOfSubjectReductionStar
+-- UNCONDITIONAL GROWN TYPE SAFETY (GrownTypeSafetyUnconditional.lean, HARVEST-TS): discharge the SR-along-↝*
+-- hypothesis of the four conditional capstones above via SR-U4 (subjectReductionStar, now unconditional under the
+-- benign WfContextDescPi presupposition).  closedTypeSafety / closedTypeSafetyUnique feed the empty-context witness
+-- (WfContextDescPi.emptyIsWellFormed); openTypeSafety / openTypeSafetyUnique lift the WfContextDesc presupposition
+-- to the grown WfContextDescPi via WfContextDescPi.ofWfContextDesc.  Progress + preservation (+ confluence) with NO
+-- hypothesis: every closed/open grown-typed term EVALUATES TO ITS (unique) canonical[-or-neutral] value.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedTypeSafety
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedTypeSafetyUnique
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openTypeSafety
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openTypeSafetyUnique
 -- CASCADE-FREE FORMER STEP-INVERSION (FormerStepInversionGeneric.lean, TG-1): a step out of any formation-rule
 -- cell (typingRuleDescOf generator = some rule) is a child congruence, proven WITHOUT enumerating the formation
 -- table — `cases step` with generator free (propext-clean), each of the 17 root-redex cases refuted because the
