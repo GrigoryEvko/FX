@@ -75,6 +75,7 @@ import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.UniverseModeBridgeReducibility
 import FX1Poly.Core.RawTermSubstLiftWeaken
 import FX1Poly.Typed.ConvergentCanonicityBoundary
+import FX1Poly.Core.SconingTaitCrossLeg
 
 /-! # FX1PolyAudit/AuditCore — zero-axiom gate for the cell-calculus core
 
@@ -448,6 +449,20 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.appLamUnit_betaStepsToUnit
 #assert_no_axioms FX1Poly.Core.convergentNormalFormNeedNotBeCanonical
 #assert_no_axioms FX1Poly.Core.convergentNormalFormCanStillBeStronglyNormalizing
+
+-- Cross-leg triangulation: the sconing leg and the Tait/Path-A leg produce SN over the SAME object — the
+-- sconing-SN cell is bridged to Tait, not independent.  sconingScone_computable_eq_candidate: the sconing
+-- witness's displayed predicate IS the reducibility candidate (rfl).  sconingScone_extraction_eq_candidateCR1:
+-- the SN extraction IS CR1.  sconingSN_eq_taitComposition: for a well-typed term the sconing leg's extracted
+-- SN is the identical witness CR1 (fundamental term typed) the Tait leg produces.  Genuine independence (a
+-- second SN proof) would need a different `computable` — the synthetic STC logical relation — which the
+-- shipped STC scaffold cannot supply zero-axiom (its ClosedMod is a one-constructor wrapper, not the HIT
+-- closed modality, which pulls Quot.sound), so fxSTC_hasNoLogicalRelationConstruction stays honest.
+#assert_no_axioms FX1Poly.Core.sconingScone_computable_eq_candidate
+#assert_no_axioms FX1Poly.Core.normalizationScone_computable_eq_candidate
+#assert_no_axioms FX1Poly.Core.sconingScone_and_normalizationScone_share_computable
+#assert_no_axioms FX1Poly.Core.sconingScone_extraction_eq_candidateCR1
+#assert_no_axioms FX1Poly.Core.sconingSN_eq_taitComposition
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
