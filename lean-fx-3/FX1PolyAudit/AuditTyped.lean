@@ -288,6 +288,7 @@ import FX1Poly.Typed.NatElimComputingCanonicity
 import FX1Poly.Typed.NatElimFaithfulArithmetic
 import FX1Poly.Typed.ClosedNumeralSubstInvariant
 import FX1Poly.Typed.NatElimFaithfulMul
+import FX1Poly.Typed.ValueElimHostFold
 import FX1Poly.Typed.ListElimComputingCanonicity
 import FX1Poly.Typed.ListElimFaithfulLength
 import FX1Poly.Typed.MatchElimComputingCanonicity
@@ -3448,6 +3449,24 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.lengthNatStepComputesExact
 #assert_no_axioms FX1Poly.Typed.listElimLengthFaithful
 #assert_no_axioms FX1Poly.Typed.listElimLengthFaithful.three
+-- ★ VALUE-CASE eliminator HOST-FOLD faithfulness (ValueElimHostFold, HON-14): completes the faithfulness coverage
+-- begun by the RECURSIVE eliminators (natElim=Nat.mul HON-13, listElim=List.length HON-12). Each non-recursive
+-- eliminator, run on the raw cell of a HOST value, reduces to EXACTLY what the corresponding host eliminator
+-- computes: boolElim ↝ cond (Bool.rec), fst/snd ↝ Prod.fst/Prod.snd, optionMatch ↝ Option.elim, eitherMatch ↝
+-- Sum.elim, idJ ↝ Eq.rec-on-rfl. Each is `cases` on the host scrutinee then StepStar.single of the matching
+-- Step.iota rule, whose reduct is the host fold's branch by rfl. The deepest "the cell truthfully encodes its
+-- mathematical meaning" of the honesty arc — every native eliminator computes its named host fold. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.rawBoolCell
+#assert_no_axioms FX1Poly.Typed.rawOptionCell
+#assert_no_axioms FX1Poly.Typed.rawEitherCell
+#assert_no_axioms FX1Poly.Typed.boolElimHostFold
+#assert_no_axioms FX1Poly.Typed.fstHostFold
+#assert_no_axioms FX1Poly.Typed.sndHostFold
+#assert_no_axioms FX1Poly.Typed.optionMatchHostFold
+#assert_no_axioms FX1Poly.Typed.eitherMatchHostFold
+#assert_no_axioms FX1Poly.Typed.idJHostFold
+#assert_no_axioms FX1Poly.Typed.boolElimHostFold.selectsThen
+#assert_no_axioms FX1Poly.Typed.optionMatchHostFold.firesSome
 -- ★ NON-RECURSIVE function-branch eliminator-computing canonicity (MatchElimComputingCanonicity), COMPLETING
 -- the eliminator-computing-canonicity coverage across all four structural shapes: bool (projection/value),
 -- nat+list (recursive function), option+either (non-recursive function, HERE). optionMatch/eitherMatch fire a
