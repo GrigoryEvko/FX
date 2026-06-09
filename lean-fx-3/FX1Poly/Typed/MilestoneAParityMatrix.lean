@@ -1,42 +1,46 @@
 import FX1Poly.Typed.RawIotaEtaOperationalSN
 
 /-! # FX1Poly/Typed/MilestoneAParityMatrix
-    — #1140: the 3-leg × 3-endpoint parity ledger + the HONEST capstone criterion for #653
+    — the 3-leg × 3-endpoint parity ledger + the HONEST capstone criterion
 
-Milestone A (SN / canonicity / consistency) is targeted by THREE independent routes ("legs"):
+Milestone A (strong normalization / canonicity / consistency) is targeted by THREE independent routes
+("legs"):
 
   1. `taitReducibility` — the syntactic logical-relation / reducibility-candidate route (the critical
-     path).  SN: `HasTypeDescPi Γ t T → IsStronglyNormalizing t` (SN-043).  Canonicity: closed-normal
-     bool/data canonical forms (SN-047..049, ELIM-CANON #1138).  Consistency: no closed inhabitant of
-     Empty (SN-050).  All three are PROVEN INDEPENDENTLY, zero-axiom.
+     path).  SN: every well-typed term is strongly normalizing.  Canonicity: closed-normal bool/data
+     canonical forms.  Consistency: no closed inhabitant of the empty type.  All three are PROVEN
+     INDEPENDENTLY, zero-axiom.
   2. `sconingViaSTC` — the categorical glued-model / Sterling-Tait-computability route.  Its SN is the SAME
-     reducibility object as Tait (the `reducibilityScone` bridge, SN-092 — reducibility IS a sconing
-     witness), so the SN endpoint is BRIDGED-to-Tait, not an independent second proof.  Canonicity ships on
-     the DATA axis (sconing data-canonicity witnesses).  Consistency ships (consistency via the sconing
-     leg).
-  3. `rpoWordRewriting` — the combinatorial recursive-path-order / ωcE-word route (firings 72-78).  Its SN
-     endpoint is PROVEN for the ι∪η FRAGMENT, Tait-FREE (`iotaEtaFullStep_wellFounded` + the operational
-     `iotaEta_noInfiniteReduction`), but β stays Tait-imported (raw β is non-SN — Ω, SN-NECESSITY #950), so
-     the SN endpoint is a FRAGMENT result.  Its canonicity / consistency endpoints are OPEN RESEARCH (an
-     independent canonicity via the convergent presentation is SN-136 #639, not yet shipped).
+     reducibility object as Tait (reducibility IS a sconing witness), so the SN endpoint is BRIDGED-to-Tait,
+     not an independent second proof.  Canonicity ships on the DATA axis (sconing data-canonicity
+     witnesses).  Consistency ships (consistency via the sconing leg).
+  3. `rpoWordRewriting` — the combinatorial recursive-path-order / convergent-word-system route.  Its SN
+     endpoint is PROVEN for the ι∪η FRAGMENT, Tait-FREE (the full ι∪η reduction is well-founded by one
+     recursive path order over the rose erasure), but raw β is non-SN (the Ω combinator), so β stays
+     Tait-imported and the SN endpoint is a FRAGMENT result.  Its canonicity / consistency endpoints are
+     OPEN RESEARCH: they are TYPED properties that the raw reduction route cannot reach without importing
+     typed SN, so the convergent presentation does not yet give an independent canonicity.
 
 ## The honest finding
 
 `fullyIndependentlyProvenLegCount = 1`: exactly ONE leg (Tait) is fully + independently proven across all
-three endpoints.  Therefore the three-way capstone #653 ("Milestone A closed three ways, zero-axiom") is
-NOT yet met (`threeWayCapstone_not_yet_met`).  The sconing leg's SN is the same object as Tait's; the RPO
-leg covers only the SN endpoint (a Tait-free fragment, with β imported and canonicity/consistency open).
-This ledger encodes that honestly — it is a CRITERION + status, not a claim that the capstone is closed.
+three endpoints.  Therefore the three-way capstone ("Milestone A closed three ways, zero-axiom") is NOT yet
+met (`threeWayCapstone_not_yet_met`).  The sconing leg's SN is the same object as Tait's; the RPO leg covers
+only the SN endpoint (a Tait-free fragment, with β imported and canonicity/consistency open).  This ledger
+encodes that honestly — it is a CRITERION + status, not a claim that the capstone is closed.  It matches the
+standing project honesty: the joint apex is open research, and the zero-false-positive / zero-false-negative
+guarantees hold per fragment, not jointly.
 
-This matches the standing project honesty: per the roadmap, the joint apex is open research and 0-FP/0-FN
-hold per fragment, not jointly.  The matrix here makes the per-(leg,endpoint) status machine-checkable: the
-capstone count is computed by `rfl`, and the RPO-leg SN endpoint carries a NON-VACUOUS witness
-(`rpoStrongNormalizationEndpoint`) inhabited by the shipped firing-78 theorem.
+The matrix here makes the per-(leg, endpoint) status machine-checkable: the capstone count is computed by
+`rfl`, and the RPO-leg SN endpoint carries a NON-VACUOUS witness (`rpoStrongNormalizationEndpoint`) inhabited
+by the shipped operational-SN theorem.  If a future cell is upgraded (e.g. an independent RPO canonicity is
+shipped, flipping `parityCell .rpoWordRewriting .canonicity`), `capstone_currentlyClosedOneWay` will fail to
+recompute, forcing the ledger to stay honest.
 
 ## Zero-axiom verification
 
-The status table is full-enum `Bool` projections (no wildcards, no derived `DecidableEq`); the capstone
-count and `legBreakdown` close by `rfl`; the not-yet-met negation closes by `decide` over `Nat`-deceq
+The status table is full-enum `Bool` projections (no wildcards, no derived `DecidableEq`); the capstone count
+and `legBreakdown` close by `rfl`; the not-yet-met negation closes by `decide` over `Nat`-deceq
 (propext-clean).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 -/
 
@@ -108,7 +112,7 @@ theorem legBreakdown :
     legFullyIndependent .sconingViaSTC = false ∧
     legFullyIndependent .rpoWordRewriting = false := ⟨rfl, rfl, rfl⟩
 
-/-- The capstone criterion #653 asks for: all three legs fully + independently proven. -/
+/-- The capstone criterion asks for: all three legs fully + independently proven. -/
 @[reducible] def threeWayCapstoneMet : Prop := fullyIndependentlyProvenLegCount = 3
 
 /-- ★ Honest: the three-way capstone is NOT yet met (only one leg is fully independent).  This is the
@@ -116,9 +120,9 @@ honest capstone CRITERION, not a closure claim. -/
 theorem threeWayCapstone_not_yet_met : ¬ threeWayCapstoneMet := by decide
 
 /-- Non-vacuous witness that the RPO leg genuinely OWNS the SN endpoint (Tait-free, ι∪η fragment): the
-firing-78 operational-SN theorem `iotaEta_noInfiniteReduction` inhabits the "no infinite ι∪η reduction
-sequence" proposition.  This keeps the `parityCell .rpoWordRewriting .strongNormalization` entry
-non-vacuous — there is a real shipped theorem behind it. -/
+operational-SN theorem `iotaEta_noInfiniteReduction` inhabits the "no infinite ι∪η reduction sequence"
+proposition.  This keeps the `parityCell .rpoWordRewriting .strongNormalization` entry non-vacuous — there is
+a real shipped theorem behind it. -/
 def rpoStrongNormalizationEndpoint :
     ∀ {scope : Nat} (reductionSequence : Nat → RawTerm scope),
       (∀ index, IotaEtaStep (reductionSequence index) (reductionSequence (index + 1))) → False :=

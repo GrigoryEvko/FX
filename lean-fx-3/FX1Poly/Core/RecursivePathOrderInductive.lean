@@ -1,16 +1,16 @@
 import FX1Poly.Core.MultisetOrder
 
 /-! # FX1Poly/Core/RecursivePathOrderInductive
-    — #1139 (Leg 3): the genuine INDUCTIVE recursive path order on a rose-tree term algebra, defined
-    zero-axiom (positivity-accepted) and shown to ORIENT the firing-68 branch-duplication obstruction arm
+    — the genuine INDUCTIVE recursive path order on a rose-tree term algebra, defined
+    zero-axiom (positivity-accepted) and shown to ORIENT the branch-duplication obstruction arm
     that defeats every flat measure
 
-Firing-67 (`IotaNonRecursiveTermination`) gave the 13 NON-recursive ι arms a clean `RawTerm.size`-decrease
-SN.  Firing-68 (`RecursiveIotaSizeGrowth`) proved the RECURSIVE arm `natElim (succ n) z s ↝ app (app s n)
-(elim n z s)` INCREASES `RawTerm.size` by `branch.size + 5`, growing without bound — so NO flat numeric
-measure certifies it.  The branch `s` is DUPLICATED (it appears in both `app s n` and the recursive
-`elim n z s`), and a flat multiset of scrutinee-sizes fails for the same reason: the duplicated copies of
-`s`'s internal eliminators are ADDED with no corresponding removal, which is not a Dershowitz-Manna step.
+`IotaNonRecursiveTermination` gave the 13 NON-recursive ι arms a clean `RawTerm.size`-decrease SN.  But the
+RECURSIVE arm `natElim (succ n) z s ↝ app (app s n) (elim n z s)` INCREASES `RawTerm.size` by
+`branch.size + 5`, growing without bound — so NO flat numeric measure certifies it.  The branch `s` is
+DUPLICATED (it appears in both `app s n` and the recursive `elim n z s`), and a flat multiset of
+scrutinee-sizes fails for the same reason: the duplicated copies of `s`'s internal eliminators are ADDED with
+no corresponding removal, which is not a Dershowitz-Manna step.
 
 The honest resolution — the standard one for primitive recursion / Gödel's T ι-rules — is a genuine
 RECURSIVE PATH ORDER (RPO) whose multiset comparison is over the RPO relation ITSELF (recursively), with a
@@ -28,10 +28,10 @@ congruence-closed recursive ι.  This file builds the genuine inductive RPO that
     dominates anything a child dominates — the subterm property), `precedence` (higher head precedence, and
     the bigger dominates every reduct child), and `multiset` (equal head, the argument multiset
     Dershowitz-Manna-decreases under `Rpo` itself, and the bigger dominates every reduct child).
-  * **`rpo_orients_natElim` (★)** — the RPO ORIENTS the firing-68 obstruction arm: `redex ≻ reduct` for
-    `natElim (succ n) z s ≻ app (app s n) (elim n z s)`, for an ARBITRARY branch `s` (faithful
-    branch-duplication).  This is exactly the arm no flat measure could orient (firing-68); the subterm
-    property tames the duplication regardless of `s`'s size.
+  * **`rpo_orients_natElim` (★)** — the RPO ORIENTS the branch-duplication obstruction arm: `redex ≻ reduct`
+    for `natElim (succ n) z s ≻ app (app s n) (elim n z s)`, for an ARBITRARY branch `s` (faithful
+    branch-duplication).  This is exactly the arm no flat measure could orient; the subterm property tames
+    the duplication regardless of `s`'s size.
   * **`fxPrecedence_wellFounded` (★)** — the head precedence is well-founded (the first ingredient of RPO
     well-foundedness): `eliminator > app > succ > zero` is the inverse image of `Nat.lt` under a rank.
 
@@ -58,9 +58,9 @@ shipped `MultisetRedOne.consAccessible` from each child's accessibility); the `A
 then built by the rose-tree recursor on the PREDECESSOR, so the precedence/multiset cases get the
 predecessor's children accessible — breaking the apparent circularity structurally.  `fxRpoWellFounded`
 instantiates it at `fxPrecedence`, so the eliminator-fragment RPO (which `rpo_orients_natElim` shows orients
-the firing-68 obstruction arm) is a genuine well-founded order — the complete termination certificate for
-that arm.  The β boundary stays honestly Tait-imported (raw β is non-SN — Ω, SN-NECESSITY #950); #1139
-separates the terminating ι/η fragment from it.
+the branch-duplication obstruction arm) is a genuine well-founded order — the complete termination
+certificate for that arm.  The β boundary stays honestly Tait-imported (raw β is non-SN, witnessed by the Ω
+combinator); the terminating ι/η fragment is separated from it.
 
 The `Rpo` inversion (`cases` on a doubly-`node`-indexed `Rpo` proof) is propext-clean here (verified), so the
 four-clause case analysis in `acc_node_mult` introduces no axioms.
@@ -130,7 +130,7 @@ def fxPrecedence (smallSym bigSym : FxElimSym) : Prop :=
 
 abbrev FxTerm := RoseTerm FxElimSym
 
-/-- `natElim (succ n) z s` redex (firing-68's obstruction arm), faithful branch `s`. -/
+/-- `natElim (succ n) z s` redex (the branch-duplication obstruction arm), faithful branch `s`. -/
 def natElimRedex (predScrut zeroBranch succBranch : FxTerm) : FxTerm :=
   .node .elimSym [.node .succSym [predScrut], zeroBranch, succBranch]
 
@@ -147,11 +147,11 @@ private theorem rpo_via_succ_child (predScrut : FxTerm) (headSym : FxElimSym)
   Rpo.subtermStrict headSym children predScrut (.node .succSym [predScrut]) membership
     (Rpo.subtermEq .succSym [predScrut] predScrut (List.Mem.head _))
 
-/-- **The RPO orients the firing-68 obstruction arm** — `redex ≻ reduct` despite branch-duplication.
+/-- **The RPO orients the branch-duplication obstruction arm** — `redex ≻ reduct` despite branch-duplication.
 The reduct's outer head is `app`, below the redex's `elim` in the precedence, and the redex dominates each
 reduct child: `app s n` (again by precedence, dominating `s` and `n` as subterms) and the recursive
 `elim n z s` (same head, multiset step `[succ n] ↦ [n]` since `succ n ≻ n`).  No flat measure could orient
-this (firing-68); the subterm property tames the duplicated `s` regardless of its size. -/
+this; the subterm property tames the duplicated `s` regardless of its size. -/
 theorem rpo_orients_natElim (predScrut zeroBranch succBranch : FxTerm) :
     Rpo fxPrecedence (natElimRedex predScrut zeroBranch succBranch)
       (natElimReduct predScrut zeroBranch succBranch) := by
@@ -298,8 +298,8 @@ theorem rpoWellFounded (precWellFounded : WellFounded prec) :
     acc_node headSym (precWellFounded.apply headSym) children accChildren
 
 /-- **★ The eliminator-fragment RPO is well-founded**: instantiating `rpoWellFounded` at `fxPrecedence`.
-Together with `rpo_orients_natElim`, the firing-68 obstruction arm sits in a genuine well-founded order —
-the complete termination certificate for it. -/
+Together with `rpo_orients_natElim`, the branch-duplication obstruction arm sits in a genuine well-founded
+order — the complete termination certificate for it. -/
 theorem fxRpoWellFounded : WellFounded (RpoBelow fxPrecedence) :=
   rpoWellFounded fxPrecedence_wellFounded
 

@@ -2,21 +2,21 @@ import FX1Poly.Core.RawIotaFullStepSN
 import FX1Poly.Core.EtaRpoEmbedding
 
 /-! # FX1Poly/Core/RawIotaEtaFullStepSN
-    — #1139 (Leg 3, term endpoint): the FULL ι∪η reduction (root + congruence) is strongly normalizing
-    by ONE recursive path order, INDEPENDENT of β and of typed-SN
+    — the FULL ι∪η reduction (root + congruence) is strongly normalizing by ONE recursive path order,
+    INDEPENDENT of β and of typed SN
 
-This is the union of firing-74's `IotaStep` (full ι, RawIotaFullStepSN) with the raw η rules
-(`Step.eta`, StepEta).  Firing-74 put the full ι reduction into a well-founded RPO via `eraseToRose`;
-firing-75 proved `eraseToRose` is rename-invariant; firing-76 proved every raw η-contraction RPO-decreases
-that SAME `eraseToRose` order (precedence-agnostically, so it specialises to `iotaGenPrecedence`).  This file
-assembles the three into the compatible (congruence) closure of (ι-root ∨ η-root) and lifts the embedding
-through congruence, giving strong normalization of the combined fragment.
+This is the union of `RawIotaFullStepSN`'s full-ι `IotaStep` with the raw η rules (`Step.eta`, StepEta).
+The full ι reduction was put into a well-founded recursive path order via `eraseToRose`; `eraseToRose` is
+rename-invariant; and every raw η-contraction RPO-decreases that SAME `eraseToRose` order
+(precedence-agnostically, so it specialises to `iotaGenPrecedence`).  This file assembles the three into the
+compatible (congruence) closure of (ι-root ∨ η-root) and lifts the embedding through congruence, giving
+strong normalization of the combined fragment.
 
 Why the union is FREE once both legs embed into one order: an `IotaEtaStep` is either a root step (ι or η,
-both RPO-decreasing by firing-73 / firing-76) or a congruence step (ι or η inside child position `i`, the
-child RPO-decreasing by the inductive hypothesis, lifted by firing-72's `rpo_congruence`).  In every case the
-whole term's `eraseToRose` strictly decreases under the single well-founded `Rpo iotaGenPrecedence`, so SN
-follows by `Subrelation.wf` + `InvImage.wf` — no fresh measure, no Geser union argument.
+both RPO-decreasing) or a congruence step (ι or η inside child position `i`, the child RPO-decreasing by the
+inductive hypothesis, lifted by `rpo_congruence`).  In every case the whole term's `eraseToRose` strictly
+decreases under the single well-founded `Rpo iotaGenPrecedence`, so SN follows by `Subrelation.wf` +
+`InvImage.wf` — no fresh measure, no Geser union argument.
 
 ## What this ships
 
@@ -24,19 +24,19 @@ follows by `Subrelation.wf` + `InvImage.wf` — no fresh measure, no Geser union
     `IotaHeadStep ∨ Step.eta` (mutual, mirrors `IotaStep`/`IotaStepChildren`).
   * `IotaHeadStep.toIotaEta` / `Step.eta.toIotaEta` — both fragments inject into the union at the head.
   * **`IotaEtaStep.rpoEmbeds` (★)** — every full ι∪η-step RPO-decreases the erasure.  Root via the `Or.elim`:
-    ι → firing-73's `IotaHeadStep.rpoEmbeds`, η → firing-76's `Step.eta.rpoEmbeds`; congruence via firing-72's
-    `rpo_congruence` (identical children-spine machinery to `IotaStep.rpoEmbeds`).
+    ι → `IotaHeadStep.rpoEmbeds`, η → `Step.eta.rpoEmbeds`; congruence via `rpo_congruence` (identical
+    children-spine machinery to `IotaStep.rpoEmbeds`).
   * **`iotaEtaFullStep_wellFounded` (★)** — the FULL ι∪η reduction is SN by `Subrelation.wf` +
-    `InvImage.wf eraseToRose` over `iotaGenRpoWellFounded`.  This is the term endpoint of Leg 3: the
-    terminating ι/η fragment terminates on its OWN order, NOT through Tait.
+    `InvImage.wf eraseToRose` over `iotaGenRpoWellFounded`.  The terminating ι/η fragment terminates on its
+    OWN order, NOT through Tait.
   * `IotaEtaStep.etaCongSmoke` — non-vacuity: an η step INSIDE a congruence (the new capability beyond
     root-only `Step.eta`).
 
 ## Honest scope
 
-β stays Tait-imported (raw β is non-SN — Ω, SN-NECESSITY #950); β's argument-duplication is exactly what an
-RPO cannot orient.  This file's claim is precisely "ι∪η terminates independently"; the β boundary is #1139's
-permanent honest seam.
+β stays Tait-imported (raw β is non-SN — witnessed by the Ω combinator); β's argument-duplication is exactly
+what an RPO cannot orient.  This file's claim is precisely "ι∪η terminates independently"; the β boundary is
+the permanent honest seam.
 
 ## Zero-axiom verification
 
@@ -88,10 +88,9 @@ theorem Step.eta.toIotaEta {scope : Nat} {source target : RawTerm scope}
     (etaStep : Step.eta source target) : IotaEtaStep source target :=
   IotaEtaStep.head (Or.inr etaStep)
 
-/-- **★ Every full ι∪η-step RPO-decreases the erasure.**  Root via `Or.elim` (ι → firing-73's
-`IotaHeadStep.rpoEmbeds`, η → firing-76's `Step.eta.rpoEmbeds`, both landing at `iotaGenPrecedence`);
-ι/η-inside-children via firing-72's `rpo_congruence` (the children-spine motive extracts the single-position
-`prefix ++ child :: suffix` split). -/
+/-- **★ Every full ι∪η-step RPO-decreases the erasure.**  Root via `Or.elim` (ι → `IotaHeadStep.rpoEmbeds`,
+η → `Step.eta.rpoEmbeds`, both landing at `iotaGenPrecedence`); ι/η-inside-children via `rpo_congruence` (the
+children-spine motive extracts the single-position `prefix ++ child :: suffix` split). -/
 theorem IotaEtaStep.rpoEmbeds {scope : Nat} {source target : RawTerm scope}
     (step : IotaEtaStep source target) :
     Rpo iotaGenPrecedence (eraseToRose source) (eraseToRose target) := by
@@ -135,7 +134,7 @@ def IotaEtaStep.successor {scope : Nat} (laterTerm earlierTerm : RawTerm scope) 
 
 /-- **★ The full ι∪η reduction of the real kernel is strongly normalizing — by ONE RPO, Tait-free.**  The
 term endpoint of Leg 3: the terminating ι/η fragment terminates on its OWN order (`eraseToRose` into the
-well-founded `iotaGenRpoWellFounded`), NOT through Tait.  β stays Tait-imported (#950). -/
+well-founded `iotaGenRpoWellFounded`), NOT through Tait.  β stays Tait-imported (raw β is non-SN). -/
 theorem iotaEtaFullStep_wellFounded {scope : Nat} :
     WellFounded (IotaEtaStep.successor (scope := scope)) :=
   Subrelation.wf

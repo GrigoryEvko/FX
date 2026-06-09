@@ -2,17 +2,17 @@ import FX1Poly.Core.RawIotaRpoBridge
 import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Core/RawIotaRpoAssembly
-    — #1139 (Leg 3): the canonical root-ι fragment (`IotaHeadStep`) of the real kernel is strongly
-    normalizing by ONE recursive path order — unifying the size-decreasing non-recursive arms (firing-67)
-    and the RPO-oriented recursive arms (firing-71) into a single well-founded order on `eraseToRose`,
+    — the canonical root-ι fragment (`IotaHeadStep`) of the real kernel is strongly
+    normalizing by ONE recursive path order — unifying the size-decreasing non-recursive arms
+    and the RPO-oriented recursive arms into a single well-founded order on `eraseToRose`,
     INDEPENDENT of β and typed-SN
 
-Firing-67 (`IotaNonRecursiveTermination`) proved the 13 NON-recursive ι arms terminate by `RawTerm.size`.
-Firing-68 found the 3 RECURSIVE arms (natElim/natRec on succ, listElim on cons) defeat every flat measure
-(they duplicate the eliminator on a smaller scrutinee).  Firings 69-71 built a generic inductive recursive
-path order (RPO), proved it well-founded (Nipkow/Buchholz, no size measure), and oriented those 3 recursive
-arms by it on the real kernel via `eraseToRose : RawTerm scope → RoseTerm Generator`.  Firing-72 proved the
-RPO is a congruence.
+`IotaNonRecursiveTermination` proved the 13 NON-recursive ι arms terminate by `RawTerm.size`.  The 3
+RECURSIVE arms (natElim/natRec on succ, listElim on cons) defeat every flat measure (they duplicate the
+eliminator on a smaller scrutinee).  A generic inductive recursive path order (RPO) over `RoseTerm Generator`
+was built, proved well-founded (Nipkow/Buchholz, no size measure), and used to orient those 3 recursive arms
+on the real kernel via `eraseToRose : RawTerm scope → RoseTerm Generator`; the RPO is then a congruence
+(`rpo_congruence`).
 
 This file is the UNIFICATION, over the CANONICAL relation: the shipped `FX1Poly.Core.IotaHeadStep` (the
 16-arm deterministic root-ι reduction already consumed by Tait, the weak-head normalizer, and the Path-B
@@ -25,16 +25,16 @@ the missing strong-normalization leg.
 
 Only 5 of the 16 arms need a precedence FACT:
 
-  * the 3 recursive arms (natElim/natRec/listElim ≻ app, as in firing-71), and
+  * the 3 recursive arms (natElim/natRec/listElim ≻ app), and
   * the 3 applied-branch arms (optionMatchSome / eitherMatchInl / eitherMatchInr), whose reduct
-    `app(branch, value)` has head `gen_app` — which under firing-71's `realGenPrecedence` OUTRANKS the redex
+    `app(branch, value)` has head `gen_app` — which under the recursive-arm precedence OUTRANKS the redex
     head optionMatch/eitherMatch (rank 0), the wrong direction.
 
 The other 10 arms have pure-subterm reducts (a direct or nested child of the redex), oriented by the RPO's
 subterm clauses with NO precedence requirement.  So `iotaGenRank` bumps optionMatch and eitherMatch to rank 2
-(alongside the recursive eliminators), above `gen_app` (rank 1); everything else 0.  The firing-71
-`rpoOrientsElim2`/`rpoOrientsElim3` are precedence-POLYMORPHIC, so the 3 recursive arms re-orient under the
-new precedence for free.
+(alongside the recursive eliminators), above `gen_app` (rank 1); everything else 0.  The recursive-arm
+orientations `rpoOrientsElim2`/`rpoOrientsElim3` are precedence-POLYMORPHIC, so the 3 recursive arms
+re-orient under the new precedence for free.
 
 ## What this ships
 
@@ -42,9 +42,10 @@ new precedence for free.
     ι-fragment precedence (recursive + applied-branch eliminators ≻ app ≻ rest).
   * `rpoOrientsAppliedFirst` / `rpoOrientsAppliedSecond` — the two generic applied-branch orientations
     (`elim (ctor value) … branch …` RPO-dominates `app branch value`); applied branch first / second child.
-  * `iotaGenRpoWellFounded` — firing-70's generic WF at `iotaGenPrecedence`.
+  * `iotaGenRpoWellFounded` — the generic RPO well-foundedness at `iotaGenPrecedence`.
   * **`IotaHeadStep.rpoEmbeds` (★)** — every one of the canonical relation's 16 arms RPO-decreases the
-    erasure (10 subterm + 3 applied-branch + 3 recursive); the unification of firing-67 and firing-71.
+    erasure (10 subterm + 3 applied-branch + 3 recursive); the unification of the size-decreasing and RPO
+    legs.
   * **`iotaHeadStep_wellFounded` (★)** — the canonical root-ι fragment is SN by `Subrelation.wf` +
     `InvImage.wf eraseToRose`, the EXACT shape of the shipped η-SN / size-SN.  All 16 arms, one order,
     Tait-free.
@@ -53,14 +54,15 @@ new precedence for free.
 
 This is the full root-ι fragment (the redex at the root — `IotaHeadStep` is root-only by design, mirroring
 `HeadStep`).  Lifting root-SN to SN of full ι-REDUCTION (ι steps inside `StepChildren` contexts) is the next
-layer — it consumes firing-72's `rpo_congruence` to lift a child RPO-decrease to a node RPO-decrease.  β
-stays Tait-imported (raw β non-SN, Ω, SN-NECESSITY #950) — #1139's honest boundary; η-SN is shipped (#357).
+layer — it consumes `rpo_congruence` to lift a child RPO-decrease to a node RPO-decrease.  β stays
+Tait-imported (raw β is non-SN, witnessed by the Ω combinator) — the honest boundary; η-SN is shipped
+separately.
 
 ## Zero-axiom verification
 
 `iotaGenRank` uses decidable-equality `if`s (no 194-constructor wildcard match, which would leak propext);
 `iotaGenPrecedence` is `@[reducible]` so the precedence facts `decide` to `Nat.lt`; the orientations are
-firing-69's propext-clean `Rpo` constructors + `List.Mem` `rcases`/`nomatch`; SN is `Subrelation.wf` +
+the propext-clean `Rpo` constructors + `List.Mem` `rcases`/`nomatch`; SN is `Subrelation.wf` +
 `InvImage.wf`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Per-declaration audit-gated in `FX1PolyAudit/AuditCore.lean`.
 -/
@@ -121,7 +123,8 @@ theorem rpoOrientsAppliedFirst (prec : Generator → Generator → Prop)
         (Rpo.subtermEq ctorGen [value] value (List.Mem.head _))
     · nomatch membershipEmpty
 
-/-- **★ The unified ι RPO is well-founded** (firing-70's generic theorem at `iotaGenPrecedence`). -/
+/-- **★ The unified ι RPO is well-founded** (the generic RPO well-foundedness theorem at
+`iotaGenPrecedence`). -/
 theorem iotaGenRpoWellFounded : WellFounded (RpoBelow iotaGenPrecedence) :=
   rpoWellFounded iotaGenPrecedence_wellFounded
 
@@ -132,9 +135,9 @@ open FX1Poly.Core.RpoInductive
 open FX1Poly.Core.RawIotaRpo
 
 /-- **★ Every root-ι arm of the canonical `IotaHeadStep` embeds into the unified ι RPO** (under
-`iotaGenPrecedence`, via `eraseToRose`).  The unification of firing-67 (size-decreasing non-recursive) and
-firing-71 (RPO recursive): 10 subterm-reduct arms via `subtermEq`/`subtermStrict`; 3 applied-branch arms via
-`rpoOrientsAppliedFirst`/`Second`; 3 recursive arms via the firing-71 `rpoOrientsElim2`/`rpoOrientsElim3`. -/
+`iotaGenPrecedence`, via `eraseToRose`).  The unification of the size-decreasing non-recursive leg and the
+RPO recursive leg: 10 subterm-reduct arms via `subtermEq`/`subtermStrict`; 3 applied-branch arms via
+`rpoOrientsAppliedFirst`/`Second`; 3 recursive arms via `rpoOrientsElim2`/`rpoOrientsElim3`. -/
 theorem IotaHeadStep.rpoEmbeds {scope : Nat} {source target : RawTerm scope}
     (step : IotaHeadStep source target) :
     Rpo iotaGenPrecedence (eraseToRose source) (eraseToRose target) := by

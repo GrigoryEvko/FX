@@ -2,16 +2,16 @@ import FX1Poly.Core.RawIotaRpoAssembly
 import FX1Poly.Core.RecursivePathOrderInductive
 
 /-! # FX1Poly/Core/RawIotaFullStepSN
-    — #1139 (Leg 3): the FULL ι-reduction relation of the real kernel (root ι + ι inside ANY child context)
+    — the FULL ι-reduction relation of the real kernel (root ι + ι inside ANY child context)
     is strongly normalizing by ONE recursive path order, INDEPENDENT of β and typed-SN
 
-Firing-73 (`RawIotaRpoAssembly`) put all 16 ROOT ι arms of the canonical `IotaHeadStep` into one well-founded
+`RawIotaRpoAssembly` put all 16 ROOT ι arms of the canonical `IotaHeadStep` into one well-founded
 RPO via `eraseToRose`.  But `IotaHeadStep` is root-only (the redex at the head).  This file lifts that to the
 FULL ι reduction — the compatible (congruence) closure: ι at the root OR ι somewhere inside the
 `RawTermChildren` spine, mutually defined exactly like the kernel's `Step`/`StepChildren`, restricted to the ι
 fragment.
 
-The congruence case is where firing-72's `rpo_congruence` is finally consumed.  When an ι step fires inside
+The congruence case is where `rpo_congruence` is finally consumed.  When an ι step fires inside
 child position `i`, `eraseToRose` of the whole term changes only in that child's subtree: the children list
 `eraseChildren` goes from `prefix ++ eraseToRose child :: suffix` to `prefix ++ eraseToRose child' :: suffix`,
 with the child RPO-decreasing by the inductive hypothesis.  `rpo_congruence` (replacing one child of a node by
@@ -22,8 +22,8 @@ builds the `prefix`: `[]` at the head (`here`), `eraseToRose head :: prefix` one
 
   * `IotaStep` / `IotaStepChildren` — the full ι reduction = compatible closure of `IotaHeadStep` (mutual,
     mirrors `Step`/`StepChildren`); `IotaStep.toStep` (soundness: a sub-relation of the live `Step`).
-  * **`IotaStep.rpoEmbeds` (★)** — every full ι-step RPO-decreases the erasure.  Root ι via firing-73's
-    `IotaHeadStep.rpoEmbeds`; ι-inside-children via firing-72's `rpo_congruence` (the children-spine motive
+  * **`IotaStep.rpoEmbeds` (★)** — every full ι-step RPO-decreases the erasure.  Root ι via
+    `IotaHeadStep.rpoEmbeds`; ι-inside-children via `rpo_congruence` (the children-spine motive
     extracts the single-position `prefix ++ child :: suffix` split the congruence consumes).  Proven with the
     explicit mutual recursor `IotaStep.rec` (the codebase's clean route for `Step`/`StepChildren`-shaped
     mutual proofs).
@@ -33,9 +33,9 @@ builds the `prefix`: `[]` at the head (`here`), `eraseToRose head :: prefix` one
 
 ## Honest scope
 
-This closes the ι half of Leg 3's "the terminating ι/η fragment terminates on its OWN, NOT through Tait".
-η-SN is shipped (`Step.etaStar`, #357).  β stays Tait-imported (raw β non-SN, Ω, SN-NECESSITY #950) — #1139's
-honest boundary, since β's argument-duplication is exactly what the RPO cannot orient.
+This closes the ι half of "the terminating ι/η fragment terminates on its OWN, NOT through Tait".
+η-SN is shipped separately (`Step.etaStar`).  β stays Tait-imported (raw β is non-SN, witnessed by the Ω
+combinator) — the honest boundary, since β's argument-duplication is exactly what the RPO cannot orient.
 
 ## Zero-axiom verification
 
@@ -77,8 +77,8 @@ mutual
         IotaStepChildren (RawTermChildren.childCons head rest) (RawTermChildren.childCons head rest')
 end
 
-/-- **★ Every full ι-step RPO-decreases the erasure** — the genuine ι-fragment lift of firing-73: root ι via
-`IotaHeadStep.rpoEmbeds`, and ι-inside-children via firing-72's `rpo_congruence` (the children-spine motive
+/-- **★ Every full ι-step RPO-decreases the erasure** — the genuine ι-fragment lift: root ι via
+`IotaHeadStep.rpoEmbeds`, and ι-inside-children via `rpo_congruence` (the children-spine motive
 extracts the single-position `prefix ++ child :: suffix` split that the congruence consumes; `here` gives the
 empty prefix, `there` prepends the unchanged head). -/
 theorem IotaStep.rpoEmbeds {scope : Nat} {source target : RawTerm scope}
@@ -141,8 +141,8 @@ def IotaStep.successor {scope : Nat} (laterTerm earlierTerm : RawTerm scope) : P
 
 /-- **★ The FULL ι-reduction relation of the real kernel is strongly normalizing — by ONE RPO, Tait-free.**
 Root ι + ι-inside-any-child, ALL via `eraseToRose` into the well-founded `iotaGenRpoWellFounded`
-(`Subrelation.wf` + `InvImage.wf`).  This is the genuine ι-fragment SN (not just the root fragment of
-firing-73) — INDEPENDENT of β and of typed-SN.  η-SN is shipped (#357); β stays Tait-imported (#950). -/
+(`Subrelation.wf` + `InvImage.wf`).  This is the genuine ι-fragment SN (not just the root fragment) —
+INDEPENDENT of β and of typed-SN.  η-SN is shipped separately; β stays Tait-imported. -/
 theorem iotaFullStep_wellFounded {scope : Nat} :
     WellFounded (IotaStep.successor (scope := scope)) :=
   Subrelation.wf

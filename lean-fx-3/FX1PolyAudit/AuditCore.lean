@@ -264,9 +264,9 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.wellFounded_of_lexPairMeasure
 #assert_no_axioms FX1Poly.Core.wellFounded_of_precedenceMultisetMeasure
 #assert_no_axioms FX1Poly.Core.wellFounded_of_precedenceLexMeasure
--- ★ #1139 SPIKE: the RECURSIVE-eliminator ι-pattern terminates via the shipped multiset RPO certificate,
--- INDEPENDENT of β and typed-SN (the Leg-3 "β-imported boundary"). The fxSystem termination (SN-131) imports
--- typed-SN because it encodes β (raw β is non-terminating, SN-NECESSITY); η-SN is shipped; the open ι piece
+-- ★ SPIKE: the RECURSIVE-eliminator ι-pattern terminates via the shipped multiset RPO certificate,
+-- INDEPENDENT of β and typed-SN (the Leg-3 "β-imported boundary"). The fxSystem termination imports
+-- typed-SN because it encodes β (raw β is non-terminating); η-SN is shipped; the open ι piece
 -- splits — non-recursive ι is size-decreasing, the RECURSIVE eliminator (natElim-succ DUPLICATES the recursive
 -- call on a SMALLER scrutinee) needs the multiset (Dershowitz-Manna) RPO. This models that hard core: ElimStep
 -- elim(k+1) ↝ branch(elim k, elim k), terminated by recScrutineeMultiset over Nat.lt via
@@ -278,7 +278,7 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.elimStep_decreasesMultiset
 #assert_no_axioms FX1Poly.Core.recursiveEliminatorTerminates
 #assert_no_axioms FX1Poly.Core.recursiveEliminatorTerminates.smoke
--- ★ #1139 (Leg 3): the NON-recursive ι fragment over the REAL kernel terminates by RawTerm.size,
+-- ★ Leg 3: the NON-recursive ι fragment over the REAL kernel terminates by RawTerm.size,
 -- INDEPENDENT of β and typed-SN. The 13 non-recursive ι arms (branch-selection bool/nat/list/option-none,
 -- fst/snd projection, idJ/idStrictRec base, optionSome/eitherInl/eitherInr applied-branch) strictly
 -- decrease size; toStep ties the fragment to the live Step relation (NOT a toy like the recursive RecTerm
@@ -291,41 +291,40 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.iotaNonRecursiveStep_wellFounded
 #assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.isStronglyNormalizing.smoke
--- ★ #1139 (Leg 3) contrast: the RECURSIVE ι arm natElimSucc INCREASES RawTerm.size by branchSize + 5
+-- ★ Leg 3 contrast: the RECURSIVE ι arm natElimSucc INCREASES RawTerm.size by branchSize + 5
 -- (grows with the branch) over the REAL kernel, because it DUPLICATES the arbitrary branch s. So the
--- firing-67 size route (IotaNonRecursiveStep.size_decreases) does NOT extend to the recursive arms, and
--- NO flat measure dominated by size survives branch-duplication. Honest correction: firing-66's RecTerm
+-- size route (IotaNonRecursiveStep.size_decreases) does NOT extend to the recursive arms, and
+-- NO flat measure dominated by size survives branch-duplication. Honest correction: the earlier RecTerm
 -- model duplicated only the recursive CALL (flat scrutinee-multiset sufficed); the real arm duplicates an
 -- independent branch eliminator of arbitrary size. The resolution is a full recursive RPO (precedence
 -- eliminator > app); the shipped single-level lex/multiset certificates do not recurse into subterms, so
--- they are insufficient for the congruence-closed recursive ι (the named multi-firing build). β stays
--- Tait-imported (SN-NECESSITY #950).
+-- they are insufficient for the congruence-closed recursive ι (the inductive RPO build). β stays
+-- Tait-imported (raw β is non-SN).
 #assert_no_axioms FX1Poly.Core.natElimSucc_isRealStep
 #assert_no_axioms FX1Poly.Core.natElimSuccReduct_size_eq
 #assert_no_axioms FX1Poly.Core.natElimSucc_size_increases
 #assert_no_axioms FX1Poly.Core.natElimSucc_size_increase_at_least_branch
 
--- The genuine INDUCTIVE recursive path order (firing-69): the generic rose-tree RPO with multiset status,
+-- The genuine INDUCTIVE recursive path order: the generic rose-tree RPO with multiset status,
 -- positivity-accepted (subterm clause split into subtermEq/subtermStrict to avoid the kernel's nested-Or
 -- rejection; multiset witnesses inlined to avoid passing the inductive to the external MultisetRedOne).
--- rpo_orients_natElim ORIENTS the firing-68 obstruction arm — redex ≻ reduct for natElim(succ n) z s with
--- an ARBITRARY duplicated branch s — exactly what every flat measure failed (firing-68); the subterm
+-- rpo_orients_natElim ORIENTS the branch-duplication obstruction arm — redex ≻ reduct for natElim(succ n) z s
+-- with an ARBITRARY duplicated branch s — exactly what every flat measure failed; the subterm
 -- property tames the duplication. fxPrecedence_wellFounded is the first WF ingredient. The full RPO
--- well-foundedness (Nipkow/Buchholz nested accessibility, fed by MultisetRedOne.consAccessible) is the
--- named multi-firing crux.
+-- well-foundedness (Nipkow/Buchholz nested accessibility, fed by MultisetRedOne.consAccessible) is the crux.
 #assert_no_axioms FX1Poly.Core.RpoInductive.rpo_orients_natElim
 #assert_no_axioms FX1Poly.Core.RpoInductive.fxPrecedence_wellFounded
 
--- RPO well-foundedness (firing-70): the Nipkow/Buchholz nested-accessibility theorem, zero-axiom and with
+-- RPO well-foundedness: the Nipkow/Buchholz nested-accessibility theorem, zero-axiom and with
 -- NO size measure. acc_node uses the rose-tree recursor twice (top-level wrapper + the predecessor's
 -- predAcc, which supplies the precedence/multiset cases their children accessible — breaking the apparent
 -- circularity); the four-clause Rpo inversion via `cases` is propext-clean. rpoWellFounded :
 -- WellFounded prec → WellFounded (RpoBelow prec); fxRpoWellFounded instantiates it at fxPrecedence, so the
--- firing-68 obstruction arm (oriented by rpo_orients_natElim) sits in a genuine well-founded order.
+-- branch-duplication obstruction arm (oriented by rpo_orients_natElim) sits in a genuine well-founded order.
 #assert_no_axioms FX1Poly.Core.RpoInductive.rpoWellFounded
 #assert_no_axioms FX1Poly.Core.RpoInductive.fxRpoWellFounded
 
--- RPO congruence (firing-72): the order is a CONGRUENCE — replacing one child by an RPO-smaller child makes
+-- RPO congruence: the order is a CONGRUENCE — replacing one child by an RPO-smaller child makes
 -- the node RPO-smaller (via the multiset clause: a single Dershowitz-Manna decrease, unchanged children
 -- dominated as subterms, the replacement dominated through the larger child). This is the monotonicity /
 -- compatibility-with-contexts that turns the root-redex order into a genuine REWRITE order — the load-bearing
@@ -334,13 +333,13 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.RpoInductive.rpo_congruence
 #assert_no_axioms FX1Poly.Core.RpoInductive.rpo_congruence_head
 
--- RawTerm RPO bridge (firing-71): the generic rose-tree RPO instantiated at the REAL kernel. eraseToRose
+-- RawTerm RPO bridge: the generic rose-tree RPO instantiated at the REAL kernel. eraseToRose
 -- forgets RawTerm's scope/binder-shift structure to a RoseTerm Generator; realGenPrecedence ranks the three
 -- recursive eliminators above gen_app. The three recursive ι arms (Step.iotaNatElimSucc / iotaNatRecSucc /
--- iotaListElimCons — the firing-68 obstruction that defeats every flat measure) have their erased redex
--- RPO-dominate their erased reduct, and realGenRpoWellFounded gives the order is well-founded — the complete
--- termination certificate for those arms on the real kernel. The <arm>Raw_isStep witnesses confirm the
--- redex/reduct pairs really are the live Step constructors. β stays Tait-imported (raw β non-SN, #950).
+-- iotaListElimCons — the branch-duplication obstruction that defeats every flat measure) have their erased
+-- redex RPO-dominate their erased reduct, and realGenRpoWellFounded gives the order is well-founded — the
+-- complete termination certificate for those arms on the real kernel. The <arm>Raw_isStep witnesses confirm
+-- the redex/reduct pairs really are the live Step constructors. β stays Tait-imported (raw β is non-SN).
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.natElimSuccRaw_isStep
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.natRecSuccRaw_isStep
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.listElimConsRaw_isStep
@@ -349,11 +348,11 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.rpo_orients_iotaListElimCons
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.realGenRpoWellFounded
 
--- Full root-ι SN assembly (firing-73): unify firing-67's 13 non-recursive arms + firing-71's 3 recursive
+-- Full root-ι SN assembly: unify the 13 non-recursive arms + the 3 recursive
 -- arms into ONE order over the CANONICAL FX1Poly.Core.IotaHeadStep (no duplicate relation — it already
 -- carries toStep + deterministic; this adds the missing SN leg). iotaGenRank bumps optionMatch/eitherMatch
--- to rank 2 (their reduct app(branch,value) has head gen_app, which outranks the redex head under firing-71's
--- realGenPrecedence — wrong direction; the bump fixes it); the other 11 arms need no rank change (recursive
+-- to rank 2 (their reduct app(branch,value) has head gen_app, which outranks the redex head under the
+-- recursive-arm realGenPrecedence — wrong direction; the bump fixes it); the other 11 arms need no rank change (recursive
 -- already ranked, 10 subterm-reduct arms need no precedence). rpoOrientsAppliedFirst/Second orient the 3
 -- applied-branch arms; IotaHeadStep.rpoEmbeds covers all 16. iotaHeadStep_wellFounded: the canonical root-ι
 -- fragment is SN by ONE RPO via Subrelation.wf + InvImage.wf eraseToRose, Tait-free (the unification).
@@ -364,14 +363,14 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.IotaHeadStep.rpoEmbeds
 #assert_no_axioms FX1Poly.Core.iotaHeadStep_wellFounded
 
--- Full ι-reduction SN (firing-74): lift root-ι SN (firing-73) to the COMPATIBLE CLOSURE of IotaHeadStep —
+-- Full ι-reduction SN: lift root-ι SN to the COMPATIBLE CLOSURE of IotaHeadStep —
 -- ι at the root OR ι inside ANY child context (IotaStep/IotaStepChildren, mirroring Step/StepChildren). The
--- congruence case finally CONSUMES firing-72's rpo_congruence: an ι step inside child position i changes
+-- congruence case finally CONSUMES rpo_congruence: an ι step inside child position i changes
 -- eraseChildren only at that position (prefix ++ child :: suffix → prefix ++ child' :: suffix, the child
 -- RPO-decreasing by IH), and rpo_congruence lifts that to a node RPO-decrease. The here/there spine walk
 -- builds the prefix ([] at head, eraseToRose head :: prefix one step in). Proven via the explicit mutual
 -- recursor IotaStep.rec (the Step.subst pattern). IotaStep.toStep: sound sub-relation of the live Step.
--- iotaFullStep_wellFounded: the GENUINE ι-fragment SN (not just root), Tait-free (β imported, η shipped #357).
+-- iotaFullStep_wellFounded: the GENUINE ι-fragment SN (not just root), Tait-free (β imported, η shipped separately).
 #assert_no_axioms FX1Poly.Core.IotaStep.rpoEmbeds
 #assert_no_axioms FX1Poly.Core.IotaStep.toStep
 #assert_no_axioms FX1Poly.Core.iotaFullStep_wellFounded
@@ -392,18 +391,18 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 -- Raw eta-contraction embeds into the eraseToRose RPO (the eta-analogue of IotaHeadStep.rpoEmbeds): every eta
 -- source wraps its target in 1-2 generator layers, so the target is a SUBTERM of the source's rose image and
 -- the source is Rpo-above it.  Precedence-agnostic (subtermEq/subtermStrict ignore prec) → holds for
--- iotaGenPrecedence, so eta decreases the SAME well-founded order ι uses (firings 72-74) — the union's shared
+-- iotaGenPrecedence, so eta decreases the SAME well-founded order ι uses — the union's shared
 -- measure.  etaLam/etaPathLam consume eraseToRose_weaken (target under one binder via RawTerm.weaken);
 -- etaGlueIntro is a direct child (one subtermEq); the rest reach a grandchild (subtermStrict ∘ subtermEq).
 -- Proven via the explicit Step.eta.rec recursor (propext-clean), mirroring IotaStep.rpoEmbeds.
 #assert_no_axioms FX1Poly.Core.Step.eta.rpoEmbeds
 
--- ★ #1139 Leg-3 TERM ENDPOINT: the FULL ι∪η reduction (root + congruence) is strongly normalizing by ONE RPO,
--- Tait-free.  IotaEtaStep = compatible closure of (IotaHeadStep ∨ Step.eta), mirroring firing-74's IotaStep.
--- IotaEtaStep.rpoEmbeds: root via Or.elim (ι→firing-73, η→firing-76, both at iotaGenPrecedence), congruence via
--- firing-72's rpo_congruence.  iotaEtaFullStep_wellFounded: SN via Subrelation.wf + InvImage.wf over
--- iotaGenRpoWellFounded — the ι/η fragment terminates on its OWN order, NOT through Tait (β stays imported,
--- #950).  toIotaEta: both fragments inject at the head.  etaCongSmoke: non-vacuity (η inside a congruence).
+-- ★ Leg-3 TERM ENDPOINT: the FULL ι∪η reduction (root + congruence) is strongly normalizing by ONE RPO,
+-- Tait-free.  IotaEtaStep = compatible closure of (IotaHeadStep ∨ Step.eta), mirroring the full-ι IotaStep.
+-- IotaEtaStep.rpoEmbeds: root via Or.elim (ι via IotaHeadStep.rpoEmbeds, η via Step.eta.rpoEmbeds, both at
+-- iotaGenPrecedence), congruence via rpo_congruence.  iotaEtaFullStep_wellFounded: SN via Subrelation.wf +
+-- InvImage.wf over iotaGenRpoWellFounded — the ι/η fragment terminates on its OWN order, NOT through Tait
+-- (β stays imported).  toIotaEta: both fragments inject at the head.  etaCongSmoke: non-vacuity (η inside a congruence).
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.rpoEmbeds
 #assert_no_axioms FX1Poly.Core.iotaEtaFullStep_wellFounded
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.isStronglyNormalizing
@@ -411,9 +410,9 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.Step.eta.toIotaEta
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.etaCongSmoke
 
--- #1139/#1140 operational SN of the ι∪η fragment (Tait-free), the RPO-leg SN endpoint for the parity matrix:
--- harvest of firing-77's iotaEtaFullStep_wellFounded via the generic relation-polymorphic Acc lemmas
--- (accessibleElementHasNoInfiniteChain / accessibleElementNotSelfRelated, #960).  iotaEta_noInfiniteReduction:
+-- Operational SN of the ι∪η fragment (Tait-free), the RPO-leg SN endpoint for the parity matrix:
+-- harvest of iotaEtaFullStep_wellFounded via the generic relation-polymorphic Acc lemmas
+-- (accessibleElementHasNoInfiniteChain / accessibleElementNotSelfRelated).  iotaEta_noInfiniteReduction:
 -- NO infinite ι∪η reduction sequence, for EVERY raw term, no typing hypothesis (vs β's Ω/tripler which DO
 -- diverge as raw terms).  irreflexive: no 1-cycle.  no_two_cycle: no 2-cycle a⟷b, via a constructed
 -- alternating chain (role-swapping recursion, no parity arithmetic) fed to the no-infinite-reduction lemma.
@@ -422,12 +421,12 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.alternatingSequence_steps
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.no_two_cycle
 
--- ★ #1140 PARITY-MATRIX: the 3-leg (Tait / sconing-via-STC / RPO-word) × 3-endpoint (SN / canonicity /
--- consistency) ledger + the HONEST capstone criterion for #653.  parityCell is the honest 9-cell status
+-- ★ PARITY-MATRIX: the 3-leg (Tait / sconing-via-STC / RPO-word) × 3-endpoint (SN / canonicity /
+-- consistency) ledger + the HONEST three-way-capstone criterion.  parityCell is the honest 9-cell status
 -- table; capstone_currentlyClosedOneWay (rfl): exactly ONE leg (Tait) is fully+independently proven across
 -- all three endpoints; threeWayCapstone_not_yet_met (decide): the three-way capstone is NOT yet closed
 -- (sconing SN bridged-to-Tait, RPO leg owns only the SN endpoint — Tait-free ι∪η, β imported, canon/consist
--- open).  rpoStrongNormalizationEndpoint: NON-VACUOUS witness (the firing-78 theorem behind the RPO×SN cell).
+-- open).  rpoStrongNormalizationEndpoint: NON-VACUOUS witness (the operational-SN theorem behind the RPO×SN cell).
 #assert_no_axioms FX1Poly.Core.ParityMatrix.capstone_currentlyClosedOneWay
 #assert_no_axioms FX1Poly.Core.ParityMatrix.legBreakdown
 #assert_no_axioms FX1Poly.Core.ParityMatrix.threeWayCapstone_not_yet_met
@@ -1072,7 +1071,7 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 /-! ## RawTermSubstLiftWeaken — the double-weaken cancellation that cracks the symbolic-S / Church-sum wall
 
 The single-weaken cancellation (weaken_subst_singleton) handles β-redexes where each bound variable is weakened
-≤ once (the #1009 case). A variable under TWO binders is weakened twice; the resulting subst (lift σ)(weaken² a)
+≤ once (the single-weaken case). A variable under TWO binders is weakened twice; the resulting subst (lift σ)(weaken² a)
 = weaken a cancellation was the last deferred de Bruijn obstruction (symbolic S-rule, symbolic Church sums). It is
 NOT a wall: subst_lift_weaken (★, the lift-weaken NATURALITY subst (lift σ)(weaken t) = weaken (subst σ t)) follows
 from weaken_eq_rename + the shipped rename_subst_commute (LHS) + subst_rename_commute (RHS) + subst_pointwise (both
