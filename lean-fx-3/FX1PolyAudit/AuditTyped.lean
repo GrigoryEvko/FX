@@ -8458,6 +8458,7 @@ reflection works at lift ρ, so the weaken-specific analysis generalizes over th
 comes from a λ with the body an exact lift-image). -/
 
 #assert_no_axioms FX1Poly.Typed.Conv.pinnedPiComponentsInRenameImage
+#assert_no_axioms FX1Poly.Typed.Conv.pinnedPiComponentsWithSourceChain
 #assert_no_axioms FX1Poly.Typed.renameEqLamCellInversion
 
 /- The pinned reflection's context condition + leaf arms (PinnedReflectionContext): the
