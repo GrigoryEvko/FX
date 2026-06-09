@@ -267,6 +267,7 @@ import FX1Poly.Typed.HasTypeDescBaseType
 import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
+import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
@@ -3136,6 +3137,18 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.optionFormerNotTypedAtBoolType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtBoolType
 #assert_no_axioms FX1Poly.Typed.closedNormalBoolCanonicalForms
+-- CLOSED BOOL CANONICITY for an ARBITRARY subject (ClosedBoolCanonicity, the SYNTACTIC route — discharges the
+-- residual named in the CombinedBoolCanonicalForms docstring: "reduce arbitrary closed t : boolCode to its NF
+-- preserving the classifier (SN-043 + SR)"). Both ingredients now ship: grown SN
+-- (HasTypeDescPi.stronglyNormalizingOfWfContextDesc) + the unconditional SR-along-↝* SR-U4
+-- (HasTypeDescPi.subjectReductionStar). ★ noClosedGrownTermAtBoolType = the GROWN engine has NO closed bool
+-- inhabitant (bool twin of consistency's noClosedTermAtEmptyType — the grown engine types only λ/Π/Σ/formation,
+-- never data VALUES). ★ closedBoolCanonicalForms = the 3-engine combined: a closed term typed at boolCode by ANY
+-- engine reduces by ↝* to boolTrue/boolFalse, NO `normal` hypothesis, NO §5 candidate bridge. Non-vacuous via the
+-- data-intro VALUE disjunct. ELIMINATOR-computing canonicity (boolElim, the 4th engine HasTypeDescDataElim) is the
+-- follow-on (needs GTL-18 to fold DataElim into the grown table). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedGrownTermAtBoolType
+#assert_no_axioms FX1Poly.Typed.closedBoolCanonicalForms
 -- GROWN CLOSED-NORMAL CLASSIFIER SHAPE (GrownClosedNormalClassifierShape, CANON-1 generalization): the POSITIVE
 -- characterization behind every data-classifier rule-out. ★ closedNormalClassifierIsFunctionOrType = a closed
 -- normal grown-typed term's classifier is Conv a Π-code OR Conv a universe code (the grown engine inhabits only
