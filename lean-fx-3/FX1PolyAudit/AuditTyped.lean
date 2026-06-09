@@ -277,6 +277,7 @@ import FX1Poly.Typed.BoolElimClosedNormalForms
 import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
 import FX1Poly.Typed.BoolElimValueCanonicity
 import FX1Poly.Typed.NatElimComputingCanonicity
+import FX1Poly.Typed.ListElimComputingCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
@@ -3282,6 +3283,23 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.copyNatStepProduces
 #assert_no_axioms FX1Poly.Typed.natElimCopyComputesToNumeral
 #assert_no_axioms FX1Poly.Typed.natElimCopyComputesToNumeral.two
+-- ★ RECURSIVE list-eliminator computing canonicity (ListElimComputingCanonicity), completing the
+-- recursive-eliminator computing-canonicity family (nat + list). listElim's cons ι-rule is a TRIPLE-nested app
+-- (the cons branch is a 3-arg curried function Elt→List→C→C) reintroducing a listElim over the tail. ★
+-- listElimComputesToValue = a closed listElim(s, nil, cons) with an isResultValue nil-branch and a cons branch
+-- that produces an isResultValue from a head/tail/value-rec (stepProduces) computes ↝* to an isResultValue, by
+-- induction on s's IsListValue (nil: iotaListElimNil; cons: iotaListElimCons + IH reduces inner listElim via
+-- StepStar.appArgument + stepProduces finishes). General over the result predicate. constNatZeroStep3
+-- (λλλnatZero, discards all 3) + lengthNatStep (λλλ(natSucc rec), USES rec → counts the list ⟹ listElim folds a
+-- list to its LENGTH as a numeral) discharge stepProduces by 3 β-steps each (subst0 computes through the
+-- binders, double StepStar.appFunction reaches past the triple-app's two function layers). .two = a concrete
+-- 2-element-list length smoke. Same GTL combined-engine follow-on (#832/#1138) as natElim. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.listElimComputesToValue
+#assert_no_axioms FX1Poly.Typed.constNatZeroStep3Produces
+#assert_no_axioms FX1Poly.Typed.listElimConstZeroComputesToNumeral
+#assert_no_axioms FX1Poly.Typed.lengthNatStepProduces
+#assert_no_axioms FX1Poly.Typed.listElimLengthComputesToNumeral
+#assert_no_axioms FX1Poly.Typed.listElimLengthComputesToNumeral.two
 -- GROWN CLOSED-NORMAL CLASSIFIER SHAPE (GrownClosedNormalClassifierShape, CANON-1 generalization): the POSITIVE
 -- characterization behind every data-classifier rule-out. ★ closedNormalClassifierIsFunctionOrType = a closed
 -- normal grown-typed term's classifier is Conv a Π-code OR Conv a universe code (the grown engine inhabits only
