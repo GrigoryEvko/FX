@@ -3115,10 +3115,13 @@ gates pin them shut.
 -- document that the generic table deliberately excludes these (emptyCode's exclusion KEEPS consistency). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_boolCode
 #assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_emptyCode
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_natCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.boolCodeTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.emptyCodeTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.natCodeTyped
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolCode_none
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_emptyCode_none
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_natCode_none
 -- BASE-TYPE METATHEORY (HasTypeDescBaseTypeMetatheory, #1062 / DI-1b-meta): inversion + determinism + SR/SN,
 -- the DI-4 analogue for the type-FORMER judgment. ★ classifierDetermined = the PROOF the flag-pinning design
 -- works (two derivations of one subject reach the SAME classifier — not just Conv, EQUAL — the determinism a
@@ -3126,7 +3129,7 @@ gates pin them shut.
 -- no cases-on-both / mkGen-index unification). subjectIsBaseTypeCode = closed forms (boolTypeCell/emptyTypeCell).
 -- subjectHasNoStep/StronglyNormalizing = type codes are no-step normal-form leaves (isStepNormalForm by rfl).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.inversion
-#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_isBoolOrEmptyCode
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_isBoolEmptyOrNatCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectIsBaseTypeCode
 #assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_outputIsType0
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.classifierIsType0

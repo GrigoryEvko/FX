@@ -84,7 +84,7 @@ theorem dataIntroAndBaseTypeSubjectsDisjoint {profile : PolyProfile} {scope : Na
     (baseTypeTyped : HasTypeDescBaseType profile context subject typeClassifier) :
     False := by
   rcases dataIntroTyped.subjectIsBoolConstructor with valueIsTrue | valueIsFalse
-  · rcases baseTypeTyped.subjectIsBaseTypeCode with typeIsBool | typeIsEmpty
+  · rcases baseTypeTyped.subjectIsBaseTypeCode with typeIsBool | typeIsEmpty | typeIsNat
     · rw [valueIsTrue] at typeIsBool
       exact Generator.noConfusion
         (congrArg RawTerm.headGenerator typeIsBool :
@@ -93,7 +93,11 @@ theorem dataIntroAndBaseTypeSubjectsDisjoint {profile : PolyProfile} {scope : Na
       exact Generator.noConfusion
         (congrArg RawTerm.headGenerator typeIsEmpty :
           Generator.gen_boolTrue = Generator.gen_emptyCode)
-  · rcases baseTypeTyped.subjectIsBaseTypeCode with typeIsBool | typeIsEmpty
+    · rw [valueIsTrue] at typeIsNat
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator typeIsNat :
+          Generator.gen_boolTrue = Generator.gen_natCode)
+  · rcases baseTypeTyped.subjectIsBaseTypeCode with typeIsBool | typeIsEmpty | typeIsNat
     · rw [valueIsFalse] at typeIsBool
       exact Generator.noConfusion
         (congrArg RawTerm.headGenerator typeIsBool :
@@ -102,5 +106,9 @@ theorem dataIntroAndBaseTypeSubjectsDisjoint {profile : PolyProfile} {scope : Na
       exact Generator.noConfusion
         (congrArg RawTerm.headGenerator typeIsEmpty :
           Generator.gen_boolFalse = Generator.gen_emptyCode)
+    · rw [valueIsFalse] at typeIsNat
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator typeIsNat :
+          Generator.gen_boolFalse = Generator.gen_natCode)
 
 end FX1Poly.Typed

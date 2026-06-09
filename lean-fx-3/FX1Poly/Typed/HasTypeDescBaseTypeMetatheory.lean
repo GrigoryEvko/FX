@@ -54,21 +54,23 @@ theorem HasTypeDescBaseType.inversion {profile : PolyProfile} {scope : Nat}
   | baseFormation generator payload children rule isBaseType =>
       exact ⟨generator, payload, children, rule, isBaseType, rfl, rfl⟩
 
-/-- **The nullary base-type table holds exactly `boolCode` / `emptyCode`.**  Any generator with a
-`baseTypeRuleDescOf` row is `gen_boolCode` or `gen_emptyCode` — `by_cases` membership extraction (the
-base-type twin of `dataIntroNullaryRuleDescOf_isBoolConstructor`).  Grows by one disjunct per future
-nullary base type code (a unit type code). -/
-theorem baseTypeRuleDescOf_isBoolOrEmptyCode {generator : Generator} {rule : BaseTypeRuleDesc}
+/-- **The nullary base-type table holds exactly `boolCode` / `emptyCode` / `natCode`.**  Any generator with
+a `baseTypeRuleDescOf` row is `gen_boolCode`, `gen_emptyCode`, or `gen_natCode` — `by_cases` membership
+extraction (the base-type twin of `dataIntroNullaryRuleDescOf_isBoolConstructor`).  Grows by one disjunct
+per future nullary base type code (a unit type code). -/
+theorem baseTypeRuleDescOf_isBoolEmptyOrNatCode {generator : Generator} {rule : BaseTypeRuleDesc}
     (isBaseType : baseTypeRuleDescOf generator = some rule) :
-    generator = .gen_boolCode ∨ generator = .gen_emptyCode := by
+    generator = .gen_boolCode ∨ generator = .gen_emptyCode ∨ generator = .gen_natCode := by
   by_cases hBool : generator = .gen_boolCode
   · exact Or.inl hBool
   · by_cases hEmpty : generator = .gen_emptyCode
-    · exact Or.inr hEmpty
-    · exfalso
-      unfold baseTypeRuleDescOf at isBaseType
-      rw [if_neg hBool, if_neg hEmpty] at isBaseType
-      contradiction
+    · exact Or.inr (Or.inl hEmpty)
+    · by_cases hNat : generator = .gen_natCode
+      · exact Or.inr (Or.inr hNat)
+      · exfalso
+        unfold baseTypeRuleDescOf at isBaseType
+        rw [if_neg hBool, if_neg hEmpty, if_neg hNat] at isBaseType
+        contradiction
 
 /-- **★ Closed forms for the base-type judgment: a typed subject is a base type code.**  Every term
 typed by `HasTypeDescBaseType` is `boolTypeCell` or `emptyTypeCell` — the type-former twin of
@@ -78,10 +80,10 @@ table-membership lemma, and normalizes the cell by `cases payload` (`Unit` → `
 theorem HasTypeDescBaseType.subjectIsBaseTypeCode {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescBaseType profile context subject classifier) :
-    subject = boolTypeCell ∨ subject = emptyTypeCell := by
+    subject = boolTypeCell ∨ subject = emptyTypeCell ∨ subject = natTypeCell := by
   cases derivation with
   | baseFormation generator payload children rule isBaseType =>
-      rcases baseTypeRuleDescOf_isBoolOrEmptyCode isBaseType with hBool | hEmpty
+      rcases baseTypeRuleDescOf_isBoolEmptyOrNatCode isBaseType with hBool | hEmpty | hNat
       · subst hBool
         cases payload
         cases children
@@ -89,7 +91,11 @@ theorem HasTypeDescBaseType.subjectIsBaseTypeCode {profile : PolyProfile} {scope
       · subst hEmpty
         cases payload
         cases children
-        exact Or.inr rfl
+        exact Or.inr (Or.inl rfl)
+      · subst hNat
+        cases payload
+        cases children
+        exact Or.inr (Or.inr rfl)
 
 /-- **A base-type rule outputs `Type@0(standard)`.**  Every generator carrying a `baseTypeRuleDescOf`
 row has `outputUniverse = fun _ => Type@0(standard)` — the flag is FIXED in the table, the load-bearing
@@ -97,10 +103,12 @@ fact behind classifier determinism.  The base-type twin of `typingRuleDescOf_out
 theorem baseTypeRuleDescOf_outputIsType0 {generator : Generator} {rule : BaseTypeRuleDesc}
     (isBaseType : baseTypeRuleDescOf generator = some rule) :
     rule.outputUniverse = fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard := by
-  rcases baseTypeRuleDescOf_isBoolOrEmptyCode isBaseType with hBool | hEmpty
+  rcases baseTypeRuleDescOf_isBoolEmptyOrNatCode isBaseType with hBool | hEmpty | hNat
   · subst hBool
     rw [← Option.some.inj isBaseType]
   · subst hEmpty
+    rw [← Option.some.inj isBaseType]
+  · subst hNat
     rw [← Option.some.inj isBaseType]
 
 /-- **Classifier inversion: a base-type classifier IS `Type@0(standard)`.**  The flag-pinned universe
@@ -135,13 +143,16 @@ theorem HasTypeDescBaseType.subjectHasNoStep {profile : PolyProfile} {scope : Na
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescBaseType profile context subject classifier)
     (targetTerm : RawTerm scope) : ¬ Step subject targetTerm := by
-  rcases derivation.subjectIsBaseTypeCode with hBool | hEmpty
+  rcases derivation.subjectIsBaseTypeCode with hBool | hEmpty | hNat
   · rw [hBool]
     exact RawTerm.isStepNormalForm_blocks_step
       (rfl : RawTerm.isStepNormalForm (boolTypeCell : RawTerm scope)) targetTerm
   · rw [hEmpty]
     exact RawTerm.isStepNormalForm_blocks_step
       (rfl : RawTerm.isStepNormalForm (emptyTypeCell : RawTerm scope)) targetTerm
+  · rw [hNat]
+    exact RawTerm.isStepNormalForm_blocks_step
+      (rfl : RawTerm.isStepNormalForm (natTypeCell : RawTerm scope)) targetTerm
 
 /-- **Subject reduction for the base-type judgment (vacuous: type codes do not reduce).**  A base-type
 subject is a no-step leaf, so there is no `reduct` to preserve typing for — `subjectHasNoStep` refutes

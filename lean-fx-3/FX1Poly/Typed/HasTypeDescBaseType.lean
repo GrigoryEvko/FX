@@ -62,6 +62,8 @@ def baseTypeRuleDescOf (generator : Generator) : Option BaseTypeRuleDesc :=
     some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
   else if generator = .gen_emptyCode then
     some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
+  else if generator = .gen_natCode then
+    some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
   else none
 
 /-- `gen_boolCode` forms a member of `Type@0(standard)` (metadata check, `rfl` on the diagonal). -/
@@ -73,6 +75,14 @@ theorem baseTypeRuleDescOf_boolCode :
 /-- `gen_emptyCode` forms a member of `Type@0(standard)` (metadata check). -/
 theorem baseTypeRuleDescOf_emptyCode :
     baseTypeRuleDescOf .gen_emptyCode
+      = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
+  rfl
+
+/-- `gen_natCode` forms a member of `Type@0(standard)` (metadata check) — the Nat TYPE code's formation
+row, the type whose closed members the data-intro value side (`natZero` / `natSucc : natCode`) ranges
+over.  Same fixed output universe as `boolCode` / `emptyCode`, flag-pinned by the rule. -/
+theorem baseTypeRuleDescOf_natCode :
+    baseTypeRuleDescOf .gen_natCode
       = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
   rfl
 
@@ -115,12 +125,33 @@ theorem HasTypeDescBaseType.emptyCodeTyped {profile : PolyProfile} {scope : Nat}
   HasTypeDescBaseType.baseFormation context .gen_emptyCode () .childNil
     { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl
 
+/-- **★ `Nat : Type@0` in the base-type engine.**  The Nat TYPE code is formed at `Type@0(standard)` — the
+formation half of Nat canonicity (the type whose closed members the data-intro value side, `natZero` /
+`natSucc(n) : natCode`, ranges over).  Like `boolCode` / `emptyCode`, the flag is pinned by the rule, so
+there is no uniqueness ambiguity; `gen_natCode` is a bespoke data type-code (NOT a generic `genFormation`
+former — `typingRuleDescOf gen_natCode = none`), so its formation goes through this standalone base-type
+judgment, never the cumulative `genFormation` telescope. -/
+theorem HasTypeDescBaseType.natCodeTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeDescBaseType profile context natTypeCell
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
+  HasTypeDescBaseType.baseFormation context .gen_natCode () .childNil
+    { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl
+
 /-- **Partition witness: `boolCode` is NOT a generic formation former.**  `typingRuleDescOf gen_boolCode
 = none` (the bool type code carries NO generic `genFormation` row — it is a nullary base type formed by
 THIS judgment, not the ≥1-child generic engine), so the base-type judgment's domain is disjoint from the
 generic formation table.  The base-type judgment is the engine that forms `boolCode`. -/
 theorem typingRuleDescOf_boolCode_none :
     typingRuleDescOf .gen_boolCode = none := rfl
+
+/-- **Partition witness: `natCode` is NOT a generic formation former.**  `typingRuleDescOf gen_natCode =
+none` (the Nat type code carries NO generic `genFormation` row — it is a nullary base type formed by THIS
+judgment, not the ≥1-child generic engine, and not a flat data former either).  So the base-type judgment's
+domain stays disjoint from both the cumulative formation table and the flat data-former table; the
+base-type judgment is the engine that forms `natCode`. -/
+theorem typingRuleDescOf_natCode_none :
+    typingRuleDescOf .gen_natCode = none := rfl
 
 /-- **Partition witness: `emptyCode` is NOT a generic formation former.**  `typingRuleDescOf gen_emptyCode
 = none` — `emptyCode`'s generic-engine row is DELIBERATELY absent (adding it would let `genFormation` type
