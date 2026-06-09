@@ -287,6 +287,7 @@ import FX1Poly.Typed.BoolElimValueCanonicity
 import FX1Poly.Typed.NatElimComputingCanonicity
 import FX1Poly.Typed.NatElimFaithfulArithmetic
 import FX1Poly.Typed.ClosedNumeralSubstInvariant
+import FX1Poly.Typed.NatElimFaithfulMul
 import FX1Poly.Typed.ListElimComputingCanonicity
 import FX1Poly.Typed.ListElimFaithfulLength
 import FX1Poly.Typed.MatchElimComputingCanonicity
@@ -3379,6 +3380,19 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.natNumeralAt
 #assert_no_axioms FX1Poly.Typed.natNumeralAt_subst
 #assert_no_axioms FX1Poly.Typed.natNumeralAt_zero_eq_natNumeralCell
+-- ★ NatElimFaithfulMul (HON-13 closed): native gen_natElim computes EXACT host Nat.mul, completing the recursor
+-- faithfulness (Nat.add was natElimAddFaithful). mulNatStep m = lam.lam.natElim(numeralM, r, copyStep) embeds a
+-- recursor in the step branch; mulStepFires lands the inner adder via the two β-reductions, consuming the
+-- natNumeralAt_subst crack (each Step.beta gives the raw subst0 body arg; firstEq/secondEq rewrite it — the
+-- pretty reduct cannot be asserted directly on the stuck symbolic numeral). natElimMulFaithful = structural
+-- recursion on n reusing natElimAddFaithful as the per-step adder (m·n + m = m·(n+1) defeq via Nat.mul_succ).
+-- Fin bounds use Nat.succ_pos _ (NOT omega, which leaks propext). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.copyNatStepAt
+#assert_no_axioms FX1Poly.Typed.copyNatStepAt_zero
+#assert_no_axioms FX1Poly.Typed.mulNatStep
+#assert_no_axioms FX1Poly.Typed.mulStepFires
+#assert_no_axioms FX1Poly.Typed.natElimMulFaithful
+#assert_no_axioms FX1Poly.Typed.natElimMulFaithful.threeTimesTwo
 -- ★ RECURSIVE list-eliminator computing canonicity (ListElimComputingCanonicity), completing the
 -- recursive-eliminator computing-canonicity family (nat + list). listElim's cons ι-rule is a TRIPLE-nested app
 -- (the cons branch is a 3-arg curried function Elt→List→C→C) reintroducing a listElim over the tail. ★
