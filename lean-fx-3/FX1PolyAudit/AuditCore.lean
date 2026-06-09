@@ -19,6 +19,7 @@ import FX1Poly.Core.RecursivePathOrderInductive
 import FX1Poly.Core.RawIotaRpoBridge
 import FX1Poly.Core.RawIotaRpoAssembly
 import FX1Poly.Core.RawIotaFullStepSN
+import FX1Poly.Core.EraseToRoseRenameInvariant
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -371,6 +372,18 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.IotaStep.toStep
 #assert_no_axioms FX1Poly.Core.iotaFullStep_wellFounded
 #assert_no_axioms FX1Poly.Core.IotaStep.congSmoke
+
+-- eraseToRose rename-invariance (the eta-embedding substrate): `eraseToRose` forgets the payload and every
+-- binder shift, so a rename (which only rewrites the var-arm payload + renames children) leaves the rose
+-- image unchanged.  This is what lets eta-reduction RPO-decrease the SAME eraseToRose order the ι fragment
+-- uses: each eta-contraction leaves a SUBTERM of the source modulo a weakening rename (etaLam/etaPathLam put
+-- the inner function under one extra binder, reached by RawTerm.weaken), and weaken-invariance erases that
+-- gap.  Proven by the mutual term+children recursion mirroring RawTerm.rename_pointwise (var arm closes
+-- definitionally; non-var via rename_mkGen_of_ne_var + the children IH).  eraseToRose_weaken is the corollary
+-- the binder eta arms consume directly.
+#assert_no_axioms FX1Poly.Core.eraseToRose_rename
+#assert_no_axioms FX1Poly.Core.eraseChildren_rename
+#assert_no_axioms FX1Poly.Core.eraseToRose_weaken
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
