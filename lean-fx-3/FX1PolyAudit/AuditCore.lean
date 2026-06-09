@@ -1229,3 +1229,4 @@ every arm: strip a `weaken` off a `Conv` classifier to descend a scope.  Zero-ax
 #assert_no_axioms FX1Poly.Core.RawTerm.weaken_injective
 #assert_no_axioms FX1Poly.Core.Conv.reflectRename
 #assert_no_axioms FX1Poly.Core.Conv.reflectWeaken
+#assert_no_axioms FX1Poly.Core.RawRenaming.lift_injective

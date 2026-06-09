@@ -66,6 +66,39 @@ theorem RawTerm.weaken_injective {scope : Nat} {leftTerm rightTerm : RawTerm sco
   rw [RawTerm.strengthen_weaken, RawTerm.strengthen_weaken] at strengthenEq
   exact Option.some.inj strengthenEq
 
+/-- Lifting a renaming preserves injectivity: `lift ρ` sends `0 ↦ 0` and `k+1 ↦ Fin.succ (ρ k)`, so it is
+injective whenever `ρ` is.  The binder-case prerequisite for a general (any-injective-renaming)
+`rename` injectivity — the substrate the recursive arms of grown strengthening's renaming-reflection would
+consume.  Axiom-clean: direct `⟨0,_⟩`/`⟨k+1,_⟩` matching + `Fin.val`/`Nat` reasoning (no `Fin.cases`,
+`simp`, or `omega`, all of which pull `propext`). -/
+theorem RawRenaming.lift_injective {source target : Nat} {rho : RawRenaming source target}
+    (rhoInjective : Function.Injective rho) :
+    Function.Injective (RawRenaming.lift rho) := by
+  intro firstIndex secondIndex liftEq
+  obtain ⟨firstValue, firstBound⟩ := firstIndex
+  obtain ⟨secondValue, secondBound⟩ := secondIndex
+  match firstValue, secondValue with
+  | 0, 0 => rfl
+  | 0, secondPred + 1 =>
+      have valEq : (0 : Nat)
+          = (rho ⟨secondPred, Nat.lt_of_succ_lt_succ secondBound⟩).val + 1 :=
+        congrArg Fin.val liftEq
+      exact Nat.noConfusion valEq
+  | firstPred + 1, 0 =>
+      have valEq : (rho ⟨firstPred, Nat.lt_of_succ_lt_succ firstBound⟩).val + 1 = (0 : Nat) :=
+        congrArg Fin.val liftEq
+      exact Nat.noConfusion valEq
+  | firstPred + 1, secondPred + 1 =>
+      have succValEq : (rho ⟨firstPred, Nat.lt_of_succ_lt_succ firstBound⟩).val + 1
+          = (rho ⟨secondPred, Nat.lt_of_succ_lt_succ secondBound⟩).val + 1 :=
+        congrArg Fin.val liftEq
+      have renamedEq : rho ⟨firstPred, Nat.lt_of_succ_lt_succ firstBound⟩
+          = rho ⟨secondPred, Nat.lt_of_succ_lt_succ secondBound⟩ :=
+        Fin.eq_of_val_eq (Nat.succ.inj succValEq)
+      have predEq : firstPred = secondPred := congrArg Fin.val (rhoInjective renamedEq)
+      subst predEq
+      rfl
+
 /-- **★ `Conv` reflects an injective renaming.**  If two renamed terms are convertible, their sources are
 convertible, provided the renaming is term-injective.  Reflect both join-chains back through `rho`
 (`StepStar.reflectRename`) to a shared renamed reduct, strip the injective renaming to identify the two
