@@ -562,6 +562,7 @@ import FX1Poly.Typed.GrownPinnedReflection
 import FX1Poly.Typed.PinnedReflectionPiElimCore
 import FX1Poly.Typed.GrownWfOpenStronglyNormalizing
 import FX1Poly.Typed.PinnedReflectionPiElimDispatcher
+import FX1Poly.Typed.PlateauDescentSubstrate
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8541,3 +8542,18 @@ deleted). -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalSubjectCanonicalOrNeutralOfTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalFunctionIsLambdaOrNeutralOfTyping
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimResidualOfHeadResiduals
+
+/- Plateau-master descent substrate (PlateauDescentSubstrate): the per-arm (size, normality)
+descent obligations for the normal-subject size-recursive reflection — strict size bounds for the
+recursion cells, the argument/body subterm-of-normal twins, and the generic mkGen child-normality
+extraction (Bool-conjunct surgery; rfl-unfold beats the two-discriminant mutual match that dsimp
+cannot reduce). -/
+
+#assert_no_axioms FX1Poly.Typed.RawTerm.size_lt_lamCell_body
+#assert_no_axioms FX1Poly.Typed.RawTerm.size_lt_appCell_function
+#assert_no_axioms FX1Poly.Typed.RawTerm.size_lt_appCell_argument
+#assert_no_axioms FX1Poly.Typed.appNormal_argumentNormal
+#assert_no_axioms FX1Poly.Typed.lamNormal_bodyNormal
+#assert_no_axioms FX1Poly.Typed.RawTerm.isStepNormalForm_childrenNormal
+#assert_no_axioms FX1Poly.Typed.RawTermChildren.areStepNormalFormsBool_head
+#assert_no_axioms FX1Poly.Typed.RawTermChildren.areStepNormalFormsBool_tail
