@@ -289,6 +289,7 @@ import FX1Poly.Typed.NatElimFaithfulArithmetic
 import FX1Poly.Typed.ClosedNumeralSubstInvariant
 import FX1Poly.Typed.NatElimFaithfulMul
 import FX1Poly.Typed.ValueElimHostFold
+import FX1Poly.Typed.RecursorHostFold
 import FX1Poly.Typed.ListElimComputingCanonicity
 import FX1Poly.Typed.ListElimFaithfulLength
 import FX1Poly.Typed.MatchElimComputingCanonicity
@@ -3470,6 +3471,16 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.idJHostFold
 #assert_no_axioms FX1Poly.Typed.boolElimHostFold.selectsThen
 #assert_no_axioms FX1Poly.Typed.optionMatchHostFold.firesSome
+-- ★ RECURSOR host-folds (RecursorHostFold): the LAST two of the ten data eliminators — natRec, idStrictRec —
+-- compute their host folds, completing per-eliminator host-fold faithfulness to all ten (value-case six +
+-- natElim=Nat.mul + listElim=List.length + these two). natRec on natZero/natSucc computes the host Nat.rec
+-- defining clauses (base/successor); idStrictRec on refl computes the host strict Eq.rec base (twin of idJ).
+-- Each is StepStar.single of the matching Step.iota rule. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.natRecCell
+#assert_no_axioms FX1Poly.Typed.idStrictRecCell
+#assert_no_axioms FX1Poly.Typed.natRecZeroHostFold
+#assert_no_axioms FX1Poly.Typed.natRecSuccHostFold
+#assert_no_axioms FX1Poly.Typed.idStrictRecHostFold
 -- ★ SEMANTIC-TIER soundness (SemanticTierSoundness): the unified live/reserved ledger's RESERVED verdict is
 -- TRUTHFUL. semanticTier g = .reserved decomposes (semanticTier_reserved_imp_both_false) into BOTH classifier
 -- Bools false — were the || true the tier if would yield .live, refuted by SemanticTier.noConfusion — feeding
