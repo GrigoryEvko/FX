@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.DataReducibilityCoverage
+import FX1Poly.Core.DataTaitCandidate
 import FX1Poly.Typed.MetatheoryParityLedger
 import FX1Poly.Typed.TypingContext
 import FX1Poly.Typed.UniverseCodeShape
@@ -4135,6 +4136,26 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.emptyTaitCandidate_isReducibilityCandidate
 #assert_no_axioms FX1Poly.Core.emptyTaitCandidate_headExpansionClosed
 #assert_no_axioms FX1Poly.Core.emptyTaitCandidate_memberWeakHeadExpansion
+-- The GENERIC head-expansion-closed data Tait candidate (dataTaitCandidate isValue), generalizing
+-- emptyTaitCandidate from the empty value set to ANY data value predicate ("SN AND every reachable normal
+-- form is a value or neutral").  It is a reducibility candidate (CR1/CR2/CR3) and head-expansion-closed
+-- (so it serves as a Π codomain candidate across the fundamental theorem) for every isValue; a CLOSED
+-- member reduces to a VALUE (closedReducesToValue) — the candidate-bridge-ready data-canonicity payload
+-- each data type code (bool/nat/…) instantiates exactly as emptyTypeCell instantiates emptyTaitCandidate.
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate.stronglyNormalizing
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate.closedUnderStep
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate.neutralExpansion
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate_memberWeakHeadExpansion
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate.closedReducesToValue
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate.memberOfValue
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate_false_iff_emptyTaitCandidate
+-- The bool instance (the SN-047 payload shape): a closed member of the bool Tait candidate reduces to
+-- boolTrue or boolFalse — closed bool canonicity, candidate-bridge-ready.
+#assert_no_axioms FX1Poly.Core.boolTaitCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.boolTaitCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.closedBoolTaitReducesToValue
 -- RICHEST data candidate — List (SN-064): IsListValue inductive combines nullary nil + binary-recursive cons
 -- (head normal like pair, tail recursive like Nat); list values are normal forms by induction; the candidate
 -- is isReducibilityCandidateOfValuesNormal at IsListValue; every list value is a member (memberOfValue); a
