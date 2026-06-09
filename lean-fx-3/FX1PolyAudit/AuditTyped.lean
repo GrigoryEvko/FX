@@ -567,6 +567,7 @@ import FX1Poly.Typed.GuardedPinnedReflection
 import FX1Poly.Typed.PlateauPinnedReflection
 import FX1Poly.Typed.NeutralReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionLamClassifierResidual
+import FX1Poly.Typed.FlagCoherentReflectionCondition
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8606,3 +8607,13 @@ refuting shape. -/
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimResidualOfLamClassifierResidual
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionOfLamClassifierResidual
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionLamClassifierResidual_isFalse
+
+/- Enrichment brick E1 (FlagCoherentReflectionCondition): the flag-coherent reflection condition —
+per-variable SHARED-universe validity pairs (the Π-pin reassembly's flag-coherence payload),
+with the non-circular strengthening base instance (wf-lookup validity + weakening; the
+implication-form payload would BE universe-classified strengthening at the root) and the
+Kripke extension step. -/
+
+#assert_no_axioms FX1Poly.Typed.ContextReflectsRenameFlagCoherent.toContextReflectsRename
+#assert_no_axioms FX1Poly.Typed.ContextReflectsRenameFlagCoherent.ofWeakenCons
+#assert_no_axioms FX1Poly.Typed.ContextReflectsRenameFlagCoherent.consConv
