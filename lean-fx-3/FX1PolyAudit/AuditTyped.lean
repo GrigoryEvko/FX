@@ -557,6 +557,7 @@ import FX1Poly.Typed.PinnedPiImageComponents
 import FX1Poly.Typed.PinnedPiRenameImage
 import FX1Poly.Typed.PinnedReflectionContext
 import FX1Poly.Typed.PinnedReflectionPiIntro
+import FX1Poly.Typed.FormationPinnedReflection
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8482,3 +8483,14 @@ SR + Π-formation inversion (source-side universe premises) → Kripke context e
 lift ρ → injective Conv reflection re-pins the reflected body classifier → piIntro rebuild. -/
 
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiIntroArm
+
+/- The formation-engine MASTER reflection (FormationPinnedReflection) — UNCONDITIONAL and PIN-FREE:
+the formation engine has no piElim, so the full mutual (term + telescope legs) closes with no
+residual.  retypeAtUniverse is the telescope-head re-pin move (injective Conv reflection + the conv
+rule); renameEqMkGenInversion the non-var subject destructuring; the telescope leg reflects EXACTLY
+(exact-image heads at the depth-lifted renaming). -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.retypeAtUniverse
+#assert_no_axioms FX1Poly.Typed.renameEqMkGenInversion
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.pinnedReflection
+#assert_no_axioms FX1Poly.Typed.DescTelescope.pinnedReflectionTelescope
