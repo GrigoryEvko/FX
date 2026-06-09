@@ -399,6 +399,7 @@ import FX1Poly.Typed.ContextValidityFails
 import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
 import FX1Poly.Typed.WfContextBetaEtaConfluence
 import FX1Poly.Typed.ConsistencyTargetSignature
+import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
 import FX1Poly.Typed.NullaryFormerFormation
 import FX1Poly.Typed.GrownUniverseFormationStrictness
@@ -6339,6 +6340,16 @@ gates pin them shut.
 -- against the neutral-derived SN candidate). So memberBridge is UNCONDITIONALLY false in the current model (no
 -- smarter candidate escapes — not even via ofPointwiseIff); CON-A3 is a MODEL CHANGE, not a grind.
 #assert_no_axioms FX1Poly.Typed.emptyTypeCell_candidate_forcedStronglyNormalizing
+-- The GO CERTIFICATE for the §5 candidate-bridge edit (CandidateBridgeEditViability.lean), companion to the
+-- obstruction proof above: a FAITHFUL MINIATURE of the EDITED relation (gated neutral excluding gen_emptyCode +
+-- a dataEmpty arm), built over the REAL RawTerm/Generator/WeakHeadStep, PROVES the determinism-survival crux —
+-- the only new interaction (neutral × dataEmpty) is ruled out by the rootGenerator contradiction. So the model
+-- change is VIABLE: emptyTypeCell routes to the empty candidate, consistency/canonicity become provable, and
+-- non-empty neutral codes keep their SN candidate. The remaining ~12-file work is mechanical mirror, not new math.
+#assert_no_axioms FX1Poly.Typed.ScratchReducibleTypeEdited.deterministic
+#assert_no_axioms FX1Poly.Typed.ScratchReducibleTypeEdited.emptyCodeCandidateIsEmpty
+#assert_no_axioms FX1Poly.Typed.ScratchReducibleTypeEdited.consistencyCore
+#assert_no_axioms FX1Poly.Typed.ScratchReducibleTypeEdited.nonEmptyNeutralStillSN
 
 -- Canonicity target signature (CanonicityTargetSignature.lean): the SN-047/048/049 twin of CON-A0. Engine
 -- canonicity reduces to the SAME data-candidate bridge as consistency, making the Phase-A boundary uniform.
