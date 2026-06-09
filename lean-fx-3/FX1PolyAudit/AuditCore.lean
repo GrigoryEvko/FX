@@ -22,6 +22,7 @@ import FX1Poly.Core.RawIotaFullStepSN
 import FX1Poly.Core.EraseToRoseRenameInvariant
 import FX1Poly.Core.EtaRpoEmbedding
 import FX1Poly.Core.RawIotaEtaFullStepSN
+import FX1Poly.Typed.RawIotaEtaOperationalSN
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -408,6 +409,17 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.IotaHeadStep.toIotaEta
 #assert_no_axioms FX1Poly.Core.Step.eta.toIotaEta
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.etaCongSmoke
+
+-- #1139/#1140 operational SN of the ι∪η fragment (Tait-free), the RPO-leg SN endpoint for the parity matrix:
+-- harvest of firing-77's iotaEtaFullStep_wellFounded via the generic relation-polymorphic Acc lemmas
+-- (accessibleElementHasNoInfiniteChain / accessibleElementNotSelfRelated, #960).  iotaEta_noInfiniteReduction:
+-- NO infinite ι∪η reduction sequence, for EVERY raw term, no typing hypothesis (vs β's Ω/tripler which DO
+-- diverge as raw terms).  irreflexive: no 1-cycle.  no_two_cycle: no 2-cycle a⟷b, via a constructed
+-- alternating chain (role-swapping recursion, no parity arithmetic) fed to the no-infinite-reduction lemma.
+#assert_no_axioms FX1Poly.Core.iotaEta_noInfiniteReduction
+#assert_no_axioms FX1Poly.Core.IotaEtaStep.irreflexive
+#assert_no_axioms FX1Poly.Core.alternatingSequence_steps
+#assert_no_axioms FX1Poly.Core.IotaEtaStep.no_two_cycle
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
