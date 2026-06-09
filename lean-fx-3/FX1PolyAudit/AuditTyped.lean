@@ -450,6 +450,7 @@ import FX1Poly.Typed.TypedTypeValidityRelation
 import FX1Poly.Typed.TypedTypeValidityBoxedRelation
 import FX1Poly.Typed.TypedTypeValidityLeveled
 import FX1Poly.Typed.TypedTypeValidityLeveledTransport
+import FX1Poly.Typed.TypedTypeValidityLeveledTransportUnderWf
 import FX1Poly.Typed.WfContextTypedLrValid
 import FX1Poly.Typed.TypedTypeValidityBoxedRename
 import FX1Poly.Typed.WfContextTypedLrValidLookup
@@ -7030,6 +7031,19 @@ gates pin them shut.
 -- LEVELED-VALID Π-codes conditional ONLY on the neutral reconstruction. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.transport
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.transportValidity
+-- neutralRecon DISCHARGED under target wf (TypedTypeValidityLeveledTransportUnderWf.lean) — the leveled
+-- transport's lone conditional arm closed by composing convContextUnderWf (#1133, post-dates the transport)
+-- with convBackToUniverseCode: a subject typed at an EXACT universe code survives pointwise-Conv context
+-- conversion at that SAME code given WfContextDescPi target (IsNeutral not even needed).
+-- universeClassifiedConvContextUnderWf is the discharge; transportUnderWf re-runs the leveled-LR transport
+-- with the neutral arm closed (wf extended at the piType binder via the transported domain's exact universe
+-- typing), PRESERVING the candidate box — the LR structure transports, not just the typing;
+-- transportValidityUnderWf is the GrownCtxConv-5-residual-shaped payoff. Converts the #1168
+-- grown-strengthening chain's neutralRecon link from an open LR research hypothesis into the same benign
+-- WfContextDescPi presupposition SN-043/OSN-1 carry. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeClassifiedConvContextUnderWf
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.transportUnderWf
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.transportValidityUnderWf
 -- GrownCtxConv-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
 -- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
 -- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
