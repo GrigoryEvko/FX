@@ -77,15 +77,17 @@ theorem reducibleTypeLevelLift {scope : Nat} {env : Nat → Nat}
   | whnfExpand weakHeadStep _reductReducible reductInductiveHypothesis =>
       obtain ⟨reductCandidate, reductReducibleAtHigh⟩ := reductInductiveHypothesis
       exact ⟨reductCandidate, ReducibleTypeStepDenote.whnfExpand weakHeadStep reductReducibleAtHigh⟩
-  | neutral noWeakHeadStep notPiType notUniverse =>
+  | neutral noWeakHeadStep notPiType notUniverse notEmpty =>
       exact ⟨IsStronglyNormalizing,
-        ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse⟩
+        ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty⟩
   | @piType domainCode codomainCode domainCandidate codomainCandidate domainReducible
       codomainReducible domainInductiveHypothesis codomainInductiveHypothesis =>
       exact piArmLift codomainCandidate domainReducible codomainReducible
         domainInductiveHypothesis codomainInductiveHypothesis
   | universeCode levelExpr flag =>
       exact universeCode_isReducibleAtDenote env highLevel levelExpr flag
+  | dataEmpty =>
+      exact ⟨emptyTaitCandidate, ReducibleTypeStepDenote.dataEmpty⟩
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 

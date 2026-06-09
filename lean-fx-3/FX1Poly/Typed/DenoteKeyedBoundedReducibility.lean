@@ -68,7 +68,10 @@ open StepStar
 /-- **The bound-carrying (universe-gated) denote step functor.**  Identical to `ReducibleTypeStepDenote` except
 the `universeCode` arm carries `belowBound : denote levelExpr env < bound`, so a universe code is reducible-as-type
 at a bound only strictly below that bound — making the model universe-label-AWARE (high-universe codes excluded
-from low bounds by construction). -/
+from low bounds by construction).  It also carries the candidate-bridge edit verbatim from
+`ReducibleTypeStepDenote`: the data-type code `emptyTypeCell` is pinned via the dedicated `dataEmpty` arm to its
+head-expansion-closed empty Tait candidate `emptyTaitCandidate`, and `neutral` is gated with
+`rootGenerator ≠ gen_emptyCode` so it no longer over-fires on the empty type code. -/
 inductive ReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
     (lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop) (bound : Nat) :
     RawTerm scope → (RawTerm scope → Prop) → Prop where
@@ -79,6 +82,7 @@ inductive ReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
       (∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct) →
       typeCode.rootGenerator ≠ Generator.gen_piTyCode →
       typeCode.rootGenerator ≠ Generator.gen_universeCode →
+      typeCode.rootGenerator ≠ Generator.gen_emptyCode →
       ReducibleTypeStepBounded env lowerAt bound typeCode IsStronglyNormalizing
   | piType {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
       {domainCandidate : RawTerm scope → Prop}
@@ -97,6 +101,8 @@ inductive ReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
       ReducibleTypeStepBounded env lowerAt bound
         (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
         (universeDenotePredicate env lowerAt levelExpr)
+  | dataEmpty :
+      ReducibleTypeStepBounded env lowerAt bound (emptyTypeCell (scope := scope)) emptyTaitCandidate
   | ofPointwiseIff {typeCode : RawTerm scope} {candidate canonical : RawTerm scope → Prop} :
       ReducibleTypeStepBounded env lowerAt bound typeCode candidate →
       PointwiseIff candidate canonical →
@@ -160,8 +166,8 @@ theorem stepBounded_cumulative {scope : Nat} {env : Nat → Nat} {bound : Nat}
   induction reducible with
   | whnfExpand weakHeadStep _reductReducible ih =>
       intro higherBound hle; exact ReducibleTypeStepBounded.whnfExpand weakHeadStep (ih higherBound hle)
-  | neutral noStep notPi notUniverse =>
-      intro higherBound _hle; exact ReducibleTypeStepBounded.neutral noStep notPi notUniverse
+  | neutral noStep notPi notUniverse notEmpty =>
+      intro higherBound _hle; exact ReducibleTypeStepBounded.neutral noStep notPi notUniverse notEmpty
   | @piType domainCode codomainCode domainCandidate codomainCandidate _domainReducible _codomainReducible
       ihDomain ihCodomain =>
       intro higherBound hle
@@ -184,6 +190,8 @@ theorem stepBounded_cumulative {scope : Nat} {env : Nat → Nat} {bound : Nat}
          ↔ (IsStronglyNormalizing term ∧
               ∃ c, denoteBelowFamilyBounded env bound (LevelExpr.denote levelExpr env) term c)
       rw [funcEq]
+  | dataEmpty =>
+      intro higherBound _hle; exact ReducibleTypeStepBounded.dataEmpty
   | ofPointwiseIff _innerReducible pointwiseIff ih =>
       intro higherBound hle; exact ReducibleTypeStepBounded.ofPointwiseIff (ih higherBound hle) pointwiseIff
 
@@ -217,13 +225,15 @@ theorem ReducibleTypeStepBounded.toReducibleTypeStepDenote {scope : Nat} {env : 
   induction reducible with
   | whnfExpand weakHeadStep _reductReducible ih =>
       exact ReducibleTypeStepDenote.whnfExpand weakHeadStep ih
-  | neutral noStep notPi notUniverse =>
-      exact ReducibleTypeStepDenote.neutral noStep notPi notUniverse
+  | neutral noStep notPi notUniverse notEmpty =>
+      exact ReducibleTypeStepDenote.neutral noStep notPi notUniverse notEmpty
   | @piType _domainCode _codomainCode _domainCandidate codomainCandidate _domainReducible _codomainReducible
       ihDomain ihCodomain =>
       exact ReducibleTypeStepDenote.piType codomainCandidate ihDomain ihCodomain
   | universeCode levelExpr flag _belowBound =>
       exact ReducibleTypeStepDenote.universeCode levelExpr flag
+  | dataEmpty =>
+      exact ReducibleTypeStepDenote.dataEmpty
   | ofPointwiseIff _innerReducible pointwiseIff ih =>
       exact ReducibleTypeStepDenote.ofPointwiseIff ih pointwiseIff
 
@@ -298,13 +308,14 @@ theorem ReducibleTypeStepBounded.forwardStepStar {scope : Nat} {env : Nat → Na
       intro finalType chain
       exact ReducibleTypeStepBounded.whnfExpandClosure chain weakHeadStep reductReducible
         (fun _furtherReduct furtherChain => reductInductiveHypothesis furtherChain)
-  | neutral noWeakHeadStep notPiType notUniverse =>
+  | neutral noWeakHeadStep notPiType notUniverse notEmpty =>
       intro finalType chain
       obtain ⟨finalNoWeakHeadStep, rootEquation⟩ :=
         WeakHeadStep.weakHeadNormalRootStableAlongStepStar chain noWeakHeadStep
       exact ReducibleTypeStepBounded.neutral finalNoWeakHeadStep
         (fun rootIsPiType => notPiType (rootEquation.symm.trans rootIsPiType))
         (fun rootIsUniverse => notUniverse (rootEquation.symm.trans rootIsUniverse))
+        (fun rootIsEmpty => notEmpty (rootEquation.symm.trans rootIsEmpty))
   | piType codomainCandidate _domainReducible _codomainReducible
       domainInductiveHypothesis codomainInductiveHypothesis =>
       intro finalType chain
@@ -322,6 +333,12 @@ theorem ReducibleTypeStepBounded.forwardStepStar {scope : Nat} {env : Nat → Na
           chain
       subst finalEquation
       exact ReducibleTypeStepBounded.universeCode levelExpr flag belowBound
+  | dataEmpty =>
+      intro finalType chain
+      have finalEquation :=
+        StepStar.eq_of_noStep (fun reduct step => emptyTypeCell_noStep reduct step) chain
+      subst finalEquation
+      exact ReducibleTypeStepBounded.dataEmpty
   | ofPointwiseIff _innerReducible pointwiseIff innerHypothesis =>
       intro finalType chain
       exact (innerHypothesis chain).ofPointwiseIff pointwiseIff
@@ -340,7 +357,8 @@ theorem ReducibleTypeStepBounded.reducibleOfNeutral {scope : Nat} {env : Nat →
     {typeCode : RawTerm scope} (neutral : IsNeutral typeCode) :
     ∃ candidate : RawTerm scope → Prop, ReducibleTypeStepBounded env lowerAt bound typeCode candidate := by
   refine ⟨IsStronglyNormalizing, ReducibleTypeStepBounded.neutral
-    (fun reduct => neutral.noWeakHeadStep reduct) ?_ ?_⟩
+    (fun reduct => neutral.noWeakHeadStep reduct) ?_ ?_ ?_⟩
+  · cases neutral <;> exact fun rootEquation => nomatch rootEquation
   · cases neutral <;> exact fun rootEquation => nomatch rootEquation
   · cases neutral <;> exact fun rootEquation => nomatch rootEquation
 
@@ -404,7 +422,7 @@ theorem ReducibleTypeStepBounded.isReducibilityCandidate {scope : Nat} {env : Na
   induction reducible with
   | whnfExpand _weakHeadStep _reductReducible reductInductiveHypothesis =>
       exact reductInductiveHypothesis
-  | neutral _noWeakHeadStep _notPiType _notUniverse =>
+  | neutral _noWeakHeadStep _notPiType _notUniverse _notEmpty =>
       exact isStronglyNormalizing_isReducibilityCandidate
   | piType codomainCandidate _domainReducible codomainReducible
       domainInductiveHypothesis codomainInductiveHypothesis =>
@@ -417,6 +435,8 @@ theorem ReducibleTypeStepBounded.isReducibilityCandidate {scope : Nat} {env : Na
       exact ReducibleTypeStep.universeCandidateIsReducibilityCandidate
         (lowerForwardStep (LevelExpr.denote levelExpr env))
         (lowerNeutralInclusionBelowBound (LevelExpr.denote levelExpr env) belowBound)
+  | dataEmpty =>
+      exact emptyTaitCandidate_isReducibilityCandidate
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 

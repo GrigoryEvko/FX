@@ -71,9 +71,19 @@ uniformly across levels. -/
 theorem IsReducibleTypeAtAllDenoteLevels.ofNeutral {scope : Nat} {env : Nat → Nat} {typeCode : RawTerm scope}
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
     (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
-    (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode) :
+    (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode)
+    (notEmpty : typeCode.rootGenerator ≠ Generator.gen_emptyCode) :
     IsReducibleTypeAtAllDenoteLevels env typeCode :=
-  fun _level => ⟨IsStronglyNormalizing, ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse⟩
+  fun _level => ⟨IsStronglyNormalizing,
+    ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty⟩
+
+/-- **Empty-code leaf.**  The empty type code `emptyTypeCell` is reducible at every denote level, with the
+head-expansion-closed empty Tait candidate `emptyTaitCandidate` — the dedicated `dataEmpty` constructor does
+not reference the lower family or the level, so it fires uniformly across levels (the candidate-bridge twin of
+`ofNeutral` / `ofUniverseCode`). -/
+theorem IsReducibleTypeAtAllDenoteLevels.ofDataEmpty {scope : Nat} {env : Nat → Nat} :
+    IsReducibleTypeAtAllDenoteLevels env (emptyTypeCell (scope := scope)) :=
+  fun _level => ⟨emptyTaitCandidate, ReducibleTypeStepDenote.dataEmpty⟩
 
 /-- **Universe leaf.**  A universe code `Type@levelExpr` is reducible at every denote level — the denote
 universe arm fires unconditionally (`universeCode_isReducibleAtDenote`), with no fuel-0 vacuity. -/
@@ -123,14 +133,16 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote {scope : Nat}
   induction reducible with
   | whnfExpand weakHeadStep _reductReducible reductInductiveHypothesis =>
       exact IsReducibleTypeAtAllDenoteLevels.headExpand weakHeadStep reductInductiveHypothesis
-  | neutral noWeakHeadStep notPiType notUniverse =>
-      exact IsReducibleTypeAtAllDenoteLevels.ofNeutral noWeakHeadStep notPiType notUniverse
+  | neutral noWeakHeadStep notPiType notUniverse notEmpty =>
+      exact IsReducibleTypeAtAllDenoteLevels.ofNeutral noWeakHeadStep notPiType notUniverse notEmpty
   | @piType domainCode codomainCode domainCandidate codomainCandidate domainReducible
       codomainReducible domainInductiveHypothesis codomainInductiveHypothesis =>
       exact piArm codomainCandidate domainReducible codomainReducible
         domainInductiveHypothesis codomainInductiveHypothesis
   | universeCode levelExpr flag =>
       exact IsReducibleTypeAtAllDenoteLevels.ofUniverseCode env levelExpr flag
+  | dataEmpty =>
+      exact IsReducibleTypeAtAllDenoteLevels.ofDataEmpty
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 
@@ -166,6 +178,7 @@ theorem neutralDomainPi_reducibleAtEveryDenoteLevel {scope : Nat} (env : Nat →
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
     (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
     (codomainReducible : ∀ (level : Nat) (argument : RawTerm scope), IsStronglyNormalizing argument →
       ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
@@ -173,7 +186,7 @@ theorem neutralDomainPi_reducibleAtEveryDenoteLevel {scope : Nat} (env : Nat →
     IsReducibleTypeAtAllDenoteLevels env
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
   uniformDomainPi_reducibleAtEveryDenoteLevel env IsStronglyNormalizing
-    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
+    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty)
     codomainCandidate codomainReducible
 
 /-- **Member-stability for a uniform-candidate type — the member-level complement of the uniform-candidate
@@ -204,12 +217,13 @@ theorem neutralType_memberStableAcrossDenoteLevels {scope : Nat} (env : Nat → 
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
     (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode)
+    (notEmpty : typeCode.rootGenerator ≠ Generator.gen_emptyCode)
     {term : RawTerm scope} {sourceLevel : Nat}
     (memberAtSource : IsReducibleMemberAtDenote env sourceLevel typeCode term)
     (targetLevel : Nat) :
     IsReducibleMemberAtDenote env targetLevel typeCode term :=
   uniformType_memberStableAcrossDenoteLevels env
-    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
+    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty)
     memberAtSource targetLevel
 
 /-- **Member-stability for a uniform-domain Π TYPE.**  If the domain `domainCode` is reducible with a
@@ -250,6 +264,7 @@ theorem neutralDomainPiType_memberStableAcrossDenoteLevels {scope : Nat} (env : 
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
     (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
     (codomainReducible : ∀ (level : Nat) (argument : RawTerm scope), IsStronglyNormalizing argument →
       ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
@@ -261,7 +276,7 @@ theorem neutralDomainPiType_memberStableAcrossDenoteLevels {scope : Nat} (env : 
     IsReducibleMemberAtDenote env targetLevel
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) term :=
   uniformDomainPiType_memberStableAcrossDenoteLevels env IsStronglyNormalizing
-    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
+    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty)
     codomainCandidate codomainReducible memberAtSource targetLevel
 
 end FX1Poly.Typed

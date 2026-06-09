@@ -60,7 +60,7 @@ theorem belowBound_of_reducibleUniverse {scope : Nat} {env : Nat → Nat} {bound
   | whnfExpand weakHeadStep _reductReducible _ih =>
       subst hTypeCode
       exact absurd weakHeadStep (by exact fun weakHeadStepFromUniverse => nomatch weakHeadStepFromUniverse)
-  | neutral _noStep _notPi notUniverse =>
+  | neutral _noStep _notPi notUniverse _notEmpty =>
       subst hTypeCode
       exact absurd rfl notUniverse
   | piType _codomainCandidate _domainReducible _codomainReducible _ihDomain _ihCodomain =>
@@ -70,6 +70,8 @@ theorem belowBound_of_reducibleUniverse {scope : Nat} {env : Nat → Nat} {bound
       injection payloadEq with levelEq _flagEq
       rw [levelEq]
       exact belowBound'
+  | dataEmpty =>
+      exact nomatch hTypeCode
   | ofPointwiseIff _innerReducible _pointwiseIff inductiveHypothesis =>
       exact inductiveHypothesis hTypeCode
 

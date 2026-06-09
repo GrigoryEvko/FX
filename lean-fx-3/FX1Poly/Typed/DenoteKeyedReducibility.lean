@@ -2,6 +2,8 @@ import FX1Poly.Typed.ClassifierLevelMeasure
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Core.StratifiedReducibleTypeConvInvariance
 import FX1Poly.Core.StratifiedReducibleTypeReducibilityCandidate
+import FX1Poly.Core.EmptyTaitCandidate
+import FX1Poly.Typed.CellConstructors
 
 /-! # FX1Poly/Typed/DenoteKeyedReducibility
     — the classifier-universe-level reducibility relation (SN-006 foundation toward #672)
@@ -80,8 +82,14 @@ def universeDenotePredicate {scope : Nat} (env : Nat → Nat)
     ∃ candidate : RawTerm scope → Prop, lowerAt (LevelExpr.denote levelExpr env) typeCode candidate
 
 /-- **The denote-keyed reducibility step-functor.**  Identical to `ReducibleTypeStep` except the
-`universeCode` arm reaches into `lowerAt (denote levelExpr env)` rather than a uniform `lower`.  The other
-four arms (weak-head expansion / neutral / dependent arrow / pointwise-iff congruence) are verbatim. -/
+`universeCode` arm reaches into `lowerAt (denote levelExpr env)` rather than a uniform `lower`, and the
+data-type code `emptyTypeCell` is pinned (via the dedicated `dataEmpty` arm) to its head-expansion-closed
+empty Tait candidate `emptyTaitCandidate` rather than going through `neutral`.  Correspondingly, the `neutral`
+arm carries a `rootGenerator ≠ gen_emptyCode` gate so it no longer over-fires on the empty type code (the
+candidate-bridge edit: emptyTypeCell's reducibility candidate IS the empty candidate, not the whole SN set).
+`emptyTaitCandidate` is head-expansion-closed (unlike `CanonicalFormsPredicate emptyIsValue`), so every Π /
+member / forward arm flows mechanically when the empty type appears as a Π codomain.  The remaining arms
+(weak-head expansion / dependent arrow / pointwise-iff congruence) are verbatim. -/
 inductive ReducibleTypeStepDenote {scope : Nat} (env : Nat → Nat)
     (lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop) :
     RawTerm scope → (RawTerm scope → Prop) → Prop where
@@ -92,6 +100,7 @@ inductive ReducibleTypeStepDenote {scope : Nat} (env : Nat → Nat)
       (∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct) →
       typeCode.rootGenerator ≠ Generator.gen_piTyCode →
       typeCode.rootGenerator ≠ Generator.gen_universeCode →
+      typeCode.rootGenerator ≠ Generator.gen_emptyCode →
       ReducibleTypeStepDenote env lowerAt typeCode IsStronglyNormalizing
   | piType {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
       {domainCandidate : RawTerm scope → Prop}
@@ -109,10 +118,36 @@ inductive ReducibleTypeStepDenote {scope : Nat} (env : Nat → Nat)
       ReducibleTypeStepDenote env lowerAt
         (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
         (universeDenotePredicate env lowerAt levelExpr)
+  | dataEmpty :
+      ReducibleTypeStepDenote env lowerAt (emptyTypeCell (scope := scope)) emptyTaitCandidate
   | ofPointwiseIff {typeCode : RawTerm scope} {candidate canonical : RawTerm scope → Prop} :
       ReducibleTypeStepDenote env lowerAt typeCode candidate →
       PointwiseIff candidate canonical →
       ReducibleTypeStepDenote env lowerAt typeCode canonical
+
+/-- **The empty type code cell admits no weak-head step.**  `emptyTypeCell` is the nullary leaf
+`mkGen gen_emptyCode () childNil`: `gen_emptyCode` is a type-former code (heads no β/ι) with an empty child
+spine, so every `WeakHeadStep` constructor save `rootIota` pins a concrete eliminable/applicable head ≠
+`gen_emptyCode`, and `rootIota`'s `IotaHeadStep` is uninhabited on the empty cell.  The weak-head normality
+fact the `dataEmpty` arm's inversions consume. -/
+theorem emptyTypeCell_noWeakHeadStep {scope : Nat} :
+    ∀ reduct : RawTerm scope, ¬ WeakHeadStep (emptyTypeCell (scope := scope)) reduct := by
+  intro reduct weakHeadStep
+  dsimp only [emptyTypeCell] at weakHeadStep
+  cases weakHeadStep with
+  | rootIota iotaStep => cases iotaStep
+
+/-- **The empty type code cell admits no full `Step`.**  The nullary-leaf analogue of
+`emptyTypeCell_noWeakHeadStep`: the only candidate reduction of `mkGen gen_emptyCode () childNil` is a `cong`
+whose `StepChildren` is on `childNil`, uninhabited by `noStepChildren_childNil` (no β/ι head fires on a
+type-former code).  The step-normality fact the `dataEmpty` arm's forward closure consumes (the chain along
+`StepStar` from `emptyTypeCell` is reflexive). -/
+theorem emptyTypeCell_noStep {scope : Nat} :
+    ∀ target : RawTerm scope, ¬ Step (emptyTypeCell (scope := scope)) target := by
+  intro target step
+  dsimp only [emptyTypeCell] at step
+  cases step with
+  | cong _ _ childStep => exact noStepChildren_childNil childStep
 
 /-- **The structural lower family below a level.**  `denoteBelowFamily (level + 1)` reuses
 `denoteBelowFamily level` for indices `lvl < level`, installs the step-functor over `denoteBelowFamily
@@ -229,7 +264,7 @@ theorem ReducibleTypeStepDenote.candidateAtWhnfReduct {scope : Nat} {env : Nat �
       have reductEquation := WeakHeadStep.deterministic weakHeadStep0 weakHeadStep
       subst reductEquation
       exact reductReducible0
-  | neutral noWeakHeadStep _ _ =>
+  | neutral noWeakHeadStep _ _ _ =>
       intro reduct weakHeadStep
       exact absurd weakHeadStep (noWeakHeadStep reduct)
   | piType _ _ _ _ _ =>
@@ -238,12 +273,17 @@ theorem ReducibleTypeStepDenote.candidateAtWhnfReduct {scope : Nat} {env : Nat �
   | universeCode _ _ =>
       intro reduct weakHeadStep
       cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+  | dataEmpty =>
+      intro reduct weakHeadStep
+      exact absurd weakHeadStep (emptyTypeCell_noWeakHeadStep reduct)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro reduct weakHeadStep
       exact .ofPointwiseIff (innerHypothesis weakHeadStep) pointwiseIff
 
-/-- **A weak-head-normal non-Π non-universe type has the strong-normalization candidate** (up to pointwise
-iff). -/
+/-- **A weak-head-normal non-Π non-universe non-empty type has the strong-normalization candidate** (up to
+pointwise iff).  Now gated with `notEmpty` (`rootGenerator ≠ gen_emptyCode`) so the new `dataEmpty` case is
+discharged: that arm's subject is `emptyTypeCell`, whose `rootGenerator` IS `gen_emptyCode`, contradicting
+the gate.  The remaining arms are verbatim. -/
 theorem ReducibleTypeStepDenote.candidateIffStronglyNormalizing {scope : Nat} {env : Nat → Nat}
     {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
     {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
@@ -251,16 +291,21 @@ theorem ReducibleTypeStepDenote.candidateIffStronglyNormalizing {scope : Nat} {e
     (∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct) →
     typeCode.rootGenerator ≠ Generator.gen_piTyCode →
     typeCode.rootGenerator ≠ Generator.gen_universeCode →
+    typeCode.rootGenerator ≠ Generator.gen_emptyCode →
     PointwiseIff candidate IsStronglyNormalizing := by
   induction reducible with
   | whnfExpand weakHeadStep0 _ _ =>
-      intro noWeakHeadStep _ _; exact absurd weakHeadStep0 (noWeakHeadStep _)
-  | neutral _ _ _ => intro _ _ _ _term; exact Iff.rfl
-  | piType _ _ _ _ _ => intro _ notPiType _; exact absurd rfl notPiType
-  | universeCode _ _ => intro _ _ notUniverse; exact absurd rfl notUniverse
+      intro noWeakHeadStep _ _ _; exact absurd weakHeadStep0 (noWeakHeadStep _)
+  | neutral _ _ _ _ => intro _ _ _ _ _term; exact Iff.rfl
+  | piType _ _ _ _ _ => intro _ notPiType _ _; exact absurd rfl notPiType
+  | universeCode _ _ => intro _ _ notUniverse _; exact absurd rfl notUniverse
+  | dataEmpty =>
+      intro _ _ _ notEmpty
+      exact absurd (rfl : (emptyTypeCell (scope := scope)).rootGenerator = Generator.gen_emptyCode) notEmpty
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
-      intro noWeakHeadStep notPiType notUniverse term
-      exact (pointwiseIff term).symm.trans (innerHypothesis noWeakHeadStep notPiType notUniverse term)
+      intro noWeakHeadStep notPiType notUniverse notEmpty term
+      exact (pointwiseIff term).symm.trans
+        (innerHypothesis noWeakHeadStep notPiType notUniverse notEmpty term)
 
 /-- **Π-shape inversion (subject generic + equation).**  A reducible type whose code IS a Π-code came
 through the `piType` arm: it recovers the domain / codomain candidates, their reducibility, and that the
@@ -285,7 +330,7 @@ theorem ReducibleTypeStepDenote.candidatePiShape {scope : Nat} {env : Nat → Na
   | whnfExpand weakHeadStep0 _ _ =>
       intro _domainCode _codomainCode hType; subst hType
       cases weakHeadStep0 with | rootIota iotaStep => cases iotaStep
-  | neutral _ notPiType _ =>
+  | neutral _ notPiType _ _ =>
       intro _domainCode _codomainCode hType; subst hType; exact absurd rfl notPiType
   | piType codomainCandidate domainReducible codomainReducible _ _ =>
       intro _domainCode _codomainCode hType; cases hType
@@ -293,6 +338,11 @@ theorem ReducibleTypeStepDenote.candidatePiShape {scope : Nat} {env : Nat → Na
   | universeCode _ _ =>
       intro _domainCode _codomainCode hType
       have rootMismatch : Generator.gen_universeCode = Generator.gen_piTyCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch (by decide)
+  | dataEmpty =>
+      intro _domainCode _codomainCode hType
+      have rootMismatch : Generator.gen_emptyCode = Generator.gen_piTyCode :=
         congrArg RawTerm.rootGenerator hType
       exact absurd rootMismatch (by decide)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
@@ -317,7 +367,7 @@ theorem ReducibleTypeStepDenote.candidateIffUniverse {scope : Nat} {env : Nat �
   | whnfExpand weakHeadStep0 _ _ =>
       intro _levelExpr _flag hType; subst hType
       cases weakHeadStep0 with | rootIota iotaStep => cases iotaStep
-  | neutral _ _ notUniverse =>
+  | neutral _ _ notUniverse _ =>
       intro _levelExpr _flag hType; subst hType; exact absurd rfl notUniverse
   | piType _ _ _ _ _ =>
       intro _levelExpr _flag hType
@@ -329,8 +379,50 @@ theorem ReducibleTypeStepDenote.candidateIffUniverse {scope : Nat} {env : Nat �
       obtain ⟨levelEq, _flagEq⟩ := universeCodeCell_inj hType
       subst levelEq
       exact Iff.rfl
+  | dataEmpty =>
+      intro _levelExpr _flag hType
+      have rootMismatch : Generator.gen_emptyCode = Generator.gen_universeCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch (by decide)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro _levelExpr _flag hType term
+      exact (pointwiseIff term).symm.trans (innerHypothesis hType term)
+
+/-- **Empty-code shape inversion (subject generic + equation).**  A reducible type whose code IS
+`emptyTypeCell` came through the dedicated `dataEmpty` arm: its candidate is the head-expansion-closed empty
+Tait candidate `emptyTaitCandidate` (up to pointwise iff).  The candidate-bridge analogue of
+`candidateIffStronglyNormalizing` / `candidateIffUniverse`: the `dataEmpty` arm gives `Iff.rfl`; the
+`whnfExpand` arm is ruled out (`emptyTypeCell` is weak-head-normal), the `neutral` arm by its
+`rootGenerator ≠ gen_emptyCode` gate (contradicted by `emptyTypeCell.rootGenerator = gen_emptyCode`), and
+`piType` / `universeCode` by a root-generator clash.  This is the leaf the `deterministic` `dataEmpty` arm
+consumes. -/
+theorem ReducibleTypeStepDenote.candidateIffEmptyCandidate {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) :
+    typeCode = emptyTypeCell (scope := scope) →
+    PointwiseIff candidate emptyTaitCandidate := by
+  induction reducible with
+  | whnfExpand weakHeadStep0 _ _ =>
+      intro hType; subst hType
+      exact absurd weakHeadStep0 (emptyTypeCell_noWeakHeadStep _)
+  | neutral _ _ _ notEmpty =>
+      intro hType; subst hType
+      exact absurd (rfl : (emptyTypeCell (scope := scope)).rootGenerator = Generator.gen_emptyCode) notEmpty
+  | piType _ _ _ _ _ =>
+      intro hType
+      have rootMismatch : Generator.gen_piTyCode = Generator.gen_emptyCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch (by decide)
+  | universeCode _ _ =>
+      intro hType
+      have rootMismatch : Generator.gen_universeCode = Generator.gen_emptyCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch (by decide)
+  | dataEmpty =>
+      intro _hType; exact fun _ => Iff.rfl
+  | ofPointwiseIff _ pointwiseIff innerHypothesis =>
+      intro hType term
       exact (pointwiseIff term).symm.trans (innerHypothesis hType term)
 
 /-- **The denote-keyed step functor is functional** (up to pointwise iff): at a fixed `env` / `lowerAt`, a
@@ -345,9 +437,10 @@ theorem ReducibleTypeStepDenote.deterministic {scope : Nat} {env : Nat → Nat}
   | whnfExpand weakHeadStep1 _reductReducible1 reductInductiveHypothesis =>
       intro candidate2 reducible2
       exact reductInductiveHypothesis (reducible2.candidateAtWhnfReduct weakHeadStep1)
-  | neutral noWeakHeadStep1 notPiType1 notUniverse1 =>
+  | neutral noWeakHeadStep1 notPiType1 notUniverse1 notEmpty1 =>
       intro candidate2 reducible2 term
-      exact (reducible2.candidateIffStronglyNormalizing noWeakHeadStep1 notPiType1 notUniverse1 term).symm
+      exact (reducible2.candidateIffStronglyNormalizing
+        noWeakHeadStep1 notPiType1 notUniverse1 notEmpty1 term).symm
   | piType codomainCandidate1 _domainReducible1 _codomainReducible1
       domainInductiveHypothesis codomainInductiveHypothesis =>
       intro candidate2 reducible2
@@ -370,6 +463,9 @@ theorem ReducibleTypeStepDenote.deterministic {scope : Nat} {env : Nat → Nat}
   | universeCode _levelExpr1 _flag1 =>
       intro candidate2 reducible2 term
       exact (reducible2.candidateIffUniverse rfl term).symm
+  | dataEmpty =>
+      intro candidate2 reducible2 term
+      exact (reducible2.candidateIffEmptyCandidate rfl term).symm
   | ofPointwiseIff _innerReducible1 pointwiseIff1 innerInductiveHypothesis1 =>
       intro candidate2 reducible2 term
       exact (pointwiseIff1 term).symm.trans (innerInductiveHypothesis1 reducible2 term)
@@ -454,13 +550,14 @@ theorem ReducibleTypeStepDenote.forwardStepStar {scope : Nat} {env : Nat → Nat
       intro finalType chain
       exact ReducibleTypeStepDenote.whnfExpandClosure chain weakHeadStep reductReducible
         (fun _furtherReduct furtherChain => reductInductiveHypothesis furtherChain)
-  | neutral noWeakHeadStep notPiType notUniverse =>
+  | neutral noWeakHeadStep notPiType notUniverse notEmpty =>
       intro finalType chain
       obtain ⟨finalNoWeakHeadStep, rootEquation⟩ :=
         WeakHeadStep.weakHeadNormalRootStableAlongStepStar chain noWeakHeadStep
       exact ReducibleTypeStepDenote.neutral finalNoWeakHeadStep
         (fun rootIsPiType => notPiType (rootEquation.symm.trans rootIsPiType))
         (fun rootIsUniverse => notUniverse (rootEquation.symm.trans rootIsUniverse))
+        (fun rootIsEmpty => notEmpty (rootEquation.symm.trans rootIsEmpty))
   | piType codomainCandidate _domainReducible _codomainReducible
       domainInductiveHypothesis codomainInductiveHypothesis =>
       intro finalType chain
@@ -478,6 +575,12 @@ theorem ReducibleTypeStepDenote.forwardStepStar {scope : Nat} {env : Nat → Nat
           chain
       subst finalEquation
       exact ReducibleTypeStepDenote.universeCode levelExpr flag
+  | dataEmpty =>
+      intro finalType chain
+      have finalEquation :=
+        StepStar.eq_of_noStep (fun reduct step => emptyTypeCell_noStep reduct step) chain
+      subst finalEquation
+      exact ReducibleTypeStepDenote.dataEmpty
   | ofPointwiseIff _innerReducible pointwiseIff innerHypothesis =>
       intro finalType chain
       exact (innerHypothesis chain).ofPointwiseIff pointwiseIff
@@ -639,7 +742,7 @@ theorem ReducibleTypeStepDenote.isReducibilityCandidate {scope : Nat} {env : Nat
   induction reducible with
   | whnfExpand _weakHeadStep _reductReducible reductInductiveHypothesis =>
       exact reductInductiveHypothesis
-  | neutral _noWeakHeadStep _notPiType _notUniverse =>
+  | neutral _noWeakHeadStep _notPiType _notUniverse _notEmpty =>
       exact isStronglyNormalizing_isReducibilityCandidate
   | piType codomainCandidate _domainReducible codomainReducible
       domainInductiveHypothesis codomainInductiveHypothesis =>
@@ -651,6 +754,8 @@ theorem ReducibleTypeStepDenote.isReducibilityCandidate {scope : Nat} {env : Nat
       exact ReducibleTypeStep.universeCandidateIsReducibilityCandidate
         (lowerForwardStep (LevelExpr.denote levelExpr env))
         (lowerNeutralInclusion (LevelExpr.denote levelExpr env))
+  | dataEmpty =>
+      exact emptyTaitCandidate_isReducibilityCandidate
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 
@@ -677,13 +782,15 @@ theorem ReducibleTypeStepDenote.forwardStep {scope : Nat} {env : Nat → Nat}
   ReducibleTypeStepDenote.forwardStepStar reducible (StepStar.single step)
 
 /-- **A neutral type is reducible (denote-keyed)** — the SN candidate via the `neutral` arm (a neutral term
-is weak-head-normal and neither Π- nor universe-rooted). -/
+is weak-head-normal and neither Π- nor universe- nor empty-rooted: every `IsNeutral` arm builds its subject
+from an elimination-set generator, none of which is `gen_emptyCode`). -/
 theorem ReducibleTypeStepDenote.reducibleOfNeutral {scope : Nat} {env : Nat → Nat}
     {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
     {typeCode : RawTerm scope} (neutral : IsNeutral typeCode) :
     ∃ candidate : RawTerm scope → Prop, ReducibleTypeStepDenote env lowerAt typeCode candidate := by
   refine ⟨IsStronglyNormalizing, ReducibleTypeStepDenote.neutral
-    (fun reduct => neutral.noWeakHeadStep reduct) ?_ ?_⟩
+    (fun reduct => neutral.noWeakHeadStep reduct) ?_ ?_ ?_⟩
+  · cases neutral <;> exact fun rootEquation => nomatch rootEquation
   · cases neutral <;> exact fun rootEquation => nomatch rootEquation
   · cases neutral <;> exact fun rootEquation => nomatch rootEquation
 

@@ -4125,6 +4125,16 @@ gates pin them shut.
 -- closed proof of Empty"; only the membership half (closed well-typed Empty term is a member) awaits the FT.
 #assert_no_axioms FX1Poly.Core.emptyCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.emptyHasNoClosedMember
+-- HEAD-EXPANSION-CLOSED empty Tait candidate (the candidate-bridge empty candidate): SN ∧ every reachable
+-- normal form is neutral. Unlike CanonicalFormsPredicate emptyIsValue (members must be neutral THEMSELVES),
+-- this is head-expansion-closed (a β-redex inherits membership from its contractum, via per-term confluence) —
+-- so it serves as a Π codomain candidate across the whole fundamental theorem (a λ into Empty is reducible).
+-- It is a reducibility candidate (CR1/CR2/CR3) and has no closed member (a closed reachable normal form would
+-- be neutral, but closed neutrals don't exist) — the consistency core for the candidate-bridge model.
+#assert_no_axioms FX1Poly.Core.emptyTaitCandidate.noClosedMember
+#assert_no_axioms FX1Poly.Core.emptyTaitCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.emptyTaitCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.emptyTaitCandidate_memberWeakHeadExpansion
 -- RICHEST data candidate — List (SN-064): IsListValue inductive combines nullary nil + binary-recursive cons
 -- (head normal like pair, tail recursive like Nat); list values are normal forms by induction; the candidate
 -- is isReducibilityCandidateOfValuesNormal at IsListValue; every list value is a member (memberOfValue); a
@@ -4613,6 +4623,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidateIffStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidatePiShape
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidateIffUniverse
+-- Candidate-bridge leaves: emptyTypeCell heads no weak-head step / no full Step (nullary gen_emptyCode leaf, no
+-- β/ι, empty child spine); candidateIffEmptyCandidate is the empty-code shape inversion (a reducible type whose
+-- code IS emptyTypeCell has candidate emptyTaitCandidate up to PointwiseIff) — the leaf deterministic's dataEmpty
+-- arm consumes, twin of candidateIffStronglyNormalizing/candidateIffUniverse.
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_noWeakHeadStep
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_noStep
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidateIffEmptyCandidate
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.deterministic
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.deterministic
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.piTypeInversion
@@ -6329,20 +6346,25 @@ gates pin them shut.
 -- SN-050 is now stated at the real cell, sole residual the candidateBridge AT emptyTypeCell. Confirms a FORMATION
 -- arm (CON-A2 route-E/F) is OFF the critical path — consistency refutes typings AT emptyTypeCell, not constructs one.
 #assert_no_axioms FX1Poly.Typed.emptyTypeCellConsistencyFromCandidateBridge
--- Residual reduced further: wires the SHIPPED FT closed-member corollary (closedBoundedReducibleMember) +
--- subst_emptyTypeCell + emptyHasNoClosedMember, so SN-050's residual drops from the full candidateBridge to the
--- cleaner memberBridge = CON-A3 core (a bounded-reducible member of emptyTypeCell is an empty-candidate member).
-#assert_no_axioms FX1Poly.Typed.emptyConsistencyFromReducibleMemberBridge
--- The CON-A3 OBSTRUCTION mechanized: emptyTypeCell IS a reducible type (non-vacuity in the reducibility model),
--- but via the neutral arm its candidate is the WHOLE IsStronglyNormalizing set (contains closed values) — NOT the
--- empty candidate. So CON-A3/memberBridge is false under the default interpretation; closing it needs a structural
--- ReducibleTypeStepBounded edit (exclude data type codes from neutral + dedicated empty-candidate arm), the #483 work.
+-- The candidate bridge at the MEMBER level: a bounded-reducible member of emptyTypeCell is an emptyTaitCandidate
+-- member (family-level deterministic against the dataEmpty-derived candidate). The CON-A3 sconing-leg core,
+-- DISCHARGED — the engine↔candidate representation identity now holds in the edited model.
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_memberIsEmptyCandidate
+-- The reducibility/sconing leg witness: a closed engine typing at emptyTypeCell yields an emptyTaitCandidate
+-- member of the +1 closing-weakened term (closedBoundedReducibleMember + subst_emptyTypeCell + the candidate bridge).
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_closedTypingYieldsEmptyCandidateMember
+-- UNCONDITIONAL consistency: HasTypeDescPi .empty t emptyTypeCell → False with NO memberBridge hypothesis. The
+-- candidate-bridge PAYOFF (the reducibility-leg member identity is discharged); the final False is delivered by the
+-- syntactic-validity route emptyTypeConsistency. Both legs agree the empty type is uninhabited.
+#assert_no_axioms FX1Poly.Typed.emptyConsistencyViaCandidateBridge
+-- emptyTypeCell IS a reducible type, via the candidate-bridge dataEmpty arm, with candidate emptyTaitCandidate
+-- (NOT the generic neutral arm, now gated rootGenerator ≠ gen_emptyCode). The formation half of the candidate bridge.
 #assert_no_axioms FX1Poly.Typed.emptyTypeCell_isReducibleType
--- The obstruction made AIRTIGHT: emptyTypeCell's candidate is not merely SN-by-default but FORCED to be the
--- whole SN set — ANY candidate for it is PointwiseIff IsStronglyNormalizing (ReducibleTypeAtBounded.deterministic
--- against the neutral-derived SN candidate). So memberBridge is UNCONDITIONALLY false in the current model (no
--- smarter candidate escapes — not even via ofPointwiseIff); CON-A3 is a MODEL CHANGE, not a grind.
-#assert_no_axioms FX1Poly.Typed.emptyTypeCell_candidate_forcedStronglyNormalizing
+-- The candidate bridge, the OBSTRUCTION REVERSED: ANY candidate for emptyTypeCell is PointwiseIff emptyTaitCandidate
+-- (ReducibleTypeAtBounded.deterministic against the dataEmpty-derived candidate). Replaces the former
+-- forcedStronglyNormalizing (which collapsed every candidate onto the maximal SN set). emptyTaitCandidate is
+-- head-expansion-closed (unlike CanonicalFormsPredicate emptyIsValue), so it serves as a Π codomain across the FT.
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_candidate_isEmptyCandidate
 -- The GO CERTIFICATE for the §5 candidate-bridge edit (CandidateBridgeEditViability.lean), companion to the
 -- obstruction proof above: a FAITHFUL MINIATURE of the EDITED relation (gated neutral excluding gen_emptyCode +
 -- a dataEmpty arm), built over the REAL RawTerm/Generator/WeakHeadStep, PROVES the determinism-survival crux —

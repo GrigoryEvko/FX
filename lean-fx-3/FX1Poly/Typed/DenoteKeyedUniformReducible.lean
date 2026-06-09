@@ -83,10 +83,18 @@ theorem UniformlyReducibleAboveDenote.ofNeutral {scope : Nat} {env : Nat → Nat
     {typeCode : RawTerm scope}
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
     (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
-    (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode) :
+    (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode)
+    (notEmpty : typeCode.rootGenerator ≠ Generator.gen_emptyCode) :
     UniformlyReducibleAboveDenote env typeCode :=
   ⟨0, IsStronglyNormalizing,
-    fun _level _habove => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse⟩
+    fun _level _habove => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty⟩
+
+/-- **Empty-code leaf.**  The empty type code `emptyTypeCell` is uniformly reducible above threshold 0 with the
+head-expansion-closed empty Tait candidate `emptyTaitCandidate` — the dedicated `dataEmpty` constructor does
+not reference the level family (the candidate-bridge twin of `ofNeutral` / `ofUniverseCode`). -/
+theorem UniformlyReducibleAboveDenote.ofDataEmpty {scope : Nat} {env : Nat → Nat} :
+    UniformlyReducibleAboveDenote env (emptyTypeCell (scope := scope)) :=
+  ⟨0, emptyTaitCandidate, fun _level _habove => ReducibleTypeStepDenote.dataEmpty⟩
 
 /-- **Universe leaf.**  `Type@levelExpr` is uniformly reducible above threshold `denote levelExpr env` with the
 level-independent decode-set candidate `fun m => SN m ∧ IsReducibleTypeAtDenote env (denote levelExpr env) m`
@@ -159,14 +167,16 @@ theorem UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote {scope : Nat} {e
   induction reducible with
   | whnfExpand weakHeadStep _reductReducible reductInductiveHypothesis =>
       exact UniformlyReducibleAboveDenote.headExpand weakHeadStep reductInductiveHypothesis
-  | neutral noWeakHeadStep notPiType notUniverse =>
-      exact UniformlyReducibleAboveDenote.ofNeutral noWeakHeadStep notPiType notUniverse
+  | neutral noWeakHeadStep notPiType notUniverse notEmpty =>
+      exact UniformlyReducibleAboveDenote.ofNeutral noWeakHeadStep notPiType notUniverse notEmpty
   | @piType domainCode codomainCode domainCandidate codomainCandidate domainReducible
       codomainReducible domainInductiveHypothesis codomainInductiveHypothesis =>
       exact piArm codomainCandidate domainReducible codomainReducible
         domainInductiveHypothesis codomainInductiveHypothesis
   | universeCode levelExpr flag =>
       exact UniformlyReducibleAboveDenote.ofUniverseCode env levelExpr flag
+  | dataEmpty =>
+      exact UniformlyReducibleAboveDenote.ofDataEmpty
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 

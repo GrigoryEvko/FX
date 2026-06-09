@@ -55,21 +55,22 @@ theorem neutralDomainPiArmLift {scope : Nat} {env : Nat → Nat} (highLevel : Na
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
     (domainReducible : ReducibleTypeStepDenote env lowerAt domainCode domainCandidate)
     (codomainLiftedPerMember : ∀ argument : RawTerm scope, domainCandidate argument →
       IsReducibleTypeAtDenote env highLevel (RawTerm.subst0 codomainCode argument)) :
     IsReducibleTypeAtDenote env highLevel
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
   piFormerReducibleAtLevel env highLevel
-    ⟨IsStronglyNormalizing, ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse⟩
+    ⟨IsStronglyNormalizing, ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty⟩
     (fun argument argumentMember =>
       let ⟨_memberCandidate, memberCandidateReducible, argumentInMemberCandidate⟩ := argumentMember
       have argumentStronglyNormalizing : IsStronglyNormalizing argument :=
         (memberCandidateReducible.candidateIffStronglyNormalizing
-          noWeakHeadStep notPiType notUniverse argument).mp argumentInMemberCandidate
+          noWeakHeadStep notPiType notUniverse notEmpty argument).mp argumentInMemberCandidate
       have argumentInDomainCandidate : domainCandidate argument :=
         (domainReducible.candidateIffStronglyNormalizing
-          noWeakHeadStep notPiType notUniverse argument).mpr argumentStronglyNormalizing
+          noWeakHeadStep notPiType notUniverse notEmpty argument).mpr argumentStronglyNormalizing
       codomainLiftedPerMember argument argumentInDomainCandidate)
 
 /-- **The universe-domain (above-threshold) discharge of `reducibleTypeLevelLift`'s `piArmLift`.**  For a

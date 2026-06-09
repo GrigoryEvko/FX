@@ -93,7 +93,8 @@ theorem fundamentalGenFormationSigmaFromTelescopeAtBoundedSucc {profile : PolyPr
       ReducibleTypeStepBounded.neutral
         (fun _reduct => WeakHeadStep.not_from_sigmaTyCode)
         (show Generator.gen_sigmaTyCode ≠ Generator.gen_piTyCode by decide)
-        (show Generator.gen_sigmaTyCode ≠ Generator.gen_universeCode by decide)⟩
+        (show Generator.gen_sigmaTyCode ≠ Generator.gen_universeCode by decide)
+        (show Generator.gen_sigmaTyCode ≠ Generator.gen_emptyCode by decide)⟩
   rw [subst_universeCodeCell]
   exact universeMembershipIntroAtBounded env (lmaxAll [domainLevel, codomainLevel]) flag bound
     (RawTerm.subst substitution (sigmaTyCodeCell domain codomain)) belowBound sigmaSN sigmaReducible

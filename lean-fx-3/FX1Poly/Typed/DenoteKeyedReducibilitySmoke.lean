@@ -56,7 +56,8 @@ theorem smoke_neutralVariable_isReducibleAtDenote {scope : Nat} (env : Nat → N
     ReducibleTypeStepDenote.neutral
       (fun _reduct weakHeadStep => noStep_var index weakHeadStep.toStep)
       (by show Generator.gen_var ≠ Generator.gen_piTyCode; decide)
-      (by show Generator.gen_var ≠ Generator.gen_universeCode; decide)⟩
+      (by show Generator.gen_var ≠ Generator.gen_universeCode; decide)
+      (by show Generator.gen_var ≠ Generator.gen_emptyCode; decide)⟩
 
 /-- **Smoke: a Σ-type FORMER is denote-reducible at any level via the neutral arm.**  A Σ former is
 weak-head-normal (NO `WeakHeadStep` constructor matches a `gen_sigmaTyCode`-rooted cell — each is keyed on an
@@ -74,6 +75,7 @@ theorem smoke_sigmaFormer_isReducibleAtDenote {scope : Nat} (env : Nat → Nat) 
     ReducibleTypeStepDenote.neutral
       (fun _reduct weakHeadStep => nomatch weakHeadStep)
       (by show Generator.gen_sigmaTyCode ≠ Generator.gen_piTyCode; decide)
-      (by show Generator.gen_sigmaTyCode ≠ Generator.gen_universeCode; decide)⟩
+      (by show Generator.gen_sigmaTyCode ≠ Generator.gen_universeCode; decide)
+      (by show Generator.gen_sigmaTyCode ≠ Generator.gen_emptyCode; decide)⟩
 
 end FX1Poly.Typed

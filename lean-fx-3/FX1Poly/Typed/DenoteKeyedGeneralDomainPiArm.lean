@@ -120,12 +120,13 @@ theorem neutralDomainPiArmFromInductiveHypotheses {scope : Nat} (env : Nat → N
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
     (codomainInductiveHypothesis : ∀ argument : RawTerm scope, IsStronglyNormalizing argument →
       IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst0 codomainCode argument)) :
     IsReducibleTypeAtAllDenoteLevels env
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
   uniformDomainPiArmFromInductiveHypotheses env
-    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse)
+    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty)
     codomainInductiveHypothesis
 
 /-- **The UNIFIED piArm — the whole case-split collapses to member-stability at one level.**  The A2 bridge
@@ -179,10 +180,11 @@ theorem neutralDomainMemberStableToOuter {scope : Nat} (env : Nat → Nat) (oute
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
     (sourceLevel : Nat) (argument : RawTerm scope)
     (memberAtSource : IsReducibleMemberAtDenote env sourceLevel domainCode argument) :
     IsReducibleMemberAtDenote env outerLevel domainCode argument :=
-  neutralType_memberStableAcrossDenoteLevels env noWeakHeadStep notPiType notUniverse
+  neutralType_memberStableAcrossDenoteLevels env noWeakHeadStep notPiType notUniverse notEmpty
     memberAtSource outerLevel
 
 /-- **Member-transfer across head-expansion (backward).**  A denote-reducible member of the contractum `reduct`
