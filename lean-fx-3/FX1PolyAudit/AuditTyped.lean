@@ -555,6 +555,7 @@ import FX1Poly.Typed.GrownCheckSoundnessRefutation
 import FX1Poly.Typed.ConvExistentialStrengtheningRefutation
 import FX1Poly.Typed.PinnedPiImageComponents
 import FX1Poly.Typed.PinnedPiRenameImage
+import FX1Poly.Typed.PinnedReflectionContext
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8458,3 +8459,16 @@ comes from a λ with the body an exact lift-image). -/
 
 #assert_no_axioms FX1Poly.Typed.Conv.pinnedPiComponentsInRenameImage
 #assert_no_axioms FX1Poly.Typed.renameEqLamCellInversion
+
+/- The pinned reflection's context condition + leaf arms (PinnedReflectionContext): the
+Kripke/Conv-relaxed image context condition (exact-image base instance for strengthening + the
+lift/cons extension that survives binders with a merely Conv-pinned domain), the var/universe head
+rename inversions, and the formation-engine var/universeFormation arms of the route-H reflection in
+the motive's conclusion shape. -/
+
+#assert_no_axioms FX1Poly.Typed.ContextReflectsRename.ofWeakenCons
+#assert_no_axioms FX1Poly.Typed.ContextReflectsRename.consConv
+#assert_no_axioms FX1Poly.Typed.renameEqVariableCellInversion
+#assert_no_axioms FX1Poly.Typed.renameEqUniverseCodeCellInversion
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.varArmPinnedReflection
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.universeArmPinnedReflection
