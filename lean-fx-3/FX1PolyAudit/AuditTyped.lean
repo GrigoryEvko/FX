@@ -553,6 +553,7 @@ import FX1Poly.Typed.GrownCheck
 import FX1Poly.Typed.GrownCheckContextConversion
 import FX1Poly.Typed.GrownCheckSoundnessRefutation
 import FX1Poly.Typed.ConvExistentialStrengtheningRefutation
+import FX1Poly.Typed.PinnedPiImageComponents
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8441,3 +8442,10 @@ reflection MUST carry the image-pinned-classifier premise. -/
 #assert_no_axioms FX1Poly.Typed.weakenedIdentityTypedAtVariableDomainPi
 #assert_no_axioms FX1Poly.Typed.variableDomainPi_notConvWeakenImage
 #assert_no_axioms FX1Poly.Typed.convExistentialStrengthening_isFalse
+
+/- The pinning analysis (PinnedPiImageComponents): a Π-classifier Conv to a weakening exposes components
+EXACTLY in the weaken image (reducesToPiTyCode ∘ StepStar.reflectRename ∘ the mkGen drilling) — the brick
+every binder arm of the route-H pinned reflection consumes; under the pinned premise the historical
+floating-domain wall hands the piIntro arm an exact in-image representative. -/
+
+#assert_no_axioms FX1Poly.Typed.Conv.pinnedPiComponentsInWeakenImage
