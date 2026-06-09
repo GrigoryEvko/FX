@@ -278,6 +278,7 @@ import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
 import FX1Poly.Typed.BoolElimValueCanonicity
 import FX1Poly.Typed.NatElimComputingCanonicity
 import FX1Poly.Typed.ListElimComputingCanonicity
+import FX1Poly.Typed.MatchElimComputingCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
 import FX1Poly.Typed.HasTypeDescPairIntro
@@ -3300,6 +3301,25 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.lengthNatStepProduces
 #assert_no_axioms FX1Poly.Typed.listElimLengthComputesToNumeral
 #assert_no_axioms FX1Poly.Typed.listElimLengthComputesToNumeral.two
+-- ★ NON-RECURSIVE function-branch eliminator-computing canonicity (MatchElimComputingCanonicity), COMPLETING
+-- the eliminator-computing-canonicity coverage across all four structural shapes: bool (projection/value),
+-- nat+list (recursive function), option+either (non-recursive function, HERE). optionMatch/eitherMatch fire a
+-- 1-arg app-chain ι (optionMatch (some v) n s ↝ app s v) — no recursion, but the some/inl/inr branch is a
+-- FUNCTION applied to the wrapped value (the content the value-branch bool case lacked). ★
+-- optionMatchComputesToValue / eitherMatchComputesToValue = a closed match with a result-valued projection
+-- branch + a function branch producing a result value from the wrapped (normal) payload (stepProduces) computes
+-- ↝* to a result value, by rcases on the isOptionValue/isEitherValue disjunction (none/some, inl/inr) + the ι
+-- step + stepProduces. General over the result predicate. const fold (λ_.natZero → numeral) +
+-- ★ id fold (λx.x USES the wrapped payload, returns it → a normal form) discharge stepProduces by one Step.beta.
+-- .smoke witnesses prove non-vacuity. Same GTL combined-engine follow-on (#832/#1138) as the recursive
+-- eliminators. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.optionMatchComputesToValue
+#assert_no_axioms FX1Poly.Typed.eitherMatchComputesToValue
+#assert_no_axioms FX1Poly.Typed.optionMatchConstComputesToNumeral
+#assert_no_axioms FX1Poly.Typed.eitherMatchConstComputesToNumeral
+#assert_no_axioms FX1Poly.Typed.optionMatchIdComputesToValue
+#assert_no_axioms FX1Poly.Typed.optionMatchIdComputesToValue.smoke
+#assert_no_axioms FX1Poly.Typed.eitherMatchConstComputesToNumeral.smoke
 -- GROWN CLOSED-NORMAL CLASSIFIER SHAPE (GrownClosedNormalClassifierShape, CANON-1 generalization): the POSITIVE
 -- characterization behind every data-classifier rule-out. ★ closedNormalClassifierIsFunctionOrType = a closed
 -- normal grown-typed term's classifier is Conv a Π-code OR Conv a universe code (the grown engine inhabits only
