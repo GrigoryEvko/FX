@@ -4,6 +4,7 @@ import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Core.GeneratorFinitePolygraph
 import FX1Poly.Core.GeneratorPolygraphMap
 import FX1Poly.Core.GeneratorRedexHead
+import FX1Poly.Core.GeneratorRedexHeadSoundness
 import FX1Poly.Core.RawCellWordEncoding
 import FX1Poly.Core.StepRewriteRuleMap
 import FX1Poly.Core.StepWordRewriteSoundness
@@ -144,6 +145,20 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.hasRedexHead_piTyCode
 #assert_no_axioms FX1Poly.Core.hasRedexHead_hilbertSpace
 #assert_no_axioms FX1Poly.Core.hasRedexHead_quantumGate
+
+-- GeneratorRedexHeadSoundness (HON-6): the operational-inertness SOUNDNESS of hasRedexHead (HON-2). A
+-- generator the redex-head classifier rejects fires NO root redex for ANY cell built on it — universally, in
+-- the kernel's own no-root-redex vocabulary. hasRedexHead_false_imp_fireRootRedex_none is the computational
+-- statement (fireRootRedex = none, the firing used by reduceOnce/normalize); hasRedexHead_false_imp_no_root_redex
+-- is the normal-form statement (hasRootStepSource = false, the !-half of isStepNormalFormBool), derived via the
+-- shipped fireRootRedex_eq_none_imp_hasRootStepSource_false (no re-extraction). The instances cover a reserved
+-- head (hilbertSpace) and a value head (lam, live via the static axis, not a redex head). This is the operational
+-- half of semanticTier soundness (HON-7); reserved ⟹ hasRedexHead = false, so it applies to every reserved
+-- generator. Zero-axiom (rw + Bool.noConfusion disequality extraction, dsimp + 11 dif_neg; no Bool.or_eq_false_iff).
+#assert_no_axioms FX1Poly.Core.hasRedexHead_false_imp_fireRootRedex_none
+#assert_no_axioms FX1Poly.Core.hasRedexHead_false_imp_no_root_redex
+#assert_no_axioms FX1Poly.Core.hilbertSpace_no_root_redex
+#assert_no_axioms FX1Poly.Core.lam_no_root_redex
 #assert_no_axioms FX1Poly.Core.fxKernelPolygraph
 
 -- The explicit Generator-to-polygraph-generator map.  PolygraphGenerator presents each former with its
