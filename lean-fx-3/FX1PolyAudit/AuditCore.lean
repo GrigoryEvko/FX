@@ -15,6 +15,7 @@ import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.RecursiveEliminatorTermination
 import FX1Poly.Core.IotaNonRecursiveTermination
 import FX1Poly.Core.RecursiveIotaSizeGrowth
+import FX1Poly.Core.RecursivePathOrderInductive
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.StepParallelConfluence
@@ -295,6 +296,17 @@ classifier.  Those engines are audit-gated in `AuditTyped.lean`.
 #assert_no_axioms FX1Poly.Core.natElimSuccReduct_size_eq
 #assert_no_axioms FX1Poly.Core.natElimSucc_size_increases
 #assert_no_axioms FX1Poly.Core.natElimSucc_size_increase_at_least_branch
+
+-- The genuine INDUCTIVE recursive path order (firing-69): the generic rose-tree RPO with multiset status,
+-- positivity-accepted (subterm clause split into subtermEq/subtermStrict to avoid the kernel's nested-Or
+-- rejection; multiset witnesses inlined to avoid passing the inductive to the external MultisetRedOne).
+-- rpo_orients_natElim ORIENTS the firing-68 obstruction arm — redex ≻ reduct for natElim(succ n) z s with
+-- an ARBITRARY duplicated branch s — exactly what every flat measure failed (firing-68); the subterm
+-- property tames the duplication. fxPrecedence_wellFounded is the first WF ingredient. The full RPO
+-- well-foundedness (Nipkow/Buchholz nested accessibility, fed by MultisetRedOne.consAccessible) is the
+-- named multi-firing crux.
+#assert_no_axioms FX1Poly.Core.RpoInductive.rpo_orients_natElim
+#assert_no_axioms FX1Poly.Core.RpoInductive.fxPrecedence_wellFounded
 
 -- The abstract Newman's lemma: terminating + weakly confluent implies confluent, the confluence analogue of
 -- the termination orders, generic over any relation.  ReflTransClosure (an own RTC, since
