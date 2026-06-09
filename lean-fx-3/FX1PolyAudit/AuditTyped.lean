@@ -566,6 +566,7 @@ import FX1Poly.Typed.PlateauDescentSubstrate
 import FX1Poly.Typed.GuardedPinnedReflection
 import FX1Poly.Typed.PlateauPinnedReflection
 import FX1Poly.Typed.NeutralReductResidualDischarge
+import FX1Poly.Typed.PinnedReflectionLamClassifierResidual
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8592,3 +8593,13 @@ guard), and the pinned-function core finishes with the original premise reflecti
 
 #assert_no_axioms FX1Poly.Typed.IsNeutral.ne_lamCell
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimNeutralReductResidualHolds
+
+/- The campaign's open core NAMED and the whole route collapsed onto it
+(PinnedReflectionLamClassifierResidual): the λ-classifier pin residual — a normal, in-image,
+grown-typed λ has a pinned classifier — implies the λ-reduct head (mirror of the neutral
+discharge), hence the full piElim residual (dispatcher), hence the full pinned-reflection MASTER.
+One statement now stands between here and strengthening. -/
+
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimLamReductResidualOfLamClassifierResidual
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimResidualOfLamClassifierResidual
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionOfLamClassifierResidual
