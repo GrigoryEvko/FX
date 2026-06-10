@@ -535,6 +535,7 @@ import FX1Poly.Typed.EmptyTypeConsistencySyntactic
 import FX1Poly.Typed.ConsistencyOfPiElimArm
 import FX1Poly.Typed.PiElimUpToClassifierConv
 import FX1Poly.Typed.ClassifierRespectsConvRefuted
+import FX1Poly.Typed.TypedCertificationStackingRefuted
 import FX1Poly.Typed.EmptyTypeConsistencyUnconditional
 import FX1Poly.Typed.FormationNormalSmoke
 import FX1Poly.Typed.BoolTypeCodeSubstrate
@@ -1664,6 +1665,20 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.classifierConvCounterexampleType_isType
 #assert_no_axioms FX1Poly.Typed.classifierConvCounterexampleRedex_notType
 #assert_no_axioms FX1Poly.Typed.classifierRespectsConv_isFalse
+-- O-STACK REFUTED (#1194, TypedCertificationStackingRefuted): ★ the §5.2 p₂ arrow HasTypeDescPi Γ t T →
+-- HasCertifiedCellDim0 t is PROVABLY FALSE. Counterexample: the SHIPPED typed λ(A:Type@e).A
+-- (identityOnUniverse_hasTypeDescPi) — the certifier REJECTS it (.wrongChildShape): gen_lam's childSpec demands a
+-- .term annotation but universeCodeCell is .type-rooted. The mismatch is BIDIRECTIONAL (probe: Π(x:X).X puts a
+-- .term var in gen_piTyCode's .type slot), so no one-sided childSpecs relabel repairs it — the sort-stratified
+-- spec table collides with the engines' UNIFIED syntax (type codes are first-class terms). What survives: the
+-- sort-AGNOSTIC FX0 seam (externalVerify_accepts_certified) + all-.term typed cells (lamWithVariableAnnotation_
+-- certified, the non-vacuity contrast). PolyCell.sortPinnedAtTermBaseGen is the free-sort inversion (only `gen`
+-- builds a .termBase cell, pinning sort = root cellSort). Zero-axiom, both procedural + structural refutations.
+#assert_no_axioms FX1Poly.Core.PolyCell.sortPinnedAtTermBaseGen
+#assert_no_axioms FX1Poly.Typed.identityOnUniverse_notCertified
+#assert_no_axioms FX1Poly.Typed.identityOnUniverse_noCertifiedCellDim0
+#assert_no_axioms FX1Poly.Typed.typedDoesNotFactorThroughCertification
+#assert_no_axioms FX1Poly.Typed.lamWithVariableAnnotation_certified
 -- reclassifyArgumentToFunctionDomain: the first consumer — re-type an argument (Conv to the function's domain) at
 -- the domain itself, with functionDomainIsType supplying the conv rule's universe witness. The argument-retyping
 -- step of the grown β / context-conversion piElim arms (toward GrownCtxConv-5/SN-055).

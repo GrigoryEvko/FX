@@ -5757,7 +5757,16 @@ live tree's typed layer judges `RawTerm` directly via the §11.8.5
 engine family plus the cell constructors in `CellConstructors.lean`;
 re-basing the typed judgments over certified `PolyCell` inhabitants,
 including the stacking lemma `HasTypeDescPi Γ t T →
-HasCertifiedCellDim0 t`, is the open O-STACK integration obligation):
+HasCertifiedCellDim0 t`, was the O-STACK integration obligation —
+REFUTED as stated (`TypedCertificationStackingRefuted.lean`): the
+`childSpecs` sort table is sort-stratified while the engines judge
+UNIFIED syntax, so the shipped typed `λ(A : Type@e). A` puts a
+`.type`-rooted annotation in `gen_lam`'s `.term` slot and the
+certifier rejects it (`.wrongChildShape`); the mismatch is
+bidirectional (`Π (x : X). X` puts a `.term` var in `gen_piTyCode`'s
+`.type` slot), so the repair needs sort-join slots or a typing-role
+sort assignment, not a table relabel.  The surviving seam is the
+sort-agnostic FX0 re-checker, `externalVerify_accepts_certified`):
 
 ```lean
 namespace LeanFX2
@@ -5957,9 +5966,12 @@ Two strata, **one construction at two dimensions** (Decision 7, §11.8.5):
   map exists; the fiber over an ill-typed raw cell is *empty*, so ill-typed
   terms are unconstructable *at the typed layer* even though they are
   constructable at the raw layer.  Decided in full in **§11.8.5**.  (The
-  stacking arrow p₂ — typing factoring through certification — is currently
-  unrealized in code; the shipped engine family judges `RawTerm` directly.
-  O-STACK.)
+  stacking arrow p₂ — typing factoring through certification — is REFUTED
+  for the sort-disciplined certifier (`typedDoesNotFactorThroughCertification`,
+  `TypedCertificationStackingRefuted.lean`): the shipped engine family judges
+  UNIFIED `RawTerm` syntax, and well-typed cells mix `.term`/`.type` sorts in
+  both directions against the `childSpecs` table.  The realized seam is the
+  sort-agnostic FX0 external re-checker.  O-STACK.)
 * **dim-1 (paths) — the MARKING WRAPPER.**  A reduction / `Conv` path is
   sound iff it is *thin* in the saturation marking (§3.3–§3.4).  Same
   mechanism, one dimension up; the named bridge
@@ -8969,8 +8981,13 @@ combined-engine canonical-form / consistency statements.  "A fully
 typed cell" (Decision 5's fiber product) is realized per-feature as
 the conjunction of the relevant engine judgments; re-basing the
 family over certified PolyCell inhabitants (the stacking lemma
-`HasTypeDescPi Γ t T → HasCertifiedCellDim0 t`) is the open O-STACK
-integration obligation.  Cost profile achieved: a new data feature =
+`HasTypeDescPi Γ t T → HasCertifiedCellDim0 t`) — the O-STACK
+integration obligation — is REFUTED as stated
+(`TypedCertificationStackingRefuted.lean`: the sort-stratified
+`childSpecs` table rejects sort-mixed well-typed cells in both
+directions; the repaired arrow needs sort-join slots or a
+typing-role sort assignment, and the surviving typed/certified seam
+is the sort-agnostic FX0 re-checker).  Cost profile achieved: a new data feature =
 table rows + (at most) one new standalone engine + audit gates — no
 arm is ever added to an existing engine (demonstrated at listCode,
 optionCode, boolCode, natCode).
