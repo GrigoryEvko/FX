@@ -431,6 +431,7 @@ import FX1Poly.Typed.UnitEtaCongruentEquality
 import FX1Poly.Typed.UnitVariableCollapse
 import FX1Poly.Typed.UnitCollapseIncompleteness
 import FX1Poly.Typed.UnitCollapseBinderFence
+import FX1Poly.Typed.UnitVariableCollapseDeep
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3379,6 +3380,24 @@ sound semi-decisions.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.konstNormalForms_notBetaEtaConv
 #assert_no_axioms FX1Poly.Typed.collapsedKonstNormalForms_distinct
 #assert_no_axioms FX1Poly.Typed.normalizeFirstCanonicalizer_isIncomplete
+
+/-! ### UnitVariableCollapseDeep — the BINDER-CROSSING collapse crosses the fence (ULC-4 brick B)
+
+The binder-domain "table" is the telescope discipline: a shift-1 child's binder domain IS its
+preceding sibling (TELESCOPE-REACH), so the deep traversal threads the previous (original)
+sibling and pushes it as the context extension — table-free, cast-free, structural.  ★ Proof of
+life: the deep collapse sends the binder-fence witness `λ(b:Unit).x↑` to `λ(b:Unit).unitCell` BY
+`rfl` (`deepCollapse_crossesBinderFence`) and IDENTIFIES the two normal forms that refuted
+normalize-first (`deepCollapse_identifiesKonstNormalForms`); it agrees with the fenced collapse
+on the binder-free gap pair.  Honest boundaries: soundness needs the spec's binder-crossing
+congruence arm (next brick); shift-1-without-preceding-sibling and shift ≥ 2 children stay
+fenced (none live today).  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.collapseUnitVariablesDeep
+#assert_no_axioms FX1Poly.Typed.collapseUnitVariablesDeepChildren
+#assert_no_axioms FX1Poly.Typed.deepCollapse_crossesBinderFence
+#assert_no_axioms FX1Poly.Typed.deepCollapse_identifiesKonstNormalForms
+#assert_no_axioms FX1Poly.Typed.deepCollapse_computesGapPair
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
