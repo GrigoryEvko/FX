@@ -571,6 +571,7 @@ import FX1Poly.Typed.FlagCoherentReflectionCondition
 import FX1Poly.Typed.UniverseClassificationUnique
 import FX1Poly.Typed.NeutralClassifierUnique
 import FX1Poly.Typed.NormalAppNeutral
+import FX1Poly.Typed.TelescopeUniverseDeterminism
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8644,3 +8645,9 @@ Remaining E2.7 piece: the row-bearing former arm (telescope determinism by child
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalAppIsNeutral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalAppClassifierUnique
+
+/- E2.7 former-arm core (TelescopeUniverseDeterminism): two grown telescopes over the same
+children agree on levels, and on the flag for nonempty children — IH-parameterized (the
+strong-size-induction seam), table-generic, budget through size peeling. -/
+
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.universeDeterminismOfChildIH
