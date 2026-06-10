@@ -578,6 +578,7 @@ import FX1Poly.Typed.ConvUniverseClassificationUnique
 import FX1Poly.Typed.RenameAlongFlagCoherent
 import FX1Poly.Typed.PinSelectsCallerPair
 import FX1Poly.Typed.PinnedReflectionFlagCoherent
+import FX1Poly.Typed.LamReductResidualDischarge
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8707,3 +8708,17 @@ residual definitions — the precise route-(A) discharge targets. -/
 
 #assert_no_axioms FX1Poly.Typed.PinnedReflectionConclusion.toFlagCoherent
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionFlagCoherentOfPlainResidual
+
+/- ★ THE FLAG-COHERENT piELIM RESIDUAL HOLDS (LamReductResidualDischarge) — the strengthening
+campaign's open core, discharged.  The λ-INCLUSIVE pin extraction closes the historical
+λ-classifier float: T2 pins the domain syntactically (the annotation is a subject child), the
+codomain pins by STRUCTURAL RECURSION into the λ's body premise, and E3's caller-pair
+negotiation re-types the recursive pin at the inversion's exact (level, flag) so the source Π
+reassembles at ONE shared flag.  With the λ exclusion gone, the discharge needs NO head split:
+normalize, subject-reduce, pin the normal reduct whatever its head, finish through the
+flag-coherent core. -/
+
+#assert_no_axioms FX1Poly.Typed.normalClassifierPinnedFlagCoherent
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimCoreFlagCoherent
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimResidualFlagCoherentHolds
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimLamReductResidualFlagCoherentHolds
