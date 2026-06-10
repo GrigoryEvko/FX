@@ -77,8 +77,11 @@ audit-gated (`lake build FX1Poly FX1PolyAudit`, 999 jobs green):
   unguarded η-β overlap is NON-joinable — `lam A (app (weaken (lam B
   b)) var0)` contracts to both `lam A b` and `lam B b`; refuted
   zero-axiom in `NederpeltNonJoinability.lean`, proved forms carry
-  the `EtaLamAnnotationDiagonal` guard, typed terms satisfy it); and
-  the (ι×η) critical-pair matrix.
+  the `EtaLamAnnotationDiagonal` SYNTACTIC-equality guard — typing
+  yields CONVERTIBLE annotations, not equal ones, so typed βη-CR is
+  stated conditionally on a hereditary diagonal premise; discharging
+  it needs an annotation-joinability local join + grown βη-SR, both
+  open); and the (ι×η) critical-pair matrix.
 * **Typed layer** — the engine family (formation `HasTypeDesc`,
   grown `HasTypeDescPi`, flat `HasTypeDescFlat`, base-type, 7
   data-intro and 6 eliminator standalone engines; rule tables
@@ -6122,9 +6125,16 @@ overlap `lam A (app (weaken (lam B b)) var0)` β-contracts to
 The shipped dispatchers (`cd_lemma_step_eta`, `cd_lemma_eta_step`,
 `cd_lemma_betaEta`) are restated with the `EtaLamAnnotationDiagonal`
 guard, and the βη Newman bridge + `HasConfluence` carry a hereditary
-diagonal guard (`StepBetaEtaConfluence`); typing forces the two
-annotations convertible, so the TYPED βη theory (Geuvers typed CR,
-Geser βη-SN #796, the WfContext βη-Conv decider #806) is unaffected.
+diagonal guard (`StepBetaEtaConfluence`).  PRECISION: typing yields
+CONVERTIBLE annotations, NOT syntactically equal ones, so typed
+subjects do not automatically satisfy the guard — Geser βη-SN (#796)
+is genuinely unaffected (SN bypasses the local join), but the Geuvers
+typed βη-CR + unique-βη-NF (`WfContextBetaEtaConfluence`) are
+restated CONDITIONALLY on a `HereditaryLamDiagonal` premise; the
+unconditional typed claim is plausibly true (convertible annotations
+are β-joinable, so the Nederpelt pair joins via domain-congruence
+chains) but needs an annotation-joinability-guarded local join plus
+grown βη-SR (STR-10/STR-11), both open.
 Record, clock, and parametricity eta remain generator-frontier work,
 not placeholders in the current raw relation.
 

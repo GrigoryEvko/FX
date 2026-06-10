@@ -68,21 +68,18 @@ The Geuvers βη-CR + unique-βη-NF results over the `HasTypeDesc`-defined `WfC
 βη-SN witness through `betaEtaStronglyNormalizingOfWfContextDesc` — the raw βη-Newman bridge +
 star-rigidity are context-predicate-agnostic. -/
 
-/- ORCHESTRATOR NOTE (T2 fleet, 2026-06-10, remove at cleanup): the Newman bridge
-`confluence_of_localJoin_and_accessible` now takes a `hereditaryDiagonal :
-HereditaryLamDiagonal subject` argument (StepBetaEtaConfluence) — the unguarded raw
-βη local join is FALSE post-T2 (NederpeltNonJoinability).  TYPING DOES NOT DISCHARGE
-THE SYNTACTIC GUARD: a typed η-source has CONVERTIBLE inner/outer annotations, not
-syntactically equal ones, so `EtaLamAnnotationDiagonal` (an equality) can fail on
-typed subjects.  The typed claim below is still plausibly TRUE — convertible
-annotations are β-joinable (raw β confluence), so the Nederpelt pair joins via
-domain-congruence chains — but proving it needs (a) a Conv/joinability-guarded
-variant of the local join (annotationsJoin instead of equality; orchestrator can
-supply on request) AND (b) hereditary typedness of βη-reachable terms = βη-SR on
-the grown engine, which is OPEN (STR-10 #1179 / STR-11 #1180).  HONEST IMMEDIATE
-FIX: restate both theorems below CONDITIONALLY on
-`(hereditaryDiagonal : Step.betaEtaStar.HereditaryLamDiagonal subject)` and thread
-it to the bridge; do NOT try to discharge it from `typed`. -/
+/- Why both theorems carry a `hereditaryDiagonal` premise (T2): the Newman bridge
+`confluence_of_localJoin_and_accessible` requires `HereditaryLamDiagonal subject` —
+the unguarded raw βη local join is FALSE post-T2 (`NederpeltNonJoinability`).
+Typing does NOT discharge the syntactic guard: a typed η-source has CONVERTIBLE
+inner/outer annotations, not syntactically EQUAL ones, so `EtaLamAnnotationDiagonal`
+(an equality) can fail on typed subjects.  The unconditional typed claim is still
+plausibly TRUE — convertible annotations are β-joinable (raw β confluence), so the
+Nederpelt pair joins via domain-congruence chains — but proving it needs (a) a
+Conv/joinability-guarded variant of the local join (annotationsJoin in place of
+equality) AND (b) hereditary typedness of βη-reachable terms = βη-SR on the grown
+engine, which is OPEN (STR-10 / STR-11).  Until then the conditional form is the
+honest maximal statement. -/
 
 /-- **βη Church-Rosser over `WfContextDesc`** — the βη analogue of the β/ι
 `subjectConfluenceOfWfContextDesc`. -/
