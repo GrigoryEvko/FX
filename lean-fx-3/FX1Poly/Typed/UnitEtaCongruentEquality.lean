@@ -35,9 +35,11 @@ the fixed target `unitTypeCell` via the whnf-directed grown checker on the route
 
 ## Honest boundaries
 
-(1) NO transitivity here: congruent transitivity composes leaf equations across DIFFERENT
-positions and needs the collapse-normalizer (collapse-then-βη-compare) or a CR-style argument —
-that is the decider brick, not this one.  (2) Binder-crossing congruence is NOT included:
+(1) Transitivity is a RULE (`trans` constructor — standard for a declarative judgmental
+equality), NOT an admissibility theorem: whether the trans-FREE algorithmic presentation
+(congruence + leaves only) derives the same relation is exactly the canonicalizer COMPLETENESS
+question of the collapse-decider campaign; the spec takes the rule, the decider must earn it.
+(2) Binder-crossing congruence is NOT included:
 `consEqual` keeps binder children equal; relating UNDER a binder requires extending the context
 by the binder's domain, which generic `mkGen` children do not carry (per-generator binder-domain
 info; `gen_lam`'s T2 domain child makes the lam case doable later).  (3) `congGen` itself carries
@@ -79,6 +81,15 @@ inductive DefEqUnitEtaCong (profile : PolyProfile) : {scope : Nat} →
           leftChildren rightChildren) :
       DefEqUnitEtaCong profile context
         (.mkGen generator payload leftChildren) (.mkGen generator payload rightChildren)
+  /-- Transitivity — a RULE of the declarative equality (standard for judgmental equality).
+  Its ADMISSIBILITY in the trans-free algorithmic presentation is exactly the canonicalizer
+  completeness question (the collapse-decider campaign); as a spec rule it lets the decision
+  procedure's soundness compose through the collapsed middle. -/
+  | trans {scope : Nat} {context : TypingContext profile scope}
+      {leftTerm middleTerm rightTerm : RawTerm scope}
+      (leftToMiddle : DefEqUnitEtaCong profile context leftTerm middleTerm)
+      (middleToRight : DefEqUnitEtaCong profile context middleTerm rightTerm) :
+      DefEqUnitEtaCong profile context leftTerm rightTerm
 
 /-- Pointwise congruent equality of children spines: shift-0 children relate by the full
 congruent relation (`consZero`); binder children are kept syntactically EQUAL (`consEqual` —
@@ -140,6 +151,8 @@ theorem DefEqUnitEtaCong.sym {profile : PolyProfile} {scope : Nat}
   | .ofDefEq defEq => .ofDefEq defEq.sym
   | .congGen payload childrenRelated =>
       .congGen payload (ChildrenUnitEtaCong.sym childrenRelated)
+  | .trans leftToMiddle middleToRight =>
+      .trans (DefEqUnitEtaCong.sym middleToRight) (DefEqUnitEtaCong.sym leftToMiddle)
 
 /-- Children symmetry. -/
 theorem ChildrenUnitEtaCong.sym {profile : PolyProfile} {scope : Nat}

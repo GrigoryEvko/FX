@@ -3284,10 +3284,11 @@ then R2 full η-long quote at Π/Σ/Unit (classifier-structure recursion, level-
 binder children equal).  Unconditional `refl`/`sym`; ★ `gapPairCongruentlyEqual` relates exactly
 the pair `DefEqUnitEta.isNotCongruent` proves unreachable; ★ `strictlyExtendsDefEqUnitEta`
 completes the machine-checked chain `BetaEtaConv ⊊ DefEqUnitEta ⊊ DefEqUnitEtaCong`.  Honest
-boundaries: no transitivity (the collapse-decider brick), no binder-crossing congruence (needs
-per-generator binder-domain context extension), the congruence skeleton is raw (leaves carry the
-typing).  ULC-1 verdict recorded in the module docstring: spec-first; the classifier-supply
-question moves to the decider (check-mode against `unitTypeCell` on the route-H wf fragment). -/
+boundaries: transitivity is a RULE of the declarative spec (`trans` ctor — its admissibility in
+the trans-FREE algorithmic presentation is the canonicalizer-completeness question), no
+binder-crossing congruence (needs per-generator binder-domain context extension), the congruence
+skeleton is raw (leaves carry the typing).  ULC-1 verdict recorded in the module docstring:
+spec-first; the classifier-supply question moves to the decider. -/
 
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong
 #assert_no_axioms FX1Poly.Typed.ChildrenUnitEtaCong
@@ -3316,6 +3317,24 @@ transitivity payoff are the next bricks). -/
 #assert_no_axioms FX1Poly.Typed.collapseUnitVariablesChildren_congruent
 #assert_no_axioms FX1Poly.Typed.collapseUnitVariables_computesGapPair
 #assert_no_axioms FX1Poly.Typed.collapse_rederivesGapPair
+
+/-! ### The decision procedure's soundness (ULC-3A) — collapse, then compare
+
+The declarative spec gained its `trans` RULE (standard for judgmental equality; admissibility in
+the trans-free algorithmic presentation = the canonicalizer-completeness question), and the
+decision procedure's soundness composes through the collapsed middle: `ofCollapsesEqual`
+(syntactic mode — UNCONDITIONAL, decidable by structural `DecidableEq`),
+`ofCollapsedBetaEtaConv` (βη mode — wf + COLLAPSED typings as hypotheses, since the collapse
+moves dependent classifiers by the congruent equality itself, not `Conv`), and
+`collapsedComparisonDecidable` (#1202 decides the βη comparison).
+`unitEtaCongProcedure_decidesGapPair` decides the flagship gap pair in syntactic mode,
+hypothesis-free — the third independent derivation.  COMPLETENESS (negative answers refute)
+remains the named open brick. -/
+
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofCollapsesEqual
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofCollapsedBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.collapsedComparisonDecidable
+#assert_no_axioms FX1Poly.Typed.unitEtaCongProcedure_decidesGapPair
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
