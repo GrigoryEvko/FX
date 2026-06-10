@@ -312,6 +312,7 @@ import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.HasTypeDescListElim
 import FX1Poly.Typed.DataIntroSubjectReductionRecursive
 import FX1Poly.Typed.CombinedClosedNormalValueHeads
+import FX1Poly.Typed.CombinedNatCanonicalForms
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -3803,6 +3804,17 @@ gates pin them shut.
 -- table or an 18-way Or — propext hygiene + one-constructor arms).  Normality/closedness are
 -- consumed ONLY by the grown arm: constructor SHAPE is unconditional in the intro engines.
 #assert_no_axioms FX1Poly.Typed.closedNormalSubjectHeadCombined
+
+-- CAN-5 (CombinedNatCanonicalForms): per-classifier canonicity at the RECURSIVE classifier Nat
+-- over the FULL 8-engine value union — the #1048 per-classifier assembly, recursive-classifier
+-- capstone (bool's 2-value instance was CANON-1b).  A closed normal term typed at natTypeCell
+-- by ANY value engine IS a numeral: grown arm = closedNatCanonicalForms (numeral REDUCT) +
+-- StepStar.eq_of_noStep (a normal term is StepStar-rigid, so the subject IS the reduct);
+-- nat-intro arm = subjectIsNatNumeral on the nose; the 6 other intro arms = classifier-shape
+-- mismatch (each engine pins its classifier to its own type cell; congrArg headGenerator +
+-- nomatch on distinct generator constructors).  natTwo non-vacuity witness included.
+#assert_no_axioms FX1Poly.Typed.closedNormalNatCanonicalFormsCombined
+#assert_no_axioms FX1Poly.Typed.closedNormalNatCanonicalFormsCombined.natTwo
 -- LIST CANONICAL FORMS (ListCanonicalForms, the DI-2e payoff): NON-VACUOUS closed-normal list canonical forms — a
 -- closed-normal term typed at List(A) by the list-intro engine OR the grown engine is nil/cons. Like option/bool
 -- (and unlike product/either FLAT-table codes), gen_listCode is a FORMATION-table former (typingRuleDescOf, GTL-11),
