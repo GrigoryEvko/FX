@@ -632,6 +632,7 @@ import FX1Poly.Typed.GluedModelModalFragment
 import FX1Poly.Typed.SconingIsEnoughThesis
 import FX1Poly.Typed.LiveSignatureSconingCoverage
 import FX1Poly.Typed.TypeAxisObligation
+import FX1Poly.Typed.UsageAxisObligation
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1307,3 +1308,41 @@ import FX1Poly.Typed.TypeAxisObligation
 #assert_no_axioms FX1Poly.Typed.fxTypeAxis_decidableTypechecking_isBacked
 #assert_no_axioms FX1Poly.Typed.CapabilityStatus.meet_available_right
 #assert_no_axioms FX1Poly.Typed.fxTypeAxis_meetPreservesCapabilities
+
+-- The usage (linearity) AxisObligation: the first honestly PARTIAL ledger + a fully-DISCHARGED sconing
+-- witness (UsageAxisObligation.lean, SN-105 #608). usageAxisCapabilities = 5 available / 3 unavailable —
+-- the first PROPER capability instance (usageAxisCapabilities_isProper: ≠ top ∧ ≠ bot), witnessing the
+-- ledger DISCRIMINATES. Backed flips over the graded λ-calculus (GradedLambda / HasGradeOver
+-- fxUsageSemiring): SN ← HasGradeOver.stronglyNormalizing (the DIM2-5 erasure transfer, ANY context);
+-- canonicity ← closedReducesToLam (closed well-graded ⟹ reaches a λ-value); normalization ← the graded
+-- normalizer + its soundness laws over the transferred SN; SR ← hasGradeOver_reducesStarPreservation
+-- (grades INCLUDED, star); confluence ← graded Newman over graded SN. Honest absences (rfl pins, each with
+-- a recorded route): parametricity (no usage-indexed relational interpretation; DIM-FUNCTORIAL is a
+-- different statement), decidable conversion (normalize-and-compare derivable, not shipped), decidable
+-- typechecking (no grade-inference procedure). fxUsageAxisObligation: axis .multiModal, Fire-Triangle
+-- restriction some .substitution (linearity restricts substitution — no contraction/weakening), precedents
+-- Girard/McBride/Atkey/Wood-Atkey. ★ usageSconingWitness = the GradedSconingWitness with the fundamental
+-- DISCHARGED (erasure SN + closedReducesToLam — both theorems, not hypotheses; stronger than the RawTerm
+-- data scones); usageSconingWitness_canonicity = the BKS composition; usageGradeArithmetic_oneAddOne (1+1=ω)
+-- + _oneMulOne (1*1=1) pin the §6.1 arithmetic the fundamental respects. usageAxis_meetWithTypeAxis = the
+-- SN-108 composition breadcrumb. (Lambda-binder rule confirmed: once ANY brace-binder appears, list EVERY
+-- binder in order; nomatch swallows a following comma in anonymous constructors — parenthesize.) All
+-- zero-axiom.
+#assert_no_axioms FX1Poly.Typed.usageAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.usageAxisCapabilities_isProper
+#assert_no_axioms FX1Poly.Typed.fxUsageAxisObligation
+#assert_no_axioms FX1Poly.Typed.usageGradeArithmetic_oneAddOne
+#assert_no_axioms FX1Poly.Typed.usageGradeArithmetic_oneMulOne
+#assert_no_axioms FX1Poly.Typed.usageAxis_strongNormalization_isBacked
+#assert_no_axioms FX1Poly.Typed.usageAxis_canonicity_isBacked
+#assert_no_axioms FX1Poly.Typed.usageAxis_normalization_isBacked
+#assert_no_axioms FX1Poly.Typed.usageAxis_subjectReduction_isBacked
+#assert_no_axioms FX1Poly.Typed.usageAxis_confluence_isBacked
+#assert_no_axioms FX1Poly.Typed.usageAxis_parametricity_isHonestlyAbsent
+#assert_no_axioms FX1Poly.Typed.usageAxis_decidableConversion_isHonestlyAbsent
+#assert_no_axioms FX1Poly.Typed.usageAxis_decidableTypechecking_isHonestlyAbsent
+#assert_no_axioms FX1Poly.Typed.GradedSconingWitness
+#assert_no_axioms FX1Poly.Typed.isClosedUsageGraded
+#assert_no_axioms FX1Poly.Typed.usageSconingWitness
+#assert_no_axioms FX1Poly.Typed.usageSconingWitness_canonicity
+#assert_no_axioms FX1Poly.Typed.usageAxis_meetWithTypeAxis
