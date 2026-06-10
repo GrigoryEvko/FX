@@ -434,6 +434,7 @@ import FX1Poly.Typed.UnitCollapseBinderFence
 import FX1Poly.Typed.UnitVariableCollapseDeep
 import FX1Poly.Typed.UnitVariableCollapseDeepSound
 import FX1Poly.Typed.UnitCollapseNeutralBoundary
+import FX1Poly.Typed.UnitNeutralSpineDetection
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3441,6 +3442,25 @@ readback.  All soundness packages intact.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.deepCollapse_compoundUnitNeutral
 #assert_no_axioms FX1Poly.Typed.collapsedCompoundNeutral_notBetaEtaConv_unitCell
 #assert_no_axioms FX1Poly.Typed.deepCollapseProcedure_isIncompleteAtCompoundNeutrals
+
+/-! ### UnitNeutralSpineDetection — spine-inversion detection of unit-typed neutrals (ULC-5 brick 1)
+
+The route decision post-verdict: NOT the whnf-directed checker (STR-5 — an unsound positive would
+break collapse soundness) but SPINE INVERSION: synthesize the type of a variable-headed application
+spine by `var` lookups + `piElim` codomain instances on literal Π codes with syntactic domain
+matches.  `detectSpineType_sound` is UNCONDITIONAL (any context, no wf) — every positive answer
+carries a real grown typing.  The compound-neutral witness is detected by `rfl` and its boundary
+pair re-certified from the detector's output alone.  Residual fragment gaps (each a future
+widening, soundness statement unchanged): λ/value arguments, Conv-not-equal domain matches,
+reducible function types.  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.asPiCode?
+#assert_no_axioms FX1Poly.Typed.asPiCode?_sound
+#assert_no_axioms FX1Poly.Typed.detectSpineType
+#assert_no_axioms FX1Poly.Typed.detectSpineType_sound
+#assert_no_axioms FX1Poly.Typed.detectsCompoundUnitNeutral
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofDetectedUnitSpines
+#assert_no_axioms FX1Poly.Typed.compoundNeutralPair_certified
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
