@@ -49,7 +49,7 @@ theorem flatFormerBinderShifts {generator : Generator} {rule : TypingRuleDesc}
         · by_cases hEquiv : generator = .gen_equivCode
           · subst hEquiv; rfl
           · exfalso
-            unfold flatTypingRuleDescOf at isFlatFormation
+            dsimp only [flatTypingRuleDescOf] at isFlatFormation
             rw [if_neg hProduct, if_neg hSum, if_neg hEither, if_neg hArrow, if_neg hEquiv]
               at isFlatFormation
             contradiction

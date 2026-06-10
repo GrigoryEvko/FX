@@ -278,7 +278,7 @@ theorem Step.renamePullbackOfLeftInverse {sourceScope targetScope : Nat}
           (RawRenaming.compose forwardRenaming leftInverseRenaming)
           (RawRenaming.identity (scope := sourceScope)) := by
       intro position
-      simp only [RawRenaming.compose, RawRenaming.identity]
+      dsimp only [RawRenaming.compose, RawRenaming.identity]
       exact leftInverseProperty position
     rw [RawTerm.rename_pointwise composeIsIdentity sourceTerm]
     exact RawTerm.rename_identity_apply sourceTerm
@@ -321,7 +321,7 @@ theorem StepStar.renamePullbackOfLeftInverse {sourceScope targetScope : Nat}
           (RawRenaming.compose forwardRenaming leftInverseRenaming)
           (RawRenaming.identity (scope := sourceScope)) := by
       intro position
-      simp only [RawRenaming.compose, RawRenaming.identity]
+      dsimp only [RawRenaming.compose, RawRenaming.identity]
       exact leftInverseProperty position
     rw [RawTerm.rename_pointwise composeIsIdentity sourceTerm]
     exact RawTerm.rename_identity_apply sourceTerm

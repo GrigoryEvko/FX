@@ -63,7 +63,7 @@ pointwise the identity substitution.  This is the de Bruijn law that makes funct
 theorem RawTerm.subst0_iterateLiftWeaken_newestVar {scope : Nat} (codomain : RawTerm (scope + 1)) :
     RawTerm.subst0 (RawTerm.rename (iterateLiftRaw RawRenaming.weaken 1) codomain)
       RawTerm.newestVar = codomain := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   rw [RawTerm.rename_subst_commute]
   have hpointwise :
       RawTerm.subst

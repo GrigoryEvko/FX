@@ -42,11 +42,11 @@ open FX1Poly.Core FX1Poly.Universe StepStar
 
 /-- After substituting `numeral` (var3) + `typeA` (var2): n=weaken² numeral, A=weaken² typeA, f=var1, x=var0. -/
 def succBody2 (numeral typeA : RawTerm 0) : RawTerm 2 :=
-  appCell (variableCell (⟨1, by decide⟩ : Fin 2))
+  appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
     (appCell (appCell (appCell (RawTerm.weaken (RawTerm.weaken numeral))
         (RawTerm.weaken (RawTerm.weaken typeA)))
-      (variableCell (⟨1, by decide⟩ : Fin 2)))
-      (variableCell (⟨0, by decide⟩ : Fin 2)))
+      (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+      (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
 
 /-- After also substituting `handlerF` (var1=f): n=weaken numeral, A=weaken typeA, f=weaken handlerF (head+inner),
 x=var0. -/
@@ -54,29 +54,29 @@ def succBody1 (numeral typeA handlerF : RawTerm 0) : RawTerm 1 :=
   appCell (RawTerm.weaken handlerF)
     (appCell (appCell (appCell (RawTerm.weaken numeral) (RawTerm.weaken typeA))
       (RawTerm.weaken handlerF))
-      (variableCell (⟨0, by decide⟩ : Fin 1)))
+      (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
 
 /-- Step 2 reshape: substitute `typeA` for the A-binder; `numeral`'s weaken-tower collapses one level. -/
 theorem succ_step2_reshape (numeral typeA : RawTerm 0) :
     RawTerm.subst0 (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn (succBody3 numeral))) typeA
       = lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn (succBody2 numeral typeA)) := by
-  unfold RawTerm.subst0 churchSuccDomainAnn succBody3
+  dsimp only [RawTerm.subst0, churchSuccDomainAnn, succBody3]
   show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
       (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (appCell
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton typeA)))
-        (variableCell (⟨1, by decide⟩ : Fin 3)))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3)))
       (appCell (appCell (appCell
         (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton typeA)))
           (RawTerm.weaken (RawTerm.weaken (RawTerm.weaken numeral))))
         (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton typeA)))
-          (variableCell (⟨2, by decide⟩ : Fin 3))))
+          (variableCell (⟨2, Nat.succ_lt_succ (Nat.succ_lt_succ (Nat.succ_pos 0))⟩ : Fin 3))))
         (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton typeA)))
-          (variableCell (⟨1, by decide⟩ : Fin 3))))
+          (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))))
         (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton typeA)))
-          (variableCell (⟨0, by decide⟩ : Fin 3))))))
+          (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))))
       = lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
           (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (succBody2 numeral typeA))
-  unfold succBody2
+  dsimp only [succBody2]
   rw [RawTerm.subst_lift_weaken, RawTerm.subst_lift_singleton_weaken_weaken]
   rfl
 
@@ -84,22 +84,22 @@ theorem succ_step2_reshape (numeral typeA : RawTerm 0) :
 theorem succ_step3_reshape (numeral typeA handlerF : RawTerm 0) :
     RawTerm.subst0 (lamCell churchSuccDomainAnn (succBody2 numeral typeA)) handlerF
       = lamCell churchSuccDomainAnn (succBody1 numeral typeA handlerF) := by
-  unfold RawTerm.subst0 churchSuccDomainAnn succBody2
+  dsimp only [RawTerm.subst0, churchSuccDomainAnn, succBody2]
   show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (appCell
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerF))
-        (variableCell (⟨1, by decide⟩ : Fin 2)))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
       (appCell (appCell (appCell
         (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerF))
           (RawTerm.weaken (RawTerm.weaken numeral)))
         (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerF))
           (RawTerm.weaken (RawTerm.weaken typeA))))
         (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerF))
-          (variableCell (⟨1, by decide⟩ : Fin 2))))
+          (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))))
         (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerF))
-          (variableCell (⟨0, by decide⟩ : Fin 2)))))
+          (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))))
       = lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
           (succBody1 numeral typeA handlerF)
-  unfold succBody1
+  dsimp only [succBody1]
   rw [RawTerm.subst_lift_singleton_weaken_weaken, RawTerm.subst_lift_singleton_weaken_weaken]
   rfl
 
@@ -107,7 +107,7 @@ theorem succ_step3_reshape (numeral typeA handlerF : RawTerm 0) :
 theorem succ_step4_reshape (numeral typeA handlerF baseX : RawTerm 0) :
     RawTerm.subst0 (succBody1 numeral typeA handlerF) baseX
       = appCell handlerF (appCell (appCell (appCell numeral typeA) handlerF) baseX) := by
-  unfold RawTerm.subst0 succBody1
+  dsimp only [RawTerm.subst0, succBody1]
   show appCell
       (RawTerm.subst (RawTermSubst.singleton baseX) (RawTerm.weaken handlerF))
       (appCell (appCell (appCell
@@ -115,7 +115,7 @@ theorem succ_step4_reshape (numeral typeA handlerF baseX : RawTerm 0) :
         (RawTerm.subst (RawTermSubst.singleton baseX) (RawTerm.weaken typeA)))
         (RawTerm.subst (RawTermSubst.singleton baseX) (RawTerm.weaken handlerF)))
         (RawTerm.subst (RawTermSubst.singleton baseX)
-          (variableCell (⟨0, by decide⟩ : Fin 1))))
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))))
       = appCell handlerF (appCell (appCell (appCell numeral typeA) handlerF) baseX)
   simp only [RawTerm.weaken_subst_singleton]
   rfl

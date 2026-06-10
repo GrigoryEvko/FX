@@ -352,12 +352,12 @@ theorem ReducibleTypeStepDenote.candidatePiShape {scope : Nat} {env : Nat â†’ Na
       intro _domainCode _codomainCode hType
       have rootMismatch : Generator.gen_universeCode = Generator.gen_piTyCode :=
         congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd rootMismatch Generator.noConfusion
   | dataEmpty =>
       intro _domainCode _codomainCode hType
       have rootMismatch : Generator.gen_emptyCode = Generator.gen_piTyCode :=
         congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd rootMismatch Generator.noConfusion
   | dataFlat flatPinned =>
       intro _domainCode _codomainCode hType
       rw [hType] at flatPinned
@@ -390,7 +390,7 @@ theorem ReducibleTypeStepDenote.candidateIffUniverse {scope : Nat} {env : Nat â†
       intro _levelExpr _flag hType
       have rootMismatch : Generator.gen_piTyCode = Generator.gen_universeCode :=
         congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd rootMismatch Generator.noConfusion
   | universeCode levelExpr flag =>
       intro _levelExpr _flag hType term
       obtain âŸ¨levelEq, _flagEqâŸ© := universeCodeCell_inj hType
@@ -400,7 +400,7 @@ theorem ReducibleTypeStepDenote.candidateIffUniverse {scope : Nat} {env : Nat â†
       intro _levelExpr _flag hType
       have rootMismatch : Generator.gen_emptyCode = Generator.gen_universeCode :=
         congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd rootMismatch Generator.noConfusion
   | dataFlat flatPinned =>
       intro _levelExpr _flag hType
       rw [hType] at flatPinned
@@ -434,12 +434,12 @@ theorem ReducibleTypeStepDenote.candidateIffEmptyCandidate {scope : Nat} {env : 
       intro hType
       have rootMismatch : Generator.gen_piTyCode = Generator.gen_emptyCode :=
         congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd rootMismatch Generator.noConfusion
   | universeCode _ _ =>
       intro hType
       have rootMismatch : Generator.gen_universeCode = Generator.gen_emptyCode :=
         congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd rootMismatch Generator.noConfusion
   | dataEmpty =>
       intro _hType; exact fun _ => Iff.rfl
   | dataFlat flatPinned =>

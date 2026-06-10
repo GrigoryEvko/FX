@@ -49,7 +49,7 @@ theorem RawTerm.rename_leftInverse_roundTrip {sourceScope targetScope : Nat}
         (RawRenaming.compose forwardRenaming leftInverseRenaming)
         (RawRenaming.identity (scope := sourceScope)) := by
     intro position
-    simp only [RawRenaming.compose, RawRenaming.identity]
+    dsimp only [RawRenaming.compose, RawRenaming.identity]
     exact leftInverseProperty position
   rw [RawTerm.rename_pointwise composeIsIdentity term]
   exact RawTerm.rename_identity_apply term

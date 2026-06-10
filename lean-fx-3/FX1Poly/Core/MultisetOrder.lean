@@ -110,12 +110,12 @@ theorem MultisetRedOne.consAccessible (baseRel : Elem → Elem → Prop) (headEl
       obtain ⟨removed, prefixList, suffixList, addedList, bigEq, smallEq, smaller⟩ := step
       cases prefixList with
       | nil =>
-          simp only [List.nil_append] at bigEq smallEq
+          dsimp only [List.nil_append] at bigEq smallEq
           obtain ⟨removedEq, suffixEq⟩ := List.cons.inj bigEq
           subst removedEq; subst suffixEq; subst smallEq
           exact accAppendBelow addedList smaller
       | cons prefixHead prefixTail =>
-          simp only [List.cons_append] at bigEq smallEq
+          dsimp only [List.cons_append] at bigEq smallEq
           obtain ⟨headEq, tailEq⟩ := List.cons.inj bigEq
           subst headEq; subst tailEq; subst smallEq
           exact ihTail (prefixTail ++ addedList ++ suffixList)

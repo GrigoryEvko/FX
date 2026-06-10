@@ -67,7 +67,7 @@ theorem iteratedApplication_isStepNormalForm {scope : Nat} (depth : Nat)
                 && (RawTerm.isStepNormalFormBool (iteratedApplication priorDepth stepFn base) && true))) := rfl
       rw [nfEq, stepNotLam, (stepNormal : RawTerm.isStepNormalFormBool stepFn = true),
         (priorIH : RawTerm.isStepNormalFormBool (iteratedApplication priorDepth stepFn base) = true)]
-      decide
+      rfl
 
 /-- `size (iteratedApplication n (var)(var)) = 4·n + 1` — each application adds four structural nodes
 (one `app` node + the step variable + the two `childCons` cells). -/
@@ -124,16 +124,16 @@ theorem lamCell_isStepNormalForm {scope : Nat} {domainAnn : RawTerm scope} {body
           && (RawTerm.isStepNormalFormBool body && true))) := rfl
   rw [nfEq, (domainNormal : RawTerm.isStepNormalFormBool domainAnn = true),
     (bodyNormal : RawTerm.isStepNormalFormBool body = true)]
-  decide
+  rfl
 
 /-- Every Church numeral is a closed no-step normal form — three `lamCell` wrappers over the iterate, whose step
 `f` (`var 1`) is a variable (not a lambda) and whose base `x` (`var 0`) is a variable. -/
 theorem churchNumeralLambda_isStepNormalForm (depth : Nat) :
     RawTerm.isStepNormalForm (churchNumeralLambda depth) :=
-  lamCell_isStepNormalForm (by decide)
-    (lamCell_isStepNormalForm (by decide)
-      (lamCell_isStepNormalForm (by decide)
-        (iteratedApplication_isStepNormalForm depth rfl (by decide) (by decide))))
+  lamCell_isStepNormalForm rfl
+    (lamCell_isStepNormalForm rfl
+      (lamCell_isStepNormalForm rfl
+        (iteratedApplication_isStepNormalForm depth rfl rfl rfl)))
 
 /-- **The three-wrapper size offset, propext-free.**  The constant-gathering identity the Church-numeral
 size proof reduces to once the iterate's size `iterateCount` is generalised: the three `lamCell` wrappers'

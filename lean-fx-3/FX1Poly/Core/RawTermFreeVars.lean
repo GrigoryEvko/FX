@@ -45,7 +45,7 @@ def contains {scope : Nat}
 instance instDecidableContains {scope : Nat}
     (variableSet : RawVarSet scope) (candidatePosition : Fin scope) :
     Decidable (RawVarSet.contains variableSet candidatePosition) := by
-  unfold RawVarSet.contains
+  dsimp only [RawVarSet.contains]
   exact inferInstance
 
 /-- Raise a parent-scope variable position through `binderShift`
@@ -75,7 +75,7 @@ theorem contains_singleton_iff {scope : Nat}
     RawVarSet.contains (RawVarSet.singleton targetPosition)
         candidatePosition ↔
       candidatePosition = targetPosition := by
-  unfold RawVarSet.contains RawVarSet.singleton
+  dsimp only [RawVarSet.contains, RawVarSet.singleton]
   by_cases positionsEqual : candidatePosition = targetPosition
   · rw [if_pos positionsEqual]
     exact ⟨fun _ => positionsEqual, fun _ => rfl⟩
@@ -93,7 +93,7 @@ theorem contains_union_iff {scope : Nat}
         candidatePosition ↔
       RawVarSet.contains firstSet candidatePosition ∨
         RawVarSet.contains secondSet candidatePosition := by
-  unfold RawVarSet.contains RawVarSet.union
+  dsimp only [RawVarSet.contains, RawVarSet.union]
   cases firstValue : firstSet candidatePosition <;>
     cases secondValue : secondSet candidatePosition
   · constructor

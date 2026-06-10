@@ -132,7 +132,7 @@ abbrev churchThreeIterate : RawTerm 0 :=
   appCell numeralTypeZeroCode (appCell numeralTypeZeroCode (appCell numeralTypeZeroCode numeralTypeOneCode))
 
 /-- The thrice-iterate is a no-step normal form (a stack of applications headed by universe codes). -/
-theorem churchThreeIterate_isStepNormalForm : RawTerm.isStepNormalForm churchThreeIterate := by decide
+theorem churchThreeIterate_isStepNormalForm : RawTerm.isStepNormalForm churchThreeIterate := rfl
 
 /-- ★ `three A f x` β-reduces (three steps) to `f (f (f x))` — the step applied THREE times.  The reduction
 peels the three numeral binders exactly as for `one`/`two`; only the substituted body (deeper by one

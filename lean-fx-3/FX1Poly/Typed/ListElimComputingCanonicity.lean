@@ -193,6 +193,6 @@ theorem listElimLengthComputesToNumeral.two :
           natZeroCell lengthNatStep) out ∧
       IsNatNumeral out :=
   listElimLengthComputesToNumeral
-    (IsListValue.cons (by decide) (IsListValue.cons (by decide) IsListValue.nil))
+    (IsListValue.cons rfl (IsListValue.cons rfl IsListValue.nil))
 
 end FX1Poly.Typed

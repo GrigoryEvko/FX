@@ -93,8 +93,8 @@ theorem variableCell_reducibleTypeAtZero {scope : Nat} (index : Fin scope) :
     IsReducibleTypeAt 0 (variableCell index) :=
   ⟨IsStronglyNormalizing,
     ReducibleTypeStep.neutral (IsNeutral.var index).noWeakHeadStep
-      (by show Generator.gen_var ≠ Generator.gen_piTyCode; decide)
-      (by show Generator.gen_var ≠ Generator.gen_universeCode; decide)⟩
+      nofun
+      nofun⟩
 
 /-- **Universe-domain-Π member-level strict-decrease (the Adjedj recursion's measure step).**  The level
 `denote e env` of a member of `Type@e` is strictly below the level `denote (lmax (lsucc e) levelC) env` of

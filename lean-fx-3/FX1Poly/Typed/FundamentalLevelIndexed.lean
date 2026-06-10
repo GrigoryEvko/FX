@@ -326,7 +326,7 @@ theorem fundamentalGenFormationFormerLevelIndexed {profile : PolyProfile} {scope
                 exact IsReducibleMemberAt.unitFormerInUniverse LevelExpr.lzero
                   UniverseFlag.standard
           · exfalso
-            unfold typingRuleDescOf at isFormation
+            dsimp only [typingRuleDescOf] at isFormation
             rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
               if_neg isUnitFormer] at isFormation
             contradiction

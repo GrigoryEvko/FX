@@ -509,7 +509,7 @@ theorem HasTypeDesc.inversionFormerClassifierGeneric {profile : PolyProfile}
         have rootEq : Generator.gen_var = generator :=
           congrArg RawTerm.headGenerator subjectEq
         rw [← rootEq] at isFormation
-        unfold typingRuleDescOf at isFormation
+        dsimp only [typingRuleDescOf] at isFormation
         rw [if_neg (fun isPi => Generator.noConfusion isPi),
           if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
         cases isFormation
@@ -524,7 +524,7 @@ theorem HasTypeDesc.inversionFormerClassifierGeneric {profile : PolyProfile}
         have rootEq : Generator.gen_universeCode = generator :=
           congrArg RawTerm.headGenerator subjectEq
         rw [← rootEq] at isFormation
-        unfold typingRuleDescOf at isFormation
+        dsimp only [typingRuleDescOf] at isFormation
         rw [if_neg (fun isPi => Generator.noConfusion isPi),
           if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
         cases isFormation
@@ -569,7 +569,7 @@ theorem HasTypeDesc.inversionFormerClassifierPinned {profile : PolyProfile}
         have rootEq : Generator.gen_var = generator :=
           congrArg RawTerm.headGenerator subjectEq
         rw [← rootEq] at isFormation
-        unfold typingRuleDescOf at isFormation
+        dsimp only [typingRuleDescOf] at isFormation
         rw [if_neg (fun isPi => Generator.noConfusion isPi),
           if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
         cases isFormation
@@ -583,7 +583,7 @@ theorem HasTypeDesc.inversionFormerClassifierPinned {profile : PolyProfile}
         have rootEq : Generator.gen_universeCode = generator :=
           congrArg RawTerm.headGenerator subjectEq
         rw [← rootEq] at isFormation
-        unfold typingRuleDescOf at isFormation
+        dsimp only [typingRuleDescOf] at isFormation
         rw [if_neg (fun isPi => Generator.noConfusion isPi),
           if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
         cases isFormation

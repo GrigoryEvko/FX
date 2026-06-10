@@ -63,7 +63,7 @@ theorem iteratedApplication_subst0_weaken_step (depth : Nat) (stepFn base : RawT
     RawTerm.subst0 (iteratedApplication depth (RawTerm.weaken stepFn)
         (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) base
       = iteratedApplication depth stepFn base := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   rw [subst_iteratedApplication]
   have stepEq : RawTerm.subst (RawTermSubst.singleton base) (RawTerm.weaken stepFn) = stepFn :=
     RawTerm.weaken_subst_singleton stepFn base
@@ -89,7 +89,7 @@ theorem churchNumeral_substType (depth : Nat) (typeA : RawTerm 0) :
             (iteratedApplication depth
               (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
               (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))) := by
-  unfold RawTerm.subst0 churchNumeralStepBinderDomain churchNumeralBaseBinderDomain
+  dsimp only [RawTerm.subst0, churchNumeralStepBinderDomain, churchNumeralBaseBinderDomain]
   show lamCell _ (lamCell _ (RawTerm.subst
       (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton typeA)))
       (iteratedApplication depth _ _))) = _
@@ -109,7 +109,7 @@ theorem churchNumeral_substStep (depth : Nat) (typeA handlerF : RawTerm 0) :
       = lamCell typeA
           (iteratedApplication depth (RawTerm.weaken handlerF)
             (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   show lamCell (RawTerm.subst (RawTermSubst.singleton handlerF) (RawTerm.weaken typeA))
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerF))
         (iteratedApplication depth _ _)) = _

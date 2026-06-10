@@ -157,7 +157,7 @@ theorem RawTermChildren.weaken_subst_singleton {scope : Nat}
     (rawArg : RawTerm scope) :
     RawTermChildren.subst (RawTermSubst.singleton rawArg)
       (RawTermChildren.weaken children) = children := by
-  unfold RawTermChildren.weaken
+  dsimp only [RawTermChildren.weaken]
   exact RawTermChildren.subst_iterateLiftRaw_singleton_weaken
     (binderDepth := 0) children rawArg
 
@@ -173,7 +173,7 @@ theorem RawTerm.subst0_subst_commute {sourceScope targetScope : Nat}
       RawTerm.subst0
         (RawTerm.subst (RawTermSubst.lift sigma) body)
         (RawTerm.subst sigma rawArg) := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   rw [RawTerm.subst_compose (RawTermSubst.singleton rawArg) sigma body]
   rw [RawTerm.subst_compose (RawTermSubst.lift sigma)
     (RawTermSubst.singleton (RawTerm.subst sigma rawArg)) body]

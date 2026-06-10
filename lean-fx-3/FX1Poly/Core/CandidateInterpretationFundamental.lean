@@ -99,7 +99,8 @@ theorem InterpretsType.fundamentalUniverseFormation {scope targetScope : Nat}
     show fold GenAlgebra.canonical substitution
         (.mkGen .gen_universeCode (levelExpr, flag) .childNil) = _
     dsimp only [fold]
-    rw [dif_neg (by decide : Generator.gen_universeCode ≠ Generator.gen_var)]
+    rw [dif_neg (fun isEq => Generator.noConfusion isEq :
+        Generator.gen_universeCode ≠ Generator.gen_var)]
     rfl
   rw [substEquation]
   exact isStronglyNormalizing_of_noStep

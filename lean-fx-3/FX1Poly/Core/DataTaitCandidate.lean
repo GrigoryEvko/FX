@@ -176,7 +176,7 @@ empty value predicate, "value or neutral" collapses to "neutral", recovering `em
 (up to `False ∨ ·`).  Confirms `dataTaitCandidate` subsumes the candidate-bridge's empty candidate. -/
 theorem dataTaitCandidate_false_iff_emptyTaitCandidate {scope : Nat} (term : RawTerm scope) :
     dataTaitCandidate (fun _ => False) term ↔ emptyTaitCandidate term := by
-  unfold dataTaitCandidate emptyTaitCandidate
+  dsimp only [dataTaitCandidate, emptyTaitCandidate]
   constructor
   · rintro ⟨sn, reach⟩
     exact ⟨sn, fun nf chain nfNormal => (reach nf chain nfNormal).resolve_left (fun isFalse => isFalse)⟩

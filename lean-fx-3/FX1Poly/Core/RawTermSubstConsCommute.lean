@@ -77,7 +77,7 @@ theorem RawTerm.subst_cons_eq_subst0_lift {scope targetScope : Nat}
     (tailSubst : RawTermSubst scope targetScope) :
     RawTerm.subst (RawTermSubst.cons headTerm tailSubst) body =
       RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift tailSubst) body) headTerm := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   rw [RawTerm.subst_compose (RawTermSubst.lift tailSubst)
     (RawTermSubst.singleton headTerm) body]
   apply RawTerm.subst_pointwise

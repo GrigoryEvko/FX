@@ -105,7 +105,7 @@ theorem GradeVector.add_comm (firstVector secondVector : GradeVector) :
       cases secondVector with
       | nil => rfl
       | cons secondHead secondRest =>
-          simp only [GradeVector.add]
+          dsimp only [GradeVector.add]
           rw [UsageGrade.add_comm firstHead secondHead, restIH secondRest]
 
 /-- Pointwise addition is associative (lifts `UsageGrade.add_assoc`; the truncation lengths agree). -/
@@ -121,7 +121,7 @@ theorem GradeVector.add_assoc (firstVector secondVector thirdVector : GradeVecto
           cases thirdVector with
           | nil => rfl
           | cons thirdHead thirdRest =>
-              simp only [GradeVector.add]
+              dsimp only [GradeVector.add]
               rw [UsageGrade.add_assoc firstHead secondHead thirdHead, restIH secondRest thirdRest]
 
 /-- The zero vector (at the operand's own length) is a right identity for addition. -/
@@ -130,7 +130,7 @@ theorem GradeVector.add_zero (someVector : GradeVector) :
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVector.length, GradeVector.zero, GradeVector.add]
+      dsimp only [GradeVector.length, GradeVector.zero, GradeVector.add]
       rw [UsageGrade.add_zero headGrade, restIH]
 
 /-- The zero vector (at the operand's own length) is a left identity for addition. -/
@@ -139,7 +139,7 @@ theorem GradeVector.zero_add (someVector : GradeVector) :
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVector.length, GradeVector.zero, GradeVector.add]
+      dsimp only [GradeVector.length, GradeVector.zero, GradeVector.add]
       rw [UsageGrade.zero_add headGrade, restIH]
 
 /-! ## Scalar-action laws (the semimodule structure over `fxUsageSemiring`) -/
@@ -150,7 +150,7 @@ theorem GradeVector.scale_zero_scalar (someVector : GradeVector) :
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVector.scale, GradeVector.zero, GradeVector.length]
+      dsimp only [GradeVector.scale, GradeVector.zero, GradeVector.length]
       rw [UsageGrade.zero_mul headGrade, restIH]
 
 /-- Scaling by `1` is the identity (`1 · p = p`). -/
@@ -159,7 +159,7 @@ theorem GradeVector.scale_one_scalar (someVector : GradeVector) :
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVector.scale]
+      dsimp only [GradeVector.scale]
       rw [UsageGrade.one_mul headGrade, restIH]
 
 /-- A scalar distributes over a vector sum: `s · (p + q) = s · p + s · q`. -/
@@ -173,7 +173,7 @@ theorem GradeVector.scale_add (scaleGrade : UsageGrade) (firstVector secondVecto
       cases secondVector with
       | nil => rfl
       | cons secondHead secondRest =>
-          simp only [GradeVector.add, GradeVector.scale]
+          dsimp only [GradeVector.add, GradeVector.scale]
           rw [UsageGrade.left_distrib scaleGrade firstHead secondHead, restIH secondRest]
 
 /-- Scalar multiplication composes: `s · (t · p) = (s * t) · p`. -/
@@ -183,7 +183,7 @@ theorem GradeVector.scale_scale (firstScale secondScale : UsageGrade) (someVecto
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVector.scale]
+      dsimp only [GradeVector.scale]
       rw [UsageGrade.mul_assoc firstScale secondScale headGrade, restIH]
 
 /-- A scalar sum distributes over a vector: `(s + t) · p = s · p + t · p`. -/
@@ -194,7 +194,7 @@ theorem GradeVector.scale_add_scalar (firstScale secondScale : UsageGrade) (some
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVector.scale, GradeVector.add]
+      dsimp only [GradeVector.scale, GradeVector.add]
       rw [UsageGrade.right_distrib firstScale secondScale headGrade, restIH]
 
 /-! ## Context division `G / p` — the corrected Lam rule's capture discipline (§6.2/§27.1)

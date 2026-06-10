@@ -65,7 +65,7 @@ theorem universeDenotePredicate_belowFamily_aboveThreshold {scope : Nat} (env : 
     universeDenotePredicate env (denoteBelowFamily env outerLevel) innerLevelExpr typeCode
       = (IsStronglyNormalizing typeCode ∧
           IsReducibleTypeAtDenote env (LevelExpr.denote innerLevelExpr env) typeCode) := by
-  unfold universeDenotePredicate IsReducibleTypeAtDenote
+  dsimp only [universeDenotePredicate, IsReducibleTypeAtDenote]
   rw [denoteBelowFamily_eq_reducible env outerLevel (LevelExpr.denote innerLevelExpr env) innerBelow]
 
 /-- **Empty decode of the lowerAt-keyed universe membership predicate.**  When the inner universe's decoded level

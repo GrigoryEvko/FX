@@ -58,11 +58,11 @@ theorem exists_step_of_not_isStepNormalForm {scope : Nat} {sourceTerm : RawTerm 
               show RawTerm.isStepNormalFormBool (.mkGen generator payload children) = true
               dsimp only [RawTerm.isStepNormalFormBool]
               rw [rootValue, childrenValue]
-              decide
+              rfl
           | false =>
               have childrenNotNormal : ¬ RawTermChildren.areStepNormalForms children := by
                 show ¬ (RawTermChildren.areStepNormalFormsBool children = true)
-                rw [childrenValue]; exact (by decide)
+                rw [childrenValue]; exact Bool.false_ne_true
               obtain ⟨targetChildren, childStep⟩ :=
                 exists_stepChildren_of_not_areStepNormalForms childrenNotNormal
               exact ⟨_, Step.cong generator payload childStep⟩
@@ -83,7 +83,7 @@ theorem exists_stepChildren_of_not_areStepNormalForms {binderShifts : List Nat} 
       | false =>
           have headNotNormal : ¬ RawTerm.isStepNormalForm childHead := by
             show ¬ (RawTerm.isStepNormalFormBool childHead = true)
-            rw [headValue]; exact (by decide)
+            rw [headValue]; exact Bool.false_ne_true
           obtain ⟨headTarget, headStep⟩ := exists_step_of_not_isStepNormalForm headNotNormal
           exact ⟨_, StepChildren.here _ headStep⟩
       | true =>
@@ -94,7 +94,7 @@ theorem exists_stepChildren_of_not_areStepNormalForms {binderShifts : List Nat} 
             show (RawTerm.isStepNormalFormBool childHead &&
                 RawTermChildren.areStepNormalFormsBool childTail) = true
             rw [headValue, tailNormal]
-            decide
+            rfl
           obtain ⟨tailTarget, tailStep⟩ :=
             exists_stepChildren_of_not_areStepNormalForms tailNotNormal
           exact ⟨_, StepChildren.there _ tailStep⟩

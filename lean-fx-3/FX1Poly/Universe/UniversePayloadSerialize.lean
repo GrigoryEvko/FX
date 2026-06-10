@@ -87,7 +87,7 @@ theorem UniversePayload.decodeOnto_nodeCount_encodePrefix
     (level : LevelExpr) (flag : UniverseFlag) :
     UniversePayload.decodeOnto level.nodeCount (UniversePayload.encodePrefix (level, flag)) =
       some ((level, flag), []) := by
-  simp only [UniversePayload.encodePrefix]
+  dsimp only [UniversePayload.encodePrefix]
   exact UniversePayload.decodeOnto_encodeOnto level flag level.nodeCount [] (Nat.le_refl _)
 
 end FX1Poly.Universe

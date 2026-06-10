@@ -131,7 +131,7 @@ theorem metatheoryFuzzLambdaFamily_normalizesToLambda {profile : PolyProfile} (n
       = lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
           (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
   ((metatheoryFuzzLambdaFamily_typed (profile := profile) n).reachedNormalForm_eq_normalForm
-    (metatheoryFuzzLambdaFamily_reducesToLambdaValue n) (by decide)).symm
+    (metatheoryFuzzLambdaFamily_reducesToLambdaValue n) rfl).symm
 
 /-- ★ **Every λ-value family member EVALUATES TO A FUNCTION.**  Its computed normal form is a `λ` (with body
 extracted) — the Π-typed canonical-forms outcome (`closedNormalFunctionIsLambda`'s shape) that neither

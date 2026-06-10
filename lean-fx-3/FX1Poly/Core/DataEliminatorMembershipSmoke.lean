@@ -88,7 +88,7 @@ inner term `boolTrue` is step-normal by `decide`). -/
 theorem idJClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_idJ () (.childCons boolTrueCell (.childCons (reflCell boolTrueCell) .childNil))) :=
-  idJClosedIsMember (isReflValue_isMember ⟨boolTrueCell, rfl, by decide⟩) boolTrueCell_isMember
+  idJClosedIsMember (isReflValue_isMember ⟨boolTrueCell, rfl, rfl⟩) boolTrueCell_isMember
 
 /-- **Concrete idStrictRec membership regression.**  Identical to `idJClosedMembershipSmoke` at the strict
 identity recursor `gen_idStrictRec` — the elimination half at a closed witness via
@@ -96,7 +96,7 @@ identity recursor `gen_idStrictRec` — the elimination half at a closed witness
 theorem idStrictRecClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_idStrictRec () (.childCons boolTrueCell (.childCons (reflCell boolTrueCell) .childNil))) :=
-  idStrictRecClosedIsMember (isReflValue_isMember ⟨boolTrueCell, rfl, by decide⟩) boolTrueCell_isMember
+  idStrictRecClosedIsMember (isReflValue_isMember ⟨boolTrueCell, rfl, rfl⟩) boolTrueCell_isMember
 
 /-- **Concrete `fst` projection membership regression.**  The closed `fst` cell over the canonical pair
 `pairCell boolTrue boolFalse` is a member of the bool candidate (its first component `boolTrue` being a
@@ -108,7 +108,7 @@ theorem fstClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_fst () (.childCons (pairCell boolTrueCell boolFalseCell) .childNil)) :=
   fstClosedIsMember
-    (pairValue_isMember (by decide) (by decide))
+    (pairValue_isMember rfl rfl)
     (fun first second reaches => by
       have componentEq := StepStar.eq_of_noStep
         (fun reduct step =>
@@ -126,7 +126,7 @@ theorem sndClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_snd () (.childCons (pairCell boolTrueCell boolFalseCell) .childNil)) :=
   sndClosedIsMember
-    (pairValue_isMember (by decide) (by decide))
+    (pairValue_isMember rfl rfl)
     (fun first second reaches => by
       have componentEq := StepStar.eq_of_noStep
         (fun reduct step =>
@@ -211,7 +211,7 @@ theorem eitherMatchClosedMembershipSmoke :
         (.childCons (eitherInlCell boolTrueCell)
           (.childCons constLamBoolTrueCell (.childCons constLamBoolTrueCell .childNil)))) :=
   eitherMatchClosedIsMember
-    (isEitherValue_isMember (Or.inl ⟨boolTrueCell, rfl, by decide⟩))
+    (isEitherValue_isMember (Or.inl ⟨boolTrueCell, rfl, rfl⟩))
     (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing
       boolTrue_isStronglyNormalizing)
     (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing

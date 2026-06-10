@@ -55,7 +55,7 @@ bridge that lets the tier soundness reuse the HON-5 static and HON-6 operational
 theorem semanticTier_reserved_imp_both_false {g : Generator}
     (reserved : semanticTier g = .reserved) :
     hasSomeTypingRule g = false ∧ g.hasRedexHead = false := by
-  unfold semanticTier at reserved
+  dsimp only [semanticTier] at reserved
   cases hCond : (hasSomeTypingRule g || g.hasRedexHead) with
   | true =>
       rw [if_pos hCond] at reserved

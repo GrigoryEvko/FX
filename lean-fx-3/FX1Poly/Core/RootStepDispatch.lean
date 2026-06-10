@@ -40,31 +40,34 @@ theorem hasRootStepSource_exists_step {scope : Nat} {source : RawTerm scope}
     ∃ target : RawTerm scope, Step source target := by
   match source with
   | .mkGen generator payload children =>
-      dsimp only [RawTerm.hasRootStepSource] at rootSource
-      split at rootSource
-      · next h => subst h; exact hasAppBetaRoot_exists_step _ rootSource
-      · split at rootSource
-        · next h => subst h; exact hasBoolElimIotaRoot_exists_step _ rootSource
-        · split at rootSource
-          · next h => subst h; exact hasPairProjectionIotaRoot_exists_step_fst _ rootSource
-          · split at rootSource
-            · next h => subst h; exact hasPairProjectionIotaRoot_exists_step_snd _ rootSource
-            · split at rootSource
-              · next h => subst h; exact hasNatElimIotaRoot_exists_step_natElim _ rootSource
-              · split at rootSource
-                · next h => subst h; exact hasNatElimIotaRoot_exists_step_natRec _ rootSource
-                · split at rootSource
-                  · next h => subst h; exact hasListElimIotaRoot_exists_step _ rootSource
-                  · split at rootSource
-                    · next h => subst h; exact hasOptionMatchIotaRoot_exists_step _ rootSource
-                    · split at rootSource
-                      · next h => subst h; exact hasEitherMatchIotaRoot_exists_step _ rootSource
-                      · split at rootSource
-                        · next h => subst h; exact hasIdElimIotaRoot_exists_step_idJ _ rootSource
-                        · split at rootSource
-                          · next h =>
-                              subst h
-                              exact hasIdElimIotaRoot_exists_step_idStrictRec _ rootSource
-                          · exact absurd rootSource (by decide)
+      by_cases hApp : generator = .gen_app
+      · subst hApp; exact hasAppBetaRoot_exists_step _ rootSource
+      · by_cases hBoolElim : generator = .gen_boolElim
+        · subst hBoolElim; exact hasBoolElimIotaRoot_exists_step _ rootSource
+        · by_cases hFst : generator = .gen_fst
+          · subst hFst; exact hasPairProjectionIotaRoot_exists_step_fst _ rootSource
+          · by_cases hSnd : generator = .gen_snd
+            · subst hSnd; exact hasPairProjectionIotaRoot_exists_step_snd _ rootSource
+            · by_cases hNatElim : generator = .gen_natElim
+              · subst hNatElim; exact hasNatElimIotaRoot_exists_step_natElim _ rootSource
+              · by_cases hNatRec : generator = .gen_natRec
+                · subst hNatRec; exact hasNatElimIotaRoot_exists_step_natRec _ rootSource
+                · by_cases hListElim : generator = .gen_listElim
+                  · subst hListElim; exact hasListElimIotaRoot_exists_step _ rootSource
+                  · by_cases hOptionMatch : generator = .gen_optionMatch
+                    · subst hOptionMatch; exact hasOptionMatchIotaRoot_exists_step _ rootSource
+                    · by_cases hEitherMatch : generator = .gen_eitherMatch
+                      · subst hEitherMatch; exact hasEitherMatchIotaRoot_exists_step _ rootSource
+                      · by_cases hIdJ : generator = .gen_idJ
+                        · subst hIdJ; exact hasIdElimIotaRoot_exists_step_idJ _ rootSource
+                        · by_cases hIdStrictRec : generator = .gen_idStrictRec
+                          · subst hIdStrictRec
+                            exact hasIdElimIotaRoot_exists_step_idStrictRec _ rootSource
+                          · dsimp only [RawTerm.hasRootStepSource] at rootSource
+                            rw [dif_neg hApp, dif_neg hBoolElim, dif_neg hFst, dif_neg hSnd,
+                              dif_neg hNatElim, dif_neg hNatRec, dif_neg hListElim,
+                              dif_neg hOptionMatch, dif_neg hEitherMatch, dif_neg hIdJ,
+                              dif_neg hIdStrictRec] at rootSource
+                            nomatch rootSource
 
 end FX1Poly.Core

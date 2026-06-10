@@ -64,7 +64,7 @@ theorem lengthConsHandlerInnerSubst (head : RawTerm 0) :
     RawTerm.subst0 (lamCell churchListDomainAnn (appCell (RawTerm.weaken (RawTerm.weaken churchSucc))
       (variableCell (⟨0, by decide⟩ : Fin 2)))) head
       = lamCell churchListDomainAnn (appCell (RawTerm.weaken churchSucc) (variableCell (⟨0, by decide⟩ : Fin 1))) := by
-  unfold RawTerm.subst0 churchListDomainAnn
+  dsimp only [RawTerm.subst0, churchListDomainAnn]
   show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (appCell
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton head))
         (RawTerm.weaken (RawTerm.weaken churchSucc)))
@@ -77,7 +77,7 @@ theorem lengthConsHandlerInnerSubst (head : RawTerm 0) :
 theorem lengthConsHandlerOuterSubst (acc : RawTerm 0) :
     RawTerm.subst0 (appCell (RawTerm.weaken churchSucc) (variableCell (⟨0, by decide⟩ : Fin 1))) acc
       = appCell churchSucc acc := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   show appCell (RawTerm.subst (RawTermSubst.singleton acc) (RawTerm.weaken churchSucc))
       (RawTerm.subst (RawTermSubst.singleton acc) (variableCell (⟨0, by decide⟩ : Fin 1)))
       = appCell churchSucc acc

@@ -100,7 +100,7 @@ theorem GradeVectorOver.add_comm {R : OrderedGradeSemiring} (lawful : IsLawfulOr
       cases secondVector with
       | nil => rfl
       | cons secondHead secondRest =>
-          simp only [GradeVectorOver.add]
+          dsimp only [GradeVectorOver.add]
           rw [lawful.add_comm firstHead secondHead, restIH secondRest]
 
 /-- Pointwise addition is associative (lifts `lawful.add_assoc`). -/
@@ -117,7 +117,7 @@ theorem GradeVectorOver.add_assoc {R : OrderedGradeSemiring} (lawful : IsLawfulO
           cases thirdVector with
           | nil => rfl
           | cons thirdHead thirdRest =>
-              simp only [GradeVectorOver.add]
+              dsimp only [GradeVectorOver.add]
               rw [lawful.add_assoc firstHead secondHead thirdHead, restIH secondRest thirdRest]
 
 /-- The zero vector (at the operand's own length) is a right identity for addition. -/
@@ -127,7 +127,7 @@ theorem GradeVectorOver.add_zero {R : OrderedGradeSemiring} (lawful : IsLawfulOr
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVectorOver.length, GradeVectorOver.zero, GradeVectorOver.add]
+      dsimp only [GradeVectorOver.length, GradeVectorOver.zero, GradeVectorOver.add]
       rw [lawful.add_zero headGrade, restIH]
 
 /-- The zero vector (at the operand's own length) is a left identity for addition. -/
@@ -137,7 +137,7 @@ theorem GradeVectorOver.zero_add {R : OrderedGradeSemiring} (lawful : IsLawfulOr
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVectorOver.length, GradeVectorOver.zero, GradeVectorOver.add]
+      dsimp only [GradeVectorOver.length, GradeVectorOver.zero, GradeVectorOver.add]
       rw [lawful.zero_add headGrade, restIH]
 
 /-! ## Scalar-action laws (the left-semimodule structure over `R`) -/
@@ -149,7 +149,7 @@ theorem GradeVectorOver.scale_zero_scalar {R : OrderedGradeSemiring}
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVectorOver.scale, GradeVectorOver.zero, GradeVectorOver.length]
+      dsimp only [GradeVectorOver.scale, GradeVectorOver.zero, GradeVectorOver.length]
       rw [lawful.zero_mul headGrade, restIH]
 
 /-- Scaling by `R.one` is the identity (`1 · p = p`). -/
@@ -159,7 +159,7 @@ theorem GradeVectorOver.scale_one_scalar {R : OrderedGradeSemiring}
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVectorOver.scale]
+      dsimp only [GradeVectorOver.scale]
       rw [lawful.one_mul headGrade, restIH]
 
 /-- A scalar distributes over a vector sum: `s · (p + q) = s · p + s · q`. -/
@@ -174,7 +174,7 @@ theorem GradeVectorOver.scale_add {R : OrderedGradeSemiring} (lawful : IsLawfulO
       cases secondVector with
       | nil => rfl
       | cons secondHead secondRest =>
-          simp only [GradeVectorOver.add, GradeVectorOver.scale]
+          dsimp only [GradeVectorOver.add, GradeVectorOver.scale]
           rw [lawful.left_distrib scaleGrade firstHead secondHead, restIH secondRest]
 
 /-- Scalar multiplication composes: `s · (t · p) = (s * t) · p`. -/
@@ -185,7 +185,7 @@ theorem GradeVectorOver.scale_scale {R : OrderedGradeSemiring} (lawful : IsLawfu
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVectorOver.scale]
+      dsimp only [GradeVectorOver.scale]
       rw [lawful.mul_assoc firstScale secondScale headGrade, restIH]
 
 /-- A scalar sum distributes over a vector: `(s + t) · p = s · p + t · p`. -/
@@ -198,7 +198,7 @@ theorem GradeVectorOver.scale_add_scalar {R : OrderedGradeSemiring}
   induction someVector with
   | nil => rfl
   | cons headGrade restGrades restIH =>
-      simp only [GradeVectorOver.scale, GradeVectorOver.add]
+      dsimp only [GradeVectorOver.scale, GradeVectorOver.add]
       rw [lawful.right_distrib firstScale secondScale headGrade, restIH]
 
 /-! ## The element-level two-sided order lemma (derived from the one-sided bundle field)

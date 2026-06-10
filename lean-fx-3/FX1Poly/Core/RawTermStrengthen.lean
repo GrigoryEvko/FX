@@ -226,7 +226,7 @@ theorem toOption_eq_some
     {term : RawTerm targetScope}
     (success : result.toOption = some term) :
     result.hasSucceeded = true ∧ result.term = term := by
-  unfold toOption at success
+  dsimp only [toOption] at success
   cases result with
   | mk hasSucceeded resultTerm =>
       cases hasSucceeded
@@ -249,7 +249,7 @@ theorem toOption_eq_some
     {children : RawTermChildren binderShifts targetScope}
     (success : result.toOption = some children) :
     result.hasSucceeded = true ∧ result.children = children := by
-  unfold toOption at success
+  dsimp only [toOption] at success
   cases result with
   | mk hasSucceeded resultChildren =>
       cases hasSucceeded
@@ -358,7 +358,7 @@ theorem RawTerm.rename_identity_apply {scope : Nat}
         cases children
         rfl
       · dsimp only [RawTerm.rename, fold]
-        simp only [dif_neg hVar]
+        rw [dif_neg hVar]
         rw [GenAlgebra.canonical_algebra_eq_mkGen]
         congr 1
         exact RawTermChildren.rename_identity_apply children
@@ -438,10 +438,10 @@ theorem RawTerm.partialRenameResult_rename_some
               (RawTerm.mkGen .gen_var (targetRenaming payload) .childNil)
         rw [renamingSurvives payload]
       · dsimp only [RawTerm.rename, fold]
-        simp only [dif_neg hVar]
+        rw [dif_neg hVar]
         rw [GenAlgebra.canonical_algebra_eq_mkGen]
         dsimp only [RawTerm.partialRenameResult]
-        simp only [dif_neg hVar]
+        rw [dif_neg hVar, dif_neg hVar]
         have childrenRenameSome :=
           RawTermChildren.partialRenameResult_rename_some children
           sourceRenaming targetRenaming partialRenaming renamingSurvives
@@ -522,7 +522,7 @@ theorem RawTerm.partialRename?_rename_some
     RawTerm.partialRename? partialRenaming
         (RawTerm.rename sourceRenaming sourceTerm) =
       some (RawTerm.rename targetRenaming sourceTerm) := by
-  unfold RawTerm.partialRename?
+  dsimp only [RawTerm.partialRename?]
   rw [RawTerm.partialRenameResult_rename_some sourceTerm sourceRenaming
     targetRenaming partialRenaming renamingSurvives]
   rfl
@@ -542,7 +542,7 @@ theorem RawTermChildren.partialRename?_rename_some
     RawTermChildren.partialRename? partialRenaming
         (RawTermChildren.rename sourceRenaming children) =
       some (RawTermChildren.rename targetRenaming children) := by
-  unfold RawTermChildren.partialRename?
+  dsimp only [RawTermChildren.partialRename?]
   rw [RawTermChildren.partialRenameResult_rename_some children sourceRenaming
     targetRenaming partialRenaming renamingSurvives]
   rfl
@@ -569,7 +569,7 @@ theorem RawTerm.partialRename?_imp_rename
       by_cases hVar : generator = .gen_var
       · subst hVar
         cases children
-        unfold RawTerm.partialRename? at success
+        dsimp only [RawTerm.partialRename?] at success
         have resultFields :=
           PartialRenameTermResult.toOption_eq_some success
         dsimp only [RawTerm.partialRenameResult] at resultFields
@@ -605,7 +605,7 @@ theorem RawTerm.partialRename?_imp_rename
                 .childNil : RawTerm intermediateScope) =
               (.mkGen .gen_var payload .childNil)
             rw [← renamingInjectsBack payload sourcePosition hPartial]
-      · unfold RawTerm.partialRename? at success
+      · dsimp only [RawTerm.partialRename?] at success
         have resultFields :=
           PartialRenameTermResult.toOption_eq_some success
         dsimp only [RawTerm.partialRenameResult] at resultFields
@@ -626,8 +626,8 @@ theorem RawTerm.partialRename?_imp_rename
         have childOption :
             RawTermChildren.partialRename? partialRenaming children =
               some childResult.children := by
-          unfold RawTermChildren.partialRename?
-          unfold PartialRenameChildrenResult.toOption
+          dsimp only [RawTermChildren.partialRename?,
+            PartialRenameChildrenResult.toOption]
           change
             (if childResult.hasSucceeded = true then some childResult.children
               else none) = some childResult.children
@@ -639,7 +639,7 @@ theorem RawTerm.partialRename?_imp_rename
             childResult.children childOption
         rw [← resultFields.right]
         dsimp only [RawTerm.rename, fold]
-        simp only [dif_neg hVar]
+        rw [dif_neg hVar]
         rw [GenAlgebra.canonical_algebra_eq_mkGen]
         rw [← RawTermChildren.rename_eq_foldChildren forwardRenaming
           childResult.children]
@@ -669,7 +669,7 @@ theorem RawTermChildren.partialRename?_imp_rename
       cases extracted
       rfl
   | headShift :: _, .childCons childHead childTail =>
-      unfold RawTermChildren.partialRename? at success
+      dsimp only [RawTermChildren.partialRename?] at success
       have resultFields :=
         PartialRenameChildrenResult.toOption_eq_some success
       dsimp only [RawTermChildren.partialRenameResult] at resultFields
@@ -695,8 +695,8 @@ theorem RawTermChildren.partialRename?_imp_rename
               RawTerm.partialRename?
                 (iterateLiftRaw partialRenaming headShift) childHead =
                 some headResult.term := by
-            unfold RawTerm.partialRename?
-            unfold PartialRenameTermResult.toOption
+            dsimp only [RawTerm.partialRename?,
+              PartialRenameTermResult.toOption]
             change
               (if headResult.hasSucceeded = true then some headResult.term
                 else none) = some headResult.term
@@ -705,8 +705,8 @@ theorem RawTermChildren.partialRename?_imp_rename
           have hTail :
               RawTermChildren.partialRename? partialRenaming childTail =
                 some tailResult.children := by
-            unfold RawTermChildren.partialRename?
-            unfold PartialRenameChildrenResult.toOption
+            dsimp only [RawTermChildren.partialRename?,
+              PartialRenameChildrenResult.toOption]
             change
               (if tailResult.hasSucceeded = true then some tailResult.children
                 else none) = some tailResult.children
@@ -739,7 +739,7 @@ end
 theorem RawTerm.strengthen_weaken {scope : Nat}
     (sourceTerm : RawTerm scope) :
     RawTerm.strengthen (RawTerm.weaken sourceTerm) = some sourceTerm := by
-  unfold RawTerm.strengthen RawTerm.weaken
+  dsimp only [RawTerm.strengthen, RawTerm.weaken]
   rw [RawTerm.partialRename?_rename_some sourceTerm
     RawRenaming.weaken RawRenaming.identity
     PartialRawRenaming.dropNewest
@@ -809,7 +809,7 @@ theorem RawTermChildren.strengthen_weaken {parentScope : Nat}
     (children : RawTermChildren binderShifts parentScope) :
     RawTermChildren.strengthen (RawTermChildren.weaken children) =
       some children := by
-  unfold RawTermChildren.strengthen RawTermChildren.weaken
+  dsimp only [RawTermChildren.strengthen, RawTermChildren.weaken]
   rw [RawTermChildren.partialRename?_rename_some children
     RawRenaming.weaken RawRenaming.identity
     PartialRawRenaming.dropNewest
@@ -822,8 +822,8 @@ theorem RawTerm.strengthen_sound {scope : Nat}
     (body : RawTerm (scope + 1)) (extracted : RawTerm scope)
     (success : RawTerm.strengthen body = some extracted) :
     RawTerm.weaken extracted = body := by
-  unfold RawTerm.strengthen at success
-  unfold RawTerm.weaken
+  dsimp only [RawTerm.strengthen] at success
+  dsimp only [RawTerm.weaken]
   exact RawTerm.partialRename?_imp_rename body RawRenaming.weaken
     PartialRawRenaming.dropNewest
     PartialRawRenaming.dropNewest_renamingInjectsBack
@@ -857,8 +857,8 @@ theorem RawTermChildren.strengthen_sound {parentScope : Nat}
     (extracted : RawTermChildren binderShifts parentScope)
     (success : RawTermChildren.strengthen children = some extracted) :
     RawTermChildren.weaken extracted = children := by
-  unfold RawTermChildren.strengthen at success
-  unfold RawTermChildren.weaken
+  dsimp only [RawTermChildren.strengthen] at success
+  dsimp only [RawTermChildren.weaken]
   exact RawTermChildren.partialRename?_imp_rename children
     RawRenaming.weaken PartialRawRenaming.dropNewest
     PartialRawRenaming.dropNewest_renamingInjectsBack extracted success
@@ -894,7 +894,7 @@ theorem RawTerm.weaken_subst0 {scope : Nat}
       RawTerm.subst0
         (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
         (RawTerm.weaken rawArg) := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   rw [RawTerm.weaken_eq_rename]
   rw [RawTerm.subst_rename_commute]
   rw [RawTerm.rename_subst_commute]
@@ -929,7 +929,7 @@ theorem RawTerm.strengthen_commutes_rename
       some (RawTerm.rename rawRenaming extracted) := by
   have weakenedBody := RawTerm.strengthen_sound body extracted success
   rw [← weakenedBody]
-  unfold RawTerm.weaken
+  dsimp only [RawTerm.weaken]
   rw [RawTerm.rename_compose RawRenaming.weaken rawRenaming.lift extracted]
   have composedRenamingsAgree :
       RawRenaming.PointwiseEq
@@ -948,7 +948,7 @@ theorem RawTerm.strengthen_commutes_subst0 {scope : Nat}
     RawTerm.subst0 body rawArg = extracted := by
   have weakenedBody := RawTerm.strengthen_sound body extracted success
   rw [← weakenedBody]
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   exact RawTerm.weaken_subst_singleton extracted rawArg
 
 end FX1Poly.Core

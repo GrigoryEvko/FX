@@ -60,7 +60,7 @@ because `lift (singleton head)` on the head-index `var 1` computes directly to `
 theorem firstOrHandlerInnerSubst (head : RawTerm 0) :
     RawTerm.subst0 (lamCell churchListDomainAnn (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))) head
       = lamCell churchListDomainAnn (RawTerm.weaken head) := by
-  unfold RawTerm.subst0 churchListDomainAnn
+  dsimp only [RawTerm.subst0, churchListDomainAnn]
   show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton head))
       (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))) = _

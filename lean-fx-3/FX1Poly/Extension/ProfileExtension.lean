@@ -186,7 +186,7 @@ def etaLamReductionIndex {interface : PolynomialInterface}
     Fin interface.reductionCount :=
   ⟨0, by
     rw [reductionCount_eq_two]
-    decide⟩
+    exact Nat.succ_pos 1⟩
 
 /-- The second eta-reduction slot when an interface has exactly two reduction
 rules. -/
@@ -195,7 +195,7 @@ def etaPathReductionIndex {interface : PolynomialInterface}
     Fin interface.reductionCount :=
   ⟨1, by
     rw [reductionCount_eq_two]
-    decide⟩
+    exact Nat.succ_lt_succ (Nat.succ_pos 0)⟩
 
 /-- The two eta-reduction rules represented by the demonstration extension.
 
@@ -210,8 +210,8 @@ inductive EtaReductionRule where
 
 /-- Canonical two-slot index for eta-reduction rules. -/
 def EtaReductionRule.toFinTwo : EtaReductionRule → Fin 2
-  | .etaLam => ⟨0, by decide⟩
-  | .etaPath => ⟨1, by decide⟩
+  | .etaLam => ⟨0, Nat.succ_pos 1⟩
+  | .etaPath => ⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩
 
 /-- Interpret an eta-reduction rule as a rule index for an interface with
 exactly two reduction rules. -/

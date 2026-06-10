@@ -179,7 +179,7 @@ theorem RawTerm.subst_identity_apply {scope : Nat}
       -- on a mutual recursive def pulls Quot.sound (see
       -- feedback_lean_unfold_mutual_quot_sound).
       dsimp only [RawTerm.subst, fold]
-      simp only [dif_neg hVar]
+      rw [dif_neg hVar]
       congr 1
       exact RawTermChildren.subst_identity_apply someChildren
 

@@ -164,6 +164,6 @@ theorem identityNormalForm_eq {profile : PolyProfile} (levelExpr : LevelExpr) (f
   (identityOnUniverse_hasTypeDescPi (profile := profile) levelExpr flag).normalForm_eq_self_of_isStepNormalForm
     (lamCell_isStepNormalForm
       (rfl : RawTerm.isStepNormalForm (universeCodeCell levelExpr flag : RawTerm 0))
-      (by decide))
+      rfl)
 
 end FX1Poly.Typed

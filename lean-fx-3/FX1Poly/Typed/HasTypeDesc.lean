@@ -242,7 +242,7 @@ theorem typingRuleDescOf_outputIsUniverseFormer {generator : Generator} {rule : 
           have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
           rw [hRule]
         · exfalso
-          unfold typingRuleDescOf at isFormation
+          dsimp only [typingRuleDescOf] at isFormation
           rw [if_neg hPi, if_neg hSigma, if_neg hList, if_neg hOption,
             if_neg isNotNullary] at isFormation
           contradiction
@@ -259,7 +259,7 @@ theorem formationRuleImpliesNotVariable {generator : Generator} {rule : TypingRu
     generator ≠ Generator.gen_var := by
   intro isVariable
   subst isVariable
-  unfold typingRuleDescOf at isFormation
+  dsimp only [typingRuleDescOf] at isFormation
   rw [if_neg (fun isPi => Generator.noConfusion isPi),
     if_neg (fun isSigma => Generator.noConfusion isSigma),
     if_neg (fun isList => Generator.noConfusion isList),
@@ -342,7 +342,7 @@ theorem typingRuleDescOf_output_eq_outputData {generator : Generator} {rule : Ty
       Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
     rfl
   · rw [typingRuleDescOf_outputIsUniverseFormer isFormation isNullary]
-    unfold formationOutputData
+    dsimp only [formationOutputData]
     rw [if_neg isNullary]
     rfl
 
@@ -400,7 +400,7 @@ theorem typingRuleDescOf_binderShiftsNonEmpty {generator : Generator} {rule : Ty
       · by_cases hOption : generator = .gen_optionCode
         · subst hOption; decide
         · exfalso
-          unfold typingRuleDescOf at isFormation
+          dsimp only [typingRuleDescOf] at isFormation
           rw [if_neg hPi, if_neg hSigma, if_neg hList, if_neg hOption,
             if_neg isNotNullary] at isFormation
           contradiction
@@ -436,7 +436,7 @@ theorem typingRuleDescOf_isPiOrSigmaOrListOrOptionCode {generator : Generator} {
       · by_cases hOption : generator = .gen_optionCode
         · exact Or.inr (Or.inr (Or.inr hOption))
         · exfalso
-          unfold typingRuleDescOf at isFormation
+          dsimp only [typingRuleDescOf] at isFormation
           rw [if_neg hPi, if_neg hSigma, if_neg hList, if_neg hOption,
             if_neg isNotNullary] at isFormation
           contradiction

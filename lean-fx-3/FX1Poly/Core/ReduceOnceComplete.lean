@@ -61,7 +61,7 @@ theorem RawTerm.reduceOnce_complete {scope : Nat} {term : RawTerm scope}
               show RawTerm.isStepNormalFormBool (.mkGen generator payload children) = true
               dsimp only [RawTerm.isStepNormalFormBool]
               rw [hRootFalse, hChildrenBool]
-              decide
+              rfl
 
 /-- **Completeness of `reduceOnceSpine`.**  A spine the reducer cannot step is structurally normal. -/
 theorem RawTermChildren.reduceOnceSpine_complete {binderShifts : List Nat} {scope : Nat}
@@ -98,7 +98,7 @@ theorem RawTermChildren.reduceOnceSpine_complete {binderShifts : List Nat} {scop
               show (RawTerm.isStepNormalFormBool childHead &&
                 RawTermChildren.areStepNormalFormsBool childTail) = true
               rw [hHeadBool, hTailBool]
-              decide
+              rfl
 
 end
 

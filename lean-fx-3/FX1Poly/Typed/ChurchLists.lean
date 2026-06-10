@@ -123,7 +123,7 @@ theorem churchCons_subst_consHandler (head tail consHandler : RawTerm 0) :
             (appCell
               (appCell (RawTerm.weaken tail) (RawTerm.weaken consHandler))
               (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) := by
-  unfold RawTerm.subst0 churchListDomainAnn
+  dsimp only [RawTerm.subst0, churchListDomainAnn]
   show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
       (appCell
         (appCell _ (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton consHandler))

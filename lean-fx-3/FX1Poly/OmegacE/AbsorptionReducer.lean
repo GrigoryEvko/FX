@@ -70,9 +70,9 @@ theorem absorptionReduceCells_isSome_append_right {dimension : Nat}
       | nil => intro hxs; exact Bool.noConfusion hxs
       | cons second rest =>
           intro hxs
-          simp only [absorptionReduceCells] at hxs
+          dsimp only [absorptionReduceCells] at hxs
           rw [List.cons_append, List.cons_append]
-          simp only [absorptionReduceCells]
+          dsimp only [absorptionReduceCells]
           by_cases hcond : (first = vanishingCell ∧ second = survivingCell)
               ∨ (first = survivingCell ∧ second = vanishingCell)
           · rw [if_pos hcond]; rfl
@@ -98,7 +98,7 @@ theorem absorptionReduceCells_isSome_append_left {dimension : Nat}
       cases hzs : xs' ++ ys with
       | nil => rw [hzs] at tail; exact Bool.noConfusion tail
       | cons second rest =>
-          simp only [absorptionReduceCells]
+          dsimp only [absorptionReduceCells]
           by_cases hcond : (first = vanishingCell ∧ second = survivingCell)
               ∨ (first = survivingCell ∧ second = vanishingCell)
           · rw [if_pos hcond]; rfl
@@ -119,7 +119,7 @@ theorem absorptionReduceCells_sound {dimension : Nat}
       | nil => intro ys hred; simp only [absorptionReduceCells] at hred; nomatch hred
       | cons second rest =>
           intro ys hred
-          simp only [absorptionReduceCells] at hred
+          dsimp only [absorptionReduceCells] at hred
           by_cases hcond : (first = vanishingCell ∧ second = survivingCell)
               ∨ (first = survivingCell ∧ second = vanishingCell)
           · rw [if_pos hcond] at hred
@@ -136,11 +136,11 @@ theorem absorptionReduceCells_sound {dimension : Nat}
             cases hinner : absorptionReduceCells vanishingCell survivingCell (second :: rest) with
             | none =>
                 rw [hinner] at hred
-                simp only [Option.map_none] at hred
+                dsimp only [Option.map_none] at hred
                 nomatch hred
             | some zs =>
                 rw [hinner] at hred
-                simp only [Option.map_some] at hred
+                dsimp only [Option.map_some] at hred
                 injection hred with hys
                 subst hys
                 exact OmegacEWord.RewritesOneStep.underLeftContext ⟨[first]⟩ (ihTail hinner)
@@ -176,27 +176,27 @@ def absorptionWordReducer {dimension : Nat} (vanishingCell survivingCell : Omega
   reduceOnce := absorptionReduceOnce vanishingCell survivingCell
   reduceOnce_sound := by
     intro word reduct hred
-    simp only [absorptionReduceOnce] at hred
+    dsimp only [absorptionReduceOnce] at hred
     cases hcells : absorptionReduceCells vanishingCell survivingCell word.cells with
     | none =>
         rw [hcells] at hred
-        simp only [Option.map_none] at hred
+        dsimp only [Option.map_none] at hred
         nomatch hred
     | some ys =>
         rw [hcells] at hred
-        simp only [Option.map_some] at hred
+        dsimp only [Option.map_some] at hred
         injection hred with hreduct
         subst hreduct
         exact absorptionReduceCells_sound vanishingCell survivingCell hcells
   reduceOnce_complete := by
     intro word hnone reduct step
     have isSome := absorptionRewrite_implies_reduceCells_isSome vanishingCell survivingCell step
-    simp only [absorptionReduceOnce] at hnone
+    dsimp only [absorptionReduceOnce] at hnone
     cases hcells : absorptionReduceCells vanishingCell survivingCell word.cells with
     | none => rw [hcells] at isSome; exact Bool.noConfusion isSome
     | some ys =>
         rw [hcells] at hnone
-        simp only [Option.map_some] at hnone
+        dsimp only [Option.map_some] at hnone
         nomatch hnone
 
 def decidableConvertibleModulo_absorptionSystem {dimension : Nat}

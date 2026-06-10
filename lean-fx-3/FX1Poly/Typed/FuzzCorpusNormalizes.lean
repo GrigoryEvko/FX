@@ -41,7 +41,7 @@ theorem metatheoryFuzzFamily_normalizesToType0 {profile : PolyProfile} (n : Nat)
     (metatheoryFuzzFamily_typed (profile := profile) n).normalForm
       = universeCodeCell LevelExpr.lzero UniverseFlag.standard :=
   ((metatheoryFuzzFamily_typed (profile := profile) n).reachedNormalForm_eq_normalForm
-    (metatheoryFuzzFamily_reducesToType0 n) (by decide)).symm
+    (metatheoryFuzzFamily_reducesToType0 n) rfl).symm
 
 /-- The verified SN-normalizer computes every constant-tower member to `Type@0` — the argument-discarding twin,
 each member reaching `Type@0` in a single β-step. -/
@@ -49,7 +49,7 @@ theorem metatheoryFuzzConstantFamily_normalizesToType0 {profile : PolyProfile} (
     (metatheoryFuzzConstantFamily_typed (profile := profile) n).normalForm
       = universeCodeCell LevelExpr.lzero UniverseFlag.standard :=
   ((metatheoryFuzzConstantFamily_typed (profile := profile) n).reachedNormalForm_eq_normalForm
-    (metatheoryFuzzConstantFamily_reducesToType0 n) (by decide)).symm
+    (metatheoryFuzzConstantFamily_reducesToType0 n) rfl).symm
 
 /-- ★ **The two fuzz families' computed normal forms coincide.**  The normalizer keyed on an identity-tower
 member's derivation and on a constant-tower member's derivation produce the SAME output cell (`Type@0`).  Via

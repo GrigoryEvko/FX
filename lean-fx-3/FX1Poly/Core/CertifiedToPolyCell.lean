@@ -110,7 +110,7 @@ theorem Certified.toHasCertifiedCellDim0
   -- risk on unfold), so `unfold` is the cleanest expansion path.
   -- The wrapper just packs the exact-certifier's result; we
   -- case-analyze on the inner call's result.
-  unfold inferRawCellGeneral? at accepted
+  dsimp only [inferRawCellGeneral?] at accepted
   cases hExact : certifyRawCellExact? (profile := profile) scope
                     (.termBase raw) with
   | error rejection =>

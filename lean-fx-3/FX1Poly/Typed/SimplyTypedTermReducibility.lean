@@ -307,10 +307,10 @@ theorem IsReducibleMemberAt.sigmaIdentity {scope : Nat} {level : Nat}
     fun _reduct => WeakHeadStep.not_from_sigmaTyCode
   have sigmaNotPiType :
       (sigmaTyCodeCell domainCode codomainCode).rootGenerator ≠ Generator.gen_piTyCode :=
-    show Generator.gen_sigmaTyCode ≠ Generator.gen_piTyCode by decide
+    nofun
   have sigmaNotUniverse :
       (sigmaTyCodeCell domainCode codomainCode).rootGenerator ≠ Generator.gen_universeCode :=
-    show Generator.gen_sigmaTyCode ≠ Generator.gen_universeCode by decide
+    nofun
   have sigmaCellSN : IsStronglyNormalizing (sigmaTyCodeCell domainCode codomainCode) :=
     sigmaTyCode_isStronglyNormalizing_of_domain_codomain domainSN codomainSN
   have codomainReducibleType : IsReducibleTypeAt level (sigmaTyCodeCell domainCode codomainCode) :=

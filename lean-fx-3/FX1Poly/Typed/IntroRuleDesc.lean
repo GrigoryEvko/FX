@@ -83,7 +83,7 @@ theorem introRuleDescOf_outputIsPiIntro {generator : Generator} {rule : IntroRul
     have hRule : rule = { outputType := piIntroOutput } := Option.some.inj isIntro.symm
     rw [hRule]
   · exfalso
-    unfold introRuleDescOf at isIntro
+    dsimp only [introRuleDescOf] at isIntro
     rw [if_neg hLam] at isIntro
     contradiction
 
@@ -98,7 +98,7 @@ theorem introRuleDescOf_isLam {generator : Generator} {rule : IntroRuleDesc}
   by_cases hLam : generator = .gen_lam
   · exact hLam
   · exfalso
-    unfold introRuleDescOf at isIntro
+    dsimp only [introRuleDescOf] at isIntro
     rw [if_neg hLam] at isIntro
     contradiction
 

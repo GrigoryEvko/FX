@@ -107,7 +107,7 @@ theorem flatTypingRuleDescOf_outputIsUniverseFormer {generator : Generator} {rul
             have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFlatFormation.symm
             rw [hRule]
           · exfalso
-            unfold flatTypingRuleDescOf at isFlatFormation
+            dsimp only [flatTypingRuleDescOf] at isFlatFormation
             rw [if_neg hProduct, if_neg hSum, if_neg hEither, if_neg hArrow, if_neg hEquiv] at isFlatFormation
             contradiction
 
@@ -119,7 +119,7 @@ theorem flatFormationRuleImpliesNotVariable {generator : Generator} {rule : Typi
     generator ≠ Generator.gen_var := by
   intro isVariable
   subst isVariable
-  unfold flatTypingRuleDescOf at isFlatFormation
+  dsimp only [flatTypingRuleDescOf] at isFlatFormation
   rw [if_neg (fun isProduct => Generator.noConfusion isProduct),
     if_neg (fun isSum => Generator.noConfusion isSum),
     if_neg (fun isEither => Generator.noConfusion isEither),

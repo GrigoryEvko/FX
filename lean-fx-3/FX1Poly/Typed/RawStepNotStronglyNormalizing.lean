@@ -105,7 +105,7 @@ theorem rawStep_notStronglyNormalizing : ¬ HasStrongNormalization :=
 variable — a neutral application with no redex anywhere — so no `Step` fires.  Decided structurally
 (`by decide`, no `Decidable`-instance axiom leak).  The fact the `Ω`-reduct inversion consumes to refute the two
 congruence shapes of `Step.from_app`. -/
-theorem selfApplicator_isStepNormalForm : RawTerm.isStepNormalForm selfApplicatorCell := by decide
+theorem selfApplicator_isStepNormalForm : RawTerm.isStepNormalForm selfApplicatorCell := rfl
 
 /-- **`Ω`'s only one-step reduct is `Ω`.**  `Step.from_app` inverts a step out of the application
 `(λx. x x)(λx. x x)` into three shapes: a β-contraction, a step inside the function, or a step inside the

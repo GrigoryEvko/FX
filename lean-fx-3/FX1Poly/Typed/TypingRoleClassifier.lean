@@ -119,7 +119,7 @@ disjointness guarantees). -/
 theorem typingRoleOf_formation_of {generator : Generator}
     (isFormation : (typingRuleDescOf generator).isSome = true) :
     typingRoleOf generator = some TypingRole.formation := by
-  unfold typingRoleOf
+  dsimp only [typingRoleOf]
   rw [if_pos isFormation]
 
 /-- An introduction former is classified as `intro` — consumes `typingRuleDescOf_excludesIntro` (the
@@ -128,7 +128,7 @@ theorem typingRoleOf_intro_of {generator : Generator} {rule : IntroRuleDesc}
     (isIntro : introRuleDescOf generator = some rule) :
     typingRoleOf generator = some TypingRole.intro := by
   have formationNone : typingRuleDescOf generator = none := typingRuleDescOf_excludesIntro isIntro
-  unfold typingRoleOf
+  dsimp only [typingRoleOf]
   rw [formationNone, Option.isSome_none, if_neg (by decide), isIntro, Option.isSome_some, if_pos rfl]
 
 /-- An elimination former is classified as `elim` — consumes `typingRuleDescOf_excludesElim` and
@@ -138,7 +138,7 @@ theorem typingRoleOf_elim_of {generator : Generator} {rule : ElimRuleDesc}
     typingRoleOf generator = some TypingRole.elim := by
   have formationNone : typingRuleDescOf generator = none := typingRuleDescOf_excludesElim isElim
   have introNone : introRuleDescOf generator = none := elimRuleDescOf_excludesIntro isElim
-  unfold typingRoleOf
+  dsimp only [typingRoleOf]
   rw [formationNone, Option.isSome_none, if_neg (by decide), introNone, Option.isSome_none,
     if_neg (by decide), isElim, Option.isSome_some, if_pos rfl]
 
@@ -154,7 +154,7 @@ theorem typingRoleOf_isNone_iff (generator : Generator) :
         elimRuleDescOf generator = none := by
   constructor
   · intro roleNone
-    unfold typingRoleOf at roleNone
+    dsimp only [typingRoleOf] at roleNone
     cases hFormation : typingRuleDescOf generator with
     | some rule =>
         rw [hFormation, Option.isSome_some, if_pos rfl] at roleNone
@@ -173,7 +173,7 @@ theorem typingRoleOf_isNone_iff (generator : Generator) :
                 exact absurd roleNone (by decide)
             | none => exact ⟨rfl, rfl, rfl⟩
   · intro ⟨formationNone, introNone, elimNone⟩
-    unfold typingRoleOf
+    dsimp only [typingRoleOf]
     rw [formationNone, Option.isSome_none, if_neg (by decide), introNone, Option.isSome_none,
       if_neg (by decide), elimNone, Option.isSome_none, if_neg (by decide)]
 

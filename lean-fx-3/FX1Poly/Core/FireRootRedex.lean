@@ -530,7 +530,7 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                                   rw [key] at fired; nomatch fired
                       · -- generator is none of the redex generators: fireRootRedex returns none.
                         rw [show RawTerm.fireRootRedex generator payload children = none from by
-                          unfold RawTerm.fireRootRedex
+                          dsimp only [RawTerm.fireRootRedex]
                           rw [dif_neg hApp, dif_neg hBoolElim, dif_neg hFst, dif_neg hSnd,
                             dif_neg hNatElim, dif_neg hNatRec, dif_neg hListElim, dif_neg hOptionMatch,
                             dif_neg hEitherMatch, dif_neg hIdJ, dif_neg hIdStrictRec]] at fired

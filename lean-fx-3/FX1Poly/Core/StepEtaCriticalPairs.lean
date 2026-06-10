@@ -120,7 +120,7 @@ theorem subst0_lift_weaken_newestVar {scope : Nat}
         (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
         (RawTerm.newestVar (scope := scope)) =
       body := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   rw [RawTerm.rename_subst_commute]
   rw [RawTerm.subst_pointwise
     RawTermSubst.lift_weaken_then_singleton_newest_pointwise body]

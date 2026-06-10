@@ -52,7 +52,7 @@ theorem HasTypeDescPi.invertFormerTelescopeWithConvGeneric {profile : PolyProfil
         have rootEq : Generator.gen_lam = generator :=
           congrArg RawTerm.headGenerator subjectEq
         rw [← rootEq] at isFormation
-        unfold typingRuleDescOf at isFormation
+        dsimp only [typingRuleDescOf] at isFormation
         rw [if_neg (fun isPi => Generator.noConfusion isPi),
           if_neg (fun isSigma => Generator.noConfusion isSigma),
           if_neg (fun isList => Generator.noConfusion isList)] at isFormation
@@ -61,7 +61,7 @@ theorem HasTypeDescPi.invertFormerTelescopeWithConvGeneric {profile : PolyProfil
         have rootEq : Generator.gen_app = generator :=
           congrArg RawTerm.headGenerator subjectEq
         rw [← rootEq] at isFormation
-        unfold typingRuleDescOf at isFormation
+        dsimp only [typingRuleDescOf] at isFormation
         rw [if_neg (fun isPi => Generator.noConfusion isPi),
           if_neg (fun isSigma => Generator.noConfusion isSigma),
           if_neg (fun isList => Generator.noConfusion isList)] at isFormation

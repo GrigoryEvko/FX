@@ -381,7 +381,7 @@ theorem GradeVectorOver.substInto_appGrade {R : OrderedGradeSemiring}
   have scaleLen : functionGrades.length =
       (GradeVectorOver.scale binderGrade argumentGrades).length := by
     rw [GradeVectorOver.scale_length]; exact lenEq
-  simp only [GradeVectorOver.substInto]
+  dsimp only [GradeVectorOver.substInto]
   rw [GradeVectorOver.removeAt_add cutDepth functionGrades
         (GradeVectorOver.scale binderGrade argumentGrades) scaleLen,
       GradeVectorOver.removeAt_scale,

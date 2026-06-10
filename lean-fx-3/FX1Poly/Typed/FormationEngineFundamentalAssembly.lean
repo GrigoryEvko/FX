@@ -167,7 +167,7 @@ theorem formationFundamentalVectorOfAllVariablesPositive {profile : PolyProfile}
                   exact IsReducibleMemberAt.unitFormerInUniverse LevelExpr.lzero
                     UniverseFlag.standard
             · exfalso
-              unfold typingRuleDescOf at isFormation
+              dsimp only [typingRuleDescOf] at isFormation
               rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
                 if_neg isUnitFormer] at isFormation
               contradiction
@@ -179,7 +179,7 @@ theorem formationFundamentalVectorOfAllVariablesPositive {profile : PolyProfile}
     intro _baseScope _currentDepth _restShifts _context _head _headLevel _restLevels _flag _rest
       _headTyped _restTyped headFundamental restFundamental
     intro _targetScope substitution _envLevels predLevel env shapeEq
-    simp only [List.length_cons, consecutiveShifts] at shapeEq
+    dsimp only [List.length_cons, consecutiveShifts] at shapeEq
     obtain ⟨_headShiftEq, restShapeEq⟩ := List.cons.inj shapeEq
     subst restShapeEq
     refine ⟨fun level => ?_, fun {_memberLevel} argument argumentMember => ?_⟩

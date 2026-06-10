@@ -58,7 +58,7 @@ theorem saTermBody_subst_b (a b : RawTerm 0) :
           (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
             (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))) b
       = sabTerm a b := by
-  unfold RawTerm.subst0 sabTerm
+  dsimp only [RawTerm.subst0, sabTerm]
   show lamCell combinatorDomainAnn (appCell
       (appCell (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton b))
         (RawTerm.weaken (RawTerm.weaken a))) _) _) = _
@@ -72,7 +72,7 @@ theorem sabTermBody_subst_c (a b c : RawTerm 0) :
         (appCell (appCell (RawTerm.weaken a) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
           (appCell (RawTerm.weaken b) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) c
       = appCell (appCell a c) (appCell b c) := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   show appCell (appCell (RawTerm.subst (RawTermSubst.singleton c) (RawTerm.weaken a)) _)
       (appCell (RawTerm.subst (RawTermSubst.singleton c) (RawTerm.weaken b)) _) = _
   rw [RawTerm.weaken_subst_singleton a c, RawTerm.weaken_subst_singleton b c]

@@ -251,7 +251,7 @@ theorem annotationCollapseForms_notBetaEtaConv :
   exact absurd
     (show false = true from
       congrArg hasVariableBodyUnderLam (etaLongIsCommon.trans commonIsVariableBodied))
-    (by decide)
+    Bool.false_ne_true
 
 /-- **★ The 9th boundary, against the FROZEN deep-collapse ingredient**: a pair of λ-terms BOTH
 grown-typed at the same formation-typed classifier `Π(_:Unit).Unit` in the wf empty context,

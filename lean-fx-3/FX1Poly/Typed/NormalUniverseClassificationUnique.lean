@@ -48,7 +48,7 @@ theorem typingRuleDescOf_binderShiftsNonempty {generator : Generator} {rule : Ty
         · subst isOption
           exact fun emptyShifts => nomatch emptyShifts
         · exfalso
-          unfold typingRuleDescOf at isFormation
+          dsimp only [typingRuleDescOf] at isFormation
           rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption,
             if_neg isNotNullary] at isFormation
           contradiction

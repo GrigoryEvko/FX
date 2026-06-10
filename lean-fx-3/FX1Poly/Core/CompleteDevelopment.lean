@@ -110,7 +110,7 @@ theorem RawTerm.fireRootRedexOrSelf_stepStar {scope : Nat} {generator : Generato
     {children : RawTermChildren generator.binderShifts scope} :
     StepStar (.mkGen generator payload children)
       (RawTerm.fireRootRedexOrSelf generator payload children) := by
-  unfold RawTerm.fireRootRedexOrSelf
+  dsimp only [RawTerm.fireRootRedexOrSelf]
   cases hFired : RawTerm.fireRootRedex generator payload children with
   | none => exact StepStar.refl _
   | some reduct => exact StepStar.single (RawTerm.fireRootRedex_sound hFired)
@@ -123,7 +123,7 @@ theorem RawTerm.fireRootRedexOrSelfGated_stepStar {scope : Nat} {generator : Gen
     {originalChildren developedChildren : RawTermChildren generator.binderShifts scope} :
     StepStar (.mkGen generator payload developedChildren)
       (RawTerm.fireRootRedexOrSelfGated generator payload originalChildren developedChildren) := by
-  unfold RawTerm.fireRootRedexOrSelfGated
+  dsimp only [RawTerm.fireRootRedexOrSelfGated]
   cases RawTerm.fireRootRedex generator payload originalChildren with
   | some _ => exact RawTerm.fireRootRedexOrSelf_stepStar
   | none => exact StepStar.refl _

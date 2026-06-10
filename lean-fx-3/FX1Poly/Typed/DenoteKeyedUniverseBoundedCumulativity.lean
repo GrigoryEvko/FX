@@ -61,7 +61,7 @@ theorem universeDenoteCandidate_boundIndependent {scope : Nat} (env : Nat → Na
     (typeCode : RawTerm scope) :
     universeDenotePredicate env (denoteBelowFamily env lowerLevel) levelExpr typeCode ↔
       universeDenotePredicate env (denoteBelowFamily env higherLevel) levelExpr typeCode := by
-  simp only [universeDenotePredicate]
+  dsimp only [universeDenotePredicate]
   rw [denoteBelowFamily_eq_reducible env lowerLevel (LevelExpr.denote levelExpr env) belowLower,
       denoteBelowFamily_eq_reducible env higherLevel (LevelExpr.denote levelExpr env) belowHigher]
 

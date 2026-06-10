@@ -54,7 +54,7 @@ theorem RawTerm.completeDevelopment_parStep {scope0 : Nat} (term0 : RawTerm scop
         show ParStep (.mkGen gen payload children)
           (RawTerm.fireRootRedexOrSelfGated gen payload children
             (RawTerm.completeDevelopmentChildren children))
-        unfold RawTerm.fireRootRedexOrSelfGated
+        dsimp only [RawTerm.fireRootRedexOrSelfGated]
         cases hfire : RawTerm.fireRootRedex gen payload children with
         | none => exact ParStep.cong gen payload childrenIH
         | some reduct =>
@@ -311,7 +311,7 @@ theorem RawTerm.completeDevelopment_parStep {scope0 : Nat} (term0 : RawTerm scop
                                               rw [key] at hfire; nomatch hfire
                                 · -- non-redex generator: fireRootRedex = none, contradicts hfire
                                   rw [show RawTerm.fireRootRedex gen payload children = none from by
-                                    unfold RawTerm.fireRootRedex
+                                    dsimp only [RawTerm.fireRootRedex]
                                     rw [dif_neg hApp, dif_neg hBoolElim, dif_neg hFst, dif_neg hSnd,
                                       dif_neg hNatElim, dif_neg hNatRec, dif_neg hListElim, dif_neg hOptionMatch,
                                       dif_neg hEitherMatch, dif_neg hIdJ, dif_neg hIdStrictRec]] at hfire

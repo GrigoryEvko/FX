@@ -92,7 +92,7 @@ theorem UniverseFlag.decode_encodeOnto (flag : UniverseFlag) (acc : List Nat) :
 `flag` exactly, with empty residue. -/
 theorem UniverseFlag.decode_encodePrefix (flag : UniverseFlag) :
     UniverseFlag.decode (flag.encodePrefix) = some (flag, []) := by
-  simp only [UniverseFlag.encodePrefix]
+  dsimp only [UniverseFlag.encodePrefix]
   exact UniverseFlag.decode_encodeOnto flag []
 
 end FX1Poly.Universe

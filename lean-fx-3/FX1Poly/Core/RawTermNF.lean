@@ -298,12 +298,12 @@ def isClosed {scope : Nat} (sourceTerm : RawTerm scope) : Prop :=
 instance instDecidableIsStepNormalForm {scope : Nat}
     (sourceTerm : RawTerm scope) :
     Decidable (RawTerm.isStepNormalForm sourceTerm) := by
-  unfold RawTerm.isStepNormalForm
+  dsimp only [RawTerm.isStepNormalForm]
   exact inferInstance
 
 instance instDecidableIsClosed {scope : Nat} (sourceTerm : RawTerm scope) :
     Decidable (RawTerm.isClosed sourceTerm) := by
-  unfold RawTerm.isClosed
+  dsimp only [RawTerm.isClosed]
   exact inferInstance
 
 end RawTerm
@@ -319,7 +319,7 @@ instance instDecidableAreStepNormalForms {binderShifts : List Nat}
     {scope : Nat} (sourceChildren : RawTermChildren binderShifts scope) :
     Decidable
       (RawTermChildren.areStepNormalForms sourceChildren) := by
-  unfold RawTermChildren.areStepNormalForms
+  dsimp only [RawTermChildren.areStepNormalForms]
   exact inferInstance
 
 end RawTermChildren
@@ -335,7 +335,7 @@ theorem RawTerm.isStepNormalForm_blocks_step {scope : Nat}
   intro reduction
   match sourceTerm with
   | .mkGen generator payload children =>
-      unfold RawTerm.isStepNormalForm at normalSource
+      dsimp only [RawTerm.isStepNormalForm] at normalSource
       dsimp only [RawTerm.isStepNormalFormBool] at normalSource
       cases rootValue : RawTerm.hasRootStepSource
           (.mkGen generator payload children) <;>
@@ -365,7 +365,7 @@ theorem RawTermChildren.areStepNormalForms_blocks_stepChildren
   | [], .childNil =>
       exact StepChildren.no_step_at_empty_spine childReduction
   | _headShift :: _, .childCons childHead childTail =>
-      unfold RawTermChildren.areStepNormalForms at normalChildren
+      dsimp only [RawTermChildren.areStepNormalForms] at normalChildren
       change
         (RawTerm.isStepNormalFormBool childHead &&
             RawTermChildren.areStepNormalFormsBool childTail) =
@@ -394,7 +394,7 @@ namespace RawTerm
 theorem isClosed_unit_smoke {scope : Nat} :
     RawTerm.isClosed
       (.mkGen .gen_unit () .childNil : RawTerm scope) := by
-  unfold RawTerm.isClosed
+  dsimp only [RawTerm.isClosed]
   dsimp only [RawTerm.freeVars]
   rw [dif_neg]
   · exact RawVarSet.isEmpty_empty

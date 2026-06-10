@@ -66,7 +66,7 @@ push of `subst0` through the application cell. -/
 theorem subst0_etaLamSource_body {scope : Nat} (innerFunction argument : RawTerm scope) :
     RawTerm.subst0 (appCell (RawTerm.weaken innerFunction) RawTerm.newestVar) argument
       = appCell innerFunction argument := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   show appCell (RawTerm.subst (RawTermSubst.singleton argument) (RawTerm.weaken innerFunction))
        (RawTerm.subst (RawTermSubst.singleton argument) RawTerm.newestVar) = appCell innerFunction argument
   rw [RawTerm.weaken_subst_singleton innerFunction argument,

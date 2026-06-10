@@ -134,26 +134,21 @@ theorem size_decreases {scope : Nat}
     targetTerm.size < sourceTerm.size := by
   cases etaStep with
   | etaLam =>
-      unfold RawTerm.etaLamSource RawTerm.newestVar
-      dsimp only [RawTerm.size, RawTermChildren.size]
+      dsimp only [RawTerm.etaLamSource, RawTerm.newestVar, RawTerm.size, RawTermChildren.size]
       rw [RawTerm.size_weaken targetTerm]
       exact lt_etaLamAnnotatedSource_size _ targetTerm.size
   | etaPair =>
-      unfold RawTerm.etaPairSource
-      dsimp only [RawTerm.size, RawTermChildren.size]
+      dsimp only [RawTerm.etaPairSource, RawTerm.size, RawTermChildren.size]
       exact lt_etaPairSource_size targetTerm.size
   | etaPathLam =>
-      unfold RawTerm.etaPathLamSource RawTerm.newestVar
-      dsimp only [RawTerm.size, RawTermChildren.size]
+      dsimp only [RawTerm.etaPathLamSource, RawTerm.newestVar, RawTerm.size, RawTermChildren.size]
       rw [RawTerm.size_weaken targetTerm]
       exact lt_etaLamSource_size targetTerm.size
   | etaModIntro =>
-      unfold RawTerm.etaModIntroSource
-      dsimp only [RawTerm.size, RawTermChildren.size]
+      dsimp only [RawTerm.etaModIntroSource, RawTerm.size, RawTermChildren.size]
       exact lt_etaModIntroSource_size targetTerm.size
   | etaGlueIntro =>
-      unfold RawTerm.etaGlueIntroSource
-      dsimp only [RawTerm.size, RawTermChildren.size]
+      dsimp only [RawTerm.etaGlueIntroSource, RawTerm.size, RawTermChildren.size]
       exact lt_etaGlueIntroSource_size targetTerm.size
 
 end Step.eta

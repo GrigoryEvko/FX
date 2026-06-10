@@ -173,23 +173,23 @@ theorem LevelExpr.decodeOnto_encodeOnto (expr : LevelExpr) :
   | lzero =>
     intro fuel acc hFuel
     cases fuel with
-    | zero => simp only [LevelExpr.nodeCount] at hFuel; exact absurd hFuel (Nat.not_succ_le_zero _)
+    | zero => dsimp only [LevelExpr.nodeCount] at hFuel; exact absurd hFuel (Nat.not_succ_le_zero _)
     | succ fuelPred => rfl
   | lsucc inner ihInner =>
     intro fuel acc hFuel
     cases fuel with
-    | zero => simp only [LevelExpr.nodeCount] at hFuel; exact absurd hFuel (Nat.not_succ_le_zero _)
+    | zero => dsimp only [LevelExpr.nodeCount] at hFuel; exact absurd hFuel (Nat.not_succ_le_zero _)
     | succ fuelPred =>
       have hInner : inner.nodeCount ≤ fuelPred := by
-        simp only [LevelExpr.nodeCount] at hFuel
+        dsimp only [LevelExpr.nodeCount] at hFuel
         exact Nat.le_of_succ_le_succ hFuel
       rw [LevelExpr.decodeOnto_encodeOnto_lsucc, ihInner fuelPred acc hInner]
   | lmax left right ihLeft ihRight =>
     intro fuel acc hFuel
     cases fuel with
-    | zero => simp only [LevelExpr.nodeCount] at hFuel; exact absurd hFuel (Nat.not_succ_le_zero _)
+    | zero => dsimp only [LevelExpr.nodeCount] at hFuel; exact absurd hFuel (Nat.not_succ_le_zero _)
     | succ fuelPred =>
-      simp only [LevelExpr.nodeCount] at hFuel
+      dsimp only [LevelExpr.nodeCount] at hFuel
       have hLeft : left.nodeCount ≤ fuelPred :=
         Nat.le_of_succ_le_succ
           (Nat.le_trans (Nat.succ_le_succ (Nat.le_add_right left.nodeCount right.nodeCount)) hFuel)
@@ -202,9 +202,9 @@ theorem LevelExpr.decodeOnto_encodeOnto (expr : LevelExpr) :
   | limax left right ihLeft ihRight =>
     intro fuel acc hFuel
     cases fuel with
-    | zero => simp only [LevelExpr.nodeCount] at hFuel; exact absurd hFuel (Nat.not_succ_le_zero _)
+    | zero => dsimp only [LevelExpr.nodeCount] at hFuel; exact absurd hFuel (Nat.not_succ_le_zero _)
     | succ fuelPred =>
-      simp only [LevelExpr.nodeCount] at hFuel
+      dsimp only [LevelExpr.nodeCount] at hFuel
       have hLeft : left.nodeCount ≤ fuelPred :=
         Nat.le_of_succ_le_succ
           (Nat.le_trans (Nat.succ_le_succ (Nat.le_add_right left.nodeCount right.nodeCount)) hFuel)
@@ -217,7 +217,7 @@ theorem LevelExpr.decodeOnto_encodeOnto (expr : LevelExpr) :
   | lvar index =>
     intro fuel acc hFuel
     cases fuel with
-    | zero => simp only [LevelExpr.nodeCount] at hFuel; exact absurd hFuel (Nat.not_succ_le_zero _)
+    | zero => dsimp only [LevelExpr.nodeCount] at hFuel; exact absurd hFuel (Nat.not_succ_le_zero _)
     | succ fuelPred => rfl
 
 /-- Headline serializer round-trip: decoding `encodePrefix e` at fuel
@@ -225,7 +225,7 @@ theorem LevelExpr.decodeOnto_encodeOnto (expr : LevelExpr) :
 sufficiency is `Nat.le_refl` — no length estimate needed. -/
 theorem LevelExpr.decodeOnto_nodeCount_encodePrefix (expr : LevelExpr) :
     LevelExpr.decodeOnto expr.nodeCount (expr.encodePrefix) = some (expr, []) := by
-  simp only [LevelExpr.encodePrefix]
+  dsimp only [LevelExpr.encodePrefix]
   exact LevelExpr.decodeOnto_encodeOnto expr expr.nodeCount [] (Nat.le_refl _)
 
 end FX1Poly.Universe

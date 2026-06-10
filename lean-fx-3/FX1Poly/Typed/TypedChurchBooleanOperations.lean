@@ -154,7 +154,7 @@ theorem churchAndBody_subst_a (selectorArg : RawTerm 0) :
         RawTerm.newestVar)
         (RawTerm.weaken (RawTerm.weaken churchFalseLambda)))) selectorArg
       = churchAndPartial selectorArg := by
-  unfold RawTerm.subst0 churchAndPartial boolOperationDomainAnn
+  dsimp only [RawTerm.subst0, churchAndPartial, boolOperationDomainAnn]
   show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (appCell (appCell (appCell
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton selectorArg))
         (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
@@ -181,7 +181,7 @@ theorem churchAndPartialBody_subst_b (selectorArg secondArg : RawTerm 0) :
         RawTerm.newestVar)
         (RawTerm.weaken churchFalseLambda)) secondArg
       = appCell (appCell (appCell selectorArg branchMotivePlaceholder) secondArg) churchFalseLambda := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   show appCell (appCell (appCell
       (RawTerm.subst (RawTermSubst.singleton secondArg) (RawTerm.weaken selectorArg))
       (RawTerm.subst (RawTermSubst.singleton secondArg) (RawTerm.weaken branchMotivePlaceholder)))
@@ -256,7 +256,7 @@ theorem churchOrBody_subst_a (selectorArg : RawTerm 0) :
         (RawTerm.weaken (RawTerm.weaken churchTrueLambda)))
         RawTerm.newestVar)) selectorArg
       = churchOrPartial selectorArg := by
-  unfold RawTerm.subst0 churchOrPartial boolOperationDomainAnn
+  dsimp only [RawTerm.subst0, churchOrPartial, boolOperationDomainAnn]
   show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (appCell (appCell (appCell
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton selectorArg))
         (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
@@ -282,7 +282,7 @@ theorem churchOrPartialBody_subst_b (selectorArg secondArg : RawTerm 0) :
         (RawTerm.weaken churchTrueLambda))
         RawTerm.newestVar) secondArg
       = appCell (appCell (appCell selectorArg branchMotivePlaceholder) churchTrueLambda) secondArg := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   show appCell (appCell (appCell
       (RawTerm.subst (RawTermSubst.singleton secondArg) (RawTerm.weaken selectorArg))
       (RawTerm.subst (RawTermSubst.singleton secondArg) (RawTerm.weaken branchMotivePlaceholder)))

@@ -130,7 +130,7 @@ theorem closedIdentityAppRedex_evaluation {profile : PolyProfile} :
     StepStar.single closedIdentityAppRedex_betaStep
   have type0Normal :
       RawTerm.isStepNormalForm (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0) := by
-    decide
+    rfl
   have type0EqValue :
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0) = _value :=
     valueUnique _ redexReachesType0 type0Normal

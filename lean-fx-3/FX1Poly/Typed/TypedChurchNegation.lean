@@ -73,7 +73,7 @@ theorem churchNotBody_substitutesToFlippedApplication (boolArg : RawTerm 0) :
     RawTerm.subst0 (appCell (appCell (appCell RawTerm.newestVar (RawTerm.weaken branchMotivePlaceholder))
       (RawTerm.weaken churchFalseLambda)) (RawTerm.weaken churchTrueLambda)) boolArg
       = appCell (appCell (appCell boolArg branchMotivePlaceholder) churchFalseLambda) churchTrueLambda := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   show appCell (appCell (appCell (RawTerm.subst (RawTermSubst.singleton boolArg) RawTerm.newestVar)
       (RawTerm.subst (RawTermSubst.singleton boolArg) (RawTerm.weaken branchMotivePlaceholder)))
       (RawTerm.subst (RawTermSubst.singleton boolArg) (RawTerm.weaken churchFalseLambda)))

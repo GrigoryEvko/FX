@@ -86,7 +86,7 @@ theorem HasTypeDesc.subjectIsVariableOrFormerHead {profile : PolyProfile} {scope
           · by_cases isUnit : generator = Generator.gen_unitCode
             · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isUnit; rfl))))))
             · exfalso
-              unfold typingRuleDescOf at isFormation
+              dsimp only [typingRuleDescOf] at isFormation
               rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption, if_neg isUnit]
                 at isFormation
               contradiction

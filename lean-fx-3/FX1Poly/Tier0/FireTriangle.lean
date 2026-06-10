@@ -30,19 +30,19 @@ def FireTriangleConfig.isAdmissible (config : FireTriangleConfig) : Bool :=
 
 theorem FireTriangleConfig.allThree_not_admissible :
     (FireTriangleConfig.mk true true true).isAdmissible = false := by
-  decide
+  rfl
 
 theorem FireTriangleConfig.twoLegs_admissible_subst_depElim :
     (FireTriangleConfig.mk true true false).isAdmissible = true := by
-  decide
+  rfl
 
 theorem FireTriangleConfig.twoLegs_admissible_subst_effects :
     (FireTriangleConfig.mk true false true).isAdmissible = true := by
-  decide
+  rfl
 
 theorem FireTriangleConfig.twoLegs_admissible_depElim_effects :
     (FireTriangleConfig.mk false true true).isAdmissible = true := by
-  decide
+  rfl
 
 def FireTriangleConfig.fromRestriction : Option FireTriangleLeg → FireTriangleConfig
   | none => ⟨true, true, false⟩
@@ -54,8 +54,8 @@ theorem FireTriangleConfig.fromRestriction_admissible
     (restriction : Option FireTriangleLeg) :
     (fromRestriction restriction).isAdmissible = true := by
   cases restriction with
-  | none => decide
-  | some leg => cases leg <;> decide
+  | none => rfl
+  | some leg => cases leg <;> rfl
 
 /-- ∂CBPV evaluation strategies — each restricts exactly one leg. -/
 inductive CBPVStrategy where
@@ -88,7 +88,7 @@ def fxDefaultNavigation : FireTriangleNavigation :=
 theorem fxDefaultNavigation_admissible :
     (FireTriangleConfig.fromRestriction
       (some fxDefaultNavigation.restrictedLeg)).isAdmissible = true := by
-  decide
+  rfl
 
 /-- Combine multiple axis restrictions into one config.
 A leg is unrestricted iff NO axis restricts it. -/
@@ -101,6 +101,6 @@ def FireTriangleConfig.combine (restrictions : List (Option FireTriangleLeg)) :
 /-- FX's 13 axes combined: at least effects is restricted (by the default pure posture). -/
 theorem fxAxesCombined_admissible :
     (FireTriangleConfig.combine [some .effects]).isAdmissible = true := by
-  decide
+  rfl
 
 end FX1Poly.Tier0

@@ -100,18 +100,18 @@ def MetatheoreticCapabilities.bot : MetatheoreticCapabilities where
 
 theorem MetatheoreticCapabilities.meet_comm (capA capB : MetatheoreticCapabilities) :
     capA.meet capB = capB.meet capA := by
-  cases capA; cases capB; unfold meet; congr 1 <;> apply CapabilityStatus.meet_comm
+  cases capA; cases capB; dsimp only [MetatheoreticCapabilities.meet]; congr 1 <;> apply CapabilityStatus.meet_comm
 
 theorem MetatheoreticCapabilities.meet_idempotent (cap : MetatheoreticCapabilities) :
     cap.meet cap = cap := by
-  cases cap; unfold meet; congr 1 <;> apply CapabilityStatus.meet_idempotent
+  cases cap; dsimp only [MetatheoreticCapabilities.meet]; congr 1 <;> apply CapabilityStatus.meet_idempotent
 
 theorem MetatheoreticCapabilities.meet_bot_right
     (cap : MetatheoreticCapabilities) :
     cap.meet MetatheoreticCapabilities.bot =
       MetatheoreticCapabilities.bot := by
   cases cap
-  unfold meet MetatheoreticCapabilities.bot
+  dsimp only [MetatheoreticCapabilities.meet, MetatheoreticCapabilities.bot]
   congr 1 <;> apply CapabilityStatus.meet_unavailable_right
 
 inductive ConsistencyStrength : Type where

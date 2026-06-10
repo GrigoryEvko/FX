@@ -71,9 +71,9 @@ theorem sortingReduceCells_isSome_append_right {dimension : Nat}
       | nil => intro hxs; exact Bool.noConfusion hxs
       | cons second rest =>
           intro hxs
-          simp only [sortingReduceCells] at hxs
+          dsimp only [sortingReduceCells] at hxs
           rw [List.cons_append, List.cons_append]
-          simp only [sortingReduceCells]
+          dsimp only [sortingReduceCells]
           by_cases hpair : slotValue second < slotValue first
           · rw [if_pos hpair]; rfl
           · rw [if_neg hpair] at hxs
@@ -99,7 +99,7 @@ theorem sortingReduceCells_isSome_append_left {dimension : Nat}
       cases hzs : xs' ++ ys with
       | nil => rw [hzs] at tail; exact Bool.noConfusion tail
       | cons second rest =>
-          simp only [sortingReduceCells]
+          dsimp only [sortingReduceCells]
           by_cases hpair : slotValue second < slotValue first
           · rw [if_pos hpair]; rfl
           · rw [if_neg hpair, option_isSome_map]
@@ -114,13 +114,13 @@ theorem sortingReduceCells_sound {dimension : Nat} (slotValue : OmegacECell dime
       OmegacEWord.RewritesOneStep (sortingSystem slotValue) ⟨xs⟩ ⟨ys⟩ := by
   intro xs
   induction xs with
-  | nil => intro ys hred; simp only [sortingReduceCells] at hred; nomatch hred
+  | nil => intro ys hred; dsimp only [sortingReduceCells] at hred; nomatch hred
   | cons first xs' ihTail =>
       cases xs' with
-      | nil => intro ys hred; simp only [sortingReduceCells] at hred; nomatch hred
+      | nil => intro ys hred; dsimp only [sortingReduceCells] at hred; nomatch hred
       | cons second rest =>
           intro ys hred
-          simp only [sortingReduceCells] at hred
+          dsimp only [sortingReduceCells] at hred
           by_cases hpair : slotValue second < slotValue first
           · rw [if_pos hpair] at hred
             injection hred with hys
@@ -131,11 +131,11 @@ theorem sortingReduceCells_sound {dimension : Nat} (slotValue : OmegacECell dime
             cases hinner : sortingReduceCells slotValue (second :: rest) with
             | none =>
                 rw [hinner] at hred
-                simp only [Option.map_none] at hred
+                dsimp only [Option.map_none] at hred
                 nomatch hred
             | some zs =>
                 rw [hinner] at hred
-                simp only [Option.map_some] at hred
+                dsimp only [Option.map_some] at hred
                 injection hred with hys
                 subst hys
                 exact OmegacEWord.RewritesOneStep.underLeftContext ⟨[first]⟩ (ihTail hinner)
@@ -172,27 +172,27 @@ def sortingWordReducer {dimension : Nat} (slotValue : OmegacECell dimension → 
   reduceOnce := sortingReduceOnce slotValue
   reduceOnce_sound := by
     intro word reduct hred
-    simp only [sortingReduceOnce] at hred
+    dsimp only [sortingReduceOnce] at hred
     cases hcells : sortingReduceCells slotValue word.cells with
     | none =>
         rw [hcells] at hred
-        simp only [Option.map_none] at hred
+        dsimp only [Option.map_none] at hred
         nomatch hred
     | some ys =>
         rw [hcells] at hred
-        simp only [Option.map_some] at hred
+        dsimp only [Option.map_some] at hred
         injection hred with hreduct
         subst hreduct
         exact sortingReduceCells_sound slotValue hcells
   reduceOnce_complete := by
     intro word hnone reduct step
     have isSome := sortingRewrite_implies_reduceCells_isSome slotValue step
-    simp only [sortingReduceOnce] at hnone
+    dsimp only [sortingReduceOnce] at hnone
     cases hcells : sortingReduceCells slotValue word.cells with
     | none => rw [hcells] at isSome; exact Bool.noConfusion isSome
     | some ys =>
         rw [hcells] at hnone
-        simp only [Option.map_some] at hnone
+        dsimp only [Option.map_some] at hnone
         nomatch hnone
 
 /-- **The sorting-system capstone.**  The word problem for the sorting / symmetric-group (bubble-sort) system is

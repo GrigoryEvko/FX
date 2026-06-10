@@ -223,11 +223,11 @@ def CwRExtension.compose
     mapMorphism := fun morphism =>
       secondExtension.inclusion.mapMorphism (firstExtension.inclusion.mapMorphism morphism)
     preservesIdentity := fun objectA => by
-      unfold Function.comp
+      dsimp only [Function.comp]
       rw [firstExtension.inclusion.preservesIdentity]
       rw [secondExtension.inclusion.preservesIdentity]
     preservesComposition := fun morphismF morphismG => by
-      unfold Function.comp
+      dsimp only [Function.comp]
       rw [firstExtension.inclusion.preservesComposition]
       rw [secondExtension.inclusion.preservesComposition]
     preservesRepresentable := fun morphism memberWitness =>

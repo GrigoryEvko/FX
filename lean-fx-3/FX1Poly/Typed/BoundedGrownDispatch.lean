@@ -268,7 +268,7 @@ theorem HasTypeDescPi.fundamentalAtBoundedSuccFromFormation {profile : PolyProfi
                       [] flag { outputType := nullaryFormerOutput } isFormation
                       (DescTelescope.nil (currentDepth := 0) _context flag))
             · exfalso
-              unfold typingRuleDescOf at isFormation
+              dsimp only [typingRuleDescOf] at isFormation
               rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
                 if_neg isUnitFormer] at isFormation
               contradiction
@@ -280,7 +280,7 @@ theorem HasTypeDescPi.fundamentalAtBoundedSuccFromFormation {profile : PolyProfi
     intro _baseScope _currentDepth _restShifts _context _head _headLevel _restLevels _flag _rest
       _headTyped _restTyped headFundamental restFundamental
     intro _targetScope substitution argLevel argLevelLeBound envReducible shapeEq
-    simp only [List.length_cons, consecutiveShifts] at shapeEq
+    dsimp only [List.length_cons, consecutiveShifts] at shapeEq
     obtain ⟨_headShiftEq, restShapeEq⟩ := List.cons.inj shapeEq
     subst restShapeEq
     exact fundamentalTelescopeConsAtBoundedSucc env bound argLevel envReducible headFundamental

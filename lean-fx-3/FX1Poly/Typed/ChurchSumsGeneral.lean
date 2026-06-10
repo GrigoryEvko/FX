@@ -51,7 +51,7 @@ theorem leftInjection_subst_handlerL (payload handlerL : RawTerm 0) :
         (lamCell churchSumDomainAnn (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
           (RawTerm.weaken (RawTerm.weaken payload)))) handlerL
       = lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload)) := by
-  unfold RawTerm.subst0 churchSumDomainAnn
+  dsimp only [RawTerm.subst0, churchSumDomainAnn]
   show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
       (appCell _ (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerL))
       (RawTerm.weaken (RawTerm.weaken payload)))) = _
@@ -65,7 +65,7 @@ theorem rightInjection_subst_handlerL (payload handlerL : RawTerm 0) :
         (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))
           (RawTerm.weaken (RawTerm.weaken payload)))) handlerL
       = lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload)) := by
-  unfold RawTerm.subst0 churchSumDomainAnn
+  dsimp only [RawTerm.subst0, churchSumDomainAnn]
   show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
       (appCell _ (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerL))
       (RawTerm.weaken (RawTerm.weaken payload)))) = _

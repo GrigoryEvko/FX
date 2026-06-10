@@ -87,7 +87,7 @@ typed roles (the only branch yielding `untypable`) leaves precisely the `isUntyp
 theorem headKind_untypable_imp_isUntypableHead {generator : Generator}
     (kindUntypable : typingHeadKindOf generator = .untypable) :
     isUntypableHead generator = true := by
-  unfold typingHeadKindOf at kindUntypable
+  dsimp only [typingHeadKindOf] at kindUntypable
   by_cases hVar : generator = Generator.gen_var
   · rw [if_pos hVar] at kindUntypable; cases kindUntypable
   · rw [if_neg hVar] at kindUntypable
@@ -97,7 +97,7 @@ theorem headKind_untypable_imp_isUntypableHead {generator : Generator}
       cases hRole : typingRoleOf generator with
       | some role => rw [hRole] at kindUntypable; cases role <;> cases kindUntypable
       | none =>
-          unfold isUntypableHead
+          dsimp only [isUntypableHead]
           exact decide_eq_true ⟨hRole, hVar, hUniverse⟩
 
 /-- The converse: an `isUntypableHead` head is classified `untypable`.  Together with the forward direction this
@@ -106,7 +106,7 @@ theorem headKind_untypable_of_isUntypableHead {generator : Generator}
     (untypable : isUntypableHead generator = true) :
     typingHeadKindOf generator = .untypable := by
   obtain ⟨roleless, notVar, notUniverse⟩ := of_decide_eq_true untypable
-  unfold typingHeadKindOf
+  dsimp only [typingHeadKindOf]
   rw [if_neg notVar, if_neg notUniverse, roleless]
 
 /-- ★ **The engine tie.**  A cell whose head is classified `untypable` has no grown typing — routes the
@@ -129,7 +129,7 @@ theorem headKind_bespokeVariable_imp {generator : Generator}
   by_cases hVar : generator = Generator.gen_var
   · exact hVar
   · exfalso
-    unfold typingHeadKindOf at kind
+    dsimp only [typingHeadKindOf] at kind
     rw [if_neg hVar] at kind
     by_cases hUniverse : generator = Generator.gen_universeCode
     · rw [if_pos hUniverse] at kind; cases kind
@@ -145,7 +145,7 @@ theorem headKind_bespokeUniverse_imp {generator : Generator}
   by_cases hUniverse : generator = Generator.gen_universeCode
   · exact hUniverse
   · exfalso
-    unfold typingHeadKindOf at kind
+    dsimp only [typingHeadKindOf] at kind
     by_cases hVar : generator = Generator.gen_var
     · rw [if_pos hVar] at kind; cases kind
     · rw [if_neg hVar, if_neg hUniverse] at kind

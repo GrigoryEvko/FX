@@ -462,7 +462,7 @@ theorem ParStep.triangleCongFires {scope : Nat} (gen : Generator) (payload : gen
                                                 if_neg hRefl
                                               rw [key] at hfire; nomatch hfire
                       · rw [show RawTerm.fireRootRedex gen payload children = none from by
-                            unfold RawTerm.fireRootRedex
+                            dsimp only [RawTerm.fireRootRedex]
                             rw [dif_neg hApp, dif_neg hBoolElim, dif_neg hFst, dif_neg hSnd,
                               dif_neg hNatElim, dif_neg hNatRec, dif_neg hListElim, dif_neg hOptionMatch,
                               dif_neg hEitherMatch, dif_neg hIdJ, dif_neg hIdStrictRec]] at hfire
@@ -487,7 +487,7 @@ theorem ParStep.triangle {scope : Nat} {a b : RawTerm scope} :
         show ParStep (.mkGen gen payload _children')
           (RawTerm.fireRootRedexOrSelfGated gen payload _children
             (RawTerm.completeDevelopmentChildren _children))
-        unfold RawTerm.fireRootRedexOrSelfGated
+        dsimp only [RawTerm.fireRootRedexOrSelfGated]
         cases hfire : RawTerm.fireRootRedex gen payload _children with
         | none => exact ParStep.cong gen payload ih
         | some reduct => exact ParStep.triangleCongFires gen payload childrenStep ih hfire)

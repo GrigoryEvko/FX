@@ -91,7 +91,7 @@ precondition of the shipped grown-untyping decision procedure.  This is the prop
 grown leg reuse `UntypableHeadDecision.isUntypableHead_sound` rather than re-inverting the grown inductive. -/
 theorem hasSomeTypingRule_false_imp_isUntypableHead (generator : Generator)
     (reserved : hasSomeTypingRule generator = false) : isUntypableHead generator = true := by
-  unfold hasSomeTypingRule at reserved
+  dsimp only [hasSomeTypingRule] at reserved
   -- Peel the left-associated 24-disjunct chain to the five grown-relevant atoms.
   have rest23 := orEqFalse_leftFalse reserved
   have universeCodeFalse := orEqFalse_rightFalse reserved
@@ -121,7 +121,7 @@ theorem hasSomeTypingRule_false_imp_isUntypableHead (generator : Generator)
   have introFalse := orEqFalse_rightFalse rest2
   have formationFalse := orEqFalse_leftFalse rest2
   have roleless : typingRoleOf generator = none := by
-    unfold typingRoleOf
+    dsimp only [typingRoleOf]
     rw [if_neg (notEqTrue_ofEqFalse formationFalse),
         if_neg (notEqTrue_ofEqFalse introFalse),
         if_neg (notEqTrue_ofEqFalse elimFalse)]
@@ -150,7 +150,7 @@ theorem flatReservedUntyped {profile : PolyProfile} {scope : Nat}
   cases typed with
   | flatFormation generator payload children levels flag rule isFlatFormation premise =>
     change hasSomeTypingRule generator = false at reserved
-    unfold hasSomeTypingRule at reserved
+    dsimp only [hasSomeTypingRule] at reserved
     rw [isFlatFormation] at reserved
     simp only [Option.isSome_some, Bool.or_true, Bool.true_or] at reserved
     exact Bool.noConfusion reserved

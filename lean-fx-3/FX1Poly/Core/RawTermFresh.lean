@@ -61,8 +61,8 @@ theorem RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
         (.mkGen generator payload sourceChildren)) :
     RawTermChildren.isFreshFor rawRenaming rawSubstitution
       sourceChildren := by
-  unfold RawTerm.isFreshFor at termFresh
-  unfold RawTermChildren.isFreshFor
+  dsimp only [RawTerm.isFreshFor] at termFresh
+  dsimp only [RawTermChildren.isFreshFor]
   rw [RawTerm.subst_nonVar_reduces rawSubstitution hNotVar payload
     sourceChildren] at termFresh
   rw [RawTerm.rename_nonVar_reduces rawRenaming hNotVar] at termFresh
@@ -85,8 +85,8 @@ theorem RawTerm.isFreshFor_nonVar_of_children_isFreshFor
         sourceChildren) :
     RawTerm.isFreshFor rawRenaming rawSubstitution
       (.mkGen generator payload sourceChildren) := by
-  unfold RawTerm.isFreshFor
-  unfold RawTermChildren.isFreshFor at childrenFresh
+  dsimp only [RawTerm.isFreshFor]
+  dsimp only [RawTermChildren.isFreshFor] at childrenFresh
   rw [RawTerm.subst_nonVar_reduces rawSubstitution hNotVar payload
     sourceChildren]
   rw [RawTerm.rename_nonVar_reduces rawRenaming hNotVar]
@@ -112,8 +112,8 @@ theorem RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
         (RawTermChildren.childCons headTerm tailChildren)) :
     RawTerm.isFreshFor (iterateLiftRaw rawRenaming headShift)
       (iterateLiftRaw rawSubstitution headShift) headTerm := by
-  unfold RawTermChildren.isFreshFor at childrenFresh
-  unfold RawTerm.isFreshFor
+  dsimp only [RawTermChildren.isFreshFor] at childrenFresh
+  dsimp only [RawTerm.isFreshFor]
   show RawTerm.rename (iterateLiftRaw rawRenaming headShift)
         (RawTerm.subst (iterateLiftRaw rawSubstitution headShift)
           headTerm) = headTerm
@@ -132,8 +132,8 @@ theorem RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
         (RawTermChildren.childCons headTerm tailChildren)) :
     RawTermChildren.isFreshFor rawRenaming rawSubstitution
       tailChildren := by
-  unfold RawTermChildren.isFreshFor at childrenFresh
-  unfold RawTermChildren.isFreshFor
+  dsimp only [RawTermChildren.isFreshFor] at childrenFresh
+  dsimp only [RawTermChildren.isFreshFor]
   show RawTermChildren.rename rawRenaming
         (RawTermChildren.subst rawSubstitution tailChildren) =
       tailChildren
@@ -155,9 +155,9 @@ theorem RawTermChildren.childCons_isFreshFor
         tailChildren) :
     RawTermChildren.isFreshFor rawRenaming rawSubstitution
       (RawTermChildren.childCons headTerm tailChildren) := by
-  unfold RawTerm.isFreshFor at headFresh
-  unfold RawTermChildren.isFreshFor at tailFresh
-  unfold RawTermChildren.isFreshFor
+  dsimp only [RawTerm.isFreshFor] at headFresh
+  dsimp only [RawTermChildren.isFreshFor] at tailFresh
+  dsimp only [RawTermChildren.isFreshFor]
   show RawTermChildren.childCons
         (RawTerm.rename (iterateLiftRaw rawRenaming headShift)
           (RawTerm.subst (iterateLiftRaw rawSubstitution headShift)
@@ -244,7 +244,7 @@ theorem RawTerm.rename_subst0_commute {sourceScope targetScope : Nat}
       RawTerm.subst0
         (RawTerm.rename (RawRenaming.lift rawRenaming) body)
         (RawTerm.rename rawRenaming rawArg) := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   rw [RawTerm.subst_rename_commute]
   rw [RawTerm.rename_subst_commute]
   apply RawTerm.subst_pointwise
@@ -264,14 +264,14 @@ theorem RawTerm.strengthen_eq_subst_of_isFreshFor_singleton {scope : Nat}
         (RawTermSubst.singleton rawArg) sourceTerm) :
     RawTerm.strengthen sourceTerm =
       some (RawTerm.subst (RawTermSubst.singleton rawArg) sourceTerm) := by
-  unfold RawTerm.isFreshFor at termFresh
+  dsimp only [RawTerm.isFreshFor] at termFresh
   let extractedTerm := RawTerm.subst (RawTermSubst.singleton rawArg) sourceTerm
   have sourceEq : RawTerm.weaken extractedTerm = sourceTerm := by
-    unfold extractedTerm
+    dsimp only [extractedTerm]
     rw [RawTerm.weaken_eq_rename]
     exact termFresh
   rw [← sourceEq]
-  unfold extractedTerm
+  dsimp only [extractedTerm]
   rw [RawTerm.weaken_subst_singleton]
   exact RawTerm.strengthen_weaken
     (RawTerm.subst (RawTermSubst.singleton rawArg) sourceTerm)

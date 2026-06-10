@@ -1428,9 +1428,9 @@ theorem typeVariableHasAllPositiveCandidate {scope : Nat} (index : Fin scope) (l
   · intro reduct
     exact WeakHeadStep.not_from_var
   · show Generator.gen_var ≠ Generator.gen_piTyCode
-    decide
+    exact fun isEq => Generator.noConfusion isEq
   · show Generator.gen_var ≠ Generator.gen_universeCode
-    decide
+    exact fun isEq => Generator.noConfusion isEq
 
 /-- **A Π type with a type-VARIABLE domain has an all-positive candidate.**  The concrete witness
 `Π(x : A). A` where `A = var 0` is the type variable of a one-entry context (the codomain is `A` weakened, i.e.

@@ -84,9 +84,9 @@ theorem idempotentReduceCells_isSome_append_right {dimension : Nat} (cell : Omeg
       | nil => intro hxs; exact Bool.noConfusion hxs
       | cons second rest =>
           intro hxs
-          simp only [idempotentReduceCells] at hxs
+          dsimp only [idempotentReduceCells] at hxs
           rw [List.cons_append, List.cons_append]
-          simp only [idempotentReduceCells]
+          dsimp only [idempotentReduceCells]
           by_cases hpair : first = cell ∧ second = cell
           · rw [if_pos hpair]; rfl
           · rw [if_neg hpair] at hxs
@@ -112,7 +112,7 @@ theorem idempotentReduceCells_isSome_append_left {dimension : Nat} (cell : Omega
       cases hzs : xs' ++ ys with
       | nil => rw [hzs] at tail; exact Bool.noConfusion tail
       | cons second rest =>
-          simp only [idempotentReduceCells]
+          dsimp only [idempotentReduceCells]
           by_cases hpair : first = cell ∧ second = cell
           · rw [if_pos hpair]; rfl
           · rw [if_neg hpair, option_isSome_map]
@@ -128,13 +128,13 @@ theorem idempotentReduceCells_sound {dimension : Nat} (cell : OmegacECell dimens
       OmegacEWord.RewritesOneStep (idempotentSystem cell) ⟨xs⟩ ⟨ys⟩ := by
   intro xs
   induction xs with
-  | nil => intro ys hred; simp only [idempotentReduceCells] at hred; nomatch hred
+  | nil => intro ys hred; dsimp only [idempotentReduceCells] at hred; nomatch hred
   | cons first xs' ihTail =>
       cases xs' with
-      | nil => intro ys hred; simp only [idempotentReduceCells] at hred; nomatch hred
+      | nil => intro ys hred; dsimp only [idempotentReduceCells] at hred; nomatch hred
       | cons second rest =>
           intro ys hred
-          simp only [idempotentReduceCells] at hred
+          dsimp only [idempotentReduceCells] at hred
           by_cases hpair : first = cell ∧ second = cell
           · rw [if_pos hpair] at hred
             injection hred with hys
@@ -146,11 +146,11 @@ theorem idempotentReduceCells_sound {dimension : Nat} (cell : OmegacECell dimens
             cases hinner : idempotentReduceCells cell (second :: rest) with
             | none =>
                 rw [hinner] at hred
-                simp only [Option.map_none] at hred
+                dsimp only [Option.map_none] at hred
                 nomatch hred
             | some zs =>
                 rw [hinner] at hred
-                simp only [Option.map_some] at hred
+                dsimp only [Option.map_some] at hred
                 injection hred with hys
                 subst hys
                 exact OmegacEWord.RewritesOneStep.underLeftContext ⟨[first]⟩ (ihTail hinner)
@@ -187,27 +187,27 @@ def idempotentWordReducer {dimension : Nat} (cell : OmegacECell dimension) :
   reduceOnce := idempotentReduceOnce cell
   reduceOnce_sound := by
     intro word reduct hred
-    simp only [idempotentReduceOnce] at hred
+    dsimp only [idempotentReduceOnce] at hred
     cases hcells : idempotentReduceCells cell word.cells with
     | none =>
         rw [hcells] at hred
-        simp only [Option.map_none] at hred
+        dsimp only [Option.map_none] at hred
         nomatch hred
     | some ys =>
         rw [hcells] at hred
-        simp only [Option.map_some] at hred
+        dsimp only [Option.map_some] at hred
         injection hred with hreduct
         subst hreduct
         exact idempotentReduceCells_sound cell hcells
   reduceOnce_complete := by
     intro word hnone reduct step
     have isSome := idempotentRewrite_implies_reduceCells_isSome cell step
-    simp only [idempotentReduceOnce] at hnone
+    dsimp only [idempotentReduceOnce] at hnone
     cases hcells : idempotentReduceCells cell word.cells with
     | none => rw [hcells] at isSome; exact Bool.noConfusion isSome
     | some ys =>
         rw [hcells] at hnone
-        simp only [Option.map_some] at hnone
+        dsimp only [Option.map_some] at hnone
         nomatch hnone
 
 /-- **The terminating normalizer for the idempotent system** — `toNormalizer` of the reducer along the shipped

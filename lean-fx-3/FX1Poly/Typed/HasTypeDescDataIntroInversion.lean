@@ -66,7 +66,7 @@ theorem dataIntroNullaryRuleDescOf_isNullaryValueConstructor {generator : Genera
     · by_cases hUnit : generator = .gen_unit
       · exact Or.inr (Or.inr hUnit)
       · exfalso
-        unfold dataIntroNullaryRuleDescOf at isDataIntro
+        dsimp only [dataIntroNullaryRuleDescOf] at isDataIntro
         rw [if_neg hTrue, if_neg hFalse, if_neg hUnit] at isDataIntro
         contradiction
 

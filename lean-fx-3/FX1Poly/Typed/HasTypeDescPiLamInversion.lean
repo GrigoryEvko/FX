@@ -93,7 +93,7 @@ theorem HasTypeDescPi.invertLamGeneral {profile : PolyProfile}
           Conv.trans converts.sym recursiveConv, domainTyped, codomainTyped, bodyTyped⟩
     | .piIntro domainLevel codomainLevel flag domainTyped codomainTyped bodyTyped =>
         fun subjectEq => by
-        simp only [lamCell] at subjectEq
+        dsimp only [lamCell] at subjectEq
         injection subjectEq with _scopeEq _generatorEq _payloadEq childrenSpineEq
         injection childrenSpineEq with _ _ _ domainAnnEq tailSpineEq
         injection tailSpineEq with _ _ _ bodyEq _

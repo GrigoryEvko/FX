@@ -24,7 +24,7 @@ theorem etaLamSource_injective {scope : Nat}
       RawTerm.etaLamSource firstDomainAnn firstFunction =
         RawTerm.etaLamSource secondDomainAnn secondFunction) :
     firstDomainAnn = secondDomainAnn ∧ firstFunction = secondFunction := by
-  unfold RawTerm.etaLamSource at sourceEq
+  dsimp only [RawTerm.etaLamSource] at sourceEq
   injection sourceEq with _ _ _ lamChildrenEq
   injection lamChildrenEq with _ _ _ domainEq bodyTailEq
   injection bodyTailEq with _ _ _ appEq _
@@ -44,7 +44,7 @@ theorem etaPairSource_injective {scope : Nat}
       RawTerm.etaPairSource firstPair =
         RawTerm.etaPairSource secondPair) :
     firstPair = secondPair := by
-  unfold RawTerm.etaPairSource at sourceEq
+  dsimp only [RawTerm.etaPairSource] at sourceEq
   injection sourceEq with _ _ _ pairChildrenEq
   injection pairChildrenEq with _ _ _ firstProjectionEq _
   injection firstProjectionEq with _ _ _ projectionChildrenEq
@@ -57,7 +57,7 @@ theorem etaPathLamSource_injective {scope : Nat}
       RawTerm.etaPathLamSource firstPath =
         RawTerm.etaPathLamSource secondPath) :
     firstPath = secondPath := by
-  unfold RawTerm.etaPathLamSource at sourceEq
+  dsimp only [RawTerm.etaPathLamSource] at sourceEq
   injection sourceEq with _ _ _ lamChildrenEq
   injection lamChildrenEq with _ _ _ appEq _
   injection appEq with _ _ _ appChildrenEq
@@ -75,7 +75,7 @@ theorem etaModIntroSource_injective {scope : Nat}
       RawTerm.etaModIntroSource firstModal =
         RawTerm.etaModIntroSource secondModal) :
     firstModal = secondModal := by
-  unfold RawTerm.etaModIntroSource at sourceEq
+  dsimp only [RawTerm.etaModIntroSource] at sourceEq
   injection sourceEq with _ _ _ introChildrenEq
   injection introChildrenEq with _ _ _ elimEq _
   injection elimEq with _ _ _ elimChildrenEq
@@ -88,7 +88,7 @@ theorem etaGlueIntroSource_injective {scope : Nat}
       RawTerm.etaGlueIntroSource firstGlue =
         RawTerm.etaGlueIntroSource secondGlue) :
     firstGlue = secondGlue := by
-  unfold RawTerm.etaGlueIntroSource at sourceEq
+  dsimp only [RawTerm.etaGlueIntroSource] at sourceEq
   injection sourceEq with _ _ _ introChildrenEq
   injection introChildrenEq with _ _ _ _ tailEq
   injection tailEq with _ _ _ glueEq _

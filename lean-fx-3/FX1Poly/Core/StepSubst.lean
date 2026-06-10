@@ -319,7 +319,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               appChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_app) rawRenaming rawSubstitution
-            (by decide) () appChildren sourceFresh
+            nofun () appChildren sourceFresh
         have lamFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_lam ()
@@ -342,7 +342,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
                 RawTermChildren [0, 1] scope) :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_lam) rawRenaming rawSubstitution
-            (by decide) () _ lamFresh
+            nofun () _ lamFresh
         have bodySpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               ((.childCons body .childNil) : RawTermChildren [1] scope) :=
@@ -353,11 +353,11 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               (RawTermSubst.lift rawSubstitution) body :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ bodySpineFresh
-        unfold RawTerm.isFreshFor
+        dsimp only [RawTerm.isFreshFor]
         rw [RawTerm.subst0_subst_commute]
         rw [RawTerm.rename_subst0_commute]
-        unfold RawTerm.isFreshFor at bodyFresh
-        unfold RawTerm.isFreshFor at argFresh
+        dsimp only [RawTerm.isFreshFor] at bodyFresh
+        dsimp only [RawTerm.isFreshFor] at argFresh
         rw [bodyFresh, argFresh])
       (fun {scope} generator payload {children} {children'} childStep
           childFreshIH {targetScope} rawRenaming rawSubstitution
@@ -385,7 +385,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_boolElim) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               ((.childCons thenBranch (.childCons elseBranch .childNil)) :
@@ -405,7 +405,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_boolElim) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               ((.childCons thenBranch (.childCons elseBranch .childNil)) :
@@ -433,7 +433,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               fstChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_fst) rawRenaming rawSubstitution
-            (by decide) () fstChildren sourceFresh
+            nofun () fstChildren sourceFresh
         have pairFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_pair () pairChildren : RawTerm scope) :=
@@ -444,7 +444,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               pairChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_pair) rawRenaming rawSubstitution
-            (by decide) () pairChildren pairFresh
+            nofun () pairChildren pairFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
           rawRenaming rawSubstitution _ _ pairChildrenFresh)
       (fun {scope} {firstValue} {secondValue} {targetScope} rawRenaming
@@ -460,7 +460,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sndChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_snd) rawRenaming rawSubstitution
-            (by decide) () sndChildren sourceFresh
+            nofun () sndChildren sourceFresh
         have pairFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_pair () pairChildren : RawTerm scope) :=
@@ -471,7 +471,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               pairChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_pair) rawRenaming rawSubstitution
-            (by decide) () pairChildren pairFresh
+            nofun () pairChildren pairFresh
         have secondSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               ((.childCons secondValue .childNil) :
@@ -491,7 +491,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_natElim) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               ((.childCons zeroBranch (.childCons succBranch .childNil)) :
@@ -511,7 +511,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_natRec) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               ((.childCons zeroBranch (.childCons succBranch .childNil)) :
@@ -531,7 +531,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_listElim) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               ((.childCons nilBranch (.childCons consBranch .childNil)) :
@@ -551,7 +551,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_optionMatch) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               ((.childCons noneBranch (.childCons someBranch .childNil)) :
@@ -573,7 +573,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_optionMatch) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have optionSomeFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_optionSome () optionSomeChildren : RawTerm scope) :=
@@ -584,7 +584,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               optionSomeChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_optionSome) rawRenaming rawSubstitution
-            (by decide) () optionSomeChildren optionSomeFresh
+            nofun () optionSomeChildren optionSomeFresh
         have valueFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution value :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
@@ -606,7 +606,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ someSpineFresh
         exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
-          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          (generator := .gen_app) rawRenaming rawSubstitution nofun
           () _ (RawTermChildren.double_isFreshFor
             (firstShift := 0) (secondShift := 0) rawRenaming
             rawSubstitution someBranch value someBranchFresh valueFresh))
@@ -623,7 +623,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_eitherMatch) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have eitherInlFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_eitherInl () eitherInlChildren : RawTerm scope) :=
@@ -634,7 +634,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               eitherInlChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_eitherInl) rawRenaming rawSubstitution
-            (by decide) () eitherInlChildren eitherInlFresh
+            nofun () eitherInlChildren eitherInlFresh
         have valueFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution value :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
@@ -650,7 +650,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ branchSpineFresh
         exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
-          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          (generator := .gen_app) rawRenaming rawSubstitution nofun
           () _ (RawTermChildren.double_isFreshFor
             (firstShift := 0) (secondShift := 0) rawRenaming
             rawSubstitution leftBranch value leftBranchFresh valueFresh))
@@ -667,7 +667,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_eitherMatch) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have eitherInrFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_eitherInr () eitherInrChildren : RawTerm scope) :=
@@ -678,7 +678,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               eitherInrChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_eitherInr) rawRenaming rawSubstitution
-            (by decide) () eitherInrChildren eitherInrFresh
+            nofun () eitherInrChildren eitherInrFresh
         have valueFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution value :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
@@ -700,7 +700,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ rightBranchSpineFresh
         exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
-          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          (generator := .gen_app) rawRenaming rawSubstitution nofun
           () _ (RawTermChildren.double_isFreshFor
             (firstShift := 0) (secondShift := 0) rawRenaming
             rawSubstitution rightBranch value rightBranchFresh valueFresh))
@@ -717,7 +717,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_natElim) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have natSuccFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_natSucc () natSuccChildren : RawTerm scope) :=
@@ -728,7 +728,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               natSuccChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_natSucc) rawRenaming rawSubstitution
-            (by decide) () natSuccChildren natSuccFresh
+            nofun () natSuccChildren natSuccFresh
         have predecessorFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution predecessor :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
@@ -761,7 +761,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
                     (.childCons succBranch .childNil))) : RawTerm scope) :=
           RawTerm.isFreshFor_nonVar_of_children_isFreshFor
             (generator := .gen_natElim) rawRenaming rawSubstitution
-            (by decide) () _
+            nofun () _
             (RawTermChildren.triple_isFreshFor
               (firstShift := 0) (secondShift := 0) (thirdShift := 0)
               rawRenaming rawSubstitution
@@ -774,13 +774,13 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
                   RawTerm scope) :=
           RawTerm.isFreshFor_nonVar_of_children_isFreshFor
             (generator := .gen_app) rawRenaming rawSubstitution
-            (by decide) () _
+            nofun () _
             (RawTermChildren.double_isFreshFor
               (firstShift := 0) (secondShift := 0)
               rawRenaming rawSubstitution
               succBranch predecessor succBranchFresh predecessorFresh)
         exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
-          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          (generator := .gen_app) rawRenaming rawSubstitution nofun
           () _ (RawTermChildren.double_isFreshFor
             (firstShift := 0) (secondShift := 0) rawRenaming
             rawSubstitution
@@ -805,7 +805,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_natRec) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have natSuccFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_natSucc () natSuccChildren : RawTerm scope) :=
@@ -816,7 +816,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               natSuccChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_natSucc) rawRenaming rawSubstitution
-            (by decide) () natSuccChildren natSuccFresh
+            nofun () natSuccChildren natSuccFresh
         have predecessorFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution predecessor :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
@@ -849,7 +849,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
                     (.childCons succBranch .childNil))) : RawTerm scope) :=
           RawTerm.isFreshFor_nonVar_of_children_isFreshFor
             (generator := .gen_natRec) rawRenaming rawSubstitution
-            (by decide) () _
+            nofun () _
             (RawTermChildren.triple_isFreshFor
               (firstShift := 0) (secondShift := 0) (thirdShift := 0)
               rawRenaming rawSubstitution
@@ -862,13 +862,13 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
                   RawTerm scope) :=
           RawTerm.isFreshFor_nonVar_of_children_isFreshFor
             (generator := .gen_app) rawRenaming rawSubstitution
-            (by decide) () _
+            nofun () _
             (RawTermChildren.double_isFreshFor
               (firstShift := 0) (secondShift := 0)
               rawRenaming rawSubstitution
               succBranch predecessor succBranchFresh predecessorFresh)
         exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
-          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          (generator := .gen_app) rawRenaming rawSubstitution nofun
           () _ (RawTermChildren.double_isFreshFor
             (firstShift := 0) (secondShift := 0) rawRenaming
             rawSubstitution
@@ -894,7 +894,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_listElim) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         have listConsFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_listCons () listConsChildren : RawTerm scope) :=
@@ -905,7 +905,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               listConsChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_listCons) rawRenaming rawSubstitution
-            (by decide) () listConsChildren listConsFresh
+            nofun () listConsChildren listConsFresh
         have headFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution headVal :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
@@ -947,7 +947,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
                   RawTerm scope) :=
           RawTerm.isFreshFor_nonVar_of_children_isFreshFor
             (generator := .gen_app) rawRenaming rawSubstitution
-            (by decide) () _
+            nofun () _
             (RawTermChildren.double_isFreshFor
               (firstShift := 0) (secondShift := 0)
               rawRenaming rawSubstitution
@@ -961,7 +961,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
                   (.childCons tailVal .childNil)) : RawTerm scope) :=
           RawTerm.isFreshFor_nonVar_of_children_isFreshFor
             (generator := .gen_app) rawRenaming rawSubstitution
-            (by decide) () _
+            nofun () _
             (RawTermChildren.double_isFreshFor
               (firstShift := 0) (secondShift := 0)
               rawRenaming rawSubstitution
@@ -977,14 +977,14 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
                     (.childCons consBranch .childNil))) : RawTerm scope) :=
           RawTerm.isFreshFor_nonVar_of_children_isFreshFor
             (generator := .gen_listElim) rawRenaming rawSubstitution
-            (by decide) () _
+            nofun () _
             (RawTermChildren.triple_isFreshFor
               (firstShift := 0) (secondShift := 0) (thirdShift := 0)
               rawRenaming rawSubstitution
               tailVal nilBranch consBranch tailFresh nilBranchFresh
               consBranchFresh)
         exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
-          (generator := .gen_app) rawRenaming rawSubstitution (by decide)
+          (generator := .gen_app) rawRenaming rawSubstitution nofun
           () _ (RawTermChildren.double_isFreshFor
             (firstShift := 0) (secondShift := 0) rawRenaming
             rawSubstitution
@@ -1011,7 +1011,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_idJ) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
           rawRenaming rawSubstitution _ _ childrenFresh)
       (fun {scope} {baseCase} {rawWitness} {targetScope} rawRenaming
@@ -1027,7 +1027,7 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_idStrictRec) rawRenaming rawSubstitution
-            (by decide) () sourceChildren sourceFresh
+            nofun () sourceChildren sourceFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
           rawRenaming rawSubstitution _ _ childrenFresh)
       (fun {parentScope} {headShift} {restShifts} {head} {head'} rest
@@ -1080,7 +1080,7 @@ theorem Step.weaken_strengthenTarget {scope : Nat}
   have sourceFresh :
       RawTerm.isFreshFor RawRenaming.weaken
         (RawTermSubst.singleton unitTerm) (RawTerm.weaken sourceTerm) := by
-    unfold RawTerm.isFreshFor
+    dsimp only [RawTerm.isFreshFor]
     rw [RawTerm.weaken_subst_singleton sourceTerm unitTerm]
     rw [RawTerm.weaken_eq_rename sourceTerm]
   exact RawTerm.strengthen_eq_subst_of_isFreshFor_singleton

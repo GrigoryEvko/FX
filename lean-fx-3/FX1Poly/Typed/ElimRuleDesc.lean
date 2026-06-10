@@ -76,7 +76,7 @@ theorem elimRuleDescOf_outputIsPiElim {generator : Generator} {rule : ElimRuleDe
     have hRule : rule = { outputType := piElimOutput } := Option.some.inj isElim.symm
     rw [hRule]
   · exfalso
-    unfold elimRuleDescOf at isElim
+    dsimp only [elimRuleDescOf] at isElim
     rw [if_neg hApp] at isElim
     contradiction
 
@@ -90,7 +90,7 @@ theorem elimRuleDescOf_isApp {generator : Generator} {rule : ElimRuleDesc}
   by_cases hApp : generator = .gen_app
   · exact hApp
   · exfalso
-    unfold elimRuleDescOf at isElim
+    dsimp only [elimRuleDescOf] at isElim
     rw [if_neg hApp] at isElim
     contradiction
 

@@ -95,7 +95,7 @@ what a grade-vector checker would decide at a site exercising all three dimensio
 theorem isAdmissible_iff (classified async session : Bool) :
     IsClassifiedAsyncSessionAdmissible classified async session ↔
       (classified = false ∨ async = false ∨ session = false) := by
-  unfold IsClassifiedAsyncSessionAdmissible
+  dsimp only [IsClassifiedAsyncSessionAdmissible]
   constructor
   · intro notAll
     cases classified

@@ -62,7 +62,7 @@ def churchListIsEmpty (list : RawTerm 0) : RawTerm 0 :=
 theorem isEmptyHandlerInnerSubst (head : RawTerm 0) :
     RawTerm.subst0 (lamCell churchListDomainAnn (RawTerm.weaken (RawTerm.weaken churchFalseLambda))) head
       = lamCell churchListDomainAnn (RawTerm.weaken churchFalseLambda) := by
-  unfold RawTerm.subst0 churchListDomainAnn
+  dsimp only [RawTerm.subst0, churchListDomainAnn]
   show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton head))
       (RawTerm.weaken (RawTerm.weaken churchFalseLambda))) = _

@@ -64,7 +64,7 @@ numeral's iterate to `churchFalse`. -/
 theorem constFalseStep_appReducesToFalse (argument : RawTerm 0) :
     Step (appCell constFalseStep argument) churchFalseLambda := by
   have reshape : RawTerm.subst0 (RawTerm.weaken churchFalseLambda) argument = churchFalseLambda := by
-    unfold RawTerm.subst0
+    dsimp only [RawTerm.subst0]
     exact RawTerm.weaken_subst_singleton churchFalseLambda argument
   rw [← reshape]
   exact Step.beta
@@ -86,7 +86,7 @@ theorem churchIsZeroBody_substitutes (numeralArg : RawTerm 0) :
     RawTerm.subst0 (appCell (appCell (appCell RawTerm.newestVar (RawTerm.weaken branchMotivePlaceholder))
       (RawTerm.weaken constFalseStep)) (RawTerm.weaken churchTrueLambda)) numeralArg
       = appCell (appCell (appCell numeralArg branchMotivePlaceholder) constFalseStep) churchTrueLambda := by
-  unfold RawTerm.subst0
+  dsimp only [RawTerm.subst0]
   show appCell (appCell (appCell (RawTerm.subst (RawTermSubst.singleton numeralArg) RawTerm.newestVar)
       (RawTerm.subst (RawTermSubst.singleton numeralArg) (RawTerm.weaken branchMotivePlaceholder)))
       (RawTerm.subst (RawTermSubst.singleton numeralArg) (RawTerm.weaken constFalseStep)))

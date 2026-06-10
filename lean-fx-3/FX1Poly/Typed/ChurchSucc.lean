@@ -78,7 +78,7 @@ theorem succ_step1_reshape (numeral : RawTerm 0) :
         (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn succBody4))) numeral
       = lamCell churchSuccDomainAnn
           (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn (succBody3 numeral))) := by
-  unfold RawTerm.subst0 churchSuccDomainAnn succBody4 succBody3
+  dsimp only [RawTerm.subst0, churchSuccDomainAnn, succBody4, succBody3]
   rfl
 
 /-- **`churchSucc` is a closed no-step normal form (a value).**  Four `lamCell` wrappers over `f (n A f x)`, whose

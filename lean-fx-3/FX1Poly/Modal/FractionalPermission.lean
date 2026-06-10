@@ -180,7 +180,7 @@ theorem Permission.add_neverOverallocates {firstShare secondShare : Permission}
           injection isFracOutput with numEq denEq
           rw [← numEq, ← denEq]; exact firstFits
       | frac c d =>
-          simp only [Permission.add] at isFracOutput
+          dsimp only [Permission.add] at isFracOutput
           cases hGuard : Nat.ble (a * d + c * b) (b * d) with
           | false => rw [hGuard] at isFracOutput; exact Permission.noConfusion isFracOutput
           | true =>

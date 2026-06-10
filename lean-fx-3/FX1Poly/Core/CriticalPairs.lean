@@ -587,7 +587,7 @@ theorem CriticalPair.currentResolution?_isSome
     (criticalPair : CriticalPair) :
     (criticalPair.currentResolution?).isSome =
       criticalPair.hasCurrentResolution := by
-  unfold CriticalPair.currentResolution?
+  dsimp only [CriticalPair.currentResolution?]
   by_cases hResolution : criticalPair.hasCurrentResolution = true
   · rw [dif_pos hResolution]
     exact hResolution.symm
@@ -670,7 +670,7 @@ theorem criticalPairResolutionDispatch?_isSome
     (leftGenerator rightGenerator : Generator) :
     (criticalPairResolutionDispatch? leftGenerator rightGenerator).isSome =
       hasCurrentResolutionForCriticalPairs leftGenerator rightGenerator := by
-  unfold criticalPairResolutionDispatch?
+  dsimp only [criticalPairResolutionDispatch?]
   by_cases hResolution :
       hasCurrentResolutionForCriticalPairs leftGenerator rightGenerator = true
   · rw [dif_pos hResolution]

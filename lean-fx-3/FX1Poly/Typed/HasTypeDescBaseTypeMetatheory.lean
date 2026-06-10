@@ -71,7 +71,7 @@ theorem baseTypeRuleDescOf_isNullaryBaseCode {generator : Generator} {rule : Bas
       · by_cases hUnit : generator = .gen_unitCode
         · exact Or.inr (Or.inr (Or.inr hUnit))
         · exfalso
-          unfold baseTypeRuleDescOf at isBaseType
+          dsimp only [baseTypeRuleDescOf] at isBaseType
           rw [if_neg hBool, if_neg hEmpty, if_neg hNat, if_neg hUnit] at isBaseType
           contradiction
 

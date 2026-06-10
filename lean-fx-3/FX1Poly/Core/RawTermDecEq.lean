@@ -18,14 +18,21 @@ def decEqUniversePayload
     Decidable (firstPayload = secondPayload) :=
   inferInstance
 
+/-- `DecidableEq` for the all-`Unit` payload arms, proven ONCE (manual
+match, propext-free) so the ~193 `Unit` generator arms of `decEqPayload`
+reference a single elaborated term instead of re-elaborating the
+`match | (), () => .isTrue rfl` per arm. -/
+def decEqUnitPayload (payloadA payloadB : Unit) : Decidable (payloadA = payloadB) :=
+  match payloadA, payloadB with | (), () => .isTrue rfl
+
 -- Payload equality decided per-generator (Fin / Nat / LevelExpr×UniverseFlag / Unit all have decEq)
 def decEqPayload (generator : Generator) (scope : Nat)
     (payloadA payloadB : generator.payload scope) : Decidable (payloadA = payloadB) := by
   cases generator <;> (
     first
+    | exact decEqUnitPayload payloadA payloadB                     -- all-Unit ctors (single elaborated term); listed first (the ~193-arm majority) to skip failed Fin/Nat attempts
     | exact instDecidableEqFin _ payloadA payloadB                 -- gen_var → Fin scope
     | exact Nat.decEq payloadA payloadB                            -- gen_trunc{Intro,Coh,Rec} → Nat
-    | exact match payloadA, payloadB with | (), () => .isTrue rfl  -- all-Unit ctors (manual, propext-free)
     | exact decEqUniversePayload payloadA payloadB)  -- gen_universeCode → LevelExpr × UniverseFlag
 
 mutual

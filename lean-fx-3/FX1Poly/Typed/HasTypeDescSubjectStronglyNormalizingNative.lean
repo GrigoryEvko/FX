@@ -113,7 +113,7 @@ theorem accStepChildrenSuccessor_of_allStronglyNormalizing
         (fun _predecessor stepRelation =>
           (StepChildren.no_step_at_empty_spine stepRelation).elim)
   | .childCons _head _rest => by
-      simp only [RawTermChildren.allStronglyNormalizing] at childrenStronglyNormalizing
+      dsimp only [RawTermChildren.allStronglyNormalizing] at childrenStronglyNormalizing
       exact accStepChildrenSuccessor_cons childrenStronglyNormalizing.1
         (accStepChildrenSuccessor_of_allStronglyNormalizing childrenStronglyNormalizing.2)
 

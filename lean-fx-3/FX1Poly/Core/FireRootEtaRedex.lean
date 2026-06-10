@@ -360,7 +360,7 @@ def RawTerm.reduceOnceBetaEta {scope : Nat} (term : RawTerm scope) : Option (Raw
 theorem RawTerm.reduceOnceBetaEta_sound {scope : Nat} {term reduct : RawTerm scope}
     (success : term.reduceOnceBetaEta = some reduct) :
     Step.betaEta term reduct := by
-  unfold RawTerm.reduceOnceBetaEta at success
+  dsimp only [RawTerm.reduceOnceBetaEta] at success
   split at success
   · next betaReduct hBeta =>
       cases success
@@ -374,7 +374,7 @@ theorem RawTerm.reduceOnceBetaEta_complete {scope : Nat} {term : RawTerm scope}
     (halted : term.reduceOnceBetaEta = none) :
     ∀ reduct : RawTerm scope, ¬ Step.betaEta term reduct := by
   intro reduct step
-  unfold RawTerm.reduceOnceBetaEta at halted
+  dsimp only [RawTerm.reduceOnceBetaEta] at halted
   split at halted
   · next betaReduct hBeta => cases halted
   · next hBetaNone =>

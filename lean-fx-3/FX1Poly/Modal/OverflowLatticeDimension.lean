@@ -314,7 +314,8 @@ theorem overflowIsNonDistributive :
       OverflowGrade.meet firstGrade (OverflowGrade.join secondGrade thirdGrade) ≠
         OverflowGrade.join (OverflowGrade.meet firstGrade secondGrade)
           (OverflowGrade.meet firstGrade thirdGrade) :=
-  ⟨OverflowGrade.wrapGrade, OverflowGrade.trapGrade, OverflowGrade.saturateGrade, by decide⟩
+  ⟨OverflowGrade.wrapGrade, OverflowGrade.trapGrade, OverflowGrade.saturateGrade,
+    fun equalityHyp => OverflowGrade.noConfusion equalityHyp⟩
 
 /-- ★ **M3 IS MODULAR** — the modular law `a ≤ c → a ∨ (b ∧ c) = (a ∨ b) ∧ c` holds.  This pins overflow down
 as M3 (the diamond, modular but not distributive), NOT N5 (the pentagon, the canonical non-modular lattice).
