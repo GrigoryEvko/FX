@@ -1,0 +1,318 @@
+import FX1PolyAudit.AuditGen
+-- Sink files of the foundational term-substrate slice (importing these
+-- transitively loads every FX1Poly.Core declaration).
+import FX1Poly.Core.CheckResult
+import FX1Poly.Core.ConsistencyStrength
+import FX1Poly.Core.CoreFxProfile
+import FX1Poly.Core.FoldShiftGreaterThanOne
+import FX1Poly.Core.GenPayloadEvidence
+import FX1Poly.Core.GeneratorChildSpecsDim0
+import FX1Poly.Core.GeneratorTotalityClass
+import FX1Poly.Core.HasEqualDim
+import FX1Poly.Core.RawCellCascadeLaws
+import FX1Poly.Core.RawCellCode
+import FX1Poly.Core.RawTermSubstAction
+import FX1Poly.Core.RawTermChildrenUnique
+import FX1Poly.Core.RuleSpec
+import FX1Poly.Core.SiteOpenness
+import FX1Poly.Core.StepEta
+import FX1Poly.Core.StepInversion
+import FX1Poly.Core.HeadStep
+import FX1Poly.Core.HeadStepCommute
+import FX1Poly.Core.HeadStepCommute2
+import FX1Poly.Core.HeadStepRenameReflect
+import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.IotaHeadStepDisjoint
+import FX1Poly.Core.WeakHeadStep
+import FX1Poly.Core.WeakHeadStepDeterministic
+import FX1Poly.Core.WeakHeadStepSubsumes
+import FX1Poly.Core.WeakHeadStepNormalForms
+import FX1Poly.Core.WeakHeadStepSubst
+import FX1Poly.Core.WeakHeadStepRename
+import FX1Poly.Core.WeakHeadStepRenameReflect
+import FX1Poly.Core.StepRenameReflect
+import FX1Poly.Core.StepRenameReflectEliminatorIota
+import FX1Poly.Core.StepRenameReflectAssembly
+import FX1Poly.Core.WeakHeadStepCommute
+import FX1Poly.Core.WeakHeadNormalPreservation
+import FX1Poly.Core.ReducibleTypeForwardClosure
+import FX1Poly.Core.ReducibleTypeForwardStepStar
+import FX1Poly.Core.ReducibleTypeConvInvariance
+import FX1Poly.Core.DependentArrowReducibilityCandidate
+import FX1Poly.Core.ReducibleTypeReducibilityCandidate
+import FX1Poly.Core.ReducibleMember
+import FX1Poly.Core.ReducibleMemberNeutral
+import FX1Poly.Core.ReducibleTypeWellFormed
+import FX1Poly.Core.StratifiedReducibleType
+import FX1Poly.Core.StratifiedReducibleTypeRename
+import FX1Poly.Core.KripkeCandidateRenameClosure
+import FX1Poly.Core.NeutralTermRename
+import FX1Poly.Core.StratifiedReducibleTypeForwardClosure
+import FX1Poly.Core.StratifiedReducibleTypeCandidate
+import FX1Poly.Core.StratifiedReducibleTypeNeutral
+import FX1Poly.Core.StratifiedReducibleTypeConvInvariance
+import FX1Poly.Core.StratifiedReducibleTypeReducibilityCandidate
+import FX1Poly.Core.StratifiedReducibleTypeHeadExpansion
+import FX1Poly.Core.StratifiedReducibleMember
+import FX1Poly.Core.StratifiedReducibleMemberNeutral
+import FX1Poly.Core.StrongNormalizationReflection
+import FX1Poly.Core.StratifiedReducibleMemberAbstraction
+import FX1Poly.Core.StratifiedReducibleUniverseDecode
+import FX1Poly.Core.StratifiedReducibleMemberNonDependent
+import FX1Poly.Core.StratifiedReducibleSmoke
+import FX1Poly.Core.ArrowCandidateMembership
+import FX1Poly.Core.CandidateInterpretationFundamental
+import FX1Poly.Core.RawTermSubstConsCommute
+-- Certifier base (CellBoundary / PolyCell + immediate consumers).
+import FX1Poly.Core.CertifiedRawCell
+import FX1Poly.Core.CertifiedTermSpineProjections
+import FX1Poly.Core.CertifyChildSpine
+import FX1Poly.Core.PolyCellErasure
+import FX1Poly.Core.PolyCellHelpers
+-- Certifier spine + exact-cell builders.
+import FX1Poly.Core.CertifyRawCellExact
+import FX1Poly.Core.CertifyTermSpine
+import FX1Poly.Core.SpineRenameStep
+import FX1Poly.Core.SpineSubstStep
+-- Certifier coverage / general inference + certified-term to PolyCell.
+import FX1Poly.Core.CertifyRawCellExactCompHRejects
+import FX1Poly.Core.CertifyRawCellExactShape
+import FX1Poly.Core.CertifyRawCellExactSound
+import FX1Poly.Core.CertifyRawCellExactTermBase
+import FX1Poly.Core.CertifyRawCellExactWrongChildShape
+import FX1Poly.Core.CertifyRawCellExactRenameEquiv
+import FX1Poly.Core.CertifyRawCellExactNegativeProbes
+import FX1Poly.Core.CertifyTermExact
+import FX1Poly.Core.CheckRawCellAs
+import FX1Poly.Core.InferRawCellGeneralSound
+import FX1Poly.Core.InferRawCellGeneralAcceptedCellDimensionEq
+import FX1Poly.Core.CertifiedToPolyCell
+-- HasCertified intro/composition/projection + subject-reduction iota family
+-- + beta-redex preservation + structural-induction primitives + Pair layer.
+import FX1Poly.Core.HasCertifiedHonestyProbes
+import FX1Poly.Core.SubjectReductionBaseIotas
+import FX1Poly.Core.SubjectReductionEtaStructural
+import FX1Poly.Core.SubjectReductionIotaBoolFalse
+import FX1Poly.Core.SubjectReductionIotaBoolTrue
+import FX1Poly.Core.SubjectReductionIotaEither
+import FX1Poly.Core.SubjectReductionIotaIdRefl
+import FX1Poly.Core.SubjectReductionIotaNatRec
+import FX1Poly.Core.SubjectReductionIotaOption
+import FX1Poly.Core.SubjectReductionIotaProjections
+import FX1Poly.Core.CompoundRenamePreservation
+import FX1Poly.Core.CompoundSubstPreservation
+import FX1Poly.Core.RawTermFoldNonVarCommute
+import FX1Poly.Core.BetaRedexDoublingSpike
+import FX1Poly.Core.StructuralInductionPrimitives
+import FX1Poly.Core.PairEliminatorLayer
+-- Reduction machinery: raw NF/free-vars/fresh, Step subst/rename + HCC
+-- wrappers + helper smokes, substitution-preservation mutual, Nat/Bool layers.
+import FX1Poly.Core.RawTermNF
+import FX1Poly.Core.StepRename
+import FX1Poly.Core.StepHelperSmokes
+import FX1Poly.Core.SubstPreservationMutual
+import FX1Poly.Core.NatEliminatorLayer
+import FX1Poly.Core.StructuralInductionWrapper
+import FX1Poly.Core.StepHCCWrappers
+-- Confluence + critical pairs + Conv congruence/subst-rename + StepPreservesShape
+-- + remaining dim-0 eliminators (Id) + StepStarLength.
+import FX1Poly.Core.ConvCongruence
+import FX1Poly.Core.ConvSubstRename
+import FX1Poly.Core.StepStarConfluence
+import FX1Poly.Core.StepStarLength
+import FX1Poly.Core.ConvNormalForm
+import FX1Poly.Core.StepEtaEtaCriticalPairs
+import FX1Poly.Core.StepIotaEtaInsideBinder
+import FX1Poly.Core.StepBetaEtaPreservesShape
+import FX1Poly.Core.SubjectReductionEtaBinder
+import FX1Poly.Core.IdEliminatorLayer
+-- Strong normalization (leaves/neutral/constructors/redexes/eta) + beta-eta
+-- confluence + iota-eta double strips + concrete neutral predicate.
+import FX1Poly.Core.NeutralTerm
+import FX1Poly.Core.ReducibilityCandidate
+import FX1Poly.Core.ReducibilityCandidateArrow
+import FX1Poly.Core.NeutralStepClosure
+import FX1Poly.Core.StrongNormalizationRedexes
+import FX1Poly.Core.StrongNormalizationIotaRedexes
+import FX1Poly.Core.BoolElimStrongNormalization
+import FX1Poly.Core.IdentityEliminatorStrongNormalization
+import FX1Poly.Core.StrongNormalizationSubterm
+import FX1Poly.Core.StrongNormalizationSpineExpansion
+import FX1Poly.Core.HeadExpansionClosure
+import FX1Poly.Core.CandidateInterpretation
+import FX1Poly.Core.CandidateInterpretationDeterminism
+import FX1Poly.Core.CandidateInterpretationRename
+import FX1Poly.Core.CandidateInterpretationSubst
+import FX1Poly.Core.CandidateInterpretationHeadExpansion
+import FX1Poly.Core.CandidateReducibleSubst
+import FX1Poly.Core.SemanticTypeDomain
+import FX1Poly.Core.WhnfInterpretation
+import FX1Poly.Core.WhnfInterpretationDeterminism
+import FX1Poly.Core.WhnfInterpretationHeadExpansion
+import FX1Poly.Core.WhnfInterpretationHeadReduce
+import FX1Poly.Core.WhnfInterpretationRename
+import FX1Poly.Core.ReducibleType
+import FX1Poly.Core.ReducibleTypeHeadExpansion
+import FX1Poly.Core.ReducibleTypeArrowCandidate
+import FX1Poly.Core.ReducibleTypeAbstraction
+import FX1Poly.Core.ReducibleTypeClosedUnderStep
+import FX1Poly.Core.ReducibleTypeInversion
+import FX1Poly.Core.PolygraphConvergentDecision
+import FX1Poly.Core.SconingWitness
+import FX1Poly.Core.StrongNormalizationRename
+import FX1Poly.Core.StrongNormalizationRenameForward
+import FX1Poly.Core.StrongNormalizationSmokeCorpus
+import FX1Poly.Core.StrongNormalizationFormerCorpus
+import FX1Poly.Core.StrongNormalizationBetaEtaLeaves
+import FX1Poly.Core.StrongNormalizationBetaEtaFormers
+import FX1Poly.Core.StrongNormalizationApplication
+import FX1Poly.Core.StrongNormalizationEta
+import FX1Poly.Core.StepBetaEtaConfluence
+import FX1Poly.Core.StepBetaEtaJoinableConfluence
+import FX1Poly.Core.NederpeltNonJoinability
+import FX1Poly.Core.GeneratorCountPin
+import FX1Poly.Core.StepIotaEtaDoubleStrips
+
+/-! # FX1PolyAudit/AuditCoreSubstrateEta — foundational term-substrate zero-axiom gates, shard 2 of 2
+(split from the AuditCoreSubstrate monolith for parallel gate elaboration; the full import block is preserved verbatim so the `#audit_namespace` sweeps see every loaded Core/Foundation declaration and the per-decl `#assert_no_axioms` gates resolve). -/
+
+-- The SN entry points (variable / unit leaves) are robust under the eta extension
+-- (Step.betaEta = Step union Step.eta).  Leaf eta-inversion + the reusable no-betaEta-step Acc base.
+#assert_no_axioms FX1Poly.Core.noEtaStep_var
+#assert_no_axioms FX1Poly.Core.noEtaStep_unit
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizingBetaEta_of_noBetaEtaStep
+#assert_no_axioms FX1Poly.Core.var_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.unit_isStronglyNormalizingBetaEta
+
+-- The full per-former corpus is robust under the eta extension.  Two generic StepChildren-normality
+-- helpers + one betaEta-SN witness per former (the formers over unit children are betaEta normal: cong has
+-- no normal-child StepChildren, and no Step.eta fires by shape mismatch).
+#assert_no_axioms FX1Poly.Core.noStepChildren_oneNormalChild
+#assert_no_axioms FX1Poly.Core.noStepChildren_twoNormalChildren
+#assert_no_axioms FX1Poly.Core.smoke_lam_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_pathLam_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_diffLambda_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_natSucc_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_optionSome_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_eitherInl_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_eitherInr_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_refl_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_modIntro_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_pair_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_listCons_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_glueIntro_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_arrowCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_productCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_sumCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_eitherCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_equivCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_piTyCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_sigmaTyCode_isStronglyNormalizingBetaEta
+#assert_no_axioms FX1Poly.Core.smoke_polyFunctor_isStronglyNormalizingBetaEta
+-- and the identity beta-redex: the corpus's first non-normal-form (head-expansion) betaEta witness.
+#assert_no_axioms FX1Poly.Core.noStep_lamVar0
+#assert_no_axioms FX1Poly.Core.smoke_identityRedex_isStronglyNormalizingBetaEta
+
+-- Kripke-indexed candidates make arrow rename-closure definitional.  Non-dependent presheaf
+-- functoriality + the arrow rename-closure.
+#assert_no_axioms FX1Poly.Core.transport_transport_pointwise
+#assert_no_axioms FX1Poly.Core.kripkeArrow_transport_pointwise
+-- Dependent Kripke arrow (the Pi case): codomain family transport functoriality + dependent rename-closure.
+#assert_no_axioms FX1Poly.Core.codFamily_transport_transport_pointwise
+#assert_no_axioms FX1Poly.Core.kripkeArrowDep_transport_pointwise
+-- CR1 structural ingredient: an application's strong normalization descends to its function (Acc pullback).
+#assert_no_axioms FX1Poly.Core.appFunctionCongStep
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizing_of_appFunction_aux
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizing_of_appFunction
+-- CR1 for the Kripke arrow (non-dependent + dependent): members are strongly normalizing (Tait argument).
+#assert_no_axioms FX1Poly.Core.kripkeArrow_stronglyNormalizing
+#assert_no_axioms FX1Poly.Core.kripkeArrowDep_stronglyNormalizing
+-- CR2 for the Kripke arrow (non-dependent + dependent): forward Step closure.
+#assert_no_axioms FX1Poly.Core.kripkeArrow_forwardStep
+#assert_no_axioms FX1Poly.Core.kripkeArrowDep_forwardStep
+-- CR3 for the non-dependent Kripke arrow: Girard neutral backward closure — the PAUSED brick, now unblocked
+-- by the full arbitrary-renaming Step reflection-with-image (Step.reflectRename, StepRenameReflectAssembly).
+-- A neutral function all of whose Step-reducts are in the arrow is in the arrow: app of neutral head is
+-- neutral, codomain-CR3 closes it, head-steps reflect via Step.reflectRename + the all-reducts hypothesis,
+-- arg-steps run the inner Tait accessibility induction on the domain-CR1 strongly-normalizing argument. This
+-- COMPLETES the non-dependent Kripke arrow CR bundle (CR1/CR2/CR3) — a prerequisite ingredient for the open
+-- Kripke logical relation that the GrownCtxConv-5 (#842) context-conversion piElim residual requires.
+#assert_no_axioms FX1Poly.Core.kripkeArrow_neutralBackwardClosure
+-- The SN Kripke candidate (the Kripke-model interpretation of a NEUTRAL type code): the index-IGNORING
+-- candidate whose members at every renaming index are exactly the strongly-normalizing terms (the
+-- `ReducibleTypeStep.neutral` SN candidate lifted to the renaming-indexed family).  Rename-INVARIANT
+-- (transport along any renaming is the IDENTITY, `Iff.rfl`) — the semantic reason context conversion is FREE
+-- on the neutral-type interpretation of the open GrownCtxConv-5 (#842) type-validity residual — plus CR1 (members are
+-- strongly normalizing, definitionally).  Wires the Kripke arrow substrate to the type-level neutral
+-- interpretation, the first concrete piece of the open typed logical-relation model.
+#assert_no_axioms FX1Poly.Core.snKripkeCand_transport_pointwise
+#assert_no_axioms FX1Poly.Core.snKripkeCand_stronglyNormalizing
+-- CR3 structural ingredient: neutrality is preserved by renaming (needed so the applied fresh-var head
+-- `rename furtherRenaming functionTerm` stays neutral in the Kripke arrow's neutral backward closure).
+#assert_no_axioms FX1Poly.Core.IsNeutral.rename
+-- A neutral term's one-step reduct is again neutral: a neutral can only step by congruence (no root redex
+-- fires, the principal child being neutral never a constructor), and congruence preserves the stuck shape.
+-- Discharges the `neutralClosedUnderStep` hypothesis of `CanonicalFormsPredicate.closedUnderStep`.
+#assert_no_axioms FX1Poly.Core.IsNeutral.closedUnderStep
+-- boolElim s t e is strongly normalizing when its scrutinee and both branches are SN (the branch-SN form,
+-- via a triple nested accessibility induction absorbing the iota-redex).  The iota-head-expansion SN
+-- foundation for boolElim reducibility and the fundamental theorem's eliminator arm.
+#assert_no_axioms FX1Poly.Core.StepStar.boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
+-- Identity eliminators: idJ / idStrictRec base witness is SN when base and witness are SN, via the
+-- boolElim-style double nested accessibility induction over base and witness.
+#assert_no_axioms FX1Poly.Core.StepStar.idJ_isStronglyNormalizing_of_strongly_normalizing_base
+#assert_no_axioms FX1Poly.Core.StepStar.idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base
+
+-- Generic non-variable cell commutation for fold traversals: the substrate for subst/rename through an
+-- abstract formation cell.  fold_mkGen_of_ne_var exposes the fold non-variable branch for an abstract
+-- non-gen_var generator (dsimp [fold] + dif_neg); subst/rename_mkGen_of_ne_var are the traversal corollaries
+-- (canonical_algebra_eq_mkGen rebuild).  The payload cast is
+-- Generator.payload_scope_invariant_of_not_var (the generator enumeration in one place).  The category-C
+-- formation-family consumers (HasTypeDescSubstitution/Weakening + grown twins) discharge their pi/sigma
+-- cases through it generically, so a new formation row touches none of them.
+#assert_no_axioms FX1Poly.Core.fold_mkGen_of_ne_var
+#assert_no_axioms FX1Poly.Core.RawTerm.subst_mkGen_of_ne_var
+#assert_no_axioms FX1Poly.Core.RawTerm.rename_mkGen_of_ne_var
+
+-- NEDERPELT NON-JOINABILITY (L1 known-unsoundness corpus): under Church-style lambda annotations the
+-- eta-beta overlap `lam A (app (weaken (lam B b)) newestVar)` contracts to `lam A b` (inner beta keeps the
+-- OUTER annotation) and to `lam B b` (root eta keeps the INNER annotation) — distinct beta-eta normal forms
+-- for normal A != B, hence non-joinable.  The three UNGUARDED mixed cd-lemma statements are therefore FALSE;
+-- the proved replacements carry the EtaLamAnnotationDiagonal guard (StepEtaCriticalPairs /
+-- StepEtaEtaCriticalPairs) and the hereditary diagonal guard (StepBetaEtaConfluence).  Typed terms satisfy
+-- the guard (typing forces the annotations convertible), so the typed beta-eta theory is unaffected.
+#assert_no_axioms FX1Poly.Core.Step.nederpeltInnerBetaBody
+#assert_no_axioms FX1Poly.Core.Step.nederpeltInnerBeta
+#assert_no_axioms FX1Poly.Core.Step.eta.not_from_varBodyLam
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.eq_of_blockedSource
+#assert_no_axioms FX1Poly.Core.nederpeltReductsNonJoinable
+#assert_no_axioms FX1Poly.Core.cdLemmaStatementStepEta_isFalse
+#assert_no_axioms FX1Poly.Core.cdLemmaStatementEtaStep_isFalse
+#assert_no_axioms FX1Poly.Core.cdLemmaStatementBetaEta_isFalse
+
+-- BECR-1, RAW HALF (StepBetaEtaJoinableConfluence.lean): the JOINABILITY-guarded βη local join +
+-- Newman twin.  The diagonal EQUALITY guard is too strong for typed subjects (typing forces
+-- annotations CONVERTIBLE, not equal); EtaLamAnnotationJoinable weakens it to a StepStar-join,
+-- and the one guarded critical pair closes by a genuine JOIN — lam A b and lam B b meet at
+-- lam C b by replaying the β/ι annotation chains through the gen_lam domain child
+-- (StepStar.lamDomainCong over the generic congAt; root-only η chains could NOT lift, β/ι's
+-- congruence closure is load-bearing).  ofDiagonal embeds the strong guard (refl join), so the
+-- joinable theory strictly subsumes the diagonal one.  The Newman recursion is the same
+-- Acc.ndrec with the weak guard threaded.  Typed discharge: WfContextBetaEtaConfluenceUnconditional.
+#assert_no_axioms FX1Poly.Core.StepStar.lamDomainCong
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.EtaLamAnnotationJoinable.ofDiagonal
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.etaLamLeftStepJoinable
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.etaLamRightStepJoinable
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.cd_lemma_step_eta_joinable
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.cd_lemma_eta_step_joinable
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.cd_lemma_betaEta_joinable
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.HereditaryLamJoinable.alongStep
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.HereditaryLamJoinable.ofHereditaryDiagonal
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.localJoin_of_cdLemmaBetaEtaJoinable
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.confluence_of_localJoin_and_accessibleJoinable
+
+-- GENERATOR-COUNT PIN (permanent stale-count guard): the enum has exactly 197 constructors —
+-- gen_npComplete attains index 196 (count from below) and every index is < 197 (count from above,
+-- the theorem a 198th generator breaks).  Update generatorCount + count-citing docstrings together.
+#assert_no_axioms FX1Poly.Core.generatorCount_lastIndex
+#assert_no_axioms FX1Poly.Core.generatorCount_upperBound

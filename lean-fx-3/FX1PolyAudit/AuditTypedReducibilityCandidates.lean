@@ -1,0 +1,1405 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Core.DataReducibilityCoverage
+import FX1Poly.Core.DataTaitCandidate
+import FX1Poly.Core.FlatCodeTaitCandidate
+import FX1Poly.Typed.FlatCodeCanonicalForms
+import FX1Poly.Typed.MilestoneASpineValueLayer
+import FX1Poly.Typed.MilestoneAEliminatorLayerSpine
+import FX1Poly.Typed.BoolElimComputingCanonicity
+import FX1Poly.Typed.MatchElimComputingCanonicityTyped
+import FX1Poly.Typed.MatchGeneralBranchCanonicity
+import FX1Poly.Typed.MetatheoryParityLedger
+import FX1Poly.Typed.TypingContext
+import FX1Poly.Typed.UniverseCodeShape
+import FX1Poly.Typed.UniverseCodeConversion
+import FX1Poly.Typed.SigmaCodeShape
+import FX1Poly.Typed.ListCodeShape
+import FX1Poly.Typed.ListFormationSmoke
+import FX1Poly.Typed.OptionCodeShape
+import FX1Poly.Typed.OptionCodeFormationUnderSubst
+import FX1Poly.Typed.OptionFormerMemberLevelIndexed
+import FX1Poly.Typed.BoundedGenFormationOptionFromTelescope
+import FX1Poly.Typed.OptionFormationSmoke
+import FX1Poly.Typed.HasTypeDesc
+import FX1Poly.Typed.HasTypeDescDecidable
+import FX1Poly.Typed.HasTypeDescElim
+import FX1Poly.Typed.HasTypeDescValidity
+import FX1Poly.Typed.HasTypeDescStronglyNormalizing
+import FX1Poly.Typed.HasTypeDescClosedForms
+import FX1Poly.Typed.HasTypeDescInversion
+import FX1Poly.Typed.HasTypeDescFormerTelescopeInversion
+import FX1Poly.Typed.DataFormerInversion
+import FX1Poly.Typed.HasTypeDescUniqueness
+import FX1Poly.Typed.HasTypeDescWeakening
+import FX1Poly.Typed.HasTypeDescSubstitution
+import FX1Poly.Typed.HasTypeDescElimWeakening
+import FX1Poly.Typed.HasTypeDescElimSubstitution
+import FX1Poly.Typed.HasTypeDescApplication
+import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Typed.HasTypeDescPiEtaCoherence
+import FX1Poly.Typed.HasTypeDescPiEtaExpansionGrown
+import FX1Poly.Typed.HasTypeDescPiEtaExpansionComputes
+import FX1Poly.Typed.HasTypeDescPiWeakening
+import FX1Poly.Typed.HasTypeDescPiSubstitution
+import FX1Poly.Typed.HasTypeDescPiInversion
+import FX1Poly.Typed.HasTypeDescPiApplication
+import FX1Poly.Typed.HasTypeDescPiValidity
+import FX1Poly.Typed.ConvCodeInjectivity
+import FX1Poly.Typed.ConvBoolCodeRigidity
+import FX1Poly.Typed.ConvFormationFormerRigidity
+import FX1Poly.Typed.ConvFlatFormerRigidity
+import FX1Poly.Typed.ConvCrossTableFormerRigidity
+import FX1Poly.Typed.ConvFlatCodeInjectivity
+import FX1Poly.Typed.ConvDataCodeInjectivity
+import FX1Poly.Typed.EmptyTypeCodeConvRigidity
+import FX1Poly.Typed.EmptyTypeValueInversion
+import FX1Poly.Typed.FormationCanonicalForms
+import FX1Poly.Typed.PiTypeFunctionInversion
+import FX1Poly.Typed.GrownCanonicalForms
+import FX1Poly.Typed.GrownTypeSafety
+import FX1Poly.Typed.FormationTypeSafety
+import FX1Poly.Typed.GrownCanonicalFormsByClassifier
+import FX1Poly.Typed.GrownClosedProgressByClassifier
+import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
+import FX1Poly.Typed.GrownBetaRedexInAction
+import FX1Poly.Typed.GrownOpenProgress
+import FX1Poly.Typed.GrownOpenCanonicalFormsByClassifier
+import FX1Poly.Typed.GrownOpenProgressByClassifier
+import FX1Poly.Typed.GrownOpenTypeSafety
+import FX1Poly.Typed.GrownTypeSafetyUnconditional
+import FX1Poly.Typed.FormerStepInversionGeneric
+import FX1Poly.Typed.SubjectReductionAtFormerGeneric
+import FX1Poly.Typed.WfContextDesc
+import FX1Poly.Typed.WfContextDescLookup
+import FX1Poly.Typed.WfContextDescValidity
+import FX1Poly.Typed.WfContextDescStronglyNormalizing
+import FX1Poly.Typed.WfContextDescUniqueness
+import FX1Poly.Typed.WfContextDescPi
+import FX1Poly.Typed.WfContextDescPiFromWfContextDesc
+import FX1Poly.Typed.WfContextDescPiLookup
+import FX1Poly.Typed.WfContextDescPiValidity
+import FX1Poly.Typed.HasTypeDescPiClassifierValidity
+import FX1Poly.Typed.HasTypeDescPiFunctionComponentValidity
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionDescPi
+import FX1Poly.Typed.HasTypeDescPiSubjectReduction
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionMutual
+import FX1Poly.Typed.ReducibleEnv
+import FX1Poly.Typed.ReducibleEnvAt
+import FX1Poly.Typed.ReducibleEnvTypeVariable
+import FX1Poly.Typed.SimplyTypedTypeExprFT
+import FX1Poly.Typed.AbstractionNonDependentUnderSubstLevelFree
+import FX1Poly.Typed.SimplyTypedTypeExprReducibleLevelFree
+import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
+import FX1Poly.Typed.SimplyTypedTermConfluenceLevelFree
+import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
+import FX1Poly.Typed.SimplyTypedTermInversionLevelFree
+import FX1Poly.Typed.SimplyTypedTypeExprClosureLevelFree
+import FX1Poly.Typed.SimplyTypedTermRenameLevelFree
+import FX1Poly.Typed.SimplyTypedTermSubstLevelFree
+import FX1Poly.Typed.SimplyTypedTermSubjectReductionLevelFree
+import FX1Poly.Typed.SimplyTypedTermCanonicityLevelFree
+import FX1Poly.Typed.SimplyTypedTermConsistencyLevelFree
+import FX1Poly.Typed.SimplyTypedConvDecision
+import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
+import FX1Poly.Typed.SimplyTypedMetatheoryViaSconing
+import FX1Poly.Tier0.FxRenamingCategory
+import FX1Poly.Tier0.FxBaseRenamingCategory
+import FX1Poly.Tier0.FxBaseRenamingVecCategory
+import FX1Poly.Tier0.FxBaseRenamingVecIsomorphism
+import FX1Poly.Tier0.FxBaseRenamingVecTabulate
+import FX1Poly.Tier0.FxBaseRenamingVecPreimage
+import FX1Poly.Tier0.FxBaseRenamingVecTryTabulate
+import FX1Poly.Tier0.FxBaseRenamingVecRMC
+import FX1Poly.Tier0.FxBaseRenamingVecGlobalSections
+import FX1Poly.Tier0.FxBaseRenamingVecSconingPreservation
+import FX1Poly.Tier0.FxBaseSubstVec
+import FX1Poly.Tier0.FxBaseSubstCategory
+import FX1Poly.Tier0.FxBaseSubstWeakening
+import FX1Poly.Tier0.FxBaseSubstComprehension
+import FX1Poly.Tier0.FxBaseSubstSingleton
+import FX1Poly.Tier0.FxBaseSubstGlobalSections
+import FX1Poly.Tier0.FxBaseSubstScone
+import FX1Poly.Tier0.FxBaseSubstWitnessScone
+import FX1Poly.Tier0.FxBaseSubstConcreteScone
+import FX1Poly.Tier0.IsomorphismCategorical
+import FX1Poly.Tier0.FxThinScopeRMC
+import FX1Poly.Tier0.FxThinScopeGlobalSections
+import FX1Poly.Typed.SimplyTypedNormalForm
+import FX1Poly.Typed.SimplyTypedConvEquivalence
+import FX1Poly.Typed.ReduceSmokeCorpus
+import FX1Poly.Core.RedexExtraction
+import FX1Poly.Core.RootStepDispatch
+import FX1Poly.Core.FireRootRedex
+import FX1Poly.Core.FireRootRedexComplete
+import FX1Poly.Core.ReduceOnce
+import FX1Poly.Core.ReduceOnceComplete
+import FX1Poly.Core.Normalize
+import FX1Poly.Core.NormalizeSteps
+import FX1Poly.Core.ConvDecisionSteps
+import FX1Poly.Core.NormalizeMeta
+import FX1Poly.Core.CanonicalFormsCandidate
+import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
+import FX1Poly.Core.BoolCanonicalFormsCandidate
+import FX1Poly.Core.BoolElimCanonicalComputation
+import FX1Poly.Core.BoolElimClosedMembership
+import FX1Poly.Core.DataEliminatorMembershipSmoke
+import FX1Poly.Core.SigmaProjectionCanonicalComputation
+import FX1Poly.Core.IdentityEliminatorCanonicalComputation
+import FX1Poly.Core.IdEliminatorClosedMembership
+import FX1Poly.Core.OptionEitherMatchCanonicalComputation
+import FX1Poly.Core.MatchClosedMembership
+import FX1Poly.Core.SigmaProjectionClosedMembership
+import FX1Poly.Core.RecursorClosedMembership
+import FX1Poly.Core.RecursiveEliminatorBaseComputation
+import FX1Poly.Core.BoolCanonicityViaSconing
+import FX1Poly.Core.DataCanonicityViaSconing
+import FX1Poly.Core.ModalCanonicityViaSconing
+import FX1Poly.Core.DataMetatheoryViaSconing
+import FX1Poly.Core.ReducibilityNormalizationViaSconing
+import FX1Poly.Core.ReducibilityConversionViaSconing
+import FX1Poly.Core.ConsistencyViaSconing
+import FX1Poly.Core.DataEliminatorProgressViaSconing
+import FX1Poly.Core.RecursiveEliminatorProgressViaSconing
+import FX1Poly.Core.NatCanonicalFormsCandidate
+import FX1Poly.Core.PairCanonicalFormsCandidate
+import FX1Poly.Core.UnitCanonicalFormsCandidate
+import FX1Poly.Core.ModIntroCanonicalFormsCandidate
+import FX1Poly.Core.EmptyCanonicalFormsCandidate
+import FX1Poly.Core.ListCanonicalFormsCandidate
+import FX1Poly.Core.OptionCanonicalFormsCandidate
+import FX1Poly.Core.EitherCanonicalFormsCandidate
+import FX1Poly.Core.ReflCanonicalFormsCandidate
+import FX1Poly.Core.StronglyNormalizingSubst
+import FX1Poly.Core.ExistsStepOfNotNormal
+import FX1Poly.Core.WeakNormalization
+import FX1Poly.Core.NormalFormUnique
+import FX1Poly.Core.StronglyNormalizingConvDecision
+import FX1Poly.Typed.ReducibleEnvAtAllLevels
+import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
+import FX1Poly.Typed.ReducibleEnvAtAllLevelsWithTypeValueCandidates
+import FX1Poly.Typed.FundamentalWithPositiveTypeCandidates
+import FX1Poly.Typed.FundamentalWithTypeValueCandidates
+import FX1Poly.Typed.FundamentalAtAllLeafArms
+import FX1Poly.Typed.FundamentalAtAllTelescope
+import FX1Poly.Typed.FundamentalAtAllFormerChildren
+import FX1Poly.Typed.FundamentalAtAllPiIntro
+import FX1Poly.Typed.FundamentalAtAllPositiveArguments
+import FX1Poly.Typed.NeutralFuelStability
+import FX1Poly.Typed.PiTypeSaturationReassembly
+import FX1Poly.Typed.StrongNormalizingAllLevelPiComponents
+import FX1Poly.Typed.FundamentalAtAllTelescopePositiveArguments
+import FX1Poly.Typed.FundamentalAtAllPositiveMemberExtension
+import FX1Poly.Typed.FundamentalAtAllCanonicalCandidate
+import FX1Poly.Typed.FundamentalAtAllVectorPremises
+import FX1Poly.Typed.FundamentalAtAllNonDependentBinders
+import FX1Poly.Typed.FundamentalAtUniformVectorPremises
+import FX1Poly.Typed.HasTypeDescPiFundamentalVectorFromFormation
+import FX1Poly.Typed.HasTypeDescFundamentalAtAllFromGenFormation
+import FX1Poly.Typed.FundamentalLevelIndexed
+import FX1Poly.Typed.ClosedLevelIndexed
+import FX1Poly.Typed.TypeFundamentalLevelIndexed
+import FX1Poly.Typed.LeveledContext
+import FX1Poly.Typed.ClosedSNSmoke
+import FX1Poly.Typed.UntypedOmegaNotStronglyNormalizing
+import FX1Poly.Typed.WeaklyNormalizingNotStronglyNormalizing
+import FX1Poly.Typed.StepNonDeterministic
+import FX1Poly.Typed.ConvValueDiscrimination
+import FX1Poly.Typed.TypedLambdaDerivations
+import FX1Poly.Typed.TypedChurchBooleans
+import FX1Poly.Typed.TypedChurchNegation
+import FX1Poly.Typed.TypedChurchNumerals
+import FX1Poly.Typed.TypedChurchNumeralIteration
+import FX1Poly.Typed.TypedChurchNumeralDiscrimination
+import FX1Poly.Typed.TypedChurchNumeralThree
+import FX1Poly.Typed.TypedChurchNumeralFaithful
+import FX1Poly.Typed.TypedChurchNumeralTyping
+import FX1Poly.Typed.TypedChurchNumeralInhabitants
+import FX1Poly.Typed.TypedChurchNumeralComputeGeneral
+import FX1Poly.Typed.TypedChurchNumeralAddition
+import FX1Poly.Typed.TypedChurchNumeralMultiplication
+import FX1Poly.Typed.TypedChurchNumeralSemiringLaws
+import FX1Poly.Typed.TypedChurchNumeralIsZero
+import FX1Poly.Typed.TypedChurchBooleanOperations
+import FX1Poly.Typed.TypedFragmentAcyclicity
+import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
+import FX1Poly.Typed.CurryFixpointDivergence
+import FX1Poly.Typed.CurryFixpointCombinator
+import FX1Poly.Typed.CombinatoryLogic
+import FX1Poly.Typed.CombinatoryCompleteness
+import FX1Poly.Typed.SymbolicSCombinatorRule
+import FX1Poly.Typed.ChurchPairs
+import FX1Poly.Typed.ChurchPairsInjective
+import FX1Poly.Typed.ChurchSums
+import FX1Poly.Typed.ChurchSumsDisjoint
+import FX1Poly.Typed.ChurchSumsGeneral
+import FX1Poly.Typed.ChurchLists
+import FX1Poly.Typed.ChurchListIsEmpty
+import FX1Poly.Typed.ChurchListAny
+import FX1Poly.Typed.ChurchListAll
+import FX1Poly.Typed.ChurchBooleanComplementLaws
+import FX1Poly.Typed.ChurchBoolXor
+import FX1Poly.Typed.ChurchListFirstOr
+import FX1Poly.Typed.ChurchSucc
+import FX1Poly.Typed.ChurchSuccApplies
+import FX1Poly.Typed.ChurchListLength
+import FX1Poly.Typed.TypedNormalizer
+import FX1Poly.Typed.IdentityTowerFamily
+import FX1Poly.Typed.NormalizeStepsTower
+import FX1Poly.Typed.TypedUniverseTower
+import FX1Poly.Typed.TypedUniverseNoTop
+import FX1Poly.Typed.TypedUniversePredicative
+import FX1Poly.Typed.ClosedConvDecision
+import FX1Poly.Typed.ClosedNormalForm
+import FX1Poly.Typed.ClosedNonConvertibility
+import FX1Poly.Typed.ValidTyping
+import FX1Poly.Typed.HasTypeDescPiStronglyNormalizingFromFundamental
+import FX1Poly.Typed.ReducibleEnvVec
+import FX1Poly.Typed.ReducibleEnvVecTypeVariable
+import FX1Poly.Typed.HasTypeDescPiConsistency
+import FX1Poly.Typed.HasTypeFormationNoLambdaApplication
+import FX1Poly.Typed.ReducibleSemanticRules
+import FX1Poly.Typed.ListCodeFormationUnderSubst
+import FX1Poly.Typed.ListFormerMemberLevelIndexed
+import FX1Poly.Typed.ReducibleMemberFormation
+import FX1Poly.Typed.DescTelescopeInversion
+import FX1Poly.Typed.DescTelescopeReach
+import FX1Poly.Typed.FlatDescTelescope
+import FX1Poly.Typed.HasTypeDescFlat
+import FX1Poly.Typed.HasTypeDescFlatInversion
+import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
+import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
+import FX1Poly.Typed.HasTypeDescFlatWeakening
+import FX1Poly.Typed.HasTypeDescFlatSubstitution
+import FX1Poly.Typed.HasTypeDescFlatValidity
+import FX1Poly.Typed.HasTypeDescFlatFormerInversion
+import FX1Poly.Typed.HasTypeDescFlatUniqueness
+import FX1Poly.Typed.HasTypeDescDataIntro
+import FX1Poly.Typed.HasTypeDescDataIntroInversion
+import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
+import FX1Poly.Typed.HasTypeDescBaseType
+import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
+import FX1Poly.Typed.StandaloneEngineCanonicity
+import FX1Poly.Typed.CombinedBoolCanonicalForms
+import FX1Poly.Typed.ClosedBoolCanonicity
+import FX1Poly.Typed.CanonicitySyntacticRoute
+import FX1Poly.Typed.GrownRigidityCanonicity
+import FX1Poly.Typed.ClosedNatCanonicity
+import FX1Poly.Typed.ClosedDataCanonicity
+import FX1Poly.Typed.BoolElimClosedNormalForms
+import FX1Poly.Typed.MatchClosedNormalForms
+import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
+import FX1Poly.Typed.BoolElimValueCanonicity
+import FX1Poly.Typed.NatElimComputingCanonicity
+import FX1Poly.Typed.NatElimFaithfulArithmetic
+import FX1Poly.Typed.ClosedNumeralSubstInvariant
+import FX1Poly.Typed.NatElimFaithfulMul
+import FX1Poly.Typed.ValueElimHostFold
+import FX1Poly.Typed.RecursorHostFold
+import FX1Poly.Typed.ListElimComputingCanonicity
+import FX1Poly.Typed.ListElimFaithfulLength
+import FX1Poly.Typed.MatchElimComputingCanonicity
+import FX1Poly.Typed.GrownClosedNormalClassifierShape
+import FX1Poly.Typed.ClosedNormalEmptyConsistency
+import FX1Poly.Typed.HasTypeDescPairIntro
+import FX1Poly.Typed.HasTypeDescEitherIntro
+import FX1Poly.Typed.ProductEitherCanonicalForms
+import FX1Poly.Typed.HasTypeDescBoolElim
+import FX1Poly.Typed.HasTypeDescEitherMatch
+import FX1Poly.Typed.HasTypeDescOptionIntro
+import FX1Poly.Typed.HasTypeDescOptionMatch
+import FX1Poly.Typed.OptionCanonicalForms
+import FX1Poly.Typed.HasTypeDescSigmaProjection
+import FX1Poly.Typed.HasTypeDescIdIntro
+import FX1Poly.Typed.HasTypeDescIdElim
+import FX1Poly.Typed.HasTypeDescListIntro
+import FX1Poly.Typed.HasTypeDescNatIntro
+import FX1Poly.Typed.HasTypeDescNatElim
+import FX1Poly.Typed.HasTypeDescListElim
+import FX1Poly.Typed.DataIntroSubjectReductionRecursive
+import FX1Poly.Typed.CombinedClosedNormalValueHeads
+import FX1Poly.Typed.CombinedNatCanonicalForms
+import FX1Poly.Typed.ListCanonicalForms
+import FX1Poly.Typed.IdCanonicalForms
+import FX1Poly.Typed.PiFormerMembership
+import FX1Poly.Typed.FormerChildrenReducible
+import FX1Poly.Typed.TelescopeReducible
+import FX1Poly.Typed.UniverseDomainMemberExtension
+import FX1Poly.Typed.ReducibleTypeAtAllLevelsLeaves
+import FX1Poly.Typed.ReducibleTypeAtAllLevelsInduction
+import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiNeutralDomain
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsLeaves
+import FX1Poly.Typed.FundamentalTelescopeConsNeutralDomain
+import FX1Poly.Typed.FundamentalTelescopeConsWhnfDomain
+import FX1Poly.Typed.ReducibleTypeAtAllLevelsPiDomainMemberExtension
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsPiMemberExtension
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsHeadExpand
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsConv
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsStronglyNormalizing
+import FX1Poly.Typed.ReducibleMemberAtAllPositiveLevelsNonDependentArrow
+import FX1Poly.Typed.ReducibleTypeAtAllLevelsNonDependentArrow
+import FX1Poly.Typed.RouteAObstruction
+import FX1Poly.Typed.ClassifierLevelDiagnosis
+import FX1Poly.Typed.ClassifierLevelMeasure
+import FX1Poly.Typed.DenoteKeyedReducibility
+import FX1Poly.Typed.DenoteKeyedReducibilitySmoke
+import FX1Poly.Typed.DenoteKeyedUniverseDomainPi
+import FX1Poly.Typed.DenoteKeyedLevelIrrelevance
+import FX1Poly.Typed.DenoteKeyedReducibleEnv
+import FX1Poly.Typed.DenoteKeyedUniverseFormationMember
+import FX1Poly.Typed.DenoteKeyedCanonicalMemberCandidate
+import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
+import FX1Poly.Typed.DenoteKeyedGeneralDomainPiArm
+import FX1Poly.Typed.DenoteKeyedUniverseDomainPiArm
+import FX1Poly.Typed.DenoteKeyedSingleLevelPi
+import FX1Poly.Typed.DenoteKeyedUniformPiCandidate
+import FX1Poly.Typed.DenoteKeyedUniformPiAboveThreshold
+import FX1Poly.Typed.DenoteKeyedPiFormerAtLevel
+import FX1Poly.Typed.DenoteKeyedReducibleTypeLevelLift
+import FX1Poly.Typed.DenoteKeyedPiArmDischarge
+import FX1Poly.Typed.DenoteKeyedPiFormationUnderSubst
+import FX1Poly.Typed.DenoteKeyedApplicationMember
+import FX1Poly.Typed.DenoteKeyedConvMember
+import FX1Poly.Typed.DenoteKeyedMemberForwardClosed
+import FX1Poly.Typed.DenoteKeyedUniverseMemberBetaExpansion
+import FX1Poly.Typed.DenoteKeyedMemberWeakHeadExpansion
+import FX1Poly.Typed.DenoteKeyedHeadExpansion
+import FX1Poly.Typed.DenoteKeyedAbstractionMember
+import FX1Poly.Typed.DenoteKeyedAbstractionUnderSubst
+import FX1Poly.Typed.DenoteKeyedFundamentalMotive
+import FX1Poly.Typed.DenoteKeyedFundamentalPiElim
+import FX1Poly.Typed.DenoteKeyedFundamentalConv
+import FX1Poly.Typed.DenoteKeyedAmbientLevelBridge
+import FX1Poly.Typed.DenoteKeyedNonDependentArrow
+import FX1Poly.Typed.DenoteKeyedFundamentalPiIntro
+import FX1Poly.Typed.DenoteKeyedClosedMember
+import FX1Poly.Typed.DenoteKeyedTelescopeReducible
+import FX1Poly.Typed.DenoteKeyedUniformReducible
+import FX1Poly.Typed.DenoteKeyedUniverseMembershipIntro
+import FX1Poly.Typed.DenoteKeyedTelescopeFundamental
+import FX1Poly.Typed.DenoteKeyedSigmaFormation
+import FX1Poly.Typed.DenoteKeyedSigmaFromChildMembers
+import FX1Poly.Typed.DenoteKeyedGenFormationSigmaArm
+import FX1Poly.Typed.DenoteKeyedGenFormationPiArm
+import FX1Poly.Typed.DenoteKeyedCumulativityObstruction
+import FX1Poly.Typed.DenoteKeyedBoundedReducibility
+import FX1Poly.Typed.DenoteKeyedBoundedReducibleEnv
+import FX1Poly.Typed.DenoteKeyedBoundedFundamentalMotive
+import FX1Poly.Typed.DenoteKeyedBoundedConvArm
+import FX1Poly.Typed.DenoteKeyedBoundedPiElimArm
+import FX1Poly.Typed.DenoteKeyedBoundedPiIntroArm
+import FX1Poly.Typed.DenoteKeyedBoundedFormerEngine
+import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiArm
+import FX1Poly.Typed.DenoteKeyedBoundedGenFormationPiDischarge
+import FX1Poly.Typed.DenoteKeyedBoundedAssemblyBridge
+import FX1Poly.Typed.DenoteKeyedBoundedTelescopeReducible
+import FX1Poly.Typed.DenoteKeyedBoundedTelescopeFundamental
+import FX1Poly.Typed.DenoteKeyedBoundedTelescopeProjection
+import FX1Poly.Typed.FormerOutputLevelBounds
+import FX1Poly.Typed.BoundedCodomainOpenSN
+import FX1Poly.Typed.BoundedDomainInhabitant
+import FX1Poly.Typed.BoundedGenFormationPiFromTelescope
+import FX1Poly.Typed.BoundedGenFormationSigmaFromTelescope
+import FX1Poly.Typed.BoundedGenFormationListFromTelescope
+import FX1Poly.Typed.BoundedTelescopeConsSucc
+import FX1Poly.Typed.BoundedGrownDispatch
+import FX1Poly.Typed.BoundedFormationLeafArms
+import FX1Poly.Typed.BoundExceedsDesc
+import FX1Poly.Typed.BoundExceedsDischarge
+import FX1Poly.Typed.BoundedFormationDispatch
+import FX1Poly.Typed.BoundExceedsPi
+import FX1Poly.Typed.BoundExceedsPiDischarge
+import FX1Poly.Typed.BoundedGrownFundamental
+import FX1Poly.Typed.ClosedBoundedReducibleMember
+import FX1Poly.Typed.ClosedStronglyNormalizing
+import FX1Poly.Typed.OpenStronglyNormalizing
+import FX1Poly.Typed.BoundedNeutralMember
+import FX1Poly.Typed.BoundedUniverseInversion
+import FX1Poly.Typed.BoundedBindingTypeReducible
+import FX1Poly.Typed.ReducibleEnvOfWfContext
+import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
+import FX1Poly.Typed.WfContextDecidableConv
+import FX1Poly.Typed.OpenSNSmoke
+import FX1Poly.Typed.ContextValidityFails
+import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
+import FX1Poly.Typed.WfContextBetaEtaConfluence
+import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
+import FX1Poly.Typed.BetaEtaConvGapStatement
+import FX1Poly.Typed.BetaEtaConvDecidable
+import FX1Poly.Typed.UnitEtaJudgmentalEquality
+import FX1Poly.Typed.UnitEtaCongruenceGap
+import FX1Poly.Typed.UnitEtaCongruentEquality
+import FX1Poly.Typed.UnitVariableCollapse
+import FX1Poly.Typed.UnitCollapseIncompleteness
+import FX1Poly.Typed.UnitCollapseBinderFence
+import FX1Poly.Typed.UnitVariableCollapseDeep
+import FX1Poly.Typed.UnitVariableCollapseDeepSound
+import FX1Poly.Typed.UnitCollapseNeutralBoundary
+import FX1Poly.Typed.UnitNeutralSpineDetection
+import FX1Poly.Typed.UnitSpineDetectionBoundary
+import FX1Poly.Typed.TypeDirectedUnitReadback
+import FX1Poly.Typed.UnitReadbackArgumentBoundary
+import FX1Poly.Typed.UnitReadbackFormerChildBoundary
+import FX1Poly.Typed.UnitReadbackDeepSpineBoundary
+import FX1Poly.Typed.UnitReadbackAnnotationBoundary
+import FX1Poly.Typed.FormationClassifierRigidity
+import FX1Poly.Typed.TypedNbeNormalizer
+import FX1Poly.Typed.TypedNbeConvDecision
+import FX1Poly.Typed.SigmaEtaEngineGate
+import FX1Poly.Typed.EliminatorMotiveShapeRecord
+import FX1Poly.Typed.LiftedChildNormalizationFromClosure
+import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
+import FX1Poly.Typed.CascadeFreedomLedger
+import FX1Poly.Typed.ConsistencyTargetSignature
+import FX1Poly.Typed.CandidateBridgeEditViability
+import FX1Poly.Typed.CanonicityTargetSignature
+import FX1Poly.Typed.NullaryFormerFormation
+import FX1Poly.Typed.GrownUniverseFormationStrictness
+import FX1Poly.Typed.GrownFormerFormationStrictness
+import FX1Poly.Typed.GrownTypingNotUnique
+import FX1Poly.Typed.GrownEngineHonesty
+import FX1Poly.Typed.GrownUniverseConsistency
+import FX1Poly.Typed.GrownVariableHonesty
+import FX1Poly.Typed.RawStepNotStronglyNormalizing
+import FX1Poly.Typed.HasTypeDescPiLamInversion
+import FX1Poly.Typed.HasTypeDescPiAppInversion
+import FX1Poly.Typed.HasTypeDescPiVarInversion
+import FX1Poly.Typed.VarHeadedAppContextConversion
+import FX1Poly.Typed.HasTypeDescPiBetaSR
+import FX1Poly.Typed.HasTypeDescPiCongruence
+import FX1Poly.Typed.HasTypeDescPiFormerCongruence
+import FX1Poly.Typed.HasTypeDescContextConversion
+import FX1Poly.Typed.HasTypeDescPiContextConversion
+import FX1Poly.Typed.HasTypeDescPiContextConversionConditional
+import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
+import FX1Poly.Typed.HasTypeDescPiContextConversionWf
+import FX1Poly.Typed.HasTypeDescPiContextConversionValidityReduction
+import FX1Poly.Typed.GrownMutualMetatheoryFromPiValidity
+import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimEquivalence
+import FX1Poly.Typed.HasTypeDescPiContextStepConversion
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionUnconditional
+import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimUnderWf
+import FX1Poly.Typed.HasTypeDescPiContextConversionFlexibleUnderWf
+import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
+import FX1Poly.Typed.ConvContextPreservesPiValidityFormerStep
+import FX1Poly.Typed.GenFormerValidityContextConversion
+import FX1Poly.Typed.ConvContextPiValidityModelNeutral
+import FX1Poly.Typed.TypedTypeValidityRelation
+import FX1Poly.Typed.TypedTypeValidityBoxedRelation
+import FX1Poly.Typed.TypedTypeValidityLeveled
+import FX1Poly.Typed.TypedTypeValidityLeveledTransport
+import FX1Poly.Typed.TypedTypeValidityLeveledTransportUnderWf
+import FX1Poly.Typed.TypedTypeValidityLeveledCompleteness
+import FX1Poly.Typed.WfContextTypedLrValid
+import FX1Poly.Typed.TypedTypeValidityBoxedRename
+import FX1Poly.Typed.WfContextTypedLrValidLookup
+import FX1Poly.Typed.PiElimClassifierConvResidual
+import FX1Poly.Typed.HasTypeDescPiFormerInversion
+import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
+import FX1Poly.Typed.HasTypeDescPiRootGeneric
+import FX1Poly.Typed.DenoteKeyedUniverseBoundedCumulativity
+import FX1Poly.Typed.DenoteKeyedClosedTypeCodeSN
+import FX1Poly.Typed.DenoteKeyedUniverseDomainPiMemberSN
+import FX1Poly.Typed.DenoteKeyedNonDependentArrowMemberSN
+import FX1Poly.Typed.DenoteKeyedCodomainMemberWiring
+import FX1Poly.Typed.ClassifierLevelSpike
+import FX1Poly.Typed.SNStrategy
+import FX1Poly.Typed.LogRelSpec
+import FX1Poly.Typed.LevelingBridge
+import FX1Poly.Typed.ConsistentStratification
+import FX1Poly.Typed.ValidTypingLevelFlexible
+import FX1Poly.Typed.ValidTypingRefinedMotive
+import FX1Poly.Typed.ValidTypingConvArm
+import FX1Poly.Typed.ValidTypingPiArms
+import FX1Poly.Typed.ValidTypingFormerArms
+import FX1Poly.Typed.ValidTypingVariableLevelPinned
+import FX1Poly.Typed.FormationEngineFundamentalReduction
+import FX1Poly.Typed.FormationEngineFundamental
+import FX1Poly.Typed.FormationEngineFundamentalAssembly
+import FX1Poly.Typed.HasTypeDescPiConditionalConfluence
+import FX1Poly.Typed.HasTypeDescPiUniqueNormalForm
+import FX1Poly.Typed.FirstOrderSimplyTypedReducibility
+import FX1Poly.Typed.HigherOrderSimplyTypedReducibility
+import FX1Poly.Typed.DependentPiOverNeutralDomain
+import FX1Poly.Typed.DependentPiNeutralCodomain
+import FX1Poly.Typed.DependentlyTypedNeutralDomainFragment
+import FX1Poly.Typed.FirstOrderSimplyTypedSubsumption
+import FX1Poly.Typed.UniverseCumulativity
+import FX1Poly.Typed.SimplyTypedTermReducibility
+import FX1Poly.Typed.HasTypeDescPiTypingNonUnique
+import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
+import FX1Poly.Typed.HasTypeDescPiVariableInversion
+import FX1Poly.Typed.HasTypeDescPiCheckVariable
+import FX1Poly.Typed.HasTypeDescPiUniverseCodeInversion
+import FX1Poly.Typed.HasTypeDescPiCheckUniverseCode
+import FX1Poly.Typed.HasTypeDescPiApplicationUniqueness
+import FX1Poly.Typed.HasTypeDescPiCheckApplication
+import FX1Poly.Typed.HasTypeDescPiFormationUniqueness
+import FX1Poly.Typed.HasTypeDescPiCheckFormation
+import FX1Poly.Typed.HasTypeDescPiFormationCodomainReTyping
+import FX1Poly.Typed.IntroRuleDesc
+import FX1Poly.Typed.ElimRuleDesc
+import FX1Poly.Typed.GenElimIotaComputation
+import FX1Poly.Typed.TypingRoleClassifier
+import FX1Poly.Typed.TypingRoleEngineBridge
+import FX1Poly.Typed.TypingRoleCoverage
+import FX1Poly.Typed.UntypableHeadDecision
+import FX1Poly.Typed.TypingHeadKindClassifier
+import FX1Poly.Typed.TypedBySomeEngine
+import FX1Poly.Typed.GeneratorSemanticTier
+import FX1Poly.Typed.GeneratorHonestyOverview
+import FX1Poly.Typed.StaticTypingSoundness
+import FX1Poly.Typed.SemanticTierSoundness
+import FX1Poly.Typed.ClassifierRefinement
+import FX1Poly.Typed.GeneratorHonestyLedger
+import FX1Poly.Typed.CertifiedWordReductionTermination
+import FX1Poly.Typed.CertifiedWordReductionConfluence
+import FX1Poly.Typed.HasTypeDescPiFormerStepDomainFormationCodomain
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionArms
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionFormerArms
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionInlineArms
+import FX1Poly.Typed.HasTypeDescSubjectReduction
+import FX1Poly.Typed.HasTypeDescPiSubjectReductionConvOfFormationArms
+import FX1Poly.Typed.ConsistencyConditionalOnSubjectReduction
+import FX1Poly.Typed.EmptyTypeConsistencySyntactic
+import FX1Poly.Typed.ConsistencyOfPiElimArm
+import FX1Poly.Typed.PiElimUpToClassifierConv
+import FX1Poly.Typed.ClassifierRespectsConvRefuted
+import FX1Poly.Typed.TypedCertificationStackingRefuted
+import FX1Poly.Typed.EmptyTypeConsistencyUnconditional
+import FX1Poly.Typed.FormationNormalSmoke
+import FX1Poly.Typed.BoolTypeCodeSubstrate
+import FX1Poly.Typed.NatTypeCodeSubstrate
+import FX1Poly.Typed.GrownNoTypeInType
+import FX1Poly.Typed.IsTypeDescRigidity
+import FX1Poly.Typed.IsTypeDescDecidable
+import FX1Poly.Typed.HasTypeDescNativeDecidable
+import FX1Poly.Typed.IsTypeDescDecidableGeneric
+import FX1Poly.Typed.IsTypeDescGenericSmoke
+import FX1Poly.Typed.KnownUnsoundnessCorpus
+import FX1Poly.Typed.UniverseClassificationAcyclic
+import FX1Poly.Modal.SecurityNoninterferenceGeneral
+import FX1Poly.Modal.GradedApplicationFlow
+import FX1Poly.Typed.MetatheoryFuzz
+import FX1Poly.Typed.FuzzCorpusConvertibility
+import FX1Poly.Typed.FuzzCorpusNormalizes
+import FX1Poly.Typed.LambdaValueFuzzFamily
+import FX1Poly.Typed.MechanizedProofCrossReference
+import FX1Poly.Typed.FormalReviewGate
+import FX1Poly.Typed.SelfVerifiedMetatheory
+import FX1Poly.Typed.GrownStrengthening
+import FX1Poly.Typed.GrownStrengtheningRefutation
+import FX1Poly.Typed.GrownCheck
+import FX1Poly.Typed.GrownCheckContextConversion
+import FX1Poly.Typed.GrownCheckSoundnessRefutation
+import FX1Poly.Typed.ConvExistentialStrengtheningRefutation
+import FX1Poly.Typed.PinnedPiImageComponents
+import FX1Poly.Typed.PinnedPiRenameImage
+import FX1Poly.Typed.PinnedReflectionContext
+import FX1Poly.Typed.PinnedReflectionPiIntro
+import FX1Poly.Typed.FormationPinnedReflection
+import FX1Poly.Typed.GrownPinnedReflection
+import FX1Poly.Typed.PinnedReflectionPiElimCore
+import FX1Poly.Typed.GrownWfOpenStronglyNormalizing
+import FX1Poly.Typed.PinnedReflectionPiElimDispatcher
+import FX1Poly.Typed.PlateauDescentSubstrate
+import FX1Poly.Typed.GuardedPinnedReflection
+import FX1Poly.Typed.PlateauPinnedReflection
+import FX1Poly.Typed.NeutralReductResidualDischarge
+import FX1Poly.Typed.PinnedReflectionLamClassifierResidual
+import FX1Poly.Typed.FlagCoherentReflectionCondition
+import FX1Poly.Typed.UniverseClassificationUnique
+import FX1Poly.Typed.NeutralClassifierUnique
+import FX1Poly.Typed.NormalAppNeutral
+import FX1Poly.Typed.TelescopeUniverseDeterminism
+import FX1Poly.Typed.GenericFormerTelescopeInversion
+import FX1Poly.Typed.NormalUniverseClassificationUnique
+import FX1Poly.Typed.ConvUniverseClassificationUnique
+import FX1Poly.Typed.RenameAlongFlagCoherent
+import FX1Poly.Typed.PinSelectsCallerPair
+import FX1Poly.Typed.PinnedReflectionFlagCoherent
+import FX1Poly.Typed.LamReductResidualDischarge
+import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
+import FX1Poly.Typed.GrownEtaSubjectReduction
+
+/-! # FX1PolyAudit/AuditTypedReducibilityCandidates — typed-layer zero-axiom gates: reducibility candidates, environments, and membership lemmas
+   (semantic shard of the typed audit; gates classified by declaration topic, appended
+   clusters kept together; full import block retained for namespace-sweep coverage) -/
+
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.optionCodeFormationUnderSubst
+
+/-! ### REDUCIBLE CLOSING-SUBSTITUTION ENVIRONMENT (the #425 fundamental-theorem environment).
+    `ReducibleEnv context γ` says `γ` sends every context variable to an `IsReducibleMember` of its
+    looked-up (γ-closed) type — the ∀-form makes the fundamental theorem's `var` case
+    `lookupReducible`, and the dependent membership re-substitutes each variable's type.  `empty` is the
+    closed-term base; `cons` is the
+    Π-introduction binder extension, its weakened lookups cancelled by `RawTerm.weaken_subst_cons`. -/
+#assert_no_axioms FX1Poly.Typed.ReducibleEnv
+#assert_no_axioms FX1Poly.Typed.ReducibleEnv.lookupReducible
+#assert_no_axioms FX1Poly.Typed.ReducibleEnv.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnv.cons
+
+/-! ### LEVEL-INDEXED REDUCIBLE ENVIRONMENT (the conv-closing stratified port of the above).
+    `ReducibleEnvAt level context γ` rides on `IsReducibleMemberAt level` instead of `IsReducibleMember`:
+    its universe arm carries each type variable's candidate ONE LEVEL DOWN, closing the conv-invariance
+    gap the pure-SN `ReducibleEnv` leaves open at a type variable `x : Type@k`.  The `level` is inert
+    through the `cons` binder rewrites (they touch only the looked-up type and substituted term), so the
+    `empty` / `cons` / `lookupReducible` proofs port character-identically.  This is the environment the
+    fundamental theorem over `HasTypeDescPi` actually consumes. -/
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAt
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.lookupReducible
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.cons
+
+/-! ### Dependent fundamental theorem — bundled type-value candidate motive.  This strengthens the
+    positive-candidate arm layer by carrying the conditional type-variable payload in the theorem motive
+    itself: if a substituted classifier is a universe code, the substituted subject must expose the
+    all-positive member predicate as a positive-fuel candidate.  The bundled validity shape prevents later
+    binder/type-variable arms from trying to recover this payload by false level irrelevance. -/
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.PositiveCandidateConclusionWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.TypeValueCandidateConclusionWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.FundamentalValidityWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.FundamentalValidityWithTypeValueCandidates.memberConclusion
+#assert_no_axioms FX1Poly.Typed.FundamentalValidityWithTypeValueCandidates.typeValueCandidateConclusion
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithPositiveTypeCandidates.toTypeValueCandidateEnv
+#assert_no_axioms FX1Poly.Typed.PositiveCandidateConclusionWithPositiveTypeCandidates.toTypeValueCandidateEnv
+#assert_no_axioms FX1Poly.Typed.PositiveCandidateConclusionWithTypeValueCandidates.toTypeValueCandidateConclusion
+#assert_no_axioms FX1Poly.Typed.TypeValueCandidateConclusionWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier
+#assert_no_axioms FX1Poly.Typed.FundamentalValidityWithTypeValueCandidates.toPositiveCandidateOfUniverseClassifier
+#assert_no_axioms FX1Poly.Typed.TypeValueCandidateConclusionWithTypeValueCandidates.ofSubstitutedClassifierNeUniverse
+#assert_no_axioms FX1Poly.Typed.PositiveCandidateConclusionWithTypeValueCandidates.consEnvWithTypeValueCandidate
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithTypeValueCandidates.toTypeValueCandidateConclusionOfUniverseMembersHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithTypeValueCandidates.toTypeValueCandidateConclusionOfAllReducibleTypesHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithTypeValueCandidates.toValidityOfUniverseMembersHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithTypeValueCandidates.toValidityOfAllReducibleTypesHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalVarWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.positiveCandidateVarLookupWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.typeValueCandidateVarWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalVarValidityWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.positiveCandidateUniverseCodeWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.typeValueCandidateUniverseCodeWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.positiveCandidateUniverseCodeWithTypeValueCandidatesOfPositiveMemberExtension
+#assert_no_axioms FX1Poly.Typed.typeValueCandidateUniverseCodeWithTypeValueCandidatesOfPositiveMemberExtension
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseValidityWithTypeValueCandidatesOfPositiveMemberExtension
+#assert_no_axioms FX1Poly.Typed.fundamentalConvWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalConvValidityWithTypeValueCandidatesFromTargetTypeValuePremise
+#assert_no_axioms FX1Poly.Typed.fundamentalConvValidityWithTypeValueCandidatesOfPositiveMemberExtension
+#assert_no_axioms FX1Poly.Typed.fundamentalPiElimWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalPiElimValidityWithTypeValueCandidatesFromResultTypeValuePremise
+#assert_no_axioms FX1Poly.Typed.fundamentalPiElimValidityWithTypeValueCandidatesOfPositiveMemberExtension
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroValidityWithTypeValueCandidatesFromTypeValueArgumentPremise
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroWithTypeValueCandidatesFromTypedArgumentPremise
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroValidityWithTypeValueCandidatesFromTypedArgumentPremise
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroValidityWithTypeValueCandidatesFromUniverseDomain
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroValidityWithTypeValueCandidatesOfPositiveMemberExtension
+#assert_no_axioms FX1Poly.Typed.positiveCandidatePiTypeWithTypeValueCandidatesFromTypeValueArgumentPremise
+#assert_no_axioms FX1Poly.Typed.typeValueCandidatePiTypeWithTypeValueCandidatesFromTypeValueArgumentPremise
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationWithTypeValueCandidatesFromTypeValueArgumentPremise
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationWithTypeValueCandidatesFromTypeValueArgumentPremise
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationWithTypeValueCandidatesFromPositiveDomainCandidate
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationValidityWithTypeValueCandidatesFromTypeValueArgumentPremise
+#assert_no_axioms FX1Poly.Typed.positiveCandidateSigmaTypeWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.typeValueCandidateSigmaTypeWithTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationValidityWithTypeValueCandidatesFromPositiveDomainCandidate
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationValidityWithTypeValueCandidatesFromTypeValueArgumentPremise
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationValidityWithTypeValueCandidatesOfPositiveMemberExtension
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationValidityWithTypeValueCandidatesOfPositiveMemberExtension
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationWithTypeValueCandidatesFromUniverseDomain
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomain
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationValidityWithTypeValueCandidatesFromUniverseDomainMembersHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationValidityWithTypeValueCandidatesFromUniverseDomainMembersHaveTypeValueCandidates
+
+/-! ### Dependent fundamental theorem — proof-relevant positive-candidate environment arm layer.  This is
+    the recursor-facing strengthened motive: ordinary all-level membership plus positive type-candidate
+    companions for looked-up binding types.  The non-binder arms project to the ordinary all-level layer; the
+    lambda arm is the binder-critical proof that a decoded domain argument can be strengthened to
+    all-positive membership, extending the strengthened environment before running the codomain/body
+    recursive premises. -/
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.PositiveCandidateConclusionWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.PositiveCandidateConclusionWithPositiveTypeCandidates.consEnv
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll.toPositiveTypeCandidateEnv
+#assert_no_axioms FX1Poly.Typed.fundamentalVarWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalConvWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalPiElimWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.positiveCandidateVarWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.positiveCandidateSigmaTypeWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.positiveCandidatePiTypeWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroWithPositiveTypeCandidatesFromPositiveDomainCandidate
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationWithPositiveTypeCandidates
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationWithPositiveTypeCandidatesFromUniverseDomain
+
+/-! ### Dependent fundamental theorem — the NON-telescope arms over the ∀-level environment.  `var` (the arm
+    the ∀-level env unblocks: closes by instantiating the all-levels family at the conclusion
+    level, off-by-one-free), `universeFormation` (`Type@e : Type@(lsucc e)`), and `conv` (reclassifier IH one
+    level up → `tarskiDecode` → `castAlongConvUnderSubst`) all close with zero axioms over
+    `ReducibleEnvAtAllLevels`, validating the env on the leaf/conv fragment.  The `genFormation` / `piIntro`
+    binder companions use the per-variable-level bridge for the fresh argument; their non-recursive packaging
+    gates pin them shut. -/
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalVarAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalConvAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalPiElimAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationAtAll
+#assert_no_axioms FX1Poly.Typed.formerChildrenReducibleNonDependentAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationNonDependentAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationNonDependentAtAll
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroNonDependentAtAll
+#assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAll
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.universeCodeHasNoMemberAtZero
+#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtAllFromPositiveDomainCandidateCompanion
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll.typeInUniverse_hasPositiveCandidateOfPositiveMemberExtension
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionWithTypeValueCandidates.typeInUniverse_hasPositiveCandidateOfPositiveMemberExtension
+#assert_no_axioms FX1Poly.Typed.fundamentalPiFormationAtAllFromUniverseDomainPositiveCandidate
+#assert_no_axioms FX1Poly.Typed.fundamentalSigmaFormationAtAllFromPositiveDomainCandidate
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll.typeInUniverse_hasCanonicalReducibleCandidateUnderSubstitution
+#assert_no_axioms FX1Poly.Typed.formerChildrenReducibleAtAllFromVectorPremise
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectReducibleUnderSubstFromFormation
+-- Closed-type twin: a closed type code (given its type-FT) is a reducible TYPE at its level under any closing
+-- substitution, via ReducibleEnvVec.empty. The handoff a closed-former canonicity argument consumes.
+#assert_no_axioms FX1Poly.Typed.closedTypeReducibleFromTypeFundamental
+-- SN-027 (LevelingBridge.lean, COMPOSE step): hasTypeDescPiReducibleFromTotalBridge composes the TOTAL leveling
+-- bridge (HasTypeDescPi → ∃ contextLevels predLevel, ValidTyping … (predLevel+1) …) with the PROVEN
+-- ValidTyping.substReducible ⟹ every HasTypeDescPi-typed subject is reducible under every closing reducible env.
+-- The total bridge is an explicit HYPOTHESIS here (mirroring the conditional fundamentalAtAllFromFormation): the
+-- residual crux is the total-bridge INDUCTION that assembles the SN-022..025 per-arm blocks under a consistent
+-- contextLevels + coordinates IH levels + inverts ofFormation/HasTypeDesc + routes type-variable domains through
+-- the reducibility all-levels machinery — the formation-FT obstruction both routes share. Composition done; the
+-- unconditional discharge is the in-progress remainder of SN-027.
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPiReducibleFromTotalBridge
+-- OPEN-CONTEXT HANDOFFS (ValidTyping.lean): the UNCONDITIONAL open twins of the ClosedLevelIndexed handoffs.
+-- The closed handoffs take the level-indexed fundamental conclusion as a HYPOTHESIS; over ValidTyping the
+-- fundamental IS proved (ValidTyping.fundamental), so substReducible (open reducibility under any reducible env)
+-- + substStronglyNormalizing (open SN via CR1) are unconditional and hold in ANY context. openVariable… is the
+-- first SN witness for a NON-closed subject (a free var closed by a reducible substitution), exercising the open
+-- handoff with a genuine reducible env (Fin 1 split refuted structurally, no omega).
+#assert_no_axioms FX1Poly.Typed.ValidTyping.substReducible
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectReducibleUnderSubstFromFundamentalAtAll
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPiPositiveCandidateFundamentalTheorem
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPiTypeValueCandidateFundamentalTheorem
+#assert_no_axioms FX1Poly.Typed.FundamentalConclusionAtAll.toTypeValueCandidateValidityOfAllReducibleTypesHaveTypeValueCandidates
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectReducibleUnderSubstFromPositiveCandidateFundamentalTheorem
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSubjectReducibleUnderSubstFromTypeValueCandidateFundamentalTheorem
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvVec
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.lookupReducible
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.empty
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.cons
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvVec.typeVariableReducible
+
+/-! ### SEMANTIC TYPING RULES UNDER A CLOSING SUBSTITUTION (the fundamental theorem's arm bodies).
+    The Girard-Tait fundamental theorem over `HasTypeDescPi` is a thin induction whose arms dispatch to
+    these substitution-closed semantic rules.  `applicationUnderSubst` is the `piElim` arm: it lifts the
+    raw `IsReducibleMemberAt.application` through the β-substitution commutation
+    `RawTerm.subst0_subst_commute` (which lines up `subst γ (subst0 codomainCode argument)` with the
+    dependent output of the substituted pieces), at a FIXED `level` (elimination introduces no universe
+    nesting).  Future arms (conv / piIntro / formation) append here. -/
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.applicationUnderSubst
+
+/-! ### CONV ARM under a closing substitution.  Transports membership across the substituted conversion
+    (`Conv.subst`) via the shipped `castAlongConv`; the target type-reducibility is supplied by the
+    fundamental theorem via `tarskiDecode` of the `reclassifier : Type@e` premise's IH at `level + 1`. -/
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.castAlongConvUnderSubst
+
+/-! ### NON-DEPENDENT (simply-typed) Π-INTRODUCTION arm under a closing substitution.  Lifts the raw
+    `abstractionNonDependent` (the choice-free no-large-elim piIntro) through the cell-substitution
+    commutations: `subst_lamCell`/`subst_piTyCodeCell` (rfl) + `subst_lift_weaken_commute` (the codomain
+    weakening commutes out through the binder lift).  The binder arm of the simply-typed fundamental
+    theorem. -/
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.abstractionNonDependentUnderSubst
+
+/-! ### DEPENDENT Π-introduction + both Π-formation arms under a closing substitution.  The dependent
+    `piIntro` (`abstractionUnderSubst`) and `Π`-formation (`piTypeUnderSubst`) twins lift the raw
+    `abstraction` / `piType` through the rfl cell-substitutions (dependent codomain stays in the extended
+    scope — no weakening-commutation); the simple-arrow formation (`arrowTypeUnderSubst`) lifts
+    `arrowType` through the same `typeEq` re-expression as the non-dependent `piIntro` arm.  Choice-free as
+    semantic rules (the per-argument candidate is given); the dependent arms are the full-FT (large
+    elimination) introduction/formation rules. -/
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.abstractionUnderSubst
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAt.arrowTypeUnderSubst
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAt.piTypeUnderSubst
+
+/-! ### CHOICE-FREE dependent Π formation + introduction under a closing substitution (the Path-A
+    fundamental-theorem binder arms).  The canonical-codomain twins of `piTypeUnderSubst` /
+    `abstractionUnderSubst`: they feed the FIXED `fun arg => IsReducibleMemberAt level (subst0 (subst
+    (lift γ) cod) arg)` codomain and discharge the per-argument codomain premise from mere EXISTENCE via
+    the Core engine `reducibleMemberCandidate` — no candidate is chosen, so the choice wall the dependent
+    fundamental theorem hit at `piIntro`/`piType` is dissolved. -/
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAt.piTypeCanonicalUnderSubst
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.abstractionCanonicalUnderSubst
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormationUnderSubst
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormationUnderSubst
+-- GTL-11 spike GO (proven by construction): the listCode data-former universe-membership under a closing
+-- substitution, the one-child twin of sigmaFormationUnderSubst via the arity-generic dataFormerInUniverse.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.listCodeFormationUnderSubst
+#assert_no_axioms FX1Poly.Typed.IsReducibleMember.atUniverseCode
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.piFormerOfChildMemberships
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaFormerOfChildMemberships
+#assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.toPiMember
+#assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.toSigmaMember
+
+-- SN-001: the fuel-0 universe-vacuity obstruction, pinned as committed theorems.  A universe-DOMAIN Π is
+-- VACUOUSLY reducible at fuel 0 for EVERY codomain (its fuel-0 candidate is the trivial `fun _ => True`),
+-- so fuel-0 reducibility carries no information and the all-levels / member-extension route (Route A)
+-- cannot bootstrap past the degenerate 0↔1 base.  Formal input for the SN-002+ classifier-level pivot.
+#assert_no_axioms FX1Poly.Typed.universeDomainPiVacuouslyReducibleAtZero
+#assert_no_axioms FX1Poly.Typed.universeDomainPiTrivialCandidateAtZero
+#assert_no_axioms FX1Poly.Typed.variableCell_reducibleTypeAtZero
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.reducibleAndMemberExtension
+
+-- Smart constructors making the first-order fragment CONSTRUCTIBLE for concrete types (via the
+-- canonical-form weak-head-normality lemmas), plus the end-to-end corollary that a variable type is
+-- reducible-at-all-levels and member-extending — a closed demonstration that the Tait machinery applies
+-- concretely, not merely to an abstract fragment.
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofVariable
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofSigmaTyCode
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.arrowOfVariableDomain
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.variableReducibleAndMemberExtension
+
+-- The general neutral-leaf principle: every neutral type (variable / neutral application / projection /
+-- stuck eliminator) is first-order simply-typed, lifting the leaf class from bare variables to the full
+-- Tait neutral family.  Backed by the Core `IsNeutral.rootGenerator_ne_piTyCode` / `…_ne_universeCode`
+-- root-disequality lemmas (swept by `#audit_namespace FX1Poly.Core`).  The end-to-end corollary exercises
+-- reducibility + member-extension on a NON-variable neutral type (a type-family application `f a`).
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofNeutral
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.ofNeutralApplication
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.neutralApplicationReducibleAndMemberExtension
+-- NO CLOSED NEUTRAL (closed-canonical-forms precursor for canonicity SN-047/049 + consistency SN-050).
+-- IsNeutral.elimEmptyScope: a neutral term forces an inhabitant of Fin scope — every arm but `var` recurses on a
+-- same-scope neutral premise, so threading the (Fin scope → False) emptiness witness down the spine refutes the
+-- head variable; stated scope-polymorphically to keep the induction motive index-clean. IsNeutral.noClosed:
+-- specialize to scope 0 (Fin 0 empty via elim0) — no RawTerm 0 is neutral, so a CLOSED normal form is an
+-- introduction form, never a stuck eliminator. Pure structural induction over the 12-arm IsNeutral; #672-free.
+#assert_no_axioms FX1Poly.Core.IsNeutral.elimEmptyScope
+#assert_no_axioms FX1Poly.Core.IsNeutral.noClosed
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.isReducibilityCandidate
+-- NEUTRAL OBLIGATION NOW DISCHARGED: the `neutralClosedUnderStep` argument is exactly the unconditional
+-- `IsNeutral.closedUnderStep` (NeutralStepClosure.lean), so a data type need only supply that its values are
+-- normal forms (trivial for constructors) to obtain its reducibility candidate.
+#assert_no_axioms FX1Poly.Core.CanonicalFormsPredicate.isReducibilityCandidateOfValuesNormal
+#assert_no_axioms FX1Poly.Core.boolCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.natCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isNatValue_isMember
+#assert_no_axioms FX1Poly.Core.natClosedReducesToValue
+#assert_no_axioms FX1Poly.Core.pairCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.pairValue_isMember
+#assert_no_axioms FX1Poly.Core.pairClosedReducesToValue
+#assert_no_axioms FX1Poly.Core.modIntroCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.modIntroValue_isMember
+#assert_no_axioms FX1Poly.Core.modIntroClosedReducesToValue
+-- EMPTY type / CONSISTENCY core (SN-050/053): emptyIsValue := False (no value constructors); the candidate is
+-- the SN neutral terms (isReducibilityCandidateOfValuesNormal with vacuous value-normality); a CLOSED member
+-- is impossible (closedReducesToValue yields a False-satisfying value). The #672-free structural heart of "no
+-- closed proof of Empty"; only the membership half (closed well-typed Empty term is a member) awaits the FT.
+#assert_no_axioms FX1Poly.Core.emptyCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.emptyHasNoClosedMember
+-- HEAD-EXPANSION-CLOSED empty Tait candidate (the candidate-bridge empty candidate): SN ∧ every reachable
+-- normal form is neutral. Unlike CanonicalFormsPredicate emptyIsValue (members must be neutral THEMSELVES),
+-- this is head-expansion-closed (a β-redex inherits membership from its contractum, via per-term confluence) —
+-- so it serves as a Π codomain candidate across the whole fundamental theorem (a λ into Empty is reducible).
+-- It is a reducibility candidate (CR1/CR2/CR3) and has no closed member (a closed reachable normal form would
+-- be neutral, but closed neutrals don't exist) — the consistency core for the candidate-bridge model.
+#assert_no_axioms FX1Poly.Core.emptyTaitCandidate.noClosedMember
+#assert_no_axioms FX1Poly.Core.emptyTaitCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.emptyTaitCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.emptyTaitCandidate_memberWeakHeadExpansion
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate.closedUnderStep
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate.neutralExpansion
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate_memberWeakHeadExpansion
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate.closedReducesToValue
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate.memberOfValue
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate_false_iff_emptyTaitCandidate
+-- The bool instance (the SN-047 payload shape): a closed member of the bool Tait candidate reduces to
+-- boolTrue or boolFalse — closed bool canonicity, candidate-bridge-ready.
+#assert_no_axioms FX1Poly.Core.boolTaitCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.boolTaitCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.closedBoolTaitReducesToValue
+-- CAN-6 / FLAT-CANON substrate (FlatCodeTaitCandidate): the per-flat-code instances feeding the SECOND §5
+-- candidate-bridge pin (product/sum/either/arrow/equiv). isFlatDataCode = the neutral-arm gate over the
+-- flatTypingRuleDescOf formers; flatCodeValuePredicate = the dispatch (product → pairs, either → injections,
+-- arrow → λ cells, equiv → equivIntro cells, sum → EMPTY, honest: no sum-injection intro generators exist);
+-- flatCodeTaitCandidate inherits the full dataTaitCandidate bundle; noWeakHeadStep_of_isFlatDataCode is the
+-- weak-head normality the dataFlat arm's inversions + forward closure consume (root stable along StepStar).
+#assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate_memberWeakHeadExpansion
+#assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate.closedReducesToValue
+#assert_no_axioms FX1Poly.Core.listCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isListValue_isMember
+#assert_no_axioms FX1Poly.Core.listClosedReducesToValue
+#assert_no_axioms FX1Poly.Core.optionCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isOptionValue_isMember
+#assert_no_axioms FX1Poly.Core.optionClosedReducesToValue
+#assert_no_axioms FX1Poly.Core.eitherCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isEitherValue_isMember
+#assert_no_axioms FX1Poly.Core.eitherClosedReducesToValue
+#assert_no_axioms FX1Poly.Core.reflCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isReflValue_isMember
+#assert_no_axioms FX1Poly.Core.reflClosedReducesToValue
+
+-- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
+-- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
+-- arrow domain `(A → B) → C` recurses, NOT blocked).  The arrow-domain recursion is unblocked precisely by the
+-- member-extension-free type-side arrow `nonDependentArrowOfAllLevelsDomain` (the IH supplies only
+-- positive-source member-extension, which the member-side `nonDependentArrowPositive` accepts).  Corrects the
+-- first-order file's docstring claim that higher-order domains hit the fuel-0 wall — only UNIVERSE domains do.
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.reducibleAndMemberExtension
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.ofFirstOrder
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.ofNeutral
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.higherOrderArrow
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.higherOrderArrowReducibleAndMemberExtension
+-- #672 STLC discharge (operational form): IsSimplyTyped.positiveMemberExtension — for ANY simply-typed type,
+-- a member at one positive level extends to all positive levels, the exact operational shape of
+-- HasPositiveMemberExtensionForStronglyNormalizingAllLevelTypes (#672) restricted to the predicative STLC
+-- fragment. This is the simply-typed dispatch arm of the eventual #672 assembly, discharged in full generality
+-- (no SN / all-levels hypothesis — both are CONCLUSIONS of simply-typedness). Residual = universe-domain +
+-- dependent-codomain (the impredicative / WHN-under-subst core).
+#assert_no_axioms FX1Poly.Typed.IsSimplyTyped.positiveMemberExtension
+
+-- TERM-level reducibility of the simply-typed fragment: the term-formation rules (abstraction / application)
+-- made concrete + the SN payoff on a REDUCING term.  `lambdaNeutralArrow` / `applicationNonDependentArrow`
+-- are the candidate-free piIntro/piElim specializations; `polymorphicIdentity` is `λx.x : A→A`; and
+-- `polymorphicIdentityRedexStronglyNormalizing` proves the β-redex `(λx.x) y` strongly normalizes — strong
+-- normalization of an actually-reducing term (CR1 on a non-normal form), the genuine Tait payoff.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.lambdaNeutralArrow
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.applicationNonDependentArrow
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.polymorphicIdentity
+
+-- HIGHER-ORDER term reducibility: `lambdaNeutralDomain` generalizes the abstraction rule from a neutral
+-- codomain to ANY reducible codomain (candidate = the codomain's own member-predicate, so the body condition
+-- is "body lands as a member" — the form functions-returning-functions and the FT λ arm need).
+-- `constantIdentity` demonstrates it on an ARROW codomain: `λx.(λy.y) : A → (B → B)`.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.lambdaNeutralDomain
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.constantIdentity
+
+-- Abstraction rule-family completion: `lambdaLeafDomain` is the maximally-general form — a LEAF domain
+-- (weak-head-normal, non-Π, non-universe: data formers, not only neutrals) + any reducible codomain — matching
+-- the `IsSimplyTyped.leaf` class and subsuming `lambdaNeutralArrow` / `lambdaNeutralDomain`.  `sigmaIdentity`
+-- (`λx.x : (Σ A. B) → (Σ A. B)`) is the identity over a Σ-code DATA-FORMER base type, reachable only via it.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.lambdaLeafDomain
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.sigmaIdentity
+
+-- The FT crux that sidesteps the universe wall: a type-VARIABLE domain (a context binding `α : Type@e`) is a
+-- reducible TYPE under a reducible environment, read off the environment via the universe-membership decode
+-- (`universeMembership_iff`).  The wall blocks TYPE abstraction (`λA:Type.…`), not term abstraction over type
+-- variables — so the simply-typed fundamental theorem is NOT wall-blocked, only awaiting the judgment+env
+-- assembly.
+#assert_no_axioms FX1Poly.Typed.ReducibleEnvAt.typeVariableReducible
+
+-- The TYPE-LEVEL half of the simply-typed fundamental theorem.  `IsSimplyTypedTypeExpr` classifies the pure
+-- STLC type expressions over a context (type variable bound at a universe, or non-dependent arrow of such), and
+-- `reducibleAtAllLevels` proves every one substitutes to an all-levels reducible type under an all-levels
+-- reducible closing environment.  The type-variable arm reads reducibility off the environment (sidestepping
+-- the universe wall via `typeVariableReducible`); the arrow arm is `nonDependentArrowOfAllLevelsDomain` on the
+-- induction hypotheses.  This is the domain/codomain reducibility the term FT's λ-introduction arm consumes.
+#assert_no_axioms FX1Poly.Typed.IsSimplyTypedTypeExpr
+
+-- The simply-typed lambda arm of the LEVEL-FREE term fundamental theorem: the non-dependent specialization
+-- of the dependent `abstractionUnderSubst`, pre-cancelling the codomain weakening
+-- (`subst0 (subst (lift σ) (weaken codomainBase)) arg = subst σ codomainBase`).  The simply-typed term FT
+-- assembles over the level-free layer (not the stratified one): level-free `ReducibleEnv.cons` extends from
+-- a single `IsReducibleMember`, so the lam binder needs no all-levels argument — the stratified universe wall
+-- is structurally absent for a non-dependent codomain.
+#assert_no_axioms FX1Poly.Typed.IsReducibleMember.abstractionNonDependentUnderSubst
+
+-- The domain supplier for the level-free simply-typed term FT: the non-dependent arrow type builder
+-- (`ReducibleType.nonDependentArrow`, level-free twin of the stratified `IsReducibleTypeAtAllLevels.nonDependentArrow`),
+-- the directly-reducible type-expression class (`IsReducibleTypeExprLF` = universe codes + non-dependent
+-- arrows; no type-variable leaves, which decode only to SN level-free), and the supplier proper
+-- (`reducibleUnderSubst`) — every such expression substitutes to a directly-reducible level-free type, the
+-- domain reducibility the lam arm consumes.
+#assert_no_axioms FX1Poly.Typed.ReducibleType.nonDependentArrow
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeExprLF
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeExprLF.reducibleUnderSubst
+
+-- THE LEVEL-FREE SIMPLY-TYPED TERM FUNDAMENTAL THEOREM (#502): the well-scoped term judgment
+-- `SimplyTypedTermLF` (var/app/lam) + `reducibleUnderSubst` (every simply-typed term, closed by a reducible
+-- substitution, is a reducible member of its type — var→lookupReducible, app→applicationUnderSubst,
+-- lam→abstractionNonDependentUnderSubst fed reducibleUnderSubst) + the strong-normalization corollaries.
+-- `stronglyNormalizingClosed` is the tangible payoff: every closed simply-typed term strongly normalizes
+-- (SN-for-well-typed on the wall-free simply-typed fragment).
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.reducibleUnderSubst
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.reducibleClosed
+
+-- REDUCIBLE TYPE-EXPR CLOSURE under renaming and substitution — the SR arc's type-side substrate.  The
+-- lam rule of SimplyTypedTermLF carries IsReducibleTypeExprLF premises on domain/codomain; the (downstream)
+-- renaming/substitution-preservation lemmas transport those premises across the action via these closure
+-- lemmas (universe-code leaves are action-invariant; arrows thread *_lift_weaken_commute through the codomain).
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeExprLF.subst
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeExprLF.rename
+
+-- SIMPLY-TYPED RENAMING PRESERVATION — the SR arc's term-side substrate.  SimplyTypedTermLF survives any
+-- context-respecting renaming (var/app/lam, no conv arm); the lam arm transports its IsReducibleTypeExprLF
+-- premises via IsReducibleTypeExprLF.rename and lifts the body IH via renameContextCondition_cons.
+-- weakenUnderBinding is the one-fresh-binder corollary the substitution lemma's binder-lift consumes.
+#assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.renameRespectingContext
+#assert_no_axioms FX1Poly.Core.IsReducibilityCandidate.respectsPointwiseIff
+#assert_no_axioms FX1Poly.Core.IsReducibilityCandidate.containsVariable
+#assert_no_axioms FX1Poly.Typed.concreteDependentPi_isReducibleType
+#assert_no_axioms FX1Poly.Typed.IsNeutralDomainDependentlyTyped.reducibleAndMemberExtension
+#assert_no_axioms FX1Poly.Typed.IsNeutralDomainDependentlyTyped.ofNeutral
+#assert_no_axioms FX1Poly.Typed.IsNeutralDomainDependentlyTyped.typeFamilyApplication
+
+-- The dependent-neutral fragment STRICTLY CONTAINS the first-order simply-typed fragment: a non-dependent
+-- arrow is the constant-codomain degenerate dependent Pi (weaken_subst_singleton cancels the substitution).
+-- The corollary re-derives first-order reducibility+member-extension through the dependent fragment's single
+-- fundamental theorem — one FT covering both fragments. Higher-order simply-typed (arrow domains) is NOT
+-- subsumed (needs domain member-extension at fuel 0, deferred with the universe-domain crux of #672).
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.toNeutralDomainDependentlyTyped
+#assert_no_axioms FX1Poly.Typed.IsFirstOrderSimplyTyped.reducibleAndMemberExtensionViaDependentFragment
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.universeCumulativity
+
+-- DenoteKeyedUniverseDomainPi (#672 toward the non-fuel piArm): the denote model closes the universe-domain
+-- Π that the external-fuel level-irrelevance induction (ReducibleTypeAtAllLevelsInduction.piArm) provably
+-- could not. candidate_levelStable is the conceptual heart — one fixed candidate is Type@e's candidate at
+-- every ambient level above denote e env (the negation of the fuel "candidates at successive levels differ"
+-- obstruction). reducibleAtAllDenoteLevels assembles the dependent universe-domain Π Π(Type@e).C uniformly
+-- across all those levels with one codomain candidate, since the level-stable domain candidate discharges the
+-- piType constructor at every level simultaneously (no across-level member-extension circularity).
+-- uniformCandidateAtAllDenoteLevels pulls the candidate existential outside the level quantifier (∃cand,∀level)
+-- and memberStableAcrossDenoteLevels is the #672-shaped payoff: a member at one level above denote e env is a
+-- member at every such level, via the uniform candidate + ReducibleTypeAtDenote.deterministic.
+#assert_no_axioms FX1Poly.Typed.universeDomainCandidate_levelStable
+
+-- DenoteKeyedPiFormationFromExistence (route D Π-formation arm, the route-D-friendly piArm): the denote
+-- Π-formation arm that takes the codomain IH as mere EXISTENCE (IsReducibleTypeAtAllDenoteLevels) rather than a
+-- chosen candidate, extracting the per-level candidate choice-freely via the canonical-member-candidate engine.
+-- uniformDomainPi covers any level-stable-candidate domain; neutralDomainPi is the witnessing instance (type
+-- variables / stuck applications — the common FT case). The domain-membership gating matches because the domain
+-- candidate is uniform across levels. No Classical.choice.
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_reducibleFromCodomainExistence
+#assert_no_axioms FX1Poly.Typed.neutralDomainPi_reducibleFromCodomainExistence
+-- universeDomainPi_reducibleFromCodomainExistence: the impredicative case — Π(X:Type@e).C[X] reducible from
+-- codomain existence over universe members. Threshold split (Nat.lt_or_ge, choice-free): above denote e the
+-- below-family = the relation at denote e (universe membership IS the codomain gate); at/below it's empty
+-- (codomain vacuous). Completes the from-existence piArm family across all domain shapes.
+#assert_no_axioms FX1Poly.Typed.universeDomainPi_reducibleFromCodomainExistence
+
+-- DenoteKeyedGeneralDomainPiArm (#752 residual isolation): the GENERAL domain piArm modulo domain
+-- member-stability. The backbone's domain IH gives a candidate PER LEVEL (drift allowed); the piType assembly
+-- needs them collapsed, which IS domain member-stability (a denote-reducible member at one level is a member at
+-- every level). generalDomainPi_reducibleFromMemberStability takes the per-level domain reducibility + member-
+-- stability + codomain existence and produces the Π at every level — strictly generalizing the uniform piArm
+-- (its member-stable-by-a-uniform-candidate instance via determinism), reaching member-stable COMPOSITE domains
+-- (Nat → Nat). Construction: canonical member-predicate as domain/codomain candidate (reducibleMemberCandidate),
+-- member-stability lifting per-level domain membership to the all-level gate. The remaining #752 residual is now
+-- precisely the THRESHOLD-DRIFT domains (composite domains with sub-threshold universe codes, member-stability
+-- fails below threshold), needing the threshold-split.
+#assert_no_axioms FX1Poly.Typed.generalDomainPi_reducibleFromMemberStability
+
+-- DenoteKeyedGeneralDomainPiArm adapters (#752 — the uniform/neutral arms of the ofReducibleTypeStepDenote
+-- piArm case-split): the backbone piArm supplies its codomain IH as an EXISTENTIAL-candidate all-level
+-- reducibility keyed on the step's domainCandidate; the shipped uniform/neutral instances consume a CONCRETE
+-- per-level codomain candidate. uniformDomainPiArmFromInductiveHypotheses bridges the two for a uniform domain
+-- candidate, routing through generalDomainPi_reducibleFromMemberStability with member-stability from
+-- uniformType_memberStableAcrossDenoteLevels and the codomain-IH candidate reconciled via determinism at level 0
+-- (choice-free). neutralDomainPiArmFromInductiveHypotheses is its weak-head-normal non-Π non-universe instance,
+-- in exactly the shape the backbone supplies its premises. Remaining piArm arms: universe-code + composite.
+#assert_no_axioms FX1Poly.Typed.uniformDomainPiArmFromInductiveHypotheses
+#assert_no_axioms FX1Poly.Typed.neutralDomainPiArmFromInductiveHypotheses
+
+-- DenoteKeyedUniformPiCandidate (#752 — composite member-stability, the recursive step): a Π over uniform-
+-- candidate components has a SINGLE uniform candidate, because the piType candidate
+-- (fun f => ∀ arg, domCand arg → codCand arg (f arg)) is level-INDEPENDENT when its components are. So uniform
+-- candidacy composes up the Π/Σ-former spine from leaf types (the leaf member-stability lemmas covered only a
+-- single uniform candidate / neutral types). uniformDomainPi_hasUniformCandidate: Π reducible at every level
+-- with the fixed candidate (one piType per level). uniformDomainPi_memberStable: hence member-stable
+-- (uniformType_memberStableAcrossDenoteLevels on it). This is what lets the shipped uniform piArm /
+-- generalDomainPi reach composite (uniform-component) domains (Nat → Nat). The remaining residual is precisely
+-- the THRESHOLD-DRIFT domains (composite domains with sub-threshold universe codes — candidate varies, NOT
+-- uniform), needing the threshold-split.
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_hasUniformCandidate
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_memberStable
+
+-- DenoteKeyedUniformPiAboveThreshold (#752 — the threshold-drift composite handler): the ABOVE-THRESHOLD twins
+-- of the uniform-composite lemmas, for composites CONTAINING universe codes (Type@0 → Type@0) whose components
+-- are uniform only ABOVE the inner codes' decoded level (universeMembership_levelIrrelevant gives the fixed
+-- candidate there). The all-level reducibility such composites would need is unachievable (the Π fails below
+-- threshold), but the FT never needs it — a former's components live in universes strictly below the former's,
+-- so the former's decoded level sits above every component threshold, exactly this regime.
+-- uniformType_memberStableAboveThreshold: bounded leaf member-stability. uniformDomainPi_hasUniformCandidate-
+-- AboveThreshold: Π reducible with the fixed candidate above threshold (one piType per above-threshold level).
+-- uniformDomainPi_memberStableAboveThreshold: composite member-stability above threshold.
+#assert_no_axioms FX1Poly.Typed.uniformType_memberStableAboveThreshold
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_hasUniformCandidateAboveThreshold
+#assert_no_axioms FX1Poly.Typed.uniformDomainPi_memberStableAboveThreshold
+
+-- piReducibleAsTypeFromComponentReducibility (the #672 reframe applied): discharges the genFormationPi arm's
+-- piReducibleAsType premise from the children's reducibility AT THE DECODED OUTPUT LEVEL (the primitive form the
+-- FT recursion supplies) — domain via universeMemberReducibleAsTypeAtDecodedLevel, codomain under the var-0
+-- extended env (subst0 (subst (lift σ) codomain) arg). Routes through the drift-free single-level
+-- piReducibleAtLevelFromComponents after subst_piTyCodeCell. SINGLE level (decoded, above thresholds) ⟹ no
+-- all-levels drift; sidesteps the #752 all-levels piArm for the genFormationPi reducible-as-type half.
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromComponentReducibility
+
+-- piReducibleAsTypeFromUniverseDomainCodomainReducibility (the NON-uniform DOMAIN twin, anti-vacuity sidestep):
+-- when the Π domain is a literal universe code Type@domainLevel (the type-of-type-families shape), the domain is
+-- reducible-as-type at the Π's decoded output level FOR FREE via universeCode_isReducibleAtDenote (anti-vacuity,
+-- EVERY level) — NO cumulativity even when denote domainLevel env < denote levelExpr env (the non-uniform case
+-- piReducibleAsTypeFromUniformLevelMember cannot reach). The #752/#753 obstruction bites only the universe MEMBER
+-- candidate (vacuous below its decoded level), never universe-code TYPE reducibility; residual isolated to codomain.
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniverseDomainCodomainReducibility
+
+-- piReducibleAsTypeFromUniverseCodeComponents (BOTH children universe codes — Π (A:Type@a). Type@b): the
+-- constant-codomain type-family former's piReducibleAsType is discharged UNCONDITIONALLY (no hypotheses) — both
+-- children anti-vacuously reducible at the output level, codomain a CLOSED universe code unchanged by subst/subst0.
+-- Closes the NON-uniform a ≠ b case entirely via anti-vacuity — the type-half witness that the obstruction is a
+-- member-candidate phenomenon, not a type-reducibility one.
+#assert_no_axioms FX1Poly.Typed.piReducibleAsTypeFromUniverseCodeComponents
+
+-- fundamentalGenFormationPiUniverseUniverse (the FIRST fully-closed genFormationPi denote FT arm): the complete
+-- FundamentalConclusionAtDenote for the type-of-type-families former Π (A:Type@a). Type@b, all three premises of
+-- fundamentalGenFormationPiAtDenote discharged UNCONDITIONALLY — domainMember via universeFormationMemberUnder-
+-- ClosingSubstitution (Type@a member of Type@(lsucc a)), codomainSN via noStep_universeCode, piReducibleAsType via
+-- piReducibleAsTypeFromUniverseCodeComponents. The Π analogue of the already-closed Σ arm; advances SN-D5d (#750).
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationPiUniverseUniverse
+
+-- fundamentalGenFormationSigmaUniverseUniverse (the Σ twin, completing the universe-universe former PAIR): the
+-- complete FundamentalConclusionAtDenote for Σ (A:Type@a). Type@b, both premises of fundamentalGenFormationSigmaAt-
+-- Denote discharged UNCONDITIONALLY — domainMember via universeFormationMemberUnderClosingSubstitution, codomainSN
+-- via noStep_universeCode. NO piReducibleAsType premise (Σ uses its free neutral candidate) — so even shorter than
+-- the Π twin, documenting the genuine Σ-free / Π-via-#752-discharge asymmetry. Both formers over universes now closed.
+#assert_no_axioms FX1Poly.Typed.fundamentalGenFormationSigmaUniverseUniverse
+#assert_no_axioms FX1Poly.Typed.universeReducible_withLowerCandidate_atHigher
+-- SN-D7 (#746): MEMBER strong-normalization for the universe-domain Π fragment over the denote relation
+-- (DenoteKeyedUniverseDomainPiMemberSN.lean). The TYPE-level half (universeDomainPi_reducibleAtEveryDenoteLevel
+-- + member-stability) supplies the type-level half; this adds the MEMBER-SN payoff. The early win that
+-- de-risks SN-D5: it sidesteps the cumulativity obstruction (DenoteKeyedCumulativityObstruction) entirely by
+-- fixing ONE ambient level strictly above denote e — no across-level transport — where the Type@e universe
+-- candidate is a genuine reducibility candidate (the bounded denoteBelowFamily legs hold via denote e < level)
+-- and the shipped denote dependent-arrow CR1 lifts it to the whole Π. universeDomainPiCandidateIsReducibility-
+-- Candidate: the dependent-arrow candidate is a Girard CR (domain inhabitant supplied concretely as Type@0).
+-- universeDomainPiMemberStronglyNormalizing: a reducible member of Π(X:Type@e).C[X] is SN via that CR's
+-- stronglyNormalizing field + ReducibleTypeAtDenote.deterministic. Isolates the residual SN-043 obstruction to
+-- ESTABLISHING the codomain reducibility uniformly across levels — no member of the fragment is the obstacle.
+#assert_no_axioms FX1Poly.Typed.universeDomainPiCandidateIsReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.reducibilityMetatheoryViaSconing
+#assert_no_axioms FX1Poly.Core.reducibilityFullMetatheoryViaSconing
+-- First CONCRETE UNCONDITIONAL instantiation of the metatheory capstone (SimplyTypedMetatheoryViaSconing.lean):
+-- the closed simply-typed fragment's full decidable metatheory via the sconing route. reducibilityFullMetatheory
+-- ViaSconing is parametric in (candidate, fundamental); this exhibits a real inhabitant with NO SN-043 dep:
+-- candidate = the SN reducibility candidate (isStronglyNormalizing_isReducibilityCandidate); fundamental = the
+-- unconditional simply-typed SN theorem simplyTypedBareClosedStronglyNormalizing (Milestone-A0 floor). Genuine +
+-- non-circular: fundamental is "closed simply-typed => SN" (isWellTyped != candidate), then the capstone carries
+-- SN => {reaches NF, decidable Conv}. IsClosedSimplyTyped: well-typedness as a bare RawTerm 0 predicate.
+-- simplyTypedFullMetatheoryViaSconing: the capstone instance (SN + WN + decidable Conv, unconditional).
+-- simplyTypedReachesNormalForm: the WN headline for the fragment (genuinely new). simplyTypedConversionDecidable
+-- ViaSconing: decidable Conv via the sconing route (cross-checks the direct Conv.decidableOfSimplyTypedBareClosed).
+-- All zero-axiom. Proves the metatheory capstone is inhabited, not a vacuous interface.
+#assert_no_axioms FX1Poly.Typed.IsClosedSimplyTyped
+#assert_no_axioms FX1Poly.Typed.simplyTypedFullMetatheoryViaSconing
+
+-- OB-2a (BoundedUniverseInversion.lean): the universe gate inversion. A bound-reducible-as-type universe code
+-- Type@levelExpr has its decoded level < bound. Four arms impossible for a universe code (weak-head-normal, not
+-- neutral, not a Π cell); the universeCode arm carries belowBound; ofPointwiseIff recurses. Recovers the
+-- belowBound premise the universe-member decode (universeMemberReducibleAsTypeAtDecodedLevelBounded) consumes in
+-- OB-2 (binding-type bounded-reducibility). Index-inversion via generalize + induction, propext-clean.
+#assert_no_axioms FX1Poly.Typed.belowBound_of_reducibleUniverse
+
+-- OB-2b (BoundedBindingTypeReducible.lean): a universe-typed subject is bound-reducible-as-type under a
+-- reducible env. Given a grown derivation typing bindingType at Type@levelExpr, a BoundExceedsPi budget at bound,
+-- and a bound-reducible closing env at bound, subst σ bindingType is bound-reducible-as-type at bound. Composes
+-- fundamentalAtBoundedSucc (FT) → subst_universeCodeCell → belowBound_of_reducibleUniverse (OB-2a) →
+-- universeMemberReducibleAsTypeAtDecodedLevelBounded (decode) → isReducibleBounded_cumulative. The type-side leaf
+-- the reducible-closing-environment builder (reducibleEnvOfWfContext, OB-3/OB-4) cons-feeds toward open SN-043.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReducibleAsTypeUnderEnv
+
+-- OB-3 (ReducibleEnvOfWfContext.lean): the reducible closing environment for a well-formed context. Every
+-- WfContextDesc admits a bound + a closing substitution (every variable ↦ var 0 ∈ scope 1, the "var 0 head"
+-- trick that sidesteps renaming closure) under which it is a bound-reducible environment. It reads each binding's
+-- type-hood off the native WfContextDesc.headIsTypeDesc (= wellFormed.2) + the native HasTypeDesc.toHasTypeDescPi
+-- formation -> grown embed. Telescope induction via ReducibleEnvAtBounded.cons: OB-2 makes each binding type
+-- reducible, OB-1 puts var 0 in it, with a SUM bound (Nat.le_add_*, propext-free — the max-based attempt leaked
+-- propext via Nat.le_max_*). The env half of the OpenStronglyNormalizing residual toward unconditional open
+-- SN-043 (#546); the wf-hypothesis is genuinely external since HasTypeDescPi -> WfContext provably FAILS
+-- (ContextValidityFails).
+#assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContextDesc
+
+-- CON-A0 (ConsistencyTargetSignature.lean): the SN-050 spike verdict. The data types are value-predicate
+-- candidates, NOT engine cells (no gen_empty); HasTypeDescPi doesn't type data (typingRuleDescOf = some only
+-- pi/sigma). So SN-050 = consistencyViaSconing (#697, shipped) specialized to engine typing, with the sole
+-- residual the explicit candidateBridge (closed engine-typing at emptyTypeCode ⟹ empty-candidate member =
+-- BFT closedBoundedReducibleMember + "emptyTypeCode's candidate is the empty candidate"). Plan's CON-A1/A2
+-- (gen_empty cascade) mismodel the architecture; the gap is the engine data-representation (#483/#485-487).
+#assert_no_axioms FX1Poly.Typed.consistencyFromEmptyCandidateBridge
+-- The abstract target specialized to the CONCRETE emptyTypeCell (CON-A1's cell, mkGen gen_emptyCode () childNil):
+-- SN-050 is now stated at the real cell, sole residual the candidateBridge AT emptyTypeCell. Confirms a FORMATION
+-- arm (CON-A2 route-E/F) is OFF the critical path — consistency refutes typings AT emptyTypeCell, not constructs one.
+#assert_no_axioms FX1Poly.Typed.emptyTypeCellConsistencyFromCandidateBridge
+-- The candidate bridge at the MEMBER level: a bounded-reducible member of emptyTypeCell is an emptyTaitCandidate
+-- member (family-level deterministic against the dataEmpty-derived candidate). The CON-A3 sconing-leg core,
+-- DISCHARGED — the engine↔candidate representation identity now holds in the edited model.
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_memberIsEmptyCandidate
+-- The reducibility/sconing leg witness: a closed engine typing at emptyTypeCell yields an emptyTaitCandidate
+-- member of the +1 closing-weakened term (closedBoundedReducibleMember + subst_emptyTypeCell + the candidate bridge).
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_closedTypingYieldsEmptyCandidateMember
+-- UNCONDITIONAL consistency: HasTypeDescPi .empty t emptyTypeCell → False with NO memberBridge hypothesis. The
+-- candidate-bridge PAYOFF (the reducibility-leg member identity is discharged); the final False is delivered by the
+-- syntactic-validity route emptyTypeConsistency. Both legs agree the empty type is uninhabited.
+#assert_no_axioms FX1Poly.Typed.emptyConsistencyViaCandidateBridge
+-- emptyTypeCell IS a reducible type, via the candidate-bridge dataEmpty arm, with candidate emptyTaitCandidate
+-- (NOT the generic neutral arm, now gated rootGenerator ≠ gen_emptyCode). The formation half of the candidate bridge.
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_isReducibleType
+-- The candidate bridge, the OBSTRUCTION REVERSED: ANY candidate for emptyTypeCell is PointwiseIff emptyTaitCandidate
+-- (ReducibleTypeAtBounded.deterministic against the dataEmpty-derived candidate). Replaces the former
+-- forcedStronglyNormalizing (which collapsed every candidate onto the maximal SN set). emptyTaitCandidate is
+-- head-expansion-closed (unlike CanonicalFormsPredicate emptyIsValue), so it serves as a Π codomain across the FT.
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_candidate_isEmptyCandidate
+#assert_no_axioms FX1Poly.Typed.flatCode_candidate_isFlatTaitCandidate
+#assert_no_axioms FX1Poly.Typed.flatCode_memberIsFlatTaitCandidate
+#assert_no_axioms FX1Poly.Typed.closedProductMemberReducesToPair
+#assert_no_axioms FX1Poly.Typed.closedEitherMemberReducesToInjection
+#assert_no_axioms FX1Poly.Typed.closedSumMemberRefuted
+
+-- The GO CERTIFICATE for the §5 candidate-bridge edit (CandidateBridgeEditViability.lean), companion to the
+-- obstruction proof above: a FAITHFUL MINIATURE of the EDITED relation (gated neutral excluding gen_emptyCode +
+-- a dataEmpty arm), built over the REAL RawTerm/Generator/WeakHeadStep, PROVES the determinism-survival crux —
+-- the only new interaction (neutral × dataEmpty) is ruled out by the rootGenerator contradiction. So the model
+-- change is VIABLE: emptyTypeCell routes to the empty candidate, consistency/canonicity become provable, and
+-- non-empty neutral codes keep their SN candidate. The remaining ~12-file work is mechanical mirror, not new math.
+#assert_no_axioms FX1Poly.Typed.ScratchReducibleTypeEdited.deterministic
+#assert_no_axioms FX1Poly.Typed.ScratchReducibleTypeEdited.emptyCodeCandidateIsEmpty
+#assert_no_axioms FX1Poly.Typed.ScratchReducibleTypeEdited.consistencyCore
+#assert_no_axioms FX1Poly.Typed.ScratchReducibleTypeEdited.nonEmptyNeutralStillSN
+
+-- Canonicity target signature (CanonicityTargetSignature.lean): the SN-047/048/049 twin of CON-A0. Engine
+-- canonicity reduces to the SAME data-candidate bridge as consistency, making the Phase-A boundary uniform.
+-- Refined cost finding: HasTypeDesc typing is cascade-free (P13 typingRuleDescOf table + generic
+-- genFormationPi); naming a data type is a BOUNDED ~10-12-site generator addition (like gen_arrowCode) + the
+-- high-risk candidate identification — NOT 80-arm cascade-death. Gated on the engine data-representation (#483).
+#assert_no_axioms FX1Poly.Typed.dataCanonicityFromCandidateBridge
+-- GrownCtxConv-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
+-- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
+-- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
+-- semantic neutral-type interpretation is IDENTICAL under both sides of the residual's pointwise-Conv context
+-- conversion — context conversion is invisible to the semantic side. This isolates the genuinely-open residual
+-- entirely to the SYNTACTIC reflection carrying the IsTypeDescPi typing WITNESS across the conversion (the typed
+-- logical relation's neutral reflection, re-assembling the type-level piElim for (var f)(var a) = GrownCtxConv-5). Substrate
+-- in hand for the typed model: Step.reflectRename + kripkeArrow_neutralBackwardClosure (firings 13/14) +
+-- Conv.piTyCode_injective (#865). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.neutralTypeCodeSemanticReducibilityIsContextFree
+-- Concrete smoke: the simplest neutral type code (a bare variable `var index` used as a type) is semantically
+-- reducible context-free — the non-circular leaf the open type-level neutral reflection bottoms out at.
+#assert_no_axioms FX1Poly.Typed.smoke_variableTypeCodeSemanticReducibilityIsContextFree
+-- TYPED-TYPE-VALIDITY RELATION (TypedTypeValidityRelation.lean): the open-context typed logical-relation OBJECT
+-- for GrownCtxConv-5 (#842), the Kripke-model interpretation of a valid type code, PAIRING a reducibility candidate
+-- (KripkeCand) with the IsTypeDescPi typing witness. The `neutral` arm: a neutral type code is typed-valid,
+-- carrying snKripkeCand (#1108) + its IsTypeDescPi witness — the base case of the open type-level neutral
+-- reflection on which the residual ConvContextPreservesPiValidity bottoms out. ★ DESIGN FINDING: a
+-- function-valued KripkeCand CANNOT be a dependent index (Lean's dependent `cases` fails to unify the
+-- eta-expanded `fun {ts} => candidate`), so the candidate is a stored ARGUMENT recoverable by `cases`, not an
+-- index. toIsTypeDescPi = soundness (relation ⟹ grown validity, the half feeding the residual);
+-- carriesSnCandidate = the candidate-pairing recovered; smoke_variableTypeIsTypedValid = non-vacuity (a
+-- variable type code is in the relation). Zero-axiom. (Π-FORMER arm + transport-across-context-conversion
+-- are the next spike: candidate-as-argument means the Π-former can't read sub-candidates inside a ctor.)
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidity.toIsTypeDescPi
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidity.carriesSnCandidate
+-- TYPED-LR-BOXED (TypedTypeValidityBoxedRelation.lean): the CANDIDATE-INDEXED relation resolving the firing-19
+-- spike — ★ DESIGN A (GO): wrap KripkeCand in the first-order structure KripkeCandBox so it can be a dependent
+-- INDEX (a structure-valued index dodges the function-valued-index dependent-elimination failure). The candidate
+-- is now a readable INDEX (indexCandidate), so the Π-FORMER arm (piType) can THREAD the domain sub-derivation's
+-- exposed candidate domainBox.run into kripkeArrowDep — the capability the candidate-as-argument first cut
+-- (#1109) structurally could NOT express. toIsTypeDescPi = soundness over BOTH arms (cases FIRES on the boxed
+-- index); smoke_variableTypeIsBoxedTypedValid = non-vacuity. Zero-axiom. (Next brick: tie codomainFamily to the
+-- codomain candidate via the scope+1→family candidate-instantiation op, then transport + the fundamental theorem.)
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.toIsTypeDescPi
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.indexCandidate
+#assert_no_axioms FX1Poly.Typed.smoke_variableTypeIsBoxedTypedValid
+-- UNIVERSE ARM: a universe code Type@e is typed-valid at snKripkeCand (the other base case beside `neutral`).
+-- smoke_universeTypeIsBoxedTypedValid = non-vacuity from a validity hypothesis; smoke_closedUniverseIsBoxedTypedValid
+-- = the relation's FIRST CLOSED (scope-0) inhabitant (validity built from ofFormation∘universeFormation, Type@e :
+-- Type@(e+1)). Before this arm the boxed relation had no scope-0 inhabitant (neutral needs scope ≥ 1, piType recurses
+-- to that base), so a WfContext-indexed typed-LR-validity predicate over it would be vacuous beyond empty — this is the
+-- foundation that unblocks the Abel-reflection well-formed-context base. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.smoke_universeTypeIsBoxedTypedValid
+#assert_no_axioms FX1Poly.Typed.smoke_closedUniverseIsBoxedTypedValid
+-- WfContextTypedLrValid: typed-LR well-formedness of a context — each binding is TYPED-LR-VALID (in
+-- TypedTypeValidityBoxed at some candidate box) in its prefix. STRENGTHENS WfContextDescPi (which only says each
+-- binding IsTypeDescPi) by pairing each entry's grown validity with a reducibility candidate — the well-formed
+-- context the Abel-reflection neutral arm of GrownCtxConv-5 (#842) needs (the transportNeutralArm finding #1112
+-- said neutral-app typing must reconstruct from a var-spine under a context where each entry is itself LR-valid).
+-- Non-vacuous only because the universe arm gave the LR a closed inhabitant (#1114, used by the universeBinding
+-- witness). toWfContextDescPi = ★ soundness: typed-LR-validity REFINES formation-validity (each entry's
+-- toIsTypeDescPi), so a typed-LR-valid context is grown-well-formed. Zero-axiom. (Next brick: the LOOKUP lemma,
+-- which needs LR-weakening under context extension — a genuinely new proof, not a projection.)
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.emptyIsWellFormed
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.tailValid
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.headLrValid
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.cons
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.toWfContextDescPi
+#assert_no_axioms FX1Poly.Typed.wfContextTypedLrValid_universeBinding
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.renameRespectingContextExists
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.weakenUnderBinding
+-- TYPED-LR LOOKUP: in a WfContextTypedLrValid context, every variable's type (the looked-up entry,
+-- iterated-weakened to the full scope) is TYPED-LR-VALID. The typed-LR analogue of WfContextDescPi.lookupIsType,
+-- by structural induction folding weakenUnderBinding (#1116) down the telescope (each cons descended re-weakens
+-- the carried derivation once, matching the de Bruijn shift lookup accumulates). The lookup leg the Abel-reflection
+-- neutral arm of GrownCtxConv-5 (#842) consumes — a neutral application's typing reconstructs from the looked-up
+-- function-variable's LR-valid type. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.WfContextTypedLrValid.lookupLrValid
+-- TYPED-LR-CODFAMILY: close the Π-former's free-codomainFamily gap (the firing-20 next brick). snKripkeCodFamily
+-- is the SN codomain family (codomain analogue of snKripkeCand #1108) — the CANONICAL codomain family for the
+-- type-VALIDITY relation (which only needs the family to EXIST + TRANSPORT, not to depend on the argument: the
+-- residual is Π-type validity, not Π-member semantics). snKripkeCodFamily_transport_pointwise = rename-invariance
+-- (Iff.rfl). piTypeViaSnCodFamily = the Π-former with codomainFamily DERIVED from snKripkeCodFamily (no free data
+-- at the call site) — the form the fundamental theorem's Π case will use. ★ FINDING: a genuinely-dependent codomain
+-- family needs to INSTANTIATE a KripkeCand (scope+1) with a TERM argument, but KripkeCand is RENAMING-indexed
+-- (Fin→Fin, can't encode a term subst) — so the dependent instantiation needs a substitution-Kripke refactor,
+-- reserved for member-level canonicity, OFF the GrownCtxConv-5 critical path. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.snKripkeCodFamily_transport_pointwise
+#assert_no_axioms FX1Poly.Typed.piTypeViaSnCodFamily
+-- TYPED-LR-TRANSPORT-NEUTRAL: the neutral arm of context-conversion transport on TypedTypeValidityBoxed. The
+-- candidate (snKripkeCand) is context-INVARIANT (#1108), so the neutral-arm transport's SOLE obligation is the
+-- target typing targetValid (the semantic side is free). ★ ARCHITECTURAL FINDING: the neutral arm carries
+-- validity as a BLACK BOX, so transporting it for a NEUTRAL APP (var f)(var a) IS GrownCtxConv-5 (#842) — the black-box
+-- LR RE-PACKAGES GrownCtxConv-5, not dissolves it. Genuine discharge needs DERIVED (not carried) validity: a well-formed-
+-- context-indexed LR where a neutral app's typing reconstructs from the looked-up function-var type (var rule +
+-- pointwise-Conv leaf) + piElim reassembly (Abel reflection). The Π case already derives validity from parts
+-- (piTypeViaSnCodFamily), so the neutral-APP case is the sole obstruction. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityBoxed.transportNeutralArm
+-- GrownCtxConv-5-RESIDUAL ★ NEGATIVE RESULT (firing-24 correction of firing-23): the SN-only type-Conv-closure
+-- IsTypeDescPiRespectsConvOnStronglyNormalizing is FALSE (NOT the residual). Counterexample T=Type@0, S=(λx.
+-- Type@0)(λz.zz): λz.zz is a NORMAL FORM (zz is a neutral var-app, no redex), so S β-reduces in one step to
+-- Type@0 — S is SN and Conv Type@0 — yet S is UNTYPED (λz.zz untypable by occurs-check). So SN (and context-free
+-- reducibility, which head-expands S to the universe) does NOT imply typedness. GrownCtxConv-5 is therefore NOT
+-- reducible to an SN/reducibility Conv-closure; its genuine residual stays the context conversion of Π-validity
+-- (ConvContextPreservesPiValidity #1092), discharged only by the TYPED logical relation (TypedTypeValidityBoxed
+-- #1110) with validity DERIVED. File retained as a guardrail against re-deriving the false simplification.
+-- smoke_residualRefl = the sole true (reflexive) instance. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.smoke_residualRefl
+#assert_no_axioms FX1Poly.Core.DataFormerFamily.hasReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.DataFormerFamily.coveredCount
+#assert_no_axioms FX1Poly.Core.DataFormerFamily.coveredCount_correct
+#assert_no_axioms FX1Poly.Core.boolFamilyCandidateInhabited
+#assert_no_axioms FX1Poly.Core.emptyFamilyCandidateHasNoClosedMember
+
+-- PAR-1 (MetatheoryParityLedger): formation↔grown reduction-metatheory parity. Weakening + substitution at
+-- FULL parity (both unconditional, anchored both engines); SN both hold (grown carries the decidable WF-ctx
+-- presupposition); SR is the ASYMMETRY — formation unconditional MASTER, grown only unconditional ARMS, its
+-- master conditional on the GrownCtxConv-5 bundle (#842/#845). The parityAnchor_* defs re-certify each engine's proof
+-- is zero-axiom + break if renamed; the discrimination theorems prove the benign WF presupposition is kept
+-- DISTINCT from the real SR blocker (no overstatement).
+#assert_no_axioms FX1Poly.Typed.MetatheoryProperty
+
+/- Open SN under GROWN context well-formedness (GrownWfOpenStronglyNormalizing): the
+WfContextDescPi-keyed twins of the formation-wf open SN — the reducible closing environment reads
+each binding's grown universe typing directly off the grown wf's cons component (no
+formation→grown embedding), and the SN assembly is the identical wire.  The SN supply for the
+pinned-reflection whnf dispatcher, whose motive carries exactly this wf. -/
+
+#assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContextDescPi
+#assert_no_axioms FX1Poly.Typed.reducibilityDispatch_isThinLinear

@@ -1,0 +1,159 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Universe.LevelExpr
+import FX1Poly.Universe.UniverseFlag
+import FX1Poly.Universe.UniverseFlagStrength
+import FX1Poly.Universe.LevelExprSimplify
+import FX1Poly.Universe.LevelExprSerialize
+import FX1Poly.Universe.UniverseFlagSerialize
+import FX1Poly.Universe.UniversePayloadSerialize
+import FX1Poly.Universe.LevelExprImpredicativeClosure
+import FX1Poly.Universe.LevelExprComplexity
+
+/-! # FX1PolyAudit/AuditUniverseLevelAlgebra01 — universe-layer zero-axiom gates, shard 1 of 3
+(split from the AuditUniverse monolith for parallel gate elaboration; the full import block is preserved verbatim so the per-decl `#assert_no_axioms` gates resolve every universe-layer name). -/
+
+/-! ### LevelExpr inductive + per-ctor canonical-form + DecidableEq smokes -/
+
+#assert_no_axioms FX1Poly.Universe.LevelExpr
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lzero_canonical
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lsucc_lzero_canonical
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lmax_lzero_lzero_canonical
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_lzero_lzero_canonical
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lvar_zero_canonical
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decEq_refl_lzero
+-- structural distinctness `e ≠ lsucc e` (no-Type-in-Type probe support):
+-- size-free structural induction, the predicativity guard at the level algebra
+#assert_no_axioms FX1Poly.Universe.LevelExpr.ne_lsucc_self
+-- the double-successor guard `e ≠ lsucc (lsucc e)` (no-level-deflation support): same induction
+#assert_no_axioms FX1Poly.Universe.LevelExpr.ne_lsuccLsucc_self
+
+/-! ### UniverseFlag Setzer-Rathjen closed enum + canonical-form + DecidableEq -/
+
+#assert_no_axioms FX1Poly.Universe.UniverseFlag
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.standard_canonical
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.inaccessible_canonical
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.mahlo_canonical
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.superMahlo_canonical
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.nMahlo_zero_canonical
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.hyperMahlo_canonical
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.weaklyCompact_canonical
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.indescribable_zero_canonical
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.reflecting_canonical
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.vopenka_canonical
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.decEq_refl_standard
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.ctorCount
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.ctorCount_correct
+
+/-! ### Normalization cascade: Phase-A simplify / size / denote / algebraic laws / compare / MaxPlusForm canonical form / predicative decision procedure / smokes / complexity working-set bounds -/
+
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lmax_idempotent
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lmax_idempotent_nonzero
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lmax_left_identity
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lmax_right_identity
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_limax_left_identity
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_limax_right_collapse
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_limax_both_zero
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lzero
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lsucc_lzero
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lvar_zero
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lmax_distinct
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_limax_non_lzero_codomain
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lzero_idempotent
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_lvar_zero_idempotent
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size_pos
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_size_le
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size_lzero
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size_lvar
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size_lsucc
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size_lmax
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size_limax
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_idempotent
+#assert_no_axioms FX1Poly.Universe.LevelExpr.IsPhaseANormalForm
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_produces_normal_form
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lzero_isNormalForm
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lvar_isNormalForm
+#assert_no_axioms FX1Poly.Universe.LevelExpr.IsStructurallyNormalForm
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_produces_isStructurallyNormalForm
+#assert_no_axioms FX1Poly.Universe.LevelExpr.IsStructurallyNormalForm.toFixedPoint
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_isStructurallyNormal_and_fixed
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size_lt_lmax_left
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size_lt_lmax_right
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size_lt_limax_left
+#assert_no_axioms FX1Poly.Universe.LevelExpr.size_lt_limax_right
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lzero_size_lt_limax
+#assert_no_axioms FX1Poly.Universe.LevelExpr.IsPhaseANormalForm.toStructurallyNormal
+#assert_no_axioms FX1Poly.Universe.LevelExpr.isPhaseANormalForm_iff_isStructurallyNormalForm
+#assert_no_axioms FX1Poly.Universe.LevelExpr.levelMax
+#assert_no_axioms FX1Poly.Universe.LevelExpr.levelMax_self
+#assert_no_axioms FX1Poly.Universe.LevelExpr.levelMax_zero_left
+#assert_no_axioms FX1Poly.Universe.LevelExpr.levelMax_zero_right
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denote
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denote_lzero
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denote_lvar
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denote_lsucc
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denote_lmax
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denote_limax
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_denote_eq
+#assert_no_axioms FX1Poly.Universe.LevelExpr.levelMax_comm
+#assert_no_axioms FX1Poly.Universe.LevelExpr.levelMax_assoc
+#assert_no_axioms FX1Poly.Universe.LevelExpr.levelMax_succ_distrib
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lmax_denote_comm
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lmax_denote_assoc
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lsucc_lmax_distrib_denote
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denoteEquiv.refl
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denoteEquiv.symm
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denoteEquiv.trans
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lmax_comm_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lmax_assoc_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lsucc_lmax_distrib_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lmax_idempotent_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lmax_lzero_left_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lmax_lzero_right_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.simplify_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lsucc_denoteEquiv_congr
+#assert_no_axioms FX1Poly.Universe.LevelExpr.lmax_denoteEquiv_congr
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_denoteEquiv_congr
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_denote_lzero_right
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_denote_lzero_left
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_denote_eq_lmax_when_codomain_nonzero
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_lzero_right_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_lzero_left_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.bothBoolTrue
+#assert_no_axioms FX1Poly.Universe.LevelExpr.isClosed
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denote_closed_env_independent
+#assert_no_axioms FX1Poly.Universe.LevelExpr.denoteEquiv_closed_iff
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decidableDenoteEquivClosed
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_denoteEquiv_lmax_of_codomainPos
+#assert_no_axioms FX1Poly.Universe.LevelExpr.limax_denoteEquiv_lzero_of_codomainZero
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compareNat
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compareNat_refl
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compareNat_swap
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compareNat_lt_trans
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compareNat_gt_trans
+#assert_no_axioms FX1Poly.Universe.LevelExpr.ctorIndex
+#assert_no_axioms FX1Poly.Universe.LevelExpr.orderingThen
+#assert_no_axioms FX1Poly.Universe.LevelExpr.orderingThen_eq_eq_of_both
+#assert_no_axioms FX1Poly.Universe.LevelExpr.orderingThen_eq_eq_inv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.orderingThen_swap
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compare
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compare_refl
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compare_swap
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compareNat_eq_imp_eq
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compareNat_eq_iff_eq
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compare_eq_imp_eq
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compare_eq_iff_eq
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compare_cross_ctor
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compare_lt_imp_ctorIndex_not_gt
+#assert_no_axioms FX1Poly.Universe.LevelExpr.orderingThen_eq_lt_iff
+#assert_no_axioms FX1Poly.Universe.LevelExpr.orderingThen_eq_gt_iff
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compare_lt_of_ctorIndex_lt
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compare_lt_trans_step
+#assert_no_axioms FX1Poly.Universe.LevelExpr.compare_lt_trans
+#assert_no_axioms FX1Poly.Universe.LevelExpr.swapToCanonicalLmax
+#assert_no_axioms FX1Poly.Universe.LevelExpr.canonicalizeLmaxPair
+#assert_no_axioms FX1Poly.Universe.LevelExpr.swapToCanonicalLmax_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.canonicalizeLmaxPair_denoteEquiv
+#assert_no_axioms FX1Poly.Universe.LevelExpr.canonicalizeLmaxPair_swapToCanonicalLmax
