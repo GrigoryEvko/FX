@@ -574,6 +574,7 @@ import FX1Poly.Typed.NormalAppNeutral
 import FX1Poly.Typed.TelescopeUniverseDeterminism
 import FX1Poly.Typed.GenericFormerTelescopeInversion
 import FX1Poly.Typed.NormalUniverseClassificationUnique
+import FX1Poly.Typed.ConvUniverseClassificationUnique
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8670,3 +8671,9 @@ table-generic — the flag-negotiation keystone of the strengthening enrichment 
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.levelsNonemptyOfShiftsNonempty
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalUniverseClassificationUniqueAtBudget
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalUniverseClassificationUnique
+
+/- E2.8 Conv-lift (ConvUniverseClassificationUnique): convertible subjects classified at
+universe codes carry EQUAL (level, flag) under grown wf — open SN normalizes both, SR-star
+re-types the pins, the join collapses at the shared normal form, the E2.7 master negotiates. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convUniverseClassificationUnique
