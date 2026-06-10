@@ -445,6 +445,7 @@ import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.TypedNbeConvDecision
 import FX1Poly.Typed.SigmaEtaEngineGate
+import FX1Poly.Typed.EliminatorMotiveShapeRecord
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -9622,3 +9623,39 @@ regression tripwires the Route-A widening must consciously revisit. -/
 #assert_no_axioms FX1Poly.Typed.etaPairExpansion_hasNoGrownTyping
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.pairCellOutsideDomain
 #assert_no_axioms FX1Poly.Typed.sigmaEtaEquation_underivable
+
+/-! ### EliminatorMotiveShapeRecord — the Phase-Z₀ motive-migration spike (Z0-DECIDE)
+
+The pre-construction spike for the Z₀ eliminator-motive migration.  Census pinned as `rfl`
+theorems: all EIGHT eliminator generators are FLAT (no motive child, zero binder shifts) — the
+16 shape pins are Route A's regression tripwires (each migration stage breaks exactly its own
+generator's two pins).  Feasibility witness for the cascade-free alternative:
+`HasTypeDescBoolElimDependent` expresses DEPENDENT elimination over the flat substrate with an
+EXTRINSIC premise-level motive applied by `subst0` — `subsumesSimpleShape` (constant motive
+recovers the shipped simple rule via `weaken_subst_singleton`), a non-vacuous smoke, and
+by-construction ι-coherence at the value scrutinee.  Named Route-B limits: no decidable
+checking (motive inference) and no uniqueness at neutral scrutinees — the classical reasons
+kernels store motives.  The module docstring carries the costed Route A (staged substrate
+migration, 1406-file blast radius, user decision) / Route B (extrinsic-motive judgments now) /
+Route C (rejected) decision record. -/
+
+#assert_no_axioms FX1Poly.Typed.boolElim_arity_isFlat
+#assert_no_axioms FX1Poly.Typed.boolElim_binderShifts_isFlat
+#assert_no_axioms FX1Poly.Typed.natElim_arity_isFlat
+#assert_no_axioms FX1Poly.Typed.natElim_binderShifts_isFlat
+#assert_no_axioms FX1Poly.Typed.natRec_arity_isFlat
+#assert_no_axioms FX1Poly.Typed.natRec_binderShifts_isFlat
+#assert_no_axioms FX1Poly.Typed.listElim_arity_isFlat
+#assert_no_axioms FX1Poly.Typed.listElim_binderShifts_isFlat
+#assert_no_axioms FX1Poly.Typed.optionMatch_arity_isFlat
+#assert_no_axioms FX1Poly.Typed.optionMatch_binderShifts_isFlat
+#assert_no_axioms FX1Poly.Typed.eitherMatch_arity_isFlat
+#assert_no_axioms FX1Poly.Typed.eitherMatch_binderShifts_isFlat
+#assert_no_axioms FX1Poly.Typed.idJ_arity_isFlat
+#assert_no_axioms FX1Poly.Typed.idJ_binderShifts_isFlat
+#assert_no_axioms FX1Poly.Typed.idStrictRec_arity_isFlat
+#assert_no_axioms FX1Poly.Typed.idStrictRec_binderShifts_isFlat
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElimDependent
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElimDependent.subsumesSimpleShape
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElimDependent.ofUniverseCodesTyped
+#assert_no_axioms FX1Poly.Typed.dependentBoolElimIotaComputesTyped_true
