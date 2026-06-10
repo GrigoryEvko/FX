@@ -579,6 +579,7 @@ import FX1Poly.Typed.RenameAlongFlagCoherent
 import FX1Poly.Typed.PinSelectsCallerPair
 import FX1Poly.Typed.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.LamReductResidualDischarge
+import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8722,3 +8723,25 @@ flag-coherent core. -/
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimCoreFlagCoherent
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimResidualFlagCoherentHolds
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimLamReductResidualFlagCoherentHolds
+
+/- ★★★ THE MASTER FIRED + THE STRENGTHENING ENDPOINT (PinnedReflectionFlagCoherentMaster):
+the conditional master re-threaded over the flag-coherent motive (the piIntro arm and the
+telescope leg extend the condition with definitional-image shared-universe triples), the
+discharged residual plugged in, the threaded SourceUniverseFlagUnique premise CLOSED (this
+assembly sits above the piIntro arm's import cycle, so convUniverseClassificationUnique's flag
+projection discharges it) — and grown strengthening lands PREMISE-FREE: a weakened-subject /
+weakened-classifier typing under one extra binding reflects to the smaller context at the SAME
+classifier, given only the natural presuppositions. Closes STR-9 (#1178) / GROWN-STRENGTHEN
+(#1168), the strengthening campaign's terminal goal. -/
+
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionOfFormationArmFlagCoherent
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionConvArmFlagCoherent
+#assert_no_axioms FX1Poly.Typed.pinnedReflectionPiIntroArmFlagCoherent
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionFlagCoherentConditional
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.pinnedReflectionTelescopeFlagCoherentConditional
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionFlagCoherent
+#assert_no_axioms FX1Poly.Typed.sourceUniverseFlagUniqueHolds
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionFlagCoherentUnconditional
+#assert_no_axioms FX1Poly.Typed.RawRenaming.weaken_finInjective
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.strengthenUnderBinding
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.strengthenUnderBindingUnconditional
