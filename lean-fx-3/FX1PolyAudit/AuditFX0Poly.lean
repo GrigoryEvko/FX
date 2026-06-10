@@ -3,6 +3,9 @@ import FX1PolyAudit.FX0Bridge
 import FX1PolyAudit.FX0CrossCheck
 import FX1PolyAudit.FX0CrossCheckCertified
 import FX1PolyAudit.FX0CrossCheckCorpus
+import FX1Poly.Core.CertifyRawCellExact
+import FX1Poly.Core.InferRawCellGeneral
+import FX1Poly.Core.CertifiedTerm
 import FX0Poly.StructuralRecheck
 import FX0Poly.CertRecheck
 import FX0Poly.CertRecheckSound
@@ -160,3 +163,30 @@ external-verifier soundness — an A₀-release ingredient (#464). -/
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchNumeral
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_polymorphicIdentity
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchNatType
+
+/-! ### FX0-PC.1 — the HOST-MINIMAL gate on the Layer-1 certifier (★ closes #220)
+
+`#assert_host_minimal` (DependencyAudit) walks the target's FULL transitive constant closure
+EXHAUSTIVELY (truncation is a build error, unlike the fuel-silent statistics walk) and fails the
+build if the closure contains: an axiom, a constant from any non-`Init`/`FX1Poly`/`FX0Poly` module
+(no `Lean.*`, no `Std.*`, no `IO`), an `unsafe` or `partial` definition, an opaque constant, or a
+quotient primitive.  Tactic-mode SOURCE in the closure is irrelevant — the gate audits the
+ELABORATED kernel artifact.
+
+Calibrated result (the honest prelude slice, reported by the gate on every build): the certifier
+closure is ~1330–1360 constants touching exactly `Init.Prelude`, `Init.Core`, `Init.WF`,
+`Init.SimpLemmas`, `Init.Data.Nat.Basic` (+ `Init.Data.List.Basic` for the wrapper/`Certified`).
+That slice — not the aspirational "Init.Prelude only" — is what the external verifier spec
+(FX0-PC.4) must model.  NOT checked (stated, not absorbed): `@[extern]` bindings on `Init`
+primitives (e.g. `Nat` arithmetic) live in the trusted Lean RUNTIME, outside the kernel-checked
+closure; eliminating that trust is exactly the external C/Rust re-checker's job (FX0-PC.6).
+
+CERTIFICATE-NOTION CAVEAT (post O-STACK #1194): this gates the sort-DISCIPLINED structural
+certifier, which provably does not cover all typed subjects
+(`typedDoesNotFactorThroughCertification`); the sort-agnostic FX0 re-checker above is the
+A0 external-verification leg. -/
+
+#assert_host_minimal FX1Poly.Core.certifyRawCellExact?
+#assert_host_minimal FX1Poly.Core.certifyRawCellExactFueled?
+#assert_host_minimal FX1Poly.Core.inferRawCellGeneral?
+#assert_host_minimal FX1Poly.Core.Certified

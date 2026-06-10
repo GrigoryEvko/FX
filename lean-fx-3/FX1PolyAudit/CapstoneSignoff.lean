@@ -54,9 +54,12 @@ Shipped and gated here: `wfContextDefensibleKernel` (open SN + decidable `Conv` 
 over EVERY well-formed context — the A0 decidability floor), `HasTypeDesc.decidableOfWellFormed`
 (decidable formation checking), and the FX0 external cross-check
 `FX0CrossCheck.externalVerify_accepts_certified` (the standalone re-checker accepts the encoding of
-every wf-typed subject, with SN).  EXACT residuals keeping #464 open: #220 (host-minimal
-`certifyRawCellExact?` prelude-only gate), the STRICT-COMPLEXITY witnesses (#268 / #471 / #648),
-and the joint-decidability apex (O-NORM, open research — A0's deciders are per-fragment/wf-scoped).
+every wf-typed subject, with SN).  The host-minimal certifier gate (FX0-PC.1, #220) is SHIPPED:
+`#assert_host_minimal` in `AuditFX0Poly` re-verifies on every build that the Layer-1 certifier's
+full transitive closure is axiom-free, prelude-family-only (no `Lean.*`/`Std.*`), `unsafe`/
+`partial`-free, opaque-free, and quotient-free.  EXACT residuals keeping #464 open: the
+STRICT-COMPLEXITY witnesses (#268 / #471 / #648), and the joint-decidability apex (O-NORM, open
+research — A0's deciders are per-fragment/wf-scoped).
 CERTIFICATE-NOTION CAVEAT (post O-STACK #1194): A0's external-verification leg is the
 sort-AGNOSTIC FX0 re-checker; the sort-disciplined `certifyRawCellExact?` provably does NOT cover
 all typed subjects (`typedDoesNotFactorThroughCertification`) — any A0 release text must say "FX0
