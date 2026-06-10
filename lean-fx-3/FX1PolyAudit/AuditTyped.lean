@@ -573,6 +573,7 @@ import FX1Poly.Typed.NeutralClassifierUnique
 import FX1Poly.Typed.NormalAppNeutral
 import FX1Poly.Typed.TelescopeUniverseDeterminism
 import FX1Poly.Typed.GenericFormerTelescopeInversion
+import FX1Poly.Typed.NormalUniverseClassificationUnique
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8659,3 +8660,13 @@ AND pins the classifier to the universe former's output code.  Unconditional; ne
 new arm. -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertFormerTelescopeWithConvGeneric
+
+/- E2.7 MASTER (NormalUniverseClassificationUnique): two grown universe classifications of one
+NORMAL subject agree on (level, flag) — budget-recursive 5-way root dispatch; the former arm's
+flag agreement is anchored by the table-wide nonempty-binder-shifts fact.  Unconditional,
+table-generic — the flag-negotiation keystone of the strengthening enrichment campaign. -/
+
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_binderShiftsNonempty
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.levelsNonemptyOfShiftsNonempty
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalUniverseClassificationUniqueAtBudget
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalUniverseClassificationUnique
