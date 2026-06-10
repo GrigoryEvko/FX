@@ -74,7 +74,7 @@ theorem konstApplications_congruentlyEqual (profile : PolyProfile) :
       (appCell konstUnitFunction (variableCell ⟨0, Nat.zero_lt_one⟩))
       (appCell konstUnitFunction unitCell) :=
   DefEqUnitEtaCong.congGen (generator := Generator.gen_app) ()
-    (.consEqual
+    (.consEqualZero
       (.consZero
         (.ofDefEq (.unitEta (Or.inr (unitVariableTyped profile))
           (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitVariableContext profile)))))

@@ -432,6 +432,7 @@ import FX1Poly.Typed.UnitVariableCollapse
 import FX1Poly.Typed.UnitCollapseIncompleteness
 import FX1Poly.Typed.UnitCollapseBinderFence
 import FX1Poly.Typed.UnitVariableCollapseDeep
+import FX1Poly.Typed.UnitVariableCollapseDeepSound
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3398,6 +3399,27 @@ fenced (none live today).  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.deepCollapse_crossesBinderFence
 #assert_no_axioms FX1Poly.Typed.deepCollapse_identifiesKonstNormalForms
 #assert_no_axioms FX1Poly.Typed.deepCollapse_computesGapPair
+
+/-! ### UnitVariableCollapseDeepSound — deep soundness, UNCONDITIONAL (ULC-4 brick C)
+
+The spec gained the binder-crossing congruence arm (`consBinder`, with the SHARED-only
+`Option`-threaded children relation — shared threading keeps `sym` provable where left-threading
+would break it), and the deep collapse is sound against it: ★
+`collapseUnitVariablesDeep_congruent` — every term congruently unit-η-equal to its deep collapse,
+ANY context, no wf (the under-binder `unitEta` leaf rides the `var` rule in the extended
+context).  The proof composes per cell through the bodies-only intermediate spine with the
+spec's `trans` rule (leg 1: heads shared / bodies via `consBinder`; leg 2: heads via `consZero` /
+bodies shared).  `ofDeepCollapsesEqual` = the hypothesis-free deep semi-decision; ★
+`konstNormalForms_congruentlyEqual` — the binder-fence pair is decided POSITIVELY (the deep
+procedure is strictly stronger than every fenced one).  Completeness re-poses next.  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.ChildrenUnitEtaCong
+#assert_no_axioms FX1Poly.Typed.collapseBinderBodiesOnlyChildren
+#assert_no_axioms FX1Poly.Typed.collapseUnitVariablesDeep_congruent
+#assert_no_axioms FX1Poly.Typed.collapseBinderBodiesLeg
+#assert_no_axioms FX1Poly.Typed.collapseHeadsLeg
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofDeepCollapsesEqual
+#assert_no_axioms FX1Poly.Typed.konstNormalForms_congruentlyEqual
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 

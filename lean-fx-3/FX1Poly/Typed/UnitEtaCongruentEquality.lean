@@ -72,12 +72,13 @@ inductive DefEqUnitEtaCong (profile : PolyProfile) : {scope : Nat} →
       (defEq : DefEqUnitEta profile context leftTerm rightTerm classifier) :
       DefEqUnitEtaCong profile context leftTerm rightTerm
   /-- Congruence: cells rooted at the SAME generator with the SAME payload and pointwise-related
-  children are congruently equal. -/
+  children are congruently equal.  The children relation starts with no shared preceding
+  sibling. -/
   | congGen {scope : Nat} {context : TypingContext profile scope}
       {generator : Generator} (payload : generator.payload scope)
       {leftChildren rightChildren : RawTermChildren generator.binderShifts scope}
       (childrenRelated :
-        ChildrenUnitEtaCong profile context generator.binderShifts
+        ChildrenUnitEtaCong profile context none generator.binderShifts
           leftChildren rightChildren) :
       DefEqUnitEtaCong profile context
         (.mkGen generator payload leftChildren) (.mkGen generator payload rightChildren)
@@ -91,30 +92,58 @@ inductive DefEqUnitEtaCong (profile : PolyProfile) : {scope : Nat} →
       (middleToRight : DefEqUnitEtaCong profile context middleTerm rightTerm) :
       DefEqUnitEtaCong profile context leftTerm rightTerm
 
-/-- Pointwise congruent equality of children spines: shift-0 children relate by the full
-congruent relation (`consZero`); binder children are kept syntactically EQUAL (`consEqual` —
-relating UNDER a binder needs the binder-domain context extension, the named follow-on). -/
+/-- Pointwise congruent equality of children spines, threading the SHARED preceding sibling (the
+binder-domain candidate per the telescope discipline): shift-0 children relate by the full
+congruent relation (`consZero` — heads may differ, so no shared domain flows downstream); a
+SHARED shift-0 head flows to the next position (`consEqualZero`); a binder child relates UNDER
+the shared preceding sibling's context extension (`consBinder` — the binder-crossing arm the
+binder-fence refutation forces); shared heads at positive shifts are kept by `consEqualHigher`. -/
 inductive ChildrenUnitEtaCong (profile : PolyProfile) : {scope : Nat} →
-    TypingContext profile scope → (shifts : List Nat) →
+    TypingContext profile scope → Option (RawTerm scope) → (shifts : List Nat) →
     RawTermChildren shifts scope → RawTermChildren shifts scope → Prop where
-  | nil {scope : Nat} {context : TypingContext profile scope} :
-      ChildrenUnitEtaCong profile context [] .childNil .childNil
-  /-- A shift-0 head child relates by the full congruent relation in the SAME context. -/
-  | consZero {scope : Nat} {context : TypingContext profile scope} {restShifts : List Nat}
+  | nil {scope : Nat} {context : TypingContext profile scope}
+      {previousShared : Option (RawTerm scope)} :
+      ChildrenUnitEtaCong profile context previousShared [] .childNil .childNil
+  /-- A shift-0 head child relates by the full congruent relation in the SAME context.  The heads
+  may DIFFER, so no shared domain flows to the next position. -/
+  | consZero {scope : Nat} {context : TypingContext profile scope}
+      {previousShared : Option (RawTerm scope)} {restShifts : List Nat}
       {leftChild rightChild : RawTerm scope}
       {leftRest rightRest : RawTermChildren restShifts scope}
       (headRelated : DefEqUnitEtaCong profile context leftChild rightChild)
-      (restRelated : ChildrenUnitEtaCong profile context restShifts leftRest rightRest) :
-      ChildrenUnitEtaCong profile context (0 :: restShifts)
+      (restRelated : ChildrenUnitEtaCong profile context none restShifts leftRest rightRest) :
+      ChildrenUnitEtaCong profile context previousShared (0 :: restShifts)
         (.childCons leftChild leftRest) (.childCons rightChild rightRest)
-  /-- A head child kept syntactically equal on both sides (any shift — in particular every
-  binder child).  This is also what makes `refl` unconditional. -/
-  | consEqual {scope : Nat} {context : TypingContext profile scope}
-      {headShift : Nat} {restShifts : List Nat}
-      {sharedChild : RawTerm (scope + headShift)}
+  /-- A SHARED shift-0 head child — it becomes the next position's binder-domain candidate. -/
+  | consEqualZero {scope : Nat} {context : TypingContext profile scope}
+      {previousShared : Option (RawTerm scope)} {restShifts : List Nat}
+      {sharedChild : RawTerm scope}
       {leftRest rightRest : RawTermChildren restShifts scope}
-      (restRelated : ChildrenUnitEtaCong profile context restShifts leftRest rightRest) :
-      ChildrenUnitEtaCong profile context (headShift :: restShifts)
+      (restRelated : ChildrenUnitEtaCong profile context (some sharedChild) restShifts
+        leftRest rightRest) :
+      ChildrenUnitEtaCong profile context previousShared (0 :: restShifts)
+        (.childCons sharedChild leftRest) (.childCons sharedChild rightRest)
+  /-- **The binder-crossing arm**: with a SHARED preceding sibling available as the binder
+  domain, shift-1 head children relate by the full congruent relation in the EXTENDED context.
+  Symmetric because the domain is shared. -/
+  | consBinder {scope : Nat} {context : TypingContext profile scope}
+      {domainSibling : RawTerm scope} {restShifts : List Nat}
+      {leftBody rightBody : RawTerm (scope + 1)}
+      {leftRest rightRest : RawTermChildren restShifts scope}
+      (bodiesRelated : DefEqUnitEtaCong profile (context.cons domainSibling)
+        leftBody rightBody)
+      (restRelated : ChildrenUnitEtaCong profile context none restShifts leftRest rightRest) :
+      ChildrenUnitEtaCong profile context (some domainSibling) (1 :: restShifts)
+        (.childCons leftBody leftRest) (.childCons rightBody rightRest)
+  /-- A head child kept syntactically equal on both sides at ANY positive shift (binder children
+  without an available shared domain stay fenced; this also keeps `refl` unconditional). -/
+  | consEqualHigher {scope : Nat} {context : TypingContext profile scope}
+      {previousShared : Option (RawTerm scope)}
+      {headShift : Nat} {restShifts : List Nat}
+      {sharedChild : RawTerm (scope + (headShift + 1))}
+      {leftRest rightRest : RawTermChildren restShifts scope}
+      (restRelated : ChildrenUnitEtaCong profile context none restShifts leftRest rightRest) :
+      ChildrenUnitEtaCong profile context previousShared ((headShift + 1) :: restShifts)
         (.childCons sharedChild leftRest) (.childCons sharedChild rightRest)
 
 end
@@ -129,14 +158,16 @@ theorem DefEqUnitEtaCong.refl {profile : PolyProfile} {scope : Nat}
   | .mkGen _generator payload children =>
       .congGen payload (ChildrenUnitEtaCong.refl children)
 
-/-- Children reflexivity: `consEqual` at every position. -/
+/-- Children reflexivity: shared-head arms at every position, at ANY threading. -/
 theorem ChildrenUnitEtaCong.refl {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {shifts : List Nat} :
-    (children : RawTermChildren shifts scope) →
-      ChildrenUnitEtaCong profile context shifts children children
-  | .childNil => .nil
-  | .childCons _headChild restChildren =>
-      .consEqual (ChildrenUnitEtaCong.refl restChildren)
+    {context : TypingContext profile scope} {previousShared : Option (RawTerm scope)} :
+    {shifts : List Nat} → (children : RawTermChildren shifts scope) →
+      ChildrenUnitEtaCong profile context previousShared shifts children children
+  | _, .childNil => .nil
+  | _, @RawTermChildren.childCons _ 0 _ _headChild restChildren =>
+      .consEqualZero (ChildrenUnitEtaCong.refl restChildren)
+  | _, @RawTermChildren.childCons _ (_ + 1) _ _headChild restChildren =>
+      .consEqualHigher (ChildrenUnitEtaCong.refl restChildren)
 
 end
 
@@ -154,17 +185,23 @@ theorem DefEqUnitEtaCong.sym {profile : PolyProfile} {scope : Nat}
   | .trans leftToMiddle middleToRight =>
       .trans (DefEqUnitEtaCong.sym middleToRight) (DefEqUnitEtaCong.sym leftToMiddle)
 
-/-- Children symmetry. -/
+/-- Children symmetry — every arm is symmetric at its own threading (the binder arm because the
+domain is SHARED; a left-threading convention would break exactly here). -/
 theorem ChildrenUnitEtaCong.sym {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {shifts : List Nat}
+    {context : TypingContext profile scope} {previousShared : Option (RawTerm scope)}
+    {shifts : List Nat}
     {leftChildren rightChildren : RawTermChildren shifts scope}
-    (related : ChildrenUnitEtaCong profile context shifts leftChildren rightChildren) :
-    ChildrenUnitEtaCong profile context shifts rightChildren leftChildren :=
+    (related : ChildrenUnitEtaCong profile context previousShared shifts
+      leftChildren rightChildren) :
+    ChildrenUnitEtaCong profile context previousShared shifts rightChildren leftChildren :=
   match related with
   | .nil => .nil
   | .consZero headRelated restRelated =>
       .consZero (DefEqUnitEtaCong.sym headRelated) (ChildrenUnitEtaCong.sym restRelated)
-  | .consEqual restRelated => .consEqual (ChildrenUnitEtaCong.sym restRelated)
+  | .consEqualZero restRelated => .consEqualZero (ChildrenUnitEtaCong.sym restRelated)
+  | .consBinder bodiesRelated restRelated =>
+      .consBinder (DefEqUnitEtaCong.sym bodiesRelated) (ChildrenUnitEtaCong.sym restRelated)
+  | .consEqualHigher restRelated => .consEqualHigher (ChildrenUnitEtaCong.sym restRelated)
 
 end
 

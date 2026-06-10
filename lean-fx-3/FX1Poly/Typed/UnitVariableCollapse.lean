@@ -109,18 +109,19 @@ theorem collapseUnitVariables_congruent {profile : PolyProfile} {scope : Nat}
       · rw [dif_neg isVariable]
         exact .congGen payload (collapseUnitVariablesChildren_congruent context children)
 
-/-- Children soundness: shift-0 heads by the term soundness, binder heads by `consEqual`. -/
+/-- Children soundness: shift-0 heads by the term soundness, binder heads by `consEqualHigher`
+(the fenced collapse leaves them untouched). -/
 theorem collapseUnitVariablesChildren_congruent {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) :
     {shifts : List Nat} → (children : RawTermChildren shifts scope) →
-      ChildrenUnitEtaCong profile context shifts children
+      ChildrenUnitEtaCong profile context none shifts children
         (collapseUnitVariablesChildren context children)
   | _, .childNil => .nil
   | _, @RawTermChildren.childCons _ 0 _ headChild restChildren =>
       .consZero (collapseUnitVariables_congruent context headChild)
         (collapseUnitVariablesChildren_congruent context restChildren)
   | _, @RawTermChildren.childCons _ (_ + 1) _ _headChild restChildren =>
-      .consEqual (collapseUnitVariablesChildren_congruent context restChildren)
+      .consEqualHigher (collapseUnitVariablesChildren_congruent context restChildren)
 
 end
 
