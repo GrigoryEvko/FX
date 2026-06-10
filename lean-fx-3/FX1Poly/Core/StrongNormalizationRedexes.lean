@@ -3681,49 +3681,91 @@ are strongly normalizing.
 The cons iota is impossible on the literal nil scrutinee, and scrutinee
 congruence is impossible because `listNil` is a normal leaf. -/
 theorem listElimNil_isStronglyNormalizing_of_branches {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {nilBranch consBranch : RawTerm scope}
+    (motiveTerminates : IsStronglyNormalizing motive)
     (nilTerminates : IsStronglyNormalizing nilBranch)
     (consTerminates : IsStronglyNormalizing consBranch) :
     IsStronglyNormalizing
       (.mkGen .gen_listElim ()
-        (.childCons
-          (.mkGen .gen_listNil () .childNil)
-          (.childCons nilBranch (.childCons consBranch .childNil))) :
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons (.mkGen .gen_listNil () .childNil) .childNil)))) :
         RawTerm scope) :=
-  isStronglyNormalizing_of_twoBranchProjectionRedex
-    (fun currentNil currentCons =>
-      (.mkGen .gen_listElim ()
-        (.childCons
-          (.mkGen .gen_listNil () .childNil)
-          (.childCons currentNil (.childCons currentCons .childNil))) :
-        RawTerm scope))
-    (fun parentStep => by
-      cases Step.from_listElim parentStep with
-      | inl nilBranchStep =>
-          exact Or.inl nilBranchStep.2
-      | inr restAfterNil =>
-          cases restAfterNil with
-          | inl consBranchStep =>
-              obtain ⟨headVal, tailVal, scrutineeEq, _⟩ := consBranchStep
-              cases scrutineeEq
-          | inr restAfterCons =>
-              cases restAfterCons with
-              | inl scrutineeBranch =>
-                  obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
-                  exact False.elim (noStep_listNil scrutineeStep)
-              | inr restAfterScrutinee =>
-                  cases restAfterScrutinee with
-                  | inl nilStep =>
-                      obtain ⟨nilAfter, targetEq, nilStepInner⟩ := nilStep
-                      exact Or.inr
-                        (Or.inl ⟨nilAfter, targetEq, nilStepInner⟩)
-                  | inr consStep =>
-                      obtain ⟨consAfter, targetEq, consStepInner⟩ :=
-                        consStep
-                      exact Or.inr
-                        (Or.inr ⟨consAfter, targetEq, consStepInner⟩))
-    nilTerminates
-    consTerminates
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentMotive =>
+      ∀ {currentNil currentCons : RawTerm scope},
+        IsStronglyNormalizing currentNil → IsStronglyNormalizing currentCons →
+          IsStronglyNormalizing
+            (.mkGen .gen_listElim ()
+              (.childCons currentMotive
+                (.childCons currentNil
+                  (.childCons currentCons
+                    (.childCons (.mkGen .gen_listNil () .childNil) .childNil)))) :
+              RawTerm scope))
+    (m := fun currentMotive currentMotiveSuccessors motiveBranchIH => by
+      intro currentNil currentCons currentNilTerminates currentConsTerminates
+      exact
+        (Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerNil =>
+            ∀ {innerCons : RawTerm scope},
+              IsStronglyNormalizing innerCons →
+                IsStronglyNormalizing
+                  (.mkGen .gen_listElim ()
+                    (.childCons currentMotive
+                      (.childCons innerNil
+                        (.childCons innerCons
+                          (.childCons (.mkGen .gen_listNil () .childNil) .childNil)))) :
+                    RawTerm scope))
+          (m := fun currentNilBranch currentNilSuccessors nilBranchIH => by
+            intro innerCons innerConsTerminates
+            exact
+              Acc.ndrec
+                (r := StepSuccessor)
+                (C := fun innerCons' =>
+                  IsStronglyNormalizing
+                    (.mkGen .gen_listElim ()
+                      (.childCons currentMotive
+                        (.childCons currentNilBranch
+                          (.childCons innerCons'
+                            (.childCons (.mkGen .gen_listNil () .childNil) .childNil)))) :
+                      RawTerm scope))
+                (m := fun currentConsBranch currentConsSuccessors consBranchIH =>
+                  Acc.intro
+                    (.mkGen .gen_listElim ()
+                      (.childCons currentMotive
+                        (.childCons currentNilBranch
+                          (.childCons currentConsBranch
+                            (.childCons (.mkGen .gen_listNil () .childNil) .childNil)))) :
+                      RawTerm scope)
+                    (fun targetTerm parentStep => by
+                      rcases Step.from_listElim parentStep with
+                        ⟨_scrutineeIsNil, targetIsNil⟩ |
+                        ⟨_headVal, _tailVal, scrutineeIsCons, _⟩ |
+                        ⟨motiveAfter, targetIsMotiveStep, motiveStep⟩ |
+                        ⟨nilAfter, targetIsNilStep, nilStep⟩ |
+                        ⟨consAfter, targetIsConsStep, consStep⟩ |
+                        ⟨_scrutineeAfter, _targetIsScrutineeStep, scrutineeStep⟩
+                      · rw [targetIsNil]
+                        exact Acc.intro currentNilBranch currentNilSuccessors
+                      · cases scrutineeIsCons
+                      · rw [targetIsMotiveStep]
+                        exact motiveBranchIH motiveAfter motiveStep
+                          (Acc.intro currentNilBranch currentNilSuccessors)
+                          (Acc.intro currentConsBranch currentConsSuccessors)
+                      · rw [targetIsNilStep]
+                        exact nilBranchIH nilAfter nilStep
+                          (Acc.intro currentConsBranch currentConsSuccessors)
+                      · rw [targetIsConsStep]
+                        exact consBranchIH consAfter consStep
+                      · exact False.elim (noStep_listNil scrutineeStep)))
+                innerConsTerminates)
+          currentNilTerminates currentConsTerminates))
+    motiveTerminates)
+    nilTerminates consTerminates
 
 /-- List elimination on `listCons headVal tailVal` is strongly normalizing
 when the cons branch is a neutral function head and the recursive call on the
@@ -3732,12 +3774,17 @@ tail is supplied as an explicit accessibility hypothesis.
 This is the list analogue of the nat-successor induction-step theorem.  The
 root iota reduct is the three-argument application spine
 `app (app (app consBranch headVal) tailVal)
-  (listElim tailVal nilBranch consBranch)`, so the theorem deliberately
+  (listElim motive nilBranch consBranch tailVal)`, so the theorem deliberately
 exposes the recursive-call SN obligation instead of claiming recursive
-eliminator termination globally. -/
+eliminator termination globally.  Phase-Z motive shape: the motive heads the
+spine (under one binder) and the scrutinee `listCons head tail` is the LAST
+child; the recursive `listElim` THREADS the motive.  A FIVE-fold accessibility
+induction (motive outer, then consBranch, headVal, tailVal, nilBranch). -/
 theorem listElimCons_isStronglyNormalizing_of_neutral_consBranch
     {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
+    {motive : RawTerm (scope + 1)}
     {headVal tailVal nilBranch consBranch : RawTerm scope}
+    (motiveTerminates : IsStronglyNormalizing motive)
     (headTerminates : IsStronglyNormalizing headVal)
     (tailTerminates : IsStronglyNormalizing tailVal)
     (nilTerminates : IsStronglyNormalizing nilBranch)
@@ -3754,119 +3801,159 @@ theorem listElimCons_isStronglyNormalizing_of_neutral_consBranch
             isNeutralHead targetHead)
     (consTerminates : IsStronglyNormalizing consBranch)
     (recursiveCallTerminates :
-      ∀ {currentTailVal currentNilBranch currentConsBranch : RawTerm scope},
-        IsStronglyNormalizing currentTailVal →
-          IsStronglyNormalizing currentNilBranch →
-            isNeutralHead currentConsBranch →
-              IsStronglyNormalizing currentConsBranch →
-                IsStronglyNormalizing
-                  (.mkGen .gen_listElim ()
-                    (.childCons currentTailVal
-                      (.childCons currentNilBranch
-                        (.childCons currentConsBranch .childNil))) :
-                    RawTerm scope)) :
+      ∀ {currentMotive : RawTerm (scope + 1)}
+        {currentTailVal currentNilBranch currentConsBranch : RawTerm scope},
+        IsStronglyNormalizing currentMotive →
+          IsStronglyNormalizing currentTailVal →
+            IsStronglyNormalizing currentNilBranch →
+              isNeutralHead currentConsBranch →
+                IsStronglyNormalizing currentConsBranch →
+                  IsStronglyNormalizing
+                    (.mkGen .gen_listElim ()
+                      (.childCons currentMotive
+                        (.childCons currentNilBranch
+                          (.childCons currentConsBranch
+                            (.childCons currentTailVal .childNil)))) :
+                      RawTerm scope)) :
     IsStronglyNormalizing
       (.mkGen .gen_listElim ()
-        (.childCons
-          (.mkGen .gen_listCons ()
-            (.childCons headVal (.childCons tailVal .childNil)))
-          (.childCons nilBranch (.childCons consBranch .childNil))) :
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons
+                (.mkGen .gen_listCons ()
+                  (.childCons headVal (.childCons tailVal .childNil)))
+                .childNil)))) :
         RawTerm scope) :=
   (Acc.ndrec
     (r := StepSuccessor)
-    (C := fun currentConsBranch =>
-      isNeutralHead currentConsBranch →
-        ∀ {currentHeadVal : RawTerm scope},
-          IsStronglyNormalizing currentHeadVal →
-            ∀ {currentTailVal : RawTerm scope},
-              IsStronglyNormalizing currentTailVal →
-                ∀ {currentNilBranch : RawTerm scope},
-                  IsStronglyNormalizing currentNilBranch →
-                    IsStronglyNormalizing
-                      (.mkGen .gen_listElim ()
-                        (.childCons
-                          (.mkGen .gen_listCons ()
-                            (.childCons currentHeadVal
-                              (.childCons currentTailVal .childNil)))
-                          (.childCons currentNilBranch
-                            (.childCons currentConsBranch .childNil))) :
-                        RawTerm scope))
-    (m := fun currentConsBranch currentConsBranchSuccessors consBranchIH => by
-      intro currentConsBranchIsNeutral currentHeadVal currentHeadTerminates
-        currentTailVal currentTailTerminates currentNilBranch
-        currentNilTerminates
+    (C := fun currentMotive =>
+      ∀ {currentConsBranch : RawTerm scope},
+        isNeutralHead currentConsBranch →
+          IsStronglyNormalizing currentConsBranch →
+            ∀ {currentHeadVal : RawTerm scope},
+              IsStronglyNormalizing currentHeadVal →
+                ∀ {currentTailVal : RawTerm scope},
+                  IsStronglyNormalizing currentTailVal →
+                    ∀ {currentNilBranch : RawTerm scope},
+                      IsStronglyNormalizing currentNilBranch →
+                        IsStronglyNormalizing
+                          (.mkGen .gen_listElim ()
+                            (.childCons currentMotive
+                              (.childCons currentNilBranch
+                                (.childCons currentConsBranch
+                                  (.childCons
+                                    (.mkGen .gen_listCons ()
+                                      (.childCons currentHeadVal
+                                        (.childCons currentTailVal .childNil)))
+                                    .childNil)))) :
+                            RawTerm scope))
+    (m := fun currentMotive currentMotiveSuccessors motiveIH => by
+      intro currentConsBranch currentConsBranchIsNeutral currentConsBranchTerminates
       exact
-        Acc.ndrec
+        (Acc.ndrec
           (r := StepSuccessor)
-          (C := fun innerHeadVal =>
-            ∀ {innerTailVal : RawTerm scope},
-              IsStronglyNormalizing innerTailVal →
-                ∀ {innerNilBranch : RawTerm scope},
-                  IsStronglyNormalizing innerNilBranch →
-                    IsStronglyNormalizing
-                      (.mkGen .gen_listElim ()
-                        (.childCons
-                          (.mkGen .gen_listCons ()
-                            (.childCons innerHeadVal
-                              (.childCons innerTailVal .childNil)))
-                          (.childCons innerNilBranch
-                            (.childCons currentConsBranch .childNil))) :
-                        RawTerm scope))
-          (m := fun currentHeadVal currentHeadSuccessors headIH => by
-            intro currentTailVal currentTailTerminates currentNilBranch
+          (C := fun innerConsBranch =>
+            isNeutralHead innerConsBranch →
+              ∀ {currentHeadVal : RawTerm scope},
+                IsStronglyNormalizing currentHeadVal →
+                  ∀ {currentTailVal : RawTerm scope},
+                    IsStronglyNormalizing currentTailVal →
+                      ∀ {currentNilBranch : RawTerm scope},
+                        IsStronglyNormalizing currentNilBranch →
+                          IsStronglyNormalizing
+                            (.mkGen .gen_listElim ()
+                              (.childCons currentMotive
+                                (.childCons currentNilBranch
+                                  (.childCons innerConsBranch
+                                    (.childCons
+                                      (.mkGen .gen_listCons ()
+                                        (.childCons currentHeadVal
+                                          (.childCons currentTailVal .childNil)))
+                                      .childNil)))) :
+                              RawTerm scope))
+          (m := fun currentConsBranch currentConsBranchSuccessors consBranchIH => by
+            intro currentConsBranchIsNeutral currentHeadVal currentHeadTerminates
+              currentTailVal currentTailTerminates currentNilBranch
               currentNilTerminates
             exact
               Acc.ndrec
                 (r := StepSuccessor)
-                (C := fun innerTailVal =>
-                  ∀ {innerNilBranch : RawTerm scope},
-                    IsStronglyNormalizing innerNilBranch →
-                      IsStronglyNormalizing
-                        (.mkGen .gen_listElim ()
-                          (.childCons
-                            (.mkGen .gen_listCons ()
-                              (.childCons currentHeadVal
-                                (.childCons innerTailVal .childNil)))
-                            (.childCons innerNilBranch
-                              (.childCons currentConsBranch .childNil))) :
-                          RawTerm scope))
-                (m := fun currentTailVal currentTailSuccessors tailIH => by
-                  intro currentNilBranch currentNilTerminates
+                (C := fun innerHeadVal =>
+                  ∀ {innerTailVal : RawTerm scope},
+                    IsStronglyNormalizing innerTailVal →
+                      ∀ {innerNilBranch : RawTerm scope},
+                        IsStronglyNormalizing innerNilBranch →
+                          IsStronglyNormalizing
+                            (.mkGen .gen_listElim ()
+                              (.childCons currentMotive
+                                (.childCons innerNilBranch
+                                  (.childCons currentConsBranch
+                                    (.childCons
+                                      (.mkGen .gen_listCons ()
+                                        (.childCons innerHeadVal
+                                          (.childCons innerTailVal .childNil)))
+                                      .childNil)))) :
+                              RawTerm scope))
+                (m := fun currentHeadVal currentHeadSuccessors headIH => by
+                  intro currentTailVal currentTailTerminates currentNilBranch
+                    currentNilTerminates
                   exact
                     Acc.ndrec
                       (r := StepSuccessor)
-                      (C := fun innerNilBranch =>
-                        IsStronglyNormalizing
-                          (.mkGen .gen_listElim ()
-                            (.childCons
-                              (.mkGen .gen_listCons ()
-                                (.childCons currentHeadVal
-                                  (.childCons currentTailVal .childNil)))
-                              (.childCons innerNilBranch
-                                (.childCons currentConsBranch .childNil))) :
-                            RawTerm scope))
-                      (m := fun currentNilBranch currentNilSuccessors nilIH =>
-                        Acc.intro
-                          (.mkGen .gen_listElim ()
-                            (.childCons
-                              (.mkGen .gen_listCons ()
-                                (.childCons currentHeadVal
-                                  (.childCons currentTailVal .childNil)))
-                              (.childCons currentNilBranch
-                                (.childCons currentConsBranch .childNil))) :
-                            RawTerm scope)
-                          (fun targetTerm parentStep => by
-                            cases Step.from_listElim parentStep with
-                            | inl nilBranchStep =>
-                                obtain ⟨scrutineeEq, _⟩ := nilBranchStep
-                                cases scrutineeEq
-                            | inr restAfterNil =>
-                                cases restAfterNil with
-                                | inl consBranchStep =>
-                                    obtain
-                                      ⟨consHead, consTail, scrutineeEq,
-                                        targetEq⟩ := consBranchStep
-                                    cases scrutineeEq
+                      (C := fun innerTailVal =>
+                        ∀ {innerNilBranch : RawTerm scope},
+                          IsStronglyNormalizing innerNilBranch →
+                            IsStronglyNormalizing
+                              (.mkGen .gen_listElim ()
+                                (.childCons currentMotive
+                                  (.childCons innerNilBranch
+                                    (.childCons currentConsBranch
+                                      (.childCons
+                                        (.mkGen .gen_listCons ()
+                                          (.childCons currentHeadVal
+                                            (.childCons innerTailVal .childNil)))
+                                        .childNil)))) :
+                                RawTerm scope))
+                      (m := fun currentTailVal currentTailSuccessors tailIH => by
+                        intro currentNilBranch currentNilTerminates
+                        exact
+                          Acc.ndrec
+                            (r := StepSuccessor)
+                            (C := fun innerNilBranch =>
+                              IsStronglyNormalizing
+                                (.mkGen .gen_listElim ()
+                                  (.childCons currentMotive
+                                    (.childCons innerNilBranch
+                                      (.childCons currentConsBranch
+                                        (.childCons
+                                          (.mkGen .gen_listCons ()
+                                            (.childCons currentHeadVal
+                                              (.childCons currentTailVal .childNil)))
+                                          .childNil)))) :
+                                  RawTerm scope))
+                            (m := fun currentNilBranch currentNilSuccessors nilIH =>
+                              Acc.intro
+                                (.mkGen .gen_listElim ()
+                                  (.childCons currentMotive
+                                    (.childCons currentNilBranch
+                                      (.childCons currentConsBranch
+                                        (.childCons
+                                          (.mkGen .gen_listCons ()
+                                            (.childCons currentHeadVal
+                                              (.childCons currentTailVal .childNil)))
+                                          .childNil)))) :
+                                  RawTerm scope)
+                                (fun targetTerm parentStep => by
+                                  rcases Step.from_listElim parentStep with
+                                    ⟨scrutineeIsNil, _⟩ |
+                                    ⟨consHead, consTail, scrutineeIsCons, targetEq⟩ |
+                                    ⟨motiveAfter, targetIsMotiveStep, motiveStep⟩ |
+                                    ⟨nilAfter, targetIsNilStep, nilStepInner⟩ |
+                                    ⟨consAfter, targetIsConsStep, consStepInner⟩ |
+                                    ⟨scrutineeAfter, targetIsScrutineeStep, scrutineeStep⟩
+                                  · cases scrutineeIsNil
+                                  · cases scrutineeIsCons
                                     rw [targetEq]
                                     exact
                                       applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_three_arguments
@@ -3881,6 +3968,8 @@ theorem listElimCons_isStronglyNormalizing_of_neutral_consBranch
                                         (Acc.intro currentTailVal
                                           currentTailSuccessors)
                                         (recursiveCallTerminates
+                                          (Acc.intro currentMotive
+                                            currentMotiveSuccessors)
                                           (Acc.intro currentTailVal
                                             currentTailSuccessors)
                                           (Acc.intro currentNilBranch
@@ -3888,67 +3977,64 @@ theorem listElimCons_isStronglyNormalizing_of_neutral_consBranch
                                           currentConsBranchIsNeutral
                                           (Acc.intro currentConsBranch
                                             currentConsBranchSuccessors))
-                                | inr restAfterCons =>
-                                    cases restAfterCons with
-                                    | inl scrutineeBranch =>
+                                  · rw [targetIsMotiveStep]
+                                    exact motiveIH motiveAfter motiveStep
+                                      currentConsBranchIsNeutral
+                                      (Acc.intro currentConsBranch
+                                        currentConsBranchSuccessors)
+                                      (Acc.intro currentHeadVal
+                                        currentHeadSuccessors)
+                                      (Acc.intro currentTailVal
+                                        currentTailSuccessors)
+                                      (Acc.intro currentNilBranch
+                                        currentNilSuccessors)
+                                  · rw [targetIsNilStep]
+                                    exact nilIH nilAfter nilStepInner
+                                  · rw [targetIsConsStep]
+                                    exact
+                                      consBranchIH consAfter
+                                        consStepInner
+                                        (neutralHeadStep
+                                          currentConsBranchIsNeutral
+                                          consStepInner)
+                                        (Acc.intro currentHeadVal
+                                          currentHeadSuccessors)
+                                        (Acc.intro currentTailVal
+                                          currentTailSuccessors)
+                                        (Acc.intro currentNilBranch
+                                          currentNilSuccessors)
+                                  · rw [targetIsScrutineeStep]
+                                    cases Step.from_listCons scrutineeStep with
+                                    | inl headBranch =>
                                         obtain
-                                          ⟨scrutineeAfter, targetEq,
-                                            scrutineeStep⟩ := scrutineeBranch
-                                        cases Step.from_listCons
-                                          scrutineeStep with
-                                        | inl headBranch =>
-                                            obtain
-                                              ⟨headAfter, scrutineeAfterEq,
-                                                headStep⟩ := headBranch
-                                            rw [targetEq, scrutineeAfterEq]
-                                            exact
-                                              headIH headAfter headStep
-                                                (Acc.intro currentTailVal
-                                                  currentTailSuccessors)
-                                                (Acc.intro currentNilBranch
-                                                  currentNilSuccessors)
-                                        | inr tailBranch =>
-                                            obtain
-                                              ⟨tailAfter, scrutineeAfterEq,
-                                                tailStep⟩ := tailBranch
-                                            rw [targetEq, scrutineeAfterEq]
-                                            exact
-                                              tailIH tailAfter tailStep
-                                                (Acc.intro currentNilBranch
-                                                  currentNilSuccessors)
-                                    | inr restAfterScrutinee =>
-                                        cases restAfterScrutinee with
-                                        | inl nilStep =>
-                                            obtain
-                                              ⟨nilAfter, targetEq,
-                                                nilStepInner⟩ := nilStep
-                                            rw [targetEq]
-                                            exact nilIH nilAfter nilStepInner
-                                        | inr consStep =>
-                                            obtain
-                                              ⟨consAfter, targetEq,
-                                                consStepInner⟩ := consStep
-                                            rw [targetEq]
-                                            exact
-                                              consBranchIH consAfter
-                                                consStepInner
-                                                (neutralHeadStep
-                                                  currentConsBranchIsNeutral
-                                                  consStepInner)
-                                                (Acc.intro currentHeadVal
-                                                  currentHeadSuccessors)
-                                                (Acc.intro currentTailVal
-                                                  currentTailSuccessors)
-                                                (Acc.intro currentNilBranch
-                                                  currentNilSuccessors)))
+                                          ⟨headAfter, scrutineeAfterEq,
+                                            headStep⟩ := headBranch
+                                        rw [scrutineeAfterEq]
+                                        exact
+                                          headIH headAfter headStep
+                                            (Acc.intro currentTailVal
+                                              currentTailSuccessors)
+                                            (Acc.intro currentNilBranch
+                                              currentNilSuccessors)
+                                    | inr tailBranch =>
+                                        obtain
+                                          ⟨tailAfter, scrutineeAfterEq,
+                                            tailStep⟩ := tailBranch
+                                        rw [scrutineeAfterEq]
+                                        exact
+                                          tailIH tailAfter tailStep
+                                            (Acc.intro currentNilBranch
+                                              currentNilSuccessors)))
+                            currentNilTerminates)
+                      currentTailTerminates
                       currentNilTerminates)
+                currentHeadTerminates
                 currentTailTerminates
                 currentNilTerminates)
-          currentHeadTerminates
-          currentTailTerminates
-          currentNilTerminates)
-    consTerminates)
-    consBranchIsNeutral
+          currentConsBranchTerminates
+          currentConsBranchIsNeutral))
+    motiveTerminates)
+    consBranchIsNeutral consTerminates
     headTerminates
     tailTerminates
     nilTerminates

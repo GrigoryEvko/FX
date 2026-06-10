@@ -194,31 +194,33 @@ theorem RawTerm.completeDevelopment_parStep {scope0 : Nat} (term0 : RawTerm scop
                       · by_cases hListElim : gen = .gen_listElim
                         · subst hListElim
                           cases children with
-                          | childCons scrut rest => cases rest with | childCons nilB rest2 => cases rest2 with
-                            | childCons consB rest3 => cases rest3 with | childNil =>
-                                cases scrut with
-                                | mkGen sg sp sc =>
-                                    by_cases hNil : sg = .gen_listNil
-                                    · subst hNil
-                                      cases sc with | childNil =>
-                                          cases childrenIH with | cons _ restS => cases restS with
-                                            | cons nilStep _ => exact ParStep.iotaListElimNil nilStep
-                                    · by_cases hCons : sg = .gen_listCons
-                                      · subst hCons
-                                        cases sc with | childCons hv sc2 => cases sc2 with
-                                          | childCons tv sc3 => cases sc3 with | childNil =>
-                                              cases childrenIH with | cons scrutStep restS => cases restS with
-                                                | cons nilStep restS2 => cases restS2 with
-                                                  | cons consStep _ =>
-                                                      cases scrutStep with | cong _ _ cs => cases cs with
-                                                        | cons hvStep rcs => cases rcs with
-                                                          | cons tvStep rcs2 => cases rcs2 with
-                                                            | nil => exact ParStep.iotaListElimCons hvStep tvStep nilStep consStep
-                                      · have key : RawTerm.fireRootRedex .gen_listElim payload
-                                            (.childCons (.mkGen sg sp sc)
-                                              (.childCons nilB (.childCons consB .childNil))) = none :=
-                                          (if_neg hNil).trans (dif_neg hCons)
-                                        rw [key] at hfire; nomatch hfire
+                          | childCons motive rest => cases rest with | childCons nilB rest2 => cases rest2 with
+                            | childCons consB rest3 => cases rest3 with | childCons scrut rest4 => cases rest4 with
+                              | childNil =>
+                                  cases scrut with
+                                  | mkGen sg sp sc =>
+                                      by_cases hNil : sg = .gen_listNil
+                                      · subst hNil
+                                        cases sc with | childNil =>
+                                            cases childrenIH with | cons motiveStep restS => cases restS with
+                                              | cons nilStep _ => exact ParStep.iotaListElimNil motiveStep nilStep
+                                      · by_cases hCons : sg = .gen_listCons
+                                        · subst hCons
+                                          cases sc with | childCons hv sc2 => cases sc2 with
+                                            | childCons tv sc3 => cases sc3 with | childNil =>
+                                                cases childrenIH with | cons motiveStep restS => cases restS with
+                                                  | cons nilStep restS2 => cases restS2 with
+                                                    | cons consStep restS3 => cases restS3 with
+                                                      | cons scrutStep _ =>
+                                                        cases scrutStep with | cong _ _ cs => cases cs with
+                                                          | cons hvStep rcs => cases rcs with
+                                                            | cons tvStep rcs2 => cases rcs2 with
+                                                              | nil => exact ParStep.iotaListElimCons motiveStep hvStep tvStep nilStep consStep
+                                        · have key : RawTerm.fireRootRedex .gen_listElim payload
+                                              (.childCons motive (.childCons nilB (.childCons consB
+                                                (.childCons (.mkGen sg sp sc) .childNil)))) = none :=
+                                            (if_neg hNil).trans (dif_neg hCons)
+                                          rw [key] at hfire; nomatch hfire
                         · by_cases hOptionMatch : gen = .gen_optionMatch
                           · subst hOptionMatch
                             cases children with

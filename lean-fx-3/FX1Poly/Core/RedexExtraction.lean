@@ -342,13 +342,15 @@ theorem isReflSource_eq_refl {scope : Nat} {witness : RawTerm scope}
         exact absurd sourceIsRefl (by decide)
 
 /-- **listElim iota redex extraction.**  A `gen_listElim` over a `listNil`/`listCons` scrutinee takes a
-`Step` (nil branch, or the step-case app-chain). -/
+`Step` (nil branch, or the step-case app-chain).  Phase-Z spine `[1, 0, 0, 0]`: children are
+`(motive, nil, cons, scrutinee)` with the scrutinee LAST. -/
 theorem hasListElimIotaRoot_exists_step {scope : Nat}
-    (children : RawTermChildren [0, 0, 0] scope)
+    (children : RawTermChildren [1, 0, 0, 0] scope)
     (iotaRoot : RawTermChildren.hasListElimIotaRoot children = true) :
     ∃ target : RawTerm scope, Step (.mkGen .gen_listElim () children) target := by
   match children with
-  | .childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons nilBranch (.childCons consBranch (.childCons scrutinee .childNil))) =>
       replace iotaRoot :
           (RawTerm.isListNilSource scrutinee || RawTerm.isListConsSource scrutinee) = true := iotaRoot
       cases nilValue : RawTerm.isListNilSource scrutinee with

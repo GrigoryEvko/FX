@@ -74,9 +74,12 @@ theorem tailValue_isStronglyNormalizing_of_listCons_probe {scope : Nat}
         (.mkGen .gen_listCons () (.childCons currentHead (.childCons tailAfter .childNil)))
         congruenceLift rfl
 
--- conditional listElim-cons iota-redex SN (normal branches + cons-contractum hypothesis)
+-- conditional listElim-cons iota-redex SN (normal motive + branches + cons-contractum hypothesis)
+-- Phase-Z motive shape: motive first (under one binder), scrutinee last; a single Acc.ndrec over the
+-- scrutinee with the motive and both branches held fixed-normal by hypothesis.
 theorem listElim_isStronglyNormalizing_of_normal_branches_probe {scope : Nat}
-    {scrutinee nilBranch consBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
+    (motiveHasNoStep : ∀ targetMotive : RawTerm (scope + 1), Step motive targetMotive → False)
     (nilBranchHasNoStep : ∀ targetNil : RawTerm scope, Step nilBranch targetNil → False)
     (consBranchHasNoStep : ∀ targetCons : RawTerm scope, Step consBranch targetCons → False)
     (consContractumTerminates :
@@ -92,35 +95,41 @@ theorem listElim_isStronglyNormalizing_of_normal_branches_probe {scope : Nat}
                   (.childCons tailValue .childNil)))
               (.childCons
                 (.mkGen .gen_listElim ()
-                  (.childCons tailValue
-                    (.childCons nilBranch (.childCons consBranch .childNil))))
+                  (.childCons motive
+                    (.childCons nilBranch
+                      (.childCons consBranch (.childCons tailValue .childNil)))))
                 .childNil)) : RawTerm scope))
     (scrutineeTerminates : IsStronglyNormalizing scrutinee) :
     IsStronglyNormalizing
       (.mkGen .gen_listElim ()
-        (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))) :
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch (.childCons scrutinee .childNil)))) :
         RawTerm scope) :=
   Acc.ndrec
     (r := StepSuccessor)
     (C := fun currentScrutinee =>
       IsStronglyNormalizing
         (.mkGen .gen_listElim ()
-          (.childCons currentScrutinee
-            (.childCons nilBranch (.childCons consBranch .childNil))) :
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consBranch (.childCons currentScrutinee .childNil)))) :
           RawTerm scope))
     (m := fun currentScrutinee currentScrutineeSuccessors scrutineeIH =>
       Acc.intro
         (.mkGen .gen_listElim ()
-          (.childCons currentScrutinee
-            (.childCons nilBranch (.childCons consBranch .childNil))) :
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consBranch (.childCons currentScrutinee .childNil)))) :
           RawTerm scope)
         (fun targetTerm listElimStep => by
           rcases Step.from_listElim listElimStep with
             ⟨_scrutineeIsNil, targetIsNil⟩ |
             ⟨headValue, tailValue, scrutineeIsCons, targetIsContractum⟩ |
-            ⟨scrutineeAfter, targetIsScrutineeStep, scrutineeStep⟩ |
+            ⟨motiveAfter, _targetIsMotiveStep, motiveStep⟩ |
             ⟨nilAfter, _targetIsNilStep, nilStep⟩ |
-            ⟨consAfter, _targetIsConsStep, consStep⟩
+            ⟨consAfter, _targetIsConsStep, consStep⟩ |
+            ⟨scrutineeAfter, targetIsScrutineeStep, scrutineeStep⟩
           · rw [targetIsNil]
             exact isStronglyNormalizing_of_noStep nilBranchHasNoStep
           · rw [targetIsContractum]
@@ -130,10 +139,11 @@ theorem listElim_isStronglyNormalizing_of_normal_branches_probe {scope : Nat}
             exact consContractumTerminates
               (headValue_isStronglyNormalizing_of_listCons_probe currentScrutineeSN)
               (tailValue_isStronglyNormalizing_of_listCons_probe currentScrutineeSN)
-          · rw [targetIsScrutineeStep]
-            exact scrutineeIH scrutineeAfter scrutineeStep
+          · exact absurd motiveStep (motiveHasNoStep motiveAfter)
           · exact absurd nilStep (nilBranchHasNoStep nilAfter)
-          · exact absurd consStep (consBranchHasNoStep consAfter)))
+          · exact absurd consStep (consBranchHasNoStep consAfter)
+          · rw [targetIsScrutineeStep]
+            exact scrutineeIH scrutineeAfter scrutineeStep))
     scrutineeTerminates
 
 end StepStar

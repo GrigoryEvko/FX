@@ -52,10 +52,16 @@ private abbrev natElimCellOn (scrutinee zeroBranch succBranch : RawTerm 0) : Raw
 private abbrev natRecCellOn (scrutinee zeroBranch succBranch : RawTerm 0) : RawTerm 0 :=
   .mkGen .gen_natRec () (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)))
 
-/-- The `listElim` cell over its (scrutinee, nilBranch, consBranch) spine — definitionally the private
-`listElimCell` of `RecursorClosedMembership`. -/
-private abbrev listElimCellOn (scrutinee nilBranch consBranch : RawTerm 0) : RawTerm 0 :=
-  .mkGen .gen_listElim () (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)))
+/-- The `listElim` cell — `gen_listElim` in the Phase-Z motive shape (arity 4, `binderShifts =
+[1, 0, 0, 0]`), author order `(motive, scrutinee, nilBranch, consBranch)`, emitting the spine
+`(motive, nilBranch, consBranch, scrutinee)` — definitionally the private `listElimCell` of
+`RecursorClosedMembership`. -/
+private abbrev listElimCellOn (motive : RawTerm 1) (scrutinee nilBranch consBranch : RawTerm 0) : RawTerm 0 :=
+  .mkGen .gen_listElim ()
+    (.childCons motive
+      (.childCons nilBranch
+        (.childCons consBranch
+          (.childCons scrutinee .childNil))))
 
 /-- **`natElim` progress on a well-typed scrutinee.**  Given the sconing fundamental (closed well-typed
 Nat ⟹ Nat-candidate member) and a well-typed scrutinee, plus the Tait branch interface (zero branch a member,
@@ -113,11 +119,14 @@ theorem natRecProgressViaSconing {isWellTyped isValue : RawTerm 0 → Prop}
 /-- **`listElim` progress on a well-typed scrutinee.**  Given the sconing fundamental (closed well-typed
 List ⟹ List-candidate member), a well-typed scrutinee, and the Tait branch interface (nil branch a member, cons
 branch SN, cons-branch application landing in the candidate with the head a step-NF and the tail an `IsListValue`,
-cons-contractum SN), the `listElim` cell reduces to an `isValue` value — never stuck.  The List twin of
-`natElimProgressViaSconing`, via `listElimClosedIsMember`. -/
+cons-contractum SN), the `listElim` cell reduces to an `isValue` value — never stuck.  Phase-Z motive shape:
+the cell carries a stored motive head child, so a motive-SN hypothesis (`motiveStronglyNormalizing`) is threaded
+into `listElimClosedIsMember` as well.  The List twin of `natElimProgressViaSconing`, via
+`listElimClosedIsMember`. -/
 theorem listElimProgressViaSconing {isWellTyped isValue : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate IsListValue term)
-    {scrutinee nilBranch consBranch : RawTerm 0}
+    {motive : RawTerm 1} {scrutinee nilBranch consBranch : RawTerm 0}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (scrutineeTyped : isWellTyped scrutinee)
     (nilBranchMember : CanonicalFormsPredicate isValue nilBranch)
     (consBranchTerminates : IsStronglyNormalizing consBranch)
@@ -140,9 +149,10 @@ theorem listElimProgressViaSconing {isWellTyped isValue : RawTerm 0 → Prop}
                 (.childCons
                   (.mkGen .gen_app () (.childCons consBranch (.childCons head .childNil)))
                   (.childCons tail .childNil)))
-              (.childCons (listElimCellOn tail nilBranch consBranch) .childNil)))) :
-    ∃ value : RawTerm 0, StepStar (listElimCellOn scrutinee nilBranch consBranch) value ∧ isValue value :=
-  (listElimClosedIsMember (fundamental scrutinee scrutineeTyped) nilBranchMember
+              (.childCons (listElimCellOn motive tail nilBranch consBranch) .childNil)))) :
+    ∃ value : RawTerm 0,
+      StepStar (listElimCellOn motive scrutinee nilBranch consBranch) value ∧ isValue value :=
+  (listElimClosedIsMember motiveStronglyNormalizing (fundamental scrutinee scrutineeTyped) nilBranchMember
     consBranchTerminates consBranchApplication consContractumTerminates).closedReducesToValue
 
 end FX1Poly.Core

@@ -83,17 +83,21 @@ theorem HasCertifiedCellDim0.preservedByIotaNatRecZero
 
 /-- **SR arm: `Step.iotaListElimNil` preserves `HasCertifiedCellDim0`.**
 
-`listElim listNil nilBranch consBranch` reduces to `nilBranch`.
-Identical structure to `iotaNatElimZero`. -/
+`listElim motive nilBranch consBranch listNil` reduces to `nilBranch`.
+Phase-Z motive shape: motive heads the spine (shift 1), scrutinee LAST;
+nilBranch stays at spine position 1, projected via `spine.tail.headAtDim0`.
+Identical structure to `iotaNatElimZero` modulo the leading motive head. -/
 theorem HasCertifiedCellDim0.preservedByIotaListElimNil
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {nilBranch consBranch : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_listElim ()
-          (.childCons (.mkGen .gen_listNil () .childNil)
+          (.childCons motive
             (.childCons nilBranch
-              (.childCons consBranch .childNil)))
+              (.childCons consBranch
+                (.childCons (.mkGen .gen_listNil () .childNil) .childNil))))
           : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) nilBranch := by
   cases sourceCert with

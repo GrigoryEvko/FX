@@ -88,10 +88,12 @@ inductive IotaNonRecursiveStep : {scope : Nat} → RawTerm scope → RawTerm sco
       IotaNonRecursiveStep
         (.mkGen .gen_natRec () (.childCons (.mkGen .gen_natZero () .childNil)
           (.childCons zeroBranch (.childCons succBranch .childNil)))) zeroBranch
-  | iotaListElimNil {scope : Nat} {nilBranch consBranch : RawTerm scope} :
+  | iotaListElimNil {scope : Nat} {motive : RawTerm (scope + 1)}
+      {nilBranch consBranch : RawTerm scope} :
       IotaNonRecursiveStep
-        (.mkGen .gen_listElim () (.childCons (.mkGen .gen_listNil () .childNil)
-          (.childCons nilBranch (.childCons consBranch .childNil)))) nilBranch
+        (.mkGen .gen_listElim () (.childCons motive
+          (.childCons nilBranch (.childCons consBranch
+            (.childCons (.mkGen .gen_listNil () .childNil) .childNil))))) nilBranch
   | iotaOptionMatchNone {scope : Nat} {noneBranch someBranch : RawTerm scope} :
       IotaNonRecursiveStep
         (.mkGen .gen_optionMatch () (.childCons (.mkGen .gen_optionNone () .childNil)
@@ -236,10 +238,13 @@ theorem IotaNonRecursiveStep.size_decreases {scope : Nat} {source target : RawTe
         (RawTermChildren.size_lt_childCons_head (shift := 0) _ _)
         (RawTermChildren.size_lt_childCons_tail (shift := 0) _ _)) (Nat.lt_succ_self _)
   | iotaListElimNil =>
+      -- Phase-Z 4-child spine `[motive, nilBranch, consBranch, listNil]`:
+      -- nilBranch is at position 1, so skip ONE head (the motive, at shift 1)
+      -- after projecting nilBranch as the head of the tail spine.
       dsimp only [RawTerm.size]
       exact Nat.lt_trans (Nat.lt_trans
         (RawTermChildren.size_lt_childCons_head (shift := 0) _ _)
-        (RawTermChildren.size_lt_childCons_tail (shift := 0) _ _)) (Nat.lt_succ_self _)
+        (RawTermChildren.size_lt_childCons_tail (shift := 1) _ _)) (Nat.lt_succ_self _)
   | iotaOptionMatchNone =>
       dsimp only [RawTerm.size]
       exact Nat.lt_trans (Nat.lt_trans

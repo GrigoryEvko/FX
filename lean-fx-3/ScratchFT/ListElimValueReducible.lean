@@ -7,7 +7,7 @@ open StepStar
 
 -- listElim value-case recursor reducibility (SN-064 recursor value-case), the recursive parallel of #732.
 theorem listElimValueReducible_probe {scope : Nat}
-    {nilBranch consBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {nilBranch consBranch : RawTerm scope}
     (resultCandidate : RawTerm scope → Prop)
     (headExpand : ∀ {redexTerm contractum : RawTerm scope},
         WeakHeadStep redexTerm contractum → resultCandidate contractum →
@@ -25,10 +25,16 @@ theorem listElimValueReducible_probe {scope : Nat}
     (redexStronglyNormalizing : ∀ {value : RawTerm scope}, IsListValue value →
         IsStronglyNormalizing
           (.mkGen .gen_listElim ()
-            (.childCons value (.childCons nilBranch (.childCons consBranch .childNil)))))
+            (.childCons motive
+              (.childCons nilBranch
+                (.childCons consBranch
+                  (.childCons value .childNil))))))
     {value : RawTerm scope} (valueIsList : IsListValue value) :
     resultCandidate (.mkGen .gen_listElim ()
-        (.childCons value (.childCons nilBranch (.childCons consBranch .childNil)))) := by
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons value .childNil))))) := by
   induction valueIsList with
   | nil =>
       exact headExpand IotaHeadStep.iotaListElimNil.toWeakHeadStep nilBranchMember

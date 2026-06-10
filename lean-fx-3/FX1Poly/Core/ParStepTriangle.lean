@@ -282,47 +282,49 @@ theorem ParStep.triangleCongFires {scope : Nat} (gen : Generator) (payload : gen
             · by_cases hListElim : gen = .gen_listElim
               · subst hListElim
                 cases childrenStep with
-                | cons scrutStep tailStep => cases tailStep with
+                | cons _motiveStep tailStep => cases tailStep with
                   | cons _nilStep tail2 => cases tail2 with
-                    | cons _consStep tailNil => cases tailNil with
-                      | nil =>
-                          cases ihChildren with
-                          | cons ihScrut ihTail => cases ihTail with
-                            | cons ihNilBranch ihTail2 => cases ihTail2 with
-                              | cons ihConsBranch ihNil => cases ihNil with
-                                | nil =>
-                                    rename_i scrut _scrut' nilB _nilB' consB _consB'
-                                    cases scrut with
-                                    | mkGen sg sp sc =>
-                                        by_cases hNil : sg = .gen_listNil
-                                        · subst hNil
-                                          cases sc with | childNil =>
-                                              cases scrutStep with
-                                              | cong _ _ csS => cases csS with
-                                                | nil => exact ParStep.iotaListElimNil ihNilBranch
-                                        · by_cases hCons : sg = .gen_listCons
-                                          · subst hCons
-                                            cases sc with | childCons _head scTail => cases scTail with
-                                              | childCons _tail scNil => cases scNil with
-                                                | childNil =>
-                                                    cases scrutStep with
-                                                    | cong _ _ csS => cases csS with
-                                                      | cons _hs rS => cases rS with
-                                                        | cons _ts rS2 => cases rS2 with
-                                                          | nil =>
-                                                              cases ihScrut with
-                                                              | cong _ _ csI => cases csI with
-                                                                | cons headDevStep rI => cases rI with
-                                                                  | cons tailDevStep rI2 => cases rI2 with
-                                                                    | nil =>
-                                                                        exact ParStep.iotaListElimCons
-                                                                          headDevStep tailDevStep
-                                                                          ihNilBranch ihConsBranch
-                                          · have key : RawTerm.fireRootRedex .gen_listElim payload
-                                                (.childCons (.mkGen sg sp sc)
-                                                  (.childCons nilB (.childCons consB .childNil))) = none :=
-                                              (if_neg hNil).trans (dif_neg hCons)
-                                            rw [key] at hfire; nomatch hfire
+                    | cons _consStep tail3 => cases tail3 with
+                      | cons scrutStep tailNil => cases tailNil with
+                        | nil =>
+                            cases ihChildren with
+                            | cons ihMotive ihTail => cases ihTail with
+                              | cons ihNilBranch ihTail2 => cases ihTail2 with
+                                | cons ihConsBranch ihTail3 => cases ihTail3 with
+                                  | cons _ihScrut ihNil => cases ihNil with
+                                    | nil =>
+                                        rename_i motive _motive' nilB _nilB' consB _consB' scrut _scrut'
+                                        cases scrut with
+                                        | mkGen sg sp sc =>
+                                            by_cases hNil : sg = .gen_listNil
+                                            · subst hNil
+                                              cases sc with | childNil =>
+                                                  cases scrutStep with
+                                                  | cong _ _ csS => cases csS with
+                                                    | nil => exact ParStep.iotaListElimNil ihMotive ihNilBranch
+                                            · by_cases hCons : sg = .gen_listCons
+                                              · subst hCons
+                                                cases sc with | childCons _head scTail => cases scTail with
+                                                  | childCons _tail scNil => cases scNil with
+                                                    | childNil =>
+                                                        cases scrutStep with
+                                                        | cong _ _ csS => cases csS with
+                                                          | cons _hs rS => cases rS with
+                                                            | cons _ts rS2 => cases rS2 with
+                                                              | nil =>
+                                                                  cases _ihScrut with
+                                                                  | cong _ _ csI => cases csI with
+                                                                    | cons headDevStep rI => cases rI with
+                                                                      | cons tailDevStep rI2 => cases rI2 with
+                                                                        | nil =>
+                                                                            exact ParStep.iotaListElimCons
+                                                                              ihMotive headDevStep tailDevStep
+                                                                              ihNilBranch ihConsBranch
+                                              · have key : RawTerm.fireRootRedex .gen_listElim payload
+                                                    (.childCons motive (.childCons nilB (.childCons consB
+                                                      (.childCons (.mkGen sg sp sc) .childNil)))) = none :=
+                                                  (if_neg hNil).trans (dif_neg hCons)
+                                                rw [key] at hfire; nomatch hfire
               · by_cases hOptionMatch : gen = .gen_optionMatch
                 · subst hOptionMatch
                   cases childrenStep with
@@ -501,7 +503,8 @@ theorem ParStep.triangle {scope : Nat} {a b : RawTerm scope} :
     (fun {_scope} {_firstValue _secondValue _secondValue'} _step ih => ih)
     (fun {_scope} {_zeroBranch _zeroBranch' _succBranch} _step ih => ih)
     (fun {_scope} {_zeroBranch _zeroBranch' _succBranch} _step ih => ih)
-    (fun {_scope} {_nilBranch _nilBranch' _consBranch} _step ih => ih)
+    (fun {_scope} {_motive _motive' _nilBranch _nilBranch' _consBranch}
+        _motiveStep _nilStep _ihMotive ihNil => ihNil)
     (fun {_scope} {_noneBranch _noneBranch' _someBranch} _step ih => ih)
     (fun {_scope} {_value _value' _noneBranch _someBranch _someBranch'} _someStep _valueStep ihSome ihValue =>
         ParStep.cong .gen_app () (.cons ihSome (.cons ihValue .nil)))
@@ -521,14 +524,15 @@ theorem ParStep.triangle {scope : Nat} {a b : RawTerm scope} :
           (.cons (ParStep.cong .gen_app () (.cons ihSucc (.cons ihPred .nil)))
             (.cons (ParStep.cong .gen_natRec ()
               (.cons ihPred (.cons ihZero (.cons ihSucc .nil)))) .nil)))
-    (fun {_scope} {_headVal _headVal' _tailVal _tailVal' _nilBranch _nilBranch' _consBranch _consBranch'}
-        _headStep _tailStep _nilStep _consStep ihHead ihTail ihNil ihCons =>
+    (fun {_scope} {_motive _motive' _headVal _headVal' _tailVal _tailVal'
+          _nilBranch _nilBranch' _consBranch _consBranch'}
+        _motiveStep _headStep _tailStep _nilStep _consStep ihMotive ihHead ihTail ihNil ihCons =>
         ParStep.cong .gen_app ()
           (.cons (ParStep.cong .gen_app ()
             (.cons (ParStep.cong .gen_app () (.cons ihCons (.cons ihHead .nil)))
               (.cons ihTail .nil)))
             (.cons (ParStep.cong .gen_listElim ()
-              (.cons ihTail (.cons ihNil (.cons ihCons .nil)))) .nil)))
+              (.cons ihMotive (.cons ihNil (.cons ihCons (.cons ihTail .nil))))) .nil)))
     (fun {_scope} {_baseCase _baseCase' _rawWitness} _step ih => ih)
     (fun {_scope} {_baseCase _baseCase' _rawWitness} _step ih => ih)
     (fun {_scope} => ParStepChildren.nil)

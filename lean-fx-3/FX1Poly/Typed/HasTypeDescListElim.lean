@@ -7,9 +7,13 @@ import FX1Poly.Core.RawTermSubst0Commute
 
 CAN-1 (`HasTypeDescNatElim`) broke the recursive-eliminator engine-separation wall with the
 3-arm mixed-engine judgment.  `listElim` is the SHAPE-5 eliminator — the deepest ι in the
-substrate: `listElim(cons h t, nb, cb) ↝ app (app (app cb h) t) (listElim t nb cb)`
+substrate: `listElim(motive, cons h t, nb, cb) ↝ app (app (app cb h) t) (listElim motive t nb cb)`
 (`Step.iotaListElimCons`), a TRIPLE app-chain (one curried argument per cons-payload piece plus
-the recursive call).
+the recursive call).  Phase-Z motive shape: `gen_listElim` is arity 4, `binderShifts =
+[1, 0, 0, 0]`, children `(motive, nilBranch, consBranch, scrutinee)` with the motive a term under
+one binder; the `listElimIntro` ctor carries the motive structurally with NO typing premise (the
+non-dependent rule's branches stay typed as before), and the cons ι THREADS the motive into the
+recursive call (unlike the nil ι, which discards it).
 
 ## How SHAPE-5 distributes over the engines
 
@@ -68,6 +72,7 @@ typed by this judgment). -/
 inductive HasTypeDescListElim (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
   | listElimIntro {scope : Nat} (context : TypingContext profile scope)
+      (motive : RawTerm (scope + 1))
       (scrutinee nilBranch consBranch elementType resultType : RawTerm scope)
       (scrutineeTyped :
         HasTypeDescListIntro profile context scrutinee (listTypeCell elementType))
@@ -75,7 +80,7 @@ inductive HasTypeDescListElim (profile : PolyProfile) :
       (consBranchTyped : HasTypeDescPi profile context consBranch
         (listStepFunctionType elementType resultType)) :
       HasTypeDescListElim profile context
-        (listElimCell scrutinee nilBranch consBranch) resultType
+        (listElimCell motive scrutinee nilBranch consBranch) resultType
   | mixedTailApplication {scope : Nat} (context : TypingContext profile scope)
       (partialFunction tailList elementType resultType : RawTerm scope)
       (partialFunctionTyped : HasTypeDescPi profile context partialFunction
@@ -97,13 +102,13 @@ the honest 3-shape disjunction of the recursive-eliminator template.  Free-index
 theorem HasTypeDescListElim.subjectShape {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescListElim profile context subject classifier) :
-    (∃ scrutinee nilBranch consBranch : RawTerm scope,
-        subject = listElimCell scrutinee nilBranch consBranch) ∨
+    (∃ (motive : RawTerm (scope + 1)) (scrutinee nilBranch consBranch : RawTerm scope),
+        subject = listElimCell motive scrutinee nilBranch consBranch) ∨
       (∃ functionPart argumentPart : RawTerm scope,
         subject = appCell functionPart argumentPart) := by
   cases derivation with
-  | listElimIntro scrutinee nilBranch consBranch _eT _rT _sT _nT _cT =>
-      exact Or.inl ⟨scrutinee, nilBranch, consBranch, rfl⟩
+  | listElimIntro motive scrutinee nilBranch consBranch _eT _rT _sT _nT _cT =>
+      exact Or.inl ⟨motive, scrutinee, nilBranch, consBranch, rfl⟩
   | mixedTailApplication partialFunction tailList _eT _rT _pT _tT =>
       exact Or.inr ⟨partialFunction, tailList, rfl⟩
   | recursiveResultApplication stepFunction recursiveCall _rT _fT _cT =>
@@ -113,6 +118,7 @@ theorem HasTypeDescListElim.subjectShape {profile : PolyProfile} {scope : Nat}
 the nil branch (`Step.iotaListElimNil`, branch selection), typed at `C` by hypothesis. -/
 theorem listElimNilIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
+    (motive : RawTerm (scope + 1))
     (nilBranch consBranch elementType resultType : RawTerm scope)
     (elementLevel : LevelExpr) (flag : UniverseFlag)
     (elementTypeFormed :
@@ -121,10 +127,10 @@ theorem listElimNilIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (consBranchTyped : HasTypeDescPi profile context consBranch
       (listStepFunctionType elementType resultType)) :
     HasTypeDescListElim profile context
-      (listElimCell listNilCell nilBranch consBranch) resultType ∧
-    Step (listElimCell listNilCell nilBranch consBranch) nilBranch ∧
+      (listElimCell motive listNilCell nilBranch consBranch) resultType ∧
+    Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
     HasTypeDescPi profile context nilBranch resultType :=
-  ⟨HasTypeDescListElim.listElimIntro context listNilCell nilBranch consBranch elementType
+  ⟨HasTypeDescListElim.listElimIntro context motive listNilCell nilBranch consBranch elementType
       resultType
       (HasTypeDescListIntro.listNilIntro context elementType elementLevel flag
         elementTypeFormed)
@@ -141,6 +147,7 @@ RECURSIVE CALL typed by `listElimIntro` at the tail.  Constructor-side: SR-free,
 propext-free. -/
 theorem listElimConsIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
+    (motive : RawTerm (scope + 1))
     (headValue tailList nilBranch consBranch elementType resultType : RawTerm scope)
     (headTyped : HasTypeDescPi profile context headValue elementType)
     (tailTyped : HasTypeDescListIntro profile context tailList (listTypeCell elementType))
@@ -148,15 +155,15 @@ theorem listElimConsIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (consBranchTyped : HasTypeDescPi profile context consBranch
       (listStepFunctionType elementType resultType)) :
     HasTypeDescListElim profile context
-      (listElimCell (listConsCell headValue tailList) nilBranch consBranch) resultType ∧
-    Step (listElimCell (listConsCell headValue tailList) nilBranch consBranch)
+      (listElimCell motive (listConsCell headValue tailList) nilBranch consBranch) resultType ∧
+    Step (listElimCell motive (listConsCell headValue tailList) nilBranch consBranch)
       (appCell (appCell (appCell consBranch headValue) tailList)
-        (listElimCell tailList nilBranch consBranch)) ∧
+        (listElimCell motive tailList nilBranch consBranch)) ∧
     HasTypeDescListElim profile context
       (appCell (appCell (appCell consBranch headValue) tailList)
-        (listElimCell tailList nilBranch consBranch)) resultType := by
+        (listElimCell motive tailList nilBranch consBranch)) resultType := by
   refine
-    ⟨HasTypeDescListElim.listElimIntro context (listConsCell headValue tailList) nilBranch
+    ⟨HasTypeDescListElim.listElimIntro context motive (listConsCell headValue tailList) nilBranch
         consBranch elementType resultType
         (HasTypeDescListIntro.listConsIntro context headValue tailList elementType
           headTyped tailTyped)
@@ -177,11 +184,11 @@ theorem listElimConsIotaComputesTyped {profile : PolyProfile} {scope : Nat}
   -- the recursive call typed by `listElimIntro` at the tail.
   exact HasTypeDescListElim.recursiveResultApplication context
     (appCell (appCell consBranch headValue) tailList)
-    (listElimCell tailList nilBranch consBranch) resultType
+    (listElimCell motive tailList nilBranch consBranch) resultType
     (HasTypeDescListElim.mixedTailApplication context
       (appCell consBranch headValue) tailList elementType resultType
       innerApplicationTyped tailTyped)
-    (HasTypeDescListElim.listElimIntro context tailList nilBranch consBranch elementType
+    (HasTypeDescListElim.listElimIntro context motive tailList nilBranch consBranch elementType
       resultType tailTyped nilBranchTyped consBranchTyped)
 
 end FX1Poly.Typed

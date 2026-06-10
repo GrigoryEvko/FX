@@ -198,23 +198,30 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | here _rest succStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaNatRecZero, StepStar.refl _⟩
                   | there _head3 emptyStep => cases emptyStep
-  | @iotaListElimNil nilBranch consBranch =>
+  | @iotaListElimNil motive nilBranch consBranch =>
+      -- Phase-Z spine: (motive, nil, cons, scrutinee=listNil).  The cong spine walks
+      -- motive (here) → nil → cons → scrutinee.  Only a step in the nil-branch changes
+      -- the selected reduct; motive/cons/scrutinee steps leave nilBranch intact.
       intro other step
       cases step with
       | iotaListElimNil => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaListElimNil, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest nilStep =>
                   exact Or.inr ⟨_, IotaHeadStep.iotaListElimNil, StepStar.single nilStep⟩
               | there _head2 restStep =>
                   cases restStep with
-                  | here _rest consStep =>
+                  | here _rest _consStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaListElimNil, StepStar.refl _⟩
-                  | there _head3 emptyStep => cases emptyStep
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                      | there _head4 emptyStep => cases emptyStep
   | @iotaOptionMatchNone noneBranch someBranch =>
       intro other step
       cases step with
@@ -396,35 +403,24 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                                 Step.cong .gen_natRec () (.there _ (.there _ (.here _ childStep'))))
                               (StepStar.single succStep)))⟩
                   | there _head3 emptyStep => cases emptyStep
-  | @iotaListElimCons headVal tailVal nilBranch consBranch =>
+  | @iotaListElimCons motive headVal tailVal nilBranch consBranch =>
+      -- Phase-Z spine: (motive, nil, cons, scrutinee=listCons headVal tailVal).  The reduct
+      -- `app (app (app cons headVal) tailVal) (listElim motive nil cons tailVal)` THREADS the
+      -- motive through the recursive call, so a motive step also catches up via the recursive
+      -- eliminator.  The cong spine walks motive (here) → nil → cons → scrutinee; the scrutinee
+      -- (`listCons`) splits into head / tail.
       intro other step
       cases step with
       | iotaListElimCons => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with
-              | cong _g _p consChild =>
-                  cases consChild with
-                  | here _rest headStep =>
-                      exact Or.inr ⟨_, IotaHeadStep.iotaListElimCons,
-                        StepStar.appFunction
-                          (StepStar.appFunction
-                            (StepStar.appArgument consBranch (StepStar.single headStep)))⟩
-                  | there _head tailChild =>
-                      cases tailChild with
-                      | here _rest tailStep =>
-                          exact Or.inr ⟨_, IotaHeadStep.iotaListElimCons,
-                            StepStar.trans_compose
-                              (StepStar.appFunction
-                                (StepStar.appArgument _ (StepStar.single tailStep)))
-                              (StepStar.appArgument _
-                                (StepStar.congAt
-                                  (fun hole => .mkGen .gen_listElim ()
-                                    (.childCons hole (.childCons nilBranch (.childCons consBranch .childNil))))
-                                  (fun childStep' => Step.cong .gen_listElim () (.here _ childStep'))
-                                  (StepStar.single tailStep)))⟩
-                      | there _head2 emptyStep => cases emptyStep
+          | here _rest motiveStep =>
+              -- The motive lives at scope + 1; lift its step into the recursive `listElim`'s
+              -- motive child (`Step.cong … (.here _ motiveStep)`) as a single scope-level step,
+              -- then replay it in the application argument.
+              exact Or.inr ⟨_, IotaHeadStep.iotaListElimCons,
+                StepStar.appArgument _
+                  (StepStar.single (Step.cong .gen_listElim () (.here _ motiveStep)))⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest nilStep =>
@@ -432,7 +428,8 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                     StepStar.appArgument _
                       (StepStar.congAt
                         (fun hole => .mkGen .gen_listElim ()
-                          (.childCons tailVal (.childCons hole (.childCons consBranch .childNil))))
+                          (.childCons motive
+                            (.childCons hole (.childCons consBranch (.childCons tailVal .childNil)))))
                         (fun childStep' => Step.cong .gen_listElim () (.there _ (.here _ childStep')))
                         (StepStar.single nilStep))⟩
               | there _head2 restStep =>
@@ -445,11 +442,41 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                           (StepStar.appArgument _
                             (StepStar.congAt
                               (fun hole => .mkGen .gen_listElim ()
-                                (.childCons tailVal (.childCons nilBranch (.childCons hole .childNil))))
+                                (.childCons motive
+                                  (.childCons nilBranch (.childCons hole (.childCons tailVal .childNil)))))
                               (fun childStep' =>
                                 Step.cong .gen_listElim () (.there _ (.there _ (.here _ childStep'))))
                               (StepStar.single consStep)))⟩
-                  | there _head3 emptyStep => cases emptyStep
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with
+                          | cong _g _p consChild =>
+                              cases consChild with
+                              | here _rest headStep =>
+                                  exact Or.inr ⟨_, IotaHeadStep.iotaListElimCons,
+                                    StepStar.appFunction
+                                      (StepStar.appFunction
+                                        (StepStar.appArgument consBranch (StepStar.single headStep)))⟩
+                              | there _head4 tailChild =>
+                                  cases tailChild with
+                                  | here _rest tailValStep =>
+                                      exact Or.inr ⟨_, IotaHeadStep.iotaListElimCons,
+                                        StepStar.trans_compose
+                                          (StepStar.appFunction
+                                            (StepStar.appArgument _ (StepStar.single tailValStep)))
+                                          (StepStar.appArgument _
+                                            (StepStar.congAt
+                                              (fun hole => .mkGen .gen_listElim ()
+                                                (.childCons motive
+                                                  (.childCons nilBranch
+                                                    (.childCons consBranch (.childCons hole .childNil)))))
+                                              (fun childStep' =>
+                                                Step.cong .gen_listElim ()
+                                                  (.there _ (.there _ (.there _ (.here _ childStep')))))
+                                              (StepStar.single tailValStep)))⟩
+                                  | there _head5 emptyStep => cases emptyStep
+                      | there _head4 emptyStep => cases emptyStep
   | @iotaIdJRefl baseCase rawWitness =>
       intro other step
       cases step with
@@ -687,18 +714,38 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
               (.childCons scrutineeReduct (.childCons zeroBranch (.childCons hole .childNil))))
             (fun childStep' => Step.cong .gen_natRec () (.there _ (.there _ (.here _ childStep'))))
             (StepStar.single succStep)⟩
-  | @scrutineeListElim scrutinee scrutineeReduct nilBranch consBranch
+  | @scrutineeListElim motive scrutinee scrutineeReduct nilBranch consBranch
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      -- Phase-Z spine: (motive, nil, cons, scrutinee).  The WeakHeadStep reduces the LAST
+      -- child (scrutinee).  `Step.from_listElim` is a six-way disjunction in the order
+      -- iotaNil / iotaCons / cong-motive / cong-nil / cong-cons / cong-scrutinee.  The two
+      -- iota disjuncts are refuted (a reducible scrutinee is not yet a constructor); motive,
+      -- nil, and cons steps leave the scrutinee reducible, so `other` still weak-head reduces
+      -- there and `reduct` catches up by a single congruence at the stepped child; a scrutinee
+      -- step recurses through the induction hypothesis.
       intro other step
       rcases Step.from_listElim step with
         ⟨scrutEq, _⟩ | ⟨_headVal, _tailVal, scrutEq, _⟩
-        | ⟨_scrutAfter, otherEq, scrutStep⟩
+        | ⟨_motiveAfter, otherEq, motiveStep⟩
         | ⟨_nilAfter, otherEq, nilStep⟩
         | ⟨_consAfter, otherEq, consStep⟩
+        | ⟨_scrutAfter, otherEq, scrutStep⟩
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_listNil
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_listCons
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeListElim scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_listElim () (.here _ motiveStep))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeListElim scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_listElim () (.there _ (.here _ nilStep)))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeListElim scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_listElim () (.there _ (.there _ (.here _ consStep))))⟩
       · subst otherEq
         rcases scrutineeInductiveHypothesis _ scrutStep with
           scrutAfterEquation | ⟨_scrutReduct2, weakHeadStep2, starChain⟩
@@ -706,22 +753,11 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
         · exact Or.inr ⟨_, WeakHeadStep.scrutineeListElim weakHeadStep2,
             StepStar.congAt
               (fun hole => .mkGen .gen_listElim ()
-                (.childCons hole (.childCons nilBranch (.childCons consBranch .childNil))))
-              (fun childStep' => Step.cong .gen_listElim () (.here _ childStep')) starChain⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeListElim scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_listElim ()
-              (.childCons scrutineeReduct (.childCons hole (.childCons consBranch .childNil))))
-            (fun childStep' => Step.cong .gen_listElim () (.there _ (.here _ childStep')))
-            (StepStar.single nilStep)⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeListElim scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_listElim ()
-              (.childCons scrutineeReduct (.childCons nilBranch (.childCons hole .childNil))))
-            (fun childStep' => Step.cong .gen_listElim () (.there _ (.there _ (.here _ childStep'))))
-            (StepStar.single consStep)⟩
+                (.childCons motive
+                  (.childCons nilBranch (.childCons consBranch (.childCons hole .childNil)))))
+              (fun childStep' =>
+                Step.cong .gen_listElim ()
+                  (.there _ (.there _ (.there _ (.here _ childStep'))))) starChain⟩
   | @scrutineeOptionMatch scrutinee scrutineeReduct noneBranch someBranch
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
       intro other step

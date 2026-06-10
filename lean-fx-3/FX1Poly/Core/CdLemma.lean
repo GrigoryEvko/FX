@@ -823,11 +823,12 @@ theorem iotaNatRecZeroSameRoot_hasJoin {scope : Nat}
     (iotaNatRecZeroSameRoot zeroBranch succBranch).HasJoin :=
   (LocalDiamond.iotaNatRecZeroSameRoot zeroBranch succBranch).hasJoin
 
-/-- Resolver arm for same-root `listElim` nil-case branchings. -/
+/-- Resolver arm for same-root `listElim` nil-case branchings.
+Phase-Z motive shape. -/
 theorem iotaListElimNilSameRoot_hasJoin {scope : Nat}
-    (nilBranch consBranch : RawTerm scope) :
-    (iotaListElimNilSameRoot nilBranch consBranch).HasJoin :=
-  (LocalDiamond.iotaListElimNilSameRoot nilBranch consBranch).hasJoin
+    (motive : RawTerm (scope + 1)) (nilBranch consBranch : RawTerm scope) :
+    (iotaListElimNilSameRoot motive nilBranch consBranch).HasJoin :=
+  (LocalDiamond.iotaListElimNilSameRoot motive nilBranch consBranch).hasJoin
 
 /-- Resolver arm for same-root `optionMatch` none-case branchings. -/
 theorem iotaOptionMatchNoneSameRoot_hasJoin {scope : Nat}
@@ -882,13 +883,15 @@ theorem iotaNatRecSuccSameRoot_hasJoin {scope : Nat}
   (LocalDiamond.iotaNatRecSuccSameRoot
     predecessor zeroBranch succBranch).hasJoin
 
-/-- Resolver arm for same-root `listElim` cons-case branchings. -/
+/-- Resolver arm for same-root `listElim` cons-case branchings.
+Phase-Z motive shape. -/
 theorem iotaListElimConsSameRoot_hasJoin {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (headValue tailValue nilBranch consBranch : RawTerm scope) :
     (iotaListElimConsSameRoot
-      headValue tailValue nilBranch consBranch).HasJoin :=
+      motive headValue tailValue nilBranch consBranch).HasJoin :=
   (LocalDiamond.iotaListElimConsSameRoot
-    headValue tailValue nilBranch consBranch).hasJoin
+    motive headValue tailValue nilBranch consBranch).hasJoin
 
 /-- `fromSteps`-facing same-root `boolTrue` iota resolver arm.  Phase-Z motive shape. -/
 theorem fromSteps_iotaBoolTrueSameRoot_hasJoin {scope : Nat}
@@ -950,15 +953,16 @@ theorem fromSteps_iotaNatRecZeroSameRoot_hasJoin {scope : Nat}
         (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
   iotaNatRecZeroSameRoot_hasJoin zeroBranch succBranch
 
-/-- `fromSteps`-facing same-root `listElim` nil-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `listElim` nil-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaListElimNilSameRoot_hasJoin {scope : Nat}
-    (nilBranch consBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (nilBranch consBranch : RawTerm scope) :
     (fromSteps
       (Step.iotaListElimNil
-        (nilBranch := nilBranch) (consBranch := consBranch))
+        (motive := motive) (nilBranch := nilBranch) (consBranch := consBranch))
       (Step.iotaListElimNil
-        (nilBranch := nilBranch) (consBranch := consBranch))).HasJoin :=
-  iotaListElimNilSameRoot_hasJoin nilBranch consBranch
+        (motive := motive) (nilBranch := nilBranch) (consBranch := consBranch))).HasJoin :=
+  iotaListElimNilSameRoot_hasJoin motive nilBranch consBranch
 
 /-- `fromSteps`-facing same-root `optionMatch` none-case iota resolver arm. -/
 theorem fromSteps_iotaOptionMatchNoneSameRoot_hasJoin {scope : Nat}
@@ -1050,18 +1054,20 @@ theorem fromSteps_iotaNatRecSuccSameRoot_hasJoin {scope : Nat}
         (succBranch := succBranch))).HasJoin :=
   iotaNatRecSuccSameRoot_hasJoin predecessor zeroBranch succBranch
 
-/-- `fromSteps`-facing same-root `listElim` cons-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `listElim` cons-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaListElimConsSameRoot_hasJoin {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (headValue tailValue nilBranch consBranch : RawTerm scope) :
     (fromSteps
       (Step.iotaListElimCons
-        (headVal := headValue) (tailVal := tailValue)
+        (motive := motive) (headVal := headValue) (tailVal := tailValue)
         (nilBranch := nilBranch) (consBranch := consBranch))
       (Step.iotaListElimCons
-        (headVal := headValue) (tailVal := tailValue)
+        (motive := motive) (headVal := headValue) (tailVal := tailValue)
         (nilBranch := nilBranch) (consBranch := consBranch))).HasJoin :=
   iotaListElimConsSameRoot_hasJoin
-    headValue tailValue nilBranch consBranch
+    motive headValue tailValue nilBranch consBranch
 
 /-- Resolver arm for `boolTrue` iota competing with selected then-branch congruence.
 Phase-Z motive shape. -/
@@ -1951,74 +1957,113 @@ theorem fromSteps_iotaNatRecSuccRight_hasJoin {scope : Nat}
 /-- Resolver arm for `listElim (listCons head tail)` iota competing with
 congruence inside the head child. -/
 theorem iotaListElimConsHeadCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headValue steppedHeadValue tailValue nilBranch consBranch :
       RawTerm scope}
     (headStep : Step headValue steppedHeadValue) :
     (iotaListElimConsHeadCong
+      (motive := motive)
       (tailValue := tailValue) (nilBranch := nilBranch)
       (consBranch := consBranch) headStep).HasJoin :=
   (LocalDiamond.iotaListElimConsHeadCong
+    (motive := motive)
     (tailValue := tailValue) (nilBranch := nilBranch)
     (consBranch := consBranch) headStep).hasJoin
 
 /-- Resolver arm for `listElim (listCons head tail)` iota competing with
 congruence inside the tail child. -/
 theorem iotaListElimConsTailCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headValue tailValue steppedTailValue nilBranch consBranch :
       RawTerm scope}
     (tailStep : Step tailValue steppedTailValue) :
     (iotaListElimConsTailCong
+      (motive := motive)
       (headValue := headValue) (nilBranch := nilBranch)
       (consBranch := consBranch) tailStep).HasJoin :=
   (LocalDiamond.iotaListElimConsTailCong
+    (motive := motive)
     (headValue := headValue) (nilBranch := nilBranch)
     (consBranch := consBranch) tailStep).hasJoin
 
 /-- Resolver arm for `listElim (listCons head tail)` iota competing with
 nil-branch congruence. -/
 theorem iotaListElimConsNilBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headValue tailValue nilBranch steppedNilBranch consBranch :
       RawTerm scope}
     (nilStep : Step nilBranch steppedNilBranch) :
     (iotaListElimConsNilBranchCong
+      (motive := motive)
       (headValue := headValue) (tailValue := tailValue)
       (consBranch := consBranch) nilStep).HasJoin :=
   (LocalDiamond.iotaListElimConsNilBranchCong
+    (motive := motive)
     (headValue := headValue) (tailValue := tailValue)
     (consBranch := consBranch) nilStep).hasJoin
 
 /-- Resolver arm for `listElim (listCons head tail)` iota competing with
 cons-branch congruence. -/
 theorem iotaListElimConsConsBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headValue tailValue nilBranch consBranch steppedConsBranch :
       RawTerm scope}
     (consStep : Step consBranch steppedConsBranch) :
     (iotaListElimConsConsBranchCong
+      (motive := motive)
       (headValue := headValue) (tailValue := tailValue)
       (nilBranch := nilBranch) consStep).HasJoin :=
   (LocalDiamond.iotaListElimConsConsBranchCong
+    (motive := motive)
     (headValue := headValue) (tailValue := tailValue)
     (nilBranch := nilBranch) consStep).hasJoin
 
 /-- Resolver arm for `listElim listNil` iota competing with selected
 nil-branch congruence. -/
 theorem iotaListElimNilBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {nilBranch steppedNilBranch consBranch : RawTerm scope}
     (nilStep : Step nilBranch steppedNilBranch) :
     (iotaListElimNilBranchCong
-      (consBranch := consBranch) nilStep).HasJoin :=
+      (motive := motive) (consBranch := consBranch) nilStep).HasJoin :=
   (LocalDiamond.iotaListElimNilBranchCong
-    (consBranch := consBranch) nilStep).hasJoin
+    (motive := motive) (consBranch := consBranch) nilStep).hasJoin
 
 /-- Resolver arm for `listElim listNil` iota competing with discarded
 cons-branch congruence. -/
 theorem iotaListElimConsBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {nilBranch consBranch steppedConsBranch : RawTerm scope}
     (consStep : Step consBranch steppedConsBranch) :
     (iotaListElimConsBranchCong
-      (nilBranch := nilBranch) consStep).HasJoin :=
+      (motive := motive) (nilBranch := nilBranch) consStep).HasJoin :=
   (LocalDiamond.iotaListElimConsBranchCong
-    (nilBranch := nilBranch) consStep).hasJoin
+    (motive := motive) (nilBranch := nilBranch) consStep).hasJoin
+
+/-- Resolver arm for `listElim listNil` iota competing with discarded motive
+congruence (Phase-Z motive shape). -/
+theorem iotaListElimNilMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {nilBranch consBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaListElimNilMotiveCong
+      (nilBranch := nilBranch) (consBranch := consBranch) motiveStep).HasJoin :=
+  (LocalDiamond.iotaListElimNilMotiveCong
+    (nilBranch := nilBranch) (consBranch := consBranch) motiveStep).hasJoin
+
+/-- Resolver arm for `listElim listCons` iota competing with motive congruence
+(Phase-Z motive shape; the cons-case iota THREADS the motive, so the diamond
+joins at the iota reduct with the stepped motive). -/
+theorem iotaListElimConsMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {headValue tailValue nilBranch consBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaListElimConsMotiveCong
+      (headValue := headValue) (tailValue := tailValue)
+      (nilBranch := nilBranch) (consBranch := consBranch) motiveStep).HasJoin :=
+  (LocalDiamond.iotaListElimConsMotiveCong
+    (headValue := headValue) (tailValue := tailValue)
+    (nilBranch := nilBranch) (consBranch := consBranch) motiveStep).hasJoin
 
 /-- Resolver arm for `optionMatch optionNone` iota competing with selected
 none-branch congruence. -/
@@ -2176,190 +2221,270 @@ theorem iotaIdStrictRecWitnessCong_hasJoin {scope : Nat}
   (LocalDiamond.iotaIdStrictRecWitnessCong
     (baseCase := baseCase) witnessStep).hasJoin
 
-/-- `fromSteps`-facing `listElim listCons` iota / head congruence arm. -/
+/-- `fromSteps`-facing `listElim listCons` iota / head congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaListElimConsHeadCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headValue steppedHeadValue tailValue nilBranch consBranch :
       RawTerm scope}
     (headStep : Step headValue steppedHeadValue) :
     (fromSteps
       (Step.iotaListElimCons
-        (headVal := headValue) (tailVal := tailValue)
+        (motive := motive) (headVal := headValue) (tailVal := tailValue)
         (nilBranch := nilBranch) (consBranch := consBranch))
       (iotaListElimConsHeadCong
+        (motive := motive)
         (tailValue := tailValue) (nilBranch := nilBranch)
         (consBranch := consBranch) headStep).rightStep).HasJoin :=
-  iotaListElimConsHeadCong_hasJoin headStep
+  iotaListElimConsHeadCong_hasJoin (motive := motive) headStep
 
-/-- `fromSteps`-facing `listElim listCons` iota / tail congruence arm. -/
+/-- `fromSteps`-facing `listElim listCons` iota / tail congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaListElimConsTailCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headValue tailValue steppedTailValue nilBranch consBranch :
       RawTerm scope}
     (tailStep : Step tailValue steppedTailValue) :
     (fromSteps
       (Step.iotaListElimCons
-        (headVal := headValue) (tailVal := tailValue)
+        (motive := motive) (headVal := headValue) (tailVal := tailValue)
         (nilBranch := nilBranch) (consBranch := consBranch))
       (iotaListElimConsTailCong
+        (motive := motive)
         (headValue := headValue) (nilBranch := nilBranch)
         (consBranch := consBranch) tailStep).rightStep).HasJoin :=
-  iotaListElimConsTailCong_hasJoin tailStep
+  iotaListElimConsTailCong_hasJoin (motive := motive) tailStep
 
-/-- `fromSteps`-facing `listElim listCons` iota / nil-branch congruence arm. -/
+/-- `fromSteps`-facing `listElim listCons` iota / nil-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaListElimConsNilBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headValue tailValue nilBranch steppedNilBranch consBranch :
       RawTerm scope}
     (nilStep : Step nilBranch steppedNilBranch) :
     (fromSteps
       (Step.iotaListElimCons
-        (headVal := headValue) (tailVal := tailValue)
+        (motive := motive) (headVal := headValue) (tailVal := tailValue)
         (nilBranch := nilBranch) (consBranch := consBranch))
       (iotaListElimConsNilBranchCong
+        (motive := motive)
         (headValue := headValue) (tailValue := tailValue)
         (consBranch := consBranch) nilStep).rightStep).HasJoin :=
-  iotaListElimConsNilBranchCong_hasJoin nilStep
+  iotaListElimConsNilBranchCong_hasJoin (motive := motive) nilStep
 
-/-- `fromSteps`-facing `listElim listCons` iota / cons-branch congruence arm. -/
+/-- `fromSteps`-facing `listElim listCons` iota / cons-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaListElimConsConsBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headValue tailValue nilBranch consBranch steppedConsBranch :
       RawTerm scope}
     (consStep : Step consBranch steppedConsBranch) :
     (fromSteps
       (Step.iotaListElimCons
-        (headVal := headValue) (tailVal := tailValue)
+        (motive := motive) (headVal := headValue) (tailVal := tailValue)
         (nilBranch := nilBranch) (consBranch := consBranch))
       (iotaListElimConsConsBranchCong
+        (motive := motive)
         (headValue := headValue) (tailValue := tailValue)
         (nilBranch := nilBranch) consStep).rightStep).HasJoin :=
-  iotaListElimConsConsBranchCong_hasJoin consStep
+  iotaListElimConsConsBranchCong_hasJoin (motive := motive) consStep
 
-/-- `fromSteps`-facing `listElim listNil` iota / nil-branch congruence arm. -/
+/-- `fromSteps`-facing `listElim listNil` iota / nil-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaListElimNilBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {nilBranch steppedNilBranch consBranch : RawTerm scope}
     (nilStep : Step nilBranch steppedNilBranch) :
     (fromSteps
       (Step.iotaListElimNil
-        (nilBranch := nilBranch) (consBranch := consBranch))
+        (motive := motive) (nilBranch := nilBranch) (consBranch := consBranch))
       (iotaListElimNilBranchCong
-        (consBranch := consBranch) nilStep).rightStep).HasJoin :=
-  iotaListElimNilBranchCong_hasJoin nilStep
+        (motive := motive) (consBranch := consBranch) nilStep).rightStep).HasJoin :=
+  iotaListElimNilBranchCong_hasJoin (motive := motive) nilStep
 
-/-- `fromSteps`-facing `listElim listNil` iota / cons-branch congruence arm. -/
+/-- `fromSteps`-facing `listElim listNil` iota / cons-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaListElimConsBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {nilBranch consBranch steppedConsBranch : RawTerm scope}
     (consStep : Step consBranch steppedConsBranch) :
     (fromSteps
       (Step.iotaListElimNil
-        (nilBranch := nilBranch) (consBranch := consBranch))
+        (motive := motive) (nilBranch := nilBranch) (consBranch := consBranch))
       (iotaListElimConsBranchCong
-        (nilBranch := nilBranch) consStep).rightStep).HasJoin :=
-  iotaListElimConsBranchCong_hasJoin consStep
+        (motive := motive) (nilBranch := nilBranch) consStep).rightStep).HasJoin :=
+  iotaListElimConsBranchCong_hasJoin (motive := motive) consStep
 
-/-- Resolve every local branching whose left step is `listElim listNil` iota. -/
+/-- `fromSteps`-facing `listElim listNil` iota / discarded motive congruence arm.
+Phase-Z motive shape. -/
+theorem fromSteps_iotaListElimNilMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {nilBranch consBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaListElimNil
+        (motive := motive) (nilBranch := nilBranch) (consBranch := consBranch))
+      (iotaListElimNilMotiveCong
+        (nilBranch := nilBranch) (consBranch := consBranch) motiveStep).rightStep).HasJoin :=
+  iotaListElimNilMotiveCong_hasJoin
+    (nilBranch := nilBranch) (consBranch := consBranch) motiveStep
+
+/-- `fromSteps`-facing `listElim listCons` iota / motive congruence arm.
+Phase-Z motive shape. -/
+theorem fromSteps_iotaListElimConsMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {headValue tailValue nilBranch consBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaListElimCons
+        (motive := motive) (headVal := headValue) (tailVal := tailValue)
+        (nilBranch := nilBranch) (consBranch := consBranch))
+      (iotaListElimConsMotiveCong
+        (headValue := headValue) (tailValue := tailValue)
+        (nilBranch := nilBranch) (consBranch := consBranch) motiveStep).rightStep).HasJoin :=
+  iotaListElimConsMotiveCong_hasJoin
+    (headValue := headValue) (tailValue := tailValue)
+    (nilBranch := nilBranch) (consBranch := consBranch) motiveStep
+
+/-- Resolve every local branching whose left step is `listElim listNil` iota.
+
+Phase-Z motive shape: the shared source permits same-root `listElim listNil`,
+congruence in the motive (head, shift 1), congruence in the selected
+nil-branch, congruence in the discarded cons-branch, or congruence in the
+scrutinee.  Congruence in the scrutinee would require a step out of the nullary
+`listNil` constructor, so that case is impossible by direct `cases`. -/
 theorem fromSteps_iotaListElimNilLeft_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {nilBranch consBranch rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_listElim ()
-        (.childCons
-          (.mkGen .gen_listNil () .childNil)
-          (.childCons nilBranch (.childCons consBranch .childNil))))
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons (.mkGen .gen_listNil () .childNil) .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaListElimNil
-        (nilBranch := nilBranch) (consBranch := consBranch))
+        (motive := motive) (nilBranch := nilBranch) (consBranch := consBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaListElimNil =>
-      exact fromSteps_iotaListElimNilSameRoot_hasJoin nilBranch consBranch
+      exact fromSteps_iotaListElimNilSameRoot_hasJoin motive nilBranch consBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaListElimNilMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here consChildren nilStep =>
-              exact fromSteps_iotaListElimNilBranchCong_hasJoin nilStep
+              exact fromSteps_iotaListElimNilBranchCong_hasJoin (motive := motive) nilStep
           | there nilChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren consStep =>
-                  exact fromSteps_iotaListElimConsBranchCong_hasJoin consStep
-              | there consChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren consStep =>
+                  exact fromSteps_iotaListElimConsBranchCong_hasJoin (motive := motive) consStep
+              | there consChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
 /-- Resolve every local branching whose right step is `listElim listNil` iota. -/
 theorem fromSteps_iotaListElimNilRight_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {nilBranch consBranch leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_listElim ()
-        (.childCons
-          (.mkGen .gen_listNil () .childNil)
-          (.childCons nilBranch (.childCons consBranch .childNil))))
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons (.mkGen .gen_listNil () .childNil) .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaListElimNil
-        (nilBranch := nilBranch) (consBranch := consBranch))).HasJoin :=
+        (motive := motive) (nilBranch := nilBranch) (consBranch := consBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaListElimNilLeft_hasJoin leftStep)
 
-/-- Resolve every local branching whose left step is `listElim listCons` iota. -/
+/-- Resolve every local branching whose left step is `listElim listCons` iota.
+
+Phase-Z motive shape: the shared source permits same-root `listElim listCons`,
+congruence in the motive (head, shift 1), congruence in the selected nil-branch
+or cons-branch, or congruence in the scrutinee (head/tail of the `listCons`). -/
 theorem fromSteps_iotaListElimConsLeft_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headValue tailValue nilBranch consBranch rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_listElim ()
-        (.childCons
-          (.mkGen .gen_listCons ()
-            (.childCons headValue (.childCons tailValue .childNil)))
-          (.childCons nilBranch (.childCons consBranch .childNil))))
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons
+                (.mkGen .gen_listCons ()
+                  (.childCons headValue (.childCons tailValue .childNil)))
+                .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaListElimCons
-        (headVal := headValue) (tailVal := tailValue)
+        (motive := motive) (headVal := headValue) (tailVal := tailValue)
         (nilBranch := nilBranch) (consBranch := consBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaListElimCons =>
       exact fromSteps_iotaListElimConsSameRoot_hasJoin
-        headValue tailValue nilBranch consBranch
+        motive headValue tailValue nilBranch consBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep with
-              | here tailChildren headStep =>
-                  exact fromSteps_iotaListElimConsHeadCong_hasJoin headStep
-              | there headChild tailChildrenStep =>
-                  cases tailChildrenStep with
-                  | here emptyChildren tailStep =>
-                      exact fromSteps_iotaListElimConsTailCong_hasJoin tailStep
-                  | there tailChild emptyStep =>
-                      cases emptyStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaListElimConsMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here consChildren nilStep =>
-              exact fromSteps_iotaListElimConsNilBranchCong_hasJoin nilStep
+              exact fromSteps_iotaListElimConsNilBranchCong_hasJoin (motive := motive) nilStep
           | there nilChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren consStep =>
-                  exact fromSteps_iotaListElimConsConsBranchCong_hasJoin consStep
-              | there consChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren consStep =>
+                  exact fromSteps_iotaListElimConsConsBranchCong_hasJoin (motive := motive) consStep
+              | there consChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep with
+                          | here tailChildren headStep =>
+                              exact fromSteps_iotaListElimConsHeadCong_hasJoin
+                                (motive := motive) headStep
+                          | there headChild tailChildrenStep =>
+                              cases tailChildrenStep with
+                              | here innerEmptyChildren tailStep =>
+                                  exact fromSteps_iotaListElimConsTailCong_hasJoin
+                                    (motive := motive) tailStep
+                              | there tailChild innerEmptyStep =>
+                                  cases innerEmptyStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
 /-- Resolve every local branching whose right step is `listElim listCons` iota. -/
 theorem fromSteps_iotaListElimConsRight_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headValue tailValue nilBranch consBranch leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_listElim ()
-        (.childCons
-          (.mkGen .gen_listCons ()
-            (.childCons headValue (.childCons tailValue .childNil)))
-          (.childCons nilBranch (.childCons consBranch .childNil))))
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons
+                (.mkGen .gen_listCons ()
+                  (.childCons headValue (.childCons tailValue .childNil)))
+                .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaListElimCons
-        (headVal := headValue) (tailVal := tailValue)
+        (motive := motive) (headVal := headValue) (tailVal := tailValue)
         (nilBranch := nilBranch) (consBranch := consBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaListElimConsLeft_hasJoin leftStep)
 
@@ -2931,27 +3056,33 @@ theorem iotaNatRecSucc_iotaNatRecZero_hasSourcesDisjoint {scope : Nat}
   iotaNatRecSucc_iotaNatRecZero_sourcesDisjoint
     predecessor zeroBranchSucc succBranchSucc zeroBranch succBranch
 
-/-- Contradiction arm for the mutually-exclusive list-elim nil/cons root pair. -/
+/-- Contradiction arm for the mutually-exclusive list-elim nil/cons root pair.
+Phase-Z motive shape. -/
 theorem iotaListElimNil_iotaListElimCons_hasSourcesDisjoint {scope : Nat}
+    (motiveNil motiveCons : RawTerm (scope + 1))
     (nilBranch consBranch headValue tailValue
       nilBranchCons consBranchCons : RawTerm scope) :
     SourcesDisjoint
-      (iotaListElimNilSameRoot nilBranch consBranch)
+      (iotaListElimNilSameRoot motiveNil nilBranch consBranch)
       (iotaListElimConsSameRoot
-        headValue tailValue nilBranchCons consBranchCons) :=
+        motiveCons headValue tailValue nilBranchCons consBranchCons) :=
   iotaListElimNil_iotaListElimCons_sourcesDisjoint
-    nilBranch consBranch headValue tailValue nilBranchCons consBranchCons
+    motiveNil motiveCons nilBranch consBranch headValue tailValue
+    nilBranchCons consBranchCons
 
-/-- Reverse contradiction arm for the mutually-exclusive list-elim cons/nil root pair. -/
+/-- Reverse contradiction arm for the mutually-exclusive list-elim cons/nil root pair.
+Phase-Z motive shape. -/
 theorem iotaListElimCons_iotaListElimNil_hasSourcesDisjoint {scope : Nat}
+    (motiveCons motiveNil : RawTerm (scope + 1))
     (headValue tailValue nilBranchCons consBranchCons
       nilBranch consBranch : RawTerm scope) :
     SourcesDisjoint
       (iotaListElimConsSameRoot
-        headValue tailValue nilBranchCons consBranchCons)
-      (iotaListElimNilSameRoot nilBranch consBranch) :=
+        motiveCons headValue tailValue nilBranchCons consBranchCons)
+      (iotaListElimNilSameRoot motiveNil nilBranch consBranch) :=
   iotaListElimCons_iotaListElimNil_sourcesDisjoint
-    headValue tailValue nilBranchCons consBranchCons nilBranch consBranch
+    motiveCons motiveNil headValue tailValue nilBranchCons consBranchCons
+    nilBranch consBranch
 
 /-- Contradiction arm for the mutually-exclusive option-match none/some root pair. -/
 theorem iotaOptionMatchNone_iotaOptionMatchSome_hasSourcesDisjoint

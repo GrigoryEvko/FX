@@ -98,12 +98,16 @@ inductive IsNeutral : {scope : Nat} → RawTerm scope → Prop where
       IsNeutral (.mkGen .gen_natRec ()
         (.childCons scrutinee
           (.childCons zeroBranch (.childCons succBranch .childNil))))
-  /-- List elimination is neutral when its scrutinee is neutral. -/
-  | listElim {scope : Nat} {scrutinee nilBranch consBranch : RawTerm scope}
+  /-- List elimination is neutral when its scrutinee is neutral.
+      Phase-Z motive shape: `(motive, nilBranch, consBranch, scrutinee)`. -/
+  | listElim {scope : Nat} {motive : RawTerm (scope + 1)}
+      {nilBranch consBranch scrutinee : RawTerm scope}
       (scrutineeIsNeutral : IsNeutral scrutinee) :
       IsNeutral (.mkGen .gen_listElim ()
-        (.childCons scrutinee
-          (.childCons nilBranch (.childCons consBranch .childNil))))
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons scrutinee .childNil)))))
   /-- Option matching is neutral when its scrutinee is neutral. -/
   | optionMatch {scope : Nat}
       {scrutinee noneBranch someBranch : RawTerm scope}

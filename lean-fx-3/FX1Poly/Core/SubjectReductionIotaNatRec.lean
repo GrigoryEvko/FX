@@ -193,7 +193,9 @@ theorem HasCertifiedCellDim0.preservedByIotaNatRecSucc
 
 /-- **SR arm: `Step.iotaListElimCons` preserves `HasCertifiedCellDim0`.**
 
-Three nested `gen_app`s plus a recursive `gen_listElim`:
+Three nested `gen_app`s plus a recursive `gen_listElim` (Phase-Z motive shape:
+motive heads the spine, scrutinee LAST, the recursive `gen_listElim` THREADS the
+motive):
 
 ```
 target =
@@ -202,23 +204,26 @@ target =
         [ gen_app [consBranch, headVal]
         , tailVal
         ]
-    , gen_listElim [tailVal, nilBranch, consBranch]
+    , gen_listElim [motive, nilBranch, consBranch, tailVal]
     ]
 ```
 
-The wrapper has 2 payloads (head and tail), so the inner-spine
-destructure binds BOTH after `cases natSuccInnerSpine` analog. -/
+The outer spine binds `motiveCell` (shift-1 head), `nilBranchCell`,
+`consBranchCell`, then the `listCons` wrapper carrying head and tail. -/
 theorem HasCertifiedCellDim0.preservedByIotaListElimCons
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {headVal tailVal nilBranch consBranch : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_listElim ()
-          (.childCons
-            (.mkGen .gen_listCons ()
-              (.childCons headVal (.childCons tailVal .childNil)))
+          (.childCons motive
             (.childCons nilBranch
-              (.childCons consBranch .childNil)))
+              (.childCons consBranch
+                (.childCons
+                  (.mkGen .gen_listCons ()
+                    (.childCons headVal (.childCons tailVal .childNil)))
+                  .childNil))))
           : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile)
       (.mkGen .gen_app ()
@@ -230,65 +235,69 @@ theorem HasCertifiedCellDim0.preservedByIotaListElimCons
               (.childCons tailVal .childNil)))
           (.childCons
             (.mkGen .gen_listElim ()
-              (.childCons tailVal
+              (.childCons motive
                 (.childCons nilBranch
-                  (.childCons consBranch .childNil))))
+                  (.childCons consBranch
+                    (.childCons tailVal .childNil)))))
             .childNil))) := by
   cases sourceCert with
   | intro sort outerCell =>
     cases outerCell with
     | gen _ _ outerSpine =>
       cases outerSpine with
-      | cons listConsCell restAfterListCons =>
-        cases restAfterListCons with
+      | cons motiveCell restAfterMotive =>
+        cases restAfterMotive with
         | cons nilBranchCell restAfterNil =>
           cases restAfterNil with
-          | cons consBranchCell _ =>
-            generalize hSort :
-                (ChildSpec.termSameScope.cellSort) = innerSort
-              at listConsCell
-            cases listConsCell with
-            | gen _ _ listConsInnerSpine =>
-              cases listConsInnerSpine with
-              | cons headValCell restListConsInner =>
-                cases restListConsInner with
-                | cons tailValCell _ =>
-                  -- Build innermost: app(consBranch, headVal).
-                  let app1Cell :=
-                    PolyCell.gen
-                      SupportedGenerator.gen_app
-                      (genPayloadEvidence (generator := .gen_app)
-                                           (scope := scope) ())
-                      (CertifiedTermSpine.cons consBranchCell
-                        (CertifiedTermSpine.cons headValCell
-                          CertifiedTermSpine.nil))
-                  -- Build middle: app(app1, tailVal).
-                  let app2Cell :=
-                    PolyCell.gen
-                      SupportedGenerator.gen_app
-                      (genPayloadEvidence (generator := .gen_app)
-                                           (scope := scope) ())
-                      (CertifiedTermSpine.cons app1Cell
-                        (CertifiedTermSpine.cons tailValCell
-                          CertifiedTermSpine.nil))
-                  -- Build recursive: listElim(tailVal, nilBranch, consBranch).
-                  let recCell :=
-                    PolyCell.gen
-                      SupportedGenerator.gen_listElim
-                      (genPayloadEvidence (generator := .gen_listElim)
-                                           (scope := scope) ())
-                      (CertifiedTermSpine.cons tailValCell
-                        (CertifiedTermSpine.cons nilBranchCell
-                          (CertifiedTermSpine.cons consBranchCell
+          | cons consBranchCell restAfterCons =>
+            cases restAfterCons with
+            | cons listConsCell _ =>
+              generalize hSort :
+                  (ChildSpec.termSameScope.cellSort) = innerSort
+                at listConsCell
+              cases listConsCell with
+              | gen _ _ listConsInnerSpine =>
+                cases listConsInnerSpine with
+                | cons headValCell restListConsInner =>
+                  cases restListConsInner with
+                  | cons tailValCell _ =>
+                    -- Build innermost: app(consBranch, headVal).
+                    let app1Cell :=
+                      PolyCell.gen
+                        SupportedGenerator.gen_app
+                        (genPayloadEvidence (generator := .gen_app)
+                                             (scope := scope) ())
+                        (CertifiedTermSpine.cons consBranchCell
+                          (CertifiedTermSpine.cons headValCell
+                            CertifiedTermSpine.nil))
+                    -- Build middle: app(app1, tailVal).
+                    let app2Cell :=
+                      PolyCell.gen
+                        SupportedGenerator.gen_app
+                        (genPayloadEvidence (generator := .gen_app)
+                                             (scope := scope) ())
+                        (CertifiedTermSpine.cons app1Cell
+                          (CertifiedTermSpine.cons tailValCell
+                            CertifiedTermSpine.nil))
+                    -- Build recursive: listElim(motive, nilBranch, consBranch, tailVal).
+                    let recCell :=
+                      PolyCell.gen
+                        SupportedGenerator.gen_listElim
+                        (genPayloadEvidence (generator := .gen_listElim)
+                                             (scope := scope) ())
+                        (CertifiedTermSpine.cons motiveCell
+                          (CertifiedTermSpine.cons nilBranchCell
+                            (CertifiedTermSpine.cons consBranchCell
+                              (CertifiedTermSpine.cons tailValCell
+                                CertifiedTermSpine.nil))))
+                    -- Outer: app(app2, recCell).
+                    exact .intro .term
+                      (PolyCell.gen
+                        SupportedGenerator.gen_app
+                        (genPayloadEvidence (generator := .gen_app)
+                                             (scope := scope) ())
+                        (CertifiedTermSpine.cons app2Cell
+                          (CertifiedTermSpine.cons recCell
                             CertifiedTermSpine.nil)))
-                  -- Outer: app(app2, recCell).
-                  exact .intro .term
-                    (PolyCell.gen
-                      SupportedGenerator.gen_app
-                      (genPayloadEvidence (generator := .gen_app)
-                                           (scope := scope) ())
-                      (CertifiedTermSpine.cons app2Cell
-                        (CertifiedTermSpine.cons recCell
-                          CertifiedTermSpine.nil)))
 
 end FX1Poly.Core

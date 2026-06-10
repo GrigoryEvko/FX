@@ -96,12 +96,16 @@ inductive IotaHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
           (.childCons (.mkGen .gen_natZero () .childNil)
             (.childCons zeroBranch (.childCons succBranch .childNil))))
         zeroBranch
-  /-- `listElim listNil nilBranch consBranch ↝ nilBranch`. -/
-  | iotaListElimNil {nilBranch consBranch : RawTerm scope} :
+  /-- `listElim motive nilBranch consBranch listNil ↝ nilBranch`.
+      Phase-Z motive shape: motive first (under one binder), scrutinee last;
+      the base-case iota discards the motive operationally. -/
+  | iotaListElimNil {motive : RawTerm (scope + 1)} {nilBranch consBranch : RawTerm scope} :
       IotaHeadStep
         (.mkGen .gen_listElim ()
-          (.childCons (.mkGen .gen_listNil () .childNil)
-            (.childCons nilBranch (.childCons consBranch .childNil))))
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consBranch
+                (.childCons (.mkGen .gen_listNil () .childNil) .childNil)))))
         nilBranch
   /-- `optionMatch optionNone noneBranch someBranch ↝ noneBranch`. -/
   | iotaOptionMatchNone {noneBranch someBranch : RawTerm scope} :
@@ -161,14 +165,22 @@ inductive IotaHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
                 (.childCons predecessor
                   (.childCons zeroBranch (.childCons succBranch .childNil))))
               .childNil)))
-  /-- `listElim (listCons headVal tailVal) n c ↝ app (app (app c headVal) tailVal) (listElim tailVal n c)`. -/
-  | iotaListElimCons {headVal tailVal nilBranch consBranch : RawTerm scope} :
+  /-- `listElim motive n c (listCons headVal tailVal)
+        ↝ app (app (app c headVal) tailVal) (listElim motive n c tailVal)`.
+      Phase-Z motive shape: motive first (under one binder), scrutinee last;
+      the step-case recursive call REBUILDS a `listElim` spine and THREADS the
+      same motive through (eliminating the tail at the same motive). -/
+  | iotaListElimCons {motive : RawTerm (scope + 1)}
+      {headVal tailVal nilBranch consBranch : RawTerm scope} :
       IotaHeadStep
         (.mkGen .gen_listElim ()
-          (.childCons
-            (.mkGen .gen_listCons ()
-              (.childCons headVal (.childCons tailVal .childNil)))
-            (.childCons nilBranch (.childCons consBranch .childNil))))
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consBranch
+                (.childCons
+                  (.mkGen .gen_listCons ()
+                    (.childCons headVal (.childCons tailVal .childNil)))
+                  .childNil)))))
         (.mkGen .gen_app ()
           (.childCons
             (.mkGen .gen_app ()
@@ -178,8 +190,9 @@ inductive IotaHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
                 (.childCons tailVal .childNil)))
             (.childCons
               (.mkGen .gen_listElim ()
-                (.childCons tailVal
-                  (.childCons nilBranch (.childCons consBranch .childNil))))
+                (.childCons motive
+                  (.childCons nilBranch
+                    (.childCons consBranch (.childCons tailVal .childNil)))))
               .childNil)))
   /-- `idJ baseCase (refl rawWitness) ↝ baseCase`. -/
   | iotaIdJRefl {baseCase rawWitness : RawTerm scope} :

@@ -261,16 +261,21 @@ theorem natRecZeroClosedMembershipSmoke :
       boolTrue_isStronglyNormalizing boolTrue_isStronglyNormalizing)
     boolTrueCell_isMember.closedReducesToValue
 
-/-- **Concrete `listElim`-on-`listNil` base-case membership regression.**  `listElim listNil boolTrue boolTrue`
-fires ι to the nil-branch `boolTrue`; SN by `listElimNil_isStronglyNormalizing_of_branches`.  The base
-half at a concrete witness. -/
+/-- **Concrete `listElim`-on-`listNil` base-case membership regression.**  `listElim(motive, listNil, boolTrue,
+boolTrue)` fires ι to the nil-branch `boolTrue`; SN by `listElimNil_isStronglyNormalizing_of_branches`.  Phase-Z
+motive shape: a `var 0` under-binder throwaway motive (SN), spine `(motive, nilBranch, consBranch, listNil)` with
+the scrutinee LAST.  The base half at a concrete witness. -/
 theorem listElimNilClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_listElim ()
-        (.childCons listNilCell (.childCons boolTrueCell (.childCons boolTrueCell .childNil)))) :=
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
+          (.childCons boolTrueCell
+            (.childCons boolTrueCell
+              (.childCons listNilCell .childNil))))) :=
   CanonicalFormsPredicate.ofStepStarReachingValue
     (StepStar.trans Step.iotaListElimNil (StepStar.refl _))
     (listElimNil_isStronglyNormalizing_of_branches
+      (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
       boolTrue_isStronglyNormalizing boolTrue_isStronglyNormalizing)
     boolTrueCell_isMember.closedReducesToValue
 

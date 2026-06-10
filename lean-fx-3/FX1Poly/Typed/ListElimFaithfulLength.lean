@@ -20,10 +20,12 @@ reduce definitionally; that is a separate, harder follow-on).
     `natZero` copies suffice to range the length over every `n`.)
   * **`lengthNatStepComputesExact`** — `(λ_.λ_.λr.natSucc r) h t rec ↝* natSucc rec`, the existential-free form
     of `lengthNatStepProduces` (faithfulness pins the EXACT output).
-  * **`listElimLengthFaithful` (★ headline)** — `listElim(rawListReplicate n, natZero, lengthStep) ↝*
-    natNumeral n` for ALL `n`, by induction on `n`: nil projects `natZero` (`iotaListElimNil`); cons fires
-    `iotaListElimCons`, the IH reduces the inner recursor over the tail via `StepStar.appArgument`, and
-    `lengthNatStepComputesExact` wraps one `natSucc` (`natSucc (natNumeral n) ≡ natNumeral (n+1)` definitionally).
+  * **`listElimLengthFaithful` (★ headline)** — `listElim(motive, rawListReplicate n, natZero, lengthStep) ↝*
+    natNumeral n` for ALL `n` (Phase-Z motive shape — the motive is carried structurally and threaded through
+    every cons firing, irrelevant to the length count), by induction on `n`: nil projects `natZero`
+    (`iotaListElimNil`); cons fires `iotaListElimCons`, the IH reduces the inner recursor over the tail (at the
+    SAME motive) via `StepStar.appArgument`, and `lengthNatStepComputesExact` wraps one `natSucc`
+    (`natSucc (natNumeral n) ≡ natNumeral (n+1)` definitionally).
   * **`listElimLengthFaithful.three`** — fully-concrete `listElim([_,_,_], natZero, lengthStep) ↝* numeral 3`.
 
 The native recursor counting to the EXACT length — the honest "this cell truthfully encodes its mathematical
@@ -73,20 +75,23 @@ n, natZero, lengthStep) ↝* natNumeral n` for ALL `n` — the de Bruijn list re
 `n`-element list, reduces to the numeral of its host LENGTH.  Faithfulness made precise: not "reaches some
 numeral" (the existing `listElimLengthComputesToNumeral`) but "reaches the RIGHT numeral", i.e. `gen_listElim`
 truthfully encodes `List.length`. -/
-theorem listElimLengthFaithful : ∀ n,
-    StepStar (listElimCell (rawListReplicate n) natZeroCell lengthNatStep) (natNumeralCell n)
+theorem listElimLengthFaithful (motive : RawTerm 1) : ∀ n,
+    StepStar (listElimCell motive (rawListReplicate n) natZeroCell lengthNatStep) (natNumeralCell n)
   | 0 => StepStar.single Step.iotaListElimNil
   | n + 1 =>
+      -- the cons ι THREADS the same motive into the recursive call (Phase-Z cons ι is not
+      -- motive-discarding), so the inner faithful chain runs at the SAME motive.
       StepStar.trans_compose (StepStar.single Step.iotaListElimCons)
         (StepStar.trans_compose
           (StepStar.appArgument (appCell (appCell lengthNatStep natZeroCell) (rawListReplicate n))
-            (listElimLengthFaithful n))
+            (listElimLengthFaithful motive n))
           (lengthNatStepComputesExact natZeroCell (rawListReplicate n) (natNumeralCell n)))
 
 /-- Fully-concrete faithfulness smoke: `listElim([natZero, natZero, natZero], natZero, lengthStep) ↝* 3` — the
-3-element list counted to the numeral `3` by the native recursor. -/
+3-element list counted to the numeral `3` by the native recursor (at a throwaway `var 0` motive). -/
 theorem listElimLengthFaithful.three :
-    StepStar (listElimCell (rawListReplicate 3) natZeroCell lengthNatStep) (natNumeralCell 3) :=
-  listElimLengthFaithful 3
+    StepStar (listElimCell (variableCell (⟨0, by decide⟩ : Fin 1)) (rawListReplicate 3)
+      natZeroCell lengthNatStep) (natNumeralCell 3) :=
+  listElimLengthFaithful (variableCell (⟨0, by decide⟩ : Fin 1)) 3
 
 end FX1Poly.Typed

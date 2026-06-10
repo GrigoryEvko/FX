@@ -231,14 +231,82 @@ theorem rpoOrientsElim3 (prec : Generator → Generator → Prop) (elimGen appGe
             · nomatch smallEmpty
     · nomatch membershipEmpty
 
-/-- listElimCons redex/reduct on the real kernel (matches `Step.iotaListElimCons`). -/
-def listElimConsRedexRaw {scope : Nat} (headVal tailVal nilBranch consBranch : RawTerm scope) :
+/-- **Generic 3-arg eliminator-arm orientation WITH a leading motive** (Phase-Z motive shape): the redex
+`elim motive nilBr consBr (cons head tail)` RPO-dominates the reduct `app (app (app consBr head) tail)
+(elim motive nilBr consBr tail)`, given `appGen ≺F elimGen`.  The motive heads the spine on BOTH sides
+and is THREADED into the recursive `elim` of the reduct.  This is the motive-aware companion of
+`rpoOrientsElim3` (which proves the pre-Phase-Z scrutinee-first shape, retained for reference). -/
+theorem rpoOrientsElim3WithMotive (prec : Generator → Generator → Prop)
+    (elimGen appGen consGen : Generator)
+    (hprec : prec appGen elimGen) (motive headVal tailVal nilBr consBr : RoseTerm Generator) :
+    Rpo prec
+      (.node elimGen [motive, nilBr, consBr, .node consGen [headVal, tailVal]])
+      (.node appGen
+        [.node appGen [.node appGen [consBr, headVal], tailVal],
+         .node elimGen [motive, nilBr, consBr, tailVal]]) := by
+  refine Rpo.precedence (bigSym := elimGen) (bigChildren := _) (smallSym := appGen)
+    (smallChildren := _) hprec ?_
+  intro smallChild membership
+  rcases membership with _ | ⟨_, membershipRest⟩
+  · refine Rpo.precedence (bigSym := elimGen) (bigChildren := _) (smallSym := appGen)
+      (smallChildren := _) hprec ?_
+    intro innerChild innerMembership
+    rcases innerMembership with _ | ⟨_, innerRest⟩
+    · refine Rpo.precedence (bigSym := elimGen) (bigChildren := _) (smallSym := appGen)
+        (smallChildren := _) hprec ?_
+      intro inner2Child inner2Membership
+      rcases inner2Membership with _ | ⟨_, inner2Rest⟩
+      · exact Rpo.subtermEq elimGen _ consBr (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+      · rcases inner2Rest with _ | ⟨_, inner2Empty⟩
+        · exact Rpo.subtermStrict elimGen _ headVal
+            (.node consGen [headVal, tailVal])
+            (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+            (Rpo.subtermEq consGen [headVal, tailVal] headVal (List.Mem.head _))
+        · nomatch inner2Empty
+    · rcases innerRest with _ | ⟨_, innerEmpty⟩
+      · exact Rpo.subtermStrict elimGen _ tailVal
+          (.node consGen [headVal, tailVal])
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          (Rpo.subtermEq consGen [headVal, tailVal] tailVal (List.Mem.tail _ (List.Mem.head _)))
+      · nomatch innerEmpty
+  · rcases membershipRest with _ | ⟨_, membershipEmpty⟩
+    · refine Rpo.multiset _ _ _ (.node consGen [headVal, tailVal])
+        [motive, nilBr, consBr] [] [tailVal] rfl rfl ?_ ?_
+      · intro addedChild addedMembership
+        rcases addedMembership with _ | ⟨_, addedEmpty⟩
+        · exact Rpo.subtermEq consGen _ tailVal (List.Mem.tail _ (List.Mem.head _))
+        · nomatch addedEmpty
+      · intro smallChild2 smallMembership
+        rcases smallMembership with _ | ⟨_, smallRest⟩
+        · exact Rpo.subtermEq elimGen _ motive (List.Mem.head _)
+        · rcases smallRest with _ | ⟨_, smallRest2⟩
+          · exact Rpo.subtermEq elimGen _ nilBr (List.Mem.tail _ (List.Mem.head _))
+          · rcases smallRest2 with _ | ⟨_, smallRest3⟩
+            · exact Rpo.subtermEq elimGen _ consBr
+                (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+            · rcases smallRest3 with _ | ⟨_, smallEmpty⟩
+              · exact Rpo.subtermStrict elimGen _ tailVal
+                  (.node consGen [headVal, tailVal])
+                  (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+                  (Rpo.subtermEq consGen [headVal, tailVal] tailVal (List.Mem.tail _ (List.Mem.head _)))
+              · nomatch smallEmpty
+    · nomatch membershipEmpty
+
+/-- listElimCons redex/reduct on the real kernel (matches `Step.iotaListElimCons`).  Phase-Z motive
+shape: motive heads the spine (under one binder), the scrutinee is the LAST child; the recursive
+`listElim` reduct THREADS the motive. -/
+def listElimConsRedexRaw {scope : Nat} (motive : RawTerm (scope + 1))
+    (headVal tailVal nilBranch consBranch : RawTerm scope) :
     RawTerm scope :=
   .mkGen .gen_listElim ()
-    (.childCons (.mkGen .gen_listCons () (.childCons headVal (.childCons tailVal .childNil)))
-      (.childCons nilBranch (.childCons consBranch .childNil)))
+    (.childCons motive
+      (.childCons nilBranch
+        (.childCons consBranch
+          (.childCons (.mkGen .gen_listCons () (.childCons headVal (.childCons tailVal .childNil)))
+            .childNil))))
 
-def listElimConsReductRaw {scope : Nat} (headVal tailVal nilBranch consBranch : RawTerm scope) :
+def listElimConsReductRaw {scope : Nat} (motive : RawTerm (scope + 1))
+    (headVal tailVal nilBranch consBranch : RawTerm scope) :
     RawTerm scope :=
   .mkGen .gen_app ()
     (.childCons
@@ -248,24 +316,28 @@ def listElimConsReductRaw {scope : Nat} (headVal tailVal nilBranch consBranch : 
           (.childCons tailVal .childNil)))
       (.childCons
         (.mkGen .gen_listElim ()
-          (.childCons tailVal (.childCons nilBranch (.childCons consBranch .childNil))))
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consBranch (.childCons tailVal .childNil)))))
         .childNil))
 
-theorem listElimConsRaw_isStep {scope : Nat} (headVal tailVal nilBranch consBranch : RawTerm scope) :
-    Step (listElimConsRedexRaw headVal tailVal nilBranch consBranch)
-      (listElimConsReductRaw headVal tailVal nilBranch consBranch) :=
+theorem listElimConsRaw_isStep {scope : Nat} (motive : RawTerm (scope + 1))
+    (headVal tailVal nilBranch consBranch : RawTerm scope) :
+    Step (listElimConsRedexRaw motive headVal tailVal nilBranch consBranch)
+      (listElimConsReductRaw motive headVal tailVal nilBranch consBranch) :=
   Step.iotaListElimCons
 
-/-- **★ `Step.iotaListElimCons` is oriented by the real generator RPO** (the deepest recursive ι arm). -/
-theorem rpo_orients_iotaListElimCons {scope : Nat}
+/-- **★ `Step.iotaListElimCons` is oriented by the real generator RPO** (the deepest recursive ι arm,
+Phase-Z motive shape). -/
+theorem rpo_orients_iotaListElimCons {scope : Nat} (motive : RawTerm (scope + 1))
     (headVal tailVal nilBranch consBranch : RawTerm scope) :
     Rpo realGenPrecedence
-      (eraseToRose (listElimConsRedexRaw headVal tailVal nilBranch consBranch))
-      (eraseToRose (listElimConsReductRaw headVal tailVal nilBranch consBranch)) := by
+      (eraseToRose (listElimConsRedexRaw motive headVal tailVal nilBranch consBranch))
+      (eraseToRose (listElimConsReductRaw motive headVal tailVal nilBranch consBranch)) := by
   dsimp only [listElimConsRedexRaw, listElimConsReductRaw, eraseToRose, eraseChildren]
-  exact rpoOrientsElim3 realGenPrecedence .gen_listElim .gen_app .gen_listCons
-    (by decide) (eraseToRose headVal) (eraseToRose tailVal) (eraseToRose nilBranch)
-    (eraseToRose consBranch)
+  exact rpoOrientsElim3WithMotive realGenPrecedence .gen_listElim .gen_app .gen_listCons
+    (by decide) (eraseToRose motive) (eraseToRose headVal) (eraseToRose tailVal)
+    (eraseToRose nilBranch) (eraseToRose consBranch)
 
 /-- **★ The real-generator RPO is well-founded.**  Instantiating the generic `rpoWellFounded` at the real
 generator precedence.  Combined with the three orientations above, all three recursive ι arms

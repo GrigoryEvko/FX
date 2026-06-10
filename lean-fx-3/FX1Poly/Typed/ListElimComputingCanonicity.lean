@@ -17,7 +17,9 @@ recursive-eliminator computing-canonicity family (nat + list).
 
 ## What this ships
 
-  * `listElimCell` — the `gen_listElim` cell `listElim(scrutinee, nilBranch, consBranch)`.
+  * `listElimCell` — the `gen_listElim` cell in the Phase-Z motive shape (arity 4, `binderShifts =
+    [1, 0, 0, 0]`), author order `listElim(motive, scrutinee, nilBranch, consBranch)` emitting the spine
+    `(motive, nilBranch, consBranch, scrutinee)`.
   * **`listElimComputesToValue` (★)** — the abstract recursive computing canonicity, general over the result
     predicate `isResultValue`, by induction on the scrutinee's `IsListValue` structure.  Nil case:
     `iotaListElimNil` projects the nil-branch.  Cons case: `iotaListElimCons` fires, the IH reduces the inner
@@ -58,11 +60,18 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The list eliminator cell `listElim(scrutinee, nilBranch, consBranch)` — `gen_listElim` (arity 3,
-`binderShifts = [0, 0, 0]`, all three children at the ambient scope). -/
-def listElimCell {scope : Nat} (scrutinee nilBranch consBranch : RawTerm scope) : RawTerm scope :=
+/-- The list eliminator cell — `gen_listElim` in the Phase-Z motive shape (arity 4,
+`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, scrutinee, nilBranch,
+consBranch)`; the emitted canonical spine is `(motive, nilBranch, consBranch, scrutinee)` — motive FIRST
+(a term under one binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the
+ambient `scope`. -/
+def listElimCell {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee nilBranch consBranch : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_listElim ()
-    (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)))
+    (.childCons motive
+      (.childCons nilBranch
+        (.childCons consBranch
+          (.childCons scrutinee .childNil))))
 
 /-- **★ Recursive list-eliminator computing canonicity.**  A closed `listElim(s, nil, cons)` whose nil-branch
 satisfies the result predicate `isResultValue` and whose cons branch produces an `isResultValue` from a head, a
@@ -80,7 +89,7 @@ Induction on `s`'s `IsListValue`:
 The cons branch's `stepProduces` obligation is the recursive eliminator's genuine content: its 3-argument
 curried function branch must compute when applied. -/
 theorem listElimComputesToValue {isResultValue : RawTerm 0 → Prop}
-    {nilBranch consBranch : RawTerm 0}
+    {motive : RawTerm 1} {nilBranch consBranch : RawTerm 0}
     (nilBranchValue : isResultValue nilBranch)
     (stepProduces : ∀ (headVal tailVal recResult : RawTerm 0),
         isResultValue recResult →
@@ -89,21 +98,23 @@ theorem listElimComputesToValue {isResultValue : RawTerm 0 → Prop}
           isResultValue out)
     {scrutinee : RawTerm 0} (scrutineeValue : IsListValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (listElimCell scrutinee nilBranch consBranch) out ∧ isResultValue out := by
+      StepStar (listElimCell motive scrutinee nilBranch consBranch) out ∧ isResultValue out := by
   induction scrutineeValue with
   | nil => exact ⟨nilBranch, StepStar.single Step.iotaListElimNil, nilBranchValue⟩
   | @cons headVal tailVal _headNormal _tailValue ih =>
       obtain ⟨recResult, recChain, recValue⟩ := ih
       obtain ⟨out, stepChain, outValue⟩ := stepProduces headVal tailVal recResult recValue
       refine ⟨out, ?_, outValue⟩
+      -- the cons-ι reduct THREADS the same motive into the recursive call (the listElim wrinkle:
+      -- cons-ι is not motive-discarding).
       have iotaStep :
-          StepStar (listElimCell (listConsCell headVal tailVal) nilBranch consBranch)
+          StepStar (listElimCell motive (listConsCell headVal tailVal) nilBranch consBranch)
             (appCell (appCell (appCell consBranch headVal) tailVal)
-              (listElimCell tailVal nilBranch consBranch)) :=
+              (listElimCell motive tailVal nilBranch consBranch)) :=
         StepStar.single Step.iotaListElimCons
       have congStep :
           StepStar (appCell (appCell (appCell consBranch headVal) tailVal)
-              (listElimCell tailVal nilBranch consBranch))
+              (listElimCell motive tailVal nilBranch consBranch))
             (appCell (appCell (appCell consBranch headVal) tailVal) recResult) :=
         StepStar.appArgument (appCell (appCell consBranch headVal) tailVal) recChain
       exact StepStar.trans_compose iotaStep (StepStar.trans_compose congStep stepChain)
@@ -137,9 +148,10 @@ theorem constNatZeroStep3Produces (headVal tailVal recResult : RawTerm 0)
 fact `natZero`) for every closed list value `s` — the abstract theorem at `constNatZeroStep3`.  Genuinely
 recursive (the proof recurses on `s`, the inner `listElim` reduces via the IH), though this step discards the
 recursive result. -/
-theorem listElimConstZeroComputesToNumeral {scrutinee : RawTerm 0} (scrutineeValue : IsListValue scrutinee) :
+theorem listElimConstZeroComputesToNumeral {motive : RawTerm 1} {scrutinee : RawTerm 0}
+    (scrutineeValue : IsListValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (listElimCell scrutinee natZeroCell constNatZeroStep3) out ∧ IsNatNumeral out :=
+      StepStar (listElimCell motive scrutinee natZeroCell constNatZeroStep3) out ∧ IsNatNumeral out :=
   listElimComputesToValue (isResultValue := IsNatNumeral)
     IsNatNumeral.zero constNatZeroStep3Produces scrutineeValue
 
@@ -177,9 +189,10 @@ theorem lengthNatStepProduces (headVal tailVal recResult : RawTerm 0)
 the LENGTH of the closed list value `s` as a numeral.  Unlike the constant fold, the length step counts via the
 recursive result, so it exercises the full recursive-threading machinery: the inner `listElim` over the tail
 must reduce to a numeral via the IH BEFORE the cons branch can wrap it in a successor. -/
-theorem listElimLengthComputesToNumeral {scrutinee : RawTerm 0} (scrutineeValue : IsListValue scrutinee) :
+theorem listElimLengthComputesToNumeral {motive : RawTerm 1} {scrutinee : RawTerm 0}
+    (scrutineeValue : IsListValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (listElimCell scrutinee natZeroCell lengthNatStep) out ∧ IsNatNumeral out :=
+      StepStar (listElimCell motive scrutinee natZeroCell lengthNatStep) out ∧ IsNatNumeral out :=
   listElimComputesToValue (isResultValue := IsNatNumeral)
     IsNatNumeral.zero lengthNatStepProduces scrutineeValue
 
@@ -189,10 +202,12 @@ to a numeral — `listElim(cons natZero (cons natZero nil), natZero, lengthStep)
 theorem listElimLengthComputesToNumeral.two :
     ∃ out : RawTerm 0,
       StepStar
-        (listElimCell (listConsCell natZeroCell (listConsCell natZeroCell listNilCell))
+        (listElimCell (variableCell (⟨0, by decide⟩ : Fin 1))
+          (listConsCell natZeroCell (listConsCell natZeroCell listNilCell))
           natZeroCell lengthNatStep) out ∧
       IsNatNumeral out :=
   listElimLengthComputesToNumeral
+    (motive := variableCell (⟨0, by decide⟩ : Fin 1))
     (IsListValue.cons rfl (IsListValue.cons rfl IsListValue.nil))
 
 end FX1Poly.Typed

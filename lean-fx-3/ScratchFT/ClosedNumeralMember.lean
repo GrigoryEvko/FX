@@ -68,7 +68,8 @@ theorem natRecClosedNumeralIsMember {isValue : RawTerm 0 → Prop}
 /-- **A closed `listElim` on a LIST VALUE with reducible branches is a data-candidate member,
 UNCONDITIONALLY** — the SN-064 twin (cons branch is the 3-argument application). -/
 theorem listElimClosedValueIsMember {isValue : RawTerm 0 → Prop}
-    {nilBranch consBranch : RawTerm 0}
+    {motive : RawTerm 1} {nilBranch consBranch : RawTerm 0}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (nilBranchMember : CanonicalFormsPredicate isValue nilBranch)
     (consBranchTerminates : IsStronglyNormalizing consBranch)
     (consBranchApplication : ∀ {head tail result : RawTerm 0},
@@ -84,14 +85,16 @@ theorem listElimClosedValueIsMember {isValue : RawTerm 0 → Prop}
     {value : RawTerm 0} (valueIsList : IsListValue value) :
     CanonicalFormsPredicate isValue
       (.mkGen .gen_listElim ()
-        (.childCons value (.childCons nilBranch (.childCons consBranch .childNil)))) :=
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch (.childCons value .childNil))))) :=
   listElimValueMember (CanonicalFormsPredicate isValue)
     CanonicalFormsPredicate.stronglyNormalizing
     (fun member step =>
       CanonicalFormsPredicate.closedUnderStep IsNeutral.closedUnderStep isListValue_impliesStepNormalForm
         member step)
-    closedHeadExpand valueIsList nilBranch consBranch nilBranchMember consBranchTerminates
-    consBranchApplication
+    closedHeadExpand valueIsList motive nilBranch consBranch motiveStronglyNormalizing nilBranchMember
+    consBranchTerminates consBranchApplication
 
 end FX1Poly.Core
 

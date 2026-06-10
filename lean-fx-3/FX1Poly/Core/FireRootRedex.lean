@@ -127,7 +127,9 @@ def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
             else none
   else if hListElim : generator = .gen_listElim then
     match (hListElim ▸ children : RawTermChildren (Generator.gen_listElim.binderShifts) scope) with
-    | .childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)) =>
+    -- Phase-Z spine: (motive, nil, cons, scrutinee); scrutinee is the LAST child.
+    | .childCons _motive
+        (.childCons nilBranch (.childCons consBranch (.childCons scrutinee .childNil))) =>
         match scrutinee with
         | .mkGen scrutineeGenerator _scrutineePayload scrutineeChildren =>
             if scrutineeGenerator = .gen_listNil then some nilBranch
@@ -143,7 +145,9 @@ def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
                           (.childCons tailValue .childNil)))
                       (.childCons
                         (.mkGen .gen_listElim ()
-                          (.childCons tailValue (.childCons nilBranch (.childCons consBranch .childNil))))
+                          (.childCons _motive
+                            (.childCons nilBranch
+                              (.childCons consBranch (.childCons tailValue .childNil)))))
                         .childNil)))
             else none
   else if hOptionMatch : generator = .gen_optionMatch then
@@ -388,8 +392,10 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                           rw [key] at fired; nomatch fired
             · by_cases hListElim : generator = .gen_listElim
               · subst hListElim
+                -- Phase-Z spine: (motive, nil, cons, scrutinee); the scrutinee head selects the iota.
                 match children with
-                | .childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)) =>
+                | .childCons motive
+                    (.childCons nilBranch (.childCons consBranch (.childCons scrutinee .childNil))) =>
                     match scrutinee with
                     | .mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
                         by_cases hNil : scrutineeGenerator = .gen_listNil
@@ -397,8 +403,11 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                           match scrutineeChildren with
                           | .childNil =>
                               have key : RawTerm.fireRootRedex .gen_listElim payload
-                                  (.childCons (.mkGen .gen_listNil scrutineePayload .childNil)
-                                    (.childCons nilBranch (.childCons consBranch .childNil))) =
+                                  (.childCons motive
+                                    (.childCons nilBranch
+                                      (.childCons consBranch
+                                        (.childCons (.mkGen .gen_listNil scrutineePayload .childNil)
+                                          .childNil)))) =
                                   some nilBranch := rfl
                               rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                               exact Step.iotaListElimNil
@@ -407,9 +416,12 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                             match scrutineeChildren with
                             | .childCons headValue (.childCons tailValue .childNil) =>
                                 have key : RawTerm.fireRootRedex .gen_listElim payload
-                                    (.childCons (.mkGen .gen_listCons scrutineePayload
-                                      (.childCons headValue (.childCons tailValue .childNil)))
-                                      (.childCons nilBranch (.childCons consBranch .childNil))) =
+                                    (.childCons motive
+                                      (.childCons nilBranch
+                                        (.childCons consBranch
+                                          (.childCons (.mkGen .gen_listCons scrutineePayload
+                                            (.childCons headValue (.childCons tailValue .childNil)))
+                                            .childNil)))) =
                                     some (.mkGen .gen_app ()
                                       (.childCons
                                         (.mkGen .gen_app ()
@@ -419,14 +431,20 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                                             (.childCons tailValue .childNil)))
                                         (.childCons
                                           (.mkGen .gen_listElim ()
-                                            (.childCons tailValue
-                                              (.childCons nilBranch (.childCons consBranch .childNil))))
+                                            (.childCons motive
+                                              (.childCons nilBranch
+                                                (.childCons consBranch
+                                                  (.childCons tailValue .childNil)))))
                                           .childNil))) := rfl
                                 rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                                 exact Step.iotaListElimCons
                           · have key : RawTerm.fireRootRedex .gen_listElim payload
-                                (.childCons (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
-                                  (.childCons nilBranch (.childCons consBranch .childNil))) = none :=
+                                (.childCons motive
+                                  (.childCons nilBranch
+                                    (.childCons consBranch
+                                      (.childCons
+                                        (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
+                                        .childNil)))) = none :=
                               (if_neg hNil).trans (dif_neg hCons)
                             rw [key] at fired; nomatch fired
               · by_cases hOptionMatch : generator = .gen_optionMatch

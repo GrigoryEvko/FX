@@ -273,14 +273,20 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
         zeroBranch
   /-- **Iota for listElim on listNil (base case).**  Eliminating on
       `listNil` selects the nil-branch.  Same branch-selection shape
-      as `iotaBoolTrue` / `iotaNatElimZero`; pure projection. -/
+      as `iotaBoolTrue` / `iotaNatElimZero`; pure projection.  Phase-Z
+      motive shape: children `(motive, nilBranch, consBranch, scrutinee)`
+      with the motive a term under one binder and the scrutinee LAST;
+      the base-case iota DISCARDS the motive (typing-only role). -/
   | iotaListElimNil {scope : Nat}
+                    {motive : RawTerm (scope + 1)}
                     {nilBranch consBranch : RawTerm scope} :
       Step
         (.mkGen .gen_listElim ()
-          (.childCons
-            (.mkGen .gen_listNil () .childNil)
-            (.childCons nilBranch (.childCons consBranch .childNil))))
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consBranch
+                (.childCons (.mkGen .gen_listNil () .childNil)
+                  .childNil)))))
         nilBranch
   /-- **Iota for optionMatch on optionNone (base case).**  Matching
       on `optionNone` selects the none-branch.  Same branch-selection
@@ -426,16 +432,27 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
       The recursive call `listElim t n c` (applied to the tail)
       appears in the reduct as a syntactic sub-term -- same
       inductive shape as `iotaNatElimSucc` but with one more
-      curried argument. -/
+      curried argument.
+
+      Phase-Z motive shape: children `(motive, nilBranch, consBranch,
+      scrutinee)` with the motive under one binder and the scrutinee
+      LAST.  Unlike the base-case iotas, the step case does NOT fully
+      discard the motive: the recursive call in the reduct rebuilds a
+      `gen_listElim` spine and THREADS the same motive through (the
+      recursive occurrence eliminates the tail at the same motive). -/
   | iotaListElimCons {scope : Nat}
+                     {motive : RawTerm (scope + 1)}
                      {headVal tailVal : RawTerm scope}
                      {nilBranch consBranch : RawTerm scope} :
       Step
         (.mkGen .gen_listElim ()
-          (.childCons
-            (.mkGen .gen_listCons ()
-              (.childCons headVal (.childCons tailVal .childNil)))
-            (.childCons nilBranch (.childCons consBranch .childNil))))
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consBranch
+                (.childCons
+                  (.mkGen .gen_listCons ()
+                    (.childCons headVal (.childCons tailVal .childNil)))
+                  .childNil)))))
         (.mkGen .gen_app ()
           (.childCons
             (.mkGen .gen_app ()
@@ -445,8 +462,10 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
                 (.childCons tailVal .childNil)))
             (.childCons
               (.mkGen .gen_listElim ()
-                (.childCons tailVal
-                  (.childCons nilBranch (.childCons consBranch .childNil))))
+                (.childCons motive
+                  (.childCons nilBranch
+                    (.childCons consBranch
+                      (.childCons tailVal .childNil)))))
               .childNil)))
   /-- **Iota for idJ on refl (identity-type elimination).**
 
@@ -764,15 +783,18 @@ Distinct nil/cons branches verify the RIGHT one is selected. -/
 theorem Step.iotaListElimNil_selects_nil :
     let nilScrutinee : RawTerm 0 :=
       .mkGen .gen_listNil () .childNil
+    let varMotive : RawTerm 1 :=
+      .mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil
     let nilBranch : RawTerm 0 :=
       .mkGen .gen_boolTrue () .childNil
     let consBranch : RawTerm 0 :=
       .mkGen .gen_boolFalse () .childNil
     let elimTerm : RawTerm 0 :=
       .mkGen .gen_listElim ()
-        (.childCons
-          nilScrutinee
-          (.childCons nilBranch (.childCons consBranch .childNil)))
+        (.childCons varMotive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons nilScrutinee .childNil))))
     Step elimTerm nilBranch := by
   apply Step.iotaListElimNil
 
@@ -975,20 +997,24 @@ theorem Step.iotaListElimCons_builds_triple_app :
     let consScrutinee : RawTerm 0 :=
       .mkGen .gen_listCons ()
         (.childCons headVal (.childCons tailVal .childNil))
+    let varMotive : RawTerm 1 :=
+      .mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil
     let nilBranch : RawTerm 0 :=
       .mkGen .gen_boolTrue () .childNil
     let consBranch : RawTerm 0 :=
       .mkGen .gen_boolFalse () .childNil
     let elimTerm : RawTerm 0 :=
       .mkGen .gen_listElim ()
-        (.childCons
-          consScrutinee
-          (.childCons nilBranch (.childCons consBranch .childNil)))
+        (.childCons varMotive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons consScrutinee .childNil))))
     let recursiveCall : RawTerm 0 :=
       .mkGen .gen_listElim ()
-        (.childCons
-          tailVal
-          (.childCons nilBranch (.childCons consBranch .childNil)))
+        (.childCons varMotive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons tailVal .childNil))))
     let appHead : RawTerm 0 :=
       .mkGen .gen_app ()
         (.childCons consBranch (.childCons headVal .childNil))

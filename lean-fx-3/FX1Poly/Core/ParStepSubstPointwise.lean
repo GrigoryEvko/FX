@@ -151,8 +151,12 @@ theorem ParStep.substPointwise {sourceScope targetScope : Nat}
         ParStep.iotaNatElimZero (ihZero sigma tau pw))
       (fun {scope} {zeroBranch zeroBranch' succBranch} _step ihZero {targetScope} sigma tau pw =>
         ParStep.iotaNatRecZero (ihZero sigma tau pw))
-      (fun {scope} {nilBranch nilBranch' consBranch} _step ihNil {targetScope} sigma tau pw =>
-        ParStep.iotaListElimNil (ihNil sigma tau pw))
+      (fun {scope} {motive motive' nilBranch nilBranch' consBranch} _stepMotive _stepNil
+          ihMotive ihNil {targetScope} sigma tau pw =>
+        ParStep.iotaListElimNil
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihNil sigma tau pw))
       (fun {scope} {noneBranch noneBranch' someBranch} _step ihNone {targetScope} sigma tau pw =>
         ParStep.iotaOptionMatchNone (ihNone sigma tau pw))
       (fun {scope} {value value' noneBranch someBranch someBranch'} _stepSome _stepVal
@@ -170,10 +174,15 @@ theorem ParStep.substPointwise {sourceScope targetScope : Nat}
       (fun {scope} {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
           _stepPred _stepZero _stepSucc ihPred ihZero ihSucc {targetScope} sigma tau pw =>
         ParStep.iotaNatRecSucc (ihPred sigma tau pw) (ihZero sigma tau pw) (ihSucc sigma tau pw))
-      (fun {scope} {headVal headVal' tailVal tailVal' nilBranch nilBranch' consBranch consBranch'}
-          _stepHead _stepTail _stepNil _stepCons ihHead ihTail ihNil ihCons
+      (fun {scope} {motive motive' headVal headVal' tailVal tailVal'
+            nilBranch nilBranch' consBranch consBranch'}
+          _stepMotive _stepHead _stepTail _stepNil _stepCons
+          ihMotive ihHead ihTail ihNil ihCons
           {targetScope} sigma tau pw =>
-        ParStep.iotaListElimCons (ihHead sigma tau pw) (ihTail sigma tau pw)
+        ParStep.iotaListElimCons
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihHead sigma tau pw) (ihTail sigma tau pw)
           (ihNil sigma tau pw) (ihCons sigma tau pw))
       (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma tau pw =>
         ParStep.iotaIdJRefl (ihBase sigma tau pw))

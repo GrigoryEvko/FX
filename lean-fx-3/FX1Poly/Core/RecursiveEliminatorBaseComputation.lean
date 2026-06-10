@@ -14,8 +14,10 @@ selects the base branch — non-growing, computable here fundamental-free — bu
 GROWING the term, and proving that terminates needs the full Tait reducibility argument (the fundamental-gated
 machinery).  This file ships the clean base-case half.
 
-* `StepStar.natElimScrutinee` / `natRecScrutinee` / `listElimScrutinee` — the scrutinee-position (head-child)
-  chain congruences (`StepStar.congAt` + `Step.cong … (StepChildren.here …)`, as for `boolElim`).
+* `StepStar.natElimScrutinee` / `natRecScrutinee` / `listElimScrutinee` — the scrutinee-position chain
+  congruences (`StepStar.congAt` + `Step.cong …`).  For `natElim` / `natRec` the scrutinee is the head child
+  (`StepChildren.here …`); for the Phase-Z `listElim` it is the LAST child of the 4-child spine, so the cong
+  drills a `there`-chain past the motive + both branches (mirroring `boolElim`).
 * `natElimZeroScrutineeReducesToBranch` / `natRecZeroScrutineeReducesToBranch` /
   `listElimNilScrutineeReducesToBranch` — the headline: when the scrutinee reduces to the base constructor
   (`zero` / `nil`), the eliminator reduces to the base branch.  The scrutinee congruence carries the
@@ -44,10 +46,16 @@ private abbrev natRecCellOn {scope : Nat} (scrutinee zeroBranch succBranch : Raw
   .mkGen .gen_natRec ()
     (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)))
 
-/-- The `listElim` cell over its three children (scrutinee, nil-branch, cons-branch). -/
-private abbrev listElimCellOn {scope : Nat} (scrutinee nilBranch consBranch : RawTerm scope) : RawTerm scope :=
+/-- The `listElim` cell — `gen_listElim` in the Phase-Z motive shape (arity 4, `binderShifts =
+[1, 0, 0, 0]`).  Author order `(motive, scrutinee, nil-branch, cons-branch)`; emitted spine
+`(motive, nil-branch, cons-branch, scrutinee)` with the motive a term under one binder and the scrutinee LAST. -/
+private abbrev listElimCellOn {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee nilBranch consBranch : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_listElim ()
-    (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)))
+    (.childCons motive
+      (.childCons nilBranch
+        (.childCons consBranch
+          (.childCons scrutinee .childNil))))
 
 /-- **Scrutinee-position chain congruence for `natElim`.**  A reduction chain in the scrutinee lifts to the
 whole `natElim` cell (branches fixed), via `StepStar.congAt` + `Step.cong … (here …)` at the head child. -/
@@ -72,15 +80,23 @@ theorem StepStar.natRecScrutinee {scope : Nat}
     (fun stepInScrutinee => Step.cong .gen_natRec () (StepChildren.here _ stepInScrutinee))
     scrutineeChain
 
-/-- **Scrutinee-position chain congruence for `listElim`.**  Symmetric to `StepStar.natElimScrutinee`. -/
+/-- **Scrutinee-position chain congruence for `listElim`.**  A reduction chain in the scrutinee lifts to the
+whole `listElim` cell (motive + branches fixed), via `StepStar.congAt` + `Step.cong …` drilled by a `there`-chain
+to the scrutinee child (the LAST child of the 4-child Phase-Z spine, past the motive + both branches). -/
 theorem StepStar.listElimScrutinee {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {scrutinee scrutineeReduct nilBranch consBranch : RawTerm scope}
     (scrutineeChain : StepStar scrutinee scrutineeReduct) :
-    StepStar (listElimCellOn scrutinee nilBranch consBranch)
-      (listElimCellOn scrutineeReduct nilBranch consBranch) :=
+    StepStar (listElimCellOn motive scrutinee nilBranch consBranch)
+      (listElimCellOn motive scrutineeReduct nilBranch consBranch) :=
   StepStar.congAt
-    (fun hole => listElimCellOn hole nilBranch consBranch)
-    (fun stepInScrutinee => Step.cong .gen_listElim () (StepChildren.here _ stepInScrutinee))
+    (fun hole => listElimCellOn motive hole nilBranch consBranch)
+    (fun stepInScrutinee =>
+      Step.cong .gen_listElim ()
+        (StepChildren.there _
+          (StepChildren.there _
+            (StepChildren.there _
+              (StepChildren.here _ stepInScrutinee)))))
     scrutineeChain
 
 /-- **`natElim` on a zero-reducing scrutinee computes to the zero-branch.**  The fundamental-free base-case half of
@@ -106,9 +122,10 @@ theorem natRecZeroScrutineeReducesToBranch {scope : Nat}
 `listElim`, and the base ι `Step.iotaListElimNil` selects the nil-branch.  (The `cons` step case grows — the ι
 reappears `listElim` on the tail — and needs Tait.) -/
 theorem listElimNilScrutineeReducesToBranch {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {scrutinee nilBranch consBranch : RawTerm scope}
     (scrutineeReducesToNil : StepStar scrutinee listNilCell) :
-    StepStar (listElimCellOn scrutinee nilBranch consBranch) nilBranch :=
+    StepStar (listElimCellOn motive scrutinee nilBranch consBranch) nilBranch :=
   StepStar.transLast (StepStar.listElimScrutinee scrutineeReducesToNil) Step.iotaListElimNil
 
 end FX1Poly.Core

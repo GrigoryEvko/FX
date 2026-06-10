@@ -181,12 +181,14 @@ def hasNatElimIotaRoot {scope : Nat}
       RawTerm.isNatZeroSource scrutinee ||
         RawTerm.isNatSuccSource scrutinee
 
-/-- Root list eliminator iota source shape. -/
+/-- Root list eliminator iota source shape.  Phase-Z spine `[1, 0, 0, 0]`:
+    children are `(motive, nil, cons, scrutinee)` with the scrutinee LAST and
+    the motive a term under one binder. -/
 def hasListElimIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [0, 0, 0] scope) : Bool :=
+    (sourceChildren : RawTermChildren [1, 0, 0, 0] scope) : Bool :=
   match sourceChildren with
-  | .childCons scrutinee
-      (.childCons _nilBranch (.childCons _consBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons _nilBranch (.childCons _consBranch (.childCons scrutinee .childNil))) =>
       RawTerm.isListNilSource scrutinee ||
         RawTerm.isListConsSource scrutinee
 

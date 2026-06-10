@@ -213,9 +213,11 @@ theorem cd_natRecZero_eq {scope : Nat} (zeroBranch succBranch : RawTerm scope) :
       (.childCons zeroBranch (.childCons succBranch .childNil)))) =
       RawTerm.completeDevelopment zeroBranch := rfl
 
-theorem cd_listElimNil_eq {scope : Nat} (nilBranch consBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_listElim () (.childCons (.mkGen .gen_listNil () .childNil)
-      (.childCons nilBranch (.childCons consBranch .childNil)))) =
+theorem cd_listElimNil_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (nilBranch consBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_listElim () (.childCons motive
+      (.childCons nilBranch (.childCons consBranch
+        (.childCons (.mkGen .gen_listNil () .childNil) .childNil))))) =
       RawTerm.completeDevelopment nilBranch := rfl
 
 theorem cd_optionMatchNone_eq {scope : Nat} (noneBranch someBranch : RawTerm scope) :
@@ -266,18 +268,22 @@ theorem cd_natRecSucc_eq {scope : Nat} (predecessor zeroBranch succBranch : RawT
           (.childCons (RawTerm.completeDevelopment zeroBranch)
             (.childCons (RawTerm.completeDevelopment succBranch) .childNil)))) .childNil)) := rfl
 
-theorem cd_listElimCons_eq {scope : Nat} (headValue tailValue nilBranch consBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_listElim () (.childCons
-      (.mkGen .gen_listCons () (.childCons headValue (.childCons tailValue .childNil)))
-      (.childCons nilBranch (.childCons consBranch .childNil)))) =
+theorem cd_listElimCons_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (headValue tailValue nilBranch consBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_listElim () (.childCons motive
+      (.childCons nilBranch (.childCons consBranch
+        (.childCons
+          (.mkGen .gen_listCons () (.childCons headValue (.childCons tailValue .childNil)))
+          .childNil))))) =
       .mkGen .gen_app () (.childCons
         (.mkGen .gen_app () (.childCons
           (.mkGen .gen_app () (.childCons (RawTerm.completeDevelopment consBranch)
             (.childCons (RawTerm.completeDevelopment headValue) .childNil)))
           (.childCons (RawTerm.completeDevelopment tailValue) .childNil)))
-        (.childCons (.mkGen .gen_listElim () (.childCons (RawTerm.completeDevelopment tailValue)
+        (.childCons (.mkGen .gen_listElim () (.childCons (RawTerm.completeDevelopment motive)
           (.childCons (RawTerm.completeDevelopment nilBranch)
-            (.childCons (RawTerm.completeDevelopment consBranch) .childNil)))) .childNil)) := rfl
+            (.childCons (RawTerm.completeDevelopment consBranch)
+              (.childCons (RawTerm.completeDevelopment tailValue) .childNil))))) .childNil)) := rfl
 
 theorem cd_idJRefl_eq {scope : Nat} (baseCase rawWitness : RawTerm scope) :
     RawTerm.completeDevelopment (.mkGen .gen_idJ () (.childCons baseCase

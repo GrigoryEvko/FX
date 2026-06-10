@@ -445,8 +445,8 @@ def Generator.childSpecs : Generator → List ChildSpec
   | .gen_listNil      => []
   | .gen_listCons     => [ChildSpec.termSameScope, ChildSpec.termSameScope]
   | .gen_listElim     =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope,
-     ChildSpec.termSameScope]
+    [ChildSpec.termUnderBinder, ChildSpec.termSameScope,
+     ChildSpec.termSameScope, ChildSpec.termSameScope]
   -- Options
   | .gen_optionNone   => []
   | .gen_optionSome   => [ChildSpec.termSameScope]

@@ -155,12 +155,20 @@ theorem natRecClosedIsMember {isValue : RawTerm 0 → Prop}
     (StepStar.natRecScrutinee scrutineeToNumeral) cellStronglyNormalizing
     numeralMember.closedReducesToValue
 
-/-- The `listElim` cell over its (scrutinee, nilBranch, consBranch) spine. -/
-private abbrev listElimCell (scrutinee nilBranch consBranch : RawTerm 0) : RawTerm 0 :=
-  .mkGen .gen_listElim () (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)))
+/-- The `listElim` cell — `gen_listElim` in the Phase-Z motive shape (arity 4, `binderShifts =
+[1, 0, 0, 0]`).  Author order `(motive, scrutinee, nilBranch, consBranch)`; emitted spine
+`(motive, nilBranch, consBranch, scrutinee)` with the motive under one binder and the scrutinee LAST. -/
+private abbrev listElimCell (motive : RawTerm 1) (scrutinee nilBranch consBranch : RawTerm 0) : RawTerm 0 :=
+  .mkGen .gen_listElim ()
+    (.childCons motive
+      (.childCons nilBranch
+        (.childCons consBranch
+          (.childCons scrutinee .childNil))))
 
-/-- The `listElim` cons-contractum `app (app (app consBranch head) tail) (listElim tail nilBranch consBranch)`. -/
-private abbrev listElimConsContractumClosed (consBranch head tail nilBranch : RawTerm 0) : RawTerm 0 :=
+/-- The `listElim` cons-contractum `app (app (app consBranch head) tail) (listElim motive tail nilBranch
+consBranch)` — the Phase-Z cons ι THREADS the same motive into the recursive call. -/
+private abbrev listElimConsContractumClosed (motive : RawTerm 1)
+    (consBranch head tail nilBranch : RawTerm 0) : RawTerm 0 :=
   .mkGen .gen_app ()
     (.childCons
       (.mkGen .gen_app ()
@@ -168,7 +176,7 @@ private abbrev listElimConsContractumClosed (consBranch head tail nilBranch : Ra
           (.mkGen .gen_app () (.childCons consBranch (.childCons head .childNil)))
           (.childCons tail .childNil)))
       (.childCons
-        (listElimCell tail nilBranch consBranch)
+        (listElimCell motive tail nilBranch consBranch)
         .childNil))
 
 /-- **A closed `listElim` on a member List scrutinee with reducible branches is a member of the result
@@ -180,9 +188,13 @@ for `redexStronglyNormalizing` and the data candidate's closed weak-head-expansi
 `consContractumTerminates` is the honest recursor-SN IH-premise (the same conditional-arm discipline
 `listElimValueReducibility` itself uses for `redexStronglyNormalizing`).  `consBranchApplication` takes the head
 in `RawTerm.isStepNormalForm` form (not SN) and the tail as an `IsListValue` — exactly the Tait interface the
-list recursor arm supplies for a reducible cons branch.  Fundamental-independent: pure closed-canonicity assembly. -/
+list recursor arm supplies for a reducible cons branch.  Phase-Z motive shape: the cell carries a stored motive
+head child, so a motive-SN hypothesis (`motiveStronglyNormalizing`) joins the branch-SN witnesses, fed to the
+SN helper in the PINNED order (scrutinee, motive, nil, cons).  Fundamental-independent: pure closed-canonicity
+assembly. -/
 theorem listElimClosedIsMember {isValue : RawTerm 0 → Prop}
-    {scrutinee nilBranch consBranch : RawTerm 0}
+    {motive : RawTerm 1} {scrutinee nilBranch consBranch : RawTerm 0}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (scrutineeMember : CanonicalFormsPredicate IsListValue scrutinee)
     (nilBranchMember : CanonicalFormsPredicate isValue nilBranch)
     (consBranchTerminates : IsStronglyNormalizing consBranch)
@@ -198,25 +210,29 @@ theorem listElimClosedIsMember {isValue : RawTerm 0 → Prop}
               (.childCons result .childNil))))
     (consContractumTerminates : ∀ head tail : RawTerm 0,
         IsStronglyNormalizing head → IsStronglyNormalizing tail →
-        IsStronglyNormalizing (listElimConsContractumClosed consBranch head tail nilBranch)) :
-    CanonicalFormsPredicate isValue (listElimCell scrutinee nilBranch consBranch) := by
+        IsStronglyNormalizing (listElimConsContractumClosed motive consBranch head tail nilBranch)) :
+    CanonicalFormsPredicate isValue (listElimCell motive scrutinee nilBranch consBranch) := by
   have headExpand : ∀ {redexTerm contractum : RawTerm 0},
       WeakHeadStep redexTerm contractum → CanonicalFormsPredicate isValue contractum →
       IsStronglyNormalizing redexTerm → CanonicalFormsPredicate isValue redexTerm :=
     fun weakHeadStep memberContractum redexSN =>
       CanonicalFormsPredicate.weakHeadExpansionOfMemberNotNeutral weakHeadStep.toStep redexSN
         memberContractum IsNeutral.noClosed
+  -- PINNED SN-helper order: scrutinee FIRST, motive SECOND, nil THIRD, cons FOURTH.
   have recursorSN : ∀ {value : RawTerm 0}, IsListValue value →
-      IsStronglyNormalizing (listElimCell value nilBranch consBranch) :=
+      IsStronglyNormalizing (listElimCell motive value nilBranch consBranch) :=
     fun valueIsList =>
       listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
-        (isListValue_isMember valueIsList).stronglyNormalizing
+        (isListValue_isMember valueIsList).stronglyNormalizing motiveStronglyNormalizing
         nilBranchMember.stronglyNormalizing consBranchTerminates
-  have cellStronglyNormalizing : IsStronglyNormalizing (listElimCell scrutinee nilBranch consBranch) :=
+  have cellStronglyNormalizing :
+      IsStronglyNormalizing (listElimCell motive scrutinee nilBranch consBranch) :=
     listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
-      scrutineeMember.stronglyNormalizing nilBranchMember.stronglyNormalizing consBranchTerminates
+      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
+      nilBranchMember.stronglyNormalizing consBranchTerminates
   obtain ⟨listValue, scrutineeToList, listValueIsList⟩ := scrutineeMember.closedReducesToValue
-  have listValueMember : CanonicalFormsPredicate isValue (listElimCell listValue nilBranch consBranch) :=
+  have listValueMember :
+      CanonicalFormsPredicate isValue (listElimCell motive listValue nilBranch consBranch) :=
     listElimValueReducibility (CanonicalFormsPredicate isValue)
       headExpand nilBranchMember consBranchApplication recursorSN listValueIsList
   exact CanonicalFormsPredicate.ofStepStarReachingValue

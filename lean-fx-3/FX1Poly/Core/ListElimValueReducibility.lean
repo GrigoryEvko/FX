@@ -21,7 +21,10 @@ conditional-arm discipline as `natElimValueReducibility` / the dependent-Π fuel
 * `consBranchApplication` — the cons branch applied to a normal head, a list-value tail, and a `C`-member
   result lands in `C` (the function-space membership of the cons branch, 3-argument).
 * `redexStronglyNormalizing` — the `listElim` cell at a list value is strongly normalizing (shipped via the
-  `listElim` cons-case ι-redex SN family).
+  `listElim` cons-case ι-redex SN family).  Phase-Z motive shape: the cell carries a stored motive head child
+  (arity 4, `binderShifts = [1, 0, 0, 0]`, spine `(motive, nilBranch, consBranch, value)`); the motive is fixed
+  through the `IsListValue` recursion, so the recursive `listElim` in the cons-ι reduct threads the SAME motive
+  and the tail IH lands at it directly.
 
 The scrutinee-reduction / neutral outer regimes (the SN/neutral recursion) are the deferred remaining half,
 shared with the Nat recursor case.
@@ -45,7 +48,7 @@ fed the tail's inductive hypothesis — each lifted to the recursor cell by the 
 The list analogue of `natElimValueReducibility`; the scrutinee-reduction / neutral regimes are the deferred
 outer recursion. -/
 theorem listElimValueReducibility {scope : Nat}
-    {nilBranch consBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {nilBranch consBranch : RawTerm scope}
     (resultCandidate : RawTerm scope → Prop)
     (headExpand : ∀ {redexTerm contractum : RawTerm scope},
         WeakHeadStep redexTerm contractum → resultCandidate contractum →
@@ -63,10 +66,16 @@ theorem listElimValueReducibility {scope : Nat}
     (redexStronglyNormalizing : ∀ {value : RawTerm scope}, IsListValue value →
         IsStronglyNormalizing
           (.mkGen .gen_listElim ()
-            (.childCons value (.childCons nilBranch (.childCons consBranch .childNil)))))
+            (.childCons motive
+              (.childCons nilBranch
+                (.childCons consBranch
+                  (.childCons value .childNil))))))
     {value : RawTerm scope} (valueIsList : IsListValue value) :
     resultCandidate (.mkGen .gen_listElim ()
-        (.childCons value (.childCons nilBranch (.childCons consBranch .childNil)))) := by
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons value .childNil))))) := by
   induction valueIsList with
   | nil =>
       exact headExpand IotaHeadStep.iotaListElimNil.toWeakHeadStep nilBranchMember

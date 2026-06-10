@@ -189,7 +189,8 @@ theorem IotaHeadStep.rpoEmbeds {scope : Nat} {source target : RawTerm scope}
       exact rpoOrientsElim2 iotaGenPrecedence .gen_natRec .gen_app .gen_natSucc (by decide) _ _ _
   | iotaListElimCons =>
       dsimp only [eraseToRose, eraseChildren]
-      exact rpoOrientsElim3 iotaGenPrecedence .gen_listElim .gen_app .gen_listCons (by decide) _ _ _ _
+      exact rpoOrientsElim3WithMotive iotaGenPrecedence .gen_listElim .gen_app .gen_listCons
+        (by decide) _ _ _ _ _
   | iotaIdJRefl =>
       dsimp only [eraseToRose, eraseChildren]
       exact Rpo.subtermEq Generator.gen_idJ _ _ (List.Mem.head _)

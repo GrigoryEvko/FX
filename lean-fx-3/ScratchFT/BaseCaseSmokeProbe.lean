@@ -30,14 +30,18 @@ theorem natRecZeroClosedMembershipSmoke :
       boolTrue_isStronglyNormalizing boolTrue_isStronglyNormalizing)
     boolTrueCell_isMember.closedReducesToValue
 
--- listElim on listNil fires to the nil-branch (base case, no recursion)
+-- listElim on listNil fires to the nil-branch (base case, no recursion).
+-- Phase-Z spine: (motive, nilBranch, consBranch, scrutinee) with a throwaway var-0 motive.
 theorem listElimNilClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_listElim ()
-        (.childCons listNilCell (.childCons boolTrueCell (.childCons boolTrueCell .childNil)))) :=
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
+          (.childCons boolTrueCell
+            (.childCons boolTrueCell (.childCons listNilCell .childNil))))) :=
   CanonicalFormsPredicate.ofStepStarReachingValue
     (StepStar.trans Step.iotaListElimNil (StepStar.refl _))
     (listElimNil_isStronglyNormalizing_of_branches
+      (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
       boolTrue_isStronglyNormalizing boolTrue_isStronglyNormalizing)
     boolTrueCell_isMember.closedReducesToValue
 

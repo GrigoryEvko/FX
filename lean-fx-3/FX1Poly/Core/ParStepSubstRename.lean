@@ -89,8 +89,9 @@ theorem ParStep.subst {sourceScope targetScope : Nat}
         ParStep.iotaNatElimZero (ihZero sigma))
       (fun {scope} {zeroBranch zeroBranch' succBranch} _step ihZero {targetScope} sigma =>
         ParStep.iotaNatRecZero (ihZero sigma))
-      (fun {scope} {nilBranch nilBranch' consBranch} _step ihNil {targetScope} sigma =>
-        ParStep.iotaListElimNil (ihNil sigma))
+      (fun {scope} {motive motive' nilBranch nilBranch' consBranch} _stepMotive _stepNil
+          ihMotive ihNil {targetScope} sigma =>
+        ParStep.iotaListElimNil (ihMotive (RawTermSubst.lift sigma)) (ihNil sigma))
       (fun {scope} {noneBranch noneBranch' someBranch} _step ihNone {targetScope} sigma =>
         ParStep.iotaOptionMatchNone (ihNone sigma))
       (fun {scope} {value value' noneBranch someBranch someBranch'} _stepSome _stepVal
@@ -108,9 +109,12 @@ theorem ParStep.subst {sourceScope targetScope : Nat}
       (fun {scope} {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
           _stepPred _stepZero _stepSucc ihPred ihZero ihSucc {targetScope} sigma =>
         ParStep.iotaNatRecSucc (ihPred sigma) (ihZero sigma) (ihSucc sigma))
-      (fun {scope} {headVal headVal' tailVal tailVal' nilBranch nilBranch' consBranch consBranch'}
-          _stepHead _stepTail _stepNil _stepCons ihHead ihTail ihNil ihCons {targetScope} sigma =>
-        ParStep.iotaListElimCons (ihHead sigma) (ihTail sigma) (ihNil sigma) (ihCons sigma))
+      (fun {scope} {motive motive' headVal headVal' tailVal tailVal'
+            nilBranch nilBranch' consBranch consBranch'}
+          _stepMotive _stepHead _stepTail _stepNil _stepCons
+          ihMotive ihHead ihTail ihNil ihCons {targetScope} sigma =>
+        ParStep.iotaListElimCons (ihMotive (RawTermSubst.lift sigma))
+          (ihHead sigma) (ihTail sigma) (ihNil sigma) (ihCons sigma))
       (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma =>
         ParStep.iotaIdJRefl (ihBase sigma))
       (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma =>
@@ -175,8 +179,9 @@ theorem ParStepChildren.subst {parentSourceScope parentTargetScope : Nat}
         ParStep.iotaNatElimZero (ihZero sigma))
       (fun {scope} {zeroBranch zeroBranch' succBranch} _step ihZero {targetScope} sigma =>
         ParStep.iotaNatRecZero (ihZero sigma))
-      (fun {scope} {nilBranch nilBranch' consBranch} _step ihNil {targetScope} sigma =>
-        ParStep.iotaListElimNil (ihNil sigma))
+      (fun {scope} {motive motive' nilBranch nilBranch' consBranch} _stepMotive _stepNil
+          ihMotive ihNil {targetScope} sigma =>
+        ParStep.iotaListElimNil (ihMotive (RawTermSubst.lift sigma)) (ihNil sigma))
       (fun {scope} {noneBranch noneBranch' someBranch} _step ihNone {targetScope} sigma =>
         ParStep.iotaOptionMatchNone (ihNone sigma))
       (fun {scope} {value value' noneBranch someBranch someBranch'} _stepSome _stepVal
@@ -194,9 +199,12 @@ theorem ParStepChildren.subst {parentSourceScope parentTargetScope : Nat}
       (fun {scope} {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
           _stepPred _stepZero _stepSucc ihPred ihZero ihSucc {targetScope} sigma =>
         ParStep.iotaNatRecSucc (ihPred sigma) (ihZero sigma) (ihSucc sigma))
-      (fun {scope} {headVal headVal' tailVal tailVal' nilBranch nilBranch' consBranch consBranch'}
-          _stepHead _stepTail _stepNil _stepCons ihHead ihTail ihNil ihCons {targetScope} sigma =>
-        ParStep.iotaListElimCons (ihHead sigma) (ihTail sigma) (ihNil sigma) (ihCons sigma))
+      (fun {scope} {motive motive' headVal headVal' tailVal tailVal'
+            nilBranch nilBranch' consBranch consBranch'}
+          _stepMotive _stepHead _stepTail _stepNil _stepCons
+          ihMotive ihHead ihTail ihNil ihCons {targetScope} sigma =>
+        ParStep.iotaListElimCons (ihMotive (RawTermSubst.lift sigma))
+          (ihHead sigma) (ihTail sigma) (ihNil sigma) (ihCons sigma))
       (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma =>
         ParStep.iotaIdJRefl (ihBase sigma))
       (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma =>

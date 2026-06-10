@@ -7,16 +7,17 @@ to revised-MILESTONE-A coverage breadth per §11.8.12.1; tracker series M24-Z2�
 machine-checked current-shape pins, a feasibility witness for the cascade-free alternative, and
 the costed decision record.
 
-## The census (2026-06, Phase-Z boolElim stage SHIPPED)
+## The census (2026-06, Phase-Z boolElim + listElim stages SHIPPED)
 
-`gen_boolElim` has LANDED its Phase-Z motive shape — arity 4, binderShifts `[1,0,0,0]`, children
-`(motive, thenBranch, elseBranch, scrutinee)` with the motive a term under one binder (pinned as
-`rfl` theorems below).  The remaining SEVEN eliminator generators are still FLAT in the current
-substrate — no motive child, no binder shifts:
-`gen_natElim`/`gen_natRec`/`gen_listElim`/`gen_optionMatch`/`gen_eitherMatch` at arity 3 shifts
+`gen_boolElim` AND `gen_listElim` have LANDED their Phase-Z motive shape — arity 4, binderShifts
+`[1,0,0,0]`, children `(motive, …branches…, scrutinee)` with the motive a term under one binder
+(pinned as `rfl` theorems below).  The remaining SIX eliminator generators are still FLAT in the
+current substrate — no motive child, no binder shifts:
+`gen_natElim`/`gen_natRec`/`gen_optionMatch`/`gen_eitherMatch` at arity 3 shifts
 `[0,0,0]`; `gen_idJ`/`gen_idStrictRec` at arity 2 shifts `[0,0]`.  The Z₀ spec shapes add a motive
 child under binders (e.g. natElim → `[1,0,2,0]`; idJ/idStrictRec shift 2).  The binder-shift
-MECHANISM is live and proven (`gen_lam` at `[0,1]` and now `gen_boolElim` at `[1,0,0,0]`).
+MECHANISM is live and proven (`gen_lam` at `[0,1]`, `gen_boolElim` and now `gen_listElim` at
+`[1,0,0,0]`).
 
 BLAST RADIUS of changing arity+binderShifts for the 8 generators: 1406 files in
 FX1Poly/FX0Poly/FX1PolyAudit mention at least one eliminator generator (262 for `gen_natElim`
@@ -73,10 +74,10 @@ extension calculus (V2-L5) is itself unbuilt, so this inverts the dependency.
 
 **RECOMMENDATION:** Route B bricks now where dependent elimination unblocks metatheory (per
 eliminator family, cascade-free, spec-by-addition), and Route A as the user-scheduled substrate
-commitment — staged ONE eliminator at a time (boolElim first: smallest corpus, validates the
-migration playbook before natElim's 262-file footprint), each stage an atomic green commit.
-The `rfl` pins below are the regression tripwires: each Route-A stage breaks exactly its own
-generator's two pins, by design.
+commitment — staged ONE eliminator at a time (boolElim first: smallest corpus, validated the
+migration playbook; listElim second, exercising the recursive cons-ι motive threading; natElim's
+262-file footprint next), each stage an atomic green commit.  The `rfl` pins below are the
+regression tripwires: each Route-A stage breaks exactly its own generator's two pins, by design.
 
 ## Zero-axiom verification
 
@@ -106,8 +107,8 @@ theorem natElim_arity_isFlat : Generator.gen_natElim.arity = 3 := rfl
 theorem natElim_binderShifts_isFlat : Generator.gen_natElim.binderShifts = [0, 0, 0] := rfl
 theorem natRec_arity_isFlat : Generator.gen_natRec.arity = 3 := rfl
 theorem natRec_binderShifts_isFlat : Generator.gen_natRec.binderShifts = [0, 0, 0] := rfl
-theorem listElim_arity_isFlat : Generator.gen_listElim.arity = 3 := rfl
-theorem listElim_binderShifts_isFlat : Generator.gen_listElim.binderShifts = [0, 0, 0] := rfl
+theorem listElim_arity_isFlat : Generator.gen_listElim.arity = 4 := rfl
+theorem listElim_binderShifts_isFlat : Generator.gen_listElim.binderShifts = [1, 0, 0, 0] := rfl
 theorem optionMatch_arity_isFlat : Generator.gen_optionMatch.arity = 3 := rfl
 theorem optionMatch_binderShifts_isFlat :
     Generator.gen_optionMatch.binderShifts = [0, 0, 0] := rfl

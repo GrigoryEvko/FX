@@ -110,8 +110,10 @@ theorem RawTerm.hasRootStepSource_imp_fireRootRedex_isSome {scope : Nat} {genera
                       subst hSucc; rfl
             · by_cases hListElim : generator = .gen_listElim
               · subst hListElim
+                -- Phase-Z spine: (motive, nil, cons, scrutinee); the scrutinee is the LAST child.
                 match children with
-                | .childCons scrutinee (.childCons _nilBranch (.childCons _consBranch .childNil)) =>
+                | .childCons _motive
+                    (.childCons _nilBranch (.childCons _consBranch (.childCons scrutinee .childNil))) =>
                     have srcTrue :
                         (RawTerm.isListNilSource scrutinee || RawTerm.isListConsSource scrutinee) = true :=
                       detected

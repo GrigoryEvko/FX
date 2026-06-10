@@ -192,9 +192,9 @@ theorem natRecReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope �
 the `rootGenerator_ne_listNil` / `_ne_listCons` discriminators).  The fact the value-case lift consumes to
 extract "the list-value cell reaches a value" from the cell's candidate membership. -/
 theorem listElim_notNeutral_ofListValueScrutinee {scope : Nat}
-    {value nilBranch consBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {value nilBranch consBranch : RawTerm scope}
     (valueIsList : IsListValue value) :
-    ¬ IsNeutral (listElimCellSpine value nilBranch consBranch) := by
+    ¬ IsNeutral (listElimCellSpine motive value nilBranch consBranch) := by
   intro cellNeutral
   cases cellNeutral with
   | listElim scrutineeNeutral =>
@@ -206,16 +206,19 @@ theorem listElim_notNeutral_ofListValueScrutinee {scope : Nat}
 of `natElimReducibleScrutineeMember`, completing recursive-eliminator reducibility for `listElim`.  Given a
 scrutinee that is a member of the List data candidate (so strongly normalizing AND neutral-or-reduces-to-a-list-
 value), reducible branches, and the honest Tait interface (`headExpand`, the 3-argument cons-branch application
-interface, the cons-contractum SN premise), the `listElim` cell is a member of the result candidate.  Dispatches
+interface, the cons-contractum SN premise), the `listElim` cell is a member of the result candidate.  Phase-Z
+motive shape: the cell carries a stored motive head child, so a motive-SN premise (`motiveStronglyNormalizing`)
+joins the witnesses (fed to the SN helper in the PINNED order scrutinee, motive, nil, cons).  Dispatches
 on the scrutinee's built-in disjunct: NEUTRAL → the recursor cell is neutral and SN, a member by CR3
 (`memberOfStronglyNormalizingNeutral`); VALUE → the list-value recursor cell is a member
 (`listElimValueReducibility`) that reaches a value (its non-neutrality forces the value side), lifted back
 through the scrutinee congruence by `ofStepStarReachingValue`. -/
 theorem listElimReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope → Prop}
-    {scrutinee nilBranch consBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
     (headExpand : ∀ {redexTerm contractum : RawTerm scope},
         WeakHeadStep redexTerm contractum → CanonicalFormsPredicate isValue contractum →
         IsStronglyNormalizing redexTerm → CanonicalFormsPredicate isValue redexTerm)
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (scrutineeMember : CanonicalFormsPredicate IsListValue scrutinee)
     (nilBranchMember : CanonicalFormsPredicate isValue nilBranch)
     (consBranchTerminates : IsStronglyNormalizing consBranch)
@@ -238,28 +241,30 @@ theorem listElimReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope 
                 (.childCons
                   (.mkGen .gen_app () (.childCons consBranch (.childCons head .childNil)))
                   (.childCons tail .childNil)))
-              (.childCons (listElimCellSpine tail nilBranch consBranch) .childNil)))) :
-    CanonicalFormsPredicate isValue (listElimCellSpine scrutinee nilBranch consBranch) := by
+              (.childCons (listElimCellSpine motive tail nilBranch consBranch) .childNil)))) :
+    CanonicalFormsPredicate isValue (listElimCellSpine motive scrutinee nilBranch consBranch) := by
+  -- PINNED SN-helper order: scrutinee FIRST, motive SECOND, nil THIRD, cons FOURTH.
   have cellStronglyNormalizing :
-      IsStronglyNormalizing (listElimCellSpine scrutinee nilBranch consBranch) :=
+      IsStronglyNormalizing (listElimCellSpine motive scrutinee nilBranch consBranch) :=
     listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
-      scrutineeMember.stronglyNormalizing nilBranchMember.stronglyNormalizing consBranchTerminates
+      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
+      nilBranchMember.stronglyNormalizing consBranchTerminates
   rcases scrutineeMember.2 with scrutineeNeutral | ⟨value, scrutineeToValue, valueIsList⟩
   · exact CanonicalFormsPredicate.memberOfStronglyNormalizingNeutral cellStronglyNormalizing
       (IsNeutral.listElim scrutineeNeutral)
   · have recursorStronglyNormalizing : ∀ {listValue : RawTerm scope}, IsListValue listValue →
-        IsStronglyNormalizing (listElimCellSpine listValue nilBranch consBranch) :=
+        IsStronglyNormalizing (listElimCellSpine motive listValue nilBranch consBranch) :=
       fun listValueIsList =>
         listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
-          (isListValue_isMember listValueIsList).stronglyNormalizing
+          (isListValue_isMember listValueIsList).stronglyNormalizing motiveStronglyNormalizing
           nilBranchMember.stronglyNormalizing consBranchTerminates
     have valueMember :
-        CanonicalFormsPredicate isValue (listElimCellSpine value nilBranch consBranch) :=
+        CanonicalFormsPredicate isValue (listElimCellSpine motive value nilBranch consBranch) :=
       listElimValueReducibility (CanonicalFormsPredicate isValue)
         headExpand nilBranchMember consBranchApplication recursorStronglyNormalizing valueIsList
     have valueCellReachesValue :
         ∃ reached : RawTerm scope,
-          StepStar (listElimCellSpine value nilBranch consBranch) reached ∧ isValue reached :=
+          StepStar (listElimCellSpine motive value nilBranch consBranch) reached ∧ isValue reached :=
       valueMember.2.resolve_left (listElim_notNeutral_ofListValueScrutinee valueIsList)
     exact CanonicalFormsPredicate.ofStepStarReachingValue
       (StepStar.listElimScrutinee scrutineeToValue) cellStronglyNormalizing valueCellReachesValue

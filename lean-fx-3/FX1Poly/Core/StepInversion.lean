@@ -1144,18 +1144,37 @@ theorem Step.from_natRec
 
 /-- **Inversion for `listElim`-rooted Step.**
 
-Five-way disjunction with the most complex iota arm in the suite:
-the Cons iota's target is a TRIPLE-nested app referencing both
-the head and tail components of the scrutinee.  Two existentials
-needed for the Cons-iota disjunct. -/
+Six-way disjunction characterizing which Step ctor fired on a
+listElim term.  Phase-Z motive shape: the spine is
+`(motive, nilBranch, consBranch, scrutinee)` with the motive a
+term under one binder (`RawTerm (scope + 1)`) and the scrutinee LAST.
+
+* **iotaListElimNil arm**: scrutinee was `listNil`, target =
+  nilBranch.
+* **iotaListElimCons arm**: scrutinee was `listCons headVal tailVal`,
+  target is the TRIPLE-nested app referencing both the head and
+  tail components plus the recursive `listElim` spine that THREADS
+  the same motive through the tail.  Two existentials needed.
+* **cong-at-motive arm**: motive stepped (at `scope + 1`).
+* **cong-at-nil arm**: nilBranch stepped.
+* **cong-at-cons arm**: consBranch stepped.
+* **cong-at-scrutinee arm**: scrutinee stepped, target preserves
+  the outer listElim with the stepped scrutinee.
+
+The proof descends through cong → here (motive) → there here (nil)
+→ there there here (cons) → there^3 here (scrutinee), mirroring
+`Step.from_boolElim` (the listElim Cons iota carries the extra
+head/tail existentials and the motive-threaded recursive spine). -/
 theorem Step.from_listElim
     {scope : Nat}
-    {scrutinee nilBranch consBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {nilBranch consBranch scrutinee : RawTerm scope}
     {target : RawTerm scope}
     (reduction :
       Step (.mkGen .gen_listElim ()
-              (.childCons scrutinee
-                (.childCons nilBranch (.childCons consBranch .childNil))))
+              (.childCons motive
+                (.childCons nilBranch
+                  (.childCons consBranch (.childCons scrutinee .childNil)))))
            target) :
     (scrutinee = .mkGen .gen_listNil () .childNil ∧ target = nilBranch)
     ∨
@@ -1171,27 +1190,38 @@ theorem Step.from_listElim
                 (.childCons tailVal .childNil)))
             (.childCons
               (.mkGen .gen_listElim ()
-                (.childCons tailVal
-                  (.childCons nilBranch (.childCons consBranch .childNil))))
+                (.childCons motive
+                  (.childCons nilBranch
+                    (.childCons consBranch (.childCons tailVal .childNil)))))
               .childNil)))
     ∨
-    (∃ (scrutineeAfter : RawTerm scope),
+    (∃ (motiveAfter : RawTerm (scope + 1)),
         target = .mkGen .gen_listElim ()
-          (.childCons scrutineeAfter
-            (.childCons nilBranch (.childCons consBranch .childNil))) ∧
-        Step scrutinee scrutineeAfter)
+          (.childCons motiveAfter
+            (.childCons nilBranch
+              (.childCons consBranch (.childCons scrutinee .childNil)))) ∧
+        Step motive motiveAfter)
     ∨
     (∃ (nilAfter : RawTerm scope),
         target = .mkGen .gen_listElim ()
-          (.childCons scrutinee
-            (.childCons nilAfter (.childCons consBranch .childNil))) ∧
+          (.childCons motive
+            (.childCons nilAfter
+              (.childCons consBranch (.childCons scrutinee .childNil)))) ∧
         Step nilBranch nilAfter)
     ∨
     (∃ (consAfter : RawTerm scope),
         target = .mkGen .gen_listElim ()
-          (.childCons scrutinee
-            (.childCons nilBranch (.childCons consAfter .childNil))) ∧
-        Step consBranch consAfter) := by
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consAfter (.childCons scrutinee .childNil)))) ∧
+        Step consBranch consAfter)
+    ∨
+    (∃ (scrutineeAfter : RawTerm scope),
+        target = .mkGen .gen_listElim ()
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consBranch (.childCons scrutineeAfter .childNil)))) ∧
+        Step scrutinee scrutineeAfter) := by
   cases reduction with
   | iotaListElimNil =>
       exact Or.inl ⟨rfl, rfl⟩
@@ -1199,9 +1229,9 @@ theorem Step.from_listElim
       exact Or.inr (Or.inl ⟨_, _, rfl, rfl⟩)
   | cong _ _ childStep =>
       cases childStep with
-      | here _ scrutineeStep =>
-          rename_i scrutineeAfter
-          exact Or.inr (Or.inr (Or.inl ⟨scrutineeAfter, rfl, scrutineeStep⟩))
+      | here _ motiveStep =>
+          rename_i motiveAfter
+          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ nilStep =>
@@ -1211,9 +1241,15 @@ theorem Step.from_listElim
               cases restStep with
               | here _ consStep =>
                   rename_i consAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr ⟨consAfter, rfl, consStep⟩)))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨consAfter, rfl, consStep⟩))))
               | there _ restRestStep =>
-                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
+                  cases restRestStep with
+                  | here _ scrutineeStep =>
+                      rename_i scrutineeAfter
+                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                  | there _ restRestRestStep =>
+                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `optionMatch`-rooted Step.**
 

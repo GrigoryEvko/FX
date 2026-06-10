@@ -132,8 +132,8 @@ theorem Step.reflectRename {sourceScope targetScope : Nat}
       -- iotaNatRecZero
       (fun {scope} {zeroBranch} {succBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaNatRecZero originRho req)
-      -- iotaListElimNil
-      (fun {scope} {nilBranch} {consBranch} {srcScope} originTerm originRho req =>
+      -- iotaListElimNil (Phase-Z: motive binder added at scope + 1, scrutinee last)
+      (fun {scope} {motive} {nilBranch} {consBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaListElimNil originRho req)
       -- iotaOptionMatchNone
       (fun {scope} {noneBranch} {someBranch} {srcScope} originTerm originRho req =>
@@ -153,8 +153,9 @@ theorem Step.reflectRename {sourceScope targetScope : Nat}
       -- iotaNatRecSucc
       (fun {scope} {predecessor} {zeroBranch} {succBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaNatRecSucc originRho req)
-      -- iotaListElimCons
-      (fun {scope} {headVal} {tailVal} {nilBranch} {consBranch} {srcScope} originTerm originRho req =>
+      -- iotaListElimCons (Phase-Z: motive binder added at scope + 1, scrutinee last)
+      (fun {scope} {motive} {headVal} {tailVal} {nilBranch} {consBranch} {srcScope}
+          originTerm originRho req =>
         Step.reflectIotaListElimCons originRho req)
       -- iotaIdJRefl
       (fun {scope} {baseCase} {rawWitness} {srcScope} originTerm originRho req =>

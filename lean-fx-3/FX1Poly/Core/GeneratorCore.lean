@@ -364,7 +364,7 @@ def Generator.arity : Generator → Nat
   -- Lists
   | .gen_listNil      => 0
   | .gen_listCons     => 2  -- headTerm, tailTerm
-  | .gen_listElim     => 3  -- scrutinee, nilBranch, consBranch
+  | .gen_listElim     => 4  -- motive (under binder), nilBranch, consBranch, scrutinee
   -- Options
   | .gen_optionNone   => 0
   | .gen_optionSome   => 1  -- valueTerm
@@ -675,7 +675,7 @@ def Generator.binderShifts : Generator → List Nat
   -- Lists
   | .gen_listNil      => []
   | .gen_listCons     => [0, 0]
-  | .gen_listElim     => [0, 0, 0]
+  | .gen_listElim     => [1, 0, 0, 0]  -- motive binds the scrutinee list
   -- Options
   | .gen_optionNone   => []
   | .gen_optionSome   => [0]

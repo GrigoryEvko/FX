@@ -21,8 +21,9 @@ file bundles them into ONE checked capstone, discharging the deferred eliminator
   2. **nat** (RECURSIVE) — `natElimCopyComputesToNumeral`: a closed `natElim(n, natZero, λ_.λr.natSucc r)`
      computes to a numeral for every closed numeral `n` — the recursive-result-USING fold (IH-threaded, not
      discarded), the genuinely recursive eliminator.
-  3. **list** (RECURSIVE) — `listElimLengthComputesToNumeral`: a closed `listElim(xs, natZero, lengthStep)`
-     computes to a numeral (the length) for every closed list value `xs`.
+  3. **list** (RECURSIVE) — `listElimLengthComputesToNumeral`: a closed `listElim(motive, xs, natZero,
+     lengthStep)` computes to a numeral (the length) for every closed list value `xs` (Phase-Z motive shape —
+     the stored motive head child is ignored by the length fold).
   4. **option** — `closedOptionMatchIntoBoolComputes` (firing-64): a closed `optionMatch(scrutinee, boolTrue,
      λ_.boolTrue)` with a typed option scrutinee computes to a bool value.
   5. **either** — `closedEitherMatchIntoBoolComputes` (firing-64): the either twin.
@@ -74,10 +75,11 @@ structure EliminatorLayerCanonicitySpine (profile : PolyProfile) : Prop where
   natElimComputes : ∀ {scrutinee : RawTerm 0}, IsNatNumeral scrutinee →
       ∃ out : RawTerm 0,
         StepStar (natElimCell scrutinee natZeroCell copyNatStep) out ∧ IsNatNumeral out
-  /-- list (recursive): the length fold computes every closed list value to a numeral. -/
-  listElimComputes : ∀ {scrutinee : RawTerm 0}, IsListValue scrutinee →
+  /-- list (recursive): the length fold computes every closed list value to a numeral.  Phase-Z motive shape:
+  the `listElim` cell carries a stored motive head child (any motive — the length fold ignores it). -/
+  listElimComputes : ∀ {motive : RawTerm 1} {scrutinee : RawTerm 0}, IsListValue scrutinee →
       ∃ out : RawTerm 0,
-        StepStar (listElimCell scrutinee natZeroCell lengthNatStep) out ∧ IsNatNumeral out
+        StepStar (listElimCell motive scrutinee natZeroCell lengthNatStep) out ∧ IsNatNumeral out
   /-- option: a closed `optionMatch` with a typed option scrutinee and constant bool branches computes to a bool. -/
   optionMatchComputes : ∀ {scrutinee elementType : RawTerm 0},
     (HasTypeDescOptionIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee
