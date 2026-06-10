@@ -121,6 +121,8 @@ import FX1Poly.Tier0.FxBaseSubstGlobalSections
 import FX1Poly.Tier0.FxBaseSubstScone
 import FX1Poly.Tier0.FxBaseSubstWitnessScone
 import FX1Poly.Tier0.FxBaseSubstConcreteScone
+import FX1Poly.Tier0.FxBaseSubstDisplayMap
+import FX1Poly.Typed.DisplayMapDecidableFibration
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -965,3 +967,43 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Tier0.thinScopeSections
 #assert_no_axioms FX1Poly.Tier0.thinScopeGlobalSections
 #assert_no_axioms FX1Poly.Tier0.thinScopeTautologicalSconing
+-- The cellular Tm↠Ty display map over the term-carrying base + its comprehension pullback
+-- (FxBaseSubstDisplayMap.lean, SN-086 #589 core). SubstActionFamily = the COVARIANT functor
+-- fxBaseSubstCategory → Type (a morphism X ⟶ Y is SubstVec Y X, so RawTerm.subst acts sections X → sections Y;
+-- GlobalSections is the contravariant twin); identity/composition term-level functor laws lifted from the shipped
+-- substitution algebra (subst_identity_apply / subst_compose through subst_pointwise). typeCellFamily = Ty
+-- (type-position cells), ClassifiedCell + classifiedCellFamily = Tm (term cells PAIRED with classifiers,
+-- componentwise action, structure-eta closure). displayClassifier = THE display map (cell ↦ classifier), naturality
+-- rfl. genericClassifiedCell = the comprehension's generic element (fresh var over the weakened type; its display
+-- boundary is rfl). displayClassifier_comprehension = ★ the Natural-Model pullback universal property in
+-- generalized-element form: unique mediator through the display substitution (existence = SubstVec.cons + p/v laws;
+-- uniqueness = cons_unique). Honest scope: the RAW cellular map — the typing refinement lives in the Typed module
+-- below; in the renaming RMC the representable class is the isos and weakening is NOT an iso, so representability
+-- is THIS comprehension property over the TERM base (as FxBaseRenamingVecGlobalSections predicted). All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.SubstVec.identity_subst_apply
+#assert_no_axioms FX1Poly.Tier0.SubstVec.compose_subst_apply
+#assert_no_axioms FX1Poly.Tier0.typeCellFamily
+#assert_no_axioms FX1Poly.Tier0.ClassifiedCell.componentsEqual
+#assert_no_axioms FX1Poly.Tier0.classifiedCellFamily
+#assert_no_axioms FX1Poly.Tier0.displayClassifier
+#assert_no_axioms FX1Poly.Tier0.genericClassifiedCell_display
+#assert_no_axioms FX1Poly.Tier0.displayClassifier_comprehension
+-- The display map's typed refinement is a DECIDABLE fibration (DisplayMapDecidableFibration.lean, SN-086 #589
+-- payoff — the #486 reading "representability = the decidable typing fibration"). IsAdmittedByFormation = the
+-- judgmental gate over Tm (HasTypeDesc Γ subject classifier); decideAdmittedByFormation = ★ the
+-- memberDecidable-shaped witness (membership in the typed refinement of every display fiber is decidable, via the
+-- shipped TOTAL formation-engine decider HasTypeDesc.decidableOfWellFormed — honestly the categorical VIEW of the
+-- shipped decidable checker #461/#303, not a new decidability result; the grown engine's checking stays
+-- bidirectional per-head). displayFiberTypedMembershipDecidable = the fiberwise phrasing.
+-- classifiedCellOfTyping + displayClassifier_classifiedCellOfTyping = every grown typing derivation is a point of
+-- Tm and the display map sends it to its classifier (rfl). genericClassifiedCell_admittedByFormation/_admittedByGrown
+-- = NON-VACUITY: the comprehension's generic element is genuinely typed over the extended context (HasTypeDesc.var
+-- + definitional lookup_cons_zero + the SUBSTVEC-3 deep coherence weakening_subst_eq_rename aligning the
+-- categorical weakening substitution with the typing context's weakening renaming). All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.ClassifiedCell.IsAdmittedByFormation
+#assert_no_axioms FX1Poly.Tier0.ClassifiedCell.decideAdmittedByFormation
+#assert_no_axioms FX1Poly.Typed.displayFiberTypedMembershipDecidable
+#assert_no_axioms FX1Poly.Typed.classifiedCellOfTyping
+#assert_no_axioms FX1Poly.Typed.displayClassifier_classifiedCellOfTyping
+#assert_no_axioms FX1Poly.Typed.genericClassifiedCell_admittedByFormation
+#assert_no_axioms FX1Poly.Typed.genericClassifiedCell_admittedByGrown
