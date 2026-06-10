@@ -430,6 +430,7 @@ import FX1Poly.Typed.UnitEtaCongruenceGap
 import FX1Poly.Typed.UnitEtaCongruentEquality
 import FX1Poly.Typed.UnitVariableCollapse
 import FX1Poly.Typed.UnitCollapseIncompleteness
+import FX1Poly.Typed.UnitCollapseBinderFence
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3357,6 +3358,27 @@ sides reach `unitCell`).  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_step_eq
 #assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_notBetaEtaConv_unitCell
 #assert_no_axioms FX1Poly.Typed.unitEtaCongProcedure_isIncomplete
+
+/-! ### UnitCollapseBinderFence — ★ normalize-FIRST is ALSO incomplete (the ULC-4 sub-spike)
+
+The binder-fence refutation: `app(λa.λb.a, x)` and `app(λa.λb.a, unitCell)` are Cong-related at
+the ZERO-SHIFT argument position, but β relocates the unit-difference UNDER the surviving binder
+— the βη normal forms `λb.x↑` / `λb.unitCell` are both βη-normal, both FIXED by the zero-shift
+collapse, neither equal after collapse nor βη-convertible.  NO binder-fenced canonicalizer (any
+normalize/collapse interleaving) is complete for the congruent relation.  Route consequence:
+completeness requires collapsing UNDER binders — the per-generator binder-domain table, the true
+#481 type-directed readback skeleton (the ULC-4 re-scope).  Both prior soundness packages remain
+sound semi-decisions.  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.konstUnitFunction
+#assert_no_axioms FX1Poly.Typed.konstAppliedToVariableNormalForm
+#assert_no_axioms FX1Poly.Typed.konstAppliedToUnitNormalForm
+#assert_no_axioms FX1Poly.Typed.konstApplications_congruentlyEqual
+#assert_no_axioms FX1Poly.Typed.konstAppliedToVariable_normalizes
+#assert_no_axioms FX1Poly.Typed.konstAppliedToUnit_normalizes
+#assert_no_axioms FX1Poly.Typed.konstNormalForms_notBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.collapsedKonstNormalForms_distinct
+#assert_no_axioms FX1Poly.Typed.normalizeFirstCanonicalizer_isIncomplete
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
