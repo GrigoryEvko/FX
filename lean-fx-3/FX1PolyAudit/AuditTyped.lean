@@ -427,6 +427,7 @@ import FX1Poly.Typed.BetaEtaConvGapStatement
 import FX1Poly.Typed.BetaEtaConvDecidable
 import FX1Poly.Typed.UnitEtaJudgmentalEquality
 import FX1Poly.Typed.UnitEtaCongruenceGap
+import FX1Poly.Typed.UnitEtaCongruentEquality
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3274,6 +3275,27 @@ then R2 full η-long quote at Π/Σ/Unit (classifier-structure recursion, level-
 #assert_no_axioms FX1Poly.Typed.pairOfUnitValues
 #assert_no_axioms FX1Poly.Typed.pairOfUnitVariables_notBetaEtaConv_pairOfUnitValues
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.isNotCongruent
+
+/-! ### UnitEtaCongruentEquality — the congruent unit-η SPEC + the strictness chain (ULC-1)
+
+`DefEqUnitEtaCong` / `ChildrenUnitEtaCong` — the mutual congruent closure of `DefEqUnitEta`
+(zero-shift fragment: `consZero` relates shift-0 children by the full relation, `consEqual` keeps
+binder children equal).  Unconditional `refl`/`sym`; ★ `gapPairCongruentlyEqual` relates exactly
+the pair `DefEqUnitEta.isNotCongruent` proves unreachable; ★ `strictlyExtendsDefEqUnitEta`
+completes the machine-checked chain `BetaEtaConv ⊊ DefEqUnitEta ⊊ DefEqUnitEtaCong`.  Honest
+boundaries: no transitivity (the collapse-decider brick), no binder-crossing congruence (needs
+per-generator binder-domain context extension), the congruence skeleton is raw (leaves carry the
+typing).  ULC-1 verdict recorded in the module docstring: spec-first; the classifier-supply
+question moves to the decider (check-mode against `unitTypeCell` on the route-H wf fragment). -/
+
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong
+#assert_no_axioms FX1Poly.Typed.ChildrenUnitEtaCong
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.refl
+#assert_no_axioms FX1Poly.Typed.ChildrenUnitEtaCong.refl
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.sym
+#assert_no_axioms FX1Poly.Typed.ChildrenUnitEtaCong.sym
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.gapPairCongruentlyEqual
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.strictlyExtendsDefEqUnitEta
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
