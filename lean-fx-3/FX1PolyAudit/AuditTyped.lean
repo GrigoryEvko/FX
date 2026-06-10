@@ -424,6 +424,7 @@ import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
 import FX1Poly.Typed.WfContextBetaEtaConfluence
 import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
 import FX1Poly.Typed.BetaEtaConvGapStatement
+import FX1Poly.Typed.BetaEtaConvDecidable
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -9000,3 +9001,17 @@ type-directed (η-M15d/e) and are NOT in `BetaEtaConv` at all. -/
 #assert_no_axioms FX1Poly.Core.BetaEtaConv.strictlyExtendsConv
 #assert_no_axioms FX1Poly.Typed.BetaEtaConv.transAtTypedMiddle
 #assert_no_axioms FX1Poly.Typed.betaEtaDeciderMetatheoryPrerequisitesHold
+
+/-! ### BetaEtaConvDecidable — ★ decidable βη-conversion on the wf-typed fragment (ETA-2 closure)
+
+The ETA-1 gap is discharged: with the reducer (`reduceOnceBetaEta`) and its normalizer
+(`normalizeBetaEta`) shipped, βη-conversion of two well-typed terms over a well-formed context IS
+βη-normalizer-output equality (forward: typed βη-CR + star-rigidity + unique typed βη-NF;
+backward: the two normalizer chains meet), hence decidable by normalize-and-compare.  Typing is
+load-bearing in both legs: termination = typed βη-SN (raw βη is not SN), well-definedness = typed
+βη-CR (raw βη-CR is Nederpelt-false).  The remaining #364 content is exactly its (B) half:
+type-directed unit-η/SProp-η (η-M15d/e), which is judgmental-equality extension, not decision. -/
+
+#assert_no_axioms FX1Poly.Typed.BetaEtaConv.iff_normalizeBetaEta_eq_of_wfTyped
+#assert_no_axioms FX1Poly.Typed.BetaEtaConv.decidableOfWfTyped
+#assert_no_axioms FX1Poly.Typed.betaEtaConvDecidableOnWfFragment

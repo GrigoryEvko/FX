@@ -84,6 +84,7 @@ import FX1Poly.Core.ConvRenameReflection
 import FX1Poly.Core.RawTermRenameInjective
 import FX1Poly.Core.ConvRenameEquivariance
 import FX1Poly.Core.FireRootEtaRedex
+import FX1Poly.Core.NormalizeBetaEta
 import FX1Poly.Typed.RawBetaNotRpoOrientable
 import FX1Poly.Typed.SnTriangulationBundle
 import FX1Poly.Typed.HonestCapstoneSignoff
@@ -1275,3 +1276,15 @@ the βη normalizer + decidable `BetaEtaConv` on the wf fragment. -/
 #assert_no_axioms FX1Poly.Core.RawTerm.reduceOnceBetaEta
 #assert_no_axioms FX1Poly.Core.RawTerm.reduceOnceBetaEta_sound
 #assert_no_axioms FX1Poly.Core.RawTerm.reduceOnceBetaEta_complete
+
+/-! ### NormalizeBetaEta — the βη normalizer over the reducer (ETA-2 harvest, raw half)
+
+The exact βη twin of `Core/Normalize`: iterate `reduceOnceBetaEta` along an
+`Acc Step.betaEtaSuccessor` witness.  Output reached by a `betaEtaStar` chain and fully βη-normal
+(no `Step.betaEta` step at all — `Step.eta` is root-only, so the root firer's completeness is full
+η-completeness).  On the wf-typed fragment the accessibility witness is typed βη-SN (OSN-1). -/
+
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeBetaEta
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeBetaEta_unfold
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeBetaEta_reducesTo
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeBetaEta_isBetaEtaNormalForm
