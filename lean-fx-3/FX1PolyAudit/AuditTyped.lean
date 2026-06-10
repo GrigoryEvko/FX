@@ -439,6 +439,7 @@ import FX1Poly.Typed.UnitSpineDetectionBoundary
 import FX1Poly.Typed.TypeDirectedUnitReadback
 import FX1Poly.Typed.UnitReadbackArgumentBoundary
 import FX1Poly.Typed.UnitReadbackFormerChildBoundary
+import FX1Poly.Typed.UnitReadbackDeepSpineBoundary
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3557,10 +3558,11 @@ endpoints) carry unit differences no shipped arm reaches — `Id(Unit, app(f,x),
 `Id(Unit, unit, unit)` is Cong-related (one `congGen` through `gen_idCode`, the endpoints by
 `unitEta`), yet the readback degrades to the deep collapse at every fuel (an `idCode` head is
 not an application) and the collapses are distinct never-joining βη-normal forms — the
-compound-neutral phenomenon recurring INSIDE a former.  The fix is rule-table-premise-directed
-former descent: the per-child classifiers are the `typingRuleDescOf` premise telescope (idCode:
-carrier at a universe, endpoints at the CARRIER), with dependent-telescope instantiation as the
-brick-5 build.  Zero-axiom. -/
+compound-neutral phenomenon recurring INSIDE a former.  CORRECTED verdict (brick-5 fact-check):
+ENGINE-gated like Σ — `typingRuleDescOf` has no `gen_idCode` row and the `DescTelescope` schema
+cannot express value premises (endpoints at the carrier), so the witness is outside the
+currently-typeable fragment and typed former children are all TYPES today; the in-fragment
+frontier is depth-2+ spines.  Zero-axiom. -/
 
 #assert_no_axioms FX1Poly.Typed.identityCodeOverCompoundNeutral
 #assert_no_axioms FX1Poly.Typed.identityCodeOverUnitValue
@@ -3572,6 +3574,35 @@ brick-5 build.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.deepCollapse_identityCodeValue
 #assert_no_axioms FX1Poly.Typed.collapsedIdentityCodePair_notBetaEtaConv
 #assert_no_axioms FX1Poly.Typed.readback_isIncompleteAtFormerChildren
+
+/-! ### UnitReadbackDeepSpineBoundary — ★ the 8th boundary: the spine arm stops at depth 1
+
+The corrected brick-5 verdict relocated the in-fragment frontier to depth-2+ spines, and the
+witness confirms it: in `(g : Π(_:Unit).Π(_:Unit).Type@0, f : Π(_:Unit).Unit, x : Unit)`, the
+pair `app(app(g, app(f,x)), x)` vs `app(app(g, unit), x)` is Cong-related (nested `congGen`
+descents, the inner arguments by `unitEta`), the NEUTRAL side fully grown-typed at `Type@0`
+(the value side's whole-spine typing blocked by the standing `unitCell` engine separation), yet
+the spine arm refuses the app-headed function position and the readback degrades to the deep
+collapse at every fuel — distinct never-joining βη-normal forms.  The brick-6 build is the
+RECURSIVE spine readback (true `quoteNeutral`), whose substituted-domain soundness obligation
+(domains at depth ≥ 2 are `subst0` codes, not context entries) needs a grown-validity variant
+of the soundness or formation-substitution threading.  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.deepSpineContext
+#assert_no_axioms FX1Poly.Typed.deepSpineInnerNeutral
+#assert_no_axioms FX1Poly.Typed.deepSpineOverNeutral
+#assert_no_axioms FX1Poly.Typed.deepSpineOverUnitValue
+#assert_no_axioms FX1Poly.Typed.deepSpineInnerNeutralTyped
+#assert_no_axioms FX1Poly.Typed.deepSpineOverNeutralTyped
+#assert_no_axioms FX1Poly.Typed.deepSpinePair_congruentlyEqual
+#assert_no_axioms FX1Poly.Typed.readback_deepSpineNeutral_isDeepCollapse
+#assert_no_axioms FX1Poly.Typed.readback_deepSpineValue_isDeepCollapse
+#assert_no_axioms FX1Poly.Typed.collapsedDeepSpineOverNeutral
+#assert_no_axioms FX1Poly.Typed.collapsedDeepSpineOverUnitValue
+#assert_no_axioms FX1Poly.Typed.deepCollapse_deepSpineNeutral
+#assert_no_axioms FX1Poly.Typed.deepCollapse_deepSpineValue
+#assert_no_axioms FX1Poly.Typed.collapsedDeepSpinePair_notBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.readback_isIncompleteAtDeepSpines
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 

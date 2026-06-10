@@ -19,14 +19,16 @@ difference there is invisible to every shipped arm.  Witness, in
     unit-typed — the compound-neutral phenomenon (the 4th boundary), recurring one level down,
     inside a former.
 
-## The verdict — rule-table-premise-directed former descent
+## The verdict (CORRECTED post-fact-check) — engine-gated, like Σ
 
-The per-child classifiers of a former's children are exactly the premise telescope of its
-`typingRuleDescOf` row — for `gen_idCode`: carrier at a universe, both endpoints at the CARRIER.
-The complete readback must traverse former children with those table-supplied classifiers (the
-"rule-table-premise-directed" road the ULC-1 spike weighed and deferred, now forced).  For
-dependent telescopes the later classifiers are INSTANTIATED by earlier children — the
-substitution threading that telescope descent requires is the brick-5 build.
+The boundary is DOUBLE-gated on the engine, not on readback machinery: (a) `typingRuleDescOf`
+has NO `gen_idCode` row today, and (b) the `DescTelescope` row schema classifies former children
+at UNIVERSES only — a VALUE premise (endpoints at the CARRIER) is inexpressible in the current
+schema.  Consequently the witness pair lies OUTSIDE the currently-typeable fragment (the same
+engine-separation class as the Σ-η block), and within the TYPED fragment every former child is
+a TYPE, so no unit-η leaf can sit at a former-child position TODAY.  The former-descent readback
+arm is gated on a future value-premise row schema; the genuine IN-FRAGMENT frontier is
+depth-2+ application spines (the next boundary).
 
 ## Honest scope notes
 
@@ -133,9 +135,9 @@ theorem collapsedIdentityCodePair_notBetaEtaConv :
 
 /-- **★ The 7th boundary — the readback is incomplete at FORMER-CHILDREN positions**: a
 congruently unit-η-equal pair of TYPE CODES (the unit difference at an identity-code endpoint)
-whose readbacks at EVERY fuel are distinct βη-normal forms that never join.  The per-child
-classifiers live in the former's `typingRuleDescOf` premise telescope — the complete readback
-must descend into former children rule-table-premise-directed (the brick-5 build). -/
+whose readbacks at EVERY fuel are distinct βη-normal forms that never join.  Engine-gated (see
+the corrected module verdict): the witness is outside the currently-typeable fragment; the
+former-descent arm waits on a value-premise row schema. -/
 theorem readback_isIncompleteAtFormerChildren (profile : PolyProfile) :
     ∃ (leftTerm rightTerm : RawTerm 2),
       DefEqUnitEtaCong profile (unitFunctionContext profile) leftTerm rightTerm ∧
