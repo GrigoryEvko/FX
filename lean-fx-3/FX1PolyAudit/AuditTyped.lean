@@ -425,6 +425,7 @@ import FX1Poly.Typed.WfContextBetaEtaConfluence
 import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
 import FX1Poly.Typed.BetaEtaConvGapStatement
 import FX1Poly.Typed.BetaEtaConvDecidable
+import FX1Poly.Typed.UnitEtaJudgmentalEquality
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3215,6 +3216,27 @@ eta-M15d). -/
 #assert_no_axioms FX1Poly.Typed.semanticTier_unit
 #assert_no_axioms FX1Poly.Core.generatorCount_upperBound
 #assert_no_axioms FX1Poly.Core.generatorCount_lastIndex
+
+/-! ### UnitEtaJudgmentalEquality — ★ typed unit-η, the equality βη-rewriting cannot express (#362)
+
+`DefEqUnitEta` = βη-conversion (#1202-decided) ⊕ the type-directed one-value collapse at
+`unitTypeCell`.  Equivalence package unconditional given derivations (transitivity discharges its
+βη-βη peak with the wf + middle-typing the arm CARRIES); `strictlyExtendsBetaEtaConv` is the
+machine-checked textbook witness — the unit-typed VARIABLE vs `unitCell`, judgmentally equal but
+provably not βη-joinable; `decidableOfWfTyped` decides the relation by one structural classifier
+comparison + the #1202 decider.  Honest boundaries in the module docstring: not congruent (η-long
+readback is the #481/#364 remainder); the witness context is raw (no formation row for `unitCode`
+yet); the data-intro fragment is refl-degenerate (`dataIntroUnitPairsCollapseToRefl`). -/
+
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.reflOfGrownTyped
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.sym
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.trans
+#assert_no_axioms FX1Poly.Typed.unitVariableTyped
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.strictlyExtendsBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.dataIntroUnitPairsCollapseToRefl
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.betaEtaConvOfNotUnit
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.decidableOfWfTyped
 -- BASE-TYPE FORMATION ENGINE (HasTypeDescBaseType, #1061 / DI-1b-flagpin): the standalone NULLARY type-FORMER
 -- judgment, the FORMATION twin of HasTypeDescDataIntro (which types the VALUES). A new relation (not an arm of
 -- HasTypeDescPi), so the grown-engine refutations stay true. The single baseFormation arm + baseTypeRuleDescOf
