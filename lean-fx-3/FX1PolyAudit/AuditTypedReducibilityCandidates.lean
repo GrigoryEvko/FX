@@ -621,6 +621,7 @@ import FX1Poly.Typed.LamReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.GrownEtaSubjectReduction
 import FX1Poly.Typed.GenericDataFormationUnderSubst
+import FX1Poly.Typed.TelescopeArityDispatchNormalization
 
 /-! # FX1PolyAudit/AuditTypedReducibilityCandidates — typed-layer zero-axiom gates: reducibility candidates, environments, and membership lemmas
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1419,3 +1420,13 @@ supplier feeding the SN hypothesis from `TelescopeReducible` at the symbolic sha
 #assert_no_axioms FX1Poly.Typed.formationRowIsNotUniverse
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.dataFormationUnderSubst
 #assert_no_axioms FX1Poly.Typed.unitFormationUnderSubstViaGenericArm
+
+/-! ### TelescopeArityDispatchNormalization — the arity-dispatch child-SN supplier (GTL-06 brick 3a)
+
+Telescope reducibility yields fold-children all-SN at a SYMBOLIC shape: the shape equation over
+a FREE binderShifts index is `subst`-eliminated, levels is cased at the table's three arities
+(brick-2 corollaries close the live cases; `Nat.le` inversion refutes a third child), and the
+conclusion is the exact `foldChildren GenAlgebra.canonical` hypothesis `dataFormationUnderSubst`
+consumes — the by_cases-free dispatch chain is now ingredient-complete. -/
+
+#assert_no_axioms FX1Poly.Typed.TelescopeReducible.foldChildrenStronglyNormalizing
