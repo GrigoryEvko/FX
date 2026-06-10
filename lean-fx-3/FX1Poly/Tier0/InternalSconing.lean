@@ -154,13 +154,17 @@ normalization transfer is `HasTypeDescPi.normalizationTransfer` / `GluedTypeCell
 (`NormalizationTransferLedger.lean`, SN-094) — where the `NormalizationExtraction` record below is
 shown CONTENT-FREE (a lawful singleton-collapse instance exists; its one law never ties `normalize`
 to reduction) and replaced by the reduction-sound `ReductionSoundNormalization` with the genuine
-SN-fragment instance over the shipped `RawTerm.normalize`.  The parametricity transfer remains open
-(SN-095). -/
+SN-fragment instance over the shipped `RawTerm.normalize`.  The parametricity transfer is
+`GluedTypeCell.parametricityTransfer` / `piFreeTheorem` (`ParametricityTransferLedger.lean`, SN-095)
+— where the LAWLESS `ParametricityExtraction` record below (its `fundamental` never consults the
+term) is shown content-free and replaced by the type-indexed relational transfer over the glued
+model (unary parametricity; binary is the recorded follow-on).  The BKS bundle (SN-096) is the
+remaining level. -/
 def fxSconingConstructionLevel : SconingConstructionLevel :=
-  .normalizationTransferTheorem
+  .parametricityTransferTheorem
 
 theorem fxSconingConstructionLevel_eq :
-    fxSconingConstructionLevel = .normalizationTransferTheorem := rfl
+    fxSconingConstructionLevel = .parametricityTransferTheorem := rfl
 
 theorem fxSconing_hasGlobalSectionsInterface :
     fxSconingConstructionLevel.hasGlobalSectionsInterface = true := rfl
@@ -183,8 +187,8 @@ theorem fxSconing_hasCanonicityTransferTheorem :
 theorem fxSconing_hasNormalizationTransferTheorem :
     fxSconingConstructionLevel.hasNormalizationTransferTheorem = true := rfl
 
-theorem fxSconing_hasNoParametricityTransferTheorem :
-    fxSconingConstructionLevel.hasParametricityTransferTheorem = false := rfl
+theorem fxSconing_hasParametricityTransferTheorem :
+    fxSconingConstructionLevel.hasParametricityTransferTheorem = true := rfl
 
 theorem fxSconing_hasNoBKSMetatheoryPackage :
     fxSconingConstructionLevel.hasBKSMetatheoryPackage = false := rfl

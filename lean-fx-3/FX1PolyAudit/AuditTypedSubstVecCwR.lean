@@ -127,6 +127,7 @@ import FX1Poly.Typed.DisplayMapDecidableFibration
 import FX1Poly.Typed.GluedModelTypeFormers
 import FX1Poly.Tier0.FxBaseSubstCanonicityExtraction
 import FX1Poly.Typed.NormalizationTransferLedger
+import FX1Poly.Typed.ParametricityTransferLedger
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -1103,7 +1104,6 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Tier0.fxSconingConstructionLevel_eq
 #assert_no_axioms FX1Poly.Tier0.fxSconing_hasConcretePreservationInstance
 #assert_no_axioms FX1Poly.Tier0.fxSconing_hasCanonicityTransferTheorem
-#assert_no_axioms FX1Poly.Tier0.fxSconing_hasNoParametricityTransferTheorem
 -- The NormalizationExtraction laws carry NO normalization content; the honest reduction-sound form + the typed
 -- transfer (NormalizationTransferLedger.lean, SN-094 #597). Unlike CanonicityExtraction (REFUTED, SN-093), the
 -- NormalizationExtraction record IS inhabitable — but its ONE law (normalizeIdempotent, on the embedded image
@@ -1131,3 +1131,24 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalizationTransfer
 #assert_no_axioms FX1Poly.Typed.GluedTypeCell.normalizationTransfer
 #assert_no_axioms FX1Poly.Tier0.fxSconing_hasNormalizationTransferTheorem
+-- The ParametricityExtraction record is LAWLESS; the honest type-indexed relational transfer
+-- (ParametricityTransferLedger.lean, SN-095 #598). The third extraction-interface verdict: the record states
+-- NO law at all (its fundamental's term argument is an underscore in the record itself) — canonicity's was
+-- refuted, normalization's had one reduction-blind law, parametricity's has none. punitParametricityExtraction
+-- = the constant-singleton-family inhabitant; punitParametricityExtraction_ignoresTerm (rfl) = fundamental
+-- never consults the term. The honest content: ★ GluedTypeCell.parametricityTransfer — UNARY parametricity over
+-- the glued model (every well-typed term satisfies ITS TYPE'S relational interpretation — the scone, tied to
+-- the type by isModeled — and is SN by CR1; the relation family is assigned per type by ReducibleType, not
+-- free-floating) + ★ GluedTypeCell.piFreeTheorem — the Reynolds abstraction-theorem shape at Π through the
+-- SN-091 lift (a well-typed function maps RELATED arguments to RELATED results; the unfolding is definitional
+-- because SN-087/091 made the Π relation literally that predicate). HONEST: this is unary parametricity
+-- (exactly what the BKS scone derives); BINARY parametricity is the recorded follow-on (the graded
+-- DIM-FUNCTORIAL projection is the dimension-indexed analogue already in the tree). LEDGER:
+-- fxSconingConstructionLevel advanced normalizationTransferTheorem → parametricityTransferTheorem;
+-- fxSconing_hasNoParametricityTransferTheorem renamed → has* true (own-gate update again). SN-096 (the BKS
+-- bundle) is the remaining ledger level. All zero-axiom.
+#assert_no_axioms FX1Poly.Typed.punitParametricityExtraction
+#assert_no_axioms FX1Poly.Typed.punitParametricityExtraction_ignoresTerm
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.parametricityTransfer
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.piFreeTheorem
+#assert_no_axioms FX1Poly.Tier0.fxSconing_hasParametricityTransferTheorem
