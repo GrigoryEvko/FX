@@ -134,6 +134,8 @@ inductive Generator : Type
   | gen_boolCode
   -- Nat type code (nullary — the nat-canonicity substrate)
   | gen_natCode
+  -- Unit type code (nullary — the unit-eta substrate)
+  | gen_unitCode
   -- Cumulativity marker
   | gen_cumulUpMarker
   -- Univalence-to-equiv vocabulary
@@ -418,6 +420,7 @@ def Generator.arity : Generator → Nat
   | .gen_emptyCode    => 0  -- nullary type code (Empty)
   | .gen_boolCode     => 0  -- nullary type code (Bool)
   | .gen_natCode      => 0  -- nullary type code (Nat)
+  | .gen_unitCode     => 0  -- nullary type code (Unit)
   -- Cumulativity marker
   | .gen_cumulUpMarker => 1 -- innerCodeRaw
   -- Univalence-to-equiv vocabulary
@@ -721,6 +724,7 @@ def Generator.binderShifts : Generator → List Nat
   | .gen_emptyCode    => []
   | .gen_boolCode     => []
   | .gen_natCode      => []
+  | .gen_unitCode     => []
   -- Cumulativity marker
   | .gen_cumulUpMarker => [0]
   -- Univalence-to-equiv vocabulary
@@ -956,6 +960,7 @@ def Generator.payload : Generator → Nat → Type
   | .gen_emptyCode, _ => Unit
   | .gen_boolCode, _ => Unit
   | .gen_natCode, _ => Unit
+  | .gen_unitCode, _ => Unit
   | .gen_cumulUpMarker, _ => Unit
   | .gen_uaToEquiv, _ => Unit
   | .gen_equivApply, _ => Unit

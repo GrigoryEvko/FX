@@ -3182,8 +3182,8 @@ gates pin them shut.
 -- boolFalseCell (combined with SN+SR -> closed t:boolCode reduces to a bool value). Cell normalization: cases payload
 -- (Unit -> ()) + cases children (RawTermChildren [] -> childNil), rfl each branch. Refines as DI-2/DI-3 add ctors.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.inversion
-#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_isBoolConstructor
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectIsBoolConstructor
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_isNullaryValueConstructor
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectIsNullaryValueCell
 -- DATA-INTRO SR + SN METATHEORY (HasTypeDescDataIntroMetatheory, DI-4 substantive half). subjectHasNoStep =
 -- the shared substrate: a data-intro subject blocks every Step (it is a bool value -> normal form, via
 -- subjectIsBoolConstructor =def boolIsValue + boolIsValue_impliesStepNormalForm + isStepNormalForm_blocks_step).
@@ -3194,7 +3194,27 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectHasNoStep
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.classifierIsBoolTypeCell
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.classifierIsNullaryTypeCell
+
+/-! ### UNIT-1 — the unit data story (gen_unitCode + formation + intro + canonical form)
+
+The 198th generator landed cascade-free: gen_unitCode (nullary type code) + the Unit:Type@0
+base-type row + the gen_unit:unitCode intro row (ending gen_unit's reserved status), each ONE
+table row absorbed by the table-generic metatheory; the only per-row ripple is one disjunct in the
+two membership lemmas and their consumers.  subjectIsUnitOfUnitClassifier is the ONE-VALUE
+COLLAPSE at the data-intro engine — the substrate brick for typed unit-eta (the (B) half of #364,
+eta-M15d). -/
+
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_unitCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.unitCodeTyped
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_unit
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.unitValueTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectClassifierCoordinated
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectIsUnitOfUnitClassifier
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_unit
+#assert_no_axioms FX1Poly.Typed.semanticTier_unit
+#assert_no_axioms FX1Poly.Core.generatorCount_upperBound
+#assert_no_axioms FX1Poly.Core.generatorCount_lastIndex
 -- BASE-TYPE FORMATION ENGINE (HasTypeDescBaseType, #1061 / DI-1b-flagpin): the standalone NULLARY type-FORMER
 -- judgment, the FORMATION twin of HasTypeDescDataIntro (which types the VALUES). A new relation (not an arm of
 -- HasTypeDescPi), so the grown-engine refutations stay true. The single baseFormation arm + baseTypeRuleDescOf
@@ -3220,7 +3240,7 @@ gates pin them shut.
 -- no cases-on-both / mkGen-index unification). subjectIsBaseTypeCode = closed forms (boolTypeCell/emptyTypeCell).
 -- subjectHasNoStep/StronglyNormalizing = type codes are no-step normal-form leaves (isStepNormalForm by rfl).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.inversion
-#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_isBoolEmptyOrNatCode
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_isNullaryBaseCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectIsBaseTypeCode
 #assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_outputIsType0
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.classifierIsType0

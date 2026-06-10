@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescDataIntroInversion
+import FX1Poly.Typed.RawTermHeadGenerator
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.RawTermNF
@@ -48,16 +49,24 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe
 
-/-- **No-step substrate: a data-intro subject blocks every `Step`.**  Its subject is a bool value
-(`subjectIsBoolConstructor`, which is definitionally `boolIsValue` of the subject), bool values are
-structural normal forms (`boolIsValue_impliesStepNormalForm`), and a normal form blocks every step
+/-- **No-step substrate: a data-intro subject blocks every `Step`.**  Its subject is a nullary value
+cell (`subjectIsNullaryValueCell`: a bool constructor or the unit value), each a childless non-redex
+LEAF (`RawTerm.isStepNormalForm` by `rfl`), and a normal form blocks every step
 (`RawTerm.isStepNormalForm_blocks_step`).  The shared ingredient of SR and SN below. -/
 theorem HasTypeDescDataIntro.subjectHasNoStep {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescDataIntro profile context subject classifier)
-    (targetTerm : RawTerm scope) : ¬ Step subject targetTerm :=
-  RawTerm.isStepNormalForm_blocks_step
-    (boolIsValue_impliesStepNormalForm derivation.subjectIsBoolConstructor) targetTerm
+    (targetTerm : RawTerm scope) : ¬ Step subject targetTerm := by
+  rcases derivation.subjectIsNullaryValueCell with hTrue | hFalse | hUnit
+  · rw [hTrue]
+    exact RawTerm.isStepNormalForm_blocks_step
+      (rfl : RawTerm.isStepNormalForm (boolTrueCell : RawTerm scope)) targetTerm
+  · rw [hFalse]
+    exact RawTerm.isStepNormalForm_blocks_step
+      (rfl : RawTerm.isStepNormalForm (boolFalseCell : RawTerm scope)) targetTerm
+  · rw [hUnit]
+    exact RawTerm.isStepNormalForm_blocks_step
+      (rfl : RawTerm.isStepNormalForm (unitCell : RawTerm scope)) targetTerm
 
 /-- **Subject reduction for the data-intro judgment (vacuous: values do not reduce).**  A data-intro
 subject is a normal-form value, so there is no `reduct` to preserve typing for — `subjectHasNoStep`
@@ -79,25 +88,76 @@ theorem HasTypeDescDataIntro.subjectStronglyNormalizing {profile : PolyProfile} 
   isStronglyNormalizing_of_noStep
     (fun targetTerm step => derivation.subjectHasNoStep targetTerm step)
 
-/-- **Classifier inversion: a data-intro classifier IS `boolTypeCell`.**  The twin of
-`subjectIsBoolConstructor` on the classifier side: cases the derivation, identifies the generator as a
-bool constructor (`dataIntroNullaryRuleDescOf_isBoolConstructor`), and recovers the rule from the table
-diagonal (`Option.some.inj`), so the reached classifier `rule.outputTypeCode scope` is `boolTypeCell`.
-The classifier-side companion the bool-canonicity rule-out (CANON-1) consumes alongside the subject side. -/
-theorem HasTypeDescDataIntro.classifierIsBoolTypeCell {profile : PolyProfile} {scope : Nat}
+/-- **Classifier inversion: a data-intro classifier is `boolTypeCell` or `unitTypeCell`.**  The twin
+of `subjectIsNullaryValueCell` on the classifier side: cases the derivation, identifies the generator
+via the table-membership lemma, and recovers the rule from the table diagonal (`Option.some.inj`).
+The classifier-side companion the canonicity rule-outs consume alongside the subject side. -/
+theorem HasTypeDescDataIntro.classifierIsNullaryTypeCell {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescDataIntro profile context subject classifier) :
-    classifier = boolTypeCell := by
+    classifier = boolTypeCell ∨ classifier = unitTypeCell := by
   cases derivation with
   | nullaryIntro generator payload children rule isDataIntro =>
-      rcases dataIntroNullaryRuleDescOf_isBoolConstructor isDataIntro with hTrue | hFalse
+      rcases dataIntroNullaryRuleDescOf_isNullaryValueConstructor isDataIntro with
+        hTrue | hFalse | hUnit
       · subst hTrue
         have hrule : rule = { outputTypeCode := fun _ => boolTypeCell } :=
           (Option.some.inj isDataIntro).symm
-        rw [hrule]
+        exact Or.inl (by rw [hrule])
       · subst hFalse
         have hrule : rule = { outputTypeCode := fun _ => boolTypeCell } :=
           (Option.some.inj isDataIntro).symm
-        rw [hrule]
+        exact Or.inl (by rw [hrule])
+      · subst hUnit
+        have hrule : rule = { outputTypeCode := fun _ => unitTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        exact Or.inr (by rw [hrule])
+
+/-- **Subject/classifier coordination for the nullary data-intro rows.**  One `cases` pass yields the
+exact (subject, classifier) PAIR for each table row — the bool constructors at `boolTypeCell`, the
+unit value at `unitTypeCell`.  Sharper than the separate subject/classifier inversions (which lose
+the row correlation); the unit-canonicity corollary below needs exactly this coordination. -/
+theorem HasTypeDescDataIntro.subjectClassifierCoordinated {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (derivation : HasTypeDescDataIntro profile context subject classifier) :
+    (subject = boolTrueCell ∧ classifier = boolTypeCell) ∨
+      (subject = boolFalseCell ∧ classifier = boolTypeCell) ∨
+      (subject = unitCell ∧ classifier = unitTypeCell) := by
+  cases derivation with
+  | nullaryIntro generator payload children rule isDataIntro =>
+      rcases dataIntroNullaryRuleDescOf_isNullaryValueConstructor isDataIntro with
+        hTrue | hFalse | hUnit
+      · subst hTrue
+        have hrule : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inl ⟨rfl, by rw [hrule]⟩
+      · subst hFalse
+        have hrule : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inr (Or.inl ⟨rfl, by rw [hrule]⟩)
+      · subst hUnit
+        have hrule : rule = { outputTypeCode := fun _ => unitTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inr (Or.inr ⟨rfl, by rw [hrule]⟩)
+
+/-- **★ Unit canonical form at the data-intro engine: a subject typed at `unitTypeCell` IS the unit
+value.**  The classifier discriminates the table rows syntactically (`unitTypeCell` and `boolTypeCell`
+have distinct head generators, refuted by `Generator.noConfusion`), so typed-at-`unitTypeCell` forces the
+`gen_unit` row — the one-value collapse the typed unit-eta judgment is built on. -/
+theorem HasTypeDescDataIntro.subjectIsUnitOfUnitClassifier {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject : RawTerm scope}
+    (derivation : HasTypeDescDataIntro profile context subject unitTypeCell) :
+    subject = unitCell := by
+  rcases derivation.subjectClassifierCoordinated with
+    ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨hSubject, _⟩
+  · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
+  · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
+  · exact hSubject
 
 end FX1Poly.Typed

@@ -1,6 +1,7 @@
 import FX1Poly.Typed.GeneratorSemanticTier
 import FX1Poly.Core.GeneratorFinitePolygraph
 import FX1Poly.Core.GeneratorTagRoundTrip
+import FX1Poly.Core.GeneratorCountPin
 
 /-! # FX1Poly/Typed/GeneratorHonestyOverview — the build-time honesty overview (HON-4)
 
@@ -18,7 +19,7 @@ quietly stall.
   * `#eval IO.println …` — the build-time printout.  Prints whenever this file (re)elaborates, e.g. on every
     `lake build FX1Poly` that touches the kernel.
 
-The current snapshot: **total 197 | statically-typed 34 | operational redex-heads 11 | semantically-live 38 |
+The current snapshot: **total 198 | statically-typed 36 | operational redex-heads 11 | semantically-live 40 |
 RESERVED 159** — i.e. ~80% of the table is reserved vocabulary with no static OR operational semantics.
 
 The `s!` interpolation is confined to the `#eval` COMMAND (not a declaration), so the `Nat.toString` `propext`
@@ -38,8 +39,12 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core
 
-/-- All 197 generators, enumerated via the total tag-inverse `Generator.fromTag` over the tag range. -/
-def allGenerators : List Generator := (List.range 197).filterMap Generator.fromTag
+/-- ALL generators, enumerated via the total tag-inverse `Generator.fromTag` over the tag range
+`0..generatorCount-1`.  The range is DERIVED from the pinned `generatorCount` (whose theorems break
+on any enum-size change), so growing the table automatically extends this enumeration — a hardcoded
+literal here once silently dropped the newest generator from every honesty count (the UNIT-1
+landing caught it summing to 197 of 198). -/
+def allGenerators : List Generator := (List.range generatorCount).filterMap Generator.fromTag
 
 /-- Count of statically-typed generators (HON-1: typed by some engine). -/
 def typedGeneratorCount : Nat := (allGenerators.filter hasSomeTypingRule).length

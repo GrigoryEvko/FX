@@ -54,7 +54,16 @@ A future nullary constructor (`unit` / `natZero` / `listNil`) is ONE more row, n
 def dataIntroNullaryRuleDescOf (generator : Generator) : Option DataIntroNullaryRuleDesc :=
   if generator = .gen_boolTrue then some { outputTypeCode := fun _ => boolTypeCell }
   else if generator = .gen_boolFalse then some { outputTypeCode := fun _ => boolTypeCell }
+  else if generator = .gen_unit then some { outputTypeCode := fun _ => unitTypeCell }
   else none
+
+/-- `gen_unit` introduces a member of `unitCode` (metadata check, `rfl` on the diagonal) — the unit
+VALUE's intro row, ending `gen_unit`'s reserved status (the type whose unit-eta judgment collapses
+all members to this one constructor). -/
+theorem dataIntroNullaryRuleDescOf_unit :
+    dataIntroNullaryRuleDescOf .gen_unit
+      = some { outputTypeCode := fun _ => unitTypeCell } :=
+  rfl
 
 /-- `gen_boolTrue` introduces a member of `boolCode` (metadata check, `rfl` on the diagonal). -/
 theorem dataIntroNullaryRuleDescOf_boolTrue :
@@ -90,6 +99,15 @@ theorem HasTypeDescDataIntro.boolTrueTyped {profile : PolyProfile} {scope : Nat}
     HasTypeDescDataIntro profile context boolTrueCell boolTypeCell :=
   HasTypeDescDataIntro.nullaryIntro context .gen_boolTrue () .childNil
     { outputTypeCode := fun _ => boolTypeCell } rfl
+
+/-- **★ `unit : unitCode` in the data-intro engine.**  The ONE canonical inhabitant of the unit
+type, typed at its code — the value half of the unit data story (the formation half is
+`HasTypeDescBaseType.unitCodeTyped`); the substrate the typed unit-eta judgment collapses to. -/
+theorem HasTypeDescDataIntro.unitValueTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeDescDataIntro profile context unitCell unitTypeCell :=
+  HasTypeDescDataIntro.nullaryIntro context .gen_unit () .childNil
+    { outputTypeCode := fun _ => unitTypeCell } rfl
 
 /-- **★ `boolFalse : boolCode` in the data-intro engine.**  The `false` companion of `boolTrueTyped`;
 together they are the two closed canonical members the bool-canonicity statement ranges over. -/

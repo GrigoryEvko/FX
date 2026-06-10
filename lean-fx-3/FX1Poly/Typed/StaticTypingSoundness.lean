@@ -155,12 +155,12 @@ theorem flatReservedUntyped {profile : PolyProfile} {scope : Nat}
     simp only [Option.isSome_some, Bool.or_true, Bool.true_or] at reserved
     exact Bool.noConfusion reserved
 
-/-- BASE-TYPE engine (`bool` / `empty` / `nat` type codes). -/
+/-- BASE-TYPE engine (`bool` / `empty` / `nat` / `unit` type codes). -/
 theorem baseTypeReservedUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
     (typed : HasTypeDescBaseType profile context subject classifier) : False := by
-  rcases HasTypeDescBaseType.subjectIsBaseTypeCode typed with rfl | rfl | rfl <;>
+  rcases HasTypeDescBaseType.subjectIsBaseTypeCode typed with rfl | rfl | rfl | rfl <;>
     exact Bool.noConfusion reserved
 
 /-- DATA-INTRO engine (nullary constructors). -/
@@ -168,7 +168,7 @@ theorem dataIntroReservedUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
     (typed : HasTypeDescDataIntro profile context subject classifier) : False := by
-  rcases HasTypeDescDataIntro.subjectIsBoolConstructor typed with rfl | rfl <;>
+  rcases HasTypeDescDataIntro.subjectIsNullaryValueCell typed with rfl | rfl | rfl <;>
     exact Bool.noConfusion reserved
 
 /-- NAT-INTRO engine (`natZero` / `natSucc`). -/

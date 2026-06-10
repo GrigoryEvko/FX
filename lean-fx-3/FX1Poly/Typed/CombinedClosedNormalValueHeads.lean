@@ -76,6 +76,7 @@ inductive IsCombinedValueHead : Generator → Prop where
   | optionNone : IsCombinedValueHead .gen_optionNone
   | optionSome : IsCombinedValueHead .gen_optionSome
   | refl : IsCombinedValueHead .gen_refl
+  | unit : IsCombinedValueHead .gen_unit
 
 /-- **★ CAN-4: the combined closed-normal head characterization.**  A closed normal term typed
 by ANY value engine has a combined former-or-constructor head.  The grown arm consumes the
@@ -99,9 +100,11 @@ theorem closedNormalSubjectHeadCombined {profile : PolyProfile} {scope : Nat}
       · exact headEq ▸ IsCombinedValueHead.listCode
       · exact headEq ▸ IsCombinedValueHead.optionCode
   | ofBoolIntro boolTyped =>
-      rcases HasTypeDescDataIntro.subjectIsBoolConstructor boolTyped with subjectEq | subjectEq
+      rcases HasTypeDescDataIntro.subjectIsNullaryValueCell boolTyped with
+        subjectEq | subjectEq | subjectEq
       · exact subjectEq ▸ IsCombinedValueHead.boolTrue
       · exact subjectEq ▸ IsCombinedValueHead.boolFalse
+      · exact subjectEq ▸ IsCombinedValueHead.unit
   | ofNatIntro natTyped =>
       rcases HasTypeDescNatIntro.subjectIsNatConstructor natTyped with
         subjectEq | ⟨predecessor, subjectEq⟩

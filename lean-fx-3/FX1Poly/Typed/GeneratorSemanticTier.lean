@@ -16,7 +16,7 @@ The two axes are GENUINELY complementary — neither alone suffices, and the tie
     catches them via the operational axis (`natElim_reducesButUntyped_stillLive`).
   * The canonical value-formers (`boolTrue`, `pair`, `lam`, …) are statically TYPED (intro engines) but are NOT
     redex heads; the tier catches them via the static axis (`boolTrue_typedNotRedex_stillLive`).
-  * `gen_hilbertSpace`, `gen_quantumGate`, `gen_unit`, `gen_idCode`, … are neither — genuinely RESERVED names.
+  * `gen_hilbertSpace`, `gen_quantumGate`, `gen_idCode`, … are neither — genuinely RESERVED names.
 
 `semanticTier_discriminates` is the non-vacuity guard (the classifier is non-constant), in the spirit of
 `MetatheoryParityLedger.parity_discriminates_*`.  The SOUNDNESS of the `reserved` verdict — that a reserved
@@ -62,7 +62,7 @@ theorem semanticTier_piTyCode : semanticTier .gen_piTyCode = .live := rfl
 /-! ## RESERVED witnesses — genuinely meaningless names -/
 
 theorem semanticTier_hilbertSpace : semanticTier .gen_hilbertSpace = .reserved := rfl
-theorem semanticTier_unit : semanticTier .gen_unit = .reserved := rfl
+theorem semanticTier_unit : semanticTier .gen_unit = .live := rfl
 theorem semanticTier_idCode : semanticTier .gen_idCode = .reserved := rfl
 theorem semanticTier_quantumGate : semanticTier .gen_quantumGate = .reserved := rfl
 

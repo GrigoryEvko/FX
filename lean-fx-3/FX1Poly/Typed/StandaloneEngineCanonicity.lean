@@ -50,7 +50,13 @@ theorem standaloneBoolCanonicalForms {profile : PolyProfile} {scope : Nat}
              HasTypeDescBaseType profile context subject boolTypeCell) :
     subject = boolTrueCell ∨ subject = boolFalseCell := by
   rcases typed with dataIntroTyped | baseTypeTyped
-  · exact dataIntroTyped.subjectIsBoolConstructor
+  · rcases dataIntroTyped.subjectClassifierCoordinated with
+      ⟨hSubject, _⟩ | ⟨hSubject, _⟩ | ⟨_, hClassifier⟩
+    · exact Or.inl hSubject
+    · exact Or.inr hSubject
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_boolCode = Generator.gen_unitCode)
   · exact Generator.noConfusion
       (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
         Generator.gen_boolCode = Generator.gen_universeCode)
@@ -65,17 +71,21 @@ theorem standaloneEmptyUninhabited {profile : PolyProfile} {scope : Nat}
              HasTypeDescBaseType profile context subject emptyTypeCell) :
     False := by
   rcases typed with dataIntroTyped | baseTypeTyped
-  · exact Generator.noConfusion
-      (congrArg RawTerm.headGenerator dataIntroTyped.classifierIsBoolTypeCell :
-        Generator.gen_emptyCode = Generator.gen_boolCode)
+  · rcases dataIntroTyped.classifierIsNullaryTypeCell with hClassifier | hClassifier
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_emptyCode = Generator.gen_boolCode)
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_emptyCode = Generator.gen_unitCode)
   · exact Generator.noConfusion
       (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
         Generator.gen_emptyCode = Generator.gen_universeCode)
 
 /-- **The standalone engines are subject-disjoint.**  No subject is typed by BOTH `HasTypeDescDataIntro` and
-`HasTypeDescBaseType`: a data-intro subject is a data VALUE (`boolTrueCell` / `boolFalseCell`), a base-type
-subject is a TYPE CODE (`boolTypeCell` / `emptyTypeCell`), and the value and type head generators are
-disjoint.  The no-confusion fact that the combined engine is a genuine disjoint union — the value layer and
+`HasTypeDescBaseType`: a data-intro subject is a data VALUE (a bool constructor or the unit value), a
+base-type subject is a TYPE CODE (one of the four nullary base codes), and the value and type head
+generators are disjoint (12 noConfusion cases, swept uniformly).  The no-confusion fact that the combined engine is a genuine disjoint union — the value layer and
 the type layer never type the same term. -/
 theorem dataIntroAndBaseTypeSubjectsDisjoint {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
@@ -83,32 +93,9 @@ theorem dataIntroAndBaseTypeSubjectsDisjoint {profile : PolyProfile} {scope : Na
     (dataIntroTyped : HasTypeDescDataIntro profile context subject valueClassifier)
     (baseTypeTyped : HasTypeDescBaseType profile context subject typeClassifier) :
     False := by
-  rcases dataIntroTyped.subjectIsBoolConstructor with valueIsTrue | valueIsFalse
-  · rcases baseTypeTyped.subjectIsBaseTypeCode with typeIsBool | typeIsEmpty | typeIsNat
-    · rw [valueIsTrue] at typeIsBool
-      exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator typeIsBool :
-          Generator.gen_boolTrue = Generator.gen_boolCode)
-    · rw [valueIsTrue] at typeIsEmpty
-      exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator typeIsEmpty :
-          Generator.gen_boolTrue = Generator.gen_emptyCode)
-    · rw [valueIsTrue] at typeIsNat
-      exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator typeIsNat :
-          Generator.gen_boolTrue = Generator.gen_natCode)
-  · rcases baseTypeTyped.subjectIsBaseTypeCode with typeIsBool | typeIsEmpty | typeIsNat
-    · rw [valueIsFalse] at typeIsBool
-      exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator typeIsBool :
-          Generator.gen_boolFalse = Generator.gen_boolCode)
-    · rw [valueIsFalse] at typeIsEmpty
-      exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator typeIsEmpty :
-          Generator.gen_boolFalse = Generator.gen_emptyCode)
-    · rw [valueIsFalse] at typeIsNat
-      exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator typeIsNat :
-          Generator.gen_boolFalse = Generator.gen_natCode)
+  rcases dataIntroTyped.subjectIsNullaryValueCell with valueEq | valueEq | valueEq <;>
+    rcases baseTypeTyped.subjectIsBaseTypeCode with typeEq | typeEq | typeEq | typeEq <;>
+      (rw [valueEq] at typeEq
+       exact Generator.noConfusion (congrArg RawTerm.headGenerator typeEq))
 
 end FX1Poly.Typed

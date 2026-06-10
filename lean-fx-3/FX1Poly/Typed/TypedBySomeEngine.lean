@@ -99,8 +99,9 @@ theorem hasSomeTypingRule_hilbertSpace : hasSomeTypingRule .gen_hilbertSpace = f
 theorem hasSomeTypingRule_natElim : hasSomeTypingRule .gen_natElim = false := rfl
 /-- `gen_idCode` is only ever a CLASSIFIER (of `refl`), never formed as a subject. -/
 theorem hasSomeTypingRule_idCode : hasSomeTypingRule .gen_idCode = false := rfl
-/-- `gen_unit` is in no table. -/
-theorem hasSomeTypingRule_unit : hasSomeTypingRule .gen_unit = false := rfl
+/-- `gen_unit` IS typed (the UNIT-1 flip): the data-intro nullary table types the unit value at
+`unitCode`.  This theorem previously pinned `= false` ("in no table"); the row landing flipped it. -/
+theorem hasSomeTypingRule_unit : hasSomeTypingRule .gen_unit = true := rfl
 /-- Another reserved-zoo name. -/
 theorem hasSomeTypingRule_quantumGate : hasSomeTypingRule .gen_quantumGate = false := rfl
 

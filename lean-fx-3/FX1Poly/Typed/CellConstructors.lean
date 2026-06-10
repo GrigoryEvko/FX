@@ -72,6 +72,17 @@ ranges over — the substrate of nat canonicity.  Distinct from the VALUE cells
 def natTypeCell {scope : Nat} : RawTerm scope :=
   .mkGen .gen_natCode () .childNil
 
+/-- The unit-type code cell `Unit` — the `.type`-sorted nullary `gen_unitCode`
+cell.  No payload data (`Unit`), no children: a closed nullary type-former
+leaf, structurally identical to `boolTypeCell` / `natTypeCell` but at the
+distinct `gen_unitCode` generator.  The formation subject of `Unit : Type@0`
+(via the nullary base-type formation `HasTypeDescBaseType`) and the type whose
+ONE closed canonical member is the value `unitCell` — the substrate of unit
+canonicity and of the typed unit-eta judgment.  Distinct from the VALUE cell
+`gen_unit`: this is the TYPE code. -/
+def unitTypeCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_unitCode () .childNil
+
 /-- The variable cell at de Bruijn position `index`. -/
 def variableCell {scope : Nat} (index : Fin scope) : RawTerm scope :=
   .mkGen .gen_var index .childNil

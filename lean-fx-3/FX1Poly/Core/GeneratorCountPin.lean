@@ -3,13 +3,13 @@ import FX1Poly.Core.GeneratorCore
 /-! # FX1Poly/Core/GeneratorCountPin — permanent stale-count guard
 
 Docstrings and design notes keep citing stale generator counts (74, 188,
-194 have all appeared); the enum currently has 197 constructors.  This
+194 have all appeared); the enum currently has 198 constructors.  This
 file pins the count as TWO theorems that break on ANY change to the
 enum's size, forcing the pin (and every count-citing docstring it
 guards) to be updated in the same change:
 
-  * appending a 198th generator breaks `generatorCount_upperBound`
-    (the new constructor's index is 197);
+  * appending a 199th generator breaks `generatorCount_upperBound`
+    (the new constructor's index is 198);
   * removing or reordering past `gen_npComplete` breaks
     `generatorCount_lastIndex`.
 
@@ -27,7 +27,7 @@ namespace FX1Poly.Core
 /-- The number of generators in the table.  UPDATE THIS PIN (and every
 docstring citing the count) when the enum changes — the two theorems
 below break on any size change. -/
-def generatorCount : Nat := 197
+def generatorCount : Nat := 198
 
 /-- The LAST generator's constructor index attains `generatorCount - 1`:
 the count from below. -/
@@ -35,7 +35,7 @@ theorem generatorCount_lastIndex :
     Generator.ctorIdx .gen_npComplete = generatorCount - 1 := rfl
 
 /-- Every generator's constructor index is below `generatorCount`: the
-count from above.  A 198th generator breaks this theorem. -/
+count from above.  A 199th generator breaks this theorem. -/
 theorem generatorCount_upperBound :
     ∀ generator : Generator,
       Generator.ctorIdx generator < generatorCount := by

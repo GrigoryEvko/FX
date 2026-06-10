@@ -130,6 +130,7 @@ def Generator.fromTag : Nat → Option Generator
   | 194 => some .gen_emptyCode
   | 195 => some .gen_boolCode
   | 196 => some .gen_natCode
+  | 197 => some .gen_unitCode
   | _ => none
 
 /-- Round-trip: `fromTag` recovers every generator from its `toNat` tag.  Each

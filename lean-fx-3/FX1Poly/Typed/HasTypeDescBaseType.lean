@@ -55,14 +55,16 @@ structure BaseTypeRuleDesc where
 
 /-- The per-generator NULLARY base-type formation table.  Its rows are exactly the childless type-code
 formers (`binderShifts = []`); `boolCode` and `emptyCode` both form a member of `Type@0(standard)` — the
-flag is FIXED here, never a free parameter, so the formation is flag-deterministic.  A future nullary
-base type code (a `unit` type code, once it lands) is ONE more row, never a new arm. -/
+flag is FIXED here, never a free parameter, so the formation is flag-deterministic.  A new nullary
+base type code is ONE more row, never a new arm — `unitCode` landed exactly that way (UNIT-1). -/
 def baseTypeRuleDescOf (generator : Generator) : Option BaseTypeRuleDesc :=
   if generator = .gen_boolCode then
     some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
   else if generator = .gen_emptyCode then
     some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
   else if generator = .gen_natCode then
+    some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
+  else if generator = .gen_unitCode then
     some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
   else none
 
@@ -83,6 +85,15 @@ row, the type whose closed members the data-intro value side (`natZero` / `natSu
 over.  Same fixed output universe as `boolCode` / `emptyCode`, flag-pinned by the rule. -/
 theorem baseTypeRuleDescOf_natCode :
     baseTypeRuleDescOf .gen_natCode
+      = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
+  rfl
+
+/-- `gen_unitCode` forms a member of `Type@0(standard)` (metadata check) — the Unit TYPE code's
+formation row, the type whose ONE closed canonical member is the value `unitCell` (the substrate of
+unit canonicity and of the typed unit-eta judgment).  Same fixed output universe as the other
+nullary base codes, flag-pinned by the rule. -/
+theorem baseTypeRuleDescOf_unitCode :
+    baseTypeRuleDescOf .gen_unitCode
       = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
   rfl
 
@@ -110,6 +121,17 @@ theorem HasTypeDescBaseType.boolCodeTyped {profile : PolyProfile} {scope : Nat}
     HasTypeDescBaseType profile context boolTypeCell
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
   HasTypeDescBaseType.baseFormation context .gen_boolCode () .childNil
+    { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl
+
+/-- **★ `Unit : Type@0` in the base-type engine.**  The unit TYPE code is formed at
+`Type@0(standard)` — the formation half of the unit data story (the value half is
+`HasTypeDescDataIntro.unitValueTyped`); the type whose one-value collapse the typed unit-eta
+judgment is built on. -/
+theorem HasTypeDescBaseType.unitCodeTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeDescBaseType profile context unitTypeCell
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
+  HasTypeDescBaseType.baseFormation context .gen_unitCode () .childNil
     { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl
 
 /-- **★ `Empty : Type@0` in the base-type engine.**  The empty TYPE code is formed at `Type@0(standard)`
