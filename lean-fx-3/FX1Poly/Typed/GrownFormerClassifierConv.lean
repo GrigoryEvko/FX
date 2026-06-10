@@ -106,6 +106,66 @@ theorem HasTypeDescPi.formerClassifierConvUniverseGeneric {profile : PolyProfile
         rw [hOutput]
         exact Conv.refl _
 
+/-- **Grown PINNED former-classifier inversion** — the grown twin of
+`HasTypeDesc.inversionFormerClassifierPinned`: for a formation generator whose rule output is
+CONSTANT (the nullary rows — the output ignores the telescope's levels and flag), a grown
+derivation of a cell with that head has its classifier `Conv` the pinned universe code EXACTLY,
+no existential.  The flag-negotiation tool at a nullary former (the
+`normalUniverseClassificationUnique` former arm): the empty telescope anchors no flag, so
+agreement is by output CONSTANCY — every `genFormationPi` arm at the same generator carries the
+SAME rule (`typingRuleDescOf` is a function) and reaches the one pinned output.  Zero-axiom. -/
+theorem HasTypeDescPi.invertFormerClassifierPinned {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier)
+    {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    {pinnedLevel : LevelExpr} {pinnedFlag : UniverseFlag}
+    (outputConstant : ∀ (levels : List LevelExpr) (flag : UniverseFlag),
+      rule.outputType generalScope levels flag = universeCodeCell pinnedLevel pinnedFlag) :
+    ∀ {payload : generator.payload generalScope}
+      {children : RawTermChildren generator.binderShifts generalScope},
+      subject = RawTerm.mkGen generator payload children →
+        Conv reachedClassifier (universeCodeCell pinnedLevel pinnedFlag) :=
+  fun {_payloadImplicit} {_childrenImplicit} =>
+    match derivation with
+    | .ofFormation formationTyped => fun subjectEq =>
+        HasTypeDesc.inversionFormerClassifierPinned formationTyped isFormation
+          outputConstant subjectEq
+    | .conv _levelExpr _flag typedPremise converts _reclassifierTyped => fun subjectEq => by
+        have convToPinned :=
+          HasTypeDescPi.invertFormerClassifierPinned typedPremise isFormation
+            outputConstant subjectEq
+        exact Conv.trans converts.sym convToPinned
+    | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
+        fun subjectEq => by
+        have rootEq : Generator.gen_lam = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [← rootEq] at isFormation
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg (fun isPi => Generator.noConfusion isPi),
+          if_neg (fun isSigma => Generator.noConfusion isSigma),
+          if_neg (fun isList => Generator.noConfusion isList)] at isFormation
+        cases isFormation
+    | .piElim _functionTyped _argumentTyped => fun subjectEq => by
+        have rootEq : Generator.gen_app = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [← rootEq] at isFormation
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg (fun isPi => Generator.noConfusion isPi),
+          if_neg (fun isSigma => Generator.noConfusion isSigma),
+          if_neg (fun isList => Generator.noConfusion isList)] at isFormation
+        cases isFormation
+    | .genFormationPi _armContext armGenerator _armPayload _armChildren armLevels armFlag
+        armRule armIsFormation _armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [generatorAgree] at armIsFormation
+        obtain rfl : armRule = rule :=
+          Option.some.inj (armIsFormation.symm.trans isFormation)
+        rw [outputConstant armLevels armFlag]
+        exact Conv.refl _
+
 /-- **A `listCode` data former is not a member of a Π-type.**  The `gen_listCode` specialization of the grown
 generic inversion: a closed `List element` is a TYPE (classifier `Conv` a universe code), and a Π-code is not
 `Conv` a universe code.  The data-former analogue of `piFormerNotTypedAtPiType`, via the head-agnostic
@@ -166,6 +226,32 @@ theorem HasTypeDescPi.optionFormerNotTypedAtEmptyType {profile : PolyProfile} {s
     False := by
   obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
     HasTypeDescPi.formerClassifierConvUniverseGeneric typed typingRuleDescOf_optionCode rfl
+  exact Conv.universeCode_not_emptyTypeCode convToUniverseCode.sym
+
+/-- **The `unitCode` former is not a member of a Π-type.**  The NULLARY specialization of the grown
+generic inversion: the Unit type code is a TYPE (classifier `Conv` a universe code), and a Π-code is
+not `Conv` a universe code.  The nullary arm of the grown canonical-forms `piElim` crux. -/
+theorem HasTypeDescPi.unitFormerNotTypedAtPiType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {outerDomain : RawTerm scope} {outerCodomain : RawTerm (scope + 1)}
+    (typed :
+      HasTypeDescPi profile context (.mkGen .gen_unitCode () .childNil)
+        (piTyCodeCell outerDomain outerCodomain)) :
+    False := by
+  obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
+    HasTypeDescPi.formerClassifierConvUniverseGeneric typed typingRuleDescOf_unitCode rfl
+  exact Conv.piTyCode_not_universeCode convToUniverseCode
+
+/-- **The `unitCode` former is not a member of the empty type.**  The empty-type twin of
+`unitFormerNotTypedAtPiType` — the nullary arm of the grown closed-consistency canonical forms. -/
+theorem HasTypeDescPi.unitFormerNotTypedAtEmptyType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    (typed :
+      HasTypeDescPi profile context (.mkGen .gen_unitCode () .childNil)
+        (emptyTypeCell (scope := scope))) :
+    False := by
+  obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
+    HasTypeDescPi.formerClassifierConvUniverseGeneric typed typingRuleDescOf_unitCode rfl
   exact Conv.universeCode_not_emptyTypeCode convToUniverseCode.sym
 
 end FX1Poly.Typed

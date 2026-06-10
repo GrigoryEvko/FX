@@ -13,11 +13,12 @@ variable, or an application whose function head is itself neutral, so β can nev
 statements over the shipped `Core.IsNeutral` predicate — no new inductive.
 
   * `HasTypeDescPi.openNormalSubjectCanonicalOrNeutral` — **open canonical forms.**  A grown-typed NORMAL term in
-    ANY well-formed context is a canonical head (`IsGrownCanonicalHead`: λ / Π-code / Σ-code / universe-code) or a
-    `Core.IsNeutral` term.  The recursor mirrors `closedNormalSubjectHead` but drops the `(Fin scope → False)`
-    premise: the `var` arm now concludes `IsNeutral.var` instead of an absurdity, and the `piElim` arm whose
-    function head is neutral concludes `IsNeutral.app` (the function cannot be a λ — that would be a β-redex,
-    contradicting normality — nor a type former / universe code — those are typed at a universe, never at the Π
+    ANY well-formed context is a canonical head (`IsGrownCanonicalHead`: λ / Π-code / Σ-code / universe-code /
+    list-code / option-code / unit-code) or a `Core.IsNeutral` term.  The recursor mirrors
+    `closedNormalSubjectHead` but drops the `(Fin scope → False)` premise: the `var` arm now concludes
+    `IsNeutral.var` instead of an absurdity, and the `piElim` arm whose function head is neutral concludes
+    `IsNeutral.app` (the function cannot be a λ — that would be a β-redex, contradicting normality — nor a type
+    former / universe code / list-code / option-code / unit-code — those are typed at a universe, never at the Π
     the function inhabits — so by induction it is neutral, and the application inherits neutrality).
 
   * `HasTypeDescPi.openProgress` — **open progress (unconditional).**  A grown-typed term in any well-formed
@@ -79,7 +80,7 @@ theorem HasTypeDescPi.openNormalSubjectCanonicalOrNeutral {profile : PolyProfile
     have functionNormal : RawTerm.isStepNormalForm functionTerm :=
       appNormal_functionNormal functionTerm argument armNormal
     rcases functionIH armWf functionNormal with
-        (headLam | headPi | headSigma | headUniverse | headList | headOption) | functionNeutral
+        (headLam | headPi | headSigma | headUniverse | headList | headOption | headUnit) | functionNeutral
     · exfalso
       obtain ⟨domainAnn, body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
       rw [bodyEq] at armNormal
@@ -104,6 +105,10 @@ theorem HasTypeDescPi.openNormalSubjectCanonicalOrNeutral {profile : PolyProfile
       obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
       rw [optionEq] at functionTyped
       exact HasTypeDescPi.optionFormerNotTypedAtPiType functionTyped
+    · exfalso
+      have unitEq := eq_unitCodeCell_of_headGenerator headUnit
+      rw [unitEq] at functionTyped
+      exact HasTypeDescPi.unitFormerNotTypedAtPiType functionTyped
     · exact Or.inr (IsNeutral.app functionNeutral)
   · intro _armScope _armContext generator _payload _children _levels _flag _rule isFormation _premises
       _premisesIH _armWf _armNormal
@@ -114,11 +119,14 @@ theorem HasTypeDescPi.openNormalSubjectCanonicalOrNeutral {profile : PolyProfile
       · by_cases isList : generator = Generator.gen_listCode
         · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by subst isList; rfl))))))
         · by_cases isOption : generator = Generator.gen_optionCode
-          · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isOption; rfl))))))
-          · exfalso
-            unfold typingRuleDescOf at isFormation
-            rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption] at isFormation
-            contradiction
+          · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by subst isOption; rfl)))))))
+          · by_cases isUnit : generator = Generator.gen_unitCode
+            · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isUnit; rfl)))))))
+            · exfalso
+              unfold typingRuleDescOf at isFormation
+              rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption, if_neg isUnit]
+                at isFormation
+              contradiction
   · intro _armBaseScope _armCurrentDepth _armContext _armFlag
     exact True.intro
   · intro _armBaseScope _armCurrentDepth _armRestShifts _armContext _armHead _armHeadLevel

@@ -34,10 +34,13 @@ index-equality-witness machinery.
   `reducibleTypeAtBoundFromUniverseMemberBounded`).  The sub-budgets are unused (the gate comes from the IH).
 * `universeFormation` — `fundamentalUniverseFormationAtBoundedSucc` (BFT-9) fed the budget's `belowBound`.  THE one
   budget-consuming arm.
-* `genFormation` — the Π/Σ former branches feed `fundamentalGenFormationPiFromTelescopeAtBoundedSucc` (BFT-4) /
-  `fundamentalGenFormationSigmaFromTelescopeAtBoundedSucc` (the Σ twin) the output-level telescope, via the same
-  double-apply-`premisesFundamental` dance as BFT-6 (read members at `argLevel = bound`, gate-extract
-  `output < bound`, re-apply at `argLevel = output`).  Non-Π/Σ generators are impossible (`typingRuleDescOf`).
+* `genFormation` — the Π/Σ/list/option former branches feed `fundamentalGenFormationPiFromTelescopeAtBoundedSucc`
+  (BFT-4) / `fundamentalGenFormationSigmaFromTelescopeAtBoundedSucc` (the Σ twin) / the list/option twins the
+  output-level telescope, via the same double-apply-`premisesFundamental` dance as BFT-6 (read members at
+  `argLevel = bound`, gate-extract `output < bound`, re-apply at `argLevel = output`).  The nullary `gen_unitCode`
+  row has no telescope, so its bounded membership is `unitFormerMemberAtBounded` with the output positivity taken
+  from the budget's `nullaryBelowBound` gate (`nullaryBelowBound rfl : 0 < bound`).  Other generators are
+  impossible (`typingRuleDescOf`).
 * `nilTelescope` / `consTelescope` — the motive_2 (`IsFormationTelescopeReducibleAtBoundedSucc`, BFT-10) arms,
   identical to BFT-6's telescope arms (the cons arm lifts the head member `argLevel → bound` via `.cumulative`).
 
@@ -54,6 +57,35 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 open StepStar
+
+/-- **Bounded nullary `unitCode` former membership.**  The childless data-former analogue of
+`fundamentalGenFormationListFromTelescopeAtBoundedSucc`'s membership step: the inert normal leaf
+`Unit` (`unitTypeCode_isStronglyNormalizing`, weak-head normal, root-distinct from Π / the universe
+code / the empty code, non-flat) is a bound-reducible member of its pinned universe
+`Type@0(standard)` at any bound strictly above the output level (`belowBound : denote lzero env <
+bound`, i.e. `0 < bound`).  The membership is `universeMembershipIntroAtBounded` over the unit
+former's SN and its reducibility-as-type at the output level via the `neutral` arm of
+`ReducibleTypeStepBounded`, exactly as the list/option arms read their element off the telescope —
+but with no telescope input, the bound positivity is the sole non-structural input. -/
+theorem unitFormerMemberAtBounded {scope : Nat} (env : Nat → Nat) (bound : Nat)
+    (belowBound : LevelExpr.denote LevelExpr.lzero env < bound) :
+    IsReducibleMemberAtBounded env bound
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+      (.mkGen .gen_unitCode () .childNil : RawTerm scope) := by
+  have unitSN : IsStronglyNormalizing (.mkGen .gen_unitCode () .childNil : RawTerm scope) :=
+    unitTypeCode_isStronglyNormalizing
+  have unitReducible :
+      IsReducibleTypeAtBounded env (LevelExpr.denote LevelExpr.lzero env)
+        (.mkGen .gen_unitCode () .childNil : RawTerm scope) :=
+    ⟨IsStronglyNormalizing,
+      ReducibleTypeStepBounded.neutral
+        (fun _reduct weakHeadStep => by cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+        (show Generator.gen_unitCode ≠ Generator.gen_piTyCode by decide)
+        (show Generator.gen_unitCode ≠ Generator.gen_universeCode by decide)
+        (show Generator.gen_unitCode ≠ Generator.gen_emptyCode by decide)
+        (show Generator.gen_unitCode.isFlatDataCode = false by decide)⟩
+  exact universeMembershipIntroAtBounded env LevelExpr.lzero UniverseFlag.standard bound
+    (.mkGen .gen_unitCode () .childNil) belowBound unitSN unitReducible
 
 /-- **Bounded telescope reducibility for a FORMATION premise telescope (motive_2 of the BFT-11 dispatch, BFT-10).**
 The formation-engine analogue of `IsTelescopeReducibleAtBoundedSucc` (over `DescTelescope` rather than
@@ -111,8 +143,8 @@ theorem HasTypeDesc.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Nat 
     intro _scope context levelExpr flag belowBound
     exact fundamentalUniverseFormationAtBoundedSucc env bound context levelExpr flag belowBound
   · -- genFormation (Π/Σ former dispatch)
-    intro _scope _context generator _payload children levelsList flag rule isFormation premises
-      _premisesBudget premisesFundamental
+    intro _scope _context generator _payload children levelsList flag rule isFormation nullaryBelowBound
+      premises _premisesBudget premisesFundamental
     by_cases isPiFormer : generator = .gen_piTyCode
     · subst isPiFormer
       obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
@@ -215,10 +247,26 @@ theorem HasTypeDesc.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Nat 
                     exact premisesFundamental substitution
                       (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt outputBelowBound)
                       envReducible Generator.gen_optionCode_binderShifts_eq)
-          · exfalso
-            unfold typingRuleDescOf at isFormation
-            rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer] at isFormation
-            contradiction
+          · by_cases isUnitFormer : generator = .gen_unitCode
+            · -- the nullary unitCode former: the output is the pinned Type@0, so the bounded member
+              -- is `unitFormerMemberAtBounded` with the output-level positivity supplied by the
+              -- budget's nullary gate (`nullaryBelowBound rfl : 0 < bound`).  No telescope input.
+              subst isUnitFormer
+              obtain rfl : rule = { outputType := nullaryFormerOutput } :=
+                Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
+              match children with
+              | .childNil =>
+                  refine fun substitution _envReducible => ?_
+                  show IsReducibleMemberAtBounded env bound
+                    (RawTerm.subst substitution (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
+                    (RawTerm.subst substitution (.mkGen .gen_unitCode () .childNil))
+                  rw [subst_universeCodeCell]
+                  exact unitFormerMemberAtBounded env bound (nullaryBelowBound rfl)
+            · exfalso
+              unfold typingRuleDescOf at isFormation
+              rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
+                if_neg isUnitFormer] at isFormation
+              contradiction
   · -- nilTelescope
     intro _baseScope _currentDepth _context _flag
     intro _targetScope _substitution _argLevel _argLevelLeBound _env _shapeEq

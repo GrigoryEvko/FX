@@ -11,7 +11,7 @@ import FX1Poly.Typed.HasTypeDescIdIntro
     characterization with CONSTRUCTOR heads (CAN-4, the #1048 head-extension).
 
 `HasTypeDescPi.closedNormalSubjectHead` characterizes closed normal GROWN-typed subjects
-(6 former/λ heads).  The kernel's data VALUES live in the standalone intro engines — by the
+(7 former/λ heads).  The kernel's data VALUES live in the standalone intro engines — by the
 cascade-free architecture they are deliberately NOT grown-typable, so the grown theorem
 cannot see constructor heads.  The canonicity assembly (#1048) needs the COMBINED statement:
 a closed normal term typed by ANY value engine has a head in the combined former-or-constructor
@@ -21,11 +21,11 @@ set.
     bool data-intro, nat, list, pair, either, option, identity).  Eliminator judgments are
     deliberately EXCLUDED: their subjects are redexes or applications, not values — the
     closed-normal analysis of eliminator-typed subjects is the CAN-5 per-classifier step.
-  * `IsCombinedValueHead` — the 18-head inductive predicate (the 6 grown heads + the 12
-    constructor heads).  An inductive predicate rather than a Boolean table or an 18-way `Or`:
+  * `IsCombinedValueHead` — the 19-head inductive predicate (the 7 grown heads + the 12
+    constructor heads).  An inductive predicate rather than a Boolean table or a 19-way `Or`:
     no wildcard match (propext hygiene), and each arm closes by one constructor.
   * `closedNormalSubjectHeadCombined` (★) — the CAN-4 headline.  The grown arm consumes the
-    shipped 6-head theorem; each intro arm consumes its engine's shipped subject-shape
+    shipped 7-head theorem; each intro arm consumes its engine's shipped subject-shape
     inversion (the subject IS a constructor cell), and the head computes by `rfl` after
     substitution.  Normality and closedness are consumed ONLY by the grown arm — constructor
     SHAPE is unconditional in the intro engines (their reducts are handled by the intro SR,
@@ -55,7 +55,7 @@ inductive TypedByValueEngine (profile : PolyProfile) {scope : Nat}
   | ofOptionIntro (typed : HasTypeDescOptionIntro profile context subject classifier)
   | ofIdIntro (typed : HasTypeDescIdIntro profile context subject classifier)
 
-/-- The combined closed-normal VALUE head set: the 6 grown former/λ heads plus the 12 data
+/-- The combined closed-normal VALUE head set: the 7 grown former/λ heads plus the 12 data
 constructor heads. -/
 inductive IsCombinedValueHead : Generator → Prop where
   | lam : IsCombinedValueHead .gen_lam
@@ -64,6 +64,7 @@ inductive IsCombinedValueHead : Generator → Prop where
   | universeCode : IsCombinedValueHead .gen_universeCode
   | listCode : IsCombinedValueHead .gen_listCode
   | optionCode : IsCombinedValueHead .gen_optionCode
+  | unitCode : IsCombinedValueHead .gen_unitCode
   | boolTrue : IsCombinedValueHead .gen_boolTrue
   | boolFalse : IsCombinedValueHead .gen_boolFalse
   | natZero : IsCombinedValueHead .gen_natZero
@@ -80,7 +81,7 @@ inductive IsCombinedValueHead : Generator → Prop where
 
 /-- **★ CAN-4: the combined closed-normal head characterization.**  A closed normal term typed
 by ANY value engine has a combined former-or-constructor head.  The grown arm consumes the
-shipped 6-head theorem; the intro arms consume their engines' subject-shape inversions (the
+shipped 7-head theorem; the intro arms consume their engines' subject-shape inversions (the
 constructor shape is unconditional there — normality/closedness are only needed on the grown
 side). -/
 theorem closedNormalSubjectHeadCombined {profile : PolyProfile} {scope : Nat}
@@ -92,13 +93,14 @@ theorem closedNormalSubjectHeadCombined {profile : PolyProfile} {scope : Nat}
   cases typed with
   | ofGrown grownTyped =>
       rcases HasTypeDescPi.closedNormalSubjectHead grownTyped normal closed with
-        headEq | headEq | headEq | headEq | headEq | headEq
+        headEq | headEq | headEq | headEq | headEq | headEq | headEq
       · exact headEq ▸ IsCombinedValueHead.lam
       · exact headEq ▸ IsCombinedValueHead.piTyCode
       · exact headEq ▸ IsCombinedValueHead.sigmaTyCode
       · exact headEq ▸ IsCombinedValueHead.universeCode
       · exact headEq ▸ IsCombinedValueHead.listCode
       · exact headEq ▸ IsCombinedValueHead.optionCode
+      · exact headEq ▸ IsCombinedValueHead.unitCode
   | ofBoolIntro boolTyped =>
       rcases HasTypeDescDataIntro.subjectIsNullaryValueCell boolTyped with
         subjectEq | subjectEq | subjectEq

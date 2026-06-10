@@ -6490,6 +6490,11 @@ the strong equation one green commit at a time, then the table flips. -/
 -- motive_2 wrapper (BFT-10).
 #assert_no_axioms FX1Poly.Typed.IsFormationTelescopeReducibleAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.fundamentalAtBoundedSucc
+-- The bounded nullary unitCode former membership (the childless data-former analogue of the list/option
+-- membership steps): the inert normal leaf Unit is a bound-reducible member of its pinned Type@0 given the output
+-- positivity 0 < bound, which the genFormation budget's nullaryBelowBound gate supplies. Used by the unitCode
+-- branch of both the formation and grown genFormationPi FT arms.
+#assert_no_axioms FX1Poly.Typed.unitFormerMemberAtBounded
 
 -- The GROWN-engine per-derivation budget (BoundExceedsPi.lean, BFT-12a). Mutual inductive Prop over HasTypeDescPi /
 -- DescTelescopePi. The grown engine has NO universeFormation leaf, so this carries NO belowBound of its own — the
@@ -9069,3 +9074,30 @@ type-directed unit-η/SProp-η (η-M15d/e), which is judgmental-equality extensi
 #assert_no_axioms FX1Poly.Typed.BetaEtaConv.iff_normalizeBetaEta_eq_of_wfTyped
 #assert_no_axioms FX1Poly.Typed.BetaEtaConv.decidableOfWfTyped
 #assert_no_axioms FX1Poly.Typed.betaEtaConvDecidableOnWfFragment
+
+/-! ### The nullary `unitCode` formation row — the flag-ignoring pinned output
+
+`typingRuleDescOf` gains its first NULLARY row: `gen_unitCode` at the pinned
+`nullaryFormerOutput` (`Type@0(standard)`, ignoring the empty level list and the unanchored
+flag).  A childless former's telescope premise holds at EVERY flag, so a flag-USING output would
+break uniqueness of typing; the pinned row restores it by output CONSTANCY
+(`typingRuleDescOf_unitCode_outputConstant` + the PINNED classifier inversions on both engines).
+The strong table-shape lemmas are rescoped to the >=1-child family (they now take a
+`generator != gen_unitCode` hypothesis); the row-shape-agnostic interface
+(`output_isUniverseCode` / `_renameStable` / `_substStable`) covers both shapes, and the
+COMPUTABLE row-data accessor `formationOutputData` (+ its soundness equation) supplies the
+Type-valued witnesses a decider needs (a Prop `∃` cannot eliminate into `Σ'`).  The
+reducibility-FT arm for the nullary row is `IsReducibleMemberAt.unitFormerInUniverse` — no
+telescope input, the inert-leaf membership. -/
+
+#assert_no_axioms FX1Poly.Typed.nullaryFormerOutput
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_unitCode
+#assert_no_axioms FX1Poly.Typed.formationOutputData
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_output_eq_outputData
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_unitCode_outputConstant
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_formerEnumeration
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.inversionFormerClassifierPinned
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertFormerClassifierPinned
+#assert_no_axioms FX1Poly.Typed.eq_unitCodeCell_of_headGenerator
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.unitFormerNotTypedAtPiType
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.unitFormerNotTypedAtEmptyType

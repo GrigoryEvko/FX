@@ -87,14 +87,30 @@ def universeFormerOutput (scope : Nat) (levels : List LevelExpr)
     (flag : UniverseFlag) : RawTerm scope :=
   universeCodeCell (lmaxAll levels) flag
 
+/-- The output classifier of a NULLARY (childless) former: pinned to `Type@0(standard)`,
+IGNORING both the level list and the flag.  A childless former's telescope premise
+`DescTelescope ... [] flag .childNil` holds for EVERY flag (no head child anchors it), so a
+flag-USING output would classify one subject at many non-`Conv` universe codes and break
+uniqueness of typing; a nullary row must pin its output instead — uniqueness at a nullary
+former is then by output CONSTANCY rather than by telescope flag-anchoring.  Matches the
+base-type engine's pinning (`baseTypeRuleDescOf` sends every nullary base code to
+`Type@0(standard)`). -/
+def nullaryFormerOutput (scope : Nat) (_levels : List LevelExpr)
+    (_flag : UniverseFlag) : RawTerm scope :=
+  universeCodeCell LevelExpr.lzero UniverseFlag.standard
+
 /-- The per-generator description table.  `gen_piTyCode` and `gen_sigmaTyCode`
-are the dependent type-formers, both with `universeFormerOutput`.  Adding a future
-dependent former is one more row here — never a new `HasTypeDesc` arm (P13). -/
+are the dependent type-formers, both with `universeFormerOutput`; `gen_listCode` /
+`gen_optionCode` are the one-child data formers at the same rule; `gen_unitCode` is the
+first NULLARY former, with the flag-ignoring `nullaryFormerOutput` (Unit : Type@0).
+Adding a future dependent former is one more row here — never a new `HasTypeDesc`
+arm (P13). -/
 def typingRuleDescOf (generator : Generator) : Option TypingRuleDesc :=
   if generator = .gen_piTyCode then some { outputType := universeFormerOutput }
   else if generator = .gen_sigmaTyCode then some { outputType := universeFormerOutput }
   else if generator = .gen_listCode then some { outputType := universeFormerOutput }
   else if generator = .gen_optionCode then some { outputType := universeFormerOutput }
+  else if generator = .gen_unitCode then some { outputType := nullaryFormerOutput }
   else none
 
 mutual
@@ -185,22 +201,29 @@ element `A`, exactly the `universeFormerOutput` rule the dependent formers and `
 theorem typingRuleDescOf_optionCode :
     typingRuleDescOf .gen_optionCode = some { outputType := universeFormerOutput } := rfl
 
-/-- **Formation-family invariant: every formation rule outputs a universe code.**  The `typingRuleDescOf`
-table currently maps EXACTLY the dependent type-formers (`gen_piTyCode` / `gen_sigmaTyCode`) to the SHARED
+/-- `gen_unitCode`'s description is the `nullaryFormerOutput` rule (metadata check) — the first
+NULLARY formation row: `Unit : Type@0(standard)`, the output IGNORING the (empty) level list and
+the (unanchored) flag. -/
+theorem typingRuleDescOf_unitCode :
+    typingRuleDescOf .gen_unitCode = some { outputType := nullaryFormerOutput } := rfl
+
+/-- **The ≥1-child formation family outputs the `universeFormerOutput` rule.**  Every NON-NULLARY
+`typingRuleDescOf` row (the dependent type-formers and the one-child data formers) carries the SHARED
 `universeFormerOutput` rule (a former lives at the `lmax` of its children's levels).  This lemma enumerates
-the table ONCE: any generator carrying a formation rule has `rule.outputType = universeFormerOutput`.
+the table ONCE: any generator carrying a formation rule, other than the nullary `gen_unitCode`, has
+`rule.outputType = universeFormerOutput`.
 
-It is the cascade-death substrate for the FORMATION-FAMILY metatheory (validity / substitution / weakening /
-the FT `genFormation` arm): a consumer obtains `rule.outputType = universeFormerOutput` from HERE instead of
-its own `unfold typingRuleDescOf` + per-generator (`by_cases` pi/sigma) split.  Adding a new
-`universeFormerOutput` row (a data type code: `product`/`sum`/`list`/`option`/`either`) is then ONE new
-`by_cases` case in THIS lemma — every consumer that obtains its output type from here inherits it, with no
-per-consumer cascade.  (polycell.md §3.16.19 per-family metatheory inheritance.)
+It is the cascade-death substrate for the ≥1-CHILD formation metatheory: a consumer obtains
+`rule.outputType = universeFormerOutput` from HERE instead of its own `unfold typingRuleDescOf` +
+per-generator split.  The NULLARY row is excluded by hypothesis — its output is flag-pinned
+(`nullaryFormerOutput`), and nullary consumers work by output CONSTANCY instead
+(`typingRuleDescOf_output_eq_outputData` below covers BOTH shapes constructively).
 
-Zero-axiom — the established `subst` + `Option.some.inj` (pi/sigma) and `unfold`/`if_neg`/`contradiction`
+Zero-axiom — the established `subst` + `Option.some.inj` and `unfold`/`if_neg`/`contradiction`
 (the non-former branch) pattern; no `propext`/`Quot.sound`/`Classical`/`native_decide`/`omega`. -/
 theorem typingRuleDescOf_outputIsUniverseFormer {generator : Generator} {rule : TypingRuleDesc}
-    (isFormation : typingRuleDescOf generator = some rule) :
+    (isFormation : typingRuleDescOf generator = some rule)
+    (isNotNullary : generator ≠ Generator.gen_unitCode) :
     rule.outputType = universeFormerOutput := by
   by_cases hPi : generator = .gen_piTyCode
   · subst hPi
@@ -220,7 +243,8 @@ theorem typingRuleDescOf_outputIsUniverseFormer {generator : Generator} {rule : 
           rw [hRule]
         · exfalso
           unfold typingRuleDescOf at isFormation
-          rw [if_neg hPi, if_neg hSigma, if_neg hList, if_neg hOption] at isFormation
+          rw [if_neg hPi, if_neg hSigma, if_neg hList, if_neg hOption,
+            if_neg isNotNullary] at isFormation
           contradiction
 
 /-- **A formation generator is never the variable generator.**  `typingRuleDescOf .gen_var = none`
@@ -239,51 +263,102 @@ theorem formationRuleImpliesNotVariable {generator : Generator} {rule : TypingRu
   rw [if_neg (fun isPi => Generator.noConfusion isPi),
     if_neg (fun isSigma => Generator.noConfusion isSigma),
     if_neg (fun isList => Generator.noConfusion isList),
-    if_neg (fun isOption => Generator.noConfusion isOption)] at isFormation
+    if_neg (fun isOption => Generator.noConfusion isOption),
+    if_neg (fun isUnit => Generator.noConfusion isUnit)] at isFormation
   cases isFormation
 
-/-- **A formation rule IS the universe-former rule (full structure).**  The single-field strengthening of
-`typingRuleDescOf_outputIsUniverseFormer`: since `TypingRuleDesc` has exactly the `outputType` field, the
-output-type equation upgrades to a structure equation `rule = { outputType := universeFormerOutput }`.  This
-is what a cell-RECONSTRUCTION consumer needs — `obtain rfl` makes `rule` concrete (replacing the old
-per-branch `Option.some.inj`), so the reconstructed `genFormation` cell carries `isFormation` directly. -/
+/-- **A ≥1-child formation rule IS the universe-former rule (full structure).**  The single-field
+strengthening of `typingRuleDescOf_outputIsUniverseFormer`: since `TypingRuleDesc` has exactly the
+`outputType` field, the output-type equation upgrades to a structure equation
+`rule = { outputType := universeFormerOutput }`.  This is what a cell-RECONSTRUCTION consumer needs —
+`obtain rfl` makes `rule` concrete (replacing the old per-branch `Option.some.inj`), so the reconstructed
+`genFormation` cell carries `isFormation` directly.  Excludes the nullary `gen_unitCode` row by
+hypothesis (its rule is `{ outputType := nullaryFormerOutput }`, pinned by
+`typingRuleDescOf_unitCode` directly). -/
 theorem formationRuleIsUniverseFormer {generator : Generator} {rule : TypingRuleDesc}
-    (isFormation : typingRuleDescOf generator = some rule) :
+    (isFormation : typingRuleDescOf generator = some rule)
+    (isNotNullary : generator ≠ Generator.gen_unitCode) :
     rule = { outputType := universeFormerOutput } := by
   have outputIsFormer : rule.outputType = universeFormerOutput :=
-    typingRuleDescOf_outputIsUniverseFormer isFormation
+    typingRuleDescOf_outputIsUniverseFormer isFormation isNotNullary
   cases rule
   rw [← outputIsFormer]
 
-/-! ### The ROW-SHAPE-AGNOSTIC output interface (UNIT-3a, the staged nullary-row migration)
+/-! ### The ROW-SHAPE-AGNOSTIC output interface
 
-`typingRuleDescOf_outputIsUniverseFormer` / `formationRuleIsUniverseFormer` pin every row's output
-to EXACTLY `universeFormerOutput` — a fact that becomes FALSE the moment a NULLARY formation row
-lands (a nullary row's telescope premise `DescTelescope ... [] flag .childNil` accepts EVERY flag,
-so its output must IGNORE the flag — `fun _ _ _ => Type@0(standard)` — to preserve uniqueness; the
-"documented future branch" of `typingRuleDescOf_binderShiftsNonEmpty`).  What consumers actually
-NEED from the output is weaker and survives both row shapes:
+`typingRuleDescOf_outputIsUniverseFormer` / `formationRuleIsUniverseFormer` pin a ≥1-CHILD row's
+output to EXACTLY `universeFormerOutput`; the nullary `gen_unitCode` row instead carries the
+flag-pinned `nullaryFormerOutput` (a nullary row's telescope premise
+`DescTelescope ... [] flag .childNil` accepts EVERY flag, so its output must IGNORE the flag to
+preserve uniqueness).  What most consumers actually NEED from the output is weaker and uniform
+across BOTH row shapes:
 
   * it is a UNIVERSE CODE (validity: the classifier is a type) — `output_isUniverseCode` below;
+  * its (level, flag) is COMPUTABLE row data — `formationOutputData` +
+    `typingRuleDescOf_output_eq_outputData` below (the constructive form a `Type`-valued decider
+    needs: a `Prop`-valued `∃` cannot eliminate into `Σ'`/`PSum`);
   * it is RENAME- and SUBST-STABLE (the weakening/substitution reconstructions) —
     `typingRuleDescOf_output_renameStable` / `_substStable`, housed with the rename/subst
-    vocabulary in `CellRenaming` / `CellSubstitution`.
-
-The interface lemmas are — currently proved THROUGH the strong equation (every
-row is `universeFormerOutput` today), so they are row-shape-agnostic by statement and remain true
-verbatim when the nullary `unitCode` row lands.  The staged migration (UNIT-3a..z): ship this
-interface, migrate the ~27 consumer files off the strong equation one green commit at a time, then
-flip the table (add the nullary row + rescope the strong lemmas to the ≥1-child family). -/
+    vocabulary in `HasTypeDescWeakening` / `HasTypeDescSubstitution`. -/
 
 /-- **The output is a universe code** — for every row, scope, level list, and flag.  The
-row-shape-agnostic validity interface. -/
+row-shape-agnostic validity interface: the ≥1-child rows output at `(lmaxAll levels, flag)`, the
+nullary row at the pinned `(lzero, standard)`. -/
 theorem typingRuleDescOf_output_isUniverseCode {generator : Generator} {rule : TypingRuleDesc}
     (isFormation : typingRuleDescOf generator = some rule)
     (scope : Nat) (levels : List LevelExpr) (flag : UniverseFlag) :
     ∃ (outputLevel : LevelExpr) (outputFlag : UniverseFlag),
       rule.outputType scope levels flag = universeCodeCell outputLevel outputFlag := by
-  rw [typingRuleDescOf_outputIsUniverseFormer isFormation]
-  exact ⟨lmaxAll levels, flag, rfl⟩
+  by_cases isNullary : generator = Generator.gen_unitCode
+  · subst isNullary
+    obtain rfl : rule = { outputType := nullaryFormerOutput } :=
+      Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
+    exact ⟨LevelExpr.lzero, UniverseFlag.standard, rfl⟩
+  · rw [typingRuleDescOf_outputIsUniverseFormer isFormation isNullary]
+    exact ⟨lmaxAll levels, flag, rfl⟩
+
+/-- **Computable formation-output data**: the `(level, flag)` of a formation row's output universe
+code, as a FUNCTION of the generator and the telescope's levels/flag.  The constructive twin of
+`typingRuleDescOf_output_isUniverseCode` — a `Type`-valued consumer (the `IsTypeDesc` decider's
+`Σ'` witness) must EXHIBIT the level/flag as data, which the `Prop`-valued `∃` cannot provide
+(no large elimination out of `Prop`).  A future nullary row adds one branch HERE plus one case in
+the soundness equation below — the same single-point-of-extension as the table itself. -/
+def formationOutputData (generator : Generator) (levels : List LevelExpr)
+    (flag : UniverseFlag) : LevelExpr × UniverseFlag :=
+  if generator = Generator.gen_unitCode then (LevelExpr.lzero, UniverseFlag.standard)
+  else (lmaxAll levels, flag)
+
+/-- **Soundness of `formationOutputData`**: every formation rule's output IS the universe code at
+the computed data — for BOTH row shapes. -/
+theorem typingRuleDescOf_output_eq_outputData {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    (scope : Nat) (levels : List LevelExpr) (flag : UniverseFlag) :
+    rule.outputType scope levels flag
+      = universeCodeCell (formationOutputData generator levels flag).1
+          (formationOutputData generator levels flag).2 := by
+  by_cases isNullary : generator = Generator.gen_unitCode
+  · subst isNullary
+    obtain rfl : rule = { outputType := nullaryFormerOutput } :=
+      Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
+    rfl
+  · rw [typingRuleDescOf_outputIsUniverseFormer isFormation isNullary]
+    unfold formationOutputData
+    rw [if_neg isNullary]
+    rfl
+
+/-- **The nullary row's output is CONSTANT**: `gen_unitCode`'s formation rule ignores its level
+list and flag entirely — every instantiation is the pinned `Type@0(standard)`.  This output
+CONSTANCY is what replaces telescope flag-anchoring in uniqueness arguments at the nullary row
+(the telescope `DescTelescope ... [] flag .childNil` holds at every flag, so nothing else pins
+the classifier). -/
+theorem typingRuleDescOf_unitCode_outputConstant {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf Generator.gen_unitCode = some rule)
+    (scope : Nat) (levels : List LevelExpr) (flag : UniverseFlag) :
+    rule.outputType scope levels flag
+      = universeCodeCell LevelExpr.lzero UniverseFlag.standard := by
+  obtain rfl : rule = { outputType := nullaryFormerOutput } :=
+    Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
+  rfl
 
 /-- **A formation telescope's level list and the generator's shift list have equal length.**  Structural
 recursion on the telescope (`DescTelescope` is mutual with `HasTypeDesc`, so `induction` is unavailable —
@@ -303,16 +378,18 @@ theorem DescTelescope.levels_length_eq_binderShifts {profile : PolyProfile}
   | .cons _ _ _ _ _ _ _ restTyped =>
       congrArg Nat.succ (DescTelescope.levels_length_eq_binderShifts restTyped)
 
-/-- **Every formation generator carries a non-empty shift list (≥1-child family).**  The CURRENT
-`typingRuleDescOf` table maps exactly the dependent type-formers (`gen_piTyCode` / `gen_sigmaTyCode`), each
-with `binderShifts = consecutiveShifts 0 2 = [0, 1]`.  This is the shape invariant the flag-uniqueness guard
-needs.  NOTE: this is a ≥1-CHILD-FAMILY fact, NOT a permanent cascade invariant — a NULLARY former (an
-`Empty` type code with `binderShifts = []`, CON-A1) would break it, at which point a nullary former's flag
-must be pinned by the formation RULE itself (the documented future branch).  Adding a ≥1-child data type
-code (`listCode` / `optionCode` / ...) extends this lemma by ONE `by_cases` row in the table home, with no
-consumer cascade.  Zero-axiom (`decide` on the closed shift lists + the non-former `if_neg` branch). -/
+/-- **Every NON-NULLARY formation generator carries a non-empty shift list (≥1-child family).**
+The ≥1-child rows (`gen_piTyCode` / `gen_sigmaTyCode` at `[0, 1]`, `gen_listCode` /
+`gen_optionCode` at `[0]`) all bind at least one child — the shape invariant the flag-uniqueness
+guard needs (a non-empty telescope anchors the flag at its head child).  The NULLARY
+`gen_unitCode` row (`binderShifts = []`) is excluded by hypothesis: a nullary former's flag is
+pinned by the formation RULE itself (`nullaryFormerOutput` /
+`typingRuleDescOf_unitCode_outputConstant`), so uniqueness there is by output constancy, not by
+telescope anchoring.  Zero-axiom (`decide` on the closed shift lists + the non-former `if_neg`
+branch). -/
 theorem typingRuleDescOf_binderShiftsNonEmpty {generator : Generator} {rule : TypingRuleDesc}
-    (isFormation : typingRuleDescOf generator = some rule) :
+    (isFormation : typingRuleDescOf generator = some rule)
+    (isNotNullary : generator ≠ Generator.gen_unitCode) :
     generator.binderShifts ≠ [] := by
   by_cases hPi : generator = .gen_piTyCode
   · subst hPi; decide
@@ -324,7 +401,8 @@ theorem typingRuleDescOf_binderShiftsNonEmpty {generator : Generator} {rule : Ty
         · subst hOption; decide
         · exfalso
           unfold typingRuleDescOf at isFormation
-          rw [if_neg hPi, if_neg hSigma, if_neg hList, if_neg hOption] at isFormation
+          rw [if_neg hPi, if_neg hSigma, if_neg hList, if_neg hOption,
+            if_neg isNotNullary] at isFormation
           contradiction
 
 /-- **The CURRENT formation table is exactly `{gen_piTyCode, gen_sigmaTyCode}`.**  Any generator carrying a
@@ -345,7 +423,8 @@ requires the arity-generic telescope→member candidate-bridge (BFT-15 / CON-A3)
 TYPING-layer metatheory (validity / subst / weaken / inversion / uniqueness) is fully table-generic; the
 REDUCIBILITY-layer former-closure is the deep residual. -/
 theorem typingRuleDescOf_isPiOrSigmaOrListOrOptionCode {generator : Generator} {rule : TypingRuleDesc}
-    (isFormation : typingRuleDescOf generator = some rule) :
+    (isFormation : typingRuleDescOf generator = some rule)
+    (isNotNullary : generator ≠ Generator.gen_unitCode) :
     generator = Generator.gen_piTyCode ∨ generator = Generator.gen_sigmaTyCode ∨
       generator = Generator.gen_listCode ∨ generator = Generator.gen_optionCode := by
   by_cases hPi : generator = .gen_piTyCode
@@ -358,17 +437,38 @@ theorem typingRuleDescOf_isPiOrSigmaOrListOrOptionCode {generator : Generator} {
         · exact Or.inr (Or.inr (Or.inr hOption))
         · exfalso
           unfold typingRuleDescOf at isFormation
-          rw [if_neg hPi, if_neg hSigma, if_neg hList, if_neg hOption] at isFormation
+          rw [if_neg hPi, if_neg hSigma, if_neg hList, if_neg hOption,
+            if_neg isNotNullary] at isFormation
           contradiction
 
-/-- **A formation cell's telescope levels are non-empty.**  Combines the length equality with the
-shift-non-emptiness: the consumer-facing form for `HasTypeDesc.uniqueness`'s flag-uniqueness guard, generic
-over the formation generator (no per-former `by_cases`).  Zero-axiom. -/
+/-- **The CURRENT formation table is exactly the four ≥1-child formers plus the nullary
+`gen_unitCode`.**  The full (unhypothesized) enumeration companion to
+`typingRuleDescOf_isPiOrSigmaOrListOrOptionCode` — every new formation row adds one disjunct
+here.  Zero-axiom. -/
+theorem typingRuleDescOf_formerEnumeration {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule) :
+    generator = Generator.gen_piTyCode ∨ generator = Generator.gen_sigmaTyCode ∨
+      generator = Generator.gen_listCode ∨ generator = Generator.gen_optionCode ∨
+      generator = Generator.gen_unitCode := by
+  by_cases isNullary : generator = Generator.gen_unitCode
+  · exact Or.inr (Or.inr (Or.inr (Or.inr isNullary)))
+  · rcases typingRuleDescOf_isPiOrSigmaOrListOrOptionCode isFormation isNullary with
+      hPi | hSigma | hList | hOption
+    · exact Or.inl hPi
+    · exact Or.inr (Or.inl hSigma)
+    · exact Or.inr (Or.inr (Or.inl hList))
+    · exact Or.inr (Or.inr (Or.inr (Or.inl hOption)))
+
+/-- **A NON-NULLARY formation cell's telescope levels are non-empty.**  Combines the length equality with
+the shift-non-emptiness: the consumer-facing form for `HasTypeDesc.uniqueness`'s flag-uniqueness guard,
+generic over the ≥1-child formation generator (no per-former `by_cases`); the nullary `gen_unitCode` row
+(whose telescope levels ARE `[]`) is excluded by hypothesis.  Zero-axiom. -/
 theorem DescTelescope.levels_ne_nil_of_isFormation {profile : PolyProfile}
     {baseScope currentDepth : Nat}
     {context : TypingContext profile (baseScope + currentDepth)}
     {generator : Generator} {rule : TypingRuleDesc}
     (isFormation : typingRuleDescOf generator = some rule)
+    (isNotNullary : generator ≠ Generator.gen_unitCode)
     {levels : List LevelExpr} {flag : UniverseFlag}
     {children : RawTermChildren generator.binderShifts baseScope}
     (telescope : DescTelescope profile context levels flag children) :
@@ -376,7 +476,7 @@ theorem DescTelescope.levels_ne_nil_of_isFormation {profile : PolyProfile}
   intro emptyLevels
   have lengthEq := DescTelescope.levels_length_eq_binderShifts telescope
   rw [emptyLevels] at lengthEq
-  exact typingRuleDescOf_binderShiftsNonEmpty isFormation
+  exact typingRuleDescOf_binderShiftsNonEmpty isFormation isNotNullary
     (List.eq_nil_of_length_eq_zero lengthEq.symm)
 
 /-- Reconstruction: the generic `genFormation` arm derives Π-formation.  Domain

@@ -80,7 +80,8 @@ theorem closedNormalTypeIsFormer_nonVacuous {profile : PolyProfile} :
        RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
        RawTerm.headGenerator subject = Generator.gen_universeCode ∨
        RawTerm.headGenerator subject = Generator.gen_listCode ∨
-       RawTerm.headGenerator subject = Generator.gen_optionCode) := by
+       RawTerm.headGenerator subject = Generator.gen_optionCode ∨
+       RawTerm.headGenerator subject = Generator.gen_unitCode) := by
   refine ⟨universeCodeCell LevelExpr.lzero UniverseFlag.standard, _, _,
     closedUniverseCodeTyping (profile := profile) LevelExpr.lzero UniverseFlag.standard, by decide, ?_⟩
   exact HasTypeDescPi.closedNormalTypeIsFormer

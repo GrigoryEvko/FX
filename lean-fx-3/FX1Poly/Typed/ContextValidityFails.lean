@@ -26,7 +26,7 @@ trivially well-formed.
 
 ## Zero-axiom verification
 
-`lamCell_isNotType` is the formation canonical-forms inversion (`subjectIsVariableOrFormerHead`) plus four
+`lamCell_isNotType` is the formation canonical-forms inversion (`subjectIsVariableOrFormerHead`) plus six
 `Generator.noConfusion` head-mismatches — a propext-free pattern.  The counterexample composes it with the
 native formation→grown `var` lift (`HasTypeDesc.toHasTypeDescPi`).  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
@@ -38,22 +38,23 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
 /-- **A lambda cell is never a formation type.**  `IsTypeDesc` requires the subject to be classified by a
 universe code, but `HasTypeDesc.subjectIsVariableOrFormerHead` forces every formation-typed subject to be a
-variable cell, a Π-type code, a Σ-type code, or a universe code — and `lamCell body` is none of these (head
-generator `gen_lam` differs from each, by `Generator.noConfusion` on `RawTerm.headGenerator`).  The reusable
-lemma that makes a context binding a lambda ill-formed. -/
+variable cell, a Π-type code, a Σ-type code, a universe code, a list code, an option code, or a unit code — and
+`lamCell body` is none of these (head generator `gen_lam` differs from each, by `Generator.noConfusion` on
+`RawTerm.headGenerator`).  The reusable lemma that makes a context binding a lambda ill-formed. -/
 theorem lamCell_isNotType {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} :
     ¬ IsTypeDesc profile context (lamCell domainAnn body) := by
   rintro ⟨levelExpr, flag, typed⟩
   rcases HasTypeDesc.subjectIsVariableOrFormerHead typed with
-    ⟨index, subjectEq⟩ | headIsPi | headIsSigma | headIsUniverse | headIsList | headIsOption
+    ⟨index, subjectEq⟩ | headIsPi | headIsSigma | headIsUniverse | headIsList | headIsOption | headIsUnit
   · exact Generator.noConfusion (congrArg RawTerm.headGenerator subjectEq)
   · exact Generator.noConfusion headIsPi
   · exact Generator.noConfusion headIsSigma
   · exact Generator.noConfusion headIsUniverse
   · exact Generator.noConfusion headIsList
   · exact Generator.noConfusion headIsOption
+  · exact Generator.noConfusion headIsUnit
 
 /-- **A grown-engine typing derivation in a genuinely ill-formed context.**  In `Γ = (.empty).cons (λx.x)`
 — ill-formed because its binding `λx.x` is not a formation type (`lamCell_isNotType`) — the variable `var 0` is

@@ -27,6 +27,23 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
+/-- **A cell with head `gen_unitCode` is THE `unitCode` cell.**  The NULLARY data-former analogue of
+the reconstruction family: no child to recover — the `childNil` spine and the `Unit` payload collapse
+by `RawTermChildren.eq_childNil` and structure-eta, so the cell is the unit type code itself.  The
+canonical-forms reconstruction the `gen_unitCode` branch of the formation/grown canonical-forms
+consumers needs once `gen_unitCode` joins `typingRuleDescOf`. -/
+theorem eq_unitCodeCell_of_headGenerator {scope : Nat}
+    {cell : RawTerm scope}
+    (headIsUnit : RawTerm.headGenerator cell = Generator.gen_unitCode) :
+    cell = .mkGen .gen_unitCode () .childNil := by
+  cases cell with
+  | mkGen generator payload children =>
+      change generator = Generator.gen_unitCode at headIsUnit
+      subst headIsUnit
+      change RawTermChildren [] scope at children
+      rw [RawTermChildren.eq_childNil children]
+      rfl
+
 /-- **A cell with head `gen_optionCode` is an `optionCode` cell.**  The one-child data-former twin of
 `eq_listCodeCell_of_headGenerator`: the element child is recovered by destructuring the `[0]`-indexed
 `RawTermChildren` and collapsing the `childNil` tail (and the `Unit` payload by structure-eta). -/

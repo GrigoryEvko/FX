@@ -54,8 +54,10 @@ theorem BoundExceedsPi.monotoneInBound {profile : PolyProfile} {env : Nat → Na
   | .piElim functionBudget argumentBudget =>
       .piElim (BoundExceedsPi.monotoneInBound hle functionBudget)
         (BoundExceedsPi.monotoneInBound hle argumentBudget)
-  | .genFormationPi context generator payload children levels flag rule isFormation premisesBudget =>
+  | .genFormationPi context generator payload children levels flag rule isFormation nullaryBelowBound
+      premisesBudget =>
       .genFormationPi context generator payload children levels flag rule isFormation
+        (fun isUnit => Nat.lt_of_lt_of_le (nullaryBelowBound isUnit) hle)
         (BoundExceedsPiTelescope.monotoneInBound hle premisesBudget)
 /-- **The grown telescope budget is monotone in the bound (telescope arm).**  Mutual companion; lifts each
 head/rest sub-budget structurally. -/
@@ -75,8 +77,10 @@ end
 
 /-- **Every grown derivation has a budget.**  `∃ bound, BoundExceedsPi env bound d` by `HasTypeDescPi.rec`: the
 `ofFormation` arm delegates to `BoundExceeds.existsBound` on the embedded formation derivation (the origin of the
-per-term fuel); recursive arms take the SUM of sub-bounds (the `piIntro` arm a three-way sum, chained with
-`Nat.le_trans`) and lift each sub-budget through `monotoneInBound`.  Propext-free (the primitive recursor). -/
+per-term fuel); the `genFormationPi` node supplies `premisesBound + 1` (`Nat.zero_lt_succ` discharges the nullary
+`0 < bound` gate, the `+ 1` keeps it above `premisesBound` for `monotoneInBound`); recursive arms take the SUM of
+sub-bounds (the `piIntro` arm a three-way sum, chained with `Nat.le_trans`) and lift each sub-budget through
+`monotoneInBound`.  Propext-free (the primitive recursor). -/
 theorem BoundExceedsPi.existsBound {profile : PolyProfile} {env : Nat → Nat} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (d : HasTypeDescPi profile context subject classifier) : ∃ bound, BoundExceedsPi env bound d :=
@@ -118,9 +122,10 @@ theorem BoundExceedsPi.existsBound {profile : PolyProfile} {env : Nat → Nat} {
           (BoundExceedsPi.monotoneInBound (Nat.le_add_left argumentBound functionBound) argumentBudget)⟩)
     (fun context generator payload children levels flag rule isFormation _premises premisesExists =>
       let ⟨premisesBound, premisesBudget⟩ := premisesExists
-      ⟨premisesBound,
+      ⟨premisesBound + 1,
         BoundExceedsPi.genFormationPi context generator payload children levels flag rule isFormation
-          premisesBudget⟩)
+          (fun _isUnit => Nat.zero_lt_succ premisesBound)
+          (BoundExceedsPiTelescope.monotoneInBound (Nat.le_succ premisesBound) premisesBudget)⟩)
     (fun context flag => ⟨0, BoundExceedsPiTelescope.nil context flag⟩)
     (fun context head headLevel restLevels flag rest _headTyped _restTyped headExists restExists =>
       let ⟨headBound, headBudget⟩ := headExists
@@ -178,9 +183,10 @@ theorem BoundExceedsPiTelescope.existsBound {profile : PolyProfile} {env : Nat �
           (BoundExceedsPi.monotoneInBound (Nat.le_add_left argumentBound functionBound) argumentBudget)⟩)
     (fun context generator payload children levels flag rule isFormation _premises premisesExists =>
       let ⟨premisesBound, premisesBudget⟩ := premisesExists
-      ⟨premisesBound,
+      ⟨premisesBound + 1,
         BoundExceedsPi.genFormationPi context generator payload children levels flag rule isFormation
-          premisesBudget⟩)
+          (fun _isUnit => Nat.zero_lt_succ premisesBound)
+          (BoundExceedsPiTelescope.monotoneInBound (Nat.le_succ premisesBound) premisesBudget)⟩)
     (fun context flag => ⟨0, BoundExceedsPiTelescope.nil context flag⟩)
     (fun context head headLevel restLevels flag rest _headTyped _restTyped headExists restExists =>
       let ⟨headBound, headBudget⟩ := headExists

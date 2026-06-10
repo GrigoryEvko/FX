@@ -25,12 +25,15 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
-/-- **Every formation row binds at least one child.**  Table-wide: a generator carrying a
-`typingRuleDescOf` rule has nonempty `binderShifts` — the fact that anchors the universe FLAG of
-a former classification at its head child (an imagined nullary row would be typed at EVERY flag,
-breaking flag uniqueness; the build re-verifies this lemma on each new row). -/
+/-- **Every NON-NULLARY formation row binds at least one child.**  A generator carrying a
+`typingRuleDescOf` rule, other than the nullary `gen_unitCode`, has nonempty `binderShifts` —
+the fact that anchors the universe FLAG of a former classification at its head child.  The
+nullary row is typed at every flag through its empty telescope, so its flag agreement is by
+output CONSTANCY instead (`HasTypeDescPi.invertFormerClassifierPinned`); the build re-verifies
+this lemma on each new row. -/
 theorem typingRuleDescOf_binderShiftsNonempty {generator : Generator} {rule : TypingRuleDesc}
-    (isFormation : typingRuleDescOf generator = some rule) :
+    (isFormation : typingRuleDescOf generator = some rule)
+    (isNotNullary : generator ≠ Generator.gen_unitCode) :
     generator.binderShifts ≠ [] := by
   by_cases isPi : generator = .gen_piTyCode
   · subst isPi
@@ -46,7 +49,8 @@ theorem typingRuleDescOf_binderShiftsNonempty {generator : Generator} {rule : Ty
           exact fun emptyShifts => nomatch emptyShifts
         · exfalso
           unfold typingRuleDescOf at isFormation
-          rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption] at isFormation
+          rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption,
+            if_neg isNotNullary] at isFormation
           contradiction
 
 /-- A telescope over children with nonempty binder shifts has a nonempty level list (the `nil`
@@ -122,29 +126,41 @@ theorem HasTypeDescPi.normalUniverseClassificationUniqueAtBudget {profile : Poly
                       (HasTypeDescPi.normalAppIsNeutral firstTyped normal)
                       firstTyped secondTyped
           · have isFormation : typingRuleDescOf generator = some rule := isFormer
-            obtain ⟨firstLevels, firstPinFlag, firstTelescope, firstConv⟩ :=
-              firstTyped.invertFormerTelescopeWithConvGeneric isFormation rfl
-            obtain ⟨secondLevels, secondPinFlag, secondTelescope, secondConv⟩ :=
-              secondTyped.invertFormerTelescopeWithConvGeneric isFormation rfl
-            obtain ⟨firstLevelEq, firstFlagEq⟩ := Conv.universeCode_injective firstConv
-            obtain ⟨secondLevelEq, secondFlagEq⟩ := Conv.universeCode_injective secondConv
-            have childrenNormal := RawTerm.isStepNormalForm_childrenNormal normal
-            have childrenSize : RawTermChildren.size children ≤ budget :=
-              Nat.le_of_succ_le_succ sizeBound
-            obtain ⟨levelsAgree, flagsConditional⟩ :=
-              DescTelescopePi.universeDeterminismOfChildIH
-                (fun {_childScope} childContext child {_childFirstLevel} {_childSecondLevel}
-                    {_childFirstFlag} {_childSecondFlag} childSize childNormal
-                    childFirst childSecond =>
-                  HasTypeDescPi.normalUniverseClassificationUniqueAtBudget budget
-                    child childSize childNormal childFirst childSecond)
-                firstTelescope secondTelescope childrenSize childrenNormal
-            have flagsAgree := flagsConditional
-              (firstTelescope.levelsNonemptyOfShiftsNonempty
-                (typingRuleDescOf_binderShiftsNonempty isFormation))
-            refine ⟨?_, ?_⟩
-            · rw [firstLevelEq, secondLevelEq, levelsAgree]
-            · rw [firstFlagEq, secondFlagEq, flagsAgree]
+            by_cases isNullary : generator = Generator.gen_unitCode
+            · -- the nullary row: both classifications reach the ONE pinned output, by output
+              -- constancy — the empty telescope anchors no flag, so no negotiation is needed
+              subst isNullary
+              obtain ⟨firstLevelEq, firstFlagEq⟩ := Conv.universeCode_injective
+                (HasTypeDescPi.invertFormerClassifierPinned firstTyped isFormation
+                  (typingRuleDescOf_unitCode_outputConstant isFormation _) rfl)
+              obtain ⟨secondLevelEq, secondFlagEq⟩ := Conv.universeCode_injective
+                (HasTypeDescPi.invertFormerClassifierPinned secondTyped isFormation
+                  (typingRuleDescOf_unitCode_outputConstant isFormation _) rfl)
+              exact ⟨firstLevelEq.trans secondLevelEq.symm,
+                firstFlagEq.trans secondFlagEq.symm⟩
+            · obtain ⟨firstLevels, firstPinFlag, firstTelescope, firstConv⟩ :=
+                firstTyped.invertFormerTelescopeWithConvGeneric isFormation rfl
+              obtain ⟨secondLevels, secondPinFlag, secondTelescope, secondConv⟩ :=
+                secondTyped.invertFormerTelescopeWithConvGeneric isFormation rfl
+              obtain ⟨firstLevelEq, firstFlagEq⟩ := Conv.universeCode_injective firstConv
+              obtain ⟨secondLevelEq, secondFlagEq⟩ := Conv.universeCode_injective secondConv
+              have childrenNormal := RawTerm.isStepNormalForm_childrenNormal normal
+              have childrenSize : RawTermChildren.size children ≤ budget :=
+                Nat.le_of_succ_le_succ sizeBound
+              obtain ⟨levelsAgree, flagsConditional⟩ :=
+                DescTelescopePi.universeDeterminismOfChildIH
+                  (fun {_childScope} childContext child {_childFirstLevel} {_childSecondLevel}
+                      {_childFirstFlag} {_childSecondFlag} childSize childNormal
+                      childFirst childSecond =>
+                    HasTypeDescPi.normalUniverseClassificationUniqueAtBudget budget
+                      child childSize childNormal childFirst childSecond)
+                  firstTelescope secondTelescope childrenSize childrenNormal
+              have flagsAgree := flagsConditional
+                (firstTelescope.levelsNonemptyOfShiftsNonempty
+                  (typingRuleDescOf_binderShiftsNonempty isFormation isNullary))
+              refine ⟨?_, ?_⟩
+              · rw [firstLevelEq, secondLevelEq, levelsAgree]
+              · rw [firstFlagEq, secondFlagEq, flagsAgree]
 
 /-- **E2.7 master**: two grown universe classifications of one NORMAL subject agree on
 (level, flag) — the negotiation lemma at the heart of the flag-coherent pair extraction.

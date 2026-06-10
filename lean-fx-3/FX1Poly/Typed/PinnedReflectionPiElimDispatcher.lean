@@ -64,7 +64,7 @@ theorem HasTypeDescPi.normalSubjectCanonicalOrNeutralOfTyping {profile : PolyPro
     have functionNormal : RawTerm.isStepNormalForm functionTerm :=
       appNormal_functionNormal functionTerm argument armNormal
     rcases functionIH functionNormal with
-        (headLam | headPi | headSigma | headUniverse | headList | headOption) | functionNeutral
+        (headLam | headPi | headSigma | headUniverse | headList | headOption | headUnit) | functionNeutral
     · exfalso
       obtain ⟨domainAnn, body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
       rw [bodyEq] at armNormal
@@ -89,6 +89,10 @@ theorem HasTypeDescPi.normalSubjectCanonicalOrNeutralOfTyping {profile : PolyPro
       obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
       rw [optionEq] at functionTyped
       exact HasTypeDescPi.optionFormerNotTypedAtPiType functionTyped
+    · exfalso
+      have unitEq := eq_unitCodeCell_of_headGenerator headUnit
+      rw [unitEq] at functionTyped
+      exact HasTypeDescPi.unitFormerNotTypedAtPiType functionTyped
     · exact Or.inr (IsNeutral.app functionNeutral)
   · intro _armScope _armContext generator _payload _children _levels _flag _rule isFormation
       _premises _premisesIH _armNormal
@@ -99,11 +103,14 @@ theorem HasTypeDescPi.normalSubjectCanonicalOrNeutralOfTyping {profile : PolyPro
       · by_cases isList : generator = Generator.gen_listCode
         · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by subst isList; rfl))))))
         · by_cases isOption : generator = Generator.gen_optionCode
-          · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isOption; rfl))))))
-          · exfalso
-            unfold typingRuleDescOf at isFormation
-            rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption] at isFormation
-            contradiction
+          · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by subst isOption; rfl)))))))
+          · by_cases isUnit : generator = Generator.gen_unitCode
+            · exact Or.inl (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isUnit; rfl)))))))
+            · exfalso
+              unfold typingRuleDescOf at isFormation
+              rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption, if_neg isUnit]
+                at isFormation
+              contradiction
   · intro _armBaseScope _armCurrentDepth _armContext _armFlag
     exact True.intro
   · intro _armBaseScope _armCurrentDepth _armRestShifts _armContext _armHead _armHeadLevel
@@ -119,7 +126,7 @@ theorem HasTypeDescPi.normalFunctionIsLambdaOrNeutralOfTyping {profile : PolyPro
     (∃ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)),
         subject = lamCell domainAnn body) ∨ IsNeutral subject := by
   rcases HasTypeDescPi.normalSubjectCanonicalOrNeutralOfTyping typed normal with
-      (headLam | headPi | headSigma | headUniverse | headList | headOption) | neutral
+      (headLam | headPi | headSigma | headUniverse | headList | headOption | headUnit) | neutral
   · exact Or.inl (eq_lamCell_of_headGenerator headLam)
   · obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
     rw [piEq] at typed
@@ -136,6 +143,9 @@ theorem HasTypeDescPi.normalFunctionIsLambdaOrNeutralOfTyping {profile : PolyPro
   · obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
     rw [optionEq] at typed
     exact (HasTypeDescPi.optionFormerNotTypedAtPiType typed).elim
+  · have unitEq := eq_unitCodeCell_of_headGenerator headUnit
+    rw [unitEq] at typed
+    exact (HasTypeDescPi.unitFormerNotTypedAtPiType typed).elim
   · exact Or.inr neutral
 
 /-- **The λ-headed-after-whnf residual**: the residual conclusion when the function

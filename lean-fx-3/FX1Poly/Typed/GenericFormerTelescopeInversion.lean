@@ -66,21 +66,22 @@ theorem HasTypeDescPi.invertFormerTelescopeWithConvGeneric {profile : PolyProfil
           if_neg (fun isSigma => Generator.noConfusion isSigma),
           if_neg (fun isList => Generator.noConfusion isList)] at isFormation
         cases isFormation
-    | .genFormationPi _armContext armGenerator _armPayload _armChildren armLevels armFlag
+    | .genFormationPi _armContext armGenerator _armPayload armChildren armLevels armFlag
         armRule armIsFormation armPremises => fun subjectEq => by
         have generatorAgree : armGenerator = generator :=
           congrArg RawTerm.headGenerator subjectEq
         subst generatorAgree
         injection subjectEq with _hScope _hGenerator _hPayload hChildren
         subst hChildren
-        refine ⟨armLevels, armFlag, armPremises, ?_⟩
-        -- stays on the >=1-child strong lemma: the existential's level/flag witnesses are FORCED to
-        -- `armLevels`/`armFlag` by the returned telescope premise, and the conclusion pins the output to
-        -- `universeCodeCell (lmaxAll armLevels) armFlag` — so the consumer (NormalUniverseClassificationUnique)
-        -- reads `lmaxAll levels`/`flag` back out via `Conv.universeCode_injective`; that level/flag arithmetic
-        -- flows into the conclusion, which only matches the output for `universeFormerOutput` rows.
-        -- Re-examined at the table flip: a flag-pinned nullary row falsifies this conclusion shape.
-        rw [typingRuleDescOf_outputIsUniverseFormer armIsFormation]
-        exact Conv.refl _
+        by_cases isNullary : armGenerator = Generator.gen_unitCode
+        · subst isNullary
+          cases armPremises with
+          | nil =>
+              refine ⟨[], UniverseFlag.standard, DescTelescopePi.nil _ _, ?_⟩
+              rw [typingRuleDescOf_unitCode_outputConstant armIsFormation]
+              exact Conv.refl _
+        · refine ⟨armLevels, armFlag, armPremises, ?_⟩
+          rw [typingRuleDescOf_outputIsUniverseFormer armIsFormation isNullary]
+          exact Conv.refl _
 
 end FX1Poly.Typed

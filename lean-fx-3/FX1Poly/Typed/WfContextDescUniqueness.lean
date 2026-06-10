@@ -60,18 +60,25 @@ theorem HasTypeDesc.uniquenessNative {profile : PolyProfile} {scope : Nat}
       (HasTypeDesc.inversionUniverseCode secondDerivation).sym
   | .genFormation _context generator _payload _children levels flag rule
       isFormation premises => fun secondDerivation => by
-      -- stays on the >=1-child strong lemma: the flag flows into the output here; the nullary row is flag-pinned so its uniqueness is by output-constancy (handled at the table flip)
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        formationRuleIsUniverseFormer isFormation
-      obtain ⟨secondLevels, secondFlag, secondTelescope, secondConv⟩ :=
-        HasTypeDesc.inversionFormerWithConvGeneric secondDerivation isFormation rfl
-      obtain ⟨levelsEq, flagImplication⟩ :=
-        DescTelescope.uniquenessAgreeNative premises secondTelescope wellFormed rfl
-      have levelsNonEmpty : levels ≠ [] :=
-        DescTelescope.levels_ne_nil_of_isFormation isFormation premises
-      have flagEq : flag = secondFlag := flagImplication levelsNonEmpty
-      rw [levelsEq, flagEq]
-      exact secondConv.sym
+      by_cases isNullary : generator = Generator.gen_unitCode
+      · -- the nullary row: uniqueness by output CONSTANCY — the telescope anchors no flag, but
+        -- every classification of the cell reaches the one pinned output
+        subst isNullary
+        rw [typingRuleDescOf_unitCode_outputConstant isFormation]
+        exact (HasTypeDesc.inversionFormerClassifierPinned secondDerivation isFormation
+          (typingRuleDescOf_unitCode_outputConstant isFormation _) rfl).sym
+      · -- the >=1-child rows: uniqueness by telescope flag-anchoring at the head child
+        obtain rfl : rule = { outputType := universeFormerOutput } :=
+          formationRuleIsUniverseFormer isFormation isNullary
+        obtain ⟨secondLevels, secondFlag, secondTelescope, secondConv⟩ :=
+          HasTypeDesc.inversionFormerWithConvGeneric secondDerivation isFormation rfl
+        obtain ⟨levelsEq, flagImplication⟩ :=
+          DescTelescope.uniquenessAgreeNative premises secondTelescope wellFormed rfl
+        have levelsNonEmpty : levels ≠ [] :=
+          DescTelescope.levels_ne_nil_of_isFormation isFormation isNullary premises
+        have flagEq : flag = secondFlag := flagImplication levelsNonEmpty
+        rw [levelsEq, flagEq]
+        exact secondConv.sym
 
 /-- Two formation telescopes over CONVERTIBLY-EQUAL children agree on `levels`, and — when non-empty — on
 `flag`, over `WfContextDesc`.  STANDALONE-shaped recursion on the first telescope but MUTUAL with

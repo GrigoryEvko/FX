@@ -13,15 +13,15 @@ context-general classifier-mismatch inversions.
 
   * `HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral` — a normal grown-typed term at a Π type
     (`piTyCodeCell …`) in ANY well-formed context is a λ (`∃ body, subject = lamCell body`) OR a `Core.IsNeutral`
-    term.  Of the open canonical-forms disjuncts, the three type-former heads are refuted at a Π classifier by the
-    `*NotTypedAtPiType` inversions (a former / universe code is a TYPE, never a member of a Π type); the λ head and
-    the neutral case survive.
+    term.  Of the open canonical-forms disjuncts, the six type-former heads (Π / Σ / universe / list / option /
+    unit) are refuted at a Π classifier by the `*NotTypedAtPiType` inversions (a former / universe code is a TYPE,
+    never a member of a Π type); the λ head and the neutral case survive.
 
   * `HasTypeDescPi.openNormalTypeIsFormerOrNeutral` — a normal grown-typed term at a universe
     (`universeCodeCell levelExpr flag`) in ANY well-formed context is a type FORMER (head `gen_piTyCode` /
-    `gen_sigmaTyCode` / `gen_universeCode`) OR a `Core.IsNeutral` term.  The λ head is refuted at a universe
-    classifier by `lam_notTypedAtUniverseCode` (a λ inhabits Π, not `Type@e`); the three former heads and the
-    neutral case survive.
+    `gen_sigmaTyCode` / `gen_universeCode` / `gen_listCode` / `gen_optionCode` / `gen_unitCode`) OR a
+    `Core.IsNeutral` term.  The λ head is refuted at a universe classifier by `lam_notTypedAtUniverseCode` (a λ
+    inhabits Π, not `Type@e`); the six former heads and the neutral case survive.
 
 This is exactly the dichotomy a type-directed NbE / η-long readback (the `TY-CONV-quote` / `η-M15` line) branches
 on: at a function type, recurse into a λ body or η-expand a neutral; at a universe, descend into a type former or
@@ -32,7 +32,7 @@ no SN.
 ## Zero-axiom verification
 
 `rcases` on `openNormalSubjectCanonicalOrNeutral`'s `(IsGrownCanonicalHead ∨ IsNeutral)` result; the impossible
-heads reconstruct their cell shape (`eq_{lamCell,piTyCodeCell,sigmaTyCodeCell,universeCodeCell}_of_headGenerator`)
+heads reconstruct their cell shape (`eq_{lamCell,piTyCodeCell,sigmaTyCodeCell,universeCodeCell,listCodeCell,optionCodeCell,unitCodeCell}_of_headGenerator`)
 and are refuted by the context-general classifier-mismatch inversions; the surviving canonical head and the
 neutral case are returned directly.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 `omega` (verified by `#print axioms` in scratch before landing).  Per-declaration gated in
@@ -45,10 +45,10 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- **Open canonical forms at a function type.**  A normal grown-typed term whose classifier is a Π type
 (`piTyCodeCell`) in any well-formed context is a λ (with its body extracted) OR a `Core.IsNeutral` term.  Of the
-open canonical-forms disjuncts, the Π / Σ formers and the universe code are refuted at a Π classifier by the
-`*NotTypedAtPiType` inversions (a type former / code is a TYPE, never a member of a Π type); the λ head
-(reconstructed by `eq_lamCell_of_headGenerator`) and the neutral case survive.  The open generalization of
-`closedNormalFunctionIsLambda`. -/
+open canonical-forms disjuncts, the Π / Σ / list / option / unit formers and the universe code are refuted at a Π
+classifier by the `*NotTypedAtPiType` inversions (a type former / code is a TYPE, never a member of a Π type);
+the λ head (reconstructed by `eq_lamCell_of_headGenerator`) and the neutral case survive.  The open
+generalization of `closedNormalFunctionIsLambda`. -/
 theorem HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     {outerDomain : RawTerm scope} {outerCodomain : RawTerm (scope + 1)}
@@ -58,7 +58,7 @@ theorem HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral {profile : PolyProfile
     (∃ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)), subject = lamCell domainAnn body) ∨
       IsNeutral subject := by
   rcases HasTypeDescPi.openNormalSubjectCanonicalOrNeutral typed wellFormed normal with
-      (headLam | headPi | headSigma | headUniverse | headList | headOption) | neutral
+      (headLam | headPi | headSigma | headUniverse | headList | headOption | headUnit) | neutral
   · exact Or.inl (eq_lamCell_of_headGenerator headLam)
   · obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
     rw [piEq] at typed
@@ -75,13 +75,17 @@ theorem HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral {profile : PolyProfile
   · obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
     rw [optionEq] at typed
     exact (HasTypeDescPi.optionFormerNotTypedAtPiType typed).elim
+  · have unitEq := eq_unitCodeCell_of_headGenerator headUnit
+    rw [unitEq] at typed
+    exact (HasTypeDescPi.unitFormerNotTypedAtPiType typed).elim
   · exact Or.inr neutral
 
 /-- **Open canonical forms at a universe.**  A normal grown-typed term whose classifier is a universe
 (`universeCodeCell levelExpr flag`) in any well-formed context — a normal TYPE — is a type FORMER (head
-`gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode`) OR a `Core.IsNeutral` term.  The λ head is refuted at a
-universe classifier by `lam_notTypedAtUniverseCode` (a λ inhabits Π, not `Type@e`); the three former heads and the
-neutral case survive.  The open generalization of `closedNormalTypeIsFormer`. -/
+`gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode` / `gen_listCode` / `gen_optionCode` / `gen_unitCode`) OR a
+`Core.IsNeutral` term.  The λ head is refuted at a universe classifier by `lam_notTypedAtUniverseCode` (a λ
+inhabits Π, not `Type@e`); the six former heads and the neutral case survive.  The open generalization of
+`closedNormalTypeIsFormer`. -/
 theorem HasTypeDescPi.openNormalTypeIsFormerOrNeutral {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag}
@@ -92,7 +96,8 @@ theorem HasTypeDescPi.openNormalTypeIsFormerOrNeutral {profile : PolyProfile} {s
      RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
      RawTerm.headGenerator subject = Generator.gen_universeCode ∨
      RawTerm.headGenerator subject = Generator.gen_listCode ∨
-     RawTerm.headGenerator subject = Generator.gen_optionCode) ∨ IsNeutral subject := by
+     RawTerm.headGenerator subject = Generator.gen_optionCode ∨
+     RawTerm.headGenerator subject = Generator.gen_unitCode) ∨ IsNeutral subject := by
   rcases HasTypeDescPi.openNormalSubjectCanonicalOrNeutral typed wellFormed normal with
       (headLam | rest) | neutral
   · obtain ⟨_domainAnn, body, lamEq⟩ := eq_lamCell_of_headGenerator headLam

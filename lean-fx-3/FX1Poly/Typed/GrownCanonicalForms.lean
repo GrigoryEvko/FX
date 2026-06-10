@@ -19,13 +19,14 @@ analogue and its empty-type consistency corollary.
   …)`), which a normal application blocks (`isStepNormalForm_blocks_step`).
 
 * `HasTypeDescPi.closedNormalSubjectHead` — **grown closed canonical forms**: a CLOSED NORMAL grown-typed
-  term has head `gen_lam` / `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode`.  Proved by the propext-free
-  mutual recursor with closedness threaded as `Fin scope → False`.  The only hard
-  arm is `piElim` (application): the function is closed, normal (by the subterm lemma) and typed at a Π-code, so
-  by the IH its head is one of the four shapes — but a λ head makes the application a β-redex (not normal,
-  `not_isStepNormalForm_beta_smoke`), and a former / universe-code head is impossible at a Π classifier
-  (`PiTypeFunctionInversion`'s `*NotTypedAtPiType`).  So a closed normal application cannot exist — there are no
-  neutrals to head it, since the empty context has no variables.
+  term has head `gen_lam` / `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode` / `gen_listCode` /
+  `gen_optionCode` / `gen_unitCode`.  Proved by the propext-free mutual recursor with closedness threaded as
+  `Fin scope → False`.  The only hard arm is `piElim` (application): the function is closed, normal (by the
+  subterm lemma) and typed at a Π-code, so by the IH its head is one of those shapes — but a λ head makes the
+  application a β-redex (not normal, `not_isStepNormalForm_beta_smoke`), and a former / universe-code head is
+  impossible at a Π classifier (`PiTypeFunctionInversion`'s `*NotTypedAtPiType`, including the nullary
+  `unitFormerNotTypedAtPiType`).  So a closed normal application cannot exist — there are no neutrals to head it,
+  since the empty context has no variables.
 
 * `HasTypeDescPi.noClosedNormalTermAtEmptyType` — **grown normal-form consistency**: no closed NORMAL term
   inhabits the empty type.  Canonical forms make the subject λ / Π / Σ / universe; each is refuted at
@@ -60,9 +61,10 @@ theorem appNormal_functionNormal {scope : Nat} (functionTerm argument : RawTerm 
       (StepChildren.here (.childCons argument .childNil : RawTermChildren [0] scope) functionStep))
 
 /-- **Grown closed canonical forms.**  A closed normal grown-typed term has head `gen_lam` / `gen_piTyCode` /
-`gen_sigmaTyCode` / `gen_universeCode`.  Stated generally with closedness as `Fin scope → False` so the
-recursor needs no scope-0 side condition; the `piElim` arm is the crux (a closed normal application is
-impossible, killed by β-redex non-normality and the type-former-not-a-Π-member inversions). -/
+`gen_sigmaTyCode` / `gen_universeCode` / `gen_listCode` / `gen_optionCode` / `gen_unitCode`.  Stated generally
+with closedness as `Fin scope → False` so the recursor needs no scope-0 side condition; the `piElim` arm is the
+crux (a closed normal application is impossible, killed by β-redex non-normality and the
+type-former-not-a-Π-member inversions, including the nullary `unitFormerNotTypedAtPiType`). -/
 theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context subject classifier)
@@ -73,7 +75,8 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
     RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_universeCode ∨
     RawTerm.headGenerator subject = Generator.gen_listCode ∨
-    RawTerm.headGenerator subject = Generator.gen_optionCode := by
+    RawTerm.headGenerator subject = Generator.gen_optionCode ∨
+    RawTerm.headGenerator subject = Generator.gen_unitCode := by
   refine HasTypeDescPi.rec
     (motive_1 := fun {armScope} _armContext armSubject _armClassifier _armTyped =>
       RawTerm.isStepNormalForm armSubject → (Fin armScope → False) →
@@ -82,7 +85,8 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
        RawTerm.headGenerator armSubject = Generator.gen_sigmaTyCode ∨
        RawTerm.headGenerator armSubject = Generator.gen_universeCode ∨
        RawTerm.headGenerator armSubject = Generator.gen_listCode ∨
-       RawTerm.headGenerator armSubject = Generator.gen_optionCode))
+       RawTerm.headGenerator armSubject = Generator.gen_optionCode ∨
+       RawTerm.headGenerator armSubject = Generator.gen_unitCode))
     (motive_2 := fun _armContext _armLevels _armFlag _armChildren _armTelescope => True)
     ?ofFormation ?conv ?piIntro ?piElim ?genFormationPi ?nilTelescope ?consTelescope
     typed normal closed
@@ -102,7 +106,7 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
     have functionNormal : RawTerm.isStepNormalForm functionTerm :=
       appNormal_functionNormal functionTerm argument armNormal
     rcases functionIH functionNormal armClosed with
-      headLam | headPi | headSigma | headUniverse | headList | headOption
+      headLam | headPi | headSigma | headUniverse | headList | headOption | headUnit
     · obtain ⟨domainAnn, body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
       rw [bodyEq] at armNormal
       exact RawTerm.not_isStepNormalForm_beta_smoke domainAnn body argument armNormal
@@ -121,6 +125,9 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
     · obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
       rw [optionEq] at functionTyped
       exact HasTypeDescPi.optionFormerNotTypedAtPiType functionTyped
+    · have unitEq := eq_unitCodeCell_of_headGenerator headUnit
+      rw [unitEq] at functionTyped
+      exact HasTypeDescPi.unitFormerNotTypedAtPiType functionTyped
   · intro _armScope _armContext generator _payload _children _levels _flag _rule isFormation _premises
       _premisesIH _armNormal _armClosed
     by_cases isPi : generator = Generator.gen_piTyCode
@@ -130,11 +137,14 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
       · by_cases isList : generator = Generator.gen_listCode
         · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by subst isList; rfl)))))
         · by_cases isOption : generator = Generator.gen_optionCode
-          · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isOption; rfl)))))
-          · exfalso
-            unfold typingRuleDescOf at isFormation
-            rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption] at isFormation
-            contradiction
+          · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by subst isOption; rfl))))))
+          · by_cases isUnit : generator = Generator.gen_unitCode
+            · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isUnit; rfl))))))
+            · exfalso
+              unfold typingRuleDescOf at isFormation
+              rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption, if_neg isUnit]
+                at isFormation
+              contradiction
   · intro _armBaseScope _armCurrentDepth _armContext _armFlag
     exact True.intro
   · intro _armBaseScope _armCurrentDepth _armRestShifts _armContext _armHead _armHeadLevel
@@ -142,9 +152,9 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
     exact True.intro
 
 /-- **No closed NORMAL term inhabits the empty type.**  Grown normal-form consistency: by the canonical forms
-the subject is λ / Π / Σ / universe, each refuted at `emptyTypeCell` by the banked value-case inversions.  No
-subject reduction needed; full consistency adds open SN + SR to reduce an arbitrary closed `t:Empty`
-to its normal form. -/
+the subject is λ / Π / Σ / universe / list / option / unit, each refuted at `emptyTypeCell` by the banked
+value-case inversions (the nullary case via `unitFormerNotTypedAtEmptyType`).  No subject reduction needed; full
+consistency adds open SN + SR to reduce an arbitrary closed `t:Empty` to its normal form. -/
 theorem HasTypeDescPi.noClosedNormalTermAtEmptyType {profile : PolyProfile} {subject : RawTerm 0}
     (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
       (emptyTypeCell (scope := 0)))
@@ -152,7 +162,7 @@ theorem HasTypeDescPi.noClosedNormalTermAtEmptyType {profile : PolyProfile} {sub
     False := by
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with
-      headLam | headPi | headSigma | headUniverse | headList | headOption
+      headLam | headPi | headSigma | headUniverse | headList | headOption | headUnit
   · obtain ⟨_domainAnn, _body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [bodyEq] at typed
     exact HasTypeDescPi.lambdaNotTypedAtEmptyType typed
@@ -171,5 +181,8 @@ theorem HasTypeDescPi.noClosedNormalTermAtEmptyType {profile : PolyProfile} {sub
   · obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
     rw [optionEq] at typed
     exact HasTypeDescPi.optionFormerNotTypedAtEmptyType typed
+  · have unitEq := eq_unitCodeCell_of_headGenerator headUnit
+    rw [unitEq] at typed
+    exact HasTypeDescPi.unitFormerNotTypedAtEmptyType typed
 
 end FX1Poly.Typed

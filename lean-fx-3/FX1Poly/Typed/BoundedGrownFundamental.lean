@@ -15,7 +15,10 @@ fundamental theorem as an explicit `formationFundamental` PREMISE; here that pre
 Proved by `BoundExceedsPi.rec` (induction on the budget, not the derivation — the same unlock as BFT-11).  Every
 arm is the SAME body as BFT-6's corresponding arm (the conv/piIntro/piElim/genFormationPi arms ignore their
 sub-budgets, gate-extracting their level bounds from the reducible members produced by the IHs, exactly as before;
-the telescope motive_2 is the shipped `IsTelescopeReducibleAtBoundedSucc`).  The ONE changed arm is `ofFormation`:
+the telescope motive_2 is the shipped `IsTelescopeReducibleAtBoundedSucc`).  The genFormationPi arm's nullary
+`gen_unitCode` branch is `unitFormerMemberAtBounded` with the output positivity taken from the budget's
+`nullaryBelowBound` gate (the one sub-budget field the genFormationPi arm consumes).  The ONE changed arm is
+`ofFormation`:
 where BFT-6 wrote `formationFundamental formationTyped`, this feeds the budget's CARRIED embedded `BoundExceeds`
 (named by the `BoundExceedsPi.ofFormation` constructor) straight into `HasTypeDesc.fundamentalAtBoundedSucc`
 (BFT-11) — `HasTypeDesc.fundamentalAtBoundedSucc env bound formationTyped formationBudget`.  So the formation
@@ -106,8 +109,8 @@ theorem HasTypeDescPi.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Na
       _argumentTyped _functionBudget _argumentBudget functionFundamental argumentFundamental
     exact fundamentalPiElimAtBoundedSucc env bound _context functionFundamental argumentFundamental
   · -- genFormationPi (mirror of BFT-6)
-    intro _scope _context generator _payload children levelsList flag rule isFormation premises
-      _premisesBudget premisesFundamental
+    intro _scope _context generator _payload children levelsList flag rule isFormation nullaryBelowBound
+      premises _premisesBudget premisesFundamental
     by_cases isPiFormer : generator = .gen_piTyCode
     · subst isPiFormer
       obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
@@ -210,10 +213,26 @@ theorem HasTypeDescPi.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Na
                     exact premisesFundamental substitution
                       (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt outputBelowBound)
                       envReducible Generator.gen_optionCode_binderShifts_eq)
-          · exfalso
-            unfold typingRuleDescOf at isFormation
-            rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer] at isFormation
-            contradiction
+          · by_cases isUnitFormer : generator = .gen_unitCode
+            · -- the nullary unitCode former: the output is the pinned Type@0, so the bounded member
+              -- is `unitFormerMemberAtBounded` with the output-level positivity supplied by the
+              -- grown budget's nullary gate (`nullaryBelowBound rfl : 0 < bound`).  No telescope.
+              subst isUnitFormer
+              obtain rfl : rule = { outputType := nullaryFormerOutput } :=
+                Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
+              match children with
+              | .childNil =>
+                  refine fun substitution _envReducible => ?_
+                  show IsReducibleMemberAtBounded env bound
+                    (RawTerm.subst substitution (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
+                    (RawTerm.subst substitution (.mkGen .gen_unitCode () .childNil))
+                  rw [subst_universeCodeCell]
+                  exact unitFormerMemberAtBounded env bound (nullaryBelowBound rfl)
+            · exfalso
+              unfold typingRuleDescOf at isFormation
+              rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
+                if_neg isUnitFormer] at isFormation
+              contradiction
   · -- nilTelescope
     intro _baseScope _currentDepth _context _flag
     intro _targetScope _substitution _argLevel _argLevelLeBound _env _shapeEq

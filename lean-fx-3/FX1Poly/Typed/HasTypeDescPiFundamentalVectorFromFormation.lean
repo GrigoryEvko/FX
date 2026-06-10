@@ -158,10 +158,21 @@ theorem HasTypeDescPi.fundamentalVectorFromFormation {profile : PolyProfile}
                 exact IsReducibleMemberAt.optionFormerFromTelescope predLevel
                   (premisesFundamental substitution predLevel env
                     Generator.gen_optionCode_binderShifts_eq)
-          · exfalso
-            unfold typingRuleDescOf at isFormation
-            rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer] at isFormation
-            contradiction
+          · by_cases isUnitFormer : generator = .gen_unitCode
+            · subst isUnitFormer
+              obtain rfl : rule = { outputType := nullaryFormerOutput } :=
+                Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
+              match children with
+              | .childNil =>
+                  dsimp only [nullaryFormerOutput]
+                  rw [subst_universeCodeCell]
+                  exact IsReducibleMemberAt.unitFormerInUniverse LevelExpr.lzero
+                    UniverseFlag.standard
+            · exfalso
+              unfold typingRuleDescOf at isFormation
+              rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
+                if_neg isUnitFormer] at isFormation
+              contradiction
   · intro _baseScope _currentDepth _context _flag
     intro _targetScope _substitution _envLevels _predLevel _env _shapeEq
     exact True.intro

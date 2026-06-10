@@ -59,10 +59,10 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- **★ The grown engine inhabits only functions and types.**  A closed NORMAL grown-typed term's
 classifier is `Conv` a Π-code or `Conv` a universe code.  Cases `closedNormalSubjectHead`: a λ's classifier
-is `Conv` a Π-code (`invertLam`), and each of the five type-former heads has its classifier `Conv` a universe
+is `Conv` a Π-code (`invertLam`), and each of the six type-former heads has its classifier `Conv` a universe
 code (`invertPiTyCode` / `invertSigmaTyCode` / `inversionUniverseCode` / the head-agnostic
-`formerClassifierConvUniverseGeneric` for `listCode` / `optionCode`).  The grown engine's exact expressive
-reach. -/
+`formerClassifierConvUniverseGeneric` for `listCode` / `optionCode` / the nullary `unitCode`).  The grown
+engine's exact expressive reach. -/
 theorem HasTypeDescPi.closedNormalClassifierIsFunctionOrType {profile : PolyProfile}
     {subject classifier : RawTerm 0}
     (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject classifier)
@@ -73,7 +73,7 @@ theorem HasTypeDescPi.closedNormalClassifierIsFunctionOrType {profile : PolyProf
       Conv classifier (universeCodeCell levelExpr flag)) := by
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with
-      headLam | headPi | headSigma | headUniverse | headList | headOption
+      headLam | headPi | headSigma | headUniverse | headList | headOption | headUnit
   · obtain ⟨domainAnn, _body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [lamEq] at typed
     obtain ⟨codomainCode, _domainLevel, _codomainLevel, _flag,
@@ -101,6 +101,11 @@ theorem HasTypeDescPi.closedNormalClassifierIsFunctionOrType {profile : PolyProf
     rw [optionEq] at typed
     obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
       HasTypeDescPi.formerClassifierConvUniverseGeneric typed typingRuleDescOf_optionCode rfl
+    exact Or.inr ⟨_, _, convToUniverseCode⟩
+  · have unitEq := eq_unitCodeCell_of_headGenerator headUnit
+    rw [unitEq] at typed
+    obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
+      HasTypeDescPi.formerClassifierConvUniverseGeneric typed typingRuleDescOf_unitCode rfl
     exact Or.inr ⟨_, _, convToUniverseCode⟩
 
 /-- **Rule-out corollary: a non-function non-type classifier has no closed-normal grown inhabitant.**  If a

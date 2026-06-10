@@ -163,6 +163,16 @@ theorem noStep_hyperreal {scope : Nat} {targetTerm : RawTerm scope} :
   | cong _ _ childStep =>
       exact noStepChildren_childNil childStep
 
+/-- The `unitCode` TYPE cell (the nullary Unit type former) is a normal leaf:
+no root rule targets `gen_unitCode` and the empty child spine cannot step. -/
+theorem noStep_unitTypeCode {scope : Nat} {targetTerm : RawTerm scope} :
+    Step (.mkGen .gen_unitCode () .childNil : RawTerm scope) targetTerm →
+      False := by
+  intro step
+  cases step with
+  | cong _ _ childStep =>
+      exact noStepChildren_childNil childStep
+
 /-- Variables are strongly normalizing. -/
 theorem var_isStronglyNormalizing {scope : Nat} (index : Fin scope) :
     IsStronglyNormalizing
@@ -170,6 +180,13 @@ theorem var_isStronglyNormalizing {scope : Nat} (index : Fin scope) :
   isStronglyNormalizing_of_noStep
     (fun targetTerm step =>
       noStep_var index (targetTerm := targetTerm) step)
+
+/-- The `unitCode` TYPE cell is strongly normalizing (inert nullary leaf). -/
+theorem unitTypeCode_isStronglyNormalizing {scope : Nat} :
+    IsStronglyNormalizing
+      (.mkGen .gen_unitCode () .childNil : RawTerm scope) :=
+  isStronglyNormalizing_of_noStep
+    (fun targetTerm step => noStep_unitTypeCode (targetTerm := targetTerm) step)
 
 /-- The unit leaf is strongly normalizing. -/
 theorem unit_isStronglyNormalizing {scope : Nat} :

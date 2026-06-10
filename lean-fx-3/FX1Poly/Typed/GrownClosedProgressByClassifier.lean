@@ -19,8 +19,9 @@ classifier, the missing "closed + per-classifier + progress" cell.
 
   * `HasTypeDescPi.closedTypeStepsOrIsFormer` — **progress at a universe.**  A closed grown-typed TYPE (classifier
     a universe `universeCodeCell levelExpr flag`) either takes a `Step` or its head is a type FORMER
-    (`gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode` / `gen_listCode` / `gen_optionCode`) — never a stuck
-    λ.  The type-level progress fact: a closed type expression reduces or is already a syntactic former.
+    (`gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode` / `gen_listCode` / `gen_optionCode` / `gen_unitCode`) —
+    never a stuck λ.  The type-level progress fact: a closed type expression reduces or is already a syntactic
+    former.
 
 Both dispatch on decidable normality: a NORMAL subject is pinned by the per-classifier canonical-forms lemma
 (`closedNormalFunctionIsLambda` / `closedNormalTypeIsFormer`); a NON-normal subject steps by
@@ -66,9 +67,9 @@ theorem HasTypeDescPi.closedFunctionStepsOrIsLambda {profile : PolyProfile} {sub
 
 /-- **Progress at a universe (unconditional).**  A closed grown-typed TYPE (classifier a universe) either takes a
 `Step` or its head is a type FORMER (`gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode` / `gen_listCode` /
-`gen_optionCode`).  Dispatches on decidable normality: a normal universe-typed subject is a former by
-`closedNormalTypeIsFormer`; a non-normal subject steps.  The type-level progress refinement of `closedProgress`:
-a closed type expression reduces or is already a syntactic former — never a stuck λ. -/
+`gen_optionCode` / `gen_unitCode`).  Dispatches on decidable normality: a normal universe-typed subject is a
+former by `closedNormalTypeIsFormer`; a non-normal subject steps.  The type-level progress refinement of
+`closedProgress`: a closed type expression reduces or is already a syntactic former — never a stuck λ. -/
 theorem HasTypeDescPi.closedTypeStepsOrIsFormer {profile : PolyProfile} {subject : RawTerm 0}
     {levelExpr : LevelExpr} {flag : UniverseFlag}
     (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
@@ -78,7 +79,8 @@ theorem HasTypeDescPi.closedTypeStepsOrIsFormer {profile : PolyProfile} {subject
      RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
      RawTerm.headGenerator subject = Generator.gen_universeCode ∨
      RawTerm.headGenerator subject = Generator.gen_listCode ∨
-     RawTerm.headGenerator subject = Generator.gen_optionCode) := by
+     RawTerm.headGenerator subject = Generator.gen_optionCode ∨
+     RawTerm.headGenerator subject = Generator.gen_unitCode) := by
   by_cases isNormal : RawTerm.isStepNormalForm subject
   · exact Or.inr (HasTypeDescPi.closedNormalTypeIsFormer typed isNormal)
   · exact Or.inl (exists_step_of_not_isStepNormalForm isNormal)

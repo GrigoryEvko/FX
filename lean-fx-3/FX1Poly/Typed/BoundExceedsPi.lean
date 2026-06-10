@@ -18,8 +18,11 @@ never off a budget).  The ONLY place a level must be SUPPLIED is the embedded fo
 bound, and `monotoneInBound` only lifts a budget UP — so a fixed bound chosen for the whole grown derivation cannot
 be guaranteed to exceed an arbitrary embedded formation sub-derivation unless that sub-budget is CARRIED.  Hence the
 `ofFormation` constructor carries `BoundExceeds env bound formationTyped`; every other constructor merely threads
-sub-`BoundExceedsPi`s (conv/piIntro/piElim) or the telescope budget (genFormationPi).  There is no `belowBound`
-constructor here — the fuel is entirely inside the carried `BoundExceeds`.
+sub-`BoundExceedsPi`s (conv/piIntro/piElim) or the telescope budget (genFormationPi).  The one per-term gate the
+grown engine carries directly is `genFormationPi`'s `nullaryBelowBound : generator = gen_unitCode → 0 < bound`:
+the nullary `gen_unitCode` row's pinned `Type@0` output has no child whose level could be gate-extracted, so its
+output positivity is budget-carried (vacuous for every ≥1-child former).  Otherwise the fuel is inside the carried
+`BoundExceeds`.
 
 ## The discharge plan (BFT-12b/12c)
 
@@ -43,8 +46,8 @@ open FX1Poly.Core FX1Poly.Universe
 
 /- **The per-derivation universe-level budget for the grown engine (indexed inductive `Prop`).**  `BoundExceedsPi
 env bound d` threads the budget down every grown-engine constructor to the embedded formation budgets it reaches
-through `ofFormation`; it carries NO `belowBound` of its own (the grown engine has no universe leaf).  Mutual with
-`BoundExceedsPiTelescope`. -/
+through `ofFormation`; the only per-term gate it carries directly is `genFormationPi`'s `nullaryBelowBound` (the
+nullary `gen_unitCode` output positivity, vacuous for ≥1-child formers).  Mutual with `BoundExceedsPiTelescope`. -/
 mutual
 inductive BoundExceedsPi {profile : PolyProfile} (env : Nat → Nat) (bound : Nat) :
     {scope : Nat} → {context : TypingContext profile scope} → {subject classifier : RawTerm scope} →
@@ -84,6 +87,7 @@ inductive BoundExceedsPi {profile : PolyProfile} (env : Nat → Nat) (bound : Na
       (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
       (levels : List LevelExpr) (flag : UniverseFlag) (rule : TypingRuleDesc)
       (isFormation : typingRuleDescOf generator = some rule)
+      (nullaryBelowBound : generator = Generator.gen_unitCode → 0 < bound)
       {premises : DescTelescopePi profile (currentDepth := 0) context levels flag children}
       (premisesBudget : BoundExceedsPiTelescope env bound premises) :
       BoundExceedsPi env bound

@@ -15,8 +15,8 @@ type codes) is `boolTrueCell` / `boolFalseCell`.  The remaining CANON-1 residual
 This file answers NO — for NORMAL subjects, **unconditionally** (no GrownCtxConv-5 #842, no §5 candidate bridge
 #768).  The grown engine is formation-only for data: it never introduces `boolTrue` / `boolFalse`
 (`HasTypeDescPi.boolTrueCellHasNoTyping`), and its closed-normal canonical forms
-(`closedNormalSubjectHead`) are exactly the SIX heads `gen_lam` / `gen_piTyCode` / `gen_sigmaTyCode` /
-`gen_universeCode` / `gen_listCode` / `gen_optionCode`.  At the `boolTypeCell` classifier:
+(`closedNormalSubjectHead`) are exactly the SEVEN heads `gen_lam` / `gen_piTyCode` / `gen_sigmaTyCode` /
+`gen_universeCode` / `gen_listCode` / `gen_optionCode` / `gen_unitCode`.  At the `boolTypeCell` classifier:
 
   * a λ's classifier is `Conv` a Π-code (`invertLam`), and `boolTypeCell` is not `Conv` a Π-code
     (`Conv.boolTypeCell_not_piTyCode`);
@@ -30,8 +30,8 @@ term; we never TYPE a reduction step), so no subject reduction — hence no grow
 `piElim` arm (#842) — is invoked.  This mirrors `noClosedNormalTermAtEmptyType` (the SN-050 normal-form
 half), the empty-type twin of this bool-type rule-out.
 
-  * **`HasTypeDescPi.{lambda,piFormer,sigmaFormer,universeCode,listFormer,optionFormer}NotTypedAtBoolType`**
-    — the six per-head refutations (the `boolTypeCell` analogues of the `*NotTypedAtEmptyType` family).
+  * **`HasTypeDescPi.{lambda,piFormer,sigmaFormer,universeCode,listFormer,optionFormer,unitFormer}NotTypedAtBoolType`**
+    — the seven per-head refutations (the `boolTypeCell` analogues of the `*NotTypedAtEmptyType` family).
   * **`HasTypeDescPi.noClosedNormalTermAtBoolType` (★)** — no closed-normal grown term is typed at
     `boolTypeCell`, by cases on `closedNormalSubjectHead`.
   * **`closedNormalBoolCanonicalForms` (★)** — combined: a closed-NORMAL term typed at `boolTypeCell` by
@@ -134,12 +134,27 @@ theorem HasTypeDescPi.optionFormerNotTypedAtBoolType {profile : PolyProfile} {sc
     HasTypeDescPi.formerClassifierConvUniverseGeneric typed typingRuleDescOf_optionCode rfl
   exact Conv.boolTypeCell_not_universeCode convToUniverseCode
 
+/-- **A `unitCode` data former is never typed at `boolCode`** — the NULLARY (childless) twin of
+`optionFormerNotTypedAtBoolType`, via `formerClassifierConvUniverseGeneric` + `typingRuleDescOf_unitCode`: the
+Unit type code's classifier is `Conv` a universe code, refuted against `boolTypeCell` by
+`Conv.boolTypeCell_not_universeCode`. -/
+theorem HasTypeDescPi.unitFormerNotTypedAtBoolType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    (typed :
+      HasTypeDescPi profile context (.mkGen .gen_unitCode () .childNil)
+        (boolTypeCell : RawTerm scope)) :
+    False := by
+  obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
+    HasTypeDescPi.formerClassifierConvUniverseGeneric typed typingRuleDescOf_unitCode rfl
+  exact Conv.boolTypeCell_not_universeCode convToUniverseCode
+
 /-- **★ No closed-NORMAL grown term is typed at `boolCode`.**  Grown bool-type vacuity: by the closed
-canonical forms (`closedNormalSubjectHead`) the subject is λ / Π / Σ / universe / list / option, each refuted
-at `boolTypeCell` by the per-head `*NotTypedAtBoolType` lemmas.  No subject reduction needed (the classifier
-is read only at the already-normal subject) — so unconditional on GrownCtxConv-5 / §5.  The grown disjunct of
-combined bool canonicity is empty for normal subjects; full canonicity adds grown SN (SN-043, shipped) plus
-the SR dispatcher (SN-055 / #842) to reduce an arbitrary closed `t : boolCode` to its normal form. -/
+canonical forms (`closedNormalSubjectHead`) the subject is λ / Π / Σ / universe / list / option / unit, each
+refuted at `boolTypeCell` by the per-head `*NotTypedAtBoolType` lemmas.  No subject reduction needed (the
+classifier is read only at the already-normal subject) — so unconditional on GrownCtxConv-5 / §5.  The grown
+disjunct of combined bool canonicity is empty for normal subjects; full canonicity adds grown SN (SN-043,
+shipped) plus the SR dispatcher (SN-055 / #842) to reduce an arbitrary closed `t : boolCode` to its normal
+form. -/
 theorem HasTypeDescPi.noClosedNormalTermAtBoolType {profile : PolyProfile} {subject : RawTerm 0}
     (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
       (boolTypeCell : RawTerm 0))
@@ -147,7 +162,7 @@ theorem HasTypeDescPi.noClosedNormalTermAtBoolType {profile : PolyProfile} {subj
     False := by
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with
-      headLam | headPi | headSigma | headUniverse | headList | headOption
+      headLam | headPi | headSigma | headUniverse | headList | headOption | headUnit
   · obtain ⟨_domainAnn, _body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [bodyEq] at typed
     exact HasTypeDescPi.lambdaNotTypedAtBoolType typed
@@ -166,6 +181,9 @@ theorem HasTypeDescPi.noClosedNormalTermAtBoolType {profile : PolyProfile} {subj
   · obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
     rw [optionEq] at typed
     exact HasTypeDescPi.optionFormerNotTypedAtBoolType typed
+  · have unitEq := eq_unitCodeCell_of_headGenerator headUnit
+    rw [unitEq] at typed
+    exact HasTypeDescPi.unitFormerNotTypedAtBoolType typed
 
 /-- **★ Combined closed-NORMAL bool canonical forms over all three engines.**  A closed NORMAL term typed at
 `boolTypeCell` by `HasTypeDescDataIntro` OR `HasTypeDescBaseType` OR `HasTypeDescPi` is `boolTrueCell` /

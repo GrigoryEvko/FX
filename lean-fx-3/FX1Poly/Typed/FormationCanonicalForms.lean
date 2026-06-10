@@ -40,10 +40,12 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
 /-- **Formation-engine canonical forms (general context).**  A `HasTypeDesc`-typed subject is a variable, or its
-head generator is `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode`.  Proved by the propext-free mutual
-recursor: `var` hits the variable disjunct; `conv` returns the subject-unchanged IH; `universeFormation` is a
-universe head; `genFormation` reads its head off the `typingRuleDescOf` table (Π / Σ, the non-former branch
-discharged by `if_neg` + `contradiction`). -/
+head generator is `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode` / `gen_listCode` / `gen_optionCode` /
+`gen_unitCode`.  Proved by the propext-free mutual recursor: `var` hits the variable disjunct; `conv` returns the
+subject-unchanged IH; `universeFormation` is a universe head; `genFormation` reads its head off the
+`typingRuleDescOf` table (Π / Σ / list / option / unit, the non-former branch discharged by `if_neg` +
+`contradiction`).  `gen_unitCode` is the nullary former row: it carries no children but is still a head the
+formation engine can type, so the disjunction enumerates it alongside the ≥1-child formers. -/
 theorem HasTypeDesc.subjectIsVariableOrFormerHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (typed : HasTypeDesc profile context subject classifier) :
@@ -52,7 +54,8 @@ theorem HasTypeDesc.subjectIsVariableOrFormerHead {profile : PolyProfile} {scope
     RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_universeCode ∨
     RawTerm.headGenerator subject = Generator.gen_listCode ∨
-    RawTerm.headGenerator subject = Generator.gen_optionCode := by
+    RawTerm.headGenerator subject = Generator.gen_optionCode ∨
+    RawTerm.headGenerator subject = Generator.gen_unitCode := by
   refine HasTypeDesc.rec
     (motive_1 := fun {_scope} _context subject _classifier _typed =>
       (∃ index : Fin _scope, subject = variableCell index) ∨
@@ -60,7 +63,8 @@ theorem HasTypeDesc.subjectIsVariableOrFormerHead {profile : PolyProfile} {scope
       RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
       RawTerm.headGenerator subject = Generator.gen_universeCode ∨
       RawTerm.headGenerator subject = Generator.gen_listCode ∨
-      RawTerm.headGenerator subject = Generator.gen_optionCode)
+      RawTerm.headGenerator subject = Generator.gen_optionCode ∨
+      RawTerm.headGenerator subject = Generator.gen_unitCode)
     (motive_2 := fun _context _levels _flag _children _telescope => True)
     ?var ?conv ?universeFormation ?genFormation ?nilTelescope ?consTelescope typed
   · intro _scope _context index
@@ -78,11 +82,14 @@ theorem HasTypeDesc.subjectIsVariableOrFormerHead {profile : PolyProfile} {scope
       · by_cases isList : generator = Generator.gen_listCode
         · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by subst isList; rfl)))))
         · by_cases isOption : generator = Generator.gen_optionCode
-          · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isOption; rfl)))))
-          · exfalso
-            unfold typingRuleDescOf at isFormation
-            rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption] at isFormation
-            contradiction
+          · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (by subst isOption; rfl))))))
+          · by_cases isUnit : generator = Generator.gen_unitCode
+            · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (by subst isUnit; rfl))))))
+            · exfalso
+              unfold typingRuleDescOf at isFormation
+              rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption, if_neg isUnit]
+                at isFormation
+              contradiction
   · intro _baseScope _currentDepth _context _flag
     exact True.intro
   · intro _baseScope _currentDepth _restShifts _context _head _headLevel _restLevels _flag _rest
@@ -91,9 +98,10 @@ theorem HasTypeDesc.subjectIsVariableOrFormerHead {profile : PolyProfile} {scope
 
 /-- **Closed formation-engine canonical forms.**  At the empty context the variable disjunct of
 `HasTypeDesc.subjectIsVariableOrFormerHead` is vacuous (`Fin 0` is empty), so a CLOSED formation-typed subject's
-head generator is exactly one of `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode`.  This is the structural
-progress fact the closed-consistency / closed-canonicity arguments consume: a closed formation-typed term is a
-type former or a universe code, and the value-case `Conv`-rigidity inversions refute each at `emptyTypeCell`. -/
+head generator is exactly one of `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode` / `gen_listCode` /
+`gen_optionCode` / `gen_unitCode`.  This is the structural progress fact the closed-consistency / closed-canonicity
+arguments consume: a closed formation-typed term is a type former or a universe code, and the value-case
+`Conv`-rigidity inversions refute each at `emptyTypeCell`. -/
 theorem HasTypeDesc.closedSubjectHeadIsFormerOrUniverse {profile : PolyProfile}
     {subject classifier : RawTerm 0}
     (typed : HasTypeDesc profile (TypingContext.empty : TypingContext profile 0) subject classifier) :
@@ -101,7 +109,8 @@ theorem HasTypeDesc.closedSubjectHeadIsFormerOrUniverse {profile : PolyProfile}
     RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
     RawTerm.headGenerator subject = Generator.gen_universeCode ∨
     RawTerm.headGenerator subject = Generator.gen_listCode ∨
-    RawTerm.headGenerator subject = Generator.gen_optionCode := by
+    RawTerm.headGenerator subject = Generator.gen_optionCode ∨
+    RawTerm.headGenerator subject = Generator.gen_unitCode := by
   rcases HasTypeDesc.subjectIsVariableOrFormerHead typed with ⟨index, _⟩ | rest
   · exact index.elim0
   · exact rest
@@ -135,12 +144,13 @@ theorem HasTypeDesc.noClosedFormationTermAtEmptyType {profile : PolyProfile} {su
       reclassifierTyped _subjectIH _reclassifierIH headEq closed
     rcases HasTypeDesc.subjectIsVariableOrFormerHead reclassifierTyped with ⟨index, _⟩ | headIsFormer
     · exact closed index
-    · rcases headIsFormer with isPi | isSigma | isUniverse | isList | isOption
+    · rcases headIsFormer with isPi | isSigma | isUniverse | isList | isOption | isUnit
       · exact Generator.noConfusion (headEq ▸ isPi)
       · exact Generator.noConfusion (headEq ▸ isSigma)
       · exact Generator.noConfusion (headEq ▸ isUniverse)
       · exact Generator.noConfusion (headEq ▸ isList)
       · exact Generator.noConfusion (headEq ▸ isOption)
+      · exact Generator.noConfusion (headEq ▸ isUnit)
   · intro _scope _context _levelExpr _flag headEq _closed
     exact Generator.noConfusion headEq
   · intro scope _context generator _payload _children levels flag rule isFormation _premises

@@ -533,9 +533,68 @@ theorem HasTypeDesc.inversionFormerClassifierGeneric {profile : PolyProfile}
         have generatorAgree : armGenerator = generator :=
           congrArg RawTerm.headGenerator subjectEq
         rw [generatorAgree] at armIsFormation
-        -- stays on the >=1-child strong lemma: the flag flows into the output here; the nullary row is flag-pinned so its uniqueness is by output-constancy (handled at the table flip)
-        obtain rfl : armRule = { outputType := universeFormerOutput } :=
-          formationRuleIsUniverseFormer armIsFormation
-        exact ⟨armLevels, armFlag, Conv.refl _⟩
+        by_cases isNullary : generator = Generator.gen_unitCode
+        · refine ⟨[], UniverseFlag.standard, ?_⟩
+          rw [typingRuleDescOf_unitCode_outputConstant (isNullary ▸ armIsFormation)]
+          exact Conv.refl _
+        · obtain rfl : armRule = { outputType := universeFormerOutput } :=
+            formationRuleIsUniverseFormer armIsFormation isNullary
+          exact ⟨armLevels, armFlag, Conv.refl _⟩
+
+/-- **PINNED former-classifier inversion**: for a formation generator whose rule output is
+CONSTANT (the nullary rows — the output ignores the telescope's levels and flag), a typed
+formation cell's classifier converts to that pinned universe code — no existential, the exact
+(level, flag) is recovered.  This output-CONSTANCY inversion is what replaces telescope
+flag-anchoring in uniqueness arguments at a nullary row: every `genFormation` arm at the same
+generator carries the SAME rule (`typingRuleDescOf` is a function), so every classification of
+the cell reaches the one pinned output.  Same recursion shape as
+`inversionFormerClassifierGeneric`; the `genFormation` arm aligns the arm's rule with `rule` by
+table-determinism and reads the pinned output off `outputConstant`.  Zero-axiom. -/
+theorem HasTypeDesc.inversionFormerClassifierPinned {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier)
+    {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    {pinnedLevel : LevelExpr} {pinnedFlag : UniverseFlag}
+    (outputConstant : ∀ (levels : List LevelExpr) (flag : UniverseFlag),
+      rule.outputType generalScope levels flag = universeCodeCell pinnedLevel pinnedFlag) :
+    ∀ {payload : generator.payload generalScope}
+      {children : RawTermChildren generator.binderShifts generalScope},
+      subject = RawTerm.mkGen generator payload children →
+        Conv reachedClassifier (universeCodeCell pinnedLevel pinnedFlag) :=
+  fun {_payloadImplicit} {_childrenImplicit} =>
+    match derivation with
+    | .var _armContext _armIndex => fun subjectEq => by
+        have rootEq : Generator.gen_var = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [← rootEq] at isFormation
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg (fun isPi => Generator.noConfusion isPi),
+          if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
+        cases isFormation
+    | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
+        fun subjectEq => by
+          have convToPinned :=
+            HasTypeDesc.inversionFormerClassifierPinned typedPremise isFormation
+              outputConstant subjectEq
+          exact Conv.trans converts.sym convToPinned
+    | .universeFormation _armContext _armLevel _armFlag => fun subjectEq => by
+        have rootEq : Generator.gen_universeCode = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [← rootEq] at isFormation
+        unfold typingRuleDescOf at isFormation
+        rw [if_neg (fun isPi => Generator.noConfusion isPi),
+          if_neg (fun isSigma => Generator.noConfusion isSigma)] at isFormation
+        cases isFormation
+    | .genFormation _armContext armGenerator _armPayload _armChildren armLevels armFlag
+        armRule armIsFormation _armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = generator :=
+          congrArg RawTerm.headGenerator subjectEq
+        rw [generatorAgree] at armIsFormation
+        obtain rfl : armRule = rule :=
+          Option.some.inj (armIsFormation.symm.trans isFormation)
+        rw [outputConstant armLevels armFlag]
+        exact Conv.refl _
 
 end FX1Poly.Typed

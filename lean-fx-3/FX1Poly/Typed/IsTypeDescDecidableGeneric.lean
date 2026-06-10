@@ -96,16 +96,16 @@ def IsTypeDesc.decideTypeGeneric {profile : PolyProfile} {scope : Nat}
           | some rule =>
               match DescTelescope.decideSynthGeneric (currentDepth := 0) context wellFormed children with
               | .inl ⟨flag, levels, telescope⟩ =>
-                  -- stays on the >=1-child strong lemma: the `.inl` Σ' is TYPE-valued and must EXHIBIT a
-                  -- concrete (level, flag) as data; `typingRuleDescOf_output_isUniverseCode` only ASSERTS
-                  -- existence (a Prop `∃`, which cannot eliminate into the Σ'/PSum), so the constructive
-                  -- witnesses `lmaxAll levels`/`flag` come from the computing strong equation.
-                  -- Re-examined at the table flip: the nullary row's pinned (level, flag) must be exposed
-                  -- by a CONSTRUCTIVE row-data accessor before this decider can drop the strong lemma.
-                  .inl ⟨lmaxAll levels, flag, by
+                  -- The `.inl` Σ' is TYPE-valued and must EXHIBIT a concrete (level, flag) as data;
+                  -- `typingRuleDescOf_output_isUniverseCode` only ASSERTS existence (a Prop `∃`, which
+                  -- cannot eliminate into the Σ'/PSum), so the constructive witnesses come from the
+                  -- COMPUTABLE row-data accessor `formationOutputData` — uniform across the flag-using
+                  -- and the flag-pinned nullary row shapes.
+                  .inl ⟨(formationOutputData generator levels flag).1,
+                    (formationOutputData generator levels flag).2, by
                     have formerTyped :=
                       HasTypeDesc.genFormation context generator payload children levels flag rule hGen telescope
-                    rw [typingRuleDescOf_outputIsUniverseFormer hGen] at formerTyped
+                    rw [typingRuleDescOf_output_eq_outputData hGen] at formerTyped
                     exact formerTyped⟩
               | .inr noTelescopeAtAnyFlag =>
                   .inr (fun isType => by

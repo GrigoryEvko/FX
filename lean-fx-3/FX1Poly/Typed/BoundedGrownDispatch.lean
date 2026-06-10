@@ -45,7 +45,10 @@ always supply the gate.
   IN the telescope.  Resolution: DOUBLE-APPLY `premisesFundamental` — first at `argLevel = bound` (trivial
   `Nat.le_refl`) to read the domain/codomain members and gate-extract `output < bound` (`levelMax_lt`), then again
   at `argLevel = output` with `Nat.le_of_lt` for the real telescope.  `premisesFundamental` is ∀-reusable, so the
-  double application is free.
+  double application is free.  The nullary `gen_unitCode` row carries no budget here (this dispatch takes
+  `formationFundamental` as a premise, not a budget), so its membership is obtained by typing the unit former
+  through the FORMATION engine and handing the derivation to `formationFundamental` — the output positivity is
+  deferred to the formation engine's own budget.
 * `nilTelescope` — `True.intro`.
 * `consTelescope` — `fundamentalTelescopeConsAtBoundedSucc` with the tail IH threaded through
   `ReducibleEnvAtBounded.cons` after the argument member is lifted `argLevel → bound` by `.cumulative`.
@@ -249,10 +252,26 @@ theorem HasTypeDescPi.fundamentalAtBoundedSuccFromFormation {profile : PolyProfi
                     exact premisesFundamental substitution
                       (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt outputBelowBound)
                       envReducible Generator.gen_optionCode_binderShifts_eq)
-          · exfalso
-            unfold typingRuleDescOf at isFormation
-            rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer] at isFormation
-            contradiction
+          · by_cases isUnitFormer : generator = .gen_unitCode
+            · -- the nullary unitCode former: type it through the FORMATION engine and hand the
+              -- result to the carried formationFundamental premise, deferring the output-level
+              -- positivity to the formation engine's own budget (this dispatch carries no budget).
+              -- The nullary output is level/flag-CONSTANT, so the formation derivation's empty
+              -- telescope produces the same classifier regardless of the genFormationPi levels.
+              subst isUnitFormer
+              obtain rfl : rule = { outputType := nullaryFormerOutput } :=
+                Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
+              match children with
+              | .childNil =>
+                  exact formationFundamental
+                    (HasTypeDesc.genFormation _context Generator.gen_unitCode _payload .childNil
+                      [] flag { outputType := nullaryFormerOutput } isFormation
+                      (DescTelescope.nil (currentDepth := 0) _context flag))
+            · exfalso
+              unfold typingRuleDescOf at isFormation
+              rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
+                if_neg isUnitFormer] at isFormation
+              contradiction
   · -- nilTelescope
     intro _baseScope _currentDepth _context _flag
     intro _targetScope _substitution _argLevel _argLevelLeBound _env _shapeEq

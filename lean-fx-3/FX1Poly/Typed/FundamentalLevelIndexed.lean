@@ -315,10 +315,21 @@ theorem fundamentalGenFormationFormerLevelIndexed {profile : PolyProfile} {scope
               dsimp only [universeFormerOutput]
               exact IsReducibleMemberAt.optionFormerFromTelescope predLevel
                 (telescopeFundamental substitution env Generator.gen_optionCode_binderShifts_eq)
-        · exfalso
-          unfold typingRuleDescOf at isFormation
-          rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer] at isFormation
-          contradiction
+        · by_cases isUnitFormer : generator = .gen_unitCode
+          · subst isUnitFormer
+            obtain rfl : rule = { outputType := nullaryFormerOutput } :=
+              Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
+            match children with
+            | .childNil =>
+                dsimp only [nullaryFormerOutput]
+                rw [subst_universeCodeCell]
+                exact IsReducibleMemberAt.unitFormerInUniverse LevelExpr.lzero
+                  UniverseFlag.standard
+          · exfalso
+            unfold typingRuleDescOf at isFormation
+            rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
+              if_neg isUnitFormer] at isFormation
+            contradiction
 
 /-- **The vector fundamental conclusion IS the level-indexed conclusion, universally quantified over the
 env's level vector and a positive conclusion level.**  `IsFundamentalConclusionAtVector` fixes the conclusion

@@ -167,4 +167,23 @@ theorem IsReducibleMemberAt.dataFormerInUniverse {scope : Nat} {predLevel : Nat}
   IsReducibleMemberAt.tarskiEncode stronglyNormalizing
     (ReducibleTypeAt.reducibleOfWeakHeadNormalFormer weakHeadNormal notPiType notUniverse)
 
+/-- **The nullary `unitCode` former inhabits every universe, semantically** — the
+`dataFormerInUniverse` instance for the childless Unit type code: an inert normal leaf
+(`unitTypeCode_isStronglyNormalizing`), weak-head normal (no ι rule fires at a `gen_unitCode`
+root), root-distinct from Π and the universe code.  The reducibility-FT `genFormation` /
+`genFormationPi` arm for the nullary formation row needs exactly this membership — with NO
+telescope input (the row binds no children). -/
+theorem IsReducibleMemberAt.unitFormerInUniverse {scope : Nat} {predLevel : Nat}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    IsReducibleMemberAt (predLevel + 1)
+      (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+      (.mkGen .gen_unitCode () .childNil : RawTerm scope) :=
+  IsReducibleMemberAt.dataFormerInUniverse levelExpr flag
+    unitTypeCode_isStronglyNormalizing
+    (fun _reduct weakHeadStep => by
+      cases weakHeadStep with
+      | rootIota iotaStep => cases iotaStep)
+    (fun rootEquation => nomatch rootEquation)
+    (fun rootEquation => nomatch rootEquation)
+
 end FX1Poly.Core

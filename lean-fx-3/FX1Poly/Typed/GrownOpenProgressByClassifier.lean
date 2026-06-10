@@ -71,10 +71,10 @@ theorem HasTypeDescPi.openFunctionStepsOrIsLambdaOrNeutral {profile : PolyProfil
 
 /-- **Open progress at a universe (unconditional).**  A grown-typed TYPE (universe classifier) in any well-formed
 context either takes a `Step`, OR has a type-former head (`gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode` /
-`gen_listCode` / `gen_optionCode`), OR is `Core.IsNeutral`.  Dispatches on decidable normality: a normal
-universe-typed subject is a former-or-neutral by `openNormalTypeIsFormerOrNeutral`; a non-normal subject steps.
-The open generalization of `closedTypeStepsOrIsFormer` — the universe case of the η-long readback dichotomy
-(reduce / descend-into-former / stop-at-neutral). -/
+`gen_listCode` / `gen_optionCode` / `gen_unitCode`), OR is `Core.IsNeutral`.  Dispatches on decidable normality: a
+normal universe-typed subject is a former-or-neutral by `openNormalTypeIsFormerOrNeutral`; a non-normal subject
+steps.  The open generalization of `closedTypeStepsOrIsFormer` — the universe case of the η-long readback
+dichotomy (reduce / descend-into-former / stop-at-neutral). -/
 theorem HasTypeDescPi.openTypeStepsOrIsFormerOrNeutral {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     {levelExpr : LevelExpr} {flag : UniverseFlag}
@@ -85,7 +85,8 @@ theorem HasTypeDescPi.openTypeStepsOrIsFormerOrNeutral {profile : PolyProfile} {
      RawTerm.headGenerator subject = Generator.gen_sigmaTyCode ∨
      RawTerm.headGenerator subject = Generator.gen_universeCode ∨
      RawTerm.headGenerator subject = Generator.gen_listCode ∨
-     RawTerm.headGenerator subject = Generator.gen_optionCode) ∨ IsNeutral subject := by
+     RawTerm.headGenerator subject = Generator.gen_optionCode ∨
+     RawTerm.headGenerator subject = Generator.gen_unitCode) ∨ IsNeutral subject := by
   by_cases isNormal : RawTerm.isStepNormalForm subject
   · exact Or.inr (HasTypeDescPi.openNormalTypeIsFormerOrNeutral typed wellFormed isNormal)
   · exact Or.inl (exists_step_of_not_isStepNormalForm isNormal)

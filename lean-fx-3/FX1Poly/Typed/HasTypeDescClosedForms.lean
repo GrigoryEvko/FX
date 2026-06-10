@@ -82,13 +82,16 @@ theorem HasTypeDesc.closedSubjectIsTypeDesc {profile : PolyProfile}
   HasTypeDesc.closedSubjectIsTypeDescGeneral rfl typed
 
 /-- Closed-form shape for the description formation engine: a closed description-typed subject is a
-universe, Pi-code, or Sigma-code cell.
+universe, Pi-code, Sigma-code, list-code, option-code, or unit-code cell.
 
 The HEAD-generator form `closedSubjectHeadIsFormerOrUniverse`
-(`FormationCanonicalForms.lean`) pins the head to `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode`, and
-the head-to-children reconstructions (`eq_piTyCodeCell_of_headGenerator` /
-`eq_sigmaTyCodeCell_of_headGenerator` / `eq_universeCodeCell_of_headGenerator`, the `childCons` dependent-index
-drilling) lift each head to its full structural existential. -/
+(`FormationCanonicalForms.lean`) pins the head to `gen_piTyCode` / `gen_sigmaTyCode` / `gen_universeCode` /
+`gen_listCode` / `gen_optionCode` / `gen_unitCode`, and the head-to-children reconstructions
+(`eq_piTyCodeCell_of_headGenerator` / `eq_sigmaTyCodeCell_of_headGenerator` /
+`eq_universeCodeCell_of_headGenerator` / `eq_listCodeCell_of_headGenerator` /
+`eq_optionCodeCell_of_headGenerator` / `eq_unitCodeCell_of_headGenerator`, the `childCons` dependent-index
+drilling — collapsing to the empty `childNil` spine in the nullary unit case) lift each head to its full
+structural existential (the unit case has no child, so its shape is the bare `gen_unitCode` cell). -/
 theorem HasTypeDesc.closedSubjectIsTypeFormer {profile : PolyProfile}
     {subject classifier : RawTerm 0}
     (typed : HasTypeDesc profile TypingContext.empty subject classifier) :
@@ -101,14 +104,16 @@ theorem HasTypeDesc.closedSubjectIsTypeFormer {profile : PolyProfile}
       (∃ element : RawTerm 0,
         subject = .mkGen .gen_listCode () (.childCons element .childNil)) ∨
       (∃ element : RawTerm 0,
-        subject = .mkGen .gen_optionCode () (.childCons element .childNil)) := by
+        subject = .mkGen .gen_optionCode () (.childCons element .childNil)) ∨
+      subject = .mkGen .gen_unitCode () .childNil := by
   rcases HasTypeDesc.closedSubjectHeadIsFormerOrUniverse typed with
-    headPi | headSigma | headUniverse | headList | headOption
+    headPi | headSigma | headUniverse | headList | headOption | headUnit
   · exact Or.inr (Or.inl (eq_piTyCodeCell_of_headGenerator headPi))
   · exact Or.inr (Or.inr (Or.inl (eq_sigmaTyCodeCell_of_headGenerator headSigma)))
   · exact Or.inl (eq_universeCodeCell_of_headGenerator headUniverse)
   · exact Or.inr (Or.inr (Or.inr (Or.inl (eq_listCodeCell_of_headGenerator headList))))
-  · exact Or.inr (Or.inr (Or.inr (Or.inr (eq_optionCodeCell_of_headGenerator headOption))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (eq_optionCodeCell_of_headGenerator headOption)))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (eq_unitCodeCell_of_headGenerator headUnit)))))
 
 /-- Consistency-facing classifier shape for the description formation engine: every closed
 description-typed subject has a classifier convertible to a universe code.  `closedSubjectIsTypeDesc`

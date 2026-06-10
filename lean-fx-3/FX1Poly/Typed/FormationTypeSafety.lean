@@ -49,18 +49,18 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 open StepStar
 
-/-- **The formation canonical-value-head predicate.**  The four head shapes a closed formation-typed term can
-take: a Π / Σ / list type code or a universe code.  Note there is NO `gen_lam` disjunct — the formation engine
-has no introduction form, so (unlike the grown `IsGrownCanonicalHead`) every closed formation-typed value is a
-type code, never a λ.  The `gen_listCode` disjunct is the forward-compatible slot for the data-type-code
-formation row (GTL-11), widened one commit ahead of the row (sound but unreached until `gen_listCode` joins
-`typingRuleDescOf`). -/
+/-- **The formation canonical-value-head predicate.**  The head shapes a closed formation-typed term can take:
+a Π / Σ / list / option / unit type code or a universe code.  Note there is NO `gen_lam` disjunct — the
+formation engine has no introduction form, so (unlike the grown `IsGrownCanonicalHead`) every closed
+formation-typed value is a type code, never a λ.  The `gen_unitCode` disjunct is the nullary former row (no
+child); the `gen_listCode` / `gen_optionCode` disjuncts are the one-child data-type-code formation rows. -/
 abbrev RawTerm.IsFormationCanonicalHead {scope : Nat} (term : RawTerm scope) : Prop :=
   RawTerm.headGenerator term = Generator.gen_piTyCode ∨
   RawTerm.headGenerator term = Generator.gen_sigmaTyCode ∨
   RawTerm.headGenerator term = Generator.gen_universeCode ∨
   RawTerm.headGenerator term = Generator.gen_listCode ∨
-  RawTerm.headGenerator term = Generator.gen_optionCode
+  RawTerm.headGenerator term = Generator.gen_optionCode ∨
+  RawTerm.headGenerator term = Generator.gen_unitCode
 
 /-- **A closed formation-typed subject is a step-normal-form.**  The contrapositive of
 `exists_step_of_not_isStepNormalForm` (not-normal ⟹ exists a step) against `HasTypeDesc.subjectAdmitsNoStep`

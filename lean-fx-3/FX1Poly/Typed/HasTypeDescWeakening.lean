@@ -44,19 +44,22 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
-/-- **Row-shape-agnostic output rename-stability** (UNIT-3a interface): renaming a formation
+/-- **Row-shape-agnostic output rename-stability**: renaming a formation
 rule's output at the source scope yields the output at the target scope — universe codes are
-scope-polymorphic leaves, for EVERY row shape (the flag-using `universeFormerOutput` rows and any
-future flag-pinned nullary row alike).  Consumers migrate here from the strong
-`formationRuleIsUniverseFormer` equation, which a nullary row falsifies. -/
+scope-polymorphic leaves, for EVERY row shape (the flag-using `universeFormerOutput` rows and
+the flag-pinned nullary `gen_unitCode` row alike).  Consumers use this instead of the strong
+`formationRuleIsUniverseFormer` equation, which the nullary row falsifies. -/
 theorem typingRuleDescOf_output_renameStable {generator : Generator} {rule : TypingRuleDesc}
     (isFormation : typingRuleDescOf generator = some rule)
     {sourceScope targetScope : Nat} (rawRenaming : RawRenaming sourceScope targetScope)
     (levels : List LevelExpr) (flag : UniverseFlag) :
     RawTerm.rename rawRenaming (rule.outputType sourceScope levels flag)
       = rule.outputType targetScope levels flag := by
-  rw [typingRuleDescOf_outputIsUniverseFormer isFormation]
-  exact rename_universeCodeCell rawRenaming (lmaxAll levels) flag
+  rw [typingRuleDescOf_output_eq_outputData isFormation sourceScope levels flag,
+    typingRuleDescOf_output_eq_outputData isFormation targetScope levels flag]
+  exact rename_universeCodeCell rawRenaming
+    (formationOutputData generator levels flag).1
+    (formationOutputData generator levels flag).2
 
 mutual
 

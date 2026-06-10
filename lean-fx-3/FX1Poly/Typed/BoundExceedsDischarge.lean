@@ -64,8 +64,10 @@ theorem BoundExceeds.monotoneInBound {profile : PolyProfile} {env : Nat → Nat}
         (BoundExceeds.monotoneInBound hle reclassifierBudget)
   | .universeFormation context levelExpr flag belowBound =>
       .universeFormation context levelExpr flag (Nat.lt_of_lt_of_le belowBound hle)
-  | .genFormation context generator payload children levels flag rule isFormation premisesBudget =>
+  | .genFormation context generator payload children levels flag rule isFormation nullaryBelowBound
+      premisesBudget =>
       .genFormation context generator payload children levels flag rule isFormation
+        (fun isUnit => Nat.lt_of_lt_of_le (nullaryBelowBound isUnit) hle)
         (BoundExceedsTelescope.monotoneInBound hle premisesBudget)
 /-- **The telescope budget is monotone in the bound (telescope arm).**  Mutual companion of
 `BoundExceeds.monotoneInBound`; lifts each head/rest sub-budget structurally. -/
@@ -85,7 +87,9 @@ end
 
 /-- **Every formation derivation has a budget.**  `∃ bound, BoundExceeds env bound d` by structural recursion on
 the formation derivation `d`: the `var` leaf needs no fuel (`0`); the `universeFormation` leaf supplies
-`denote (lsucc levelExpr) env + 1` (so `Nat.lt_succ_self` discharges its `belowBound`); recursive arms take the SUM
+`denote (lsucc levelExpr) env + 1` (so `Nat.lt_succ_self` discharges its `belowBound`); the `genFormation` node
+supplies `premisesBound + 1` (so `Nat.zero_lt_succ` discharges the nullary `0 < bound` gate uniformly, and the
+`+ 1` keeps it above `premisesBound` so `monotoneInBound` lifts the telescope budget); recursive arms take the SUM
 of the sub-bounds and lift each sub-budget through `monotoneInBound` (sum, not `max`, because the Init `max`
 le-lemmas leak `propext`).  Written against `HasTypeDesc.rec` (propext-free) rather than a `match` on the indexed
 family. -/
@@ -109,9 +113,10 @@ theorem BoundExceeds.existsBound {profile : PolyProfile} {env : Nat → Nat} {sc
         BoundExceeds.universeFormation context levelExpr flag (Nat.lt_succ_self _)⟩)
     (fun context generator payload children levels flag rule isFormation _premises premisesExists =>
       let ⟨premisesBound, premisesBudget⟩ := premisesExists
-      ⟨premisesBound,
+      ⟨premisesBound + 1,
         BoundExceeds.genFormation context generator payload children levels flag rule isFormation
-          premisesBudget⟩)
+          (fun _isUnit => Nat.zero_lt_succ premisesBound)
+          (BoundExceedsTelescope.monotoneInBound (Nat.le_succ premisesBound) premisesBudget)⟩)
     (fun context flag => ⟨0, BoundExceedsTelescope.nil context flag⟩)
     (fun context head headLevel restLevels flag rest _headTyped _restTyped headExists restExists =>
       let ⟨headBound, headBudget⟩ := headExists
@@ -148,9 +153,10 @@ theorem BoundExceedsTelescope.existsBound {profile : PolyProfile} {env : Nat →
         BoundExceeds.universeFormation context levelExpr flag (Nat.lt_succ_self _)⟩)
     (fun context generator payload children levels flag rule isFormation _premises premisesExists =>
       let ⟨premisesBound, premisesBudget⟩ := premisesExists
-      ⟨premisesBound,
+      ⟨premisesBound + 1,
         BoundExceeds.genFormation context generator payload children levels flag rule isFormation
-          premisesBudget⟩)
+          (fun _isUnit => Nat.zero_lt_succ premisesBound)
+          (BoundExceedsTelescope.monotoneInBound (Nat.le_succ premisesBound) premisesBudget)⟩)
     (fun context flag => ⟨0, BoundExceedsTelescope.nil context flag⟩)
     (fun context head headLevel restLevels flag rest _headTyped _restTyped headExists restExists =>
       let ⟨headBound, headBudget⟩ := headExists

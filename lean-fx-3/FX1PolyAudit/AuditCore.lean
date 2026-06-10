@@ -1288,3 +1288,14 @@ The exact βη twin of `Core/Normalize`: iterate `reduceOnceBetaEta` along an
 #assert_no_axioms FX1Poly.Core.RawTerm.normalizeBetaEta_unfold
 #assert_no_axioms FX1Poly.Core.RawTerm.normalizeBetaEta_reducesTo
 #assert_no_axioms FX1Poly.Core.RawTerm.normalizeBetaEta_isBetaEtaNormalForm
+
+/-! ### The `unitCode` inert-leaf substrate (nullary formation row support)
+
+The Unit type code `.mkGen .gen_unitCode () .childNil` is a normal leaf (no root rule, no
+child steps), hence strongly normalizing, hence a reducible member of every universe code via
+the generic `dataFormerInUniverse` (weak-head normal, non-Pi non-universe rooted) — the
+reducibility-FT `genFormation`/`genFormationPi` arm for the nullary formation row. -/
+
+#assert_no_axioms FX1Poly.Core.StepStar.noStep_unitTypeCode
+#assert_no_axioms FX1Poly.Core.StepStar.unitTypeCode_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.IsReducibleMemberAt.unitFormerInUniverse
