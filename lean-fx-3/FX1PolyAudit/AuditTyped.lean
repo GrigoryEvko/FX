@@ -459,6 +459,7 @@ import FX1Poly.Typed.TypedTypeValidityBoxedRelation
 import FX1Poly.Typed.TypedTypeValidityLeveled
 import FX1Poly.Typed.TypedTypeValidityLeveledTransport
 import FX1Poly.Typed.TypedTypeValidityLeveledTransportUnderWf
+import FX1Poly.Typed.TypedTypeValidityLeveledCompleteness
 import FX1Poly.Typed.WfContextTypedLrValid
 import FX1Poly.Typed.TypedTypeValidityBoxedRename
 import FX1Poly.Typed.WfContextTypedLrValidLookup
@@ -7205,6 +7206,23 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.universeClassifiedConvContextUnderWf
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.transportUnderWf
 #assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.transportValidityUnderWf
+-- LRH-1: LR COMPLETENESS on the {neutral, universe, Pi} head fragment under wf
+-- (TypedTypeValidityLeveledCompleteness.lean) — the THIRD leg closing the route-B loop: soundness
+-- (toHasTypeDescPi) + transportUnderWf + completeOnHeadFragment = the leveled LR is a faithful
+-- wf-conditional candidate-carrying model of the fragment. completeOnHeadFragment: fragment induction;
+-- neutral arm consumes the typing, universeType pins (level, flag) via the predicativity inversion,
+-- piType inverts the former typing (invertPiTyCode + universeCodeCell_inj_of_conv) and recurses under the
+-- wf-extended binder, reassembling with the canonical snKripkeCodFamily. faithfulOnHeadFragment is the
+-- iff. BOUNDARY committed, not absorbed: headCharacterization pins membership to the three heads;
+-- sigmaTyCodeCell_notInHeadFragment proves the Sigma code OUTSIDE (no Sigma arm; same root argument
+-- excludes data/flat/empty/modal codes — their model story is the §5 candidate bridge, not this LR).
+-- For bare typing transport the direct LR-free witness remains convContextUnderWf. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.TypedLrHeadFragment.headCharacterization
+#assert_no_axioms FX1Poly.Core.IsNeutral.rootGenerator_ne_gen_sigmaTyCode
+#assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_notInHeadFragment
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.completeOnHeadFragment
+#assert_no_axioms FX1Poly.Typed.TypedTypeValidityLeveled.faithfulOnHeadFragment
+#assert_no_axioms FX1Poly.Typed.smoke_completeOnHeadFragment_piOverUniverse
 -- GrownCtxConv-5-MODELNEUTRAL (#1106): the SEMANTIC half of the residual's open neutral core, discharged unconditionally
 -- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
 -- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
