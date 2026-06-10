@@ -72,10 +72,11 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofNeutral {scope : Nat} {env : Nat → 
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
     (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode)
-    (notEmpty : typeCode.rootGenerator ≠ Generator.gen_emptyCode) :
+    (notEmpty : typeCode.rootGenerator ≠ Generator.gen_emptyCode)
+    (notFlat : typeCode.rootGenerator.isFlatDataCode = false) :
     IsReducibleTypeAtAllDenoteLevels env typeCode :=
   fun _level => ⟨IsStronglyNormalizing,
-    ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty⟩
+    ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat⟩
 
 /-- **Empty-code leaf.**  The empty type code `emptyTypeCell` is reducible at every denote level, with the
 head-expansion-closed empty Tait candidate `emptyTaitCandidate` — the dedicated `dataEmpty` constructor does
@@ -84,6 +85,16 @@ not reference the lower family or the level, so it fires uniformly across levels
 theorem IsReducibleTypeAtAllDenoteLevels.ofDataEmpty {scope : Nat} {env : Nat → Nat} :
     IsReducibleTypeAtAllDenoteLevels env (emptyTypeCell (scope := scope)) :=
   fun _level => ⟨emptyTaitCandidate, ReducibleTypeStepDenote.dataEmpty⟩
+
+/-- **Flat-code leaf.**  A flat-data-code-rooted type cell (product / sum / either / arrow / equiv) is
+reducible at every denote level, with the pinned head-expansion-closed flat Tait candidate — the dedicated
+`dataFlat` constructor references neither the lower family nor the level, so it fires uniformly across
+levels (the flat twin of `ofDataEmpty`). -/
+theorem IsReducibleTypeAtAllDenoteLevels.ofDataFlat {scope : Nat} {env : Nat → Nat}
+    {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true) :
+    IsReducibleTypeAtAllDenoteLevels env typeCode :=
+  fun _level => ⟨dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
+    ReducibleTypeStepDenote.dataFlat flatPinned⟩
 
 /-- **Universe leaf.**  A universe code `Type@levelExpr` is reducible at every denote level — the denote
 universe arm fires unconditionally (`universeCode_isReducibleAtDenote`), with no fuel-0 vacuity. -/
@@ -133,8 +144,9 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote {scope : Nat}
   induction reducible with
   | whnfExpand weakHeadStep _reductReducible reductInductiveHypothesis =>
       exact IsReducibleTypeAtAllDenoteLevels.headExpand weakHeadStep reductInductiveHypothesis
-  | neutral noWeakHeadStep notPiType notUniverse notEmpty =>
+  | neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat =>
       exact IsReducibleTypeAtAllDenoteLevels.ofNeutral noWeakHeadStep notPiType notUniverse notEmpty
+        notFlat
   | @piType domainCode codomainCode domainCandidate codomainCandidate domainReducible
       codomainReducible domainInductiveHypothesis codomainInductiveHypothesis =>
       exact piArm codomainCandidate domainReducible codomainReducible
@@ -143,6 +155,8 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote {scope : Nat}
       exact IsReducibleTypeAtAllDenoteLevels.ofUniverseCode env levelExpr flag
   | dataEmpty =>
       exact IsReducibleTypeAtAllDenoteLevels.ofDataEmpty
+  | dataFlat flatPinned =>
+      exact IsReducibleTypeAtAllDenoteLevels.ofDataFlat flatPinned
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 
@@ -179,6 +193,7 @@ theorem neutralDomainPi_reducibleAtEveryDenoteLevel {scope : Nat} (env : Nat →
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
     (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
+    (notFlat : domainCode.rootGenerator.isFlatDataCode = false)
     (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
     (codomainReducible : ∀ (level : Nat) (argument : RawTerm scope), IsStronglyNormalizing argument →
       ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
@@ -186,7 +201,8 @@ theorem neutralDomainPi_reducibleAtEveryDenoteLevel {scope : Nat} (env : Nat →
     IsReducibleTypeAtAllDenoteLevels env
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
   uniformDomainPi_reducibleAtEveryDenoteLevel env IsStronglyNormalizing
-    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty)
+    (fun _level =>
+      ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat)
     codomainCandidate codomainReducible
 
 /-- **Member-stability for a uniform-candidate type — the member-level complement of the uniform-candidate
@@ -218,12 +234,14 @@ theorem neutralType_memberStableAcrossDenoteLevels {scope : Nat} (env : Nat → 
     (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode)
     (notEmpty : typeCode.rootGenerator ≠ Generator.gen_emptyCode)
+    (notFlat : typeCode.rootGenerator.isFlatDataCode = false)
     {term : RawTerm scope} {sourceLevel : Nat}
     (memberAtSource : IsReducibleMemberAtDenote env sourceLevel typeCode term)
     (targetLevel : Nat) :
     IsReducibleMemberAtDenote env targetLevel typeCode term :=
   uniformType_memberStableAcrossDenoteLevels env
-    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty)
+    (fun _level =>
+      ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat)
     memberAtSource targetLevel
 
 /-- **Member-stability for a uniform-domain Π TYPE.**  If the domain `domainCode` is reducible with a
@@ -265,6 +283,7 @@ theorem neutralDomainPiType_memberStableAcrossDenoteLevels {scope : Nat} (env : 
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
     (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
+    (notFlat : domainCode.rootGenerator.isFlatDataCode = false)
     (codomainCandidate : RawTerm scope → (RawTerm scope → Prop))
     (codomainReducible : ∀ (level : Nat) (argument : RawTerm scope), IsStronglyNormalizing argument →
       ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
@@ -276,7 +295,8 @@ theorem neutralDomainPiType_memberStableAcrossDenoteLevels {scope : Nat} (env : 
     IsReducibleMemberAtDenote env targetLevel
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) term :=
   uniformDomainPiType_memberStableAcrossDenoteLevels env IsStronglyNormalizing
-    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty)
+    (fun _level =>
+      ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat)
     codomainCandidate codomainReducible memberAtSource targetLevel
 
 end FX1Poly.Typed

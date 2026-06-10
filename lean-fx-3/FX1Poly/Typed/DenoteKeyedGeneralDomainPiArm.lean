@@ -121,12 +121,14 @@ theorem neutralDomainPiArmFromInductiveHypotheses {scope : Nat} (env : Nat → N
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
     (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
+    (notFlat : domainCode.rootGenerator.isFlatDataCode = false)
     (codomainInductiveHypothesis : ∀ argument : RawTerm scope, IsStronglyNormalizing argument →
       IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst0 codomainCode argument)) :
     IsReducibleTypeAtAllDenoteLevels env
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
   uniformDomainPiArmFromInductiveHypotheses env
-    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty)
+    (fun _level =>
+      ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat)
     codomainInductiveHypothesis
 
 /-- **The UNIFIED piArm — the whole case-split collapses to member-stability at one level.**  The A2 bridge
@@ -181,11 +183,12 @@ theorem neutralDomainMemberStableToOuter {scope : Nat} (env : Nat → Nat) (oute
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
     (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
+    (notFlat : domainCode.rootGenerator.isFlatDataCode = false)
     (sourceLevel : Nat) (argument : RawTerm scope)
     (memberAtSource : IsReducibleMemberAtDenote env sourceLevel domainCode argument) :
     IsReducibleMemberAtDenote env outerLevel domainCode argument :=
   neutralType_memberStableAcrossDenoteLevels env noWeakHeadStep notPiType notUniverse notEmpty
-    memberAtSource outerLevel
+    notFlat memberAtSource outerLevel
 
 /-- **Member-transfer across head-expansion (backward).**  A denote-reducible member of the contractum `reduct`
 is a member of the redex `typeCode`: the `whnfExpand` constructor re-attaches the same candidate above the

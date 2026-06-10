@@ -312,7 +312,7 @@ theorem ReducibleTypeStepBounded.belowBoundOfUniverseCodeShape {scope : Nat} {en
   | whnfExpand weakHeadStep0 _ _ =>
       intro _levelExpr _flag hType; subst hType
       cases weakHeadStep0 with | rootIota iotaStep => cases iotaStep
-  | neutral _ _ notUniverse _ =>
+  | neutral _ _ notUniverse _ _ =>
       intro _levelExpr _flag hType; subst hType; exact absurd rfl notUniverse
   | piType _ _ _ _ _ =>
       intro _levelExpr _flag hType
@@ -328,6 +328,10 @@ theorem ReducibleTypeStepBounded.belowBoundOfUniverseCodeShape {scope : Nat} {en
       have rootMismatch : Generator.gen_emptyCode = Generator.gen_universeCode :=
         congrArg RawTerm.rootGenerator hType
       exact absurd rootMismatch (by decide)
+  | dataFlat flatPinned =>
+      intro _levelExpr _flag hType
+      rw [hType] at flatPinned
+      exact nomatch flatPinned
   | ofPointwiseIff _ _ innerHypothesis =>
       intro _levelExpr _flag hType; exact innerHypothesis hType
 

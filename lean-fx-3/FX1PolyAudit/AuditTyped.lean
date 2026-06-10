@@ -1,6 +1,8 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.DataReducibilityCoverage
 import FX1Poly.Core.DataTaitCandidate
+import FX1Poly.Core.FlatCodeTaitCandidate
+import FX1Poly.Typed.FlatCodeCanonicalForms
 import FX1Poly.Typed.MilestoneASpineValueLayer
 import FX1Poly.Typed.MilestoneAEliminatorLayerSpine
 import FX1Poly.Typed.BoolElimComputingCanonicity
@@ -4478,6 +4480,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Core.boolTaitCandidate_isReducibilityCandidate
 #assert_no_axioms FX1Poly.Core.boolTaitCandidate_headExpansionClosed
 #assert_no_axioms FX1Poly.Core.closedBoolTaitReducesToValue
+-- CAN-6 / FLAT-CANON substrate (FlatCodeTaitCandidate): the per-flat-code instances feeding the SECOND §5
+-- candidate-bridge pin (product/sum/either/arrow/equiv). isFlatDataCode = the neutral-arm gate over the
+-- flatTypingRuleDescOf formers; flatCodeValuePredicate = the dispatch (product → pairs, either → injections,
+-- arrow → λ cells, equiv → equivIntro cells, sum → EMPTY, honest: no sum-injection intro generators exist);
+-- flatCodeTaitCandidate inherits the full dataTaitCandidate bundle; noWeakHeadStep_of_isFlatDataCode is the
+-- weak-head normality the dataFlat arm's inversions + forward closure consume (root stable along StepStar).
+#assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate_memberWeakHeadExpansion
+#assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate.closedReducesToValue
+#assert_no_axioms FX1Poly.Core.noWeakHeadStep_of_isFlatDataCode
 -- RICHEST data candidate — List (SN-064): IsListValue inductive combines nullary nil + binary-recursive cons
 -- (head normal like pair, tail recursive like Nat); list values are normal forms by induction; the candidate
 -- is isReducibilityCandidateOfValuesNormal at IsListValue; every list value is a member (memberOfValue); a
@@ -4973,6 +4986,9 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.emptyTypeCell_noWeakHeadStep
 #assert_no_axioms FX1Poly.Typed.emptyTypeCell_noStep
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidateIffEmptyCandidate
+-- The FLAT twin (CAN-6): root-keyed shape inversion — a reducible type whose root generator is a FLAT data
+-- code came through the dedicated dataFlat arm; its candidate IS the pinned flat Tait candidate.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidateIffFlatCandidate
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.deterministic
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.deterministic
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.piTypeInversion
@@ -6728,6 +6744,21 @@ gates pin them shut.
 -- forcedStronglyNormalizing (which collapsed every candidate onto the maximal SN set). emptyTaitCandidate is
 -- head-expansion-closed (unlike CanonicalFormsPredicate emptyIsValue), so it serves as a Π codomain across the FT.
 #assert_no_axioms FX1Poly.Typed.emptyTypeCell_candidate_isEmptyCandidate
+
+-- CAN-6 / FLAT-CANON (#936) PAYOFF (FlatCodeCanonicalForms): the SECOND §5 candidate-bridge pin harvested.
+-- Non-vacuity (every flat-rooted cell is bounded-reducible via the dataFlat arm); the flat candidate bridge
+-- (family determinism pins ANY candidate to dataTaitCandidate (flatCodeValuePredicate root) — before the
+-- edit the neutral arm collapsed it onto the whole SN set); the member identity; and per-code CLOSED
+-- canonicity: a closed candidate member of a product cell reduces to a PAIR, of an either cell to an
+-- inl/inr injection, and the sum lane (no intro generators — empty value predicate, honest) has NO closed
+-- member. MODEL-level (sconing leg): connecting ENGINE-typed members is future work, stated, not absorbed.
+#assert_no_axioms FX1Poly.Typed.flatCode_isReducibleTypeAtBounded
+#assert_no_axioms FX1Poly.Typed.flatCode_candidate_isFlatTaitCandidate
+#assert_no_axioms FX1Poly.Typed.flatCode_memberIsFlatTaitCandidate
+#assert_no_axioms FX1Poly.Typed.closedProductMemberReducesToPair
+#assert_no_axioms FX1Poly.Typed.closedEitherMemberReducesToInjection
+#assert_no_axioms FX1Poly.Typed.closedSumMemberRefuted
+
 -- The GO CERTIFICATE for the §5 candidate-bridge edit (CandidateBridgeEditViability.lean), companion to the
 -- obstruction proof above: a FAITHFUL MINIATURE of the EDITED relation (gated neutral excluding gen_emptyCode +
 -- a dataEmpty arm), built over the REAL RawTerm/Generator/WeakHeadStep, PROVES the determinism-survival crux —

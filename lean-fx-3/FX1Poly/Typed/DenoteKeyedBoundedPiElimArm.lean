@@ -66,7 +66,7 @@ theorem ReducibleTypeStepBounded.candidatePiShape {scope : Nat} {env : Nat → N
   | whnfExpand weakHeadStep0 _ _ =>
       intro _domainCode _codomainCode hType; subst hType
       cases weakHeadStep0 with | rootIota iotaStep => cases iotaStep
-  | neutral _ notPiType _ _ =>
+  | neutral _ notPiType _ _ _ =>
       intro _domainCode _codomainCode hType; subst hType; exact absurd rfl notPiType
   | piType codomainCandidate domainReducible codomainReducible _ _ =>
       intro _domainCode _codomainCode hType; cases hType
@@ -81,6 +81,10 @@ theorem ReducibleTypeStepBounded.candidatePiShape {scope : Nat} {env : Nat → N
       have rootMismatch : Generator.gen_emptyCode = Generator.gen_piTyCode :=
         congrArg RawTerm.rootGenerator hType
       exact absurd rootMismatch (by decide)
+  | dataFlat flatPinned =>
+      intro _domainCode _codomainCode hType
+      rw [hType] at flatPinned
+      exact nomatch flatPinned
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro _domainCode _codomainCode hType
       obtain ⟨domainCandidate, codomainCandidate, domainReducible, codomainReducible, pwi⟩ :=

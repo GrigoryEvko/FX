@@ -56,21 +56,24 @@ theorem neutralDomainPiArmLift {scope : Nat} {env : Nat → Nat} (highLevel : Na
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
     (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
+    (notFlat : domainCode.rootGenerator.isFlatDataCode = false)
     (domainReducible : ReducibleTypeStepDenote env lowerAt domainCode domainCandidate)
     (codomainLiftedPerMember : ∀ argument : RawTerm scope, domainCandidate argument →
       IsReducibleTypeAtDenote env highLevel (RawTerm.subst0 codomainCode argument)) :
     IsReducibleTypeAtDenote env highLevel
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
   piFormerReducibleAtLevel env highLevel
-    ⟨IsStronglyNormalizing, ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty⟩
+    ⟨IsStronglyNormalizing,
+      ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat⟩
     (fun argument argumentMember =>
       let ⟨_memberCandidate, memberCandidateReducible, argumentInMemberCandidate⟩ := argumentMember
       have argumentStronglyNormalizing : IsStronglyNormalizing argument :=
         (memberCandidateReducible.candidateIffStronglyNormalizing
-          noWeakHeadStep notPiType notUniverse notEmpty argument).mp argumentInMemberCandidate
+          noWeakHeadStep notPiType notUniverse notEmpty notFlat argument).mp argumentInMemberCandidate
       have argumentInDomainCandidate : domainCandidate argument :=
         (domainReducible.candidateIffStronglyNormalizing
-          noWeakHeadStep notPiType notUniverse notEmpty argument).mpr argumentStronglyNormalizing
+          noWeakHeadStep notPiType notUniverse notEmpty notFlat argument).mpr
+          argumentStronglyNormalizing
       codomainLiftedPerMember argument argumentInDomainCandidate)
 
 /-- **The universe-domain (above-threshold) discharge of `reducibleTypeLevelLift`'s `piArmLift`.**  For a

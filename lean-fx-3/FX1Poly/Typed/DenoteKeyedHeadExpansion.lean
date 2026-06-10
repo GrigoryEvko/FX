@@ -64,7 +64,7 @@ theorem ReducibleTypeStepDenote.headExpansionClosed {scope : Nat} {env : Nat →
   induction reducible with
   | whnfExpand _weakHeadStep _reductReducible reductInductiveHypothesis =>
       exact reductInductiveHypothesis
-  | neutral _noWeakHeadStep _notPiType _notUniverse _notEmpty =>
+  | neutral _noWeakHeadStep _notPiType _notUniverse _notEmpty _notFlat =>
       exact isStronglyNormalizing_headExpansionClosed
   | @piType _domainCode _codomainCode _domainCandidate codomainCandidate _domainReducible
       _codomainReducible _domainInductiveHypothesis codomainInductiveHypothesis =>
@@ -94,6 +94,8 @@ theorem ReducibleTypeStepDenote.headExpansionClosed {scope : Nat} {env : Nat →
         lowerCandidate, lowerHeadExpand (LevelExpr.denote levelExpr env) lowerContractum⟩
   | dataEmpty =>
       exact emptyTaitCandidate_headExpansionClosed
+  | dataFlat _flatPinned =>
+      exact dataTaitCandidate_headExpansionClosed
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 

@@ -81,7 +81,7 @@ theorem ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi {scope : Nat} {e
   induction reducible with
   | whnfExpand _weakHeadStep _reductReducible reductInductiveHypothesis =>
       exact reductInductiveHypothesis
-  | neutral _noWeakHeadStep _notPiType _notUniverse _notEmpty =>
+  | neutral _noWeakHeadStep _notPiType _notUniverse _notEmpty _notFlat =>
       intro source _reduct _weakHeadStep sourceStronglyNormalizing _member
       exact sourceStronglyNormalizing
   | @piType domainCode codomainCode domainCandidate codomainCandidate domainReducible
@@ -99,6 +99,9 @@ theorem ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi {scope : Nat} {e
   | dataEmpty =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact emptyTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member
+  | dataFlat _flatPinned =>
+      intro source reduct weakHeadStep sourceStronglyNormalizing member
+      exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact (pointwiseIff source).mp

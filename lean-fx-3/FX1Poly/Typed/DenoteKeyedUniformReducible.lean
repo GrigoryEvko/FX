@@ -84,10 +84,12 @@ theorem UniformlyReducibleAboveDenote.ofNeutral {scope : Nat} {env : Nat → Nat
     (noWeakHeadStep : ∀ reduct : RawTerm scope, ¬ WeakHeadStep typeCode reduct)
     (notPiType : typeCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : typeCode.rootGenerator ≠ Generator.gen_universeCode)
-    (notEmpty : typeCode.rootGenerator ≠ Generator.gen_emptyCode) :
+    (notEmpty : typeCode.rootGenerator ≠ Generator.gen_emptyCode)
+    (notFlat : typeCode.rootGenerator.isFlatDataCode = false) :
     UniformlyReducibleAboveDenote env typeCode :=
   ⟨0, IsStronglyNormalizing,
-    fun _level _habove => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty⟩
+    fun _level _habove =>
+      ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat⟩
 
 /-- **Empty-code leaf.**  The empty type code `emptyTypeCell` is uniformly reducible above threshold 0 with the
 head-expansion-closed empty Tait candidate `emptyTaitCandidate` — the dedicated `dataEmpty` constructor does
@@ -95,6 +97,15 @@ not reference the level family (the candidate-bridge twin of `ofNeutral` / `ofUn
 theorem UniformlyReducibleAboveDenote.ofDataEmpty {scope : Nat} {env : Nat → Nat} :
     UniformlyReducibleAboveDenote env (emptyTypeCell (scope := scope)) :=
   ⟨0, emptyTaitCandidate, fun _level _habove => ReducibleTypeStepDenote.dataEmpty⟩
+
+/-- **Flat-code leaf.**  A flat-data-code-rooted type cell is uniformly reducible above threshold 0 with the
+pinned head-expansion-closed flat Tait candidate — the dedicated `dataFlat` constructor does not reference
+the level family (the flat twin of `ofDataEmpty`). -/
+theorem UniformlyReducibleAboveDenote.ofDataFlat {scope : Nat} {env : Nat → Nat}
+    {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true) :
+    UniformlyReducibleAboveDenote env typeCode :=
+  ⟨0, dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
+    fun _level _habove => ReducibleTypeStepDenote.dataFlat flatPinned⟩
 
 /-- **Universe leaf.**  `Type@levelExpr` is uniformly reducible above threshold `denote levelExpr env` with the
 level-independent decode-set candidate `fun m => SN m ∧ IsReducibleTypeAtDenote env (denote levelExpr env) m`
@@ -167,8 +178,9 @@ theorem UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote {scope : Nat} {e
   induction reducible with
   | whnfExpand weakHeadStep _reductReducible reductInductiveHypothesis =>
       exact UniformlyReducibleAboveDenote.headExpand weakHeadStep reductInductiveHypothesis
-  | neutral noWeakHeadStep notPiType notUniverse notEmpty =>
+  | neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat =>
       exact UniformlyReducibleAboveDenote.ofNeutral noWeakHeadStep notPiType notUniverse notEmpty
+        notFlat
   | @piType domainCode codomainCode domainCandidate codomainCandidate domainReducible
       codomainReducible domainInductiveHypothesis codomainInductiveHypothesis =>
       exact piArm codomainCandidate domainReducible codomainReducible
@@ -177,6 +189,8 @@ theorem UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote {scope : Nat} {e
       exact UniformlyReducibleAboveDenote.ofUniverseCode env levelExpr flag
   | dataEmpty =>
       exact UniformlyReducibleAboveDenote.ofDataEmpty
+  | dataFlat flatPinned =>
+      exact UniformlyReducibleAboveDenote.ofDataFlat flatPinned
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 

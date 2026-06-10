@@ -51,7 +51,7 @@ theorem ReducibleTypeStepDenote.memberForwardClosed {scope : Nat} {env : Nat →
   induction reducible with
   | whnfExpand _weakHeadStep _reductReducible reductInductiveHypothesis =>
       exact reductInductiveHypothesis
-  | neutral _noWeakHeadStep _notPiType _notUniverse _notEmpty =>
+  | neutral _noWeakHeadStep _notPiType _notUniverse _notEmpty _notFlat =>
       intro term reduct memberStronglyNormalizing step
       exact isStronglyNormalizing_isReducibilityCandidate.closedUnderStep memberStronglyNormalizing step
   | @piType domainCode codomainCode domainCandidate codomainCandidate _domainReducible
@@ -70,6 +70,9 @@ theorem ReducibleTypeStepDenote.memberForwardClosed {scope : Nat} {env : Nat →
   | dataEmpty =>
       intro term reduct member step
       exact emptyTaitCandidate.closedUnderStep member step
+  | dataFlat _flatPinned =>
+      intro term reduct member step
+      exact dataTaitCandidate.closedUnderStep member step
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       intro term reduct member step
       exact (pointwiseIff reduct).mp

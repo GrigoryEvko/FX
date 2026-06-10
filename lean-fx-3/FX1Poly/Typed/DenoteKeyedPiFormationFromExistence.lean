@@ -64,12 +64,14 @@ theorem neutralDomainPi_reducibleFromCodomainExistence {scope : Nat} (env : Nat 
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
     (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
+    (notFlat : domainCode.rootGenerator.isFlatDataCode = false)
     (codomainExistence : ∀ argument : RawTerm scope, IsStronglyNormalizing argument →
       IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst0 codomainCode argument)) :
     IsReducibleTypeAtAllDenoteLevels env
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
   uniformDomainPi_reducibleFromCodomainExistence env IsStronglyNormalizing
-    (fun _level => ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty)
+    (fun _level =>
+      ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat)
     codomainExistence
 
 /-- **Universe-domain Π-formation from codomain EXISTENCE (the impredicative case).**  `Π (X : Type@levelExpr).

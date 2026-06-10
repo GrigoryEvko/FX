@@ -90,13 +90,15 @@ theorem neutralDomainPiFormerReducibleAtLevel {scope : Nat} (env : Nat → Nat) 
     (notPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (notUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
     (notEmpty : domainCode.rootGenerator ≠ Generator.gen_emptyCode)
+    (notFlat : domainCode.rootGenerator.isFlatDataCode = false)
     (codomainReducible : ∀ argument : RawTerm scope,
       IsReducibleMemberAtDenote env level domainCode argument →
       IsReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)) :
     IsReducibleTypeAtDenote env level
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))) :=
   piFormerReducibleAtLevel env level
-    ⟨IsStronglyNormalizing, ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty⟩
+    ⟨IsStronglyNormalizing,
+      ReducibleTypeStepDenote.neutral noWeakHeadStep notPiType notUniverse notEmpty notFlat⟩
     codomainReducible
 
 end FX1Poly.Typed
