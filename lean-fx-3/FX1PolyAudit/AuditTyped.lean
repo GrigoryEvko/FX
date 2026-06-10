@@ -429,6 +429,7 @@ import FX1Poly.Typed.UnitEtaJudgmentalEquality
 import FX1Poly.Typed.UnitEtaCongruenceGap
 import FX1Poly.Typed.UnitEtaCongruentEquality
 import FX1Poly.Typed.UnitVariableCollapse
+import FX1Poly.Typed.UnitCollapseIncompleteness
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3335,6 +3336,27 @@ remains the named open brick. -/
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofCollapsedBetaEtaConv
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.collapsedComparisonDecidable
 #assert_no_axioms FX1Poly.Typed.unitEtaCongProcedure_decidesGapPair
+
+/-! ### UnitCollapseIncompleteness — ★ the one-pass procedure is INCOMPLETE (ULC-3B verdict)
+
+The β-surfacing refutation: `app(lam(Unit, var₁), x)` is grown-typed at `unitTypeCell` (concrete
+`piIntro`/`piElim` over the #1205 unit row) hence congruently unit-η-equal to `x` — yet its
+collapse `app(lam(Unit, var₁), unitCell)` reduces ONLY to `var₀ = x`, never joining
+`collapse(x) = unitCell`: β surfaces binder-hidden unit-variable occurrences AFTER the zero-shift
+collapse has passed.  Completeness as planned (one collapse pass, then compare) is FALSE; the
+ULC-2 soundness is untouched (sound SEMI-decision), and the corrected route is the
+normalize-FIRST canonicalizer (βη-normalize via typed SN, then collapse — on the witness both
+sides reach `unitCell`).  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.betaSurfacingRedex
+#assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex
+#assert_no_axioms FX1Poly.Typed.collapse_betaSurfacingRedex
+#assert_no_axioms FX1Poly.Typed.betaSurfacingRedexTyped
+#assert_no_axioms FX1Poly.Typed.betaSurfacingPair_congruentlyEqual
+#assert_no_axioms FX1Poly.Typed.noEtaFromAppHead
+#assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_step_eq
+#assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_notBetaEtaConv_unitCell
+#assert_no_axioms FX1Poly.Typed.unitEtaCongProcedure_isIncomplete
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
