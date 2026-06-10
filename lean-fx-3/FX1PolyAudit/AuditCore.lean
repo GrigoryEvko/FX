@@ -83,6 +83,7 @@ import FX1Poly.Core.EtaRootClassifier
 import FX1Poly.Core.ConvRenameReflection
 import FX1Poly.Core.RawTermRenameInjective
 import FX1Poly.Core.ConvRenameEquivariance
+import FX1Poly.Core.FireRootEtaRedex
 import FX1Poly.Typed.RawBetaNotRpoOrientable
 import FX1Poly.Typed.SnTriangulationBundle
 import FX1Poly.Typed.HonestCapstoneSignoff
@@ -1254,3 +1255,23 @@ pinned reflection's piIntro arm consumes (`Conv` reflects `lift rho`).  Zero-axi
 #assert_no_axioms FX1Poly.Core.Conv.renameWeaken_iff
 #assert_no_axioms FX1Poly.Core.Conv.renameLift_iff
 #assert_no_axioms FX1Poly.Core.RawTerm.isStepNormalForm_rename_iff
+
+/-! ### FireRootEtaRedex — the computable root η-firer + layered βη one-step reducer (ETA-2 core)
+
+The ONE missing artifact the ETA-1 census identified: `fireRootEtaRedex?` fires the root η-redex
+exactly when one exists (sound + EXACT-complete, since `Step.eta` is root-only), and
+`reduceOnceBetaEta` layers it after the β/ι `reduceOnce` — sound + complete against the FULL
+`Step.betaEta` union.  With the shipped metatheory bundle this completes the ingredient list for
+the βη normalizer + decidable `BetaEtaConv` on the wf fragment. -/
+
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootEtaRedex?
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootEtaRedex?_etaLamSource
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootEtaRedex?_etaPairSource
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootEtaRedex?_etaPathLamSource
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootEtaRedex?_etaModIntroSource
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootEtaRedex?_etaGlueIntroSource
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootEtaRedex?_complete
+#assert_no_axioms FX1Poly.Core.RawTerm.fireRootEtaRedex?_sound
+#assert_no_axioms FX1Poly.Core.RawTerm.reduceOnceBetaEta
+#assert_no_axioms FX1Poly.Core.RawTerm.reduceOnceBetaEta_sound
+#assert_no_axioms FX1Poly.Core.RawTerm.reduceOnceBetaEta_complete
