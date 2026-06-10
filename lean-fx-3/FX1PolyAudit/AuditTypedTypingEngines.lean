@@ -620,6 +620,7 @@ import FX1Poly.Typed.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.LamReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.GrownEtaSubjectReduction
+import FX1Poly.Typed.FormationTableShapeFacts
 
 /-! # FX1PolyAudit/AuditTypedTypingEngines — typed-layer zero-axiom gates: the typing engines (formation, grown, flat, data) and their inversions
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1792,3 +1793,16 @@ regression tripwires the Route-A widening must consciously revisit. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElimDependent.ofUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.uniqueness_isZeroArm
 #assert_no_axioms FX1Poly.Typed.inversion_isZeroArm
+
+/-! ### FormationTableShapeFacts — generic shape equation + arity bound (GTL-06 brick 3b support)
+
+The two call-site facts of the by_cases-free dispatch refit: `DescTelescope.shiftsShape`
+extracts the binder-shifts shape equation GENERICALLY from the premise telescope (levels
+induction + telescope cases — retires the per-generator binderShifts_eq rfl lemmas at dispatch
+sites), and the arity bound (the ONE table-mirroring fact, five defeq cases) in both the
+binder-shifts and levels-length forms via `consecutiveShifts_length`. -/
+
+#assert_no_axioms FX1Poly.Typed.consecutiveShifts_length
+#assert_no_axioms FX1Poly.Typed.DescTelescope.shiftsShape
+#assert_no_axioms FX1Poly.Typed.formationRowArityBound
+#assert_no_axioms FX1Poly.Typed.formationLevelsArityBound
