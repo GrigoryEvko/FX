@@ -441,6 +441,7 @@ import FX1Poly.Typed.UnitReadbackArgumentBoundary
 import FX1Poly.Typed.UnitReadbackFormerChildBoundary
 import FX1Poly.Typed.UnitReadbackDeepSpineBoundary
 import FX1Poly.Typed.UnitReadbackAnnotationBoundary
+import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3653,6 +3654,29 @@ CANONICAL-FORM completeness of the #364 normalize-and-compare route.  Zero-axiom
 #assert_no_axioms FX1Poly.Typed.deepCollapseMode_isIncompleteAtAnnotationMismatch
 #assert_no_axioms FX1Poly.Typed.readback_canonicalizesAnnotations
 #assert_no_axioms FX1Poly.Typed.annotationPair_decidedByReadback
+
+/-! ### FormationClassifierRigidity — ★ brick 8, POSITIVE: literal classifier matching is complete
+
+The post-brick-7 completeness re-analysis closed the suspected 10th-boundary family EMPTY, as
+theorems: formation subjects are step-free (`subjectAdmitsNoStep` — the formation engine has no
+`piIntro`/`piElim` arms, so formation-typed terms are app-free, redex-free trees), hence
+`Conv`-RIGID (`formationSubjects_convRigid` via `Conv.eq_of_noStep`).  Consequently a
+formation-typed classifier `Conv` to a Π code literally IS a Π code with `Conv`-related
+components (`piCodeDetection_completeOnFormationClassifiers` via `Conv.reducesToPiTyCode` +
+chain collapse), `asPiCode?` fires on it (`asPiCode?_firesOnFormationClassifiers`), wf lookups
+inherit the completeness (`WfContextDesc.piCodeDetection_completeOnLookups` via
+`lookupIsTypeDesc`), and the unit arm's literal test is complete
+(`unitDetection_completeOnFormationClassifiers`).  Within the soundness presupposition the
+readback's literal dispatch loses NOTHING — `Conv`-disguised type codes are not
+formation-typable; the 9th boundary's phenomenon cannot recur at classifier or lookup
+positions.  The standing honest-boundary note (2) is RETIRED.  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.formationSubjects_convRigid
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.piCodeDetection_completeOnFormationClassifiers
+#assert_no_axioms FX1Poly.Typed.asPiCode?_piTyCodeCell
+#assert_no_axioms FX1Poly.Typed.asPiCode?_firesOnFormationClassifiers
+#assert_no_axioms FX1Poly.Typed.WfContextDesc.piCodeDetection_completeOnLookups
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.unitDetection_completeOnFormationClassifiers
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 

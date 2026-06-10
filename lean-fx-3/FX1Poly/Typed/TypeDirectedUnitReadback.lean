@@ -54,10 +54,12 @@ the inlined `weakenUnderBinding`/`piElim`/η-identity derivation.
 
 (1) Soundness presupposes the classifier FORMATION-typed (static type codes — no β-redex
 classifiers) and the subject grown-typed; data-intro-typed subjects (e.g. `unitCell` itself)
-enter only as direct-form right-hand sides.  (2) η-expansion fires only at LITERAL Π codes;
-classifiers that merely reduce to Π codes fall back.  (3) Σ (surjective pairing, #361) and the
-modal/cubical η classifiers (#363) are not yet arms.  Each widening strengthens the same
-soundness statement.
+enter only as direct-form right-hand sides.  (2) RETIRED (brick 8): literal Π/unit matching is
+COMPLETE on formation-typed classifiers and wf lookups — formation subjects are step-free, so
+`Conv`-disguised type codes do not exist in the soundness domain
+(`FormationClassifierRigidity`).  (3) Σ (surjective pairing, #361) and the modal/cubical η
+classifiers (#363) are not yet arms.  Each widening strengthens the same soundness
+statement.
 
 ## Zero-axiom verification
 
