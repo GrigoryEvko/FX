@@ -7,6 +7,9 @@ import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.ListFormerMemberLevelIndexed
 import FX1Poly.Typed.OptionFormerMemberLevelIndexed
 import FX1Poly.Typed.FundamentalAtAllVectorPremises
+import FX1Poly.Typed.GenericDataFormationUnderSubst
+import FX1Poly.Typed.TelescopeArityDispatchNormalization
+import FX1Poly.Typed.FormationTableShapeFacts
 
 /-! # FX1Poly/Typed/FundamentalLevelIndexed
     — the decoupled-`subjectLevel` fundamental-theorem conclusion (Route 2: dependent FT, var-level wall).
@@ -284,52 +287,17 @@ theorem fundamentalGenFormationFormerLevelIndexed {profile : PolyProfile} {scope
         rw [subst_universeCodeCell]
         exact (FormerChildrenReducible.ofTelescopeReducible predLevel
           (telescopeFundamental substitution env Generator.gen_piTyCode_binderShifts_eq)).toPiMember
-  · by_cases isSigmaFormer : generator = .gen_sigmaTyCode
-    · subst isSigmaFormer
-      obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
-      match children with
-      | .childCons _domainCode (.childCons _codomainCode .childNil) =>
-          obtain ⟨_domainLevel, _codomainLevel, levelsShape⟩ := DescTelescopePi.twoChildLevels premises
-          subst levelsShape
-          dsimp only [universeFormerOutput]
-          rw [subst_universeCodeCell]
-          exact (FormerChildrenReducible.ofTelescopeReducible predLevel
-            (telescopeFundamental substitution env Generator.gen_sigmaTyCode_binderShifts_eq)).toSigmaMember
-    · by_cases isListFormer : generator = .gen_listCode
-      · subst isListFormer
-        obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
-        match children with
-        | .childCons _element .childNil =>
-            obtain ⟨_elementLevel, levelsShape⟩ := DescTelescopePi.oneChildLevel premises
-            subst levelsShape
-            dsimp only [universeFormerOutput]
-            exact IsReducibleMemberAt.listFormerFromTelescope predLevel
-              (telescopeFundamental substitution env Generator.gen_listCode_binderShifts_eq)
-      · by_cases isOptionFormer : generator = .gen_optionCode
-        · subst isOptionFormer
-          obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
-          match children with
-          | .childCons _element .childNil =>
-              obtain ⟨_elementLevel, levelsShape⟩ := DescTelescopePi.oneChildLevel premises
-              subst levelsShape
-              dsimp only [universeFormerOutput]
-              exact IsReducibleMemberAt.optionFormerFromTelescope predLevel
-                (telescopeFundamental substitution env Generator.gen_optionCode_binderShifts_eq)
-        · by_cases isUnitFormer : generator = .gen_unitCode
-          · subst isUnitFormer
-            obtain rfl : rule = { outputType := nullaryFormerOutput } :=
-              Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
-            match children with
-            | .childNil =>
-                dsimp only [nullaryFormerOutput]
-                rw [subst_universeCodeCell]
-                exact IsReducibleMemberAt.unitFormerInUniverse LevelExpr.lzero
-                  UniverseFlag.standard
-          · exfalso
-            dsimp only [typingRuleDescOf] at isFormation
-            rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
-              if_neg isUnitFormer] at isFormation
-            contradiction
+  · -- the GENERIC non-Pi arm: shape from the telescope, output from the row-shape-agnostic
+    -- interface, child SN from the arity-dispatch supplier — no former enumerated
+    have shapeEq := premises.shiftsShape
+    obtain ⟨outputLevel, outputFlag, outputEq⟩ :=
+      typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
+    rw [outputEq]
+    exact IsReducibleMemberAt.dataFormationUnderSubst outputLevel outputFlag substitution
+      isFormation isPiFormer
+      (TelescopeReducible.foldChildrenStronglyNormalizing predLevel shapeEq
+        (formationLevelsArityBound isFormation shapeEq)
+        (telescopeFundamental substitution env shapeEq))
 
 /-- **The vector fundamental conclusion IS the level-indexed conclusion, universally quantified over the
 env's level vector and a positive conclusion level.**  `IsFundamentalConclusionAtVector` fixes the conclusion

@@ -55,6 +55,25 @@ theorem DescTelescope.shiftsShape {profile : PolyProfile} {baseScope currentDept
       | cons _context _head _headLevel _restLevels _flag _rest _headTyped restTelescope =>
           exact congrArg (List.cons _) (restIH restTelescope)
 
+/-- **The shape equation for the GROWN premise telescope** — the `DescTelescopePi` twin of
+`DescTelescope.shiftsShape`, same levels-induction recipe (the grown telescope is mutual with
+`HasTypeDescPi`, so direct telescope induction is unsupported). -/
+theorem DescTelescopePi.shiftsShape {profile : PolyProfile} {baseScope currentDepth : Nat}
+    {binderShifts : List Nat}
+    {context : TypingContext profile (baseScope + currentDepth)}
+    {levels : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren binderShifts baseScope}
+    (telescope : DescTelescopePi profile context levels flag children) :
+    binderShifts = consecutiveShifts currentDepth levels.length := by
+  induction levels generalizing binderShifts currentDepth children with
+  | nil =>
+      cases telescope
+      rfl
+  | cons _headLevel _restLevels restIH =>
+      cases telescope with
+      | cons _context _head _headLevel _restLevels _flag _rest _headTyped restTelescope =>
+          exact congrArg (List.cons _) (restIH restTelescope)
+
 /-- **Every formation row has at most two children** — the one table-mirroring fact in the
 generic dispatch chain: five defeq cases, one line per row, table-miss closes the rest. -/
 theorem formationRowArityBound {generator : Generator} {rule : TypingRuleDesc}

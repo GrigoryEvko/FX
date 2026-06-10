@@ -1804,5 +1804,6 @@ binder-shifts and levels-length forms via `consecutiveShifts_length`. -/
 
 #assert_no_axioms FX1Poly.Typed.consecutiveShifts_length
 #assert_no_axioms FX1Poly.Typed.DescTelescope.shiftsShape
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.shiftsShape
 #assert_no_axioms FX1Poly.Typed.formationRowArityBound
 #assert_no_axioms FX1Poly.Typed.formationLevelsArityBound
