@@ -426,6 +426,7 @@ import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
 import FX1Poly.Typed.BetaEtaConvGapStatement
 import FX1Poly.Typed.BetaEtaConvDecidable
 import FX1Poly.Typed.UnitEtaJudgmentalEquality
+import FX1Poly.Typed.UnitEtaCongruenceGap
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3257,6 +3258,22 @@ unit-η decider now live on the decidable wf fragment
 #assert_no_axioms FX1Poly.Typed.unitVariableContextWellFormedPi
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.strictlyExtendsBetaEtaConvOnWfFragment
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.unitVariableDecidable
+
+/-! ### UnitEtaCongruenceGap — ★ `DefEqUnitEta` is NOT congruent, machine-checked (#481/#364 route)
+
+The pair-of-units congruence gap: the COMPONENTS (unit variable / `unitCell`) are `DefEqUnitEta` at
+`unitTypeCell`, yet the PAIRS `pair(x,x)` / `pair(unit,unit)` are `DefEqUnitEta` at NO classifier —
+the `unitEta` arm refuted by both unit-typing engines (data-intro forces subject = `unitCell`;
+the grown engine types no `gen_pair` cell), the βη arm by joint βη-normality.  This turns the
+UNIT-2 docstring-only boundary (1) into a theorem and pins what the η-long type-directed readback
+(#481, the #364 remainder) must close — no rewriting-relation extension can.  The module also
+commits the route record: R1 unit-only congruent collapse (term-structural, checker-directed),
+then R2 full η-long quote at Π/Σ/Unit (classifier-structure recursion, level-measured). -/
+
+#assert_no_axioms FX1Poly.Typed.pairOfUnitVariables
+#assert_no_axioms FX1Poly.Typed.pairOfUnitValues
+#assert_no_axioms FX1Poly.Typed.pairOfUnitVariables_notBetaEtaConv_pairOfUnitValues
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.isNotCongruent
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
