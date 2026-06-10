@@ -620,6 +620,7 @@ import FX1Poly.Typed.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.LamReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.GrownEtaSubjectReduction
+import FX1Poly.Typed.GenericDataFormationUnderSubst
 
 /-! # FX1PolyAudit/AuditTypedReducibilityCandidates — typed-layer zero-axiom gates: reducibility candidates, environments, and membership lemmas
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1403,3 +1404,18 @@ pinned-reflection whnf dispatcher, whose motive carries exactly this wf. -/
 
 #assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContextDescPi
 #assert_no_axioms FX1Poly.Typed.reducibilityDispatch_isThinLinear
+
+/-! ### GenericDataFormationUnderSubst — the SYMBOLIC-generator non-Pi membership arm (GTL-06 brick 3 headline)
+
+The table-generic universe-membership assembly at a symbolic generator: the two cascade-free
+table-miss discriminations (variable / universe rows are definitionally absent), the headline
+`dataFormationUnderSubst` (any non-Pi formation row's substituted former is a reducible member
+of any universe from substituted-children SN alone), and the nullary smoke threading the unit
+row through the generic arm.  Collapses the per-row by_cases chains of the six dispatch files
+to one Pi case plus one generic call; the remaining brick is the arity-dispatch child-SN
+supplier feeding the SN hypothesis from `TelescopeReducible` at the symbolic shape cast. -/
+
+#assert_no_axioms FX1Poly.Typed.formationRowIsNotVariable
+#assert_no_axioms FX1Poly.Typed.formationRowIsNotUniverse
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.dataFormationUnderSubst
+#assert_no_axioms FX1Poly.Typed.unitFormationUnderSubstViaGenericArm
