@@ -3,6 +3,7 @@ import FX1Poly.Typed.HasTypeDescPiLamInversion
 import FX1Poly.Typed.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.HasTypeDescPiEtaExpansionGrown
 import FX1Poly.Typed.ConvCodeInjectivity
+import FX1Poly.Typed.HasTypeDescPiContextStepConversion
 
 /-! # FX1Poly/Typed/TypeDirectedUnitReadback
    — the type-directed η-long readback, unit + Π fragment (#481 bricks 1–2, #360 core)
@@ -14,8 +15,10 @@ congruent unit-η relation — the classifier must flow TOP-DOWN.  This module s
   * at classifier `unitTypeCell`: returns `unitCell` — the η-long readback at unit is CONSTANT,
     so every unit-classified subterm (variable, compound neutral, λ-application, value)
     collapses without any detection;
-  * at a literal Π classifier over a matching λ: descends into the body with the CODOMAIN
-    classifier under the extended context — the binder crossing, type-directed;
+  * at a literal Π classifier over ANY λ: descends into the body with the CODOMAIN classifier
+    under the context extended by the CLASSIFIER's domain — the binder annotation is never
+    compared (trust the classifier, the 9th boundary's fix), so outputs are
+    annotation-canonical;
   * at a literal Π classifier over a NON-λ subject: η-EXPANDS — emits
     `λ(D, readback(app(weaken t, var₀)) at C)`, the η-LONG readback at Π (#360); the inner
     position then sees the codomain classifier, so η and unit-η COMPOSE (a neutral
@@ -155,9 +158,11 @@ theorem asVarCell?_sound {scope : Nat} {term : RawTerm scope} {index : Fin scope
 mutual
 
 /-- **The type-directed η-long readback, unit + Π + recursive-spine fragment**: classifier-
-directed unit collapse, Π-descent on matching λs, η-EXPANSION on non-λ subjects at Π, and — at
-classifiers that are neither — delegation to the RECURSIVE neutral-spine readback;
-everywhere else (and at fuel 0) the unconditionally sound deep collapse. -/
+directed unit collapse, TRUST-THE-CLASSIFIER Π-descent on λs (the binder annotation is NOT
+compared — the emitted λ carries the CLASSIFIER's domain, making outputs annotation-canonical;
+the 9th boundary's verdict), η-EXPANSION on non-λ subjects at Π, and — at classifiers that are
+neither — delegation to the RECURSIVE neutral-spine readback; everywhere else (and at fuel 0)
+the unconditionally sound deep collapse. -/
 def readbackAtClassifier {profile : PolyProfile} :
     Nat → {scope : Nat} → TypingContext profile scope →
       RawTerm scope → RawTerm scope → RawTerm scope
@@ -173,11 +178,9 @@ def readbackAtClassifier {profile : PolyProfile} :
                 lamCell domainCode
                   (readbackAtClassifier fuel (context.cons domainCode) codomainCode
                     (appCell (RawTerm.weaken term) RawTerm.newestVar))
-            | some (domainAnn, body) =>
-                if domainAnn = domainCode then
-                  lamCell domainAnn
-                    (readbackAtClassifier fuel (context.cons domainAnn) codomainCode body)
-                else collapseUnitVariablesDeep context term
+            | some (_domainAnn, body) =>
+                lamCell domainCode
+                  (readbackAtClassifier fuel (context.cons domainCode) codomainCode body)
 
 /-- **The recursive neutral-spine readback (`quoteNeutral`)**: at a VARIABLE-headed application,
 the argument is read back at the DOMAIN of the head's looked-up Π code; at an APP-headed
@@ -211,11 +214,14 @@ mutual
 universe), the readback is congruently unit-η-equal to the input, at every fuel.  The unit arm
 is one `unitEta` leaf; the η-expansion arm lifts the η-contraction through `ofBetaEtaConv`
 (`etaExpansionPreservesTypingGrown` supplies the expansion typing) and recurses into the body
-(the inlined weaken/`piElim`/η-identity derivation); the λ arm re-types the body at the given
-codomain (`invertLam` + Π-injectivity + `conv`, the reclassifier obligation from the
-classifier's formation inversion — which also extends the wf under the binder); non-Π non-unit
-classifiers delegate to the mutual spine soundness; the residue is the shipped unconditional
-deep-collapse soundness. -/
+(the inlined weaken/`piElim`/η-identity derivation); the λ arm TRUSTS THE CLASSIFIER — the
+body re-types across the binder via the grown EXACT context conversion
+(`contextConversionExact` over the replaced-entry `ConvContextWithOldValid`, built from
+`invertLam` + Π-injectivity + the wf lookups), converts to the classifier's codomain, and the
+witness routes by `trans` through the annotation-canonicalized λ (a single `congGen` cannot
+express a differing domain AND a differing body — `consBinder` requires a shared domain);
+non-Π non-unit classifiers delegate to the mutual spine soundness; the residue is the shipped
+unconditional deep-collapse soundness. -/
 theorem readbackAtClassifier_congruent {profile : PolyProfile} :
     (fuel : Nat) → {scope : Nat} → (context : TypingContext profile scope) →
       (classifier term : RawTerm scope) →
@@ -288,31 +294,79 @@ theorem readbackAtClassifier_congruent {profile : PolyProfile} :
                         wellFormedExtended bodyTyped codomainFormationTyped)
                       .nil)))
               · next domainAnn body hLam =>
-                  split
-                  · next domainsMatch =>
-                      have termIsLam := asLamCell?_sound hLam
-                      subst termIsLam
-                      subst domainsMatch
-                      obtain ⟨innerCodomain, _innerDomainLevel, _innerCodomainLevel,
-                        _innerFlag, convToInner, _domainUniverseTypedInner,
-                        _innerCodomainUniverseTyped, bodyTypedInner⟩ :=
-                        HasTypeDescPi.invertLam subjectTyped
-                      have codomainsConv : Conv codomainCode innerCodomain :=
-                        (Conv.piTyCode_inj convToInner).2
-                      have bodyTyped :
-                          HasTypeDescPi profile (context.cons domainAnn) body
-                            codomainCode :=
-                        HasTypeDescPi.conv formCodomainLevel formFlag bodyTypedInner
-                          (Conv.sym codomainsConv)
-                          (HasTypeDescPi.ofFormation codomainFormationTyped)
-                      exact DefEqUnitEtaCong.congGen (generator := Generator.gen_lam) ()
-                        (.consEqualZero (.consBinder
-                          (readbackAtClassifier_congruent fuel (context.cons domainAnn)
-                            codomainCode body wellFormedExtended bodyTyped
-                            codomainFormationTyped)
-                          .nil))
-                  · next _domainsDiffer =>
-                      exact collapseUnitVariablesDeep_congruent context term
+                  -- TRUST THE CLASSIFIER: the body re-types across the binder via the grown
+                  -- EXACT context conversion, then converts to the classifier's codomain
+                  have termIsLam := asLamCell?_sound hLam
+                  subst termIsLam
+                  obtain ⟨innerCodomain, innerDomainLevel, _innerCodomainLevel,
+                    innerFlag, convToInner, domainAnnUniverseTyped,
+                    _innerCodomainUniverseTyped, bodyTypedInner⟩ :=
+                    HasTypeDescPi.invertLam subjectTyped
+                  have domainsConv : Conv domainAnn domainCode :=
+                    (Conv.piTyCode_inj convToInner).1.sym
+                  have codomainsConv : Conv innerCodomain codomainCode :=
+                    (Conv.piTyCode_inj convToInner).2.sym
+                  have enriched : ConvContextWithOldValid
+                      (context.cons domainAnn) (context.cons domainCode) := by
+                    intro index
+                    obtain ⟨indexValue, indexBound⟩ := index
+                    cases indexValue with
+                    | zero =>
+                        refine ⟨?_, ?_⟩
+                        · show Conv (RawTerm.rename RawRenaming.weaken domainAnn)
+                            (RawTerm.rename RawRenaming.weaken domainCode)
+                          exact Conv.rename RawRenaming.weaken domainsConv
+                        · show IsTypeDescPi profile (context.cons domainCode)
+                            (RawTerm.rename RawRenaming.weaken domainAnn)
+                          refine ⟨innerDomainLevel, innerFlag, ?_⟩
+                          have weakened := HasTypeDescPi.weakenUnderBinding domainCode
+                            domainAnnUniverseTyped
+                          rwa [rename_universeCodeCell] at weakened
+                    | succ priorIndex =>
+                        refine ⟨?_, ?_⟩
+                        · show Conv (RawTerm.rename RawRenaming.weaken
+                              (context.lookup ⟨priorIndex,
+                                Nat.lt_of_succ_lt_succ indexBound⟩))
+                            (RawTerm.rename RawRenaming.weaken
+                              (context.lookup ⟨priorIndex,
+                                Nat.lt_of_succ_lt_succ indexBound⟩))
+                          exact Conv.refl _
+                        · show IsTypeDescPi profile (context.cons domainCode)
+                            (RawTerm.rename RawRenaming.weaken
+                              (context.lookup ⟨priorIndex,
+                                Nat.lt_of_succ_lt_succ indexBound⟩))
+                          obtain ⟨entryLevel, entryFlag, entryFormationTyped⟩ :=
+                            WfContextDesc.lookupIsTypeDesc context contextWellFormed
+                              ⟨priorIndex, Nat.lt_of_succ_lt_succ indexBound⟩
+                          refine ⟨entryLevel, entryFlag, ?_⟩
+                          have weakened := HasTypeDescPi.weakenUnderBinding domainCode
+                            (HasTypeDescPi.ofFormation entryFormationTyped)
+                          rwa [rename_universeCodeCell] at weakened
+                  have bodyTyped :
+                      HasTypeDescPi profile (context.cons domainCode) body codomainCode :=
+                    HasTypeDescPi.conv formCodomainLevel formFlag
+                      (HasTypeDescPi.contextConversionExact bodyTypedInner
+                        (context.cons domainCode) enriched)
+                      codomainsConv
+                      (HasTypeDescPi.ofFormation codomainFormationTyped)
+                  have annotationCanonicalLamTyped :
+                      HasTypeDescPi profile context (lamCell domainCode body)
+                        (piTyCodeCell domainCode codomainCode) :=
+                    HasTypeDescPi.piIntro formDomainLevel formCodomainLevel formFlag
+                      (HasTypeDescPi.ofFormation domainFormationTyped)
+                      (HasTypeDescPi.ofFormation codomainFormationTyped)
+                      bodyTyped
+                  exact DefEqUnitEtaCong.trans
+                    (.ofDefEq (.ofBetaEtaConv contextWellFormed subjectTyped
+                      annotationCanonicalLamTyped
+                      (BetaEtaConv.ofConv
+                        (Conv.lam_cong domainsConv (Conv.refl body)))))
+                    (DefEqUnitEtaCong.congGen (generator := Generator.gen_lam) ()
+                      (.consEqualZero (.consBinder
+                        (readbackAtClassifier_congruent fuel (context.cons domainCode)
+                          codomainCode body wellFormedExtended bodyTyped
+                          codomainFormationTyped)
+                        .nil)))
 
 /-- **★ Typed soundness of the recursive neutral-spine readback**: a grown-typed subject in a
 formation-wf context is congruently unit-η-equal to its spine readback, at every fuel — NO

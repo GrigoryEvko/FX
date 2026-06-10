@@ -2,39 +2,40 @@ import FX1Poly.Typed.UnitReadbackDeepSpineBoundary
 import FX1Poly.Core.StepInversion
 
 /-! # FX1Poly/Typed/UnitReadbackAnnotationBoundary
-   — ★ the 9th boundary: the λ arm's SYNTACTIC annotation match (#481 brick-7 verdict)
+   — ★ the 9th boundary, DECIDED: trust-the-classifier annotation canonicalization (#481 brick 7)
 
-The mandated post-spine completeness re-analysis, machine-checked.  The λ arm fires only when
-the subject's domain annotation is SYNTACTICALLY the classifier's literal domain — but typed λs
-may carry annotations that merely CONVERT to it.  Witness, in the EMPTY context:
+The post-spine completeness re-analysis found the λ arm's SYNTACTIC annotation match: typed λs
+may carry annotations that merely CONVERT to the classifier's literal domain.  Witness, in the
+EMPTY context:
 
   * `redexAnnotation` = `app(λ(x:Type@0).x, Unit)` — a β-redex grown-typed at `Type@0` that
     contracts to `Unit` in one step.
   * `λ(redexAnnotation).x₀` and `λ(Unit).x₀` are BOTH grown-typed at `Π(_:Unit).Unit` (the
     redex side via `conv` through the Π-code congruence step) — the FIRST boundary pair with
-    both endpoints typed at one formation-typed classifier, so `ofReadbackEqual` is fully
-    applicable... and misses: the annotation-mismatch arm degrades the left side to the deep
-    collapse (which fixes it — the binder's unit-typedness hides BEHIND the redex, so the
-    body variable is not rewritten), while the right side computes the η-long `λ(Unit).unit`.
-  * The readbacks are distinct at every fuel pair AND never βη-join (the left's reducts all
-    keep the VARIABLE body — the star-chain invariant — while the right's body is `unit`).
+    both endpoints typed at one formation-typed classifier.
+  * Against the FROZEN deep-collapse ingredient the boundary stands permanently
+    (`deepCollapseMode_isIncompleteAtAnnotationMismatch`): the collapse's syntactic lookup test
+    cannot see unit-typedness BEHIND the redex, and the collapses are distinct forms that never
+    βη-join (the star-chain invariant: variable-bodied λs stay variable-bodied).
 
-## What this boundary is — and is not
+## The resolution — trust the classifier (brick 7)
 
-The PAIR is decidable by the shipped βη machinery (`annotationLambdas_oneStepApart`: one
-congruence step joins them; the `Cong` witness below IS `ofBetaEtaConv`).  What fails is the
-READBACK as a canonicalizer: a normalize-and-compare decider built on it (#364) would compute
-distinct never-joining forms for definitionally equal, identically-classified subjects.  The
-9th boundary is about CANONICAL-FORM completeness, not pair-decidability.
+The λ arm no longer compares annotations: it EMITS the classifier's domain and descends
+unconditionally, so outputs are annotation-canonical.  Soundness re-types the body across the
+binder via the grown EXACT context conversion (`contextConversionExact` over the
+replaced-entry `ConvContextWithOldValid` — `invertLam` + Π-code injectivity supply
+`Conv domainAnn domainCode`, the wf lookups validate the old entries), and the congruence
+witness routes by `trans` through the annotation-canonicalized λ.  Both λs now read back to the
+η-long `λ(Unit).unit` at fuel 1 (`readback_canonicalizesAnnotations`, `rfl`) and
+`ofReadbackEqual` decides the pair (`annotationPair_decidedByReadback`).
 
-## The verdict — trust the classifier (brick 7)
+## What this boundary was — and was not
 
-The fix is the standard NbE discipline: the λ arm should not COMPARE annotations at all — it
-should EMIT the classifier's domain and descend unconditionally, re-typing the body across the
-binder via grown context-conversion (`invertLam` + Π-code injectivity supply `Conv domainAnn
-domainCode`; the classifier's formation inversion types the new entry).  That also makes
-readback outputs annotation-canonical — the η-long form's binder annotations come from the
-classifier, exactly like the η-expansion arm already does.
+The PAIR was always decidable by the shipped βη machinery (`annotationLambdas_oneStepApart`:
+one congruence step joins them; the `Cong` witness IS `ofBetaEtaConv`).  What the boundary
+exposed was the READBACK as a canonicalizer: pre-fix, a normalize-and-compare decider (#364)
+computed distinct never-joining forms for definitionally equal, identically-classified
+subjects.  CANONICAL-FORM completeness, not pair-decidability.
 
 ## Zero-axiom verification
 
@@ -166,16 +167,28 @@ theorem annotationPair_congruentlyEqual (profile : PolyProfile) :
           (Step.betaEtaStar.refl _),
         Step.betaEtaStar.refl _⟩)
 
-/-- The annotation-mismatch arm FIXES the redex-annotated λ at every fuel: the deep collapse
-cannot rewrite the body variable (its looked-up classifier is the weakened REDEX, not the
-literal `unitTypeCell`), so the readback returns the input unchanged. -/
-theorem readback_annotatedByRedex_isFixed (profile : PolyProfile) :
+/-- **The trust-the-classifier λ arm canonicalizes the annotation (brick 7)**: at every positive
+fuel the redex-annotated λ reads back to the η-long `λ(Unit).unit` — the emitted binder carries
+the CLASSIFIER's domain, and under `cons Unit` the body variable's looked-up classifier is the
+literal unit code, so the unit collapse fires. -/
+theorem readback_annotatedByRedex_isEtaLong (profile : PolyProfile) :
     ∀ fuel : Nat,
-      readbackAtClassifier fuel (TypingContext.empty : TypingContext profile 0)
+      readbackAtClassifier (fuel + 1) (TypingContext.empty : TypingContext profile 0)
           (piTyCodeCell unitTypeCell unitTypeCell) annotatedByRedex
-        = annotatedByRedex
+        = lamCell unitTypeCell unitCell
   | 0 => rfl
   | _ + 1 => rfl
+
+/-- The DEEP COLLAPSE stays blind: under `cons redexAnnotation` the body variable's looked-up
+classifier is the weakened REDEX, not the literal unit code, so the collapse fixes the
+redex-annotated λ — unit-typedness hides BEHIND the redex. -/
+theorem deepCollapse_annotatedByRedex (profile : PolyProfile) :
+    collapseUnitVariablesDeep (TypingContext.empty : TypingContext profile 0) annotatedByRedex
+      = annotatedByRedex := rfl
+
+theorem deepCollapse_annotatedByLiteral (profile : PolyProfile) :
+    collapseUnitVariablesDeep (TypingContext.empty : TypingContext profile 0) annotatedByLiteral
+      = lamCell unitTypeCell unitCell := rfl
 
 /-- The literal twin computes to the η-long form `λ(Unit).unit` at every fuel. -/
 theorem readback_annotatedByLiteral_isEtaLong (profile : PolyProfile) :
@@ -221,10 +234,10 @@ theorem betaEtaStar_preservesVariableBodiedLambda {scope : Nat}
               exact absurd bodyStep Step.no_step_from_var
       | inr etaStep => cases etaStep
 
-/-- **The readback outputs never βη-join**: every reduct of the fixed redex-annotated λ keeps
-its VARIABLE body, while the η-long form's body is the `unit` value — and the η-long form is
-βη-normal, so any common reduct must BE it. -/
-theorem annotationReadbackForms_notBetaEtaConv :
+/-- **The deep-collapse outputs never βη-join**: every reduct of the collapse-fixed
+redex-annotated λ keeps its VARIABLE body, while the η-long form's body is the `unit` value —
+and the η-long form is βη-normal, so any common reduct must BE it. -/
+theorem annotationCollapseForms_notBetaEtaConv :
     ¬ BetaEtaConv annotatedByRedex (lamCell unitTypeCell unitCell) := by
   intro convertible
   obtain ⟨commonTerm, redexChain, etaLongChain⟩ := convertible
@@ -240,13 +253,13 @@ theorem annotationReadbackForms_notBetaEtaConv :
       congrArg hasVariableBodyUnderLam (etaLongIsCommon.trans commonIsVariableBodied))
     (by decide)
 
-/-- **★ The 9th boundary — the readback is incomplete at ANNOTATION-MISMATCH λs**: a pair of
-λ-terms BOTH grown-typed at the same formation-typed classifier `Π(_:Unit).Unit` in the wf
-empty context (so `ofReadbackEqual` is fully applicable), congruently unit-η-equal (indeed
-βη-equal in one congruence step), whose readbacks at EVERY fuel pair are distinct and never
-βη-join — no normalize-and-compare decider built on the current readback closes it.  The λ
-arm must TRUST THE CLASSIFIER (emit its domain, descend unconditionally) — brick 7. -/
-theorem readback_isIncompleteAtAnnotationMismatch (profile : PolyProfile) :
+/-- **★ The 9th boundary, against the FROZEN deep-collapse ingredient**: a pair of λ-terms BOTH
+grown-typed at the same formation-typed classifier `Π(_:Unit).Unit` in the wf empty context,
+congruently unit-η-equal (indeed βη-equal in one congruence step), whose DEEP COLLAPSES are
+distinct never-βη-joining forms — the collapse's syntactic lookup test cannot see
+unit-typedness behind a redex annotation.  This boundary FORCED the trust-the-classifier λ arm
+(brick 7), which decides the pair below. -/
+theorem deepCollapseMode_isIncompleteAtAnnotationMismatch (profile : PolyProfile) :
     ∃ (leftTerm rightTerm : RawTerm 0),
       DefEqUnitEtaCong profile (TypingContext.empty : TypingContext profile 0)
         leftTerm rightTerm ∧
@@ -254,31 +267,44 @@ theorem readback_isIncompleteAtAnnotationMismatch (profile : PolyProfile) :
         (piTyCodeCell unitTypeCell unitTypeCell) ∧
       HasTypeDescPi profile TypingContext.empty rightTerm
         (piTyCodeCell unitTypeCell unitTypeCell) ∧
-      (∀ leftFuel rightFuel : Nat,
-        readbackAtClassifier leftFuel (TypingContext.empty : TypingContext profile 0)
-            (piTyCodeCell unitTypeCell unitTypeCell) leftTerm
-          ≠ readbackAtClassifier rightFuel (TypingContext.empty : TypingContext profile 0)
-              (piTyCodeCell unitTypeCell unitTypeCell) rightTerm) ∧
-      (∀ leftFuel rightFuel : Nat,
-        ¬ BetaEtaConv
-          (readbackAtClassifier leftFuel (TypingContext.empty : TypingContext profile 0)
-            (piTyCodeCell unitTypeCell unitTypeCell) leftTerm)
-          (readbackAtClassifier rightFuel (TypingContext.empty : TypingContext profile 0)
-            (piTyCodeCell unitTypeCell unitTypeCell) rightTerm)) :=
+      collapseUnitVariablesDeep (TypingContext.empty : TypingContext profile 0) leftTerm
+        ≠ collapseUnitVariablesDeep (TypingContext.empty : TypingContext profile 0) rightTerm ∧
+      ¬ BetaEtaConv
+        (collapseUnitVariablesDeep (TypingContext.empty : TypingContext profile 0) leftTerm)
+        (collapseUnitVariablesDeep (TypingContext.empty : TypingContext profile 0) rightTerm) :=
   ⟨annotatedByRedex, annotatedByLiteral,
     annotationPair_congruentlyEqual profile,
     annotatedByRedexTyped profile,
     annotatedByLiteralTyped profile,
-    fun leftFuel rightFuel readbacksEqual =>
+    fun collapsesEqual =>
       absurd
-        (show annotatedByRedex = lamCell unitTypeCell unitCell from
-          (readback_annotatedByRedex_isFixed profile leftFuel).symm.trans
-            (readbacksEqual.trans
-              (readback_annotatedByLiteral_isEtaLong profile rightFuel)))
+        (show annotatedByRedex = lamCell unitTypeCell unitCell from collapsesEqual)
         (by decide),
-    fun leftFuel rightFuel convertible =>
-      annotationReadbackForms_notBetaEtaConv
-        (readback_annotatedByRedex_isFixed profile leftFuel ▸
-          readback_annotatedByLiteral_isEtaLong profile rightFuel ▸ convertible)⟩
+    fun convertible => annotationCollapseForms_notBetaEtaConv convertible⟩
+
+/-- **★ The annotation-canonical readback identifies the pair (brick-7 payoff)**: at fuel 1
+both λs read back to the same η-long `λ(Unit).unit` — the emitted annotation comes from the
+classifier, by `rfl`. -/
+theorem readback_canonicalizesAnnotations (profile : PolyProfile) :
+    readbackAtClassifier 1 (TypingContext.empty : TypingContext profile 0)
+        (piTyCodeCell unitTypeCell unitTypeCell) annotatedByRedex
+      = readbackAtClassifier 1 (TypingContext.empty : TypingContext profile 0)
+          (piTyCodeCell unitTypeCell unitTypeCell) annotatedByLiteral := rfl
+
+/-- **★ THE 9TH-BOUNDARY PAIR, DECIDED — `ofReadbackEqual` now closes it at `rfl`**: both
+endpoints typed at the formation-typed classifier, wf empty context, equal readbacks at
+fuel 1. -/
+theorem annotationPair_decidedByReadback (profile : PolyProfile) :
+    DefEqUnitEtaCong profile (TypingContext.empty : TypingContext profile 0)
+      annotatedByRedex annotatedByLiteral :=
+  DefEqUnitEtaCong.ofReadbackEqual (leftFuel := 1) (rightFuel := 1)
+    WfContextDesc.emptyIsWellFormed
+    (annotatedByRedexTyped profile)
+    (annotatedByLiteralTyped profile)
+    (hasTypeDesc_piFormation_viaGenArm TypingContext.empty
+      unitTypeCell unitTypeCell LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard
+      (unitTypeCellFormationTyped TypingContext.empty)
+      (unitTypeCellFormationTyped (TypingContext.empty.cons unitTypeCell)))
+    rfl
 
 end FX1Poly.Typed
