@@ -41,7 +41,7 @@ theorem Step.subst {sourceScope targetScope : Nat}
     (Step.rec
       (motive_1 := motiveStep)
       (motive_2 := motiveChildren)
-      (fun {scope} {body} {arg} {targetScope} sigma => by
+      (fun {scope} {domainAnn} {body} {arg} {targetScope} sigma => by
         rw [RawTerm.subst0_subst_commute]
         exact Step.beta)
       (fun {scope} generator payload {children} {children'} childStep
@@ -124,7 +124,7 @@ theorem StepChildren.subst {parentSourceScope parentTargetScope : Nat}
     (StepChildren.rec
       (motive_1 := motiveStep)
       (motive_2 := motiveChildren)
-      (fun {scope} {body} {arg} {targetScope} sigma => by
+      (fun {scope} {domainAnn} {body} {arg} {targetScope} sigma => by
         rw [RawTerm.subst0_subst_commute]
         exact Step.beta)
       (fun {scope} generator payload {children} {children'} childStep
@@ -307,11 +307,12 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
           secondChildren
   exact
     (Step.rec (motive_1 := motiveStep) (motive_2 := motiveChildren)
-      (fun {scope} {body} {arg} {targetScope} rawRenaming rawSubstitution
-          sourceFresh => by
+      (fun {scope} {domainAnn} {body} {arg} {targetScope}
+          rawRenaming rawSubstitution sourceFresh => by
         let appChildren :=
           ((.childCons
-              (.mkGen .gen_lam () (.childCons body .childNil))
+              (.mkGen .gen_lam ()
+                (.childCons domainAnn (.childCons body .childNil)))
               (.childCons arg .childNil)) : RawTermChildren [0, 0] scope)
         have appChildrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
@@ -321,7 +322,8 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             (by decide) () appChildren sourceFresh
         have lamFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
-              (.mkGen .gen_lam () (.childCons body .childNil) :
+              (.mkGen .gen_lam ()
+                (.childCons domainAnn (.childCons body .childNil)) :
                 RawTerm scope) :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ appChildrenFresh
@@ -336,15 +338,21 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             rawRenaming rawSubstitution _ _ argumentSpineFresh
         have lamChildrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons body .childNil) : RawTermChildren [1] scope) :=
+              ((.childCons domainAnn (.childCons body .childNil)) :
+                RawTermChildren [0, 1] scope) :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_lam) rawRenaming rawSubstitution
             (by decide) () _ lamFresh
+        have bodySpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons body .childNil) : RawTermChildren [1] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ lamChildrenFresh
         have bodyFresh :
             RawTerm.isFreshFor (RawRenaming.lift rawRenaming)
               (RawTermSubst.lift rawSubstitution) body :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ lamChildrenFresh
+            rawRenaming rawSubstitution _ _ bodySpineFresh
         unfold RawTerm.isFreshFor
         rw [RawTerm.subst0_subst_commute]
         rw [RawTerm.rename_subst0_commute]

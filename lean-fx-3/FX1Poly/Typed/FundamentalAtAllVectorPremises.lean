@@ -90,7 +90,8 @@ theorem fundamentalPiIntroAtAllFromVectorPremises {profile : PolyProfile} {scope
         (universeCodeCell codomainLevel flag))
     (bodyFundamental :
       IsFundamentalConclusionAtVector (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionAtAll context (lamCell body) (piTyCodeCell domainCode codomainCode) :=
+    FundamentalConclusionAtAll context (lamCell domainCode body)
+      (piTyCodeCell domainCode codomainCode) :=
   fundamentalPiIntroAtAllFromMemberPremises domainFundamental
     (fun _targetScope substitution env predLevel {domainCandidate} domainReducible argument
         argumentInDomain =>
@@ -120,7 +121,7 @@ theorem fundamentalPiIntroNonDependentAtAllFromVectorPremise {profile : PolyProf
     (bodyFundamental :
       IsFundamentalConclusionAtVector (context.cons domainCode) body
         (RawTerm.weaken codomainCodeBase)) :
-    FundamentalConclusionAtAll context (lamCell body)
+    FundamentalConclusionAtAll context (lamCell domainCode body)
       (piTyCodeCell domainCode (RawTerm.weaken codomainCodeBase)) :=
   fundamentalPiIntroNonDependentAtAll domainFundamental codomainFundamental
     (fun _targetScope substitution env predLevel {domainCandidate codomainCandidate}

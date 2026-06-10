@@ -103,12 +103,14 @@ theorem HasTypeDescPi.normalUniverseClassificationUniqueAtBudget {profile : Poly
           · have generatorEq : generator = Generator.gen_lam := isLam
             subst generatorEq
             cases children with
-            | childCons body rest =>
-                cases rest
-                obtain ⟨_domainCode, _codomainCode, _domainLevel, _codomainLevel, _pinFlag,
-                  classifierConv, _domainTyped, _codomainTyped, _bodyTyped⟩ :=
-                  HasTypeDescPi.invertLam firstTyped
-                exact (Conv.piTyCode_not_universeCode classifierConv.sym).elim
+            | childCons domainAnn rest =>
+                cases rest with
+                | childCons body restRest =>
+                    cases restRest
+                    obtain ⟨_codomainCode, _domainLevel, _codomainLevel, _pinFlag,
+                      classifierConv, _domainTyped, _codomainTyped, _bodyTyped⟩ :=
+                      HasTypeDescPi.invertLam firstTyped
+                    exact (Conv.piTyCode_not_universeCode classifierConv.sym).elim
           · have generatorEq : generator = Generator.gen_app := isApp
             subst generatorEq
             cases children with

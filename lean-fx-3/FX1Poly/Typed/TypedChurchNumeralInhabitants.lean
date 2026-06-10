@@ -70,11 +70,11 @@ injective family `ℕ → RawTerm 0` — the Church numerals — every member of
 `Π(A:Type@0). Π(f:A→A). Π(x:A). A` and which is pairwise non-convertible.  So a single closed type of the
 formation-only Π-fragment carries an injection from ℕ — an expressiveness capstone of the Church arc, bundling
 the general typing (#1007) and the general faithfulness (#1006). -/
-theorem churchNatType_hasInfinitelyManyDistinctInhabitants {profile : PolyProfile} (flag : UniverseFlag) :
+theorem churchNatType_hasInfinitelyManyDistinctInhabitants {profile : PolyProfile} :
     ∃ inhabitants : Nat → RawTerm 0,
       (∀ depthLeft depthRight, inhabitants depthLeft = inhabitants depthRight → depthLeft = depthRight)
       ∧ (∀ depth, HasTypeDescPi profile TypingContext.empty (inhabitants depth)
-          (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+          (piTyCodeCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
             (piTyCodeCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
                 (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
               (piTyCodeCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
@@ -83,7 +83,7 @@ theorem churchNatType_hasInfinitelyManyDistinctInhabitants {profile : PolyProfil
           → ¬ Conv (inhabitants depthLeft) (inhabitants depthRight)) :=
   ⟨churchNumeralLambda,
     fun _ _ sameNumeral => churchNumeralLambda_injective sameNumeral,
-    fun depth => churchNumeralLambda_hasTypeDescPi flag depth,
+    fun depth => churchNumeralLambda_hasTypeDescPi depth,
     fun _ _ depthsDiffer => churchNumeralLambda_notConvertible_of_ne depthsDiffer⟩
 
 end FX1Poly.Typed

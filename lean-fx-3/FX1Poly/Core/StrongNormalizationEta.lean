@@ -75,6 +75,23 @@ private theorem lt_etaLamSource_size (sizeValue : Nat) :
     (((((0 + 1 + 0 + 1) + 1) + 1) + 0) + 1) 1]
   exact Nat.lt_add_of_pos_right (Nat.succ_pos _)
 
+private theorem lt_etaLamAnnotatedSource_size
+    (annotationSize sizeValue : Nat) :
+    sizeValue <
+      annotationSize + (sizeValue + (0 + 1 + 0 + 1) + 1 + 1 + 0 + 1) +
+        1 + 1 := by
+  have innerBound :
+      sizeValue < sizeValue + (0 + 1 + 0 + 1) + 1 + 1 + 0 + 1 := by
+    rw [Nat.add_assoc sizeValue (0 + 1 + 0 + 1) 1]
+    rw [Nat.add_assoc sizeValue ((0 + 1 + 0 + 1) + 1) 1]
+    rw [Nat.add_assoc sizeValue (((0 + 1 + 0 + 1) + 1) + 1) 0]
+    rw [Nat.add_assoc sizeValue ((((0 + 1 + 0 + 1) + 1) + 1) + 0) 1]
+    exact Nat.lt_add_of_pos_right (Nat.succ_pos _)
+  exact
+    Nat.lt_of_lt_of_le innerBound
+      (Nat.le_trans (Nat.le_add_left _ annotationSize)
+        (Nat.le_trans (Nat.le_add_right _ 1) (Nat.le_add_right _ 1)))
+
 private theorem lt_etaPairSource_size (sizeValue : Nat) :
     sizeValue <
       sizeValue + 0 + 1 + 1 + (sizeValue + 0 + 1 + 1 + 0 + 1) + 1 + 1 := by
@@ -120,7 +137,7 @@ theorem size_decreases {scope : Nat}
       unfold RawTerm.etaLamSource RawTerm.newestVar
       dsimp only [RawTerm.size, RawTermChildren.size]
       rw [RawTerm.size_weaken targetTerm]
-      exact lt_etaLamSource_size targetTerm.size
+      exact lt_etaLamAnnotatedSource_size _ targetTerm.size
   | etaPair =>
       unfold RawTerm.etaPairSource
       dsimp only [RawTerm.size, RawTermChildren.size]
@@ -190,11 +207,14 @@ theorem hasStrongNormalization : HasStrongNormalization := by
 their represented functions are.  Both directions are immediate from
 global eta-only well-foundedness. -/
 theorem etaLam_isStronglyNormalizing_iff {scope : Nat}
-    (innerFunction : RawTerm scope) :
-    IsStronglyNormalizing (RawTerm.etaLamSource innerFunction) ↔
+    (domainAnn innerFunction : RawTerm scope) :
+    IsStronglyNormalizing
+        (RawTerm.etaLamSource domainAnn innerFunction) ↔
       IsStronglyNormalizing innerFunction :=
   ⟨fun _ => isStronglyNormalizing innerFunction,
-    fun _ => isStronglyNormalizing (RawTerm.etaLamSource innerFunction)⟩
+    fun _ =>
+      isStronglyNormalizing
+        (RawTerm.etaLamSource domainAnn innerFunction)⟩
 
 /-- Pair eta sources are eta-only strongly normalizing exactly when
 their represented pair terms are. -/

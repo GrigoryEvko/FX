@@ -73,13 +73,13 @@ def PinnedReflectionPiElimResidualFlagCoherent (profile : PolyProfile) : Prop :=
 premises (the binder-steering data the E4-0/E4-1 spikes showed the discharge needs). -/
 def PinnedReflectionPiElimLamReductResidualFlagCoherent (profile : PolyProfile) : Prop :=
   ∀ {targetScope : Nat} {targetContext : TypingContext profile targetScope}
-    {functionTerm argument domainCode : RawTerm targetScope}
+    {functionTerm argument domainCode lamDomain : RawTerm targetScope}
     {codomainCode lamBody : RawTerm (targetScope + 1)},
     HasTypeDescPi profile targetContext functionTerm
       (piTyCodeCell domainCode codomainCode) →
     HasTypeDescPi profile targetContext argument domainCode →
-    StepStar functionTerm (lamCell lamBody) →
-    RawTerm.isStepNormalForm (lamCell lamBody) →
+    StepStar functionTerm (lamCell lamDomain lamBody) →
+    RawTerm.isStepNormalForm (lamCell lamDomain lamBody) →
     PinnedReflectionConclusionFlagCoherent profile targetContext functionTerm
       (piTyCodeCell domainCode codomainCode) →
     PinnedReflectionConclusionFlagCoherent profile targetContext argument domainCode →
@@ -93,11 +93,12 @@ discharge of the flag-coherent residual; until then the two masters agree wherev
 residual fires. -/
 theorem HasTypeDescPi.pinnedReflectionFlagCoherentOfPlainResidual {profile : PolyProfile}
     (residual : PinnedReflectionPiElimResidual profile)
+    (flagUnique : SourceUniverseFlagUnique profile)
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     {subject classifier : RawTerm targetScope}
     (derivation : HasTypeDescPi profile targetContext subject classifier) :
     PinnedReflectionConclusionFlagCoherent profile targetContext subject classifier :=
-  (HasTypeDescPi.pinnedReflectionConditional residual derivation).toFlagCoherent
+  (HasTypeDescPi.pinnedReflectionConditional residual flagUnique derivation).toFlagCoherent
 
 end FX1Poly.Typed
 

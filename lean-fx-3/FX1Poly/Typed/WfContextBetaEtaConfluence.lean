@@ -68,19 +68,36 @@ The Geuvers βη-CR + unique-βη-NF results over the `HasTypeDesc`-defined `WfC
 βη-SN witness through `betaEtaStronglyNormalizingOfWfContextDesc` — the raw βη-Newman bridge +
 star-rigidity are context-predicate-agnostic. -/
 
+/- ORCHESTRATOR NOTE (T2 fleet, 2026-06-10, remove at cleanup): the Newman bridge
+`confluence_of_localJoin_and_accessible` now takes a `hereditaryDiagonal :
+HereditaryLamDiagonal subject` argument (StepBetaEtaConfluence) — the unguarded raw
+βη local join is FALSE post-T2 (NederpeltNonJoinability).  TYPING DOES NOT DISCHARGE
+THE SYNTACTIC GUARD: a typed η-source has CONVERTIBLE inner/outer annotations, not
+syntactically equal ones, so `EtaLamAnnotationDiagonal` (an equality) can fail on
+typed subjects.  The typed claim below is still plausibly TRUE — convertible
+annotations are β-joinable (raw β confluence), so the Nederpelt pair joins via
+domain-congruence chains — but proving it needs (a) a Conv/joinability-guarded
+variant of the local join (annotationsJoin instead of equality; orchestrator can
+supply on request) AND (b) hereditary typedness of βη-reachable terms = βη-SR on
+the grown engine, which is OPEN (STR-10 #1179 / STR-11 #1180).  HONEST IMMEDIATE
+FIX: restate both theorems below CONDITIONALLY on
+`(hereditaryDiagonal : Step.betaEtaStar.HereditaryLamDiagonal subject)` and thread
+it to the bridge; do NOT try to discharge it from `typed`. -/
+
 /-- **βη Church-Rosser over `WfContextDesc`** — the βη analogue of the β/ι
 `subjectConfluenceOfWfContextDesc`. -/
 theorem HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (contextWellFormed : WfContextDesc context)
     (typed : HasTypeDescPi profile context subject classifier)
+    (hereditaryDiagonal : Step.betaEtaStar.HereditaryLamDiagonal subject)
     {leftReduct rightReduct : RawTerm scope}
     (subjectToLeft : Step.betaEtaStar subject leftReduct)
     (subjectToRight : Step.betaEtaStar subject rightReduct) :
     Step.betaEtaStar.Join leftReduct rightReduct :=
   Step.betaEtaStar.confluence_of_localJoin_and_accessible
     (HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc contextWellFormed typed)
-    subjectToLeft subjectToRight
+    hereditaryDiagonal subjectToLeft subjectToRight
 
 /-- **Unique βη-normal-forms over `WfContextDesc`** — the βη analogue of the β/ι
 `uniqueNormalFormOfWfContextDesc`, via the confluence result + βη star-rigidity. -/
@@ -88,6 +105,7 @@ theorem HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContextDesc {profile : PolyProf
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (contextWellFormed : WfContextDesc context)
     (typed : HasTypeDescPi profile context subject classifier)
+    (hereditaryDiagonal : Step.betaEtaStar.HereditaryLamDiagonal subject)
     {normalFormLeft normalFormRight : RawTerm scope}
     (subjectToLeft : Step.betaEtaStar subject normalFormLeft)
     (leftNoStep : ∀ reduct : RawTerm scope, ¬ Step.betaEta normalFormLeft reduct)
@@ -95,7 +113,8 @@ theorem HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContextDesc {profile : PolyProf
     (rightNoStep : ∀ reduct : RawTerm scope, ¬ Step.betaEta normalFormRight reduct) :
     normalFormLeft = normalFormRight := by
   obtain ⟨apex, leftToApex, rightToApex⟩ :=
-    HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc contextWellFormed typed subjectToLeft subjectToRight
+    HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc contextWellFormed typed
+      hereditaryDiagonal subjectToLeft subjectToRight
   have leftEqApex : normalFormLeft = apex := Step.betaEtaStar.eq_of_noBetaEtaStep leftNoStep leftToApex
   have rightEqApex : normalFormRight = apex := Step.betaEtaStar.eq_of_noBetaEtaStep rightNoStep rightToApex
   exact leftEqApex.trans rightEqApex.symm

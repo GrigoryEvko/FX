@@ -38,18 +38,25 @@ Gated per-decl in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core StepStar
+open FX1Poly.Core FX1Poly.Universe StepStar
+
+/-- A closed, scope-polymorphic domain annotation for the SKI-combinator binders.  Under T2 every `lamCell`
+carries a domain; for these pure-raw fixtures (no typing derivation) a closed `universeCodeCell` is invariant
+under `subst0`/`weaken` and heads no redex, keeping the normal-form and reduction proofs computational. -/
+def combinatorDomainAnn {scope : Nat} : RawTerm scope :=
+  universeCodeCell LevelExpr.lzero UniverseFlag.standard
 
 /-- `I = λx. x` — the identity combinator. -/
-def combinatorI : RawTerm 0 := lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+def combinatorI : RawTerm 0 := lamCell combinatorDomainAnn (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
 
 /-- `K = λx. λy. x` — the constant combinator (first projection). -/
 def combinatorK : RawTerm 0 :=
-  lamCell (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+  lamCell combinatorDomainAnn
+    (lamCell combinatorDomainAnn (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
 
 /-- `S = λx. λy. λz. (x z) (y z)` — the substitution/distribution combinator. -/
 def combinatorS : RawTerm 0 :=
-  lamCell (lamCell (lamCell
+  lamCell combinatorDomainAnn (lamCell combinatorDomainAnn (lamCell combinatorDomainAnn
     (appCell
       (appCell (variableCell (⟨2, Nat.succ_lt_succ (Nat.succ_lt_succ (Nat.succ_pos 0))⟩ : Fin 3))
         (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))
@@ -77,13 +84,16 @@ theorem combinatorI_reduces (a : RawTerm 0) : Step (appCell combinatorI a) a := 
 /-- The **K-rule**: `K a b ↝* a` — `K a` β-reduces (in function position) to `λy. (weaken a)`, then the outer β
 contracts that applied to `b` back to `a` (the `subst0 (weaken a) b = a` cancellation). -/
 theorem combinatorK_reduces (a b : RawTerm 0) : StepStar (appCell (appCell combinatorK a) b) a := by
-  have functionBeta : Step (appCell combinatorK a) (lamCell (RawTerm.weaken a)) := Step.beta
-  have congStep : Step (appCell (appCell combinatorK a) b) (appCell (lamCell (RawTerm.weaken a)) b) :=
+  have functionBeta : Step (appCell combinatorK a)
+      (lamCell combinatorDomainAnn (RawTerm.weaken a)) := Step.beta
+  have congStep : Step (appCell (appCell combinatorK a) b)
+      (appCell (lamCell combinatorDomainAnn (RawTerm.weaken a)) b) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons b .childNil) functionBeta)
   have cancelEq : RawTerm.subst0 (RawTerm.weaken a) b = a := RawTerm.weaken_subst_singleton a b
-  have outerBeta : Step (appCell (lamCell (RawTerm.weaken a)) b) (RawTerm.subst0 (RawTerm.weaken a) b) :=
+  have outerBeta : Step (appCell (lamCell combinatorDomainAnn (RawTerm.weaken a)) b)
+      (RawTerm.subst0 (RawTerm.weaken a) b) :=
     Step.beta
   rw [cancelEq] at outerBeta
   exact StepStar.trans congStep (StepStar.trans outerBeta (StepStar.refl _))

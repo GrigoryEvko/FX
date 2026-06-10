@@ -85,7 +85,8 @@ structure EliminatorLayerCanonicitySpine (profile : PolyProfile) : Prop where
      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (optionTypeCell elementType)) →
       ∃ out : RawTerm 0,
-        StepStar (optionMatchCell scrutinee boolTrueCell (lamCell (boolTrueCell : RawTerm 1))) out ∧
+        StepStar (optionMatchCell scrutinee boolTrueCell
+          (lamCell boolTrueCell (boolTrueCell : RawTerm 1))) out ∧
         (out = boolTrueCell ∨ out = boolFalseCell)
   /-- either: the either twin of `optionMatchComputes`. -/
   eitherMatchComputes : ∀ {scrutinee leftType rightType : RawTerm 0},
@@ -94,8 +95,8 @@ structure EliminatorLayerCanonicitySpine (profile : PolyProfile) : Prop where
      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (eitherTypeCell leftType rightType)) →
       ∃ out : RawTerm 0,
-        StepStar (eitherMatchCell scrutinee (lamCell (boolTrueCell : RawTerm 1))
-          (lamCell (boolFalseCell : RawTerm 1))) out ∧
+        StepStar (eitherMatchCell scrutinee (lamCell boolTrueCell (boolTrueCell : RawTerm 1))
+          (lamCell boolTrueCell (boolFalseCell : RawTerm 1))) out ∧
         (out = boolTrueCell ∨ out = boolFalseCell)
 
 /-- **★ The eliminator-layer canonicity spine holds, unconditionally, zero-axiom.**  Each field is the shipped

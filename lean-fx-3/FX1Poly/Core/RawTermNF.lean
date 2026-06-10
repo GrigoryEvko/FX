@@ -409,22 +409,26 @@ theorem isStepNormalForm_unit_smoke {scope : Nat} :
 
 /-- A lambda applied to an argument is detected as a root beta redex. -/
 theorem hasRootStepSource_beta_smoke {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1)) (arg : RawTerm scope) :
     RawTerm.hasRootStepSource
       (.mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons body .childNil))
+          (.mkGen .gen_lam ()
+            (.childCons domainAnn (.childCons body .childNil)))
           (.childCons arg .childNil))) =
       true := by
   rfl
 
 /-- The beta smoke is therefore not structurally normal. -/
 theorem not_isStepNormalForm_beta_smoke {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1)) (arg : RawTerm scope) :
     RawTerm.isStepNormalForm
       (.mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons body .childNil))
+          (.mkGen .gen_lam ()
+            (.childCons domainAnn (.childCons body .childNil)))
           (.childCons arg .childNil))) →
       False := by
   intro normalSource
@@ -444,9 +448,9 @@ theorem hasRootStepSource_fst_pair_smoke {scope : Nat}
 
 /-- Eta sources are not beta/iota root redexes. -/
 theorem hasRootStepSource_etaLamSource_smoke {scope : Nat}
-    (innerFunction : RawTerm scope) :
+    (domainAnn innerFunction : RawTerm scope) :
     RawTerm.hasRootStepSource
-      (RawTerm.etaLamSource innerFunction) =
+      (RawTerm.etaLamSource domainAnn innerFunction) =
       false := by
   rfl
 

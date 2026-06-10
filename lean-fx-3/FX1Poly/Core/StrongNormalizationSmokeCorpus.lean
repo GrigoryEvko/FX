@@ -45,8 +45,13 @@ theorem smoke_identityRedex_isStronglyNormalizing {scope : Nat}
       (.mkGen .gen_app ()
         (.childCons
           (.mkGen .gen_lam ()
-            (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil) .childNil))
+            (.childCons
+              (.mkGen .gen_unit () .childNil : RawTerm scope)
+              (.childCons
+                (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil) .childNil)))
           (.childCons argument .childNil))) :=
-  betaRedex_isStronglyNormalizing_of_contractum argumentStronglyNormalizing argumentStronglyNormalizing
+  betaRedex_isStronglyNormalizing_of_contractum
+    smoke_unit_isStronglyNormalizing
+    argumentStronglyNormalizing argumentStronglyNormalizing
 
 end FX1Poly.Core

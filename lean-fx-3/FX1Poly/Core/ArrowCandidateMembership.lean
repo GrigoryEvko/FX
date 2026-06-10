@@ -77,16 +77,18 @@ argument-independent `bodyReducible`.  No choice, because the codomain candidate
 argument value (the no-large-elimination System-F fact `CandidateInterpretation` rests on). -/
 theorem IsArrowReducible.abstraction {scope : Nat}
     {domainCandidate codomainCandidate : RawTerm scope → Prop}
-    {body : RawTerm (scope + 1)}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (domainArgumentsSN : ∀ argument : RawTerm scope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainClosed : HeadExpansionClosed codomainCandidate)
     (bodyReducible : ∀ argument : RawTerm scope, domainCandidate argument →
       codomainCandidate (RawTerm.subst0 body argument)) :
     IsArrowReducible domainCandidate codomainCandidate
-      (.mkGen .gen_lam () (.childCons body .childNil)) :=
+      (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) :=
   DependentArrowCandidate.abstraction
     (codomainCandidate := fun _argument => codomainCandidate)
+    domainAnnSN
     domainArgumentsSN
     (fun _argument _argumentInDomain => codomainClosed)
     bodyReducible

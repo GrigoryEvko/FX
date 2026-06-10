@@ -83,6 +83,27 @@ theorem HasTypeDescPi.subjectReduction {profile : PolyProfile}
         (fun {bodyReduct} bodyStep =>
           HasTypeDescPi.subjectReduction bodyTyped
             (WfContextDescPi.cons wellFormed ⟨domainLevel, flag, domainTyped⟩) bodyReduct bodyStep)
+        (fun {domainReduct} domainStep =>
+          -- The domain annotation steps: rebuild the λ at the ORIGINAL Π type.
+          -- 1) re-type the stepped domain at its universe via the recursive master SR;
+          -- 2) re-type codomain + body under the stepped binder via the directed
+          --    context conversion (`codomainReTypingStep`, the head-step instance);
+          -- 3) `piIntro` lands the new λ at `piTyCodeCell domainReduct codomainCode`;
+          -- 4) `conv` it back to `piTyCodeCell domainCode codomainCode` (the original
+          --    domain converts to its reduct, congruence on the Π code).
+          let wellFormedUnderDomain :=
+            WfContextDescPi.cons wellFormed ⟨domainLevel, flag, domainTyped⟩
+          let domainReductTyped :=
+            HasTypeDescPi.subjectReduction domainTyped wellFormed domainReduct domainStep
+          let lambdaAtSteppedDomain :=
+            HasTypeDescPi.piIntro domainLevel codomainLevel flag domainReductTyped
+              (HasTypeDescPi.codomainReTypingStep wellFormedUnderDomain codomainTyped domainStep)
+              (HasTypeDescPi.codomainReTypingStep wellFormedUnderDomain bodyTyped domainStep)
+          HasTypeDescPi.conv (LevelExpr.lmax domainLevel codomainLevel) flag
+            lambdaAtSteppedDomain
+            (Conv.piTyCode_cong (Conv.fromStep domainStep).sym (Conv.refl codomainCode))
+            (HasTypeDescPi.piFormationViaGenArm context domainCode codomainCode domainLevel
+              codomainLevel flag domainTyped codomainTyped))
   | .piElim functionTyped argumentTyped => fun reduct step =>
       HasTypeDescPi.subjectReductionPiElimArmDescPi functionTyped argumentTyped step
         (fun {functionReduct} functionStep =>

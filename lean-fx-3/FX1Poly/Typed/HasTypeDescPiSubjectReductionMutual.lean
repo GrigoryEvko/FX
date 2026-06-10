@@ -3,6 +3,7 @@ import FX1Poly.Typed.HasTypeDescPiSubjectReductionInlineArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionConvOfFormationArms
 import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.HasTypeDescPiContextConversionConditional
+import FX1Poly.Typed.HasTypeDescPiContextStepConversion
 
 /-! # FX1Poly/Typed/HasTypeDescPiSubjectReductionMutual
     — the grown-engine master subject reduction ⋈ grown telescope SR, conditional on the SINGLE piElim crux
@@ -84,6 +85,23 @@ theorem HasTypeDescPi.subjectReductionOfPiElimArm {profile : PolyProfile}
         (fun {bodyReduct} bodyStep =>
           HasTypeDescPi.subjectReductionOfPiElimArm piElimArm bodyTyped
             (WfContextDescPi.cons wellFormed ⟨domainLevel, flag, domainTyped⟩) bodyReduct bodyStep)
+        (fun {domainReduct} domainStep =>
+          -- Domain-annotation step: rebuild the λ at the ORIGINAL Π type via a stepped-binder
+          -- re-typing of codomain + body, then `conv` the Π code back across the domain step.
+          let wellFormedUnderDomain :=
+            WfContextDescPi.cons wellFormed ⟨domainLevel, flag, domainTyped⟩
+          let domainReductTyped :=
+            HasTypeDescPi.subjectReductionOfPiElimArm piElimArm domainTyped wellFormed
+              domainReduct domainStep
+          let lambdaAtSteppedDomain :=
+            HasTypeDescPi.piIntro domainLevel codomainLevel flag domainReductTyped
+              (HasTypeDescPi.codomainReTypingStep wellFormedUnderDomain codomainTyped domainStep)
+              (HasTypeDescPi.codomainReTypingStep wellFormedUnderDomain bodyTyped domainStep)
+          HasTypeDescPi.conv (LevelExpr.lmax domainLevel codomainLevel) flag
+            lambdaAtSteppedDomain
+            (Conv.piTyCode_cong (Conv.fromStep domainStep).sym (Conv.refl codomainCode))
+            (HasTypeDescPi.piFormationViaGenArm context domainCode codomainCode domainLevel
+              codomainLevel flag domainTyped codomainTyped))
   | .piElim functionTyped argumentTyped => fun reduct step =>
       HasTypeDescPi.subjectReductionPiElimArmDescPi functionTyped argumentTyped step
         (fun {functionReduct} functionStep =>

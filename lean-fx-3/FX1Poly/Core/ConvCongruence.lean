@@ -201,15 +201,21 @@ theorem Conv.app_cong {scope : Nat}
   Conv.ofChildren (ConvChildren.consC functionConv
                     (ConvChildren.consC argumentConv ConvChildren.nilC))
 
-/-- **Conv-congruence for `gen_lam`.** -/
+/-- **Conv-congruence for `gen_lam`.**  Church-style: both the domain
+annotation and the body convert pointwise. -/
 theorem Conv.lam_cong {scope : Nat}
+    {domainLeft domainRight : RawTerm scope}
     {bodyLeft bodyRight : RawTerm (scope + 1)}
+    (domainConv : Conv domainLeft domainRight)
     (bodyConv : Conv bodyLeft bodyRight) :
-    Conv (.mkGen .gen_lam () (.childCons bodyLeft .childNil) :
+    Conv (.mkGen .gen_lam ()
+            (.childCons domainLeft (.childCons bodyLeft .childNil)) :
             RawTerm scope)
-         (.mkGen .gen_lam () (.childCons bodyRight .childNil) :
+         (.mkGen .gen_lam ()
+            (.childCons domainRight (.childCons bodyRight .childNil)) :
             RawTerm scope) :=
-  Conv.ofChildren (ConvChildren.consC bodyConv ConvChildren.nilC)
+  Conv.ofChildren (ConvChildren.consC domainConv
+                    (ConvChildren.consC bodyConv ConvChildren.nilC))
 
 /-- **Conv-congruence for `gen_pair`.** -/
 theorem Conv.pair_cong {scope : Nat}

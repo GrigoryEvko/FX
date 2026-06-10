@@ -59,10 +59,11 @@ head-expansion closure (`ReducibleTypeAt.headExpansionClosed`), which `Dependent
 threads to discharge the β-redex `app (lam body) argument ↝ subst0 body argument`.  The argument's strong
 normalization is supplied at the call site (the fundamental theorem's domain CR1). -/
 theorem IsReducibleMemberAt.abstraction {scope : Nat} {level : Nat}
-    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainAnn domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     {domainCandidate : RawTerm scope → Prop}
     {codomainCandidate : RawTerm scope → (RawTerm scope → Prop)}
     (domainReducible : ReducibleTypeAt level domainCode domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (domainArgumentsSN : ∀ argument : RawTerm scope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainReducible : ∀ argument : RawTerm scope, domainCandidate argument →
@@ -71,10 +72,10 @@ theorem IsReducibleMemberAt.abstraction {scope : Nat} {level : Nat}
       codomainCandidate argument (RawTerm.subst0 body argument)) :
     IsReducibleMemberAt level
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
-      (.mkGen .gen_lam () (.childCons body .childNil)) :=
+      (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) :=
   ⟨IsDependentArrowReducible domainCandidate codomainCandidate,
    ReducibleTypeAt.piType codomainCandidate domainReducible codomainReducible,
-   DependentArrowCandidate.abstraction domainArgumentsSN
+   DependentArrowCandidate.abstraction domainAnnSN domainArgumentsSN
      (fun argument argumentInDomain =>
        (codomainReducible argument argumentInDomain).headExpansionClosed)
      bodyReducible⟩
@@ -106,9 +107,10 @@ argument)` for every reducible argument (its fundamental-theorem IH), and the co
 is again discharged from existence by `IsReducibleTypeAt.reducibleMemberCandidate`.  The dependent
 generalization of `abstractionNonDependent` (the `codomainCode := weaken B` special case), choice-free. -/
 theorem IsReducibleMemberAt.abstractionCanonical {scope : Nat} {level : Nat}
-    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainAnn domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     {domainCandidate : RawTerm scope → Prop}
     (domainReducible : ReducibleTypeAt level domainCode domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (domainArgumentsSN : ∀ argument : RawTerm scope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainExists : ∀ argument : RawTerm scope, domainCandidate argument →
@@ -117,8 +119,8 @@ theorem IsReducibleMemberAt.abstractionCanonical {scope : Nat} {level : Nat}
       IsReducibleMemberAt level (RawTerm.subst0 codomainCode argument) (RawTerm.subst0 body argument)) :
     IsReducibleMemberAt level
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
-      (.mkGen .gen_lam () (.childCons body .childNil)) :=
-  IsReducibleMemberAt.abstraction domainReducible domainArgumentsSN
+      (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) :=
+  IsReducibleMemberAt.abstraction domainReducible domainAnnSN domainArgumentsSN
     (fun argument argumentInDomain => (codomainExists argument argumentInDomain).reducibleMemberCandidate)
     bodyReducible
 

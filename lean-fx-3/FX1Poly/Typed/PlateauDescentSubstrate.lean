@@ -28,12 +28,28 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
-/-- A λ's body is strictly smaller than the λ. -/
-theorem RawTerm.size_lt_lamCell_body {scope : Nat} (body : RawTerm (scope + 1)) :
-    body.size < (lamCell body).size :=
+/-- A λ's body is strictly smaller than the λ (Church-style: the body is the second child, after the
+domain annotation). -/
+theorem RawTerm.size_lt_lamCell_body {scope : Nat} (domainAnn : RawTerm scope)
+    (body : RawTerm (scope + 1)) :
+    body.size < (lamCell domainAnn body).size :=
   Nat.lt_trans
-    (RawTermChildren.size_lt_childCons_head (scope := scope) (shift := 1) body
-      (.childNil : RawTermChildren [] scope))
+    (Nat.lt_trans
+      (RawTermChildren.size_lt_childCons_head (scope := scope) (shift := 1) body
+        (.childNil : RawTermChildren [] scope))
+      (RawTermChildren.size_lt_childCons_tail (scope := scope) (shift := 0) domainAnn
+        (.childCons body .childNil : RawTermChildren [1] scope)))
+    (Nat.lt_succ_self _)
+
+/-- A λ's domain annotation is strictly smaller than the λ (Church-style: the domain is the FIRST
+child, before the body).  The domain twin of `size_lt_lamCell_body`, needed by the guarded piIntro
+arm's domain-reflection recursion. -/
+theorem RawTerm.size_lt_lamCell_domain {scope : Nat} (domainAnn : RawTerm scope)
+    (body : RawTerm (scope + 1)) :
+    domainAnn.size < (lamCell domainAnn body).size :=
+  Nat.lt_trans
+    (RawTermChildren.size_lt_childCons_head (scope := scope) (shift := 0) domainAnn
+      (.childCons body .childNil : RawTermChildren [1] scope))
     (Nat.lt_succ_self _)
 
 /-- An application's function is strictly smaller than the application. -/
@@ -72,14 +88,29 @@ theorem appNormal_argumentNormal {scope : Nat} (functionTerm argument : RawTerm 
 
 /-- **Subterm-of-normal (λ-body).**  A normal λ has a normal body: a body step lifts via the head
 congruence under the binder shift, which a normal λ blocks. -/
-theorem lamNormal_bodyNormal {scope : Nat} (body : RawTerm (scope + 1))
-    (normal : RawTerm.isStepNormalForm (lamCell body)) :
+theorem lamNormal_bodyNormal {scope : Nat} (domainAnn : RawTerm scope)
+    (body : RawTerm (scope + 1))
+    (normal : RawTerm.isStepNormalForm (lamCell domainAnn body)) :
     RawTerm.isStepNormalForm body := by
   refine Decidable.byContradiction (fun notNormal => ?_)
   obtain ⟨reduct, bodyStep⟩ := exists_step_of_not_isStepNormalForm notNormal
-  exact RawTerm.isStepNormalForm_blocks_step normal (lamCell reduct)
+  exact RawTerm.isStepNormalForm_blocks_step normal (lamCell domainAnn reduct)
     (Step.cong .gen_lam ()
-      (StepChildren.here (.childNil : RawTermChildren [] scope) bodyStep))
+      (StepChildren.there (parentScope := scope) (headShift := 0) domainAnn
+        (StepChildren.here (.childNil : RawTermChildren [] scope) bodyStep)))
+
+/-- **Subterm-of-normal (λ-domain).**  A normal λ has a normal domain annotation: a domain step lifts
+via the head congruence at the parent scope, which a normal λ blocks.  The domain twin of
+`lamNormal_bodyNormal`, needed by the guarded piIntro arm's domain-reflection recursion. -/
+theorem lamNormal_domainNormal {scope : Nat} (domainAnn : RawTerm scope)
+    (body : RawTerm (scope + 1))
+    (normal : RawTerm.isStepNormalForm (lamCell domainAnn body)) :
+    RawTerm.isStepNormalForm domainAnn := by
+  refine Decidable.byContradiction (fun notNormal => ?_)
+  obtain ⟨reduct, domainStep⟩ := exists_step_of_not_isStepNormalForm notNormal
+  exact RawTerm.isStepNormalForm_blocks_step normal (lamCell reduct body)
+    (Step.cong .gen_lam ()
+      (StepChildren.here (.childCons body .childNil : RawTermChildren [1] scope) domainStep))
 
 /-- **Generic children-of-normal extraction**: a normal term's child spine is Bool-normal. -/
 theorem RawTerm.isStepNormalForm_childrenNormal {scope : Nat}

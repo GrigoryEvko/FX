@@ -192,17 +192,21 @@ Closes by `rfl` — the fold engine's binder discipline is
 definitional. -/
 theorem RawTerm.subst0_lam_reduces
     {scope : Nat} (rawArg : RawTerm scope)
+    (innerDomain : RawTerm (scope + 1))
     (innerBody : RawTerm (scope + 2)) :
     RawTerm.subst0
         ((.mkGen .gen_lam ()
-          (.childCons innerBody .childNil)) : RawTerm (scope + 1))
+          (.childCons innerDomain (.childCons innerBody .childNil))) :
+          RawTerm (scope + 1))
         rawArg =
       (.mkGen .gen_lam ()
         (.childCons
-          (RawTerm.subst
-            (RawTermSubst.lift (RawTermSubst.singleton rawArg))
-            innerBody)
-          .childNil)
+          (RawTerm.subst0 innerDomain rawArg)
+          (.childCons
+            (RawTerm.subst
+              (RawTermSubst.lift (RawTermSubst.singleton rawArg))
+              innerBody)
+            .childNil))
         : RawTerm scope) := rfl
 
 /-! ## Section 2 — compound beta-redex preservations
@@ -369,7 +373,11 @@ lam's binder, so the inner subst uses the lifted singleton. -/
 theorem HasCertifiedCellDim0.subst0_lam_preservation
     {profile : PolyProfile} {scope : Nat}
     (rawArg : RawTerm scope)
+    (innerDomain : RawTerm (scope + 1))
     (innerBody : RawTerm (scope + 2))
+    (substInnerDomainCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase (RawTerm.subst0 innerDomain rawArg)))
     (substInnerBodyCell :
       PolyCell profile .term 0 (scope + 1) CellBoundary.trivial
         (.termBase
@@ -379,9 +387,10 @@ theorem HasCertifiedCellDim0.subst0_lam_preservation
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.subst0
         ((.mkGen .gen_lam ()
-          (.childCons innerBody .childNil)) : RawTerm (scope + 1))
+          (.childCons innerDomain (.childCons innerBody .childNil))) :
+          RawTerm (scope + 1))
         rawArg) := by
   rw [RawTerm.subst0_lam_reduces]
-  exact HasCertifiedCellDim0.lam substInnerBodyCell
+  exact HasCertifiedCellDim0.lam substInnerDomainCell substInnerBodyCell
 
 end FX1Poly.Core

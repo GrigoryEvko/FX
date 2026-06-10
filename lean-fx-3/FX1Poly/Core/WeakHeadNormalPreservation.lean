@@ -101,7 +101,7 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
               injection lamEquation with _innerScopeEq _innerGenEq innerPayloadEquation _innerChildrenEq
               subst innerPayloadEquation
               match innerChildren with
-              | .childCons _innerBody .childNil =>
+              | .childCons _innerDomain (.childCons _innerBody .childNil) =>
                   exact ⟨_, WeakHeadStep.beta⟩
         | there _head tailStep =>
             cases tailStep with

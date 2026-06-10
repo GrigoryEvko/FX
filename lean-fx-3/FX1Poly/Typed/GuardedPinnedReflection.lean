@@ -59,6 +59,7 @@ mutual
 normality threaded — every recursive call's guards discharge by the plateau descent substrate. -/
 theorem HasTypeDescPi.pinnedReflectionGuarded {profile : PolyProfile} {bound : Nat}
     (residual : PinnedReflectionPiElimResidualGuarded profile bound)
+    (flagUnique : SourceUniverseFlagUnique profile)
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     {subject classifier : RawTerm targetScope}
     (derivation : HasTypeDescPi profile targetContext subject classifier)
@@ -70,19 +71,23 @@ theorem HasTypeDescPi.pinnedReflectionGuarded {profile : PolyProfile} {bound : N
       pinnedReflectionOfFormationArm profile formationTyped
   | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
       pinnedReflectionConvArm profile converts
-        (HasTypeDescPi.pinnedReflectionGuarded residual typedPremise sizeBound subjectNormal)
+        (HasTypeDescPi.pinnedReflectionGuarded residual flagUnique typedPremise sizeBound
+          subjectNormal)
   | .piIntro domainLevel _codomainLevel flag domainTyped _codomainTyped bodyTyped =>
-      pinnedReflectionPiIntroArm profile ⟨domainLevel, flag, domainTyped⟩
-        (HasTypeDescPi.pinnedReflectionGuarded residual bodyTyped
-          (Nat.le_of_lt (Nat.lt_of_lt_of_le (RawTerm.size_lt_lamCell_body _) sizeBound))
-          (lamNormal_bodyNormal _ subjectNormal))
+      pinnedReflectionPiIntroArm profile flagUnique domainTyped
+        (HasTypeDescPi.pinnedReflectionGuarded residual flagUnique domainTyped
+          (Nat.le_of_lt (Nat.lt_of_lt_of_le (RawTerm.size_lt_lamCell_domain _ _) sizeBound))
+          (lamNormal_domainNormal _ _ subjectNormal))
+        (HasTypeDescPi.pinnedReflectionGuarded residual flagUnique bodyTyped
+          (Nat.le_of_lt (Nat.lt_of_lt_of_le (RawTerm.size_lt_lamCell_body _ _) sizeBound))
+          (lamNormal_bodyNormal _ _ subjectNormal))
   | .piElim functionTyped argumentTyped =>
       residual functionTyped argumentTyped sizeBound subjectNormal
-        (HasTypeDescPi.pinnedReflectionGuarded residual functionTyped
+        (HasTypeDescPi.pinnedReflectionGuarded residual flagUnique functionTyped
           (Nat.le_of_lt
             (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_function _ _) sizeBound))
           (appNormal_functionNormal _ _ subjectNormal))
-        (HasTypeDescPi.pinnedReflectionGuarded residual argumentTyped
+        (HasTypeDescPi.pinnedReflectionGuarded residual flagUnique argumentTyped
           (Nat.le_of_lt
             (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_argument _ _) sizeBound))
           (appNormal_argumentNormal _ _ subjectNormal))
@@ -102,7 +107,7 @@ theorem HasTypeDescPi.pinnedReflectionGuarded {profile : PolyProfile} {bound : N
       have childrenNormal : RawTermChildren.areStepNormalFormsBool children = true :=
         RawTerm.isStepNormalForm_childrenNormal subjectNormal
       have sourceTelescope :=
-        DescTelescopePi.pinnedReflectionTelescopeGuarded residual premises
+        DescTelescopePi.pinnedReflectionTelescopeGuarded residual flagUnique premises
           childrenBound childrenNormal targetWellFormed rho sourceContext rhoInjective
           condition wellFormed hChildren
       refine ⟨universeFormerOutput _ levels flag, ?_, ?_⟩
@@ -118,6 +123,7 @@ theorem HasTypeDescPi.pinnedReflectionGuarded {profile : PolyProfile} {bound : N
 spine by the plateau descent substrate. -/
 theorem DescTelescopePi.pinnedReflectionTelescopeGuarded {profile : PolyProfile} {bound : Nat}
     (residual : PinnedReflectionPiElimResidualGuarded profile bound)
+    (flagUnique : SourceUniverseFlagUnique profile)
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
     {targetContext : TypingContext profile (baseScope + currentDepth)}
     {levels : List LevelExpr} {flag : UniverseFlag}
@@ -169,7 +175,7 @@ theorem DescTelescopePi.pinnedReflectionTelescopeGuarded {profile : PolyProfile}
             rw [rename_universeCodeCell]
             exact Conv.refl _
           obtain ⟨reflectedClassifier, classifierConv, reflectedTyped⟩ :=
-            HasTypeDescPi.pinnedReflectionGuarded residual headTyped headBound headNormal
+            HasTypeDescPi.pinnedReflectionGuarded residual flagUnique headTyped headBound headNormal
               targetWellFormed (iterateLiftRaw rho currentDepth) sourceContext
               (RawRenaming.iterateLiftRaw_injective rhoInjective currentDepth)
               condition wellFormed hHead headPin
@@ -196,7 +202,7 @@ theorem DescTelescopePi.pinnedReflectionTelescopeGuarded {profile : PolyProfile}
             ⟨targetWellFormed, headLevel, flag, headTyped⟩
           exact DescTelescopePi.cons sourceContext sourceHead headLevel restLevels
             flag sourceRest sourceHeadTyped
-            (DescTelescopePi.pinnedReflectionTelescopeGuarded residual restTyped
+            (DescTelescopePi.pinnedReflectionTelescopeGuarded residual flagUnique restTyped
               restBound restNormal targetWellFormed' rho
               (sourceContext.cons sourceHead) rhoInjective condition' wellFormed' hTail)
 

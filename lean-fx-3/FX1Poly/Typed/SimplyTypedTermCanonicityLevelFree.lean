@@ -81,7 +81,9 @@ would make the application a β-redex, contradicting normality. -/
 theorem SimplyTypedTermLF.canonicalSplit {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {term type : RawTerm scope}
     (typed : SimplyTypedTermLF context term type) :
-    RawTerm.isStepNormalForm term → LnNeutral term ∨ ∃ body, term = lamCell body := by
+    RawTerm.isStepNormalForm term →
+      LnNeutral term ∨ ∃ (domainCode : RawTerm scope) (body : RawTerm (scope + 1)),
+        term = lamCell domainCode body := by
   induction typed with
   | var index =>
       intro _normal
@@ -90,13 +92,13 @@ theorem SimplyTypedTermLF.canonicalSplit {profile : PolyProfile} {scope : Nat}
       functionTyped argumentTyped ihFunction _ihArgument =>
       intro normalApp
       have normalFunction := isStepNormalForm_appCell_function normalApp
-      rcases ihFunction normalFunction with functionNeutral | ⟨body, functionEq⟩
+      rcases ihFunction normalFunction with functionNeutral | ⟨functionDomain, body, functionEq⟩
       · exact Or.inl (LnNeutral.app functionNeutral)
       · subst functionEq
         exact absurd Step.beta (RawTerm.isStepNormalForm_blocks_step normalApp _)
   | @lam sourceScope sourceContext body domainCode codomainBase _domainExpr _codomainExpr _bodyTyped _ih =>
       intro _normal
-      exact Or.inr ⟨body, rfl⟩
+      exact Or.inr ⟨domainCode, body, rfl⟩
 
 /-- **Canonicity.**  A closed simply-typed term in normal form is a lambda — the canonical split's neutral
 branch is impossible at the empty scope. -/
@@ -104,7 +106,7 @@ theorem SimplyTypedTermLF.closedNormalIsLambda {profile : PolyProfile}
     {term type : RawTerm 0}
     (typed : SimplyTypedTermLF (TypingContext.empty : TypingContext profile 0) term type)
     (normal : RawTerm.isStepNormalForm term) :
-    ∃ body, term = lamCell body := by
+    ∃ (domainCode : RawTerm 0) (body : RawTerm 1), term = lamCell domainCode body := by
   rcases typed.canonicalSplit normal with neutral | lambda
   · exact absurd neutral lnNeutral_scopeZero_absurd
   · exact lambda
@@ -115,7 +117,7 @@ supplies its typing, `normalForm_isStepNormalForm` its normality, and canonicity
 theorem SimplyTypedTermLF.normalFormIsLambda {profile : PolyProfile}
     {term type : RawTerm 0}
     (typed : SimplyTypedTermLF (TypingContext.empty : TypingContext profile 0) term type) :
-    ∃ body, typed.normalForm = lamCell body :=
+    ∃ (domainCode : RawTerm 0) (body : RawTerm 1), typed.normalForm = lamCell domainCode body :=
   typed.normalForm_typed.closedNormalIsLambda typed.normalForm_isStepNormalForm
 
 end FX1Poly.Typed

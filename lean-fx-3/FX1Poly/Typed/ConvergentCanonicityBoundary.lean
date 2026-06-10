@@ -64,11 +64,13 @@ theorem unit_iotaEtaNormal {scope : Nat} :
     | inr etaStep => cases etaStep
   | cong gen payload childStep => cases childStep
 
-/-- `lam unit` admits no ι∪η step: its body `unit` is not an `app`, so the function-η rule does not fire,
-and the only congruence child reduces to the `unit` leaf. -/
+/-- `lam unit unit` (Church-annotated, domain `unit`) admits no ι∪η step: its body `unit` is not an `app`,
+so the function-η rule does not fire, and the domain/body congruence children each reduce to the `unit` leaf. -/
 theorem lamUnit_iotaEtaNormal :
     ∀ reduct, ¬ IotaEtaStep
-      (.mkGen .gen_lam () (.childCons (.mkGen .gen_unit () .childNil) .childNil) : RawTerm 0) reduct := by
+      (.mkGen .gen_lam ()
+        (.childCons (.mkGen .gen_unit () .childNil)
+          (.childCons (.mkGen .gen_unit () .childNil) .childNil)) : RawTerm 0) reduct := by
   intro reduct step
   cases step with
   | head rootStep => cases rootStep with
@@ -77,7 +79,10 @@ theorem lamUnit_iotaEtaNormal :
   | cong gen payload childStep =>
       cases childStep with
       | here rest childStep => exact unit_iotaEtaNormal _ childStep
-      | there headChild restStep => cases restStep
+      | there headChild restStep =>
+          cases restStep with
+          | here rest2 childStep2 => exact unit_iotaEtaNormal _ childStep2
+          | there headChild2 restStep2 => cases restStep2
 
 /-- **The closed β-redex `app (lam unit) unit` is ι∪η-NORMAL** — the convergent presentation halts on it.
 Root `app` matches no ι/η head-redex; the function child `lam unit` and the argument `unit` are each
@@ -86,7 +91,9 @@ theorem appLamUnit_iotaEtaNormal :
     ∀ reduct, ¬ IotaEtaStep
       (.mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons (.mkGen .gen_unit () .childNil) .childNil))
+          (.mkGen .gen_lam ()
+            (.childCons (.mkGen .gen_unit () .childNil)
+              (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
           (.childCons (.mkGen .gen_unit () .childNil) .childNil)) : RawTerm 0) reduct := by
   intro reduct step
   cases step with
@@ -106,7 +113,9 @@ theorem appLamUnit_betaStepsToUnit :
     Step
       (.mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons (.mkGen .gen_unit () .childNil) .childNil))
+          (.mkGen .gen_lam ()
+            (.childCons (.mkGen .gen_unit () .childNil)
+              (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
           (.childCons (.mkGen .gen_unit () .childNil) .childNil)) : RawTerm 0)
       (.mkGen .gen_unit () .childNil) :=
   Step.beta
@@ -127,7 +136,9 @@ theorem convergentNormalFormCanStillBeStronglyNormalizing :
     Acc IotaEtaStep.successor
       (.mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons (.mkGen .gen_unit () .childNil) .childNil))
+          (.mkGen .gen_lam ()
+            (.childCons (.mkGen .gen_unit () .childNil)
+              (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
           (.childCons (.mkGen .gen_unit () .childNil) .childNil)) : RawTerm 0) :=
   IotaEtaStep.isStronglyNormalizing _
 

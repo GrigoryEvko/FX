@@ -92,11 +92,13 @@ and assembles the instantiated-codomain pin via the substitution lemma. -/
 theorem normalNonLambdaClassifierPinned {profile : PolyProfile} {budget : Nat}
     (residualWithinBudget : ∀ {smallBound : Nat}, smallBound ≤ budget →
       PinnedReflectionPiElimResidualGuarded profile smallBound)
+    (flagUnique : SourceUniverseFlagUnique profile)
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     {subject classifier : RawTerm targetScope}
     (derivation : HasTypeDescPi profile targetContext subject classifier)
     (subjectNormal : RawTerm.isStepNormalForm subject)
-    (hNotLam : ∀ body : RawTerm (targetScope + 1), subject ≠ lamCell body)
+    (hNotLam : ∀ (domainAnn : RawTerm targetScope) (body : RawTerm (targetScope + 1)),
+      subject ≠ lamCell domainAnn body)
     (subjectSize : subject.size ≤ budget)
     (targetWellFormed : WfContextDescPi targetContext)
     {sourceScope : Nat} (rho : RawRenaming sourceScope targetScope)
@@ -115,20 +117,20 @@ theorem normalNonLambdaClassifierPinned {profile : PolyProfile} {budget : Nat}
         wellFormed subjectInImage
   | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
       let ⟨base, pinConv, baseTyped⟩ :=
-        normalNonLambdaClassifierPinned residualWithinBudget typedPremise subjectNormal hNotLam
-          subjectSize targetWellFormed rho sourceContext rhoInjective condition
+        normalNonLambdaClassifierPinned residualWithinBudget flagUnique typedPremise subjectNormal
+          hNotLam subjectSize targetWellFormed rho sourceContext rhoInjective condition
           wellFormed subjectInImage
       ⟨base, converts.sym.trans pinConv, baseTyped⟩
   | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
-      (hNotLam _ rfl).elim
+      (hNotLam _ _ rfl).elim
   | @HasTypeDescPi.piElim _ _ _ nestedFunction nestedArgument _ _
       nestedFunctionTyped nestedArgumentTyped => by
       have nestedFunctionNormal := appNormal_functionNormal _ _ subjectNormal
       have nestedArgumentNormal := appNormal_argumentNormal _ _ subjectNormal
-      have hNotLamNested : ∀ body, nestedFunction ≠ lamCell body := by
-        intro body hEq
+      have hNotLamNested : ∀ domainAnn body, nestedFunction ≠ lamCell domainAnn body := by
+        intro domainAnn body hEq
         rw [hEq] at subjectNormal
-        exact RawTerm.not_isStepNormalForm_beta_smoke body _ subjectNormal
+        exact RawTerm.not_isStepNormalForm_beta_smoke domainAnn body _ subjectNormal
       obtain ⟨sourceNestedFunction, sourceNestedArgument, hSourceSubject,
           hNestedFunction, hNestedArgument⟩ :=
         renameEqAppCellInversion rho subjectInImage.symm
@@ -136,7 +138,7 @@ theorem normalNonLambdaClassifierPinned {profile : PolyProfile} {budget : Nat}
         Nat.le_of_lt
           (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_function _ _) subjectSize)
       obtain ⟨piBase, piPinned, piBaseTyped⟩ :=
-        normalNonLambdaClassifierPinned residualWithinBudget nestedFunctionTyped
+        normalNonLambdaClassifierPinned residualWithinBudget flagUnique nestedFunctionTyped
           nestedFunctionNormal hNotLamNested nestedFunctionSizeBound targetWellFormed rho
           sourceContext rhoInjective condition wellFormed hNestedFunction
       obtain ⟨domainBase, codomainBase, sourceChain, domainConv, codomainConv⟩ :=
@@ -151,7 +153,7 @@ theorem normalNonLambdaClassifierPinned {profile : PolyProfile} {budget : Nat}
           (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_argument _ _) subjectSize)
       obtain ⟨argumentReflectedClassifier, argumentClassConv, sourceArgumentTyped⟩ :=
         HasTypeDescPi.pinnedReflectionGuarded (residualWithinBudget nestedArgumentSizeBound)
-          nestedArgumentTyped (Nat.le_refl _) nestedArgumentNormal
+          flagUnique nestedArgumentTyped (Nat.le_refl _) nestedArgumentNormal
           targetWellFormed rho sourceContext rhoInjective condition wellFormed
           hNestedArgument domainConv ⟨domainLevel, componentFlag, domainTyped⟩
       have sourceArgumentAtDomain :
@@ -180,7 +182,8 @@ theorem normalNonLambdaClassifierPinned {profile : PolyProfile} {budget : Nat}
 /-- **The plateau induction**: the guarded piElim residual holds at every bound within a budget,
 by structural induction on the budget — the spine pin-extraction's master calls land at strictly
 smaller bounds, supplied by the induction hypothesis. -/
-theorem piElimResidualGuardedWithinBudget (profile : PolyProfile) :
+theorem piElimResidualGuardedWithinBudget (profile : PolyProfile)
+    (flagUnique : SourceUniverseFlagUnique profile) :
     ∀ (budget : Nat) (bound : Nat), bound ≤ budget →
       PinnedReflectionPiElimResidualGuarded profile bound
   | 0 => by
@@ -198,16 +201,18 @@ theorem piElimResidualGuardedWithinBudget (profile : PolyProfile) :
         renameEqAppCellInversion rho subjectInImage.symm
       subst hSubject
       have functionNormal := appNormal_functionNormal _ _ appNormal
-      have hNotLamF : ∀ body, functionTerm ≠ lamCell body := by
-        intro body hEq
+      have hNotLamF : ∀ domainAnn body, functionTerm ≠ lamCell domainAnn body := by
+        intro domainAnn body hEq
         rw [hEq] at appNormal
-        exact RawTerm.not_isStepNormalForm_beta_smoke body argument appNormal
+        exact RawTerm.not_isStepNormalForm_beta_smoke domainAnn body argument appNormal
       have functionSizeBound : functionTerm.size ≤ budget :=
         Nat.le_of_lt_succ (Nat.lt_of_lt_of_le
           (Nat.lt_of_lt_of_le (RawTerm.size_lt_appCell_function _ _) sizeBound) hBound)
       obtain ⟨piBase', piPinned', piBaseTyped'⟩ :=
         normalNonLambdaClassifierPinned
-          (fun {smallBound} h => piElimResidualGuardedWithinBudget profile budget smallBound h)
+          (fun {smallBound} h => piElimResidualGuardedWithinBudget profile flagUnique budget
+            smallBound h)
+          flagUnique
           functionTyped functionNormal hNotLamF functionSizeBound targetWellFormed rho
           sourceContext rhoInjective condition wellFormed hFunction
       exact pinnedReflectionPiElimCore profile functionIH argumentIH rho sourceContext
@@ -215,19 +220,24 @@ theorem piElimResidualGuardedWithinBudget (profile : PolyProfile) :
         piPinned' piBaseTyped'
 
 /-- The guarded residual holds at EVERY bound. -/
-theorem piElimResidualGuardedAtEveryBound (profile : PolyProfile) (bound : Nat) :
+theorem piElimResidualGuardedAtEveryBound (profile : PolyProfile)
+    (flagUnique : SourceUniverseFlagUnique profile) (bound : Nat) :
     PinnedReflectionPiElimResidualGuarded profile bound :=
-  piElimResidualGuardedWithinBudget profile bound bound (Nat.le_refl bound)
+  piElimResidualGuardedWithinBudget profile flagUnique bound bound (Nat.le_refl bound)
 
 /-- **THE PLATEAU MASTER**: the full pinned reflection for every NORMAL grown-typed subject —
-the guarded master at the subject's own size, with the plateau-induction residual. -/
+the guarded master at the subject's own size, with the plateau-induction residual.  Threads the
+`SourceUniverseFlagUnique` premise (the downstream universe-classification-uniqueness, see
+`PinnedReflectionPiIntro`) consumed by the T2 piIntro domain reflection. -/
 theorem HasTypeDescPi.pinnedReflectionNormal {profile : PolyProfile}
+    (flagUnique : SourceUniverseFlagUnique profile)
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     {subject classifier : RawTerm targetScope}
     (derivation : HasTypeDescPi profile targetContext subject classifier)
     (subjectNormal : RawTerm.isStepNormalForm subject) :
     PinnedReflectionConclusion profile targetContext subject classifier :=
-  HasTypeDescPi.pinnedReflectionGuarded (piElimResidualGuardedAtEveryBound profile subject.size)
-    derivation (Nat.le_refl _) subjectNormal
+  HasTypeDescPi.pinnedReflectionGuarded
+    (piElimResidualGuardedAtEveryBound profile flagUnique subject.size)
+    flagUnique derivation (Nat.le_refl _) subjectNormal
 
 end FX1Poly.Typed

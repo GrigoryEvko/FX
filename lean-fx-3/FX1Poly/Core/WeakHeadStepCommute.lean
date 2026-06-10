@@ -488,16 +488,20 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       other = reduct ∨
         ∃ otherReduct : RawTerm scope, WeakHeadStep other otherReduct ∧ StepStar reduct otherReduct := by
   induction weakHeadStep with
-  | @beta body argument =>
+  | @beta domainAnn body argument =>
       intro other step
       cases step with
       | beta => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
           | here _rest functionStep =>
-              obtain ⟨bodyAfter, functionEquation, bodyStep⟩ := Step.from_lam functionStep
-              subst functionEquation
-              exact Or.inr ⟨_, WeakHeadStep.beta, Step.subst0Body argument bodyStep⟩
+              rcases Step.from_lam functionStep with
+                ⟨domainAfter, functionEquation, _domainStep⟩ |
+                ⟨bodyAfter, functionEquation, bodyStep⟩
+              · subst functionEquation
+                exact Or.inr ⟨_, WeakHeadStep.beta, StepStar.refl _⟩
+              · subst functionEquation
+                exact Or.inr ⟨_, WeakHeadStep.beta, Step.subst0Body argument bodyStep⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest argumentStep =>
@@ -506,7 +510,7 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
   | @appCongruence function functionReduct argument functionWeakHeadStep functionInductiveHypothesis =>
       intro other step
       rcases Step.from_app step with
-        ⟨betaBody, functionEquation, _targetEquation⟩
+        ⟨_betaDomainAnn, betaBody, functionEquation, _targetEquation⟩
         | ⟨functionAfter, targetEquation, functionStep⟩
         | ⟨argumentAfter, targetEquation, argumentStep⟩
       · rw [functionEquation] at functionWeakHeadStep

@@ -116,12 +116,15 @@ Witnesses both:
 theorem StepStar.identity_lam_beta_unit :
     let identityLamBody : RawTerm 1 :=
       .mkGen .gen_var (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1) .childNil
+    let domainAnn : RawTerm 0 :=
+      .mkGen .gen_unit () .childNil
     let unitArg : RawTerm 0 :=
       .mkGen .gen_unit () .childNil
     let app : RawTerm 0 :=
       .mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons identityLamBody .childNil))
+          (.mkGen .gen_lam ()
+            (.childCons domainAnn (.childCons identityLamBody .childNil)))
           (.childCons unitArg .childNil))
     StepStar app unitArg :=
   StepStar.trans Step.beta (StepStar.refl _)
@@ -252,14 +255,23 @@ theorem StepStar.appArgument {scope : Nat}
                 headStep)))
           tailIH
 
-/-- Replay a `StepStar` chain in the body child of a lambda. -/
+/-- Replay a `StepStar` chain in the body child of a lambda.
+
+Church-style: the lambda carries a domain annotation as its first
+(shift-`0`) child; this lemma keeps the annotation fixed and replays
+the chain in the body (the second, shift-`1` child).  Each `cong`
+step walks past the domain via `there` before firing `here` at the
+body. -/
 theorem StepStar.lamBody {scope : Nat}
+    (domainAnn : RawTerm scope)
     {bodyTerm updatedBodyTerm : RawTerm (scope + 1)}
     (bodyChain : StepStar bodyTerm updatedBodyTerm) :
     StepStar
-      (.mkGen .gen_lam () (.childCons bodyTerm .childNil) :
+      (.mkGen .gen_lam ()
+        (.childCons domainAnn (.childCons bodyTerm .childNil)) :
         RawTerm scope)
-      (.mkGen .gen_lam () (.childCons updatedBodyTerm .childNil) :
+      (.mkGen .gen_lam ()
+        (.childCons domainAnn (.childCons updatedBodyTerm .childNil)) :
         RawTerm scope) := by
   induction bodyChain with
   | refl _ =>
@@ -268,10 +280,13 @@ theorem StepStar.lamBody {scope : Nat}
       exact
         StepStar.trans
           (Step.cong .gen_lam ()
-            (StepChildren.here
-              (parentScope := scope) (headShift := 1) (restShifts := [])
-              (.childNil : RawTermChildren [] scope)
-              headStep))
+            (StepChildren.there
+              (parentScope := scope) (headShift := 0) (restShifts := [1])
+              domainAnn
+              (StepChildren.here
+                (parentScope := scope) (headShift := 1) (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                headStep)))
           tailIH
 
 end FX1Poly.Core

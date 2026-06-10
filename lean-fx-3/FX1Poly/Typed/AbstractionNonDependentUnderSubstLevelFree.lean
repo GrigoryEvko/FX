@@ -66,6 +66,7 @@ theorem IsReducibleMember.abstractionNonDependentUnderSubst {scope targetScope :
     {domainCandidate : RawTerm targetScope → Prop}
     (substitution : RawTermSubst scope targetScope)
     (domainReducible : ReducibleType (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainCode))
     (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainReducible : IsReducibleType (RawTerm.subst substitution codomainBase))
@@ -74,7 +75,7 @@ theorem IsReducibleMember.abstractionNonDependentUnderSubst {scope targetScope :
         (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
     IsReducibleMember
       (RawTerm.subst substitution (piTyCodeCell domainCode (RawTerm.weaken codomainBase)))
-      (RawTerm.subst substitution (lamCell body)) := by
+      (RawTerm.subst substitution (lamCell domainCode body)) := by
   -- the per-argument codomain collapses to the constant base codomain; annotated in `RawTerm.weaken`
   -- form so the rewrites below match the goal `abstractionUnderSubst` produces
   have codomainCollapse : ∀ argument : RawTerm targetScope,
@@ -84,7 +85,8 @@ theorem IsReducibleMember.abstractionNonDependentUnderSubst {scope targetScope :
       (congrArg (RawTerm.subst0 · argument)
         (subst_lift_weaken_commute substitution codomainBase)).trans
         (RawTerm.weaken_subst_singleton (RawTerm.subst substitution codomainBase) argument)
-  exact IsReducibleMember.abstractionUnderSubst substitution domainReducible domainArgumentsSN
+  exact IsReducibleMember.abstractionUnderSubst substitution domainReducible domainAnnSN
+    domainArgumentsSN
     (fun argument _argumentInDomain => by
       rw [codomainCollapse argument]; exact codomainReducible)
     (fun argument argumentInDomain => by

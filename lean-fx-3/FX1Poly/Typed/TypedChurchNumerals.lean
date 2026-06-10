@@ -144,9 +144,12 @@ implicit domain/codomain unify.  The first Church-encoding whose body USES a bou
 numeral, not a re-typed boolean. -/
 theorem churchOne_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (lamCell (lamCell
-        (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-          (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))))
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+          (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+              (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
         (piTyCodeCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
             (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
@@ -185,9 +188,12 @@ theorem churchOne_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) :
 derivation.  The Π-fragment encodes the naturals AND proves the encoding terminating. -/
 theorem churchOne_stronglyNormalizing {profile : PolyProfile} (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (lamCell (lamCell (lamCell
-        (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-          (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))) : RawTerm 0) :=
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+          (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+              (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))) : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing (churchOne_hasTypeDescPi (profile := profile) flag)
 
 end FX1Poly.Typed

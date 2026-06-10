@@ -46,14 +46,22 @@ theorem HasTypeDescPi.subjectReductionPiIntroArm {profile : PolyProfile} {scope 
     (domainTyped : HasTypeDescPi profile context domainCode (universeCodeCell domainLevel flag))
     (codomainTyped : HasTypeDescPi profile (context.cons domainCode) codomainCode
       (universeCodeCell codomainLevel flag))
-    (step : Step (lamCell body) reduct)
+    (step : Step (lamCell domainCode body) reduct)
     (bodySR : ∀ {bodyReduct : RawTerm (scope + 1)},
       Step body bodyReduct →
-        HasTypeDescPi profile (context.cons domainCode) bodyReduct codomainCode) :
+        HasTypeDescPi profile (context.cons domainCode) bodyReduct codomainCode)
+    (domainSR : ∀ {domainReduct : RawTerm scope},
+      Step domainCode domainReduct →
+        HasTypeDescPi profile context (lamCell domainReduct body)
+          (piTyCodeCell domainCode codomainCode)) :
     HasTypeDescPi profile context reduct (piTyCodeCell domainCode codomainCode) := by
-  obtain ⟨bodyAfter, reductEq, bodyStep⟩ := Step.from_lam step
-  subst reductEq
-  exact HasTypeDescPi.piIntro domainLevel codomainLevel flag domainTyped codomainTyped (bodySR bodyStep)
+  rcases Step.from_lam step with
+    ⟨domainAfter, reductEq, domainStep⟩ | ⟨bodyAfter, reductEq, bodyStep⟩
+  · subst reductEq
+    exact domainSR domainStep
+  · subst reductEq
+    exact HasTypeDescPi.piIntro domainLevel codomainLevel flag domainTyped codomainTyped
+      (bodySR bodyStep)
 
 /-- **Dispatcher application arm (specific-IH).**  Given the function's Π-typing, the argument's typing, and
 each child's SR at its specific classifier, a `Step (appCell functionTerm argument) reduct` rebuilds `reduct`
@@ -74,7 +82,7 @@ theorem HasTypeDescPi.subjectReductionPiElimArm {profile : PolyProfile} {scope :
       Step argument argumentReduct → HasTypeDescPi profile context argumentReduct domainCode)
     (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context reduct (RawTerm.subst0 codomainCode argument) := by
-  rcases Step.from_app step with ⟨body, functionEq, reductEq⟩ |
+  rcases Step.from_app step with ⟨domainAnn, body, functionEq, reductEq⟩ |
       ⟨functionAfter, reductEq, functionStep⟩ | ⟨argumentAfter, reductEq, argumentStep⟩
   · subst functionEq
     subst reductEq

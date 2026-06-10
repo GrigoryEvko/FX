@@ -43,7 +43,7 @@ or `omega`.  Gated per-decl in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core StepStar
+open FX1Poly.Core FX1Poly.Universe StepStar
 
 /-- `churchZero = numeral 0 = λA.λf.λx. x`. -/
 def churchZero : RawTerm 0 := churchNumeralLambda 0
@@ -55,16 +55,17 @@ theorem churchZero_applies (typeA handlerF baseX : RawTerm 0) :
 
 /-- `lengthConsHandler = λhead. λacc. churchSucc acc` — adds one to the accumulator, ignoring the head. -/
 def lengthConsHandler : RawTerm 0 :=
-  lamCell (lamCell (appCell (RawTerm.weaken (RawTerm.weaken churchSucc))
-    (variableCell (⟨0, by decide⟩ : Fin 2))))
+  lamCell churchListDomainAnn (lamCell churchListDomainAnn
+    (appCell (RawTerm.weaken (RawTerm.weaken churchSucc))
+      (variableCell (⟨0, by decide⟩ : Fin 2))))
 
 /-- β1 reshape: substituting the head leaves `churchSucc acc` (head unused, churchSucc collapses one weaken). -/
 theorem lengthConsHandlerInnerSubst (head : RawTerm 0) :
-    RawTerm.subst0 (lamCell (appCell (RawTerm.weaken (RawTerm.weaken churchSucc))
+    RawTerm.subst0 (lamCell churchListDomainAnn (appCell (RawTerm.weaken (RawTerm.weaken churchSucc))
       (variableCell (⟨0, by decide⟩ : Fin 2)))) head
-      = lamCell (appCell (RawTerm.weaken churchSucc) (variableCell (⟨0, by decide⟩ : Fin 1))) := by
-  unfold RawTerm.subst0
-  show lamCell (appCell
+      = lamCell churchListDomainAnn (appCell (RawTerm.weaken churchSucc) (variableCell (⟨0, by decide⟩ : Fin 1))) := by
+  unfold RawTerm.subst0 churchListDomainAnn
+  show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (appCell
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton head))
         (RawTerm.weaken (RawTerm.weaken churchSucc)))
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton head))
@@ -88,14 +89,14 @@ accumulator), discarding the head. -/
 theorem lengthConsHandler_reduces (head acc : RawTerm 0) :
     StepStar (appCell (appCell lengthConsHandler head) acc) (appCell churchSucc acc) := by
   have functionBeta : Step (appCell lengthConsHandler head)
-      (lamCell (appCell (RawTerm.weaken churchSucc) (variableCell (⟨0, by decide⟩ : Fin 1)))) := by
+      (lamCell churchListDomainAnn (appCell (RawTerm.weaken churchSucc) (variableCell (⟨0, by decide⟩ : Fin 1)))) := by
     rw [← lengthConsHandlerInnerSubst head]; exact Step.beta
   have congStep : Step (appCell (appCell lengthConsHandler head) acc)
-      (appCell (lamCell (appCell (RawTerm.weaken churchSucc) (variableCell (⟨0, by decide⟩ : Fin 1)))) acc) :=
+      (appCell (lamCell churchListDomainAnn (appCell (RawTerm.weaken churchSucc) (variableCell (⟨0, by decide⟩ : Fin 1)))) acc) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons acc .childNil) functionBeta)
-  have outerBeta : Step (appCell (lamCell (appCell (RawTerm.weaken churchSucc)
+  have outerBeta : Step (appCell (lamCell churchListDomainAnn (appCell (RawTerm.weaken churchSucc)
       (variableCell (⟨0, by decide⟩ : Fin 1)))) acc) (appCell churchSucc acc) := by
     rw [← lengthConsHandlerOuterSubst acc]; exact Step.beta
   exact StepStar.trans congStep (StepStar.trans outerBeta (StepStar.refl _))

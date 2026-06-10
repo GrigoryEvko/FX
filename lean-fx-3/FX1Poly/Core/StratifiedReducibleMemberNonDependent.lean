@@ -102,9 +102,10 @@ reducibility, discharged — as in `arrowType` — by `subst0 (weaken B) argumen
 collapsing it to the single `codomainReducible`.  The body premise `bodyReducible` transfers directly: the
 constant family applied to any argument β-reduces to `codomainCandidate`. -/
 theorem IsReducibleMemberAt.abstractionNonDependent {scope : Nat} {level : Nat}
-    {domainCode codomainCodeBase : RawTerm scope} {body : RawTerm (scope + 1)}
+    {domainAnn domainCode codomainCodeBase : RawTerm scope} {body : RawTerm (scope + 1)}
     {domainCandidate codomainCandidate : RawTerm scope → Prop}
     (domainReducible : ReducibleTypeAt level domainCode domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (domainArgumentsSN : ∀ argument : RawTerm scope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainReducible : ReducibleTypeAt level codomainCodeBase codomainCandidate)
@@ -113,10 +114,10 @@ theorem IsReducibleMemberAt.abstractionNonDependent {scope : Nat} {level : Nat}
     IsReducibleMemberAt level
       (.mkGen .gen_piTyCode ()
         (.childCons domainCode (.childCons (RawTerm.weaken codomainCodeBase) .childNil)))
-      (.mkGen .gen_lam () (.childCons body .childNil)) := by
+      (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) := by
   refine IsReducibleMemberAt.abstraction
     (codomainCandidate := fun _argument => codomainCandidate)
-    domainReducible domainArgumentsSN ?codomainConstReducible bodyReducible
+    domainReducible domainAnnSN domainArgumentsSN ?codomainConstReducible bodyReducible
   intro argument _argumentInDomain
   rw [RawTerm.subst0, RawTerm.weaken_subst_singleton]
   exact codomainReducible

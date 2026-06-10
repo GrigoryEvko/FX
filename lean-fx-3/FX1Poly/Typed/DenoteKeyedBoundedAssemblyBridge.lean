@@ -153,6 +153,10 @@ theorem fundamentalPiIntroAtBoundedSucc {profile : PolyProfile} {scope : Nat} (e
     (domainReducibleAtBound : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
         IsReducibleTypeAtBounded env bound (RawTerm.subst substitution domainCode))
+    (domainCodeStronglyNormalizing :
+        ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        IsStronglyNormalizing (RawTerm.subst substitution domainCode))
     (codomainReducibleAtBound : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
         ∀ argument : RawTerm (targetScope + 1),
@@ -161,7 +165,7 @@ theorem fundamentalPiIntroAtBoundedSucc {profile : PolyProfile} {scope : Nat} (e
             (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
     (bodyConclusion :
         FundamentalConclusionAtBoundedSucc env bound (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionAtBoundedSucc env bound context (lamCell body)
+    FundamentalConclusionAtBoundedSucc env bound context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) := by
   intro _targetScope substitution envReducible
   exact abstractionMemberUnderClosingSubstitutionBounded
@@ -171,6 +175,7 @@ theorem fundamentalPiIntroAtBoundedSucc {profile : PolyProfile} {scope : Nat} (e
         (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
     env bound
     (domainReducibleAtBound substitution envReducible).reducibleMemberCandidate
+    (domainCodeStronglyNormalizing substitution envReducible)
     (fun argument argumentMember =>
       (codomainReducibleAtBound substitution envReducible argument argumentMember).reducibleMemberCandidate)
     (fun _argument argumentMember => stronglyNormalizing_of_memberAtBoundedSucc argumentMember)

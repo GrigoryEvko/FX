@@ -52,15 +52,17 @@ open FX1Poly.Core FX1Poly.Universe StepStar
 /-- `firstOrHandler = λhead. λrest. head` — the head-projecting cons-handler: returns the head, discards the
 recursively-folded tail. -/
 def firstOrHandler : RawTerm 0 :=
-  lamCell (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+  lamCell churchListDomainAnn
+    (lamCell churchListDomainAnn (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
 
 /-- β1 reshape: substituting the head into `firstOrHandler` keeps the head (lifted under the rest-binder).  `rfl`
 because `lift (singleton head)` on the head-index `var 1` computes directly to `weaken head`. -/
 theorem firstOrHandlerInnerSubst (head : RawTerm 0) :
-    RawTerm.subst0 (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))) head
-      = lamCell (RawTerm.weaken head) := by
-  unfold RawTerm.subst0
-  show lamCell (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton head))
+    RawTerm.subst0 (lamCell churchListDomainAnn (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))) head
+      = lamCell churchListDomainAnn (RawTerm.weaken head) := by
+  unfold RawTerm.subst0 churchListDomainAnn
+  show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+      (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton head))
       (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))) = _
   rfl
 
@@ -69,16 +71,16 @@ argument and DISCARDS the second (head-strict: `rest` is never inspected). -/
 theorem firstOrHandler_returnsHead (head rest : RawTerm 0) :
     StepStar (appCell (appCell firstOrHandler head) rest) head := by
   have functionBeta : Step (appCell firstOrHandler head)
-      (lamCell (RawTerm.weaken head)) := by
+      (lamCell churchListDomainAnn (RawTerm.weaken head)) := by
     rw [← firstOrHandlerInnerSubst head]; exact Step.beta
   have congStep : Step (appCell (appCell firstOrHandler head) rest)
-      (appCell (lamCell (RawTerm.weaken head)) rest) :=
+      (appCell (lamCell churchListDomainAnn (RawTerm.weaken head)) rest) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons rest .childNil) functionBeta)
   have cancel : RawTerm.subst0 (RawTerm.weaken head) rest = head :=
     RawTerm.weaken_subst_singleton head rest
-  have outerBeta : Step (appCell (lamCell (RawTerm.weaken head)) rest)
+  have outerBeta : Step (appCell (lamCell churchListDomainAnn (RawTerm.weaken head)) rest)
       (RawTerm.subst0 (RawTerm.weaken head) rest) := Step.beta
   rw [cancel] at outerBeta
   exact StepStar.trans congStep (StepStar.trans outerBeta (StepStar.refl _))

@@ -38,9 +38,9 @@ theorem HasTypeDescPi.normalAppIsNeutral {profile : PolyProfile} {scope : Nat}
   have functionNormal : RawTerm.isStepNormalForm functionTerm :=
     appNormal_functionNormal functionTerm argument normal
   rcases HasTypeDescPi.normalFunctionIsLambdaOrNeutralOfTyping functionTyped functionNormal with
-    ⟨body, bodyEq⟩ | functionNeutral
+    ⟨domainAnn, body, bodyEq⟩ | functionNeutral
   · rw [bodyEq] at normal
-    exact (RawTerm.not_isStepNormalForm_beta_smoke body argument normal).elim
+    exact (RawTerm.not_isStepNormalForm_beta_smoke domainAnn body argument normal).elim
   · exact IsNeutral.app functionNeutral
 
 theorem HasTypeDescPi.normalAppClassifierUnique {profile : PolyProfile} {scope : Nat}

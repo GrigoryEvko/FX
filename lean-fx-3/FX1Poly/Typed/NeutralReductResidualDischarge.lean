@@ -31,9 +31,10 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 /-- A neutral term is never a λ: every `IsNeutral` head generator differs from `gen_lam`. -/
 theorem IsNeutral.ne_lamCell {scope : Nat} {neutralTerm : RawTerm scope}
     (neutral : IsNeutral neutralTerm) :
-    ∀ body : RawTerm (scope + 1), neutralTerm ≠ lamCell body := by
+    ∀ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)),
+      neutralTerm ≠ lamCell domainAnn body := by
   cases neutral <;>
-    exact fun body hEq => by
+    exact fun domainAnn body hEq => by
       injection hEq with hScope hGenerator hPayload hChildren
       exact Generator.noConfusion hGenerator
 
@@ -41,7 +42,8 @@ theorem IsNeutral.ne_lamCell {scope : Nat} {neutralTerm : RawTerm scope}
 neutral, the residual conclusion follows — the reduct is in-image and keeps the Π classifier by
 subject reduction, the plateau pin-extraction pins it (the ∀-bound guarded residual supplies the
 budget), and the pinned-function core finishes with the original premise reflections. -/
-theorem pinnedReflectionPiElimNeutralReductResidualHolds (profile : PolyProfile) :
+theorem pinnedReflectionPiElimNeutralReductResidualHolds (profile : PolyProfile)
+    (flagUnique : SourceUniverseFlagUnique profile) :
     PinnedReflectionPiElimNeutralReductResidual profile := by
   intro targetScope targetContext functionTerm argument domainCode reduct codomainCode
     functionTyped argumentTyped functionReduces reductNeutral reductNormal
@@ -60,7 +62,8 @@ theorem pinnedReflectionPiElimNeutralReductResidualHolds (profile : PolyProfile)
   obtain ⟨reflectedPiBase, piPinned, piBaseTyped⟩ :=
     normalNonLambdaClassifierPinned (budget := reduct.size)
       (fun {smallBound} _withinBudget =>
-        piElimResidualGuardedAtEveryBound profile smallBound)
+        piElimResidualGuardedAtEveryBound profile flagUnique smallBound)
+      flagUnique
       reductTyped reductNormal (IsNeutral.ne_lamCell reductNeutral) (Nat.le_refl _)
       targetWellFormed rho sourceContext rhoInjective condition wellFormed imageEq.symm
   exact pinnedReflectionPiElimCore profile functionIH argumentIH rho sourceContext

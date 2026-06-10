@@ -37,24 +37,28 @@ K-rule / second-projection rule.  `pairProjectionsRecover` bundles the two.  No 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core StepStar
+open FX1Poly.Core FX1Poly.Universe StepStar
 
 /-- `pair a b = λf. f a b` — the Church pair storing `a` and `b` (applied to a selector `f`). -/
 def pairTerm (a b : RawTerm 0) : RawTerm 0 :=
-  lamCell (appCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken a))
-    (RawTerm.weaken b))
+  lamCell combinatorDomainAnn
+    (appCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken a))
+      (RawTerm.weaken b))
 
 /-- `fst = λp. p K` — the first projection (selects the first stored component via `K`). -/
 def churchFst : RawTerm 0 :=
-  lamCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken combinatorK))
+  lamCell combinatorDomainAnn
+    (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken combinatorK))
 
 /-- `λx. λy. y` — the second projector (discards `x`, returns `y`). -/
 def secondProjector : RawTerm 0 :=
-  lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
+  lamCell combinatorDomainAnn
+    (lamCell combinatorDomainAnn (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
 
 /-- `snd = λp. p (λx.λy.y)` — the second projection (selects the second stored component). -/
 def churchSnd : RawTerm 0 :=
-  lamCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken secondProjector))
+  lamCell combinatorDomainAnn
+    (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken secondProjector))
 
 /-- **The second-projection rule: `(λx.λy.y) a b ↝* b`.**  `(λx.λy.y) a` discards `x` and reduces to `λy.y = I`
 (`rfl`-definitional — `x` is absent from the body), then the I-rule selects `b`. -/

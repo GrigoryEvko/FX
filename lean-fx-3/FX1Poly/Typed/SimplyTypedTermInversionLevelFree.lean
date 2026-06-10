@@ -107,37 +107,39 @@ theorem SimplyTypedTermLF.inversionApplication {profile : PolyProfile} {scope : 
 /-- **Inversion for a lambda cell.**  A lambda's type is `Π domainCode. weaken codomainBase`, with the body
 typed in the extended context and both domain and codomain reducible type expressions. -/
 theorem SimplyTypedTermLF.inversionLambda {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)} {classifier : RawTerm scope}
-    (typed : SimplyTypedTermLF context (lamCell body) classifier) :
-    ∃ domainCode codomainBase : RawTerm scope,
-      classifier = piTyCodeCell domainCode (RawTerm.weaken codomainBase) ∧
-        IsReducibleTypeExprLF domainCode ∧ IsReducibleTypeExprLF codomainBase ∧
-          SimplyTypedTermLF (context.cons domainCode) body (RawTerm.weaken codomainBase) := by
+    {context : TypingContext profile scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} {classifier : RawTerm scope}
+    (typed : SimplyTypedTermLF context (lamCell domainAnn body) classifier) :
+    ∃ codomainBase : RawTerm scope,
+      classifier = piTyCodeCell domainAnn (RawTerm.weaken codomainBase) ∧
+        IsReducibleTypeExprLF domainAnn ∧ IsReducibleTypeExprLF codomainBase ∧
+          SimplyTypedTermLF (context.cons domainAnn) body (RawTerm.weaken codomainBase) := by
   suffices general :
       ∀ {generalScope : Nat} {generalContext : TypingContext profile generalScope}
         {subject reached : RawTerm generalScope},
         SimplyTypedTermLF generalContext subject reached →
-          ∀ {generalBody : RawTerm (generalScope + 1)},
-            subject = lamCell generalBody →
-              ∃ domainCode codomainBase : RawTerm generalScope,
-                reached = piTyCodeCell domainCode (RawTerm.weaken codomainBase) ∧
-                  IsReducibleTypeExprLF domainCode ∧ IsReducibleTypeExprLF codomainBase ∧
-                    SimplyTypedTermLF (generalContext.cons domainCode) generalBody
+          ∀ {generalDomainAnn : RawTerm generalScope} {generalBody : RawTerm (generalScope + 1)},
+            subject = lamCell generalDomainAnn generalBody →
+              ∃ codomainBase : RawTerm generalScope,
+                reached = piTyCodeCell generalDomainAnn (RawTerm.weaken codomainBase) ∧
+                  IsReducibleTypeExprLF generalDomainAnn ∧ IsReducibleTypeExprLF codomainBase ∧
+                    SimplyTypedTermLF (generalContext.cons generalDomainAnn) generalBody
                       (RawTerm.weaken codomainBase) from
     general typed rfl
   intro generalScope generalContext subject reached derivation
   induction derivation with
   | var armIndex =>
-      intro generalBody subjectEq
+      intro generalDomainAnn generalBody subjectEq
       exact Generator.noConfusion (congrArg RawTerm.headGenerator subjectEq)
   | app functionTyped argumentTyped _ihFunction _ihArgument =>
-      intro generalBody subjectEq
+      intro generalDomainAnn generalBody subjectEq
       exact Generator.noConfusion (congrArg RawTerm.headGenerator subjectEq)
   | lam domainExpr codomainExpr bodyTyped _ihBody =>
-      intro generalBody subjectEq
+      intro generalDomainAnn generalBody subjectEq
       injection subjectEq with _ _ _ childrenSpineEq
-      injection childrenSpineEq with _ _ _ bodyEq _
-      subst bodyEq
-      exact ⟨_, _, rfl, domainExpr, codomainExpr, bodyTyped⟩
+      injection childrenSpineEq with _ _ _ domainAnnEq tailSpineEq
+      injection tailSpineEq with _ _ _ bodyEq _
+      subst domainAnnEq; subst bodyEq
+      exact ⟨_, rfl, domainExpr, codomainExpr, bodyTyped⟩
 
 end FX1Poly.Typed

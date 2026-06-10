@@ -106,7 +106,7 @@ theorem isDependentArrowReducible_isReducibilityCandidate {scope : Nat}
           (IsNeutral.app functionIsNeutral) ?_
         intro reduct reductionStep
         rcases Step.from_app reductionStep with
-          ⟨_body, functionEqualsLam, _targetEq⟩ |
+          ⟨_domainAnn, _body, functionEqualsLam, _targetEq⟩ |
           ⟨functionAfter, reductEquals, functionStep⟩ |
           ⟨argumentAfter, reductEquals, argumentStep⟩
         · exact (IsNeutral.not_lam (functionEqualsLam ▸ functionIsNeutral)).elim

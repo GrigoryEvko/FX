@@ -63,7 +63,8 @@ theorem HasTypeDescPi.openFunctionStepsOrIsLambdaOrNeutral {profile : PolyProfil
     (typed : HasTypeDescPi profile context subject (piTyCodeCell outerDomain outerCodomain))
     (wellFormed : WfContextDesc context) :
     (∃ reduct : RawTerm scope, Step subject reduct) ∨
-    (∃ body : RawTerm (scope + 1), subject = lamCell body) ∨ IsNeutral subject := by
+    (∃ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)), subject = lamCell domainAnn body) ∨
+      IsNeutral subject := by
   by_cases isNormal : RawTerm.isStepNormalForm subject
   · exact Or.inr (HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral typed wellFormed isNormal)
   · exact Or.inl (exists_step_of_not_isStepNormalForm isNormal)

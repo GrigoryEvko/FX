@@ -61,6 +61,12 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe StepStar
 
+/-- A closed, scope-polymorphic domain annotation for the binary Boolean-operation binders.  Under T2 every
+`lamCell` carries a domain; for these pure-raw operational fixtures a closed `universeCodeCell` is invariant under
+`subst0`/`weaken` and heads no redex, keeping the two-β-step reductions computational. -/
+def boolOperationDomainAnn {scope : Nat} : RawTerm scope :=
+  universeCodeCell LevelExpr.lzero UniverseFlag.standard
+
 -- ========== selection helpers ==========
 
 /-- `churchFalse` selects its else-branch (the THIRD argument) for ARBITRARY (symbolic) arguments — its body is
@@ -124,7 +130,7 @@ theorem churchTrueSelectsConcreteFalse (typeArg elseBranch : RawTerm 0) :
 /-- The Church-encoded conjunction `churchAnd = λa.λb. a P b churchFalse` — `a` selects `b` when true and
 `churchFalse` when false.  The constants are weakened under the two binders. -/
 abbrev churchAndLambda : RawTerm 0 :=
-  lamCell (lamCell (appCell (appCell (appCell
+  lamCell boolOperationDomainAnn (lamCell boolOperationDomainAnn (appCell (appCell (appCell
     (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
     (RawTerm.weaken (RawTerm.weaken branchMotivePlaceholder)))
     RawTerm.newestVar)
@@ -132,7 +138,7 @@ abbrev churchAndLambda : RawTerm 0 :=
 
 /-- The β1-contractum of `churchAnd`: `λb. (weaken a) (weaken P) b (weaken churchFalse)`. -/
 abbrev churchAndPartial (selectorArg : RawTerm 0) : RawTerm 0 :=
-  lamCell (appCell (appCell (appCell
+  lamCell boolOperationDomainAnn (appCell (appCell (appCell
     (RawTerm.weaken selectorArg)
     (RawTerm.weaken branchMotivePlaceholder))
     RawTerm.newestVar)
@@ -142,14 +148,14 @@ abbrev churchAndPartial (selectorArg : RawTerm 0) : RawTerm 0 :=
 constant (`subst_lift_singleton_weaken_weaken`); the bound `b` (`var 0`) is unchanged. -/
 theorem churchAndBody_subst_a (selectorArg : RawTerm 0) :
     RawTerm.subst0
-      (lamCell (appCell (appCell (appCell
+      (lamCell boolOperationDomainAnn (appCell (appCell (appCell
         (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
         (RawTerm.weaken (RawTerm.weaken branchMotivePlaceholder)))
         RawTerm.newestVar)
         (RawTerm.weaken (RawTerm.weaken churchFalseLambda)))) selectorArg
       = churchAndPartial selectorArg := by
-  unfold RawTerm.subst0 churchAndPartial
-  show lamCell (appCell (appCell (appCell
+  unfold RawTerm.subst0 churchAndPartial boolOperationDomainAnn
+  show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (appCell (appCell (appCell
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton selectorArg))
         (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton selectorArg))
@@ -227,7 +233,7 @@ theorem churchAnd_trueFalse :
 /-- The Church-encoded disjunction `churchOr = λa.λb. a P churchTrue b` — `a` selects `churchTrue` when true and
 `b` when false. -/
 abbrev churchOrLambda : RawTerm 0 :=
-  lamCell (lamCell (appCell (appCell (appCell
+  lamCell boolOperationDomainAnn (lamCell boolOperationDomainAnn (appCell (appCell (appCell
     (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
     (RawTerm.weaken (RawTerm.weaken branchMotivePlaceholder)))
     (RawTerm.weaken (RawTerm.weaken churchTrueLambda)))
@@ -235,7 +241,7 @@ abbrev churchOrLambda : RawTerm 0 :=
 
 /-- The β1-contractum of `churchOr`: `λb. (weaken a) (weaken P) (weaken churchTrue) b`. -/
 abbrev churchOrPartial (selectorArg : RawTerm 0) : RawTerm 0 :=
-  lamCell (appCell (appCell (appCell
+  lamCell boolOperationDomainAnn (appCell (appCell (appCell
     (RawTerm.weaken selectorArg)
     (RawTerm.weaken branchMotivePlaceholder))
     (RawTerm.weaken churchTrueLambda))
@@ -244,14 +250,14 @@ abbrev churchOrPartial (selectorArg : RawTerm 0) : RawTerm 0 :=
 /-- β1 reshape for `churchOr`. -/
 theorem churchOrBody_subst_a (selectorArg : RawTerm 0) :
     RawTerm.subst0
-      (lamCell (appCell (appCell (appCell
+      (lamCell boolOperationDomainAnn (appCell (appCell (appCell
         (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
         (RawTerm.weaken (RawTerm.weaken branchMotivePlaceholder)))
         (RawTerm.weaken (RawTerm.weaken churchTrueLambda)))
         RawTerm.newestVar)) selectorArg
       = churchOrPartial selectorArg := by
-  unfold RawTerm.subst0 churchOrPartial
-  show lamCell (appCell (appCell (appCell
+  unfold RawTerm.subst0 churchOrPartial boolOperationDomainAnn
+  show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (appCell (appCell (appCell
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton selectorArg))
         (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
       (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton selectorArg))

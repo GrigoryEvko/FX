@@ -32,14 +32,20 @@ open Foundation
 
 /-- **Inversion of `ParStep` at a λ.**  A parallel reduct of `lam body` is `lam body'` with the body
 reduced — the extraction the triangle's β arm needs from the cong-reduced function child. -/
-theorem ParStep.lam_inv {scope : Nat} {body : RawTerm (scope + 1)} {target : RawTerm scope}
-    (step : ParStep (.mkGen .gen_lam () (.childCons body .childNil)) target) :
-    ∃ body' : RawTerm (scope + 1),
-      target = .mkGen .gen_lam () (.childCons body' .childNil) ∧ ParStep body body' := by
+theorem ParStep.lam_inv {scope : Nat} {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+    {target : RawTerm scope}
+    (step : ParStep (.mkGen .gen_lam ()
+      (.childCons domainAnn (.childCons body .childNil))) target) :
+    ∃ (domainAnn' : RawTerm scope) (body' : RawTerm (scope + 1)),
+      target = .mkGen .gen_lam () (.childCons domainAnn' (.childCons body' .childNil)) ∧
+        ParStep domainAnn domainAnn' ∧ ParStep body body' := by
   cases step with
   | cong gen payload childrenStep =>
       cases childrenStep with
-      | cons headStep tailStep => cases tailStep with | nil => exact ⟨_, rfl, headStep⟩
+      | cons domainStep tailStep =>
+          cases tailStep with
+          | cons bodyStep tailStep2 =>
+              cases tailStep2 with | nil => exact ⟨_, _, rfl, domainStep, bodyStep⟩
 
 /-- **Inversion of `ParStep` at a pair.**  A parallel reduct of `pair a b` is `pair a' b'` with both
 components reduced — the extraction the `fst`/`snd` ι arms need. -/

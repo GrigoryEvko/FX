@@ -42,7 +42,9 @@ open StepStar
 `Type@e`.  Height `0` is `Type@e`; height `n+1` wraps the previous in one identity application. -/
 def idTower (levelExpr : LevelExpr) (flag : UniverseFlag) : Nat → RawTerm 0
   | 0 => universeCodeCell levelExpr flag
-  | n + 1 => appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) (idTower levelExpr flag n)
+  | n + 1 => appCell
+      (lamCell (universeCodeCell levelExpr.lsucc flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (idTower levelExpr flag n)
 
 /-- **Every tower member types uniformly at `Type@(e+1)`.**  Base by universe formation
 (`Type@e : Type@(e+1)`); step by `piElim` of the identity at `Type@(e+1)` against the inductive

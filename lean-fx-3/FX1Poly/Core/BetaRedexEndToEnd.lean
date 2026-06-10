@@ -71,13 +71,14 @@ Use case: the structural induction's start of body for the
 SR-beta proof — extracts the inputs to the recursive call. -/
 theorem HasCertifiedCellDim0.beta_redex_projection
     {profile : PolyProfile} {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     (arg : RawTerm scope)
     (cert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_app ()
                 (.childCons
                   (.mkGen .gen_lam ()
-                    (.childCons body .childNil))
+                    (.childCons domainAnn (.childCons body .childNil)))
                   (.childCons arg .childNil))) : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) body ∧
     HasCertifiedCellDim0 (profile := profile) arg := by
@@ -85,13 +86,15 @@ theorem HasCertifiedCellDim0.beta_redex_projection
   · -- extract body cert via lam projection of function
     have lamCert :=
       HasCertifiedCellDim0.app_function_projection
-        (.mkGen .gen_lam () (.childCons body .childNil))
+        (.mkGen .gen_lam ()
+          (.childCons domainAnn (.childCons body .childNil)))
         arg
         cert
-    exact lamCert.lam_body_projection body
+    exact lamCert.lam_body_projection domainAnn body
   · -- extract arg cert directly
     exact HasCertifiedCellDim0.app_argument_projection
-      (.mkGen .gen_lam () (.childCons body .childNil))
+      (.mkGen .gen_lam ()
+        (.childCons domainAnn (.childCons body .childNil)))
       arg
       cert
 
@@ -113,16 +116,18 @@ general structural induction
 `HasCertifiedCellDim0.preservedBySubst0`. -/
 theorem HasCertifiedCellDim0.beta_var_zero_e2e
     {profile : PolyProfile} {scope : Nat}
+    (domainAnn : RawTerm scope)
     (arg : RawTerm scope)
     (cert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_app ()
                 (.childCons
                   (.mkGen .gen_lam ()
-                    (.childCons
-                      (.mkGen .gen_var
-                        (⟨0, Nat.zero_lt_succ scope⟩ : Fin (scope + 1))
-                        .childNil)
-                      .childNil))
+                    (.childCons domainAnn
+                      (.childCons
+                        (.mkGen .gen_var
+                          (⟨0, Nat.zero_lt_succ scope⟩ : Fin (scope + 1))
+                          .childNil)
+                        .childNil)))
                   (.childCons arg .childNil))) : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.subst0
@@ -133,11 +138,12 @@ theorem HasCertifiedCellDim0.beta_var_zero_e2e
   have argCert :=
     HasCertifiedCellDim0.app_argument_projection
       (.mkGen .gen_lam ()
-        (.childCons
-          (.mkGen .gen_var
-            (⟨0, Nat.zero_lt_succ scope⟩ : Fin (scope + 1))
-            .childNil)
-          .childNil))
+        (.childCons domainAnn
+          (.childCons
+            (.mkGen .gen_var
+              (⟨0, Nat.zero_lt_succ scope⟩ : Fin (scope + 1))
+              .childNil)
+            .childNil)))
       arg
       cert
   exact HasCertifiedCellDim0.subst0_varZero_preservation arg argCert
@@ -166,13 +172,14 @@ specific body shapes (the 8 leaf preservations + 9 compound
 preservations) can instantiate `substPreservation` case-by-case. -/
 theorem HasCertifiedCellDim0.beta_redex_assembly
     {profile : PolyProfile} {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     (arg : RawTerm scope)
     (sourceCert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_app ()
                 (.childCons
                   (.mkGen .gen_lam ()
-                    (.childCons body .childNil))
+                    (.childCons domainAnn (.childCons body .childNil)))
                   (.childCons arg .childNil))) : RawTerm scope))
     (substPreservation :
       HasCertifiedCellDim0 (profile := profile) body →
@@ -180,7 +187,7 @@ theorem HasCertifiedCellDim0.beta_redex_assembly
       HasCertifiedCellDim0 (profile := profile) (RawTerm.subst0 body arg)) :
     HasCertifiedCellDim0 (profile := profile) (RawTerm.subst0 body arg) := by
   obtain ⟨bodyCert, argCert⟩ :=
-    HasCertifiedCellDim0.beta_redex_projection body arg sourceCert
+    HasCertifiedCellDim0.beta_redex_projection domainAnn body arg sourceCert
   exact substPreservation bodyCert argCert
 
 end FX1Poly.Core

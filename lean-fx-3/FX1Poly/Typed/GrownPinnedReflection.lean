@@ -110,6 +110,7 @@ mutual
 which is the explicit `residual` hypothesis. -/
 theorem HasTypeDescPi.pinnedReflectionConditional {profile : PolyProfile}
     (residual : PinnedReflectionPiElimResidual profile)
+    (flagUnique : SourceUniverseFlagUnique profile)
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     {subject classifier : RawTerm targetScope}
     (derivation : HasTypeDescPi profile targetContext subject classifier) :
@@ -119,14 +120,15 @@ theorem HasTypeDescPi.pinnedReflectionConditional {profile : PolyProfile}
       pinnedReflectionOfFormationArm profile formationTyped
   | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
       pinnedReflectionConvArm profile converts
-        (HasTypeDescPi.pinnedReflectionConditional residual typedPremise)
+        (HasTypeDescPi.pinnedReflectionConditional residual flagUnique typedPremise)
   | .piIntro domainLevel _codomainLevel flag domainTyped _codomainTyped bodyTyped =>
-      pinnedReflectionPiIntroArm profile ⟨domainLevel, flag, domainTyped⟩
-        (HasTypeDescPi.pinnedReflectionConditional residual bodyTyped)
+      pinnedReflectionPiIntroArm profile flagUnique domainTyped
+        (HasTypeDescPi.pinnedReflectionConditional residual flagUnique domainTyped)
+        (HasTypeDescPi.pinnedReflectionConditional residual flagUnique bodyTyped)
   | .piElim functionTyped argumentTyped =>
       residual functionTyped argumentTyped
-        (HasTypeDescPi.pinnedReflectionConditional residual functionTyped)
-        (HasTypeDescPi.pinnedReflectionConditional residual argumentTyped)
+        (HasTypeDescPi.pinnedReflectionConditional residual flagUnique functionTyped)
+        (HasTypeDescPi.pinnedReflectionConditional residual flagUnique argumentTyped)
   | .genFormationPi _targetContext generator payload children levels flag rule
       isFormation premises => by
       intro targetWellFormed sourceScope rho sourceContext rhoInjective condition
@@ -139,7 +141,7 @@ theorem HasTypeDescPi.pinnedReflectionConditional {profile : PolyProfile}
         renameEqMkGenInversion rho hNotVar subjectInImage.symm
       subst hSource
       have sourceTelescope :=
-        DescTelescopePi.pinnedReflectionTelescopeConditional residual premises
+        DescTelescopePi.pinnedReflectionTelescopeConditional residual flagUnique premises
           targetWellFormed rho sourceContext rhoInjective condition wellFormed
           hChildren
       refine ⟨universeFormerOutput _ levels flag, ?_, ?_⟩
@@ -156,6 +158,7 @@ conclusion; heads re-pin to their universe classifiers via `HasTypeDescPi.retype
 (pin base = the rename-invariant universe code, typed by `universeFormation`). -/
 theorem DescTelescopePi.pinnedReflectionTelescopeConditional {profile : PolyProfile}
     (residual : PinnedReflectionPiElimResidual profile)
+    (flagUnique : SourceUniverseFlagUnique profile)
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
     {targetContext : TypingContext profile (baseScope + currentDepth)}
     {levels : List LevelExpr} {flag : UniverseFlag}
@@ -195,7 +198,7 @@ theorem DescTelescopePi.pinnedReflectionTelescopeConditional {profile : PolyProf
             rw [rename_universeCodeCell]
             exact Conv.refl _
           obtain ⟨reflectedClassifier, classifierConv, reflectedTyped⟩ :=
-            HasTypeDescPi.pinnedReflectionConditional residual headTyped
+            HasTypeDescPi.pinnedReflectionConditional residual flagUnique headTyped
               targetWellFormed (iterateLiftRaw rho currentDepth) sourceContext
               (RawRenaming.iterateLiftRaw_injective rhoInjective currentDepth)
               condition wellFormed hHead headPin
@@ -222,7 +225,7 @@ theorem DescTelescopePi.pinnedReflectionTelescopeConditional {profile : PolyProf
             ⟨targetWellFormed, headLevel, flag, headTyped⟩
           exact DescTelescopePi.cons sourceContext sourceHead headLevel restLevels
             flag sourceRest sourceHeadTyped
-            (DescTelescopePi.pinnedReflectionTelescopeConditional residual restTyped
+            (DescTelescopePi.pinnedReflectionTelescopeConditional residual flagUnique restTyped
               targetWellFormed' rho (sourceContext.cons sourceHead) rhoInjective
               condition' wellFormed' hTail)
 

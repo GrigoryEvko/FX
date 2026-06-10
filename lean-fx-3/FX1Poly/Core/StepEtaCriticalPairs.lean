@@ -53,13 +53,15 @@ namespace RawTerm
 
 /-- Weakening a lambda preserves the lambda head and lifts weakening under
 the lambda binder. -/
-theorem weaken_lam {scope : Nat} (body : RawTerm (scope + 1)) :
+theorem weaken_lam {scope : Nat} (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)) :
     RawTerm.weaken
-        (RawTerm.mkGen .gen_lam () (.childCons body .childNil)) =
+        (RawTerm.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) =
       RawTerm.mkGen .gen_lam ()
         (.childCons
-          (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
-          .childNil) := by
+          (RawTerm.rename RawRenaming.weaken domainAnn)
+          (.childCons
+            (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
+            .childNil)) := by
   rw [RawTerm.weaken_eq_rename]
   rw [RawTerm.rename_nonVar_reduces RawRenaming.weaken
     (by decide : Generator.gen_lam ≠ .gen_var)]
@@ -70,13 +72,17 @@ already a lambda and the weakened body is the binder-lifted weakening of its
 source body. -/
 theorem weaken_eq_lam_implies_source_lam {scope : Nat}
     {innerFunction : RawTerm scope}
+    {weakenedDomain : RawTerm (scope + 1)}
     {weakenedBody : RawTerm (scope + 2)}
     (weakenedEq :
       RawTerm.weaken innerFunction =
-        RawTerm.mkGen .gen_lam () (.childCons weakenedBody .childNil)) :
-    ∃ body : RawTerm (scope + 1),
+        RawTerm.mkGen .gen_lam ()
+          (.childCons weakenedDomain (.childCons weakenedBody .childNil))) :
+    ∃ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)),
       innerFunction =
-          RawTerm.mkGen .gen_lam () (.childCons body .childNil) ∧
+          RawTerm.mkGen .gen_lam ()
+            (.childCons domainAnn (.childCons body .childNil)) ∧
+        weakenedDomain = RawTerm.rename RawRenaming.weaken domainAnn ∧
         weakenedBody =
           RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body := by
   cases innerFunction with
@@ -89,12 +95,15 @@ theorem weaken_eq_lam_implies_source_lam {scope : Nat}
         · subst generator
           cases payload
           cases children with
-          | childCons head rest =>
-              cases rest
-              rw [RawTerm.weaken_lam] at weakenedEq
-              injection weakenedEq with _ _ _ childrenEq
-              injection childrenEq with _ _ _ childHeadEq _
-              exact ⟨head, rfl, childHeadEq.symm⟩
+          | childCons domainHead rest =>
+              cases rest with
+              | childCons bodyHead restTail =>
+                  cases restTail
+                  rw [RawTerm.weaken_lam] at weakenedEq
+                  injection weakenedEq with _ _ _ childrenEq
+                  injection childrenEq with _ _ _ childDomainEq childrenTailEq
+                  injection childrenTailEq with _ _ _ childBodyEq _
+                  exact ⟨domainHead, bodyHead, rfl, childDomainEq.symm, childBodyEq.symm⟩
         · rw [RawTerm.weaken_eq_rename] at weakenedEq
           rw [RawTerm.rename_nonVar_reduces RawRenaming.weaken
             generatorIsVar] at weakenedEq
@@ -686,37 +695,87 @@ theorem etaGlueIntroRightStep {scope : Nat}
       (Or.inl rightStep) :=
   swap (etaGlueIntroLeftStep rightStep)
 
-/-- Eta-lambda versus beta at the eta body's application root.
+/-- **The Nederpelt diagonal guard.**  IF the eta-expanded function is itself an
+annotated lambda, its annotation matches the eta binder's annotation.  Without this
+guard the eta-beta overlap is genuinely NON-JOINABLE in the raw calculus: the source
+`lam A (app (weaken (lam B b)) var0)` contracts to `lam A b` by the inner beta and to
+`lam B b` by the root eta — distinct stuck terms for normal `A != B`.  Church-style
+annotations break RAW beta-eta local confluence (Nederpelt); the typed layer is
+unaffected, since typing forces the two annotations convertible. -/
+def EtaLamAnnotationDiagonal {scope : Nat}
+    (domainAnn innerFunction : RawTerm scope) : Prop :=
+  ∀ (innerDomainAnn : RawTerm scope) (innerBody : RawTerm (scope + 1)),
+    innerFunction =
+      .mkGen .gen_lam ()
+        (.childCons innerDomainAnn (.childCons innerBody .childNil)) →
+    innerDomainAnn = domainAnn
 
-When the eta-expanded function is itself a lambda, the body
-`app (weaken (lam body)) newestVar` beta-reduces under the outer eta
+/-- A function that is not lambda-shaped satisfies the diagonal guard vacuously — the
+case every iota-headed or neutral-headed eta-expansion consumer needs (the shape
+refutation is one `Generator.noConfusion` at the call site). -/
+theorem EtaLamAnnotationDiagonal.ofNotLamShape {scope : Nat}
+    {domainAnn innerFunction : RawTerm scope}
+    (notLamShaped :
+      ∀ (innerDomainAnn : RawTerm scope) (innerBody : RawTerm (scope + 1)),
+        innerFunction ≠
+          .mkGen .gen_lam ()
+            (.childCons innerDomainAnn (.childCons innerBody .childNil))) :
+    EtaLamAnnotationDiagonal domainAnn innerFunction :=
+  fun innerDomainAnn innerBody innerFunctionEq =>
+    absurd innerFunctionEq (notLamShaped innerDomainAnn innerBody)
+
+/-- The matching-annotation lambda satisfies the diagonal guard — the joinable
+diagonal instance. -/
+theorem EtaLamAnnotationDiagonal.ofMatchingLam {scope : Nat}
+    {domainAnn : RawTerm scope} {innerBody : RawTerm (scope + 1)} :
+    EtaLamAnnotationDiagonal domainAnn
+      (.mkGen .gen_lam ()
+        (.childCons domainAnn (.childCons innerBody .childNil))) := by
+  intro otherDomainAnn otherBody innerFunctionEq
+  injection innerFunctionEq with _ _ _ childrenEq
+  injection childrenEq with _ _ _ domainEq _
+  exact domainEq.symm
+
+/-- Eta-lambda versus beta at the eta body's application root, ON THE DIAGONAL.
+
+When the eta-expanded function is itself a lambda WITH THE SAME annotation, the body
+`app (weaken (lam domainAnn body)) newestVar` beta-reduces under the outer eta
 lambda to `body`, so the whole reduct is definitionally joined with
-the root eta branch after the substitution-cancellation lemma above. -/
+the root eta branch after the substitution-cancellation lemma above.  Off the
+diagonal the pair is NON-JOINABLE — see `EtaLamAnnotationDiagonal`. -/
 theorem etaLamBodyBeta {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1)) :
     BetaEtaPairJoin
       (Or.inl
         (Step.cong .gen_lam ()
-          (StepChildren.here
-            (parentScope := scope) (headShift := 1) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
-            (Step.beta
-              (body :=
-                RawTerm.rename (RawRenaming.lift RawRenaming.weaken)
-                  body)
-              (arg := RawTerm.newestVar (scope := scope))))))
+          (StepChildren.there (parentScope := scope) (headShift := 0)
+              (restShifts := [1]) domainAnn
+            (StepChildren.here
+              (parentScope := scope) (headShift := 1) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              (Step.beta
+                (domainAnn :=
+                  RawTerm.rename RawRenaming.weaken domainAnn)
+                (body :=
+                  RawTerm.rename (RawRenaming.lift RawRenaming.weaken)
+                    body)
+                (arg := RawTerm.newestVar (scope := scope)))))))
       (Or.inr
-        (Step.eta.etaLam
-          (RawTerm.mkGen .gen_lam () (.childCons body .childNil)))) := by
+        (Step.eta.etaLam domainAnn
+          (RawTerm.mkGen .gen_lam ()
+            (.childCons domainAnn (.childCons body .childNil))))) := by
   apply ofReductsEqual
   change
     (RawTerm.mkGen .gen_lam ()
-      (.childCons
-        (RawTerm.subst0
-          (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
-          (RawTerm.newestVar (scope := scope)))
-        .childNil)) =
-      (RawTerm.mkGen .gen_lam () (.childCons body .childNil))
+      (.childCons domainAnn
+        (.childCons
+          (RawTerm.subst0
+            (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
+            (RawTerm.newestVar (scope := scope)))
+          .childNil))) =
+      (RawTerm.mkGen .gen_lam ()
+        (.childCons domainAnn (.childCons body .childNil)))
   rw [RawTerm.subst0_lift_weaken_newestVar]
 
 /-- Eta-lambda versus a beta+iota step replayed through the weakened
@@ -730,26 +789,29 @@ step under weakening in the function slot of the eta source.  The join
 contracts eta for the updated function on the congruence side and replays
 the original function step on the eta side. -/
 theorem etaLamFunctionCong {scope : Nat}
+    (domainAnn : RawTerm scope)
     {innerFunction updatedFunction : RawTerm scope}
     (functionStep : Step innerFunction updatedFunction) :
     BetaEtaPairJoin
       (Or.inl
         (Step.cong .gen_lam ()
-          (StepChildren.here
-            (parentScope := scope) (headShift := 1) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
-            (Step.cong .gen_app ()
-              (StepChildren.here
-                (parentScope := scope + 1) (headShift := 0)
-                (restShifts := [0])
-                ((.childCons RawTerm.newestVar .childNil) :
-                  RawTermChildren [0] (scope + 1))
-                (Step.weaken functionStep))))))
-      (Or.inr (Step.eta.etaLam innerFunction)) := by
+          (StepChildren.there (parentScope := scope) (headShift := 0)
+              (restShifts := [1]) domainAnn
+            (StepChildren.here
+              (parentScope := scope) (headShift := 1) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              (Step.cong .gen_app ()
+                (StepChildren.here
+                  (parentScope := scope + 1) (headShift := 0)
+                  (restShifts := [0])
+                  ((.childCons RawTerm.newestVar .childNil) :
+                    RawTermChildren [0] (scope + 1))
+                  (Step.weaken functionStep)))))))
+      (Or.inr (Step.eta.etaLam domainAnn innerFunction)) := by
   exact
     ⟨ updatedFunction
     , Step.betaEtaStar.trans
-        (Or.inr (Step.eta.etaLam updatedFunction))
+        (Or.inr (Step.eta.etaLam domainAnn updatedFunction))
         (Step.betaEtaStar.refl _)
     , Step.betaEtaStar.trans (Or.inl functionStep)
         (Step.betaEtaStar.refl _) ⟩
@@ -792,6 +854,7 @@ assume the under-binder step was syntactically built by `Step.weaken`.
 Instead, it consumes the exact strengthening evidence a future inversion
 lemma must produce. -/
 theorem etaLamStrengthenedFunctionCong {scope : Nat}
+    (domainAnn : RawTerm scope)
     {innerFunction : RawTerm scope}
     {updatedUnderBinder : RawTerm (scope + 1)}
     {updatedFunction : RawTerm scope}
@@ -803,17 +866,19 @@ theorem etaLamStrengthenedFunctionCong {scope : Nat}
     BetaEtaPairJoin
       (Or.inl
         (Step.cong .gen_lam ()
-          (StepChildren.here
-            (parentScope := scope) (headShift := 1) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
-            (Step.cong .gen_app ()
-              (StepChildren.here
-                (parentScope := scope + 1) (headShift := 0)
-                (restShifts := [0])
-                ((.childCons RawTerm.newestVar .childNil) :
-                  RawTermChildren [0] (scope + 1))
-                underBinderStep)))))
-      (Or.inr (Step.eta.etaLam innerFunction)) := by
+          (StepChildren.there (parentScope := scope) (headShift := 0)
+              (restShifts := [1]) domainAnn
+            (StepChildren.here
+              (parentScope := scope) (headShift := 1) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              (Step.cong .gen_app ()
+                (StepChildren.here
+                  (parentScope := scope + 1) (headShift := 0)
+                  (restShifts := [0])
+                  ((.childCons RawTerm.newestVar .childNil) :
+                    RawTermChildren [0] (scope + 1))
+                  underBinderStep))))))
+      (Or.inr (Step.eta.etaLam domainAnn innerFunction)) := by
   have underBinderEq :
       updatedUnderBinder = RawTerm.weaken updatedFunction :=
     (RawTerm.strengthen_sound updatedUnderBinder updatedFunction
@@ -822,7 +887,7 @@ theorem etaLamStrengthenedFunctionCong {scope : Nat}
   exact
     ⟨ updatedFunction
     , Step.betaEtaStar.trans
-        (Or.inr (Step.eta.etaLam updatedFunction))
+        (Or.inr (Step.eta.etaLam domainAnn updatedFunction))
         (Step.betaEtaStar.refl _)
     , Step.betaEtaStar.trans (Or.inl functionStep)
         (Step.betaEtaStar.refl _) ⟩
@@ -876,6 +941,7 @@ This consumes only the remaining freshness witness
 source-scope step itself is reconstructed by substituting a canonical unit
 term for the fresh variable in `Step.weaken_substTarget`. -/
 theorem etaLamStrengthenedFunctionCongFromUnderStep {scope : Nat}
+    (domainAnn : RawTerm scope)
     {innerFunction : RawTerm scope}
     {updatedUnderBinder : RawTerm (scope + 1)}
     {updatedFunction : RawTerm scope}
@@ -886,17 +952,19 @@ theorem etaLamStrengthenedFunctionCongFromUnderStep {scope : Nat}
     BetaEtaPairJoin
       (Or.inl
         (Step.cong .gen_lam ()
-          (StepChildren.here
-            (parentScope := scope) (headShift := 1) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
-            (Step.cong .gen_app ()
-              (StepChildren.here
-                (parentScope := scope + 1) (headShift := 0)
-                (restShifts := [0])
-                ((.childCons RawTerm.newestVar .childNil) :
-                  RawTermChildren [0] (scope + 1))
-                underBinderStep)))))
-      (Or.inr (Step.eta.etaLam innerFunction)) := by
+          (StepChildren.there (parentScope := scope) (headShift := 0)
+              (restShifts := [1]) domainAnn
+            (StepChildren.here
+              (parentScope := scope) (headShift := 1) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              (Step.cong .gen_app ()
+                (StepChildren.here
+                  (parentScope := scope + 1) (headShift := 0)
+                  (restShifts := [0])
+                  ((.childCons RawTerm.newestVar .childNil) :
+                    RawTermChildren [0] (scope + 1))
+                  underBinderStep))))))
+      (Or.inr (Step.eta.etaLam domainAnn innerFunction)) := by
   let unitTerm : RawTerm scope := .mkGen .gen_unit () .childNil
   have targetBySubstitution :
       RawTerm.subst (RawTermSubst.singleton unitTerm) updatedUnderBinder =
@@ -912,7 +980,7 @@ theorem etaLamStrengthenedFunctionCongFromUnderStep {scope : Nat}
     dsimp only [unitTerm] at targetBySubstitution
     rw [targetBySubstitution] at replayedStep
     exact replayedStep
-  exact etaLamStrengthenedFunctionCong underBinderStep
+  exact etaLamStrengthenedFunctionCong domainAnn underBinderStep
     strengthenSuccess functionStep
 
 /-- Cubical path-lambda sibling of
@@ -962,6 +1030,7 @@ weakened function occurrence.
 The strengthening evidence is now derived from `Step.weaken_strengthenTarget`,
 so callers only supply the under-binder `Step`. -/
 theorem etaLamArbitraryUnderBinderCong {scope : Nat}
+    (domainAnn : RawTerm scope)
     {innerFunction : RawTerm scope}
     {updatedUnderBinder : RawTerm (scope + 1)}
     (underBinderStep :
@@ -969,18 +1038,20 @@ theorem etaLamArbitraryUnderBinderCong {scope : Nat}
     BetaEtaPairJoin
       (Or.inl
         (Step.cong .gen_lam ()
-          (StepChildren.here
-            (parentScope := scope) (headShift := 1) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
-            (Step.cong .gen_app ()
-              (StepChildren.here
-                (parentScope := scope + 1) (headShift := 0)
-                (restShifts := [0])
-                ((.childCons RawTerm.newestVar .childNil) :
-                  RawTermChildren [0] (scope + 1))
-                underBinderStep)))))
-      (Or.inr (Step.eta.etaLam innerFunction)) :=
-  etaLamStrengthenedFunctionCongFromUnderStep underBinderStep
+          (StepChildren.there (parentScope := scope) (headShift := 0)
+              (restShifts := [1]) domainAnn
+            (StepChildren.here
+              (parentScope := scope) (headShift := 1) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              (Step.cong .gen_app ()
+                (StepChildren.here
+                  (parentScope := scope + 1) (headShift := 0)
+                  (restShifts := [0])
+                  ((.childCons RawTerm.newestVar .childNil) :
+                    RawTermChildren [0] (scope + 1))
+                  underBinderStep))))))
+      (Or.inr (Step.eta.etaLam domainAnn innerFunction)) :=
+  etaLamStrengthenedFunctionCongFromUnderStep domainAnn underBinderStep
     (Step.weaken_strengthenTarget underBinderStep)
 
 /-- Cubical path-lambda sibling of `etaLamArbitraryUnderBinderCong`. -/
@@ -1016,45 +1087,63 @@ inversion for weakened terms plus the lifted-weakening cancellation lemma; the
 argument case is impossible because the newest variable has an empty child
 spine. -/
 theorem etaLamLeftStep {scope : Nat}
+    {domainAnn : RawTerm scope}
     {innerFunction leftReduct : RawTerm scope}
-    (leftStep : Step (RawTerm.etaLamSource innerFunction) leftReduct) :
+    (diagonal : EtaLamAnnotationDiagonal domainAnn innerFunction)
+    (leftStep : Step (RawTerm.etaLamSource domainAnn innerFunction) leftReduct) :
     BetaEtaPairJoin
       (Or.inl leftStep)
-      (Or.inr (Step.eta.etaLam innerFunction)) := by
-  obtain ⟨bodyAfter, leftReductEq, bodyStep⟩ :=
-    Step.from_lam leftStep
-  cases Step.from_app bodyStep with
-  | inl betaBranch =>
-      obtain ⟨weakenedBody, weakenedFunctionEq, bodyAfterEq⟩ :=
-        betaBranch
-      obtain ⟨body, innerFunctionEq, weakenedBodyEq⟩ :=
-        RawTerm.weaken_eq_lam_implies_source_lam weakenedFunctionEq
-      apply ofReductsEqual
-      rw [leftReductEq, bodyAfterEq, innerFunctionEq, weakenedBodyEq]
-      rw [RawTerm.subst0_lift_weaken_newestVar]
-  | inr congruenceBranch =>
-      cases congruenceBranch with
-      | inl functionBranch =>
-          obtain ⟨updatedUnderBinder, bodyAfterEq, underBinderStep⟩ :=
-            functionBranch
-          cases leftReductEq
-          cases bodyAfterEq
-          exact etaLamArbitraryUnderBinderCong underBinderStep
-      | inr argumentBranch =>
-          obtain ⟨_argumentAfter, _bodyAfterEq, argumentStep⟩ :=
-            argumentBranch
-          cases argumentStep with
-          | cong _ _ childStep =>
-              cases childStep
+      (Or.inr (Step.eta.etaLam domainAnn innerFunction)) := by
+  cases Step.from_lam leftStep with
+  | inl domainBranch =>
+      -- The domain annotation itself steps; eta discards it, so the
+      -- stepped source eta-contracts to the same `innerFunction`.
+      obtain ⟨domainAfter, leftReductEq, _domainStep⟩ := domainBranch
+      cases leftReductEq
+      exact
+        ⟨ innerFunction
+        , Step.betaEtaStar.trans
+            (Or.inr (Step.eta.etaLam domainAfter innerFunction))
+            (Step.betaEtaStar.refl _)
+        , Step.betaEtaStar.refl _ ⟩
+  | inr bodyBranch =>
+      obtain ⟨bodyAfter, leftReductEq, bodyStep⟩ := bodyBranch
+      cases Step.from_app bodyStep with
+      | inl betaBranch =>
+          obtain ⟨weakenedDomain, weakenedBody, weakenedFunctionEq, bodyAfterEq⟩ :=
+            betaBranch
+          obtain ⟨innerDomainAnn, body, innerFunctionEq, _weakenedDomainEq, weakenedBodyEq⟩ :=
+            RawTerm.weaken_eq_lam_implies_source_lam weakenedFunctionEq
+          have annotationEq := diagonal innerDomainAnn body innerFunctionEq
+          subst annotationEq
+          apply ofReductsEqual
+          rw [leftReductEq, bodyAfterEq, innerFunctionEq, weakenedBodyEq]
+          rw [RawTerm.subst0_lift_weaken_newestVar]
+      | inr congruenceBranch =>
+          cases congruenceBranch with
+          | inl functionBranch =>
+              obtain ⟨updatedUnderBinder, bodyAfterEq, underBinderStep⟩ :=
+                functionBranch
+              cases leftReductEq
+              cases bodyAfterEq
+              exact etaLamArbitraryUnderBinderCong domainAnn underBinderStep
+          | inr argumentBranch =>
+              obtain ⟨_argumentAfter, _bodyAfterEq, argumentStep⟩ :=
+                argumentBranch
+              cases argumentStep with
+              | cong _ _ childStep =>
+                  cases childStep
 
-/-- Reverse orientation of `etaLamLeftStep`. -/
+/-- Reverse orientation of `etaLamLeftStep` (same Nederpelt diagonal guard). -/
 theorem etaLamRightStep {scope : Nat}
+    {domainAnn : RawTerm scope}
     {innerFunction rightReduct : RawTerm scope}
-    (rightStep : Step (RawTerm.etaLamSource innerFunction) rightReduct) :
+    (diagonal : EtaLamAnnotationDiagonal domainAnn innerFunction)
+    (rightStep : Step (RawTerm.etaLamSource domainAnn innerFunction) rightReduct) :
     BetaEtaPairJoin
-      (Or.inr (Step.eta.etaLam innerFunction))
+      (Or.inr (Step.eta.etaLam domainAnn innerFunction))
       (Or.inl rightStep) :=
-  swap (etaLamLeftStep rightStep)
+  swap (etaLamLeftStep diagonal rightStep)
 
 /-- Resolver-facing eta-path-lambda arm for every beta+iota step leaving a
 path-eta source.
@@ -1098,16 +1187,27 @@ theorem etaPathLamRightStep {scope : Nat}
   swap (etaPathLamLeftStep rightStep)
 
 /-- Mixed beta+iota-vs-eta local Church-Rosser dispatcher for all current
-root eta rules.
+root eta rules, GUARDED at the lambda root by the Nederpelt diagonal.
 
-This is the honest M8f cd-lemma extension: every beta+iota `Step` leaving an
-eta source is joined with the corresponding root eta contraction.  The
-eta-vs-eta quadrant remains a separate M8g task. -/
-theorem cd_lemma_step_eta : CdLemmaStatementStepEta := by
-  intro scope sourceTerm leftReduct rightReduct leftStep rightStep
+Under Church-style annotations the UNGUARDED statement (`CdLemmaStatementStepEta`)
+is FALSE: the eta-beta overlap `lam A (app (weaken (lam B b)) var0)` contracts to
+`lam A b` (inner beta) and to `lam B b` (root eta) — non-joinable for normal
+`A != B`.  The guard quantifies over the (forced) lambda decomposition of the
+source; non-lambda eta roots discharge it vacuously.  The eta-vs-eta quadrant
+remains a separate M8g task; the TYPED beta-eta CR is unaffected (typing forces
+the annotations convertible). -/
+theorem cd_lemma_step_eta {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    (leftStep : Step sourceTerm leftReduct)
+    (rightStep : Step.eta sourceTerm rightReduct)
+    (lamDiagonal :
+      ∀ {domainAnn innerFunction : RawTerm scope},
+        sourceTerm = RawTerm.etaLamSource domainAnn innerFunction →
+        EtaLamAnnotationDiagonal domainAnn innerFunction) :
+    BetaEtaPairJoin (Or.inl leftStep) (Or.inr rightStep) := by
   cases rightStep with
-  | etaLam innerFunction =>
-      exact etaLamLeftStep leftStep
+  | etaLam domainAnn innerFunction =>
+      exact etaLamLeftStep (lamDiagonal rfl) leftStep
   | etaPair pairTerm =>
       exact etaPairLeftStep leftStep
   | etaPathLam innerPath =>
@@ -1117,10 +1217,17 @@ theorem cd_lemma_step_eta : CdLemmaStatementStepEta := by
   | etaGlueIntro gluedTerm =>
       exact etaGlueIntroLeftStep leftStep
 
-/-- Reverse mixed eta-vs-beta+iota local Church-Rosser dispatcher. -/
-theorem cd_lemma_eta_step : CdLemmaStatementEtaStep := by
-  intro scope sourceTerm leftReduct rightReduct leftStep rightStep
-  exact swap (cd_lemma_step_eta rightStep leftStep)
+/-- Reverse mixed eta-vs-beta+iota local Church-Rosser dispatcher (same guard). -/
+theorem cd_lemma_eta_step {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    (leftStep : Step.eta sourceTerm leftReduct)
+    (rightStep : Step sourceTerm rightReduct)
+    (lamDiagonal :
+      ∀ {domainAnn innerFunction : RawTerm scope},
+        sourceTerm = RawTerm.etaLamSource domainAnn innerFunction →
+        EtaLamAnnotationDiagonal domainAnn innerFunction) :
+    BetaEtaPairJoin (Or.inr leftStep) (Or.inl rightStep) := by
+  exact swap (cd_lemma_step_eta rightStep leftStep lamDiagonal)
 
 end BetaEtaPairJoin
 

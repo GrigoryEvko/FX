@@ -216,20 +216,37 @@ by `no_step_at_empty_spine`).
 The proof unpacks the StepChildren witness and reads off the
 post-step body. -/
 theorem Step.from_lam
-    {scope : Nat} {body : RawTerm (scope + 1)} {target : RawTerm scope}
+    {scope : Nat}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+    {target : RawTerm scope}
     (reduction :
-      Step (.mkGen .gen_lam () (.childCons body .childNil)) target) :
-    ∃ (bodyAfter : RawTerm (scope + 1)),
-      target = .mkGen .gen_lam () (.childCons bodyAfter .childNil) ∧
-      Step body bodyAfter := by
+      Step
+        (.mkGen .gen_lam ()
+          (.childCons domainAnn (.childCons body .childNil)))
+        target) :
+    (∃ (domainAfter : RawTerm scope),
+        target =
+          .mkGen .gen_lam ()
+            (.childCons domainAfter (.childCons body .childNil)) ∧
+        Step domainAnn domainAfter) ∨
+    (∃ (bodyAfter : RawTerm (scope + 1)),
+        target =
+          .mkGen .gen_lam ()
+            (.childCons domainAnn (.childCons bodyAfter .childNil)) ∧
+        Step body bodyAfter) := by
   cases reduction with
   | cong _ _ childStep =>
       cases childStep with
-      | here _ bodyStep =>
-          rename_i bodyAfter
-          exact ⟨bodyAfter, rfl, bodyStep⟩
+      | here _ domainStep =>
+          rename_i domainAfter
+          exact Or.inl ⟨domainAfter, rfl, domainStep⟩
       | there _ restStep =>
-          exact absurd restStep StepChildren.no_step_at_empty_spine
+          cases restStep with
+          | here _ bodyStep =>
+              rename_i bodyAfter
+              exact Or.inr ⟨bodyAfter, rfl, bodyStep⟩
+          | there _ emptyStep =>
+              exact absurd emptyStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `pathLam`-rooted Step.**
 
@@ -1393,15 +1410,19 @@ that SR's beta arm substitutes into via the cell-level
 substitution boundary lemma.
 
 The function child lives at the same scope as `fn`; the
-lambda's body lives at `scope + 1` (the `gen_lam`'s binderShift
-is `[1]`). -/
+lambda's body lives at `scope + 1` (the `gen_lam`'s binderShifts
+are `[0, 1]`: a domain annotation at the same scope plus the body
+under one binder).  Church-style: the beta arm exposes the
+lambda's domain annotation as an existential alongside the body;
+contraction discards the annotation so the reduct is unchanged. -/
 theorem Step.from_app
     {scope : Nat} {fn arg : RawTerm scope} {target : RawTerm scope}
     (reduction :
       Step (.mkGen .gen_app ()
               (.childCons fn (.childCons arg .childNil))) target) :
-    (∃ (body : RawTerm (scope + 1)),
-        fn = .mkGen .gen_lam () (.childCons body .childNil) ∧
+    (∃ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)),
+        fn = .mkGen .gen_lam ()
+          (.childCons domainAnn (.childCons body .childNil)) ∧
         target = RawTerm.subst0 body arg)
     ∨
     (∃ (fnAfter : RawTerm scope),
@@ -1413,7 +1434,7 @@ theorem Step.from_app
         Step arg argAfter) := by
   cases reduction with
   | beta =>
-      exact Or.inl ⟨_, rfl, rfl⟩
+      exact Or.inl ⟨_, _, rfl, rfl⟩
   | cong _ _ childStep =>
       cases childStep with
       | here _ fnStep =>

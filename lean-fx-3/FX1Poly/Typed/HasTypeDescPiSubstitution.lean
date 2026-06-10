@@ -42,7 +42,7 @@ result lands in `HasTypeDescPi`, never `HasTypeDesc`.
   mirror of `HasTypeDesc.substituteUnderBinding`.
 
 * `HasTypeDescPi.betaCoherence` — GENERAL non-vacuous β subject reduction: a redex
-  `appCell (lamCell body) argument` from GROWN components and its reduct `subst0 body argument` are
+  `appCell (lamCell domainCode body) argument` from GROWN components and its reduct `subst0 body argument` are
   BOTH typed at `subst0 codomainCode argument` (redex by `piElim ∘ piIntro`, reduct by
   `substituteUnderBinding`).  Strictly generalizes the formation-component `betaCoherence_formationBody`.
 
@@ -199,14 +199,17 @@ theorem DescTelescope.substIntoGrown {profile : PolyProfile}
 
 end
 
-/-- Substitution distributes over `lamCell`: the body (child shift `1`) is substituted under one
-lift (`iterateLiftRaw substitution 1 ≡ RawTermSubst.lift substitution`).  rfl — `RawTerm.subst` is
-`fold GenAlgebra.canonical`, threading the lift at the shift-`1` child.  The substitution-side
-companion to `rename_lamCell`. -/
+/-- Substitution distributes over the Church-style `lamCell`: the domain annotation (child shift
+`0`) is substituted directly, the body (child shift `1`) under one lift (`iterateLiftRaw
+substitution 1 ≡ RawTermSubst.lift substitution`).  rfl — `RawTerm.subst` is `fold
+GenAlgebra.canonical`, threading the lift at the shift-`1` child.  Same `[0, 1]` shape as
+`subst_piTyCodeCell`; the substitution-side companion to `rename_lamCell`. -/
 theorem subst_lamCell {sourceScope targetScope : Nat}
-    (substitution : RawTermSubst sourceScope targetScope) (body : RawTerm (sourceScope + 1)) :
-    RawTerm.subst substitution (lamCell body)
-      = lamCell (RawTerm.subst (iterateLiftRaw substitution 1) body) :=
+    (substitution : RawTermSubst sourceScope targetScope)
+    (domainAnn : RawTerm sourceScope) (body : RawTerm (sourceScope + 1)) :
+    RawTerm.subst substitution (lamCell domainAnn body)
+      = lamCell (RawTerm.subst substitution domainAnn)
+          (RawTerm.subst (iterateLiftRaw substitution 1) body) :=
   rfl
 
 /-- Substitution distributes over `appCell`: both children (shifts `[0, 0]`) are substituted by the
@@ -460,7 +463,7 @@ theorem HasTypeDescPi.substituteUnderBinding {profile : PolyProfile} {scope : Na
 /-- GENERAL non-vacuous β subject reduction for grown redexes: the β-rule preserves typing for a
 redex built from GROWN components.  For `body : codomainCode` under `context.cons domainCode`,
 `argument : domainCode`, and `domainCode` a grown type — BOTH the redex
-`appCell (lamCell body) argument` and its β-reduct `subst0 body argument` (the contractum of
+`appCell (lamCell domainCode body) argument` and its β-reduct `subst0 body argument` (the contractum of
 `Step.beta`) are typed at `subst0 codomainCode argument`.  The redex types by `piElim ∘ piIntro`; the
 reduct by the grown `substituteUnderBinding`.  This STRICTLY GENERALIZES
 `betaCoherence_formationBody` (which required formation components) to arbitrary grown
@@ -478,7 +481,7 @@ theorem HasTypeDescPi.betaCoherence {profile : PolyProfile} {scope : Nat}
         (universeCodeCell codomainLevel flag))
     (bodyTyped : HasTypeDescPi profile (context.cons domainCode) body codomainCode)
     (argumentTyped : HasTypeDescPi profile context argument domainCode) :
-    HasTypeDescPi profile context (appCell (lamCell body) argument)
+    HasTypeDescPi profile context (appCell (lamCell domainCode body) argument)
         (RawTerm.subst0 codomainCode argument)
       ∧ HasTypeDescPi profile context (RawTerm.subst0 body argument)
         (RawTerm.subst0 codomainCode argument) := by

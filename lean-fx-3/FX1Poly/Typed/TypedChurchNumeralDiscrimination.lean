@@ -42,18 +42,27 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe StepStar
 
-/-- The bare Church-`one` lambda term `λ(A:Type@0). λ(f:A→A). λ(x:A). f x` (body the single application `f x`). -/
+/-- The bare Church-`one` lambda term `λ(A:Type@0). λ(f:A→A). λ(x:A). f x` (body the single application `f x`).
+Under T2 each binder carries its domain (universe code `Type@0`, arrow `A→A`, type variable `A`) — the domains
+`churchNumeralLambda` uses, so `churchNumeralLambda 1 = churchOneLambda` holds by `rfl`. -/
 abbrev churchOneLambda : RawTerm 0 :=
-  lamCell (lamCell (lamCell
-    (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-      (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+      (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+        (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+          (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
 
-/-- The bare Church-`two` lambda term `λ(A:Type@0). λ(f:A→A). λ(x:A). f (f x)` (body the nested `f (f x)`). -/
+/-- The bare Church-`two` lambda term `λ(A:Type@0). λ(f:A→A). λ(x:A). f (f x)` (body the nested `f (f x)`).
+Under T2 each binder carries its domain, so `churchNumeralLambda 2 = churchTwoLambda` holds by `rfl`. -/
 abbrev churchTwoLambda : RawTerm 0 :=
-  lamCell (lamCell (lamCell
-    (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-      (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-        (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))))
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+      (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+        (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+          (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+            (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))))
 
 /-- The universe code `Type@0` at the `standard` flag — the type argument and the step `f` of the iteration
 fixtures. -/

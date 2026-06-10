@@ -44,12 +44,12 @@ theorem SimplyTypedTermLF.closedTermHasArrowType {profile : PolyProfile}
     {term type : RawTerm 0}
     (typed : SimplyTypedTermLF (TypingContext.empty : TypingContext profile 0) term type) :
     ∃ domainCode codomainBase : RawTerm 0, type = piTyCodeCell domainCode (RawTerm.weaken codomainBase) := by
-  obtain ⟨body, normalFormEq⟩ := typed.normalFormIsLambda
+  obtain ⟨lambdaDomain, body, normalFormEq⟩ := typed.normalFormIsLambda
   have normalFormTyped := typed.normalForm_typed
   rw [normalFormEq] at normalFormTyped
-  obtain ⟨domainCode, codomainBase, typeEq, _domainExpr, _codomainExpr, _bodyTyped⟩ :=
+  obtain ⟨codomainBase, typeEq, _domainExpr, _codomainExpr, _bodyTyped⟩ :=
     normalFormTyped.inversionLambda
-  exact ⟨domainCode, codomainBase, typeEq⟩
+  exact ⟨lambdaDomain, codomainBase, typeEq⟩
 
 /-- **Consistency: universe codes are uninhabited by closed simply-typed terms.**  A closed simply-typed
 term cannot have a universe-code type: every closed term has an arrow type, and an arrow (`gen_piTyCode`)

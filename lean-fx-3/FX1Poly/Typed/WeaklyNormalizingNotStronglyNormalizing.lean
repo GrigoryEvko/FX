@@ -47,7 +47,7 @@ open StepStar
 variable.  The body is a nullary universe-code leaf living at scope `1` (under
 the binder), so the abstraction discards whatever it is applied to. -/
 def discardingConstantLambda (levelExpr : LevelExpr) (flag : UniverseFlag) : RawTerm 0 :=
-  lamCell (universeCodeCell levelExpr flag)
+  lamCell (.mkGen .gen_unit () .childNil) (universeCodeCell levelExpr flag)
 
 /-- `(λx. Type@levelExpr) Ω` — the constant function applied to the divergent Ω
 combinator (from `UntypedOmegaNotStronglyNormalizing`). -/

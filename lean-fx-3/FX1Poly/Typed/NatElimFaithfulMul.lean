@@ -46,14 +46,15 @@ open FX1Poly.Core FX1Poly.Universe
 /-- The scope-polymorphic copy step (`copyNatStep` is scope-0 only; under `mulNatStep`'s binders it lives at
 scope 2).  Matches `copyNatStep` at scope 0 by `Fin`-bound proof-irrelevance. -/
 def copyNatStepAt {scope : Nat} : RawTerm scope :=
-  lamCell (lamCell (natSuccCell (variableCell (⟨0, Nat.succ_pos _⟩ : Fin (scope + 2)))))
+  lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, Nat.succ_pos _⟩ : Fin (scope + 2)))))
 
 /-- At scope 0 the scope-general copy step is the existing `copyNatStep`. -/
 theorem copyNatStepAt_zero : (copyNatStepAt (scope := 0)) = copyNatStep := rfl
 
 /-- The multiplication step `λ_.λr.natElim(numeralM, r, copyStep)` — folds "add `m`" onto the accumulator `r`. -/
 def mulNatStep (m : Nat) : RawTerm 0 :=
-  lamCell (lamCell (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 2)) copyNatStepAt))
+  lamCell natZeroCell
+    (lamCell natZeroCell (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 2)) copyNatStepAt))
 
 /-- **The multiplication step's two β-reductions** land the inner adder `natElim(natNumeralAt m, rec, copyStep)`
 with the embedded numeral fixed by `natNumeralAt_subst`.  Each `Step.beta` produces the raw `subst0 body arg`;
@@ -65,18 +66,24 @@ theorem mulStepFires (m : Nat) (pred rec : RawTerm 0) :
   have firstBeta :
       Step (appCell (mulNatStep m) pred)
         (RawTerm.subst0
-          (lamCell (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 2)) copyNatStepAt)) pred) :=
+          (lamCell natZeroCell
+            (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 2)) copyNatStepAt)) pred) :=
     Step.beta
   have firstEq :
       RawTerm.subst0
-          (lamCell (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 2)) copyNatStepAt)) pred
-        = lamCell (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) copyNatStepAt) := by
-    show lamCell (natElimCell (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton pred)) (natNumeralAt m))
+          (lamCell natZeroCell
+            (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 2)) copyNatStepAt)) pred
+        = lamCell natZeroCell
+            (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) copyNatStepAt) := by
+    show lamCell natZeroCell
+        (natElimCell (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton pred)) (natNumeralAt m))
         (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) copyNatStepAt)
-      = lamCell (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) copyNatStepAt)
+      = lamCell natZeroCell
+          (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) copyNatStepAt)
     rw [natNumeralAt_subst]
   have secondBeta :
-      Step (appCell (lamCell (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) copyNatStepAt)) rec)
+      Step (appCell (lamCell natZeroCell
+          (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) copyNatStepAt)) rec)
         (RawTerm.subst0 (natElimCell (natNumeralAt m) (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) copyNatStepAt) rec) :=
     Step.beta
   have secondEq :

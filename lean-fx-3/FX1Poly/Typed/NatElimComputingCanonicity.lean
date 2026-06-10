@@ -114,7 +114,7 @@ theorem natElimComputesToNumeral {zeroBranch succBranch : RawTerm 0}
 
 /-- The constant-zero successor step `λ_. λ_. natZero` — ignores both the predecessor and the recursive
 result, collapsing every fold to `natZero`. -/
-def constNatZeroStep : RawTerm 0 := lamCell (lamCell (natZeroCell : RawTerm 2))
+def constNatZeroStep : RawTerm 0 := lamCell natZeroCell (lamCell natZeroCell (natZeroCell : RawTerm 2))
 
 /-- **`constNatZeroStep` produces `natZero`.**  Applied to any predecessor and recursive result, the two β-steps
 drop both binders (the body `natZero` is a closed nullary cell, so `subst0` computes definitionally) and land
@@ -124,9 +124,10 @@ theorem constNatZeroStepProduces (predecessor recResult : RawTerm 0)
     ∃ out : RawTerm 0,
       StepStar (appCell (appCell constNatZeroStep predecessor) recResult) out ∧ IsNatNumeral out := by
   refine ⟨natZeroCell, ?_, IsNatNumeral.zero⟩
-  have firstBeta : Step (appCell constNatZeroStep predecessor) (lamCell (natZeroCell : RawTerm 1)) :=
+  have firstBeta : Step (appCell constNatZeroStep predecessor)
+      (lamCell natZeroCell (natZeroCell : RawTerm 1)) :=
     Step.beta
-  have secondBeta : Step (appCell (lamCell (natZeroCell : RawTerm 1)) recResult) natZeroCell :=
+  have secondBeta : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) recResult) natZeroCell :=
     Step.beta
   exact StepStar.trans_compose
     (StepStar.appFunction (StepStar.single firstBeta))
@@ -147,7 +148,7 @@ theorem natElimConstZeroComputesToNumeral {scrutinee : RawTerm 0} (scrutineeNume
 `natSucc`.  Folding with base `natZero` rebuilds the numeral, so this step genuinely THREADS the recursive
 result rather than discarding it. -/
 def copyNatStep : RawTerm 0 :=
-  lamCell (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))
+  lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))
 
 /-- **`copyNatStep` produces `natSucc recResult`.**  The two β-steps drop the unused predecessor binder and
 substitute the recursive result for `r` (the `subst0` computes the de Bruijn index through the binder
@@ -159,9 +160,9 @@ theorem copyNatStepProduces (predecessor recResult : RawTerm 0)
       StepStar (appCell (appCell copyNatStep predecessor) recResult) out ∧ IsNatNumeral out := by
   refine ⟨natSuccCell recResult, ?_, IsNatNumeral.succ recResultNumeral⟩
   have firstBeta : Step (appCell copyNatStep predecessor)
-      (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) :=
+      (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) :=
     Step.beta
-  have secondBeta : Step (appCell (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) recResult)
+  have secondBeta : Step (appCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) recResult)
       (natSuccCell recResult) :=
     Step.beta
   exact StepStar.trans_compose

@@ -61,7 +61,7 @@ theorem IsNeutral.closedUnderStep {scope : Nat} {term reduct : RawTerm scope}
       exact (noStep_var index step).elim
   | app headIsNeutral headIH =>
       rcases Step.from_app step with
-        ⟨_body, headEq, _⟩ | ⟨_fnAfter, reductEq, stepHead⟩ | ⟨_argAfter, reductEq, _⟩
+        ⟨_domainAnn, _body, headEq, _⟩ | ⟨_fnAfter, reductEq, stepHead⟩ | ⟨_argAfter, reductEq, _⟩
       · cases headIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator headEq)
       · rw [reductEq]; exact IsNeutral.app (headIH stepHead)

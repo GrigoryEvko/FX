@@ -44,8 +44,9 @@ open FX1Poly.Core StepStar
 
 /-- `λx. g (x x)` — the Curry self-applicator parameterized by `g`, with `g` weakened into the binder scope. -/
 def curryHalf (g : RawTerm 0) : RawTerm 0 :=
-  lamCell (appCell (RawTerm.weaken g)
-    (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))))
+  lamCell (.mkGen .gen_unit () .childNil)
+    (appCell (RawTerm.weaken g)
+      (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))))
 
 /-- `Ω_g = (λx. g (x x)) (λx. g (x x))` — the Curry fixpoint core for `g`.  With a trivial `g` it is Ω. -/
 def curryOmega (g : RawTerm 0) : RawTerm 0 :=

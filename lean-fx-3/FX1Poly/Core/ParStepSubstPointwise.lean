@@ -113,10 +113,11 @@ theorem ParStep.substPointwise {sourceScope targetScope : Nat}
     (ParStep.rec
       (motive_1 := motiveStep)
       (motive_2 := motiveChildren)
-      (fun {scope} {body body' arg arg'} _bodyStep _argStep ihBody ihArg
-          {targetScope} sigma tau pw => by
+      (fun {scope} {domainAnn domainAnn' body body' arg arg'} _domainStep _bodyStep _argStep
+          ihDomain ihBody ihArg {targetScope} sigma tau pw => by
         rw [RawTerm.subst0_subst_commute]
         exact ParStep.beta
+          (ihDomain sigma tau pw)
           (ihBody (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
             (RawTermSubst.lift_pointwiseParStep pw))
           (ihArg sigma tau pw))

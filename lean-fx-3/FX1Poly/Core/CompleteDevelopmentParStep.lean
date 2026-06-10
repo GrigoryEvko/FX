@@ -67,13 +67,15 @@ theorem RawTerm.completeDevelopment_parStep {scope0 : Nat} (term0 : RawTerm scop
                     | mkGen ig ip ic =>
                         by_cases hLam : ig = .gen_lam
                         · subst hLam
-                          cases ic with | childCons body ic2 => cases ic2 with
-                            | childNil =>
-                                cases childrenIH with | cons funcStep restS => cases restS with
-                                  | cons argStep _ =>
-                                      cases funcStep with | cong _ _ cs => cases cs with
-                                        | cons bodyStep rcs => cases rcs with
-                                          | nil => exact ParStep.beta bodyStep argStep
+                          cases ic with | childCons domainAnn ic2 => cases ic2 with
+                            | childCons body ic3 => cases ic3 with
+                              | childNil =>
+                                  cases childrenIH with | cons funcStep restS => cases restS with
+                                    | cons argStep _ =>
+                                        cases funcStep with | cong _ _ cs => cases cs with
+                                          | cons domainStep rcs => cases rcs with
+                                            | cons bodyStep rcs2 => cases rcs2 with
+                                              | nil => exact ParStep.beta domainStep bodyStep argStep
                         · have key : RawTerm.fireRootRedex .gen_app payload
                               (.childCons (.mkGen ig ip ic) (.childCons arg .childNil)) = none := dif_neg hLam
                           rw [key] at hfire; nomatch hfire

@@ -47,7 +47,7 @@ def arrowTypeZeroCode (scope : Nat) : RawTerm scope :=
 looked-up type is the weakened binding, `TypingContext.lookup_cons_zero`). -/
 theorem identityIsSimplyTyped {profile : PolyProfile} :
     SimplyTypedTermLF (TypingContext.empty : TypingContext profile 0)
-      (lamCell (variableCell ⟨0, Nat.zero_lt_succ 0⟩))
+      (lamCell (typeZeroCode 0) (variableCell ⟨0, Nat.zero_lt_succ 0⟩))
       (piTyCodeCell (typeZeroCode 0) (RawTerm.weaken (typeZeroCode 0))) := by
   apply SimplyTypedTermLF.lam
     (IsReducibleTypeExprLF.universeCode LevelExpr.lzero UniverseFlag.standard)
@@ -63,7 +63,8 @@ inhabitant. -/
 theorem identityStronglyNormalizing {profile : PolyProfile} {targetScope : Nat}
     (substitution : RawTermSubst 0 (targetScope + 1)) :
     IsStronglyNormalizing
-      (RawTerm.subst substitution (lamCell (variableCell ⟨0, Nat.zero_lt_succ 0⟩))) :=
+      (RawTerm.subst substitution
+        (lamCell (typeZeroCode 0) (variableCell ⟨0, Nat.zero_lt_succ 0⟩))) :=
   (identityIsSimplyTyped (profile := profile)).stronglyNormalizingClosed substitution
 
 /-- **The identity at an arrow type is a simply-typed term.**  `λx:(Type@0→Type@0). x :
@@ -71,7 +72,7 @@ theorem identityStronglyNormalizing {profile : PolyProfile} {targetScope : Nat}
 `IsReducibleTypeExprLF.arrow` case of the domain supplier. -/
 theorem arrowIdentityIsSimplyTyped {profile : PolyProfile} :
     SimplyTypedTermLF (TypingContext.empty : TypingContext profile 0)
-      (lamCell (variableCell ⟨0, Nat.zero_lt_succ 0⟩))
+      (lamCell (arrowTypeZeroCode 0) (variableCell ⟨0, Nat.zero_lt_succ 0⟩))
       (piTyCodeCell (arrowTypeZeroCode 0) (RawTerm.weaken (arrowTypeZeroCode 0))) := by
   apply SimplyTypedTermLF.lam
     (IsReducibleTypeExprLF.arrow
@@ -89,7 +90,8 @@ theorem arrowIdentityIsSimplyTyped {profile : PolyProfile} :
 theorem arrowIdentityStronglyNormalizing {profile : PolyProfile} {targetScope : Nat}
     (substitution : RawTermSubst 0 (targetScope + 1)) :
     IsStronglyNormalizing
-      (RawTerm.subst substitution (lamCell (variableCell ⟨0, Nat.zero_lt_succ 0⟩))) :=
+      (RawTerm.subst substitution
+        (lamCell (arrowTypeZeroCode 0) (variableCell ⟨0, Nat.zero_lt_succ 0⟩))) :=
   (arrowIdentityIsSimplyTyped (profile := profile)).stronglyNormalizingClosed substitution
 
 end FX1Poly.Typed

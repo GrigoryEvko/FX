@@ -392,7 +392,7 @@ theorem kripkeArrow_neutralBackwardClosure {scope : Nat}
         (IsNeutral.app renamedFunctionNeutral) ?_
       intro reduct reductionStep
       rcases Step.from_app reductionStep with
-        ⟨_body, functionEqualsLam, _targetEq⟩ |
+        ⟨_domainAnn, _body, functionEqualsLam, _targetEq⟩ |
         ⟨functionAfter, reductEquals, functionStep⟩ |
         ⟨argumentAfter, reductEquals, argumentStep⟩
       · exact (IsNeutral.not_lam (functionEqualsLam ▸ renamedFunctionNeutral)).elim

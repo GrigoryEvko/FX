@@ -973,7 +973,8 @@ theorem fundamentalPiIntroAtAllFromAllPositiveArgumentPremises {profile : PolyPr
         (universeCodeCell codomainLevel flag))
     (bodyFundamental :
       FundamentalConclusionAtAll (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionAtAll context (lamCell body) (piTyCodeCell domainCode codomainCode) :=
+    FundamentalConclusionAtAll context (lamCell domainCode body)
+      (piTyCodeCell domainCode codomainCode) :=
   fundamentalPiIntroAtAllFromMemberPremises domainFundamental
     (fun _targetScope substitution env predLevel {domainCandidate} domainReducible argument
         argumentInDomain => by
@@ -1011,7 +1012,8 @@ theorem fundamentalPiIntroAtAllFromAllPositiveDomainCandidate {profile : PolyPro
         (universeCodeCell codomainLevel flag))
     (bodyFundamental :
       FundamentalConclusionAtAll (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionAtAll context (lamCell body) (piTyCodeCell domainCode codomainCode) :=
+    FundamentalConclusionAtAll context (lamCell domainCode body)
+      (piTyCodeCell domainCode codomainCode) :=
   fundamentalPiIntroAtAllFromAllPositiveArgumentPremises domainFundamental
     (fun _targetScope substitution env predLevel {_domainCandidate} domainReducible _argument
         argumentInDomain =>
@@ -1038,7 +1040,8 @@ theorem fundamentalPiIntroAtAllFromPositiveDomainCandidateCompanion
         (universeCodeCell codomainLevel flag))
     (bodyFundamental :
       FundamentalConclusionAtAll (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionAtAll context (lamCell body) (piTyCodeCell domainCode codomainCode) :=
+    FundamentalConclusionAtAll context (lamCell domainCode body)
+      (piTyCodeCell domainCode codomainCode) :=
   fundamentalPiIntroAtAllFromAllPositiveDomainCandidate domainFundamental
     (fun substitution env predLevel =>
       domainHasPositiveCandidateUnderSubstitution substitution env predLevel)

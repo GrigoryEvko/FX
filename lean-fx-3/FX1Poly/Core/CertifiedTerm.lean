@@ -274,8 +274,10 @@ theorem Certified.lamUnit_at_scope_zero {profile : PolyProfile} :
     Certified (profile := profile)
       (.mkGen .gen_lam ()
         (.childCons
-          (.mkGen .gen_unit () .childNil : RawTerm 1)
-          .childNil)
+          (.mkGen .gen_unit () .childNil : RawTerm 0)
+          (.childCons
+            (.mkGen .gen_unit () .childNil : RawTerm 1)
+            .childNil))
         : RawTerm 0) :=
   ⟨_, rfl⟩
 
@@ -292,8 +294,10 @@ theorem Certified.appBetaRedex_at_scope_zero {profile : PolyProfile} :
         (.childCons
           (.mkGen .gen_lam ()
             (.childCons
-              (.mkGen .gen_unit () .childNil : RawTerm 1)
-              .childNil))
+              (.mkGen .gen_unit () .childNil : RawTerm 0)
+              (.childCons
+                (.mkGen .gen_unit () .childNil : RawTerm 1)
+                .childNil)))
           (.childCons (.mkGen .gen_unit () .childNil) .childNil))
         : RawTerm 0) :=
   ⟨_, rfl⟩

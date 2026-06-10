@@ -72,7 +72,8 @@ inductive SimplyTypedTermLF {profile : PolyProfile} :
       (domainExpr : IsReducibleTypeExprLF domainCode)
       (codomainExpr : IsReducibleTypeExprLF codomainBase)
       (bodyTyped : SimplyTypedTermLF (context.cons domainCode) body (RawTerm.weaken codomainBase)) :
-      SimplyTypedTermLF context (lamCell body) (piTyCodeCell domainCode (RawTerm.weaken codomainBase))
+      SimplyTypedTermLF context (lamCell domainCode body)
+        (piTyCodeCell domainCode (RawTerm.weaken codomainBase))
 
 /-- **The level-free simply-typed term fundamental theorem.**  Every simply-typed term, closed by a reducible
 substitution, is a reducible member of its (closed) type.  The three arms dispatch `var` to
@@ -109,6 +110,7 @@ theorem SimplyTypedTermLF.reducibleUnderSubst {profile : PolyProfile} {scope : N
       obtain ⟨domainCandidate, domainReducible⟩ :=
         domainExpr.reducibleUnderSubst (substitution := substitution)
       exact IsReducibleMember.abstractionNonDependentUnderSubst substitution domainReducible
+        (domainExpr.stronglyNormalizingUnderSubst (substitution := substitution))
         (fun _argument argumentInDomain =>
           domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
         (codomainExpr.reducibleUnderSubst)

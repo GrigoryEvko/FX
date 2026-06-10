@@ -55,7 +55,8 @@ theorem fundamentalPiIntroAtAllFromMemberPremises {profile : PolyProfile} {scope
           IsReducibleMemberAt (predLevel + 1)
             (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode)
             (RawTerm.subst (RawTermSubst.cons argument substitution) body)) :
-    FundamentalConclusionAtAll context (lamCell body) (piTyCodeCell domainCode codomainCode) :=
+    FundamentalConclusionAtAll context (lamCell domainCode body)
+      (piTyCodeCell domainCode codomainCode) :=
   fundamentalPiIntroAtAll domainFundamental
     (fun _targetScope substitution env predLevel {domainCandidate} domainReducible argument
         argumentInDomain => by

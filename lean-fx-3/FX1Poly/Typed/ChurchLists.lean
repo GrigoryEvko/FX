@@ -48,18 +48,24 @@ congruence lifts the reshaped β1, the second β cancels the single weakens (`we
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core StepStar
+open FX1Poly.Core FX1Poly.Universe StepStar
+
+/-- A closed, scope-polymorphic domain annotation for the Church-list binders.  Under T2 every `lamCell` carries a
+domain; for these pure-raw fixtures (no typing derivation) a closed `universeCodeCell` is invariant under
+`subst0`/`weaken` and heads no redex, keeping the value/fold computations clean. -/
+def churchListDomainAnn {scope : Nat} : RawTerm scope :=
+  universeCodeCell LevelExpr.lzero UniverseFlag.standard
 
 /-- `nil = λc. λn. n` — the empty Church list: ignores the cons-handler `c` (outer binder) and returns the
 nil-handler `n` (inner binder, `var 0`).  Structurally the Church-numeral zero `λf.λx.x`. -/
 def churchNil : RawTerm 0 :=
-  lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
+  lamCell churchListDomainAnn (lamCell churchListDomainAnn (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
 
 /-- `cons h t = λc. λn. c h (t c n)` — prepend `h` to `t`: applies the cons-handler `c` (outer binder, `var 1`)
 to the stored head `h` and the RECURSIVELY-folded tail `t c n`.  The inductive constructor as nested polymorphic
 application. -/
 def churchCons (head tail : RawTerm 0) : RawTerm 0 :=
-  lamCell (lamCell
+  lamCell churchListDomainAnn (lamCell churchListDomainAnn
     (appCell
       (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
         (RawTerm.weaken (RawTerm.weaken head)))
@@ -78,13 +84,13 @@ to `n` it returns `n`.  Both `subst0` contracta are the clean innermost-variable
 theorem foldNil (consHandler nilHandler : RawTerm 0) :
     StepStar (churchFold consHandler nilHandler churchNil) nilHandler := by
   have functionBeta : Step (appCell churchNil consHandler)
-      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) := Step.beta
+      (lamCell churchListDomainAnn (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) := Step.beta
   have congStep : Step (churchFold consHandler nilHandler churchNil)
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) nilHandler) :=
+      (appCell (lamCell churchListDomainAnn (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) nilHandler) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons nilHandler .childNil) functionBeta)
-  have innerBeta : Step (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) nilHandler)
+  have innerBeta : Step (appCell (lamCell churchListDomainAnn (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) nilHandler)
       nilHandler := Step.beta
   exact StepStar.trans congStep (StepStar.trans innerBeta (StepStar.refl _))
 
@@ -103,7 +109,7 @@ each doubly-weakened stored value (`head`, `tail`) one level (`subst_lift_single
 The cons analogue of `ChurchSumsGeneral.leftInjection_subst_handlerL`, with two stored values instead of one. -/
 theorem churchCons_subst_consHandler (head tail consHandler : RawTerm 0) :
     RawTerm.subst0
-        (lamCell
+        (lamCell churchListDomainAnn
           (appCell
             (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
               (RawTerm.weaken (RawTerm.weaken head)))
@@ -111,14 +117,14 @@ theorem churchCons_subst_consHandler (head tail consHandler : RawTerm 0) :
               (appCell (RawTerm.weaken (RawTerm.weaken tail))
                 (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
               (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))) consHandler
-      = lamCell
+      = lamCell churchListDomainAnn
           (appCell
             (appCell (RawTerm.weaken consHandler) (RawTerm.weaken head))
             (appCell
               (appCell (RawTerm.weaken tail) (RawTerm.weaken consHandler))
               (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) := by
-  unfold RawTerm.subst0
-  show lamCell
+  unfold RawTerm.subst0 churchListDomainAnn
+  show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
       (appCell
         (appCell _ (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton consHandler))
           (RawTerm.weaken (RawTerm.weaken head))))
@@ -140,7 +146,7 @@ theorem foldCons (head tail consHandler nilHandler : RawTerm 0) :
       (appCell (appCell consHandler head)
         (appCell (appCell tail consHandler) nilHandler)) := by
   have functionBeta : Step (appCell (churchCons head tail) consHandler)
-      (lamCell
+      (lamCell churchListDomainAnn
         (appCell
           (appCell (RawTerm.weaken consHandler) (RawTerm.weaken head))
           (appCell
@@ -150,7 +156,7 @@ theorem foldCons (head tail consHandler nilHandler : RawTerm 0) :
     exact Step.beta
   have congStep : Step (churchFold consHandler nilHandler (churchCons head tail))
       (appCell
-        (lamCell
+        (lamCell churchListDomainAnn
           (appCell
             (appCell (RawTerm.weaken consHandler) (RawTerm.weaken head))
             (appCell
@@ -162,7 +168,7 @@ theorem foldCons (head tail consHandler nilHandler : RawTerm 0) :
         (.childCons nilHandler .childNil) functionBeta)
   have outerBeta : Step
       (appCell
-        (lamCell
+        (lamCell churchListDomainAnn
           (appCell
             (appCell (RawTerm.weaken consHandler) (RawTerm.weaken head))
             (appCell

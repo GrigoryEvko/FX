@@ -74,11 +74,11 @@ theorem HasTypeDescPi.closedNormalClassifierIsFunctionOrType {profile : PolyProf
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with
       headLam | headPi | headSigma | headUniverse | headList | headOption
-  · obtain ⟨_body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
+  · obtain ⟨domainAnn, _body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [lamEq] at typed
-    obtain ⟨domainCode, codomainCode, _domainLevel, _codomainLevel, _flag,
+    obtain ⟨codomainCode, _domainLevel, _codomainLevel, _flag,
         convToPiCode, _domainTyped, _codomainTyped, _bodyTyped⟩ := HasTypeDescPi.invertLam typed
-    exact Or.inl ⟨domainCode, codomainCode, convToPiCode⟩
+    exact Or.inl ⟨domainAnn, codomainCode, convToPiCode⟩
   · obtain ⟨_domain, _codomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
     rw [piEq] at typed
     obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped, convToUniverseCode⟩ :=

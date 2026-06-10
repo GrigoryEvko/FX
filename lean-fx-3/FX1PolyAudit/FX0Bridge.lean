@@ -157,7 +157,7 @@ The arity model computes against FX1Poly's native tags, and DIFFERS from `FX0Pol
 is tag `57` here, `2` in `fxArity`) — which is exactly why `bridgeArity` must be `fromTag`-based, not `fxArity`. -/
 
 theorem bridgeArity_smoke_var : bridgeArity 0 = some 0 := rfl
-theorem bridgeArity_smoke_lam : bridgeArity 2 = some 1 := rfl
+theorem bridgeArity_smoke_lam : bridgeArity 2 = some 2 := rfl
 theorem bridgeArity_smoke_piTyCode : bridgeArity 57 = some 2 := rfl
 theorem bridgeArity_smoke_unknownTag : bridgeArity 999 = none := rfl
 

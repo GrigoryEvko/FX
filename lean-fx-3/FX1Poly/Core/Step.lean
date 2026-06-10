@@ -55,12 +55,13 @@ The beta constructor:
 
   Step (.mkGen .gen_app ()
           (.childCons
-            (.mkGen .gen_lam () (.childCons body .childNil))
+            (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
             (.childCons arg .childNil)))
        (RawTerm.subst0 body arg)
 
 Textbook lambda calculus beta rule, formulated over V2's un-indexed
-raw substrate.
+raw substrate.  Church-style: the lambda carries its domain annotation
+as a first (shift-`0`) child; contraction discards the annotation.
 
 ## The uniform congruence rule
 
@@ -156,11 +157,12 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
 
       Textbook lambda calculus beta rule, formulated over V2's
       un-indexed raw substrate. -/
-  | beta {scope : Nat} {body : RawTerm (scope + 1)} {arg : RawTerm scope} :
+  | beta {scope : Nat} {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+      {arg : RawTerm scope} :
       Step
         (.mkGen .gen_app ()
           (.childCons
-            (.mkGen .gen_lam () (.childCons body .childNil))
+            (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
             (.childCons arg .childNil)))
         (RawTerm.subst0 body arg)
   /-- **Uniform congruence under any generator.**  When a
@@ -534,12 +536,15 @@ attribute on `singleton` + `subst0`). -/
 theorem Step.identity_lam_applied_to_unit :
     let identityLamBody : RawTerm 1 :=
       .mkGen .gen_var (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1) .childNil
+    let domainAnn : RawTerm 0 :=
+      .mkGen .gen_unit () .childNil
     let unitArg : RawTerm 0 :=
       .mkGen .gen_unit () .childNil
     let app : RawTerm 0 :=
       .mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons identityLamBody .childNil))
+          (.mkGen .gen_lam ()
+            (.childCons domainAnn (.childCons identityLamBody .childNil)))
           (.childCons unitArg .childNil))
     Step app unitArg := by
   apply Step.beta
@@ -568,19 +573,25 @@ core motion the L3 cascade will compose. -/
 theorem Step.cong_lam_body_beta :
     let identityLamBody : RawTerm 2 :=
       .mkGen .gen_var (⟨0, Nat.zero_lt_succ 1⟩ : Fin 2) .childNil
+    let innerDomainAnn : RawTerm 1 :=
+      .mkGen .gen_unit () .childNil
+    let outerDomainAnn : RawTerm 0 :=
+      .mkGen .gen_unit () .childNil
     let unitArg : RawTerm 1 :=
       .mkGen .gen_unit () .childNil
     let innerApp : RawTerm 1 :=
       .mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons identityLamBody .childNil))
+          (.mkGen .gen_lam ()
+            (.childCons innerDomainAnn (.childCons identityLamBody .childNil)))
           (.childCons unitArg .childNil))
     let outerLamBefore : RawTerm 0 :=
-      .mkGen .gen_lam () (.childCons innerApp .childNil)
+      .mkGen .gen_lam () (.childCons outerDomainAnn (.childCons innerApp .childNil))
     let outerLamAfter : RawTerm 0 :=
-      .mkGen .gen_lam () (.childCons unitArg .childNil)
+      .mkGen .gen_lam () (.childCons outerDomainAnn (.childCons unitArg .childNil))
     Step outerLamBefore outerLamAfter := by
   apply Step.cong .gen_lam ()
+  apply StepChildren.there
   apply StepChildren.here .childNil
   apply Step.beta
 

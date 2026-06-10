@@ -63,10 +63,11 @@ open FX1Poly.Core FX1Poly.Universe
 `Conv.boolTypeCell_not_piTyCode` refutes that against `boolTypeCell`.  The `boolType` analogue of
 `lambdaNotTypedAtEmptyType` (context-free — the λ inversion needs no well-formedness). -/
 theorem HasTypeDescPi.lambdaNotTypedAtBoolType {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
-    (typed : HasTypeDescPi profile context (lamCell body) (boolTypeCell : RawTerm scope)) :
+    {context : TypingContext profile scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+    (typed : HasTypeDescPi profile context (lamCell domainAnn body) (boolTypeCell : RawTerm scope)) :
     False := by
-  obtain ⟨_domainCode, _codomainCode, _domainLevel, _codomainLevel, _flag,
+  obtain ⟨_codomainCode, _domainLevel, _codomainLevel, _flag,
       convToPiCode, _domainTyped, _codomainTyped, _bodyTyped⟩ := HasTypeDescPi.invertLam typed
   exact Conv.boolTypeCell_not_piTyCode convToPiCode
 
@@ -147,7 +148,7 @@ theorem HasTypeDescPi.noClosedNormalTermAtBoolType {profile : PolyProfile} {subj
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with
       headLam | headPi | headSigma | headUniverse | headList | headOption
-  · obtain ⟨_body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
+  · obtain ⟨_domainAnn, _body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [bodyEq] at typed
     exact HasTypeDescPi.lambdaNotTypedAtBoolType typed
   · obtain ⟨_domain, _codomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi

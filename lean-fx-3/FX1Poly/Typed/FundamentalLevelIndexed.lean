@@ -52,7 +52,7 @@ Gated per declaration in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Foundation
 
 /-- **The decoupled-level fundamental-theorem conclusion.**  Under a closing substitution and a
 per-variable-level reducible environment (`ReducibleEnvVec contextLevels`, each variable at its OWN rung
@@ -150,13 +150,15 @@ theorem fundamentalPiIntroLevelIndexed {profile : PolyProfile} {scope : Nat}
       (predLevel + 1 + 1) (context.cons domainCode) codomainCode (universeCodeCell codomainLevel flag))
     (bodyFundamental : FundamentalConclusionLevelIndexed (levelCons (predLevel + 1) contextLevels)
       (predLevel + 1) (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionLevelIndexed contextLevels (predLevel + 1) context (lamCell body)
+    FundamentalConclusionLevelIndexed contextLevels (predLevel + 1) context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) := by
   intro _targetScope substitution env
   have domainMember := domainFundamental substitution env
   rw [subst_universeCodeCell] at domainMember
+  have domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainCode) :=
+    domainMember.stronglyNormalizing
   obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
-  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible domainAnnSN
     (fun _argument argumentInDomain =>
       domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
     (fun argument argumentInDomain => ?_) (fun argument argumentInDomain => ?_)

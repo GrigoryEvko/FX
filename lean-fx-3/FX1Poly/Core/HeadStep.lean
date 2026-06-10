@@ -30,11 +30,16 @@ open FX1Poly.Foundation
 position of an application (`appCongruence`).  Deterministic by construction: at most one head redex
 exists. -/
 inductive HeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop where
-  /-- Head β-contraction: a λ applied to an argument steps to the substituted body. -/
-  | beta {body : RawTerm (scope + 1)} {argument : RawTerm scope} :
+  /-- Head β-contraction: a λ applied to an argument steps to the substituted body.
+      Church-style: the λ carries a domain annotation as its first child; contraction
+      discards it. -/
+  | beta {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+      {argument : RawTerm scope} :
       HeadStep
         (.mkGen .gen_app ()
-          (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons
+            (.mkGen .gen_lam ()
+              (.childCons domainAnn (.childCons body .childNil)))
             (.childCons argument .childNil)))
         (RawTerm.subst0 body argument)
   /-- Head congruence: when the function position weak-head reduces, so does the application. -/
@@ -46,9 +51,13 @@ inductive HeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop wher
 
 /-- A λ-abstraction has no weak-head step: both `HeadStep` constructors conclude an application-headed
 subject, and `gen_lam ≠ gen_app`. -/
-theorem HeadStep.not_from_lam {scope : Nat} {body : RawTerm (scope + 1)}
+theorem HeadStep.not_from_lam {scope : Nat}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     {reduct : RawTerm scope} :
-    ¬ HeadStep (.mkGen .gen_lam () (.childCons body .childNil)) reduct := by
+    ¬ HeadStep
+        (.mkGen .gen_lam ()
+          (.childCons domainAnn (.childCons body .childNil)))
+        reduct := by
   intro headStep
   cases headStep
 

@@ -41,12 +41,14 @@ open FX1Poly.Core StepStar
 
 /-- `λx. f (x x)` at scope 1: `f` is the outer-bound variable (de Bruijn 1), `x` the inner (de Bruijn 0). -/
 def fixInnerHalf : RawTerm 1 :=
-  lamCell (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
-    (appCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)) (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+  lamCell (.mkGen .gen_unit () .childNil)
+    (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+      (appCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)) (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
 
 /-- The Curry fixpoint combinator `fix = λf. (λx. f(x x)) (λx. f(x x))`. -/
 def fixCombinator : RawTerm 0 :=
-  lamCell (appCell fixInnerHalf fixInnerHalf)
+  lamCell (.mkGen .gen_unit () .childNil)
+    (appCell fixInnerHalf fixInnerHalf)
 
 /-- Applying `fix` to `g` β-reduces to `Ω_g`: the body's `f` is replaced by `g`, and the under-binder
 substitution `subst0 fixInnerHalf g` computes to `curryHalf g` definitionally (the lifted singleton sends the

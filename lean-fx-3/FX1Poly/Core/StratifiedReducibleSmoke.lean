@@ -46,7 +46,8 @@ theorem identityLambda_stronglyNormalizing_viaReducibility {scope : Nat} {predLe
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     IsStronglyNormalizing
       (.mkGen .gen_lam ()
-        (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos (scope + 1)⟩ .childNil) .childNil)
+        (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+          (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos (scope + 1)⟩ .childNil) .childNil))
         : RawTerm (scope + 1)) := by
   have universeReducible :
       ReducibleTypeAt (predLevel + 1)
@@ -54,8 +55,10 @@ theorem identityLambda_stronglyNormalizing_viaReducibility {scope : Nat} {predLe
         (universeReducibilityPredicate (ReducibleTypeAt predLevel)) :=
     ReducibleTypeStep.universeCode levelExpr flag
   exact (IsReducibleMemberAt.abstractionNonDependent
+    (domainAnn := .mkGen .gen_universeCode (levelExpr, flag) .childNil)
     (body := .mkGen .gen_var ⟨0, Nat.succ_pos (scope + 1)⟩ .childNil)
     universeReducible
+    (universeCode_isStronglyNormalizing (levelExpr, flag))
     (fun _argument argumentInDomain => argumentInDomain.1)
     universeReducible
     (fun _argument argumentInDomain => argumentInDomain)).stronglyNormalizing
@@ -99,7 +102,8 @@ theorem identityAppliedToUniverse_stronglyNormalizing_viaReducibility {scope : N
       (.mkGen .gen_app ()
         (.childCons
           (.mkGen .gen_lam ()
-            (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos (scope + 1)⟩ .childNil) .childNil))
+            (.childCons (.mkGen .gen_universeCode (LevelExpr.lsucc levelExpr, flag) .childNil)
+              (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos (scope + 1)⟩ .childNil) .childNil)))
           (.childCons (.mkGen .gen_universeCode (levelExpr, flag) .childNil) .childNil))
         : RawTerm (scope + 1)) := by
   have domainReducible :
@@ -109,10 +113,13 @@ theorem identityAppliedToUniverse_stronglyNormalizing_viaReducibility {scope : N
     ReducibleTypeStep.universeCode (LevelExpr.lsucc levelExpr) flag
   have functionMember :=
     IsReducibleMemberAt.abstractionNonDependent
+      (domainAnn :=
+        (.mkGen .gen_universeCode (LevelExpr.lsucc levelExpr, flag) .childNil : RawTerm (scope + 1)))
       (codomainCodeBase :=
         (.mkGen .gen_universeCode (LevelExpr.lsucc levelExpr, flag) .childNil : RawTerm (scope + 1)))
       (body := (.mkGen .gen_var ⟨0, Nat.succ_pos (scope + 1)⟩ .childNil : RawTerm (scope + 1 + 1)))
       domainReducible
+      (universeCode_isStronglyNormalizing (LevelExpr.lsucc levelExpr, flag))
       (fun _argument argumentInDomain => argumentInDomain.1)
       domainReducible
       (fun _argument argumentInDomain => argumentInDomain)

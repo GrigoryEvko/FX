@@ -38,17 +38,24 @@ namespace FX1Poly.Core
 
 open Foundation
 
-/-- A `gen_lam`-rooted term (per `isLamSource`) is a lambda cell. -/
+/-- A `gen_lam`-rooted term (per `isLamSource`) is a lambda cell.
+
+Church-style: the lambda carries a domain annotation as its first child,
+with the body under one binder. -/
 theorem isLamSource_eq_lam {scope : Nat} {functionTerm : RawTerm scope}
     (sourceIsLam : RawTerm.isLamSource functionTerm = true) :
-    ∃ body : RawTerm (scope + 1), functionTerm = .mkGen .gen_lam () (.childCons body .childNil) := by
+    ∃ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)),
+      functionTerm =
+        .mkGen .gen_lam ()
+          (.childCons domainAnn (.childCons body .childNil)) := by
   match functionTerm with
   | .mkGen generator payload children =>
       dsimp only [RawTerm.isLamSource] at sourceIsLam
       by_cases generatorIsLam : generator = .gen_lam
       · subst generatorIsLam
         match children with
-        | .childCons body .childNil => exact ⟨body, rfl⟩
+        | .childCons domainAnn (.childCons body .childNil) =>
+            exact ⟨domainAnn, body, rfl⟩
       · rw [if_neg generatorIsLam] at sourceIsLam
         exact absurd sourceIsLam (by decide)
 
@@ -61,7 +68,7 @@ theorem hasAppBetaRoot_exists_step {scope : Nat}
   match children with
   | .childCons functionTerm (.childCons argumentTerm .childNil) =>
       dsimp only [RawTermChildren.hasAppBetaRoot] at betaRoot
-      obtain ⟨body, functionIsLam⟩ := isLamSource_eq_lam betaRoot
+      obtain ⟨domainAnn, body, functionIsLam⟩ := isLamSource_eq_lam betaRoot
       subst functionIsLam
       exact ⟨RawTerm.subst0 body argumentTerm, Step.beta⟩
 

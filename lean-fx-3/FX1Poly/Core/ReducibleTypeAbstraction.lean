@@ -56,7 +56,8 @@ The argument's strong normalization (from the domain candidate's CR1) feeds the 
 theorem DependentArrowCandidate.abstraction {scope : Nat}
     {domainCandidate : RawTerm scope → Prop}
     {codomainCandidate : RawTerm scope → (RawTerm scope → Prop)}
-    {body : RawTerm (scope + 1)}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (domainArgumentsSN :
       ∀ argument : RawTerm scope, domainCandidate argument → IsStronglyNormalizing argument)
     (codomainClosed :
@@ -66,23 +67,27 @@ theorem DependentArrowCandidate.abstraction {scope : Nat}
       ∀ argument : RawTerm scope, domainCandidate argument →
         codomainCandidate argument (RawTerm.subst0 body argument)) :
     DependentArrowCandidate domainCandidate codomainCandidate
-      (.mkGen .gen_lam () (.childCons body .childNil)) := by
+      (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) := by
   intro argument argumentReducible
   have codomainHeadExpansionClosed :
-      ∀ {redexBody : RawTerm (scope + 1)} {redexArgument : RawTerm scope}
-        {spine : List (RawTerm scope)},
+      ∀ {redexDomainAnn : RawTerm scope} {redexBody : RawTerm (scope + 1)}
+        {redexArgument : RawTerm scope} {spine : List (RawTerm scope)},
+        IsStronglyNormalizing redexDomainAnn →
         IsStronglyNormalizing redexArgument →
         codomainCandidate argument
           (RawTerm.applySpineApp (RawTerm.subst0 redexBody redexArgument) spine) →
         codomainCandidate argument
           (RawTerm.applySpineApp
             (.mkGen .gen_app ()
-              (.childCons (.mkGen .gen_lam () (.childCons redexBody .childNil))
+              (.childCons
+                (.mkGen .gen_lam ()
+                  (.childCons redexDomainAnn (.childCons redexBody .childNil)))
                 (.childCons redexArgument .childNil)))
             spine) :=
     codomainClosed argument argumentReducible
-  exact codomainHeadExpansionClosed (redexBody := body) (redexArgument := argument)
-    (spine := ([] : List (RawTerm scope)))
+  exact codomainHeadExpansionClosed (redexDomainAnn := domainAnn) (redexBody := body)
+    (redexArgument := argument) (spine := ([] : List (RawTerm scope)))
+    domainAnnSN
     (domainArgumentsSN argument argumentReducible)
     (bodyReducible argument argumentReducible)
 

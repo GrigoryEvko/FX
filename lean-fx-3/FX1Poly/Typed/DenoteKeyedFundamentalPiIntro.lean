@@ -57,6 +57,10 @@ theorem fundamentalPiIntroAtDenote {profile : PolyProfile} {scope : Nat} (env : 
     (domainReducibleAtLevel : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
         ReducibleEnvAtDenote env level context substitution →
         IsReducibleTypeAtDenote env level (RawTerm.subst substitution domainCode))
+    (domainCodeStronglyNormalizing :
+        ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsStronglyNormalizing (RawTerm.subst substitution domainCode))
     (domainArgumentsSN : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
         ReducibleEnvAtDenote env level context substitution →
         ∀ argument : RawTerm targetScope,
@@ -70,7 +74,7 @@ theorem fundamentalPiIntroAtDenote {profile : PolyProfile} {scope : Nat} (env : 
             (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
     (bodyConclusion :
         FundamentalConclusionAtDenote env level (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionAtDenote env level context (lamCell body)
+    FundamentalConclusionAtDenote env level context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) := by
   intro _targetScope substitution envReducible
   exact abstractionMemberUnderClosingSubstitution
@@ -80,6 +84,7 @@ theorem fundamentalPiIntroAtDenote {profile : PolyProfile} {scope : Nat} (env : 
         (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
     env level
     (domainReducibleAtLevel substitution envReducible).reducibleMemberCandidate
+    (domainCodeStronglyNormalizing substitution envReducible)
     (fun argument argumentMember =>
       (codomainReducibleAtLevel substitution envReducible argument argumentMember).reducibleMemberCandidate)
     (domainArgumentsSN substitution envReducible)

@@ -41,24 +41,35 @@ theorem rename_lift_newestVar {sourceScope targetScope : Nat}
       (RawTerm.newestVar : RawTerm (targetScope + 1)) := by
   rfl
 
-/-- Eta-lambda sources commute with raw renaming. -/
+/-- Eta-lambda sources commute with raw renaming.
+
+Church-style: the eta-lambda source carries a domain annotation at the
+same scope as its first child; renaming maps it directly while the body
+(`app (weaken innerFunction) newestVar`) renames under the lifted
+renaming. -/
 theorem rename_etaLamSource {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
-    (innerFunction : RawTerm sourceScope) :
-    RawTerm.rename rawRenaming (RawTerm.etaLamSource innerFunction) =
-      RawTerm.etaLamSource (RawTerm.rename rawRenaming innerFunction) := by
+    (domainAnn innerFunction : RawTerm sourceScope) :
+    RawTerm.rename rawRenaming
+        (RawTerm.etaLamSource domainAnn innerFunction) =
+      RawTerm.etaLamSource (RawTerm.rename rawRenaming domainAnn)
+        (RawTerm.rename rawRenaming innerFunction) := by
   change
     ((.mkGen .gen_lam ()
       (.childCons
-        ((.mkGen .gen_app ()
-          (.childCons
-            (RawTerm.rename rawRenaming.lift (RawTerm.weaken innerFunction))
+        (RawTerm.rename rawRenaming domainAnn)
+        (.childCons
+          ((.mkGen .gen_app ()
             (.childCons
               (RawTerm.rename rawRenaming.lift
-                (RawTerm.newestVar : RawTerm (sourceScope + 1)))
-              .childNil))) : RawTerm (targetScope + 1))
-        .childNil)) : RawTerm targetScope) =
-      RawTerm.etaLamSource (RawTerm.rename rawRenaming innerFunction)
+                (RawTerm.weaken innerFunction))
+              (.childCons
+                (RawTerm.rename rawRenaming.lift
+                  (RawTerm.newestVar : RawTerm (sourceScope + 1)))
+                .childNil))) : RawTerm (targetScope + 1))
+          .childNil))) : RawTerm targetScope) =
+      RawTerm.etaLamSource (RawTerm.rename rawRenaming domainAnn)
+        (RawTerm.rename rawRenaming innerFunction)
   rw [RawTerm.rename_lift_weaken, RawTerm.rename_lift_newestVar]
 
 /-- Eta-pair sources commute with raw renaming. -/
@@ -177,9 +188,9 @@ theorem rename {sourceScope targetScope : Nat}
     Step.eta (RawTerm.rename rawRenaming sourceTerm)
       (RawTerm.rename rawRenaming targetTerm) := by
   cases etaStep with
-  | etaLam innerFunction =>
+  | etaLam domainAnn innerFunction =>
       rw [RawTerm.rename_etaLamSource]
-      exact Step.eta.etaLam _
+      exact Step.eta.etaLam _ _
   | etaPair pairTerm =>
       rw [RawTerm.rename_etaPairSource]
       exact Step.eta.etaPair _

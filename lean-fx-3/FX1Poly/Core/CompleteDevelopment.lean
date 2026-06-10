@@ -162,10 +162,12 @@ end
 the exact equation the Takahashi triangle's β arm needs, and witnesses that the gated (non-over-firing)
 development fires the source β-redex with the developed components — the property the over-firing version
 also had for β but violated by additionally firing redexes created under non-`lam` heads. -/
-theorem cd_app_lam_eq {scope : Nat} (body : RawTerm (scope + 1)) (arg : RawTerm scope) :
+theorem cd_app_lam_eq {scope : Nat} (domainAnn : RawTerm scope) (body : RawTerm (scope + 1))
+    (arg : RawTerm scope) :
     RawTerm.completeDevelopment
-      (.mkGen .gen_app () (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
-        (.childCons arg .childNil)))
+      (.mkGen .gen_app ()
+        (.childCons (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
+          (.childCons arg .childNil)))
       = RawTerm.subst0 (RawTerm.completeDevelopment body) (RawTerm.completeDevelopment arg) := rfl
 
 /-! ### ι reduction-rule equations.

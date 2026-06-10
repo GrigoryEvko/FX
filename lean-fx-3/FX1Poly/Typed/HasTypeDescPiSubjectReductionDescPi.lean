@@ -43,18 +43,19 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 universe witness, which comes from the grown `classifierIsTypeDescPi`. -/
 theorem HasTypeDescPi.betaSubjectReductionDescPi {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    {body : RawTerm (scope + 1)} {argument classifier : RawTerm scope}
-    (redexTyped : HasTypeDescPi profile context (appCell (lamCell body) argument) classifier)
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} {argument classifier : RawTerm scope}
+    (redexTyped :
+      HasTypeDescPi profile context (appCell (lamCell domainAnn body) argument) classifier)
     (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context (RawTerm.subst0 body argument) classifier := by
   obtain ⟨domainCode, codomainCode, functionTyped, argumentTyped, convClassifierToOutput⟩ :=
     redexTyped.invertApp
-  obtain ⟨lamDomainCode, lamCodomainCode, lamDomainLevel, lamCodomainLevel, lamFlag,
+  obtain ⟨lamCodomainCode, lamDomainLevel, lamCodomainLevel, lamFlag,
       convPiToPi, lamDomainTyped, _lamCodomainTyped, bodyTyped⟩ :=
     functionTyped.invertLam
   obtain ⟨convDomain, convCodomain⟩ := Conv.piTyCode_inj convPiToPi
   have argumentTypedAtLamDomain :
-      HasTypeDescPi profile context argument lamDomainCode :=
+      HasTypeDescPi profile context argument domainAnn :=
     HasTypeDescPi.conv lamDomainLevel lamFlag argumentTyped convDomain lamDomainTyped
   have reductTyped :
       HasTypeDescPi profile context (RawTerm.subst0 body argument)
@@ -88,7 +89,7 @@ theorem HasTypeDescPi.subjectReductionPiElimArmDescPi {profile : PolyProfile} {s
       Step argument argumentReduct → HasTypeDescPi profile context argumentReduct domainCode)
     (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context reduct (RawTerm.subst0 codomainCode argument) := by
-  rcases Step.from_app step with ⟨body, functionEq, reductEq⟩ |
+  rcases Step.from_app step with ⟨domainAnn, body, functionEq, reductEq⟩ |
       ⟨functionAfter, reductEq, functionStep⟩ | ⟨argumentAfter, reductEq, argumentStep⟩
   · subst functionEq
     subst reductEq

@@ -83,42 +83,105 @@ theorem iteratedApplication_size_var {scope : Nat} (depth : Nat)
           = 4 * (priorDepth + 1) + 1
       rw [priorIH, Nat.mul_succ, Nat.add_comm 1 (4 * priorDepth + 1)]
 
-/-- The general Church numeral `n = λ(A:Type@0). λ(f:A→A). λ(x:A). f^n x` — the polymorphic iterator applying
-its step `f` exactly `n` times to its base `x`. -/
-def churchNumeralLambda (depth : Nat) : RawTerm 0 :=
-  lamCell (lamCell (lamCell
-    (iteratedApplication depth
-      (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-      (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
+/-- The universe-code domain of the Church numeral's type binder `A:Type@0` (at the empty scope).  Under T2 the
+outer `lamCell` carries this domain; it is the `domainCode` the numeral's `piIntro` typing rule names
+(`churchNumeralLambda_hasTypeDescPi`).  Pinned to the `standard` flag so the numeral term keeps its fixed
+`RawTerm 0` arity across every call site; the typed derivation instantiates the Church Nat type at this flag. -/
+def churchNumeralTypeBinderDomain : RawTerm 0 :=
+  universeCodeCell LevelExpr.lzero UniverseFlag.standard
 
-/-- A lambda is a no-step normal form whenever its body is (the `lamCell` normality equation is `rfl`). -/
-theorem lamCell_isStepNormalForm {scope : Nat} {body : RawTerm (scope + 1)}
+/-- The arrow domain `A→A` of the Church numeral's step binder `f:A→A` (under the `A` binder, scope 1).  Under
+T2 the middle `lamCell` carries this domain — the `churchNatArrow` subject. -/
+def churchNumeralStepBinderDomain : RawTerm 1 :=
+  piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+    (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+
+/-- The type-variable domain `A` of the Church numeral's base binder `x:A` (under the `A`,`f` binders, scope 2,
+de Bruijn `var 1`).  Under T2 the inner `lamCell` carries this domain. -/
+def churchNumeralBaseBinderDomain : RawTerm 2 :=
+  variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)
+
+/-- The general Church numeral `n = λ(A:Type@0). λ(f:A→A). λ(x:A). f^n x` — the polymorphic iterator applying
+its step `f` exactly `n` times to its base `x`.  Under T2 each binder carries its domain annotation (the
+universe code, the arrow `A→A`, the type variable `A`), exactly the domains the `piIntro` typing rule names. -/
+def churchNumeralLambda (depth : Nat) : RawTerm 0 :=
+  lamCell churchNumeralTypeBinderDomain
+    (lamCell churchNumeralStepBinderDomain
+      (lamCell churchNumeralBaseBinderDomain
+        (iteratedApplication depth
+          (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+          (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
+
+/-- A lambda is a no-step normal form whenever BOTH its domain annotation and its body are (the `lamCell`
+normality equation — over the two-child Church-style telescope — is `rfl`). -/
+theorem lamCell_isStepNormalForm {scope : Nat} {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+    (domainNormal : RawTerm.isStepNormalForm domainAnn)
     (bodyNormal : RawTerm.isStepNormalForm body) :
-    RawTerm.isStepNormalForm (lamCell body) := by
-  show RawTerm.isStepNormalFormBool (lamCell body) = true
-  have nfEq : RawTerm.isStepNormalFormBool (lamCell body)
-      = (!false && (RawTerm.isStepNormalFormBool body && true)) := rfl
-  rw [nfEq, (bodyNormal : RawTerm.isStepNormalFormBool body = true)]
+    RawTerm.isStepNormalForm (lamCell domainAnn body) := by
+  show RawTerm.isStepNormalFormBool (lamCell domainAnn body) = true
+  have nfEq : RawTerm.isStepNormalFormBool (lamCell domainAnn body)
+      = (!false && (RawTerm.isStepNormalFormBool domainAnn
+          && (RawTerm.isStepNormalFormBool body && true))) := rfl
+  rw [nfEq, (domainNormal : RawTerm.isStepNormalFormBool domainAnn = true),
+    (bodyNormal : RawTerm.isStepNormalFormBool body = true)]
   decide
 
 /-- Every Church numeral is a closed no-step normal form — three `lamCell` wrappers over the iterate, whose step
 `f` (`var 1`) is a variable (not a lambda) and whose base `x` (`var 0`) is a variable. -/
 theorem churchNumeralLambda_isStepNormalForm (depth : Nat) :
     RawTerm.isStepNormalForm (churchNumeralLambda depth) :=
-  lamCell_isStepNormalForm (lamCell_isStepNormalForm (lamCell_isStepNormalForm
-    (iteratedApplication_isStepNormalForm depth rfl (by decide) (by decide))))
+  lamCell_isStepNormalForm (by decide)
+    (lamCell_isStepNormalForm (by decide)
+      (lamCell_isStepNormalForm (by decide)
+        (iteratedApplication_isStepNormalForm depth rfl (by decide) (by decide))))
 
-/-- `size (churchNumeralLambda n) = 4·n + 7` — the iterate's `4·n + 1` plus the three `lamCell` wrappers
-(`+2` each). -/
+/-- **The three-wrapper size offset, propext-free.**  The constant-gathering identity the Church-numeral
+size proof reduces to once the iterate's size `iterateCount` is generalised: the three `lamCell` wrappers'
+domain/body/`+3` contributions sum the `iterateCount` plus a constant `+17`.  Proved by structural
+recursion on `iterateCount` (the successor case is `Nat.succ` congruence, the base case `rfl`) — no
+`Nat.add_mul`, no `ac_rfl`, no `omega`. -/
+theorem wrapperSizeOffset (iterateCount : Nat) :
+    1 + (5 + (1 + (iterateCount + 1) + 3) + 3) + 3 = iterateCount + 17 := by
+  induction iterateCount with
+  | zero => rfl
+  | succ priorCount priorEquation =>
+      show Nat.succ (1 + (5 + (1 + (priorCount + 1) + 3) + 3) + 3) = Nat.succ (priorCount + 17)
+      exact congrArg Nat.succ priorEquation
+
+/-- `size (churchNumeralLambda n) = 4·n + 17` — the iterate's `4·n + 1` plus the three annotated `lamCell`
+wrappers.  Under T2 each `lamCell` carries a domain child, so a wrapper adds `domain.size + body.size + 3`:
+the base binder's type-variable domain (`+1`) gives `+4`, the step binder's arrow domain `A→A` (`+5`) gives
+`+12`, the type binder's universe-code domain (`+1`) gives `+16` — `4·n + 1 + 16`. -/
 theorem churchNumeralLambda_size (depth : Nat) :
-    (churchNumeralLambda depth).size = 4 * depth + 7 := by
-  show (((iteratedApplication depth
-    (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-    (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))).size + 2) + 2 + 2) = 4 * depth + 7
-  rw [iteratedApplication_size_var]
+    (churchNumeralLambda depth).size = 4 * depth + 17 := by
+  have iterateSize :
+      (iteratedApplication depth
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+        (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))).size = 4 * depth + 1 :=
+    iteratedApplication_size_var depth _ _
+  rw [churchNumeralLambda]
+  show ((lamCell (churchNumeralTypeBinderDomain)
+      (lamCell (churchNumeralStepBinderDomain)
+        (lamCell (churchNumeralBaseBinderDomain)
+          (iteratedApplication depth
+            (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+            (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))).size) = 4 * depth + 17
+  rw [show ∀ (domainAnn : RawTerm 0) (body : RawTerm 1),
+        (lamCell domainAnn body).size = domainAnn.size + body.size + 3 from fun _ _ => rfl,
+      show ∀ (domainAnn : RawTerm 1) (body : RawTerm 2),
+        (lamCell domainAnn body).size = domainAnn.size + body.size + 3 from fun _ _ => rfl,
+      show ∀ (domainAnn : RawTerm 2) (body : RawTerm 3),
+        (lamCell domainAnn body).size = domainAnn.size + body.size + 3 from fun _ _ => rfl,
+      iterateSize,
+      show churchNumeralTypeBinderDomain.size = 1 from rfl,
+      show churchNumeralStepBinderDomain.size = 5 from rfl,
+      show churchNumeralBaseBinderDomain.size = 1 from rfl]
+  show 1 + (5 + (1 + (4 * depth + 1) + 3) + 3) + 3 = 4 * depth + 17
+  generalize 4 * depth = iterateCount
+  exact wrapperSizeOffset iterateCount
 
 /-- The Church numeral construction is injective: distinct depths give distinct (closed) numeral terms.  Via the
-size `4·n + 7`, with a `propext`-free cancellation (`Nat.succ.inj` ×7 strips the `+7`, then
+size `4·n + 17`, with a `propext`-free cancellation (`Nat.succ.inj` ×17 strips the `+17`, then
 `Nat.eq_of_mul_eq_mul_left` strips the `·4`). -/
 theorem churchNumeralLambda_injective {depthLeft depthRight : Nat}
     (sameNumeral : churchNumeralLambda depthLeft = churchNumeralLambda depthRight) :
@@ -127,8 +190,10 @@ theorem churchNumeralLambda_injective {depthLeft depthRight : Nat}
     congrArg RawTerm.size sameNumeral
   rw [churchNumeralLambda_size, churchNumeralLambda_size] at sizeEq
   have fourEq : 4 * depthLeft = 4 * depthRight :=
-    Nat.succ.inj (Nat.succ.inj (Nat.succ.inj (Nat.succ.inj
-      (Nat.succ.inj (Nat.succ.inj (Nat.succ.inj sizeEq))))))
+    Nat.succ.inj (Nat.succ.inj (Nat.succ.inj (Nat.succ.inj (Nat.succ.inj
+      (Nat.succ.inj (Nat.succ.inj (Nat.succ.inj (Nat.succ.inj (Nat.succ.inj
+        (Nat.succ.inj (Nat.succ.inj (Nat.succ.inj (Nat.succ.inj (Nat.succ.inj
+          (Nat.succ.inj (Nat.succ.inj sizeEq))))))))))))))))
   exact Nat.eq_of_mul_eq_mul_left (by decide) fourEq
 
 /-- ★ **The Church encoding of ℕ injects into the FX term model up to definitional equality.**  For all

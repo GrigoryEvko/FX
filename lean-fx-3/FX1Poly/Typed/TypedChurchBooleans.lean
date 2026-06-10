@@ -87,7 +87,10 @@ nested `piIntro`s; the body `t` (de Bruijn `var 1`, the non-innermost binder) ty
 weakened lookup resolving to the codomain `A` (`var 2`). -/
 theorem churchTrue_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (lamCell (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3)))))
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3)))))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
         (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
           (piTyCodeCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
@@ -114,7 +117,10 @@ theorem churchTrue_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) :
 /-- The Church boolean `true` is strongly normalizing — SN-043 on the concrete nested-`piIntro` derivation. -/
 theorem churchTrue_stronglyNormalizing {profile : PolyProfile} (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (lamCell (lamCell (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))))
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))))
         : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing (churchTrue_hasTypeDescPi (profile := profile) flag)
 
@@ -123,7 +129,10 @@ theorem churchTrue_stronglyNormalizing {profile : PolyProfile} (flag : UniverseF
 classifier as `churchTrue`; the body `f` (de Bruijn `var 0`, the innermost binder) types by the `var` rule. -/
 theorem churchFalse_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
         (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
           (piTyCodeCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
@@ -149,7 +158,10 @@ theorem churchFalse_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) 
 /-- The Church boolean `false` is strongly normalizing — SN-043 on its concrete derivation. -/
 theorem churchFalse_stronglyNormalizing {profile : PolyProfile} (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (lamCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))) : RawTerm 0) :=
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))) : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing (churchFalse_hasTypeDescPi (profile := profile) flag)
 
 /-! ## β-selection — the Church booleans COMPUTE the correct branch
@@ -179,7 +191,10 @@ body `var 1` only resolves through the `subst0` fold on concrete closed argument
 theorem churchTrue_selectsThenBranch (flag : UniverseFlag) :
     StepStar
       (appCell (appCell (appCell
-          (lamCell (lamCell (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3)))))
+          (lamCell (universeCodeCell LevelExpr.lzero flag)
+            (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+              (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+                (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3)))))
           (universeCodeCell LevelExpr.lzero flag))
           (universeCodeCell LevelExpr.lzero flag))
         (universeCodeCell LevelExpr.lzero.lsucc flag))
@@ -205,7 +220,10 @@ encodings compute DIFFERENT results (`Type@0` vs `Type@1`): the booleans are com
 theorem churchFalse_selectsElseBranch (flag : UniverseFlag) :
     StepStar
       (appCell (appCell (appCell
-          (lamCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
+          (lamCell (universeCodeCell LevelExpr.lzero flag)
+            (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+              (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+                (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
           (universeCodeCell LevelExpr.lzero flag))
           (universeCodeCell LevelExpr.lzero flag))
         (universeCodeCell LevelExpr.lzero.lsucc flag))
@@ -248,11 +266,17 @@ equivalence/congruence lemmas, and a `decide` over the structural `DecidableEq` 
 
 /-- The bare Church-`true` lambda term `λ(A:Type@0). λ(t:A). λ(f:A). t` (body the non-innermost `var 1`). -/
 abbrev churchTrueLambda : RawTerm 0 :=
-  lamCell (lamCell (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))))
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+      (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))))
 
 /-- The bare Church-`false` lambda term `λ(A:Type@0). λ(t:A). λ(f:A). f` (body the innermost `var 0`). -/
 abbrev churchFalseLambda : RawTerm 0 :=
-  lamCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+      (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+        (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))
 
 /-- The universe code `Type@0` at the `standard` flag — the type argument and the `then` branch of the
 selection fixtures. -/

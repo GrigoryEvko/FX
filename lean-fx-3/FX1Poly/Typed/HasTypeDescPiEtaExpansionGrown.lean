@@ -66,7 +66,7 @@ theorem HasTypeDescPi.etaExpansionPreservesTypingGrown {profile : PolyProfile} {
     (wellFormed : WfContextDescPi context)
     (functionTyped :
       HasTypeDescPi profile context functionTerm (piTyCodeCell domainCode codomainCode)) :
-    HasTypeDescPi profile context (RawTerm.etaLamSource functionTerm)
+    HasTypeDescPi profile context (RawTerm.etaLamSource domainCode functionTerm)
       (piTyCodeCell domainCode codomainCode) := by
   obtain ⟨_classLevel, _classFlag, piTyped⟩ := functionTyped.classifierIsTypeDescPi wellFormed
   obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped, _convCode⟩ :=
@@ -102,7 +102,7 @@ theorem HasTypeDescPi.etaCoherenceGrown {profile : PolyProfile} {scope : Nat}
     (wellFormed : WfContextDescPi context)
     (functionTyped :
       HasTypeDescPi profile context functionTerm (piTyCodeCell domainCode codomainCode)) :
-    HasTypeDescPi profile context (RawTerm.etaLamSource functionTerm)
+    HasTypeDescPi profile context (RawTerm.etaLamSource domainCode functionTerm)
         (piTyCodeCell domainCode codomainCode)
       ∧ HasTypeDescPi profile context functionTerm (piTyCodeCell domainCode codomainCode) :=
   ⟨HasTypeDescPi.etaExpansionPreservesTypingGrown wellFormed functionTyped, functionTyped⟩

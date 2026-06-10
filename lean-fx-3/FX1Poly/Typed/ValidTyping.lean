@@ -96,7 +96,7 @@ inductive ValidTyping (profile : PolyProfile) :
       (bodyTyped : ValidTyping profile (levelCons (predLevel + 1) contextLevels)
         (predLevel + 1) (context.cons domainCode) body codomainCode) :
       ValidTyping profile contextLevels (predLevel + 1) context
-        (lamCell body) (piTyCodeCell domainCode codomainCode)
+        (lamCell domainCode body) (piTyCodeCell domainCode codomainCode)
   | piElim {scope : Nat} (contextLevels : Fin scope → Nat) (subjectLevel : Nat)
       {context : TypingContext profile scope}
       {functionTerm argument domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
@@ -209,7 +209,9 @@ This is the first SN witness on the dependent-FT lane whose subject contains a b
 occurrence — the shape where β-redexes live. -/
 theorem validTyping_identity_stronglyNormalizing {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
-    IsStronglyNormalizing (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) :=
+    IsStronglyNormalizing
+      (lamCell (universeCodeCell levelExpr flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        : RawTerm 0) :=
   ValidTyping.closedStronglyNormalizing (profile := profile) 0
     (ValidTyping.piIntro emptyLevelVector 0
       (domainLevel := levelExpr.lsucc) (codomainLevel := levelExpr.lsucc) (flag := flag)
@@ -338,7 +340,9 @@ arm, composed over `piIntro` (the identity, `λ(x : Type@(e+2)). x : Π(Type@(e+
 theorem validTyping_betaRedex_stronglyNormalizing {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell
+        (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag) : RawTerm 0) :=
   ValidTyping.closedStronglyNormalizing (profile := profile) 0
     (ValidTyping.piElim emptyLevelVector 1

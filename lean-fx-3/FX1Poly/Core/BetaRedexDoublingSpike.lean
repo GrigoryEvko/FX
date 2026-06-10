@@ -122,24 +122,26 @@ COMPOSITION TEMPLATE at zero axioms. -/
 theorem HasCertifiedCellDim0.beta_app_self_e2e
     {profile : PolyProfile} {scope : Nat}
     (argumentTerm : RawTerm scope)
+    (domainAnn : RawTerm scope)
     (sourceCert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_app ()
                 (.childCons
                   (.mkGen .gen_lam ()
-                    (.childCons
-                      (.mkGen .gen_app ()
-                        (.childCons
-                          (.mkGen .gen_var
-                            (⟨0, Nat.zero_lt_succ scope⟩
-                              : Fin (scope + 1))
-                            .childNil)
+                    (.childCons domainAnn
+                      (.childCons
+                        (.mkGen .gen_app ()
                           (.childCons
                             (.mkGen .gen_var
                               (⟨0, Nat.zero_lt_succ scope⟩
                                 : Fin (scope + 1))
                               .childNil)
-                            .childNil)))
-                      .childNil))
+                            (.childCons
+                              (.mkGen .gen_var
+                                (⟨0, Nat.zero_lt_succ scope⟩
+                                  : Fin (scope + 1))
+                                .childNil)
+                              .childNil)))
+                        .childNil)))
                   (.childCons argumentTerm .childNil))) : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.subst0

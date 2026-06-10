@@ -2,41 +2,37 @@ import FX1Poly.Typed.GrownCheckSoundnessRefutation
 import FX1Poly.Typed.ReduceSmokeCorpus
 import FX1Poly.Core.ConvNormalForm
 
-/-! # FX1Poly/Typed/ConvExistentialStrengtheningRefutation — the Conv-existential is ALSO false unpinned
+/-! # FX1Poly/Typed/ConvExistentialStrengtheningRefutation — RETIRED refutation (T2 flipped it)
 
-The strengthening campaign's THIRD refutation, completing the design-space fence:
+PRE-T2 this file was the strengthening campaign's THIRD refutation: under Curry-style λ the
+weakened identity could be grown-typed at the variable-domain Π `Π (var 0). (var 1)` (the λ's
+domain was invisible, so the classifier floated), and that classifier is not `Conv` to any
+weakening — refuting the unpinned Conv-existential strengthening.
 
-  * `GrownStrengtheningRefutation` (STR-1) — the SYNTACTIC-image existential is false (the `conv`
-    arm escapes via β-expansion, but `Conv` to a weakening survives there).
-  * `GrownCheckSoundnessRefutation` (STR-5) — the raw checking relation is unsound (typehood must
-    enter the pipeline).
-  * THIS FILE — even the CONV-existential strengthening is false WITHOUT a pinned classifier: a
-    grown typing of a weakened subject does not force its classifier into the weaken image even up
-    to `Conv`.
+UNDER T2 (Church-style two-child λ) THE REFUTATION IS DEAD, and honestly so: `piIntro` pins the
+λ's domain ANNOTATION to the Π domain (`HasTypeDescPi.invertLam`), so the only inhabitant of a
+`var 0`-domain Π is the `var 0`-ANNOTATED identity `lamCell (var 0) (var 0)` — which is NOT a
+weaken-image of any scope-0 term (weakening shifts every variable away from slot 0).  The old
+witness `weaken identityLambda` (a `unitCell`-annotated λ) is untypeable here, and no replacement
+witness exists: the float the refutation exploited is structurally impossible.  The refuted claim
+(the Conv-existential strengthening) is consequently EXPECTED TO BE TRUE under T2; its positive
+proof is the pinned-reflection λ-reduct discharge (the campaign's open core).
 
-The witness is Curry-style λ-typing non-uniqueness at its purest: the weakened identity λ is
-grown-typed at `Π (var 0). (var 1)` in `[Type@0]` — the binder's type IS the fresh variable (a
-perfectly valid domain there, since `var 0`'s lookup is `Type@0`), every `piIntro` side condition
-is rfl-defeq, and the classifier is a NORMAL form whose domain mentions the fresh variable
-irreducibly:
+What SURVIVES, still true and load-bearing:
 
-  * `variableDomainPi` / `variableDomainPi_isStepNormalForm` — the classifier and its normality
-    (`by decide`).
-  * `weakenedIdentityTypedAtVariableDomainPi` — the typing (pure `piIntro`, three `var` leaves).
-  * `variableDomainPi_notConvWeakenImage` — the escape up to `Conv`: normality collapses the join
-    (`StepStar.eq_of_noStep`), `StepStar.reflectRename` pulls the weakening's chain back, and the
-    STR-1 drilling shows the Π-code's `var 0` domain cannot be a weakening's image.
-  * `convExistentialStrengthening_isFalse` — ★ the refutation.
+  * `variableDomainPi` / `variableDomainPi_isStepNormalForm` — the variable-domain classifier and
+    its normality (`by decide`).
+  * `weakenedIdentityTypedAtVariableDomainPi` — the typing witness, RESTATED for T2: the
+    `var 0`-annotated identity (the name records its pre-T2 ancestry; the audited claim is the
+    restated one).
+  * `variableDomainPi_notConvWeakenImage` — the classifier-side escape is STILL a fact: the
+    variable-domain Π is not `Conv` to any weakening.  Under T2 this no longer refutes
+    strengthening (no weaken-image subject inhabits it); instead it documents exactly WHY the
+    annotation pin is load-bearing.
 
-## Consequence (the STR-5b route decision)
-
-The strengthening reflection's conclusion `∃ S₀, Conv S (weaken S₀) ∧ …` is UNPROVABLE as a
-standalone ∀-statement over all classifiers — the image-pinned-classifier premise
-(`∃ S_img, Conv S (weaken S_img)`) is MANDATORY, not an artifact of any proof strategy.  Together
-with the Ω-unsoundness this pins the surviving route: image-pinned, NF-annotated ENGINE-derivation
-reflection (campaign log, firing 247d900a), whose remaining open core is pinning the function's Π
-at `piElim`.  The η-SR consumer (#850) supplies its root pinning partially (the `(var 0)` argument
-pins the domain via `inversionVariable`); its codomain pinning threads the same open core. -/
+RETIRED (user-approved deletion, 2026-06-10): `convExistentialStrengthening_isFalse` and its
+consumer `pinnedReflectionLamClassifierResidual_isFalse` — the refuted statements are plausibly
+TRUE under T2; keeping `_isFalse` theorems for them would be dishonest. -/
 
 namespace FX1Poly.Typed
 
@@ -52,13 +48,22 @@ def variableDomainPi : RawTerm 1 :=
 theorem variableDomainPi_isStepNormalForm :
     RawTerm.isStepNormalForm variableDomainPi := by decide
 
-/-- The weakened identity λ is grown-typed at `Π (var 0). (var 1)` in `[Type@0]`: the binder's type
-`var 0` IS a type there (its lookup is `Type@0`), the codomain `var 1` likewise, and the body's
-natural type is exactly the codomain — a pure `piIntro` whose every side condition is rfl-defeq. -/
+/-- The variable-domain identity λ is grown-typed at `Π (var 0). (var 1)` in `[Type@0]`: the
+binder's type `var 0` IS a type there (its lookup is `Type@0`), the codomain `var 1` likewise, and
+the body's natural type is exactly the codomain — a pure `piIntro` whose every side condition is
+rfl-defeq.
+
+T2 RESTATEMENT: a Church-style `piIntro` pins the λ's domain ANNOTATION to the Π domain
+(`HasTypeDescPi.invertLam`), so the inhabitant of a `var 0`-domain Π must itself be the
+`var 0`-ANNOTATED identity `lamCell (var 0) (var 0)` — NOT the pre-T2 `weaken identityLambda`
+(whose domain is the smoke-corpus `unitCell`), which is untypeable here.  Crucially,
+`lamCell (var 0) (var 0)` is NOT a weaken-image of any scope-0 term, so this typing no longer
+yields a strengthening counterexample — see the file header. -/
 theorem weakenedIdentityTypedAtVariableDomainPi (profile : PolyProfile) :
     HasTypeDescPi profile
       ((TypingContext.empty (profile := profile)).cons (typeZeroCode 0))
-      (RawTerm.weaken identityLambda)
+      (lamCell (variableCell (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1))
+        (variableCell (⟨0, Nat.zero_lt_succ 1⟩ : Fin 2)))
       variableDomainPi :=
   HasTypeDescPi.piIntro LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard
     (HasTypeDescPi.ofFormation (HasTypeDesc.var _ ⟨0, Nat.succ_pos 0⟩))
@@ -111,21 +116,11 @@ theorem variableDomainPi_notConvWeakenImage (classifierBase : RawTerm 0) :
                 injection hDomainChild with hDomScope hDomGenerator hDomPayload hDomChildren
                 exact hDomainVar hDomGenerator
 
-/-- ★ **The CONV-existential strengthening is FALSE without a pinned classifier** — sharpening
-STR-1's syntactic-image refutation: a grown typing of a weakened subject does not even force its
-classifier into the weaken image UP TO CONV.  The strengthening reflection MUST carry the
-image-pinned-classifier premise. -/
-theorem convExistentialStrengthening_isFalse (profile : PolyProfile) :
-    ¬ (∀ (bindingType subject : RawTerm 0) (classifier : RawTerm 1),
-        HasTypeDescPi profile
-          ((TypingContext.empty (profile := profile)).cons bindingType)
-          (RawTerm.weaken subject) classifier →
-        ∃ classifierBase : RawTerm 0,
-          Conv classifier (RawTerm.weaken classifierBase)) := by
-  intro convExistentialClaim
-  obtain ⟨classifierBase, convToWeaken⟩ :=
-    convExistentialClaim (typeZeroCode 0) identityLambda variableDomainPi
-      (weakenedIdentityTypedAtVariableDomainPi profile)
-  exact variableDomainPi_notConvWeakenImage classifierBase convToWeaken
+/- RETIRED: `convExistentialStrengthening_isFalse` lived here pre-T2.  Its witness fed
+`weaken identityLambda` typed at `variableDomainPi` to the Conv-existential strengthening claim;
+under T2 that typing is impossible (the annotation pin) and no weaken-image subject inhabits a
+variable-domain Π, so the refutation has no witness and the refuted claim is expected TRUE.
+Deleted with user approval 2026-06-10; the positive successor is the pinned-reflection λ-reduct
+discharge. -/
 
 end FX1Poly.Typed

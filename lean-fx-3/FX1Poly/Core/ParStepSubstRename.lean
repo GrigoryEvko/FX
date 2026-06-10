@@ -62,9 +62,10 @@ theorem ParStep.subst {sourceScope targetScope : Nat}
     (ParStep.rec
       (motive_1 := motiveStep)
       (motive_2 := motiveChildren)
-      (fun {scope} {body body' arg arg'} _bodyStep _argStep ihBody ihArg {targetScope} sigma => by
+      (fun {scope} {domainAnn domainAnn' body body' arg arg'} _domainStep _bodyStep _argStep
+          ihDomain ihBody ihArg {targetScope} sigma => by
         rw [RawTerm.subst0_subst_commute]
-        exact ParStep.beta (ihBody (RawTermSubst.lift sigma)) (ihArg sigma))
+        exact ParStep.beta (ihDomain sigma) (ihBody (RawTermSubst.lift sigma)) (ihArg sigma))
       (fun {scope} generator payload {children children'} _childrenStep ihChildren
           {targetScope} sigma => by
         by_cases hVar : generator = .gen_var
@@ -145,9 +146,10 @@ theorem ParStepChildren.subst {parentSourceScope parentTargetScope : Nat}
     (ParStepChildren.rec
       (motive_1 := motiveStep)
       (motive_2 := motiveChildren)
-      (fun {scope} {body body' arg arg'} _bodyStep _argStep ihBody ihArg {targetScope} sigma => by
+      (fun {scope} {domainAnn domainAnn' body body' arg arg'} _domainStep _bodyStep _argStep
+          ihDomain ihBody ihArg {targetScope} sigma => by
         rw [RawTerm.subst0_subst_commute]
-        exact ParStep.beta (ihBody (RawTermSubst.lift sigma)) (ihArg sigma))
+        exact ParStep.beta (ihDomain sigma) (ihBody (RawTermSubst.lift sigma)) (ihArg sigma))
       (fun {scope} generator payload {children children'} _childrenStep ihChildren
           {targetScope} sigma => by
         by_cases hVar : generator = .gen_var

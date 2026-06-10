@@ -32,10 +32,12 @@ open FX1Poly.Core FX1Poly.Universe
 `Conv.piTyCode_not_emptyTypeCode` refutes that against `emptyTypeCell`.  No well-formedness needed (the λ
 inversion is context-free). -/
 theorem HasTypeDescPi.lambdaNotTypedAtEmptyType {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
-    (typed : HasTypeDescPi profile context (lamCell body) (emptyTypeCell (scope := scope))) :
+    {context : TypingContext profile scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+    (typed :
+      HasTypeDescPi profile context (lamCell domainAnn body) (emptyTypeCell (scope := scope))) :
     False := by
-  obtain ⟨_domainCode, _codomainCode, _domainLevel, _codomainLevel, _flag,
+  obtain ⟨_codomainCode, _domainLevel, _codomainLevel, _flag,
       convToPiCode, _domainTyped, _codomainTyped, _bodyTyped⟩ := HasTypeDescPi.invertLam typed
   exact Conv.piTyCode_not_emptyTypeCode convToPiCode.sym
 

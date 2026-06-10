@@ -130,10 +130,11 @@ from the domain candidate's CR1 at the call site.  The β-redex `app (lam body) 
 `subst0 body argument`, discharged by `DependentArrowCandidate.abstraction` threading
 `ReducibleType.headExpansionClosed`. -/
 theorem IsReducibleMember.abstraction {scope : Nat}
-    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainAnn domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     {domainCandidate : RawTerm scope → Prop}
     {codomainCandidate : RawTerm scope → (RawTerm scope → Prop)}
     (domainReducible : ReducibleType domainCode domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (domainArgumentsSN : ∀ argument : RawTerm scope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainReducible : ∀ argument : RawTerm scope, domainCandidate argument →
@@ -142,10 +143,10 @@ theorem IsReducibleMember.abstraction {scope : Nat}
       codomainCandidate argument (RawTerm.subst0 body argument)) :
     IsReducibleMember
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
-      (.mkGen .gen_lam () (.childCons body .childNil)) :=
+      (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) :=
   ⟨DependentArrowCandidate domainCandidate codomainCandidate,
    ReducibleType.piType codomainCandidate domainReducible codomainReducible,
-   DependentArrowCandidate.abstraction domainArgumentsSN
+   DependentArrowCandidate.abstraction domainAnnSN domainArgumentsSN
      (fun argument argumentInDomain => (codomainReducible argument argumentInDomain).headExpansionClosed)
      bodyReducible⟩
 

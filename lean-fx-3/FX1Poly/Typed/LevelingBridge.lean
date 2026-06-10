@@ -113,7 +113,7 @@ theorem validTypingBridgePiIntro {profile : PolyProfile} {scope : Nat}
       (context.cons domainCode) body codomainCode) :
     ∃ subjectLevel : Nat,
       ValidTyping profile contextLevels subjectLevel context
-        (lamCell body) (piTyCodeCell domainCode codomainCode) :=
+        (lamCell domainCode body) (piTyCodeCell domainCode codomainCode) :=
   ⟨_, ValidTyping.piIntro contextLevels predLevel domainTyped codomainTyped bodyTyped⟩
 
 /-- **Bridge piElim arm.**  Application: function and argument share one `subjectLevel`; the result classifier

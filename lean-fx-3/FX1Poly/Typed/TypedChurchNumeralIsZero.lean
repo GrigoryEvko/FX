@@ -55,7 +55,8 @@ open FX1Poly.Core FX1Poly.Universe StepStar
 
 /-- The constant-false step `λ_. churchFalse` — a unary function ignoring its argument, returning `churchFalse`
 (`churchFalse` is closed, so it is weakened under the binder it never references). -/
-abbrev constFalseStep : RawTerm 0 := lamCell (RawTerm.weaken churchFalseLambda)
+abbrev constFalseStep : RawTerm 0 :=
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (RawTerm.weaken churchFalseLambda)
 
 /-- Applying the constant-false step to ANY argument β-reduces straight to `churchFalse` — the weakened body
 ignores the substituted argument (`weaken_subst_singleton`).  The single β-step that collapses each successor
@@ -73,8 +74,9 @@ bound numeral `n` (de Bruijn `var 0`) the constant-false step over the base `chu
 are weakened under the `λn.` binder.  The type argument is the inert `branchMotivePlaceholder` (never inspected
 by the iteration — see the predicativity note in the file header). -/
 abbrev churchIsZeroLambda : RawTerm 0 :=
-  lamCell (appCell (appCell (appCell RawTerm.newestVar (RawTerm.weaken branchMotivePlaceholder))
-    (RawTerm.weaken constFalseStep)) (RawTerm.weaken churchTrueLambda))
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (appCell (appCell (appCell RawTerm.newestVar (RawTerm.weaken branchMotivePlaceholder))
+      (RawTerm.weaken constFalseStep)) (RawTerm.weaken churchTrueLambda))
 
 /-- The β-contractum reshape: substituting a numeral for the bound `n` cancels the three weakened constants
 (`weaken_subst_singleton`) and resolves the head `var 0` to the numeral — yielding the numeral applied to the

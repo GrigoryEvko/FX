@@ -63,14 +63,22 @@ theorem RawTerm.rename_eq_app {sourceScope targetScope : Nat}
             _tailRestShiftsEquation argumentEquation _nilEquation
           exact ⟨functionTerm, argument, rfl, functionEquation, argumentEquation⟩
 
-/-- Renaming inversion at a λ head: if `rename rho t` is a λ cell, then `t` is a λ cell. -/
+/-- Renaming inversion at a λ head: if `rename rho t` is a λ cell, then `t` is a λ cell.
+
+Church-style: the lambda carries a domain annotation as its first child; the
+inversion exposes a source domain annotation and a source body. -/
 theorem RawTerm.rename_eq_lam {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {domainReduct : RawTerm targetScope}
     {bodyReduct : RawTerm (targetScope + 1)}
     (renameEquation :
-      RawTerm.rename rho term = .mkGen .gen_lam () (.childCons bodyReduct .childNil)) :
-    ∃ body : RawTerm (sourceScope + 1),
-      term = .mkGen .gen_lam () (.childCons body .childNil) := by
+      RawTerm.rename rho term =
+        .mkGen .gen_lam ()
+          (.childCons domainReduct (.childCons bodyReduct .childNil))) :
+    ∃ (domainAnn : RawTerm sourceScope) (body : RawTerm (sourceScope + 1)),
+      term =
+        .mkGen .gen_lam ()
+          (.childCons domainAnn (.childCons body .childNil)) := by
   have rootEquation : term.rootGenerator = Generator.gen_lam := by
     have congruence := congrArg RawTerm.rootGenerator renameEquation
     rw [RawTerm.rename_rootGenerator] at congruence
@@ -80,8 +88,8 @@ theorem RawTerm.rename_eq_lam {sourceScope targetScope : Nat}
       change generator = Generator.gen_lam at rootEquation
       subst rootEquation
       match payload, children with
-      | (), .childCons body .childNil =>
-          exact ⟨body, rfl⟩
+      | (), .childCons domainAnn (.childCons body .childNil) =>
+          exact ⟨domainAnn, body, rfl⟩
 
 /-- **Renaming reflects weak-head reduction**: if the renamed term takes a weak-head step, the term
 itself takes one.  Induction on the HeadStep derivation: the `beta` case inverts the renamed redex back
@@ -103,7 +111,8 @@ theorem HeadStep.rename_reflects {sourceScope targetScope : Nat}
       intro sourceTerm renameEquation
       obtain ⟨functionTerm, argument, sourceEquation, functionRename, _argumentRename⟩ :=
         RawTerm.rename_eq_app rho renameEquation
-      obtain ⟨body, functionEquation⟩ := RawTerm.rename_eq_lam rho functionRename
+      obtain ⟨domainAnn, body, functionEquation⟩ :=
+        RawTerm.rename_eq_lam rho functionRename
       subst sourceEquation
       subst functionEquation
       exact ⟨RawTerm.subst0 body argument, HeadStep.beta⟩

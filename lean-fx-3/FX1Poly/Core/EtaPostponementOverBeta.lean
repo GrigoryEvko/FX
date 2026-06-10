@@ -41,28 +41,33 @@ namespace FX1Poly.Core
 inner function becomes a single step on the whole etaLam source, by congruence through the lambda binder,
 the application head, and the weakening. -/
 theorem Step.etaLamSourceCongruence {scope : Nat}
+    (domainAnn : RawTerm scope)
     {innerFunction reduct : RawTerm scope}
     (betaStep : Step innerFunction reduct) :
-    Step (RawTerm.etaLamSource innerFunction) (RawTerm.etaLamSource reduct) :=
+    Step (RawTerm.etaLamSource domainAnn innerFunction)
+      (RawTerm.etaLamSource domainAnn reduct) :=
   Step.cong .gen_lam ()
-    (StepChildren.here .childNil
-      (Step.cong .gen_app ()
-        (StepChildren.here
-          (.childCons RawTerm.newestVar .childNil : RawTermChildren [0] (scope + 1))
-          (Step.weaken betaStep))))
+    (StepChildren.there (parentScope := scope) (headShift := 0)
+      (restShifts := [1]) domainAnn
+      (StepChildren.here .childNil
+        (Step.cong .gen_app ()
+          (StepChildren.here
+            (.childCons RawTerm.newestVar .childNil : RawTermChildren [0] (scope + 1))
+            (Step.weaken betaStep)))))
 
 /-- **etaLam quasi-commutes over β.**  An etaLam η-step then a β/ι-step reorders into a single
 β/ι-step then a βη-star reduction: the etaLam case of `QuasiCommutesRightOverLeft Step Step.eta`.  The
 common reduct is `etaLamSource reduct` — reached from `etaLamSource innerFunction` by the congruence lift
 of the β/ι-step, and reaching `reduct` by one etaLam η-contraction. -/
 theorem etaLamQuasiCommutesOverBeta {scope : Nat}
+    (domainAnn : RawTerm scope)
     {innerFunction reduct : RawTerm scope}
     (betaStep : Step innerFunction reduct) :
-    ∃ commonReduct, Step (RawTerm.etaLamSource innerFunction) commonReduct ∧
+    ∃ commonReduct, Step (RawTerm.etaLamSource domainAnn innerFunction) commonReduct ∧
       UnionStar Step Step.eta commonReduct reduct :=
-  ⟨RawTerm.etaLamSource reduct,
-   Step.etaLamSourceCongruence betaStep,
-   UnionStar.tailRight (UnionStar.refl _) (Step.eta.etaLam reduct)⟩
+  ⟨RawTerm.etaLamSource domainAnn reduct,
+   Step.etaLamSourceCongruence domainAnn betaStep,
+   UnionStar.tailRight (UnionStar.refl _) (Step.eta.etaLam domainAnn reduct)⟩
 
 /-! ## etaModIntro (the single-strip case)
 
@@ -229,7 +234,7 @@ postponement lemma.  This discharges the lone hypothesis of the open βη-SN ass
 theorem etaQuasiCommutesOverBeta : EtaQuasiCommutesOverBeta := by
   intro scope a b c etaStep betaStep
   cases etaStep with
-  | etaLam innerFunction => exact etaLamQuasiCommutesOverBeta betaStep
+  | etaLam domainAnn innerFunction => exact etaLamQuasiCommutesOverBeta domainAnn betaStep
   | etaPair pairTerm => exact etaPairQuasiCommutesOverBeta betaStep
   | etaPathLam innerPath => exact etaPathLamQuasiCommutesOverBeta betaStep
   | etaModIntro modalTerm => exact etaModIntroQuasiCommutesOverBeta betaStep

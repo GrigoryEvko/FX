@@ -69,13 +69,17 @@ neutrality witness with the subject free (the propext-safe direction) sends each
 arm's `rootGenerator` to a concrete generator, refuted against `gen_lam` by
 `Generator.noConfusion`.  This rules out the β reduct of a neutral application
 in the arrow candidate's CR3. -/
-theorem IsNeutral.not_lam {scope : Nat} {body : RawTerm (scope + 1)}
+theorem IsNeutral.not_lam {scope : Nat}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     (lambdaIsNeutral :
-      IsNeutral (.mkGen .gen_lam () (.childCons body .childNil))) :
+      IsNeutral
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))) :
     False := by
   suffices neutralIsNeverLam :
       ∀ {subject : RawTerm scope}, IsNeutral subject →
-        subject = .mkGen .gen_lam () (.childCons body .childNil) → False from
+        subject =
+            .mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)) →
+          False from
     neutralIsNeverLam lambdaIsNeutral rfl
   intro subject subjectIsNeutral
   cases subjectIsNeutral
@@ -167,7 +171,7 @@ theorem isArrowReducible_isReducibilityCandidate {scope : Nat}
           (IsNeutral.app functionIsNeutral) ?_
         intro reduct reductionStep
         rcases Step.from_app reductionStep with
-          ⟨_body, functionEqualsLam, _targetEq⟩ |
+          ⟨_domainAnn, _body, functionEqualsLam, _targetEq⟩ |
           ⟨functionAfter, reductEquals, functionStep⟩ |
           ⟨argumentAfter, reductEquals, argumentStep⟩
         · exact (IsNeutral.not_lam (functionEqualsLam ▸ functionIsNeutral)).elim

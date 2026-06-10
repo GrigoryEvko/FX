@@ -55,7 +55,8 @@ theorem HasTypeDescPi.openNormalFunctionIsLambdaOrNeutral {profile : PolyProfile
     (typed : HasTypeDescPi profile context subject (piTyCodeCell outerDomain outerCodomain))
     (wellFormed : WfContextDesc context)
     (normal : RawTerm.isStepNormalForm subject) :
-    (∃ body : RawTerm (scope + 1), subject = lamCell body) ∨ IsNeutral subject := by
+    (∃ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)), subject = lamCell domainAnn body) ∨
+      IsNeutral subject := by
   rcases HasTypeDescPi.openNormalSubjectCanonicalOrNeutral typed wellFormed normal with
       (headLam | headPi | headSigma | headUniverse | headList | headOption) | neutral
   · exact Or.inl (eq_lamCell_of_headGenerator headLam)
@@ -94,7 +95,7 @@ theorem HasTypeDescPi.openNormalTypeIsFormerOrNeutral {profile : PolyProfile} {s
      RawTerm.headGenerator subject = Generator.gen_optionCode) ∨ IsNeutral subject := by
   rcases HasTypeDescPi.openNormalSubjectCanonicalOrNeutral typed wellFormed normal with
       (headLam | rest) | neutral
-  · obtain ⟨body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
+  · obtain ⟨_domainAnn, body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [lamEq] at typed
     exact (lam_notTypedAtUniverseCode levelExpr flag typed).elim
   · exact Or.inl rest

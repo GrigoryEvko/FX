@@ -61,7 +61,8 @@ open FX1Poly.Core FX1Poly.Foundation FX1Poly.Core.StepStar
 /-- **The self-applicator `λx. x x`** at scope 0 — a well-scoped raw cell (it is NOT well-typed: no type can be
 both a function's domain and the type of that function applied to itself). -/
 def selfApplicatorCell : RawTerm 0 :=
-  lamCell (appCell (variableCell ⟨0, Nat.succ_pos 0⟩) (variableCell ⟨0, Nat.succ_pos 0⟩))
+  lamCell unitCell
+    (appCell (variableCell ⟨0, Nat.succ_pos 0⟩) (variableCell ⟨0, Nat.succ_pos 0⟩))
 
 /-- **Church's diverging combinator `Ω = (λx. x x)(λx. x x)`** at scope 0. -/
 def divergentOmegaCell : RawTerm 0 :=
@@ -115,15 +116,17 @@ theorem divergentOmega_reductIsSelf :
     ∀ reduct : RawTerm 0, Step divergentOmegaCell reduct → reduct = divergentOmegaCell := by
   intro reduct step
   rcases Step.from_app step with
-      ⟨body, functionEq, reductEq⟩ | ⟨functionAfter, reductEq, functionStep⟩
+      ⟨domainAnn, body, functionEq, reductEq⟩ | ⟨functionAfter, reductEq, functionStep⟩
       | ⟨argumentAfter, reductEq, argumentStep⟩
   · -- β-shape: functionEq forces the lambda body to be `x x`, so the contractum is Ω.
     rw [show selfApplicatorCell
-          = (.mkGen .gen_lam () (.childCons
+          = (.mkGen .gen_lam () (.childCons unitCell (.childCons
               (appCell (variableCell ⟨0, Nat.succ_pos 0⟩) (variableCell ⟨0, Nat.succ_pos 0⟩))
-              .childNil) : RawTerm 0) from rfl] at functionEq
+              .childNil)) : RawTerm 0) from rfl] at functionEq
     injection functionEq with _scopeEq _genEq _payloadEq childrenSpineEq
-    injection childrenSpineEq with _shiftEq _arityEq _restShiftsEq bodyEq _tailEq
+    injection childrenSpineEq with _domainShiftEq _domainArityEq _domainRestShiftsEq _domainEq
+      tailSpineEq
+    injection tailSpineEq with _shiftEq _arityEq _restShiftsEq bodyEq _tailEq
     subst reductEq
     subst bodyEq
     rfl

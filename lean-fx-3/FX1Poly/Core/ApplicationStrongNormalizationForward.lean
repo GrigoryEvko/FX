@@ -68,8 +68,9 @@ generalizes the argument so the function IH applies at every function reduct.  S
 theorem isStronglyNormalizing_applicationCell_aux {scope : Nat} {functionTerm : RawTerm scope}
     (functionStronglyNormalizing : IsStronglyNormalizing functionTerm) :
     ∀ argument : RawTerm scope, IsStronglyNormalizing argument →
-      (∀ body : RawTerm (scope + 1),
-        StepStar functionTerm (.mkGen .gen_lam () (.childCons body .childNil)) →
+      (∀ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)),
+        StepStar functionTerm
+          (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) →
         IsStronglyNormalizing (RawTerm.subst0 body argument)) →
       IsStronglyNormalizing (applicationCell functionTerm argument) := by
   induction functionStronglyNormalizing with
@@ -81,21 +82,22 @@ theorem isStronglyNormalizing_applicationCell_aux {scope : Nat} {functionTerm : 
           apply Acc.intro
           intro reduct stepToReduct
           rcases Step.from_app stepToReduct with
-            ⟨body, functionIsLam, reductIsContractum⟩ |
+            ⟨domainAnn, body, functionIsLam, reductIsContractum⟩ |
             ⟨functionAfter, reductIsFunctionStep, functionStep⟩ |
             ⟨argumentAfter, reductIsArgumentStep, argumentStep⟩
           · subst reductIsContractum
             subst functionIsLam
-            exact betaContractionsStronglyNormalizing body (StepStar.refl _)
+            exact betaContractionsStronglyNormalizing domainAnn body (StepStar.refl _)
           · subst reductIsFunctionStep
             exact functionIH functionAfter functionStep argumentWitness
               (Acc.intro argumentWitness _argumentAccessors)
-              (fun body chain =>
-                betaContractionsStronglyNormalizing body (StepStar.trans functionStep chain))
+              (fun domainAnn body chain =>
+                betaContractionsStronglyNormalizing domainAnn body
+                  (StepStar.trans functionStep chain))
           · subst reductIsArgumentStep
-            refine argumentIH argumentAfter argumentStep (fun body chain => ?_)
+            refine argumentIH argumentAfter argumentStep (fun domainAnn body chain => ?_)
             exact IsStronglyNormalizing.descendStepStar
-              (betaContractionsStronglyNormalizing body chain)
+              (betaContractionsStronglyNormalizing domainAnn body chain)
               (Step.subst0Argument body argumentStep)
 
 /-- **SN of an application under the β-contraction side-condition.**  `app functionTerm argument` is strongly
@@ -108,8 +110,10 @@ theorem isStronglyNormalizing_applicationCell_ofBetaContractionsStronglyNormaliz
     {scope : Nat} {functionTerm argument : RawTerm scope}
     (functionStronglyNormalizing : IsStronglyNormalizing functionTerm)
     (argumentStronglyNormalizing : IsStronglyNormalizing argument)
-    (betaContractionsStronglyNormalizing : ∀ body : RawTerm (scope + 1),
-        StepStar functionTerm (.mkGen .gen_lam () (.childCons body .childNil)) →
+    (betaContractionsStronglyNormalizing :
+        ∀ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)),
+        StepStar functionTerm
+          (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) →
         IsStronglyNormalizing (RawTerm.subst0 body argument)) :
     IsStronglyNormalizing (applicationCell functionTerm argument) :=
   isStronglyNormalizing_applicationCell_aux functionStronglyNormalizing argument

@@ -6419,11 +6419,13 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectWeaklyNormalizesOfWfContextDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueNormalFormOfWfContextDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convergencePackageOfWfContextDesc
--- SN-052 design fact: grown-engine typing is NON-UNIQUE for a bare Curry-style λ (the identity λ inhabits
--- Π(Type@e)(Type@e) for every e), so decidable typed CHECKING must be BIDIRECTIONAL (CHECK mode at λ against
--- the given target), NOT infer-then-compare. The non-uniqueness witness, pinning that design constraint.
+-- SN-052 design fact, T2-FLIPPED: pre-T2 the bare Curry-style λ typed NON-uniquely (the identity λ
+-- inhabited Π(Type@e)(Type@e) for every e, forcing a bidirectional checker). Under T2 the Church-style
+-- annotation PINS the λ-domain — any two classifiers of one annotated λ agree on the syntactic domain
+-- (each Conv to a Π over the annotation), so the checker SYNTHESISES the domain from the subject.
 #assert_no_axioms FX1Poly.Typed.hasTypeDescPi_identityLambda_atUniverse
-#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_typing_notUnique
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_lambdaDomain_pinnedByAnnotation
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_lambdaDomains_agree
 -- SN-052 COMPARE step: checking a subject against a KNOWN-TYPE target reduces to deciding Conv (SN-051) — the
 -- load-bearing infer-mode step of the bidirectional checker. isTrue via the grown conv rule; isFalse via the
 -- subject's per-term uniqueness (holds for every non-λ subject). Typing witnesses threaded explicitly (data),
@@ -8456,16 +8458,17 @@ annotated judgment (campaign log carries the surviving routes). -/
 #assert_no_axioms FX1Poly.Typed.omegaChecksAtTypeZero
 #assert_no_axioms FX1Poly.Typed.grownCheckRawSoundness_isFalse
 
-/- The CONV-existential strengthening is ALSO false unpinned (ConvExistentialStrengtheningRefutation):
-the weakened identity λ is grown-typed at Π(var 0)(var 1) in [Type@0] — a NORMAL classifier not Conv to
-ANY weakening (the domain IS the fresh variable). Completes the three-refutation fence: the strengthening
-reflection MUST carry the image-pinned-classifier premise. -/
+/- ConvExistentialStrengtheningRefutation — RETIRED refutation (T2 flipped it; user-approved
+deletion 2026-06-10).  `convExistentialStrengthening_isFalse` is gone: under T2 `piIntro` pins
+the λ annotation, the pre-T2 floating-domain witness is untypeable, and the Conv-existential
+strengthening is expected TRUE.  Survivors: the variable-domain Π and its normality, the
+RESTATED typing witness (the var-0-ANNOTATED identity), and `notConvWeakenImage` — which now
+documents WHY the annotation pin is load-bearing rather than refuting anything. -/
 
 #assert_no_axioms FX1Poly.Typed.variableDomainPi
 #assert_no_axioms FX1Poly.Typed.variableDomainPi_isStepNormalForm
 #assert_no_axioms FX1Poly.Typed.weakenedIdentityTypedAtVariableDomainPi
 #assert_no_axioms FX1Poly.Typed.variableDomainPi_notConvWeakenImage
-#assert_no_axioms FX1Poly.Typed.convExistentialStrengthening_isFalse
 
 /- The pinning analysis (PinnedPiImageComponents): a Π-classifier Conv to a weakening exposes components
 EXACTLY in the weaken image (reducesToPiTyCode ∘ StepStar.reflectRename ∘ the mkGen drilling) — the brick
@@ -8607,16 +8610,14 @@ guard), and the pinned-function core finishes with the original premise reflecti
 
 /- The bare λ-classifier pin factorization (PinnedReflectionLamClassifierResidual): the residual
 implies the λ-reduct head (mirror of the neutral discharge), hence the full piElim residual,
-hence the MASTER — sound implications, but the residual itself is REFUTED on the STR-1 witness
-(an UNAPPLIED λ's classifier genuinely floats: the weakened identity λ types at
-`Π (var 0). (var 1)`, which no weakening pins).  The fence stands mechanically; the surviving
-route is discharging the λ-reduct residual DIRECTLY, where the output-pin premise excludes the
-refuting shape. -/
+hence the MASTER.  Pre-T2 the residual was refuted (the unguarded λ-classifier float);
+`pinnedReflectionLamClassifierResidual_isFalse` is RETIRED (user-approved deletion 2026-06-10) —
+under T2 the annotation pin kills the float witness and the residual is expected TRUE, making
+these conditionals the live assembly route. -/
 
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimLamReductResidualOfLamClassifierResidual
 #assert_no_axioms FX1Poly.Typed.pinnedReflectionPiElimResidualOfLamClassifierResidual
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionOfLamClassifierResidual
-#assert_no_axioms FX1Poly.Typed.pinnedReflectionLamClassifierResidual_isFalse
 
 /- Enrichment brick E1 (FlagCoherentReflectionCondition): the flag-coherent reflection condition —
 per-variable SHARED-universe validity pairs (the Π-pin reassembly's flag-coherence payload),

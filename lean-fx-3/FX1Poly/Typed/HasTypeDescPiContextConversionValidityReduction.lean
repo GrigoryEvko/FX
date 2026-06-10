@@ -232,8 +232,8 @@ needed.  Together with `#1095` this is the full UNCONDITIONAL fragment of `TypeC
 genuinely-open remainder is congruence into a type-level-computing child. -/
 theorem HasTypeDescPi.validityRespectsBetaRedex {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    {body : RawTerm (scope + 1)} {argument : RawTerm scope}
-    (isType : IsTypeDescPi profile context (appCell (lamCell body) argument))
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} {argument : RawTerm scope}
+    (isType : IsTypeDescPi profile context (appCell (lamCell domainAnn body) argument))
     (wellFormed : WfContextDescPi context) :
     IsTypeDescPi profile context (RawTerm.subst0 body argument) := by
   obtain ⟨level, flag, redexTyped⟩ := isType

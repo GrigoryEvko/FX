@@ -39,7 +39,7 @@ in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core StepStar
+open FX1Poly.Core FX1Poly.Universe StepStar
 
 /-- Body of `churchSucc` under all four binders (`n`=var3, `A`=var2, `f`=var1, `x`=var0): `f (n A f x)`. -/
 def succBody4 : RawTerm 4 :=
@@ -49,9 +49,18 @@ def succBody4 : RawTerm 4 :=
       (variableCell (⟨1, by decide⟩ : Fin 4)))
       (variableCell (⟨0, by decide⟩ : Fin 4)))
 
+/-- A closed, scope-polymorphic domain annotation for the Church-successor binders.  Under T2 every `lamCell`
+carries a domain; for this pure-raw fixture (no typing derivation) a closed `universeCodeCell` is invariant under
+`subst0`/`weaken` and heads no redex, keeping the normal-form and reshape proofs computational. -/
+def churchSuccDomainAnn {scope : Nat} : RawTerm scope :=
+  universeCodeCell LevelExpr.lzero UniverseFlag.standard
+
 /-- `churchSucc = λn. λA. λf. λx. f (n A f x)` — the Church successor: applies the step `f` one more time than `n`. -/
 def churchSucc : RawTerm 0 :=
-  lamCell (lamCell (lamCell (lamCell succBody4)))
+  lamCell churchSuccDomainAnn
+    (lamCell churchSuccDomainAnn
+      (lamCell churchSuccDomainAnn
+        (lamCell churchSuccDomainAnn succBody4)))
 
 /-- The body after substituting `numeral` for the n-binder (`var 3`), threaded under the three inner binders:
 `var 3 ↦ weaken³ numeral`; `A`=var2, `f`=var1, `x`=var0 unchanged. -/
@@ -65,9 +74,11 @@ def succBody3 (numeral : RawTerm 0) : RawTerm 3 :=
 /-- The n-binder substitution computes by `rfl`: the lifted singleton on the head-index `var 3` yields `weaken³
 numeral`, and the inner variables are unchanged. -/
 theorem succ_step1_reshape (numeral : RawTerm 0) :
-    RawTerm.subst0 (lamCell (lamCell (lamCell succBody4))) numeral
-      = lamCell (lamCell (lamCell (succBody3 numeral))) := by
-  unfold RawTerm.subst0 succBody4 succBody3
+    RawTerm.subst0 (lamCell churchSuccDomainAnn
+        (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn succBody4))) numeral
+      = lamCell churchSuccDomainAnn
+          (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn (succBody3 numeral))) := by
+  unfold RawTerm.subst0 churchSuccDomainAnn succBody4 succBody3
   rfl
 
 /-- **`churchSucc` is a closed no-step normal form (a value).**  Four `lamCell` wrappers over `f (n A f x)`, whose
@@ -78,9 +89,12 @@ theorem churchSucc_isStepNormalForm : RawTerm.isStepNormalForm churchSucc := by 
 argument and exposing the successor abstraction (`n` lifted under the three fresh binders).  The next increment is
 the fully-applied iteration `churchSucc n A f x ↝* f (n A f x)`, which needs the weaken-tower cancellation. -/
 theorem churchSucc_betaUnfold (numeral : RawTerm 0) :
-    Step (appCell churchSucc numeral) (lamCell (lamCell (lamCell (succBody3 numeral)))) := by
+    Step (appCell churchSucc numeral)
+      (lamCell churchSuccDomainAnn
+        (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn (succBody3 numeral)))) := by
   have base : Step (appCell churchSucc numeral)
-      (RawTerm.subst0 (lamCell (lamCell (lamCell succBody4))) numeral) := Step.beta
+      (RawTerm.subst0 (lamCell churchSuccDomainAnn
+        (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn succBody4))) numeral) := Step.beta
   rw [succ_step1_reshape] at base
   exact base
 

@@ -600,85 +600,130 @@ namespace LocalStepBranching
 
 /-- Resolver arm for the beta/beta root-root branching. -/
 theorem betaBeta_hasJoin {scope : Nat}
-    (body : RawTerm (scope + 1)) (arg : RawTerm scope) :
-    (betaBeta body arg).HasJoin :=
-  (LocalDiamond.betaBeta body arg).hasJoin
+    (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)) (arg : RawTerm scope) :
+    (betaBeta domainAnn body arg).HasJoin :=
+  (LocalDiamond.betaBeta domainAnn body arg).hasJoin
 
 /-- `fromSteps`-facing beta/beta resolver arm. -/
 theorem fromSteps_betaBeta_hasJoin {scope : Nat}
-    (body : RawTerm (scope + 1)) (argument : RawTerm scope) :
+    (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)) (argument : RawTerm scope) :
     (fromSteps
-      (Step.beta (body := body) (arg := argument))
-      (Step.beta (body := body) (arg := argument))).HasJoin :=
-  betaBeta_hasJoin body argument
+      (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))
+      (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))).HasJoin :=
+  betaBeta_hasJoin domainAnn body argument
 
 /-- Resolver arm for beta competing with congruence in the function child. -/
 theorem betaFunctionCong_hasJoin {scope : Nat}
+    (domainAnn : RawTerm scope)
     {body updatedBody : RawTerm (scope + 1)}
     (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
-    (betaFunctionCong argument bodyStep).HasJoin :=
-  (LocalDiamond.betaFunctionCong argument bodyStep).hasJoin
+    (betaFunctionCong domainAnn argument bodyStep).HasJoin :=
+  (LocalDiamond.betaFunctionCong domainAnn argument bodyStep).hasJoin
 
 /-- `fromSteps`-facing beta/function-congruence resolver arm. -/
 theorem fromSteps_betaFunctionCong_hasJoin {scope : Nat}
+    (domainAnn : RawTerm scope)
     {body updatedBody : RawTerm (scope + 1)}
     (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
     (fromSteps
-      (Step.beta (body := body) (arg := argument))
-      (betaFunctionCong argument bodyStep).rightStep).HasJoin :=
-  betaFunctionCong_hasJoin argument bodyStep
+      (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))
+      (betaFunctionCong domainAnn argument bodyStep).rightStep).HasJoin :=
+  betaFunctionCong_hasJoin domainAnn argument bodyStep
 
 /-- Resolver arm for the reverse orientation of beta/function congruence. -/
 theorem betaFunctionCongReverse_hasJoin {scope : Nat}
+    (domainAnn : RawTerm scope)
     {body updatedBody : RawTerm (scope + 1)}
     (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
-    (betaFunctionCong argument bodyStep).swap.HasJoin :=
-  (LocalDiamond.betaFunctionCongReverse argument bodyStep).hasJoin
+    (betaFunctionCong domainAnn argument bodyStep).swap.HasJoin :=
+  (LocalDiamond.betaFunctionCongReverse domainAnn argument bodyStep).hasJoin
 
 /-- `fromSteps`-facing reverse beta/function-congruence resolver arm. -/
 theorem fromSteps_betaFunctionCongReverse_hasJoin {scope : Nat}
+    (domainAnn : RawTerm scope)
     {body updatedBody : RawTerm (scope + 1)}
     (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
     (fromSteps
-      (betaFunctionCong argument bodyStep).rightStep
-      (Step.beta (body := body) (arg := argument))).HasJoin :=
-  betaFunctionCongReverse_hasJoin argument bodyStep
+      (betaFunctionCong domainAnn argument bodyStep).rightStep
+      (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))).HasJoin :=
+  betaFunctionCongReverse_hasJoin domainAnn argument bodyStep
+
+/-- Resolver arm for beta competing with congruence in the lambda domain
+annotation. -/
+theorem betaDomainCong_hasJoin {scope : Nat}
+    {domainAnn updatedDomainAnn : RawTerm scope}
+    (body : RawTerm (scope + 1)) (argument : RawTerm scope)
+    (domainStep : Step domainAnn updatedDomainAnn) :
+    (betaDomainCong body argument domainStep).HasJoin :=
+  (LocalDiamond.betaDomainCong body argument domainStep).hasJoin
+
+/-- `fromSteps`-facing beta/domain-congruence resolver arm. -/
+theorem fromSteps_betaDomainCong_hasJoin {scope : Nat}
+    {domainAnn updatedDomainAnn : RawTerm scope}
+    (body : RawTerm (scope + 1)) (argument : RawTerm scope)
+    (domainStep : Step domainAnn updatedDomainAnn) :
+    (fromSteps
+      (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))
+      (betaDomainCong body argument domainStep).rightStep).HasJoin :=
+  betaDomainCong_hasJoin body argument domainStep
+
+/-- Resolver arm for the reverse orientation of beta/domain congruence. -/
+theorem betaDomainCongReverse_hasJoin {scope : Nat}
+    {domainAnn updatedDomainAnn : RawTerm scope}
+    (body : RawTerm (scope + 1)) (argument : RawTerm scope)
+    (domainStep : Step domainAnn updatedDomainAnn) :
+    (betaDomainCong body argument domainStep).swap.HasJoin :=
+  (LocalDiamond.betaDomainCongReverse body argument domainStep).hasJoin
+
+/-- `fromSteps`-facing reverse beta/domain-congruence resolver arm. -/
+theorem fromSteps_betaDomainCongReverse_hasJoin {scope : Nat}
+    {domainAnn updatedDomainAnn : RawTerm scope}
+    (body : RawTerm (scope + 1)) (argument : RawTerm scope)
+    (domainStep : Step domainAnn updatedDomainAnn) :
+    (fromSteps
+      (betaDomainCong body argument domainStep).rightStep
+      (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))).HasJoin :=
+  betaDomainCongReverse_hasJoin body argument domainStep
 
 /-- Resolver arm for beta competing with congruence in the argument child. -/
 theorem betaArgumentCong_hasJoin {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     {argument updatedArgument : RawTerm scope}
     (argumentStep : Step argument updatedArgument) :
-    (betaArgumentCong body argumentStep).HasJoin :=
-  (LocalDiamond.betaArgumentCong body argumentStep).hasJoin
+    (betaArgumentCong domainAnn body argumentStep).HasJoin :=
+  (LocalDiamond.betaArgumentCong domainAnn body argumentStep).hasJoin
 
 /-- `fromSteps`-facing beta/argument-congruence resolver arm. -/
 theorem fromSteps_betaArgumentCong_hasJoin {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     {argument updatedArgument : RawTerm scope}
     (argumentStep : Step argument updatedArgument) :
     (fromSteps
-      (Step.beta (body := body) (arg := argument))
-      (betaArgumentCong body argumentStep).rightStep).HasJoin :=
-  betaArgumentCong_hasJoin body argumentStep
+      (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))
+      (betaArgumentCong domainAnn body argumentStep).rightStep).HasJoin :=
+  betaArgumentCong_hasJoin domainAnn body argumentStep
 
 /-- Resolver arm for the reverse orientation of beta/argument congruence. -/
 theorem betaArgumentCongReverse_hasJoin {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     {argument updatedArgument : RawTerm scope}
     (argumentStep : Step argument updatedArgument) :
-    (betaArgumentCong body argumentStep).swap.HasJoin :=
-  (LocalDiamond.betaArgumentCongReverse body argumentStep).hasJoin
+    (betaArgumentCong domainAnn body argumentStep).swap.HasJoin :=
+  (LocalDiamond.betaArgumentCongReverse domainAnn body argumentStep).hasJoin
 
 /-- `fromSteps`-facing reverse beta/argument-congruence resolver arm. -/
 theorem fromSteps_betaArgumentCongReverse_hasJoin {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     {argument updatedArgument : RawTerm scope}
     (argumentStep : Step argument updatedArgument) :
     (fromSteps
-      (betaArgumentCong body argumentStep).rightStep
-      (Step.beta (body := body) (arg := argument))).HasJoin :=
-  betaArgumentCongReverse_hasJoin body argumentStep
+      (betaArgumentCong domainAnn body argumentStep).rightStep
+      (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))).HasJoin :=
+  betaArgumentCongReverse_hasJoin domainAnn body argumentStep
 
 /-- Resolve every local branching whose left step is beta.
 
@@ -687,34 +732,39 @@ branchings from the shared beta-redex source: beta/beta, congruence in the
 application function child, or congruence in the application argument child.
 Empty-spine tails are impossible by direct `cases`. -/
 theorem fromSteps_betaLeft_hasJoin {scope : Nat}
+    {domainAnn : RawTerm scope}
     {body : RawTerm (scope + 1)}
     {argument rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons body .childNil))
+          (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
           (.childCons argument .childNil)))
       rightReduct) :
     (fromSteps
-      (Step.beta (body := body) (arg := argument))
+      (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))
       rightStep).HasJoin := by
   cases rightStep with
   | beta =>
-      exact fromSteps_betaBeta_hasJoin body argument
+      exact fromSteps_betaBeta_hasJoin domainAnn body argument
   | cong generator payload childStep =>
       cases childStep with
       | here restChildren functionStep =>
           cases functionStep with
           | cong functionGenerator functionPayload functionChildStep =>
               cases functionChildStep with
-              | here functionRest bodyStep =>
-                  exact fromSteps_betaFunctionCong_hasJoin argument bodyStep
+              | here functionRest domainStep =>
+                  exact fromSteps_betaDomainCong_hasJoin body argument domainStep
               | there functionHead functionRestStep =>
-                  cases functionRestStep
+                  cases functionRestStep with
+                  | here functionInnerRest bodyStep =>
+                      exact fromSteps_betaFunctionCong_hasJoin domainAnn argument bodyStep
+                  | there functionInnerHead functionInnerRestStep =>
+                      cases functionInnerRestStep
       | there functionChild argumentChildrenStep =>
           cases argumentChildrenStep with
           | here argumentRest argumentStep =>
-              exact fromSteps_betaArgumentCong_hasJoin body argumentStep
+              exact fromSteps_betaArgumentCong_hasJoin domainAnn body argumentStep
           | there argumentHead argumentRestStep =>
               cases argumentRestStep
 
@@ -723,17 +773,18 @@ theorem fromSteps_betaLeft_hasJoin {scope : Nat}
 This is the orientation bridge for the beta-left resolver arm, preserving the
 resolver spine's ability to consume either arbitrary step order. -/
 theorem fromSteps_betaRight_hasJoin {scope : Nat}
+    {domainAnn : RawTerm scope}
     {body : RawTerm (scope + 1)}
     {argument leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons body .childNil))
+          (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
           (.childCons argument .childNil)))
       leftReduct) :
     (fromSteps
       leftStep
-      (Step.beta (body := body) (arg := argument))).HasJoin :=
+      (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))).HasJoin :=
   hasJoin_swap (fromSteps_betaLeft_hasJoin leftStep)
 
 /-- Resolver arm for same-root `boolTrue` iota branchings. -/

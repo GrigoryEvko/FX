@@ -71,47 +71,48 @@ theorem iteratedApplicationBody_hasTypeDescPi {profile : PolyProfile} (flag : Un
 at `Π(A:Type@0). Π(f:A→A). Π(x:A). A` for ALL `n` — three nested `piIntro`s (universe binder `A`, arrow binder
 `f:A→A` via `churchNatArrow`, base binder `x:A`) over the general iterate body.  The typing capstone of the
 Church arc (complements `churchNumeralLambda_notConvertible_of_ne`). -/
-theorem churchNumeralLambda_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) (n : Nat) :
+theorem churchNumeralLambda_hasTypeDescPi {profile : PolyProfile} (n : Nat) :
     HasTypeDescPi profile TypingContext.empty
       (churchNumeralLambda n)
-      (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
         (piTyCodeCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
             (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
           (piTyCodeCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
             (variableCell (⟨2, Nat.succ_lt_succ (Nat.succ_lt_succ (Nat.succ_pos 0))⟩ : Fin 3))))) := by
   refine HasTypeDescPi.piIntro LevelExpr.lzero.lsucc
     (lmaxAll [lmaxAll [LevelExpr.lzero, LevelExpr.lzero], lmaxAll [LevelExpr.lzero, LevelExpr.lzero]])
-    flag ?domainTyped ?codomainTyped ?bodyTyped
+    UniverseFlag.standard ?domainTyped ?codomainTyped ?bodyTyped
   · exact HasTypeDescPi.ofFormation
-      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag)
-  · exact churchNatCodomain flag
+      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero UniverseFlag.standard)
+  · exact churchNatCodomain UniverseFlag.standard
   · refine HasTypeDescPi.piIntro (lmaxAll [LevelExpr.lzero, LevelExpr.lzero])
-      (lmaxAll [LevelExpr.lzero, LevelExpr.lzero]) flag ?midDomainTyped ?midCodomainTyped ?midBodyTyped
-    · exact churchNatArrow flag
-    · exact churchNatRest flag
-    · refine HasTypeDescPi.piIntro LevelExpr.lzero LevelExpr.lzero flag
+      (lmaxAll [LevelExpr.lzero, LevelExpr.lzero]) UniverseFlag.standard
+      ?midDomainTyped ?midCodomainTyped ?midBodyTyped
+    · exact churchNatArrow UniverseFlag.standard
+    · exact churchNatRest UniverseFlag.standard
+    · refine HasTypeDescPi.piIntro LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard
         ?inDomainTyped ?inCodomainTyped ?inBodyTyped
       · exact HasTypeDescPi.ofFormation
           (HasTypeDesc.var _ (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
       · exact HasTypeDescPi.ofFormation
           (HasTypeDesc.var _ (⟨2, Nat.succ_lt_succ (Nat.succ_lt_succ (Nat.succ_pos 0))⟩ : Fin 3))
-      · exact iteratedApplicationBody_hasTypeDescPi flag n
+      · exact iteratedApplicationBody_hasTypeDescPi UniverseFlag.standard n
 
 /-- Every Church numeral is strongly normalizing — SN-043 on the general typing.  The Π-fragment encodes the
 naturals AND proves the whole family terminating. -/
-theorem churchNumeralLambda_stronglyNormalizing {profile : PolyProfile} (flag : UniverseFlag) (n : Nat) :
+theorem churchNumeralLambda_stronglyNormalizing {profile : PolyProfile} (_flag : UniverseFlag) (n : Nat) :
     IsStronglyNormalizing (churchNumeralLambda n) :=
-  HasTypeDescPi.closedStronglyNormalizing (churchNumeralLambda_hasTypeDescPi (profile := profile) flag n)
+  HasTypeDescPi.closedStronglyNormalizing (churchNumeralLambda_hasTypeDescPi (profile := profile) n)
 
 /-- The concrete `churchOne` typing re-derived as the `n = 1` instance of the general typing
 (`churchNumeralLambda 1 = churchOneLambda` definitionally) — the general theorem subsumes the concrete ones. -/
-theorem churchOneLambda_hasTypeDescPi_viaGeneral {profile : PolyProfile} (flag : UniverseFlag) :
+theorem churchOneLambda_hasTypeDescPi_viaGeneral {profile : PolyProfile} :
     HasTypeDescPi profile TypingContext.empty churchOneLambda
-      (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
         (piTyCodeCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
             (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
           (piTyCodeCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
             (variableCell (⟨2, Nat.succ_lt_succ (Nat.succ_lt_succ (Nat.succ_pos 0))⟩ : Fin 3))))) :=
-  churchNumeralLambda_hasTypeDescPi flag 1
+  churchNumeralLambda_hasTypeDescPi 1
 
 end FX1Poly.Typed

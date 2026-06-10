@@ -48,13 +48,13 @@ lambda cell exposes the body cell; the structural substitution
 driver then certifies `subst0 body rawArg` at the exact `.term` sort. -/
 theorem PolyCell.exists_preservedByBeta_dim0
     {profile : PolyProfile} {scope : Nat}
-    {body : RawTerm (scope + 1)} {rawArg : RawTerm scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} {rawArg : RawTerm scope}
     (sourceCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
           ((.mkGen .gen_app ()
             (.childCons
-              (.mkGen .gen_lam () (.childCons body .childNil))
+              (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
               (.childCons rawArg .childNil))) : RawTerm scope))) :
     ∃ _targetCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
@@ -66,7 +66,7 @@ theorem PolyCell.exists_preservedByBeta_dim0
       have lamCell :
           PolyCell profile .term 0 scope CellBoundary.trivial
             (.termBase
-              ((.mkGen .gen_lam () (.childCons body .childNil)) :
+              ((.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) :
                 RawTerm scope)) :=
         sourceSpine.headAtDim0 rfl
       have argCell :
@@ -79,7 +79,7 @@ theorem PolyCell.exists_preservedByBeta_dim0
           let bodyCell :
               PolyCell profile .term 0 (scope + 1) CellBoundary.trivial
                 (.termBase body) :=
-            lamSpine.headAtDim0 rfl
+            lamSpine.tail.headAtDim0 rfl
           exact ⟨
             PolyCell.subst_dim0
               (RawTermSubst.singleton rawArg)
@@ -948,7 +948,7 @@ theorem StepCellPreserverWitness.polyCell (profile : PolyProfile) :
               children',
             True)
       (beta := by
-        intro _scope _body _arg _sort sourceCell
+        intro _scope _domainAnn _body _arg _sort sourceCell
         cases sourceCell with
         | gen admission payloadEvidence sourceSpine =>
             exact PolyCell.exists_preservedByBeta_dim0

@@ -110,6 +110,23 @@ theorem HasTypeDescPi.masterSubjectReductionFromPiValidity {profile : PolyProfil
         (fun {bodyReduct} bodyStep =>
           HasTypeDescPi.masterSubjectReductionFromPiValidity piValidityTransfers bodyTyped
             (WfContextDescPi.cons wellFormed ⟨domainLevel, flag, domainTyped⟩) bodyReduct bodyStep)
+        (fun {domainReduct} domainStep =>
+          -- Domain-annotation step: rebuild the λ at the ORIGINAL Π type via a stepped-binder
+          -- re-typing of codomain + body, then `conv` the Π code back across the domain step.
+          let wellFormedUnderDomain :=
+            WfContextDescPi.cons wellFormed ⟨domainLevel, flag, domainTyped⟩
+          let domainReductTyped :=
+            HasTypeDescPi.masterSubjectReductionFromPiValidity piValidityTransfers domainTyped
+              wellFormed domainReduct domainStep
+          let lambdaAtSteppedDomain :=
+            HasTypeDescPi.piIntro domainLevel codomainLevel flag domainReductTyped
+              (HasTypeDescPi.codomainReTypingStep wellFormedUnderDomain codomainTyped domainStep)
+              (HasTypeDescPi.codomainReTypingStep wellFormedUnderDomain bodyTyped domainStep)
+          HasTypeDescPi.conv (LevelExpr.lmax domainLevel codomainLevel) flag
+            lambdaAtSteppedDomain
+            (Conv.piTyCode_cong (Conv.fromStep domainStep).sym (Conv.refl codomainCode))
+            (HasTypeDescPi.piFormationViaGenArm context domainCode codomainCode domainLevel
+              codomainLevel flag domainTyped codomainTyped))
   | .piElim functionTyped argumentTyped => fun reduct step =>
       HasTypeDescPi.subjectReductionPiElimArmDescPi functionTyped argumentTyped step
         (fun {functionReduct} functionStep =>

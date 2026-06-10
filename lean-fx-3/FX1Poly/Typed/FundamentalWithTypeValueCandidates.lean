@@ -885,13 +885,14 @@ theorem fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise
         (universeCodeCell codomainLevel flag))
     (bodyFundamental :
       FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionWithTypeValueCandidates context (lamCell body)
+    FundamentalConclusionWithTypeValueCandidates context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) := by
   intro _targetScope substitution envWithTypeValueCandidates predLevel
   have domainMember := domainFundamental substitution envWithTypeValueCandidates (predLevel + 1)
   rw [subst_universeCodeCell] at domainMember
+  have domainAnnSN := domainMember.stronglyNormalizing
   obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
-  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible domainAnnSN
     (fun _argument argumentInDomain =>
       domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
     ?codomainExists ?bodyReducible
@@ -985,7 +986,7 @@ theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromTypeValueArgumentPr
         (universeCodeCell codomainLevel flag))
     (bodyFundamental :
       FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
-    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+    FundamentalValidityWithTypeValueCandidates context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) :=
   ⟨fundamentalPiIntroWithTypeValueCandidatesFromTypeValueArgumentPremise
       domainFundamental domainHasPositiveCandidate
@@ -1027,13 +1028,14 @@ theorem fundamentalPiIntroWithTypeValueCandidatesFromTypedArgumentPremise
         (universeCodeCell codomainLevel flag))
     (bodyFundamental :
       FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionWithTypeValueCandidates context (lamCell body)
+    FundamentalConclusionWithTypeValueCandidates context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) := by
   intro _targetScope substitution envWithTypeValueCandidates predLevel
   have domainMember := domainFundamental substitution envWithTypeValueCandidates (predLevel + 1)
   rw [subst_universeCodeCell] at domainMember
+  have domainAnnSN := domainMember.stronglyNormalizing
   obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
-  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible domainAnnSN
     (fun _argument argumentInDomain =>
       domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
     ?codomainExists ?bodyReducible
@@ -1094,7 +1096,7 @@ theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromTypedArgumentPremis
         (universeCodeCell codomainLevel flag))
     (bodyFundamental :
       FundamentalConclusionWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
-    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+    FundamentalValidityWithTypeValueCandidates context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) :=
   ⟨fundamentalPiIntroWithTypeValueCandidatesFromTypedArgumentPremise
       domainFundamental domainHasPositiveCandidate
@@ -1126,7 +1128,7 @@ theorem fundamentalPiIntroValidityWithTypeValueCandidatesOfAllReducibleTypesHave
         (universeCodeCell codomainLevel flag))
     (bodyValidity :
       FundamentalValidityWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
-    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+    FundamentalValidityWithTypeValueCandidates context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) := by
   let domainHasPositiveCandidate :
       PositiveCandidateConclusionWithTypeValueCandidates context domainCode :=
@@ -1170,7 +1172,7 @@ theorem fundamentalPiIntroValidityWithTypeValueCandidatesOfPositiveMemberExtensi
         (universeCodeCell codomainLevel flag))
     (bodyValidity :
       FundamentalValidityWithTypeValueCandidates (context.cons domainCode) body codomainCode) :
-    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+    FundamentalValidityWithTypeValueCandidates context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) :=
   fundamentalPiIntroValidityWithTypeValueCandidatesOfAllReducibleTypesHaveTypeValueCandidates
     positiveMemberExtension.toAllReducibleTypesHaveTypeValueCandidates
@@ -1199,7 +1201,8 @@ theorem fundamentalPiIntroValidityWithTypeValueCandidatesFromUniverseDomain
     (bodyFundamental :
       FundamentalConclusionWithTypeValueCandidates
         (context.cons (universeCodeCell domainLevel flag)) body codomainCode) :
-    FundamentalValidityWithTypeValueCandidates context (lamCell body)
+    FundamentalValidityWithTypeValueCandidates context
+      (lamCell (universeCodeCell domainLevel flag) body)
       (piTyCodeCell (universeCodeCell domainLevel flag) codomainCode) :=
   fundamentalPiIntroValidityWithTypeValueCandidatesFromTypedArgumentPremise
     domainFundamental domainHasPositiveCandidate

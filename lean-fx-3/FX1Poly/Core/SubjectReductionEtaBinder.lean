@@ -62,10 +62,10 @@ lambda body, then project the application's function child
 `certifiesBeforeWeakening`. -/
 theorem HasCertifiedCellDim0.preservedByEtaLam
     {profile : PolyProfile} {scope : Nat}
-    {innerFunction : RawTerm scope}
+    {domainAnn innerFunction : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
-        (RawTerm.etaLamSource innerFunction)) :
+        (RawTerm.etaLamSource domainAnn innerFunction)) :
     HasCertifiedCellDim0 (profile := profile) innerFunction := by
   let etaBody : RawTerm (scope + 1) :=
     .mkGen .gen_app ()
@@ -74,7 +74,7 @@ theorem HasCertifiedCellDim0.preservedByEtaLam
         (.childCons RawTerm.newestVar .childNil))
   have bodyCert :
       HasCertifiedCellDim0 (profile := profile) etaBody :=
-    HasCertifiedCellDim0.lam_body_projection etaBody sourceCert
+    HasCertifiedCellDim0.lam_body_projection domainAnn etaBody sourceCert
   have weakenedFunctionCert :
       HasCertifiedCellDim0 (profile := profile)
         (RawTerm.weaken innerFunction) :=

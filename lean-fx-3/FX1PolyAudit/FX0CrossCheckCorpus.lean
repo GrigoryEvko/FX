@@ -48,18 +48,26 @@ open FX1Poly.Typed (lamCell appCell variableCell piTyCodeCell universeCodeCell H
 open FX1Poly.Core.StepStar (IsStronglyNormalizing)
 open FX1Poly.Universe (UniverseFlag LevelExpr)
 
-/-- The Church-numeral-one subject `λA.λf.λx. f x` (mirrors `churchOne_hasTypeDescPi`'s subject). -/
+/-- The Church-numeral-one subject `λ(A:Type@0).λ(f:A→A).λ(x:A). f x` — T2 Church-style, with the
+domain annotations in the subject (mirrors `churchOne_hasTypeDescPi`'s subject at `standard`). -/
 abbrev churchOneSubject : RawTerm 0 :=
-  lamCell (lamCell (lamCell
-    (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-      (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+      (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+        (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+          (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))
 
-/-- The Church-numeral-two subject `λA.λf.λx. f (f x)` (mirrors `churchTwo_hasTypeDescPi`'s subject). -/
+/-- The Church-numeral-two subject `λ(A:Type@0).λ(f:A→A).λ(x:A). f (f x)` — T2 Church-style
+(mirrors `churchTwo_hasTypeDescPi`'s subject at `standard`). -/
 abbrev churchTwoSubject : RawTerm 0 :=
-  lamCell (lamCell (lamCell
-    (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-      (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-        (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))))
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+      (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+        (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+          (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+            (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))))
 
 /-- The external verifier accepts the certified Church-`true` encoding, and it is strongly normalizing. -/
 theorem externalVerify_accepts_churchTrue {profile : PolyProfile} :
@@ -103,11 +111,14 @@ theorem externalVerify_accepts_churchNumeral {profile : PolyProfile} (n : Nat) :
         (encodeCell (churchNumeralLambda n)).budget = FX0Poly.CheckVerdict.accepted
       ∧ IsStronglyNormalizing (churchNumeralLambda n) :=
   externalVerify_accepts_certified WfContextDesc.emptyIsWellFormed
-    (churchNumeralLambda_hasTypeDescPi (profile := profile) UniverseFlag.standard n)
+    (churchNumeralLambda_hasTypeDescPi (profile := profile) n)
 
-/-- The polymorphic identity subject `λ(A:Type@0). λ(x:A). x` (mirrors `polymorphicIdentity_hasTypeDescPi`). -/
+/-- The polymorphic identity subject `λ(A:Type@0). λ(x:A). x` — T2 Church-style (mirrors
+`polymorphicIdentity_hasTypeDescPi`'s subject at `standard`). -/
 abbrev polymorphicIdentitySubject : RawTerm 0 :=
-  lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+      (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
 
 /-- The external verifier accepts the certified polymorphic identity `λA.λx. x` (a distinct λ-shape from the
 selectors and iterators — the dependent identity), and it is strongly normalizing. -/

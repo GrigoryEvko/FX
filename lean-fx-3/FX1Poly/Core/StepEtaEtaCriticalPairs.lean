@@ -16,22 +16,25 @@ namespace FX1Poly.Core
 
 namespace RawTerm
 
-/-- Lambda eta sources are injective in the represented function. -/
+/-- Lambda eta sources are injective in BOTH the domain annotation and the
+represented function (Church-style: the annotation is the first lam child). -/
 theorem etaLamSource_injective {scope : Nat}
-    {firstFunction secondFunction : RawTerm scope}
+    {firstDomainAnn secondDomainAnn firstFunction secondFunction : RawTerm scope}
     (sourceEq :
-      RawTerm.etaLamSource firstFunction =
-        RawTerm.etaLamSource secondFunction) :
-    firstFunction = secondFunction := by
+      RawTerm.etaLamSource firstDomainAnn firstFunction =
+        RawTerm.etaLamSource secondDomainAnn secondFunction) :
+    firstDomainAnn = secondDomainAnn ∧ firstFunction = secondFunction := by
   unfold RawTerm.etaLamSource at sourceEq
   injection sourceEq with _ _ _ lamChildrenEq
-  injection lamChildrenEq with _ _ _ appEq _
+  injection lamChildrenEq with _ _ _ domainEq bodyTailEq
+  injection bodyTailEq with _ _ _ appEq _
   injection appEq with _ _ _ appChildrenEq
   injection appChildrenEq with _ _ _ weakenedEq _
   have strengthenedEq : some firstFunction = some secondFunction := by
     rw [← RawTerm.strengthen_weaken firstFunction]
     rw [weakenedEq]
     rw [RawTerm.strengthen_weaken secondFunction]
+  refine ⟨domainEq, ?_⟩
   injection strengthenedEq
 
 /-- Pair eta sources are injective in the represented pair term. -/
@@ -97,15 +100,15 @@ namespace Step.eta
 /-- Any eta step from a lambda eta source targets that source's represented
 function. -/
 theorem from_etaLamSource {scope : Nat}
-    {innerFunction rightReduct : RawTerm scope}
+    {domainAnn innerFunction rightReduct : RawTerm scope}
     (rightStep :
-      Step.eta (RawTerm.etaLamSource innerFunction) rightReduct) :
+      Step.eta (RawTerm.etaLamSource domainAnn innerFunction) rightReduct) :
     rightReduct = innerFunction := by
   generalize sourceEq :
-    RawTerm.etaLamSource innerFunction = sourceTerm at rightStep
+    RawTerm.etaLamSource domainAnn innerFunction = sourceTerm at rightStep
   cases rightStep with
   | etaLam =>
-      exact (RawTerm.etaLamSource_injective sourceEq).symm
+      exact (RawTerm.etaLamSource_injective sourceEq).2.symm
   | etaPair =>
       cases sourceEq
   | etaPathLam =>
@@ -237,20 +240,32 @@ theorem cd_lemma_eta_eta : CdLemmaStatementEtaEta := by
   exact Step.eta.deterministic leftStep rightStep
 
 /-- Full local Church-Rosser dispatcher for the current beta+iota+root-eta
-single-step relation. -/
-theorem cd_lemma_betaEta : CdLemmaStatementBetaEta := by
-  intro scope sourceTerm leftReduct rightReduct leftStep rightStep
+single-step relation, GUARDED at the lambda eta root by the Nederpelt diagonal.
+
+The unguarded statement (`CdLemmaStatementBetaEta`) is FALSE under Church-style
+annotations: the eta-beta overlap `lam A (app (weaken (lam B b)) var0)` contracts
+to `lam A b` and `lam B b`, non-joinable for normal `A != B`.  The TYPED beta-eta
+CR is unaffected (typing forces the annotations convertible). -/
+theorem cd_lemma_betaEta {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    (leftStep : Step.betaEta sourceTerm leftReduct)
+    (rightStep : Step.betaEta sourceTerm rightReduct)
+    (lamDiagonal :
+      ∀ {domainAnn innerFunction : RawTerm scope},
+        sourceTerm = RawTerm.etaLamSource domainAnn innerFunction →
+        EtaLamAnnotationDiagonal domainAnn innerFunction) :
+    BetaEtaPairJoin leftStep rightStep := by
   cases leftStep with
   | inl leftStepOnly =>
       cases rightStep with
       | inl rightStepOnly =>
           exact ofCdLemmaForStepSteps leftStepOnly rightStepOnly
       | inr rightEtaOnly =>
-          exact cd_lemma_step_eta leftStepOnly rightEtaOnly
+          exact cd_lemma_step_eta leftStepOnly rightEtaOnly lamDiagonal
   | inr leftEtaOnly =>
       cases rightStep with
       | inl rightStepOnly =>
-          exact cd_lemma_eta_step leftEtaOnly rightStepOnly
+          exact cd_lemma_eta_step leftEtaOnly rightStepOnly lamDiagonal
       | inr rightEtaOnly =>
           exact cd_lemma_eta_eta leftEtaOnly rightEtaOnly
 

@@ -138,7 +138,7 @@ theorem Step.from_applySpineApp {scope : Nat} :
         ⟨wrappedReduct, wrappedStep, reductEquation⟩ |
         ⟨updatedRest, restSpineStep, reductEquation⟩
       · rcases Step.from_app wrappedStep with
-          ⟨_betaBody, headEqualsLam, _⟩ |
+          ⟨_betaDomain, _betaBody, headEqualsLam, _⟩ |
           ⟨headReduct, wrappedReductEquation, headStep⟩ |
           ⟨elementReduct, wrappedReductEquation, elementStep⟩
         · exact absurd (congrArg RawTerm.rootGenerator headEqualsLam) _headNotLam
@@ -164,8 +164,10 @@ appear directly in the contractum); only the argument needs its own measure (a
 induction is therefore nested `Acc` on `(argument, contractum)`, with `(body, spine)`
 generalised and linked to the contractum by an equation. -/
 theorem betaSpineHeadExpansion {scope : Nat}
+    {domainAnn : RawTerm scope}
     {body : RawTerm (scope + 1)} {argument : RawTerm scope}
     {spine : List (RawTerm scope)}
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (argumentSN : IsStronglyNormalizing argument)
     (contractumSN :
       IsStronglyNormalizing
@@ -173,35 +175,46 @@ theorem betaSpineHeadExpansion {scope : Nat}
     IsStronglyNormalizing
       (RawTerm.applySpineApp
         (.mkGen .gen_app ()
-          (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons
+            (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
             (.childCons argument .childNil)))
         spine) := by
   suffices general :
-      ∀ {currentArgument : RawTerm scope}, Acc StepSuccessor currentArgument →
-        ∀ {currentContractum : RawTerm scope}, Acc StepSuccessor currentContractum →
-          ∀ (currentBody : RawTerm (scope + 1)) (currentSpine : List (RawTerm scope)),
-            currentContractum =
-              RawTerm.applySpineApp (RawTerm.subst0 currentBody currentArgument) currentSpine →
-            IsStronglyNormalizing
-              (RawTerm.applySpineApp
-                (.mkGen .gen_app ()
-                  (.childCons (.mkGen .gen_lam () (.childCons currentBody .childNil))
-                    (.childCons currentArgument .childNil)))
-                currentSpine) from
-    general argumentSN contractumSN body spine rfl
-  intro currentArgument argumentAccessible
-  induction argumentAccessible with
-  | intro argumentFocus _argumentPredecessors argumentInductiveHypothesis =>
-      intro currentContractum contractumAccessible
-      induction contractumAccessible with
-      | intro contractumFocus contractumPredecessorsAccessible contractumInductiveHypothesis =>
+      ∀ {currentDomain : RawTerm scope}, Acc StepSuccessor currentDomain →
+        ∀ {currentArgument : RawTerm scope}, Acc StepSuccessor currentArgument →
+          ∀ {currentContractum : RawTerm scope}, Acc StepSuccessor currentContractum →
+            ∀ (currentBody : RawTerm (scope + 1)) (currentSpine : List (RawTerm scope)),
+              currentContractum =
+                RawTerm.applySpineApp (RawTerm.subst0 currentBody currentArgument)
+                  currentSpine →
+              IsStronglyNormalizing
+                (RawTerm.applySpineApp
+                  (.mkGen .gen_app ()
+                    (.childCons
+                      (.mkGen .gen_lam ()
+                        (.childCons currentDomain (.childCons currentBody .childNil)))
+                      (.childCons currentArgument .childNil)))
+                  currentSpine) from
+    general domainAnnSN argumentSN contractumSN body spine rfl
+  intro currentDomain domainAccessible
+  induction domainAccessible with
+  | intro domainFocus _domainPredecessors domainInductiveHypothesis =>
+    intro currentArgument argumentAccessible
+    induction argumentAccessible with
+    | intro argumentFocus argumentPredecessorsAccessible argumentInductiveHypothesis =>
+        intro currentContractum contractumAccessible
+        induction contractumAccessible with
+        | intro contractumFocus contractumPredecessorsAccessible
+            contractumInductiveHypothesis =>
           intro currentBody currentSpine contractumEquation
           apply Acc.intro
           intro reduct reductionStep
           have headNotLam :
               RawTerm.rootGenerator
                   (.mkGen .gen_app ()
-                    (.childCons (.mkGen .gen_lam () (.childCons currentBody .childNil))
+                    (.childCons
+                      (.mkGen .gen_lam ()
+                        (.childCons domainFocus (.childCons currentBody .childNil)))
                       (.childCons argumentFocus .childNil)))
                 ≠ Generator.gen_lam :=
             fun headEquation => Generator.noConfusion headEquation
@@ -209,22 +222,32 @@ theorem betaSpineHeadExpansion {scope : Nat}
             ⟨headReduct, headStep, reductEquation⟩ |
             ⟨updatedSpine, spineStep, reductEquation⟩
           · rcases Step.from_app headStep with
-              ⟨_betaBody, lambdaEquation, headReductEquation⟩ |
+              ⟨_betaDomain, _betaBody, lambdaEquation, headReductEquation⟩ |
               ⟨lambdaReduct, headReductEquation, lambdaStep⟩ |
               ⟨argumentReduct, headReductEquation, argumentStep⟩
             · -- β contraction: the reduct is exactly the contractum.
               cases lambdaEquation
               rw [reductEquation, headReductEquation, ← contractumEquation]
               exact Acc.intro contractumFocus contractumPredecessorsAccessible
-            · -- inner body congruence: `currentBody ↝ bodyAfter`.
-              obtain ⟨bodyAfter, lambdaReductEquation, bodyStep⟩ := Step.from_lam lambdaStep
-              rw [reductEquation, headReductEquation, lambdaReductEquation]
-              refine contractumInductiveHypothesis
-                (RawTerm.applySpineApp (RawTerm.subst0 bodyAfter argumentFocus) currentSpine)
-                ?_ bodyAfter currentSpine rfl
-              rw [contractumEquation]
-              exact Step.applySpineAppHead currentSpine
-                (Step.subst (RawTermSubst.singleton argumentFocus) bodyStep)
+            · -- inner lambda congruence: domain or body steps.
+              rcases Step.from_lam lambdaStep with
+                ⟨domainAfter, lambdaReductEquation, domainStep⟩ |
+                ⟨bodyAfter, lambdaReductEquation, bodyStep⟩
+              · -- domain annotation congruence: `domainFocus ↝ domainAfter`.
+                rw [reductEquation, headReductEquation, lambdaReductEquation]
+                exact domainInductiveHypothesis domainAfter domainStep
+                  (Acc.intro argumentFocus argumentPredecessorsAccessible)
+                  (Acc.intro contractumFocus contractumPredecessorsAccessible)
+                  currentBody currentSpine contractumEquation
+              · -- inner body congruence: `currentBody ↝ bodyAfter`.
+                rw [reductEquation, headReductEquation, lambdaReductEquation]
+                refine contractumInductiveHypothesis
+                  (RawTerm.applySpineApp (RawTerm.subst0 bodyAfter argumentFocus)
+                    currentSpine)
+                  ?_ bodyAfter currentSpine rfl
+                rw [contractumEquation]
+                exact Step.applySpineAppHead currentSpine
+                  (Step.subst (RawTermSubst.singleton argumentFocus) bodyStep)
             · -- inner argument congruence: `argumentFocus ↝ argumentReduct`.
               rw [reductEquation, headReductEquation]
               refine argumentInductiveHypothesis argumentReduct argumentStep
@@ -248,14 +271,17 @@ SN, then `app (lam body) argument` is SN.  The generalisation revealed that the 
 be assumed strongly normalizing — the contractum's accessibility already bounds every body
 reduction — so this corollary takes two hypotheses, not three. -/
 theorem betaRedex_isStronglyNormalizing_of_contractum {scope : Nat}
+    {domainAnn : RawTerm scope}
     {body : RawTerm (scope + 1)} {argument : RawTerm scope}
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (argumentSN : IsStronglyNormalizing argument)
     (contractumSN : IsStronglyNormalizing (RawTerm.subst0 body argument)) :
     IsStronglyNormalizing
       (.mkGen .gen_app ()
-        (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+        (.childCons
+          (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
           (.childCons argument .childNil))) :=
-  betaSpineHeadExpansion (spine := []) argumentSN contractumSN
+  betaSpineHeadExpansion (spine := []) domainAnnSN argumentSN contractumSN
 
 end StepStar
 end FX1Poly.Core

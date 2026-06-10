@@ -58,11 +58,11 @@ binders, substitute the recursive result for `r`. -/
 theorem lengthNatStepComputesExact (headVal tailVal recResult : RawTerm 0) :
     StepStar (appCell (appCell (appCell lengthNatStep headVal) tailVal) recResult) (natSuccCell recResult) := by
   have firstBeta : Step (appCell lengthNatStep headVal)
-      (lamCell (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) := Step.beta
+      (lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) := Step.beta
   have secondBeta :
-      Step (appCell (lamCell (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) tailVal)
-        (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) := Step.beta
-  have thirdBeta : Step (appCell (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) recResult)
+      Step (appCell (lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) tailVal)
+        (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) := Step.beta
+  have thirdBeta : Step (appCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) recResult)
       (natSuccCell recResult) := Step.beta
   exact StepStar.trans_compose
     (StepStar.appFunction (StepStar.appFunction (StepStar.single firstBeta)))

@@ -46,9 +46,12 @@ encoding's β-reduction realizes iteration. -/
 theorem churchOne_appliedReducesToIterate (flag : UniverseFlag) :
     StepStar
       (appCell (appCell (appCell
-          (lamCell (lamCell (lamCell
-            (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-              (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))))
+          (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+            (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+                (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+              (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+                (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+                  (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))))
           (universeCodeCell LevelExpr.lzero flag))
           (universeCodeCell LevelExpr.lzero flag))
         (universeCodeCell LevelExpr.lzero.lsucc flag))
@@ -74,10 +77,13 @@ application.  Both the looked-up arrow type of `f` and the inner application's r
 reduced forms so the nested `piElim`s' implicit domain/codomain unify. -/
 theorem churchTwo_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (lamCell (lamCell
-        (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-          (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-            (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))))
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+          (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+              (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+                (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
         (piTyCodeCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
             (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
@@ -128,10 +134,13 @@ theorem churchTwo_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) :
 /-- The Church numeral `two` is strongly normalizing — SN-043 on the nested-`piElim` derivation. -/
 theorem churchTwo_stronglyNormalizing {profile : PolyProfile} (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (lamCell (lamCell (lamCell
-        (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-          (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-            (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))) : RawTerm 0) :=
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+          (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+              (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+                (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))) : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing (churchTwo_hasTypeDescPi (profile := profile) flag)
 
 /-- ★ `two A f x` β-reduces (three steps) to `f (f x)` — the step applied TWICE.  At `A=Type@0`, `f=Type@0`,
@@ -140,10 +149,13 @@ theorem churchTwo_stronglyNormalizing {profile : PolyProfile} (flag : UniverseFl
 theorem churchTwo_appliedReducesToIterate (flag : UniverseFlag) :
     StepStar
       (appCell (appCell (appCell
-          (lamCell (lamCell (lamCell
-            (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-              (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-                (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))))
+          (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+            (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+                (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+              (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+                (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+                  (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+                    (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))))
           (universeCodeCell LevelExpr.lzero flag))
           (universeCodeCell LevelExpr.lzero flag))
         (universeCodeCell LevelExpr.lzero.lsucc flag))

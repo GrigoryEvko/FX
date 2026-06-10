@@ -40,7 +40,7 @@ is rewritten by named `weaken_subst_singleton` cancellations, composed by `StepS
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core StepStar
+open FX1Poly.Core FX1Poly.Universe StepStar
 
 /-- **β1 contractum reshape (left injection).**  Substituting the left handler into `leftInjection payload`'s
 body discards nothing of the payload: the doubly-weakened payload collapses one level
@@ -48,11 +48,12 @@ body discards nothing of the payload: the doubly-weakened payload collapses one 
 `weaken handlerL`.  The reshape a concrete payload got by `rfl`. -/
 theorem leftInjection_subst_handlerL (payload handlerL : RawTerm 0) :
     RawTerm.subst0
-        (lamCell (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+        (lamCell churchSumDomainAnn (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
           (RawTerm.weaken (RawTerm.weaken payload)))) handlerL
-      = lamCell (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload)) := by
-  unfold RawTerm.subst0
-  show lamCell (appCell _ (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerL))
+      = lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload)) := by
+  unfold RawTerm.subst0 churchSumDomainAnn
+  show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+      (appCell _ (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerL))
       (RawTerm.weaken (RawTerm.weaken payload)))) = _
   rw [RawTerm.subst_lift_singleton_weaken_weaken payload handlerL]
   rfl
@@ -61,11 +62,12 @@ theorem leftInjection_subst_handlerL (payload handlerL : RawTerm 0) :
 inner `r`-variable in place and collapses `weaken² payload` to `weaken payload`. -/
 theorem rightInjection_subst_handlerL (payload handlerL : RawTerm 0) :
     RawTerm.subst0
-        (lamCell (appCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))
+        (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))
           (RawTerm.weaken (RawTerm.weaken payload)))) handlerL
-      = lamCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload)) := by
-  unfold RawTerm.subst0
-  show lamCell (appCell _ (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerL))
+      = lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload)) := by
+  unfold RawTerm.subst0 churchSumDomainAnn
+  show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+      (appCell _ (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerL))
       (RawTerm.weaken (RawTerm.weaken payload)))) = _
   rw [RawTerm.subst_lift_singleton_weaken_weaken payload handlerL]
   rfl
@@ -78,14 +80,14 @@ theorem caseLeft_selectsLeftHandler_general (payload handlerL handlerR : RawTerm
     StepStar (appCell (appCell (leftInjection payload) handlerL) handlerR)
       (appCell handlerL payload) := by
   have functionBeta : Step (appCell (leftInjection payload) handlerL)
-      (lamCell (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload))) := by
+      (lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload))) := by
     rw [← leftInjection_subst_handlerL payload handlerL]; exact Step.beta
   have congStep : Step (appCell (appCell (leftInjection payload) handlerL) handlerR)
-      (appCell (lamCell (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload))) handlerR) :=
+      (appCell (lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload))) handlerR) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons handlerR .childNil) functionBeta)
-  have outerBeta : Step (appCell (lamCell (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload))) handlerR)
+  have outerBeta : Step (appCell (lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload))) handlerR)
       (appCell (RawTerm.subst0 (RawTerm.weaken handlerL) handlerR)
         (RawTerm.subst0 (RawTerm.weaken payload) handlerR)) := Step.beta
   have cancelHandler : RawTerm.subst0 (RawTerm.weaken handlerL) handlerR = handlerL :=
@@ -101,14 +103,14 @@ theorem caseRight_selectsRightHandler_general (payload handlerL handlerR : RawTe
     StepStar (appCell (appCell (rightInjection payload) handlerL) handlerR)
       (appCell handlerR payload) := by
   have functionBeta : Step (appCell (rightInjection payload) handlerL)
-      (lamCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload))) := by
+      (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload))) := by
     rw [← rightInjection_subst_handlerL payload handlerL]; exact Step.beta
   have congStep : Step (appCell (appCell (rightInjection payload) handlerL) handlerR)
-      (appCell (lamCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload))) handlerR) :=
+      (appCell (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload))) handlerR) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons handlerR .childNil) functionBeta)
-  have outerBeta : Step (appCell (lamCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload))) handlerR)
+  have outerBeta : Step (appCell (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload))) handlerR)
       (appCell handlerR (RawTerm.subst0 (RawTerm.weaken payload) handlerR)) := Step.beta
   have cancelValue : RawTerm.subst0 (RawTerm.weaken payload) handlerR = payload :=
     RawTerm.weaken_subst_singleton payload handlerR

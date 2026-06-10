@@ -57,7 +57,7 @@ theorem TotalBridgeConclusion.piIntro {profile : PolyProfile} {scope : Nat}
     (bodyTyped : ValidTyping profile (levelCons (predLevel + 1) contextLevels)
       (predLevel + 1) (context.cons domainCode) body codomainCode) :
     TotalBridgeConclusion profile contextLevels context
-      (lamCell body) (piTyCodeCell domainCode codomainCode) :=
+      (lamCell domainCode body) (piTyCodeCell domainCode codomainCode) :=
   TotalBridgeConclusion.ofTermValidity
     (ValidTyping.piIntro contextLevels predLevel domainTyped codomainTyped bodyTyped)
     (fun _levelExpr _flag convertibility => Conv.piTyCode_not_universeCode convertibility)

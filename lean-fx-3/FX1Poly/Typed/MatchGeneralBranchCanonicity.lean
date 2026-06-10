@@ -125,7 +125,8 @@ theorem closedOptionMatchIntoBoolFromGeneral {profile : PolyProfile}
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (optionTypeCell elementType)) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell scrutinee boolTrueCell (lamCell (boolTrueCell : RawTerm 1))) out ∧
+      StepStar (optionMatchCell scrutinee boolTrueCell
+        (lamCell unitCell (boolTrueCell : RawTerm 1))) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   closedOptionMatchComputes
     (isValue := fun value => value = boolTrueCell ∨ value = boolFalseCell)
@@ -141,7 +142,7 @@ produces a value FROM the payload. -/
 theorem closedOptionMatchIdentityIntoBool {noneBranch : RawTerm 0} :
     ∃ out : RawTerm 0,
       StepStar (optionMatchCell (optionSomeCell boolTrueCell) noneBranch
-        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) out ∧
+        (lamCell unitCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   ⟨boolTrueCell,
    StepStar.transLast
@@ -155,7 +156,7 @@ theorem closedOptionMatchIdentityIntoBool {noneBranch : RawTerm 0} :
 theorem closedEitherMatchIdentityIntoBool {rightBranch : RawTerm 0} :
     ∃ out : RawTerm 0,
       StepStar (eitherMatchCell (eitherInlCell boolTrueCell)
-        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) rightBranch) out ∧
+        (lamCell unitCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) rightBranch) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   ⟨boolTrueCell,
    StepStar.transLast

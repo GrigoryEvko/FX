@@ -2,9 +2,12 @@ import FX1Poly.Typed.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.SimplyTypedTermInversionLevelFree
 import FX1Poly.Typed.SimplyTypedTermSubstLevelFree
 import FX1Poly.Typed.SimplyTypedNormalForm
+import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.RawTermSubst0Commute
 import FX1Poly.Core.Normalize
+import FX1Poly.Core.StrongNormalizationLeaves
+import FX1Poly.Core.StepRenameReflectAssembly
 
 /-! # FX1Poly/Typed/SimplyTypedTermSubjectReductionLevelFree
     — subject reduction for the simply-typed fragment, culminating in TYPE-PRESERVING NORMALIZATION.
@@ -45,6 +48,30 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe Foundation
 
+/-- **A reducible type expression is a step-normal form.**  `IsReducibleTypeExprLF` codes are built only
+from `universeCodeCell` leaves and `piTyCodeCell` arrows over (weakened) reducible codes — there is no
+redex root and every child is itself reducible-hence-normal, so the code admits no `Step`.  `universeCode`
+arm: `noStep_universeCode`; `arrow` arm: `piTyCodeCell_noStep_of_childrenNoStep` with the codomain child's
+no-step pulled back from the codomain base through `Step.reflectRename` (a step out of `weaken codomainBase`
+reflects to a step out of `codomainBase`, refuted by the IH).  This is what makes the domain-annotation step
+in `lam` subject reduction VACUOUS — the λ's domain annotation is a reducible type code, hence non-stepping,
+so the annotation cannot change under reduction and the λ's type is stable. -/
+theorem IsReducibleTypeExprLF.noStep {scope : Nat} {typeExprCode : RawTerm scope}
+    (typeExpr : IsReducibleTypeExprLF typeExprCode) :
+    ∀ reduct, Step typeExprCode reduct → False := by
+  induction typeExpr with
+  | universeCode levelExpr flag =>
+      intro reduct step
+      exact StepStar.noStep_universeCode (levelExpr, flag) step
+  | arrow _domainExpr _codomainExpr domainNoStep codomainNoStep =>
+      rename_i domainCode codomainBase
+      refine piTyCodeCell_noStep_of_childrenNoStep domainNoStep ?_
+      intro reduct stepFromWeaken
+      rw [RawTerm.weaken_eq_rename] at stepFromWeaken
+      obtain ⟨sourceReduct, sourceStep, _renamedEq⟩ :=
+        Step.reflectRename RawRenaming.weaken stepFromWeaken
+      exact codomainNoStep sourceReduct sourceStep
+
 /-- **Single-step subject reduction.**  A reduction out of a simply-typed term lands a simply-typed term of
 the same type.  Inducts on the typing derivation, inverting the `Step` per term shape. -/
 theorem SimplyTypedTermLF.subjectReduction {profile : PolyProfile} {scope : Nat}
@@ -59,12 +86,12 @@ theorem SimplyTypedTermLF.subjectReduction {profile : PolyProfile} {scope : Nat}
       functionTyped argumentTyped ihFunction ihArgument =>
       intro target step
       rcases Step.from_app step with
-        ⟨body, functionEq, targetEq⟩ | ⟨functionAfter, targetEq, functionStep⟩
+        ⟨domainAnn, body, functionEq, targetEq⟩ | ⟨functionAfter, targetEq, functionStep⟩
         | ⟨argumentAfter, targetEq, argumentStep⟩
-      · -- β: functionTerm = `lam body`, target = `body[argument]`
+      · -- β: functionTerm = `lam domainAnn body`, target = `body[argument]`
         subst functionEq
         subst targetEq
-        obtain ⟨invDomain, invCodomain, typeEq, _invDomainExpr, _invCodomainExpr, bodyTyped⟩ :=
+        obtain ⟨invCodomain, typeEq, _invDomainExpr, _invCodomainExpr, bodyTyped⟩ :=
           functionTyped.inversionLambda
         injection typeEq with _ _ _ spineEq
         injection spineEq with _ _ _ domainEq tailEq
@@ -82,9 +109,12 @@ theorem SimplyTypedTermLF.subjectReduction {profile : PolyProfile} {scope : Nat}
   | @lam sourceScope sourceContext body domainCode codomainBase
       domainExpr codomainExpr bodyTyped ihBody =>
       intro target step
-      obtain ⟨bodyAfter, targetEq, bodyStep⟩ := Step.from_lam step
-      subst targetEq
-      exact SimplyTypedTermLF.lam domainExpr codomainExpr (ihBody bodyStep)
+      rcases Step.from_lam step with
+        ⟨domainAfter, _targetEq, domainStep⟩ | ⟨bodyAfter, targetEq, bodyStep⟩
+      · -- domain-annotation step: impossible, the λ's domain is a reducible (normal) type code.
+        exact (domainExpr.noStep domainAfter domainStep).elim
+      · subst targetEq
+        exact SimplyTypedTermLF.lam domainExpr codomainExpr (ihBody bodyStep)
 
 /-- **Multi-step subject reduction.**  Typing is preserved along any `StepStar` reduction chain (iterate
 `subjectReduction` over the chain). -/

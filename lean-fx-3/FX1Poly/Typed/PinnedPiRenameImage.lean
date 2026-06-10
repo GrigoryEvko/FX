@@ -137,14 +137,19 @@ theorem Conv.pinnedPiComponentsWithSourceChain {sourceScope targetScope : Nat}
             · rw [← hCodomainReduct] at codomainConv
               exact codomainConv
 
-/-- **λ-head rename inversion**: an image term that IS a λ comes from a λ, with the body an exact
-lift-image — the subject-destructuring step of the reflection's piIntro arm. -/
+/-- **λ-head rename inversion**: an image term that IS a Church-style λ comes from a λ, with BOTH the
+domain annotation an exact `ρ`-image and the body an exact `lift ρ`-image — the subject-destructuring
+step of the reflection's piIntro arm.  T2 strengthens this: the λ now carries its domain annotation as
+the first child, so the inversion recovers the SOURCE domain syntactically (the domain is pinned, not
+free).  The `[0, 1]`-spine twin of `renameEqAppCellInversion`. -/
 theorem renameEqLamCellInversion {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope)
-    {sourceTerm : RawTerm sourceScope} {body : RawTerm (targetScope + 1)}
-    (imageIsLam : RawTerm.rename rho sourceTerm = lamCell body) :
-    ∃ sourceBody : RawTerm (sourceScope + 1),
-      sourceTerm = lamCell sourceBody ∧
+    {sourceTerm : RawTerm sourceScope}
+    {domainAnn : RawTerm targetScope} {body : RawTerm (targetScope + 1)}
+    (imageIsLam : RawTerm.rename rho sourceTerm = lamCell domainAnn body) :
+    ∃ (sourceDomain : RawTerm sourceScope) (sourceBody : RawTerm (sourceScope + 1)),
+      sourceTerm = lamCell sourceDomain sourceBody ∧
+      domainAnn = RawTerm.rename rho sourceDomain ∧
       body = RawTerm.rename (RawRenaming.lift rho) sourceBody := by
   cases sourceTerm with
   | mkGen generator payload children =>
@@ -160,12 +165,17 @@ theorem renameEqLamCellInversion {sourceScope targetScope : Nat}
       subst hGenerator
       have hChildrenEq := eq_of_heq hChildren
       cases children with
-      | childCons bodyChild nilChildren =>
-        cases nilChildren with
-        | childNil =>
-          dsimp only [RawTermChildren.rename, foldChildren, iterateLiftRaw] at hChildrenEq
-          injection hChildrenEq with hHeadScope hHeadShift hRestShifts hBodyChild hNilChildren
-          exact ⟨bodyChild, rfl, hBodyChild.symm⟩
+      | childCons domainChild restChildren =>
+        cases restChildren with
+        | childCons bodyChild nilChildren =>
+          cases nilChildren with
+          | childNil =>
+            dsimp only [RawTermChildren.rename, foldChildren, iterateLiftRaw] at hChildrenEq
+            injection hChildrenEq with hHeadScope hHeadShift hRestShifts hDomainChild
+              hTailChildren
+            injection hTailChildren with hTailScope hTailShift hTailRestShifts hBodyChild
+              hNilChildren
+            exact ⟨domainChild, bodyChild, rfl, hDomainChild.symm, hBodyChild.symm⟩
 
 /-- **Application-head rename inversion**: an image term that IS an application comes from an
 application with exact-image function and argument — the piElim residual's subject-destructuring

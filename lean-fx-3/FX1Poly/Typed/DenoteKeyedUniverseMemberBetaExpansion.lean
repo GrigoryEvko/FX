@@ -48,13 +48,15 @@ theorem universeMemberBetaExpansionAtDenote {scope : Nat} {env : Nat → Nat}
       ∀ {typeCode reduct : RawTerm scope} {candidate : RawTerm scope → Prop},
         lowerAt (LevelExpr.denote levelExpr env) reduct candidate → WeakHeadStep typeCode reduct →
         lowerAt (LevelExpr.denote levelExpr env) typeCode candidate)
-    {body : RawTerm (scope + 1)} {arg : RawTerm scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} {arg : RawTerm scope}
     (lamStronglyNormalizing :
-      IsStronglyNormalizing (.mkGen .gen_lam () (.childCons body .childNil)))
+      IsStronglyNormalizing
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))))
     (argumentStronglyNormalizing : IsStronglyNormalizing arg)
     (contractumMember : universeDenotePredicate env lowerAt levelExpr (RawTerm.subst0 body arg)) :
     universeDenotePredicate env lowerAt levelExpr
-      (applicationCell (.mkGen .gen_lam () (.childCons body .childNil)) arg) :=
+      (applicationCell
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) arg) :=
   ⟨appLam_isStronglyNormalizing_of_contractum lamStronglyNormalizing argumentStronglyNormalizing
       contractumMember.1,
     match contractumMember.2 with

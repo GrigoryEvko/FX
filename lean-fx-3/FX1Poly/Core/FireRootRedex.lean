@@ -56,7 +56,8 @@ def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
         | .mkGen innerGenerator _innerPayload innerChildren =>
             if hLam : innerGenerator = .gen_lam then
               match (hLam ▸ innerChildren : RawTermChildren (Generator.gen_lam.binderShifts) scope) with
-              | .childCons body .childNil => some (RawTerm.subst0 body argChild)
+              | .childCons _domainAnn (.childCons body .childNil) =>
+                  some (RawTerm.subst0 body argChild)
             else none
   else if hBoolElim : generator = .gen_boolElim then
     match (hBoolElim ▸ children : RawTermChildren (Generator.gen_boolElim.binderShifts) scope) with
@@ -208,10 +209,13 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
             by_cases hLam : innerGenerator = .gen_lam
             · subst hLam
               match innerChildren with
-              | .childCons body .childNil =>
+              | .childCons domainAnn (.childCons body .childNil) =>
                   have key : RawTerm.fireRootRedex .gen_app payload
-                      (.childCons (.mkGen .gen_lam innerPayload (.childCons body .childNil))
-                        (.childCons argChild .childNil)) = some (RawTerm.subst0 body argChild) := rfl
+                      (.childCons
+                        (.mkGen .gen_lam innerPayload
+                          (.childCons domainAnn (.childCons body .childNil)))
+                        (.childCons argChild .childNil)) =
+                      some (RawTerm.subst0 body argChild) := rfl
                   rw [key] at fired; injection fired with reductEq; rw [← reductEq]; exact Step.beta
             · have key : RawTerm.fireRootRedex .gen_app payload
                   (.childCons (.mkGen innerGenerator innerPayload innerChildren)

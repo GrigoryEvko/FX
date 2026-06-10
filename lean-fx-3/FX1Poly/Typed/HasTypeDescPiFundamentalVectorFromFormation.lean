@@ -86,8 +86,9 @@ theorem HasTypeDescPi.fundamentalVectorFromFormation {profile : PolyProfile}
     intro _targetScope substitution _envLevels predLevel env
     have domainMember := domainFundamental substitution (predLevel + 1) env
     rw [subst_universeCodeCell] at domainMember
+    have domainAnnSN := domainMember.stronglyNormalizing
     obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
-    refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+    refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible domainAnnSN
       (fun _argument argumentInDomain =>
         domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
       (fun argument argumentInDomain => ?_) (fun argument argumentInDomain => ?_)

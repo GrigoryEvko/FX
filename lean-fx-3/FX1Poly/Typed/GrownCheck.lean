@@ -92,7 +92,7 @@ inductive GrownCheck (profile : PolyProfile) :
       {target : RawTerm scope}
       (targetConverts : Conv (piTyCodeCell domainCode codomainCode) target)
       (bodyChecks : GrownCheck profile (context.cons domainCode) body codomainCode) :
-      GrownCheck profile context (lamCell body) target
+      GrownCheck profile context (lamCell domainCode body) target
   | app {scope : Nat} {context : TypingContext profile scope}
       {functionTerm argument : RawTerm scope}
       (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1))
@@ -178,7 +178,7 @@ theorem GrownCheck.universeCodeSoundAtTypedTarget {profile : PolyProfile} {scope
 /-- Smoke: the identity λ checks at its Π-type (lam arm, `Conv.refl` leaves). -/
 theorem grownCheckIdentityLambdaSmoke (profile : PolyProfile) :
     GrownCheck profile (TypingContext.empty (profile := profile))
-      (lamCell (variableCell ⟨0, Nat.zero_lt_succ 0⟩))
+      (lamCell (typeZeroCode 0) (variableCell ⟨0, Nat.zero_lt_succ 0⟩))
       (piTyCodeCell (typeZeroCode 0) (typeZeroCode 1)) :=
   GrownCheck.lam (typeZeroCode 0) (typeZeroCode 1)
     (Conv.refl _)

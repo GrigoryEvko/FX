@@ -44,11 +44,11 @@ def trueValueCell {scope : Nat} : RawTerm scope :=
 
 /-- `λx. boolTrue` — a constant function whose body discards the bound variable. -/
 def constantTrueLambda : RawTerm 0 :=
-  lamCell trueValueCell
+  lamCell unitCell trueValueCell
 
 /-- `(λy. y) unit` — an inner β-redex (the identity applied to `unit`). -/
 def innerIdentityRedex : RawTerm 0 :=
-  appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) unitCell
+  appCell (lamCell unitCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) unitCell
 
 /-- `(λx. boolTrue) ((λy. y) unit)` — a closed term carrying BOTH an outer redex
 (the head application) and an inner redex (its argument). -/

@@ -58,12 +58,14 @@ theorem WeakHeadStep.applySpine {scope : Nat} :
 /-- **A β-redex at a spine head is a weak-head step.**  `WeakHeadStep.applySpine` of `WeakHeadStep.beta`:
 `applySpineApp (app (lam body) argument) spine` weak-head-reduces to `applySpineApp (subst0 body argument)
 spine`. -/
-theorem WeakHeadStep.betaSpine {scope : Nat} {body : RawTerm (scope + 1)}
+theorem WeakHeadStep.betaSpine {scope : Nat}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     {argument : RawTerm scope} {spine : List (RawTerm scope)} :
     WeakHeadStep
       (RawTerm.applySpineApp
         (.mkGen .gen_app ()
-          (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons
+            (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
             (.childCons argument .childNil)))
         spine)
       (RawTerm.applySpineApp (RawTerm.subst0 body argument) spine) :=
@@ -97,12 +99,14 @@ closed conjunct-wise — SN by `betaSpineHeadExpansion`, the reducible-type conj
 β-spine backward closure (`lowerHeadExpand`). -/
 theorem ReducibleTypeStep.headExpansionClosed {scope : Nat}
     {lowerReducible : RawTerm scope → (RawTerm scope → Prop) → Prop}
-    (lowerHeadExpand : ∀ {body : RawTerm (scope + 1)} {argument : RawTerm scope}
+    (lowerHeadExpand : ∀ {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+      {argument : RawTerm scope}
       {spine : List (RawTerm scope)} {lowerCandidate : RawTerm scope → Prop},
       lowerReducible (RawTerm.applySpineApp (RawTerm.subst0 body argument) spine) lowerCandidate →
       lowerReducible (RawTerm.applySpineApp
         (.mkGen .gen_app ()
-          (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons
+            (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
             (.childCons argument .childNil)))
         spine) lowerCandidate)
     {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
@@ -115,7 +119,7 @@ theorem ReducibleTypeStep.headExpansionClosed {scope : Nat}
       exact isStronglyNormalizing_headExpansionClosed
   | piType codomainCandidate _domainReducible _codomainReducible
       _domainInductiveHypothesis codomainInductiveHypothesis =>
-      intro body argument spine argumentSN contractumReducible
+      intro domainAnn body argument spine domainAnnSN argumentSN contractumReducible
       intro extraArgument extraArgumentReducible
       have contractumAtExtendedSpine :
           codomainCandidate extraArgument
@@ -126,17 +130,18 @@ theorem ReducibleTypeStep.headExpansionClosed {scope : Nat}
           codomainCandidate extraArgument
             (RawTerm.applySpineApp
               (.mkGen .gen_app ()
-                (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+                (.childCons
+                  (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
                   (.childCons argument .childNil)))
               (spine ++ [extraArgument])) :=
         (codomainInductiveHypothesis extraArgument extraArgumentReducible)
-          argumentSN contractumAtExtendedSpine
+          domainAnnSN argumentSN contractumAtExtendedSpine
       rw [applySpineApp_append] at redexAtExtendedSpine
       exact redexAtExtendedSpine
   | universeCode _levelExpr _flag =>
-      intro _body _argument _spine argumentSN contractumMember
+      intro _domainAnn _body _argument _spine domainAnnSN argumentSN contractumMember
       obtain ⟨contractumStronglyNormalizing, lowerCandidate, lowerContractum⟩ := contractumMember
-      exact ⟨betaSpineHeadExpansion argumentSN contractumStronglyNormalizing,
+      exact ⟨betaSpineHeadExpansion domainAnnSN argumentSN contractumStronglyNormalizing,
         lowerCandidate, lowerHeadExpand lowerContractum⟩
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)

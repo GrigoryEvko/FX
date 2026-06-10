@@ -103,18 +103,21 @@ canonical-form computation — the redex's value is `Type@e`. -/
 theorem closedBetaRedexNormalForm_eq {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     RawTerm.normalize
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag) : RawTerm 0)
       (closedIdentityApplication_stronglyNormalizing (profile := profile) levelExpr flag) =
       universeCodeCell levelExpr flag := by
   have convFact :
       Conv
-        (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+            (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
           (universeCodeCell levelExpr flag) : RawTerm 0)
         (universeCodeCell levelExpr flag) :=
     betaRedexConvertsToReduct levelExpr flag
   rw [(RawTerm.normalize_eq_iff_conv
-        (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+            (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
           (universeCodeCell levelExpr flag))
         (universeCodeCell levelExpr flag)
         (closedIdentityApplication_stronglyNormalizing (profile := profile) levelExpr flag)
@@ -126,10 +129,11 @@ structurally normal, so the normalizer returns it unchanged (`normalize_eq_self_
 leaf-normal by `rfl`). -/
 theorem closedIdentityNormalForm_eq {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
-    RawTerm.normalize (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0)
+    RawTerm.normalize (lamCell (universeCodeCell levelExpr flag)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0)
       (closedIdentityOnUniverse_stronglyNormalizing (profile := profile) levelExpr flag) =
-      lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) :=
+      lamCell (universeCodeCell levelExpr flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) :=
   RawTerm.normalize_eq_self_of_isStepNormalForm
-    (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) _ rfl
+    (lamCell (universeCodeCell levelExpr flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) _ rfl
 
 end FX1Poly.Typed

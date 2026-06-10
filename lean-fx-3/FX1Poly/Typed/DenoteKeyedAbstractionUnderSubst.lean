@@ -52,6 +52,7 @@ theorem abstractionMemberUnderClosingSubstitution {scope targetScope : Nat} (env
     {codomainCandidate : RawTerm targetScope → (RawTerm targetScope → Prop)}
     (domainReducible :
       ReducibleTypeAtDenote env level (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainCode))
     (codomainReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
       ReducibleTypeAtDenote env level
         (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode)
@@ -65,14 +66,16 @@ theorem abstractionMemberUnderClosingSubstitution {scope targetScope : Nat} (env
       (RawTerm.subst substitution
         (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))))
       (RawTerm.subst substitution
-        (.mkGen .gen_lam () (.childCons body .childNil))) := by
+        (.mkGen .gen_lam () (.childCons domainCode (.childCons body .childNil)))) := by
   show IsReducibleMemberAtDenote env level
     (.mkGen .gen_piTyCode ()
       (.childCons (RawTerm.subst substitution domainCode)
         (.childCons (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) .childNil)))
     (.mkGen .gen_lam ()
-      (.childCons (RawTerm.subst (RawTermSubst.lift substitution) body) .childNil))
-  refine abstractionMemberAtDenote (codomainCandidate := codomainCandidate) env level domainReducible
+      (.childCons (RawTerm.subst substitution domainCode)
+        (.childCons (RawTerm.subst (RawTermSubst.lift substitution) body) .childNil)))
+  refine abstractionMemberAtDenote (codomainCandidate := codomainCandidate) env level
+    domainReducible domainAnnSN
     (fun argument argumentInDomain => ?_) domainArgumentsSN
     (fun argument argumentInDomain => ?_)
   · rw [← RawTerm.subst_cons_eq_subst0_lift codomainCode argument substitution]

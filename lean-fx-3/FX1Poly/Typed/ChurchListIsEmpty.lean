@@ -50,7 +50,7 @@ open FX1Poly.Core FX1Poly.Universe StepStar
 /-- `isEmptyHandler = λh. λacc. false` — the constant-false cons-handler: discards the head AND the recursive
 accumulator, always returning the Church-`false`. -/
 def isEmptyHandler : RawTerm 0 :=
-  lamCell (lamCell (RawTerm.weaken (RawTerm.weaken churchFalseLambda)))
+  lamCell churchListDomainAnn (lamCell churchListDomainAnn (RawTerm.weaken (RawTerm.weaken churchFalseLambda)))
 
 /-- `isEmpty list = fold (λh.λacc. false) true list` — the list `null` predicate as a right-fold: `nil` returns
 `true` (the nil-handler), every `cons` returns `false` (the constant handler). -/
@@ -60,10 +60,11 @@ def churchListIsEmpty (list : RawTerm 0) : RawTerm 0 :=
 /-- β1 reshape: substituting the head into `isEmptyHandler`'s body collapses the doubly-weakened `false` one level
 (`subst_lift_singleton_weaken_weaken`, #1023) and discards `h` (the body never mentions it). -/
 theorem isEmptyHandlerInnerSubst (head : RawTerm 0) :
-    RawTerm.subst0 (lamCell (RawTerm.weaken (RawTerm.weaken churchFalseLambda))) head
-      = lamCell (RawTerm.weaken churchFalseLambda) := by
-  unfold RawTerm.subst0
-  show lamCell (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton head))
+    RawTerm.subst0 (lamCell churchListDomainAnn (RawTerm.weaken (RawTerm.weaken churchFalseLambda))) head
+      = lamCell churchListDomainAnn (RawTerm.weaken churchFalseLambda) := by
+  unfold RawTerm.subst0 churchListDomainAnn
+  show lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+      (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton head))
       (RawTerm.weaken (RawTerm.weaken churchFalseLambda))) = _
   rw [RawTerm.subst_lift_singleton_weaken_weaken churchFalseLambda head]
 
@@ -73,14 +74,14 @@ computation `foldSingleton` chains into for `isEmptyConsNil`. -/
 theorem isEmptyHandler_const (head acc : RawTerm 0) :
     StepStar (appCell (appCell isEmptyHandler head) acc) churchFalseLambda := by
   have functionBeta : Step (appCell isEmptyHandler head)
-      (lamCell (RawTerm.weaken churchFalseLambda)) := by
+      (lamCell churchListDomainAnn (RawTerm.weaken churchFalseLambda)) := by
     rw [← isEmptyHandlerInnerSubst head]; exact Step.beta
   have congStep : Step (appCell (appCell isEmptyHandler head) acc)
-      (appCell (lamCell (RawTerm.weaken churchFalseLambda)) acc) :=
+      (appCell (lamCell churchListDomainAnn (RawTerm.weaken churchFalseLambda)) acc) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons acc .childNil) functionBeta)
-  have outerBeta : Step (appCell (lamCell (RawTerm.weaken churchFalseLambda)) acc) churchFalseLambda := by
+  have outerBeta : Step (appCell (lamCell churchListDomainAnn (RawTerm.weaken churchFalseLambda)) acc) churchFalseLambda := by
     have cancel : RawTerm.subst0 (RawTerm.weaken churchFalseLambda) acc = churchFalseLambda :=
       RawTerm.weaken_subst_singleton churchFalseLambda acc
     rw [← cancel]; exact Step.beta

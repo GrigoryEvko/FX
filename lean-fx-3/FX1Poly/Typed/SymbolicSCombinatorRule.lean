@@ -53,13 +53,13 @@ open FX1Poly.Core StepStar
 for free by `rfl` but symbolic arguments need this lemma for. -/
 theorem saTermBody_subst_b (a b : RawTerm 0) :
     RawTerm.subst0
-        (lamCell (appCell
+        (lamCell combinatorDomainAnn (appCell
           (appCell (RawTerm.weaken (RawTerm.weaken a)) (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
           (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
             (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))) b
       = sabTerm a b := by
   unfold RawTerm.subst0 sabTerm
-  show lamCell (appCell
+  show lamCell combinatorDomainAnn (appCell
       (appCell (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton b))
         (RawTerm.weaken (RawTerm.weaken a))) _) _) = _
   rw [RawTerm.subst_lift_singleton_weaken_weaken a b]

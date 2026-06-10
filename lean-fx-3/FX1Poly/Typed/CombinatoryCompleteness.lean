@@ -36,17 +36,21 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core StepStar
 
-/-- The intermediate reduct `S a = λy. λz. ((weaken² a) z) (y z)` — the β-contractum of `appCell S a`. -/
+/-- The intermediate reduct `S a = λy. λz. ((weaken² a) z) (y z)` — the β-contractum of `appCell S a`.  The two
+remaining λ-binders carry the Church domain annotation (`combinatorDomainAnn`, the closed `universeCodeCell`
+domain that `combinatorS`'s binders are annotated with; it survives `subst`/`weaken` unchanged so the
+contractum stays `rfl`-definitional under the T2 two-child λ). -/
 def saTerm (a : RawTerm 0) : RawTerm 0 :=
-  lamCell (lamCell (appCell
+  lamCell combinatorDomainAnn (lamCell combinatorDomainAnn (appCell
     (appCell (RawTerm.weaken (RawTerm.weaken a)) (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
     (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
       (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))))
 
 /-- The intermediate reduct `S a b = λz. ((weaken a) z) ((weaken b) z)` — the β-contractum of `appCell (S a) b`
-(definitional when `a`, `b` are concrete closed terms). -/
+(definitional when `a`, `b` are concrete closed terms).  The remaining λ-binder carries the
+`combinatorDomainAnn` domain annotation (the closed `universeCodeCell` that `combinatorS`'s binders use). -/
 def sabTerm (a b : RawTerm 0) : RawTerm 0 :=
-  lamCell (appCell
+  lamCell combinatorDomainAnn (appCell
     (appCell (RawTerm.weaken a) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
     (appCell (RawTerm.weaken b) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))))
 

@@ -40,33 +40,49 @@ open StepStar
 body chain is recovered.  Induction on the chain; `Step.from_lam` maintains the lambda shape at each step. -/
 theorem stepStarLamInversion {scope : Nat} {source target : RawTerm scope}
     (chain : StepStar source target) :
-    ∀ body : RawTerm (scope + 1),
-      source = .mkGen .gen_lam () (.childCons body .childNil) →
-      ∃ bodyFinal : RawTerm (scope + 1),
-        target = .mkGen .gen_lam () (.childCons bodyFinal .childNil) ∧
+    ∀ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)),
+      source = .mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)) →
+      ∃ (domainFinal : RawTerm scope) (bodyFinal : RawTerm (scope + 1)),
+        target = .mkGen .gen_lam ()
+          (.childCons domainFinal (.childCons bodyFinal .childNil)) ∧
+          StepStar domainAnn domainFinal ∧
           StepStar body bodyFinal := by
   induction chain with
   | refl term =>
-      intro body sourceEquation
-      exact ⟨body, sourceEquation, StepStar.refl body⟩
+      intro domainAnn body sourceEquation
+      exact ⟨domainAnn, body, sourceEquation, StepStar.refl domainAnn, StepStar.refl body⟩
   | trans headStep _restChain restInductiveHypothesis =>
-      intro body sourceEquation
+      intro domainAnn body sourceEquation
       subst sourceEquation
-      obtain ⟨bodyAfter, secondEquation, bodyStep⟩ := Step.from_lam headStep
-      obtain ⟨bodyFinal, targetEquation, bodyRest⟩ := restInductiveHypothesis bodyAfter secondEquation
-      exact ⟨bodyFinal, targetEquation, StepStar.trans bodyStep bodyRest⟩
+      rcases Step.from_lam headStep with
+        ⟨domainAfter, secondEquation, domainStep⟩ |
+        ⟨bodyAfter, secondEquation, bodyStep⟩
+      · obtain ⟨domainFinal, bodyFinal, targetEquation, domainRest, bodyRest⟩ :=
+          restInductiveHypothesis domainAfter body secondEquation
+        exact ⟨domainFinal, bodyFinal, targetEquation,
+          StepStar.trans domainStep domainRest, bodyRest⟩
+      · obtain ⟨domainFinal, bodyFinal, targetEquation, domainRest, bodyRest⟩ :=
+          restInductiveHypothesis domainAnn bodyAfter secondEquation
+        exact ⟨domainFinal, bodyFinal, targetEquation,
+          domainRest, StepStar.trans bodyStep bodyRest⟩
 
 /-- **lam-StepStar body chain.**  Specialization of `stepStarLamInversion` when the target is already known to
 be a lambda: a chain `lam body ↝* lam bodyFinal` yields the body chain `body ↝* bodyFinal`.  The `mkGen`/`childCons`
 injection drills through the dependent index equations to reach the body-head equation. -/
-theorem stepStarLamBodyChain {scope : Nat} {body bodyFinal : RawTerm (scope + 1)}
-    (chain : StepStar (.mkGen .gen_lam () (.childCons body .childNil))
-                      (.mkGen .gen_lam () (.childCons bodyFinal .childNil))) :
+theorem stepStarLamBodyChain {scope : Nat}
+    {domainAnn domainFinal : RawTerm scope} {body bodyFinal : RawTerm (scope + 1)}
+    (chain :
+      StepStar (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
+               (.mkGen .gen_lam ()
+                 (.childCons domainFinal (.childCons bodyFinal .childNil)))) :
     StepStar body bodyFinal := by
-  obtain ⟨bodyFinalRecovered, lamEquation, bodyChain⟩ := stepStarLamInversion chain body rfl
+  obtain ⟨domainFinalRecovered, bodyFinalRecovered, lamEquation, _domainChain,
+    bodyChain⟩ := stepStarLamInversion chain domainAnn body rfl
   injection lamEquation with _scopeEquation _generatorEquation _payloadEquation childrenEquation
-  injection childrenEquation with _childScopeEquation _childShiftEquation _childRestShiftsEquation
-    bodyEquation _childTailEquation
+  injection childrenEquation with _childScopeEquation _childShiftEquation
+    _childRestShiftsEquation _domainEquation childTailEquation
+  injection childTailEquation with _bodyScopeEquation _bodyShiftEquation
+    _bodyRestShiftsEquation bodyEquation _bodyTailEquation
   rw [bodyEquation]; exact bodyChain
 
 /-- **Single-contractum β-redex SN.**  `app (lam body) arg` is strongly normalizing given the binder
@@ -76,16 +92,18 @@ step.  Discharges the β-contraction obligation of
 (`lam body ↝* lam body'`, by `stepStarLamBodyChain`), the contractum `subst0 body' arg` is SN because
 `subst0 body arg ↝* subst0 body' arg` (`StepStar.subst0Body`) descends from `contractumStronglyNormalizing`. -/
 theorem appLam_isStronglyNormalizing_of_contractum {scope : Nat}
-    {body : RawTerm (scope + 1)} {arg : RawTerm scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} {arg : RawTerm scope}
     (lamStronglyNormalizing :
-      IsStronglyNormalizing (.mkGen .gen_lam () (.childCons body .childNil)))
+      IsStronglyNormalizing
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))))
     (argumentStronglyNormalizing : IsStronglyNormalizing arg)
     (contractumStronglyNormalizing : IsStronglyNormalizing (RawTerm.subst0 body arg)) :
     IsStronglyNormalizing
-      (applicationCell (.mkGen .gen_lam () (.childCons body .childNil)) arg) := by
+      (applicationCell
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) arg) := by
   refine isStronglyNormalizing_applicationCell_ofBetaContractionsStronglyNormalizing
     lamStronglyNormalizing argumentStronglyNormalizing ?_
-  intro bodyFinal chain
+  intro currentDomain bodyFinal chain
   exact IsStronglyNormalizing.descendStepStar contractumStronglyNormalizing
     (StepStar.subst0Body arg (stepStarLamBodyChain chain))
 

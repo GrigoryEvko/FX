@@ -38,38 +38,44 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe StepStar
 
-/-- The bare Church-`three` lambda term `λ(A:Type@0). λ(f:A→A). λ(x:A). f (f (f x))`. -/
+/-- The bare Church-`three` lambda term `λ(A:Type@0). λ(f:A→A). λ(x:A). f (f (f x))`.  Under T2 each binder
+carries its domain annotation (the universe code `Type@0`, the arrow `A→A`, the type variable `A`), exactly the
+domains `churchNumeralLambda` uses — so `churchNumeralLambda 3 = churchThreeLambda` holds by `rfl`. -/
 abbrev churchThreeLambda : RawTerm 0 :=
-  lamCell (lamCell (lamCell
-    (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-      (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (lamCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
+      (lamCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
         (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-          (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))))
+          (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+            (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+              (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))))))
 
 /-- ★ The Church numeral `three`, `λ(A:Type@0). λ(f:A→A). λ(x:A). f (f (f x))`, typed at the Church Nat type —
 a TRIPLE-nested `piElim`: the outer `f` (`var 1`, at the arrow `A→A`) applied to the churchTwo body `f (f x)`
 (itself a double `piElim`), all under the three numeral binders.  The looked-up arrow/variable types of `f`/`x`
 are ascribed to their reduced `piTyCodeCell`/`variableCell` forms so the nested `piElim`s' implicit
 domain/codomain unify. -/
-theorem churchThree_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) :
+theorem churchThree_hasTypeDescPi {profile : PolyProfile} :
     HasTypeDescPi profile TypingContext.empty
       churchThreeLambda
-      (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
         (piTyCodeCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
             (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
           (piTyCodeCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
             (variableCell (⟨2, Nat.succ_lt_succ (Nat.succ_lt_succ (Nat.succ_pos 0))⟩ : Fin 3))))) := by
   refine HasTypeDescPi.piIntro LevelExpr.lzero.lsucc
     (lmaxAll [lmaxAll [LevelExpr.lzero, LevelExpr.lzero], lmaxAll [LevelExpr.lzero, LevelExpr.lzero]])
-    flag ?domainTyped ?codomainTyped ?bodyTyped
+    UniverseFlag.standard ?domainTyped ?codomainTyped ?bodyTyped
   · exact HasTypeDescPi.ofFormation
-      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag)
-  · exact churchNatCodomain flag
+      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero UniverseFlag.standard)
+  · exact churchNatCodomain UniverseFlag.standard
   · refine HasTypeDescPi.piIntro (lmaxAll [LevelExpr.lzero, LevelExpr.lzero])
-      (lmaxAll [LevelExpr.lzero, LevelExpr.lzero]) flag ?midDomainTyped ?midCodomainTyped ?midBodyTyped
-    · exact churchNatArrow flag
-    · exact churchNatRest flag
-    · refine HasTypeDescPi.piIntro LevelExpr.lzero LevelExpr.lzero flag
+      (lmaxAll [LevelExpr.lzero, LevelExpr.lzero]) UniverseFlag.standard
+      ?midDomainTyped ?midCodomainTyped ?midBodyTyped
+    · exact churchNatArrow UniverseFlag.standard
+    · exact churchNatRest UniverseFlag.standard
+    · refine HasTypeDescPi.piIntro LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard
         ?inDomainTyped ?inCodomainTyped ?inBodyTyped
       · exact HasTypeDescPi.ofFormation
           (HasTypeDesc.var _ (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
@@ -116,9 +122,9 @@ theorem churchThree_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) 
                 (variableCell (⟨2, Nat.succ_lt_succ (Nat.succ_lt_succ (Nat.succ_pos 0))⟩ : Fin 3))))
 
 /-- The Church numeral `three` is strongly normalizing — SN-043 on the triple-`piElim` derivation. -/
-theorem churchThree_stronglyNormalizing {profile : PolyProfile} (flag : UniverseFlag) :
+theorem churchThree_stronglyNormalizing {profile : PolyProfile} (_flag : UniverseFlag) :
     IsStronglyNormalizing (churchThreeLambda : RawTerm 0) :=
-  HasTypeDescPi.closedStronglyNormalizing (churchThree_hasTypeDescPi (profile := profile) flag)
+  HasTypeDescPi.closedStronglyNormalizing (churchThree_hasTypeDescPi (profile := profile))
 
 /-- The thrice-iterate `f (f (f x)) = app(Type@0, app(Type@0, app(Type@0, Type@1)))` — what `churchThree`
 computes on the fixtures. -/

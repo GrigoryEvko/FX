@@ -89,9 +89,10 @@ theorem notStronglyNormalizing_of_infiniteReduction {scope : Nat}
 Unlike `λx. x x` (whose self-application is Ω and loops in place), this triples the occurrence, so its
 self-application grows by one application per β-step. -/
 def tripler : RawTerm 0 :=
-  lamCell (appCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
-    (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
-    (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+  lamCell (.mkGen .gen_unit () .childNil)
+    (appCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+      (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
 
 /-- `(λx. (x x) x) (λx. (x x) x)` — a closed term that diverges by UNBOUNDED GROWTH: its β-reduct is
 `(growingDivergentTerm) tripler`, strictly larger than itself. -/

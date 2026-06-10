@@ -52,16 +52,23 @@ theorem HeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       other = reduct ∨
         ∃ otherReduct : RawTerm scope, HeadStep other otherReduct ∧ StepStar reduct otherReduct := by
   induction headStep with
-  | @beta body argument =>
+  | @beta domainAnn body argument =>
       intro other step
       cases step with
       | beta => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
           | here _rest functionStep =>
-              obtain ⟨bodyAfter, functionEquation, bodyStep⟩ := Step.from_lam functionStep
-              subst functionEquation
-              exact Or.inr ⟨_, HeadStep.beta, Step.subst0Body argument bodyStep⟩
+              rcases Step.from_lam functionStep with
+                ⟨_domainAfter, functionEquation, _domainStep⟩
+                | ⟨bodyAfter, functionEquation, bodyStep⟩
+              · -- the lambda's domain ANNOTATION stepped; β discards it, so the redex
+                -- survives and contracts to the SAME contractum (`StepStar.refl`)
+                subst functionEquation
+                exact Or.inr ⟨_, HeadStep.beta, StepStar.refl _⟩
+              · -- the lambda's BODY stepped; the contractum catches up via `subst0Body`
+                subst functionEquation
+                exact Or.inr ⟨_, HeadStep.beta, Step.subst0Body argument bodyStep⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest argumentStep =>
@@ -71,7 +78,7 @@ theorem HeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
   | @appCongruence function functionReduct argument functionHeadStep functionInductiveHypothesis =>
       intro other step
       rcases Step.from_app step with
-        ⟨betaBody, functionEquation, _targetEquation⟩
+        ⟨_betaDomainAnn, betaBody, functionEquation, _targetEquation⟩
         | ⟨functionAfter, targetEquation, functionStep⟩
         | ⟨argumentAfter, targetEquation, argumentStep⟩
       · rw [functionEquation] at functionHeadStep

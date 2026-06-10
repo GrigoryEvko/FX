@@ -46,7 +46,7 @@ theorem ReducibleType.headExpansionClosed {scope : Nat} {typeCode : RawTerm scop
       exact isStronglyNormalizing_headExpansionClosed
   | piType codomainCandidate _domainReducible _codomainReducible
       _domainInductiveHypothesis codomainInductiveHypothesis =>
-      intro body argument spine argumentSN contractumReducible
+      intro domainAnn body argument spine domainAnnSN argumentSN contractumReducible
       intro extraArgument extraArgumentReducible
       have contractumAtExtendedSpine :
           codomainCandidate extraArgument
@@ -57,11 +57,12 @@ theorem ReducibleType.headExpansionClosed {scope : Nat} {typeCode : RawTerm scop
           codomainCandidate extraArgument
             (RawTerm.applySpineApp
               (.mkGen .gen_app ()
-                (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+                (.childCons
+                  (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
                   (.childCons argument .childNil)))
               (spine ++ [extraArgument])) :=
         (codomainInductiveHypothesis extraArgument extraArgumentReducible)
-          argumentSN contractumAtExtendedSpine
+          domainAnnSN argumentSN contractumAtExtendedSpine
       rw [applySpineApp_append] at redexAtExtendedSpine
       exact redexAtExtendedSpine
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>

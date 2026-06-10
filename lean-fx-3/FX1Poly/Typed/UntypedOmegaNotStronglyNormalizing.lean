@@ -49,11 +49,13 @@ theorem accessibleElementNotSelfRelated {carrier : Type}
       inductiveHypothesis point selfAtPoint selfAtPoint)
     accessible selfRelated
 
-/-- `λx. x x` — the self-application abstraction.  Its body applies the bound
-variable to itself; closed at scope `0`. -/
+/-- `λx. x x` — the self-application abstraction (Church-annotated with a cheap
+closed domain `unit`; the annotation is discarded by β so divergence is
+unchanged).  Its body applies the bound variable to itself; closed at scope `0`. -/
 def selfApplicationLambda : RawTerm 0 :=
-  lamCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
-    (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+  lamCell (.mkGen .gen_unit () .childNil)
+    (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+      (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
 
 /-- `Ω = (λx. x x) (λx. x x)` — the prototypical non-normalizing closed term. -/
 def omegaCombinator : RawTerm 0 :=
@@ -85,7 +87,7 @@ theorem selfApplicationBody_noStep
         (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) target) :
     False := by
   rcases Step.from_app bodyStep with
-    ⟨_lambdaBody, functionIsLambda, _⟩ |
+    ⟨_lambdaDomain, _lambdaBody, functionIsLambda, _⟩ |
     ⟨_functionAfter, _, functionStep⟩ |
     ⟨_argumentAfter, _, argumentStep⟩
   · exact Generator.noConfusion (congrArg RawTerm.rootGenerator functionIsLambda)
@@ -100,8 +102,10 @@ theorem selfApplicationLambda_stronglyNormalizing :
     IsStronglyNormalizing selfApplicationLambda :=
   isStronglyNormalizing_of_noStep
     (fun target lambdaStep => by
-      obtain ⟨bodyAfter, _, bodyStep⟩ := Step.from_lam lambdaStep
-      exact selfApplicationBody_noStep bodyAfter bodyStep)
+      rcases Step.from_lam lambdaStep with
+        ⟨_domainAfter, _, domainStep⟩ | ⟨bodyAfter, _, bodyStep⟩
+      · exact noStep_unit domainStep
+      · exact selfApplicationBody_noStep bodyAfter bodyStep)
 
 /-- ★ The SN-043 typing hypothesis is ESSENTIAL.  In the raw (untyped)
 reduction system the application of a strongly-normalizing function to a

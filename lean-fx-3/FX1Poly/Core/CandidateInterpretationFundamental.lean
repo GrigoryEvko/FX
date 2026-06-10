@@ -122,8 +122,9 @@ simply-typed introduction spine (var leaf, app elim, λ intro, universe formatio
 over the choice-free interpretation. -/
 theorem InterpretsType.fundamentalArrowAbstraction {scope targetScope : Nat}
     {domainCandidate codomainCandidate : RawTerm targetScope → Prop}
-    {body : RawTerm (scope + 1)}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     (substitution : RawTermSubst scope targetScope)
+    (domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainAnn))
     (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainClosed : HeadExpansionClosed codomainCandidate)
@@ -132,9 +133,9 @@ theorem InterpretsType.fundamentalArrowAbstraction {scope targetScope : Nat}
         (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
     IsArrowReducible domainCandidate codomainCandidate
       (RawTerm.subst substitution
-        (.mkGen .gen_lam () (.childCons body .childNil))) := by
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))) := by
   rw [RawTerm.subst_lam_reduces]
-  exact IsArrowReducible.abstraction domainArgumentsSN codomainClosed bodyReducible
+  exact IsArrowReducible.abstraction domainAnnSN domainArgumentsSN codomainClosed bodyReducible
 
 /-- **The `piIntro` (λ) fundamental-theorem arm in the form the closure induction supplies it** — the
 binder arm packaged for direct dispatch by the `HasTypeDescPi` fundamental-theorem induction.  When the
@@ -149,8 +150,9 @@ single rewrite reshapes the IH into the abstraction premise.  This is the precis
 calls in its piIntro arm: no further substitution reasoning needed at the induction site, just this lemma. -/
 theorem InterpretsType.fundamentalArrowAbstractionConsForm {scope targetScope : Nat}
     {domainCandidate codomainCandidate : RawTerm targetScope → Prop}
-    {body : RawTerm (scope + 1)}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     (substitution : RawTermSubst scope targetScope)
+    (domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainAnn))
     (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainClosed : HeadExpansionClosed codomainCandidate)
@@ -159,8 +161,9 @@ theorem InterpretsType.fundamentalArrowAbstractionConsForm {scope targetScope : 
         (RawTerm.subst (RawTermSubst.cons argument substitution) body)) :
     IsArrowReducible domainCandidate codomainCandidate
       (RawTerm.subst substitution
-        (.mkGen .gen_lam () (.childCons body .childNil))) := by
-  apply InterpretsType.fundamentalArrowAbstraction substitution domainArgumentsSN codomainClosed
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))) := by
+  apply InterpretsType.fundamentalArrowAbstraction substitution domainAnnSN domainArgumentsSN
+    codomainClosed
   intro argument argumentInDomain
   rw [← RawTerm.subst_cons_eq_subst0_lift]
   exact bodyReducible argument argumentInDomain

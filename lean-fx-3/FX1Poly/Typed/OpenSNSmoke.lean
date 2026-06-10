@@ -84,7 +84,8 @@ grown engine's binder arm `piIntro` under a non-empty context — the open analo
 theorem openIdentityLambda_stronglyNormalizing {profile : PolyProfile}
     (levelExpr subjectLevel : LevelExpr) (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)) : RawTerm 1) :=
+      (lamCell (universeCodeCell subjectLevel.lsucc flag)
+        (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)) : RawTerm 1) :=
   HasTypeDescPi.stronglyNormalizingOfWfContextDesc
     (wfContextDesc_universeBinding levelExpr flag)
     (HasTypeDescPi.piIntro
@@ -110,14 +111,16 @@ here certifies the TERMINATION of a non-trivial open reduction, proving the corp
 theorem openBetaRedex_stronglyNormalizing {profile : PolyProfile}
     (levelExpr subjectLevel : LevelExpr) (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
+      (appCell (lamCell (universeCodeCell subjectLevel.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
         (universeCodeCell subjectLevel flag) : RawTerm 1) :=
   HasTypeDescPi.stronglyNormalizingOfWfContextDesc
     (wfContextDesc_universeBinding levelExpr flag)
     (HasTypeDescPi.piElim
       (context := (TypingContext.empty : TypingContext profile 0).cons
         (universeCodeCell levelExpr flag))
-      (functionTerm := lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
+      (functionTerm := lamCell (universeCodeCell subjectLevel.lsucc flag)
+        (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))
       (argument := universeCodeCell subjectLevel flag)
       (domainCode := universeCodeCell subjectLevel.lsucc flag)
       (codomainCode := universeCodeCell subjectLevel.lsucc flag)

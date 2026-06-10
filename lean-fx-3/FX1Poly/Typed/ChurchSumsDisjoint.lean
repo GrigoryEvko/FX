@@ -51,11 +51,11 @@ open FX1Poly.Core FX1Poly.Universe StepStar
 /-- `handlerToUniverse = λx. (Type@0)` — a constant handler returning a universe code (head `gen_universeCode`).
 Paired with `handlerToIdentity`, it makes the two `case` branches land on terms with DIFFERENT head generators. -/
 def handlerToUniverse : RawTerm 0 :=
-  lamCell (RawTerm.weaken (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
+  lamCell combinatorDomainAnn (RawTerm.weaken (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
 
 /-- `handlerToIdentity = λx. (λy.y)` — a constant handler returning the identity λ (head `gen_lam`). -/
 def handlerToIdentity : RawTerm 0 :=
-  lamCell (RawTerm.weaken combinatorI)
+  lamCell combinatorDomainAnn (RawTerm.weaken combinatorI)
 
 /-- `handlerToUniverse I ↝* Type@0` — the constant handler discards its argument and yields the universe code,
 the stored value re-emerging through the `subst0 (weaken ·) I = ·` cancellation. -/

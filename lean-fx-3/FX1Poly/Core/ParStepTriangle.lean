@@ -92,16 +92,19 @@ theorem ParStep.triangleCongFires {scope : Nat} (gen : Generator) (payload : gen
                     | mkGen ig ip ic =>
                         by_cases hLam : ig = .gen_lam
                         · subst hLam
-                          cases ic with | childCons body icNil => cases icNil with
-                            | childNil =>
-                                cases funcStep with
-                                | cong _ _ csF => cases csF with
-                                  | cons _bs rF => cases rF with
-                                    | nil =>
-                                        cases ihFunc with
-                                        | cong _ _ csI => cases csI with
-                                          | cons bodyDevStep rI => cases rI with
-                                            | nil => exact ParStep.beta bodyDevStep ihArg
+                          cases ic with | childCons domainAnn icTail => cases icTail with
+                            | childCons body icNil => cases icNil with
+                              | childNil =>
+                                  cases funcStep with
+                                  | cong _ _ csF => cases csF with
+                                    | cons _ds rF0 => cases rF0 with
+                                      | cons _bs rF => cases rF with
+                                        | nil =>
+                                            cases ihFunc with
+                                            | cong _ _ csI => cases csI with
+                                              | cons domainDevStep rI0 => cases rI0 with
+                                                | cons bodyDevStep rI => cases rI with
+                                                  | nil => exact ParStep.beta domainDevStep bodyDevStep ihArg
                         · have key : RawTerm.fireRootRedex .gen_app payload
                               (.childCons (.mkGen ig ip ic) (.childCons _arg .childNil)) = none :=
                             dif_neg hLam
@@ -477,7 +480,8 @@ theorem ParStep.triangle {scope : Nat} {a b : RawTerm scope} :
     (motive_1 := fun {_scope} a b _ => ParStep b (RawTerm.completeDevelopment a))
     (motive_2 := fun {_binderShifts} {_scope} cs cs' _ =>
       ParStepChildren cs' (RawTerm.completeDevelopmentChildren cs))
-    (fun {_scope} {_body _body' _arg _arg'} _bodyStep _argStep ihBody ihArg =>
+    (fun {_scope} {_domainAnn _domainAnn' _body _body' _arg _arg'}
+        _domainStep _bodyStep _argStep _ihDomain ihBody ihArg =>
         ParStep.subst0_diagonal ihBody ihArg)
     (fun {_scope} gen payload {_children _children'} childrenStep ih => by
         show ParStep (.mkGen gen payload _children')

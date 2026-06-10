@@ -111,7 +111,8 @@ theorem listElimComputesToValue {isResultValue : RawTerm 0 → Prop}
 /-! ## Concrete instance 1: the constant-zero fold (discards head, tail, and recursive result) -/
 
 /-- The constant-zero cons step `λ_. λ_. λ_. natZero` — ignores the head, the tail, and the recursive result. -/
-def constNatZeroStep3 : RawTerm 0 := lamCell (lamCell (lamCell (natZeroCell : RawTerm 3)))
+def constNatZeroStep3 : RawTerm 0 :=
+  lamCell natZeroCell (lamCell natZeroCell (lamCell natZeroCell (natZeroCell : RawTerm 3)))
 
 /-- **`constNatZeroStep3` produces `natZero`.**  Applied to any head, tail, and recursive result, the three
 β-steps drop all three binders (the body `natZero` is closed nullary, `subst0` computes definitionally). -/
@@ -122,10 +123,10 @@ theorem constNatZeroStep3Produces (headVal tailVal recResult : RawTerm 0)
       IsNatNumeral out := by
   refine ⟨natZeroCell, ?_, IsNatNumeral.zero⟩
   have firstBeta : Step (appCell constNatZeroStep3 headVal)
-      (lamCell (lamCell (natZeroCell : RawTerm 2))) := Step.beta
-  have secondBeta : Step (appCell (lamCell (lamCell (natZeroCell : RawTerm 2))) tailVal)
-      (lamCell (natZeroCell : RawTerm 1)) := Step.beta
-  have thirdBeta : Step (appCell (lamCell (natZeroCell : RawTerm 1)) recResult) natZeroCell := Step.beta
+      (lamCell natZeroCell (lamCell natZeroCell (natZeroCell : RawTerm 2))) := Step.beta
+  have secondBeta : Step (appCell (lamCell natZeroCell (lamCell natZeroCell (natZeroCell : RawTerm 2))) tailVal)
+      (lamCell natZeroCell (natZeroCell : RawTerm 1)) := Step.beta
+  have thirdBeta : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) recResult) natZeroCell := Step.beta
   exact StepStar.trans_compose
     (StepStar.appFunction (StepStar.appFunction (StepStar.single firstBeta)))
     (StepStar.trans_compose
@@ -148,7 +149,8 @@ theorem listElimConstZeroComputesToNumeral {scrutinee : RawTerm 0} (scrutineeVal
 `r` (de Bruijn `0`) in a `natSucc`.  Folding with base `natZero` counts the list, so this step genuinely
 THREADS the recursive result. -/
 def lengthNatStep : RawTerm 0 :=
-  lamCell (lamCell (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 3)))))
+  lamCell natZeroCell (lamCell natZeroCell (lamCell natZeroCell
+    (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 3)))))
 
 /-- **`lengthNatStep` produces `natSucc recResult`.**  The three β-steps drop the unused head and tail binders
 and substitute the recursive result for `r` (`subst0` computes the de Bruijn index through the binders
@@ -160,10 +162,10 @@ theorem lengthNatStepProduces (headVal tailVal recResult : RawTerm 0)
       IsNatNumeral out := by
   refine ⟨natSuccCell recResult, ?_, IsNatNumeral.succ recResultNumeral⟩
   have firstBeta : Step (appCell lengthNatStep headVal)
-      (lamCell (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) := Step.beta
-  have secondBeta : Step (appCell (lamCell (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) tailVal)
-      (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) := Step.beta
-  have thirdBeta : Step (appCell (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) recResult)
+      (lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) := Step.beta
+  have secondBeta : Step (appCell (lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) tailVal)
+      (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) := Step.beta
+  have thirdBeta : Step (appCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) recResult)
       (natSuccCell recResult) := Step.beta
   exact StepStar.trans_compose
     (StepStar.appFunction (StepStar.appFunction (StepStar.single firstBeta)))

@@ -35,7 +35,9 @@ it sidesteps the decidability/uniqueness cascade that a direct `HasTypeDesc` ext
 * `piIntro` (λ) — `body : codomainCode` under `context.cons domainCode`, with BOTH `domainCode` and
   `codomainCode` types at a SHARED universe flag (witnesses
   `domainLevel`/`codomainLevel`/`flag`/`domainTyped`/`codomainTyped`, per the
-  nested-`Exists`-in-a-ctor-premise rejection), gives `lamCell body : Π domainCode. codomainCode`.
+  nested-`Exists`-in-a-ctor-premise rejection), gives the Church-style
+  `lamCell domainCode body : Π domainCode. codomainCode` (the domain ANNOTATION on the λ IS the rule's
+  `domainCode` — Curry-style typing non-uniqueness dies at the root).
   The codomain-well-formedness premise makes the Π type WELL-FORMED BY CONSTRUCTION (the standard
   λ-rule) — it is what lets validity (`classifierIsTypeDesc`) reconstruct the Π formation via
   `genFormationPi` without a domain/codomain flag mismatch.
@@ -46,7 +48,7 @@ it sidesteps the decidability/uniqueness cascade that a direct `HasTypeDesc` ext
 ## The headline: first non-vacuous subject reduction
 
 `betaCoherence_formationBody` proves that for a β-redex built from FORMATION components, the
-redex `appCell (lamCell body) argument` AND its β-reduct `subst0 body argument` are BOTH typed
+redex `appCell (lamCell domainCode body) argument` AND its β-reduct `subst0 body argument` are BOTH typed
 at `subst0 codomainCode argument` — the β-rule preserves typing.  Scope: this is the
 PRESERVATION direction for COMPONENT-derived redexes (built from the pieces), via the
 intrinsic `HasTypeDesc.substituteUnderBinding`.  The fully-general inverted SR (arbitrary
@@ -65,9 +67,12 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
-/-- The λ cell: `gen_lam` with the single body child (under one fresh value binder, shift `1`). -/
-def lamCell {scope : Nat} (body : RawTerm (scope + 1)) : RawTerm scope :=
-  .mkGen .gen_lam () (.childCons body .childNil)
+/-- The λ cell, Church-style: `gen_lam` with the domain-annotation child (parent scope,
+shift `0`) followed by the body child (under one fresh value binder, shift `1`).  Same
+`[0, 1]` child shape as `piTyCodeCell`. -/
+def lamCell {scope : Nat} (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)) :
+    RawTerm scope :=
+  .mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))
 
 /-- The application cell: `gen_app` with the function and argument children (both at the parent
 scope, shifts `[0, 0]`). -/
@@ -119,7 +124,7 @@ inductive HasTypeDescPi (profile : PolyProfile) :
           (universeCodeCell codomainLevel flag))
       (bodyTyped :
         HasTypeDescPi profile (context.cons domainCode) body codomainCode) :
-      HasTypeDescPi profile context (lamCell body)
+      HasTypeDescPi profile context (lamCell domainCode body)
         (piTyCodeCell domainCode codomainCode)
   | piElim {scope : Nat} {context : TypingContext profile scope}
       {functionTerm argument domainCode : RawTerm scope}
@@ -229,7 +234,7 @@ theorem HasTypeDesc.genFormationToHasTypeDescPi {profile : PolyProfile} {scope :
 For a β-redex built from FORMATION components — `body : codomainCode` under `context.cons
 domainCode`, `argument : domainCode`, and BOTH `domainCode` and `codomainCode` types at a shared
 universe flag (the codomain witness the strengthened `piIntro` requires) — BOTH the redex
-`appCell (lamCell body) argument` and its β-reduct `subst0 body argument` (the contractum of
+`appCell (lamCell domainCode body) argument` and its β-reduct `subst0 body argument` (the contractum of
 `Step.beta`) are typed at `subst0 codomainCode argument` in the grown engine.
 
 The redex types by `piElim ∘ piIntro` (over `ofFormation`-embedded components); the reduct
@@ -254,7 +259,7 @@ theorem HasTypeDescPi.betaCoherence_formationBody {profile : PolyProfile} {scope
         (universeCodeCell codomainLevel flag))
     (bodyTyped : HasTypeDesc profile (context.cons domainCode) body codomainCode)
     (argumentTyped : HasTypeDesc profile context argument domainCode) :
-    HasTypeDescPi profile context (appCell (lamCell body) argument)
+    HasTypeDescPi profile context (appCell (lamCell domainCode body) argument)
         (RawTerm.subst0 codomainCode argument)
       ∧ HasTypeDescPi profile context (RawTerm.subst0 body argument)
         (RawTerm.subst0 codomainCode argument) := by

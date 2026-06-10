@@ -150,14 +150,16 @@ the corpus docstring named as the remaining prerequisite. -/
 
 /-- The constant lambda `λ_. boolTrue` — its application reduces to `boolTrue` for any argument. -/
 abbrev constLamBoolTrueCell : RawTerm 0 :=
-  .mkGen .gen_lam () (.childCons boolTrueCell .childNil)
+  .mkGen .gen_lam () (.childCons boolTrueCell (.childCons boolTrueCell .childNil))
 
 /-- **The constant lambda applied to any argument β-reduces to `boolTrue`.**  A single head β-step
 (`WeakHeadStep.beta`): the contractum `subst0 boolTrue value` is `boolTrue` definitionally (the body is the
 closed nullary `boolTrue`). -/
 theorem constLamBoolTrue_app_stepStar (value : RawTerm 0) :
     StepStar (applicationCell constLamBoolTrueCell value) boolTrueCell :=
-  StepStar.trans (WeakHeadStep.beta (body := boolTrueCell) (argument := value)).toStep
+  StepStar.trans
+    (WeakHeadStep.beta (domainAnn := boolTrueCell) (body := boolTrueCell)
+      (argument := value)).toStep
     (StepStar.refl _)
 
 /-- **The constant branch respects SN.**  Applying `λ_. boolTrue` to ANY strongly-normalizing value yields a
@@ -170,7 +172,16 @@ theorem constLamBoolTrue_respectsSN :
   fun value valueStronglyNormalizing =>
     CanonicalFormsPredicate.ofStepStarReachingValue
       (constLamBoolTrue_app_stepStar value)
-      (appLamBoolTrue_isStronglyNormalizing_of_argument valueStronglyNormalizing)
+      (appLam_isStronglyNormalizing_of_normal_body_constant_contractum
+        (domainAnn := boolTrueCell)
+        (body := boolTrueCell)
+        (contractum := boolTrueCell)
+        (bodyHasNoStep := fun targetBody bodyStep =>
+          noStep_boolTrue (targetTerm := targetBody) bodyStep)
+        (contractumTerminates := boolTrue_isStronglyNormalizing)
+        (bodySubst0Constant := fun _currentArgument => rfl)
+        (domainAnnTerminates := boolTrue_isStronglyNormalizing)
+        valueStronglyNormalizing)
       ⟨boolTrueCell, StepStar.refl _, Or.inl rfl⟩
 
 /-- **Concrete `optionMatch` membership regression.**  The closed `optionMatch` on the `none` scrutinee with
@@ -186,7 +197,8 @@ theorem optionMatchClosedMembershipSmoke :
   optionMatchClosedIsMember
     (isOptionValue_isMember (Or.inl rfl))
     boolTrueCell_isMember
-    (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing)
+    (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing
+      boolTrue_isStronglyNormalizing)
     constLamBoolTrue_respectsSN
 
 /-- **Concrete `eitherMatch` membership regression.**  The closed `eitherMatch` on the `inl boolTrue` scrutinee
@@ -200,8 +212,10 @@ theorem eitherMatchClosedMembershipSmoke :
           (.childCons constLamBoolTrueCell (.childCons constLamBoolTrueCell .childNil)))) :=
   eitherMatchClosedIsMember
     (isEitherValue_isMember (Or.inl ⟨boolTrueCell, rfl, by decide⟩))
-    (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing)
-    (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing)
+    (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing
+      boolTrue_isStronglyNormalizing)
+    (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing
+      boolTrue_isStronglyNormalizing)
     constLamBoolTrue_respectsSN
     constLamBoolTrue_respectsSN
 

@@ -50,7 +50,7 @@ theorem RawTerm.hasRootStepSource_imp_fireRootRedex_isSome {scope : Nat} {genera
     match children with
     | .childCons functionChild (.childCons _argChild .childNil) =>
         have srcTrue : RawTerm.isLamSource functionChild = true := detected
-        obtain ⟨body, hBody⟩ := isLamSource_eq_lam srcTrue
+        obtain ⟨domainAnn, body, hBody⟩ := isLamSource_eq_lam srcTrue
         subst hBody; rfl
   · by_cases hBoolElim : generator = .gen_boolElim
     · subst hBoolElim

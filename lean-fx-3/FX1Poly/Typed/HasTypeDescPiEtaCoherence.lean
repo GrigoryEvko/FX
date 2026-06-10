@@ -98,7 +98,7 @@ theorem HasTypeDescPi.etaCoherence_formationFunction {profile : PolyProfile} {sc
         (universeCodeCell codomainLevel flag))
     (functionFormationTyped :
       HasTypeDesc profile context functionTerm (piTyCodeCell domainCode codomainCode)) :
-    HasTypeDescPi profile context (RawTerm.etaLamSource functionTerm)
+    HasTypeDescPi profile context (RawTerm.etaLamSource domainCode functionTerm)
         (piTyCodeCell domainCode codomainCode)
       ∧ HasTypeDescPi profile context functionTerm (piTyCodeCell domainCode codomainCode) := by
   refine ⟨?_, HasTypeDescPi.ofFormation functionFormationTyped⟩

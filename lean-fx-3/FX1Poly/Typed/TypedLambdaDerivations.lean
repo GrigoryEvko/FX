@@ -78,7 +78,8 @@ Type@e` is definitionally `Type@e`, matching the codomain. -/
 theorem identityOnUniverse_hasTypeDescPi
     {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (lamCell (universeCodeCell levelExpr flag)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
       (piTyCodeCell (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr flag)) :=
   HasTypeDescPi.piIntro levelExpr.lsucc levelExpr.lsucc flag
@@ -96,7 +97,8 @@ by `piIntro`.  Both the codomain `Type@(e+1)` and the body `Type@e` type by
 theorem constantTypeLambda_hasTypeDescPi
     {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (universeCodeCell levelExpr flag))
+      (lamCell (universeCodeCell levelExpr flag)
+        (universeCodeCell levelExpr flag))
       (piTyCodeCell (universeCodeCell levelExpr flag)
         (universeCodeCell levelExpr.lsucc flag)) :=
   HasTypeDescPi.piIntro levelExpr.lsucc levelExpr.lsucc.lsucc flag
@@ -115,7 +117,8 @@ closed program. -/
 theorem identityOnUniverse_stronglyNormalizing
     {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) :=
+      (lamCell (universeCodeCell levelExpr flag)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing
     (identityOnUniverse_hasTypeDescPi (profile := profile) levelExpr flag)
 
@@ -127,7 +130,8 @@ substitution ignores the argument. -/
 theorem identityApplicationOnUniverseCode_hasTypeDescPi
     {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag))
       (universeCodeCell levelExpr.lsucc flag) :=
   HasTypeDescPi.piElim
@@ -140,7 +144,8 @@ substituted by the argument). -/
 theorem identityApplicationOnUniverseCode_betaReducesToArgument
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     Step
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag))
       (universeCodeCell levelExpr flag) :=
   Step.beta
@@ -153,11 +158,13 @@ closed `piElim` derivation, not a general lemma. -/
 theorem identityApplication_subjectReduction
     {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
     Step
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag))
       (universeCodeCell levelExpr flag) ∧
     HasTypeDescPi profile TypingContext.empty
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag))
       (universeCodeCell levelExpr.lsucc flag) ∧
     HasTypeDescPi profile TypingContext.empty
@@ -201,7 +208,9 @@ Bruijn index). -/
 theorem polymorphicIdentity_hasTypeDescPi
     {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
         (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
           (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))) := by
@@ -222,7 +231,9 @@ nested-`piIntro` derivation. -/
 theorem polymorphicIdentity_stronglyNormalizing
     {profile : PolyProfile} (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))) : RawTerm 0) :=
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))) : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing
     (polymorphicIdentity_hasTypeDescPi (profile := profile) flag)
 
@@ -269,7 +280,9 @@ climbs from `Type@0` to `Type@1`, so its domain admits the closed argument
 theorem polymorphicIdentityAtLevelOne_hasTypeDescPi
     {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (lamCell (universeCodeCell LevelExpr.lzero.lsucc flag)
+        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero.lsucc flag)
         (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
           (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))) := by
@@ -297,7 +310,9 @@ codomain truly depends on the argument. -/
 theorem polymorphicIdentityInstantiatedAtTypeZero_hasTypeDescPi
     {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero flag))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
         (universeCodeCell LevelExpr.lzero flag)) :=
@@ -311,9 +326,12 @@ lambda `λ(x : A). x` survives `subst0` unchanged (it does not mention `A`), so
 `subst0 (λx. x) Type@0` is defeq `λx. x`. -/
 theorem polymorphicIdentityInstantiation_betaReducesToIdentity (flag : UniverseFlag) :
     Step
-      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero flag))
-      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) :=
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) :=
   Step.beta
 
 /-- ★ Concrete subject reduction for the dependent type-instantiation.  The redex
@@ -324,16 +342,22 @@ type-application followed by β, with the type preserved end-to-end. -/
 theorem polymorphicIdentityInstantiation_subjectReduction
     {profile : PolyProfile} (flag : UniverseFlag) :
     Step
-      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero flag))
-      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) ∧
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) ∧
     HasTypeDescPi profile TypingContext.empty
-      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero flag))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
         (universeCodeCell LevelExpr.lzero flag)) ∧
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (lamCell (universeCodeCell LevelExpr.lzero flag)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
         (universeCodeCell LevelExpr.lzero flag)) :=
   ⟨polymorphicIdentityInstantiation_betaReducesToIdentity flag,
@@ -345,7 +369,9 @@ concrete `piElim` derivation. -/
 theorem polymorphicIdentityInstantiation_stronglyNormalizing
     {profile : PolyProfile} (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero flag) : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing
     (polymorphicIdentityInstantiatedAtTypeZero_hasTypeDescPi (profile := profile) flag)
@@ -391,7 +417,9 @@ DescPi` (same term; the type-variable universe climbs to `Type@2` so that instan
 theorem polymorphicIdentityAtLevelTwo_hasTypeDescPi
     {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (lamCell (universeCodeCell LevelExpr.lzero.lsucc.lsucc flag)
+        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+          (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero.lsucc.lsucc flag)
         (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
           (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))) := by
@@ -415,7 +443,9 @@ application of the curried use below. -/
 theorem polymorphicIdentityInstantiatedAtTypeOne_hasTypeDescPi
     {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero.lsucc flag))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero.lsucc flag)
         (universeCodeCell LevelExpr.lzero.lsucc flag)) :=
@@ -433,7 +463,9 @@ in full: instantiate, then apply. -/
 theorem polymorphicIdentityAppliedToTypeOneThenTypeZero_hasTypeDescPi
     {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (appCell (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero.lsucc flag)) (universeCodeCell LevelExpr.lzero flag))
       (universeCodeCell LevelExpr.lzero.lsucc flag) :=
   HasTypeDescPi.piElim
@@ -448,7 +480,9 @@ leaving `(λx. x) (Type@0)`; then the outer β contracts that to `Type@0` (`subs
 Type@0 = Type@0`). -/
 theorem polymorphicIdentityTwoArgReducesToTypeZero (flag : UniverseFlag) :
     StepStar
-      (appCell (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero.lsucc flag)) (universeCodeCell LevelExpr.lzero flag))
       (universeCodeCell LevelExpr.lzero flag) :=
   StepStar.trans
@@ -467,11 +501,15 @@ multi-step reduction, with the type preserved end-to-end. -/
 theorem polymorphicIdentityTwoArg_subjectReduction
     {profile : PolyProfile} (flag : UniverseFlag) :
     StepStar
-      (appCell (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero.lsucc flag)) (universeCodeCell LevelExpr.lzero flag))
       (universeCodeCell LevelExpr.lzero flag) ∧
     HasTypeDescPi profile TypingContext.empty
-      (appCell (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero.lsucc flag)) (universeCodeCell LevelExpr.lzero flag))
       (universeCodeCell LevelExpr.lzero.lsucc flag) ∧
     HasTypeDescPi profile TypingContext.empty
@@ -487,7 +525,9 @@ nested-`piElim` derivation. -/
 theorem polymorphicIdentityTwoArg_stronglyNormalizing
     {profile : PolyProfile} (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (appCell (appCell (lamCell (lamCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
+      (appCell (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc.lsucc flag)
+          (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))
         (universeCodeCell LevelExpr.lzero.lsucc flag)) (universeCodeCell LevelExpr.lzero flag)
         : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing
@@ -605,7 +645,8 @@ obtained from `introRuleDescOf .gen_lam` (not hardwired).  The domain and codoma
 theorem identityLambdaViaIntroTable
     {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (lamCell (universeCodeCell levelExpr.lsucc flag)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
       (piIntroOutput 0 (universeCodeCell levelExpr.lsucc flag)
         (universeCodeCell levelExpr.lsucc flag)) :=
   hasTypeDescPi_piIntro_viaIntroDesc levelExpr.lsucc.lsucc levelExpr.lsucc.lsucc flag
@@ -627,7 +668,8 @@ across introduction AND elimination (the formation half is the Σ block above). 
 theorem identityApplicationViaRuleTables
     {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag))
       (piElimOutput 0 (universeCodeCell levelExpr.lsucc flag)
         (universeCodeCell levelExpr flag)) :=
@@ -650,7 +692,8 @@ elim-output resolution above). -/
 theorem identityApplicationViaRuleTables_atResolvedType
     {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag))
       (universeCodeCell levelExpr.lsucc flag) :=
   identityApplicationViaRuleTables (profile := profile) levelExpr flag
@@ -660,7 +703,8 @@ exactly as for the explicit-engine derivation. -/
 theorem identityApplicationViaRuleTables_stronglyNormalizing
     {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag) : RawTerm 0) :=
   HasTypeDescPi.closedStronglyNormalizing
     (identityApplicationViaRuleTables (profile := profile) levelExpr flag)

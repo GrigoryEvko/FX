@@ -95,7 +95,7 @@ theorem Step.reflectRename {sourceScope targetScope : Nat}
       (motive_1 := motiveStep)
       (motive_2 := motiveChildren)
       -- beta
-      (fun {scope} {body} {arg} {srcScope} originTerm originRho req =>
+      (fun {scope} {domainAnn} {body} {arg} {srcScope} originTerm originRho req =>
         Step.reflectBeta originRho req)
       -- cong
       (fun {scope} generator payload {children} {children'} childStep childStepIH

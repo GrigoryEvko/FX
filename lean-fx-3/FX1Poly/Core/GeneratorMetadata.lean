@@ -403,15 +403,16 @@ Sort classification of children:
     code (the path-type to transport along) plus the current interval point
     and the source term.
 
-The scope-shift entries match `binderShifts` arm-for-arm: `gen_lam` and
-`gen_pathLam` have a `1`-shifted body; `gen_piTyCode` and `gen_sigmaTyCode`
-have a `1`-shifted codomain; everything else uses `0`. -/
+The scope-shift entries match `binderShifts` arm-for-arm: `gen_lam` (Church-style,
+domain annotation at shift `0` + body at shift `1`) mirrors `gen_piTyCode` and
+`gen_sigmaTyCode` (shift-`1` codomain after a shift-`0` domain); `gen_pathLam`
+has a `1`-shifted body; everything else uses `0`. -/
 def Generator.childSpecs : Generator → List ChildSpec
   -- Variable + unit
   | .gen_var          => []
   | .gen_unit         => []
   -- Function
-  | .gen_lam          => [ChildSpec.termUnderBinder]
+  | .gen_lam          => [ChildSpec.termSameScope, ChildSpec.termUnderBinder]
   | .gen_app          => [ChildSpec.termSameScope, ChildSpec.termSameScope]
   -- Pair
   | .gen_pair         => [ChildSpec.termSameScope, ChildSpec.termSameScope]

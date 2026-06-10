@@ -171,13 +171,15 @@ analogous to rename's `RawRenaming.lift ρ`.  Closes by `rfl`. -/
 theorem RawTerm.subst_lam_reduces
     {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope)
+    (domainAnn : RawTerm sourceScope)
     (bodyTerm : RawTerm (sourceScope + 1)) :
     RawTerm.subst substitution
         ((.mkGen .gen_lam ()
-          (.childCons bodyTerm .childNil)) : RawTerm sourceScope) =
+          (.childCons domainAnn (.childCons bodyTerm .childNil))) : RawTerm sourceScope) =
       ((.mkGen .gen_lam ()
-        (.childCons (RawTerm.subst (RawTermSubst.lift substitution) bodyTerm)
-          .childNil)) : RawTerm targetScope) := rfl
+        (.childCons (RawTerm.subst substitution domainAnn)
+          (.childCons (RawTerm.subst (RawTermSubst.lift substitution) bodyTerm)
+            .childNil))) : RawTerm targetScope) := rfl
 
 /-! ## Section 2 — Compound cell-level subst preservation -/
 
@@ -320,7 +322,11 @@ Analogous to rename's `lam_preservedByRename`. -/
 theorem HasCertifiedCellDim0.lam_preservedBySubst
     {profile : PolyProfile} {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope)
+    (domainAnn : RawTerm sourceScope)
     (bodyTerm : RawTerm (sourceScope + 1))
+    (substDomainCell :
+      PolyCell profile .term 0 targetScope CellBoundary.trivial
+        (.termBase (RawTerm.subst substitution domainAnn)))
     (substBodyCell :
       PolyCell profile .term 0 (targetScope + 1) CellBoundary.trivial
         (.termBase (RawTerm.subst
@@ -328,8 +334,8 @@ theorem HasCertifiedCellDim0.lam_preservedBySubst
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.subst substitution
         ((.mkGen .gen_lam ()
-          (.childCons bodyTerm .childNil)) : RawTerm sourceScope)) := by
+          (.childCons domainAnn (.childCons bodyTerm .childNil))) : RawTerm sourceScope)) := by
   rw [RawTerm.subst_lam_reduces]
-  exact HasCertifiedCellDim0.lam substBodyCell
+  exact HasCertifiedCellDim0.lam substDomainCell substBodyCell
 
 end FX1Poly.Core

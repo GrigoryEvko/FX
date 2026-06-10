@@ -58,7 +58,8 @@ theorem HasTypeDescPi.closedFunctionStepsOrIsLambda {profile : PolyProfile} {sub
     {outerDomain : RawTerm 0} {outerCodomain : RawTerm 1}
     (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
       (piTyCodeCell outerDomain outerCodomain)) :
-    (∃ reduct : RawTerm 0, Step subject reduct) ∨ (∃ body : RawTerm 1, subject = lamCell body) := by
+    (∃ reduct : RawTerm 0, Step subject reduct) ∨
+      (∃ (domainAnn : RawTerm 0) (body : RawTerm 1), subject = lamCell domainAnn body) := by
   by_cases isNormal : RawTerm.isStepNormalForm subject
   · exact Or.inr (HasTypeDescPi.closedNormalFunctionIsLambda typed isNormal)
   · exact Or.inl (exists_step_of_not_isStepNormalForm isNormal)

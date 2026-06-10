@@ -43,11 +43,15 @@ open FX1Poly.Foundation
 root-ι, and `WeakHeadStep` into each eliminator's scrutinee position.  Deterministic by construction (a
 term has at most one weak-head redex). -/
 inductive WeakHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop where
-  /-- Head β-contraction. -/
-  | beta {body : RawTerm (scope + 1)} {argument : RawTerm scope} :
+  /-- Head β-contraction.  Church-style: the λ carries a domain annotation as
+      its first child; contraction discards it. -/
+  | beta {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+      {argument : RawTerm scope} :
       WeakHeadStep
         (.mkGen .gen_app ()
-          (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons
+            (.mkGen .gen_lam ()
+              (.childCons domainAnn (.childCons body .childNil)))
             (.childCons argument .childNil)))
         (RawTerm.subst0 body argument)
   /-- Reduce the function of an application (recursive in `WeakHeadStep`). -/
@@ -134,9 +138,13 @@ inductive WeakHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
 
 /-- A λ-abstraction has no weak-head step: every `WeakHeadStep` constructor concludes an application- or
 eliminator-headed subject (the `rootIota` premise an `IotaHeadStep` on the λ, itself impossible). -/
-theorem WeakHeadStep.not_from_lam {scope : Nat} {body : RawTerm (scope + 1)}
+theorem WeakHeadStep.not_from_lam {scope : Nat}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     {reduct : RawTerm scope} :
-    ¬ WeakHeadStep (.mkGen .gen_lam () (.childCons body .childNil)) reduct := by
+    ¬ WeakHeadStep
+        (.mkGen .gen_lam ()
+          (.childCons domainAnn (.childCons body .childNil)))
+        reduct := by
   intro weakHeadStep
   cases weakHeadStep with
   | rootIota iotaStep => cases iotaStep

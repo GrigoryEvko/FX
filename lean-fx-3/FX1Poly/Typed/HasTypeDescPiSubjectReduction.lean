@@ -3,6 +3,7 @@ import FX1Poly.Typed.HasTypeDescPiSubjectReductionInlineArms
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionConvOfFormationArms
 import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
+import FX1Poly.Typed.HasTypeDescPiContextStepConversion
 
 /-! # FX1Poly/Typed/HasTypeDescPiSubjectReduction
     — the master subject-reduction dispatcher for the GROWN engine, conditional on the grown telescope SR
@@ -78,13 +79,30 @@ theorem HasTypeDescPi.subjectReductionOfGrownTelescopeSR {profile : PolyProfile}
       HasTypeDescPi.conv levelExpr flag
         (HasTypeDescPi.subjectReductionOfGrownTelescopeSR telescopeSR wellFormed typed reduct step)
         converts reclassifierTyped
-  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel _codomainLevel flag
+  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel codomainLevel flag
       domainTyped codomainTyped bodyTyped => fun _reduct step =>
       HasTypeDescPi.subjectReductionPiIntroArm domainTyped codomainTyped step
         (fun {bodyReduct} bodyStep =>
           HasTypeDescPi.subjectReductionOfGrownTelescopeSR telescopeSR
             (WfContextDescPi.cons wellFormed ⟨domainLevel, flag, domainTyped⟩)
             bodyTyped bodyReduct bodyStep)
+        (fun {domainReduct} domainStep =>
+          -- Domain-annotation step: rebuild the λ at the ORIGINAL Π type via a stepped-binder
+          -- re-typing of codomain + body, then `conv` the Π code back across the domain step.
+          let wellFormedUnderDomain :=
+            WfContextDescPi.cons wellFormed ⟨domainLevel, flag, domainTyped⟩
+          let domainReductTyped :=
+            HasTypeDescPi.subjectReductionOfGrownTelescopeSR telescopeSR wellFormed domainTyped
+              domainReduct domainStep
+          let lambdaAtSteppedDomain :=
+            HasTypeDescPi.piIntro domainLevel codomainLevel flag domainReductTyped
+              (HasTypeDescPi.codomainReTypingStep wellFormedUnderDomain codomainTyped domainStep)
+              (HasTypeDescPi.codomainReTypingStep wellFormedUnderDomain bodyTyped domainStep)
+          HasTypeDescPi.conv (LevelExpr.lmax domainLevel codomainLevel) flag
+            lambdaAtSteppedDomain
+            (Conv.piTyCode_cong (Conv.fromStep domainStep).sym (Conv.refl codomainCode))
+            (HasTypeDescPi.piFormationViaGenArm context domainCode codomainCode domainLevel
+              codomainLevel flag domainTyped codomainTyped))
   | .piElim functionTyped argumentTyped => fun _reduct step =>
       HasTypeDescPi.subjectReductionPiElimArmDescPi functionTyped argumentTyped step
         (fun {functionReduct} functionStep =>

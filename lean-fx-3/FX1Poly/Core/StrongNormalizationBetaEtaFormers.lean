@@ -71,14 +71,20 @@ theorem noStepChildren_twoNormalChildren {parentScope headShift secondShift : Na
 /-- **Smoke: a lambda over the unit leaf is beta-eta strongly normalizing.** -/
 theorem smoke_lam_isStronglyNormalizingBetaEta {scope : Nat} :
     Step.betaEtaStar.IsStronglyNormalizing
-      (.mkGen .gen_lam () (.childCons (.mkGen .gen_unit () .childNil) .childNil) : RawTerm scope) := by
+      (.mkGen .gen_lam ()
+        (.childCons
+          (.mkGen .gen_unit () .childNil : RawTerm scope)
+          (.childCons
+            (.mkGen .gen_unit () .childNil : RawTerm (scope + 1))
+            .childNil)) : RawTerm scope) := by
   apply isStronglyNormalizingBetaEta_of_noBetaEtaStep
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
     cases stepEdge with
     | cong _generator _payload childrenStep =>
-      exact noStepChildren_oneNormalChild (fun _ => noStep_unit) childrenStep
+      exact noStepChildren_twoNormalChildren
+        (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
 /-- **Smoke: a cubical path abstraction over the unit leaf is beta-eta strongly normalizing.** -/
@@ -365,14 +371,19 @@ theorem smoke_polyFunctor_isStronglyNormalizingBetaEta {scope : Nat} :
 /-- **The identity lambda is `Step`-normal.**  `lam (var 0)` has no `beta` / `iota` redex (its root is a
 lambda, not an application or eliminator) and its single child `var 0` is `Step`-normal (`noStep_var`), so
 the only surviving `cong` carries an impossible child step. -/
-theorem noStep_lamVar0 {scope : Nat} {targetTerm : RawTerm scope}
+theorem noStep_lamVar0 {scope : Nat} {domainAnn : RawTerm scope}
+    {targetTerm : RawTerm scope}
+    (domainHasNoStep : ∀ targetDomain : RawTerm scope, Step domainAnn targetDomain → False)
     (step : Step
       (.mkGen .gen_lam ()
-        (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil) .childNil)) targetTerm) :
+        (.childCons domainAnn
+          (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil) .childNil)))
+      targetTerm) :
     False := by
   cases step with
   | cong _generator _payload childrenStep =>
-    exact noStepChildren_oneNormalChild
+    exact noStepChildren_twoNormalChildren
+      (fun _ stepFromDomain => domainHasNoStep _ stepFromDomain)
       (fun _ stepFromVar => noStep_var ⟨0, Nat.succ_pos scope⟩ stepFromVar) childrenStep
 
 /-- **Smoke: the identity beta-redex `(lam (var 0)) unit` is beta-eta strongly normalizing.**  Unlike the
@@ -387,7 +398,9 @@ theorem smoke_identityRedex_isStronglyNormalizingBetaEta {scope : Nat} :
       (.mkGen .gen_app ()
         (.childCons
           (.mkGen .gen_lam ()
-            (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil) .childNil))
+            (.childCons
+              (.mkGen .gen_unit () .childNil : RawTerm scope)
+              (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil) .childNil)))
           (.childCons (.mkGen .gen_unit () .childNil) .childNil)) : RawTerm scope) := by
   apply Acc.intro
   intro _reduct edge
@@ -397,7 +410,8 @@ theorem smoke_identityRedex_isStronglyNormalizingBetaEta {scope : Nat} :
     | beta => exact unit_isStronglyNormalizingBetaEta
     | cong _generator _payload childrenStep =>
       exact (noStepChildren_twoNormalChildren
-        (fun _ stepFromLam => noStep_lamVar0 stepFromLam) (fun _ => noStep_unit) childrenStep).elim
+        (fun _ stepFromLam => noStep_lamVar0 (fun _ => noStep_unit) stepFromLam)
+        (fun _ => noStep_unit) childrenStep).elim
   | inr etaEdge => cases etaEdge
 
 end FX1Poly.Core

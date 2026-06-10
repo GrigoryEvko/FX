@@ -98,7 +98,7 @@ theorem ReducibleTypeAtBounded.headExpansionClosed {scope : Nat} {env : Nat → 
     (reducible : ReducibleTypeAtBounded env bound typeCode candidate) :
     HeadExpansionClosed candidate := by
   refine ReducibleTypeStepDenote.headExpansionClosed ?leg reducible.toReducibleTypeStepDenote
-  intro lvl _body _argument _spine _lowerCandidate contractumMember
+  intro lvl _domainAnn _body _argument _spine _lowerCandidate contractumMember
   exact denoteBelowFamilyBounded_backwardWeakHeadStep env bound lvl contractumMember WeakHeadStep.betaSpine
 
 /-- **The bounded Π-introduction (λ) member arm (the bounded SN-D2 — the classical hard Tait case).**  `λ body`
@@ -109,11 +109,12 @@ candidate via `ReducibleTypeStepBounded.piType` (its candidate defeq to `Depende
 `λ body` is `DependentArrowCandidate.abstraction`, its codomain head-expansion-closure premise the bounded
 `headExpansionClosed`. -/
 theorem abstractionMemberAtBounded {scope : Nat} (env : Nat → Nat) (bound : Nat)
-    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainAnn domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {domainCandidate : RawTerm scope → Prop}
     {codomainCandidate : RawTerm scope → (RawTerm scope → Prop)}
     {body : RawTerm (scope + 1)}
     (domainReducible : ReducibleTypeAtBounded env bound domainCode domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (codomainReducible : ∀ argument : RawTerm scope, domainCandidate argument →
         ReducibleTypeAtBounded env bound (RawTerm.subst0 codomainCode argument)
           (codomainCandidate argument))
@@ -123,10 +124,10 @@ theorem abstractionMemberAtBounded {scope : Nat} (env : Nat → Nat) (bound : Na
         codomainCandidate argument (RawTerm.subst0 body argument)) :
     IsReducibleMemberAtBounded env bound
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
-      (.mkGen .gen_lam () (.childCons body .childNil)) :=
+      (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) :=
   ⟨DependentArrowCandidate domainCandidate codomainCandidate,
     ReducibleTypeStepBounded.piType codomainCandidate domainReducible codomainReducible,
-    DependentArrowCandidate.abstraction domainArgumentsSN
+    DependentArrowCandidate.abstraction domainAnnSN domainArgumentsSN
       (fun argument argumentReducible =>
         (codomainReducible argument argumentReducible).headExpansionClosed)
       bodyReducible⟩
@@ -142,6 +143,7 @@ theorem abstractionMemberUnderClosingSubstitutionBounded {scope targetScope : Na
     {codomainCandidate : RawTerm targetScope → (RawTerm targetScope → Prop)}
     (domainReducible :
       ReducibleTypeAtBounded env bound (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainCode))
     (codomainReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
       ReducibleTypeAtBounded env bound
         (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode)
@@ -155,14 +157,16 @@ theorem abstractionMemberUnderClosingSubstitutionBounded {scope targetScope : Na
       (RawTerm.subst substitution
         (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))))
       (RawTerm.subst substitution
-        (.mkGen .gen_lam () (.childCons body .childNil))) := by
+        (.mkGen .gen_lam () (.childCons domainCode (.childCons body .childNil)))) := by
   show IsReducibleMemberAtBounded env bound
     (.mkGen .gen_piTyCode ()
       (.childCons (RawTerm.subst substitution domainCode)
         (.childCons (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) .childNil)))
     (.mkGen .gen_lam ()
-      (.childCons (RawTerm.subst (RawTermSubst.lift substitution) body) .childNil))
-  refine abstractionMemberAtBounded (codomainCandidate := codomainCandidate) env bound domainReducible
+      (.childCons (RawTerm.subst substitution domainCode)
+        (.childCons (RawTerm.subst (RawTermSubst.lift substitution) body) .childNil)))
+  refine abstractionMemberAtBounded (codomainCandidate := codomainCandidate) env bound
+    domainReducible domainAnnSN
     (fun argument argumentInDomain => ?_) domainArgumentsSN
     (fun argument argumentInDomain => ?_)
   · rw [← RawTerm.subst_cons_eq_subst0_lift codomainCode argument substitution]
@@ -182,6 +186,9 @@ theorem fundamentalPiIntroAtBounded {profile : PolyProfile} {scope : Nat} (env :
     (domainReducibleAtBound : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
         ReducibleEnvAtBounded env bound context substitution →
         IsReducibleTypeAtBounded env bound (RawTerm.subst substitution domainCode))
+    (domainCodeStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtBounded env bound context substitution →
+        IsStronglyNormalizing (RawTerm.subst substitution domainCode))
     (domainArgumentsSN : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
         ReducibleEnvAtBounded env bound context substitution →
         ∀ argument : RawTerm targetScope,
@@ -195,7 +202,7 @@ theorem fundamentalPiIntroAtBounded {profile : PolyProfile} {scope : Nat} (env :
             (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
     (bodyConclusion :
         FundamentalConclusionAtBounded env bound (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionAtBounded env bound context (lamCell body)
+    FundamentalConclusionAtBounded env bound context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) := by
   intro _targetScope substitution envReducible
   exact abstractionMemberUnderClosingSubstitutionBounded
@@ -205,6 +212,7 @@ theorem fundamentalPiIntroAtBounded {profile : PolyProfile} {scope : Nat} (env :
         (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
     env bound
     (domainReducibleAtBound substitution envReducible).reducibleMemberCandidate
+    (domainCodeStronglyNormalizing substitution envReducible)
     (fun argument argumentMember =>
       (codomainReducibleAtBound substitution envReducible argument argumentMember).reducibleMemberCandidate)
     (domainArgumentsSN substitution envReducible)

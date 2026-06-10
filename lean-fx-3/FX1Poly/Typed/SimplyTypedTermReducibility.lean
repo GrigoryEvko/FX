@@ -72,10 +72,11 @@ codomain-membership premise is exactly the SN-preservation condition stated here
 theorem IsReducibleMemberAt.lambdaNeutralArrow {scope : Nat} {level : Nat}
     {domainCode codomainBase : RawTerm scope} {body : RawTerm (scope + 1)}
     (domainNeutral : IsNeutral domainCode) (codomainNeutral : IsNeutral codomainBase)
+    (domainSN : IsStronglyNormalizing domainCode)
     (bodyPreservesSN : ∀ argument : RawTerm scope,
       IsStronglyNormalizing argument → IsStronglyNormalizing (RawTerm.subst0 body argument)) :
     IsReducibleMemberAt level
-      (piTyCodeCell domainCode (RawTerm.weaken codomainBase)) (lamCell body) := by
+      (piTyCodeCell domainCode (RawTerm.weaken codomainBase)) (lamCell domainCode body) := by
   have neutralReducible : ∀ {typeCode : RawTerm scope}, IsNeutral typeCode →
       ReducibleTypeAt level typeCode IsStronglyNormalizing := by
     intro typeCode neutral
@@ -85,7 +86,8 @@ theorem IsReducibleMemberAt.lambdaNeutralArrow {scope : Nat} {level : Nat}
     cases level with
     | zero => exact ReducibleTypeStep.neutral noStep notPi notUniv
     | succ predLevel => exact ReducibleTypeStep.neutral noStep notPi notUniv
-  exact IsReducibleMemberAt.abstractionNonDependent (neutralReducible domainNeutral)
+  exact IsReducibleMemberAt.abstractionNonDependent
+    (neutralReducible domainNeutral) domainSN
     (fun _argument argumentSN => argumentSN) (neutralReducible codomainNeutral) bodyPreservesSN
 
 /-- **Application for a non-dependent arrow.**  A reducible member of `A → B` (code
@@ -109,8 +111,9 @@ first concrete reducible TERM inhabitant of a simply-typed function type. -/
 theorem IsReducibleMemberAt.polymorphicIdentity {scope : Nat} {level : Nat} {index : Fin scope} :
     IsReducibleMemberAt level
       (piTyCodeCell (variableCell index) (RawTerm.weaken (variableCell index)))
-      (lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) := by
-  refine IsReducibleMemberAt.lambdaNeutralArrow (IsNeutral.var index) (IsNeutral.var index) ?_
+      (lamCell (variableCell index) (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) := by
+  refine IsReducibleMemberAt.lambdaNeutralArrow (IsNeutral.var index) (IsNeutral.var index)
+    (isStronglyNormalizing_of_noStep (fun _ step => noStep_var index step)) ?_
   intro argument argumentSN
   rw [show RawTerm.subst0 (variableCell ⟨0, Nat.zero_lt_succ scope⟩) argument = argument from
     RawTerm.subst0_var_zero argument]
@@ -125,7 +128,7 @@ proves the whole redex terminates. -/
 theorem polymorphicIdentityRedexStronglyNormalizing {scope : Nat} {predLevel : Nat}
     {typeIndex argumentIndex : Fin (scope + 1)} :
     IsStronglyNormalizing
-      (appCell (lamCell (variableCell ⟨0, Nat.zero_lt_succ (scope + 1)⟩))
+      (appCell (lamCell (variableCell typeIndex) (variableCell ⟨0, Nat.zero_lt_succ (scope + 1)⟩))
         (variableCell argumentIndex)) := by
   have typeReducible : ReducibleTypeAt (predLevel + 1) (variableCell typeIndex) IsStronglyNormalizing :=
     ReducibleTypeStep.neutral (IsNeutral.var typeIndex).noWeakHeadStep
@@ -135,7 +138,7 @@ theorem polymorphicIdentityRedexStronglyNormalizing {scope : Nat} {predLevel : N
       (variableCell argumentIndex) :=
     IsReducibleMemberAt.variable typeReducible argumentIndex
   have applicationMember : IsReducibleMemberAt (predLevel + 1) (variableCell typeIndex)
-      (appCell (lamCell (variableCell ⟨0, Nat.zero_lt_succ (scope + 1)⟩))
+      (appCell (lamCell (variableCell typeIndex) (variableCell ⟨0, Nat.zero_lt_succ (scope + 1)⟩))
         (variableCell argumentIndex)) :=
     IsReducibleMemberAt.applicationNonDependentArrow IsReducibleMemberAt.polymorphicIdentity argumentMember
   exact (IsReducibleMemberAt.atNeutralClassifier (IsNeutral.var typeIndex).noWeakHeadStep
@@ -152,11 +155,12 @@ fundamental theorem's λ arm threads.  `lambdaNeutralArrow` is the special case 
 theorem IsReducibleMemberAt.lambdaNeutralDomain {scope : Nat} {level : Nat}
     {domainCode codomainBase : RawTerm scope} {body : RawTerm (scope + 1)}
     (domainNeutral : IsNeutral domainCode)
+    (domainSN : IsStronglyNormalizing domainCode)
     (codomainReducibleType : IsReducibleTypeAt level codomainBase)
     (bodyMember : ∀ argument : RawTerm scope, IsStronglyNormalizing argument →
       IsReducibleMemberAt level codomainBase (RawTerm.subst0 body argument)) :
     IsReducibleMemberAt level
-      (piTyCodeCell domainCode (RawTerm.weaken codomainBase)) (lamCell body) := by
+      (piTyCodeCell domainCode (RawTerm.weaken codomainBase)) (lamCell domainCode body) := by
   have domainReducible : ReducibleTypeAt level domainCode IsStronglyNormalizing := by
     have noStep := domainNeutral.noWeakHeadStep
     have notPi := domainNeutral.rootGenerator_ne_piTyCode
@@ -164,7 +168,7 @@ theorem IsReducibleMemberAt.lambdaNeutralDomain {scope : Nat} {level : Nat}
     cases level with
     | zero => exact ReducibleTypeStep.neutral noStep notPi notUniv
     | succ predLevel => exact ReducibleTypeStep.neutral noStep notPi notUniv
-  exact IsReducibleMemberAt.abstractionNonDependent domainReducible
+  exact IsReducibleMemberAt.abstractionNonDependent domainReducible domainSN
     (fun _argument argumentSN => argumentSN)
     (IsReducibleTypeAt.reducibleMemberCandidate codomainReducibleType) bodyMember
 
@@ -179,17 +183,24 @@ theorem IsReducibleMemberAt.constantIdentity {scope : Nat} {level : Nat}
       (piTyCodeCell (variableCell domainIndex)
         (RawTerm.weaken (piTyCodeCell (variableCell codomainIndex)
           (RawTerm.weaken (variableCell codomainIndex)))))
-      (lamCell (RawTerm.weaken (lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩)))) := by
+      (lamCell (variableCell domainIndex)
+        (RawTerm.weaken
+          (lamCell (variableCell codomainIndex) (variableCell ⟨0, Nat.zero_lt_succ scope⟩)))) := by
   have codomainReducibleType : IsReducibleTypeAt level
       (piTyCodeCell (variableCell codomainIndex) (RawTerm.weaken (variableCell codomainIndex))) :=
     (IsSimplyTyped.arrow (IsSimplyTyped.ofNeutral (IsNeutral.var codomainIndex))
       (IsSimplyTyped.ofNeutral (IsNeutral.var codomainIndex))).reducibleAndMemberExtension.1 level
-  refine IsReducibleMemberAt.lambdaNeutralDomain (IsNeutral.var domainIndex) codomainReducibleType ?_
+  refine IsReducibleMemberAt.lambdaNeutralDomain
+    (IsNeutral.var domainIndex)
+    (isStronglyNormalizing_of_noStep (fun _ step => noStep_var domainIndex step))
+    codomainReducibleType ?_
   intro argument _argumentSN
   rw [show RawTerm.subst0
-      (RawTerm.weaken (lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩))) argument
-      = lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩) from
-    RawTerm.weaken_subst_singleton (lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) argument]
+      (RawTerm.weaken
+        (lamCell (variableCell codomainIndex) (variableCell ⟨0, Nat.zero_lt_succ scope⟩))) argument
+      = lamCell (variableCell codomainIndex) (variableCell ⟨0, Nat.zero_lt_succ scope⟩) from
+    RawTerm.weaken_subst_singleton
+      (lamCell (variableCell codomainIndex) (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) argument]
   exact IsReducibleMemberAt.polymorphicIdentity
 
 /-- **Substituting into `λy.x` (the captured outer variable) yields the constant function `λy.(weaken x)`.**
@@ -198,15 +209,16 @@ The binder-crossing substitution computation behind the K combinator: `subst0 (�
 lifted substitution at the captured variable `var 1`, which `RawTermSubst.lift`'s successor case sends to
 `weaken (singleton arg at var 0) = weaken arg` (`singleton_var_zero`).  Proven WITHOUT a fold-level `rfl` (which
 would leak `propext`/`Quot.sound`) and with a `Nat`-arithmetic `Fin` bound (avoiding the `omega` leak). -/
-theorem subst0_lamCellVarOne_eq_lamWeaken {scope : Nat} (argument : RawTerm scope) :
+theorem subst0_lamCellVarOne_eq_lamWeaken {scope : Nat}
+    (annotation : RawTerm (scope + 1)) (argument : RawTerm scope) :
     RawTerm.subst0
-        (lamCell (variableCell ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩)) argument
-      = lamCell (RawTerm.weaken argument) := by
+        (lamCell annotation (variableCell ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩)) argument
+      = lamCell (RawTerm.subst0 annotation argument) (RawTerm.weaken argument) := by
   show RawTerm.subst (RawTermSubst.singleton argument)
-      (lamCell (.mkGen .gen_var ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ .childNil))
-      = lamCell (RawTerm.weaken argument)
+      (lamCell annotation (.mkGen .gen_var ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ .childNil))
+      = lamCell (RawTerm.subst0 annotation argument) (RawTerm.weaken argument)
   rw [subst_lamCell]
-  refine congrArg lamCell ?_
+  refine congrArg (lamCell (RawTerm.subst0 annotation argument)) ?_
   rw [RawTerm.subst_var_reduces]
   show RawTerm.weaken (RawTermSubst.singleton argument ⟨0, Nat.zero_lt_succ scope⟩)
       = RawTerm.weaken argument
@@ -224,16 +236,25 @@ theorem IsReducibleMemberAt.kCombinator {scope : Nat} {level : Nat}
       (piTyCodeCell (variableCell domainIndex)
         (RawTerm.weaken (piTyCodeCell (variableCell codomainIndex)
           (RawTerm.weaken (variableCell domainIndex)))))
-      (lamCell (lamCell (variableCell ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩))) := by
+      (lamCell (variableCell domainIndex)
+        (lamCell (RawTerm.weaken (variableCell codomainIndex))
+          (variableCell ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩))) := by
   have codomainReducibleType : IsReducibleTypeAt level
       (piTyCodeCell (variableCell codomainIndex) (RawTerm.weaken (variableCell domainIndex))) :=
     (IsSimplyTyped.arrow (IsSimplyTyped.ofNeutral (IsNeutral.var codomainIndex))
       (IsSimplyTyped.ofNeutral (IsNeutral.var domainIndex))).reducibleAndMemberExtension.1 level
-  refine IsReducibleMemberAt.lambdaNeutralDomain (IsNeutral.var domainIndex) codomainReducibleType ?_
+  refine IsReducibleMemberAt.lambdaNeutralDomain
+    (IsNeutral.var domainIndex)
+    (isStronglyNormalizing_of_noStep (fun _ step => noStep_var domainIndex step))
+    codomainReducibleType ?_
   intro argument argumentSN
-  rw [subst0_lamCellVarOne_eq_lamWeaken argument]
-  refine IsReducibleMemberAt.lambdaNeutralArrow (IsNeutral.var codomainIndex)
-    (IsNeutral.var domainIndex) ?_
+  rw [subst0_lamCellVarOne_eq_lamWeaken (RawTerm.weaken (variableCell codomainIndex)) argument,
+    show RawTerm.subst0 (RawTerm.weaken (variableCell codomainIndex)) argument
+        = variableCell codomainIndex from
+      RawTerm.weaken_subst_singleton (variableCell codomainIndex) argument]
+  refine IsReducibleMemberAt.lambdaNeutralArrow
+    (IsNeutral.var codomainIndex) (IsNeutral.var domainIndex)
+    (isStronglyNormalizing_of_noStep (fun _ step => noStep_var codomainIndex step)) ?_
   intro innerArgument _innerArgumentSN
   rw [show RawTerm.subst0 (RawTerm.weaken argument) innerArgument = argument from
     RawTerm.weaken_subst_singleton argument innerArgument]
@@ -252,17 +273,18 @@ theorem IsReducibleMemberAt.lambdaLeafDomain {scope : Nat} {level : Nat}
     (domainWeakHeadNormal : ∀ reduct : RawTerm scope, ¬ WeakHeadStep domainCode reduct)
     (domainNotPiType : domainCode.rootGenerator ≠ Generator.gen_piTyCode)
     (domainNotUniverse : domainCode.rootGenerator ≠ Generator.gen_universeCode)
+    (domainSN : IsStronglyNormalizing domainCode)
     (codomainReducibleType : IsReducibleTypeAt level codomainBase)
     (bodyMember : ∀ argument : RawTerm scope, IsStronglyNormalizing argument →
       IsReducibleMemberAt level codomainBase (RawTerm.subst0 body argument)) :
     IsReducibleMemberAt level
-      (piTyCodeCell domainCode (RawTerm.weaken codomainBase)) (lamCell body) := by
+      (piTyCodeCell domainCode (RawTerm.weaken codomainBase)) (lamCell domainCode body) := by
   have domainReducible : ReducibleTypeAt level domainCode IsStronglyNormalizing := by
     cases level with
     | zero => exact ReducibleTypeStep.neutral domainWeakHeadNormal domainNotPiType domainNotUniverse
     | succ predLevel =>
         exact ReducibleTypeStep.neutral domainWeakHeadNormal domainNotPiType domainNotUniverse
-  exact IsReducibleMemberAt.abstractionNonDependent domainReducible
+  exact IsReducibleMemberAt.abstractionNonDependent domainReducible domainSN
     (fun _argument argumentSN => argumentSN)
     (IsReducibleTypeAt.reducibleMemberCandidate codomainReducibleType) bodyMember
 
@@ -272,11 +294,14 @@ rules (`lambdaNeutralArrow` / `polymorphicIdentity`) can express; it is reachabl
 Witnesses that the term-formation reducibility rules cover data-former base types, the term-level companion to
 the type-level `IsSimplyTyped` Σ-leaf treatment. -/
 theorem IsReducibleMemberAt.sigmaIdentity {scope : Nat} {level : Nat}
-    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)} :
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (domainSN : IsStronglyNormalizing domainCode)
+    (codomainSN : IsStronglyNormalizing codomainCode) :
     IsReducibleMemberAt level
       (piTyCodeCell (sigmaTyCodeCell domainCode codomainCode)
         (RawTerm.weaken (sigmaTyCodeCell domainCode codomainCode)))
-      (lamCell (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) := by
+      (lamCell (sigmaTyCodeCell domainCode codomainCode)
+        (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) := by
   have sigmaWeakHeadNormal :
       ∀ reduct : RawTerm scope, ¬ WeakHeadStep (sigmaTyCodeCell domainCode codomainCode) reduct :=
     fun _reduct => WeakHeadStep.not_from_sigmaTyCode
@@ -286,11 +311,13 @@ theorem IsReducibleMemberAt.sigmaIdentity {scope : Nat} {level : Nat}
   have sigmaNotUniverse :
       (sigmaTyCodeCell domainCode codomainCode).rootGenerator ≠ Generator.gen_universeCode :=
     show Generator.gen_sigmaTyCode ≠ Generator.gen_universeCode by decide
+  have sigmaCellSN : IsStronglyNormalizing (sigmaTyCodeCell domainCode codomainCode) :=
+    sigmaTyCode_isStronglyNormalizing_of_domain_codomain domainSN codomainSN
   have codomainReducibleType : IsReducibleTypeAt level (sigmaTyCodeCell domainCode codomainCode) :=
     (IsSimplyTyped.leaf sigmaWeakHeadNormal sigmaNotPiType
       sigmaNotUniverse).reducibleAndMemberExtension.1 level
-  refine IsReducibleMemberAt.lambdaLeafDomain sigmaWeakHeadNormal sigmaNotPiType sigmaNotUniverse
-    codomainReducibleType ?_
+  refine IsReducibleMemberAt.lambdaLeafDomain sigmaWeakHeadNormal
+    sigmaNotPiType sigmaNotUniverse sigmaCellSN codomainReducibleType ?_
   intro argument argumentSN
   rw [show RawTerm.subst0 (variableCell ⟨0, Nat.zero_lt_succ scope⟩) argument = argument from
     RawTerm.subst0_var_zero argument]

@@ -50,7 +50,7 @@ theorem HasTypeDescPi.closedNormalFunctionIsLambda {profile : PolyProfile} {subj
     (typed : HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
       (piTyCodeCell outerDomain outerCodomain))
     (normal : RawTerm.isStepNormalForm subject) :
-    ∃ body : RawTerm 1, subject = lamCell body := by
+    ∃ (domainAnn : RawTerm 0) (body : RawTerm 1), subject = lamCell domainAnn body := by
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with
       headLam | headPi | headSigma | headUniverse | headList | headOption
@@ -88,7 +88,7 @@ theorem HasTypeDescPi.closedNormalTypeIsFormer {profile : PolyProfile} {subject 
     RawTerm.headGenerator subject = Generator.gen_optionCode := by
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with headLam | rest
-  · obtain ⟨body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
+  · obtain ⟨_domainAnn, body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [lamEq] at typed
     exact (lam_notTypedAtUniverseCode levelExpr flag typed).elim
   · exact rest

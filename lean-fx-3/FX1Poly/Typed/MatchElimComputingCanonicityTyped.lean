@@ -71,7 +71,7 @@ theorem closedOptionMatchIntoBoolComputes {profile : PolyProfile}
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (optionTypeCell elementType)) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell scrutinee boolTrueCell (lamCell (boolTrueCell : RawTerm 1))) out ∧
+      StepStar (optionMatchCell scrutinee boolTrueCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1))) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) := by
   obtain ⟨scrutValue, scrutReduces, scrutIsOption⟩ := closedOptionCanonicalForms scrutineeTyped
   rcases scrutIsOption with noneEq | ⟨inner, someEq⟩
@@ -80,7 +80,7 @@ theorem closedOptionMatchIntoBoolComputes {profile : PolyProfile}
       StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) Step.iotaOptionMatchNone,
       Or.inl rfl⟩
   · subst someEq
-    have betaStep : Step (appCell (lamCell (boolTrueCell : RawTerm 1)) inner) boolTrueCell := Step.beta
+    have betaStep : Step (appCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) inner) boolTrueCell := Step.beta
     exact ⟨boolTrueCell,
       StepStar.transLast
         (StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) Step.iotaOptionMatchSome)
@@ -100,20 +100,20 @@ theorem closedEitherMatchIntoBoolComputes {profile : PolyProfile}
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (eitherTypeCell leftType rightType)) :
     ∃ out : RawTerm 0,
-      StepStar (eitherMatchCell scrutinee (lamCell (boolTrueCell : RawTerm 1))
-        (lamCell (boolFalseCell : RawTerm 1))) out ∧
+      StepStar (eitherMatchCell scrutinee (lamCell boolTrueCell (boolTrueCell : RawTerm 1))
+        (lamCell boolTrueCell (boolFalseCell : RawTerm 1))) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) := by
   obtain ⟨scrutValue, scrutReduces, scrutIsEither⟩ := closedEitherCanonicalForms scrutineeTyped
   rcases scrutIsEither with ⟨inner, inlEq⟩ | ⟨inner, inrEq⟩
   · subst inlEq
-    have betaStep : Step (appCell (lamCell (boolTrueCell : RawTerm 1)) inner) boolTrueCell := Step.beta
+    have betaStep : Step (appCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) inner) boolTrueCell := Step.beta
     exact ⟨boolTrueCell,
       StepStar.transLast
         (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) Step.iotaEitherMatchInl)
         betaStep,
       Or.inl rfl⟩
   · subst inrEq
-    have betaStep : Step (appCell (lamCell (boolFalseCell : RawTerm 1)) inner) boolFalseCell := Step.beta
+    have betaStep : Step (appCell (lamCell boolTrueCell (boolFalseCell : RawTerm 1)) inner) boolFalseCell := Step.beta
     exact ⟨boolFalseCell,
       StepStar.transLast
         (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) Step.iotaEitherMatchInr)
@@ -125,7 +125,7 @@ theorem closedEitherMatchIntoBoolComputes {profile : PolyProfile}
 on a real typed option (`optionNone : option(Type@0)`). -/
 theorem closedOptionMatchIntoBoolComputes.smoke {profile : PolyProfile} (flag : UniverseFlag) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell optionNoneCell boolTrueCell (lamCell (boolTrueCell : RawTerm 1))) out ∧
+      StepStar (optionMatchCell optionNoneCell boolTrueCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1))) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   closedOptionMatchIntoBoolComputes (profile := profile)
     (Or.inl (HasTypeDescOptionIntro.optionNoneOfUniverseCodeTyped flag))
@@ -136,7 +136,7 @@ a typed `Inl` scrutinee — computes to `boolTrue` (the left branch).  Witnesses
 theorem closedEitherMatchIntoBoolComputes.smoke {profile : PolyProfile} (flag : UniverseFlag) :
     ∃ out : RawTerm 0,
       StepStar (eitherMatchCell (eitherInlCell (universeCodeCell LevelExpr.lzero flag))
-        (lamCell (boolTrueCell : RawTerm 1)) (lamCell (boolFalseCell : RawTerm 1))) out ∧
+        (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) (lamCell boolTrueCell (boolFalseCell : RawTerm 1))) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   closedEitherMatchIntoBoolComputes (profile := profile)
     (Or.inl (HasTypeDescEitherIntro.eitherInlOfUniverseCodeTyped flag))

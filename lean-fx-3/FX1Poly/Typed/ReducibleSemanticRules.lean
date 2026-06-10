@@ -112,11 +112,12 @@ exposing the γ-closed simple arrow exactly in the shape the shipped raw
 introduces no universe nesting.  This is the binder arm of the SIMPLY-TYPED fundamental theorem; the
 DEPENDENT `piIntro` (per-argument codomain) belongs to the large-elimination lane. -/
 theorem IsReducibleMemberAt.abstractionNonDependentUnderSubst {scope targetScope : Nat} {level : Nat}
-    {domainCode codomainCodeBase : RawTerm scope} {body : RawTerm (scope + 1)}
+    {domainAnn domainCode codomainCodeBase : RawTerm scope} {body : RawTerm (scope + 1)}
     {domainCandidate codomainCandidate : RawTerm targetScope → Prop}
     (substitution : RawTermSubst scope targetScope)
     (domainReducible : ReducibleTypeAt level
       (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainAnn))
     (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainReducible : ReducibleTypeAt level
@@ -126,7 +127,7 @@ theorem IsReducibleMemberAt.abstractionNonDependentUnderSubst {scope targetScope
         (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
     IsReducibleMemberAt level
       (RawTerm.subst substitution (piTyCodeCell domainCode (RawTerm.weaken codomainCodeBase)))
-      (RawTerm.subst substitution (lamCell body)) := by
+      (RawTerm.subst substitution (lamCell domainAnn body)) := by
   have typeEq :
       RawTerm.subst substitution (piTyCodeCell domainCode (RawTerm.weaken codomainCodeBase))
         = piTyCodeCell (RawTerm.subst substitution domainCode)
@@ -136,7 +137,7 @@ theorem IsReducibleMemberAt.abstractionNonDependentUnderSubst {scope targetScope
       (subst_lift_weaken_commute substitution codomainCodeBase)
   rw [typeEq, subst_lamCell]
   exact IsReducibleMemberAt.abstractionNonDependent
-    domainReducible domainArgumentsSN codomainReducible bodyReducible
+    domainReducible domainAnnSN domainArgumentsSN codomainReducible bodyReducible
 
 /-- **Semantic DEPENDENT Π introduction under a closing substitution (the dependent `piIntro` arm).**  The
 dependent twin of `abstractionNonDependentUnderSubst`: the codomain candidate `codomainCandidate argument`
@@ -152,12 +153,13 @@ only the `rfl` cell-substitutions `subst_piTyCodeCell` / `subst_lamCell` are nee
 substitution under the binder as `iterateLiftRaw substitution 1 ≡ RawTermSubst.lift substitution`) — NO
 weakening-commutation.  The `level` is threaded unchanged. -/
 theorem IsReducibleMemberAt.abstractionUnderSubst {scope targetScope : Nat} {level : Nat}
-    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainAnn domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     {domainCandidate : RawTerm targetScope → Prop}
     {codomainCandidate : RawTerm targetScope → (RawTerm targetScope → Prop)}
     (substitution : RawTermSubst scope targetScope)
     (domainReducible : ReducibleTypeAt level
       (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainAnn))
     (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
@@ -169,10 +171,10 @@ theorem IsReducibleMemberAt.abstractionUnderSubst {scope targetScope : Nat} {lev
         (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
     IsReducibleMemberAt level
       (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode))
-      (RawTerm.subst substitution (lamCell body)) := by
+      (RawTerm.subst substitution (lamCell domainAnn body)) := by
   rw [subst_piTyCodeCell, subst_lamCell]
   exact IsReducibleMemberAt.abstraction
-    domainReducible domainArgumentsSN codomainReducible bodyReducible
+    domainReducible domainAnnSN domainArgumentsSN codomainReducible bodyReducible
 
 /-- **Semantic non-dependent (simply-typed) Π formation under a closing substitution (the simple-arrow
 `Π`-formation arm).**  `gen_piTyCode (A, weaken B)` is a reducible TYPE at the non-dependent arrow candidate
@@ -258,11 +260,12 @@ argument, and the codomain-reducibility premise is discharged from existence by
 `IsReducibleMemberAt.abstractionCanonical`.  This is the choice-free dependent generalization of
 `abstractionNonDependentUnderSubst`; the binder arm of the dependent fundamental theorem. -/
 theorem IsReducibleMemberAt.abstractionCanonicalUnderSubst {scope targetScope : Nat} {level : Nat}
-    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainAnn domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     {domainCandidate : RawTerm targetScope → Prop}
     (substitution : RawTermSubst scope targetScope)
     (domainReducible : ReducibleTypeAt level
       (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainAnn))
     (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainExists : ∀ argument : RawTerm targetScope, domainCandidate argument →
@@ -274,10 +277,10 @@ theorem IsReducibleMemberAt.abstractionCanonicalUnderSubst {scope targetScope : 
         (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
     IsReducibleMemberAt level
       (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode))
-      (RawTerm.subst substitution (lamCell body)) := by
+      (RawTerm.subst substitution (lamCell domainAnn body)) := by
   rw [subst_piTyCodeCell, subst_lamCell]
   exact IsReducibleMemberAt.abstractionCanonical
-    domainReducible domainArgumentsSN codomainExists bodyReducible
+    domainReducible domainAnnSN domainArgumentsSN codomainExists bodyReducible
 
 /-- **A formation generator's cell admits no weak-head step (the `genFormationPi` arm's weak-head-normality
 obligation).**  The grown engine's sole formation arm `HasTypeDescPi.genFormationPi` is generic over

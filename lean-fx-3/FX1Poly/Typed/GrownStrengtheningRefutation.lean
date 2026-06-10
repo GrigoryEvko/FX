@@ -45,7 +45,8 @@ open FX1Poly.Core FX1Poly.Foundation FX1Poly.Universe
 /-- The escaping reclassifier `(λ. Type@1) (var 0)` — β-convertible to `Type@1` but syntactically
 mentioning the fresh variable, hence outside the weaken image from scope 0. -/
 def escapingReclassifier : RawTerm 1 :=
-  appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard))
+  appCell (lamCell (typeZeroCode 1)
+      (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard))
     (variableCell ⟨0, Nat.zero_lt_succ 0⟩)
 
 /-- **The counterexample typing**: in `[Type@0]`, the WEAKENED subject `weaken Type@0` grown-types
@@ -67,7 +68,8 @@ theorem weakenedSubjectGrownTypedAtEscapingClassifier (profile : PolyProfile) :
   -- the function part (λ. Type@1) : Π Type@0. Type@2 via piIntro
   have functionTyped : HasTypeDescPi profile
       ((TypingContext.empty (profile := profile)).cons (typeZeroCode 0))
-      (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard))
+      (lamCell (typeZeroCode 1)
+        (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard))
       (piTyCodeCell (typeZeroCode 1)
         (universeCodeCell LevelExpr.lzero.lsucc.lsucc UniverseFlag.standard)) :=
     HasTypeDescPi.piIntro LevelExpr.lzero.lsucc LevelExpr.lzero.lsucc.lsucc.lsucc

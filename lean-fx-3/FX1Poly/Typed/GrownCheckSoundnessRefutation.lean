@@ -38,20 +38,38 @@ reassembly) remain the toolbox for whichever annotated judgment lands. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Foundation
 
 /-- The Π-former body `Π (var 0). Type@0` — the recursive-type generator's body. -/
 def piFormerBody : RawTerm 1 :=
   piTyCodeCell (variableCell ⟨0, Nat.succ_pos 0⟩) (typeZeroCode 2)
 
-/-- The Π-former generator `λT. Π T. Type@0`. -/
+/-- The Π-former generator `λT. Π T. Type@0`.  Church-annotated with the recursive type `X` itself
+(`recursiveSelfApplicationLambda`'s domain): under T2 the checker reads the λ-domain from the
+syntactic annotation, so the exploit that routes the floating Π-code through `X` must pin the
+annotation to `X` (the universe-anchored domain the body's var leaves absorb). -/
 def piFormerLambda : RawTerm 0 :=
-  lamCell piFormerBody
+  lamCell (typeZeroCode 0) piFormerBody
 
 /-- The recursive Π-type `X := curryOmega (λT. Π T. Type@0)` — the ill-founded type code with
 `X ~Conv~ Π X. Type@0`. -/
 def recursivePiType : RawTerm 0 :=
   curryOmega piFormerLambda
+
+/-- The self-applicator `λx. x x` Church-annotated with the recursive type `X` as its domain — the
+T2 form of the refutation's witness.  Under Church-style binders the checker reads the λ-domain from
+the annotation, so the exploit pins the annotation to `X` (rather than letting the old Curry checker
+choose it freely); the `unitCell`-annotated `selfApplicationLambda` from the SN corpus would pin the
+domain to `unit`, which does not route the floating Π-code through `X`. -/
+def recursiveSelfApplicationLambda : RawTerm 0 :=
+  lamCell recursivePiType
+    (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+      (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+
+/-- `Ω` over the `X`-annotated self-applicator — the same divergent self-application, untypable for
+the same SN-043 reason (its β-self-step is `Step.beta`, annotation discarded). -/
+def recursiveOmega : RawTerm 0 :=
+  appCell recursiveSelfApplicationLambda recursiveSelfApplicationLambda
 
 /-- `X` reduces to `Π X. Type@0` in two steps: the curry unfolding, then β (the subst0 of the
 Π-former body at `X` computes definitionally to `Π X. Type@0`). -/
@@ -82,39 +100,61 @@ theorem selfApplicationBodyChecks (profile : PolyProfile) :
     (GrownCheck.var ⟨0, Nat.succ_pos 0⟩ (Conv.refl _))
     (Conv.refl _)
 
-/-- The self-applicator `λx. x x` CHECKS at the honest-looking Π-code `Π X. Type@0`. -/
+/-- The `X`-annotated self-applicator CHECKS at the honest-looking Π-code `Π X. Type@0` — under T2
+the lam arm reads the domain from the annotation, which is exactly `X`. -/
 theorem selfApplicationChecksAtPi (profile : PolyProfile) :
     GrownCheck profile (TypingContext.empty (profile := profile))
-      selfApplicationLambda
+      recursiveSelfApplicationLambda
       (piTyCodeCell recursivePiType (typeZeroCode 1)) :=
   GrownCheck.lam recursivePiType (typeZeroCode 1)
     (Conv.refl _)
     (selfApplicationBodyChecks profile)
 
-/-- The self-applicator ALSO checks at the recursive type `X` itself (the unfolding read
+/-- The `X`-annotated self-applicator ALSO checks at the recursive type `X` itself (the unfolding read
 backwards through the λ-arm's `Conv` leaf). -/
 theorem selfApplicationChecksAtRecursiveType (profile : PolyProfile) :
     GrownCheck profile (TypingContext.empty (profile := profile))
-      selfApplicationLambda
+      recursiveSelfApplicationLambda
       recursivePiType :=
   GrownCheck.lam recursivePiType (typeZeroCode 1)
     recursivePiType_convPi.sym
     (selfApplicationBodyChecks profile)
 
-/-- ★ **Ω CHECKS at `Type@0`** — the untypable diverging combinator passes the raw relation at a
-TYPED target, by routing the app arm's floating Π-code through the recursive type `X`. -/
+/-- ★ **`recursiveOmega` CHECKS at `Type@0`** — the untypable diverging combinator passes the raw
+relation at a TYPED target, by routing the app arm's floating Π-code through the recursive type `X`
+(the function and argument are the SAME `X`-annotated self-applicator). -/
 theorem omegaChecksAtTypeZero (profile : PolyProfile) :
     GrownCheck profile (TypingContext.empty (profile := profile))
-      omegaCombinator
+      recursiveOmega
       (typeZeroCode 0) :=
   GrownCheck.app recursivePiType (typeZeroCode 1)
     (selfApplicationChecksAtPi profile)
     (selfApplicationChecksAtRecursiveType profile)
     (Conv.refl _)
 
+/-- `recursiveOmega` β-self-steps (the annotation is discarded by β, the body `(var 0)(var 0)`
+substituted by the self-applicator recopies it), so it diverges and is NOT strongly normalizing. -/
+theorem recursiveOmega_betaSelfStep : Step recursiveOmega recursiveOmega :=
+  Step.beta
+
+/-- `recursiveOmega` is NOT strongly normalizing — it self-loops under `Step`. -/
+theorem recursiveOmega_notStronglyNormalizing :
+    ¬ IsStronglyNormalizing recursiveOmega :=
+  fun stronglyNormalizing =>
+    accessibleElementNotSelfRelated stronglyNormalizing recursiveOmega_betaSelfStep
+
+/-- `recursiveOmega` has NO closed type — were it typed, SN-043 would force it strongly normalizing,
+contradicting its self-loop. -/
+theorem recursiveOmega_notClosedWellTyped {profile : PolyProfile} :
+    ¬ ∃ classifier : RawTerm 0,
+      HasTypeDescPi profile TypingContext.empty recursiveOmega classifier :=
+  fun ⟨_classifier, typing⟩ =>
+    recursiveOmega_notStronglyNormalizing
+      (HasTypeDescPi.closedStronglyNormalizing typing)
+
 /-- ★★ **Raw-relation soundness is FALSE, even with a typed target and a well-formed context**:
-were every `GrownCheck` at a typed target sound, Ω would be well-typed — contradicting
-`omegaCombinator_notClosedWellTyped` (SN-043). -/
+were every `GrownCheck` at a typed target sound, `recursiveOmega` would be well-typed — contradicting
+`recursiveOmega_notClosedWellTyped` (SN-043). -/
 theorem grownCheckRawSoundness_isFalse (profile : PolyProfile) :
     ¬ (∀ (subject target : RawTerm 0) (targetLevel : LevelExpr) (targetFlag : UniverseFlag),
         WfContextDescPi (TypingContext.empty (profile := profile)) →
@@ -123,9 +163,9 @@ theorem grownCheckRawSoundness_isFalse (profile : PolyProfile) :
         GrownCheck profile TypingContext.empty subject target →
         HasTypeDescPi profile TypingContext.empty subject target) := by
   intro soundnessClaim
-  exact omegaCombinator_notClosedWellTyped
+  exact recursiveOmega_notClosedWellTyped
     ⟨typeZeroCode 0,
-      soundnessClaim omegaCombinator (typeZeroCode 0) LevelExpr.lzero.lsucc
+      soundnessClaim recursiveOmega (typeZeroCode 0) LevelExpr.lzero.lsucc
         UniverseFlag.standard
         WfContextDescPi.emptyIsWellFormed
         (HasTypeDescPi.ofFormation

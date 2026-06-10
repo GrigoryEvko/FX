@@ -45,7 +45,7 @@ all on shipped zero-axiom lemmas.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Foundation
 
 /-- **The dependent fundamental theorem's conclusion shape over the ∀-level environment.**  A subject is, for
 every closing substitution into a non-empty scope and every all-levels reducible environment, a reducible
@@ -150,12 +150,15 @@ theorem fundamentalPiIntroAtAll {profile : PolyProfile} {scope : Nat}
             (RawTerm.subst0
               (RawTerm.subst (RawTermSubst.lift substitution) codomainCode) argument)
             (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
-    FundamentalConclusionAtAll context (lamCell body) (piTyCodeCell domainCode codomainCode) := by
+    FundamentalConclusionAtAll context (lamCell domainCode body)
+      (piTyCodeCell domainCode codomainCode) := by
   intro _targetScope substitution env predLevel
   have domainMember := domainFundamental substitution env (predLevel + 1)
   rw [subst_universeCodeCell] at domainMember
+  have domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainCode) :=
+    domainMember.stronglyNormalizing
   obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
-  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible domainAnnSN
     (fun _argument argumentInDomain =>
       domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
     ?codomainExists ?bodyReducible

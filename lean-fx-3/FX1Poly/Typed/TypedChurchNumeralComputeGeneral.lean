@@ -53,7 +53,7 @@ reshaped form via `rw [← reshape]` — lifted through function-position congru
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core StepStar
+open FX1Poly.Core FX1Poly.Universe StepStar
 
 /-- **The symbolic heart (β3): applying the base into the iterate.**  `subst0 ((weaken stepFn)^n (var 0)) base =
 stepFn^n base` — the final β-contractum reshape.  Via `subst_iteratedApplication` + `weaken_subst_singleton`
@@ -71,36 +71,49 @@ theorem iteratedApplication_subst0_weaken_step (depth : Nat) (stepFn base : RawT
       (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) = base := rfl
   rw [stepEq, baseEq]
 
-/-- **β1: applying the (unused) type argument discards the `A`-binder.**  `subst0 (λf.λx. f^n x) typeA =
-λf.λx. f^n x` — the iterate never references `A`, so the doubly-lifted singleton fixes both bound variables. -/
+/-- **β1: applying the (unused) type argument discards the `A`-binder.**  `subst0 (λ(f:A→A).λ(x:A). f^n x) typeA
+= λ(f: typeA→typeA).λ(x: weaken typeA). f^n x`.  Under T2 the two inner lambdas carry the A-referencing domains
+`A→A` / `A`, so the type substitution rewrites them (the step domain to `typeA→typeA`, the base domain to
+`weaken typeA`); the body iterate references only `f`/`x` (`var 1`/`var 0`), never `A`, so the doubly-lifted
+singleton fixes it (`subst_iteratedApplication` + `rfl`).  The substituted domains are discarded by the SUBSEQUENT
+β. -/
 theorem churchNumeral_substType (depth : Nat) (typeA : RawTerm 0) :
     RawTerm.subst0
-        (lamCell (lamCell (iteratedApplication depth
-          (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
-          (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3)))) ) typeA
-      = lamCell (lamCell (iteratedApplication depth
-          (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
-          (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))) := by
-  unfold RawTerm.subst0
-  show lamCell (lamCell (RawTerm.subst
+        (lamCell churchNumeralStepBinderDomain
+          (lamCell churchNumeralBaseBinderDomain
+            (iteratedApplication depth
+              (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 1)⟩ : Fin 3))
+              (variableCell (⟨0, Nat.succ_pos 2⟩ : Fin 3))))) typeA
+      = lamCell (piTyCodeCell typeA (RawTerm.weaken typeA))
+          (lamCell (RawTerm.weaken typeA)
+            (iteratedApplication depth
+              (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+              (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))) := by
+  unfold RawTerm.subst0 churchNumeralStepBinderDomain churchNumeralBaseBinderDomain
+  show lamCell _ (lamCell _ (RawTerm.subst
       (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton typeA)))
       (iteratedApplication depth _ _))) = _
   rw [subst_iteratedApplication]
   rfl
 
-/-- **β2: applying the step argument substitutes it for `f`.**  `subst0 (λx. f^n x) handlerF =
-λx. (weaken handlerF)^n x` — the step is weakened once under the remaining `x`-binder. -/
-theorem churchNumeral_substStep (depth : Nat) (handlerF : RawTerm 0) :
+/-- **β2: applying the step argument substitutes it for `f`.**  `subst0 (λ(x: weaken typeA). f^n x) handlerF =
+λ(x: weaken² typeA). (weaken handlerF)^n x` — the step is weakened once under the remaining `x`-binder; the base
+domain `weaken typeA` is weakened again by the lifted singleton.  The substituted base domain is discarded by the
+final β. -/
+theorem churchNumeral_substStep (depth : Nat) (typeA handlerF : RawTerm 0) :
     RawTerm.subst0
-        (lamCell (iteratedApplication depth
-          (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
-          (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))) handlerF
-      = lamCell (iteratedApplication depth (RawTerm.weaken handlerF)
-          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) := by
+        (lamCell (RawTerm.weaken typeA)
+          (iteratedApplication depth
+            (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2)))) handlerF
+      = lamCell typeA
+          (iteratedApplication depth (RawTerm.weaken handlerF)
+            (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) := by
   unfold RawTerm.subst0
-  show lamCell (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerF))
-      (iteratedApplication depth _ _)) = _
-  rw [subst_iteratedApplication]
+  show lamCell (RawTerm.subst (RawTermSubst.singleton handlerF) (RawTerm.weaken typeA))
+      (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton handlerF))
+        (iteratedApplication depth _ _)) = _
+  rw [RawTerm.weaken_subst_singleton typeA handlerF, subst_iteratedApplication]
   rfl
 
 /-- ★ **The general Church-numeral iteration computation.**  For every depth `n` and ANY closed `typeA`,
@@ -112,19 +125,32 @@ theorem churchNumeral_appliedReducesToIterate_general (depth : Nat) (typeA handl
     StepStar
       (appCell (appCell (appCell (churchNumeralLambda depth) typeA) handlerF) baseX)
       (iteratedApplication depth handlerF baseX) := by
+  -- The two inner lambdas after the type binder, with their (A-referencing) domain annotations.  Under T2 each
+  -- `lamCell` carries a domain, so the three β-steps substitute through annotated lambdas; the domains are
+  -- discarded by the SUBSEQUENT β (annotation discarded at contraction), so the final iterate is unchanged.
+  -- The intermediate reducts are left as literal `subst0` expressions and the body content is normalised by the
+  -- `churchNumeral_iterateBody_*` lemmas, so the proof never needs the closed form of a substituted domain.
   have step1 : Step (appCell (churchNumeralLambda depth) typeA)
-      (lamCell (lamCell (iteratedApplication depth
-        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
-        (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))) := by
+      (lamCell (piTyCodeCell typeA (RawTerm.weaken typeA))
+        (lamCell (RawTerm.weaken typeA)
+          (iteratedApplication depth
+            (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))) := by
     rw [← churchNumeral_substType depth typeA]; exact Step.beta
-  have step2 : Step (appCell (lamCell (lamCell (iteratedApplication depth
-        (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
-        (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))) handlerF)
-      (lamCell (iteratedApplication depth (RawTerm.weaken handlerF)
-        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) := by
-    rw [← churchNumeral_substStep depth handlerF]; exact Step.beta
-  have step3 : Step (appCell (lamCell (iteratedApplication depth (RawTerm.weaken handlerF)
-        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) baseX)
+  have step2 : Step
+      (appCell (lamCell (piTyCodeCell typeA (RawTerm.weaken typeA))
+        (lamCell (RawTerm.weaken typeA)
+          (iteratedApplication depth
+            (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+            (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))) handlerF)
+      (lamCell typeA
+        (iteratedApplication depth (RawTerm.weaken handlerF)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) := by
+    rw [← churchNumeral_substStep depth typeA handlerF]; exact Step.beta
+  have step3 : Step
+      (appCell (lamCell typeA
+        (iteratedApplication depth (RawTerm.weaken handlerF)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) baseX)
       (iteratedApplication depth handlerF baseX) := by
     rw [← iteratedApplication_subst0_weaken_step depth handlerF baseX]; exact Step.beta
   exact StepStar.trans

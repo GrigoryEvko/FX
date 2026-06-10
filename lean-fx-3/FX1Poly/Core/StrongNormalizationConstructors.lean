@@ -100,17 +100,22 @@ theorem isStronglyNormalizing_of_twoChildCong
 normalizing.  The body lives under one fresh binder, but the one-child closure
 lemma is scope-polymorphic, so no special binder transport is needed. -/
 theorem lam_isStronglyNormalizing_of_body {scope : Nat}
-    {body : RawTerm (scope + 1)}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+    (domainAnnTerminates : IsStronglyNormalizing domainAnn)
     (bodyTerminates : IsStronglyNormalizing body) :
     IsStronglyNormalizing
-      (.mkGen .gen_lam () (.childCons body .childNil) : RawTerm scope) :=
-  isStronglyNormalizing_of_oneChildCong
-    (childScope := scope + 1)
+      (.mkGen .gen_lam ()
+        (.childCons domainAnn (.childCons body .childNil)) : RawTerm scope) :=
+  isStronglyNormalizing_of_twoChildCong
+    (firstScope := scope)
+    (secondScope := scope + 1)
     (parentScope := scope)
-    (fun currentBody =>
-      (.mkGen .gen_lam () (.childCons currentBody .childNil) :
+    (fun currentDomain currentBody =>
+      (.mkGen .gen_lam ()
+        (.childCons currentDomain (.childCons currentBody .childNil)) :
         RawTerm scope))
     (fun parentStep => Step.from_lam parentStep)
+    domainAnnTerminates
     bodyTerminates
 
 /-- Cubical path abstraction is strongly normalizing when its body is strongly

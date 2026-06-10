@@ -64,7 +64,7 @@ theorem hasTypeDescPi_genElimIota_viaElimDesc {profile : PolyProfile} {scope : N
     {codomainCode : RawTerm (scope + 1)}
     (rule : ElimRuleDesc) (isElim : elimRuleDescOf .gen_app = some rule)
     (functionTyped :
-      HasTypeDescPi profile context (lamCell body) (piTyCodeCell domainCode codomainCode))
+      HasTypeDescPi profile context (lamCell domainCode body) (piTyCodeCell domainCode codomainCode))
     (argumentTyped : HasTypeDescPi profile context argument domainCode)
     (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context (RawTerm.subst0 body argument)
@@ -73,7 +73,7 @@ theorem hasTypeDescPi_genElimIota_viaElimDesc {profile : PolyProfile} {scope : N
     Option.some.inj (isElim.symm.trans elimRuleDescOf_app)
   subst hRule
   have redexTyped :
-      HasTypeDescPi profile context (appCell (lamCell body) argument)
+      HasTypeDescPi profile context (appCell (lamCell domainCode body) argument)
         (RawTerm.subst0 codomainCode argument) :=
     HasTypeDescPi.piElim functionTyped argumentTyped
   exact HasTypeDescPi.betaSubjectReduction redexTyped wellFormed
@@ -93,10 +93,10 @@ theorem hasTypeDescPi_genElim_computesTypeStably {profile : PolyProfile} {scope 
     {codomainCode : RawTerm (scope + 1)}
     (rule : ElimRuleDesc) (isElim : elimRuleDescOf .gen_app = some rule)
     (functionTyped :
-      HasTypeDescPi profile context (lamCell body) (piTyCodeCell domainCode codomainCode))
+      HasTypeDescPi profile context (lamCell domainCode body) (piTyCodeCell domainCode codomainCode))
     (argumentTyped : HasTypeDescPi profile context argument domainCode)
     (wellFormed : WfContextDescPi context) :
-    HasTypeDescPi profile context (appCell (lamCell body) argument)
+    HasTypeDescPi profile context (appCell (lamCell domainCode body) argument)
         (rule.outputType scope codomainCode argument)
       ∧ HasTypeDescPi profile context (RawTerm.subst0 body argument)
         (rule.outputType scope codomainCode argument) := by

@@ -398,11 +398,11 @@ from the source spine, then feeds the generic `subst0` theorem through
 the existing beta assembly bridge. -/
 theorem HasCertifiedCellDim0.preservedByBeta
     {profile : PolyProfile} {scope : Nat}
-    {body : RawTerm (scope + 1)} {rawArg : RawTerm scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} {rawArg : RawTerm scope}
     (sourceCert : HasCertifiedCellDim0 (profile := profile)
       ((.mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons body .childNil))
+          (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
           (.childCons rawArg .childNil))) : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.subst0 body rawArg) := by
@@ -414,7 +414,7 @@ theorem HasCertifiedCellDim0.preservedByBeta
           PolyCell profile .term 0 scope CellBoundary.trivial
             (.termBase rawArg) :=
         spine.tail.headAtDim0 rfl
-      exact HasCertifiedCellDim0.beta_redex_assembly body rawArg
+      exact HasCertifiedCellDim0.beta_redex_assembly domainAnn body rawArg
         originalSourceCert
         (fun bodyCert _argCert =>
           HasCertifiedCellDim0.preservedBySubst0 bodyCert argCell)

@@ -93,7 +93,7 @@ theorem fundamentalPiIntroNonDependentAtAllFromUniformVectorPremise {profile : P
     (bodyFundamental :
       IsFundamentalConclusionAtUniformVector (context.cons domainCode) body
         (RawTerm.weaken codomainCodeBase)) :
-    FundamentalConclusionAtAll context (lamCell body)
+    FundamentalConclusionAtAll context (lamCell domainCode body)
       (piTyCodeCell domainCode (RawTerm.weaken codomainCodeBase)) :=
   fundamentalPiIntroNonDependentAtAll domainFundamental codomainFundamental
     (fun _targetScope substitution env predLevel {domainCandidate codomainCandidate}

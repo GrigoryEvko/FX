@@ -83,8 +83,8 @@ theorem lam_etaLive_betaInert :
 
 /-! ## completeness — every η-source is detected -/
 
-theorem hasRootEtaSource_etaLamSource {scope : Nat} (innerFunction : RawTerm scope) :
-    (RawTerm.etaLamSource innerFunction).hasRootEtaSource = true := rfl
+theorem hasRootEtaSource_etaLamSource {scope : Nat} (domainAnn innerFunction : RawTerm scope) :
+    (RawTerm.etaLamSource domainAnn innerFunction).hasRootEtaSource = true := rfl
 theorem hasRootEtaSource_etaPairSource {scope : Nat} (pairTerm : RawTerm scope) :
     (RawTerm.etaPairSource pairTerm).hasRootEtaSource = true := rfl
 theorem hasRootEtaSource_etaPathLamSource {scope : Nat} (innerPath : RawTerm scope) :

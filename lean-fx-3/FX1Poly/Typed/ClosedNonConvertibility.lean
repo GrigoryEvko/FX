@@ -51,13 +51,13 @@ Both are normal (`rfl`); their head generators differ (`gen_universeCode` vs `ge
 normal-form characterization a conversion would force the impossible syntactic equality. -/
 theorem closedUniverseCode_not_conv_identity (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ¬ Conv (universeCodeCell levelExpr flag : RawTerm 0)
-        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) := by
+        (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) := by
   intro convertibility
   have universeNormal :
       RawTerm.isStepNormalForm (universeCodeCell levelExpr flag : RawTerm 0) := rfl
   have identityNormal :
       RawTerm.isStepNormalForm
-        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) := rfl
+        (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) := rfl
   have termsEqual :=
     (closedNormalConv_iff_syntacticEq universeNormal identityNormal).mp convertibility
   exact Generator.noConfusion (congrArg RawTerm.headGenerator termsEqual)
@@ -81,12 +81,12 @@ theorem closedUniverseCode_not_conv_piCode (levelExpr : LevelExpr) (flag : Unive
 /-- **Negative non-vacuity (3/3): the closed identity is NOT convertible to a Π type code.**  Head generators
 `gen_lam` vs `gen_piTyCode` differ. -/
 theorem closedIdentity_not_conv_piCode (levelExpr : LevelExpr) (flag : UniverseFlag) :
-    ¬ Conv (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0)
+    ¬ Conv (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0)
         (piTyCodeCell (universeCodeCell levelExpr flag) (universeCodeCell levelExpr flag)) := by
   intro convertibility
   have identityNormal :
       RawTerm.isStepNormalForm
-        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) := rfl
+        (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) := rfl
   have piCodeNormal :
       RawTerm.isStepNormalForm
         (piTyCodeCell (universeCodeCell levelExpr flag)

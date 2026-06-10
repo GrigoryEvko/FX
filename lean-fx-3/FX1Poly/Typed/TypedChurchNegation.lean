@@ -61,8 +61,9 @@ boolean `b` (de Bruijn `var 0`) as a selector over the FLIPPED candidate pair `(
 so the branch `b` would have selected is replaced by the opposite Church boolean.  The branches are weakened
 under the `λb.` binder. -/
 abbrev churchNotLambda : RawTerm 0 :=
-  lamCell (appCell (appCell (appCell RawTerm.newestVar (RawTerm.weaken branchMotivePlaceholder))
-    (RawTerm.weaken churchFalseLambda)) (RawTerm.weaken churchTrueLambda))
+  lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+    (appCell (appCell (appCell RawTerm.newestVar (RawTerm.weaken branchMotivePlaceholder))
+      (RawTerm.weaken churchFalseLambda)) (RawTerm.weaken churchTrueLambda))
 
 /-- The β-contractum reshape: substituting `boolArg` for the bound `var 0` in the body of `churchNot` collapses
 each weakened constant back to itself (`weaken_subst_singleton`) and resolves the head `var 0` to `boolArg`,

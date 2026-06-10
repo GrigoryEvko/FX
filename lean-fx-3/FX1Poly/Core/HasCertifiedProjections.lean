@@ -232,20 +232,25 @@ theorem HasCertifiedCellDim0.refl_witness_projection
 
 /-- **Projection: `gen_lam` → body child's cert at scope + 1.**
 
-BINDER CASE.  The body lives at `scope + 1` because lam's only
-child has scopeShift = 1.  The spine's headAtDim0 returns a
+BINDER CASE.  `gen_lam` now carries two children (binderShifts
+`[0,1]`): a domain annotation at the parent scope followed by
+the body under one binder.  The body lives at `scope + 1`
+because lam's body child has scopeShift = 1.  After peeling the
+domain head with `tail`, the spine's `headAtDim0` returns a
 `PolyCell ... 0 (parentScope + 1) ... (.termBase body)`, which
 wraps as `HasCertifiedCellDim0 body` at scope+1. -/
 theorem HasCertifiedCellDim0.lam_body_projection
     {profile : PolyProfile} {scope : Nat}
+    (domainAnn : RawTerm scope)
     (bodyTerm : RawTerm (scope + 1))
     (cert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_lam ()
-                (.childCons bodyTerm .childNil)) : RawTerm scope)) :
+                (.childCons domainAnn
+                  (.childCons bodyTerm .childNil))) : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) bodyTerm := by
   obtain ⟨_, cell⟩ := cert
   cases cell with
   | gen _ _ spine =>
-    exact ⟨.term, spine.headAtDim0 rfl⟩
+    exact ⟨.term, spine.tail.headAtDim0 rfl⟩
 
 end FX1Poly.Core

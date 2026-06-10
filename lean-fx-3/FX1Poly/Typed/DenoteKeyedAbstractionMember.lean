@@ -55,11 +55,12 @@ with the dependent-arrow candidate via the `piType` constructor; membership of `
 `DependentArrowCandidate.abstraction`, whose codomain head-expansion-closure premise is SN-D1
 `ReducibleTypeAtDenote.headExpansionClosed`. -/
 theorem abstractionMemberAtDenote {scope : Nat} (env : Nat → Nat) (level : Nat)
-    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    {domainAnn domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {domainCandidate : RawTerm scope → Prop}
     {codomainCandidate : RawTerm scope → (RawTerm scope → Prop)}
     {body : RawTerm (scope + 1)}
     (domainReducible : ReducibleTypeAtDenote env level domainCode domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (codomainReducible : ∀ argument : RawTerm scope, domainCandidate argument →
         ReducibleTypeAtDenote env level (RawTerm.subst0 codomainCode argument)
           (codomainCandidate argument))
@@ -69,10 +70,10 @@ theorem abstractionMemberAtDenote {scope : Nat} (env : Nat → Nat) (level : Nat
         codomainCandidate argument (RawTerm.subst0 body argument)) :
     IsReducibleMemberAtDenote env level
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
-      (.mkGen .gen_lam () (.childCons body .childNil)) :=
+      (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) :=
   ⟨DependentArrowCandidate domainCandidate codomainCandidate,
     ReducibleTypeStepDenote.piType codomainCandidate domainReducible codomainReducible,
-    DependentArrowCandidate.abstraction domainArgumentsSN
+    DependentArrowCandidate.abstraction domainAnnSN domainArgumentsSN
       (fun argument argumentReducible =>
         (codomainReducible argument argumentReducible).headExpansionClosed)
       bodyReducible⟩

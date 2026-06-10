@@ -68,7 +68,9 @@ returns the constant lambda `λy.Type@0`, discarding its first argument.  Built 
 an inner `piIntro` (`λy.Type@0 : Π(Type@1, Type@1)` in context `[Type@1]`). -/
 theorem nestedConstantLambdaTyping {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescPi profile TypingContext.empty
-      (lamCell (lamCell (universeCodeCell LevelExpr.lzero flag)))
+      (lamCell (universeCodeCell LevelExpr.lzero.lsucc flag)
+        (lamCell (universeCodeCell LevelExpr.lzero.lsucc flag)
+          (universeCodeCell LevelExpr.lzero flag)))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero.lsucc flag)
         (piTyCodeCell (universeCodeCell LevelExpr.lzero.lsucc flag)
           (universeCodeCell LevelExpr.lzero.lsucc flag))) := by
@@ -88,7 +90,9 @@ theorem nestedConstantLambdaTyping {profile : PolyProfile} (flag : UniverseFlag)
 member; one β-step discards the argument and exposes the constant lambda `λy.Type@0` — a FUNCTION value (not a
 type code).  The third L2 family, completing the canonical-forms coverage of the fuzz corpus. -/
 def metatheoryFuzzLambdaFamily : Nat → RawTerm 0
-  | n => appCell (lamCell (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)))
+  | n => appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+          (universeCodeCell LevelExpr.lzero UniverseFlag.standard)))
       (metatheoryFuzzFamily n)
 
 /-- Every λ-value family member is well-typed at the arrow `Π(Type@1, Type@1)` — `piElim` of the nested
@@ -107,13 +111,15 @@ theorem metatheoryFuzzLambdaFamily_typed {profile : PolyProfile} (n : Nat) :
 `λy.Type@0` is itself by defeq). -/
 theorem metatheoryFuzzLambdaFamily_betaStep (n : Nat) :
     Step (metatheoryFuzzLambdaFamily n)
-      (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) :=
+      (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) :=
   Step.beta
 
 /-- Each member reaches the constant lambda value in a single-step `StepStar` chain. -/
 theorem metatheoryFuzzLambdaFamily_reducesToLambdaValue (n : Nat) :
     StepStar (metatheoryFuzzLambdaFamily n)
-      (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) :=
+      (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) :=
   StepStar.single (metatheoryFuzzLambdaFamily_betaStep n)
 
 /-- ★ **The verified SN-normalizer computes each member to the function value `λy.Type@0`.**
@@ -122,7 +128,8 @@ normality discharged by `decide`.  Unlike the universe-code fuzz families (which
 family's normal form is a `λ`. -/
 theorem metatheoryFuzzLambdaFamily_normalizesToLambda {profile : PolyProfile} (n : Nat) :
     (metatheoryFuzzLambdaFamily_typed (profile := profile) n).normalForm
-      = lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
+      = lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+          (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
   ((metatheoryFuzzLambdaFamily_typed (profile := profile) n).reachedNormalForm_eq_normalForm
     (metatheoryFuzzLambdaFamily_reducesToLambdaValue n) (by decide)).symm
 
@@ -131,8 +138,10 @@ extracted) — the Π-typed canonical-forms outcome (`closedNormalFunctionIsLamb
 universe-code fuzz family reaches.  The fuzz corpus now covers both canonical-forms outcomes: a type code
 (`Type@0`) and a function (`λy.Type@0`). -/
 theorem metatheoryFuzzLambdaFamily_evaluatesToFunction {profile : PolyProfile} (n : Nat) :
-    ∃ body, (metatheoryFuzzLambdaFamily_typed (profile := profile) n).normalForm = lamCell body :=
-  ⟨universeCodeCell LevelExpr.lzero UniverseFlag.standard,
+    ∃ domainAnn body,
+      (metatheoryFuzzLambdaFamily_typed (profile := profile) n).normalForm = lamCell domainAnn body :=
+  ⟨universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard,
+    universeCodeCell LevelExpr.lzero UniverseFlag.standard,
     metatheoryFuzzLambdaFamily_normalizesToLambda n⟩
 
 /-- **Progress at the function type over the family.**  Each member either steps or IS a `λ` — firing-112's
@@ -140,7 +149,8 @@ theorem metatheoryFuzzLambdaFamily_evaluatesToFunction {profile : PolyProfile} (
 member steps (the β-redex); the λ disjunct is the forward-compatible value case. -/
 theorem metatheoryFuzzLambdaFamily_progress {profile : PolyProfile} (n : Nat) :
     (∃ reduct : RawTerm 0, Step (metatheoryFuzzLambdaFamily n) reduct)
-    ∨ (∃ body : RawTerm 1, metatheoryFuzzLambdaFamily n = lamCell body) :=
+    ∨ (∃ (domainAnn : RawTerm 0) (body : RawTerm 1),
+        metatheoryFuzzLambdaFamily n = lamCell domainAnn body) :=
   HasTypeDescPi.closedFunctionStepsOrIsLambda (metatheoryFuzzLambdaFamily_typed (profile := profile) n)
 
 /-- **Strong normalization over the family** (SN-043) — every member terminates, even though it discards a

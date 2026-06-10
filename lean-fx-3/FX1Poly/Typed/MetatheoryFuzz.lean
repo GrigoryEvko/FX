@@ -65,7 +65,8 @@ iterating the closed identity `λ(x : Type@1). x` applied to the previous term, 
 deterministic generator (structural Nat recursion) — the zero-axiom stand-in for randomized generation. -/
 def metatheoryFuzzFamily : Nat → RawTerm 0
   | 0 => universeCodeCell LevelExpr.lzero UniverseFlag.standard
-  | n + 1 => appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) (metatheoryFuzzFamily n)
+  | n + 1 => appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) (metatheoryFuzzFamily n)
 
 /-! ## Well-typedness by construction -/
 
@@ -186,7 +187,8 @@ context).  Has the SAME type as the identity lambda, so applying it via `piElim`
 argument yields `Type@1` identically — but the body discards the bound variable. -/
 def closedConstantLambdaTyping {profile : PolyProfile} :
     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
-      (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
+      (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
       (piTyCodeCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
         (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)) :=
   HasTypeDescPi.piIntro
@@ -208,7 +210,8 @@ def closedConstantLambdaTyping {profile : PolyProfile} :
 argument on β-contraction (the body ignores the bound variable) — the complement of the identity tower. -/
 def metatheoryFuzzConstantFamily : Nat → RawTerm 0
   | 0 => universeCodeCell LevelExpr.lzero UniverseFlag.standard
-  | n + 1 => appCell (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
+  | n + 1 => appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
       (metatheoryFuzzConstantFamily n)
 
 /-- **Every constant-family member is well-typed at `Type@1`.**  Base: `Type@0 : Type@1`.  Step: `piElim` of

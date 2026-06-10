@@ -229,27 +229,37 @@ theorem HasCertifiedCellDim0.refl
       (CertifiedTermSpine.cons witnessCell
         CertifiedTermSpine.nil))
 
-/-! ## Section 2 — Lambda intro (1 binder)
+/-! ## Section 2 — Lambda intro (domain annotation + 1 binder)
 
-`gen_lam`'s body lives at `scope + 1` (the bound variable).
-The body cell takes the +1-shifted scope explicitly. -/
+`gen_lam` now carries two children (binderShifts `[0,1]`,
+mirroring `gen_piTyCode`): a domain annotation at the parent
+scope followed by the body under one binder.  The domain cell
+takes the parent scope; the body cell takes the +1-shifted
+scope explicitly. -/
 
-/-- **Intro: lam's structural admission from body cell at scope+1.** -/
+/-- **Intro: lam's structural admission from domain cell at scope
+    plus body cell at scope+1.** -/
 theorem HasCertifiedCellDim0.lam
     {profile : PolyProfile} {scope : Nat}
+    {domainAnn : RawTerm scope}
     {bodyTerm : RawTerm (scope + 1)}
+    (domainCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase domainAnn))
     (bodyCell :
       PolyCell profile .term 0 (scope + 1) CellBoundary.trivial
         (.termBase bodyTerm)) :
     HasCertifiedCellDim0 (profile := profile)
       ((.mkGen .gen_lam ()
-        (.childCons bodyTerm .childNil) : RawTerm scope)) :=
+        (.childCons domainAnn
+          (.childCons bodyTerm .childNil)) : RawTerm scope)) :=
   .intro .term
     (PolyCell.gen
       SupportedGenerator.gen_lam
       (genPayloadEvidence (generator := .gen_lam)
                            (scope := scope) ())
-      (CertifiedTermSpine.cons bodyCell
-        CertifiedTermSpine.nil))
+      (CertifiedTermSpine.cons domainCell
+        (CertifiedTermSpine.cons bodyCell
+          CertifiedTermSpine.nil)))
 
 end FX1Poly.Core

@@ -47,10 +47,12 @@ mutual
   Mirrors every `Step` rule but reduces the surviving sub-terms in parallel; the source of the
   `DiamondProperty` the raw-confluence proof needs. -/
   inductive ParStep : {scope : Nat} → RawTerm scope → RawTerm scope → Prop where
-    | beta {scope : Nat} {body body' : RawTerm (scope + 1)} {arg arg' : RawTerm scope} :
-        ParStep body body' → ParStep arg arg' →
-        ParStep (.mkGen .gen_app () (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
-            (.childCons arg .childNil))) (RawTerm.subst0 body' arg')
+    | beta {scope : Nat} {domainAnn domainAnn' : RawTerm scope} {body body' : RawTerm (scope + 1)}
+        {arg arg' : RawTerm scope} :
+        ParStep domainAnn domainAnn' → ParStep body body' → ParStep arg arg' →
+        ParStep (.mkGen .gen_app ()
+            (.childCons (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
+              (.childCons arg .childNil))) (RawTerm.subst0 body' arg')
     | cong {scope : Nat} (gen : Generator) (payload : gen.payload scope)
            {children children' : RawTermChildren gen.binderShifts scope} :
         ParStepChildren children children' →
@@ -178,7 +180,7 @@ mutual
   `ParStep.refl` on every surviving component; `cong` maps the single-child `StepChildren` to a pointwise
   `ParStepChildren` (the stepping child via the recursive call, the rest reflexive). -/
   theorem Step.toParStep {scope : Nat} {a b : RawTerm scope} : Step a b → ParStep a b
-    | .beta => ParStep.beta (ParStep.refl _) (ParStep.refl _)
+    | .beta => ParStep.beta (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
     | .cong gen payload childStep => ParStep.cong gen payload (StepChildren.toParStepChildren childStep)
     | .iotaBoolTrue => ParStep.iotaBoolTrue (ParStep.refl _)
     | .iotaBoolFalse => ParStep.iotaBoolFalse (ParStep.refl _)
@@ -221,12 +223,16 @@ mutual
   all-reduced redex).  `cong` lifts the pointwise `ParStepChildren` to a `StepStar` through
   `ofChildrenStar`. -/
   theorem ParStep.toStepStar {scope : Nat} {a b : RawTerm scope} : ParStep a b → StepStar a b
-    | .beta bodyPar argPar =>
+    | .beta domainPar bodyPar argPar =>
         StepStar.transLast
           (StepStar.ofChildrenStar
             (StepChildrenStar.trans_compose
               (StepChildrenStar.here _
-                (StepStar.ofChildrenStar (StepChildrenStar.here _ (ParStep.toStepStar bodyPar))))
+                (StepStar.ofChildrenStar
+                  (StepChildrenStar.trans_compose
+                    (StepChildrenStar.here _ (ParStep.toStepStar domainPar))
+                    (StepChildrenStar.there _
+                      (StepChildrenStar.here _ (ParStep.toStepStar bodyPar))))))
               (StepChildrenStar.there _
                 (StepChildrenStar.here _ (ParStep.toStepStar argPar)))))
           Step.beta

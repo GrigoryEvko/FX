@@ -24,7 +24,7 @@ substitution cancellation for weakened codomains and `subst_universeCodeCell`.  
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Foundation
 
 /-- **Non-dependent former-child reducibility over the all-level environment.**  If the domain and the
 base codomain are fundamental members of their universe classifiers, then the former child bundle for
@@ -112,16 +112,18 @@ theorem fundamentalPiIntroNonDependentAtAll {profile : PolyProfile} {scope : Nat
         ∀ argument : RawTerm (targetScope + 1), domainCandidate argument →
           codomainCandidate
             (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) body) argument)) :
-    FundamentalConclusionAtAll context (lamCell body)
+    FundamentalConclusionAtAll context (lamCell domainCode body)
       (piTyCodeCell domainCode (RawTerm.weaken codomainCodeBase)) := by
   intro _targetScope substitution env predLevel
   have domainMember := domainFundamental substitution env (predLevel + 1)
   rw [subst_universeCodeCell] at domainMember
+  have domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainCode) :=
+    domainMember.stronglyNormalizing
   obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
   have codomainMember := codomainFundamental substitution env (predLevel + 1)
   rw [subst_universeCodeCell] at codomainMember
   obtain ⟨codomainCandidate, codomainReducible⟩ := codomainMember.tarskiDecode
-  exact IsReducibleMemberAt.abstractionNonDependentUnderSubst substitution domainReducible
+  exact IsReducibleMemberAt.abstractionNonDependentUnderSubst substitution domainReducible domainAnnSN
     (fun _argument argumentInDomain =>
       domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
     codomainReducible

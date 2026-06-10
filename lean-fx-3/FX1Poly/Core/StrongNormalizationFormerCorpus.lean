@@ -42,8 +42,13 @@ open StepStar
 theorem smoke_lam_isStronglyNormalizing {scope : Nat} :
     IsStronglyNormalizing
       (.mkGen .gen_lam ()
-        (.childCons (.mkGen .gen_unit () .childNil) .childNil) : RawTerm scope) :=
-  lam_isStronglyNormalizing_of_body smoke_unit_isStronglyNormalizing
+        (.childCons
+          (.mkGen .gen_unit () .childNil : RawTerm scope)
+          (.childCons
+            (.mkGen .gen_unit () .childNil : RawTerm (scope + 1))
+            .childNil)) : RawTerm scope) :=
+  lam_isStronglyNormalizing_of_body
+    smoke_unit_isStronglyNormalizing smoke_unit_isStronglyNormalizing
 
 /-- **Smoke: a cubical path abstraction over the unit leaf is strongly normalizing.** -/
 theorem smoke_pathLam_isStronglyNormalizing {scope : Nat} :
@@ -219,10 +224,13 @@ theorem smoke_nestedLamNatSucc_isStronglyNormalizing {scope : Nat} :
     IsStronglyNormalizing
       (.mkGen .gen_lam ()
         (.childCons
-          (.mkGen .gen_natSucc ()
-            (.childCons (.mkGen .gen_unit () .childNil) .childNil))
-          .childNil) : RawTerm scope) :=
+          (.mkGen .gen_unit () .childNil : RawTerm scope)
+          (.childCons
+            (.mkGen .gen_natSucc ()
+              (.childCons (.mkGen .gen_unit () .childNil) .childNil))
+            .childNil)) : RawTerm scope) :=
   lam_isStronglyNormalizing_of_body
+    smoke_unit_isStronglyNormalizing
     (natSucc_isStronglyNormalizing_of_predecessor smoke_unit_isStronglyNormalizing)
 
 /-- **Smoke: a pi type code whose codomain is a sigma type code is strongly normalizing.**  The pi

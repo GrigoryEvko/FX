@@ -42,8 +42,9 @@ variable cell, a Π-type code, a Σ-type code, or a universe code — and `lamCe
 generator `gen_lam` differs from each, by `Generator.noConfusion` on `RawTerm.headGenerator`).  The reusable
 lemma that makes a context binding a lambda ill-formed. -/
 theorem lamCell_isNotType {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)} :
-    ¬ IsTypeDesc profile context (lamCell body) := by
+    {context : TypingContext profile scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} :
+    ¬ IsTypeDesc profile context (lamCell domainAnn body) := by
   rintro ⟨levelExpr, flag, typed⟩
   rcases HasTypeDesc.subjectIsVariableOrFormerHead typed with
     ⟨index, subjectEq⟩ | headIsPi | headIsSigma | headIsUniverse | headIsList | headIsOption
@@ -63,13 +64,15 @@ theorem wellTypedInIllFormedContext {profile : PolyProfile} :
     ∃ (context : TypingContext profile 1) (subject classifier : RawTerm 1),
       HasTypeDescPi profile context subject classifier ∧ ¬ WfContextDesc context :=
   ⟨(TypingContext.empty : TypingContext profile 0).cons
-      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))),
+      (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))),
    variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1),
    _,
    HasTypeDesc.toHasTypeDescPi
      (HasTypeDesc.var
        ((TypingContext.empty : TypingContext profile 0).cons
-         (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))))
+         (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+           (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))))
        (⟨0, Nat.succ_pos 0⟩ : Fin 1)),
    fun contextWellFormed => lamCell_isNotType contextWellFormed.2⟩
 

@@ -48,15 +48,16 @@ theorem Step.eta.rpoEmbeds {scope : Nat} {prec : Generator → Generator → Pro
   Step.eta.rec
     (motive := fun source target _ =>
       Rpo prec (eraseToRose source) (eraseToRose target))
-    (fun innerFunction => by
+    (fun domainAnn innerFunction => by
       show Rpo prec
         (.node Generator.gen_lam
-          [.node Generator.gen_app
+          [eraseToRose domainAnn,
+           .node Generator.gen_app
             [eraseToRose (RawTerm.weaken innerFunction),
              eraseToRose RawTerm.newestVar]])
         (eraseToRose innerFunction)
       rw [eraseToRose_weaken]
-      exact Rpo.subtermStrict Generator.gen_lam _ _ _ (List.Mem.head _)
+      exact Rpo.subtermStrict Generator.gen_lam _ _ _ (List.Mem.tail _ (List.Mem.head _))
         (Rpo.subtermEq Generator.gen_app _ _ (List.Mem.head _)))
     (fun pairTerm => by
       show Rpo prec

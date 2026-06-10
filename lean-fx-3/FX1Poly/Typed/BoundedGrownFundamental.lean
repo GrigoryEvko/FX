@@ -82,6 +82,7 @@ theorem HasTypeDescPi.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Na
       domainFundamental codomainFundamental bodyFundamental
     refine fundamentalPiIntroAtBoundedSucc env bound _context
       (fun substitution envReducible => ?_)
+      (fun substitution envReducible => ?_)
       (fun substitution envReducible argument argumentMember => ?_)
       bodyFundamental
     · have m := domainFundamental substitution envReducible
@@ -89,6 +90,11 @@ theorem HasTypeDescPi.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Na
       obtain ⟨c, cr, ci⟩ := m
       exact reducibleTypeAtBoundFromUniverseMemberBounded env bound ⟨c, cr, ci⟩
         (universeCodeReducibleAtBounded_belowBound cr)
+    · have m := domainFundamental substitution envReducible
+      rw [subst_universeCodeCell] at m
+      obtain ⟨c, cr, ci⟩ := m
+      exact stronglyNormalizing_of_universeMemberAtBounded env bound _ _ _
+        (universeCodeReducibleAtBounded_belowBound cr) ⟨c, cr, ci⟩
     · have m := codomainFundamental (RawTermSubst.cons argument substitution)
         (ReducibleEnvAtBounded.cons envReducible argumentMember)
       rw [subst_universeCodeCell] at m

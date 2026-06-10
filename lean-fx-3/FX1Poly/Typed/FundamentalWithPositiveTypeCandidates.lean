@@ -526,13 +526,15 @@ theorem fundamentalPiIntroWithPositiveTypeCandidatesFromPositiveDomainCandidate
         (universeCodeCell codomainLevel flag))
     (bodyFundamental :
       FundamentalConclusionWithPositiveTypeCandidates (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionWithPositiveTypeCandidates context (lamCell body)
+    FundamentalConclusionWithPositiveTypeCandidates context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) := by
   intro _targetScope substitution envWithCandidates predLevel
   have domainMember := domainFundamental substitution envWithCandidates (predLevel + 1)
   rw [subst_universeCodeCell] at domainMember
+  have domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainCode) :=
+    domainMember.stronglyNormalizing
   obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
-  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible domainAnnSN
     (fun _argument argumentInDomain =>
       domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
     ?codomainExists ?bodyReducible
@@ -591,13 +593,15 @@ theorem fundamentalPiIntroWithPositiveTypeCandidates
         (universeCodeCell codomainLevel flag))
     (bodyFundamental :
       FundamentalConclusionWithPositiveTypeCandidates (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionWithPositiveTypeCandidates context (lamCell body)
+    FundamentalConclusionWithPositiveTypeCandidates context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) := by
   intro _targetScope substitution envWithCandidates predLevel
   have domainMember := domainFundamental substitution envWithCandidates (predLevel + 1)
   rw [subst_universeCodeCell] at domainMember
+  have domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainCode) :=
+    domainMember.stronglyNormalizing
   obtain ⟨domainCandidate, domainReducible⟩ := domainMember.tarskiDecode
-  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible
+  refine IsReducibleMemberAt.abstractionCanonicalUnderSubst substitution domainReducible domainAnnSN
     (fun _argument argumentInDomain =>
       domainReducible.isReducibilityCandidate.stronglyNormalizing argumentInDomain)
     ?codomainExists ?bodyReducible

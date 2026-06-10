@@ -81,10 +81,10 @@ theorem natElimAddFaithful (base : Nat) : (scrutinee : Nat) →
         StepStar.appArgument (appCell copyNatStep (natNumeralCell k)) (natElimAddFaithful base k)
       have firstBeta :
           Step (appCell copyNatStep (natNumeralCell k))
-            (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) :=
+            (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) :=
         Step.beta
       have secondBeta :
-          Step (appCell (lamCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1))))
+          Step (appCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1))))
               (natNumeralCell (base + k)))
             (natSuccCell (natNumeralCell (base + k))) :=
         Step.beta

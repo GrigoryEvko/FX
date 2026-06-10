@@ -173,13 +173,15 @@ tractable: the binder lift is also definitional. -/
 theorem RawTerm.rename_lam_reduces
     {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
+    (domainAnn : RawTerm sourceScope)
     (bodyTerm : RawTerm (sourceScope + 1)) :
     RawTerm.rename rawRenaming
         ((.mkGen .gen_lam ()
-          (.childCons bodyTerm .childNil)) : RawTerm sourceScope) =
+          (.childCons domainAnn (.childCons bodyTerm .childNil))) : RawTerm sourceScope) =
       ((.mkGen .gen_lam ()
-        (.childCons (RawTerm.rename (RawRenaming.lift rawRenaming) bodyTerm)
-          .childNil)) : RawTerm targetScope) := rfl
+        (.childCons (RawTerm.rename rawRenaming domainAnn)
+          (.childCons (RawTerm.rename (RawRenaming.lift rawRenaming) bodyTerm)
+            .childNil))) : RawTerm targetScope) := rfl
 
 /-! ## Section 2 — Compound cell-level preservation (compositional)
 
@@ -332,7 +334,11 @@ the binder discipline cleanly through the structural induction. -/
 theorem HasCertifiedCellDim0.lam_preservedByRename
     {profile : PolyProfile} {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
+    (domainAnn : RawTerm sourceScope)
     (bodyTerm : RawTerm (sourceScope + 1))
+    (renamedDomainCell :
+      PolyCell profile .term 0 targetScope CellBoundary.trivial
+        (.termBase (RawTerm.rename rawRenaming domainAnn)))
     (renamedBodyCell :
       PolyCell profile .term 0 (targetScope + 1) CellBoundary.trivial
         (.termBase (RawTerm.rename
@@ -340,8 +346,8 @@ theorem HasCertifiedCellDim0.lam_preservedByRename
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.rename rawRenaming
         ((.mkGen .gen_lam ()
-          (.childCons bodyTerm .childNil)) : RawTerm sourceScope)) := by
+          (.childCons domainAnn (.childCons bodyTerm .childNil))) : RawTerm sourceScope)) := by
   rw [RawTerm.rename_lam_reduces]
-  exact HasCertifiedCellDim0.lam renamedBodyCell
+  exact HasCertifiedCellDim0.lam renamedDomainCell renamedBodyCell
 
 end FX1Poly.Core

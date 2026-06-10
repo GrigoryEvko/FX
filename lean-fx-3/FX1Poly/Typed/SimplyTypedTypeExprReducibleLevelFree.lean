@@ -1,5 +1,8 @@
 import FX1Poly.Core.ReducibleTypeWellFormed
 import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Core.StrongNormalizationConstructors
+import FX1Poly.Core.StrongNormalizationRenameForwardGeneral
+import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Typed.CellSubstitution
 import FX1Poly.Typed.HasTypeDescPi
 
@@ -47,7 +50,7 @@ in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe StepStar
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation StepStar
 
 /-- **Level-free non-dependent arrow type builder.**  From domain reducibility and codomain reducibility, the
 simple arrow `A → B` (code `piTyCodeCell domainCode (RawTerm.weaken codomainBase)`) is a reducible type at the
@@ -105,5 +108,46 @@ theorem IsReducibleTypeExprLF.reducibleUnderSubst {scope targetScope : Nat}
       obtain ⟨domainCandidate, domainReducible⟩ := domainInductiveHypothesis
       obtain ⟨codomainCandidate, codomainReducible⟩ := codomainInductiveHypothesis
       exact ⟨_, ReducibleType.nonDependentArrow domainReducible codomainReducible⟩
+
+/-- **Forward strong normalization of a weakening.**  Weakening preserves strong normalization at every
+scope — routed through the reflection-based Core primitive `weaken_isStronglyNormalizing_forward` (every
+step of `weaken t` reflects to a source step, so the source's accessibility transfers).  This is scope-0
+safe (a `weaken` at the closed scope has no total left inverse, so the inversion route fails there; the
+forward reflection needs none).  The codomain-SN bridge the arrow arm of `stronglyNormalizingUnderSubst`
+needs (`weaken (subst σ B)` is SN when `subst σ B` is). -/
+theorem weaken_stronglyNormalizing {scope : Nat} {sourceTerm : RawTerm scope}
+    (sourceTerminates : IsStronglyNormalizing sourceTerm) :
+    IsStronglyNormalizing (RawTerm.weaken sourceTerm) :=
+  weaken_isStronglyNormalizing_forward sourceTerminates
+
+/-- **A reducible level-free type expression is strongly normalizing under any closing substitution.**  The
+SN companion to `reducibleUnderSubst`: every `IsReducibleTypeExprLF` substitutes to a strongly normalizing
+type code.  `universeCode` arm: `subst σ (Type@e) = Type@e` is a normal leaf (`noStep_universeCode`).  `arrow`
+arm: the substituted Π former `piTyCodeCell (subst σ A) (weaken (subst σ B))` is SN by
+`piTyCode_isStronglyNormalizing_of_domain_codomain` over the domain induction hypothesis and the weakened
+codomain induction hypothesis (`weaken_stronglyNormalizing`).  This is the `domainAnnSN` the level-free
+simply-typed term FT's lambda arm threads to the Church-style abstraction lemma. -/
+theorem IsReducibleTypeExprLF.stronglyNormalizingUnderSubst {scope targetScope : Nat}
+    {typeExprCode : RawTerm scope}
+    {substitution : RawTermSubst scope targetScope}
+    (typeExpr : IsReducibleTypeExprLF typeExprCode) :
+    IsStronglyNormalizing (RawTerm.subst substitution typeExprCode) := by
+  induction typeExpr with
+  | universeCode levelExpr flag =>
+      rw [subst_universeCodeCell]
+      exact isStronglyNormalizing_of_noStep
+        (fun _target step => noStep_universeCode (levelExpr, flag) step)
+  | arrow _domainExpr _codomainExpr domainInductiveHypothesis codomainInductiveHypothesis =>
+      rename_i domainCode codomainBase
+      have typeEq : RawTerm.subst substitution (piTyCodeCell domainCode (RawTerm.weaken codomainBase))
+          = piTyCodeCell (RawTerm.subst substitution domainCode)
+              (RawTerm.weaken (RawTerm.subst substitution codomainBase)) := by
+        rw [subst_piTyCodeCell]
+        exact congrArg (piTyCodeCell (RawTerm.subst substitution domainCode))
+          (subst_lift_weaken_commute substitution codomainBase)
+      rw [typeEq]
+      exact piTyCode_isStronglyNormalizing_of_domain_codomain
+        domainInductiveHypothesis
+        (weaken_stronglyNormalizing codomainInductiveHypothesis)
 
 end FX1Poly.Typed

@@ -72,8 +72,13 @@ audit-gated (`lake build FX1Poly FX1PolyAudit`, 999 jobs green):
 * **Reduction metatheory** — confluence via the Takahashi triangle
   (complete development, gated root-redexes), raw Conv as a full
   equivalence, unique normal forms WITHOUT a termination hypothesis,
-  decidable Conv on the normal fragment; βη local confluence and the
-  (ι×η) critical-pair matrix.
+  decidable Conv on the normal fragment; βη local confluence on the
+  Nederpelt-guarded fragment (post-T2 Church-style annotations the
+  unguarded η-β overlap is NON-joinable — `lam A (app (weaken (lam B
+  b)) var0)` contracts to both `lam A b` and `lam B b`; refuted
+  zero-axiom in `NederpeltNonJoinability.lean`, proved forms carry
+  the `EtaLamAnnotationDiagonal` guard, typed terms satisfy it); and
+  the (ι×η) critical-pair matrix.
 * **Typed layer** — the engine family (formation `HasTypeDesc`,
   grown `HasTypeDescPi`, flat `HasTypeDescFlat`, base-type, 7
   data-intro and 6 eliminator standalone engines; rule tables
@@ -6109,6 +6114,17 @@ the "SN accessibility lifts remain blocked behind #258" caveat is
 dead — typed SN shipped (#546), βη-SN on the WfContext fragment
 shipped via the Geser union argument + η-postponement
 (#796/#798–#805), and the decidable βη-Conv harvest landed (#806).
+T2 RE-SCOPE (2026-06-10, Church-style gen_lam annotations): the
+UNGUARDED mixed cd-lemma statements are now FALSE — the Nederpelt
+overlap `lam A (app (weaken (lam B b)) var0)` β-contracts to
+`lam A b` but η-contracts to `lam B b`, non-joinable for normal
+`A != B` (refuted zero-axiom in `NederpeltNonJoinability.lean`).
+The shipped dispatchers (`cd_lemma_step_eta`, `cd_lemma_eta_step`,
+`cd_lemma_betaEta`) are restated with the `EtaLamAnnotationDiagonal`
+guard, and the βη Newman bridge + `HasConfluence` carry a hereditary
+diagonal guard (`StepBetaEtaConfluence`); typing forces the two
+annotations convertible, so the TYPED βη theory (Geuvers typed CR,
+Geser βη-SN #796, the WfContext βη-Conv decider #806) is unaffected.
 Record, clock, and parametricity eta remain generator-frontier work,
 not placeholders in the current raw relation.
 

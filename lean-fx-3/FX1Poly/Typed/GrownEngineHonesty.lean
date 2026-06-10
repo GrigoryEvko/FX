@@ -43,31 +43,35 @@ open FX1Poly.Core FX1Poly.Universe
 `HasTypeDescPi.invertLam` forces its classifier `Conv` to a Π-code, refuted against the universe code by
 `Conv.piTyCode_not_universeCode`. -/
 theorem lam_notTypedAtUniverseCode {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
+    {context : TypingContext profile scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
-    ¬ HasTypeDescPi profile context (lamCell body) (universeCodeCell levelExpr flag) := by
+    ¬ HasTypeDescPi profile context (lamCell domainAnn body) (universeCodeCell levelExpr flag) := by
   intro typed
-  obtain ⟨_domainCode, _codomainCode, _domainLevel, _codomainLevel, _flag, conv, _, _, _⟩ :=
+  obtain ⟨_codomainCode, _domainLevel, _codomainLevel, _flag, conv, _, _, _⟩ :=
     HasTypeDescPi.invertLam typed
   exact Conv.piTyCode_not_universeCode conv.sym
 
 /-- **Grown 0-FP: a λ is never typed at a Σ-type code** (lambdas inhabit Π, not Σ). -/
 theorem lam_notTypedAtSigmaTyCode {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
+    {context : TypingContext profile scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     (sigmaDomain : RawTerm scope) (sigmaCodomain : RawTerm (scope + 1)) :
-    ¬ HasTypeDescPi profile context (lamCell body) (sigmaTyCodeCell sigmaDomain sigmaCodomain) := by
+    ¬ HasTypeDescPi profile context (lamCell domainAnn body)
+      (sigmaTyCodeCell sigmaDomain sigmaCodomain) := by
   intro typed
-  obtain ⟨_domainCode, _codomainCode, _domainLevel, _codomainLevel, _flag, conv, _, _, _⟩ :=
+  obtain ⟨_codomainCode, _domainLevel, _codomainLevel, _flag, conv, _, _, _⟩ :=
     HasTypeDescPi.invertLam typed
   exact Conv.piTyCode_not_sigmaTyCode conv.sym
 
 /-- **Grown 0-FP: a λ is never typed at a variable** (a Π type is a `piTyCodeCell`, never a stuck variable). -/
 theorem lam_notTypedAtVariableCell {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
+    {context : TypingContext profile scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     (index : Fin scope) :
-    ¬ HasTypeDescPi profile context (lamCell body) (variableCell index) := by
+    ¬ HasTypeDescPi profile context (lamCell domainAnn body) (variableCell index) := by
   intro typed
-  obtain ⟨_domainCode, _codomainCode, _domainLevel, _codomainLevel, _flag, conv, _, _, _⟩ :=
+  obtain ⟨_codomainCode, _domainLevel, _codomainLevel, _flag, conv, _, _, _⟩ :=
     HasTypeDescPi.invertLam typed
   exact Conv.piTyCode_not_variableCell conv.sym
 

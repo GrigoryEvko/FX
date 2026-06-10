@@ -37,23 +37,25 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **The fourth head→shape reconstruction.**  A cell whose head generator is `gen_lam` IS a `lamCell`: its
-single-entry child spine (`gen_lam.binderShifts = [1]`, the body at `scope + 1`) is recovered by destructuring
-the `RawTermChildren` and collapsing the `childNil` tail — the λ companion to
-`eq_piTyCodeCell_of_headGenerator`. -/
+/-- **The fourth head→shape reconstruction.**  A cell whose head generator is `gen_lam` IS a Church-style
+`lamCell`: its two-entry child spine (`gen_lam.binderShifts = [0, 1]`, the domain annotation at `scope` then
+the body at `scope + 1`) is recovered by destructuring the `RawTermChildren` twice and collapsing the
+`childNil` tail — the λ companion to `eq_piTyCodeCell_of_headGenerator` (same `[0, 1]` two-child spine). -/
 theorem eq_lamCell_of_headGenerator {scope : Nat} {cell : RawTerm scope}
     (headIsLam : RawTerm.headGenerator cell = Generator.gen_lam) :
-    ∃ body : RawTerm (scope + 1), cell = lamCell body := by
+    ∃ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)), cell = lamCell domainAnn body := by
   cases cell with
   | mkGen generator payload children =>
       change generator = Generator.gen_lam at headIsLam
       subst headIsLam
-      change RawTermChildren [1] scope at children
+      change RawTermChildren [0, 1] scope at children
       cases children with
-      | childCons body tailChildren =>
-          refine ⟨body, ?_⟩
-          rw [RawTermChildren.eq_childNil tailChildren]
-          rfl
+      | childCons domainAnn restChildren =>
+          cases restChildren with
+          | childCons body tailChildren =>
+              refine ⟨domainAnn, body, ?_⟩
+              rw [RawTermChildren.eq_childNil tailChildren]
+              rfl
 
 /-- **A Π-type FORMER is not a member of a Π-type.**  Inverting the former (`invertPiTyCode`) exposes the
 would-be Π-type classifier as `Conv` a universe code; a Π-code is not `Conv` a universe code

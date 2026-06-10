@@ -55,11 +55,15 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
-/-- Renaming distributes over `lamCell`: the body (child shift `1`) is renamed under one lift. -/
+/-- Renaming distributes over the Church-style `lamCell`: the domain annotation (child shift `0`)
+is renamed directly, the body (child shift `1`) is renamed under one lift — same `[0, 1]` shape as
+`rename_piTyCodeCell`. -/
 theorem rename_lamCell {sourceScope targetScope : Nat}
-    (rawRenaming : RawRenaming sourceScope targetScope) (body : RawTerm (sourceScope + 1)) :
-    RawTerm.rename rawRenaming (lamCell body)
-      = lamCell (RawTerm.rename (iterateLiftRaw rawRenaming 1) body) :=
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (domainAnn : RawTerm sourceScope) (body : RawTerm (sourceScope + 1)) :
+    RawTerm.rename rawRenaming (lamCell domainAnn body)
+      = lamCell (RawTerm.rename rawRenaming domainAnn)
+          (RawTerm.rename (iterateLiftRaw rawRenaming 1) body) :=
   rfl
 
 /-- Renaming distributes over `appCell`: both children (shifts `[0, 0]`) are renamed directly. -/

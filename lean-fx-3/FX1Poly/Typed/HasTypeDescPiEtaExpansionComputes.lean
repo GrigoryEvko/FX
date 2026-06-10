@@ -77,8 +77,10 @@ theorem subst0_etaLamSource_body {scope : Nat} (innerFunction argument : RawTerm
 contractum reshapes to `f @ a` by `subst0_etaLamSource_body`.  Purely raw (no typing) and general over scope, so
 it lifts under binders / inside application spines; it is the operational justification that an η-expansion is
 interchangeable with the original under application. -/
-theorem Step.etaLamSourceApplication {scope : Nat} (innerFunction argument : RawTerm scope) :
-    Step (appCell (RawTerm.etaLamSource innerFunction) argument) (appCell innerFunction argument) := by
+theorem Step.etaLamSourceApplication {scope : Nat}
+    (domainAnn innerFunction argument : RawTerm scope) :
+    Step (appCell (RawTerm.etaLamSource domainAnn innerFunction) argument)
+      (appCell innerFunction argument) := by
   rw [← subst0_etaLamSource_body innerFunction argument]
   exact Step.beta
 
@@ -92,26 +94,29 @@ theorem HasTypeDescPi.etaExpansionTypedAndOperational {profile : PolyProfile} {s
     (wellFormed : WfContextDescPi context)
     (functionTyped :
       HasTypeDescPi profile context functionTerm (piTyCodeCell domainCode codomainCode)) :
-    HasTypeDescPi profile context (RawTerm.etaLamSource functionTerm) (piTyCodeCell domainCode codomainCode)
+    HasTypeDescPi profile context (RawTerm.etaLamSource domainCode functionTerm)
+        (piTyCodeCell domainCode codomainCode)
       ∧ ∀ argument : RawTerm scope,
-          Step (appCell (RawTerm.etaLamSource functionTerm) argument) (appCell functionTerm argument) :=
+          Step (appCell (RawTerm.etaLamSource domainCode functionTerm) argument)
+            (appCell functionTerm argument) :=
   ⟨HasTypeDescPi.etaExpansionPreservesTypingGrown wellFormed functionTyped,
-   fun argument => Step.etaLamSourceApplication functionTerm argument⟩
+   fun argument => Step.etaLamSourceApplication domainCode functionTerm argument⟩
 
 /-- **η-expansion preserves typing on a Church numeral** (non-vacuity, static).  The η-expansion of
 `churchNumeralLambda n` types at the SAME Church Nat type — the forward η rule applied to a genuine grown λ-term
 (not the bare variable-of-function-type the formation-only η-coherence covered). -/
-theorem etaExpandedChurchNumeral_hasTypeDescPi {profile : PolyProfile} (flag : UniverseFlag) (depth : Nat) :
+theorem etaExpandedChurchNumeral_hasTypeDescPi {profile : PolyProfile} (depth : Nat) :
     HasTypeDescPi profile TypingContext.empty
-      (RawTerm.etaLamSource (churchNumeralLambda depth))
-      (piTyCodeCell (universeCodeCell LevelExpr.lzero flag)
+      (RawTerm.etaLamSource
+        (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (churchNumeralLambda depth))
+      (piTyCodeCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
         (piTyCodeCell (piTyCodeCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
             (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2)))
           (piTyCodeCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
             (variableCell (⟨2, Nat.succ_lt_succ (Nat.succ_lt_succ (Nat.succ_pos 0))⟩ : Fin 3))))) :=
   HasTypeDescPi.etaExpansionPreservesTypingGrown
     WfContextDescPi.emptyIsWellFormed
-    (churchNumeralLambda_hasTypeDescPi flag depth)
+    (churchNumeralLambda_hasTypeDescPi depth)
 
 /-- ★ **η-expansion preserves computation on a Church numeral** (non-vacuity, dynamic).  The η-expanded numeral
 applied to `(typeA, handlerF, baseX)` still reduces to `iteratedApplication n handlerF baseX = f^n x` — the same
@@ -121,7 +126,10 @@ which `churchNumeral_appliedReducesToIterate_general` finishes.  η-expansion pr
 arithmetic. -/
 theorem etaExpandedChurchNumeral_appliedReducesToIterate (depth : Nat) (typeA handlerF baseX : RawTerm 0) :
     StepStar
-      (appCell (appCell (appCell (RawTerm.etaLamSource (churchNumeralLambda depth)) typeA) handlerF) baseX)
+      (appCell (appCell (appCell
+        (RawTerm.etaLamSource
+          (universeCodeCell LevelExpr.lzero UniverseFlag.standard) (churchNumeralLambda depth))
+        typeA) handlerF) baseX)
       (iteratedApplication depth handlerF baseX) :=
   StepStar.trans
     (Step.cong .gen_app ()
@@ -130,7 +138,9 @@ theorem etaExpandedChurchNumeral_appliedReducesToIterate (depth : Nat) (typeA ha
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             (.childCons handlerF .childNil)
-            (Step.etaLamSourceApplication (churchNumeralLambda depth) typeA)))))
+            (Step.etaLamSourceApplication
+              (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+              (churchNumeralLambda depth) typeA)))))
     (churchNumeral_appliedReducesToIterate_general depth typeA handlerF baseX)
 
 end FX1Poly.Typed

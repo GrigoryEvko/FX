@@ -206,12 +206,15 @@ one Step via `Step.beta`.  Lifts to `StepStarN 1` via `single`. -/
 theorem StepStarN.identity_lam_beta_unit_smoke :
     let identityLamBody : RawTerm 1 :=
       .mkGen .gen_var (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1) .childNil
+    let domainAnn : RawTerm 0 :=
+      .mkGen .gen_unit () .childNil
     let unitArg : RawTerm 0 :=
       .mkGen .gen_unit () .childNil
     let appTerm : RawTerm 0 :=
       .mkGen .gen_app ()
         (.childCons
-          (.mkGen .gen_lam () (.childCons identityLamBody .childNil))
+          (.mkGen .gen_lam ()
+            (.childCons domainAnn (.childCons identityLamBody .childNil)))
           (.childCons unitArg .childNil))
     StepStarN 1 appTerm unitArg :=
   StepStarN.single Step.beta

@@ -52,16 +52,21 @@ theorem applySpineApp_append {scope : Nat} :
         (.mkGen .gen_app () (.childCons head (.childCons spineElement .childNil))) extraArgument
 
 /-- A candidate is **head-expansion-closed** when, for any application spine, the spined β-redex
-inherits membership from its spined contractum (given the argument is strongly normalizing).  The
-spine-general formulation is what makes the property close under the arrow former. -/
+inherits membership from its spined contractum (given the argument AND the Church-style domain
+annotation are strongly normalizing).  The annotation premise is forced under Church-style
+lambdas: β discards the annotation, so a divergent annotation would make the redex non-SN while
+its contractum is SN.  The spine-general formulation is what makes the property close under the
+arrow former. -/
 def HeadExpansionClosed {scope : Nat} (candidate : RawTerm scope → Prop) : Prop :=
-  ∀ {body : RawTerm (scope + 1)} {argument : RawTerm scope} {spine : List (RawTerm scope)},
+  ∀ {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} {argument : RawTerm scope}
+    {spine : List (RawTerm scope)},
+    IsStronglyNormalizing domainAnn →
     IsStronglyNormalizing argument →
     candidate (RawTerm.applySpineApp (RawTerm.subst0 body argument) spine) →
     candidate
       (RawTerm.applySpineApp
         (.mkGen .gen_app ()
-          (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
             (.childCons argument .childNil)))
         spine)
 
@@ -69,7 +74,8 @@ def HeadExpansionClosed {scope : Nat} (candidate : RawTerm scope → Prop) : Pro
 head-expansion `betaSpineHeadExpansion`. -/
 theorem isStronglyNormalizing_headExpansionClosed {scope : Nat} :
     HeadExpansionClosed (IsStronglyNormalizing (scope := scope)) :=
-  fun argumentSN contractumSN => betaSpineHeadExpansion argumentSN contractumSN
+  fun domainAnnSN argumentSN contractumSN =>
+    betaSpineHeadExpansion domainAnnSN argumentSN contractumSN
 
 /-- **Head-expansion closure respects pointwise equivalence.**  The property is membership-defined (a redex
 inherits membership from its contractum), so transporting the candidate across a pointwise `↔` preserves it.
@@ -79,8 +85,9 @@ theorem HeadExpansionClosed.respectsPointwiseIff {scope : Nat}
     (closed : HeadExpansionClosed candidate)
     (equivalence : ∀ term : RawTerm scope, candidate term ↔ canonicalCandidate term) :
     HeadExpansionClosed canonicalCandidate := by
-  intro _body _argument _spine argumentSN contractumMember
-  exact (equivalence _).mp (closed argumentSN ((equivalence _).mpr contractumMember))
+  intro _domainAnn _body _argument _spine domainAnnSN argumentSN contractumMember
+  exact (equivalence _).mp
+    (closed domainAnnSN argumentSN ((equivalence _).mpr contractumMember))
 
 /-- **The arrow former preserves head-expansion closure.**  If the codomain candidate is
 head-expansion-closed, so is `IsArrowReducible domain codomain` — applying the redex to one more
@@ -90,7 +97,7 @@ theorem isArrowReducible_headExpansionClosed {scope : Nat}
     {domainPredicate codomainPredicate : RawTerm scope → Prop}
     (codomainClosed : HeadExpansionClosed codomainPredicate) :
     HeadExpansionClosed (IsArrowReducible domainPredicate codomainPredicate) := by
-  intro body argument spine argumentSN contractumArrowReducible
+  intro domainAnn body argument spine domainAnnSN argumentSN contractumArrowReducible
   intro extraArgument extraArgumentReducible
   have contractumAtExtendedSpine :
       codomainPredicate
@@ -101,10 +108,10 @@ theorem isArrowReducible_headExpansionClosed {scope : Nat}
       codomainPredicate
         (RawTerm.applySpineApp
           (.mkGen .gen_app ()
-            (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+            (.childCons (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
               (.childCons argument .childNil)))
           (spine ++ [extraArgument])) :=
-    codomainClosed argumentSN contractumAtExtendedSpine
+    codomainClosed domainAnnSN argumentSN contractumAtExtendedSpine
   rw [applySpineApp_append] at redexAtExtendedSpine
   exact redexAtExtendedSpine
 

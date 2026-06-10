@@ -2,6 +2,7 @@ import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.ClosedConvDecision
 import FX1Poly.Typed.GrownTypeSafety
+import FX1Poly.Typed.TypedChurchNumeralFaithful
 import FX1Poly.Core.NormalizeMeta
 
 /-! # Foundation/PolyCell/Typed/TypedNormalizer (SN-112)
@@ -159,8 +160,10 @@ the normalizer is a genuine fixed point on a concrete grown-typed normal form (`
 structural normality). -/
 theorem identityNormalForm_eq {profile : PolyProfile} (levelExpr : LevelExpr) (flag : UniverseFlag) :
     (identityOnUniverse_hasTypeDescPi (profile := profile) levelExpr flag).normalForm =
-      lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) :=
+      lamCell (universeCodeCell levelExpr flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) :=
   (identityOnUniverse_hasTypeDescPi (profile := profile) levelExpr flag).normalForm_eq_self_of_isStepNormalForm
-    (by decide)
+    (lamCell_isStepNormalForm
+      (rfl : RawTerm.isStepNormalForm (universeCodeCell levelExpr flag : RawTerm 0))
+      (by decide))
 
 end FX1Poly.Typed

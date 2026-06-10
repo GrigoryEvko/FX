@@ -42,9 +42,11 @@ theorem isNeutralApplicationHead_not_lam {scope : Nat}
     {candidateHead : RawTerm scope}
     (candidateHeadIsNeutralApplication :
       IsNeutralApplicationHead isNeutralHead candidateHead)
+    (lambdaDomain : RawTerm scope)
     (lambdaBody : RawTerm (scope + 1)) :
     candidateHead ≠
-      (.mkGen .gen_lam () (.childCons lambdaBody .childNil) :
+      (.mkGen .gen_lam ()
+        (.childCons lambdaDomain (.childCons lambdaBody .childNil)) :
       RawTerm scope) := by
   obtain
     ⟨innerHead, innerArgument, innerHeadIsNeutral, candidateHeadShape⟩ :=
@@ -60,8 +62,9 @@ theorem isNeutralApplicationHead_step {scope : Nat}
     {isNeutralHead : RawTerm scope → Prop}
     (neutralHeadIsNotLambda :
       ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
-        ∀ lambdaBody : RawTerm (scope + 1),
-          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+        ∀ (lambdaDomain : RawTerm scope) (lambdaBody : RawTerm (scope + 1)),
+          currentHead ≠ .mkGen .gen_lam ()
+            (.childCons lambdaDomain (.childCons lambdaBody .childNil)))
     (neutralHeadStep :
       ∀ {currentHead targetHead : RawTerm scope},
         isNeutralHead currentHead →
@@ -78,9 +81,10 @@ theorem isNeutralApplicationHead_step {scope : Nat}
   rw [candidateHeadShape] at candidateHeadStep
   cases Step.from_app candidateHeadStep with
   | inl betaBranch =>
-      obtain ⟨lambdaBody, innerHeadEq, _⟩ := betaBranch
+      obtain ⟨lambdaDomain, lambdaBody, innerHeadEq, _⟩ := betaBranch
       exact False.elim
-        (neutralHeadIsNotLambda innerHeadIsNeutral lambdaBody innerHeadEq)
+        (neutralHeadIsNotLambda innerHeadIsNeutral lambdaDomain lambdaBody
+          innerHeadEq)
   | inr congruenceBranch =>
       cases congruenceBranch with
       | inl headBranch =>
@@ -106,8 +110,9 @@ theorem app_isStronglyNormalizing_of_neutral_head_arg
     (headIsNeutral : isNeutralHead headTerm)
     (neutralHeadIsNotLambda :
       ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
-        ∀ lambdaBody : RawTerm (scope + 1),
-          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+        ∀ (lambdaDomain : RawTerm scope) (lambdaBody : RawTerm (scope + 1)),
+          currentHead ≠ .mkGen .gen_lam ()
+            (.childCons lambdaDomain (.childCons lambdaBody .childNil)))
     (neutralHeadStep :
       ∀ {currentHead targetHead : RawTerm scope},
         isNeutralHead currentHead →
@@ -147,10 +152,10 @@ theorem app_isStronglyNormalizing_of_neutral_head_arg
               (fun targetTerm applicationStep => by
                 cases Step.from_app applicationStep with
                 | inl betaBranch =>
-                    obtain ⟨lambdaBody, headEq, _⟩ := betaBranch
+                    obtain ⟨lambdaDomain, lambdaBody, headEq, _⟩ := betaBranch
                     exact False.elim
                       (neutralHeadIsNotLambda currentHeadIsNeutral
-                        lambdaBody headEq)
+                        lambdaDomain lambdaBody headEq)
                 | inr congruenceBranch =>
                     cases congruenceBranch with
                     | inl headBranch =>
@@ -183,8 +188,9 @@ theorem app_isStronglyNormalizing_of_neutral_application_head_arg
       IsNeutralApplicationHead isNeutralHead headTerm)
     (neutralHeadIsNotLambda :
       ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
-        ∀ lambdaBody : RawTerm (scope + 1),
-          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+        ∀ (lambdaDomain : RawTerm scope) (lambdaBody : RawTerm (scope + 1)),
+          currentHead ≠ .mkGen .gen_lam ()
+            (.childCons lambdaDomain (.childCons lambdaBody .childNil)))
     (neutralHeadStep :
       ∀ {currentHead targetHead : RawTerm scope},
         isNeutralHead currentHead →
@@ -199,9 +205,9 @@ theorem app_isStronglyNormalizing_of_neutral_application_head_arg
   app_isStronglyNormalizing_of_neutral_head_arg
     (isNeutralHead := IsNeutralApplicationHead isNeutralHead)
     headIsNeutralApplication
-    (fun currentHeadIsNeutralApplication lambdaBody =>
+    (fun currentHeadIsNeutralApplication lambdaDomain lambdaBody =>
       isNeutralApplicationHead_not_lam currentHeadIsNeutralApplication
-        lambdaBody)
+        lambdaDomain lambdaBody)
     (fun currentHeadIsNeutralApplication currentHeadStep =>
       isNeutralApplicationHead_step neutralHeadIsNotLambda neutralHeadStep
         currentHeadIsNeutralApplication currentHeadStep)
@@ -225,9 +231,11 @@ theorem isVariableHeadedSpine_not_lam {scope : Nat}
     {headIndex : Fin scope} {candidateHead : RawTerm scope}
     (candidateHeadIsVariableSpine :
       IsVariableHeadedSpine headIndex candidateHead)
+    (lambdaDomain : RawTerm scope)
     (lambdaBody : RawTerm (scope + 1)) :
     candidateHead ≠
-      (.mkGen .gen_lam () (.childCons lambdaBody .childNil) :
+      (.mkGen .gen_lam ()
+        (.childCons lambdaDomain (.childCons lambdaBody .childNil)) :
       RawTerm scope) := by
   intro candidateEq
   cases candidateHeadIsVariableSpine with
@@ -255,10 +263,10 @@ theorem isVariableHeadedSpine_step {scope : Nat}
   | applyArgument innerHeadIsVariableSpine innerIH =>
       cases Step.from_app candidateHeadStep with
       | inl betaBranch =>
-          obtain ⟨lambdaBody, innerHeadEq, _⟩ := betaBranch
+          obtain ⟨lambdaDomain, lambdaBody, innerHeadEq, _⟩ := betaBranch
           exact False.elim
             (isVariableHeadedSpine_not_lam innerHeadIsVariableSpine
-              lambdaBody innerHeadEq)
+              lambdaDomain lambdaBody innerHeadEq)
       | inr congruenceBranch =>
           cases congruenceBranch with
           | inl headBranch =>
@@ -288,8 +296,8 @@ theorem app_isStronglyNormalizing_of_variable_headed_spine_arg
   app_isStronglyNormalizing_of_neutral_head_arg
     (isNeutralHead := IsVariableHeadedSpine headIndex)
     headIsVariableSpine
-    (fun variableSpineHead lambdaBody =>
-      isVariableHeadedSpine_not_lam variableSpineHead lambdaBody)
+    (fun variableSpineHead lambdaDomain lambdaBody =>
+      isVariableHeadedSpine_not_lam variableSpineHead lambdaDomain lambdaBody)
     (fun variableSpineHead variableSpineStep =>
       isVariableHeadedSpine_step variableSpineHead variableSpineStep)
     headTerminates
@@ -352,8 +360,9 @@ theorem applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
     (headIsNeutral : isNeutralHead headTerm)
     (neutralHeadIsNotLambda :
       ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
-        ∀ lambdaBody : RawTerm (scope + 1),
-          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+        ∀ (lambdaDomain : RawTerm scope) (lambdaBody : RawTerm (scope + 1)),
+          currentHead ≠ .mkGen .gen_lam ()
+            (.childCons lambdaDomain (.childCons lambdaBody .childNil)))
     (neutralHeadStep :
       ∀ {currentHead targetHead : RawTerm scope},
         isNeutralHead currentHead →
@@ -375,9 +384,9 @@ theorem applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
               (isNeutralHead := IsNeutralApplicationHead isNeutralHead)
               (headTerm := applyRawArgument headTerm argumentTerm)
               ⟨headTerm, argumentTerm, headIsNeutral, rfl⟩
-              (fun neutralApplicationHead lambdaBody =>
+              (fun neutralApplicationHead lambdaDomain lambdaBody =>
                 isNeutralApplicationHead_not_lam neutralApplicationHead
-                  lambdaBody)
+                  lambdaDomain lambdaBody)
               (fun neutralApplicationHead neutralApplicationStep =>
                 isNeutralApplicationHead_step neutralHeadIsNotLambda
                   neutralHeadStep neutralApplicationHead neutralApplicationStep)
@@ -395,8 +404,9 @@ theorem applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_one_argument
     (headIsNeutral : isNeutralHead headTerm)
     (neutralHeadIsNotLambda :
       ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
-        ∀ lambdaBody : RawTerm (scope + 1),
-          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+        ∀ (lambdaDomain : RawTerm scope) (lambdaBody : RawTerm (scope + 1)),
+          currentHead ≠ .mkGen .gen_lam ()
+            (.childCons lambdaDomain (.childCons lambdaBody .childNil)))
     (neutralHeadStep :
       ∀ {currentHead targetHead : RawTerm scope},
         isNeutralHead currentHead →
@@ -424,8 +434,9 @@ theorem applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_two_argument
     (headIsNeutral : isNeutralHead headTerm)
     (neutralHeadIsNotLambda :
       ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
-        ∀ lambdaBody : RawTerm (scope + 1),
-          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+        ∀ (lambdaDomain : RawTerm scope) (lambdaBody : RawTerm (scope + 1)),
+          currentHead ≠ .mkGen .gen_lam ()
+            (.childCons lambdaDomain (.childCons lambdaBody .childNil)))
     (neutralHeadStep :
       ∀ {currentHead targetHead : RawTerm scope},
         isNeutralHead currentHead →
@@ -457,8 +468,9 @@ theorem applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_three_argume
     (headIsNeutral : isNeutralHead headTerm)
     (neutralHeadIsNotLambda :
       ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
-        ∀ lambdaBody : RawTerm (scope + 1),
-          currentHead ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+        ∀ (lambdaDomain : RawTerm scope) (lambdaBody : RawTerm (scope + 1)),
+          currentHead ≠ .mkGen .gen_lam ()
+            (.childCons lambdaDomain (.childCons lambdaBody .childNil)))
     (neutralHeadStep :
       ∀ {currentHead targetHead : RawTerm scope},
         isNeutralHead currentHead →
@@ -521,8 +533,8 @@ theorem variableHeadedSpineTermFrom_isStronglyNormalizing_of_arguments
   applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_arguments
     (isNeutralHead := IsVariableHeadedSpine headIndex)
     headIsVariableSpine
-    (fun variableSpineHead lambdaBody =>
-      isVariableHeadedSpine_not_lam variableSpineHead lambdaBody)
+    (fun variableSpineHead lambdaDomain lambdaBody =>
+      isVariableHeadedSpine_not_lam variableSpineHead lambdaDomain lambdaBody)
     (fun variableSpineHead variableSpineStep =>
       isVariableHeadedSpine_step variableSpineHead variableSpineStep)
     headTerminates
@@ -555,8 +567,9 @@ theorem app_isStronglyNormalizing_of_normal_nonlambda_head_arg
     (headHasNoStep :
       ∀ targetHead : RawTerm scope, Step headTerm targetHead → False)
     (headIsNotLambda :
-      ∀ lambdaBody : RawTerm (scope + 1),
-        headTerm ≠ .mkGen .gen_lam () (.childCons lambdaBody .childNil))
+      ∀ (lambdaDomain : RawTerm scope) (lambdaBody : RawTerm (scope + 1)),
+        headTerm ≠ .mkGen .gen_lam ()
+          (.childCons lambdaDomain (.childCons lambdaBody .childNil)))
     (argumentTerminates : IsStronglyNormalizing argumentTerm) :
     IsStronglyNormalizing
       (.mkGen .gen_app ()
@@ -577,8 +590,8 @@ theorem app_isStronglyNormalizing_of_normal_nonlambda_head_arg
         (fun targetTerm applicationStep => by
           cases Step.from_app applicationStep with
           | inl betaBranch =>
-              obtain ⟨lambdaBody, headEq, _⟩ := betaBranch
-              exact False.elim (headIsNotLambda lambdaBody headEq)
+              obtain ⟨lambdaDomain, lambdaBody, headEq, _⟩ := betaBranch
+              exact False.elim (headIsNotLambda lambdaDomain lambdaBody headEq)
           | inr congruenceBranch =>
               cases congruenceBranch with
               | inl headBranch =>
@@ -610,7 +623,7 @@ theorem appVar_isStronglyNormalizing_of_argument {scope : Nat}
     (argumentTerm := argumentTerm)
     (fun targetHead headStep =>
       noStep_var headIndex (targetTerm := targetHead) headStep)
-    (fun lambdaBody headEq => by
+    (fun lambdaDomain lambdaBody headEq => by
       cases headEq)
     argumentTerminates
 
@@ -644,8 +657,8 @@ theorem appVarSpine2_isStronglyNormalizing_of_arguments {scope : Nat}
               (.childCons currentFirstArgument .childNil)) :
             RawTerm scope))
     (headIsNeutral := ⟨firstArgument, rfl⟩)
-    (neutralHeadIsNotLambda := fun candidateHeadIsNeutral lambdaBody
-        candidateHeadEq => by
+    (neutralHeadIsNotLambda := fun candidateHeadIsNeutral lambdaDomain
+        lambdaBody candidateHeadEq => by
       obtain ⟨currentFirstArgument, candidateHeadShape⟩ :=
         candidateHeadIsNeutral
       rw [candidateHeadShape] at candidateHeadEq
@@ -656,7 +669,7 @@ theorem appVarSpine2_isStronglyNormalizing_of_arguments {scope : Nat}
       rw [candidateHeadShape] at candidateHeadStep
       cases Step.from_app candidateHeadStep with
       | inl betaBranch =>
-          obtain ⟨lambdaBody, variableEq, _⟩ := betaBranch
+          obtain ⟨lambdaDomain, lambdaBody, variableEq, _⟩ := betaBranch
           cases variableEq
       | inr congruenceBranch =>
           cases congruenceBranch with
@@ -715,8 +728,8 @@ theorem appVarSpine3_isStronglyNormalizing_of_arguments {scope : Nat}
       , secondArgument
       , ⟨firstArgument, rfl⟩
       , rfl ⟩)
-    (neutralHeadIsNotLambda := fun candidateHeadIsNeutral lambdaBody
-        candidateHeadEq => by
+    (neutralHeadIsNotLambda := fun candidateHeadIsNeutral lambdaDomain
+        lambdaBody candidateHeadEq => by
       obtain ⟨currentFirstArgument, candidateHeadShape⟩ :=
         candidateHeadIsNeutral
       rw [candidateHeadShape] at candidateHeadEq
@@ -727,7 +740,7 @@ theorem appVarSpine3_isStronglyNormalizing_of_arguments {scope : Nat}
       rw [candidateHeadShape] at candidateHeadStep
       cases Step.from_app candidateHeadStep with
       | inl betaBranch =>
-          obtain ⟨lambdaBody, variableEq, _⟩ := betaBranch
+          obtain ⟨lambdaDomain, lambdaBody, variableEq, _⟩ := betaBranch
           cases variableEq
       | inr congruenceBranch =>
           cases congruenceBranch with

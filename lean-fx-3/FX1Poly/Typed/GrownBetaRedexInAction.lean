@@ -54,7 +54,8 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 `Type@0 : Type@1`).  The piElim output `subst0 (Type@1) (Type@0)` is `Type@1` (constant codomain). -/
 def closedIdentityAppRedexTyping {profile : PolyProfile} :
     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
       (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard) :=
   HasTypeDescPi.piElim
@@ -64,7 +65,8 @@ def closedIdentityAppRedexTyping {profile : PolyProfile} :
 /-- **The β-redex fires.**  `(λ (x : Type@1). x) (Type@0)` `Step`s to `Type@0`: the β-contractum
 `subst0 (var 0) (Type@0)` is `Type@0` (the body is the bound variable), so `Step.beta` applies directly. -/
 theorem closedIdentityAppRedex_betaStep :
-    Step (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+    Step (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
             (universeCodeCell LevelExpr.lzero UniverseFlag.standard) : RawTerm 0)
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
   Step.beta
@@ -105,19 +107,22 @@ unconditional evaluation-determinism theorem — open strong normalization + raw
 form is instantiated to the reachable normal `Type@0`.  The concrete computation of an evaluation result through
 the determinism theorem. -/
 theorem closedIdentityAppRedex_evaluation {profile : PolyProfile} :
-    StepStar (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+    StepStar (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell LevelExpr.lzero UniverseFlag.standard) : RawTerm 0)
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard) ∧
     RawTerm.isStepNormalForm (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0) ∧
     ∀ otherForm : RawTerm 0,
-      StepStar (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      StepStar (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
           (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) otherForm →
       RawTerm.isStepNormalForm otherForm →
       otherForm = universeCodeCell LevelExpr.lzero UniverseFlag.standard := by
   obtain ⟨_value, ⟨_reaches, _valueNormal⟩, valueUnique⟩ :=
     HasTypeDescPi.closedHasUniqueNormalForm (profile := profile) closedIdentityAppRedexTyping
   have redexReachesType0 :
-      StepStar (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      StepStar (appCell (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
           (universeCodeCell LevelExpr.lzero UniverseFlag.standard) : RawTerm 0)
         (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
     StepStar.single closedIdentityAppRedex_betaStep

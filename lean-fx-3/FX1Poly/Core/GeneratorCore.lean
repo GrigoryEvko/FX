@@ -328,7 +328,7 @@ def Generator.arity : Generator → Nat
   | .gen_var          => 0  -- Fin scope payload, not a child
   | .gen_unit         => 0
   -- Function
-  | .gen_lam          => 1  -- body
+  | .gen_lam          => 2  -- domainAnn, body (Church-style domain annotation)
   | .gen_app          => 2  -- functionTerm, argumentTerm
   -- Pair
   | .gen_pair         => 2  -- firstValue, secondValue
@@ -604,7 +604,9 @@ corresponding child.
 
 **Non-zero entries** (only four constructors carry binders):
 
-* `gen_lam` — body lives under one fresh value binder, shift `1`.
+* `gen_lam` — Church-style: the domain annotation lives at the parent
+  scope (shift `0`), the body under one fresh value binder (shift `1`).
+  Same `[0, 1]` shape as `gen_piTyCode`.
 * `gen_pathLam` — body lives under one fresh interval binder,
   shift `1`.
 * `gen_piTyCode` — codomain lives at `scope + 1`, shift on the
@@ -629,7 +631,7 @@ def Generator.binderShifts : Generator → List Nat
   | .gen_var          => []
   | .gen_unit         => []
   -- Function
-  | .gen_lam          => [1]                 -- body under one fresh binder
+  | .gen_lam          => [0, 1]              -- domain annotation, body under one fresh binder
   | .gen_app          => [0, 0]
   -- Pair
   | .gen_pair         => [0, 0]

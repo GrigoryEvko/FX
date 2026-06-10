@@ -53,7 +53,7 @@ def closedUniverseCodeTyping {profile : PolyProfile} (subjectLevel : LevelExpr) 
 a Π type.  The scope-0 closed analogue of `OpenSNSmoke.openIdentityLambda_stronglyNormalizing`. -/
 def closedIdentityLambdaTyping {profile : PolyProfile} (subjectLevel : LevelExpr) (flag : UniverseFlag) :
     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
-      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (lamCell (universeCodeCell subjectLevel flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
       (piTyCodeCell (universeCodeCell subjectLevel flag) (universeCodeCell subjectLevel flag)) :=
   HasTypeDescPi.piIntro
     (context := (TypingContext.empty : TypingContext profile 0))
@@ -94,8 +94,9 @@ theorem closedNormalFunctionIsLambda_nonVacuous {profile : PolyProfile} :
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
         (piTyCodeCell outerDomain outerCodomain) ∧
       RawTerm.isStepNormalForm subject ∧
-      (∃ body : RawTerm 1, subject = lamCell body) := by
-  refine ⟨lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)), _, _,
+      (∃ (domainAnn : RawTerm 0) (body : RawTerm 1), subject = lamCell domainAnn body) := by
+  refine ⟨lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+      (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)), _, _,
     closedIdentityLambdaTyping (profile := profile) LevelExpr.lzero UniverseFlag.standard, by decide, ?_⟩
   exact HasTypeDescPi.closedNormalFunctionIsLambda
     (closedIdentityLambdaTyping (profile := profile) LevelExpr.lzero UniverseFlag.standard) (by decide)

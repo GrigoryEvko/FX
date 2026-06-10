@@ -51,9 +51,9 @@ parameters are the domain (at `scope`) and the codomain (at `scope+1`).  Pure sy
 structure IntroRuleDesc where
   outputType : (scope : Nat) → RawTerm scope → RawTerm (scope + 1) → RawTerm scope
 
-/-- The output of the Π-introduction rule (λ): the member `lamCell body` inhabits `Π domain. codomain`,
-i.e. `piTyCodeCell domain codomain`.  Factored out so the table row and the reconstruction reduce through
-one definition. -/
+/-- The output of the Π-introduction rule (λ): the Church-style member `lamCell domain body` inhabits
+`Π domain. codomain`, i.e. `piTyCodeCell domain codomain`.  Factored out so the table row and the
+reconstruction reduce through one definition. -/
 def piIntroOutput (scope : Nat) (domain : RawTerm scope) (codomain : RawTerm (scope + 1)) :
     RawTerm scope :=
   piTyCodeCell domain codomain
@@ -123,7 +123,7 @@ theorem hasTypeDescPi_piIntro_viaIntroDesc {profile : PolyProfile} {scope : Nat}
         (universeCodeCell codomainLevel flag))
     (bodyTyped :
       HasTypeDescPi profile (context.cons domainCode) body codomainCode) :
-    HasTypeDescPi profile context (lamCell body)
+    HasTypeDescPi profile context (lamCell domainCode body)
       (rule.outputType scope domainCode codomainCode) := by
   have hRule : rule = { outputType := piIntroOutput } :=
     Option.some.inj (isIntro.symm.trans introRuleDescOf_lam)
@@ -133,7 +133,7 @@ theorem hasTypeDescPi_piIntro_viaIntroDesc {profile : PolyProfile} {scope : Nat}
 /-- **The generic introduction-DISPATCH consumer: route an ARBITRARY intro-carrying generator through the
 table.**  For ANY `generator` whose `introRuleDescOf generator = some rule` (currently only `gen_lam`, but
 stated generically over the generator so a new introduction former needs ZERO change here), the introduced
-member `lamCell body` types at the rule-DATA output `rule.outputType scope domainCode codomainCode`.  The
+Church-style member `lamCell domainCode body` types at the rule-DATA output `rule.outputType scope domainCode codomainCode`.  The
 consumer obtains the generator's identity from the table (`introRuleDescOf_isLam` ⟹ `generator = gen_lam`)
 rather than performing its own per-generator `by_cases` split, then routes to the shipped reconstruction
 `hasTypeDescPi_piIntro_viaIntroDesc` — the cascade-death CONSUMER shape (mirroring how every formation
@@ -154,7 +154,7 @@ theorem hasTypeDescPi_genIntro_dispatchViaTable {profile : PolyProfile} {scope :
         (universeCodeCell codomainLevel flag))
     (bodyTyped :
       HasTypeDescPi profile (context.cons domainCode) body codomainCode) :
-    HasTypeDescPi profile context (lamCell body)
+    HasTypeDescPi profile context (lamCell domainCode body)
       (rule.outputType scope domainCode codomainCode) := by
   have hLam : generator = Generator.gen_lam := introRuleDescOf_isLam isIntro
   subst hLam

@@ -81,9 +81,9 @@ theorem HasTypeDescPi.openNormalSubjectCanonicalOrNeutral {profile : PolyProfile
     rcases functionIH armWf functionNormal with
         (headLam | headPi | headSigma | headUniverse | headList | headOption) | functionNeutral
     · exfalso
-      obtain ⟨body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
+      obtain ⟨domainAnn, body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
       rw [bodyEq] at armNormal
-      exact RawTerm.not_isStepNormalForm_beta_smoke body argument armNormal
+      exact RawTerm.not_isStepNormalForm_beta_smoke domainAnn body argument armNormal
     · exfalso
       obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
       rw [piEq] at functionTyped

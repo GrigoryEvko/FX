@@ -78,21 +78,26 @@ standalone case needing NO sub-reflection hypothesis (β is a base case), the su
 child-projection ι arms and the recursive `cong` arm will join in the eventual mutual assembly. -/
 theorem Step.reflectBeta {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedDomain : RawTerm targetScope}
     {renamedBody : RawTerm (targetScope + 1)} {renamedArg : RawTerm targetScope}
     (renameEquation : RawTerm.rename rho term =
       .mkGen .gen_app ()
-        (.childCons (.mkGen .gen_lam () (.childCons renamedBody .childNil))
+        (.childCons
+          (.mkGen .gen_lam ()
+            (.childCons renamedDomain (.childCons renamedBody .childNil)))
           (.childCons renamedArg .childNil))) :
     ∃ sourceReduct : RawTerm sourceScope,
       Step term sourceReduct ∧
         RawTerm.rename rho sourceReduct = RawTerm.subst0 renamedBody renamedArg := by
   obtain ⟨functionTerm, argument, termEqApp, functionRename, argumentRename⟩ :=
     RawTerm.rename_eq_app rho renameEquation
-  obtain ⟨body, functionEqLam⟩ := RawTerm.rename_eq_lam rho functionRename
+  obtain ⟨domainAnn, body, functionEqLam⟩ := RawTerm.rename_eq_lam rho functionRename
   subst termEqApp
   subst functionEqLam
   rw [RawTerm.rename_lam_reduces] at functionRename
-  injection functionRename with _scopeEq _generatorEq _payloadEq bodyChildrenEq
+  injection functionRename with _scopeEq _generatorEq _payloadEq lamChildrenEq
+  injection lamChildrenEq with _domainScopeEq _domainShiftEq _domainRestShiftsEq
+    _domainEq bodyChildrenEq
   injection bodyChildrenEq with _childScopeEq _childShiftEq _childRestShiftsEq bodyEq _nilEq
   refine ⟨RawTerm.subst0 body argument, Step.beta, ?_⟩
   rw [RawTerm.rename_subst0_commute, bodyEq, argumentRename]

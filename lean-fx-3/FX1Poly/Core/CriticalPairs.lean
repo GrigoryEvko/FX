@@ -470,7 +470,8 @@ theorem childPositions_app :
 
 theorem childPositions_lam :
     childPositions .gen_lam =
-      [ { parentGenerator := .gen_lam, childIndex := 0, scopeShift := 1 }
+      [ { parentGenerator := .gen_lam, childIndex := 0, scopeShift := 0 }
+      , { parentGenerator := .gen_lam, childIndex := 1, scopeShift := 1 }
       ] := rfl
 
 theorem childPositions_unit :
@@ -822,12 +823,12 @@ This is the first proof-relevant instance corresponding to a concrete
 `Generator.CriticalPair.rootRoot` entry (`gen_app` / beta against beta).
 Both one-step paths contract the same beta redex to the same substitution
 result. -/
-def betaBeta {scope : Nat} (body : RawTerm (scope + 1))
+def betaBeta {scope : Nat} (domainAnn : RawTerm scope) (body : RawTerm (scope + 1))
     (arg : RawTerm scope) : LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_app ()
       (.childCons
-        (.mkGen .gen_lam () (.childCons body .childNil))
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
         (.childCons arg .childNil))
   leftReduct := RawTerm.subst0 body arg
   rightReduct := RawTerm.subst0 body arg
@@ -842,19 +843,58 @@ child position 0.  The corresponding diamond needs a substitution
 replay from `subst0 body argument` to `subst0 updatedBody argument`;
 that replay is supplied by the `LocalDiamond` template below. -/
 def betaFunctionCong {scope : Nat}
+    (domainAnn : RawTerm scope)
     {body updatedBody : RawTerm (scope + 1)}
     (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_app ()
       (.childCons
-        (.mkGen .gen_lam () (.childCons body .childNil))
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
         (.childCons argument .childNil))
   leftReduct := RawTerm.subst0 body argument
   rightReduct :=
     .mkGen .gen_app ()
       (.childCons
-        (.mkGen .gen_lam () (.childCons updatedBody .childNil))
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons updatedBody .childNil)))
+        (.childCons argument .childNil))
+  leftStep := Step.beta
+  rightStep :=
+    Step.cong .gen_app ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 0) (restShifts := [0])
+        ((.childCons argument .childNil) : RawTermChildren [0] scope)
+        (Step.cong .gen_lam ()
+          (StepChildren.there
+            (parentScope := scope) (headShift := 0) (restShifts := [1])
+            domainAnn
+            (StepChildren.here
+              (parentScope := scope) (headShift := 1) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              bodyStep))))
+
+/-- Beta competing with congruence in the lambda domain annotation.
+
+Church-style lambdas carry a domain annotation at child index 0 (parent
+scope, no binder shift).  Beta discards the annotation, so this overlap
+joins immediately: the left beta reduct `subst0 body argument` is reached
+again by the right side once it fires beta on the annotation-updated
+lambda. -/
+def betaDomainCong {scope : Nat}
+    {domainAnn updatedDomainAnn : RawTerm scope}
+    (body : RawTerm (scope + 1))
+    (argument : RawTerm scope) (domainStep : Step domainAnn updatedDomainAnn) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
+        (.childCons argument .childNil))
+  leftReduct := RawTerm.subst0 body argument
+  rightReduct :=
+    .mkGen .gen_app ()
+      (.childCons
+        (.mkGen .gen_lam () (.childCons updatedDomainAnn (.childCons body .childNil)))
         (.childCons argument .childNil))
   leftStep := Step.beta
   rightStep :=
@@ -864,9 +904,9 @@ def betaFunctionCong {scope : Nat}
         ((.childCons argument .childNil) : RawTermChildren [0] scope)
         (Step.cong .gen_lam ()
           (StepChildren.here
-            (parentScope := scope) (headShift := 1) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
-            bodyStep)))
+            (parentScope := scope) (headShift := 0) (restShifts := [1])
+            ((.childCons body .childNil) : RawTermChildren [1] scope)
+            domainStep)))
 
 /-- Beta competing with congruence in the application argument child.
 
@@ -875,6 +915,7 @@ child position 1.  The corresponding diamond needs a substitution
 replay from `subst0 body argument` to `subst0 body updatedArgument`;
 that replay is supplied by the `LocalDiamond` template below. -/
 def betaArgumentCong {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     {argument updatedArgument : RawTerm scope}
     (argumentStep : Step argument updatedArgument) :
@@ -882,20 +923,20 @@ def betaArgumentCong {scope : Nat}
   source :=
     .mkGen .gen_app ()
       (.childCons
-        (.mkGen .gen_lam () (.childCons body .childNil))
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
         (.childCons argument .childNil))
   leftReduct := RawTerm.subst0 body argument
   rightReduct :=
     .mkGen .gen_app ()
       (.childCons
-        (.mkGen .gen_lam () (.childCons body .childNil))
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
         (.childCons updatedArgument .childNil))
   leftStep := Step.beta
   rightStep :=
     Step.cong .gen_app ()
       (StepChildren.there
         (parentScope := scope) (headShift := 0) (restShifts := [0])
-        ((.mkGen .gen_lam () (.childCons body .childNil)) :
+        ((.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) :
           RawTerm scope)
         (StepChildren.here
           (parentScope := scope) (headShift := 0) (restShifts := [])
@@ -2799,9 +2840,9 @@ def sameReductOfEq {scope : Nat}
 
 This is the first root/root critical-pair filler template: both sides
 are the same beta contraction, so the join is the beta reduct itself. -/
-def betaBeta {scope : Nat} (body : RawTerm (scope + 1))
+def betaBeta {scope : Nat} (domainAnn : RawTerm scope) (body : RawTerm (scope + 1))
     (arg : RawTerm scope) :
-    LocalDiamond (LocalStepBranching.betaBeta body arg) :=
+    LocalDiamond (LocalStepBranching.betaBeta domainAnn body arg) :=
   sameReduct Step.beta Step.beta
 
 /-- Conditional beta/function-congruence local diamond.
@@ -2812,13 +2853,14 @@ once supplied with the real substitution replay theorem
 replay is proved generically, the app root/congruence schema remains
 marked unresolved by `RootCongruenceBranching.hasCurrentResolution`. -/
 def betaFunctionCongOfSubst0Replay {scope : Nat}
+    (domainAnn : RawTerm scope)
     {body updatedBody : RawTerm (scope + 1)}
     (argument : RawTerm scope) (bodyStep : Step body updatedBody)
     (subst0Replay :
       StepStar (RawTerm.subst0 body argument)
         (RawTerm.subst0 updatedBody argument)) :
     LocalDiamond
-      (LocalStepBranching.betaFunctionCong argument bodyStep) where
+      (LocalStepBranching.betaFunctionCong domainAnn argument bodyStep) where
   commonReduct := RawTerm.subst0 updatedBody argument
   leftChain := by
     dsimp [LocalStepBranching.betaFunctionCong]
@@ -2830,35 +2872,68 @@ def betaFunctionCongOfSubst0Replay {scope : Nat}
 /-- Reverse orientation for the conditional beta/function-congruence
 diamond. -/
 def betaFunctionCongReverseOfSubst0Replay {scope : Nat}
+    (domainAnn : RawTerm scope)
     {body updatedBody : RawTerm (scope + 1)}
     (argument : RawTerm scope) (bodyStep : Step body updatedBody)
     (subst0Replay :
       StepStar (RawTerm.subst0 body argument)
         (RawTerm.subst0 updatedBody argument)) :
     LocalDiamond
-      (LocalStepBranching.betaFunctionCong argument bodyStep).swap :=
-  (betaFunctionCongOfSubst0Replay argument bodyStep subst0Replay).swap
+      (LocalStepBranching.betaFunctionCong domainAnn argument bodyStep).swap :=
+  (betaFunctionCongOfSubst0Replay domainAnn argument bodyStep subst0Replay).swap
 
 /-- Concrete beta/function-congruence local diamond.
 
 Uses `Step.subst0Body`, the substitution-compatibility theorem
 specialized to singleton substitution, as the left replay. -/
 def betaFunctionCong {scope : Nat}
+    (domainAnn : RawTerm scope)
     {body updatedBody : RawTerm (scope + 1)}
     (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
     LocalDiamond
-      (LocalStepBranching.betaFunctionCong argument bodyStep) :=
-  betaFunctionCongOfSubst0Replay argument bodyStep
+      (LocalStepBranching.betaFunctionCong domainAnn argument bodyStep) :=
+  betaFunctionCongOfSubst0Replay domainAnn argument bodyStep
     (Step.subst0Body argument bodyStep)
 
 /-- Reverse orientation for the concrete beta/function-congruence
 local diamond. -/
 def betaFunctionCongReverse {scope : Nat}
+    (domainAnn : RawTerm scope)
     {body updatedBody : RawTerm (scope + 1)}
     (argument : RawTerm scope) (bodyStep : Step body updatedBody) :
     LocalDiamond
-      (LocalStepBranching.betaFunctionCong argument bodyStep).swap :=
-  (betaFunctionCong argument bodyStep).swap
+      (LocalStepBranching.betaFunctionCong domainAnn argument bodyStep).swap :=
+  (betaFunctionCong domainAnn argument bodyStep).swap
+
+/-- Concrete beta/domain-annotation-congruence local diamond.
+
+Beta discards the Church-style domain annotation, so the left beta
+reduct `subst0 body argument` is already the common reduct (zero further
+steps), and the right side reaches it by firing beta on the
+annotation-updated lambda. -/
+def betaDomainCong {scope : Nat}
+    {domainAnn updatedDomainAnn : RawTerm scope}
+    (body : RawTerm (scope + 1))
+    (argument : RawTerm scope) (domainStep : Step domainAnn updatedDomainAnn) :
+    LocalDiamond
+      (LocalStepBranching.betaDomainCong body argument domainStep) where
+  commonReduct := RawTerm.subst0 body argument
+  leftChain := by
+    dsimp [LocalStepBranching.betaDomainCong]
+    exact StepStar.refl _
+  rightChain := by
+    dsimp [LocalStepBranching.betaDomainCong]
+    exact StepStar.single (Step.beta (body := body) (arg := argument))
+
+/-- Reverse orientation for the concrete beta/domain-annotation-congruence
+local diamond. -/
+def betaDomainCongReverse {scope : Nat}
+    {domainAnn updatedDomainAnn : RawTerm scope}
+    (body : RawTerm (scope + 1))
+    (argument : RawTerm scope) (domainStep : Step domainAnn updatedDomainAnn) :
+    LocalDiamond
+      (LocalStepBranching.betaDomainCong body argument domainStep).swap :=
+  (betaDomainCong body argument domainStep).swap
 
 /-- Conditional beta/argument-congruence local diamond.
 
@@ -2868,6 +2943,7 @@ once supplied with the real substitution replay theorem
 duplicating case for beta, so the replay target is a `StepStar` chain
 rather than a promised single step. -/
 def betaArgumentCongOfSubst0Replay {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     {argument updatedArgument : RawTerm scope}
     (argumentStep : Step argument updatedArgument)
@@ -2875,7 +2951,7 @@ def betaArgumentCongOfSubst0Replay {scope : Nat}
       StepStar (RawTerm.subst0 body argument)
         (RawTerm.subst0 body updatedArgument)) :
     LocalDiamond
-      (LocalStepBranching.betaArgumentCong body argumentStep) where
+      (LocalStepBranching.betaArgumentCong domainAnn body argumentStep) where
   commonReduct := RawTerm.subst0 body updatedArgument
   leftChain := by
     dsimp [LocalStepBranching.betaArgumentCong]
@@ -2887,6 +2963,7 @@ def betaArgumentCongOfSubst0Replay {scope : Nat}
 /-- Reverse orientation for the conditional beta/argument-congruence
 diamond. -/
 def betaArgumentCongReverseOfSubst0Replay {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     {argument updatedArgument : RawTerm scope}
     (argumentStep : Step argument updatedArgument)
@@ -2894,8 +2971,8 @@ def betaArgumentCongReverseOfSubst0Replay {scope : Nat}
       StepStar (RawTerm.subst0 body argument)
         (RawTerm.subst0 body updatedArgument)) :
     LocalDiamond
-      (LocalStepBranching.betaArgumentCong body argumentStep).swap :=
-  (betaArgumentCongOfSubst0Replay body argumentStep subst0Replay).swap
+      (LocalStepBranching.betaArgumentCong domainAnn body argumentStep).swap :=
+  (betaArgumentCongOfSubst0Replay domainAnn body argumentStep subst0Replay).swap
 
 /-- Concrete beta/argument-congruence local diamond.
 
@@ -2903,23 +2980,25 @@ Uses `Step.subst0Argument`, the pointwise-substitution replay theorem.
 The replay is a `StepStar` chain because the lambda body may duplicate
 the argument variable. -/
 def betaArgumentCong {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     {argument updatedArgument : RawTerm scope}
     (argumentStep : Step argument updatedArgument) :
     LocalDiamond
-      (LocalStepBranching.betaArgumentCong body argumentStep) :=
-  betaArgumentCongOfSubst0Replay body argumentStep
+      (LocalStepBranching.betaArgumentCong domainAnn body argumentStep) :=
+  betaArgumentCongOfSubst0Replay domainAnn body argumentStep
     (Step.subst0Argument body argumentStep)
 
 /-- Reverse orientation for the concrete beta/argument-congruence
 local diamond. -/
 def betaArgumentCongReverse {scope : Nat}
+    (domainAnn : RawTerm scope)
     (body : RawTerm (scope + 1))
     {argument updatedArgument : RawTerm scope}
     (argumentStep : Step argument updatedArgument) :
     LocalDiamond
-      (LocalStepBranching.betaArgumentCong body argumentStep).swap :=
-  (betaArgumentCong body argumentStep).swap
+      (LocalStepBranching.betaArgumentCong domainAnn body argumentStep).swap :=
+  (betaArgumentCong domainAnn body argumentStep).swap
 
 /-- Concrete bool-true iota same-root local diamond. -/
 def iotaBoolTrueSameRoot {scope : Nat}

@@ -104,9 +104,10 @@ each argument `atMemberPredicate` turns the existential reducible-type witness i
 canonical candidate, while the body hypothesis IS membership in it definitionally.  This is the keystone the
 `ofPointwiseIff` arm was added to enable. -/
 theorem IsReducibleMember.abstractionAtMemberPredicate {scope : Nat}
-    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainAnn domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     {domainCandidate : RawTerm scope → Prop}
     (domainReducible : ReducibleType domainCode domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing domainAnn)
     (domainArgumentsSN : ∀ argument : RawTerm scope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainIsReducibleType : ∀ argument : RawTerm scope, domainCandidate argument →
@@ -115,10 +116,10 @@ theorem IsReducibleMember.abstractionAtMemberPredicate {scope : Nat}
       IsReducibleMember (RawTerm.subst0 codomainCode argument) (RawTerm.subst0 body argument)) :
     IsReducibleMember
       (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil)))
-      (.mkGen .gen_lam () (.childCons body .childNil)) :=
+      (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))) :=
   IsReducibleMember.abstraction
     (codomainCandidate := fun argument => IsReducibleMember (RawTerm.subst0 codomainCode argument))
-    domainReducible domainArgumentsSN
+    domainReducible domainAnnSN domainArgumentsSN
     (fun argument argumentInDomain =>
       (codomainIsReducibleType argument argumentInDomain).elim
         (fun _witnessCandidate witnessReducible => ReducibleType.atMemberPredicate witnessReducible))
@@ -136,10 +137,11 @@ codomain / body induction hypotheses into by `RawTerm.subst_cons_eq_subst0_lift`
 choice-free; the piIntro counterpart of `applicationUnderSubst` (piElim) and `castAlongConvUnderSubst`
 (conv). -/
 theorem IsReducibleMember.abstractionUnderSubst {scope targetScope : Nat}
-    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    {domainAnn domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     {domainCandidate : RawTerm targetScope → Prop}
     (substitution : RawTermSubst scope targetScope)
     (domainReducible : ReducibleType (RawTerm.subst substitution domainCode) domainCandidate)
+    (domainAnnSN : IsStronglyNormalizing (RawTerm.subst substitution domainAnn))
     (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
       IsStronglyNormalizing argument)
     (codomainIsReducibleType : ∀ argument : RawTerm targetScope, domainCandidate argument →
@@ -152,9 +154,10 @@ theorem IsReducibleMember.abstractionUnderSubst {scope targetScope : Nat}
     IsReducibleMember
       (RawTerm.subst substitution
         (.mkGen .gen_piTyCode () (.childCons domainCode (.childCons codomainCode .childNil))))
-      (RawTerm.subst substitution (.mkGen .gen_lam () (.childCons body .childNil))) := by
+      (RawTerm.subst substitution
+        (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))) := by
   rw [RawTerm.subst_piTyCode, RawTerm.subst_lam_reduces]
-  exact IsReducibleMember.abstractionAtMemberPredicate domainReducible domainArgumentsSN
-    codomainIsReducibleType bodyReducible
+  exact IsReducibleMember.abstractionAtMemberPredicate domainReducible
+    domainAnnSN domainArgumentsSN codomainIsReducibleType bodyReducible
 
 end FX1Poly.Core

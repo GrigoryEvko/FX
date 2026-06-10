@@ -48,14 +48,15 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core
 
-/-- `λ. v0` — the identity lambda (a normal form). -/
-def identityLambda : RawTerm 0 := lamCell (variableCell ⟨0, Nat.zero_lt_succ 0⟩)
+/-- `λ. v0` — the identity lambda (a normal form).  Under T2 the binder carries a closed domain annotation
+(`unitCell`), invariant under `subst0` and heading no redex. -/
+def identityLambda : RawTerm 0 := lamCell unitCell (variableCell ⟨0, Nat.zero_lt_succ 0⟩)
 
 /-- `(λ. v0) unit` — the identity applied to unit (a β-redex). -/
 def identityAppliedToUnit : RawTerm 0 := appCell identityLambda unitCell
 
 /-- `λ. unit` — the constant function whose body ignores the binder. -/
-def constantUnitLambda : RawTerm 0 := lamCell unitCell
+def constantUnitLambda : RawTerm 0 := lamCell unitCell unitCell
 
 /-- `(λ. unit) (λ. v0)` — the constant function applied to the identity (a β-redex whose argument is
 discarded by `subst0`). -/

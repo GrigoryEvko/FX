@@ -103,9 +103,9 @@ theorem HasTypeDescPi.closedNormalSubjectHead {profile : PolyProfile} {scope : N
       appNormal_functionNormal functionTerm argument armNormal
     rcases functionIH functionNormal armClosed with
       headLam | headPi | headSigma | headUniverse | headList | headOption
-    · obtain ⟨body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
+    · obtain ⟨domainAnn, body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
       rw [bodyEq] at armNormal
-      exact RawTerm.not_isStepNormalForm_beta_smoke body argument armNormal
+      exact RawTerm.not_isStepNormalForm_beta_smoke domainAnn body argument armNormal
     · obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
       rw [piEq] at functionTyped
       exact HasTypeDescPi.piFormerNotTypedAtPiType functionTyped
@@ -153,7 +153,7 @@ theorem HasTypeDescPi.noClosedNormalTermAtEmptyType {profile : PolyProfile} {sub
   rcases HasTypeDescPi.closedNormalSubjectHead typed normal
       (fun emptyIndex => emptyIndex.elim0) with
       headLam | headPi | headSigma | headUniverse | headList | headOption
-  · obtain ⟨_body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
+  · obtain ⟨_domainAnn, _body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
     rw [bodyEq] at typed
     exact HasTypeDescPi.lambdaNotTypedAtEmptyType typed
   · obtain ⟨_domain, _codomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi

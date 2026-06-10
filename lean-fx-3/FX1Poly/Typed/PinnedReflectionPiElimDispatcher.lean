@@ -66,9 +66,9 @@ theorem HasTypeDescPi.normalSubjectCanonicalOrNeutralOfTyping {profile : PolyPro
     rcases functionIH functionNormal with
         (headLam | headPi | headSigma | headUniverse | headList | headOption) | functionNeutral
     · exfalso
-      obtain ⟨body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
+      obtain ⟨domainAnn, body, bodyEq⟩ := eq_lamCell_of_headGenerator headLam
       rw [bodyEq] at armNormal
-      exact RawTerm.not_isStepNormalForm_beta_smoke body argument armNormal
+      exact RawTerm.not_isStepNormalForm_beta_smoke domainAnn body argument armNormal
     · exfalso
       obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
       rw [piEq] at functionTyped
@@ -116,7 +116,8 @@ theorem HasTypeDescPi.normalFunctionIsLambdaOrNeutralOfTyping {profile : PolyPro
     {outerDomain : RawTerm scope} {outerCodomain : RawTerm (scope + 1)}
     (typed : HasTypeDescPi profile context subject (piTyCodeCell outerDomain outerCodomain))
     (normal : RawTerm.isStepNormalForm subject) :
-    (∃ body : RawTerm (scope + 1), subject = lamCell body) ∨ IsNeutral subject := by
+    (∃ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)),
+        subject = lamCell domainAnn body) ∨ IsNeutral subject := by
   rcases HasTypeDescPi.normalSubjectCanonicalOrNeutralOfTyping typed normal with
       (headLam | headPi | headSigma | headUniverse | headList | headOption) | neutral
   · exact Or.inl (eq_lamCell_of_headGenerator headLam)
@@ -142,13 +143,13 @@ theorem HasTypeDescPi.normalFunctionIsLambdaOrNeutralOfTyping {profile : PolyPro
 covered by any premise IH). -/
 def PinnedReflectionPiElimLamReductResidual (profile : PolyProfile) : Prop :=
   ∀ {targetScope : Nat} {targetContext : TypingContext profile targetScope}
-    {functionTerm argument domainCode : RawTerm targetScope}
+    {functionTerm argument domainCode lamDomain : RawTerm targetScope}
     {codomainCode lamBody : RawTerm (targetScope + 1)},
     HasTypeDescPi profile targetContext functionTerm
       (piTyCodeCell domainCode codomainCode) →
     HasTypeDescPi profile targetContext argument domainCode →
-    StepStar functionTerm (lamCell lamBody) →
-    RawTerm.isStepNormalForm (lamCell lamBody) →
+    StepStar functionTerm (lamCell lamDomain lamBody) →
+    RawTerm.isStepNormalForm (lamCell lamDomain lamBody) →
     PinnedReflectionConclusion profile targetContext functionTerm
       (piTyCodeCell domainCode codomainCode) →
     PinnedReflectionConclusion profile targetContext argument domainCode →
@@ -200,7 +201,7 @@ theorem pinnedReflectionPiElimResidualOfHeadResiduals (profile : PolyProfile)
       (piTyCodeCell domainCode codomainCode) :=
     HasTypeDescPi.subjectReductionStar targetWellFormed functionTyped functionReduces
   rcases HasTypeDescPi.normalFunctionIsLambdaOrNeutralOfTyping reductTyped reductNormal with
-      ⟨lamBody, reductEq⟩ | reductNeutral
+      ⟨lamDomain, lamBody, reductEq⟩ | reductNeutral
   · subst reductEq
     exact lamResidual functionTyped argumentTyped functionReduces reductNormal
       functionIH argumentIH targetWellFormed rho sourceContext rhoInjective condition wellFormed

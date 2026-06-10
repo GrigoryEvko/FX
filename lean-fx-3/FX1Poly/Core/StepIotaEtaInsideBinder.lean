@@ -274,35 +274,41 @@ position of the eta-lambda body; the right branch contracts eta-lambda at
 the root.  The generic proof strengthens the updated under-binder target
 and replays the step in the source scope. -/
 theorem iotaEta_inside_etaLam_join {scope : Nat}
-    {innerFunction : RawTerm scope}
+    {domainAnn innerFunction : RawTerm scope}
     {updatedUnderBinder : RawTerm (scope + 1)}
     (underBinderStep :
       Step (RawTerm.weaken innerFunction) updatedUnderBinder) :
     BetaEtaPairJoin
       (Or.inl
         (Step.cong .gen_lam ()
-          (StepChildren.here
-            (parentScope := scope) (headShift := 1) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
-            (Step.cong .gen_app ()
-              (StepChildren.here
-                (parentScope := scope + 1) (headShift := 0)
-                (restShifts := [0])
-                ((.childCons RawTerm.newestVar .childNil) :
-                  RawTermChildren [0] (scope + 1))
-                underBinderStep)))))
-      (Or.inr (Step.eta.etaLam innerFunction)) :=
-  BetaEtaPairJoin.etaLamArbitraryUnderBinderCong underBinderStep
+          (StepChildren.there
+            (parentScope := scope) (headShift := 0) (restShifts := [1])
+            domainAnn
+            (StepChildren.here
+              (parentScope := scope) (headShift := 1) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              (Step.cong .gen_app ()
+                (StepChildren.here
+                  (parentScope := scope + 1) (headShift := 0)
+                  (restShifts := [0])
+                  ((.childCons RawTerm.newestVar .childNil) :
+                    RawTermChildren [0] (scope + 1))
+                  underBinderStep))))))
+      (Or.inr (Step.eta.etaLam domainAnn innerFunction)) :=
+  BetaEtaPairJoin.etaLamArbitraryUnderBinderCong domainAnn underBinderStep
 
 /-- Resolver-facing wrapper for any beta+iota step leaving an eta-lambda
-source. -/
+source, under the Nederpelt diagonal guard (the unguarded form is FALSE under
+Church-style annotations — see `BetaEtaPairJoin.EtaLamAnnotationDiagonal`). -/
 theorem iotaEta_etaLam_source_join {scope : Nat}
-    {innerFunction leftReduct : RawTerm scope}
-    (leftStep : Step (RawTerm.etaLamSource innerFunction) leftReduct) :
+    {domainAnn innerFunction leftReduct : RawTerm scope}
+    (diagonal : BetaEtaPairJoin.EtaLamAnnotationDiagonal domainAnn innerFunction)
+    (leftStep :
+      Step (RawTerm.etaLamSource domainAnn innerFunction) leftReduct) :
     BetaEtaPairJoin
       (Or.inl leftStep)
-      (Or.inr (Step.eta.etaLam innerFunction)) :=
-  BetaEtaPairJoin.etaLamLeftStep leftStep
+      (Or.inr (Step.eta.etaLam domainAnn innerFunction)) :=
+  BetaEtaPairJoin.etaLamLeftStep diagonal leftStep
 
 /-- Audit bit exported under `Step` for the inside-binder eta-lambda coverage. -/
 def iotaEta_inside_binder_complete : Bool :=

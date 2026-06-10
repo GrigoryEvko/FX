@@ -105,20 +105,21 @@ hence value-or-neutral.  Exactly what the fundamental theorem's Π-introduction 
 candidate (`DependentArrowCandidate.abstraction`). -/
 theorem dataTaitCandidate_headExpansionClosed {scope : Nat} {isValue : RawTerm scope → Prop} :
     HeadExpansionClosed (dataTaitCandidate isValue) := by
-  intro body argument spine argumentSN contractumMember
-  refine ⟨betaSpineHeadExpansion argumentSN contractumMember.1, ?_⟩
+  intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
+  refine ⟨betaSpineHeadExpansion domainAnnSN argumentSN contractumMember.1, ?_⟩
   intro normalForm redexToNF nfIsNormal
   have redexToContractum : StepStar
       (RawTerm.applySpineApp
         (.mkGen .gen_app ()
-          (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons
+            (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
             (.childCons argument .childNil)))
         spine)
       (RawTerm.applySpineApp (RawTerm.subst0 body argument) spine) :=
     StepStar.single (WeakHeadStep.betaSpine).toStep
   obtain ⟨commonReduct, normalFormToCommon, contractumToCommon⟩ :=
     confluence_of_localJoin_and_accessible
-      (betaSpineHeadExpansion argumentSN contractumMember.1) redexToNF redexToContractum
+      (betaSpineHeadExpansion domainAnnSN argumentSN contractumMember.1) redexToNF redexToContractum
   have commonEqNormalForm : commonReduct = normalForm :=
     StepStar.eq_of_noStep (fun reduct step =>
       (RawTerm.isStepNormalForm_blocks_step nfIsNormal reduct step).elim) normalFormToCommon

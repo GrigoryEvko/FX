@@ -57,9 +57,10 @@ theorem HasTypeDesc.subjectRootGenerator_ne_app {profile : PolyProfile} {scope :
 
 /-- The description formation engine cannot type a lambda subject. -/
 theorem HasTypeDesc.subjectCannotBeLambda {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
+    {context : TypingContext profile scope}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     {classifier : RawTerm scope}
-    (typed : HasTypeDesc profile context (lamCell body) classifier) :
+    (typed : HasTypeDesc profile context (lamCell domainAnn body) classifier) :
     False :=
   typed.subjectRootGenerator_ne_lam rfl
 

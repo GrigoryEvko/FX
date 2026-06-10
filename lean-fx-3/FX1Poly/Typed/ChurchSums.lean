@@ -45,19 +45,27 @@ symbolic-handler / concrete-value contractum is rewritten by a named `subst0`-ty
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core StepStar
+open FX1Poly.Core FX1Poly.Universe StepStar
+
+/-- A closed, scope-polymorphic domain annotation for the Church-sum binders.  Under T2 every `lamCell` carries a
+domain; for these pure-raw fixtures (no typing derivation) a closed `universeCodeCell` is invariant under
+`subst0`/`weaken` and heads no redex, keeping the case-selection reductions computational. -/
+def churchSumDomainAnn {scope : Nat} : RawTerm scope :=
+  universeCodeCell LevelExpr.lzero UniverseFlag.standard
 
 /-- `inl a = λl. λr. l a` — the LEFT injection of a Church sum: applies the left handler (`l`, the outer binder,
 appearing as `var 1` under the two binders) to the stored payload `a`, discarding the right handler `r`. -/
 def leftInjection (payload : RawTerm 0) : RawTerm 0 :=
-  lamCell (lamCell (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
-    (RawTerm.weaken (RawTerm.weaken payload))))
+  lamCell churchSumDomainAnn (lamCell churchSumDomainAnn
+    (appCell (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
+      (RawTerm.weaken (RawTerm.weaken payload))))
 
 /-- `inr b = λl. λr. r b` — the RIGHT injection of a Church sum: applies the right handler (`r`, the inner binder,
 appearing as `var 0`) to the stored payload `b`, discarding the left handler `l`. -/
 def rightInjection (payload : RawTerm 0) : RawTerm 0 :=
-  lamCell (lamCell (appCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))
-    (RawTerm.weaken (RawTerm.weaken payload))))
+  lamCell churchSumDomainAnn (lamCell churchSumDomainAnn
+    (appCell (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))
+      (RawTerm.weaken (RawTerm.weaken payload))))
 
 /-- **`case (inl I) l r ↝* l I`** — case-analysing the LEFT injection selects the LEFT handler.  Applying
 `inl I` to `handlerL` β-reduces (discarding the still-to-come right handler, since the left injection's body never
@@ -67,13 +75,13 @@ theorem caseLeft_selectsLeftHandler (handlerL handlerR : RawTerm 0) :
     StepStar (appCell (appCell (leftInjection combinatorI) handlerL) handlerR)
       (appCell handlerL combinatorI) := by
   have functionBeta : Step (appCell (leftInjection combinatorI) handlerL)
-      (lamCell (appCell (RawTerm.weaken handlerL) (RawTerm.weaken combinatorI))) := Step.beta
+      (lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken combinatorI))) := Step.beta
   have congStep : Step (appCell (appCell (leftInjection combinatorI) handlerL) handlerR)
-      (appCell (lamCell (appCell (RawTerm.weaken handlerL) (RawTerm.weaken combinatorI))) handlerR) :=
+      (appCell (lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken combinatorI))) handlerR) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons handlerR .childNil) functionBeta)
-  have outerBeta : Step (appCell (lamCell (appCell (RawTerm.weaken handlerL) (RawTerm.weaken combinatorI))) handlerR)
+  have outerBeta : Step (appCell (lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken combinatorI))) handlerR)
       (appCell (RawTerm.subst0 (RawTerm.weaken handlerL) handlerR)
         (RawTerm.subst0 (RawTerm.weaken combinatorI) handlerR)) := Step.beta
   have cancelHandler : RawTerm.subst0 (RawTerm.weaken handlerL) handlerR = handlerL :=
@@ -91,13 +99,13 @@ theorem caseRight_selectsRightHandler (handlerL handlerR : RawTerm 0) :
     StepStar (appCell (appCell (rightInjection combinatorI) handlerL) handlerR)
       (appCell handlerR combinatorI) := by
   have functionBeta : Step (appCell (rightInjection combinatorI) handlerL)
-      (lamCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken combinatorI))) := Step.beta
+      (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken combinatorI))) := Step.beta
   have congStep : Step (appCell (appCell (rightInjection combinatorI) handlerL) handlerR)
-      (appCell (lamCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken combinatorI))) handlerR) :=
+      (appCell (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken combinatorI))) handlerR) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons handlerR .childNil) functionBeta)
-  have outerBeta : Step (appCell (lamCell (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken combinatorI))) handlerR)
+  have outerBeta : Step (appCell (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken combinatorI))) handlerR)
       (appCell handlerR (RawTerm.subst0 (RawTerm.weaken combinatorI) handlerR)) := Step.beta
   have cancelValue : RawTerm.subst0 (RawTerm.weaken combinatorI) handlerR = combinatorI :=
     RawTerm.weaken_subst_singleton combinatorI handlerR

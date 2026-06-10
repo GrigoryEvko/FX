@@ -176,7 +176,7 @@ theorem GrownCheck.lamSoundGivenBodyTyped {profile : PolyProfile} {scope : Nat}
       HasTypeDescPi profile (context.cons domainReduct) codomainReduct
         (universeCodeCell codomainLevel flag))
     (bodyTyped : HasTypeDescPi profile (context.cons domainReduct) body codomainReduct) :
-    HasTypeDescPi profile context (lamCell body) target :=
+    HasTypeDescPi profile context (lamCell domainReduct body) target :=
   HasTypeDescPi.conv targetLevel targetFlag
     (HasTypeDescPi.piIntro domainLevel codomainLevel flag domainTyped codomainTyped bodyTyped)
     (Conv.fromStepStar targetReduces).sym

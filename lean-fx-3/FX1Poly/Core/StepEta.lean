@@ -25,16 +25,18 @@ namespace RawTerm
   .mkGen .gen_var ⟨0, Nat.zero_lt_succ scope⟩ .childNil
 
 /-- Raw eta source for functions:
-`lam (app (weaken f) newestVar)`. -/
+`lam domainAnn (app (weaken f) newestVar)`.  Church-style: the lambda
+carries a domain annotation; eta contraction discards it. -/
 @[reducible] def etaLamSource {scope : Nat}
-    (innerFunction : RawTerm scope) : RawTerm scope :=
+    (domainAnn innerFunction : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_lam ()
-    (.childCons
-      (.mkGen .gen_app ()
-        (.childCons
-          (RawTerm.weaken innerFunction)
-          (.childCons RawTerm.newestVar .childNil)))
-      .childNil)
+    (.childCons domainAnn
+      (.childCons
+        (.mkGen .gen_app ()
+          (.childCons
+            (RawTerm.weaken innerFunction)
+            (.childCons RawTerm.newestVar .childNil)))
+        .childNil))
 
 /-- Raw eta source for pairs:
 `pair (fst p) (snd p)`. -/
@@ -96,8 +98,8 @@ not constructors here yet because their generators are Phase Z7/Z8
 entries and are not present in the current enum. -/
 inductive eta : {scope : Nat} → RawTerm scope → RawTerm scope → Prop where
   /-- Function eta: `lam (app (weaken f) newestVar)` contracts to `f`. -/
-  | etaLam {scope : Nat} (innerFunction : RawTerm scope) :
-      eta (RawTerm.etaLamSource innerFunction) innerFunction
+  | etaLam {scope : Nat} (domainAnn innerFunction : RawTerm scope) :
+      eta (RawTerm.etaLamSource domainAnn innerFunction) innerFunction
   /-- Pair eta: `pair (fst p) (snd p)` contracts to `p`. -/
   | etaPair {scope : Nat} (pairTerm : RawTerm scope) :
       eta (RawTerm.etaPairSource pairTerm) pairTerm
@@ -160,12 +162,18 @@ theorem etaLam_weakened_function_strengthens {scope : Nat}
       some innerFunction :=
   RawTerm.strengthen_weaken innerFunction
 
-/-- Smoke: eta-lambda fires on a closed unit-shaped raw term. -/
+/-- Smoke: eta-lambda fires on a closed unit-shaped raw term.
+
+Church-style: `etaLamSource` carries a domain annotation as its
+first argument; the contraction discards it.  Both the annotation
+and the inner function are the closed `unit` term here. -/
 theorem etaLam_unit_smoke :
     Step.eta
-      (RawTerm.etaLamSource (.mkGen .gen_unit () .childNil : RawTerm 0))
+      (RawTerm.etaLamSource
+        (.mkGen .gen_unit () .childNil : RawTerm 0)
+        (.mkGen .gen_unit () .childNil : RawTerm 0))
       (.mkGen .gen_unit () .childNil : RawTerm 0) :=
-  Step.eta.etaLam _
+  Step.eta.etaLam _ _
 
 /-- Smoke: eta-pair fires on an explicit pair term. -/
 theorem etaPair_pair_smoke :

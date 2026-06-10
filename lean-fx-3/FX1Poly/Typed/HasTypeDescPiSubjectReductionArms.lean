@@ -39,18 +39,26 @@ redex), so — given the body's SR (`bodyPreserves`) — `reduct` is typed at th
 `congLamBody`.  The dispatcher's `piIntro` case. -/
 theorem HasTypeDescPi.subjectReductionAtLam {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    {body : RawTerm (scope + 1)} {reduct : RawTerm scope} {classifier : RawTerm scope}
-    (typed : HasTypeDescPi profile context (lamCell body) classifier)
-    (step : Step (lamCell body) reduct)
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
+    {reduct : RawTerm scope} {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (lamCell domainAnn body) classifier)
+    (step : Step (lamCell domainAnn body) reduct)
     (bodyPreserves : ∀ {bindingType : RawTerm scope} {bodyReduct bodyClassifier : RawTerm (scope + 1)},
       Step body bodyReduct →
         HasTypeDescPi profile (context.cons bindingType) body bodyClassifier →
           HasTypeDescPi profile (context.cons bindingType) bodyReduct bodyClassifier)
+    (domainPreserves : ∀ {domainReduct : RawTerm scope},
+      Step domainAnn domainReduct →
+        HasTypeDescPi profile context (lamCell domainReduct body) classifier)
     (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context reduct classifier := by
-  obtain ⟨bodyAfter, reductEq, bodyStep⟩ := Step.from_lam step
-  subst reductEq
-  exact HasTypeDescPi.congLamBody typed (fun bodyTyped => bodyPreserves bodyStep bodyTyped) wellFormed
+  rcases Step.from_lam step with
+    ⟨domainAfter, reductEq, domainStep⟩ | ⟨bodyAfter, reductEq, bodyStep⟩
+  · subst reductEq
+    exact domainPreserves domainStep
+  · subst reductEq
+    exact HasTypeDescPi.congLamBody typed (fun bodyTyped => bodyPreserves bodyStep bodyTyped)
+      wellFormed
 
 /-- **SR routing arm at an application.**  `Step (appCell functionTerm argument) reduct` is one of: β-contraction
 (→ `betaSubjectReduction`), function congruence (→ `congFunction` with the function's SR), or argument congruence
@@ -71,7 +79,7 @@ theorem HasTypeDescPi.subjectReductionAtApp {profile : PolyProfile} {scope : Nat
           HasTypeDescPi profile context argumentReduct argumentClassifier)
     (wellFormed : WfContextDescPi context) :
     HasTypeDescPi profile context reduct classifier := by
-  rcases Step.from_app step with ⟨body, functionEq, reductEq⟩ |
+  rcases Step.from_app step with ⟨domainAnn, body, functionEq, reductEq⟩ |
       ⟨functionAfter, reductEq, functionStep⟩ | ⟨argumentAfter, reductEq, argumentStep⟩
   · subst functionEq
     subst reductEq

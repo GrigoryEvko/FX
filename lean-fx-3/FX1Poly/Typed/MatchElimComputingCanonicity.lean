@@ -115,13 +115,13 @@ theorem eitherMatchComputesToValue {isResultValue : RawTerm 0 → Prop}
 wrapped payload (`subst0 natZero payload = natZero` definitionally). -/
 theorem optionMatchConstComputesToNumeral {scrutinee : RawTerm 0} (scrutineeValue : isOptionValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell scrutinee natZeroCell (lamCell (natZeroCell : RawTerm 1))) out ∧
+      StepStar (optionMatchCell scrutinee natZeroCell (lamCell natZeroCell (natZeroCell : RawTerm 1))) out ∧
       IsNatNumeral out :=
   optionMatchComputesToValue (isResultValue := IsNatNumeral)
     IsNatNumeral.zero
     (fun payload _payloadNormal => by
       refine ⟨natZeroCell, ?_, IsNatNumeral.zero⟩
-      have betaStep : Step (appCell (lamCell (natZeroCell : RawTerm 1)) payload) natZeroCell := Step.beta
+      have betaStep : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) payload) natZeroCell := Step.beta
       exact StepStar.single betaStep)
     scrutineeValue
 
@@ -129,16 +129,16 @@ theorem optionMatchConstComputesToNumeral {scrutinee : RawTerm 0} (scrutineeValu
 every closed either value `s`. -/
 theorem eitherMatchConstComputesToNumeral {scrutinee : RawTerm 0} (scrutineeValue : isEitherValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (eitherMatchCell scrutinee (lamCell (natZeroCell : RawTerm 1)) (lamCell (natZeroCell : RawTerm 1)))
+      StepStar (eitherMatchCell scrutinee (lamCell natZeroCell (natZeroCell : RawTerm 1)) (lamCell natZeroCell (natZeroCell : RawTerm 1)))
         out ∧ IsNatNumeral out :=
   eitherMatchComputesToValue (isResultValue := IsNatNumeral)
     (fun payload _payloadNormal => by
       refine ⟨natZeroCell, ?_, IsNatNumeral.zero⟩
-      have betaStep : Step (appCell (lamCell (natZeroCell : RawTerm 1)) payload) natZeroCell := Step.beta
+      have betaStep : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) payload) natZeroCell := Step.beta
       exact StepStar.single betaStep)
     (fun payload _payloadNormal => by
       refine ⟨natZeroCell, ?_, IsNatNumeral.zero⟩
-      have betaStep : Step (appCell (lamCell (natZeroCell : RawTerm 1)) payload) natZeroCell := Step.beta
+      have betaStep : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) payload) natZeroCell := Step.beta
       exact StepStar.single betaStep)
     scrutineeValue
 
@@ -150,14 +150,14 @@ wrapped `payload`, which is normal (from `isOptionValue`), so the eliminator thr
 non-recursive analogue of the length/copy folds — the branch genuinely uses its argument. -/
 theorem optionMatchIdComputesToValue {scrutinee : RawTerm 0} (scrutineeValue : isOptionValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell scrutinee boolTrueCell (lamCell (variableCell (⟨0, by decide⟩ : Fin 1)))) out ∧
+      StepStar (optionMatchCell scrutinee boolTrueCell (lamCell natZeroCell (variableCell (⟨0, by decide⟩ : Fin 1)))) out ∧
       RawTerm.isStepNormalForm out :=
   optionMatchComputesToValue (isResultValue := RawTerm.isStepNormalForm)
     (by decide)
     (fun payload payloadNormal => by
       refine ⟨payload, ?_, payloadNormal⟩
       have betaStep :
-          Step (appCell (lamCell (variableCell (⟨0, by decide⟩ : Fin 1))) payload) payload := Step.beta
+          Step (appCell (lamCell natZeroCell (variableCell (⟨0, by decide⟩ : Fin 1))) payload) payload := Step.beta
       exact StepStar.single betaStep)
     scrutineeValue
 
@@ -167,7 +167,7 @@ theorem optionMatchIdComputesToValue.smoke :
     ∃ out : RawTerm 0,
       StepStar
         (optionMatchCell (optionSomeCell boolTrueCell) boolTrueCell
-          (lamCell (variableCell (⟨0, by decide⟩ : Fin 1)))) out ∧
+          (lamCell natZeroCell (variableCell (⟨0, by decide⟩ : Fin 1)))) out ∧
       RawTerm.isStepNormalForm out :=
   optionMatchIdComputesToValue (Or.inr ⟨boolTrueCell, rfl, by decide⟩)
 
@@ -175,8 +175,8 @@ theorem optionMatchIdComputesToValue.smoke :
 theorem eitherMatchConstComputesToNumeral.smoke :
     ∃ out : RawTerm 0,
       StepStar
-        (eitherMatchCell (eitherInlCell boolTrueCell) (lamCell (natZeroCell : RawTerm 1))
-          (lamCell (natZeroCell : RawTerm 1))) out ∧
+        (eitherMatchCell (eitherInlCell boolTrueCell) (lamCell natZeroCell (natZeroCell : RawTerm 1))
+          (lamCell natZeroCell (natZeroCell : RawTerm 1))) out ∧
       IsNatNumeral out :=
   eitherMatchConstComputesToNumeral (Or.inl ⟨boolTrueCell, rfl, by decide⟩)
 

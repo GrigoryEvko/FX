@@ -74,7 +74,7 @@ def decidableConvBetaRedexAndReduct {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     Decidable
       (Conv
-        (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (appCell (lamCell (universeCodeCell levelExpr.lsucc flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
           (universeCodeCell levelExpr flag) : RawTerm 0)
         (universeCodeCell levelExpr flag)) :=
   Conv.decidableOfStronglyNormalizing
@@ -90,9 +90,9 @@ def decidableConvBetaRedexAndIdentity {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     Decidable
       (Conv
-        (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+        (appCell (lamCell (universeCodeCell levelExpr.lsucc flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
           (universeCodeCell levelExpr flag) : RawTerm 0)
-        (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) :=
+        (lamCell (universeCodeCell levelExpr flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) :=
   Conv.decidableOfStronglyNormalizing
     (closedIdentityApplication_stronglyNormalizing (profile := profile) levelExpr flag)
     (closedIdentityOnUniverse_stronglyNormalizing (profile := profile) levelExpr flag)
@@ -103,7 +103,7 @@ single step to conversion.  The non-vacuity witness for `decidableConvBetaRedexA
 really convertible, so the decision procedure has a true instance to find — not an always-false relation. -/
 theorem betaRedexConvertsToReduct (levelExpr : LevelExpr) (flag : UniverseFlag) :
     Conv
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag) : RawTerm 0)
       (universeCodeCell levelExpr flag) :=
   Conv.fromStep Step.beta

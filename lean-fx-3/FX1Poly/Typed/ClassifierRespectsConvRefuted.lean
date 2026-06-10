@@ -60,9 +60,14 @@ open FX1Poly.Core FX1Poly.Universe StepStar
 abbrev classifierConvCounterexampleType : RawTerm 0 :=
   universeCodeCell LevelExpr.lzero UniverseFlag.standard
 
-/-- The bad term `B = (λ_. Type@0) Ω` — a β-redex whose lambda discards its (untypable) argument. -/
+/-- The bad term `B = (λ(_: Type@0). Type@0) Ω` — a β-redex whose lambda discards its (untypable)
+argument (the Church domain annotation is irrelevant: β discards both the annotation and the
+argument). -/
 abbrev classifierConvCounterexampleRedex : RawTerm 0 :=
-  appCell (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) omegaCombinator
+  appCell
+    (lamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
+    omegaCombinator
 
 /-- `B ↝ A`: the β-redex discards `Ω` (the body `Type@0` has no `var 0`), stepping to `Type@0`. -/
 theorem classifierConvCounterexampleRedex_stepsToType :

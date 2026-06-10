@@ -48,23 +48,26 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **λ-body congruence (at typing).**  A `lamCell body` typed at `classifier`, with a same-typed
-replacement `body'` (preserved at any codomain under any domain binder), gives `lamCell body'` typed
-at the SAME `classifier`.  The `Step.cong`-on-a-λ-body case of subject reduction, modulo the body's SR
-(supplied as `childPreserves`). -/
+/-- **λ-body congruence (at typing).**  A Church-style `lamCell domainAnn body` typed at `classifier`,
+with a same-typed replacement `body'` (preserved at any codomain under any domain binder), gives
+`lamCell domainAnn body'` typed at the SAME `classifier` — the syntactic domain annotation is FIXED by
+the step (`Step.cong` under a λ steps only the body), so it persists.  The `Step.cong`-on-a-λ-body case
+of subject reduction, modulo the body's SR (supplied as `childPreserves`).  With the T2 Church-style
+pin, `invertLam` returns the codomain directly against the SYNTACTIC `domainAnn` (no domain
+existential), so the rebuilt λ types at `piTyCodeCell domainAnn codomainCode` immediately. -/
 theorem HasTypeDescPi.congLamBody {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    {body body' : RawTerm (scope + 1)} {classifier : RawTerm scope}
-    (typed : HasTypeDescPi profile context (lamCell body) classifier)
+    {domainAnn : RawTerm scope} {body body' : RawTerm (scope + 1)} {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (lamCell domainAnn body) classifier)
     (childPreserves : ∀ {bindingType : RawTerm scope} {bodyClassifier : RawTerm (scope + 1)},
       HasTypeDescPi profile (context.cons bindingType) body bodyClassifier →
         HasTypeDescPi profile (context.cons bindingType) body' bodyClassifier)
     (wellFormed : WfContextDescPi context) :
-    HasTypeDescPi profile context (lamCell body') classifier := by
-  obtain ⟨domainCode, codomainCode, domainLevel, codomainLevel, flag,
+    HasTypeDescPi profile context (lamCell domainAnn body') classifier := by
+  obtain ⟨codomainCode, domainLevel, codomainLevel, flag,
       convClassifierPi, domainTyped, codomainTyped, bodyTyped⟩ := typed.invertLam
   have rebuiltLam :
-      HasTypeDescPi profile context (lamCell body') (piTyCodeCell domainCode codomainCode) :=
+      HasTypeDescPi profile context (lamCell domainAnn body') (piTyCodeCell domainAnn codomainCode) :=
     HasTypeDescPi.piIntro domainLevel codomainLevel flag domainTyped codomainTyped
       (childPreserves bodyTyped)
   obtain ⟨classifierLevel, classifierFlag, classifierTyped⟩ := typed.classifierIsTypeDescPi wellFormed

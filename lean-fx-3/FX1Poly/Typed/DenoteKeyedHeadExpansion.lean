@@ -48,12 +48,14 @@ at the decoded classifier level `LevelExpr.denote levelExpr env`.  A proof of th
 denote-reducible candidate head-expansion-closed. -/
 theorem ReducibleTypeStepDenote.headExpansionClosed {scope : Nat} {env : Nat → Nat}
     {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
-    (lowerHeadExpand : ∀ (lvl : Nat) {body : RawTerm (scope + 1)} {argument : RawTerm scope}
+    (lowerHeadExpand : ∀ (lvl : Nat) {domainAnn : RawTerm scope}
+      {body : RawTerm (scope + 1)} {argument : RawTerm scope}
       {spine : List (RawTerm scope)} {lowerCandidate : RawTerm scope → Prop},
       lowerAt lvl (RawTerm.applySpineApp (RawTerm.subst0 body argument) spine) lowerCandidate →
       lowerAt lvl (RawTerm.applySpineApp
         (.mkGen .gen_app ()
-          (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+          (.childCons
+            (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
             (.childCons argument .childNil)))
         spine) lowerCandidate)
     {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
@@ -66,7 +68,8 @@ theorem ReducibleTypeStepDenote.headExpansionClosed {scope : Nat} {env : Nat →
       exact isStronglyNormalizing_headExpansionClosed
   | @piType _domainCode _codomainCode _domainCandidate codomainCandidate _domainReducible
       _codomainReducible _domainInductiveHypothesis codomainInductiveHypothesis =>
-      intro body argument spine argumentSN contractumReducible extraArgument extraArgumentReducible
+      intro domainAnn body argument spine domainAnnSN argumentSN contractumReducible
+      intro extraArgument extraArgumentReducible
       have contractumAtExtendedSpine :
           codomainCandidate extraArgument
             (RawTerm.applySpineApp (RawTerm.subst0 body argument) (spine ++ [extraArgument])) := by
@@ -76,17 +79,18 @@ theorem ReducibleTypeStepDenote.headExpansionClosed {scope : Nat} {env : Nat →
           codomainCandidate extraArgument
             (RawTerm.applySpineApp
               (.mkGen .gen_app ()
-                (.childCons (.mkGen .gen_lam () (.childCons body .childNil))
+                (.childCons
+                  (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
                   (.childCons argument .childNil)))
               (spine ++ [extraArgument])) :=
         (codomainInductiveHypothesis extraArgument extraArgumentReducible)
-          argumentSN contractumAtExtendedSpine
+          domainAnnSN argumentSN contractumAtExtendedSpine
       rw [applySpineApp_append] at redexAtExtendedSpine
       exact redexAtExtendedSpine
   | universeCode levelExpr _flag =>
-      intro _body _argument _spine argumentSN contractumMember
+      intro _domainAnn _body _argument _spine domainAnnSN argumentSN contractumMember
       obtain ⟨contractumStronglyNormalizing, lowerCandidate, lowerContractum⟩ := contractumMember
-      exact ⟨betaSpineHeadExpansion argumentSN contractumStronglyNormalizing,
+      exact ⟨betaSpineHeadExpansion domainAnnSN argumentSN contractumStronglyNormalizing,
         lowerCandidate, lowerHeadExpand (LevelExpr.denote levelExpr env) lowerContractum⟩
   | dataEmpty =>
       exact emptyTaitCandidate_headExpansionClosed
@@ -103,7 +107,7 @@ theorem ReducibleTypeAtDenote.headExpansionClosed {scope : Nat} {env : Nat → N
     (reducible : ReducibleTypeAtDenote env level typeCode candidate) :
     HeadExpansionClosed candidate := by
   refine ReducibleTypeStepDenote.headExpansionClosed ?leg reducible
-  intro lvl _body _argument _spine _lowerCandidate contractumMember
+  intro lvl _domainAnn _body _argument _spine _lowerCandidate contractumMember
   exact denoteBelowFamily_backwardWeakHeadStep env level lvl contractumMember WeakHeadStep.betaSpine
 
 end FX1Poly.Typed

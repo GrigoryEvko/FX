@@ -168,6 +168,8 @@ import FX1Poly.Core.StrongNormalizationBetaEtaFormers
 import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
+import FX1Poly.Core.NederpeltNonJoinability
+import FX1Poly.Core.GeneratorCountPin
 import FX1Poly.Core.StepIotaEtaDoubleStrips
 
 /-! # FX1PolyAudit/AuditCoreSubstrate — namespace zero-axiom sweep
@@ -448,3 +450,25 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.fold_mkGen_of_ne_var
 #assert_no_axioms FX1Poly.Core.RawTerm.subst_mkGen_of_ne_var
 #assert_no_axioms FX1Poly.Core.RawTerm.rename_mkGen_of_ne_var
+
+-- NEDERPELT NON-JOINABILITY (L1 known-unsoundness corpus): under Church-style lambda annotations the
+-- eta-beta overlap `lam A (app (weaken (lam B b)) newestVar)` contracts to `lam A b` (inner beta keeps the
+-- OUTER annotation) and to `lam B b` (root eta keeps the INNER annotation) — distinct beta-eta normal forms
+-- for normal A != B, hence non-joinable.  The three UNGUARDED mixed cd-lemma statements are therefore FALSE;
+-- the proved replacements carry the EtaLamAnnotationDiagonal guard (StepEtaCriticalPairs /
+-- StepEtaEtaCriticalPairs) and the hereditary diagonal guard (StepBetaEtaConfluence).  Typed terms satisfy
+-- the guard (typing forces the annotations convertible), so the typed beta-eta theory is unaffected.
+#assert_no_axioms FX1Poly.Core.Step.nederpeltInnerBetaBody
+#assert_no_axioms FX1Poly.Core.Step.nederpeltInnerBeta
+#assert_no_axioms FX1Poly.Core.Step.eta.not_from_varBodyLam
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.eq_of_blockedSource
+#assert_no_axioms FX1Poly.Core.nederpeltReductsNonJoinable
+#assert_no_axioms FX1Poly.Core.cdLemmaStatementStepEta_isFalse
+#assert_no_axioms FX1Poly.Core.cdLemmaStatementEtaStep_isFalse
+#assert_no_axioms FX1Poly.Core.cdLemmaStatementBetaEta_isFalse
+
+-- GENERATOR-COUNT PIN (permanent stale-count guard): the enum has exactly 197 constructors —
+-- gen_npComplete attains index 196 (count from below) and every index is < 197 (count from above,
+-- the theorem a 198th generator breaks).  Update generatorCount + count-citing docstrings together.
+#assert_no_axioms FX1Poly.Core.generatorCount_lastIndex
+#assert_no_axioms FX1Poly.Core.generatorCount_upperBound

@@ -71,7 +71,8 @@ codomain `Type@e`, so the var arm feeds `piIntro`'s body premise directly.  The 
 theorem closedIdentityOnUniverse_stronglyNormalizing {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) :=
+      (lamCell (universeCodeCell levelExpr flag)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) : RawTerm 0) :=
   closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
     (fundamentalPiIntroLevelIndexed (context := (TypingContext.empty : TypingContext profile 0))
       emptyLevelVector 0
@@ -99,12 +100,14 @@ machinery, hypothesis-free. -/
 theorem closedIdentityApplication_stronglyNormalizing {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (appCell (lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag) : RawTerm 0) :=
   closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
     (fundamentalPiElimLevelIndexed (context := (TypingContext.empty : TypingContext profile 0))
       emptyLevelVector (0 + 1)
-      (functionTerm := lamCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
+      (functionTerm := lamCell (universeCodeCell levelExpr.lsucc flag)
+        (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
       (argument := universeCodeCell levelExpr flag)
       (domainCode := universeCodeCell levelExpr.lsucc flag)
       (codomainCode := universeCodeCell levelExpr.lsucc flag)
@@ -158,7 +161,8 @@ uses the binder or discards it. -/
 theorem closedConstantLambda_stronglyNormalizing {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (lamCell (universeCodeCell LevelExpr.lzero flag) : RawTerm 0) :=
+      (lamCell (universeCodeCell levelExpr flag)
+        (universeCodeCell LevelExpr.lzero flag) : RawTerm 0) :=
   closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
     (fundamentalPiIntroLevelIndexed (context := (TypingContext.empty : TypingContext profile 0))
       emptyLevelVector 0
@@ -186,12 +190,14 @@ on the ERASING β-case end-to-end, hypothesis-free — the complement of the ide
 theorem closedConstantApplication_stronglyNormalizing {profile : PolyProfile}
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     IsStronglyNormalizing
-      (appCell (lamCell (universeCodeCell LevelExpr.lzero flag))
+      (appCell (lamCell (universeCodeCell levelExpr.lsucc flag)
+          (universeCodeCell LevelExpr.lzero flag))
         (universeCodeCell levelExpr flag) : RawTerm 0) :=
   closedSubjectStronglyNormalizingFromLevelIndexed (profile := profile) 0
     (fundamentalPiElimLevelIndexed (context := (TypingContext.empty : TypingContext profile 0))
       emptyLevelVector (0 + 1)
-      (functionTerm := lamCell (universeCodeCell LevelExpr.lzero flag))
+      (functionTerm := lamCell (universeCodeCell levelExpr.lsucc flag)
+        (universeCodeCell LevelExpr.lzero flag))
       (argument := universeCodeCell levelExpr flag)
       (domainCode := universeCodeCell levelExpr.lsucc flag)
       (codomainCode := universeCodeCell LevelExpr.lzero.lsucc flag)
