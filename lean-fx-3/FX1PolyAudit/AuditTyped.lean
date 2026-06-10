@@ -433,6 +433,7 @@ import FX1Poly.Typed.UnitCollapseIncompleteness
 import FX1Poly.Typed.UnitCollapseBinderFence
 import FX1Poly.Typed.UnitVariableCollapseDeep
 import FX1Poly.Typed.UnitVariableCollapseDeepSound
+import FX1Poly.Typed.UnitCollapseNeutralBoundary
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3420,6 +3421,26 @@ procedure is strictly stronger than every fenced one).  Completeness re-poses ne
 #assert_no_axioms FX1Poly.Typed.collapseHeadsLeg
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofDeepCollapsesEqual
 #assert_no_axioms FX1Poly.Typed.konstNormalForms_congruentlyEqual
+
+/-! ### UnitCollapseNeutralBoundary — ★ the brick-D verdict: incomplete at compound neutrals
+
+The mandated pre-construction re-analysis, machine-checked: the deep collapse ERASES both prior
+refutation witnesses, but completeness fails at a SIMPLER boundary — `x` and `app(f, x)` are
+both unit-typed (one `unitEta` leaf, no β, no binder) in `(f : Π(_:Unit).Unit, x : Unit)`, yet
+their deep collapses `unitCell` / `app(f, unitCell)` are distinct βη-normal forms that never
+join.  VERDICT: completeness of the congruent unit-η decider IS the completeness of
+unit-typedness DETECTION at replacement sites — compound neutrals need check-mode against
+`unitTypeCell` whose soundness lives only on the route-H wf fragment (an unsound positive would
+break collapse SOUNDNESS, not just completeness), or equivalently the full #481 type-directed
+readback.  All soundness packages intact.  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.unitFunctionContext
+#assert_no_axioms FX1Poly.Typed.compoundUnitNeutral
+#assert_no_axioms FX1Poly.Typed.compoundUnitNeutralTyped
+#assert_no_axioms FX1Poly.Typed.unitVariable_congruentlyEqual_compoundNeutral
+#assert_no_axioms FX1Poly.Typed.deepCollapse_compoundUnitNeutral
+#assert_no_axioms FX1Poly.Typed.collapsedCompoundNeutral_notBetaEtaConv_unitCell
+#assert_no_axioms FX1Poly.Typed.deepCollapseProcedure_isIncompleteAtCompoundNeutrals
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
