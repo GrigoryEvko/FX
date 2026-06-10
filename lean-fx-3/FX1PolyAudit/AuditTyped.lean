@@ -444,6 +444,7 @@ import FX1Poly.Typed.UnitReadbackAnnotationBoundary
 import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.TypedNbeConvDecision
+import FX1Poly.Typed.SigmaEtaEngineGate
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -9595,3 +9596,29 @@ telescope input, the inert-leaf membership. -/
 #assert_no_axioms FX1Poly.Typed.eq_unitCodeCell_of_headGenerator
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.unitFormerNotTypedAtPiType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.unitFormerNotTypedAtEmptyType
+
+/-! ### SigmaEtaEngineGate — the Σ-η spike (#361): two engine gates + underivability
+
+The mandated pre-construction spike for Σ-η in the readback.  Machine-checks WHY the quote has
+no Σ arm: (1) the scrutinee gate — the Σ-projection engine types only LITERAL-pair scrutinees
+(`scrutineeIsLiteralPair`), so `fst(x)` of a variable is untypeable in EVERY engine
+(`fstOfVariableHasNoTyping` here + the shipped grown refutations); (2) the chaining gate — even
+on literal pairs, `pair(fst p, snd p)` is untypeable because `pairIntro` demands GROWN component
+typings while projections are grown-untyped (`componentsGrownTyped` +
+`etaPairExpansion_hasNoPairIntroTyping`); the standalone engines do not chain.  CONSEQUENCE:
+pair cells are outside the typed judgmental equality's domain entirely
+(`pairCellOutsideDomain`), so the Σ-η equation is UNDERIVABLE at every classifier
+(`sigmaEtaEquation_underivable`) — engine-gated, not readback-gated.  The module docstring
+carries the costed Route A (widen standalone engines, 4 bricks, pending user sign-off per the
+T2 precedent) vs Route B (grown-engine cascade, rejected) decision record; these gates are the
+regression tripwires the Route-A widening must consciously revisit. -/
+
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_pairIsNone
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.pairCellHasNoDataIntroTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.componentsGrownTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.scrutineeIsLiteralPair
+#assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.fstOfVariableHasNoTyping
+#assert_no_axioms FX1Poly.Typed.etaPairExpansion_hasNoPairIntroTyping
+#assert_no_axioms FX1Poly.Typed.etaPairExpansion_hasNoGrownTyping
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.pairCellOutsideDomain
+#assert_no_axioms FX1Poly.Typed.sigmaEtaEquation_underivable
