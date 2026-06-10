@@ -134,6 +134,7 @@ import FX1Poly.Core.FireRootRedexComplete
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.Normalize
+import FX1Poly.Core.NormalizeSteps
 import FX1Poly.Core.NormalizeMeta
 import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
@@ -242,6 +243,7 @@ import FX1Poly.Typed.ChurchSuccApplies
 import FX1Poly.Typed.ChurchListLength
 import FX1Poly.Typed.TypedNormalizer
 import FX1Poly.Typed.IdentityTowerFamily
+import FX1Poly.Typed.NormalizeStepsTower
 import FX1Poly.Typed.TypedUniverseTower
 import FX1Poly.Typed.TypedUniverseNoTop
 import FX1Poly.Typed.TypedUniversePredicative
@@ -8935,3 +8937,26 @@ round-trip regression witnesses the λ-arm NON-VACUOUS: every grown function typ
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionBetaEta
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionBetaEtaStar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaExpandContractRoundTrip
+
+/-! ### NormalizeSteps + NormalizeStepsTower — the SN-normalizer STRICT-COMPLEXITY witness (SN-145)
+
+The normalizer's EXACT cost instrumentation: `normalizeSteps` (the `Acc.rec` twin of
+`RawTerm.normalize`), the counted-chain identity (`StepStarN (normalizeSteps t acc) t
+(normalize t acc)`), zero-cost-iff-normal, and the identity-tower family realizing the counter
+exactly (`= towerHeight`) — yielding the unboundedness boundary brick.  HONEST scope: exactness +
+unboundedness are machine-checked; NO size-polynomial bound is claimed in either direction (the
+non-elementary β-normalization lower bound, Statman 1979, is literature-cited, not mechanized);
+the polynomial-shape `StrictNormalizer` contract is deliberately NOT instantiated for the term
+normalizer. -/
+
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeSteps
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeSteps_unfold
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeSteps_eq
+#assert_no_axioms FX1Poly.Core.RawTerm.reduceOnce_eq_none_of_isStepNormalForm
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeSteps_chainExact
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeSteps_eq_zero_iff
+#assert_no_axioms FX1Poly.Typed.RawTerm.reduceOnce_idTower_succ
+#assert_no_axioms FX1Poly.Typed.RawTerm.reduceOnce_idTower_zero
+#assert_no_axioms FX1Poly.Typed.normalizeSteps_idTower
+#assert_no_axioms FX1Poly.Typed.normalizeSteps_unbounded
+#assert_no_axioms FX1Poly.Typed.idTower_normalizeChainExact
