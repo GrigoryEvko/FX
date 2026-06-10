@@ -435,6 +435,7 @@ import FX1Poly.Typed.UnitVariableCollapseDeep
 import FX1Poly.Typed.UnitVariableCollapseDeepSound
 import FX1Poly.Typed.UnitCollapseNeutralBoundary
 import FX1Poly.Typed.UnitNeutralSpineDetection
+import FX1Poly.Typed.UnitSpineDetectionBoundary
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3461,6 +3462,26 @@ reducible function types.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.detectsCompoundUnitNeutral
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofDetectedUnitSpines
 #assert_no_axioms FX1Poly.Typed.compoundNeutralPair_certified
+
+/-! ### UnitSpineDetectionBoundary — ★ the 5th refutation: spine detection misses λ-arguments
+
+The brick-2 pre-construction verdict: `app(g, λ(x:Unit).x)` in `(g : Π(_:Π(_:Unit).Unit).Unit)`
+is grown-typed at `unitTypeCell` (wf-free: var + piIntro + piElim) and congruently unit-η-equal
+to `unitCell`, yet `detectSpineType` answers `none` on it at EVERY fuel — the spine grammar
+demands the argument synthesize, and a λ never does.  Detector-driven deep collapse is
+incomplete BEFORE construction.  Widening to λ-arguments = λ-synthesis (piIntro + formation
+obligations) = bidirectional checking = the #481 readback.  The unit campaign's elimination
+chain is COMPLETE: five refutations, five forced components.  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.higherOrderUnitContext
+#assert_no_axioms FX1Poly.Typed.unitIdentityFunction
+#assert_no_axioms FX1Poly.Typed.lambdaArgumentNeutral
+#assert_no_axioms FX1Poly.Typed.unitIdentityFunctionTyped
+#assert_no_axioms FX1Poly.Typed.lambdaArgumentNeutralTyped
+#assert_no_axioms FX1Poly.Typed.lambdaArgument_congruentlyEqual_unitValue
+#assert_no_axioms FX1Poly.Typed.detectSpineType_missesUnitIdentityFunction
+#assert_no_axioms FX1Poly.Typed.detectSpineType_missesLambdaArgument
+#assert_no_axioms FX1Poly.Typed.spineDetection_isIncompleteAtLambdaArguments
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
