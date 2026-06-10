@@ -634,6 +634,7 @@ import FX1Poly.Typed.LiveSignatureSconingCoverage
 import FX1Poly.Typed.TypeAxisObligation
 import FX1Poly.Typed.UsageAxisObligation
 import FX1Poly.Typed.EffectSecurityAxisObligations
+import FX1Poly.Typed.RemainingDimensionAxisObligations
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1387,3 +1388,38 @@ import FX1Poly.Typed.EffectSecurityAxisObligations
 #assert_no_axioms FX1Poly.Typed.effectAxis_algebraIsLawfulLattice
 #assert_no_axioms FX1Poly.Typed.effectAxis_fireTriangleAdmissible
 #assert_no_axioms FX1Poly.Typed.effectAxis_meetForcesBot
+
+-- The remaining-dimensions AxisObligation batch (RemainingDimensionAxisObligations.lean, SN-107 #610) — the
+-- per-dimension gallery COMPLETE in three honesty tiers. ★ gradedAxis_fiveCapabilitiesBacked = the GENERIC
+-- five-capability bundle over ANY lawful ordered grade semiring (SN + closed canonicity + normalization + SR +
+-- confluence in ONE conjunction — the common generalization the usage/security modules instantiated piecewise;
+-- every future semiring dimension discharges by one application). COMPLEXITY = the third graded sibling:
+-- complexityAxisCapabilities_eq_usageAxisCapabilities (rfl) extends the orthogonal-composition thesis to a
+-- THREE-dimension family; complexityAxis_fiveCapabilitiesBacked = ledger fields + the bundle at
+-- fxComplexitySemiring in one theorem. ALGEBRA TIER (bot + cited algebra): trust (cannotRideGradedEngine +
+-- lawful weakest-link lattice — the effect-shaped pair), clock + provenance (lawful lattices), lifetime
+-- (lifetimeAxis_algebraIsProperPreorder = provably NOT antisymmetric — cannot even be a join-semilattice, the
+-- honest structural reason its entry differs). PENDING TIER (bot, NO algebra, non-zero estimatedLinesOfCode —
+-- the field's first honest use): refinement (SMT-obligation model, ~4000), representation (layout preorder,
+-- ~1500), observability (opaque/transparent two-point lattice — the security recipe, ~1000).
+-- remainingDimensionObligations = the 8-record batch + count pin. Composition: complexity meets losslessly;
+-- every bot entry forces bot (meet_bot_right) until its judgment ships — the SN-108 inputs. All zero-axiom.
+#assert_no_axioms FX1Poly.Typed.gradedAxis_fiveCapabilitiesBacked
+#assert_no_axioms FX1Poly.Typed.complexityAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.complexityAxisCapabilities_eq_usageAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.fxComplexityAxisObligation
+#assert_no_axioms FX1Poly.Typed.complexityAxis_fiveCapabilitiesBacked
+#assert_no_axioms FX1Poly.Typed.fxTrustAxisObligation
+#assert_no_axioms FX1Poly.Typed.trustAxis_cannotRideGradedEngine
+#assert_no_axioms FX1Poly.Typed.trustAxis_algebraIsLawfulLattice
+#assert_no_axioms FX1Poly.Typed.fxClockAxisObligation
+#assert_no_axioms FX1Poly.Typed.clockAxis_algebraIsLawfulLattice
+#assert_no_axioms FX1Poly.Typed.fxProvenanceAxisObligation
+#assert_no_axioms FX1Poly.Typed.provenanceAxis_algebraIsLawfulLattice
+#assert_no_axioms FX1Poly.Typed.fxLifetimeAxisObligation
+#assert_no_axioms FX1Poly.Typed.lifetimeAxis_algebraIsProperPreorder
+#assert_no_axioms FX1Poly.Typed.fxRefinementAxisObligation
+#assert_no_axioms FX1Poly.Typed.fxRepresentationAxisObligation
+#assert_no_axioms FX1Poly.Typed.fxObservabilityAxisObligation
+#assert_no_axioms FX1Poly.Typed.remainingDimensionObligations
+#assert_no_axioms FX1Poly.Typed.remainingDimensionObligations_count
