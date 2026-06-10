@@ -447,6 +447,7 @@ import FX1Poly.Typed.TypedNbeConvDecision
 import FX1Poly.Typed.SigmaEtaEngineGate
 import FX1Poly.Typed.EliminatorMotiveShapeRecord
 import FX1Poly.Typed.LiftedChildNormalizationFromClosure
+import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -9671,3 +9672,16 @@ shift-1 children; depth-0 children are CR1, shift ≥ 2 is a named non-blocker (
 formation row).  The module docstring records the GO verdict + the remaining #820 assembly. -/
 
 #assert_no_axioms FX1Poly.Typed.IsStronglyNormalizing.liftedSubstOfConsClosureAtFreshVariable
+
+/-! ### TelescopeSubstitutedChildrenNormalization — the GTL-06 kernel's brick 2 (#820)
+
+Telescope reducibility yields SN of every substituted child at each arity the formation table
+uses: count-1 via head-membership CR1; count-2 via head CR1 + brick 1 at the LIFTED binder
+position; the spine corollaries package these as `allStronglyNormalizing` of the literal
+substituted spines — the exact input of `formerCellStronglyNormalizingOfChildren`.  Brick 3
+(the table-generic dispatch arm over the six dispatch files) consumes these. -/
+
+#assert_no_axioms FX1Poly.Typed.TelescopeReducible.substitutedOneChildStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.TelescopeReducible.substitutedTwoChildrenStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.TelescopeReducible.substitutedOneChildSpineStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.TelescopeReducible.substitutedTwoChildSpineStronglyNormalizing
