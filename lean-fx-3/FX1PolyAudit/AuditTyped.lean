@@ -572,6 +572,7 @@ import FX1Poly.Typed.UniverseClassificationUnique
 import FX1Poly.Typed.NeutralClassifierUnique
 import FX1Poly.Typed.NormalAppNeutral
 import FX1Poly.Typed.TelescopeUniverseDeterminism
+import FX1Poly.Typed.GenericFormerTelescopeInversion
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8651,3 +8652,10 @@ children agree on levels, and on the flag for nonempty children — IH-parameter
 strong-size-induction seam), table-generic, budget through size peeling. -/
 
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.universeDeterminismOfChildIH
+
+/- E2.7 former-arm inversion (GenericFormerTelescopeInversion): ONE table-generic grown
+inversion for every formation row — keeps the premise telescope over the subject's own children
+AND pins the classifier to the universe former's output code.  Unconditional; new rows need no
+new arm. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.invertFormerTelescopeWithConvGeneric
