@@ -9,6 +9,7 @@ import FX1Poly.Core.RawCellWordEncoding
 import FX1Poly.Core.StepRewriteRuleMap
 import FX1Poly.Core.StepWordRewriteSoundness
 import FX1Poly.Core.StepWordRewriteEquivariance
+import FX1Poly.Core.WordRewriteMisalignment
 import FX1Poly.Core.ConvWordJoinableBridge
 import FX1Poly.Core.BetaEtaWordSystem
 import FX1Poly.Core.MultisetOrder
@@ -238,6 +239,21 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.FxWordRewritesMany.underLeftContext
 #assert_no_axioms FX1Poly.Core.FxWordRewritesMany.underRightContext
 #assert_no_axioms FX1Poly.Core.StepStar.toWordRewrites
+
+-- WordRewriteMisalignment — the SN-134 verdict.  The serializer is preorder [tag, payload] pairs, and word
+-- rewriting fires at ANY offset: the beta-redex code [3,0,2,0,1,0,0,0,1,0] reads at ODD offset as five
+-- variable leaves (gen_var.toNat = 0), so a left-nested pair-of-variables host — a Step-NORMAL form —
+-- contains a misaligned occurrence and its code word-rewrites.  Hence the word→term inversion is FALSE
+-- (even asking only for SOME term reduct), word rewriting is strictly coarser than term rewriting, and —
+-- with untypedWordReductionDiverges — BOTH hypotheses of the full-system convergent-presentation decision
+-- fail: an honest word-layer decision must decode to the term layer first.
+
+#assert_no_axioms FX1Poly.Core.misalignmentRedex_steps
+#assert_no_axioms FX1Poly.Core.misalignmentRule_mem_fxStepSystem
+#assert_no_axioms FX1Poly.Core.misalignedPairHost_isNormal
+#assert_no_axioms FX1Poly.Core.misalignedPairHost_code
+#assert_no_axioms FX1Poly.Core.fxWordRewritesOneStep_firesOnNormalImage
+#assert_no_axioms FX1Poly.Core.wordStepInversion_isFalse
 
 -- Rename/subst-equivariance of the Step-to-word bridge + system-level inversion.  The soundness commutes
 -- with the term rename/subst actions (Step.toWordRewrite_rename/_subst, StepStar.toWordRewrites_rename, via
