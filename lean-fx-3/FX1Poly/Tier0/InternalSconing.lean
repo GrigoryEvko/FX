@@ -158,13 +158,16 @@ SN-fragment instance over the shipped `RawTerm.normalize`.  The parametricity tr
 `GluedTypeCell.parametricityTransfer` / `piFreeTheorem` (`ParametricityTransferLedger.lean`, SN-095)
 — where the LAWLESS `ParametricityExtraction` record below (its `fundamental` never consults the
 term) is shown content-free and replaced by the type-indexed relational transfer over the glued
-model (unary parametricity; binary is the recorded follow-on).  The BKS bundle (SN-096) is the
-remaining level. -/
+model (unary parametricity; binary is the recorded follow-on).  The BKS bundle is
+`fxBksGluedMetatheoryPackage` (`BksMetatheoryPackage.lean`, SN-096): the preservation instance plus
+the three glued-model transfers in one record with the ONE shared fundamental hypothesis — the
+ladder's TOP level, with the per-record verdicts (refuted / content-free / lawless) carried by the
+bundled honest replacements. -/
 def fxSconingConstructionLevel : SconingConstructionLevel :=
-  .parametricityTransferTheorem
+  .bksMetatheoryPackage
 
 theorem fxSconingConstructionLevel_eq :
-    fxSconingConstructionLevel = .parametricityTransferTheorem := rfl
+    fxSconingConstructionLevel = .bksMetatheoryPackage := rfl
 
 theorem fxSconing_hasGlobalSectionsInterface :
     fxSconingConstructionLevel.hasGlobalSectionsInterface = true := rfl
@@ -190,8 +193,8 @@ theorem fxSconing_hasNormalizationTransferTheorem :
 theorem fxSconing_hasParametricityTransferTheorem :
     fxSconingConstructionLevel.hasParametricityTransferTheorem = true := rfl
 
-theorem fxSconing_hasNoBKSMetatheoryPackage :
-    fxSconingConstructionLevel.hasBKSMetatheoryPackage = false := rfl
+theorem fxSconing_hasBKSMetatheoryPackage :
+    fxSconingConstructionLevel.hasBKSMetatheoryPackage = true := rfl
 
 /-- Global sections: extracts closed elements from objects.
 For a type theory, Γ(A) = closed terms of type A. -/

@@ -128,6 +128,7 @@ import FX1Poly.Typed.GluedModelTypeFormers
 import FX1Poly.Tier0.FxBaseSubstCanonicityExtraction
 import FX1Poly.Typed.NormalizationTransferLedger
 import FX1Poly.Typed.ParametricityTransferLedger
+import FX1Poly.Typed.BksMetatheoryPackage
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -1152,3 +1153,19 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.GluedTypeCell.parametricityTransfer
 #assert_no_axioms FX1Poly.Typed.GluedTypeCell.piFreeTheorem
 #assert_no_axioms FX1Poly.Tier0.fxSconing_hasParametricityTransferTheorem
+-- ★ The BKS sconing metatheory package — the SconingConstructionLevel TOP (BksMetatheoryPackage.lean, SN-096
+-- #599, completes the Phase-2 extraction-ledger arc). BksGluedMetatheoryPackage = the concrete preservation
+-- instance (SN-090) + the three glued-model transfer theorems — canonicity (SN-093), normalization (SN-094),
+-- parametricity (SN-095) — each over EVERY GluedTypeCell (hence the SN-091 Π/Σ/universe lifts) with the ONE
+-- shared fundamental hypothesis; that sharing IS the BKS thesis (one fundamental feeds all three extractions,
+-- the extractions free: CR1 / the normalizer / the membership). fxBksGluedMetatheoryPackage = the inhabitant
+-- (direct application of the four shipped pieces; structure-field lambdas need ALL implicits explicitly bound —
+-- fun {scope} glued {isWellTyped} … — positional binding grabs implicits otherwise). HONEST: the bundle is the
+-- Leg-1 categorical ORGANIZATION of proven content, not an independent second SN proof
+-- (sconingSN_eq_taitComposition); the three Tier-0 extraction records' verdicts (refuted / content-free /
+-- lawless) are carried by the bundled honest replacements. LEDGER: fxSconingConstructionLevel reaches its TOP
+-- level bksMetatheoryPackage; every has* theorem in InternalSconing.lean is now TRUE
+-- (fxSconing_hasNoBKSMetatheoryPackage renamed → has*; no shard gated the old name). All zero-axiom.
+#assert_no_axioms FX1Poly.Typed.fxBksGluedMetatheoryPackage
+#assert_no_axioms FX1Poly.Tier0.fxSconingConstructionLevel_eq
+#assert_no_axioms FX1Poly.Tier0.fxSconing_hasBKSMetatheoryPackage
