@@ -7,9 +7,9 @@ import FX1Poly.Foundation.RawSubst.RenameDefs
 The Tier-0 categorical substrate (`RepresentableMapCategory.lean`, `InternalSconing.lean`, `CwRExtension.lean`)
 ships the Uemura CwR interfaces — `RawCategory`, `MorphismClass`, `PullbackSquare`, `RepresentableMapCategory`,
 `GlobalSections`, `SconingObject` — but, as their construction-level ledgers record
-(`fxSconingConstructionLevel = .extractionRecordInterfaces`, `fxCwRExtensionConstructionLevel =
-.extensionComposition`), with NO concrete FX instance: every structure is an obligation shape awaiting an
-inhabitant.  The orientation step toward `fxBaseRMC` is to identify what concrete
+(`fxSconingConstructionLevel = .extractionRecordInterfaces`; `fxCwRExtensionConstructionLevel` stood at
+`.extensionComposition` until SN-087 landed `concreteTypeFormerInstances`), originally with NO concrete FX
+instance: every structure was an obligation shape awaiting an inhabitant.  The orientation step toward `fxBaseRMC` is to identify what concrete
 categorical objects FX already supports and build the first one.
 
 This file builds it: `fxRenamingCategory`, the first concrete `RawCategory` for FX.  Objects are scopes

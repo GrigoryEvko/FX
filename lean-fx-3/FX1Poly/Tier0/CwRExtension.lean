@@ -105,12 +105,17 @@ def CwRExtensionConstructionLevel.hasConservativeExtensionTheorem :
   | .uemuraBijectionTheorem => false
   | .conservativeExtensionTheorem => true
 
-/-- Present status: interface records and definitional extension composition. -/
+/-- Present status: concrete type-former instances (SN-087, `FxBaseSubstTypeFormers.lean`) — the
+presheaf-level `piFormerMap`/`sigmaFormerMap` natural transformations carry the genuine Π/Σ former
+content, and the literal `TypeFormer`/`CwRExtension` records are inhabited (at the identity shape the
+iso representable class admits — see `typeFormer_overRenamingVecRMC_resultIsIsomorphism` for why no
+non-degenerate former can inhabit the literal record over the renaming RMC).  The Uemura BIJECTION
+and conservative-extension THEOREM remain open (SN-088). -/
 def fxCwRExtensionConstructionLevel : CwRExtensionConstructionLevel :=
-  .extensionComposition
+  .concreteTypeFormerInstances
 
 theorem fxCwRExtensionConstructionLevel_eq :
-    fxCwRExtensionConstructionLevel = .extensionComposition := rfl
+    fxCwRExtensionConstructionLevel = .concreteTypeFormerInstances := rfl
 
 theorem fxCwRExtension_hasSliceInterface :
     fxCwRExtensionConstructionLevel.hasSliceInterface = true := rfl
@@ -124,8 +129,8 @@ theorem fxCwRExtension_hasTypeFormerRecord :
 theorem fxCwRExtension_hasExtensionComposition :
     fxCwRExtensionConstructionLevel.hasExtensionComposition = true := rfl
 
-theorem fxCwRExtension_hasNoConcreteTypeFormerInstances :
-    fxCwRExtensionConstructionLevel.hasConcreteTypeFormerInstances = false := rfl
+theorem fxCwRExtension_hasConcreteTypeFormerInstances :
+    fxCwRExtensionConstructionLevel.hasConcreteTypeFormerInstances = true := rfl
 
 theorem fxCwRExtension_hasNoUemuraBijectionTheorem :
     fxCwRExtensionConstructionLevel.hasUemuraBijectionTheorem = false := rfl

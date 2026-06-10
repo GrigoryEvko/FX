@@ -122,6 +122,7 @@ import FX1Poly.Tier0.FxBaseSubstScone
 import FX1Poly.Tier0.FxBaseSubstWitnessScone
 import FX1Poly.Tier0.FxBaseSubstConcreteScone
 import FX1Poly.Tier0.FxBaseSubstDisplayMap
+import FX1Poly.Tier0.FxBaseSubstTypeFormers
 import FX1Poly.Typed.DisplayMapDecidableFibration
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
@@ -1007,3 +1008,36 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.displayClassifier_classifiedCellOfTyping
 #assert_no_axioms FX1Poly.Typed.genericClassifiedCell_admittedByFormation
 #assert_no_axioms FX1Poly.Typed.genericClassifiedCell_admittedByGrown
+-- Pi/Sigma as concrete type formers (FxBaseSubstTypeFormers.lean, SN-087 #590). SubstVec.liftUnderBinder = the
+-- under-binder lift (cons var0 (substVec ∘ weakening)) + the pointwise bridge to the kernel RawTermSubst.lift
+-- (rfl at 0; lookup_compose + weakening_subst_eq_rename at successors) + the lift functor laws at the subst
+-- level (identity via the pointwise identity + subst_identity_apply; composition via the shipped
+-- RawTermSubst.lift_pointwise + lift_compose_pointwise (the polynomial-monad binder pull) + subst_compose).
+-- binderParameterFamily = Uemura's Pi/Sigma parameter object (A : U, B : U^A) cellularly (pairs with a
+-- binder-scoped codomain; action substitutes the codomain through the lift). piFormerMap/sigmaFormerMap = ★ the
+-- concrete Pi/Sigma TYPE FORMERS as natural transformations into Ty — naturality is the genuine
+-- substitution-commutes-with-the-former equation (the kernel fold computes the binder child through
+-- RawTermSubst.lift, identified with the categorical lift). typeFormer_overRenamingVecRMC_resultIsIsomorphism =
+-- the literal-record VERDICT: over fxBaseRenamingVecRMC the representable class is the isos, so every literal
+-- TypeFormer's result map is an iso renaming — no genuine Pi can inhabit the literal record there; the honest
+-- home is the presheaf level (exactly the natural-transformation side of the Uemura bijection, SN-088's
+-- pairing). identityShapedTypeFormer/identityShapedFormerExtension/composedIdentityShapedExtensions = the
+-- literal TypeFormer + CwRExtension records inhabited (first NONEMPTY newTypeFormers list; conservativity,
+-- faithfulness + CwRExtension.compose exercised) at the only shape the iso class admits, honestly labeled
+-- degenerate. Ledger: fxCwRExtensionConstructionLevel advanced extensionComposition →
+-- concreteTypeFormerInstances (bijection + conservative-extension theorems remain open, SN-088). All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.SubstVec.liftUnderBinder_toRawTermSubst
+#assert_no_axioms FX1Poly.Tier0.SubstVec.liftUnderBinder_subst_apply
+#assert_no_axioms FX1Poly.Tier0.SubstVec.liftUnderBinder_identity_subst_apply
+#assert_no_axioms FX1Poly.Tier0.SubstVec.liftUnderBinder_compose_subst_apply
+#assert_no_axioms FX1Poly.Tier0.binderParameterFamily
+#assert_no_axioms FX1Poly.Tier0.piFormer_subst_commutes
+#assert_no_axioms FX1Poly.Tier0.sigmaFormer_subst_commutes
+#assert_no_axioms FX1Poly.Tier0.piFormerMap
+#assert_no_axioms FX1Poly.Tier0.sigmaFormerMap
+#assert_no_axioms FX1Poly.Tier0.typeFormer_overRenamingVecRMC_resultIsIsomorphism
+#assert_no_axioms FX1Poly.Tier0.identityShapedTypeFormer
+#assert_no_axioms FX1Poly.Tier0.identityShapedFormerExtension_isFaithful
+#assert_no_axioms FX1Poly.Tier0.composedIdentityShapedExtensions_typeFormerCount
+#assert_no_axioms FX1Poly.Tier0.fxCwRExtensionConstructionLevel_eq
+#assert_no_axioms FX1Poly.Tier0.fxCwRExtension_hasConcreteTypeFormerInstances
