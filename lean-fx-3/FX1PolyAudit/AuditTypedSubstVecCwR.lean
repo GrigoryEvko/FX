@@ -629,6 +629,7 @@ import FX1Poly.Typed.LamReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.GrownEtaSubjectReduction
 import FX1Poly.Typed.GluedModelModalFragment
+import FX1Poly.Typed.SconingIsEnoughThesis
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1211,3 +1212,25 @@ import FX1Poly.Typed.GluedModelModalFragment
 #assert_no_axioms FX1Poly.Typed.subsume_preservesModalityLiftScone
 #assert_no_axioms FX1Poly.Typed.modalTermFragment_isStaticallyUntypedToday
 #assert_no_axioms FX1Poly.Typed.modalityFormers_haveNoFormationRowToday
+
+-- ★★ THE LEG-1 CAPSTONE: sconing is enough — ONE functor yields canonicity + normalization + parametricity
+-- (SconingIsEnoughThesis.lean, SN-110 #613, discharges the #463 ONORM-spike GO/NO-GO frontier obligation).
+-- ★ GluedTypeCell.sconingIsEnough = the thesis theorem: for EVERY glued type (the SN-091 Π/Σ/universe lifts,
+-- the ONORM-M1 modality lifts, any future lift), ONE fundamental obligation yields all three metatheorems as
+-- projections — the SN-096 package's three fields applied to the SAME hypothesis. sconingIsEnough_atMembership
+-- = non-vacuity (well-typedness := scone membership, fundamental := id — the triple is real for every
+-- computable term). ★ HasTypeDescPi.closedSconingTriple = the DISCHARGED instance, zero hypotheses: every
+-- closed well-typed grown term is SN (BFT-14) ∧ reaches a normal form (the normalizer) ∧ is a
+-- bounded-reducible member of its classifier's interpretation (BFT-13 — discharged unary parametricity).
+-- HasTypeDescPi.openSconingPair = the open discharged pair (SN + normalization over any wf context; the open
+-- parametricity leg is the recorded follow-on). sconingIsEnough_canonicityIsTaitComposition (rfl) = the
+-- honesty pin: the thesis's canonicity projection IS CR1 ∘ fundamental — Leg-1 is the categorical
+-- ORGANIZATION of the proven Tait content, not an independent second SN proof (HCAP triangulation
+-- discipline). ONORM VERDICT: GO with three named residuals — per-fragment fundamentals (hypotheses outside
+-- the engine fragments), STC ladder not consumed (the moonshot cross-check remains separate), and the
+-- per-generator live-signature coverage gate (the recorded follow-on admission gate). All zero-axiom.
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.sconingIsEnough
+#assert_no_axioms FX1Poly.Typed.sconingIsEnough_atMembership
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSconingTriple
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openSconingPair
+#assert_no_axioms FX1Poly.Typed.sconingIsEnough_canonicityIsTaitComposition
