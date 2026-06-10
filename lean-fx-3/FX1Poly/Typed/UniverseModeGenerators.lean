@@ -203,4 +203,75 @@ theorem universeU_payloadAlwaysAdmitted {scope : Nat}
     (genPayloadEvidence? (generator := .gen_universeU)
       (scope := scope) modePayload).isSome = true := rfl
 
+/-! ## SProp — the definitional-proof-irrelevance universe (M26-Z1)
+
+`gen_sprop` is nullary with `Unit` payload, output sort `.type` — the
+proof-irrelevant universe per §3.16.3.  The DISCIPLINE (SProp elimination
+into Type restricted to subsingleton targets + `False`, and the
+trivial-univalence collapse "any two inhabitants are equal" per the
+§11.8.13 register) is a TYPING-row + judgmental-equality obligation, NOT a
+table-shape property; the table lands the alphabet, the discipline lands
+with the SProp formation/elim rows (SN-076 #579 and beyond). -/
+
+/-- The SProp universe cell. -/
+def spropRaw : RawCell 0 :=
+  .termBase (.mkGen .gen_sprop () .childNil)
+
+theorem coverage_spropRaw_sort {profile : PolyProfile} :
+    certifiedResultSort?
+      (inferRawCellGeneral? (profile := profile) 0 spropRaw) =
+      some .type := rfl
+
+/-- An SProp-universe atom is a normal leaf. -/
+theorem noStep_sprop {scope : Nat} {targetTerm : RawTerm scope} :
+    Step (.mkGen .gen_sprop () .childNil : RawTerm scope) targetTerm →
+      False := by
+  intro step
+  cases step with
+  | cong _ _ childStep =>
+      exact noStepChildren_childNil childStep
+
+/-- SProp-universe atoms are strongly normalizing. -/
+theorem sprop_isStronglyNormalizing {scope : Nat} :
+    IsStronglyNormalizing
+      (.mkGen .gen_sprop () .childNil : RawTerm scope) :=
+  isStronglyNormalizing_of_noStep
+    (fun targetTerm step => noStep_sprop (targetTerm := targetTerm) step)
+
+theorem semanticTier_sprop : semanticTier .gen_sprop = .reserved := rfl
+
+theorem fromTag_sprop : Generator.fromTag 202 = some .gen_sprop := rfl
+
+/-! ## The mode bridges — the shipped name-encoded design supersedes LiftDirection
+
+The M26 plan called for ONE `gen_univLift` generator carrying a
+`LiftDirection` payload enum (InnerToOuter / OuterToInner / DirectedLift).
+The kernel SHIPPED the equivalent encoding with the direction in the
+GENERATOR NAME instead: `gen_liftInnerToOuter` (arity 1 — innerTerm) and
+`gen_lowerOuterToInner` (arity 2 — outerTerm, cofibrancy), with SN-077
+reducibility already proven over them.  The name-encoded design is
+STRICTLY better for the zero-axiom discipline: no payload enum (no
+DecidableEq derivation to audit), head-directed dispatch and direction
+no-confusion come free from `Generator.noConfusion`, and the §11.8.13
+"lifts are univalence-preserving" obligation attaches per-generator.
+The pins below LOCK the shipped table shapes so a silent redesign breaks
+loudly.  HONEST GAP: the third planned direction (the directed lift,
+universeU↔universeD) has no shipped generator — that bridge lands with
+the directed-mode typing work, not this migration. -/
+
+theorem liftInnerToOuter_arity : Generator.arity .gen_liftInnerToOuter = 1 := rfl
+theorem liftInnerToOuter_shifts :
+    Generator.binderShifts .gen_liftInnerToOuter = [0] := rfl
+theorem lowerOuterToInner_arity : Generator.arity .gen_lowerOuterToInner = 2 := rfl
+theorem lowerOuterToInner_shifts :
+    Generator.binderShifts .gen_lowerOuterToInner = [0, 0] := rfl
+
+/-- The two shipped bridge generators are distinct — the direction
+no-confusion the LiftDirection enum would have needed a DecidableEq for,
+free at the generator level. -/
+theorem liftBridges_directionsDistinct :
+    Generator.gen_liftInnerToOuter ≠ Generator.gen_lowerOuterToInner := by
+  intro headsEqual
+  exact Generator.noConfusion headsEqual
+
 end FX1Poly.Typed

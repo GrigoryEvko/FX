@@ -184,6 +184,8 @@ def Generator.cellSort : Generator → CellSort
   | .gen_universeS    => .type
   | .gen_universeD    => .type
   | .gen_universeOmega => .type
+  -- SProp universe — a type code (output sort .type)
+  | .gen_sprop        => .type
   -- Per-shape type codes (atom-shape)
   | .gen_arrowCode    => .type
   -- Per-shape type codes (binder-shape)
@@ -518,6 +520,8 @@ def Generator.childSpecs : Generator → List ChildSpec
   | .gen_universeS    => []
   | .gen_universeD    => []
   | .gen_universeOmega => []
+  -- SProp universe (nullary, no children)
+  | .gen_sprop        => []
   -- Empty type code (nullary)
   | .gen_emptyCode    => []
   -- Bool type code (nullary)

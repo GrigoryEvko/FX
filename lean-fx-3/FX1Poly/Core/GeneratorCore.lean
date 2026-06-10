@@ -126,6 +126,11 @@ inductive Generator : Type
   | gen_universeD
   -- (∞,ω)-directed universe (Loubaton)
   | gen_universeOmega
+  -- SProp — the definitional-proof-irrelevance universe (§3.16.3).
+  -- Discipline note: SProp elimination into Type is restricted to
+  -- subsingleton targets (+ False); that restriction is a TYPING-row
+  -- obligation, not a table-shape property.
+  | gen_sprop
   -- Per-shape type-code constructors (atom-shape)
   | gen_arrowCode
   -- Per-shape type-code constructors (binder-shape)
@@ -420,6 +425,8 @@ def Generator.arity : Generator → Nat
   | .gen_universeS    => 0
   | .gen_universeD    => 0
   | .gen_universeOmega => 0
+  -- SProp universe (nullary)
+  | .gen_sprop        => 0
   -- Per-shape type codes (atom-shape)
   | .gen_arrowCode    => 2  -- domainCode, codomainCode
   -- Per-shape type codes (binder-shape)
@@ -729,6 +736,8 @@ def Generator.binderShifts : Generator → List Nat
   | .gen_universeS    => []
   | .gen_universeD    => []
   | .gen_universeOmega => []
+  -- SProp universe (nullary)
+  | .gen_sprop        => []
   -- Per-shape type codes (atom-shape)
   | .gen_arrowCode    => [0, 0]
   -- Per-shape type codes (binder-shape)
@@ -918,6 +927,7 @@ def Generator.payload : Generator → Nat → Type
   | .gen_universeS, _ => FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag
   | .gen_universeD, _ => FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag
   | .gen_universeOmega, _ => FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag
+  | .gen_sprop, _ => Unit
   | .gen_unit, _ => Unit
   | .gen_lam, _ => Unit
   | .gen_app, _ => Unit

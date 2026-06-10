@@ -128,6 +128,7 @@ inductive SupportedGenerator : Generator → Type where
   | gen_universeS    : SupportedGenerator .gen_universeS
   | gen_universeD    : SupportedGenerator .gen_universeD
   | gen_universeOmega : SupportedGenerator .gen_universeOmega
+  | gen_sprop        : SupportedGenerator .gen_sprop
   | gen_arrowCode    : SupportedGenerator .gen_arrowCode
   | gen_piTyCode     : SupportedGenerator .gen_piTyCode
   | gen_sigmaTyCode  : SupportedGenerator .gen_sigmaTyCode
@@ -353,6 +354,7 @@ def supportedGenerator : (generator : Generator) →
   | .gen_universeS    => .gen_universeS
   | .gen_universeD    => .gen_universeD
   | .gen_universeOmega => .gen_universeOmega
+  | .gen_sprop        => .gen_sprop
   | .gen_arrowCode    => .gen_arrowCode
   | .gen_piTyCode     => .gen_piTyCode
   | .gen_sigmaTyCode  => .gen_sigmaTyCode

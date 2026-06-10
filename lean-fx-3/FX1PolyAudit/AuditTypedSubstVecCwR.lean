@@ -1514,3 +1514,24 @@ restricted-profile track). -/
 #assert_no_axioms FX1Poly.Typed.fromTag_universeD
 #assert_no_axioms FX1Poly.Typed.fromTag_universeOmega
 #assert_no_axioms FX1Poly.Typed.universeU_payloadAlwaysAdmitted
+
+/-! ## M26-Z1 (#434) — gen_sprop + the mode-bridge reconciliation (Z-arc brick 2)
+
+`gen_sprop` (the definitional-proof-irrelevance universe) lands as a table row: Unit payload,
+arity 0, sort .type, tag 202, admission, count pin 202 -> 203. The SProp DISCIPLINE
+(subsingleton-target elimination + trivial univalence collapse) is a typing-row obligation
+(SN-076 track), not a table property. The M26 LiftDirection-payload bridge design is
+SUPERSEDED by the shipped name-encoded pair gen_liftInnerToOuter / gen_lowerOuterToInner
+(SN-077 reducibility already proven) — table shapes pinned, direction no-confusion free from
+Generator.noConfusion; the directed lift (universeU<->universeD) is the honest unshipped gap. -/
+#assert_no_axioms FX1Poly.Typed.spropRaw
+#assert_no_axioms FX1Poly.Typed.coverage_spropRaw_sort
+#assert_no_axioms FX1Poly.Typed.noStep_sprop
+#assert_no_axioms FX1Poly.Typed.sprop_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.semanticTier_sprop
+#assert_no_axioms FX1Poly.Typed.fromTag_sprop
+#assert_no_axioms FX1Poly.Typed.liftInnerToOuter_arity
+#assert_no_axioms FX1Poly.Typed.liftInnerToOuter_shifts
+#assert_no_axioms FX1Poly.Typed.lowerOuterToInner_arity
+#assert_no_axioms FX1Poly.Typed.lowerOuterToInner_shifts
+#assert_no_axioms FX1Poly.Typed.liftBridges_directionsDistinct

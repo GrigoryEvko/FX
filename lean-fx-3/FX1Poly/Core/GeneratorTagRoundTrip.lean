@@ -135,6 +135,7 @@ def Generator.fromTag : Nat → Option Generator
   | 199 => some .gen_universeS
   | 200 => some .gen_universeD
   | 201 => some .gen_universeOmega
+  | 202 => some .gen_sprop
   | _ => none
 
 /-- Round-trip: `fromTag` recovers every generator from its `toNat` tag.  Each
