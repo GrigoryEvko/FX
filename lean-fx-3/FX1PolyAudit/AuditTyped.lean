@@ -438,6 +438,7 @@ import FX1Poly.Typed.UnitNeutralSpineDetection
 import FX1Poly.Typed.UnitSpineDetectionBoundary
 import FX1Poly.Typed.TypeDirectedUnitReadback
 import FX1Poly.Typed.UnitReadbackArgumentBoundary
+import FX1Poly.Typed.UnitReadbackFormerChildBoundary
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3548,6 +3549,29 @@ Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.deepCollapseMode_isIncompleteAtApplicationArguments
 #assert_no_axioms FX1Poly.Typed.appArgumentPair_decidedByReadback
 #assert_no_axioms FX1Poly.Typed.readback_recoversArgumentClassifier
+
+/-! ### UnitReadbackFormerChildBoundary — ★ the 7th boundary: formers hide their children
+
+The post-spine completeness re-analysis: term positions inside TYPE CODES (the identity code's
+endpoints) carry unit differences no shipped arm reaches — `Id(Unit, app(f,x), unit)` vs
+`Id(Unit, unit, unit)` is Cong-related (one `congGen` through `gen_idCode`, the endpoints by
+`unitEta`), yet the readback degrades to the deep collapse at every fuel (an `idCode` head is
+not an application) and the collapses are distinct never-joining βη-normal forms — the
+compound-neutral phenomenon recurring INSIDE a former.  The fix is rule-table-premise-directed
+former descent: the per-child classifiers are the `typingRuleDescOf` premise telescope (idCode:
+carrier at a universe, endpoints at the CARRIER), with dependent-telescope instantiation as the
+brick-5 build.  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.identityCodeOverCompoundNeutral
+#assert_no_axioms FX1Poly.Typed.identityCodeOverUnitValue
+#assert_no_axioms FX1Poly.Typed.identityCodePair_congruentlyEqual
+#assert_no_axioms FX1Poly.Typed.readback_identityCodeNeutral_isDeepCollapse
+#assert_no_axioms FX1Poly.Typed.readback_identityCodeValue_isDeepCollapse
+#assert_no_axioms FX1Poly.Typed.collapsedIdentityCodeOverCompoundNeutral
+#assert_no_axioms FX1Poly.Typed.deepCollapse_identityCodeNeutral
+#assert_no_axioms FX1Poly.Typed.deepCollapse_identityCodeValue
+#assert_no_axioms FX1Poly.Typed.collapsedIdentityCodePair_notBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.readback_isIncompleteAtFormerChildren
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
