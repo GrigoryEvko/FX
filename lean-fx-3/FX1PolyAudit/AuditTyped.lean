@@ -423,6 +423,7 @@ import FX1Poly.Typed.ContextValidityFails
 import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
 import FX1Poly.Typed.WfContextBetaEtaConfluence
 import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
+import FX1Poly.Typed.BetaEtaConvGapStatement
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -8977,3 +8978,25 @@ with the polynomial witness reserved for deciders where it is true (the LevelExp
 #assert_no_axioms FX1Poly.Core.Conv.decideStronglyNormalizingSteps_eq_zero_iff_normalForms
 #assert_no_axioms FX1Poly.Typed.convDecideSteps_idTower
 #assert_no_axioms FX1Poly.Typed.convDecideSteps_unbounded
+
+/-! ### BetaEtaConvGapStatement — the ETA-1 census verdict, machine-checked (gap statement for #364)
+
+CORRECTION OF RECORD: tracker #806 overstated — decidable βη-Conv was DEFERRED by the shipped file
+itself.  This module makes the βη conversion relation first-class (`BetaEtaConv =
+betaEtaStar.Join`, mirroring the kernel's own join-based `Conv`), proves the equivalence package
+(refl/sym structural; `Conv ⊆ BetaEtaConv`; STRICT extension via an η-pair that is provably not
+β/ι-Conv; transitivity through a WELL-TYPED middle — raw βη-CR is Nederpelt-false, so typing is
+load-bearing exactly there), and bundles the complete shipped decision METATHEORY
+(`betaEtaDeciderMetatheoryPrerequisitesHold`: typed βη-SN + typed βη-CR + unique βη-NF +
+star-rigidity).  The named gap: ONE computable artifact (a sound+complete βη one-step reducer,
+ETA-2) yields decidable `BetaEtaConv` on the wf fragment; unit-η/SProp-η remain genuinely
+type-directed (η-M15d/e) and are NOT in `BetaEtaConv` at all. -/
+
+#assert_no_axioms FX1Poly.Core.BetaEtaConv
+#assert_no_axioms FX1Poly.Core.BetaEtaConv.refl
+#assert_no_axioms FX1Poly.Core.BetaEtaConv.sym
+#assert_no_axioms FX1Poly.Core.BetaEtaConv.fromBetaEtaStar
+#assert_no_axioms FX1Poly.Core.BetaEtaConv.ofConv
+#assert_no_axioms FX1Poly.Core.BetaEtaConv.strictlyExtendsConv
+#assert_no_axioms FX1Poly.Typed.BetaEtaConv.transAtTypedMiddle
+#assert_no_axioms FX1Poly.Typed.betaEtaDeciderMetatheoryPrerequisitesHold
