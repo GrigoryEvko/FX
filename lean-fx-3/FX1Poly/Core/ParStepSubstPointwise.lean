@@ -131,10 +131,18 @@ theorem ParStep.substPointwise {sourceScope targetScope : Nat}
         · rw [RawTerm.subst_nonVar_reduces sigma hVar payload children]
           rw [RawTerm.subst_nonVar_reduces tau hVar payload children']
           exact ParStep.cong generator _ (ihChildren sigma tau pw))
-      (fun {scope} {thenBranch thenBranch' elseBranch} _step ihThen {targetScope} sigma tau pw =>
-        ParStep.iotaBoolTrue (ihThen sigma tau pw))
-      (fun {scope} {thenBranch elseBranch elseBranch'} _step ihElse {targetScope} sigma tau pw =>
-        ParStep.iotaBoolFalse (ihElse sigma tau pw))
+      (fun {scope} {motive motive' thenBranch thenBranch' elseBranch} _stepMotive _stepThen
+          ihMotive ihThen {targetScope} sigma tau pw =>
+        ParStep.iotaBoolTrue
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihThen sigma tau pw))
+      (fun {scope} {motive motive' thenBranch elseBranch elseBranch'} _stepMotive _stepElse
+          ihMotive ihElse {targetScope} sigma tau pw =>
+        ParStep.iotaBoolFalse
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihElse sigma tau pw))
       (fun {scope} {firstValue firstValue' secondValue} _step ihFirst {targetScope} sigma tau pw =>
         ParStep.iotaFstPair (ihFirst sigma tau pw))
       (fun {scope} {firstValue secondValue secondValue'} _step ihSecond {targetScope} sigma tau pw =>

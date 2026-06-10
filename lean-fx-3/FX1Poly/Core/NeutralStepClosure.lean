@@ -80,15 +80,17 @@ theorem IsNeutral.closedUnderStep {scope : Nat} {term reduct : RawTerm scope}
       · rw [reductEq]; exact IsNeutral.snd (argumentIH stepArgument)
   | boolElim scrutineeIsNeutral scrutineeIH =>
       rcases Step.from_boolElim step with
-        ⟨scrutineeEq, _⟩ | ⟨scrutineeEq, _⟩ | ⟨_scrutAfter, reductEq, stepScrutinee⟩
+        ⟨scrutineeEq, _⟩ | ⟨scrutineeEq, _⟩ | ⟨_motiveAfter, reductEq, _⟩
         | ⟨_thenAfter, reductEq, _⟩ | ⟨_elseAfter, reductEq, _⟩
+        | ⟨_scrutAfter, reductEq, stepScrutinee⟩
       · cases scrutineeIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator scrutineeEq)
       · cases scrutineeIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator scrutineeEq)
+      · rw [reductEq]; exact IsNeutral.boolElim scrutineeIsNeutral
+      · rw [reductEq]; exact IsNeutral.boolElim scrutineeIsNeutral
+      · rw [reductEq]; exact IsNeutral.boolElim scrutineeIsNeutral
       · rw [reductEq]; exact IsNeutral.boolElim (scrutineeIH stepScrutinee)
-      · rw [reductEq]; exact IsNeutral.boolElim scrutineeIsNeutral
-      · rw [reductEq]; exact IsNeutral.boolElim scrutineeIsNeutral
   | natElim scrutineeIsNeutral scrutineeIH =>
       rcases Step.from_natElim step with
         ⟨scrutineeEq, _⟩ | ⟨_predecessor, scrutineeEq, _⟩ | ⟨_scrutAfter, reductEq, stepScrutinee⟩

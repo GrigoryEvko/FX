@@ -70,15 +70,20 @@ namespace FX1Poly.Core
 
 open StepStar
 
-/-- **Concrete data-eliminator membership regression.**  The closed `boolElim` cell with scrutinee
-`boolTrue` and branches `boolTrue` / `boolFalse` — all canonical bool members — is itself a member of the
-bool candidate.  The elimination half exercised at a closed witness via `boolElimClosedIsMember` fed
-the shipped `boolTrueCell_isMember` / `boolFalseCell_isMember`. -/
+/-- **Concrete data-eliminator membership regression.**  The closed `boolElim` cell (Phase-Z motive shape) with
+a `var 0` throwaway motive, scrutinee `boolTrue`, and branches `boolTrue` / `boolFalse` — all canonical bool
+members — is itself a member of the bool candidate.  The elimination half exercised at a closed witness via
+`boolElimClosedIsMember` fed the motive's SN (`var_isStronglyNormalizing`) and the shipped
+`boolTrueCell_isMember` / `boolFalseCell_isMember`. -/
 theorem boolElimClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_boolElim ()
-        (.childCons boolTrueCell (.childCons boolTrueCell (.childCons boolFalseCell .childNil)))) :=
-  boolElimClosedIsMember boolTrueCell_isMember boolTrueCell_isMember boolFalseCell_isMember
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
+          (.childCons boolTrueCell
+            (.childCons boolFalseCell
+              (.childCons boolTrueCell .childNil))))) :=
+  boolElimClosedIsMember (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
+    boolTrueCell_isMember boolTrueCell_isMember boolFalseCell_isMember
 
 /-- **Concrete idJ membership regression.**  The closed `idJ` cell with base case `boolTrue` and witness
 `refl boolTrue` — the base case a canonical bool member, the witness a canonical refl member — is itself a

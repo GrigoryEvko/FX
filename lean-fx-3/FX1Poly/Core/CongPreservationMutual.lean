@@ -95,17 +95,22 @@ the source spine.  They avoid the sort-existential
 `Exists`, making them directly usable by the final Prop-valued
 `StepCellPreserverWitness` dispatcher. -/
 
-/-- Exact witness for `boolElim boolTrue thenBranch elseBranch ↝ thenBranch`. -/
+/-- Exact witness for `boolElim motive thenBranch elseBranch boolTrue ↝ thenBranch`.
+    Phase-Z motive shape: `(motive, thenBranch, elseBranch, scrutinee)` with the
+    motive under one binder; thenBranch stays at spine position 1 (`.tail.headAtDim0`). -/
 theorem PolyCell.exists_preservedByIotaBoolTrue_dim0
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch : RawTerm scope}
     (sourceCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
           ((.mkGen .gen_boolElim ()
-            (.childCons (.mkGen .gen_boolTrue () .childNil)
+            (.childCons motive
               (.childCons thenBranch
-                (.childCons elseBranch .childNil)))) : RawTerm scope))) :
+                (.childCons elseBranch
+                  (.childCons (.mkGen .gen_boolTrue () .childNil)
+                    .childNil))))) : RawTerm scope))) :
     ∃ _targetCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase thenBranch),
@@ -115,17 +120,21 @@ theorem PolyCell.exists_preservedByIotaBoolTrue_dim0
   | gen _ _ sourceSpine =>
       exact ⟨sourceSpine.tail.headAtDim0 rfl, True.intro⟩
 
-/-- Exact witness for `boolElim boolFalse thenBranch elseBranch ↝ elseBranch`. -/
+/-- Exact witness for `boolElim motive thenBranch elseBranch boolFalse ↝ elseBranch`.
+    Phase-Z motive shape; elseBranch stays at spine position 2 (`.tail.tail.headAtDim0`). -/
 theorem PolyCell.exists_preservedByIotaBoolFalse_dim0
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch : RawTerm scope}
     (sourceCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
           ((.mkGen .gen_boolElim ()
-            (.childCons (.mkGen .gen_boolFalse () .childNil)
+            (.childCons motive
               (.childCons thenBranch
-                (.childCons elseBranch .childNil)))) : RawTerm scope))) :
+                (.childCons elseBranch
+                  (.childCons (.mkGen .gen_boolFalse () .childNil)
+                    .childNil))))) : RawTerm scope))) :
     ∃ _targetCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase elseBranch),
@@ -970,13 +979,13 @@ theorem StepCellPreserverWitness.polyCell (profile : PolyProfile) :
               PolyCell.gen admission payloadEvidence targetSpine,
               True.intro⟩)
       (iotaBoolTrue := by
-        intro _scope _thenBranch _elseBranch _sort sourceCell
+        intro _scope _motive _thenBranch _elseBranch _sort sourceCell
         cases sourceCell with
         | gen admission payloadEvidence sourceSpine =>
             exact PolyCell.exists_preservedByIotaBoolTrue_dim0
               (PolyCell.gen admission payloadEvidence sourceSpine))
       (iotaBoolFalse := by
-        intro _scope _thenBranch _elseBranch _sort sourceCell
+        intro _scope _motive _thenBranch _elseBranch _sort sourceCell
         cases sourceCell with
         | gen admission payloadEvidence sourceSpine =>
             exact PolyCell.exists_preservedByIotaBoolFalse_dim0

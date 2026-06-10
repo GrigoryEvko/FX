@@ -20,7 +20,8 @@ rule simply DISCARDS the refl witness and returns the base case:
 
 That's pure projection — the simplest iota shape, simpler than
 `iotaBoolTrue` (which does `spine.tail.headAtDim0` to skip the
-boolTrue head; here we extract the HEAD directly).
+position-0 motive head in the Phase-Z 4-child boolElim spine; here
+we extract the HEAD directly).
 
 Same template as `iotaBoolTrue`/`iotaBoolFalse`/etc.: single
 `cases` on the certified cell, single `headAtDim0` on its spine.
@@ -39,8 +40,8 @@ namespace FX1Poly.Core
 `idJ baseCase (refl rawWitness) ↝ baseCase`.
 
 Pure-projection iota: target is the head of the source's spine.
-Identical to `iotaBoolTrue` modulo extracting position 1 (head)
-instead of position 2 (tail.head). -/
+Like `iotaBoolTrue` but extracting position 0 (head) directly
+instead of position 1 (tail.head, skipping the motive). -/
 theorem HasCertifiedCellDim0.preservedByIotaIdJRefl
     {profile : PolyProfile} {scope : Nat}
     {baseCase rawWitness : RawTerm scope}

@@ -75,10 +75,12 @@ theorem ParStep.subst {sourceScope targetScope : Nat}
         · rw [RawTerm.subst_nonVar_reduces sigma hVar payload children]
           rw [RawTerm.subst_nonVar_reduces sigma hVar payload children']
           exact ParStep.cong generator _ (ihChildren sigma))
-      (fun {scope} {thenBranch thenBranch' elseBranch} _step ihThen {targetScope} sigma =>
-        ParStep.iotaBoolTrue (ihThen sigma))
-      (fun {scope} {thenBranch elseBranch elseBranch'} _step ihElse {targetScope} sigma =>
-        ParStep.iotaBoolFalse (ihElse sigma))
+      (fun {scope} {motive motive' thenBranch thenBranch' elseBranch} _stepMotive _stepThen
+          ihMotive ihThen {targetScope} sigma =>
+        ParStep.iotaBoolTrue (ihMotive (RawTermSubst.lift sigma)) (ihThen sigma))
+      (fun {scope} {motive motive' thenBranch elseBranch elseBranch'} _stepMotive _stepElse
+          ihMotive ihElse {targetScope} sigma =>
+        ParStep.iotaBoolFalse (ihMotive (RawTermSubst.lift sigma)) (ihElse sigma))
       (fun {scope} {firstValue firstValue' secondValue} _step ihFirst {targetScope} sigma =>
         ParStep.iotaFstPair (ihFirst sigma))
       (fun {scope} {firstValue secondValue secondValue'} _step ihSecond {targetScope} sigma =>
@@ -159,10 +161,12 @@ theorem ParStepChildren.subst {parentSourceScope parentTargetScope : Nat}
         · rw [RawTerm.subst_nonVar_reduces sigma hVar payload children]
           rw [RawTerm.subst_nonVar_reduces sigma hVar payload children']
           exact ParStep.cong generator _ (ihChildren sigma))
-      (fun {scope} {thenBranch thenBranch' elseBranch} _step ihThen {targetScope} sigma =>
-        ParStep.iotaBoolTrue (ihThen sigma))
-      (fun {scope} {thenBranch elseBranch elseBranch'} _step ihElse {targetScope} sigma =>
-        ParStep.iotaBoolFalse (ihElse sigma))
+      (fun {scope} {motive motive' thenBranch thenBranch' elseBranch} _stepMotive _stepThen
+          ihMotive ihThen {targetScope} sigma =>
+        ParStep.iotaBoolTrue (ihMotive (RawTermSubst.lift sigma)) (ihThen sigma))
+      (fun {scope} {motive motive' thenBranch elseBranch elseBranch'} _stepMotive _stepElse
+          ihMotive ihElse {targetScope} sigma =>
+        ParStep.iotaBoolFalse (ihMotive (RawTermSubst.lift sigma)) (ihElse sigma))
       (fun {scope} {firstValue firstValue' secondValue} _step ihFirst {targetScope} sigma =>
         ParStep.iotaFstPair (ihFirst sigma))
       (fun {scope} {firstValue secondValue secondValue'} _step ihSecond {targetScope} sigma =>

@@ -61,7 +61,9 @@ def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
             else none
   else if hBoolElim : generator = .gen_boolElim then
     match (hBoolElim ▸ children : RawTermChildren (Generator.gen_boolElim.binderShifts) scope) with
-    | .childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)) =>
+    -- Phase-Z spine: (motive, then, else, scrutinee); scrutinee is the LAST child.
+    | .childCons _motive
+        (.childCons thenBranch (.childCons elseBranch (.childCons scrutinee .childNil))) =>
         match scrutinee with
         | .mkGen scrutineeGenerator _scrutineePayload _scrutineeChildren =>
             if scrutineeGenerator = .gen_boolTrue then some thenBranch
@@ -223,8 +225,10 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
               rw [key] at fired; nomatch fired
   · by_cases hBoolElim : generator = .gen_boolElim
     · subst hBoolElim
+      -- Phase-Z spine: (motive, then, else, scrutinee); the scrutinee head selects the iota.
       match children with
-      | .childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)) =>
+      | .childCons motive
+          (.childCons thenBranch (.childCons elseBranch (.childCons scrutinee .childNil))) =>
           match scrutinee with
           | .mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
               by_cases hTrue : scrutineeGenerator = .gen_boolTrue
@@ -232,8 +236,11 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                 match scrutineeChildren with
                 | .childNil =>
                     have key : RawTerm.fireRootRedex .gen_boolElim payload
-                        (.childCons (.mkGen .gen_boolTrue scrutineePayload .childNil)
-                          (.childCons thenBranch (.childCons elseBranch .childNil))) =
+                        (.childCons motive
+                          (.childCons thenBranch
+                            (.childCons elseBranch
+                              (.childCons (.mkGen .gen_boolTrue scrutineePayload .childNil)
+                                .childNil)))) =
                         some thenBranch := rfl
                     rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                     exact Step.iotaBoolTrue
@@ -242,14 +249,21 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                   match scrutineeChildren with
                   | .childNil =>
                       have key : RawTerm.fireRootRedex .gen_boolElim payload
-                          (.childCons (.mkGen .gen_boolFalse scrutineePayload .childNil)
-                            (.childCons thenBranch (.childCons elseBranch .childNil))) =
+                          (.childCons motive
+                            (.childCons thenBranch
+                              (.childCons elseBranch
+                                (.childCons (.mkGen .gen_boolFalse scrutineePayload .childNil)
+                                  .childNil)))) =
                           some elseBranch := rfl
                       rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                       exact Step.iotaBoolFalse
                 · have key : RawTerm.fireRootRedex .gen_boolElim payload
-                      (.childCons (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
-                        (.childCons thenBranch (.childCons elseBranch .childNil))) = none :=
+                      (.childCons motive
+                        (.childCons thenBranch
+                          (.childCons elseBranch
+                            (.childCons
+                              (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
+                              .childNil)))) = none :=
                     (if_neg hTrue).trans (if_neg hFalse)
                   rw [key] at fired; nomatch fired
     · by_cases hFst : generator = .gen_fst

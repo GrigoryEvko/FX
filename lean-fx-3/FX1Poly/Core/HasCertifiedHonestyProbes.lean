@@ -125,20 +125,23 @@ theorem HasCertifiedCellDim0.probe_app_boolTrue_unit
 
 /-- **Honesty probe: nonsense scrutinee in boolElim is structurally admitted.**
 
-`boolElim natZero unit unit` is ill-typed: the scrutinee should
-be a `Bool`, not a `Nat`.  But structurally, all three children
-of `gen_boolElim` have sort `.term`, so the term is admitted.
+`boolElim (λ_.unit) unit unit natZero` is ill-typed: the scrutinee should
+be a `Bool`, not a `Nat`.  But structurally, all four children
+of `gen_boolElim` (Phase-Z motive shape: motive under one binder + three
+same-scope children) have sort `.term`, so the term is admitted.
 
 This shows that even ELIMINATORS, which one might expect to
 enforce scrutinee discipline, do NOT do so structurally — the
-discipline lives in the semantic layer. -/
+discipline lives in the semantic layer.  The motive head child (a
+throwaway `unit` at scope 1) is admitted by the same uniform spine. -/
 theorem HasCertifiedCellDim0.probe_boolElim_natZero_branches
     {profile : PolyProfile} :
     HasCertifiedCellDim0 (profile := profile)
       (.mkGen .gen_boolElim ()
-        (.childCons (.mkGen .gen_natZero () .childNil)
+        (.childCons (.mkGen .gen_unit () .childNil : RawTerm 1)
           (.childCons (.mkGen .gen_unit () .childNil)
-            (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
+            (.childCons (.mkGen .gen_unit () .childNil)
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil))))
         : RawTerm 0) :=
   .intro .term
     (PolyCell.gen
@@ -146,8 +149,8 @@ theorem HasCertifiedCellDim0.probe_boolElim_natZero_branches
       (genPayloadEvidence (generator := .gen_boolElim) (scope := 0) ())
       (CertifiedTermSpine.cons
         (PolyCell.gen
-          SupportedGenerator.gen_natZero
-          (genPayloadEvidence (generator := .gen_natZero) (scope := 0) ())
+          SupportedGenerator.gen_unit
+          (genPayloadEvidence (generator := .gen_unit) (scope := 1) ())
           CertifiedTermSpine.nil)
         (CertifiedTermSpine.cons
           (PolyCell.gen
@@ -159,6 +162,11 @@ theorem HasCertifiedCellDim0.probe_boolElim_natZero_branches
               SupportedGenerator.gen_unit
               (genPayloadEvidence (generator := .gen_unit) (scope := 0) ())
               CertifiedTermSpine.nil)
-            CertifiedTermSpine.nil))))
+            (CertifiedTermSpine.cons
+              (PolyCell.gen
+                SupportedGenerator.gen_natZero
+                (genPayloadEvidence (generator := .gen_natZero) (scope := 0) ())
+                CertifiedTermSpine.nil)
+              CertifiedTermSpine.nil)))))
 
 end FX1Poly.Core

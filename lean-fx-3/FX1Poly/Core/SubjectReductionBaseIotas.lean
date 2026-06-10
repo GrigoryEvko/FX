@@ -7,9 +7,12 @@ The SR arms for the base-case branch-selection iotas.
 
 Each base-case eliminator (natElim/natRec on natZero, listElim on
 listNil, optionMatch on optionNone) selects the "base" branch from a
-3-child same-scope spine.  The proof pattern is identical to
-`iotaBoolTrue` (which extracts the then-branch from boolElim's
-3-child spine).
+3-child same-scope spine (scrutinee first, `binderShifts [0, 0, 0]`).
+The proof pattern is the pure-projection iota template shared with
+`iotaBoolTrue` — extract the second child via `spine.tail.headAtDim0
+rfl`.  (NOTE: boolElim itself now carries the Phase-Z 4-child motive
+shape with the scrutinee LAST, so its spine differs; these four base
+iotas keep the classic scrutinee-first 3-child spine.)
 
 ## One family, one file
 
@@ -37,8 +40,8 @@ namespace FX1Poly.Core
 /-- **SR arm: `Step.iotaNatElimZero` preserves `HasCertifiedCellDim0`.**
 
 `natElim natZero zeroBranch succBranch` reduces to `zeroBranch`.
-Same 3-child same-scope spine as `iotaBoolTrue`; second child is
-the target. -/
+3-child same-scope spine (scrutinee first); second child is the
+target, projected via `spine.tail.headAtDim0 rfl`. -/
 theorem HasCertifiedCellDim0.preservedByIotaNatElimZero
     {profile : PolyProfile} {scope : Nat}
     {zeroBranch succBranch : RawTerm scope}

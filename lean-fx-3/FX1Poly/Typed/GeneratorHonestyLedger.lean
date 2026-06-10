@@ -67,9 +67,11 @@ structure GeneratorHonestyLedger : Prop where
     (∀ g : Generator, hasSomeTypingRule g = false → isUntypableHead g = true) ∧
     (∀ g : Generator, isUntypableHead g = false → hasSomeTypingRule g = true) ∧
     (∃ g : Generator, isUntypableHead g = true ∧ hasSomeTypingRule g = true)
-  /-- FAITHFULNESS (representative): the `boolElim` eliminator computes its exact host fold `cond`. -/
-  boolElimFaithful : ∀ {scope : Nat} (selector : Bool) (thenBranch elseBranch : RawTerm scope),
-    StepStar (boolElimCell (rawBoolCell selector) thenBranch elseBranch)
+  /-- FAITHFULNESS (representative): the `boolElim` eliminator computes its exact host fold `cond`
+      for EVERY stored motive (Phase-Z shape — the iota discards the motive). -/
+  boolElimFaithful : ∀ {scope : Nat} (motive : RawTerm (scope + 1)) (selector : Bool)
+      (thenBranch elseBranch : RawTerm scope),
+    StepStar (boolElimCell motive (rawBoolCell selector) thenBranch elseBranch)
       (cond selector thenBranch elseBranch)
   /-- NON-VACUITY: the two classifier axes are complementary — neither alone classifies the live table. -/
   axesComplementary :
@@ -85,7 +87,8 @@ object certifying that the 197-generator table is honestly classified. -/
 theorem generatorHonestyLedgerHolds : GeneratorHonestyLedger :=
   { reservedIsDead := fun reserved => semanticTierReservedSound reserved
     unionStrictlyRefinesGrown := hasSomeTypingRuleStrictlyRefinesUntypableHead
-    boolElimFaithful := fun selector thenBranch elseBranch => boolElimHostFold selector thenBranch elseBranch
+    boolElimFaithful := fun motive selector thenBranch elseBranch =>
+      boolElimHostFold motive selector thenBranch elseBranch
     axesComplementary := ⟨natElim_reducesButUntyped_stillLive, boolTrue_typedNotRedex_stillLive⟩ }
 
 /-- Count the generators (of the 197) satisfying a `Bool` metric. -/

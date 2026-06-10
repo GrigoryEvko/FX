@@ -112,35 +112,37 @@ theorem ParStep.triangleCongFires {scope : Nat} (gen : Generator) (payload : gen
   · by_cases hBoolElim : gen = .gen_boolElim
     · subst hBoolElim
       cases childrenStep with
-      | cons scrutStep tailStep => cases tailStep with
+      | cons _motiveStep tailStep => cases tailStep with
         | cons _thenStep tail2 => cases tail2 with
-          | cons _elseStep tailNil => cases tailNil with
-            | nil =>
-                cases ihChildren with
-                | cons _ihScrut ihTail => cases ihTail with
-                  | cons ihThen ihTail2 => cases ihTail2 with
-                    | cons ihElse ihNil => cases ihNil with
-                      | nil =>
-                          rename_i scrut _scrut' thenB _thenB' elseB _elseB'
-                          cases scrut with
-                          | mkGen sg sp sc =>
-                              by_cases hTrue : sg = .gen_boolTrue
-                              · subst hTrue
-                                cases sc with | childNil =>
-                                    cases scrutStep with
-                                    | cong _ _ csS => cases csS with
-                                      | nil => exact ParStep.iotaBoolTrue ihThen
-                              · by_cases hFalse : sg = .gen_boolFalse
-                                · subst hFalse
-                                  cases sc with | childNil =>
-                                      cases scrutStep with
-                                      | cong _ _ csS => cases csS with
-                                        | nil => exact ParStep.iotaBoolFalse ihElse
-                                · have key : RawTerm.fireRootRedex .gen_boolElim payload
-                                      (.childCons (.mkGen sg sp sc)
-                                        (.childCons thenB (.childCons elseB .childNil))) = none :=
-                                    (if_neg hTrue).trans (if_neg hFalse)
-                                  rw [key] at hfire; nomatch hfire
+          | cons _elseStep tail3 => cases tail3 with
+            | cons scrutStep tailNil => cases tailNil with
+              | nil =>
+                  cases ihChildren with
+                  | cons ihMotive ihTail => cases ihTail with
+                    | cons ihThen ihTail2 => cases ihTail2 with
+                      | cons ihElse ihTail3 => cases ihTail3 with
+                        | cons _ihScrut ihNil => cases ihNil with
+                          | nil =>
+                              rename_i motive _motive' thenB _thenB' elseB _elseB' scrut _scrut'
+                              cases scrut with
+                              | mkGen sg sp sc =>
+                                  by_cases hTrue : sg = .gen_boolTrue
+                                  · subst hTrue
+                                    cases sc with | childNil =>
+                                        cases scrutStep with
+                                        | cong _ _ csS => cases csS with
+                                          | nil => exact ParStep.iotaBoolTrue ihMotive ihThen
+                                  · by_cases hFalse : sg = .gen_boolFalse
+                                    · subst hFalse
+                                      cases sc with | childNil =>
+                                          cases scrutStep with
+                                          | cong _ _ csS => cases csS with
+                                            | nil => exact ParStep.iotaBoolFalse ihMotive ihElse
+                                    · have key : RawTerm.fireRootRedex .gen_boolElim payload
+                                          (.childCons motive (.childCons thenB (.childCons elseB
+                                            (.childCons (.mkGen sg sp sc) .childNil)))) = none :=
+                                        (if_neg hTrue).trans (if_neg hFalse)
+                                      rw [key] at hfire; nomatch hfire
     · by_cases hFst : gen = .gen_fst
       · subst hFst
         cases childrenStep with
@@ -491,8 +493,10 @@ theorem ParStep.triangle {scope : Nat} {a b : RawTerm scope} :
         cases hfire : RawTerm.fireRootRedex gen payload _children with
         | none => exact ParStep.cong gen payload ih
         | some reduct => exact ParStep.triangleCongFires gen payload childrenStep ih hfire)
-    (fun {_scope} {_thenBranch _thenBranch' _elseBranch} _step ih => ih)
-    (fun {_scope} {_thenBranch _elseBranch _elseBranch'} _step ih => ih)
+    (fun {_scope} {_motive _motive' _thenBranch _thenBranch' _elseBranch}
+        _motiveStep _thenStep _ihMotive ihThen => ihThen)
+    (fun {_scope} {_motive _motive' _thenBranch _elseBranch _elseBranch'}
+        _motiveStep _elseStep _ihMotive ihElse => ihElse)
     (fun {_scope} {_firstValue _firstValue' _secondValue} _step ih => ih)
     (fun {_scope} {_firstValue _secondValue _secondValue'} _step ih => ih)
     (fun {_scope} {_zeroBranch _zeroBranch' _succBranch} _step ih => ih)

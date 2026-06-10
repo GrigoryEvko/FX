@@ -146,13 +146,15 @@ theorem isBoolFalseSource_eq_boolFalse {scope : Nat} {scrutinee : RawTerm scope}
 
 /-- **boolElim iota redex extraction.**  If the scrutinee child of a `gen_boolElim` cell is `boolTrue` or
 `boolFalse` (`hasBoolElimIotaRoot`), the eliminator takes a `Step` (the selected branch).  The disjunctive
-root check is split by `cases` on the boolean (propext-free), the false branch collapsing `false || b`. -/
+root check is split by `cases` on the boolean (propext-free), the false branch collapsing `false || b`.
+Phase-Z spine `[1, 0, 0, 0]`: children are `(motive, then, else, scrutinee)` with the scrutinee LAST. -/
 theorem hasBoolElimIotaRoot_exists_step {scope : Nat}
-    (children : RawTermChildren [0, 0, 0] scope)
+    (children : RawTermChildren [1, 0, 0, 0] scope)
     (iotaRoot : RawTermChildren.hasBoolElimIotaRoot children = true) :
     ∃ target : RawTerm scope, Step (.mkGen .gen_boolElim () children) target := by
   match children with
-  | .childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons thenBranch (.childCons elseBranch (.childCons scrutinee .childNil))) =>
       replace iotaRoot :
           (RawTerm.isBoolTrueSource scrutinee || RawTerm.isBoolFalseSource scrutinee) = true := iotaRoot
       cases trueValue : RawTerm.isBoolTrueSource scrutinee with

@@ -481,7 +481,7 @@ theorem rootCongruenceBranchings_app_length :
     (rootCongruenceBranchings .gen_app).length = 4 := rfl
 
 theorem rootCongruenceBranchings_boolElim_length :
-    (rootCongruenceBranchings .gen_boolElim).length = 12 := rfl
+    (rootCongruenceBranchings .gen_boolElim).length = 16 := rfl
 
 theorem rootCongruenceBranchings_unit :
     rootCongruenceBranchings .gen_unit = [] := rfl
@@ -685,7 +685,7 @@ theorem criticalPairs_app_app_length :
     (criticalPairs .gen_app .gen_app).length = 5 := rfl
 
 theorem criticalPairs_boolElim_boolElim_length :
-    (criticalPairs .gen_boolElim .gen_boolElim).length = 16 := rfl
+    (criticalPairs .gen_boolElim .gen_boolElim).length = 20 := rfl
 
 theorem criticalPairs_unit_app :
     criticalPairs .gen_unit .gen_app = [] := rfl
@@ -945,16 +945,18 @@ def betaArgumentCong {scope : Nat}
 
 /-- The concrete same-root bool-true iota branching.
 
-Both one-step paths eliminate the same `boolElim boolTrue` redex and
-select the then-branch. -/
+Both one-step paths eliminate the same `boolElim … boolTrue` redex and
+select the then-branch.  Phase-Z motive shape: motive first (under one
+binder), scrutinee last. -/
 def iotaBoolTrueSameRoot {scope : Nat}
-    (thenBranch elseBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch : RawTerm scope) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_boolElim ()
-      (.childCons
-        (.mkGen .gen_boolTrue () .childNil)
-        (.childCons thenBranch (.childCons elseBranch .childNil)))
+      (.childCons motive
+        (.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))
   leftReduct := thenBranch
   rightReduct := thenBranch
   leftStep := Step.iotaBoolTrue
@@ -963,15 +965,17 @@ def iotaBoolTrueSameRoot {scope : Nat}
 /-- The concrete same-root bool-false iota branching.
 
 Both one-step paths eliminate the same `boolElim boolFalse` redex and
-select the else-branch. -/
+select the else-branch.  Phase-Z motive shape: motive first (under one
+binder), scrutinee last. -/
 def iotaBoolFalseSameRoot {scope : Nat}
-    (thenBranch elseBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch : RawTerm scope) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_boolElim ()
-      (.childCons
-        (.mkGen .gen_boolFalse () .childNil)
-        (.childCons thenBranch (.childCons elseBranch .childNil)))
+      (.childCons motive
+        (.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))))
   leftReduct := elseBranch
   rightReduct := elseBranch
   leftStep := Step.iotaBoolFalse
@@ -1252,27 +1256,32 @@ def iotaListElimConsSameRoot {scope : Nat}
   leftStep := Step.iotaListElimCons
   rightStep := Step.iotaListElimCons
 
-/-- `boolElim boolTrue` and `boolElim boolFalse` are disjoint root
-redex sources, so a true/false root-root branching is impossible. -/
+/-- `boolElim … boolTrue` and `boolElim … boolFalse` are disjoint root
+redex sources, so a true/false root-root branching is impossible.
+Phase-Z motive shape: the scrutinee (boolTrue vs boolFalse) is the last
+child; the differing scrutinee tags drive the `cases` contradiction. -/
 theorem iotaBoolTrue_iotaBoolFalse_sourcesDisjoint {scope : Nat}
+    (motiveTrue motiveFalse : RawTerm (scope + 1))
     (thenTrue elseTrue thenFalse elseFalse : RawTerm scope) :
     Not
-      ((iotaBoolTrueSameRoot thenTrue elseTrue).source =
-        (iotaBoolFalseSameRoot thenFalse elseFalse).source) := by
+      ((iotaBoolTrueSameRoot motiveTrue thenTrue elseTrue).source =
+        (iotaBoolFalseSameRoot motiveFalse thenFalse elseFalse).source) := by
   intro sourceEquality
   dsimp [iotaBoolTrueSameRoot, iotaBoolFalseSameRoot] at sourceEquality
   cases sourceEquality
 
 /-- Reverse orientation of `iotaBoolTrue_iotaBoolFalse_sourcesDisjoint`. -/
 theorem iotaBoolFalse_iotaBoolTrue_sourcesDisjoint {scope : Nat}
+    (motiveFalse motiveTrue : RawTerm (scope + 1))
     (thenFalse elseFalse thenTrue elseTrue : RawTerm scope) :
     Not
-      ((iotaBoolFalseSameRoot thenFalse elseFalse).source =
-        (iotaBoolTrueSameRoot thenTrue elseTrue).source) := by
+      ((iotaBoolFalseSameRoot motiveFalse thenFalse elseFalse).source =
+        (iotaBoolTrueSameRoot motiveTrue thenTrue elseTrue).source) := by
   intro sourceEquality
   exact
     (iotaBoolTrue_iotaBoolFalse_sourcesDisjoint
-      thenTrue elseTrue thenFalse elseFalse) sourceEquality.symm
+      motiveTrue motiveFalse thenTrue elseTrue thenFalse elseFalse)
+      sourceEquality.symm
 
 /-- `natElim natZero` and `natElim (natSucc _)` are disjoint root
 redex sources, so a zero/succ root-root branching is impossible. -/
@@ -1421,124 +1430,209 @@ theorem iotaEitherMatchInr_iotaEitherMatchInl_sourcesDisjoint
       leftBranchRight rightBranchRight) sourceEquality.symm
 
 /-- Root `boolTrue` iota branching against congruence in the selected
-then-branch.  The local diamond joins at the stepped then-branch. -/
+then-branch.  The local diamond joins at the stepped then-branch.
+Phase-Z motive shape: spine `(motive, thenBranch, elseBranch, boolTrue)`;
+the congruence skips the motive (shift 1) then fires at the then-branch. -/
 def iotaBoolTrueThenCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch steppedThenBranch elseBranch : RawTerm scope}
     (thenStep : Step thenBranch steppedThenBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_boolElim ()
-      (.childCons
-        (.mkGen .gen_boolTrue () .childNil)
-        (.childCons thenBranch (.childCons elseBranch .childNil)))
+      (.childCons motive
+        (.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))
   leftReduct := thenBranch
   rightReduct :=
     .mkGen .gen_boolElim ()
-      (.childCons
-        (.mkGen .gen_boolTrue () .childNil)
-        (.childCons steppedThenBranch (.childCons elseBranch .childNil)))
+      (.childCons motive
+        (.childCons steppedThenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))
   leftStep := Step.iotaBoolTrue
   rightStep :=
     Step.cong .gen_boolElim ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_boolTrue () .childNil) : RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.here
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
-          ((.childCons elseBranch .childNil) :
-            RawTermChildren [0] scope)
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+          ((.childCons elseBranch
+            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)) :
+            RawTermChildren [0, 0] scope)
           thenStep))
 
 /-- Root `boolTrue` iota branching against congruence in the discarded
-else-branch.  The local diamond joins immediately at the then-branch. -/
+else-branch.  The local diamond joins immediately at the then-branch.
+Phase-Z motive shape: spine `(motive, thenBranch, elseBranch, boolTrue)`. -/
 def iotaBoolTrueElseCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch steppedElseBranch : RawTerm scope}
     (elseStep : Step elseBranch steppedElseBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_boolElim ()
-      (.childCons
-        (.mkGen .gen_boolTrue () .childNil)
-        (.childCons thenBranch (.childCons elseBranch .childNil)))
+      (.childCons motive
+        (.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))
   leftReduct := thenBranch
   rightReduct :=
     .mkGen .gen_boolElim ()
-      (.childCons
-        (.mkGen .gen_boolTrue () .childNil)
-        (.childCons thenBranch (.childCons steppedElseBranch .childNil)))
+      (.childCons motive
+        (.childCons thenBranch
+          (.childCons steppedElseBranch
+            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))
   leftStep := Step.iotaBoolTrue
   rightStep :=
     Step.cong .gen_boolElim ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_boolTrue () .childNil) : RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.there
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
           thenBranch
           (StepChildren.here
-            (parentScope := scope) (headShift := 0) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons (.mkGen .gen_boolTrue () .childNil) .childNil) :
+              RawTermChildren [0] scope)
             elseStep)))
 
 /-- Root `boolFalse` iota branching against congruence in the discarded
-then-branch.  The local diamond joins immediately at the else-branch. -/
+then-branch.  The local diamond joins immediately at the else-branch.
+Phase-Z motive shape: spine `(motive, thenBranch, elseBranch, boolFalse)`. -/
 def iotaBoolFalseThenCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch steppedThenBranch elseBranch : RawTerm scope}
     (thenStep : Step thenBranch steppedThenBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_boolElim ()
-      (.childCons
-        (.mkGen .gen_boolFalse () .childNil)
-        (.childCons thenBranch (.childCons elseBranch .childNil)))
+      (.childCons motive
+        (.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))))
   leftReduct := elseBranch
   rightReduct :=
     .mkGen .gen_boolElim ()
-      (.childCons
-        (.mkGen .gen_boolFalse () .childNil)
-        (.childCons steppedThenBranch (.childCons elseBranch .childNil)))
+      (.childCons motive
+        (.childCons steppedThenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))))
   leftStep := Step.iotaBoolFalse
   rightStep :=
     Step.cong .gen_boolElim ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_boolFalse () .childNil) : RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.here
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
-          ((.childCons elseBranch .childNil) :
-            RawTermChildren [0] scope)
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+          ((.childCons elseBranch
+            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)) :
+            RawTermChildren [0, 0] scope)
           thenStep))
 
 /-- Root `boolFalse` iota branching against congruence in the selected
-else-branch.  The local diamond joins at the stepped else-branch. -/
+else-branch.  The local diamond joins at the stepped else-branch.
+Phase-Z motive shape: spine `(motive, thenBranch, elseBranch, boolFalse)`. -/
 def iotaBoolFalseElseCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch steppedElseBranch : RawTerm scope}
     (elseStep : Step elseBranch steppedElseBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_boolElim ()
-      (.childCons
-        (.mkGen .gen_boolFalse () .childNil)
-        (.childCons thenBranch (.childCons elseBranch .childNil)))
+      (.childCons motive
+        (.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))))
   leftReduct := elseBranch
   rightReduct :=
     .mkGen .gen_boolElim ()
-      (.childCons
-        (.mkGen .gen_boolFalse () .childNil)
-        (.childCons thenBranch (.childCons steppedElseBranch .childNil)))
+      (.childCons motive
+        (.childCons thenBranch
+          (.childCons steppedElseBranch
+            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))))
   leftStep := Step.iotaBoolFalse
   rightStep :=
     Step.cong .gen_boolElim ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_boolFalse () .childNil) : RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.there
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
           thenBranch
           (StepChildren.here
-            (parentScope := scope) (headShift := 0) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons (.mkGen .gen_boolFalse () .childNil) .childNil) :
+              RawTermChildren [0] scope)
             elseStep)))
+
+/-- Root `boolTrue` iota branching against congruence in the discarded
+motive (Phase-Z motive shape, at `scope + 1`).  The motive is
+operationally discarded by the iota, so the local diamond joins
+immediately at the then-branch. -/
+def iotaBoolTrueMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {thenBranch elseBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_boolElim ()
+      (.childCons motive
+        (.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))
+  leftReduct := thenBranch
+  rightReduct :=
+    .mkGen .gen_boolElim ()
+      (.childCons steppedMotive
+        (.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))
+  leftStep := Step.iotaBoolTrue
+  rightStep :=
+    Step.cong .gen_boolElim ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        ((.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))) :
+          RawTermChildren [0, 0, 0] scope)
+        motiveStep)
+
+/-- Root `boolFalse` iota branching against congruence in the discarded
+motive.  The local diamond joins immediately at the else-branch. -/
+def iotaBoolFalseMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {thenBranch elseBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_boolElim ()
+      (.childCons motive
+        (.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))))
+  leftReduct := elseBranch
+  rightReduct :=
+    .mkGen .gen_boolElim ()
+      (.childCons steppedMotive
+        (.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))))
+  leftStep := Step.iotaBoolFalse
+  rightStep :=
+    Step.cong .gen_boolElim ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        ((.childCons thenBranch
+          (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))) :
+          RawTermChildren [0, 0, 0] scope)
+        motiveStep)
 
 /-- Root `fst` iota branching against congruence in the selected first
 pair component.  The local diamond joins at the stepped first component. -/
@@ -3000,18 +3094,18 @@ def betaArgumentCongReverse {scope : Nat}
       (LocalStepBranching.betaArgumentCong domainAnn body argumentStep).swap :=
   (betaArgumentCong domainAnn body argumentStep).swap
 
-/-- Concrete bool-true iota same-root local diamond. -/
+/-- Concrete bool-true iota same-root local diamond.  Phase-Z motive shape. -/
 def iotaBoolTrueSameRoot {scope : Nat}
-    (thenBranch elseBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch : RawTerm scope) :
     LocalDiamond
-      (LocalStepBranching.iotaBoolTrueSameRoot thenBranch elseBranch) :=
+      (LocalStepBranching.iotaBoolTrueSameRoot motive thenBranch elseBranch) :=
   sameReduct Step.iotaBoolTrue Step.iotaBoolTrue
 
-/-- Concrete bool-false iota same-root local diamond. -/
+/-- Concrete bool-false iota same-root local diamond.  Phase-Z motive shape. -/
 def iotaBoolFalseSameRoot {scope : Nat}
-    (thenBranch elseBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch : RawTerm scope) :
     LocalDiamond
-      (LocalStepBranching.iotaBoolFalseSameRoot thenBranch elseBranch) :=
+      (LocalStepBranching.iotaBoolFalseSameRoot motive thenBranch elseBranch) :=
   sameReduct Step.iotaBoolFalse Step.iotaBoolFalse
 
 /-- Concrete first-projection iota same-root local diamond. -/
@@ -3118,12 +3212,15 @@ def iotaListElimConsSameRoot {scope : Nat}
         headValue tailValue nilBranch consBranch) :=
   sameReduct Step.iotaListElimCons Step.iotaListElimCons
 
-/-- Root `boolTrue` iota against congruence in the selected then-branch. -/
+/-- Root `boolTrue` iota against congruence in the selected then-branch.
+Phase-Z motive shape. -/
 def iotaBoolTrueThenCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch steppedThenBranch elseBranch : RawTerm scope}
     (thenStep : Step thenBranch steppedThenBranch) :
     LocalDiamond
       (LocalStepBranching.iotaBoolTrueThenCong
+        (motive := motive)
         (thenBranch := thenBranch)
         (steppedThenBranch := steppedThenBranch)
         (elseBranch := elseBranch)
@@ -3134,12 +3231,15 @@ def iotaBoolTrueThenCong {scope : Nat}
       leftChain := StepStar.single thenStep
       rightChain := StepStar.single Step.iotaBoolTrue }
 
-/-- Root `boolTrue` iota against congruence in the discarded else-branch. -/
+/-- Root `boolTrue` iota against congruence in the discarded else-branch.
+Phase-Z motive shape. -/
 def iotaBoolTrueElseCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch steppedElseBranch : RawTerm scope}
     (elseStep : Step elseBranch steppedElseBranch) :
     LocalDiamond
       (LocalStepBranching.iotaBoolTrueElseCong
+        (motive := motive)
         (thenBranch := thenBranch)
         (elseBranch := elseBranch)
         (steppedElseBranch := steppedElseBranch)
@@ -3150,12 +3250,15 @@ def iotaBoolTrueElseCong {scope : Nat}
       leftChain := StepStar.refl thenBranch
       rightChain := StepStar.single Step.iotaBoolTrue }
 
-/-- Root `boolFalse` iota against congruence in the discarded then-branch. -/
+/-- Root `boolFalse` iota against congruence in the discarded then-branch.
+Phase-Z motive shape. -/
 def iotaBoolFalseThenCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch steppedThenBranch elseBranch : RawTerm scope}
     (thenStep : Step thenBranch steppedThenBranch) :
     LocalDiamond
       (LocalStepBranching.iotaBoolFalseThenCong
+        (motive := motive)
         (thenBranch := thenBranch)
         (steppedThenBranch := steppedThenBranch)
         (elseBranch := elseBranch)
@@ -3166,12 +3269,15 @@ def iotaBoolFalseThenCong {scope : Nat}
       leftChain := StepStar.refl elseBranch
       rightChain := StepStar.single Step.iotaBoolFalse }
 
-/-- Root `boolFalse` iota against congruence in the selected else-branch. -/
+/-- Root `boolFalse` iota against congruence in the selected else-branch.
+Phase-Z motive shape. -/
 def iotaBoolFalseElseCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch steppedElseBranch : RawTerm scope}
     (elseStep : Step elseBranch steppedElseBranch) :
     LocalDiamond
       (LocalStepBranching.iotaBoolFalseElseCong
+        (motive := motive)
         (thenBranch := thenBranch)
         (elseBranch := elseBranch)
         (steppedElseBranch := steppedElseBranch)
@@ -3180,6 +3286,45 @@ def iotaBoolFalseElseCong {scope : Nat}
   exact
     { commonReduct := steppedElseBranch
       leftChain := StepStar.single elseStep
+      rightChain := StepStar.single Step.iotaBoolFalse }
+
+/-- Root `boolTrue` iota against congruence in the discarded motive.
+Phase-Z motive shape; the motive is discarded so the diamond joins at
+the then-branch immediately. -/
+def iotaBoolTrueMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {thenBranch elseBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalDiamond
+      (LocalStepBranching.iotaBoolTrueMotiveCong
+        (motive := motive)
+        (steppedMotive := steppedMotive)
+        (thenBranch := thenBranch)
+        (elseBranch := elseBranch)
+        motiveStep) := by
+  dsimp [LocalStepBranching.iotaBoolTrueMotiveCong]
+  exact
+    { commonReduct := thenBranch
+      leftChain := StepStar.refl thenBranch
+      rightChain := StepStar.single Step.iotaBoolTrue }
+
+/-- Root `boolFalse` iota against congruence in the discarded motive.
+Phase-Z motive shape; joins at the else-branch immediately. -/
+def iotaBoolFalseMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {thenBranch elseBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalDiamond
+      (LocalStepBranching.iotaBoolFalseMotiveCong
+        (motive := motive)
+        (steppedMotive := steppedMotive)
+        (thenBranch := thenBranch)
+        (elseBranch := elseBranch)
+        motiveStep) := by
+  dsimp [LocalStepBranching.iotaBoolFalseMotiveCong]
+  exact
+    { commonReduct := elseBranch
+      leftChain := StepStar.refl elseBranch
       rightChain := StepStar.single Step.iotaBoolFalse }
 
 /-- Root `fst` iota against congruence in the selected first component. -/

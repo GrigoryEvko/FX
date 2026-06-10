@@ -75,13 +75,16 @@ theorem eitherMatchNeutralVarSmoke {scope : Nat} (index : Fin scope) :
     (var_isStronglyNormalizing index) (IsNeutral.var index)
     (var_isStronglyNormalizing index) (var_isStronglyNormalizing index)
 
-/-- **`boolElim` over a variable scrutinee is strongly normalizing.** -/
+/-- **`boolElim` over a variable scrutinee is strongly normalizing.**  Phase-Z motive shape: a `var 0`
+under-binder throwaway motive (SN), then/else/scrutinee all the same outer variable. -/
 theorem boolElimNeutralVarSmoke {scope : Nat} (index : Fin scope) :
     IsStronglyNormalizing (.mkGen .gen_boolElim ()
-      (.childCons (.mkGen .gen_var index .childNil)
+      (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ scope⟩ .childNil)
         (.childCons (.mkGen .gen_var index .childNil)
-          (.childCons (.mkGen .gen_var index .childNil) .childNil)))) :=
+          (.childCons (.mkGen .gen_var index .childNil)
+            (.childCons (.mkGen .gen_var index .childNil) .childNil))))) :=
   boolElimNeutralScrutineeMember IsStronglyNormalizing isStronglyNormalizing_isReducibilityCandidate
+    (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ scope⟩)
     (var_isStronglyNormalizing index) (IsNeutral.var index)
     (var_isStronglyNormalizing index) (var_isStronglyNormalizing index)
 

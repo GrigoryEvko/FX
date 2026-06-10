@@ -320,18 +320,20 @@ theorem Certified.fstPairUnits_at_scope_zero {profile : PolyProfile} :
         : RawTerm 0) :=
   ⟨_, rfl⟩
 
-/-- **Smoke: `boolElim boolTrue unit unit` is Certified at scope 0.**
+/-- **Smoke: `boolElim (motive := var 0) unit unit boolTrue` is Certified at
+scope 0.**
 
-A 3-child eliminator iota-redex shape with unit-typed branches.
-Demonstrates the certifier accepts eliminators with full
-children spines -- which matters for SR's eliminator iota arms
-that fire on this shape. -/
+The Phase-Z eliminator iota-redex shape (motive under one binder, then- and
+else-branches, scrutinee LAST) with unit-typed branches.  Demonstrates the
+certifier accepts eliminators with full children spines -- which matters for
+SR's eliminator iota arms that fire on this shape. -/
 theorem Certified.boolElimTrue_at_scope_zero {profile : PolyProfile} :
     Certified (profile := profile)
       (.mkGen .gen_boolElim ()
-        (.childCons (.mkGen .gen_boolTrue () .childNil)
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
           (.childCons (.mkGen .gen_unit () .childNil)
-            (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
+            (.childCons (.mkGen .gen_unit () .childNil)
+              (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))
         : RawTerm 0) :=
   ⟨_, rfl⟩
 

@@ -2784,160 +2784,225 @@ theorem sndPair_isStronglyNormalizing_of_components {scope : Nat}
     firstTerminates)
     secondTerminates
 
-/-- Boolean elimination on the literal `true` is strongly normalizing when both
-branches are strongly normalizing.
+/-- Boolean elimination on the literal `true` is strongly normalizing when the
+motive and both branches are strongly normalizing.
 
 The root iota reduct is the then-branch.  Congruence at the scrutinee is
-impossible because `boolTrue` is a normal leaf; congruence in either branch is
-handled by nested accessibility induction on the branches. -/
+impossible because `boolTrue` is a normal leaf; congruence in the motive or
+either branch is handled by nested accessibility induction (motive outer,
+then-branch, else-branch innermost).  Phase-Z motive shape: the children spine
+is `(motive, thenBranch, elseBranch, boolTrue)`. -/
 theorem boolElimTrue_isStronglyNormalizing_of_branches {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch : RawTerm scope}
+    (motiveTerminates : IsStronglyNormalizing motive)
     (thenTerminates : IsStronglyNormalizing thenBranch)
     (elseTerminates : IsStronglyNormalizing elseBranch) :
     IsStronglyNormalizing
       (.mkGen .gen_boolElim ()
-        (.childCons
-          (.mkGen .gen_boolTrue () .childNil)
-          (.childCons thenBranch (.childCons elseBranch .childNil))) :
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)))) :
         RawTerm scope) :=
   (Acc.ndrec
     (r := StepSuccessor)
-    (C := fun currentThen =>
-      ∀ {currentElse : RawTerm scope},
-        IsStronglyNormalizing currentElse →
+    (C := fun currentMotive =>
+      ∀ {currentThen currentElse : RawTerm scope},
+        IsStronglyNormalizing currentThen → IsStronglyNormalizing currentElse →
           IsStronglyNormalizing
             (.mkGen .gen_boolElim ()
-              (.childCons
-                (.mkGen .gen_boolTrue () .childNil)
+              (.childCons currentMotive
                 (.childCons currentThen
-                  (.childCons currentElse .childNil))) : RawTerm scope))
-    (m := fun currentThen currentThenSuccessors thenBranchIH => by
-      intro currentElse currentElseTerminates
+                  (.childCons currentElse
+                    (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)))) :
+              RawTerm scope))
+    (m := fun currentMotive currentMotiveSuccessors motiveBranchIH => by
+      intro currentThen currentElse currentThenTerminates currentElseTerminates
       exact
-        Acc.ndrec
+        (Acc.ndrec
           (r := StepSuccessor)
-          (C := fun innerElse =>
-            IsStronglyNormalizing
-              (.mkGen .gen_boolElim ()
-                (.childCons
-                  (.mkGen .gen_boolTrue () .childNil)
-                  (.childCons currentThen
-                    (.childCons innerElse .childNil))) : RawTerm scope))
-          (m := fun currentElse currentElseSuccessors elseBranchIH =>
-            Acc.intro
-              (.mkGen .gen_boolElim ()
-                (.childCons
-                  (.mkGen .gen_boolTrue () .childNil)
-                  (.childCons currentThen
-                    (.childCons currentElse .childNil))) : RawTerm scope)
-              (fun targetTerm parentStep => by
-                cases Step.from_boolElim parentStep with
-                | inl trueBranch =>
-                    obtain ⟨_, targetEq⟩ := trueBranch
-                    rw [targetEq]
-                    exact Acc.intro currentThen currentThenSuccessors
-                | inr restAfterTrue =>
-                    cases restAfterTrue with
-                    | inl falseBranch =>
-                        obtain ⟨scrutineeEq, _⟩ := falseBranch
-                        cases scrutineeEq
-                    | inr restAfterFalse =>
-                        cases restAfterFalse with
-                        | inl scrutineeBranch =>
-                            obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
-                            exact False.elim (noStep_boolTrue scrutineeStep)
-                        | inr restAfterScrutinee =>
-                            cases restAfterScrutinee with
-                            | inl thenBranchStep =>
-                                obtain ⟨thenAfter, targetEq, thenStep⟩ :=
-                                  thenBranchStep
-                                rw [targetEq]
-                                exact thenBranchIH thenAfter thenStep
-                                  (Acc.intro currentElse currentElseSuccessors)
-                            | inr elseBranchStep =>
-                                obtain ⟨elseAfter, targetEq, elseStep⟩ :=
-                                  elseBranchStep
-                                rw [targetEq]
-                                exact elseBranchIH elseAfter elseStep))
-          currentElseTerminates)
-    thenTerminates)
-    elseTerminates
+          (C := fun innerThen =>
+            ∀ {innerElse : RawTerm scope},
+              IsStronglyNormalizing innerElse →
+                IsStronglyNormalizing
+                  (.mkGen .gen_boolElim ()
+                    (.childCons currentMotive
+                      (.childCons innerThen
+                        (.childCons innerElse
+                          (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)))) :
+                    RawTerm scope))
+          (m := fun currentThen currentThenSuccessors thenBranchIH => by
+            intro innerElse innerElseTerminates
+            exact
+              Acc.ndrec
+                (r := StepSuccessor)
+                (C := fun innerElse' =>
+                  IsStronglyNormalizing
+                    (.mkGen .gen_boolElim ()
+                      (.childCons currentMotive
+                        (.childCons currentThen
+                          (.childCons innerElse'
+                            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)))) :
+                      RawTerm scope))
+                (m := fun currentElse currentElseSuccessors elseBranchIH =>
+                  Acc.intro
+                    (.mkGen .gen_boolElim ()
+                      (.childCons currentMotive
+                        (.childCons currentThen
+                          (.childCons currentElse
+                            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)))) :
+                      RawTerm scope)
+                    (fun targetTerm parentStep => by
+                      cases Step.from_boolElim parentStep with
+                      | inl trueBranch =>
+                          obtain ⟨_, targetEq⟩ := trueBranch
+                          rw [targetEq]
+                          exact Acc.intro currentThen currentThenSuccessors
+                      | inr restAfterTrue =>
+                          cases restAfterTrue with
+                          | inl falseBranch =>
+                              obtain ⟨scrutineeEq, _⟩ := falseBranch
+                              cases scrutineeEq
+                          | inr restAfterFalse =>
+                              cases restAfterFalse with
+                              | inl motiveStepBranch =>
+                                  obtain ⟨motiveAfter, targetEq, motiveStep⟩ :=
+                                    motiveStepBranch
+                                  rw [targetEq]
+                                  exact motiveBranchIH motiveAfter motiveStep
+                                    (Acc.intro currentThen currentThenSuccessors)
+                                    (Acc.intro currentElse currentElseSuccessors)
+                              | inr restAfterMotive =>
+                                  cases restAfterMotive with
+                                  | inl thenBranchStep =>
+                                      obtain ⟨thenAfter, targetEq, thenStep⟩ :=
+                                        thenBranchStep
+                                      rw [targetEq]
+                                      exact thenBranchIH thenAfter thenStep
+                                        (Acc.intro currentElse currentElseSuccessors)
+                                  | inr restAfterThen =>
+                                      cases restAfterThen with
+                                      | inl elseBranchStep =>
+                                          obtain ⟨elseAfter, targetEq, elseStep⟩ :=
+                                            elseBranchStep
+                                          rw [targetEq]
+                                          exact elseBranchIH elseAfter elseStep
+                                      | inr scrutineeBranch =>
+                                          obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
+                                          exact False.elim (noStep_boolTrue scrutineeStep)))
+                innerElseTerminates)
+          currentThenTerminates currentElseTerminates))
+    motiveTerminates)
+    thenTerminates elseTerminates
 
 /-- Boolean elimination on the literal `false` is strongly normalizing when
-both branches are strongly normalizing.  Symmetric to the `true` case, with the
-root iota reduct selecting the else-branch. -/
+the motive and both branches are strongly normalizing.  Symmetric to the `true`
+case, with the root iota reduct selecting the else-branch.  Phase-Z motive shape:
+the children spine is `(motive, thenBranch, elseBranch, boolFalse)`. -/
 theorem boolElimFalse_isStronglyNormalizing_of_branches {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch : RawTerm scope}
+    (motiveTerminates : IsStronglyNormalizing motive)
     (thenTerminates : IsStronglyNormalizing thenBranch)
     (elseTerminates : IsStronglyNormalizing elseBranch) :
     IsStronglyNormalizing
       (.mkGen .gen_boolElim ()
-        (.childCons
-          (.mkGen .gen_boolFalse () .childNil)
-          (.childCons thenBranch (.childCons elseBranch .childNil))) :
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)))) :
         RawTerm scope) :=
   (Acc.ndrec
     (r := StepSuccessor)
-    (C := fun currentThen =>
-      ∀ {currentElse : RawTerm scope},
-        IsStronglyNormalizing currentElse →
+    (C := fun currentMotive =>
+      ∀ {currentThen currentElse : RawTerm scope},
+        IsStronglyNormalizing currentThen → IsStronglyNormalizing currentElse →
           IsStronglyNormalizing
             (.mkGen .gen_boolElim ()
-              (.childCons
-                (.mkGen .gen_boolFalse () .childNil)
+              (.childCons currentMotive
                 (.childCons currentThen
-                  (.childCons currentElse .childNil))) : RawTerm scope))
-    (m := fun currentThen currentThenSuccessors thenBranchIH => by
-      intro currentElse currentElseTerminates
+                  (.childCons currentElse
+                    (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)))) :
+              RawTerm scope))
+    (m := fun currentMotive currentMotiveSuccessors motiveBranchIH => by
+      intro currentThen currentElse currentThenTerminates currentElseTerminates
       exact
-        Acc.ndrec
+        (Acc.ndrec
           (r := StepSuccessor)
-          (C := fun innerElse =>
-            IsStronglyNormalizing
-              (.mkGen .gen_boolElim ()
-                (.childCons
-                  (.mkGen .gen_boolFalse () .childNil)
-                  (.childCons currentThen
-                    (.childCons innerElse .childNil))) : RawTerm scope))
-          (m := fun currentElse currentElseSuccessors elseBranchIH =>
-            Acc.intro
-              (.mkGen .gen_boolElim ()
-                (.childCons
-                  (.mkGen .gen_boolFalse () .childNil)
-                  (.childCons currentThen
-                    (.childCons currentElse .childNil))) : RawTerm scope)
-              (fun targetTerm parentStep => by
-                cases Step.from_boolElim parentStep with
-                | inl trueBranch =>
-                    obtain ⟨scrutineeEq, _⟩ := trueBranch
-                    cases scrutineeEq
-                | inr restAfterTrue =>
-                    cases restAfterTrue with
-                    | inl falseBranch =>
-                        obtain ⟨_, targetEq⟩ := falseBranch
-                        rw [targetEq]
-                        exact Acc.intro currentElse currentElseSuccessors
-                    | inr restAfterFalse =>
-                        cases restAfterFalse with
-                        | inl scrutineeBranch =>
-                            obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
-                            exact False.elim (noStep_boolFalse scrutineeStep)
-                        | inr restAfterScrutinee =>
-                            cases restAfterScrutinee with
-                            | inl thenBranchStep =>
-                                obtain ⟨thenAfter, targetEq, thenStep⟩ :=
-                                  thenBranchStep
-                                rw [targetEq]
-                                exact thenBranchIH thenAfter thenStep
-                                  (Acc.intro currentElse currentElseSuccessors)
-                            | inr elseBranchStep =>
-                                obtain ⟨elseAfter, targetEq, elseStep⟩ :=
-                                  elseBranchStep
-                                rw [targetEq]
-                                exact elseBranchIH elseAfter elseStep))
-          currentElseTerminates)
-    thenTerminates)
-    elseTerminates
+          (C := fun innerThen =>
+            ∀ {innerElse : RawTerm scope},
+              IsStronglyNormalizing innerElse →
+                IsStronglyNormalizing
+                  (.mkGen .gen_boolElim ()
+                    (.childCons currentMotive
+                      (.childCons innerThen
+                        (.childCons innerElse
+                          (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)))) :
+                    RawTerm scope))
+          (m := fun currentThen currentThenSuccessors thenBranchIH => by
+            intro innerElse innerElseTerminates
+            exact
+              Acc.ndrec
+                (r := StepSuccessor)
+                (C := fun innerElse' =>
+                  IsStronglyNormalizing
+                    (.mkGen .gen_boolElim ()
+                      (.childCons currentMotive
+                        (.childCons currentThen
+                          (.childCons innerElse'
+                            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)))) :
+                      RawTerm scope))
+                (m := fun currentElse currentElseSuccessors elseBranchIH =>
+                  Acc.intro
+                    (.mkGen .gen_boolElim ()
+                      (.childCons currentMotive
+                        (.childCons currentThen
+                          (.childCons currentElse
+                            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)))) :
+                      RawTerm scope)
+                    (fun targetTerm parentStep => by
+                      cases Step.from_boolElim parentStep with
+                      | inl trueBranch =>
+                          obtain ⟨scrutineeEq, _⟩ := trueBranch
+                          cases scrutineeEq
+                      | inr restAfterTrue =>
+                          cases restAfterTrue with
+                          | inl falseBranch =>
+                              obtain ⟨_, targetEq⟩ := falseBranch
+                              rw [targetEq]
+                              exact Acc.intro currentElse currentElseSuccessors
+                          | inr restAfterFalse =>
+                              cases restAfterFalse with
+                              | inl motiveStepBranch =>
+                                  obtain ⟨motiveAfter, targetEq, motiveStep⟩ :=
+                                    motiveStepBranch
+                                  rw [targetEq]
+                                  exact motiveBranchIH motiveAfter motiveStep
+                                    (Acc.intro currentThen currentThenSuccessors)
+                                    (Acc.intro currentElse currentElseSuccessors)
+                              | inr restAfterMotive =>
+                                  cases restAfterMotive with
+                                  | inl thenBranchStep =>
+                                      obtain ⟨thenAfter, targetEq, thenStep⟩ :=
+                                        thenBranchStep
+                                      rw [targetEq]
+                                      exact thenBranchIH thenAfter thenStep
+                                        (Acc.intro currentElse currentElseSuccessors)
+                                  | inr restAfterThen =>
+                                      cases restAfterThen with
+                                      | inl elseBranchStep =>
+                                          obtain ⟨elseAfter, targetEq, elseStep⟩ :=
+                                            elseBranchStep
+                                          rw [targetEq]
+                                          exact elseBranchIH elseAfter elseStep
+                                      | inr scrutineeBranch =>
+                                          obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
+                                          exact False.elim (noStep_boolFalse scrutineeStep)))
+                innerElseTerminates)
+          currentThenTerminates currentElseTerminates))
+    motiveTerminates)
+    thenTerminates elseTerminates
 
 /-- Identity elimination on a reflexivity witness is strongly normalizing when
 the base case and raw witness are strongly normalizing.

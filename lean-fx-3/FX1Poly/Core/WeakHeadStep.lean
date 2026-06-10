@@ -15,8 +15,9 @@ normal: weak-head-normalize the scrutinee first, then fire ι.  `WeakHeadStep` i
     function that is itself an eliminator-redex, which `HeadStep`'s β-only congruence misses);
   * `rootIota` — any root-ι step (`IotaHeadStep`);
   * `scrutineeCong<Eliminator>` — reduce the SCRUTINEE of an eliminator by `WeakHeadStep`, one rule per
-    eliminator, at its scrutinee position (child 0 for `boolElim`/`fst`/`snd`/`natElim`/`natRec`/
-    `listElim`/`optionMatch`/`eitherMatch`; child 1 for `idJ`/`idStrictRec`).
+    eliminator, at its scrutinee position (child 0 for `fst`/`snd`/`natElim`/`natRec`/`listElim`/
+    `optionMatch`/`eitherMatch`; child 1 for `idJ`/`idStrictRec`; child 3 — LAST — for the Phase-Z
+    `boolElim` whose spine is `(motive, then, else, scrutinee)`).
 
 This is the relation a large-elimination-ready dependent reducibility relation dispatches on: the
 `neutral` arm's honest guard is `¬ WeakHeadStep` (genuinely stuck — no β, no ι, no reducible scrutinee),
@@ -63,14 +64,20 @@ inductive WeakHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
   /-- Any root-ι step. -/
   | rootIota {term reduct : RawTerm scope} :
       IotaHeadStep term reduct → WeakHeadStep term reduct
-  /-- Reduce the scrutinee of `boolElim`. -/
-  | scrutineeBoolElim {scrutinee scrutineeReduct thenBranch elseBranch : RawTerm scope} :
+  /-- Reduce the scrutinee of `boolElim` (Phase-Z: scrutinee is the LAST child;
+      the motive heads the spine at `scope + 1`). -/
+  | scrutineeBoolElim {motive : RawTerm (scope + 1)}
+      {scrutinee scrutineeReduct thenBranch elseBranch : RawTerm scope} :
       WeakHeadStep scrutinee scrutineeReduct →
       WeakHeadStep
         (.mkGen .gen_boolElim ()
-          (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))))
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch (.childCons scrutinee .childNil)))))
         (.mkGen .gen_boolElim ()
-          (.childCons scrutineeReduct (.childCons thenBranch (.childCons elseBranch .childNil))))
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch (.childCons scrutineeReduct .childNil)))))
   /-- Reduce the scrutinee of `fst`. -/
   | scrutineeFst {scrutinee scrutineeReduct : RawTerm scope} :
       WeakHeadStep scrutinee scrutineeReduct →
@@ -161,7 +168,9 @@ theorem WeakHeadStep.toStep {scope : Nat} {term reduct : RawTerm scope}
       exact Step.cong .gen_app () (StepChildren.here _ functionToStep)
   | rootIota iotaStep => exact iotaStep.toStep
   | scrutineeBoolElim _scrutineeStep scrutineeToStep =>
-      exact Step.cong .gen_boolElim () (StepChildren.here _ scrutineeToStep)
+      exact Step.cong .gen_boolElim ()
+        (StepChildren.there _
+          (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep))))
   | scrutineeFst _scrutineeStep scrutineeToStep =>
       exact Step.cong .gen_fst () (StepChildren.here _ scrutineeToStep)
   | scrutineeSnd _scrutineeStep scrutineeToStep =>

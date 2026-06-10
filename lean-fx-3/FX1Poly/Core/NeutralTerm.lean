@@ -76,12 +76,16 @@ inductive IsNeutral : {scope : Nat} → RawTerm scope → Prop where
   | snd {scope : Nat} {argument : RawTerm scope}
       (argumentIsNeutral : IsNeutral argument) :
       IsNeutral (.mkGen .gen_snd () (.childCons argument .childNil))
-  /-- Boolean elimination is neutral when its scrutinee is neutral. -/
-  | boolElim {scope : Nat} {scrutinee thenBranch elseBranch : RawTerm scope}
+  /-- Boolean elimination is neutral when its scrutinee is neutral.
+      Phase-Z motive shape: `(motive, thenBranch, elseBranch, scrutinee)`. -/
+  | boolElim {scope : Nat} {motive : RawTerm (scope + 1)}
+      {thenBranch elseBranch scrutinee : RawTerm scope}
       (scrutineeIsNeutral : IsNeutral scrutinee) :
       IsNeutral (.mkGen .gen_boolElim ()
-        (.childCons scrutinee
-          (.childCons thenBranch (.childCons elseBranch .childNil))))
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons scrutinee .childNil)))))
   /-- Natural-number elimination is neutral when its scrutinee is neutral. -/
   | natElim {scope : Nat} {scrutinee zeroBranch succBranch : RawTerm scope}
       (scrutineeIsNeutral : IsNeutral scrutinee) :

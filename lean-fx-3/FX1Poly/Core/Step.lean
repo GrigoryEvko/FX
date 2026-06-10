@@ -179,31 +179,42 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
       Step (.mkGen gen payload children) (.mkGen gen payload children')
   /-- **Iota for boolElim on boolTrue.**  Eliminating on `boolTrue`
       selects the then-branch.  No substitution involved -- pure tag-
-      selection at the same scope (`binderShifts [0, 0, 0]`).
+      selection at the same scope.  The Phase-Z motive shape
+      (`binderShifts [1, 0, 0, 0]`): children are
+      `(motive, thenBranch, elseBranch, scrutinee)` with the motive a
+      term under one binder (it binds the scrutinee).  The iota rule
+      DISCARDS the motive operationally — the same discard pattern as
+      beta dropping `gen_lam`'s domain annotation; the motive's role is
+      TYPING (dependent elimination), not computation.
 
-      The simplest iota rule: bool's two-constructor scheme + zero
-      binders makes this the textbook minimal iota.  More complex iota
-      (natRec on natSucc, listElim on listCons) follow the same
-      pattern: pattern-match the scrutinee's constructor in the children
-      spine, then return the branch term (Church-encoded, no direct
-      subst). -/
+      The simplest iota rule: bool's two-constructor scheme makes this
+      the textbook minimal iota.  More complex iota (natRec on natSucc,
+      listElim on listCons) follow the same pattern: pattern-match the
+      scrutinee's constructor in the children spine, then return the
+      branch term (Church-encoded, no direct subst). -/
   | iotaBoolTrue {scope : Nat}
+                 {motive : RawTerm (scope + 1)}
                  {thenBranch elseBranch : RawTerm scope} :
       Step
         (.mkGen .gen_boolElim ()
-          (.childCons
-            (.mkGen .gen_boolTrue () .childNil)
-            (.childCons thenBranch (.childCons elseBranch .childNil))))
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch
+                (.childCons (.mkGen .gen_boolTrue () .childNil)
+                  .childNil)))))
         thenBranch
   /-- **Iota for boolElim on boolFalse.**  Eliminating on `boolFalse`
       selects the else-branch.  Symmetric to `iotaBoolTrue`. -/
   | iotaBoolFalse {scope : Nat}
+                  {motive : RawTerm (scope + 1)}
                   {thenBranch elseBranch : RawTerm scope} :
       Step
         (.mkGen .gen_boolElim ()
-          (.childCons
-            (.mkGen .gen_boolFalse () .childNil)
-            (.childCons thenBranch (.childCons elseBranch .childNil))))
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch
+                (.childCons (.mkGen .gen_boolFalse () .childNil)
+                  .childNil)))))
         elseBranch
   /-- **Iota for fst on pair.**  Projecting the first component of an
       explicitly-constructed pair returns the first value.
@@ -609,15 +620,18 @@ Closes by `apply Step.iotaBoolTrue`. -/
 theorem Step.iotaBoolTrue_selects_then :
     let trueScrutinee : RawTerm 0 :=
       .mkGen .gen_boolTrue () .childNil
+    let varMotive : RawTerm 1 :=
+      .mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil
     let thenBranch : RawTerm 0 :=
       .mkGen .gen_boolTrue () .childNil
     let elseBranch : RawTerm 0 :=
       .mkGen .gen_boolFalse () .childNil
     let elimTerm : RawTerm 0 :=
       .mkGen .gen_boolElim ()
-        (.childCons
-          trueScrutinee
-          (.childCons thenBranch (.childCons elseBranch .childNil)))
+        (.childCons varMotive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons trueScrutinee .childNil))))
     Step elimTerm thenBranch := by
   apply Step.iotaBoolTrue
 
@@ -636,15 +650,18 @@ Closes by `apply Step.iotaBoolFalse`. -/
 theorem Step.iotaBoolFalse_selects_else :
     let falseScrutinee : RawTerm 0 :=
       .mkGen .gen_boolFalse () .childNil
+    let varMotive : RawTerm 1 :=
+      .mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil
     let thenBranch : RawTerm 0 :=
       .mkGen .gen_boolTrue () .childNil
     let elseBranch : RawTerm 0 :=
       .mkGen .gen_boolFalse () .childNil
     let elimTerm : RawTerm 0 :=
       .mkGen .gen_boolElim ()
-        (.childCons
-          falseScrutinee
-          (.childCons thenBranch (.childCons elseBranch .childNil)))
+        (.childCons varMotive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons falseScrutinee .childNil))))
     Step elimTerm elseBranch := by
   apply Step.iotaBoolFalse
 

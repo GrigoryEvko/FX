@@ -430,8 +430,8 @@ def Generator.childSpecs : Generator → List ChildSpec
   | .gen_boolTrue     => []
   | .gen_boolFalse    => []
   | .gen_boolElim     =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope,
-     ChildSpec.termSameScope]
+    [ChildSpec.termUnderBinder, ChildSpec.termSameScope,
+     ChildSpec.termSameScope, ChildSpec.termSameScope]
   -- Naturals
   | .gen_natZero      => []
   | .gen_natSucc      => [ChildSpec.termSameScope]

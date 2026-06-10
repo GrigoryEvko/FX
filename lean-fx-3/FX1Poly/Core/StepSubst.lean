@@ -52,9 +52,9 @@ theorem Step.subst {sourceScope targetScope : Nat}
         · rw [RawTerm.subst_nonVar_reduces sigma hVar payload children]
           rw [RawTerm.subst_nonVar_reduces sigma hVar payload children']
           exact Step.cong generator _ (childStepSubst sigma))
-      (fun {scope} {thenBranch} {elseBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {thenBranch} {elseBranch} {targetScope} sigma =>
         Step.iotaBoolTrue)
-      (fun {scope} {thenBranch} {elseBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {thenBranch} {elseBranch} {targetScope} sigma =>
         Step.iotaBoolFalse)
       (fun {scope} {firstValue} {secondValue} {targetScope} sigma =>
         Step.iotaFstPair)
@@ -135,9 +135,9 @@ theorem StepChildren.subst {parentSourceScope parentTargetScope : Nat}
         · rw [RawTerm.subst_nonVar_reduces sigma hVar payload children]
           rw [RawTerm.subst_nonVar_reduces sigma hVar payload children']
           exact Step.cong generator _ (childStepSubst sigma))
-      (fun {scope} {thenBranch} {elseBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {thenBranch} {elseBranch} {targetScope} sigma =>
         Step.iotaBoolTrue)
-      (fun {scope} {thenBranch} {elseBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {thenBranch} {elseBranch} {targetScope} sigma =>
         Step.iotaBoolFalse)
       (fun {scope} {firstValue} {secondValue} {targetScope} sigma =>
         Step.iotaFstPair)
@@ -374,12 +374,16 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
           exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
             rawRenaming rawSubstitution generatorIsVar payload children'
             (childFreshIH rawRenaming rawSubstitution childrenFresh))
-      (fun {scope} {thenBranch} {elseBranch} {targetScope} rawRenaming
+      (fun {scope} {motive} {thenBranch} {elseBranch} {targetScope} rawRenaming
           rawSubstitution sourceFresh => by
+        -- Phase-Z boolElim spine: (motive, then, else, scrutinee) at shifts [1, 0, 0, 0].
+        -- iotaBoolTrue projects the then-branch; the motive (shift 1) is discarded.
         let sourceChildren :=
-          ((.childCons (.mkGen .gen_boolTrue () .childNil)
-            (.childCons thenBranch (.childCons elseBranch .childNil))) :
-              RawTermChildren [0, 0, 0] scope)
+          ((.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch
+                (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)))) :
+              RawTermChildren [1, 0, 0, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
@@ -388,18 +392,24 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons thenBranch (.childCons elseBranch .childNil)) :
-                RawTermChildren [0, 0] scope) :=
+              ((.childCons thenBranch
+                (.childCons elseBranch
+                  (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))) :
+                RawTermChildren [0, 0, 0] scope) :=
           RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ childrenFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
           rawRenaming rawSubstitution _ _ branchSpineFresh)
-      (fun {scope} {thenBranch} {elseBranch} {targetScope} rawRenaming
+      (fun {scope} {motive} {thenBranch} {elseBranch} {targetScope} rawRenaming
           rawSubstitution sourceFresh => by
+        -- Phase-Z boolElim spine: (motive, then, else, scrutinee) at shifts [1, 0, 0, 0].
+        -- iotaBoolFalse projects the else-branch; the motive (shift 1) is discarded.
         let sourceChildren :=
-          ((.childCons (.mkGen .gen_boolFalse () .childNil)
-            (.childCons thenBranch (.childCons elseBranch .childNil))) :
-              RawTermChildren [0, 0, 0] scope)
+          ((.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch
+                (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)))) :
+              RawTermChildren [1, 0, 0, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
@@ -408,14 +418,17 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons thenBranch (.childCons elseBranch .childNil)) :
-                RawTermChildren [0, 0] scope) :=
+              ((.childCons thenBranch
+                (.childCons elseBranch
+                  (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))) :
+                RawTermChildren [0, 0, 0] scope) :=
           RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ childrenFresh
         have elseSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons elseBranch .childNil) :
-                RawTermChildren [0] scope) :=
+              ((.childCons elseBranch
+                (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)) :
+                RawTermChildren [0, 0] scope) :=
           RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ branchSpineFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor

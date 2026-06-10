@@ -58,7 +58,7 @@ theorem HasTypeDescBoolElim.noClosedBoolElimAtBoolType {profile : PolyProfile} {
       subject boolTypeCell) :
     False := by
   cases derivation with
-  | boolElimIntro scrutinee thenBranch elseBranch resultType _scrutineeTyped thenTyped _elseTyped =>
+  | boolElimIntro _motive scrutinee thenBranch elseBranch resultType _scrutineeTyped thenTyped _elseTyped =>
       exact HasTypeDescPi.noClosedGrownTermAtBoolType thenTyped
 
 /-- **★ ARBITRARY-subject 4-engine bool canonicity.**  A closed term typed at `boolTypeCell` by ANY of the four

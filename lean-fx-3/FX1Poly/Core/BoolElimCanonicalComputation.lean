@@ -11,14 +11,16 @@ elimination analog of closed-bool canonicity, and a fundamental-free step toward
 
 * `StepStar.boolElimScrutinee` — the scrutinee-position chain congruence: a `StepStar` in the scrutinee lifts to
   the whole `boolElim` cell.  Built from the generic one-hole-context chain lifter `StepStar.congAt` with the
-  uniform `Step.cong … (StepChildren.here …)` at the scrutinee child (the head of the 3-child spine).
+  uniform `Step.cong … (StepChildren.there … (StepChildren.here …))` drilled to the scrutinee child (the LAST
+  child of the 4-child Phase-Z spine, past the motive + both branches).
 * `boolElimCanonicalScrutineeReducesToBranch` — the headline: a closed `boolElim` on a canonical scrutinee
   `StepStar`-reduces to its then-branch OR its else-branch.  The scrutinee reduces to `boolTrue`/`boolFalse`
   (data canonicity), the congruence carries that under the `boolElim`, and the matching ι rule
   (`Step.iotaBoolTrue` / `Step.iotaBoolFalse`) selects the branch.
 
-NOTE: `gen_boolElim` is the NON-dependent 3-child form (scrutinee, then, else) — no motive child.  The cell
-shape here matches that 3-child spine.
+NOTE: `gen_boolElim` is the Phase-Z motive shape (arity 4, binderShifts `[1,0,0,0]`): children
+`(motive, thenBranch, elseBranch, scrutinee)` with the motive a term under one binder, scrutinee LAST.  The cell
+shape here matches that 4-child spine; the motive is fixed under the scrutinee congruence.
 
 ## Zero-axiom verification
 
@@ -32,24 +34,35 @@ namespace FX1Poly.Core
 
 open FX1Poly.Foundation
 
-/-- The non-dependent `boolElim` cell over its three children (scrutinee, then, else) — the current Z₀ shape
-(no motive child yet). -/
-private abbrev boolElimCellOn {scope : Nat} (scrutinee thenBranch elseBranch : RawTerm scope) : RawTerm scope :=
+/-- The Phase-Z `boolElim` cell over its four children — author order `(motive, scrutinee, thenBranch,
+elseBranch)`, emitting the canonical spine `(motive, thenBranch, elseBranch, scrutinee)` with the motive a term
+under one binder (`RawTerm (scope + 1)`) and the scrutinee LAST. -/
+private abbrev boolElimCellOn {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee thenBranch elseBranch : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_boolElim ()
-    (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))
+    (.childCons motive
+      (.childCons thenBranch
+        (.childCons elseBranch
+          (.childCons scrutinee .childNil))))
 
 /-- **Scrutinee-position chain congruence for `boolElim`.**  A reduction chain in the scrutinee lifts to the
-whole `boolElim` cell (branches fixed).  Instantiates the generic one-hole-context chain lifter
-`StepStar.congAt` with the `boolElim` wrapper around its scrutinee and the uniform `Step.cong … (here …)` at the
-scrutinee child (the head of the 3-child spine). -/
+whole `boolElim` cell (motive + branches fixed).  Instantiates the generic one-hole-context chain lifter
+`StepStar.congAt` with the `boolElim` wrapper around its scrutinee and the uniform `Step.cong …` drilled by a
+`there`-chain to the scrutinee child (the LAST child of the 4-child spine, past the motive + both branches). -/
 theorem StepStar.boolElimScrutinee {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {scrutinee scrutineeReduct thenBranch elseBranch : RawTerm scope}
     (scrutineeChain : StepStar scrutinee scrutineeReduct) :
-    StepStar (boolElimCellOn scrutinee thenBranch elseBranch)
-      (boolElimCellOn scrutineeReduct thenBranch elseBranch) :=
+    StepStar (boolElimCellOn motive scrutinee thenBranch elseBranch)
+      (boolElimCellOn motive scrutineeReduct thenBranch elseBranch) :=
   StepStar.congAt
-    (fun hole => boolElimCellOn hole thenBranch elseBranch)
-    (fun stepInScrutinee => Step.cong .gen_boolElim () (StepChildren.here _ stepInScrutinee))
+    (fun hole => boolElimCellOn motive hole thenBranch elseBranch)
+    (fun stepInScrutinee =>
+      Step.cong .gen_boolElim ()
+        (StepChildren.there _
+          (StepChildren.there _
+            (StepChildren.there _
+              (StepChildren.here _ stepInScrutinee)))))
     scrutineeChain
 
 /-- **Closed `boolElim` on a canonical scrutinee computes to a branch.**  The elimination analog of closed-bool
@@ -58,10 +71,11 @@ its then-branch or its else-branch.  The scrutinee reduces to `boolTrue`/`boolFa
 (`boolClosedReducesToTrueOrFalse`), `StepStar.boolElimScrutinee` carries that reduction under the `boolElim`,
 and the matching ι rule fires to select the branch.  Fundamental-free — it uses only data canonicity plus the
 scrutinee congruence and the ι rules, no fundamental theorem. -/
-theorem boolElimCanonicalScrutineeReducesToBranch {scrutinee thenBranch elseBranch : RawTerm 0}
+theorem boolElimCanonicalScrutineeReducesToBranch {motive : RawTerm 1}
+    {scrutinee thenBranch elseBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate boolIsValue scrutinee) :
-    StepStar (boolElimCellOn scrutinee thenBranch elseBranch) thenBranch ∨
-      StepStar (boolElimCellOn scrutinee thenBranch elseBranch) elseBranch := by
+    StepStar (boolElimCellOn motive scrutinee thenBranch elseBranch) thenBranch ∨
+      StepStar (boolElimCellOn motive scrutinee thenBranch elseBranch) elseBranch := by
   obtain ⟨value, scrutineeReducesToValue, valueIsTrueOrFalse⟩ :=
     boolClosedReducesToTrueOrFalse scrutineeMember
   cases valueIsTrueOrFalse with

@@ -20,10 +20,11 @@ candidate, not merely normalizes.
 ## Why this assembles cleanly (and is fundamental-independent)
 
 bool is the simplest eliminator: non-recursive, two branches, no inductive hypothesis.  The three shipped
-pieces compose directly:
+pieces compose directly (Phase-Z motive shape: the cell carries a stored motive head child, so a motive-SN
+hypothesis joins the branch-SN witnesses):
 
 1. The cell is strongly normalizing — `boolElim_isStronglyNormalizing_of_strongly_normalizing_branches` fed
-   the members' CR1 witnesses (`.stronglyNormalizing`, the `.1` projections).
+   the motive's SN plus the members' CR1 witnesses (`.stronglyNormalizing`, the `.1` projections).
 2. The cell reduces to its then- or else-branch — `boolElimCanonicalScrutineeReducesToBranch` on the canonical
    scrutinee (the scrutinee reaches `boolTrue`/`boolFalse`, the ι rule fires).
 3. The chosen branch, being a CLOSED member, reduces to a value (`closedReducesToValue` — a closed member is
@@ -53,22 +54,29 @@ selected branch (`boolElimCanonicalScrutineeReducesToBranch`), and that branch �
 a value (`closedReducesToValue`); value-reaching weak-head expansion (`ofStepStarReachingValue`) lifts the
 membership back to the cell.  The eliminator half of bool reducibility, closed-layer, fundamental-independent. -/
 theorem boolElimClosedIsMember {isValue : RawTerm 0 → Prop}
-    {scrutinee thenBranch elseBranch : RawTerm 0}
+    {motive : RawTerm 1} {scrutinee thenBranch elseBranch : RawTerm 0}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (scrutineeMember : CanonicalFormsPredicate boolIsValue scrutinee)
     (thenBranchMember : CanonicalFormsPredicate isValue thenBranch)
     (elseBranchMember : CanonicalFormsPredicate isValue elseBranch) :
     CanonicalFormsPredicate isValue
       (.mkGen .gen_boolElim ()
-        (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))) := by
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons scrutinee .childNil))))) := by
   have boolElimStronglyNormalizing :
       IsStronglyNormalizing
         (.mkGen .gen_boolElim ()
-          (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))) :=
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch
+                (.childCons scrutinee .childNil))))) :=
     boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
-      scrutineeMember.stronglyNormalizing thenBranchMember.stronglyNormalizing
-      elseBranchMember.stronglyNormalizing
+      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
+      thenBranchMember.stronglyNormalizing elseBranchMember.stronglyNormalizing
   rcases boolElimCanonicalScrutineeReducesToBranch
-      (thenBranch := thenBranch) (elseBranch := elseBranch) scrutineeMember with
+      (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch) scrutineeMember with
     reducesToThen | reducesToElse
   · exact CanonicalFormsPredicate.ofStepStarReachingValue reducesToThen
       boolElimStronglyNormalizing thenBranchMember.closedReducesToValue

@@ -787,17 +787,17 @@ theorem fromSteps_betaRight_hasJoin {scope : Nat}
       (Step.beta (domainAnn := domainAnn) (body := body) (arg := argument))).HasJoin :=
   hasJoin_swap (fromSteps_betaLeft_hasJoin leftStep)
 
-/-- Resolver arm for same-root `boolTrue` iota branchings. -/
+/-- Resolver arm for same-root `boolTrue` iota branchings.  Phase-Z motive shape. -/
 theorem iotaBoolTrueSameRoot_hasJoin {scope : Nat}
-    (thenBranch elseBranch : RawTerm scope) :
-    (iotaBoolTrueSameRoot thenBranch elseBranch).HasJoin :=
-  (LocalDiamond.iotaBoolTrueSameRoot thenBranch elseBranch).hasJoin
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch : RawTerm scope) :
+    (iotaBoolTrueSameRoot motive thenBranch elseBranch).HasJoin :=
+  (LocalDiamond.iotaBoolTrueSameRoot motive thenBranch elseBranch).hasJoin
 
-/-- Resolver arm for same-root `boolFalse` iota branchings. -/
+/-- Resolver arm for same-root `boolFalse` iota branchings.  Phase-Z motive shape. -/
 theorem iotaBoolFalseSameRoot_hasJoin {scope : Nat}
-    (thenBranch elseBranch : RawTerm scope) :
-    (iotaBoolFalseSameRoot thenBranch elseBranch).HasJoin :=
-  (LocalDiamond.iotaBoolFalseSameRoot thenBranch elseBranch).hasJoin
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch : RawTerm scope) :
+    (iotaBoolFalseSameRoot motive thenBranch elseBranch).HasJoin :=
+  (LocalDiamond.iotaBoolFalseSameRoot motive thenBranch elseBranch).hasJoin
 
 /-- Resolver arm for same-root first-projection iota branchings. -/
 theorem iotaFstPairSameRoot_hasJoin {scope : Nat}
@@ -890,25 +890,25 @@ theorem iotaListElimConsSameRoot_hasJoin {scope : Nat}
   (LocalDiamond.iotaListElimConsSameRoot
     headValue tailValue nilBranch consBranch).hasJoin
 
-/-- `fromSteps`-facing same-root `boolTrue` iota resolver arm. -/
+/-- `fromSteps`-facing same-root `boolTrue` iota resolver arm.  Phase-Z motive shape. -/
 theorem fromSteps_iotaBoolTrueSameRoot_hasJoin {scope : Nat}
-    (thenBranch elseBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch : RawTerm scope) :
     (fromSteps
       (Step.iotaBoolTrue
-        (thenBranch := thenBranch) (elseBranch := elseBranch))
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))
       (Step.iotaBoolTrue
-        (thenBranch := thenBranch) (elseBranch := elseBranch))).HasJoin :=
-  iotaBoolTrueSameRoot_hasJoin thenBranch elseBranch
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))).HasJoin :=
+  iotaBoolTrueSameRoot_hasJoin motive thenBranch elseBranch
 
-/-- `fromSteps`-facing same-root `boolFalse` iota resolver arm. -/
+/-- `fromSteps`-facing same-root `boolFalse` iota resolver arm.  Phase-Z motive shape. -/
 theorem fromSteps_iotaBoolFalseSameRoot_hasJoin {scope : Nat}
-    (thenBranch elseBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch : RawTerm scope) :
     (fromSteps
       (Step.iotaBoolFalse
-        (thenBranch := thenBranch) (elseBranch := elseBranch))
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))
       (Step.iotaBoolFalse
-        (thenBranch := thenBranch) (elseBranch := elseBranch))).HasJoin :=
-  iotaBoolFalseSameRoot_hasJoin thenBranch elseBranch
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))).HasJoin :=
+  iotaBoolFalseSameRoot_hasJoin motive thenBranch elseBranch
 
 /-- `fromSteps`-facing same-root first-projection iota resolver arm. -/
 theorem fromSteps_iotaFstPairSameRoot_hasJoin {scope : Nat}
@@ -1063,37 +1063,67 @@ theorem fromSteps_iotaListElimConsSameRoot_hasJoin {scope : Nat}
   iotaListElimConsSameRoot_hasJoin
     headValue tailValue nilBranch consBranch
 
-/-- Resolver arm for `boolTrue` iota competing with selected then-branch congruence. -/
+/-- Resolver arm for `boolTrue` iota competing with selected then-branch congruence.
+Phase-Z motive shape. -/
 theorem iotaBoolTrueThenCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch steppedThenBranch elseBranch : RawTerm scope}
     (thenStep : Step thenBranch steppedThenBranch) :
-    (iotaBoolTrueThenCong (elseBranch := elseBranch) thenStep).HasJoin :=
+    (iotaBoolTrueThenCong (motive := motive) (elseBranch := elseBranch) thenStep).HasJoin :=
   (LocalDiamond.iotaBoolTrueThenCong
-    (elseBranch := elseBranch) thenStep).hasJoin
+    (motive := motive) (elseBranch := elseBranch) thenStep).hasJoin
 
-/-- Resolver arm for `boolTrue` iota competing with discarded else-branch congruence. -/
+/-- Resolver arm for `boolTrue` iota competing with discarded else-branch congruence.
+Phase-Z motive shape. -/
 theorem iotaBoolTrueElseCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch steppedElseBranch : RawTerm scope}
     (elseStep : Step elseBranch steppedElseBranch) :
-    (iotaBoolTrueElseCong (thenBranch := thenBranch) elseStep).HasJoin :=
+    (iotaBoolTrueElseCong (motive := motive) (thenBranch := thenBranch) elseStep).HasJoin :=
   (LocalDiamond.iotaBoolTrueElseCong
-    (thenBranch := thenBranch) elseStep).hasJoin
+    (motive := motive) (thenBranch := thenBranch) elseStep).hasJoin
 
-/-- Resolver arm for `boolFalse` iota competing with discarded then-branch congruence. -/
+/-- Resolver arm for `boolFalse` iota competing with discarded then-branch congruence.
+Phase-Z motive shape. -/
 theorem iotaBoolFalseThenCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch steppedThenBranch elseBranch : RawTerm scope}
     (thenStep : Step thenBranch steppedThenBranch) :
-    (iotaBoolFalseThenCong (elseBranch := elseBranch) thenStep).HasJoin :=
+    (iotaBoolFalseThenCong (motive := motive) (elseBranch := elseBranch) thenStep).HasJoin :=
   (LocalDiamond.iotaBoolFalseThenCong
-    (elseBranch := elseBranch) thenStep).hasJoin
+    (motive := motive) (elseBranch := elseBranch) thenStep).hasJoin
 
-/-- Resolver arm for `boolFalse` iota competing with selected else-branch congruence. -/
+/-- Resolver arm for `boolFalse` iota competing with selected else-branch congruence.
+Phase-Z motive shape. -/
 theorem iotaBoolFalseElseCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch steppedElseBranch : RawTerm scope}
     (elseStep : Step elseBranch steppedElseBranch) :
-    (iotaBoolFalseElseCong (thenBranch := thenBranch) elseStep).HasJoin :=
+    (iotaBoolFalseElseCong (motive := motive) (thenBranch := thenBranch) elseStep).HasJoin :=
   (LocalDiamond.iotaBoolFalseElseCong
-    (thenBranch := thenBranch) elseStep).hasJoin
+    (motive := motive) (thenBranch := thenBranch) elseStep).hasJoin
+
+/-- Resolver arm for `boolTrue` iota competing with discarded motive congruence
+(Phase-Z motive shape). -/
+theorem iotaBoolTrueMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {thenBranch elseBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaBoolTrueMotiveCong
+      (thenBranch := thenBranch) (elseBranch := elseBranch) motiveStep).HasJoin :=
+  (LocalDiamond.iotaBoolTrueMotiveCong
+    (thenBranch := thenBranch) (elseBranch := elseBranch) motiveStep).hasJoin
+
+/-- Resolver arm for `boolFalse` iota competing with discarded motive congruence
+(Phase-Z motive shape). -/
+theorem iotaBoolFalseMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {thenBranch elseBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaBoolFalseMotiveCong
+      (thenBranch := thenBranch) (elseBranch := elseBranch) motiveStep).HasJoin :=
+  (LocalDiamond.iotaBoolFalseMotiveCong
+    (thenBranch := thenBranch) (elseBranch := elseBranch) motiveStep).hasJoin
 
 /-- Resolver arm for first projection competing with selected first-component congruence. -/
 theorem iotaFstPairFirstCong_hasJoin {scope : Nat}
@@ -1131,149 +1161,205 @@ theorem iotaSndPairSecondCong_hasJoin {scope : Nat}
   (LocalDiamond.iotaSndPairSecondCong
     (firstValue := firstValue) secondStep).hasJoin
 
-/-- `fromSteps`-facing `boolTrue` iota / selected then-branch congruence arm. -/
+/-- `fromSteps`-facing `boolTrue` iota / selected then-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaBoolTrueThenCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch steppedThenBranch elseBranch : RawTerm scope}
     (thenStep : Step thenBranch steppedThenBranch) :
     (fromSteps
       (Step.iotaBoolTrue
-        (thenBranch := thenBranch) (elseBranch := elseBranch))
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))
       (iotaBoolTrueThenCong
-        (elseBranch := elseBranch) thenStep).rightStep).HasJoin :=
-  iotaBoolTrueThenCong_hasJoin thenStep
+        (motive := motive) (elseBranch := elseBranch) thenStep).rightStep).HasJoin :=
+  iotaBoolTrueThenCong_hasJoin (motive := motive) thenStep
 
-/-- `fromSteps`-facing `boolTrue` iota / discarded else-branch congruence arm. -/
+/-- `fromSteps`-facing `boolTrue` iota / discarded else-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaBoolTrueElseCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch steppedElseBranch : RawTerm scope}
     (elseStep : Step elseBranch steppedElseBranch) :
     (fromSteps
       (Step.iotaBoolTrue
-        (thenBranch := thenBranch) (elseBranch := elseBranch))
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))
       (iotaBoolTrueElseCong
-        (thenBranch := thenBranch) elseStep).rightStep).HasJoin :=
-  iotaBoolTrueElseCong_hasJoin elseStep
+        (motive := motive) (thenBranch := thenBranch) elseStep).rightStep).HasJoin :=
+  iotaBoolTrueElseCong_hasJoin (motive := motive) elseStep
+
+/-- `fromSteps`-facing `boolTrue` iota / discarded motive congruence arm.
+Phase-Z motive shape. -/
+theorem fromSteps_iotaBoolTrueMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {thenBranch elseBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaBoolTrue
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))
+      (iotaBoolTrueMotiveCong
+        (thenBranch := thenBranch) (elseBranch := elseBranch) motiveStep).rightStep).HasJoin :=
+  iotaBoolTrueMotiveCong_hasJoin
+    (thenBranch := thenBranch) (elseBranch := elseBranch) motiveStep
 
 /-- Resolve every local branching whose left step is `boolTrue` iota.
 
-The shared source permits only same-root `boolTrue`, congruence in the selected
-then-branch, or congruence in the discarded else-branch.  Congruence in the
-scrutinee would require a step out of the nullary `boolTrue` constructor, so
-the empty child-spine case is impossible by direct `cases`. -/
+Phase-Z motive shape: the shared source permits same-root `boolTrue`,
+congruence in the motive (head, shift 1), congruence in the selected
+then-branch, congruence in the discarded else-branch, or congruence in the
+scrutinee.  Congruence in the scrutinee would require a step out of the nullary
+`boolTrue` constructor, so that case is impossible by direct `cases`. -/
 theorem fromSteps_iotaBoolTrueLeft_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_boolElim ()
-        (.childCons
-          (.mkGen .gen_boolTrue () .childNil)
-          (.childCons thenBranch (.childCons elseBranch .childNil))))
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaBoolTrue
-        (thenBranch := thenBranch) (elseBranch := elseBranch))
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaBoolTrue =>
-      exact fromSteps_iotaBoolTrueSameRoot_hasJoin thenBranch elseBranch
+      exact fromSteps_iotaBoolTrueSameRoot_hasJoin motive thenBranch elseBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaBoolTrueMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here elseChildren thenStep =>
-              exact fromSteps_iotaBoolTrueThenCong_hasJoin thenStep
+              exact fromSteps_iotaBoolTrueThenCong_hasJoin (motive := motive) thenStep
           | there thenChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren elseStep =>
-                  exact fromSteps_iotaBoolTrueElseCong_hasJoin elseStep
-              | there elseChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren elseStep =>
+                  exact fromSteps_iotaBoolTrueElseCong_hasJoin (motive := motive) elseStep
+              | there elseChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
 /-- Resolve every local branching whose right step is `boolTrue` iota. -/
 theorem fromSteps_iotaBoolTrueRight_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_boolElim ()
-        (.childCons
-          (.mkGen .gen_boolTrue () .childNil)
-          (.childCons thenBranch (.childCons elseBranch .childNil))))
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaBoolTrue
-        (thenBranch := thenBranch) (elseBranch := elseBranch))).HasJoin :=
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaBoolTrueLeft_hasJoin leftStep)
 
-/-- `fromSteps`-facing `boolFalse` iota / discarded then-branch congruence arm. -/
+/-- `fromSteps`-facing `boolFalse` iota / discarded then-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaBoolFalseThenCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch steppedThenBranch elseBranch : RawTerm scope}
     (thenStep : Step thenBranch steppedThenBranch) :
     (fromSteps
       (Step.iotaBoolFalse
-        (thenBranch := thenBranch) (elseBranch := elseBranch))
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))
       (iotaBoolFalseThenCong
-        (elseBranch := elseBranch) thenStep).rightStep).HasJoin :=
-  iotaBoolFalseThenCong_hasJoin thenStep
+        (motive := motive) (elseBranch := elseBranch) thenStep).rightStep).HasJoin :=
+  iotaBoolFalseThenCong_hasJoin (motive := motive) thenStep
 
-/-- `fromSteps`-facing `boolFalse` iota / selected else-branch congruence arm. -/
+/-- `fromSteps`-facing `boolFalse` iota / selected else-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaBoolFalseElseCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch steppedElseBranch : RawTerm scope}
     (elseStep : Step elseBranch steppedElseBranch) :
     (fromSteps
       (Step.iotaBoolFalse
-        (thenBranch := thenBranch) (elseBranch := elseBranch))
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))
       (iotaBoolFalseElseCong
-        (thenBranch := thenBranch) elseStep).rightStep).HasJoin :=
-  iotaBoolFalseElseCong_hasJoin elseStep
+        (motive := motive) (thenBranch := thenBranch) elseStep).rightStep).HasJoin :=
+  iotaBoolFalseElseCong_hasJoin (motive := motive) elseStep
 
-/-- Resolve every local branching whose left step is `boolFalse` iota. -/
+/-- `fromSteps`-facing `boolFalse` iota / discarded motive congruence arm.
+Phase-Z motive shape. -/
+theorem fromSteps_iotaBoolFalseMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {thenBranch elseBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaBoolFalse
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))
+      (iotaBoolFalseMotiveCong
+        (thenBranch := thenBranch) (elseBranch := elseBranch) motiveStep).rightStep).HasJoin :=
+  iotaBoolFalseMotiveCong_hasJoin
+    (thenBranch := thenBranch) (elseBranch := elseBranch) motiveStep
+
+/-- Resolve every local branching whose left step is `boolFalse` iota.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaBoolFalseLeft_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_boolElim ()
-        (.childCons
-          (.mkGen .gen_boolFalse () .childNil)
-          (.childCons thenBranch (.childCons elseBranch .childNil))))
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaBoolFalse
-        (thenBranch := thenBranch) (elseBranch := elseBranch))
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaBoolFalse =>
-      exact fromSteps_iotaBoolFalseSameRoot_hasJoin thenBranch elseBranch
+      exact fromSteps_iotaBoolFalseSameRoot_hasJoin motive thenBranch elseBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaBoolFalseMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here elseChildren thenStep =>
-              exact fromSteps_iotaBoolFalseThenCong_hasJoin thenStep
+              exact fromSteps_iotaBoolFalseThenCong_hasJoin (motive := motive) thenStep
           | there thenChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren elseStep =>
-                  exact fromSteps_iotaBoolFalseElseCong_hasJoin elseStep
-              | there elseChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren elseStep =>
+                  exact fromSteps_iotaBoolFalseElseCong_hasJoin (motive := motive) elseStep
+              | there elseChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
 /-- Resolve every local branching whose right step is `boolFalse` iota. -/
 theorem fromSteps_iotaBoolFalseRight_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {thenBranch elseBranch leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_boolElim ()
-        (.childCons
-          (.mkGen .gen_boolFalse () .childNil)
-          (.childCons thenBranch (.childCons elseBranch .childNil))))
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaBoolFalse
-        (thenBranch := thenBranch) (elseBranch := elseBranch))).HasJoin :=
+        (motive := motive) (thenBranch := thenBranch) (elseBranch := elseBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaBoolFalseLeft_hasJoin leftStep)
 
 /-- `fromSteps`-facing first-projection / selected first-component congruence arm. -/
@@ -2779,23 +2865,27 @@ theorem fromSteps_iotaIdStrictRecReflRight_hasJoin {scope : Nat}
         (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
   hasJoin_swap (fromSteps_iotaIdStrictRecReflLeft_hasJoin leftStep)
 
-/-- Contradiction arm for the mutually-exclusive bool true/false root pair. -/
+/-- Contradiction arm for the mutually-exclusive bool true/false root pair.
+Phase-Z motive shape. -/
 theorem iotaBoolTrue_iotaBoolFalse_hasSourcesDisjoint {scope : Nat}
+    (motiveTrue motiveFalse : RawTerm (scope + 1))
     (thenTrue elseTrue thenFalse elseFalse : RawTerm scope) :
     SourcesDisjoint
-      (iotaBoolTrueSameRoot thenTrue elseTrue)
-      (iotaBoolFalseSameRoot thenFalse elseFalse) :=
+      (iotaBoolTrueSameRoot motiveTrue thenTrue elseTrue)
+      (iotaBoolFalseSameRoot motiveFalse thenFalse elseFalse) :=
   iotaBoolTrue_iotaBoolFalse_sourcesDisjoint
-    thenTrue elseTrue thenFalse elseFalse
+    motiveTrue motiveFalse thenTrue elseTrue thenFalse elseFalse
 
-/-- Reverse contradiction arm for the mutually-exclusive bool false/true root pair. -/
+/-- Reverse contradiction arm for the mutually-exclusive bool false/true root pair.
+Phase-Z motive shape. -/
 theorem iotaBoolFalse_iotaBoolTrue_hasSourcesDisjoint {scope : Nat}
+    (motiveFalse motiveTrue : RawTerm (scope + 1))
     (thenFalse elseFalse thenTrue elseTrue : RawTerm scope) :
     SourcesDisjoint
-      (iotaBoolFalseSameRoot thenFalse elseFalse)
-      (iotaBoolTrueSameRoot thenTrue elseTrue) :=
+      (iotaBoolFalseSameRoot motiveFalse thenFalse elseFalse)
+      (iotaBoolTrueSameRoot motiveTrue thenTrue elseTrue) :=
   iotaBoolFalse_iotaBoolTrue_sourcesDisjoint
-    thenFalse elseFalse thenTrue elseTrue
+    motiveFalse motiveTrue thenFalse elseFalse thenTrue elseTrue
 
 /-- Contradiction arm for the mutually-exclusive nat-elim zero/succ root pair. -/
 theorem iotaNatElimZero_iotaNatElimSucc_hasSourcesDisjoint {scope : Nat}

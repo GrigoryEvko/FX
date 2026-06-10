@@ -154,12 +154,14 @@ def hasAppBetaRoot {scope : Nat}
   | .childCons functionTerm (.childCons _argumentTerm .childNil) =>
       RawTerm.isLamSource functionTerm
 
-/-- Root bool-eliminator iota source shape. -/
+/-- Root bool-eliminator iota source shape.  Phase-Z spine `[1, 0, 0, 0]`:
+    children are `(motive, then, else, scrutinee)` with the scrutinee LAST and
+    the motive a term under one binder. -/
 def hasBoolElimIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [0, 0, 0] scope) : Bool :=
+    (sourceChildren : RawTermChildren [1, 0, 0, 0] scope) : Bool :=
   match sourceChildren with
-  | .childCons scrutinee
-      (.childCons _thenBranch (.childCons _elseBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons _thenBranch (.childCons _elseBranch (.childCons scrutinee .childNil))) =>
       RawTerm.isBoolTrueSource scrutinee ||
         RawTerm.isBoolFalseSource scrutinee
 

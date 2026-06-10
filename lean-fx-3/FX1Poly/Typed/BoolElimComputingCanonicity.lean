@@ -14,9 +14,10 @@ GTL table-residency).
 This file lands the genuinely-non-vacuous result WITHOUT building that combined engine, by stating canonicity
 over the eliminator's COMPONENT typings rather than over a single unified `boolElim : boolType` derivation:
 
-  **`closedBoolElimComputesToValue` (★)** — a closed `boolElim(scrutinee, thenBranch, elseBranch)` whose
-  *scrutinee* is typed at `boolType` by any of the three value/formation engines AND whose *branches* are
-  data-VALUE-typed at `boolType` reduces by `↝*` to `boolTrue`/`boolFalse`.
+  **`closedBoolElimComputesToValue` (★)** — a closed `boolElim(motive, scrutinee, thenBranch, elseBranch)`
+  (Phase-Z motive shape) whose *scrutinee* is typed at `boolType` by any of the three value/formation engines
+  AND whose *branches* are data-VALUE-typed at `boolType` reduces by `↝*` to `boolTrue`/`boolFalse`.  The stored
+  motive is fixed under the scrutinee congruence and discarded by the ι rule.
 
 The scrutinee, being a closed bool, reduces to `boolTrue`/`boolFalse` (`closedBoolCanonicalForms`, the
 syntactic route); the scrutinee congruence (`StepStar.boolElimScrutinee`) carries that reduction under the
@@ -50,7 +51,7 @@ base-type, or grown engine) and whose branches are data-VALUE-typed at `boolType
 the scrutinee congruence carries it under the `boolElim`, the ι rule selects the branch, and the branch IS a
 value (`standaloneBoolCanonicalForms`).  The eliminator-layer analogue of `closedBoolCanonicalForms`. -/
 theorem closedBoolElimComputesToValue {profile : PolyProfile}
-    {scrutinee thenBranch elseBranch : RawTerm 0}
+    {motive : RawTerm 1} {scrutinee thenBranch elseBranch : RawTerm 0}
     (scrutineeTyped :
       HasTypeDescDataIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee boolTypeCell ∨
       HasTypeDescBaseType profile (TypingContext.empty : TypingContext profile 0) scrutinee boolTypeCell ∨
@@ -59,7 +60,7 @@ theorem closedBoolElimComputesToValue {profile : PolyProfile}
       thenBranch boolTypeCell)
     (elseTyped : HasTypeDescDataIntro profile (TypingContext.empty : TypingContext profile 0)
       elseBranch boolTypeCell) :
-    ∃ value : RawTerm 0, StepStar (boolElimCell scrutinee thenBranch elseBranch) value ∧
+    ∃ value : RawTerm 0, StepStar (boolElimCell motive scrutinee thenBranch elseBranch) value ∧
       (value = boolTrueCell ∨ value = boolFalseCell) := by
   obtain ⟨scrutValue, scrutReduces, scrutIsBool⟩ := closedBoolCanonicalForms scrutineeTyped
   cases scrutIsBool with
@@ -80,9 +81,9 @@ data-VALUE branches, none grown-typed — computes to a canonical bool.  Witness
 `HasTypeDescBoolElim` cannot type (data-value branches). -/
 theorem closedBoolElimComputesToValue.smoke {profile : PolyProfile} :
     ∃ value : RawTerm 0,
-      StepStar (boolElimCell boolTrueCell boolTrueCell boolFalseCell) value ∧
+      StepStar (boolElimCell boolTypeCell boolTrueCell boolTrueCell boolFalseCell) value ∧
       (value = boolTrueCell ∨ value = boolFalseCell) :=
-  closedBoolElimComputesToValue
+  closedBoolElimComputesToValue (motive := boolTypeCell)
     (Or.inl (HasTypeDescDataIntro.boolTrueTyped (TypingContext.empty : TypingContext profile 0)))
     (HasTypeDescDataIntro.boolTrueTyped (TypingContext.empty : TypingContext profile 0))
     (HasTypeDescDataIntro.boolFalseTyped (TypingContext.empty : TypingContext profile 0))

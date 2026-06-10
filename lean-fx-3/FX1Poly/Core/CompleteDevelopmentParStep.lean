@@ -82,26 +82,28 @@ theorem RawTerm.completeDevelopment_parStep {scope0 : Nat} (term0 : RawTerm scop
             · by_cases hBoolElim : gen = .gen_boolElim
               · subst hBoolElim
                 cases children with
-                | childCons scrut rest => cases rest with | childCons thenB rest2 => cases rest2 with
-                  | childCons elseB rest3 => cases rest3 with | childNil =>
-                      cases scrut with
-                      | mkGen sg sp sc =>
-                          by_cases hTrue : sg = .gen_boolTrue
-                          · subst hTrue
-                            cases sc with | childNil =>
-                                cases childrenIH with | cons _ restS => cases restS with
-                                  | cons thenStep _ => exact ParStep.iotaBoolTrue thenStep
-                          · by_cases hFalse : sg = .gen_boolFalse
-                            · subst hFalse
+                | childCons motive rest => cases rest with | childCons thenB rest2 => cases rest2 with
+                  | childCons elseB rest3 => cases rest3 with | childCons scrut rest4 => cases rest4 with
+                    | childNil =>
+                        cases scrut with
+                        | mkGen sg sp sc =>
+                            by_cases hTrue : sg = .gen_boolTrue
+                            · subst hTrue
                               cases sc with | childNil =>
-                                  cases childrenIH with | cons _ restS => cases restS with
-                                    | cons _ restS2 => cases restS2 with
-                                      | cons elseStep _ => exact ParStep.iotaBoolFalse elseStep
-                            · have key : RawTerm.fireRootRedex .gen_boolElim payload
-                                  (.childCons (.mkGen sg sp sc)
-                                    (.childCons thenB (.childCons elseB .childNil))) = none :=
-                                (if_neg hTrue).trans (if_neg hFalse)
-                              rw [key] at hfire; nomatch hfire
+                                  cases childrenIH with | cons motiveStep restS => cases restS with
+                                    | cons thenStep _ => exact ParStep.iotaBoolTrue motiveStep thenStep
+                            · by_cases hFalse : sg = .gen_boolFalse
+                              · subst hFalse
+                                cases sc with | childNil =>
+                                    cases childrenIH with | cons motiveStep restS => cases restS with
+                                      | cons _ restS2 => cases restS2 with
+                                        | cons elseStep _ =>
+                                            exact ParStep.iotaBoolFalse motiveStep elseStep
+                              · have key : RawTerm.fireRootRedex .gen_boolElim payload
+                                    (.childCons motive (.childCons thenB (.childCons elseB
+                                      (.childCons (.mkGen sg sp sc) .childNil)))) = none :=
+                                  (if_neg hTrue).trans (if_neg hFalse)
+                                rw [key] at hfire; nomatch hfire
               · by_cases hFst : gen = .gen_fst
                 · subst hFst
                   cases children with

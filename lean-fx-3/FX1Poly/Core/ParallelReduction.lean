@@ -57,14 +57,18 @@ mutual
            {children children' : RawTermChildren gen.binderShifts scope} :
         ParStepChildren children children' →
         ParStep (.mkGen gen payload children) (.mkGen gen payload children')
-    | iotaBoolTrue {scope : Nat} {thenBranch thenBranch' elseBranch : RawTerm scope} :
-        ParStep thenBranch thenBranch' →
-        ParStep (.mkGen .gen_boolElim () (.childCons (.mkGen .gen_boolTrue () .childNil)
-            (.childCons thenBranch (.childCons elseBranch .childNil)))) thenBranch'
-    | iotaBoolFalse {scope : Nat} {thenBranch elseBranch elseBranch' : RawTerm scope} :
-        ParStep elseBranch elseBranch' →
-        ParStep (.mkGen .gen_boolElim () (.childCons (.mkGen .gen_boolFalse () .childNil)
-            (.childCons thenBranch (.childCons elseBranch .childNil)))) elseBranch'
+    | iotaBoolTrue {scope : Nat} {motive motive' : RawTerm (scope + 1)}
+        {thenBranch thenBranch' elseBranch : RawTerm scope} :
+        ParStep motive motive' → ParStep thenBranch thenBranch' →
+        ParStep (.mkGen .gen_boolElim () (.childCons motive
+            (.childCons thenBranch (.childCons elseBranch
+              (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))) thenBranch'
+    | iotaBoolFalse {scope : Nat} {motive motive' : RawTerm (scope + 1)}
+        {thenBranch elseBranch elseBranch' : RawTerm scope} :
+        ParStep motive motive' → ParStep elseBranch elseBranch' →
+        ParStep (.mkGen .gen_boolElim () (.childCons motive
+            (.childCons thenBranch (.childCons elseBranch
+              (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))))) elseBranch'
     | iotaFstPair {scope : Nat} {firstValue firstValue' secondValue : RawTerm scope} :
         ParStep firstValue firstValue' →
         ParStep (.mkGen .gen_fst () (.childCons (.mkGen .gen_pair ()
@@ -182,8 +186,8 @@ mutual
   theorem Step.toParStep {scope : Nat} {a b : RawTerm scope} : Step a b → ParStep a b
     | .beta => ParStep.beta (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
     | .cong gen payload childStep => ParStep.cong gen payload (StepChildren.toParStepChildren childStep)
-    | .iotaBoolTrue => ParStep.iotaBoolTrue (ParStep.refl _)
-    | .iotaBoolFalse => ParStep.iotaBoolFalse (ParStep.refl _)
+    | .iotaBoolTrue => ParStep.iotaBoolTrue (ParStep.refl _) (ParStep.refl _)
+    | .iotaBoolFalse => ParStep.iotaBoolFalse (ParStep.refl _) (ParStep.refl _)
     | .iotaFstPair => ParStep.iotaFstPair (ParStep.refl _)
     | .iotaSndPair => ParStep.iotaSndPair (ParStep.refl _)
     | .iotaNatElimZero => ParStep.iotaNatElimZero (ParStep.refl _)
@@ -238,14 +242,18 @@ mutual
           Step.beta
     | .cong _gen _payload childrenPar =>
         StepStar.ofChildrenStar (ParStepChildren.toStepChildrenStar childrenPar)
-    | .iotaBoolTrue thenPar =>
+    | .iotaBoolTrue motivePar thenPar =>
         StepStar.transLast (StepStar.ofChildrenStar
-          (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar thenPar))))
+          (StepChildrenStar.trans_compose
+            (StepChildrenStar.here _ (ParStep.toStepStar motivePar))
+            (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar thenPar)))))
           Step.iotaBoolTrue
-    | .iotaBoolFalse elsePar =>
+    | .iotaBoolFalse motivePar elsePar =>
         StepStar.transLast (StepStar.ofChildrenStar
-          (StepChildrenStar.there _ (StepChildrenStar.there _
-            (StepChildrenStar.here _ (ParStep.toStepStar elsePar)))))
+          (StepChildrenStar.trans_compose
+            (StepChildrenStar.here _ (ParStep.toStepStar motivePar))
+            (StepChildrenStar.there _ (StepChildrenStar.there _
+              (StepChildrenStar.here _ (ParStep.toStepStar elsePar))))))
           Step.iotaBoolFalse
     | .iotaFstPair firstPar =>
         StepStar.transLast (StepStar.ofChildrenStar (StepChildrenStar.here _

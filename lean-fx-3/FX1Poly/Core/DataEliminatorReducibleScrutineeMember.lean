@@ -46,11 +46,17 @@ namespace FX1Poly.Core
 
 open StepStar
 
-/-- The `boolElim` cell over its (scrutinee, thenBranch, elseBranch) spine, spelled exactly as
-`IsNeutral.boolElim`, `boolElim_isStronglyNormalizing_of_strongly_normalizing_branches`, and
-`StepStar.boolElimScrutinee` expect. -/
-abbrev boolElimSpine {scope : Nat} (scrutinee thenBranch elseBranch : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_boolElim () (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))
+/-- The Phase-Z `boolElim` cell — author order `(motive, scrutinee, thenBranch, elseBranch)`, emitting the
+canonical spine `(motive, thenBranch, elseBranch, scrutinee)` with the motive a term under one binder and the
+scrutinee LAST.  Spelled exactly as `IsNeutral.boolElim`,
+`boolElim_isStronglyNormalizing_of_strongly_normalizing_branches`, and `StepStar.boolElimScrutinee` expect. -/
+abbrev boolElimSpine {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee thenBranch elseBranch : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_boolElim ()
+    (.childCons motive
+      (.childCons thenBranch
+        (.childCons elseBranch
+          (.childCons scrutinee .childNil))))
 
 /-- **A neutral term's head is never `boolTrue`** (the `boolTrue` ι-vacuity discriminator, the `boolElim`
 analogue of `IsNeutral.rootGenerator_ne_natZero`). -/
@@ -68,8 +74,9 @@ constructor producing a neutral `boolElim` cell and it demands a neutral scrutin
 `boolTrue` / `boolFalse` (refuted by the `rootGenerator_ne_boolTrue` / `_ne_boolFalse` discriminators).  The fact
 the value-case lift consumes to extract "the value cell reaches a value" from the cell's candidate membership. -/
 theorem boolElim_notNeutral_ofBoolValueScrutinee {scope : Nat}
-    {value thenBranch elseBranch : RawTerm scope} (valueIsBool : boolIsValue value) :
-    ¬ IsNeutral (boolElimSpine value thenBranch elseBranch) := by
+    {motive : RawTerm (scope + 1)} {value thenBranch elseBranch : RawTerm scope}
+    (valueIsBool : boolIsValue value) :
+    ¬ IsNeutral (boolElimSpine motive value thenBranch elseBranch) := by
   intro cellNeutral
   cases cellNeutral with
   | boolElim scrutineeNeutral =>
@@ -91,7 +98,7 @@ member), the `iotaBoolFalse` ι the else-branch — each lifted to the `boolElim
 weak-head expansion (`headExpand`).  The non-recursive simplification of the recursor value regime: the ι
 contractum is just the selected branch, with no successor application or inductive hypothesis. -/
 theorem boolElimValueReducibility {scope : Nat}
-    {thenBranch elseBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {thenBranch elseBranch : RawTerm scope}
     (resultCandidate : RawTerm scope → Prop)
     (headExpand : ∀ {redexTerm contractum : RawTerm scope},
         WeakHeadStep redexTerm contractum → resultCandidate contractum →
@@ -99,9 +106,9 @@ theorem boolElimValueReducibility {scope : Nat}
     (thenBranchMember : resultCandidate thenBranch)
     (elseBranchMember : resultCandidate elseBranch)
     (redexStronglyNormalizing : ∀ {value : RawTerm scope}, boolIsValue value →
-        IsStronglyNormalizing (boolElimSpine value thenBranch elseBranch))
+        IsStronglyNormalizing (boolElimSpine motive value thenBranch elseBranch))
     {value : RawTerm scope} (valueIsBool : boolIsValue value) :
-    resultCandidate (boolElimSpine value thenBranch elseBranch) := by
+    resultCandidate (boolElimSpine motive value thenBranch elseBranch) := by
   rcases valueIsBool with valueEq | valueEq
   · subst valueEq
     exact headExpand IotaHeadStep.iotaBoolTrue.toWeakHeadStep thenBranchMember
@@ -120,35 +127,36 @@ congruence by `ofStepStarReachingValue`.  Completes `boolElim` reducibility to t
 the recursive eliminators; the closed `boolElimClosedIsMember` is the scope-0 special case (neutral disjunct
 vacuous). -/
 theorem boolElimReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope → Prop}
-    {scrutinee thenBranch elseBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {scrutinee thenBranch elseBranch : RawTerm scope}
     (headExpand : ∀ {redexTerm contractum : RawTerm scope},
         WeakHeadStep redexTerm contractum → CanonicalFormsPredicate isValue contractum →
         IsStronglyNormalizing redexTerm → CanonicalFormsPredicate isValue redexTerm)
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (scrutineeMember : CanonicalFormsPredicate boolIsValue scrutinee)
     (thenBranchMember : CanonicalFormsPredicate isValue thenBranch)
     (elseBranchMember : CanonicalFormsPredicate isValue elseBranch) :
-    CanonicalFormsPredicate isValue (boolElimSpine scrutinee thenBranch elseBranch) := by
+    CanonicalFormsPredicate isValue (boolElimSpine motive scrutinee thenBranch elseBranch) := by
   have cellStronglyNormalizing :
-      IsStronglyNormalizing (boolElimSpine scrutinee thenBranch elseBranch) :=
+      IsStronglyNormalizing (boolElimSpine motive scrutinee thenBranch elseBranch) :=
     boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
-      scrutineeMember.stronglyNormalizing thenBranchMember.stronglyNormalizing
-      elseBranchMember.stronglyNormalizing
+      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
+      thenBranchMember.stronglyNormalizing elseBranchMember.stronglyNormalizing
   rcases scrutineeMember.2 with scrutineeNeutral | ⟨value, scrutineeToValue, valueIsBool⟩
   · exact CanonicalFormsPredicate.memberOfStronglyNormalizingNeutral cellStronglyNormalizing
       (IsNeutral.boolElim scrutineeNeutral)
   · have redexStronglyNormalizing : ∀ {boolValue : RawTerm scope}, boolIsValue boolValue →
-        IsStronglyNormalizing (boolElimSpine boolValue thenBranch elseBranch) :=
+        IsStronglyNormalizing (boolElimSpine motive boolValue thenBranch elseBranch) :=
       fun boolValueIsBool =>
         boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
-          (boolValue_isStronglyNormalizing boolValueIsBool)
+          (boolValue_isStronglyNormalizing boolValueIsBool) motiveStronglyNormalizing
           thenBranchMember.stronglyNormalizing elseBranchMember.stronglyNormalizing
     have valueMember :
-        CanonicalFormsPredicate isValue (boolElimSpine value thenBranch elseBranch) :=
+        CanonicalFormsPredicate isValue (boolElimSpine motive value thenBranch elseBranch) :=
       boolElimValueReducibility (CanonicalFormsPredicate isValue)
         headExpand thenBranchMember elseBranchMember redexStronglyNormalizing valueIsBool
     have valueCellReachesValue :
         ∃ reached : RawTerm scope,
-          StepStar (boolElimSpine value thenBranch elseBranch) reached ∧ isValue reached :=
+          StepStar (boolElimSpine motive value thenBranch elseBranch) reached ∧ isValue reached :=
       valueMember.2.resolve_left (boolElim_notNeutral_ofBoolValueScrutinee valueIsBool)
     exact CanonicalFormsPredicate.ofStepStarReachingValue
       (StepStar.boolElimScrutinee scrutineeToValue) cellStronglyNormalizing valueCellReachesValue

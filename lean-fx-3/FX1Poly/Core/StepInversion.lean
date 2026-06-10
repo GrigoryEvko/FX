@@ -831,8 +831,9 @@ iotaBoolTrue+iotaBoolFalse, natElim has zero+succ) accumulate
 more disjuncts.
 
 This file builds eliminator inversions in order of complexity:
-fst/snd first (2-way), then boolElim (3-way iota+iota+cong), then
-the multi-child eliminators (5+ way). -/
+fst/snd first (2-way), then boolElim (6-way: iota+iota plus a
+cong arm per child of the Phase-Z `(motive, then, else, scrutinee)`
+spine), then the multi-child eliminators (5+ way). -/
 
 /-- **Inversion for `fst`-rooted Step.**
 
@@ -900,57 +901,72 @@ theorem Step.from_snd
 
 /-- **Inversion for `boolElim`-rooted Step.**
 
-Five-way disjunction characterizing which Step ctor fired on a
-boolElim term:
+Six-way disjunction characterizing which Step ctor fired on a
+boolElim term.  Phase-Z motive shape: the spine is
+`(motive, thenBranch, elseBranch, scrutinee)` with the motive a
+term under one binder (`RawTerm (scope + 1)`) and the scrutinee LAST.
 
 * **iotaBoolTrue arm**: scrutinee was `boolTrue`, target =
   thenBranch.
 * **iotaBoolFalse arm**: scrutinee was `boolFalse`, target =
   elseBranch.
-* **cong-at-scrutinee arm**: scrutinee stepped, target preserves
-  the outer boolElim with the stepped scrutinee.
+* **cong-at-motive arm**: motive stepped (at `scope + 1`).
 * **cong-at-then arm**: thenBranch stepped.
 * **cong-at-else arm**: elseBranch stepped.
+* **cong-at-scrutinee arm**: scrutinee stepped, target preserves
+  the outer boolElim with the stepped scrutinee.
 
 The proof descends through:
 1. `cases reduction` — dispatches the 18 Step ctors; iotaBoolTrue,
    iotaBoolFalse, and cong are the only matches; rest auto-discharge.
-2. For cong, `cases childStep` — dispatches `here` (scrutinee
+2. For cong, `cases childStep` — dispatches `here` (motive
    position) and `there` (descend into tail).
-3. For `there`, `cases tailStep` — dispatches the then position
-   and recurses into the else position via another `there`.
+3. The tail descends `then`, then `else`, then `scrutinee`, each
+   reached via another `there`.
 4. For the inner-most `there`, `cases restStep` — dispatches the
-   else position and the impossible-empty-spine case. -/
+   scrutinee position and the impossible-empty-spine case. -/
 theorem Step.from_boolElim
     {scope : Nat}
-    {scrutinee thenBranch elseBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {thenBranch elseBranch scrutinee : RawTerm scope}
     {target : RawTerm scope}
     (reduction :
       Step (.mkGen .gen_boolElim ()
-              (.childCons scrutinee
-                (.childCons thenBranch (.childCons elseBranch .childNil))))
+              (.childCons motive
+                (.childCons thenBranch
+                  (.childCons elseBranch (.childCons scrutinee .childNil)))))
            target) :
     (scrutinee = .mkGen .gen_boolTrue () .childNil ∧ target = thenBranch)
     ∨
     (scrutinee = .mkGen .gen_boolFalse () .childNil ∧ target = elseBranch)
     ∨
-    (∃ (scrutineeAfter : RawTerm scope),
+    (∃ (motiveAfter : RawTerm (scope + 1)),
         target = .mkGen .gen_boolElim ()
-          (.childCons scrutineeAfter
-            (.childCons thenBranch (.childCons elseBranch .childNil))) ∧
-        Step scrutinee scrutineeAfter)
+          (.childCons motiveAfter
+            (.childCons thenBranch
+              (.childCons elseBranch (.childCons scrutinee .childNil)))) ∧
+        Step motive motiveAfter)
     ∨
     (∃ (thenAfter : RawTerm scope),
         target = .mkGen .gen_boolElim ()
-          (.childCons scrutinee
-            (.childCons thenAfter (.childCons elseBranch .childNil))) ∧
+          (.childCons motive
+            (.childCons thenAfter
+              (.childCons elseBranch (.childCons scrutinee .childNil)))) ∧
         Step thenBranch thenAfter)
     ∨
     (∃ (elseAfter : RawTerm scope),
         target = .mkGen .gen_boolElim ()
-          (.childCons scrutinee
-            (.childCons thenBranch (.childCons elseAfter .childNil))) ∧
-        Step elseBranch elseAfter) := by
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseAfter (.childCons scrutinee .childNil)))) ∧
+        Step elseBranch elseAfter)
+    ∨
+    (∃ (scrutineeAfter : RawTerm scope),
+        target = .mkGen .gen_boolElim ()
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch (.childCons scrutineeAfter .childNil)))) ∧
+        Step scrutinee scrutineeAfter) := by
   cases reduction with
   | iotaBoolTrue =>
       exact Or.inl ⟨rfl, rfl⟩
@@ -958,9 +974,9 @@ theorem Step.from_boolElim
       exact Or.inr (Or.inl ⟨rfl, rfl⟩)
   | cong _ _ childStep =>
       cases childStep with
-      | here _ scrutineeStep =>
-          rename_i scrutineeAfter
-          exact Or.inr (Or.inr (Or.inl ⟨scrutineeAfter, rfl, scrutineeStep⟩))
+      | here _ motiveStep =>
+          rename_i motiveAfter
+          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ thenStep =>
@@ -970,9 +986,15 @@ theorem Step.from_boolElim
               cases restStep with
               | here _ elseStep =>
                   rename_i elseAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr ⟨elseAfter, rfl, elseStep⟩)))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨elseAfter, rfl, elseStep⟩))))
               | there _ restRestStep =>
-                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
+                  cases restRestStep with
+                  | here _ scrutineeStep =>
+                      rename_i scrutineeAfter
+                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                  | there _ restRestRestStep =>
+                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `natElim`-rooted Step.**
 

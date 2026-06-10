@@ -60,14 +60,18 @@ smaller than the redex.  Excludes the 3 recursive eliminators (natElimSucc / nat
 listElimCons), whose reduct re-introduces the eliminator on a smaller scrutinee (the multiset-RPO
 territory of `RecursiveEliminatorTermination`). -/
 inductive IotaNonRecursiveStep : {scope : Nat} → RawTerm scope → RawTerm scope → Prop where
-  | iotaBoolTrue {scope : Nat} {thenBranch elseBranch : RawTerm scope} :
+  | iotaBoolTrue {scope : Nat} {motive : RawTerm (scope + 1)}
+      {thenBranch elseBranch : RawTerm scope} :
       IotaNonRecursiveStep
-        (.mkGen .gen_boolElim () (.childCons (.mkGen .gen_boolTrue () .childNil)
-          (.childCons thenBranch (.childCons elseBranch .childNil)))) thenBranch
-  | iotaBoolFalse {scope : Nat} {thenBranch elseBranch : RawTerm scope} :
+        (.mkGen .gen_boolElim () (.childCons motive
+          (.childCons thenBranch (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))) thenBranch
+  | iotaBoolFalse {scope : Nat} {motive : RawTerm (scope + 1)}
+      {thenBranch elseBranch : RawTerm scope} :
       IotaNonRecursiveStep
-        (.mkGen .gen_boolElim () (.childCons (.mkGen .gen_boolFalse () .childNil)
-          (.childCons thenBranch (.childCons elseBranch .childNil)))) elseBranch
+        (.mkGen .gen_boolElim () (.childCons motive
+          (.childCons thenBranch (.childCons elseBranch
+            (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))))) elseBranch
   | iotaFstPair {scope : Nat} {firstValue secondValue : RawTerm scope} :
       IotaNonRecursiveStep
         (.mkGen .gen_fst () (.childCons (.mkGen .gen_pair ()
@@ -202,16 +206,21 @@ theorem IotaNonRecursiveStep.size_decreases {scope : Nat} {source target : RawTe
     (step : IotaNonRecursiveStep source target) : target.size < source.size := by
   cases step with
   | iotaBoolTrue =>
+      -- Phase-Z 4-child spine `[motive, thenBranch, elseBranch, boolTrue]`:
+      -- thenBranch is at position 1, so skip ONE head (the motive, at shift 1)
+      -- after projecting thenBranch as the head of the tail spine.
       dsimp only [RawTerm.size]
       exact Nat.lt_trans (Nat.lt_trans
         (RawTermChildren.size_lt_childCons_head (shift := 0) _ _)
-        (RawTermChildren.size_lt_childCons_tail (shift := 0) _ _)) (Nat.lt_succ_self _)
+        (RawTermChildren.size_lt_childCons_tail (shift := 1) _ _)) (Nat.lt_succ_self _)
   | iotaBoolFalse =>
+      -- Phase-Z 4-child spine: elseBranch is at position 2, so skip the motive
+      -- (shift 1) then the thenBranch (shift 0) after projecting elseBranch.
       dsimp only [RawTerm.size]
       exact Nat.lt_trans (Nat.lt_trans (Nat.lt_trans
         (RawTermChildren.size_lt_childCons_head (shift := 0) _ _)
         (RawTermChildren.size_lt_childCons_tail (shift := 0) _ _))
-        (RawTermChildren.size_lt_childCons_tail (shift := 0) _ _)) (Nat.lt_succ_self _)
+        (RawTermChildren.size_lt_childCons_tail (shift := 1) _ _)) (Nat.lt_succ_self _)
   | iotaFstPair =>
       dsimp only [RawTerm.size, RawTermChildren.size]; exact iotaSizeShapeFstProjection _ _
   | iotaSndPair =>
@@ -273,13 +282,16 @@ theorem IotaNonRecursiveStep.isStronglyNormalizing {scope : Nat} (sourceTerm : R
     Acc IotaNonRecursiveStep.successor sourceTerm :=
   iotaNonRecursiveStep_wellFounded.apply sourceTerm
 
-/-- Non-vacuity smoke: a concrete `boolElim boolTrue unit unit` (which `iotaBoolTrue`-reduces to its
-then-branch) is accessible — its non-recursive ι reductions cannot go forever. -/
+/-- Non-vacuity smoke: a concrete `boolElim motive unit unit boolTrue` (which `iotaBoolTrue`-reduces to
+its then-branch) is accessible — its non-recursive ι reductions cannot go forever.  Phase-Z motive shape:
+the motive is `var 0 : RawTerm 1` (under one binder), the scrutinee `boolTrue` is the last child. -/
 theorem IotaNonRecursiveStep.isStronglyNormalizing.smoke :
     Acc (IotaNonRecursiveStep.successor (scope := 0))
-      (.mkGen .gen_boolElim () (.childCons (.mkGen .gen_boolTrue () .childNil)
-        (.childCons (.mkGen .gen_unit () .childNil) (.childCons (.mkGen .gen_unit () .childNil)
-          .childNil)))) :=
+      (.mkGen .gen_boolElim ()
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
+          (.childCons (.mkGen .gen_unit () .childNil)
+            (.childCons (.mkGen .gen_unit () .childNil)
+              (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))) :=
   IotaNonRecursiveStep.isStronglyNormalizing _
 
 end FX1Poly.Core

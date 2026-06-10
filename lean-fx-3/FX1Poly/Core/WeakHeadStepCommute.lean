@@ -80,40 +80,54 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       other = reduct ∨
         ∃ otherReduct : RawTerm scope, IotaHeadStep other otherReduct ∧ StepStar reduct otherReduct := by
   cases iotaStep with
-  | @iotaBoolTrue thenBranch elseBranch =>
+  | @iotaBoolTrue motive thenBranch elseBranch =>
+      -- Phase-Z spine: (motive, then, else, scrutinee=boolTrue).  The cong spine walks
+      -- motive (here) → then → else → scrutinee.  Only a step in the then-branch changes
+      -- the selected reduct; motive/else/scrutinee steps leave thenBranch intact.
       intro other step
       cases step with
       | iotaBoolTrue => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaBoolTrue, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest thenStep =>
                   exact Or.inr ⟨_, IotaHeadStep.iotaBoolTrue, StepStar.single thenStep⟩
               | there _head2 restStep =>
                   cases restStep with
-                  | here _rest elseStep =>
+                  | here _rest _elseStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaBoolTrue, StepStar.refl _⟩
-                  | there _head3 emptyStep => cases emptyStep
-  | @iotaBoolFalse thenBranch elseBranch =>
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                      | there _head4 emptyStep => cases emptyStep
+  | @iotaBoolFalse motive thenBranch elseBranch =>
+      -- Phase-Z spine: (motive, then, else, scrutinee=boolFalse).  Only a step in the
+      -- else-branch changes the selected reduct; motive/then/scrutinee steps leave
+      -- elseBranch intact.
       intro other step
       cases step with
       | iotaBoolFalse => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaBoolFalse, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
-              | here _rest thenStep =>
+              | here _rest _thenStep =>
                   exact Or.inr ⟨_, IotaHeadStep.iotaBoolFalse, StepStar.refl _⟩
               | there _head2 restStep =>
                   cases restStep with
                   | here _rest elseStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaBoolFalse, StepStar.single elseStep⟩
-                  | there _head3 emptyStep => cases emptyStep
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                      | there _head4 emptyStep => cases emptyStep
   | @iotaFstPair firstValue secondValue =>
       intro other step
       cases step with
@@ -531,18 +545,38 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       rcases iotaStep.commuteWithStep other step with equation | ⟨otherReduct, iotaOther, starChain⟩
       · exact Or.inl equation
       · exact Or.inr ⟨otherReduct, WeakHeadStep.rootIota iotaOther, starChain⟩
-  | @scrutineeBoolElim scrutinee scrutineeReduct thenBranch elseBranch
+  | @scrutineeBoolElim motive scrutinee scrutineeReduct thenBranch elseBranch
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      -- Phase-Z spine: (motive, then, else, scrutinee).  The WeakHeadStep reduces the LAST
+      -- child (scrutinee).  `Step.from_boolElim` is a six-way disjunction in the order
+      -- iotaTrue / iotaFalse / cong-motive / cong-then / cong-else / cong-scrutinee.  The two
+      -- iota disjuncts are refuted (a reducible scrutinee is not yet a constructor); motive,
+      -- then, and else steps leave the scrutinee reducible, so `other` still weak-head reduces
+      -- there and `reduct` catches up by a single congruence at the stepped child; a scrutinee
+      -- step recurses through the induction hypothesis.
       intro other step
       rcases Step.from_boolElim step with
         ⟨scrutEq, _⟩ | ⟨scrutEq, _⟩
-        | ⟨_scrutAfter, otherEq, scrutStep⟩
+        | ⟨_motiveAfter, otherEq, motiveStep⟩
         | ⟨_thenAfter, otherEq, thenStep⟩
         | ⟨_elseAfter, otherEq, elseStep⟩
+        | ⟨_scrutAfter, otherEq, scrutStep⟩
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_boolTrue
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_boolFalse
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeBoolElim scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_boolElim () (.here _ motiveStep))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeBoolElim scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_boolElim () (.there _ (.here _ thenStep)))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeBoolElim scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_boolElim () (.there _ (.there _ (.here _ elseStep))))⟩
       · subst otherEq
         rcases scrutineeInductiveHypothesis _ scrutStep with
           scrutAfterEquation | ⟨_scrutReduct2, weakHeadStep2, starChain⟩
@@ -550,22 +584,11 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
         · exact Or.inr ⟨_, WeakHeadStep.scrutineeBoolElim weakHeadStep2,
             StepStar.congAt
               (fun hole => .mkGen .gen_boolElim ()
-                (.childCons hole (.childCons thenBranch (.childCons elseBranch .childNil))))
-              (fun childStep' => Step.cong .gen_boolElim () (.here _ childStep')) starChain⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeBoolElim scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_boolElim ()
-              (.childCons scrutineeReduct (.childCons hole (.childCons elseBranch .childNil))))
-            (fun childStep' => Step.cong .gen_boolElim () (.there _ (.here _ childStep')))
-            (StepStar.single thenStep)⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeBoolElim scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_boolElim ()
-              (.childCons scrutineeReduct (.childCons thenBranch (.childCons hole .childNil))))
-            (fun childStep' => Step.cong .gen_boolElim () (.there _ (.there _ (.here _ childStep'))))
-            (StepStar.single elseStep)⟩
+                (.childCons motive
+                  (.childCons thenBranch (.childCons elseBranch (.childCons hole .childNil)))))
+              (fun childStep' =>
+                Step.cong .gen_boolElim ()
+                  (.there _ (.there _ (.there _ (.here _ childStep'))))) starChain⟩
   | @scrutineeFst scrutinee scrutineeReduct scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
       intro other step
       rcases Step.from_fst step with

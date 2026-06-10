@@ -179,14 +179,18 @@ generator), and the developed children fire the matching `Step`/`ParStep` arm �
 built from the developed components.  These are the reduction rules the Takahashi triangle's β/ι arms
 rewrite the goal's `completeDevelopment` with before firing the matching `ParStep` constructor. -/
 
-theorem cd_boolElimTrue_eq {scope : Nat} (thenBranch elseBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_boolElim () (.childCons (.mkGen .gen_boolTrue () .childNil)
-      (.childCons thenBranch (.childCons elseBranch .childNil)))) =
+theorem cd_boolElimTrue_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (thenBranch elseBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_boolElim () (.childCons motive
+      (.childCons thenBranch (.childCons elseBranch
+        (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil))))) =
       RawTerm.completeDevelopment thenBranch := rfl
 
-theorem cd_boolElimFalse_eq {scope : Nat} (thenBranch elseBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_boolElim () (.childCons (.mkGen .gen_boolFalse () .childNil)
-      (.childCons thenBranch (.childCons elseBranch .childNil)))) =
+theorem cd_boolElimFalse_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (thenBranch elseBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_boolElim () (.childCons motive
+      (.childCons thenBranch (.childCons elseBranch
+        (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))))) =
       RawTerm.completeDevelopment elseBranch := rfl
 
 theorem cd_fstPair_eq {scope : Nat} (firstValue secondValue : RawTerm scope) :

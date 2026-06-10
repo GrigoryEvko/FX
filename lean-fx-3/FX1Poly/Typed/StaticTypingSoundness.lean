@@ -224,7 +224,7 @@ theorem boolElimReservedUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
     (typed : HasTypeDescBoolElim profile context subject classifier) : False := by
-  rcases HasTypeDescBoolElim.subjectIsBoolElim typed with ⟨_scrutinee, _thenBranch, _elseBranch, rfl⟩
+  rcases HasTypeDescBoolElim.subjectIsBoolElim typed with ⟨_motive, _scrutinee, _thenBranch, _elseBranch, rfl⟩
   exact Bool.noConfusion reserved
 
 /-- ID-ELIM engine (`idJ`). -/

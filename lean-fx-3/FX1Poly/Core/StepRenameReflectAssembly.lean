@@ -114,11 +114,11 @@ theorem Step.reflectRename {sourceScope targetScope : Nat}
             Step.cong generator sourcePayload childrenStep, ?_⟩
           rw [RawTerm.rename_mkGen_of_ne_var originRho hVar sourcePayload sourceChildren',
             childrenImageEq, payloadEq])
-      -- iotaBoolTrue
-      (fun {scope} {thenBranch} {elseBranch} {srcScope} originTerm originRho req =>
+      -- iotaBoolTrue (Phase-Z: motive binder added at scope + 1, scrutinee last)
+      (fun {scope} {motive} {thenBranch} {elseBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaBoolTrue originRho req)
-      -- iotaBoolFalse
-      (fun {scope} {thenBranch} {elseBranch} {srcScope} originTerm originRho req =>
+      -- iotaBoolFalse (Phase-Z: motive binder added at scope + 1, scrutinee last)
+      (fun {scope} {motive} {thenBranch} {elseBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaBoolFalse originRho req)
       -- iotaFstPair
       (fun {scope} {firstValue} {secondValue} {srcScope} originTerm originRho req =>

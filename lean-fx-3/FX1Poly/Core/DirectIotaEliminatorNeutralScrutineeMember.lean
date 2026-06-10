@@ -44,19 +44,25 @@ open StepStar
 
 /-- **`boolElim` over a neutral SN scrutinee with reducible branches is a member of the result candidate.**  The
 cell is neutral (`IsNeutral.boolElim`) and SN (`boolElim_isStronglyNormalizing_of_strongly_normalizing_branches`
-on the branches' SN via CR1), so it inhabits the candidate by the abstract neutral bridge. -/
+on the motive's SN + the branches' SN via CR1), so it inhabits the candidate by the abstract neutral bridge.
+Phase-Z motive shape: the stored motive head child carries an SN hypothesis. -/
 theorem boolElimNeutralScrutineeMember {scope : Nat}
     (resultCandidate : RawTerm scope → Prop) (candidate : IsReducibilityCandidate resultCandidate)
-    {scrutinee : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {scrutinee : RawTerm scope}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee)
     (scrutineeNeutral : IsNeutral scrutinee)
     {thenBranch elseBranch : RawTerm scope}
     (thenBranchMember : resultCandidate thenBranch) (elseBranchMember : resultCandidate elseBranch) :
     resultCandidate
       (.mkGen .gen_boolElim ()
-        (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))) :=
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons scrutinee .childNil))))) :=
   candidate.memberOfStronglyNormalizingNeutral
-    (boolElim_isStronglyNormalizing_of_strongly_normalizing_branches scrutineeStronglyNormalizing
+    (boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
+      scrutineeStronglyNormalizing motiveStronglyNormalizing
       (candidate.stronglyNormalizing thenBranchMember)
       (candidate.stronglyNormalizing elseBranchMember))
     (IsNeutral.boolElim scrutineeNeutral)

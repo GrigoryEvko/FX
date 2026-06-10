@@ -15,8 +15,10 @@ deep in the certified spine rather than one:
 Compare to the pure-projection iotas:
 
   * iotaBoolTrue source:
-      `boolElim boolTrue thenBranch elseBranch`
-      spine = `[boolTrue, thenBranch, elseBranch]`  (1 layer)
+      `boolElim motive thenBranch elseBranch boolTrue`
+      spine = `[motive, thenBranch, elseBranch, boolTrue]`  (1 layer,
+      Phase-Z motive shape: motive first under one binder, scrutinee
+      last; target thenBranch projected via `spine.tail.headAtDim0`)
 
   * iotaFstPair source:
       `fst (pair firstValue secondValue)`

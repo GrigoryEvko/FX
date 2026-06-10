@@ -1090,19 +1090,20 @@ CANONICAL-FORM completeness of the #364 normalize-and-compare route.  Zero-axiom
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.pairCellOutsideDomain
 #assert_no_axioms FX1Poly.Typed.sigmaEtaEquation_underivable
 
-/-! ### EliminatorMotiveShapeRecord — the Phase-Z₀ motive-migration spike (Z0-DECIDE)
+/-! ### EliminatorMotiveShapeRecord — the Phase-Z₀ motive-migration record (Z0-DECIDE + boolElim stage)
 
-The pre-construction spike for the Z₀ eliminator-motive migration.  Census pinned as `rfl`
-theorems: all EIGHT eliminator generators are FLAT (no motive child, zero binder shifts) — the
-16 shape pins are Route A's regression tripwires (each migration stage breaks exactly its own
-generator's two pins).  Feasibility witness for the cascade-free alternative:
-`HasTypeDescBoolElimDependent` expresses DEPENDENT elimination over the flat substrate with an
-EXTRINSIC premise-level motive applied by `subst0` — `subsumesSimpleShape` (constant motive
-recovers the shipped simple rule via `weaken_subst_singleton`), a non-vacuous smoke, and
-by-construction ι-coherence at the value scrutinee.  Named Route-B limits: no decidable
-checking (motive inference) and no uniqueness at neutral scrutinees — the classical reasons
-kernels store motives.  The module docstring carries the costed Route A (staged substrate
-migration, 1406-file blast radius, user decision) / Route B (extrinsic-motive judgments now) /
-Route C (rejected) decision record. -/
+The decision record + per-generator shape pins for the Z₀ eliminator-motive migration.  The
+`gen_boolElim` stage has SHIPPED: its two pins now assert the motive-carrying shape (arity 4,
+binderShifts `[1,0,0,0]`, spine `(motive, thenBranch, elseBranch, scrutinee)`); the remaining
+SEVEN eliminator generators are still pinned FLAT — each future migration stage breaks exactly
+its own generator's two pins (Route A's regression tripwires).  `HasTypeDescBoolElimDependent`
+now expresses DEPENDENT elimination by reading the STORED motive child applied by `subst0` —
+decidable checking and uniqueness at neutral scrutinees are exactly what storing the motive
+buys (pre-migration this judgment carried the motive EXTRINSICALLY as the Route-B feasibility
+spike, with those two limits named).  `subsumesSimpleShape` (constant motive recovers the
+simple rule via `weaken_subst_singleton`), a non-vacuous smoke, and by-construction
+ι-coherence at the value scrutinee survive the reshape.  The module docstring carries the
+costed Route A (staged substrate migration, per-eliminator atomic stages) / Route B
+(extrinsic-motive judgments) / Route C (rejected) decision record. -/
 
 #assert_no_axioms FX1Poly.Typed.boolElim_arity_isFlat

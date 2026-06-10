@@ -50,11 +50,16 @@ namespace FX1Poly.Core
 
 open FX1Poly.Foundation
 
-/-- The `boolElim` cell over its three children (scrutinee, then-branch, else-branch) — definitionally the
-private `boolElimCellOn` of `BoolElimCanonicalComputation`. -/
-private abbrev boolElimCellOn {scope : Nat} (scrutinee thenBranch elseBranch : RawTerm scope) : RawTerm scope :=
+/-- The Phase-Z `boolElim` cell over its four children — author order `(motive, scrutinee, thenBranch,
+elseBranch)`, emitting the canonical spine `(motive, thenBranch, elseBranch, scrutinee)` with the motive a term
+under one binder.  Definitionally the private `boolElimCellOn` of `BoolElimCanonicalComputation`. -/
+private abbrev boolElimCellOn {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee thenBranch elseBranch : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_boolElim ()
-    (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))
+    (.childCons motive
+      (.childCons thenBranch
+        (.childCons elseBranch
+          (.childCons scrutinee .childNil))))
 
 /-- The unary `fst` projection cell — definitionally the private `fstCell` of
 `SigmaProjectionCanonicalComputation`. -/
@@ -72,11 +77,11 @@ then-branch or its else-branch — it is never stuck.  Composition of the fundam
 fundamental-free `boolElimCanonicalScrutineeReducesToBranch`.  The fundamental is the sole obligation. -/
 theorem boolElimProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate boolIsValue term)
-    {scrutinee thenBranch elseBranch : RawTerm 0}
+    {motive : RawTerm 1} {scrutinee thenBranch elseBranch : RawTerm 0}
     (scrutineeTyped : isWellTyped scrutinee) :
-    StepStar (boolElimCellOn scrutinee thenBranch elseBranch) thenBranch ∨
-      StepStar (boolElimCellOn scrutinee thenBranch elseBranch) elseBranch :=
-  boolElimCanonicalScrutineeReducesToBranch (fundamental scrutinee scrutineeTyped)
+    StepStar (boolElimCellOn motive scrutinee thenBranch elseBranch) thenBranch ∨
+      StepStar (boolElimCellOn motive scrutinee thenBranch elseBranch) elseBranch :=
+  boolElimCanonicalScrutineeReducesToBranch (motive := motive) (fundamental scrutinee scrutineeTyped)
 
 /-- **`fst`/`snd` projection progress on a well-typed scrutinee.**  Given the fundamental
 obligation (closed well-typed pair ⟹ pair-candidate member) and a well-typed scrutinee, the scrutinee

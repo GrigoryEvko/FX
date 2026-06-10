@@ -44,19 +44,25 @@ construction: the root generator and scrutinee constructor select a unique rule 
 contractum.  No congruence — reduction into the scrutinee is a separate concern (mirrors how `HeadStep`
 keeps β-at-the-head separate from reduction into arguments). -/
 inductive IotaHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop where
-  /-- `boolElim boolTrue thenBranch elseBranch ↝ thenBranch`. -/
-  | iotaBoolTrue {thenBranch elseBranch : RawTerm scope} :
+  /-- `boolElim motive thenBranch elseBranch boolTrue ↝ thenBranch`.
+      Phase-Z motive shape: motive first (under one binder), scrutinee last;
+      the iota discards the motive operationally. -/
+  | iotaBoolTrue {motive : RawTerm (scope + 1)} {thenBranch elseBranch : RawTerm scope} :
       IotaHeadStep
         (.mkGen .gen_boolElim ()
-          (.childCons (.mkGen .gen_boolTrue () .childNil)
-            (.childCons thenBranch (.childCons elseBranch .childNil))))
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch
+                (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)))))
         thenBranch
-  /-- `boolElim boolFalse thenBranch elseBranch ↝ elseBranch`. -/
-  | iotaBoolFalse {thenBranch elseBranch : RawTerm scope} :
+  /-- `boolElim motive thenBranch elseBranch boolFalse ↝ elseBranch`. -/
+  | iotaBoolFalse {motive : RawTerm (scope + 1)} {thenBranch elseBranch : RawTerm scope} :
       IotaHeadStep
         (.mkGen .gen_boolElim ()
-          (.childCons (.mkGen .gen_boolFalse () .childNil)
-            (.childCons thenBranch (.childCons elseBranch .childNil))))
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch
+                (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil)))))
         elseBranch
   /-- `fst (pair firstValue secondValue) ↝ firstValue`. -/
   | iotaFstPair {firstValue secondValue : RawTerm scope} :

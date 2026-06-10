@@ -7,14 +7,16 @@ to revised-MILESTONE-A coverage breadth per §11.8.12.1; tracker series M24-Z2�
 machine-checked current-shape pins, a feasibility witness for the cascade-free alternative, and
 the costed decision record.
 
-## The census (2026-06)
+## The census (2026-06, Phase-Z boolElim stage SHIPPED)
 
-All EIGHT eliminator generators are FLAT in the current substrate — no motive child, no binder
-shifts (pinned as `rfl` theorems below):
-`gen_boolElim`/`gen_natElim`/`gen_natRec`/`gen_listElim`/`gen_optionMatch`/`gen_eitherMatch`
-at arity 3 shifts `[0,0,0]`; `gen_idJ`/`gen_idStrictRec` at arity 2 shifts `[0,0]`.  The Z₀ spec
-shapes add a motive child under binders (e.g. natElim → `[1,0,2,0]`; idJ/idStrictRec shift 2).
-The binder-shift MECHANISM itself is live and proven (only `gen_lam` at `[0,1]` uses it).
+`gen_boolElim` has LANDED its Phase-Z motive shape — arity 4, binderShifts `[1,0,0,0]`, children
+`(motive, thenBranch, elseBranch, scrutinee)` with the motive a term under one binder (pinned as
+`rfl` theorems below).  The remaining SEVEN eliminator generators are still FLAT in the current
+substrate — no motive child, no binder shifts:
+`gen_natElim`/`gen_natRec`/`gen_listElim`/`gen_optionMatch`/`gen_eitherMatch` at arity 3 shifts
+`[0,0,0]`; `gen_idJ`/`gen_idStrictRec` at arity 2 shifts `[0,0]`.  The Z₀ spec shapes add a motive
+child under binders (e.g. natElim → `[1,0,2,0]`; idJ/idStrictRec shift 2).  The binder-shift
+MECHANISM is live and proven (`gen_lam` at `[0,1]` and now `gen_boolElim` at `[1,0,0,0]`).
 
 BLAST RADIUS of changing arity+binderShifts for the 8 generators: 1406 files in
 FX1Poly/FX0Poly/FX1PolyAudit mention at least one eliminator generator (262 for `gen_natElim`
@@ -24,16 +26,18 @@ canonicity/candidate arm re-proves, the certifier/serializer/FX0 encoding re-der
 Church-iota faithfulness corpus rebuilds.  This is the per-constructor cascade wall multiplied
 by eight — months of mechanical migration.
 
-## The feasibility finding: dependent elimination WITHOUT the substrate change
+## The feasibility finding: dependent elimination over the motive-carrying shape
 
 What Z₀ buys semantically is DEPENDENT elimination (induction): branches at `motive(true)` /
-`motive(false)`, result at `motive(scrutinee)`.  This spike proves the dependent RULE is
-expressible TODAY over the flat substrate by carrying the motive EXTRINSICALLY — a premise-level
-term under one binder, applied by `subst0`, never stored in the cell:
+`motive(false)`, result at `motive(scrutinee)`.  With the Phase-Z boolElim shape SHIPPED the motive
+is now STORED in the cell (the head child under one binder); the dependent RULE reads that stored
+motive and applies it by `subst0`:
 
-  * `HasTypeDescBoolElimDependent` — the extrinsic-motive dependent boolean eliminator: from
-    `motive : RawTerm (scope+1)`, branches typed at `subst0 motive boolTrue/boolFalse`, the
-    flat `boolElim(s,t,e)` cell is typed at `subst0 motive s`.
+  * `HasTypeDescBoolElimDependent` — the dependent boolean eliminator: the cell's stored
+    `motive : RawTerm (scope+1)` types the branches at `subst0 motive boolTrue/boolFalse` and the
+    `boolElim(motive, s, t, e)` cell at `subst0 motive s`.  (Pre-Phase-Z this spike carried the
+    motive EXTRINSICALLY over the flat substrate to witness feasibility without the cascade; the
+    motive is now in the term, so checking the dependent rule is decidable — read the motive child.)
   * `subsumesSimpleShape` — the constant motive (`weaken resultType`) collapses every premise
     and the conclusion to the shipped non-dependent rule's shape (`weaken_subst_singleton`), so
     the dependent rule strictly generalizes `HasTypeDescBoolElim`.
@@ -87,13 +91,17 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-! ### The current-shape pins — Route A's regression tripwires.
+/-! ### The shape pins — Route A's regression tripwires.
 
-Each Z₀ migration stage changes exactly its generator's two pins; everything else builds on
-these staying fixed until that stage lands. -/
+`gen_boolElim` has LANDED its Phase-Z motive shape (arity 4, shifts `[1,0,0,0]`); its two pins now
+record the SHIPPED motive-carrying shape.  The pin NAMES are retained (the `…isFlat` suffix is now a
+historical artifact, kept stable so the per-declaration audit references survive) but their bodies
+assert the new shipped shape.  Each remaining Z₀ migration stage changes exactly its generator's two
+pins; everything else builds on those staying fixed until that stage lands. -/
 
-theorem boolElim_arity_isFlat : Generator.gen_boolElim.arity = 3 := rfl
-theorem boolElim_binderShifts_isFlat : Generator.gen_boolElim.binderShifts = [0, 0, 0] := rfl
+theorem boolElim_arity_isFlat : Generator.gen_boolElim.arity = 4 := rfl
+theorem boolElim_binderShifts_isFlat :
+    Generator.gen_boolElim.binderShifts = [1, 0, 0, 0] := rfl
 theorem natElim_arity_isFlat : Generator.gen_natElim.arity = 3 := rfl
 theorem natElim_binderShifts_isFlat : Generator.gen_natElim.binderShifts = [0, 0, 0] := rfl
 theorem natRec_arity_isFlat : Generator.gen_natRec.arity = 3 := rfl
@@ -112,24 +120,22 @@ theorem idStrictRec_arity_isFlat : Generator.gen_idStrictRec.arity = 2 := rfl
 theorem idStrictRec_binderShifts_isFlat :
     Generator.gen_idStrictRec.binderShifts = [0, 0] := rfl
 
-/-- **The extrinsic-motive DEPENDENT boolean eliminator (the Route-B feasibility witness).**
-A standalone judgment over the FLAT `boolElimCell`: the motive is a term under one binder
-carried in the PREMISES (never stored in the cell), applied by `subst0`.  Branches are typed at
-the motive instantiated at the matching constructor; the eliminator is typed at the motive
-instantiated at the scrutinee — genuine dependent elimination with zero substrate change.
-Named limits (why kernels store motives; see the module docstring): no decidable checking
-(motive inference), no uniqueness at neutral scrutinees. -/
+/-- **The DEPENDENT boolean eliminator over the motive-carrying shape.**
+A standalone judgment over the Phase-Z `boolElimCell`: the motive is the cell's STORED head child (a
+term under one binder), applied by `subst0`.  Branches are typed at the motive instantiated at the
+matching constructor; the eliminator is typed at the motive instantiated at the scrutinee — genuine
+dependent elimination, the motive now in the term (so checking is decidable: read the motive child). -/
 inductive HasTypeDescBoolElimDependent (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
   | boolElimDependentIntro {scope : Nat} (context : TypingContext profile scope)
-      (scrutinee thenBranch elseBranch : RawTerm scope) (motive : RawTerm (scope + 1))
+      (motive : RawTerm (scope + 1)) (scrutinee thenBranch elseBranch : RawTerm scope)
       (scrutineeTyped : HasTypeDescDataIntro profile context scrutinee boolTypeCell)
       (thenTyped : HasTypeDescPi profile context thenBranch
         (RawTerm.subst0 motive boolTrueCell))
       (elseTyped : HasTypeDescPi profile context elseBranch
         (RawTerm.subst0 motive boolFalseCell)) :
       HasTypeDescBoolElimDependent profile context
-        (boolElimCell scrutinee thenBranch elseBranch) (RawTerm.subst0 motive scrutinee)
+        (boolElimCell motive scrutinee thenBranch elseBranch) (RawTerm.subst0 motive scrutinee)
 
 /-- **★ The dependent rule subsumes the simple one.**  With the CONSTANT motive
 (`weaken resultType`), every `subst0` instance collapses to `resultType`
@@ -142,7 +148,7 @@ theorem HasTypeDescBoolElimDependent.subsumesSimpleShape {profile : PolyProfile}
     (thenTyped : HasTypeDescPi profile context thenBranch resultType)
     (elseTyped : HasTypeDescPi profile context elseBranch resultType) :
     HasTypeDescBoolElimDependent profile context
-      (boolElimCell scrutinee thenBranch elseBranch) resultType := by
+      (boolElimCell (RawTerm.weaken resultType) scrutinee thenBranch elseBranch) resultType := by
   have collapseAtTrue :
       RawTerm.subst0 (RawTerm.weaken resultType) boolTrueCell = resultType :=
     RawTerm.weaken_subst_singleton resultType boolTrueCell
@@ -159,8 +165,9 @@ theorem HasTypeDescBoolElimDependent.subsumesSimpleShape {profile : PolyProfile}
       (RawTerm.subst0 (RawTerm.weaken resultType) boolFalseCell) := by
     rw [collapseAtFalse]; exact elseTyped
   have dependentTyped :=
-    HasTypeDescBoolElimDependent.boolElimDependentIntro context scrutinee thenBranch
-      elseBranch (RawTerm.weaken resultType) scrutineeTyped thenAtMotive elseAtMotive
+    HasTypeDescBoolElimDependent.boolElimDependentIntro context
+      (RawTerm.weaken resultType) scrutinee thenBranch elseBranch
+      scrutineeTyped thenAtMotive elseAtMotive
   rwa [collapseAtScrutinee] at dependentTyped
 
 /-- **★ A dependent eliminator is typed (non-vacuous smoke).**  The constant-motive
@@ -169,7 +176,8 @@ through the DEPENDENT rule. -/
 theorem HasTypeDescBoolElimDependent.ofUniverseCodesTyped {profile : PolyProfile}
     (flag : UniverseFlag) :
     HasTypeDescBoolElimDependent profile (TypingContext.empty : TypingContext profile 0)
-      (boolElimCell boolTrueCell (universeCodeCell LevelExpr.lzero flag)
+      (boolElimCell (RawTerm.weaken (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag))
+        boolTrueCell (universeCodeCell LevelExpr.lzero flag)
         (universeCodeCell LevelExpr.lzero flag))
       (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag) :=
   HasTypeDescBoolElimDependent.subsumesSimpleShape TypingContext.empty boolTrueCell
@@ -194,12 +202,12 @@ theorem dependentBoolElimIotaComputesTyped_true {profile : PolyProfile} {scope :
     (elseTyped : HasTypeDescPi profile context elseBranch
       (RawTerm.subst0 motive boolFalseCell)) :
     HasTypeDescBoolElimDependent profile context
-      (boolElimCell boolTrueCell thenBranch elseBranch)
+      (boolElimCell motive boolTrueCell thenBranch elseBranch)
       (RawTerm.subst0 motive boolTrueCell) ∧
-    Step (boolElimCell boolTrueCell thenBranch elseBranch) thenBranch ∧
+    Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
     HasTypeDescPi profile context thenBranch (RawTerm.subst0 motive boolTrueCell) :=
-  ⟨HasTypeDescBoolElimDependent.boolElimDependentIntro context boolTrueCell thenBranch
-      elseBranch motive (HasTypeDescDataIntro.boolTrueTyped context) thenTyped elseTyped,
+  ⟨HasTypeDescBoolElimDependent.boolElimDependentIntro context motive boolTrueCell thenBranch
+      elseBranch (HasTypeDescDataIntro.boolTrueTyped context) thenTyped elseTyped,
    Step.iotaBoolTrue, thenTyped⟩
 
 end FX1Poly.Typed

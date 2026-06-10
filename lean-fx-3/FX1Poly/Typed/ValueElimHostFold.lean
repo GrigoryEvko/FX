@@ -59,8 +59,9 @@ def rawEitherCell {scope : Nat} : (RawTerm scope) ⊕ (RawTerm scope) → RawTer
 every host `b : Bool` — the native eliminator selects the branch the host `Bool.rec` selects.  Two cases: the
 `Step.iotaBoolTrue` / `Step.iotaBoolFalse` reducts are `t` / `e`, which are `cond true t e` / `cond false t e`
 definitionally. -/
-theorem boolElimHostFold {scope : Nat} (selector : Bool) (thenBranch elseBranch : RawTerm scope) :
-    StepStar (boolElimCell (rawBoolCell selector) thenBranch elseBranch)
+theorem boolElimHostFold {scope : Nat} (motive : RawTerm (scope + 1)) (selector : Bool)
+    (thenBranch elseBranch : RawTerm scope) :
+    StepStar (boolElimCell motive (rawBoolCell selector) thenBranch elseBranch)
       (cond selector thenBranch elseBranch) := by
   cases selector
   · exact StepStar.single Step.iotaBoolFalse
@@ -105,10 +106,11 @@ theorem idJHostFold {scope : Nat} (baseCase witness : RawTerm scope) :
 
 /-! ## Concrete branch-selection smokes -/
 
-/-- `boolElim true t e ↝* t` — the host fold selects the THEN branch (`cond true t e = t`). -/
+/-- `boolElim true t e ↝* t` — the host fold selects the THEN branch (`cond true t e = t`).  Phase-Z motive
+shape: a constant Bool throwaway motive (`boolTypeCell`) at the head. -/
 theorem boolElimHostFold.selectsThen {scope : Nat} (thenBranch elseBranch : RawTerm scope) :
-    StepStar (boolElimCell boolTrueCell thenBranch elseBranch) thenBranch :=
-  boolElimHostFold true thenBranch elseBranch
+    StepStar (boolElimCell boolTypeCell boolTrueCell thenBranch elseBranch) thenBranch :=
+  boolElimHostFold boolTypeCell true thenBranch elseBranch
 
 /-- `optionMatch (some v) n s ↝* s v` — the host fold applies the SOME branch to the stored value. -/
 theorem optionMatchHostFold.firesSome {scope : Nat} (value noneBranch someBranch : RawTerm scope) :

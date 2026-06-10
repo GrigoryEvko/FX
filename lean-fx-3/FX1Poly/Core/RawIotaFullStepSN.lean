@@ -155,17 +155,19 @@ theorem IotaStep.isStronglyNormalizing {scope : Nat} (sourceTerm : RawTerm scope
     Acc IotaStep.successor sourceTerm :=
   iotaFullStep_wellFounded.apply sourceTerm
 
-/-- Non-vacuity smoke: the congruence arm genuinely fires — `app (boolElim boolTrue unit unit) unit`
+/-- Non-vacuity smoke: the congruence arm genuinely fires — `app (boolElim motive unit unit boolTrue) unit`
 full-ι-reduces to `app unit unit` by an ι step INSIDE the function position (`cong` ∘ `here` ∘ `head`), not
-at the root.  Demonstrates the closure is inhabited at the congruence arm, not just the head arm. -/
+at the root.  Demonstrates the closure is inhabited at the congruence arm, not just the head arm.  Phase-Z
+motive shape: the motive is `var 0 : RawTerm 1` (under one binder), the scrutinee `boolTrue` is last. -/
 theorem IotaStep.congSmoke :
     IotaStep (scope := 0)
       (.mkGen .gen_app ()
         (.childCons
           (.mkGen .gen_boolElim ()
-            (.childCons (.mkGen .gen_boolTrue () .childNil)
+            (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
               (.childCons (.mkGen .gen_unit () .childNil)
-                (.childCons (.mkGen .gen_unit () .childNil) .childNil))))
+                (.childCons (.mkGen .gen_unit () .childNil)
+                  (.childCons (.mkGen .gen_boolTrue () .childNil) .childNil)))))
           (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
       (.mkGen .gen_app ()
         (.childCons (.mkGen .gen_unit () .childNil)

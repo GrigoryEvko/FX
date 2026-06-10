@@ -22,17 +22,23 @@ namespace FX1Poly.Core
 open FX1Poly.Foundation
 namespace StepStar
 
-/-- A `boolElim`-headed redex is strongly normalizing when both branches are
-already normal and the scrutinee is strongly normalizing.
+/-- A `boolElim`-headed redex is strongly normalizing when the motive and both
+branches are already normal and the scrutinee is strongly normalizing.
 
-The branches are passive: requiring them normal discharges their congruence
-branches (an ι-fire lands on a branch, which is SN by `isStronglyNormalizing_of_noStep`).
-The scrutinee is active: accessibility induction on it handles both the
-ι-fire (`boolTrue`/`boolFalse` selecting a normal branch) and scrutinee
-congruence.  Mirrors `appLam_isStronglyNormalizing_of_normal_body_contractum`
-with the scrutinee in the argument role and the branches in the body role. -/
+Phase-Z motive shape: the children spine is `(motive, thenBranch, elseBranch,
+scrutinee)` with the motive under one binder and the scrutinee LAST.  The motive
+and both branches are passive: requiring them normal discharges their congruence
+branches (an ι-fire lands on a branch, which is SN by `isStronglyNormalizing_of_noStep`;
+the motive is operationally discarded by the ι rule, so its only behaviour is
+congruence, which normality blocks).  The scrutinee is active: accessibility
+induction on it handles both the ι-fire (`boolTrue`/`boolFalse` selecting a normal
+branch) and scrutinee congruence.  Mirrors `appLam_isStronglyNormalizing_of_normal_body_contractum`
+with the scrutinee in the argument role and the motive/branches in the body role. -/
 theorem boolElim_isStronglyNormalizing_of_normal_branches
-    {scope : Nat} {scrutinee thenBranch elseBranch : RawTerm scope}
+    {scope : Nat} {motive : RawTerm (scope + 1)}
+    {scrutinee thenBranch elseBranch : RawTerm scope}
+    (motiveHasNoStep :
+      ∀ targetMotive : RawTerm (scope + 1), Step motive targetMotive → False)
     (thenBranchHasNoStep :
       ∀ targetThen : RawTerm scope, Step thenBranch targetThen → False)
     (elseBranchHasNoStep :
@@ -40,22 +46,25 @@ theorem boolElim_isStronglyNormalizing_of_normal_branches
     (scrutineeTerminates : IsStronglyNormalizing scrutinee) :
     IsStronglyNormalizing
       (.mkGen .gen_boolElim ()
-        (.childCons scrutinee
-          (.childCons thenBranch (.childCons elseBranch .childNil))) :
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch (.childCons scrutinee .childNil)))) :
         RawTerm scope) :=
   Acc.ndrec
     (r := StepSuccessor)
     (C := fun currentScrutinee =>
       IsStronglyNormalizing
         (.mkGen .gen_boolElim ()
-          (.childCons currentScrutinee
-            (.childCons thenBranch (.childCons elseBranch .childNil))) :
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch (.childCons currentScrutinee .childNil)))) :
           RawTerm scope))
     (m := fun currentScrutinee _currentScrutineeSuccessors scrutineeIH =>
       Acc.intro
         (.mkGen .gen_boolElim ()
-          (.childCons currentScrutinee
-            (.childCons thenBranch (.childCons elseBranch .childNil))) :
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch (.childCons currentScrutinee .childNil)))) :
           RawTerm scope)
         (fun targetTerm boolElimStep => by
           cases Step.from_boolElim boolElimStep with
@@ -71,11 +80,11 @@ theorem boolElim_isStronglyNormalizing_of_normal_branches
                   exact isStronglyNormalizing_of_noStep elseBranchHasNoStep
               | inr congruenceBranch =>
                   cases congruenceBranch with
-                  | inl scrutineeCongruence =>
-                      obtain ⟨scrutineeAfter, targetIsScrutineeStep,
-                        scrutineeStep⟩ := scrutineeCongruence
-                      rw [targetIsScrutineeStep]
-                      exact scrutineeIH scrutineeAfter scrutineeStep
+                  | inl motiveCongruence =>
+                      obtain ⟨motiveAfter, _targetIsMotiveStep, motiveStep⟩ :=
+                        motiveCongruence
+                      exact False.elim
+                        (motiveHasNoStep motiveAfter motiveStep)
                   | inr branchCongruence =>
                       cases branchCongruence with
                       | inl thenCongruence =>
@@ -83,11 +92,18 @@ theorem boolElim_isStronglyNormalizing_of_normal_branches
                             thenCongruence
                           exact False.elim
                             (thenBranchHasNoStep thenAfter thenStep)
-                      | inr elseCongruence =>
-                          obtain ⟨elseAfter, _targetIsElseStep, elseStep⟩ :=
-                            elseCongruence
-                          exact False.elim
-                            (elseBranchHasNoStep elseAfter elseStep)))
+                      | inr elseScrutBranch =>
+                          cases elseScrutBranch with
+                          | inl elseCongruence =>
+                              obtain ⟨elseAfter, _targetIsElseStep, elseStep⟩ :=
+                                elseCongruence
+                              exact False.elim
+                                (elseBranchHasNoStep elseAfter elseStep)
+                          | inr scrutineeCongruence =>
+                              obtain ⟨scrutineeAfter, targetIsScrutineeStep,
+                                scrutineeStep⟩ := scrutineeCongruence
+                              rw [targetIsScrutineeStep]
+                              exact scrutineeIH scrutineeAfter scrutineeStep))
     scrutineeTerminates
 
 /-- A `fst`-headed redex is strongly normalizing when its argument is.

@@ -47,26 +47,28 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **The bool eliminator INTO Bool** (constant Bool motive): `boolElim(scrutinee, thenBranch, elseBranch) : Bool`
-when the scrutinee and both branches are data-intro values at `boolCode`.  Standalone (NOT mutual with / NOT an
-arm of any engine), the data-value-branch twin of `HasTypeDescBoolElim` (whose branches are grown-typed).  Types
-`boolElim b true false : Bool`, which the grown-branch engine cannot. -/
+/-- **The bool eliminator INTO Bool** (constant Bool motive): `boolElim(motive, scrutinee, thenBranch,
+elseBranch) : Bool` when the scrutinee and both branches are data-intro values at `boolCode`.  Standalone (NOT
+mutual with / NOT an arm of any engine), the data-value-branch twin of `HasTypeDescBoolElim` (whose branches are
+grown-typed).  Types `boolElim b true false : Bool`, which the grown-branch engine cannot.  The stored motive
+child (Phase-Z shape) is carried structurally with no premise (the constant Bool motive, e.g. `boolTypeCell`). -/
 inductive HasTypeDescBoolElimValue (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
   | boolElimValueIntro {scope : Nat} (context : TypingContext profile scope)
-      (scrutinee thenBranch elseBranch : RawTerm scope)
+      (motive : RawTerm (scope + 1)) (scrutinee thenBranch elseBranch : RawTerm scope)
       (scrutineeTyped : HasTypeDescDataIntro profile context scrutinee boolTypeCell)
       (thenTyped : HasTypeDescDataIntro profile context thenBranch boolTypeCell)
       (elseTyped : HasTypeDescDataIntro profile context elseBranch boolTypeCell) :
       HasTypeDescBoolElimValue profile context
-        (boolElimCell scrutinee thenBranch elseBranch) boolTypeCell
+        (boolElimCell motive scrutinee thenBranch elseBranch) boolTypeCell
 
 /-- **Non-vacuous typing smoke**: `boolElim(boolTrue, boolTrue, boolFalse) : Bool` — the first eliminator the
 kernel types INTO a data type with data-value branches. -/
 theorem HasTypeDescBoolElimValue.smoke {profile : PolyProfile} :
     HasTypeDescBoolElimValue profile (TypingContext.empty : TypingContext profile 0)
-      (boolElimCell boolTrueCell boolTrueCell boolFalseCell) boolTypeCell :=
-  HasTypeDescBoolElimValue.boolElimValueIntro TypingContext.empty boolTrueCell boolTrueCell boolFalseCell
+      (boolElimCell boolTypeCell boolTrueCell boolTrueCell boolFalseCell) boolTypeCell :=
+  HasTypeDescBoolElimValue.boolElimValueIntro TypingContext.empty boolTypeCell
+    boolTrueCell boolTrueCell boolFalseCell
     (HasTypeDescDataIntro.boolTrueTyped TypingContext.empty)
     (HasTypeDescDataIntro.boolTrueTyped TypingContext.empty)
     (HasTypeDescDataIntro.boolFalseTyped TypingContext.empty)
@@ -75,18 +77,20 @@ theorem HasTypeDescBoolElimValue.smoke {profile : PolyProfile} :
 (`Step.iotaBoolTrue`), and `t` stays data-intro-typed at `boolCode` — SR for the eliminator's value-case
 computation step. -/
 theorem boolElimValueTrueIotaTyped {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (thenBranch elseBranch : RawTerm scope)
+    (context : TypingContext profile scope) (motive : RawTerm (scope + 1))
+    (thenBranch elseBranch : RawTerm scope)
     (thenTyped : HasTypeDescDataIntro profile context thenBranch boolTypeCell) :
-    Step (boolElimCell boolTrueCell thenBranch elseBranch) thenBranch ∧
+    Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
     HasTypeDescDataIntro profile context thenBranch boolTypeCell :=
   ⟨Step.iotaBoolTrue, thenTyped⟩
 
 /-- **Typed ι-computation (false case)**: the `boolFalse` mirror — `boolElim(boolFalse, t, e)` ι-reduces to the
 else-branch `e` (`Step.iotaBoolFalse`), typed at `boolCode`. -/
 theorem boolElimValueFalseIotaTyped {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (thenBranch elseBranch : RawTerm scope)
+    (context : TypingContext profile scope) (motive : RawTerm (scope + 1))
+    (thenBranch elseBranch : RawTerm scope)
     (elseTyped : HasTypeDescDataIntro profile context elseBranch boolTypeCell) :
-    Step (boolElimCell boolFalseCell thenBranch elseBranch) elseBranch ∧
+    Step (boolElimCell motive boolFalseCell thenBranch elseBranch) elseBranch ∧
     HasTypeDescDataIntro profile context elseBranch boolTypeCell :=
   ⟨Step.iotaBoolFalse, elseTyped⟩
 
@@ -101,7 +105,7 @@ theorem boolElimValueCanonicity {profile : PolyProfile} {subject : RawTerm 0}
       subject boolTypeCell) :
     ∃ value : RawTerm 0, StepStar subject value ∧ (value = boolTrueCell ∨ value = boolFalseCell) := by
   cases derivation with
-  | boolElimValueIntro scrutinee thenBranch elseBranch scrutineeTyped thenTyped elseTyped =>
+  | boolElimValueIntro motive scrutinee thenBranch elseBranch scrutineeTyped thenTyped elseTyped =>
       rcases standaloneBoolCanonicalForms (Or.inl scrutineeTyped) with scrutEq | scrutEq
       · subst scrutEq
         rcases standaloneBoolCanonicalForms (Or.inl thenTyped) with branchEq | branchEq

@@ -59,7 +59,7 @@ theorem HasTypeDescBoolElim.noClosedNormalBoolElim {profile : PolyProfile}
     (normal : RawTerm.isStepNormalForm subject) :
     False := by
   cases derivation with
-  | boolElimIntro scrutinee thenBranch elseBranch _resultType scrutineeTyped
+  | boolElimIntro motive scrutinee thenBranch elseBranch _resultType scrutineeTyped
       _thenTyped _elseTyped =>
       rcases standaloneBoolCanonicalForms (Or.inl scrutineeTyped) with scrutineeEq | scrutineeEq
       · subst scrutineeEq; cases normal

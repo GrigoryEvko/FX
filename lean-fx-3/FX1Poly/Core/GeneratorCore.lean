@@ -355,7 +355,7 @@ def Generator.arity : Generator → Nat
   -- Booleans
   | .gen_boolTrue     => 0
   | .gen_boolFalse    => 0
-  | .gen_boolElim     => 3  -- scrutinee, thenBranch, elseBranch
+  | .gen_boolElim     => 4  -- motive (under binder), thenBranch, elseBranch, scrutinee
   -- Naturals
   | .gen_natZero      => 0
   | .gen_natSucc      => 1  -- predecessor
@@ -666,7 +666,7 @@ def Generator.binderShifts : Generator → List Nat
   -- Booleans
   | .gen_boolTrue     => []
   | .gen_boolFalse    => []
-  | .gen_boolElim     => [0, 0, 0]
+  | .gen_boolElim     => [1, 0, 0, 0]  -- motive binds the scrutinee
   -- Naturals
   | .gen_natZero      => []
   | .gen_natSucc      => [0]
