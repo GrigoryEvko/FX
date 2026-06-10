@@ -3487,21 +3487,24 @@ chain is COMPLETE: five refutations, five forced components.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.detectSpineType_missesLambdaArgument
 #assert_no_axioms FX1Poly.Typed.spineDetection_isIncompleteAtLambdaArguments
 
-/-! ### TypeDirectedUnitReadback — the #481 η-long readback, unit + Π fragment (bricks 1–2, #360)
+/-! ### TypeDirectedUnitReadback — the #481 η-long readback, unit + Π + recursive-spine fragment
 
 The classifier flows TOP-DOWN: at `unitTypeCell` the readback is constantly `unitCell`; at a
 literal Π over a matching λ it descends with the codomain classifier; at a literal Π over a
 NON-λ subject it η-EXPANDS (#360 — `λ(D, readback(app(weaken t, var₀)) at C)`, so η and unit-η
-COMPOSE); everywhere else and at fuel 0 it degrades to the unconditionally sound deep collapse.
+COMPOSE); at any other classifier it delegates to the MUTUAL recursive neutral-spine readback
+`readbackSpine` (the NbE `quoteNeutral`, brick 6): var-headed applications read the argument
+back at the looked-up domain, app-headed function positions recurse into the head (this level's
+argument deep-collapses — its classifier is a substituted code, the mapped soundness wall);
+everywhere else and at fuel 0 the unconditionally sound deep collapse.
 `readbackAtClassifier_congruent` is the typed soundness under the NbE presuppositions
-(formation-wf context + subject grown-typed + classifier FORMATION-typed — the formation
-Π-inversion extends the wf under binders and feeds the grown obligations via `ofFormation`);
-the η leg lifts the η-contraction through `DefEqUnitEta.ofBetaEtaConv` with
-`etaExpansionPreservesTypingGrown`.  Decided through this ONE procedure: all five refutation
-boundary pairs, THE η pair (`f` vs `λx.(weaken f)x`), and the mixed η+unit pair (`f` vs
-`λ(_:Unit).unitCell` — βη-normal, deep-collapse-fixed, undecidable by every prior procedure).
-Honest gaps: data-intro-typed subjects, Conv-not-literal Π classifiers, Σ (#361),
-modal/cubical η (#363).  Zero-axiom. -/
+(formation-wf context + subject grown-typed + classifier FORMATION-typed); the mutual
+`readbackSpine_congruent` needs NO classifier hypothesis — the var arm recovers it from the wf
+lookup, the app-headed arm needs only `invertApp` (the spine stays at the SAME context), so
+spine soundness covers EVERY depth.  Decided through this ONE procedure: all five refutation
+boundary pairs, THE η pair, the mixed η+unit pair, the 6th-boundary argument pair, and the
+8th-boundary depth-2 spines.  Honest gaps: data-intro-typed subjects, Conv-not-literal Π
+classifiers, Σ (#361), modal/cubical η (#363), former children (engine-gated).  Zero-axiom. -/
 
 #assert_no_axioms FX1Poly.Typed.asLamCell?
 #assert_no_axioms FX1Poly.Typed.asLamCell?_sound
@@ -3510,7 +3513,9 @@ modal/cubical η (#363).  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.asVarCell?
 #assert_no_axioms FX1Poly.Typed.asVarCell?_sound
 #assert_no_axioms FX1Poly.Typed.readbackAtClassifier
+#assert_no_axioms FX1Poly.Typed.readbackSpine
 #assert_no_axioms FX1Poly.Typed.readbackAtClassifier_congruent
+#assert_no_axioms FX1Poly.Typed.readbackSpine_congruent
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofReadbackEqual
 #assert_no_axioms FX1Poly.Typed.unitFunctionContextWellFormed
 #assert_no_axioms FX1Poly.Typed.higherOrderUnitContextWellFormed
@@ -3575,34 +3580,38 @@ frontier is depth-2+ spines.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.collapsedIdentityCodePair_notBetaEtaConv
 #assert_no_axioms FX1Poly.Typed.readback_isIncompleteAtFormerChildren
 
-/-! ### UnitReadbackDeepSpineBoundary — ★ the 8th boundary: the spine arm stops at depth 1
+/-! ### UnitReadbackDeepSpineBoundary — ★ the 8th boundary, DECIDED by the recursive spine
 
-The corrected brick-5 verdict relocated the in-fragment frontier to depth-2+ spines, and the
-witness confirms it: in `(g : Π(_:Unit).Π(_:Unit).Type@0, f : Π(_:Unit).Unit, x : Unit)`, the
-pair `app(app(g, app(f,x)), x)` vs `app(app(g, unit), x)` is Cong-related (nested `congGen`
+In `(g : Π(_:Unit).Π(_:Unit).Type@0, f : Π(_:Unit).Unit, x : Unit)`, the pair
+`app(app(g, app(f,x)), x)` vs `app(app(g, unit), x)` is Cong-related (nested `congGen`
 descents, the inner arguments by `unitEta`), the NEUTRAL side fully grown-typed at `Type@0`
-(the value side's whole-spine typing blocked by the standing `unitCell` engine separation), yet
-the spine arm refuses the app-headed function position and the readback degrades to the deep
-collapse at every fuel — distinct never-joining βη-normal forms.  The brick-6 build is the
-RECURSIVE spine readback (true `quoteNeutral`), whose substituted-domain soundness obligation
-(domains at depth ≥ 2 are `subst0` codes, not context entries) needs a grown-validity variant
-of the soundness or formation-substitution threading.  Zero-axiom. -/
+(the value side's whole-spine typing blocked by the standing `unitCell` engine separation).
+Against the FROZEN deep-collapse ingredient the boundary stands permanently
+(`deepCollapseMode_isIncompleteAtDeepSpines` — the collapses are distinct never-joining
+βη-normal forms).  The brick-6 mutual `readbackSpine` recursion DECIDES it: at fuel 4 both
+sides compute to the η-long `app(app(g, unit), unit)` (`readback_identifiesDeepSpines`, `rfl`;
+fuel 3 insufficient — the inner argument needs the unit ARM, not just the collapse) and the
+typed soundness canonicalizes the neutral side directly
+(`deepSpine_canonicalizedByReadback`); the substituted-domain wall was never met — app-headed
+positions need only `invertApp` (same context), classifier-directed readback stays at
+var-headed levels where the domain is a context entry.  Zero-axiom. -/
 
 #assert_no_axioms FX1Poly.Typed.deepSpineContext
+#assert_no_axioms FX1Poly.Typed.deepSpineContextWellFormed
 #assert_no_axioms FX1Poly.Typed.deepSpineInnerNeutral
 #assert_no_axioms FX1Poly.Typed.deepSpineOverNeutral
 #assert_no_axioms FX1Poly.Typed.deepSpineOverUnitValue
 #assert_no_axioms FX1Poly.Typed.deepSpineInnerNeutralTyped
 #assert_no_axioms FX1Poly.Typed.deepSpineOverNeutralTyped
 #assert_no_axioms FX1Poly.Typed.deepSpinePair_congruentlyEqual
-#assert_no_axioms FX1Poly.Typed.readback_deepSpineNeutral_isDeepCollapse
-#assert_no_axioms FX1Poly.Typed.readback_deepSpineValue_isDeepCollapse
 #assert_no_axioms FX1Poly.Typed.collapsedDeepSpineOverNeutral
 #assert_no_axioms FX1Poly.Typed.collapsedDeepSpineOverUnitValue
 #assert_no_axioms FX1Poly.Typed.deepCollapse_deepSpineNeutral
 #assert_no_axioms FX1Poly.Typed.deepCollapse_deepSpineValue
 #assert_no_axioms FX1Poly.Typed.collapsedDeepSpinePair_notBetaEtaConv
-#assert_no_axioms FX1Poly.Typed.readback_isIncompleteAtDeepSpines
+#assert_no_axioms FX1Poly.Typed.deepCollapseMode_isIncompleteAtDeepSpines
+#assert_no_axioms FX1Poly.Typed.readback_identifiesDeepSpines
+#assert_no_axioms FX1Poly.Typed.deepSpine_canonicalizedByReadback
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 

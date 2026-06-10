@@ -78,7 +78,9 @@ theorem identityCodePair_congruentlyEqual (profile : PolyProfile) :
         (.consEqualZero .nil)))
 
 /-- At `Type@0` the readback degrades to the deep collapse on the neutral-endpoint code at EVERY
-fuel — an `idCode` head is not an application, so no classifier-directed arm fires. -/
+fuel — an `idCode` head is not an application, so neither the classifier-directed arms nor the
+delegated spine readback fire (three fuel shapes: 0 collapses outright, 1 delegates into an
+exhausted spine, ≥ 2 delegates into a spine whose app-destructuring refuses the former head). -/
 theorem readback_identityCodeNeutral_isDeepCollapse (profile : PolyProfile) :
     ∀ fuel : Nat,
       readbackAtClassifier fuel (unitFunctionContext profile)
@@ -87,7 +89,8 @@ theorem readback_identityCodeNeutral_isDeepCollapse (profile : PolyProfile) :
         = collapseUnitVariablesDeep (unitFunctionContext profile)
             identityCodeOverCompoundNeutral
   | 0 => rfl
-  | _ + 1 => rfl
+  | 1 => rfl
+  | _ + 2 => rfl
 
 theorem readback_identityCodeValue_isDeepCollapse (profile : PolyProfile) :
     ∀ fuel : Nat,
@@ -97,7 +100,8 @@ theorem readback_identityCodeValue_isDeepCollapse (profile : PolyProfile) :
         = collapseUnitVariablesDeep (unitFunctionContext profile)
             identityCodeOverUnitValue
   | 0 => rfl
-  | _ + 1 => rfl
+  | 1 => rfl
+  | _ + 2 => rfl
 
 /-- The deep collapse of the neutral-endpoint code: the unit VARIABLE inside the neutral is
 rewritten, but the neutral itself survives — the 4th-boundary phenomenon inside a former. -/

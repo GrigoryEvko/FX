@@ -206,9 +206,10 @@ theorem appArgumentPair_decidedByReadback (profile : PolyProfile) :
     rfl
 
 /-- **The spine arm computes the η-long argument form** — the recovered classifier drives the
-argument all the way to `λ(x:Unit).unitCell`, by `rfl`. -/
+argument all the way to `λ(x:Unit).unitCell`, by `rfl` (fuel 4: one level pays the delegation
+into the mutual spine readback). -/
 theorem readback_recoversArgumentClassifier (profile : PolyProfile) :
-    readbackAtClassifier 3 (appArgumentContext profile)
+    readbackAtClassifier 4 (appArgumentContext profile)
         (universeCodeCell LevelExpr.lzero UniverseFlag.standard) appliedToBareArgument
       = appCell (variableCell ⟨1, Nat.le.refl⟩) (lamCell unitTypeCell unitCell) := rfl
 

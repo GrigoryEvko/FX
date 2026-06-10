@@ -20,6 +20,10 @@ congruent unit-η relation — the classifier must flow TOP-DOWN.  This module s
     `λ(D, readback(app(weaken t, var₀)) at C)`, the η-LONG readback at Π (#360); the inner
     position then sees the codomain classifier, so η and unit-η COMPOSE (a neutral
     `f : Π(_:Unit).Unit` reads back to the full η-long form `λ(_:Unit).unitCell`);
+  * at any other classifier: delegates to the mutual RECURSIVE neutral-spine readback
+    (`readbackSpine`, the NbE `quoteNeutral`) — var-headed applications read the argument back
+    at the looked-up domain, app-headed function positions recurse into the head, so spines of
+    EVERY depth are traversed;
   * everywhere else (and at fuel 0): falls back to the shipped UNCONDITIONALLY sound
     binder-crossing collapse — fuel exhaustion and uncovered classifiers DEGRADE, never break.
 
@@ -148,12 +152,12 @@ theorem asVarCell?_sound {scope : Nat} {term : RawTerm scope} {index : Fin scope
         rfl
     · cases isVar
 
-/-- **The type-directed η-long readback, unit + Π + spine fragment**: classifier-directed unit
-collapse, Π-descent on matching λs, η-EXPANSION on non-λ subjects at Π, and — at classifiers
-that are neither — the NEUTRAL-SPINE arm: a variable-headed application's argument is read back
-at the DOMAIN of the head's looked-up Π code (the classifier the 6th boundary proved
-unreachable bottom-up); everywhere else (and at fuel 0) the unconditionally sound deep
-collapse. -/
+mutual
+
+/-- **The type-directed η-long readback, unit + Π + recursive-spine fragment**: classifier-
+directed unit collapse, Π-descent on matching λs, η-EXPANSION on non-λ subjects at Π, and — at
+classifiers that are neither — delegation to the RECURSIVE neutral-spine readback;
+everywhere else (and at fuel 0) the unconditionally sound deep collapse. -/
 def readbackAtClassifier {profile : PolyProfile} :
     Nat → {scope : Nat} → TypingContext profile scope →
       RawTerm scope → RawTerm scope → RawTerm scope
@@ -162,18 +166,7 @@ def readbackAtClassifier {profile : PolyProfile} :
       if classifier = unitTypeCell then unitCell
       else
         match asPiCode? classifier with
-        | none =>
-            match asAppCell? term with
-            | none => collapseUnitVariablesDeep context term
-            | some (functionTerm, argument) =>
-                match asVarCell? functionTerm with
-                | none => collapseUnitVariablesDeep context term
-                | some index =>
-                    match asPiCode? (context.lookup index) with
-                    | none => collapseUnitVariablesDeep context term
-                    | some (domainCode, _codomainCode) =>
-                        appCell functionTerm
-                          (readbackAtClassifier fuel context domainCode argument)
+        | none => readbackSpine fuel context term
         | some (domainCode, codomainCode) =>
             match asLamCell? term with
             | none =>
@@ -186,6 +179,33 @@ def readbackAtClassifier {profile : PolyProfile} :
                     (readbackAtClassifier fuel (context.cons domainAnn) codomainCode body)
                 else collapseUnitVariablesDeep context term
 
+/-- **The recursive neutral-spine readback (`quoteNeutral`)**: at a VARIABLE-headed application,
+the argument is read back at the DOMAIN of the head's looked-up Π code; at an APP-headed
+function position the spine recurses into the head (this level's argument degrades to the
+unconditionally sound deep collapse — its classifier is a substituted code, the mapped
+soundness wall); everywhere else the deep collapse. -/
+def readbackSpine {profile : PolyProfile} :
+    Nat → {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope
+  | 0, _, context, term => collapseUnitVariablesDeep context term
+  | fuel + 1, _, context, term =>
+      match asAppCell? term with
+      | none => collapseUnitVariablesDeep context term
+      | some (functionTerm, argument) =>
+          match asVarCell? functionTerm with
+          | none =>
+              appCell (readbackSpine fuel context functionTerm)
+                (collapseUnitVariablesDeep context argument)
+          | some index =>
+              match asPiCode? (context.lookup index) with
+              | none => collapseUnitVariablesDeep context term
+              | some (domainCode, _codomainCode) =>
+                  appCell functionTerm
+                    (readbackAtClassifier fuel context domainCode argument)
+
+end
+
+mutual
+
 /-- **★ Typed soundness of the type-directed η-long readback**: under the NbE presuppositions
 (formation-wf context, subject grown-typed at the classifier, classifier FORMATION-typed at a
 universe), the readback is congruently unit-η-equal to the input, at every fuel.  The unit arm
@@ -193,8 +213,9 @@ is one `unitEta` leaf; the η-expansion arm lifts the η-contraction through `of
 (`etaExpansionPreservesTypingGrown` supplies the expansion typing) and recurses into the body
 (the inlined weaken/`piElim`/η-identity derivation); the λ arm re-types the body at the given
 codomain (`invertLam` + Π-injectivity + `conv`, the reclassifier obligation from the
-classifier's formation inversion — which also extends the wf under the binder); all other arms
-are the shipped unconditional deep-collapse soundness. -/
+classifier's formation inversion — which also extends the wf under the binder); non-Π non-unit
+classifiers delegate to the mutual spine soundness; the residue is the shipped unconditional
+deep-collapse soundness. -/
 theorem readbackAtClassifier_congruent {profile : PolyProfile} :
     (fuel : Nat) → {scope : Nat} → (context : TypingContext profile scope) →
       (classifier term : RawTerm scope) →
@@ -216,46 +237,8 @@ theorem readbackAtClassifier_congruent {profile : PolyProfile} :
             (Or.inl (HasTypeDescDataIntro.unitValueTyped context)))
       · next _notUnit =>
           split
-          · -- the NEUTRAL-SPINE arm: classifier is not a Π code
-            split
-            · exact collapseUnitVariablesDeep_congruent context term
-            · next functionTerm argument hApp =>
-                split
-                · exact collapseUnitVariablesDeep_congruent context term
-                · next index hVar =>
-                    split
-                    · exact collapseUnitVariablesDeep_congruent context term
-                    · next domainCode _codomainCode hLookupPi =>
-                        have termIsApp := asAppCell?_sound hApp
-                        have functionIsVar := asVarCell?_sound hVar
-                        subst termIsApp
-                        subst functionIsVar
-                        have lookupIsPi := asPiCode?_sound hLookupPi
-                        obtain ⟨innerDomain, innerCodomain, functionTyped,
-                          argumentTypedInner, _classifierConv⟩ :=
-                          HasTypeDescPi.invertApp subjectTyped
-                        have functionClassifierConv :=
-                          HasTypeDescPi.invertVar functionTyped
-                        rw [lookupIsPi] at functionClassifierConv
-                        have domainsConv : Conv innerDomain domainCode :=
-                          (Conv.piTyCode_inj functionClassifierConv).1
-                        obtain ⟨_lookupLevel, _lookupFlag, lookupFormationTyped⟩ :=
-                          WfContextDesc.lookupIsTypeDesc context contextWellFormed index
-                        rw [lookupIsPi] at lookupFormationTyped
-                        obtain ⟨formDomainLevel, _formCodomainLevel, formFlag,
-                          domainFormationTyped, _codomainFormationTyped, _convClass⟩ :=
-                          HasTypeDesc.inversionPiCodeComponents lookupFormationTyped
-                        have argumentTyped :
-                            HasTypeDescPi profile context argument domainCode :=
-                          HasTypeDescPi.conv formDomainLevel formFlag argumentTypedInner
-                            domainsConv
-                            (HasTypeDescPi.ofFormation domainFormationTyped)
-                        exact DefEqUnitEtaCong.congGen (generator := Generator.gen_app) ()
-                          (.consEqualZero (.consZero
-                            (readbackAtClassifier_congruent fuel context domainCode
-                              argument contextWellFormed argumentTyped
-                              domainFormationTyped)
-                            .nil))
+          · -- the classifier is not a Π code: delegate to the mutual spine soundness
+            exact readbackSpine_congruent fuel context term contextWellFormed subjectTyped
           · next domainCode codomainCode hPiCode =>
               have classifierIsPi := asPiCode?_sound hPiCode
               subst classifierIsPi
@@ -330,6 +313,68 @@ theorem readbackAtClassifier_congruent {profile : PolyProfile} :
                           .nil))
                   · next _domainsDiffer =>
                       exact collapseUnitVariablesDeep_congruent context term
+
+/-- **★ Typed soundness of the recursive neutral-spine readback**: a grown-typed subject in a
+formation-wf context is congruently unit-η-equal to its spine readback, at every fuel — NO
+classifier hypothesis (the spine never receives one): the var-headed arm recovers the
+argument's classifier from the context lookup (`invertVar` + Π-injectivity + the wf lookup's
+formation typing, exactly the brick-4 derivation); the app-headed arm needs only `invertApp` —
+the spine recursion stays at the SAME context, so the head's typing feeds the IH directly and
+this level's argument is the unconditional deep-collapse leaf.  The depth restriction is gone:
+soundness covers spines of EVERY depth. -/
+theorem readbackSpine_congruent {profile : PolyProfile} :
+    (fuel : Nat) → {scope : Nat} → (context : TypingContext profile scope) →
+      (term : RawTerm scope) →
+      (contextWellFormed : WfContextDesc context) →
+      {classifier : RawTerm scope} →
+      (subjectTyped : HasTypeDescPi profile context term classifier) →
+      DefEqUnitEtaCong profile context term (readbackSpine fuel context term)
+  | 0, _, context, term, _, _, _ => collapseUnitVariablesDeep_congruent context term
+  | fuel + 1, _, context, term, contextWellFormed, _, subjectTyped => by
+      dsimp only [readbackSpine]
+      split
+      · exact collapseUnitVariablesDeep_congruent context term
+      · next functionTerm argument hApp =>
+          have termIsApp := asAppCell?_sound hApp
+          subst termIsApp
+          obtain ⟨innerDomain, innerCodomain, functionTyped, argumentTypedInner,
+            _classifierConv⟩ := HasTypeDescPi.invertApp subjectTyped
+          split
+          · -- app-headed function position: spine IH on the head, deep collapse here
+            exact DefEqUnitEtaCong.congGen (generator := Generator.gen_app) ()
+              (.consZero
+                (readbackSpine_congruent fuel context functionTerm contextWellFormed
+                  functionTyped)
+                (.consZero (collapseUnitVariablesDeep_congruent context argument) .nil))
+          · next index hVar =>
+              have functionIsVar := asVarCell?_sound hVar
+              subst functionIsVar
+              split
+              · exact collapseUnitVariablesDeep_congruent context
+                  (appCell (variableCell index) argument)
+              · next domainCode _codomainCode hLookupPi =>
+                  have lookupIsPi := asPiCode?_sound hLookupPi
+                  have functionClassifierConv := HasTypeDescPi.invertVar functionTyped
+                  rw [lookupIsPi] at functionClassifierConv
+                  have domainsConv : Conv innerDomain domainCode :=
+                    (Conv.piTyCode_inj functionClassifierConv).1
+                  obtain ⟨_lookupLevel, _lookupFlag, lookupFormationTyped⟩ :=
+                    WfContextDesc.lookupIsTypeDesc context contextWellFormed index
+                  rw [lookupIsPi] at lookupFormationTyped
+                  obtain ⟨formDomainLevel, _formCodomainLevel, formFlag,
+                    domainFormationTyped, _codomainFormationTyped, _convClass⟩ :=
+                    HasTypeDesc.inversionPiCodeComponents lookupFormationTyped
+                  have argumentTyped :
+                      HasTypeDescPi profile context argument domainCode :=
+                    HasTypeDescPi.conv formDomainLevel formFlag argumentTypedInner
+                      domainsConv (HasTypeDescPi.ofFormation domainFormationTyped)
+                  exact DefEqUnitEtaCong.congGen (generator := Generator.gen_app) ()
+                    (.consEqualZero (.consZero
+                      (readbackAtClassifier_congruent fuel context domainCode argument
+                        contextWellFormed argumentTyped domainFormationTyped)
+                      .nil))
+
+end
 
 /-- **Sound semi-decision, type-directed mode**: two subjects grown-typed at the same
 formation-typed classifier in a wf context, with EQUAL readbacks, are congruently

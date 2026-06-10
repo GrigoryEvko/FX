@@ -1,13 +1,12 @@
 import FX1Poly.Typed.UnitReadbackFormerChildBoundary
 
 /-! # FX1Poly/Typed/UnitReadbackDeepSpineBoundary
-   — ★ the 8th boundary: the spine arm stops at depth 1 (#481 brick-6 verdict)
+   — ★ the 8th boundary, DECIDED: the recursive spine readback reaches depth-2 spines (#481 brick 6)
 
-The corrected brick-5 fact-check relocated the in-fragment completeness frontier: typed former
-children are all TYPES today, so the genuine remaining gap inside the TYPEABLE fragment is
-application spines of depth ≥ 2 — the shipped spine arm requires the head to be a VARIABLE, and
-an app-headed function position falls back to the deep collapse.  Witness, fully grown-typed,
-in `(g : Π(_:Unit).Π(_:Unit).Type@0, f : Π(_:Unit).Unit, x : Unit)`:
+The corrected brick-5 fact-check relocated the in-fragment completeness frontier to application
+spines of depth ≥ 2: the depth-1 spine arm required the head to be a VARIABLE, so an app-headed
+function position degraded to the deep collapse.  Witness, in
+`(g : Π(_:Unit).Π(_:Unit).Type@0, f : Π(_:Unit).Unit, x : Unit)`:
 
   * `app(app(g, app(f,x)), x)` and `app(app(g, unit), x)` are congruently unit-η-equal — two
     nested `congGen` descents through the applications, the inner arguments related by `unitEta`
@@ -15,29 +14,31 @@ in `(g : Π(_:Unit).Π(_:Unit).Type@0, f : Π(_:Unit).Unit, x : Unit)`:
     NEUTRAL side is fully grown-typed at `Type@0` (a nested `piElim` chain); the value side's
     whole-spine typing is blocked by the standing `unitCell` engine separation, exactly as in
     the prior boundaries.
-  * At the classifier `Type@0` the readback's spine arm sees the function position
-    `app(g, ...)` — an APPLICATION, not a variable — refuses, and degrades to the deep collapse
-    at EVERY fuel; the collapses are distinct βη-normal forms that never join (the deep collapse
-    rewrites the unit VARIABLES but cannot see the compound neutral is unit-typed).
+  * Against the FROZEN deep-collapse ingredient the boundary stands permanently
+    (`deepCollapseMode_isIncompleteAtDeepSpines`): the collapses rewrite the unit VARIABLES but
+    cannot see the compound neutral is unit-typed, and the results are distinct βη-normal forms
+    that never join.
 
-## The verdict — the recursive spine (true `quoteNeutral`)
+## The resolution — the recursive spine (brick 6)
 
-Depth-2+ spines need the RECURSIVE spine readback — at `app(fn, arg)` recurse into `fn` as a
-spine and read `arg` back at the domain of `fn`'s SYNTHESIZED type (`detectSpineType`, shipped).
-The soundness wall mapped at brick 4 stands: at depth ≥ 2 the recovered domain is
-`subst0(codomain, earlier-argument)` — a SUBSTITUTED code, not a context entry, hence not
-formation-typed in general.  Discharging the recursive classifier hypothesis needs either a
-grown-validity variant of the soundness (classifier valid rather than formation-typed — with
-the wf-extension obligation re-routed) or formation-substitution threading.  That is the
-brick-6 build decision.
+The mutual `readbackSpine` recursion dissolved the depth restriction WITHOUT meeting the
+substituted-domain soundness wall: at an app-headed function position the spine recurses into
+the HEAD (same context — `invertApp` alone feeds the IH) and deep-collapses that level's
+argument; classifier-directed argument readback happens only at var-headed levels, where the
+domain is a context entry (formation-typed via the wf lookup).  At fuel 4 BOTH depth-2 spines
+compute to the η-long form `app(app(g, unit), unit)` (`readback_identifiesDeepSpines`, `rfl` —
+fuel 3 is insufficient: the inner argument needs one level for the unit arm, not just the
+collapse), and the typed soundness canonicalizes the neutral side to that form directly
+(`deepSpine_canonicalizedByReadback`).
 
 ## Zero-axiom verification
 
-The typings are `piElim` chains over `var` lookups (all `rfl`-computing closed codes); the
-`congGen` witness composes shipped leaves; degradations are `rfl` per fuel shape; the collapse
-computations are `rfl`; non-joinability is the `reduceOnceBetaEta_complete`-at-`rfl` leaf
-discipline; inequalities are `decide`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, `omega`.  Gated in `FX1PolyAudit/AuditTyped.lean`.
+The typings are `piElim` chains over `var` lookups; the wf witness is nested
+`hasTypeDesc_piFormation_viaGenArm` + `universeFormation`; the `congGen` witness composes
+shipped leaves; the identification and collapse computations are `rfl`; non-joinability is the
+`reduceOnceBetaEta_complete`-at-`rfl` leaf discipline; inequalities are `decide`.  No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -53,6 +54,42 @@ def deepSpineContext (profile : PolyProfile) : TypingContext profile 3 :=
         (universeCodeCell LevelExpr.lzero UniverseFlag.standard)))).cons
     (piTyCodeCell unitTypeCell unitTypeCell)).cons unitTypeCell
 
+/-- The depth-2 context is formation-well-formed — `g`'s curried type through two nested generic
+Π-formation arms with `universeFormation` at the leaf, `f`'s through the unit rows. -/
+theorem deepSpineContextWellFormed (profile : PolyProfile) :
+    WfContextDesc (deepSpineContext profile) :=
+  WfContextDesc.cons
+    (WfContextDesc.cons
+      (WfContextDesc.cons WfContextDesc.emptyIsWellFormed
+        ⟨_, _, hasTypeDesc_piFormation_viaGenArm TypingContext.empty
+          unitTypeCell
+          (piTyCodeCell unitTypeCell
+            (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
+          LevelExpr.lzero (LevelExpr.lmax LevelExpr.lzero LevelExpr.lzero.lsucc)
+          UniverseFlag.standard
+          (unitTypeCellFormationTyped TypingContext.empty)
+          (hasTypeDesc_piFormation_viaGenArm (TypingContext.empty.cons unitTypeCell)
+            unitTypeCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)
+            LevelExpr.lzero LevelExpr.lzero.lsucc UniverseFlag.standard
+            (unitTypeCellFormationTyped (TypingContext.empty.cons unitTypeCell))
+            (HasTypeDesc.universeFormation
+              ((TypingContext.empty.cons unitTypeCell).cons unitTypeCell)
+              LevelExpr.lzero UniverseFlag.standard))⟩)
+      ⟨_, _, hasTypeDesc_piFormation_viaGenArm
+        (TypingContext.empty.cons
+          (piTyCodeCell unitTypeCell
+            (piTyCodeCell unitTypeCell
+              (universeCodeCell LevelExpr.lzero UniverseFlag.standard))))
+        unitTypeCell unitTypeCell LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard
+        (unitTypeCellFormationTyped _)
+        (unitTypeCellFormationTyped _)⟩)
+    (unitTypeCellIsTypeDesc
+      (((TypingContext.empty : TypingContext profile 0).cons
+        (piTyCodeCell unitTypeCell
+          (piTyCodeCell unitTypeCell
+            (universeCodeCell LevelExpr.lzero UniverseFlag.standard)))).cons
+        (piTyCodeCell unitTypeCell unitTypeCell)))
+
 /-- The compound unit-typed neutral `app(f,x)` at scope 3. -/
 def deepSpineInnerNeutral : RawTerm 3 :=
   appCell (variableCell ⟨1, Nat.le.step Nat.le.refl⟩)
@@ -65,7 +102,7 @@ def deepSpineOverNeutral : RawTerm 3 :=
     (appCell (variableCell ⟨2, Nat.le.refl⟩) deepSpineInnerNeutral)
     (variableCell ⟨0, Nat.le.step (Nat.le.step Nat.le.refl)⟩)
 
-/-- `app(app(g, unit), x)` — the η-long target. -/
+/-- `app(app(g, unit), x)` — the η-long target at the inner argument. -/
 def deepSpineOverUnitValue : RawTerm 3 :=
   appCell
     (appCell (variableCell ⟨2, Nat.le.refl⟩) unitCell)
@@ -110,24 +147,6 @@ theorem deepSpinePair_congruentlyEqual (profile : PolyProfile) :
             .nil)))
       (.consEqualZero .nil))
 
-/-- At `Type@0` the readback degrades to the deep collapse on BOTH depth-2 spines at EVERY
-fuel — the spine arm refuses an app-headed function position. -/
-theorem readback_deepSpineNeutral_isDeepCollapse (profile : PolyProfile) :
-    ∀ fuel : Nat,
-      readbackAtClassifier fuel (deepSpineContext profile)
-          (universeCodeCell LevelExpr.lzero UniverseFlag.standard) deepSpineOverNeutral
-        = collapseUnitVariablesDeep (deepSpineContext profile) deepSpineOverNeutral
-  | 0 => rfl
-  | _ + 1 => rfl
-
-theorem readback_deepSpineValue_isDeepCollapse (profile : PolyProfile) :
-    ∀ fuel : Nat,
-      readbackAtClassifier fuel (deepSpineContext profile)
-          (universeCodeCell LevelExpr.lzero UniverseFlag.standard) deepSpineOverUnitValue
-        = collapseUnitVariablesDeep (deepSpineContext profile) deepSpineOverUnitValue
-  | 0 => rfl
-  | _ + 1 => rfl
-
 /-- The deep collapse of the neutral side: the unit VARIABLES are rewritten everywhere, but the
 compound neutral survives — un-seen unit-typedness at spine depth 2. -/
 def collapsedDeepSpineOverNeutral : RawTerm 3 :=
@@ -164,33 +183,55 @@ theorem collapsedDeepSpinePair_notBetaEtaConv :
       valueChain
   exact absurd (neutralEq.trans valueEq.symm) (by decide)
 
-/-- **★ The 8th boundary — the spine arm stops at depth 1**: a congruently unit-η-equal pair of
-depth-2 spines (the neutral side fully grown-typed at `Type@0`) whose readbacks at EVERY fuel
-are distinct βη-normal forms that never join.  The recursive spine readback (true
-`quoteNeutral`) with its substituted-domain soundness obligation is the brick-6 build. -/
-theorem readback_isIncompleteAtDeepSpines (profile : PolyProfile) :
+/-- **★ The 8th boundary, against the FROZEN deep-collapse ingredient**: a congruently
+unit-η-equal pair of depth-2 spines (the neutral side fully grown-typed at `Type@0`) whose deep
+collapses are distinct βη-normal forms that never join — the collapse mode cannot see
+unit-typedness of a compound neutral at spine depth 2.  This boundary FORCED the recursive
+spine readback (brick 6), which decides the pair below. -/
+theorem deepCollapseMode_isIncompleteAtDeepSpines (profile : PolyProfile) :
     ∃ (leftTerm rightTerm : RawTerm 3),
       DefEqUnitEtaCong profile (deepSpineContext profile) leftTerm rightTerm ∧
       HasTypeDescPi profile (deepSpineContext profile) leftTerm
         (universeCodeCell LevelExpr.lzero UniverseFlag.standard) ∧
-      (∀ leftFuel rightFuel : Nat,
-        readbackAtClassifier leftFuel (deepSpineContext profile)
-            (universeCodeCell LevelExpr.lzero UniverseFlag.standard) leftTerm
-          ≠ readbackAtClassifier rightFuel (deepSpineContext profile)
-              (universeCodeCell LevelExpr.lzero UniverseFlag.standard) rightTerm) ∧
+      collapseUnitVariablesDeep (deepSpineContext profile) leftTerm
+        ≠ collapseUnitVariablesDeep (deepSpineContext profile) rightTerm ∧
       ¬ BetaEtaConv
           (collapseUnitVariablesDeep (deepSpineContext profile) leftTerm)
           (collapseUnitVariablesDeep (deepSpineContext profile) rightTerm) :=
   ⟨deepSpineOverNeutral, deepSpineOverUnitValue,
     deepSpinePair_congruentlyEqual profile,
     deepSpineOverNeutralTyped profile,
-    fun leftFuel rightFuel readbacksEqual =>
+    fun collapsesEqual =>
       absurd
         (show collapsedDeepSpineOverNeutral = collapsedDeepSpineOverUnitValue from
-          (readback_deepSpineNeutral_isDeepCollapse profile leftFuel).symm.trans
-            (readbacksEqual.trans
-              (readback_deepSpineValue_isDeepCollapse profile rightFuel)))
+          collapsesEqual)
         (by decide),
     collapsedDeepSpinePair_notBetaEtaConv⟩
+
+/-- **★ The recursive spine identifies the depth-2 spines (brick-6 payoff)**: at fuel 4 BOTH
+sides compute to the η-long form `app(app(g, unit), unit)` — the spine recursion crosses the
+app-headed function position and the recovered domain collapses the inner compound neutral.
+By `rfl`.  (Fuel 3 is insufficient: the inner argument's readback needs the unit ARM, which
+costs one more level than the collapse.) -/
+theorem readback_identifiesDeepSpines (profile : PolyProfile) :
+    readbackAtClassifier 4 (deepSpineContext profile)
+        (universeCodeCell LevelExpr.lzero UniverseFlag.standard) deepSpineOverNeutral
+      = readbackAtClassifier 4 (deepSpineContext profile)
+          (universeCodeCell LevelExpr.lzero UniverseFlag.standard) deepSpineOverUnitValue :=
+  rfl
+
+/-- **★ The depth-2 spine, canonicalized by the readback** — direct soundness form: the typed
+neutral side is congruently unit-η-equal to `app(app(g, unit), unit)`, the η-long form its
+fuel-4 readback computes — exactly what the deep collapse could not produce (it left the
+compound neutral `app(f, unit)` at the inner argument). -/
+theorem deepSpine_canonicalizedByReadback (profile : PolyProfile) :
+    DefEqUnitEtaCong profile (deepSpineContext profile)
+      deepSpineOverNeutral collapsedDeepSpineOverUnitValue :=
+  readbackAtClassifier_congruent 4 (deepSpineContext profile)
+    (universeCodeCell LevelExpr.lzero UniverseFlag.standard) deepSpineOverNeutral
+    (deepSpineContextWellFormed profile)
+    (deepSpineOverNeutralTyped profile)
+    (HasTypeDesc.universeFormation (deepSpineContext profile)
+      LevelExpr.lzero UniverseFlag.standard)
 
 end FX1Poly.Typed
