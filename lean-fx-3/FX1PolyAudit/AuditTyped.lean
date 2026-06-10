@@ -310,6 +310,7 @@ import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.HasTypeDescNatIntro
 import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.HasTypeDescListElim
+import FX1Poly.Typed.DataIntroSubjectReductionRecursive
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -3775,6 +3776,21 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListElim.subjectShape
 #assert_no_axioms FX1Poly.Typed.listElimNilIotaComputesTyped
 #assert_no_axioms FX1Poly.Typed.listElimConsIotaComputesTyped
+
+-- CAN-3 (DataIntroSubjectReductionRecursive): SR for the two RECURSIVE data-intro engines (the
+-- DI-3/DI-2e deferred debt) + the per-eliminator typed-ι SR coverage matrix.  Nat/list VALUES
+-- have no root redexes (no β: head not gen_app; no ι: every ι head is an eliminator; η is the
+-- sibling relation), so every step is payload congruence: nat-intro SR is UNCONDITIONAL (the
+-- engine's only premise is recursive), list-intro SR consumes WfContextDescPi exactly once (the
+-- cons HEAD is grown-typed, re-typed by the SR-U4 master).  The matrix reconciles the historical
+-- #475/#476 claims (proved for the DELETED HasType engine): grown subjects are fully covered by
+-- the one master SR; the 7 standalone families all have constructor-side typed-ι (DI-5 complete,
+-- re-checked by enumeration); derivation-side SR of the standalone eliminator judgments is the
+-- HONEST OPEN gap (the cons-index propext-trap inversion), deferred loudly via the matrix flags.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.subjectReduction
+#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.subjectReduction
+#assert_no_axioms FX1Poly.Typed.eliminatorIotaSrCoverage_count
+#assert_no_axioms FX1Poly.Typed.eliminatorIotaSrCoverage_constructorSideComplete
 -- LIST CANONICAL FORMS (ListCanonicalForms, the DI-2e payoff): NON-VACUOUS closed-normal list canonical forms — a
 -- closed-normal term typed at List(A) by the list-intro engine OR the grown engine is nil/cons. Like option/bool
 -- (and unlike product/either FLAT-table codes), gen_listCode is a FORMATION-table former (typingRuleDescOf, GTL-11),
