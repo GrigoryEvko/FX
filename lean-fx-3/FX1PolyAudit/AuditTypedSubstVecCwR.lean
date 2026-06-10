@@ -633,6 +633,7 @@ import FX1Poly.Typed.SconingIsEnoughThesis
 import FX1Poly.Typed.LiveSignatureSconingCoverage
 import FX1Poly.Typed.TypeAxisObligation
 import FX1Poly.Typed.UsageAxisObligation
+import FX1Poly.Typed.EffectSecurityAxisObligations
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1346,3 +1347,43 @@ import FX1Poly.Typed.UsageAxisObligation
 #assert_no_axioms FX1Poly.Typed.usageSconingWitness
 #assert_no_axioms FX1Poly.Typed.usageSconingWitness_canonicity
 #assert_no_axioms FX1Poly.Typed.usageAxis_meetWithTypeAxis
+
+-- The security + effect AxisObligations — the graded twin and the honest BOTTOM
+-- (EffectSecurityAxisObligations.lean, SN-106 #609; completes the capability-lattice SPAN: type=top,
+-- usage=security=proper, effect=bot). SECURITY: securityAxisCapabilities_eq_usageAxisCapabilities (rfl) = the
+-- DIM5 orthogonal-composition thesis at the LEDGER level (both ride the ONE generic HasGradeOver engine →
+-- identical 5/3 profiles); five backed flips instantiated at fxSecuritySemiring (SN/canonicity/normalization/
+-- SR/confluence — same generic theorems); Fire-Triangle restriction some .dependentElimination (branching on a
+-- classified scrutinee IS the implicit-flow channel, §12.2); ★
+-- securityAxis_parametricityIsAbsent_withFlowHalf = the honest-absence-WITH-partial-content form (the field
+-- stays .unavailable — relational noninterference is the route — conjoined with the SHIPPED grade-flow half:
+-- securityClassifiedFunctionPoisonsApplication); securitySconingWitness = the discharged witness at the
+-- security instance; securityGradeArithmetic_noImplicitDowngrade pins unclassified+classified=classified.
+-- EFFECT: effectAxisCapabilities = bot with the REASON a theorem — effectAxis_cannotRideGradedEngine
+-- (effectIsNotLawfulOrderedGradeSemiring: the effect join has no annihilator, the semiring engine provably
+-- does not instantiate; a lattice-graded judgment is the route); what IS mechanized = the lawful bounded
+-- join-semilattice (effectAxis_algebraIsLawfulLattice) + the admissible .effects Fire-Triangle restriction
+-- (SN-104 ∂CBPV); effectAxis_meetForcesBot = the negative SN-108 example (composing with the undischarged
+-- effect axis zeroes the joint ledger). Precedents Goguen-Meseguer/Volpano/Abadi/Sabelfeld-Myers +
+-- Moggi/Plotkin-Power/Levy/Pedrot-Tabareau. All zero-axiom.
+#assert_no_axioms FX1Poly.Typed.securityAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.securityAxisCapabilities_eq_usageAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.fxSecurityAxisObligation
+#assert_no_axioms FX1Poly.Typed.securityGradeArithmetic_noImplicitDowngrade
+#assert_no_axioms FX1Poly.Typed.securityAxis_strongNormalization_isBacked
+#assert_no_axioms FX1Poly.Typed.securityAxis_canonicity_isBacked
+#assert_no_axioms FX1Poly.Typed.securityAxis_normalization_isBacked
+#assert_no_axioms FX1Poly.Typed.securityAxis_subjectReduction_isBacked
+#assert_no_axioms FX1Poly.Typed.securityAxis_confluence_isBacked
+#assert_no_axioms FX1Poly.Typed.securityAxis_parametricityIsAbsent_withFlowHalf
+#assert_no_axioms FX1Poly.Typed.securityAxis_decidableConversion_isHonestlyAbsent
+#assert_no_axioms FX1Poly.Typed.securityAxis_decidableTypechecking_isHonestlyAbsent
+#assert_no_axioms FX1Poly.Typed.isClosedSecurityGraded
+#assert_no_axioms FX1Poly.Typed.securitySconingWitness
+#assert_no_axioms FX1Poly.Typed.effectAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.effectAxisCapabilities_eq_bot
+#assert_no_axioms FX1Poly.Typed.fxEffectAxisObligation
+#assert_no_axioms FX1Poly.Typed.effectAxis_cannotRideGradedEngine
+#assert_no_axioms FX1Poly.Typed.effectAxis_algebraIsLawfulLattice
+#assert_no_axioms FX1Poly.Typed.effectAxis_fireTriangleAdmissible
+#assert_no_axioms FX1Poly.Typed.effectAxis_meetForcesBot
