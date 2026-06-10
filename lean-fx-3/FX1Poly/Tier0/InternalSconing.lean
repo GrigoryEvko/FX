@@ -149,13 +149,18 @@ def SconingConstructionLevel.hasBKSMetatheoryPackage :
 (well-typedness → canonicity through the scone, extraction free by CR1) together with the per-scone
 extraction story in `FxBaseSubstCanonicityExtraction.lean` — where the GLOBAL `CanonicityExtraction`
 record below is REFUTED over both shipped bases (`canonicityExtraction_overSubstBase_isFalse`) and
-replaced by the honest per-scone `SconeCanonicityExtraction` with genuine instances.  Normalization
-and parametricity transfers remain open (SN-094/095). -/
+replaced by the honest per-scone `SconeCanonicityExtraction` with genuine instances.  The
+normalization transfer is `HasTypeDescPi.normalizationTransfer` / `GluedTypeCell.normalizationTransfer`
+(`NormalizationTransferLedger.lean`, SN-094) — where the `NormalizationExtraction` record below is
+shown CONTENT-FREE (a lawful singleton-collapse instance exists; its one law never ties `normalize`
+to reduction) and replaced by the reduction-sound `ReductionSoundNormalization` with the genuine
+SN-fragment instance over the shipped `RawTerm.normalize`.  The parametricity transfer remains open
+(SN-095). -/
 def fxSconingConstructionLevel : SconingConstructionLevel :=
-  .canonicityTransferTheorem
+  .normalizationTransferTheorem
 
 theorem fxSconingConstructionLevel_eq :
-    fxSconingConstructionLevel = .canonicityTransferTheorem := rfl
+    fxSconingConstructionLevel = .normalizationTransferTheorem := rfl
 
 theorem fxSconing_hasGlobalSectionsInterface :
     fxSconingConstructionLevel.hasGlobalSectionsInterface = true := rfl
@@ -175,8 +180,8 @@ theorem fxSconing_hasConcretePreservationInstance :
 theorem fxSconing_hasCanonicityTransferTheorem :
     fxSconingConstructionLevel.hasCanonicityTransferTheorem = true := rfl
 
-theorem fxSconing_hasNoNormalizationTransferTheorem :
-    fxSconingConstructionLevel.hasNormalizationTransferTheorem = false := rfl
+theorem fxSconing_hasNormalizationTransferTheorem :
+    fxSconingConstructionLevel.hasNormalizationTransferTheorem = true := rfl
 
 theorem fxSconing_hasNoParametricityTransferTheorem :
     fxSconingConstructionLevel.hasParametricityTransferTheorem = false := rfl

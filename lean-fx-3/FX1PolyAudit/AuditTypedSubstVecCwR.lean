@@ -126,6 +126,7 @@ import FX1Poly.Tier0.FxBaseSubstTypeFormers
 import FX1Poly.Typed.DisplayMapDecidableFibration
 import FX1Poly.Typed.GluedModelTypeFormers
 import FX1Poly.Tier0.FxBaseSubstCanonicityExtraction
+import FX1Poly.Typed.NormalizationTransferLedger
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -1102,5 +1103,31 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Tier0.fxSconingConstructionLevel_eq
 #assert_no_axioms FX1Poly.Tier0.fxSconing_hasConcretePreservationInstance
 #assert_no_axioms FX1Poly.Tier0.fxSconing_hasCanonicityTransferTheorem
-#assert_no_axioms FX1Poly.Tier0.fxSconing_hasNoNormalizationTransferTheorem
 #assert_no_axioms FX1Poly.Tier0.fxSconing_hasNoParametricityTransferTheorem
+-- The NormalizationExtraction laws carry NO normalization content; the honest reduction-sound form + the typed
+-- transfer (NormalizationTransferLedger.lean, SN-094 #597). Unlike CanonicityExtraction (REFUTED, SN-093), the
+-- NormalizationExtraction record IS inhabitable — but its ONE law (normalizeIdempotent, on the embedded image
+-- only) never ties normalize to REDUCTION: punitNormalizationExtraction is a FULLY LAWFUL instance whose
+-- normal-form family is the singleton PUnit at every object (normalize identifies ALL sections —
+-- punitNormalizationExtraction_identifiesEverything, rfl), and identityNormalizationExtraction is the lawful
+-- other extreme (normal forms = the sections themselves). The honest record: ReductionSoundNormalization domain
+-- — the two missing laws, reaches (StepStar to the assigned form) + isNormal — with ★
+-- snReductionSoundNormalization the GENUINE instance over the SN fragment (normalFormOf = the shipped
+-- RawTerm.normalize, whose Acc parameter IS IsStronglyNormalizing definitionally; soundness = the shipped
+-- normalize_reducesTo/normalize_isStepNormalForm; fixed-point on normal inputs =
+-- snReductionSoundNormalization_eq_self_ofNormal). Domain restriction essential
+-- (curryOmega_notStronglyNormalizing). ★ HasTypeDescPi.normalizationTransfer = the typed transfer (well-typed
+-- over wf context ⟹ reaches a normal form, via the SN-043 open form); GluedTypeCell.normalizationTransfer =
+-- the glued-model form (completes the canonicity/normalization transfer pair). LEDGER: fxSconingConstructionLevel
+-- advanced canonicityTransferTheorem → normalizationTransferTheorem; fxSconing_hasNoNormalizationTransferTheorem
+-- RENAMED → has* true (the prior firing's own gate updated — the rename lesson applies to the audit shard's OWN
+-- gates too). Follow-on recorded: the full-domain ReductionSoundNormalization refutation needs Ω-not-WN (classic
+-- Ω's only reduct is itself, Step inversion), strictly stronger than the shipped not-SN. All zero-axiom.
+#assert_no_axioms FX1Poly.Typed.punitNormalizationExtraction
+#assert_no_axioms FX1Poly.Typed.identityNormalizationExtraction
+#assert_no_axioms FX1Poly.Typed.punitNormalizationExtraction_identifiesEverything
+#assert_no_axioms FX1Poly.Typed.snReductionSoundNormalization
+#assert_no_axioms FX1Poly.Typed.snReductionSoundNormalization_eq_self_ofNormal
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalizationTransfer
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.normalizationTransfer
+#assert_no_axioms FX1Poly.Tier0.fxSconing_hasNormalizationTransferTheorem
