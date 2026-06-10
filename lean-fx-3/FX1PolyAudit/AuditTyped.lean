@@ -448,6 +448,7 @@ import FX1Poly.Typed.SigmaEtaEngineGate
 import FX1Poly.Typed.EliminatorMotiveShapeRecord
 import FX1Poly.Typed.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
+import FX1Poly.Typed.CascadeFreedomLedger
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -9685,3 +9686,41 @@ substituted spines — the exact input of `formerCellStronglyNormalizingOfChildr
 #assert_no_axioms FX1Poly.Typed.TelescopeReducible.substitutedTwoChildrenStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.TelescopeReducible.substitutedOneChildSpineStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.TelescopeReducible.substitutedTwoChildSpineStronglyNormalizing
+
+/-! ### CascadeFreedomLedger — the per-row absorption-cost ledger (the logical-conclusion criterion)
+
+The honest, machine-anchored record of HOW FAR the table-generic program is met: seven
+metatheory rows absorb a new formation row at ZERO arms (anchored to the shipped generic
+theorems), the reducibility-FT dispatch is the thin-linear residual (kernel bricks shipped,
+the table-generic arm remaining), and canonical-forms reconstruction is the bounded
+per-former brick set.  The completeness theorem proves the cost function classifies EVERY
+row — cascade-freedom claims are exactly as partial as the ledger states. -/
+
+#assert_no_axioms FX1Poly.Typed.MetatheoryRow.absorptionCost
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_weakening_formation
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_weakening_grown
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_substitution_formation
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_substitution_grown
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_uniqueness
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_inversion
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_subjectReduction_formation
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_subjectReduction_grown
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_subjectReduction_genericArm
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_strongNormalization
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_contextConversion_telescopeStep
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_contextConversion_grownMaster
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_dispatchBrick_liftedChild
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_dispatchBrick_spineSN
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_canonicalFormsBrick
+#assert_no_axioms FX1Poly.Typed.weakening_isZeroArm
+#assert_no_axioms FX1Poly.Typed.substitution_isZeroArm
+#assert_no_axioms FX1Poly.Typed.uniqueness_isZeroArm
+#assert_no_axioms FX1Poly.Typed.inversion_isZeroArm
+#assert_no_axioms FX1Poly.Typed.subjectReduction_isZeroArm
+#assert_no_axioms FX1Poly.Typed.strongNormalization_isZeroArm
+#assert_no_axioms FX1Poly.Typed.contextConversion_isZeroArm
+#assert_no_axioms FX1Poly.Typed.reducibilityDispatch_isThinLinear
+#assert_no_axioms FX1Poly.Typed.canonicalForms_isBoundedBricks
+#assert_no_axioms FX1Poly.Typed.cost_discriminates_weakening_vs_dispatch
+#assert_no_axioms FX1Poly.Typed.cost_discriminates_dispatch_vs_canonicalForms
+#assert_no_axioms FX1Poly.Typed.absorptionCost_classifiesEveryRow
