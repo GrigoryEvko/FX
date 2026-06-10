@@ -7,6 +7,8 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescDecidable
+import FX1Poly.Typed.ThirdWayBoundaries
+import FX1Poly.Core.ConvWordJoinableBridge
 
 /-! # FX1PolyAudit/CapstoneSignoff — the per-milestone capstone sign-off, pillar theorems BY NAME
 
@@ -31,15 +33,20 @@ plus the SN-triangulation parity (`honestCapstoneMet_holds`).  The POSITIVE asse
 honest triangulation, one checked object — replacing the lone negative
 `threeWayCapstone_not_yet_met` as the spine's headline.
 
-## POWERFUL-SN (tracker #653) — honest criterion MET; literal three-ways UNREACHABLE; NOT closed
+## POWERFUL-SN (tracker #653) — the HONEST capstone, CLOSED
 
 Shipped and gated here: `honestCapstoneMet_holds` + `honestCapstone_met_while_threeWay_unreachable`
-(the criterion), `snColumnIsHonest` + `snPrimaryTait` / `snConfirmSconingBridged` /
-`snConfirmRpoFragment` / `snRpoBetaBoundary` (SN once by Tait, triangulated twice, with the NO-GO
-boundaries).  EXACT residuals keeping #653 open: the cross-leg equivalences #641 (Leg-3
-word-equality decision vs Path-A decidable Conv) and #642 (convergence-canonicity vs Tait
-canonicity + typed-SN vs fxSystem-termination), and #1146 (the consistency convergent-fragment /
-Tait-import boundary, the `ConvergentCanonicityBoundary` twin).
+(the criterion: SN/canonicity/consistency each proven once by Tait; SN triangulated twice; the
+literal three-INDEPENDENT-ways criterion is itself proven unreachable), `snColumnIsHonest` +
+`snPrimaryTait` / `snConfirmSconingBridged` / `snConfirmRpoFragment` / `snRpoBetaBoundary` (the SN
+column), and the three cross-leg boundary bricks (`ThirdWayBoundaries`): #1146 =
+`thirdWayConsistencyBoundaryHolds` + `thirdWayConsistencyAssembled` (consistency-at-`Empty`
+decomposed Tait-free ⊕ Tait-imported, the import visible as one proof step); #642 =
+`typedRootWordReductionTerminates` + `infiniteTermChainInducesInfiniteWordChain` (the chain-level
+termination ≡ SN correspondence; the canonicity half stays dropped per
+`convergentNormalFormNeedNotBeCanonical`); #641 = `Conv.toWordJoinable` (forward, shipped) +
+`RawTerm.toCode_not_injective` (the committed reverse blocker — payload collapse; the
+word→`Conv` reverse needs a payload-faithful encoding, the named follow-on).
 
 ## MILESTONE A0 (tracker #464) — shipped pillars gated; NOT closed
 
@@ -103,7 +110,7 @@ end FX1Poly.Typed
 -- ★ the positive assembled spine capstone (#501)
 #assert_no_axioms FX1Poly.Typed.milestoneASpineSignoffHolds
 
--- ===== POWERFUL-SN (#653) — honest triangulation by name; residuals #641 #642 #1146 =====
+-- ===== POWERFUL-SN (#653) — honest triangulation by name, all three boundary bricks in =====
 #assert_no_axioms FX1Poly.Core.ParityMatrix.honestCapstoneMet_holds
 #assert_no_axioms FX1Poly.Core.ParityMatrix.honestCapstone_met_while_threeWay_unreachable
 #assert_no_axioms FX1Poly.Core.ParityMatrix.snColumnIsHonest
@@ -111,6 +118,16 @@ end FX1Poly.Typed
 #assert_no_axioms FX1Poly.Core.ParityMatrix.snConfirmSconingBridged
 #assert_no_axioms FX1Poly.Core.ParityMatrix.snConfirmRpoFragment
 #assert_no_axioms FX1Poly.Core.ParityMatrix.snRpoBetaBoundary
+-- #1146: third-way consistency = Tait-free normal-form half ⊕ Tait-imported normalization half
+#assert_no_axioms FX1Poly.Typed.thirdWayConsistencyBoundaryHolds
+#assert_no_axioms FX1Poly.Typed.thirdWayConsistencyAssembled
+-- #642: chain-level termination ≡ SN (the canonicity half stays dropped per the NO-GO)
+#assert_no_axioms FX1Poly.Typed.typedRootWordReductionTerminates
+#assert_no_axioms FX1Poly.Typed.infiniteTermChainInducesInfiniteWordChain
+#assert_no_axioms FX1Poly.Core.convergentNormalFormNeedNotBeCanonical
+-- #641: word-joinability forward + the committed reverse blocker (payload collapse)
+#assert_no_axioms FX1Poly.Core.Conv.toWordJoinable
+#assert_no_axioms FX1Poly.Core.RawTerm.toCode_not_injective
 
 -- ===== MILESTONE A0 (#464) — shipped pillars by name; residuals #220, #268/#471/#648, O-NORM =====
 #assert_no_axioms FX1Poly.Typed.wfContextDefensibleKernel
