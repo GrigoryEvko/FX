@@ -8757,3 +8757,22 @@ of grown βη subject reduction (PAR-2); structural arms = STR-11. -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaLam
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaLamStep
+
+/- η-SR structural arms (STR-11) + the grown βη MASTER SR (PAR-2).  The pair/cubical/modal/Glue
+arms hold VACUOUSLY today — their source heads (gen_pair/gen_pathLam/gen_modIntro/gen_glueIntro)
+are grown-untypable (`isUntypableHead = true` by rfl), so each discharges via
+`isUntypableHead_sound`; when those typing rules land, the rfl arguments break loudly and force
+substantive re-proofs (the decision procedure is the cascade alarm).  The dispatcher assembles
+all five η arms; the βη master = the shipped β/ι master (SR-U4) ∪ the η dispatcher (Step.betaEta
+is the plain disjunction, η fires at the root only); the star version threads the chain.  The
+round-trip regression witnesses the λ-arm NON-VACUOUS: every grown function typing η-expands
+(TY-ETA-GROWN) to a real typed η-source the λ-arm contracts back. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaPair
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaPathLam
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaModIntro
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaGlueIntro
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEta
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionBetaEta
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionBetaEtaStar
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaExpandContractRoundTrip
