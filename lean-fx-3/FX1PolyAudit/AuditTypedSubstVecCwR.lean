@@ -635,6 +635,7 @@ import FX1Poly.Typed.TypeAxisObligation
 import FX1Poly.Typed.UsageAxisObligation
 import FX1Poly.Typed.EffectSecurityAxisObligations
 import FX1Poly.Typed.RemainingDimensionAxisObligations
+import FX1Poly.Modal.GradedCostSemantics
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1423,3 +1424,48 @@ import FX1Poly.Typed.RemainingDimensionAxisObligations
 #assert_no_axioms FX1Poly.Typed.fxObservabilityAxisObligation
 #assert_no_axioms FX1Poly.Typed.remainingDimensionObligations
 #assert_no_axioms FX1Poly.Typed.remainingDimensionObligations_count
+
+-- ★ The verified COST SEMANTICS for the graded λ-calculus — complexity is honestly CALCULABLE
+-- (GradedCostSemantics.lean, COST-1 #1213; the user-directed maximum honest version). The cost MODEL:
+-- ReducesInSteps (one unit per β-step) + bridges to ReducesStar. The enumeration: oneStepReducts proven
+-- COMPLETE (every Reduces step listed — what the upper bound consumes) AND SOUND (every listed element is a
+-- step — what the recursive construction consumes), with HAND-ROLLED membership lemmas (memMapOfMem/
+-- memAppendLeft/Right/memMapInv/memAppendInv — core List.mem_* axiom status unaudited, so rolled by list
+-- induction with explicit List.Mem ctors). ★ costBound = the computable WORST-CASE cost via Acc.rec
+-- (constant-Nat motive, the normalize recipe) over the soundness-THREADED fold costBoundOverReducts (no
+-- List.attach; each recursive call justified by a genuine Reduces witness); costBound_isSound = EVERY
+-- reduction sequence under ANY strategy is bounded (sum-based per the propext-free Nat.le_add discipline —
+-- Nat.le_max_* leaks). ★ normalizeCost = the EXACT attained cost of the canonical normalizer path
+-- (normalizeCost_isExact: a genuine chain of exactly that length; normalizeWithCost_reachesNormalize: to THE
+-- normal form, by uniqueness; normalizeCost_le_costBound: the sandwich). ★ HasGradeOver.costCalculator +
+-- canonicalEvaluationCost: every well-graded term over ANY dimension has a computable sound bound + exact
+-- canonical cost; complexityGraded_costIsCalculable = the §6.3 Dim-13 narrative instance. HONEST: cost is
+-- computed FROM THE TERM (search + instrumented evaluation), NOT read off the grades — the grade→cost tie is
+-- COST-2 (#1214, cost-indexed LR, calf/Danielsson/dlPCF program); the SN-107 complexity docstring now carries
+-- this qualifier. All zero-axiom, FIRST-BUILD GREEN.
+#assert_no_axioms FX1Poly.Modal.GradedLambda.ReducesInSteps
+#assert_no_axioms FX1Poly.Modal.GradedLambda.ReducesInSteps.toStar
+#assert_no_axioms FX1Poly.Modal.GradedLambda.ReducesStar.existsStepCount
+#assert_no_axioms FX1Poly.Modal.GradedLambda.memMapOfMem
+#assert_no_axioms FX1Poly.Modal.GradedLambda.memAppendLeft
+#assert_no_axioms FX1Poly.Modal.GradedLambda.memAppendRight
+#assert_no_axioms FX1Poly.Modal.GradedLambda.memMapInv
+#assert_no_axioms FX1Poly.Modal.GradedLambda.memAppendInv
+#assert_no_axioms FX1Poly.Modal.GradedLambda.oneStepReducts
+#assert_no_axioms FX1Poly.Modal.GradedLambda.oneStepReducts_complete
+#assert_no_axioms FX1Poly.Modal.GradedLambda.oneStepReducts_sound
+#assert_no_axioms FX1Poly.Modal.GradedLambda.costBoundOverReducts
+#assert_no_axioms FX1Poly.Modal.GradedLambda.costBoundOverReducts_boundsElement
+#assert_no_axioms FX1Poly.Modal.GradedLambda.costBound
+#assert_no_axioms FX1Poly.Modal.GradedLambda.costBound_isSound
+#assert_no_axioms FX1Poly.Modal.GradedLambda.normalizeWithCost
+#assert_no_axioms FX1Poly.Modal.GradedLambda.normalizeCost
+#assert_no_axioms FX1Poly.Modal.GradedLambda.normalizeCost_isExact
+#assert_no_axioms FX1Poly.Modal.GradedLambda.normalizeWithCost_reachesNormalize
+#assert_no_axioms FX1Poly.Modal.GradedLambda.normalizeCost_le_costBound
+#assert_no_axioms FX1Poly.Modal.GradedLambda.identityRedex_costsOneStep
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.costCalculator
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.costCalculator_isSound
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.canonicalEvaluationCost
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.canonicalEvaluationCost_isExact
+#assert_no_axioms FX1Poly.Modal.complexityGraded_costIsCalculable

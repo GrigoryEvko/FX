@@ -121,7 +121,12 @@ theorem complexityAxisCapabilities_eq_usageAxisCapabilities :
     complexityAxisCapabilities = usageAxisCapabilities := rfl
 
 /-- **The complexity (cost/space) axis obligation**: the §6.3 Dim 13/15 N-semiring dimension over
-the graded λ-calculus — costs add in parallel and sequentially, zero is free. -/
+the graded λ-calculus.  HONEST QUALIFIER: the grade is exact OCCURRENCE-COUNTING at the naturals;
+the cost READING — "the grade bounds evaluation steps" — is pending the cost-indexed logical
+relation (COST-2).  What IS shipped beyond the five ledger capabilities is the verified cost
+SEMANTICS (`GradedCostSemantics`, COST-1): a computable sound worst-case step bound and an exact
+canonical-evaluation cost for every well-graded term — complexity is CALCULABLE from the term, not
+yet read off the grades. -/
 def fxComplexityAxisObligation : AxisObligation where
   axisName := "FX complexity (cost/space) dimension over the graded lambda calculus"
   axisId := .multiModal
