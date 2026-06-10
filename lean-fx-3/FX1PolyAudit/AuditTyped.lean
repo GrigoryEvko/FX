@@ -446,6 +446,7 @@ import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.TypedNbeConvDecision
 import FX1Poly.Typed.SigmaEtaEngineGate
 import FX1Poly.Typed.EliminatorMotiveShapeRecord
+import FX1Poly.Typed.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -9659,3 +9660,14 @@ Route C (rejected) decision record. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElimDependent.subsumesSimpleShape
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElimDependent.ofUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.dependentBoolElimIotaComputesTyped_true
+
+/-! ### LiftedChildNormalizationFromClosure — the GTL-06 kernel's brick 1 (#820)
+
+The reusable fresh-variable instantiation, extracted from the Π/Σ former-membership interiors
+and strictly generalized (abstract domain term, ARBITRARY child classifier): a cons-closure at
+a one-level-up-reducible domain yields strong normalization of the LIFTED-open substituted
+binder-child.  This is the one genuinely new piece the table-generic dispatch arm needs at
+shift-1 children; depth-0 children are CR1, shift ≥ 2 is a named non-blocker (no current
+formation row).  The module docstring records the GO verdict + the remaining #820 assembly. -/
+
+#assert_no_axioms FX1Poly.Typed.IsStronglyNormalizing.liftedSubstOfConsClosureAtFreshVariable
