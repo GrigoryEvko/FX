@@ -631,6 +631,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 import FX1Poly.Typed.GluedModelModalFragment
 import FX1Poly.Typed.SconingIsEnoughThesis
 import FX1Poly.Typed.LiveSignatureSconingCoverage
+import FX1Poly.Typed.TypeAxisObligation
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1273,3 +1274,36 @@ import FX1Poly.Typed.LiveSignatureSconingCoverage
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.neutralLeafMemberOfEveryCandidate
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.abstractionConstructorPreservesSn
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.eliminatorHasRedexHead
+
+-- ★ The FX type-axis AxisObligation — all eight capabilities flipped, each flip BACKED
+-- (TypeAxisObligation.lean, SN-103 #606). fxTypeAxisObligation = the FIRST concrete AxisObligation with
+-- non-bottom capabilities: axis id .universe, no Fire-Triangle restriction (the pure type axis; the
+-- effect/eval restriction is SN-104's separate axis), capabilities = MetatheoreticCapabilities.top (pinned
+-- rfl), precedents = Tait 1967 / Girard 1972 / Atkey 2018 / Wood-Atkey 2022 / Uemura 1904.04097 / BKS
+-- 2302.05190. THE HONESTY CONSTRAINT (not a bare flip): eight fxTypeAxis_*_isBacked theorems, each conjoining
+-- the ledger field's .available value (rfl) with the SHIPPED metatheorem restated and proved by direct
+-- application — canonicity ← closedBoolCanonicalForms; normalization ← HasTypeDescPi.normalizationTransfer;
+-- parametricity ← closedBoundedReducibleMember (BFT-13); subject reduction ← HasTypeDescPi.subjectReduction
+-- (SR-U4); confluence ← StepStar.rawConfluence; strong normalization ← stronglyNormalizingOfWfContextDesc
+-- (OB-5); decidable conversion ← Conv.decidableOfHasTypeDesc; decidable typechecking ←
+-- HasTypeDesc.decidableOfWellFormed (both decidability legs through Nonempty since deciders are data).
+-- fxTypeAxis_meetPreservesCapabilities = the SN-108 hook: meeting ANY ledger against the type axis is the
+-- identity (the discharged base never degrades an extension) — via the new
+-- CapabilityStatus.meet_available_right. HONEST: decidability backed on the proven fragments (classifier-Conv
+-- of typed subjects; checking over wf contexts); SR over WfContextDescPi, SN/normalization over WfContextDesc
+-- — the wf hypotheses quoted exactly as shipped. (The positional-implicit lambda trap recurred: a lambda
+-- against ∀ {profile} (env) {subject classifier} (typing) binds {subject} as the typing arg — bind ALL
+-- implicits explicitly.) All zero-axiom.
+#assert_no_axioms FX1Poly.Typed.fxTypeAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.fxTypeAxisCapabilities_eq_top
+#assert_no_axioms FX1Poly.Typed.fxTypeAxisObligation
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_canonicity_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_normalization_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_parametricity_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_subjectReduction_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_confluence_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_strongNormalization_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_decidableConversion_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_decidableTypechecking_isBacked
+#assert_no_axioms FX1Poly.Typed.CapabilityStatus.meet_available_right
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_meetPreservesCapabilities
