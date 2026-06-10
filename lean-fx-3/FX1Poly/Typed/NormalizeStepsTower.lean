@@ -1,4 +1,5 @@
 import FX1Poly.Core.NormalizeSteps
+import FX1Poly.Core.ConvDecisionSteps
 import FX1Poly.Typed.IdentityTowerFamily
 
 /-! # FX1Poly/Typed/NormalizeStepsTower
@@ -86,5 +87,43 @@ theorem idTower_normalizeChainExact (levelExpr : LevelExpr) (flag : UniverseFlag
     RawTerm.normalizeSteps_chainExact (idTower levelExpr flag towerHeight) accessible
   rw [normalizeSteps_idTower levelExpr flag towerHeight accessible] at hChain
   exact hChain
+
+/-! ### The `Conv` decider's cost on the tower family (M19's exact realization) -/
+
+/-- **The SN-fragment `Conv` decider's reducer cost is EXACT on tower pairs**: deciding
+`Conv (λx.x)ᵐ(Type@e) (λx.x)ⁿ(Type@e)` fires the reducer exactly `m + n` times — the two
+normalizer runs the decider performs, each counted exactly by `normalizeSteps_idTower`. -/
+theorem convDecideSteps_idTower (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (leftHeight rightHeight : Nat)
+    (accLeft : Acc StepStar.StepSuccessor (idTower levelExpr flag leftHeight))
+    (accRight : Acc StepStar.StepSuccessor (idTower levelExpr flag rightHeight)) :
+    Conv.decideStronglyNormalizingSteps
+        (idTower levelExpr flag leftHeight) (idTower levelExpr flag rightHeight)
+        accLeft accRight = leftHeight + rightHeight := by
+  show RawTerm.normalizeSteps (idTower levelExpr flag leftHeight) accLeft +
+      RawTerm.normalizeSteps (idTower levelExpr flag rightHeight) accRight =
+    leftHeight + rightHeight
+  rw [normalizeSteps_idTower levelExpr flag leftHeight accLeft,
+      normalizeSteps_idTower levelExpr flag rightHeight accRight]
+
+/-- **The `Conv` decider's reducer cost is not bounded by any constant** — every proposed bound is
+exceeded by deciding a tall tower against the base value (a TRUE `Conv` instance: both collapse to
+`Type@e`).  M19's boundary brick: with the no-size-polynomial disclosure in
+`Core/ConvDecisionSteps.lean`, this closes the "decidable but EXP-tower" loophole by exact
+accounting rather than overclaim. -/
+theorem convDecideSteps_unbounded (bound : Nat) :
+    ∃ (leftTerm rightTerm : RawTerm 0)
+      (accLeft : Acc StepStar.StepSuccessor leftTerm)
+      (accRight : Acc StepStar.StepSuccessor rightTerm),
+      bound <
+        Conv.decideStronglyNormalizingSteps leftTerm rightTerm accLeft accRight :=
+  ⟨idTower LevelExpr.lzero UniverseFlag.standard (bound + 1),
+   idTower LevelExpr.lzero UniverseFlag.standard 0,
+   idTower_stronglyNormalizing (profile := fxProfile) LevelExpr.lzero UniverseFlag.standard
+     (bound + 1),
+   idTower_stronglyNormalizing (profile := fxProfile) LevelExpr.lzero UniverseFlag.standard 0,
+   by
+     rw [convDecideSteps_idTower LevelExpr.lzero UniverseFlag.standard (bound + 1) 0]
+     exact Nat.lt_succ_self bound⟩
 
 end FX1Poly.Typed

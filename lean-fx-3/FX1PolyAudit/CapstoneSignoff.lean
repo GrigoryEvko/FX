@@ -57,9 +57,13 @@ over EVERY well-formed context — the A0 decidability floor), `HasTypeDesc.deci
 every wf-typed subject, with SN).  The host-minimal certifier gate (FX0-PC.1, #220) is SHIPPED:
 `#assert_host_minimal` in `AuditFX0Poly` re-verifies on every build that the Layer-1 certifier's
 full transitive closure is axiom-free, prelude-family-only (no `Lean.*`/`Std.*`), `unsafe`/
-`partial`-free, opaque-free, and quotient-free.  EXACT residuals keeping #464 open: the
-STRICT-COMPLEXITY witnesses (#268 / #471 / #648), and the joint-decidability apex (O-NORM, open
-research — A0's deciders are per-fragment/wf-scoped).
+`partial`-free, opaque-free, and quotient-free.  The STRICT-COMPLEXITY witnesses (#268 / #471 /
+#648) are SHIPPED, two-tier honest: a machine-checked POLYNOMIAL witness where it is true
+(`levelDenoteEquivDecisionComplexity`, quadratic), and EXACT counters + chain identities +
+unboundedness where no size-polynomial is true (`normalizeSteps` for the term normalizer,
+`decideStronglyNormalizingSteps` for the SN-fragment `Conv` decider; Statman non-elementarity
+literature-cited, named open formalization target).  EXACT residual keeping #464 open: the
+joint-decidability apex (O-NORM, open research — A0's deciders are per-fragment/wf-scoped).
 CERTIFICATE-NOTION CAVEAT (post O-STACK #1194): A0's external-verification leg is the
 sort-AGNOSTIC FX0 re-checker; the sort-disciplined `certifyRawCellExact?` provably does NOT cover
 all typed subjects (`typedDoesNotFactorThroughCertification`) — any A0 release text must say "FX0

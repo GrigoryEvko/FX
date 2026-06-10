@@ -135,6 +135,7 @@ import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.Normalize
 import FX1Poly.Core.NormalizeSteps
+import FX1Poly.Core.ConvDecisionSteps
 import FX1Poly.Core.NormalizeMeta
 import FX1Poly.Core.CanonicalFormsCandidate
 import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
@@ -8960,3 +8961,19 @@ normalizer. -/
 #assert_no_axioms FX1Poly.Typed.normalizeSteps_idTower
 #assert_no_axioms FX1Poly.Typed.normalizeSteps_unbounded
 #assert_no_axioms FX1Poly.Typed.idTower_normalizeChainExact
+
+/-! ### ConvDecisionSteps — the SN-fragment Conv decider's exact cost witness (M19)
+
+The decider's reducer cost = the sum of the two operands' exact normalizer counters
+(`decideStronglyNormalizingSteps`), tied to the verdict + the two counted chains in ONE object
+(`costAccounting`), zero exactly on the normal fragment, EXACT (= m + n) on tower pairs, and
+unbounded.  HONEST M19 closure: `DecisionComplexity` is deliberately NOT instantiated for raw
+`Conv` (two β-normalization runs admit no truthful size-polynomial — Statman 1979,
+literature-cited); the §11.8.7 "decidable but EXP-tower" loophole is closed by exact DISCLOSURE,
+with the polynomial witness reserved for deciders where it is true (the LevelExpr instance). -/
+
+#assert_no_axioms FX1Poly.Core.Conv.decideStronglyNormalizingSteps
+#assert_no_axioms FX1Poly.Core.Conv.decideStronglyNormalizing_costAccounting
+#assert_no_axioms FX1Poly.Core.Conv.decideStronglyNormalizingSteps_eq_zero_iff_normalForms
+#assert_no_axioms FX1Poly.Typed.convDecideSteps_idTower
+#assert_no_axioms FX1Poly.Typed.convDecideSteps_unbounded
