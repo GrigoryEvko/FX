@@ -17,9 +17,9 @@ grown canonical-forms `piElim` crux needs once a data type code (`listCode`, GTL
 arms: `ofFormation` delegates to the formation generic inversion; `conv` recurses and threads the classifier
 `Conv` through (`Conv.trans`); `piIntro` / `piElim` are refuted (their `gen_lam` / `gen_app` heads are not in
 `typingRuleDescOf`, the `if_neg` non-former branch — now three-way over Π / Σ / list); `genFormationPi` reads
-the classifier directly off the rule's `universeFormerOutput` (`typingRuleDescOf_outputIsUniverseFormer` +
-`Conv.refl`).  Head-agnostic: a future data type code is absorbed with no new arm — exactly the FRAME-2
-extensibility property at the grown layer.
+the classifier off the row-shape-agnostic `typingRuleDescOf_output_isUniverseCode` (output is SOME universe
+code) + `Conv.refl`.  Head-agnostic: a future data type code — including a flag-pinned nullary row — is
+absorbed with no new arm — exactly the FRAME-2 extensibility property at the grown layer.
 
 ## The two `listCode` refutations
 
@@ -34,7 +34,7 @@ consistency theorem's empty-type arm) reads.
 ## Zero-axiom verification
 
 Term-mode dependent `match` on the five grown arms + `congrArg RawTerm.headGenerator` head-equalities +
-`unfold typingRuleDescOf` / `if_neg` non-former discharge + `typingRuleDescOf_outputIsUniverseFormer` +
+`unfold typingRuleDescOf` / `if_neg` non-former discharge + `typingRuleDescOf_output_isUniverseCode` +
 `Conv.refl` / `Conv.trans`; the specializations add `eq_listCodeCell_of_headGenerator` + a single Conv
 refutation.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
@@ -95,8 +95,15 @@ theorem HasTypeDescPi.formerClassifierConvUniverseGeneric {profile : PolyProfile
         have generatorAgree : armGenerator = generator :=
           congrArg RawTerm.headGenerator subjectEq
         subst generatorAgree
-        refine ⟨armLevels, armFlag, ?_⟩
-        rw [typingRuleDescOf_outputIsUniverseFormer armIsFormation]
+        -- ROW-SHAPE-AGNOSTIC: read the output through `typingRuleDescOf_output_isUniverseCode`
+        -- (it is SOME universe code) rather than the strong `= universeFormerOutput` equation.
+        -- The existential's `lmaxAll levels` is filled with the singleton `[outputLevel]`
+        -- (`lmaxAll [outputLevel] = outputLevel` definitionally), so a future flag-pinned nullary
+        -- row absorbs here verbatim.
+        obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+          typingRuleDescOf_output_isUniverseCode armIsFormation _ armLevels armFlag
+        refine ⟨[outputLevel], outputFlag, ?_⟩
+        rw [hOutput]
         exact Conv.refl _
 
 /-- **A `listCode` data former is not a member of a Π-type.**  The `gen_listCode` specialization of the grown

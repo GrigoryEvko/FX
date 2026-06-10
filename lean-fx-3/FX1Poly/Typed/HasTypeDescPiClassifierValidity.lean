@@ -37,7 +37,7 @@ The grown classifier-validity needs only the component telescope (the child typi
 
 Subject-generalised structural recursion + the `Conv`-free formation inversion + `toDescTelescopePi` +
 `Generator.noConfusion`/`injection`/`subst_vars` + `IsTypeDescPi.substituteUnderBinding` + `genFormationPi` +
-the `typingRuleDescOf_outputIsUniverseFormer` table fact.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+the `typingRuleDescOf_output_isUniverseCode` row-shape-agnostic interface.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -153,8 +153,10 @@ theorem HasTypeDescPi.classifierIsTypeDescPi {profile : PolyProfile} {scope : Na
       HasTypeDescPi.piCodeInstantiationIsTypeUnconditional
         (functionTyped.classifierIsTypeDescPi wellFormed) argumentTyped
   | .genFormationPi context generator _payload _children levels flag rule isFormation _premises => by
-      rw [typingRuleDescOf_outputIsUniverseFormer isFormation]
-      exact ⟨(lmaxAll levels).lsucc, flag,
-        HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context (lmaxAll levels) flag)⟩
+      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
+      rw [hOutput]
+      exact ⟨outputLevel.lsucc, outputFlag,
+        HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context outputLevel outputFlag)⟩
 
 end FX1Poly.Typed

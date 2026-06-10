@@ -87,11 +87,17 @@ def HasTypeDesc.inferWithWitness {profile : PolyProfile} {scope : Nat}
                 · exact absurd isUniverseCode hUniverse
                 · obtain ⟨levels, telFlag, telescope, _convToCode⟩ :=
                     HasTypeDesc.inversionFormerWithConvGeneric typed isFormer rfl
-                  refine ⟨lmaxAll levels, telFlag, ?_⟩
+                  -- ROW-SHAPE-AGNOSTIC: `IsTypeDesc` is `∃ level flag, HasTypeDesc ... (universeCodeCell ..)`,
+                  -- so read the output through `typingRuleDescOf_output_isUniverseCode` (it is SOME universe
+                  -- code) rather than the strong `= universeFormerOutput` equation; a future flag-pinned
+                  -- nullary row absorbs here verbatim.
+                  obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+                    typingRuleDescOf_output_isUniverseCode isFormer scope levels telFlag
+                  refine ⟨outputLevel, outputFlag, ?_⟩
                   have formerTyped :=
                     HasTypeDesc.genFormation context generator payload children levels telFlag rule
                       isFormer telescope
-                  rw [typingRuleDescOf_outputIsUniverseFormer isFormer] at formerTyped
+                  rw [hOutput] at formerTyped
                   exact formerTyped))
 
 /-- **Native `Decidable (HasTypeDesc Γ t T)`** — decide the full formation typing judgment.

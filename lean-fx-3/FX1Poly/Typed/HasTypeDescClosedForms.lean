@@ -37,7 +37,7 @@ All THREE closed-form consequences are proved on the native formation-engine rec
 
 ## Zero-axiom verification
 
-The native proofs use the propext-free formation recursion + `typingRuleDescOf_outputIsUniverseFormer` + the
+The native proofs use the propext-free formation recursion + `typingRuleDescOf_output_isUniverseCode` + the
 native uniqueness (`HasTypeDesc.uniquenessNative`) + the native head-canonical-forms + the `eq_*_of_headGenerator`
 reconstructions.  No `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTyped.lean`.
@@ -66,10 +66,12 @@ theorem HasTypeDesc.closedSubjectIsTypeDescGeneral {profile : PolyProfile} {scop
   | .universeFormation context levelExpr flag =>
       ⟨levelExpr.lsucc, flag, HasTypeDesc.universeFormation context levelExpr flag⟩
   | .genFormation context generator payload children levels flag rule isFormation premises => by
-      refine ⟨lmaxAll levels, flag, ?_⟩
+      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
+      refine ⟨outputLevel, outputFlag, ?_⟩
       have rebuilt := HasTypeDesc.genFormation context generator payload children levels flag rule
         isFormation premises
-      rwa [typingRuleDescOf_outputIsUniverseFormer isFormation] at rebuilt
+      rwa [hOutput] at rebuilt
 
 /-- Closed description-engine subjects in the formation engine are themselves description-engine types.
 The native formation recursion via `closedSubjectIsTypeDescGeneral`. -/

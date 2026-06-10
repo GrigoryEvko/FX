@@ -74,6 +74,12 @@ theorem HasTypeDescPi.invertFormerTelescopeWithConvGeneric {profile : PolyProfil
         injection subjectEq with _hScope _hGenerator _hPayload hChildren
         subst hChildren
         refine ⟨armLevels, armFlag, armPremises, ?_⟩
+        -- stays on the >=1-child strong lemma: the existential's level/flag witnesses are FORCED to
+        -- `armLevels`/`armFlag` by the returned telescope premise, and the conclusion pins the output to
+        -- `universeCodeCell (lmaxAll armLevels) armFlag` — so the consumer (NormalUniverseClassificationUnique)
+        -- reads `lmaxAll levels`/`flag` back out via `Conv.universeCode_injective`; that level/flag arithmetic
+        -- flows into the conclusion, which only matches the output for `universeFormerOutput` rows.
+        -- Re-examined at the table flip: a flag-pinned nullary row falsifies this conclusion shape.
         rw [typingRuleDescOf_outputIsUniverseFormer armIsFormation]
         exact Conv.refl _
 

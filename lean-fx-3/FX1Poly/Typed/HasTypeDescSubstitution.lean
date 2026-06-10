@@ -111,22 +111,20 @@ theorem HasTypeDesc.substRespectingContext {profile : PolyProfile}
       have substPremises :=
         DescTelescope.substRespectingTelescope premises targetContext substitution
           substitutionTyped
-      -- TABLE-GENERIC (no `by_cases pi/sigma`): `formationRuleImpliesNotVariable` discharges the
-      -- non-`gen_var` side condition, `formationRuleIsUniverseFormer` makes `rule` concrete, and the
-      -- generic `RawTerm.subst_mkGen_of_ne_var` distributes the substitution over the ABSTRACT
-      -- formation cell (the non-var commutation substrate).  A new formation row absorbs here with
-      -- zero edits — reconstruction carries the ORIGINAL `generator`/`isFormation`.
+      -- ROW-SHAPE-AGNOSTIC (no `by_cases pi/sigma`, no concrete `rule`): `formationRuleImpliesNotVariable`
+      -- discharges the non-`gen_var` side condition, `typingRuleDescOf_output_substStable` rewrites the
+      -- ABSTRACT rule's output through the substitution (universe codes are scope-polymorphic leaves for
+      -- every row shape), and the generic `RawTerm.subst_mkGen_of_ne_var` distributes the substitution over
+      -- the ABSTRACT formation cell (the non-var commutation substrate).  A new formation row (including a
+      -- flag-pinned nullary one) absorbs here with zero edits — reconstruction carries the ORIGINAL abstract
+      -- `rule`/`generator`/`isFormation`.
       have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        formationRuleIsUniverseFormer isFormation
-      show HasTypeDesc profile targetContext
-        (RawTerm.subst substitution (RawTerm.mkGen generator payload children))
-        (RawTerm.subst substitution (universeCodeCell (lmaxAll levels) flag))
-      rw [subst_universeCodeCell, RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+      rw [typingRuleDescOf_output_substStable isFormation substitution levels flag,
+        RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
       exact HasTypeDesc.genFormation targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.subst substitution children) levels flag
-        { outputType := universeFormerOutput } isFormation substPremises
+        rule isFormation substPremises
 
 /-- Companion: substitute the premise spine.  Structural recursion on the telescope; the
 `cons` arm fires the head recursion through `HasTypeDesc.substRespectingContext` (the

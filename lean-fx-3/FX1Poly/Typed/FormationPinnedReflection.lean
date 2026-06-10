@@ -122,22 +122,20 @@ theorem HasTypeDesc.pinnedReflection {profile : PolyProfile}
       fun rho sourceContext rhoInjective condition sourceSubject subjectInImage => by
         have hNotVar : generator ≠ Generator.gen_var :=
           formationRuleImpliesNotVariable isFormation
-        obtain rfl : rule = { outputType := universeFormerOutput } :=
-          formationRuleIsUniverseFormer isFormation
         obtain ⟨sourcePayload, sourceChildren, hSource, hChildren⟩ :=
           renameEqMkGenInversion rho hNotVar subjectInImage.symm
         subst hSource
         have sourceTelescope :=
           DescTelescope.pinnedReflectionTelescope premises rho sourceContext
             rhoInjective condition hChildren
-        refine ⟨universeFormerOutput _ levels flag, ?_, ?_⟩
-        · show Conv (universeCodeCell (lmaxAll levels) flag)
-            (RawTerm.rename rho (universeCodeCell (lmaxAll levels) flag))
-          rw [rename_universeCodeCell]
+        -- ROW-SHAPE-AGNOSTIC: reflect to the ABSTRACT `rule.outputType _ levels flag`; its
+        -- rename-stability collapses the Conv to `refl`, and the source formation cell reconstructs
+        -- over the ORIGINAL abstract `rule`/`isFormation` — surviving the nullary-row table flip.
+        refine ⟨rule.outputType _ levels flag, ?_, ?_⟩
+        · rw [typingRuleDescOf_output_renameStable isFormation rho levels flag]
           exact Conv.refl _
         · exact HasTypeDesc.genFormation sourceContext generator sourcePayload
-            sourceChildren levels flag { outputType := universeFormerOutput }
-            isFormation sourceTelescope
+            sourceChildren levels flag rule isFormation sourceTelescope
 
 /-- **The formation telescope reflection leg** — EXACT-image heads, EXACT telescope conclusion:
 each head is an exact image at the depth-lifted renaming, the head reflection re-pins to its

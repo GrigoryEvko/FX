@@ -63,16 +63,16 @@ theorem HasTypeDesc.renameAlongFlagCoherentToGrown {profile : PolyProfile}
         premises targetContext rho condition
       have hNotVar : generator ≠ Generator.gen_var :=
         formationRuleImpliesNotVariable isFormation
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        formationRuleIsUniverseFormer isFormation
-      show HasTypeDescPi profile targetContext
-        (RawTerm.rename rho (RawTerm.mkGen generator payload children))
-        (RawTerm.rename rho (universeCodeCell (lmaxAll levels) flag))
-      rw [rename_universeCodeCell, RawTerm.rename_mkGen_of_ne_var rho hNotVar]
+      -- ROW-SHAPE-AGNOSTIC: rather than pinning `rule` to `universeFormerOutput`, rewrite the
+      -- ABSTRACT rule's renamed output via `typingRuleDescOf_output_renameStable` (universe codes
+      -- are scope-polymorphic leaves for every row shape) and reconstruct with the ORIGINAL abstract
+      -- `rule`/`isFormation`.  Survives the nullary-row table flip with no edits.
+      rw [typingRuleDescOf_output_renameStable isFormation rho levels flag,
+        RawTerm.rename_mkGen_of_ne_var rho hNotVar]
       exact HasTypeDescPi.genFormationPi targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.rename rho children) levels flag
-        { outputType := universeFormerOutput } isFormation renamedPremises
+        rule isFormation renamedPremises
 
 /-- The formation premise telescope renames to a GROWN telescope along the flag-coherent
 condition; binder crossings extend the condition via `consConv` (the new pair is the renamed
@@ -174,16 +174,16 @@ theorem HasTypeDescPi.renameAlongFlagCoherent {profile : PolyProfile}
         targetContext rho condition
       have hNotVar : generator ≠ Generator.gen_var :=
         formationRuleImpliesNotVariable isFormation
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        formationRuleIsUniverseFormer isFormation
-      show HasTypeDescPi profile targetContext
-        (RawTerm.rename rho (RawTerm.mkGen generator payload children))
-        (RawTerm.rename rho (universeCodeCell (lmaxAll levels) flag))
-      rw [rename_universeCodeCell, RawTerm.rename_mkGen_of_ne_var rho hNotVar]
+      -- ROW-SHAPE-AGNOSTIC: rewrite the ABSTRACT rule's renamed output via
+      -- `typingRuleDescOf_output_renameStable` and reconstruct over the ORIGINAL abstract `rule`;
+      -- the flag is merely forwarded into `genFormationPi` (not pinned), so the nullary-row flip
+      -- absorbs here unchanged.
+      rw [typingRuleDescOf_output_renameStable isFormation rho levels flag,
+        RawTerm.rename_mkGen_of_ne_var rho hNotVar]
       exact HasTypeDescPi.genFormationPi targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.rename rho children) levels flag
-        { outputType := universeFormerOutput } isFormation renamedPremises
+        rule isFormation renamedPremises
 
 /-- The grown premise telescope renames along the flag-coherent condition (heads are grown
 already — the source half of the `consConv` triple is the head premise itself). -/

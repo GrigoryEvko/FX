@@ -135,8 +135,6 @@ theorem HasTypeDescPi.pinnedReflectionConditional {profile : PolyProfile}
         wellFormed sourceSubject pinBase subjectInImage pinned pinBaseTyped
       have hNotVar : generator ≠ Generator.gen_var :=
         formationRuleImpliesNotVariable isFormation
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        formationRuleIsUniverseFormer isFormation
       obtain ⟨sourcePayload, sourceChildren, hSource, hChildren⟩ :=
         renameEqMkGenInversion rho hNotVar subjectInImage.symm
       subst hSource
@@ -144,14 +142,14 @@ theorem HasTypeDescPi.pinnedReflectionConditional {profile : PolyProfile}
         DescTelescopePi.pinnedReflectionTelescopeConditional residual flagUnique premises
           targetWellFormed rho sourceContext rhoInjective condition wellFormed
           hChildren
-      refine ⟨universeFormerOutput _ levels flag, ?_, ?_⟩
-      · show Conv (universeCodeCell (lmaxAll levels) flag)
-          (RawTerm.rename rho (universeCodeCell (lmaxAll levels) flag))
-        rw [rename_universeCodeCell]
+      -- ROW-SHAPE-AGNOSTIC: reflect to the ABSTRACT `rule.outputType _ levels flag`; its
+      -- rename-stability collapses the Conv to `refl`, and the source cell reconstructs over the
+      -- ORIGINAL abstract `rule`/`isFormation` — surviving the nullary-row table flip unchanged.
+      refine ⟨rule.outputType _ levels flag, ?_, ?_⟩
+      · rw [typingRuleDescOf_output_renameStable isFormation rho levels flag]
         exact Conv.refl _
       · exact HasTypeDescPi.genFormationPi sourceContext generator sourcePayload
-          sourceChildren levels flag { outputType := universeFormerOutput }
-          isFormation sourceTelescope
+          sourceChildren levels flag rule isFormation sourceTelescope
 
 /-- **The grown telescope reflection leg (conditional)** — exact-image heads, exact telescope
 conclusion; heads re-pin to their universe classifiers via `HasTypeDescPi.retypeAtUniverse`

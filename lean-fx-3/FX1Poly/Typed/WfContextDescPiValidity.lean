@@ -21,8 +21,8 @@ This file ships the grown-validity twins:
 ## Zero-axiom verification
 
 Full-enumeration term-mode `match` on the formation derivation + `WfContextDescPi.lookupIsType` +
-`HasTypeDescPi.ofFormation` + `HasTypeDesc.universeFormation` + the `typingRuleDescOf_outputIsUniverseFormer`
-table fact.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
+`HasTypeDescPi.ofFormation` + `HasTypeDesc.universeFormation` + the `typingRuleDescOf_output_isUniverseCode`
+row-shape-agnostic interface.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -59,8 +59,10 @@ theorem HasTypeDesc.classifierIsTypeDescPi {profile : PolyProfile} {scope : Nat}
   | .universeFormation context levelExpr flag =>
       ⟨_, _, HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context levelExpr.lsucc flag)⟩
   | .genFormation context generator _payload _children levels flag rule isFormation _premises => by
-      rw [typingRuleDescOf_outputIsUniverseFormer isFormation]
-      exact ⟨(lmaxAll levels).lsucc, flag,
-        HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context (lmaxAll levels) flag)⟩
+      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
+      rw [hOutput]
+      exact ⟨outputLevel.lsucc, outputFlag,
+        HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context outputLevel outputFlag)⟩
 
 end FX1Poly.Typed

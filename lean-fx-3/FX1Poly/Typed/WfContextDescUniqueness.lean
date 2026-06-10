@@ -60,6 +60,7 @@ theorem HasTypeDesc.uniquenessNative {profile : PolyProfile} {scope : Nat}
       (HasTypeDesc.inversionUniverseCode secondDerivation).sym
   | .genFormation _context generator _payload _children levels flag rule
       isFormation premises => fun secondDerivation => by
+      -- stays on the >=1-child strong lemma: the flag flows into the output here; the nullary row is flag-pinned so its uniqueness is by output-constancy (handled at the table flip)
       obtain rfl : rule = { outputType := universeFormerOutput } :=
         formationRuleIsUniverseFormer isFormation
       obtain ⟨secondLevels, secondFlag, secondTelescope, secondConv⟩ :=

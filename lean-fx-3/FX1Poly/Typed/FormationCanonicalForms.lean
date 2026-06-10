@@ -30,8 +30,8 @@ disjunct directly.
 `HasTypeDesc.rec` (the propext-free mutual recursor, with a trivial `True` telescope motive_2), `by_cases` on
 the decidable `Generator` equality, the established `unfold typingRuleDescOf` + `if_neg` + `contradiction`
 non-former branch, `rcases` on the disjunction, `Fin.elim0`, and — for consistency —
-`typingRuleDescOf_outputIsUniverseFormer` (the table-generic former-output lemma) + `Generator.noConfusion` on
-the `▸`-rewritten head equality.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+`typingRuleDescOf_output_isUniverseCode` (the row-shape-agnostic former-output interface) + `headGenerator_universeCodeCell`
++ `Generator.noConfusion` on the head equality.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -143,9 +143,11 @@ theorem HasTypeDesc.noClosedFormationTermAtEmptyType {profile : PolyProfile} {su
       · exact Generator.noConfusion (headEq ▸ isOption)
   · intro _scope _context _levelExpr _flag headEq _closed
     exact Generator.noConfusion headEq
-  · intro _scope _context generator _payload _children levels flag rule isFormation _premises
+  · intro scope _context generator _payload _children levels flag rule isFormation _premises
       _premisesIH headEq _closed
-    rw [typingRuleDescOf_outputIsUniverseFormer isFormation] at headEq
+    obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+      typingRuleDescOf_output_isUniverseCode isFormation scope levels flag
+    rw [hOutput, headGenerator_universeCodeCell] at headEq
     exact Generator.noConfusion headEq
   · intro _baseScope _currentDepth _context _flag
     exact True.intro

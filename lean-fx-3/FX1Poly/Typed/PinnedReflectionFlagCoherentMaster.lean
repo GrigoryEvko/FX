@@ -213,8 +213,6 @@ theorem HasTypeDescPi.pinnedReflectionFlagCoherentConditional {profile : PolyPro
         wellFormed sourceSubject pinBase subjectInImage pinned pinBaseTyped
       have hNotVar : generator ≠ Generator.gen_var :=
         formationRuleImpliesNotVariable isFormation
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        formationRuleIsUniverseFormer isFormation
       obtain ⟨sourcePayload, sourceChildren, hSource, hChildren⟩ :=
         renameEqMkGenInversion rho hNotVar subjectInImage.symm
       subst hSource
@@ -222,14 +220,15 @@ theorem HasTypeDescPi.pinnedReflectionFlagCoherentConditional {profile : PolyPro
         DescTelescopePi.pinnedReflectionTelescopeFlagCoherentConditional residual flagUnique
           premises targetWellFormed rho sourceContext rhoInjective coherent wellFormed
           hChildren
-      refine ⟨universeFormerOutput _ levels flag, ?_, ?_⟩
-      · show Conv (universeCodeCell (lmaxAll levels) flag)
-          (RawTerm.rename rho (universeCodeCell (lmaxAll levels) flag))
-        rw [rename_universeCodeCell]
+      -- ROW-SHAPE-AGNOSTIC: the reflected classifier is the ABSTRACT `rule.outputType _ levels flag`
+      -- itself (not the pinned `universeFormerOutput`).  Its rename-stability (`output_renameStable`)
+      -- collapses the Conv to `refl`, and the source cell reconstructs over the ORIGINAL abstract
+      -- `rule`/`isFormation` — so the nullary-row flip absorbs here with no edits.
+      refine ⟨rule.outputType _ levels flag, ?_, ?_⟩
+      · rw [typingRuleDescOf_output_renameStable isFormation rho levels flag]
         exact Conv.refl _
       · exact HasTypeDescPi.genFormationPi sourceContext generator sourcePayload
-          sourceChildren levels flag { outputType := universeFormerOutput }
-          isFormation sourceTelescope
+          sourceChildren levels flag rule isFormation sourceTelescope
 
 /-- The grown telescope reflection leg over the coherent condition — exact-image heads re-pin to
 their universe classifiers; binder crossings extend the condition via the COHERENT `consConv`

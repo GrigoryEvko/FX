@@ -533,6 +533,7 @@ theorem HasTypeDesc.inversionFormerClassifierGeneric {profile : PolyProfile}
         have generatorAgree : armGenerator = generator :=
           congrArg RawTerm.headGenerator subjectEq
         rw [generatorAgree] at armIsFormation
+        -- stays on the >=1-child strong lemma: the flag flows into the output here; the nullary row is flag-pinned so its uniqueness is by output-constancy (handled at the table flip)
         obtain rfl : armRule = { outputType := universeFormerOutput } :=
           formationRuleIsUniverseFormer armIsFormation
         exact ⟨armLevels, armFlag, Conv.refl _⟩

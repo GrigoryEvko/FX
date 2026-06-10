@@ -107,7 +107,8 @@ theorem HasTypeDescBaseType.subjectIsBaseTypeCode {profile : PolyProfile} {scope
 
 /-- **A base-type rule outputs `Type@0(standard)`.**  Every generator carrying a `baseTypeRuleDescOf`
 row has `outputUniverse = fun _ => Type@0(standard)` — the flag is FIXED in the table, the load-bearing
-fact behind classifier determinism.  The base-type twin of `typingRuleDescOf_outputIsUniverseFormer`. -/
+fact behind classifier determinism.  The base-type twin of `typingRuleDescOf_output_isUniverseCode` (the
+row-shape-agnostic former-output interface); like a flag-pinned nullary former, the output ignores the flag. -/
 theorem baseTypeRuleDescOf_outputIsType0 {generator : Generator} {rule : BaseTypeRuleDesc}
     (isBaseType : baseTypeRuleDescOf generator = some rule) :
     rule.outputUniverse = fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard := by

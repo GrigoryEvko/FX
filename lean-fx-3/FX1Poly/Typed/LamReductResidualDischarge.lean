@@ -192,15 +192,17 @@ theorem normalClassifierPinnedFlagCoherent {profile : PolyProfile} {budget : Nat
           codomainTyped sourceArgumentAtDomain
   | .genFormationPi _targetContext generator payload children levels flag rule
       isFormation _premises => by
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        formationRuleIsUniverseFormer isFormation
-      refine ⟨universeCodeCell (lmaxAll levels) flag, ?_, ?_⟩
-      · show Conv (universeCodeCell (lmaxAll levels) flag)
-          (RawTerm.rename rho (universeCodeCell (lmaxAll levels) flag))
-        rw [rename_universeCodeCell]
+      -- ROW-SHAPE-AGNOSTIC: the output is SOME universe code (`output_isUniverseCode`); the abstract
+      -- `outputLevel`/`outputFlag` replace the pinned `lmaxAll levels`/`flag` (the flag merely rides
+      -- into the universe code, not flag-coherence reasoning), so the nullary-row flip absorbs here.
+      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
+      rw [hOutput]
+      refine ⟨universeCodeCell outputLevel outputFlag, ?_, ?_⟩
+      · rw [rename_universeCodeCell]
         exact Conv.refl _
-      · exact ⟨(lmaxAll levels).lsucc, flag,
-          .ofFormation (.universeFormation sourceContext (lmaxAll levels) flag)⟩
+      · exact ⟨outputLevel.lsucc, outputFlag,
+          .ofFormation (.universeFormation sourceContext outputLevel outputFlag)⟩
 
 /-- **The pinned-function piElim core over the flag-coherent motive** — the shipped
 `pinnedReflectionPiElimCore` with the premise IHs receiving the coherent condition. -/

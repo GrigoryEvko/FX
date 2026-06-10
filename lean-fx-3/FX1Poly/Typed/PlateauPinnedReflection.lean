@@ -75,15 +75,17 @@ theorem formationClassifierPinned {profile : PolyProfile}
           .ofFormation (.universeFormation sourceContext levelExpr.lsucc flag)⟩
   | .genFormation _targetContext generator payload children levels flag rule
       isFormation _premises => by
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        formationRuleIsUniverseFormer isFormation
-      refine ⟨universeCodeCell (lmaxAll levels) flag, ?_, ?_⟩
-      · show Conv (universeCodeCell (lmaxAll levels) flag)
-          (RawTerm.rename rho (universeCodeCell (lmaxAll levels) flag))
-        rw [rename_universeCodeCell]
+      -- ROW-SHAPE-AGNOSTIC: the output is SOME universe code (`output_isUniverseCode`) — the abstract
+      -- `outputLevel`/`outputFlag` replace the pinned `lmaxAll levels`/`flag`; the flag merely rides
+      -- into the universe code (no flag-coherence reasoning), so the nullary-row flip absorbs here.
+      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
+      rw [hOutput]
+      refine ⟨universeCodeCell outputLevel outputFlag, ?_, ?_⟩
+      · rw [rename_universeCodeCell]
         exact Conv.refl _
-      · exact ⟨(lmaxAll levels).lsucc, flag,
-          .ofFormation (.universeFormation sourceContext (lmaxAll levels) flag)⟩
+      · exact ⟨outputLevel.lsucc, outputFlag,
+          .ofFormation (.universeFormation sourceContext outputLevel outputFlag)⟩
 
 /-- **The spine pin-extraction**: the classifier of a NORMAL, non-λ, in-image grown-typed term is
 pinned.  Derivation-structural; the piElim arm pins the nested function recursively, reflects the
@@ -169,15 +171,17 @@ theorem normalNonLambdaClassifierPinned {profile : PolyProfile} {budget : Nat}
           codomainTyped sourceArgumentAtDomain
   | .genFormationPi _targetContext generator payload children levels flag rule
       isFormation _premises => by
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        formationRuleIsUniverseFormer isFormation
-      refine ⟨universeCodeCell (lmaxAll levels) flag, ?_, ?_⟩
-      · show Conv (universeCodeCell (lmaxAll levels) flag)
-          (RawTerm.rename rho (universeCodeCell (lmaxAll levels) flag))
-        rw [rename_universeCodeCell]
+      -- ROW-SHAPE-AGNOSTIC: the abstract `outputLevel`/`outputFlag` from `output_isUniverseCode`
+      -- replace the pinned `lmaxAll levels`/`flag`; the universe-code output structure (not the
+      -- flag flow) is all this pin needs, so the nullary-row flip absorbs here.
+      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
+      rw [hOutput]
+      refine ⟨universeCodeCell outputLevel outputFlag, ?_, ?_⟩
+      · rw [rename_universeCodeCell]
         exact Conv.refl _
-      · exact ⟨(lmaxAll levels).lsucc, flag,
-          .ofFormation (.universeFormation sourceContext (lmaxAll levels) flag)⟩
+      · exact ⟨outputLevel.lsucc, outputFlag,
+          .ofFormation (.universeFormation sourceContext outputLevel outputFlag)⟩
 
 /-- **The plateau induction**: the guarded piElim residual holds at every bound within a budget,
 by structural induction on the budget — the spine pin-extraction's master calls land at strictly

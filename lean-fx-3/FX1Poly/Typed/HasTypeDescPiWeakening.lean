@@ -185,21 +185,20 @@ theorem HasTypeDescPi.renameRespectingContext {profile : PolyProfile}
       have renamedPremises :=
         DescTelescopePi.renameRespectingTelescope premises targetContext rawRenaming
           contextCondition
-      -- TABLE-GENERIC (no `by_cases pi/sigma`): the grown-engine rename twin.  The non-var commutation
-      -- `RawTerm.rename_mkGen_of_ne_var` distributes the renaming over the ABSTRACT formation cell and
-      -- the GENERIC `genFormationPi` re-fires with the ORIGINAL generator/isFormation — realizing the
-      -- "no per-former dispatch" cascade-free shape this arm's docstring describes.
+      -- ROW-SHAPE-AGNOSTIC (no `by_cases pi/sigma`, no concrete `rule`): the grown-engine rename twin.
+      -- `typingRuleDescOf_output_renameStable` rewrites the ABSTRACT rule's output through the renaming
+      -- (universe codes are scope-polymorphic leaves for every row shape, including a future flag-pinned
+      -- nullary row), the non-var commutation `RawTerm.rename_mkGen_of_ne_var` distributes the renaming over
+      -- the ABSTRACT formation cell, and the GENERIC `genFormationPi` re-fires with the ORIGINAL abstract
+      -- rule/generator/isFormation — realizing the "no per-former dispatch" cascade-free shape this arm's
+      -- docstring describes.
       have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        formationRuleIsUniverseFormer isFormation
-      show HasTypeDescPi profile targetContext
-        (RawTerm.rename rawRenaming (RawTerm.mkGen generator payload children))
-        (RawTerm.rename rawRenaming (universeCodeCell (lmaxAll levels) flag))
-      rw [rename_universeCodeCell, RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
+      rw [typingRuleDescOf_output_renameStable isFormation rawRenaming levels flag,
+        RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
       exact HasTypeDescPi.genFormationPi targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.rename rawRenaming children) levels flag
-        { outputType := universeFormerOutput } isFormation renamedPremises
+        rule isFormation renamedPremises
 
 theorem DescTelescopePi.renameRespectingTelescope {profile : PolyProfile}
     {baseScope currentDepth : Nat} {binderShifts : List Nat}

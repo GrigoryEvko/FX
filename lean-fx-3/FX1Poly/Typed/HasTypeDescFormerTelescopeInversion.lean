@@ -104,6 +104,11 @@ theorem HasTypeDesc.inversionFormerWithConvGeneric {profile : PolyProfile}
         have generatorAgree : armGenerator = generator :=
           congrArg RawTerm.headGenerator subjectEq
         subst generatorAgree
+        -- stays on the >=1-child strong lemma: the conclusion couples the returned telescope's
+        -- `armLevels`/`armFlag` with the output `universeCodeCell (lmaxAll armLevels) armFlag`, so a
+        -- consumer (WfContextDescUniqueness / NormalUniverseClassificationUnique) reads the level/flag
+        -- arithmetic back out of the SAME witnesses; that pairing only matches the output for
+        -- `universeFormerOutput` rows.  Re-examined at the table flip: a flag-pinned nullary row breaks it.
         obtain rfl : armRule = { outputType := universeFormerOutput } :=
           formationRuleIsUniverseFormer armIsFormation
         injection subjectEq
