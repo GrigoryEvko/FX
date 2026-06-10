@@ -577,6 +577,7 @@ import FX1Poly.Typed.NormalUniverseClassificationUnique
 import FX1Poly.Typed.ConvUniverseClassificationUnique
 import FX1Poly.Typed.RenameAlongFlagCoherent
 import FX1Poly.Typed.PinSelectsCallerPair
+import FX1Poly.Typed.PinnedReflectionFlagCoherent
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8698,3 +8699,10 @@ shared flag; piIntro reassembles. -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinSelectsCallerPair
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinBaseValidAtCallerPair
+
+/- E2-0 (PinnedReflectionFlagCoherent): the flag-coherent pinned-reflection motive + the free
+transfer of the shipped conditional master (the enriched condition projects) + the enriched
+residual definitions — the precise route-(A) discharge targets. -/
+
+#assert_no_axioms FX1Poly.Typed.PinnedReflectionConclusion.toFlagCoherent
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinnedReflectionFlagCoherentOfPlainResidual
