@@ -8621,6 +8621,7 @@ with the non-circular strengthening base instance (wf-lookup validity + weakenin
 implication-form payload would BE universe-classified strengthening at the root) and the
 Kripke extension step. -/
 
+#assert_no_axioms FX1Poly.Typed.SharedUniverseValidityWithImage.toSharedUniverseValidity
 #assert_no_axioms FX1Poly.Typed.ContextReflectsRenameFlagCoherent.toContextReflectsRename
 #assert_no_axioms FX1Poly.Typed.ContextReflectsRenameFlagCoherent.ofWeakenCons
 #assert_no_axioms FX1Poly.Typed.ContextReflectsRenameFlagCoherent.consConv

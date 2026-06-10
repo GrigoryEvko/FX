@@ -43,8 +43,39 @@ def SharedUniverseValidity (profile : PolyProfile) {sourceScope targetScope : Na
     HasTypeDescPi profile targetContext targetType (universeCodeCell levelExpr flag) ∧
     HasTypeDescPi profile sourceContext sourceType (universeCodeCell levelExpr flag)
 
+/-- The shared-universe validity TRIPLE: the pair plus the IMAGE validity — `rename rho
+sourceType` is valid in the target context at the SAME (level, flag).  The image component is
+the conv-rule reclassifier the forward renaming lemma's variable arm needs (the renamed source
+lookup must be classified in the target to re-classify the target variable at it), and the
+direct Δ-side classification the caller-pair negotiation (`convUniverseClassificationUnique`)
+compares against. -/
+def SharedUniverseValidityWithImage (profile : PolyProfile) {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    (sourceContext : TypingContext profile sourceScope)
+    (targetContext : TypingContext profile targetScope)
+    (sourceType : RawTerm sourceScope) (targetType : RawTerm targetScope) : Prop :=
+  ∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
+    HasTypeDescPi profile targetContext targetType (universeCodeCell levelExpr flag) ∧
+    HasTypeDescPi profile sourceContext sourceType (universeCodeCell levelExpr flag) ∧
+    HasTypeDescPi profile targetContext (RawTerm.rename rho sourceType)
+      (universeCodeCell levelExpr flag)
+
+/-- The triple projects onto the pair. -/
+theorem SharedUniverseValidityWithImage.toSharedUniverseValidity
+    {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {rho : RawRenaming sourceScope targetScope}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    {sourceType : RawTerm sourceScope} {targetType : RawTerm targetScope}
+    (triple : SharedUniverseValidityWithImage profile rho sourceContext targetContext
+      sourceType targetType) :
+    SharedUniverseValidity profile sourceContext targetContext sourceType targetType :=
+  let ⟨levelExpr, flag, targetValid, sourceValid, _imageValid⟩ := triple
+  ⟨levelExpr, flag, targetValid, sourceValid⟩
+
 /-- **The flag-coherent reflection condition**: `ContextReflectsRename` strengthened so every
-variable ALSO carries a shared-universe validity pair for its (source lookup, target lookup). -/
+variable ALSO carries a shared-universe validity TRIPLE for its (source lookup, target lookup,
+renamed source lookup). -/
 def ContextReflectsRenameFlagCoherent (profile : PolyProfile) {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope)
     (sourceContext : TypingContext profile sourceScope)
@@ -52,7 +83,7 @@ def ContextReflectsRenameFlagCoherent (profile : PolyProfile) {sourceScope targe
   ∀ index : Fin sourceScope,
     Conv (targetContext.lookup (rho index))
       (RawTerm.rename rho (sourceContext.lookup index)) ∧
-    SharedUniverseValidity profile sourceContext targetContext
+    SharedUniverseValidityWithImage profile rho sourceContext targetContext
       (sourceContext.lookup index) (targetContext.lookup (rho index))
 
 /-- The flag-coherent condition projects onto the shipped Conv-only condition. -/
@@ -84,11 +115,12 @@ theorem ContextReflectsRenameFlagCoherent.ofWeakenCons (profile : PolyProfile) {
       (universeCodeCell levelExpr flag) := by
     have raw := HasTypeDescPi.weakenUnderBinding bindingType lookupValid
     rwa [rename_universeCodeCell] at raw
-  exact ⟨levelExpr, flag, weakenedValid, lookupValid⟩
+  exact ⟨levelExpr, flag, weakenedValid, lookupValid, weakenedValid⟩
 
 /-- **The flag-coherent Kripke extension step**: the condition survives entering a binder whose
-(target domain, source base) pair is Conv-pinned AND shared-universe valid.  Index 0 is the new
-pair weakened on both sides; index `k + 1` weakens the prior pair (universe classifiers are
+(target domain, source base) pair is Conv-pinned AND shared-universe valid WITH image.  Index 0
+is the new triple weakened on both sides (the image component crosses the binder via
+`rename_lift_weaken_commute`); index `k + 1` weakens the prior triple (universe classifiers are
 rename-invariant, preserving the shared (level, flag)). -/
 theorem ContextReflectsRenameFlagCoherent.consConv (profile : PolyProfile)
     {sourceScope targetScope : Nat} {rho : RawRenaming sourceScope targetScope}
@@ -97,7 +129,7 @@ theorem ContextReflectsRenameFlagCoherent.consConv (profile : PolyProfile)
     {domainBase : RawTerm sourceScope} {domainCode : RawTerm targetScope}
     (coherent : ContextReflectsRenameFlagCoherent profile rho sourceContext targetContext)
     (domainPinned : Conv domainCode (RawTerm.rename rho domainBase))
-    (domainShared : SharedUniverseValidity profile sourceContext targetContext
+    (domainShared : SharedUniverseValidityWithImage profile rho sourceContext targetContext
       domainBase domainCode) :
     ContextReflectsRenameFlagCoherent profile (RawRenaming.lift rho)
       (sourceContext.cons domainBase) (targetContext.cons domainCode) := by
@@ -108,20 +140,38 @@ theorem ContextReflectsRenameFlagCoherent.consConv (profile : PolyProfile)
   obtain ⟨position, isLt⟩ := index
   cases position with
   | zero =>
-      obtain ⟨levelExpr, flag, targetValid, sourceValid⟩ := domainShared
-      refine ⟨levelExpr, flag, ?_, ?_⟩
+      obtain ⟨levelExpr, flag, targetValid, sourceValid, imageValid⟩ := domainShared
+      refine ⟨levelExpr, flag, ?_, ?_, ?_⟩
       · have raw := HasTypeDescPi.weakenUnderBinding domainCode targetValid
         rwa [rename_universeCodeCell] at raw
       · have raw := HasTypeDescPi.weakenUnderBinding domainBase sourceValid
         rwa [rename_universeCodeCell] at raw
+      · have raw := HasTypeDescPi.weakenUnderBinding domainCode imageValid
+        rw [rename_universeCodeCell] at raw
+        show HasTypeDescPi profile (targetContext.cons domainCode)
+          (RawTerm.rename (RawRenaming.lift rho)
+            (RawTerm.rename RawRenaming.weaken domainBase))
+          (universeCodeCell levelExpr flag)
+        rw [rename_lift_weaken_commute rho domainBase]
+        exact raw
   | succ priorPosition =>
-      obtain ⟨levelExpr, flag, targetValid, sourceValid⟩ :=
+      obtain ⟨levelExpr, flag, targetValid, sourceValid, imageValid⟩ :=
         (coherent ⟨priorPosition, Nat.lt_of_succ_lt_succ isLt⟩).2
-      refine ⟨levelExpr, flag, ?_, ?_⟩
+      refine ⟨levelExpr, flag, ?_, ?_, ?_⟩
       · have raw := HasTypeDescPi.weakenUnderBinding domainCode targetValid
         rwa [rename_universeCodeCell] at raw
       · have raw := HasTypeDescPi.weakenUnderBinding domainBase sourceValid
         rwa [rename_universeCodeCell] at raw
+      · have raw := HasTypeDescPi.weakenUnderBinding domainCode imageValid
+        rw [rename_universeCodeCell] at raw
+        show HasTypeDescPi profile (targetContext.cons domainCode)
+          (RawTerm.rename (RawRenaming.lift rho)
+            (RawTerm.rename RawRenaming.weaken
+              (sourceContext.lookup ⟨priorPosition, Nat.lt_of_succ_lt_succ isLt⟩)))
+          (universeCodeCell levelExpr flag)
+        rw [rename_lift_weaken_commute rho
+          (sourceContext.lookup ⟨priorPosition, Nat.lt_of_succ_lt_succ isLt⟩)]
+        exact raw
 
 end FX1Poly.Typed
 
