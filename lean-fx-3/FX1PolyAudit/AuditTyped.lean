@@ -576,6 +576,7 @@ import FX1Poly.Typed.GenericFormerTelescopeInversion
 import FX1Poly.Typed.NormalUniverseClassificationUnique
 import FX1Poly.Typed.ConvUniverseClassificationUnique
 import FX1Poly.Typed.RenameAlongFlagCoherent
+import FX1Poly.Typed.PinSelectsCallerPair
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8689,3 +8690,11 @@ fibration leg that collapses every pinned-reflection flag negotiation to one E2.
 #assert_no_axioms FX1Poly.Typed.DescTelescope.renameAlongFlagCoherentToGrownTelescope
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.renameAlongFlagCoherent
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.renameAlongFlagCoherentTelescope
+
+/- E3 capstone (PinSelectsCallerPair): THE flag wall closed — a pinned base's universe pair is
+forced to the caller's (forward renaming + Conv-lifted uniqueness), and any ∃-flag pin base
+re-types at the caller's EXACT (level, flag).  The λ-reduct Π-components inherit invertLam's
+shared flag; piIntro reassembles. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinSelectsCallerPair
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pinBaseValidAtCallerPair
