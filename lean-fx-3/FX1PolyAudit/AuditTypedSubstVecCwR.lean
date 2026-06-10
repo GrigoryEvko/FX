@@ -630,6 +630,7 @@ import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.GrownEtaSubjectReduction
 import FX1Poly.Typed.GluedModelModalFragment
 import FX1Poly.Typed.SconingIsEnoughThesis
+import FX1Poly.Typed.LiveSignatureSconingCoverage
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1234,3 +1235,41 @@ import FX1Poly.Typed.SconingIsEnoughThesis
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedSconingTriple
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.openSconingPair
 #assert_no_axioms FX1Poly.Typed.sconingIsEnough_canonicityIsTaitComposition
+
+-- ★ THE O-NORM ADMISSION GATE: every semantically-live generator is sconing-covered
+-- (LiveSignatureSconingCoverage.lean, ONORM-M2 #1212 — the third SN-110 residual, closed). LiveGenerator =
+-- the 40-ctor enumeration of the live signature (14 formers/codes + 15 value constructors + 11 eliminators;
+-- LiveGenerator.isLive = 40 semanticTier kernel evaluations; liveSignature_count = 40 pin). ★
+-- liveSignature_complete = THE GATE: every classifier-live generator is in the enumeration, by full 198-arm
+-- cases — reserved arms refute via absurd + of_decide_eq_true rfl on ¬(semanticTier g = .live) (EAGER, unlike
+-- nomatch whose postponed elaboration ESCAPES the first combinator — the new Lean trap this firing), live arms
+-- evaluate the Boolean contains by rfl (the List.Mem DECIDABILITY INSTANCE leaks propext — second new trap). A generator going live without an enum ctor + coverage arms BREAKS the theorem. The
+-- six-way SconingCoverageRole taxonomy (the uniform "SN-closure for every live generator" is FALSE — untyped
+-- Ω — hence per-role coverage): ★ neutralFormerCellHasGluedLift = the NEW lifts (every non-Π former cell, for
+-- EVERY payload/children, admits a glued-model SN-scone lift — the ONORM-M1 modalityLift recipe across all 13
+-- live formers; the glued model is closed over the ENTIRE live former signature);
+-- dependentFormerIsPi + piTyCode_hasConditionalGluedLift = the honest Π asymmetry (lift conditional on
+-- modeled-codomain data); constructorFamily + constructorFamilyHasTaitCandidate = each value constructor
+-- pinned to ITS DataFormerFamily candidate (indexed, no cross-family discharge);
+-- neutralLeafMemberOfEveryCandidate = the variable in every canonical-forms candidate;
+-- abstractionConstructorPreservesSn = λ SN-closure (full membership = the shipped abstraction FT arm);
+-- eliminatorHasRedexHead = the operational half (semantic half = the SN-058..069 arc, per regime). HONEST:
+-- the modal fragment is correctly ABSENT (statically untyped + β/ι-inert; ONORM-M1 covers it semantically,
+-- joining this gate when a modal rule-table row lands). All zero-axiom.
+#assert_no_axioms FX1Poly.Typed.LiveGenerator
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.generator
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.isLive
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.all
+#assert_no_axioms FX1Poly.Typed.liveSignatureList
+#assert_no_axioms FX1Poly.Typed.liveSignature_count
+#assert_no_axioms FX1Poly.Typed.liveSignature_complete
+#assert_no_axioms FX1Poly.Typed.SconingCoverageRole
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.sconingRole
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.neutralFormerCellHasGluedLift
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.dependentFormerIsPi
+#assert_no_axioms FX1Poly.Typed.piTyCode_hasConditionalGluedLift
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.constructorFamily
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.constructorFamilyHasTaitCandidate
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.neutralLeafMemberOfEveryCandidate
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.abstractionConstructorPreservesSn
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.eliminatorHasRedexHead
