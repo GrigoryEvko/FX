@@ -308,6 +308,7 @@ import FX1Poly.Typed.HasTypeDescIdIntro
 import FX1Poly.Typed.HasTypeDescIdElim
 import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.HasTypeDescNatIntro
+import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -3739,6 +3740,25 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.natTwoTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.subjectIsNatConstructor
 #assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.classifierIsNat
+
+-- CAN-1 / DI-5f (HasTypeDescNatElim): the RECURSIVE Nat eliminator judgments + typed recursive
+-- ι-computation — the recursive-eliminator wall DI-5 deferred (#1078 engine-separation finding).
+-- The succ ι-reduct app(app sb p)(natElim p z sb) is NOT grown-typable (the predecessor is
+-- DATA-engine-typed; piElim demands grown arguments), so the judgment carries the reduct shapes as
+-- arms: natElimIntro (the cell) + mixedStepApplication (grown step fn × data predecessor : C → C,
+-- the cross-engine rule piElim can't express; non-dependent output baked in, no subst0 collapse) +
+-- recursiveResultApplication (both parts typed by THIS judgment — recursion in the typing mirrors
+-- recursion in the computation).  natRec = the substrate-identical twin.  The ★★ succ theorems are
+-- the first typed RECURSIVE ι-computations: typed eliminator + Step.iotaNat{Elim,Rec}Succ + typed
+-- reduct with the recursive call typed at the predecessor.  Constructor-side (SR-free,
+-- propext-free); full SR of these judgments is CAN-3.  Closed forms are honestly 3-shape
+-- (cell OR application) — unlike the single-shape non-recursive DI-5 judgments.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatElim.subjectShape
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatRec.subjectShape
+#assert_no_axioms FX1Poly.Typed.natElimZeroIotaComputesTyped
+#assert_no_axioms FX1Poly.Typed.natElimSuccIotaComputesTyped
+#assert_no_axioms FX1Poly.Typed.natRecZeroIotaComputesTyped
+#assert_no_axioms FX1Poly.Typed.natRecSuccIotaComputesTyped
 -- LIST CANONICAL FORMS (ListCanonicalForms, the DI-2e payoff): NON-VACUOUS closed-normal list canonical forms — a
 -- closed-normal term typed at List(A) by the list-intro engine OR the grown engine is nil/cons. Like option/bool
 -- (and unlike product/either FLAT-table codes), gen_listCode is a FORMATION-table former (typingRuleDescOf, GTL-11),
