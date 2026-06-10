@@ -428,6 +428,7 @@ import FX1Poly.Typed.BetaEtaConvDecidable
 import FX1Poly.Typed.UnitEtaJudgmentalEquality
 import FX1Poly.Typed.UnitEtaCongruenceGap
 import FX1Poly.Typed.UnitEtaCongruentEquality
+import FX1Poly.Typed.UnitVariableCollapse
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3296,6 +3297,25 @@ question moves to the decider (check-mode against `unitTypeCell` on the route-H 
 #assert_no_axioms FX1Poly.Typed.ChildrenUnitEtaCong.sym
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.gapPairCongruentlyEqual
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.strictlyExtendsDefEqUnitEta
+
+/-! ### UnitVariableCollapse — the computable unit-collapse + UNCONDITIONAL soundness (ULC-2)
+
+`collapseUnitVariables` — the first computable canonicalizer for the congruent unit-η equality:
+replace unit-typed VARIABLES (one decidable lookup comparison — no checker, no wf) with
+`unitCell`, shift-0 descent, binder children untouched.  ★ Soundness UNCONDITIONAL
+(`collapseUnitVariables_congruent`: each replacement discharges `unitEta` via the wf-free `var`
+rule + `unitValueTyped`); ★ the canonicalizer COMPUTES the gap pair by `rfl`
+(`collapseUnitVariables_computesGapPair`) and rederives the hand-built spec witness
+(`collapse_rederivesGapPair`).  Boundaries: variables only (compound unit-typed neutrals need the
+checker-directed detection — follow-on), canonicalizer half only (compare half + completeness/
+transitivity payoff are the next bricks). -/
+
+#assert_no_axioms FX1Poly.Typed.collapseUnitVariables
+#assert_no_axioms FX1Poly.Typed.collapseUnitVariablesChildren
+#assert_no_axioms FX1Poly.Typed.collapseUnitVariables_congruent
+#assert_no_axioms FX1Poly.Typed.collapseUnitVariablesChildren_congruent
+#assert_no_axioms FX1Poly.Typed.collapseUnitVariables_computesGapPair
+#assert_no_axioms FX1Poly.Typed.collapse_rederivesGapPair
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
