@@ -443,6 +443,7 @@ import FX1Poly.Typed.UnitReadbackDeepSpineBoundary
 import FX1Poly.Typed.UnitReadbackAnnotationBoundary
 import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.TypedNbeNormalizer
+import FX1Poly.Typed.TypedNbeConvDecision
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3707,6 +3708,29 @@ modules are β-normal and decided only by quote.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.identityApplication_evalNormalForm_eq
 #assert_no_axioms FX1Poly.Typed.readbackAlone_keepsBetaRedex
 #assert_no_axioms FX1Poly.Typed.identityApplicationPair_decidedByNbe
+
+/-! ### TypedNbeConvDecision — ★ #364: the typed NbE conversion check, sound + complete-at-unit
+
+The normalize-and-compare check over the composed typed NbE normalizer: `checkNbeEqual`
+(executable `decide` over the kernel's `DecidableEq RawTerm`), SOUND unconditionally
+(`checkNbeEqual_sound` — a passing check certifies the full typed judgmental equality
+`DefEqUnitEtaCong`), and sound AND complete at the UNIT classifier: the readback is CONSTANT
+at `unitTypeCell` on a SYMBOLIC subject (`readbackAtClassifier_constantAtUnit`, `rfl`), so
+every unit-typed NbE form at positive fuel is `unitCell`
+(`nbeNormalForm_constantAtUnit`, still `rfl` through eval), any two unit-typed subjects check
+equal (`nbeComplete_atUnit`), and `checkNbeEqual = true ↔ DefEqUnitEtaCong` there
+(`checkNbeEqual_iff_atUnit` — the first total 0/0 cell of the NbE decider;
+`DefEqUnitEtaCong.decidableAtUnit` realizes the `Decidable`).  Honest ledger: β/ι completeness
+is the shipped `conv_iff_normalForm_eq`; η/congruent completeness holds on the ten #481
+boundary verdicts and is UNPROVEN jointly (O-NORM).  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.checkNbeEqual
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.checkNbeEqual_sound
+#assert_no_axioms FX1Poly.Typed.readbackAtClassifier_constantAtUnit
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.nbeNormalForm_constantAtUnit
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.nbeComplete_atUnit
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.checkNbeEqual_iff_atUnit
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.decidableAtUnit
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
