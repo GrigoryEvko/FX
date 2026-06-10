@@ -1,4 +1,5 @@
 import FX1Poly.Typed.TelescopeReducible
+import FX1Poly.Core.FlatCodeTaitCandidate
 
 /-! # FX1Poly/Typed/FormationTableShapeFacts
    — generic shape equation + arity bound for the formation table (GTL-06 brick 3b support)
@@ -105,5 +106,118 @@ theorem formationLevelsArityBound {generator : Generator} {rule : TypingRuleDesc
   have lengthEq : generator.binderShifts.length = levels.length :=
     (congrArg List.length shapeEq).trans (consecutiveShifts_length 0 levels.length)
   exact lengthEq ▸ formationRowArityBound isFormation
+
+/-- **A formation row is never the empty code** — cascade-free table-miss discrimination: at
+the literal `gen_emptyCode` the rule table reduces definitionally to `none` (the Empty type is
+typed by the base-type engine, not by a formation row).  The bounded relation's `neutral` arm
+gate. -/
+theorem formationRowIsNotEmpty {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule) :
+    generator ≠ .gen_emptyCode := by
+  intro isEmpty
+  subst isEmpty
+  exact nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+
+/-- **No formation row is a flat data code** — table-mirroring fact (five defeq cases, the
+same row-mirror discipline as `formationRowArityBound`): the bounded relation pins flat codes
+to their data candidates, so its `neutral` arm requires this gate at a symbolic generator. -/
+theorem formationRowIsNotFlat {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule) :
+    generator.isFlatDataCode = false := by
+  by_cases isPiFormer : generator = .gen_piTyCode
+  · subst isPiFormer; rfl
+  by_cases isSigmaFormer : generator = .gen_sigmaTyCode
+  · subst isSigmaFormer; rfl
+  by_cases isListFormer : generator = .gen_listCode
+  · subst isListFormer; rfl
+  by_cases isOptionFormer : generator = .gen_optionCode
+  · subst isOptionFormer; rfl
+  by_cases isUnitFormer : generator = .gen_unitCode
+  · subst isUnitFormer; rfl
+  exfalso
+  dsimp only [typingRuleDescOf] at isFormation
+  rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
+    if_neg isUnitFormer] at isFormation
+  exact nomatch isFormation
+
+/-- **The unique childless formation row is the unit former** — table-mirroring fact: the
+non-nullary rows all carry at least one binder shift, so a childless formation generator must
+be `gen_unitCode`.  Converts the budget's `gen_unitCode`-named nullary gate into the
+levels-empty form the generic arity-dispatch supplier consumes. -/
+theorem formationRowNullaryIsUnit {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    (isChildless : generator.binderShifts = []) :
+    generator = .gen_unitCode := by
+  by_cases isPiFormer : generator = .gen_piTyCode
+  · subst isPiFormer; exact nomatch isChildless
+  by_cases isSigmaFormer : generator = .gen_sigmaTyCode
+  · subst isSigmaFormer; exact nomatch isChildless
+  by_cases isListFormer : generator = .gen_listCode
+  · subst isListFormer; exact nomatch isChildless
+  by_cases isOptionFormer : generator = .gen_optionCode
+  · subst isOptionFormer; exact nomatch isChildless
+  by_cases isUnitFormer : generator = .gen_unitCode
+  · exact isUnitFormer
+  exfalso
+  dsimp only [typingRuleDescOf] at isFormation
+  rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
+    if_neg isUnitFormer] at isFormation
+  exact nomatch isFormation
+
+/-- **The empty formation telescope at a SYMBOLIC childless spine.**  Over a free
+`binderShifts` index pinned to `[]`, any child spine is the empty spine and carries the
+empty telescope — the row-generic form of `DescTelescope.nil` a dispatch site needs at a
+symbolic generator whose shape equation forces childlessness (the nullary-row deferral). -/
+theorem DescTelescope.nilAtChildless {profile : PolyProfile} {baseScope : Nat}
+    {binderShifts : List Nat}
+    (context : TypingContext profile baseScope) (flag : UniverseFlag)
+    (children : RawTermChildren binderShifts baseScope)
+    (isChildless : binderShifts = []) :
+    DescTelescope profile (currentDepth := 0) context [] flag children := by
+  subst isChildless
+  match children with
+  | .childNil => exact DescTelescope.nil (currentDepth := 0) context flag
+
+/-- **Every formation row's output is a universe code at the iterated-`lmax` level** — the
+LEVEL-PINNED strengthening of `typingRuleDescOf_output_isUniverseCode`, which the BOUNDED
+dispatch needs: its gate extraction bounds the CHILD levels, so the output's level must be
+named as `lmaxAll levels` (not an opaque existential) to conclude the output is below the
+bound.  The `universeFormerOutput` rows hold definitionally; the nullary row's pinned `lzero`
+output coincides with `lmaxAll []` once the shape equation forces `levels = []`. -/
+theorem formationRowOutputLevel {generator : Generator} {rule : TypingRuleDesc}
+    {levels : List LevelExpr}
+    (isFormation : typingRuleDescOf generator = some rule)
+    (shapeEq : generator.binderShifts = consecutiveShifts 0 levels.length)
+    (scope : Nat) (flag : UniverseFlag) :
+    ∃ outputFlag : UniverseFlag,
+      rule.outputType scope levels flag = universeCodeCell (lmaxAll levels) outputFlag := by
+  by_cases isPiFormer : generator = .gen_piTyCode
+  · subst isPiFormer
+    obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+    exact ⟨flag, rfl⟩
+  by_cases isSigmaFormer : generator = .gen_sigmaTyCode
+  · subst isSigmaFormer
+    obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+    exact ⟨flag, rfl⟩
+  by_cases isListFormer : generator = .gen_listCode
+  · subst isListFormer
+    obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+    exact ⟨flag, rfl⟩
+  by_cases isOptionFormer : generator = .gen_optionCode
+  · subst isOptionFormer
+    obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+    exact ⟨flag, rfl⟩
+  by_cases isUnitFormer : generator = .gen_unitCode
+  · subst isUnitFormer
+    obtain rfl : rule = { outputType := nullaryFormerOutput } :=
+      Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
+    match levels, shapeEq with
+    | [], _shapeEq => exact ⟨UniverseFlag.standard, rfl⟩
+    | _ :: _, impossibleShape => exact nomatch impossibleShape
+  exfalso
+  dsimp only [typingRuleDescOf] at isFormation
+  rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
+    if_neg isUnitFormer] at isFormation
+  exact nomatch isFormation
 
 end FX1Poly.Typed

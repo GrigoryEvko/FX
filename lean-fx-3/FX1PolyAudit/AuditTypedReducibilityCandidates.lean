@@ -622,6 +622,7 @@ import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.GrownEtaSubjectReduction
 import FX1Poly.Typed.GenericDataFormationUnderSubst
 import FX1Poly.Typed.TelescopeArityDispatchNormalization
+import FX1Poly.Typed.BoundedFormationArityDispatch
 
 /-! # FX1PolyAudit/AuditTypedReducibilityCandidates — typed-layer zero-axiom gates: reducibility candidates, environments, and membership lemmas
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1430,3 +1431,13 @@ conclusion is the exact `foldChildren GenAlgebra.canonical` hypothesis `dataForm
 consumes — the by_cases-free dispatch chain is now ingredient-complete. -/
 
 #assert_no_axioms FX1Poly.Typed.TelescopeReducible.foldChildrenStronglyNormalizing
+
+/-! ### BoundedFormationArityDispatch — the BOUNDED twin of the generic dispatch chain (GTL-06)
+
+The bounded supplier reads BOTH the fold-children all-SN and the output-level bound off ONE
+telescope application at `argLevel = bound` (the non-Pi formers classify by the `neutral` arm,
+so no double-apply dance); the bounded membership arm assembles the symbolic-generator
+bound-reducible membership over the table-generic root gates. -/
+
+#assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow
+#assert_no_axioms FX1Poly.Typed.IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded
