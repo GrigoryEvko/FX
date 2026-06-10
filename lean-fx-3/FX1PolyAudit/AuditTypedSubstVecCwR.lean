@@ -124,6 +124,7 @@ import FX1Poly.Tier0.FxBaseSubstConcreteScone
 import FX1Poly.Tier0.FxBaseSubstDisplayMap
 import FX1Poly.Tier0.FxBaseSubstTypeFormers
 import FX1Poly.Typed.DisplayMapDecidableFibration
+import FX1Poly.Typed.GluedModelTypeFormers
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -1041,3 +1042,31 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Tier0.composedIdentityShapedExtensions_typeFormerCount
 #assert_no_axioms FX1Poly.Tier0.fxCwRExtensionConstructionLevel_eq
 #assert_no_axioms FX1Poly.Tier0.fxCwRExtension_hasConcreteTypeFormerInstances
+-- BKS preservation: the Pi/Sigma/universe formers lift to the glued model (GluedModelTypeFormers.lean,
+-- SN-091 #594, the Phase-1 capstone of the O-NORM sconing ladder). GluedTypeCell = the glued-model type object:
+-- a type cell + its computability predicate + the MODEL TIE (isModeled : ReducibleType typeCell computable) —
+-- the tie distinguishes a glued point from an arbitrary pairing; candidate-hood is DERIVED from it
+-- (GluedTypeCell.isCandidate via the SN-038 capstone ReducibleType.isReducibilityCandidate, at scope+1 for the
+-- arrow CR1 variable inhabitant) and every glued type yields a SconingWitness (GluedTypeCell.scone — extraction
+-- free by CR1 via reducibilityScone, SN-092). piLift = ★ the BKS lemma at Pi: cell = the SN-087 cellular
+-- former's output, scone = the SN-038 dependent function-space predicate, model tie = ONE constructor
+-- (ReducibleType.piType); the categorical-twin identifications piLift_typeCell / piLift_computable are rfl —
+-- "the sconing of the Pi is the Pi of the sconings", literal. sigmaLift/universeLift route through the model's
+-- neutral arm (table-generic formationGenerator_noWeakHeadStep over the gen_sigmaTyCode row;
+-- universeCodeCell_noWeakHeadStep) — HONEST: the Sigma scone is the model's NEUTRAL (SN) assignment, not a
+-- surjective-pairing predicate (that would be a model refinement). piLift/sigmaLift/universeLift_isCandidate =
+-- the preservation payoff (the glued model is closed under the three formers); piLiftScone = the witness-level
+-- form the extraction ledgers SN-093/094/095 consume. Categorical PACKAGING of proven content (SN-038 + its
+-- capstone carry the mathematics); the new content is the former-by-former closure + the definitional
+-- identification with SN-087 + the scone hand-off. All zero-axiom.
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.isCandidate
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.scone
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.piLift
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.piLift_typeCell
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.piLift_computable
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.sigmaLift
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.universeLift
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.piLift_isCandidate
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.sigmaLift_isCandidate
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.universeLift_isCandidate
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.piLiftScone
