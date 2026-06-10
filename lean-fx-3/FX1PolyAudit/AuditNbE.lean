@@ -5,6 +5,7 @@ import FX1PolyAudit.AuditGen
 -- StrictNormalizer).
 import FX1Poly.NbE.Quote
 import FX1Poly.NbE.StrictNormalizer
+import FX1Poly.NbE.DecisionComplexity
 
 /-! # FX1PolyAudit/AuditNbE — namespace zero-axiom sweep for the NbE slice
 
@@ -26,3 +27,8 @@ The `#audit_namespace` walk loads every declaration under
 -/
 
 #audit_namespace FX1Poly.NbE
+
+-- DecisionComplexity.lean — the generic §11.8.7 STRICT-COMPLEXITY witness schema for decision
+-- procedures (the sibling of StrictNormalizer for deciders that are not term normalizers).
+#assert_no_axioms FX1Poly.NbE.DecisionComplexity
+#assert_no_axioms FX1Poly.NbE.DecisionComplexity.fieldCount_correct

@@ -7,6 +7,7 @@ import FX1Poly.Universe.LevelExprSerialize
 import FX1Poly.Universe.UniverseFlagSerialize
 import FX1Poly.Universe.UniversePayloadSerialize
 import FX1Poly.Universe.LevelExprImpredicativeClosure
+import FX1Poly.Universe.LevelExprComplexity
 
 /-! # FX1PolyAudit/AuditUniverse
    — persistent per-declaration zero-axiom gate for the universe layer
@@ -512,3 +513,19 @@ Round-trip at LevelExpr fuel. -/
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.not_vopenka_le_standard
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.nMahlo_le_hyperMahlo
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.nMahlo_mono
+
+/-! ### LevelExprComplexity — the M22-A11 STRICT-COMPLEXITY witness (DecisionComplexity instance)
+
+The level decider's shadow comparison counter packaged through the generic `DecisionComplexity`
+schema with the machine-checked HONEST quadratic bound `≤ 4·(size² + size²) + 4` (the sort is an
+insertion sort — degree 2 is the real worst case, not an `O(n·log n)` overclaim). -/
+
+#assert_no_axioms FX1Poly.Universe.pow_one_eq_self
+#assert_no_axioms FX1Poly.Universe.addSelf_le_mulSelf_add_two
+#assert_no_axioms FX1Poly.Universe.mulSelf_add_self_add_self_le_doubleSquare
+#assert_no_axioms FX1Poly.Universe.addSelf_add_addSelf_eq_four_mul
+#assert_no_axioms FX1Poly.Universe.add_two_add_add_two_eq_add_four
+#assert_no_axioms FX1Poly.Universe.LevelExpr.decideDenoteEquivSteps_isPolynomial
+#assert_no_axioms FX1Poly.Universe.levelDenoteEquivDecisionComplexity
+#assert_no_axioms FX1Poly.Universe.levelDenoteEquivDecisionComplexity_stepCount_smoke
+#assert_no_axioms FX1Poly.Universe.levelDenoteEquivDecisionComplexity_stepCount_smoke_larger
