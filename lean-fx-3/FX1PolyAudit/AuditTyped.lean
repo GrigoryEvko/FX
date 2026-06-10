@@ -311,6 +311,7 @@ import FX1Poly.Typed.HasTypeDescNatIntro
 import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.HasTypeDescListElim
 import FX1Poly.Typed.DataIntroSubjectReductionRecursive
+import FX1Poly.Typed.CombinedClosedNormalValueHeads
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -3791,6 +3792,17 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.subjectReduction
 #assert_no_axioms FX1Poly.Typed.eliminatorIotaSrCoverage_count
 #assert_no_axioms FX1Poly.Typed.eliminatorIotaSrCoverage_constructorSideComplete
+
+-- CAN-4 (CombinedClosedNormalValueHeads): the COMBINED closed-normal head characterization with
+-- CONSTRUCTOR heads — the #1048 head-extension.  The grown 6-head theorem cannot see constructor
+-- heads (data values are deliberately not grown-typable), so TypedByValueEngine unions the 8
+-- value engines (grown + bool/nat/list/pair/either/option/id intros; eliminator judgments
+-- deliberately EXCLUDED — their subjects are redexes/applications, the CAN-5 per-classifier
+-- step) and closedNormalSubjectHeadCombined lands every closed normal value-engine-typed term
+-- in the 18-head IsCombinedValueHead predicate (an inductive predicate, not a wildcard Bool
+-- table or an 18-way Or — propext hygiene + one-constructor arms).  Normality/closedness are
+-- consumed ONLY by the grown arm: constructor SHAPE is unconditional in the intro engines.
+#assert_no_axioms FX1Poly.Typed.closedNormalSubjectHeadCombined
 -- LIST CANONICAL FORMS (ListCanonicalForms, the DI-2e payoff): NON-VACUOUS closed-normal list canonical forms — a
 -- closed-normal term typed at List(A) by the list-intro engine OR the grown engine is nil/cons. Like option/bool
 -- (and unlike product/either FLAT-table codes), gen_listCode is a FORMATION-table former (typingRuleDescOf, GTL-11),
