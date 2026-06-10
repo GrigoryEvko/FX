@@ -168,6 +168,7 @@ import FX1Poly.Core.StrongNormalizationBetaEtaFormers
 import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
+import FX1Poly.Core.StepBetaEtaJoinableConfluence
 import FX1Poly.Core.NederpeltNonJoinability
 import FX1Poly.Core.GeneratorCountPin
 import FX1Poly.Core.StepIotaEtaDoubleStrips
@@ -466,6 +467,27 @@ per-decl list.  It also re-checks the native infra under
 #assert_no_axioms FX1Poly.Core.cdLemmaStatementStepEta_isFalse
 #assert_no_axioms FX1Poly.Core.cdLemmaStatementEtaStep_isFalse
 #assert_no_axioms FX1Poly.Core.cdLemmaStatementBetaEta_isFalse
+
+-- BECR-1, RAW HALF (StepBetaEtaJoinableConfluence.lean): the JOINABILITY-guarded βη local join +
+-- Newman twin.  The diagonal EQUALITY guard is too strong for typed subjects (typing forces
+-- annotations CONVERTIBLE, not equal); EtaLamAnnotationJoinable weakens it to a StepStar-join,
+-- and the one guarded critical pair closes by a genuine JOIN — lam A b and lam B b meet at
+-- lam C b by replaying the β/ι annotation chains through the gen_lam domain child
+-- (StepStar.lamDomainCong over the generic congAt; root-only η chains could NOT lift, β/ι's
+-- congruence closure is load-bearing).  ofDiagonal embeds the strong guard (refl join), so the
+-- joinable theory strictly subsumes the diagonal one.  The Newman recursion is the same
+-- Acc.ndrec with the weak guard threaded.  Typed discharge: WfContextBetaEtaConfluenceUnconditional.
+#assert_no_axioms FX1Poly.Core.StepStar.lamDomainCong
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.EtaLamAnnotationJoinable.ofDiagonal
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.etaLamLeftStepJoinable
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.etaLamRightStepJoinable
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.cd_lemma_step_eta_joinable
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.cd_lemma_eta_step_joinable
+#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.cd_lemma_betaEta_joinable
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.HereditaryLamJoinable.alongStep
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.HereditaryLamJoinable.ofHereditaryDiagonal
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.localJoin_of_cdLemmaBetaEtaJoinable
+#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.confluence_of_localJoin_and_accessibleJoinable
 
 -- GENERATOR-COUNT PIN (permanent stale-count guard): the enum has exactly 197 constructors —
 -- gen_npComplete attains index 196 (count from below) and every index is < 197 (count from above,

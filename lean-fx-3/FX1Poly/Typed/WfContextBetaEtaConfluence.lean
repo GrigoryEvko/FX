@@ -73,13 +73,14 @@ star-rigidity are context-predicate-agnostic. -/
 the unguarded raw βη local join is FALSE post-T2 (`NederpeltNonJoinability`).
 Typing does NOT discharge the syntactic guard: a typed η-source has CONVERTIBLE
 inner/outer annotations, not syntactically EQUAL ones, so `EtaLamAnnotationDiagonal`
-(an equality) can fail on typed subjects.  The unconditional typed claim is still
-plausibly TRUE — convertible annotations are β-joinable (raw β confluence), so the
-Nederpelt pair joins via domain-congruence chains — but proving it needs (a) a
-Conv/joinability-guarded variant of the local join (annotationsJoin in place of
-equality) AND (b) hereditary typedness of βη-reachable terms = βη-SR on the grown
-engine, which is OPEN (STR-10 / STR-11).  Until then the conditional form is the
-honest maximal statement. -/
+(an equality) can fail on typed subjects.  The two ingredients for the unconditional
+typed claim — (a) a joinability-guarded variant of the local join, and (b) βη-SR on
+the grown engine — are BOTH now shipped (`StepBetaEtaJoinableConfluence` /
+`subjectReductionBetaEtaStar`), and `WfContextBetaEtaConfluenceUnconditional` fires
+them: `subjectBetaEtaConfluenceTypedUnconditional` /
+`uniqueBetaEtaNormalFormTypedUnconditional` drop the guard premise entirely.  The
+conditional pair below remains valid (and is subsumed on typed subjects); it is the
+honest statement for subjects whose typing status is unknown. -/
 
 /-- **βη Church-Rosser over `WfContextDesc`** — the βη analogue of the β/ι
 `subjectConfluenceOfWfContextDesc`. -/

@@ -412,6 +412,7 @@ import FX1Poly.Typed.OpenSNSmoke
 import FX1Poly.Typed.ContextValidityFails
 import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
 import FX1Poly.Typed.WfContextBetaEtaConfluence
+import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -6602,6 +6603,24 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContextDesc
+
+-- BECR-1 ★ (WfContextBetaEtaConfluenceUnconditional.lean): the Geuvers βη-CR + unique-βη-NF with
+-- the HereditaryLamDiagonal premise GONE — well-typedness in a well-formed context is the only
+-- hypothesis.  The two ingredients the conditional file's docstring named as missing are both
+-- fired: (a) the joinability-guarded local join + Newman twin (StepBetaEtaJoinableConfluence) and
+-- (b) grown βη-SR (subjectReductionBetaEtaStar, PAR-2).  The guard discharge:
+-- etaLamSourceAnnotationJoinable extracts Conv between the inner/outer annotations of any TYPED
+-- lambda η-source whose inner function is a lambda (invertLam → invertApp → invertVar pins the
+-- app domain to the weakened OUTER annotation; a second invertLamGeneral via rename_lamCell pins
+-- it to the weakened INNER annotation through the Π classifier; Conv.piTyCode_inj aligns,
+-- Conv.reflectWeaken strips the weakening) — and Conv IS StepStar.Join, so the conversion is
+-- LITERALLY the joinability witness.  βη-SR-star makes the guard hereditary.  The raw-layer
+-- Nederpelt non-joinability stands untouched; typing is exactly what buys the guard.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaLamSourceAnnotationJoinable
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.lamJoinableGuardOfTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.hereditaryLamJoinableOfTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectBetaEtaConfluenceTypedUnconditional
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueBetaEtaNormalFormTypedUnconditional
 
 -- CON-A0 (ConsistencyTargetSignature.lean): the SN-050 spike verdict. The data types are value-predicate
 -- candidates, NOT engine cells (no gen_empty); HasTypeDescPi doesn't type data (typingRuleDescOf = some only
