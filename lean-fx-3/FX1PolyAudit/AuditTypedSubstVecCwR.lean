@@ -628,6 +628,7 @@ import FX1Poly.Typed.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.LamReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.GrownEtaSubjectReduction
+import FX1Poly.Typed.GluedModelModalFragment
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1169,3 +1170,44 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.fxBksGluedMetatheoryPackage
 #assert_no_axioms FX1Poly.Tier0.fxSconingConstructionLevel_eq
 #assert_no_axioms FX1Poly.Tier0.fxSconing_hasBKSMetatheoryPackage
+
+-- ★ The sconing witness extends to the MODAL fragment — the first joint pair beyond MLTT
+-- (GluedModelModalFragment.lean, ONORM-M1 #1211). ModalityFormer = the six one-child modality TYPE formers
+-- (cohesive shape/flat/sharp, linear bang/whyNot, provability box; payload Unit, binderShifts [0]), enumerated
+-- a la DataFormerFamily. ★ GluedTypeCell.modalityLift = the modal former lifts to the glued model through the
+-- neutral arm exactly as SN-091's sigmaLift (weak-head normal per former by the cases-rootIota script — no
+-- modality root carries a β/ι/scrutinee rule — and non-Π-rooted by nomatch); ONE definition covers all six.
+-- ★ jointPair_mlttAndModal_underOnePackage = the headline: the SN-096 package instance
+-- fxBksGluedMetatheoryPackage, built with ZERO modal knowledge, discharges canonicity for an MLTT lift (Σ) AND
+-- the modal lift in one conjunction — "MLTT and the modal layer under ONE functor", the first genuine O-NORM
+-- increment beyond MLTT; the three per-transfer corollaries are one-line applications of the same package.
+-- modalBoxValueScone = the #721 categorical twin (SconingWitness over CanonicalFormsPredicate isModIntroValue,
+-- canonical phase = reaches a modIntro VALUE — strictly finer than SN); ★ modalSconeConfinement = the semantic
+-- O-FIRE confinement (closed well-typed box terms land under a modIntro ROOT with normal payload — the legacy
+-- M44-T1 gate's content recovered at the candidate layer); modalCandidate_refinesModalityLiftScone = the
+-- two-level coherence (value candidate refines the SN scone by CR1); the three *_preservesModalityLiftScone =
+-- modIntro/modElim/subsume scone closure (#721/#722 re-read). HONESTY (the live-signature index):
+-- modalTermFragment_isStaticallyUntypedToday + modalityFormers_haveNoFormationRowToday — hasSomeTypingRule is
+-- FALSE (rfl) for all nine modal generators; the legacy modal typing died with HT-C, so the fundamental
+-- obligations are explicit hypotheses, and wiring modal rule-table rows is the recorded follow-on. The modal
+-- eliminator carries no β/ι rule (the collapse is raw η), so eliminator PROGRESS does not transfer — only
+-- SN-closure does. All zero-axiom.
+#assert_no_axioms FX1Poly.Typed.ModalityFormer
+#assert_no_axioms FX1Poly.Typed.ModalityFormer.generator
+#assert_no_axioms FX1Poly.Typed.ModalityFormer.formerCell
+#assert_no_axioms FX1Poly.Typed.ModalityFormer.formerCell_noWeakHeadStep
+#assert_no_axioms FX1Poly.Typed.ModalityFormer.formerCell_notPiRooted
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.modalityLift
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.modalityLift_isCandidate
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.modalityLift_canonicityTransfer
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.modalityLift_normalizationTransfer
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.modalityLift_parametricityTransfer
+#assert_no_axioms FX1Poly.Typed.jointPair_mlttAndModal_underOnePackage
+#assert_no_axioms FX1Poly.Typed.modalBoxValueScone
+#assert_no_axioms FX1Poly.Typed.modalSconeConfinement
+#assert_no_axioms FX1Poly.Typed.modalCandidate_refinesModalityLiftScone
+#assert_no_axioms FX1Poly.Typed.modIntro_preservesModalityLiftScone
+#assert_no_axioms FX1Poly.Typed.modElim_preservesModalityLiftScone
+#assert_no_axioms FX1Poly.Typed.subsume_preservesModalityLiftScone
+#assert_no_axioms FX1Poly.Typed.modalTermFragment_isStaticallyUntypedToday
+#assert_no_axioms FX1Poly.Typed.modalityFormers_haveNoFormationRowToday
