@@ -143,12 +143,19 @@ def SconingConstructionLevel.hasBKSMetatheoryPackage :
   | .parametricityTransferTheorem => false
   | .bksMetatheoryPackage => true
 
-/-- Present status: interfaces and extraction records only. -/
+/-- Present status: the canonicity-transfer level (SN-093).  The concrete preservation instance is
+`fxBaseRenamingVecSconingPreservation` (SN-090) with the glued former lifts in
+`GluedModelTypeFormers.lean` (SN-091); the canonicity transfer is `GluedTypeCell.canonicityTransfer`
+(well-typedness → canonicity through the scone, extraction free by CR1) together with the per-scone
+extraction story in `FxBaseSubstCanonicityExtraction.lean` — where the GLOBAL `CanonicityExtraction`
+record below is REFUTED over both shipped bases (`canonicityExtraction_overSubstBase_isFalse`) and
+replaced by the honest per-scone `SconeCanonicityExtraction` with genuine instances.  Normalization
+and parametricity transfers remain open (SN-094/095). -/
 def fxSconingConstructionLevel : SconingConstructionLevel :=
-  .extractionRecordInterfaces
+  .canonicityTransferTheorem
 
 theorem fxSconingConstructionLevel_eq :
-    fxSconingConstructionLevel = .extractionRecordInterfaces := rfl
+    fxSconingConstructionLevel = .canonicityTransferTheorem := rfl
 
 theorem fxSconing_hasGlobalSectionsInterface :
     fxSconingConstructionLevel.hasGlobalSectionsInterface = true := rfl
@@ -162,11 +169,11 @@ theorem fxSconing_hasPreservationWitnessInterface :
 theorem fxSconing_hasExtractionRecordInterfaces :
     fxSconingConstructionLevel.hasExtractionRecordInterfaces = true := rfl
 
-theorem fxSconing_hasNoConcretePreservationInstance :
-    fxSconingConstructionLevel.hasConcretePreservationInstance = false := rfl
+theorem fxSconing_hasConcretePreservationInstance :
+    fxSconingConstructionLevel.hasConcretePreservationInstance = true := rfl
 
-theorem fxSconing_hasNoCanonicityTransferTheorem :
-    fxSconingConstructionLevel.hasCanonicityTransferTheorem = false := rfl
+theorem fxSconing_hasCanonicityTransferTheorem :
+    fxSconingConstructionLevel.hasCanonicityTransferTheorem = true := rfl
 
 theorem fxSconing_hasNoNormalizationTransferTheorem :
     fxSconingConstructionLevel.hasNormalizationTransferTheorem = false := rfl

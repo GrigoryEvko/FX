@@ -125,6 +125,7 @@ import FX1Poly.Tier0.FxBaseSubstDisplayMap
 import FX1Poly.Tier0.FxBaseSubstTypeFormers
 import FX1Poly.Typed.DisplayMapDecidableFibration
 import FX1Poly.Typed.GluedModelTypeFormers
+import FX1Poly.Tier0.FxBaseSubstCanonicityExtraction
 import FX1Poly.Tier0.IsomorphismCategorical
 import FX1Poly.Tier0.FxThinScopeRMC
 import FX1Poly.Tier0.FxThinScopeGlobalSections
@@ -1070,3 +1071,36 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.GluedTypeCell.sigmaLift_isCandidate
 #assert_no_axioms FX1Poly.Typed.GluedTypeCell.universeLift_isCandidate
 #assert_no_axioms FX1Poly.Typed.GluedTypeCell.piLiftScone
+-- Canonicity extraction is a PER-SCONE property (FxBaseSubstCanonicityExtraction.lean +
+-- GluedTypeCell.canonicityTransfer + the InternalSconing ledger advance, SN-093 #596, discharges #212).
+-- THE REFUTATION: the GLOBAL CanonicityExtraction record (extract quantified over EVERY scone) is UNINHABITABLE
+-- over both shipped GlobalSections — the adversarial emptyDomainScone (PEmpty semantic domain over scope 0,
+-- whose sections are PUnit, inhabited) kills any global extract
+-- (canonicityExtraction_overSubstBase_isFalse / _overRenamingBase_isFalse). The honest replacement:
+-- SconeCanonicityExtraction (per-FIXED-scone, same two fields) with realizationIsSurjective (the choice-free
+-- characterization direction) + isFalse_ofUnrealizedSection (the refutation criterion). Instances:
+-- tautologicalSconeCanonicityExtraction (generic inhabitation, extract = id) + ★
+-- closedTermSconeCanonicityExtraction (GENUINE: the closed-term scone's realization closedTermAsSection is
+-- split by sectionAsClosedTerm, round-trip definitional) + emptyValueScone_hasNoCanonicityExtraction (the
+-- CONSISTENCY reading: the empty type's predicate-carrying scone rightly refuses extraction — uninhabited
+-- domain, inhabited sections). The law-carrying TRANSFER is GluedTypeCell.canonicityTransfer
+-- (GluedModelTypeFormers.lean): for every glued type incl. the SN-091 lifts, well-typedness → canonicity (SN)
+-- through the scone (SconingWitness.canonicity, extraction free by CR1). LEDGER: fxSconingConstructionLevel
+-- advanced extractionRecordInterfaces → canonicityTransferTheorem (the SN-090 honest-scope deferral now
+-- performed); fxSconing_hasNoConcretePreservationInstance/hasNoCanonicityTransferTheorem RENAMED to has* true
+-- (rg'd: no shard gated the old names); normalization/parametricity/BKS levels remain false (SN-094/095/096).
+-- All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.emptyDomainScone
+#assert_no_axioms FX1Poly.Tier0.canonicityExtraction_overSubstBase_isFalse
+#assert_no_axioms FX1Poly.Tier0.canonicityExtraction_overRenamingBase_isFalse
+#assert_no_axioms FX1Poly.Tier0.SconeCanonicityExtraction.realizationIsSurjective
+#assert_no_axioms FX1Poly.Tier0.SconeCanonicityExtraction.isFalse_ofUnrealizedSection
+#assert_no_axioms FX1Poly.Tier0.tautologicalSconeCanonicityExtraction
+#assert_no_axioms FX1Poly.Tier0.closedTermSconeCanonicityExtraction
+#assert_no_axioms FX1Poly.Tier0.emptyValueScone_hasNoCanonicityExtraction
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.canonicityTransfer
+#assert_no_axioms FX1Poly.Tier0.fxSconingConstructionLevel_eq
+#assert_no_axioms FX1Poly.Tier0.fxSconing_hasConcretePreservationInstance
+#assert_no_axioms FX1Poly.Tier0.fxSconing_hasCanonicityTransferTheorem
+#assert_no_axioms FX1Poly.Tier0.fxSconing_hasNoNormalizationTransferTheorem
+#assert_no_axioms FX1Poly.Tier0.fxSconing_hasNoParametricityTransferTheorem

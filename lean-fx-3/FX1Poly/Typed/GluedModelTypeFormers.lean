@@ -174,6 +174,17 @@ theorem GluedTypeCell.universeLift_isCandidate {scope : Nat}
       (GluedTypeCell.universeLift (scope := scope) levelExpr flag).computable :=
   isStronglyNormalizing_isReducibilityCandidate
 
+/-- ★ **The canonicity TRANSFER theorem for the glued model** (SN-093 namesake): for every glued
+type — in particular the SN-091 Π/Σ/universe lifts — well-typedness transfers to canonicity
+(strong normalization) through the scone, by the BKS boilerplate-free derivation
+`SconingWitness.canonicity` (fundamental then extraction, the latter free by CR1). -/
+theorem GluedTypeCell.canonicityTransfer {scope : Nat} (glued : GluedTypeCell (scope + 1))
+    {isWellTyped : RawTerm (scope + 1) → Prop}
+    (fundamental : ∀ term : RawTerm (scope + 1), isWellTyped term → glued.computable term)
+    (term : RawTerm (scope + 1)) (typed : isWellTyped term) :
+    IsStronglyNormalizing term :=
+  (glued.scone fundamental).canonicity term typed
+
 /-- The lifted Π yields a `SconingWitness` (BKS: extraction free by CR1) — the witness-level form of
 the preservation lemma, the shape the extraction ledgers (SN-093/094/095) consume. -/
 def GluedTypeCell.piLiftScone {scope : Nat} (domainGlued : GluedTypeCell (scope + 1))
