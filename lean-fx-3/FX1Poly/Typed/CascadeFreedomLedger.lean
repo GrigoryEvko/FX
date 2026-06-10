@@ -12,6 +12,8 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionFlexibleUnderWf
 import FX1Poly.Typed.GenFormerValidityContextConversion
 import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
 import FX1Poly.Typed.ListCodeShape
+import FX1Poly.Typed.BoundedFormationArityDispatch
+import FX1Poly.Typed.TelescopeArityDispatchNormalization
 
 /-! # FX1Poly/Typed/CascadeFreedomLedger — the per-row absorption-cost ledger
    (the logical-conclusion criterion for the table-generic metatheory program)
@@ -33,7 +35,7 @@ evidence located the residuals exactly.
 | Subject reduction           | ZERO arms            | generic former arm + both master dispatchers       |
 | Strong normalization        | ZERO arms            | `formerCellStronglyNormalizingOfChildren`          |
 | Context conversion          | ZERO arms            | `convTelescopeFromChildIH` + `convContextUnderWf`  |
-| Reducibility-FT dispatch    | THIN-LINEAR residual | ~8 lines/row across the six dispatch files         |
+| Reducibility-FT dispatch    | ZERO arms            | generic non-Pi arm in all six dispatch files       |
 | Canonical-forms shape       | BOUNDED bricks       | ~7 bricks per former (`eq_<former>Cell_of_...`)    |
 
   * **`zeroArm`** — a new row at an existing arity is absorbed with NO new line anywhere
@@ -41,13 +43,18 @@ evidence located the residuals exactly.
     structural-metatheory layer (validity / subst / weaken / uniqueness / inversion /
     SR via the generic former arms / SN via the N-child accessibility assembly /
     context conversion via the table-generic telescope step).
-  * **`thinLinearDispatch`** — the reducibility fundamental-theorem REASSEMBLY: each new
-    row currently costs a ~8-line `by_cases`-shaped branch in each of the six dispatch
-    files (the formation fundamental vectors, the level-indexed and bounded dispatchers).
-    The kernel lemmas that erase this residual are SHIPPED and anchored below: the
-    fresh-variable cons-closure instantiation (brick 1) and the telescope-to-per-child
-    SN extraction at the table's arities (brick 2); the remaining work is the ONE
-    table-generic non-Pi dispatch arm consuming them.  Path to zero, not zero yet.
+  * **`thinLinearDispatch`** — RETIRED: this was the reducibility fundamental-theorem
+    REASSEMBLY residual (~8 `by_cases` lines per new row in each of the six dispatch
+    files).  The table-generic non-Pi dispatch arm landed in all six files
+    (`dataFormationUnderSubst` / `dataFormationUnderSubstAtBounded` over the arity
+    suppliers), so the dispatch row moved to `zeroArm`.  The constructor is kept so the
+    ledger's history of the residual remains expressible; no row carries it.  The honest
+    remaining per-row cost is NOT in the dispatch files: it is one defeq case in each of
+    the four table-mirror facts co-located with `typingRuleDescOf`
+    (`formationRowArityBound` / `formationRowIsNotFlat` / `formationRowNullaryIsUnit` /
+    `formationRowOutputLevel`) — constant-size, single-file, the same edit locus as the
+    row itself; the recorded follow-on (tag-bounded `decide` self-updating forms) erases
+    even those.
   * **`boundedBricks`** — canonical-forms reconstruction: a new data former costs a
     BOUNDED per-former brick set (the `eq_<former>Cell_of_headGenerator` shape pin plus
     the head-disjunction extension across the closed-normal-form consumers, ~7 bricks
@@ -94,9 +101,8 @@ inductive AbsorptionCost where
   /-- The row is absorbed table-generically: ZERO new proof arms for a new former at an
   existing arity. -/
   | zeroArm
-  /-- A thin linear residual: ~8 dispatch lines per new row across the six reducibility
-  dispatch files; the kernel bricks erasing it are shipped, the table-generic arm is the
-  remaining work. -/
+  /-- RETIRED (no row carries this cost): the former ~8-dispatch-lines-per-row residual,
+  erased by the table-generic non-Pi arm; kept so the ledger's history is expressible. -/
   | thinLinearDispatch
   /-- A bounded per-former brick set (~7 bricks, cloning-shrinkable): the canonical-forms
   shape pin and its head-disjunction consumers. -/
@@ -112,7 +118,7 @@ def MetatheoryRow.absorptionCost : MetatheoryRow → AbsorptionCost
   | .subjectReduction => .zeroArm
   | .strongNormalization => .zeroArm
   | .contextConversion => .zeroArm
-  | .reducibilityDispatch => .thinLinearDispatch
+  | .reducibilityDispatch => .zeroArm
   | .canonicalForms => .boundedBricks
 
 /-! ## Zero-arm anchors (the teeth)
@@ -146,7 +152,21 @@ def cascadeAnchor_contextConversion_telescopeStep := @DescTelescopePi.convTelesc
 /-- Context conversion — the grown flexible master under a well-formed target context. -/
 def cascadeAnchor_contextConversion_grownMaster := @HasTypeDescPi.convContextUnderWf
 
-/-! ## Residual anchors — the path to zero, by reference not promise -/
+/-- Reducibility dispatch — the table-generic non-Pi membership arm (unbounded). -/
+def cascadeAnchor_reducibilityDispatch_membership := @IsReducibleMemberAt.dataFormationUnderSubst
+/-- Reducibility dispatch — the arity-dispatch child-SN supplier (unbounded). -/
+def cascadeAnchor_reducibilityDispatch_supplier :=
+  @TelescopeReducible.foldChildrenStronglyNormalizing
+/-- Reducibility dispatch — the bounded membership arm. -/
+def cascadeAnchor_reducibilityDispatch_boundedMembership :=
+  @IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded
+/-- Reducibility dispatch — the bounded combined supplier (SN + output bound). -/
+def cascadeAnchor_reducibilityDispatch_boundedSupplier :=
+  @TelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow
+/-- Reducibility dispatch — the level-pinned row-output interface. -/
+def cascadeAnchor_reducibilityDispatch_outputLevel := @formationRowOutputLevel
+
+/-! ## Residual anchors — the canonical-forms bricks plus the dispatch's erased history -/
 
 /-- Dispatch-residual kernel brick 1 (SHIPPED): the fresh-variable cons-closure
 instantiation — lifted-open substituted binder-child SN from telescope tail closure. -/
@@ -190,10 +210,10 @@ theorem strongNormalization_isZeroArm :
 theorem contextConversion_isZeroArm :
     MetatheoryRow.contextConversion.absorptionCost = .zeroArm := rfl
 
-/-- The reducibility-FT dispatch is the THIN-LINEAR residual: ~8 lines per new row across
-the six dispatch files, with the erasing kernel bricks shipped and anchored above. -/
-theorem reducibilityDispatch_isThinLinear :
-    MetatheoryRow.reducibilityDispatch.absorptionCost = .thinLinearDispatch := rfl
+/-- The reducibility-FT dispatch absorbs new rows with zero arms: the table-generic non-Pi
+arm (anchored above) replaced the per-row `by_cases` branches in all six dispatch files. -/
+theorem reducibilityDispatch_isZeroArm :
+    MetatheoryRow.reducibilityDispatch.absorptionCost = .zeroArm := rfl
 
 /-- Canonical-forms reconstruction is the BOUNDED-BRICKS residual: ~7 per-former bricks,
 shrinking by cloning for each subsequent former. -/
@@ -203,32 +223,31 @@ theorem canonicalForms_isBoundedBricks :
 /-! ## Non-vacuity and completeness -/
 
 /-- The ledger genuinely discriminates: the structural layer's cost differs from the
-dispatch residual's (the cost function is not constant). -/
-theorem cost_discriminates_weakening_vs_dispatch :
+canonical-forms residual's (the cost function is not constant). -/
+theorem cost_discriminates_weakening_vs_canonicalForms :
     MetatheoryRow.weakening.absorptionCost ≠
-      MetatheoryRow.reducibilityDispatch.absorptionCost := by
+      MetatheoryRow.canonicalForms.absorptionCost := by
   intro costEq
-  rw [weakening_isZeroArm, reducibilityDispatch_isThinLinear] at costEq
+  rw [weakening_isZeroArm, canonicalForms_isBoundedBricks] at costEq
   exact AbsorptionCost.noConfusion costEq
 
-/-- The two residual classes are themselves distinct: the thin-linear dispatch residual
-(path-to-zero shipped) is NOT the bounded-bricks canonical-forms residual (bounded and
-local by design). -/
+/-- The now-zero-arm dispatch row is distinct from the bounded-bricks canonical-forms
+residual — the ledger's one remaining residual class is genuinely non-trivial. -/
 theorem cost_discriminates_dispatch_vs_canonicalForms :
     MetatheoryRow.reducibilityDispatch.absorptionCost ≠
       MetatheoryRow.canonicalForms.absorptionCost := by
   intro costEq
-  rw [reducibilityDispatch_isThinLinear, canonicalForms_isBoundedBricks] at costEq
+  rw [reducibilityDispatch_isZeroArm, canonicalForms_isBoundedBricks] at costEq
   exact AbsorptionCost.noConfusion costEq
 
 /-- **The logical-conclusion criterion, complete over every row**: each metatheory row is
-either absorbed at zero arms, or is one of the two named residuals — the thin-linear
-reducibility dispatch or the bounded canonical-forms bricks.  Full enumeration; no row
-escapes classification, so cascade-freedom claims are exactly as PARTIAL as this ledger
-states: total on the structural layer, residual on dispatch and canonical forms. -/
+absorbed at zero arms except the ONE named residual — the bounded canonical-forms bricks.
+Full enumeration; no row escapes classification, so cascade-freedom claims are exactly as
+PARTIAL as this ledger states: total on the structural layer AND the reducibility dispatch,
+residual on canonical forms (plus the constant four co-located table-mirror defeq cases
+recorded in the `thinLinearDispatch` retirement note). -/
 theorem absorptionCost_classifiesEveryRow (row : MetatheoryRow) :
-    row.absorptionCost = .zeroArm ∨
-      row = .reducibilityDispatch ∨ row = .canonicalForms := by
+    row.absorptionCost = .zeroArm ∨ row = .canonicalForms := by
   cases row with
   | weakening => exact Or.inl rfl
   | substitution => exact Or.inl rfl
@@ -237,7 +256,7 @@ theorem absorptionCost_classifiesEveryRow (row : MetatheoryRow) :
   | subjectReduction => exact Or.inl rfl
   | strongNormalization => exact Or.inl rfl
   | contextConversion => exact Or.inl rfl
-  | reducibilityDispatch => exact Or.inr (Or.inl rfl)
-  | canonicalForms => exact Or.inr (Or.inr rfl)
+  | reducibilityDispatch => exact Or.inl rfl
+  | canonicalForms => exact Or.inr rfl
 
 end FX1Poly.Typed

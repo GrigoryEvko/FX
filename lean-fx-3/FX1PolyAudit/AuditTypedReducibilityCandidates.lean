@@ -1405,7 +1405,7 @@ formation→grown embedding), and the SN assembly is the identical wire.  The SN
 pinned-reflection whnf dispatcher, whose motive carries exactly this wf. -/
 
 #assert_no_axioms FX1Poly.Typed.reducibleEnvOfWfContextDescPi
-#assert_no_axioms FX1Poly.Typed.reducibilityDispatch_isThinLinear
+#assert_no_axioms FX1Poly.Typed.reducibilityDispatch_isZeroArm
 
 /-! ### GenericDataFormationUnderSubst — the SYMBOLIC-generator non-Pi membership arm (GTL-06 brick 3 headline)
 

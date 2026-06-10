@@ -647,12 +647,13 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 
 /-! ### CascadeFreedomLedger — the per-row absorption-cost ledger (the logical-conclusion criterion)
 
-The honest, machine-anchored record of HOW FAR the table-generic program is met: seven
+The honest, machine-anchored record of HOW FAR the table-generic program is met: EIGHT
 metatheory rows absorb a new formation row at ZERO arms (anchored to the shipped generic
-theorems), the reducibility-FT dispatch is the thin-linear residual (kernel bricks shipped,
-the table-generic arm remaining), and canonical-forms reconstruction is the bounded
-per-former brick set.  The completeness theorem proves the cost function classifies EVERY
-row — cascade-freedom claims are exactly as partial as the ledger states. -/
+theorems — the reducibility-FT dispatch joined them when the table-generic non-Pi arm
+landed in all six dispatch files), and canonical-forms reconstruction remains the one
+bounded per-former brick residual.  The completeness theorem proves the cost function
+classifies EVERY row — cascade-freedom claims are exactly as partial as the ledger
+states. -/
 
 #assert_no_axioms FX1Poly.Typed.MetatheoryRow.absorptionCost
 #assert_no_axioms FX1Poly.Typed.cascadeAnchor_weakening_formation
@@ -664,4 +665,10 @@ row — cascade-freedom claims are exactly as partial as the ledger states. -/
 #assert_no_axioms FX1Poly.Typed.cascadeAnchor_contextConversion_grownMaster
 #assert_no_axioms FX1Poly.Typed.cascadeAnchor_dispatchBrick_liftedChild
 #assert_no_axioms FX1Poly.Typed.cascadeAnchor_dispatchBrick_spineSN
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_reducibilityDispatch_membership
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_reducibilityDispatch_supplier
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_reducibilityDispatch_boundedMembership
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_reducibilityDispatch_boundedSupplier
+#assert_no_axioms FX1Poly.Typed.cascadeAnchor_reducibilityDispatch_outputLevel
+#assert_no_axioms FX1Poly.Typed.reducibilityDispatch_isZeroArm
 #assert_no_axioms FX1Poly.Typed.absorptionCost_classifiesEveryRow

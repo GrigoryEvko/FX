@@ -140,99 +140,23 @@ theorem HasTypeDescPi.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Na
               exact premisesFundamental substitution
                 (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env) (Nat.le_of_lt outBB)
                 envReducible Generator.gen_piTyCode_binderShifts_eq)
-    · by_cases isSigmaFormer : generator = .gen_sigmaTyCode
-      · subst isSigmaFormer
-        obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
-        match children with
-        | .childCons domain (.childCons codomain .childNil) =>
-            obtain ⟨domainLevel, codomainLevel, levelsShape⟩ :=
-              DescTelescopePi.twoChildLevels premises
-            subst levelsShape
-            dsimp only [universeFormerOutput]
-            exact fundamentalGenFormationSigmaFromTelescopeAtBoundedSucc env bound _context
-              domainLevel codomainLevel flag
-              (fun substitution envReducible => by
-                have throwaway := premisesFundamental substitution bound (Nat.le_refl bound) envReducible
-                  Generator.gen_sigmaTyCode_binderShifts_eq
-                obtain ⟨domM, codMFn⟩ := throwaway.twoChildMembers
-                have domBB : LevelExpr.denote domainLevel env < bound := by
-                  obtain ⟨_, dr, _⟩ := domM
-                  exact universeCodeReducibleAtBounded_belowBound dr
-                have variableZero :=
-                  variableZeroMemberOfBoundedUniverseMember domM domBB (Nat.le_of_lt domBB)
-                have codM := codMFn _ variableZero
-                have codBB : LevelExpr.denote codomainLevel env < bound := by
-                  obtain ⟨_, cr, _⟩ := codM
-                  exact universeCodeReducibleAtBounded_belowBound cr
-                have outBB : LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env < bound :=
-                  levelMax_lt domBB codBB
-                exact premisesFundamental substitution
-                  (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env) (Nat.le_of_lt outBB)
-                  envReducible Generator.gen_sigmaTyCode_binderShifts_eq)
-      · by_cases isListFormer : generator = .gen_listCode
-        · subst isListFormer
-          obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
-          match children with
-          | .childCons element .childNil =>
-              obtain ⟨elementLevel, levelsShape⟩ := DescTelescopePi.oneChildLevel premises
-              subst levelsShape
-              dsimp only [universeFormerOutput]
-              exact fundamentalGenFormationListFromTelescopeAtBoundedSucc env bound _context
-                elementLevel flag
-                (fun substitution envReducible => by
-                  have memberTelescope := premisesFundamental substitution bound (Nat.le_refl bound)
-                    envReducible Generator.gen_listCode_binderShifts_eq
-                  have elementMember := memberTelescope.oneChildMember
-                  have elementBelowBound : LevelExpr.denote elementLevel env < bound := by
-                    obtain ⟨_, elementReducible, _⟩ := elementMember
-                    exact universeCodeReducibleAtBounded_belowBound elementReducible
-                  have outputBelowBound :
-                      LevelExpr.denote (lmaxAll [elementLevel]) env < bound := elementBelowBound
-                  exact premisesFundamental substitution
-                    (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt outputBelowBound)
-                    envReducible Generator.gen_listCode_binderShifts_eq)
-        · by_cases isOptionFormer : generator = .gen_optionCode
-          · subst isOptionFormer
-            obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
-            match children with
-            | .childCons element .childNil =>
-                obtain ⟨elementLevel, levelsShape⟩ := DescTelescopePi.oneChildLevel premises
-                subst levelsShape
-                dsimp only [universeFormerOutput]
-                exact fundamentalGenFormationOptionFromTelescopeAtBoundedSucc env bound _context
-                  elementLevel flag
-                  (fun substitution envReducible => by
-                    have memberTelescope := premisesFundamental substitution bound (Nat.le_refl bound)
-                      envReducible Generator.gen_optionCode_binderShifts_eq
-                    have elementMember := memberTelescope.oneChildMember
-                    have elementBelowBound : LevelExpr.denote elementLevel env < bound := by
-                      obtain ⟨_, elementReducible, _⟩ := elementMember
-                      exact universeCodeReducibleAtBounded_belowBound elementReducible
-                    have outputBelowBound :
-                        LevelExpr.denote (lmaxAll [elementLevel]) env < bound := elementBelowBound
-                    exact premisesFundamental substitution
-                      (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt outputBelowBound)
-                      envReducible Generator.gen_optionCode_binderShifts_eq)
-          · by_cases isUnitFormer : generator = .gen_unitCode
-            · -- the nullary unitCode former: the output is the pinned Type@0, so the bounded member
-              -- is `unitFormerMemberAtBounded` with the output-level positivity supplied by the
-              -- grown budget's nullary gate (`nullaryBelowBound rfl : 0 < bound`).  No telescope.
-              subst isUnitFormer
-              obtain rfl : rule = { outputType := nullaryFormerOutput } :=
-                Option.some.inj (isFormation.symm.trans typingRuleDescOf_unitCode)
-              match children with
-              | .childNil =>
-                  refine fun substitution _envReducible => ?_
-                  show IsReducibleMemberAtBounded env bound
-                    (RawTerm.subst substitution (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
-                    (RawTerm.subst substitution (.mkGen .gen_unitCode () .childNil))
-                  rw [subst_universeCodeCell]
-                  exact unitFormerMemberAtBounded env bound (nullaryBelowBound rfl)
-            · exfalso
-              dsimp only [typingRuleDescOf] at isFormation
-              rw [if_neg isPiFormer, if_neg isSigmaFormer, if_neg isListFormer, if_neg isOptionFormer,
-                if_neg isUnitFormer] at isFormation
-              contradiction
+    · -- the GENERIC non-Pi arm (bounded): shape from the telescope, output from the
+      -- level-pinned row interface, child SN + output bound from ONE telescope
+      -- application at the bound — no former enumerated
+      have shapeEq := premises.shiftsShape
+      obtain ⟨outputFlag, outputEq⟩ := formationRowOutputLevel isFormation shapeEq _ flag
+      rw [outputEq]
+      intro substitution envReducible
+      obtain ⟨substitutedChildrenNormalizing, outputBelowBound⟩ :=
+        TelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow shapeEq
+          (formationLevelsArityBound isFormation shapeEq)
+          (fun levelsEmpty =>
+            nullaryBelowBound (formationRowNullaryIsUnit isFormation
+              (by rw [levelsEmpty] at shapeEq; exact shapeEq)))
+          (premisesFundamental substitution bound (Nat.le_refl bound) envReducible shapeEq)
+      exact IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded (lmaxAll levelsList)
+        outputFlag substitution isFormation isPiFormer outputBelowBound
+        substitutedChildrenNormalizing
   · -- nilTelescope
     intro _baseScope _currentDepth _context _flag
     intro _targetScope _substitution _argLevel _argLevelLeBound _env _shapeEq

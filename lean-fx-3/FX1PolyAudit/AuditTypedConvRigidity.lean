@@ -1199,4 +1199,4 @@ re-types the pins, the join collapses at the shared normal form, the E2.7 master
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convUniverseClassificationUnique
 #assert_no_axioms FX1Poly.Typed.contextConversion_isZeroArm
-#assert_no_axioms FX1Poly.Typed.cost_discriminates_weakening_vs_dispatch
+#assert_no_axioms FX1Poly.Typed.cost_discriminates_weakening_vs_canonicalForms
