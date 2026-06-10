@@ -442,6 +442,7 @@ import FX1Poly.Typed.UnitReadbackFormerChildBoundary
 import FX1Poly.Typed.UnitReadbackDeepSpineBoundary
 import FX1Poly.Typed.UnitReadbackAnnotationBoundary
 import FX1Poly.Typed.FormationClassifierRigidity
+import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3677,6 +3678,35 @@ positions.  The standing honest-boundary note (2) is RETIRED.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.asPiCode?_firesOnFormationClassifiers
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.piCodeDetection_completeOnLookups
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.unitDetection_completeOnFormationClassifiers
+
+/-! ### TypedNbeNormalizer — ★ #480: the typed NbE EVAL half + the eval∘quote composition
+
+The typed normalizer assembled from its two halves.  EVAL (`evalNormalForm`, #480): β/ι
+normalization of well-typed OPEN terms — `RawTerm.normalize` with the open-SN witness
+(`stronglyNormalizingOfWfContextDesc`) as the termination certificate; total, fuel-free; the
+output reduces from the input, is structurally normal, converts to the input, and — the
+headline — is TYPED AT THE SAME CLASSIFIER (`evalNormalForm_typed` via the unconditional master
+`subjectReductionStar`).  QUOTE: the #481 type-directed η-long readback.  The composition
+`nbeNormalForm = quote ∘ eval` carries the composed soundness (`nbeNormalForm_congruent`:
+`ofBetaEtaConv` along the normalization chain, then the readback soundness on the typed eval
+output) and the #364-shaped semi-decision (`DefEqUnitEtaCong.ofNbeEqual`).  EACH HALF IS
+LOAD-BEARING: eval contracts the typed β-redex `(λx.x)(Type@e)` (the pair with its reduct is
+decided — `identityApplicationPair_decidedByNbe`) while quote alone provably fixes the
+unevaluated redex (`readbackAlone_keepsBetaRedex`); conversely the η/unit pairs of the #481
+modules are β-normal and decided only by quote.  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.evalNormalForm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.evalNormalForm_reducesTo
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.evalNormalForm_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.evalNormalForm_conv
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.evalNormalForm_typed
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.nbeNormalForm
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.nbeNormalForm_congruent
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofNbeEqual
+#assert_no_axioms FX1Poly.Typed.universeCode_evalNormalForm_eq
+#assert_no_axioms FX1Poly.Typed.identityApplication_evalNormalForm_eq
+#assert_no_axioms FX1Poly.Typed.readbackAlone_keepsBetaRedex
+#assert_no_axioms FX1Poly.Typed.identityApplicationPair_decidedByNbe
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
