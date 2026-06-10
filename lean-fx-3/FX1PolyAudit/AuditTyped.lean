@@ -575,6 +575,7 @@ import FX1Poly.Typed.TelescopeUniverseDeterminism
 import FX1Poly.Typed.GenericFormerTelescopeInversion
 import FX1Poly.Typed.NormalUniverseClassificationUnique
 import FX1Poly.Typed.ConvUniverseClassificationUnique
+import FX1Poly.Typed.RenameAlongFlagCoherent
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8678,3 +8679,13 @@ universe codes carry EQUAL (level, flag) under grown wf — open SN normalizes b
 re-types the pins, the join collapses at the shared normal form, the E2.7 master negotiates. -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convUniverseClassificationUnique
+
+/- E3 core (RenameAlongFlagCoherent): grown typing is preserved along ANY renaming satisfying
+the flag-coherent Conv condition — both engines (the formation companion renames INTO the grown
+engine; its var arm consumes the image component as the conv-rule reclassifier).  The forward
+fibration leg that collapses every pinned-reflection flag negotiation to one E2.8 application. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.renameAlongFlagCoherentToGrown
+#assert_no_axioms FX1Poly.Typed.DescTelescope.renameAlongFlagCoherentToGrownTelescope
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.renameAlongFlagCoherent
+#assert_no_axioms FX1Poly.Typed.DescTelescopePi.renameAlongFlagCoherentTelescope
