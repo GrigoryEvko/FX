@@ -309,6 +309,7 @@ import FX1Poly.Typed.HasTypeDescIdElim
 import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.HasTypeDescNatIntro
 import FX1Poly.Typed.HasTypeDescNatElim
+import FX1Poly.Typed.HasTypeDescListElim
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -3759,6 +3760,21 @@ gates pin them shut.
 #assert_no_axioms FX1Poly.Typed.natElimSuccIotaComputesTyped
 #assert_no_axioms FX1Poly.Typed.natRecZeroIotaComputesTyped
 #assert_no_axioms FX1Poly.Typed.natRecSuccIotaComputesTyped
+
+-- CAN-2 / DI-5g (HasTypeDescListElim): the SHAPE-5 recursive List eliminator — closes DI-5
+-- (#1047).  The cons ι-reduct is the TRIPLE chain app(app(app cb h) t)(listElim t nb cb); the
+-- payload splits across engines (head GROWN-typed per listConsIntro, tail LIST-INTRO-typed), so
+-- only ONE new mixed arm is needed: innermost app cb h is plain piElim + weaken_subst_singleton
+-- (both grown; the eitherMatch pattern), middle app(app cb h) t is mixedTailApplication (grown
+-- partial fn at List(A) → C → C × DATA-engine tail), outer is recursiveResultApplication (both
+-- parts typed by the judgment; recursive call typed at the TAIL).  consBranch inhabits the
+-- 3-arg curried listStepFunctionType A → List(A) → C → C.  ★★ listElimConsIotaComputesTyped is
+-- the deepest typed ι in the kernel.  With CAN-1, EVERY live eliminator family
+-- (bool/either/option/Σ/id/nat/list) now has a standalone typed judgment with typed
+-- ι-computation.  Constructor-side (SR-free, propext-free); full SR is CAN-3.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescListElim.subjectShape
+#assert_no_axioms FX1Poly.Typed.listElimNilIotaComputesTyped
+#assert_no_axioms FX1Poly.Typed.listElimConsIotaComputesTyped
 -- LIST CANONICAL FORMS (ListCanonicalForms, the DI-2e payoff): NON-VACUOUS closed-normal list canonical forms — a
 -- closed-normal term typed at List(A) by the list-intro engine OR the grown engine is nil/cons. Like option/bool
 -- (and unlike product/either FLAT-table codes), gen_listCode is a FORMATION-table former (typingRuleDescOf, GTL-11),
