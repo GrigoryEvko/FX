@@ -580,6 +580,7 @@ import FX1Poly.Typed.PinSelectsCallerPair
 import FX1Poly.Typed.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.LamReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
+import FX1Poly.Typed.GrownEtaSubjectReduction
 
 /-! # Tools/AuditAll/AuditTyped
    — persistent per-declaration zero-axiom gate for the typed layer
@@ -8745,3 +8746,14 @@ classifier, given only the natural presuppositions. Closes STR-9 (#1178) / GROWN
 #assert_no_axioms FX1Poly.Typed.RawRenaming.weaken_finInjective
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.strengthenUnderBinding
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.strengthenUnderBindingUnconditional
+
+/- η-SR λ-arm (GrownEtaSubjectReduction, STR-10): grown typing is preserved by etaLam
+contraction — `lam domainAnn (app (weaken f) newestVar) : T` descends to `f : T` in a
+well-formed context.  The strengthening campaign's first downstream harvest: invertLam +
+invertApp + invertVar expose the η shape, the λ-inclusive pin extraction + premise-free master
+reflect the weakened function to the smaller scope, `subst0_lift_weaken_newestVar` collapses
+the instantiated codomain, and `Conv.reflectWeaken` strips the domain weakening.  The crux arm
+of grown βη subject reduction (PAR-2); structural arms = STR-11. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaLam
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaLamStep
