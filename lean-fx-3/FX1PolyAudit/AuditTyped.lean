@@ -3484,29 +3484,36 @@ chain is COMPLETE: five refutations, five forced components.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.detectSpineType_missesLambdaArgument
 #assert_no_axioms FX1Poly.Typed.spineDetection_isIncompleteAtLambdaArguments
 
-/-! ### TypeDirectedUnitReadback — the #481 readback skeleton, unit-instantiated (brick 1)
+/-! ### TypeDirectedUnitReadback — the #481 η-long readback, unit + Π fragment (bricks 1–2, #360)
 
-The classifier flows TOP-DOWN: at `unitTypeCell` the readback is constantly `unitCell` (η-long
-at unit — no detection needed); at a literal Π over a matching λ it descends into the body with
-the codomain classifier under the extended context; everywhere else and at fuel 0 it degrades to
-the unconditionally sound deep collapse.  `readbackAtClassifier_congruent` is the typed
-soundness (subject grown-typed at the classifier, classifier universe-typed — the NbE
-presupposition); the Π arm re-types the body via `invertLam` + `Conv.piTyCode_inj` + the grown
-`conv` rule with `invertPiTyCode` discharging the reclassifier obligation.  ALL FIVE refutation
-boundary pairs are decided by this one procedure: β-surfacing + compound-neutral via
-`ofReadbackEqual` at `rfl`, the λ-argument pair (bottom-up-undecidable) directly, the
-binder-fence normal forms identified at the Π classifier by `rfl`.  Honest gaps: data-intro-typed
-subjects, app-position classifier recovery, η-EXPANSION at Π (#360).  Zero-axiom. -/
+The classifier flows TOP-DOWN: at `unitTypeCell` the readback is constantly `unitCell`; at a
+literal Π over a matching λ it descends with the codomain classifier; at a literal Π over a
+NON-λ subject it η-EXPANDS (#360 — `λ(D, readback(app(weaken t, var₀)) at C)`, so η and unit-η
+COMPOSE); everywhere else and at fuel 0 it degrades to the unconditionally sound deep collapse.
+`readbackAtClassifier_congruent` is the typed soundness under the NbE presuppositions
+(formation-wf context + subject grown-typed + classifier FORMATION-typed — the formation
+Π-inversion extends the wf under binders and feeds the grown obligations via `ofFormation`);
+the η leg lifts the η-contraction through `DefEqUnitEta.ofBetaEtaConv` with
+`etaExpansionPreservesTypingGrown`.  Decided through this ONE procedure: all five refutation
+boundary pairs, THE η pair (`f` vs `λx.(weaken f)x`), and the mixed η+unit pair (`f` vs
+`λ(_:Unit).unitCell` — βη-normal, deep-collapse-fixed, undecidable by every prior procedure).
+Honest gaps: data-intro-typed subjects, Conv-not-literal Π classifiers, Σ (#361),
+modal/cubical η (#363).  Zero-axiom. -/
 
 #assert_no_axioms FX1Poly.Typed.asLamCell?
 #assert_no_axioms FX1Poly.Typed.asLamCell?_sound
 #assert_no_axioms FX1Poly.Typed.readbackAtClassifier
 #assert_no_axioms FX1Poly.Typed.readbackAtClassifier_congruent
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofReadbackEqual
+#assert_no_axioms FX1Poly.Typed.unitFunctionContextWellFormed
+#assert_no_axioms FX1Poly.Typed.higherOrderUnitContextWellFormed
 #assert_no_axioms FX1Poly.Typed.betaSurfacingPair_decidedByReadback
 #assert_no_axioms FX1Poly.Typed.compoundNeutralPair_decidedByReadback
 #assert_no_axioms FX1Poly.Typed.lambdaArgumentPair_decidedByReadback
 #assert_no_axioms FX1Poly.Typed.readback_identifiesKonstNormalFormsAtPi
+#assert_no_axioms FX1Poly.Typed.readback_etaExpandsNeutralAtPi
+#assert_no_axioms FX1Poly.Typed.etaPair_decidedByReadback
+#assert_no_axioms FX1Poly.Typed.etaUnitPair_decidedByReadback
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
