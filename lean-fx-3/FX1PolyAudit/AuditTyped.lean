@@ -3225,18 +3225,38 @@ eta-M15d). -/
 machine-checked textbook witness — the unit-typed VARIABLE vs `unitCell`, judgmentally equal but
 provably not βη-joinable; `decidableOfWfTyped` decides the relation by one structural classifier
 comparison + the #1202 decider.  Honest boundaries in the module docstring: not congruent (η-long
-readback is the #481/#364 remainder); the witness context is raw (no formation row for `unitCode`
-yet); the data-intro fragment is refl-degenerate (`dataIntroUnitPairsCollapseToRefl`). -/
+readback is the #481/#364 remainder); the data-intro fragment is refl-degenerate
+(`dataIntroUnitPairsCollapseToRefl`).  The raw-context boundary is DISCHARGED by the UNIT-3
+formation row (payoff gates below). -/
 
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.reflOfGrownTyped
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.sym
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.trans
 #assert_no_axioms FX1Poly.Typed.unitVariableTyped
+#assert_no_axioms FX1Poly.Typed.unitVariableNotBetaEtaConvUnitValue
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.strictlyExtendsBetaEtaConv
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.dataIntroUnitPairsCollapseToRefl
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.betaEtaConvOfNotUnit
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.decidableOfWfTyped
+
+/-! ### UNIT-3 payoff — unit-typed variables get the wf metatheory (#1205 closure)
+
+The nullary `unitCode` formation row (flag-pinned `nullaryFormerOutput`) discharges the UNIT-2
+raw-context boundary: `unitTypeCell` is formation-typed at the pinned `Type@0` in ANY context
+(`unitTypeCellFormationTyped` — the row fires with the empty telescope, its floating flag absorbed
+by the flag-IGNORING output), so `WfContextDesc` binds it (`unitVariableContextWellFormed`), the
+grown lift hands the unit context the full wf metatheory — open SN / open βη-SN / βη
+Church-Rosser (`unitVariableContextWellFormedPi`) — and BOTH the strictness witness and the
+unit-η decider now live on the decidable wf fragment
+(`strictlyExtendsBetaEtaConvOnWfFragment` / `unitVariableDecidable`).  Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.unitTypeCellFormationTyped
+#assert_no_axioms FX1Poly.Typed.unitTypeCellIsTypeDesc
+#assert_no_axioms FX1Poly.Typed.unitVariableContextWellFormed
+#assert_no_axioms FX1Poly.Typed.unitVariableContextWellFormedPi
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.strictlyExtendsBetaEtaConvOnWfFragment
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.unitVariableDecidable
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 

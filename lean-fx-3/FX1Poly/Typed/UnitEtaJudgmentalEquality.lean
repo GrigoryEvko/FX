@@ -1,6 +1,7 @@
 import FX1Poly.Typed.BetaEtaConvDecidable
 import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
 import FX1Poly.Typed.RawTermHeadGenerator
+import FX1Poly.Typed.WfContextDescPiFromWfContextDesc
 
 /-! # FX1Poly/Typed/UnitEtaJudgmentalEquality
    — ★ typed unit-η: the judgmental equality βη-conversion CANNOT express, decidable (#362 core)
@@ -36,11 +37,13 @@ equivalence package, the strictness witness, and the decider:
 
 (1) NOT congruent: `DefEqUnitEta` does not collapse unit-typed SUBTERMS (a pair of unit-typed
 components is not equated to a pair of `unitCell`s); the congruent closure is the η-long
-type-directed readback (#481 / the #364 remainder), the named follow-on.  (2) `WfContextDesc`
-cannot currently bind `unitTypeCell` (the formation engine has no `unitCode` row — the nullary
-flag-uniqueness obstruction that parked bool/empty/nat in the standalone `HasTypeDescBaseType`
-engine), so the strictness witness lives in a RAW context; giving unit-typed variables the full wf
-metatheory needs the formation-row follow-on.  (3) SProp/modal η kin (η-M15e) remain open.
+type-directed readback (#481 / the #364 remainder), the named follow-on.  (2) DISCHARGED: the
+nullary `unitCode` formation row landed (flag-pinned `nullaryFormerOutput`), so `WfContextDesc`
+binds `unitTypeCell` (`unitVariableContextWellFormed`) and the strictness witness lives on the
+DECIDABLE wf fragment (`strictlyExtendsBetaEtaConvOnWfFragment` / `unitVariableDecidable`); the
+grown lift `unitVariableContextWellFormedPi` hands unit-typed variables the full wf metatheory
+(open SN, open βη-SN, βη Church-Rosser, both deciders).  (3) SProp/modal η kin (η-M15e) remain
+open.
 
 ## Zero-axiom verification
 
@@ -52,7 +55,7 @@ headGenerator` discrimination.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `C
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core
+open FX1Poly.Core FX1Poly.Universe
 
 /-- **The typed unit-η judgmental equality**: βη-conversion of grown-typed terms, extended by the
 type-directed one-value collapse at `unitTypeCell`.  Presupposition-carrying: each arm carries the
@@ -145,19 +148,13 @@ theorem unitVariableTyped (profile : PolyProfile) :
   HasTypeDescPi.ofFormation
     (HasTypeDesc.var (unitVariableContext profile) ⟨0, Nat.zero_lt_one⟩)
 
-/-- **★ Unit-η is STRICTLY beyond βη-conversion**: the unit-typed variable and the unit value are
-judgmentally equal (`unitEta` — both typed at `unitTypeCell`) but provably NOT `BetaEtaConv` (both
-are βη-normal leaves, so a join forces them syntactically equal — distinct head generators).  The
-textbook motivation for type-directed η, machine-checked: no rewriting relation can close this
-pair, only the type can. -/
-theorem DefEqUnitEta.strictlyExtendsBetaEtaConv (profile : PolyProfile) :
-    ∃ (context : TypingContext profile 1) (leftTerm rightTerm : RawTerm 1),
-      DefEqUnitEta profile context leftTerm rightTerm unitTypeCell ∧
-        ¬ BetaEtaConv leftTerm rightTerm := by
-  refine ⟨unitVariableContext profile, variableCell ⟨0, Nat.zero_lt_one⟩, unitCell,
-    .unitEta (Or.inr (unitVariableTyped profile))
-      (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitVariableContext profile))),
-    fun convertible => ?_⟩
+/-- The unit-typed variable and the unit value are NOT βη-convertible: both are βη-normal leaves
+(`reduceOnceBetaEta = none` by `rfl`), so any βη-join forces them syntactically equal — refuted by
+the head-generator clash `gen_var ≠ gen_unit`.  The refutation half shared by both strictness
+witnesses (raw-context and wf-fragment). -/
+theorem unitVariableNotBetaEtaConvUnitValue :
+    ¬ BetaEtaConv (variableCell ⟨0, Nat.zero_lt_one⟩ : RawTerm 1) unitCell := by
+  intro convertible
   obtain ⟨commonTerm, variableChain, unitChain⟩ := convertible
   have variableIsCommon :=
     Step.betaEtaStar.eq_of_noBetaEtaStep
@@ -171,6 +168,20 @@ theorem DefEqUnitEta.strictlyExtendsBetaEtaConv (profile : PolyProfile) :
       unitChain
   exact Generator.noConfusion
     (congrArg RawTerm.headGenerator (variableIsCommon.trans unitIsCommon.symm))
+
+/-- **★ Unit-η is STRICTLY beyond βη-conversion**: the unit-typed variable and the unit value are
+judgmentally equal (`unitEta` — both typed at `unitTypeCell`) but provably NOT `BetaEtaConv` (both
+are βη-normal leaves, so a join forces them syntactically equal — distinct head generators).  The
+textbook motivation for type-directed η, machine-checked: no rewriting relation can close this
+pair, only the type can. -/
+theorem DefEqUnitEta.strictlyExtendsBetaEtaConv (profile : PolyProfile) :
+    ∃ (context : TypingContext profile 1) (leftTerm rightTerm : RawTerm 1),
+      DefEqUnitEta profile context leftTerm rightTerm unitTypeCell ∧
+        ¬ BetaEtaConv leftTerm rightTerm :=
+  ⟨unitVariableContext profile, variableCell ⟨0, Nat.zero_lt_one⟩, unitCell,
+    .unitEta (Or.inr (unitVariableTyped profile))
+      (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitVariableContext profile))),
+    unitVariableNotBetaEtaConvUnitValue⟩
 
 /-- **The honest degeneracy boundary**: on the DATA-INTRO fragment the `unitEta` arm is
 refl-degenerate — closed unit canonicity (`subjectIsUnitOfUnitClassifier`) already collapses both
@@ -215,5 +226,70 @@ def DefEqUnitEta.decidableOfWfTyped {profile : PolyProfile} {scope : Nat}
         .isTrue (.ofBetaEtaConv contextWellFormed leftTyped rightTyped convertible)
     | .isFalse notConvertible =>
         .isFalse (fun defEq => notConvertible (defEq.betaEtaConvOfNotUnit isUnitClassifier))
+
+/-! ## The formation-row payoff — unit-typed variables get the wf metatheory
+
+The nullary `unitCode` formation row (flag-pinned `nullaryFormerOutput`) discharges honest
+boundary (2): `unitTypeCell` is a formation TYPE, so `WfContextDesc` binds it, the grown lift
+hands the unit-variable context to the full wf metatheory (open SN / open βη-SN / βη
+Church-Rosser), and the strictness witness + the unit-η decider now live on the DECIDABLE wf
+fragment. -/
+
+/-- **`unitTypeCell` is formation-typed at the pinned `Type@0`** — the nullary `unitCode` row
+fires with the empty telescope in ANY context (the row is context-uniform; the empty telescope's
+floating flag is absorbed by the flag-IGNORING pinned output). -/
+theorem unitTypeCellFormationTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeDesc profile context unitTypeCell
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
+  HasTypeDesc.genFormation context .gen_unitCode () .childNil [] UniverseFlag.standard
+    { outputType := nullaryFormerOutput } typingRuleDescOf_unitCode
+    (DescTelescope.nil (currentDepth := 0) context UniverseFlag.standard)
+
+/-- `unitTypeCell` is a formation type — the `IsTypeDesc` triple at the pinned
+`(lzero, standard)`. -/
+theorem unitTypeCellIsTypeDesc {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    IsTypeDesc profile context unitTypeCell :=
+  ⟨LevelExpr.lzero, UniverseFlag.standard, unitTypeCellFormationTyped context⟩
+
+/-- **★ The wf upgrade**: the unit-variable context is formation-well-formed — `WfContextDesc`
+now binds `unitTypeCell` (honest boundary (2), discharged by the formation row). -/
+theorem unitVariableContextWellFormed (profile : PolyProfile) :
+    WfContextDesc (unitVariableContext profile) :=
+  WfContextDesc.cons WfContextDesc.emptyIsWellFormed
+    (unitTypeCellIsTypeDesc TypingContext.empty)
+
+/-- The grown lift: the unit-variable context is grown-well-formed, so the FULL wf metatheory —
+open SN (`HasTypeDescPi` + `WfContextDescPi` ⟹ strongly normalizing), open βη-SN, βη
+Church-Rosser, the #1202 βη decider, and the unit-η decider below — applies to unit-typed
+variables. -/
+theorem unitVariableContextWellFormedPi (profile : PolyProfile) :
+    WfContextDescPi (unitVariableContext profile) :=
+  WfContextDescPi.ofWfContextDesc (unitVariableContextWellFormed profile)
+
+/-- **★ The strictness witness on the WELL-FORMED fragment**: the same variable-vs-`unitCell`
+pair, now over a context certified `WfContextDesc` — unit-η strictly extends βη-conversion
+exactly where the wf metatheory (and the decider) operates, not merely in a raw context. -/
+theorem DefEqUnitEta.strictlyExtendsBetaEtaConvOnWfFragment (profile : PolyProfile) :
+    ∃ (context : TypingContext profile 1), WfContextDesc context ∧
+      ∃ (leftTerm rightTerm : RawTerm 1),
+        DefEqUnitEta profile context leftTerm rightTerm unitTypeCell ∧
+          ¬ BetaEtaConv leftTerm rightTerm :=
+  ⟨unitVariableContext profile, unitVariableContextWellFormed profile,
+    variableCell ⟨0, Nat.zero_lt_one⟩, unitCell,
+    .unitEta (Or.inr (unitVariableTyped profile))
+      (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitVariableContext profile))),
+    unitVariableNotBetaEtaConvUnitValue⟩
+
+/-- **The decider instantiates at the unit-variable context** — previously impossible (boundary
+(2) blocked the `WfContextDesc` premise).  The unit-η judgment over the wf unit context is
+DECIDED, completing the #362 story: relation + strictness + decidability, all on the wf
+fragment. -/
+def DefEqUnitEta.unitVariableDecidable (profile : PolyProfile) :
+    Decidable (DefEqUnitEta profile (unitVariableContext profile)
+      (variableCell ⟨0, Nat.zero_lt_one⟩) (variableCell ⟨0, Nat.zero_lt_one⟩) unitTypeCell) :=
+  DefEqUnitEta.decidableOfWfTyped (unitVariableContextWellFormed profile)
+    (unitVariableTyped profile) (unitVariableTyped profile)
 
 end FX1Poly.Typed
