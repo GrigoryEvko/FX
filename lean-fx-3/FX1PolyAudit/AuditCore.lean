@@ -82,6 +82,7 @@ import FX1Poly.Core.SconingSNObjectUnique
 import FX1Poly.Core.EtaRootClassifier
 import FX1Poly.Core.ConvRenameReflection
 import FX1Poly.Core.RawTermRenameInjective
+import FX1Poly.Core.ConvRenameEquivariance
 import FX1Poly.Typed.RawBetaNotRpoOrientable
 import FX1Poly.Typed.SnTriangulationBundle
 import FX1Poly.Typed.HonestCapstoneSignoff
@@ -1244,3 +1245,12 @@ pinned reflection's piIntro arm consumes (`Conv` reflects `lift rho`).  Zero-axi
 #assert_no_axioms FX1Poly.Core.RawTermChildren.rename_injective
 #assert_no_axioms FX1Poly.Core.Conv.reflectRenameOfFinInjective
 #assert_no_axioms FX1Poly.Core.Conv.reflectLiftRename
+-- STR-7: the Conv/NF renaming-EQUIVARIANCE bundle (ConvRenameEquivariance) — the two shipped halves
+-- (preservation Conv.rename #370 + reflection Conv.reflectRename* #1167) assembled as iffs at the three
+-- shapes the whnf-directed checker compares classifiers in (general Fin-injective / weaken / lift), plus
+-- structural-normality invariance under EVERY renaming (Step.rename pushes a source step forward,
+-- Step.reflectRename pulls an image step back — Bool case split, no excluded middle).
+#assert_no_axioms FX1Poly.Core.Conv.rename_iff_ofFinInjective
+#assert_no_axioms FX1Poly.Core.Conv.renameWeaken_iff
+#assert_no_axioms FX1Poly.Core.Conv.renameLift_iff
+#assert_no_axioms FX1Poly.Core.RawTerm.isStepNormalForm_rename_iff
