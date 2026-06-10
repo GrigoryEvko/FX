@@ -95,9 +95,65 @@ theorem asLamCell?_sound {scope : Nat} {term : RawTerm scope}
         rfl
     · cases isLam
 
-/-- **The type-directed η-long readback, unit + Π fragment**: classifier-directed unit collapse,
-Π-descent on matching λs, η-EXPANSION on non-λ subjects at Π; everywhere else (and at fuel 0)
-the unconditionally sound deep collapse. -/
+/-- Destructure an application cell into its function and argument (syntactic). -/
+def asAppCell? {scope : Nat} : RawTerm scope → Option (RawTerm scope × RawTerm scope)
+  | .mkGen generator _payload children =>
+      if isApp : generator = Generator.gen_app then
+        match (isApp ▸ children :
+            RawTermChildren (Generator.gen_app.binderShifts) scope) with
+        | .childCons functionTerm (.childCons argument .childNil) =>
+            some (functionTerm, argument)
+      else none
+
+/-- `asAppCell?` is honest: a positive answer reconstructs the application cell. -/
+theorem asAppCell?_sound {scope : Nat} {term : RawTerm scope}
+    {functionTerm argument : RawTerm scope}
+    (isApp : asAppCell? term = some (functionTerm, argument)) :
+    term = appCell functionTerm argument := by
+  match term, isApp with
+  | .mkGen generator payload children, isApp =>
+    dsimp only [asAppCell?] at isApp
+    split at isApp
+    · next isAppGen =>
+        subst isAppGen
+        split at isApp
+        next headFunction headArgument childrenEq =>
+        have childrenShape :
+            children = .childCons headFunction (.childCons headArgument .childNil) :=
+          childrenEq
+        subst childrenShape
+        cases Option.some.inj isApp
+        rfl
+    · cases isApp
+
+/-- Destructure a variable cell into its de Bruijn index (syntactic). -/
+def asVarCell? {scope : Nat} : RawTerm scope → Option (Fin scope)
+  | .mkGen generator payload _children =>
+      if isVar : generator = Generator.gen_var then
+        some (isVar ▸ payload : Generator.gen_var.payload scope)
+      else none
+
+/-- `asVarCell?` is honest: a positive answer reconstructs the variable cell. -/
+theorem asVarCell?_sound {scope : Nat} {term : RawTerm scope} {index : Fin scope}
+    (isVar : asVarCell? term = some index) :
+    term = variableCell index := by
+  match term, isVar with
+  | .mkGen generator payload children, isVar =>
+    dsimp only [asVarCell?] at isVar
+    split at isVar
+    · next isVarGen =>
+        subst isVarGen
+        cases Option.some.inj isVar
+        rw [RawTermChildren.eq_childNil children]
+        rfl
+    · cases isVar
+
+/-- **The type-directed η-long readback, unit + Π + spine fragment**: classifier-directed unit
+collapse, Π-descent on matching λs, η-EXPANSION on non-λ subjects at Π, and — at classifiers
+that are neither — the NEUTRAL-SPINE arm: a variable-headed application's argument is read back
+at the DOMAIN of the head's looked-up Π code (the classifier the 6th boundary proved
+unreachable bottom-up); everywhere else (and at fuel 0) the unconditionally sound deep
+collapse. -/
 def readbackAtClassifier {profile : PolyProfile} :
     Nat → {scope : Nat} → TypingContext profile scope →
       RawTerm scope → RawTerm scope → RawTerm scope
@@ -106,7 +162,18 @@ def readbackAtClassifier {profile : PolyProfile} :
       if classifier = unitTypeCell then unitCell
       else
         match asPiCode? classifier with
-        | none => collapseUnitVariablesDeep context term
+        | none =>
+            match asAppCell? term with
+            | none => collapseUnitVariablesDeep context term
+            | some (functionTerm, argument) =>
+                match asVarCell? functionTerm with
+                | none => collapseUnitVariablesDeep context term
+                | some index =>
+                    match asPiCode? (context.lookup index) with
+                    | none => collapseUnitVariablesDeep context term
+                    | some (domainCode, _codomainCode) =>
+                        appCell functionTerm
+                          (readbackAtClassifier fuel context domainCode argument)
         | some (domainCode, codomainCode) =>
             match asLamCell? term with
             | none =>
@@ -149,7 +216,46 @@ theorem readbackAtClassifier_congruent {profile : PolyProfile} :
             (Or.inl (HasTypeDescDataIntro.unitValueTyped context)))
       · next _notUnit =>
           split
-          · exact collapseUnitVariablesDeep_congruent context term
+          · -- the NEUTRAL-SPINE arm: classifier is not a Π code
+            split
+            · exact collapseUnitVariablesDeep_congruent context term
+            · next functionTerm argument hApp =>
+                split
+                · exact collapseUnitVariablesDeep_congruent context term
+                · next index hVar =>
+                    split
+                    · exact collapseUnitVariablesDeep_congruent context term
+                    · next domainCode _codomainCode hLookupPi =>
+                        have termIsApp := asAppCell?_sound hApp
+                        have functionIsVar := asVarCell?_sound hVar
+                        subst termIsApp
+                        subst functionIsVar
+                        have lookupIsPi := asPiCode?_sound hLookupPi
+                        obtain ⟨innerDomain, innerCodomain, functionTyped,
+                          argumentTypedInner, _classifierConv⟩ :=
+                          HasTypeDescPi.invertApp subjectTyped
+                        have functionClassifierConv :=
+                          HasTypeDescPi.invertVar functionTyped
+                        rw [lookupIsPi] at functionClassifierConv
+                        have domainsConv : Conv innerDomain domainCode :=
+                          (Conv.piTyCode_inj functionClassifierConv).1
+                        obtain ⟨_lookupLevel, _lookupFlag, lookupFormationTyped⟩ :=
+                          WfContextDesc.lookupIsTypeDesc context contextWellFormed index
+                        rw [lookupIsPi] at lookupFormationTyped
+                        obtain ⟨formDomainLevel, _formCodomainLevel, formFlag,
+                          domainFormationTyped, _codomainFormationTyped, _convClass⟩ :=
+                          HasTypeDesc.inversionPiCodeComponents lookupFormationTyped
+                        have argumentTyped :
+                            HasTypeDescPi profile context argument domainCode :=
+                          HasTypeDescPi.conv formDomainLevel formFlag argumentTypedInner
+                            domainsConv
+                            (HasTypeDescPi.ofFormation domainFormationTyped)
+                        exact DefEqUnitEtaCong.congGen (generator := Generator.gen_app) ()
+                          (.consEqualZero (.consZero
+                            (readbackAtClassifier_congruent fuel context domainCode
+                              argument contextWellFormed argumentTyped
+                              domainFormationTyped)
+                            .nil))
           · next domainCode codomainCode hPiCode =>
               have classifierIsPi := asPiCode?_sound hPiCode
               subst classifierIsPi

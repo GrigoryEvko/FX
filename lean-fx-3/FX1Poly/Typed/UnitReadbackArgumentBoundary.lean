@@ -134,16 +134,6 @@ theorem appArgumentPair_congruentlyEqual (profile : PolyProfile) :
               (Step.betaEtaStar.refl _)⟩))
         .nil))
 
-/-- At the OPAQUE classifier `Type@0` the readback degrades to the deep collapse at EVERY fuel —
-`Type@0` is neither `unitTypeCell` nor a Π code, so no classifier-directed arm fires. -/
-theorem readback_atUniverseClassifierIsDeepCollapse (profile : PolyProfile) :
-    ∀ (fuel : Nat) (term : RawTerm 2),
-      readbackAtClassifier fuel (appArgumentContext profile)
-          (universeCodeCell LevelExpr.lzero UniverseFlag.standard) term
-        = collapseUnitVariablesDeep (appArgumentContext profile) term
-  | 0, _ => rfl
-  | _ + 1, _ => rfl
-
 /-- The deep collapse of the η-expanded application: the bound variable INSIDE the η-expansion is
 unit-typed under the binder, so the collapse rewrites it — but the η-redex shape survives. -/
 def collapsedEtaExpandedApplication : RawTerm 2 :=
@@ -178,33 +168,48 @@ theorem collapsedAppArgumentPair_notBetaEtaConv :
       expandedChain
   exact absurd (bareEq.trans expandedEq.symm) (by decide)
 
-/-- **★ The 6th boundary — the readback is incomplete at APPLICATION-ARGUMENT positions**: a
-congruently unit-η-equal pair (the η pair, injected at an argument position under an OPAQUE
-result classifier) whose readbacks at EVERY fuel are distinct βη-normal forms that never join.
-The classifier flows through λ-binders but stops at application nodes — the argument's
-classifier is the function type's domain, which only SPINE SYNTHESIS recovers.  The fix is the
-missing half of the NbE quote pair: `quoteNeutral` (spine-directed) mutually with the shipped
-`quoteNormal`. -/
-theorem readback_isIncompleteAtApplicationArguments (profile : PolyProfile) :
+/-- **★ The 6th boundary — every binder-fenced/collapse-mode procedure is incomplete at
+APPLICATION-ARGUMENT positions**: a congruently unit-η-equal pair (the η pair, injected at an
+argument position under an OPAQUE result classifier) whose DEEP COLLAPSES are distinct βη-normal
+forms that never join — root-η cannot reach an η-redex inside an application, and no bottom-up
+traversal supplies the argument's classifier.  This boundary FORCED the neutral-spine arm. -/
+theorem deepCollapseMode_isIncompleteAtApplicationArguments (profile : PolyProfile) :
     ∃ (leftTerm rightTerm : RawTerm 2),
       DefEqUnitEtaCong profile (appArgumentContext profile) leftTerm rightTerm ∧
-      (∀ leftFuel rightFuel : Nat,
-        readbackAtClassifier leftFuel (appArgumentContext profile)
-            (universeCodeCell LevelExpr.lzero UniverseFlag.standard) leftTerm
-          ≠ readbackAtClassifier rightFuel (appArgumentContext profile)
-              (universeCodeCell LevelExpr.lzero UniverseFlag.standard) rightTerm) ∧
+      collapseUnitVariablesDeep (appArgumentContext profile) leftTerm
+        ≠ collapseUnitVariablesDeep (appArgumentContext profile) rightTerm ∧
       ¬ BetaEtaConv
           (collapseUnitVariablesDeep (appArgumentContext profile) leftTerm)
           (collapseUnitVariablesDeep (appArgumentContext profile) rightTerm) :=
   ⟨appliedToBareArgument, appliedToEtaExpandedArgument,
     appArgumentPair_congruentlyEqual profile,
-    fun leftFuel rightFuel readbacksEqual =>
+    fun collapsesEqual =>
       absurd
-        (show appliedToBareArgument = collapsedEtaExpandedApplication from
-          (readback_atUniverseClassifierIsDeepCollapse profile leftFuel _).symm.trans
-            (readbacksEqual.trans
-              (readback_atUniverseClassifierIsDeepCollapse profile rightFuel _)))
+        (show appliedToBareArgument = collapsedEtaExpandedApplication from collapsesEqual)
         (by decide),
     collapsedAppArgumentPair_notBetaEtaConv⟩
+
+/-- **★ THE 6TH-BOUNDARY PAIR, DECIDED — the neutral-spine arm resolves it**: the readback now
+recovers the argument's classifier from the head variable's looked-up Π code, so BOTH sides read
+back to `app(f, λ(x:Unit).unitCell)` — the η-long argument form — and `ofReadbackEqual` closes
+the pair at `rfl`.  The spine arm composes with η-expansion (left: the bare `g` η-expands at the
+recovered `Π(_:Unit).Unit`) and with the unit collapse (the expansion body at the codomain). -/
+theorem appArgumentPair_decidedByReadback (profile : PolyProfile) :
+    DefEqUnitEtaCong profile (appArgumentContext profile)
+      appliedToBareArgument appliedToEtaExpandedArgument :=
+  DefEqUnitEtaCong.ofReadbackEqual (leftFuel := 3) (rightFuel := 3)
+    (appArgumentContextWellFormed profile)
+    (appliedToBareArgumentTyped profile)
+    (appliedToEtaExpandedArgumentTyped profile)
+    (HasTypeDesc.universeFormation (appArgumentContext profile)
+      LevelExpr.lzero UniverseFlag.standard)
+    rfl
+
+/-- **The spine arm computes the η-long argument form** — the recovered classifier drives the
+argument all the way to `λ(x:Unit).unitCell`, by `rfl`. -/
+theorem readback_recoversArgumentClassifier (profile : PolyProfile) :
+    readbackAtClassifier 3 (appArgumentContext profile)
+        (universeCodeCell LevelExpr.lzero UniverseFlag.standard) appliedToBareArgument
+      = appCell (variableCell ⟨1, Nat.le.refl⟩) (lamCell unitTypeCell unitCell) := rfl
 
 end FX1Poly.Typed

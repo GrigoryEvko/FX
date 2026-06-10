@@ -3503,6 +3503,10 @@ modal/cubical η (#363).  Zero-axiom. -/
 
 #assert_no_axioms FX1Poly.Typed.asLamCell?
 #assert_no_axioms FX1Poly.Typed.asLamCell?_sound
+#assert_no_axioms FX1Poly.Typed.asAppCell?
+#assert_no_axioms FX1Poly.Typed.asAppCell?_sound
+#assert_no_axioms FX1Poly.Typed.asVarCell?
+#assert_no_axioms FX1Poly.Typed.asVarCell?_sound
 #assert_no_axioms FX1Poly.Typed.readbackAtClassifier
 #assert_no_axioms FX1Poly.Typed.readbackAtClassifier_congruent
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofReadbackEqual
@@ -3516,17 +3520,19 @@ modal/cubical η (#363).  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.etaPair_decidedByReadback
 #assert_no_axioms FX1Poly.Typed.etaUnitPair_decidedByReadback
 
-/-! ### UnitReadbackArgumentBoundary — ★ the 6th boundary: classifiers stop at application nodes
+/-! ### UnitReadbackArgumentBoundary — ★ the 6th boundary + its RESOLUTION by the spine arm
 
-The brick-3 pre-construction verdicts: (Σ) the Σ-η mirror is BLOCKED by engine separation —
-the expansion emits a pair and `pairCellHasNoTyping` makes `ofBetaEtaConv`'s both-typed
-presupposition unsatisfiable (#361 re-gated on a grown pair-intro rule); (apps) in
+The brick-3/4 cycle: (Σ) the Σ-η mirror is BLOCKED by engine separation — the expansion emits a
+pair and `pairCellHasNoTyping` makes `ofBetaEtaConv`'s both-typed presupposition unsatisfiable
+(#361 re-gated on a grown pair-intro rule); (the boundary) in
 `(f : Π(_:Π(_:Unit).Unit).Type@0, g : Π(_:Unit).Unit)` the pair `app(f,g)` vs
-`app(f, λx.(weaken g)x)` is Cong-related (the η pair at an ARGUMENT position) yet at the opaque
-classifier `Type@0` the readback degrades to the deep collapse at EVERY fuel and the results are
-distinct never-joining βη-normal forms — root-η cannot reach an η-redex INSIDE an application
-and no classifier flows to the argument.  The fix is the missing NbE half: `quoteNeutral`
-(spine-directed, via the shipped `detectSpineType`) mutual with the shipped `quoteNormal`.
+`app(f, λx.(weaken g)x)` is Cong-related (the η pair at an ARGUMENT position) yet its DEEP
+COLLAPSES are distinct never-joining βη-normal forms — every binder-fenced/collapse-mode
+procedure fails it; (the resolution) the NEUTRAL-SPINE arm recovers the argument's classifier
+from the head variable's looked-up Π code: both sides now read back to the η-long
+`app(f, λ(x:Unit).unitCell)` and `ofReadbackEqual` decides the pair at `rfl`.  The spine-arm
+soundness chains `invertApp` + `invertVar` + Π-injectivity + `lookupIsTypeDesc` +
+`inversionPiCodeComponents` — every hypothesis self-supplied by the wf presuppositions.
 Zero-axiom. -/
 
 #assert_no_axioms FX1Poly.Typed.appArgumentContext
@@ -3536,11 +3542,12 @@ Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.appliedToBareArgumentTyped
 #assert_no_axioms FX1Poly.Typed.appliedToEtaExpandedArgumentTyped
 #assert_no_axioms FX1Poly.Typed.appArgumentPair_congruentlyEqual
-#assert_no_axioms FX1Poly.Typed.readback_atUniverseClassifierIsDeepCollapse
 #assert_no_axioms FX1Poly.Typed.deepCollapse_appliedToEtaExpanded
 #assert_no_axioms FX1Poly.Typed.deepCollapse_appliedToBare
 #assert_no_axioms FX1Poly.Typed.collapsedAppArgumentPair_notBetaEtaConv
-#assert_no_axioms FX1Poly.Typed.readback_isIncompleteAtApplicationArguments
+#assert_no_axioms FX1Poly.Typed.deepCollapseMode_isIncompleteAtApplicationArguments
+#assert_no_axioms FX1Poly.Typed.appArgumentPair_decidedByReadback
+#assert_no_axioms FX1Poly.Typed.readback_recoversArgumentClassifier
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
