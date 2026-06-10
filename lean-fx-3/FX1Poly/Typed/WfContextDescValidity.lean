@@ -14,13 +14,13 @@ line).  This is the canonical formation validity, threaded by the formation-engi
 * `var` — `WfContextDesc.lookupIsTypeDesc` concludes `IsTypeDesc` of the looked-up type directly.
 * `conv` — the reclassifier's own typing IS the `IsTypeDesc` witness.
 * `universeFormation` — `universeCodeCell ℓ.lsucc f` is typed one level up by `HasTypeDesc.universeFormation`.
-* `genFormation` — the table-generic `typingRuleDescOf_outputIsUniverseFormer` reduces the output to
+* `genFormation` — the row-shape-agnostic `typingRuleDescOf_output_isUniverseCode` reduces the output to
   `universeCodeCell (lmaxAll levels) flag`, a universe code typed one level up.
 
 ## Zero-axiom verification
 
 Full-enumeration term-mode `match` on the formation derivation + `WfContextDesc.lookupIsTypeDesc` +
-`HasTypeDesc.universeFormation` + the `typingRuleDescOf_outputIsUniverseFormer` table fact.  No `axiom`,
+`HasTypeDesc.universeFormation` + the `typingRuleDescOf_output_isUniverseCode` interface fact.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -47,8 +47,12 @@ theorem HasTypeDesc.classifierIsTypeDescNative {profile : PolyProfile} {scope : 
       ⟨_, _, HasTypeDesc.universeFormation context levelExpr.lsucc flag⟩
   | .genFormation context generator _payload _children levels flag rule
       isFormation _premises => by
-      rw [typingRuleDescOf_outputIsUniverseFormer isFormation]
-      exact ⟨(lmaxAll levels).lsucc, flag,
-        HasTypeDesc.universeFormation context (lmaxAll levels) flag⟩
+      -- ROW-SHAPE-AGNOSTIC (UNIT-3a migration): the output is SOME universe code — true for the
+      -- flag-using `universeFormerOutput` rows and any future flag-pinned nullary row alike.
+      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
+      rw [hOutput]
+      exact ⟨outputLevel.lsucc, outputFlag,
+        HasTypeDesc.universeFormation context outputLevel outputFlag⟩
 
 end FX1Poly.Typed

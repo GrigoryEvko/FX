@@ -255,6 +255,36 @@ theorem formationRuleIsUniverseFormer {generator : Generator} {rule : TypingRule
   cases rule
   rw [← outputIsFormer]
 
+/-! ### The ROW-SHAPE-AGNOSTIC output interface (UNIT-3a, the staged nullary-row migration)
+
+`typingRuleDescOf_outputIsUniverseFormer` / `formationRuleIsUniverseFormer` pin every row's output
+to EXACTLY `universeFormerOutput` — a fact that becomes FALSE the moment a NULLARY formation row
+lands (a nullary row's telescope premise `DescTelescope ... [] flag .childNil` accepts EVERY flag,
+so its output must IGNORE the flag — `fun _ _ _ => Type@0(standard)` — to preserve uniqueness; the
+"documented future branch" of `typingRuleDescOf_binderShiftsNonEmpty`).  What consumers actually
+NEED from the output is weaker and survives both row shapes:
+
+  * it is a UNIVERSE CODE (validity: the classifier is a type) — `output_isUniverseCode` below;
+  * it is RENAME- and SUBST-STABLE (the weakening/substitution reconstructions) —
+    `typingRuleDescOf_output_renameStable` / `_substStable`, housed with the rename/subst
+    vocabulary in `CellRenaming` / `CellSubstitution`.
+
+The interface lemmas are — currently proved THROUGH the strong equation (every
+row is `universeFormerOutput` today), so they are row-shape-agnostic by statement and remain true
+verbatim when the nullary `unitCode` row lands.  The staged migration (UNIT-3a..z): ship this
+interface, migrate the ~27 consumer files off the strong equation one green commit at a time, then
+flip the table (add the nullary row + rescope the strong lemmas to the ≥1-child family). -/
+
+/-- **The output is a universe code** — for every row, scope, level list, and flag.  The
+row-shape-agnostic validity interface. -/
+theorem typingRuleDescOf_output_isUniverseCode {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    (scope : Nat) (levels : List LevelExpr) (flag : UniverseFlag) :
+    ∃ (outputLevel : LevelExpr) (outputFlag : UniverseFlag),
+      rule.outputType scope levels flag = universeCodeCell outputLevel outputFlag := by
+  rw [typingRuleDescOf_outputIsUniverseFormer isFormation]
+  exact ⟨lmaxAll levels, flag, rfl⟩
+
 /-- **A formation telescope's level list and the generator's shift list have equal length.**  Structural
 recursion on the telescope (`DescTelescope` is mutual with `HasTypeDesc`, so `induction` is unavailable —
 term-mode `match` recurses through the `restTyped` field; `cons` prepends exactly one shift and one level).

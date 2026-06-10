@@ -53,6 +53,17 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
+/-- **Row-shape-agnostic output subst-stability** (UNIT-3a interface) — the substitution twin of
+`typingRuleDescOf_output_renameStable`. -/
+theorem typingRuleDescOf_output_substStable {generator : Generator} {rule : TypingRuleDesc}
+    (isFormation : typingRuleDescOf generator = some rule)
+    {sourceScope targetScope : Nat} (substitution : RawTermSubst sourceScope targetScope)
+    (levels : List LevelExpr) (flag : UniverseFlag) :
+    RawTerm.subst substitution (rule.outputType sourceScope levels flag)
+      = rule.outputType targetScope levels flag := by
+  rw [typingRuleDescOf_outputIsUniverseFormer isFormation]
+  exact subst_universeCodeCell substitution (lmaxAll levels) flag
+
 mutual
 
 /-- INTRINSIC general substitution (P6): `HasTypeDesc` is preserved along any substitution

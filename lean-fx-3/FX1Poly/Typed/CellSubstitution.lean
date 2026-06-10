@@ -136,4 +136,5 @@ theorem subst_singleton_renameWeaken_cancel {scope : Nat}
   rw [← RawTerm.weaken_eq_rename]
   exact RawTerm.weaken_subst_singleton sourceTerm rawArg
 
+
 end FX1Poly.Typed

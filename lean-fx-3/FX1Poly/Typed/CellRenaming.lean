@@ -121,4 +121,5 @@ theorem rename_lift_weaken_commute {sourceScope targetScope : Nat}
   rw [RawTerm.rename_compose, RawTerm.rename_compose]
   exact RawTerm.rename_pointwise (fun _position => rfl) sourceTerm
 
+
 end FX1Poly.Typed

@@ -3237,6 +3237,18 @@ yet); the data-intro fragment is refl-degenerate (`dataIntroUnitPairsCollapseToR
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.dataIntroUnitPairsCollapseToRefl
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.betaEtaConvOfNotUnit
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.decidableOfWfTyped
+
+/-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
+
+The strong table fact (`rule = universeFormerOutput`) becomes FALSE when the nullary `unitCode`
+formation row lands (its output must IGNORE the floating flag of the nil telescope to preserve
+uniqueness).  These interface lemmas state only what consumers NEED — the output is SOME universe
+code, rename-stable, subst-stable — true for both row shapes; the ~27 consumer files migrate off
+the strong equation one green commit at a time, then the table flips. -/
+
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_output_isUniverseCode
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_output_renameStable
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_output_substStable
 -- BASE-TYPE FORMATION ENGINE (HasTypeDescBaseType, #1061 / DI-1b-flagpin): the standalone NULLARY type-FORMER
 -- judgment, the FORMATION twin of HasTypeDescDataIntro (which types the VALUES). A new relation (not an arm of
 -- HasTypeDescPi), so the grown-engine refutations stay true. The single baseFormation arm + baseTypeRuleDescOf
