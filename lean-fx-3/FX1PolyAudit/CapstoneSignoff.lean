@@ -7,6 +7,10 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescDecidable
+import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
+import FX1Poly.Typed.SemanticTierSoundness
+import FX1Poly.Typed.BetaEtaConvDecidable
+import FX1Poly.Typed.TypedNbeConvDecision
 import FX1Poly.Typed.ThirdWayBoundaries
 import FX1Poly.Core.ConvWordJoinableBridge
 
@@ -48,25 +52,38 @@ termination ≡ SN correspondence; the canonicity half stays dropped per
 `RawTerm.toCode_not_injective` (the committed reverse blocker — payload collapse; the
 word→`Conv` reverse needs a payload-faithful encoding, the named follow-on).
 
-## MILESTONE A0 (tracker #464) — shipped pillars gated; NOT closed
+## MILESTONE A0 (tracker #464) — SIGNED OFF in this file, per §11.8.12.0
 
-Shipped and gated here: `wfContextDefensibleKernel` (open SN + decidable `Conv` of well-typed terms
-over EVERY well-formed context — the A0 decidability floor), `HasTypeDesc.decidableOfWellFormed`
-(decidable formation checking), and the FX0 external cross-check
-`FX0CrossCheck.externalVerify_accepts_certified` (the standalone re-checker accepts the encoding of
-every wf-typed subject, with SN).  The host-minimal certifier gate (FX0-PC.1, #220) is SHIPPED:
-`#assert_host_minimal` in `AuditFX0Poly` re-verifies on every build that the Layer-1 certifier's
-full transitive closure is axiom-free, prelude-family-only (no `Lean.*`/`Std.*`), `unsafe`/
-`partial`-free, opaque-free, and quotient-free.  The STRICT-COMPLEXITY witnesses (#268 / #471 /
-#648) are SHIPPED, two-tier honest: a machine-checked POLYNOMIAL witness where it is true
-(`levelDenoteEquivDecisionComplexity`, quadratic), and EXACT counters + chain identities +
-unboundedness where no size-polynomial is true (`normalizeSteps` for the term normalizer,
-`decideStronglyNormalizingSteps` for the SN-fragment `Conv` decider; Statman non-elementarity
-literature-cited, named open formalization target).  EXACT residual keeping #464 open: the
-joint-decidability apex (O-NORM, open research — A0's deciders are per-fragment/wf-scoped).
-CERTIFICATE-NOTION CAVEAT (post O-STACK #1194): A0's external-verification leg is the
+The spec (polycell.md §11.8.12.0) defines A₀ as exactly three pillars — decidable typed checking
+on the live typed fragment with a PROVEN boundary, decidable typed conversion on the same
+fragment, and the FX0 cross-check — and EXPLICITLY excludes the joint-apex normalization (O-NORM)
+from A₀'s claims ("A₀ does NOT claim: joint-apex normalization (O-NORM) …").  An earlier revision
+of this docstring cited O-NORM as "the exact residual keeping #464 open" — that framing
+CONTRADICTED the spec it cites and is retired: O-NORM is a non-claim of A₀ by definition, tracked
+at revised-MILESTONE-A and beyond, not an A₀ residual.  Per the spec, the sign-off artifact is
+this audit module enumerating the pillar carriers by name, "after which #464 closes".
+
+The POSITIVE assembled capstone is **`milestoneA0SignoffHolds`** (below): one checked record
+whose seven fields are the shipped pillar carriers —
+  * checking: `HasTypeDesc.decidableOfWellFormed` (native formation decider) +
+    `HasTypeDescPi.decidableCheckOfInferredUniqueAtType` (the grown bidirectional compare step);
+  * boundary: `reservedTierUntypedByEveryEngine` (reserved generators head no typed cell — the
+    grown conjunct is the record field; the full nine-engine conjunction is gated by name);
+  * conversion: `wfContextDefensibleKernel.convDecidable` (typed `Conv` decider, every wf
+    context) + `BetaEtaConv.decidableOfWfTyped` (the βη decider) + `checkNbeEqual_sound` (the
+    NbE normalize-and-compare check certifies the full judgmental equality `DefEqUnitEtaCong`);
+  * FX0: `FX0CrossCheck.externalVerify_accepts_certified` (the independent re-checker accepts
+    every wf-typed subject's encoding, with SN).
+Supporting load-bearing facts (independently gated here and in `AuditTyped`): open SN, the
+Milestone-A spine record, uniqueness, the honesty ledger.
+
+Two honest caveats carried forward unchanged: the host-minimal certifier gate (FX0-PC.1, #220)
+is SHIPPED (`#assert_host_minimal` in `AuditFX0Poly`); the STRICT-COMPLEXITY witnesses (#268 /
+#471 / #648) are SHIPPED two-tier honest (`levelDenoteEquivDecisionComplexity` polynomial where
+true; EXACT counters + Statman non-elementarity literature-cited where no size-polynomial is
+true).  CERTIFICATE-NOTION CAVEAT (post O-STACK #1194): A₀'s external-verification leg is the
 sort-AGNOSTIC FX0 re-checker; the sort-disciplined `certifyRawCellExact?` provably does NOT cover
-all typed subjects (`typedDoesNotFactorThroughCertification`) — any A0 release text must say "FX0
+all typed subjects (`typedDoesNotFactorThroughCertification`) — any A₀ release text must say "FX0
 re-checked", not "structurally certified".
 
 ## Zero-axiom verification
@@ -104,6 +121,106 @@ theorem milestoneASpineSignoffHolds {profile : PolyProfile} :
   natCanonicity typed := closedNatCanonicalForms typed
   snTriangulationHonest := FX1Poly.Core.ParityMatrix.honestCapstoneMet_holds
 
+/-- **The Milestone-A₀ sign-off record (#464)** — the §11.8.12.0 release gate as ONE checked
+object: the three A₀ pillars (decidable typed checking + proven boundary, decidable typed
+conversion, FX0 cross-check), each field instantiated by a shipped named theorem.  `Type`-valued
+because the decider fields are decision DATA. -/
+structure MilestoneA0Signoff (profile : PolyProfile) : Type where
+  /-- Pillar 1a — decidable FORMATION checking over every well-formed context
+  (`HasTypeDesc.decidableOfWellFormed`). -/
+  checkingDecidableFormation :
+    ∀ {scope : Nat} {context : TypingContext profile scope},
+      WfContextDesc context → ∀ (subject classifier : RawTerm scope),
+        Decidable (HasTypeDesc profile context subject classifier)
+  /-- Pillar 1b — the GROWN bidirectional compare step: checking against a known-type target is
+  decidable given inference + per-subject uniqueness (`decidableCheckOfInferredUniqueAtType`). -/
+  checkingDecidableGrownCompare :
+    ∀ {scope : Nat} {context : TypingContext profile scope},
+      WfContextDesc context →
+      ∀ {subject inferredType inferredTypeClassifier targetType : RawTerm scope}
+        {targetLevel : LevelExpr} {targetFlag : UniverseFlag},
+        HasTypeDescPi profile context subject inferredType →
+        HasTypeDescPi profile context inferredType inferredTypeClassifier →
+        HasTypeDescPi profile context targetType (universeCodeCell targetLevel targetFlag) →
+        (∀ {otherType : RawTerm scope},
+          HasTypeDescPi profile context subject otherType → Conv inferredType otherType) →
+        Decidable (HasTypeDescPi profile context subject targetType)
+  /-- Pillar 1c — the typed-fragment boundary is PROVEN: a reserved-tier generator heads no
+  grown-typed cell (the grown conjunct of `reservedTierUntypedByEveryEngine`; the full
+  nine-engine conjunction is gated by name alongside). -/
+  typedFragmentBoundary :
+    ∀ {generator : Generator}, semanticTier generator = .reserved →
+      ∀ {scope : Nat} {context : TypingContext profile scope} {subject : RawTerm scope},
+        RawTerm.headGenerator subject = generator →
+        ∀ classifier : RawTerm scope, ¬ HasTypeDescPi profile context subject classifier
+  /-- Pillar 2a — decidable typed `Conv` of well-typed terms over every well-formed context
+  (`wfContextDefensibleKernel.convDecidable`). -/
+  conversionDecidableConv :
+    ∀ {scope : Nat} {context : TypingContext profile scope}
+      {leftSubject leftClassifier rightSubject rightClassifier : RawTerm scope},
+      WfContextDesc context →
+        HasTypeDescPi profile context leftSubject leftClassifier →
+          HasTypeDescPi profile context rightSubject rightClassifier →
+            Decidable (Conv leftSubject rightSubject)
+  /-- Pillar 2b — decidable βη-conversion on the wf fragment
+  (`BetaEtaConv.decidableOfWfTyped`). -/
+  conversionDecidableBetaEta :
+    ∀ {scope : Nat} {context : TypingContext profile scope}
+      {leftTerm leftClassifier rightTerm rightClassifier : RawTerm scope},
+      WfContextDesc context →
+      HasTypeDescPi profile context leftTerm leftClassifier →
+      HasTypeDescPi profile context rightTerm rightClassifier →
+      Decidable (BetaEtaConv leftTerm rightTerm)
+  /-- Pillar 2c — the typed-NbE normalize-and-compare check is SOUND for the full judgmental
+  equality with type-directed unit-η and congruence (`checkNbeEqual_sound`, #364). -/
+  conversionNbeCheckSound :
+    ∀ {scope : Nat} {context : TypingContext profile scope}
+      {classifier leftTerm rightTerm : RawTerm scope} {leftFuel rightFuel : Nat}
+      {contextWellFormed : WfContextDesc context}
+      {leftTyped : HasTypeDescPi profile context leftTerm classifier}
+      {rightTyped : HasTypeDescPi profile context rightTerm classifier}
+      {classifierLevel : LevelExpr} {classifierFlag : UniverseFlag},
+      HasTypeDesc profile context classifier
+        (universeCodeCell classifierLevel classifierFlag) →
+      HasTypeDescPi.checkNbeEqual leftFuel rightFuel contextWellFormed leftTyped rightTyped
+        = true →
+      DefEqUnitEtaCong profile context leftTerm rightTerm
+  /-- Pillar 3 — the FX0 cross-check: the independent structural re-checker accepts the encoding
+  of every wf-typed subject, which is moreover strongly normalizing
+  (`FX0CrossCheck.externalVerify_accepts_certified`). -/
+  fx0CrossCheckAccepts :
+    ∀ {scope : Nat} {context : TypingContext profile scope}
+      {subject classifier : RawTerm scope},
+      WfContextDesc context →
+      HasTypeDescPi profile context subject classifier →
+      FX1Poly.FX0CrossCheck.externalVerify
+          (FX0Poly.Cert.encode (FX1Poly.FX0Bridge.encodeCell subject))
+          (FX1Poly.FX0Bridge.encodeCell subject).budget
+        = FX0Poly.CheckVerdict.accepted
+      ∧ StepStar.IsStronglyNormalizing subject
+
+/-- **★ The Milestone-A₀ sign-off HOLDS (#464)** — every field is the shipped named carrier:
+`HasTypeDesc.decidableOfWellFormed`, `HasTypeDescPi.decidableCheckOfInferredUniqueAtType`,
+`reservedTierUntypedByEveryEngine`, `wfContextDefensibleKernel.convDecidable`,
+`BetaEtaConv.decidableOfWfTyped`, `HasTypeDescPi.checkNbeEqual_sound`,
+`FX0CrossCheck.externalVerify_accepts_certified`.  Zero-axiom; A₀'s named non-claims (O-NORM,
+full per-classifier canonicity assembly, grown η-SR breadth, complexity polynomials beyond the
+shipped two-tier witnesses, the external non-Lean FX0 implementation) remain non-claims. -/
+def milestoneA0SignoffHolds {profile : PolyProfile} : MilestoneA0Signoff profile where
+  checkingDecidableFormation wellFormed subject classifier :=
+    HasTypeDesc.decidableOfWellFormed wellFormed subject classifier
+  checkingDecidableGrownCompare wellFormed :=
+    HasTypeDescPi.decidableCheckOfInferredUniqueAtType wellFormed
+  typedFragmentBoundary := fun {_generator} reserved {_scope} {_context} {_subject} headEq =>
+    (reservedTierUntypedByEveryEngine reserved headEq).1
+  conversionDecidableConv := wfContextDefensibleKernel.convDecidable
+  conversionDecidableBetaEta contextWellFormed leftTyped rightTyped :=
+    BetaEtaConv.decidableOfWfTyped contextWellFormed leftTyped rightTyped
+  conversionNbeCheckSound classifierTyped checkPasses :=
+    HasTypeDescPi.checkNbeEqual_sound classifierTyped checkPasses
+  fx0CrossCheckAccepts contextWellFormed typed :=
+    FX1Poly.FX0CrossCheck.externalVerify_accepts_certified contextWellFormed typed
+
 end FX1Poly.Typed
 
 -- ===== MILESTONE-A SPINE (#501) — pillar theorems by name, re-verified =====
@@ -136,7 +253,14 @@ end FX1Poly.Typed
 #assert_no_axioms FX1Poly.Core.Conv.toWordJoinable
 #assert_no_axioms FX1Poly.Core.RawTerm.toCode_not_injective
 
--- ===== MILESTONE A0 (#464) — shipped pillars by name; residuals #220, #268/#471/#648, O-NORM =====
+-- ===== MILESTONE A0 (#464) — the §11.8.12.0 pillar carriers by name, SIGNED OFF =====
 #assert_no_axioms FX1Poly.Typed.wfContextDefensibleKernel
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormed
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckOfInferredUniqueAtType
+#assert_no_axioms FX1Poly.Typed.reservedTierUntypedByEveryEngine
+#assert_no_axioms FX1Poly.Typed.semanticTierReservedSound
+#assert_no_axioms FX1Poly.Typed.BetaEtaConv.decidableOfWfTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.checkNbeEqual_sound
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_certified
+-- ★ the positive assembled A0 capstone (#464 closes per §11.8.12.0)
+#assert_no_axioms FX1Poly.Typed.milestoneA0SignoffHolds

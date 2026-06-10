@@ -9683,8 +9683,10 @@ audit-gated:
 1. **Decidable typed checking** on the live typed fragment —
    carriers: the native formation decider, the per-shape grown
    checkers, and the standalone-engine deciders; the fragment is
-   exactly the 34 typed generators of the honesty count, and the
-   boundary is PROVEN (reserved ⟹ untyped by every engine).
+   exactly the typed generators of the honesty count (36 of 198
+   as of the unitCode/natCode rows — the build-time ledger is the
+   source of truth, not this paragraph), and the boundary is
+   PROVEN (reserved ⟹ untyped by every engine).
 2. **Decidable typed conversion** — typed NF equality on the same
    fragment, plus the SN-backed normalizer decider and the WfContext
    βη decider.
@@ -9713,10 +9715,12 @@ NbE) is REVISED:
 
 * **MILESTONE A (revised)** = **decidable TYPED conversion + decidable
   TYPED checking** for the semantic core (Phase Z₁ + Z₂ + Z₃).
-  STATUS 2026-06: A₀ (§11.8.12.0) is delivered modulo its sign-off
-  audit; revised A is delivered FOR THE LIVE 34-generator typed
-  fragment (the decidable typed checking + typed Conv carriers
-  listed in the §11.8.5 status); the residual to full revised-A is
+  STATUS 2026-06: A₀ (§11.8.12.0) is SIGNED OFF (the
+  `milestoneA0SignoffHolds` record in `CapstoneSignoff`, #464
+  closed); revised A is delivered FOR THE LIVE typed fragment
+  (36 generators per the honesty ledger; the decidable typed
+  checking + typed Conv carriers listed in the §11.8.5 status);
+  the residual to full revised-A is
   coverage breadth — the motive-spine refactor (Z₀) and the
   remaining semantic-core formers — plus the single assembled grown
   checker, NOT new metatheory.  A+/A++/B/C/D unchanged as targets.
