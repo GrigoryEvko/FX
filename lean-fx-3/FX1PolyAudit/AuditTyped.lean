@@ -440,6 +440,7 @@ import FX1Poly.Typed.TypeDirectedUnitReadback
 import FX1Poly.Typed.UnitReadbackArgumentBoundary
 import FX1Poly.Typed.UnitReadbackFormerChildBoundary
 import FX1Poly.Typed.UnitReadbackDeepSpineBoundary
+import FX1Poly.Typed.UnitReadbackAnnotationBoundary
 import FX1Poly.Typed.ConsistencyTargetSignature
 import FX1Poly.Typed.CandidateBridgeEditViability
 import FX1Poly.Typed.CanonicityTargetSignature
@@ -3612,6 +3613,39 @@ var-headed levels where the domain is a context entry.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.deepCollapseMode_isIncompleteAtDeepSpines
 #assert_no_axioms FX1Poly.Typed.readback_identifiesDeepSpines
 #assert_no_axioms FX1Poly.Typed.deepSpine_canonicalizedByReadback
+
+/-! ### UnitReadbackAnnotationBoundary — ★ the 9th boundary: the λ arm's syntactic annotation match
+
+The post-spine completeness re-analysis: in the EMPTY context, `λ(app(λ(x:Type@0).x, Unit)).x₀`
+and `λ(Unit).x₀` are BOTH grown-typed at `Π(_:Unit).Unit` (the redex-annotated side via `conv`
+through the Π-code congruence step) — the FIRST boundary pair with both endpoints typed at one
+formation-typed classifier, so `ofReadbackEqual` is fully applicable and still misses: the
+annotation-mismatch arm fixes the left side (the deep collapse cannot see the binder's
+unit-typedness BEHIND the redex), the right computes the η-long `λ(Unit).unit`, and the
+readbacks never βη-join (the variable-bodied-λ star-chain invariant over `Step.from_lam` +
+`no_step_from_var` + root-η refutation).  NOT a pair-decidability gap — the pair is βη-joinable
+in ONE congruence step; the gap is CANONICAL-FORM completeness (a normalize-and-compare #364
+decider computes distinct NFs for defeq subjects).  The brick-7 fix: the λ arm must TRUST THE
+CLASSIFIER — emit its domain, descend unconditionally, re-type via grown context-conversion.
+Zero-axiom. -/
+
+#assert_no_axioms FX1Poly.Typed.redexAnnotation
+#assert_no_axioms FX1Poly.Typed.annotatedByRedex
+#assert_no_axioms FX1Poly.Typed.annotatedByLiteral
+#assert_no_axioms FX1Poly.Typed.redexAnnotation_steps
+#assert_no_axioms FX1Poly.Typed.redexAnnotationTyped
+#assert_no_axioms FX1Poly.Typed.annotatedByRedexTypedAtRedexPi
+#assert_no_axioms FX1Poly.Typed.annotationPiCodes_oneStepApart
+#assert_no_axioms FX1Poly.Typed.annotatedByRedexTyped
+#assert_no_axioms FX1Poly.Typed.annotatedByLiteralTyped
+#assert_no_axioms FX1Poly.Typed.annotationLambdas_oneStepApart
+#assert_no_axioms FX1Poly.Typed.annotationPair_congruentlyEqual
+#assert_no_axioms FX1Poly.Typed.readback_annotatedByRedex_isFixed
+#assert_no_axioms FX1Poly.Typed.readback_annotatedByLiteral_isEtaLong
+#assert_no_axioms FX1Poly.Typed.hasVariableBodyUnderLam
+#assert_no_axioms FX1Poly.Typed.betaEtaStar_preservesVariableBodiedLambda
+#assert_no_axioms FX1Poly.Typed.annotationReadbackForms_notBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.readback_isIncompleteAtAnnotationMismatch
 
 /-! ### UNIT-3a — the row-shape-agnostic formation-output interface (staged nullary-row migration)
 
