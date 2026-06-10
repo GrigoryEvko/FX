@@ -636,6 +636,7 @@ import FX1Poly.Typed.UsageAxisObligation
 import FX1Poly.Typed.EffectSecurityAxisObligations
 import FX1Poly.Typed.RemainingDimensionAxisObligations
 import FX1Poly.Modal.GradedCostSemantics
+import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1469,3 +1470,47 @@ import FX1Poly.Modal.GradedCostSemantics
 #assert_no_axioms FX1Poly.Modal.HasGradeOver.canonicalEvaluationCost
 #assert_no_axioms FX1Poly.Modal.HasGradeOver.canonicalEvaluationCost_isExact
 #assert_no_axioms FX1Poly.Modal.complexityGraded_costIsCalculable
+
+/-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
+
+`gen_universeU`/`gen_universeS`/`gen_universeD`/`gen_universeOmega` land as table rows:
+LevelExpr x UniverseFlag payload, arity 0, empty child specs, sort .type, tags 198-201,
+SupportedGenerator admission, count pin 198 -> 202. The cascade-death architecture absorbed
+the addition everywhere except the explicit count sites (count pin + finite polygraph) —
+zero new metatheory arms. Smokes: certifier acceptance at sort .type per mode; no-step
+normal leaves hence SN; reserved semanticTier pins (no typing/reduction rules yet — the
+mode-aware formation rows and per-mode reduction disciplines are LATER Z-arc work);
+tag round-trip pins; the honest payload-admission scope (every payload admitted under
+fxProfile per the unbounded-universes commitment — the reject-half is the HON-11 /
+restricted-profile track). -/
+#assert_no_axioms FX1Poly.Core.generatorCount
+#assert_no_axioms FX1Poly.Core.generatorCount_lastIndex
+#assert_no_axioms FX1Poly.Core.generatorCount_upperBound
+#assert_no_axioms FX1Poly.Core.Generator.toNat_lt
+#assert_no_axioms FX1Poly.Core.Generator.fromTag_total_on_range
+#assert_no_axioms FX1Poly.Core.fxKernelPolygraph
+#assert_no_axioms FX1Poly.Typed.universeURaw
+#assert_no_axioms FX1Poly.Typed.universeSRaw
+#assert_no_axioms FX1Poly.Typed.universeDRaw
+#assert_no_axioms FX1Poly.Typed.universeOmegaRaw
+#assert_no_axioms FX1Poly.Typed.coverage_universeURaw_sort
+#assert_no_axioms FX1Poly.Typed.coverage_universeSRaw_sort
+#assert_no_axioms FX1Poly.Typed.coverage_universeDRaw_sort
+#assert_no_axioms FX1Poly.Typed.coverage_universeOmegaRaw_sort
+#assert_no_axioms FX1Poly.Typed.noStep_universeU
+#assert_no_axioms FX1Poly.Typed.noStep_universeS
+#assert_no_axioms FX1Poly.Typed.noStep_universeD
+#assert_no_axioms FX1Poly.Typed.noStep_universeOmega
+#assert_no_axioms FX1Poly.Typed.universeU_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.universeS_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.universeD_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.universeOmega_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.semanticTier_universeU
+#assert_no_axioms FX1Poly.Typed.semanticTier_universeS
+#assert_no_axioms FX1Poly.Typed.semanticTier_universeD
+#assert_no_axioms FX1Poly.Typed.semanticTier_universeOmega
+#assert_no_axioms FX1Poly.Typed.fromTag_universeU
+#assert_no_axioms FX1Poly.Typed.fromTag_universeS
+#assert_no_axioms FX1Poly.Typed.fromTag_universeD
+#assert_no_axioms FX1Poly.Typed.fromTag_universeOmega
+#assert_no_axioms FX1Poly.Typed.universeU_payloadAlwaysAdmitted

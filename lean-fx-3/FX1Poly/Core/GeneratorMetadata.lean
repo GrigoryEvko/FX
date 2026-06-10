@@ -179,6 +179,11 @@ def Generator.cellSort : Generator → CellSort
   | .gen_effectPerform => .term
   -- Universe code — a type code (output sort .type)
   | .gen_universeCode => .type
+  -- Universe-mode codes — type codes (output sort .type)
+  | .gen_universeU    => .type
+  | .gen_universeS    => .type
+  | .gen_universeD    => .type
+  | .gen_universeOmega => .type
   -- Per-shape type codes (atom-shape)
   | .gen_arrowCode    => .type
   -- Per-shape type codes (binder-shape)
@@ -508,6 +513,11 @@ def Generator.childSpecs : Generator → List ChildSpec
     [ChildSpec.termSameScope, ChildSpec.termSameScope]
   -- Universe code (Nat payload, no children)
   | .gen_universeCode => []
+  -- Universe-mode codes (payload-only, no children)
+  | .gen_universeU    => []
+  | .gen_universeS    => []
+  | .gen_universeD    => []
+  | .gen_universeOmega => []
   -- Empty type code (nullary)
   | .gen_emptyCode    => []
   -- Bool type code (nullary)

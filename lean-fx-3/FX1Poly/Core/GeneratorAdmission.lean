@@ -124,6 +124,10 @@ inductive SupportedGenerator : Generator → Type where
   | gen_sessionRecv  : SupportedGenerator .gen_sessionRecv
   | gen_effectPerform : SupportedGenerator .gen_effectPerform
   | gen_universeCode : SupportedGenerator .gen_universeCode
+  | gen_universeU    : SupportedGenerator .gen_universeU
+  | gen_universeS    : SupportedGenerator .gen_universeS
+  | gen_universeD    : SupportedGenerator .gen_universeD
+  | gen_universeOmega : SupportedGenerator .gen_universeOmega
   | gen_arrowCode    : SupportedGenerator .gen_arrowCode
   | gen_piTyCode     : SupportedGenerator .gen_piTyCode
   | gen_sigmaTyCode  : SupportedGenerator .gen_sigmaTyCode
@@ -345,6 +349,10 @@ def supportedGenerator : (generator : Generator) →
   | .gen_sessionRecv  => .gen_sessionRecv
   | .gen_effectPerform => .gen_effectPerform
   | .gen_universeCode => .gen_universeCode
+  | .gen_universeU    => .gen_universeU
+  | .gen_universeS    => .gen_universeS
+  | .gen_universeD    => .gen_universeD
+  | .gen_universeOmega => .gen_universeOmega
   | .gen_arrowCode    => .gen_arrowCode
   | .gen_piTyCode     => .gen_piTyCode
   | .gen_sigmaTyCode  => .gen_sigmaTyCode

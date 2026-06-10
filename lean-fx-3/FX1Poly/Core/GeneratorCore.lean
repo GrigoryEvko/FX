@@ -115,6 +115,17 @@ inductive Generator : Type
   | gen_effectPerform
   -- Universe-code term (LevelExpr × UniverseFlag payload, no RawTerm children)
   | gen_universeCode
+  -- Universe-MODE codes (§11.8.2 / §3.16.3 2LTT family): same
+  -- LevelExpr × UniverseFlag payload as gen_universeCode, nullary.
+  -- Inner univalent universe (cubical Kan reduction discipline)
+  | gen_universeU
+  -- Outer strict universe (strict reduction calculus + strict large-elim;
+  -- univalence STILL applies per the §11.8.13 univalence-everywhere register)
+  | gen_universeS
+  -- Directed universe (Riehl-Shulman synthetic (∞,1))
+  | gen_universeD
+  -- (∞,ω)-directed universe (Loubaton)
+  | gen_universeOmega
   -- Per-shape type-code constructors (atom-shape)
   | gen_arrowCode
   -- Per-shape type-code constructors (binder-shape)
@@ -404,6 +415,11 @@ def Generator.arity : Generator → Nat
   | .gen_effectPerform => 2 -- operationTag, arguments
   -- Universe code (Nat payload, no RawTerm children)
   | .gen_universeCode => 0
+  -- Universe-mode codes (nullary, payload-only like gen_universeCode)
+  | .gen_universeU    => 0
+  | .gen_universeS    => 0
+  | .gen_universeD    => 0
+  | .gen_universeOmega => 0
   -- Per-shape type codes (atom-shape)
   | .gen_arrowCode    => 2  -- domainCode, codomainCode
   -- Per-shape type codes (binder-shape)
@@ -708,6 +724,11 @@ def Generator.binderShifts : Generator → List Nat
   | .gen_effectPerform => [0, 0]
   -- Universe code
   | .gen_universeCode => []
+  -- Universe-mode codes (nullary)
+  | .gen_universeU    => []
+  | .gen_universeS    => []
+  | .gen_universeD    => []
+  | .gen_universeOmega => []
   -- Per-shape type codes (atom-shape)
   | .gen_arrowCode    => [0, 0]
   -- Per-shape type codes (binder-shape)
@@ -893,6 +914,10 @@ all other ctors map to `Unit`.  Full enumeration, no wildcard. -/
 def Generator.payload : Generator → Nat → Type
   | .gen_var, scope => Fin scope
   | .gen_universeCode, _ => FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag
+  | .gen_universeU, _ => FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag
+  | .gen_universeS, _ => FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag
+  | .gen_universeD, _ => FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag
+  | .gen_universeOmega, _ => FX1Poly.Universe.LevelExpr × FX1Poly.Universe.UniverseFlag
   | .gen_unit, _ => Unit
   | .gen_lam, _ => Unit
   | .gen_app, _ => Unit
