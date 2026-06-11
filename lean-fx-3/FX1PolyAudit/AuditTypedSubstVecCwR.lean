@@ -651,6 +651,7 @@ import FX1Poly.Typed.WellTypedCostCalculable
 import FX1Poly.Typed.WellTypedSpaceCalculable
 import FX1Poly.Typed.CostAwareEquivalence
 import FX1Poly.Typed.OptimizationCell
+import FX1Poly.Typed.ChurchNumeralAsymptotics
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1886,6 +1887,23 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.identityApplicationRedex_cost_ne_zero
 #assert_no_axioms FX1Poly.Typed.betaRewriteCell
 #assert_no_axioms FX1Poly.Typed.betaRewriteCell_isStrict
+
+-- ★★ Verified Church-numeral asymptotics (Typed/ChurchNumeralAsymptotics.lean, COST-8 #1221 —
+-- arithmetic DISPATCH is constant-time). StepStarN.congAt: the counted one-hole congruence lifter
+-- (a counted chain lifts through a hole at the SAME length). ★ churchNumeral_dispatchCounted:
+-- the numeral dispatch costs EXACTLY 3 steps INDEPENDENT of n — the iterate f^n x is produced BY
+-- SUBSTITUTION, so the type/step/base β's are all the dispatch ever fires (the counted twin of
+-- #1009's general compute, same three reshaped contractums). ★ churchAddition_dispatchCounted:
+-- Church ADDITION dispatches in EXACTLY 6 steps for ALL m,n — inner dispatch (3, length-preserved
+-- through the argument position) + outer dispatch (3) + the iteratedApplication_add EQUALITY
+-- (zero steps). ★ churchArithmetic_dispatchIsConstantTime: the bundle — the counts do not mention
+-- the operands. Honest scope: ITERATE-level costs (using the result against a concrete step
+-- function grows with the count); multiplication's recursive linear-in-m counted form is the
+-- remaining COST-8 brick.
+#assert_no_axioms FX1Poly.Typed.StepStarN.congAt
+#assert_no_axioms FX1Poly.Typed.churchNumeral_dispatchCounted
+#assert_no_axioms FX1Poly.Typed.churchAddition_dispatchCounted
+#assert_no_axioms FX1Poly.Typed.churchArithmetic_dispatchIsConstantTime
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
