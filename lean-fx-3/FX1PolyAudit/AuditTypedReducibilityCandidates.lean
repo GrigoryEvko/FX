@@ -1289,9 +1289,10 @@ import FX1Poly.Typed.BoundedFormationArityDispatch
 -- (ConvContextPiValidityModelNeutral.lean). neutralTypeCodeSemanticReducibilityIsContextFree: a neutral type code
 -- is ReducibleTypeStep-reducible, and that judgment carries NO typing context (the theorem takes none), so the
 -- semantic neutral-type interpretation is IDENTICAL under both sides of the residual's pointwise-Conv context
--- conversion — context conversion is invisible to the semantic side. This isolates the genuinely-open residual
+-- conversion — context conversion is invisible to the semantic side. This isolated the then-open residual
 -- entirely to the SYNTACTIC reflection carrying the IsTypeDescPi typing WITNESS across the conversion (the typed
--- logical relation's neutral reflection, re-assembling the type-level piElim for (var f)(var a) = GrownCtxConv-5). Substrate
+-- logical relation's neutral reflection, re-assembling the type-level piElim for (var f)(var a) = GrownCtxConv-5,
+-- since closed unconditionally via SR-U4/SR-U5). Substrate
 -- in hand for the typed model: Step.reflectRename + kripkeArrow_neutralBackwardClosure (firings 13/14) +
 -- Conv.piTyCode_injective (#865). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.neutralTypeCodeSemanticReducibilityIsContextFree

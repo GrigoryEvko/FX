@@ -736,13 +736,13 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- type (IsTypeDescPi) under any pointwise-Conv-related target, via the shipped unconditional formation
 -- context-conversion convContextOfFormation (HasTypeDesc.convContext re-embedded through ofFormation) +
 -- convBackToUniverseCode — NO semantic input. Together with #1095 (the validity-respects-reduction twin is likewise
--- free for the formation fragment), this LOCALIZES the residual's genuinely-open core precisely to the
--- GENUINELY-GROWN Π-codes: open NEUTRAL type-level applications ((var f)(var a) at a universe) / type-level λ, typed
--- via piElim/piIntro at the type level, NOT via ofFormation/genFormationPi-from-formation. That open-neutral case IS
--- GrownCtxConv-5 itself (context-converting a neutral type-level application is the piElim context-conversion), so the
--- residual's hard core is irreducibly the open semantic-model obligation (Kripke/sconing logical relation — the
--- bounded reducibility model is closed-substitution-based, unfit; reflection fails at the neutral base). No further
--- syntactic fragment to peel. Zero-axiom.
+-- free for the formation fragment), this LOCALIZED the residual's then-open core precisely to the
+-- GENUINELY-GROWN Π-codes: NEUTRAL type-level applications ((var f)(var a) at a universe) / type-level λ, typed
+-- via piElim/piIntro at the type level, NOT via ofFormation/genFormationPi-from-formation. That neutral case WAS
+-- GrownCtxConv-5 itself (context-converting a neutral type-level application is the piElim context-conversion); no
+-- further syntactic fragment was left to peel. STATUS: the core has since been closed UNCONDITIONALLY via the SR-U
+-- enriched-condition route (SR-U4/SR-U5), and the neutral-reconstruction hypothesis is separately discharged under
+-- target wf (TypedTypeValidityLeveledTransportUnderWf). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.convContextPreservesPiValidityForFormationCode
 -- GrownCtxConv-5-GENFORMERSTEP (#1122): the TABLE-GENERIC genFormationPi former step
 -- (GenFormerValidityContextConversion.lean) — ONE theorem covering EVERY genFormationPi type-code former (Π, Σ,

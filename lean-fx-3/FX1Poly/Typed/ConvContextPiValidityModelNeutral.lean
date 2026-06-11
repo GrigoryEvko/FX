@@ -2,12 +2,22 @@ import FX1Poly.Core.StratifiedReducibleTypeNeutral
 import FX1Poly.Typed.ConvContextPreservesPiValidityFormationFragment
 
 /-! # FX1Poly/Typed/ConvContextPiValidityModelNeutral
-    — semantic neutral-type validity is CONTEXT-UNIFORM (the model's load-bearing property for GrownCtxConv-5's open core)
+    — semantic neutral-type validity is CONTEXT-UNIFORM (the model's load-bearing property for what was
+    GrownCtxConv-5's open core)
 
-## Where this sits
+## STATUS UPDATE (post-closure)
 
-`ConvContextPreservesPiValidity` (`#1092`) is the single residual to which both open grown-metatheory
-release blockers reduce — GrownCtxConv-5 grown context-conversion (`#842`) AND SRD-2 master subject reduction
+The "open" framing below is HISTORICAL.  The `ConvContextPreservesPiValidity` residual and the whole
+GrownCtxConv-5 / SRD-2 bundle were closed UNCONDITIONALLY by the SR-U enriched-condition route (SR-U4/SR-U5),
+and the neutral-reconstruction hypothesis (`neutralRecon`) was separately discharged under target
+well-formedness (`TypedTypeValidityLeveledTransportUnderWf.lean` — `universeClassifiedConvContextUnderWf`,
+`transportUnderWf`).  This file's theorems remain load-bearing as the SEMANTIC context-uniformity half of the
+typed logical relation; the narration of the residual's openness is kept for provenance only.
+
+## Where this sits (historical framing)
+
+`ConvContextPreservesPiValidity` (`#1092`) was the single residual to which both grown-metatheory
+release blockers reduced — GrownCtxConv-5 grown context-conversion (`#842`) AND SRD-2 master subject reduction
 (`#845`), unified in `#1098`: a `Π`-type-code's GROWN validity (`IsTypeDescPi`, i.e. `∃ universe,
 HasTypeDescPi ctx (Π D C) universe`) is stable under pointwise context conversion.
 
@@ -33,7 +43,8 @@ neutral type codes, UNCONDITIONALLY:
   reason the model's neutral case is "free on the semantic side": context conversion is invisible to the
   semantic interpretation of a neutral type.
 
-What this does NOT yet supply (the genuine residual `#1092`, still open): the SYNTACTIC reflection — carrying
+What this does NOT supply (the residual `#1092` as it stood — since closed, see the status banner): the
+SYNTACTIC reflection — carrying
 the TYPING WITNESS (`IsTypeDescPi` derivation) of a neutral type-level application across the context
 conversion.  That witness is what the SN candidate alone does not carry; transporting it for `(var f)(var a)`
 re-assembles the type-level `piElim` under the target, which IS GrownCtxConv-5.  The open logical relation must be a
@@ -70,10 +81,10 @@ the pointwise-`Conv` context conversion of the `ConvContextPreservesPiValidity` 
 conversion acts as the IDENTITY on the semantic neutral-type interpretation — this is the SEMANTIC half of the
 residual's open neutral core, discharged unconditionally by the shipped unconditional
 `ReducibleTypeStep.reducibleOfNeutral` (the `noWeakHeadStep` weak-head-normality plus the non-`Π` /
-non-universe root guards).  The genuinely-open residual is therefore isolated entirely to the SYNTACTIC
+non-universe root guards).  The residual was therefore isolated entirely to the SYNTACTIC
 reflection that carries the `IsTypeDescPi` typing WITNESS across the conversion — the typed neutral
-reflection, which (re-assembling the type-level `piElim` for `(var f)(var a)` under the converted context) is
-GrownCtxConv-5 itself, the irreducible open obligation for the typed logical relation. -/
+reflection, which (re-assembling the type-level `piElim` for `(var f)(var a)` under the converted context) was
+GrownCtxConv-5 itself; since closed unconditionally via the SR-U route (see the module status banner). -/
 theorem neutralTypeCodeSemanticReducibilityIsContextFree {scope : Nat}
     {lowerReducible : RawTerm scope → (RawTerm scope → Prop) → Prop}
     {typeCode : RawTerm scope} (neutral : IsNeutral typeCode) :
@@ -83,9 +94,10 @@ theorem neutralTypeCodeSemanticReducibilityIsContextFree {scope : Nat}
 /-- **Smoke: a variable type code is semantically reducible, context-free.**  The simplest neutral type code
 — a bare de Bruijn variable `var index` used as a type — is `ReducibleTypeStep`-reducible with NO typing
 context, so its semantic validity is identical under any two `Conv`-related contexts.  A variable is the base
-case the open type-level neutral reflection bottoms out at: under context conversion its typing transfers by
+case the type-level neutral reflection bottoms out at: under context conversion its typing transfers by
 the var rule + the pointwise `Conv` on the looked-up classifier (the non-circular leaf), whereas the neutral
-APPLICATION `(var f)(var a)` re-assembles the type-level `piElim` (the genuinely-open residual = GrownCtxConv-5). -/
+APPLICATION `(var f)(var a)` re-assembles the type-level `piElim` (the residual that was GrownCtxConv-5 —
+since closed; see the module status banner). -/
 theorem smoke_variableTypeCodeSemanticReducibilityIsContextFree {scope : Nat}
     {lowerReducible : RawTerm scope → (RawTerm scope → Prop) → Prop} (index : Fin scope) :
     ∃ candidate : RawTerm scope → Prop,

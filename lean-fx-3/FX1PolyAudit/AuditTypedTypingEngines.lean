@@ -1547,11 +1547,11 @@ the strong equation one green commit at a time, then the table flips. -/
 -- IsTypeDesc.respectsReductionStar: formation type validity survives reduction UNCONDITIONALLY -- HasTypeDesc
 -- .subjectReduction preserves the universe classifier and is itself unconditional (its telescope arm re-types a
 -- former's codomain under a stepped domain binder via the UNCONDITIONAL formation convTelescope, the exact move the
--- grown engine cannot make = why GrownCtxConv-5 is open), iterated along StepStar. validityRespectsReductionOfFormation: the
+-- grown engine cannot make = why GrownCtxConv-5 was then open), iterated along StepStar. validityRespectsReductionOfFormation: the
 -- grown corollary (formation-typed type code, S⤳*T ⟹ grown IsTypeDescPi T, via ofFormation). This discharges the
 -- grown residual TypeCodeValidityRespectsReduction (#1094) on the FORMATION fragment for free, precisely localizing
--- the genuinely-open part to the type-level-computing (genuinely-grown) type codes -- the logical-relation
--- obligation. Zero-axiom.
+-- the then-open part to the type-level-computing (genuinely-grown) type codes -- the logical-relation
+-- obligation (since closed unconditionally via SR-U4/SR-U5). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.respectsReductionStar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.validityRespectsReductionOfFormation
 

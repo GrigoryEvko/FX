@@ -1079,9 +1079,9 @@ positions.  The standing honest-boundary note (2) is RETIRED.  Zero-axiom. -/
 -- flag — essential since piFormationViaGenArm needs the domain+codomain flags to match), and piFormationViaGenArm
 -- re-forms the Π-code validity under the target. "Semantic types are Conv-closed by construction" made concrete for
 -- the Π-former: the validity is REBUILT from its transported parts, never carried as a black box. With the base
--- (#1099), this engine, and the var-spine leaf (#1119) in place, the residual's genuinely-open core is precisely the
--- APP-HEADED neutral leaf (arbitrary-term argument → general-term context conversion = the GTL-20 mutual bundle).
--- Zero-axiom.
+-- (#1099), this engine, and the var-spine leaf (#1119) in place, the residual's then-open core was precisely the
+-- APP-HEADED neutral leaf (arbitrary-term argument → general-term context conversion = the GTL-20 mutual bundle);
+-- since closed UNCONDITIONALLY via the SR-U enriched-condition route (SR-U4/SR-U5). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.piCodeValidityContextConversionFormerStep
 -- GrownCtxConv-5-SIGMASTEP (#1121): the Σ-former recursion step, the exact twin of the Π step (#1120 above) over
 -- sigmaTyCodeCell / inversionSigmaCodeComponents / sigmaFormationViaGenArm. A genuinely-needed companion, NOT a

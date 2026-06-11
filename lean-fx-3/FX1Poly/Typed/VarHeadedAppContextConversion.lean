@@ -3,8 +3,10 @@ import FX1Poly.Typed.HasTypeDescPiContextConversionPiElimReduction
 
 /-! # FX1Poly/Typed/VarHeadedAppContextConversion — the var-headed Abel-reflection piElim arm
 
-The grown context-conversion piElim arm (GrownCtxConv-5, #842) is the lone open arm of grown context
-conversion.  The firing-22/#1112 architectural finding is that it cannot transport the application's typing as
+The grown context-conversion piElim arm (GrownCtxConv-5, #842) was the lone open arm of grown context
+conversion when this file landed.  STATUS: since closed UNCONDITIONALLY via the SR-U enriched-condition route
+(SR-U4/SR-U5); this file's Abel-reflection leaf remains the var-headed reconstruction primitive the typed
+logical relation uses.  The firing-22/#1112 architectural finding is that it cannot transport the application's typing as
 a BLACK BOX; it must RECONSTRUCT the typing from the application's var-headed spine — re-typing each spine leaf
 under the converted target via the var rule + the context-conversion `Conv`, then `piElim`-reassembling (Abel
 reflection).  This file lands that reconstruction for the VAR-HEADED case.

@@ -23,17 +23,22 @@ the flag, because the index is preserved).
     universe codes, so `piFormationViaGenArm` (which needs the shared flag) rebuilds
     `HasTypeDescPi targetContext (Π D C) (Type@(lmax domainLevel codomainLevel))`, and `piType` re-fires.
   * `neutral` — the CONDITIONAL Abel-reflection reconstruction `neutralRecon` (a neutral type code valid in the
-    source is valid at a `Conv`-converted target).  This is the lone open hypothesis — the genuine hard core
-    (the var-headed leaf `#1119` extended to general neutral spines / the term-level mutual partner).
+    source is valid at a `Conv`-converted target).  At the time this file landed this was the lone open
+    hypothesis.  STATUS: DISCHARGED under target well-formedness —
+    `TypedTypeValidityLeveledTransportUnderWf.lean` supplies `neutralRecon` outright via
+    `HasTypeDescPi.universeClassifiedConvContextUnderWf` and ships the unconditional wf-instances
+    `transportUnderWf` / `transportValidityUnderWf`.  Independently, the downstream GrownCtxConv-5 residual
+    was closed UNCONDITIONALLY by the SR-U enriched-condition route (SR-U4/SR-U5).  The conditional theorems
+    below are retained as the hypothesis-explicit general statements.
 
 ## The payoff for the residual
 
 `transportValidity`: a leveled-valid type code's EXACT universe-code typing transports across context
 conversion (conditional on `neutralRecon`).  Specialized to a `Π`-code, this is exactly the GrownCtxConv-5
 residual `ConvContextPreservesPiValidity` shape — discharged for LEVELED-VALID `Π`-codes, conditional ONLY on
-the neutral reconstruction.  The remaining route-B brick is COMPLETENESS (`HasTypeDescPi context T
-(universeCodeCell level flag) → TypedTypeValidityLeveled …`), after which `soundness ∘ transport ∘
-completeness` discharges the residual modulo `neutralRecon`.
+the neutral reconstruction.  The route-B completeness brick landed as LR completeness on the
+neutral/universe/Pi head fragment under wf (LRH-1), and the residual itself is closed unconditionally by the
+SR-U route — route B is now a CONFIRMING alternative path, not the open one.
 
 ## Zero-axiom verification
 
