@@ -5,6 +5,7 @@ import FX1Poly.Modal.GradeVectorGeneric
 import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTypingGeneric
 import FX1Poly.Modal.GradedBinaryParametricity
+import FX1Poly.Modal.GradedRelationScaling
 import FX1Poly.Modal.GradedGradeExactness
 import FX1Poly.Modal.GradeErasureGeneric
 import FX1Poly.Modal.GradedWeakeningGeneric
@@ -177,6 +178,30 @@ results).  The grade-AWARE relation-scaling refinement is OP1-M1. -/
 #assert_no_axioms FX1Poly.Modal.HasGradeOver.parametricClosed
 #assert_no_axioms FX1Poly.Modal.joinabilityRespectsExpansion
 #assert_no_axioms FX1Poly.Modal.linearUsageFunction_mapsJoinable
+
+/-! ### Grade-AWARE binary parametricity (OP1-M1)
+
+Relations now scale by the binder grade: the abstract `RelationGradeAction` laws (identity at one,
+total at zero, splitting along add), the lawful usage instance, the grade-vector-indexed related
+environment with its algebra (lookup at `single … one`, splitting along the App accounting,
+nonzero-scale collapse), the grade-aware fundamental theorem over the usage judgment, and the
+flagship ZERO-grade free theorem — a closed `base -(0)-> base` function maps arbitrary UNRELATED
+arguments to joinable results. -/
+
+#assert_no_axioms FX1Poly.Modal.RelationGradeAction
+#assert_no_axioms FX1Poly.Modal.usageRelationScale
+#assert_no_axioms FX1Poly.Modal.usageRelationScaleAction
+#assert_no_axioms FX1Poly.Modal.UsageParametricRel
+#assert_no_axioms FX1Poly.Modal.UsageParametricRel.expandLeft
+#assert_no_axioms FX1Poly.Modal.UsageParametricRel.expandRight
+#assert_no_axioms FX1Poly.Modal.GradedParametricSubstitution
+#assert_no_axioms FX1Poly.Modal.GradedParametricSubstitution.lookupRelated
+#assert_no_axioms FX1Poly.Modal.GradedParametricSubstitution.splitAdd
+#assert_no_axioms FX1Poly.Modal.GradedParametricSubstitution.collapseScaleNonzero
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.parametricGraded
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.parametricGradedClosed
+#assert_no_axioms FX1Poly.Modal.zeroUsageFunction_mapsAnythingToJoinable
+#assert_no_axioms FX1Poly.Modal.linearUsageFunction_mapsJoinableGraded
 
 -- The usage composition ledger (graded-SR over full β + the SN∧graded-SR metatheory bundle + the ω-scaling
 -- regression witnesses) is subsumed by the GENERIC HasGradeOver.preservedByReduces / .metatheoryBundle +
