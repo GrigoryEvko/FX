@@ -514,11 +514,45 @@ is dead code but the interface is forward-compatible. -/
     Option (SupportedGenerator generator) :=
   some (supportedGenerator generator)
 
-/-- The admission decision is always `some` under the default
-`fxProfile` (all 203 generators admitted).  Proof: `rfl` after
-unfolding — `supportedGenerator?` is definitionally `some _`. -/
+/-- The admission decision is VACUOUSLY `some` under the default
+`fxProfile` — `supportedGenerator?` is the constant-`some` function
+(every one of the 203 generators is admitted), so this lemma is NOT a
+coverage certificate over a non-trivial discipline.  It is the visible,
+named record that fxProfile's admission cannot fail.  The lemma gains
+content only when a restricted profile re-defines `SupportedGenerator`
+with fewer arms, making the lookup genuinely partial. -/
 theorem supportedGenerator?_isSome (generator : Generator) :
     (supportedGenerator? generator).isSome = true := by
   rfl
+
+/-- The constant-`some` admission cannot reject: the `none` branch in
+every consumer matching on `supportedGenerator?` is dead code under
+fxProfile.  Stated so dead-branch reasoning cites a named fact rather
+than re-deriving the triviality inline. -/
+theorem supportedGenerator?_cannotReject (generator : Generator) :
+    supportedGenerator? generator ≠ none :=
+  fun absurdEq => nomatch absurdEq
+
+/-- Every admission witness is the canonical one produced by the total
+lookup.  Single induction over the 203 admission constructors; each arm
+closes by `rfl` against the matching `supportedGenerator` equation. -/
+theorem SupportedGenerator.eq_canonical {generator : Generator}
+    (witness : SupportedGenerator generator) :
+    witness = supportedGenerator generator := by
+  cases witness <;> rfl
+
+/-- **Named triviality fact**: admission witnesses carry no information
+— `SupportedGenerator generator` has exactly one inhabitant per
+generator, so any two witnesses are equal.  Together with the totality
+of `supportedGenerator` this says fxProfile's generator admission is a
+mere yes-flag that is always yes: nothing is excluded and nothing is
+discriminated.  A restricted profile falsifies the totality half by
+removing arms; the uniqueness half is a permanent design property
+(distinct admission witnesses are not a feature channel). -/
+theorem SupportedGenerator.unique {generator : Generator}
+    (witnessA witnessB : SupportedGenerator generator) :
+    witnessA = witnessB :=
+  (SupportedGenerator.eq_canonical witnessA).trans
+    (SupportedGenerator.eq_canonical witnessB).symm
 
 end FX1Poly.Core

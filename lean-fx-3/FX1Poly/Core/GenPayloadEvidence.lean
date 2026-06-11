@@ -151,14 +151,49 @@ constraints. -/
     Option (GenPayloadEvidence generator scope payload) :=
   some (genPayloadEvidence payload)
 
-/-- The payload-admission decision is always `some` under the default
-`fxProfile`.  Proof: `rfl` — both `genPayloadEvidence?` and `.isSome`
-reduce definitionally on `some _`.  This lemma locks in fxProfile's
-"all admitted" behavior. -/
+/-- **Named triviality fact**: the payload-evidence TYPE is `Unit` for
+every generator, scope, and payload.  The fxProfile payload discipline
+admits everything *by construction of the type*, not by a per-payload
+check that happens to succeed.  This is the honest record of what the
+current discipline is; a restricted profile falsifies exactly this
+equation by replacing the `GenPayloadEvidence` body with a
+discriminating inductive. -/
+theorem genPayloadEvidence_admitsEverything
+    (generator : Generator) (scope : Nat)
+    (payload : generator.payload scope) :
+    GenPayloadEvidence generator scope payload = Unit :=
+  rfl
+
+/-- Payload evidence carries no information: any two witnesses are
+equal (the body is `Unit`).  A consumer holding evidence learns nothing
+beyond its existence — and existence is unconditional
+(`genPayloadEvidence_admitsEverything`). -/
+theorem genPayloadEvidence_unique {generator : Generator} {scope : Nat}
+    {payload : generator.payload scope}
+    (evidenceA evidenceB : GenPayloadEvidence generator scope payload) :
+    evidenceA = evidenceB :=
+  rfl
+
+/-- The payload-admission decision is VACUOUSLY `some` under the default
+`fxProfile` — `genPayloadEvidence?` is the constant-`some` function, so
+this lemma is NOT a coverage certificate over a non-trivial discipline.
+It is the visible, named record that the decision cannot fail today
+(see `genPayloadEvidence_admitsEverything` for the type-level reason).
+The lemma gains content only when a restricted profile replaces the
+body with a genuinely partial decision. -/
 theorem genPayloadEvidence?_isSome {generator : Generator} {scope : Nat}
     (payload : generator.payload scope) :
     (genPayloadEvidence? payload).isSome = true :=
   rfl
+
+/-- The constant-`some` decision cannot reject: the `none` branch in
+every certifier consuming `genPayloadEvidence?` is dead code under
+fxProfile.  Stated so dead-branch reasoning cites a named fact rather
+than re-deriving the triviality inline. -/
+theorem genPayloadEvidence?_cannotReject {generator : Generator}
+    {scope : Nat} (payload : generator.payload scope) :
+    genPayloadEvidence? payload ≠ none :=
+  fun absurdEq => nomatch absurdEq
 
 /-- **Design commitment witness: unbounded universes.**
 
@@ -171,7 +206,10 @@ no `maxUniverseLevel` bound.
 Proof closes by `rfl`: `genPayloadEvidence?` always returns
 `some _` (it's the constant `some (genPayloadEvidence payload)`
 definition for the default profile), regardless of the universe
-level passed as payload.
+level passed as payload.  This is therefore an instance of the
+constant-`some` triviality (`genPayloadEvidence_admitsEverything`)
+— its content is the design COMMITMENT it pins (fxProfile will not
+add a universe bound), not a proof achievement.
 
 The same unbounded commitment applies symmetrically to truncation
 levels (`gen_truncIntro`, `gen_truncCoh`, `gen_truncRec`) — for
