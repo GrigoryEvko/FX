@@ -79,4 +79,32 @@ elab "#audit_namespace " namespaceSyntax:ident : command => do
         "namespace axiom audit failed for {targetName}: {stats.axiomNames.size} axiom(s): {formatNameList stats.axiomNames}"
   logInfo m!"namespace axiom audit ok: {namespaceName} ({targetNames.size} declarations)"
 
+/-- Coverage guard for the under-import footgun: `#audit_namespace`
+walks only the declarations the auditing module has transitively
+IMPORTED, so an under-imported namespace silently reports
+"ok (0 declarations)" and PASSES.  This command fails the build when
+the loaded audit-target count drops below a pinned minimum, turning
+the silent coverage hole into a loud failure.
+
+The pin is a LOWER bound at the time of pinning: adding declarations
+only grows the count, so the pin never needs maintenance for growth.
+A legitimately approved deletion that drops the count below the pin
+fails the build and forces a DELIBERATE re-pin — exactly the
+explicitness the footgun lacked.
+
+Usage: `#assert_namespace_min_count FX1Poly.Core 3000` directly after
+the corresponding `#audit_namespace` sweep. -/
+elab "#assert_namespace_min_count " namespaceSyntax:ident
+    expectedMinimum:num : command => do
+  let environment ← getEnv
+  let namespaceName := namespaceSyntax.getId
+  let targetNames := namespaceAuditTargets environment namespaceName
+  let loadedCount := targetNames.size
+  let minimumCount := expectedMinimum.getNat
+  if loadedCount < minimumCount then
+    throwError
+      "namespace coverage audit failed for {namespaceName}: only {loadedCount} declaration(s) loaded, expected at least {minimumCount} — the auditing module is under-importing this namespace (the silent 'ok (0 declarations)' footgun), or an unapproved deletion shrank it"
+  logInfo
+    m!"namespace coverage audit ok: {namespaceName} ({loadedCount} >= {minimumCount} declarations)"
+
 end FX1PolyAudit

@@ -23,3 +23,4 @@ The `#audit_namespace` walk loads every declaration under
 -/
 
 #audit_namespace FX1Poly.FXProfile
+#assert_namespace_min_count FX1Poly.FXProfile 6

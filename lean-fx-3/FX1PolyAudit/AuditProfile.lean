@@ -22,19 +22,33 @@ axiom leak.
 -/
 
 #audit_namespace FX1Poly.Algebra
+#assert_namespace_min_count FX1Poly.Algebra 114
 #audit_namespace FX1Poly.Enrichment
+#assert_namespace_min_count FX1Poly.Enrichment 90
 #audit_namespace FX1Poly.Gray
+#assert_namespace_min_count FX1Poly.Gray 29
 #audit_namespace FX1Poly.MTTNorm
+#assert_namespace_min_count FX1Poly.MTTNorm 130
 #audit_namespace FX1Poly.Modal
+#assert_namespace_min_count FX1Poly.Modal 106
 #audit_namespace FX1Poly.OmegacE
+#assert_namespace_min_count FX1Poly.OmegacE 124
 #audit_namespace FX1Poly.ProfileFibration
+#assert_namespace_min_count FX1Poly.ProfileFibration 72
 #audit_namespace FX1Poly.SSC
+#assert_namespace_min_count FX1Poly.SSC 30
 #audit_namespace FX1Poly.STC
+#assert_namespace_min_count FX1Poly.STC 95
 #audit_namespace FX1Poly.Saturation
+#assert_namespace_min_count FX1Poly.Saturation 122
 #audit_namespace FX1Poly.Shape
+#assert_namespace_min_count FX1Poly.Shape 95
 #audit_namespace FX1Poly.Stratification
+#assert_namespace_min_count FX1Poly.Stratification 93
 #audit_namespace FX1Poly.Tier0
+#assert_namespace_min_count FX1Poly.Tier0 439
 #audit_namespace FX1Poly.Extension
+#assert_namespace_min_count FX1Poly.Extension 203
 
 /-! ## AdmissibleProfile + cellular tensor headline gates
 

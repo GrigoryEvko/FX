@@ -27,6 +27,7 @@ The `#audit_namespace` walk loads every declaration under
 -/
 
 #audit_namespace FX1Poly.NbE
+#assert_namespace_min_count FX1Poly.NbE 110
 
 -- DecisionComplexity.lean — the generic §11.8.7 STRICT-COMPLEXITY witness schema for decision
 -- procedures (the sibling of StrictNormalizer for deciders that are not term normalizers).
