@@ -639,6 +639,7 @@ import FX1Poly.Modal.GradedCostSemantics
 import FX1Poly.Modal.GradedCostRelation
 import FX1Poly.Modal.GradedCostFundamental
 import FX1Poly.Modal.GradedTermSize
+import FX1Poly.Modal.GradedLinearTime
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1569,6 +1570,44 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Modal.GradedLambda.size_substAt_lt_redex
 #assert_no_axioms FX1Poly.Modal.GradedLambda.countOccurrencesAt_duplicator
 #assert_no_axioms FX1Poly.Modal.GradedLambda.duplicatorRedex_count_exceeds_linear
+
+-- ★ The STRICT-LINEAR fragment + the grade→occurrence bound (GradedLinearTime.lean, COST-2a #1215
+-- brick 2). HasStrictLinearGrade: HasGradeOver at the usage semiring with EVERY binder grade pinned to
+-- one (forgetful toGraded) — the fragment where grades genuinely bound syntactic occurrence counts.
+-- ★ countBound: lookupGrade grades i `boundsCount` count i t (zero ⟹ absent, one ⟹ at most once,
+-- omega ⟹ unconstrained); the app arm is sound precisely because strict scaling is the identity
+-- (lookupGrade_scale_one) and the usage add table never compresses one+one (boundsCount_add's 9-case
+-- bash). ★ lamBodyCountBound (the cons-one head read at the binder) → betaShrinks: every strict-linear
+-- β-redex STRICTLY decreases size via brick 1's β-size lemma — the single-step engine of steps < size
+-- (brick 3). Pointwise lookupGrade + single/add/scale laws (add specialized to the usage semiring whose
+-- closed table makes the out-of-range default consistent). ★ THE AFFINE COUNTERWITNESS, COMMITTED:
+-- affineDuplicatorLam_typedAtGradeZero — λx.(f x) x types at binder grade ZERO under the FULL graded
+-- judgment over f : base -0→ base -0→ base (both applications 0-scale x's grades away while the syntax
+-- keeps two occurrences; the whole derivation is built from explicit ctors, vector arithmetic closing
+-- by whnf defeq); affineDuplicatorBody_countsTwice (rfl); affineGradeZero_doesNotBoundCount — grade 0
+-- does NOT bound occurrences, so the linear-time theorem genuinely needs strictness (the task's affine
+-- premise REFUTED as committed theorems, not just metadata).
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.lookupGrade
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.lookupGrade_zero
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.lookupGrade_single_self
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.lookupGrade_single_other
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.lookupGrade_add_usage
+#assert_no_axioms FX1Poly.Modal.UsageGrade.one_mul_eq
+#assert_no_axioms FX1Poly.Modal.GradeVectorOver.lookupGrade_scale_one
+#assert_no_axioms FX1Poly.Modal.UsageGrade.boundsCount
+#assert_no_axioms FX1Poly.Modal.UsageGrade.boundsCount_add
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.toGraded
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.countBound
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.lamBodyCountBound
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.betaShrinks
+#assert_no_axioms FX1Poly.Modal.linearIdentity_strictlyLinear
+#assert_no_axioms FX1Poly.Modal.identityApplication_strictlyShrinks
+#assert_no_axioms FX1Poly.Modal.affineDuplicatorBody
+#assert_no_axioms FX1Poly.Modal.zeroScalingFunctionType
+#assert_no_axioms FX1Poly.Modal.affineDuplicatorLam_typedAtGradeZero
+#assert_no_axioms FX1Poly.Modal.affineDuplicatorBody_countsTwice
+#assert_no_axioms FX1Poly.Modal.affineGradeZero_doesNotBoundCount
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
