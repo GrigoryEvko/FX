@@ -48,7 +48,11 @@ strictness is the better semantics, recorded rather than papered over.
 
 ## Honest scope
 
-  * NO conv arm in the seed (conv-closure of the union is NATIVE-46 restatement work; additive later).
+  * The `conv` arm IS present (NATIVE-46, additive — the 25th arm): a union typing at `classifier`
+    plus `Conv classifier reclassifier` plus a universe-code derivation for `reclassifier` reclassifies
+    the subject, exactly as `HasTypeDescPi.conv` does on the grown engine.  `Conv` is a raw StepStar
+    relation never mentioning typing, so the arm is strictly positive and free-subject `cases` over all
+    25 arms stays propext-clean.
   * The union-wide affine-rejection statement (`pathLam(pair(var 0, var 0))` untypable in the UNION)
     needs a host-engine pathLam-head-untyped lemma not yet in `HasTypeDescPiDataHeadUntyped`; the
     graded-arm rejection is shipped (NATIVE-23); the union-wide form is pinned as wave work.
