@@ -343,4 +343,61 @@ theorem RawTerm.freeVars_var_self_smoke {scope : Nat}
   exact (RawVarSet.contains_singleton_iff
     variablePosition variablePosition).mpr rfl
 
+/-! ## Occurrence counting — the affine-usage gate
+
+`freeVars` answers WHETHER a position occurs; the graded typing rows (the
+gen_param internal-parametricity intro, where the bridge-dimension binder
+must be AFFINE) need HOW MANY TIMES.  Same structural recursion as
+`freeVars` — a variable hit counts 1, a miss 0, a child spine sums its
+children's counts at the binder-raised position. -/
+
+mutual
+
+/-- The number of free occurrences of `candidatePosition` in a raw term.
+The quantitative refinement of `RawTerm.UsesPosition`: a count of `0`
+means unused, `1` linear, `≤ 1` affine. -/
+def RawTerm.occurrenceCountAt {scope : Nat} (sourceTerm : RawTerm scope)
+    (candidatePosition : Fin scope) : Nat :=
+  match sourceTerm with
+  | .mkGen generator payload children =>
+      if generatorIsVar : generator = .gen_var then
+        let variablePosition : Fin scope :=
+          Eq.rec
+            (motive := fun targetGenerator _generatorEq =>
+              Generator.payload targetGenerator scope)
+            payload generatorIsVar
+        if RawVarSet.singleton variablePosition candidatePosition = true
+          then 1 else 0
+      else
+        RawTermChildren.occurrenceCountAt children candidatePosition
+
+/-- Occurrence count summed over a raw child spine.  Each child head lives
+under its own binder shift, so the parent position is raised through the
+fresh binders before counting. -/
+def RawTermChildren.occurrenceCountAt {binderShifts : List Nat} {scope : Nat}
+    (sourceChildren : RawTermChildren binderShifts scope)
+    (candidatePosition : Fin scope) : Nat :=
+  match binderShifts, sourceChildren with
+  | [], .childNil => 0
+  | binderShift :: _, .childCons childHead childTail =>
+      RawTerm.occurrenceCountAt childHead
+          (RawVarSet.raiseParentPosition binderShift candidatePosition) +
+        RawTermChildren.occurrenceCountAt childTail candidatePosition
+
+end
+
+/-- A variable counts itself exactly once. -/
+theorem RawTerm.occurrenceCountAt_var_self {scope : Nat}
+    (variablePosition : Fin scope) :
+    RawTerm.occurrenceCountAt
+      (.mkGen .gen_var variablePosition .childNil) variablePosition = 1 := by
+  have selfContained :
+      RawVarSet.singleton variablePosition variablePosition = true :=
+    (RawVarSet.contains_singleton_iff variablePosition variablePosition).mpr rfl
+  dsimp only [RawTerm.occurrenceCountAt]
+  rw [dif_pos rfl]
+  show (if RawVarSet.singleton variablePosition variablePosition = true
+    then 1 else 0) = 1
+  rw [if_pos selfContained]
+
 end FX1Poly.Core

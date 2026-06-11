@@ -665,6 +665,7 @@ import FX1Poly.Typed.KernelBinaryGenericFormer
 import FX1Poly.Typed.KernelBinaryFundamental
 import FX1Poly.Typed.KernelAbstractionTheorem
 import FX1Poly.Typed.KernelParamSubstrateSurvey
+import FX1Poly.Typed.HasTypeDescBridge
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2309,6 +2310,36 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_gapsPinned
 #assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_assetsPinned
 #assert_no_axioms FX1Poly.Typed.dimensionTypingRowsGap_coherentWithTier
+
+-- ★ THE GRADED BRIDGE ROWS (OP1-INT brick 2, FX1Poly/Typed/HasTypeDescBridge.lean +
+-- RawTerm.occurrenceCountAt in Core/RawTermFreeVars.lean): the standalone internal-
+-- parametricity typing engine over the landed substrate, realizing the survey's row schemas.
+-- THE GRADED ROW: pathIntro is the first kernel rule where the TYPE premise (body typed
+-- under the interval-extended context) and the USAGE premise (the dimension binder is
+-- AFFINE — occurrenceCountAt body 0 ≤ 1, the quantitative refinement of UsesPosition,
+-- the kernel realization of the usage semiring's affine grade) are JOINTLY required.
+-- Witnesses: bridgeOfUniverseCodesTyped (Bridge(Type@1,Type@0,Type@0) : Type@2),
+-- constantBridgeTyped (pathLam(Type@0) — the first graded-row inhabitant; the closed body's
+-- affine premise computes to 0 ≤ 1 and the endpoint substitutions collapse definitionally),
+-- constantBridgeAppliedTyped (pathApp at intervalZero — elim fires on the intro).
+-- pathLamSubjectIsAffine is the graded-row HONESTY inversion: the engine FORCES affinity
+-- (every typed bridge abstraction satisfies the bound), via the equation-motive recipe.
+-- HONEST SCOPE: rows only — the endpoint-ι Step arm + the sconing-admission verdict remain
+-- the open OP1-INT work; SR/SN for this engine deferred per the DI-family discipline.
+#assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt
+#assert_no_axioms FX1Poly.Core.RawTermChildren.occurrenceCountAt
+#assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_var_self
+#assert_no_axioms FX1Poly.Typed.intervalTypeCell
+#assert_no_axioms FX1Poly.Typed.intervalZeroCell
+#assert_no_axioms FX1Poly.Typed.intervalOneCell
+#assert_no_axioms FX1Poly.Typed.bridgeTypeCell
+#assert_no_axioms FX1Poly.Typed.pathLamCell
+#assert_no_axioms FX1Poly.Typed.pathAppCell
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.bridgeOfUniverseCodesTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.constantBridgeTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.constantBridgeAppliedTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathLamSubjectIsAffine
 
 -- ★★ THE UNARY-GUARDED Π CANDIDATE — the Abel binary-over-unary construction (OP1-K2 #1228,
 -- in-place strengthening across KernelBinaryParametricity/PiElim/PiIntro/ConvInvariance/
