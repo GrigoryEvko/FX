@@ -684,6 +684,7 @@ import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.IntroRuleDescGradedBinder
 import FX1Poly.Core.RawTermOccurrenceSubst
 import FX1Poly.Typed.GradedBetaSubjectReductionGhost
+import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
 import FX1Poly.Typed.UniverseModeGenerators
@@ -2499,6 +2500,30 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_subst0_ghost
 #assert_no_axioms FX1Poly.Typed.gradedGhostBetaErasesArgument
 #assert_no_axioms FX1Poly.Typed.gradedGhostBetaErasesArgument_weakenWitness
+-- NATIVE-23 (#1300) — pathLam as a native graded intro row (the intro-schema KEYSTONE).
+-- The v1 IntroRuleDesc cannot express pathLam (body-dependent output, pinned domain, annotation-free
+-- member shape — three independent schema mismatches).  GradedIntroRule is the v2 schema: domainCell /
+-- bodyClassifier / memberCell / BODY-dependent outputType / binderUsage / two premise-selection gates
+-- (premise PARITY with the bespoke piIntro/pathIntro arms — the delete-safety requirement).
+-- HasTypeDescGradedIntro is the ONE generic arm interpreting the two-row table (gen_lam at .omega,
+-- gen_pathLam at .one — the FIRST affine introduction row).  soundness routes every generic typing back
+-- to a bespoke piIntro-/pathIntro-built derivation at the SAME subject and classifier (per-row adequacy
+-- with the reconstructions).  gradedIntroEngine_rejectsDoubleDimensionUse: pathLam(pair(var 0, var 0))
+-- is untypable at EVERY classifier — the first typing refused purely by a table-row usage grade.
+#assert_no_axioms FX1Poly.Typed.lamGradedIntroRule
+#assert_no_axioms FX1Poly.Typed.pathLamGradedIntroRule
+#assert_no_axioms FX1Poly.Typed.gradedIntroRuleOf_lam
+#assert_no_axioms FX1Poly.Typed.gradedIntroRuleOf_pathLam
+#assert_no_axioms FX1Poly.Typed.gradedIntroRuleOf_pathLamUsageIsOne
+#assert_no_axioms FX1Poly.Typed.gradedIntroRuleOf_isLamOrPathLam
+#assert_no_axioms FX1Poly.Typed.gradedIntroEngine_typesLam
+#assert_no_axioms FX1Poly.Typed.gradedIntroEngine_typesPathLam
+#assert_no_axioms FX1Poly.Typed.HasTypeDescGradedIntro.soundness
+#assert_no_axioms FX1Poly.Typed.closedConstantLambdaGradedEngineTyped
+#assert_no_axioms FX1Poly.Typed.constantBridgeGradedEngineTyped
+#assert_no_axioms FX1Poly.Typed.doubleDimensionUseBody_occurrenceIsTwo
+#assert_no_axioms FX1Poly.Typed.gradedIntroEngine_rejectsDoubleDimensionUse
+#assert_no_axioms FX1Poly.Typed.gradedIntroEngineCoverageWitness
 
 -- ★ NATIVE-08 — THE CROSS-ENGINE WALL FALLS (BridgeEndpointNativeSubjectReduction).
 -- intervalZeroGrownUntypable proved the endpoint-β reduct interval0 escapes the GROWN engine, so a
