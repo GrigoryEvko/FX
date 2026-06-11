@@ -652,6 +652,7 @@ import FX1Poly.Typed.WellTypedSpaceCalculable
 import FX1Poly.Typed.CostAwareEquivalence
 import FX1Poly.Typed.OptimizationCell
 import FX1Poly.Typed.ChurchNumeralAsymptotics
+import FX1Poly.Typed.CostArcLedger
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1912,6 +1913,32 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.churchMultiplication_dispatchCounted
 #assert_no_axioms FX1Poly.Typed.churchTwoTimesThree_dispatchCounted
 #assert_no_axioms FX1Poly.Typed.churchArithmetic_verifiedBoundedTime
+
+-- ★★ The COST-arc capstone — the honest frontier ledger (Typed/CostArcLedger.lean, COST-9 #1222).
+-- CostArcCell pins each cost-arc claim with a CostClaimStatus (proven/impossible/openProblem);
+-- costArcLedger has 16 cells — 9 PROVEN, 3 IMPOSSIBLE, 4 OPEN — with the counts kernel-computed
+-- (costArcLedger_counts := ⟨rfl, rfl, rfl⟩ over List.filter). Every PROVEN pin is backed by a
+-- theorem RESTATING a representative of the shipped result (exact cost / worst-case bound /
+-- grade→cost tie / linear time / typed cost+space totality / improvement optimality / Church
+-- bounded time / optimization cells); every IMPOSSIBLE pin cites the mechanized refutation
+-- (costIsNotConvInvariant / affineGradeZero_doesNotBoundCount / Ω-divergence). The OPEN cells
+-- (calf phase, PolyBound, dim-2 cost, time-space tradeoff) are recorded without invented content.
+#assert_no_axioms FX1Poly.Typed.CostClaimStatus.isProvenB
+#assert_no_axioms FX1Poly.Typed.CostClaimStatus.isImpossibleB
+#assert_no_axioms FX1Poly.Typed.costArcLedger
+#assert_no_axioms FX1Poly.Typed.costArcLedger_counts
+#assert_no_axioms FX1Poly.Typed.costLedger_exactCost_isBacked
+#assert_no_axioms FX1Poly.Typed.costLedger_worstCase_isBacked
+#assert_no_axioms FX1Poly.Typed.costLedger_gradeCostTie_isBacked
+#assert_no_axioms FX1Poly.Typed.costLedger_linearTime_isBacked
+#assert_no_axioms FX1Poly.Typed.costLedger_typedCost_isBacked
+#assert_no_axioms FX1Poly.Typed.costLedger_typedSpace_isBacked
+#assert_no_axioms FX1Poly.Typed.costLedger_improvementOptimality_isBacked
+#assert_no_axioms FX1Poly.Typed.costLedger_churchBoundedTime_isBacked
+#assert_no_axioms FX1Poly.Typed.costLedger_optimizationCells_isBacked
+#assert_no_axioms FX1Poly.Typed.costLedger_convInvariance_isRefuted
+#assert_no_axioms FX1Poly.Typed.costLedger_affineScaling_isRefuted
+#assert_no_axioms FX1Poly.Typed.costLedger_rawTotality_isRefuted
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
