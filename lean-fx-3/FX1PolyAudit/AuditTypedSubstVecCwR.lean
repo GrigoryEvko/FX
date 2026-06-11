@@ -637,6 +637,7 @@ import FX1Poly.Typed.EffectSecurityAxisObligations
 import FX1Poly.Typed.RemainingDimensionAxisObligations
 import FX1Poly.Modal.GradedCostSemantics
 import FX1Poly.Modal.GradedCostRelation
+import FX1Poly.Modal.GradedCostFundamental
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1505,6 +1506,41 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Modal.CostReducible.applicationBudget
 #assert_no_axioms FX1Poly.Modal.identityLambda_costReducible_atLinearGrade
 #assert_no_axioms FX1Poly.Modal.identityLambda_notCostReducible_atZeroGrade
+
+-- ★★ The COST-2 FUNDAMENTAL THEOREM (GradedCostFundamental.lean, #1214 brick 2 — the §6.3 Dim-13
+-- grade→cost tie PROVED). HasGradeOver.costFundamental: every complexity-graded term, closed by a
+-- cost-reducible substitution, is CostReducible at the GRADE-WEIGHTED budget
+-- `weightedBudget grades budgetAssignment + intrinsicWeight` — the §6.2 grade vector contracted against
+-- the per-variable environment budgets (a variable consumed at grade r contributes r·its budget) plus a
+-- term-intrinsic weight. The quantifier order is the λ-arm's crux: ∃ weight BEFORE ∀ substitution (the
+-- lambda commits to ONE body weight for every future argument — possible exactly because the IH's weight
+-- is environment-independent). λ-arm = the cost-indexed substitution step: β-reduct rewritten into the
+-- extended environment via the σ-algebra composition substAt_zero_applySubstitution_lift, head-expanded
+-- at +1, budget shuffle by Nat AC; app arm distributes r·(Wₐ+wₐ) via Nat.left_distrib + the hand-rolled
+-- natAddMiddleExchange. ★ weightedBudget + the LINEARITY laws mirroring the §6.2 vector ops the three
+-- typing rules use (zero/single-of-lookup/add/scale — add needs the equal-length §6.2 invariant; scale
+-- uses the hand-rolled natMulAssoc + clean Nat.left_distrib). ★ CostReducibleSubstitution + cons (the
+-- cost-indexed closing environment). ★ Closed corollaries: closedCostReducible (every closed well-graded
+-- term cost-reducible) + closedBaseNormalizesWithinBudget (base type ⟹ reaches NF within budget).
+-- ★ Smokes on the brick-1 frontier: the linear identity lands via the FT at its grade-ONE arrow; the K
+-- combinator lands at a type with a grade-ZERO inner arrow — the zero-grade arrow IS inhabited by honest
+-- discarders, contrasting identityLambda_notCostReducible_atZeroGrade (underclaim by a USER rejected).
+-- HONEST: budgets are ∃-strategy (optimal discard-early path); the intrinsic weight is existential
+-- (HasGradeOver is Prop — no weight computable from it); the grade scaling is the structural content.
+#assert_no_axioms FX1Poly.Modal.natAddMiddleExchange
+#assert_no_axioms FX1Poly.Modal.weightedBudget
+#assert_no_axioms FX1Poly.Modal.weightedBudget_zero
+#assert_no_axioms FX1Poly.Modal.weightedBudget_single_of_lookup
+#assert_no_axioms FX1Poly.Modal.weightedBudget_add
+#assert_no_axioms FX1Poly.Modal.weightedBudget_scale
+#assert_no_axioms FX1Poly.Modal.consBudgetAssignment
+#assert_no_axioms FX1Poly.Modal.CostReducibleSubstitution
+#assert_no_axioms FX1Poly.Modal.CostReducibleSubstitution.cons
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.costFundamental
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.closedCostReducible
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.closedBaseNormalizesWithinBudget
+#assert_no_axioms FX1Poly.Modal.linearIdentityCostReducibleViaFundamental
+#assert_no_axioms FX1Poly.Modal.kCombinatorCostReducibleViaFundamental
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
