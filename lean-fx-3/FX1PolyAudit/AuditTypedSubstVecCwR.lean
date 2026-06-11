@@ -669,6 +669,7 @@ import FX1Poly.Typed.HasTypeDescBridge
 import FX1Poly.Typed.BridgeEndpointStep
 import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
+import FX1Poly.Typed.TermIndexedFormerSpike
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2601,3 +2602,20 @@ kind.  All `rfl`/`by decide` — every theorem axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.pathLamPremiseIsGradedAffine
 #assert_no_axioms FX1Poly.Typed.natElimPremisesNeedMotive
 #assert_no_axioms FX1Poly.Typed.interpreterShippedLedger
+
+/-! ## NATIVE-02 (#1279) — the term-indexed former premise IS expressible (SPIKE, verdict GO)
+
+The expressibility spike for `childMemberOfEarlierType`: can a premise classify a child term (`b : A`) by
+an EARLIER child (`A : Type`)?  GO — `HasTypeDescBridge.bridgeFormation` already expresses it over the grown
+engine.  This ships the foldable GENERIC form: `TermIndexedFormerPremise` (the back-reference spine,
+endpoints typed at a recorded carrier) + `TermIndexedFormerTyping`, with `termIndexedFormer_universeCodes`
+(non-vacuous) and `termIndexedFormerTyping_buildsBridge` (★ adequacy: the generic spine SUFFICES to
+construct the bridge former — its premise is an instance).  `termIndexedExpressibility_isGo` records the
+all-positive verdict.  Positive recursive inductive; all `rfl` / direct arm application — axiom-free.  The
+NATIVE-12 work is the INTERPRETER, not the expressibility this settles. -/
+#assert_no_axioms FX1Poly.Typed.TermIndexedFormerPremise
+#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTyping
+#assert_no_axioms FX1Poly.Typed.termIndexedFormer_universeCodes
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerTyping_buildsBridge
+#assert_no_axioms FX1Poly.Typed.termIndexedExpressibility
+#assert_no_axioms FX1Poly.Typed.termIndexedExpressibility_isGo
