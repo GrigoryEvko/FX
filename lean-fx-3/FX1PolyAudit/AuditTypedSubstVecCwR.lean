@@ -2341,6 +2341,24 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.constantBridgeAppliedTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathLamSubjectIsAffine
 
+-- ★ THE INTERVAL DATA REDUCIBILITY CANDIDATE (OP1-INT brick 3a,
+-- FX1Poly/Core/IntervalCanonicalFormsCandidate.lean + the DataFormerFamily.intervalFamily
+-- extension): the bridge-dimension type's Tait candidate — the bool twin (two nullary
+-- endpoint values), CanonicalFormsPredicate isIntervalValue is a full Girard candidate
+-- (CR1+CR2+CR3) with both endpoints as members and fundamental-free closed canonicity.
+-- This is the valueConstructor-role sconing coverage the interval endpoints need to go
+-- LIVE through the ONORM-M2 admission gate (the OP1-INT verdict mechanism); the family
+-- enumeration grows 10 → 11 (coveredCount re-pinned).
+#assert_no_axioms FX1Poly.Core.isIntervalValue
+#assert_no_axioms FX1Poly.Core.isIntervalValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.intervalCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.Step.no_step_from_interval0
+#assert_no_axioms FX1Poly.Core.Step.no_step_from_interval1
+#assert_no_axioms FX1Poly.Core.intervalZeroValueCell_isMember
+#assert_no_axioms FX1Poly.Core.intervalOneValueCell_isMember
+#assert_no_axioms FX1Poly.Core.intervalClosedReducesToValue
+#assert_no_axioms FX1Poly.Core.DataFormerFamily.coveredCount_correct
+
 -- ★★ THE UNARY-GUARDED Π CANDIDATE — the Abel binary-over-unary construction (OP1-K2 #1228,
 -- in-place strengthening across KernelBinaryParametricity/PiElim/PiIntro/ConvInvariance/
 -- Telescope/PiFormer; every gate above re-verifies at the new shapes, no new decls).

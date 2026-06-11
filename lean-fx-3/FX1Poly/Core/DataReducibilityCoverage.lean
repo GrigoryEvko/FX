@@ -8,6 +8,7 @@ import FX1Poly.Core.OptionCanonicalFormsCandidate
 import FX1Poly.Core.EitherCanonicalFormsCandidate
 import FX1Poly.Core.ReflCanonicalFormsCandidate
 import FX1Poly.Core.ModIntroCanonicalFormsCandidate
+import FX1Poly.Core.IntervalCanonicalFormsCandidate
 
 /-! # FX1Poly/Core/DataReducibilityCoverage
     — SN-082: the reducibility-coverage gate over the data-type former families
@@ -64,6 +65,7 @@ inductive DataFormerFamily where
   | eitherFamily
   | identityFamily
   | modalBoxFamily
+  | intervalFamily
 
 /-- The value predicate (`isValue` instance) each data-former family is interpreted at — the predicate whose
 canonical inhabitants are the type's constructors and whose `CanonicalFormsPredicate` is the family's Tait
@@ -80,6 +82,7 @@ def DataFormerFamily.valuePredicate {scope : Nat} : DataFormerFamily → (RawTer
   | .eitherFamily => isEitherValue
   | .identityFamily => isReflValue
   | .modalBoxFamily => isModIntroValue
+  | .intervalFamily => isIntervalValue
 
 /-- **The data reducibility coverage theorem (SN-082).**  For EVERY enumerated data-former family, the
 canonical-forms predicate at that family's value predicate is a full Girard reducibility candidate
@@ -100,14 +103,15 @@ theorem DataFormerFamily.hasReducibilityCandidate {scope : Nat} :
   | .eitherFamily => eitherCanonicalFormsCandidate
   | .identityFamily => reflCanonicalFormsCandidate
   | .modalBoxFamily => modIntroCanonicalFormsCandidate
+  | .intervalFamily => intervalCanonicalFormsCandidate
 
 /-- The number of data-former families covered.  A pinned smoke: if the enumeration grows or shrinks without
 updating this count, the `_correct` equation breaks. -/
-def DataFormerFamily.coveredCount : Nat := 10
+def DataFormerFamily.coveredCount : Nat := 11
 
-/-- The covered-family count is exactly ten (bool, nat, unit, empty, pair, list, option, either, identity,
-modal box). -/
-theorem DataFormerFamily.coveredCount_correct : DataFormerFamily.coveredCount = 10 := rfl
+/-- The covered-family count is exactly eleven (bool, nat, unit, empty, pair, list, option, either,
+identity, modal box, interval). -/
+theorem DataFormerFamily.coveredCount_correct : DataFormerFamily.coveredCount = 11 := rfl
 
 /-- **Non-vacuity (positive):** bool's covered candidate is inhabited by a closed member (`boolTrueCell`), so
 the coverage is not over empty predicates. -/
