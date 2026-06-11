@@ -638,6 +638,7 @@ import FX1Poly.Typed.RemainingDimensionAxisObligations
 import FX1Poly.Modal.GradedCostSemantics
 import FX1Poly.Modal.GradedCostRelation
 import FX1Poly.Modal.GradedCostFundamental
+import FX1Poly.Modal.GradedTermSize
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1541,6 +1542,33 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Modal.HasGradeOver.closedBaseNormalizesWithinBudget
 #assert_no_axioms FX1Poly.Modal.linearIdentityCostReducibleViaFundamental
 #assert_no_axioms FX1Poly.Modal.kCombinatorCostReducibleViaFundamental
+
+-- ★ Term SIZE + exact occurrence counting + the substitution-size equation (GradedTermSize.lean,
+-- COST-2a #1215 brick 1 — the quantitative substrate for the linear-time theorem). GradedLambda.size
+-- (node count) + countOccurrencesAt (EXACT Nat-valued — the ω-collapsed usage vector cannot drive size
+-- arithmetic) + size_shift (renaming preserves size). ★ size_substAt, the ADDITIVE substitution-size
+-- equation: size(t[i := r]) + count i t = size t + count i t · size r — each occurrence trades one var
+-- node for a replacement copy; the additive form dodges Nat truncated subtraction entirely. ★ THE β-SIZE
+-- LEMMA size_substAt_lt_redex: count 0 body ≤ 1 ⟹ the β-reduct is STRICTLY smaller than the redex (the
+-- single-step engine of "linear terms normalize in < size steps under any strategy"). ★ The duplication
+-- seed: count 0 (x x) = 2 + its ¬≤1 pin — the witness germ for brick 2's counterexamples. DESIGN FINDING
+-- (recorded in #1215 metadata): the task's AFFINE premise is FALSE — binder grade 0 does NOT bound
+-- occurrences (0-SCALING LEAKS: λx.(f x) x types at binder grade 0 with x occurring twice over
+-- f : A -0-> A -0-> B, and its β DUPLICATES) — the any-strategy theorem holds on the STRICT-linear
+-- fragment (all binder grades = 1), brick 2's target; affine gets only ∃-strategy bounds (COST-2).
+-- Proof recipe: rw [if_pos/if_neg] consumes ONE instantiated pattern per element — an arm with both a
+-- subst-if and count-ifs over the same condition needs the rewrite TWICE; 0 * symbolic is STUCK
+-- (Nat.mul recurses on arg 2) — close with Nat.zero_mul, never rfl.
+#assert_no_axioms FX1Poly.Modal.GradedLambda.size
+#assert_no_axioms FX1Poly.Modal.GradedLambda.countOccurrencesAt
+#assert_no_axioms FX1Poly.Modal.GradedLambda.size_pos
+#assert_no_axioms FX1Poly.Modal.GradedLambda.size_shift
+#assert_no_axioms FX1Poly.Modal.GradedLambda.size_substAt
+#assert_no_axioms FX1Poly.Modal.GradedLambda.size_substAt_of_absent
+#assert_no_axioms FX1Poly.Modal.GradedLambda.size_substAt_of_linear
+#assert_no_axioms FX1Poly.Modal.GradedLambda.size_substAt_lt_redex
+#assert_no_axioms FX1Poly.Modal.GradedLambda.countOccurrencesAt_duplicator
+#assert_no_axioms FX1Poly.Modal.GradedLambda.duplicatorRedex_count_exceeds_linear
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
