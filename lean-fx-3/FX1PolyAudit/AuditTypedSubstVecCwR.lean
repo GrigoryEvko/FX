@@ -663,6 +663,7 @@ import FX1Poly.Typed.KernelBinaryPiFormer
 import FX1Poly.Typed.KernelBinaryMemberSN
 import FX1Poly.Typed.KernelBinaryGenericFormer
 import FX1Poly.Typed.KernelBinaryFundamental
+import FX1Poly.Typed.KernelAbstractionTheorem
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2231,6 +2232,43 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.binaryFundamentalConjoinedAtBounded
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.binaryFundamentalConjoinedAtBounded
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.binaryParametricityClosed
+
+-- ★★ THE KERNEL ABSTRACTION THEOREM — free theorems from closed binary parametricity
+-- (OP1-K3 #1229, Typed/KernelAbstractionTheorem.lean). The harvest of
+-- binaryParametricityClosed by chaining applicationMemberPairAtBounded through the closed
+-- self-relation and decoding through the pinned data candidates. subst0WeakenCancel: the de
+-- Bruijn cancellation (weaken t)[a] = t (weaken_eq_rename + rename_subst_commute + pointwise
+-- collapse to identity + subst_identity_apply). polymorphicIdentityTypeCell: the
+-- scope-generic Π(A:Type@0).Π(x:A).A with rfl subst-collapse + rfl inner-instantiation
+-- equations (concrete constructor trees, concrete de Bruijn indices). The flat-code candidate
+-- kit (reducibleType@0 / binary type pair / member decode / member intro / unary member —
+-- the unary+binary dataFlat pins are gate-free, so flat-code membership IS
+-- dataTait × dataTait × Conv). ★ kernelFreeTheoremAtFlatCode: every CLOSED term typed at the
+-- polymorphic-identity type, instantiated at any SN flat data code F, maps CONVERTIBLE
+-- data-Tait members of F to CONVERTIBLE data-Tait members of F — two chained applications
+-- (the universe argument admitted via the dataFlat pins through the universe-membership
+-- intros at the cumulated bound; the inner codomain computes by defeq reshaping + the
+-- weakening cancellation), then the flat decode. ★
+-- polymorphicInstantiationCanonicityAtFlatCode (the diagonal): polyFunction F a is a
+-- data-Tait member of F — polymorphic-instantiation CANONICITY with no typing derivation for
+-- the application ever constructed: parametricity delivers canonicity-of-instantiation free.
+-- Concrete witness: polymorphicIdentity_freeTheoremAtFlatCode at the shipped #955 derivation.
+-- HONEST SCOPE (recorded in the module docstring): the kernel binary relation interprets the
+-- universe by its FIXED candidate assignment (no relation-polymorphic quantification) — these
+-- are the free theorems of the PINNED relational model; Reynolds-style arbitrary-relation
+-- free theorems are the gen_param internal-parametricity track (OP1-INT #1230/#1231).
+#assert_no_axioms FX1Poly.Typed.subst0WeakenCancel
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityTypeCell
+#assert_no_axioms FX1Poly.Typed.subst_polymorphicIdentityTypeCell
+#assert_no_axioms FX1Poly.Typed.subst0_innerDependentArrow
+#assert_no_axioms FX1Poly.Typed.flatCodeReducibleTypeAtLevelZero
+#assert_no_axioms FX1Poly.Typed.flatCodeBinaryTypePairAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryMemberPairAtFlatCodeDecode
+#assert_no_axioms FX1Poly.Typed.binaryMemberPairAtFlatCodeIntro
+#assert_no_axioms FX1Poly.Typed.flatCodeUnaryMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.kernelFreeTheoremAtFlatCode
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentity_freeTheoremAtFlatCode
+#assert_no_axioms FX1Poly.Typed.polymorphicInstantiationCanonicityAtFlatCode
 
 -- ★★ THE UNARY-GUARDED Π CANDIDATE — the Abel binary-over-unary construction (OP1-K2 #1228,
 -- in-place strengthening across KernelBinaryParametricity/PiElim/PiIntro/ConvInvariance/
