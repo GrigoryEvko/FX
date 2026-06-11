@@ -118,44 +118,41 @@ theorem BinaryTelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow
   | _ :: _ :: _, _children, _telescope =>
       exact nomatch Nat.le_of_succ_le_succ arityBound
 
-/-- ★ **The premise-isolated binary Σ-former FT arm.**  Same premise discipline as the Π arm
-(brick 5b): the output gate and the open-codomain SN pair arrive as premises (the wall's
-forbidden extractions), the domain SN pair extracts from the binary universe candidate, and
-the Σ PAIR is related-as-types via the binary `neutral` arm at the concrete `gen_sigmaTyCode`
-row — no component reducibility enters (Σ formers take the SN-product candidate in this
-model, exactly as in the unary relation). -/
-theorem binaryFundamentalGenFormationSigmaArm {profile : PolyProfile} {scope : Nat}
-    (env : Nat → Nat) (bound : Nat) (context : TypingContext profile scope)
+/-- ★ **The PER-SUBSTITUTION-PAIR binary Σ-former member pair** — the composition core the
+premise-isolated Σ FT arm and the conjoined master assembly both consume: from the per-pair
+binary telescope (domain member pair only — Σ formers take the SN-product candidate, no
+component reducibility enters), the output gate, and the open-codomain SN pair, the two
+closures of `sigmaTyCodeCell domain codomain` are a related member pair of the output
+universe pair, via the binary `neutral` arm at the concrete `gen_sigmaTyCode` row. -/
+theorem binarySigmaFormerMemberPairUnderSubstAtBounded {scope targetScope : Nat}
+    (env : Nat → Nat) (bound : Nat)
     {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
     (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
+    (leftSubstitution rightSubstitution : RawTermSubst scope targetScope)
     (outputBelowBound :
       LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env < bound)
-    (codomainOpenSNPair : ∀ {targetScope : Nat}
-      (leftSubstitution rightSubstitution : RawTermSubst scope targetScope),
-      BinaryReducibleEnvAtBounded env bound context leftSubstitution rightSubstitution →
-      IsStronglyNormalizing
-          (RawTerm.subst (RawTermSubst.lift leftSubstitution) codomain) ∧
-        IsStronglyNormalizing
-          (RawTerm.subst (RawTermSubst.lift rightSubstitution) codomain))
-    (telescope : ∀ {targetScope : Nat}
-      (leftSubstitution rightSubstitution : RawTermSubst scope targetScope),
-      BinaryReducibleEnvAtBounded env bound context leftSubstitution rightSubstitution →
-      BinaryTelescopeReducibleAtBounded env bound
-        (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env) flag 0 2
-        leftSubstitution rightSubstitution [domainLevel, codomainLevel]
-        (.childCons domain (.childCons codomain .childNil))) :
-    BinaryFundamentalConclusionAtBounded env bound context
-      (sigmaTyCodeCell domain codomain)
-      (universeCodeCell (lmaxAll [domainLevel, codomainLevel]) flag) := by
+    (codomainLeftOpenSN :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift leftSubstitution) codomain))
+    (codomainRightOpenSN :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift rightSubstitution) codomain))
+    (telescopePair : BinaryTelescopeReducibleAtBounded env bound
+      (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env) flag 0 2
+      leftSubstitution rightSubstitution [domainLevel, codomainLevel]
+      (.childCons domain (.childCons codomain .childNil))) :
+    IsBinaryReducibleMemberPairAtBounded env bound
+      (RawTerm.subst leftSubstitution
+        (universeCodeCell (lmaxAll [domainLevel, codomainLevel]) flag))
+      (RawTerm.subst rightSubstitution
+        (universeCodeCell (lmaxAll [domainLevel, codomainLevel]) flag))
+      (RawTerm.subst leftSubstitution (sigmaTyCodeCell domain codomain))
+      (RawTerm.subst rightSubstitution (sigmaTyCodeCell domain codomain)) := by
   obtain ⟨sigmaRule, sigmaRow⟩ :
       ∃ rule, typingRuleDescOf Generator.gen_sigmaTyCode = some rule := ⟨_, rfl⟩
-  intro _targetScope leftSubstitution rightSubstitution envRelated
-  obtain ⟨domainMemberPair, _codomainMemberPairFn⟩ :=
-    (telescope leftSubstitution rightSubstitution envRelated).twoChildMembers
+  obtain ⟨domainMemberPair, _codomainMemberPairFn⟩ := telescopePair.twoChildMembers
   obtain ⟨domainLeftSN, domainRightSN⟩ :=
     binaryStronglyNormalizingPairOfUniverseMemberAtBounded domainMemberPair
-  obtain ⟨codomainLeftSN, codomainRightSN⟩ :=
-    codomainOpenSNPair leftSubstitution rightSubstitution envRelated
+  have codomainLeftSN := codomainLeftOpenSN
+  have codomainRightSN := codomainRightOpenSN
   have sigmaLeftSN :
       IsStronglyNormalizing
         (RawTerm.subst leftSubstitution (sigmaTyCodeCell domain codomain)) := by
@@ -188,5 +185,39 @@ theorem binaryFundamentalGenFormationSigmaArm {profile : PolyProfile} {scope : N
   rw [subst_universeCodeCell, subst_universeCodeCell]
   exact binaryUniverseMembershipIntroAtBounded env (lmaxAll [domainLevel, codomainLevel]) flag
     bound outputBelowBound sigmaLeftSN sigmaRightSN sigmaPairRelated
+
+/-- ★ **The premise-isolated binary Σ-former FT arm** — the env-quantified wrapper over the
+per-pair composition core, with the same premise discipline as the Π arm (brick 5b): the
+output gate and the open-codomain SN pair arrive as per-related-substitution-pair suppliers,
+discharged at the conjoined master assembly from the shipped UNARY fundamental theorem. -/
+theorem binaryFundamentalGenFormationSigmaArm {profile : PolyProfile} {scope : Nat}
+    (env : Nat → Nat) (bound : Nat) (context : TypingContext profile scope)
+    {domain : RawTerm scope} {codomain : RawTerm (scope + 1)}
+    (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
+    (outputBelowBound :
+      LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env < bound)
+    (codomainOpenSNPair : ∀ {targetScope : Nat}
+      (leftSubstitution rightSubstitution : RawTermSubst scope targetScope),
+      BinaryReducibleEnvAtBounded env bound context leftSubstitution rightSubstitution →
+      IsStronglyNormalizing
+          (RawTerm.subst (RawTermSubst.lift leftSubstitution) codomain) ∧
+        IsStronglyNormalizing
+          (RawTerm.subst (RawTermSubst.lift rightSubstitution) codomain))
+    (telescope : ∀ {targetScope : Nat}
+      (leftSubstitution rightSubstitution : RawTermSubst scope targetScope),
+      BinaryReducibleEnvAtBounded env bound context leftSubstitution rightSubstitution →
+      BinaryTelescopeReducibleAtBounded env bound
+        (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env) flag 0 2
+        leftSubstitution rightSubstitution [domainLevel, codomainLevel]
+        (.childCons domain (.childCons codomain .childNil))) :
+    BinaryFundamentalConclusionAtBounded env bound context
+      (sigmaTyCodeCell domain codomain)
+      (universeCodeCell (lmaxAll [domainLevel, codomainLevel]) flag) :=
+  fun leftSubstitution rightSubstitution envRelated =>
+    binarySigmaFormerMemberPairUnderSubstAtBounded env bound domainLevel codomainLevel flag
+      leftSubstitution rightSubstitution outputBelowBound
+      (codomainOpenSNPair leftSubstitution rightSubstitution envRelated).1
+      (codomainOpenSNPair leftSubstitution rightSubstitution envRelated).2
+      (telescope leftSubstitution rightSubstitution envRelated)
 
 end FX1Poly.Typed

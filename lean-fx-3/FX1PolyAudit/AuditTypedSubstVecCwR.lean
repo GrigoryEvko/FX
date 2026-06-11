@@ -662,6 +662,7 @@ import FX1Poly.Typed.KernelBinaryTelescope
 import FX1Poly.Typed.KernelBinaryPiFormer
 import FX1Poly.Typed.KernelBinaryMemberSN
 import FX1Poly.Typed.KernelBinaryGenericFormer
+import FX1Poly.Typed.KernelBinaryFundamental
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2199,6 +2200,37 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.binaryDataFormationUnderSubstAtBounded
 #assert_no_axioms FX1Poly.Typed.BinaryTelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow
 #assert_no_axioms FX1Poly.Typed.binaryFundamentalGenFormationSigmaArm
+
+-- ★★★ THE BINARY FUNDAMENTAL THEOREM — the OP1-K2 master assembly (#1228,
+-- Typed/KernelBinaryFundamental.lean). The budget-recursor assembly over BOTH engines with
+-- the CONJOINED motive BinaryFundamentalConclusionConjoinedAtBounded: the conclusion carries
+-- the two UNARY bound-reducible environments alongside the binary-related one — the honest
+-- price of binary parametricity (the wall premises are discharged at every arm by the
+-- SHIPPED UNARY FTs applied to the arm's named sub-derivation/sub-budget fields at the
+-- unary halves of the triple; they erase at the closed corollary, vacuous over the empty
+-- context). Design-(f) propagation: the binary telescope's rest-clause gained two
+-- unary-membership premises (in-place strengthening of BinaryTelescopeReducibleAtBounded +
+-- twoChildMembers; the Π arm supplies them from guards + the stored unary fields), which is
+-- exactly what lets the conjoined motive_2 cons arm extend BOTH unary environments. The
+-- Π/Σ-former composition cores were factored per-substitution-pair
+-- (binaryPiFormerMemberPairUnderSubstAtBounded / binarySigmaFormerMemberPairUnderSubstAt-
+-- Bounded) so the FT arms and the master share one body. The piIntro arm is the design-(f)
+-- payoff: guards convert to unary memberships ⟨candidate, derivation, guard⟩ that extend
+-- both unary environments at the body IH; open-body SN comes from the unary FT at the
+-- variable-0-extended environment through the subst0 SN reflection (the open-codomain
+-- trick, classifier-generic). genFormation dispatch: by_cases Π / Σ / generic-arity-≤1
+-- (formationLevelsArityBoundNonPiSigma — the new row-mirror gate).
+-- ★ HasTypeDescPi.binaryParametricityClosed: every CLOSED well-typed term is
+-- binary-SELF-related at a budget-derived bound under every closing-substitution pair —
+-- the kernel abstraction-theorem doorway (OP1-K3).
+#assert_no_axioms FX1Poly.Typed.BinaryFundamentalConclusionConjoinedAtBounded
+#assert_no_axioms FX1Poly.Typed.IsBinaryTelescopeConjoinedAtBounded
+#assert_no_axioms FX1Poly.Typed.formationLevelsArityBoundNonPiSigma
+#assert_no_axioms FX1Poly.Typed.binaryPiFormerMemberPairUnderSubstAtBounded
+#assert_no_axioms FX1Poly.Typed.binarySigmaFormerMemberPairUnderSubstAtBounded
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.binaryFundamentalConjoinedAtBounded
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.binaryFundamentalConjoinedAtBounded
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.binaryParametricityClosed
 
 -- ★★ THE UNARY-GUARDED Π CANDIDATE — the Abel binary-over-unary construction (OP1-K2 #1228,
 -- in-place strengthening across KernelBinaryParametricity/PiElim/PiIntro/ConvInvariance/

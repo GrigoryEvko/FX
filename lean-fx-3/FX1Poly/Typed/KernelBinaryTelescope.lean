@@ -62,6 +62,10 @@ def BinaryTelescopeReducibleAtBounded {baseScope targetScope : Nat} (env : Nat �
         (universeCodeCell headLevel flag) (universeCodeCell headLevel flag)
         (RawTerm.subst leftSubstitution head) (RawTerm.subst rightSubstitution head) ∧
       (∀ leftArgument rightArgument : RawTerm targetScope,
+        IsReducibleMemberAtBounded env argLevel
+          (RawTerm.subst leftSubstitution head) leftArgument →
+        IsReducibleMemberAtBounded env argLevel
+          (RawTerm.subst rightSubstitution head) rightArgument →
         IsBinaryReducibleMemberPairAtBounded env argLevel
           (RawTerm.subst leftSubstitution head) (RawTerm.subst rightSubstitution head)
           leftArgument rightArgument →
@@ -93,6 +97,10 @@ theorem BinaryTelescopeReducibleAtBounded.twoChildMembers {baseScope targetScope
       (universeCodeCell domainLevel flag) (universeCodeCell domainLevel flag)
       (RawTerm.subst leftSubstitution domain) (RawTerm.subst rightSubstitution domain) ∧
     (∀ leftArgument rightArgument : RawTerm targetScope,
+      IsReducibleMemberAtBounded env argLevel
+        (RawTerm.subst leftSubstitution domain) leftArgument →
+      IsReducibleMemberAtBounded env argLevel
+        (RawTerm.subst rightSubstitution domain) rightArgument →
       IsBinaryReducibleMemberPairAtBounded env argLevel
         (RawTerm.subst leftSubstitution domain) (RawTerm.subst rightSubstitution domain)
         leftArgument rightArgument →
@@ -103,8 +111,9 @@ theorem BinaryTelescopeReducibleAtBounded.twoChildMembers {baseScope targetScope
         (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift rightSubstitution) codomain)
           rightArgument)) :=
   ⟨telescope.1,
-   fun leftArgument rightArgument argumentsMember => by
-     have codomainMemberPair := (telescope.2 leftArgument rightArgument argumentsMember).1
+   fun leftArgument rightArgument leftUnaryMember rightUnaryMember argumentsMember => by
+     have codomainMemberPair := (telescope.2 leftArgument rightArgument leftUnaryMember
+       rightUnaryMember argumentsMember).1
      rwa [RawTerm.subst_cons_eq_subst0_lift codomain leftArgument leftSubstitution,
        RawTerm.subst_cons_eq_subst0_lift codomain rightArgument rightSubstitution]
        at codomainMemberPair⟩
