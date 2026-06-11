@@ -36,11 +36,14 @@ occurrence bound, the quantitative refinement of `RawTerm.UsesPosition`.
 
 ## HONEST SCOPE
 
-Substrate rows only: the endpoint-ι computation rule (`pathApp (pathLam body) ε ↝
-body[i:=ε]`) is a `Step` extension and remains the recorded OP1-INT gap (with the
-definitional endpoint boundary); SR/SN for this engine are deferred exactly as for every
-DI-family intro engine.  The OP1-INT verdict (does the glued model extend over these rows —
-the sconing admission gate) is the remaining task.
+Rows + the endpoint-β computation: the rule `pathApp (pathLam body) ε ↝ body[i:=ε]` ships as
+the GATED SIBLING `StepBridgeEndpoint` (`BridgeEndpointStep.lean`, the η-discipline — NOT a
+core `Step` arm; promotion is the recorded future event), with the deterministic inversion
+stack and two non-vacuous SR fragments there.  GENERAL SR for this engine awaits engine
+integration (see `intervalZeroGrownUntypable` — the cross-engine wall); the definitional
+endpoint boundary (`pathApp p 0 ≡ a`) remains open.  The rows passed the ONORM-M2 sconing
+admission gate (the live flip) — the remaining OP1-INT verdict half is the affine-dimension
+glued-model statement over `pathIntro`.
 
 ## Zero-axiom
 

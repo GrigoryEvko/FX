@@ -666,6 +666,7 @@ import FX1Poly.Typed.KernelBinaryFundamental
 import FX1Poly.Typed.KernelAbstractionTheorem
 import FX1Poly.Typed.KernelParamSubstrateSurvey
 import FX1Poly.Typed.HasTypeDescBridge
+import FX1Poly.Typed.BridgeEndpointStep
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2336,10 +2337,11 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- constantBridgeAppliedTyped (pathApp at intervalZero — elim fires on the intro).
 -- pathLamSubjectIsAffine is the graded-row HONESTY inversion: the engine FORCES affinity
 -- (every typed bridge abstraction satisfies the bound), via the equation-motive recipe.
--- HONEST SCOPE: the rows are LIVE and admission-covered (brick 4); the endpoint-ι Step arm
--- + the affine-dimension glued-model statement over pathIntro remain the open OP1-INT work;
--- SR/SN for this engine deferred per the DI-family discipline.  The HON-5 negative-soundness
--- bundle gained the bridge leg (bridgeReservedUntyped, 16th engine — gated with HON-5).
+-- HONEST SCOPE: the rows are LIVE and admission-covered (brick 4); the endpoint-β
+-- computation SHIPPED as the gated sibling StepBridgeEndpoint (brick 5, gated below); the
+-- affine-dimension glued-model statement over pathIntro + core-Step promotion remain the
+-- open OP1-INT work.  The HON-5 negative-soundness bundle gained the bridge leg
+-- (bridgeReservedUntyped, 16th engine — gated with HON-5).
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt
 #assert_no_axioms FX1Poly.Core.RawTermChildren.occurrenceCountAt
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_var_self
@@ -2372,6 +2374,46 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.intervalOneValueCell_isMember
 #assert_no_axioms FX1Poly.Core.intervalClosedReducesToValue
 #assert_no_axioms FX1Poly.Core.DataFormerFamily.coveredCount_correct
+
+-- ★ THE ENDPOINT-β COMPUTATION AS A GATED SIBLING (OP1-INT brick 5,
+-- FX1Poly/Typed/BridgeEndpointStep.lean): pathApp(pathLam body, ε) ↝ body[i:=ε] shipped
+-- under the Step.eta SIBLING discipline (η-M8b precedent) — by-construction gated
+-- (sourceShape: the relation fires ONLY on the exact redex; deterministic), ZERO core-Step
+-- cascade; promotion into core Step is the recorded future event (flips hasRedexHead,
+-- migrates the ONORM-M2 role inertEliminator → eliminator, breaks the LiveGenerator enum by
+-- design). RawTerm.subst0_weaken = the substitution collapse subst0 (weaken t) a = t
+-- (rename_subst_commute + PointwiseEq-to-identity rfl + subst_identity_apply) — the
+-- dimension-constant computation engine, giving the SYMBOLIC constantPathBetaComputesToBody.
+-- The identity path pathLam(var 0) : Bridge(dim, 0, 1) = the first inhabitant genuinely
+-- USING its dimension binder (affine count exactly 1 via occurrenceCountAt_var_self); its
+-- endpoint application computes to the endpoint. The deterministic INVERSION STACK (no conv
+-- arm in the bridge engine): pathAppSubjectInversion + pathLamAtBridgeInversion (explicit
+-- injection drilling, 4-field mkGen / 5-field childCons) → pathBetaRedexInversion = the SR
+-- skeleton (body typed under the binder AT THE REDEX'S CLASSIFIER + forced affinity +
+-- argument interval-typed). pathBetaRoundTrip = general intro-then-elim typed AND fires.
+-- TWO NON-VACUOUS SR INSTANCES: constantBridgeEndpointSubjectReduction (CROSS-ENGINE — the
+-- reduct is GROWN-typed at the same classifier; the bridge eliminator computes INTO the
+-- grown world on the constant fragment) + identityPathEndpointSubjectReduction (WITHIN the
+-- bridge engine). ★ intervalZeroGrownUntypable = the machine-checked CROSS-ENGINE WALL:
+-- interval0 heads no grown-typed cell, so general endpoint-β SR cannot target HasTypeDescPi
+-- alone — the honest general-SR target is an INTEGRATED engine (the recorded residual, the
+-- listElim engine-separation shape). All zero-axiom.
+#assert_no_axioms FX1Poly.Core.RawTerm.subst0_weaken
+#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint
+#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.sourceShape
+#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.deterministic
+#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.constantBridgeAppliedComputes
+#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.identityPathAppliedComputes
+#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.constantPathBetaComputesToBody
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.identityPathTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.identityPathAppliedTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathAppSubjectInversion
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathLamAtBridgeInversion
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathBetaRedexInversion
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathBetaRoundTrip
+#assert_no_axioms FX1Poly.Typed.constantBridgeEndpointSubjectReduction
+#assert_no_axioms FX1Poly.Typed.identityPathEndpointSubjectReduction
+#assert_no_axioms FX1Poly.Typed.intervalZeroGrownUntypable
 
 -- ★★ THE UNARY-GUARDED Π CANDIDATE — the Abel binary-over-unary construction (OP1-K2 #1228,
 -- in-place strengthening across KernelBinaryParametricity/PiElim/PiIntro/ConvInvariance/

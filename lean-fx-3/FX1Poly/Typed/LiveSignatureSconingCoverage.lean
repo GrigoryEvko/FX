@@ -223,10 +223,11 @@ inductive SconingCoverageRole where
   | neutralLeaf
   /-- Root-reduction heads: covered by the reduction rule + the per-regime reducibility arc. -/
   | eliminator
-  /-- Typed elimination heads with NO root reduction rule TODAY (the bridge `pathApp`, whose
-  endpoint-ι is the recorded OP1-INT gap): β/ι-inert, hence weak-head normal — covered by the
-  unconditional neutral lift; migrates to `eliminator` when its ι lands (this enum breaks then,
-  by design). -/
+  /-- Typed elimination heads with NO root reduction rule in CORE `Step` (the bridge
+  `pathApp` — its endpoint-β ships as the GATED SIBLING `StepBridgeEndpoint`, η-discipline):
+  core-β/ι-inert, hence weak-head normal for the candidates/scones — covered by the
+  unconditional neutral lift; migrates to `eliminator` when the sibling rule is PROMOTED into
+  core `Step` (this enum breaks then, by design). -/
   | inertEliminator
 
 /-- The coverage role of each live-signature member. -/
@@ -683,12 +684,13 @@ theorem LiveGenerator.pathAbstractionConstructorPreservesSn {scope : Nat}
       (.mkGen .gen_pathLam () (.childCons body .childNil) : RawTerm scope) :=
   pathLam_isStronglyNormalizing_of_body bodyNormalizing
 
-/-- **The inert-eliminator coverage** — the typed-but-β/ι-inert elimination heads (today:
-exactly `pathApp`, whose endpoint-ι is the recorded OP1-INT gap).  An inert eliminator's cells
-are weak-head normal (no root rule exists), so the UNCONDITIONAL neutral lift covers them —
-the honest contrast with the `.eliminator` role, whose coverage demands `hasRedexHead = true`.
-When the endpoint-ι lands, `pathApp` migrates to `.eliminator` and this dispatch loses its
-real arm (the enum breaks, by design). -/
+/-- **The inert-eliminator coverage** — the typed-but-core-β/ι-inert elimination heads (today:
+exactly `pathApp`; its endpoint-β EXISTS as the gated sibling `StepBridgeEndpoint`, but core
+`Step` — the relation the candidates/scones are built over — has no rule for it).  An inert
+eliminator's cells are weak-head normal w.r.t. core `Step`, so the UNCONDITIONAL neutral lift
+covers them — the honest contrast with the `.eliminator` role, whose coverage demands
+`hasRedexHead = true`.  When the sibling rule is PROMOTED into core `Step`, `pathApp` migrates
+to `.eliminator` and this dispatch loses its real arm (the enum breaks, by design). -/
 theorem LiveGenerator.inertEliminatorCellHasGluedLift {scope : Nat} :
     (liveGenerator : LiveGenerator) →
       liveGenerator.sconingRole = .inertEliminator →
