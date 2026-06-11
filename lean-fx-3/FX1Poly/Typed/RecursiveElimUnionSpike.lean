@@ -433,4 +433,27 @@ theorem recursiveElimRowGoVerdict {profile : PolyProfile} :
     natTypeCell boolTrueCell natZeroCell (inductiveHypothesisReturnBranch 0)
     (inductiveHypothesisReturnBranch 0) natZeroCell boolTypeCell
 
+/-! ## ★ Table inversion: a row hit pins the generator and the row (NATIVE-32 transfer ingredient) -/
+
+/-- **A recursive-elim table hit pins one of the two Nat rows.**  Given
+`recursiveElimRuleOf generator = some rule`, the generator is `gen_natElim` (with `rule` the natElim
+row) or `gen_natRec` (with `rule` the natRec row).  The if-then-else table is inverted by decidable
+case analysis on the two diagonal generators (the `none` tail refutes any other generator's `some`
+result by `Option.noConfusion`).  Zero-axiom: `if h : ...`/`dif_pos`/`dif_neg` over the derived
+`DecidableEq Generator`, no `propext`. -/
+theorem recursiveElimRuleOf_cases {generator : Generator} {rule : RecursiveElimRule}
+    (tableHit : recursiveElimRuleOf generator = some rule) :
+    (generator = .gen_natElim ∧ rule = natElimRecursiveRule) ∨
+    (generator = .gen_natRec ∧ rule = natRecRecursiveRule) := by
+  unfold recursiveElimRuleOf at tableHit
+  by_cases isNatElim : generator = .gen_natElim
+  · rw [if_pos isNatElim] at tableHit
+    exact Or.inl ⟨isNatElim, (Option.some.inj tableHit).symm⟩
+  · rw [if_neg isNatElim] at tableHit
+    by_cases isNatRec : generator = .gen_natRec
+    · rw [if_pos isNatRec] at tableHit
+      exact Or.inr ⟨isNatRec, (Option.some.inj tableHit).symm⟩
+    · rw [if_neg isNatRec] at tableHit
+      exact absurd tableHit (by intro hit; cases hit)
+
 end FX1Poly.Typed

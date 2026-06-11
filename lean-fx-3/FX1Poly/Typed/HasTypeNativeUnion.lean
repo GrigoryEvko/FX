@@ -2,6 +2,7 @@ import FX1Poly.Typed.HasTypeDescGeneralElim
 import FX1Poly.Typed.HasTypeDescBaseType
 import FX1Poly.Typed.HasTypeDescDataIntro
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
+import FX1Poly.Typed.HasTypeDescNatElim
 
 /-! # FX1Poly/Typed/HasTypeNativeUnion — NATIVE-25: the seed unified judgment + Bridge full adequacy
 
@@ -62,6 +63,58 @@ the recursive case.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, 
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Modal
+
+/-! ## The native recursive-eliminator row schema (NATIVE-32 union residency of the spike's rows)
+
+The seed union (NATIVE-25) carried the non-recursive eliminator compositions through `generalElim`.
+The RECURSIVE eliminators (`natElim` / `natRec`) need a dedicated row whose scrutinee and base-branch
+premises are RECURSIVE in the union itself — the exact construction the NATIVE-27 spike
+(`RecursiveElimUnionSpike.recursiveElimRow`) locked as GO.  This schema mirrors the spike's
+`RecursiveElimRule` field-for-field; it is defined HERE (below the union, above the inductive) so the
+union arm can reference it without the spike→union import cycle.  The two Nat rows reuse the shipped
+`natElimCell` / `natRecCell` cells and their succ-ι contracta. -/
+
+/-- A native recursive-eliminator row: the inductive type code its scrutinee inhabits, the eliminator
+member cell (motive, base branch, two-binder step branch, scrutinee), and the succ-ι contractum (the
+step branch with the recursive call at var 0 and the predecessor at var 1).  Field-identical to the
+spike's `RecursiveElimRule` — the union residency of the locked schema. -/
+structure NativeRecursiveElimRule where
+  /-- The inductive type code the scrutinee must inhabit (`natTypeCell` for both Nat rows). -/
+  scrutineeType : (scope : Nat) → RawTerm scope
+  /-- The eliminator cell: motive (one binder), base branch, step branch (two binders), scrutinee. -/
+  memberCell : (scope : Nat) → RawTerm (scope + 1) → RawTerm scope → RawTerm (scope + 2) →
+    RawTerm scope → RawTerm scope
+  /-- The succ-ι contractum at a predecessor: the step branch with the recursive call at var 0 and
+  the predecessor at var 1. -/
+  succContractum : (scope : Nat) → RawTerm (scope + 1) → RawTerm scope → RawTerm (scope + 2) →
+    RawTerm scope → RawTerm scope
+
+/-- The native `gen_natElim` row. -/
+def natElimNativeRecursiveRule : NativeRecursiveElimRule where
+  scrutineeType := fun _ => natTypeCell
+  memberCell := fun _ => natElimCell
+  succContractum := fun _ => natElimSuccContractum
+
+/-- The native `gen_natRec` row (the dependent-recursor twin — identical substrate metadata). -/
+def natRecNativeRecursiveRule : NativeRecursiveElimRule where
+  scrutineeType := fun _ => natTypeCell
+  memberCell := fun _ => natRecCell
+  succContractum := fun _ => natRecSuccContractum
+
+/-- The native recursive-eliminator table.  `gen_listElim` does NOT join here: its cons-ι is an
+app-chain (not a substitution) so it has a different row shape (NATIVE-33). -/
+def nativeRecursiveElimRuleOf (generator : Generator) : Option NativeRecursiveElimRule :=
+  if generator = .gen_natElim then some natElimNativeRecursiveRule
+  else if generator = .gen_natRec then some natRecNativeRecursiveRule
+  else none
+
+/-- Table metadata: the native natElim row is hit (rfl on the diagonal). -/
+theorem nativeRecursiveElimRuleOf_natElim :
+    nativeRecursiveElimRuleOf .gen_natElim = some natElimNativeRecursiveRule := rfl
+
+/-- Table metadata: the native natRec row is hit. -/
+theorem nativeRecursiveElimRuleOf_natRec :
+    nativeRecursiveElimRuleOf .gen_natRec = some natRecNativeRecursiveRule := rfl
 
 /-- **The seed unified native judgment (the NATIVE-46 miniature).**  Four engine embeddings (the base
 typing mass) + the two table-driven keystone arms with RECURSIVE premises (the compositional closure).
@@ -127,6 +180,30 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       HasTypeNativeUnion profile context
         (rule.memberCell scope eliminated argument)
         (rule.outputType scope typeParamA typeParamB argument)
+  /-- Embed the Nat value constructors (numeral scrutinees).  The sanctioned interim embedding form
+  (the NATIVE-36 native-row conversion replaces it later): a numeral typed by `HasTypeDescNatIntro` is
+  an admissible union subject, so a recursive eliminator's scrutinee premise has a union witness.
+  Mirrors the NATIVE-27 spike's `ofNatIntro` embedding. -/
+  | ofNatIntro {scope : Nat} {context : TypingContext profile scope}
+      {subject classifier : RawTerm scope}
+      (natTyped : HasTypeDescNatIntro profile context subject classifier) :
+      HasTypeNativeUnion profile context subject classifier
+  /-- The table-driven recursive-eliminator arm (the NATIVE-32 union residency of the spike's
+  `recursiveElimRow`): the scrutinee and base-branch premises are RECURSIVE in the UNION itself — so a
+  recursive call (`natElimCell` at the predecessor) is an admissible scrutinee-typed subject, closing
+  the recursion loop the bespoke engine could not.  The motive and step branch are STORED (premise
+  parity with `HasTypeDescNatElim` — the NATIVE-33 fold's delete-safety requirement). -/
+  | recursiveElim {scope : Nat} (context : TypingContext profile scope)
+      (generator : Generator) (rule : NativeRecursiveElimRule)
+      (motive : RawTerm (scope + 1)) (baseBranch : RawTerm scope)
+      (stepBranch : RawTerm (scope + 2)) (scrutinee : RawTerm scope)
+      (resultType : RawTerm scope)
+      (isRecursiveElim : nativeRecursiveElimRuleOf generator = some rule)
+      (scrutineeTyped : HasTypeNativeUnion profile context scrutinee
+        (rule.scrutineeType scope))
+      (baseBranchTyped : HasTypeNativeUnion profile context baseBranch resultType) :
+      HasTypeNativeUnion profile context
+        (rule.memberCell scope motive baseBranch stepBranch scrutinee) resultType
 
 /-! ## ★ The wall-falls smokes — typable for the FIRST time -/
 
