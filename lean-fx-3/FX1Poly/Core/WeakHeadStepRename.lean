@@ -32,9 +32,45 @@ every other arm a constructor on the induction hypothesis (or `IotaHeadStep.rena
 namespace FX1Poly.Core
 open FX1Poly.Foundation
 
-/-- **Root-ι reduction commutes with renaming.**  Each ι contractum is a Church-encoded reshuffling of the
-redex children (no `subst0`), so renaming distributes through both sides and every rule transports by its
-own constructor. -/
+/-- **The two-binder succ-iota contractum commutes with an outer renaming.**
+
+The renaming twin of `RawTerm.natSuccElim_subst_commute`: pushing a renaming `rawRenaming` through the
+Phase-Z natElim/natRec succ-iota contractum lifts the renaming twice for the two-binder succ-branch and
+renames each substituent.
+
+  `rename rho (subst (cons recCall (singleton pred)) succBranch)
+     = subst (cons (rename rho recCall) (singleton (rename rho pred)))
+             (rename (iterateLiftRaw rho 2) succBranch)`.
+
+Proved by the same `subst_rename_commute` + `rename_subst_commute` + `subst_pointwise` template as
+`RawTerm.rename_subst0_commute`; the pointwise residual closes by `rfl` at every position (renamings are
+positional, so the lift / weakening cancellations are definitional). -/
+theorem RawTerm.natSuccElim_rename_commute {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (recursiveCall predecessor : RawTerm sourceScope)
+    (succBranch : RawTerm (sourceScope + 2)) :
+    RawTerm.rename rawRenaming
+        (RawTerm.subst
+          (RawTermSubst.cons recursiveCall (RawTermSubst.singleton predecessor))
+          succBranch) =
+      RawTerm.subst
+        (RawTermSubst.cons
+          (RawTerm.rename rawRenaming recursiveCall)
+          (RawTermSubst.singleton (RawTerm.rename rawRenaming predecessor)))
+        (RawTerm.rename (iterateLiftRaw rawRenaming 2) succBranch) := by
+  rw [RawTerm.subst_rename_commute]
+  rw [RawTerm.rename_subst_commute]
+  apply RawTerm.subst_pointwise
+  intro position
+  match position with
+  | ⟨0, _⟩ => rfl
+  | ⟨1, _⟩ => rfl
+  | ⟨_priorValue + 2, _⟩ => rfl
+
+/-- **Root-ι reduction commutes with renaming.**  Most ι contracta are Church-encoded reshufflings of the
+redex children (no `subst0`), so renaming distributes through both sides and those rules transport by their
+own constructor.  The two substituting succ-iotas (`iotaNatElimSucc` / `iotaNatRecSucc`) rewrite by
+`RawTerm.natSuccElim_rename_commute` first. -/
 theorem IotaHeadStep.rename {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
     {term reduct : RawTerm sourceScope} (iotaStep : IotaHeadStep term reduct) :
@@ -51,8 +87,10 @@ theorem IotaHeadStep.rename {sourceScope targetScope : Nat}
   | iotaOptionMatchSome => exact IotaHeadStep.iotaOptionMatchSome
   | iotaEitherMatchInl => exact IotaHeadStep.iotaEitherMatchInl
   | iotaEitherMatchInr => exact IotaHeadStep.iotaEitherMatchInr
-  | iotaNatElimSucc => exact IotaHeadStep.iotaNatElimSucc
-  | iotaNatRecSucc => exact IotaHeadStep.iotaNatRecSucc
+  | iotaNatElimSucc =>
+      rw [RawTerm.natSuccElim_rename_commute]; exact IotaHeadStep.iotaNatElimSucc
+  | iotaNatRecSucc =>
+      rw [RawTerm.natSuccElim_rename_commute]; exact IotaHeadStep.iotaNatRecSucc
   | iotaListElimCons => exact IotaHeadStep.iotaListElimCons
   | iotaIdJRefl => exact IotaHeadStep.iotaIdJRefl
   | iotaIdStrictRecRefl => exact IotaHeadStep.iotaIdStrictRecRefl

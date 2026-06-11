@@ -22,8 +22,10 @@ honestly classified, and here is the bundled proof":
     (`gen_boolTrue`, grown-untypable yet union-typed).  (`hasSomeTypingRuleStrictlyRefinesUntypableHead`.)
   * **`boolElimFaithful`** (FAITHFULNESS, HON-14 representative) — a live eliminator computes its EXACT host
     meaning: `boolElim` on a host bool reduces to `cond`.  (`boolElimHostFold`; the full faithfulness set —
-    fst/snd↝Prod, optionMatch↝Option.elim, eitherMatch↝Sum.elim, idJ↝Eq.rec, natElim↝Nat.mul, listElim↝
-    List.length — is in `ValueElimHostFold` / `NatElimFaithfulMul` / `ListElimFaithfulLength`.)
+    fst/snd↝Prod, optionMatch↝Option.elim, eitherMatch↝Sum.elim, idJ↝Eq.rec, natElim↝Nat.add/Nat.mul, listElim↝
+    List.length — is in `ValueElimHostFold` / `NatElimFaithfulArithmetic` / `NatElimFaithfulMul` /
+    `ListElimFaithfulLength`.  The natElim Nat.mul fold is Phase-Z CONDITIONAL — it awaits the typed 2-variable
+    `substPair` commutation lemma; Nat.add is unconditional.)
   * **`axesComplementary`** (NON-VACUITY, HON-3) — neither classifier axis alone suffices: `natElim` reduces but
     is statically reserved, `boolTrue` is typed but not a redex head — both LIVE, caught by complementary axes.
 

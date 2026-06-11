@@ -197,13 +197,15 @@ theorem isNatSuccSource_eq_natSucc {scope : Nat} {scrutinee : RawTerm scope}
         exact absurd sourceIsNatSucc (by decide)
 
 /-- **natElim iota redex extraction.**  A `gen_natElim` over a `natZero`/`natSucc` scrutinee
-(`hasNatElimIotaRoot`) takes a `Step` (zero branch, or the step-case app-chain). -/
+(`hasNatElimIotaRoot`) takes a `Step` (zero branch, or the substituting succ reduct).  Phase-Z spine
+`[1, 0, 2, 0]`: children are `(motive, zeroBranch, succBranch, scrutinee)` with the scrutinee LAST. -/
 theorem hasNatElimIotaRoot_exists_step_natElim {scope : Nat}
-    (children : RawTermChildren [0, 0, 0] scope)
+    (children : RawTermChildren [1, 0, 2, 0] scope)
     (iotaRoot : RawTermChildren.hasNatElimIotaRoot children = true) :
     ∃ target : RawTerm scope, Step (.mkGen .gen_natElim () children) target := by
   match children with
-  | .childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons zeroBranch (.childCons _succBranch (.childCons scrutinee .childNil))) =>
       replace iotaRoot :
           (RawTerm.isNatZeroSource scrutinee || RawTerm.isNatSuccSource scrutinee) = true := iotaRoot
       cases zeroValue : RawTerm.isNatZeroSource scrutinee with
@@ -218,13 +220,14 @@ theorem hasNatElimIotaRoot_exists_step_natElim {scope : Nat}
           exact ⟨_, Step.iotaNatElimSucc⟩
 
 /-- **natRec iota redex extraction.**  The `gen_natRec` twin of `…_natElim` (same root check; the v2
-substrate treats `gen_natElim` and `gen_natRec` identically). -/
+substrate treats `gen_natElim` and `gen_natRec` identically).  Phase-Z spine `[1, 0, 2, 0]`. -/
 theorem hasNatElimIotaRoot_exists_step_natRec {scope : Nat}
-    (children : RawTermChildren [0, 0, 0] scope)
+    (children : RawTermChildren [1, 0, 2, 0] scope)
     (iotaRoot : RawTermChildren.hasNatElimIotaRoot children = true) :
     ∃ target : RawTerm scope, Step (.mkGen .gen_natRec () children) target := by
   match children with
-  | .childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons zeroBranch (.childCons _succBranch (.childCons scrutinee .childNil))) =>
       replace iotaRoot :
           (RawTerm.isNatZeroSource scrutinee || RawTerm.isNatSuccSource scrutinee) = true := iotaRoot
       cases zeroValue : RawTerm.isNatZeroSource scrutinee with

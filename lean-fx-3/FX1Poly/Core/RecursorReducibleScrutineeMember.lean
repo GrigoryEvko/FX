@@ -54,14 +54,44 @@ namespace FX1Poly.Core
 
 open StepStar
 
+/-- The `natElim` succ-iota SUBSTITUTED reduct (Phase-Z shape):
+`succBranch[var 0 := natElim motive zeroBranch succBranch predecessor, var 1 := predecessor]`.  Spelled to
+match the substituting `succContractumTerminates` premise of
+`natElim_isStronglyNormalizing_of_strongly_normalizing_branches`. -/
+private abbrev natElimSuccContractumOn {scope : Nat} (motive : RawTerm (scope + 1))
+    (succBranch : RawTerm (scope + 2)) (predecessor zeroBranch : RawTerm scope) : RawTerm scope :=
+  RawTerm.subst
+    (RawTermSubst.cons
+      (.mkGen .gen_natElim ()
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons predecessor .childNil)))))
+      (RawTermSubst.singleton predecessor))
+    succBranch
+
+/-- The `natRec` succ-iota SUBSTITUTED reduct — the `gen_natRec` mirror of `natElimSuccContractumOn`. -/
+private abbrev natRecSuccContractumOn {scope : Nat} (motive : RawTerm (scope + 1))
+    (succBranch : RawTerm (scope + 2)) (predecessor zeroBranch : RawTerm scope) : RawTerm scope :=
+  RawTerm.subst
+    (RawTermSubst.cons
+      (.mkGen .gen_natRec ()
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons predecessor .childNil)))))
+      (RawTermSubst.singleton predecessor))
+    succBranch
+
 /-- **A `natElim` over a numeral scrutinee is never neutral.**  `IsNeutral.natElim` is the unique constructor
 producing a neutral `natElim` cell and it demands a neutral scrutinee, but a numeral's head is `natZero` /
 `natSucc` (refuted by the `rootGenerator_ne_natZero` / `_ne_natSucc` discriminators).  The fact the value-case
 lift consumes to extract "the numeral cell reaches a value" from the cell's candidate membership. -/
 theorem natElim_notNeutral_ofNatValueScrutinee {scope : Nat}
-    {numeral zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {numeral zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (numeralIsNat : IsNatValue numeral) :
-    ¬ IsNeutral (natElimCellSpine numeral zeroBranch succBranch) := by
+    ¬ IsNeutral (natElimCellSpine motive numeral zeroBranch succBranch) := by
   intro cellNeutral
   cases cellNeutral with
   | natElim scrutineeNeutral =>
@@ -73,9 +103,10 @@ theorem natElim_notNeutral_ofNatValueScrutinee {scope : Nat}
 `natElim_notNeutral_ofNatValueScrutinee`, via the `IsNeutral.natRec` constructor and the same numeral-head
 discriminators. -/
 theorem natRec_notNeutral_ofNatValueScrutinee {scope : Nat}
-    {numeral zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {numeral zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (numeralIsNat : IsNatValue numeral) :
-    ¬ IsNeutral (natRecCellSpine numeral zeroBranch succBranch) := by
+    ¬ IsNeutral (natRecCellSpine motive numeral zeroBranch succBranch) := by
   intro cellNeutral
   cases cellNeutral with
   | natRec scrutineeNeutral =>
@@ -93,46 +124,47 @@ member (`natElimValueReducibility`) that reaches a value (its non-neutrality for
 disjunct), lifted back through the scrutinee congruence by `ofStepStarReachingValue`.  Completes general-scrutinee
 reducibility for `natElim`; the closed `natElimClosedIsMember` is the scope-0 special case (neutral disjunct vacuous). -/
 theorem natElimReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope → Prop}
-    {scrutinee zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {scrutinee zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (headExpand : ∀ {redexTerm contractum : RawTerm scope},
         WeakHeadStep redexTerm contractum → CanonicalFormsPredicate isValue contractum →
         IsStronglyNormalizing redexTerm → CanonicalFormsPredicate isValue redexTerm)
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (scrutineeMember : CanonicalFormsPredicate IsNatValue scrutinee)
     (zeroBranchMember : CanonicalFormsPredicate isValue zeroBranch)
     (succBranchTerminates : IsStronglyNormalizing succBranch)
-    (succBranchApplication : ∀ {predecessor result : RawTerm scope},
-        IsNatValue predecessor → CanonicalFormsPredicate isValue result →
-        CanonicalFormsPredicate isValue
-          (.mkGen .gen_app ()
-            (.childCons (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
-              (.childCons result .childNil))))
-    (succContractumTerminates : ∀ predecessor : RawTerm scope, IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing
-          (.mkGen .gen_app ()
-            (.childCons
-              (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
-              (.childCons (natElimCellSpine predecessor zeroBranch succBranch) .childNil)))) :
-    CanonicalFormsPredicate isValue (natElimCellSpine scrutinee zeroBranch succBranch) := by
+    (substitutedReductMember : ∀ {predecessor : RawTerm scope},
+        IsNatValue predecessor →
+        CanonicalFormsPredicate isValue (natElimSuccContractumOn motive succBranch predecessor zeroBranch))
+    (substitutedReductTerminates :
+        ∀ (currentMotive : RawTerm (scope + 1)) (currentSucc : RawTerm (scope + 2))
+          (predecessor currentZero : RawTerm scope), IsStronglyNormalizing predecessor →
+          IsStronglyNormalizing
+            (natElimSuccContractumOn currentMotive currentSucc predecessor currentZero)) :
+    CanonicalFormsPredicate isValue (natElimCellSpine motive scrutinee zeroBranch succBranch) := by
+  -- PINNED SN-helper order: substituted-reduct FIRST, scrutinee SECOND, motive THIRD, zero FOURTH, succ FIFTH.
   have cellStronglyNormalizing :
-      IsStronglyNormalizing (natElimCellSpine scrutinee zeroBranch succBranch) :=
-    natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-      scrutineeMember.stronglyNormalizing zeroBranchMember.stronglyNormalizing succBranchTerminates
+      IsStronglyNormalizing (natElimCellSpine motive scrutinee zeroBranch succBranch) :=
+    natElim_isStronglyNormalizing_of_strongly_normalizing_branches substitutedReductTerminates
+      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
+      zeroBranchMember.stronglyNormalizing succBranchTerminates
   rcases scrutineeMember.2 with scrutineeNeutral | ⟨numeral, scrutineeToNumeral, numeralIsNat⟩
   · exact CanonicalFormsPredicate.memberOfStronglyNormalizingNeutral cellStronglyNormalizing
       (IsNeutral.natElim scrutineeNeutral)
   · have recursorStronglyNormalizing : ∀ {value : RawTerm scope}, IsNatValue value →
-        IsStronglyNormalizing (natElimCellSpine value zeroBranch succBranch) :=
+        IsStronglyNormalizing (natElimCellSpine motive value zeroBranch succBranch) :=
       fun valueIsNat =>
-        natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-          (isNatValue_isMember valueIsNat).stronglyNormalizing
+        natElim_isStronglyNormalizing_of_strongly_normalizing_branches substitutedReductTerminates
+          (isNatValue_isMember valueIsNat).stronglyNormalizing motiveStronglyNormalizing
           zeroBranchMember.stronglyNormalizing succBranchTerminates
     have numeralMember :
-        CanonicalFormsPredicate isValue (natElimCellSpine numeral zeroBranch succBranch) :=
+        CanonicalFormsPredicate isValue (natElimCellSpine motive numeral zeroBranch succBranch) :=
       natElimValueReducibility (CanonicalFormsPredicate isValue)
-        headExpand zeroBranchMember succBranchApplication recursorStronglyNormalizing numeralIsNat
+        headExpand zeroBranchMember (fun predIsValue => substitutedReductMember predIsValue)
+        recursorStronglyNormalizing numeralIsNat
     have numeralCellReachesValue :
         ∃ value : RawTerm scope,
-          StepStar (natElimCellSpine numeral zeroBranch succBranch) value ∧ isValue value :=
+          StepStar (natElimCellSpine motive numeral zeroBranch succBranch) value ∧ isValue value :=
       numeralMember.2.resolve_left (natElim_notNeutral_ofNatValueScrutinee numeralIsNat)
     exact CanonicalFormsPredicate.ofStepStarReachingValue
       (StepStar.natElimScrutinee scrutineeToNumeral) cellStronglyNormalizing numeralCellReachesValue
@@ -142,46 +174,46 @@ theorem natElimReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope �
 and `StepStar.natRecScrutinee`, with `natRec_notNeutral_ofNatValueScrutinee` extracting the value side.  Completes
 general-scrutinee reducibility for `natRec`. -/
 theorem natRecReducibleScrutineeMember {scope : Nat} {isValue : RawTerm scope → Prop}
-    {scrutinee zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {scrutinee zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (headExpand : ∀ {redexTerm contractum : RawTerm scope},
         WeakHeadStep redexTerm contractum → CanonicalFormsPredicate isValue contractum →
         IsStronglyNormalizing redexTerm → CanonicalFormsPredicate isValue redexTerm)
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (scrutineeMember : CanonicalFormsPredicate IsNatValue scrutinee)
     (zeroBranchMember : CanonicalFormsPredicate isValue zeroBranch)
     (succBranchTerminates : IsStronglyNormalizing succBranch)
-    (succBranchApplication : ∀ {predecessor result : RawTerm scope},
-        IsNatValue predecessor → CanonicalFormsPredicate isValue result →
-        CanonicalFormsPredicate isValue
-          (.mkGen .gen_app ()
-            (.childCons (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
-              (.childCons result .childNil))))
-    (succContractumTerminates : ∀ predecessor : RawTerm scope, IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing
-          (.mkGen .gen_app ()
-            (.childCons
-              (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
-              (.childCons (natRecCellSpine predecessor zeroBranch succBranch) .childNil)))) :
-    CanonicalFormsPredicate isValue (natRecCellSpine scrutinee zeroBranch succBranch) := by
+    (substitutedReductMember : ∀ {predecessor : RawTerm scope},
+        IsNatValue predecessor →
+        CanonicalFormsPredicate isValue (natRecSuccContractumOn motive succBranch predecessor zeroBranch))
+    (substitutedReductTerminates :
+        ∀ (currentMotive : RawTerm (scope + 1)) (currentSucc : RawTerm (scope + 2))
+          (predecessor currentZero : RawTerm scope), IsStronglyNormalizing predecessor →
+          IsStronglyNormalizing
+            (natRecSuccContractumOn currentMotive currentSucc predecessor currentZero)) :
+    CanonicalFormsPredicate isValue (natRecCellSpine motive scrutinee zeroBranch succBranch) := by
   have cellStronglyNormalizing :
-      IsStronglyNormalizing (natRecCellSpine scrutinee zeroBranch succBranch) :=
-    natRec_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-      scrutineeMember.stronglyNormalizing zeroBranchMember.stronglyNormalizing succBranchTerminates
+      IsStronglyNormalizing (natRecCellSpine motive scrutinee zeroBranch succBranch) :=
+    natRec_isStronglyNormalizing_of_strongly_normalizing_branches substitutedReductTerminates
+      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
+      zeroBranchMember.stronglyNormalizing succBranchTerminates
   rcases scrutineeMember.2 with scrutineeNeutral | ⟨numeral, scrutineeToNumeral, numeralIsNat⟩
   · exact CanonicalFormsPredicate.memberOfStronglyNormalizingNeutral cellStronglyNormalizing
       (IsNeutral.natRec scrutineeNeutral)
   · have recursorStronglyNormalizing : ∀ {value : RawTerm scope}, IsNatValue value →
-        IsStronglyNormalizing (natRecCellSpine value zeroBranch succBranch) :=
+        IsStronglyNormalizing (natRecCellSpine motive value zeroBranch succBranch) :=
       fun valueIsNat =>
-        natRec_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-          (isNatValue_isMember valueIsNat).stronglyNormalizing
+        natRec_isStronglyNormalizing_of_strongly_normalizing_branches substitutedReductTerminates
+          (isNatValue_isMember valueIsNat).stronglyNormalizing motiveStronglyNormalizing
           zeroBranchMember.stronglyNormalizing succBranchTerminates
     have numeralMember :
-        CanonicalFormsPredicate isValue (natRecCellSpine numeral zeroBranch succBranch) :=
+        CanonicalFormsPredicate isValue (natRecCellSpine motive numeral zeroBranch succBranch) :=
       natRecValueReducibility (CanonicalFormsPredicate isValue)
-        headExpand zeroBranchMember succBranchApplication recursorStronglyNormalizing numeralIsNat
+        headExpand zeroBranchMember (fun predIsValue => substitutedReductMember predIsValue)
+        recursorStronglyNormalizing numeralIsNat
     have numeralCellReachesValue :
         ∃ value : RawTerm scope,
-          StepStar (natRecCellSpine numeral zeroBranch succBranch) value ∧ isValue value :=
+          StepStar (natRecCellSpine motive numeral zeroBranch succBranch) value ∧ isValue value :=
       numeralMember.2.resolve_left (natRec_notNeutral_ofNatValueScrutinee numeralIsNat)
     exact CanonicalFormsPredicate.ofStepStarReachingValue
       (StepStar.natRecScrutinee scrutineeToNumeral) cellStronglyNormalizing numeralCellReachesValue

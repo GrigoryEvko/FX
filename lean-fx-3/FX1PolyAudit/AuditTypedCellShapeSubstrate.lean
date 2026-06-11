@@ -934,26 +934,28 @@ classifiers, Σ (#361), modal/cubical η (#363), former children (engine-gated).
 #assert_no_axioms FX1Poly.Typed.asPiCode?_piTyCodeCell
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.piCodeDetection_completeOnLookups
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectHasNoStep
-#assert_no_axioms FX1Poly.Typed.constNatZeroStepProduces
-#assert_no_axioms FX1Poly.Typed.copyNatStepProduces
+#assert_no_axioms FX1Poly.Typed.constNatZeroBranchProduces
+#assert_no_axioms FX1Poly.Typed.copyNatBranch_substitutedReduct_eq
 -- Native natElim computes binary ADDITION FAITHFULLY (NatElimFaithfulArithmetic): sharpens "computes to A
--- numeral" to the EXACT result — natElim(numeral n, numeral m, copyStep) ↝* numeral (m+n), agreeing with the
--- host's Nat addition. natNumeralCell is the reusable native numeral builder; the proof is structural recursion
--- on the scrutinee composing ι-steps + the copy-step β-pair (Nat.add_zero / Nat.add_succ for the arithmetic).
+-- numeral" to the EXACT result — natElim(motive, numeral base, copyNatBranch, numeral n) ↝* numeral (base+n),
+-- agreeing with the host's Nat addition. natNumeralCell is the reusable native numeral builder; the proof is
+-- structural recursion on the scrutinee composing the Phase-Z SUBSTITUTING succ-iota (no β-step — the recursive
+-- call lands in var 0 directly) with the natSuccArgument congruence (Nat.add_zero / Nat.add_succ are defeq).
 #assert_no_axioms FX1Poly.Typed.natNumeralCell
 #assert_no_axioms FX1Poly.Typed.natNumeralCell_isNumeral
 #assert_no_axioms FX1Poly.Typed.natNumeralAt_zero_eq_natNumeralCell
--- ★ NatElimFaithfulMul (HON-13 closed): native gen_natElim computes EXACT host Nat.mul, completing the recursor
--- faithfulness (Nat.add was natElimAddFaithful). mulNatStep m = lam.lam.natElim(numeralM, r, copyStep) embeds a
--- recursor in the step branch; mulStepFires lands the inner adder via the two β-reductions, consuming the
--- natNumeralAt_subst crack (each Step.beta gives the raw subst0 body arg; firstEq/secondEq rewrite it — the
--- pretty reduct cannot be asserted directly on the stuck symbolic numeral). natElimMulFaithful = structural
--- recursion on n reusing natElimAddFaithful as the per-step adder (m·n + m = m·(n+1) defeq via Nat.mul_succ).
+-- ★ NatElimFaithfulMul (HON-13): native gen_natElim computes EXACT host Nat.mul, completing the recursor
+-- faithfulness (Nat.add was natElimAddFaithful). mulNatBranch m = natElim(_, var 0, copyNatBranchAt,
+-- numeralAt m) embeds the adder recursor in the two-binder succ branch (var 0 = the threaded accumulator);
+-- mulBranchSubstitutedTarget names the inner adder the Phase-Z succ-iota substitution lands at. CONDITIONAL on
+-- the mulStepReduces premise (the 2-variable subst-commutation through the embedded closed numeral — discharged
+-- by the typed substPair lemma, tracked follow-up). natElimMulFaithful = structural recursion on n reusing
+-- natElimAddFaithful as the per-step adder (m·n + m = m·(n+1) defeq via Nat.mul_succ).
 -- Fin bounds use Nat.succ_pos _ (NOT omega, which leaks propext). Zero-axiom.
-#assert_no_axioms FX1Poly.Typed.copyNatStepAt
-#assert_no_axioms FX1Poly.Typed.copyNatStepAt_zero
-#assert_no_axioms FX1Poly.Typed.mulNatStep
-#assert_no_axioms FX1Poly.Typed.mulStepFires
+#assert_no_axioms FX1Poly.Typed.copyNatBranchAt
+#assert_no_axioms FX1Poly.Typed.copyNatBranchAt_zero
+#assert_no_axioms FX1Poly.Typed.mulNatBranch
+#assert_no_axioms FX1Poly.Typed.mulBranchSubstitutedTarget
 #assert_no_axioms FX1Poly.Typed.constNatZeroStep3Produces
 #assert_no_axioms FX1Poly.Typed.lengthNatStepProduces
 -- ★ VALUE-CASE eliminator HOST-FOLD faithfulness (ValueElimHostFold, HON-14): completes the faithfulness coverage

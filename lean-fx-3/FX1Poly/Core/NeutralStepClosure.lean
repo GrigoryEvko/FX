@@ -93,26 +93,30 @@ theorem IsNeutral.closedUnderStep {scope : Nat} {term reduct : RawTerm scope}
       · rw [reductEq]; exact IsNeutral.boolElim (scrutineeIH stepScrutinee)
   | natElim scrutineeIsNeutral scrutineeIH =>
       rcases Step.from_natElim step with
-        ⟨scrutineeEq, _⟩ | ⟨_predecessor, scrutineeEq, _⟩ | ⟨_scrutAfter, reductEq, stepScrutinee⟩
+        ⟨scrutineeEq, _⟩ | ⟨_predecessor, scrutineeEq, _⟩ | ⟨_motiveAfter, reductEq, _⟩
         | ⟨_zeroAfter, reductEq, _⟩ | ⟨_succAfter, reductEq, _⟩
+        | ⟨_scrutAfter, reductEq, stepScrutinee⟩
       · cases scrutineeIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator scrutineeEq)
       · cases scrutineeIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator scrutineeEq)
+      · rw [reductEq]; exact IsNeutral.natElim scrutineeIsNeutral
+      · rw [reductEq]; exact IsNeutral.natElim scrutineeIsNeutral
+      · rw [reductEq]; exact IsNeutral.natElim scrutineeIsNeutral
       · rw [reductEq]; exact IsNeutral.natElim (scrutineeIH stepScrutinee)
-      · rw [reductEq]; exact IsNeutral.natElim scrutineeIsNeutral
-      · rw [reductEq]; exact IsNeutral.natElim scrutineeIsNeutral
   | natRec scrutineeIsNeutral scrutineeIH =>
       rcases Step.from_natRec step with
-        ⟨scrutineeEq, _⟩ | ⟨_predecessor, scrutineeEq, _⟩ | ⟨_scrutAfter, reductEq, stepScrutinee⟩
+        ⟨scrutineeEq, _⟩ | ⟨_predecessor, scrutineeEq, _⟩ | ⟨_motiveAfter, reductEq, _⟩
         | ⟨_zeroAfter, reductEq, _⟩ | ⟨_succAfter, reductEq, _⟩
+        | ⟨_scrutAfter, reductEq, stepScrutinee⟩
       · cases scrutineeIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator scrutineeEq)
       · cases scrutineeIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator scrutineeEq)
+      · rw [reductEq]; exact IsNeutral.natRec scrutineeIsNeutral
+      · rw [reductEq]; exact IsNeutral.natRec scrutineeIsNeutral
+      · rw [reductEq]; exact IsNeutral.natRec scrutineeIsNeutral
       · rw [reductEq]; exact IsNeutral.natRec (scrutineeIH stepScrutinee)
-      · rw [reductEq]; exact IsNeutral.natRec scrutineeIsNeutral
-      · rw [reductEq]; exact IsNeutral.natRec scrutineeIsNeutral
   | listElim scrutineeIsNeutral scrutineeIH =>
       rcases Step.from_listElim step with
         ⟨scrutineeEq, _⟩ | ⟨_headVal, _tailVal, scrutineeEq, _⟩ | ⟨_motiveAfter, reductEq, _⟩

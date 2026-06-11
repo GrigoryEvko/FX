@@ -126,11 +126,11 @@ theorem Step.reflectRename {sourceScope targetScope : Nat}
       -- iotaSndPair
       (fun {scope} {firstValue} {secondValue} {srcScope} originTerm originRho req =>
         Step.reflectIotaSndPair originRho req)
-      -- iotaNatElimZero
-      (fun {scope} {zeroBranch} {succBranch} {srcScope} originTerm originRho req =>
+      -- iotaNatElimZero (Phase-Z: motive binder at scope + 1, succ at scope + 2, scrutinee last)
+      (fun {scope} {motive} {zeroBranch} {succBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaNatElimZero originRho req)
-      -- iotaNatRecZero
-      (fun {scope} {zeroBranch} {succBranch} {srcScope} originTerm originRho req =>
+      -- iotaNatRecZero (Phase-Z: motive binder at scope + 1, succ at scope + 2, scrutinee last)
+      (fun {scope} {motive} {zeroBranch} {succBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaNatRecZero originRho req)
       -- iotaListElimNil (Phase-Z: motive binder added at scope + 1, scrutinee last)
       (fun {scope} {motive} {nilBranch} {consBranch} {srcScope} originTerm originRho req =>
@@ -147,11 +147,13 @@ theorem Step.reflectRename {sourceScope targetScope : Nat}
       -- iotaEitherMatchInr
       (fun {scope} {value} {leftBranch} {rightBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaEitherMatchInr originRho req)
-      -- iotaNatElimSucc
-      (fun {scope} {predecessor} {zeroBranch} {succBranch} {srcScope} originTerm originRho req =>
+      -- iotaNatElimSucc (Phase-Z: motive binder at scope + 1, succ at scope + 2, scrutinee last)
+      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch} {srcScope}
+          originTerm originRho req =>
         Step.reflectIotaNatElimSucc originRho req)
-      -- iotaNatRecSucc
-      (fun {scope} {predecessor} {zeroBranch} {succBranch} {srcScope} originTerm originRho req =>
+      -- iotaNatRecSucc (Phase-Z: motive binder at scope + 1, succ at scope + 2, scrutinee last)
+      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch} {srcScope}
+          originTerm originRho req =>
         Step.reflectIotaNatRecSucc originRho req)
       -- iotaListElimCons (Phase-Z: motive binder added at scope + 1, scrutinee last)
       (fun {scope} {motive} {headVal} {tailVal} {nilBranch} {consBranch} {srcScope}

@@ -27,14 +27,18 @@ head).  The complete current-substrate elimination set is
   · eitherMatch · idJ · idStrictRec
 
 with the *principal* child (the one whose canonical form triggers the rule)
-being child 0 for every form except `idJ`/`idStrictRec`, whose principal child
-is the identity *witness* (child 1; the base case is passive).
+being child 0 for `fst`/`snd`/`optionMatch`/`eitherMatch`, child 1 for
+`idJ`/`idStrictRec` (the identity *witness*; the base case is passive), and the
+LAST child (child 3) for the Phase-Z dependent eliminators
+`boolElim`/`natElim`/`natRec`/`listElim`, whose spine is
+`(motive, branch…, scrutinee)`.
 
-Because FX's ι-rules are Church-encoded — all binding is deferred to the
-app-chain *reduct* (`natElim (succ n) z s ↝ app (app s n) (natElim n z s)`),
-never carried on the eliminator's own children — every eliminator child lives
-at the ambient `scope`.  So each arm's children are plain `RawTerm scope`, with
-no binder-shift arithmetic.
+The Phase-Z dependent eliminators carry binder-shift arithmetic on their own
+children: `boolElim`/`listElim` have shifts `[1, 0, 0, 0]` (the motive binds the
+scrutinee), and `natElim`/`natRec` have `[1, 0, 2, 0]` (the motive binds the
+scrutinee; the succ-branch binds the predecessor and the inductive hypothesis).
+Neutrality only inspects the *scrutinee* child, which lives at the ambient
+`scope`, so the motive and branch shifts do not affect the neutral arms.
 
 ## Scope boundary (honesty)
 
@@ -86,18 +90,28 @@ inductive IsNeutral : {scope : Nat} → RawTerm scope → Prop where
           (.childCons thenBranch
             (.childCons elseBranch
               (.childCons scrutinee .childNil)))))
-  /-- Natural-number elimination is neutral when its scrutinee is neutral. -/
-  | natElim {scope : Nat} {scrutinee zeroBranch succBranch : RawTerm scope}
+  /-- Natural-number elimination is neutral when its scrutinee is neutral.
+      Phase-Z motive shape: `(motive, zeroBranch, succBranch, scrutinee)`
+      with the motive under one binder, the succ-branch under two, and
+      the scrutinee LAST. -/
+  | natElim {scope : Nat} {motive : RawTerm (scope + 1)}
+      {zeroBranch scrutinee : RawTerm scope} {succBranch : RawTerm (scope + 2)}
       (scrutineeIsNeutral : IsNeutral scrutinee) :
       IsNeutral (.mkGen .gen_natElim ()
-        (.childCons scrutinee
-          (.childCons zeroBranch (.childCons succBranch .childNil))))
-  /-- Natural-number recursion is neutral when its scrutinee is neutral. -/
-  | natRec {scope : Nat} {scrutinee zeroBranch succBranch : RawTerm scope}
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons scrutinee .childNil)))))
+  /-- Natural-number recursion is neutral when its scrutinee is neutral.
+      Phase-Z motive shape: `(motive, zeroBranch, succBranch, scrutinee)`. -/
+  | natRec {scope : Nat} {motive : RawTerm (scope + 1)}
+      {zeroBranch scrutinee : RawTerm scope} {succBranch : RawTerm (scope + 2)}
       (scrutineeIsNeutral : IsNeutral scrutinee) :
       IsNeutral (.mkGen .gen_natRec ()
-        (.childCons scrutinee
-          (.childCons zeroBranch (.childCons succBranch .childNil))))
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons scrutinee .childNil)))))
   /-- List elimination is neutral when its scrutinee is neutral.
       Phase-Z motive shape: `(motive, nilBranch, consBranch, scrutinee)`. -/
   | listElim {scope : Nat} {motive : RawTerm (scope + 1)}

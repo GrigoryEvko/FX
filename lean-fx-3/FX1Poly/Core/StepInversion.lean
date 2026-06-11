@@ -998,59 +998,76 @@ theorem Step.from_boolElim
 
 /-- **Inversion for `natElim`-rooted Step.**
 
-Five-way disjunction with a COMPLEX-IOTA disjunct.  The Succ
-iota's target is a nested app `app (app succBranch pred)
-(natElim pred zeroBranch succBranch)` -- so the Succ-iota
-disjunct must existentially characterize `pred` AND the resulting
-nested-app target.
+Six-way disjunction.  Phase-Z motive shape: the spine is
+`(motive, zeroBranch, succBranch, scrutinee)` with the motive a
+term under one binder (`RawTerm (scope + 1)`), the succ-branch
+under TWO binders (`RawTerm (scope + 2)`), and the scrutinee LAST.
+The Succ iota's target is the SUBSTITUTED succ-branch: `var 0`
+(the inductive hypothesis) replaced by the recursive call
+`natElim motive zeroBranch succBranch predecessor` (threading the
+same motive/branches), `var 1` replaced by the predecessor.
 
-The five disjuncts:
+The six disjuncts:
 * iotaNatElimZero arm: scrutinee = natZero, target = zeroBranch.
 * iotaNatElimSucc arm: ∃ pred, scrutinee = natSucc pred ∧
-  target = app (app succBranch pred) (natElim pred zeroBranch succBranch).
-* cong-at-scrutinee arm.
+  target = the substituted reduct.
+* cong-at-motive arm (at `scope + 1`).
 * cong-at-zero arm.
-* cong-at-succ arm. -/
+* cong-at-succ arm (inner step at `scope + 2`).
+* cong-at-scrutinee arm (LAST). -/
 theorem Step.from_natElim
     {scope : Nat}
-    {scrutinee zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch scrutinee : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     {target : RawTerm scope}
     (reduction :
       Step (.mkGen .gen_natElim ()
-              (.childCons scrutinee
-                (.childCons zeroBranch (.childCons succBranch .childNil))))
+              (.childCons motive
+                (.childCons zeroBranch
+                  (.childCons succBranch (.childCons scrutinee .childNil)))))
            target) :
     (scrutinee = .mkGen .gen_natZero () .childNil ∧ target = zeroBranch)
     ∨
     (∃ (predecessor : RawTerm scope),
         scrutinee = .mkGen .gen_natSucc () (.childCons predecessor .childNil) ∧
-        target = .mkGen .gen_app ()
-          (.childCons
-            (.mkGen .gen_app ()
-              (.childCons succBranch (.childCons predecessor .childNil)))
-            (.childCons
-              (.mkGen .gen_natElim ()
-                (.childCons predecessor
-                  (.childCons zeroBranch (.childCons succBranch .childNil))))
-              .childNil)))
+        target = RawTerm.subst
+          (RawTermSubst.cons
+            (.mkGen .gen_natElim ()
+              (.childCons motive
+                (.childCons zeroBranch
+                  (.childCons succBranch
+                    (.childCons predecessor .childNil)))))
+            (RawTermSubst.singleton predecessor))
+          succBranch)
     ∨
-    (∃ (scrutineeAfter : RawTerm scope),
+    (∃ (motiveAfter : RawTerm (scope + 1)),
         target = .mkGen .gen_natElim ()
-          (.childCons scrutineeAfter
-            (.childCons zeroBranch (.childCons succBranch .childNil))) ∧
-        Step scrutinee scrutineeAfter)
+          (.childCons motiveAfter
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons scrutinee .childNil)))) ∧
+        Step motive motiveAfter)
     ∨
     (∃ (zeroAfter : RawTerm scope),
         target = .mkGen .gen_natElim ()
-          (.childCons scrutinee
-            (.childCons zeroAfter (.childCons succBranch .childNil))) ∧
+          (.childCons motive
+            (.childCons zeroAfter
+              (.childCons succBranch (.childCons scrutinee .childNil)))) ∧
         Step zeroBranch zeroAfter)
     ∨
-    (∃ (succAfter : RawTerm scope),
+    (∃ (succAfter : RawTerm (scope + 2)),
         target = .mkGen .gen_natElim ()
-          (.childCons scrutinee
-            (.childCons zeroBranch (.childCons succAfter .childNil))) ∧
-        Step succBranch succAfter) := by
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succAfter (.childCons scrutinee .childNil)))) ∧
+        Step succBranch succAfter)
+    ∨
+    (∃ (scrutineeAfter : RawTerm scope),
+        target = .mkGen .gen_natElim ()
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons scrutineeAfter .childNil)))) ∧
+        Step scrutinee scrutineeAfter) := by
   cases reduction with
   | iotaNatElimZero =>
       exact Or.inl ⟨rfl, rfl⟩
@@ -1058,9 +1075,9 @@ theorem Step.from_natElim
       exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
   | cong _ _ childStep =>
       cases childStep with
-      | here _ scrutineeStep =>
-          rename_i scrutineeAfter
-          exact Or.inr (Or.inr (Or.inl ⟨scrutineeAfter, rfl, scrutineeStep⟩))
+      | here _ motiveStep =>
+          rename_i motiveAfter
+          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ zeroStep =>
@@ -1070,55 +1087,75 @@ theorem Step.from_natElim
               cases restStep with
               | here _ succStep =>
                   rename_i succAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr ⟨succAfter, rfl, succStep⟩)))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨succAfter, rfl, succStep⟩))))
               | there _ restRestStep =>
-                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
+                  cases restRestStep with
+                  | here _ scrutineeStep =>
+                      rename_i scrutineeAfter
+                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                  | there _ restRestRestStep =>
+                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `natRec`-rooted Step.**
 
 Same shape as `from_natElim` — the v2 substrate's metadata
 treats `gen_natElim` and `gen_natRec` identically.  The
-recursive call inside the Succ iota refers to `natRec`. -/
+recursive call substituted for the inductive-hypothesis variable
+inside the Succ iota refers to `natRec`. -/
 theorem Step.from_natRec
     {scope : Nat}
-    {scrutinee zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch scrutinee : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     {target : RawTerm scope}
     (reduction :
       Step (.mkGen .gen_natRec ()
-              (.childCons scrutinee
-                (.childCons zeroBranch (.childCons succBranch .childNil))))
+              (.childCons motive
+                (.childCons zeroBranch
+                  (.childCons succBranch (.childCons scrutinee .childNil)))))
            target) :
     (scrutinee = .mkGen .gen_natZero () .childNil ∧ target = zeroBranch)
     ∨
     (∃ (predecessor : RawTerm scope),
         scrutinee = .mkGen .gen_natSucc () (.childCons predecessor .childNil) ∧
-        target = .mkGen .gen_app ()
-          (.childCons
-            (.mkGen .gen_app ()
-              (.childCons succBranch (.childCons predecessor .childNil)))
-            (.childCons
-              (.mkGen .gen_natRec ()
-                (.childCons predecessor
-                  (.childCons zeroBranch (.childCons succBranch .childNil))))
-              .childNil)))
+        target = RawTerm.subst
+          (RawTermSubst.cons
+            (.mkGen .gen_natRec ()
+              (.childCons motive
+                (.childCons zeroBranch
+                  (.childCons succBranch
+                    (.childCons predecessor .childNil)))))
+            (RawTermSubst.singleton predecessor))
+          succBranch)
     ∨
-    (∃ (scrutineeAfter : RawTerm scope),
+    (∃ (motiveAfter : RawTerm (scope + 1)),
         target = .mkGen .gen_natRec ()
-          (.childCons scrutineeAfter
-            (.childCons zeroBranch (.childCons succBranch .childNil))) ∧
-        Step scrutinee scrutineeAfter)
+          (.childCons motiveAfter
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons scrutinee .childNil)))) ∧
+        Step motive motiveAfter)
     ∨
     (∃ (zeroAfter : RawTerm scope),
         target = .mkGen .gen_natRec ()
-          (.childCons scrutinee
-            (.childCons zeroAfter (.childCons succBranch .childNil))) ∧
+          (.childCons motive
+            (.childCons zeroAfter
+              (.childCons succBranch (.childCons scrutinee .childNil)))) ∧
         Step zeroBranch zeroAfter)
     ∨
-    (∃ (succAfter : RawTerm scope),
+    (∃ (succAfter : RawTerm (scope + 2)),
         target = .mkGen .gen_natRec ()
-          (.childCons scrutinee
-            (.childCons zeroBranch (.childCons succAfter .childNil))) ∧
-        Step succBranch succAfter) := by
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succAfter (.childCons scrutinee .childNil)))) ∧
+        Step succBranch succAfter)
+    ∨
+    (∃ (scrutineeAfter : RawTerm scope),
+        target = .mkGen .gen_natRec ()
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons scrutineeAfter .childNil)))) ∧
+        Step scrutinee scrutineeAfter) := by
   cases reduction with
   | iotaNatRecZero =>
       exact Or.inl ⟨rfl, rfl⟩
@@ -1126,9 +1163,9 @@ theorem Step.from_natRec
       exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
   | cong _ _ childStep =>
       cases childStep with
-      | here _ scrutineeStep =>
-          rename_i scrutineeAfter
-          exact Or.inr (Or.inr (Or.inl ⟨scrutineeAfter, rfl, scrutineeStep⟩))
+      | here _ motiveStep =>
+          rename_i motiveAfter
+          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ zeroStep =>
@@ -1138,9 +1175,15 @@ theorem Step.from_natRec
               cases restStep with
               | here _ succStep =>
                   rename_i succAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr ⟨succAfter, rfl, succStep⟩)))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨succAfter, rfl, succStep⟩))))
               | there _ restRestStep =>
-                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
+                  cases restRestStep with
+                  | here _ scrutineeStep =>
+                      rename_i scrutineeAfter
+                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                  | there _ restRestRestStep =>
+                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `listElim`-rooted Step.**
 

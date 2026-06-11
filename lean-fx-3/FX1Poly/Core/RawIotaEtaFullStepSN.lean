@@ -2,41 +2,44 @@ import FX1Poly.Core.RawIotaFullStepSN
 import FX1Poly.Core.EtaRpoEmbedding
 
 /-! # FX1Poly/Core/RawIotaEtaFullStepSN
-    — the FULL ι∪η reduction (root + congruence) is strongly normalizing by ONE recursive path order,
-    INDEPENDENT of β and of typed SN
+    — the FULL oriented-ι∪η reduction (root + congruence) is strongly normalizing by ONE recursive path
+    order, INDEPENDENT of β and of typed SN
 
-This is the union of `RawIotaFullStepSN`'s full-ι `IotaStep` with the raw η rules (`Step.eta`, StepEta).
-The full ι reduction was put into a well-founded recursive path order via `eraseToRose`; `eraseToRose` is
-rename-invariant; and every raw η-contraction RPO-decreases that SAME `eraseToRose` order
+This is the union of `RawIotaFullStepSN`'s full oriented-ι `IotaStep` with the raw η rules (`Step.eta`,
+StepEta).  The oriented ι reduction was put into a well-founded recursive path order via `eraseToRose`;
+`eraseToRose` is rename-invariant; and every raw η-contraction RPO-decreases that SAME `eraseToRose` order
 (precedence-agnostically, so it specialises to `iotaGenPrecedence`).  This file assembles the three into the
-compatible (congruence) closure of (ι-root ∨ η-root) and lifts the embedding through congruence, giving
-strong normalization of the combined fragment.
+compatible (congruence) closure of (oriented-ι-root ∨ η-root) and lifts the embedding through congruence,
+giving strong normalization of the combined fragment.
 
-Why the union is FREE once both legs embed into one order: an `IotaEtaStep` is either a root step (ι or η,
-both RPO-decreasing) or a congruence step (ι or η inside child position `i`, the child RPO-decreasing by the
-inductive hypothesis, lifted by `rpo_congruence`).  In every case the whole term's `eraseToRose` strictly
-decreases under the single well-founded `Rpo iotaGenPrecedence`, so SN follows by `Subrelation.wf` +
-`InvImage.wf` — no fresh measure, no Geser union argument.
+Why the union is FREE once both legs embed into one order: an `IotaEtaStep` is either a root step (oriented
+ι or η, both RPO-decreasing) or a congruence step (ι or η inside child position `i`, the child
+RPO-decreasing by the inductive hypothesis, lifted by `rpo_congruence`).  In every case the whole term's
+`eraseToRose` strictly decreases under the single well-founded `Rpo iotaGenPrecedence`, so SN follows by
+`Subrelation.wf` + `InvImage.wf` — no fresh measure, no Geser union argument.
 
 ## What this ships
 
-  * `IotaEtaStep` / `IotaEtaStepChildren` — the full ι∪η reduction = compatible closure of
-    `IotaHeadStep ∨ Step.eta` (mutual, mirrors `IotaStep`/`IotaStepChildren`).
-  * `IotaHeadStep.toIotaEta` / `Step.eta.toIotaEta` — both fragments inject into the union at the head.
-  * **`IotaEtaStep.rpoEmbeds` (★)** — every full ι∪η-step RPO-decreases the erasure.  Root via the `Or.elim`:
-    ι → `IotaHeadStep.rpoEmbeds`, η → `Step.eta.rpoEmbeds`; congruence via `rpo_congruence` (identical
-    children-spine machinery to `IotaStep.rpoEmbeds`).
-  * **`iotaEtaFullStep_wellFounded` (★)** — the FULL ι∪η reduction is SN by `Subrelation.wf` +
+  * `IotaEtaStep` / `IotaEtaStepChildren` — the full oriented-ι∪η reduction = compatible closure of
+    `IotaOrientedHeadStep ∨ Step.eta` (mutual, mirrors `IotaStep`/`IotaStepChildren`).
+  * `IotaOrientedHeadStep.toIotaEta` / `Step.eta.toIotaEta` — both fragments inject into the union at the
+    head.
+  * **`IotaEtaStep.rpoEmbeds` (★)** — every full oriented-ι∪η-step RPO-decreases the erasure.  Root via the
+    `Or.elim`: ι → `IotaHeadStep.rpoEmbeds` (fed the oriented step's guard), η → `Step.eta.rpoEmbeds`;
+    congruence via `rpo_congruence` (identical children-spine machinery to `IotaStep.rpoEmbeds`).
+  * **`iotaEtaFullStep_wellFounded` (★)** — the FULL oriented-ι∪η reduction is SN by `Subrelation.wf` +
     `InvImage.wf eraseToRose` over `iotaGenRpoWellFounded`.  The terminating ι/η fragment terminates on its
     OWN order, NOT through Tait.
   * `IotaEtaStep.etaCongSmoke` — non-vacuity: an η step INSIDE a congruence (the new capability beyond
     root-only `Step.eta`).
 
-## Honest scope
+## Honest scope (Phase-Z re-scope EXECUTED)
 
 β stays Tait-imported (raw β is non-SN — witnessed by the Ω combinator); β's argument-duplication is exactly
-what an RPO cannot orient.  This file's claim is precisely "ι∪η terminates independently"; the β boundary is
-the permanent honest seam.
+what an RPO cannot orient.  Under the Phase-Z motive migration the natElim/natRec SUCCESSOR iotas SUBSTITUTE
+and share β's duplication shape, so they too sit at the Tait-imported boundary: the ι leg here is the
+ORIENTED fragment (`IotaOrientedHeadStep`, root ι minus those two arms).  This file's claim is precisely
+"oriented ι∪η terminates independently"; the β/substituting-ι boundary is the permanent honest seam.
 
 ## Zero-axiom verification
 
@@ -50,13 +53,13 @@ namespace FX1Poly.Core
 open FX1Poly.Core.RpoInductive
 open FX1Poly.Core.RawIotaRpo
 
--- The full ι∪η reduction: the compatible (congruence) closure of (root ι ∨ root η).  Mirrors
--- IotaStep/IotaStepChildren exactly, with the head relation widened to IotaHeadStep ∨ Step.eta.  (A /-- -/
--- doc comment cannot precede `mutual`.)
+-- The full oriented-ι∪η reduction: the compatible (congruence) closure of (oriented root ι ∨ root η).
+-- Mirrors IotaStep/IotaStepChildren exactly, with the head relation widened to
+-- IotaOrientedHeadStep ∨ Step.eta.  (A /-- -/ doc comment cannot precede `mutual`.)
 mutual
   inductive IotaEtaStep : {scope : Nat} → RawTerm scope → RawTerm scope → Prop where
     | head {scope : Nat} {source target : RawTerm scope}
-           (rootStep : IotaHeadStep source target ∨ Step.eta source target) :
+           (rootStep : IotaOrientedHeadStep source target ∨ Step.eta source target) :
         IotaEtaStep source target
     | cong {scope : Nat} (gen : Generator) (payload : gen.payload scope)
            {children children' : RawTermChildren gen.binderShifts scope}
@@ -78,9 +81,9 @@ mutual
         IotaEtaStepChildren (RawTermChildren.childCons head rest) (RawTermChildren.childCons head rest')
 end
 
-/-- Root injection: every full ι-root step is a full ι∪η step. -/
-theorem IotaHeadStep.toIotaEta {scope : Nat} {source target : RawTerm scope}
-    (rootStep : IotaHeadStep source target) : IotaEtaStep source target :=
+/-- Root injection: every oriented ι-root step is a full oriented-ι∪η step. -/
+theorem IotaOrientedHeadStep.toIotaEta {scope : Nat} {source target : RawTerm scope}
+    (rootStep : IotaOrientedHeadStep source target) : IotaEtaStep source target :=
   IotaEtaStep.head (Or.inl rootStep)
 
 /-- Root injection: every raw η step is a full ι∪η step. -/
@@ -88,9 +91,10 @@ theorem Step.eta.toIotaEta {scope : Nat} {source target : RawTerm scope}
     (etaStep : Step.eta source target) : IotaEtaStep source target :=
   IotaEtaStep.head (Or.inr etaStep)
 
-/-- **★ Every full ι∪η-step RPO-decreases the erasure.**  Root via `Or.elim` (ι → `IotaHeadStep.rpoEmbeds`,
-η → `Step.eta.rpoEmbeds`, both landing at `iotaGenPrecedence`); ι/η-inside-children via `rpo_congruence` (the
-children-spine motive extracts the single-position `prefix ++ child :: suffix` split). -/
+/-- **★ Every full oriented-ι∪η-step RPO-decreases the erasure.**  Root via `Or.elim` (oriented ι →
+`IotaHeadStep.rpoEmbeds` fed the guard component, η → `Step.eta.rpoEmbeds`, both landing at
+`iotaGenPrecedence`); ι/η-inside-children via `rpo_congruence` (the children-spine motive extracts the
+single-position `prefix ++ child :: suffix` split). -/
 theorem IotaEtaStep.rpoEmbeds {scope : Nat} {source target : RawTerm scope}
     (step : IotaEtaStep source target) :
     Rpo iotaGenPrecedence (eraseToRose source) (eraseToRose target) := by
@@ -110,7 +114,7 @@ theorem IotaEtaStep.rpoEmbeds {scope : Nat} {source target : RawTerm scope}
       (motive_2 := motiveChildren)
       (fun {_} {_} {_} rootStep =>
         rootStep.elim
-          (fun headIota => IotaHeadStep.rpoEmbeds headIota)
+          (fun headIota => IotaHeadStep.rpoEmbeds headIota.1 headIota.2)
           (fun headEta => Step.eta.rpoEmbeds headEta))
       (fun {_} gen _payload {children} {children'} _childStep childStepIH => by
         obtain ⟨prefixChildren, suffixChildren, bigChild, smallChild, hbefore, hafter, hrpo⟩ := childStepIH

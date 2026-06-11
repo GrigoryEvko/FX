@@ -21,8 +21,12 @@ scrutinee-congruence), so conversion-invariance needs the commutation diamond fo
 Either the arbitrary step contracted the very weak-head redex (`other = reduct`), or the redex SURVIVES
 — `other` weak-head steps to some `otherReduct` and the two contracta re-converge by a `StepStar` chain
 (`reduct ↠ otherReduct`).  The chain (not a single step) is essential: a β-redex argument or an
-eliminator branch can occur MORE THAN ONCE in the contractum (`natElim (natSucc p) z s ↝ app (app s p)
-(natElim p z s)` has `p` twice, `s` twice), so replaying one source step replays it once per occurrence.
+eliminator branch can occur MORE THAN ONCE in the contractum.  For the Phase-Z substituting succ-iota
+`natElim m z s (natSucc p) ↝ s[var 0 := natElim m z s p, var 1 := p]` the predecessor `p` and the
+succ-branch `s` each occur twice (once in the recursive call substituted for `var 0`, plus the singleton
+slot / the substitution body), so replaying one source step replays it once per occurrence — the chain is
+assembled via `RawTerm.subst_pointwise_stepStar` over the consed substitution (plus `StepStar.subst` for
+the succ body).
 
 The diamond is assembled in two lemmas:
 
@@ -30,8 +34,10 @@ The diamond is assembled in two lemmas:
     step is inverted by raw `cases`; index unification auto-selects the matching ι (other = reduct),
     auto-discards the wrong-constructor ι, and the `cong` case splits on which child stepped.  A step in
     the constructor scrutinee or a branch leaves the ι redex intact, so `other` still ι-reduces and the
-    contractum congruence (built from `StepStar.appFunction`/`appArgument` over the app spine and the
-    generic one-hole lifter `StepStar.congAt` into the recursive eliminator) catches `reduct` up.
+    contractum congruence catches `reduct` up: for the app-chain ι contracta via `StepStar.appFunction`/
+    `appArgument` over the app spine and the generic one-hole lifter `StepStar.congAt`; for the two
+    substituting succ-iotas via `RawTerm.subst_pointwise_stepStar` over the consed substitution (plus
+    `StepStar.subst` for a succ-branch step in the substitution body).
 
   * `WeakHeadStep.commuteWithStep` — the full relation, by induction on the `WeakHeadStep` derivation.  β
     and `appCongruence` mirror `HeadStep.commuteWithStep` (the β-redex / function-spine cases, with
@@ -70,10 +76,36 @@ theorem StepStar.congAt {scope : Nat} {subjectStart subjectEnd : RawTerm scope}
   | trans headStep _restChain restCongruence =>
       exact StepStar.trans (liftStepThroughHole headStep) restCongruence
 
+/-- **The natElim/natRec succ-iota cons-substitution replays piece-wise `StepStar`.**
+
+The Phase-Z succ-iota contractum is `subst (cons recursiveCall (singleton predecessor)) succBranch`.
+When a child of the redex steps, the recursive call and/or the predecessor step, so the consed
+substitution steps pointwise: this lemma assembles the `PointwiseStepStar` between the original and the
+stepped consed substitution.  Composed with `RawTerm.subst_pointwise_stepStar succBranch` it yields the
+contractum catch-up chain the local-confluence diamond needs.
+
+Position 0 carries the recursive-call chain; position 1 carries the predecessor chain (through the
+singleton's position-0 slot); positions `k + 2` are the unchanged shifted variables (`refl`). -/
+theorem RawTermSubst.natSuccElim_cons_pointwiseStepStar {scope : Nat}
+    {recursiveCall recursiveCallReduct : RawTerm scope}
+    {predecessor predecessorReduct : RawTerm scope}
+    (recChain : StepStar recursiveCall recursiveCallReduct)
+    (predChain : StepStar predecessor predecessorReduct) :
+    RawTermSubst.PointwiseStepStar
+      (RawTermSubst.cons recursiveCall (RawTermSubst.singleton predecessor))
+      (RawTermSubst.cons recursiveCallReduct (RawTermSubst.singleton predecessorReduct)) := by
+  intro position
+  match position with
+  | ⟨0, _⟩ => exact recChain
+  | ⟨1, _⟩ => exact predChain
+  | ⟨_priorValue + 2, _⟩ => exact StepStar.refl _
+
 /-- **Root-iota reduction commutes with arbitrary single-step reduction.**  Given a root-ι step
 `term ↝ᵢ reduct` and any step `term ↝ other`, either the arbitrary step contracted the same ι redex
 (`other = reduct`), or the redex survives — `other` ι-reduces to some `otherReduct` and `reduct` catches
-up by a `StepStar` chain (`reduct ↠ otherReduct`). -/
+up by a `StepStar` chain (`reduct ↠ otherReduct`).  The two substituting succ-iotas join their
+contracta via `RawTerm.subst_pointwise_stepStar` over
+`RawTermSubst.natSuccElim_cons_pointwiseStepStar`. -/
 theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
     (iotaStep : IotaHeadStep term reduct) :
     ∀ (other : RawTerm scope), Step term other →
@@ -164,40 +196,51 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                           exact Or.inr ⟨_, IotaHeadStep.iotaSndPair, StepStar.single secondStep⟩
                       | there _head2 emptyStep => cases emptyStep
           | there _head emptyStep => cases emptyStep
-  | @iotaNatElimZero zeroBranch succBranch =>
+  | @iotaNatElimZero motive zeroBranch succBranch =>
+      -- Phase-Z spine: (motive, zero, succ, scrutinee=natZero).  The cong spine walks
+      -- motive (here) → zero → succ → scrutinee.  Only a step in the zero-branch changes
+      -- the selected reduct; motive/succ/scrutinee steps leave zeroBranch intact.
       intro other step
       cases step with
       | iotaNatElimZero => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaNatElimZero, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest zeroStep =>
                   exact Or.inr ⟨_, IotaHeadStep.iotaNatElimZero, StepStar.single zeroStep⟩
               | there _head2 restStep =>
                   cases restStep with
-                  | here _rest succStep =>
+                  | here _rest _succStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaNatElimZero, StepStar.refl _⟩
-                  | there _head3 emptyStep => cases emptyStep
-  | @iotaNatRecZero zeroBranch succBranch =>
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                      | there _head4 emptyStep => cases emptyStep
+  | @iotaNatRecZero motive zeroBranch succBranch =>
       intro other step
       cases step with
       | iotaNatRecZero => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaNatRecZero, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest zeroStep =>
                   exact Or.inr ⟨_, IotaHeadStep.iotaNatRecZero, StepStar.single zeroStep⟩
               | there _head2 restStep =>
                   cases restStep with
-                  | here _rest succStep =>
+                  | here _rest _succStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaNatRecZero, StepStar.refl _⟩
-                  | there _head3 emptyStep => cases emptyStep
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                      | there _head4 emptyStep => cases emptyStep
   | @iotaListElimNil motive nilBranch consBranch =>
       -- Phase-Z spine: (motive, nil, cons, scrutinee=listNil).  The cong spine walks
       -- motive (here) → nil → cons → scrutinee.  Only a step in the nil-branch changes
@@ -311,98 +354,134 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                       exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInr,
                         StepStar.appFunction (StepStar.single rightStep)⟩
                   | there _head3 emptyStep => cases emptyStep
-  | @iotaNatElimSucc predecessor zeroBranch succBranch =>
+  | @iotaNatElimSucc motive predecessor zeroBranch succBranch =>
+      -- Phase-Z spine: (motive, zero, succ, scrutinee = natSucc predecessor).  The reduct
+      -- `subst (cons (natElim motive zero succ predecessor) (singleton predecessor)) succ`
+      -- threads motive/zero/succ/predecessor into BOTH the recursive call (the cons head) and
+      -- (for succ) the substitution body.  Each child step is replayed through the consed
+      -- substitution via `subst_pointwise_stepStar`, plus (for succ) through the body via
+      -- `StepStar.subst`.  The cong spine walks motive (here) → zero → succ → scrutinee.
       intro other step
       cases step with
       | iotaNatElimSucc => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with
-              | cong _g _p predChild =>
-                  cases predChild with
-                  | here _rest predStep =>
-                      exact Or.inr ⟨_, IotaHeadStep.iotaNatElimSucc,
-                        StepStar.trans_compose
-                          (StepStar.appFunction
-                            (StepStar.appArgument succBranch (StepStar.single predStep)))
-                          (StepStar.appArgument _
-                            (StepStar.congAt
-                              (fun hole => .mkGen .gen_natElim ()
-                                (.childCons hole (.childCons zeroBranch (.childCons succBranch .childNil))))
-                              (fun childStep' => Step.cong .gen_natElim () (.here _ childStep'))
-                              (StepStar.single predStep)))⟩
-                  | there _head emptyStep => cases emptyStep
+          | here _rest motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaNatElimSucc,
+                RawTerm.subst_pointwise_stepStar
+                  (RawTermSubst.natSuccElim_cons_pointwiseStepStar
+                    (StepStar.single (Step.cong .gen_natElim () (.here _ motiveStep)))
+                    (StepStar.refl predecessor))
+                  succBranch⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest zeroStep =>
                   exact Or.inr ⟨_, IotaHeadStep.iotaNatElimSucc,
-                    StepStar.appArgument _
-                      (StepStar.congAt
-                        (fun hole => .mkGen .gen_natElim ()
-                          (.childCons predecessor (.childCons hole (.childCons succBranch .childNil))))
-                        (fun childStep' => Step.cong .gen_natElim () (.there _ (.here _ childStep')))
-                        (StepStar.single zeroStep))⟩
+                    RawTerm.subst_pointwise_stepStar
+                      (RawTermSubst.natSuccElim_cons_pointwiseStepStar
+                        (StepStar.single
+                          (Step.cong .gen_natElim () (.there _ (.here _ zeroStep))))
+                        (StepStar.refl predecessor))
+                      succBranch⟩
               | there _head2 restStep =>
                   cases restStep with
                   | here _rest succStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaNatElimSucc,
                         StepStar.trans_compose
-                          (StepStar.appFunction (StepStar.appFunction (StepStar.single succStep)))
-                          (StepStar.appArgument _
-                            (StepStar.congAt
-                              (fun hole => .mkGen .gen_natElim ()
-                                (.childCons predecessor (.childCons zeroBranch (.childCons hole .childNil))))
-                              (fun childStep' =>
-                                Step.cong .gen_natElim () (.there _ (.there _ (.here _ childStep'))))
-                              (StepStar.single succStep)))⟩
-                  | there _head3 emptyStep => cases emptyStep
-  | @iotaNatRecSucc predecessor zeroBranch succBranch =>
+                          (StepStar.subst
+                            (RawTermSubst.cons
+                              (.mkGen .gen_natElim ()
+                                (.childCons motive
+                                  (.childCons zeroBranch
+                                    (.childCons succBranch
+                                      (.childCons predecessor .childNil)))))
+                              (RawTermSubst.singleton predecessor))
+                            (StepStar.single succStep))
+                          (RawTerm.subst_pointwise_stepStar
+                            (RawTermSubst.natSuccElim_cons_pointwiseStepStar
+                              (StepStar.single
+                                (Step.cong .gen_natElim ()
+                                  (.there _ (.there _ (.here _ succStep)))))
+                              (StepStar.refl predecessor))
+                            _)⟩
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with
+                          | cong _g _p predChild =>
+                              cases predChild with
+                              | here _rest predStep =>
+                                  exact Or.inr ⟨_, IotaHeadStep.iotaNatElimSucc,
+                                    RawTerm.subst_pointwise_stepStar
+                                      (RawTermSubst.natSuccElim_cons_pointwiseStepStar
+                                        (StepStar.single
+                                          (Step.cong .gen_natElim ()
+                                            (.there _ (.there _ (.there _ (.here _ predStep))))))
+                                        (StepStar.single predStep))
+                                      succBranch⟩
+                              | there _head4 emptyStep => cases emptyStep
+                      | there _head4 emptyStep => cases emptyStep
+  | @iotaNatRecSucc motive predecessor zeroBranch succBranch =>
       intro other step
       cases step with
       | iotaNatRecSucc => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with
-              | cong _g _p predChild =>
-                  cases predChild with
-                  | here _rest predStep =>
-                      exact Or.inr ⟨_, IotaHeadStep.iotaNatRecSucc,
-                        StepStar.trans_compose
-                          (StepStar.appFunction
-                            (StepStar.appArgument succBranch (StepStar.single predStep)))
-                          (StepStar.appArgument _
-                            (StepStar.congAt
-                              (fun hole => .mkGen .gen_natRec ()
-                                (.childCons hole (.childCons zeroBranch (.childCons succBranch .childNil))))
-                              (fun childStep' => Step.cong .gen_natRec () (.here _ childStep'))
-                              (StepStar.single predStep)))⟩
-                  | there _head emptyStep => cases emptyStep
+          | here _rest motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaNatRecSucc,
+                RawTerm.subst_pointwise_stepStar
+                  (RawTermSubst.natSuccElim_cons_pointwiseStepStar
+                    (StepStar.single (Step.cong .gen_natRec () (.here _ motiveStep)))
+                    (StepStar.refl predecessor))
+                  succBranch⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest zeroStep =>
                   exact Or.inr ⟨_, IotaHeadStep.iotaNatRecSucc,
-                    StepStar.appArgument _
-                      (StepStar.congAt
-                        (fun hole => .mkGen .gen_natRec ()
-                          (.childCons predecessor (.childCons hole (.childCons succBranch .childNil))))
-                        (fun childStep' => Step.cong .gen_natRec () (.there _ (.here _ childStep')))
-                        (StepStar.single zeroStep))⟩
+                    RawTerm.subst_pointwise_stepStar
+                      (RawTermSubst.natSuccElim_cons_pointwiseStepStar
+                        (StepStar.single
+                          (Step.cong .gen_natRec () (.there _ (.here _ zeroStep))))
+                        (StepStar.refl predecessor))
+                      succBranch⟩
               | there _head2 restStep =>
                   cases restStep with
                   | here _rest succStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaNatRecSucc,
                         StepStar.trans_compose
-                          (StepStar.appFunction (StepStar.appFunction (StepStar.single succStep)))
-                          (StepStar.appArgument _
-                            (StepStar.congAt
-                              (fun hole => .mkGen .gen_natRec ()
-                                (.childCons predecessor (.childCons zeroBranch (.childCons hole .childNil))))
-                              (fun childStep' =>
-                                Step.cong .gen_natRec () (.there _ (.there _ (.here _ childStep'))))
-                              (StepStar.single succStep)))⟩
-                  | there _head3 emptyStep => cases emptyStep
+                          (StepStar.subst
+                            (RawTermSubst.cons
+                              (.mkGen .gen_natRec ()
+                                (.childCons motive
+                                  (.childCons zeroBranch
+                                    (.childCons succBranch
+                                      (.childCons predecessor .childNil)))))
+                              (RawTermSubst.singleton predecessor))
+                            (StepStar.single succStep))
+                          (RawTerm.subst_pointwise_stepStar
+                            (RawTermSubst.natSuccElim_cons_pointwiseStepStar
+                              (StepStar.single
+                                (Step.cong .gen_natRec ()
+                                  (.there _ (.there _ (.here _ succStep)))))
+                              (StepStar.refl predecessor))
+                            _)⟩
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with
+                          | cong _g _p predChild =>
+                              cases predChild with
+                              | here _rest predStep =>
+                                  exact Or.inr ⟨_, IotaHeadStep.iotaNatRecSucc,
+                                    RawTerm.subst_pointwise_stepStar
+                                      (RawTermSubst.natSuccElim_cons_pointwiseStepStar
+                                        (StepStar.single
+                                          (Step.cong .gen_natRec ()
+                                            (.there _ (.there _ (.there _ (.here _ predStep))))))
+                                        (StepStar.single predStep))
+                                      succBranch⟩
+                              | there _head4 emptyStep => cases emptyStep
+                      | there _head4 emptyStep => cases emptyStep
   | @iotaListElimCons motive headVal tailVal nilBranch consBranch =>
       -- Phase-Z spine: (motive, nil, cons, scrutinee=listCons headVal tailVal).  The reduct
       -- `app (app (app cons headVal) tailVal) (listElim motive nil cons tailVal)` THREADS the
@@ -644,18 +723,38 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
             StepStar.congAt
               (fun hole => .mkGen .gen_snd () (.childCons hole .childNil))
               (fun childStep' => Step.cong .gen_snd () (.here _ childStep')) starChain⟩
-  | @scrutineeNatElim scrutinee scrutineeReduct zeroBranch succBranch
+  | @scrutineeNatElim motive scrutinee scrutineeReduct zeroBranch succBranch
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      -- Phase-Z spine: (motive, zero, succ, scrutinee).  The WeakHeadStep reduces the LAST
+      -- child (scrutinee).  `Step.from_natElim` is a six-way disjunction in the order
+      -- iotaZero / iotaSucc / cong-motive / cong-zero / cong-succ / cong-scrutinee.  The two
+      -- iota disjuncts are refuted (a reducible scrutinee is not yet a constructor); motive,
+      -- zero, and succ steps leave the scrutinee reducible, so `other` still weak-head reduces
+      -- there and `reduct` catches up by a single congruence at the stepped child (the succ
+      -- branch lives at scope + 2); a scrutinee step recurses through the induction hypothesis.
       intro other step
       rcases Step.from_natElim step with
         ⟨scrutEq, _⟩ | ⟨_pred, scrutEq, _⟩
-        | ⟨_scrutAfter, otherEq, scrutStep⟩
+        | ⟨_motiveAfter, otherEq, motiveStep⟩
         | ⟨_zeroAfter, otherEq, zeroStep⟩
         | ⟨_succAfter, otherEq, succStep⟩
+        | ⟨_scrutAfter, otherEq, scrutStep⟩
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_natZero
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_natSucc
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeNatElim scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_natElim () (.here _ motiveStep))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeNatElim scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_natElim () (.there _ (.here _ zeroStep)))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeNatElim scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_natElim () (.there _ (.there _ (.here _ succStep))))⟩
       · subst otherEq
         rcases scrutineeInductiveHypothesis _ scrutStep with
           scrutAfterEquation | ⟨_scrutReduct2, weakHeadStep2, starChain⟩
@@ -663,34 +762,36 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
         · exact Or.inr ⟨_, WeakHeadStep.scrutineeNatElim weakHeadStep2,
             StepStar.congAt
               (fun hole => .mkGen .gen_natElim ()
-                (.childCons hole (.childCons zeroBranch (.childCons succBranch .childNil))))
-              (fun childStep' => Step.cong .gen_natElim () (.here _ childStep')) starChain⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeNatElim scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_natElim ()
-              (.childCons scrutineeReduct (.childCons hole (.childCons succBranch .childNil))))
-            (fun childStep' => Step.cong .gen_natElim () (.there _ (.here _ childStep')))
-            (StepStar.single zeroStep)⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeNatElim scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_natElim ()
-              (.childCons scrutineeReduct (.childCons zeroBranch (.childCons hole .childNil))))
-            (fun childStep' => Step.cong .gen_natElim () (.there _ (.there _ (.here _ childStep'))))
-            (StepStar.single succStep)⟩
-  | @scrutineeNatRec scrutinee scrutineeReduct zeroBranch succBranch
+                (.childCons motive
+                  (.childCons zeroBranch (.childCons succBranch (.childCons hole .childNil)))))
+              (fun childStep' =>
+                Step.cong .gen_natElim ()
+                  (.there _ (.there _ (.there _ (.here _ childStep'))))) starChain⟩
+  | @scrutineeNatRec motive scrutinee scrutineeReduct zeroBranch succBranch
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
       intro other step
       rcases Step.from_natRec step with
         ⟨scrutEq, _⟩ | ⟨_pred, scrutEq, _⟩
-        | ⟨_scrutAfter, otherEq, scrutStep⟩
+        | ⟨_motiveAfter, otherEq, motiveStep⟩
         | ⟨_zeroAfter, otherEq, zeroStep⟩
         | ⟨_succAfter, otherEq, succStep⟩
+        | ⟨_scrutAfter, otherEq, scrutStep⟩
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_natZero
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_natSucc
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeNatRec scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_natRec () (.here _ motiveStep))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeNatRec scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_natRec () (.there _ (.here _ zeroStep)))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeNatRec scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_natRec () (.there _ (.there _ (.here _ succStep))))⟩
       · subst otherEq
         rcases scrutineeInductiveHypothesis _ scrutStep with
           scrutAfterEquation | ⟨_scrutReduct2, weakHeadStep2, starChain⟩
@@ -698,22 +799,11 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
         · exact Or.inr ⟨_, WeakHeadStep.scrutineeNatRec weakHeadStep2,
             StepStar.congAt
               (fun hole => .mkGen .gen_natRec ()
-                (.childCons hole (.childCons zeroBranch (.childCons succBranch .childNil))))
-              (fun childStep' => Step.cong .gen_natRec () (.here _ childStep')) starChain⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeNatRec scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_natRec ()
-              (.childCons scrutineeReduct (.childCons hole (.childCons succBranch .childNil))))
-            (fun childStep' => Step.cong .gen_natRec () (.there _ (.here _ childStep')))
-            (StepStar.single zeroStep)⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeNatRec scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_natRec ()
-              (.childCons scrutineeReduct (.childCons zeroBranch (.childCons hole .childNil))))
-            (fun childStep' => Step.cong .gen_natRec () (.there _ (.there _ (.here _ childStep'))))
-            (StepStar.single succStep)⟩
+                (.childCons motive
+                  (.childCons zeroBranch (.childCons succBranch (.childCons hole .childNil)))))
+              (fun childStep' =>
+                Step.cong .gen_natRec ()
+                  (.there _ (.there _ (.there _ (.here _ childStep'))))) starChain⟩
   | @scrutineeListElim motive scrutinee scrutineeReduct nilBranch consBranch
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
       -- Phase-Z spine: (motive, nil, cons, scrutinee).  The WeakHeadStep reduces the LAST

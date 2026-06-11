@@ -18,9 +18,10 @@ file bundles them into ONE checked capstone, discharging the deferred eliminator
 
   1. **bool** — `boolElimValueCanonicity`: a closed `boolElim b t e : Bool` (data-VALUE branches, via the
      non-vacuous `HasTypeDescBoolElimValue` engine) computes by a single ι-step to a bool value.
-  2. **nat** (RECURSIVE) — `natElimCopyComputesToNumeral`: a closed `natElim(n, natZero, λ_.λr.natSucc r)`
-     computes to a numeral for every closed numeral `n` — the recursive-result-USING fold (IH-threaded, not
-     discarded), the genuinely recursive eliminator.
+  2. **nat** (RECURSIVE) — `natElimCopyComputesToNumeral`: a closed `natElim(motive, natZero, natSucc (var 0), n)`
+     (Phase-Z SUBSTITUTING shape — the succ-branch `natSucc (var 0)` is a two-binder term, the succ-ι substitutes
+     the recursive call into `var 0`) computes to a numeral for every closed numeral `n` — the
+     recursive-result-USING fold (IH-threaded, not discarded), the genuinely recursive eliminator.
   3. **list** (RECURSIVE) — `listElimLengthComputesToNumeral`: a closed `listElim(motive, xs, natZero,
      lengthStep)` computes to a numeral (the length) for every closed list value `xs` (Phase-Z motive shape —
      the stored motive head child is ignored by the length fold).
@@ -71,10 +72,11 @@ structure EliminatorLayerCanonicitySpine (profile : PolyProfile) : Prop where
   boolElimComputes : ∀ {subject : RawTerm 0},
     HasTypeDescBoolElimValue profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell →
       ∃ value : RawTerm 0, StepStar subject value ∧ (value = boolTrueCell ∨ value = boolFalseCell)
-  /-- nat (recursive): the recursive-result-using copy fold computes every closed numeral to a numeral. -/
-  natElimComputes : ∀ {scrutinee : RawTerm 0}, IsNatNumeral scrutinee →
+  /-- nat (recursive): the recursive-result-using copy fold computes every closed numeral to a numeral.  Phase-Z
+  motive shape: the `natElim` cell carries a stored motive head child (any motive — the copy fold ignores it). -/
+  natElimComputes : ∀ {motive : RawTerm 1} {scrutinee : RawTerm 0}, IsNatNumeral scrutinee →
       ∃ out : RawTerm 0,
-        StepStar (natElimCell scrutinee natZeroCell copyNatStep) out ∧ IsNatNumeral out
+        StepStar (natElimCell motive natZeroCell copyNatBranch scrutinee) out ∧ IsNatNumeral out
   /-- list (recursive): the length fold computes every closed list value to a numeral.  Phase-Z motive shape:
   the `listElim` cell carries a stored motive head child (any motive — the length fold ignores it). -/
   listElimComputes : ∀ {motive : RawTerm 1} {scrutinee : RawTerm 0}, IsListValue scrutinee →

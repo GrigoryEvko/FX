@@ -11,21 +11,22 @@ import FX1Poly.Typed.HasTypeDescIdIntro
 the dependent Nat recursor `natRec` and the strict identity recursor `idStrictRec`.  This file closes them,
 completing per-eliminator host-fold faithfulness to all ten:
 
-  * **`natRecZeroHostFold`** — `natRec natZero z s ↝ z` (host `Nat.rec` base clause).
-  * **`natRecSuccHostFold`** — `natRec (natSucc p) z s ↝ s p (natRec p z s)` (host `Nat.rec` successor clause:
-    the step branch applied to the predecessor and the recursive result).  These two ARE the defining clauses
-    of the host `Nat.rec` recursor, so `gen_natRec` computes exactly the host dependent Nat recursor.
+  * **`natRecZeroHostFold`** — `natRec m z s natZero ↝ z` (host `Nat.rec` base clause).
+  * **`natRecSuccHostFold`** — Phase-Z SUBSTITUTING successor clause: `natRec m z s (natSucc p) ↝
+    s[var 0 := natRec m z s p, var 1 := p]` (the host `Nat.rec` successor equation, with the step branch's
+    two binders — recursive result + predecessor — filled by SUBSTITUTION rather than application).  These two
+    ARE the defining clauses of the host `Nat.rec` recursor, so `gen_natRec` computes exactly the host dependent
+    Nat recursor.
   * **`idStrictRecHostFold`** — `idStrictRec base (refl w) ↝ base` (host strict `Eq.rec` on `rfl` returns the
     base case) — the strict-recursor twin of `idJHostFold`.
 
-`natRecCell` / `idStrictRecCell` are the eliminator-cell builders (no prior builder existed); their shapes match
-the `Step.iotaNatRec{Zero,Succ}` / `Step.iotaIdStrictRecRefl` redex heads, so each host-fold is a single
+`natRecCell` / `idStrictRecCell` are the eliminator-cell builders; their shapes match the
+`Step.iotaNatRec{Zero,Succ}` / `Step.iotaIdStrictRecRefl` redex heads, so each host-fold is a single
 `StepStar.single` of the matching `Step.iota` rule whose reduct IS the host clause by `rfl`.
 
 Honest strength note: `idStrictRecHostFold` is single-ι branch selection (exactly the strength of `idJHostFold`
 and the other value-case folds).  The two `natRec` theorems are the recursor's host computation CLAUSES (the
-`Nat.rec` defining equations), the `natRec` twin of `natElim`'s ι rules — NOT a closed-form-on-numerals result
-(that stronger shape is `natElim ↝ Nat.mul`, which for `natRec` would hit the same `subst0`-commutation step).
+`Nat.rec` defining equations), the `natRec` twin of `natElim`'s ι rules — NOT a closed-form-on-numerals result.
 
 ## Zero-axiom
 
@@ -38,26 +39,45 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The `natRec` eliminator cell: scrutinee + zero-branch + successor-branch. -/
-def natRecCell {scope : Nat} (scrutinee zeroBranch succBranch : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_natRec () (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)))
+/-- The Phase-Z `natRec` eliminator cell `natRec(motive, zeroBranch, succBranch, scrutinee)` — arity 4,
+`binderShifts = [1, 0, 2, 0]`, motive under one binder, succ-branch under two, scrutinee LAST. -/
+def natRecCell {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (scrutinee : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_natRec ()
+    (.childCons motive
+      (.childCons zeroBranch
+        (.childCons succBranch
+          (.childCons scrutinee .childNil))))
+
+/-- The Phase-Z `natRec` succ-iota SUBSTITUTED reduct:
+`succBranch[var 0 := natRec motive zeroBranch succBranch predecessor, var 1 := predecessor]`. -/
+def natRecSuccContractum {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) : RawTerm scope :=
+  RawTerm.subst
+    (RawTermSubst.cons
+      (natRecCell motive zeroBranch succBranch predecessor)
+      (RawTermSubst.singleton predecessor))
+    succBranch
 
 /-- The `idStrictRec` eliminator cell: base-case + scrutinee (the strict identity recursor). -/
 def idStrictRecCell {scope : Nat} (baseCase scrutinee : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_idStrictRec () (.childCons baseCase (.childCons scrutinee .childNil))
 
-/-- **★ `natRec` on `natZero` computes the host `Nat.rec` base clause.**  `natRec natZero z s ↝ z` via
+/-- **★ `natRec` on `natZero` computes the host `Nat.rec` base clause.**  `natRec m z s natZero ↝ z` via
 `Step.iotaNatRecZero` — the recursor on zero projects the zero-branch, exactly as host `Nat.rec`. -/
-theorem natRecZeroHostFold {scope : Nat} (zeroBranch succBranch : RawTerm scope) :
-    StepStar (natRecCell natZeroCell zeroBranch succBranch) zeroBranch :=
+theorem natRecZeroHostFold {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) :
+    StepStar (natRecCell motive zeroBranch succBranch natZeroCell) zeroBranch :=
   StepStar.single Step.iotaNatRecZero
 
-/-- **★ `natRec` on `natSucc` computes the host `Nat.rec` successor clause.**  `natRec (natSucc p) z s ↝
-s p (natRec p z s)` via `Step.iotaNatRecSucc` — the step-branch applied to the predecessor and the recursive
-call, exactly the host `Nat.rec` successor equation. -/
-theorem natRecSuccHostFold {scope : Nat} (predecessor zeroBranch succBranch : RawTerm scope) :
-    StepStar (natRecCell (natSuccCell predecessor) zeroBranch succBranch)
-      (appCell (appCell succBranch predecessor) (natRecCell predecessor zeroBranch succBranch)) :=
+/-- **★ `natRec` on `natSucc` computes the host `Nat.rec` successor clause** (Phase-Z SUBSTITUTING).
+`natRec m z s (natSucc p) ↝ s[var 0 := natRec m z s p, var 1 := p]` via `Step.iotaNatRecSucc` — the step-branch's
+two binders (recursive result + predecessor) filled by SUBSTITUTION, exactly the host `Nat.rec` successor
+equation. -/
+theorem natRecSuccHostFold {scope : Nat} (motive : RawTerm (scope + 1))
+    (predecessor zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)) :
+    StepStar (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
+      (natRecSuccContractum motive zeroBranch succBranch predecessor) :=
   StepStar.single Step.iotaNatRecSucc
 
 /-- **★ `idStrictRec` on `refl` computes the host strict `Eq.rec` base.**  `idStrictRec base (refl w) ↝ base`

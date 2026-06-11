@@ -49,89 +49,137 @@ namespace FX1Poly.Core
 
 open StepStar
 
-/-- The `natElim` cell over its (scrutinee, zeroBranch, succBranch) spine. -/
-private abbrev natElimCell (scrutinee zeroBranch succBranch : RawTerm 0) : RawTerm 0 :=
-  .mkGen .gen_natElim () (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)))
+/-- The `natElim` cell — `gen_natElim` in the Phase-Z motive shape (arity 4, `binderShifts =
+[1, 0, 2, 0]`).  Author order `(motive, scrutinee, zeroBranch, succBranch)`; emitted spine
+`(motive, zeroBranch, succBranch, scrutinee)` with the motive under one binder, the succ-branch under TWO
+binders, and the scrutinee LAST. -/
+private abbrev natElimCell (motive : RawTerm 1) (scrutinee zeroBranch : RawTerm 0)
+    (succBranch : RawTerm 2) : RawTerm 0 :=
+  .mkGen .gen_natElim ()
+    (.childCons motive
+      (.childCons zeroBranch
+        (.childCons succBranch
+          (.childCons scrutinee .childNil))))
 
-/-- The `natElim` succ-contractum `app (app succBranch predecessor) (natElim predecessor zeroBranch succBranch)`. -/
-private abbrev natElimSuccContractumClosed (succBranch predecessor zeroBranch : RawTerm 0) : RawTerm 0 :=
-  .mkGen .gen_app ()
-    (.childCons
-      (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
-      (.childCons (natElimCell predecessor zeroBranch succBranch) .childNil))
+/-- The `natElim` succ-contractum — now SUBSTITUTING (the Phase-Z succ-iota substitutes the recursive call
+into var 0 and the predecessor into var 1 of the two-binder succ-branch):
+`succBranch[var 0 := natElim motive zeroBranch succBranch predecessor, var 1 := predecessor]`.  The recursive
+call THREADS the same motive and branches at the predecessor. -/
+private abbrev natElimSuccContractumClosed (motive : RawTerm 1) (succBranch : RawTerm 2)
+    (predecessor zeroBranch : RawTerm 0) : RawTerm 0 :=
+  RawTerm.subst
+    (RawTermSubst.cons
+      (.mkGen .gen_natElim ()
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons predecessor .childNil)))))
+      (RawTermSubst.singleton predecessor))
+    succBranch
 
 /-- **A closed `natElim` on a member Nat scrutinee with reducible branches is a member of the result
 candidate.**  The scrutinee-reduction half: the scrutinee reduces to a numeral
 (Nat canonicity), `natElimValueReducibility` lands the numeral recursor cell in the candidate (instantiated at the
 closed data candidate, fed the SN-from-SN-branches recursor for `redexStronglyNormalizing` and the data
 candidate's closed weak-head-expansion for `headExpand`), and `ofStepStarReachingValue` lifts membership through
-the scrutinee congruence to the original cell.  `succContractumTerminates` is the honest recursor-SN IH-premise.
-Fundamental-independent. -/
+the scrutinee congruence to the original cell.
+
+Phase-Z SUBSTITUTING shape: the cell carries a stored motive head child, so a motive-SN hypothesis
+(`motiveStronglyNormalizing`) joins the branch-SN witnesses, fed to the SN helper in the PINNED Lane-4 order
+`(substitutedReductTerminates, scrutinee, motive, zero, succ)`.  Because the succ-iota SUBSTITUTES rather than
+building an app-chain, the succ-branch interface is `substitutedReductMember` — the SUBSTITUTED reduct is a
+member of the candidate (universally quantified over the current motive/branches/predecessor; the
+substitution-shaped analogue of the old `succBranchApplication`, mirroring the substituting
+`substitutedReductTerminates` SN premise).  Fundamental-independent. -/
 theorem natElimClosedIsMember {isValue : RawTerm 0 → Prop}
-    {scrutinee zeroBranch succBranch : RawTerm 0}
+    {motive : RawTerm 1} {scrutinee zeroBranch : RawTerm 0} {succBranch : RawTerm 2}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (scrutineeMember : CanonicalFormsPredicate IsNatValue scrutinee)
     (zeroBranchMember : CanonicalFormsPredicate isValue zeroBranch)
     (succBranchTerminates : IsStronglyNormalizing succBranch)
-    (succBranchApplication : ∀ {predecessor result : RawTerm 0},
-        IsNatValue predecessor → CanonicalFormsPredicate isValue result →
+    (substitutedReductMember : ∀ {predecessor : RawTerm 0},
+        IsNatValue predecessor →
         CanonicalFormsPredicate isValue
-          (.mkGen .gen_app ()
-            (.childCons (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
-              (.childCons result .childNil))))
-    (succContractumTerminates : ∀ predecessor : RawTerm 0, IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing (natElimSuccContractumClosed succBranch predecessor zeroBranch)) :
-    CanonicalFormsPredicate isValue (natElimCell scrutinee zeroBranch succBranch) := by
+          (natElimSuccContractumClosed motive succBranch predecessor zeroBranch))
+    (substitutedReductTerminates :
+        ∀ (currentMotive : RawTerm 1) (currentSucc : RawTerm 2)
+          (predecessor currentZero : RawTerm 0), IsStronglyNormalizing predecessor →
+          IsStronglyNormalizing
+            (natElimSuccContractumClosed currentMotive currentSucc predecessor currentZero)) :
+    CanonicalFormsPredicate isValue (natElimCell motive scrutinee zeroBranch succBranch) := by
   have headExpand : ∀ {redexTerm contractum : RawTerm 0},
       WeakHeadStep redexTerm contractum → CanonicalFormsPredicate isValue contractum →
       IsStronglyNormalizing redexTerm → CanonicalFormsPredicate isValue redexTerm :=
     fun weakHeadStep memberContractum redexSN =>
       CanonicalFormsPredicate.weakHeadExpansionOfMemberNotNeutral weakHeadStep.toStep redexSN
         memberContractum IsNeutral.noClosed
+  -- PINNED SN-helper order: substituted-reduct FIRST, scrutinee SECOND, motive THIRD, zero FOURTH, succ FIFTH.
   have recursorSN : ∀ {value : RawTerm 0}, IsNatValue value →
-      IsStronglyNormalizing (natElimCell value zeroBranch succBranch) :=
+      IsStronglyNormalizing (natElimCell motive value zeroBranch succBranch) :=
     fun valueIsNat =>
-      natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-        (isNatValue_isMember valueIsNat).stronglyNormalizing
+      natElim_isStronglyNormalizing_of_strongly_normalizing_branches substitutedReductTerminates
+        (isNatValue_isMember valueIsNat).stronglyNormalizing motiveStronglyNormalizing
         zeroBranchMember.stronglyNormalizing succBranchTerminates
-  have cellStronglyNormalizing : IsStronglyNormalizing (natElimCell scrutinee zeroBranch succBranch) :=
-    natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-      scrutineeMember.stronglyNormalizing zeroBranchMember.stronglyNormalizing succBranchTerminates
+  have cellStronglyNormalizing : IsStronglyNormalizing (natElimCell motive scrutinee zeroBranch succBranch) :=
+    natElim_isStronglyNormalizing_of_strongly_normalizing_branches substitutedReductTerminates
+      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
+      zeroBranchMember.stronglyNormalizing succBranchTerminates
   obtain ⟨numeral, scrutineeToNumeral, numeralIsNat⟩ := scrutineeMember.closedReducesToValue
-  have numeralMember : CanonicalFormsPredicate isValue (natElimCell numeral zeroBranch succBranch) :=
+  have numeralMember : CanonicalFormsPredicate isValue (natElimCell motive numeral zeroBranch succBranch) :=
     natElimValueReducibility (CanonicalFormsPredicate isValue)
-      headExpand zeroBranchMember succBranchApplication recursorSN numeralIsNat
+      headExpand zeroBranchMember (fun predIsValue => substitutedReductMember predIsValue)
+      recursorSN numeralIsNat
   exact CanonicalFormsPredicate.ofStepStarReachingValue
     (StepStar.natElimScrutinee scrutineeToNumeral) cellStronglyNormalizing
     numeralMember.closedReducesToValue
 
-/-- The `natRec` cell over its (scrutinee, zeroBranch, succBranch) spine. -/
-private abbrev natRecCell (scrutinee zeroBranch succBranch : RawTerm 0) : RawTerm 0 :=
-  .mkGen .gen_natRec () (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)))
+/-- The `natRec` cell — `gen_natRec` in the Phase-Z motive shape (arity 4, `binderShifts =
+[1, 0, 2, 0]`).  Author order `(motive, scrutinee, zeroBranch, succBranch)`; emitted spine
+`(motive, zeroBranch, succBranch, scrutinee)` with the motive under one binder, the succ-branch under TWO
+binders, and the scrutinee LAST. -/
+private abbrev natRecCell (motive : RawTerm 1) (scrutinee zeroBranch : RawTerm 0)
+    (succBranch : RawTerm 2) : RawTerm 0 :=
+  .mkGen .gen_natRec ()
+    (.childCons motive
+      (.childCons zeroBranch
+        (.childCons succBranch
+          (.childCons scrutinee .childNil))))
 
-/-- The `natRec` succ-contractum `app (app succBranch predecessor) (natRec predecessor zeroBranch succBranch)`. -/
-private abbrev natRecSuccContractumClosed (succBranch predecessor zeroBranch : RawTerm 0) : RawTerm 0 :=
-  .mkGen .gen_app ()
-    (.childCons
-      (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
-      (.childCons (natRecCell predecessor zeroBranch succBranch) .childNil))
+/-- The `natRec` succ-contractum — now SUBSTITUTING (the Phase-Z succ-iota substitutes the recursive call into
+var 0 and the predecessor into var 1 of the two-binder succ-branch):
+`succBranch[var 0 := natRec motive zeroBranch succBranch predecessor, var 1 := predecessor]`. -/
+private abbrev natRecSuccContractumClosed (motive : RawTerm 1) (succBranch : RawTerm 2)
+    (predecessor zeroBranch : RawTerm 0) : RawTerm 0 :=
+  RawTerm.subst
+    (RawTermSubst.cons
+      (.mkGen .gen_natRec ()
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons predecessor .childNil)))))
+      (RawTermSubst.singleton predecessor))
+    succBranch
 
 /-- **A closed `natRec` on a member Nat scrutinee with reducible branches is a member of the result candidate** —
 the dependent-recursor twin of `natElimClosedIsMember`, identical assembly via `natRecValueReducibility` and the
-`natRec` SN-from-SN-branches recursor. -/
+`natRec` SN-from-SN-branches recursor.  Phase-Z SUBSTITUTING shape: a motive-SN hypothesis and the
+substituted-reduct membership/termination premises in the PINNED Lane-4 order. -/
 theorem natRecClosedIsMember {isValue : RawTerm 0 → Prop}
-    {scrutinee zeroBranch succBranch : RawTerm 0}
+    {motive : RawTerm 1} {scrutinee zeroBranch : RawTerm 0} {succBranch : RawTerm 2}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (scrutineeMember : CanonicalFormsPredicate IsNatValue scrutinee)
     (zeroBranchMember : CanonicalFormsPredicate isValue zeroBranch)
     (succBranchTerminates : IsStronglyNormalizing succBranch)
-    (succBranchApplication : ∀ {predecessor result : RawTerm 0},
-        IsNatValue predecessor → CanonicalFormsPredicate isValue result →
+    (substitutedReductMember : ∀ {predecessor : RawTerm 0},
+        IsNatValue predecessor →
         CanonicalFormsPredicate isValue
-          (.mkGen .gen_app ()
-            (.childCons (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
-              (.childCons result .childNil))))
-    (succContractumTerminates : ∀ predecessor : RawTerm 0, IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing (natRecSuccContractumClosed succBranch predecessor zeroBranch)) :
-    CanonicalFormsPredicate isValue (natRecCell scrutinee zeroBranch succBranch) := by
+          (natRecSuccContractumClosed motive succBranch predecessor zeroBranch))
+    (substitutedReductTerminates :
+        ∀ (currentMotive : RawTerm 1) (currentSucc : RawTerm 2)
+          (predecessor currentZero : RawTerm 0), IsStronglyNormalizing predecessor →
+          IsStronglyNormalizing
+            (natRecSuccContractumClosed currentMotive currentSucc predecessor currentZero)) :
+    CanonicalFormsPredicate isValue (natRecCell motive scrutinee zeroBranch succBranch) := by
   have headExpand : ∀ {redexTerm contractum : RawTerm 0},
       WeakHeadStep redexTerm contractum → CanonicalFormsPredicate isValue contractum →
       IsStronglyNormalizing redexTerm → CanonicalFormsPredicate isValue redexTerm :=
@@ -139,18 +187,20 @@ theorem natRecClosedIsMember {isValue : RawTerm 0 → Prop}
       CanonicalFormsPredicate.weakHeadExpansionOfMemberNotNeutral weakHeadStep.toStep redexSN
         memberContractum IsNeutral.noClosed
   have recursorSN : ∀ {value : RawTerm 0}, IsNatValue value →
-      IsStronglyNormalizing (natRecCell value zeroBranch succBranch) :=
+      IsStronglyNormalizing (natRecCell motive value zeroBranch succBranch) :=
     fun valueIsNat =>
-      natRec_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-        (isNatValue_isMember valueIsNat).stronglyNormalizing
+      natRec_isStronglyNormalizing_of_strongly_normalizing_branches substitutedReductTerminates
+        (isNatValue_isMember valueIsNat).stronglyNormalizing motiveStronglyNormalizing
         zeroBranchMember.stronglyNormalizing succBranchTerminates
-  have cellStronglyNormalizing : IsStronglyNormalizing (natRecCell scrutinee zeroBranch succBranch) :=
-    natRec_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-      scrutineeMember.stronglyNormalizing zeroBranchMember.stronglyNormalizing succBranchTerminates
+  have cellStronglyNormalizing : IsStronglyNormalizing (natRecCell motive scrutinee zeroBranch succBranch) :=
+    natRec_isStronglyNormalizing_of_strongly_normalizing_branches substitutedReductTerminates
+      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
+      zeroBranchMember.stronglyNormalizing succBranchTerminates
   obtain ⟨numeral, scrutineeToNumeral, numeralIsNat⟩ := scrutineeMember.closedReducesToValue
-  have numeralMember : CanonicalFormsPredicate isValue (natRecCell numeral zeroBranch succBranch) :=
+  have numeralMember : CanonicalFormsPredicate isValue (natRecCell motive numeral zeroBranch succBranch) :=
     natRecValueReducibility (CanonicalFormsPredicate isValue)
-      headExpand zeroBranchMember succBranchApplication recursorSN numeralIsNat
+      headExpand zeroBranchMember (fun predIsValue => substitutedReductMember predIsValue)
+      recursorSN numeralIsNat
   exact CanonicalFormsPredicate.ofStepStarReachingValue
     (StepStar.natRecScrutinee scrutineeToNumeral) cellStronglyNormalizing
     numeralMember.closedReducesToValue

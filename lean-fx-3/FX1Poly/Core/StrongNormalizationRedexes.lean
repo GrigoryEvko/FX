@@ -3217,463 +3217,360 @@ theorem isStronglyNormalizing_of_twoBranchProjectionRedex {scope : Nat}
     selectedTerminates)
     otherTerminates
 
-/-- Natural-number elimination on literal zero is strongly normalizing when
-both branches are strongly normalizing.
+/-- Natural-number elimination on literal zero is strongly normalizing when the
+motive and both branches are strongly normalizing.
 
-The root iota reduct is the zero branch.  The successor iota is impossible on
-the literal zero scrutinee, and scrutinee congruence is impossible because
-`natZero` is a normal leaf. -/
+Phase-Z motive shape (arity 4, `binderShifts [1, 0, 2, 0]`, spine
+`(motive, zeroBranch, succBranch, natZero)` with the scrutinee LAST).  The root
+iota reduct is the zero branch.  The successor iota is impossible on the literal
+zero scrutinee, and scrutinee congruence is impossible because `natZero` is a
+normal leaf.  A THREE-fold accessibility induction `(motive, zeroBranch,
+succBranch)` mirroring `listElimNil_isStronglyNormalizing_of_branches`; the
+PINNED 6-way `Step.from_natElim` gives the arms (ι-zero → the zero branch;
+ι-succ + scrutinee-cong impossible on `natZero`; motive/branch congruences →
+the corresponding inner IH). -/
 theorem natElimZero_isStronglyNormalizing_of_branches {scope : Nat}
-    {zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
+    (motiveTerminates : IsStronglyNormalizing motive)
     (zeroTerminates : IsStronglyNormalizing zeroBranch)
     (succTerminates : IsStronglyNormalizing succBranch) :
     IsStronglyNormalizing
       (.mkGen .gen_natElim ()
-        (.childCons
-          (.mkGen .gen_natZero () .childNil)
-          (.childCons zeroBranch (.childCons succBranch .childNil))) :
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
         RawTerm scope) :=
-  isStronglyNormalizing_of_twoBranchProjectionRedex
-    (fun currentZero currentSucc =>
-      (.mkGen .gen_natElim ()
-        (.childCons
-          (.mkGen .gen_natZero () .childNil)
-          (.childCons currentZero (.childCons currentSucc .childNil))) :
-        RawTerm scope))
-    (fun parentStep => by
-      cases Step.from_natElim parentStep with
-      | inl zeroBranchStep =>
-          exact Or.inl zeroBranchStep.2
-      | inr restAfterZero =>
-          cases restAfterZero with
-          | inl succBranchStep =>
-              obtain ⟨predecessor, scrutineeEq, _⟩ := succBranchStep
-              cases scrutineeEq
-          | inr restAfterSucc =>
-              cases restAfterSucc with
-              | inl scrutineeBranch =>
-                  obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
-                  exact False.elim (noStep_natZero scrutineeStep)
-              | inr restAfterScrutinee =>
-                  cases restAfterScrutinee with
-                  | inl zeroStep =>
-                      obtain ⟨zeroAfter, targetEq, zeroStepInner⟩ :=
-                        zeroStep
-                      exact Or.inr
-                        (Or.inl ⟨zeroAfter, targetEq, zeroStepInner⟩)
-                  | inr succStep =>
-                      obtain ⟨succAfter, targetEq, succStepInner⟩ :=
-                        succStep
-                      exact Or.inr
-                        (Or.inr ⟨succAfter, targetEq, succStepInner⟩))
-    zeroTerminates
-    succTerminates
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentMotive =>
+      ∀ {currentZero : RawTerm scope} {currentSucc : RawTerm (scope + 2)},
+        IsStronglyNormalizing currentZero → IsStronglyNormalizing currentSucc →
+          IsStronglyNormalizing
+            (.mkGen .gen_natElim ()
+              (.childCons currentMotive
+                (.childCons currentZero
+                  (.childCons currentSucc
+                    (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
+              RawTerm scope))
+    (m := fun currentMotive currentMotiveSuccessors motiveBranchIH => by
+      intro currentZero currentSucc currentZeroTerminates currentSuccTerminates
+      exact
+        (Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerZero =>
+            ∀ {innerSucc : RawTerm (scope + 2)},
+              IsStronglyNormalizing innerSucc →
+                IsStronglyNormalizing
+                  (.mkGen .gen_natElim ()
+                    (.childCons currentMotive
+                      (.childCons innerZero
+                        (.childCons innerSucc
+                          (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
+                    RawTerm scope))
+          (m := fun currentZeroBranch currentZeroSuccessors zeroBranchIH => by
+            intro innerSucc innerSuccTerminates
+            exact
+              Acc.ndrec
+                (r := StepSuccessor)
+                (C := fun innerSucc' =>
+                  IsStronglyNormalizing
+                    (.mkGen .gen_natElim ()
+                      (.childCons currentMotive
+                        (.childCons currentZeroBranch
+                          (.childCons innerSucc'
+                            (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
+                      RawTerm scope))
+                (m := fun currentSuccBranch currentSuccSuccessors succBranchIH =>
+                  Acc.intro
+                    (.mkGen .gen_natElim ()
+                      (.childCons currentMotive
+                        (.childCons currentZeroBranch
+                          (.childCons currentSuccBranch
+                            (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
+                      RawTerm scope)
+                    (fun targetTerm parentStep => by
+                      rcases Step.from_natElim parentStep with
+                        ⟨_scrutineeIsZero, targetIsZero⟩ |
+                        ⟨_predecessor, scrutineeIsSucc, _⟩ |
+                        ⟨motiveAfter, targetIsMotiveStep, motiveStep⟩ |
+                        ⟨zeroAfter, targetIsZeroStep, zeroStep⟩ |
+                        ⟨succAfter, targetIsSuccStep, succStep⟩ |
+                        ⟨_scrutineeAfter, _targetIsScrutineeStep, scrutineeStep⟩
+                      · rw [targetIsZero]
+                        exact Acc.intro currentZeroBranch currentZeroSuccessors
+                      · cases scrutineeIsSucc
+                      · rw [targetIsMotiveStep]
+                        exact motiveBranchIH motiveAfter motiveStep
+                          (Acc.intro currentZeroBranch currentZeroSuccessors)
+                          (Acc.intro currentSuccBranch currentSuccSuccessors)
+                      · rw [targetIsZeroStep]
+                        exact zeroBranchIH zeroAfter zeroStep
+                          (Acc.intro currentSuccBranch currentSuccSuccessors)
+                      · rw [targetIsSuccStep]
+                        exact succBranchIH succAfter succStep
+                      · exact False.elim (noStep_natZero scrutineeStep)))
+                innerSuccTerminates)
+          currentZeroTerminates currentSuccTerminates))
+    motiveTerminates)
+    zeroTerminates succTerminates
 
-/-- Natural-number recursion on literal zero is strongly normalizing when both
-branches are strongly normalizing.  This mirrors the `natElim` zero case for
-the substrate's strict recursor. -/
+/-- Natural-number recursion on literal zero is strongly normalizing when the
+motive and both branches are strongly normalizing.  This mirrors the `natElim`
+zero case for the substrate's strict recursor (`Step.from_natRec` is the
+`gen_natRec` mirror of `Step.from_natElim`). -/
 theorem natRecZero_isStronglyNormalizing_of_branches {scope : Nat}
-    {zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
+    (motiveTerminates : IsStronglyNormalizing motive)
     (zeroTerminates : IsStronglyNormalizing zeroBranch)
     (succTerminates : IsStronglyNormalizing succBranch) :
     IsStronglyNormalizing
       (.mkGen .gen_natRec ()
-        (.childCons
-          (.mkGen .gen_natZero () .childNil)
-          (.childCons zeroBranch (.childCons succBranch .childNil))) :
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
         RawTerm scope) :=
-  isStronglyNormalizing_of_twoBranchProjectionRedex
-    (fun currentZero currentSucc =>
-      (.mkGen .gen_natRec ()
-        (.childCons
-          (.mkGen .gen_natZero () .childNil)
-          (.childCons currentZero (.childCons currentSucc .childNil))) :
-        RawTerm scope))
-    (fun parentStep => by
-      cases Step.from_natRec parentStep with
-      | inl zeroBranchStep =>
-          exact Or.inl zeroBranchStep.2
-      | inr restAfterZero =>
-          cases restAfterZero with
-          | inl succBranchStep =>
-              obtain ⟨predecessor, scrutineeEq, _⟩ := succBranchStep
-              cases scrutineeEq
-          | inr restAfterSucc =>
-              cases restAfterSucc with
-              | inl scrutineeBranch =>
-                  obtain ⟨_, _, scrutineeStep⟩ := scrutineeBranch
-                  exact False.elim (noStep_natZero scrutineeStep)
-              | inr restAfterScrutinee =>
-                  cases restAfterScrutinee with
-                  | inl zeroStep =>
-                      obtain ⟨zeroAfter, targetEq, zeroStepInner⟩ :=
-                        zeroStep
-                      exact Or.inr
-                        (Or.inl ⟨zeroAfter, targetEq, zeroStepInner⟩)
-                  | inr succStep =>
-                      obtain ⟨succAfter, targetEq, succStepInner⟩ :=
-                        succStep
-                      exact Or.inr
-                        (Or.inr ⟨succAfter, targetEq, succStepInner⟩))
-    zeroTerminates
-    succTerminates
-
-/-- Natural-number elimination on `natSucc predecessor` is strongly
-normalizing when the successor branch is a neutral function head and the
-recursive call on the predecessor is supplied as an explicit accessibility
-hypothesis.
-
-This is deliberately an induction-step theorem, not a global recursion proof:
-the recursive obligation is visible in `recursiveCallTerminates` and will later
-be discharged by the reducibility/fundamental-theorem layer.  The root iota
-reduct is the two-argument application spine
-`app (app succBranch predecessor) (natElim predecessor zeroBranch succBranch)`,
-so beta is ruled out only by the neutral selected-branch invariant. -/
-theorem natElimSucc_isStronglyNormalizing_of_neutral_succBranch
-    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
-    {predecessor zeroBranch succBranch : RawTerm scope}
-    (predecessorTerminates : IsStronglyNormalizing predecessor)
-    (zeroTerminates : IsStronglyNormalizing zeroBranch)
-    (succBranchIsNeutral : isNeutralHead succBranch)
-    (neutralHeadIsNotLambda :
-      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
-        ∀ (lambdaDomain : RawTerm scope) (lambdaBody : RawTerm (scope + 1)),
-          currentHead ≠ .mkGen .gen_lam ()
-            (.childCons lambdaDomain (.childCons lambdaBody .childNil)))
-    (neutralHeadStep :
-      ∀ {currentHead targetHead : RawTerm scope},
-        isNeutralHead currentHead →
-          Step currentHead targetHead →
-            isNeutralHead targetHead)
-    (succTerminates : IsStronglyNormalizing succBranch)
-    (recursiveCallTerminates :
-      ∀ {currentPredecessor currentZeroBranch currentSuccBranch :
-          RawTerm scope},
-        IsStronglyNormalizing currentPredecessor →
-          IsStronglyNormalizing currentZeroBranch →
-            isNeutralHead currentSuccBranch →
-              IsStronglyNormalizing currentSuccBranch →
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentMotive =>
+      ∀ {currentZero : RawTerm scope} {currentSucc : RawTerm (scope + 2)},
+        IsStronglyNormalizing currentZero → IsStronglyNormalizing currentSucc →
+          IsStronglyNormalizing
+            (.mkGen .gen_natRec ()
+              (.childCons currentMotive
+                (.childCons currentZero
+                  (.childCons currentSucc
+                    (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
+              RawTerm scope))
+    (m := fun currentMotive currentMotiveSuccessors motiveBranchIH => by
+      intro currentZero currentSucc currentZeroTerminates currentSuccTerminates
+      exact
+        (Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerZero =>
+            ∀ {innerSucc : RawTerm (scope + 2)},
+              IsStronglyNormalizing innerSucc →
                 IsStronglyNormalizing
-                  (.mkGen .gen_natElim ()
-                    (.childCons currentPredecessor
-                      (.childCons currentZeroBranch
-                        (.childCons currentSuccBranch .childNil))) :
-                    RawTerm scope)) :
+                  (.mkGen .gen_natRec ()
+                    (.childCons currentMotive
+                      (.childCons innerZero
+                        (.childCons innerSucc
+                          (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
+                    RawTerm scope))
+          (m := fun currentZeroBranch currentZeroSuccessors zeroBranchIH => by
+            intro innerSucc innerSuccTerminates
+            exact
+              Acc.ndrec
+                (r := StepSuccessor)
+                (C := fun innerSucc' =>
+                  IsStronglyNormalizing
+                    (.mkGen .gen_natRec ()
+                      (.childCons currentMotive
+                        (.childCons currentZeroBranch
+                          (.childCons innerSucc'
+                            (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
+                      RawTerm scope))
+                (m := fun currentSuccBranch currentSuccSuccessors succBranchIH =>
+                  Acc.intro
+                    (.mkGen .gen_natRec ()
+                      (.childCons currentMotive
+                        (.childCons currentZeroBranch
+                          (.childCons currentSuccBranch
+                            (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
+                      RawTerm scope)
+                    (fun targetTerm parentStep => by
+                      rcases Step.from_natRec parentStep with
+                        ⟨_scrutineeIsZero, targetIsZero⟩ |
+                        ⟨_predecessor, scrutineeIsSucc, _⟩ |
+                        ⟨motiveAfter, targetIsMotiveStep, motiveStep⟩ |
+                        ⟨zeroAfter, targetIsZeroStep, zeroStep⟩ |
+                        ⟨succAfter, targetIsSuccStep, succStep⟩ |
+                        ⟨_scrutineeAfter, _targetIsScrutineeStep, scrutineeStep⟩
+                      · rw [targetIsZero]
+                        exact Acc.intro currentZeroBranch currentZeroSuccessors
+                      · cases scrutineeIsSucc
+                      · rw [targetIsMotiveStep]
+                        exact motiveBranchIH motiveAfter motiveStep
+                          (Acc.intro currentZeroBranch currentZeroSuccessors)
+                          (Acc.intro currentSuccBranch currentSuccSuccessors)
+                      · rw [targetIsZeroStep]
+                        exact zeroBranchIH zeroAfter zeroStep
+                          (Acc.intro currentSuccBranch currentSuccSuccessors)
+                      · rw [targetIsSuccStep]
+                        exact succBranchIH succAfter succStep
+                      · exact False.elim (noStep_natZero scrutineeStep)))
+                innerSuccTerminates)
+          currentZeroTerminates currentSuccTerminates))
+    motiveTerminates)
+    zeroTerminates succTerminates
+
+/-- The natElim succ-iota SUBSTITUTED reduct (the same shape as
+`StrongNormalizationNatElim.natElimSuccContractum`, re-declared here because this file does not import that
+one).  Phase-Z motive shape: `succBranch : RawTerm (scope + 2)`, the reduct is the simultaneous substitution
+`subst (cons (natElim motive zeroBranch succBranch predecessor) (singleton predecessor)) succBranch`. -/
+private abbrev natElimSuccSubstReduct {scope : Nat} (motive : RawTerm (scope + 1))
+    (succBranch : RawTerm (scope + 2)) (predecessor zeroBranch : RawTerm scope) : RawTerm scope :=
+  RawTerm.subst
+    (RawTermSubst.cons
+      (.mkGen .gen_natElim ()
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch (.childCons predecessor .childNil)))))
+      (RawTermSubst.singleton predecessor))
+    succBranch
+
+/-- **Natural-number elimination on `natSucc predecessor` is strongly normalizing when the motive and both
+branches are normal and the SUBSTITUTED successor reduct strongly normalizes for every strongly-normalizing
+predecessor.**
+
+This REPLACES the old neutral-head app-chain successor lemma `natElimSucc_isStronglyNormalizing_of_neutral_…`:
+under the Phase-Z migration the succ-iota SUBSTITUTES (it does NOT build `app (app succBranch n) (natElim …)`),
+so the "neutral function head of an application spine" argument no longer exists — the reduct is
+`subst (cons recursiveCall (singleton pred)) succBranch`, and its SN is supplied as the explicit
+`substReductTerminates` premise (the β-like situation: substitution can duplicate/relocate the recursive call,
+so SN does NOT follow by congruence).  Single accessibility induction on the LAST-child scrutinee; the PINNED
+6-way `Step.from_natElim` gives the arms — ι-zero → normal `zeroBranch`; ι-succ → the substituted reduct,
+discharged by `substReductTerminates` at the `natSucc` predecessor; scrutinee-cong → the IH; motive + both
+branch-congruences impossible by normality.  The substitution twin of
+`natElim_isStronglyNormalizing_of_normal_branches`, kept here as the zero-consumer successor lemma the old
+neutral helper occupied. -/
+theorem natElimSucc_isStronglyNormalizing_of_normal_branches
+    {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
+    (motiveHasNoStep : ∀ targetMotive : RawTerm (scope + 1), Step motive targetMotive → False)
+    (zeroBranchHasNoStep : ∀ targetZero : RawTerm scope, Step zeroBranch targetZero → False)
+    (succBranchHasNoStep : ∀ targetSucc : RawTerm (scope + 2), Step succBranch targetSucc → False)
+    (predecessorTerminates : IsStronglyNormalizing predecessor)
+    (substReductTerminates :
+      ∀ {currentPredecessor : RawTerm scope},
+        IsStronglyNormalizing
+          (.mkGen .gen_natSucc () (.childCons currentPredecessor .childNil) : RawTerm scope) →
+        IsStronglyNormalizing (natElimSuccSubstReduct motive succBranch currentPredecessor zeroBranch)) :
     IsStronglyNormalizing
       (.mkGen .gen_natElim ()
-        (.childCons
-          (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-          (.childCons zeroBranch (.childCons succBranch .childNil))) :
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons
+                (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) .childNil)))) :
         RawTerm scope) :=
-  (Acc.ndrec
+  Acc.ndrec
     (r := StepSuccessor)
-    (C := fun currentSuccBranch =>
-      isNeutralHead currentSuccBranch →
-        ∀ {currentPredecessor : RawTerm scope},
-          IsStronglyNormalizing currentPredecessor →
-            ∀ {currentZeroBranch : RawTerm scope},
-              IsStronglyNormalizing currentZeroBranch →
-                IsStronglyNormalizing
-                  (.mkGen .gen_natElim ()
-                    (.childCons
-                      (.mkGen .gen_natSucc ()
-                        (.childCons currentPredecessor .childNil))
-                      (.childCons currentZeroBranch
-                        (.childCons currentSuccBranch .childNil))) :
-                    RawTerm scope))
-    (m := fun currentSuccBranch currentSuccBranchSuccessors succBranchIH => by
-      intro currentSuccBranchIsNeutral currentPredecessor
-        currentPredecessorTerminates currentZeroBranch currentZeroTerminates
-      exact
-        Acc.ndrec
-          (r := StepSuccessor)
-          (C := fun innerPredecessor =>
-            ∀ {innerZeroBranch : RawTerm scope},
-              IsStronglyNormalizing innerZeroBranch →
-                IsStronglyNormalizing
-                  (.mkGen .gen_natElim ()
-                    (.childCons
-                      (.mkGen .gen_natSucc ()
-                        (.childCons innerPredecessor .childNil))
-                      (.childCons innerZeroBranch
-                        (.childCons currentSuccBranch .childNil))) :
-                    RawTerm scope))
-          (m := fun currentPredecessor currentPredecessorSuccessors
-              predecessorIH => by
-            intro currentZeroBranch currentZeroTerminates
-            exact
-              Acc.ndrec
-                (r := StepSuccessor)
-                (C := fun innerZeroBranch =>
-                  IsStronglyNormalizing
-                    (.mkGen .gen_natElim ()
-                      (.childCons
-                        (.mkGen .gen_natSucc ()
-                          (.childCons currentPredecessor .childNil))
-                        (.childCons innerZeroBranch
-                          (.childCons currentSuccBranch .childNil))) :
-                      RawTerm scope))
-                (m := fun currentZeroBranch currentZeroSuccessors zeroIH =>
-                  Acc.intro
-                    (.mkGen .gen_natElim ()
-                      (.childCons
-                        (.mkGen .gen_natSucc ()
-                          (.childCons currentPredecessor .childNil))
-                        (.childCons currentZeroBranch
-                          (.childCons currentSuccBranch .childNil))) :
-                      RawTerm scope)
-                    (fun targetTerm parentStep => by
-                      cases Step.from_natElim parentStep with
-                      | inl zeroBranchStep =>
-                          obtain ⟨scrutineeEq, _⟩ := zeroBranchStep
-                          cases scrutineeEq
-                      | inr restAfterZero =>
-                          cases restAfterZero with
-                          | inl succBranchStep =>
-                              obtain
-                                ⟨succPredecessor, scrutineeEq,
-                                  targetEq⟩ := succBranchStep
-                              cases scrutineeEq
-                              rw [targetEq]
-                              exact
-                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_two_arguments
-                                  (isNeutralHead := isNeutralHead)
-                                  currentSuccBranchIsNeutral
-                                  neutralHeadIsNotLambda
-                                  neutralHeadStep
-                                  (Acc.intro currentSuccBranch
-                                    currentSuccBranchSuccessors)
-                                  (Acc.intro currentPredecessor
-                                    currentPredecessorSuccessors)
-                                  (recursiveCallTerminates
-                                    (Acc.intro currentPredecessor
-                                      currentPredecessorSuccessors)
-                                    (Acc.intro currentZeroBranch
-                                      currentZeroSuccessors)
-                                    currentSuccBranchIsNeutral
-                                    (Acc.intro currentSuccBranch
-                                      currentSuccBranchSuccessors))
-                          | inr restAfterSucc =>
-                              cases restAfterSucc with
-                              | inl scrutineeBranch =>
-                                  obtain
-                                    ⟨scrutineeAfter, targetEq,
-                                      scrutineeStep⟩ := scrutineeBranch
-                                  obtain
-                                    ⟨predecessorAfter, scrutineeAfterEq,
-                                      predecessorStep⟩ :=
-                                      Step.from_natSucc scrutineeStep
-                                  rw [targetEq, scrutineeAfterEq]
-                                  exact
-                                    predecessorIH predecessorAfter
-                                      predecessorStep
-                                      (Acc.intro currentZeroBranch
-                                        currentZeroSuccessors)
-                              | inr restAfterScrutinee =>
-                                  cases restAfterScrutinee with
-                                  | inl zeroStep =>
-                                      obtain
-                                        ⟨zeroAfter, targetEq,
-                                          zeroStepInner⟩ := zeroStep
-                                      rw [targetEq]
-                                      exact zeroIH zeroAfter zeroStepInner
-                                  | inr succStep =>
-                                      obtain
-                                        ⟨succAfter, targetEq,
-                                          succStepInner⟩ := succStep
-                                      rw [targetEq]
-                                      exact
-                                        succBranchIH succAfter succStepInner
-                                          (neutralHeadStep
-                                            currentSuccBranchIsNeutral
-                                            succStepInner)
-                                          (Acc.intro currentPredecessor
-                                            currentPredecessorSuccessors)
-                                          (Acc.intro currentZeroBranch
-                                            currentZeroSuccessors)))
-                currentZeroTerminates)
-          currentPredecessorTerminates
-          currentZeroTerminates)
-    succTerminates)
-    succBranchIsNeutral
-    predecessorTerminates
-    zeroTerminates
+    (C := fun currentScrutinee =>
+      IsStronglyNormalizing
+        (.mkGen .gen_natElim ()
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons currentScrutinee .childNil)))) :
+          RawTerm scope))
+    (m := fun currentScrutinee currentScrutineeSuccessors scrutineeIH =>
+      Acc.intro
+        (.mkGen .gen_natElim ()
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons currentScrutinee .childNil)))) :
+          RawTerm scope)
+        (fun targetTerm natElimStep => by
+          rcases Step.from_natElim natElimStep with
+            ⟨_scrutineeIsZero, targetIsZero⟩ |
+            ⟨predecessor, scrutineeIsSucc, targetIsContractum⟩ |
+            ⟨motiveAfter, _targetIsMotiveStep, motiveStep⟩ |
+            ⟨zeroAfter, _targetIsZeroStep, zeroStep⟩ |
+            ⟨succAfter, _targetIsSuccStep, succStep⟩ |
+            ⟨scrutineeAfter, targetIsScrutineeStep, scrutineeStep⟩
+          · rw [targetIsZero]
+            exact isStronglyNormalizing_of_noStep zeroBranchHasNoStep
+          · rw [targetIsContractum]
+            have currentScrutineeSN : IsStronglyNormalizing currentScrutinee :=
+              Acc.intro currentScrutinee currentScrutineeSuccessors
+            rw [scrutineeIsSucc] at currentScrutineeSN
+            exact substReductTerminates currentScrutineeSN
+          · exact absurd motiveStep (motiveHasNoStep motiveAfter)
+          · exact absurd zeroStep (zeroBranchHasNoStep zeroAfter)
+          · exact absurd succStep (succBranchHasNoStep succAfter)
+          · rw [targetIsScrutineeStep]
+            exact scrutineeIH scrutineeAfter scrutineeStep))
+    (natSucc_isStronglyNormalizing_of_predecessor predecessorTerminates)
 
-/-- Natural-number recursion on `natSucc predecessor` is strongly normalizing
-under the same conservative hypotheses as the `natElim` successor theorem.
+/-- The natRec succ-iota SUBSTITUTED reduct — the `gen_natRec` mirror of `natElimSuccSubstReduct`. -/
+private abbrev natRecSuccSubstReduct {scope : Nat} (motive : RawTerm (scope + 1))
+    (succBranch : RawTerm (scope + 2)) (predecessor zeroBranch : RawTerm scope) : RawTerm scope :=
+  RawTerm.subst
+    (RawTermSubst.cons
+      (.mkGen .gen_natRec ()
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch (.childCons predecessor .childNil)))))
+      (RawTermSubst.singleton predecessor))
+    succBranch
 
-The recursive call obligation is again explicit: this theorem is the substrate
-induction-step accessibility lemma for `natRec`, not a closed proof of
-recursive eliminator termination. -/
-theorem natRecSucc_isStronglyNormalizing_of_neutral_succBranch
-    {scope : Nat} (isNeutralHead : RawTerm scope → Prop)
-    {predecessor zeroBranch succBranch : RawTerm scope}
+/-- **Natural-number recursion on `natSucc predecessor` is strongly normalizing when the motive and both
+branches are normal and the SUBSTITUTED successor reduct strongly normalizes for every strongly-normalizing
+predecessor** — the dependent-recursor twin of `natElimSucc_isStronglyNormalizing_of_normal_branches` (same
+substitution shape with `gen_natRec`, `Step.from_natRec` mirroring `Step.from_natElim`).  Replaces the old
+neutral-head app-chain successor lemma, which the Phase-Z substitution migration retired. -/
+theorem natRecSucc_isStronglyNormalizing_of_normal_branches
+    {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
+    (motiveHasNoStep : ∀ targetMotive : RawTerm (scope + 1), Step motive targetMotive → False)
+    (zeroBranchHasNoStep : ∀ targetZero : RawTerm scope, Step zeroBranch targetZero → False)
+    (succBranchHasNoStep : ∀ targetSucc : RawTerm (scope + 2), Step succBranch targetSucc → False)
     (predecessorTerminates : IsStronglyNormalizing predecessor)
-    (zeroTerminates : IsStronglyNormalizing zeroBranch)
-    (succBranchIsNeutral : isNeutralHead succBranch)
-    (neutralHeadIsNotLambda :
-      ∀ {currentHead : RawTerm scope}, isNeutralHead currentHead →
-        ∀ (lambdaDomain : RawTerm scope) (lambdaBody : RawTerm (scope + 1)),
-          currentHead ≠ .mkGen .gen_lam ()
-            (.childCons lambdaDomain (.childCons lambdaBody .childNil)))
-    (neutralHeadStep :
-      ∀ {currentHead targetHead : RawTerm scope},
-        isNeutralHead currentHead →
-          Step currentHead targetHead →
-            isNeutralHead targetHead)
-    (succTerminates : IsStronglyNormalizing succBranch)
-    (recursiveCallTerminates :
-      ∀ {currentPredecessor currentZeroBranch currentSuccBranch :
-          RawTerm scope},
-        IsStronglyNormalizing currentPredecessor →
-          IsStronglyNormalizing currentZeroBranch →
-            isNeutralHead currentSuccBranch →
-              IsStronglyNormalizing currentSuccBranch →
-                IsStronglyNormalizing
-                  (.mkGen .gen_natRec ()
-                    (.childCons currentPredecessor
-                      (.childCons currentZeroBranch
-                        (.childCons currentSuccBranch .childNil))) :
-                    RawTerm scope)) :
+    (substReductTerminates :
+      ∀ {currentPredecessor : RawTerm scope},
+        IsStronglyNormalizing
+          (.mkGen .gen_natSucc () (.childCons currentPredecessor .childNil) : RawTerm scope) →
+        IsStronglyNormalizing (natRecSuccSubstReduct motive succBranch currentPredecessor zeroBranch)) :
     IsStronglyNormalizing
       (.mkGen .gen_natRec ()
-        (.childCons
-          (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-          (.childCons zeroBranch (.childCons succBranch .childNil))) :
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons
+                (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) .childNil)))) :
         RawTerm scope) :=
-  (Acc.ndrec
+  Acc.ndrec
     (r := StepSuccessor)
-    (C := fun currentSuccBranch =>
-      isNeutralHead currentSuccBranch →
-        ∀ {currentPredecessor : RawTerm scope},
-          IsStronglyNormalizing currentPredecessor →
-            ∀ {currentZeroBranch : RawTerm scope},
-              IsStronglyNormalizing currentZeroBranch →
-                IsStronglyNormalizing
-                  (.mkGen .gen_natRec ()
-                    (.childCons
-                      (.mkGen .gen_natSucc ()
-                        (.childCons currentPredecessor .childNil))
-                      (.childCons currentZeroBranch
-                        (.childCons currentSuccBranch .childNil))) :
-                    RawTerm scope))
-    (m := fun currentSuccBranch currentSuccBranchSuccessors succBranchIH => by
-      intro currentSuccBranchIsNeutral currentPredecessor
-        currentPredecessorTerminates currentZeroBranch currentZeroTerminates
-      exact
-        Acc.ndrec
-          (r := StepSuccessor)
-          (C := fun innerPredecessor =>
-            ∀ {innerZeroBranch : RawTerm scope},
-              IsStronglyNormalizing innerZeroBranch →
-                IsStronglyNormalizing
-                  (.mkGen .gen_natRec ()
-                    (.childCons
-                      (.mkGen .gen_natSucc ()
-                        (.childCons innerPredecessor .childNil))
-                      (.childCons innerZeroBranch
-                        (.childCons currentSuccBranch .childNil))) :
-                    RawTerm scope))
-          (m := fun currentPredecessor currentPredecessorSuccessors
-              predecessorIH => by
-            intro currentZeroBranch currentZeroTerminates
-            exact
-              Acc.ndrec
-                (r := StepSuccessor)
-                (C := fun innerZeroBranch =>
-                  IsStronglyNormalizing
-                    (.mkGen .gen_natRec ()
-                      (.childCons
-                        (.mkGen .gen_natSucc ()
-                          (.childCons currentPredecessor .childNil))
-                        (.childCons innerZeroBranch
-                          (.childCons currentSuccBranch .childNil))) :
-                      RawTerm scope))
-                (m := fun currentZeroBranch currentZeroSuccessors zeroIH =>
-                  Acc.intro
-                    (.mkGen .gen_natRec ()
-                      (.childCons
-                        (.mkGen .gen_natSucc ()
-                          (.childCons currentPredecessor .childNil))
-                        (.childCons currentZeroBranch
-                          (.childCons currentSuccBranch .childNil))) :
-                      RawTerm scope)
-                    (fun targetTerm parentStep => by
-                      cases Step.from_natRec parentStep with
-                      | inl zeroBranchStep =>
-                          obtain ⟨scrutineeEq, _⟩ := zeroBranchStep
-                          cases scrutineeEq
-                      | inr restAfterZero =>
-                          cases restAfterZero with
-                          | inl succBranchStep =>
-                              obtain
-                                ⟨succPredecessor, scrutineeEq,
-                                  targetEq⟩ := succBranchStep
-                              cases scrutineeEq
-                              rw [targetEq]
-                              exact
-                                applyRawArgumentsFrom_isStronglyNormalizing_of_neutral_head_two_arguments
-                                  (isNeutralHead := isNeutralHead)
-                                  currentSuccBranchIsNeutral
-                                  neutralHeadIsNotLambda
-                                  neutralHeadStep
-                                  (Acc.intro currentSuccBranch
-                                    currentSuccBranchSuccessors)
-                                  (Acc.intro currentPredecessor
-                                    currentPredecessorSuccessors)
-                                  (recursiveCallTerminates
-                                    (Acc.intro currentPredecessor
-                                      currentPredecessorSuccessors)
-                                    (Acc.intro currentZeroBranch
-                                      currentZeroSuccessors)
-                                    currentSuccBranchIsNeutral
-                                    (Acc.intro currentSuccBranch
-                                      currentSuccBranchSuccessors))
-                          | inr restAfterSucc =>
-                              cases restAfterSucc with
-                              | inl scrutineeBranch =>
-                                  obtain
-                                    ⟨scrutineeAfter, targetEq,
-                                      scrutineeStep⟩ := scrutineeBranch
-                                  obtain
-                                    ⟨predecessorAfter, scrutineeAfterEq,
-                                      predecessorStep⟩ :=
-                                      Step.from_natSucc scrutineeStep
-                                  rw [targetEq, scrutineeAfterEq]
-                                  exact
-                                    predecessorIH predecessorAfter
-                                      predecessorStep
-                                      (Acc.intro currentZeroBranch
-                                        currentZeroSuccessors)
-                              | inr restAfterScrutinee =>
-                                  cases restAfterScrutinee with
-                                  | inl zeroStep =>
-                                      obtain
-                                        ⟨zeroAfter, targetEq,
-                                          zeroStepInner⟩ := zeroStep
-                                      rw [targetEq]
-                                      exact zeroIH zeroAfter zeroStepInner
-                                  | inr succStep =>
-                                      obtain
-                                        ⟨succAfter, targetEq,
-                                          succStepInner⟩ := succStep
-                                      rw [targetEq]
-                                      exact
-                                        succBranchIH succAfter succStepInner
-                                          (neutralHeadStep
-                                            currentSuccBranchIsNeutral
-                                            succStepInner)
-                                          (Acc.intro currentPredecessor
-                                            currentPredecessorSuccessors)
-                                          (Acc.intro currentZeroBranch
-                                            currentZeroSuccessors)))
-                currentZeroTerminates)
-          currentPredecessorTerminates
-          currentZeroTerminates)
-    succTerminates)
-    succBranchIsNeutral
-    predecessorTerminates
-    zeroTerminates
+    (C := fun currentScrutinee =>
+      IsStronglyNormalizing
+        (.mkGen .gen_natRec ()
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons currentScrutinee .childNil)))) :
+          RawTerm scope))
+    (m := fun currentScrutinee currentScrutineeSuccessors scrutineeIH =>
+      Acc.intro
+        (.mkGen .gen_natRec ()
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons currentScrutinee .childNil)))) :
+          RawTerm scope)
+        (fun targetTerm natRecStep => by
+          rcases Step.from_natRec natRecStep with
+            ⟨_scrutineeIsZero, targetIsZero⟩ |
+            ⟨predecessor, scrutineeIsSucc, targetIsContractum⟩ |
+            ⟨motiveAfter, _targetIsMotiveStep, motiveStep⟩ |
+            ⟨zeroAfter, _targetIsZeroStep, zeroStep⟩ |
+            ⟨succAfter, _targetIsSuccStep, succStep⟩ |
+            ⟨scrutineeAfter, targetIsScrutineeStep, scrutineeStep⟩
+          · rw [targetIsZero]
+            exact isStronglyNormalizing_of_noStep zeroBranchHasNoStep
+          · rw [targetIsContractum]
+            have currentScrutineeSN : IsStronglyNormalizing currentScrutinee :=
+              Acc.intro currentScrutinee currentScrutineeSuccessors
+            rw [scrutineeIsSucc] at currentScrutineeSN
+            exact substReductTerminates currentScrutineeSN
+          · exact absurd motiveStep (motiveHasNoStep motiveAfter)
+          · exact absurd zeroStep (zeroBranchHasNoStep zeroAfter)
+          · exact absurd succStep (succBranchHasNoStep succAfter)
+          · rw [targetIsScrutineeStep]
+            exact scrutineeIH scrutineeAfter scrutineeStep))
+    (natSucc_isStronglyNormalizing_of_predecessor predecessorTerminates)
 
 /-- List elimination on literal nil is strongly normalizing when both branches
 are strongly normalizing.

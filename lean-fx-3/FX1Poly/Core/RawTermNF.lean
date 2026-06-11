@@ -172,12 +172,15 @@ def hasPairProjectionIotaRoot {scope : Nat}
   | .childCons pairTerm .childNil =>
       RawTerm.isPairSource pairTerm
 
-/-- Root natural-number eliminator iota source shape. -/
+/-- Root natural-number eliminator iota source shape.  Phase-Z spine
+    `[1, 0, 2, 0]`: children are `(motive, zeroBranch, succBranch, scrutinee)`
+    with the scrutinee LAST, the motive a term under one binder, and the
+    succ-branch a term under TWO binders. -/
 def hasNatElimIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [0, 0, 0] scope) : Bool :=
+    (sourceChildren : RawTermChildren [1, 0, 2, 0] scope) : Bool :=
   match sourceChildren with
-  | .childCons scrutinee
-      (.childCons _zeroBranch (.childCons _succBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons _zeroBranch (.childCons _succBranch (.childCons scrutinee .childNil))) =>
       RawTerm.isNatZeroSource scrutinee ||
         RawTerm.isNatSuccSource scrutinee
 

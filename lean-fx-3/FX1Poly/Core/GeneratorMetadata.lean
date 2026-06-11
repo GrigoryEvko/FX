@@ -71,6 +71,13 @@ namespace ChildSpec
 /-- Term child under one fresh binder (dim 0, scope shift 1). -/
 @[reducible] def termUnderBinder : ChildSpec := underOneBinderDimZero .term
 
+/-- Term child under TWO fresh binders (dim 0, scope shift 2) — the Phase-Z
+recursor step-branch shape (predecessor + induction hypothesis). -/
+@[reducible] def termUnderTwoBinders : ChildSpec where
+  cellSort := .term
+  cellDimension := 0
+  scopeShift := 2
+
 /-- Same-scope type child (dim 0, scope shift 0). -/
 @[reducible] def typeSameScope : ChildSpec := sameScopeDimZero .type
 
@@ -436,11 +443,11 @@ def Generator.childSpecs : Generator → List ChildSpec
   | .gen_natZero      => []
   | .gen_natSucc      => [ChildSpec.termSameScope]
   | .gen_natElim      =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope,
-     ChildSpec.termSameScope]
+    [ChildSpec.termUnderBinder, ChildSpec.termSameScope,
+     ChildSpec.termUnderTwoBinders, ChildSpec.termSameScope]
   | .gen_natRec       =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope,
-     ChildSpec.termSameScope]
+    [ChildSpec.termUnderBinder, ChildSpec.termSameScope,
+     ChildSpec.termUnderTwoBinders, ChildSpec.termSameScope]
   -- Lists
   | .gen_listNil      => []
   | .gen_listCons     => [ChildSpec.termSameScope, ChildSpec.termSameScope]

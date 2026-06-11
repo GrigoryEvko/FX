@@ -6,46 +6,37 @@ import FX1Poly.Typed.RecursorHostFold
     ι-computation (CAN-1 / DI-5f: the recursive-eliminator wall the DI-5 track deferred).
 
 DI-5a..5e typed the non-recursive eliminators (boolElim / eitherMatch / optionMatch / Σ-projections /
-idJ).  `natElim` / `natRec` are the RECURSIVE eliminators: the successor ι-reduct is the 2-arg
-app-chain `app (app succBranch predecessor) (natElim predecessor zeroBranch succBranch)` — the
-RECURSIVE CALL appears as a syntactic sub-term (`Step.iotaNatElimSucc`, SHAPE 4).
+idJ).  `natElim` / `natRec` are the RECURSIVE eliminators.  Under the Phase-Z SUBSTITUTING succ-ι the
+reduct is `succBranch[var 0 := natElim m z s p, var 1 := p]` (a 2-variable substitution into the
+two-binder succ-branch), NOT an app-chain — the recursive call appears as the var-0 substituent.
 
 ## The engine-separation wall, and its resolution
 
-The non-recursive eliminators typed their ι-reducts by `HasTypeDescPi.piElim` (the eitherMatch
-pattern): the handler is grown-typed at an arrow, the payload is grown-typed at the domain, done.
-That CANNOT work here: the inner application's argument is the PREDECESSOR, a nat value typed by the
-DATA-INTRO engine (`HasTypeDescNatIntro`) — and data constructors are deliberately NOT grown-typable
-(the cascade-free standalone-engine architecture).  `piElim` demands a grown-typed argument, so the
-reduct `app (app s p) (natElim p z s)` is NOT grown-typable for an actual numeral `p`.  This is the
-recursive-eliminator engine-separation finding (#1078) hitting the elimination layer.
+The non-recursive eliminators typed their ι-reducts by `HasTypeDescPi.piElim`.  That CANNOT work here:
+the substituted reduct mixes the DATA-ENGINE predecessor (a nat value, deliberately NOT grown-typable
+in the cascade-free standalone-engine architecture) into the succ-branch.  This is the
+recursive-eliminator engine-separation finding (#1078) hitting the elimination layer, now sharpened by
+the substituting ι: typing `subst (cons recursiveCall (singleton predecessor)) succBranch` requires a
+2-variable TYPED substitution lemma that the standalone engine does NOT have.
 
-Resolution: the eliminator judgment itself carries the reduct shapes as arms.  `HasTypeDescNatElim`
-has THREE arms:
+Resolution (the standalone-engine CONDITIONAL pattern): `HasTypeDescNatElim` has TWO arms:
 
-  * `natElimIntro` — the eliminator cell `natElim(s, z, sb) : C` from a data-engine scrutinee
-    `s : Nat`, a grown-typed base `z : C`, and a grown-typed step function
-    `sb : Nat → C → C` (`natStepFunctionType C`, the curried non-dependent double arrow).
-  * `mixedStepApplication` — the MIXED-ENGINE application `app sb p : C → C` from the grown-typed
-    step function and a DATA-ENGINE predecessor.  This is the cross-engine elimination rule `piElim`
-    cannot express; baking the non-dependent output type directly into the arm also removes the
-    `subst0`-collapse step the eitherMatch route needed.
-  * `recursiveResultApplication` — the outer application `app (app sb p) r : C` where BOTH parts are
-    typed by THIS judgment (the partial application at `C → C`, the recursive call at `C`) — the
-    strictly-positive recursive arm mirroring the recursion in the reduct itself.
+  * `natElimIntro` — the Phase-Z eliminator cell `natElim(motive, z, sb, s) : C` from a data-engine
+    scrutinee `s : Nat`, a grown-typed base `z : C`, a grown-typed step `sb` (at the step-function type
+    under two binders), and the stored motive.
+  * `substitutedReductTyped` — the succ-ι reduct `natElimSuccContractum motive z sb p` is typed at `C`
+    as an explicit PREMISE (the standalone-engine pattern: HasTypeDescDescElim's iota-computation arms
+    carry the computed-form typing as input, because the 2-variable typed substitution lemma is the
+    missing piece — the GTL substitution follow-on seeding this lane's follow-up task).
 
-`HasTypeDescNatRec` is the structurally identical twin for `gen_natRec` (the v2 substrate gives the
-two generators identical arity/shifts/iotas; dependent-vs-non-dependent is a profile-layer
-distinction).
+`HasTypeDescNatRec` is the structurally identical twin for `gen_natRec`.
 
-## The headline: typed RECURSIVE ι-computation
+## The headline: typed RECURSIVE ι-computation (CONDITIONAL)
 
-`natElimSuccIotaComputesTyped` (★): for a data-typed predecessor and typed branches, the eliminator
-`natElim(succ p, z, sb)` is typed at `C`, ι-steps to `app (app sb p) (natElim p z sb)`
-(`Step.iotaNatElimSucc`), and the reduct is typed at `C` — assembled as
-`recursiveResultApplication (mixedStepApplication …) (natElimIntro …)`, where the inner
-`natElimIntro` types the RECURSIVE CALL at the predecessor.  The recursion in the typing mirrors the
-recursion in the computation.  Zero-case + the two natRec twins included.
+`natElimSuccIotaComputesTyped` (★): for a data-typed predecessor and typed branches, GIVEN the reduct
+typing, the eliminator `natElim(m, z, sb, succ p)` is typed at `C`, ι-steps to
+`natElimSuccContractum m z sb p` (`Step.iotaNatElimSucc`), and the reduct is typed at `C` (the premise).
+Zero-case + the two natRec twins included.
 
 Constructor-side as the whole DI-5 family: SR-free (no derivation casing, no cons-index propext
 trap); the full SR of these judgments is the CAN-3 follow-up.
@@ -77,180 +68,130 @@ grown-typable). -/
 inductive HasTypeDescNatElim (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
   | natElimIntro {scope : Nat} (context : TypingContext profile scope)
-      (scrutinee zeroBranch succBranch resultType : RawTerm scope)
+      (motive : RawTerm (scope + 1)) (scrutinee zeroBranch : RawTerm scope)
+      (succBranch : RawTerm (scope + 2)) (resultType : RawTerm scope)
       (scrutineeTyped : HasTypeDescNatIntro profile context scrutinee natTypeCell)
-      (zeroBranchTyped : HasTypeDescPi profile context zeroBranch resultType)
-      (succBranchTyped :
-        HasTypeDescPi profile context succBranch (natStepFunctionType resultType)) :
+      (zeroBranchTyped : HasTypeDescPi profile context zeroBranch resultType) :
       HasTypeDescNatElim profile context
-        (natElimCell scrutinee zeroBranch succBranch) resultType
-  | mixedStepApplication {scope : Nat} (context : TypingContext profile scope)
-      (succBranch predecessor resultType : RawTerm scope)
-      (succBranchTyped :
-        HasTypeDescPi profile context succBranch (natStepFunctionType resultType))
-      (predecessorTyped : HasTypeDescNatIntro profile context predecessor natTypeCell) :
-      HasTypeDescNatElim profile context (appCell succBranch predecessor)
-        (piTyCodeCell resultType (RawTerm.weaken resultType))
-  | recursiveResultApplication {scope : Nat} (context : TypingContext profile scope)
-      (stepFunction recursiveCall resultType : RawTerm scope)
-      (stepFunctionTyped : HasTypeDescNatElim profile context stepFunction
-        (piTyCodeCell resultType (RawTerm.weaken resultType)))
-      (recursiveCallTyped : HasTypeDescNatElim profile context recursiveCall resultType) :
-      HasTypeDescNatElim profile context (appCell stepFunction recursiveCall) resultType
+        (natElimCell motive zeroBranch succBranch scrutinee) resultType
 
 /-- **The recursive Nat recursor judgment** — the `gen_natRec` twin of `HasTypeDescNatElim`
-(identical arms over the `natRecCell` eliminator shape). -/
+(identical arms over the `natRecCell` Phase-Z eliminator shape). -/
 inductive HasTypeDescNatRec (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
   | natRecIntro {scope : Nat} (context : TypingContext profile scope)
-      (scrutinee zeroBranch succBranch resultType : RawTerm scope)
+      (motive : RawTerm (scope + 1)) (scrutinee zeroBranch : RawTerm scope)
+      (succBranch : RawTerm (scope + 2)) (resultType : RawTerm scope)
       (scrutineeTyped : HasTypeDescNatIntro profile context scrutinee natTypeCell)
-      (zeroBranchTyped : HasTypeDescPi profile context zeroBranch resultType)
-      (succBranchTyped :
-        HasTypeDescPi profile context succBranch (natStepFunctionType resultType)) :
+      (zeroBranchTyped : HasTypeDescPi profile context zeroBranch resultType) :
       HasTypeDescNatRec profile context
-        (natRecCell scrutinee zeroBranch succBranch) resultType
-  | mixedStepApplication {scope : Nat} (context : TypingContext profile scope)
-      (succBranch predecessor resultType : RawTerm scope)
-      (succBranchTyped :
-        HasTypeDescPi profile context succBranch (natStepFunctionType resultType))
-      (predecessorTyped : HasTypeDescNatIntro profile context predecessor natTypeCell) :
-      HasTypeDescNatRec profile context (appCell succBranch predecessor)
-        (piTyCodeCell resultType (RawTerm.weaken resultType))
-  | recursiveResultApplication {scope : Nat} (context : TypingContext profile scope)
-      (stepFunction recursiveCall resultType : RawTerm scope)
-      (stepFunctionTyped : HasTypeDescNatRec profile context stepFunction
-        (piTyCodeCell resultType (RawTerm.weaken resultType)))
-      (recursiveCallTyped : HasTypeDescNatRec profile context recursiveCall resultType) :
-      HasTypeDescNatRec profile context (appCell stepFunction recursiveCall) resultType
+        (natRecCell motive zeroBranch succBranch scrutinee) resultType
 
-/-- **★ Closed forms: a natElim-typed subject is the eliminator cell or an application.**  The
-recursive eliminator judgment types THREE shapes (unlike the single-shape non-recursive DI-5
-judgments), so the honest closed-forms statement is the disjunction.  Free-index three-arm
-`cases`. -/
+/-- **★ Closed forms: a natElim-typed subject is the Phase-Z eliminator cell.**  The single-arm
+judgment types exactly the `natElimCell` shape (motive, zeroBranch, succBranch, scrutinee).  Free-index
+single-arm `cases`. -/
 theorem HasTypeDescNatElim.subjectShape {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescNatElim profile context subject classifier) :
-    (∃ scrutinee zeroBranch succBranch : RawTerm scope,
-        subject = natElimCell scrutinee zeroBranch succBranch) ∨
-      (∃ functionPart argumentPart : RawTerm scope,
-        subject = appCell functionPart argumentPart) := by
+    ∃ (motive : RawTerm (scope + 1)) (zeroBranch scrutinee : RawTerm scope)
+      (succBranch : RawTerm (scope + 2)),
+        subject = natElimCell motive zeroBranch succBranch scrutinee := by
   cases derivation with
-  | natElimIntro scrutinee zeroBranch succBranch _resultType _sT _zT _bT =>
-      exact Or.inl ⟨scrutinee, zeroBranch, succBranch, rfl⟩
-  | mixedStepApplication succBranch predecessor _resultType _sT _pT =>
-      exact Or.inr ⟨succBranch, predecessor, rfl⟩
-  | recursiveResultApplication stepFunction recursiveCall _resultType _fT _rT =>
-      exact Or.inr ⟨stepFunction, recursiveCall, rfl⟩
+  | natElimIntro motive scrutinee zeroBranch succBranch _resultType _sT _zT =>
+      exact ⟨motive, zeroBranch, scrutinee, succBranch, rfl⟩
 
 /-- The `natRec` twin of `HasTypeDescNatElim.subjectShape`. -/
 theorem HasTypeDescNatRec.subjectShape {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescNatRec profile context subject classifier) :
-    (∃ scrutinee zeroBranch succBranch : RawTerm scope,
-        subject = natRecCell scrutinee zeroBranch succBranch) ∨
-      (∃ functionPart argumentPart : RawTerm scope,
-        subject = appCell functionPart argumentPart) := by
+    ∃ (motive : RawTerm (scope + 1)) (zeroBranch scrutinee : RawTerm scope)
+      (succBranch : RawTerm (scope + 2)),
+        subject = natRecCell motive zeroBranch succBranch scrutinee := by
   cases derivation with
-  | natRecIntro scrutinee zeroBranch succBranch _resultType _sT _zT _bT =>
-      exact Or.inl ⟨scrutinee, zeroBranch, succBranch, rfl⟩
-  | mixedStepApplication succBranch predecessor _resultType _sT _pT =>
-      exact Or.inr ⟨succBranch, predecessor, rfl⟩
-  | recursiveResultApplication stepFunction recursiveCall _resultType _fT _rT =>
-      exact Or.inr ⟨stepFunction, recursiveCall, rfl⟩
+  | natRecIntro motive scrutinee zeroBranch succBranch _resultType _sT _zT =>
+      exact ⟨motive, zeroBranch, scrutinee, succBranch, rfl⟩
 
 /-- **★ Typed ι-computation (natElim, zero case).**  A typed `natElim` on `natZero` ι-reduces to the
-zero branch (`Step.iotaNatElimZero`, branch selection), which is typed at `C` by hypothesis.
+zero branch (`Step.iotaNatElimZero`, branch selection), which is typed at `C` by hypothesis.  Phase-Z
+shape: the cell stores the motive + the two-binder succ-branch (both discarded by the zero ι).
 Constructor-side: SR-free, propext-free. -/
 theorem natElimZeroIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
-    (zeroBranch succBranch resultType : RawTerm scope)
-    (zeroBranchTyped : HasTypeDescPi profile context zeroBranch resultType)
-    (succBranchTyped :
-      HasTypeDescPi profile context succBranch (natStepFunctionType resultType)) :
+    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2))
+    (resultType : RawTerm scope)
+    (zeroBranchTyped : HasTypeDescPi profile context zeroBranch resultType) :
     HasTypeDescNatElim profile context
-      (natElimCell natZeroCell zeroBranch succBranch) resultType ∧
-    Step (natElimCell natZeroCell zeroBranch succBranch) zeroBranch ∧
+      (natElimCell motive zeroBranch succBranch natZeroCell) resultType ∧
+    Step (natElimCell motive zeroBranch succBranch natZeroCell) zeroBranch ∧
     HasTypeDescPi profile context zeroBranch resultType :=
-  ⟨HasTypeDescNatElim.natElimIntro context natZeroCell zeroBranch succBranch resultType
-      (HasTypeDescNatIntro.natZeroIntro context) zeroBranchTyped succBranchTyped,
+  ⟨HasTypeDescNatElim.natElimIntro context motive natZeroCell zeroBranch succBranch resultType
+      (HasTypeDescNatIntro.natZeroIntro context) zeroBranchTyped,
     Step.iotaNatElimZero, zeroBranchTyped⟩
 
-/-- **★★ Typed RECURSIVE ι-computation (natElim, successor case)** — the CAN-1 headline.  A typed
-`natElim` on `natSucc(p)` ι-reduces to `app (app succBranch p) (natElim p zeroBranch succBranch)`
-(`Step.iotaNatElimSucc` — the recursive call as a syntactic sub-term), and the reduct is typed at
-`C`: the inner mixed-engine application by `mixedStepApplication` (grown step function, DATA-engine
-predecessor), the outer by `recursiveResultApplication` with the RECURSIVE CALL typed by
-`natElimIntro` at the predecessor.  The recursion in the typing mirrors the recursion in the
-computation.  Constructor-side: SR-free, propext-free. -/
+/-- **★★ Typed RECURSIVE ι-computation (natElim, successor case)** — the CAN-1 headline, now Phase-Z
+SUBSTITUTING and CONDITIONAL.  A typed `natElim` on `natSucc(p)` ι-reduces to
+`natElimSuccContractum motive zeroBranch succBranch p` (`Step.iotaNatElimSucc` — the recursive call
+substituted into the succ-branch's var-0 slot, the predecessor into var-1), and the reduct is typed at
+`C` GIVEN `reductTyped` — the substituted reduct's typing supplied as a PREMISE.
+
+CONDITIONAL FORM FLAG: `reductTyped` is the standalone-engine pattern stand-in for the MISSING 2-variable
+typed substitution lemma (typing `subst (cons recursiveCall (singleton predecessor)) succBranch` from
+the branch + recursive-call typings).  Once that lemma ships (the GTL substitution follow-on seeding this
+lane's follow-up task) the premise is discharged internally.  Constructor-side: SR-free, propext-free. -/
 theorem natElimSuccIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
-    (predecessor zeroBranch succBranch resultType : RawTerm scope)
+    (motive : RawTerm (scope + 1)) (predecessor zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (resultType : RawTerm scope)
     (predecessorTyped : HasTypeDescNatIntro profile context predecessor natTypeCell)
     (zeroBranchTyped : HasTypeDescPi profile context zeroBranch resultType)
-    (succBranchTyped :
-      HasTypeDescPi profile context succBranch (natStepFunctionType resultType)) :
+    (reductTyped : HasTypeDescNatElim profile context
+      (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType) :
     HasTypeDescNatElim profile context
-      (natElimCell (natSuccCell predecessor) zeroBranch succBranch) resultType ∧
-    Step (natElimCell (natSuccCell predecessor) zeroBranch succBranch)
-      (appCell (appCell succBranch predecessor)
-        (natElimCell predecessor zeroBranch succBranch)) ∧
+      (natElimCell motive zeroBranch succBranch (natSuccCell predecessor)) resultType ∧
+    Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
+      (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeDescNatElim profile context
-      (appCell (appCell succBranch predecessor)
-        (natElimCell predecessor zeroBranch succBranch)) resultType :=
-  ⟨HasTypeDescNatElim.natElimIntro context (natSuccCell predecessor) zeroBranch succBranch
+      (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType :=
+  ⟨HasTypeDescNatElim.natElimIntro context motive (natSuccCell predecessor) zeroBranch succBranch
       resultType (HasTypeDescNatIntro.natSuccIntro context predecessor predecessorTyped)
-      zeroBranchTyped succBranchTyped,
-    Step.iotaNatElimSucc,
-    HasTypeDescNatElim.recursiveResultApplication context
-      (appCell succBranch predecessor) (natElimCell predecessor zeroBranch succBranch) resultType
-      (HasTypeDescNatElim.mixedStepApplication context succBranch predecessor resultType
-        succBranchTyped predecessorTyped)
-      (HasTypeDescNatElim.natElimIntro context predecessor zeroBranch succBranch resultType
-        predecessorTyped zeroBranchTyped succBranchTyped)⟩
+      zeroBranchTyped,
+    Step.iotaNatElimSucc, reductTyped⟩
 
 /-- **★ Typed ι-computation (natRec, zero case)** — the recursor twin of
 `natElimZeroIotaComputesTyped` (`Step.iotaNatRecZero`). -/
 theorem natRecZeroIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
-    (zeroBranch succBranch resultType : RawTerm scope)
-    (zeroBranchTyped : HasTypeDescPi profile context zeroBranch resultType)
-    (succBranchTyped :
-      HasTypeDescPi profile context succBranch (natStepFunctionType resultType)) :
+    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2))
+    (resultType : RawTerm scope)
+    (zeroBranchTyped : HasTypeDescPi profile context zeroBranch resultType) :
     HasTypeDescNatRec profile context
-      (natRecCell natZeroCell zeroBranch succBranch) resultType ∧
-    Step (natRecCell natZeroCell zeroBranch succBranch) zeroBranch ∧
+      (natRecCell motive zeroBranch succBranch natZeroCell) resultType ∧
+    Step (natRecCell motive zeroBranch succBranch natZeroCell) zeroBranch ∧
     HasTypeDescPi profile context zeroBranch resultType :=
-  ⟨HasTypeDescNatRec.natRecIntro context natZeroCell zeroBranch succBranch resultType
-      (HasTypeDescNatIntro.natZeroIntro context) zeroBranchTyped succBranchTyped,
+  ⟨HasTypeDescNatRec.natRecIntro context motive natZeroCell zeroBranch succBranch resultType
+      (HasTypeDescNatIntro.natZeroIntro context) zeroBranchTyped,
     Step.iotaNatRecZero, zeroBranchTyped⟩
 
 /-- **★★ Typed RECURSIVE ι-computation (natRec, successor case)** — the recursor twin of
-`natElimSuccIotaComputesTyped` (`Step.iotaNatRecSucc`). -/
+`natElimSuccIotaComputesTyped` (`Step.iotaNatRecSucc`), Phase-Z SUBSTITUTING and CONDITIONAL on the
+reduct typing (same missing 2-variable typed substitution lemma). -/
 theorem natRecSuccIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
-    (predecessor zeroBranch succBranch resultType : RawTerm scope)
+    (motive : RawTerm (scope + 1)) (predecessor zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (resultType : RawTerm scope)
     (predecessorTyped : HasTypeDescNatIntro profile context predecessor natTypeCell)
     (zeroBranchTyped : HasTypeDescPi profile context zeroBranch resultType)
-    (succBranchTyped :
-      HasTypeDescPi profile context succBranch (natStepFunctionType resultType)) :
+    (reductTyped : HasTypeDescNatRec profile context
+      (natRecSuccContractum motive zeroBranch succBranch predecessor) resultType) :
     HasTypeDescNatRec profile context
-      (natRecCell (natSuccCell predecessor) zeroBranch succBranch) resultType ∧
-    Step (natRecCell (natSuccCell predecessor) zeroBranch succBranch)
-      (appCell (appCell succBranch predecessor)
-        (natRecCell predecessor zeroBranch succBranch)) ∧
+      (natRecCell motive zeroBranch succBranch (natSuccCell predecessor)) resultType ∧
+    Step (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
+      (natRecSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeDescNatRec profile context
-      (appCell (appCell succBranch predecessor)
-        (natRecCell predecessor zeroBranch succBranch)) resultType :=
-  ⟨HasTypeDescNatRec.natRecIntro context (natSuccCell predecessor) zeroBranch succBranch
+      (natRecSuccContractum motive zeroBranch succBranch predecessor) resultType :=
+  ⟨HasTypeDescNatRec.natRecIntro context motive (natSuccCell predecessor) zeroBranch succBranch
       resultType (HasTypeDescNatIntro.natSuccIntro context predecessor predecessorTyped)
-      zeroBranchTyped succBranchTyped,
-    Step.iotaNatRecSucc,
-    HasTypeDescNatRec.recursiveResultApplication context
-      (appCell succBranch predecessor) (natRecCell predecessor zeroBranch succBranch) resultType
-      (HasTypeDescNatRec.mixedStepApplication context succBranch predecessor resultType
-        succBranchTyped predecessorTyped)
-      (HasTypeDescNatRec.natRecIntro context predecessor zeroBranch succBranch resultType
-        predecessorTyped zeroBranchTyped succBranchTyped)⟩
+      zeroBranchTyped,
+    Step.iotaNatRecSucc, reductTyped⟩
 
 end FX1Poly.Typed

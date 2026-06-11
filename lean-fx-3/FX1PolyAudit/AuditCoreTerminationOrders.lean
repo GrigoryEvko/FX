@@ -91,14 +91,16 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 
 /-! # FX1PolyAudit/AuditCoreTerminationOrders — core reduction-layer zero-axiom gates, shard 02 of 3 (split from the AuditCore monolith for parallel gate elaboration) -/
 
--- Full ι-reduction SN: lift root-ι SN to the COMPATIBLE CLOSURE of IotaHeadStep —
--- ι at the root OR ι inside ANY child context (IotaStep/IotaStepChildren, mirroring Step/StepChildren). The
+-- Full oriented-ι-reduction SN: lift oriented root-ι SN to the COMPATIBLE CLOSURE of IotaOrientedHeadStep —
+-- oriented ι at the root OR inside ANY child context (IotaStep/IotaStepChildren, mirroring
+-- Step/StepChildren; the two Phase-Z substituting succ-iotas are excluded, β-imported boundary). The
 -- congruence case finally CONSUMES rpo_congruence: an ι step inside child position i changes
 -- eraseChildren only at that position (prefix ++ child :: suffix → prefix ++ child' :: suffix, the child
 -- RPO-decreasing by IH), and rpo_congruence lifts that to a node RPO-decrease. The here/there spine walk
 -- builds the prefix ([] at head, eraseToRose head :: prefix one step in). Proven via the explicit mutual
 -- recursor IotaStep.rec (the Step.subst pattern). IotaStep.toStep: sound sub-relation of the live Step.
--- iotaFullStep_wellFounded: the GENUINE ι-fragment SN (not just root), Tait-free (β imported, η shipped separately).
+-- iotaFullStep_wellFounded: the GENUINE oriented-ι SN (not just root), Tait-free (β + substituting succ-ι
+-- imported, η shipped separately).
 #assert_no_axioms FX1Poly.Core.IotaStep.rpoEmbeds
 #assert_no_axioms FX1Poly.Core.IotaStep.toStep
 #assert_no_axioms FX1Poly.Core.iotaFullStep_wellFounded
@@ -125,16 +127,18 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 -- Proven via the explicit Step.eta.rec recursor (propext-clean), mirroring IotaStep.rpoEmbeds.
 #assert_no_axioms FX1Poly.Core.Step.eta.rpoEmbeds
 
--- ★ Leg-3 TERM ENDPOINT: the FULL ι∪η reduction (root + congruence) is strongly normalizing by ONE RPO,
--- Tait-free.  IotaEtaStep = compatible closure of (IotaHeadStep ∨ Step.eta), mirroring the full-ι IotaStep.
--- IotaEtaStep.rpoEmbeds: root via Or.elim (ι via IotaHeadStep.rpoEmbeds, η via Step.eta.rpoEmbeds, both at
--- iotaGenPrecedence), congruence via rpo_congruence.  iotaEtaFullStep_wellFounded: SN via Subrelation.wf +
--- InvImage.wf over iotaGenRpoWellFounded — the ι/η fragment terminates on its OWN order, NOT through Tait
--- (β stays imported).  toIotaEta: both fragments inject at the head.  etaCongSmoke: non-vacuity (η inside a congruence).
+-- ★ Leg-3 TERM ENDPOINT: the FULL oriented-ι∪η reduction (root + congruence) is strongly normalizing by
+-- ONE RPO, Tait-free.  IotaEtaStep = compatible closure of (IotaOrientedHeadStep ∨ Step.eta), mirroring
+-- the full oriented-ι IotaStep.  IotaEtaStep.rpoEmbeds: root via Or.elim (oriented ι via
+-- IotaHeadStep.rpoEmbeds fed the guard, η via Step.eta.rpoEmbeds, both at iotaGenPrecedence), congruence
+-- via rpo_congruence.  iotaEtaFullStep_wellFounded: SN via Subrelation.wf + InvImage.wf over
+-- iotaGenRpoWellFounded — the oriented ι/η fragment terminates on its OWN order, NOT through Tait (β +
+-- the Phase-Z substituting succ-iotas stay imported).  toIotaEta: both fragments inject at the head.
+-- etaCongSmoke: non-vacuity (η inside a congruence).
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.rpoEmbeds
 #assert_no_axioms FX1Poly.Core.iotaEtaFullStep_wellFounded
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.isStronglyNormalizing
-#assert_no_axioms FX1Poly.Core.IotaHeadStep.toIotaEta
+#assert_no_axioms FX1Poly.Core.IotaOrientedHeadStep.toIotaEta
 #assert_no_axioms FX1Poly.Core.Step.eta.toIotaEta
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.etaCongSmoke
 

@@ -29,10 +29,14 @@ The arms:
   `optionMatchNone`/`idJRefl`/`idStrictRecRefl`) — the reduct IS the single reduced sub-term, and
   `cd (redex)` is definitionally that sub-term's `cd` (the `cd_<redex>_eq` rfl-equations), so the arm IS
   its own IH (`exact ih`).
-* **6 recursive/substituting ι** (`optionMatchSome`/`eitherMatchInl`/`eitherMatchInr`/`natElimSucc`/
-  `natRecSucc`/`listElimCons`) — the reduct is an app-chain over the reduced components; `cd (redex)` is
-  definitionally the same app-chain over the developed components, so the arm assembles by nested
-  `ParStep.cong` over the component IHs.
+* **4 app-chain ι** (`optionMatchSome`/`eitherMatchInl`/`eitherMatchInr`/`listElimCons`) — the reduct is
+  an app-chain over the reduced components; `cd (redex)` is definitionally the same app-chain over the
+  developed components, so the arm assembles by nested `ParStep.cong` over the component IHs.
+* **2 substituting ι** (`natElimSucc`/`natRecSucc`) — the reduct SUBSTITUTES the recursive call (IH) for
+  `var 0` and the predecessor for `var 1` in the two-binder succ-branch; `cd (redex)` is definitionally
+  the same `substPair` over the developed components, so the arm closes by `ParStep.substPair_diagonal`
+  (the two-variable diagonal) feeding the succ-branch IH as the body step, the `ParStep.cong`-assembled
+  recursive-call step as the inner substituent, and the predecessor IH as the outer substituent.
 * **cong** — split on whether the original children form a syntactic redex (`fireRootRedex`):
   `none` is the pure congruence (`ParStep.cong` of the children IH); `some` delegates to
   `ParStep.triangleCongFires`, which inverts the cong-reduced children to reconstruct the firing.
@@ -204,81 +208,87 @@ theorem ParStep.triangleCongFires {scope : Nat} (gen : Generator) (payload : gen
         · by_cases hNatElim : gen = .gen_natElim
           · subst hNatElim
             cases childrenStep with
-            | cons scrutStep tailStep => cases tailStep with
+            | cons _motiveStep tailStep => cases tailStep with
               | cons _zeroStep tail2 => cases tail2 with
-                | cons _succStep tailNil => cases tailNil with
-                  | nil =>
-                      cases ihChildren with
-                      | cons ihScrut ihTail => cases ihTail with
-                        | cons ihZero ihTail2 => cases ihTail2 with
-                          | cons ihSucc ihNil => cases ihNil with
-                            | nil =>
-                                rename_i scrut _scrut' zeroB _zeroB' succB _succB'
-                                cases scrut with
-                                | mkGen sg sp sc =>
-                                    by_cases hZero : sg = .gen_natZero
-                                    · subst hZero
-                                      cases sc with | childNil =>
-                                          cases scrutStep with
-                                          | cong _ _ csS => cases csS with
-                                            | nil => exact ParStep.iotaNatElimZero ihZero
-                                    · by_cases hSucc : sg = .gen_natSucc
-                                      · subst hSucc
-                                        cases sc with | childCons _pred scNil => cases scNil with
-                                          | childNil =>
+                | cons _succStep tail3 => cases tail3 with
+                  | cons scrutStep tailNil => cases tailNil with
+                    | nil =>
+                        cases ihChildren with
+                        | cons ihMotive ihTail => cases ihTail with
+                          | cons ihZero ihTail2 => cases ihTail2 with
+                            | cons ihSucc ihTail3 => cases ihTail3 with
+                              | cons ihScrut ihNil => cases ihNil with
+                                | nil =>
+                                    rename_i motive _motive' zeroB _zeroB' succB _succB' scrut _scrut'
+                                    cases scrut with
+                                    | mkGen sg sp sc =>
+                                        by_cases hZero : sg = .gen_natZero
+                                        · subst hZero
+                                          cases sc with | childNil =>
                                               cases scrutStep with
                                               | cong _ _ csS => cases csS with
-                                                | cons _ps rS => cases rS with
-                                                  | nil =>
-                                                      cases ihScrut with
-                                                      | cong _ _ csI => cases csI with
-                                                        | cons predDevStep rI => cases rI with
-                                                          | nil =>
-                                                              exact ParStep.iotaNatElimSucc predDevStep ihZero ihSucc
-                                      · have key : RawTerm.fireRootRedex .gen_natElim payload
-                                            (.childCons (.mkGen sg sp sc)
-                                              (.childCons zeroB (.childCons succB .childNil))) = none :=
-                                          (if_neg hZero).trans (dif_neg hSucc)
-                                        rw [key] at hfire; nomatch hfire
+                                                | nil => exact ParStep.iotaNatElimZero ihMotive ihZero
+                                        · by_cases hSucc : sg = .gen_natSucc
+                                          · subst hSucc
+                                            cases sc with | childCons _pred scNil => cases scNil with
+                                              | childNil =>
+                                                  cases scrutStep with
+                                                  | cong _ _ csS => cases csS with
+                                                    | cons _ps rS => cases rS with
+                                                      | nil =>
+                                                          cases ihScrut with
+                                                          | cong _ _ csI => cases csI with
+                                                            | cons predDevStep rI => cases rI with
+                                                              | nil =>
+                                                                  exact ParStep.iotaNatElimSucc
+                                                                    ihMotive predDevStep ihZero ihSucc
+                                          · have key : RawTerm.fireRootRedex .gen_natElim payload
+                                                (.childCons motive (.childCons zeroB (.childCons succB
+                                                  (.childCons (.mkGen sg sp sc) .childNil)))) = none :=
+                                              (if_neg hZero).trans (dif_neg hSucc)
+                                            rw [key] at hfire; nomatch hfire
           · by_cases hNatRec : gen = .gen_natRec
             · subst hNatRec
               cases childrenStep with
-              | cons scrutStep tailStep => cases tailStep with
+              | cons _motiveStep tailStep => cases tailStep with
                 | cons _zeroStep tail2 => cases tail2 with
-                  | cons _succStep tailNil => cases tailNil with
-                    | nil =>
-                        cases ihChildren with
-                        | cons ihScrut ihTail => cases ihTail with
-                          | cons ihZero ihTail2 => cases ihTail2 with
-                            | cons ihSucc ihNil => cases ihNil with
-                              | nil =>
-                                  rename_i scrut _scrut' zeroB _zeroB' succB _succB'
-                                  cases scrut with
-                                  | mkGen sg sp sc =>
-                                      by_cases hZero : sg = .gen_natZero
-                                      · subst hZero
-                                        cases sc with | childNil =>
-                                            cases scrutStep with
-                                            | cong _ _ csS => cases csS with
-                                              | nil => exact ParStep.iotaNatRecZero ihZero
-                                      · by_cases hSucc : sg = .gen_natSucc
-                                        · subst hSucc
-                                          cases sc with | childCons _pred scNil => cases scNil with
-                                            | childNil =>
+                  | cons _succStep tail3 => cases tail3 with
+                    | cons scrutStep tailNil => cases tailNil with
+                      | nil =>
+                          cases ihChildren with
+                          | cons ihMotive ihTail => cases ihTail with
+                            | cons ihZero ihTail2 => cases ihTail2 with
+                              | cons ihSucc ihTail3 => cases ihTail3 with
+                                | cons ihScrut ihNil => cases ihNil with
+                                  | nil =>
+                                      rename_i motive _motive' zeroB _zeroB' succB _succB' scrut _scrut'
+                                      cases scrut with
+                                      | mkGen sg sp sc =>
+                                          by_cases hZero : sg = .gen_natZero
+                                          · subst hZero
+                                            cases sc with | childNil =>
                                                 cases scrutStep with
                                                 | cong _ _ csS => cases csS with
-                                                  | cons _ps rS => cases rS with
-                                                    | nil =>
-                                                        cases ihScrut with
-                                                        | cong _ _ csI => cases csI with
-                                                          | cons predDevStep rI => cases rI with
-                                                            | nil =>
-                                                                exact ParStep.iotaNatRecSucc predDevStep ihZero ihSucc
-                                        · have key : RawTerm.fireRootRedex .gen_natRec payload
-                                              (.childCons (.mkGen sg sp sc)
-                                                (.childCons zeroB (.childCons succB .childNil))) = none :=
-                                            (if_neg hZero).trans (dif_neg hSucc)
-                                          rw [key] at hfire; nomatch hfire
+                                                  | nil => exact ParStep.iotaNatRecZero ihMotive ihZero
+                                          · by_cases hSucc : sg = .gen_natSucc
+                                            · subst hSucc
+                                              cases sc with | childCons _pred scNil => cases scNil with
+                                                | childNil =>
+                                                    cases scrutStep with
+                                                    | cong _ _ csS => cases csS with
+                                                      | cons _ps rS => cases rS with
+                                                        | nil =>
+                                                            cases ihScrut with
+                                                            | cong _ _ csI => cases csI with
+                                                              | cons predDevStep rI => cases rI with
+                                                                | nil =>
+                                                                    exact ParStep.iotaNatRecSucc
+                                                                      ihMotive predDevStep ihZero ihSucc
+                                            · have key : RawTerm.fireRootRedex .gen_natRec payload
+                                                  (.childCons motive (.childCons zeroB (.childCons succB
+                                                    (.childCons (.mkGen sg sp sc) .childNil)))) = none :=
+                                                (if_neg hZero).trans (dif_neg hSucc)
+                                              rw [key] at hfire; nomatch hfire
             · by_cases hListElim : gen = .gen_listElim
               · subst hListElim
                 cases childrenStep with
@@ -501,8 +511,10 @@ theorem ParStep.triangle {scope : Nat} {a b : RawTerm scope} :
         _motiveStep _elseStep _ihMotive ihElse => ihElse)
     (fun {_scope} {_firstValue _firstValue' _secondValue} _step ih => ih)
     (fun {_scope} {_firstValue _secondValue _secondValue'} _step ih => ih)
-    (fun {_scope} {_zeroBranch _zeroBranch' _succBranch} _step ih => ih)
-    (fun {_scope} {_zeroBranch _zeroBranch' _succBranch} _step ih => ih)
+    (fun {_scope} {_motive _motive' _zeroBranch _zeroBranch' _succBranch}
+        _motiveStep _zeroStep _ihMotive ihZero => ihZero)
+    (fun {_scope} {_motive _motive' _zeroBranch _zeroBranch' _succBranch}
+        _motiveStep _zeroStep _ihMotive ihZero => ihZero)
     (fun {_scope} {_motive _motive' _nilBranch _nilBranch' _consBranch}
         _motiveStep _nilStep _ihMotive ihNil => ihNil)
     (fun {_scope} {_noneBranch _noneBranch' _someBranch} _step ih => ih)
@@ -512,18 +524,20 @@ theorem ParStep.triangle {scope : Nat} {a b : RawTerm scope} :
         ParStep.cong .gen_app () (.cons ihLeft (.cons ihValue .nil)))
     (fun {_scope} {_value _value' _leftBranch _rightBranch _rightBranch'} _rightStep _valueStep ihRight ihValue =>
         ParStep.cong .gen_app () (.cons ihRight (.cons ihValue .nil)))
-    (fun {_scope} {_predecessor _predecessor' _zeroBranch _zeroBranch' _succBranch _succBranch'}
-        _predStep _zeroStep _succStep ihPred ihZero ihSucc =>
-        ParStep.cong .gen_app ()
-          (.cons (ParStep.cong .gen_app () (.cons ihSucc (.cons ihPred .nil)))
-            (.cons (ParStep.cong .gen_natElim ()
-              (.cons ihPred (.cons ihZero (.cons ihSucc .nil)))) .nil)))
-    (fun {_scope} {_predecessor _predecessor' _zeroBranch _zeroBranch' _succBranch _succBranch'}
-        _predStep _zeroStep _succStep ihPred ihZero ihSucc =>
-        ParStep.cong .gen_app ()
-          (.cons (ParStep.cong .gen_app () (.cons ihSucc (.cons ihPred .nil)))
-            (.cons (ParStep.cong .gen_natRec ()
-              (.cons ihPred (.cons ihZero (.cons ihSucc .nil)))) .nil)))
+    (fun {_scope} {_motive _motive' _predecessor _predecessor' _zeroBranch _zeroBranch'
+          _succBranch _succBranch'}
+        _motiveStep _predStep _zeroStep _succStep ihMotive ihPred ihZero ihSucc =>
+        ParStep.substPair_diagonal ihSucc
+          (ParStep.cong .gen_natElim ()
+            (.cons ihMotive (.cons ihZero (.cons ihSucc (.cons ihPred .nil)))))
+          ihPred)
+    (fun {_scope} {_motive _motive' _predecessor _predecessor' _zeroBranch _zeroBranch'
+          _succBranch _succBranch'}
+        _motiveStep _predStep _zeroStep _succStep ihMotive ihPred ihZero ihSucc =>
+        ParStep.substPair_diagonal ihSucc
+          (ParStep.cong .gen_natRec ()
+            (.cons ihMotive (.cons ihZero (.cons ihSucc (.cons ihPred .nil)))))
+          ihPred)
     (fun {_scope} {_motive _motive' _headVal _headVal' _tailVal _tailVal'
           _nilBranch _nilBranch' _consBranch _consBranch'}
         _motiveStep _headStep _tailStep _nilStep _consStep ihMotive ihHead ihTail ihNil ihCons =>

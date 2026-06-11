@@ -359,8 +359,8 @@ def Generator.arity : Generator → Nat
   -- Naturals
   | .gen_natZero      => 0
   | .gen_natSucc      => 1  -- predecessor
-  | .gen_natElim      => 3  -- scrutinee, zeroBranch, succBranch
-  | .gen_natRec       => 3  -- scrutinee, zeroBranch, succBranch
+  | .gen_natElim      => 4  -- motive (under binder), zeroBranch, succBranch (under 2 binders), scrutinee
+  | .gen_natRec       => 4  -- motive (under binder), zeroBranch, succBranch (under 2 binders), scrutinee
   -- Lists
   | .gen_listNil      => 0
   | .gen_listCons     => 2  -- headTerm, tailTerm
@@ -670,8 +670,8 @@ def Generator.binderShifts : Generator → List Nat
   -- Naturals
   | .gen_natZero      => []
   | .gen_natSucc      => [0]
-  | .gen_natElim      => [0, 0, 0]
-  | .gen_natRec       => [0, 0, 0]
+  | .gen_natElim      => [1, 0, 2, 0]  -- motive binds the scrutinee; succBranch binds predecessor + IH
+  | .gen_natRec       => [1, 0, 2, 0]  -- motive binds the scrutinee; succBranch binds predecessor + IH
   -- Lists
   | .gen_listNil      => []
   | .gen_listCons     => [0, 0]

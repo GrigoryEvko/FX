@@ -118,6 +118,36 @@ def RawTermChildren.subst {parentSourceScope parentTargetScope : Nat}
     RawTermChildren binderShifts parentTargetScope :=
   foldChildren GenAlgebra.canonical someSubstitution children
 
+/-- Extend a parallel substitution with a fresh substituent `headTerm`
+at position 0 — the term-level dual of `RawTermSubst.lift` (lift
+weakens; cons substitutes) and of `CandidateEnv.cons`.
+
+Relocated here (from `CandidateReducibleSubst.lean`) so the low-level
+reduction substrate can reference it: the natElim/natRec succ-iota
+(`Step.iotaNatElimSucc` / `iotaNatRecSucc`) substitutes into the
+two-binder succ-branch via `RawTermSubst.cons recursiveCall
+(RawTermSubst.singleton predecessor)`, and `Step` imports only the
+`RawTermSubst*` substrate.  It needs only `RawTerm` + `RawTermSubst`,
+both available here. -/
+def RawTermSubst.cons {scope targetScope : Nat} (headTerm : RawTerm targetScope)
+    (tailSubst : RawTermSubst scope targetScope) : RawTermSubst (scope + 1) targetScope :=
+  fun position =>
+    match position with
+    | ⟨0, _⟩ => headTerm
+    | ⟨priorValue + 1, hBound⟩ => tailSubst ⟨priorValue, Nat.lt_of_succ_lt_succ hBound⟩
+
+/-- Behavior pin: `cons`'s position-0 entry returns the consed head. -/
+theorem RawTermSubst.cons_var_zero {scope targetScope : Nat}
+    (headTerm : RawTerm targetScope) (tailSubst : RawTermSubst scope targetScope) :
+    RawTermSubst.cons headTerm tailSubst ⟨0, Nat.zero_lt_succ scope⟩ = headTerm := rfl
+
+/-- Behavior pin: `cons`'s position-(k+1) entry defers to the tail. -/
+theorem RawTermSubst.cons_var_succ {scope targetScope : Nat}
+    (headTerm : RawTerm targetScope) (tailSubst : RawTermSubst scope targetScope)
+    (priorValue : Nat) (hBound : priorValue + 1 < scope + 1) :
+    RawTermSubst.cons headTerm tailSubst ⟨priorValue + 1, hBound⟩ =
+      tailSubst ⟨priorValue, Nat.lt_of_succ_lt_succ hBound⟩ := rfl
+
 /-- Definitional unfolding: `RawTerm.subst` is `fold` with
 canonical algebra and `RawTermSubst` Container. -/
 theorem RawTerm.subst_eq_fold {sourceScope targetScope : Nat}

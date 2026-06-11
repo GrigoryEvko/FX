@@ -80,14 +80,18 @@ inductive IotaNonRecursiveStep : {scope : Nat} → RawTerm scope → RawTerm sco
       IotaNonRecursiveStep
         (.mkGen .gen_snd () (.childCons (.mkGen .gen_pair ()
           (.childCons firstValue (.childCons secondValue .childNil))) .childNil)) secondValue
-  | iotaNatElimZero {scope : Nat} {zeroBranch succBranch : RawTerm scope} :
+  | iotaNatElimZero {scope : Nat} {motive : RawTerm (scope + 1)}
+      {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)} :
       IotaNonRecursiveStep
-        (.mkGen .gen_natElim () (.childCons (.mkGen .gen_natZero () .childNil)
-          (.childCons zeroBranch (.childCons succBranch .childNil)))) zeroBranch
-  | iotaNatRecZero {scope : Nat} {zeroBranch succBranch : RawTerm scope} :
+        (.mkGen .gen_natElim () (.childCons motive
+          (.childCons zeroBranch (.childCons succBranch
+            (.childCons (.mkGen .gen_natZero () .childNil) .childNil))))) zeroBranch
+  | iotaNatRecZero {scope : Nat} {motive : RawTerm (scope + 1)}
+      {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)} :
       IotaNonRecursiveStep
-        (.mkGen .gen_natRec () (.childCons (.mkGen .gen_natZero () .childNil)
-          (.childCons zeroBranch (.childCons succBranch .childNil)))) zeroBranch
+        (.mkGen .gen_natRec () (.childCons motive
+          (.childCons zeroBranch (.childCons succBranch
+            (.childCons (.mkGen .gen_natZero () .childNil) .childNil))))) zeroBranch
   | iotaListElimNil {scope : Nat} {motive : RawTerm (scope + 1)}
       {nilBranch consBranch : RawTerm scope} :
       IotaNonRecursiveStep
@@ -228,15 +232,21 @@ theorem IotaNonRecursiveStep.size_decreases {scope : Nat} {source target : RawTe
   | iotaSndPair =>
       dsimp only [RawTerm.size, RawTermChildren.size]; exact iotaSizeShapeSndProjection _ _
   | iotaNatElimZero =>
+      -- Phase-Z 4-child spine `[motive, zeroBranch, succBranch, natZero]`:
+      -- zeroBranch is at position 1, so skip ONE head (the motive, at shift 1)
+      -- after projecting zeroBranch as the head of the tail spine — mirrors the
+      -- `iotaListElimNil` arm exactly (the nilBranch also sits at position 1).
       dsimp only [RawTerm.size]
       exact Nat.lt_trans (Nat.lt_trans
         (RawTermChildren.size_lt_childCons_head (shift := 0) _ _)
-        (RawTermChildren.size_lt_childCons_tail (shift := 0) _ _)) (Nat.lt_succ_self _)
+        (RawTermChildren.size_lt_childCons_tail (shift := 1) _ _)) (Nat.lt_succ_self _)
   | iotaNatRecZero =>
+      -- Phase-Z 4-child spine `[motive, zeroBranch, succBranch, natZero]`: same as
+      -- `iotaNatElimZero` (zeroBranch at position 1, motive head at shift 1).
       dsimp only [RawTerm.size]
       exact Nat.lt_trans (Nat.lt_trans
         (RawTermChildren.size_lt_childCons_head (shift := 0) _ _)
-        (RawTermChildren.size_lt_childCons_tail (shift := 0) _ _)) (Nat.lt_succ_self _)
+        (RawTermChildren.size_lt_childCons_tail (shift := 1) _ _)) (Nat.lt_succ_self _)
   | iotaListElimNil =>
       -- Phase-Z 4-child spine `[motive, nilBranch, consBranch, listNil]`:
       -- nilBranch is at position 1, so skip ONE head (the motive, at shift 1)

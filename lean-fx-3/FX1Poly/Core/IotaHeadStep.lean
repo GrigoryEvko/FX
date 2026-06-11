@@ -5,8 +5,8 @@ import FX1Poly.Core.Step
 
 `HeadStep` (`HeadStep.lean`) captures the β half of weak-head reduction: contract the head β-redex, or
 head-reduce into the function spine.  This file captures the COMPLEMENTARY ι half: contract the
-eliminator-on-constructor redex AT THE ROOT — `boolElim boolTrue t e ↝ t`, `natRec (natSucc p) z s ↝
-app (app s p) (natRec p z s)`, etc. — and nothing else (no congruence, no reduction into the
+eliminator-on-constructor redex AT THE ROOT — `boolElim m t e boolTrue ↝ t`, `natRec m z s (natSucc p) ↝
+s[var 0 := natRec m z s p, var 1 := p]`, etc. — and nothing else (no congruence, no reduction into the
 scrutinee).
 
 Why a separate root-only relation (rather than reusing `Step`'s ι constructors): like `HeadStep.beta`,
@@ -24,8 +24,9 @@ reduction, the weak-head normalizer, and the Path-B convergent rewrite presentat
 The sixteen rules are the same redex/contractum pairs as `Step`'s ι constructors (§11.6.1 SHAPE 1-5),
 restricted to the root: SHAPE 1 branch-selection (bool×2 / nat-zero×2 / list-nil / option-none / idJ-refl
 / idStrictRec-refl), SHAPE 2 content-projection (pair fst/snd), SHAPE 3 1-arg app-chain (option-some /
-either-inl/inr), SHAPE 4 2-arg app-chain with recursion (natElim/natRec on succ), SHAPE 5 3-arg app-chain
-(listElim on cons).
+either-inl/inr), SHAPE 4 SUBSTITUTING with recursion (natElim/natRec on succ — the Phase-Z two-binder
+succ-branch receives the recursive call and the predecessor by direct substitution), SHAPE 5 3-arg
+app-chain (listElim on cons).
 
 ## Zero-axiom verification
 
@@ -82,19 +83,28 @@ inductive IotaHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
               (.childCons firstValue (.childCons secondValue .childNil)))
             .childNil))
         secondValue
-  /-- `natElim natZero zeroBranch succBranch ↝ zeroBranch`. -/
-  | iotaNatElimZero {zeroBranch succBranch : RawTerm scope} :
+  /-- `natElim motive zeroBranch succBranch natZero ↝ zeroBranch`.
+      Phase-Z motive shape: motive first (under one binder), succ-branch
+      under two binders, scrutinee last; the base-case iota discards
+      the motive operationally. -/
+  | iotaNatElimZero {motive : RawTerm (scope + 1)}
+      {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)} :
       IotaHeadStep
         (.mkGen .gen_natElim ()
-          (.childCons (.mkGen .gen_natZero () .childNil)
-            (.childCons zeroBranch (.childCons succBranch .childNil))))
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch
+                (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
         zeroBranch
-  /-- `natRec natZero zeroBranch succBranch ↝ zeroBranch`. -/
-  | iotaNatRecZero {zeroBranch succBranch : RawTerm scope} :
+  /-- `natRec motive zeroBranch succBranch natZero ↝ zeroBranch`. -/
+  | iotaNatRecZero {motive : RawTerm (scope + 1)}
+      {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)} :
       IotaHeadStep
         (.mkGen .gen_natRec ()
-          (.childCons (.mkGen .gen_natZero () .childNil)
-            (.childCons zeroBranch (.childCons succBranch .childNil))))
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch
+                (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
         zeroBranch
   /-- `listElim motive nilBranch consBranch listNil ↝ nilBranch`.
       Phase-Z motive shape: motive first (under one binder), scrutinee last;
@@ -135,36 +145,52 @@ inductive IotaHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
           (.childCons (.mkGen .gen_eitherInr () (.childCons value .childNil))
             (.childCons leftBranch (.childCons rightBranch .childNil))))
         (.mkGen .gen_app () (.childCons rightBranch (.childCons value .childNil)))
-  /-- `natElim (natSucc predecessor) z s ↝ app (app s predecessor) (natElim predecessor z s)`. -/
-  | iotaNatElimSucc {predecessor zeroBranch succBranch : RawTerm scope} :
+  /-- `natElim motive z s (natSucc predecessor)
+        ↝ s[var 0 := natElim motive z s predecessor, var 1 := predecessor]`.
+      Phase-Z motive shape: the SUBSTITUTING succ-iota replaces the
+      inductive-hypothesis variable `var 0` with the recursive call
+      (threading the same motive/branches) and `var 1` with the
+      predecessor. -/
+  | iotaNatElimSucc {motive : RawTerm (scope + 1)}
+      {predecessor zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)} :
       IotaHeadStep
         (.mkGen .gen_natElim ()
-          (.childCons (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-            (.childCons zeroBranch (.childCons succBranch .childNil))))
-        (.mkGen .gen_app ()
-          (.childCons
-            (.mkGen .gen_app ()
-              (.childCons succBranch (.childCons predecessor .childNil)))
-            (.childCons
-              (.mkGen .gen_natElim ()
-                (.childCons predecessor
-                  (.childCons zeroBranch (.childCons succBranch .childNil))))
-              .childNil)))
-  /-- `natRec (natSucc predecessor) z s ↝ app (app s predecessor) (natRec predecessor z s)`. -/
-  | iotaNatRecSucc {predecessor zeroBranch succBranch : RawTerm scope} :
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch
+                (.childCons
+                  (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                  .childNil)))))
+        (RawTerm.subst
+          (RawTermSubst.cons
+            (.mkGen .gen_natElim ()
+              (.childCons motive
+                (.childCons zeroBranch
+                  (.childCons succBranch
+                    (.childCons predecessor .childNil)))))
+            (RawTermSubst.singleton predecessor))
+          succBranch)
+  /-- `natRec motive z s (natSucc predecessor)
+        ↝ s[var 0 := natRec motive z s predecessor, var 1 := predecessor]`. -/
+  | iotaNatRecSucc {motive : RawTerm (scope + 1)}
+      {predecessor zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)} :
       IotaHeadStep
         (.mkGen .gen_natRec ()
-          (.childCons (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-            (.childCons zeroBranch (.childCons succBranch .childNil))))
-        (.mkGen .gen_app ()
-          (.childCons
-            (.mkGen .gen_app ()
-              (.childCons succBranch (.childCons predecessor .childNil)))
-            (.childCons
-              (.mkGen .gen_natRec ()
-                (.childCons predecessor
-                  (.childCons zeroBranch (.childCons succBranch .childNil))))
-              .childNil)))
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch
+                (.childCons
+                  (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                  .childNil)))))
+        (RawTerm.subst
+          (RawTermSubst.cons
+            (.mkGen .gen_natRec ()
+              (.childCons motive
+                (.childCons zeroBranch
+                  (.childCons succBranch
+                    (.childCons predecessor .childNil)))))
+            (RawTermSubst.singleton predecessor))
+          succBranch)
   /-- `listElim motive n c (listCons headVal tailVal)
         ↝ app (app (app c headVal) tailVal) (listElim motive n c tailVal)`.
       Phase-Z motive shape: motive first (under one binder), scrutinee last;

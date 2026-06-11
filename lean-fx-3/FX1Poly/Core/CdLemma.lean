@@ -813,15 +813,17 @@ theorem iotaSndPairSameRoot_hasJoin {scope : Nat}
 
 /-- Resolver arm for same-root `natElim` zero-case branchings. -/
 theorem iotaNatElimZeroSameRoot_hasJoin {scope : Nat}
-    (zeroBranch succBranch : RawTerm scope) :
-    (iotaNatElimZeroSameRoot zeroBranch succBranch).HasJoin :=
-  (LocalDiamond.iotaNatElimZeroSameRoot zeroBranch succBranch).hasJoin
+    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) :
+    (iotaNatElimZeroSameRoot motive zeroBranch succBranch).HasJoin :=
+  (LocalDiamond.iotaNatElimZeroSameRoot motive zeroBranch succBranch).hasJoin
 
 /-- Resolver arm for same-root `natRec` zero-case branchings. -/
 theorem iotaNatRecZeroSameRoot_hasJoin {scope : Nat}
-    (zeroBranch succBranch : RawTerm scope) :
-    (iotaNatRecZeroSameRoot zeroBranch succBranch).HasJoin :=
-  (LocalDiamond.iotaNatRecZeroSameRoot zeroBranch succBranch).hasJoin
+    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) :
+    (iotaNatRecZeroSameRoot motive zeroBranch succBranch).HasJoin :=
+  (LocalDiamond.iotaNatRecZeroSameRoot motive zeroBranch succBranch).hasJoin
 
 /-- Resolver arm for same-root `listElim` nil-case branchings.
 Phase-Z motive shape. -/
@@ -871,17 +873,19 @@ theorem iotaEitherMatchInrSameRoot_hasJoin {scope : Nat}
 
 /-- Resolver arm for same-root `natElim` succ-case branchings. -/
 theorem iotaNatElimSuccSameRoot_hasJoin {scope : Nat}
-    (predecessor zeroBranch succBranch : RawTerm scope) :
-    (iotaNatElimSuccSameRoot predecessor zeroBranch succBranch).HasJoin :=
+    (motive : RawTerm (scope + 1)) (predecessor zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) :
+    (iotaNatElimSuccSameRoot motive predecessor zeroBranch succBranch).HasJoin :=
   (LocalDiamond.iotaNatElimSuccSameRoot
-    predecessor zeroBranch succBranch).hasJoin
+    motive predecessor zeroBranch succBranch).hasJoin
 
 /-- Resolver arm for same-root `natRec` succ-case branchings. -/
 theorem iotaNatRecSuccSameRoot_hasJoin {scope : Nat}
-    (predecessor zeroBranch succBranch : RawTerm scope) :
-    (iotaNatRecSuccSameRoot predecessor zeroBranch succBranch).HasJoin :=
+    (motive : RawTerm (scope + 1)) (predecessor zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) :
+    (iotaNatRecSuccSameRoot motive predecessor zeroBranch succBranch).HasJoin :=
   (LocalDiamond.iotaNatRecSuccSameRoot
-    predecessor zeroBranch succBranch).hasJoin
+    motive predecessor zeroBranch succBranch).hasJoin
 
 /-- Resolver arm for same-root `listElim` cons-case branchings.
 Phase-Z motive shape. -/
@@ -933,25 +937,29 @@ theorem fromSteps_iotaSndPairSameRoot_hasJoin {scope : Nat}
         (firstValue := firstValue) (secondValue := secondValue))).HasJoin :=
   iotaSndPairSameRoot_hasJoin firstValue secondValue
 
-/-- `fromSteps`-facing same-root `natElim` zero-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `natElim` zero-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatElimZeroSameRoot_hasJoin {scope : Nat}
-    (zeroBranch succBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) :
     (fromSteps
       (Step.iotaNatElimZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))
       (Step.iotaNatElimZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
-  iotaNatElimZeroSameRoot_hasJoin zeroBranch succBranch
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
+  iotaNatElimZeroSameRoot_hasJoin motive zeroBranch succBranch
 
-/-- `fromSteps`-facing same-root `natRec` zero-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `natRec` zero-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatRecZeroSameRoot_hasJoin {scope : Nat}
-    (zeroBranch succBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) :
     (fromSteps
       (Step.iotaNatRecZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))
       (Step.iotaNatRecZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
-  iotaNatRecZeroSameRoot_hasJoin zeroBranch succBranch
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
+  iotaNatRecZeroSameRoot_hasJoin motive zeroBranch succBranch
 
 /-- `fromSteps`-facing same-root `listElim` nil-case iota resolver arm.
 Phase-Z motive shape. -/
@@ -1030,29 +1038,33 @@ theorem fromSteps_iotaEitherMatchInrSameRoot_hasJoin {scope : Nat}
         (rightBranch := rightBranch))).HasJoin :=
   iotaEitherMatchInrSameRoot_hasJoin value leftBranch rightBranch
 
-/-- `fromSteps`-facing same-root `natElim` succ-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `natElim` succ-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatElimSuccSameRoot_hasJoin {scope : Nat}
-    (predecessor zeroBranch succBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (predecessor zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) :
     (fromSteps
       (Step.iotaNatElimSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))
       (Step.iotaNatElimSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))).HasJoin :=
-  iotaNatElimSuccSameRoot_hasJoin predecessor zeroBranch succBranch
+  iotaNatElimSuccSameRoot_hasJoin motive predecessor zeroBranch succBranch
 
-/-- `fromSteps`-facing same-root `natRec` succ-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `natRec` succ-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatRecSuccSameRoot_hasJoin {scope : Nat}
-    (predecessor zeroBranch succBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (predecessor zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) :
     (fromSteps
       (Step.iotaNatRecSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))
       (Step.iotaNatRecSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))).HasJoin :=
-  iotaNatRecSuccSameRoot_hasJoin predecessor zeroBranch succBranch
+  iotaNatRecSuccSameRoot_hasJoin motive predecessor zeroBranch succBranch
 
 /-- `fromSteps`-facing same-root `listElim` cons-case iota resolver arm.
 Phase-Z motive shape. -/
@@ -1515,442 +1527,680 @@ theorem fromSteps_iotaSndPairRight_hasJoin {scope : Nat}
 /-- Resolver arm for `natElim natZero` iota competing with selected
 zero-branch congruence. -/
 theorem iotaNatElimZeroBranchCong_hasJoin {scope : Nat}
-    {zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch steppedZeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (zeroStep : Step zeroBranch steppedZeroBranch) :
     (iotaNatElimZeroBranchCong
-      (succBranch := succBranch) zeroStep).HasJoin :=
+      (motive := motive) (succBranch := succBranch) zeroStep).HasJoin :=
   (LocalDiamond.iotaNatElimZeroBranchCong
-    (succBranch := succBranch) zeroStep).hasJoin
+    (motive := motive) (succBranch := succBranch) zeroStep).hasJoin
 
 /-- Resolver arm for `natElim natZero` iota competing with discarded
-successor-branch congruence. -/
+successor-branch congruence (at `scope + 2`). -/
 theorem iotaNatElimSuccBranchCong_hasJoin {scope : Nat}
-    {zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope}
+    {succBranch steppedSuccBranch : RawTerm (scope + 2)}
     (succStep : Step succBranch steppedSuccBranch) :
     (iotaNatElimSuccBranchCong
-      (zeroBranch := zeroBranch) succStep).HasJoin :=
+      (motive := motive) (zeroBranch := zeroBranch) succStep).HasJoin :=
   (LocalDiamond.iotaNatElimSuccBranchCong
-    (zeroBranch := zeroBranch) succStep).hasJoin
+    (motive := motive) (zeroBranch := zeroBranch) succStep).hasJoin
 
 /-- Resolver arm for `natRec natZero` iota competing with selected
 zero-branch congruence. -/
 theorem iotaNatRecZeroBranchCong_hasJoin {scope : Nat}
-    {zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch steppedZeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (zeroStep : Step zeroBranch steppedZeroBranch) :
     (iotaNatRecZeroBranchCong
-      (succBranch := succBranch) zeroStep).HasJoin :=
+      (motive := motive) (succBranch := succBranch) zeroStep).HasJoin :=
   (LocalDiamond.iotaNatRecZeroBranchCong
-    (succBranch := succBranch) zeroStep).hasJoin
+    (motive := motive) (succBranch := succBranch) zeroStep).hasJoin
 
 /-- Resolver arm for `natRec natZero` iota competing with discarded
-successor-branch congruence. -/
+successor-branch congruence (at `scope + 2`). -/
 theorem iotaNatRecSuccBranchCong_hasJoin {scope : Nat}
-    {zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope}
+    {succBranch steppedSuccBranch : RawTerm (scope + 2)}
     (succStep : Step succBranch steppedSuccBranch) :
     (iotaNatRecSuccBranchCong
-      (zeroBranch := zeroBranch) succStep).HasJoin :=
+      (motive := motive) (zeroBranch := zeroBranch) succStep).HasJoin :=
   (LocalDiamond.iotaNatRecSuccBranchCong
-    (zeroBranch := zeroBranch) succStep).hasJoin
+    (motive := motive) (zeroBranch := zeroBranch) succStep).hasJoin
 
 /-- Resolver arm for `natElim (natSucc predecessor)` iota competing with
-zero-branch congruence. -/
+zero-branch congruence.  Phase-Z motive shape. -/
 theorem iotaNatElimSuccZeroBranchCong_hasJoin {scope : Nat}
-    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch steppedZeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (zeroStep : Step zeroBranch steppedZeroBranch) :
     (iotaNatElimSuccZeroBranchCong
-      (predecessor := predecessor) (succBranch := succBranch)
+      (motive := motive) (predecessor := predecessor) (succBranch := succBranch)
       zeroStep).HasJoin :=
   (LocalDiamond.iotaNatElimSuccZeroBranchCong
-    (predecessor := predecessor) (succBranch := succBranch)
+    (motive := motive) (predecessor := predecessor) (succBranch := succBranch)
     zeroStep).hasJoin
 
 /-- Resolver arm for `natElim (natSucc predecessor)` iota competing with
-successor-branch congruence. -/
+successor-branch congruence (at `scope + 2`).  Phase-Z motive shape. -/
 theorem iotaNatElimSuccSuccBranchCong_hasJoin {scope : Nat}
-    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch : RawTerm scope}
+    {succBranch steppedSuccBranch : RawTerm (scope + 2)}
     (succStep : Step succBranch steppedSuccBranch) :
     (iotaNatElimSuccSuccBranchCong
-      (predecessor := predecessor) (zeroBranch := zeroBranch)
+      (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
       succStep).HasJoin :=
   (LocalDiamond.iotaNatElimSuccSuccBranchCong
-    (predecessor := predecessor) (zeroBranch := zeroBranch)
+    (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
     succStep).hasJoin
 
 /-- Resolver arm for `natRec (natSucc predecessor)` iota competing with
-zero-branch congruence. -/
+zero-branch congruence.  Phase-Z motive shape. -/
 theorem iotaNatRecSuccZeroBranchCong_hasJoin {scope : Nat}
-    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch steppedZeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (zeroStep : Step zeroBranch steppedZeroBranch) :
     (iotaNatRecSuccZeroBranchCong
-      (predecessor := predecessor) (succBranch := succBranch)
+      (motive := motive) (predecessor := predecessor) (succBranch := succBranch)
       zeroStep).HasJoin :=
   (LocalDiamond.iotaNatRecSuccZeroBranchCong
-    (predecessor := predecessor) (succBranch := succBranch)
+    (motive := motive) (predecessor := predecessor) (succBranch := succBranch)
     zeroStep).hasJoin
 
 /-- Resolver arm for `natRec (natSucc predecessor)` iota competing with
-successor-branch congruence. -/
+successor-branch congruence (at `scope + 2`).  Phase-Z motive shape. -/
 theorem iotaNatRecSuccSuccBranchCong_hasJoin {scope : Nat}
-    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch : RawTerm scope}
+    {succBranch steppedSuccBranch : RawTerm (scope + 2)}
     (succStep : Step succBranch steppedSuccBranch) :
     (iotaNatRecSuccSuccBranchCong
-      (predecessor := predecessor) (zeroBranch := zeroBranch)
+      (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
       succStep).HasJoin :=
   (LocalDiamond.iotaNatRecSuccSuccBranchCong
-    (predecessor := predecessor) (zeroBranch := zeroBranch)
+    (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
     succStep).hasJoin
 
 /-- Resolver arm for `natElim (natSucc predecessor)` iota competing with
-congruence inside the predecessor child. -/
+congruence inside the predecessor child (the scrutinee, LAST).  Phase-Z motive
+shape. -/
 theorem iotaNatElimSuccPredecessorCong_hasJoin {scope : Nat}
-    {predecessor steppedPredecessor zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor steppedPredecessor zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (predecessorStep : Step predecessor steppedPredecessor) :
     (iotaNatElimSuccPredecessorCong
-      (zeroBranch := zeroBranch) (succBranch := succBranch)
+      (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch)
       predecessorStep).HasJoin :=
   (LocalDiamond.iotaNatElimSuccPredecessorCong
-    (zeroBranch := zeroBranch) (succBranch := succBranch)
+    (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch)
     predecessorStep).hasJoin
 
 /-- Resolver arm for `natRec (natSucc predecessor)` iota competing with
-congruence inside the predecessor child. -/
+congruence inside the predecessor child (the scrutinee, LAST).  Phase-Z motive
+shape. -/
 theorem iotaNatRecSuccPredecessorCong_hasJoin {scope : Nat}
-    {predecessor steppedPredecessor zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor steppedPredecessor zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (predecessorStep : Step predecessor steppedPredecessor) :
     (iotaNatRecSuccPredecessorCong
-      (zeroBranch := zeroBranch) (succBranch := succBranch)
+      (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch)
       predecessorStep).HasJoin :=
   (LocalDiamond.iotaNatRecSuccPredecessorCong
-    (zeroBranch := zeroBranch) (succBranch := succBranch)
+    (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch)
     predecessorStep).hasJoin
 
-/-- `fromSteps`-facing `natElim natZero` iota / zero-branch congruence arm. -/
+/-- Resolver arm for `natElim natZero` iota competing with discarded motive
+congruence (Phase-Z motive shape). -/
+theorem iotaNatElimZeroMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaNatElimZeroMotiveCong
+      (zeroBranch := zeroBranch) (succBranch := succBranch) motiveStep).HasJoin :=
+  (LocalDiamond.iotaNatElimZeroMotiveCong
+    (zeroBranch := zeroBranch) (succBranch := succBranch) motiveStep).hasJoin
+
+/-- Resolver arm for `natRec natZero` iota competing with discarded motive
+congruence (Phase-Z motive shape). -/
+theorem iotaNatRecZeroMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaNatRecZeroMotiveCong
+      (zeroBranch := zeroBranch) (succBranch := succBranch) motiveStep).HasJoin :=
+  (LocalDiamond.iotaNatRecZeroMotiveCong
+    (zeroBranch := zeroBranch) (succBranch := succBranch) motiveStep).hasJoin
+
+/-- Resolver arm for `natElim (natSucc predecessor)` iota competing with motive
+congruence (Phase-Z motive shape; the succ-case iota THREADS the motive, so the
+diamond joins at the substituting reduct with the stepped motive). -/
+theorem iotaNatElimSuccMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {predecessor zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaNatElimSuccMotiveCong
+      (predecessor := predecessor) (zeroBranch := zeroBranch)
+      (succBranch := succBranch) motiveStep).HasJoin :=
+  (LocalDiamond.iotaNatElimSuccMotiveCong
+    (predecessor := predecessor) (zeroBranch := zeroBranch)
+    (succBranch := succBranch) motiveStep).hasJoin
+
+/-- Resolver arm for `natRec (natSucc predecessor)` iota competing with motive
+congruence (Phase-Z motive shape; the succ-case iota THREADS the motive). -/
+theorem iotaNatRecSuccMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {predecessor zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaNatRecSuccMotiveCong
+      (predecessor := predecessor) (zeroBranch := zeroBranch)
+      (succBranch := succBranch) motiveStep).HasJoin :=
+  (LocalDiamond.iotaNatRecSuccMotiveCong
+    (predecessor := predecessor) (zeroBranch := zeroBranch)
+    (succBranch := succBranch) motiveStep).hasJoin
+
+/-- `fromSteps`-facing `natElim natZero` iota / zero-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatElimZeroBranchCong_hasJoin {scope : Nat}
-    {zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch steppedZeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (zeroStep : Step zeroBranch steppedZeroBranch) :
     (fromSteps
       (Step.iotaNatElimZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))
       (iotaNatElimZeroBranchCong
-        (succBranch := succBranch) zeroStep).rightStep).HasJoin :=
-  iotaNatElimZeroBranchCong_hasJoin zeroStep
+        (motive := motive) (succBranch := succBranch) zeroStep).rightStep).HasJoin :=
+  iotaNatElimZeroBranchCong_hasJoin (motive := motive) zeroStep
 
-/-- `fromSteps`-facing `natElim natZero` iota / successor-branch congruence arm. -/
+/-- `fromSteps`-facing `natElim natZero` iota / successor-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatElimSuccBranchCong_hasJoin {scope : Nat}
-    {zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope}
+    {succBranch steppedSuccBranch : RawTerm (scope + 2)}
     (succStep : Step succBranch steppedSuccBranch) :
     (fromSteps
       (Step.iotaNatElimZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))
       (iotaNatElimSuccBranchCong
-        (zeroBranch := zeroBranch) succStep).rightStep).HasJoin :=
-  iotaNatElimSuccBranchCong_hasJoin succStep
+        (motive := motive) (zeroBranch := zeroBranch) succStep).rightStep).HasJoin :=
+  iotaNatElimSuccBranchCong_hasJoin (motive := motive) succStep
 
-/-- `fromSteps`-facing `natRec natZero` iota / zero-branch congruence arm. -/
+/-- `fromSteps`-facing `natRec natZero` iota / zero-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatRecZeroBranchCong_hasJoin {scope : Nat}
-    {zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch steppedZeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (zeroStep : Step zeroBranch steppedZeroBranch) :
     (fromSteps
       (Step.iotaNatRecZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))
       (iotaNatRecZeroBranchCong
-        (succBranch := succBranch) zeroStep).rightStep).HasJoin :=
-  iotaNatRecZeroBranchCong_hasJoin zeroStep
+        (motive := motive) (succBranch := succBranch) zeroStep).rightStep).HasJoin :=
+  iotaNatRecZeroBranchCong_hasJoin (motive := motive) zeroStep
 
-/-- `fromSteps`-facing `natRec natZero` iota / successor-branch congruence arm. -/
+/-- `fromSteps`-facing `natRec natZero` iota / successor-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatRecSuccBranchCong_hasJoin {scope : Nat}
-    {zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope}
+    {succBranch steppedSuccBranch : RawTerm (scope + 2)}
     (succStep : Step succBranch steppedSuccBranch) :
     (fromSteps
       (Step.iotaNatRecZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))
       (iotaNatRecSuccBranchCong
-        (zeroBranch := zeroBranch) succStep).rightStep).HasJoin :=
-  iotaNatRecSuccBranchCong_hasJoin succStep
+        (motive := motive) (zeroBranch := zeroBranch) succStep).rightStep).HasJoin :=
+  iotaNatRecSuccBranchCong_hasJoin (motive := motive) succStep
 
-/-- `fromSteps`-facing `natElim natSucc` iota / zero-branch congruence arm. -/
+/-- `fromSteps`-facing `natElim natSucc` iota / zero-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatElimSuccZeroBranchCong_hasJoin {scope : Nat}
-    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch steppedZeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (zeroStep : Step zeroBranch steppedZeroBranch) :
     (fromSteps
       (Step.iotaNatElimSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))
       (iotaNatElimSuccZeroBranchCong
-        (predecessor := predecessor) (succBranch := succBranch)
+        (motive := motive) (predecessor := predecessor) (succBranch := succBranch)
         zeroStep).rightStep).HasJoin :=
-  iotaNatElimSuccZeroBranchCong_hasJoin zeroStep
+  iotaNatElimSuccZeroBranchCong_hasJoin (motive := motive) zeroStep
 
-/-- `fromSteps`-facing `natElim natSucc` iota / successor-branch congruence arm. -/
+/-- `fromSteps`-facing `natElim natSucc` iota / successor-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatElimSuccSuccBranchCong_hasJoin {scope : Nat}
-    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch : RawTerm scope}
+    {succBranch steppedSuccBranch : RawTerm (scope + 2)}
     (succStep : Step succBranch steppedSuccBranch) :
     (fromSteps
       (Step.iotaNatElimSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))
       (iotaNatElimSuccSuccBranchCong
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         succStep).rightStep).HasJoin :=
-  iotaNatElimSuccSuccBranchCong_hasJoin succStep
+  iotaNatElimSuccSuccBranchCong_hasJoin (motive := motive) succStep
 
-/-- `fromSteps`-facing `natRec natSucc` iota / zero-branch congruence arm. -/
+/-- `fromSteps`-facing `natRec natSucc` iota / zero-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatRecSuccZeroBranchCong_hasJoin {scope : Nat}
-    {predecessor zeroBranch steppedZeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch steppedZeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (zeroStep : Step zeroBranch steppedZeroBranch) :
     (fromSteps
       (Step.iotaNatRecSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))
       (iotaNatRecSuccZeroBranchCong
-        (predecessor := predecessor) (succBranch := succBranch)
+        (motive := motive) (predecessor := predecessor) (succBranch := succBranch)
         zeroStep).rightStep).HasJoin :=
-  iotaNatRecSuccZeroBranchCong_hasJoin zeroStep
+  iotaNatRecSuccZeroBranchCong_hasJoin (motive := motive) zeroStep
 
-/-- `fromSteps`-facing `natRec natSucc` iota / successor-branch congruence arm. -/
+/-- `fromSteps`-facing `natRec natSucc` iota / successor-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatRecSuccSuccBranchCong_hasJoin {scope : Nat}
-    {predecessor zeroBranch succBranch steppedSuccBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch : RawTerm scope}
+    {succBranch steppedSuccBranch : RawTerm (scope + 2)}
     (succStep : Step succBranch steppedSuccBranch) :
     (fromSteps
       (Step.iotaNatRecSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))
       (iotaNatRecSuccSuccBranchCong
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         succStep).rightStep).HasJoin :=
-  iotaNatRecSuccSuccBranchCong_hasJoin succStep
+  iotaNatRecSuccSuccBranchCong_hasJoin (motive := motive) succStep
 
-/-- `fromSteps`-facing `natElim natSucc` iota / predecessor congruence arm. -/
+/-- `fromSteps`-facing `natElim natSucc` iota / predecessor congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatElimSuccPredecessorCong_hasJoin {scope : Nat}
-    {predecessor steppedPredecessor zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor steppedPredecessor zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (predecessorStep : Step predecessor steppedPredecessor) :
     (fromSteps
       (Step.iotaNatElimSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))
       (iotaNatElimSuccPredecessorCong
-        (zeroBranch := zeroBranch) (succBranch := succBranch)
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch)
         predecessorStep).rightStep).HasJoin :=
-  iotaNatElimSuccPredecessorCong_hasJoin predecessorStep
+  iotaNatElimSuccPredecessorCong_hasJoin (motive := motive) predecessorStep
 
-/-- `fromSteps`-facing `natRec natSucc` iota / predecessor congruence arm. -/
+/-- `fromSteps`-facing `natRec natSucc` iota / predecessor congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatRecSuccPredecessorCong_hasJoin {scope : Nat}
-    {predecessor steppedPredecessor zeroBranch succBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor steppedPredecessor zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (predecessorStep : Step predecessor steppedPredecessor) :
     (fromSteps
       (Step.iotaNatRecSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))
       (iotaNatRecSuccPredecessorCong
-        (zeroBranch := zeroBranch) (succBranch := succBranch)
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch)
         predecessorStep).rightStep).HasJoin :=
-  iotaNatRecSuccPredecessorCong_hasJoin predecessorStep
+  iotaNatRecSuccPredecessorCong_hasJoin (motive := motive) predecessorStep
 
-/-- Resolve every local branching whose left step is `natElim natZero` iota. -/
+/-- `fromSteps`-facing `natElim natZero` iota / discarded motive congruence arm.
+Phase-Z motive shape. -/
+theorem fromSteps_iotaNatElimZeroMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaNatElimZero
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))
+      (iotaNatElimZeroMotiveCong
+        (zeroBranch := zeroBranch) (succBranch := succBranch)
+        motiveStep).rightStep).HasJoin :=
+  iotaNatElimZeroMotiveCong_hasJoin
+    (zeroBranch := zeroBranch) (succBranch := succBranch) motiveStep
+
+/-- `fromSteps`-facing `natRec natZero` iota / discarded motive congruence arm.
+Phase-Z motive shape. -/
+theorem fromSteps_iotaNatRecZeroMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaNatRecZero
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))
+      (iotaNatRecZeroMotiveCong
+        (zeroBranch := zeroBranch) (succBranch := succBranch)
+        motiveStep).rightStep).HasJoin :=
+  iotaNatRecZeroMotiveCong_hasJoin
+    (zeroBranch := zeroBranch) (succBranch := succBranch) motiveStep
+
+/-- `fromSteps`-facing `natElim natSucc` iota / motive congruence arm.
+Phase-Z motive shape. -/
+theorem fromSteps_iotaNatElimSuccMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {predecessor zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaNatElimSucc
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))
+      (iotaNatElimSuccMotiveCong
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch) motiveStep).rightStep).HasJoin :=
+  iotaNatElimSuccMotiveCong_hasJoin
+    (predecessor := predecessor) (zeroBranch := zeroBranch)
+    (succBranch := succBranch) motiveStep
+
+/-- `fromSteps`-facing `natRec natSucc` iota / motive congruence arm.
+Phase-Z motive shape. -/
+theorem fromSteps_iotaNatRecSuccMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {predecessor zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaNatRecSucc
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch))
+      (iotaNatRecSuccMotiveCong
+        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (succBranch := succBranch) motiveStep).rightStep).HasJoin :=
+  iotaNatRecSuccMotiveCong_hasJoin
+    (predecessor := predecessor) (zeroBranch := zeroBranch)
+    (succBranch := succBranch) motiveStep
+
+/-- Resolve every local branching whose left step is `natElim natZero` iota.
+Phase-Z motive shape: the shared source permits same-root, congruence in the
+motive (head, shift 1), the selected zero-branch, the discarded succ-branch
+(at `scope + 2`), or the scrutinee (`natZero`, which cannot step). -/
 theorem fromSteps_iotaNatElimZeroLeft_hasJoin {scope : Nat}
-    {zeroBranch succBranch rightReduct : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch rightReduct : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (rightStep : Step
       (.mkGen .gen_natElim ()
-        (.childCons
-          (.mkGen .gen_natZero () .childNil)
-          (.childCons zeroBranch (.childCons succBranch .childNil))))
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaNatElimZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaNatElimZero =>
-      exact fromSteps_iotaNatElimZeroSameRoot_hasJoin zeroBranch succBranch
+      exact fromSteps_iotaNatElimZeroSameRoot_hasJoin motive zeroBranch succBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaNatElimZeroMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here succChildren zeroStep =>
-              exact fromSteps_iotaNatElimZeroBranchCong_hasJoin zeroStep
+              exact fromSteps_iotaNatElimZeroBranchCong_hasJoin (motive := motive) zeroStep
           | there zeroChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren succStep =>
-                  exact fromSteps_iotaNatElimSuccBranchCong_hasJoin succStep
-              | there succChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren succStep =>
+                  exact fromSteps_iotaNatElimSuccBranchCong_hasJoin (motive := motive) succStep
+              | there succChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
 /-- Resolve every local branching whose right step is `natElim natZero` iota. -/
 theorem fromSteps_iotaNatElimZeroRight_hasJoin {scope : Nat}
-    {zeroBranch succBranch leftReduct : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch leftReduct : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (leftStep : Step
       (.mkGen .gen_natElim ()
-        (.childCons
-          (.mkGen .gen_natZero () .childNil)
-          (.childCons zeroBranch (.childCons succBranch .childNil))))
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaNatElimZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaNatElimZeroLeft_hasJoin leftStep)
 
-/-- Resolve every local branching whose left step is `natRec natZero` iota. -/
+/-- Resolve every local branching whose left step is `natRec natZero` iota.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatRecZeroLeft_hasJoin {scope : Nat}
-    {zeroBranch succBranch rightReduct : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch rightReduct : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (rightStep : Step
       (.mkGen .gen_natRec ()
-        (.childCons
-          (.mkGen .gen_natZero () .childNil)
-          (.childCons zeroBranch (.childCons succBranch .childNil))))
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaNatRecZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaNatRecZero =>
-      exact fromSteps_iotaNatRecZeroSameRoot_hasJoin zeroBranch succBranch
+      exact fromSteps_iotaNatRecZeroSameRoot_hasJoin motive zeroBranch succBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaNatRecZeroMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here succChildren zeroStep =>
-              exact fromSteps_iotaNatRecZeroBranchCong_hasJoin zeroStep
+              exact fromSteps_iotaNatRecZeroBranchCong_hasJoin (motive := motive) zeroStep
           | there zeroChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren succStep =>
-                  exact fromSteps_iotaNatRecSuccBranchCong_hasJoin succStep
-              | there succChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren succStep =>
+                  exact fromSteps_iotaNatRecSuccBranchCong_hasJoin (motive := motive) succStep
+              | there succChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
 /-- Resolve every local branching whose right step is `natRec natZero` iota. -/
 theorem fromSteps_iotaNatRecZeroRight_hasJoin {scope : Nat}
-    {zeroBranch succBranch leftReduct : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch leftReduct : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (leftStep : Step
       (.mkGen .gen_natRec ()
-        (.childCons
-          (.mkGen .gen_natZero () .childNil)
-          (.childCons zeroBranch (.childCons succBranch .childNil))))
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaNatRecZero
-        (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
+        (motive := motive) (zeroBranch := zeroBranch) (succBranch := succBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaNatRecZeroLeft_hasJoin leftStep)
 
-/-- Resolve every local branching whose left step is `natElim natSucc` iota. -/
+/-- Resolve every local branching whose left step is `natElim natSucc` iota.
+Phase-Z motive shape: the shared source permits same-root, congruence in the
+motive (head, shift 1), the zero-branch, the succ-branch (at `scope + 2`), or
+the scrutinee (`natSucc predecessor`, whose only sub-step is in the
+predecessor). -/
 theorem fromSteps_iotaNatElimSuccLeft_hasJoin {scope : Nat}
-    {predecessor zeroBranch succBranch rightReduct : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch rightReduct : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (rightStep : Step
       (.mkGen .gen_natElim ()
-        (.childCons
-          (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-          (.childCons zeroBranch (.childCons succBranch .childNil))))
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons
+                (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaNatElimSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaNatElimSucc =>
       exact fromSteps_iotaNatElimSuccSameRoot_hasJoin
-        predecessor zeroBranch succBranch
+        motive predecessor zeroBranch succBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep with
-              | here emptyChildren predecessorStep =>
-                  exact fromSteps_iotaNatElimSuccPredecessorCong_hasJoin
-                    predecessorStep
-              | there predecessorChild emptyStep =>
-                  cases emptyStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaNatElimSuccMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here succChildren zeroStep =>
-              exact fromSteps_iotaNatElimSuccZeroBranchCong_hasJoin zeroStep
+              exact fromSteps_iotaNatElimSuccZeroBranchCong_hasJoin
+                (motive := motive) zeroStep
           | there zeroChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren succStep =>
-                  exact fromSteps_iotaNatElimSuccSuccBranchCong_hasJoin succStep
-              | there succChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren succStep =>
+                  exact fromSteps_iotaNatElimSuccSuccBranchCong_hasJoin
+                    (motive := motive) succStep
+              | there succChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep with
+                          | here innerEmptyChildren predecessorStep =>
+                              exact fromSteps_iotaNatElimSuccPredecessorCong_hasJoin
+                                (motive := motive) predecessorStep
+                          | there predecessorChild innerEmptyStep =>
+                              cases innerEmptyStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
 /-- Resolve every local branching whose right step is `natElim natSucc` iota. -/
 theorem fromSteps_iotaNatElimSuccRight_hasJoin {scope : Nat}
-    {predecessor zeroBranch succBranch leftReduct : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch leftReduct : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (leftStep : Step
       (.mkGen .gen_natElim ()
-        (.childCons
-          (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-          (.childCons zeroBranch (.childCons succBranch .childNil))))
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons
+                (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaNatElimSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaNatElimSuccLeft_hasJoin leftStep)
 
-/-- Resolve every local branching whose left step is `natRec natSucc` iota. -/
+/-- Resolve every local branching whose left step is `natRec natSucc` iota.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaNatRecSuccLeft_hasJoin {scope : Nat}
-    {predecessor zeroBranch succBranch rightReduct : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch rightReduct : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (rightStep : Step
       (.mkGen .gen_natRec ()
-        (.childCons
-          (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-          (.childCons zeroBranch (.childCons succBranch .childNil))))
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons
+                (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaNatRecSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaNatRecSucc =>
       exact fromSteps_iotaNatRecSuccSameRoot_hasJoin
-        predecessor zeroBranch succBranch
+        motive predecessor zeroBranch succBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep with
-              | here emptyChildren predecessorStep =>
-                  exact fromSteps_iotaNatRecSuccPredecessorCong_hasJoin
-                    predecessorStep
-              | there predecessorChild emptyStep =>
-                  cases emptyStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaNatRecSuccMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here succChildren zeroStep =>
-              exact fromSteps_iotaNatRecSuccZeroBranchCong_hasJoin zeroStep
+              exact fromSteps_iotaNatRecSuccZeroBranchCong_hasJoin
+                (motive := motive) zeroStep
           | there zeroChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren succStep =>
-                  exact fromSteps_iotaNatRecSuccSuccBranchCong_hasJoin succStep
-              | there succChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren succStep =>
+                  exact fromSteps_iotaNatRecSuccSuccBranchCong_hasJoin
+                    (motive := motive) succStep
+              | there succChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep with
+                          | here innerEmptyChildren predecessorStep =>
+                              exact fromSteps_iotaNatRecSuccPredecessorCong_hasJoin
+                                (motive := motive) predecessorStep
+                          | there predecessorChild innerEmptyStep =>
+                              cases innerEmptyStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
 /-- Resolve every local branching whose right step is `natRec natSucc` iota. -/
 theorem fromSteps_iotaNatRecSuccRight_hasJoin {scope : Nat}
-    {predecessor zeroBranch succBranch leftReduct : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {predecessor zeroBranch leftReduct : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
     (leftStep : Step
       (.mkGen .gen_natRec ()
-        (.childCons
-          (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-          (.childCons zeroBranch (.childCons succBranch .childNil))))
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons
+                (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaNatRecSucc
-        (predecessor := predecessor) (zeroBranch := zeroBranch)
+        (motive := motive) (predecessor := predecessor) (zeroBranch := zeroBranch)
         (succBranch := succBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaNatRecSuccLeft_hasJoin leftStep)
 
@@ -3012,49 +3262,61 @@ theorem iotaBoolFalse_iotaBoolTrue_hasSourcesDisjoint {scope : Nat}
   iotaBoolFalse_iotaBoolTrue_sourcesDisjoint
     motiveFalse motiveTrue thenFalse elseFalse thenTrue elseTrue
 
-/-- Contradiction arm for the mutually-exclusive nat-elim zero/succ root pair. -/
+/-- Contradiction arm for the mutually-exclusive nat-elim zero/succ root pair.
+Phase-Z motive shape. -/
 theorem iotaNatElimZero_iotaNatElimSucc_hasSourcesDisjoint {scope : Nat}
-    (zeroBranch succBranch predecessor
-      zeroBranchSucc succBranchSucc : RawTerm scope) :
+    (motiveZero motiveSucc : RawTerm (scope + 1))
+    (zeroBranch predecessor zeroBranchSucc : RawTerm scope)
+    (succBranch succBranchSucc : RawTerm (scope + 2)) :
     SourcesDisjoint
-      (iotaNatElimZeroSameRoot zeroBranch succBranch)
+      (iotaNatElimZeroSameRoot motiveZero zeroBranch succBranch)
       (iotaNatElimSuccSameRoot
-        predecessor zeroBranchSucc succBranchSucc) :=
+        motiveSucc predecessor zeroBranchSucc succBranchSucc) :=
   iotaNatElimZero_iotaNatElimSucc_sourcesDisjoint
-    zeroBranch succBranch predecessor zeroBranchSucc succBranchSucc
+    motiveZero motiveSucc zeroBranch predecessor zeroBranchSucc
+    succBranch succBranchSucc
 
-/-- Reverse contradiction arm for the mutually-exclusive nat-elim succ/zero root pair. -/
+/-- Reverse contradiction arm for the mutually-exclusive nat-elim succ/zero root
+pair.  Phase-Z motive shape. -/
 theorem iotaNatElimSucc_iotaNatElimZero_hasSourcesDisjoint {scope : Nat}
-    (predecessor zeroBranchSucc succBranchSucc
-      zeroBranch succBranch : RawTerm scope) :
+    (motiveSucc motiveZero : RawTerm (scope + 1))
+    (predecessor zeroBranchSucc zeroBranch : RawTerm scope)
+    (succBranchSucc succBranch : RawTerm (scope + 2)) :
     SourcesDisjoint
       (iotaNatElimSuccSameRoot
-        predecessor zeroBranchSucc succBranchSucc)
-      (iotaNatElimZeroSameRoot zeroBranch succBranch) :=
+        motiveSucc predecessor zeroBranchSucc succBranchSucc)
+      (iotaNatElimZeroSameRoot motiveZero zeroBranch succBranch) :=
   iotaNatElimSucc_iotaNatElimZero_sourcesDisjoint
-    predecessor zeroBranchSucc succBranchSucc zeroBranch succBranch
+    motiveSucc motiveZero predecessor zeroBranchSucc zeroBranch
+    succBranchSucc succBranch
 
-/-- Contradiction arm for the mutually-exclusive nat-rec zero/succ root pair. -/
+/-- Contradiction arm for the mutually-exclusive nat-rec zero/succ root pair.
+Phase-Z motive shape. -/
 theorem iotaNatRecZero_iotaNatRecSucc_hasSourcesDisjoint {scope : Nat}
-    (zeroBranch succBranch predecessor
-      zeroBranchSucc succBranchSucc : RawTerm scope) :
+    (motiveZero motiveSucc : RawTerm (scope + 1))
+    (zeroBranch predecessor zeroBranchSucc : RawTerm scope)
+    (succBranch succBranchSucc : RawTerm (scope + 2)) :
     SourcesDisjoint
-      (iotaNatRecZeroSameRoot zeroBranch succBranch)
+      (iotaNatRecZeroSameRoot motiveZero zeroBranch succBranch)
       (iotaNatRecSuccSameRoot
-        predecessor zeroBranchSucc succBranchSucc) :=
+        motiveSucc predecessor zeroBranchSucc succBranchSucc) :=
   iotaNatRecZero_iotaNatRecSucc_sourcesDisjoint
-    zeroBranch succBranch predecessor zeroBranchSucc succBranchSucc
+    motiveZero motiveSucc zeroBranch predecessor zeroBranchSucc
+    succBranch succBranchSucc
 
-/-- Reverse contradiction arm for the mutually-exclusive nat-rec succ/zero root pair. -/
+/-- Reverse contradiction arm for the mutually-exclusive nat-rec succ/zero root
+pair.  Phase-Z motive shape. -/
 theorem iotaNatRecSucc_iotaNatRecZero_hasSourcesDisjoint {scope : Nat}
-    (predecessor zeroBranchSucc succBranchSucc
-      zeroBranch succBranch : RawTerm scope) :
+    (motiveSucc motiveZero : RawTerm (scope + 1))
+    (predecessor zeroBranchSucc zeroBranch : RawTerm scope)
+    (succBranchSucc succBranch : RawTerm (scope + 2)) :
     SourcesDisjoint
       (iotaNatRecSuccSameRoot
-        predecessor zeroBranchSucc succBranchSucc)
-      (iotaNatRecZeroSameRoot zeroBranch succBranch) :=
+        motiveSucc predecessor zeroBranchSucc succBranchSucc)
+      (iotaNatRecZeroSameRoot motiveZero zeroBranch succBranch) :=
   iotaNatRecSucc_iotaNatRecZero_sourcesDisjoint
-    predecessor zeroBranchSucc succBranchSucc zeroBranch succBranch
+    motiveSucc motiveZero predecessor zeroBranchSucc zeroBranch
+    succBranchSucc succBranch
 
 /-- Contradiction arm for the mutually-exclusive list-elim nil/cons root pair.
 Phase-Z motive shape. -/

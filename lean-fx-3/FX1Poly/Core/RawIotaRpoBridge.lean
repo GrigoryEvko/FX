@@ -9,17 +9,27 @@ FIRING-69 defined the generic inductive RPO on a rose-tree algebra and oriented 
 arm abstractly; FIRING-70 proved that RPO well-founded (Nipkow/Buchholz, zero-axiom, no size measure).  This
 file BRIDGES that machinery to the actual kernel: it forgets `RawTerm`'s scope/binder-shift structure to a
 `RoseTerm Generator` (`eraseToRose`), defines the real generator precedence (the three recursive eliminators
-outrank `app`), and proves the per-arm `Step → Rpo`-decrease for the three recursive ι arms ON the real
-`Step` relation:
+outrank `app`), and proves the per-arm `Step → Rpo`-decrease for the recursive ι arms ON the real `Step`
+relation.
 
-    natElim (succ n) z s  ↝  app (app s n) (natElim n z s)        (Step.iotaNatElimSucc)
-    natRec  (succ n) z s  ↝  app (app s n) (natRec  n z s)        (Step.iotaNatRecSucc)
-    listElim (cons h t) n c  ↝  app (app (app c h) t) (listElim t n c)   (Step.iotaListElimCons)
+**Phase-Z RPO RE-SCOPE (natElim/natRec succ iotas LEAVE the oriented set).**  Under the Phase-Z motive
+migration the natElim/natRec successor iotas SUBSTITUTE — their reduct is
+`subst (cons recursiveCall (singleton pred)) succBranch`, NOT the app-chain `app (app s n) (natElim n z s)`.
+Substitution is NOT orientable by erasure (it can duplicate `recursiveCall` arbitrarily, exactly β's
+situation — see `betaNotOrientableByErasure`), so these two arms DROP OUT of the RPO-oriented ι set and join
+the β-imported boundary.  Only the listElim cons iota REMAINS RPO-orientable here (its reduct is still a pure
+app-chain reassembly with no substitution):
 
-These are EXACTLY the arms that defeat every flat measure (firing-68: size and flat scrutinee-multiset both
-grow under branch-duplication).  With `realGenRpoWellFounded` (the generic WF instantiated at the real
-precedence), all three sit in a genuine well-founded order on the real kernel — the complete termination
-certificate for the firing-68 obstruction.
+    listElim motive n c (cons h t)  ↝  app (app (app c h) t) (listElim motive n c t)   (Step.iotaListElimCons)
+
+The natElim/natRec **zero** iotas stay oriented separately (pure projection of the zero-branch — handled in
+`RawIotaRpoAssembly`'s subterm clauses, no substitution).  The old app-chain `natElimSuccReductRaw` /
+`rpo_orients_iotaNatElimSucc` definitions below are RETAINED as a documented boundary record of the
+pre-migration shape (the GENERIC `rpoOrientsElim2` is still a true rose-tree fact and is reused by other
+callers), but they NO LONGER correspond to the live `Step.iotaNatElimSucc` — flagged for orchestrator
+sign-off (see the per-lemma notes).  With `realGenRpoWellFounded` the listElim cons arm (and the non-recursive
+arms in `RawIotaRpoAssembly`) sit in a genuine well-founded order on the real kernel; the natElim/natRec succ
+arms sit honestly at the β boundary.
 
 ## What this ships
 
@@ -120,66 +130,61 @@ theorem rpoOrientsElim2 (prec : Generator → Generator → Prop) (elimGen appGe
             · nomatch smallEmpty
     · nomatch membershipEmpty
 
-/-- The natElimSucc redex on the REAL kernel (matches `Step.iotaNatElimSucc`). -/
-def natElimSuccRedexRaw {scope : Nat} (predScrut zeroBranch succBranch : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_natElim ()
-    (.childCons (.mkGen .gen_natSucc () (.childCons predScrut .childNil))
-      (.childCons zeroBranch (.childCons succBranch .childNil)))
+/-- **BOUNDARY RECORD (pre-migration shape, ROSE level).** The natElimSucc redex in the PRE-Phase-Z arity-3
+shape.  Under Phase-Z the kernel's `gen_natElim` is arity-4 (`[1,0,2,0]` binder shifts, motive first,
+scrutinee LAST), so the retired arity-3 spine is no longer even WELL-FORMED as a `RawTerm` — the cell
+calculus rejects it by construction.  The record therefore lives at the rose-erasure level, the only layer
+where the retired shape still exists. -/
+def natElimSuccRedexRaw (predScrut zeroBranch succBranch : RoseTerm Generator) :
+    RoseTerm Generator :=
+  .node .gen_natElim [.node .gen_natSucc [predScrut], zeroBranch, succBranch]
 
-/-- Its reduct `app (app s n) (natElim n z s)`. -/
-def natElimSuccReductRaw {scope : Nat} (predScrut zeroBranch succBranch : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_app ()
-    (.childCons
-      (.mkGen .gen_app () (.childCons succBranch (.childCons predScrut .childNil)))
-      (.childCons
-        (.mkGen .gen_natElim ()
-          (.childCons predScrut (.childCons zeroBranch (.childCons succBranch .childNil))))
-        .childNil))
+/-- **BOUNDARY RECORD (pre-migration shape, ROSE level).** The pre-Phase-Z app-chain reduct
+`app (app s n) (natElim n z s)`.  The live succ-iota now SUBSTITUTES
+(`subst (cons recursiveCall (singleton pred)) succBranch`), which is NOT this app-chain — this records the
+retired shape only, at the rose level (see `natElimSuccRedexRaw`). -/
+def natElimSuccReductRaw (predScrut zeroBranch succBranch : RoseTerm Generator) :
+    RoseTerm Generator :=
+  .node .gen_app
+    [.node .gen_app [succBranch, predScrut],
+     .node .gen_natElim [predScrut, zeroBranch, succBranch]]
 
-/-- The raw redex/reduct really are a `Step.iotaNatElimSucc`. -/
-theorem natElimSuccRaw_isStep {scope : Nat} (predScrut zeroBranch succBranch : RawTerm scope) :
-    Step (natElimSuccRedexRaw predScrut zeroBranch succBranch)
+/-- **BOUNDARY RECORD (pre-migration orientation — NOT the live Step).**  The PRE-Phase-Z app-chain
+redex/reduct pair is RPO-oriented by the real generator precedence (the GENERIC `rpoOrientsElim2` is a true
+rose-tree fact, retained for reuse).  This is NO LONGER `Step.iotaNatElimSucc`: under Phase-Z the live
+succ-iota SUBSTITUTES and DROPS OUT of the RPO-oriented set into the β-imported boundary (substitution is not
+orientable by erasure — `betaNotOrientableByErasure`); the retired arity-3 shape itself is no longer
+`RawTerm`-expressible, so the orientation survives only at the rose level. -/
+theorem rpo_orients_iotaNatElimSucc (predScrut zeroBranch succBranch : RoseTerm Generator) :
+    Rpo realGenPrecedence
+      (natElimSuccRedexRaw predScrut zeroBranch succBranch)
       (natElimSuccReductRaw predScrut zeroBranch succBranch) :=
-  Step.iotaNatElimSucc
+  rpoOrientsElim2 realGenPrecedence .gen_natElim .gen_app .gen_natSucc
+    (by decide) predScrut zeroBranch succBranch
 
-/-- **★ The recursive ι arm `Step.iotaNatElimSucc` is oriented by the real generator RPO** — the erased
-redex RPO-dominates the erased reduct, on the REAL kernel. -/
-theorem rpo_orients_iotaNatElimSucc {scope : Nat} (predScrut zeroBranch succBranch : RawTerm scope) :
+/-- **BOUNDARY RECORD (pre-migration shape, ROSE level).** natRecSucc redex, pre-Phase-Z arity-3 shape
+(see `natElimSuccRedexRaw`). -/
+def natRecSuccRedexRaw (predScrut zeroBranch succBranch : RoseTerm Generator) :
+    RoseTerm Generator :=
+  .node .gen_natRec [.node .gen_natSucc [predScrut], zeroBranch, succBranch]
+
+/-- **BOUNDARY RECORD (pre-migration shape, ROSE level).** natRecSucc app-chain reduct (see
+`natElimSuccReductRaw`). -/
+def natRecSuccReductRaw (predScrut zeroBranch succBranch : RoseTerm Generator) :
+    RoseTerm Generator :=
+  .node .gen_app
+    [.node .gen_app [succBranch, predScrut],
+     .node .gen_natRec [predScrut, zeroBranch, succBranch]]
+
+/-- **BOUNDARY RECORD (pre-migration orientation — NOT the live Step).**  natRec twin of
+`rpo_orients_iotaNatElimSucc`: the pre-Phase-Z app-chain pair is RPO-oriented at the rose level, but the live
+`Step.iotaNatRecSucc` now SUBSTITUTES and sits at the β boundary. -/
+theorem rpo_orients_iotaNatRecSucc (predScrut zeroBranch succBranch : RoseTerm Generator) :
     Rpo realGenPrecedence
-      (eraseToRose (natElimSuccRedexRaw predScrut zeroBranch succBranch))
-      (eraseToRose (natElimSuccReductRaw predScrut zeroBranch succBranch)) := by
-  dsimp only [natElimSuccRedexRaw, natElimSuccReductRaw, eraseToRose, eraseChildren]
-  exact rpoOrientsElim2 realGenPrecedence .gen_natElim .gen_app .gen_natSucc
-    (by decide) (eraseToRose predScrut) (eraseToRose zeroBranch) (eraseToRose succBranch)
-
-/-- natRecSucc: same shape as natElimSucc with `gen_natRec`. -/
-def natRecSuccRedexRaw {scope : Nat} (predScrut zeroBranch succBranch : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_natRec ()
-    (.childCons (.mkGen .gen_natSucc () (.childCons predScrut .childNil))
-      (.childCons zeroBranch (.childCons succBranch .childNil)))
-
-def natRecSuccReductRaw {scope : Nat} (predScrut zeroBranch succBranch : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_app ()
-    (.childCons
-      (.mkGen .gen_app () (.childCons succBranch (.childCons predScrut .childNil)))
-      (.childCons
-        (.mkGen .gen_natRec ()
-          (.childCons predScrut (.childCons zeroBranch (.childCons succBranch .childNil))))
-        .childNil))
-
-theorem natRecSuccRaw_isStep {scope : Nat} (predScrut zeroBranch succBranch : RawTerm scope) :
-    Step (natRecSuccRedexRaw predScrut zeroBranch succBranch)
+      (natRecSuccRedexRaw predScrut zeroBranch succBranch)
       (natRecSuccReductRaw predScrut zeroBranch succBranch) :=
-  Step.iotaNatRecSucc
-
-/-- **★ `Step.iotaNatRecSucc` is oriented by the real generator RPO.** -/
-theorem rpo_orients_iotaNatRecSucc {scope : Nat} (predScrut zeroBranch succBranch : RawTerm scope) :
-    Rpo realGenPrecedence
-      (eraseToRose (natRecSuccRedexRaw predScrut zeroBranch succBranch))
-      (eraseToRose (natRecSuccReductRaw predScrut zeroBranch succBranch)) := by
-  dsimp only [natRecSuccRedexRaw, natRecSuccReductRaw, eraseToRose, eraseChildren]
-  exact rpoOrientsElim2 realGenPrecedence .gen_natRec .gen_app .gen_natSucc
-    (by decide) (eraseToRose predScrut) (eraseToRose zeroBranch) (eraseToRose succBranch)
+  rpoOrientsElim2 realGenPrecedence .gen_natRec .gen_app .gen_natSucc
+    (by decide) predScrut zeroBranch succBranch
 
 /-- **Generic 3-arg eliminator-arm orientation** (listElim shape): the redex `elim (cons head tail) nilBr
 consBr` RPO-dominates `app (app (app consBr head) tail) (elim tail nilBr consBr)`, given `appGen ≺F

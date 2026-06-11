@@ -7,9 +7,11 @@ import FX1Poly.Core.StrongNormalizationIotaRedexes
     — the neutral-scrutinee regime of the DIRECT-ι eliminators (boolElim / fst / snd / idJ / idStrictRec)
 
 The non-recursive companion to `NatElimNeutralScrutineeMember` / `ListElimNeutralScrutineeMember`.  Those built
-a bespoke triple-accessibility cell-SN because the RECURSIVE recursors' ι-reduct (`natElim (succ n) … ↝ app (app
-s n) (natElim n …)`) is an application whose SN needs the branch-application interface.  The eliminators here are
-DIRECT-ι: each ι-reduct is a branch or a structural component, NOT an application —
+a bespoke multi-accessibility cell-SN because the RECURSIVE recursors' ι-reduct is non-structural: `natElim`/
+`natRec` on `succ n` SUBSTITUTES into the two-binder succ-branch (`natElim m z s (succ n) ↝
+s[var 0 := natElim m z s n, var 1 := n]`), whose SN needs the substituted-reduct interface, and `listElim` on
+`cons` reassembles an app-chain.  The eliminators here are DIRECT-ι: each ι-reduct is a branch or a structural
+component, NOT a substitution or application —
 
   * `boolElim true t e ↝ t`  /  `boolElim false t e ↝ e`     (branch selected directly)
   * `fst (pair a b) ↝ a`     /  `snd (pair a b) ↝ b`         (component projected directly)
@@ -24,9 +26,9 @@ reducibility candidate by `IsReducibilityCandidate.memberOfStronglyNormalizingNe
 
 This brings the direct-ι eliminators to the neutral-coverage parity already held by the three recursive recursors.
 The remaining two eliminators — `optionMatch` / `eitherMatch` — are application-ι
-(`optionMatch (some v) … ↝ app someBranch v`), so they need a bespoke neutral-scrutinee cell-SN (the `natElim`
-pattern) and are deferred to a follow-up; with those, all twelve `IsNeutral` eliminators are reducible over a
-neutral principal child.
+(`optionMatch (some v) … ↝ app someBranch v`), so they need a bespoke neutral-scrutinee cell-SN (the recursive-
+recursor pattern) and are deferred to a follow-up; with those, all twelve `IsNeutral` eliminators are reducible
+over a neutral principal child.
 
 Fundamental-independent (fixed result candidate, the pure Tait neutral-eliminator argument).
 

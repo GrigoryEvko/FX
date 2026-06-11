@@ -203,14 +203,18 @@ theorem cd_sndPair_eq {scope : Nat} (firstValue secondValue : RawTerm scope) :
       (.childCons firstValue (.childCons secondValue .childNil))) .childNil)) =
       RawTerm.completeDevelopment secondValue := rfl
 
-theorem cd_natElimZero_eq {scope : Nat} (zeroBranch succBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_natElim () (.childCons (.mkGen .gen_natZero () .childNil)
-      (.childCons zeroBranch (.childCons succBranch .childNil)))) =
+theorem cd_natElimZero_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)) :
+    RawTerm.completeDevelopment (.mkGen .gen_natElim () (.childCons motive
+      (.childCons zeroBranch (.childCons succBranch
+        (.childCons (.mkGen .gen_natZero () .childNil) .childNil))))) =
       RawTerm.completeDevelopment zeroBranch := rfl
 
-theorem cd_natRecZero_eq {scope : Nat} (zeroBranch succBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_natRec () (.childCons (.mkGen .gen_natZero () .childNil)
-      (.childCons zeroBranch (.childCons succBranch .childNil)))) =
+theorem cd_natRecZero_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)) :
+    RawTerm.completeDevelopment (.mkGen .gen_natRec () (.childCons motive
+      (.childCons zeroBranch (.childCons succBranch
+        (.childCons (.mkGen .gen_natZero () .childNil) .childNil))))) =
       RawTerm.completeDevelopment zeroBranch := rfl
 
 theorem cd_listElimNil_eq {scope : Nat} (motive : RawTerm (scope + 1))
@@ -246,27 +250,35 @@ theorem cd_eitherMatchInr_eq {scope : Nat} (value leftBranch rightBranch : RawTe
       .mkGen .gen_app () (.childCons (RawTerm.completeDevelopment rightBranch)
         (.childCons (RawTerm.completeDevelopment value) .childNil)) := rfl
 
-theorem cd_natElimSucc_eq {scope : Nat} (predecessor zeroBranch succBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_natElim () (.childCons
-      (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-      (.childCons zeroBranch (.childCons succBranch .childNil)))) =
-      .mkGen .gen_app () (.childCons
-        (.mkGen .gen_app () (.childCons (RawTerm.completeDevelopment succBranch)
-          (.childCons (RawTerm.completeDevelopment predecessor) .childNil)))
-        (.childCons (.mkGen .gen_natElim () (.childCons (RawTerm.completeDevelopment predecessor)
-          (.childCons (RawTerm.completeDevelopment zeroBranch)
-            (.childCons (RawTerm.completeDevelopment succBranch) .childNil)))) .childNil)) := rfl
+theorem cd_natElimSucc_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (predecessor zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)) :
+    RawTerm.completeDevelopment (.mkGen .gen_natElim () (.childCons motive
+      (.childCons zeroBranch (.childCons succBranch
+        (.childCons (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) .childNil))))) =
+      RawTerm.subst
+        (RawTermSubst.cons
+          (.mkGen .gen_natElim ()
+            (.childCons (RawTerm.completeDevelopment motive)
+              (.childCons (RawTerm.completeDevelopment zeroBranch)
+                (.childCons (RawTerm.completeDevelopment succBranch)
+                  (.childCons (RawTerm.completeDevelopment predecessor) .childNil)))))
+          (RawTermSubst.singleton (RawTerm.completeDevelopment predecessor)))
+        (RawTerm.completeDevelopment succBranch) := rfl
 
-theorem cd_natRecSucc_eq {scope : Nat} (predecessor zeroBranch succBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_natRec () (.childCons
-      (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-      (.childCons zeroBranch (.childCons succBranch .childNil)))) =
-      .mkGen .gen_app () (.childCons
-        (.mkGen .gen_app () (.childCons (RawTerm.completeDevelopment succBranch)
-          (.childCons (RawTerm.completeDevelopment predecessor) .childNil)))
-        (.childCons (.mkGen .gen_natRec () (.childCons (RawTerm.completeDevelopment predecessor)
-          (.childCons (RawTerm.completeDevelopment zeroBranch)
-            (.childCons (RawTerm.completeDevelopment succBranch) .childNil)))) .childNil)) := rfl
+theorem cd_natRecSucc_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (predecessor zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)) :
+    RawTerm.completeDevelopment (.mkGen .gen_natRec () (.childCons motive
+      (.childCons zeroBranch (.childCons succBranch
+        (.childCons (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) .childNil))))) =
+      RawTerm.subst
+        (RawTermSubst.cons
+          (.mkGen .gen_natRec ()
+            (.childCons (RawTerm.completeDevelopment motive)
+              (.childCons (RawTerm.completeDevelopment zeroBranch)
+                (.childCons (RawTerm.completeDevelopment succBranch)
+                  (.childCons (RawTerm.completeDevelopment predecessor) .childNil)))))
+          (RawTermSubst.singleton (RawTerm.completeDevelopment predecessor)))
+        (RawTerm.completeDevelopment succBranch) := rfl
 
 theorem cd_listElimCons_eq {scope : Nat} (motive : RawTerm (scope + 1))
     (headValue tailValue nilBranch consBranch : RawTerm scope) :

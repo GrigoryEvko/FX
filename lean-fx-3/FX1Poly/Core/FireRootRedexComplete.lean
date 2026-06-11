@@ -82,8 +82,10 @@ theorem RawTerm.hasRootStepSource_imp_fireRootRedex_isSome {scope : Nat} {genera
               subst hPair; rfl
         · by_cases hNatElim : generator = .gen_natElim
           · subst hNatElim
+            -- Phase-Z spine: (motive, zero, succ, scrutinee); the scrutinee is the LAST child.
             match children with
-            | .childCons scrutinee (.childCons _zeroBranch (.childCons _succBranch .childNil)) =>
+            | .childCons _motive
+                (.childCons _zeroBranch (.childCons _succBranch (.childCons scrutinee .childNil))) =>
                 have srcTrue :
                     (RawTerm.isNatZeroSource scrutinee || RawTerm.isNatSuccSource scrutinee) = true :=
                   detected
@@ -96,8 +98,10 @@ theorem RawTerm.hasRootStepSource_imp_fireRootRedex_isSome {scope : Nat} {genera
                     subst hSucc; rfl
           · by_cases hNatRec : generator = .gen_natRec
             · subst hNatRec
+              -- Phase-Z spine: (motive, zero, succ, scrutinee); the scrutinee is the LAST child.
               match children with
-              | .childCons scrutinee (.childCons _zeroBranch (.childCons _succBranch .childNil)) =>
+              | .childCons _motive
+                  (.childCons _zeroBranch (.childCons _succBranch (.childCons scrutinee .childNil))) =>
                   have srcTrue :
                       (RawTerm.isNatZeroSource scrutinee || RawTerm.isNatSuccSource scrutinee) = true :=
                     detected

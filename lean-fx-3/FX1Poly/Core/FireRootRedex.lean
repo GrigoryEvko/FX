@@ -89,7 +89,9 @@ def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
             else none
   else if hNatElim : generator = .gen_natElim then
     match (hNatElim ▸ children : RawTermChildren (Generator.gen_natElim.binderShifts) scope) with
-    | .childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)) =>
+    -- Phase-Z spine: (motive, zero, succ, scrutinee); scrutinee is the LAST child.
+    | .childCons motive
+        (.childCons zeroBranch (.childCons succBranch (.childCons scrutinee .childNil))) =>
         match scrutinee with
         | .mkGen scrutineeGenerator _scrutineePayload scrutineeChildren =>
             if scrutineeGenerator = .gen_natZero then some zeroBranch
@@ -97,18 +99,23 @@ def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
               match (hSucc ▸ scrutineeChildren :
                   RawTermChildren (Generator.gen_natSucc.binderShifts) scope) with
               | .childCons predecessor .childNil =>
-                  some (.mkGen .gen_app ()
-                    (.childCons
-                      (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
-                      (.childCons
-                        (.mkGen .gen_natElim ()
-                          (.childCons predecessor
-                            (.childCons zeroBranch (.childCons succBranch .childNil))))
-                        .childNil)))
+                  -- SUBSTITUTING succ-iota: var 0 := recursiveCall (the IH = natElim over the
+                  -- predecessor, threading the same motive/branches), var 1 := predecessor.
+                  some (RawTerm.subst
+                    (RawTermSubst.cons
+                      (.mkGen .gen_natElim ()
+                        (.childCons motive
+                          (.childCons zeroBranch
+                            (.childCons succBranch
+                              (.childCons predecessor .childNil)))))
+                      (RawTermSubst.singleton predecessor))
+                    succBranch)
             else none
   else if hNatRec : generator = .gen_natRec then
     match (hNatRec ▸ children : RawTermChildren (Generator.gen_natRec.binderShifts) scope) with
-    | .childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)) =>
+    -- Phase-Z spine: (motive, zero, succ, scrutinee); scrutinee is the LAST child.
+    | .childCons motive
+        (.childCons zeroBranch (.childCons succBranch (.childCons scrutinee .childNil))) =>
         match scrutinee with
         | .mkGen scrutineeGenerator _scrutineePayload scrutineeChildren =>
             if scrutineeGenerator = .gen_natZero then some zeroBranch
@@ -116,14 +123,17 @@ def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
               match (hSucc ▸ scrutineeChildren :
                   RawTermChildren (Generator.gen_natSucc.binderShifts) scope) with
               | .childCons predecessor .childNil =>
-                  some (.mkGen .gen_app ()
-                    (.childCons
-                      (.mkGen .gen_app () (.childCons succBranch (.childCons predecessor .childNil)))
-                      (.childCons
-                        (.mkGen .gen_natRec ()
-                          (.childCons predecessor
-                            (.childCons zeroBranch (.childCons succBranch .childNil))))
-                        .childNil)))
+                  -- SUBSTITUTING succ-iota: var 0 := recursiveCall (the IH = natRec over the
+                  -- predecessor, threading the same motive/branches), var 1 := predecessor.
+                  some (RawTerm.subst
+                    (RawTermSubst.cons
+                      (.mkGen .gen_natRec ()
+                        (.childCons motive
+                          (.childCons zeroBranch
+                            (.childCons succBranch
+                              (.childCons predecessor .childNil)))))
+                      (RawTermSubst.singleton predecessor))
+                    succBranch)
             else none
   else if hListElim : generator = .gen_listElim then
     match (hListElim ▸ children : RawTermChildren (Generator.gen_listElim.binderShifts) scope) with
@@ -312,8 +322,10 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                     rw [key] at fired; nomatch fired
         · by_cases hNatElim : generator = .gen_natElim
           · subst hNatElim
+            -- Phase-Z spine: (motive, zero, succ, scrutinee); the scrutinee head selects the iota.
             match children with
-            | .childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)) =>
+            | .childCons motive
+                (.childCons zeroBranch (.childCons succBranch (.childCons scrutinee .childNil))) =>
                 match scrutinee with
                 | .mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
                     by_cases hZero : scrutineeGenerator = .gen_natZero
@@ -321,8 +333,11 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                       match scrutineeChildren with
                       | .childNil =>
                           have key : RawTerm.fireRootRedex .gen_natElim payload
-                              (.childCons (.mkGen .gen_natZero scrutineePayload .childNil)
-                                (.childCons zeroBranch (.childCons succBranch .childNil))) =
+                              (.childCons motive
+                                (.childCons zeroBranch
+                                  (.childCons succBranch
+                                    (.childCons (.mkGen .gen_natZero scrutineePayload .childNil)
+                                      .childNil)))) =
                               some zeroBranch := rfl
                           rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                           exact Step.iotaNatElimZero
@@ -331,29 +346,38 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                         match scrutineeChildren with
                         | .childCons predecessor .childNil =>
                             have key : RawTerm.fireRootRedex .gen_natElim payload
-                                (.childCons (.mkGen .gen_natSucc scrutineePayload
-                                  (.childCons predecessor .childNil))
-                                  (.childCons zeroBranch (.childCons succBranch .childNil))) =
-                                some (.mkGen .gen_app ()
-                                  (.childCons
-                                    (.mkGen .gen_app ()
-                                      (.childCons succBranch (.childCons predecessor .childNil)))
-                                    (.childCons
-                                      (.mkGen .gen_natElim ()
-                                        (.childCons predecessor
-                                          (.childCons zeroBranch (.childCons succBranch .childNil))))
-                                      .childNil))) := rfl
+                                (.childCons motive
+                                  (.childCons zeroBranch
+                                    (.childCons succBranch
+                                      (.childCons (.mkGen .gen_natSucc scrutineePayload
+                                        (.childCons predecessor .childNil))
+                                        .childNil)))) =
+                                some (RawTerm.subst
+                                  (RawTermSubst.cons
+                                    (.mkGen .gen_natElim ()
+                                      (.childCons motive
+                                        (.childCons zeroBranch
+                                          (.childCons succBranch
+                                            (.childCons predecessor .childNil)))))
+                                    (RawTermSubst.singleton predecessor))
+                                  succBranch) := rfl
                             rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                             exact Step.iotaNatElimSucc
                       · have key : RawTerm.fireRootRedex .gen_natElim payload
-                            (.childCons (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
-                              (.childCons zeroBranch (.childCons succBranch .childNil))) = none :=
+                            (.childCons motive
+                              (.childCons zeroBranch
+                                (.childCons succBranch
+                                  (.childCons
+                                    (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
+                                    .childNil)))) = none :=
                           (if_neg hZero).trans (dif_neg hSucc)
                         rw [key] at fired; nomatch fired
           · by_cases hNatRec : generator = .gen_natRec
             · subst hNatRec
+              -- Phase-Z spine: (motive, zero, succ, scrutinee); the scrutinee head selects the iota.
               match children with
-              | .childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)) =>
+              | .childCons motive
+                  (.childCons zeroBranch (.childCons succBranch (.childCons scrutinee .childNil))) =>
                   match scrutinee with
                   | .mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
                       by_cases hZero : scrutineeGenerator = .gen_natZero
@@ -361,8 +385,11 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                         match scrutineeChildren with
                         | .childNil =>
                             have key : RawTerm.fireRootRedex .gen_natRec payload
-                                (.childCons (.mkGen .gen_natZero scrutineePayload .childNil)
-                                  (.childCons zeroBranch (.childCons succBranch .childNil))) =
+                                (.childCons motive
+                                  (.childCons zeroBranch
+                                    (.childCons succBranch
+                                      (.childCons (.mkGen .gen_natZero scrutineePayload .childNil)
+                                        .childNil)))) =
                                 some zeroBranch := rfl
                             rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                             exact Step.iotaNatRecZero
@@ -371,23 +398,30 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                           match scrutineeChildren with
                           | .childCons predecessor .childNil =>
                               have key : RawTerm.fireRootRedex .gen_natRec payload
-                                  (.childCons (.mkGen .gen_natSucc scrutineePayload
-                                    (.childCons predecessor .childNil))
-                                    (.childCons zeroBranch (.childCons succBranch .childNil))) =
-                                  some (.mkGen .gen_app ()
-                                    (.childCons
-                                      (.mkGen .gen_app ()
-                                        (.childCons succBranch (.childCons predecessor .childNil)))
-                                      (.childCons
-                                        (.mkGen .gen_natRec ()
-                                          (.childCons predecessor
-                                            (.childCons zeroBranch (.childCons succBranch .childNil))))
-                                        .childNil))) := rfl
+                                  (.childCons motive
+                                    (.childCons zeroBranch
+                                      (.childCons succBranch
+                                        (.childCons (.mkGen .gen_natSucc scrutineePayload
+                                          (.childCons predecessor .childNil))
+                                          .childNil)))) =
+                                  some (RawTerm.subst
+                                    (RawTermSubst.cons
+                                      (.mkGen .gen_natRec ()
+                                        (.childCons motive
+                                          (.childCons zeroBranch
+                                            (.childCons succBranch
+                                              (.childCons predecessor .childNil)))))
+                                      (RawTermSubst.singleton predecessor))
+                                    succBranch) := rfl
                               rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                               exact Step.iotaNatRecSucc
                         · have key : RawTerm.fireRootRedex .gen_natRec payload
-                              (.childCons (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
-                                (.childCons zeroBranch (.childCons succBranch .childNil))) = none :=
+                              (.childCons motive
+                                (.childCons zeroBranch
+                                  (.childCons succBranch
+                                    (.childCons
+                                      (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
+                                      .childNil)))) = none :=
                             (if_neg hZero).trans (dif_neg hSucc)
                           rw [key] at fired; nomatch fired
             · by_cases hListElim : generator = .gen_listElim

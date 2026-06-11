@@ -10,10 +10,13 @@ substitution.  The dependent reducibility relation dispatches on the COMPLETE we
 well-typed term under a reducible closing substitution — reasons about how the substituted term reduces.
 This file lifts substitution-commutation to the full relation.
 
-  * `IotaHeadStep.subst` — root-ι commutes with substitution.  Every ι contractum is Church-encoded (a
+  * `IotaHeadStep.subst` — root-ι commutes with substitution.  Most ι contracta are Church-encoded (a
     reshuffling of the redex's children into nested applications, NO `subst0`; see the redex/contractum
     pairs in `IotaHeadStep`), so substitution distributes through both redex and contractum definitionally
-    and each of the sixteen rules transports by a bare constructor application.
+    and those rules transport by a bare constructor application.  The TWO substituting ι rules
+    (`iotaNatElimSucc` / `iotaNatRecSucc`, whose Phase-Z contractum substitutes the recursive call and
+    predecessor into the two-binder succ-branch) instead rewrite by the two-binder commute helper
+    `RawTerm.natSuccElim_subst_commute` before the constructor application.
 
   * `WeakHeadStep.subst` — the complete weak-head reduction commutes with substitution.  `beta` reshapes
     its contractum by `RawTerm.subst0_subst_commute` (the head β-redex's `subst0` interacts with the outer
@@ -34,9 +37,107 @@ every other arm a constructor on the induction hypothesis (or `IotaHeadStep.subs
 namespace FX1Poly.Core
 open FX1Poly.Foundation
 
-/-- **Root-ι reduction commutes with substitution.**  Each ι contractum is a Church-encoded reshuffling
-of the redex's children (no `subst0`), so substitution distributes through both sides and every rule
-transports by its own constructor. -/
+/-- **A `cons`-extended substitution annihilates an outer weakening.**
+
+`subst (cons head tail) (weaken sourceTerm) = subst tail sourceTerm`: the fresh binder slot the weakening
+introduces is exactly the slot `cons` fills, so they cancel.  Proved locally (the `RawTermSubstConsCommute`
+analog `RawTerm.weaken_subst_cons` lives above this file's import frontier) by `weaken = rename weaken`,
+`rename_subst_commute`, and the `rfl`-pointwise `(cons head tail) ∘ weaken = tail`. -/
+theorem RawTerm.weaken_subst_cons_local {scope targetScope : Nat}
+    (sourceTerm : RawTerm scope) (headTerm : RawTerm targetScope)
+    (tailSubst : RawTermSubst scope targetScope) :
+    RawTerm.subst (RawTermSubst.cons headTerm tailSubst)
+        (RawTerm.weaken sourceTerm) =
+      RawTerm.subst tailSubst sourceTerm := by
+  rw [RawTerm.weaken_eq_rename]
+  rw [RawTerm.rename_subst_commute RawRenaming.weaken
+    (RawTermSubst.cons headTerm tailSubst) sourceTerm]
+  apply RawTerm.subst_pointwise
+  intro position
+  cases position with
+  | mk positionValue positionBound => rfl
+
+/-- **The two-binder succ-iota contractum commutes with an outer substitution.**
+
+The Phase-Z natElim/natRec succ-iota substitutes into a two-binder succ-branch via
+`cons recursiveCall (singleton predecessor)` (`var 0 := recursiveCall`, `var 1 := predecessor`).
+Pushing an outer parallel substitution `sigma` through that contractum lifts `sigma` twice for the
+succ-branch (`iterateLiftRaw sigma 2`) and substitutes `sigma` into each substituent:
+
+  `subst sigma (subst (cons recCall (singleton pred)) succBranch)
+     = subst (cons (subst sigma recCall) (singleton (subst sigma pred)))
+             (subst (iterateLiftRaw sigma 2) succBranch)`.
+
+The two-binder analog of `RawTerm.subst0_subst_commute` / `RawTerm.subst_cons_eq_subst0_lift`, proved by
+the identical `subst_compose` + `subst_pointwise` template: at positions 0 and 1 both sides hit the consed
+head / singleton head (`rfl` after unfolding); at `k + 2` both reduce to `sigma k` (the two lifted
+weakenings cancel against the cons and singleton heads via `RawTerm.weaken_subst_singleton`). -/
+theorem RawTerm.natSuccElim_subst_commute {sourceScope targetScope : Nat}
+    (sigma : RawTermSubst sourceScope targetScope)
+    (recursiveCall predecessor : RawTerm sourceScope)
+    (succBranch : RawTerm (sourceScope + 2)) :
+    RawTerm.subst sigma
+        (RawTerm.subst
+          (RawTermSubst.cons recursiveCall (RawTermSubst.singleton predecessor))
+          succBranch) =
+      RawTerm.subst
+        (RawTermSubst.cons
+          (RawTerm.subst sigma recursiveCall)
+          (RawTermSubst.singleton (RawTerm.subst sigma predecessor)))
+        (RawTerm.subst (iterateLiftRaw sigma 2) succBranch) := by
+  rw [RawTerm.subst_compose
+    (RawTermSubst.cons recursiveCall (RawTermSubst.singleton predecessor)) sigma succBranch]
+  rw [RawTerm.subst_compose (iterateLiftRaw sigma 2)
+    (RawTermSubst.cons
+      (RawTerm.subst sigma recursiveCall)
+      (RawTermSubst.singleton (RawTerm.subst sigma predecessor)))
+    succBranch]
+  apply RawTerm.subst_pointwise
+  intro position
+  match position with
+  | ⟨0, _⟩ =>
+      -- LHS = subst σ ((cons R (singleton P)) 0) = subst σ R.
+      -- RHS = subst (cons (subst σ R) _) ((iterateLiftRaw σ 2) 0)
+      --     = subst (cons (subst σ R) _) (var 0) = subst σ R.
+      rfl
+  | ⟨1, _⟩ =>
+      -- LHS = subst σ ((cons R (singleton P)) 1) = subst σ ((singleton P) 0) = subst σ P.
+      -- RHS = subst (cons _ (singleton (subst σ P))) ((iterateLiftRaw σ 2) 1)
+      --     = subst (cons _ (singleton (subst σ P))) (weaken (var 0))
+      --     = subst (cons _ (singleton (subst σ P))) (var 1)
+      --     = (singleton (subst σ P)) 0 = subst σ P.
+      rfl
+  | ⟨priorValue + 2, positionBound⟩ =>
+      have innerBound : priorValue < sourceScope :=
+        Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ positionBound)
+      show RawTerm.subst sigma
+            ((RawTermSubst.cons recursiveCall
+              (RawTermSubst.singleton predecessor)) ⟨priorValue + 2, positionBound⟩) =
+          RawTerm.subst
+            (RawTermSubst.cons
+              (RawTerm.subst sigma recursiveCall)
+              (RawTermSubst.singleton (RawTerm.subst sigma predecessor)))
+            ((iterateLiftRaw sigma 2) ⟨priorValue + 2, positionBound⟩)
+      have lhsReduces :
+          RawTerm.subst sigma
+              ((RawTermSubst.cons recursiveCall
+                (RawTermSubst.singleton predecessor)) ⟨priorValue + 2, positionBound⟩) =
+            sigma ⟨priorValue, innerBound⟩ := rfl
+      have rhsLift :
+          (iterateLiftRaw sigma 2) ⟨priorValue + 2, positionBound⟩ =
+            RawTerm.weaken (RawTerm.weaken (sigma ⟨priorValue, innerBound⟩)) := rfl
+      rw [lhsReduces, rhsLift,
+        RawTerm.weaken_subst_cons_local
+          (RawTerm.weaken (sigma ⟨priorValue, innerBound⟩))
+          (RawTerm.subst sigma recursiveCall)
+          (RawTermSubst.singleton (RawTerm.subst sigma predecessor)),
+        RawTerm.weaken_subst_singleton
+          (sigma ⟨priorValue, innerBound⟩) (RawTerm.subst sigma predecessor)]
+
+/-- **Root-ι reduction commutes with substitution.**  Most ι contracta are Church-encoded reshufflings
+of the redex's children (no `subst0`), so substitution distributes through both sides and those rules
+transport by their own constructor.  The two substituting succ-iotas (`iotaNatElimSucc` /
+`iotaNatRecSucc`) rewrite by `RawTerm.natSuccElim_subst_commute` first. -/
 theorem IotaHeadStep.subst {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope)
     {term reduct : RawTerm sourceScope} (iotaStep : IotaHeadStep term reduct) :
@@ -53,8 +154,10 @@ theorem IotaHeadStep.subst {sourceScope targetScope : Nat}
   | iotaOptionMatchSome => exact IotaHeadStep.iotaOptionMatchSome
   | iotaEitherMatchInl => exact IotaHeadStep.iotaEitherMatchInl
   | iotaEitherMatchInr => exact IotaHeadStep.iotaEitherMatchInr
-  | iotaNatElimSucc => exact IotaHeadStep.iotaNatElimSucc
-  | iotaNatRecSucc => exact IotaHeadStep.iotaNatRecSucc
+  | iotaNatElimSucc =>
+      rw [RawTerm.natSuccElim_subst_commute]; exact IotaHeadStep.iotaNatElimSucc
+  | iotaNatRecSucc =>
+      rw [RawTerm.natSuccElim_subst_commute]; exact IotaHeadStep.iotaNatRecSucc
   | iotaListElimCons => exact IotaHeadStep.iotaListElimCons
   | iotaIdJRefl => exact IotaHeadStep.iotaIdJRefl
   | iotaIdStrictRecRefl => exact IotaHeadStep.iotaIdStrictRecRefl

@@ -147,10 +147,18 @@ theorem ParStep.substPointwise {sourceScope targetScope : Nat}
         ParStep.iotaFstPair (ihFirst sigma tau pw))
       (fun {scope} {firstValue secondValue secondValue'} _step ihSecond {targetScope} sigma tau pw =>
         ParStep.iotaSndPair (ihSecond sigma tau pw))
-      (fun {scope} {zeroBranch zeroBranch' succBranch} _step ihZero {targetScope} sigma tau pw =>
-        ParStep.iotaNatElimZero (ihZero sigma tau pw))
-      (fun {scope} {zeroBranch zeroBranch' succBranch} _step ihZero {targetScope} sigma tau pw =>
-        ParStep.iotaNatRecZero (ihZero sigma tau pw))
+      (fun {scope} {motive motive' zeroBranch zeroBranch' succBranch} _stepMotive _stepZero
+          ihMotive ihZero {targetScope} sigma tau pw =>
+        ParStep.iotaNatElimZero
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihZero sigma tau pw))
+      (fun {scope} {motive motive' zeroBranch zeroBranch' succBranch} _stepMotive _stepZero
+          ihMotive ihZero {targetScope} sigma tau pw =>
+        ParStep.iotaNatRecZero
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihZero sigma tau pw))
       (fun {scope} {motive motive' nilBranch nilBranch' consBranch} _stepMotive _stepNil
           ihMotive ihNil {targetScope} sigma tau pw =>
         ParStep.iotaListElimNil
@@ -168,12 +176,28 @@ theorem ParStep.substPointwise {sourceScope targetScope : Nat}
       (fun {scope} {value value' leftBranch rightBranch rightBranch'} _stepRight _stepVal
           ihRight ihVal {targetScope} sigma tau pw =>
         ParStep.iotaEitherMatchInr (ihRight sigma tau pw) (ihVal sigma tau pw))
-      (fun {scope} {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
-          _stepPred _stepZero _stepSucc ihPred ihZero ihSucc {targetScope} sigma tau pw =>
-        ParStep.iotaNatElimSucc (ihPred sigma tau pw) (ihZero sigma tau pw) (ihSucc sigma tau pw))
-      (fun {scope} {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
-          _stepPred _stepZero _stepSucc ihPred ihZero ihSucc {targetScope} sigma tau pw =>
-        ParStep.iotaNatRecSucc (ihPred sigma tau pw) (ihZero sigma tau pw) (ihSucc sigma tau pw))
+      (fun {scope} {motive motive' predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
+          _stepMotive _stepPred _stepZero _stepSucc ihMotive ihPred ihZero ihSucc
+          {targetScope} sigma tau pw => by
+        rw [RawTerm.substPair_subst_commute]
+        exact ParStep.iotaNatElimSucc
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihPred sigma tau pw) (ihZero sigma tau pw)
+          (ihSucc (RawTermSubst.lift (RawTermSubst.lift sigma))
+            (RawTermSubst.lift (RawTermSubst.lift tau))
+            (RawTermSubst.lift_pointwiseParStep (RawTermSubst.lift_pointwiseParStep pw))))
+      (fun {scope} {motive motive' predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
+          _stepMotive _stepPred _stepZero _stepSucc ihMotive ihPred ihZero ihSucc
+          {targetScope} sigma tau pw => by
+        rw [RawTerm.substPair_subst_commute]
+        exact ParStep.iotaNatRecSucc
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihPred sigma tau pw) (ihZero sigma tau pw)
+          (ihSucc (RawTermSubst.lift (RawTermSubst.lift sigma))
+            (RawTermSubst.lift (RawTermSubst.lift tau))
+            (RawTermSubst.lift_pointwiseParStep (RawTermSubst.lift_pointwiseParStep pw))))
       (fun {scope} {motive motive' headVal headVal' tailVal tailVal'
             nilBranch nilBranch' consBranch consBranch'}
           _stepMotive _stepHead _stepTail _stepNil _stepCons
@@ -218,5 +242,46 @@ theorem ParStep.subst0_diagonal {scope : Nat} {body body' : RawTerm (scope + 1)}
     ParStep (RawTerm.subst0 body arg) (RawTerm.subst0 body' arg') :=
   ParStep.substPointwise bodyStep (RawTermSubst.singleton arg) (RawTermSubst.singleton arg')
     (RawTermSubst.singleton_pointwiseParStep argStep)
+
+/-- The `cons` extension of two pointwise-ParStep-related substitutions by two `ParStep`-related heads is
+pointwise-ParStep-related: position 0 carries the head step, the tail defers to the tail relatedness.  The
+two-substituent analog of `RawTermSubst.singleton_pointwiseParStep`. -/
+theorem RawTermSubst.cons_pointwiseParStep {scope targetScope : Nat}
+    {headTerm headTerm' : RawTerm targetScope}
+    {tailSubst tailSubst' : RawTermSubst scope targetScope}
+    (headStep : ParStep headTerm headTerm')
+    (tailRelatedness : RawTermSubst.PointwiseParStep tailSubst tailSubst') :
+    RawTermSubst.PointwiseParStep
+      (RawTermSubst.cons headTerm tailSubst) (RawTermSubst.cons headTerm' tailSubst') := by
+  intro position
+  match position with
+  | ⟨0, _⟩ => exact headStep
+  | ⟨priorPositionValue + 1, positionBound⟩ =>
+      exact tailRelatedness ⟨priorPositionValue, Nat.lt_of_succ_lt_succ positionBound⟩
+
+/-- The `pair` substitutions for two `ParStep`-related inner/outer arguments are pointwise-ParStep-related:
+the `cons` of the inner step onto the `singleton` of the outer step. -/
+theorem RawTermSubst.pair_pointwiseParStep {scope : Nat}
+    {innerArg innerArg' outerArg outerArg' : RawTerm scope}
+    (innerStep : ParStep innerArg innerArg') (outerStep : ParStep outerArg outerArg') :
+    RawTermSubst.PointwiseParStep
+      (RawTermSubst.pair innerArg outerArg) (RawTermSubst.pair innerArg' outerArg') :=
+  RawTermSubst.cons_pointwiseParStep innerStep
+    (RawTermSubst.singleton_pointwiseParStep outerStep)
+
+/-- **Two-variable diagonal parallel substitution.**  Substituting parallel-reduced inner/outer arguments
+into a parallel-reduced two-binder body parallel-reduces.  `ParStep.substPointwise` at the two `pair`
+substitutions.  This is the engine the triangle's natElim/natRec succ-iota arms fire with — their
+contractums embed `substPair` of the developed components (the recursive call as inner = IH, the
+predecessor as outer). -/
+theorem ParStep.substPair_diagonal {scope : Nat} {body body' : RawTerm (scope + 2)}
+    {innerArg innerArg' outerArg outerArg' : RawTerm scope}
+    (bodyStep : ParStep body body')
+    (innerStep : ParStep innerArg innerArg') (outerStep : ParStep outerArg outerArg') :
+    ParStep (RawTerm.substPair body innerArg outerArg)
+      (RawTerm.substPair body' innerArg' outerArg') :=
+  ParStep.substPointwise bodyStep (RawTermSubst.pair innerArg outerArg)
+    (RawTermSubst.pair innerArg' outerArg')
+    (RawTermSubst.pair_pointwiseParStep innerStep outerStep)
 
 end FX1Poly.Core

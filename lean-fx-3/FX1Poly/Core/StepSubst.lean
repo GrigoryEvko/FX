@@ -1,5 +1,6 @@
 import FX1Poly.Core.StepStar
 import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Core.RawTermSubstPair
 import FX1Poly.Core.RawTermFresh
 import FX1Poly.Core.StructuralInductionPrimitives
 
@@ -60,9 +61,9 @@ theorem Step.subst {sourceScope targetScope : Nat}
         Step.iotaFstPair)
       (fun {scope} {firstValue} {secondValue} {targetScope} sigma =>
         Step.iotaSndPair)
-      (fun {scope} {zeroBranch} {succBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {zeroBranch} {succBranch} {targetScope} sigma =>
         Step.iotaNatElimZero)
-      (fun {scope} {zeroBranch} {succBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {zeroBranch} {succBranch} {targetScope} sigma =>
         Step.iotaNatRecZero)
       (fun {scope} {motive} {nilBranch} {consBranch} {targetScope} sigma =>
         Step.iotaListElimNil)
@@ -74,10 +75,28 @@ theorem Step.subst {sourceScope targetScope : Nat}
         Step.iotaEitherMatchInl)
       (fun {scope} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
         Step.iotaEitherMatchInr)
-      (fun {scope} {predecessor} {zeroBranch} {succBranch} {targetScope}
-          sigma => Step.iotaNatElimSucc)
-      (fun {scope} {predecessor} {zeroBranch} {succBranch} {targetScope}
-          sigma => Step.iotaNatRecSucc)
+      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch}
+          {targetScope} sigma => by
+        -- SUBSTITUTING succ-iota: the substituted source still fires `iotaNatElimSucc`,
+        -- and `cons_singleton_subst_commute` reshapes the substituted reduct to the fired
+        -- reduct (the recursive call `subst sigma (natElim ...)` reduces by `rfl` to the
+        -- substituted-children natElim, matching the constructor's reduct).
+        rw [RawTerm.cons_singleton_subst_commute succBranch
+          (.mkGen .gen_natElim ()
+            (.childCons motive
+              (.childCons zeroBranch
+                (.childCons succBranch (.childCons predecessor .childNil)))))
+          predecessor sigma]
+        exact Step.iotaNatElimSucc)
+      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch}
+          {targetScope} sigma => by
+        rw [RawTerm.cons_singleton_subst_commute succBranch
+          (.mkGen .gen_natRec ()
+            (.childCons motive
+              (.childCons zeroBranch
+                (.childCons succBranch (.childCons predecessor .childNil)))))
+          predecessor sigma]
+        exact Step.iotaNatRecSucc)
       (fun {scope} {motive} {headVal} {tailVal} {nilBranch} {consBranch}
           {targetScope} sigma => Step.iotaListElimCons)
       (fun {scope} {baseCase} {rawWitness} {targetScope} sigma =>
@@ -143,9 +162,9 @@ theorem StepChildren.subst {parentSourceScope parentTargetScope : Nat}
         Step.iotaFstPair)
       (fun {scope} {firstValue} {secondValue} {targetScope} sigma =>
         Step.iotaSndPair)
-      (fun {scope} {zeroBranch} {succBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {zeroBranch} {succBranch} {targetScope} sigma =>
         Step.iotaNatElimZero)
-      (fun {scope} {zeroBranch} {succBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {zeroBranch} {succBranch} {targetScope} sigma =>
         Step.iotaNatRecZero)
       (fun {scope} {motive} {nilBranch} {consBranch} {targetScope} sigma =>
         Step.iotaListElimNil)
@@ -157,10 +176,24 @@ theorem StepChildren.subst {parentSourceScope parentTargetScope : Nat}
         Step.iotaEitherMatchInl)
       (fun {scope} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
         Step.iotaEitherMatchInr)
-      (fun {scope} {predecessor} {zeroBranch} {succBranch} {targetScope}
-          sigma => Step.iotaNatElimSucc)
-      (fun {scope} {predecessor} {zeroBranch} {succBranch} {targetScope}
-          sigma => Step.iotaNatRecSucc)
+      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch}
+          {targetScope} sigma => by
+        rw [RawTerm.cons_singleton_subst_commute succBranch
+          (.mkGen .gen_natElim ()
+            (.childCons motive
+              (.childCons zeroBranch
+                (.childCons succBranch (.childCons predecessor .childNil)))))
+          predecessor sigma]
+        exact Step.iotaNatElimSucc)
+      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch}
+          {targetScope} sigma => by
+        rw [RawTerm.cons_singleton_subst_commute succBranch
+          (.mkGen .gen_natRec ()
+            (.childCons motive
+              (.childCons zeroBranch
+                (.childCons succBranch (.childCons predecessor .childNil)))))
+          predecessor sigma]
+        exact Step.iotaNatRecSucc)
       (fun {scope} {motive} {headVal} {tailVal} {nilBranch} {consBranch}
           {targetScope} sigma => Step.iotaListElimCons)
       (fun {scope} {baseCase} {rawWitness} {targetScope} sigma =>
@@ -493,12 +526,16 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             rawRenaming rawSubstitution _ _ pairChildrenFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
           rawRenaming rawSubstitution _ _ secondSpineFresh)
-      (fun {scope} {zeroBranch} {succBranch} {targetScope} rawRenaming
+      (fun {scope} {motive} {zeroBranch} {succBranch} {targetScope} rawRenaming
           rawSubstitution sourceFresh => by
+        -- Phase-Z natElim spine: (motive, zero, succ, scrutinee) at shifts [1, 0, 2, 0].
+        -- iotaNatElimZero projects the zero-branch; motive (shift 1) and succ (shift 2) discarded.
         let sourceChildren :=
-          ((.childCons (.mkGen .gen_natZero () .childNil)
-            (.childCons zeroBranch (.childCons succBranch .childNil))) :
-              RawTermChildren [0, 0, 0] scope)
+          ((.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch
+                (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
+              RawTermChildren [1, 0, 2, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
@@ -507,18 +544,23 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons zeroBranch (.childCons succBranch .childNil)) :
-                RawTermChildren [0, 0] scope) :=
+              ((.childCons zeroBranch
+                (.childCons succBranch
+                  (.childCons (.mkGen .gen_natZero () .childNil) .childNil))) :
+                RawTermChildren [0, 2, 0] scope) :=
           RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ childrenFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
           rawRenaming rawSubstitution _ _ branchSpineFresh)
-      (fun {scope} {zeroBranch} {succBranch} {targetScope} rawRenaming
+      (fun {scope} {motive} {zeroBranch} {succBranch} {targetScope} rawRenaming
           rawSubstitution sourceFresh => by
+        -- Phase-Z natRec spine: (motive, zero, succ, scrutinee) at shifts [1, 0, 2, 0].
         let sourceChildren :=
-          ((.childCons (.mkGen .gen_natZero () .childNil)
-            (.childCons zeroBranch (.childCons succBranch .childNil))) :
-              RawTermChildren [0, 0, 0] scope)
+          ((.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch
+                (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))) :
+              RawTermChildren [1, 0, 2, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
@@ -527,8 +569,10 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons zeroBranch (.childCons succBranch .childNil)) :
-                RawTermChildren [0, 0] scope) :=
+              ((.childCons zeroBranch
+                (.childCons succBranch
+                  (.childCons (.mkGen .gen_natZero () .childNil) .childNil))) :
+                RawTermChildren [0, 2, 0] scope) :=
           RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ childrenFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
@@ -723,25 +767,72 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
           () _ (RawTermChildren.double_isFreshFor
             (firstShift := 0) (secondShift := 0) rawRenaming
             rawSubstitution rightBranch value rightBranchFresh valueFresh))
-      (fun {scope} {predecessor} {zeroBranch} {succBranch} {targetScope}
+      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch} {targetScope}
           rawRenaming rawSubstitution sourceFresh => by
+        -- Phase-Z natElim succ-iota: spine (motive[1], zero[0], succ[2], natSucc pred[0]) at
+        -- shifts [1, 0, 2, 0].  The reduct SUBSTITUTES: var 0 := recursiveCall (the IH = natElim
+        -- over the predecessor), var 1 := predecessor.  Freshness of the substituted reduct comes
+        -- from `RawTerm.isFreshFor_cons_singleton`, needing succ fresh at the DOUBLE lift, plus
+        -- recursiveCall and predecessor fresh.
         let natSuccChildren :=
           ((.childCons predecessor .childNil) : RawTermChildren [0] scope)
         let sourceChildren :=
-          ((.childCons (.mkGen .gen_natSucc () natSuccChildren)
-            (.childCons zeroBranch (.childCons succBranch .childNil))) :
-              RawTermChildren [0, 0, 0] scope)
+          ((.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch
+                (.childCons (.mkGen .gen_natSucc () natSuccChildren) .childNil)))) :
+              RawTermChildren [1, 0, 2, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_natElim) rawRenaming rawSubstitution
             nofun () sourceChildren sourceFresh
+        -- motive fresh at iterateLiftRaw _ 1 (first child, shift 1).
+        have motiveFresh :
+            RawTerm.isFreshFor (iterateLiftRaw rawRenaming 1)
+              (iterateLiftRaw rawSubstitution 1) motive :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        -- tail spine (zero[0], succ[2], scrutinee[0]).
+        have tail1Fresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons zeroBranch
+                (.childCons succBranch
+                  (.childCons (.mkGen .gen_natSucc () natSuccChildren) .childNil))) :
+                RawTermChildren [0, 2, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have zeroBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution zeroBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ tail1Fresh
+        -- tail spine (succ[2], scrutinee[0]).
+        have tail2Fresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons succBranch
+                (.childCons (.mkGen .gen_natSucc () natSuccChildren) .childNil)) :
+                RawTermChildren [2, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ tail1Fresh
+        -- succ-branch fresh at the DOUBLE lift (third child, shift 2).
+        have succBranchFresh :
+            RawTerm.isFreshFor (iterateLiftRaw rawRenaming 2)
+              (iterateLiftRaw rawSubstitution 2) succBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ tail2Fresh
+        -- tail spine (scrutinee[0]) → natSucc predecessor fresh → predecessor fresh.
+        have scrutSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons (.mkGen .gen_natSucc () natSuccChildren) .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ tail2Fresh
         have natSuccFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_natSucc () natSuccChildren : RawTerm scope) :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ childrenFresh
+            rawRenaming rawSubstitution _ _ scrutSpineFresh
         have natSuccChildrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               natSuccChildren :=
@@ -752,84 +843,93 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             RawTerm.isFreshFor rawRenaming rawSubstitution predecessor :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ natSuccChildrenFresh
-        have branchSpineFresh :
-            RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons zeroBranch (.childCons succBranch .childNil)) :
-                RawTermChildren [0, 0] scope) :=
-          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ childrenFresh
-        have zeroBranchFresh :
-            RawTerm.isFreshFor rawRenaming rawSubstitution zeroBranch :=
-          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ branchSpineFresh
-        have succBranchSpineFresh :
-            RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons succBranch .childNil) :
-                RawTermChildren [0] scope) :=
-          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ branchSpineFresh
-        have succBranchFresh :
-            RawTerm.isFreshFor rawRenaming rawSubstitution succBranch :=
-          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ succBranchSpineFresh
+        -- recursiveCall = natElim motive zero succ predecessor (the IH spine, same shifts).
         have recursiveFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_natElim ()
-                (.childCons predecessor
+                (.childCons motive
                   (.childCons zeroBranch
-                    (.childCons succBranch .childNil))) : RawTerm scope) :=
+                    (.childCons succBranch
+                      (.childCons predecessor .childNil)))) : RawTerm scope) :=
           RawTerm.isFreshFor_nonVar_of_children_isFreshFor
             (generator := .gen_natElim) rawRenaming rawSubstitution
             nofun () _
-            (RawTermChildren.triple_isFreshFor
-              (firstShift := 0) (secondShift := 0) (thirdShift := 0)
-              rawRenaming rawSubstitution
-              predecessor zeroBranch succBranch predecessorFresh
-              zeroBranchFresh succBranchFresh)
-        have innerAppFresh :
-            RawTerm.isFreshFor rawRenaming rawSubstitution
-              (.mkGen .gen_app ()
-                (.childCons succBranch (.childCons predecessor .childNil)) :
-                  RawTerm scope) :=
-          RawTerm.isFreshFor_nonVar_of_children_isFreshFor
-            (generator := .gen_app) rawRenaming rawSubstitution
-            nofun () _
-            (RawTermChildren.double_isFreshFor
-              (firstShift := 0) (secondShift := 0)
-              rawRenaming rawSubstitution
-              succBranch predecessor succBranchFresh predecessorFresh)
-        exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
-          (generator := .gen_app) rawRenaming rawSubstitution nofun
-          () _ (RawTermChildren.double_isFreshFor
-            (firstShift := 0) (secondShift := 0) rawRenaming
-            rawSubstitution
-            ((.mkGen .gen_app ()
-              (.childCons succBranch (.childCons predecessor .childNil))) :
-                RawTerm scope)
-            ((.mkGen .gen_natElim ()
-              (.childCons predecessor
-                (.childCons zeroBranch
-                  (.childCons succBranch .childNil)))) : RawTerm scope)
-            innerAppFresh recursiveFresh))
-      (fun {scope} {predecessor} {zeroBranch} {succBranch} {targetScope}
+            (RawTermChildren.childCons_isFreshFor
+              (headShift := 1) rawRenaming rawSubstitution _ _ motiveFresh
+              (RawTermChildren.childCons_isFreshFor
+                (headShift := 0) rawRenaming rawSubstitution _ _ zeroBranchFresh
+                (RawTermChildren.childCons_isFreshFor
+                  (headShift := 2) rawRenaming rawSubstitution _ _ succBranchFresh
+                  (RawTermChildren.childCons_isFreshFor
+                    (headShift := 0) rawRenaming rawSubstitution _ _
+                    predecessorFresh
+                    (RawTermChildren.childNil_isFreshFor
+                      rawRenaming rawSubstitution)))))
+        exact RawTerm.isFreshFor_cons_singleton rawRenaming rawSubstitution
+          succBranch
+          (.mkGen .gen_natElim ()
+            (.childCons motive
+              (.childCons zeroBranch
+                (.childCons succBranch (.childCons predecessor .childNil)))))
+          predecessor succBranchFresh recursiveFresh predecessorFresh)
+      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch} {targetScope}
           rawRenaming rawSubstitution sourceFresh => by
+        -- Phase-Z natRec succ-iota: structurally identical to natElim (same shifts, same
+        -- substituting reduct over `gen_natRec`).
         let natSuccChildren :=
           ((.childCons predecessor .childNil) : RawTermChildren [0] scope)
         let sourceChildren :=
-          ((.childCons (.mkGen .gen_natSucc () natSuccChildren)
-            (.childCons zeroBranch (.childCons succBranch .childNil))) :
-              RawTermChildren [0, 0, 0] scope)
+          ((.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch
+                (.childCons (.mkGen .gen_natSucc () natSuccChildren) .childNil)))) :
+              RawTermChildren [1, 0, 2, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_natRec) rawRenaming rawSubstitution
             nofun () sourceChildren sourceFresh
+        have motiveFresh :
+            RawTerm.isFreshFor (iterateLiftRaw rawRenaming 1)
+              (iterateLiftRaw rawSubstitution 1) motive :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have tail1Fresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons zeroBranch
+                (.childCons succBranch
+                  (.childCons (.mkGen .gen_natSucc () natSuccChildren) .childNil))) :
+                RawTermChildren [0, 2, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have zeroBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution zeroBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ tail1Fresh
+        have tail2Fresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons succBranch
+                (.childCons (.mkGen .gen_natSucc () natSuccChildren) .childNil)) :
+                RawTermChildren [2, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ tail1Fresh
+        have succBranchFresh :
+            RawTerm.isFreshFor (iterateLiftRaw rawRenaming 2)
+              (iterateLiftRaw rawSubstitution 2) succBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ tail2Fresh
+        have scrutSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons (.mkGen .gen_natSucc () natSuccChildren) .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ tail2Fresh
         have natSuccFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_natSucc () natSuccChildren : RawTerm scope) :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ childrenFresh
+            rawRenaming rawSubstitution _ _ scrutSpineFresh
         have natSuccChildrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               natSuccChildren :=
@@ -840,65 +940,34 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             RawTerm.isFreshFor rawRenaming rawSubstitution predecessor :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ natSuccChildrenFresh
-        have branchSpineFresh :
-            RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons zeroBranch (.childCons succBranch .childNil)) :
-                RawTermChildren [0, 0] scope) :=
-          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ childrenFresh
-        have zeroBranchFresh :
-            RawTerm.isFreshFor rawRenaming rawSubstitution zeroBranch :=
-          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ branchSpineFresh
-        have succBranchSpineFresh :
-            RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons succBranch .childNil) :
-                RawTermChildren [0] scope) :=
-          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ branchSpineFresh
-        have succBranchFresh :
-            RawTerm.isFreshFor rawRenaming rawSubstitution succBranch :=
-          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ succBranchSpineFresh
         have recursiveFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_natRec ()
-                (.childCons predecessor
+                (.childCons motive
                   (.childCons zeroBranch
-                    (.childCons succBranch .childNil))) : RawTerm scope) :=
+                    (.childCons succBranch
+                      (.childCons predecessor .childNil)))) : RawTerm scope) :=
           RawTerm.isFreshFor_nonVar_of_children_isFreshFor
             (generator := .gen_natRec) rawRenaming rawSubstitution
             nofun () _
-            (RawTermChildren.triple_isFreshFor
-              (firstShift := 0) (secondShift := 0) (thirdShift := 0)
-              rawRenaming rawSubstitution
-              predecessor zeroBranch succBranch predecessorFresh
-              zeroBranchFresh succBranchFresh)
-        have innerAppFresh :
-            RawTerm.isFreshFor rawRenaming rawSubstitution
-              (.mkGen .gen_app ()
-                (.childCons succBranch (.childCons predecessor .childNil)) :
-                  RawTerm scope) :=
-          RawTerm.isFreshFor_nonVar_of_children_isFreshFor
-            (generator := .gen_app) rawRenaming rawSubstitution
-            nofun () _
-            (RawTermChildren.double_isFreshFor
-              (firstShift := 0) (secondShift := 0)
-              rawRenaming rawSubstitution
-              succBranch predecessor succBranchFresh predecessorFresh)
-        exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
-          (generator := .gen_app) rawRenaming rawSubstitution nofun
-          () _ (RawTermChildren.double_isFreshFor
-            (firstShift := 0) (secondShift := 0) rawRenaming
-            rawSubstitution
-            ((.mkGen .gen_app ()
-              (.childCons succBranch (.childCons predecessor .childNil))) :
-                RawTerm scope)
-            ((.mkGen .gen_natRec ()
-              (.childCons predecessor
-                (.childCons zeroBranch
-                  (.childCons succBranch .childNil)))) : RawTerm scope)
-            innerAppFresh recursiveFresh))
+            (RawTermChildren.childCons_isFreshFor
+              (headShift := 1) rawRenaming rawSubstitution _ _ motiveFresh
+              (RawTermChildren.childCons_isFreshFor
+                (headShift := 0) rawRenaming rawSubstitution _ _ zeroBranchFresh
+                (RawTermChildren.childCons_isFreshFor
+                  (headShift := 2) rawRenaming rawSubstitution _ _ succBranchFresh
+                  (RawTermChildren.childCons_isFreshFor
+                    (headShift := 0) rawRenaming rawSubstitution _ _
+                    predecessorFresh
+                    (RawTermChildren.childNil_isFreshFor
+                      rawRenaming rawSubstitution)))))
+        exact RawTerm.isFreshFor_cons_singleton rawRenaming rawSubstitution
+          succBranch
+          (.mkGen .gen_natRec ()
+            (.childCons motive
+              (.childCons zeroBranch
+                (.childCons succBranch (.childCons predecessor .childNil)))))
+          predecessor succBranchFresh recursiveFresh predecessorFresh)
       (fun {scope} {motive} {headVal} {tailVal} {nilBranch} {consBranch}
           {targetScope} rawRenaming rawSubstitution sourceFresh => by
         -- Phase-Z listElim spine: (motive, nil, cons, scrutinee) at shifts [1, 0, 0, 0].

@@ -13,15 +13,24 @@ fragment must terminate on its OWN — NOT through Tait.
 
 The ι fragment splits by difficulty: the NON-recursive eliminators (`boolElim`, `fst`/`snd`, `optionMatch`-none,
 `eitherMatch`) strictly DECREASE term size (a simple well-founded measure).  The hard core is the RECURSIVE
-eliminator —
+eliminator's SCRUTINEE DESCENT —
 
-    natElim (natSucc n) z s  ↝  app (app s n) (natElim n z s)
+    natElim motive z s (natSucc n)  ↝  …recursiveCall on `n`, possibly DUPLICATED…
 
-— which reintroduces a `natElim` on a SMALLER scrutinee and may DUPLICATE it.  Size can stay flat or grow, so a
-size measure does NOT work; this is exactly what the **multiset (Dershowitz-Manna) RPO** is for.  This file
-proves that recursive-duplication pattern terminates via the shipped RPO certificate
-(`wellFounded_of_precedenceMultisetMeasure`), on a self-contained model, with NO β and NO typed-SN anywhere — the
-genuine technical de-risking of #1139's ι-fragment Leg-3 independence.
+— which reintroduces a `natElim` on a SMALLER scrutinee `n` and may DUPLICATE it.  Size can stay flat or grow,
+so a size measure does NOT work; this is exactly what the **multiset (Dershowitz-Manna) RPO** is for.
+
+**Phase-Z note (substitution).** Under the Phase-Z migration the natElim/natRec succ reduct is no longer the
+app-chain `app (app s n) (natElim n z s)` — it SUBSTITUTES (`subst (cons recursiveCall (singleton n)) s`), and
+substitution is NOT RPO-orientable by erasure (it can relocate/duplicate `recursiveCall` arbitrarily, β's
+situation), so the REAL natElim/natRec succ arms join the β-imported boundary (see the RPO re-scope in
+`RawIotaRpoBridge` / `RawIotaRpoAssembly`).  This self-contained `RecTerm`/`ElimStep` MODEL captures only the
+SCRUTINEE-DESCENT termination essence (recursive call on the predecessor, duplicated as `branch (elim k) (elim
+k)`) — a faithful de-risking of the multiset-RPO certificate for scrutinee descent, but NOT a model of the
+substituting reduct (which the boundary handles).  It proves that scrutinee-descent-with-duplication pattern
+terminates via the shipped RPO certificate (`wellFounded_of_precedenceMultisetMeasure`), with NO β and NO
+typed-SN anywhere — the genuine technical de-risking of #1139's ι-fragment Leg-3 independence for the
+projecting (non-substituting) recursive arms.
 
 ## What this ships
 
@@ -64,8 +73,10 @@ inductive RecTerm where
   | elim : Nat → RecTerm
 
 /-- The recursive-eliminator reduction: `elim (k+1) ↝ branch (elim k) (elim k)` — fire the eliminator on a
-successor scrutinee, DUPLICATING the recursive call on the predecessor `k` (the natElim/listElim shape, stripped
-to its termination essence) — plus congruence into branches. -/
+successor scrutinee, DUPLICATING the recursive call on the predecessor `k` (the SCRUTINEE-DESCENT essence shared
+by every recursive eliminator; the Phase-Z natElim/natRec succ reduct SUBSTITUTES rather than app-chains, so
+this models the descent/duplication, not the substituting reduct — see the file header) — plus congruence into
+branches. -/
 inductive ElimStep : RecTerm → RecTerm → Prop where
   | fire (scrutinee : Nat) :
       ElimStep (.elim (scrutinee + 1)) (.branch (.elim scrutinee) (.elim scrutinee))

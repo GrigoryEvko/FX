@@ -1,6 +1,7 @@
 import FX1Poly.Core.Step
 import FX1Poly.Core.RawTermSubst0
 import FX1Poly.Core.StepSubst
+import FX1Poly.Core.RawTermSubstPair
 
 /-! # FX1Poly/Core/ParallelReduction
     — the FX parallel reduction relation + reflexivity (toward the Takahashi diamond / raw confluence)
@@ -77,14 +78,18 @@ mutual
         ParStep secondValue secondValue' →
         ParStep (.mkGen .gen_snd () (.childCons (.mkGen .gen_pair ()
             (.childCons firstValue (.childCons secondValue .childNil))) .childNil)) secondValue'
-    | iotaNatElimZero {scope : Nat} {zeroBranch zeroBranch' succBranch : RawTerm scope} :
-        ParStep zeroBranch zeroBranch' →
-        ParStep (.mkGen .gen_natElim () (.childCons (.mkGen .gen_natZero () .childNil)
-            (.childCons zeroBranch (.childCons succBranch .childNil)))) zeroBranch'
-    | iotaNatRecZero {scope : Nat} {zeroBranch zeroBranch' succBranch : RawTerm scope} :
-        ParStep zeroBranch zeroBranch' →
-        ParStep (.mkGen .gen_natRec () (.childCons (.mkGen .gen_natZero () .childNil)
-            (.childCons zeroBranch (.childCons succBranch .childNil)))) zeroBranch'
+    | iotaNatElimZero {scope : Nat} {motive motive' : RawTerm (scope + 1)}
+        {zeroBranch zeroBranch' : RawTerm scope} {succBranch : RawTerm (scope + 2)} :
+        ParStep motive motive' → ParStep zeroBranch zeroBranch' →
+        ParStep (.mkGen .gen_natElim () (.childCons motive
+            (.childCons zeroBranch (.childCons succBranch
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil))))) zeroBranch'
+    | iotaNatRecZero {scope : Nat} {motive motive' : RawTerm (scope + 1)}
+        {zeroBranch zeroBranch' : RawTerm scope} {succBranch : RawTerm (scope + 2)} :
+        ParStep motive motive' → ParStep zeroBranch zeroBranch' →
+        ParStep (.mkGen .gen_natRec () (.childCons motive
+            (.childCons zeroBranch (.childCons succBranch
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil))))) zeroBranch'
     | iotaListElimNil {scope : Nat} {motive motive' : RawTerm (scope + 1)}
         {nilBranch nilBranch' consBranch : RawTerm scope} :
         ParStep motive motive' → ParStep nilBranch nilBranch' →
@@ -114,25 +119,33 @@ mutual
             (.childCons leftBranch (.childCons rightBranch .childNil))))
           (.mkGen .gen_app () (.childCons rightBranch' (.childCons value' .childNil)))
     | iotaNatElimSucc {scope : Nat}
-        {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch' : RawTerm scope} :
-        ParStep predecessor predecessor' → ParStep zeroBranch zeroBranch' → ParStep succBranch succBranch' →
-        ParStep (.mkGen .gen_natElim () (.childCons
-            (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-            (.childCons zeroBranch (.childCons succBranch .childNil))))
-          (.mkGen .gen_app () (.childCons
-            (.mkGen .gen_app () (.childCons succBranch' (.childCons predecessor' .childNil)))
-            (.childCons (.mkGen .gen_natElim () (.childCons predecessor'
-                (.childCons zeroBranch' (.childCons succBranch' .childNil)))) .childNil)))
+        {motive motive' : RawTerm (scope + 1)}
+        {predecessor predecessor' zeroBranch zeroBranch' : RawTerm scope}
+        {succBranch succBranch' : RawTerm (scope + 2)} :
+        ParStep motive motive' → ParStep predecessor predecessor' →
+        ParStep zeroBranch zeroBranch' → ParStep succBranch succBranch' →
+        ParStep (.mkGen .gen_natElim () (.childCons motive
+            (.childCons zeroBranch (.childCons succBranch
+              (.childCons (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) .childNil)))))
+          (RawTerm.substPair succBranch'
+            (.mkGen .gen_natElim ()
+              (.childCons motive' (.childCons zeroBranch' (.childCons succBranch'
+                (.childCons predecessor' .childNil)))))
+            predecessor')
     | iotaNatRecSucc {scope : Nat}
-        {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch' : RawTerm scope} :
-        ParStep predecessor predecessor' → ParStep zeroBranch zeroBranch' → ParStep succBranch succBranch' →
-        ParStep (.mkGen .gen_natRec () (.childCons
-            (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-            (.childCons zeroBranch (.childCons succBranch .childNil))))
-          (.mkGen .gen_app () (.childCons
-            (.mkGen .gen_app () (.childCons succBranch' (.childCons predecessor' .childNil)))
-            (.childCons (.mkGen .gen_natRec () (.childCons predecessor'
-                (.childCons zeroBranch' (.childCons succBranch' .childNil)))) .childNil)))
+        {motive motive' : RawTerm (scope + 1)}
+        {predecessor predecessor' zeroBranch zeroBranch' : RawTerm scope}
+        {succBranch succBranch' : RawTerm (scope + 2)} :
+        ParStep motive motive' → ParStep predecessor predecessor' →
+        ParStep zeroBranch zeroBranch' → ParStep succBranch succBranch' →
+        ParStep (.mkGen .gen_natRec () (.childCons motive
+            (.childCons zeroBranch (.childCons succBranch
+              (.childCons (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) .childNil)))))
+          (RawTerm.substPair succBranch'
+            (.mkGen .gen_natRec ()
+              (.childCons motive' (.childCons zeroBranch' (.childCons succBranch'
+                (.childCons predecessor' .childNil)))))
+            predecessor')
     | iotaListElimCons {scope : Nat} {motive motive' : RawTerm (scope + 1)}
         {headVal headVal' tailVal tailVal' nilBranch nilBranch' consBranch consBranch' : RawTerm scope} :
         ParStep motive motive' → ParStep headVal headVal' → ParStep tailVal tailVal' →
@@ -195,15 +208,17 @@ mutual
     | .iotaBoolFalse => ParStep.iotaBoolFalse (ParStep.refl _) (ParStep.refl _)
     | .iotaFstPair => ParStep.iotaFstPair (ParStep.refl _)
     | .iotaSndPair => ParStep.iotaSndPair (ParStep.refl _)
-    | .iotaNatElimZero => ParStep.iotaNatElimZero (ParStep.refl _)
-    | .iotaNatRecZero => ParStep.iotaNatRecZero (ParStep.refl _)
+    | .iotaNatElimZero => ParStep.iotaNatElimZero (ParStep.refl _) (ParStep.refl _)
+    | .iotaNatRecZero => ParStep.iotaNatRecZero (ParStep.refl _) (ParStep.refl _)
     | .iotaListElimNil => ParStep.iotaListElimNil (ParStep.refl _) (ParStep.refl _)
     | .iotaOptionMatchNone => ParStep.iotaOptionMatchNone (ParStep.refl _)
     | .iotaOptionMatchSome => ParStep.iotaOptionMatchSome (ParStep.refl _) (ParStep.refl _)
     | .iotaEitherMatchInl => ParStep.iotaEitherMatchInl (ParStep.refl _) (ParStep.refl _)
     | .iotaEitherMatchInr => ParStep.iotaEitherMatchInr (ParStep.refl _) (ParStep.refl _)
-    | .iotaNatElimSucc => ParStep.iotaNatElimSucc (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
-    | .iotaNatRecSucc => ParStep.iotaNatRecSucc (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
+    | .iotaNatElimSucc =>
+        ParStep.iotaNatElimSucc (ParStep.refl _) (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
+    | .iotaNatRecSucc =>
+        ParStep.iotaNatRecSucc (ParStep.refl _) (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
     | .iotaListElimCons =>
         ParStep.iotaListElimCons (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
           (ParStep.refl _) (ParStep.refl _)
@@ -270,13 +285,17 @@ mutual
           (StepStar.ofChildrenStar (StepChildrenStar.there _
             (StepChildrenStar.here _ (ParStep.toStepStar secondPar))))))
           Step.iotaSndPair
-    | .iotaNatElimZero zeroPar =>
+    | .iotaNatElimZero motivePar zeroPar =>
         StepStar.transLast (StepStar.ofChildrenStar
-          (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar zeroPar))))
+          (StepChildrenStar.trans_compose
+            (StepChildrenStar.here _ (ParStep.toStepStar motivePar))
+            (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar zeroPar)))))
           Step.iotaNatElimZero
-    | .iotaNatRecZero zeroPar =>
+    | .iotaNatRecZero motivePar zeroPar =>
         StepStar.transLast (StepStar.ofChildrenStar
-          (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar zeroPar))))
+          (StepChildrenStar.trans_compose
+            (StepChildrenStar.here _ (ParStep.toStepStar motivePar))
+            (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar zeroPar)))))
           Step.iotaNatRecZero
     | .iotaListElimNil motivePar nilPar =>
         StepStar.transLast (StepStar.ofChildrenStar
@@ -309,25 +328,33 @@ mutual
           (StepStar.trans Step.iotaEitherMatchInr
             (StepStar.ofChildrenStar (StepChildrenStar.there _
               (StepChildrenStar.here _ (ParStep.toStepStar valuePar)))))
-    | .iotaNatElimSucc predPar zeroPar succPar =>
+    | .iotaNatElimSucc motivePar predPar zeroPar succPar =>
         StepStar.transLast (StepStar.ofChildrenStar
           (StepChildrenStar.trans_compose
-            (StepChildrenStar.here _
-              (StepStar.ofChildrenStar (StepChildrenStar.here _ (ParStep.toStepStar predPar))))
+            (StepChildrenStar.here _ (ParStep.toStepStar motivePar))
             (StepChildrenStar.trans_compose
               (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar zeroPar)))
-              (StepChildrenStar.there _ (StepChildrenStar.there _
-                (StepChildrenStar.here _ (ParStep.toStepStar succPar)))))))
+              (StepChildrenStar.trans_compose
+                (StepChildrenStar.there _ (StepChildrenStar.there _
+                  (StepChildrenStar.here _ (ParStep.toStepStar succPar))))
+                (StepChildrenStar.there _ (StepChildrenStar.there _ (StepChildrenStar.there _
+                  (StepChildrenStar.here _
+                    (StepStar.ofChildrenStar
+                      (StepChildrenStar.here _ (ParStep.toStepStar predPar)))))))))))
           Step.iotaNatElimSucc
-    | .iotaNatRecSucc predPar zeroPar succPar =>
+    | .iotaNatRecSucc motivePar predPar zeroPar succPar =>
         StepStar.transLast (StepStar.ofChildrenStar
           (StepChildrenStar.trans_compose
-            (StepChildrenStar.here _
-              (StepStar.ofChildrenStar (StepChildrenStar.here _ (ParStep.toStepStar predPar))))
+            (StepChildrenStar.here _ (ParStep.toStepStar motivePar))
             (StepChildrenStar.trans_compose
               (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar zeroPar)))
-              (StepChildrenStar.there _ (StepChildrenStar.there _
-                (StepChildrenStar.here _ (ParStep.toStepStar succPar)))))))
+              (StepChildrenStar.trans_compose
+                (StepChildrenStar.there _ (StepChildrenStar.there _
+                  (StepChildrenStar.here _ (ParStep.toStepStar succPar))))
+                (StepChildrenStar.there _ (StepChildrenStar.there _ (StepChildrenStar.there _
+                  (StepChildrenStar.here _
+                    (StepStar.ofChildrenStar
+                      (StepChildrenStar.here _ (ParStep.toStepStar predPar)))))))))))
           Step.iotaNatRecSucc
     | .iotaListElimCons motivePar headPar tailPar nilPar consPar =>
         StepStar.transLast (StepStar.ofChildrenStar

@@ -1,4 +1,3 @@
-import FX1Poly.Core.CandidateReducibleSubst
 import FX1Poly.Core.RawTermRenameSubstCommute
 import FX1Poly.Core.RawTermSubstPointwise
 import FX1Poly.Core.RawTermSubst0Commute

@@ -35,21 +35,27 @@ namespace FX1Poly.Core
 open StepStar
 
 /-- **`natElim` over a variable scrutinee is strongly normalizing** — the concrete non-vacuous witness of
-`natElimNeutralScrutineeMember` at the SN candidate. -/
+`natElimNeutralScrutineeMember` at the SN candidate.  Phase-Z motive shape: a `var 0` under-binder throwaway
+motive (SN), zero-branch / scrutinee the same outer variable, and a `var 0` two-binder throwaway succ-branch
+(SN at `scope + 2`). -/
 theorem natElimNeutralVarSmoke {scope : Nat} (index : Fin scope) :
-    IsStronglyNormalizing (natElimCellSpine (.mkGen .gen_var index .childNil)
-      (.mkGen .gen_var index .childNil) (.mkGen .gen_var index .childNil)) :=
+    IsStronglyNormalizing (natElimCellSpine (.mkGen .gen_var ⟨0, Nat.zero_lt_succ scope⟩ .childNil)
+      (.mkGen .gen_var index .childNil) (.mkGen .gen_var index .childNil)
+      (.mkGen .gen_var ⟨0, Nat.zero_lt_succ (scope + 1)⟩ .childNil)) :=
   natElimNeutralScrutineeMember IsStronglyNormalizing isStronglyNormalizing_isReducibilityCandidate
+    (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ scope⟩)
     (var_isStronglyNormalizing index) (IsNeutral.var index)
-    (var_isStronglyNormalizing index) (var_isStronglyNormalizing index)
+    (var_isStronglyNormalizing index) (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ (scope + 1)⟩)
 
 /-- **`natRec` over a variable scrutinee is strongly normalizing** (dependent-recursor twin). -/
 theorem natRecNeutralVarSmoke {scope : Nat} (index : Fin scope) :
-    IsStronglyNormalizing (natRecCellSpine (.mkGen .gen_var index .childNil)
-      (.mkGen .gen_var index .childNil) (.mkGen .gen_var index .childNil)) :=
+    IsStronglyNormalizing (natRecCellSpine (.mkGen .gen_var ⟨0, Nat.zero_lt_succ scope⟩ .childNil)
+      (.mkGen .gen_var index .childNil) (.mkGen .gen_var index .childNil)
+      (.mkGen .gen_var ⟨0, Nat.zero_lt_succ (scope + 1)⟩ .childNil)) :=
   natRecNeutralScrutineeMember IsStronglyNormalizing isStronglyNormalizing_isReducibilityCandidate
+    (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ scope⟩)
     (var_isStronglyNormalizing index) (IsNeutral.var index)
-    (var_isStronglyNormalizing index) (var_isStronglyNormalizing index)
+    (var_isStronglyNormalizing index) (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ (scope + 1)⟩)
 
 /-- **`listElim` over a variable scrutinee is strongly normalizing.**  Phase-Z motive shape: a `var 0`
 under-binder throwaway motive (SN), then nil/cons/scrutinee all the same outer variable. -/

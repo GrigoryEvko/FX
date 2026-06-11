@@ -365,15 +365,15 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.iotaNonRecursiveStep_wellFounded
 #assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.isStronglyNormalizing.smoke
--- ★ Leg 3 contrast: the RECURSIVE ι arm natElimSucc INCREASES RawTerm.size by branchSize + 5
--- (grows with the branch) over the REAL kernel, because it DUPLICATES the arbitrary branch s. So the
--- size route (IotaNonRecursiveStep.size_decreases) does NOT extend to the recursive arms, and
--- NO flat measure dominated by size survives branch-duplication. Honest correction: the earlier RecTerm
--- model duplicated only the recursive CALL (flat scrutinee-multiset sufficed); the real arm duplicates an
--- independent branch eliminator of arbitrary size. The resolution is a full recursive RPO (precedence
--- eliminator > app); the shipped single-level lex/multiset certificates do not recurse into subterms, so
--- they are insufficient for the congruence-closed recursive ι (the inductive RPO build). β stays
--- Tait-imported (raw β is non-SN).
+-- ★ Leg 3 contrast: the RECURSIVE ι arm natElimSucc INCREASES RawTerm.size by branchSize + 13
+-- (grows with the zero branch) over the REAL kernel: the Phase-Z succ-iota SUBSTITUTES, and a step branch
+-- using its induction-hypothesis variable twice (app (var 0) (var 0)) DUPLICATES the recursive call — and
+-- with it the arbitrary zero branch it carries. So the size route (IotaNonRecursiveStep.size_decreases)
+-- does NOT extend to the recursive arms, and NO flat measure dominated by size survives the duplication.
+-- Moreover the substituting succ-iota shares beta's duplication shape (betaNotOrientableByErasure), which
+-- is exactly why the Phase-Z re-scope moves it to the beta-imported boundary (IotaOrientedHeadStep keeps
+-- only the non-substituting arms); typed SN covers it through Tait. beta stays Tait-imported (raw beta is
+-- non-SN).
 #assert_no_axioms FX1Poly.Core.natElimSucc_isRealStep
 #assert_no_axioms FX1Poly.Core.natElimSuccReduct_size_eq
 #assert_no_axioms FX1Poly.Core.natElimSucc_size_increases
@@ -408,14 +408,14 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.RpoInductive.rpo_congruence_head
 
 -- RawTerm RPO bridge: the generic rose-tree RPO instantiated at the REAL kernel. eraseToRose
--- forgets RawTerm's scope/binder-shift structure to a RoseTerm Generator; realGenPrecedence ranks the three
--- recursive eliminators above gen_app. The three recursive ι arms (Step.iotaNatElimSucc / iotaNatRecSucc /
--- iotaListElimCons — the branch-duplication obstruction that defeats every flat measure) have their erased
--- redex RPO-dominate their erased reduct, and realGenRpoWellFounded gives the order is well-founded — the
--- complete termination certificate for those arms on the real kernel. The <arm>Raw_isStep witnesses confirm
--- the redex/reduct pairs really are the live Step constructors. β stays Tait-imported (raw β is non-SN).
-#assert_no_axioms FX1Poly.Core.RawIotaRpo.natElimSuccRaw_isStep
-#assert_no_axioms FX1Poly.Core.RawIotaRpo.natRecSuccRaw_isStep
+-- forgets RawTerm's scope/binder-shift structure to a RoseTerm Generator; realGenPrecedence ranks the
+-- recursive eliminators above gen_app. Post Phase-Z re-scope: ONLY listElimCons remains a live RPO-oriented
+-- recursive Step (listElimConsRaw_isStep confirms the redex/reduct pair really is the live constructor; its
+-- app-chain reduct is RPO-dominated by the redex). The natElim/natRec succ-iotas now SUBSTITUTE and are
+-- NOT erasure-orientable — their pre-migration arity-3 app-chain orientations survive only as ROSE-level
+-- boundary records (rpo_orients_iotaNatElimSucc / iotaNatRecSucc over RoseTerm; the retired arity-3 shape
+-- is no longer even RawTerm-expressible against the live arity-4 generator table). realGenRpoWellFounded
+-- gives the order is well-founded. beta + the substituting succ-iotas stay Tait-imported.
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.listElimConsRaw_isStep
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.rpo_orients_iotaNatElimSucc
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.rpo_orients_iotaNatRecSucc
@@ -450,17 +450,22 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.ParityMatrix.honestCapstoneMet_holds
 #assert_no_axioms FX1Poly.Core.ParityMatrix.honestCapstone_met_while_threeWay_unreachable
 
--- Full root-ι SN assembly: unify the 13 non-recursive arms + the 3 recursive
--- arms into ONE order over the CANONICAL FX1Poly.Core.IotaHeadStep (no duplicate relation — it already
--- carries toStep + deterministic; this adds the missing SN leg). iotaGenRank bumps optionMatch/eitherMatch
--- to rank 2 (their reduct app(branch,value) has head gen_app, which outranks the redex head under the
--- recursive-arm realGenPrecedence — wrong direction; the bump fixes it); the other 11 arms need no rank change (recursive
--- already ranked, 10 subterm-reduct arms need no precedence). rpoOrientsAppliedFirst/Second orient the 3
--- applied-branch arms; IotaHeadStep.rpoEmbeds covers all 16. iotaHeadStep_wellFounded: the canonical root-ι
+-- Oriented root-ι SN assembly (Phase-Z re-scope EXECUTED): unify the non-recursive arms + the
+-- listElim-cons recursive arm into ONE order over the ORIENTED fragment of the CANONICAL
+-- FX1Poly.Core.IotaHeadStep (IotaOrientedHeadStep = IotaHeadStep ∧ the isNatRecursorSuccRedex guard is
+-- false — the two Phase-Z SUBSTITUTING natElim/natRec succ-iotas join the β-imported boundary, exactly
+-- betaNotOrientableByErasure's situation). iotaGenRank bumps optionMatch/eitherMatch to rank 2 (their
+-- reduct app(branch,value) has head gen_app, which outranks the redex head under the recursive-arm
+-- precedence — wrong direction; the bump fixes it). rpoOrientsAppliedFirst/Second orient the 3
+-- applied-branch arms; IotaHeadStep.rpoEmbeds covers the 14 oriented arms (the 2 substituting arms
+-- discharge via Bool.noConfusion on the guard). iotaOrientedHeadStep_wellFounded: the oriented root-ι
 -- fragment is SN by ONE RPO via Subrelation.wf + InvImage.wf eraseToRose, Tait-free (the unification).
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.iotaGenPrecedence_wellFounded
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.rpoOrientsAppliedFirst
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.rpoOrientsAppliedSecond
 #assert_no_axioms FX1Poly.Core.RawIotaRpo.iotaGenRpoWellFounded
+#assert_no_axioms FX1Poly.Core.RawTerm.isNatRecursorSuccRedex
 #assert_no_axioms FX1Poly.Core.IotaHeadStep.rpoEmbeds
-#assert_no_axioms FX1Poly.Core.iotaHeadStep_wellFounded
+#assert_no_axioms FX1Poly.Core.iotaOrientedHeadStep_wellFounded
+#assert_no_axioms FX1Poly.Core.IotaOrientedHeadStep.isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.IotaOrientedHeadStep.listElimConsSmoke

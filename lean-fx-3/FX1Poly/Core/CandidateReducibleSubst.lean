@@ -17,7 +17,9 @@ with the two operations the fundamental theorem needs: consing a fresh reducible
 Π-introduction binder extension) and the reducible identity substitution (each variable lies in its
 own candidate by `containsVariable`, turning the theorem into the closed-term reducibility corollary).
 
-`RawTermSubst.cons` (the term-level substitution extension, dual to `lift`) is redefined here.
+`RawTermSubst.cons` (the term-level substitution extension, dual to `lift`) now lives in
+`FX1Poly/Core/RawTermSubst.lean` (relocated so the reduction substrate can reference it) and is in
+scope here via the `RawTermSubst` import.
 
 ## Zero-axiom verification
 
@@ -29,14 +31,9 @@ declaration by `#audit_namespace FX1Poly.Core`.
 namespace FX1Poly.Core
 open FX1Poly.Foundation
 
-/-- Extend a parallel substitution with a fresh substituent `headTerm` at position 0 — the term-level
-dual of `RawTermSubst.lift` (lift weakens; cons substitutes) and of `CandidateEnv.cons`. -/
-def RawTermSubst.cons {scope targetScope : Nat} (headTerm : RawTerm targetScope)
-    (tailSubst : RawTermSubst scope targetScope) : RawTermSubst (scope + 1) targetScope :=
-  fun position =>
-    match position with
-    | ⟨0, _⟩ => headTerm
-    | ⟨priorValue + 1, hBound⟩ => tailSubst ⟨priorValue, Nat.lt_of_succ_lt_succ hBound⟩
+-- `RawTermSubst.cons` (the term-level substitution extension, dual to `lift`) was relocated to
+-- `FX1Poly/Core/RawTermSubst.lean` so the low-level reduction substrate (`Step`'s natElim/natRec
+-- succ-iota) can reference it; it is in scope here via the `RawTermSubst` import above.
 
 /-- A term substitution is reducible for a per-variable candidate assignment when each variable's
 substituent lies in that variable's candidate. -/

@@ -5,16 +5,17 @@ import FX1Poly.Core.StepInversion
 /-! # FX1Poly/Core/NatElimNeutralScrutineeMember
     — the NEUTRAL-scrutinee regime of `natElim` / `natRec` recursor reducibility
 
-`NatElimValueMember` discharges the VALUE-scrutinee regime of the Nat recursor: `natElim numeral
-zeroBranch succBranch` lands in the result candidate.  This file ships the NEUTRAL-scrutinee regime.
+`NatElimValueMember` discharges the VALUE-scrutinee regime of the Nat recursor: `natElim motive zeroBranch
+succBranch numeral` lands in the result candidate.  This file ships the NEUTRAL-scrutinee regime.
 
 The key structural fact: `gen_natElim` ι-fires only on a numeral scrutinee (`natZero` / `natSucc`).  A NEUTRAL
 scrutinee is never a numeral and stays neutral under `Step` (`IsNeutral.closedUnderStep`), so the recursor cell
-NEVER ι-fires — it reduces purely by congruence in its three children.  Hence `natElim` over a neutral
+NEVER ι-fires — it reduces purely by congruence in its four children.  Hence `natElim` over a neutral
 scrutinee is itself neutral (`IsNeutral.natElim`), and a neutral strongly-normalizing term inhabits EVERY
 reducibility candidate by CR3 (`neutralExpansion`).  This is the dual of the value regime: there the recursor
-COMPUTES into the branch application; here it is STUCK at a neutral head and reducibility flows from the
-neutral-closure of the candidate.
+COMPUTES into the SUBSTITUTED succ reduct; here it is STUCK at a neutral head and reducibility flows from the
+neutral-closure of the candidate.  Because the cell STAYS neutral, the SUBSTITUTING succ-iota never enters this
+regime — the neutral proof is entirely congruence + vacuity, NO substitution machinery.
 
 Five results:
 
@@ -28,12 +29,13 @@ Five results:
     never a numeral constructor (the ι-vacuity discriminators), uniform over the neutral family exactly as
     `IsNeutral.rootGenerator_ne_piTyCode`.
   * `natElim_neutralScrutinee_isStronglyNormalizing` / `natRec_…` — the recursor cell at a neutral SN scrutinee
-    with SN branches is SN: a triple accessibility recursion over (scrutinee, zeroBranch, succBranch) whose two
-    ι-reduct cases are VACUOUS by neutrality (a neutral scrutinee is no numeral) and whose three congruence
-    cases recurse.
+    with SN motive and SN branches is SN: a FOUR-fold accessibility recursion (Phase-Z motive shape adds the
+    motive child) over (scrutinee, motive, zeroBranch, succBranch) whose two ι-reduct cases are VACUOUS by
+    neutrality (a neutral scrutinee is no numeral) and whose four congruence cases (motive, zero, succ,
+    scrutinee) recurse.
   * `natElimNeutralScrutineeMember` / `natRec…` — the neutral arm: `natElim`/`natRec` over a neutral SN
-    scrutinee with reducible branches is a member of the result candidate, by the abstract neutral bridge on the
-    cell SN + `IsNeutral.natElim`.
+    scrutinee with SN motive and reducible branches is a member of the result candidate, by the abstract neutral
+    bridge on the cell SN + `IsNeutral.natElim`.
 
 Fundamental-independent: the result candidate is a fixed candidate, this is the pure Tait neutral-eliminator
 argument.  The remaining regime is the scrutinee-reduction outer recursion (a non-value non-neutral
@@ -43,28 +45,35 @@ scrutinee threading down to its numeral), shared with the closed-membership trac
 
 The abstract bridge is `Acc`-recursion + CR3 + `IsNeutral.closedUnderStep`.  The discriminators are `cases
 neutral <;> Generator.noConfusion` (the shipped `rootGenerator_ne_piTyCode` pattern).  The cell-SN recursors are
-a triple `Acc.intro` over the branch + scrutinee accessibilities with `Step.from_natElim` / `from_natRec`
-dispatch; the ι cases are refuted by `congrArg RawTerm.rootGenerator` against the neutral discriminators.  No
-`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditCore.lean`.
+a FOUR-fold `Acc.intro` over the motive + branch + scrutinee accessibilities with `Step.from_natElim` /
+`from_natRec` dispatch; the ι cases are refuted by `congrArg RawTerm.rootGenerator` against the neutral
+discriminators.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
+Per-declaration gated in `FX1PolyAudit/AuditCore.lean`.
 -/
 
 namespace FX1Poly.Core
 
 open StepStar
 
-/-- The `natElim` cell over its (scrutinee, zeroBranch, succBranch) spine, spelled exactly as
-`IsNeutral.natElim` and `Step.from_natElim` expect. -/
-abbrev natElimCellSpine {scope : Nat} (scrutinee zeroBranch succBranch : RawTerm scope) :
-    RawTerm scope :=
+/-- The `natElim` cell — `gen_natElim` in the Phase-Z motive shape (arity 4, `binderShifts = [1, 0, 2, 0]`),
+spelled exactly as `IsNeutral.natElim` and `Step.from_natElim` expect (motive FIRST under one binder, the
+succ-branch under TWO binders, the scrutinee LAST). -/
+abbrev natElimCellSpine {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)) : RawTerm scope :=
   .mkGen .gen_natElim ()
-    (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)))
+    (.childCons motive
+      (.childCons zeroBranch
+        (.childCons succBranch
+          (.childCons scrutinee .childNil))))
 
-/-- The `natRec` cell over its (scrutinee, zeroBranch, succBranch) spine. -/
-abbrev natRecCellSpine {scope : Nat} (scrutinee zeroBranch succBranch : RawTerm scope) :
-    RawTerm scope :=
+/-- The `natRec` cell — `gen_natRec` in the Phase-Z motive shape (motive first, scrutinee last). -/
+abbrev natRecCellSpine {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)) : RawTerm scope :=
   .mkGen .gen_natRec ()
-    (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil)))
+    (.childCons motive
+      (.childCons zeroBranch
+        (.childCons succBranch
+          (.childCons scrutinee .childNil))))
 
 /-- **A strongly-normalizing neutral term is a member of ANY reducibility candidate.**  Well-founded recursion
 on the term's SN accessibility: each one-step reduct stays neutral (`IsNeutral.closedUnderStep`) and is
@@ -99,144 +108,178 @@ theorem IsNeutral.rootGenerator_ne_natSucc {scope : Nat} {term : RawTerm scope}
     (neutral : IsNeutral term) : term.rootGenerator ≠ Generator.gen_natSucc := by
   cases neutral <;> exact fun shapeEquation => Generator.noConfusion shapeEquation
 
-/-- **`natElim` over a neutral SN scrutinee with SN branches is strongly normalizing.**  A neutral scrutinee is
-never a numeral and stays neutral under `Step`, so the recursor never ι-fires — the cell reduces purely by
-congruence in its three children.  A triple accessibility recursion over (scrutinee, zeroBranch, succBranch):
-`Step.from_natElim`'s two ι cases are refuted by the neutrality discriminators, and its three congruence cases
-recurse (the scrutinee step preserving neutrality via `IsNeutral.closedUnderStep`). -/
+/-- **`natElim` over a neutral SN scrutinee with SN motive and SN branches is strongly normalizing.**  A neutral
+scrutinee is never a numeral and stays neutral under `Step`, so the recursor never ι-fires — the cell reduces
+purely by congruence in its four children.  Phase-Z motive shape: a FOUR-fold accessibility recursion over
+(scrutinee, motive, zeroBranch, succBranch): `Step.from_natElim`'s two ι cases are refuted by the neutrality
+discriminators, and its four congruence cases recurse (the scrutinee step preserving neutrality via
+`IsNeutral.closedUnderStep`). -/
 theorem natElim_neutralScrutinee_isStronglyNormalizing {scope : Nat}
+    {motive : RawTerm (scope + 1)} (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     {scrutinee : RawTerm scope} (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee)
     (scrutineeNeutral : IsNeutral scrutinee)
-    {zeroBranch succBranch : RawTerm scope}
+    {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
     (zeroBranchStronglyNormalizing : IsStronglyNormalizing zeroBranch)
     (succBranchStronglyNormalizing : IsStronglyNormalizing succBranch) :
-    IsStronglyNormalizing (natElimCellSpine scrutinee zeroBranch succBranch) := by
+    IsStronglyNormalizing (natElimCellSpine motive scrutinee zeroBranch succBranch) := by
   suffices aux :
     ∀ scrutinee : RawTerm scope, IsStronglyNormalizing scrutinee → IsNeutral scrutinee →
+    ∀ motive : RawTerm (scope + 1), IsStronglyNormalizing motive →
     ∀ zeroBranch : RawTerm scope, IsStronglyNormalizing zeroBranch →
-    ∀ succBranch : RawTerm scope, IsStronglyNormalizing succBranch →
-      IsStronglyNormalizing (natElimCellSpine scrutinee zeroBranch succBranch) by
-    exact aux scrutinee scrutineeStronglyNormalizing scrutineeNeutral zeroBranch
-      zeroBranchStronglyNormalizing succBranch succBranchStronglyNormalizing
-  clear scrutineeStronglyNormalizing scrutineeNeutral zeroBranchStronglyNormalizing
-    succBranchStronglyNormalizing scrutinee zeroBranch succBranch
+    ∀ succBranch : RawTerm (scope + 2), IsStronglyNormalizing succBranch →
+      IsStronglyNormalizing (natElimCellSpine motive scrutinee zeroBranch succBranch) by
+    exact aux scrutinee scrutineeStronglyNormalizing scrutineeNeutral motive
+      motiveStronglyNormalizing zeroBranch zeroBranchStronglyNormalizing succBranch
+      succBranchStronglyNormalizing
+  clear motiveStronglyNormalizing scrutineeStronglyNormalizing scrutineeNeutral
+    zeroBranchStronglyNormalizing succBranchStronglyNormalizing motive scrutinee zeroBranch succBranch
   intro scrutinee scrutineeStronglyNormalizing
   induction scrutineeStronglyNormalizing with
   | intro scrutineeNode _scrutineeAccessible scrutineeInductiveHypothesis =>
-    intro scrutineeNeutral zeroBranch zeroBranchStronglyNormalizing
-    induction zeroBranchStronglyNormalizing with
-    | intro zeroNode _zeroAccessible zeroInductiveHypothesis =>
-      intro succBranch succBranchStronglyNormalizing
-      induction succBranchStronglyNormalizing with
-      | intro succNode succNodeAccessible succInductiveHypothesis =>
-        apply Acc.intro
-        intro target step
-        rcases Step.from_natElim step with
-          ⟨scrutineeIsZero, _⟩ |
-          ⟨_predecessor, scrutineeIsSucc, _⟩ |
-          ⟨scrutineeAfter, targetEquation, scrutineeStep⟩ |
-          ⟨zeroAfter, targetEquation, zeroStep⟩ |
-          ⟨succAfter, targetEquation, succStep⟩
-        · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsZero)
-            scrutineeNeutral.rootGenerator_ne_natZero
-        · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsSucc)
-            scrutineeNeutral.rootGenerator_ne_natSucc
-        · rw [targetEquation]
-          exact scrutineeInductiveHypothesis scrutineeAfter scrutineeStep
-            (scrutineeNeutral.closedUnderStep scrutineeStep)
-            zeroNode (Acc.intro zeroNode _zeroAccessible)
-            succNode (Acc.intro succNode succNodeAccessible)
-        · rw [targetEquation]
-          exact zeroInductiveHypothesis zeroAfter zeroStep succNode
-            (Acc.intro succNode succNodeAccessible)
-        · rw [targetEquation]
-          exact succInductiveHypothesis succAfter succStep
+    intro scrutineeNeutral motive motiveStronglyNormalizing
+    induction motiveStronglyNormalizing with
+    | intro motiveNode _motiveAccessible motiveInductiveHypothesis =>
+      intro zeroBranch zeroBranchStronglyNormalizing
+      induction zeroBranchStronglyNormalizing with
+      | intro zeroNode _zeroAccessible zeroInductiveHypothesis =>
+        intro succBranch succBranchStronglyNormalizing
+        induction succBranchStronglyNormalizing with
+        | intro succNode succNodeAccessible succInductiveHypothesis =>
+          apply Acc.intro
+          intro target step
+          rcases Step.from_natElim step with
+            ⟨scrutineeIsZero, _⟩ |
+            ⟨_predecessor, scrutineeIsSucc, _⟩ |
+            ⟨motiveAfter, targetEquation, motiveStep⟩ |
+            ⟨zeroAfter, targetEquation, zeroStep⟩ |
+            ⟨succAfter, targetEquation, succStep⟩ |
+            ⟨scrutineeAfter, targetEquation, scrutineeStep⟩
+          · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsZero)
+              scrutineeNeutral.rootGenerator_ne_natZero
+          · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsSucc)
+              scrutineeNeutral.rootGenerator_ne_natSucc
+          · rw [targetEquation]
+            exact motiveInductiveHypothesis motiveAfter motiveStep
+              zeroNode (Acc.intro zeroNode _zeroAccessible)
+              succNode (Acc.intro succNode succNodeAccessible)
+          · rw [targetEquation]
+            exact zeroInductiveHypothesis zeroAfter zeroStep succNode
+              (Acc.intro succNode succNodeAccessible)
+          · rw [targetEquation]
+            exact succInductiveHypothesis succAfter succStep
+          · rw [targetEquation]
+            exact scrutineeInductiveHypothesis scrutineeAfter scrutineeStep
+              (scrutineeNeutral.closedUnderStep scrutineeStep)
+              motiveNode (Acc.intro motiveNode _motiveAccessible)
+              zeroNode (Acc.intro zeroNode _zeroAccessible)
+              succNode (Acc.intro succNode succNodeAccessible)
 
-/-- **`natRec` over a neutral SN scrutinee with SN branches is strongly normalizing** — the dependent-recursor
-twin of `natElim_neutralScrutinee_isStronglyNormalizing` (same `Step.from_natRec` five-way inversion, same
-triple accessibility, same ι-vacuity by neutrality). -/
+/-- **`natRec` over a neutral SN scrutinee with SN motive and SN branches is strongly normalizing** — the
+dependent-recursor twin of `natElim_neutralScrutinee_isStronglyNormalizing` (same `Step.from_natRec` six-way
+inversion, same FOUR-fold accessibility, same ι-vacuity by neutrality). -/
 theorem natRec_neutralScrutinee_isStronglyNormalizing {scope : Nat}
+    {motive : RawTerm (scope + 1)} (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     {scrutinee : RawTerm scope} (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee)
     (scrutineeNeutral : IsNeutral scrutinee)
-    {zeroBranch succBranch : RawTerm scope}
+    {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
     (zeroBranchStronglyNormalizing : IsStronglyNormalizing zeroBranch)
     (succBranchStronglyNormalizing : IsStronglyNormalizing succBranch) :
-    IsStronglyNormalizing (natRecCellSpine scrutinee zeroBranch succBranch) := by
+    IsStronglyNormalizing (natRecCellSpine motive scrutinee zeroBranch succBranch) := by
   suffices aux :
     ∀ scrutinee : RawTerm scope, IsStronglyNormalizing scrutinee → IsNeutral scrutinee →
+    ∀ motive : RawTerm (scope + 1), IsStronglyNormalizing motive →
     ∀ zeroBranch : RawTerm scope, IsStronglyNormalizing zeroBranch →
-    ∀ succBranch : RawTerm scope, IsStronglyNormalizing succBranch →
-      IsStronglyNormalizing (natRecCellSpine scrutinee zeroBranch succBranch) by
-    exact aux scrutinee scrutineeStronglyNormalizing scrutineeNeutral zeroBranch
-      zeroBranchStronglyNormalizing succBranch succBranchStronglyNormalizing
-  clear scrutineeStronglyNormalizing scrutineeNeutral zeroBranchStronglyNormalizing
-    succBranchStronglyNormalizing scrutinee zeroBranch succBranch
+    ∀ succBranch : RawTerm (scope + 2), IsStronglyNormalizing succBranch →
+      IsStronglyNormalizing (natRecCellSpine motive scrutinee zeroBranch succBranch) by
+    exact aux scrutinee scrutineeStronglyNormalizing scrutineeNeutral motive
+      motiveStronglyNormalizing zeroBranch zeroBranchStronglyNormalizing succBranch
+      succBranchStronglyNormalizing
+  clear motiveStronglyNormalizing scrutineeStronglyNormalizing scrutineeNeutral
+    zeroBranchStronglyNormalizing succBranchStronglyNormalizing motive scrutinee zeroBranch succBranch
   intro scrutinee scrutineeStronglyNormalizing
   induction scrutineeStronglyNormalizing with
   | intro scrutineeNode _scrutineeAccessible scrutineeInductiveHypothesis =>
-    intro scrutineeNeutral zeroBranch zeroBranchStronglyNormalizing
-    induction zeroBranchStronglyNormalizing with
-    | intro zeroNode _zeroAccessible zeroInductiveHypothesis =>
-      intro succBranch succBranchStronglyNormalizing
-      induction succBranchStronglyNormalizing with
-      | intro succNode succNodeAccessible succInductiveHypothesis =>
-        apply Acc.intro
-        intro target step
-        rcases Step.from_natRec step with
-          ⟨scrutineeIsZero, _⟩ |
-          ⟨_predecessor, scrutineeIsSucc, _⟩ |
-          ⟨scrutineeAfter, targetEquation, scrutineeStep⟩ |
-          ⟨zeroAfter, targetEquation, zeroStep⟩ |
-          ⟨succAfter, targetEquation, succStep⟩
-        · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsZero)
-            scrutineeNeutral.rootGenerator_ne_natZero
-        · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsSucc)
-            scrutineeNeutral.rootGenerator_ne_natSucc
-        · rw [targetEquation]
-          exact scrutineeInductiveHypothesis scrutineeAfter scrutineeStep
-            (scrutineeNeutral.closedUnderStep scrutineeStep)
-            zeroNode (Acc.intro zeroNode _zeroAccessible)
-            succNode (Acc.intro succNode succNodeAccessible)
-        · rw [targetEquation]
-          exact zeroInductiveHypothesis zeroAfter zeroStep succNode
-            (Acc.intro succNode succNodeAccessible)
-        · rw [targetEquation]
-          exact succInductiveHypothesis succAfter succStep
+    intro scrutineeNeutral motive motiveStronglyNormalizing
+    induction motiveStronglyNormalizing with
+    | intro motiveNode _motiveAccessible motiveInductiveHypothesis =>
+      intro zeroBranch zeroBranchStronglyNormalizing
+      induction zeroBranchStronglyNormalizing with
+      | intro zeroNode _zeroAccessible zeroInductiveHypothesis =>
+        intro succBranch succBranchStronglyNormalizing
+        induction succBranchStronglyNormalizing with
+        | intro succNode succNodeAccessible succInductiveHypothesis =>
+          apply Acc.intro
+          intro target step
+          rcases Step.from_natRec step with
+            ⟨scrutineeIsZero, _⟩ |
+            ⟨_predecessor, scrutineeIsSucc, _⟩ |
+            ⟨motiveAfter, targetEquation, motiveStep⟩ |
+            ⟨zeroAfter, targetEquation, zeroStep⟩ |
+            ⟨succAfter, targetEquation, succStep⟩ |
+            ⟨scrutineeAfter, targetEquation, scrutineeStep⟩
+          · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsZero)
+              scrutineeNeutral.rootGenerator_ne_natZero
+          · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsSucc)
+              scrutineeNeutral.rootGenerator_ne_natSucc
+          · rw [targetEquation]
+            exact motiveInductiveHypothesis motiveAfter motiveStep
+              zeroNode (Acc.intro zeroNode _zeroAccessible)
+              succNode (Acc.intro succNode succNodeAccessible)
+          · rw [targetEquation]
+            exact zeroInductiveHypothesis zeroAfter zeroStep succNode
+              (Acc.intro succNode succNodeAccessible)
+          · rw [targetEquation]
+            exact succInductiveHypothesis succAfter succStep
+          · rw [targetEquation]
+            exact scrutineeInductiveHypothesis scrutineeAfter scrutineeStep
+              (scrutineeNeutral.closedUnderStep scrutineeStep)
+              motiveNode (Acc.intro motiveNode _motiveAccessible)
+              zeroNode (Acc.intro zeroNode _zeroAccessible)
+              succNode (Acc.intro succNode succNodeAccessible)
 
-/-- **Neutral regime: `natElim` over a neutral SN scrutinee with reducible branches is a member of the
-result candidate.**  The cell is neutral (`IsNeutral.natElim`) and strongly normalizing
-(`natElim_neutralScrutinee_isStronglyNormalizing`, fed the branches' SN by CR1), so it inhabits the candidate by
-the abstract neutral bridge.  The dual of `natElimValueMember`: there the recursor COMPUTES into a member; here
-it is stuck at a neutral head and reducibility is the candidate's neutral closure. -/
+/-- **Neutral regime: `natElim` over a neutral SN scrutinee with SN motive, a reducible zero-branch, and an SN
+under-binder succ-branch is a member of the result candidate.**  The cell is neutral (`IsNeutral.natElim`) and
+strongly normalizing (`natElim_neutralScrutinee_isStronglyNormalizing`, fed the zero-branch's SN by CR1 and the
+succ-branch's SN directly — the succ-branch lives at `scope + 2` so it cannot be a candidate member, only SN), so
+it inhabits the candidate by the abstract neutral bridge.  The dual of `natElimValueMember`: there the recursor
+COMPUTES into a member; here it is stuck at a neutral head and reducibility is the candidate's neutral closure. -/
 theorem natElimNeutralScrutineeMember {scope : Nat}
     (resultCandidate : RawTerm scope → Prop)
     (candidate : IsReducibilityCandidate resultCandidate)
+    {motive : RawTerm (scope + 1)}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     {scrutinee : RawTerm scope}
     (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee)
     (scrutineeNeutral : IsNeutral scrutinee)
-    {zeroBranch succBranch : RawTerm scope}
-    (zeroBranchMember : resultCandidate zeroBranch) (succBranchMember : resultCandidate succBranch) :
-    resultCandidate (natElimCellSpine scrutinee zeroBranch succBranch) :=
+    {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
+    (zeroBranchMember : resultCandidate zeroBranch)
+    (succBranchStronglyNormalizing : IsStronglyNormalizing succBranch) :
+    resultCandidate (natElimCellSpine motive scrutinee zeroBranch succBranch) :=
   candidate.memberOfStronglyNormalizingNeutral
-    (natElim_neutralScrutinee_isStronglyNormalizing scrutineeStronglyNormalizing scrutineeNeutral
+    (natElim_neutralScrutinee_isStronglyNormalizing motiveStronglyNormalizing
+      scrutineeStronglyNormalizing scrutineeNeutral
       (candidate.stronglyNormalizing zeroBranchMember)
-      (candidate.stronglyNormalizing succBranchMember))
+      succBranchStronglyNormalizing)
     (IsNeutral.natElim scrutineeNeutral)
 
 /-- **Neutral regime for `natRec`** — the dependent-recursor twin of `natElimNeutralScrutineeMember`. -/
 theorem natRecNeutralScrutineeMember {scope : Nat}
     (resultCandidate : RawTerm scope → Prop)
     (candidate : IsReducibilityCandidate resultCandidate)
+    {motive : RawTerm (scope + 1)}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     {scrutinee : RawTerm scope}
     (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee)
     (scrutineeNeutral : IsNeutral scrutinee)
-    {zeroBranch succBranch : RawTerm scope}
-    (zeroBranchMember : resultCandidate zeroBranch) (succBranchMember : resultCandidate succBranch) :
-    resultCandidate (natRecCellSpine scrutinee zeroBranch succBranch) :=
+    {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
+    (zeroBranchMember : resultCandidate zeroBranch)
+    (succBranchStronglyNormalizing : IsStronglyNormalizing succBranch) :
+    resultCandidate (natRecCellSpine motive scrutinee zeroBranch succBranch) :=
   candidate.memberOfStronglyNormalizingNeutral
-    (natRec_neutralScrutinee_isStronglyNormalizing scrutineeStronglyNormalizing scrutineeNeutral
+    (natRec_neutralScrutinee_isStronglyNormalizing motiveStronglyNormalizing
+      scrutineeStronglyNormalizing scrutineeNeutral
       (candidate.stronglyNormalizing zeroBranchMember)
-      (candidate.stronglyNormalizing succBranchMember))
+      succBranchStronglyNormalizing)
     (IsNeutral.natRec scrutineeNeutral)
 
 end FX1Poly.Core

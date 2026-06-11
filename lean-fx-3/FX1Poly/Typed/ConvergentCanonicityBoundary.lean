@@ -15,9 +15,12 @@ proves it CANNOT, and pins exactly why.
 
 `appLamUnit := app (lam unit) unit` — a closed β-redex.  Two facts about it:
 
-  * **It is ι∪η-NORMAL** (`appLamUnit_iotaEtaNormal`): no `IotaEtaStep` fires.  The root is an `app`, which
-    is neither an ι head-redex (the 16 ι arms are all eliminator/projection heads) nor an η head-redex (the
-    5 η arms are lam/pair/pathLam/modIntro/glueIntro heads); the only congruence child `lam unit` is itself
+  * **It is ι∪η-NORMAL** (`appLamUnit_iotaEtaNormal`): no `IotaEtaStep` fires.  The ι leg here is the
+    compatible closure of the ORIENTED root fragment (`IotaOrientedHeadStep` = root ι minus the two Phase-Z
+    SUBSTITUTING natElim/natRec succ-iota arms, which join the β-imported boundary).  The root is an `app`,
+    which is neither an ι head-redex (the 16 underlying `IotaHeadStep` arms are all eliminator/projection
+    heads) nor an η head-redex (the 5 η arms are lam/pair/pathLam/modIntro/glueIntro heads); the only
+    congruence child `lam unit` is itself
     ι∪η-normal (its body `unit` is not an `app`, so the function-η rule cannot fire on it), and `unit` is a
     nullary leaf.  So the convergent presentation HALTS on `appLamUnit` and reports it as a normal form.
 
@@ -60,7 +63,7 @@ theorem unit_iotaEtaNormal {scope : Nat} :
   intro reduct step
   cases step with
   | head rootStep => cases rootStep with
-    | inl iotaHead => cases iotaHead
+    | inl iotaHead => cases iotaHead.1
     | inr etaStep => cases etaStep
   | cong gen payload childStep => cases childStep
 
@@ -74,7 +77,7 @@ theorem lamUnit_iotaEtaNormal :
   intro reduct step
   cases step with
   | head rootStep => cases rootStep with
-    | inl iotaHead => cases iotaHead
+    | inl iotaHead => cases iotaHead.1
     | inr etaStep => cases etaStep
   | cong gen payload childStep =>
       cases childStep with
@@ -98,7 +101,7 @@ theorem appLamUnit_iotaEtaNormal :
   intro reduct step
   cases step with
   | head rootStep => cases rootStep with
-    | inl iotaHead => cases iotaHead
+    | inl iotaHead => cases iotaHead.1
     | inr etaStep => cases etaStep
   | cong gen payload childStep =>
       cases childStep with

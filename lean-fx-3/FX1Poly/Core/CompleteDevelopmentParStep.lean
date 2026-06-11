@@ -140,57 +140,65 @@ theorem RawTerm.completeDevelopment_parStep {scope0 : Nat} (term0 : RawTerm scop
                   · by_cases hNatElim : gen = .gen_natElim
                     · subst hNatElim
                       cases children with
-                      | childCons scrut rest => cases rest with | childCons zeroB rest2 => cases rest2 with
-                        | childCons succB rest3 => cases rest3 with | childNil =>
-                            cases scrut with
-                            | mkGen sg sp sc =>
-                                by_cases hZero : sg = .gen_natZero
-                                · subst hZero
-                                  cases sc with | childNil =>
-                                      cases childrenIH with | cons _ restS => cases restS with
-                                        | cons zeroStep _ => exact ParStep.iotaNatElimZero zeroStep
-                                · by_cases hSucc : sg = .gen_natSucc
-                                  · subst hSucc
-                                    cases sc with | childCons pred sc2 => cases sc2 with
-                                      | childNil =>
-                                          cases childrenIH with | cons scrutStep restS => cases restS with
-                                            | cons zeroStep restS2 => cases restS2 with
-                                              | cons succStep _ =>
-                                                  cases scrutStep with | cong _ _ cs => cases cs with
-                                                    | cons predStep rcs => cases rcs with
-                                                      | nil => exact ParStep.iotaNatElimSucc predStep zeroStep succStep
-                                  · have key : RawTerm.fireRootRedex .gen_natElim payload
-                                        (.childCons (.mkGen sg sp sc)
-                                          (.childCons zeroB (.childCons succB .childNil))) = none :=
-                                      (if_neg hZero).trans (dif_neg hSucc)
-                                    rw [key] at hfire; nomatch hfire
-                    · by_cases hNatRec : gen = .gen_natRec
-                      · subst hNatRec
-                        cases children with
-                        | childCons scrut rest => cases rest with | childCons zeroB rest2 => cases rest2 with
-                          | childCons succB rest3 => cases rest3 with | childNil =>
+                      | childCons motive rest => cases rest with | childCons zeroB rest2 => cases rest2 with
+                        | childCons succB rest3 => cases rest3 with | childCons scrut rest4 => cases rest4 with
+                          | childNil =>
                               cases scrut with
                               | mkGen sg sp sc =>
                                   by_cases hZero : sg = .gen_natZero
                                   · subst hZero
                                     cases sc with | childNil =>
-                                        cases childrenIH with | cons _ restS => cases restS with
-                                          | cons zeroStep _ => exact ParStep.iotaNatRecZero zeroStep
+                                        cases childrenIH with | cons motiveStep restS => cases restS with
+                                          | cons zeroStep _ => exact ParStep.iotaNatElimZero motiveStep zeroStep
                                   · by_cases hSucc : sg = .gen_natSucc
                                     · subst hSucc
                                       cases sc with | childCons pred sc2 => cases sc2 with
                                         | childNil =>
-                                            cases childrenIH with | cons scrutStep restS => cases restS with
+                                            cases childrenIH with | cons motiveStep restS => cases restS with
                                               | cons zeroStep restS2 => cases restS2 with
-                                                | cons succStep _ =>
-                                                    cases scrutStep with | cong _ _ cs => cases cs with
-                                                      | cons predStep rcs => cases rcs with
-                                                        | nil => exact ParStep.iotaNatRecSucc predStep zeroStep succStep
-                                    · have key : RawTerm.fireRootRedex .gen_natRec payload
-                                          (.childCons (.mkGen sg sp sc)
-                                            (.childCons zeroB (.childCons succB .childNil))) = none :=
+                                                | cons succStep restS3 => cases restS3 with
+                                                  | cons scrutStep _ =>
+                                                      cases scrutStep with | cong _ _ cs => cases cs with
+                                                        | cons predStep rcs => cases rcs with
+                                                          | nil =>
+                                                              exact ParStep.iotaNatElimSucc
+                                                                motiveStep predStep zeroStep succStep
+                                    · have key : RawTerm.fireRootRedex .gen_natElim payload
+                                          (.childCons motive (.childCons zeroB (.childCons succB
+                                            (.childCons (.mkGen sg sp sc) .childNil)))) = none :=
                                         (if_neg hZero).trans (dif_neg hSucc)
                                       rw [key] at hfire; nomatch hfire
+                    · by_cases hNatRec : gen = .gen_natRec
+                      · subst hNatRec
+                        cases children with
+                        | childCons motive rest => cases rest with | childCons zeroB rest2 => cases rest2 with
+                          | childCons succB rest3 => cases rest3 with | childCons scrut rest4 => cases rest4 with
+                            | childNil =>
+                                cases scrut with
+                                | mkGen sg sp sc =>
+                                    by_cases hZero : sg = .gen_natZero
+                                    · subst hZero
+                                      cases sc with | childNil =>
+                                          cases childrenIH with | cons motiveStep restS => cases restS with
+                                            | cons zeroStep _ => exact ParStep.iotaNatRecZero motiveStep zeroStep
+                                    · by_cases hSucc : sg = .gen_natSucc
+                                      · subst hSucc
+                                        cases sc with | childCons pred sc2 => cases sc2 with
+                                          | childNil =>
+                                              cases childrenIH with | cons motiveStep restS => cases restS with
+                                                | cons zeroStep restS2 => cases restS2 with
+                                                  | cons succStep restS3 => cases restS3 with
+                                                    | cons scrutStep _ =>
+                                                        cases scrutStep with | cong _ _ cs => cases cs with
+                                                          | cons predStep rcs => cases rcs with
+                                                            | nil =>
+                                                                exact ParStep.iotaNatRecSucc
+                                                                  motiveStep predStep zeroStep succStep
+                                      · have key : RawTerm.fireRootRedex .gen_natRec payload
+                                            (.childCons motive (.childCons zeroB (.childCons succB
+                                              (.childCons (.mkGen sg sp sc) .childNil)))) = none :=
+                                          (if_neg hZero).trans (dif_neg hSucc)
+                                        rw [key] at hfire; nomatch hfire
                       · by_cases hListElim : gen = .gen_listElim
                         · subst hListElim
                           cases children with

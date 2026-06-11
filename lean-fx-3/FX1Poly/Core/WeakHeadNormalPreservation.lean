@@ -271,7 +271,12 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
                   | (), .childCons _innerFirst (.childCons _innerSecond .childNil) =>
                       exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaSndPair⟩
             | there _head tailStep => cases tailStep
-      | @iotaNatElimZero zeroBranch succBranch =>
+      | @iotaNatElimZero motive zeroBranch succBranch =>
+          -- Phase-Z spine: (motive, zero, succ, scrutinee=natZero).  A step in motive / zero /
+          -- succ leaves the scrutinee a constructor, so the subject is still a natZero redex
+          -- (`rootIota IotaHeadStep.iotaNatElimZero`).  A step in the LAST child (scrutinee) is
+          -- decided by a nested `weakHeadStep_or_cong`: a genuine wh-step lifts via
+          -- `scrutineeNatElim`, a cong into `natZero`'s empty spine is impossible.
           rcases Step.weakHeadStep_or_cong step with
             ⟨subjectReduct, weakHeadOnSubject⟩
             | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
@@ -284,24 +289,33 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
             subst payloadEquation
             subst childrenAfterEquation
             cases childStep with
-            | here _rest scrutineeStep =>
-                rcases Step.weakHeadStep_or_cong scrutineeStep with
-                  ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
-                  | ⟨innerGenerator, _innerPayload, _innerChildren, innerAfter,
-                      _scrutineeEquation, ctorEquation, innerChildStep⟩
-                · exact ⟨_, WeakHeadStep.scrutineeNatElim weakHeadOnScrutinee⟩
-                · have innerGeneratorEquation : Generator.gen_natZero = innerGenerator :=
-                    congrArg RawTerm.rootGenerator ctorEquation
-                  subst innerGeneratorEquation
-                  injection ctorEquation with _innerScopeEq _innerGenEq _innerPayloadEq innerAfterEquation
-                  subst innerAfterEquation
-                  cases innerChildStep
-            | there _head _tailStep =>
-                rename_i subjectTail
-                match subjectTail with
-                | .childCons _zeroSubject (.childCons _succSubject .childNil) =>
+            | here _rest _motiveStep =>
+                exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimZero⟩
+            | there _head tailStep =>
+                cases tailStep with
+                | here _rest _zeroStep =>
                     exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimZero⟩
-      | @iotaNatRecZero zeroBranch succBranch =>
+                | there _head2 restStep =>
+                    cases restStep with
+                    | here _rest _succStep =>
+                        exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimZero⟩
+                    | there _head3 scrutineeTailStep =>
+                        cases scrutineeTailStep with
+                        | here _rest scrutineeStep =>
+                            rcases Step.weakHeadStep_or_cong scrutineeStep with
+                              ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
+                              | ⟨innerGenerator, _innerPayload, _innerChildren, innerAfter,
+                                  _scrutineeEquation, ctorEquation, innerChildStep⟩
+                            · exact ⟨_, WeakHeadStep.scrutineeNatElim weakHeadOnScrutinee⟩
+                            · have innerGeneratorEquation : Generator.gen_natZero = innerGenerator :=
+                                congrArg RawTerm.rootGenerator ctorEquation
+                              subst innerGeneratorEquation
+                              injection ctorEquation with
+                                _innerScopeEq _innerGenEq _innerPayloadEq innerAfterEquation
+                              subst innerAfterEquation
+                              cases innerChildStep
+                        | there _head4 emptyStep => cases emptyStep
+      | @iotaNatRecZero motive zeroBranch succBranch =>
           rcases Step.weakHeadStep_or_cong step with
             ⟨subjectReduct, weakHeadOnSubject⟩
             | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
@@ -314,23 +328,32 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
             subst payloadEquation
             subst childrenAfterEquation
             cases childStep with
-            | here _rest scrutineeStep =>
-                rcases Step.weakHeadStep_or_cong scrutineeStep with
-                  ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
-                  | ⟨innerGenerator, _innerPayload, _innerChildren, innerAfter,
-                      _scrutineeEquation, ctorEquation, innerChildStep⟩
-                · exact ⟨_, WeakHeadStep.scrutineeNatRec weakHeadOnScrutinee⟩
-                · have innerGeneratorEquation : Generator.gen_natZero = innerGenerator :=
-                    congrArg RawTerm.rootGenerator ctorEquation
-                  subst innerGeneratorEquation
-                  injection ctorEquation with _innerScopeEq _innerGenEq _innerPayloadEq innerAfterEquation
-                  subst innerAfterEquation
-                  cases innerChildStep
-            | there _head _tailStep =>
-                rename_i subjectTail
-                match subjectTail with
-                | .childCons _zeroSubject (.childCons _succSubject .childNil) =>
+            | here _rest _motiveStep =>
+                exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecZero⟩
+            | there _head tailStep =>
+                cases tailStep with
+                | here _rest _zeroStep =>
                     exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecZero⟩
+                | there _head2 restStep =>
+                    cases restStep with
+                    | here _rest _succStep =>
+                        exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecZero⟩
+                    | there _head3 scrutineeTailStep =>
+                        cases scrutineeTailStep with
+                        | here _rest scrutineeStep =>
+                            rcases Step.weakHeadStep_or_cong scrutineeStep with
+                              ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
+                              | ⟨innerGenerator, _innerPayload, _innerChildren, innerAfter,
+                                  _scrutineeEquation, ctorEquation, innerChildStep⟩
+                            · exact ⟨_, WeakHeadStep.scrutineeNatRec weakHeadOnScrutinee⟩
+                            · have innerGeneratorEquation : Generator.gen_natZero = innerGenerator :=
+                                congrArg RawTerm.rootGenerator ctorEquation
+                              subst innerGeneratorEquation
+                              injection ctorEquation with
+                                _innerScopeEq _innerGenEq _innerPayloadEq innerAfterEquation
+                              subst innerAfterEquation
+                              cases innerChildStep
+                        | there _head4 emptyStep => cases emptyStep
       | @iotaListElimNil motive nilBranch consBranch =>
           -- Phase-Z spine: (motive, nil, cons, scrutinee=listNil).  A step in motive / nil /
           -- cons leaves the scrutinee a constructor, so the subject is still a listNil redex
@@ -498,7 +521,12 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
                 match subjectTail with
                 | .childCons _leftSubject (.childCons _rightSubject .childNil) =>
                     exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaEitherMatchInr⟩
-      | @iotaNatElimSucc predecessor zeroBranch succBranch =>
+      | @iotaNatElimSucc motive predecessor zeroBranch succBranch =>
+          -- Phase-Z spine: (motive, zero, succ, scrutinee=natSucc predecessor).  A step in motive /
+          -- zero / succ leaves the scrutinee a constructor, so the subject is still a natSucc redex
+          -- (`rootIota IotaHeadStep.iotaNatElimSucc`).  A step in the LAST child (scrutinee) is
+          -- decided by a nested `weakHeadStep_or_cong`: a genuine wh-step lifts via
+          -- `scrutineeNatElim`, a cong into a `natSucc` scrutinee leaves it a constructor.
           rcases Step.weakHeadStep_or_cong step with
             ⟨subjectReduct, weakHeadOnSubject⟩
             | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
@@ -511,25 +539,33 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
             subst payloadEquation
             subst childrenAfterEquation
             cases childStep with
-            | here _rest scrutineeStep =>
-                rcases Step.weakHeadStep_or_cong scrutineeStep with
-                  ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
-                  | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
-                      scrutineeEquation, ctorEquation, _innerChildStep⟩
-                · exact ⟨_, WeakHeadStep.scrutineeNatElim weakHeadOnScrutinee⟩
-                · have innerGeneratorEquation : Generator.gen_natSucc = innerGenerator :=
-                    congrArg RawTerm.rootGenerator ctorEquation
-                  subst innerGeneratorEquation
-                  subst scrutineeEquation
-                  match innerPayload, innerChildren with
-                  | (), .childCons _innerPredecessor .childNil =>
-                      exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimSucc⟩
-            | there _head _tailStep =>
-                rename_i subjectTail
-                match subjectTail with
-                | .childCons _zeroSubject (.childCons _succSubject .childNil) =>
+            | here _rest _motiveStep =>
+                exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimSucc⟩
+            | there _head tailStep =>
+                cases tailStep with
+                | here _rest _zeroStep =>
                     exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimSucc⟩
-      | @iotaNatRecSucc predecessor zeroBranch succBranch =>
+                | there _head2 restStep =>
+                    cases restStep with
+                    | here _rest _succStep =>
+                        exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimSucc⟩
+                    | there _head3 scrutineeTailStep =>
+                        cases scrutineeTailStep with
+                        | here _rest scrutineeStep =>
+                            rcases Step.weakHeadStep_or_cong scrutineeStep with
+                              ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
+                              | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
+                                  scrutineeEquation, ctorEquation, _innerChildStep⟩
+                            · exact ⟨_, WeakHeadStep.scrutineeNatElim weakHeadOnScrutinee⟩
+                            · have innerGeneratorEquation : Generator.gen_natSucc = innerGenerator :=
+                                congrArg RawTerm.rootGenerator ctorEquation
+                              subst innerGeneratorEquation
+                              subst scrutineeEquation
+                              match innerPayload, innerChildren with
+                              | (), .childCons _innerPredecessor .childNil =>
+                                  exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimSucc⟩
+                        | there _head4 emptyStep => cases emptyStep
+      | @iotaNatRecSucc motive predecessor zeroBranch succBranch =>
           rcases Step.weakHeadStep_or_cong step with
             ⟨subjectReduct, weakHeadOnSubject⟩
             | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
@@ -542,24 +578,32 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
             subst payloadEquation
             subst childrenAfterEquation
             cases childStep with
-            | here _rest scrutineeStep =>
-                rcases Step.weakHeadStep_or_cong scrutineeStep with
-                  ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
-                  | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
-                      scrutineeEquation, ctorEquation, _innerChildStep⟩
-                · exact ⟨_, WeakHeadStep.scrutineeNatRec weakHeadOnScrutinee⟩
-                · have innerGeneratorEquation : Generator.gen_natSucc = innerGenerator :=
-                    congrArg RawTerm.rootGenerator ctorEquation
-                  subst innerGeneratorEquation
-                  subst scrutineeEquation
-                  match innerPayload, innerChildren with
-                  | (), .childCons _innerPredecessor .childNil =>
-                      exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecSucc⟩
-            | there _head _tailStep =>
-                rename_i subjectTail
-                match subjectTail with
-                | .childCons _zeroSubject (.childCons _succSubject .childNil) =>
+            | here _rest _motiveStep =>
+                exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecSucc⟩
+            | there _head tailStep =>
+                cases tailStep with
+                | here _rest _zeroStep =>
                     exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecSucc⟩
+                | there _head2 restStep =>
+                    cases restStep with
+                    | here _rest _succStep =>
+                        exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecSucc⟩
+                    | there _head3 scrutineeTailStep =>
+                        cases scrutineeTailStep with
+                        | here _rest scrutineeStep =>
+                            rcases Step.weakHeadStep_or_cong scrutineeStep with
+                              ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
+                              | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
+                                  scrutineeEquation, ctorEquation, _innerChildStep⟩
+                            · exact ⟨_, WeakHeadStep.scrutineeNatRec weakHeadOnScrutinee⟩
+                            · have innerGeneratorEquation : Generator.gen_natSucc = innerGenerator :=
+                                congrArg RawTerm.rootGenerator ctorEquation
+                              subst innerGeneratorEquation
+                              subst scrutineeEquation
+                              match innerPayload, innerChildren with
+                              | (), .childCons _innerPredecessor .childNil =>
+                                  exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecSucc⟩
+                        | there _head4 emptyStep => cases emptyStep
       | @iotaListElimCons motive headVal tailVal nilBranch consBranch =>
           -- Phase-Z spine: (motive, nil, cons, scrutinee=listCons).  A step in motive / nil /
           -- cons leaves the scrutinee a constructor, so the subject is still a listCons redex
@@ -738,8 +782,12 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
             obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ := inductiveHypothesis scrutineeStep
             exact ⟨_, WeakHeadStep.scrutineeSnd weakHeadOnScrutinee⟩
         | there _head tailStep => cases tailStep
-  | @scrutineeNatElim scrutinee scrutineeReduct zeroBranch succBranch
+  | @scrutineeNatElim motive scrutinee scrutineeReduct zeroBranch succBranch
       _storedWeakHead inductiveHypothesis =>
+      -- Phase-Z spine: (motive, zero, succ, scrutinee).  The WeakHeadStep reduces the LAST child.
+      -- A step in motive / zero / succ leaves the scrutinee still reducible, so the subject still
+      -- weak-head reduces there (`scrutineeNatElim _storedWeakHead`).  A step in the scrutinee
+      -- (deepest child) recurses through the induction hypothesis.
       intro subjectType step
       rcases Step.weakHeadStep_or_cong step with
         ⟨subjectReduct, weakHeadOnSubject⟩
@@ -753,15 +801,24 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
         subst payloadEquation
         subst childrenAfterEquation
         cases childStep with
-        | here _rest scrutineeStep =>
-            obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ := inductiveHypothesis scrutineeStep
-            exact ⟨_, WeakHeadStep.scrutineeNatElim weakHeadOnScrutinee⟩
-        | there _head _tailStep =>
-            rename_i subjectTail
-            match subjectTail with
-            | .childCons _zeroSubject (.childCons _succSubject .childNil) =>
+        | here _rest _motiveStep =>
+            exact ⟨_, WeakHeadStep.scrutineeNatElim _storedWeakHead⟩
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest _zeroStep =>
                 exact ⟨_, WeakHeadStep.scrutineeNatElim _storedWeakHead⟩
-  | @scrutineeNatRec scrutinee scrutineeReduct zeroBranch succBranch
+            | there _head2 restStep =>
+                cases restStep with
+                | here _rest _succStep =>
+                    exact ⟨_, WeakHeadStep.scrutineeNatElim _storedWeakHead⟩
+                | there _head3 scrutineeTailStep =>
+                    cases scrutineeTailStep with
+                    | here _rest scrutineeStep =>
+                        obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ :=
+                          inductiveHypothesis scrutineeStep
+                        exact ⟨_, WeakHeadStep.scrutineeNatElim weakHeadOnScrutinee⟩
+                    | there _head4 emptyStep => cases emptyStep
+  | @scrutineeNatRec motive scrutinee scrutineeReduct zeroBranch succBranch
       _storedWeakHead inductiveHypothesis =>
       intro subjectType step
       rcases Step.weakHeadStep_or_cong step with
@@ -776,14 +833,23 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
         subst payloadEquation
         subst childrenAfterEquation
         cases childStep with
-        | here _rest scrutineeStep =>
-            obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ := inductiveHypothesis scrutineeStep
-            exact ⟨_, WeakHeadStep.scrutineeNatRec weakHeadOnScrutinee⟩
-        | there _head _tailStep =>
-            rename_i subjectTail
-            match subjectTail with
-            | .childCons _zeroSubject (.childCons _succSubject .childNil) =>
+        | here _rest _motiveStep =>
+            exact ⟨_, WeakHeadStep.scrutineeNatRec _storedWeakHead⟩
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest _zeroStep =>
                 exact ⟨_, WeakHeadStep.scrutineeNatRec _storedWeakHead⟩
+            | there _head2 restStep =>
+                cases restStep with
+                | here _rest _succStep =>
+                    exact ⟨_, WeakHeadStep.scrutineeNatRec _storedWeakHead⟩
+                | there _head3 scrutineeTailStep =>
+                    cases scrutineeTailStep with
+                    | here _rest scrutineeStep =>
+                        obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ :=
+                          inductiveHypothesis scrutineeStep
+                        exact ⟨_, WeakHeadStep.scrutineeNatRec weakHeadOnScrutinee⟩
+                    | there _head4 emptyStep => cases emptyStep
   | @scrutineeListElim motive scrutinee scrutineeReduct nilBranch consBranch
       _storedWeakHead inductiveHypothesis =>
       -- Phase-Z spine: (motive, nil, cons, scrutinee).  The WeakHeadStep reduces the LAST child.

@@ -234,18 +234,24 @@ the root-ι step reaches the base branch, and `ofStepStarReachingValue` lifts th
 the cell.  The IH-carrying SUCCESSOR/CONS case (`natElim (natSucc n) …`, `listElim (listCons h t) …`), whose
 contractum re-invokes the recursor, genuinely needs the well-founded recursor SN and remains the lone deferral. -/
 
-/-- **Concrete `natElim`-on-`natZero` base-case membership regression.**  `natElim natZero boolTrue boolTrue`
-fires ι to the zero-branch `boolTrue` (a bool member); the cell is SN by
-`natElimZero_isStronglyNormalizing_of_branches` (branch-SN only — natZero fires without recursion).  The
-base half at a concrete witness. -/
+/-- **Concrete `natElim`-on-`natZero` base-case membership regression.**  `natElim(motive, natZero, boolTrue,
+boolTrue)` fires ι to the zero-branch `boolTrue` (a bool member); the cell is SN by
+`natElimZero_isStronglyNormalizing_of_branches` (branch-SN only — natZero fires without recursion).  Phase-Z
+motive shape: a `var 0` under-binder throwaway motive (SN), a `var 0` two-binder throwaway succ-branch, spine
+`(motive, zeroBranch, succBranch, natZero)` with the scrutinee LAST.  The base half at a concrete witness. -/
 theorem natElimZeroClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_natElim ()
-        (.childCons natZeroCell (.childCons boolTrueCell (.childCons boolTrueCell .childNil)))) :=
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
+          (.childCons boolTrueCell
+            (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 1⟩ .childNil)
+              (.childCons natZeroCell .childNil))))) :=
   CanonicalFormsPredicate.ofStepStarReachingValue
     (StepStar.trans Step.iotaNatElimZero (StepStar.refl _))
     (natElimZero_isStronglyNormalizing_of_branches
-      boolTrue_isStronglyNormalizing boolTrue_isStronglyNormalizing)
+      (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
+      boolTrue_isStronglyNormalizing
+      (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 1⟩))
     boolTrueCell_isMember.closedReducesToValue
 
 /-- **Concrete `natRec`-on-`natZero` base-case membership regression.**  The dependent-recursor twin of
@@ -254,11 +260,16 @@ theorem natElimZeroClosedMembershipSmoke :
 theorem natRecZeroClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_natRec ()
-        (.childCons natZeroCell (.childCons boolTrueCell (.childCons boolTrueCell .childNil)))) :=
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
+          (.childCons boolTrueCell
+            (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 1⟩ .childNil)
+              (.childCons natZeroCell .childNil))))) :=
   CanonicalFormsPredicate.ofStepStarReachingValue
     (StepStar.trans Step.iotaNatRecZero (StepStar.refl _))
     (natRecZero_isStronglyNormalizing_of_branches
-      boolTrue_isStronglyNormalizing boolTrue_isStronglyNormalizing)
+      (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
+      boolTrue_isStronglyNormalizing
+      (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 1⟩))
     boolTrueCell_isMember.closedReducesToValue
 
 /-- **Concrete `listElim`-on-`listNil` base-case membership regression.**  `listElim(motive, listNil, boolTrue,

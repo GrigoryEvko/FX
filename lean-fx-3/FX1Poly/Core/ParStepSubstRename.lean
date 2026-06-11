@@ -1,6 +1,7 @@
 import FX1Poly.Core.ParallelReduction
 import FX1Poly.Core.StepSubst
 import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Core.RawTermSubstPair
 
 /-! # FX1Poly/Core/ParStepSubstRename
     — parallel reduction is stable under substitution and renaming.
@@ -85,10 +86,12 @@ theorem ParStep.subst {sourceScope targetScope : Nat}
         ParStep.iotaFstPair (ihFirst sigma))
       (fun {scope} {firstValue secondValue secondValue'} _step ihSecond {targetScope} sigma =>
         ParStep.iotaSndPair (ihSecond sigma))
-      (fun {scope} {zeroBranch zeroBranch' succBranch} _step ihZero {targetScope} sigma =>
-        ParStep.iotaNatElimZero (ihZero sigma))
-      (fun {scope} {zeroBranch zeroBranch' succBranch} _step ihZero {targetScope} sigma =>
-        ParStep.iotaNatRecZero (ihZero sigma))
+      (fun {scope} {motive motive' zeroBranch zeroBranch' succBranch} _stepMotive _stepZero
+          ihMotive ihZero {targetScope} sigma =>
+        ParStep.iotaNatElimZero (ihMotive (RawTermSubst.lift sigma)) (ihZero sigma))
+      (fun {scope} {motive motive' zeroBranch zeroBranch' succBranch} _stepMotive _stepZero
+          ihMotive ihZero {targetScope} sigma =>
+        ParStep.iotaNatRecZero (ihMotive (RawTermSubst.lift sigma)) (ihZero sigma))
       (fun {scope} {motive motive' nilBranch nilBranch' consBranch} _stepMotive _stepNil
           ihMotive ihNil {targetScope} sigma =>
         ParStep.iotaListElimNil (ihMotive (RawTermSubst.lift sigma)) (ihNil sigma))
@@ -103,12 +106,18 @@ theorem ParStep.subst {sourceScope targetScope : Nat}
       (fun {scope} {value value' leftBranch rightBranch rightBranch'} _stepRight _stepVal
           ihRight ihVal {targetScope} sigma =>
         ParStep.iotaEitherMatchInr (ihRight sigma) (ihVal sigma))
-      (fun {scope} {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
-          _stepPred _stepZero _stepSucc ihPred ihZero ihSucc {targetScope} sigma =>
-        ParStep.iotaNatElimSucc (ihPred sigma) (ihZero sigma) (ihSucc sigma))
-      (fun {scope} {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
-          _stepPred _stepZero _stepSucc ihPred ihZero ihSucc {targetScope} sigma =>
-        ParStep.iotaNatRecSucc (ihPred sigma) (ihZero sigma) (ihSucc sigma))
+      (fun {scope} {motive motive' predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
+          _stepMotive _stepPred _stepZero _stepSucc ihMotive ihPred ihZero ihSucc
+          {targetScope} sigma => by
+        rw [RawTerm.substPair_subst_commute]
+        exact ParStep.iotaNatElimSucc (ihMotive (RawTermSubst.lift sigma)) (ihPred sigma)
+          (ihZero sigma) (ihSucc (RawTermSubst.lift (RawTermSubst.lift sigma))))
+      (fun {scope} {motive motive' predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
+          _stepMotive _stepPred _stepZero _stepSucc ihMotive ihPred ihZero ihSucc
+          {targetScope} sigma => by
+        rw [RawTerm.substPair_subst_commute]
+        exact ParStep.iotaNatRecSucc (ihMotive (RawTermSubst.lift sigma)) (ihPred sigma)
+          (ihZero sigma) (ihSucc (RawTermSubst.lift (RawTermSubst.lift sigma))))
       (fun {scope} {motive motive' headVal headVal' tailVal tailVal'
             nilBranch nilBranch' consBranch consBranch'}
           _stepMotive _stepHead _stepTail _stepNil _stepCons
@@ -175,10 +184,12 @@ theorem ParStepChildren.subst {parentSourceScope parentTargetScope : Nat}
         ParStep.iotaFstPair (ihFirst sigma))
       (fun {scope} {firstValue secondValue secondValue'} _step ihSecond {targetScope} sigma =>
         ParStep.iotaSndPair (ihSecond sigma))
-      (fun {scope} {zeroBranch zeroBranch' succBranch} _step ihZero {targetScope} sigma =>
-        ParStep.iotaNatElimZero (ihZero sigma))
-      (fun {scope} {zeroBranch zeroBranch' succBranch} _step ihZero {targetScope} sigma =>
-        ParStep.iotaNatRecZero (ihZero sigma))
+      (fun {scope} {motive motive' zeroBranch zeroBranch' succBranch} _stepMotive _stepZero
+          ihMotive ihZero {targetScope} sigma =>
+        ParStep.iotaNatElimZero (ihMotive (RawTermSubst.lift sigma)) (ihZero sigma))
+      (fun {scope} {motive motive' zeroBranch zeroBranch' succBranch} _stepMotive _stepZero
+          ihMotive ihZero {targetScope} sigma =>
+        ParStep.iotaNatRecZero (ihMotive (RawTermSubst.lift sigma)) (ihZero sigma))
       (fun {scope} {motive motive' nilBranch nilBranch' consBranch} _stepMotive _stepNil
           ihMotive ihNil {targetScope} sigma =>
         ParStep.iotaListElimNil (ihMotive (RawTermSubst.lift sigma)) (ihNil sigma))
@@ -193,12 +204,18 @@ theorem ParStepChildren.subst {parentSourceScope parentTargetScope : Nat}
       (fun {scope} {value value' leftBranch rightBranch rightBranch'} _stepRight _stepVal
           ihRight ihVal {targetScope} sigma =>
         ParStep.iotaEitherMatchInr (ihRight sigma) (ihVal sigma))
-      (fun {scope} {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
-          _stepPred _stepZero _stepSucc ihPred ihZero ihSucc {targetScope} sigma =>
-        ParStep.iotaNatElimSucc (ihPred sigma) (ihZero sigma) (ihSucc sigma))
-      (fun {scope} {predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
-          _stepPred _stepZero _stepSucc ihPred ihZero ihSucc {targetScope} sigma =>
-        ParStep.iotaNatRecSucc (ihPred sigma) (ihZero sigma) (ihSucc sigma))
+      (fun {scope} {motive motive' predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
+          _stepMotive _stepPred _stepZero _stepSucc ihMotive ihPred ihZero ihSucc
+          {targetScope} sigma => by
+        rw [RawTerm.substPair_subst_commute]
+        exact ParStep.iotaNatElimSucc (ihMotive (RawTermSubst.lift sigma)) (ihPred sigma)
+          (ihZero sigma) (ihSucc (RawTermSubst.lift (RawTermSubst.lift sigma))))
+      (fun {scope} {motive motive' predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
+          _stepMotive _stepPred _stepZero _stepSucc ihMotive ihPred ihZero ihSucc
+          {targetScope} sigma => by
+        rw [RawTerm.substPair_subst_commute]
+        exact ParStep.iotaNatRecSucc (ihMotive (RawTermSubst.lift sigma)) (ihPred sigma)
+          (ihZero sigma) (ihSucc (RawTermSubst.lift (RawTermSubst.lift sigma))))
       (fun {scope} {motive motive' headVal headVal' tailVal tailVal'
             nilBranch nilBranch' consBranch consBranch'}
           _stepMotive _stepHead _stepTail _stepNil _stepCons

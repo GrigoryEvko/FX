@@ -15,9 +15,9 @@ normal: weak-head-normalize the scrutinee first, then fire ι.  `WeakHeadStep` i
     function that is itself an eliminator-redex, which `HeadStep`'s β-only congruence misses);
   * `rootIota` — any root-ι step (`IotaHeadStep`);
   * `scrutineeCong<Eliminator>` — reduce the SCRUTINEE of an eliminator by `WeakHeadStep`, one rule per
-    eliminator, at its scrutinee position (child 0 for `fst`/`snd`/`natElim`/`natRec`/`optionMatch`/
-    `eitherMatch`; child 1 for `idJ`/`idStrictRec`; child 3 — LAST — for the Phase-Z `boolElim` /
-    `listElim` whose spines are `(motive, then, else, scrutinee)` / `(motive, nil, cons, scrutinee)`).
+    eliminator, at its scrutinee position (child 0 for `fst`/`snd`/`optionMatch`/`eitherMatch`;
+    child 1 for `idJ`/`idStrictRec`; child 3 — LAST — for the Phase-Z `boolElim` / `natElim` /
+    `natRec` / `listElim` whose spines are `(motive, then/zero/nil, else/succ/cons, scrutinee)`).
 
 This is the relation a large-elimination-ready dependent reducibility relation dispatches on: the
 `neutral` arm's honest guard is `¬ WeakHeadStep` (genuinely stuck — no β, no ι, no reducible scrutinee),
@@ -90,22 +90,33 @@ inductive WeakHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
       WeakHeadStep
         (.mkGen .gen_snd () (.childCons scrutinee .childNil))
         (.mkGen .gen_snd () (.childCons scrutineeReduct .childNil))
-  /-- Reduce the scrutinee of `natElim`. -/
-  | scrutineeNatElim {scrutinee scrutineeReduct zeroBranch succBranch : RawTerm scope} :
+  /-- Reduce the scrutinee of `natElim` (Phase-Z: scrutinee is the LAST child;
+      the motive heads the spine at `scope + 1`, succ-branch at `scope + 2`). -/
+  | scrutineeNatElim {motive : RawTerm (scope + 1)}
+      {scrutinee scrutineeReduct zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)} :
       WeakHeadStep scrutinee scrutineeReduct →
       WeakHeadStep
         (.mkGen .gen_natElim ()
-          (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil))))
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons scrutinee .childNil)))))
         (.mkGen .gen_natElim ()
-          (.childCons scrutineeReduct (.childCons zeroBranch (.childCons succBranch .childNil))))
-  /-- Reduce the scrutinee of `natRec`. -/
-  | scrutineeNatRec {scrutinee scrutineeReduct zeroBranch succBranch : RawTerm scope} :
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons scrutineeReduct .childNil)))))
+  /-- Reduce the scrutinee of `natRec` (Phase-Z: scrutinee LAST). -/
+  | scrutineeNatRec {motive : RawTerm (scope + 1)}
+      {scrutinee scrutineeReduct zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)} :
       WeakHeadStep scrutinee scrutineeReduct →
       WeakHeadStep
         (.mkGen .gen_natRec ()
-          (.childCons scrutinee (.childCons zeroBranch (.childCons succBranch .childNil))))
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons scrutinee .childNil)))))
         (.mkGen .gen_natRec ()
-          (.childCons scrutineeReduct (.childCons zeroBranch (.childCons succBranch .childNil))))
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch (.childCons scrutineeReduct .childNil)))))
   /-- Reduce the scrutinee of `listElim` (Phase-Z: scrutinee is the LAST child;
       the motive heads the spine at `scope + 1`). -/
   | scrutineeListElim {motive : RawTerm (scope + 1)}
@@ -182,9 +193,13 @@ theorem WeakHeadStep.toStep {scope : Nat} {term reduct : RawTerm scope}
   | scrutineeSnd _scrutineeStep scrutineeToStep =>
       exact Step.cong .gen_snd () (StepChildren.here _ scrutineeToStep)
   | scrutineeNatElim _scrutineeStep scrutineeToStep =>
-      exact Step.cong .gen_natElim () (StepChildren.here _ scrutineeToStep)
+      exact Step.cong .gen_natElim ()
+        (StepChildren.there _
+          (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep))))
   | scrutineeNatRec _scrutineeStep scrutineeToStep =>
-      exact Step.cong .gen_natRec () (StepChildren.here _ scrutineeToStep)
+      exact Step.cong .gen_natRec ()
+        (StepChildren.there _
+          (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep))))
   | scrutineeListElim _scrutineeStep scrutineeToStep =>
       exact Step.cong .gen_listElim ()
         (StepChildren.there _
