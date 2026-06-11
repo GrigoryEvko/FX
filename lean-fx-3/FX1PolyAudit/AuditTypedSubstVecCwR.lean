@@ -640,6 +640,7 @@ import FX1Poly.Modal.GradedCostRelation
 import FX1Poly.Modal.GradedCostFundamental
 import FX1Poly.Modal.GradedTermSize
 import FX1Poly.Modal.GradedLinearTime
+import FX1Poly.Modal.GradedLinearTimeBound
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1608,6 +1609,37 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Modal.affineDuplicatorLam_typedAtGradeZero
 #assert_no_axioms FX1Poly.Modal.affineDuplicatorBody_countsTwice
 #assert_no_axioms FX1Poly.Modal.affineGradeZero_doesNotBoundCount
+
+-- ★★ COST-2a CLOSED (GradedLinearTimeBound.lean, #1215 brick 3): LINEAR TERMS EVALUATE IN LINEAR TIME,
+-- UNDER ANY STRATEGY. HasStrictLinearGrade.linearTime: every ReducesInSteps chain from a strict-linear
+-- term — any strategy, any target — is strictly shorter than the term's SIZE (steps < size). Pipeline:
+-- strict weakening + substitution (mechanical mirrors of the generic #903/#905 graded metatheory with
+-- the binder grade pinned to one; the judgment-free substInto/insertAt vector algebra reused VERBATIM)
+-- → betaPreservation (grades preserved EXACTLY: substInto 0 at cons-one is definitionally the strict App
+-- grade) → subjectReduction (one-step SR, congruences rebuild) → stepDecreasesSize (β via brick 2's
+-- betaShrinks; congruences via inversion + Nat.succ_lt_succ/add_lt_add) → linearTime (chain induction:
+-- succ_lt_succ of the tail bound under SR, lt_of_lt_of_le with the head decrease). Smoke: the identity
+-- application normalizes in 1 < 5 steps end-to-end through the chain. ★ The β-NON-SHRINK witnesses:
+-- duplicatorRedex_betaDoesNotShrink — the SAME syntactic duplicator redex (λx.(f x) x)((λz.z) y) has
+-- β-reduct size EQUAL to the redex (11 = 11, Nat.lt_irrefl on the rfl-computed sizes), and it is graded
+-- BOTH at binder grade ZERO (brick 2's affine leak) and at OMEGA (omegaDuplicatorLam_typedAtGradeOmega,
+-- the same 6-ctor derivation over ω-arrows) — strict decrease fails outside the strict fragment in both
+-- gradings, so strictness is exactly the right hypothesis. CASES RECIPE: cases on the strict judgment
+-- at a VARIABLE grade/result index CONSUMES the ctor binders that unify with them (outerGrades↦grades,
+-- codomain↦resultType) — reference the surviving outer variables, not the ctor's binder names.
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.invertLam
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.invertApp
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.weakening
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.substitution
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.betaPreservation
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.subjectReduction
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.stepDecreasesSize
+#assert_no_axioms FX1Poly.Modal.HasStrictLinearGrade.linearTime
+#assert_no_axioms FX1Poly.Modal.identityApplication_linearTime
+#assert_no_axioms FX1Poly.Modal.duplicatedArgument
+#assert_no_axioms FX1Poly.Modal.duplicatorRedex_betaDoesNotShrink
+#assert_no_axioms FX1Poly.Modal.omegaFunctionType
+#assert_no_axioms FX1Poly.Modal.omegaDuplicatorLam_typedAtGradeOmega
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
