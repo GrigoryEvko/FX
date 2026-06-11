@@ -671,6 +671,7 @@ import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
 import FX1Poly.Typed.TermIndexedFormerSpike
 import FX1Poly.Typed.GradedIntroPremiseSpike
+import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2641,3 +2642,21 @@ direct arm — axiom-free.  NATIVE-20/23 is threading per-binder usage into `Int
 #assert_no_axioms FX1Poly.Typed.gradedIntroPremise_buildsPathIntro
 #assert_no_axioms FX1Poly.Typed.gradedIntroExpressibility
 #assert_no_axioms FX1Poly.Typed.gradedIntroExpressibility_isGo
+
+/-! ## NATIVE-04 (#1281) — the dependent-elimination premise (motive IH), the RISK spike (verdict GO-WITH-RESIDUAL)
+
+The hardest premise kind (`childMotiveInstance`): the recursive eliminators whose succ/cons branch inhabits
+the MOTIVE applied to constructor data + the IH.  The shipped `HasTypeDescNatElim` settles expressibility:
+`natElimIntro` TYPES the eliminator (motive + two-binder succ-branch encodable), and the zero-ι SR is
+unconditional.  But the recursive succ-ι SR is CONDITIONAL on the reduct typing — the reduct's var-0
+substituent is the recursive `natElimCell` itself, which only a union judgment (standalone-elim ∪ grown)
+types.  `dependentElimEliminatorTyped` (★ non-vacuous closed natElim), `dependentElimZeroIotaUnconditional`
+/ `dependentElimSuccIotaConditional` (the SR dichotomy), `dependentElimExpressibility_verdict` (the honest
+GO-WITH-RECURSIVE-ι-RESIDUAL ledger: dischargeable by the NATIVE-40 unified engine, the 2-var subst lemma
+shipped; flagged as the 100%-vs-95% risk point).  Direct construction over the shipped engine — axiom-free.
+This pins the residual exactly so NATIVE-05 locks the collapse scope with the cost known. -/
+#assert_no_axioms FX1Poly.Typed.dependentElimEliminatorTyped
+#assert_no_axioms FX1Poly.Typed.dependentElimZeroIotaUnconditional
+#assert_no_axioms FX1Poly.Typed.dependentElimSuccIotaConditional
+#assert_no_axioms FX1Poly.Typed.dependentElimExpressibility
+#assert_no_axioms FX1Poly.Typed.dependentElimExpressibility_verdict
