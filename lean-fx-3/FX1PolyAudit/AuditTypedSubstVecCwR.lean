@@ -2200,6 +2200,31 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.BinaryTelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow
 #assert_no_axioms FX1Poly.Typed.binaryFundamentalGenFormationSigmaArm
 
+-- ★★ THE UNARY-GUARDED Π CANDIDATE — the Abel binary-over-unary construction (OP1-K2 #1228,
+-- in-place strengthening across KernelBinaryParametricity/PiElim/PiIntro/ConvInvariance/
+-- Telescope/PiFormer; every gate above re-verifies at the new shapes, no new decls).
+-- Assembly-design analysis refuted the SN-augmented design too: the piIntro arm's λ-pair
+-- membership quantifies over NAKED binary argument pairs, which cannot extend a conjoined
+-- (unary-left × unary-right × binary) environment — and the binary→unary projection at Π is
+-- equivalent to the FT itself, so neither a unary-FT side-discharge nor a conjoined motive
+-- could reach the body IH. The correction (Abel's construction, the third design iteration):
+-- the piType arm CARRIES the unary domain reducibilities as constructor FIELDS
+-- (ReducibleTypeAtBounded env bound domain domainCandidate, per side) and GUARDS both the
+-- codomain-family premise and the member candidate's argument quantification with the unary
+-- candidate VARIABLES (leftDomainCandidate aL → rightDomainCandidate aR → domainRelation
+-- aL aR → ...). Reduction-stable by construction: the guards mention candidate variables,
+-- never type codes, so brick 3's forward arms transport the unary fields by
+-- ReducibleTypeStepBounded.forwardStepStar at the SAME candidate and the guards are
+-- untouched; cumulativity lifts the fields by stepBounded_cumulative at the SAME candidate.
+-- Guard discharge at use sites: ReducibleTypeAtBounded.deterministic converts between any
+-- two unary derivations' candidates (PointwiseIff), so piElim derives guards from NEW
+-- IsReducibleMemberAtBounded argument premises; at assembly a guard + the stored unary field
+-- reassembles the unary membership ⟨candidate, derivation, guard⟩ — exactly what conjoined-env
+-- extension at the piIntro body IH needs. The wall premises grew accordingly: the Π/Σ-former
+-- arms take domainUnaryPair (per-substitution unary type-reducibility of both substituted
+-- domains at the output level) and piIntro takes domainUnaryReduciblePair — all discharged
+-- at assembly from the unary FT, per the wall discipline.
+
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
 `gen_universeU`/`gen_universeS`/`gen_universeD`/`gen_universeOmega` land as table rows:

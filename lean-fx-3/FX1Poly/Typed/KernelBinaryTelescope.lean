@@ -151,8 +151,12 @@ pinned to the canonical member-pair predicate (brick 2's choice-free engine): th
 related, and the codomain pair related at every CANONICAL related argument pair. -/
 theorem binaryPiReducibleFromComponentsAtBounded {scope : Nat} (env : Nat → Nat) (lvl : Nat)
     {leftDomain rightDomain : RawTerm scope} {leftCodomain rightCodomain : RawTerm (scope + 1)}
+    {leftDomainCandidate rightDomainCandidate : RawTerm scope → Prop}
+    (leftDomainUnary : ReducibleTypeAtBounded env lvl leftDomain leftDomainCandidate)
+    (rightDomainUnary : ReducibleTypeAtBounded env lvl rightDomain rightDomainCandidate)
     (domainsRelated : IsBinaryReducibleTypePairAtBounded env lvl leftDomain rightDomain)
     (codomainsRelated : ∀ leftArgument rightArgument : RawTerm scope,
+      leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
       IsBinaryReducibleMemberPairAtBounded env lvl leftDomain rightDomain
         leftArgument rightArgument →
       IsBinaryReducibleTypePairAtBounded env lvl
@@ -167,9 +171,10 @@ theorem binaryPiReducibleFromComponentsAtBounded {scope : Nat} (env : Nat → Na
       IsBinaryReducibleMemberPairAtBounded env lvl
         (RawTerm.subst0 leftCodomain leftArgument)
         (RawTerm.subst0 rightCodomain rightArgument) leftTerm rightTerm)
+    leftDomainUnary rightDomainUnary
     domainsRelated.reducibleMemberPairCandidate
-    (fun leftArgument rightArgument argumentsMember =>
-      (codomainsRelated leftArgument rightArgument
+    (fun leftArgument rightArgument leftGuard rightGuard argumentsMember =>
+      (codomainsRelated leftArgument rightArgument leftGuard rightGuard
         argumentsMember).reducibleMemberPairCandidate)⟩
 
 end FX1Poly.Typed

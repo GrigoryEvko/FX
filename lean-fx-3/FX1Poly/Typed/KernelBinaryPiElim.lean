@@ -312,10 +312,14 @@ theorem BinaryReducibleTypeStepBounded.candidatePiPairShape {scope : Nat} {env :
         = (.mkGen .gen_piTyCode () (.childCons leftDomain (.childCons leftCodomain .childNil))) →
       rightCode
         = (.mkGen .gen_piTyCode () (.childCons rightDomain (.childCons rightCodomain .childNil))) →
-      ∃ (domainRelation : BinaryCandidate scope)
+      ∃ (leftDomainCandidate rightDomainCandidate : RawTerm scope → Prop)
+        (domainRelation : BinaryCandidate scope)
         (codomainRelation : RawTerm scope → RawTerm scope → BinaryCandidate scope),
+        ReducibleTypeAtBounded env bound leftDomain leftDomainCandidate ∧
+        ReducibleTypeAtBounded env bound rightDomain rightDomainCandidate ∧
         BinaryReducibleTypeStepBounded env lowerAt bound leftDomain rightDomain domainRelation ∧
         (∀ leftArgument rightArgument : RawTerm scope,
+          leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
           domainRelation leftArgument rightArgument →
           BinaryReducibleTypeStepBounded env lowerAt bound
             (RawTerm.subst0 leftCodomain leftArgument)
@@ -325,6 +329,7 @@ theorem BinaryReducibleTypeStepBounded.candidatePiPairShape {scope : Nat} {env :
           (fun leftFunction rightFunction =>
             IsStronglyNormalizing leftFunction ∧ IsStronglyNormalizing rightFunction ∧
               ∀ leftArgument rightArgument : RawTerm scope,
+                leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
                 domainRelation leftArgument rightArgument →
                 codomainRelation leftArgument rightArgument
                   (.mkGen .gen_app ()
@@ -341,10 +346,12 @@ theorem BinaryReducibleTypeStepBounded.candidatePiPairShape {scope : Nat} {env :
   | neutral _ _ notPiLeft _ _ _ _ _ _ _ =>
       intro _ _ _ _ leftEq _rightEq; subst leftEq
       exact absurd rfl notPiLeft
-  | piType codomainRelation domainsRelated codomainsRelated _ _ =>
+  | piType codomainRelation leftDomainUnary rightDomainUnary domainsRelated codomainsRelated
+      _ _ =>
       intro _ _ _ _ leftEq rightEq
       cases leftEq; cases rightEq
-      exact ⟨_, codomainRelation, domainsRelated, codomainsRelated, fun _ _ => Iff.rfl⟩
+      exact ⟨_, _, _, codomainRelation, leftDomainUnary, rightDomainUnary, domainsRelated,
+        codomainsRelated, fun _ _ => Iff.rfl⟩
   | universeCode _ _ _ =>
       intro _ _ _ _ leftEq _rightEq
       have rootMismatch : Generator.gen_universeCode = Generator.gen_piTyCode :=
@@ -361,9 +368,11 @@ theorem BinaryReducibleTypeStepBounded.candidatePiPairShape {scope : Nat} {env :
       exact nomatch flatPinned
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro _ _ _ _ leftEq rightEq
-      obtain ⟨domainRelation, codomainRelation, domainsRelated, codomainsRelated, pwi⟩ :=
+      obtain ⟨leftDomainCandidate, rightDomainCandidate, domainRelation, codomainRelation,
+        leftDomainUnary, rightDomainUnary, domainsRelated, codomainsRelated, pwi⟩ :=
         innerHypothesis leftEq rightEq
-      exact ⟨domainRelation, codomainRelation, domainsRelated, codomainsRelated,
+      exact ⟨leftDomainCandidate, rightDomainCandidate, domainRelation, codomainRelation,
+        leftDomainUnary, rightDomainUnary, domainsRelated, codomainsRelated,
         fun leftTerm rightTerm =>
           (pointwiseIff leftTerm rightTerm).symm.trans (pwi leftTerm rightTerm)⟩
 
@@ -375,10 +384,14 @@ theorem BinaryReducibleTypeAtBounded.piTypePairInversion {scope : Nat} {env : Na
       (.mkGen .gen_piTyCode () (.childCons leftDomain (.childCons leftCodomain .childNil)))
       (.mkGen .gen_piTyCode () (.childCons rightDomain (.childCons rightCodomain .childNil)))
       relation) :
-    ∃ (domainRelation : BinaryCandidate scope)
+    ∃ (leftDomainCandidate rightDomainCandidate : RawTerm scope → Prop)
+      (domainRelation : BinaryCandidate scope)
       (codomainRelation : RawTerm scope → RawTerm scope → BinaryCandidate scope),
+      ReducibleTypeAtBounded env bound leftDomain leftDomainCandidate ∧
+      ReducibleTypeAtBounded env bound rightDomain rightDomainCandidate ∧
       BinaryReducibleTypeAtBounded env bound leftDomain rightDomain domainRelation ∧
       (∀ leftArgument rightArgument : RawTerm scope,
+        leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
         domainRelation leftArgument rightArgument →
         BinaryReducibleTypeAtBounded env bound
           (RawTerm.subst0 leftCodomain leftArgument)
@@ -388,6 +401,7 @@ theorem BinaryReducibleTypeAtBounded.piTypePairInversion {scope : Nat} {env : Na
         (fun leftFunction rightFunction =>
           IsStronglyNormalizing leftFunction ∧ IsStronglyNormalizing rightFunction ∧
             ∀ leftArgument rightArgument : RawTerm scope,
+              leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
               domainRelation leftArgument rightArgument →
               codomainRelation leftArgument rightArgument
                 (.mkGen .gen_app ()
@@ -423,33 +437,45 @@ theorem BinaryReducibleTypeStepBounded.deterministic {scope : Nat} {env : Nat �
       exact (related2.binaryCandidateIffStronglyNormalizingPair noStepLeft noStepRight
         notPiLeft notUniverseLeft notEmptyLeft notFlatLeft
         notPiRight notUniverseRight notEmptyRight notFlatRight leftTerm rightTerm).symm
-  | piType codomainRelation1 _domainsRelated1 _codomainsRelated1 domainIH codomainIH =>
+  | piType codomainRelation1 leftDomainUnary1 rightDomainUnary1 _domainsRelated1
+      _codomainsRelated1 domainIH codomainIH =>
       intro relation2 related2
-      obtain ⟨domainRelation2, codomainRelation2, domainsRelated2, codomainsRelated2, pwi2⟩ :=
+      obtain ⟨leftDomainCandidate2, rightDomainCandidate2, domainRelation2, codomainRelation2,
+        leftDomainUnary2, rightDomainUnary2, domainsRelated2, codomainsRelated2, pwi2⟩ :=
         related2.candidatePiPairShape rfl rfl
+      have leftUnaryAgree :=
+        ReducibleTypeAtBounded.deterministic leftDomainUnary1 leftDomainUnary2
+      have rightUnaryAgree :=
+        ReducibleTypeAtBounded.deterministic rightDomainUnary1 rightDomainUnary2
       refine fun leftFunction rightFunction =>
         Iff.trans ?_ (pwi2 leftFunction rightFunction).symm
       constructor
       · intro membership1
         refine ⟨membership1.1, membership1.2.1, ?_⟩
-        intro leftArgument rightArgument domain2Arguments
+        intro leftArgument rightArgument leftGuard2 rightGuard2 domain2Arguments
+        have leftGuard1 := (leftUnaryAgree leftArgument).mpr leftGuard2
+        have rightGuard1 := (rightUnaryAgree rightArgument).mpr rightGuard2
         have domain1Arguments :=
           (domainIH domainsRelated2 leftArgument rightArgument).mpr domain2Arguments
         have codomainEquivalence :=
-          codomainIH leftArgument rightArgument domain1Arguments
-            (codomainsRelated2 leftArgument rightArgument domain2Arguments)
+          codomainIH leftArgument rightArgument leftGuard1 rightGuard1 domain1Arguments
+            (codomainsRelated2 leftArgument rightArgument leftGuard2 rightGuard2
+              domain2Arguments)
         exact (codomainEquivalence _ _).mp
-          (membership1.2.2 leftArgument rightArgument domain1Arguments)
+          (membership1.2.2 leftArgument rightArgument leftGuard1 rightGuard1 domain1Arguments)
       · intro membership2
         refine ⟨membership2.1, membership2.2.1, ?_⟩
-        intro leftArgument rightArgument domain1Arguments
+        intro leftArgument rightArgument leftGuard1 rightGuard1 domain1Arguments
+        have leftGuard2 := (leftUnaryAgree leftArgument).mp leftGuard1
+        have rightGuard2 := (rightUnaryAgree rightArgument).mp rightGuard1
         have domain2Arguments :=
           (domainIH domainsRelated2 leftArgument rightArgument).mp domain1Arguments
         have codomainEquivalence :=
-          codomainIH leftArgument rightArgument domain1Arguments
-            (codomainsRelated2 leftArgument rightArgument domain2Arguments)
+          codomainIH leftArgument rightArgument leftGuard1 rightGuard1 domain1Arguments
+            (codomainsRelated2 leftArgument rightArgument leftGuard2 rightGuard2
+              domain2Arguments)
         exact (codomainEquivalence _ _).mpr
-          (membership2.2.2 leftArgument rightArgument domain2Arguments)
+          (membership2.2.2 leftArgument rightArgument leftGuard2 rightGuard2 domain2Arguments)
   | universeCode _levelExpr1 _flag1 _belowBound1 =>
       intro relation2 related2 leftTerm rightTerm
       exact (related2.binaryCandidateIffUniverse rfl rfl leftTerm rightTerm).symm
@@ -488,22 +514,36 @@ theorem applicationMemberPairAtBounded {scope : Nat} (env : Nat → Nat) (bound 
       (.mkGen .gen_piTyCode () (.childCons rightDomain (.childCons rightCodomain .childNil)))
       leftFunction rightFunction)
     (argumentMemberPair : IsBinaryReducibleMemberPairAtBounded env bound
-      leftDomain rightDomain leftArgument rightArgument) :
+      leftDomain rightDomain leftArgument rightArgument)
+    (leftArgumentUnaryMember : IsReducibleMemberAtBounded env bound leftDomain leftArgument)
+    (rightArgumentUnaryMember :
+      IsReducibleMemberAtBounded env bound rightDomain rightArgument) :
     IsBinaryReducibleMemberPairAtBounded env bound
       (RawTerm.subst0 leftCodomain leftArgument) (RawTerm.subst0 rightCodomain rightArgument)
       (.mkGen .gen_app () (.childCons leftFunction (.childCons leftArgument .childNil)))
       (.mkGen .gen_app () (.childCons rightFunction (.childCons rightArgument .childNil))) := by
   obtain ⟨_piRelation, piPairRelated, functionsInPi⟩ := functionMemberPair
-  obtain ⟨domainRelation, codomainRelation, domainsRelated, codomainsRelated, piRelationIff⟩ :=
+  obtain ⟨leftDomainCandidate, rightDomainCandidate, domainRelation, codomainRelation,
+    leftDomainUnary, rightDomainUnary, domainsRelated, codomainsRelated, piRelationIff⟩ :=
     piPairRelated.piTypePairInversion
   have functionsApply := (piRelationIff leftFunction rightFunction).mp functionsInPi
   obtain ⟨argumentRelation, argumentTypesRelated, argumentsInRelation⟩ := argumentMemberPair
   have argumentsInDomain : domainRelation leftArgument rightArgument :=
     (BinaryReducibleTypeAtBounded.deterministic argumentTypesRelated domainsRelated
       leftArgument rightArgument).mp argumentsInRelation
+  obtain ⟨leftUnaryCandidate, leftUnaryReducible, leftArgumentInUnary⟩ :=
+    leftArgumentUnaryMember
+  obtain ⟨rightUnaryCandidate, rightUnaryReducible, rightArgumentInUnary⟩ :=
+    rightArgumentUnaryMember
+  have leftGuard : leftDomainCandidate leftArgument :=
+    (ReducibleTypeAtBounded.deterministic leftUnaryReducible leftDomainUnary leftArgument).mp
+      leftArgumentInUnary
+  have rightGuard : rightDomainCandidate rightArgument :=
+    (ReducibleTypeAtBounded.deterministic rightUnaryReducible rightDomainUnary
+      rightArgument).mp rightArgumentInUnary
   exact ⟨codomainRelation leftArgument rightArgument,
-    codomainsRelated leftArgument rightArgument argumentsInDomain,
-    functionsApply.2.2 leftArgument rightArgument argumentsInDomain⟩
+    codomainsRelated leftArgument rightArgument leftGuard rightGuard argumentsInDomain,
+    functionsApply.2.2 leftArgument rightArgument leftGuard rightGuard argumentsInDomain⟩
 
 /-- The Π-elimination pair arm under a closing-substitution pair (the FT shape): both sides'
 dependent result types commute by `subst0_subst_commute`, and `subst` distributes over the app
@@ -523,6 +563,11 @@ theorem applicationMemberPairUnderClosingSubstitutionBounded {scope targetScope 
     (argumentMemberPair : IsBinaryReducibleMemberPairAtBounded env bound
       (RawTerm.subst leftSubstitution domainCode) (RawTerm.subst rightSubstitution domainCode)
       (RawTerm.subst leftSubstitution argumentTerm)
+      (RawTerm.subst rightSubstitution argumentTerm))
+    (leftArgumentUnaryMember : IsReducibleMemberAtBounded env bound
+      (RawTerm.subst leftSubstitution domainCode) (RawTerm.subst leftSubstitution argumentTerm))
+    (rightArgumentUnaryMember : IsReducibleMemberAtBounded env bound
+      (RawTerm.subst rightSubstitution domainCode)
       (RawTerm.subst rightSubstitution argumentTerm)) :
     IsBinaryReducibleMemberPairAtBounded env bound
       (RawTerm.subst leftSubstitution (RawTerm.subst0 codomainCode argumentTerm))
@@ -534,6 +579,7 @@ theorem applicationMemberPairUnderClosingSubstitutionBounded {scope targetScope 
   rw [RawTerm.subst0_subst_commute codomainCode argumentTerm leftSubstitution,
     RawTerm.subst0_subst_commute codomainCode argumentTerm rightSubstitution]
   exact applicationMemberPairAtBounded env bound functionMemberPair argumentMemberPair
+    leftArgumentUnaryMember rightArgumentUnaryMember
 
 /-! ## ★ The binary fundamental-theorem motive + the var and piElim arms -/
 
@@ -570,12 +616,21 @@ theorem binaryFundamentalPiElimArm {profile : PolyProfile} {scope : Nat} (env : 
     (functionConclusion : BinaryFundamentalConclusionAtBounded env bound context functionTerm
       (piTyCodeCell domainCode codomainCode))
     (argumentConclusion : BinaryFundamentalConclusionAtBounded env bound context argument
-      domainCode) :
+      domainCode)
+    (argumentUnaryMembers : ∀ {targetScope : Nat}
+      (leftSubstitution rightSubstitution : RawTermSubst scope targetScope),
+      BinaryReducibleEnvAtBounded env bound context leftSubstitution rightSubstitution →
+      IsReducibleMemberAtBounded env bound (RawTerm.subst leftSubstitution domainCode)
+          (RawTerm.subst leftSubstitution argument) ∧
+        IsReducibleMemberAtBounded env bound (RawTerm.subst rightSubstitution domainCode)
+          (RawTerm.subst rightSubstitution argument)) :
     BinaryFundamentalConclusionAtBounded env bound context (appCell functionTerm argument)
       (RawTerm.subst0 codomainCode argument) := by
   intro _targetScope leftSubstitution rightSubstitution envRelated
   exact applicationMemberPairUnderClosingSubstitutionBounded env bound
     (functionConclusion leftSubstitution rightSubstitution envRelated)
     (argumentConclusion leftSubstitution rightSubstitution envRelated)
+    (argumentUnaryMembers leftSubstitution rightSubstitution envRelated).1
+    (argumentUnaryMembers leftSubstitution rightSubstitution envRelated).2
 
 end FX1Poly.Typed

@@ -74,6 +74,15 @@ theorem binaryFundamentalGenFormationPiArm {profile : PolyProfile} {scope : Nat}
           (RawTerm.subst (RawTermSubst.lift leftSubstitution) codomain) ∧
         IsStronglyNormalizing
           (RawTerm.subst (RawTermSubst.lift rightSubstitution) codomain))
+    (domainUnaryPair : ∀ {targetScope : Nat}
+      (leftSubstitution rightSubstitution : RawTermSubst scope targetScope),
+      BinaryReducibleEnvAtBounded env bound context leftSubstitution rightSubstitution →
+      IsReducibleTypeAtBounded env
+          (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env)
+          (RawTerm.subst leftSubstitution domain) ∧
+        IsReducibleTypeAtBounded env
+          (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env)
+          (RawTerm.subst rightSubstitution domain))
     (telescope : ∀ {targetScope : Nat}
       (leftSubstitution rightSubstitution : RawTermSubst scope targetScope),
       BinaryReducibleEnvAtBounded env bound context leftSubstitution rightSubstitution →
@@ -85,6 +94,9 @@ theorem binaryFundamentalGenFormationPiArm {profile : PolyProfile} {scope : Nat}
       (piTyCodeCell domain codomain)
       (universeCodeCell (lmaxAll [domainLevel, codomainLevel]) flag) := by
   intro _targetScope leftSubstitution rightSubstitution envRelated
+  obtain ⟨⟨leftDomainCandidateAtOutput, leftDomainUnaryAtOutput⟩,
+    ⟨rightDomainCandidateAtOutput, rightDomainUnaryAtOutput⟩⟩ :=
+    domainUnaryPair leftSubstitution rightSubstitution envRelated
   obtain ⟨domainMemberPair, codomainMemberPairFn⟩ :=
     (telescope leftSubstitution rightSubstitution envRelated).twoChildMembers
   have domainBelowOutput := denote_domainLevel_le_lmaxAll_pair domainLevel codomainLevel env
@@ -140,7 +152,10 @@ theorem binaryFundamentalGenFormationPiArm {profile : PolyProfile} {scope : Nat}
     rw [subst_piTyCodeCell, subst_piTyCodeCell]
     exact binaryPiReducibleFromComponentsAtBounded env
       (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env)
-      domainPairAtOutput codomainPairAtOutput
+      leftDomainUnaryAtOutput rightDomainUnaryAtOutput
+      domainPairAtOutput
+      (fun leftArgument rightArgument _leftGuard _rightGuard argumentsMember =>
+        codomainPairAtOutput leftArgument rightArgument argumentsMember)
   rw [subst_universeCodeCell, subst_universeCodeCell]
   exact binaryUniverseMembershipIntroAtBounded env (lmaxAll [domainLevel, codomainLevel]) flag
     bound outputBelowBound piLeftSN piRightSN piPairRelated

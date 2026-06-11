@@ -155,17 +155,18 @@ theorem BinaryReducibleTypeStepBounded.headExpansionClosedLeft {scope : Nat} {en
   | neutral _ _ _ _ _ _ _ _ _ _ =>
       intro _domainAnn _body _argument _spine _rightTerm domainAnnSN argumentSN membership
       exact ⟨betaSpineHeadExpansion domainAnnSN argumentSN membership.1, membership.2⟩
-  | piType codomainRelation _domainsRelated _codomainsRelated _domainIH codomainIH =>
+  | piType codomainRelation _leftDomainUnary _rightDomainUnary _domainsRelated
+      _codomainsRelated _domainIH codomainIH =>
       intro domainAnn body argument spine rightTerm domainAnnSN argumentSN contractumRelated
       refine ⟨betaSpineHeadExpansion domainAnnSN argumentSN contractumRelated.1,
         contractumRelated.2.1, ?_⟩
-      intro extraLeft extraRight extraRelated
+      intro extraLeft extraRight leftGuard rightGuard extraRelated
       have contractumAtExtendedSpine :
           codomainRelation extraLeft extraRight
             (RawTerm.applySpineApp (RawTerm.subst0 body argument) (spine ++ [extraLeft]))
             (.mkGen .gen_app () (.childCons rightTerm (.childCons extraRight .childNil))) := by
         rw [applySpineApp_append]
-        exact contractumRelated.2.2 extraLeft extraRight extraRelated
+        exact contractumRelated.2.2 extraLeft extraRight leftGuard rightGuard extraRelated
       have redexAtExtendedSpine :
           codomainRelation extraLeft extraRight
             (RawTerm.applySpineApp
@@ -175,7 +176,7 @@ theorem BinaryReducibleTypeStepBounded.headExpansionClosedLeft {scope : Nat} {en
                   (.childCons argument .childNil)))
               (spine ++ [extraLeft]))
             (.mkGen .gen_app () (.childCons rightTerm (.childCons extraRight .childNil))) :=
-        (codomainIH extraLeft extraRight extraRelated)
+        (codomainIH extraLeft extraRight leftGuard rightGuard extraRelated)
           domainAnnSN argumentSN contractumAtExtendedSpine
       rw [applySpineApp_append] at redexAtExtendedSpine
       exact redexAtExtendedSpine
@@ -224,17 +225,18 @@ theorem BinaryReducibleTypeStepBounded.headExpansionClosedRight {scope : Nat} {e
   | neutral _ _ _ _ _ _ _ _ _ _ =>
       intro _domainAnn _body _argument _spine _leftTerm domainAnnSN argumentSN membership
       exact ⟨membership.1, betaSpineHeadExpansion domainAnnSN argumentSN membership.2⟩
-  | piType codomainRelation _domainsRelated _codomainsRelated _domainIH codomainIH =>
+  | piType codomainRelation _leftDomainUnary _rightDomainUnary _domainsRelated
+      _codomainsRelated _domainIH codomainIH =>
       intro domainAnn body argument spine leftTerm domainAnnSN argumentSN contractumRelated
       refine ⟨contractumRelated.1,
         betaSpineHeadExpansion domainAnnSN argumentSN contractumRelated.2.1, ?_⟩
-      intro extraLeft extraRight extraRelated
+      intro extraLeft extraRight leftGuard rightGuard extraRelated
       have contractumAtExtendedSpine :
           codomainRelation extraLeft extraRight
             (.mkGen .gen_app () (.childCons leftTerm (.childCons extraLeft .childNil)))
             (RawTerm.applySpineApp (RawTerm.subst0 body argument) (spine ++ [extraRight])) := by
         rw [applySpineApp_append]
-        exact contractumRelated.2.2 extraLeft extraRight extraRelated
+        exact contractumRelated.2.2 extraLeft extraRight leftGuard rightGuard extraRelated
       have redexAtExtendedSpine :
           codomainRelation extraLeft extraRight
             (.mkGen .gen_app () (.childCons leftTerm (.childCons extraLeft .childNil)))
@@ -244,7 +246,7 @@ theorem BinaryReducibleTypeStepBounded.headExpansionClosedRight {scope : Nat} {e
                   (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
                   (.childCons argument .childNil)))
               (spine ++ [extraRight])) :=
-        (codomainIH extraLeft extraRight extraRelated)
+        (codomainIH extraLeft extraRight leftGuard rightGuard extraRelated)
           domainAnnSN argumentSN contractumAtExtendedSpine
       rw [applySpineApp_append] at redexAtExtendedSpine
       exact redexAtExtendedSpine
@@ -359,25 +361,31 @@ the empty spine. -/
 theorem binaryAbstractionMemberPairAtBounded {scope : Nat} (env : Nat → Nat) (bound : Nat)
     {leftDomainAnn rightDomainAnn leftDomain rightDomain : RawTerm scope}
     {leftCodomain rightCodomain : RawTerm (scope + 1)}
+    {leftDomainCandidate rightDomainCandidate : RawTerm scope → Prop}
     {domainRelation : BinaryCandidate scope}
     {codomainRelation : RawTerm scope → RawTerm scope → BinaryCandidate scope}
     {leftBody rightBody : RawTerm (scope + 1)}
+    (leftDomainUnary : ReducibleTypeAtBounded env bound leftDomain leftDomainCandidate)
+    (rightDomainUnary : ReducibleTypeAtBounded env bound rightDomain rightDomainCandidate)
     (domainsRelated : BinaryReducibleTypeAtBounded env bound leftDomain rightDomain
       domainRelation)
     (leftDomainAnnSN : IsStronglyNormalizing leftDomainAnn)
     (rightDomainAnnSN : IsStronglyNormalizing rightDomainAnn)
     (codomainsRelated : ∀ leftArgument rightArgument : RawTerm scope,
+      leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
       domainRelation leftArgument rightArgument →
       BinaryReducibleTypeAtBounded env bound
         (RawTerm.subst0 leftCodomain leftArgument)
         (RawTerm.subst0 rightCodomain rightArgument)
         (codomainRelation leftArgument rightArgument))
     (domainArgumentsSN : ∀ leftArgument rightArgument : RawTerm scope,
+      leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
       domainRelation leftArgument rightArgument →
       IsStronglyNormalizing leftArgument ∧ IsStronglyNormalizing rightArgument)
     (leftBodySN : IsStronglyNormalizing leftBody)
     (rightBodySN : IsStronglyNormalizing rightBody)
     (bodiesRelated : ∀ leftArgument rightArgument : RawTerm scope,
+      leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
       domainRelation leftArgument rightArgument →
       codomainRelation leftArgument rightArgument
         (RawTerm.subst0 leftBody leftArgument) (RawTerm.subst0 rightBody rightArgument)) :
@@ -389,23 +397,28 @@ theorem binaryAbstractionMemberPairAtBounded {scope : Nat} (env : Nat → Nat) (
   ⟨fun leftFunction rightFunction =>
       IsStronglyNormalizing leftFunction ∧ IsStronglyNormalizing rightFunction ∧
         ∀ leftArgument rightArgument : RawTerm scope,
+          leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
           domainRelation leftArgument rightArgument →
           codomainRelation leftArgument rightArgument
             (.mkGen .gen_app () (.childCons leftFunction (.childCons leftArgument .childNil)))
             (.mkGen .gen_app () (.childCons rightFunction (.childCons rightArgument .childNil))),
-   BinaryReducibleTypeStepBounded.piType codomainRelation domainsRelated codomainsRelated,
+   BinaryReducibleTypeStepBounded.piType codomainRelation leftDomainUnary rightDomainUnary
+     domainsRelated codomainsRelated,
    lam_isStronglyNormalizing_of_body leftDomainAnnSN leftBodySN,
    lam_isStronglyNormalizing_of_body rightDomainAnnSN rightBodySN,
-   fun leftArgument rightArgument argumentsRelated =>
-     (codomainsRelated leftArgument rightArgument argumentsRelated).headExpansionClosedLeft
+   fun leftArgument rightArgument leftGuard rightGuard argumentsRelated =>
+     (codomainsRelated leftArgument rightArgument leftGuard rightGuard
+         argumentsRelated).headExpansionClosedLeft
        (spine := [])
        leftDomainAnnSN
-       (domainArgumentsSN leftArgument rightArgument argumentsRelated).1
-       ((codomainsRelated leftArgument rightArgument argumentsRelated).headExpansionClosedRight
+       (domainArgumentsSN leftArgument rightArgument leftGuard rightGuard argumentsRelated).1
+       ((codomainsRelated leftArgument rightArgument leftGuard rightGuard
+           argumentsRelated).headExpansionClosedRight
          (spine := [])
          rightDomainAnnSN
-         (domainArgumentsSN leftArgument rightArgument argumentsRelated).2
-         (bodiesRelated leftArgument rightArgument argumentsRelated))⟩
+         (domainArgumentsSN leftArgument rightArgument leftGuard rightGuard
+           argumentsRelated).2
+         (bodiesRelated leftArgument rightArgument leftGuard rightGuard argumentsRelated))⟩
 
 /-- The λ-pair member arm under a closing-substitution pair: `subst` distributes over Π/λ
 definitionally on each side; the IH-shaped premises bridge via `subst_cons_eq_subst0_lift`. -/
@@ -413,27 +426,35 @@ theorem binaryAbstractionMemberPairUnderClosingSubstitutionBounded {scope target
     (env : Nat → Nat) (bound : Nat)
     {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
     {leftSubstitution rightSubstitution : RawTermSubst scope targetScope}
+    {leftDomainCandidate rightDomainCandidate : RawTerm targetScope → Prop}
     {domainRelation : BinaryCandidate targetScope}
     {codomainRelation : RawTerm targetScope → RawTerm targetScope →
       BinaryCandidate targetScope}
+    (leftDomainUnary : ReducibleTypeAtBounded env bound
+      (RawTerm.subst leftSubstitution domainCode) leftDomainCandidate)
+    (rightDomainUnary : ReducibleTypeAtBounded env bound
+      (RawTerm.subst rightSubstitution domainCode) rightDomainCandidate)
     (domainsRelated : BinaryReducibleTypeAtBounded env bound
       (RawTerm.subst leftSubstitution domainCode) (RawTerm.subst rightSubstitution domainCode)
       domainRelation)
     (leftDomainAnnSN : IsStronglyNormalizing (RawTerm.subst leftSubstitution domainCode))
     (rightDomainAnnSN : IsStronglyNormalizing (RawTerm.subst rightSubstitution domainCode))
     (codomainsRelated : ∀ leftArgument rightArgument : RawTerm targetScope,
+      leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
       domainRelation leftArgument rightArgument →
       BinaryReducibleTypeAtBounded env bound
         (RawTerm.subst (RawTermSubst.cons leftArgument leftSubstitution) codomainCode)
         (RawTerm.subst (RawTermSubst.cons rightArgument rightSubstitution) codomainCode)
         (codomainRelation leftArgument rightArgument))
     (domainArgumentsSN : ∀ leftArgument rightArgument : RawTerm targetScope,
+      leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
       domainRelation leftArgument rightArgument →
       IsStronglyNormalizing leftArgument ∧ IsStronglyNormalizing rightArgument)
     (leftBodySN : IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift leftSubstitution) body))
     (rightBodySN :
       IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift rightSubstitution) body))
     (bodiesRelated : ∀ leftArgument rightArgument : RawTerm targetScope,
+      leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
       domainRelation leftArgument rightArgument →
       codomainRelation leftArgument rightArgument
         (RawTerm.subst (RawTermSubst.cons leftArgument leftSubstitution) body)
@@ -463,16 +484,18 @@ theorem binaryAbstractionMemberPairUnderClosingSubstitutionBounded {scope target
       (.childCons (RawTerm.subst rightSubstitution domainCode)
         (.childCons (RawTerm.subst (RawTermSubst.lift rightSubstitution) body) .childNil)))
   refine binaryAbstractionMemberPairAtBounded (codomainRelation := codomainRelation) env bound
+    leftDomainUnary rightDomainUnary
     domainsRelated leftDomainAnnSN rightDomainAnnSN
-    (fun leftArgument rightArgument argumentsRelated => ?_) domainArgumentsSN
+    (fun leftArgument rightArgument leftGuard rightGuard argumentsRelated => ?_)
+    domainArgumentsSN
     leftBodySN rightBodySN
-    (fun leftArgument rightArgument argumentsRelated => ?_)
+    (fun leftArgument rightArgument leftGuard rightGuard argumentsRelated => ?_)
   · rw [← RawTerm.subst_cons_eq_subst0_lift codomainCode leftArgument leftSubstitution,
       ← RawTerm.subst_cons_eq_subst0_lift codomainCode rightArgument rightSubstitution]
-    exact codomainsRelated leftArgument rightArgument argumentsRelated
+    exact codomainsRelated leftArgument rightArgument leftGuard rightGuard argumentsRelated
   · rw [← RawTerm.subst_cons_eq_subst0_lift body leftArgument leftSubstitution,
       ← RawTerm.subst_cons_eq_subst0_lift body rightArgument rightSubstitution]
-    exact bodiesRelated leftArgument rightArgument argumentsRelated
+    exact bodiesRelated leftArgument rightArgument leftGuard rightGuard argumentsRelated
 
 /-! ## ★ The binary piIntro FT arm -/
 
@@ -484,6 +507,11 @@ the body IH under the cons-extended related environment pair. -/
 theorem binaryFundamentalPiIntroArm {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
     (bound : Nat) (context : TypingContext profile scope)
     {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
+    (domainUnaryReduciblePair : ∀ {targetScope : Nat}
+      (leftSubstitution rightSubstitution : RawTermSubst scope targetScope),
+      BinaryReducibleEnvAtBounded env bound context leftSubstitution rightSubstitution →
+      IsReducibleTypeAtBounded env bound (RawTerm.subst leftSubstitution domainCode) ∧
+        IsReducibleTypeAtBounded env bound (RawTerm.subst rightSubstitution domainCode))
     (domainsRelatedAtBound : ∀ {targetScope : Nat}
       (leftSubstitution rightSubstitution : RawTermSubst scope targetScope),
       BinaryReducibleEnvAtBounded env bound context leftSubstitution rightSubstitution →
@@ -523,6 +551,8 @@ theorem binaryFundamentalPiIntroArm {profile : PolyProfile} {scope : Nat} (env :
     BinaryFundamentalConclusionAtBounded env bound context (lamCell domainCode body)
       (piTyCodeCell domainCode codomainCode) := by
   intro _targetScope leftSubstitution rightSubstitution envRelated
+  obtain ⟨⟨leftDomainCandidate, leftDomainUnary⟩, ⟨rightDomainCandidate, rightDomainUnary⟩⟩ :=
+    domainUnaryReduciblePair leftSubstitution rightSubstitution envRelated
   exact binaryAbstractionMemberPairUnderClosingSubstitutionBounded
     (domainRelation := fun leftTerm rightTerm =>
       IsBinaryReducibleMemberPairAtBounded env bound
@@ -534,17 +564,20 @@ theorem binaryFundamentalPiIntroArm {profile : PolyProfile} {scope : Nat} (env :
         (RawTerm.subst (RawTermSubst.cons rightArgument rightSubstitution) codomainCode)
         leftTerm rightTerm)
     env bound
+    leftDomainUnary rightDomainUnary
     (domainsRelatedAtBound leftSubstitution rightSubstitution
       envRelated).reducibleMemberPairCandidate
     (domainCodeStronglyNormalizing leftSubstitution rightSubstitution envRelated).1
     (domainCodeStronglyNormalizing leftSubstitution rightSubstitution envRelated).2
-    (fun leftArgument rightArgument argumentsMember =>
+    (fun leftArgument rightArgument _leftGuard _rightGuard argumentsMember =>
       (codomainsRelatedAtBound leftSubstitution rightSubstitution envRelated
         leftArgument rightArgument argumentsMember).reducibleMemberPairCandidate)
-    (domainArgumentsSN leftSubstitution rightSubstitution envRelated)
+    (fun leftArgument rightArgument _leftGuard _rightGuard argumentsMember =>
+      domainArgumentsSN leftSubstitution rightSubstitution envRelated
+        leftArgument rightArgument argumentsMember)
     (bodyCodeStronglyNormalizing leftSubstitution rightSubstitution envRelated).1
     (bodyCodeStronglyNormalizing leftSubstitution rightSubstitution envRelated).2
-    (fun leftArgument rightArgument argumentsMember =>
+    (fun leftArgument rightArgument _leftGuard _rightGuard argumentsMember =>
       bodyConclusion (RawTermSubst.cons leftArgument leftSubstitution)
         (RawTermSubst.cons rightArgument rightSubstitution)
         (BinaryReducibleEnvAtBounded.cons envRelated argumentsMember))

@@ -119,14 +119,18 @@ theorem BinaryReducibleTypeStepBounded.forwardStepStarLeft {scope : Nat} {env : 
         (fun rootIsEmpty => notEmptyLeft (rootEquation.symm.trans rootIsEmpty))
         ((congrArg Generator.isFlatDataCode rootEquation).trans notFlatLeft)
         notPiRight notUniverseRight notEmptyRight notFlatRight
-  | piType codomainRelation _domainsRelated _codomainsRelated domainIH codomainIH =>
+  | piType codomainRelation leftDomainUnary rightDomainUnary _domainsRelated
+      _codomainsRelated domainIH codomainIH =>
       intro finalLeft chain
       obtain ⟨_updatedDomain, _updatedCodomain, finalEquation, domainChain, codomainChain⟩ :=
         StepStar.piTyCode_decompose chain
       subst finalEquation
-      exact BinaryReducibleTypeStepBounded.piType codomainRelation (domainIH domainChain)
-        (fun leftArgument rightArgument argumentsRelated =>
-          codomainIH leftArgument rightArgument argumentsRelated
+      exact BinaryReducibleTypeStepBounded.piType codomainRelation
+        (ReducibleTypeStepBounded.forwardStepStar leftDomainUnary domainChain)
+        rightDomainUnary
+        (domainIH domainChain)
+        (fun leftArgument rightArgument leftGuard rightGuard argumentsRelated =>
+          codomainIH leftArgument rightArgument leftGuard rightGuard argumentsRelated
             (StepStar.subst0Body leftArgument codomainChain))
   | universeCode levelExpr flag belowBound =>
       intro finalLeft chain
@@ -182,14 +186,18 @@ theorem BinaryReducibleTypeStepBounded.forwardStepStarRight {scope : Nat} {env :
         (fun rootIsUniverse => notUniverseRight (rootEquation.symm.trans rootIsUniverse))
         (fun rootIsEmpty => notEmptyRight (rootEquation.symm.trans rootIsEmpty))
         ((congrArg Generator.isFlatDataCode rootEquation).trans notFlatRight)
-  | piType codomainRelation _domainsRelated _codomainsRelated domainIH codomainIH =>
+  | piType codomainRelation leftDomainUnary rightDomainUnary _domainsRelated
+      _codomainsRelated domainIH codomainIH =>
       intro finalRight chain
       obtain ⟨_updatedDomain, _updatedCodomain, finalEquation, domainChain, codomainChain⟩ :=
         StepStar.piTyCode_decompose chain
       subst finalEquation
-      exact BinaryReducibleTypeStepBounded.piType codomainRelation (domainIH domainChain)
-        (fun leftArgument rightArgument argumentsRelated =>
-          codomainIH leftArgument rightArgument argumentsRelated
+      exact BinaryReducibleTypeStepBounded.piType codomainRelation
+        leftDomainUnary
+        (ReducibleTypeStepBounded.forwardStepStar rightDomainUnary domainChain)
+        (domainIH domainChain)
+        (fun leftArgument rightArgument leftGuard rightGuard argumentsRelated =>
+          codomainIH leftArgument rightArgument leftGuard rightGuard argumentsRelated
             (StepStar.subst0Body rightArgument codomainChain))
   | universeCode levelExpr flag belowBound =>
       intro finalRight chain

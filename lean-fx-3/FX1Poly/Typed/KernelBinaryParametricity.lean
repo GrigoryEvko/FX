@@ -141,10 +141,14 @@ inductive BinaryReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
           IsStronglyNormalizing leftTerm ∧ IsStronglyNormalizing rightTerm)
   | piType {leftDomain rightDomain : RawTerm scope}
       {leftCodomain rightCodomain : RawTerm (scope + 1)}
+      {leftDomainCandidate rightDomainCandidate : RawTerm scope → Prop}
       {domainRelation : BinaryCandidate scope}
       (codomainRelation : RawTerm scope → RawTerm scope → BinaryCandidate scope) :
+      ReducibleTypeAtBounded env bound leftDomain leftDomainCandidate →
+      ReducibleTypeAtBounded env bound rightDomain rightDomainCandidate →
       BinaryReducibleTypeStepBounded env lowerAt bound leftDomain rightDomain domainRelation →
       (∀ leftArgument rightArgument : RawTerm scope,
+        leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
         domainRelation leftArgument rightArgument →
         BinaryReducibleTypeStepBounded env lowerAt bound
           (RawTerm.subst0 leftCodomain leftArgument)
@@ -156,6 +160,7 @@ inductive BinaryReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
         (fun leftFunction rightFunction =>
           IsStronglyNormalizing leftFunction ∧ IsStronglyNormalizing rightFunction ∧
             ∀ leftArgument rightArgument : RawTerm scope,
+              leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
               domainRelation leftArgument rightArgument →
               codomainRelation leftArgument rightArgument
                 (.mkGen .gen_app ()
@@ -257,11 +262,16 @@ theorem binaryStepBounded_cumulative {scope : Nat} {env : Nat → Nat} {bound : 
       exact BinaryReducibleTypeStepBounded.neutral noStepLeft noStepRight
         notPiLeft notUniverseLeft notEmptyLeft notFlatLeft
         notPiRight notUniverseRight notEmptyRight notFlatRight
-  | piType codomainRelation _domainRelated _codomainRelated ihDomain ihCodomain =>
+  | piType codomainRelation leftDomainUnary rightDomainUnary _domainRelated _codomainRelated
+      ihDomain ihCodomain =>
       intro higherBound hle
-      exact BinaryReducibleTypeStepBounded.piType codomainRelation (ihDomain higherBound hle)
-        (fun leftArgument rightArgument argumentsRelated =>
-          ihCodomain leftArgument rightArgument argumentsRelated higherBound hle)
+      exact BinaryReducibleTypeStepBounded.piType codomainRelation
+        (stepBounded_cumulative leftDomainUnary higherBound hle)
+        (stepBounded_cumulative rightDomainUnary higherBound hle)
+        (ihDomain higherBound hle)
+        (fun leftArgument rightArgument leftGuard rightGuard argumentsRelated =>
+          ihCodomain leftArgument rightArgument leftGuard rightGuard argumentsRelated
+            higherBound hle)
   | universeCode levelExpr flag belowBound =>
       intro higherBound hle
       have belowHigher : LevelExpr.denote levelExpr env < higherBound :=
@@ -340,11 +350,15 @@ codomains form a related Π pair at the relational-arrow candidate — the genui
 formation step the OP1-K2 Π-formation case consumes. -/
 theorem binaryPiFormationArm {scope : Nat} {env : Nat → Nat} {bound : Nat}
     {leftDomain rightDomain : RawTerm scope} {leftCodomain rightCodomain : RawTerm (scope + 1)}
+    {leftDomainCandidate rightDomainCandidate : RawTerm scope → Prop}
     {domainRelation : BinaryCandidate scope}
     (codomainRelation : RawTerm scope → RawTerm scope → BinaryCandidate scope)
+    (leftDomainUnary : ReducibleTypeAtBounded env bound leftDomain leftDomainCandidate)
+    (rightDomainUnary : ReducibleTypeAtBounded env bound rightDomain rightDomainCandidate)
     (domainsRelated : BinaryReducibleTypeAtBounded env bound leftDomain rightDomain
       domainRelation)
     (codomainsRelated : ∀ leftArgument rightArgument : RawTerm scope,
+      leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
       domainRelation leftArgument rightArgument →
       BinaryReducibleTypeAtBounded env bound
         (RawTerm.subst0 leftCodomain leftArgument)
@@ -356,13 +370,15 @@ theorem binaryPiFormationArm {scope : Nat} {env : Nat → Nat} {bound : Nat}
       (fun leftFunction rightFunction =>
         IsStronglyNormalizing leftFunction ∧ IsStronglyNormalizing rightFunction ∧
           ∀ leftArgument rightArgument : RawTerm scope,
+            leftDomainCandidate leftArgument → rightDomainCandidate rightArgument →
             domainRelation leftArgument rightArgument →
             codomainRelation leftArgument rightArgument
               (.mkGen .gen_app ()
                 (.childCons leftFunction (.childCons leftArgument .childNil)))
               (.mkGen .gen_app ()
                 (.childCons rightFunction (.childCons rightArgument .childNil)))) :=
-  BinaryReducibleTypeStepBounded.piType codomainRelation domainsRelated codomainsRelated
+  BinaryReducibleTypeStepBounded.piType codomainRelation leftDomainUnary rightDomainUnary
+    domainsRelated codomainsRelated
 
 /-- `Type@levelExpr` is a self-related TYPE PAIR below any dominating bound. -/
 theorem universeCode_isBinaryReducibleSelfPair {scope : Nat} (env : Nat → Nat) (bound : Nat)
