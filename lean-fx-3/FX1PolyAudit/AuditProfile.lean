@@ -7,6 +7,7 @@ import FX1Poly.Extension.AdmissibleProfileTensor
 import FX1Poly.Extension.FxWithEtaCertifier
 import FX1Poly.Extension.ProfileLens
 import FX1Poly.STC.FxLogicalRelation
+import FX1Poly.STC.FxBoolCanonicity
 import FX1Poly.Core.StrengthCalibration
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
@@ -79,13 +80,16 @@ no-go register. -/
 #assert_no_axioms FX1Poly.Extension.fxProfileLedgerAdmission
 #assert_no_axioms
   FX1Poly.Extension.fxProfileLedgerAdmission_capabilities_eq_bot
+#assert_no_axioms FX1Poly.Extension.fxProfileCanonicityAdmission
+#assert_no_axioms
+  FX1Poly.Extension.fxProfileCanonicityAdmission_claims_canonicity
 #assert_no_axioms FX1Poly.Extension.extendProfile_preserves_admissible
 #assert_no_axioms
   FX1Poly.Extension.extendProfile_preserves_admissible_capabilities
 #assert_no_axioms FX1Poly.Extension.fxWithEta_admission_capabilities_eq_bot
 #assert_no_axioms FX1Poly.Extension.FullAdmissionObligations
 #assert_no_axioms
-  FX1Poly.Extension.fullAdmission_metatheoryRealized_unrealizable_for_fx
+  FX1Poly.Extension.fullAdmission_metatheoryRealized_canonicityRung_dischargeable
 #assert_no_axioms FX1Poly.Extension.CellularTensorObligations
 #assert_no_axioms FX1Poly.Extension.NoGoPosture
 #assert_no_axioms FX1Poly.Extension.NoGoCell
@@ -185,5 +189,30 @@ modality pulls Quot.sound) — the SN-102 boundary. -/
 #assert_no_axioms FX1Poly.STC.fxStcExtension
 #assert_no_axioms FX1Poly.STC.fxStcFundamental_syntactic_eq
 #assert_no_axioms FX1Poly.STC.fxSTC_hasLogicalRelationConstruction
-#assert_no_axioms FX1Poly.STC.fxSTC_hasNoCanonicityTheorem
+#assert_no_axioms FX1Poly.STC.fxSTC_hasCanonicityTheorem
 #assert_no_axioms FX1Poly.STC.fxSTC_hasNoNormalizationTheorem
+
+/-! ## canonicityViaSTC gates (SN-100, the §3.12 headline)
+
+The Axis 12 `canonicityTheorem` ledger flip: every closed
+combined-engine-typed FX bool glues with its
+reaches-`boolTrue`-or-`boolFalse` evidence in the canonical STC
+model's vocabulary.  BRIDGED — the semantic side is the kernel's
+`closedBoolCanonicalForms` (grown SN + master SR), definitionally.
+The vacuity trap is pinned: a GROWN-only bool glue would be empty
+(the grown engine types no closed bool), so the relation quantifies
+over the combined 3-engine disjunction, with the data-intro arm
+concretely inhabited (`boolTrue` smoke). -/
+
+#assert_no_axioms FX1Poly.STC.ClosedTypedBool
+#assert_no_axioms FX1Poly.STC.ReachesCanonicalBool
+#assert_no_axioms FX1Poly.STC.fxStcBoolRelation
+#assert_no_axioms FX1Poly.STC.canonicityViaSTC
+#assert_no_axioms FX1Poly.STC.canonicityViaSTC_extracts
+#assert_no_axioms FX1Poly.STC.canonicityViaSTC_semantic_isKernelWitness
+#assert_no_axioms FX1Poly.STC.grownOnlyBoolGlue_isVacuous
+#assert_no_axioms FX1Poly.STC.closedTypedBool_grownArm_isVacuous
+#assert_no_axioms FX1Poly.STC.boolTrueClosedTyped
+#assert_no_axioms FX1Poly.STC.canonicityViaSTC_boolTrue_nonVacuous
+#assert_no_axioms FX1Poly.Core.fxProfile_stcConstructionLevel
+#assert_no_axioms FX1Poly.Core.fxProfile_stcHasCanonicityTheorem

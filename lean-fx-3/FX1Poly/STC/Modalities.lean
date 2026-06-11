@@ -137,19 +137,22 @@ def STCConstructionLevel.hasFXGenericSTCReplacement :
   | .fxGenericSTCReplacement => true
 
 /-- Current Axis 12 status: the FX logical relation construction is
-present (`FxLogicalRelation.lean` — `fxStcRelationAt` glues closed
-grown-typed syntax with computability evidence through
-`canonicalSTCModel.Glue`, with the fundamental theorem
-`fxStcFundamental`).  The construction is BRIDGED to Tait
-(`fxStcFundamental_semantic_isTaitWitness`): its semantic side is the
-kernel's Tait-derived SN, not an independent second semantics.  No FX
-canonicity or normalization theorem is claimed at this level. -/
+present (`FxLogicalRelation.lean`) AND the FX bool canonicity theorem
+is stated and proved in the STC vocabulary
+(`FxBoolCanonicity.lean` — `canonicityViaSTC` glues every closed
+combined-engine-typed bool with its reaches-`boolTrue`-or-`boolFalse`
+evidence through `canonicalSTCModel.Glue`).  Both are BRIDGED to the
+kernel (`fxStcFundamental_semantic_isTaitWitness`,
+`canonicityViaSTC_semantic_isKernelWitness`): the semantic sides are
+the kernel's Tait-derived SN / syntactic canonicity witness, not an
+independent second semantics.  No FX normalization theorem is claimed
+at this level. -/
 def fxSTCConstructionLevel : STCConstructionLevel :=
-  .logicalRelationConstruction
+  .canonicityTheorem
 
 theorem fxSTCConstructionLevel_eq :
     fxSTCConstructionLevel
-      = STCConstructionLevel.logicalRelationConstruction := rfl
+      = STCConstructionLevel.canonicityTheorem := rfl
 
 theorem fxSTC_hasPhaseAndModalInterfaces :
     fxSTCConstructionLevel.hasPhaseAndModalInterfaces = true := rfl
@@ -169,9 +172,12 @@ ledger docstring). -/
 theorem fxSTC_hasLogicalRelationConstruction :
     fxSTCConstructionLevel.hasLogicalRelationConstruction = true := rfl
 
-/-- Current Axis 12 has no FX canonicity theorem. -/
-theorem fxSTC_hasNoCanonicityTheorem :
-    fxSTCConstructionLevel.hasCanonicityTheorem = false := rfl
+/-- Current Axis 12 HAS the FX bool canonicity theorem in the STC
+vocabulary (witnessed in `FxBoolCanonicity.lean` — `canonicityViaSTC`;
+BRIDGED to the kernel's syntactic canonicity witness, see the ledger
+docstring). -/
+theorem fxSTC_hasCanonicityTheorem :
+    fxSTCConstructionLevel.hasCanonicityTheorem = true := rfl
 
 /-- Current Axis 12 has no FX normalization theorem. -/
 theorem fxSTC_hasNoNormalizationTheorem :

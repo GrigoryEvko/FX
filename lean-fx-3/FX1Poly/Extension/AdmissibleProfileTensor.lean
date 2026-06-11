@@ -266,17 +266,34 @@ def AdmissibleProfile.bottom (profile : PolyProfile) :
   decidableConversionBacked := fun claimed =>
     CapabilityStatus.noConfusion claimed
 
-/-- The FX profile is ledger-admissible at bottom.  Its construction
-ledgers currently back no capability claim (`hasCanonicityTheorem`,
-`hasNormalizationTheorem`, `hasFXConversionDecidableTheorem` are all
-false on `fxProfile`), so bottom is also the only admission the
-ledger discipline permits today. -/
+/-- The FX profile is ledger-admissible at bottom — claiming nothing
+requires no backing.  Retained as the conservative floor; since the
+SN-100 canonicity flip, bottom is no longer the ONLY admission the
+ledger discipline permits (see `fxProfileCanonicityAdmission`). -/
 def fxProfileLedgerAdmission : AdmissibleProfile fxProfile :=
   AdmissibleProfile.bottom fxProfile
 
 theorem fxProfileLedgerAdmission_capabilities_eq_bot :
     fxProfileLedgerAdmission.capabilities =
       MetatheoreticCapabilities.bot := rfl
+
+/-- The first NON-BOTTOM ledger admission for FX: the canonicity claim
+is now backable — `fxProfile`'s STC ledger carries the bool canonicity
+theorem (`canonicityViaSTC`, SN-100), so `hasCanonicityTheorem = true`
+discharges `canonicityBacked`.  Normalization and decidable-conversion
+stay unclaimed (their ledger rungs are still false). -/
+def fxProfileCanonicityAdmission : AdmissibleProfile fxProfile where
+  capabilities :=
+    { MetatheoreticCapabilities.bot with canonicityStatus := .available }
+  canonicityBacked := fun _ => fxProfile_stcHasCanonicityTheorem
+  normalizationBacked := fun claimed => CapabilityStatus.noConfusion claimed
+  decidableConversionBacked := fun claimed =>
+    CapabilityStatus.noConfusion claimed
+
+/-- The non-bottom admission genuinely claims canonicity. -/
+theorem fxProfileCanonicityAdmission_claims_canonicity :
+    fxProfileCanonicityAdmission.capabilities.canonicityStatus =
+      CapabilityStatus.available := rfl
 
 /-! ## The headline (#216) — proved for the ledger reading
 
@@ -375,21 +392,29 @@ structure FullAdmissionObligations (baseProfile : PolyProfile)
     extension.interface.generatorCount = 0 ∨
       extension.fireTriangleRestriction.isSome = true
 
-/-- The honest gap statement: the demonstration eta extension cannot
-realize `metatheoryRealized` with an `available` canonicity claim,
+/-- POST-SN-100 STATUS CHANGE.  Before the canonicity ledger flip this
+spot held `fullAdmission_metatheoryRealized_unrealizable_for_fx`: an
+`available` canonicity claim made `metatheoryRealized` underivable,
 because `extendProfile` preserves the base STC ledger and `fxProfile`
-has no canonicity theorem in its ledger.  Capability inflation on the
-extension record is therefore structurally unrealizable — the meet
-discipline and the ledger discipline agree. -/
-theorem fullAdmission_metatheoryRealized_unrealizable_for_fx
-    (extension : ProfileExtension fxProfile)
-    (claimed : extension.capabilities.canonicityStatus = .available)
-    (obligations : FullAdmissionObligations fxProfile extension) :
-    False := by
-  have realized := obligations.metatheoryRealized claimed
-  rw [extendProfile_preserves_stcConstructionLevel] at realized
-  rw [fxProfile_stcConstructionLevel] at realized
-  exact Bool.noConfusion realized
+had `hasCanonicityTheorem = false`.  That theorem is now FALSE —
+`fxProfile`'s ledger carries the bool canonicity theorem
+(`canonicityViaSTC`), so the obligation's formal statement holds by
+ledger PERSISTENCE, as this replacement pins.
+
+HONESTY BOUNDARY: persistence-discharge does NOT realize the field
+docstring's "must ADVANCE (not merely persist)" intent — since
+`extendProfile` preserves every construction level, genuine
+advancement remains structurally impossible, and the field's formal
+statement no longer distinguishes the two.  Restating the field to
+require advancement (and deciding whether `FullAdmissionObligations`
+should then be inhabited) is the `admissibleProfileTheorem`-rung
+decision (SN-108), deliberately NOT taken here. -/
+theorem fullAdmission_metatheoryRealized_canonicityRung_dischargeable
+    (extension : ProfileExtension fxProfile) :
+    (extendProfile fxProfile
+        extension).stcConstructionLevel.hasCanonicityTheorem = true := by
+  rw [extendProfile_preserves_stcConstructionLevel]
+  exact fxProfile_stcHasCanonicityTheorem
 
 /-! ## Cellular tensor (T1)-(T3) obligation shapes (#217)
 
