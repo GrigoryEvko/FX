@@ -31,10 +31,12 @@ branches" do not transfer.  This file closes that recursive case.
     because its branches were values, and the OLD natElim split this into an explicit IH + app-chain
     `stepProduces`; the substituting reduct folds both into a single premise).
 
-CONDITIONAL FORM FLAG: the abstract theorem takes `substitutedReductProduces` as an explicit premise because the
-typed-engine 2-variable SUBSTITUTION lemma (typing `subst (cons recursiveCall (singleton predecessor)) succBranch`
-from the branch + recursive-call typings) is the missing standalone-engine piece — the GTL substitution follow-on.
-On CONCRETE closed numerals the substitution COMPUTES, so the concrete instances discharge the premise directly.
+CONDITIONAL FORM FLAG: the abstract theorem takes `substitutedReductProduces` as an explicit premise — for an
+ABSTRACT branch it IS the branch's computational content, so the premise is honest by design.  The typed
+2-variable substitution lemma now ships (`HasTypeDescPi.substPairUnderTwoBindings`, HasTypeDescPiSubstPair),
+but typing alone does not produce the reduction this premise asks for; the iota instance additionally mixes the
+grown-untypable recursive `natElimCell` into the substituent (the union-engine follow-on).  On CONCRETE closed
+numerals the substitution COMPUTES, so the concrete instances discharge the premise directly.
 
 ## What this is and what remains (honest)
 

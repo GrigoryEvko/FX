@@ -620,6 +620,7 @@ import FX1Poly.Typed.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.LamReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.GrownEtaSubjectReduction
+import FX1Poly.Typed.HasTypeDescPiSubstPair
 
 /-! # FX1PolyAudit/AuditTypedCellShapeSubstrate — typed-layer zero-axiom gates: the cell builders and rename/subst/shift commutation substrate
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -956,6 +957,21 @@ classifiers, Σ (#361), modal/cubical η (#363), former children (engine-gated).
 #assert_no_axioms FX1Poly.Typed.copyNatBranchAt_zero
 #assert_no_axioms FX1Poly.Typed.mulNatBranch
 #assert_no_axioms FX1Poly.Typed.mulBranchSubstitutedTarget
+-- ★ The typed 2-VARIABLE substitution lemma (HasTypeDescPiSubstPair): substPairUnderTwoBindings is
+-- substRespectingContext instantiated at cons innerArg (singleton outerArg) — the Phase-Z substPair lemma the
+-- natElim/natRec migration flagged; substPairNonDependent is the recursor-step shape (twice-weakened result
+-- type, both weakenings cancel). mulNatBranch_substituted computes the 2-variable subst through the mul branch
+-- (children by cons/singleton/lift var-equations, embedded numeral by natNumeralAt_subst), mulStepReduces_proved
+-- discharges natElimMulFaithful's premise, and natElimMulFaithful.unconditional makes native-natElim-computes-
+-- host-Nat.mul UNCONDITIONAL (closes the HON-13 conditional flag). The iota-instance reductTyped premise of
+-- natElimSuccIotaComputesTyped stays honestly conditional: its inner substituent is the recursive natElimCell,
+-- which the grown engine deliberately does not type — the union-engine follow-on. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.substPairUnderTwoBindings
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.substPairNonDependent
+#assert_no_axioms FX1Poly.Typed.mulNatBranch_substituted
+#assert_no_axioms FX1Poly.Typed.mulStepReduces_proved
+#assert_no_axioms FX1Poly.Typed.natElimMulFaithful.unconditional
+#assert_no_axioms FX1Poly.Typed.natElimMulFaithful.threeTimesTwoUnconditional
 #assert_no_axioms FX1Poly.Typed.constNatZeroStep3Produces
 #assert_no_axioms FX1Poly.Typed.lengthNatStepProduces
 -- ★ VALUE-CASE eliminator HOST-FOLD faithfulness (ValueElimHostFold, HON-14): completes the faithfulness coverage

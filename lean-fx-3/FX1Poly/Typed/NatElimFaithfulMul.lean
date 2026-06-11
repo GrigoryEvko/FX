@@ -68,10 +68,10 @@ predecessor `natNumeralAt n` reduces to the inner adder `mulBranchSubstitutedTar
 CONDITIONAL FORM FLAG: `mulStepReduces` packages the MISSING piece — the succ-iota substitution
 (`Step.iotaNatElimSucc`) COMPOSED with the 2-variable subst-commutation that pushes `cons rec (singleton pred)`
 through the embedded `natNumeralAt m` (closed, fixed by `natNumeralAt_subst`) and the inner `copyNatBranchAt`
-while replacing the accumulator `var 0` by the recursive call.  Once the substrate ships the typed `substPair`
-commutation lemma (the GTL follow-on seeding this lane's follow-up task), this hypothesis is discharged by
-`Step.iotaNatElimSucc` + `natNumeralAt_subst` + the cons/singleton var-equations, and the theorem becomes
-unconditional.  Induction on `n` reusing `natElimAddFaithful` as the per-step adder; `m·n + m = m·(n+1)` is
+while replacing the accumulator `var 0` by the recursive call.  DISCHARGED: `mulStepReduces_proved`
+(HasTypeDescPiSubstPair) proves this hypothesis via `Step.iotaNatElimSucc` + `mulNatBranch_substituted`, and
+`natElimMulFaithful.unconditional` is the premise-free headline — this conditional form is kept as the
+abstract statement.  Induction on `n` reusing `natElimAddFaithful` as the per-step adder; `m·n + m = m·(n+1)` is
 `Nat.mul_succ`. -/
 theorem natElimMulFaithful (m : Nat)
     (mulStepReduces : ∀ n : Nat,

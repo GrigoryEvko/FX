@@ -134,10 +134,13 @@ SUBSTITUTING and CONDITIONAL.  A typed `natElim` on `natSucc(p)` ι-reduces to
 substituted into the succ-branch's var-0 slot, the predecessor into var-1), and the reduct is typed at
 `C` GIVEN `reductTyped` — the substituted reduct's typing supplied as a PREMISE.
 
-CONDITIONAL FORM FLAG: `reductTyped` is the standalone-engine pattern stand-in for the MISSING 2-variable
-typed substitution lemma (typing `subst (cons recursiveCall (singleton predecessor)) succBranch` from
-the branch + recursive-call typings).  Once that lemma ships (the GTL substitution follow-on seeding this
-lane's follow-up task) the premise is discharged internally.  Constructor-side: SR-free, propext-free. -/
+CONDITIONAL FORM FLAG: `reductTyped` is the standalone-engine pattern stand-in for the 2-variable typed
+substitution lemma.  That lemma now SHIPS as `HasTypeDescPi.substPairUnderTwoBindings` /
+`substPairNonDependent` (HasTypeDescPiSubstPair), but it does NOT discharge this premise internally: the
+iota-instance inner substituent is the recursive `natElimCell` itself, which the grown engine deliberately
+does not type — the unconditional discharge needs a UNION judgment closed under both the standalone
+eliminator intro and the grown rules (the #832/#1138 table-residency follow-on).  Constructor-side:
+SR-free, propext-free. -/
 theorem natElimSuccIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (predecessor zeroBranch : RawTerm scope)
