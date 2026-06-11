@@ -642,6 +642,7 @@ import FX1Poly.Modal.GradedTermSize
 import FX1Poly.Modal.GradedLinearTime
 import FX1Poly.Modal.GradedLinearTimeBound
 import FX1Poly.Core.NormalizeCost
+import FX1Poly.Core.OneStepReducts
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1670,6 +1671,29 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.unitNormalFormFixture_reduceOnce_halts
 #assert_no_axioms FX1Poly.Core.unitNormalFormFixture_accessible
 #assert_no_axioms FX1Poly.Core.RawTerm.normalizeCost_unit_isZero
+
+-- ★ The kernel ONE-STEP REDUCT ENUMERATION with SOUNDNESS (Core/OneStepReducts.lean, COST-3 #1216
+-- brick 2 — the heavy lift's first half). RawTerm.oneStepReducts / RawTermChildren.oneStepChildrenReducts:
+-- mutual structural enumeration over the 198-generator table — the root β/ι reduct via fireRootRedex
+-- (Option match) ++ every one-child-stepped reassembly (per-position maps over the dependent children
+-- spine; the childCons reassemblies keep the binderShifts indices). ★ SOUNDNESS (mutual): every listed
+-- element is a genuine Step — root via fireRootRedex_sound, congruence via Step.cong over the mutual
+-- StepChildren soundness (here/there per position). Generic hand-rolled membership INVERSION lemmas
+-- (listMemAppendInv/listMemMapInv — explicit List.Mem ctors, core mem lemmas unaudited; now GENERIC
+-- {α β : Type} unlike COST-1's GradedLambda-specialized ones). split-at on the equation-binderless
+-- Option match names the some-arm discharge via `next rootReduct fireEq`. Non-vacuity: the identity-β
+-- fixture's enumeration COMPUTES to exactly the singleton β-reduct by kernel evaluation (rfl through
+-- fireRootRedex's dite chain — gen_app is the first branch — with all children normal).
+-- COMPLETENESS (every Step listed — what costBound's soundness consumes) is brick 3: the congruence
+-- half mirrors with FORWARD membership lemmas; the root half needs per-ι fireRootRedex firing equations.
+#assert_no_axioms FX1Poly.Core.listMemAppendInv
+#assert_no_axioms FX1Poly.Core.listMemMapInv
+#assert_no_axioms FX1Poly.Core.RawTerm.oneStepReducts
+#assert_no_axioms FX1Poly.Core.RawTermChildren.oneStepChildrenReducts
+#assert_no_axioms FX1Poly.Core.RawTerm.oneStepReducts_sound
+#assert_no_axioms FX1Poly.Core.RawTermChildren.oneStepChildrenReducts_sound
+#assert_no_axioms FX1Poly.Core.identityBetaFixture
+#assert_no_axioms FX1Poly.Core.identityBetaFixture_oneStepReducts
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
