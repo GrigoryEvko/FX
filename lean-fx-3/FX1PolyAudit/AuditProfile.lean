@@ -4,6 +4,7 @@ import FX1Poly.Tier0.InternalSconing
 import FX1Poly.Tier0.FireTriangle
 import FX1Poly.Extension.ProfileExtension
 import FX1Poly.Extension.AdmissibleProfileTensor
+import FX1Poly.Extension.FxWithEtaCertifier
 import FX1Poly.Core.StrengthCalibration
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
@@ -114,3 +115,33 @@ monotonically as lower bounds. -/
 #assert_no_axioms FX1Poly.Tier0.ConsistencyStrength.toCoreStrength_monotone
 #assert_no_axioms
   FX1Poly.Tier0.ConsistencyStrength.toCoreStrength_not_injective
+
+/-! ## fxWithEta-through-the-certifier gates (V2-L5.4)
+
+The first end-to-end profile-extension demonstration on the canonical
+kernel: profile-uniform corpus certification (the certifier never
+reads the profile), fxWithEta instances including a dim-1 cell, the
+declared eta rules discharged against the kernel SR-eta arms at the
+extended profile, and a concrete eta-pair step run end-to-end. -/
+
+#assert_no_axioms FX1Poly.Extension.unitLeafTerm
+#assert_no_axioms FX1Poly.Extension.unitPairTerm
+#assert_no_axioms FX1Poly.Extension.certified_unitLeaf_uniform
+#assert_no_axioms FX1Poly.Extension.certified_unitPair_uniform
+#assert_no_axioms FX1Poly.Extension.certified_etaPairSource_uniform
+#assert_no_axioms FX1Poly.Extension.fxWithEta_certifies_unitLeaf
+#assert_no_axioms FX1Poly.Extension.fxWithEta_certifies_unitPair
+#assert_no_axioms FX1Poly.Extension.fxWithEta_certifies_etaPairSource
+#assert_no_axioms FX1Poly.Extension.fxWithEta_certifies_identityCell
+#assert_no_axioms
+  FX1Poly.Extension.EtaReductionRule.preservesCertificationAt
+#assert_no_axioms
+  FX1Poly.Extension.EtaReductionRule.fxWithEta_preservesCertification
+#assert_no_axioms FX1Poly.Extension.etaPairStep_fires_on_unitPair
+#assert_no_axioms
+  FX1Poly.Extension.fxWithEta_etaPairSource_hasCertifiedCell
+#assert_no_axioms
+  FX1Poly.Extension.fxWithEta_etaPairTarget_certified_viaSR
+#assert_no_axioms FX1Poly.Extension.fxWithEta_fibrationTower_eq
+#assert_no_axioms FX1Poly.Extension.fxWithEta_algebraUniverse_eq
+#assert_no_axioms FX1Poly.Extension.fxWithEta_universeConfig_eq
