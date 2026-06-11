@@ -658,6 +658,7 @@ import FX1Poly.Typed.KernelBinaryPiElim
 import FX1Poly.Typed.KernelBinaryPiIntro
 import FX1Poly.Typed.KernelBinaryConvInvariance
 import FX1Poly.Typed.KernelBinaryConvArm
+import FX1Poly.Typed.KernelBinaryTelescope
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2108,6 +2109,29 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.binaryUniverseMembershipBounded_levelIrrelevant
 #assert_no_axioms FX1Poly.Typed.binaryUniverseFormationMemberPairAtBounded
 #assert_no_axioms FX1Poly.Typed.binaryFundamentalUniverseFormationFTArm
+
+-- ★★ The binary formation telescope + universe intro + Π-pair reducibility (OP1-K2 brick 5a
+-- #1228, Typed/KernelBinaryTelescope.lean). BinaryTelescopeReducibleAtBounded: the
+-- pair-substitution telescope (each child pair a related member pair of its universe pair;
+-- the rest fires at RELATED argument pairs) with nil/twoChildMembers/oneChildMember
+-- (subst_cons_eq_subst0_lift reshapes the codomain on each side).
+-- binaryUniverseMembershipIntroAtBounded: the INTRO inverse of brick 4's extraction (one
+-- anonymous constructor over the level-irrelevant candidate). ★
+-- binaryPiReducibleFromComponentsAtBounded: the Π PAIR related-as-types from related
+-- components, both candidates pinned canonical (brick 2). ⚠ THE INHABITATION WALL (recorded
+-- in the module docstring): binary neutral-pair inhabitation is FALSE — a diagonal neutral
+-- pair (x,x) recursing through a Π candidate produces NON-diagonal application pairs that
+-- the same-value data candidate refuses (Conv (app x aL) (app x aR) fails) — so the binary
+-- Π-former arm must be PREMISE-ISOLATING (codomain gate + component SN as explicit premises,
+-- discharged at assembly from the budget + the shipped UNARY FT). Parametricity presupposes
+-- the unary normalization layer for proof-irrelevant facts — the standard binary-LR
+-- phenomenon, now pinned at the kernel.
+#assert_no_axioms FX1Poly.Typed.BinaryTelescopeReducibleAtBounded
+#assert_no_axioms FX1Poly.Typed.BinaryTelescopeReducibleAtBounded.nil
+#assert_no_axioms FX1Poly.Typed.BinaryTelescopeReducibleAtBounded.twoChildMembers
+#assert_no_axioms FX1Poly.Typed.BinaryTelescopeReducibleAtBounded.oneChildMember
+#assert_no_axioms FX1Poly.Typed.binaryUniverseMembershipIntroAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryPiReducibleFromComponentsAtBounded
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
