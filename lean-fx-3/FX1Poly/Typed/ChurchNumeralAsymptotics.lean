@@ -1,4 +1,5 @@
 import FX1Poly.Typed.TypedChurchNumeralAddition
+import FX1Poly.Typed.TypedChurchNumeralMultiplication
 import FX1Poly.Core.StepStarLength
 
 /-! # FX1Poly/Typed/ChurchNumeralAsymptotics
@@ -155,5 +156,111 @@ theorem churchArithmetic_dispatchIsConstantTime :
                 handlerF) baseX))
             (iteratedApplication (countLeft + countRight) handlerF baseX)) :=
   ⟨churchNumeral_dispatchCounted, churchAddition_dispatchCounted⟩
+
+/-! ## Multiplication — the exact linear closed form -/
+
+/-- **The counted multiplicative induction**: iterating the `n`-fold
+step term `(n A f)` over a base `countOuter` times costs EXACTLY
+`3 · countOuter` steps — each outer unit is one 3-step dispatch of the
+inner numeral, lifted at the same length through the argument
+position.  The counted twin of `churchMultiplicationStepIterate`. -/
+theorem churchMultiplicationStepIterate_counted (countOuter countInner : Nat)
+    (typeA handlerF baseX : RawTerm 0) :
+    StepStarN (3 * countOuter)
+      (iteratedApplication countOuter
+        (appCell (appCell (churchNumeralLambda countInner) typeA) handlerF) baseX)
+      (iteratedApplication (countOuter * countInner) handlerF baseX) := by
+  induction countOuter with
+  | zero =>
+      rw [Nat.zero_mul]
+      exact StepStarN.reflN _
+  | succ priorOuter priorIH =>
+      have liftIH : StepStarN (3 * priorOuter)
+          (appCell (appCell (appCell (churchNumeralLambda countInner) typeA) handlerF)
+            (iteratedApplication priorOuter
+              (appCell (appCell (churchNumeralLambda countInner) typeA) handlerF) baseX))
+          (appCell (appCell (appCell (churchNumeralLambda countInner) typeA) handlerF)
+            (iteratedApplication (priorOuter * countInner) handlerF baseX)) :=
+        StepStarN.congAt
+          (fun hole =>
+            appCell (appCell (appCell (churchNumeralLambda countInner) typeA) handlerF) hole)
+          (fun argStep => Step.appArgCong _ argStep)
+          priorIH
+      have applyN : StepStarN 3
+          (appCell (appCell (appCell (churchNumeralLambda countInner) typeA) handlerF)
+            (iteratedApplication (priorOuter * countInner) handlerF baseX))
+          (iteratedApplication countInner handlerF
+            (iteratedApplication (priorOuter * countInner) handlerF baseX)) :=
+        churchNumeral_dispatchCounted countInner typeA handlerF
+          (iteratedApplication (priorOuter * countInner) handlerF baseX)
+      have combine : iteratedApplication countInner handlerF
+            (iteratedApplication (priorOuter * countInner) handlerF baseX)
+          = iteratedApplication ((priorOuter + 1) * countInner) handlerF baseX := by
+        rw [← iteratedApplication_add countInner (priorOuter * countInner) handlerF baseX,
+          Nat.succ_mul, Nat.add_comm countInner (priorOuter * countInner)]
+      have composed := StepStarN.trans_compose liftIH applyN
+      rw [combine] at composed
+      show StepStarN (3 * (priorOuter + 1))
+        (appCell (appCell (appCell (churchNumeralLambda countInner) typeA) handlerF)
+          (iteratedApplication priorOuter
+            (appCell (appCell (churchNumeralLambda countInner) typeA) handlerF) baseX)) _
+      rw [Nat.mul_succ]
+      exact composed
+
+/-- ★ **Church MULTIPLICATION dispatches in EXACTLY `3·m + 3` steps —
+independent of the RIGHT operand**: the outer numeral's 3-step dispatch
+plus one 3-step inner dispatch per unit of the LEFT operand.  The
+verified asymmetry of Church multiplication: `m × 1000000` costs
+`3m + 3` steps while `1000000 × n` costs `3000003`. -/
+theorem churchMultiplication_dispatchCounted (countLeft countRight : Nat)
+    (typeA handlerF baseX : RawTerm 0) :
+    StepStarN (3 * countLeft + 3)
+      (appCell (appCell (appCell (churchNumeralLambda countLeft) typeA)
+        (appCell (appCell (churchNumeralLambda countRight) typeA) handlerF)) baseX)
+      (iteratedApplication (countLeft * countRight) handlerF baseX) := by
+  have outerCounted : StepStarN 3
+      (appCell (appCell (appCell (churchNumeralLambda countLeft) typeA)
+        (appCell (appCell (churchNumeralLambda countRight) typeA) handlerF)) baseX)
+      (iteratedApplication countLeft
+        (appCell (appCell (churchNumeralLambda countRight) typeA) handlerF) baseX) :=
+    churchNumeral_dispatchCounted countLeft typeA
+      (appCell (appCell (churchNumeralLambda countRight) typeA) handlerF) baseX
+  have composed := StepStarN.trans_compose outerCounted
+    (churchMultiplicationStepIterate_counted countLeft countRight typeA handlerF baseX)
+  rw [Nat.add_comm 3 (3 * countLeft)] at composed
+  exact composed
+
+/-- The concrete counted smoke: `2 × 3` dispatches in exactly 9 steps to
+`f^6 x` (`3·2 + 3 = 9`). -/
+theorem churchTwoTimesThree_dispatchCounted (typeA handlerF baseX : RawTerm 0) :
+    StepStarN 9
+      (appCell (appCell (appCell (churchNumeralLambda 2) typeA)
+        (appCell (appCell (churchNumeralLambda 3) typeA) handlerF)) baseX)
+      (iteratedApplication 6 handlerF baseX) :=
+  churchMultiplication_dispatchCounted 2 3 typeA handlerF baseX
+
+/-- ★ **FX's term model does arithmetic in VERIFIED BOUNDED time** — the
+complete COST-8 bundle, every count an exact closed form: numeral
+dispatch in 3 steps, addition in 6 (both CONSTANT — no operand appears
+in the count), multiplication in `3·m + 3` (linear in the LEFT operand
+only).  The counts are kernel-checked `StepStarN` theorems. -/
+theorem churchArithmetic_verifiedBoundedTime :
+    (∀ (depth : Nat) (typeA handlerF baseX : RawTerm 0),
+        StepStarN 3
+          (appCell (appCell (appCell (churchNumeralLambda depth) typeA) handlerF) baseX)
+          (iteratedApplication depth handlerF baseX))
+      ∧ (∀ (countLeft countRight : Nat) (typeA handlerF baseX : RawTerm 0),
+          StepStarN 6
+            (appCell (appCell (appCell (churchNumeralLambda countLeft) typeA) handlerF)
+              (appCell (appCell (appCell (churchNumeralLambda countRight) typeA)
+                handlerF) baseX))
+            (iteratedApplication (countLeft + countRight) handlerF baseX))
+      ∧ (∀ (countLeft countRight : Nat) (typeA handlerF baseX : RawTerm 0),
+          StepStarN (3 * countLeft + 3)
+            (appCell (appCell (appCell (churchNumeralLambda countLeft) typeA)
+              (appCell (appCell (churchNumeralLambda countRight) typeA) handlerF)) baseX)
+            (iteratedApplication (countLeft * countRight) handlerF baseX)) :=
+  ⟨churchNumeral_dispatchCounted, churchAddition_dispatchCounted,
+   churchMultiplication_dispatchCounted⟩
 
 end FX1Poly.Typed

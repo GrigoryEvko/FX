@@ -1897,13 +1897,21 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- Church ADDITION dispatches in EXACTLY 6 steps for ALL m,n — inner dispatch (3, length-preserved
 -- through the argument position) + outer dispatch (3) + the iteratedApplication_add EQUALITY
 -- (zero steps). ★ churchArithmetic_dispatchIsConstantTime: the bundle — the counts do not mention
--- the operands. Honest scope: ITERATE-level costs (using the result against a concrete step
--- function grows with the count); multiplication's recursive linear-in-m counted form is the
--- remaining COST-8 brick.
+-- the operands. ★ churchMultiplication_dispatchCounted: MULTIPLICATION dispatches in EXACTLY
+-- 3·m + 3 steps — INDEPENDENT of the right operand (the verified asymmetry: each unit of the LEFT
+-- operand costs one 3-step inner dispatch, via the counted multiplicative induction
+-- churchMultiplicationStepIterate_counted at 3·countOuter). ★ churchArithmetic_verifiedBoundedTime:
+-- the complete bundle — dispatch 3, addition 6, multiplication 3m+3, every count an exact
+-- kernel-checked closed form. Honest scope: ITERATE-level costs (using the result against a
+-- concrete step function grows with the count).
 #assert_no_axioms FX1Poly.Typed.StepStarN.congAt
 #assert_no_axioms FX1Poly.Typed.churchNumeral_dispatchCounted
 #assert_no_axioms FX1Poly.Typed.churchAddition_dispatchCounted
 #assert_no_axioms FX1Poly.Typed.churchArithmetic_dispatchIsConstantTime
+#assert_no_axioms FX1Poly.Typed.churchMultiplicationStepIterate_counted
+#assert_no_axioms FX1Poly.Typed.churchMultiplication_dispatchCounted
+#assert_no_axioms FX1Poly.Typed.churchTwoTimesThree_dispatchCounted
+#assert_no_axioms FX1Poly.Typed.churchArithmetic_verifiedBoundedTime
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
