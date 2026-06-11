@@ -195,21 +195,25 @@ def hasListElimIotaRoot {scope : Nat}
       RawTerm.isListNilSource scrutinee ||
         RawTerm.isListConsSource scrutinee
 
-/-- Root option matcher iota source shape. -/
+/-- Root option matcher iota source shape.  Phase-Z spine `[1, 0, 0, 0]`:
+    children are `(motive, none, some, scrutinee)` with the scrutinee LAST and
+    the motive a term under one binder. -/
 def hasOptionMatchIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [0, 0, 0] scope) : Bool :=
+    (sourceChildren : RawTermChildren [1, 0, 0, 0] scope) : Bool :=
   match sourceChildren with
-  | .childCons scrutinee
-      (.childCons _noneBranch (.childCons _someBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons _noneBranch (.childCons _someBranch (.childCons scrutinee .childNil))) =>
       RawTerm.isOptionNoneSource scrutinee ||
         RawTerm.isOptionSomeSource scrutinee
 
-/-- Root either matcher iota source shape. -/
+/-- Root either matcher iota source shape.  Phase-Z spine `[1, 0, 0, 0]`:
+    children are `(motive, left, right, scrutinee)` with the scrutinee LAST and
+    the motive a term under one binder. -/
 def hasEitherMatchIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [0, 0, 0] scope) : Bool :=
+    (sourceChildren : RawTermChildren [1, 0, 0, 0] scope) : Bool :=
   match sourceChildren with
-  | .childCons scrutinee
-      (.childCons _leftBranch (.childCons _rightBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons _leftBranch (.childCons _rightBranch (.childCons scrutinee .childNil))) =>
       RawTerm.isEitherInlSource scrutinee ||
         RawTerm.isEitherInrSource scrutinee
 

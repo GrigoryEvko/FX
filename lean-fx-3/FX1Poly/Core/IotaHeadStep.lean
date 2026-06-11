@@ -117,33 +117,53 @@ inductive IotaHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
               (.childCons consBranch
                 (.childCons (.mkGen .gen_listNil () .childNil) .childNil)))))
         nilBranch
-  /-- `optionMatch optionNone noneBranch someBranch ↝ noneBranch`. -/
-  | iotaOptionMatchNone {noneBranch someBranch : RawTerm scope} :
+  /-- `optionMatch motive noneBranch someBranch optionNone ↝ noneBranch`.
+      Phase-Z motive shape: motive first (under one binder), scrutinee last;
+      the base-case iota discards the motive operationally. -/
+  | iotaOptionMatchNone {motive : RawTerm (scope + 1)}
+      {noneBranch someBranch : RawTerm scope} :
       IotaHeadStep
         (.mkGen .gen_optionMatch ()
-          (.childCons (.mkGen .gen_optionNone () .childNil)
-            (.childCons noneBranch (.childCons someBranch .childNil))))
+          (.childCons motive
+            (.childCons noneBranch
+              (.childCons someBranch
+                (.childCons (.mkGen .gen_optionNone () .childNil) .childNil)))))
         noneBranch
-  /-- `optionMatch (optionSome value) noneBranch someBranch ↝ app someBranch value`. -/
-  | iotaOptionMatchSome {value noneBranch someBranch : RawTerm scope} :
+  /-- `optionMatch motive noneBranch someBranch (optionSome value) ↝ app someBranch value`.
+      Phase-Z motive shape; the motive is discarded by the iota. -/
+  | iotaOptionMatchSome {motive : RawTerm (scope + 1)}
+      {value noneBranch someBranch : RawTerm scope} :
       IotaHeadStep
         (.mkGen .gen_optionMatch ()
-          (.childCons (.mkGen .gen_optionSome () (.childCons value .childNil))
-            (.childCons noneBranch (.childCons someBranch .childNil))))
+          (.childCons motive
+            (.childCons noneBranch
+              (.childCons someBranch
+                (.childCons (.mkGen .gen_optionSome () (.childCons value .childNil))
+                  .childNil)))))
         (.mkGen .gen_app () (.childCons someBranch (.childCons value .childNil)))
-  /-- `eitherMatch (eitherInl value) leftBranch rightBranch ↝ app leftBranch value`. -/
-  | iotaEitherMatchInl {value leftBranch rightBranch : RawTerm scope} :
+  /-- `eitherMatch motive leftBranch rightBranch (eitherInl value) ↝ app leftBranch value`.
+      Phase-Z motive shape; the motive is discarded by the iota. -/
+  | iotaEitherMatchInl {motive : RawTerm (scope + 1)}
+      {value leftBranch rightBranch : RawTerm scope} :
       IotaHeadStep
         (.mkGen .gen_eitherMatch ()
-          (.childCons (.mkGen .gen_eitherInl () (.childCons value .childNil))
-            (.childCons leftBranch (.childCons rightBranch .childNil))))
+          (.childCons motive
+            (.childCons leftBranch
+              (.childCons rightBranch
+                (.childCons (.mkGen .gen_eitherInl () (.childCons value .childNil))
+                  .childNil)))))
         (.mkGen .gen_app () (.childCons leftBranch (.childCons value .childNil)))
-  /-- `eitherMatch (eitherInr value) leftBranch rightBranch ↝ app rightBranch value`. -/
-  | iotaEitherMatchInr {value leftBranch rightBranch : RawTerm scope} :
+  /-- `eitherMatch motive leftBranch rightBranch (eitherInr value) ↝ app rightBranch value`.
+      Phase-Z motive shape; the motive is discarded by the iota. -/
+  | iotaEitherMatchInr {motive : RawTerm (scope + 1)}
+      {value leftBranch rightBranch : RawTerm scope} :
       IotaHeadStep
         (.mkGen .gen_eitherMatch ()
-          (.childCons (.mkGen .gen_eitherInr () (.childCons value .childNil))
-            (.childCons leftBranch (.childCons rightBranch .childNil))))
+          (.childCons motive
+            (.childCons leftBranch
+              (.childCons rightBranch
+                (.childCons (.mkGen .gen_eitherInr () (.childCons value .childNil))
+                  .childNil)))))
         (.mkGen .gen_app () (.childCons rightBranch (.childCons value .childNil)))
   /-- `natElim motive z s (natSucc predecessor)
         ↝ s[var 0 := natElim motive z s predecessor, var 1 := predecessor]`.

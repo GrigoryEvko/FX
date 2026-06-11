@@ -265,61 +265,74 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                       | here _rest scrutineeStep =>
                           cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
                       | there _head4 emptyStep => cases emptyStep
-  | @iotaOptionMatchNone noneBranch someBranch =>
+  | @iotaOptionMatchNone motive noneBranch someBranch =>
+      -- Phase-Z spine: (motive, none, some, scrutinee=optionNone).  The cong spine walks
+      -- motive (here) → none → some → scrutinee.  Only a step in the none-branch changes
+      -- the selected reduct; motive/some/scrutinee steps leave noneBranch intact.
       intro other step
       cases step with
       | iotaOptionMatchNone => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchNone, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest noneStep =>
                   exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchNone, StepStar.single noneStep⟩
               | there _head2 restStep =>
                   cases restStep with
-                  | here _rest someStep =>
+                  | here _rest _someStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchNone, StepStar.refl _⟩
-                  | there _head3 emptyStep => cases emptyStep
-  | @iotaOptionMatchSome value noneBranch someBranch =>
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                      | there _head4 emptyStep => cases emptyStep
+  | @iotaOptionMatchSome motive value noneBranch someBranch =>
+      -- Phase-Z spine: (motive, none, some, scrutinee=optionSome value).  The reduct is
+      -- `app someBranch value`.  The cong spine walks motive (here) → none → some →
+      -- scrutinee.  A motive/none step leaves the reduct intact; a some step pushes the
+      -- app function; a step in the scrutinee's wrapped value pushes the app argument.
       intro other step
       cases step with
       | iotaOptionMatchSome => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with
-              | cong _g _p valueChild =>
-                  cases valueChild with
-                  | here _rest valueStep =>
-                      exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchSome,
-                        StepStar.appArgument someBranch (StepStar.single valueStep)⟩
-                  | there _head emptyStep => cases emptyStep
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchSome, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
-              | here _rest noneStep =>
+              | here _rest _noneStep =>
                   exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchSome, StepStar.refl _⟩
               | there _head2 restStep =>
                   cases restStep with
                   | here _rest someStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchSome,
                         StepStar.appFunction (StepStar.single someStep)⟩
-                  | there _head3 emptyStep => cases emptyStep
-  | @iotaEitherMatchInl value leftBranch rightBranch =>
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with
+                          | cong _g _p valueChild =>
+                              cases valueChild with
+                              | here _rest valueStep =>
+                                  exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchSome,
+                                    StepStar.appArgument someBranch (StepStar.single valueStep)⟩
+                              | there _head4 emptyStep => cases emptyStep
+                      | there _head4 emptyStep => cases emptyStep
+  | @iotaEitherMatchInl motive value leftBranch rightBranch =>
+      -- Phase-Z spine: (motive, left, right, scrutinee=eitherInl value).  The reduct is
+      -- `app leftBranch value`.  The cong spine walks motive (here) → left → right →
+      -- scrutinee.  A motive/right step leaves the reduct intact; a left step pushes the
+      -- app function; a step in the scrutinee's wrapped value pushes the app argument.
       intro other step
       cases step with
       | iotaEitherMatchInl => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with
-              | cong _g _p valueChild =>
-                  cases valueChild with
-                  | here _rest valueStep =>
-                      exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInl,
-                        StepStar.appArgument leftBranch (StepStar.single valueStep)⟩
-                  | there _head emptyStep => cases emptyStep
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInl, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
               | here _rest leftStep =>
@@ -327,33 +340,51 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                     StepStar.appFunction (StepStar.single leftStep)⟩
               | there _head2 restStep =>
                   cases restStep with
-                  | here _rest rightStep =>
+                  | here _rest _rightStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInl, StepStar.refl _⟩
-                  | there _head3 emptyStep => cases emptyStep
-  | @iotaEitherMatchInr value leftBranch rightBranch =>
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with
+                          | cong _g _p valueChild =>
+                              cases valueChild with
+                              | here _rest valueStep =>
+                                  exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInl,
+                                    StepStar.appArgument leftBranch (StepStar.single valueStep)⟩
+                              | there _head4 emptyStep => cases emptyStep
+                      | there _head4 emptyStep => cases emptyStep
+  | @iotaEitherMatchInr motive value leftBranch rightBranch =>
+      -- Phase-Z spine: (motive, left, right, scrutinee=eitherInr value).  The reduct is
+      -- `app rightBranch value`.  The cong spine walks motive (here) → left → right →
+      -- scrutinee.  A motive/left step leaves the reduct intact; a right step pushes the
+      -- app function; a step in the scrutinee's wrapped value pushes the app argument.
       intro other step
       cases step with
       | iotaEitherMatchInr => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest scrutineeStep =>
-              cases scrutineeStep with
-              | cong _g _p valueChild =>
-                  cases valueChild with
-                  | here _rest valueStep =>
-                      exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInr,
-                        StepStar.appArgument rightBranch (StepStar.single valueStep)⟩
-                  | there _head emptyStep => cases emptyStep
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInr, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
-              | here _rest leftStep =>
+              | here _rest _leftStep =>
                   exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInr, StepStar.refl _⟩
               | there _head2 restStep =>
                   cases restStep with
                   | here _rest rightStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInr,
                         StepStar.appFunction (StepStar.single rightStep)⟩
-                  | there _head3 emptyStep => cases emptyStep
+                  | there _head3 scrutineeTailStep =>
+                      cases scrutineeTailStep with
+                      | here _rest scrutineeStep =>
+                          cases scrutineeStep with
+                          | cong _g _p valueChild =>
+                              cases valueChild with
+                              | here _rest valueStep =>
+                                  exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInr,
+                                    StepStar.appArgument rightBranch (StepStar.single valueStep)⟩
+                              | there _head4 emptyStep => cases emptyStep
+                      | there _head4 emptyStep => cases emptyStep
   | @iotaNatElimSucc motive predecessor zeroBranch succBranch =>
       -- Phase-Z spine: (motive, zero, succ, scrutinee = natSucc predecessor).  The reduct
       -- `subst (cons (natElim motive zero succ predecessor) (singleton predecessor)) succ`
@@ -848,18 +879,38 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
               (fun childStep' =>
                 Step.cong .gen_listElim ()
                   (.there _ (.there _ (.there _ (.here _ childStep'))))) starChain⟩
-  | @scrutineeOptionMatch scrutinee scrutineeReduct noneBranch someBranch
+  | @scrutineeOptionMatch motive scrutinee scrutineeReduct noneBranch someBranch
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      -- Phase-Z spine: (motive, none, some, scrutinee).  The WeakHeadStep reduces the LAST
+      -- child (scrutinee).  `Step.from_optionMatch` is a six-way disjunction in the order
+      -- iotaNone / iotaSome / cong-motive / cong-none / cong-some / cong-scrutinee.  The two
+      -- iota disjuncts are refuted (a reducible scrutinee is not yet a constructor); motive,
+      -- none, and some steps leave the scrutinee reducible, so `other` still weak-head reduces
+      -- there and `reduct` catches up by a single congruence at the stepped child; a scrutinee
+      -- step recurses through the induction hypothesis.
       intro other step
       rcases Step.from_optionMatch step with
         ⟨scrutEq, _⟩ | ⟨_value, scrutEq, _⟩
-        | ⟨_scrutAfter, otherEq, scrutStep⟩
+        | ⟨_motiveAfter, otherEq, motiveStep⟩
         | ⟨_noneAfter, otherEq, noneStep⟩
         | ⟨_someAfter, otherEq, someStep⟩
+        | ⟨_scrutAfter, otherEq, scrutStep⟩
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_optionNone
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_optionSome
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeOptionMatch scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_optionMatch () (.here _ motiveStep))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeOptionMatch scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_optionMatch () (.there _ (.here _ noneStep)))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeOptionMatch scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_optionMatch () (.there _ (.there _ (.here _ someStep))))⟩
       · subst otherEq
         rcases scrutineeInductiveHypothesis _ scrutStep with
           scrutAfterEquation | ⟨_scrutReduct2, weakHeadStep2, starChain⟩
@@ -867,34 +918,43 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
         · exact Or.inr ⟨_, WeakHeadStep.scrutineeOptionMatch weakHeadStep2,
             StepStar.congAt
               (fun hole => .mkGen .gen_optionMatch ()
-                (.childCons hole (.childCons noneBranch (.childCons someBranch .childNil))))
-              (fun childStep' => Step.cong .gen_optionMatch () (.here _ childStep')) starChain⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeOptionMatch scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_optionMatch ()
-              (.childCons scrutineeReduct (.childCons hole (.childCons someBranch .childNil))))
-            (fun childStep' => Step.cong .gen_optionMatch () (.there _ (.here _ childStep')))
-            (StepStar.single noneStep)⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeOptionMatch scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_optionMatch ()
-              (.childCons scrutineeReduct (.childCons noneBranch (.childCons hole .childNil))))
-            (fun childStep' => Step.cong .gen_optionMatch () (.there _ (.there _ (.here _ childStep'))))
-            (StepStar.single someStep)⟩
-  | @scrutineeEitherMatch scrutinee scrutineeReduct leftBranch rightBranch
+                (.childCons motive
+                  (.childCons noneBranch (.childCons someBranch (.childCons hole .childNil)))))
+              (fun childStep' =>
+                Step.cong .gen_optionMatch ()
+                  (.there _ (.there _ (.there _ (.here _ childStep'))))) starChain⟩
+  | @scrutineeEitherMatch motive scrutinee scrutineeReduct leftBranch rightBranch
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      -- Phase-Z spine: (motive, left, right, scrutinee).  The WeakHeadStep reduces the LAST
+      -- child (scrutinee).  `Step.from_eitherMatch` is a six-way disjunction in the order
+      -- iotaInl / iotaInr / cong-motive / cong-left / cong-right / cong-scrutinee.  The two
+      -- iota disjuncts are refuted (a reducible scrutinee is not yet a constructor); motive,
+      -- left, and right steps leave the scrutinee reducible, so `other` still weak-head reduces
+      -- there and `reduct` catches up by a single congruence at the stepped child; a scrutinee
+      -- step recurses through the induction hypothesis.
       intro other step
       rcases Step.from_eitherMatch step with
         ⟨_value, scrutEq, _⟩ | ⟨_value, scrutEq, _⟩
-        | ⟨_scrutAfter, otherEq, scrutStep⟩
+        | ⟨_motiveAfter, otherEq, motiveStep⟩
         | ⟨_leftAfter, otherEq, leftStep⟩
         | ⟨_rightAfter, otherEq, rightStep⟩
+        | ⟨_scrutAfter, otherEq, scrutStep⟩
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_eitherInl
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_eitherInr
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeEitherMatch scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_eitherMatch () (.here _ motiveStep))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeEitherMatch scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_eitherMatch () (.there _ (.here _ leftStep)))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeEitherMatch scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_eitherMatch () (.there _ (.there _ (.here _ rightStep))))⟩
       · subst otherEq
         rcases scrutineeInductiveHypothesis _ scrutStep with
           scrutAfterEquation | ⟨_scrutReduct2, weakHeadStep2, starChain⟩
@@ -902,22 +962,11 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
         · exact Or.inr ⟨_, WeakHeadStep.scrutineeEitherMatch weakHeadStep2,
             StepStar.congAt
               (fun hole => .mkGen .gen_eitherMatch ()
-                (.childCons hole (.childCons leftBranch (.childCons rightBranch .childNil))))
-              (fun childStep' => Step.cong .gen_eitherMatch () (.here _ childStep')) starChain⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeEitherMatch scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_eitherMatch ()
-              (.childCons scrutineeReduct (.childCons hole (.childCons rightBranch .childNil))))
-            (fun childStep' => Step.cong .gen_eitherMatch () (.there _ (.here _ childStep')))
-            (StepStar.single leftStep)⟩
-      · subst otherEq
-        exact Or.inr ⟨_, WeakHeadStep.scrutineeEitherMatch scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_eitherMatch ()
-              (.childCons scrutineeReduct (.childCons leftBranch (.childCons hole .childNil))))
-            (fun childStep' => Step.cong .gen_eitherMatch () (.there _ (.there _ (.here _ childStep'))))
-            (StepStar.single rightStep)⟩
+                (.childCons motive
+                  (.childCons leftBranch (.childCons rightBranch (.childCons hole .childNil)))))
+              (fun childStep' =>
+                Step.cong .gen_eitherMatch ()
+                  (.there _ (.there _ (.there _ (.here _ childStep'))))) starChain⟩
   | @scrutineeIdJ baseCase scrutinee scrutineeReduct
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
       intro other step

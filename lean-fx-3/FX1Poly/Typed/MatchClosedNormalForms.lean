@@ -14,7 +14,7 @@ argument:
 
   * **`HasTypeDescOptionMatch.noClosedNormalOptionMatch` (★)** — a closed NORMAL term typed by the option-match
     engine is impossible.  Its scrutinee is option-intro-typed at `option(A)`, hence `optionNone`/`optionSome v`
-    (`subjectIsOptionConstructor`), so `optionMatch(optionNone/optionSome v, n, s)` is an ι-redex
+    (`subjectIsOptionConstructor`), so `optionMatch(m, n, s, optionNone/optionSome v)` is an ι-redex
     (`Step.iotaOptionMatchNone` / `iotaOptionMatchSome` fire on a constructor scrutinee regardless of `v`'s
     normality); the structural NF checker computes `false` on that head redex, so `cases normal` refutes.
 
@@ -54,7 +54,7 @@ theorem HasTypeDescOptionMatch.noClosedNormalOptionMatch {profile : PolyProfile}
     (normal : RawTerm.isStepNormalForm subject) :
     False := by
   cases derivation with
-  | optionMatchIntro scrutinee noneBranch someBranch _elementType _resultType scrutineeTyped
+  | optionMatchIntro _motive scrutinee noneBranch someBranch _elementType _resultType scrutineeTyped
       _noneBranchTyped _someBranchTyped =>
       rcases scrutineeTyped.subjectIsOptionConstructor with scrutineeEq | ⟨value, scrutineeEq⟩
       · subst scrutineeEq; cases normal
@@ -70,7 +70,7 @@ theorem HasTypeDescEitherMatch.noClosedNormalEitherMatch {profile : PolyProfile}
     (normal : RawTerm.isStepNormalForm subject) :
     False := by
   cases derivation with
-  | eitherMatchIntro scrutinee leftBranch rightBranch _leftType _rightType _resultType scrutineeTyped
+  | eitherMatchIntro _motive scrutinee leftBranch rightBranch _leftType _rightType _resultType scrutineeTyped
       _leftBranchTyped _rightBranchTyped =>
       rcases scrutineeTyped.subjectIsEitherInjection with ⟨value, scrutineeEq⟩ | ⟨value, scrutineeEq⟩
       · subst scrutineeEq; cases normal

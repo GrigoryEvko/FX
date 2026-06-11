@@ -13,9 +13,11 @@ motive a term under one binder and the scrutinee LAST; the base-case
 iota DISCARDS the motive and projects the zero/nil-branch which sits at
 spine position 1 — extracted via `spine.tail.headAtDim0 rfl` (the tail
 drops the motive head, leaving the branch at the head of the tail).
-optionMatch on optionNone keeps the classic scrutinee-first 3-child
-spine.  The proof pattern is the pure-projection iota template shared
-with `iotaBoolTrue`.
+optionMatch on optionNone now carries the same Phase-Z 4-child motive
+shape (`binderShifts [1, 0, 0, 0]`), children `(motive, noneBranch,
+someBranch, scrutinee)` with the scrutinee LAST; noneBranch sits at
+spine position 1 and is projected identically.  The proof pattern is
+the pure-projection iota template shared with `iotaBoolTrue`.
 
 ## One family, one file
 
@@ -25,7 +27,7 @@ they differ only by which generator's spine they case-analyze:
   * iotaNatElimZero    : natElim motive zeroBranch succBranch natZero ↝ zeroBranch
   * iotaNatRecZero     : natRec  motive zeroBranch succBranch natZero ↝ zeroBranch
   * iotaListElimNil    : listElim motive nilBranch consBranch listNil ↝ nilBranch
-  * iotaOptionMatchNone: optionMatch optionNone noneBranch someBranch ↝ noneBranch
+  * iotaOptionMatchNone: optionMatch motive noneBranch someBranch optionNone ↝ noneBranch
 
 Each: target = the branch at spine position 1.  Proof =
 `spine.tail.headAtDim0 rfl`.  Grouping these semantically-similar
@@ -119,17 +121,21 @@ theorem HasCertifiedCellDim0.preservedByIotaListElimNil
 
 /-- **SR arm: `Step.iotaOptionMatchNone` preserves `HasCertifiedCellDim0`.**
 
-`optionMatch optionNone noneBranch someBranch` reduces to
-`noneBranch`.  Identical structure to `iotaNatElimZero`. -/
+`optionMatch motive noneBranch someBranch optionNone` reduces to
+`noneBranch`.  Phase-Z motive shape: motive heads the spine (shift 1),
+scrutinee LAST; noneBranch stays at spine position 1, projected via
+`spine.tail.headAtDim0 rfl`.  Identical structure to `iotaNatElimZero`. -/
 theorem HasCertifiedCellDim0.preservedByIotaOptionMatchNone
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch someBranch : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_optionMatch ()
-          (.childCons (.mkGen .gen_optionNone () .childNil)
+          (.childCons motive
             (.childCons noneBranch
-              (.childCons someBranch .childNil)))
+              (.childCons someBranch
+                (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))
           : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) noneBranch := by
   cases sourceCert with

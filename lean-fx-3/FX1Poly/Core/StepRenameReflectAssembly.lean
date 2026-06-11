@@ -135,17 +135,17 @@ theorem Step.reflectRename {sourceScope targetScope : Nat}
       -- iotaListElimNil (Phase-Z: motive binder added at scope + 1, scrutinee last)
       (fun {scope} {motive} {nilBranch} {consBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaListElimNil originRho req)
-      -- iotaOptionMatchNone
-      (fun {scope} {noneBranch} {someBranch} {srcScope} originTerm originRho req =>
+      -- iotaOptionMatchNone (Phase-Z: motive binder added at scope + 1, scrutinee last)
+      (fun {scope} {motive} {noneBranch} {someBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaOptionMatchNone originRho req)
-      -- iotaOptionMatchSome
-      (fun {scope} {value} {noneBranch} {someBranch} {srcScope} originTerm originRho req =>
+      -- iotaOptionMatchSome (Phase-Z: motive binder added at scope + 1, scrutinee last)
+      (fun {scope} {motive} {value} {noneBranch} {someBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaOptionMatchSome originRho req)
-      -- iotaEitherMatchInl
-      (fun {scope} {value} {leftBranch} {rightBranch} {srcScope} originTerm originRho req =>
+      -- iotaEitherMatchInl (Phase-Z: motive binder added at scope + 1, scrutinee last)
+      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaEitherMatchInl originRho req)
-      -- iotaEitherMatchInr
-      (fun {scope} {value} {leftBranch} {rightBranch} {srcScope} originTerm originRho req =>
+      -- iotaEitherMatchInr (Phase-Z: motive binder added at scope + 1, scrutinee last)
+      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {srcScope} originTerm originRho req =>
         Step.reflectIotaEitherMatchInr originRho req)
       -- iotaNatElimSucc (Phase-Z: motive binder at scope + 1, succ at scope + 2, scrutinee last)
       (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch} {srcScope}

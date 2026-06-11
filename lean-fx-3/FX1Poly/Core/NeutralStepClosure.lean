@@ -132,26 +132,30 @@ theorem IsNeutral.closedUnderStep {scope : Nat} {term reduct : RawTerm scope}
       · rw [reductEq]; exact IsNeutral.listElim (scrutineeIH stepScrutinee)
   | optionMatch scrutineeIsNeutral scrutineeIH =>
       rcases Step.from_optionMatch step with
-        ⟨scrutineeEq, _⟩ | ⟨_value, scrutineeEq, _⟩ | ⟨_scrutAfter, reductEq, stepScrutinee⟩
+        ⟨scrutineeEq, _⟩ | ⟨_value, scrutineeEq, _⟩ | ⟨_motiveAfter, reductEq, _⟩
         | ⟨_noneAfter, reductEq, _⟩ | ⟨_someAfter, reductEq, _⟩
+        | ⟨_scrutAfter, reductEq, stepScrutinee⟩
       · cases scrutineeIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator scrutineeEq)
       · cases scrutineeIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator scrutineeEq)
+      · rw [reductEq]; exact IsNeutral.optionMatch scrutineeIsNeutral
+      · rw [reductEq]; exact IsNeutral.optionMatch scrutineeIsNeutral
+      · rw [reductEq]; exact IsNeutral.optionMatch scrutineeIsNeutral
       · rw [reductEq]; exact IsNeutral.optionMatch (scrutineeIH stepScrutinee)
-      · rw [reductEq]; exact IsNeutral.optionMatch scrutineeIsNeutral
-      · rw [reductEq]; exact IsNeutral.optionMatch scrutineeIsNeutral
   | eitherMatch scrutineeIsNeutral scrutineeIH =>
       rcases Step.from_eitherMatch step with
-        ⟨_value, scrutineeEq, _⟩ | ⟨_value, scrutineeEq, _⟩ | ⟨_scrutAfter, reductEq, stepScrutinee⟩
+        ⟨_value, scrutineeEq, _⟩ | ⟨_value, scrutineeEq, _⟩ | ⟨_motiveAfter, reductEq, _⟩
         | ⟨_leftAfter, reductEq, _⟩ | ⟨_rightAfter, reductEq, _⟩
+        | ⟨_scrutAfter, reductEq, stepScrutinee⟩
       · cases scrutineeIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator scrutineeEq)
       · cases scrutineeIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator scrutineeEq)
+      · rw [reductEq]; exact IsNeutral.eitherMatch scrutineeIsNeutral
+      · rw [reductEq]; exact IsNeutral.eitherMatch scrutineeIsNeutral
+      · rw [reductEq]; exact IsNeutral.eitherMatch scrutineeIsNeutral
       · rw [reductEq]; exact IsNeutral.eitherMatch (scrutineeIH stepScrutinee)
-      · rw [reductEq]; exact IsNeutral.eitherMatch scrutineeIsNeutral
-      · rw [reductEq]; exact IsNeutral.eitherMatch scrutineeIsNeutral
   | idJ witnessIsNeutral witnessIH =>
       rcases Step.from_idJ step with
         ⟨_rawWitness, witnessEq, _⟩ | ⟨_baseAfter, reductEq, _⟩ | ⟨_witnessAfter, reductEq, stepWitness⟩

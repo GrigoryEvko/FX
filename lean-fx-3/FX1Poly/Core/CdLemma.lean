@@ -832,11 +832,12 @@ theorem iotaListElimNilSameRoot_hasJoin {scope : Nat}
     (iotaListElimNilSameRoot motive nilBranch consBranch).HasJoin :=
   (LocalDiamond.iotaListElimNilSameRoot motive nilBranch consBranch).hasJoin
 
-/-- Resolver arm for same-root `optionMatch` none-case branchings. -/
+/-- Resolver arm for same-root `optionMatch` none-case branchings.
+Phase-Z motive shape. -/
 theorem iotaOptionMatchNoneSameRoot_hasJoin {scope : Nat}
-    (noneBranch someBranch : RawTerm scope) :
-    (iotaOptionMatchNoneSameRoot noneBranch someBranch).HasJoin :=
-  (LocalDiamond.iotaOptionMatchNoneSameRoot noneBranch someBranch).hasJoin
+    (motive : RawTerm (scope + 1)) (noneBranch someBranch : RawTerm scope) :
+    (iotaOptionMatchNoneSameRoot motive noneBranch someBranch).HasJoin :=
+  (LocalDiamond.iotaOptionMatchNoneSameRoot motive noneBranch someBranch).hasJoin
 
 /-- Resolver arm for same-root `idJ` refl-case branchings. -/
 theorem iotaIdJReflSameRoot_hasJoin {scope : Nat}
@@ -850,26 +851,32 @@ theorem iotaIdStrictRecReflSameRoot_hasJoin {scope : Nat}
     (iotaIdStrictRecReflSameRoot baseCase rawWitness).HasJoin :=
   (LocalDiamond.iotaIdStrictRecReflSameRoot baseCase rawWitness).hasJoin
 
-/-- Resolver arm for same-root `optionMatch` some-case branchings. -/
+/-- Resolver arm for same-root `optionMatch` some-case branchings.
+Phase-Z motive shape. -/
 theorem iotaOptionMatchSomeSameRoot_hasJoin {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value noneBranch someBranch : RawTerm scope) :
-    (iotaOptionMatchSomeSameRoot value noneBranch someBranch).HasJoin :=
+    (iotaOptionMatchSomeSameRoot motive value noneBranch someBranch).HasJoin :=
   (LocalDiamond.iotaOptionMatchSomeSameRoot
-    value noneBranch someBranch).hasJoin
+    motive value noneBranch someBranch).hasJoin
 
-/-- Resolver arm for same-root `eitherMatch` inl-case branchings. -/
+/-- Resolver arm for same-root `eitherMatch` inl-case branchings.
+Phase-Z motive shape. -/
 theorem iotaEitherMatchInlSameRoot_hasJoin {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value leftBranch rightBranch : RawTerm scope) :
-    (iotaEitherMatchInlSameRoot value leftBranch rightBranch).HasJoin :=
+    (iotaEitherMatchInlSameRoot motive value leftBranch rightBranch).HasJoin :=
   (LocalDiamond.iotaEitherMatchInlSameRoot
-    value leftBranch rightBranch).hasJoin
+    motive value leftBranch rightBranch).hasJoin
 
-/-- Resolver arm for same-root `eitherMatch` inr-case branchings. -/
+/-- Resolver arm for same-root `eitherMatch` inr-case branchings.
+Phase-Z motive shape. -/
 theorem iotaEitherMatchInrSameRoot_hasJoin {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value leftBranch rightBranch : RawTerm scope) :
-    (iotaEitherMatchInrSameRoot value leftBranch rightBranch).HasJoin :=
+    (iotaEitherMatchInrSameRoot motive value leftBranch rightBranch).HasJoin :=
   (LocalDiamond.iotaEitherMatchInrSameRoot
-    value leftBranch rightBranch).hasJoin
+    motive value leftBranch rightBranch).hasJoin
 
 /-- Resolver arm for same-root `natElim` succ-case branchings. -/
 theorem iotaNatElimSuccSameRoot_hasJoin {scope : Nat}
@@ -972,15 +979,16 @@ theorem fromSteps_iotaListElimNilSameRoot_hasJoin {scope : Nat}
         (motive := motive) (nilBranch := nilBranch) (consBranch := consBranch))).HasJoin :=
   iotaListElimNilSameRoot_hasJoin motive nilBranch consBranch
 
-/-- `fromSteps`-facing same-root `optionMatch` none-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `optionMatch` none-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaOptionMatchNoneSameRoot_hasJoin {scope : Nat}
-    (noneBranch someBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (noneBranch someBranch : RawTerm scope) :
     (fromSteps
       (Step.iotaOptionMatchNone
-        (noneBranch := noneBranch) (someBranch := someBranch))
+        (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch))
       (Step.iotaOptionMatchNone
-        (noneBranch := noneBranch) (someBranch := someBranch))).HasJoin :=
-  iotaOptionMatchNoneSameRoot_hasJoin noneBranch someBranch
+        (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch))).HasJoin :=
+  iotaOptionMatchNoneSameRoot_hasJoin motive noneBranch someBranch
 
 /-- `fromSteps`-facing same-root `idJ` refl-case iota resolver arm. -/
 theorem fromSteps_iotaIdJReflSameRoot_hasJoin {scope : Nat}
@@ -1002,41 +1010,47 @@ theorem fromSteps_iotaIdStrictRecReflSameRoot_hasJoin {scope : Nat}
         (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
   iotaIdStrictRecReflSameRoot_hasJoin baseCase rawWitness
 
-/-- `fromSteps`-facing same-root `optionMatch` some-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `optionMatch` some-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaOptionMatchSomeSameRoot_hasJoin {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value noneBranch someBranch : RawTerm scope) :
     (fromSteps
       (Step.iotaOptionMatchSome
-        (value := value) (noneBranch := noneBranch)
+        (motive := motive) (value := value) (noneBranch := noneBranch)
         (someBranch := someBranch))
       (Step.iotaOptionMatchSome
-        (value := value) (noneBranch := noneBranch)
+        (motive := motive) (value := value) (noneBranch := noneBranch)
         (someBranch := someBranch))).HasJoin :=
-  iotaOptionMatchSomeSameRoot_hasJoin value noneBranch someBranch
+  iotaOptionMatchSomeSameRoot_hasJoin motive value noneBranch someBranch
 
-/-- `fromSteps`-facing same-root `eitherMatch` inl-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `eitherMatch` inl-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaEitherMatchInlSameRoot_hasJoin {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value leftBranch rightBranch : RawTerm scope) :
     (fromSteps
       (Step.iotaEitherMatchInl
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))
       (Step.iotaEitherMatchInl
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))).HasJoin :=
-  iotaEitherMatchInlSameRoot_hasJoin value leftBranch rightBranch
+  iotaEitherMatchInlSameRoot_hasJoin motive value leftBranch rightBranch
 
-/-- `fromSteps`-facing same-root `eitherMatch` inr-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `eitherMatch` inr-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaEitherMatchInrSameRoot_hasJoin {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value leftBranch rightBranch : RawTerm scope) :
     (fromSteps
       (Step.iotaEitherMatchInr
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))
       (Step.iotaEitherMatchInr
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))).HasJoin :=
-  iotaEitherMatchInrSameRoot_hasJoin value leftBranch rightBranch
+  iotaEitherMatchInrSameRoot_hasJoin motive value leftBranch rightBranch
 
 /-- `fromSteps`-facing same-root `natElim` succ-case iota resolver arm.
 Phase-Z motive shape. -/
@@ -2318,118 +2332,179 @@ theorem iotaListElimConsMotiveCong_hasJoin {scope : Nat}
 /-- Resolver arm for `optionMatch optionNone` iota competing with selected
 none-branch congruence. -/
 theorem iotaOptionMatchNoneBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch steppedNoneBranch someBranch : RawTerm scope}
     (noneStep : Step noneBranch steppedNoneBranch) :
     (iotaOptionMatchNoneBranchCong
-      (someBranch := someBranch) noneStep).HasJoin :=
+      (motive := motive) (someBranch := someBranch) noneStep).HasJoin :=
   (LocalDiamond.iotaOptionMatchNoneBranchCong
-    (someBranch := someBranch) noneStep).hasJoin
+    (motive := motive) (someBranch := someBranch) noneStep).hasJoin
 
 /-- Resolver arm for `optionMatch optionNone` iota competing with discarded
 some-branch congruence. -/
 theorem iotaOptionMatchSomeBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch someBranch steppedSomeBranch : RawTerm scope}
     (someStep : Step someBranch steppedSomeBranch) :
     (iotaOptionMatchSomeBranchCong
-      (noneBranch := noneBranch) someStep).HasJoin :=
+      (motive := motive) (noneBranch := noneBranch) someStep).HasJoin :=
   (LocalDiamond.iotaOptionMatchSomeBranchCong
-    (noneBranch := noneBranch) someStep).hasJoin
+    (motive := motive) (noneBranch := noneBranch) someStep).hasJoin
 
 /-- Resolver arm for `optionMatch (optionSome value)` iota competing with
 congruence inside the payload value. -/
 theorem iotaOptionMatchSomeValueCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue noneBranch someBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     (iotaOptionMatchSomeValueCong
-      (noneBranch := noneBranch) (someBranch := someBranch)
+      (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch)
       valueStep).HasJoin :=
   (LocalDiamond.iotaOptionMatchSomeValueCong
-    (noneBranch := noneBranch) (someBranch := someBranch)
+    (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch)
     valueStep).hasJoin
 
 /-- Resolver arm for `optionMatch (optionSome value)` iota competing with
 discarded none-branch congruence. -/
 theorem iotaOptionMatchSomeNoneBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch steppedNoneBranch someBranch : RawTerm scope}
     (noneStep : Step noneBranch steppedNoneBranch) :
     (iotaOptionMatchSomeNoneBranchCong
-      (value := value) (someBranch := someBranch) noneStep).HasJoin :=
+      (motive := motive) (value := value) (someBranch := someBranch) noneStep).HasJoin :=
   (LocalDiamond.iotaOptionMatchSomeNoneBranchCong
-    (value := value) (someBranch := someBranch) noneStep).hasJoin
+    (motive := motive) (value := value) (someBranch := someBranch) noneStep).hasJoin
 
 /-- Resolver arm for `optionMatch (optionSome value)` iota competing with
 selected some-branch congruence. -/
 theorem iotaOptionMatchSomeSomeBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch someBranch steppedSomeBranch : RawTerm scope}
     (someStep : Step someBranch steppedSomeBranch) :
     (iotaOptionMatchSomeSomeBranchCong
-      (value := value) (noneBranch := noneBranch) someStep).HasJoin :=
+      (motive := motive) (value := value) (noneBranch := noneBranch) someStep).HasJoin :=
   (LocalDiamond.iotaOptionMatchSomeSomeBranchCong
-    (value := value) (noneBranch := noneBranch) someStep).hasJoin
+    (motive := motive) (value := value) (noneBranch := noneBranch) someStep).hasJoin
 
 /-- Resolver arm for `eitherMatch (eitherInl value)` iota competing with
 congruence inside the left payload value. -/
 theorem iotaEitherMatchInlValueCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue leftBranch rightBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     (iotaEitherMatchInlValueCong
-      (leftBranch := leftBranch) (rightBranch := rightBranch)
+      (motive := motive) (leftBranch := leftBranch) (rightBranch := rightBranch)
       valueStep).HasJoin :=
   (LocalDiamond.iotaEitherMatchInlValueCong
-    (leftBranch := leftBranch) (rightBranch := rightBranch)
+    (motive := motive) (leftBranch := leftBranch) (rightBranch := rightBranch)
     valueStep).hasJoin
 
 /-- Resolver arm for `eitherMatch (eitherInl value)` iota competing with
 selected left-branch congruence. -/
 theorem iotaEitherMatchInlLeftBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
     (leftStep : Step leftBranch steppedLeftBranch) :
     (iotaEitherMatchInlLeftBranchCong
-      (value := value) (rightBranch := rightBranch) leftStep).HasJoin :=
+      (motive := motive) (value := value) (rightBranch := rightBranch) leftStep).HasJoin :=
   (LocalDiamond.iotaEitherMatchInlLeftBranchCong
-    (value := value) (rightBranch := rightBranch) leftStep).hasJoin
+    (motive := motive) (value := value) (rightBranch := rightBranch) leftStep).hasJoin
 
 /-- Resolver arm for `eitherMatch (eitherInl value)` iota competing with
 discarded right-branch congruence. -/
 theorem iotaEitherMatchInlRightBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
     (rightStep : Step rightBranch steppedRightBranch) :
     (iotaEitherMatchInlRightBranchCong
-      (value := value) (leftBranch := leftBranch) rightStep).HasJoin :=
+      (motive := motive) (value := value) (leftBranch := leftBranch) rightStep).HasJoin :=
   (LocalDiamond.iotaEitherMatchInlRightBranchCong
-    (value := value) (leftBranch := leftBranch) rightStep).hasJoin
+    (motive := motive) (value := value) (leftBranch := leftBranch) rightStep).hasJoin
 
 /-- Resolver arm for `eitherMatch (eitherInr value)` iota competing with
 congruence inside the right payload value. -/
 theorem iotaEitherMatchInrValueCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue leftBranch rightBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     (iotaEitherMatchInrValueCong
-      (leftBranch := leftBranch) (rightBranch := rightBranch)
+      (motive := motive) (leftBranch := leftBranch) (rightBranch := rightBranch)
       valueStep).HasJoin :=
   (LocalDiamond.iotaEitherMatchInrValueCong
-    (leftBranch := leftBranch) (rightBranch := rightBranch)
+    (motive := motive) (leftBranch := leftBranch) (rightBranch := rightBranch)
     valueStep).hasJoin
 
 /-- Resolver arm for `eitherMatch (eitherInr value)` iota competing with
 discarded left-branch congruence. -/
 theorem iotaEitherMatchInrLeftBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
     (leftStep : Step leftBranch steppedLeftBranch) :
     (iotaEitherMatchInrLeftBranchCong
-      (value := value) (rightBranch := rightBranch) leftStep).HasJoin :=
+      (motive := motive) (value := value) (rightBranch := rightBranch) leftStep).HasJoin :=
   (LocalDiamond.iotaEitherMatchInrLeftBranchCong
-    (value := value) (rightBranch := rightBranch) leftStep).hasJoin
+    (motive := motive) (value := value) (rightBranch := rightBranch) leftStep).hasJoin
 
 /-- Resolver arm for `eitherMatch (eitherInr value)` iota competing with
 selected right-branch congruence. -/
 theorem iotaEitherMatchInrRightBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
     (rightStep : Step rightBranch steppedRightBranch) :
     (iotaEitherMatchInrRightBranchCong
-      (value := value) (leftBranch := leftBranch) rightStep).HasJoin :=
+      (motive := motive) (value := value) (leftBranch := leftBranch) rightStep).HasJoin :=
   (LocalDiamond.iotaEitherMatchInrRightBranchCong
-    (value := value) (leftBranch := leftBranch) rightStep).hasJoin
+    (motive := motive) (value := value) (leftBranch := leftBranch) rightStep).hasJoin
+
+/-- Resolver arm for `optionMatch optionNone` iota competing with discarded
+motive congruence (Phase-Z motive shape). -/
+theorem iotaOptionMatchNoneMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {noneBranch someBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaOptionMatchNoneMotiveCong
+      (noneBranch := noneBranch) (someBranch := someBranch) motiveStep).HasJoin :=
+  (LocalDiamond.iotaOptionMatchNoneMotiveCong
+    (noneBranch := noneBranch) (someBranch := someBranch) motiveStep).hasJoin
+
+/-- Resolver arm for `optionMatch (optionSome value)` iota competing with
+discarded motive congruence (Phase-Z motive shape). -/
+theorem iotaOptionMatchSomeMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value noneBranch someBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaOptionMatchSomeMotiveCong
+      (value := value) (noneBranch := noneBranch) (someBranch := someBranch)
+      motiveStep).HasJoin :=
+  (LocalDiamond.iotaOptionMatchSomeMotiveCong
+    (value := value) (noneBranch := noneBranch) (someBranch := someBranch)
+    motiveStep).hasJoin
+
+/-- Resolver arm for `eitherMatch (eitherInl value)` iota competing with
+discarded motive congruence (Phase-Z motive shape). -/
+theorem iotaEitherMatchInlMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value leftBranch rightBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaEitherMatchInlMotiveCong
+      (value := value) (leftBranch := leftBranch) (rightBranch := rightBranch)
+      motiveStep).HasJoin :=
+  (LocalDiamond.iotaEitherMatchInlMotiveCong
+    (value := value) (leftBranch := leftBranch) (rightBranch := rightBranch)
+    motiveStep).hasJoin
+
+/-- Resolver arm for `eitherMatch (eitherInr value)` iota competing with
+discarded motive congruence (Phase-Z motive shape). -/
+theorem iotaEitherMatchInrMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value leftBranch rightBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaEitherMatchInrMotiveCong
+      (value := value) (leftBranch := leftBranch) (rightBranch := rightBranch)
+      motiveStep).HasJoin :=
+  (LocalDiamond.iotaEitherMatchInrMotiveCong
+    (value := value) (leftBranch := leftBranch) (rightBranch := rightBranch)
+    motiveStep).hasJoin
 
 /-- Resolver arm for `idJ refl` iota competing with selected base-case
 congruence. -/
@@ -2738,144 +2813,225 @@ theorem fromSteps_iotaListElimConsRight_hasJoin {scope : Nat}
         (nilBranch := nilBranch) (consBranch := consBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaListElimConsLeft_hasJoin leftStep)
 
-/-- `fromSteps`-facing `optionMatch optionNone` iota / none-branch congruence arm. -/
+/-- `fromSteps`-facing `optionMatch optionNone` iota / none-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaOptionMatchNoneBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch steppedNoneBranch someBranch : RawTerm scope}
     (noneStep : Step noneBranch steppedNoneBranch) :
     (fromSteps
       (Step.iotaOptionMatchNone
-        (noneBranch := noneBranch) (someBranch := someBranch))
+        (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch))
       (iotaOptionMatchNoneBranchCong
-        (someBranch := someBranch) noneStep).rightStep).HasJoin :=
+        (motive := motive) (someBranch := someBranch) noneStep).rightStep).HasJoin :=
   iotaOptionMatchNoneBranchCong_hasJoin noneStep
 
-/-- `fromSteps`-facing `optionMatch optionNone` iota / some-branch congruence arm. -/
+/-- `fromSteps`-facing `optionMatch optionNone` iota / some-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaOptionMatchSomeBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch someBranch steppedSomeBranch : RawTerm scope}
     (someStep : Step someBranch steppedSomeBranch) :
     (fromSteps
       (Step.iotaOptionMatchNone
-        (noneBranch := noneBranch) (someBranch := someBranch))
+        (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch))
       (iotaOptionMatchSomeBranchCong
-        (noneBranch := noneBranch) someStep).rightStep).HasJoin :=
+        (motive := motive) (noneBranch := noneBranch) someStep).rightStep).HasJoin :=
   iotaOptionMatchSomeBranchCong_hasJoin someStep
 
-/-- `fromSteps`-facing `optionMatch optionSome` iota / value congruence arm. -/
+/-- `fromSteps`-facing `optionMatch optionSome` iota / value congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaOptionMatchSomeValueCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue noneBranch someBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     (fromSteps
       (Step.iotaOptionMatchSome
-        (value := value) (noneBranch := noneBranch)
+        (motive := motive) (value := value) (noneBranch := noneBranch)
         (someBranch := someBranch))
       (iotaOptionMatchSomeValueCong
-        (noneBranch := noneBranch) (someBranch := someBranch)
+        (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch)
         valueStep).rightStep).HasJoin :=
   iotaOptionMatchSomeValueCong_hasJoin valueStep
 
-/-- `fromSteps`-facing `optionMatch optionSome` iota / none-branch congruence arm. -/
+/-- `fromSteps`-facing `optionMatch optionSome` iota / none-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaOptionMatchSomeNoneBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch steppedNoneBranch someBranch : RawTerm scope}
     (noneStep : Step noneBranch steppedNoneBranch) :
     (fromSteps
       (Step.iotaOptionMatchSome
-        (value := value) (noneBranch := noneBranch)
+        (motive := motive) (value := value) (noneBranch := noneBranch)
         (someBranch := someBranch))
       (iotaOptionMatchSomeNoneBranchCong
-        (value := value) (someBranch := someBranch)
+        (motive := motive) (value := value) (someBranch := someBranch)
         noneStep).rightStep).HasJoin :=
   iotaOptionMatchSomeNoneBranchCong_hasJoin noneStep
 
-/-- `fromSteps`-facing `optionMatch optionSome` iota / some-branch congruence arm. -/
+/-- `fromSteps`-facing `optionMatch optionSome` iota / some-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaOptionMatchSomeSomeBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch someBranch steppedSomeBranch : RawTerm scope}
     (someStep : Step someBranch steppedSomeBranch) :
     (fromSteps
       (Step.iotaOptionMatchSome
-        (value := value) (noneBranch := noneBranch)
+        (motive := motive) (value := value) (noneBranch := noneBranch)
         (someBranch := someBranch))
       (iotaOptionMatchSomeSomeBranchCong
-        (value := value) (noneBranch := noneBranch)
+        (motive := motive) (value := value) (noneBranch := noneBranch)
         someStep).rightStep).HasJoin :=
   iotaOptionMatchSomeSomeBranchCong_hasJoin someStep
 
-/-- `fromSteps`-facing `eitherMatch eitherInl` iota / value congruence arm. -/
+/-- `fromSteps`-facing `eitherMatch eitherInl` iota / value congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaEitherMatchInlValueCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue leftBranch rightBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     (fromSteps
       (Step.iotaEitherMatchInl
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))
       (iotaEitherMatchInlValueCong
-        (leftBranch := leftBranch) (rightBranch := rightBranch)
+        (motive := motive) (leftBranch := leftBranch) (rightBranch := rightBranch)
         valueStep).rightStep).HasJoin :=
   iotaEitherMatchInlValueCong_hasJoin valueStep
 
-/-- `fromSteps`-facing `eitherMatch eitherInl` iota / left-branch congruence arm. -/
+/-- `fromSteps`-facing `eitherMatch eitherInl` iota / left-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaEitherMatchInlLeftBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
     (leftStep : Step leftBranch steppedLeftBranch) :
     (fromSteps
       (Step.iotaEitherMatchInl
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))
       (iotaEitherMatchInlLeftBranchCong
-        (value := value) (rightBranch := rightBranch)
+        (motive := motive) (value := value) (rightBranch := rightBranch)
         leftStep).rightStep).HasJoin :=
   iotaEitherMatchInlLeftBranchCong_hasJoin leftStep
 
-/-- `fromSteps`-facing `eitherMatch eitherInl` iota / right-branch congruence arm. -/
+/-- `fromSteps`-facing `eitherMatch eitherInl` iota / right-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaEitherMatchInlRightBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
     (rightStep : Step rightBranch steppedRightBranch) :
     (fromSteps
       (Step.iotaEitherMatchInl
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))
       (iotaEitherMatchInlRightBranchCong
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         rightStep).rightStep).HasJoin :=
   iotaEitherMatchInlRightBranchCong_hasJoin rightStep
 
-/-- `fromSteps`-facing `eitherMatch eitherInr` iota / value congruence arm. -/
+/-- `fromSteps`-facing `eitherMatch eitherInr` iota / value congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaEitherMatchInrValueCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue leftBranch rightBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     (fromSteps
       (Step.iotaEitherMatchInr
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))
       (iotaEitherMatchInrValueCong
-        (leftBranch := leftBranch) (rightBranch := rightBranch)
+        (motive := motive) (leftBranch := leftBranch) (rightBranch := rightBranch)
         valueStep).rightStep).HasJoin :=
   iotaEitherMatchInrValueCong_hasJoin valueStep
 
-/-- `fromSteps`-facing `eitherMatch eitherInr` iota / left-branch congruence arm. -/
+/-- `fromSteps`-facing `eitherMatch eitherInr` iota / left-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaEitherMatchInrLeftBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
     (leftStep : Step leftBranch steppedLeftBranch) :
     (fromSteps
       (Step.iotaEitherMatchInr
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))
       (iotaEitherMatchInrLeftBranchCong
-        (value := value) (rightBranch := rightBranch)
+        (motive := motive) (value := value) (rightBranch := rightBranch)
         leftStep).rightStep).HasJoin :=
   iotaEitherMatchInrLeftBranchCong_hasJoin leftStep
 
-/-- `fromSteps`-facing `eitherMatch eitherInr` iota / right-branch congruence arm. -/
+/-- `fromSteps`-facing `eitherMatch eitherInr` iota / right-branch congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaEitherMatchInrRightBranchCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
     (rightStep : Step rightBranch steppedRightBranch) :
     (fromSteps
       (Step.iotaEitherMatchInr
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))
       (iotaEitherMatchInrRightBranchCong
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         rightStep).rightStep).HasJoin :=
   iotaEitherMatchInrRightBranchCong_hasJoin rightStep
+
+/-- `fromSteps`-facing `optionMatch optionNone` iota / discarded motive
+congruence arm.  Phase-Z motive shape. -/
+theorem fromSteps_iotaOptionMatchNoneMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {noneBranch someBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaOptionMatchNone
+        (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch))
+      (iotaOptionMatchNoneMotiveCong
+        (noneBranch := noneBranch) (someBranch := someBranch)
+        motiveStep).rightStep).HasJoin :=
+  iotaOptionMatchNoneMotiveCong_hasJoin motiveStep
+
+/-- `fromSteps`-facing `optionMatch optionSome` iota / discarded motive
+congruence arm.  Phase-Z motive shape. -/
+theorem fromSteps_iotaOptionMatchSomeMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value noneBranch someBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaOptionMatchSome
+        (motive := motive) (value := value) (noneBranch := noneBranch)
+        (someBranch := someBranch))
+      (iotaOptionMatchSomeMotiveCong
+        (value := value) (noneBranch := noneBranch) (someBranch := someBranch)
+        motiveStep).rightStep).HasJoin :=
+  iotaOptionMatchSomeMotiveCong_hasJoin motiveStep
+
+/-- `fromSteps`-facing `eitherMatch eitherInl` iota / discarded motive
+congruence arm.  Phase-Z motive shape. -/
+theorem fromSteps_iotaEitherMatchInlMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value leftBranch rightBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaEitherMatchInl
+        (motive := motive) (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))
+      (iotaEitherMatchInlMotiveCong
+        (value := value) (leftBranch := leftBranch) (rightBranch := rightBranch)
+        motiveStep).rightStep).HasJoin :=
+  iotaEitherMatchInlMotiveCong_hasJoin motiveStep
+
+/-- `fromSteps`-facing `eitherMatch eitherInr` iota / discarded motive
+congruence arm.  Phase-Z motive shape. -/
+theorem fromSteps_iotaEitherMatchInrMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value leftBranch rightBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaEitherMatchInr
+        (motive := motive) (value := value) (leftBranch := leftBranch)
+        (rightBranch := rightBranch))
+      (iotaEitherMatchInrMotiveCong
+        (value := value) (leftBranch := leftBranch) (rightBranch := rightBranch)
+        motiveStep).rightStep).HasJoin :=
+  iotaEitherMatchInrMotiveCong_hasJoin motiveStep
 
 /-- `fromSteps`-facing `idJ refl` iota / base-case congruence arm. -/
 theorem fromSteps_iotaIdJBaseCaseCong_hasJoin {scope : Nat}
@@ -2921,216 +3077,300 @@ theorem fromSteps_iotaIdStrictRecWitnessCong_hasJoin {scope : Nat}
         (baseCase := baseCase) witnessStep).rightStep).HasJoin :=
   iotaIdStrictRecWitnessCong_hasJoin witnessStep
 
-/-- Resolve every local branching whose left step is `optionMatch optionNone` iota. -/
+/-- Resolve every local branching whose left step is `optionMatch optionNone` iota.
+
+Phase-Z motive shape: the shared source permits same-root `optionMatch`
+none-case, congruence in the motive (head, shift 1), congruence in the selected
+none-branch, congruence in the discarded some-branch, or congruence in the
+scrutinee.  Congruence in the scrutinee would require a step out of the nullary
+`optionNone` constructor, so that case is impossible by direct `cases`. -/
 theorem fromSteps_iotaOptionMatchNoneLeft_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch someBranch rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_optionMatch ()
-        (.childCons
-          (.mkGen .gen_optionNone () .childNil)
-          (.childCons noneBranch (.childCons someBranch .childNil))))
+        (.childCons motive
+          (.childCons noneBranch
+            (.childCons someBranch
+              (.childCons (.mkGen .gen_optionNone () .childNil) .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaOptionMatchNone
-        (noneBranch := noneBranch) (someBranch := someBranch))
+        (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaOptionMatchNone =>
-      exact fromSteps_iotaOptionMatchNoneSameRoot_hasJoin noneBranch someBranch
+      exact fromSteps_iotaOptionMatchNoneSameRoot_hasJoin motive noneBranch someBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaOptionMatchNoneMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here someChildren noneStep =>
-              exact fromSteps_iotaOptionMatchNoneBranchCong_hasJoin noneStep
+              exact fromSteps_iotaOptionMatchNoneBranchCong_hasJoin
+                (motive := motive) noneStep
           | there noneChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren someStep =>
-                  exact fromSteps_iotaOptionMatchSomeBranchCong_hasJoin someStep
-              | there someChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren someStep =>
+                  exact fromSteps_iotaOptionMatchSomeBranchCong_hasJoin
+                    (motive := motive) someStep
+              | there someChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
-/-- Resolve every local branching whose right step is `optionMatch optionNone` iota. -/
+/-- Resolve every local branching whose right step is `optionMatch optionNone` iota.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaOptionMatchNoneRight_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch someBranch leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_optionMatch ()
-        (.childCons
-          (.mkGen .gen_optionNone () .childNil)
-          (.childCons noneBranch (.childCons someBranch .childNil))))
+        (.childCons motive
+          (.childCons noneBranch
+            (.childCons someBranch
+              (.childCons (.mkGen .gen_optionNone () .childNil) .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaOptionMatchNone
-        (noneBranch := noneBranch) (someBranch := someBranch))).HasJoin :=
+        (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaOptionMatchNoneLeft_hasJoin leftStep)
 
-/-- Resolve every local branching whose left step is `optionMatch optionSome` iota. -/
+/-- Resolve every local branching whose left step is `optionMatch optionSome` iota.
+
+Phase-Z motive shape: the shared source permits same-root `optionMatch`
+some-case, congruence in the motive (head, shift 1), congruence in the discarded
+none-branch, congruence in the selected some-branch, or congruence inside the
+`optionSome` scrutinee payload (the LAST child). -/
 theorem fromSteps_iotaOptionMatchSomeLeft_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch someBranch rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_optionMatch ()
-        (.childCons
-          (.mkGen .gen_optionSome () (.childCons value .childNil))
-          (.childCons noneBranch (.childCons someBranch .childNil))))
+        (.childCons motive
+          (.childCons noneBranch
+            (.childCons someBranch
+              (.childCons
+                (.mkGen .gen_optionSome () (.childCons value .childNil))
+                .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaOptionMatchSome
-        (value := value) (noneBranch := noneBranch)
+        (motive := motive) (value := value) (noneBranch := noneBranch)
         (someBranch := someBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaOptionMatchSome =>
       exact fromSteps_iotaOptionMatchSomeSameRoot_hasJoin
-        value noneBranch someBranch
+        motive value noneBranch someBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep with
-              | here emptyChildren valueStep =>
-                  exact fromSteps_iotaOptionMatchSomeValueCong_hasJoin valueStep
-              | there valueChild emptyStep =>
-                  cases emptyStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaOptionMatchSomeMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here someChildren noneStep =>
-              exact fromSteps_iotaOptionMatchSomeNoneBranchCong_hasJoin noneStep
+              exact fromSteps_iotaOptionMatchSomeNoneBranchCong_hasJoin
+                (motive := motive) noneStep
           | there noneChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren someStep =>
-                  exact fromSteps_iotaOptionMatchSomeSomeBranchCong_hasJoin someStep
-              | there someChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren someStep =>
+                  exact fromSteps_iotaOptionMatchSomeSomeBranchCong_hasJoin
+                    (motive := motive) someStep
+              | there someChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep with
+                          | here valueEmptyChildren valueStep =>
+                              exact fromSteps_iotaOptionMatchSomeValueCong_hasJoin
+                                (motive := motive) valueStep
+                          | there valueChild valueEmptyStep =>
+                              cases valueEmptyStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
-/-- Resolve every local branching whose right step is `optionMatch optionSome` iota. -/
+/-- Resolve every local branching whose right step is `optionMatch optionSome` iota.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaOptionMatchSomeRight_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch someBranch leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_optionMatch ()
-        (.childCons
-          (.mkGen .gen_optionSome () (.childCons value .childNil))
-          (.childCons noneBranch (.childCons someBranch .childNil))))
+        (.childCons motive
+          (.childCons noneBranch
+            (.childCons someBranch
+              (.childCons
+                (.mkGen .gen_optionSome () (.childCons value .childNil))
+                .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaOptionMatchSome
-        (value := value) (noneBranch := noneBranch)
+        (motive := motive) (value := value) (noneBranch := noneBranch)
         (someBranch := someBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaOptionMatchSomeLeft_hasJoin leftStep)
 
-/-- Resolve every local branching whose left step is `eitherMatch eitherInl` iota. -/
+/-- Resolve every local branching whose left step is `eitherMatch eitherInl` iota.
+
+Phase-Z motive shape: the shared source permits same-root `eitherMatch`
+inl-case, congruence in the motive (head, shift 1), congruence in the selected
+left-branch, congruence in the discarded right-branch, or congruence inside the
+`eitherInl` scrutinee payload (the LAST child). -/
 theorem fromSteps_iotaEitherMatchInlLeft_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_eitherMatch ()
-        (.childCons
-          (.mkGen .gen_eitherInl () (.childCons value .childNil))
-          (.childCons leftBranch (.childCons rightBranch .childNil))))
+        (.childCons motive
+          (.childCons leftBranch
+            (.childCons rightBranch
+              (.childCons
+                (.mkGen .gen_eitherInl () (.childCons value .childNil))
+                .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaEitherMatchInl
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaEitherMatchInl =>
       exact fromSteps_iotaEitherMatchInlSameRoot_hasJoin
-        value leftBranch rightBranch
+        motive value leftBranch rightBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep with
-              | here emptyChildren valueStep =>
-                  exact fromSteps_iotaEitherMatchInlValueCong_hasJoin valueStep
-              | there valueChild emptyStep =>
-                  cases emptyStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaEitherMatchInlMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here rightChildren leftStep =>
-              exact fromSteps_iotaEitherMatchInlLeftBranchCong_hasJoin leftStep
+              exact fromSteps_iotaEitherMatchInlLeftBranchCong_hasJoin
+                (motive := motive) leftStep
           | there leftChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren rightStep =>
-                  exact fromSteps_iotaEitherMatchInlRightBranchCong_hasJoin rightStep
-              | there rightChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren rightStep =>
+                  exact fromSteps_iotaEitherMatchInlRightBranchCong_hasJoin
+                    (motive := motive) rightStep
+              | there rightChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep with
+                          | here valueEmptyChildren valueStep =>
+                              exact fromSteps_iotaEitherMatchInlValueCong_hasJoin
+                                (motive := motive) valueStep
+                          | there valueChild valueEmptyStep =>
+                              cases valueEmptyStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
-/-- Resolve every local branching whose right step is `eitherMatch eitherInl` iota. -/
+/-- Resolve every local branching whose right step is `eitherMatch eitherInl` iota.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaEitherMatchInlRight_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_eitherMatch ()
-        (.childCons
-          (.mkGen .gen_eitherInl () (.childCons value .childNil))
-          (.childCons leftBranch (.childCons rightBranch .childNil))))
+        (.childCons motive
+          (.childCons leftBranch
+            (.childCons rightBranch
+              (.childCons
+                (.mkGen .gen_eitherInl () (.childCons value .childNil))
+                .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaEitherMatchInl
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaEitherMatchInlLeft_hasJoin leftStep)
 
-/-- Resolve every local branching whose left step is `eitherMatch eitherInr` iota. -/
+/-- Resolve every local branching whose left step is `eitherMatch eitherInr` iota.
+
+Phase-Z motive shape: the shared source permits same-root `eitherMatch`
+inr-case, congruence in the motive (head, shift 1), congruence in the discarded
+left-branch, congruence in the selected right-branch, or congruence inside the
+`eitherInr` scrutinee payload (the LAST child). -/
 theorem fromSteps_iotaEitherMatchInrLeft_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_eitherMatch ()
-        (.childCons
-          (.mkGen .gen_eitherInr () (.childCons value .childNil))
-          (.childCons leftBranch (.childCons rightBranch .childNil))))
+        (.childCons motive
+          (.childCons leftBranch
+            (.childCons rightBranch
+              (.childCons
+                (.mkGen .gen_eitherInr () (.childCons value .childNil))
+                .childNil)))))
       rightReduct) :
     (fromSteps
       (Step.iotaEitherMatchInr
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaEitherMatchInr =>
       exact fromSteps_iotaEitherMatchInrSameRoot_hasJoin
-        value leftBranch rightBranch
+        motive value leftBranch rightBranch
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren scrutineeStep =>
-          cases scrutineeStep with
-          | cong scrutineeGenerator scrutineePayload scrutineeChildrenStep =>
-              cases scrutineeChildrenStep with
-              | here emptyChildren valueStep =>
-                  exact fromSteps_iotaEitherMatchInrValueCong_hasJoin valueStep
-              | there valueChild emptyStep =>
-                  cases emptyStep
-      | there scrutinee restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaEitherMatchInrMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
           | here rightChildren leftStep =>
-              exact fromSteps_iotaEitherMatchInrLeftBranchCong_hasJoin leftStep
+              exact fromSteps_iotaEitherMatchInrLeftBranchCong_hasJoin
+                (motive := motive) leftStep
           | there leftChild branchTailStep =>
               cases branchTailStep with
-              | here emptyChildren rightStep =>
-                  exact fromSteps_iotaEitherMatchInrRightBranchCong_hasJoin rightStep
-              | there rightChild emptyStep =>
-                  cases emptyStep
+              | here scrutChildren rightStep =>
+                  exact fromSteps_iotaEitherMatchInrRightBranchCong_hasJoin
+                    (motive := motive) rightStep
+              | there rightChild scrutTailStep =>
+                  cases scrutTailStep with
+                  | here emptyChildren scrutineeStep =>
+                      cases scrutineeStep with
+                      | cong scrutineeGenerator scrutineePayload
+                          scrutineeChildrenStep =>
+                          cases scrutineeChildrenStep with
+                          | here valueEmptyChildren valueStep =>
+                              exact fromSteps_iotaEitherMatchInrValueCong_hasJoin
+                                (motive := motive) valueStep
+                          | there valueChild valueEmptyStep =>
+                              cases valueEmptyStep
+                  | there scrutChild emptyStep =>
+                      cases emptyStep
 
-/-- Resolve every local branching whose right step is `eitherMatch eitherInr` iota. -/
+/-- Resolve every local branching whose right step is `eitherMatch eitherInr` iota.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaEitherMatchInrRight_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_eitherMatch ()
-        (.childCons
-          (.mkGen .gen_eitherInr () (.childCons value .childNil))
-          (.childCons leftBranch (.childCons rightBranch .childNil))))
+        (.childCons motive
+          (.childCons leftBranch
+            (.childCons rightBranch
+              (.childCons
+                (.mkGen .gen_eitherInr () (.childCons value .childNil))
+                .childNil)))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaEitherMatchInr
-        (value := value) (leftBranch := leftBranch)
+        (motive := motive) (value := value) (leftBranch := leftBranch)
         (rightBranch := rightBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaEitherMatchInrLeft_hasJoin leftStep)
 
@@ -3349,52 +3589,60 @@ theorem iotaListElimCons_iotaListElimNil_hasSourcesDisjoint {scope : Nat}
 /-- Contradiction arm for the mutually-exclusive option-match none/some root pair. -/
 theorem iotaOptionMatchNone_iotaOptionMatchSome_hasSourcesDisjoint
     {scope : Nat}
+    (motiveNone motiveSome : RawTerm (scope + 1))
     (noneBranch someBranch value
       noneBranchSome someBranchSome : RawTerm scope) :
     SourcesDisjoint
-      (iotaOptionMatchNoneSameRoot noneBranch someBranch)
+      (iotaOptionMatchNoneSameRoot motiveNone noneBranch someBranch)
       (iotaOptionMatchSomeSameRoot
-        value noneBranchSome someBranchSome) :=
+        motiveSome value noneBranchSome someBranchSome) :=
   iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint
+    motiveNone motiveSome
     noneBranch someBranch value noneBranchSome someBranchSome
 
 /-- Reverse contradiction arm for the mutually-exclusive option-match some/none root pair. -/
 theorem iotaOptionMatchSome_iotaOptionMatchNone_hasSourcesDisjoint
     {scope : Nat}
+    (motiveSome motiveNone : RawTerm (scope + 1))
     (value noneBranchSome someBranchSome
       noneBranch someBranch : RawTerm scope) :
     SourcesDisjoint
       (iotaOptionMatchSomeSameRoot
-        value noneBranchSome someBranchSome)
-      (iotaOptionMatchNoneSameRoot noneBranch someBranch) :=
+        motiveSome value noneBranchSome someBranchSome)
+      (iotaOptionMatchNoneSameRoot motiveNone noneBranch someBranch) :=
   iotaOptionMatchSome_iotaOptionMatchNone_sourcesDisjoint
+    motiveSome motiveNone
     value noneBranchSome someBranchSome noneBranch someBranch
 
 /-- Contradiction arm for the mutually-exclusive either-match inl/inr root pair. -/
 theorem iotaEitherMatchInl_iotaEitherMatchInr_hasSourcesDisjoint
     {scope : Nat}
+    (motiveInl motiveInr : RawTerm (scope + 1))
     (leftValue leftBranch rightBranch rightValue
       leftBranchRight rightBranchRight : RawTerm scope) :
     SourcesDisjoint
       (iotaEitherMatchInlSameRoot
-        leftValue leftBranch rightBranch)
+        motiveInl leftValue leftBranch rightBranch)
       (iotaEitherMatchInrSameRoot
-        rightValue leftBranchRight rightBranchRight) :=
+        motiveInr rightValue leftBranchRight rightBranchRight) :=
   iotaEitherMatchInl_iotaEitherMatchInr_sourcesDisjoint
+    motiveInl motiveInr
     leftValue leftBranch rightBranch rightValue
     leftBranchRight rightBranchRight
 
 /-- Reverse contradiction arm for the mutually-exclusive either-match inr/inl root pair. -/
 theorem iotaEitherMatchInr_iotaEitherMatchInl_hasSourcesDisjoint
     {scope : Nat}
+    (motiveInr motiveInl : RawTerm (scope + 1))
     (rightValue leftBranchRight rightBranchRight leftValue
       leftBranch rightBranch : RawTerm scope) :
     SourcesDisjoint
       (iotaEitherMatchInrSameRoot
-        rightValue leftBranchRight rightBranchRight)
+        motiveInr rightValue leftBranchRight rightBranchRight)
       (iotaEitherMatchInlSameRoot
-        leftValue leftBranch rightBranch) :=
+        motiveInl leftValue leftBranch rightBranch) :=
   iotaEitherMatchInr_iotaEitherMatchInl_sourcesDisjoint
+    motiveInr motiveInl
     rightValue leftBranchRight rightBranchRight leftValue
     leftBranch rightBranch
 

@@ -100,31 +100,35 @@ def iotaGenRank (gen : Generator) : Nat :=
 theorem iotaGenPrecedence_wellFounded : WellFounded iotaGenPrecedence :=
   InvImage.wf iotaGenRank Nat.lt_wfRel.wf
 
-/-- Applied-branch orientation, branch SECOND (optionMatchSome / eitherMatchInr): the redex
-`elim (ctor value) otherBranch appliedBranch` RPO-dominates `app appliedBranch value`, given `appGen ≺F
-elimGen`.  appliedBranch dominated as a direct subterm; value through the `ctor` node. -/
+/-- Applied-branch orientation, branch SECOND (optionMatchSome / eitherMatchInr): the Phase-Z
+redex `elim motive otherBranch appliedBranch (ctor value)` (motive first, scrutinee LAST)
+RPO-dominates `app appliedBranch value`, given `appGen ≺F elimGen`.  appliedBranch dominated as
+a direct subterm (index 2); value through the `ctor` node (index 3). -/
 theorem rpoOrientsAppliedSecond (prec : Generator → Generator → Prop)
     (elimGen appGen ctorGen : Generator) (hprec : prec appGen elimGen)
-    (value otherBranch appliedBranch : RoseTerm Generator) :
+    (value motive otherBranch appliedBranch : RoseTerm Generator) :
     Rpo prec
-      (.node elimGen [.node ctorGen [value], otherBranch, appliedBranch])
+      (.node elimGen [motive, otherBranch, appliedBranch, .node ctorGen [value]])
       (.node appGen [appliedBranch, value]) := by
   refine Rpo.precedence (bigSym := elimGen) (bigChildren := _) (smallSym := appGen)
     (smallChildren := _) hprec ?_
   intro smallChild membership
   rcases membership with _ | ⟨_, membershipRest⟩
-  · exact Rpo.subtermEq elimGen _ appliedBranch (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  · exact Rpo.subtermEq elimGen _ appliedBranch
+      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
   · rcases membershipRest with _ | ⟨_, membershipEmpty⟩
-    · exact Rpo.subtermStrict elimGen _ value (.node ctorGen [value]) (List.Mem.head _)
+    · exact Rpo.subtermStrict elimGen _ value (.node ctorGen [value])
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
         (Rpo.subtermEq ctorGen [value] value (List.Mem.head _))
     · nomatch membershipEmpty
 
-/-- Applied-branch orientation, branch FIRST (eitherMatchInl). -/
+/-- Applied-branch orientation, branch FIRST (eitherMatchInl).  Phase-Z layout: motive first,
+scrutinee LAST; appliedBranch at index 1. -/
 theorem rpoOrientsAppliedFirst (prec : Generator → Generator → Prop)
     (elimGen appGen ctorGen : Generator) (hprec : prec appGen elimGen)
-    (value appliedBranch otherBranch : RoseTerm Generator) :
+    (value motive appliedBranch otherBranch : RoseTerm Generator) :
     Rpo prec
-      (.node elimGen [.node ctorGen [value], appliedBranch, otherBranch])
+      (.node elimGen [motive, appliedBranch, otherBranch, .node ctorGen [value]])
       (.node appGen [appliedBranch, value]) := by
   refine Rpo.precedence (bigSym := elimGen) (bigChildren := _) (smallSym := appGen)
     (smallChildren := _) hprec ?_
@@ -132,7 +136,8 @@ theorem rpoOrientsAppliedFirst (prec : Generator → Generator → Prop)
   rcases membership with _ | ⟨_, membershipRest⟩
   · exact Rpo.subtermEq elimGen _ appliedBranch (List.Mem.tail _ (List.Mem.head _))
   · rcases membershipRest with _ | ⟨_, membershipEmpty⟩
-    · exact Rpo.subtermStrict elimGen _ value (.node ctorGen [value]) (List.Mem.head _)
+    · exact Rpo.subtermStrict elimGen _ value (.node ctorGen [value])
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
         (Rpo.subtermEq ctorGen [value] value (List.Mem.head _))
     · nomatch membershipEmpty
 
@@ -219,15 +224,15 @@ theorem IotaHeadStep.rpoEmbeds {scope : Nat} {source target : RawTerm scope}
   | iotaOptionMatchSome =>
       dsimp only [eraseToRose, eraseChildren]
       exact rpoOrientsAppliedSecond iotaGenPrecedence .gen_optionMatch .gen_app .gen_optionSome
-        (by decide) _ _ _
+        (by decide) _ _ _ _
   | iotaEitherMatchInl =>
       dsimp only [eraseToRose, eraseChildren]
       exact rpoOrientsAppliedFirst iotaGenPrecedence .gen_eitherMatch .gen_app .gen_eitherInl
-        (by decide) _ _ _
+        (by decide) _ _ _ _
   | iotaEitherMatchInr =>
       dsimp only [eraseToRose, eraseChildren]
       exact rpoOrientsAppliedSecond iotaGenPrecedence .gen_eitherMatch .gen_app .gen_eitherInr
-        (by decide) _ _ _
+        (by decide) _ _ _ _
   | iotaNatElimSucc =>
       exact Bool.noConfusion nonSubstituting
   | iotaNatRecSucc =>

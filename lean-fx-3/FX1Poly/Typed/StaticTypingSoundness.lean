@@ -240,7 +240,8 @@ theorem optionMatchReservedUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
     (typed : HasTypeDescOptionMatch profile context subject classifier) : False := by
-  rcases HasTypeDescOptionMatch.subjectIsOptionMatch typed with ⟨_scrutinee, _noneBranch, _someBranch, rfl⟩
+  rcases HasTypeDescOptionMatch.subjectIsOptionMatch typed with
+    ⟨_motive, _noneBranch, _someBranch, _scrutinee, rfl⟩
   exact Bool.noConfusion reserved
 
 /-- EITHER-MATCH engine. -/
@@ -248,7 +249,8 @@ theorem eitherMatchReservedUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
     (typed : HasTypeDescEitherMatch profile context subject classifier) : False := by
-  rcases HasTypeDescEitherMatch.subjectIsEitherMatch typed with ⟨_scrutinee, _leftBranch, _rightBranch, rfl⟩
+  rcases HasTypeDescEitherMatch.subjectIsEitherMatch typed with
+    ⟨_motive, _leftBranch, _rightBranch, _scrutinee, rfl⟩
   exact Bool.noConfusion reserved
 
 /-- SIGMA-PROJECTION engine (`fst` / `snd`). -/

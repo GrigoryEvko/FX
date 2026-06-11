@@ -103,17 +103,23 @@ theorem pairProjectionProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
 private abbrev applyCell {scope : Nat} (function argument : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_app () (.childCons function (.childCons argument .childNil))
 
-/-- The `optionMatch` cell over its three children — definitionally the private `optionMatchCellOn`. -/
-private abbrev optionMatchCellOn {scope : Nat}
+/-- The Phase-Z `optionMatch` cell over its four children — author order `(motive, scrutinee, noneBranch,
+someBranch)`, emitting the canonical spine `(motive, noneBranch, someBranch, scrutinee)` with the motive a term
+under one binder.  Definitionally the private `optionMatchCellOn` of `OptionEitherMatchCanonicalComputation`. -/
+private abbrev optionMatchCellOn {scope : Nat} (motive : RawTerm (scope + 1))
     (scrutinee noneBranch someBranch : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_optionMatch ()
-    (.childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)))
+    (.childCons motive
+      (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))))
 
-/-- The `eitherMatch` cell over its three children — definitionally the private `eitherMatchCellOn`. -/
-private abbrev eitherMatchCellOn {scope : Nat}
+/-- The Phase-Z `eitherMatch` cell over its four children — author order `(motive, scrutinee, leftBranch,
+rightBranch)`, emitting the canonical spine `(motive, leftBranch, rightBranch, scrutinee)` with the motive a term
+under one binder.  Definitionally the private `eitherMatchCellOn` of `OptionEitherMatchCanonicalComputation`. -/
+private abbrev eitherMatchCellOn {scope : Nat} (motive : RawTerm (scope + 1))
     (scrutinee leftBranch rightBranch : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_eitherMatch ()
-    (.childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)))
+    (.childCons motive
+      (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))
 
 /-- The `idJ` cell over its two children (base case, witness) — definitionally the private `idJCellOn`. -/
 private abbrev idJCellOn {scope : Nat} (baseCase witness : RawTerm scope) : RawTerm scope :=
@@ -129,14 +135,14 @@ to its none-branch or to its some-branch applied to the wrapped payload — neve
 fundamental with the fundamental-free `optionMatchCanonicalScrutineeReduces`. -/
 theorem optionMatchProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isOptionValue term)
-    {scrutinee noneBranch someBranch : RawTerm 0}
+    {motive : RawTerm 1} {scrutinee noneBranch someBranch : RawTerm 0}
     (scrutineeTyped : isWellTyped scrutinee) :
-    StepStar (optionMatchCellOn scrutinee noneBranch someBranch) noneBranch ∨
+    StepStar (optionMatchCellOn motive scrutinee noneBranch someBranch) noneBranch ∨
       ∃ payload : RawTerm 0,
         StepStar scrutinee (optionSomeCell payload) ∧
-          StepStar (optionMatchCellOn scrutinee noneBranch someBranch)
+          StepStar (optionMatchCellOn motive scrutinee noneBranch someBranch)
             (applyCell someBranch payload) :=
-  optionMatchCanonicalScrutineeReduces (fundamental scrutinee scrutineeTyped)
+  optionMatchCanonicalScrutineeReduces (motive := motive) (fundamental scrutinee scrutineeTyped)
 
 /-- **`eitherMatch` progress on a well-typed scrutinee.**  Given the fundamental obligation
 (closed well-typed either ⟹ either-candidate member) and a well-typed scrutinee, the `eitherMatch` reduces
@@ -144,17 +150,17 @@ to its left-branch or right-branch applied to the wrapped payload — never stuc
 fundamental with the fundamental-free `eitherMatchCanonicalScrutineeReduces`. -/
 theorem eitherMatchProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isEitherValue term)
-    {scrutinee leftBranch rightBranch : RawTerm 0}
+    {motive : RawTerm 1} {scrutinee leftBranch rightBranch : RawTerm 0}
     (scrutineeTyped : isWellTyped scrutinee) :
     (∃ payload : RawTerm 0,
         StepStar scrutinee (eitherInlCell payload) ∧
-          StepStar (eitherMatchCellOn scrutinee leftBranch rightBranch)
+          StepStar (eitherMatchCellOn motive scrutinee leftBranch rightBranch)
             (applyCell leftBranch payload)) ∨
       ∃ payload : RawTerm 0,
         StepStar scrutinee (eitherInrCell payload) ∧
-          StepStar (eitherMatchCellOn scrutinee leftBranch rightBranch)
+          StepStar (eitherMatchCellOn motive scrutinee leftBranch rightBranch)
             (applyCell rightBranch payload) :=
-  eitherMatchCanonicalScrutineeReduces (fundamental scrutinee scrutineeTyped)
+  eitherMatchCanonicalScrutineeReduces (motive := motive) (fundamental scrutinee scrutineeTyped)
 
 /-- **`idJ` progress on a well-typed witness.**  Given the fundamental obligation (closed
 well-typed identity proof ⟹ refl-candidate member) and a well-typed witness, the `idJ` reduces to its base

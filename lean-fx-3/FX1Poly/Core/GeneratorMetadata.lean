@@ -458,14 +458,14 @@ def Generator.childSpecs : Generator → List ChildSpec
   | .gen_optionNone   => []
   | .gen_optionSome   => [ChildSpec.termSameScope]
   | .gen_optionMatch  =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope,
-     ChildSpec.termSameScope]
+    [ChildSpec.termUnderBinder, ChildSpec.termSameScope,
+     ChildSpec.termSameScope, ChildSpec.termSameScope]
   -- Eithers
   | .gen_eitherInl    => [ChildSpec.termSameScope]
   | .gen_eitherInr    => [ChildSpec.termSameScope]
   | .gen_eitherMatch  =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope,
-     ChildSpec.termSameScope]
+    [ChildSpec.termUnderBinder, ChildSpec.termSameScope,
+     ChildSpec.termSameScope, ChildSpec.termSameScope]
   -- Identity-type witnesses + eliminator
   | .gen_refl         => [ChildSpec.termSameScope]
   | .gen_idJ          => [ChildSpec.termSameScope, ChildSpec.termSameScope]

@@ -67,13 +67,13 @@ theorem Step.subst {sourceScope targetScope : Nat}
         Step.iotaNatRecZero)
       (fun {scope} {motive} {nilBranch} {consBranch} {targetScope} sigma =>
         Step.iotaListElimNil)
-      (fun {scope} {noneBranch} {someBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {noneBranch} {someBranch} {targetScope} sigma =>
         Step.iotaOptionMatchNone)
-      (fun {scope} {value} {noneBranch} {someBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {value} {noneBranch} {someBranch} {targetScope} sigma =>
         Step.iotaOptionMatchSome)
-      (fun {scope} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
         Step.iotaEitherMatchInl)
-      (fun {scope} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
         Step.iotaEitherMatchInr)
       (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch}
           {targetScope} sigma => by
@@ -168,13 +168,13 @@ theorem StepChildren.subst {parentSourceScope parentTargetScope : Nat}
         Step.iotaNatRecZero)
       (fun {scope} {motive} {nilBranch} {consBranch} {targetScope} sigma =>
         Step.iotaListElimNil)
-      (fun {scope} {noneBranch} {someBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {noneBranch} {someBranch} {targetScope} sigma =>
         Step.iotaOptionMatchNone)
-      (fun {scope} {value} {noneBranch} {someBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {value} {noneBranch} {someBranch} {targetScope} sigma =>
         Step.iotaOptionMatchSome)
-      (fun {scope} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
         Step.iotaEitherMatchInl)
-      (fun {scope} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
+      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
         Step.iotaEitherMatchInr)
       (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch}
           {targetScope} sigma => by
@@ -603,12 +603,16 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             rawRenaming rawSubstitution _ _ childrenFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
           rawRenaming rawSubstitution _ _ branchSpineFresh)
-      (fun {scope} {noneBranch} {someBranch} {targetScope} rawRenaming
+      (fun {scope} {motive} {noneBranch} {someBranch} {targetScope} rawRenaming
           rawSubstitution sourceFresh => by
+        -- Phase-Z optionMatch spine: (motive, none, some, scrutinee) at shifts [1, 0, 0, 0].
+        -- iotaOptionMatchNone projects the none-branch; the motive (shift 1) is discarded.
         let sourceChildren :=
-          ((.childCons (.mkGen .gen_optionNone () .childNil)
-            (.childCons noneBranch (.childCons someBranch .childNil))) :
-              RawTermChildren [0, 0, 0] scope)
+          ((.childCons motive
+            (.childCons noneBranch
+              (.childCons someBranch
+                (.childCons (.mkGen .gen_optionNone () .childNil) .childNil)))) :
+              RawTermChildren [1, 0, 0, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
@@ -617,31 +621,66 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             nofun () sourceChildren sourceFresh
         have branchSpineFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons noneBranch (.childCons someBranch .childNil)) :
-                RawTermChildren [0, 0] scope) :=
+              ((.childCons noneBranch
+                (.childCons someBranch
+                  (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))) :
+                RawTermChildren [0, 0, 0] scope) :=
           RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ childrenFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
           rawRenaming rawSubstitution _ _ branchSpineFresh)
-      (fun {scope} {value} {noneBranch} {someBranch} {targetScope}
+      (fun {scope} {motive} {value} {noneBranch} {someBranch} {targetScope}
           rawRenaming rawSubstitution sourceFresh => by
+        -- Phase-Z optionMatch spine: (motive, none, some, optionSome value) at [1, 0, 0, 0].
+        -- iotaOptionMatchSome builds `app someBranch value`; the motive (shift 1) is discarded.
         let optionSomeChildren :=
           ((.childCons value .childNil) : RawTermChildren [0] scope)
         let sourceChildren :=
-          ((.childCons (.mkGen .gen_optionSome () optionSomeChildren)
-            (.childCons noneBranch (.childCons someBranch .childNil))) :
-              RawTermChildren [0, 0, 0] scope)
+          ((.childCons motive
+            (.childCons noneBranch
+              (.childCons someBranch
+                (.childCons (.mkGen .gen_optionSome () optionSomeChildren)
+                  .childNil)))) :
+              RawTermChildren [1, 0, 0, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_optionMatch) rawRenaming rawSubstitution
             nofun () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons noneBranch
+                (.childCons someBranch
+                  (.childCons (.mkGen .gen_optionSome () optionSomeChildren)
+                    .childNil))) :
+                RawTermChildren [0, 0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have someSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons someBranch
+                (.childCons (.mkGen .gen_optionSome () optionSomeChildren)
+                  .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have someBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution someBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ someSpineFresh
+        have scrutineeSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons (.mkGen .gen_optionSome () optionSomeChildren)
+                .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ someSpineFresh
         have optionSomeFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_optionSome () optionSomeChildren : RawTerm scope) :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ childrenFresh
+            rawRenaming rawSubstitution _ _ scrutineeSpineFresh
         have optionSomeChildrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               optionSomeChildren :=
@@ -652,46 +691,63 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             RawTerm.isFreshFor rawRenaming rawSubstitution value :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ optionSomeChildrenFresh
-        have branchSpineFresh :
-            RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons noneBranch (.childCons someBranch .childNil)) :
-                RawTermChildren [0, 0] scope) :=
-          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ childrenFresh
-        have someSpineFresh :
-            RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons someBranch .childNil) :
-                RawTermChildren [0] scope) :=
-          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ branchSpineFresh
-        have someBranchFresh :
-            RawTerm.isFreshFor rawRenaming rawSubstitution someBranch :=
-          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ someSpineFresh
         exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
           (generator := .gen_app) rawRenaming rawSubstitution nofun
           () _ (RawTermChildren.double_isFreshFor
             (firstShift := 0) (secondShift := 0) rawRenaming
             rawSubstitution someBranch value someBranchFresh valueFresh))
-      (fun {scope} {value} {leftBranch} {rightBranch} {targetScope}
+      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {targetScope}
           rawRenaming rawSubstitution sourceFresh => by
+        -- Phase-Z eitherMatch spine: (motive, left, right, eitherInl value) at [1, 0, 0, 0].
+        -- iotaEitherMatchInl builds `app leftBranch value`; the motive (shift 1) is discarded.
         let eitherInlChildren :=
           ((.childCons value .childNil) : RawTermChildren [0] scope)
         let sourceChildren :=
-          ((.childCons (.mkGen .gen_eitherInl () eitherInlChildren)
-            (.childCons leftBranch (.childCons rightBranch .childNil))) :
-              RawTermChildren [0, 0, 0] scope)
+          ((.childCons motive
+            (.childCons leftBranch
+              (.childCons rightBranch
+                (.childCons (.mkGen .gen_eitherInl () eitherInlChildren)
+                  .childNil)))) :
+              RawTermChildren [1, 0, 0, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_eitherMatch) rawRenaming rawSubstitution
             nofun () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons leftBranch
+                (.childCons rightBranch
+                  (.childCons (.mkGen .gen_eitherInl () eitherInlChildren)
+                    .childNil))) :
+                RawTermChildren [0, 0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have leftBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution leftBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have rightSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons rightBranch
+                (.childCons (.mkGen .gen_eitherInl () eitherInlChildren)
+                  .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have scrutineeSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons (.mkGen .gen_eitherInl () eitherInlChildren)
+                .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ rightSpineFresh
         have eitherInlFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_eitherInl () eitherInlChildren : RawTerm scope) :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ childrenFresh
+            rawRenaming rawSubstitution _ _ scrutineeSpineFresh
         have eitherInlChildrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               eitherInlChildren :=
@@ -702,40 +758,63 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             RawTerm.isFreshFor rawRenaming rawSubstitution value :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ eitherInlChildrenFresh
-        have branchSpineFresh :
-            RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons leftBranch (.childCons rightBranch .childNil)) :
-                RawTermChildren [0, 0] scope) :=
-          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ childrenFresh
-        have leftBranchFresh :
-            RawTerm.isFreshFor rawRenaming rawSubstitution leftBranch :=
-          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ branchSpineFresh
         exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
           (generator := .gen_app) rawRenaming rawSubstitution nofun
           () _ (RawTermChildren.double_isFreshFor
             (firstShift := 0) (secondShift := 0) rawRenaming
             rawSubstitution leftBranch value leftBranchFresh valueFresh))
-      (fun {scope} {value} {leftBranch} {rightBranch} {targetScope}
+      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {targetScope}
           rawRenaming rawSubstitution sourceFresh => by
+        -- Phase-Z eitherMatch spine: (motive, left, right, eitherInr value) at [1, 0, 0, 0].
+        -- iotaEitherMatchInr builds `app rightBranch value`; the motive (shift 1) is discarded.
         let eitherInrChildren :=
           ((.childCons value .childNil) : RawTermChildren [0] scope)
         let sourceChildren :=
-          ((.childCons (.mkGen .gen_eitherInr () eitherInrChildren)
-            (.childCons leftBranch (.childCons rightBranch .childNil))) :
-              RawTermChildren [0, 0, 0] scope)
+          ((.childCons motive
+            (.childCons leftBranch
+              (.childCons rightBranch
+                (.childCons (.mkGen .gen_eitherInr () eitherInrChildren)
+                  .childNil)))) :
+              RawTermChildren [1, 0, 0, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_eitherMatch) rawRenaming rawSubstitution
             nofun () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons leftBranch
+                (.childCons rightBranch
+                  (.childCons (.mkGen .gen_eitherInr () eitherInrChildren)
+                    .childNil))) :
+                RawTermChildren [0, 0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
+        have rightBranchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons rightBranch
+                (.childCons (.mkGen .gen_eitherInr () eitherInrChildren)
+                  .childNil)) :
+                RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ branchSpineFresh
+        have rightBranchFresh :
+            RawTerm.isFreshFor rawRenaming rawSubstitution rightBranch :=
+          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ rightBranchSpineFresh
+        have scrutineeSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons (.mkGen .gen_eitherInr () eitherInrChildren)
+                .childNil) :
+                RawTermChildren [0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ rightBranchSpineFresh
         have eitherInrFresh :
             RawTerm.isFreshFor rawRenaming rawSubstitution
               (.mkGen .gen_eitherInr () eitherInrChildren : RawTerm scope) :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ childrenFresh
+            rawRenaming rawSubstitution _ _ scrutineeSpineFresh
         have eitherInrChildrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               eitherInrChildren :=
@@ -746,22 +825,6 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
             RawTerm.isFreshFor rawRenaming rawSubstitution value :=
           RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
             rawRenaming rawSubstitution _ _ eitherInrChildrenFresh
-        have branchSpineFresh :
-            RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons leftBranch (.childCons rightBranch .childNil)) :
-                RawTermChildren [0, 0] scope) :=
-          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ childrenFresh
-        have rightBranchSpineFresh :
-            RawTermChildren.isFreshFor rawRenaming rawSubstitution
-              ((.childCons rightBranch .childNil) :
-                RawTermChildren [0] scope) :=
-          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ branchSpineFresh
-        have rightBranchFresh :
-            RawTerm.isFreshFor rawRenaming rawSubstitution rightBranch :=
-          RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-            rawRenaming rawSubstitution _ _ rightBranchSpineFresh
         exact RawTerm.isFreshFor_nonVar_of_children_isFreshFor
           (generator := .gen_app) rawRenaming rawSubstitution nofun
           () _ (RawTermChildren.double_isFreshFor

@@ -16,11 +16,13 @@ So the judgment carries a value branch AND a function branch, and the two typed-
 shapes respectively.  Following the established cascade-free pattern (a brand-new standalone judgment), consuming
 `HasTypeDescOptionIntro` (DI-2c) for the scrutinee premise.
 
-  * `optionMatchCell` — the `gen_optionMatch` cell (arity 3, `[0, 0, 0]`).
-  * `HasTypeDescOptionMatch` — the judgment: `optionMatch(s, n, sm) : C` from a scrutinee typed at `option(A)`
+  * `optionMatchCell` — the `gen_optionMatch` cell (Phase-Z motive shape: arity 4, `binderShifts = [1, 0, 0, 0]`,
+    children `(motive, noneBranch, someBranch, scrutinee)` with the motive a term under one binder, scrutinee LAST).
+  * `HasTypeDescOptionMatch` — the judgment: `optionMatch(m, n, sm, s) : C` from a scrutinee typed at `option(A)`
     (by the option-intro engine — so it is `optionNone`/`optionSome`), a None branch `n : C` (value, by the grown
     engine) and a Some branch `sm : A → C` (the non-dependent arrow `piTyCodeCell A (weaken C)`, by the grown
-    engine).
+    engine).  The stored motive child `m` is carried structurally with NO typing premise (the boolElim "option b"
+    Phase-Z pattern — the standalone judgment stores the motive without typing it).
   * `HasTypeDescOptionMatch.subjectIsOptionMatch` — the free-index closed-forms inversion.
   * `optionMatchNoneIotaComputesTyped` (★, branch-selection) — a typed `optionMatch` on `optionNone` is typed at
     `C`, ι-reduces to the None branch, and that branch is typed at `C` (the boolElim-shape typed ι).
@@ -48,11 +50,17 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The option eliminator cell `optionMatch(scrutinee, noneBranch, someBranch)` — `gen_optionMatch` (arity 3,
-`binderShifts = [0, 0, 0]`). -/
-def optionMatchCell {scope : Nat} (scrutinee noneBranch someBranch : RawTerm scope) : RawTerm scope :=
+/-- The option eliminator cell — `gen_optionMatch` in the Phase-Z motive shape (arity 4,
+`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, noneBranch, someBranch, scrutinee)`;
+the emitted canonical spine is `(motive, noneBranch, someBranch, scrutinee)` — motive FIRST (a term under one
+binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the ambient `scope`. -/
+def optionMatchCell {scope : Nat} (motive : RawTerm (scope + 1))
+    (noneBranch someBranch scrutinee : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_optionMatch ()
-    (.childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)))
+    (.childCons motive
+      (.childCons noneBranch
+        (.childCons someBranch
+          (.childCons scrutinee .childNil))))
 
 /-- **The option eliminator judgment.**  A standalone layer typing the non-dependent `optionMatch`:
 `optionMatch(s, n, sm) : C` when the scrutinee is typed at `option(A)` (by the option-intro engine), the None
@@ -62,6 +70,7 @@ branch is `n : C` (a value, by the grown engine) and the Some branch is `sm : A 
 inductive HasTypeDescOptionMatch (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
   | optionMatchIntro {scope : Nat} (context : TypingContext profile scope)
+      (motive : RawTerm (scope + 1))
       (scrutinee noneBranch someBranch elementType resultType : RawTerm scope)
       (scrutineeTyped :
         HasTypeDescOptionIntro profile context scrutinee (optionTypeCell elementType))
@@ -69,19 +78,19 @@ inductive HasTypeDescOptionMatch (profile : PolyProfile) :
       (someBranchTyped :
         HasTypeDescPi profile context someBranch (piTyCodeCell elementType (RawTerm.weaken resultType))) :
       HasTypeDescOptionMatch profile context
-        (optionMatchCell scrutinee noneBranch someBranch) resultType
+        (optionMatchCell motive noneBranch someBranch scrutinee) resultType
 
 /-- **★ Closed forms: an option-match-typed subject is an `optionMatchCell`.**  Every term typed by
 `HasTypeDescOptionMatch` is `optionMatch(s, n, sm)`.  Free-index single-arm `cases`. -/
 theorem HasTypeDescOptionMatch.subjectIsOptionMatch {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescOptionMatch profile context subject classifier) :
-    ∃ (scrutinee noneBranch someBranch : RawTerm scope),
-      subject = optionMatchCell scrutinee noneBranch someBranch := by
+    ∃ (motive : RawTerm (scope + 1)) (noneBranch someBranch scrutinee : RawTerm scope),
+      subject = optionMatchCell motive noneBranch someBranch scrutinee := by
   cases derivation with
-  | optionMatchIntro scrutinee noneBranch someBranch _elementType _resultType
+  | optionMatchIntro motive scrutinee noneBranch someBranch _elementType _resultType
       _scrutineeTyped _noneBranchTyped _someBranchTyped =>
-      exact ⟨scrutinee, noneBranch, someBranch, rfl⟩
+      exact ⟨motive, noneBranch, someBranch, scrutinee, rfl⟩
 
 /-- **★ Typed branch-selection ι-computation (None case).**  A typed `optionMatch` on `optionNone` is typed at
 `C`, ι-reduces to the None branch (`Step.iotaOptionMatchNone`), and that branch is typed at `C`.  The
@@ -89,6 +98,7 @@ boolElim-shape typed ι (the reduct IS the selected value branch).  Constructor-
 The `optionNone` scrutinee typing needs the element-type-formedness witness (the `None` asymmetry). -/
 theorem optionMatchNoneIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
+    (motive : RawTerm (scope + 1))
     (noneBranch someBranch elementType resultType : RawTerm scope)
     (elementLevel : LevelExpr) (flag : UniverseFlag)
     (elementTypeFormed :
@@ -97,11 +107,11 @@ theorem optionMatchNoneIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (someBranchTyped :
       HasTypeDescPi profile context someBranch (piTyCodeCell elementType (RawTerm.weaken resultType))) :
     HasTypeDescOptionMatch profile context
-      (optionMatchCell optionNoneCell noneBranch someBranch) resultType ∧
-    Step (optionMatchCell optionNoneCell noneBranch someBranch) noneBranch ∧
+      (optionMatchCell motive noneBranch someBranch optionNoneCell) resultType ∧
+    Step (optionMatchCell motive noneBranch someBranch optionNoneCell) noneBranch ∧
     HasTypeDescPi profile context noneBranch resultType := by
   refine ⟨?_, Step.iotaOptionMatchNone, noneBranchTyped⟩
-  exact HasTypeDescOptionMatch.optionMatchIntro context optionNoneCell noneBranch someBranch
+  exact HasTypeDescOptionMatch.optionMatchIntro context motive optionNoneCell noneBranch someBranch
     elementType resultType
     (HasTypeDescOptionIntro.optionNoneIntro context elementType elementLevel flag elementTypeFormed)
     noneBranchTyped someBranchTyped
@@ -113,18 +123,19 @@ codomain `(weaken C).subst0 value` collapsing to `C` (`RawTerm.weaken_subst_sing
 the syntactic `rw` matches).  Constructor-side: SR-free and propext-free. -/
 theorem optionMatchSomeIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
+    (motive : RawTerm (scope + 1))
     (value noneBranch someBranch elementType resultType : RawTerm scope)
     (valueTyped : HasTypeDescPi profile context value elementType)
     (noneBranchTyped : HasTypeDescPi profile context noneBranch resultType)
     (someBranchTyped :
       HasTypeDescPi profile context someBranch (piTyCodeCell elementType (RawTerm.weaken resultType))) :
     HasTypeDescOptionMatch profile context
-      (optionMatchCell (optionSomeCell value) noneBranch someBranch) resultType ∧
-    Step (optionMatchCell (optionSomeCell value) noneBranch someBranch)
+      (optionMatchCell motive noneBranch someBranch (optionSomeCell value)) resultType ∧
+    Step (optionMatchCell motive noneBranch someBranch (optionSomeCell value))
       (appCell someBranch value) ∧
     HasTypeDescPi profile context (appCell someBranch value) resultType := by
   refine ⟨?_, Step.iotaOptionMatchSome, ?_⟩
-  · exact HasTypeDescOptionMatch.optionMatchIntro context (optionSomeCell value) noneBranch someBranch
+  · exact HasTypeDescOptionMatch.optionMatchIntro context motive (optionSomeCell value) noneBranch someBranch
       elementType resultType
       (HasTypeDescOptionIntro.optionSomeIntro context value elementType valueTyped)
       noneBranchTyped someBranchTyped

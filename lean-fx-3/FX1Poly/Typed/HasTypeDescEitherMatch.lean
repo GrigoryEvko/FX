@@ -11,11 +11,13 @@ are FUNCTIONS (`A → C`, `B → C`), and the typed ι-computation's reduct is a
 
 Following the established cascade-free pattern (a brand-new standalone judgment).
 
-  * `eitherMatchCell` — the `gen_eitherMatch` cell (arity 3, `[0, 0, 0]`).
-  * `HasTypeDescEitherMatch` — the judgment: `eitherMatch(s, l, r) : C` from a scrutinee typed at
+  * `eitherMatchCell` — the `gen_eitherMatch` cell (Phase-Z motive shape: arity 4, `binderShifts = [1, 0, 0, 0]`,
+    children `(motive, leftBranch, rightBranch, scrutinee)` with the motive a term under one binder, scrutinee LAST).
+  * `HasTypeDescEitherMatch` — the judgment: `eitherMatch(m, l, r, s) : C` from a scrutinee typed at
     `either(A, B)` (by the either-intro engine — so it is `eitherInl`/`eitherInr`) and two function branches
     `l : A → C`, `r : B → C` (typed at `piTyCodeCell A (weaken C)` / `piTyCodeCell B (weaken C)` — the
-    non-dependent arrows, codomain weakened past the binder, by the grown engine).
+    non-dependent arrows, codomain weakened past the binder, by the grown engine).  The stored motive child `m`
+    is carried structurally with NO typing premise (the boolElim "option b" Phase-Z pattern).
   * `HasTypeDescEitherMatch.subjectIsEitherMatch` — the free-index closed-forms inversion.
   * `eitherMatchInlIotaComputesTyped` / `eitherMatchInrIotaComputesTyped` (★) — the typed app-chain
     ι-computation: a typed `eitherMatch` on an injection ι-reduces to the handler APPLIED to the payload, and
@@ -43,11 +45,17 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The coproduct eliminator cell `eitherMatch(scrutinee, leftBranch, rightBranch)` — `gen_eitherMatch`
-(arity 3, `binderShifts = [0, 0, 0]`). -/
-def eitherMatchCell {scope : Nat} (scrutinee leftBranch rightBranch : RawTerm scope) : RawTerm scope :=
+/-- The coproduct eliminator cell — `gen_eitherMatch` in the Phase-Z motive shape (arity 4,
+`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, leftBranch, rightBranch, scrutinee)`;
+the emitted canonical spine is `(motive, leftBranch, rightBranch, scrutinee)` — motive FIRST (a term under one
+binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the ambient `scope`. -/
+def eitherMatchCell {scope : Nat} (motive : RawTerm (scope + 1))
+    (leftBranch rightBranch scrutinee : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_eitherMatch ()
-    (.childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)))
+    (.childCons motive
+      (.childCons leftBranch
+        (.childCons rightBranch
+          (.childCons scrutinee .childNil))))
 
 /-- **The coproduct eliminator judgment.**  A standalone layer typing the non-dependent `eitherMatch`:
 `eitherMatch(s, l, r) : C` when the scrutinee is typed at `either(A, B)` (by the either-intro engine) and the
@@ -56,6 +64,7 @@ two branches are FUNCTIONS `l : A → C` and `r : B → C` (the non-dependent ar
 inductive HasTypeDescEitherMatch (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
   | eitherMatchIntro {scope : Nat} (context : TypingContext profile scope)
+      (motive : RawTerm (scope + 1))
       (scrutinee leftBranch rightBranch leftType rightType resultType : RawTerm scope)
       (scrutineeTyped :
         HasTypeDescEitherIntro profile context scrutinee (eitherTypeCell leftType rightType))
@@ -64,19 +73,19 @@ inductive HasTypeDescEitherMatch (profile : PolyProfile) :
       (rightBranchTyped :
         HasTypeDescPi profile context rightBranch (piTyCodeCell rightType (RawTerm.weaken resultType))) :
       HasTypeDescEitherMatch profile context
-        (eitherMatchCell scrutinee leftBranch rightBranch) resultType
+        (eitherMatchCell motive leftBranch rightBranch scrutinee) resultType
 
 /-- **★ Closed forms: an either-match-typed subject is an `eitherMatchCell`.**  Every term typed by
 `HasTypeDescEitherMatch` is `eitherMatch(s, l, r)`.  Free-index single-arm `cases`. -/
 theorem HasTypeDescEitherMatch.subjectIsEitherMatch {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescEitherMatch profile context subject classifier) :
-    ∃ (scrutinee leftBranch rightBranch : RawTerm scope),
-      subject = eitherMatchCell scrutinee leftBranch rightBranch := by
+    ∃ (motive : RawTerm (scope + 1)) (leftBranch rightBranch scrutinee : RawTerm scope),
+      subject = eitherMatchCell motive leftBranch rightBranch scrutinee := by
   cases derivation with
-  | eitherMatchIntro scrutinee leftBranch rightBranch _leftType _rightType _resultType
+  | eitherMatchIntro motive scrutinee leftBranch rightBranch _leftType _rightType _resultType
       _scrutineeTyped _leftBranchTyped _rightBranchTyped =>
-      exact ⟨scrutinee, leftBranch, rightBranch, rfl⟩
+      exact ⟨motive, leftBranch, rightBranch, scrutinee, rfl⟩
 
 /-- **★ Typed app-chain ι-computation (inl case).**  A typed `eitherMatch` on `eitherInl(value)` is typed at
 `C`, ι-reduces to `app(leftBranch, value)` (`Step.iotaEitherMatchInl`), and that application is typed at `C`.
@@ -85,6 +94,7 @@ The reduct's typing is `piElim` (`leftBranch : A → C`, `value : A`), with the 
 (app-chain) and the computation PRESERVES TYPING.  Constructor-side: SR-free and propext-free. -/
 theorem eitherMatchInlIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
+    (motive : RawTerm (scope + 1))
     (value leftBranch rightBranch leftType rightType resultType : RawTerm scope)
     (rightLevel : LevelExpr) (flag : UniverseFlag)
     (valueTyped : HasTypeDescPi profile context value leftType)
@@ -94,12 +104,12 @@ theorem eitherMatchInlIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (rightBranchTyped :
       HasTypeDescPi profile context rightBranch (piTyCodeCell rightType (RawTerm.weaken resultType))) :
     HasTypeDescEitherMatch profile context
-      (eitherMatchCell (eitherInlCell value) leftBranch rightBranch) resultType ∧
-    Step (eitherMatchCell (eitherInlCell value) leftBranch rightBranch)
+      (eitherMatchCell motive leftBranch rightBranch (eitherInlCell value)) resultType ∧
+    Step (eitherMatchCell motive leftBranch rightBranch (eitherInlCell value))
       (appCell leftBranch value) ∧
     HasTypeDescPi profile context (appCell leftBranch value) resultType := by
   refine ⟨?_, Step.iotaEitherMatchInl, ?_⟩
-  · exact HasTypeDescEitherMatch.eitherMatchIntro context (eitherInlCell value) leftBranch rightBranch
+  · exact HasTypeDescEitherMatch.eitherMatchIntro context motive (eitherInlCell value) leftBranch rightBranch
       leftType rightType resultType
       (HasTypeDescEitherIntro.eitherInlIntro context value leftType rightType rightLevel flag
         valueTyped rightTypeFormed)
@@ -118,6 +128,7 @@ theorem eitherMatchInlIotaComputesTyped {profile : PolyProfile} {scope : Nat}
 `app(rightBranch, value)`, typed at `C`. -/
 theorem eitherMatchInrIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
+    (motive : RawTerm (scope + 1))
     (value leftBranch rightBranch leftType rightType resultType : RawTerm scope)
     (leftLevel : LevelExpr) (flag : UniverseFlag)
     (valueTyped : HasTypeDescPi profile context value rightType)
@@ -127,12 +138,12 @@ theorem eitherMatchInrIotaComputesTyped {profile : PolyProfile} {scope : Nat}
     (rightBranchTyped :
       HasTypeDescPi profile context rightBranch (piTyCodeCell rightType (RawTerm.weaken resultType))) :
     HasTypeDescEitherMatch profile context
-      (eitherMatchCell (eitherInrCell value) leftBranch rightBranch) resultType ∧
-    Step (eitherMatchCell (eitherInrCell value) leftBranch rightBranch)
+      (eitherMatchCell motive leftBranch rightBranch (eitherInrCell value)) resultType ∧
+    Step (eitherMatchCell motive leftBranch rightBranch (eitherInrCell value))
       (appCell rightBranch value) ∧
     HasTypeDescPi profile context (appCell rightBranch value) resultType := by
   refine ⟨?_, Step.iotaEitherMatchInr, ?_⟩
-  · exact HasTypeDescEitherMatch.eitherMatchIntro context (eitherInrCell value) leftBranch rightBranch
+  · exact HasTypeDescEitherMatch.eitherMatchIntro context motive (eitherInrCell value) leftBranch rightBranch
       leftType rightType resultType
       (HasTypeDescEitherIntro.eitherInrIntro context value leftType rightType leftLevel flag
         valueTyped leftTypeFormed)

@@ -163,7 +163,9 @@ def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
   else if hOptionMatch : generator = .gen_optionMatch then
     match (hOptionMatch ▸ children :
         RawTermChildren (Generator.gen_optionMatch.binderShifts) scope) with
-    | .childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)) =>
+    -- Phase-Z spine: (motive, none, some, scrutinee); scrutinee is the LAST child.
+    | .childCons _motive
+        (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))) =>
         match scrutinee with
         | .mkGen scrutineeGenerator _scrutineePayload scrutineeChildren =>
             if scrutineeGenerator = .gen_optionNone then some noneBranch
@@ -176,7 +178,9 @@ def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
   else if hEitherMatch : generator = .gen_eitherMatch then
     match (hEitherMatch ▸ children :
         RawTermChildren (Generator.gen_eitherMatch.binderShifts) scope) with
-    | .childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)) =>
+    -- Phase-Z spine: (motive, left, right, scrutinee); scrutinee is the LAST child.
+    | .childCons _motive
+        (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))) =>
         match scrutinee with
         | .mkGen scrutineeGenerator _scrutineePayload scrutineeChildren =>
             if hInl : scrutineeGenerator = .gen_eitherInl then
@@ -483,8 +487,10 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                             rw [key] at fired; nomatch fired
               · by_cases hOptionMatch : generator = .gen_optionMatch
                 · subst hOptionMatch
+                  -- Phase-Z spine: (motive, none, some, scrutinee); the scrutinee head selects the iota.
                   match children with
-                  | .childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)) =>
+                  | .childCons motive
+                      (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))) =>
                       match scrutinee with
                       | .mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
                           by_cases hNone : scrutineeGenerator = .gen_optionNone
@@ -492,8 +498,11 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                             match scrutineeChildren with
                             | .childNil =>
                                 have key : RawTerm.fireRootRedex .gen_optionMatch payload
-                                    (.childCons (.mkGen .gen_optionNone scrutineePayload .childNil)
-                                      (.childCons noneBranch (.childCons someBranch .childNil))) =
+                                    (.childCons motive
+                                      (.childCons noneBranch
+                                        (.childCons someBranch
+                                          (.childCons (.mkGen .gen_optionNone scrutineePayload .childNil)
+                                            .childNil)))) =
                                     some noneBranch := rfl
                                 rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                                 exact Step.iotaOptionMatchNone
@@ -502,22 +511,30 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                               match scrutineeChildren with
                               | .childCons value .childNil =>
                                   have key : RawTerm.fireRootRedex .gen_optionMatch payload
-                                      (.childCons (.mkGen .gen_optionSome scrutineePayload
-                                        (.childCons value .childNil))
-                                        (.childCons noneBranch (.childCons someBranch .childNil))) =
+                                      (.childCons motive
+                                        (.childCons noneBranch
+                                          (.childCons someBranch
+                                            (.childCons (.mkGen .gen_optionSome scrutineePayload
+                                              (.childCons value .childNil)) .childNil)))) =
                                       some (.mkGen .gen_app ()
                                         (.childCons someBranch (.childCons value .childNil))) := rfl
                                   rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                                   exact Step.iotaOptionMatchSome
                             · have key : RawTerm.fireRootRedex .gen_optionMatch payload
-                                  (.childCons (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
-                                    (.childCons noneBranch (.childCons someBranch .childNil))) = none :=
+                                  (.childCons motive
+                                    (.childCons noneBranch
+                                      (.childCons someBranch
+                                        (.childCons
+                                          (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
+                                          .childNil)))) = none :=
                                 (if_neg hNone).trans (dif_neg hSome)
                               rw [key] at fired; nomatch fired
                 · by_cases hEitherMatch : generator = .gen_eitherMatch
                   · subst hEitherMatch
+                    -- Phase-Z spine: (motive, left, right, scrutinee); the scrutinee head selects the iota.
                     match children with
-                    | .childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)) =>
+                    | .childCons motive
+                        (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))) =>
                         match scrutinee with
                         | .mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
                             by_cases hInl : scrutineeGenerator = .gen_eitherInl
@@ -525,9 +542,11 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                               match scrutineeChildren with
                               | .childCons value .childNil =>
                                   have key : RawTerm.fireRootRedex .gen_eitherMatch payload
-                                      (.childCons (.mkGen .gen_eitherInl scrutineePayload
-                                        (.childCons value .childNil))
-                                        (.childCons leftBranch (.childCons rightBranch .childNil))) =
+                                      (.childCons motive
+                                        (.childCons leftBranch
+                                          (.childCons rightBranch
+                                            (.childCons (.mkGen .gen_eitherInl scrutineePayload
+                                              (.childCons value .childNil)) .childNil)))) =
                                       some (.mkGen .gen_app ()
                                         (.childCons leftBranch (.childCons value .childNil))) := rfl
                                   rw [key] at fired; injection fired with reductEq; rw [← reductEq]
@@ -537,17 +556,22 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                                 match scrutineeChildren with
                                 | .childCons value .childNil =>
                                     have key : RawTerm.fireRootRedex .gen_eitherMatch payload
-                                        (.childCons (.mkGen .gen_eitherInr scrutineePayload
-                                          (.childCons value .childNil))
-                                          (.childCons leftBranch (.childCons rightBranch .childNil))) =
+                                        (.childCons motive
+                                          (.childCons leftBranch
+                                            (.childCons rightBranch
+                                              (.childCons (.mkGen .gen_eitherInr scrutineePayload
+                                                (.childCons value .childNil)) .childNil)))) =
                                         some (.mkGen .gen_app ()
                                           (.childCons rightBranch (.childCons value .childNil))) := rfl
                                     rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                                     exact Step.iotaEitherMatchInr
                               · have key : RawTerm.fireRootRedex .gen_eitherMatch payload
-                                    (.childCons
-                                      (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
-                                      (.childCons leftBranch (.childCons rightBranch .childNil))) = none :=
+                                    (.childCons motive
+                                      (.childCons leftBranch
+                                        (.childCons rightBranch
+                                          (.childCons
+                                            (.mkGen scrutineeGenerator scrutineePayload scrutineeChildren)
+                                            .childNil)))) = none :=
                                   (dif_neg hInl).trans (dif_neg hInr)
                                 rw [key] at fired; nomatch fired
                   · by_cases hIdJ : generator = .gen_idJ

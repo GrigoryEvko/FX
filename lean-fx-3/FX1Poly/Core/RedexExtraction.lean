@@ -367,13 +367,15 @@ theorem hasListElimIotaRoot_exists_step {scope : Nat}
           rw [consShape]
           exact ⟨_, Step.iotaListElimCons⟩
 
-/-- **optionMatch iota redex extraction.** -/
+/-- **optionMatch iota redex extraction.**  Phase-Z spine `[1, 0, 0, 0]`: children are
+`(motive, noneBranch, someBranch, scrutinee)` with the scrutinee LAST. -/
 theorem hasOptionMatchIotaRoot_exists_step {scope : Nat}
-    (children : RawTermChildren [0, 0, 0] scope)
+    (children : RawTermChildren [1, 0, 0, 0] scope)
     (iotaRoot : RawTermChildren.hasOptionMatchIotaRoot children = true) :
     ∃ target : RawTerm scope, Step (.mkGen .gen_optionMatch () children) target := by
   match children with
-  | .childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))) =>
       replace iotaRoot :
           (RawTerm.isOptionNoneSource scrutinee || RawTerm.isOptionSomeSource scrutinee) = true := iotaRoot
       cases noneValue : RawTerm.isOptionNoneSource scrutinee with
@@ -387,13 +389,15 @@ theorem hasOptionMatchIotaRoot_exists_step {scope : Nat}
           rw [someShape]
           exact ⟨_, Step.iotaOptionMatchSome⟩
 
-/-- **eitherMatch iota redex extraction** (both scrutinee constructors are unary). -/
+/-- **eitherMatch iota redex extraction** (both scrutinee constructors are unary).  Phase-Z spine
+`[1, 0, 0, 0]`: children are `(motive, leftBranch, rightBranch, scrutinee)` with the scrutinee LAST. -/
 theorem hasEitherMatchIotaRoot_exists_step {scope : Nat}
-    (children : RawTermChildren [0, 0, 0] scope)
+    (children : RawTermChildren [1, 0, 0, 0] scope)
     (iotaRoot : RawTermChildren.hasEitherMatchIotaRoot children = true) :
     ∃ target : RawTerm scope, Step (.mkGen .gen_eitherMatch () children) target := by
   match children with
-  | .childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)) =>
+  | .childCons _motive
+      (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))) =>
       replace iotaRoot :
           (RawTerm.isEitherInlSource scrutinee || RawTerm.isEitherInrSource scrutinee) = true := iotaRoot
       cases inlValue : RawTerm.isEitherInlSource scrutinee with

@@ -19,8 +19,8 @@ eliminator shapes:
 `optionMatch` / `eitherMatch` are the non-recursive eliminators whose firing branch is a FUNCTION applied to the
 wrapped value — their ι-rules are 1-argument app-chains:
 
-    optionMatch (optionSome v) n s  ↝  app s v          eitherMatch (eitherInl v) l r  ↝  app l v
-    optionMatch optionNone     n s  ↝  n                eitherMatch (eitherInr v) l r  ↝  app r v
+    optionMatch m n s (optionSome v)  ↝  app s v        eitherMatch m l r (eitherInl v)  ↝  app l v
+    optionMatch m n s optionNone      ↝  n              eitherMatch m l r (eitherInr v)  ↝  app r v
 
 So there is no recursion (no IH) but, unlike `boolElim`, the some/inl/inr branch is a function whose application
 to the wrapped value must itself compute — the genuine new content over the value-branch bool case.
@@ -73,13 +73,14 @@ Case split on `isOptionValue s` (a disjunction): `none` ι-projects the none-bra
 branch's `stepProduces` on the normal payload finishes.  No recursion — but the some-branch is a function whose
 application must compute (the content the value-branch bool case lacked). -/
 theorem optionMatchComputesToValue {isResultValue : RawTerm 0 → Prop}
+    {motive : RawTerm 1}
     {noneBranch someBranch : RawTerm 0}
     (noneBranchValue : isResultValue noneBranch)
     (stepProduces : ∀ payload : RawTerm 0, RawTerm.isStepNormalForm payload →
         ∃ out : RawTerm 0, StepStar (appCell someBranch payload) out ∧ isResultValue out)
     {scrutinee : RawTerm 0} (scrutineeValue : isOptionValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell scrutinee noneBranch someBranch) out ∧ isResultValue out := by
+      StepStar (optionMatchCell motive noneBranch someBranch scrutinee) out ∧ isResultValue out := by
   rcases scrutineeValue with noneEq | ⟨payload, someEq, payloadNormal⟩
   · subst noneEq
     exact ⟨noneBranch, StepStar.single Step.iotaOptionMatchNone, noneBranchValue⟩
@@ -92,6 +93,7 @@ theorem optionMatchComputesToValue {isResultValue : RawTerm 0 → Prop}
 value from the wrapped (normal) payload (`leftProduces` / `rightProduces`) computes to a result value, for every
 closed either value `s` (`inl` fires `Step.iotaEitherMatchInl`, `inr` fires `Step.iotaEitherMatchInr`). -/
 theorem eitherMatchComputesToValue {isResultValue : RawTerm 0 → Prop}
+    {motive : RawTerm 1}
     {leftBranch rightBranch : RawTerm 0}
     (leftProduces : ∀ payload : RawTerm 0, RawTerm.isStepNormalForm payload →
         ∃ out : RawTerm 0, StepStar (appCell leftBranch payload) out ∧ isResultValue out)
@@ -99,7 +101,7 @@ theorem eitherMatchComputesToValue {isResultValue : RawTerm 0 → Prop}
         ∃ out : RawTerm 0, StepStar (appCell rightBranch payload) out ∧ isResultValue out)
     {scrutinee : RawTerm 0} (scrutineeValue : isEitherValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (eitherMatchCell scrutinee leftBranch rightBranch) out ∧ isResultValue out := by
+      StepStar (eitherMatchCell motive leftBranch rightBranch scrutinee) out ∧ isResultValue out := by
   rcases scrutineeValue with ⟨payload, inlEq, payloadNormal⟩ | ⟨payload, inrEq, payloadNormal⟩
   · subst inlEq
     obtain ⟨out, appChain, outValue⟩ := leftProduces payload payloadNormal
@@ -115,7 +117,9 @@ theorem eitherMatchComputesToValue {isResultValue : RawTerm 0 → Prop}
 wrapped payload (`subst0 natZero payload = natZero` definitionally). -/
 theorem optionMatchConstComputesToNumeral {scrutinee : RawTerm 0} (scrutineeValue : isOptionValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell scrutinee natZeroCell (lamCell natZeroCell (natZeroCell : RawTerm 1))) out ∧
+      StepStar
+        (optionMatchCell (variableCell (⟨0, by decide⟩ : Fin 1)) natZeroCell
+          (lamCell natZeroCell (natZeroCell : RawTerm 1)) scrutinee) out ∧
       IsNatNumeral out :=
   optionMatchComputesToValue (isResultValue := IsNatNumeral)
     IsNatNumeral.zero
@@ -129,7 +133,9 @@ theorem optionMatchConstComputesToNumeral {scrutinee : RawTerm 0} (scrutineeValu
 every closed either value `s`. -/
 theorem eitherMatchConstComputesToNumeral {scrutinee : RawTerm 0} (scrutineeValue : isEitherValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (eitherMatchCell scrutinee (lamCell natZeroCell (natZeroCell : RawTerm 1)) (lamCell natZeroCell (natZeroCell : RawTerm 1)))
+      StepStar
+        (eitherMatchCell (variableCell (⟨0, by decide⟩ : Fin 1))
+          (lamCell natZeroCell (natZeroCell : RawTerm 1)) (lamCell natZeroCell (natZeroCell : RawTerm 1)) scrutinee)
         out ∧ IsNatNumeral out :=
   eitherMatchComputesToValue (isResultValue := IsNatNumeral)
     (fun payload _payloadNormal => by
@@ -150,7 +156,9 @@ wrapped `payload`, which is normal (from `isOptionValue`), so the eliminator thr
 non-recursive analogue of the length/copy folds — the branch genuinely uses its argument. -/
 theorem optionMatchIdComputesToValue {scrutinee : RawTerm 0} (scrutineeValue : isOptionValue scrutinee) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell scrutinee boolTrueCell (lamCell natZeroCell (variableCell (⟨0, by decide⟩ : Fin 1)))) out ∧
+      StepStar
+        (optionMatchCell (variableCell (⟨0, by decide⟩ : Fin 1)) boolTrueCell
+          (lamCell natZeroCell (variableCell (⟨0, by decide⟩ : Fin 1))) scrutinee) out ∧
       RawTerm.isStepNormalForm out :=
   optionMatchComputesToValue (isResultValue := RawTerm.isStepNormalForm)
     (by decide)
@@ -166,8 +174,8 @@ theorem optionMatchIdComputesToValue {scrutinee : RawTerm 0} (scrutineeValue : i
 theorem optionMatchIdComputesToValue.smoke :
     ∃ out : RawTerm 0,
       StepStar
-        (optionMatchCell (optionSomeCell boolTrueCell) boolTrueCell
-          (lamCell natZeroCell (variableCell (⟨0, by decide⟩ : Fin 1)))) out ∧
+        (optionMatchCell (variableCell (⟨0, by decide⟩ : Fin 1)) boolTrueCell
+          (lamCell natZeroCell (variableCell (⟨0, by decide⟩ : Fin 1))) (optionSomeCell boolTrueCell)) out ∧
       RawTerm.isStepNormalForm out :=
   optionMatchIdComputesToValue (Or.inr ⟨boolTrueCell, rfl, by decide⟩)
 
@@ -175,8 +183,9 @@ theorem optionMatchIdComputesToValue.smoke :
 theorem eitherMatchConstComputesToNumeral.smoke :
     ∃ out : RawTerm 0,
       StepStar
-        (eitherMatchCell (eitherInlCell boolTrueCell) (lamCell natZeroCell (natZeroCell : RawTerm 1))
-          (lamCell natZeroCell (natZeroCell : RawTerm 1))) out ∧
+        (eitherMatchCell (variableCell (⟨0, by decide⟩ : Fin 1))
+          (lamCell natZeroCell (natZeroCell : RawTerm 1))
+          (lamCell natZeroCell (natZeroCell : RawTerm 1)) (eitherInlCell boolTrueCell)) out ∧
       IsNatNumeral out :=
   eitherMatchConstComputesToNumeral (Or.inl ⟨boolTrueCell, rfl, by decide⟩)
 

@@ -68,19 +68,25 @@ theorem listElimNeutralVarSmoke {scope : Nat} (index : Fin scope) :
     (var_isStronglyNormalizing index) (IsNeutral.var index)
     (var_isStronglyNormalizing index) (var_isStronglyNormalizing index)
 
-/-- **`optionMatch` over a variable scrutinee is strongly normalizing.** -/
+/-- **`optionMatch` over a variable scrutinee is strongly normalizing.**  Phase-Z motive shape: a `var 0`
+under-binder throwaway motive (SN), scrutinee/none/some all the same outer variable. -/
 theorem optionMatchNeutralVarSmoke {scope : Nat} (index : Fin scope) :
-    IsStronglyNormalizing (optionMatchCellSpine (.mkGen .gen_var index .childNil)
+    IsStronglyNormalizing (optionMatchCellSpine (.mkGen .gen_var ⟨0, Nat.zero_lt_succ scope⟩ .childNil)
+      (.mkGen .gen_var index .childNil)
       (.mkGen .gen_var index .childNil) (.mkGen .gen_var index .childNil)) :=
   optionMatchNeutralScrutineeMember IsStronglyNormalizing isStronglyNormalizing_isReducibilityCandidate
+    (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ scope⟩)
     (var_isStronglyNormalizing index) (IsNeutral.var index)
     (var_isStronglyNormalizing index) (var_isStronglyNormalizing index)
 
-/-- **`eitherMatch` over a variable scrutinee is strongly normalizing.** -/
+/-- **`eitherMatch` over a variable scrutinee is strongly normalizing.**  Phase-Z motive shape: a `var 0`
+under-binder throwaway motive (SN), scrutinee/left/right all the same outer variable. -/
 theorem eitherMatchNeutralVarSmoke {scope : Nat} (index : Fin scope) :
-    IsStronglyNormalizing (eitherMatchCellSpine (.mkGen .gen_var index .childNil)
+    IsStronglyNormalizing (eitherMatchCellSpine (.mkGen .gen_var ⟨0, Nat.zero_lt_succ scope⟩ .childNil)
+      (.mkGen .gen_var index .childNil)
       (.mkGen .gen_var index .childNil) (.mkGen .gen_var index .childNil)) :=
   eitherMatchNeutralScrutineeMember IsStronglyNormalizing isStronglyNormalizing_isReducibilityCandidate
+    (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ scope⟩)
     (var_isStronglyNormalizing index) (IsNeutral.var index)
     (var_isStronglyNormalizing index) (var_isStronglyNormalizing index)
 

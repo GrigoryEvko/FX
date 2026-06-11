@@ -11,7 +11,7 @@ import FX1Poly.Core.ApplicationStrongNormalizationForward
 PASSIVE-branch eliminators (`boolElim`, `idJ`, `idStrictRec`) — whose ι selects a branch DIRECTLY.  This file is
 the APPLIED-branch twin: the elimination membership for the non-recursive sum matchers `optionMatch` and
 `eitherMatch`, whose ι rules APPLY the chosen branch to the scrutinee's wrapped payload
-(`optionMatch (some v) n s ↝ app s v`, `eitherMatch (inl v) l r ↝ app l v`, …).
+(`optionMatch m n s (some v) ↝ app s v`, `eitherMatch m l r (inl v) ↝ app l v`, …).
 
 The applied-branch shape is exactly why these need more than `boolElim`: the contractum `app branch payload` is
 not the branch itself, so (a) the cell-SN ingredient needs the SN-from-SN-branches matcher lemma
@@ -61,23 +61,28 @@ result-candidate members (`someBranchRespectsSN`), the closed `optionMatch` cell
 (`noneBranchMember`/`someBranchRespectsSN` ⟹ `closedReducesToValue`); `ofStepStarReachingValue` lifts membership
 to the cell.  The elimination half of option reducibility, closed-layer, fundamental-independent. -/
 theorem optionMatchClosedIsMember {isValue : RawTerm 0 → Prop}
+    {motive : RawTerm 1}
     {scrutinee noneBranch someBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isOptionValue scrutinee)
+    (motiveTerminates : IsStronglyNormalizing motive)
     (noneBranchMember : CanonicalFormsPredicate isValue noneBranch)
     (someBranchTerminates : IsStronglyNormalizing someBranch)
     (someBranchRespectsSN : ∀ value : RawTerm 0, IsStronglyNormalizing value →
       CanonicalFormsPredicate isValue (applicationCell someBranch value)) :
     CanonicalFormsPredicate isValue
       (.mkGen .gen_optionMatch ()
-        (.childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)))) := by
+        (.childCons motive
+          (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))))) := by
   have cellStronglyNormalizing :
       IsStronglyNormalizing
         (.mkGen .gen_optionMatch ()
-          (.childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)))) :=
-    optionMatch_isStronglyNormalizing_of_strongly_normalizing_branches
+          (.childCons motive
+            (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))))) :=
+    optionMatch_isStronglyNormalizing_of_strongly_normalizing_branches (motive := motive)
       (fun value valueTerminates => (someBranchRespectsSN value valueTerminates).stronglyNormalizing)
-      scrutineeMember.stronglyNormalizing noneBranchMember.stronglyNormalizing someBranchTerminates
-  rcases optionMatchCanonicalScrutineeReduces
+      scrutineeMember.stronglyNormalizing motiveTerminates
+      noneBranchMember.stronglyNormalizing someBranchTerminates
+  rcases optionMatchCanonicalScrutineeReduces (motive := motive)
       (noneBranch := noneBranch) (someBranch := someBranch) scrutineeMember with
     reducesToNone | ⟨payload, scrutineeToSome, reducesToApp⟩
   · exact CanonicalFormsPredicate.ofStepStarReachingValue reducesToNone
@@ -96,8 +101,10 @@ to `app leftBranch payload` or `app rightBranch payload` (`eitherMatchCanonicalS
 contractum reaches a value (`leftBranchRespectsSN`/`rightBranchRespectsSN` ⟹ `closedReducesToValue`).  The
 elimination half of sum reducibility, closed-layer, fundamental-independent. -/
 theorem eitherMatchClosedIsMember {isValue : RawTerm 0 → Prop}
+    {motive : RawTerm 1}
     {scrutinee leftBranch rightBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isEitherValue scrutinee)
+    (motiveTerminates : IsStronglyNormalizing motive)
     (leftBranchTerminates : IsStronglyNormalizing leftBranch)
     (rightBranchTerminates : IsStronglyNormalizing rightBranch)
     (leftBranchRespectsSN : ∀ value : RawTerm 0, IsStronglyNormalizing value →
@@ -106,16 +113,19 @@ theorem eitherMatchClosedIsMember {isValue : RawTerm 0 → Prop}
       CanonicalFormsPredicate isValue (applicationCell rightBranch value)) :
     CanonicalFormsPredicate isValue
       (.mkGen .gen_eitherMatch ()
-        (.childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)))) := by
+        (.childCons motive
+          (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))) := by
   have cellStronglyNormalizing :
       IsStronglyNormalizing
         (.mkGen .gen_eitherMatch ()
-          (.childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)))) :=
-    eitherMatch_isStronglyNormalizing_of_strongly_normalizing_branches
+          (.childCons motive
+            (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))) :=
+    eitherMatch_isStronglyNormalizing_of_strongly_normalizing_branches (motive := motive)
       (fun value valueTerminates => (leftBranchRespectsSN value valueTerminates).stronglyNormalizing)
       (fun value valueTerminates => (rightBranchRespectsSN value valueTerminates).stronglyNormalizing)
-      scrutineeMember.stronglyNormalizing leftBranchTerminates rightBranchTerminates
-  rcases eitherMatchCanonicalScrutineeReduces
+      scrutineeMember.stronglyNormalizing motiveTerminates
+      leftBranchTerminates rightBranchTerminates
+  rcases eitherMatchCanonicalScrutineeReduces (motive := motive)
       (leftBranch := leftBranch) (rightBranch := rightBranch) scrutineeMember with
     ⟨payload, scrutineeToInl, reducesToLeftApp⟩ | ⟨payload, scrutineeToInr, reducesToRightApp⟩
   · have payloadTerminates : IsStronglyNormalizing payload :=

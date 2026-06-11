@@ -197,10 +197,13 @@ respects SN (`constLamBoolTrue_respectsSN`). -/
 theorem optionMatchClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_optionMatch ()
-        (.childCons optionNoneCell
-          (.childCons boolTrueCell (.childCons constLamBoolTrueCell .childNil)))) :=
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
+          (.childCons boolTrueCell
+            (.childCons constLamBoolTrueCell (.childCons optionNoneCell .childNil))))) :=
   optionMatchClosedIsMember
+    (motive := .mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
     (isOptionValue_isMember (Or.inl rfl))
+    (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
     boolTrueCell_isMember
     (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing
       boolTrue_isStronglyNormalizing)
@@ -213,10 +216,13 @@ half at a concrete witness. -/
 theorem eitherMatchClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
       (.mkGen .gen_eitherMatch ()
-        (.childCons (eitherInlCell boolTrueCell)
-          (.childCons constLamBoolTrueCell (.childCons constLamBoolTrueCell .childNil)))) :=
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
+          (.childCons constLamBoolTrueCell
+            (.childCons constLamBoolTrueCell (.childCons (eitherInlCell boolTrueCell) .childNil))))) :=
   eitherMatchClosedIsMember
+    (motive := .mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
     (isEitherValue_isMember (Or.inl ⟨boolTrueCell, rfl, rfl⟩))
+    (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
     (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing
       boolTrue_isStronglyNormalizing)
     (lam_isStronglyNormalizing_of_body boolTrue_isStronglyNormalizing

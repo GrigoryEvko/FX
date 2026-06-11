@@ -95,17 +95,21 @@ theorem ParStep.subst {sourceScope targetScope : Nat}
       (fun {scope} {motive motive' nilBranch nilBranch' consBranch} _stepMotive _stepNil
           ihMotive ihNil {targetScope} sigma =>
         ParStep.iotaListElimNil (ihMotive (RawTermSubst.lift sigma)) (ihNil sigma))
-      (fun {scope} {noneBranch noneBranch' someBranch} _step ihNone {targetScope} sigma =>
-        ParStep.iotaOptionMatchNone (ihNone sigma))
-      (fun {scope} {value value' noneBranch someBranch someBranch'} _stepSome _stepVal
-          ihSome ihVal {targetScope} sigma =>
-        ParStep.iotaOptionMatchSome (ihSome sigma) (ihVal sigma))
-      (fun {scope} {value value' leftBranch leftBranch' rightBranch} _stepLeft _stepVal
-          ihLeft ihVal {targetScope} sigma =>
-        ParStep.iotaEitherMatchInl (ihLeft sigma) (ihVal sigma))
-      (fun {scope} {value value' leftBranch rightBranch rightBranch'} _stepRight _stepVal
-          ihRight ihVal {targetScope} sigma =>
-        ParStep.iotaEitherMatchInr (ihRight sigma) (ihVal sigma))
+      (fun {scope} {motive motive' noneBranch noneBranch' someBranch} _stepMotive _stepNone
+          ihMotive ihNone {targetScope} sigma =>
+        ParStep.iotaOptionMatchNone (ihMotive (RawTermSubst.lift sigma)) (ihNone sigma))
+      (fun {scope} {motive motive' value value' noneBranch someBranch someBranch'}
+          _stepMotive _stepSome _stepVal ihMotive ihSome ihVal {targetScope} sigma =>
+        ParStep.iotaOptionMatchSome (ihMotive (RawTermSubst.lift sigma))
+          (ihSome sigma) (ihVal sigma))
+      (fun {scope} {motive motive' value value' leftBranch leftBranch' rightBranch}
+          _stepMotive _stepLeft _stepVal ihMotive ihLeft ihVal {targetScope} sigma =>
+        ParStep.iotaEitherMatchInl (ihMotive (RawTermSubst.lift sigma))
+          (ihLeft sigma) (ihVal sigma))
+      (fun {scope} {motive motive' value value' leftBranch rightBranch rightBranch'}
+          _stepMotive _stepRight _stepVal ihMotive ihRight ihVal {targetScope} sigma =>
+        ParStep.iotaEitherMatchInr (ihMotive (RawTermSubst.lift sigma))
+          (ihRight sigma) (ihVal sigma))
       (fun {scope} {motive motive' predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
           _stepMotive _stepPred _stepZero _stepSucc ihMotive ihPred ihZero ihSucc
           {targetScope} sigma => by
@@ -193,17 +197,21 @@ theorem ParStepChildren.subst {parentSourceScope parentTargetScope : Nat}
       (fun {scope} {motive motive' nilBranch nilBranch' consBranch} _stepMotive _stepNil
           ihMotive ihNil {targetScope} sigma =>
         ParStep.iotaListElimNil (ihMotive (RawTermSubst.lift sigma)) (ihNil sigma))
-      (fun {scope} {noneBranch noneBranch' someBranch} _step ihNone {targetScope} sigma =>
-        ParStep.iotaOptionMatchNone (ihNone sigma))
-      (fun {scope} {value value' noneBranch someBranch someBranch'} _stepSome _stepVal
-          ihSome ihVal {targetScope} sigma =>
-        ParStep.iotaOptionMatchSome (ihSome sigma) (ihVal sigma))
-      (fun {scope} {value value' leftBranch leftBranch' rightBranch} _stepLeft _stepVal
-          ihLeft ihVal {targetScope} sigma =>
-        ParStep.iotaEitherMatchInl (ihLeft sigma) (ihVal sigma))
-      (fun {scope} {value value' leftBranch rightBranch rightBranch'} _stepRight _stepVal
-          ihRight ihVal {targetScope} sigma =>
-        ParStep.iotaEitherMatchInr (ihRight sigma) (ihVal sigma))
+      (fun {scope} {motive motive' noneBranch noneBranch' someBranch} _stepMotive _stepNone
+          ihMotive ihNone {targetScope} sigma =>
+        ParStep.iotaOptionMatchNone (ihMotive (RawTermSubst.lift sigma)) (ihNone sigma))
+      (fun {scope} {motive motive' value value' noneBranch someBranch someBranch'}
+          _stepMotive _stepSome _stepVal ihMotive ihSome ihVal {targetScope} sigma =>
+        ParStep.iotaOptionMatchSome (ihMotive (RawTermSubst.lift sigma))
+          (ihSome sigma) (ihVal sigma))
+      (fun {scope} {motive motive' value value' leftBranch leftBranch' rightBranch}
+          _stepMotive _stepLeft _stepVal ihMotive ihLeft ihVal {targetScope} sigma =>
+        ParStep.iotaEitherMatchInl (ihMotive (RawTermSubst.lift sigma))
+          (ihLeft sigma) (ihVal sigma))
+      (fun {scope} {motive motive' value value' leftBranch rightBranch rightBranch'}
+          _stepMotive _stepRight _stepVal ihMotive ihRight ihVal {targetScope} sigma =>
+        ParStep.iotaEitherMatchInr (ihMotive (RawTermSubst.lift sigma))
+          (ihRight sigma) (ihVal sigma))
       (fun {scope} {motive motive' predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
           _stepMotive _stepPred _stepZero _stepSucc ihMotive ihPred ihZero ihSucc
           {targetScope} sigma => by

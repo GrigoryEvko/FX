@@ -25,8 +25,9 @@ file bundles them into ONE checked capstone, discharging the deferred eliminator
   3. **list** (RECURSIVE) — `listElimLengthComputesToNumeral`: a closed `listElim(motive, xs, natZero,
      lengthStep)` computes to a numeral (the length) for every closed list value `xs` (Phase-Z motive shape —
      the stored motive head child is ignored by the length fold).
-  4. **option** — `closedOptionMatchIntoBoolComputes` (firing-64): a closed `optionMatch(scrutinee, boolTrue,
-     λ_.boolTrue)` with a typed option scrutinee computes to a bool value.
+  4. **option** — `closedOptionMatchIntoBoolComputes` (firing-64): a closed `optionMatch(m, boolTrue,
+     λ_.boolTrue, scrutinee)` with a typed option scrutinee computes to a bool value (Phase-Z motive shape —
+     the stored motive head child is discarded by the ι).
   5. **either** — `closedEitherMatchIntoBoolComputes` (firing-64): the either twin.
 
 ## Honest scope — what this is and is NOT
@@ -82,25 +83,26 @@ structure EliminatorLayerCanonicitySpine (profile : PolyProfile) : Prop where
   listElimComputes : ∀ {motive : RawTerm 1} {scrutinee : RawTerm 0}, IsListValue scrutinee →
       ∃ out : RawTerm 0,
         StepStar (listElimCell motive scrutinee natZeroCell lengthNatStep) out ∧ IsNatNumeral out
-  /-- option: a closed `optionMatch` with a typed option scrutinee and constant bool branches computes to a bool. -/
-  optionMatchComputes : ∀ {scrutinee elementType : RawTerm 0},
+  /-- option: a closed `optionMatch` with a typed option scrutinee and constant bool branches computes to a bool.
+  Phase-Z motive shape: the `optionMatch` cell carries a stored motive head child (any motive — the ι discards it). -/
+  optionMatchComputes : ∀ {motive : RawTerm 1} {scrutinee elementType : RawTerm 0},
     (HasTypeDescOptionIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (optionTypeCell elementType) ∨
      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (optionTypeCell elementType)) →
       ∃ out : RawTerm 0,
-        StepStar (optionMatchCell scrutinee boolTrueCell
-          (lamCell boolTrueCell (boolTrueCell : RawTerm 1))) out ∧
+        StepStar (optionMatchCell motive boolTrueCell
+          (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) scrutinee) out ∧
         (out = boolTrueCell ∨ out = boolFalseCell)
   /-- either: the either twin of `optionMatchComputes`. -/
-  eitherMatchComputes : ∀ {scrutinee leftType rightType : RawTerm 0},
+  eitherMatchComputes : ∀ {motive : RawTerm 1} {scrutinee leftType rightType : RawTerm 0},
     (HasTypeDescEitherIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (eitherTypeCell leftType rightType) ∨
      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (eitherTypeCell leftType rightType)) →
       ∃ out : RawTerm 0,
-        StepStar (eitherMatchCell scrutinee (lamCell boolTrueCell (boolTrueCell : RawTerm 1))
-          (lamCell boolTrueCell (boolFalseCell : RawTerm 1))) out ∧
+        StepStar (eitherMatchCell motive (lamCell boolTrueCell (boolTrueCell : RawTerm 1))
+          (lamCell boolTrueCell (boolFalseCell : RawTerm 1)) scrutinee) out ∧
         (out = boolTrueCell ∨ out = boolFalseCell)
 
 /-- **★ The eliminator-layer canonicity spine holds, unconditionally, zero-axiom.**  Each field is the shipped

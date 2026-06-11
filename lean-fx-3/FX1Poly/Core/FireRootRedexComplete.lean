@@ -130,8 +130,10 @@ theorem RawTerm.hasRootStepSource_imp_fireRootRedex_isSome {scope : Nat} {genera
                         subst hCons; rfl
               · by_cases hOptionMatch : generator = .gen_optionMatch
                 · subst hOptionMatch
+                  -- Phase-Z spine: (motive, none, some, scrutinee); the scrutinee is the LAST child.
                   match children with
-                  | .childCons scrutinee (.childCons _noneBranch (.childCons _someBranch .childNil)) =>
+                  | .childCons _motive
+                      (.childCons _noneBranch (.childCons _someBranch (.childCons scrutinee .childNil))) =>
                       have srcTrue :
                           (RawTerm.isOptionNoneSource scrutinee ||
                             RawTerm.isOptionSomeSource scrutinee) = true := detected
@@ -144,8 +146,10 @@ theorem RawTerm.hasRootStepSource_imp_fireRootRedex_isSome {scope : Nat} {genera
                           subst hSome; rfl
                 · by_cases hEitherMatch : generator = .gen_eitherMatch
                   · subst hEitherMatch
+                    -- Phase-Z spine: (motive, left, right, scrutinee); the scrutinee is the LAST child.
                     match children with
-                    | .childCons scrutinee (.childCons _leftBranch (.childCons _rightBranch .childNil)) =>
+                    | .childCons _motive
+                        (.childCons _leftBranch (.childCons _rightBranch (.childCons scrutinee .childNil))) =>
                         have srcTrue :
                             (RawTerm.isEitherInlSource scrutinee ||
                               RawTerm.isEitherInrSource scrutinee) = true := detected

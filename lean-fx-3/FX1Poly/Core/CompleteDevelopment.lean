@@ -224,29 +224,37 @@ theorem cd_listElimNil_eq {scope : Nat} (motive : RawTerm (scope + 1))
         (.childCons (.mkGen .gen_listNil () .childNil) .childNil))))) =
       RawTerm.completeDevelopment nilBranch := rfl
 
-theorem cd_optionMatchNone_eq {scope : Nat} (noneBranch someBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_optionMatch () (.childCons (.mkGen .gen_optionNone () .childNil)
-      (.childCons noneBranch (.childCons someBranch .childNil)))) =
+theorem cd_optionMatchNone_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (noneBranch someBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_optionMatch () (.childCons motive
+      (.childCons noneBranch (.childCons someBranch
+        (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))) =
       RawTerm.completeDevelopment noneBranch := rfl
 
-theorem cd_optionMatchSome_eq {scope : Nat} (value noneBranch someBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_optionMatch () (.childCons
-      (.mkGen .gen_optionSome () (.childCons value .childNil))
-      (.childCons noneBranch (.childCons someBranch .childNil)))) =
+theorem cd_optionMatchSome_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (value noneBranch someBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_optionMatch () (.childCons motive
+      (.childCons noneBranch (.childCons someBranch
+        (.childCons (.mkGen .gen_optionSome () (.childCons value .childNil))
+          .childNil))))) =
       .mkGen .gen_app () (.childCons (RawTerm.completeDevelopment someBranch)
         (.childCons (RawTerm.completeDevelopment value) .childNil)) := rfl
 
-theorem cd_eitherMatchInl_eq {scope : Nat} (value leftBranch rightBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_eitherMatch () (.childCons
-      (.mkGen .gen_eitherInl () (.childCons value .childNil))
-      (.childCons leftBranch (.childCons rightBranch .childNil)))) =
+theorem cd_eitherMatchInl_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (value leftBranch rightBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_eitherMatch () (.childCons motive
+      (.childCons leftBranch (.childCons rightBranch
+        (.childCons (.mkGen .gen_eitherInl () (.childCons value .childNil))
+          .childNil))))) =
       .mkGen .gen_app () (.childCons (RawTerm.completeDevelopment leftBranch)
         (.childCons (RawTerm.completeDevelopment value) .childNil)) := rfl
 
-theorem cd_eitherMatchInr_eq {scope : Nat} (value leftBranch rightBranch : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_eitherMatch () (.childCons
-      (.mkGen .gen_eitherInr () (.childCons value .childNil))
-      (.childCons leftBranch (.childCons rightBranch .childNil)))) =
+theorem cd_eitherMatchInr_eq {scope : Nat} (motive : RawTerm (scope + 1))
+    (value leftBranch rightBranch : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_eitherMatch () (.childCons motive
+      (.childCons leftBranch (.childCons rightBranch
+        (.childCons (.mkGen .gen_eitherInr () (.childCons value .childNil))
+          .childNil))))) =
       .mkGen .gen_app () (.childCons (RawTerm.completeDevelopment rightBranch)
         (.childCons (RawTerm.completeDevelopment value) .childNil)) := rfl
 

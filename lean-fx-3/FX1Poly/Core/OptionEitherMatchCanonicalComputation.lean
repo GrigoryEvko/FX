@@ -41,39 +41,60 @@ applies a branch to the wrapped payload. -/
 private abbrev applyCell {scope : Nat} (function argument : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_app () (.childCons function (.childCons argument .childNil))
 
-/-- The `optionMatch` cell over its three children (scrutinee, none-branch, some-branch). -/
-private abbrev optionMatchCellOn {scope : Nat}
+/-- The Phase-Z `optionMatch` cell over its four children — spine `(motive, noneBranch, someBranch, scrutinee)`
+with the motive a term under one binder (`RawTerm (scope + 1)`) and the scrutinee LAST. -/
+private abbrev optionMatchCellOn {scope : Nat} (motive : RawTerm (scope + 1))
     (scrutinee noneBranch someBranch : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_optionMatch ()
-    (.childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)))
+    (.childCons motive
+      (.childCons noneBranch
+        (.childCons someBranch
+          (.childCons scrutinee .childNil))))
 
-/-- The `eitherMatch` cell over its three children (scrutinee, left-branch, right-branch). -/
-private abbrev eitherMatchCellOn {scope : Nat}
+/-- The Phase-Z `eitherMatch` cell over its four children — spine `(motive, leftBranch, rightBranch, scrutinee)`
+with the motive a term under one binder (`RawTerm (scope + 1)`) and the scrutinee LAST. -/
+private abbrev eitherMatchCellOn {scope : Nat} (motive : RawTerm (scope + 1))
     (scrutinee leftBranch rightBranch : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_eitherMatch ()
-    (.childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)))
+    (.childCons motive
+      (.childCons leftBranch
+        (.childCons rightBranch
+          (.childCons scrutinee .childNil))))
 
 /-- **Scrutinee-position chain congruence for `optionMatch`.**  A reduction chain in the scrutinee lifts to the
-whole `optionMatch` cell (branches fixed), via `StepStar.congAt` + `Step.cong … (here …)` at the head child. -/
+whole `optionMatch` cell (motive + branches fixed), via `StepStar.congAt` + `Step.cong …` drilled by a
+`there`-chain to the scrutinee child (the LAST child of the 4-child spine, past the motive + both branches). -/
 theorem StepStar.optionMatchScrutinee {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {scrutinee scrutineeReduct noneBranch someBranch : RawTerm scope}
     (scrutineeChain : StepStar scrutinee scrutineeReduct) :
-    StepStar (optionMatchCellOn scrutinee noneBranch someBranch)
-      (optionMatchCellOn scrutineeReduct noneBranch someBranch) :=
+    StepStar (optionMatchCellOn motive scrutinee noneBranch someBranch)
+      (optionMatchCellOn motive scrutineeReduct noneBranch someBranch) :=
   StepStar.congAt
-    (fun hole => optionMatchCellOn hole noneBranch someBranch)
-    (fun stepInScrutinee => Step.cong .gen_optionMatch () (StepChildren.here _ stepInScrutinee))
+    (fun hole => optionMatchCellOn motive hole noneBranch someBranch)
+    (fun stepInScrutinee =>
+      Step.cong .gen_optionMatch ()
+        (StepChildren.there _
+          (StepChildren.there _
+            (StepChildren.there _
+              (StepChildren.here _ stepInScrutinee)))))
     scrutineeChain
 
 /-- **Scrutinee-position chain congruence for `eitherMatch`.**  Symmetric to `StepStar.optionMatchScrutinee`. -/
 theorem StepStar.eitherMatchScrutinee {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {scrutinee scrutineeReduct leftBranch rightBranch : RawTerm scope}
     (scrutineeChain : StepStar scrutinee scrutineeReduct) :
-    StepStar (eitherMatchCellOn scrutinee leftBranch rightBranch)
-      (eitherMatchCellOn scrutineeReduct leftBranch rightBranch) :=
+    StepStar (eitherMatchCellOn motive scrutinee leftBranch rightBranch)
+      (eitherMatchCellOn motive scrutineeReduct leftBranch rightBranch) :=
   StepStar.congAt
-    (fun hole => eitherMatchCellOn hole leftBranch rightBranch)
-    (fun stepInScrutinee => Step.cong .gen_eitherMatch () (StepChildren.here _ stepInScrutinee))
+    (fun hole => eitherMatchCellOn motive hole leftBranch rightBranch)
+    (fun stepInScrutinee =>
+      Step.cong .gen_eitherMatch ()
+        (StepChildren.there _
+          (StepChildren.there _
+            (StepChildren.there _
+              (StepChildren.here _ stepInScrutinee)))))
     scrutineeChain
 
 /-- **Closed `optionMatch` on a canonical scrutinee computes to a branch.**  The non-recursive-data-eliminator
@@ -83,12 +104,13 @@ applied to the wrapped payload (if it evaluates to `some payload`).  The scrutin
 value (`optionClosedReducesToValue`), `StepStar.optionMatchScrutinee` carries that under the `optionMatch`, and
 `Step.iotaOptionMatchNone` / `Step.iotaOptionMatchSome` fire to select the branch.  Fundamental-free — no fundamental
 theorem. -/
-theorem optionMatchCanonicalScrutineeReduces {scrutinee noneBranch someBranch : RawTerm 0}
+theorem optionMatchCanonicalScrutineeReduces {motive : RawTerm 1}
+    {scrutinee noneBranch someBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isOptionValue scrutinee) :
-    StepStar (optionMatchCellOn scrutinee noneBranch someBranch) noneBranch ∨
+    StepStar (optionMatchCellOn motive scrutinee noneBranch someBranch) noneBranch ∨
       ∃ payload : RawTerm 0,
         StepStar scrutinee (optionSomeCell payload) ∧
-          StepStar (optionMatchCellOn scrutinee noneBranch someBranch)
+          StepStar (optionMatchCellOn motive scrutinee noneBranch someBranch)
             (applyCell someBranch payload) := by
   obtain ⟨value, scrutineeReducesToValue, valueIsOption⟩ := optionClosedReducesToValue scrutineeMember
   cases valueIsOption with
@@ -108,15 +130,16 @@ candidate `StepStar`-reduces to `leftBranch` applied to the wrapped payload (if 
 `inl payload`) or to `rightBranch` applied to the wrapped payload (if it evaluates to `inr payload`), via
 `eitherClosedReducesToValue` + `StepStar.eitherMatchScrutinee` + `Step.iotaEitherMatchInl` /
 `Step.iotaEitherMatchInr`.  Fundamental-free. -/
-theorem eitherMatchCanonicalScrutineeReduces {scrutinee leftBranch rightBranch : RawTerm 0}
+theorem eitherMatchCanonicalScrutineeReduces {motive : RawTerm 1}
+    {scrutinee leftBranch rightBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isEitherValue scrutinee) :
     (∃ payload : RawTerm 0,
         StepStar scrutinee (eitherInlCell payload) ∧
-          StepStar (eitherMatchCellOn scrutinee leftBranch rightBranch)
+          StepStar (eitherMatchCellOn motive scrutinee leftBranch rightBranch)
             (applyCell leftBranch payload)) ∨
       ∃ payload : RawTerm 0,
         StepStar scrutinee (eitherInrCell payload) ∧
-          StepStar (eitherMatchCellOn scrutinee leftBranch rightBranch)
+          StepStar (eitherMatchCellOn motive scrutinee leftBranch rightBranch)
             (applyCell rightBranch payload) := by
   obtain ⟨value, scrutineeReducesToValue, valueIsEither⟩ := eitherClosedReducesToValue scrutineeMember
   cases valueIsEither with

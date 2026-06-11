@@ -1296,17 +1296,29 @@ theorem Step.from_listElim
 
 /-- **Inversion for `optionMatch`-rooted Step.**
 
-Five-way disjunction.  Some-iota arm has a 1-arg app-chain target
-`app someBranch value` requiring one existential for the wrapped
-value. -/
+Six-way disjunction.  Phase-Z motive shape: the spine is
+`(motive, noneBranch, someBranch, scrutinee)` with the motive a
+term under one binder (`RawTerm (scope + 1)`) and the scrutinee LAST.
+
+* **iotaOptionMatchNone arm**: scrutinee was `optionNone`, target =
+  noneBranch.
+* **iotaOptionMatchSome arm**: scrutinee was `optionSome value`,
+  target = `app someBranch value` (1-arg app-chain).
+* **cong-at-motive arm**: motive stepped (at `scope + 1`).
+* **cong-at-none arm**: noneBranch stepped.
+* **cong-at-some arm**: someBranch stepped.
+* **cong-at-scrutinee arm**: scrutinee stepped (LAST), target
+  preserves the outer optionMatch with the stepped scrutinee. -/
 theorem Step.from_optionMatch
     {scope : Nat}
-    {scrutinee noneBranch someBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {noneBranch someBranch scrutinee : RawTerm scope}
     {target : RawTerm scope}
     (reduction :
       Step (.mkGen .gen_optionMatch ()
-              (.childCons scrutinee
-                (.childCons noneBranch (.childCons someBranch .childNil))))
+              (.childCons motive
+                (.childCons noneBranch
+                  (.childCons someBranch (.childCons scrutinee .childNil)))))
            target) :
     (scrutinee = .mkGen .gen_optionNone () .childNil ∧ target = noneBranch)
     ∨
@@ -1315,23 +1327,33 @@ theorem Step.from_optionMatch
         target = .mkGen .gen_app ()
                   (.childCons someBranch (.childCons value .childNil)))
     ∨
-    (∃ (scrutineeAfter : RawTerm scope),
+    (∃ (motiveAfter : RawTerm (scope + 1)),
         target = .mkGen .gen_optionMatch ()
-          (.childCons scrutineeAfter
-            (.childCons noneBranch (.childCons someBranch .childNil))) ∧
-        Step scrutinee scrutineeAfter)
+          (.childCons motiveAfter
+            (.childCons noneBranch
+              (.childCons someBranch (.childCons scrutinee .childNil)))) ∧
+        Step motive motiveAfter)
     ∨
     (∃ (noneAfter : RawTerm scope),
         target = .mkGen .gen_optionMatch ()
-          (.childCons scrutinee
-            (.childCons noneAfter (.childCons someBranch .childNil))) ∧
+          (.childCons motive
+            (.childCons noneAfter
+              (.childCons someBranch (.childCons scrutinee .childNil)))) ∧
         Step noneBranch noneAfter)
     ∨
     (∃ (someAfter : RawTerm scope),
         target = .mkGen .gen_optionMatch ()
-          (.childCons scrutinee
-            (.childCons noneBranch (.childCons someAfter .childNil))) ∧
-        Step someBranch someAfter) := by
+          (.childCons motive
+            (.childCons noneBranch
+              (.childCons someAfter (.childCons scrutinee .childNil)))) ∧
+        Step someBranch someAfter)
+    ∨
+    (∃ (scrutineeAfter : RawTerm scope),
+        target = .mkGen .gen_optionMatch ()
+          (.childCons motive
+            (.childCons noneBranch
+              (.childCons someBranch (.childCons scrutineeAfter .childNil)))) ∧
+        Step scrutinee scrutineeAfter) := by
   cases reduction with
   | iotaOptionMatchNone =>
       exact Or.inl ⟨rfl, rfl⟩
@@ -1339,9 +1361,9 @@ theorem Step.from_optionMatch
       exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
   | cong _ _ childStep =>
       cases childStep with
-      | here _ scrutineeStep =>
-          rename_i scrutineeAfter
-          exact Or.inr (Or.inr (Or.inl ⟨scrutineeAfter, rfl, scrutineeStep⟩))
+      | here _ motiveStep =>
+          rename_i motiveAfter
+          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ noneStep =>
@@ -1351,24 +1373,43 @@ theorem Step.from_optionMatch
               cases restStep with
               | here _ someStep =>
                   rename_i someAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr ⟨someAfter, rfl, someStep⟩)))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨someAfter, rfl, someStep⟩))))
               | there _ restRestStep =>
-                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
+                  cases restRestStep with
+                  | here _ scrutineeStep =>
+                      rename_i scrutineeAfter
+                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                  | there _ restRestRestStep =>
+                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `eitherMatch`-rooted Step.**
 
-Five-way disjunction.  BOTH iota arms have 1-arg app-chain
-targets (no nullary base case for either) -- so the first two
-disjuncts are existential, characterizing the wrapped value in
-each case. -/
+Six-way disjunction.  Phase-Z motive shape: the spine is
+`(motive, leftBranch, rightBranch, scrutinee)` with the motive a
+term under one binder (`RawTerm (scope + 1)`) and the scrutinee LAST.
+BOTH iota arms have 1-arg app-chain targets (no nullary base case
+for either) -- so the first two disjuncts are existential,
+characterizing the wrapped value in each case.
+
+* **iotaEitherMatchInl arm**: scrutinee = `eitherInl value`,
+  target = `app leftBranch value`.
+* **iotaEitherMatchInr arm**: scrutinee = `eitherInr value`,
+  target = `app rightBranch value`.
+* **cong-at-motive arm**: motive stepped (at `scope + 1`).
+* **cong-at-left arm**: leftBranch stepped.
+* **cong-at-right arm**: rightBranch stepped.
+* **cong-at-scrutinee arm**: scrutinee stepped (LAST). -/
 theorem Step.from_eitherMatch
     {scope : Nat}
-    {scrutinee leftBranch rightBranch : RawTerm scope}
+    {motive : RawTerm (scope + 1)}
+    {leftBranch rightBranch scrutinee : RawTerm scope}
     {target : RawTerm scope}
     (reduction :
       Step (.mkGen .gen_eitherMatch ()
-              (.childCons scrutinee
-                (.childCons leftBranch (.childCons rightBranch .childNil))))
+              (.childCons motive
+                (.childCons leftBranch
+                  (.childCons rightBranch (.childCons scrutinee .childNil)))))
            target) :
     (∃ (value : RawTerm scope),
         scrutinee = .mkGen .gen_eitherInl () (.childCons value .childNil) ∧
@@ -1380,23 +1421,33 @@ theorem Step.from_eitherMatch
         target = .mkGen .gen_app ()
                   (.childCons rightBranch (.childCons value .childNil)))
     ∨
-    (∃ (scrutineeAfter : RawTerm scope),
+    (∃ (motiveAfter : RawTerm (scope + 1)),
         target = .mkGen .gen_eitherMatch ()
-          (.childCons scrutineeAfter
-            (.childCons leftBranch (.childCons rightBranch .childNil))) ∧
-        Step scrutinee scrutineeAfter)
+          (.childCons motiveAfter
+            (.childCons leftBranch
+              (.childCons rightBranch (.childCons scrutinee .childNil)))) ∧
+        Step motive motiveAfter)
     ∨
     (∃ (leftAfter : RawTerm scope),
         target = .mkGen .gen_eitherMatch ()
-          (.childCons scrutinee
-            (.childCons leftAfter (.childCons rightBranch .childNil))) ∧
+          (.childCons motive
+            (.childCons leftAfter
+              (.childCons rightBranch (.childCons scrutinee .childNil)))) ∧
         Step leftBranch leftAfter)
     ∨
     (∃ (rightAfter : RawTerm scope),
         target = .mkGen .gen_eitherMatch ()
-          (.childCons scrutinee
-            (.childCons leftBranch (.childCons rightAfter .childNil))) ∧
-        Step rightBranch rightAfter) := by
+          (.childCons motive
+            (.childCons leftBranch
+              (.childCons rightAfter (.childCons scrutinee .childNil)))) ∧
+        Step rightBranch rightAfter)
+    ∨
+    (∃ (scrutineeAfter : RawTerm scope),
+        target = .mkGen .gen_eitherMatch ()
+          (.childCons motive
+            (.childCons leftBranch
+              (.childCons rightBranch (.childCons scrutineeAfter .childNil)))) ∧
+        Step scrutinee scrutineeAfter) := by
   cases reduction with
   | iotaEitherMatchInl =>
       exact Or.inl ⟨_, rfl, rfl⟩
@@ -1404,9 +1455,9 @@ theorem Step.from_eitherMatch
       exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
   | cong _ _ childStep =>
       cases childStep with
-      | here _ scrutineeStep =>
-          rename_i scrutineeAfter
-          exact Or.inr (Or.inr (Or.inl ⟨scrutineeAfter, rfl, scrutineeStep⟩))
+      | here _ motiveStep =>
+          rename_i motiveAfter
+          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ leftStep =>
@@ -1416,9 +1467,15 @@ theorem Step.from_eitherMatch
               cases restStep with
               | here _ rightStep =>
                   rename_i rightAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr ⟨rightAfter, rfl, rightStep⟩)))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨rightAfter, rfl, rightStep⟩))))
               | there _ restRestStep =>
-                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
+                  cases restRestStep with
+                  | here _ scrutineeStep =>
+                      rename_i scrutineeAfter
+                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                  | there _ restRestRestStep =>
+                      exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `idJ`-rooted Step.**
 

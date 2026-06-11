@@ -232,61 +232,74 @@ theorem RawTerm.completeDevelopment_parStep {scope0 : Nat} (term0 : RawTerm scop
                         · by_cases hOptionMatch : gen = .gen_optionMatch
                           · subst hOptionMatch
                             cases children with
-                            | childCons scrut rest => cases rest with | childCons noneB rest2 => cases rest2 with
-                              | childCons someB rest3 => cases rest3 with | childNil =>
-                                  cases scrut with
-                                  | mkGen sg sp sc =>
-                                      by_cases hNone : sg = .gen_optionNone
-                                      · subst hNone
-                                        cases sc with | childNil =>
-                                            cases childrenIH with | cons _ restS => cases restS with
-                                              | cons noneStep _ => exact ParStep.iotaOptionMatchNone noneStep
-                                      · by_cases hSome : sg = .gen_optionSome
-                                        · subst hSome
-                                          cases sc with | childCons val sc2 => cases sc2 with
-                                            | childNil =>
-                                                cases childrenIH with | cons scrutStep restS => cases restS with
-                                                  | cons _ restS2 => cases restS2 with
-                                                    | cons someStep _ =>
-                                                        cases scrutStep with | cong _ _ cs => cases cs with
-                                                          | cons valStep rcs => cases rcs with
-                                                            | nil => exact ParStep.iotaOptionMatchSome someStep valStep
-                                        · have key : RawTerm.fireRootRedex .gen_optionMatch payload
-                                              (.childCons (.mkGen sg sp sc)
-                                                (.childCons noneB (.childCons someB .childNil))) = none :=
-                                            (if_neg hNone).trans (dif_neg hSome)
-                                          rw [key] at hfire; nomatch hfire
+                            | childCons motive rest => cases rest with | childCons noneB rest2 => cases rest2 with
+                              | childCons someB rest3 => cases rest3 with | childCons scrut rest4 => cases rest4 with
+                                | childNil =>
+                                    cases scrut with
+                                    | mkGen sg sp sc =>
+                                        by_cases hNone : sg = .gen_optionNone
+                                        · subst hNone
+                                          cases sc with | childNil =>
+                                              cases childrenIH with | cons motiveStep restS => cases restS with
+                                                | cons noneStep _ =>
+                                                    exact ParStep.iotaOptionMatchNone motiveStep noneStep
+                                        · by_cases hSome : sg = .gen_optionSome
+                                          · subst hSome
+                                            cases sc with | childCons val sc2 => cases sc2 with
+                                              | childNil =>
+                                                  cases childrenIH with | cons motiveStep restS => cases restS with
+                                                    | cons _ restS2 => cases restS2 with
+                                                      | cons someStep restS3 => cases restS3 with
+                                                        | cons scrutStep _ =>
+                                                          cases scrutStep with | cong _ _ cs => cases cs with
+                                                            | cons valStep rcs => cases rcs with
+                                                              | nil =>
+                                                                  exact ParStep.iotaOptionMatchSome
+                                                                    motiveStep someStep valStep
+                                          · have key : RawTerm.fireRootRedex .gen_optionMatch payload
+                                                (.childCons motive (.childCons noneB (.childCons someB
+                                                  (.childCons (.mkGen sg sp sc) .childNil)))) = none :=
+                                              (if_neg hNone).trans (dif_neg hSome)
+                                            rw [key] at hfire; nomatch hfire
                           · by_cases hEitherMatch : gen = .gen_eitherMatch
                             · subst hEitherMatch
                               cases children with
-                              | childCons scrut rest => cases rest with | childCons leftB rest2 => cases rest2 with
-                                | childCons rightB rest3 => cases rest3 with | childNil =>
-                                    cases scrut with
-                                    | mkGen sg sp sc =>
-                                        by_cases hInl : sg = .gen_eitherInl
-                                        · subst hInl
-                                          cases sc with | childCons val sc2 => cases sc2 with
-                                            | childNil =>
-                                                cases childrenIH with | cons scrutStep restS => cases restS with
-                                                  | cons leftStep _ =>
-                                                      cases scrutStep with | cong _ _ cs => cases cs with
-                                                        | cons valStep rcs => cases rcs with
-                                                          | nil => exact ParStep.iotaEitherMatchInl leftStep valStep
-                                        · by_cases hInr : sg = .gen_eitherInr
-                                          · subst hInr
+                              | childCons motive rest => cases rest with | childCons leftB rest2 => cases rest2 with
+                                | childCons rightB rest3 => cases rest3 with | childCons scrut rest4 => cases rest4 with
+                                  | childNil =>
+                                      cases scrut with
+                                      | mkGen sg sp sc =>
+                                          by_cases hInl : sg = .gen_eitherInl
+                                          · subst hInl
                                             cases sc with | childCons val sc2 => cases sc2 with
                                               | childNil =>
-                                                  cases childrenIH with | cons scrutStep restS => cases restS with
-                                                    | cons _ restS2 => cases restS2 with
-                                                      | cons rightStep _ =>
+                                                  cases childrenIH with | cons motiveStep restS => cases restS with
+                                                    | cons leftStep restS2 => cases restS2 with
+                                                      | cons _ restS3 => cases restS3 with
+                                                        | cons scrutStep _ =>
                                                           cases scrutStep with | cong _ _ cs => cases cs with
                                                             | cons valStep rcs => cases rcs with
-                                                              | nil => exact ParStep.iotaEitherMatchInr rightStep valStep
-                                          · have key : RawTerm.fireRootRedex .gen_eitherMatch payload
-                                                (.childCons (.mkGen sg sp sc)
-                                                  (.childCons leftB (.childCons rightB .childNil))) = none :=
-                                              (dif_neg hInl).trans (dif_neg hInr)
-                                            rw [key] at hfire; nomatch hfire
+                                                              | nil =>
+                                                                  exact ParStep.iotaEitherMatchInl
+                                                                    motiveStep leftStep valStep
+                                          · by_cases hInr : sg = .gen_eitherInr
+                                            · subst hInr
+                                              cases sc with | childCons val sc2 => cases sc2 with
+                                                | childNil =>
+                                                    cases childrenIH with | cons motiveStep restS => cases restS with
+                                                      | cons _ restS2 => cases restS2 with
+                                                        | cons rightStep restS3 => cases restS3 with
+                                                          | cons scrutStep _ =>
+                                                            cases scrutStep with | cong _ _ cs => cases cs with
+                                                              | cons valStep rcs => cases rcs with
+                                                                | nil =>
+                                                                    exact ParStep.iotaEitherMatchInr
+                                                                      motiveStep rightStep valStep
+                                            · have key : RawTerm.fireRootRedex .gen_eitherMatch payload
+                                                  (.childCons motive (.childCons leftB (.childCons rightB
+                                                    (.childCons (.mkGen sg sp sc) .childNil)))) = none :=
+                                                (dif_neg hInl).trans (dif_neg hInr)
+                                              rw [key] at hfire; nomatch hfire
                             · by_cases hIdJ : gen = .gen_idJ
                               · subst hIdJ
                                 cases children with

@@ -41,18 +41,26 @@ namespace FX1Poly.Core
 
 open StepStar
 
-/-- The `optionMatch` cell over its (scrutinee, noneBranch, someBranch) spine, spelled exactly as
-`IsNeutral.optionMatch` and `Step.from_optionMatch` expect. -/
-abbrev optionMatchCellSpine {scope : Nat} (scrutinee noneBranch someBranch : RawTerm scope) :
-    RawTerm scope :=
+/-- The `optionMatch` cell — `gen_optionMatch` in the Phase-Z motive shape (arity 4, `binderShifts =
+[1, 0, 0, 0]`).  Emitted spine `(motive, noneBranch, someBranch, scrutinee)` — spelled exactly as
+`IsNeutral.optionMatch` and `Step.from_optionMatch` expect (motive FIRST under one binder, scrutinee LAST). -/
+abbrev optionMatchCellSpine {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee noneBranch someBranch : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_optionMatch ()
-    (.childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)))
+    (.childCons motive
+      (.childCons noneBranch
+        (.childCons someBranch
+          (.childCons scrutinee .childNil))))
 
-/-- The `eitherMatch` cell over its (scrutinee, leftBranch, rightBranch) spine. -/
-abbrev eitherMatchCellSpine {scope : Nat} (scrutinee leftBranch rightBranch : RawTerm scope) :
-    RawTerm scope :=
+/-- The `eitherMatch` cell — `gen_eitherMatch` in the Phase-Z motive shape.  Emitted spine
+`(motive, leftBranch, rightBranch, scrutinee)` (motive FIRST under one binder, scrutinee LAST). -/
+abbrev eitherMatchCellSpine {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee leftBranch rightBranch : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_eitherMatch ()
-    (.childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)))
+    (.childCons motive
+      (.childCons leftBranch
+        (.childCons rightBranch
+          (.childCons scrutinee .childNil))))
 
 /-- **A neutral term's head is never the `optionNone` constructor** (an Option ι-vacuity discriminator). -/
 theorem IsNeutral.rootGenerator_ne_optionNone {scope : Nat} {term : RawTerm scope}
@@ -80,103 +88,127 @@ purely by congruence in its three children.  A triple accessibility recursion ov
 someBranch): `Step.from_optionMatch`'s two ι cases are refuted by the neutrality discriminators, and its three
 congruence cases recurse. -/
 theorem optionMatch_neutralScrutinee_isStronglyNormalizing {scope : Nat}
+    {motive : RawTerm (scope + 1)} (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     {scrutinee : RawTerm scope} (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee)
     (scrutineeNeutral : IsNeutral scrutinee)
     {noneBranch someBranch : RawTerm scope}
     (noneBranchStronglyNormalizing : IsStronglyNormalizing noneBranch)
     (someBranchStronglyNormalizing : IsStronglyNormalizing someBranch) :
-    IsStronglyNormalizing (optionMatchCellSpine scrutinee noneBranch someBranch) := by
+    IsStronglyNormalizing (optionMatchCellSpine motive scrutinee noneBranch someBranch) := by
   suffices aux :
     ∀ scrutinee : RawTerm scope, IsStronglyNormalizing scrutinee → IsNeutral scrutinee →
+    ∀ motive : RawTerm (scope + 1), IsStronglyNormalizing motive →
     ∀ noneBranch : RawTerm scope, IsStronglyNormalizing noneBranch →
     ∀ someBranch : RawTerm scope, IsStronglyNormalizing someBranch →
-      IsStronglyNormalizing (optionMatchCellSpine scrutinee noneBranch someBranch) by
-    exact aux scrutinee scrutineeStronglyNormalizing scrutineeNeutral noneBranch
-      noneBranchStronglyNormalizing someBranch someBranchStronglyNormalizing
-  clear scrutineeStronglyNormalizing scrutineeNeutral noneBranchStronglyNormalizing
-    someBranchStronglyNormalizing scrutinee noneBranch someBranch
+      IsStronglyNormalizing (optionMatchCellSpine motive scrutinee noneBranch someBranch) by
+    exact aux scrutinee scrutineeStronglyNormalizing scrutineeNeutral motive
+      motiveStronglyNormalizing noneBranch noneBranchStronglyNormalizing
+      someBranch someBranchStronglyNormalizing
+  clear motiveStronglyNormalizing scrutineeStronglyNormalizing scrutineeNeutral
+    noneBranchStronglyNormalizing someBranchStronglyNormalizing motive scrutinee noneBranch someBranch
   intro scrutinee scrutineeStronglyNormalizing
   induction scrutineeStronglyNormalizing with
   | intro scrutineeNode _scrutineeAccessible scrutineeInductiveHypothesis =>
-    intro scrutineeNeutral noneBranch noneBranchStronglyNormalizing
-    induction noneBranchStronglyNormalizing with
-    | intro noneNode _noneAccessible noneInductiveHypothesis =>
-      intro someBranch someBranchStronglyNormalizing
-      induction someBranchStronglyNormalizing with
-      | intro someNode someNodeAccessible someInductiveHypothesis =>
-        apply Acc.intro
-        intro target step
-        rcases Step.from_optionMatch step with
-          ⟨scrutineeIsNone, _⟩ |
-          ⟨_value, scrutineeIsSome, _⟩ |
-          ⟨scrutineeAfter, targetEquation, scrutineeStep⟩ |
-          ⟨noneAfter, targetEquation, noneStep⟩ |
-          ⟨someAfter, targetEquation, someStep⟩
-        · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsNone)
-            scrutineeNeutral.rootGenerator_ne_optionNone
-        · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsSome)
-            scrutineeNeutral.rootGenerator_ne_optionSome
-        · rw [targetEquation]
-          exact scrutineeInductiveHypothesis scrutineeAfter scrutineeStep
-            (scrutineeNeutral.closedUnderStep scrutineeStep)
-            noneNode (Acc.intro noneNode _noneAccessible)
-            someNode (Acc.intro someNode someNodeAccessible)
-        · rw [targetEquation]
-          exact noneInductiveHypothesis noneAfter noneStep someNode
-            (Acc.intro someNode someNodeAccessible)
-        · rw [targetEquation]
-          exact someInductiveHypothesis someAfter someStep
+    intro scrutineeNeutral motive motiveStronglyNormalizing
+    induction motiveStronglyNormalizing with
+    | intro motiveNode _motiveAccessible motiveInductiveHypothesis =>
+      intro noneBranch noneBranchStronglyNormalizing
+      induction noneBranchStronglyNormalizing with
+      | intro noneNode _noneAccessible noneInductiveHypothesis =>
+        intro someBranch someBranchStronglyNormalizing
+        induction someBranchStronglyNormalizing with
+        | intro someNode someNodeAccessible someInductiveHypothesis =>
+          apply Acc.intro
+          intro target step
+          rcases Step.from_optionMatch step with
+            ⟨scrutineeIsNone, _⟩ |
+            ⟨_value, scrutineeIsSome, _⟩ |
+            ⟨motiveAfter, targetEquation, motiveStep⟩ |
+            ⟨noneAfter, targetEquation, noneStep⟩ |
+            ⟨someAfter, targetEquation, someStep⟩ |
+            ⟨scrutineeAfter, targetEquation, scrutineeStep⟩
+          · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsNone)
+              scrutineeNeutral.rootGenerator_ne_optionNone
+          · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsSome)
+              scrutineeNeutral.rootGenerator_ne_optionSome
+          · rw [targetEquation]
+            exact motiveInductiveHypothesis motiveAfter motiveStep
+              noneNode (Acc.intro noneNode _noneAccessible)
+              someNode (Acc.intro someNode someNodeAccessible)
+          · rw [targetEquation]
+            exact noneInductiveHypothesis noneAfter noneStep someNode
+              (Acc.intro someNode someNodeAccessible)
+          · rw [targetEquation]
+            exact someInductiveHypothesis someAfter someStep
+          · rw [targetEquation]
+            exact scrutineeInductiveHypothesis scrutineeAfter scrutineeStep
+              (scrutineeNeutral.closedUnderStep scrutineeStep)
+              motiveNode (Acc.intro motiveNode _motiveAccessible)
+              noneNode (Acc.intro noneNode _noneAccessible)
+              someNode (Acc.intro someNode someNodeAccessible)
 
 /-- **`eitherMatch` over a neutral SN scrutinee with SN branches is strongly normalizing** — the Either twin of
 `optionMatch_neutralScrutinee_isStronglyNormalizing` (both ι cases are existential `inl`/`inr`, both vacuous by
 neutrality). -/
 theorem eitherMatch_neutralScrutinee_isStronglyNormalizing {scope : Nat}
+    {motive : RawTerm (scope + 1)} (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     {scrutinee : RawTerm scope} (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee)
     (scrutineeNeutral : IsNeutral scrutinee)
     {leftBranch rightBranch : RawTerm scope}
     (leftBranchStronglyNormalizing : IsStronglyNormalizing leftBranch)
     (rightBranchStronglyNormalizing : IsStronglyNormalizing rightBranch) :
-    IsStronglyNormalizing (eitherMatchCellSpine scrutinee leftBranch rightBranch) := by
+    IsStronglyNormalizing (eitherMatchCellSpine motive scrutinee leftBranch rightBranch) := by
   suffices aux :
     ∀ scrutinee : RawTerm scope, IsStronglyNormalizing scrutinee → IsNeutral scrutinee →
+    ∀ motive : RawTerm (scope + 1), IsStronglyNormalizing motive →
     ∀ leftBranch : RawTerm scope, IsStronglyNormalizing leftBranch →
     ∀ rightBranch : RawTerm scope, IsStronglyNormalizing rightBranch →
-      IsStronglyNormalizing (eitherMatchCellSpine scrutinee leftBranch rightBranch) by
-    exact aux scrutinee scrutineeStronglyNormalizing scrutineeNeutral leftBranch
-      leftBranchStronglyNormalizing rightBranch rightBranchStronglyNormalizing
-  clear scrutineeStronglyNormalizing scrutineeNeutral leftBranchStronglyNormalizing
-    rightBranchStronglyNormalizing scrutinee leftBranch rightBranch
+      IsStronglyNormalizing (eitherMatchCellSpine motive scrutinee leftBranch rightBranch) by
+    exact aux scrutinee scrutineeStronglyNormalizing scrutineeNeutral motive
+      motiveStronglyNormalizing leftBranch leftBranchStronglyNormalizing
+      rightBranch rightBranchStronglyNormalizing
+  clear motiveStronglyNormalizing scrutineeStronglyNormalizing scrutineeNeutral
+    leftBranchStronglyNormalizing rightBranchStronglyNormalizing motive scrutinee leftBranch rightBranch
   intro scrutinee scrutineeStronglyNormalizing
   induction scrutineeStronglyNormalizing with
   | intro scrutineeNode _scrutineeAccessible scrutineeInductiveHypothesis =>
-    intro scrutineeNeutral leftBranch leftBranchStronglyNormalizing
-    induction leftBranchStronglyNormalizing with
-    | intro leftNode _leftAccessible leftInductiveHypothesis =>
-      intro rightBranch rightBranchStronglyNormalizing
-      induction rightBranchStronglyNormalizing with
-      | intro rightNode rightNodeAccessible rightInductiveHypothesis =>
-        apply Acc.intro
-        intro target step
-        rcases Step.from_eitherMatch step with
-          ⟨_value, scrutineeIsInl, _⟩ |
-          ⟨_value, scrutineeIsInr, _⟩ |
-          ⟨scrutineeAfter, targetEquation, scrutineeStep⟩ |
-          ⟨leftAfter, targetEquation, leftStep⟩ |
-          ⟨rightAfter, targetEquation, rightStep⟩
-        · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsInl)
-            scrutineeNeutral.rootGenerator_ne_eitherInl
-        · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsInr)
-            scrutineeNeutral.rootGenerator_ne_eitherInr
-        · rw [targetEquation]
-          exact scrutineeInductiveHypothesis scrutineeAfter scrutineeStep
-            (scrutineeNeutral.closedUnderStep scrutineeStep)
-            leftNode (Acc.intro leftNode _leftAccessible)
-            rightNode (Acc.intro rightNode rightNodeAccessible)
-        · rw [targetEquation]
-          exact leftInductiveHypothesis leftAfter leftStep rightNode
-            (Acc.intro rightNode rightNodeAccessible)
-        · rw [targetEquation]
-          exact rightInductiveHypothesis rightAfter rightStep
+    intro scrutineeNeutral motive motiveStronglyNormalizing
+    induction motiveStronglyNormalizing with
+    | intro motiveNode _motiveAccessible motiveInductiveHypothesis =>
+      intro leftBranch leftBranchStronglyNormalizing
+      induction leftBranchStronglyNormalizing with
+      | intro leftNode _leftAccessible leftInductiveHypothesis =>
+        intro rightBranch rightBranchStronglyNormalizing
+        induction rightBranchStronglyNormalizing with
+        | intro rightNode rightNodeAccessible rightInductiveHypothesis =>
+          apply Acc.intro
+          intro target step
+          rcases Step.from_eitherMatch step with
+            ⟨_value, scrutineeIsInl, _⟩ |
+            ⟨_value, scrutineeIsInr, _⟩ |
+            ⟨motiveAfter, targetEquation, motiveStep⟩ |
+            ⟨leftAfter, targetEquation, leftStep⟩ |
+            ⟨rightAfter, targetEquation, rightStep⟩ |
+            ⟨scrutineeAfter, targetEquation, scrutineeStep⟩
+          · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsInl)
+              scrutineeNeutral.rootGenerator_ne_eitherInl
+          · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsInr)
+              scrutineeNeutral.rootGenerator_ne_eitherInr
+          · rw [targetEquation]
+            exact motiveInductiveHypothesis motiveAfter motiveStep
+              leftNode (Acc.intro leftNode _leftAccessible)
+              rightNode (Acc.intro rightNode rightNodeAccessible)
+          · rw [targetEquation]
+            exact leftInductiveHypothesis leftAfter leftStep rightNode
+              (Acc.intro rightNode rightNodeAccessible)
+          · rw [targetEquation]
+            exact rightInductiveHypothesis rightAfter rightStep
+          · rw [targetEquation]
+            exact scrutineeInductiveHypothesis scrutineeAfter scrutineeStep
+              (scrutineeNeutral.closedUnderStep scrutineeStep)
+              motiveNode (Acc.intro motiveNode _motiveAccessible)
+              leftNode (Acc.intro leftNode _leftAccessible)
+              rightNode (Acc.intro rightNode rightNodeAccessible)
 
 /-- **`optionMatch` over a neutral SN scrutinee with reducible branches is a member of the result candidate.**
 The cell is neutral (`IsNeutral.optionMatch`) and SN
@@ -184,14 +216,16 @@ The cell is neutral (`IsNeutral.optionMatch`) and SN
 by the abstract neutral bridge. -/
 theorem optionMatchNeutralScrutineeMember {scope : Nat}
     (resultCandidate : RawTerm scope → Prop) (candidate : IsReducibilityCandidate resultCandidate)
+    {motive : RawTerm (scope + 1)} (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     {scrutinee : RawTerm scope}
     (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee)
     (scrutineeNeutral : IsNeutral scrutinee)
     {noneBranch someBranch : RawTerm scope}
     (noneBranchMember : resultCandidate noneBranch) (someBranchMember : resultCandidate someBranch) :
-    resultCandidate (optionMatchCellSpine scrutinee noneBranch someBranch) :=
+    resultCandidate (optionMatchCellSpine motive scrutinee noneBranch someBranch) :=
   candidate.memberOfStronglyNormalizingNeutral
-    (optionMatch_neutralScrutinee_isStronglyNormalizing scrutineeStronglyNormalizing scrutineeNeutral
+    (optionMatch_neutralScrutinee_isStronglyNormalizing motiveStronglyNormalizing
+      scrutineeStronglyNormalizing scrutineeNeutral
       (candidate.stronglyNormalizing noneBranchMember)
       (candidate.stronglyNormalizing someBranchMember))
     (IsNeutral.optionMatch scrutineeNeutral)
@@ -201,14 +235,16 @@ the Either twin of `optionMatchNeutralScrutineeMember`.  Completes the eliminato
 twelve `IsNeutral` eliminators reducible over a neutral principal child). -/
 theorem eitherMatchNeutralScrutineeMember {scope : Nat}
     (resultCandidate : RawTerm scope → Prop) (candidate : IsReducibilityCandidate resultCandidate)
+    {motive : RawTerm (scope + 1)} (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     {scrutinee : RawTerm scope}
     (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee)
     (scrutineeNeutral : IsNeutral scrutinee)
     {leftBranch rightBranch : RawTerm scope}
     (leftBranchMember : resultCandidate leftBranch) (rightBranchMember : resultCandidate rightBranch) :
-    resultCandidate (eitherMatchCellSpine scrutinee leftBranch rightBranch) :=
+    resultCandidate (eitherMatchCellSpine motive scrutinee leftBranch rightBranch) :=
   candidate.memberOfStronglyNormalizingNeutral
-    (eitherMatch_neutralScrutinee_isStronglyNormalizing scrutineeStronglyNormalizing scrutineeNeutral
+    (eitherMatch_neutralScrutinee_isStronglyNormalizing motiveStronglyNormalizing
+      scrutineeStronglyNormalizing scrutineeNeutral
       (candidate.stronglyNormalizing leftBranchMember)
       (candidate.stronglyNormalizing rightBranchMember))
     (IsNeutral.eitherMatch scrutineeNeutral)

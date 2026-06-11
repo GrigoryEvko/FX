@@ -131,22 +131,34 @@ inductive WeakHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
           (.childCons motive
             (.childCons nilBranch
               (.childCons consBranch (.childCons scrutineeReduct .childNil)))))
-  /-- Reduce the scrutinee of `optionMatch`. -/
-  | scrutineeOptionMatch {scrutinee scrutineeReduct noneBranch someBranch : RawTerm scope} :
+  /-- Reduce the scrutinee of `optionMatch` (Phase-Z: scrutinee is the LAST child;
+      the motive heads the spine at `scope + 1`). -/
+  | scrutineeOptionMatch {motive : RawTerm (scope + 1)}
+      {scrutinee scrutineeReduct noneBranch someBranch : RawTerm scope} :
       WeakHeadStep scrutinee scrutineeReduct →
       WeakHeadStep
         (.mkGen .gen_optionMatch ()
-          (.childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil))))
+          (.childCons motive
+            (.childCons noneBranch
+              (.childCons someBranch (.childCons scrutinee .childNil)))))
         (.mkGen .gen_optionMatch ()
-          (.childCons scrutineeReduct (.childCons noneBranch (.childCons someBranch .childNil))))
-  /-- Reduce the scrutinee of `eitherMatch`. -/
-  | scrutineeEitherMatch {scrutinee scrutineeReduct leftBranch rightBranch : RawTerm scope} :
+          (.childCons motive
+            (.childCons noneBranch
+              (.childCons someBranch (.childCons scrutineeReduct .childNil)))))
+  /-- Reduce the scrutinee of `eitherMatch` (Phase-Z: scrutinee is the LAST child;
+      the motive heads the spine at `scope + 1`). -/
+  | scrutineeEitherMatch {motive : RawTerm (scope + 1)}
+      {scrutinee scrutineeReduct leftBranch rightBranch : RawTerm scope} :
       WeakHeadStep scrutinee scrutineeReduct →
       WeakHeadStep
         (.mkGen .gen_eitherMatch ()
-          (.childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil))))
+          (.childCons motive
+            (.childCons leftBranch
+              (.childCons rightBranch (.childCons scrutinee .childNil)))))
         (.mkGen .gen_eitherMatch ()
-          (.childCons scrutineeReduct (.childCons leftBranch (.childCons rightBranch .childNil))))
+          (.childCons motive
+            (.childCons leftBranch
+              (.childCons rightBranch (.childCons scrutineeReduct .childNil)))))
   /-- Reduce the scrutinee (child 1) of `idJ`. -/
   | scrutineeIdJ {baseCase scrutinee scrutineeReduct : RawTerm scope} :
       WeakHeadStep scrutinee scrutineeReduct →
@@ -205,9 +217,13 @@ theorem WeakHeadStep.toStep {scope : Nat} {term reduct : RawTerm scope}
         (StepChildren.there _
           (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep))))
   | scrutineeOptionMatch _scrutineeStep scrutineeToStep =>
-      exact Step.cong .gen_optionMatch () (StepChildren.here _ scrutineeToStep)
+      exact Step.cong .gen_optionMatch ()
+        (StepChildren.there _
+          (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep))))
   | scrutineeEitherMatch _scrutineeStep scrutineeToStep =>
-      exact Step.cong .gen_eitherMatch () (StepChildren.here _ scrutineeToStep)
+      exact Step.cong .gen_eitherMatch ()
+        (StepChildren.there _
+          (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep))))
   | scrutineeIdJ _scrutineeStep scrutineeToStep =>
       exact Step.cong .gen_idJ () (StepChildren.there _ (StepChildren.here _ scrutineeToStep))
   | scrutineeIdStrictRec _scrutineeStep scrutineeToStep =>

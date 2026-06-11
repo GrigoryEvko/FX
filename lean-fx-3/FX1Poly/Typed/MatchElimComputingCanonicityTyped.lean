@@ -13,8 +13,8 @@ value-layer canonicity for `boolElim`: a closed `boolElim` whose scrutinee is ty
 `↝*` to `boolTrue`/`boolFalse`.  Bool's eliminator has NO payload — every branch is a value, selected directly
 by the ι rule.
 
-The option/either MATCH eliminators DO carry a payload: `optionMatch(some v, n, s) ↝ι app s v` and
-`eitherMatch(inl v, l, r) ↝ι app l v` feed the constructor's stored payload `v` into a *function* branch.  The
+The option/either MATCH eliminators DO carry a payload: `optionMatch(m, n, s, some v) ↝ι app s v` and
+`eitherMatch(m, l, r, inl v) ↝ι app l v` feed the constructor's stored payload `v` into a *function* branch.  The
 general operational `optionMatchComputesToValue` (firing-56) therefore requires the some-branch to produce a
 value *from a NORMAL payload* — and a typed scrutinee reduces to `some inner` with `inner` not necessarily
 normal, so that operational lemma does not compose directly with `closedOptionCanonicalForms`.
@@ -24,7 +24,7 @@ payload obstruction dissolves: a constant branch `λ_. boolTrue` β-reduces to `
 payload (`subst0` of a nullary cell ignores its argument), so the eliminator computes past ANY `inner`:
 
   **`closedOptionMatchIntoBoolComputes` / `closedEitherMatchIntoBoolComputes` (★)** — a closed
-  `optionMatch(scrutinee, boolTrue, λ_.boolTrue)` / `eitherMatch(scrutinee, λ_.boolTrue, λ_.boolFalse)` whose
+  `optionMatch(m, boolTrue, λ_.boolTrue, scrutinee)` / `eitherMatch(m, λ_.boolTrue, λ_.boolFalse, scrutinee)` whose
   *scrutinee* is typed at the option/either type (by the data-intro engine or vacuously by the grown engine)
   reduces by `↝*` to a canonical bool.
 
@@ -64,6 +64,7 @@ reduces to `optionNone`/`optionSome inner` (`closedOptionCanonicalForms`); the s
 under the match; the ι rule selects+applies the branch; and the constant some-branch β-reduces to `boolTrue`
 regardless of `inner`.  The option-match analogue of `closedBoolElimComputesToValue`. -/
 theorem closedOptionMatchIntoBoolComputes {profile : PolyProfile}
+    {motive : RawTerm 1}
     {scrutinee elementType : RawTerm 0}
     (scrutineeTyped :
       HasTypeDescOptionIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee
@@ -71,7 +72,7 @@ theorem closedOptionMatchIntoBoolComputes {profile : PolyProfile}
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (optionTypeCell elementType)) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell scrutinee boolTrueCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1))) out ∧
+      StepStar (optionMatchCell motive boolTrueCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) scrutinee) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) := by
   obtain ⟨scrutValue, scrutReduces, scrutIsOption⟩ := closedOptionCanonicalForms scrutineeTyped
   rcases scrutIsOption with noneEq | ⟨inner, someEq⟩
@@ -93,6 +94,7 @@ reduces by `↝*` to `boolTrue`/`boolFalse`.  The `inl` payload selects+applies 
 the `inr` payload the right (β to `boolFalse`) — irrespective of the stored payload.  The either-match analogue
 of `closedBoolElimComputesToValue`. -/
 theorem closedEitherMatchIntoBoolComputes {profile : PolyProfile}
+    {motive : RawTerm 1}
     {scrutinee leftType rightType : RawTerm 0}
     (scrutineeTyped :
       HasTypeDescEitherIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee
@@ -100,8 +102,8 @@ theorem closedEitherMatchIntoBoolComputes {profile : PolyProfile}
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (eitherTypeCell leftType rightType)) :
     ∃ out : RawTerm 0,
-      StepStar (eitherMatchCell scrutinee (lamCell boolTrueCell (boolTrueCell : RawTerm 1))
-        (lamCell boolTrueCell (boolFalseCell : RawTerm 1))) out ∧
+      StepStar (eitherMatchCell motive (lamCell boolTrueCell (boolTrueCell : RawTerm 1))
+        (lamCell boolTrueCell (boolFalseCell : RawTerm 1)) scrutinee) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) := by
   obtain ⟨scrutValue, scrutReduces, scrutIsEither⟩ := closedEitherCanonicalForms scrutineeTyped
   rcases scrutIsEither with ⟨inner, inlEq⟩ | ⟨inner, inrEq⟩
@@ -125,7 +127,8 @@ theorem closedEitherMatchIntoBoolComputes {profile : PolyProfile}
 on a real typed option (`optionNone : option(Type@0)`). -/
 theorem closedOptionMatchIntoBoolComputes.smoke {profile : PolyProfile} (flag : UniverseFlag) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell optionNoneCell boolTrueCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1))) out ∧
+      StepStar (optionMatchCell (variableCell (⟨0, by decide⟩ : Fin 1)) boolTrueCell
+        (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) optionNoneCell) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   closedOptionMatchIntoBoolComputes (profile := profile)
     (Or.inl (HasTypeDescOptionIntro.optionNoneOfUniverseCodeTyped flag))
@@ -135,8 +138,9 @@ a typed `Inl` scrutinee — computes to `boolTrue` (the left branch).  Witnesses
 `closedEitherMatchIntoBoolComputes` is non-vacuous on a real typed either. -/
 theorem closedEitherMatchIntoBoolComputes.smoke {profile : PolyProfile} (flag : UniverseFlag) :
     ∃ out : RawTerm 0,
-      StepStar (eitherMatchCell (eitherInlCell (universeCodeCell LevelExpr.lzero flag))
-        (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) (lamCell boolTrueCell (boolFalseCell : RawTerm 1))) out ∧
+      StepStar (eitherMatchCell (variableCell (⟨0, by decide⟩ : Fin 1))
+        (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) (lamCell boolTrueCell (boolFalseCell : RawTerm 1))
+        (eitherInlCell (universeCodeCell LevelExpr.lzero flag))) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   closedEitherMatchIntoBoolComputes (profile := profile)
     (Or.inl (HasTypeDescEitherIntro.eitherInlOfUniverseCodeTyped flag))

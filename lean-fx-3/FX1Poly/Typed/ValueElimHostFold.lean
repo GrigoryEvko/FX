@@ -79,9 +79,10 @@ theorem sndHostFold {scope : Nat} (pairHost : (RawTerm scope) × (RawTerm scope)
 
 /-- **★ `optionMatch` computes the host `Option.elim`.**  `optionMatch (rawOption o) n s ↝* o.elim n (s ·)` — the
 `none` branch projects `n`, the `some v` branch applies `s` to `v`, exactly as host `Option.elim`. -/
-theorem optionMatchHostFold {scope : Nat} (scrutinee : Option (RawTerm scope))
+theorem optionMatchHostFold {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee : Option (RawTerm scope))
     (noneBranch someBranch : RawTerm scope) :
-    StepStar (optionMatchCell (rawOptionCell scrutinee) noneBranch someBranch)
+    StepStar (optionMatchCell motive noneBranch someBranch (rawOptionCell scrutinee))
       (scrutinee.elim noneBranch (fun value => appCell someBranch value)) := by
   cases scrutinee
   · exact StepStar.single Step.iotaOptionMatchNone
@@ -89,9 +90,10 @@ theorem optionMatchHostFold {scope : Nat} (scrutinee : Option (RawTerm scope))
 
 /-- **★ `eitherMatch` computes the host `Sum.elim`.**  `eitherMatch (rawEither e) l r ↝* Sum.elim (l ·) (r ·) e`
 — the `inl a` branch applies `l` to `a`, the `inr b` branch applies `r` to `b`, exactly as host `Sum.elim`. -/
-theorem eitherMatchHostFold {scope : Nat} (scrutinee : (RawTerm scope) ⊕ (RawTerm scope))
+theorem eitherMatchHostFold {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee : (RawTerm scope) ⊕ (RawTerm scope))
     (leftBranch rightBranch : RawTerm scope) :
-    StepStar (eitherMatchCell (rawEitherCell scrutinee) leftBranch rightBranch)
+    StepStar (eitherMatchCell motive leftBranch rightBranch (rawEitherCell scrutinee))
       (Sum.elim (fun value => appCell leftBranch value)
         (fun value => appCell rightBranch value) scrutinee) := by
   cases scrutinee
@@ -112,9 +114,13 @@ theorem boolElimHostFold.selectsThen {scope : Nat} (thenBranch elseBranch : RawT
     StepStar (boolElimCell boolTypeCell boolTrueCell thenBranch elseBranch) thenBranch :=
   boolElimHostFold boolTypeCell true thenBranch elseBranch
 
-/-- `optionMatch (some v) n s ↝* s v` — the host fold applies the SOME branch to the stored value. -/
+/-- `optionMatch m n s (some v) ↝* s v` — the host fold applies the SOME branch to the stored value.  Phase-Z
+motive shape: a `var 0` under-binder throwaway motive at the head (discarded by the ι). -/
 theorem optionMatchHostFold.firesSome {scope : Nat} (value noneBranch someBranch : RawTerm scope) :
-    StepStar (optionMatchCell (optionSomeCell value) noneBranch someBranch) (appCell someBranch value) :=
-  optionMatchHostFold (some value) noneBranch someBranch
+    StepStar
+      (optionMatchCell (variableCell (⟨0, Nat.succ_pos scope⟩ : Fin (scope + 1))) noneBranch someBranch
+        (optionSomeCell value))
+      (appCell someBranch value) :=
+  optionMatchHostFold (variableCell (⟨0, Nat.succ_pos scope⟩ : Fin (scope + 1))) (some value) noneBranch someBranch
 
 end FX1Poly.Typed

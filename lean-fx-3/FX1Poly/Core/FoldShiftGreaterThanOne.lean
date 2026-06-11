@@ -31,9 +31,11 @@ succ cases.  Concretely:
 
 * `gen_natElim` → `[1 (motive), 0 (zero case), 2 (succ case), 0
   (scrutinee)]` — the succ case binds (predecessor, ih, result).
-* Similar shift > 1 patterns for `gen_listElim`, `gen_optionMatch`,
-  `gen_eitherMatch`, and the HIT eliminators (`gen_quotRec`,
-  `gen_pushRec`, `gen_circleRec`).
+* Similar shift > 1 patterns for `gen_listElim` (cons case binds the
+  IH) and the HIT eliminators (`gen_quotRec`, `gen_pushRec`,
+  `gen_circleRec`).  Non-recursive matchers `gen_optionMatch` /
+  `gen_eitherMatch` carry the motive-only shift `[1, 0, 0, 0]`
+  (max shift 1 — the motive binds the scrutinee, no IH thread).
 
 These require the engine to handle shift ≥ 2.  This smoke pins that
 behavior against the shift-polymorphic engine, so that refactors

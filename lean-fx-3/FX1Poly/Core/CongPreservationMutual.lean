@@ -283,17 +283,22 @@ theorem PolyCell.exists_preservedByIotaListElimNil_dim0
   | gen _ _ sourceSpine =>
       exact ⟨sourceSpine.tail.headAtDim0 rfl, True.intro⟩
 
-/-- Exact witness for `optionMatch optionNone noneBranch someBranch ↝ noneBranch`. -/
+/-- Exact witness for `optionMatch motive noneBranch someBranch optionNone ↝ noneBranch`.
+Phase-Z motive shape: motive first (under one binder), scrutinee last; noneBranch
+sits at spine position 1, projected via `tail.headAtDim0`. -/
 theorem PolyCell.exists_preservedByIotaOptionMatchNone_dim0
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch someBranch : RawTerm scope}
     (sourceCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
           ((.mkGen .gen_optionMatch ()
-            (.childCons (.mkGen .gen_optionNone () .childNil)
+            (.childCons motive
               (.childCons noneBranch
-                (.childCons someBranch .childNil)))) : RawTerm scope))) :
+                (.childCons someBranch
+                  (.childCons (.mkGen .gen_optionNone () .childNil)
+                    .childNil))))) : RawTerm scope))) :
     ∃ _targetCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase noneBranch),
@@ -355,18 +360,22 @@ the source.  They are the exact-cell counterparts of the existing
 target cell at sort `.term` directly for the Prop-valued final
 `StepCellPreserverWitness` dispatcher. -/
 
-/-- Exact witness for `optionMatch (optionSome value) none some ↝ app some value`. -/
+/-- Exact witness for `optionMatch motive none some (optionSome value) ↝ app some value`.
+Phase-Z motive shape: motive first (skipped), scrutinee LAST. -/
 theorem PolyCell.exists_preservedByIotaOptionMatchSome_dim0
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch someBranch : RawTerm scope}
     (sourceCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
           ((.mkGen .gen_optionMatch ()
-            (.childCons
-              (.mkGen .gen_optionSome () (.childCons value .childNil))
+            (.childCons motive
               (.childCons noneBranch
-                (.childCons someBranch .childNil)))) : RawTerm scope))) :
+                (.childCons someBranch
+                  (.childCons
+                    (.mkGen .gen_optionSome () (.childCons value .childNil))
+                    .childNil))))) : RawTerm scope))) :
     ∃ _targetCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
@@ -378,40 +387,46 @@ theorem PolyCell.exists_preservedByIotaOptionMatchSome_dim0
   cases sourceCell with
   | gen _ _ sourceSpine =>
       cases sourceSpine with
-      | cons optionSomeCell restAfterOptionSome =>
-          cases restAfterOptionSome with
+      | cons _motiveCell restAfterMotive =>
+          cases restAfterMotive with
           | cons _noneBranchCell restAfterNone =>
               cases restAfterNone with
-              | cons someBranchCell _ =>
-                  generalize hOptionSort :
-                      (ChildSpec.termSameScope.cellSort) = optionSort
-                    at optionSomeCell
-                  cases optionSomeCell with
-                  | gen _ _ optionSomeSpine =>
-                      cases optionSomeSpine with
-                      | cons valueCell _ =>
-                          exact ⟨
-                            PolyCell.gen
-                              SupportedGenerator.gen_app
-                              (genPayloadEvidence (generator := .gen_app)
-                                (scope := scope) ())
-                              (CertifiedTermSpine.cons someBranchCell
-                                (CertifiedTermSpine.cons valueCell
-                                  CertifiedTermSpine.nil)),
-                            True.intro⟩
+              | cons someBranchCell restAfterSome =>
+                  cases restAfterSome with
+                  | cons optionSomeCell _ =>
+                      generalize hOptionSort :
+                          (ChildSpec.termSameScope.cellSort) = optionSort
+                        at optionSomeCell
+                      cases optionSomeCell with
+                      | gen _ _ optionSomeSpine =>
+                          cases optionSomeSpine with
+                          | cons valueCell _ =>
+                              exact ⟨
+                                PolyCell.gen
+                                  SupportedGenerator.gen_app
+                                  (genPayloadEvidence (generator := .gen_app)
+                                    (scope := scope) ())
+                                  (CertifiedTermSpine.cons someBranchCell
+                                    (CertifiedTermSpine.cons valueCell
+                                      CertifiedTermSpine.nil)),
+                                True.intro⟩
 
-/-- Exact witness for `eitherMatch (eitherInl value) left right ↝ app left value`. -/
+/-- Exact witness for `eitherMatch motive left right (eitherInl value) ↝ app left value`.
+Phase-Z motive shape: motive first (skipped), scrutinee LAST. -/
 theorem PolyCell.exists_preservedByIotaEitherMatchInl_dim0
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch : RawTerm scope}
     (sourceCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
           ((.mkGen .gen_eitherMatch ()
-            (.childCons
-              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+            (.childCons motive
               (.childCons leftBranch
-                (.childCons rightBranch .childNil)))) : RawTerm scope))) :
+                (.childCons rightBranch
+                  (.childCons
+                    (.mkGen .gen_eitherInl () (.childCons value .childNil))
+                    .childNil))))) : RawTerm scope))) :
     ∃ _targetCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
@@ -423,38 +438,46 @@ theorem PolyCell.exists_preservedByIotaEitherMatchInl_dim0
   cases sourceCell with
   | gen _ _ sourceSpine =>
       cases sourceSpine with
-      | cons eitherInlCell restAfterEitherInl =>
-          cases restAfterEitherInl with
-          | cons leftBranchCell _restAfterLeft =>
-              generalize hEitherSort :
-                  (ChildSpec.termSameScope.cellSort) = eitherSort
-                at eitherInlCell
-              cases eitherInlCell with
-              | gen _ _ eitherInlSpine =>
-                  cases eitherInlSpine with
-                  | cons valueCell _ =>
-                      exact ⟨
-                        PolyCell.gen
-                          SupportedGenerator.gen_app
-                          (genPayloadEvidence (generator := .gen_app)
-                            (scope := scope) ())
-                          (CertifiedTermSpine.cons leftBranchCell
-                            (CertifiedTermSpine.cons valueCell
-                              CertifiedTermSpine.nil)),
-                        True.intro⟩
+      | cons _motiveCell restAfterMotive =>
+          cases restAfterMotive with
+          | cons leftBranchCell restAfterLeft =>
+              cases restAfterLeft with
+              | cons _rightBranchCell restAfterRight =>
+                  cases restAfterRight with
+                  | cons eitherInlCell _ =>
+                      generalize hEitherSort :
+                          (ChildSpec.termSameScope.cellSort) = eitherSort
+                        at eitherInlCell
+                      cases eitherInlCell with
+                      | gen _ _ eitherInlSpine =>
+                          cases eitherInlSpine with
+                          | cons valueCell _ =>
+                              exact ⟨
+                                PolyCell.gen
+                                  SupportedGenerator.gen_app
+                                  (genPayloadEvidence (generator := .gen_app)
+                                    (scope := scope) ())
+                                  (CertifiedTermSpine.cons leftBranchCell
+                                    (CertifiedTermSpine.cons valueCell
+                                      CertifiedTermSpine.nil)),
+                                True.intro⟩
 
-/-- Exact witness for `eitherMatch (eitherInr value) left right ↝ app right value`. -/
+/-- Exact witness for `eitherMatch motive left right (eitherInr value) ↝ app right value`.
+Phase-Z motive shape: motive first (skipped), scrutinee LAST. -/
 theorem PolyCell.exists_preservedByIotaEitherMatchInr_dim0
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch : RawTerm scope}
     (sourceCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
           ((.mkGen .gen_eitherMatch ()
-            (.childCons
-              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+            (.childCons motive
               (.childCons leftBranch
-                (.childCons rightBranch .childNil)))) : RawTerm scope))) :
+                (.childCons rightBranch
+                  (.childCons
+                    (.mkGen .gen_eitherInr () (.childCons value .childNil))
+                    .childNil))))) : RawTerm scope))) :
     ∃ _targetCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
@@ -466,27 +489,29 @@ theorem PolyCell.exists_preservedByIotaEitherMatchInr_dim0
   cases sourceCell with
   | gen _ _ sourceSpine =>
       cases sourceSpine with
-      | cons eitherInrCell restAfterEitherInr =>
-          cases restAfterEitherInr with
+      | cons _motiveCell restAfterMotive =>
+          cases restAfterMotive with
           | cons _leftBranchCell restAfterLeft =>
               cases restAfterLeft with
-              | cons rightBranchCell _ =>
-                  generalize hEitherSort :
-                      (ChildSpec.termSameScope.cellSort) = eitherSort
-                    at eitherInrCell
-                  cases eitherInrCell with
-                  | gen _ _ eitherInrSpine =>
-                      cases eitherInrSpine with
-                      | cons valueCell _ =>
-                          exact ⟨
-                            PolyCell.gen
-                              SupportedGenerator.gen_app
-                              (genPayloadEvidence (generator := .gen_app)
-                                (scope := scope) ())
-                              (CertifiedTermSpine.cons rightBranchCell
-                                (CertifiedTermSpine.cons valueCell
-                                  CertifiedTermSpine.nil)),
-                            True.intro⟩
+              | cons rightBranchCell restAfterRight =>
+                  cases restAfterRight with
+                  | cons eitherInrCell _ =>
+                      generalize hEitherSort :
+                          (ChildSpec.termSameScope.cellSort) = eitherSort
+                        at eitherInrCell
+                      cases eitherInrCell with
+                      | gen _ _ eitherInrSpine =>
+                          cases eitherInrSpine with
+                          | cons valueCell _ =>
+                              exact ⟨
+                                PolyCell.gen
+                                  SupportedGenerator.gen_app
+                                  (genPayloadEvidence (generator := .gen_app)
+                                    (scope := scope) ())
+                                  (CertifiedTermSpine.cons rightBranchCell
+                                    (CertifiedTermSpine.cons valueCell
+                                      CertifiedTermSpine.nil)),
+                                True.intro⟩
 
 /-- Cons-substitution-cells witness for the natElim/natRec succ-iota:
 the substitution `RawTermSubst.cons recursiveCall (RawTermSubst.singleton
@@ -1092,25 +1117,25 @@ theorem StepCellPreserverWitness.polyCell (profile : PolyProfile) :
             exact PolyCell.exists_preservedByIotaListElimNil_dim0
               (PolyCell.gen admission payloadEvidence sourceSpine))
       (iotaOptionMatchNone := by
-        intro _scope _noneBranch _someBranch _sort sourceCell
+        intro _scope _motive _noneBranch _someBranch _sort sourceCell
         cases sourceCell with
         | gen admission payloadEvidence sourceSpine =>
             exact PolyCell.exists_preservedByIotaOptionMatchNone_dim0
               (PolyCell.gen admission payloadEvidence sourceSpine))
       (iotaOptionMatchSome := by
-        intro _scope _value _noneBranch _someBranch _sort sourceCell
+        intro _scope _motive _value _noneBranch _someBranch _sort sourceCell
         cases sourceCell with
         | gen admission payloadEvidence sourceSpine =>
             exact PolyCell.exists_preservedByIotaOptionMatchSome_dim0
               (PolyCell.gen admission payloadEvidence sourceSpine))
       (iotaEitherMatchInl := by
-        intro _scope _value _leftBranch _rightBranch _sort sourceCell
+        intro _scope _motive _value _leftBranch _rightBranch _sort sourceCell
         cases sourceCell with
         | gen admission payloadEvidence sourceSpine =>
             exact PolyCell.exists_preservedByIotaEitherMatchInl_dim0
               (PolyCell.gen admission payloadEvidence sourceSpine))
       (iotaEitherMatchInr := by
-        intro _scope _value _leftBranch _rightBranch _sort sourceCell
+        intro _scope _motive _value _leftBranch _rightBranch _sort sourceCell
         cases sourceCell with
         | gen admission payloadEvidence sourceSpine =>
             exact PolyCell.exists_preservedByIotaEitherMatchInr_dim0

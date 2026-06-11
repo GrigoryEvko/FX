@@ -368,11 +368,11 @@ def Generator.arity : Generator → Nat
   -- Options
   | .gen_optionNone   => 0
   | .gen_optionSome   => 1  -- valueTerm
-  | .gen_optionMatch  => 3  -- scrutinee, noneBranch, someBranch
+  | .gen_optionMatch  => 4  -- motive (under binder), noneBranch, someBranch, scrutinee
   -- Eithers
   | .gen_eitherInl    => 1  -- valueTerm
   | .gen_eitherInr    => 1  -- valueTerm
-  | .gen_eitherMatch  => 3  -- scrutinee, leftBranch, rightBranch
+  | .gen_eitherMatch  => 4  -- motive (under binder), leftBranch, rightBranch, scrutinee
   -- Identity types
   | .gen_refl         => 1  -- rawWitness
   | .gen_idJ          => 2  -- baseCase, witness
@@ -679,11 +679,11 @@ def Generator.binderShifts : Generator → List Nat
   -- Options
   | .gen_optionNone   => []
   | .gen_optionSome   => [0]
-  | .gen_optionMatch  => [0, 0, 0]
+  | .gen_optionMatch  => [1, 0, 0, 0]  -- motive binds the scrutinee option
   -- Eithers
   | .gen_eitherInl    => [0]
   | .gen_eitherInr    => [0]
-  | .gen_eitherMatch  => [0, 0, 0]
+  | .gen_eitherMatch  => [1, 0, 0, 0]  -- motive binds the scrutinee either
   -- Identity types
   | .gen_refl         => [0]
   | .gen_idJ          => [0, 0]

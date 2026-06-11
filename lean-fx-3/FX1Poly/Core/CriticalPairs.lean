@@ -1097,15 +1097,17 @@ def iotaListElimNilSameRoot {scope : Nat}
   leftStep := Step.iotaListElimNil
   rightStep := Step.iotaListElimNil
 
-/-- The concrete same-root `optionMatch` none-case iota branching. -/
+/-- The concrete same-root `optionMatch` none-case iota branching.
+Phase-Z motive shape: motive first (under one binder), scrutinee last. -/
 def iotaOptionMatchNoneSameRoot {scope : Nat}
-    (noneBranch someBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (noneBranch someBranch : RawTerm scope) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionNone () .childNil)
-        (.childCons noneBranch (.childCons someBranch .childNil)))
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))
   leftReduct := noneBranch
   rightReduct := noneBranch
   leftStep := Step.iotaOptionMatchNone
@@ -1143,15 +1145,20 @@ def iotaIdStrictRecReflSameRoot {scope : Nat}
   leftStep := Step.iotaIdStrictRecRefl
   rightStep := Step.iotaIdStrictRecRefl
 
-/-- The concrete same-root `optionMatch` some-case iota branching. -/
+/-- The concrete same-root `optionMatch` some-case iota branching.
+Phase-Z motive shape: motive first (under one binder), scrutinee last. -/
 def iotaOptionMatchSomeSameRoot {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value noneBranch someBranch : RawTerm scope) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionSome () (.childCons value .childNil))
-        (.childCons noneBranch (.childCons someBranch .childNil)))
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons someBranch (.childCons value .childNil))
@@ -1161,15 +1168,20 @@ def iotaOptionMatchSomeSameRoot {scope : Nat}
   leftStep := Step.iotaOptionMatchSome
   rightStep := Step.iotaOptionMatchSome
 
-/-- The concrete same-root `eitherMatch` inl-case iota branching. -/
+/-- The concrete same-root `eitherMatch` inl-case iota branching.
+Phase-Z motive shape: motive first (under one binder), scrutinee last. -/
 def iotaEitherMatchInlSameRoot {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value leftBranch rightBranch : RawTerm scope) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInl () (.childCons value .childNil))
-        (.childCons leftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons leftBranch (.childCons value .childNil))
@@ -1179,15 +1191,20 @@ def iotaEitherMatchInlSameRoot {scope : Nat}
   leftStep := Step.iotaEitherMatchInl
   rightStep := Step.iotaEitherMatchInl
 
-/-- The concrete same-root `eitherMatch` inr-case iota branching. -/
+/-- The concrete same-root `eitherMatch` inr-case iota branching.
+Phase-Z motive shape: motive first (under one binder), scrutinee last. -/
 def iotaEitherMatchInrSameRoot {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value leftBranch rightBranch : RawTerm scope) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInr () (.childCons value .childNil))
-        (.childCons leftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons rightBranch (.childCons value .childNil))
@@ -1430,12 +1447,13 @@ theorem iotaListElimCons_iotaListElimNil_sourcesDisjoint {scope : Nat}
 root redex sources, so a none/some root-root branching is impossible. -/
 theorem iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint
     {scope : Nat}
+    (motiveNone motiveSome : RawTerm (scope + 1))
     (noneBranch someBranch value
       noneBranchSome someBranchSome : RawTerm scope) :
     Not
-      ((iotaOptionMatchNoneSameRoot noneBranch someBranch).source =
+      ((iotaOptionMatchNoneSameRoot motiveNone noneBranch someBranch).source =
         (iotaOptionMatchSomeSameRoot
-          value noneBranchSome someBranchSome).source) := by
+          motiveSome value noneBranchSome someBranchSome).source) := by
   intro sourceEquality
   dsimp [iotaOptionMatchNoneSameRoot, iotaOptionMatchSomeSameRoot]
     at sourceEquality
@@ -1445,15 +1463,17 @@ theorem iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint
 `iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint`. -/
 theorem iotaOptionMatchSome_iotaOptionMatchNone_sourcesDisjoint
     {scope : Nat}
+    (motiveSome motiveNone : RawTerm (scope + 1))
     (value noneBranchSome someBranchSome
       noneBranch someBranch : RawTerm scope) :
     Not
       ((iotaOptionMatchSomeSameRoot
-          value noneBranchSome someBranchSome).source =
-        (iotaOptionMatchNoneSameRoot noneBranch someBranch).source) := by
+          motiveSome value noneBranchSome someBranchSome).source =
+        (iotaOptionMatchNoneSameRoot motiveNone noneBranch someBranch).source) := by
   intro sourceEquality
   exact
     (iotaOptionMatchNone_iotaOptionMatchSome_sourcesDisjoint
+      motiveNone motiveSome
       noneBranch someBranch value noneBranchSome someBranchSome)
       sourceEquality.symm
 
@@ -1462,13 +1482,14 @@ disjoint root redex sources, so an inl/inr root-root branching is
 impossible. -/
 theorem iotaEitherMatchInl_iotaEitherMatchInr_sourcesDisjoint
     {scope : Nat}
+    (motiveInl motiveInr : RawTerm (scope + 1))
     (leftValue leftBranch rightBranch rightValue
       leftBranchRight rightBranchRight : RawTerm scope) :
     Not
       ((iotaEitherMatchInlSameRoot
-          leftValue leftBranch rightBranch).source =
+          motiveInl leftValue leftBranch rightBranch).source =
         (iotaEitherMatchInrSameRoot
-          rightValue leftBranchRight rightBranchRight).source) := by
+          motiveInr rightValue leftBranchRight rightBranchRight).source) := by
   intro sourceEquality
   dsimp [iotaEitherMatchInlSameRoot, iotaEitherMatchInrSameRoot]
     at sourceEquality
@@ -1478,16 +1499,18 @@ theorem iotaEitherMatchInl_iotaEitherMatchInr_sourcesDisjoint
 `iotaEitherMatchInl_iotaEitherMatchInr_sourcesDisjoint`. -/
 theorem iotaEitherMatchInr_iotaEitherMatchInl_sourcesDisjoint
     {scope : Nat}
+    (motiveInr motiveInl : RawTerm (scope + 1))
     (rightValue leftBranchRight rightBranchRight leftValue
       leftBranch rightBranch : RawTerm scope) :
     Not
       ((iotaEitherMatchInrSameRoot
-          rightValue leftBranchRight rightBranchRight).source =
+          motiveInr rightValue leftBranchRight rightBranchRight).source =
         (iotaEitherMatchInlSameRoot
-          leftValue leftBranch rightBranch).source) := by
+          motiveInl leftValue leftBranch rightBranch).source) := by
   intro sourceEquality
   exact
     (iotaEitherMatchInl_iotaEitherMatchInr_sourcesDisjoint
+      motiveInl motiveInr
       leftValue leftBranch rightBranch rightValue
       leftBranchRight rightBranchRight) sourceEquality.symm
 
@@ -2865,358 +2888,629 @@ def iotaListElimConsMotiveCong {scope : Nat}
           RawTermChildren [0, 0, 0] scope)
         motiveStep)
 
+/-- Root `optionMatch optionNone` iota branching against congruence in the
+discarded motive (Phase-Z motive shape, at `scope + 1`).  The none-case iota
+operationally discards the motive, so the local diamond joins immediately at
+the none-branch. -/
+def iotaOptionMatchNoneMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {noneBranch someBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_optionMatch ()
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))
+  leftReduct := noneBranch
+  rightReduct :=
+    .mkGen .gen_optionMatch ()
+      (.childCons steppedMotive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))
+  leftStep := Step.iotaOptionMatchNone
+  rightStep :=
+    Step.cong .gen_optionMatch ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        ((.childCons noneBranch
+          (.childCons someBranch
+            (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))) :
+          RawTermChildren [0, 0, 0] scope)
+        motiveStep)
+
+/-- Root `optionMatch (optionSome value)` iota branching against congruence in
+the discarded motive (Phase-Z motive shape, at `scope + 1`).  The some-case iota
+discards the motive, so the diamond joins at the `app someBranch value` reduct. -/
+def iotaOptionMatchSomeMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value noneBranch someBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_optionMatch ()
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil))))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons someBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_optionMatch ()
+      (.childCons steppedMotive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil))))
+  leftStep := Step.iotaOptionMatchSome
+  rightStep :=
+    Step.cong .gen_optionMatch ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        ((.childCons noneBranch
+          (.childCons someBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil))) :
+          RawTermChildren [0, 0, 0] scope)
+        motiveStep)
+
+/-- Root `eitherMatch (eitherInl value)` iota branching against congruence in
+the discarded motive (Phase-Z motive shape, at `scope + 1`).  The inl-case iota
+discards the motive, so the diamond joins at the `app leftBranch value` reduct. -/
+def iotaEitherMatchInlMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value leftBranch rightBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil))))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons leftBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons steppedMotive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil))))
+  leftStep := Step.iotaEitherMatchInl
+  rightStep :=
+    Step.cong .gen_eitherMatch ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        ((.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil))) :
+          RawTermChildren [0, 0, 0] scope)
+        motiveStep)
+
+/-- Root `eitherMatch (eitherInr value)` iota branching against congruence in
+the discarded motive (Phase-Z motive shape, at `scope + 1`).  The inr-case iota
+discards the motive, so the diamond joins at the `app rightBranch value` reduct. -/
+def iotaEitherMatchInrMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value leftBranch rightBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil))))
+  leftReduct :=
+    .mkGen .gen_app ()
+      (.childCons rightBranch (.childCons value .childNil))
+  rightReduct :=
+    .mkGen .gen_eitherMatch ()
+      (.childCons steppedMotive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil))))
+  leftStep := Step.iotaEitherMatchInr
+  rightStep :=
+    Step.cong .gen_eitherMatch ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        ((.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil))) :
+          RawTermChildren [0, 0, 0] scope)
+        motiveStep)
+
 /-- Root `optionMatch optionNone` iota branching against congruence in
-the selected none-branch. -/
+the selected none-branch.  Phase-Z motive shape: motive first (shift 1),
+scrutinee last. -/
 def iotaOptionMatchNoneBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch steppedNoneBranch someBranch : RawTerm scope}
     (noneStep : Step noneBranch steppedNoneBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionNone () .childNil)
-        (.childCons noneBranch (.childCons someBranch .childNil)))
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))
   leftReduct := noneBranch
   rightReduct :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionNone () .childNil)
-        (.childCons steppedNoneBranch (.childCons someBranch .childNil)))
+      (.childCons motive
+        (.childCons steppedNoneBranch
+          (.childCons someBranch
+            (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))
   leftStep := Step.iotaOptionMatchNone
   rightStep :=
     Step.cong .gen_optionMatch ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_optionNone () .childNil) : RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.here
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
-          ((.childCons someBranch .childNil) :
-            RawTermChildren [0] scope)
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+          ((.childCons someBranch
+            (.childCons (.mkGen .gen_optionNone () .childNil) .childNil)) :
+            RawTermChildren [0, 0] scope)
           noneStep))
 
 /-- Root `optionMatch optionNone` iota branching against congruence in
-the discarded some-branch. -/
+the discarded some-branch.  Phase-Z motive shape: motive first (shift 1),
+scrutinee last. -/
 def iotaOptionMatchSomeBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch someBranch steppedSomeBranch : RawTerm scope}
     (someStep : Step someBranch steppedSomeBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionNone () .childNil)
-        (.childCons noneBranch (.childCons someBranch .childNil)))
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))
   leftReduct := noneBranch
   rightReduct :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionNone () .childNil)
-        (.childCons noneBranch (.childCons steppedSomeBranch .childNil)))
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons steppedSomeBranch
+            (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))
   leftStep := Step.iotaOptionMatchNone
   rightStep :=
     Step.cong .gen_optionMatch ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_optionNone () .childNil) : RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.there
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
           noneBranch
           (StepChildren.here
-            (parentScope := scope) (headShift := 0) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons (.mkGen .gen_optionNone () .childNil) .childNil) :
+              RawTermChildren [0] scope)
             someStep)))
 
 /-- Root `optionMatch (optionSome value)` iota branching against
-congruence inside the `optionSome` payload. -/
+congruence inside the `optionSome` payload (the scrutinee, LAST child).
+Phase-Z motive shape: motive first (shift 1), scrutinee last. -/
 def iotaOptionMatchSomeValueCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue noneBranch someBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionSome () (.childCons value .childNil))
-        (.childCons noneBranch (.childCons someBranch .childNil)))
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons someBranch (.childCons value .childNil))
   rightReduct :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionSome () (.childCons steppedValue .childNil))
-        (.childCons noneBranch (.childCons someBranch .childNil)))
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons steppedValue .childNil))
+              .childNil))))
   leftStep := Step.iotaOptionMatchSome
   rightStep :=
     Step.cong .gen_optionMatch ()
-      (StepChildren.here
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.childCons noneBranch (.childCons someBranch .childNil)) :
-          RawTermChildren [0, 0] scope)
-        (Step.cong .gen_optionSome ()
-          (StepChildren.here
-            (parentScope := scope) (headShift := 0) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
-            valueStep)))
+      (StepChildren.there
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+          noneBranch
+          (StepChildren.there
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            someBranch
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              (Step.cong .gen_optionSome ()
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0) (restShifts := [])
+                  (.childNil : RawTermChildren [] scope)
+                  valueStep))))))
 
 /-- Root `optionMatch (optionSome value)` iota branching against
-congruence in the discarded none-branch. -/
+congruence in the discarded none-branch.  Phase-Z motive shape: motive
+first (shift 1), scrutinee last. -/
 def iotaOptionMatchSomeNoneBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch steppedNoneBranch someBranch : RawTerm scope}
     (noneStep : Step noneBranch steppedNoneBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionSome () (.childCons value .childNil))
-        (.childCons noneBranch (.childCons someBranch .childNil)))
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons someBranch (.childCons value .childNil))
   rightReduct :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionSome () (.childCons value .childNil))
-        (.childCons steppedNoneBranch (.childCons someBranch .childNil)))
+      (.childCons motive
+        (.childCons steppedNoneBranch
+          (.childCons someBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil))))
   leftStep := Step.iotaOptionMatchSome
   rightStep :=
     Step.cong .gen_optionMatch ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_optionSome () (.childCons value .childNil)) :
-          RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.here
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
-          ((.childCons someBranch .childNil) :
-            RawTermChildren [0] scope)
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+          ((.childCons someBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil)) :
+            RawTermChildren [0, 0] scope)
           noneStep))
 
 /-- Root `optionMatch (optionSome value)` iota branching against
-congruence in the selected some-branch. -/
+congruence in the selected some-branch.  Phase-Z motive shape: motive
+first (shift 1), scrutinee last. -/
 def iotaOptionMatchSomeSomeBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch someBranch steppedSomeBranch : RawTerm scope}
     (someStep : Step someBranch steppedSomeBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionSome () (.childCons value .childNil))
-        (.childCons noneBranch (.childCons someBranch .childNil)))
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons someBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons someBranch (.childCons value .childNil))
   rightReduct :=
     .mkGen .gen_optionMatch ()
-      (.childCons
-        (.mkGen .gen_optionSome () (.childCons value .childNil))
-        (.childCons noneBranch (.childCons steppedSomeBranch .childNil)))
+      (.childCons motive
+        (.childCons noneBranch
+          (.childCons steppedSomeBranch
+            (.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil))))
   leftStep := Step.iotaOptionMatchSome
   rightStep :=
     Step.cong .gen_optionMatch ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_optionSome () (.childCons value .childNil)) :
-          RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.there
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
           noneBranch
           (StepChildren.here
-            (parentScope := scope) (headShift := 0) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons
+              (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil) :
+              RawTermChildren [0] scope)
             someStep)))
 
 /-- Root `eitherMatch (eitherInl value)` iota branching against congruence
-inside the `eitherInl` payload. -/
+inside the `eitherInl` payload (the scrutinee, LAST child).  Phase-Z motive
+shape: motive first (shift 1), scrutinee last. -/
 def iotaEitherMatchInlValueCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue leftBranch rightBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInl () (.childCons value .childNil))
-        (.childCons leftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons leftBranch (.childCons value .childNil))
   rightReduct :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInl () (.childCons steppedValue .childNil))
-        (.childCons leftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons steppedValue .childNil))
+              .childNil))))
   leftStep := Step.iotaEitherMatchInl
   rightStep :=
     Step.cong .gen_eitherMatch ()
-      (StepChildren.here
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.childCons leftBranch (.childCons rightBranch .childNil)) :
-          RawTermChildren [0, 0] scope)
-        (Step.cong .gen_eitherInl ()
-          (StepChildren.here
-            (parentScope := scope) (headShift := 0) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
-            valueStep)))
+      (StepChildren.there
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+          leftBranch
+          (StepChildren.there
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            rightBranch
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              (Step.cong .gen_eitherInl ()
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0) (restShifts := [])
+                  (.childNil : RawTermChildren [] scope)
+                  valueStep))))))
 
 /-- Root `eitherMatch (eitherInl value)` iota branching against congruence
-in the selected left branch. -/
+in the selected left branch.  Phase-Z motive shape: motive first (shift 1),
+scrutinee last. -/
 def iotaEitherMatchInlLeftBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
     (leftStep : Step leftBranch steppedLeftBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInl () (.childCons value .childNil))
-        (.childCons leftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons leftBranch (.childCons value .childNil))
   rightReduct :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInl () (.childCons value .childNil))
-        (.childCons steppedLeftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons steppedLeftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil))))
   leftStep := Step.iotaEitherMatchInl
   rightStep :=
     Step.cong .gen_eitherMatch ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_eitherInl () (.childCons value .childNil)) :
-          RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.here
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
-          ((.childCons rightBranch .childNil) :
-            RawTermChildren [0] scope)
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+          ((.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil)) :
+            RawTermChildren [0, 0] scope)
           leftStep))
 
 /-- Root `eitherMatch (eitherInl value)` iota branching against congruence
-in the discarded right branch. -/
+in the discarded right branch.  Phase-Z motive shape: motive first
+(shift 1), scrutinee last. -/
 def iotaEitherMatchInlRightBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
     (rightStep : Step rightBranch steppedRightBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInl () (.childCons value .childNil))
-        (.childCons leftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons leftBranch (.childCons value .childNil))
   rightReduct :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInl () (.childCons value .childNil))
-        (.childCons leftBranch (.childCons steppedRightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons steppedRightBranch
+            (.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil))))
   leftStep := Step.iotaEitherMatchInl
   rightStep :=
     Step.cong .gen_eitherMatch ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_eitherInl () (.childCons value .childNil)) :
-          RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.there
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
           leftBranch
           (StepChildren.here
-            (parentScope := scope) (headShift := 0) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons
+              (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil) :
+              RawTermChildren [0] scope)
             rightStep)))
 
 /-- Root `eitherMatch (eitherInr value)` iota branching against congruence
-inside the `eitherInr` payload. -/
+inside the `eitherInr` payload (the scrutinee, LAST child).  Phase-Z motive
+shape: motive first (shift 1), scrutinee last. -/
 def iotaEitherMatchInrValueCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue leftBranch rightBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInr () (.childCons value .childNil))
-        (.childCons leftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons rightBranch (.childCons value .childNil))
   rightReduct :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInr () (.childCons steppedValue .childNil))
-        (.childCons leftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons steppedValue .childNil))
+              .childNil))))
   leftStep := Step.iotaEitherMatchInr
   rightStep :=
     Step.cong .gen_eitherMatch ()
-      (StepChildren.here
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.childCons leftBranch (.childCons rightBranch .childNil)) :
-          RawTermChildren [0, 0] scope)
-        (Step.cong .gen_eitherInr ()
-          (StepChildren.here
-            (parentScope := scope) (headShift := 0) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
-            valueStep)))
+      (StepChildren.there
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+          leftBranch
+          (StepChildren.there
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            rightBranch
+            (StepChildren.here
+              (parentScope := scope) (headShift := 0) (restShifts := [])
+              (.childNil : RawTermChildren [] scope)
+              (Step.cong .gen_eitherInr ()
+                (StepChildren.here
+                  (parentScope := scope) (headShift := 0) (restShifts := [])
+                  (.childNil : RawTermChildren [] scope)
+                  valueStep))))))
 
 /-- Root `eitherMatch (eitherInr value)` iota branching against congruence
-in the discarded left branch. -/
+in the discarded left branch.  Phase-Z motive shape: motive first
+(shift 1), scrutinee last. -/
 def iotaEitherMatchInrLeftBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
     (leftStep : Step leftBranch steppedLeftBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInr () (.childCons value .childNil))
-        (.childCons leftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons rightBranch (.childCons value .childNil))
   rightReduct :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInr () (.childCons value .childNil))
-        (.childCons steppedLeftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons steppedLeftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil))))
   leftStep := Step.iotaEitherMatchInr
   rightStep :=
     Step.cong .gen_eitherMatch ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_eitherInr () (.childCons value .childNil)) :
-          RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.here
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
-          ((.childCons rightBranch .childNil) :
-            RawTermChildren [0] scope)
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
+          ((.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil)) :
+            RawTermChildren [0, 0] scope)
           leftStep))
 
 /-- Root `eitherMatch (eitherInr value)` iota branching against congruence
-in the selected right branch. -/
+in the selected right branch.  Phase-Z motive shape: motive first
+(shift 1), scrutinee last. -/
 def iotaEitherMatchInrRightBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
     (rightStep : Step rightBranch steppedRightBranch) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInr () (.childCons value .childNil))
-        (.childCons leftBranch (.childCons rightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons rightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil))))
   leftReduct :=
     .mkGen .gen_app ()
       (.childCons rightBranch (.childCons value .childNil))
   rightReduct :=
     .mkGen .gen_eitherMatch ()
-      (.childCons
-        (.mkGen .gen_eitherInr () (.childCons value .childNil))
-        (.childCons leftBranch (.childCons steppedRightBranch .childNil)))
+      (.childCons motive
+        (.childCons leftBranch
+          (.childCons steppedRightBranch
+            (.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil))))
   leftStep := Step.iotaEitherMatchInr
   rightStep :=
     Step.cong .gen_eitherMatch ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
-        ((.mkGen .gen_eitherInr () (.childCons value .childNil)) :
-          RawTerm scope)
+        (parentScope := scope) (headShift := 1) (restShifts := [0, 0, 0])
+        motive
         (StepChildren.there
-          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          (parentScope := scope) (headShift := 0) (restShifts := [0, 0])
           leftBranch
           (StepChildren.here
-            (parentScope := scope) (headShift := 0) (restShifts := [])
-            (.childNil : RawTermChildren [] scope)
+            (parentScope := scope) (headShift := 0) (restShifts := [0])
+            ((.childCons
+              (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil) :
+              RawTermChildren [0] scope)
             rightStep)))
 
 /-- Root `idJ refl` iota branching against congruence in the selected
@@ -3628,11 +3922,12 @@ def iotaListElimNilSameRoot {scope : Nat}
       (LocalStepBranching.iotaListElimNilSameRoot motive nilBranch consBranch) :=
   sameReduct Step.iotaListElimNil Step.iotaListElimNil
 
-/-- Concrete `optionMatch` none-case iota same-root local diamond. -/
+/-- Concrete `optionMatch` none-case iota same-root local diamond.
+Phase-Z motive shape. -/
 def iotaOptionMatchNoneSameRoot {scope : Nat}
-    (noneBranch someBranch : RawTerm scope) :
+    (motive : RawTerm (scope + 1)) (noneBranch someBranch : RawTerm scope) :
     LocalDiamond
-      (LocalStepBranching.iotaOptionMatchNoneSameRoot noneBranch someBranch) :=
+      (LocalStepBranching.iotaOptionMatchNoneSameRoot motive noneBranch someBranch) :=
   sameReduct Step.iotaOptionMatchNone Step.iotaOptionMatchNone
 
 /-- Concrete `idJ` refl-case iota same-root local diamond. -/
@@ -3649,28 +3944,34 @@ def iotaIdStrictRecReflSameRoot {scope : Nat}
       (LocalStepBranching.iotaIdStrictRecReflSameRoot baseCase rawWitness) :=
   sameReduct Step.iotaIdStrictRecRefl Step.iotaIdStrictRecRefl
 
-/-- Concrete `optionMatch` some-case iota same-root local diamond. -/
+/-- Concrete `optionMatch` some-case iota same-root local diamond.
+Phase-Z motive shape. -/
 def iotaOptionMatchSomeSameRoot {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value noneBranch someBranch : RawTerm scope) :
     LocalDiamond
       (LocalStepBranching.iotaOptionMatchSomeSameRoot
-        value noneBranch someBranch) :=
+        motive value noneBranch someBranch) :=
   sameReduct Step.iotaOptionMatchSome Step.iotaOptionMatchSome
 
-/-- Concrete `eitherMatch` inl-case iota same-root local diamond. -/
+/-- Concrete `eitherMatch` inl-case iota same-root local diamond.
+Phase-Z motive shape. -/
 def iotaEitherMatchInlSameRoot {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value leftBranch rightBranch : RawTerm scope) :
     LocalDiamond
       (LocalStepBranching.iotaEitherMatchInlSameRoot
-        value leftBranch rightBranch) :=
+        motive value leftBranch rightBranch) :=
   sameReduct Step.iotaEitherMatchInl Step.iotaEitherMatchInl
 
-/-- Concrete `eitherMatch` inr-case iota same-root local diamond. -/
+/-- Concrete `eitherMatch` inr-case iota same-root local diamond.
+Phase-Z motive shape. -/
 def iotaEitherMatchInrSameRoot {scope : Nat}
+    (motive : RawTerm (scope + 1))
     (value leftBranch rightBranch : RawTerm scope) :
     LocalDiamond
       (LocalStepBranching.iotaEitherMatchInrSameRoot
-        value leftBranch rightBranch) :=
+        motive value leftBranch rightBranch) :=
   sameReduct Step.iotaEitherMatchInr Step.iotaEitherMatchInr
 
 /-- Concrete `natElim` succ-case iota same-root local diamond. -/
@@ -4848,13 +5149,113 @@ def iotaListElimConsMotiveCong {scope : Nat}
                     motiveStep)))))
       rightChain := StepStar.single Step.iotaListElimCons }
 
+/-- Root `optionMatch optionNone` iota against congruence in the discarded
+motive.  Phase-Z motive shape; the none-case iota discards the motive, so the
+diamond joins at the none-branch immediately. -/
+def iotaOptionMatchNoneMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {noneBranch someBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalDiamond
+      (LocalStepBranching.iotaOptionMatchNoneMotiveCong
+        (motive := motive)
+        (steppedMotive := steppedMotive)
+        (noneBranch := noneBranch)
+        (someBranch := someBranch)
+        motiveStep) := by
+  dsimp [LocalStepBranching.iotaOptionMatchNoneMotiveCong]
+  exact
+    { commonReduct := noneBranch
+      leftChain := StepStar.refl noneBranch
+      rightChain := StepStar.single Step.iotaOptionMatchNone }
+
+/-- Root `optionMatch (optionSome value)` iota against congruence in the
+discarded motive.  Phase-Z motive shape; the some-case iota discards the motive,
+so the diamond joins at the `app someBranch value` reduct. -/
+def iotaOptionMatchSomeMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value noneBranch someBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalDiamond
+      (LocalStepBranching.iotaOptionMatchSomeMotiveCong
+        (motive := motive)
+        (steppedMotive := steppedMotive)
+        (value := value)
+        (noneBranch := noneBranch)
+        (someBranch := someBranch)
+        motiveStep) := by
+  dsimp [LocalStepBranching.iotaOptionMatchSomeMotiveCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons someBranch (.childCons value .childNil))
+      leftChain :=
+        StepStar.refl
+          (.mkGen .gen_app ()
+            (.childCons someBranch (.childCons value .childNil)))
+      rightChain := StepStar.single Step.iotaOptionMatchSome }
+
+/-- Root `eitherMatch (eitherInl value)` iota against congruence in the
+discarded motive.  Phase-Z motive shape; the inl-case iota discards the motive,
+so the diamond joins at the `app leftBranch value` reduct. -/
+def iotaEitherMatchInlMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value leftBranch rightBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalDiamond
+      (LocalStepBranching.iotaEitherMatchInlMotiveCong
+        (motive := motive)
+        (steppedMotive := steppedMotive)
+        (value := value)
+        (leftBranch := leftBranch)
+        (rightBranch := rightBranch)
+        motiveStep) := by
+  dsimp [LocalStepBranching.iotaEitherMatchInlMotiveCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons leftBranch (.childCons value .childNil))
+      leftChain :=
+        StepStar.refl
+          (.mkGen .gen_app ()
+            (.childCons leftBranch (.childCons value .childNil)))
+      rightChain := StepStar.single Step.iotaEitherMatchInl }
+
+/-- Root `eitherMatch (eitherInr value)` iota against congruence in the
+discarded motive.  Phase-Z motive shape; the inr-case iota discards the motive,
+so the diamond joins at the `app rightBranch value` reduct. -/
+def iotaEitherMatchInrMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 1)}
+    {value leftBranch rightBranch : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalDiamond
+      (LocalStepBranching.iotaEitherMatchInrMotiveCong
+        (motive := motive)
+        (steppedMotive := steppedMotive)
+        (value := value)
+        (leftBranch := leftBranch)
+        (rightBranch := rightBranch)
+        motiveStep) := by
+  dsimp [LocalStepBranching.iotaEitherMatchInrMotiveCong]
+  exact
+    { commonReduct :=
+        .mkGen .gen_app ()
+          (.childCons rightBranch (.childCons value .childNil))
+      leftChain :=
+        StepStar.refl
+          (.mkGen .gen_app ()
+            (.childCons rightBranch (.childCons value .childNil)))
+      rightChain := StepStar.single Step.iotaEitherMatchInr }
+
 /-- Root `optionMatch optionNone` iota against congruence in the
-selected none-branch. -/
+selected none-branch.  Phase-Z motive shape. -/
 def iotaOptionMatchNoneBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch steppedNoneBranch someBranch : RawTerm scope}
     (noneStep : Step noneBranch steppedNoneBranch) :
     LocalDiamond
       (LocalStepBranching.iotaOptionMatchNoneBranchCong
+        (motive := motive)
         (noneBranch := noneBranch)
         (steppedNoneBranch := steppedNoneBranch)
         (someBranch := someBranch)
@@ -4866,12 +5267,14 @@ def iotaOptionMatchNoneBranchCong {scope : Nat}
       rightChain := StepStar.single Step.iotaOptionMatchNone }
 
 /-- Root `optionMatch optionNone` iota against congruence in the
-discarded some-branch. -/
+discarded some-branch.  Phase-Z motive shape. -/
 def iotaOptionMatchSomeBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {noneBranch someBranch steppedSomeBranch : RawTerm scope}
     (someStep : Step someBranch steppedSomeBranch) :
     LocalDiamond
       (LocalStepBranching.iotaOptionMatchSomeBranchCong
+        (motive := motive)
         (noneBranch := noneBranch)
         (someBranch := someBranch)
         (steppedSomeBranch := steppedSomeBranch)
@@ -4883,12 +5286,14 @@ def iotaOptionMatchSomeBranchCong {scope : Nat}
       rightChain := StepStar.single Step.iotaOptionMatchNone }
 
 /-- Root `optionMatch (optionSome value)` iota against congruence inside
-the `optionSome` payload. -/
+the `optionSome` payload.  Phase-Z motive shape. -/
 def iotaOptionMatchSomeValueCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue noneBranch someBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     LocalDiamond
       (LocalStepBranching.iotaOptionMatchSomeValueCong
+        (motive := motive)
         (value := value)
         (steppedValue := steppedValue)
         (noneBranch := noneBranch)
@@ -4912,12 +5317,14 @@ def iotaOptionMatchSomeValueCong {scope : Nat}
       rightChain := StepStar.single Step.iotaOptionMatchSome }
 
 /-- Root `optionMatch (optionSome value)` iota against congruence in the
-discarded none-branch. -/
+discarded none-branch.  Phase-Z motive shape. -/
 def iotaOptionMatchSomeNoneBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch steppedNoneBranch someBranch : RawTerm scope}
     (noneStep : Step noneBranch steppedNoneBranch) :
     LocalDiamond
       (LocalStepBranching.iotaOptionMatchSomeNoneBranchCong
+        (motive := motive)
         (value := value)
         (noneBranch := noneBranch)
         (steppedNoneBranch := steppedNoneBranch)
@@ -4935,12 +5342,14 @@ def iotaOptionMatchSomeNoneBranchCong {scope : Nat}
       rightChain := StepStar.single Step.iotaOptionMatchSome }
 
 /-- Root `optionMatch (optionSome value)` iota against congruence in the
-selected some-branch. -/
+selected some-branch.  Phase-Z motive shape. -/
 def iotaOptionMatchSomeSomeBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value noneBranch someBranch steppedSomeBranch : RawTerm scope}
     (someStep : Step someBranch steppedSomeBranch) :
     LocalDiamond
       (LocalStepBranching.iotaOptionMatchSomeSomeBranchCong
+        (motive := motive)
         (value := value)
         (noneBranch := noneBranch)
         (someBranch := someBranch)
@@ -4961,12 +5370,14 @@ def iotaOptionMatchSomeSomeBranchCong {scope : Nat}
       rightChain := StepStar.single Step.iotaOptionMatchSome }
 
 /-- Root `eitherMatch (eitherInl value)` iota against congruence inside
-the `eitherInl` payload. -/
+the `eitherInl` payload.  Phase-Z motive shape. -/
 def iotaEitherMatchInlValueCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue leftBranch rightBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     LocalDiamond
       (LocalStepBranching.iotaEitherMatchInlValueCong
+        (motive := motive)
         (value := value)
         (steppedValue := steppedValue)
         (leftBranch := leftBranch)
@@ -4990,12 +5401,14 @@ def iotaEitherMatchInlValueCong {scope : Nat}
       rightChain := StepStar.single Step.iotaEitherMatchInl }
 
 /-- Root `eitherMatch (eitherInl value)` iota against congruence in the
-selected left branch. -/
+selected left branch.  Phase-Z motive shape. -/
 def iotaEitherMatchInlLeftBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
     (leftStep : Step leftBranch steppedLeftBranch) :
     LocalDiamond
       (LocalStepBranching.iotaEitherMatchInlLeftBranchCong
+        (motive := motive)
         (value := value)
         (leftBranch := leftBranch)
         (steppedLeftBranch := steppedLeftBranch)
@@ -5016,12 +5429,14 @@ def iotaEitherMatchInlLeftBranchCong {scope : Nat}
       rightChain := StepStar.single Step.iotaEitherMatchInl }
 
 /-- Root `eitherMatch (eitherInl value)` iota against congruence in the
-discarded right branch. -/
+discarded right branch.  Phase-Z motive shape. -/
 def iotaEitherMatchInlRightBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
     (rightStep : Step rightBranch steppedRightBranch) :
     LocalDiamond
       (LocalStepBranching.iotaEitherMatchInlRightBranchCong
+        (motive := motive)
         (value := value)
         (leftBranch := leftBranch)
         (rightBranch := rightBranch)
@@ -5039,12 +5454,14 @@ def iotaEitherMatchInlRightBranchCong {scope : Nat}
       rightChain := StepStar.single Step.iotaEitherMatchInl }
 
 /-- Root `eitherMatch (eitherInr value)` iota against congruence inside
-the `eitherInr` payload. -/
+the `eitherInr` payload.  Phase-Z motive shape. -/
 def iotaEitherMatchInrValueCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value steppedValue leftBranch rightBranch : RawTerm scope}
     (valueStep : Step value steppedValue) :
     LocalDiamond
       (LocalStepBranching.iotaEitherMatchInrValueCong
+        (motive := motive)
         (value := value)
         (steppedValue := steppedValue)
         (leftBranch := leftBranch)
@@ -5068,12 +5485,14 @@ def iotaEitherMatchInrValueCong {scope : Nat}
       rightChain := StepStar.single Step.iotaEitherMatchInr }
 
 /-- Root `eitherMatch (eitherInr value)` iota against congruence in the
-discarded left branch. -/
+discarded left branch.  Phase-Z motive shape. -/
 def iotaEitherMatchInrLeftBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch steppedLeftBranch rightBranch : RawTerm scope}
     (leftStep : Step leftBranch steppedLeftBranch) :
     LocalDiamond
       (LocalStepBranching.iotaEitherMatchInrLeftBranchCong
+        (motive := motive)
         (value := value)
         (leftBranch := leftBranch)
         (steppedLeftBranch := steppedLeftBranch)
@@ -5091,12 +5510,14 @@ def iotaEitherMatchInrLeftBranchCong {scope : Nat}
       rightChain := StepStar.single Step.iotaEitherMatchInr }
 
 /-- Root `eitherMatch (eitherInr value)` iota against congruence in the
-selected right branch. -/
+selected right branch.  Phase-Z motive shape. -/
 def iotaEitherMatchInrRightBranchCong {scope : Nat}
+    {motive : RawTerm (scope + 1)}
     {value leftBranch rightBranch steppedRightBranch : RawTerm scope}
     (rightStep : Step rightBranch steppedRightBranch) :
     LocalDiamond
       (LocalStepBranching.iotaEitherMatchInrRightBranchCong
+        (motive := motive)
         (value := value)
         (leftBranch := leftBranch)
         (rightBranch := rightBranch)

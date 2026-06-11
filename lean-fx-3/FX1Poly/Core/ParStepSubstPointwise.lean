@@ -165,17 +165,30 @@ theorem ParStep.substPointwise {sourceScope targetScope : Nat}
           (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
             (RawTermSubst.lift_pointwiseParStep pw))
           (ihNil sigma tau pw))
-      (fun {scope} {noneBranch noneBranch' someBranch} _step ihNone {targetScope} sigma tau pw =>
-        ParStep.iotaOptionMatchNone (ihNone sigma tau pw))
-      (fun {scope} {value value' noneBranch someBranch someBranch'} _stepSome _stepVal
-          ihSome ihVal {targetScope} sigma tau pw =>
-        ParStep.iotaOptionMatchSome (ihSome sigma tau pw) (ihVal sigma tau pw))
-      (fun {scope} {value value' leftBranch leftBranch' rightBranch} _stepLeft _stepVal
-          ihLeft ihVal {targetScope} sigma tau pw =>
-        ParStep.iotaEitherMatchInl (ihLeft sigma tau pw) (ihVal sigma tau pw))
-      (fun {scope} {value value' leftBranch rightBranch rightBranch'} _stepRight _stepVal
-          ihRight ihVal {targetScope} sigma tau pw =>
-        ParStep.iotaEitherMatchInr (ihRight sigma tau pw) (ihVal sigma tau pw))
+      (fun {scope} {motive motive' noneBranch noneBranch' someBranch} _stepMotive _stepNone
+          ihMotive ihNone {targetScope} sigma tau pw =>
+        ParStep.iotaOptionMatchNone
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihNone sigma tau pw))
+      (fun {scope} {motive motive' value value' noneBranch someBranch someBranch'}
+          _stepMotive _stepSome _stepVal ihMotive ihSome ihVal {targetScope} sigma tau pw =>
+        ParStep.iotaOptionMatchSome
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihSome sigma tau pw) (ihVal sigma tau pw))
+      (fun {scope} {motive motive' value value' leftBranch leftBranch' rightBranch}
+          _stepMotive _stepLeft _stepVal ihMotive ihLeft ihVal {targetScope} sigma tau pw =>
+        ParStep.iotaEitherMatchInl
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihLeft sigma tau pw) (ihVal sigma tau pw))
+      (fun {scope} {motive motive' value value' leftBranch rightBranch rightBranch'}
+          _stepMotive _stepRight _stepVal ihMotive ihRight ihVal {targetScope} sigma tau pw =>
+        ParStep.iotaEitherMatchInr
+          (ihMotive (RawTermSubst.lift sigma) (RawTermSubst.lift tau)
+            (RawTermSubst.lift_pointwiseParStep pw))
+          (ihRight sigma tau pw) (ihVal sigma tau pw))
       (fun {scope} {motive motive' predecessor predecessor' zeroBranch zeroBranch' succBranch succBranch'}
           _stepMotive _stepPred _stepZero _stepSucc ihMotive ihPred ihZero ihSucc
           {targetScope} sigma tau pw => by

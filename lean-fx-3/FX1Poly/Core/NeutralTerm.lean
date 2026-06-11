@@ -27,16 +27,17 @@ head).  The complete current-substrate elimination set is
   · eitherMatch · idJ · idStrictRec
 
 with the *principal* child (the one whose canonical form triggers the rule)
-being child 0 for `fst`/`snd`/`optionMatch`/`eitherMatch`, child 1 for
-`idJ`/`idStrictRec` (the identity *witness*; the base case is passive), and the
-LAST child (child 3) for the Phase-Z dependent eliminators
-`boolElim`/`natElim`/`natRec`/`listElim`, whose spine is
-`(motive, branch…, scrutinee)`.
+being child 0 for `fst`/`snd`, child 1 for `idJ`/`idStrictRec` (the identity
+*witness*; the base case is passive), and the LAST child (child 3) for the
+Phase-Z dependent eliminators
+`boolElim`/`natElim`/`natRec`/`listElim`/`optionMatch`/`eitherMatch`, whose
+spine is `(motive, branch…, scrutinee)`.
 
 The Phase-Z dependent eliminators carry binder-shift arithmetic on their own
-children: `boolElim`/`listElim` have shifts `[1, 0, 0, 0]` (the motive binds the
-scrutinee), and `natElim`/`natRec` have `[1, 0, 2, 0]` (the motive binds the
-scrutinee; the succ-branch binds the predecessor and the inductive hypothesis).
+children: `boolElim`/`listElim`/`optionMatch`/`eitherMatch` have shifts
+`[1, 0, 0, 0]` (the motive binds the scrutinee), and `natElim`/`natRec` have
+`[1, 0, 2, 0]` (the motive binds the scrutinee; the succ-branch binds the
+predecessor and the inductive hypothesis).
 Neutrality only inspects the *scrutinee* child, which lives at the ambient
 `scope`, so the motive and branch shifts do not affect the neutral arms.
 
@@ -122,20 +123,26 @@ inductive IsNeutral : {scope : Nat} → RawTerm scope → Prop where
           (.childCons nilBranch
             (.childCons consBranch
               (.childCons scrutinee .childNil)))))
-  /-- Option matching is neutral when its scrutinee is neutral. -/
-  | optionMatch {scope : Nat}
-      {scrutinee noneBranch someBranch : RawTerm scope}
+  /-- Option matching is neutral when its scrutinee is neutral.
+      Phase-Z motive shape: `(motive, noneBranch, someBranch, scrutinee)`. -/
+  | optionMatch {scope : Nat} {motive : RawTerm (scope + 1)}
+      {noneBranch someBranch scrutinee : RawTerm scope}
       (scrutineeIsNeutral : IsNeutral scrutinee) :
       IsNeutral (.mkGen .gen_optionMatch ()
-        (.childCons scrutinee
-          (.childCons noneBranch (.childCons someBranch .childNil))))
-  /-- Either matching is neutral when its scrutinee is neutral. -/
-  | eitherMatch {scope : Nat}
-      {scrutinee leftBranch rightBranch : RawTerm scope}
+        (.childCons motive
+          (.childCons noneBranch
+            (.childCons someBranch
+              (.childCons scrutinee .childNil)))))
+  /-- Either matching is neutral when its scrutinee is neutral.
+      Phase-Z motive shape: `(motive, leftBranch, rightBranch, scrutinee)`. -/
+  | eitherMatch {scope : Nat} {motive : RawTerm (scope + 1)}
+      {leftBranch rightBranch scrutinee : RawTerm scope}
       (scrutineeIsNeutral : IsNeutral scrutinee) :
       IsNeutral (.mkGen .gen_eitherMatch ()
-        (.childCons scrutinee
-          (.childCons leftBranch (.childCons rightBranch .childNil))))
+        (.childCons motive
+          (.childCons leftBranch
+            (.childCons rightBranch
+              (.childCons scrutinee .childNil)))))
   /-- Identity-type elimination is neutral when its witness is neutral; the
   base case is passive, so it places no neutrality demand. -/
   | idJ {scope : Nat} {baseCase witness : RawTerm scope}

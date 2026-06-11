@@ -98,24 +98,35 @@ inductive IotaNonRecursiveStep : {scope : Nat} → RawTerm scope → RawTerm sco
         (.mkGen .gen_listElim () (.childCons motive
           (.childCons nilBranch (.childCons consBranch
             (.childCons (.mkGen .gen_listNil () .childNil) .childNil))))) nilBranch
-  | iotaOptionMatchNone {scope : Nat} {noneBranch someBranch : RawTerm scope} :
+  | iotaOptionMatchNone {scope : Nat} {motive : RawTerm (scope + 1)}
+      {noneBranch someBranch : RawTerm scope} :
       IotaNonRecursiveStep
-        (.mkGen .gen_optionMatch () (.childCons (.mkGen .gen_optionNone () .childNil)
-          (.childCons noneBranch (.childCons someBranch .childNil)))) noneBranch
-  | iotaOptionMatchSome {scope : Nat} {value noneBranch someBranch : RawTerm scope} :
+        (.mkGen .gen_optionMatch () (.childCons motive
+          (.childCons noneBranch (.childCons someBranch
+            (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))) noneBranch
+  | iotaOptionMatchSome {scope : Nat} {motive : RawTerm (scope + 1)}
+      {value noneBranch someBranch : RawTerm scope} :
       IotaNonRecursiveStep
-        (.mkGen .gen_optionMatch () (.childCons (.mkGen .gen_optionSome () (.childCons value .childNil))
-          (.childCons noneBranch (.childCons someBranch .childNil))))
+        (.mkGen .gen_optionMatch () (.childCons motive
+          (.childCons noneBranch (.childCons someBranch
+            (.childCons (.mkGen .gen_optionSome () (.childCons value .childNil))
+              .childNil)))))
         (.mkGen .gen_app () (.childCons someBranch (.childCons value .childNil)))
-  | iotaEitherMatchInl {scope : Nat} {value leftBranch rightBranch : RawTerm scope} :
+  | iotaEitherMatchInl {scope : Nat} {motive : RawTerm (scope + 1)}
+      {value leftBranch rightBranch : RawTerm scope} :
       IotaNonRecursiveStep
-        (.mkGen .gen_eitherMatch () (.childCons (.mkGen .gen_eitherInl () (.childCons value .childNil))
-          (.childCons leftBranch (.childCons rightBranch .childNil))))
+        (.mkGen .gen_eitherMatch () (.childCons motive
+          (.childCons leftBranch (.childCons rightBranch
+            (.childCons (.mkGen .gen_eitherInl () (.childCons value .childNil))
+              .childNil)))))
         (.mkGen .gen_app () (.childCons leftBranch (.childCons value .childNil)))
-  | iotaEitherMatchInr {scope : Nat} {value leftBranch rightBranch : RawTerm scope} :
+  | iotaEitherMatchInr {scope : Nat} {motive : RawTerm (scope + 1)}
+      {value leftBranch rightBranch : RawTerm scope} :
       IotaNonRecursiveStep
-        (.mkGen .gen_eitherMatch () (.childCons (.mkGen .gen_eitherInr () (.childCons value .childNil))
-          (.childCons leftBranch (.childCons rightBranch .childNil))))
+        (.mkGen .gen_eitherMatch () (.childCons motive
+          (.childCons leftBranch (.childCons rightBranch
+            (.childCons (.mkGen .gen_eitherInr () (.childCons value .childNil))
+              .childNil)))))
         (.mkGen .gen_app () (.childCons rightBranch (.childCons value .childNil)))
   | iotaIdJRefl {scope : Nat} {baseCase rawWitness : RawTerm scope} :
       IotaNonRecursiveStep
@@ -204,6 +215,73 @@ private theorem iotaSizeShapeAppliedFirst (branchSize valueSize otherSize : Nat)
     (Nat.lt_of_lt_of_le (show (3 : Nat) < 6 by decide) (Nat.le_add_left 6 otherSize))
     (branchSize + valueSize)
 
+/-- The reduct `app(branch, value)` size collapses by defeq to
+`branchSize + valueSize + 3`.  Shared by both Phase-Z applied-branch helpers. -/
+private theorem appliedReductSizeEq (branchSize valueSize : Nat) :
+    branchSize + (valueSize + 0 + 1) + 1 + 1 = branchSize + valueSize + 3 := by
+  show branchSize + (valueSize + 1) + 1 + 1 = branchSize + valueSize + 3
+  rw [← Nat.add_assoc branchSize valueSize 1,
+      Nat.add_assoc (branchSize + valueSize) 1 1,
+      Nat.add_assoc (branchSize + valueSize) 2 1]
+
+/-- The innermost two-branch span `branch + (value + 0 + 1 + 1 + 0 + 1) + 1`
+collapses by defeq to `branchSize + valueSize + 4` — the scrutinee `optionSome`/
+`eitherIn_` wraps the value with two extra levels.  Both applied-branch redexes
+contain this span. -/
+private theorem appliedSpanSizeEq (branchSize valueSize : Nat) :
+    branchSize + (valueSize + 0 + 1 + 1 + 0 + 1) + 1 = branchSize + valueSize + 4 := by
+  show branchSize + (valueSize + 3) + 1 = branchSize + valueSize + 4
+  rw [← Nat.add_assoc branchSize valueSize 3,
+      Nat.add_assoc (branchSize + valueSize) 3 1]
+
+/-- Phase-Z applied-branch size helper, applied branch SECOND
+(optionMatchSome / eitherMatchInr).  The Phase-Z 4-child redex spine
+`[motive, otherBranch, appliedBranch, scrutinee]` carries the extra `motiveSize`
+on the outside and the scrutinee LAST.  The reduct collapses to
+`branchSize + valueSize + 3`, the redex strictly dominates by the
+`branchSize + valueSize + 4` applied span plus the surrounding padding —
+proved by monotone `Nat.le_add_*` bounds (no AC normalization). -/
+private theorem iotaSizeShapeAppliedSecondWithMotive
+    (branchSize valueSize otherSize motiveSize : Nat) :
+    branchSize + (valueSize + 0 + 1) + 1 + 1 <
+      motiveSize +
+        (otherSize + (branchSize + (valueSize + 0 + 1 + 1 + 0 + 1) + 1) + 1) + 1 + 1 := by
+  rw [appliedReductSizeEq, appliedSpanSizeEq]
+  -- Goal: branchSize + valueSize + 3 < motiveSize + (otherSize + (branchSize + valueSize + 4) + 1) + 1 + 1
+  refine Nat.lt_of_lt_of_le
+    (Nat.lt_succ_of_le (Nat.le_refl (branchSize + valueSize + 3))) ?_
+  -- branchSize + valueSize + 4 ≤ redex
+  refine Nat.le_trans (Nat.le_add_left (branchSize + valueSize + 4) otherSize) ?_
+  refine Nat.le_trans (Nat.le_add_right (otherSize + (branchSize + valueSize + 4)) 1) ?_
+  refine Nat.le_trans (Nat.le_add_left
+    (otherSize + (branchSize + valueSize + 4) + 1) motiveSize) ?_
+  refine Nat.le_trans (Nat.le_add_right
+    (motiveSize + (otherSize + (branchSize + valueSize + 4) + 1)) 1) ?_
+  exact Nat.le_add_right
+    (motiveSize + (otherSize + (branchSize + valueSize + 4) + 1) + 1) 1
+
+/-- Phase-Z applied-branch size helper, applied branch FIRST (eitherMatchInl).
+Twin of `iotaSizeShapeAppliedSecondWithMotive` with the dropped branch and the
+carried branch swapped in the Phase-Z 4-child redex spine. -/
+private theorem iotaSizeShapeAppliedFirstWithMotive
+    (branchSize valueSize otherSize motiveSize : Nat) :
+    branchSize + (valueSize + 0 + 1) + 1 + 1 <
+      motiveSize +
+        (branchSize + (otherSize + (valueSize + 0 + 1 + 1 + 0 + 1) + 1) + 1) + 1 + 1 := by
+  rw [appliedReductSizeEq, appliedSpanSizeEq]
+  -- Goal: branchSize + valueSize + 3 < motiveSize + (branchSize + (otherSize + valueSize + 4) + 1) + 1 + 1
+  have payloadBound : valueSize + 3 < otherSize + valueSize + 4 :=
+    Nat.lt_succ_of_le (Nat.add_le_add_right (Nat.le_add_left valueSize otherSize) 3)
+  have reductBelowSpan :
+      branchSize + valueSize + 3 < branchSize + (otherSize + valueSize + 4) :=
+    Nat.add_lt_add_left payloadBound branchSize
+  exact Nat.lt_of_lt_of_le reductBelowSpan
+    (Nat.le_trans (Nat.le_succ (branchSize + (otherSize + valueSize + 4)))
+      (Nat.le_trans
+        (Nat.le_add_left (branchSize + (otherSize + valueSize + 4) + 1) motiveSize)
+        (Nat.le_add_right
+          (motiveSize + (branchSize + (otherSize + valueSize + 4) + 1)) 2)))
+
 /-- **★ Every non-recursive ι step strictly decreases `RawTerm.size`.**  The 10 subterm-reduct arms
 (branch-selection bool/nat/list/option-none, fst/snd projection, idJ/idStrictRec base) close by the
 structural `size_lt_childCons` chains; the 3 applied-branch arms (optionSome/eitherInl/eitherInr) close
@@ -256,16 +334,23 @@ theorem IotaNonRecursiveStep.size_decreases {scope : Nat} {source target : RawTe
         (RawTermChildren.size_lt_childCons_head (shift := 0) _ _)
         (RawTermChildren.size_lt_childCons_tail (shift := 1) _ _)) (Nat.lt_succ_self _)
   | iotaOptionMatchNone =>
+      -- Phase-Z 4-child spine `[motive, noneBranch, someBranch, optionNone]`:
+      -- noneBranch is at position 1, so skip ONE head (the motive, at shift 1)
+      -- after projecting noneBranch as the head of the tail spine — mirrors the
+      -- `iotaListElimNil` arm exactly.
       dsimp only [RawTerm.size]
       exact Nat.lt_trans (Nat.lt_trans
         (RawTermChildren.size_lt_childCons_head (shift := 0) _ _)
-        (RawTermChildren.size_lt_childCons_tail (shift := 0) _ _)) (Nat.lt_succ_self _)
+        (RawTermChildren.size_lt_childCons_tail (shift := 1) _ _)) (Nat.lt_succ_self _)
   | iotaOptionMatchSome =>
-      dsimp only [RawTerm.size, RawTermChildren.size]; exact iotaSizeShapeAppliedSecond _ _ _
+      dsimp only [RawTerm.size, RawTermChildren.size]
+      exact iotaSizeShapeAppliedSecondWithMotive _ _ _ _
   | iotaEitherMatchInl =>
-      dsimp only [RawTerm.size, RawTermChildren.size]; exact iotaSizeShapeAppliedFirst _ _ _
+      dsimp only [RawTerm.size, RawTermChildren.size]
+      exact iotaSizeShapeAppliedFirstWithMotive _ _ _ _
   | iotaEitherMatchInr =>
-      dsimp only [RawTerm.size, RawTermChildren.size]; exact iotaSizeShapeAppliedSecond _ _ _
+      dsimp only [RawTerm.size, RawTermChildren.size]
+      exact iotaSizeShapeAppliedSecondWithMotive _ _ _ _
   | iotaIdJRefl =>
       dsimp only [RawTerm.size]
       exact Nat.lt_trans

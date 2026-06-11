@@ -3,14 +3,14 @@ import FX1Poly.Core.NatEliminatorLayer
 /-! # Foundation/PolyCell/Core/RemainingDim0Eliminators
    — full compositional layer for `listElim`, `optionMatch`, `eitherMatch`
 
-The 3-child same-scope eliminator family.  Sibling to
+The Phase-Z motive-shape eliminator family.  Sibling to
 `BoolEliminatorLayer` and `NatEliminatorLayer`.
 
-## Contents (31 declarations)
+## Contents (33 declarations)
 
-`gen_listElim` has landed its Phase-Z motive shape (arity 4, `binderShifts = [1, 0, 0, 0]`, spine
-`(motive, nilBranch, consBranch, scrutinee)` with the motive a term under one binder), so it carries
-11 declarations:
+All three of `gen_listElim` / `gen_optionMatch` / `gen_eitherMatch` have landed their Phase-Z motive
+shape (arity 4, `binderShifts = [1, 0, 0, 0]`, spine `(motive, branch1, branch2, scrutinee)` with the
+motive a term under one binder), so each carries 11 declarations:
 
   * INTRO (1): build HCC from 4 child cells (the motive at `scope + 1` + 3 same-scope children).
   * 4 PROJECTIONS: motive (head) + 2 branches + scrutinee (last).
@@ -18,20 +18,17 @@ The 3-child same-scope eliminator family.  Sibling to
   * Subst probe + preservation (2) — the motive head child substitutes under `RawTermSubst.lift`.
   * Subst0 probe + preservation (2) — the motive head child under the lifted singleton.
 
-`gen_optionMatch` / `gen_eitherMatch` remain 3-child same-scope, 10 declarations each.
+Child layouts (all Phase-Z, motive at `scope + 1`, scrutinee LAST):
+  * `listElim`:    `(motive, nilBranch, consBranch, scrutinee)`
+  * `optionMatch`: `(motive, noneBranch, someBranch, scrutinee)`
+  * `eitherMatch`: `(motive, leftBranch, rightBranch, scrutinee)`
 
-Child layouts:
-  * `listElim`:    `(motive, nilBranch, consBranch, scrutinee)`  — Phase-Z, motive at `scope + 1`
-  * `optionMatch`: `(scrutinee, noneBranch, someBranch)`
-  * `eitherMatch`: `(scrutinee, leftBranch, rightBranch)`
-
-`optionMatch`/`eitherMatch` are 3-child same-scope (no binder shifts) — `listElim` now follows the
-Phase-Z boolElim template (motive head child under one binder).  (`IdEliminatorLayer` carries the
-full dim-0 coverage table.)
+All three now follow the Phase-Z boolElim template (motive head child under one binder).
+(`IdEliminatorLayer` carries the full dim-0 coverage table; `idJ`/`idStrictRec` remain flat.)
 
 ## Zero-axiom verification
 
-Each declaration follows the 3-child template from
+Each declaration follows the 4-child Phase-Z template from
 `BoolEliminatorLayer` / `NatEliminatorLayer`.  Audit-gated.
 -/
 
@@ -310,10 +307,16 @@ theorem HasCertifiedCellDim0.subst0_listElim_preservation
 
 /-! ## optionMatch -/
 
-/-- **Intro: optionMatch's structural admission from 3 child cells.** -/
+/-- **Intro: optionMatch's structural admission from 4 child cells** (Phase-Z motive shape: arity 4,
+`binderShifts = [1, 0, 0, 0]`, spine `(motive, noneBranch, someBranch, scrutinee)` with the motive a term
+under one binder, at `scope + 1`). -/
 theorem HasCertifiedCellDim0.optionMatch
     {profile : PolyProfile} {scope : Nat}
+    {motiveTerm : RawTerm (scope + 1)}
     {scrutineeTerm noneBranchTerm someBranchTerm : RawTerm scope}
+    (motiveCell :
+      PolyCell profile .term 0 (scope + 1) CellBoundary.trivial
+        (.termBase motiveTerm))
     (scrutineeCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase scrutineeTerm))
@@ -325,44 +328,50 @@ theorem HasCertifiedCellDim0.optionMatch
         (.termBase someBranchTerm)) :
     HasCertifiedCellDim0 (profile := profile)
       ((.mkGen .gen_optionMatch ()
-        (.childCons scrutineeTerm
+        (.childCons motiveTerm
           (.childCons noneBranchTerm
-            (.childCons someBranchTerm .childNil)))) : RawTerm scope) :=
+            (.childCons someBranchTerm
+              (.childCons scrutineeTerm .childNil))))) : RawTerm scope) :=
   .intro .term
     (PolyCell.gen
       SupportedGenerator.gen_optionMatch
       (genPayloadEvidence (generator := .gen_optionMatch)
                            (scope := scope) ())
-      (CertifiedTermSpine.cons scrutineeCell
+      (CertifiedTermSpine.cons motiveCell
         (CertifiedTermSpine.cons noneBranchCell
           (CertifiedTermSpine.cons someBranchCell
-            CertifiedTermSpine.nil))))
+            (CertifiedTermSpine.cons scrutineeCell
+              CertifiedTermSpine.nil)))))
 
-/-- **Projection: `gen_optionMatch` → scrutinee child's cert.** -/
-theorem HasCertifiedCellDim0.optionMatch_scrutinee_projection
+/-- **Projection: `gen_optionMatch` → motive child's cert** (the head child, at `scope + 1`). -/
+theorem HasCertifiedCellDim0.optionMatch_motive_projection
     {profile : PolyProfile} {scope : Nat}
+    (motiveTerm : RawTerm (scope + 1))
     (scrutineeTerm noneBranchTerm someBranchTerm : RawTerm scope)
     (cert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_optionMatch ()
-                (.childCons scrutineeTerm
+                (.childCons motiveTerm
                   (.childCons noneBranchTerm
-                    (.childCons someBranchTerm .childNil))))
+                    (.childCons someBranchTerm
+                      (.childCons scrutineeTerm .childNil)))))
                 : RawTerm scope)) :
-    HasCertifiedCellDim0 (profile := profile) scrutineeTerm := by
+    HasCertifiedCellDim0 (profile := profile) motiveTerm := by
   obtain ⟨_, cell⟩ := cert
   cases cell with
   | gen _ _ spine =>
     exact ⟨.term, spine.headAtDim0 rfl⟩
 
-/-- **Projection: `gen_optionMatch` → noneBranch child's cert.** -/
+/-- **Projection: `gen_optionMatch` → noneBranch child's cert** (child 1). -/
 theorem HasCertifiedCellDim0.optionMatch_noneBranch_projection
     {profile : PolyProfile} {scope : Nat}
+    (motiveTerm : RawTerm (scope + 1))
     (scrutineeTerm noneBranchTerm someBranchTerm : RawTerm scope)
     (cert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_optionMatch ()
-                (.childCons scrutineeTerm
+                (.childCons motiveTerm
                   (.childCons noneBranchTerm
-                    (.childCons someBranchTerm .childNil))))
+                    (.childCons someBranchTerm
+                      (.childCons scrutineeTerm .childNil)))))
                 : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) noneBranchTerm := by
   obtain ⟨_, cell⟩ := cert
@@ -370,15 +379,17 @@ theorem HasCertifiedCellDim0.optionMatch_noneBranch_projection
   | gen _ _ spine =>
     exact ⟨.term, spine.tail.headAtDim0 rfl⟩
 
-/-- **Projection: `gen_optionMatch` → someBranch child's cert.** -/
+/-- **Projection: `gen_optionMatch` → someBranch child's cert** (child 2). -/
 theorem HasCertifiedCellDim0.optionMatch_someBranch_projection
     {profile : PolyProfile} {scope : Nat}
+    (motiveTerm : RawTerm (scope + 1))
     (scrutineeTerm noneBranchTerm someBranchTerm : RawTerm scope)
     (cert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_optionMatch ()
-                (.childCons scrutineeTerm
+                (.childCons motiveTerm
                   (.childCons noneBranchTerm
-                    (.childCons someBranchTerm .childNil))))
+                    (.childCons someBranchTerm
+                      (.childCons scrutineeTerm .childNil)))))
                 : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) someBranchTerm := by
   obtain ⟨_, cell⟩ := cert
@@ -386,29 +397,55 @@ theorem HasCertifiedCellDim0.optionMatch_someBranch_projection
   | gen _ _ spine =>
     exact ⟨.term, spine.tail.tail.headAtDim0 rfl⟩
 
-/-- **Probe: rename distributes over `gen_optionMatch`.** -/
+/-- **Projection: `gen_optionMatch` → scrutinee child's cert** (the LAST child, child 3). -/
+theorem HasCertifiedCellDim0.optionMatch_scrutinee_projection
+    {profile : PolyProfile} {scope : Nat}
+    (motiveTerm : RawTerm (scope + 1))
+    (scrutineeTerm noneBranchTerm someBranchTerm : RawTerm scope)
+    (cert : HasCertifiedCellDim0 (profile := profile)
+              ((.mkGen .gen_optionMatch ()
+                (.childCons motiveTerm
+                  (.childCons noneBranchTerm
+                    (.childCons someBranchTerm
+                      (.childCons scrutineeTerm .childNil)))))
+                : RawTerm scope)) :
+    HasCertifiedCellDim0 (profile := profile) scrutineeTerm := by
+  obtain ⟨_, cell⟩ := cert
+  cases cell with
+  | gen _ _ spine =>
+    exact ⟨.term, spine.tail.tail.tail.headAtDim0 rfl⟩
+
+/-- **Probe: rename distributes over `gen_optionMatch`.**  The motive head child (binderShift `1`) renames under
+the LIFTED renaming `RawRenaming.lift rawRenaming`; the three same-scope children under the plain `rawRenaming`. -/
 theorem RawTerm.rename_optionMatch_reduces
     {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
+    (motiveTerm : RawTerm (sourceScope + 1))
     (scrutineeTerm noneBranchTerm someBranchTerm : RawTerm sourceScope) :
     RawTerm.rename rawRenaming
         ((.mkGen .gen_optionMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons noneBranchTerm
-              (.childCons someBranchTerm .childNil))))
+              (.childCons someBranchTerm
+                (.childCons scrutineeTerm .childNil)))))
           : RawTerm sourceScope) =
       ((.mkGen .gen_optionMatch ()
-        (.childCons (RawTerm.rename rawRenaming scrutineeTerm)
+        (.childCons (RawTerm.rename (RawRenaming.lift rawRenaming) motiveTerm)
           (.childCons (RawTerm.rename rawRenaming noneBranchTerm)
             (.childCons (RawTerm.rename rawRenaming someBranchTerm)
-              .childNil))))
+              (.childCons (RawTerm.rename rawRenaming scrutineeTerm)
+                .childNil)))))
         : RawTerm targetScope) := rfl
 
 /-- **`optionMatch` preserved by rename (compositional).** -/
 theorem HasCertifiedCellDim0.optionMatch_preservedByRename
     {profile : PolyProfile} {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
+    (motiveTerm : RawTerm (sourceScope + 1))
     (scrutineeTerm noneBranchTerm someBranchTerm : RawTerm sourceScope)
+    (renamedMotiveCell :
+      PolyCell profile .term 0 (targetScope + 1) CellBoundary.trivial
+        (.termBase (RawTerm.rename (RawRenaming.lift rawRenaming) motiveTerm)))
     (renamedScrutineeCell :
       PolyCell profile .term 0 targetScope CellBoundary.trivial
         (.termBase (RawTerm.rename rawRenaming scrutineeTerm)))
@@ -421,36 +458,46 @@ theorem HasCertifiedCellDim0.optionMatch_preservedByRename
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.rename rawRenaming
         (.mkGen .gen_optionMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons noneBranchTerm
-              (.childCons someBranchTerm .childNil))))) := by
+              (.childCons someBranchTerm
+                (.childCons scrutineeTerm .childNil)))))) := by
   rw [RawTerm.rename_optionMatch_reduces]
-  exact HasCertifiedCellDim0.optionMatch renamedScrutineeCell
+  exact HasCertifiedCellDim0.optionMatch renamedMotiveCell renamedScrutineeCell
     renamedNoneBranchCell renamedSomeBranchCell
 
-/-- **Probe: subst distributes over `gen_optionMatch`.** -/
+/-- **Probe: subst distributes over `gen_optionMatch`.**  The motive head child (binderShift `1`) substitutes
+under the LIFTED substitution `RawTermSubst.lift substitution`; the three same-scope children under the plain
+`substitution`. -/
 theorem RawTerm.subst_optionMatch_reduces
     {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope)
+    (motiveTerm : RawTerm (sourceScope + 1))
     (scrutineeTerm noneBranchTerm someBranchTerm : RawTerm sourceScope) :
     RawTerm.subst substitution
         ((.mkGen .gen_optionMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons noneBranchTerm
-              (.childCons someBranchTerm .childNil))))
+              (.childCons someBranchTerm
+                (.childCons scrutineeTerm .childNil)))))
           : RawTerm sourceScope) =
       ((.mkGen .gen_optionMatch ()
-        (.childCons (RawTerm.subst substitution scrutineeTerm)
+        (.childCons (RawTerm.subst (RawTermSubst.lift substitution) motiveTerm)
           (.childCons (RawTerm.subst substitution noneBranchTerm)
             (.childCons (RawTerm.subst substitution someBranchTerm)
-              .childNil))))
+              (.childCons (RawTerm.subst substitution scrutineeTerm)
+                .childNil)))))
         : RawTerm targetScope) := rfl
 
 /-- **`optionMatch` preserved by subst (compositional).** -/
 theorem HasCertifiedCellDim0.optionMatch_preservedBySubst
     {profile : PolyProfile} {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope)
+    (motiveTerm : RawTerm (sourceScope + 1))
     (scrutineeTerm noneBranchTerm someBranchTerm : RawTerm sourceScope)
+    (substMotiveCell :
+      PolyCell profile .term 0 (targetScope + 1) CellBoundary.trivial
+        (.termBase (RawTerm.subst (RawTermSubst.lift substitution) motiveTerm)))
     (substScrutineeCell :
       PolyCell profile .term 0 targetScope CellBoundary.trivial
         (.termBase (RawTerm.subst substitution scrutineeTerm)))
@@ -463,35 +510,48 @@ theorem HasCertifiedCellDim0.optionMatch_preservedBySubst
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.subst substitution
         (.mkGen .gen_optionMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons noneBranchTerm
-              (.childCons someBranchTerm .childNil))))) := by
+              (.childCons someBranchTerm
+                (.childCons scrutineeTerm .childNil)))))) := by
   rw [RawTerm.subst_optionMatch_reduces]
-  exact HasCertifiedCellDim0.optionMatch substScrutineeCell
+  exact HasCertifiedCellDim0.optionMatch substMotiveCell substScrutineeCell
     substNoneBranchCell substSomeBranchCell
 
-/-- **Probe: subst0 distributes over `gen_optionMatch`.** -/
+/-- **Probe: subst0 distributes over `gen_optionMatch`.**  The cell lives at `scope + 1`, so its motive head
+child lives at `scope + 2`; under subst0 that motive substitutes with the LIFTED singleton
+`RawTermSubst.lift (RawTermSubst.singleton rawArg)`, while the three same-scope children (at `scope + 1`) use
+`RawTerm.subst0 … rawArg`. -/
 theorem RawTerm.subst0_optionMatch_reduces
     {scope : Nat} (rawArg : RawTerm scope)
+    (motiveTerm : RawTerm (scope + 2))
     (scrutineeTerm noneBranchTerm someBranchTerm : RawTerm (scope + 1)) :
     RawTerm.subst0
         ((.mkGen .gen_optionMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons noneBranchTerm
-              (.childCons someBranchTerm .childNil))))
+              (.childCons someBranchTerm
+                (.childCons scrutineeTerm .childNil)))))
           : RawTerm (scope + 1))
         rawArg =
       (.mkGen .gen_optionMatch ()
-        (.childCons (RawTerm.subst0 scrutineeTerm rawArg)
+        (.childCons
+          (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton rawArg)) motiveTerm)
           (.childCons (RawTerm.subst0 noneBranchTerm rawArg)
-            (.childCons (RawTerm.subst0 someBranchTerm rawArg) .childNil)))
+            (.childCons (RawTerm.subst0 someBranchTerm rawArg)
+              (.childCons (RawTerm.subst0 scrutineeTerm rawArg) .childNil))))
         : RawTerm scope) := rfl
 
-/-- **Beta-redex preservation for `gen_optionMatch`.** -/
+/-- **Beta-redex preservation for `gen_optionMatch`** (Phase-Z motive shape: the motive head child substitutes
+under the lifted singleton). -/
 theorem HasCertifiedCellDim0.subst0_optionMatch_preservation
     {profile : PolyProfile} {scope : Nat}
     (rawArg : RawTerm scope)
+    (motiveTerm : RawTerm (scope + 2))
     (scrutineeTerm noneBranchTerm someBranchTerm : RawTerm (scope + 1))
+    (substMotiveCell :
+      PolyCell profile .term 0 (scope + 1) CellBoundary.trivial
+        (.termBase (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton rawArg)) motiveTerm)))
     (substScrutineeCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase (RawTerm.subst0 scrutineeTerm rawArg)))
@@ -504,21 +564,28 @@ theorem HasCertifiedCellDim0.subst0_optionMatch_preservation
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.subst0
         ((.mkGen .gen_optionMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons noneBranchTerm
-              (.childCons someBranchTerm .childNil))))
+              (.childCons someBranchTerm
+                (.childCons scrutineeTerm .childNil)))))
           : RawTerm (scope + 1))
         rawArg) := by
   rw [RawTerm.subst0_optionMatch_reduces]
-  exact HasCertifiedCellDim0.optionMatch substScrutineeCell
+  exact HasCertifiedCellDim0.optionMatch substMotiveCell substScrutineeCell
     substNoneBranchCell substSomeBranchCell
 
 /-! ## eitherMatch -/
 
-/-- **Intro: eitherMatch's structural admission from 3 child cells.** -/
+/-- **Intro: eitherMatch's structural admission from 4 child cells** (Phase-Z motive shape: arity 4,
+`binderShifts = [1, 0, 0, 0]`, spine `(motive, leftBranch, rightBranch, scrutinee)` with the motive a term
+under one binder, at `scope + 1`). -/
 theorem HasCertifiedCellDim0.eitherMatch
     {profile : PolyProfile} {scope : Nat}
+    {motiveTerm : RawTerm (scope + 1)}
     {scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm scope}
+    (motiveCell :
+      PolyCell profile .term 0 (scope + 1) CellBoundary.trivial
+        (.termBase motiveTerm))
     (scrutineeCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase scrutineeTerm))
@@ -530,44 +597,50 @@ theorem HasCertifiedCellDim0.eitherMatch
         (.termBase rightBranchTerm)) :
     HasCertifiedCellDim0 (profile := profile)
       ((.mkGen .gen_eitherMatch ()
-        (.childCons scrutineeTerm
+        (.childCons motiveTerm
           (.childCons leftBranchTerm
-            (.childCons rightBranchTerm .childNil)))) : RawTerm scope) :=
+            (.childCons rightBranchTerm
+              (.childCons scrutineeTerm .childNil))))) : RawTerm scope) :=
   .intro .term
     (PolyCell.gen
       SupportedGenerator.gen_eitherMatch
       (genPayloadEvidence (generator := .gen_eitherMatch)
                            (scope := scope) ())
-      (CertifiedTermSpine.cons scrutineeCell
+      (CertifiedTermSpine.cons motiveCell
         (CertifiedTermSpine.cons leftBranchCell
           (CertifiedTermSpine.cons rightBranchCell
-            CertifiedTermSpine.nil))))
+            (CertifiedTermSpine.cons scrutineeCell
+              CertifiedTermSpine.nil)))))
 
-/-- **Projection: `gen_eitherMatch` → scrutinee child's cert.** -/
-theorem HasCertifiedCellDim0.eitherMatch_scrutinee_projection
+/-- **Projection: `gen_eitherMatch` → motive child's cert** (the head child, at `scope + 1`). -/
+theorem HasCertifiedCellDim0.eitherMatch_motive_projection
     {profile : PolyProfile} {scope : Nat}
+    (motiveTerm : RawTerm (scope + 1))
     (scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm scope)
     (cert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_eitherMatch ()
-                (.childCons scrutineeTerm
+                (.childCons motiveTerm
                   (.childCons leftBranchTerm
-                    (.childCons rightBranchTerm .childNil))))
+                    (.childCons rightBranchTerm
+                      (.childCons scrutineeTerm .childNil)))))
                 : RawTerm scope)) :
-    HasCertifiedCellDim0 (profile := profile) scrutineeTerm := by
+    HasCertifiedCellDim0 (profile := profile) motiveTerm := by
   obtain ⟨_, cell⟩ := cert
   cases cell with
   | gen _ _ spine =>
     exact ⟨.term, spine.headAtDim0 rfl⟩
 
-/-- **Projection: `gen_eitherMatch` → leftBranch child's cert.** -/
+/-- **Projection: `gen_eitherMatch` → leftBranch child's cert** (child 1). -/
 theorem HasCertifiedCellDim0.eitherMatch_leftBranch_projection
     {profile : PolyProfile} {scope : Nat}
+    (motiveTerm : RawTerm (scope + 1))
     (scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm scope)
     (cert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_eitherMatch ()
-                (.childCons scrutineeTerm
+                (.childCons motiveTerm
                   (.childCons leftBranchTerm
-                    (.childCons rightBranchTerm .childNil))))
+                    (.childCons rightBranchTerm
+                      (.childCons scrutineeTerm .childNil)))))
                 : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) leftBranchTerm := by
   obtain ⟨_, cell⟩ := cert
@@ -575,15 +648,17 @@ theorem HasCertifiedCellDim0.eitherMatch_leftBranch_projection
   | gen _ _ spine =>
     exact ⟨.term, spine.tail.headAtDim0 rfl⟩
 
-/-- **Projection: `gen_eitherMatch` → rightBranch child's cert.** -/
+/-- **Projection: `gen_eitherMatch` → rightBranch child's cert** (child 2). -/
 theorem HasCertifiedCellDim0.eitherMatch_rightBranch_projection
     {profile : PolyProfile} {scope : Nat}
+    (motiveTerm : RawTerm (scope + 1))
     (scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm scope)
     (cert : HasCertifiedCellDim0 (profile := profile)
               ((.mkGen .gen_eitherMatch ()
-                (.childCons scrutineeTerm
+                (.childCons motiveTerm
                   (.childCons leftBranchTerm
-                    (.childCons rightBranchTerm .childNil))))
+                    (.childCons rightBranchTerm
+                      (.childCons scrutineeTerm .childNil)))))
                 : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) rightBranchTerm := by
   obtain ⟨_, cell⟩ := cert
@@ -591,29 +666,55 @@ theorem HasCertifiedCellDim0.eitherMatch_rightBranch_projection
   | gen _ _ spine =>
     exact ⟨.term, spine.tail.tail.headAtDim0 rfl⟩
 
-/-- **Probe: rename distributes over `gen_eitherMatch`.** -/
+/-- **Projection: `gen_eitherMatch` → scrutinee child's cert** (the LAST child, child 3). -/
+theorem HasCertifiedCellDim0.eitherMatch_scrutinee_projection
+    {profile : PolyProfile} {scope : Nat}
+    (motiveTerm : RawTerm (scope + 1))
+    (scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm scope)
+    (cert : HasCertifiedCellDim0 (profile := profile)
+              ((.mkGen .gen_eitherMatch ()
+                (.childCons motiveTerm
+                  (.childCons leftBranchTerm
+                    (.childCons rightBranchTerm
+                      (.childCons scrutineeTerm .childNil)))))
+                : RawTerm scope)) :
+    HasCertifiedCellDim0 (profile := profile) scrutineeTerm := by
+  obtain ⟨_, cell⟩ := cert
+  cases cell with
+  | gen _ _ spine =>
+    exact ⟨.term, spine.tail.tail.tail.headAtDim0 rfl⟩
+
+/-- **Probe: rename distributes over `gen_eitherMatch`.**  The motive head child (binderShift `1`) renames under
+the LIFTED renaming `RawRenaming.lift rawRenaming`; the three same-scope children under the plain `rawRenaming`. -/
 theorem RawTerm.rename_eitherMatch_reduces
     {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
+    (motiveTerm : RawTerm (sourceScope + 1))
     (scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm sourceScope) :
     RawTerm.rename rawRenaming
         ((.mkGen .gen_eitherMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons leftBranchTerm
-              (.childCons rightBranchTerm .childNil))))
+              (.childCons rightBranchTerm
+                (.childCons scrutineeTerm .childNil)))))
           : RawTerm sourceScope) =
       ((.mkGen .gen_eitherMatch ()
-        (.childCons (RawTerm.rename rawRenaming scrutineeTerm)
+        (.childCons (RawTerm.rename (RawRenaming.lift rawRenaming) motiveTerm)
           (.childCons (RawTerm.rename rawRenaming leftBranchTerm)
             (.childCons (RawTerm.rename rawRenaming rightBranchTerm)
-              .childNil))))
+              (.childCons (RawTerm.rename rawRenaming scrutineeTerm)
+                .childNil)))))
         : RawTerm targetScope) := rfl
 
 /-- **`eitherMatch` preserved by rename (compositional).** -/
 theorem HasCertifiedCellDim0.eitherMatch_preservedByRename
     {profile : PolyProfile} {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope)
+    (motiveTerm : RawTerm (sourceScope + 1))
     (scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm sourceScope)
+    (renamedMotiveCell :
+      PolyCell profile .term 0 (targetScope + 1) CellBoundary.trivial
+        (.termBase (RawTerm.rename (RawRenaming.lift rawRenaming) motiveTerm)))
     (renamedScrutineeCell :
       PolyCell profile .term 0 targetScope CellBoundary.trivial
         (.termBase (RawTerm.rename rawRenaming scrutineeTerm)))
@@ -626,36 +727,46 @@ theorem HasCertifiedCellDim0.eitherMatch_preservedByRename
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.rename rawRenaming
         (.mkGen .gen_eitherMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons leftBranchTerm
-              (.childCons rightBranchTerm .childNil))))) := by
+              (.childCons rightBranchTerm
+                (.childCons scrutineeTerm .childNil)))))) := by
   rw [RawTerm.rename_eitherMatch_reduces]
-  exact HasCertifiedCellDim0.eitherMatch renamedScrutineeCell
+  exact HasCertifiedCellDim0.eitherMatch renamedMotiveCell renamedScrutineeCell
     renamedLeftBranchCell renamedRightBranchCell
 
-/-- **Probe: subst distributes over `gen_eitherMatch`.** -/
+/-- **Probe: subst distributes over `gen_eitherMatch`.**  The motive head child (binderShift `1`) substitutes
+under the LIFTED substitution `RawTermSubst.lift substitution`; the three same-scope children under the plain
+`substitution`. -/
 theorem RawTerm.subst_eitherMatch_reduces
     {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope)
+    (motiveTerm : RawTerm (sourceScope + 1))
     (scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm sourceScope) :
     RawTerm.subst substitution
         ((.mkGen .gen_eitherMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons leftBranchTerm
-              (.childCons rightBranchTerm .childNil))))
+              (.childCons rightBranchTerm
+                (.childCons scrutineeTerm .childNil)))))
           : RawTerm sourceScope) =
       ((.mkGen .gen_eitherMatch ()
-        (.childCons (RawTerm.subst substitution scrutineeTerm)
+        (.childCons (RawTerm.subst (RawTermSubst.lift substitution) motiveTerm)
           (.childCons (RawTerm.subst substitution leftBranchTerm)
             (.childCons (RawTerm.subst substitution rightBranchTerm)
-              .childNil))))
+              (.childCons (RawTerm.subst substitution scrutineeTerm)
+                .childNil)))))
         : RawTerm targetScope) := rfl
 
 /-- **`eitherMatch` preserved by subst (compositional).** -/
 theorem HasCertifiedCellDim0.eitherMatch_preservedBySubst
     {profile : PolyProfile} {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope)
+    (motiveTerm : RawTerm (sourceScope + 1))
     (scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm sourceScope)
+    (substMotiveCell :
+      PolyCell profile .term 0 (targetScope + 1) CellBoundary.trivial
+        (.termBase (RawTerm.subst (RawTermSubst.lift substitution) motiveTerm)))
     (substScrutineeCell :
       PolyCell profile .term 0 targetScope CellBoundary.trivial
         (.termBase (RawTerm.subst substitution scrutineeTerm)))
@@ -668,35 +779,48 @@ theorem HasCertifiedCellDim0.eitherMatch_preservedBySubst
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.subst substitution
         (.mkGen .gen_eitherMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons leftBranchTerm
-              (.childCons rightBranchTerm .childNil))))) := by
+              (.childCons rightBranchTerm
+                (.childCons scrutineeTerm .childNil)))))) := by
   rw [RawTerm.subst_eitherMatch_reduces]
-  exact HasCertifiedCellDim0.eitherMatch substScrutineeCell
+  exact HasCertifiedCellDim0.eitherMatch substMotiveCell substScrutineeCell
     substLeftBranchCell substRightBranchCell
 
-/-- **Probe: subst0 distributes over `gen_eitherMatch`.** -/
+/-- **Probe: subst0 distributes over `gen_eitherMatch`.**  The cell lives at `scope + 1`, so its motive head
+child lives at `scope + 2`; under subst0 that motive substitutes with the LIFTED singleton
+`RawTermSubst.lift (RawTermSubst.singleton rawArg)`, while the three same-scope children (at `scope + 1`) use
+`RawTerm.subst0 … rawArg`. -/
 theorem RawTerm.subst0_eitherMatch_reduces
     {scope : Nat} (rawArg : RawTerm scope)
+    (motiveTerm : RawTerm (scope + 2))
     (scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm (scope + 1)) :
     RawTerm.subst0
         ((.mkGen .gen_eitherMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons leftBranchTerm
-              (.childCons rightBranchTerm .childNil))))
+              (.childCons rightBranchTerm
+                (.childCons scrutineeTerm .childNil)))))
           : RawTerm (scope + 1))
         rawArg =
       (.mkGen .gen_eitherMatch ()
-        (.childCons (RawTerm.subst0 scrutineeTerm rawArg)
+        (.childCons
+          (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton rawArg)) motiveTerm)
           (.childCons (RawTerm.subst0 leftBranchTerm rawArg)
-            (.childCons (RawTerm.subst0 rightBranchTerm rawArg) .childNil)))
+            (.childCons (RawTerm.subst0 rightBranchTerm rawArg)
+              (.childCons (RawTerm.subst0 scrutineeTerm rawArg) .childNil))))
         : RawTerm scope) := rfl
 
-/-- **Beta-redex preservation for `gen_eitherMatch`.** -/
+/-- **Beta-redex preservation for `gen_eitherMatch`** (Phase-Z motive shape: the motive head child substitutes
+under the lifted singleton). -/
 theorem HasCertifiedCellDim0.subst0_eitherMatch_preservation
     {profile : PolyProfile} {scope : Nat}
     (rawArg : RawTerm scope)
+    (motiveTerm : RawTerm (scope + 2))
     (scrutineeTerm leftBranchTerm rightBranchTerm : RawTerm (scope + 1))
+    (substMotiveCell :
+      PolyCell profile .term 0 (scope + 1) CellBoundary.trivial
+        (.termBase (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton rawArg)) motiveTerm)))
     (substScrutineeCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase (RawTerm.subst0 scrutineeTerm rawArg)))
@@ -709,13 +833,14 @@ theorem HasCertifiedCellDim0.subst0_eitherMatch_preservation
     HasCertifiedCellDim0 (profile := profile)
       (RawTerm.subst0
         ((.mkGen .gen_eitherMatch ()
-          (.childCons scrutineeTerm
+          (.childCons motiveTerm
             (.childCons leftBranchTerm
-              (.childCons rightBranchTerm .childNil))))
+              (.childCons rightBranchTerm
+                (.childCons scrutineeTerm .childNil)))))
           : RawTerm (scope + 1))
         rawArg) := by
   rw [RawTerm.subst0_eitherMatch_reduces]
-  exact HasCertifiedCellDim0.eitherMatch substScrutineeCell
+  exact HasCertifiedCellDim0.eitherMatch substMotiveCell substScrutineeCell
     substLeftBranchCell substRightBranchCell
 
 end FX1Poly.Core

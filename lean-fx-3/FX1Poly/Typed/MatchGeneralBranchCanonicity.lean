@@ -19,7 +19,7 @@ This file lands the general structural reduction.  The eliminator-computing cano
 SECOND as a hypothesis (`branchComputes : ∀ payload, ∃ out, StepStar (app branch payload) out ∧ isValue out`).
 So they reduce eliminator canonicity to branch canonicity for ANY branches — the constant branches of the prior
 file become a one-line corollary (`closedOptionMatchIntoBoolFromGeneral`), and genuinely PAYLOAD-USING branches
-are now in scope: `closedOptionMatchIdentityIntoBool` feeds the some-payload `boolTrue` straight out through the
+are now in scope (`optionMatch(m, n, branch, scrutinee)`): `closedOptionMatchIdentityIntoBool` feeds the some-payload `boolTrue` straight out through the
 IDENTITY branch `λx.x` (the payload is consumed and re-emitted, not discarded), reaching the canonical bool
 `boolTrue` — past the constant-branch corner the prior file could not cross.
 
@@ -42,13 +42,14 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
 /-- **★ Option-match eliminator-computing canonicity for ARBITRARY branches.**  A closed
-`optionMatch(scrutinee, noneBranch, someBranch)` whose scrutinee is typed at `option(elementType)` reduces by
+`optionMatch(m, noneBranch, someBranch, scrutinee)` whose scrutinee is typed at `option(elementType)` reduces by
 `↝*` to an `isValue`, GIVEN that the none-branch reduces to an `isValue` and the some-branch applied to any
 payload reduces to an `isValue`.  The scrutinee reduces to `optionNone`/`optionSome inner`
 (`closedOptionCanonicalForms`); the congruence carries it under the match; the ι rule selects (and, for `some`,
 applies) the branch; the branch-canonicity hypothesis finishes.  Reduces eliminator canonicity to branch
 canonicity for ANY branches — including payload-using ones. -/
 theorem closedOptionMatchComputes {profile : PolyProfile}
+    {motive : RawTerm 1}
     {scrutinee elementType noneBranch someBranch : RawTerm 0}
     {isValue : RawTerm 0 → Prop}
     (scrutineeTyped :
@@ -60,7 +61,7 @@ theorem closedOptionMatchComputes {profile : PolyProfile}
     (someBranchComputes : ∀ payload : RawTerm 0,
       ∃ out : RawTerm 0, StepStar (appCell someBranch payload) out ∧ isValue out) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell scrutinee noneBranch someBranch) out ∧ isValue out := by
+      StepStar (optionMatchCell motive noneBranch someBranch scrutinee) out ∧ isValue out := by
   obtain ⟨scrutValue, scrutReduces, scrutIsOption⟩ := closedOptionCanonicalForms scrutineeTyped
   rcases scrutIsOption with noneEq | ⟨inner, someEq⟩
   · subst noneEq
@@ -79,10 +80,11 @@ theorem closedOptionMatchComputes {profile : PolyProfile}
       branchValue⟩
 
 /-- **★ Either-match eliminator-computing canonicity for ARBITRARY branches.**  A closed
-`eitherMatch(scrutinee, leftBranch, rightBranch)` whose scrutinee is typed at `either(leftType, rightType)`
+`eitherMatch(m, leftBranch, rightBranch, scrutinee)` whose scrutinee is typed at `either(leftType, rightType)`
 reduces by `↝*` to an `isValue`, GIVEN that each branch applied to any payload reduces to an `isValue`.  The
 either twin of `closedOptionMatchComputes`. -/
 theorem closedEitherMatchComputes {profile : PolyProfile}
+    {motive : RawTerm 1}
     {scrutinee leftType rightType leftBranch rightBranch : RawTerm 0}
     {isValue : RawTerm 0 → Prop}
     (scrutineeTyped :
@@ -95,7 +97,7 @@ theorem closedEitherMatchComputes {profile : PolyProfile}
     (rightBranchComputes : ∀ payload : RawTerm 0,
       ∃ out : RawTerm 0, StepStar (appCell rightBranch payload) out ∧ isValue out) :
     ∃ out : RawTerm 0,
-      StepStar (eitherMatchCell scrutinee leftBranch rightBranch) out ∧ isValue out := by
+      StepStar (eitherMatchCell motive leftBranch rightBranch scrutinee) out ∧ isValue out := by
   obtain ⟨scrutValue, scrutReduces, scrutIsEither⟩ := closedEitherCanonicalForms scrutineeTyped
   rcases scrutIsEither with ⟨inner, inlEq⟩ | ⟨inner, inrEq⟩
   · subst inlEq
@@ -125,8 +127,8 @@ theorem closedOptionMatchIntoBoolFromGeneral {profile : PolyProfile}
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
         (optionTypeCell elementType)) :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell scrutinee boolTrueCell
-        (lamCell unitCell (boolTrueCell : RawTerm 1))) out ∧
+      StepStar (optionMatchCell (variableCell (⟨0, by decide⟩ : Fin 1)) boolTrueCell
+        (lamCell unitCell (boolTrueCell : RawTerm 1)) scrutinee) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   closedOptionMatchComputes
     (isValue := fun value => value = boolTrueCell ∨ value = boolFalseCell)
@@ -134,15 +136,15 @@ theorem closedOptionMatchIntoBoolFromGeneral {profile : PolyProfile}
     ⟨boolTrueCell, StepStar.refl _, Or.inl rfl⟩
     (fun _payload => ⟨boolTrueCell, StepStar.transLast (StepStar.refl _) Step.beta, Or.inl rfl⟩)
 
-/-- **★ Payload-USING option canonicity (identity branch).**  A closed `optionMatch(optionSome boolTrue,
-noneBranch, λx.x)` reduces to the canonical bool `boolTrue` — the IDENTITY some-branch CONSUMES the stored
+/-- **★ Payload-USING option canonicity (identity branch).**  A closed `optionMatch(m, noneBranch, λx.x,
+optionSome boolTrue)` reduces to the canonical bool `boolTrue` — the IDENTITY some-branch CONSUMES the stored
 payload `boolTrue` and re-emits it, so the eliminator's output genuinely depends on the payload (unlike the
 constant branch).  This crosses the boundary `MatchElimComputingCanonicityTyped` flagged: the some-branch
 produces a value FROM the payload. -/
 theorem closedOptionMatchIdentityIntoBool {noneBranch : RawTerm 0} :
     ∃ out : RawTerm 0,
-      StepStar (optionMatchCell (optionSomeCell boolTrueCell) noneBranch
-        (lamCell unitCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) out ∧
+      StepStar (optionMatchCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) noneBranch
+        (lamCell unitCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) (optionSomeCell boolTrueCell)) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   ⟨boolTrueCell,
    StepStar.transLast
@@ -150,13 +152,13 @@ theorem closedOptionMatchIdentityIntoBool {noneBranch : RawTerm 0} :
      Step.beta,
    Or.inl rfl⟩
 
-/-- **★ Payload-USING either canonicity (identity left branch).**  A closed `eitherMatch(eitherInl boolTrue,
-λx.x, rightBranch)` reduces to the canonical bool `boolTrue` — the IDENTITY left branch consumes and re-emits the
+/-- **★ Payload-USING either canonicity (identity left branch).**  A closed `eitherMatch(m, λx.x, rightBranch,
+eitherInl boolTrue)` reduces to the canonical bool `boolTrue` — the IDENTITY left branch consumes and re-emits the
 `inl` payload.  The either twin of `closedOptionMatchIdentityIntoBool`. -/
 theorem closedEitherMatchIdentityIntoBool {rightBranch : RawTerm 0} :
     ∃ out : RawTerm 0,
-      StepStar (eitherMatchCell (eitherInlCell boolTrueCell)
-        (lamCell unitCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) rightBranch) out ∧
+      StepStar (eitherMatchCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
+        (lamCell unitCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) rightBranch (eitherInlCell boolTrueCell)) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   ⟨boolTrueCell,
    StepStar.transLast

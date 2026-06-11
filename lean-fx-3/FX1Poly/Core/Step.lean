@@ -306,49 +306,63 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
                   .childNil)))))
         nilBranch
   /-- **Iota for optionMatch on optionNone (base case).**  Matching
-      on `optionNone` selects the none-branch.  Same branch-selection
-      shape; pure projection. -/
+      on `optionNone` selects the none-branch.  Phase-Z spine
+      `(motive, noneBranch, someBranch, scrutinee)` — the motive is
+      a term under one binder, discarded by the iota.  Same
+      branch-selection shape; pure projection. -/
   | iotaOptionMatchNone {scope : Nat}
+                        {motive : RawTerm (scope + 1)}
                         {noneBranch someBranch : RawTerm scope} :
       Step
         (.mkGen .gen_optionMatch ()
-          (.childCons
-            (.mkGen .gen_optionNone () .childNil)
-            (.childCons noneBranch (.childCons someBranch .childNil))))
+          (.childCons motive
+            (.childCons noneBranch
+              (.childCons someBranch
+                (.childCons (.mkGen .gen_optionNone () .childNil)
+                  .childNil)))))
         noneBranch
   /-- **Iota for optionMatch on optionSome (step case, 1-arg app-chain).**
 
       Matching on `optionSome value` applies the some-branch to the
-      wrapped value: `optionMatch (optionSome v) n s ↝ app s v`.
-      The THIRD iota shape: build an `app` term rather than
-      projecting.  No direct substitution -- beta handles the
-      binding work in a subsequent reduction step, separating
-      iota's "tag-recognition" duty from beta's "argument-binding"
-      duty. -/
+      wrapped value: `optionMatch m n s (optionSome v) ↝ app s v`
+      (the Phase-Z motive is discarded).  The THIRD iota shape:
+      build an `app` term rather than projecting.  No direct
+      substitution -- beta handles the binding work in a subsequent
+      reduction step, separating iota's "tag-recognition" duty from
+      beta's "argument-binding" duty. -/
   | iotaOptionMatchSome {scope : Nat}
+                        {motive : RawTerm (scope + 1)}
                         {value : RawTerm scope}
                         {noneBranch someBranch : RawTerm scope} :
       Step
         (.mkGen .gen_optionMatch ()
-          (.childCons
-            (.mkGen .gen_optionSome () (.childCons value .childNil))
-            (.childCons noneBranch (.childCons someBranch .childNil))))
+          (.childCons motive
+            (.childCons noneBranch
+              (.childCons someBranch
+                (.childCons
+                  (.mkGen .gen_optionSome () (.childCons value .childNil))
+                  .childNil)))))
         (.mkGen .gen_app ()
           (.childCons someBranch (.childCons value .childNil)))
   /-- **Iota for eitherMatch on eitherInl (step case, 1-arg
       app-chain).**
 
       Matching on `eitherInl value` applies the left-branch to the
-      wrapped value: `eitherMatch (inl v) l r ↝ app l v`.  Same
-      1-arg app-chain shape as `iotaOptionMatchSome`. -/
+      wrapped value: `eitherMatch m l r (inl v) ↝ app l v` (the
+      Phase-Z motive is discarded).  Same 1-arg app-chain shape as
+      `iotaOptionMatchSome`. -/
   | iotaEitherMatchInl {scope : Nat}
+                       {motive : RawTerm (scope + 1)}
                        {value : RawTerm scope}
                        {leftBranch rightBranch : RawTerm scope} :
       Step
         (.mkGen .gen_eitherMatch ()
-          (.childCons
-            (.mkGen .gen_eitherInl () (.childCons value .childNil))
-            (.childCons leftBranch (.childCons rightBranch .childNil))))
+          (.childCons motive
+            (.childCons leftBranch
+              (.childCons rightBranch
+                (.childCons
+                  (.mkGen .gen_eitherInl () (.childCons value .childNil))
+                  .childNil)))))
         (.mkGen .gen_app ()
           (.childCons leftBranch (.childCons value .childNil)))
   /-- **Iota for eitherMatch on eitherInr (step case, 1-arg
@@ -357,13 +371,17 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
       Symmetric to `iotaEitherMatchInl`: matching on `eitherInr
       value` applies the right-branch to the wrapped value. -/
   | iotaEitherMatchInr {scope : Nat}
+                       {motive : RawTerm (scope + 1)}
                        {value : RawTerm scope}
                        {leftBranch rightBranch : RawTerm scope} :
       Step
         (.mkGen .gen_eitherMatch ()
-          (.childCons
-            (.mkGen .gen_eitherInr () (.childCons value .childNil))
-            (.childCons leftBranch (.childCons rightBranch .childNil))))
+          (.childCons motive
+            (.childCons leftBranch
+              (.childCons rightBranch
+                (.childCons
+                  (.mkGen .gen_eitherInr () (.childCons value .childNil))
+                  .childNil)))))
         (.mkGen .gen_app ()
           (.childCons rightBranch (.childCons value .childNil)))
   /-- **Iota for natElim on natSucc (step case, SUBSTITUTING with
@@ -841,10 +859,13 @@ theorem Step.iotaListElimNil_selects_nil :
 
 /-- **Smoke: iotaOptionMatchNone selects the none-branch.**
 
-  `optionMatch optionNone boolTrue boolFalse  ↝  boolTrue`
+  `optionMatch motive boolTrue boolFalse optionNone  ↝  boolTrue`
 
-Distinct none/some branches verify the RIGHT one is selected. -/
+Distinct none/some branches verify the RIGHT one is selected; the
+Phase-Z motive (a throwaway `var 0` under the binder) is discarded. -/
 theorem Step.iotaOptionMatchNone_selects_none :
+    let throwawayMotive : RawTerm 1 :=
+      .mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil
     let noneScrutinee : RawTerm 0 :=
       .mkGen .gen_optionNone () .childNil
     let noneBranch : RawTerm 0 :=
@@ -853,20 +874,23 @@ theorem Step.iotaOptionMatchNone_selects_none :
       .mkGen .gen_boolFalse () .childNil
     let matchTerm : RawTerm 0 :=
       .mkGen .gen_optionMatch ()
-        (.childCons
-          noneScrutinee
-          (.childCons noneBranch (.childCons someBranch .childNil)))
+        (.childCons throwawayMotive
+          (.childCons noneBranch
+            (.childCons someBranch
+              (.childCons noneScrutinee .childNil))))
     Step matchTerm noneBranch := by
   apply Step.iotaOptionMatchNone
 
 /-- **Smoke: iotaOptionMatchSome builds app chain.**
 
-  `optionMatch (optionSome unit) boolTrue boolFalse
+  `optionMatch motive boolTrue boolFalse (optionSome unit)
      ↝  app boolFalse unit`
 
 The result is the `app` term (not just `boolFalse`); the wrapped
 value is preserved as the application's argument. -/
 theorem Step.iotaOptionMatchSome_builds_app :
+    let throwawayMotive : RawTerm 1 :=
+      .mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil
     let unitVal : RawTerm 0 :=
       .mkGen .gen_unit () .childNil
     let someScrutinee : RawTerm 0 :=
@@ -877,9 +901,10 @@ theorem Step.iotaOptionMatchSome_builds_app :
       .mkGen .gen_boolFalse () .childNil
     let matchTerm : RawTerm 0 :=
       .mkGen .gen_optionMatch ()
-        (.childCons
-          someScrutinee
-          (.childCons noneBranch (.childCons someBranch .childNil)))
+        (.childCons throwawayMotive
+          (.childCons noneBranch
+            (.childCons someBranch
+              (.childCons someScrutinee .childNil))))
     let appResult : RawTerm 0 :=
       .mkGen .gen_app ()
         (.childCons someBranch (.childCons unitVal .childNil))
@@ -888,12 +913,14 @@ theorem Step.iotaOptionMatchSome_builds_app :
 
 /-- **Smoke: iotaEitherMatchInl builds app chain.**
 
-  `eitherMatch (eitherInl unit) boolTrue boolFalse
+  `eitherMatch motive boolTrue boolFalse (eitherInl unit)
      ↝  app boolTrue unit`
 
 Distinct left/right branches verify the RIGHT branch is applied.
 The wrapped value is preserved as the application's argument. -/
 theorem Step.iotaEitherMatchInl_builds_app :
+    let throwawayMotive : RawTerm 1 :=
+      .mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil
     let unitVal : RawTerm 0 :=
       .mkGen .gen_unit () .childNil
     let inlScrutinee : RawTerm 0 :=
@@ -904,9 +931,10 @@ theorem Step.iotaEitherMatchInl_builds_app :
       .mkGen .gen_boolFalse () .childNil
     let matchTerm : RawTerm 0 :=
       .mkGen .gen_eitherMatch ()
-        (.childCons
-          inlScrutinee
-          (.childCons leftBranch (.childCons rightBranch .childNil)))
+        (.childCons throwawayMotive
+          (.childCons leftBranch
+            (.childCons rightBranch
+              (.childCons inlScrutinee .childNil))))
     let appResult : RawTerm 0 :=
       .mkGen .gen_app ()
         (.childCons leftBranch (.childCons unitVal .childNil))
@@ -915,11 +943,13 @@ theorem Step.iotaEitherMatchInl_builds_app :
 
 /-- **Smoke: iotaEitherMatchInr builds app chain.**
 
-  `eitherMatch (eitherInr unit) boolTrue boolFalse
+  `eitherMatch motive boolTrue boolFalse (eitherInr unit)
      ↝  app boolFalse unit`
 
 Symmetric to `iotaEitherMatchInl_builds_app`. -/
 theorem Step.iotaEitherMatchInr_builds_app :
+    let throwawayMotive : RawTerm 1 :=
+      .mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil
     let unitVal : RawTerm 0 :=
       .mkGen .gen_unit () .childNil
     let inrScrutinee : RawTerm 0 :=
@@ -930,9 +960,10 @@ theorem Step.iotaEitherMatchInr_builds_app :
       .mkGen .gen_boolFalse () .childNil
     let matchTerm : RawTerm 0 :=
       .mkGen .gen_eitherMatch ()
-        (.childCons
-          inrScrutinee
-          (.childCons leftBranch (.childCons rightBranch .childNil)))
+        (.childCons throwawayMotive
+          (.childCons leftBranch
+            (.childCons rightBranch
+              (.childCons inrScrutinee .childNil))))
     let appResult : RawTerm 0 :=
       .mkGen .gen_app ()
         (.childCons rightBranch (.childCons unitVal .childNil))

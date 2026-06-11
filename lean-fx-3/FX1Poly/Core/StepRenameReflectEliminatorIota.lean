@@ -191,29 +191,37 @@ projecting its none-branch, recovered with its renaming as the contractum image.
 projection recipe with `gen_optionMatch` / `gen_optionNone`. -/
 theorem Step.reflectIotaOptionMatchNone {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedMotive : RawTerm (targetScope + 1)}
     {renamedNone renamedSome : RawTerm targetScope}
     (renameEquation : RawTerm.rename rho term =
       .mkGen .gen_optionMatch ()
-        (.childCons (.mkGen .gen_optionNone () .childNil)
-          (.childCons renamedNone (.childCons renamedSome .childNil)))) :
+        (.childCons renamedMotive
+          (.childCons renamedNone
+            (.childCons renamedSome
+              (.childCons (.mkGen .gen_optionNone () .childNil) .childNil))))) :
     ∃ sourceReduct : RawTerm sourceScope,
       Step term sourceReduct ∧ RawTerm.rename rho sourceReduct = renamedNone := by
   obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
   subst termEq
   match payload, children with
-  | (), .childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)) =>
+  | (), .childCons motive
+        (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))) =>
       rw [show RawTerm.rename rho
             (.mkGen .gen_optionMatch ()
-              (.childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)))) =
+              (.childCons motive
+                (.childCons noneBranch
+                  (.childCons someBranch (.childCons scrutinee .childNil))))) =
             (.mkGen .gen_optionMatch ()
-              (.childCons (RawTerm.rename rho scrutinee)
+              (.childCons (RawTerm.rename (RawRenaming.lift rho) motive)
                 (.childCons (RawTerm.rename rho noneBranch)
-                  (.childCons (RawTerm.rename rho someBranch) .childNil)))
+                  (.childCons (RawTerm.rename rho someBranch)
+                    (.childCons (RawTerm.rename rho scrutinee) .childNil))))
               : RawTerm targetScope) from rfl] at renameEquation
       injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
-      injection childrenEq with _ _ _ scrutineeEq tailEq
+      injection childrenEq with _ _ _ _motiveEq tailEq
       injection tailEq with _ _ _ noneEq tail2Eq
-      injection tail2Eq with _ _ _ _someEq _nilEq
+      injection tail2Eq with _ _ _ _someEq tail3Eq
+      injection tail3Eq with _ _ _ scrutineeEq _nilEq
       obtain ⟨_scrutPayload, _scrutChildren, scrutTermEq⟩ := RawTerm.rename_eq_mkGen rho scrutineeEq
       subst scrutTermEq
       match _scrutPayload, _scrutChildren with
@@ -239,11 +247,15 @@ distribution + the recovered `someBranch`/`value` renamings).  The app-chain (st
 `reflectIotaOptionMatchNone`. -/
 theorem Step.reflectIotaOptionMatchSome {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedMotive : RawTerm (targetScope + 1)}
     {renamedValue renamedNone renamedSome : RawTerm targetScope}
     (renameEquation : RawTerm.rename rho term =
       .mkGen .gen_optionMatch ()
-        (.childCons (.mkGen .gen_optionSome () (.childCons renamedValue .childNil))
-          (.childCons renamedNone (.childCons renamedSome .childNil)))) :
+        (.childCons renamedMotive
+          (.childCons renamedNone
+            (.childCons renamedSome
+              (.childCons (.mkGen .gen_optionSome () (.childCons renamedValue .childNil))
+                .childNil))))) :
     ∃ sourceReduct : RawTerm sourceScope,
       Step term sourceReduct ∧
         RawTerm.rename rho sourceReduct =
@@ -251,19 +263,24 @@ theorem Step.reflectIotaOptionMatchSome {sourceScope targetScope : Nat}
   obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
   subst termEq
   match payload, children with
-  | (), .childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)) =>
+  | (), .childCons motive
+        (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))) =>
       rw [show RawTerm.rename rho
             (.mkGen .gen_optionMatch ()
-              (.childCons scrutinee (.childCons noneBranch (.childCons someBranch .childNil)))) =
+              (.childCons motive
+                (.childCons noneBranch
+                  (.childCons someBranch (.childCons scrutinee .childNil))))) =
             (.mkGen .gen_optionMatch ()
-              (.childCons (RawTerm.rename rho scrutinee)
+              (.childCons (RawTerm.rename (RawRenaming.lift rho) motive)
                 (.childCons (RawTerm.rename rho noneBranch)
-                  (.childCons (RawTerm.rename rho someBranch) .childNil)))
+                  (.childCons (RawTerm.rename rho someBranch)
+                    (.childCons (RawTerm.rename rho scrutinee) .childNil))))
               : RawTerm targetScope) from rfl] at renameEquation
       injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
-      injection childrenEq with _ _ _ scrutineeEq tailEq
+      injection childrenEq with _ _ _ _motiveEq tailEq
       injection tailEq with _ _ _ _noneEq tail2Eq
-      injection tail2Eq with _ _ _ someEq _nilEq
+      injection tail2Eq with _ _ _ someEq tail3Eq
+      injection tail3Eq with _ _ _ scrutineeEq _nilEq
       obtain ⟨_scrutPayload, _scrutChildren, scrutTermEq⟩ := RawTerm.rename_eq_mkGen rho scrutineeEq
       subst scrutTermEq
       match _scrutPayload, _scrutChildren with
@@ -287,11 +304,15 @@ theorem Step.reflectIotaOptionMatchSome {sourceScope targetScope : Nat}
 `app leftBranch value`, recovered with the `rename`-over-`app` image.  The left coproduct app-chain twin. -/
 theorem Step.reflectIotaEitherMatchInl {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedMotive : RawTerm (targetScope + 1)}
     {renamedValue renamedLeft renamedRight : RawTerm targetScope}
     (renameEquation : RawTerm.rename rho term =
       .mkGen .gen_eitherMatch ()
-        (.childCons (.mkGen .gen_eitherInl () (.childCons renamedValue .childNil))
-          (.childCons renamedLeft (.childCons renamedRight .childNil)))) :
+        (.childCons renamedMotive
+          (.childCons renamedLeft
+            (.childCons renamedRight
+              (.childCons (.mkGen .gen_eitherInl () (.childCons renamedValue .childNil))
+                .childNil))))) :
     ∃ sourceReduct : RawTerm sourceScope,
       Step term sourceReduct ∧
         RawTerm.rename rho sourceReduct =
@@ -299,19 +320,24 @@ theorem Step.reflectIotaEitherMatchInl {sourceScope targetScope : Nat}
   obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
   subst termEq
   match payload, children with
-  | (), .childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)) =>
+  | (), .childCons motive
+        (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))) =>
       rw [show RawTerm.rename rho
             (.mkGen .gen_eitherMatch ()
-              (.childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)))) =
+              (.childCons motive
+                (.childCons leftBranch
+                  (.childCons rightBranch (.childCons scrutinee .childNil))))) =
             (.mkGen .gen_eitherMatch ()
-              (.childCons (RawTerm.rename rho scrutinee)
+              (.childCons (RawTerm.rename (RawRenaming.lift rho) motive)
                 (.childCons (RawTerm.rename rho leftBranch)
-                  (.childCons (RawTerm.rename rho rightBranch) .childNil)))
+                  (.childCons (RawTerm.rename rho rightBranch)
+                    (.childCons (RawTerm.rename rho scrutinee) .childNil))))
               : RawTerm targetScope) from rfl] at renameEquation
       injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
-      injection childrenEq with _ _ _ scrutineeEq tailEq
+      injection childrenEq with _ _ _ _motiveEq tailEq
       injection tailEq with _ _ _ leftEq tail2Eq
-      injection tail2Eq with _ _ _ _rightEq _nilEq
+      injection tail2Eq with _ _ _ _rightEq tail3Eq
+      injection tail3Eq with _ _ _ scrutineeEq _nilEq
       obtain ⟨_scrutPayload, _scrutChildren, scrutTermEq⟩ := RawTerm.rename_eq_mkGen rho scrutineeEq
       subst scrutTermEq
       match _scrutPayload, _scrutChildren with
@@ -335,11 +361,15 @@ right-coproduct twin of `reflectIotaEitherMatchInl`: reflects `eitherMatch (eith
 the source redex reducing to `app rightBranch value`. -/
 theorem Step.reflectIotaEitherMatchInr {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedMotive : RawTerm (targetScope + 1)}
     {renamedValue renamedLeft renamedRight : RawTerm targetScope}
     (renameEquation : RawTerm.rename rho term =
       .mkGen .gen_eitherMatch ()
-        (.childCons (.mkGen .gen_eitherInr () (.childCons renamedValue .childNil))
-          (.childCons renamedLeft (.childCons renamedRight .childNil)))) :
+        (.childCons renamedMotive
+          (.childCons renamedLeft
+            (.childCons renamedRight
+              (.childCons (.mkGen .gen_eitherInr () (.childCons renamedValue .childNil))
+                .childNil))))) :
     ∃ sourceReduct : RawTerm sourceScope,
       Step term sourceReduct ∧
         RawTerm.rename rho sourceReduct =
@@ -347,19 +377,24 @@ theorem Step.reflectIotaEitherMatchInr {sourceScope targetScope : Nat}
   obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
   subst termEq
   match payload, children with
-  | (), .childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)) =>
+  | (), .childCons motive
+        (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))) =>
       rw [show RawTerm.rename rho
             (.mkGen .gen_eitherMatch ()
-              (.childCons scrutinee (.childCons leftBranch (.childCons rightBranch .childNil)))) =
+              (.childCons motive
+                (.childCons leftBranch
+                  (.childCons rightBranch (.childCons scrutinee .childNil))))) =
             (.mkGen .gen_eitherMatch ()
-              (.childCons (RawTerm.rename rho scrutinee)
+              (.childCons (RawTerm.rename (RawRenaming.lift rho) motive)
                 (.childCons (RawTerm.rename rho leftBranch)
-                  (.childCons (RawTerm.rename rho rightBranch) .childNil)))
+                  (.childCons (RawTerm.rename rho rightBranch)
+                    (.childCons (RawTerm.rename rho scrutinee) .childNil))))
               : RawTerm targetScope) from rfl] at renameEquation
       injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
-      injection childrenEq with _ _ _ scrutineeEq tailEq
+      injection childrenEq with _ _ _ _motiveEq tailEq
       injection tailEq with _ _ _ _leftEq tail2Eq
-      injection tail2Eq with _ _ _ rightEq _nilEq
+      injection tail2Eq with _ _ _ rightEq tail3Eq
+      injection tail3Eq with _ _ _ scrutineeEq _nilEq
       obtain ⟨_scrutPayload, _scrutChildren, scrutTermEq⟩ := RawTerm.rename_eq_mkGen rho scrutineeEq
       subst scrutTermEq
       match _scrutPayload, _scrutChildren with
