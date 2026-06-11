@@ -654,6 +654,7 @@ import FX1Poly.Typed.OptimizationCell
 import FX1Poly.Typed.ChurchNumeralAsymptotics
 import FX1Poly.Typed.CostArcLedger
 import FX1Poly.Typed.KernelBinaryParametricity
+import FX1Poly.Typed.KernelBinaryPiElim
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1991,6 +1992,38 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.witnessPairValues_distinct
 #assert_no_axioms FX1Poly.Typed.binaryPairCandidate_discriminates
 #assert_no_axioms FX1Poly.Typed.binaryDataCandidate_strictlyRefinesSquare
+
+-- ★★ Binary determinism + the Π-ELIMINATION pair arm + the binary FT motive (OP1-K2 brick 1
+-- #1228, Typed/KernelBinaryPiElim.lean). The structural novelty vs the unary: the unary
+-- deterministic transferred through the bounded-to-denote forget bridge, but the binary
+-- relation has NO denote twin — determinism is a DIRECT double induction over per-shape
+-- candidate identifications. candidateAtWhnfReductLeft/Right: one-sided weak-head factoring
+-- (the OPPOSITE side's expansions commute by re-wrap — the genuinely binary step).
+-- binaryCandidateIff{StronglyNormalizingPair,Universe,EmptyCandidate,FlatCandidate} +
+-- candidatePiPairShape: per-shape identification keyed on BOTH indices. ★ deterministic:
+-- the binary relation is FUNCTIONAL (pointwise-equivalent candidates at the same pair).
+-- ★ applicationMemberPairAtBounded (+ closing-substitution form via subst0_subst_commute on
+-- BOTH sides): the Π-elimination member arm — Π-pair inversion supplies the relational-arrow
+-- form, determinism aligns the argument pair's relation with the inverted domain relation.
+-- ★ BinaryFundamentalConclusionAtBounded: THE binary FT motive. binaryFundamentalVarArm (the
+-- env lookup IS the leaf arm) + ★ binaryFundamentalPiElimArm (the application FT arm, one
+-- composition). Honest scope: piIntro (binary env cons + two-sided β-expansion), conv
+-- (binary Conv-invariance), former arms (binary telescope), and assembly are later K2 bricks.
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.candidateAtWhnfReductLeft
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.candidateAtWhnfReductRight
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.binaryCandidateIffStronglyNormalizingPair
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.binaryCandidateIffUniverse
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.binaryCandidateIffEmptyCandidate
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.binaryCandidateIffFlatCandidate
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.candidatePiPairShape
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeAtBounded.piTypePairInversion
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.deterministic
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeAtBounded.deterministic
+#assert_no_axioms FX1Poly.Typed.applicationMemberPairAtBounded
+#assert_no_axioms FX1Poly.Typed.applicationMemberPairUnderClosingSubstitutionBounded
+#assert_no_axioms FX1Poly.Typed.BinaryFundamentalConclusionAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalVarArm
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalPiElimArm
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
