@@ -653,6 +653,7 @@ import FX1Poly.Typed.CostAwareEquivalence
 import FX1Poly.Typed.OptimizationCell
 import FX1Poly.Typed.ChurchNumeralAsymptotics
 import FX1Poly.Typed.CostArcLedger
+import FX1Poly.Typed.KernelBinaryParametricity
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1939,6 +1940,57 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.costLedger_convInvariance_isRefuted
 #assert_no_axioms FX1Poly.Typed.costLedger_affineScaling_isRefuted
 #assert_no_axioms FX1Poly.Typed.costLedger_rawTotality_isRefuted
+
+-- ★★ Kernel binary parametricity — the pair-indexed stratified relation (OP1-K1 #1227,
+-- Typed/KernelBinaryParametricity.lean). BinaryReducibleTypeStepBounded mirrors the unary
+-- ReducibleTypeStepBounded cell for cell with BINARY candidates: one-sided WHNF expansion,
+-- neutral SN-product pair, the genuinely-binary piType (map-related-to-related over a
+-- related-argument-indexed codomain family), the bound-gated same-payload universeCode pair,
+-- the pinned dataEmpty/dataFlat pairs (binaryDataCandidate = the SAME-VALUE refinement:
+-- data-Tait both sides + Conv), and BinaryPointwiseIff congruence. The below-family keeps the
+-- unary's propext-clean non-WF structural recursion; coherence + ★ free binary cumulativity
+-- mirror (ofPointwiseIff reconciliation, funext-free). The K1 formation arms
+-- (universe/empty/flat-data/Pi) are the constructor-level arms OP1-K2's FT consumes, with
+-- diagonal self-pair instances. TEETH: the binary universe candidate is inhabited
+-- ((Empty,Empty) at Type@0 through the below-family boundary), and binaryDataCandidate
+-- relates a value to itself but REFUSES two distinct normal pair values BOTH of which the
+-- unary square admits — the strict-refinement witness. Honest scope: the env-threaded
+-- var/conv arms, the piIntro/piElim member arms, and the binary FT assembly are OP1-K2;
+-- binary-to-unary projection at Pi is deliberately unclaimed (equivalent to the FT itself).
+#assert_no_axioms FX1Poly.Typed.BinaryPointwiseIff
+#assert_no_axioms FX1Poly.Typed.binaryUniverseDenotePredicate
+#assert_no_axioms FX1Poly.Typed.binaryEmptyCandidate
+#assert_no_axioms FX1Poly.Typed.binaryDataCandidate
+#assert_no_axioms FX1Poly.Typed.binaryDataCandidate_relatedAreConvertible
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded
+#assert_no_axioms FX1Poly.Typed.binaryDenoteBelowFamilyBounded
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeAtBounded
+#assert_no_axioms FX1Poly.Typed.IsBinaryReducibleTypePairAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryDenoteBelowFamilyBounded_eq_reducible
+#assert_no_axioms FX1Poly.Typed.binaryStepBounded_cumulative
+#assert_no_axioms FX1Poly.Typed.isBinaryReducibleTypePair_cumulative
+#assert_no_axioms FX1Poly.Typed.binaryUniverseFormationArm
+#assert_no_axioms FX1Poly.Typed.binaryEmptyFormationArm
+#assert_no_axioms FX1Poly.Typed.binaryFlatDataFormationArm
+#assert_no_axioms FX1Poly.Typed.binaryPiFormationArm
+#assert_no_axioms FX1Poly.Typed.universeCode_isBinaryReducibleSelfPair
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_isBinaryReducibleSelfPair
+#assert_no_axioms FX1Poly.Typed.IsBinaryReducibleMemberPairAtBounded
+#assert_no_axioms FX1Poly.Typed.isBinaryReducibleMemberPair_cumulative
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleEnvAtBounded
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleEnvAtBounded.lookupRelated
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleEnvAtBounded.empty
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalUniverseFormationArm
+#assert_no_axioms FX1Poly.Typed.IsStronglyNormalizing.ofIsStepNormalForm
+#assert_no_axioms FX1Poly.Typed.binaryUniverseCandidate_relatesEmptyCodes
+#assert_no_axioms FX1Poly.Typed.firstWitnessPairValue
+#assert_no_axioms FX1Poly.Typed.secondWitnessPairValue
+#assert_no_axioms FX1Poly.Typed.firstWitnessPairValue_isPairValue
+#assert_no_axioms FX1Poly.Typed.secondWitnessPairValue_isPairValue
+#assert_no_axioms FX1Poly.Typed.binaryPairCandidate_relatesSelf
+#assert_no_axioms FX1Poly.Typed.witnessPairValues_distinct
+#assert_no_axioms FX1Poly.Typed.binaryPairCandidate_discriminates
+#assert_no_axioms FX1Poly.Typed.binaryDataCandidate_strictlyRefinesSquare
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
