@@ -677,6 +677,7 @@ import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerUniqueness
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerSubjectReduction
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerStronglyNormalizing
+import FX1Poly.Typed.IdFormerTermIndexedRetrofit
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
@@ -2771,6 +2772,22 @@ candidate.  Axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.subjectStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.closedSubjectStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.closedBridgeUniverseStronglyNormalizing
+
+/-! ## NATIVE-17 (#1294) — the Id retrofit (idCode formable + refl classifier grown-formable)
+
+The identity type former is retrofitted onto the term-indexed table (NATIVE-12 made `gen_idCode` a row).
+`idFormationViaTermIndexed` recasts `termIndexedFormerGenFormation_idCode` in the canonical `idTypeCell` builder:
+`Id(A, a, b) : Type@e` whenever `A : Type@e` and `a, b : A` (idCode formable).  `reflClassifierTermIndexedFormable`
+shows the EXACT classifier `Id(A, x, x)` that `HasTypeDescIdIntro.reflIntro` produces (the reflexive instance) is
+term-indexed-formable given `A : Type@e` (refl classifier grown-formable).  `closedIdUniverseFormable` is the
+closed witness `Id(Type@1,Type@0,Type@0) : Type@2`; `reflProofWithFormableClassifier` is the capstone —
+`refl(Type@0) : Id(Type@1,Type@0,Type@0)` AND that classifier is itself formable at `Type@2`, so the refl VALUE
+(via `HasTypeDescIdIntro`) and the FORMATION of the type it inhabits (via the term-indexed table) both route
+through native rules.  No bespoke `idFormation`.  Axiom-free. -/
+#assert_no_axioms FX1Poly.Typed.idFormationViaTermIndexed
+#assert_no_axioms FX1Poly.Typed.reflClassifierTermIndexedFormable
+#assert_no_axioms FX1Poly.Typed.closedIdUniverseFormable
+#assert_no_axioms FX1Poly.Typed.reflProofWithFormableClassifier
 
 /-! ## NATIVE-03 (#1280) — the graded intro premise IS expressible (SPIKE, verdict GO)
 
