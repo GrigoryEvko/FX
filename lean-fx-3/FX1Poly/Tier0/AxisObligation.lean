@@ -162,4 +162,187 @@ structure AxisObligation where
   precedents : List Citation
   deriving Repr
 
+/-! ## Capability lattice order
+
+`MetatheoreticCapabilities` ships with a componentwise `meet`; the
+honesty-ledger statements need the induced partial ORDER.  Both layers
+(per-status and per-record) are finite, so the order is decidable and
+the greatest-lower-bound laws are case checks.  (Kernel-native — the
+capability lattice's own order theory, integrated here from the
+extension PoC layer.) -/
+
+/-- The capability-status order: `unavailable` is below `available`.
+A status is below another when claiming it concedes at least as much. -/
+def CapabilityStatus.isBelow (statusA statusB : CapabilityStatus) : Prop :=
+  statusA.meet statusB = statusA
+
+instance (statusA statusB : CapabilityStatus) :
+    Decidable (statusA.isBelow statusB) :=
+  inferInstanceAs (Decidable (statusA.meet statusB = statusA))
+
+theorem CapabilityStatus.isBelow_refl (status : CapabilityStatus) :
+    status.isBelow status :=
+  CapabilityStatus.meet_idempotent status
+
+theorem CapabilityStatus.meet_isBelow_left
+    (statusA statusB : CapabilityStatus) :
+    (statusA.meet statusB).isBelow statusA := by
+  cases statusA <;> cases statusB <;> rfl
+
+theorem CapabilityStatus.meet_isBelow_right
+    (statusA statusB : CapabilityStatus) :
+    (statusA.meet statusB).isBelow statusB := by
+  cases statusA <;> cases statusB <;> rfl
+
+theorem CapabilityStatus.isBelow_trans
+    {statusA statusB statusC : CapabilityStatus}
+    (belowAB : statusA.isBelow statusB)
+    (belowBC : statusB.isBelow statusC) :
+    statusA.isBelow statusC := by
+  cases statusA <;> cases statusB <;> cases statusC <;>
+    first
+      | rfl
+      | exact belowAB
+      | exact belowBC
+
+theorem CapabilityStatus.isBelow_antisymm
+    {statusA statusB : CapabilityStatus}
+    (belowAB : statusA.isBelow statusB)
+    (belowBA : statusB.isBelow statusA) :
+    statusA = statusB := by
+  cases statusA <;> cases statusB <;>
+    first
+      | rfl
+      | exact belowAB.symm
+      | exact belowBA
+
+/-- A status below a meet is below both factors, and conversely: the
+meet is the GREATEST lower bound of the two-point status lattice. -/
+theorem CapabilityStatus.isBelow_meet_iff
+    (statusA statusB statusC : CapabilityStatus) :
+    statusC.isBelow (statusA.meet statusB) ↔
+      statusC.isBelow statusA ∧ statusC.isBelow statusB := by
+  cases statusA <;> cases statusB <;> cases statusC <;>
+    constructor <;> intro hyp <;>
+      first
+        | exact ⟨rfl, rfl⟩
+        | exact rfl
+        | exact ⟨rfl, hyp⟩
+        | exact ⟨hyp, rfl⟩
+        | exact ⟨hyp, hyp⟩
+        | exact hyp.1
+        | exact hyp.2
+
+/-- An available claim below another status forces that status to be
+available too — the extraction lemma the admission theorems use. -/
+theorem CapabilityStatus.eq_available_of_isBelow_of_available
+    {statusA statusB : CapabilityStatus}
+    (below : statusA.isBelow statusB)
+    (claimed : statusA = .available) :
+    statusB = .available := by
+  cases statusA <;> cases statusB <;>
+    first
+      | rfl
+      | exact claimed
+      | exact below
+
+/-- The capability-record order: componentwise `isBelow`. -/
+def MetatheoreticCapabilities.isBelow
+    (capA capB : MetatheoreticCapabilities) : Prop :=
+  capA.canonicityStatus.isBelow capB.canonicityStatus ∧
+  capA.normalizationStatus.isBelow capB.normalizationStatus ∧
+  capA.parametricityStatus.isBelow capB.parametricityStatus ∧
+  capA.subjectReductionStatus.isBelow capB.subjectReductionStatus ∧
+  capA.confluenceStatus.isBelow capB.confluenceStatus ∧
+  capA.strongNormalizationStatus.isBelow capB.strongNormalizationStatus ∧
+  capA.decidableConversionStatus.isBelow capB.decidableConversionStatus ∧
+  capA.decidableTypecheckingStatus.isBelow capB.decidableTypecheckingStatus
+
+instance (capA capB : MetatheoreticCapabilities) :
+    Decidable (capA.isBelow capB) :=
+  inferInstanceAs (Decidable
+    (capA.canonicityStatus.isBelow capB.canonicityStatus ∧
+     capA.normalizationStatus.isBelow capB.normalizationStatus ∧
+     capA.parametricityStatus.isBelow capB.parametricityStatus ∧
+     capA.subjectReductionStatus.isBelow capB.subjectReductionStatus ∧
+     capA.confluenceStatus.isBelow capB.confluenceStatus ∧
+     capA.strongNormalizationStatus.isBelow
+       capB.strongNormalizationStatus ∧
+     capA.decidableConversionStatus.isBelow
+       capB.decidableConversionStatus ∧
+     capA.decidableTypecheckingStatus.isBelow
+       capB.decidableTypecheckingStatus))
+
+theorem MetatheoreticCapabilities.isBelow_refl
+    (cap : MetatheoreticCapabilities) :
+    cap.isBelow cap :=
+  ⟨CapabilityStatus.isBelow_refl _, CapabilityStatus.isBelow_refl _,
+   CapabilityStatus.isBelow_refl _, CapabilityStatus.isBelow_refl _,
+   CapabilityStatus.isBelow_refl _, CapabilityStatus.isBelow_refl _,
+   CapabilityStatus.isBelow_refl _, CapabilityStatus.isBelow_refl _⟩
+
+/-- (Lattice law) The meet is below its left factor. -/
+theorem MetatheoreticCapabilities.meet_isBelow_left
+    (capA capB : MetatheoreticCapabilities) :
+    (capA.meet capB).isBelow capA :=
+  ⟨CapabilityStatus.meet_isBelow_left _ _,
+   CapabilityStatus.meet_isBelow_left _ _,
+   CapabilityStatus.meet_isBelow_left _ _,
+   CapabilityStatus.meet_isBelow_left _ _,
+   CapabilityStatus.meet_isBelow_left _ _,
+   CapabilityStatus.meet_isBelow_left _ _,
+   CapabilityStatus.meet_isBelow_left _ _,
+   CapabilityStatus.meet_isBelow_left _ _⟩
+
+/-- (Lattice law) The meet is below its right factor. -/
+theorem MetatheoreticCapabilities.meet_isBelow_right
+    (capA capB : MetatheoreticCapabilities) :
+    (capA.meet capB).isBelow capB :=
+  ⟨CapabilityStatus.meet_isBelow_right _ _,
+   CapabilityStatus.meet_isBelow_right _ _,
+   CapabilityStatus.meet_isBelow_right _ _,
+   CapabilityStatus.meet_isBelow_right _ _,
+   CapabilityStatus.meet_isBelow_right _ _,
+   CapabilityStatus.meet_isBelow_right _ _,
+   CapabilityStatus.meet_isBelow_right _ _,
+   CapabilityStatus.meet_isBelow_right _ _⟩
+
+theorem MetatheoreticCapabilities.isBelow_trans
+    {capA capB capC : MetatheoreticCapabilities}
+    (belowAB : capA.isBelow capB)
+    (belowBC : capB.isBelow capC) :
+    capA.isBelow capC :=
+  ⟨CapabilityStatus.isBelow_trans belowAB.1 belowBC.1,
+   CapabilityStatus.isBelow_trans belowAB.2.1 belowBC.2.1,
+   CapabilityStatus.isBelow_trans belowAB.2.2.1 belowBC.2.2.1,
+   CapabilityStatus.isBelow_trans belowAB.2.2.2.1 belowBC.2.2.2.1,
+   CapabilityStatus.isBelow_trans belowAB.2.2.2.2.1 belowBC.2.2.2.2.1,
+   CapabilityStatus.isBelow_trans belowAB.2.2.2.2.2.1 belowBC.2.2.2.2.2.1,
+   CapabilityStatus.isBelow_trans
+     belowAB.2.2.2.2.2.2.1 belowBC.2.2.2.2.2.2.1,
+   CapabilityStatus.isBelow_trans
+     belowAB.2.2.2.2.2.2.2 belowBC.2.2.2.2.2.2.2⟩
+
+/-- (Universal property) The meet is the GREATEST lower bound:
+anything below both factors is below the meet. -/
+theorem MetatheoreticCapabilities.isBelow_meet_of_isBelow_both
+    {capA capB capC : MetatheoreticCapabilities}
+    (belowA : capC.isBelow capA)
+    (belowB : capC.isBelow capB) :
+    capC.isBelow (capA.meet capB) :=
+  ⟨(CapabilityStatus.isBelow_meet_iff _ _ _).mpr ⟨belowA.1, belowB.1⟩,
+   (CapabilityStatus.isBelow_meet_iff _ _ _).mpr ⟨belowA.2.1, belowB.2.1⟩,
+   (CapabilityStatus.isBelow_meet_iff _ _ _).mpr
+     ⟨belowA.2.2.1, belowB.2.2.1⟩,
+   (CapabilityStatus.isBelow_meet_iff _ _ _).mpr
+     ⟨belowA.2.2.2.1, belowB.2.2.2.1⟩,
+   (CapabilityStatus.isBelow_meet_iff _ _ _).mpr
+     ⟨belowA.2.2.2.2.1, belowB.2.2.2.2.1⟩,
+   (CapabilityStatus.isBelow_meet_iff _ _ _).mpr
+     ⟨belowA.2.2.2.2.2.1, belowB.2.2.2.2.2.1⟩,
+   (CapabilityStatus.isBelow_meet_iff _ _ _).mpr
+     ⟨belowA.2.2.2.2.2.2.1, belowB.2.2.2.2.2.2.1⟩,
+   (CapabilityStatus.isBelow_meet_iff _ _ _).mpr
+     ⟨belowA.2.2.2.2.2.2.2, belowB.2.2.2.2.2.2.2⟩⟩
+
 end FX1Poly.Tier0

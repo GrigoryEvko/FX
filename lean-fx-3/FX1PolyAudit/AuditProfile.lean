@@ -11,6 +11,7 @@ import FX1Poly.STC.FxBoolCanonicity
 import FX1Poly.STC.FxNormalization
 import FX1Poly.STC.FxIndependenceBoundary
 import FX1Poly.Extension.AdmissionAdvanceBoundary
+import FX1Poly.Core.ProfileAdmission
 import FX1Poly.Core.StrengthCalibration
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
@@ -78,14 +79,17 @@ no-go register. -/
 #assert_no_axioms FX1Poly.Tier0.MetatheoreticCapabilities.isBelow_trans
 #assert_no_axioms
   FX1Poly.Tier0.MetatheoreticCapabilities.isBelow_meet_of_isBelow_both
-#assert_no_axioms FX1Poly.Extension.AdmissibleProfile
-#assert_no_axioms FX1Poly.Extension.AdmissibleProfile.bottom
-#assert_no_axioms FX1Poly.Extension.fxProfileLedgerAdmission
+#assert_no_axioms FX1Poly.Core.AdmissibleProfile
+#assert_no_axioms FX1Poly.Core.AdmissibleProfile.bottom
+#assert_no_axioms FX1Poly.Core.AdmissibleProfile.meetAdmission
+#assert_no_axioms FX1Poly.Core.fxProfileLedgerAdmission
 #assert_no_axioms
-  FX1Poly.Extension.fxProfileLedgerAdmission_capabilities_eq_bot
-#assert_no_axioms FX1Poly.Extension.fxProfileCanonicityAdmission
+  FX1Poly.Core.fxProfileLedgerAdmission_capabilities_eq_bot
+#assert_no_axioms FX1Poly.Core.fxProfileCanonicityAdmission
 #assert_no_axioms
-  FX1Poly.Extension.fxProfileCanonicityAdmission_claims_canonicity
+  FX1Poly.Core.fxProfileCanonicityAdmission_claims_canonicity
+#assert_no_axioms FX1Poly.Core.fxProfileMetatheoryAdmission
+#assert_no_axioms FX1Poly.Core.fxProfileMetatheoryAdmission_claims_both
 #assert_no_axioms FX1Poly.Extension.extendProfile_preserves_admissible
 #assert_no_axioms
   FX1Poly.Extension.extendProfile_preserves_admissible_capabilities
@@ -93,12 +97,21 @@ no-go register. -/
 #assert_no_axioms FX1Poly.Extension.FullAdmissionObligations
 #assert_no_axioms
   FX1Poly.Extension.fullAdmission_metatheoryRealized_canonicityRung_dischargeable
-#assert_no_axioms FX1Poly.Extension.CellularTensorObligations
-#assert_no_axioms FX1Poly.Extension.NoGoPosture
-#assert_no_axioms FX1Poly.Extension.NoGoCell
-#assert_no_axioms FX1Poly.Extension.zwartMarsdenRegister
-#assert_no_axioms FX1Poly.Extension.zwartMarsdenRegister_length
-#assert_no_axioms FX1Poly.Extension.zwartMarsdenRegister_allReject
+#assert_no_axioms FX1Poly.Core.CellularTensorObligations
+#assert_no_axioms FX1Poly.Core.diagonalCellularTensor
+#assert_no_axioms FX1Poly.Core.diagonalTensor_fx_meetCapabilities
+#assert_no_axioms FX1Poly.Core.NoGoPosture
+#assert_no_axioms FX1Poly.Core.NoGoCell
+#assert_no_axioms FX1Poly.Core.NoGoCell.matchesPair
+#assert_no_axioms FX1Poly.Core.zwartMarsdenRegister
+#assert_no_axioms FX1Poly.Core.zwartMarsdenRegister_length
+#assert_no_axioms FX1Poly.Core.zwartMarsdenRegister_allReject
+#assert_no_axioms FX1Poly.Core.findNoGoCell
+#assert_no_axioms FX1Poly.Core.findNoGoCell_mem
+#assert_no_axioms FX1Poly.Core.findNoGoCell_register_posture
+#assert_no_axioms FX1Poly.Core.probabilityPowersetTensor_isRejected
+#assert_no_axioms FX1Poly.Core.powersetProbabilityTensor_isRejected
+#assert_no_axioms FX1Poly.Core.unregisteredTensorPair_passesGate
 #assert_no_axioms
   FX1Poly.Extension.extensionLedger_stillBelow_metatheoryTransfer
 #assert_no_axioms
@@ -266,8 +279,6 @@ closed typed β-redex.  The two ledger-payoff admissions
 #assert_no_axioms FX1Poly.STC.identityApplicationClosedTyped
 #assert_no_axioms FX1Poly.STC.normalizationViaSTC_betaRedex_nonVacuous
 #assert_no_axioms FX1Poly.Core.fxProfile_stcHasNormalizationTheorem
-#assert_no_axioms FX1Poly.Extension.fxProfileMetatheoryAdmission
-#assert_no_axioms FX1Poly.Extension.fxProfileMetatheoryAdmission_claims_both
 
 /-! ## The independence VERDICT gates (SN-102, the STC arc's final rung)
 
