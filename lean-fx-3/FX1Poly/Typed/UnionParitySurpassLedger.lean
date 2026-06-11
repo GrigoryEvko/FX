@@ -8,6 +8,7 @@ import FX1Poly.Typed.HasTypeNativeUnionPathProjInversion
 import FX1Poly.Typed.HasTypeNativeUnionRecursiveInversion
 import FX1Poly.Typed.TypedByTableUnion
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
+import FX1Poly.Typed.HasTypeNativeUnionWeakening
 
 /-! # FX1Poly/Typed/UnionParitySurpassLedger — the honest PARITY-AND-SURPASS ledger for `HasTypeNativeUnion`
 
@@ -39,7 +40,7 @@ will close it — it carries NO anchor, because none exists yet.
 | reverse adequacy          | proven   | `nativeUnionReverseAdequacyCoverageWitness`                          |
 | honesty classifier        | proven   | `hasTableTypingRule` + `hasSomeTypingRule_eq_hasTableTypingRule`     |
 | affine rejection          | proven   | `HasTypeNativeUnion.unionRejectsAffineDoubleUse`                     |
-| weakening                 | open     | pending `HasTypeNativeUnion.renameRespectingContext` (union-weakening task) |
+| weakening                 | proven   | `HasTypeNativeUnion.renameRespectingContext` (all 25 arms, unconditional)   |
 | uniqueness                | open     | union has no classifier-uniqueness theorem yet (union-uniqueness task) |
 | reducibility / SN         | open     | no union-level SN theorem; bespoke SN lives on the grown engine (union-reducibility task) |
 | canonicity                | open     | no union-level canonicity theorem; closed-form canonicity is per-engine (union-canonicity task) |
@@ -64,12 +65,12 @@ will close it — it carries NO anchor, because none exists yet.
 
 ## Honest finding
 
-The five SURPASS items are all SHIPPED and CITED.  On the PARITY side, SEVEN of the twelve capability
-rows are positive (six `proven` + one `bridged`); FIVE are honestly `open` (weakening — landing
-concurrently; uniqueness, reducibility/SN, canonicity, context conversion — the union does NOT yet
-carry these, they live on the bespoke / grown engines and have not been restated union-wide).  The
-ledger does NOT mark a single one of those five as proven.  This is the present, honest state — a
-criterion, not a closure claim.
+The five SURPASS items are all SHIPPED and CITED.  On the PARITY side, EIGHT of the twelve capability
+rows are positive (seven `proven` + one `bridged`); FOUR are honestly `open` (uniqueness,
+reducibility/SN, canonicity, context conversion — the union does NOT yet carry these, they live on
+the bespoke / grown engines and have not been restated union-wide).  The ledger does NOT mark a
+single one of those four as proven.  This is the present, honest state — a criterion, not a closure
+claim.
 
 ## Zero-axiom verification
 
@@ -125,7 +126,7 @@ def UnionCapability.parityStatus : UnionCapability → ParityStatus
   | .reverseAdequacy => .proven
   | .honestyClassifier => .proven
   | .affineRejection => .proven
-  | .weakening => .open
+  | .weakening => .proven
   | .uniqueness => .open
   | .reducibilityStrongNormalization => .open
   | .canonicity => .open
@@ -170,6 +171,9 @@ def unionAnchor_honestyClassifier_table := @hasTableTypingRule
 def unionAnchor_honestyClassifier_equivalence := @hasSomeTypingRule_eq_hasTableTypingRule
 /-- Affine rejection: the union refutes `pathLam(pair(var 0, var 0))` across every arm. -/
 def unionAnchor_affineRejection := @HasTypeNativeUnion.unionRejectsAffineDoubleUse
+/-- Weakening: union typing is preserved along any context-respecting renaming (de-Bruijn insertion),
+all 25 arms (unconditional). -/
+def unionAnchor_weakening := @HasTypeNativeUnion.renameRespectingContext
 
 /-! ## Ledger facts (parity) -/
 
@@ -204,10 +208,10 @@ theorem honestyClassifier_atParity :
 theorem affineRejection_atParity :
     UnionCapability.affineRejection.parityStatus = .proven := rfl
 
-/-- Weakening is OPEN: pending `HasTypeNativeUnion.renameRespectingContext` (union-weakening task),
-landing concurrently.  The cell carries NO anchor. -/
-theorem weakening_isOpen :
-    UnionCapability.weakening.parityStatus = .open := rfl
+/-- Weakening is at PARITY (proven): union typing is preserved along any context-respecting renaming,
+anchored to `HasTypeNativeUnion.renameRespectingContext` (all 25 arms, unconditional, zero-axiom). -/
+theorem weakening_atParity :
+    UnionCapability.weakening.parityStatus = .proven := rfl
 
 /-- Uniqueness is OPEN: the union carries no classifier-uniqueness theorem yet (union-uniqueness
 task).  Classifier uniqueness lives on the bespoke / grown engines and is not restated union-wide. -/
@@ -263,17 +267,17 @@ def strictlyProvenCapabilityCount : Nat :=
 def openCapabilityCount : Nat :=
   (allCapabilities.filter (fun capability => not capability.parityStatus.isCovered)).length
 
-/-- ★ The honest present count: SEVEN of twelve capability rows are positive (six strictly proven plus
-the bridged root-SR row).  Computed by `rfl`. -/
-theorem coveredCapabilityCount_isSeven : coveredCapabilityCount = 7 := rfl
+/-- ★ The honest present count: EIGHT of twelve capability rows are positive (seven strictly proven
+plus the bridged root-SR row).  Computed by `rfl`. -/
+theorem coveredCapabilityCount_isEight : coveredCapabilityCount = 8 := rfl
 
-/-- SIX of twelve rows are strictly proven (typing, inversion, substitution, reverse adequacy, honesty,
-affine rejection); root-SR is bridged, not counted here. -/
-theorem strictlyProvenCapabilityCount_isSix : strictlyProvenCapabilityCount = 6 := rfl
+/-- SEVEN of twelve rows are strictly proven (typing, inversion, substitution, reverse adequacy,
+honesty, affine rejection, weakening); root-SR is bridged, not counted here. -/
+theorem strictlyProvenCapabilityCount_isSeven : strictlyProvenCapabilityCount = 7 := rfl
 
-/-- FIVE of twelve rows are honestly OPEN (weakening, uniqueness, reducibility/SN, canonicity, context
+/-- FOUR of twelve rows are honestly OPEN (uniqueness, reducibility/SN, canonicity, context
 conversion).  The ledger marks none of these `proven`. -/
-theorem openCapabilityCount_isFive : openCapabilityCount = 5 := rfl
+theorem openCapabilityCount_isFour : openCapabilityCount = 4 := rfl
 
 /-- The full-parity criterion asks for all twelve capability rows strictly proven. -/
 @[reducible] def unionAchievesFullParity : Prop := strictlyProvenCapabilityCount = 12
@@ -352,11 +356,11 @@ theorem unionSurpasses_isMet : unionSurpasses := rfl
 
 /-! ## Non-vacuity: the ledger genuinely discriminates -/
 
-/-- The ledger is not constant: typing-adequacy (proven) differs from weakening (open). -/
+/-- The ledger is not constant: typing-adequacy (proven) differs from uniqueness (open). -/
 theorem parity_discriminates_proven_vs_open :
-    UnionCapability.typingAdequacy.parityStatus ≠ UnionCapability.weakening.parityStatus := by
+    UnionCapability.typingAdequacy.parityStatus ≠ UnionCapability.uniqueness.parityStatus := by
   intro statusEq
-  rw [typingAdequacy_atParity, weakening_isOpen] at statusEq
+  rw [typingAdequacy_atParity, uniqueness_isOpen] at statusEq
   exact ParityStatus.noConfusion statusEq
 
 /-- The ledger keeps `bridged` distinct from `proven`: the root-SR row's honest Conv-modulo status is
