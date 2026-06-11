@@ -659,6 +659,7 @@ import FX1Poly.Typed.KernelBinaryPiIntro
 import FX1Poly.Typed.KernelBinaryConvInvariance
 import FX1Poly.Typed.KernelBinaryConvArm
 import FX1Poly.Typed.KernelBinaryTelescope
+import FX1Poly.Typed.KernelBinaryPiFormer
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2132,6 +2133,25 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.BinaryTelescopeReducibleAtBounded.oneChildMember
 #assert_no_axioms FX1Poly.Typed.binaryUniverseMembershipIntroAtBounded
 #assert_no_axioms FX1Poly.Typed.binaryPiReducibleFromComponentsAtBounded
+
+-- ★★ The PREMISE-ISOLATED binary Π-former FT arm (OP1-K2 brick 5b #1228,
+-- Typed/KernelBinaryPiFormer.lean). The binary twin of
+-- fundamentalGenFormationPiFromTelescopeAtBoundedSucc restructured around THE INHABITATION
+-- WALL: the two facts the unary arm read off the variable-0 neutral inhabitant arrive as
+-- premises instead — outputBelowBound (one fixed level-arithmetic gate, from which BOTH
+-- component gates fall out via denote_*_le_lmaxAll_pair + Nat.lt_of_le_of_lt) and
+-- codomainOpenSNPair (per related substitution pair, both once-lifted codomain closures SN;
+-- discharged at assembly from the budget + the shipped UNARY FT).
+-- binaryStronglyNormalizingPairOfUniverseMemberAtBounded: what the binary relation CAN
+-- deliver internally — the domain SN pair extracted from the binary universe candidate's own
+-- SN conjuncts (keyed both indices via binaryCandidateIffUniverse, gate-free: the SN
+-- conjuncts sit BEFORE the below-family decode). ★
+-- binaryFundamentalGenFormationPiArm: telescope.twoChildMembers → decode (brick 4) →
+-- cumulativity to the output level (brick 1) → binaryPiReducibleFromComponentsAtBounded +
+-- binaryUniverseMembershipIntroAtBounded (brick 5a) close the member pair at
+-- Type@(lmaxAll [domainLevel, codomainLevel]).
+#assert_no_axioms FX1Poly.Typed.binaryStronglyNormalizingPairOfUniverseMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalGenFormationPiArm
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
