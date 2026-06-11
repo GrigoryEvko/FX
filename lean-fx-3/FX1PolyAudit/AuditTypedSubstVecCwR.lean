@@ -646,8 +646,10 @@ import FX1Poly.Core.OneStepReducts
 import FX1Poly.Core.OneStepReductsComplete
 import FX1Poly.Core.CostBound
 import FX1Poly.Core.SpaceBound
+import FX1Poly.Core.CostConvInvariance
 import FX1Poly.Typed.WellTypedCostCalculable
 import FX1Poly.Typed.WellTypedSpaceCalculable
+import FX1Poly.Typed.CostAwareEquivalence
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1803,6 +1805,59 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.spaceCalculatorOpen
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.spaceCalculatorOpen_isSound
 #assert_no_axioms FX1Poly.Typed.wellTypedClosedProgram_spaceIsCalculable
+
+-- ★★ The Conv-invariance NO-GO + the zero-cost characterization (Core/CostConvInvariance.lean,
+-- COST-4 #1217 brick 1 — the design-pinning refutation). ★ costIsNotConvInvariant: two CONVERTIBLE
+-- closed terms (the identity-β redex and unit) with provably DIFFERENT canonical costs — cost is an
+-- INTENSIONAL property destroyed by extensional quotienting (the calf/decalf observation,
+-- mechanized); any cost-aware equivalence must be STRICTLY FINER than Conv. The engine:
+-- ★ normalizeCost_eq_zero_iff_isStepNormalForm (zero cost EXACTLY on normal forms — forward by
+-- reading the exactness chain at succ, backward by transporting normality along the zero-length
+-- chain via StepStarN.eq_of_zero). No kernel evaluation through accessibility witnesses anywhere:
+-- unit costs 0 by rfl, the redex's cost is nonzero because zero would make it normal, contradicting
+-- its β-step.
+#assert_no_axioms FX1Poly.Core.StepStarN.eq_of_zero
+#assert_no_axioms FX1Poly.Core.StepStarN.eq_zero_of_isStepNormalForm
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeCost_eq_zero_of_isStepNormalForm
+#assert_no_axioms FX1Poly.Core.RawTerm.isStepNormalForm_of_normalizeCost_eq_zero
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeCost_eq_zero_iff_isStepNormalForm
+#assert_no_axioms FX1Poly.Core.identityBetaFixture_normalizeCost_ne_zero
+#assert_no_axioms FX1Poly.Core.costIsNotConvInvariant
+
+-- ★★ Cost-aware equivalence + the improvement preorder, DECIDABLE (Typed/CostAwareEquivalence.lean,
+-- COST-4 #1217 — the constructive answer to the no-go, over derivations which carry the SN
+-- witnesses). Improves = Conv + cost-no-larger (refl/trans — the preorder every verified
+-- optimization lands in, the OPT-arc substrate); CostEquiv = Conv + cost-EQUAL (refl/sym/trans,
+-- transports cost via costEq — the property Conv provably lacks; = the symmetrization of Improves
+-- via ofImprovesBoth/improves/improvesReverse, Nat.le_antisymm). ★ normalFormDerivation (re-typed
+-- via the unconditional grown subjectReductionStar) + _cost_isZero + _improvesAllConvertible: the
+-- normalizer is improvement-OPTIMAL — the cost-minimum of each Conv class of closed well-typed
+-- programs is its normal form. ★ decideImproves/decideCostEquiv: both relations DECIDABLE
+-- (Conv.decidableOfStronglyNormalizing + Nat tests). Non-vacuity: the typed β-redex
+-- (λx:Type@1.x)(Type@0) at concrete lzero/standard is STRICTLY improved by its reduct
+-- (identityApplicationReduct_strictlyImproves — forward by reduct-NF zero cost, the refutation
+-- by the redex's nonzero cost against zero).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.Improves
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.CostEquiv
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.Improves.refl
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.Improves.trans
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.CostEquiv.refl
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.CostEquiv.sym
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.CostEquiv.trans
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.CostEquiv.costEq
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.CostEquiv.improves
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.CostEquiv.improvesReverse
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.CostEquiv.ofImprovesBoth
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalFormDerivation
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalFormDerivation_cost_isZero
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalFormDerivation_improves
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.normalFormDerivation_improvesAllConvertible
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decideImproves
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decideCostEquiv
+#assert_no_axioms FX1Poly.Typed.identityApplicationRedexDerivation
+#assert_no_axioms FX1Poly.Typed.identityApplicationReductDerivation
+#assert_no_axioms FX1Poly.Typed.identityApplicationReduct_isStepNormalForm
+#assert_no_axioms FX1Poly.Typed.identityApplicationReduct_strictlyImproves
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
