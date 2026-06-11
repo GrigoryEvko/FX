@@ -59,7 +59,12 @@ theorem HasTypeNativeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope :
     HasTypeNativeUnion profile context scrutinee boolTypeCell ∧
     HasTypeNativeUnion profile context thenBranch classifier ∧
     HasTypeNativeUnion profile context elseBranch classifier := by
-  cases derivation with
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped⟩ := innerInversion subjectShape
+      exact ⟨scrutineeTyped,
+        HasTypeNativeUnion.conv levelExpr flag thenBranchTyped converts reclassifierTyped,
+        HasTypeNativeUnion.conv levelExpr flag elseBranchTyped converts reclassifierTyped⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.boolElimCellHasNoTyping (fun contra => contra)
@@ -196,12 +201,18 @@ theorem HasTypeNativeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scop
     {motive : RawTerm (scope + 1)} {noneBranch someBranch scrutinee : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context subject classifier)
     (subjectShape : subject = optionMatchCell motive noneBranch someBranch scrutinee) :
-    ∃ elementType : RawTerm scope,
+    ∃ (elementType pinnedClassifier : RawTerm scope),
       HasTypeNativeUnion profile context scrutinee (optionTypeCell elementType) ∧
-      HasTypeNativeUnion profile context noneBranch classifier ∧
+      HasTypeNativeUnion profile context noneBranch pinnedClassifier ∧
       HasTypeNativeUnion profile context someBranch
-        (piTyCodeCell elementType (RawTerm.weaken classifier)) := by
-  cases derivation with
+        (piTyCodeCell elementType (RawTerm.weaken pinnedClassifier)) ∧
+      Conv pinnedClassifier classifier := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨elementType, pinnedClassifier, scrutineeTyped, noneTyped, someTyped, convInner⟩ :=
+        innerInversion subjectShape
+      exact ⟨elementType, pinnedClassifier, scrutineeTyped, noneTyped, someTyped,
+        convInner.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.optionMatchCellHasNoTyping (fun contra => contra)
@@ -275,7 +286,8 @@ theorem HasTypeNativeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scop
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
       · subst ruleEq
         rcases subjectShape with ⟨⟩
-        exact ⟨typeParamA, scrutineeTyped, firstBranchTyped, secondBranchTyped⟩
+        exact ⟨typeParamA, _, scrutineeTyped, firstBranchTyped, secondBranchTyped,
+          Conv.refl _⟩
       · subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | pathInductionElim ctx generator rule armMotive armBase armWitness armTypeCode armEndpoint resultType
@@ -339,13 +351,19 @@ theorem HasTypeNativeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scop
     {motive : RawTerm (scope + 1)} {leftBranch rightBranch scrutinee : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context subject classifier)
     (subjectShape : subject = eitherMatchCell motive leftBranch rightBranch scrutinee) :
-    ∃ leftType rightType : RawTerm scope,
+    ∃ (leftType rightType pinnedClassifier : RawTerm scope),
       HasTypeNativeUnion profile context scrutinee (eitherTypeCell leftType rightType) ∧
       HasTypeNativeUnion profile context leftBranch
-        (piTyCodeCell leftType (RawTerm.weaken classifier)) ∧
+        (piTyCodeCell leftType (RawTerm.weaken pinnedClassifier)) ∧
       HasTypeNativeUnion profile context rightBranch
-        (piTyCodeCell rightType (RawTerm.weaken classifier)) := by
-  cases derivation with
+        (piTyCodeCell rightType (RawTerm.weaken pinnedClassifier)) ∧
+      Conv pinnedClassifier classifier := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, leftTyped, rightTyped,
+        convInner⟩ := innerInversion subjectShape
+      exact ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, leftTyped, rightTyped,
+        convInner.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.eitherMatchCellHasNoTyping (fun contra => contra)
@@ -421,7 +439,8 @@ theorem HasTypeNativeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scop
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
       · subst ruleEq
         rcases subjectShape with ⟨⟩
-        exact ⟨typeParamA, typeParamB, scrutineeTyped, firstBranchTyped, secondBranchTyped⟩
+        exact ⟨typeParamA, typeParamB, _, scrutineeTyped, firstBranchTyped, secondBranchTyped,
+          Conv.refl _⟩
   | pathInductionElim ctx generator rule armMotive armBase armWitness armTypeCode armEndpoint resultType
       isPathInduction witnessTyped baseCaseTyped =>
       obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction

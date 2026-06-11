@@ -83,13 +83,20 @@ batch-1 nested witness: a union member at `Nat` whose HEAD is an eliminator, NOT
 is NOT bespoke-NatIntro-typable, the exact surplus the row's recursive premise admits. -/
 theorem HasTypeNativeUnion.computedNumberTypedAtNat {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (motive : RawTerm (scope + 1))
-    (stepBranch : RawTerm (scope + 2)) :
+    (stepBranch : RawTerm (scope + 2))
+    (stepBranchTyped : HasTypeNativeUnion profile
+      ((context.cons natTypeCell).cons
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken natTypeCell))
+      stepBranch
+      (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken natTypeCell))) :
     HasTypeNativeUnion profile context
       (natElimCell motive natZeroCell stepBranch natZeroCell) natTypeCell :=
   HasTypeNativeUnion.recursiveElim context .gen_natElim natElimNativeRecursiveRule
     motive natZeroCell stepBranch natZeroCell natTypeCell rfl
     (HasTypeNativeUnion.ofNatIntro (HasTypeDescNatIntro.natZeroIntro context))
     (HasTypeNativeUnion.ofNatIntro (HasTypeDescNatIntro.natZeroIntro context))
+    stepBranchTyped
 
 /-! ## (2) Row ⟹ embedding is REFUTED: strict generality -/
 
@@ -124,7 +131,13 @@ So the ROW path is STRICTLY MORE GENERAL than the embedding; the embedding is su
 the `ofNatIntro` embedding is redundant for derivability and is delete-ready (NATIVE-42). -/
 theorem HasTypeNativeUnion.natSuccRowStrictlyMoreGeneralThanEmbedding {profile : PolyProfile}
     {scope : Nat} (context : TypingContext profile scope) (motive : RawTerm (scope + 1))
-    (stepBranch : RawTerm (scope + 2)) :
+    (stepBranch : RawTerm (scope + 2))
+    (stepBranchTyped : HasTypeNativeUnion profile
+      ((context.cons natTypeCell).cons
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken natTypeCell))
+      stepBranch
+      (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken natTypeCell))) :
     HasTypeNativeUnion profile context
       (natSuccCell (natElimCell motive natZeroCell stepBranch natZeroCell)) natTypeCell ∧
     (∀ classifier : RawTerm scope,
@@ -133,7 +146,7 @@ theorem HasTypeNativeUnion.natSuccRowStrictlyMoreGeneralThanEmbedding {profile :
   refine ⟨?_, ?_⟩
   · exact HasTypeNativeUnion.recursiveUnaryIntro context .gen_natSucc
       natSuccNativeRecursiveUnaryRule (natElimCell motive natZeroCell stepBranch natZeroCell) rfl
-      (HasTypeNativeUnion.computedNumberTypedAtNat context motive stepBranch)
+      (HasTypeNativeUnion.computedNumberTypedAtNat context motive stepBranch stepBranchTyped)
   · intro classifier embeddingTyped
     exact embeddingTyped.natSuccOfComputedNumberHasNoEmbedding
 

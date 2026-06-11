@@ -252,6 +252,37 @@ theorem subst_iterateLift_one_weaken_commute {sourceScope targetScope : Nat}
       = RawTerm.weaken (RawTerm.subst substitution sourceTerm) :=
   subst_lift_weaken_commute substitution sourceTerm
 
+/-- The one-level lift/weaken naturality square in the EXPLICIT `rename RawRenaming.weaken` presentation
+(rather than the `RawTerm.weaken` abbreviation), so `rw` matches the recursiveElim step-branch context
+binding `subst (iterateLiftRaw σ 1) (rename weaken resultType)` without unfolding `RawTerm.weaken`. -/
+theorem subst_iterateLift_one_renameWeaken_commute {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) (sourceTerm : RawTerm sourceScope) :
+    RawTerm.subst (iterateLiftRaw substitution 1)
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken sourceTerm)
+      = RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+          (RawTerm.subst substitution sourceTerm) :=
+  subst_lift_weaken_commute substitution sourceTerm
+
+/-- The TWICE-iterated lift/weaken naturality square (the recursive-eliminator step-branch classifier
+shape).  `subst (iterateLiftRaw σ 2) (weaken (weaken X)) = weaken (weaken (subst σ X))` — two composed
+applications of the one-level square, with `iterateLiftRaw σ 2` defeq to `lift (lift σ)` so the outer
+square runs at `iterateLiftRaw σ 1` and the inner at `σ`.  Used to retype the recursiveElim arm's
+twice-weakened result-type step-branch classifier after substitution. -/
+theorem subst_iterateLift_two_weaken_weaken_commute {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) (sourceTerm : RawTerm sourceScope) :
+    RawTerm.subst (iterateLiftRaw substitution 2)
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken sourceTerm))
+      = RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+            (RawTerm.subst substitution sourceTerm)) := by
+  show RawTerm.subst (iterateLiftRaw (iterateLiftRaw substitution 1) 1)
+      (RawTerm.weaken (RawTerm.weaken sourceTerm))
+    = RawTerm.weaken (RawTerm.weaken (RawTerm.subst substitution sourceTerm))
+  rw [subst_iterateLift_one_weaken_commute (iterateLiftRaw substitution 1)
+        (RawTerm.weaken sourceTerm),
+    subst_iterateLift_one_weaken_commute substitution sourceTerm]
+
 /-- `listStepFunctionType` distributes over both type params: built from `piTyCodeCell` /
 `listTypeCell` / `weaken` spines, the substitution threads through.  Proved by `rw` of the per-cell
 commutations + the lift/weaken naturality square (no `simp`, propext-clean). -/

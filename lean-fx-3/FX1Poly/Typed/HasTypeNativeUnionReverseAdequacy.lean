@@ -102,11 +102,12 @@ theorem HasTypeNativeUnion.optionMatchSurplus {profile : PolyProfile} {scope : N
     {motive : RawTerm (scope + 1)} {noneBranch someBranch scrutinee : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context
       (optionMatchCell motive noneBranch someBranch scrutinee) classifier) :
-    ∃ elementType : RawTerm scope,
+    ∃ (elementType pinnedClassifier : RawTerm scope),
       HasTypeNativeUnion profile context scrutinee (optionTypeCell elementType) ∧
-      HasTypeNativeUnion profile context noneBranch classifier ∧
+      HasTypeNativeUnion profile context noneBranch pinnedClassifier ∧
       HasTypeNativeUnion profile context someBranch
-        (piTyCodeCell elementType (RawTerm.weaken classifier)) :=
+        (piTyCodeCell elementType (RawTerm.weaken pinnedClassifier)) ∧
+      Conv pinnedClassifier classifier :=
   derivation.invertAtOptionMatchHead rfl
 
 /-- **★ Reverse adequacy at the optionMatch head (relativized).**  GIVEN a union typing of an
@@ -118,22 +119,27 @@ theorem HasTypeNativeUnion.toOptionMatchRelativized {profile : PolyProfile} {sco
     {motive : RawTerm (scope + 1)} {noneBranch someBranch scrutinee : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context
       (optionMatchCell motive noneBranch someBranch scrutinee) classifier)
-    (reconstruct : ∀ elementType : RawTerm scope,
+    (reconstruct : ∀ elementType pinnedClassifier : RawTerm scope,
       HasTypeNativeUnion profile context scrutinee (optionTypeCell elementType) →
-      HasTypeNativeUnion profile context noneBranch classifier →
+      HasTypeNativeUnion profile context noneBranch pinnedClassifier →
       HasTypeNativeUnion profile context someBranch
-        (piTyCodeCell elementType (RawTerm.weaken classifier)) →
+        (piTyCodeCell elementType (RawTerm.weaken pinnedClassifier)) →
       HasTypeDescOptionIntro profile context scrutinee (optionTypeCell elementType) ∧
-      HasTypeDescPi profile context noneBranch classifier ∧
+      HasTypeDescPi profile context noneBranch pinnedClassifier ∧
       HasTypeDescPi profile context someBranch
-        (piTyCodeCell elementType (RawTerm.weaken classifier))) :
-    HasTypeDescOptionMatch profile context
-      (optionMatchCell motive noneBranch someBranch scrutinee) classifier := by
-  obtain ⟨elementType, scrutineeUnion, noneUnion, someUnion⟩ := derivation.invertAtOptionMatchHead rfl
+        (piTyCodeCell elementType (RawTerm.weaken pinnedClassifier))) :
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeDescOptionMatch profile context
+        (optionMatchCell motive noneBranch someBranch scrutinee) pinnedClassifier ∧
+      Conv pinnedClassifier classifier := by
+  obtain ⟨elementType, pinnedClassifier, scrutineeUnion, noneUnion, someUnion, convPinned⟩ :=
+    derivation.invertAtOptionMatchHead rfl
   obtain ⟨scrutineeBespoke, noneBespoke, someBespoke⟩ :=
-    reconstruct elementType scrutineeUnion noneUnion someUnion
-  exact HasTypeDescOptionMatch.optionMatchIntro context motive scrutinee noneBranch someBranch
-    elementType classifier scrutineeBespoke noneBespoke someBespoke
+    reconstruct elementType pinnedClassifier scrutineeUnion noneUnion someUnion
+  exact ⟨pinnedClassifier,
+    HasTypeDescOptionMatch.optionMatchIntro context motive scrutinee noneBranch someBranch
+      elementType pinnedClassifier scrutineeBespoke noneBespoke someBespoke,
+    convPinned⟩
 
 /-! ## (2) ★ Reverse adequacy — eitherMatch (relativized) -/
 
@@ -145,12 +151,13 @@ theorem HasTypeNativeUnion.eitherMatchSurplus {profile : PolyProfile} {scope : N
     {motive : RawTerm (scope + 1)} {leftBranch rightBranch scrutinee : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context
       (eitherMatchCell motive leftBranch rightBranch scrutinee) classifier) :
-    ∃ leftType rightType : RawTerm scope,
+    ∃ (leftType rightType pinnedClassifier : RawTerm scope),
       HasTypeNativeUnion profile context scrutinee (eitherTypeCell leftType rightType) ∧
       HasTypeNativeUnion profile context leftBranch
-        (piTyCodeCell leftType (RawTerm.weaken classifier)) ∧
+        (piTyCodeCell leftType (RawTerm.weaken pinnedClassifier)) ∧
       HasTypeNativeUnion profile context rightBranch
-        (piTyCodeCell rightType (RawTerm.weaken classifier)) :=
+        (piTyCodeCell rightType (RawTerm.weaken pinnedClassifier)) ∧
+      Conv pinnedClassifier classifier :=
   derivation.invertAtEitherMatchHead rfl
 
 /-- **★ Reverse adequacy at the eitherMatch head (relativized).**  GIVEN a union typing of an
@@ -162,25 +169,29 @@ theorem HasTypeNativeUnion.toEitherMatchRelativized {profile : PolyProfile} {sco
     {motive : RawTerm (scope + 1)} {leftBranch rightBranch scrutinee : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context
       (eitherMatchCell motive leftBranch rightBranch scrutinee) classifier)
-    (reconstruct : ∀ leftType rightType : RawTerm scope,
+    (reconstruct : ∀ leftType rightType pinnedClassifier : RawTerm scope,
       HasTypeNativeUnion profile context scrutinee (eitherTypeCell leftType rightType) →
       HasTypeNativeUnion profile context leftBranch
-        (piTyCodeCell leftType (RawTerm.weaken classifier)) →
+        (piTyCodeCell leftType (RawTerm.weaken pinnedClassifier)) →
       HasTypeNativeUnion profile context rightBranch
-        (piTyCodeCell rightType (RawTerm.weaken classifier)) →
+        (piTyCodeCell rightType (RawTerm.weaken pinnedClassifier)) →
       HasTypeDescEitherIntro profile context scrutinee (eitherTypeCell leftType rightType) ∧
       HasTypeDescPi profile context leftBranch
-        (piTyCodeCell leftType (RawTerm.weaken classifier)) ∧
+        (piTyCodeCell leftType (RawTerm.weaken pinnedClassifier)) ∧
       HasTypeDescPi profile context rightBranch
-        (piTyCodeCell rightType (RawTerm.weaken classifier))) :
-    HasTypeDescEitherMatch profile context
-      (eitherMatchCell motive leftBranch rightBranch scrutinee) classifier := by
-  obtain ⟨leftType, rightType, scrutineeUnion, leftUnion, rightUnion⟩ :=
+        (piTyCodeCell rightType (RawTerm.weaken pinnedClassifier))) :
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeDescEitherMatch profile context
+        (eitherMatchCell motive leftBranch rightBranch scrutinee) pinnedClassifier ∧
+      Conv pinnedClassifier classifier := by
+  obtain ⟨leftType, rightType, pinnedClassifier, scrutineeUnion, leftUnion, rightUnion, convPinned⟩ :=
     derivation.invertAtEitherMatchHead rfl
   obtain ⟨scrutineeBespoke, leftBespoke, rightBespoke⟩ :=
-    reconstruct leftType rightType scrutineeUnion leftUnion rightUnion
-  exact HasTypeDescEitherMatch.eitherMatchIntro context motive scrutinee leftBranch rightBranch
-    leftType rightType classifier scrutineeBespoke leftBespoke rightBespoke
+    reconstruct leftType rightType pinnedClassifier scrutineeUnion leftUnion rightUnion
+  exact ⟨pinnedClassifier,
+    HasTypeDescEitherMatch.eitherMatchIntro context motive scrutinee leftBranch rightBranch
+      leftType rightType pinnedClassifier scrutineeBespoke leftBespoke rightBespoke,
+    convPinned⟩
 
 /-! ## (2) ★ Reverse adequacy — idJ (relativized) -/
 
@@ -222,8 +233,10 @@ type `B` and the RECURSIVE union premise: the pair term union-typed at `product(
 theorem HasTypeNativeUnion.fstSurplus {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope} {pairTerm : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context (fstCell pairTerm) classifier) :
-    ∃ secondType : RawTerm scope,
-      HasTypeNativeUnion profile context pairTerm (productTypeCell classifier secondType) :=
+    ∃ secondType pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context pairTerm
+        (productTypeCell pinnedClassifier secondType) ∧
+      Conv pinnedClassifier classifier :=
   derivation.invertAtFstHead rfl
 
 /-- **★ Reverse adequacy at the fst head (relativized).**  GIVEN a union typing of an `fstCell` AND, for
@@ -233,21 +246,28 @@ reconstructed. -/
 theorem HasTypeNativeUnion.toFstRelativized {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope} {pairTerm : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context (fstCell pairTerm) classifier)
-    (reconstruct : ∀ secondType : RawTerm scope,
-      HasTypeNativeUnion profile context pairTerm (productTypeCell classifier secondType) →
-      HasTypeDescPairIntro profile context pairTerm (productTypeCell classifier secondType)) :
-    HasTypeDescSigmaProjection profile context (fstCell pairTerm) classifier := by
-  obtain ⟨secondType, pairUnion⟩ := derivation.invertAtFstHead rfl
-  exact HasTypeDescSigmaProjection.fstIntro context pairTerm classifier secondType
-    (reconstruct secondType pairUnion)
+    (reconstruct : ∀ secondType pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context pairTerm (productTypeCell pinnedClassifier secondType) →
+      HasTypeDescPairIntro profile context pairTerm
+        (productTypeCell pinnedClassifier secondType)) :
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeDescSigmaProjection profile context (fstCell pairTerm) pinnedClassifier ∧
+      Conv pinnedClassifier classifier := by
+  obtain ⟨secondType, pinnedClassifier, pairUnion, convPinned⟩ := derivation.invertAtFstHead rfl
+  exact ⟨pinnedClassifier,
+    HasTypeDescSigmaProjection.fstIntro context pairTerm pinnedClassifier secondType
+      (reconstruct secondType pinnedClassifier pairUnion),
+    convPinned⟩
 
 /-- **★ The honest SURPLUS at the snd head.**  A union typing of an `sndCell` surfaces a first-component
 type `A` and the RECURSIVE union premise: the pair term union-typed at `product(A, C)`. -/
 theorem HasTypeNativeUnion.sndSurplus {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope} {pairTerm : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context (sndCell pairTerm) classifier) :
-    ∃ firstType : RawTerm scope,
-      HasTypeNativeUnion profile context pairTerm (productTypeCell firstType classifier) :=
+    ∃ firstType pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context pairTerm
+        (productTypeCell firstType pinnedClassifier) ∧
+      Conv pinnedClassifier classifier :=
   derivation.invertAtSndHead rfl
 
 /-- **★ Reverse adequacy at the snd head (relativized).**  GIVEN a union typing of an `sndCell` AND, for
@@ -257,13 +277,18 @@ reconstructed. -/
 theorem HasTypeNativeUnion.toSndRelativized {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope} {pairTerm : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context (sndCell pairTerm) classifier)
-    (reconstruct : ∀ firstType : RawTerm scope,
-      HasTypeNativeUnion profile context pairTerm (productTypeCell firstType classifier) →
-      HasTypeDescPairIntro profile context pairTerm (productTypeCell firstType classifier)) :
-    HasTypeDescSigmaProjection profile context (sndCell pairTerm) classifier := by
-  obtain ⟨firstType, pairUnion⟩ := derivation.invertAtSndHead rfl
-  exact HasTypeDescSigmaProjection.sndIntro context pairTerm firstType classifier
-    (reconstruct firstType pairUnion)
+    (reconstruct : ∀ firstType pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context pairTerm (productTypeCell firstType pinnedClassifier) →
+      HasTypeDescPairIntro profile context pairTerm
+        (productTypeCell firstType pinnedClassifier)) :
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeDescSigmaProjection profile context (sndCell pairTerm) pinnedClassifier ∧
+      Conv pinnedClassifier classifier := by
+  obtain ⟨firstType, pinnedClassifier, pairUnion, convPinned⟩ := derivation.invertAtSndHead rfl
+  exact ⟨pinnedClassifier,
+    HasTypeDescSigmaProjection.sndIntro context pairTerm firstType pinnedClassifier
+      (reconstruct firstType pinnedClassifier pairUnion),
+    convPinned⟩
 
 /-! ## (2) ★ Reverse adequacy — natElim / natRec (relativized; the batch-1 exceeds-bespoke surplus) -/
 
@@ -346,11 +371,16 @@ theorem HasTypeNativeUnion.toListElim {profile : PolyProfile} {scope : Nat}
     {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context
       (listElimCell motive scrutinee nilBranch consBranch) classifier) :
-    HasTypeDescListElim profile context
-      (listElimCell motive scrutinee nilBranch consBranch) classifier := by
-  obtain ⟨elementType, scrutineeIntro, nilGrown, consGrown⟩ := derivation.invertAtListElimHead rfl
-  exact HasTypeDescListElim.listElimIntro context motive scrutinee nilBranch consBranch elementType
-    classifier scrutineeIntro nilGrown consGrown
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeDescListElim profile context
+        (listElimCell motive scrutinee nilBranch consBranch) pinnedClassifier ∧
+      Conv pinnedClassifier classifier := by
+  obtain ⟨elementType, pinnedClassifier, scrutineeIntro, nilGrown, consGrown, convPinned⟩ :=
+    derivation.invertAtListElimHead rfl
+  exact ⟨pinnedClassifier,
+    HasTypeDescListElim.listElimIntro context motive scrutinee nilBranch consBranch elementType
+      pinnedClassifier scrutineeIntro nilGrown consGrown,
+    convPinned⟩
 
 /-! ## (5) Coverage record + witness -/
 
@@ -360,14 +390,17 @@ relativized reverse adequacies (the reconstruction half), and the ONE unconditio
 (listElim, no surplus at the head).  An inhabitant certifies the reverse-adequacy substrate is exercised
 (constructed, not just declared) and CANNOT silently shrink. -/
 structure NativeUnionReverseAdequacyCoverage (profile : PolyProfile) : Prop where
-  /-- listElim: the UNCONDITIONAL reverse adequacy — a union `listElimCell` typing IS bespoke. -/
+  /-- listElim: the UNCONDITIONAL reverse adequacy (Conv-modulo: the conv arm reclassifies, so the
+  bespoke typing holds at a pinned classifier convertible to the actual one). -/
   listElimUnconditional : ∀ {scope : Nat} {context : TypingContext profile scope}
     {classifier : RawTerm scope} {motive : RawTerm (scope + 1)}
     {scrutinee nilBranch consBranch : RawTerm scope},
     HasTypeNativeUnion profile context
       (listElimCell motive scrutinee nilBranch consBranch) classifier →
-    HasTypeDescListElim profile context
-      (listElimCell motive scrutinee nilBranch consBranch) classifier
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeDescListElim profile context
+        (listElimCell motive scrutinee nilBranch consBranch) pinnedClassifier ∧
+      Conv pinnedClassifier classifier
   /-- boolElim: the relativized reverse adequacy reconstructs the bespoke engine from the surfaced
   premises plus the reconstruction maps. -/
   boolElimRelativized : ∀ {scope : Nat} {context : TypingContext profile scope}

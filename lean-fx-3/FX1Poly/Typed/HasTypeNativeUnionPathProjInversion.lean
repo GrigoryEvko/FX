@@ -41,7 +41,11 @@ theorem HasTypeNativeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
     ∃ typeCode endpoint : RawTerm scope,
       HasTypeNativeUnion profile context witness (idTypeCell typeCode endpoint endpoint) ∧
       HasTypeNativeUnion profile context baseCase classifier := by
-  cases derivation with
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨typeCode, endpoint, witnessTyped, baseCaseTyped⟩ := innerInversion subjectShape
+      exact ⟨typeCode, endpoint, witnessTyped,
+        HasTypeNativeUnion.conv levelExpr flag baseCaseTyped converts reclassifierTyped⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.idJCellHasNoTyping (fun contra => contra)
@@ -175,9 +179,14 @@ theorem HasTypeNativeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
     {pairTerm : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context subject classifier)
     (subjectShape : subject = fstCell pairTerm) :
-    ∃ secondType : RawTerm scope,
-      HasTypeNativeUnion profile context pairTerm (productTypeCell classifier secondType) := by
-  cases derivation with
+    ∃ secondType pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context pairTerm
+        (productTypeCell pinnedClassifier secondType) ∧
+      Conv pinnedClassifier classifier := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨secondType, pinnedClassifier, pairTyped, convInner⟩ := innerInversion subjectShape
+      exact ⟨secondType, pinnedClassifier, pairTyped, convInner.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.fstCellHasNoTyping (fun contra => contra)
@@ -259,7 +268,7 @@ theorem HasTypeNativeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
       rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       · subst ruleEq
         rcases subjectShape with ⟨⟩
-        exact ⟨secondType, pairTyped⟩
+        exact ⟨secondType, _, pairTyped, Conv.refl _⟩
       · subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | recursiveUnaryIntro ctx generator rule armChild isRecursiveUnary childTyped =>
@@ -312,9 +321,14 @@ theorem HasTypeNativeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
     {pairTerm : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context subject classifier)
     (subjectShape : subject = sndCell pairTerm) :
-    ∃ firstType : RawTerm scope,
-      HasTypeNativeUnion profile context pairTerm (productTypeCell firstType classifier) := by
-  cases derivation with
+    ∃ firstType pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context pairTerm
+        (productTypeCell firstType pinnedClassifier) ∧
+      Conv pinnedClassifier classifier := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨firstType, pinnedClassifier, pairTyped, convInner⟩ := innerInversion subjectShape
+      exact ⟨firstType, pinnedClassifier, pairTyped, convInner.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.sndCellHasNoTyping (fun contra => contra)
@@ -398,7 +412,7 @@ theorem HasTypeNativeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
       · subst ruleEq
         rcases subjectShape with ⟨⟩
-        exact ⟨firstType, pairTyped⟩
+        exact ⟨firstType, _, pairTyped, Conv.refl _⟩
   | recursiveUnaryIntro ctx generator rule armChild isRecursiveUnary childTyped =>
       obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
       subst ruleEq

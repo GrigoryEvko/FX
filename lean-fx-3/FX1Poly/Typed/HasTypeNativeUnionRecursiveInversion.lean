@@ -40,7 +40,11 @@ theorem HasTypeNativeUnion.invertAtNatRecHead {profile : PolyProfile} {scope : N
     (subjectShape : subject = natRecCell motive zeroBranch stepBranch scrutinee) :
     HasTypeNativeUnion profile context scrutinee natTypeCell ∧
     HasTypeNativeUnion profile context zeroBranch classifier := by
-  cases derivation with
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨scrutineeTyped, zeroBranchTyped⟩ := innerInversion subjectShape
+      exact ⟨scrutineeTyped,
+        HasTypeNativeUnion.conv levelExpr flag zeroBranchTyped converts reclassifierTyped⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natRecCellHasNoTyping (fun contra => contra)
@@ -179,12 +183,18 @@ theorem HasTypeNativeUnion.invertAtListElimHead {profile : PolyProfile} {scope :
     {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context subject classifier)
     (subjectShape : subject = listElimCell motive scrutinee nilBranch consBranch) :
-    ∃ elementType : RawTerm scope,
+    ∃ elementType pinnedClassifier : RawTerm scope,
       HasTypeDescListIntro profile context scrutinee (listTypeCell elementType) ∧
-      HasTypeDescPi profile context nilBranch classifier ∧
+      HasTypeDescPi profile context nilBranch pinnedClassifier ∧
       HasTypeDescPi profile context consBranch
-        (listStepFunctionType elementType classifier) := by
-  cases derivation with
+        (listStepFunctionType elementType pinnedClassifier) ∧
+      Conv pinnedClassifier classifier := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨elementType, pinnedClassifier, scrutineeTyped, nilTyped, consTyped, convInner⟩ :=
+        innerInversion subjectShape
+      exact ⟨elementType, pinnedClassifier, scrutineeTyped, nilTyped, consTyped,
+        convInner.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.listElimCellHasNoTyping (fun contra => contra)
@@ -305,6 +315,6 @@ theorem HasTypeNativeUnion.invertAtListElimHead {profile : PolyProfile} {scope :
       obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
       subst ruleEq
       rcases subjectShape with ⟨⟩
-      exact ⟨elementType, scrutineeTyped, nilBranchTyped, consBranchTyped⟩
+      exact ⟨elementType, _, scrutineeTyped, nilBranchTyped, consBranchTyped, Conv.refl _⟩
 
 end FX1Poly.Typed

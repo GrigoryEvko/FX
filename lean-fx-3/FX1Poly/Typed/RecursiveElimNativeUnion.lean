@@ -46,31 +46,71 @@ a `HasTypeNativeUnion` typing at the same subject and classifier — the scrutin
 embedding arm, the base branch through the host embedding.  The NATIVE-33 fold's delete-safety
 direction, landing in the SHIPPED union. -/
 theorem HasTypeDescNatElim.toNativeUnion {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (derivation : HasTypeDescNatElim profile context subject classifier) :
-    HasTypeNativeUnion profile context subject classifier := by
+    {context : TypingContext profile scope}
+    (motive : RawTerm (scope + 1)) (scrutinee zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) {classifier : RawTerm scope}
+    (derivation : HasTypeDescNatElim profile context
+      (natElimCell motive zeroBranch succBranch scrutinee) classifier)
+    (stepBranchTyped : HasTypeNativeUnion profile
+      ((context.cons natTypeCell).cons
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken classifier))
+      succBranch
+      (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken classifier))) :
+    HasTypeNativeUnion profile context
+      (natElimCell motive zeroBranch succBranch scrutinee) classifier := by
   cases derivation with
-  | natElimIntro motive scrutinee zeroBranch succBranch _resultTypeUnified
-      scrutineeTyped zeroBranchTyped =>
+  | natElimIntro _ _ _ _ _ scrutineeTyped zeroBranchTyped =>
       exact HasTypeNativeUnion.recursiveElim _ .gen_natElim natElimNativeRecursiveRule
         motive zeroBranch succBranch scrutinee classifier rfl
         (HasTypeNativeUnion.ofNatIntro scrutineeTyped)
         (HasTypeNativeUnion.ofGrown zeroBranchTyped)
+        stepBranchTyped
 
 /-- **Bespoke natRec adequacy (into the union)** — the recursor twin. -/
 theorem HasTypeDescNatRec.toNativeUnion {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (derivation : HasTypeDescNatRec profile context subject classifier) :
-    HasTypeNativeUnion profile context subject classifier := by
+    {context : TypingContext profile scope}
+    (motive : RawTerm (scope + 1)) (scrutinee zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) {classifier : RawTerm scope}
+    (derivation : HasTypeDescNatRec profile context
+      (natRecCell motive zeroBranch succBranch scrutinee) classifier)
+    (stepBranchTyped : HasTypeNativeUnion profile
+      ((context.cons natTypeCell).cons
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken classifier))
+      succBranch
+      (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken classifier))) :
+    HasTypeNativeUnion profile context
+      (natRecCell motive zeroBranch succBranch scrutinee) classifier := by
   cases derivation with
-  | natRecIntro motive scrutinee zeroBranch succBranch _resultTypeUnified
-      scrutineeTyped zeroBranchTyped =>
+  | natRecIntro _ _ _ _ _ scrutineeTyped zeroBranchTyped =>
       exact HasTypeNativeUnion.recursiveElim _ .gen_natRec natRecNativeRecursiveRule
         motive zeroBranch succBranch scrutinee classifier rfl
         (HasTypeNativeUnion.ofNatIntro scrutineeTyped)
         (HasTypeNativeUnion.ofGrown zeroBranchTyped)
+        stepBranchTyped
 
 /-! ## ★ THE GO TEST ON THE UNION: the succ-ι reduct types internally -/
+
+/-- **The IH-return step branch types at the recursive-eliminator arm's step-branch shape.**  The
+step branch `inductiveHypothesisReturnBranch scope = var 0` lives in the two-binder context
+`(context.cons natTypeCell).cons (rename weaken resultType)`; its grown variable lookup at index `0`
+is `rename weaken (rename weaken resultType)` — exactly the classifier the `recursiveElim` arm's
+`stepBranchTyped` premise demands.  Constructed through the grown `var` rule, embedded into the union.
+The succ-ι GO theorems thread this so their conclusions stay verbatim (no added hypothesis). -/
+theorem inductiveHypothesisReturnBranchUnionTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (resultType : RawTerm scope) :
+    HasTypeNativeUnion profile
+      ((context.cons natTypeCell).cons
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
+      (inductiveHypothesisReturnBranch scope)
+      (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType)) :=
+  HasTypeNativeUnion.ofGrown (HasTypeDescPi.ofFormation
+    (HasTypeDesc.var
+      ((context.cons natTypeCell).cons
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
+      ⟨0, Nat.succ_pos (scope + 1)⟩))
 
 /-- **★★ THE GO THEOREM ON THE UNION (natElim): the succ-ι reduct types INTERNALLY.**  On the IH-return
 branch family, for ANY union-typed predecessor and base branch: the succ-ι fires
@@ -92,7 +132,8 @@ theorem recursiveElimSuccIotaDischargedInUnion {profile : PolyProfile} {scope : 
   ⟨natElimSuccContractum_ihReturn motive zeroBranch predecessor ▸ Step.iotaNatElimSucc,
     HasTypeNativeUnion.recursiveElim context .gen_natElim natElimNativeRecursiveRule
       motive zeroBranch (inductiveHypothesisReturnBranch scope) predecessor resultType rfl
-      predecessorTyped zeroBranchTyped⟩
+      predecessorTyped zeroBranchTyped
+      (inductiveHypothesisReturnBranchUnionTyped context resultType)⟩
 
 /-- **★ The natRec twin of the GO theorem on the union.** -/
 theorem recursiveRecSuccIotaDischargedInUnion {profile : PolyProfile} {scope : Nat}
@@ -110,7 +151,8 @@ theorem recursiveRecSuccIotaDischargedInUnion {profile : PolyProfile} {scope : N
   ⟨natRecSuccContractum_ihReturn motive zeroBranch predecessor ▸ Step.iotaNatRecSucc,
     HasTypeNativeUnion.recursiveElim context .gen_natRec natRecNativeRecursiveRule
       motive zeroBranch (inductiveHypothesisReturnBranch scope) predecessor resultType rfl
-      predecessorTyped zeroBranchTyped⟩
+      predecessorTyped zeroBranchTyped
+      (inductiveHypothesisReturnBranchUnionTyped context resultType)⟩
 
 /-! ## ★ End-to-end: a closed 2-step typed computation through the recursion loop, on the union -/
 
@@ -149,11 +191,13 @@ theorem recursiveElimClosedComputationFullyTypedInUnion {profile : PolyProfile} 
         (HasTypeDescNatIntro.natSuccIntro TypingContext.empty natZeroCell
           (HasTypeDescNatIntro.natZeroIntro TypingContext.empty)))
       trueBranchTyped
+      (inductiveHypothesisReturnBranchUnionTyped TypingContext.empty boolTypeCell)
   · exact natElimSuccContractum_ihReturn boolTypeCell boolTrueCell natZeroCell ▸
       Step.iotaNatElimSucc
   · exact HasTypeNativeUnion.recursiveElim TypingContext.empty .gen_natElim
       natElimNativeRecursiveRule boolTypeCell boolTrueCell (inductiveHypothesisReturnBranch 0)
       natZeroCell boolTypeCell rfl zeroScrutineeTyped trueBranchTyped
+      (inductiveHypothesisReturnBranchUnionTyped TypingContext.empty boolTypeCell)
 
 /-! ## ★ The spike→union transfer: every spike derivation maps into the real union -/
 
@@ -171,7 +215,15 @@ The spike was the locked design surface for the union arm; this transfer certifi
 faithful — the union admits everything the spike admitted. -/
 theorem RecursiveElimUnionSpike.toNativeUnion {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (derivation : RecursiveElimUnionSpike profile context subject classifier) :
+    (derivation : RecursiveElimUnionSpike profile context subject classifier)
+    (stepBranchTyped : ∀ {innerScope : Nat} {innerContext : TypingContext profile innerScope}
+        (stepBranch : RawTerm (innerScope + 2)) (resultType : RawTerm innerScope),
+      HasTypeNativeUnion profile
+        ((innerContext.cons natTypeCell).cons
+          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
+        stepBranch
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))) :
     HasTypeNativeUnion profile context subject classifier := by
   induction derivation with
   | ofUnion unionTyped => exact unionTyped
@@ -183,9 +235,11 @@ theorem RecursiveElimUnionSpike.toNativeUnion {profile : PolyProfile} {scope : N
       · subst ruleEq
         exact HasTypeNativeUnion.recursiveElim _ .gen_natElim natElimNativeRecursiveRule
           motive baseBranch stepBranch scrutinee resultType rfl scrutineeUnion baseBranchUnion
+          (stepBranchTyped stepBranch resultType)
       · subst ruleEq
         exact HasTypeNativeUnion.recursiveElim _ .gen_natRec natRecNativeRecursiveRule
           motive baseBranch stepBranch scrutinee resultType rfl scrutineeUnion baseBranchUnion
+          (stepBranchTyped stepBranch resultType)
 
 /-! ## The integration gate -/
 
@@ -195,16 +249,34 @@ bespoke engines map in (premise parity, the fold's delete-safety), the succ-ι r
 on the recursion-isolating family (the NATIVE-04 residual discharge inside the union), the closed
 recursive computation runs union-typed end-to-end, and the whole spike transfers. -/
 structure RecursiveElimUnionResidencyEvidence (profile : PolyProfile) : Prop where
-  /-- Every bespoke natElim derivation maps into the union. -/
+  /-- Every bespoke natElim derivation maps into the union (given the step branch's union typing). -/
   natElimAdequate : ∀ {scope : Nat} {context : TypingContext profile scope}
-    {subject classifier : RawTerm scope},
-    HasTypeDescNatElim profile context subject classifier →
-    HasTypeNativeUnion profile context subject classifier
-  /-- Every bespoke natRec derivation maps into the union. -/
+    (motive : RawTerm (scope + 1)) (scrutinee zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) {classifier : RawTerm scope},
+    HasTypeDescNatElim profile context
+      (natElimCell motive zeroBranch succBranch scrutinee) classifier →
+    HasTypeNativeUnion profile
+      ((context.cons natTypeCell).cons
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken classifier))
+      succBranch
+      (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken classifier)) →
+    HasTypeNativeUnion profile context
+      (natElimCell motive zeroBranch succBranch scrutinee) classifier
+  /-- Every bespoke natRec derivation maps into the union (given the step branch's union typing). -/
   natRecAdequate : ∀ {scope : Nat} {context : TypingContext profile scope}
-    {subject classifier : RawTerm scope},
-    HasTypeDescNatRec profile context subject classifier →
-    HasTypeNativeUnion profile context subject classifier
+    (motive : RawTerm (scope + 1)) (scrutinee zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) {classifier : RawTerm scope},
+    HasTypeDescNatRec profile context
+      (natRecCell motive zeroBranch succBranch scrutinee) classifier →
+    HasTypeNativeUnion profile
+      ((context.cons natTypeCell).cons
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken classifier))
+      succBranch
+      (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken classifier)) →
+    HasTypeNativeUnion profile context
+      (natRecCell motive zeroBranch succBranch scrutinee) classifier
   /-- The succ-ι reduct types internally (no `reductTyped` premise) on the IH-return family. -/
   succIotaInternal : ∀ {scope : Nat} (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (predecessor zeroBranch resultType : RawTerm scope),
@@ -217,21 +289,32 @@ structure RecursiveElimUnionResidencyEvidence (profile : PolyProfile) : Prop whe
     HasTypeNativeUnion profile context
       (natElimCell motive zeroBranch (inductiveHypothesisReturnBranch scope) predecessor)
       resultType
-  /-- Every spike derivation transfers to the union. -/
+  /-- Every spike derivation transfers to the union (given a uniform step-branch union typing). -/
   spikeTransfers : ∀ {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope},
     RecursiveElimUnionSpike profile context subject classifier →
+    (∀ {innerScope : Nat} {innerContext : TypingContext profile innerScope}
+        (stepBranch : RawTerm (innerScope + 2)) (resultType : RawTerm innerScope),
+      HasTypeNativeUnion profile
+        ((innerContext.cons natTypeCell).cons
+          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
+        stepBranch
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))) →
     HasTypeNativeUnion profile context subject classifier
 
 /-- **★ The NATIVE-32 integration gate** — inhabited by the shipped witnesses. -/
 theorem recursiveElimUnionResidencyWitness {profile : PolyProfile} :
     RecursiveElimUnionResidencyEvidence profile where
-  natElimAdequate := fun derivation => derivation.toNativeUnion
-  natRecAdequate := fun derivation => derivation.toNativeUnion
+  natElimAdequate := fun motive scrutinee zeroBranch succBranch =>
+    HasTypeDescNatElim.toNativeUnion motive scrutinee zeroBranch succBranch
+  natRecAdequate := fun motive scrutinee zeroBranch succBranch =>
+    HasTypeDescNatRec.toNativeUnion motive scrutinee zeroBranch succBranch
   succIotaInternal := fun context motive predecessor zeroBranch resultType
     predecessorTyped zeroBranchTyped =>
     recursiveElimSuccIotaDischargedInUnion context motive predecessor zeroBranch resultType
       predecessorTyped zeroBranchTyped
-  spikeTransfers := fun derivation => derivation.toNativeUnion
+  spikeTransfers := fun derivation stepBranchTyped =>
+    derivation.toNativeUnion stepBranchTyped
 
 end FX1Poly.Typed

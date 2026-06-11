@@ -193,17 +193,26 @@ theorem HasTypeNativeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : 
     {body : RawTerm (scope + 1)}
     (derivation : HasTypeNativeUnion profile context subject classifier)
     (subjectShape : subject = pathLamCell body) :
-    HasTypeDescPi profile context (pathLamCell body) classifier
-    ∨ (∃ carrierCode : RawTerm scope,
-        classifier = bridgeTypeCell carrierCode
+    (∃ pinnedClassifier : RawTerm scope,
+        HasTypeDescPi profile context (pathLamCell body) pinnedClassifier ∧
+        Conv pinnedClassifier classifier)
+    ∨ (∃ (carrierCode pinnedClassifier : RawTerm scope),
+        pinnedClassifier = bridgeTypeCell carrierCode
           (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell) ∧
         gradedBinderChecks UsageGrade.one body ∧
         HasTypeNativeUnion profile (context.cons intervalTypeCell) body
-          (RawTerm.weaken carrierCode)) := by
-  cases derivation with
+          (RawTerm.weaken carrierCode) ∧
+        Conv pinnedClassifier classifier) := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      rcases innerInversion subjectShape with ⟨pinnedClassifier, hostInner, convInner⟩ |
+        ⟨carrierCode, pinnedClassifier, bridgeEq, bodyAffine, bodyTyped, convInner⟩
+      · exact Or.inl ⟨pinnedClassifier, hostInner, convInner.trans converts⟩
+      · exact Or.inr ⟨carrierCode, pinnedClassifier, bridgeEq, bodyAffine, bodyTyped,
+          convInner.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
-      exact Or.inl hostTyped
+      exact Or.inl ⟨_, hostTyped, Conv.refl _⟩
   | ofBaseType baseTyped =>
       exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
   | ofDataIntro dataTyped =>
@@ -225,7 +234,7 @@ theorem HasTypeNativeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : 
         subst ruleEq
         have bodiesEqual : armBody = body := by injections
         subst bodiesEqual
-        exact Or.inr ⟨typeParamA, rfl, binderGraded, bodyTyped⟩
+        exact Or.inr ⟨typeParamA, _, rfl, binderGraded, bodyTyped, Conv.refl _⟩
   | generalElim ctx generator rule typeParamA typeParamB typeParamC typeParamD eliminated argument
       isElim eliminatedTyped argumentTyped =>
       rcases generalElimRuleOf_isAppOrPathApp isElim with hApp | hPath
@@ -340,18 +349,27 @@ theorem HasTypeNativeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
     {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
     (derivation : HasTypeNativeUnion profile context subject classifier)
     (subjectShape : subject = lamCell domainAnn body) :
-    HasTypeDescPi profile context (lamCell domainAnn body) classifier
+    (∃ pinnedClassifier : RawTerm scope,
+        HasTypeDescPi profile context (lamCell domainAnn body) pinnedClassifier ∧
+        Conv pinnedClassifier classifier)
     ∨ (∃ (codomainCode : RawTerm (scope + 1)) (domainLevel codomainLevel : LevelExpr)
           (flag : UniverseFlag),
-        classifier = piTyCodeCell domainAnn codomainCode ∧
+        Conv (piTyCodeCell domainAnn codomainCode) classifier ∧
         HasTypeNativeUnion profile context domainAnn (universeCodeCell domainLevel flag) ∧
         HasTypeNativeUnion profile (context.cons domainAnn) codomainCode
           (universeCodeCell codomainLevel flag) ∧
         HasTypeNativeUnion profile (context.cons domainAnn) body codomainCode) := by
-  cases derivation with
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      rcases innerInversion subjectShape with ⟨pinnedClassifier, hostInner, convInner⟩ |
+        ⟨codomainCode, domainLevel, codomainLevel, flag, convInner, domainFormed,
+          codomainFormed, bodyTyped⟩
+      · exact Or.inl ⟨pinnedClassifier, hostInner, convInner.trans converts⟩
+      · exact Or.inr ⟨codomainCode, domainLevel, codomainLevel, flag,
+          convInner.trans converts, domainFormed, codomainFormed, bodyTyped⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
-      exact Or.inl hostTyped
+      exact Or.inl ⟨_, hostTyped, Conv.refl _⟩
   | ofBaseType baseTyped =>
       exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
   | ofDataIntro dataTyped =>
@@ -367,8 +385,8 @@ theorem HasTypeNativeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
           Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
         subst ruleEq
         rcases subjectShape with ⟨⟩
-        exact Or.inr ⟨typeParamB, domainLevel, codomainLevel, flag, rfl,
-          domainFormed rfl, classifierFormed rfl, bodyTyped⟩
+        exact Or.inr ⟨typeParamB, domainLevel, codomainLevel, flag,
+          Conv.refl _, domainFormed rfl, classifierFormed rfl, bodyTyped⟩
       · subst hPath
         have ruleEq : rule = pathLamGradedIntroRule :=
           Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
@@ -492,7 +510,11 @@ theorem HasTypeNativeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : 
     (subjectShape : subject = natElimCell motive zeroBranch stepBranch scrutinee) :
     HasTypeNativeUnion profile context scrutinee natTypeCell ∧
     HasTypeNativeUnion profile context zeroBranch classifier := by
-  cases derivation with
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨scrutineeTyped, zeroBranchTyped⟩ := innerInversion subjectShape
+      exact ⟨scrutineeTyped,
+        HasTypeNativeUnion.conv levelExpr flag zeroBranchTyped converts reclassifierTyped⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natElimCellHasNoTyping (fun contra => contra)
@@ -635,9 +657,16 @@ theorem HasTypeNativeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : 
     {child : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context subject classifier)
     (subjectShape : subject = natSuccCell child) :
-    (classifier = natTypeCell ∧ HasTypeNativeUnion profile context child natTypeCell)
-    ∨ HasTypeDescNatIntro profile context (natSuccCell child) classifier := by
-  cases derivation with
+    (Conv natTypeCell classifier ∧ HasTypeNativeUnion profile context child natTypeCell)
+    ∨ (∃ pinnedClassifier : RawTerm scope,
+        HasTypeDescNatIntro profile context (natSuccCell child) pinnedClassifier ∧
+        Conv pinnedClassifier classifier) := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      rcases innerInversion subjectShape with ⟨convInner, childTyped⟩ |
+        ⟨pinnedClassifier, natTyped, convInner⟩
+      · exact Or.inl ⟨convInner.trans converts, childTyped⟩
+      · exact Or.inr ⟨pinnedClassifier, natTyped, convInner.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natSuccCellHasNoTyping (fun contra => contra)
@@ -676,7 +705,7 @@ theorem HasTypeNativeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : 
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | ofNatIntro natTyped =>
       rw [subjectShape] at natTyped
-      exact Or.inr natTyped
+      exact Or.inr ⟨_, natTyped, Conv.refl _⟩
   | recursiveElim ctx generator rule motive baseBranch stepBranch scrutinee resultType
       isRecursiveElim scrutineeTyped baseBranchTyped =>
       rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
@@ -723,7 +752,7 @@ theorem HasTypeNativeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : 
       obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
       subst ruleEq
       rcases subjectShape with ⟨⟩
-      exact Or.inl ⟨rfl, childTyped⟩
+      exact Or.inl ⟨Conv.refl natTypeCell, childTyped⟩
   | recursiveBinaryIntro ctx generator rule head tail elementType isRecursiveBinary headTyped
       tailTyped =>
       obtain ⟨_, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
@@ -781,7 +810,8 @@ theorem HasTypeNativeUnion.unionRejectsAffineDoubleUse {profile : PolyProfile} {
     ¬ HasTypeNativeUnion profile context
         (pathLamCell (doubleDimensionUseBody scope)) classifier := by
   intro derivation
-  rcases derivation.invertAtPathLamHead rfl with hostTyped | ⟨carrierCode, _, bodyAffine, _⟩
+  rcases derivation.invertAtPathLamHead rfl with ⟨_, hostTyped, _⟩ |
+    ⟨carrierCode, _, _, bodyAffine, _, _⟩
   · exact hostTyped.pathLamCellHasNoTyping
   · -- `bodyAffine : gradedBinderChecks .one body` defeq `occurrenceCountAt body 0 ≤ 1`; the body occurs twice.
     have occurrenceBound :
@@ -801,18 +831,22 @@ structure NativeUnionInversionCoverage (profile : PolyProfile) : Prop where
   grownRejectsPathLamHead : ∀ {scope : Nat} {context : TypingContext profile scope}
     {body : RawTerm (scope + 1)} {classifier : RawTerm scope},
     HasTypeDescPi profile context (pathLamCell body) classifier → False
-  /-- The pathLam-head inversion holds (grown disjunct ∨ graded pathLam-row premises). -/
+  /-- The pathLam-head inversion holds (grown disjunct ∨ graded pathLam-row premises), each
+  Conv-modulo: the conv arm reclassifies, so the pinned classifier is convertible to the actual one. -/
   pathLamInversion : ∀ {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} {body : RawTerm (scope + 1)},
     HasTypeNativeUnion profile context subject classifier →
     subject = pathLamCell body →
-    HasTypeDescPi profile context (pathLamCell body) classifier
-    ∨ (∃ carrierCode : RawTerm scope,
-        classifier = bridgeTypeCell carrierCode
+    (∃ pinnedClassifier : RawTerm scope,
+        HasTypeDescPi profile context (pathLamCell body) pinnedClassifier ∧
+        Conv pinnedClassifier classifier)
+    ∨ (∃ (carrierCode pinnedClassifier : RawTerm scope),
+        pinnedClassifier = bridgeTypeCell carrierCode
           (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell) ∧
         gradedBinderChecks UsageGrade.one body ∧
         HasTypeNativeUnion profile (context.cons intervalTypeCell) body
-          (RawTerm.weaken carrierCode))
+          (RawTerm.weaken carrierCode) ∧
+        Conv pinnedClassifier classifier)
   /-- The natElim-head inversion holds (the single recursive-eliminator survivor). -/
   natElimInversion : ∀ {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} {motive : RawTerm (scope + 1)}
@@ -821,13 +855,16 @@ structure NativeUnionInversionCoverage (profile : PolyProfile) : Prop where
     subject = natElimCell motive zeroBranch stepBranch scrutinee →
     HasTypeNativeUnion profile context scrutinee natTypeCell ∧
     HasTypeNativeUnion profile context zeroBranch classifier
-  /-- The natSucc-head inversion holds (the two-path survivors). -/
+  /-- The natSucc-head inversion holds (the two-path survivors), Conv-modulo: the conv arm
+  reclassifies, so the pinned `Nat`/NatIntro classifier is convertible to the actual one. -/
   natSuccInversion : ∀ {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} {child : RawTerm scope},
     HasTypeNativeUnion profile context subject classifier →
     subject = natSuccCell child →
-    (classifier = natTypeCell ∧ HasTypeNativeUnion profile context child natTypeCell)
-    ∨ HasTypeDescNatIntro profile context (natSuccCell child) classifier
+    (Conv natTypeCell classifier ∧ HasTypeNativeUnion profile context child natTypeCell)
+    ∨ (∃ pinnedClassifier : RawTerm scope,
+        HasTypeDescNatIntro profile context (natSuccCell child) pinnedClassifier ∧
+        Conv pinnedClassifier classifier)
   /-- The union rejects the affine double-use path abstraction at every classifier and context. -/
   affineDoubleUseRejected : ∀ {scope : Nat} (context : TypingContext profile scope)
     (classifier : RawTerm scope),

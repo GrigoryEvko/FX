@@ -108,10 +108,13 @@ theorem unionSubjectReductionListElimNil {profile : PolyProfile} {scope : Nat}
     (typed : HasTypeNativeUnion profile context
       (listElimCell motive listNilCell nilBranch consBranch) classifier) :
     Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
-    HasTypeNativeUnion profile context nilBranch classifier := by
-  obtain ⟨_elementType, _scrutineeTyped, nilBranchHostTyped, _consBranchTyped⟩ :=
-    typed.invertAtListElimHead rfl
-  exact ⟨Step.iotaListElimNil, HasTypeNativeUnion.ofGrown nilBranchHostTyped⟩
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context nilBranch pinnedClassifier ∧
+      Conv pinnedClassifier classifier := by
+  obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, nilBranchHostTyped, _consBranchTyped,
+    convPinned⟩ := typed.invertAtListElimHead rfl
+  exact ⟨Step.iotaListElimNil,
+    pinnedClassifier, HasTypeNativeUnion.ofGrown nilBranchHostTyped, convPinned⟩
 
 /-- **optionMatch on `optionNone` selects the none-branch, typed.**  A union-typed `optionMatch` on
 `optionNone` ι-steps to the none-branch (`Step.iotaOptionMatchNone`), union-typed at the same
@@ -122,10 +125,12 @@ theorem unionSubjectReductionOptionMatchNone {profile : PolyProfile} {scope : Na
     (typed : HasTypeNativeUnion profile context
       (optionMatchCell motive noneBranch someBranch optionNoneCell) classifier) :
     Step (optionMatchCell motive noneBranch someBranch optionNoneCell) noneBranch ∧
-    HasTypeNativeUnion profile context noneBranch classifier := by
-  obtain ⟨_elementType, _scrutineeTyped, noneBranchTyped, _someBranchTyped⟩ :=
-    typed.invertAtOptionMatchHead rfl
-  exact ⟨Step.iotaOptionMatchNone, noneBranchTyped⟩
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context noneBranch pinnedClassifier ∧
+      Conv pinnedClassifier classifier := by
+  obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, noneBranchTyped, _someBranchTyped,
+    convPinned⟩ := typed.invertAtOptionMatchHead rfl
+  exact ⟨Step.iotaOptionMatchNone, pinnedClassifier, noneBranchTyped, convPinned⟩
 
 /-- **idJ on `refl` selects the base case, typed.**  A union-typed `idJ` on `refl` ι-steps to the base
 case (`Step.iotaIdJRefl`), union-typed at the same classifier. -/
@@ -229,20 +234,24 @@ structure NativeUnionRootRedexSubjectReductionCoverage (profile : PolyProfile) :
       (natRecCell motive zeroBranch stepBranch natZeroCell) classifier →
     Step (natRecCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
     HasTypeNativeUnion profile context zeroBranch classifier
-  /-- listElim-nil reduct is typed. -/
+  /-- listElim-nil reduct is typed (Conv-modulo: the conv arm reclassifies the host-typed nil branch). -/
   listElimNilReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {nilBranch consBranch classifier : RawTerm scope},
     HasTypeNativeUnion profile context
       (listElimCell motive listNilCell nilBranch consBranch) classifier →
     Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
-    HasTypeNativeUnion profile context nilBranch classifier
-  /-- optionMatch-none reduct is typed. -/
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context nilBranch pinnedClassifier ∧
+      Conv pinnedClassifier classifier
+  /-- optionMatch-none reduct is typed (Conv-modulo: the conv arm reclassifies the none branch). -/
   optionMatchNoneReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {noneBranch someBranch classifier : RawTerm scope},
     HasTypeNativeUnion profile context
       (optionMatchCell motive noneBranch someBranch optionNoneCell) classifier →
     Step (optionMatchCell motive noneBranch someBranch optionNoneCell) noneBranch ∧
-    HasTypeNativeUnion profile context noneBranch classifier
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context noneBranch pinnedClassifier ∧
+      Conv pinnedClassifier classifier
   /-- idJ-refl reduct is typed. -/
   idJReflReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 2)} {baseCase rawWitness classifier : RawTerm scope},
@@ -308,7 +317,9 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {redex reduct classifier : RawTerm scope}
     (typed : HasTypeNativeUnion profile context redex classifier)
     (stepHyp : Step redex reduct) :
-    HasTypeNativeUnion profile context reduct classifier
+    (∃ pinnedClassifier : RawTerm scope,
+        HasTypeNativeUnion profile context reduct pinnedClassifier ∧
+        Conv pinnedClassifier classifier)
     ∨ (∃ (generator : Generator) (payload : generator.payload scope)
          (childrenBefore childrenAfter : RawTermChildren generator.binderShifts scope),
         redex = .mkGen generator payload childrenBefore ∧
@@ -321,17 +332,17 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
   | cong generator payload childStep =>
       exact Or.inr (Or.inl ⟨generator, payload, _, _, rfl, rfl, childStep⟩)
   | iotaBoolTrue =>
-      exact Or.inl (unionSubjectReductionBoolElimTrue typed).2
+      exact Or.inl ⟨classifier, (unionSubjectReductionBoolElimTrue typed).2, Conv.refl classifier⟩
   | iotaBoolFalse =>
-      exact Or.inl (unionSubjectReductionBoolElimFalse typed).2
+      exact Or.inl ⟨classifier, (unionSubjectReductionBoolElimFalse typed).2, Conv.refl classifier⟩
   | iotaFstPair =>
       exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, rfl⟩)))
   | iotaSndPair =>
       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, rfl⟩))))
   | iotaNatElimZero =>
-      exact Or.inl (unionSubjectReductionNatElimZero typed).2
+      exact Or.inl ⟨classifier, (unionSubjectReductionNatElimZero typed).2, Conv.refl classifier⟩
   | iotaNatRecZero =>
-      exact Or.inl (unionSubjectReductionNatRecZero typed).2
+      exact Or.inl ⟨classifier, (unionSubjectReductionNatRecZero typed).2, Conv.refl classifier⟩
   | iotaListElimNil =>
       exact Or.inl (unionSubjectReductionListElimNil typed).2
   | iotaOptionMatchNone =>
@@ -352,7 +363,7 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
         (Or.inr (Or.inr (Or.inl ⟨_, _, _, _, _, rfl⟩))))))))))
   | iotaIdJRefl =>
-      exact Or.inl (unionSubjectReductionIdJRefl typed).2
+      exact Or.inl ⟨classifier, (unionSubjectReductionIdJRefl typed).2, Conv.refl classifier⟩
   | iotaIdStrictRecRefl =>
       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
         (Or.inr (Or.inr (Or.inr ⟨_, _, _, rfl⟩))))))))))

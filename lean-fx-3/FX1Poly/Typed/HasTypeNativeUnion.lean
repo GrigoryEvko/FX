@@ -209,8 +209,10 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
   /-- The table-driven recursive-eliminator arm (the NATIVE-32 union residency of the spike's
   `recursiveElimRow`): the scrutinee and base-branch premises are RECURSIVE in the UNION itself — so a
   recursive call (`natElimCell` at the predecessor) is an admissible scrutinee-typed subject, closing
-  the recursion loop the bespoke engine could not.  The motive and step branch are STORED (premise
-  parity with `HasTypeDescNatElim` — the NATIVE-33 fold's delete-safety requirement). -/
+  the recursion loop the bespoke engine could not.  The motive stays STORED; the step branch is
+  PREMISED at the two-binder context (outer binder the scrutinee's element type, inner binder the
+  once-weakened recursive result) — the conv-closure churn closing the premise-shape gap, so the
+  substituting succ-iota reduct typing is recoverable from the redex's own derivation. -/
   | recursiveElim {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativeRecursiveElimRule)
       (motive : RawTerm (scope + 1)) (baseBranch : RawTerm scope)
@@ -219,7 +221,13 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (isRecursiveElim : nativeRecursiveElimRuleOf generator = some rule)
       (scrutineeTyped : HasTypeNativeUnion profile context scrutinee
         (rule.scrutineeType scope))
-      (baseBranchTyped : HasTypeNativeUnion profile context baseBranch resultType) :
+      (baseBranchTyped : HasTypeNativeUnion profile context baseBranch resultType)
+      (stepBranchTyped : HasTypeNativeUnion profile
+        ((context.cons (rule.scrutineeType scope)).cons
+          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
+        stepBranch
+        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))) :
       HasTypeNativeUnion profile context
         (rule.memberCell scope motive baseBranch stepBranch scrutinee) resultType
   /-- Embed the Option value constructors (`optionNone` / `optionSome` scrutinees) — the data-elim
@@ -377,6 +385,21 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
         (listStepFunctionType elementType resultType)) :
       HasTypeNativeUnion profile context
         (rule.memberCell scope motive scrutinee nilBranch consBranch) resultType
+  /-- The CONVERSION arm (the conv-closure): a union-typed subject reclassifies along a raw
+  definitional equality, with the target classifier itself union-typed at a universe code.
+  Field-identical to `HasTypeDescPi.conv` — shape parity is what the embedding adequacies need.
+  This arm dissolves the no-conv-arm wall: union substitution no longer needs host-typed
+  substituent images, and congruence-step subject reduction can absorb the dependent-scrutinee
+  classifier drift. -/
+  | conv {scope : Nat} {context : TypingContext profile scope}
+      {subject classifier reclassifier : RawTerm scope}
+      (levelExpr : LevelExpr) (flag : UniverseFlag)
+      (typed : HasTypeNativeUnion profile context subject classifier)
+      (converts : Conv classifier reclassifier)
+      (reclassifierTyped :
+        HasTypeNativeUnion profile context reclassifier
+          (universeCodeCell levelExpr flag)) :
+      HasTypeNativeUnion profile context subject reclassifier
 
 /-! ## ★ The wall-falls smokes — typable for the FIRST time -/
 
