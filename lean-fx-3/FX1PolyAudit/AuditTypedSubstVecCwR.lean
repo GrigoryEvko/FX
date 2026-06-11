@@ -657,6 +657,7 @@ import FX1Poly.Typed.KernelBinaryParametricity
 import FX1Poly.Typed.KernelBinaryPiElim
 import FX1Poly.Typed.KernelBinaryPiIntro
 import FX1Poly.Typed.KernelBinaryConvInvariance
+import FX1Poly.Typed.KernelBinaryConvArm
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2083,6 +2084,30 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.binaryConvCandidateIff
 #assert_no_axioms FX1Poly.Typed.IsBinaryReducibleMemberPairAtBounded.convTransport
 #assert_no_axioms FX1Poly.Typed.convMemberPairUnderClosingSubstitutionBounded
+
+-- ★★ Binary universe-membership extraction + the conv and universeFormation FT arms
+-- (OP1-K2 brick 4 #1228, Typed/KernelBinaryConvArm.lean). belowBoundOfUniverseCodePairShape +
+-- the rfl-rfl corollary: a binary-related universe-code pair carries its bound gate (left
+-- payload aligned by universeCodeCell_inj; the right equation rules out the right expansion
+-- arm). ★ The A2-bridge doubled: a member PAIR of a binary universe pair is a binary-related
+-- TYPE pair at the ambient bound (identify the candidate by brick-1 binaryCandidateIffUniverse
+-- + decode through below-family coherence + lift by K1 cumulativity). ★ The conv FT arm: the
+-- reclassifier's universe membership yields its gate + type-pair reducibility — substitution
+-- leaves universe codes fixed DEFINITIONALLY so the extraction applies without rewriting —
+-- and brick-3's Conv transport finishes. ★ The universeFormation FT arm in MEMBER form:
+-- (Type@e, Type@e) is a related member pair of (Type@(lsucc e), Type@(lsucc e)) via the
+-- level-irrelevant candidate (ofPointwiseIff + coherence rw, the binary twin of
+-- universeMembershipBounded_levelIrrelevant). STATUS: all NON-FORMER arms of the binary FT
+-- are now shipped (var/piElim brick 1, piIntro brick 2, conv transport brick 3, conv +
+-- universeFormation this brick); remaining: former/telescope arms + the assembly.
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.belowBoundOfUniverseCodePairShape
+#assert_no_axioms FX1Poly.Typed.binaryUniverseCodeReducibleAtBounded_belowBound
+#assert_no_axioms FX1Poly.Typed.binaryUniverseMemberReducibleAsTypePairAtDecodedLevel
+#assert_no_axioms FX1Poly.Typed.binaryReducibleTypePairFromUniverseMemberBounded
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalConvArm
+#assert_no_axioms FX1Poly.Typed.binaryUniverseMembershipBounded_levelIrrelevant
+#assert_no_axioms FX1Poly.Typed.binaryUniverseFormationMemberPairAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalUniverseFormationFTArm
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
