@@ -4,6 +4,7 @@ import FX1Poly.Tier0.InternalSconing
 import FX1Poly.Tier0.FireTriangle
 import FX1Poly.Extension.ProfileExtension
 import FX1Poly.Extension.AdmissibleProfileTensor
+import FX1Poly.Core.StrengthCalibration
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
 
@@ -78,3 +79,24 @@ no-go register. -/
   FX1Poly.Extension.extensionLedger_stillBelow_metatheoryTransfer
 #assert_no_axioms
   FX1Poly.Extension.extensionLedger_stillBelow_admissibleProfileTheorem
+
+/-! ## Strength-calibration gates (one canonical strength enum)
+
+`FX1Poly.Core.ConsistencyStrength` is the canonical strength enum;
+the UniverseFlag ladder and the Tier-0 ledger tags calibrate into it
+monotonically as lower bounds. -/
+
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.ladderRank
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.consistencyStrengthBound
+#assert_no_axioms
+  FX1Poly.Universe.UniverseFlag.consistencyStrengthBound_monotone
+#assert_no_axioms
+  FX1Poly.Universe.UniverseFlag.standard_calibratesTo_predicative
+#assert_no_axioms FX1Poly.Universe.UniverseFlag.mahlo_calibratesTo_mahlo
+#assert_no_axioms
+  FX1Poly.Universe.UniverseFlag.vopenka_calibratesTo_customZero
+#assert_no_axioms FX1Poly.Tier0.ConsistencyStrength.rank
+#assert_no_axioms FX1Poly.Tier0.ConsistencyStrength.toCoreStrength
+#assert_no_axioms FX1Poly.Tier0.ConsistencyStrength.toCoreStrength_monotone
+#assert_no_axioms
+  FX1Poly.Tier0.ConsistencyStrength.toCoreStrength_not_injective

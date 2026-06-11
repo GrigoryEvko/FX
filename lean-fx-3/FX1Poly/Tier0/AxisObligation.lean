@@ -114,6 +114,14 @@ theorem MetatheoreticCapabilities.meet_bot_right
   dsimp only [MetatheoreticCapabilities.meet, MetatheoreticCapabilities.bot]
   congr 1 <;> apply CapabilityStatus.meet_unavailable_right
 
+/-- Coarse consistency-strength tags for Tier-0 obligation
+bookkeeping.  NOT the canonical strength enum — that is
+`FX1Poly.Core.ConsistencyStrength` (which carries the total rank and
+decidable order the extension calculus and the `.fx0c` ABI use).
+This ledger vocabulary calibrates into the canonical enum via
+`ConsistencyStrength.toCoreStrength`
+(`FX1Poly/Core/StrengthCalibration.lean`), monotonically along the
+declaration order; ordered strength reasoning goes through that map. -/
 inductive ConsistencyStrength : Type where
   | leanCore
   | zfc

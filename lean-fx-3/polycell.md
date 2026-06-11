@@ -7533,13 +7533,38 @@ inductive ConsistencyStrength where
   deriving DecidableEq
 ```
 
-**DRIFT note (2026-06):** the tree carries two related enums — the
-10-ctor `UniverseFlag` ladder (#272, enum-only with DecidableEq, NO
-admission predicates) and a separate 6-ctor core consistency-strength
-enum — neither matching this sketch.  Reconcile in code to ONE
-strength enum + the flag ladder, then update this block; until then
-this block is TARGET, and the "decidable admission predicate" claims
-here and in §11.8.2/§3.16.3 are pending (flags are catalogue-only).
+**RECONCILED (2026-06, X-05):** the tree's strength vocabulary is
+now unified around ONE canonical strength enum,
+`FX1Poly.Core.ConsistencyStrength` — the shipped 6-ctor enum
+(`finitistic` / `predicative` / `impredicative` / `inaccessible` /
+`mahlo` / `custom (tag : Nat)`) with total `toRank`, decidable `LE`,
+and the `.fx0c` Nat-rank ABI.  The two other types calibrate INTO it
+(`FX1Poly/Core/StrengthCalibration.lean`, monotonicity proved,
+zero-axiom, audit-gated):
+
+* `UniverseFlag` (the 10-ctor Setzer-Rathjen ladder) stays the
+  per-universe admission FLAG vocabulary; `UniverseFlag.ladderRank`
+  + `UniverseFlag.consistencyStrengthBound` give each flag its
+  LOWER BOUND in the canonical enum (`standard ↦ predicative`,
+  `inaccessible ↦ inaccessible`, `mahlo`/`superMahlo`/`nMahlo n ↦
+  mahlo`, everything from `hyperMahlo` up ↦ `custom 0`), monotone
+  along the ladder.  A strictly order-preserving total calibration
+  is IMPOSSIBLE into any Nat-ranked enum (the `nMahlo n` /
+  `indescribable n` rungs are unbounded families later rungs must
+  dominate); the lower-bound reading is the honest one.
+* `FX1Poly.Tier0.ConsistencyStrength` (the 5-ctor Tier-0 ledger
+  tags) stays as coarse obligation-bookkeeping vocabulary;
+  `toCoreStrength` calibrates it monotonically (and deliberately
+  non-injectively — `leanCore` and `zfc` share the `impredicative`
+  floor) into the canonical enum.
+
+The 11-ctor sketch ABOVE remains TARGET for its named upper tiers
+(`setzerHierarchy` … `reinhardtOpen`): in shipped code those live in
+the `custom`-tag space until a task lands them as ctors with real
+admission content, and the "decidable admission predicate" claims
+here and in §11.8.2/§3.16.3 are still pending (flags are
+catalogue-only — `consistencyStrengthBound` calibrates them, it does
+not admit them).
 
 **Integration into ProfileExtension (§3.14):**
 
