@@ -1,6 +1,7 @@
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.CellConstructors
 import FX1Poly.Core.BoolCanonicalFormsCandidate
+import FX1Poly.Core.IntervalCanonicalFormsCandidate
 
 /-! # FX1Poly/Typed/HasTypeDescDataIntro — the standalone data-CONSTRUCTOR introduction judgment
     (DI-1: the nullary arm — `boolTrue` / `boolFalse : boolCode`).
@@ -55,6 +56,8 @@ def dataIntroNullaryRuleDescOf (generator : Generator) : Option DataIntroNullary
   if generator = .gen_boolTrue then some { outputTypeCode := fun _ => boolTypeCell }
   else if generator = .gen_boolFalse then some { outputTypeCode := fun _ => boolTypeCell }
   else if generator = .gen_unit then some { outputTypeCode := fun _ => unitTypeCell }
+  else if generator = .gen_interval0 then some { outputTypeCode := fun _ => intervalTypeCell }
+  else if generator = .gen_interval1 then some { outputTypeCode := fun _ => intervalTypeCell }
   else none
 
 /-- `gen_unit` introduces a member of `unitCode` (metadata check, `rfl` on the diagonal) — the unit
@@ -74,6 +77,18 @@ theorem dataIntroNullaryRuleDescOf_boolTrue :
 theorem dataIntroNullaryRuleDescOf_boolFalse :
     dataIntroNullaryRuleDescOf .gen_boolFalse
       = some { outputTypeCode := fun _ => boolTypeCell } := rfl
+
+/-- `gen_interval0` introduces a member of `intervalCode` (metadata check, `rfl` on the diagonal)
+— the left endpoint `0 : Interval`, the data VALUE the bridge dimension's type code receives (NATIVE-07). -/
+theorem dataIntroNullaryRuleDescOf_interval0 :
+    dataIntroNullaryRuleDescOf .gen_interval0
+      = some { outputTypeCode := fun _ => intervalTypeCell } := rfl
+
+/-- `gen_interval1` introduces a member of `intervalCode` (metadata check) — the right endpoint
+`1 : Interval`, the endpoint companion of `interval0`. -/
+theorem dataIntroNullaryRuleDescOf_interval1 :
+    dataIntroNullaryRuleDescOf .gen_interval1
+      = some { outputTypeCode := fun _ => intervalTypeCell } := rfl
 
 /-- **The data-constructor introduction judgment.**  A standalone layer (NOT mutual with / NOT an arm
 of `HasTypeDescPi`, mirroring `HasTypeDescFlat`) typing the data VALUE constructors at their data
@@ -116,6 +131,26 @@ theorem HasTypeDescDataIntro.boolFalseTyped {profile : PolyProfile} {scope : Nat
     HasTypeDescDataIntro profile context boolFalseCell boolTypeCell :=
   HasTypeDescDataIntro.nullaryIntro context .gen_boolFalse () .childNil
     { outputTypeCode := fun _ => boolTypeCell } rfl
+
+/-- **★ `interval0 : intervalCode` in the data-intro engine.**  The left endpoint `0 : Interval` is
+TYPED at the interval type code (whose formation row is `HasTypeDescBaseType.intervalCodeTyped`,
+NATIVE-06) — the value the bridge engine previously typed only at a context-bound interval variable now
+has a native typing at the fixed `intervalCode`, the `boolTrue : boolCode` template.  The endpoint that
+NATIVE-08's endpoint-β crosses into the grown engine. -/
+theorem HasTypeDescDataIntro.intervalZeroTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeDescDataIntro profile context intervalZeroValueCell intervalTypeCell :=
+  HasTypeDescDataIntro.nullaryIntro context .gen_interval0 () .childNil
+    { outputTypeCode := fun _ => intervalTypeCell } rfl
+
+/-- **★ `interval1 : intervalCode` in the data-intro engine.**  The right endpoint `1 : Interval`, the
+endpoint companion of `intervalZeroTyped`; together they are the two closed canonical members the
+interval-canonicity statement (NATIVE-10) ranges over. -/
+theorem HasTypeDescDataIntro.intervalOneTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeDescDataIntro profile context intervalOneValueCell intervalTypeCell :=
+  HasTypeDescDataIntro.nullaryIntro context .gen_interval1 () .childNil
+    { outputTypeCode := fun _ => intervalTypeCell } rfl
 
 /-- **Partition witness: `boolTrue` is NOT a grown FORMATION former.**  `typingRuleDescOf gen_boolTrue
 = none` (it is a VALUE constructor, not a type-former), so the data-intro judgment's domain is disjoint

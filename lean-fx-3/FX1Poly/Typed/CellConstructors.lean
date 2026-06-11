@@ -83,6 +83,18 @@ canonicity and of the typed unit-eta judgment.  Distinct from the VALUE cell
 def unitTypeCell {scope : Nat} : RawTerm scope :=
   .mkGen .gen_unitCode () .childNil
 
+/-- The interval-type code cell `Interval` — the `.type`-sorted nullary
+`gen_intervalCode` cell (the bridge / dimension classifier).  No payload data
+(`Unit`), no children: a closed nullary type-former leaf, structurally identical
+to `boolTypeCell` / `unitTypeCell` but at the distinct `gen_intervalCode`
+generator.  The formation subject of `Interval : Type@0` (via the nullary
+base-type formation `HasTypeDescBaseType`, NATIVE-06) and the type whose two
+closed canonical members are the endpoint VALUE cells `intervalZeroValueCell` /
+`intervalOneValueCell` (typed by `HasTypeDescDataIntro`, NATIVE-07).  Distinct
+from the VALUE cells `gen_interval0` / `gen_interval1`: this is the TYPE code. -/
+def intervalTypeCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_intervalCode () .childNil
+
 /-- The variable cell at de Bruijn position `index`. -/
 def variableCell {scope : Nat} (index : Fin scope) : RawTerm scope :=
   .mkGen .gen_var index .childNil

@@ -21,9 +21,10 @@ set.
     bool data-intro, nat, list, pair, either, option, identity).  Eliminator judgments are
     deliberately EXCLUDED: their subjects are redexes or applications, not values — the
     closed-normal analysis of eliminator-typed subjects is the CAN-5 per-classifier step.
-  * `IsCombinedValueHead` — the 19-head inductive predicate (the 7 grown heads + the 12
-    constructor heads).  An inductive predicate rather than a Boolean table or a 19-way `Or`:
-    no wildcard match (propext hygiene), and each arm closes by one constructor.
+  * `IsCombinedValueHead` — the 21-head inductive predicate (the 7 grown heads + the 14
+    constructor heads, including the two interval endpoints).  An inductive predicate rather
+    than a Boolean table or a 21-way `Or`: no wildcard match (propext hygiene), and each arm
+    closes by one constructor.
   * `closedNormalSubjectHeadCombined` (★) — the CAN-4 headline.  The grown arm consumes the
     shipped 7-head theorem; each intro arm consumes its engine's shipped subject-shape
     inversion (the subject IS a constructor cell), and the head computes by `rfl` after
@@ -78,6 +79,8 @@ inductive IsCombinedValueHead : Generator → Prop where
   | optionSome : IsCombinedValueHead .gen_optionSome
   | refl : IsCombinedValueHead .gen_refl
   | unit : IsCombinedValueHead .gen_unit
+  | interval0 : IsCombinedValueHead .gen_interval0
+  | interval1 : IsCombinedValueHead .gen_interval1
 
 /-- **★ CAN-4: the combined closed-normal head characterization.**  A closed normal term typed
 by ANY value engine has a combined former-or-constructor head.  The grown arm consumes the
@@ -103,10 +106,12 @@ theorem closedNormalSubjectHeadCombined {profile : PolyProfile} {scope : Nat}
       · exact headEq ▸ IsCombinedValueHead.unitCode
   | ofBoolIntro boolTyped =>
       rcases HasTypeDescDataIntro.subjectIsNullaryValueCell boolTyped with
-        subjectEq | subjectEq | subjectEq
+        subjectEq | subjectEq | subjectEq | subjectEq | subjectEq
       · exact subjectEq ▸ IsCombinedValueHead.boolTrue
       · exact subjectEq ▸ IsCombinedValueHead.boolFalse
       · exact subjectEq ▸ IsCombinedValueHead.unit
+      · exact subjectEq ▸ IsCombinedValueHead.interval0
+      · exact subjectEq ▸ IsCombinedValueHead.interval1
   | ofNatIntro natTyped =>
       rcases HasTypeDescNatIntro.subjectIsNatConstructor natTyped with
         subjectEq | ⟨predecessor, subjectEq⟩

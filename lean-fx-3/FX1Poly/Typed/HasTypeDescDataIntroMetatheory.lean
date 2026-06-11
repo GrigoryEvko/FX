@@ -57,7 +57,7 @@ theorem HasTypeDescDataIntro.subjectHasNoStep {profile : PolyProfile} {scope : N
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescDataIntro profile context subject classifier)
     (targetTerm : RawTerm scope) : ¬ Step subject targetTerm := by
-  rcases derivation.subjectIsNullaryValueCell with hTrue | hFalse | hUnit
+  rcases derivation.subjectIsNullaryValueCell with hTrue | hFalse | hUnit | hZero | hOne
   · rw [hTrue]
     exact RawTerm.isStepNormalForm_blocks_step
       (rfl : RawTerm.isStepNormalForm (boolTrueCell : RawTerm scope)) targetTerm
@@ -67,6 +67,12 @@ theorem HasTypeDescDataIntro.subjectHasNoStep {profile : PolyProfile} {scope : N
   · rw [hUnit]
     exact RawTerm.isStepNormalForm_blocks_step
       (rfl : RawTerm.isStepNormalForm (unitCell : RawTerm scope)) targetTerm
+  · rw [hZero]
+    exact RawTerm.isStepNormalForm_blocks_step
+      (rfl : RawTerm.isStepNormalForm (intervalZeroValueCell : RawTerm scope)) targetTerm
+  · rw [hOne]
+    exact RawTerm.isStepNormalForm_blocks_step
+      (rfl : RawTerm.isStepNormalForm (intervalOneValueCell : RawTerm scope)) targetTerm
 
 /-- **Subject reduction for the data-intro judgment (vacuous: values do not reduce).**  A data-intro
 subject is a normal-form value, so there is no `reduct` to preserve typing for — `subjectHasNoStep`
@@ -95,11 +101,11 @@ The classifier-side companion the canonicity rule-outs consume alongside the sub
 theorem HasTypeDescDataIntro.classifierIsNullaryTypeCell {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescDataIntro profile context subject classifier) :
-    classifier = boolTypeCell ∨ classifier = unitTypeCell := by
+    classifier = boolTypeCell ∨ classifier = unitTypeCell ∨ classifier = intervalTypeCell := by
   cases derivation with
   | nullaryIntro generator payload children rule isDataIntro =>
       rcases dataIntroNullaryRuleDescOf_isNullaryValueConstructor isDataIntro with
-        hTrue | hFalse | hUnit
+        hTrue | hFalse | hUnit | hZero | hOne
       · subst hTrue
         have hrule : rule = { outputTypeCode := fun _ => boolTypeCell } :=
           (Option.some.inj isDataIntro).symm
@@ -111,7 +117,15 @@ theorem HasTypeDescDataIntro.classifierIsNullaryTypeCell {profile : PolyProfile}
       · subst hUnit
         have hrule : rule = { outputTypeCode := fun _ => unitTypeCell } :=
           (Option.some.inj isDataIntro).symm
-        exact Or.inr (by rw [hrule])
+        exact Or.inr (Or.inl (by rw [hrule]))
+      · subst hZero
+        have hrule : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        exact Or.inr (Or.inr (by rw [hrule]))
+      · subst hOne
+        have hrule : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        exact Or.inr (Or.inr (by rw [hrule]))
 
 /-- **Subject/classifier coordination for the nullary data-intro rows.**  One `cases` pass yields the
 exact (subject, classifier) PAIR for each table row — the bool constructors at `boolTypeCell`, the
@@ -122,11 +136,13 @@ theorem HasTypeDescDataIntro.subjectClassifierCoordinated {profile : PolyProfile
     (derivation : HasTypeDescDataIntro profile context subject classifier) :
     (subject = boolTrueCell ∧ classifier = boolTypeCell) ∨
       (subject = boolFalseCell ∧ classifier = boolTypeCell) ∨
-      (subject = unitCell ∧ classifier = unitTypeCell) := by
+      (subject = unitCell ∧ classifier = unitTypeCell) ∨
+      (subject = intervalZeroValueCell ∧ classifier = intervalTypeCell) ∨
+      (subject = intervalOneValueCell ∧ classifier = intervalTypeCell) := by
   cases derivation with
   | nullaryIntro generator payload children rule isDataIntro =>
       rcases dataIntroNullaryRuleDescOf_isNullaryValueConstructor isDataIntro with
-        hTrue | hFalse | hUnit
+        hTrue | hFalse | hUnit | hZero | hOne
       · subst hTrue
         have hrule : rule = { outputTypeCode := fun _ => boolTypeCell } :=
           (Option.some.inj isDataIntro).symm
@@ -144,7 +160,19 @@ theorem HasTypeDescDataIntro.subjectClassifierCoordinated {profile : PolyProfile
           (Option.some.inj isDataIntro).symm
         cases payload
         cases children
-        exact Or.inr (Or.inr ⟨rfl, by rw [hrule]⟩)
+        exact Or.inr (Or.inr (Or.inl ⟨rfl, by rw [hrule]⟩))
+      · subst hZero
+        have hrule : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inr (Or.inr (Or.inr (Or.inl ⟨rfl, by rw [hrule]⟩)))
+      · subst hOne
+        have hrule : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inr (Or.inr (Or.inr (Or.inr ⟨rfl, by rw [hrule]⟩)))
 
 /-- **★ Unit canonical form at the data-intro engine: a subject typed at `unitTypeCell` IS the unit
 value.**  The classifier discriminates the table rows syntactically (`unitTypeCell` and `boolTypeCell`
@@ -155,9 +183,11 @@ theorem HasTypeDescDataIntro.subjectIsUnitOfUnitClassifier {profile : PolyProfil
     (derivation : HasTypeDescDataIntro profile context subject unitTypeCell) :
     subject = unitCell := by
   rcases derivation.subjectClassifierCoordinated with
-    ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨hSubject, _⟩
+    ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨hSubject, _⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩
   · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
   · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
   · exact hSubject
+  · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
+  · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
 
 end FX1Poly.Typed

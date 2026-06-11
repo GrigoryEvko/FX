@@ -57,10 +57,10 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The interval type code `dim` — the bridge-dimension classifier (`gen_intervalCode`,
-nullary, the `gen_unitCode` template). -/
-def intervalTypeCell {scope : Nat} : RawTerm scope :=
-  .mkGen .gen_intervalCode () .childNil
+-- `intervalTypeCell` (the interval/dimension type code `Interval`, `gen_intervalCode` nullary)
+-- now lives in `CellConstructors` beside `boolTypeCell` / `unitTypeCell` (NATIVE-07 consolidation —
+-- the cell is shared by this bridge engine and `HasTypeDescDataIntro`'s endpoint rows); reached here
+-- transitively via the `HasTypeDescPi → … → CellConstructors` import.
 
 /-- The left interval endpoint `0 : dim` (`gen_interval0`, nullary). -/
 def intervalZeroCell {scope : Nat} : RawTerm scope :=

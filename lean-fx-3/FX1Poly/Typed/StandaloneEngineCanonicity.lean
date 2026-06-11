@@ -51,12 +51,18 @@ theorem standaloneBoolCanonicalForms {profile : PolyProfile} {scope : Nat}
     subject = boolTrueCell ∨ subject = boolFalseCell := by
   rcases typed with dataIntroTyped | baseTypeTyped
   · rcases dataIntroTyped.subjectClassifierCoordinated with
-      ⟨hSubject, _⟩ | ⟨hSubject, _⟩ | ⟨_, hClassifier⟩
+      ⟨hSubject, _⟩ | ⟨hSubject, _⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩
     · exact Or.inl hSubject
     · exact Or.inr hSubject
     · exact Generator.noConfusion
         (congrArg RawTerm.headGenerator hClassifier :
           Generator.gen_boolCode = Generator.gen_unitCode)
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_boolCode = Generator.gen_intervalCode)
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_boolCode = Generator.gen_intervalCode)
   · exact Generator.noConfusion
       (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
         Generator.gen_boolCode = Generator.gen_universeCode)
@@ -71,13 +77,17 @@ theorem standaloneEmptyUninhabited {profile : PolyProfile} {scope : Nat}
              HasTypeDescBaseType profile context subject emptyTypeCell) :
     False := by
   rcases typed with dataIntroTyped | baseTypeTyped
-  · rcases dataIntroTyped.classifierIsNullaryTypeCell with hClassifier | hClassifier
+  · rcases dataIntroTyped.classifierIsNullaryTypeCell with
+      hClassifier | hClassifier | hClassifier
     · exact Generator.noConfusion
         (congrArg RawTerm.headGenerator hClassifier :
           Generator.gen_emptyCode = Generator.gen_boolCode)
     · exact Generator.noConfusion
         (congrArg RawTerm.headGenerator hClassifier :
           Generator.gen_emptyCode = Generator.gen_unitCode)
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_emptyCode = Generator.gen_intervalCode)
   · exact Generator.noConfusion
       (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
         Generator.gen_emptyCode = Generator.gen_universeCode)
@@ -93,7 +103,8 @@ theorem dataIntroAndBaseTypeSubjectsDisjoint {profile : PolyProfile} {scope : Na
     (dataIntroTyped : HasTypeDescDataIntro profile context subject valueClassifier)
     (baseTypeTyped : HasTypeDescBaseType profile context subject typeClassifier) :
     False := by
-  rcases dataIntroTyped.subjectIsNullaryValueCell with valueEq | valueEq | valueEq <;>
+  rcases dataIntroTyped.subjectIsNullaryValueCell with
+      valueEq | valueEq | valueEq | valueEq | valueEq <;>
     rcases baseTypeTyped.subjectIsBaseTypeCode with
       typeEq | typeEq | typeEq | typeEq | typeEq <;>
       (rw [valueEq] at typeEq

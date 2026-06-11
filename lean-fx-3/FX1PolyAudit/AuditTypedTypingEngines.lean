@@ -1023,6 +1023,14 @@ import FX1Poly.Typed.FormationTableShapeFacts
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.boolTrueTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.boolFalseTyped
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolTrue_none
+-- NATIVE-07: the two interval endpoints (gen_interval0 / gen_interval1) join the nullary table as data
+-- VALUES typed at intervalCode (the bridge dimension's type code, formed by HasTypeDescBaseType per
+-- NATIVE-06). The boolTrue/boolFalse template; the values the bridge engine previously typed only at a
+-- context-bound interval variable now have a native typing at the fixed intervalCode. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_interval0
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_interval1
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.intervalZeroTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.intervalOneTyped
 -- DATA-INTRO INVERSION + BOOL CANONICAL FORMS (HasTypeDescDataIntroInversion, DI-1/DI-4 inversion slice). The
 -- twin of HasTypeDescFlatInversion: inversion = single-arm cases (nullaryIntro context is the auto-index, binds 5);
 -- dataIntroNullaryRuleDescOf_isBoolConstructor = the table holds exactly boolTrue/boolFalse. subjectIsBoolConstructor
