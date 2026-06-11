@@ -2415,6 +2415,38 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.identityPathEndpointSubjectReduction
 #assert_no_axioms FX1Poly.Typed.intervalZeroGrownUntypable
 
+-- ★★ THE REFLEXIVITY BRIDGE — the GRADED verdict's general positive half (OP1-INT brick 6,
+-- FX1Poly/Core/RawTermOccurrenceRename.lean + the BridgeEndpointStep capstones).
+-- The occurrence metatheory: occurrenceCountAt_rename_avoided (mutual with the children
+-- version) — a renaming that never produces a position yields ZERO occurrences there; the
+-- avoidance hypothesis transports through binder crossings (liftAvoidsSucc one-lift step;
+-- iterateLiftRawAvoidsRaised through iterateLiftRaw at the raiseParentPosition-raised
+-- position, with the Fin val-bridges raiseParentPosition_zero/_succ via Fin.eq_of_val_eq on
+-- definitionally-computed vals — NO Fin.cases, the propext trap). ★ THE GRADE-0 HEADLINE
+-- occurrenceCountAt_weaken_zeroPosition: weaken t uses the newest position ZERO times — the
+-- quantitative content of weakening, discharging the graded pathIntro AFFINE premise for
+-- every dimension-constant body. PROOF-ENGINEERING NOTE: dsimp only does NOT iota-reduce the
+-- mutual foldChildren/occurrenceCountAt matches — the spine arms reshape by defeq `show`
+-- (delta+iota+zeta are definitional) then fold back via the rfl-lemmas rename_eq_fold /
+-- rename_eq_foldChildren. ★★ constantBridgeOfTyped: EVERY grown-typed term t : T embeds as
+-- the REFLEXIVITY BRIDGE pathLam(weaken t) : Bridge(T, t, t) — type premise = grown
+-- weakening, affine premise = the grade-0 lemma (DISCHARGED, not hypothesized), endpoints
+-- collapse by subst0_weaken. ★★ reflexivityBridgeRoundTrip: the full symbolic bundle —
+-- bridge typed + application typed at T + endpoint-β FIRES to exactly t + reduct grown-typed
+-- at the SAME classifier: the GENERAL symbolic cross-engine SR for the whole
+-- dimension-constant fragment (supersedes the concrete universe-code instance). This is the
+-- derivable `refl` constructor of the bridge type — the degenerate case of internal
+-- parametricity, all four premises machine-discharged. All zero-axiom.
+#assert_no_axioms FX1Poly.Core.RawRenaming.liftAvoidsSucc
+#assert_no_axioms FX1Poly.Core.RawVarSet.raiseParentPosition_zero
+#assert_no_axioms FX1Poly.Core.RawVarSet.raiseParentPosition_succ
+#assert_no_axioms FX1Poly.Core.iterateLiftRawAvoidsRaised
+#assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_rename_avoided
+#assert_no_axioms FX1Poly.Core.RawTermChildren.occurrenceCountAt_rename_avoided
+#assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_weaken_zeroPosition
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.constantBridgeOfTyped
+#assert_no_axioms FX1Poly.Typed.reflexivityBridgeRoundTrip
+
 -- ★★ THE UNARY-GUARDED Π CANDIDATE — the Abel binary-over-unary construction (OP1-K2 #1228,
 -- in-place strengthening across KernelBinaryParametricity/PiElim/PiIntro/ConvInvariance/
 -- Telescope/PiFormer; every gate above re-verifies at the new shapes, no new decls).

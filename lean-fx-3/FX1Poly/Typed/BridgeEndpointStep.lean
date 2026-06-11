@@ -1,8 +1,10 @@
 import FX1Poly.Typed.HasTypeDescBridge
 import FX1Poly.Typed.UntypableHeadDecision
+import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Core.RawTermSubstIdentity
 import FX1Poly.Core.RawTermRenameSubstCommute
 import FX1Poly.Core.RawTermSubstPointwise
+import FX1Poly.Core.RawTermOccurrenceRename
 
 /-! # FX1Poly/Typed/BridgeEndpointStep — the endpoint-β computation as a GATED SIBLING (OP1-INT brick 5)
 
@@ -348,6 +350,58 @@ theorem identityPathEndpointSubjectReduction {profile : PolyProfile} {scope : Na
   ⟨HasTypeDescBridge.identityPathAppliedTyped context,
    StepBridgeEndpoint.identityPathAppliedComputes,
    HasTypeDescBridge.intervalZero context⟩
+
+/-! ## ★★ The REFLEXIVITY BRIDGE — the graded verdict's general positive half
+
+Every grown-typed term embeds as a constant bridge, FULLY SYMBOLICALLY: the type premise is
+grown weakening, the AFFINE premise is the grade-0 occurrence lemma
+(`occurrenceCountAt_weaken_zeroPosition` — discharged, not hypothesized), and the endpoint
+substitutions collapse by `subst0_weaken`.  This is the derivable `refl` constructor of the
+bridge type — the degenerate case of internal parametricity — and its endpoint application
+computes back to the original term with the SAME grown typing: the general symbolic
+cross-engine subject reduction for the entire dimension-constant fragment. -/
+
+/-- **★ Every typed term embeds as a constant bridge.**  `t : T  ⟹  pathLam(weaken t) :
+Bridge(T, t, t)` — the reflexivity bridge, with the affine usage premise PROVED at grade `0`
+and both endpoints collapsing to `t` itself. -/
+theorem HasTypeDescBridge.constantBridgeOfTyped {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {constantBody typeCode : RawTerm scope}
+    (bodyTyped : HasTypeDescPi profile context constantBody typeCode) :
+    HasTypeDescBridge profile context (pathLamCell (RawTerm.weaken constantBody))
+      (bridgeTypeCell typeCode constantBody constantBody) := by
+  have intro := HasTypeDescBridge.pathIntro context (RawTerm.weaken constantBody) typeCode
+    (bodyTyped.weakenUnderBinding intervalTypeCell)
+    (by rw [RawTerm.occurrenceCountAt_weaken_zeroPosition]
+        exact Nat.zero_le 1)
+  rw [RawTerm.subst0_weaken, RawTerm.subst0_weaken] at intro
+  exact intro
+
+/-- **★★ The reflexivity-bridge ROUND-TRIP — general symbolic cross-engine SR for the
+dimension-constant fragment.**  From `t : T` (grown) and any interval-typed argument `ε`:
+the reflexivity bridge is typed at `Bridge(T, t, t)`, its application `pathApp(pathLam(weaken
+t), ε)` is bridge-typed at `T`, the endpoint-β FIRES to exactly `t`, and the reduct `t` is
+grown-typed at the SAME classifier `T` — subject reduction closes by the hypothesis itself.
+This supersedes the concrete universe-code SR instance: the bridge eliminator computes into
+the grown world TYPE-PRESERVINGLY on the whole constant fragment, with every premise
+(including affinity) discharged. -/
+theorem reflexivityBridgeRoundTrip {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {constantBody typeCode : RawTerm scope}
+    (bodyTyped : HasTypeDescPi profile context constantBody typeCode)
+    {argument : RawTerm scope}
+    (argumentTyped : HasTypeDescBridge profile context argument intervalTypeCell) :
+    HasTypeDescBridge profile context (pathLamCell (RawTerm.weaken constantBody))
+      (bridgeTypeCell typeCode constantBody constantBody) ∧
+    HasTypeDescBridge profile context
+      (pathAppCell (pathLamCell (RawTerm.weaken constantBody)) argument) typeCode ∧
+    StepBridgeEndpoint
+      (pathAppCell (pathLamCell (RawTerm.weaken constantBody)) argument) constantBody ∧
+    HasTypeDescPi profile context constantBody typeCode :=
+  ⟨HasTypeDescBridge.constantBridgeOfTyped bodyTyped,
+   HasTypeDescBridge.pathElim context (pathLamCell (RawTerm.weaken constantBody)) argument
+     typeCode constantBody constantBody
+     (HasTypeDescBridge.constantBridgeOfTyped bodyTyped) argumentTyped,
+   StepBridgeEndpoint.constantPathBetaComputesToBody constantBody argument,
+   bodyTyped⟩
 
 /-- **★ The CROSS-ENGINE WALL, machine-checked.**  The identity-path reduct `interval0` heads
 NO grown-typed cell (`isUntypableHead gen_interval0` holds for the grown-only classifier —
