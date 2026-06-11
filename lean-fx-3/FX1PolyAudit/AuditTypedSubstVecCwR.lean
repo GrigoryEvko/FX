@@ -685,6 +685,7 @@ import FX1Poly.Typed.IntroRuleDescGradedBinder
 import FX1Poly.Core.RawTermOccurrenceSubst
 import FX1Poly.Typed.GradedBetaSubjectReductionGhost
 import FX1Poly.Typed.HasTypeDescGradedIntro
+import FX1Poly.Typed.HasTypeDescGeneralElim
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
 import FX1Poly.Typed.UniverseModeGenerators
@@ -2524,6 +2525,31 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.doubleDimensionUseBody_occurrenceIsTwo
 #assert_no_axioms FX1Poly.Typed.gradedIntroEngine_rejectsDoubleDimensionUse
 #assert_no_axioms FX1Poly.Typed.gradedIntroEngineCoverageWitness
+-- NATIVE-24 (#1301) — pathApp as a native elim row + endpoint-ι at the typed level.
+-- The elim twin of the NATIVE-23 keystone: the v1 ElimRuleDesc has the same schema gaps for pathApp
+-- (member shape pathAppCell vs hardwired appCell; eliminated former bridgeTypeCell vs piTyCodeCell).
+-- GeneralElimRule is the v2 schema (eliminatedType/argumentType/memberCell/argument-dependent
+-- outputType over four type-parameters); HasTypeDescGeneralElim is the ONE generic arm with HOST-judgment
+-- (HasTypeDescPi) premises: the app row has EXACT piElim premise parity; the pathApp row covers the
+-- NEUTRAL-path regime (the canonical pathLam-headed regime is where endpoint-ι fires).
+-- invertGeneric: the keystone intro engine's free-index premise-surfacing inversion.
+-- gradedIntroEndpointIotaComputesTyped ★: ENDPOINT-ι AT THE TYPED LEVEL — a keystone-typed pathLam
+-- applied to a grown-typed interval argument fires endpoint-β and the reduct types at the extracted
+-- carrier ((keystone inversion) ∘ (NATIVE-09's endpointBetaGeneralArgumentGrownReduct)).
+#assert_no_axioms FX1Poly.Typed.appGeneralElimRule
+#assert_no_axioms FX1Poly.Typed.pathAppGeneralElimRule
+#assert_no_axioms FX1Poly.Typed.generalElimRuleOf_app
+#assert_no_axioms FX1Poly.Typed.generalElimRuleOf_pathApp
+#assert_no_axioms FX1Poly.Typed.generalElimRuleOf_isAppOrPathApp
+#assert_no_axioms FX1Poly.Typed.generalElimEngine_typesApp
+#assert_no_axioms FX1Poly.Typed.generalElimEngine_typesPathApp
+#assert_no_axioms FX1Poly.Typed.HasTypeDescGeneralElim.soundness
+#assert_no_axioms FX1Poly.Typed.HasTypeDescGradedIntro.invertGeneric
+#assert_no_axioms FX1Poly.Typed.gradedIntroEndpointIotaComputesTyped
+#assert_no_axioms FX1Poly.Typed.closedApplicationGeneralElimTyped
+#assert_no_axioms FX1Poly.Typed.neutralPathApplicationGeneralElimTyped
+#assert_no_axioms FX1Poly.Typed.constantBridgeEndpointIotaSmoke
+#assert_no_axioms FX1Poly.Typed.generalElimEngineCoverageWitness
 
 -- ★ NATIVE-08 — THE CROSS-ENGINE WALL FALLS (BridgeEndpointNativeSubjectReduction).
 -- intervalZeroGrownUntypable proved the endpoint-β reduct interval0 escapes the GROWN engine, so a
