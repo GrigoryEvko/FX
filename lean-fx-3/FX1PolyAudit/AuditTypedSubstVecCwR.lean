@@ -636,6 +636,7 @@ import FX1Poly.Typed.UsageAxisObligation
 import FX1Poly.Typed.EffectSecurityAxisObligations
 import FX1Poly.Typed.RemainingDimensionAxisObligations
 import FX1Poly.Modal.GradedCostSemantics
+import FX1Poly.Modal.GradedCostRelation
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1478,6 +1479,32 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Modal.HasGradeOver.canonicalEvaluationCost
 #assert_no_axioms FX1Poly.Modal.HasGradeOver.canonicalEvaluationCost_isExact
 #assert_no_axioms FX1Poly.Modal.complexityGraded_costIsCalculable
+
+-- ★ The COST-INDEXED REDUCIBILITY relation at the complexity N-semiring (GradedCostRelation.lean,
+-- COST-2 #1214 brick 1 — the calf/Danielsson/dlPCF construction's opening brick). CostReducible: base =
+-- bounded normalization (∃ value steps, ReducesInSteps ∧ IsNormalForm ∧ steps ≤ budget); graded arrow =
+-- THE APP SCALING AS COST ACCOUNTING — applying to a j-reducible argument is reducible at
+-- budget + binderGrade·j + 1 (the §6.1 coeffect law `grades(f a) = grades(f) + r·grades(a)` mirrored into
+-- the budget index, plus one unit for the β-step; this is where the grade semiring and the cost model
+-- interlock). The carrier gotcha: fxComplexitySemiring.Carrier ≡ Nat definitionally but NOT for TC synthesis
+-- (HMul/OfNat fail) — the relation uses explicit Nat.mul and Nat-ascribed grade literals. ★ monotone =
+-- budget weakening (upward closure, structural on GTypeOver). ★ headExpansion = the cost-indexed CR3
+-- (one backward step costs one unit; arrow arm lifts through congAppLeft, budget shuffle via
+-- Nat.add_right_comm + le_of_eq through monotone). ★ applicationBudget = the App interlock DEFINITIONALLY
+-- (the arrow case IS the law). ★ Grade honesty in BOTH directions: at binder grade ONE the identity is
+-- cost-reducible at budget 0 (genuine β-chain, the algebra computes); at binder grade ZERO it is NOT
+-- (the 1-step identityRedex argument defeats budget 0+0·j+1 — exhaustive ≤1-step chain inversion) — the
+-- budget index genuinely rejects grade UNDERCLAIMING. HONEST: the FUNDAMENTAL THEOREM (HasGradeOver ⟹
+-- CostReducible at a grade-weighted budget — the §6.3 Dim-13 grade→cost tie) is the NAMED OPEN CORE; its
+-- λ-arm needs the cost-indexed substitution lemma (the genuinely hard calf/dlPCF step, later bricks).
+#assert_no_axioms FX1Poly.Modal.CostReducible
+#assert_no_axioms FX1Poly.Modal.CostReducible.extractBoundedNormalization
+#assert_no_axioms FX1Poly.Modal.CostReducible.ofNormalForm
+#assert_no_axioms FX1Poly.Modal.CostReducible.monotone
+#assert_no_axioms FX1Poly.Modal.CostReducible.headExpansion
+#assert_no_axioms FX1Poly.Modal.CostReducible.applicationBudget
+#assert_no_axioms FX1Poly.Modal.identityLambda_costReducible_atLinearGrade
+#assert_no_axioms FX1Poly.Modal.identityLambda_notCostReducible_atZeroGrade
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
