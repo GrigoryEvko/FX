@@ -655,6 +655,7 @@ import FX1Poly.Typed.ChurchNumeralAsymptotics
 import FX1Poly.Typed.CostArcLedger
 import FX1Poly.Typed.KernelBinaryParametricity
 import FX1Poly.Typed.KernelBinaryPiElim
+import FX1Poly.Typed.KernelBinaryPiIntro
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2024,6 +2025,39 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.BinaryFundamentalConclusionAtBounded
 #assert_no_axioms FX1Poly.Typed.binaryFundamentalVarArm
 #assert_no_axioms FX1Poly.Typed.binaryFundamentalPiElimArm
+
+-- ★★ The binary Π-INTRODUCTION (λ-pair) arm — the binder crux, doubled (OP1-K2 brick 2 #1228,
+-- Typed/KernelBinaryPiIntro.lean). The forget-bridge economy is again unavailable: the unary
+-- head-expansion closure transferred to the denote engine; the binary closure is a DIRECT
+-- 8-arm induction PER SIDE (BinaryHeadExpansionClosedLeft/Right — one-sided spine-general
+-- β-expansion, the other member held fixed, which is exactly what lets the piType arm absorb
+-- the extra application argument into its own side's spine). The dataFlat arm proves the
+-- SAME-VALUE candidate expansion-stable: the Conv conjunct prepends the β step to its chain.
+-- The below-family legs are by-cases ports (coherence + whnfExpandLeft/Right below the bound,
+-- vacuous at/above via binaryDenoteBelowFamilyBounded_eq_empty_of_ge).
+-- reducibleMemberPairCandidate: the canonical member-PAIR predicate via brick 1 determinism
+-- (the choice-free engine). BinaryReducibleEnvAtBounded.cons: the binder env extension
+-- (lookup_cons_zero/succ + weaken_subst_cons on EACH side). ★ The λ-pair abstraction: expand
+-- the related body-instance pair back through β on the RIGHT then the LEFT, each at the empty
+-- spine. ★ binaryFundamentalPiIntroArm: the FT arm pinning both candidates to the canonical
+-- member-pair predicate, threading the cons-extended related environment pair. With var +
+-- piElim (brick 1) + piIntro (this brick), the λΠ-fragment arms of the binary FT are complete;
+-- conv + former arms + assembly remain.
+#assert_no_axioms FX1Poly.Typed.BinaryHeadExpansionClosedLeft
+#assert_no_axioms FX1Poly.Typed.BinaryHeadExpansionClosedRight
+#assert_no_axioms FX1Poly.Typed.binaryDenoteBelowFamilyBounded_eq_empty_of_ge
+#assert_no_axioms FX1Poly.Typed.binaryDenoteBelowFamilyBounded_backwardWeakHeadStepLeft
+#assert_no_axioms FX1Poly.Typed.binaryDenoteBelowFamilyBounded_backwardWeakHeadStepRight
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.headExpansionClosedLeft
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.headExpansionClosedRight
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeAtBounded.headExpansionClosedLeft
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeAtBounded.headExpansionClosedRight
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeAtBounded.reducibleMemberPairCandidate
+#assert_no_axioms FX1Poly.Typed.IsBinaryReducibleTypePairAtBounded.reducibleMemberPairCandidate
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleEnvAtBounded.cons
+#assert_no_axioms FX1Poly.Typed.binaryAbstractionMemberPairAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryAbstractionMemberPairUnderClosingSubstitutionBounded
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalPiIntroArm
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
