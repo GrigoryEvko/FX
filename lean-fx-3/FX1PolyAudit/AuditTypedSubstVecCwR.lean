@@ -661,6 +661,7 @@ import FX1Poly.Typed.KernelBinaryConvArm
 import FX1Poly.Typed.KernelBinaryTelescope
 import FX1Poly.Typed.KernelBinaryPiFormer
 import FX1Poly.Typed.KernelBinaryMemberSN
+import FX1Poly.Typed.KernelBinaryGenericFormer
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2177,6 +2178,27 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- the piIntro arm's domainArgumentsSN premise for EVERY domain shape.
 #assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.memberPairStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.binaryMemberPairStronglyNormalizingAtBounded
+
+-- ★★ The binary GENERIC former membership + supplier + the premise-isolated Σ arm (OP1-K2
+-- #1228, Typed/KernelBinaryGenericFormer.lean). The non-Π half of the binary FT's former
+-- coverage, mirroring the unary BoundedFormationArityDispatch under the wall discipline.
+-- binaryDataFormationUnderSubstAtBounded: table-generic — any non-Π formation-row former
+-- under a closing-substitution PAIR is a binary member pair of its output universe pair,
+-- given the gate + both folds SN; the pair's relatedness is the binary NEUTRAL arm over the
+-- SAME table-generic root gates (formationGenerator_noWeakHeadStep / NotUniverse / NotEmpty /
+-- NotFlat) applied once per side — subst preserves the root, so one row keys both cells.
+-- BinaryTelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow: the WALL-FREE
+-- supplier for arity ≤ 1 (every non-Π/Σ cumulative row) — the 1-child pair's SN comes from
+-- the binary universe candidate's own conjuncts, its gate from the pair extraction; the
+-- unary's 2-child case (variable-0 inhabitant) is deliberately ABSENT per the wall.
+-- binaryFundamentalGenFormationSigmaArm: the Σ-former FT arm, premise-isolated exactly like
+-- the Π arm (outputBelowBound + codomainOpenSNPair as premises), closing through the binary
+-- neutral arm at the concrete gen_sigmaTyCode row — Σ formers take the SN-product candidate
+-- in this model, exactly as in the unary relation. Binary former-arm coverage is now
+-- COMPLETE: Π (brick 5b) + Σ (here) + every other arity-≤1 row (here, table-generic).
+#assert_no_axioms FX1Poly.Typed.binaryDataFormationUnderSubstAtBounded
+#assert_no_axioms FX1Poly.Typed.BinaryTelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalGenFormationSigmaArm
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
