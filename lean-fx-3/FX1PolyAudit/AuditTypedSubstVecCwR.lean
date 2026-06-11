@@ -650,6 +650,7 @@ import FX1Poly.Core.CostConvInvariance
 import FX1Poly.Typed.WellTypedCostCalculable
 import FX1Poly.Typed.WellTypedSpaceCalculable
 import FX1Poly.Typed.CostAwareEquivalence
+import FX1Poly.Typed.OptimizationCell
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1858,6 +1859,33 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.identityApplicationReductDerivation
 #assert_no_axioms FX1Poly.Typed.identityApplicationReduct_isStepNormalForm
 #assert_no_axioms FX1Poly.Typed.identityApplicationReduct_strictlyImproves
+
+-- ★★★ The first VERIFIED OPTIMIZATION CELL (Typed/OptimizationCell.lean, OPT-0 #1225 — the
+-- meta-algorithmic demonstrator). OptimizationCell = source + optimized programs at the SAME
+-- classifier with BOTH certificates as kernel-checked FIELDS (extensional Conv + cost direction);
+-- .improves bridges to the COST-4 preorder. canonicalEvaluationCost_eq_of_subjectEq: cost is a
+-- function of the SUBJECT (Acc proof irrelevance — the transport making cells COMPOSE). The
+-- pipeline algebra: identity + ★ compose (certificates chain through cost-transport at the
+-- matching subjects) + strictness propagation from EITHER leg. ★ normalizeCell — THE UNIVERSAL
+-- CERTIFIED OPTIMIZER: every closed well-typed program carries a canonical cell to its normal
+-- form with ZERO optimized cost (COST-4 improvement-optimality as a cell factory).
+-- ★ betaRewriteCell + betaRewriteCell_isStrict — the concrete demonstrator: the β-rewrite
+-- (λx:Type@1.x)(Type@0) ⤳ Type@0 as a STRICTLY cost-decreasing cell, every certificate
+-- enumerated. Honest scope: one rewrite per cell; schema families = OPT-2+, cost-ordered
+-- termination = OPT-6.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.canonicalEvaluationCost_eq_of_subjectEq
+#assert_no_axioms FX1Poly.Typed.OptimizationCell
+#assert_no_axioms FX1Poly.Typed.OptimizationCell.improves
+#assert_no_axioms FX1Poly.Typed.OptimizationCell.IsStrict
+#assert_no_axioms FX1Poly.Typed.OptimizationCell.identity
+#assert_no_axioms FX1Poly.Typed.OptimizationCell.compose
+#assert_no_axioms FX1Poly.Typed.OptimizationCell.compose_isStrict_ofFirst
+#assert_no_axioms FX1Poly.Typed.OptimizationCell.compose_isStrict_ofSecond
+#assert_no_axioms FX1Poly.Typed.OptimizationCell.normalizeCell
+#assert_no_axioms FX1Poly.Typed.OptimizationCell.normalizeCell_optimizedCost_isZero
+#assert_no_axioms FX1Poly.Typed.identityApplicationRedex_cost_ne_zero
+#assert_no_axioms FX1Poly.Typed.betaRewriteCell
+#assert_no_axioms FX1Poly.Typed.betaRewriteCell_isStrict
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
