@@ -670,6 +670,7 @@ import FX1Poly.Typed.BridgeEndpointStep
 import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
 import FX1Poly.Typed.TermIndexedFormerSpike
+import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2619,3 +2620,24 @@ NATIVE-12 work is the INTERPRETER, not the expressibility this settles. -/
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerTyping_buildsBridge
 #assert_no_axioms FX1Poly.Typed.termIndexedExpressibility
 #assert_no_axioms FX1Poly.Typed.termIndexedExpressibility_isGo
+
+/-! ## NATIVE-03 (#1280) — the graded intro premise IS expressible (SPIKE, verdict GO)
+
+The expressibility spike for `binderUsage`: can an intro premise carry a usage grade on its binder and have
+it CHECKED?  GO across the WHOLE grade spectrum — `UsageGrade.boundsCount` is the grade→occurrence-bound
+interpreter and `HasTypeDescBridge.pathIntro` already checks the affine binder (`occurrenceCountAt body 0 ≤ 1`
+= `UsageGrade.one.boundsCount …` by `rfl`).  `gradedBinderChecks` is the grade-parametric form;
+`gradedBinderChecks_spectrum` spans omega/one/zero; `gradedIntro_ghost_ofWeakened` (★ genuinely-new) shows a
+weakened body is GHOST-gradeable via the rung-77 occurrence metatheory; `gradedIntroPremise_buildsPathIntro`
+(★ adequacy) builds `pathIntro` from a `.one` graded premise; `gradedIntroExpressibility_isGo` records the
+all-positive verdict (grade forced by the shipped `pathLamSubjectIsAffine`).  Thin wrapper + rung-77 lemma +
+direct arm — axiom-free.  NATIVE-20/23 is threading per-binder usage into `IntroRuleDesc`, not this. -/
+#assert_no_axioms FX1Poly.Typed.gradedBinderChecks
+#assert_no_axioms FX1Poly.Typed.gradedBinderChecks_spectrum
+#assert_no_axioms FX1Poly.Typed.affinePremise_isGradedCheckAtOne
+#assert_no_axioms FX1Poly.Typed.GradedIntroPremise
+#assert_no_axioms FX1Poly.Typed.gradedIntro_ghost_ofWeakened
+#assert_no_axioms FX1Poly.Typed.gradedIntro_affine_constant
+#assert_no_axioms FX1Poly.Typed.gradedIntroPremise_buildsPathIntro
+#assert_no_axioms FX1Poly.Typed.gradedIntroExpressibility
+#assert_no_axioms FX1Poly.Typed.gradedIntroExpressibility_isGo
