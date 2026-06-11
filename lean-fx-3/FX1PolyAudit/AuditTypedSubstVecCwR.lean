@@ -686,6 +686,7 @@ import FX1Poly.Core.RawTermOccurrenceSubst
 import FX1Poly.Typed.GradedBetaSubjectReductionGhost
 import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.HasTypeDescGeneralElim
+import FX1Poly.Typed.HasTypeNativeUnion
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
 import FX1Poly.Typed.UniverseModeGenerators
@@ -2550,6 +2551,22 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.neutralPathApplicationGeneralElimTyped
 #assert_no_axioms FX1Poly.Typed.constantBridgeEndpointIotaSmoke
 #assert_no_axioms FX1Poly.Typed.generalElimEngineCoverageWitness
+-- NATIVE-25 (#1302) — the SEED UNIFIED JUDGMENT + Bridge full adequacy (the NATIVE-46 miniature,
+-- pulled forward by the resequencing decision: the judgment-boundary wall is SYSTEMIC, so the union
+-- is built ONCE at full width instead of per-family fragments). HasTypeNativeUnion = four engine
+-- embeddings (ofGrown/ofBaseType/ofDataIntro/ofTermIndexedFormer — positivity-trivial) + the two
+-- keystone arms with RECURSIVE premises (gradedBinderIntro/generalElim — the compositional closure).
+-- Wall-falls: endpointRedexNativelyTypedWhole (the WHOLE redex pathApp(pathLam _, 0) in ONE
+-- derivation) + constantIntervalLambdaNativelyTyped (a λ whose body lives in the data engine —
+-- untypable in every prior engine). toNativeUnion: ALL SIX Bridge arms translate, pathElim's
+-- recursion dissolving through the union's elim arm exactly as the NATIVE-04 verdict predicted; the
+-- interval-formation ANY-FLAG liberality is honestly surfaced as an explicit disjunct (the native
+-- base-type row pins standard — flag-determinism is the better semantics, recorded not papered over).
+#assert_no_axioms FX1Poly.Typed.endpointRedexNativelyTypedWhole
+#assert_no_axioms FX1Poly.Typed.constantIntervalLambdaNativelyTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.toNativeUnion
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.toNativeUnionExact
+#assert_no_axioms FX1Poly.Typed.nativeUnionCoverageWitness
 
 -- ★ NATIVE-08 — THE CROSS-ENGINE WALL FALLS (BridgeEndpointNativeSubjectReduction).
 -- intervalZeroGrownUntypable proved the endpoint-β reduct interval0 escapes the GROWN engine, so a
