@@ -8,6 +8,7 @@ import FX1Poly.Extension.FxWithEtaCertifier
 import FX1Poly.Extension.ProfileLens
 import FX1Poly.STC.FxLogicalRelation
 import FX1Poly.STC.FxBoolCanonicity
+import FX1Poly.STC.FxNormalization
 import FX1Poly.Core.StrengthCalibration
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
@@ -190,7 +191,7 @@ modality pulls Quot.sound) — the SN-102 boundary. -/
 #assert_no_axioms FX1Poly.STC.fxStcFundamental_syntactic_eq
 #assert_no_axioms FX1Poly.STC.fxSTC_hasLogicalRelationConstruction
 #assert_no_axioms FX1Poly.STC.fxSTC_hasCanonicityTheorem
-#assert_no_axioms FX1Poly.STC.fxSTC_hasNoNormalizationTheorem
+#assert_no_axioms FX1Poly.STC.fxSTC_hasNormalizationTheorem
 
 /-! ## canonicityViaSTC gates (SN-100, the §3.12 headline)
 
@@ -216,3 +217,26 @@ concretely inhabited (`boolTrue` smoke). -/
 #assert_no_axioms FX1Poly.STC.canonicityViaSTC_boolTrue_nonVacuous
 #assert_no_axioms FX1Poly.Core.fxProfile_stcConstructionLevel
 #assert_no_axioms FX1Poly.Core.fxProfile_stcHasCanonicityTheorem
+
+/-! ## normalizationViaSTC gates (SN-101)
+
+The Axis 12 `normalizationTheorem` ledger flip: every closed
+grown-typed FX term glues with its reaches-a-normal-form evidence in
+the canonical STC model's vocabulary.  BRIDGED — the semantic side is
+the kernel's computed normalizer triple (`HasTypeDescPi.normalForm` +
+correctness theorems), definitionally.  Non-vacuity pinned on a
+closed typed β-redex.  The two ledger-payoff admissions
+(canonicity-only and canonicity+normalization, the first non-bottom
+`AdmissibleProfile` values) are gated with the SN-100 block above. -/
+
+#assert_no_axioms FX1Poly.STC.ReachesNormalForm
+#assert_no_axioms FX1Poly.STC.fxStcNormalizationRelation
+#assert_no_axioms FX1Poly.STC.normalizationViaSTC
+#assert_no_axioms FX1Poly.STC.normalizationViaSTC_extracts
+#assert_no_axioms FX1Poly.STC.normalizationViaSTC_semantic_isKernelWitness
+#assert_no_axioms FX1Poly.STC.normalizationViaSTC_syntactic_eq
+#assert_no_axioms FX1Poly.STC.identityApplicationClosedTyped
+#assert_no_axioms FX1Poly.STC.normalizationViaSTC_betaRedex_nonVacuous
+#assert_no_axioms FX1Poly.Core.fxProfile_stcHasNormalizationTheorem
+#assert_no_axioms FX1Poly.Extension.fxProfileMetatheoryAdmission
+#assert_no_axioms FX1Poly.Extension.fxProfileMetatheoryAdmission_claims_both

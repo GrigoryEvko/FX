@@ -280,8 +280,9 @@ theorem fxProfileLedgerAdmission_capabilities_eq_bot :
 /-- The first NON-BOTTOM ledger admission for FX: the canonicity claim
 is now backable — `fxProfile`'s STC ledger carries the bool canonicity
 theorem (`canonicityViaSTC`, SN-100), so `hasCanonicityTheorem = true`
-discharges `canonicityBacked`.  Normalization and decidable-conversion
-stay unclaimed (their ledger rungs are still false). -/
+discharges `canonicityBacked`.  Normalization is backable too since
+SN-101 (see `fxProfileMetatheoryAdmission`); decidable-conversion
+stays unclaimed (the Axis 13 rung is still false). -/
 def fxProfileCanonicityAdmission : AdmissibleProfile fxProfile where
   capabilities :=
     { MetatheoreticCapabilities.bot with canonicityStatus := .available }
@@ -294,6 +295,29 @@ def fxProfileCanonicityAdmission : AdmissibleProfile fxProfile where
 theorem fxProfileCanonicityAdmission_claims_canonicity :
     fxProfileCanonicityAdmission.capabilities.canonicityStatus =
       CapabilityStatus.available := rfl
+
+/-- The ledger admission claiming BOTH canonicity and normalization —
+both Axis 12 rungs are now true (`canonicityViaSTC` SN-100,
+`normalizationViaSTC` SN-101).  Decidable-conversion stays unclaimed
+(its backing is the Axis 13 `hasFXConversionDecidableTheorem` rung,
+still false). -/
+def fxProfileMetatheoryAdmission : AdmissibleProfile fxProfile where
+  capabilities :=
+    { MetatheoreticCapabilities.bot with
+        canonicityStatus := .available
+        normalizationStatus := .available }
+  canonicityBacked := fun _ => fxProfile_stcHasCanonicityTheorem
+  normalizationBacked := fun _ => fxProfile_stcHasNormalizationTheorem
+  decidableConversionBacked := fun claimed =>
+    CapabilityStatus.noConfusion claimed
+
+/-- The metatheory admission genuinely claims both rungs. -/
+theorem fxProfileMetatheoryAdmission_claims_both :
+    fxProfileMetatheoryAdmission.capabilities.canonicityStatus =
+        CapabilityStatus.available ∧
+      fxProfileMetatheoryAdmission.capabilities.normalizationStatus =
+        CapabilityStatus.available :=
+  ⟨rfl, rfl⟩
 
 /-! ## The headline (#216) — proved for the ledger reading
 

@@ -136,23 +136,25 @@ def STCConstructionLevel.hasFXGenericSTCReplacement :
   | .normalizationTheorem => false
   | .fxGenericSTCReplacement => true
 
-/-- Current Axis 12 status: the FX logical relation construction is
-present (`FxLogicalRelation.lean`) AND the FX bool canonicity theorem
-is stated and proved in the STC vocabulary
-(`FxBoolCanonicity.lean` — `canonicityViaSTC` glues every closed
-combined-engine-typed bool with its reaches-`boolTrue`-or-`boolFalse`
-evidence through `canonicalSTCModel.Glue`).  Both are BRIDGED to the
-kernel (`fxStcFundamental_semantic_isTaitWitness`,
-`canonicityViaSTC_semantic_isKernelWitness`): the semantic sides are
-the kernel's Tait-derived SN / syntactic canonicity witness, not an
-independent second semantics.  No FX normalization theorem is claimed
-at this level. -/
+/-- Current Axis 12 status: the FX logical relation construction
+(`FxLogicalRelation.lean`), the FX bool canonicity theorem
+(`FxBoolCanonicity.lean` — `canonicityViaSTC`), AND the FX
+normalization theorem (`FxNormalization.lean` —
+`normalizationViaSTC` glues every closed grown-typed term with its
+reaches-a-normal-form evidence through `canonicalSTCModel.Glue`) are
+all stated and proved in the STC vocabulary.  All three are BRIDGED
+to the kernel (`fxStcFundamental_semantic_isTaitWitness`,
+`canonicityViaSTC_semantic_isKernelWitness`,
+`normalizationViaSTC_semantic_isKernelWitness`): the semantic sides
+are the kernel's Tait-derived SN / syntactic canonicity / computed
+normalizer witnesses, not an independent second semantics.  The
+final `fxGenericSTCReplacement` rung is NOT claimed. -/
 def fxSTCConstructionLevel : STCConstructionLevel :=
-  .canonicityTheorem
+  .normalizationTheorem
 
 theorem fxSTCConstructionLevel_eq :
     fxSTCConstructionLevel
-      = STCConstructionLevel.canonicityTheorem := rfl
+      = STCConstructionLevel.normalizationTheorem := rfl
 
 theorem fxSTC_hasPhaseAndModalInterfaces :
     fxSTCConstructionLevel.hasPhaseAndModalInterfaces = true := rfl
@@ -179,9 +181,12 @@ docstring). -/
 theorem fxSTC_hasCanonicityTheorem :
     fxSTCConstructionLevel.hasCanonicityTheorem = true := rfl
 
-/-- Current Axis 12 has no FX normalization theorem. -/
-theorem fxSTC_hasNoNormalizationTheorem :
-    fxSTCConstructionLevel.hasNormalizationTheorem = false := rfl
+/-- Current Axis 12 HAS the FX normalization theorem in the STC
+vocabulary (witnessed in `FxNormalization.lean` —
+`normalizationViaSTC`; BRIDGED to the kernel's computed normalizer,
+see the ledger docstring). -/
+theorem fxSTC_hasNormalizationTheorem :
+    fxSTCConstructionLevel.hasNormalizationTheorem = true := rfl
 
 /-- Current Axis 12 has not replaced the generic FX reducibility route. -/
 theorem fxSTC_hasNoFXGenericSTCReplacement :

@@ -365,12 +365,12 @@ theorem fxProfile_fibrationHasNoUnboundedProfileTower :
 theorem fxProfile_sscEquationCount :
     fxProfile.sscBackbone.equationCount = 8 := rfl
 
-/-- FX profile carries the Axis 12 bool canonicity theorem in the STC
+/-- FX profile carries the Axis 12 normalization theorem in the STC
 vocabulary (BRIDGED to the kernel — `STC/FxLogicalRelation.lean` +
-`STC/FxBoolCanonicity.lean`). -/
+`STC/FxBoolCanonicity.lean` + `STC/FxNormalization.lean`). -/
 theorem fxProfile_stcConstructionLevel :
     fxProfile.stcConstructionLevel =
-      STC.STCConstructionLevel.canonicityTheorem := rfl
+      STC.STCConstructionLevel.normalizationTheorem := rfl
 
 /-- FX profile HAS the Axis 12 logical-relation construction. -/
 theorem fxProfile_stcHasLogicalRelationConstruction :
@@ -383,9 +383,11 @@ witness). -/
 theorem fxProfile_stcHasCanonicityTheorem :
     fxProfile.stcConstructionLevel.hasCanonicityTheorem = true := rfl
 
-/-- FX profile currently has no Axis 12 normalization theorem. -/
-theorem fxProfile_stcHasNoNormalizationTheorem :
-    fxProfile.stcConstructionLevel.hasNormalizationTheorem = false := rfl
+/-- FX profile HAS the Axis 12 normalization theorem
+(`normalizationViaSTC`, BRIDGED to the kernel's computed
+normalizer). -/
+theorem fxProfile_stcHasNormalizationTheorem :
+    fxProfile.stcConstructionLevel.hasNormalizationTheorem = true := rfl
 
 /-- FX profile has only the Axis 13 Gratzer-readiness input record. -/
 theorem fxProfile_mttNormConstructionLevel :
