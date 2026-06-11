@@ -683,6 +683,7 @@ import FX1Poly.Typed.TermIndexedFormerSmokeCorpus
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.IntroRuleDescGradedBinder
 import FX1Poly.Core.RawTermOccurrenceSubst
+import FX1Poly.Typed.GradedBetaSubjectReductionGhost
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
 import FX1Poly.Typed.UniverseModeGenerators
@@ -2480,6 +2481,24 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_subst0_weaken_self
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.constantBridgeOfTyped
 #assert_no_axioms FX1Poly.Typed.reflexivityBridgeRoundTrip
+-- NATIVE-22 (#1299) — graded β subject reduction respects the usage bound (GHOST grade).
+-- strengthen_eq_some_of_occurrenceZero: the ★ bridge — a body not using the newest variable
+-- (occurrenceCountAt body 0 = 0, the `.zero` graded check) STRENGTHENS; via a generic
+-- partialRenameSucceeds_of_occurrenceZero mutual induction (a partial renaming failing only at the
+-- dropped position succeeds on a body that does not use that position).
+-- occurrenceCountAt_subst0_ghost: the ★ ghost β-SR equation — when the binder is unused, subst0 counts
+-- body shifted down with ZERO contribution from the argument (chains the bridge + NATIVE-21's
+-- subst0_of_strengthens + strengthen_sound + weaken_succ).
+-- gradedGhostBetaErasesArgument: table-generic graded SR for the `.zero` grade — the argument is erased,
+-- the usage bound respected (generic over the future ghost intro row, NATIVE-23). All zero-axiom.
+#assert_no_axioms FX1Poly.Core.PartialRawRenaming.liftFailsOnlyAtSucc
+#assert_no_axioms FX1Poly.Core.iterateLiftRawFailsOnlyAtRaised
+#assert_no_axioms FX1Poly.Core.RawTerm.partialRenameSucceeds_of_occurrenceZero
+#assert_no_axioms FX1Poly.Core.RawTermChildren.partialRenameSucceeds_of_occurrenceZero
+#assert_no_axioms FX1Poly.Core.RawTerm.strengthen_eq_some_of_occurrenceZero
+#assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_subst0_ghost
+#assert_no_axioms FX1Poly.Typed.gradedGhostBetaErasesArgument
+#assert_no_axioms FX1Poly.Typed.gradedGhostBetaErasesArgument_weakenWitness
 
 -- ★ NATIVE-08 — THE CROSS-ENGINE WALL FALLS (BridgeEndpointNativeSubjectReduction).
 -- intervalZeroGrownUntypable proved the endpoint-β reduct interval0 escapes the GROWN engine, so a
