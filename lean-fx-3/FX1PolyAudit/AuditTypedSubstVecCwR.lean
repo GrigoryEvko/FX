@@ -667,6 +667,7 @@ import FX1Poly.Typed.KernelAbstractionTheorem
 import FX1Poly.Typed.KernelParamSubstrateSurvey
 import FX1Poly.Typed.HasTypeDescBridge
 import FX1Poly.Typed.BridgeEndpointStep
+import FX1Poly.Typed.BridgeEndpointNativeSubjectReduction
 import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
 import FX1Poly.Typed.TermIndexedFormerSpike
@@ -2452,6 +2453,27 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_weaken_zeroPosition
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.constantBridgeOfTyped
 #assert_no_axioms FX1Poly.Typed.reflexivityBridgeRoundTrip
+
+-- ★ NATIVE-08 — THE CROSS-ENGINE WALL FALLS (BridgeEndpointNativeSubjectReduction).
+-- intervalZeroGrownUntypable proved the endpoint-β reduct interval0 escapes the GROWN engine, so a
+-- general endpoint-β SR could not target HasTypeDescPi alone (the recorded wall). NATIVE-07 typed the
+-- interval endpoints NATIVELY (HasTypeDescDataIntro), so the escaping reduct is now caught by a
+-- DIFFERENT native engine. EndpointBetaReductNativelyTyped = the combined target (grown | bridge |
+-- dataIntro). ★ endpointBetaWallFalls: interval0 is combined-native-typed AND grown-untypable AT ONCE —
+-- the combined engine succeeds exactly where grown alone provably fails. ★ identityPathEndpointSubject
+-- ReductionNative: the full identity-path endpoint-β SR routes the reduct through the data-value layer
+-- (the genuine cross-engine SR — the eliminator computes INTO the data engine). reflexivityBridge
+-- EndpointSubjectReductionNative folds the constant fragment into the SAME predicate (ofGrown). ★★
+-- endpointBetaNativeSubjectReductionVerdict: both fragments preserve combined-native typing + grown-only
+-- is provably insufficient. The union of native engines is the correct SR target (NATIVE-40 unifies it).
+-- All zero-axiom (constructor applications over the shipped fragments + isUntypableHead_sound rfl twin).
+#assert_no_axioms FX1Poly.Typed.intervalZeroReductNativelyTyped
+#assert_no_axioms FX1Poly.Typed.intervalOneReductNativelyTyped
+#assert_no_axioms FX1Poly.Typed.intervalOneGrownUntypable
+#assert_no_axioms FX1Poly.Typed.endpointBetaWallFalls
+#assert_no_axioms FX1Poly.Typed.identityPathEndpointSubjectReductionNative
+#assert_no_axioms FX1Poly.Typed.reflexivityBridgeEndpointSubjectReductionNative
+#assert_no_axioms FX1Poly.Typed.endpointBetaNativeSubjectReductionVerdict
 
 -- ★★ THE UNARY-GUARDED Π CANDIDATE — the Abel binary-over-unary construction (OP1-K2 #1228,
 -- in-place strengthening across KernelBinaryParametricity/PiElim/PiIntro/ConvInvariance/
