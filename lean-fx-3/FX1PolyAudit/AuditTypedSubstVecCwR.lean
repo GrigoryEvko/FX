@@ -644,6 +644,7 @@ import FX1Poly.Modal.GradedLinearTimeBound
 import FX1Poly.Core.NormalizeCost
 import FX1Poly.Core.OneStepReducts
 import FX1Poly.Core.OneStepReductsComplete
+import FX1Poly.Core.CostBound
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1714,6 +1715,28 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.RawTerm.oneStepReducts_complete
 #assert_no_axioms FX1Poly.Core.RawTermChildren.oneStepChildrenReducts_complete
 #assert_no_axioms FX1Poly.Core.RawTerm.step_iff_mem_oneStepReducts
+
+-- ★★ The kernel WORST-CASE cost bound (Core/CostBound.lean, COST-3 #1216 brick 4 — the COST-1
+-- recipe over the characterized enumeration). costBoundOverReducts: the soundness-threaded cost
+-- fold (one unit + recursive bound per listed reduct, summed; threading avoids List.attach).
+-- boundsElement: each contribution bounded by the fold (propext-free SUM-bound discipline —
+-- Nat.le_add_right/left; Nat.le_max_* would leak propext). ★ costBound: Acc.rec constant-Nat
+-- motive over strong normalization, folding the brick-2 enumeration with brick-2 soundness
+-- justifying each recursive call. ★ costBound_isSound: EVERY StepStarN chain under ANY strategy
+-- has length ≤ costBound — head-step membership by brick-3 COMPLETENESS, recursive bounds line up
+-- by Acc proof irrelevance. The sandwich: brick 1's exact normalizeCost ≤ costBound. Non-vacuity:
+-- costBound unit = 0 by kernel evaluation through the concrete Acc.intro witness; the identity-β
+-- fixture's bound is POSITIVE via soundness at its concrete 1-step chain, with the fixture's
+-- accessibility hand-built from brick-3 completeness over brick-2's computed enumeration.
+#assert_no_axioms FX1Poly.Core.RawTerm.costBoundOverReducts
+#assert_no_axioms FX1Poly.Core.RawTerm.costBoundOverReducts_boundsElement
+#assert_no_axioms FX1Poly.Core.RawTerm.costBound
+#assert_no_axioms FX1Poly.Core.RawTerm.costBound_isSound
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeCost_le_costBound
+#assert_no_axioms FX1Poly.Core.RawTerm.costBound_unit_isZero
+#assert_no_axioms FX1Poly.Core.identityBetaFixture_stepsToUnit
+#assert_no_axioms FX1Poly.Core.identityBetaFixture_accessible
+#assert_no_axioms FX1Poly.Core.identityBetaFixture_costBound_isPositive
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
