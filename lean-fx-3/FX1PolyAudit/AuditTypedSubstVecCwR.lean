@@ -675,6 +675,7 @@ import FX1Poly.Typed.TermIndexedFormerSpike
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerUniqueness
+import FX1Poly.Typed.HasTypeDescTermIndexedFormerSubjectReduction
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
@@ -2727,6 +2728,27 @@ telescope-wide level-list agreement.  Axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.inversionFormerWithConv
 #assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.levelFlagAgree
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.uniquenessNative
+
+/-! ## NATIVE-15 (#1292) — the term-indexed former engine's context-conversion + subject reduction
+
+The last two structural-metatheory pieces (parity with the formation/flat/grown engines).  Context-conversion
+(EXACT): a term-indexed-former derivation re-types under an enriched `ConvContextWithOldValid` context, classifier
+preserved exactly — each grown premise lifts through the shipped unconditional `HasTypeDescPi.contextConversionExact`
+(no binder crosses, all Id/Bridge children in the base context).  Subject reduction: an `Id`/`Bridge` cell heads
+NO root redex (`termIndexedFormerCellStepIsChildCongruence`, the 18-arm `cases step` keyed on
+`termIndexedFormerDescOf`), so a `Step` is a child congruence; the premise re-types under the stepped children.
+The richer-than-flat move: when the CARRIER child steps `A ↝ A'`, the endpoints `eᵢ : A` re-class to `eᵢ : A'`
+via the grown `conv` arm (`convCarrier`, `Conv` from the step + the SR'd carrier as the new universe witness); when
+an endpoint steps the carrier is fixed and only that endpoint re-types by the grown SR.  The output classifier
+(`universeCodeCell level flag`, the carrier's universe) survives any child step.  Axiom-free. -/
+#assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.contextConversionExact
+#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.contextConversionExact
+#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.contextConversionExact
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerCellStepIsChildCongruence
+#assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.convCarrier
+#assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.subjectReduction
+#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.subjectReduction
+#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.subjectReduction
 
 /-! ## NATIVE-03 (#1280) — the graded intro premise IS expressible (SPIKE, verdict GO)
 
