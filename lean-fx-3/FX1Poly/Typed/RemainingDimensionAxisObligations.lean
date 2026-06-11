@@ -1,5 +1,7 @@
 import FX1Poly.Typed.EffectSecurityAxisObligations
 import FX1Poly.Modal.ComplexitySemiring
+import FX1Poly.Modal.GradedCostFundamental
+import FX1Poly.Modal.GradedBinaryParametricity
 import FX1Poly.Modal.ClockDomainLatticeDimension
 import FX1Poly.Modal.ProvenanceLatticeDimension
 import FX1Poly.Modal.PreorderDimension
@@ -16,10 +18,12 @@ The batch discharge completing the per-dimension obligation gallery.  Three hone
     reduction, and confluence, in one conjunction.  This is the common generalization the usage and
     security modules instantiated piecewise — stated once, it discharges every present and future
     semiring dimension in one application.  `fxComplexityAxisObligation` instantiates it at the
-    cost/space N-semiring (`fxComplexitySemiring`, DIM3-1), with the ledger identity
-    `complexityAxisCapabilities_eq_usageAxisCapabilities` (`rfl`) extending the
-    orthogonal-composition thesis to a THREE-dimension family: usage, security, and complexity
-    carry literally the same capability profile because they ride the same engine.
+    cost/space N-semiring (`fxComplexitySemiring`, DIM3-1).  Post-COST-2 the complexity ledger
+    additionally carries PARAMETRICITY `.available` (the COST-6 flip), doubly backed by the
+    cost-indexed logical relation and the binary graded parametricity FT
+    (`complexityAxis_parametricity_isBacked`); the orthogonal-composition thesis is restated as
+    the REFINEMENT `complexityAxisCapabilities_refines_usageAxisCapabilities` — seven shared
+    engine-inherited fields, one dimension-specific strict gain.
   * **The algebra tier (trust, clock, provenance, lifetime).**  Each at capability BOTTOM with its
     mechanized algebra cited by re-export: trust is a lawful bounded join-semilattice AND provably
     not a grade semiring (the effect-shaped pair); clock and provenance are lawful lattices
@@ -103,30 +107,52 @@ theorem gradedAxis_fiveCapabilitiesBacked (R : OrderedGradeSemiring)
 
 /-! ## The complexity axis (the third graded sibling) -/
 
-/-- The complexity-axis ledger — the same 5/3 profile as usage and security. -/
+/-- The complexity-axis ledger — the shared graded 5-capability base, PLUS parametricity (the
+COST-6 flip): the cost-indexed logical relation (COST-2, `HasGradeOver.costFundamental`) and the
+binary graded parametricity fundamental theorem (OP1-M1, `HasGradeOver.parametric` instantiated at
+`fxComplexitySemiring`) back the field — see `complexityAxis_parametricity_isBacked`. -/
 def complexityAxisCapabilities : MetatheoreticCapabilities where
   canonicityStatus := .available
   normalizationStatus := .available
-  parametricityStatus := .unavailable
+  parametricityStatus := .available
   subjectReductionStatus := .available
   confluenceStatus := .available
   strongNormalizationStatus := .available
   decidableConversionStatus := .unavailable
   decidableTypecheckingStatus := .unavailable
 
-/-- **The orthogonal-composition thesis now spans a THREE-dimension family** (`rfl`): usage,
-security, and complexity carry literally the same capability profile — one generic engine, three
-instances, zero per-dimension metatheory. -/
-theorem complexityAxisCapabilities_eq_usageAxisCapabilities :
-    complexityAxisCapabilities = usageAxisCapabilities := rfl
+/-- **The orthogonal-composition thesis, REFINED post-COST-2** (supersedes the historic `rfl`
+identity `complexityAxisCapabilities_eq_usageAxisCapabilities`, which the COST-6 flip makes false
+BY DESIGN): complexity agrees with the usage profile on all seven engine-inherited fields — the
+five backed capabilities and the two open decidability fields — and differs EXACTLY at
+parametricity, where the DIMENSION-SPECIFIC cost-indexed logical relation lifts complexity strictly
+above the shared graded profile.  The thesis content survives: the seven shared fields ride one
+generic engine; the eighth is honest per-dimension work. -/
+theorem complexityAxisCapabilities_refines_usageAxisCapabilities :
+    (complexityAxisCapabilities.canonicityStatus = usageAxisCapabilities.canonicityStatus
+      ∧ complexityAxisCapabilities.normalizationStatus
+          = usageAxisCapabilities.normalizationStatus
+      ∧ complexityAxisCapabilities.subjectReductionStatus
+          = usageAxisCapabilities.subjectReductionStatus
+      ∧ complexityAxisCapabilities.confluenceStatus = usageAxisCapabilities.confluenceStatus
+      ∧ complexityAxisCapabilities.strongNormalizationStatus
+          = usageAxisCapabilities.strongNormalizationStatus
+      ∧ complexityAxisCapabilities.decidableConversionStatus
+          = usageAxisCapabilities.decidableConversionStatus
+      ∧ complexityAxisCapabilities.decidableTypecheckingStatus
+          = usageAxisCapabilities.decidableTypecheckingStatus)
+      ∧ (complexityAxisCapabilities.parametricityStatus = .available
+          ∧ usageAxisCapabilities.parametricityStatus = .unavailable) :=
+  ⟨⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩, rfl, rfl⟩
 
 /-- **The complexity (cost/space) axis obligation**: the §6.3 Dim 13/15 N-semiring dimension over
-the graded λ-calculus.  HONEST QUALIFIER: the grade is exact OCCURRENCE-COUNTING at the naturals;
-the cost READING — "the grade bounds evaluation steps" — is pending the cost-indexed logical
-relation (COST-2).  What IS shipped beyond the five ledger capabilities is the verified cost
-SEMANTICS (`GradedCostSemantics`, COST-1): a computable sound worst-case step bound and an exact
-canonical-evaluation cost for every well-graded term — complexity is CALCULABLE from the term, not
-yet read off the grades. -/
+the graded λ-calculus.  The historic honest qualifier ("the cost READING is pending COST-2") is
+DISCHARGED: the cost-indexed logical relation (`HasGradeOver.costFundamental`, COST-2) proves the
+grade→cost tie — grades bound evaluation cost — and the binary graded parametricity FT
+(`HasGradeOver.parametric`, OP1-M1) supplies relational parametricity at the semiring, so the
+parametricity field is `.available` and doubly backed (`complexityAxis_parametricity_isBacked`).
+Also shipped: the verified cost SEMANTICS (`GradedCostSemantics`, COST-1) — a computable sound
+worst-case step bound and an exact canonical-evaluation cost for every well-graded term. -/
 def fxComplexityAxisObligation : AxisObligation where
   axisName := "FX complexity (cost/space) dimension over the graded lambda calculus"
   axisId := .multiModal
@@ -178,6 +204,42 @@ theorem complexityAxis_fiveCapabilitiesBacked :
                 Joinable GradedLambda.Reduces leftReduct rightReduct)) :=
   ⟨⟨rfl, rfl, rfl, rfl, rfl⟩,
    gradedAxis_fiveCapabilitiesBacked fxComplexitySemiring fxComplexitySemiring_isLawful⟩
+
+/-- **Backed flip (parametricity — the COST-6 flip)**: the ledger field is `.available` AND it is
+DOUBLY backed.  (1) The cost-indexed logical relation fundamental theorem (COST-2,
+`HasGradeOver.costFundamental`): every well-graded term at the complexity semiring carries an
+intrinsic weight such that under any cost-reducible closing substitution it is cost-reducible at
+its GRADE-WEIGHTED budget — the grade→cost tie, the §6.3 Dim-13 cost reading of the N-semiring.
+(2) The binary graded parametricity fundamental theorem (OP1-M1, `HasGradeOver.parametric`
+instantiated at `fxComplexitySemiring`): parametrically related closing substitutions map to
+parametrically related instances, for any expansion-respecting base observation. -/
+theorem complexityAxis_parametricity_isBacked :
+    fxComplexityAxisObligation.capabilities.parametricityStatus = .available
+      ∧ (∀ {typeContext : List (GTypeOver fxComplexitySemiring)}
+          {grades : GradeVectorOver fxComplexitySemiring} {term : GradedLambda}
+          {resultType : GTypeOver fxComplexitySemiring},
+          HasGradeOver fxComplexitySemiring typeContext grades term resultType →
+          ∃ (intrinsicWeight : Nat),
+            ∀ (substitution : TermSubstitution) (budgetAssignment : Nat → Nat),
+              CostReducibleSubstitution typeContext budgetAssignment substitution →
+              CostReducible resultType
+                (weightedBudget grades budgetAssignment + intrinsicWeight)
+                (GradedLambda.applySubstitution substitution term))
+      ∧ (∀ {baseRel : GradedLambda → GradedLambda → Prop},
+          RespectsExpansion baseRel →
+          ∀ {typeContext : List (GTypeOver fxComplexitySemiring)}
+            {grades : GradeVectorOver fxComplexitySemiring} {term : GradedLambda}
+            {resultType : GTypeOver fxComplexitySemiring},
+            HasGradeOver fxComplexitySemiring typeContext grades term resultType →
+            ∀ (leftSubstitution rightSubstitution : TermSubstitution),
+              ParametricSubstitution baseRel typeContext leftSubstitution rightSubstitution →
+              ParametricRel baseRel resultType
+                (GradedLambda.applySubstitution leftSubstitution term)
+                (GradedLambda.applySubstitution rightSubstitution term)) :=
+  ⟨rfl,
+   fun {_typeContext} {_grades} {_term} {_resultType} typed => typed.costFundamental,
+   fun {_baseRel} respects {_typeContext} {_grades} {_term} {_resultType} typed =>
+     HasGradeOver.parametric respects typed⟩
 
 /-! ## The algebra tier: trust, clock, provenance, lifetime -/
 

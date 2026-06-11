@@ -1415,10 +1415,14 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- per-dimension gallery COMPLETE in three honesty tiers. ★ gradedAxis_fiveCapabilitiesBacked = the GENERIC
 -- five-capability bundle over ANY lawful ordered grade semiring (SN + closed canonicity + normalization + SR +
 -- confluence in ONE conjunction — the common generalization the usage/security modules instantiated piecewise;
--- every future semiring dimension discharges by one application). COMPLEXITY = the third graded sibling:
--- complexityAxisCapabilities_eq_usageAxisCapabilities (rfl) extends the orthogonal-composition thesis to a
--- THREE-dimension family; complexityAxis_fiveCapabilitiesBacked = ledger fields + the bundle at
--- fxComplexitySemiring in one theorem. ALGEBRA TIER (bot + cited algebra): trust (cannotRideGradedEngine +
+-- every future semiring dimension discharges by one application). COMPLEXITY = the third graded sibling,
+-- now with PARAMETRICITY .available (the COST-6 #1219 flip): the historic rfl identity with the usage
+-- profile is SUPERSEDED by complexityAxisCapabilities_refines_usageAxisCapabilities (7 shared
+-- engine-inherited fields + the strict parametricity gap), and the flip is DOUBLY backed by
+-- complexityAxis_parametricity_isBacked — (1) the cost-indexed LR FT (COST-2, costFundamental: grades
+-- bound evaluation cost, the §6.3 Dim-13 cost reading PROVED) + (2) the binary graded parametricity FT
+-- (OP1-M1, HasGradeOver.parametric at fxComplexitySemiring). complexityAxis_fiveCapabilitiesBacked =
+-- ledger fields + the bundle at fxComplexitySemiring in one theorem. ALGEBRA TIER (bot + cited algebra): trust (cannotRideGradedEngine +
 -- lawful weakest-link lattice — the effect-shaped pair), clock + provenance (lawful lattices), lifetime
 -- (lifetimeAxis_algebraIsProperPreorder = provably NOT antisymmetric — cannot even be a join-semilattice, the
 -- honest structural reason its entry differs). PENDING TIER (bot, NO algebra, non-zero estimatedLinesOfCode —
@@ -1428,9 +1432,10 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- every bot entry forces bot (meet_bot_right) until its judgment ships — the SN-108 inputs. All zero-axiom.
 #assert_no_axioms FX1Poly.Typed.gradedAxis_fiveCapabilitiesBacked
 #assert_no_axioms FX1Poly.Typed.complexityAxisCapabilities
-#assert_no_axioms FX1Poly.Typed.complexityAxisCapabilities_eq_usageAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.complexityAxisCapabilities_refines_usageAxisCapabilities
 #assert_no_axioms FX1Poly.Typed.fxComplexityAxisObligation
 #assert_no_axioms FX1Poly.Typed.complexityAxis_fiveCapabilitiesBacked
+#assert_no_axioms FX1Poly.Typed.complexityAxis_parametricity_isBacked
 #assert_no_axioms FX1Poly.Typed.fxTrustAxisObligation
 #assert_no_axioms FX1Poly.Typed.trustAxis_cannotRideGradedEngine
 #assert_no_axioms FX1Poly.Typed.trustAxis_algebraIsLawfulLattice
