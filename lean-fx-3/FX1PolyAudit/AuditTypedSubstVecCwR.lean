@@ -645,6 +645,7 @@ import FX1Poly.Core.NormalizeCost
 import FX1Poly.Core.OneStepReducts
 import FX1Poly.Core.OneStepReductsComplete
 import FX1Poly.Core.CostBound
+import FX1Poly.Typed.WellTypedCostCalculable
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1737,6 +1738,29 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.identityBetaFixture_stepsToUnit
 #assert_no_axioms FX1Poly.Core.identityBetaFixture_accessible
 #assert_no_axioms FX1Poly.Core.identityBetaFixture_costBound_isPositive
+
+-- ★★★ EVERY WELL-TYPED FX PROGRAM HAS CALCULABLE COST (Typed/WellTypedCostCalculable.lean, COST-3
+-- #1216 brick 5 — the typed packaging, the FX-language headline). The shipped typed-SN theorems
+-- feed the kernel cost machinery with ZERO glue (IsStronglyNormalizing IS Acc StepSuccessor
+-- definitionally). CLOSED: HasTypeDescPi.costCalculator (worst-case, via closedStronglyNormalizing)
+-- + costCalculator_isSound (no chain under ANY strategy exceeds it) + canonicalEvaluationCost
+-- (exact, attained by a genuine StepStarN chain to THE normal form) + the sandwich. OPEN twins over
+-- WfContextDesc (the genuinely-external context hypothesis). ★ The bundle headline
+-- wellTypedClosedProgram_costIsCalculable = the §6.3 Dim-13 promise at the kernel; honest scope:
+-- cost computed FROM THE TERM, typing contributes TOTALITY (the calculators are defined on every
+-- well-typed program). Non-vacuity: the shipped typed β-redex (λx:Type@(e+1). x)(Type@e) has
+-- POSITIVE calculated cost (its β-step is a counted 1-chain).
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.costCalculator
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.costCalculator_isSound
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.canonicalEvaluationCost
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.canonicalEvaluationCost_isExact
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.canonicalEvaluationCost_le_costCalculator
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.costCalculatorOpen
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.costCalculatorOpen_isSound
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.canonicalEvaluationCostOpen
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.canonicalEvaluationCostOpen_isExact
+#assert_no_axioms FX1Poly.Typed.wellTypedClosedProgram_costIsCalculable
+#assert_no_axioms FX1Poly.Typed.identityApplication_costCalculator_isPositive
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
