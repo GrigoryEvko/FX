@@ -667,6 +667,7 @@ import FX1Poly.Typed.KernelAbstractionTheorem
 import FX1Poly.Typed.KernelParamSubstrateSurvey
 import FX1Poly.Typed.HasTypeDescBridge
 import FX1Poly.Typed.BridgeEndpointStep
+import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2536,3 +2537,41 @@ Generator.noConfusion; the directed lift (universeU<->universeD) is the honest u
 #assert_no_axioms FX1Poly.Typed.lowerOuterToInner_arity
 #assert_no_axioms FX1Poly.Typed.lowerOuterToInner_shifts
 #assert_no_axioms FX1Poly.Typed.liftBridges_directionsDistinct
+
+/-! ## NATIVE-00 (#1277) — the machine-checked nativity census ledger (unified-signature campaign brick 0)
+
+The empirical ground truth the NATIVE-00..63 campaign folds away: 18 principal standalone
+`HasTypeDesc*` engines (the legacy data/elim zoo) classified into the unified rule tables via the
+`migrationTarget` / `migrationClass` total functions (Lean exhaustiveness = the regression gate),
+and the GENUINELY self-derived frankenstein metric — `isHardcodedClassifierHead g` is `true` iff
+`g` is statically LIVE yet covered by NO rule table, exactly the heads `hasSomeTypingRule`
+dispatches by hardcoded `decide`.  `hardcodedRoster_allHardcoded` checks all 22 by `decide`; the
+"before-state" anchors (`*_notFormation_yet`, `introTable_onlyLam`, `elimTable_onlyApp`) BREAK as
+migration rows land, keeping the census honest.  All `rfl` / `by decide` (the propext-free
+decidable-equality route — every theorem verified axiom-free). -/
+#assert_no_axioms FX1Poly.Typed.StandaloneTypingEngine.all
+#assert_no_axioms FX1Poly.Typed.standaloneTypingEngineCount
+#assert_no_axioms FX1Poly.Typed.StandaloneTypingEngine.migrationTarget
+#assert_no_axioms FX1Poly.Typed.StandaloneTypingEngine.migrationClass
+#assert_no_axioms FX1Poly.Typed.riskClassEngines
+#assert_no_axioms FX1Poly.Typed.riskClassEngineCount
+#assert_no_axioms FX1Poly.Typed.alreadyTableDrivenCount
+#assert_no_axioms FX1Poly.Typed.isHardcodedClassifierHead
+#assert_no_axioms FX1Poly.Typed.hardcodedClassifierHeads
+#assert_no_axioms FX1Poly.Typed.hardcodedClassifierHeadCount
+#assert_no_axioms FX1Poly.Typed.hardcodedRoster_allHardcoded
+#assert_no_axioms FX1Poly.Typed.bespokePrimitiveHeads
+#assert_no_axioms FX1Poly.Typed.bespokePrimitiveHeadCount
+#assert_no_axioms FX1Poly.Typed.bespokePrimitives_areHardcoded
+#assert_no_axioms FX1Poly.Typed.migratableHardcodedHeads
+#assert_no_axioms FX1Poly.Typed.migratableHardcodedHeadCount
+#assert_no_axioms FX1Poly.Typed.migratableHeads_areHardcoded
+#assert_no_axioms FX1Poly.Typed.frankensteinMetric
+#assert_no_axioms FX1Poly.Typed.frankensteinMetric_current_matchesRoster
+#assert_no_axioms FX1Poly.Typed.frankensteinMetric_migratable_matchesRoster
+#assert_no_axioms FX1Poly.Typed.intervalCode_notFormation_yet
+#assert_no_axioms FX1Poly.Typed.idCode_notFormation_yet
+#assert_no_axioms FX1Poly.Typed.bridgeCode_notFormation_yet
+#assert_no_axioms FX1Poly.Typed.introTable_onlyLam
+#assert_no_axioms FX1Poly.Typed.elimTable_onlyApp
+#assert_no_axioms FX1Poly.Typed.formationTable_currentCoverage
