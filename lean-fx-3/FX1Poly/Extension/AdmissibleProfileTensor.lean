@@ -429,10 +429,13 @@ HONESTY BOUNDARY: persistence-discharge does NOT realize the field
 docstring's "must ADVANCE (not merely persist)" intent — since
 `extendProfile` preserves every construction level, genuine
 advancement remains structurally impossible, and the field's formal
-statement no longer distinguishes the two.  Restating the field to
-require advancement (and deciding whether `FullAdmissionObligations`
-should then be inhabited) is the `admissibleProfileTheorem`-rung
-decision (SN-108), deliberately NOT taken here. -/
+statement no longer distinguishes the two.  The restatement decision
+is TAKEN in `AdmissionAdvanceBoundary.lean`: the persist-form field
+stays as-is, the advance form is stated separately
+(`AdvancingAdmissionObligations`) and proved UNIVERSALLY unrealizable
+under the level-preserving `extendProfile`
+(`advancingAdmission_canonicity_unrealizable`) — the flip-proof
+restoration of the structural point the deleted theorem made. -/
 theorem fullAdmission_metatheoryRealized_canonicityRung_dischargeable
     (extension : ProfileExtension fxProfile) :
     (extendProfile fxProfile

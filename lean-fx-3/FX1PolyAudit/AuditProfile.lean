@@ -10,6 +10,7 @@ import FX1Poly.STC.FxLogicalRelation
 import FX1Poly.STC.FxBoolCanonicity
 import FX1Poly.STC.FxNormalization
 import FX1Poly.STC.FxIndependenceBoundary
+import FX1Poly.Extension.AdmissionAdvanceBoundary
 import FX1Poly.Core.StrengthCalibration
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
@@ -102,6 +103,32 @@ no-go register. -/
   FX1Poly.Extension.extensionLedger_stillBelow_metatheoryTransfer
 #assert_no_axioms
   FX1Poly.Extension.extensionLedger_stillBelow_admissibleProfileTheorem
+
+/-! ## The admission-advance boundary gates (SN-108 verdict)
+
+NOT a ledger flip — the extension ledger stays at
+`.profileLensInstance` (the `stillBelow` pins above remain true).
+The committed theorems: the ADVANCE-form admission obligation (the
+restated "must ADVANCE, not merely persist" intent) is UNIVERSALLY
+unrealizable under the level-preserving `extendProfile` — for every
+base profile, flip-proof; and the cumulative ladder structurally
+gates the top rung behind the three unfilled rungs, with the
+generator-less-extensions pin closing the double block. -/
+
+#assert_no_axioms FX1Poly.Extension.AdvancingAdmissionObligations
+#assert_no_axioms
+  FX1Poly.Extension.advancingAdmission_canonicity_unrealizable
+#assert_no_axioms
+  FX1Poly.Extension.advancingAdmission_normalization_unrealizable
+#assert_no_axioms
+  FX1Poly.Extension.hasAdmissibleProfileTheorem_requires_metatheoryTransfer
+#assert_no_axioms
+  FX1Poly.Extension.hasAdmissibleProfileTheorem_requires_interactionLawProofs
+#assert_no_axioms
+  FX1Poly.Extension.hasAdmissibleProfileTheorem_requires_algebraExtension
+#assert_no_axioms
+  FX1Poly.Extension.admissibleProfileTheorem_blocked_byGeneratorlessExtensions
+#assert_no_axioms FX1Poly.Extension.fxExtension_hasNoAdmissibleProfileTheorem
 
 /-! ## Strength-calibration gates (one canonical strength enum)
 
