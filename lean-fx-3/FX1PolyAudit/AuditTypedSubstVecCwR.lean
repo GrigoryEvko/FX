@@ -656,6 +656,7 @@ import FX1Poly.Typed.CostArcLedger
 import FX1Poly.Typed.KernelBinaryParametricity
 import FX1Poly.Typed.KernelBinaryPiElim
 import FX1Poly.Typed.KernelBinaryPiIntro
+import FX1Poly.Typed.KernelBinaryConvInvariance
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2058,6 +2059,30 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.binaryAbstractionMemberPairAtBounded
 #assert_no_axioms FX1Poly.Typed.binaryAbstractionMemberPairUnderClosingSubstitutionBounded
 #assert_no_axioms FX1Poly.Typed.binaryFundamentalPiIntroArm
+
+-- ★★ Binary forward closure + Conv-invariance (OP1-K2 brick 3 #1228,
+-- Typed/KernelBinaryConvInvariance.lean). whnfExpandClosureLeft/Right: the one-sided
+-- multi-step expansion race (commuteWithStep, per side). ★ forwardStepStarLeft/Right (+
+-- forwardStepStarPair): a related pair stays related at the SAME candidate when either side
+-- reduces — neutral/flat arms ride weakHeadNormalRootStableAlongStepStar (the dataFlat-left
+-- arm rebuilds at the final root then transports the candidate by the root equation; the
+-- right arm needs no transport since the candidate is keyed on the LEFT root); the Π arm
+-- decomposes the chain into child chains and pushes the codomain chain through subst0 on its
+-- own side only. ★ binaryConvCandidateIff — BINARY CONV-INVARIANCE: componentwise-convertible
+-- related pairs have pointwise-equivalent candidates (join at common reducts + forward both
+-- derivations + brick-1 determinism); the binary candidate is an invariant of the Conv-class
+-- PAIR. ★ convTransport + convMemberPairUnderClosingSubstitutionBounded: member pairs
+-- transport along Conv of their types; the FT shape pushes ONE source-level Conv through
+-- BOTH substitutions via Conv.subst. Honest scope: the FT-shaped conv ARM additionally needs
+-- the binary universe-membership extraction — rides with the assembly brick.
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.whnfExpandClosureLeft
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.whnfExpandClosureRight
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.forwardStepStarLeft
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.forwardStepStarRight
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.forwardStepStarPair
+#assert_no_axioms FX1Poly.Typed.binaryConvCandidateIff
+#assert_no_axioms FX1Poly.Typed.IsBinaryReducibleMemberPairAtBounded.convTransport
+#assert_no_axioms FX1Poly.Typed.convMemberPairUnderClosingSubstitutionBounded
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
