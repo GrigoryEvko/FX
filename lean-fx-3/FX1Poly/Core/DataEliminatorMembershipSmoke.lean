@@ -85,23 +85,30 @@ theorem boolElimClosedMembershipSmoke :
   boolElimClosedIsMember (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
     boolTrueCell_isMember boolTrueCell_isMember boolFalseCell_isMember
 
-/-- **Concrete idJ membership regression.**  The closed `idJ` cell with base case `boolTrue` and witness
-`refl boolTrue` — the base case a canonical bool member, the witness a canonical refl member — is itself a
-member of the bool candidate.  The elimination half exercised at a closed witness via
-`idJClosedIsMember` fed `boolTrueCell_isMember` and the refl member `isReflValue_isMember` (the witness'
-inner term `boolTrue` is step-normal by `decide`). -/
+/-- **Concrete idJ membership regression.**  The closed `idJ` cell (Phase-Z motive shape) with a `var 0`
+under-two-binders throwaway motive (SN), base case `boolTrue`, and witness `refl boolTrue` — the base case a
+canonical bool member, the witness a canonical refl member — is itself a member of the bool candidate.  The
+elimination half exercised at a closed witness via `idJClosedIsMember` fed the motive's SN
+(`var_isStronglyNormalizing`), the refl member `isReflValue_isMember` (the witness' inner term `boolTrue` is
+step-normal by `decide`), and `boolTrueCell_isMember`. -/
 theorem idJClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
-      (.mkGen .gen_idJ () (.childCons boolTrueCell (.childCons (reflCell boolTrueCell) .childNil))) :=
-  idJClosedIsMember (isReflValue_isMember ⟨boolTrueCell, rfl, rfl⟩) boolTrueCell_isMember
+      (.mkGen .gen_idJ ()
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 1⟩ .childNil)
+          (.childCons boolTrueCell (.childCons (reflCell boolTrueCell) .childNil)))) :=
+  idJClosedIsMember (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 1⟩)
+    (isReflValue_isMember ⟨boolTrueCell, rfl, rfl⟩) boolTrueCell_isMember
 
 /-- **Concrete idStrictRec membership regression.**  Identical to `idJClosedMembershipSmoke` at the strict
 identity recursor `gen_idStrictRec` — the elimination half at a closed witness via
-`idStrictRecClosedIsMember`. -/
+`idStrictRecClosedIsMember`, with the same `var 0` throwaway motive. -/
 theorem idStrictRecClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
-      (.mkGen .gen_idStrictRec () (.childCons boolTrueCell (.childCons (reflCell boolTrueCell) .childNil))) :=
-  idStrictRecClosedIsMember (isReflValue_isMember ⟨boolTrueCell, rfl, rfl⟩) boolTrueCell_isMember
+      (.mkGen .gen_idStrictRec ()
+        (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 1⟩ .childNil)
+          (.childCons boolTrueCell (.childCons (reflCell boolTrueCell) .childNil)))) :=
+  idStrictRecClosedIsMember (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 1⟩)
+    (isReflValue_isMember ⟨boolTrueCell, rfl, rfl⟩) boolTrueCell_isMember
 
 /-- **Concrete `fst` projection membership regression.**  The closed `fst` cell over the canonical pair
 `pairCell boolTrue boolFalse` is a member of the bool candidate (its first component `boolTrue` being a

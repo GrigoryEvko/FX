@@ -217,11 +217,13 @@ def hasEitherMatchIotaRoot {scope : Nat}
       RawTerm.isEitherInlSource scrutinee ||
         RawTerm.isEitherInrSource scrutinee
 
-/-- Root identity-eliminator iota source shape. -/
+/-- Root identity-eliminator iota source shape.  Phase-Z spine `[2, 0, 0]`:
+    children are `(motive, baseCase, witness)` with the witness LAST and the
+    motive a term under two binders (endpoint + path). -/
 def hasIdElimIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [0, 0] scope) : Bool :=
+    (sourceChildren : RawTermChildren [2, 0, 0] scope) : Bool :=
   match sourceChildren with
-  | .childCons _baseCase (.childCons witness .childNil) =>
+  | .childCons _motive (.childCons _baseCase (.childCons witness .childNil)) =>
       RawTerm.isReflSource witness
 
 end RawTermChildren

@@ -116,20 +116,26 @@ theorem sndNeutralVarSmoke {scope : Nat} (index : Fin scope) :
     (var_isStronglyNormalizing index) (IsNeutral.var index)
 
 /-- **`idJ` over a variable witness is strongly normalizing** (the neutral child is the WITNESS; the base case
-is also a variable here). -/
+is also a variable here).  Phase-Z motive shape: a `var 0` under-two-binders throwaway motive (SN), at
+`scope + 2`; base case and witness the same outer variable. -/
 theorem idJNeutralVarSmoke {scope : Nat} (index : Fin scope) :
     IsStronglyNormalizing (.mkGen .gen_idJ ()
-      (.childCons (.mkGen .gen_var index .childNil)
-        (.childCons (.mkGen .gen_var index .childNil) .childNil))) :=
+      (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ (scope + 1)⟩ .childNil)
+        (.childCons (.mkGen .gen_var index .childNil)
+          (.childCons (.mkGen .gen_var index .childNil) .childNil)))) :=
   idJNeutralWitnessMember IsStronglyNormalizing isStronglyNormalizing_isReducibilityCandidate
+    (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ (scope + 1)⟩)
     (var_isStronglyNormalizing index) (var_isStronglyNormalizing index) (IsNeutral.var index)
 
-/-- **`idStrictRec` over a variable witness is strongly normalizing.** -/
+/-- **`idStrictRec` over a variable witness is strongly normalizing.**  Phase-Z motive shape: a `var 0`
+under-two-binders throwaway motive (SN), at `scope + 2`; base case and witness the same outer variable. -/
 theorem idStrictRecNeutralVarSmoke {scope : Nat} (index : Fin scope) :
     IsStronglyNormalizing (.mkGen .gen_idStrictRec ()
-      (.childCons (.mkGen .gen_var index .childNil)
-        (.childCons (.mkGen .gen_var index .childNil) .childNil))) :=
+      (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ (scope + 1)⟩ .childNil)
+        (.childCons (.mkGen .gen_var index .childNil)
+          (.childCons (.mkGen .gen_var index .childNil) .childNil)))) :=
   idStrictRecNeutralWitnessMember IsStronglyNormalizing isStronglyNormalizing_isReducibilityCandidate
+    (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ (scope + 1)⟩)
     (var_isStronglyNormalizing index) (var_isStronglyNormalizing index) (IsNeutral.var index)
 
 end FX1Poly.Core

@@ -422,30 +422,37 @@ witness is irrelevant to the contractum, so after recovering the `refl` shape th
 recovered renaming IS the contractum image. -/
 
 /-- **The `idJ`-on-`refl` ι arm of arbitrary-renaming `Step` reflection.**  Reflects the ι-redex `idJ
-renamedBase (refl renamedWitness)` to the source redex `idJ baseCase (refl witness)` projecting its
-base-case branch, recovered with the base-case's own renaming as the contractum image. -/
+renamedMotive renamedBase (refl renamedWitness)` to the source redex `idJ motive baseCase (refl witness)`
+projecting its base-case branch (the SECOND child under the Phase-Z spine), recovered with the base-case's
+own renaming as the contractum image.  The motive lives under TWO binders (`targetScope + 2`), renamed via
+`RawRenaming.lift (RawRenaming.lift rho)`, and is DISCARDED by the ι-projection. -/
 theorem Step.reflectIotaIdJRefl {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedMotive : RawTerm (targetScope + 2)}
     {renamedBase renamedWitness : RawTerm targetScope}
     (renameEquation : RawTerm.rename rho term =
       .mkGen .gen_idJ ()
-        (.childCons renamedBase
-          (.childCons (.mkGen .gen_refl () (.childCons renamedWitness .childNil)) .childNil))) :
+        (.childCons renamedMotive
+          (.childCons renamedBase
+            (.childCons (.mkGen .gen_refl () (.childCons renamedWitness .childNil)) .childNil)))) :
     ∃ sourceReduct : RawTerm sourceScope,
       Step term sourceReduct ∧ RawTerm.rename rho sourceReduct = renamedBase := by
   obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
   subst termEq
   match payload, children with
-  | (), .childCons baseCase (.childCons reflChild .childNil) =>
+  | (), .childCons motive (.childCons baseCase (.childCons reflChild .childNil)) =>
       rw [show RawTerm.rename rho
-            (.mkGen .gen_idJ () (.childCons baseCase (.childCons reflChild .childNil))) =
             (.mkGen .gen_idJ ()
-              (.childCons (RawTerm.rename rho baseCase)
-                (.childCons (RawTerm.rename rho reflChild) .childNil))
+              (.childCons motive (.childCons baseCase (.childCons reflChild .childNil)))) =
+            (.mkGen .gen_idJ ()
+              (.childCons (RawTerm.rename (RawRenaming.lift (RawRenaming.lift rho)) motive)
+                (.childCons (RawTerm.rename rho baseCase)
+                  (.childCons (RawTerm.rename rho reflChild) .childNil)))
               : RawTerm targetScope) from rfl] at renameEquation
       injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
-      injection childrenEq with _ _ _ baseEq tailEq
-      injection tailEq with _ _ _ reflEq _nilEq
+      injection childrenEq with _ _ _ _motiveEq tailEq
+      injection tailEq with _ _ _ baseEq tail2Eq
+      injection tail2Eq with _ _ _ reflEq _nilEq
       obtain ⟨_reflPayload, _reflChildren, reflTermEq⟩ := RawTerm.rename_eq_mkGen rho reflEq
       subst reflTermEq
       match _reflPayload, _reflChildren with
@@ -453,29 +460,35 @@ theorem Step.reflectIotaIdJRefl {sourceScope targetScope : Nat}
           exact ⟨baseCase, Step.iotaIdJRefl, baseEq⟩
 
 /-- **The `idStrictRec`-on-`refl` ι arm of arbitrary-renaming `Step` reflection.**  The strict
-identity-eliminator twin of `reflectIotaIdJRefl` (same arity / projection shape). -/
+identity-eliminator twin of `reflectIotaIdJRefl` (same arity / projection shape, same Phase-Z spine with
+the motive under two binders and the witness last). -/
 theorem Step.reflectIotaIdStrictRecRefl {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope) {term : RawTerm sourceScope}
+    {renamedMotive : RawTerm (targetScope + 2)}
     {renamedBase renamedWitness : RawTerm targetScope}
     (renameEquation : RawTerm.rename rho term =
       .mkGen .gen_idStrictRec ()
-        (.childCons renamedBase
-          (.childCons (.mkGen .gen_refl () (.childCons renamedWitness .childNil)) .childNil))) :
+        (.childCons renamedMotive
+          (.childCons renamedBase
+            (.childCons (.mkGen .gen_refl () (.childCons renamedWitness .childNil)) .childNil)))) :
     ∃ sourceReduct : RawTerm sourceScope,
       Step term sourceReduct ∧ RawTerm.rename rho sourceReduct = renamedBase := by
   obtain ⟨payload, children, termEq⟩ := RawTerm.rename_eq_mkGen rho renameEquation
   subst termEq
   match payload, children with
-  | (), .childCons baseCase (.childCons reflChild .childNil) =>
+  | (), .childCons motive (.childCons baseCase (.childCons reflChild .childNil)) =>
       rw [show RawTerm.rename rho
-            (.mkGen .gen_idStrictRec () (.childCons baseCase (.childCons reflChild .childNil))) =
             (.mkGen .gen_idStrictRec ()
-              (.childCons (RawTerm.rename rho baseCase)
-                (.childCons (RawTerm.rename rho reflChild) .childNil))
+              (.childCons motive (.childCons baseCase (.childCons reflChild .childNil)))) =
+            (.mkGen .gen_idStrictRec ()
+              (.childCons (RawTerm.rename (RawRenaming.lift (RawRenaming.lift rho)) motive)
+                (.childCons (RawTerm.rename rho baseCase)
+                  (.childCons (RawTerm.rename rho reflChild) .childNil)))
               : RawTerm targetScope) from rfl] at renameEquation
       injection renameEquation with _scopeEq _generatorEq _payloadEq childrenEq
-      injection childrenEq with _ _ _ baseEq tailEq
-      injection tailEq with _ _ _ reflEq _nilEq
+      injection childrenEq with _ _ _ _motiveEq tailEq
+      injection tailEq with _ _ _ baseEq tail2Eq
+      injection tail2Eq with _ _ _ reflEq _nilEq
       obtain ⟨_reflPayload, _reflChildren, reflTermEq⟩ := RawTerm.rename_eq_mkGen rho reflEq
       subst reflTermEq
       match _reflPayload, _reflChildren with

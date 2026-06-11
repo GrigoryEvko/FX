@@ -375,7 +375,7 @@ def Generator.arity : Generator → Nat
   | .gen_eitherMatch  => 4  -- motive (under binder), leftBranch, rightBranch, scrutinee
   -- Identity types
   | .gen_refl         => 1  -- rawWitness
-  | .gen_idJ          => 2  -- baseCase, witness
+  | .gen_idJ          => 3  -- motive (under two binders), baseCase, witness
   -- Modal
   | .gen_modIntro     => 1  -- raw
   | .gen_modElim      => 1  -- raw
@@ -400,7 +400,7 @@ def Generator.arity : Generator → Nat
   | .gen_oeqFunext    => 1  -- pointwiseEquality
   -- Strict identity
   | .gen_idStrictRefl => 1  -- witness
-  | .gen_idStrictRec  => 2  -- baseCase, witness
+  | .gen_idStrictRec  => 3  -- motive (under two binders), baseCase, witness
   -- Type equivalence
   | .gen_equivIntro   => 2  -- forwardFn, backwardFn
   | .gen_equivApp     => 2  -- equivTerm, argument
@@ -686,7 +686,7 @@ def Generator.binderShifts : Generator → List Nat
   | .gen_eitherMatch  => [1, 0, 0, 0]  -- motive binds the scrutinee either
   -- Identity types
   | .gen_refl         => [0]
-  | .gen_idJ          => [0, 0]
+  | .gen_idJ          => [2, 0, 0]  -- motive binds the endpoint and the path
   -- Modal
   | .gen_modIntro     => [0]
   | .gen_modElim      => [0]
@@ -711,7 +711,7 @@ def Generator.binderShifts : Generator → List Nat
   | .gen_oeqFunext    => [0]
   -- Strict identity
   | .gen_idStrictRefl => [0]
-  | .gen_idStrictRec  => [0, 0]
+  | .gen_idStrictRec  => [2, 0, 0]  -- motive binds the endpoint and the path
   -- Type equivalence
   | .gen_equivIntro   => [0, 0]
   | .gen_equivApp     => [0, 0]

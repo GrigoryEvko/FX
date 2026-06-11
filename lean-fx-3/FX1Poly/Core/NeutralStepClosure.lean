@@ -158,16 +158,20 @@ theorem IsNeutral.closedUnderStep {scope : Nat} {term reduct : RawTerm scope}
       · rw [reductEq]; exact IsNeutral.eitherMatch (scrutineeIH stepScrutinee)
   | idJ witnessIsNeutral witnessIH =>
       rcases Step.from_idJ step with
-        ⟨_rawWitness, witnessEq, _⟩ | ⟨_baseAfter, reductEq, _⟩ | ⟨_witnessAfter, reductEq, stepWitness⟩
+        ⟨_rawWitness, witnessEq, _⟩ | ⟨_motiveAfter, reductEq, _⟩ |
+        ⟨_baseAfter, reductEq, _⟩ | ⟨_witnessAfter, reductEq, stepWitness⟩
       · cases witnessIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator witnessEq)
+      · rw [reductEq]; exact IsNeutral.idJ witnessIsNeutral
       · rw [reductEq]; exact IsNeutral.idJ witnessIsNeutral
       · rw [reductEq]; exact IsNeutral.idJ (witnessIH stepWitness)
   | idStrictRec witnessIsNeutral witnessIH =>
       rcases Step.from_idStrictRec step with
-        ⟨_rawWitness, witnessEq, _⟩ | ⟨_baseAfter, reductEq, _⟩ | ⟨_witnessAfter, reductEq, stepWitness⟩
+        ⟨_rawWitness, witnessEq, _⟩ | ⟨_motiveAfter, reductEq, _⟩ |
+        ⟨_baseAfter, reductEq, _⟩ | ⟨_witnessAfter, reductEq, stepWitness⟩
       · cases witnessIsNeutral <;>
           exact Generator.noConfusion (congrArg RawTerm.rootGenerator witnessEq)
+      · rw [reductEq]; exact IsNeutral.idStrictRec witnessIsNeutral
       · rw [reductEq]; exact IsNeutral.idStrictRec witnessIsNeutral
       · rw [reductEq]; exact IsNeutral.idStrictRec (witnessIH stepWitness)
 

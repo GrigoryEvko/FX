@@ -522,25 +522,26 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
       Eliminating the identity type at `refl rawWitness` returns
       the base case:
 
-        idJ baseCase (refl rawWitness)  ↝  baseCase
+        idJ motive baseCase (refl rawWitness)  ↝  baseCase
 
       Same SHAPE-1 (branch-selection / pure projection) as
-      `iotaBoolTrue` and the other base-case iotas.  Identity-type
-      elimination is simpler than textbook MLTT in v2's design
-      because the motive and endpoint information lives in the
-      PROFILE layer (which interprets identity types), not in the
-      substrate's metadata.  The iota just discards the refl
-      witness and returns the base case; the profile checks that
-      the base case has the right type relative to the motive. -/
-  | iotaIdJRefl {scope : Nat}
+      `iotaBoolTrue` and the other base-case iotas.  Phase-Z
+      spine `(motive, baseCase, witness)` with the witness LAST:
+      the motive is a term under TWO binders (var 1 = the
+      endpoint, var 0 = the path) and is DISCARDED by the iota —
+      J's computation rule returns the base case verbatim.  The
+      typing layer checks the base case against the motive
+      instantiated at refl; the reduction layer never reads it. -/
+  | iotaIdJRefl {scope : Nat} {motive : RawTerm (scope + 2)}
                 {baseCase rawWitness : RawTerm scope} :
       Step
         (.mkGen .gen_idJ ()
-          (.childCons
-            baseCase
+          (.childCons motive
             (.childCons
-              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-              .childNil)))
+              baseCase
+              (.childCons
+                (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+                .childNil))))
         baseCase
   /-- **Iota for idStrictRec on refl (strict identity-type
       elimination).**
@@ -550,15 +551,16 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
       eliminators identically (same arity, same binderShifts) --
       the strict-vs-relaxed distinction is a profile-layer
       concern, not a reduction-rule concern. -/
-  | iotaIdStrictRecRefl {scope : Nat}
+  | iotaIdStrictRecRefl {scope : Nat} {motive : RawTerm (scope + 2)}
                         {baseCase rawWitness : RawTerm scope} :
       Step
         (.mkGen .gen_idStrictRec ()
-          (.childCons
-            baseCase
+          (.childCons motive
             (.childCons
-              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-              .childNil)))
+              baseCase
+              (.childCons
+                (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+                .childNil))))
         baseCase
 
 /-- **Step at some position in a children spine.**
@@ -1109,6 +1111,8 @@ theorem Step.iotaListElimCons_builds_triple_app :
 The witness `refl unit` is discarded; the base case `boolTrue` is
 returned.  Closes by `apply Step.iotaIdJRefl`. -/
 theorem Step.iotaIdJRefl_selects_base :
+    let motive : RawTerm 2 :=
+      .mkGen .gen_var ⟨0, Nat.zero_lt_succ 1⟩ .childNil
     let baseCase : RawTerm 0 :=
       .mkGen .gen_boolTrue () .childNil
     let rawWitness : RawTerm 0 :=
@@ -1117,7 +1121,8 @@ theorem Step.iotaIdJRefl_selects_base :
       .mkGen .gen_refl () (.childCons rawWitness .childNil)
     let idJTerm : RawTerm 0 :=
       .mkGen .gen_idJ ()
-        (.childCons baseCase (.childCons reflTerm .childNil))
+        (.childCons motive
+          (.childCons baseCase (.childCons reflTerm .childNil)))
     Step idJTerm baseCase := by
   apply Step.iotaIdJRefl
 
@@ -1125,6 +1130,8 @@ theorem Step.iotaIdJRefl_selects_base :
 
 Symmetric to `iotaIdJRefl_selects_base` for `gen_idStrictRec`. -/
 theorem Step.iotaIdStrictRecRefl_selects_base :
+    let motive : RawTerm 2 :=
+      .mkGen .gen_var ⟨0, Nat.zero_lt_succ 1⟩ .childNil
     let baseCase : RawTerm 0 :=
       .mkGen .gen_boolTrue () .childNil
     let rawWitness : RawTerm 0 :=
@@ -1133,7 +1140,8 @@ theorem Step.iotaIdStrictRecRefl_selects_base :
       .mkGen .gen_refl () (.childCons rawWitness .childNil)
     let idStrictRecTerm : RawTerm 0 :=
       .mkGen .gen_idStrictRec ()
-        (.childCons baseCase (.childCons reflTerm .childNil))
+        (.childCons motive
+          (.childCons baseCase (.childCons reflTerm .childNil)))
     Step idStrictRecTerm baseCase := by
   apply Step.iotaIdStrictRecRefl
 

@@ -128,14 +128,15 @@ inductive IotaNonRecursiveStep : {scope : Nat} → RawTerm scope → RawTerm sco
             (.childCons (.mkGen .gen_eitherInr () (.childCons value .childNil))
               .childNil)))))
         (.mkGen .gen_app () (.childCons rightBranch (.childCons value .childNil)))
-  | iotaIdJRefl {scope : Nat} {baseCase rawWitness : RawTerm scope} :
+  | iotaIdJRefl {scope : Nat} {motive : RawTerm (scope + 2)} {baseCase rawWitness : RawTerm scope} :
       IotaNonRecursiveStep
-        (.mkGen .gen_idJ () (.childCons baseCase
-          (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil))) baseCase
-  | iotaIdStrictRecRefl {scope : Nat} {baseCase rawWitness : RawTerm scope} :
+        (.mkGen .gen_idJ () (.childCons motive (.childCons baseCase
+          (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))) baseCase
+  | iotaIdStrictRecRefl {scope : Nat} {motive : RawTerm (scope + 2)}
+      {baseCase rawWitness : RawTerm scope} :
       IotaNonRecursiveStep
-        (.mkGen .gen_idStrictRec () (.childCons baseCase
-          (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil))) baseCase
+        (.mkGen .gen_idStrictRec () (.childCons motive (.childCons baseCase
+          (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))) baseCase
 
 /-- Soundness: every non-recursive ι step is a genuine `Step` of the real kernel — this fragment is a
 sub-relation of the live reduction relation, not a toy model. -/
@@ -352,13 +353,21 @@ theorem IotaNonRecursiveStep.size_decreases {scope : Nat} {source target : RawTe
       dsimp only [RawTerm.size, RawTermChildren.size]
       exact iotaSizeShapeAppliedSecondWithMotive _ _ _ _
   | iotaIdJRefl =>
+      -- Phase-Z 3-child spine `[motive, baseCase, refl]`: baseCase is at position 1,
+      -- so skip ONE head (the motive, at shift 2) after projecting baseCase as the
+      -- head of the tail spine — mirrors the `iotaBoolTrue` arm with the motive at
+      -- shift 2 (a term under TWO binders) rather than shift 1.
       dsimp only [RawTerm.size]
-      exact Nat.lt_trans
-        (RawTermChildren.size_lt_childCons_head (shift := 0) _ _) (Nat.lt_succ_self _)
+      exact Nat.lt_trans (Nat.lt_trans
+        (RawTermChildren.size_lt_childCons_head (shift := 0) _ _)
+        (RawTermChildren.size_lt_childCons_tail (shift := 2) _ _)) (Nat.lt_succ_self _)
   | iotaIdStrictRecRefl =>
+      -- Phase-Z 3-child spine `[motive, baseCase, refl]`: same as `iotaIdJRefl`
+      -- (baseCase at position 1, motive head at shift 2).
       dsimp only [RawTerm.size]
-      exact Nat.lt_trans
-        (RawTermChildren.size_lt_childCons_head (shift := 0) _ _) (Nat.lt_succ_self _)
+      exact Nat.lt_trans (Nat.lt_trans
+        (RawTermChildren.size_lt_childCons_head (shift := 0) _ _)
+        (RawTermChildren.size_lt_childCons_tail (shift := 2) _ _)) (Nat.lt_succ_self _)
 
 /-- Accessibility successor: `laterTerm` is below `earlierTerm` when `earlierTerm` contracts by one
 non-recursive ι step (mirrors `Step.etaSuccessor`). -/

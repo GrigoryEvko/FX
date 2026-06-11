@@ -839,17 +839,19 @@ theorem iotaOptionMatchNoneSameRoot_hasJoin {scope : Nat}
     (iotaOptionMatchNoneSameRoot motive noneBranch someBranch).HasJoin :=
   (LocalDiamond.iotaOptionMatchNoneSameRoot motive noneBranch someBranch).hasJoin
 
-/-- Resolver arm for same-root `idJ` refl-case branchings. -/
+/-- Resolver arm for same-root `idJ` refl-case branchings.
+Phase-Z motive shape. -/
 theorem iotaIdJReflSameRoot_hasJoin {scope : Nat}
-    (baseCase rawWitness : RawTerm scope) :
-    (iotaIdJReflSameRoot baseCase rawWitness).HasJoin :=
-  (LocalDiamond.iotaIdJReflSameRoot baseCase rawWitness).hasJoin
+    (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope) :
+    (iotaIdJReflSameRoot motive baseCase rawWitness).HasJoin :=
+  (LocalDiamond.iotaIdJReflSameRoot motive baseCase rawWitness).hasJoin
 
-/-- Resolver arm for same-root `idStrictRec` refl-case branchings. -/
+/-- Resolver arm for same-root `idStrictRec` refl-case branchings.
+Phase-Z motive shape. -/
 theorem iotaIdStrictRecReflSameRoot_hasJoin {scope : Nat}
-    (baseCase rawWitness : RawTerm scope) :
-    (iotaIdStrictRecReflSameRoot baseCase rawWitness).HasJoin :=
-  (LocalDiamond.iotaIdStrictRecReflSameRoot baseCase rawWitness).hasJoin
+    (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope) :
+    (iotaIdStrictRecReflSameRoot motive baseCase rawWitness).HasJoin :=
+  (LocalDiamond.iotaIdStrictRecReflSameRoot motive baseCase rawWitness).hasJoin
 
 /-- Resolver arm for same-root `optionMatch` some-case branchings.
 Phase-Z motive shape. -/
@@ -990,25 +992,27 @@ theorem fromSteps_iotaOptionMatchNoneSameRoot_hasJoin {scope : Nat}
         (motive := motive) (noneBranch := noneBranch) (someBranch := someBranch))).HasJoin :=
   iotaOptionMatchNoneSameRoot_hasJoin motive noneBranch someBranch
 
-/-- `fromSteps`-facing same-root `idJ` refl-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `idJ` refl-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaIdJReflSameRoot_hasJoin {scope : Nat}
-    (baseCase rawWitness : RawTerm scope) :
+    (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope) :
     (fromSteps
       (Step.iotaIdJRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))
       (Step.iotaIdJRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
-  iotaIdJReflSameRoot_hasJoin baseCase rawWitness
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
+  iotaIdJReflSameRoot_hasJoin motive baseCase rawWitness
 
-/-- `fromSteps`-facing same-root `idStrictRec` refl-case iota resolver arm. -/
+/-- `fromSteps`-facing same-root `idStrictRec` refl-case iota resolver arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaIdStrictRecReflSameRoot_hasJoin {scope : Nat}
-    (baseCase rawWitness : RawTerm scope) :
+    (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope) :
     (fromSteps
       (Step.iotaIdStrictRecRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))
       (Step.iotaIdStrictRecRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
-  iotaIdStrictRecReflSameRoot_hasJoin baseCase rawWitness
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
+  iotaIdStrictRecReflSameRoot_hasJoin motive baseCase rawWitness
 
 /-- `fromSteps`-facing same-root `optionMatch` some-case iota resolver arm.
 Phase-Z motive shape. -/
@@ -2506,45 +2510,71 @@ theorem iotaEitherMatchInrMotiveCong_hasJoin {scope : Nat}
     (value := value) (leftBranch := leftBranch) (rightBranch := rightBranch)
     motiveStep).hasJoin
 
+/-- Resolver arm for `idJ refl` iota competing with discarded motive
+congruence (Phase-Z motive shape). -/
+theorem iotaIdJMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 2)}
+    {baseCase rawWitness : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaIdJMotiveCong
+      (baseCase := baseCase) (rawWitness := rawWitness) motiveStep).HasJoin :=
+  (LocalDiamond.iotaIdJMotiveCong
+    (baseCase := baseCase) (rawWitness := rawWitness) motiveStep).hasJoin
+
 /-- Resolver arm for `idJ refl` iota competing with selected base-case
-congruence. -/
+congruence (Phase-Z motive shape). -/
 theorem iotaIdJBaseCaseCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase steppedBaseCase rawWitness : RawTerm scope}
     (baseStep : Step baseCase steppedBaseCase) :
     (iotaIdJBaseCaseCong
-      (rawWitness := rawWitness) baseStep).HasJoin :=
+      (motive := motive) (rawWitness := rawWitness) baseStep).HasJoin :=
   (LocalDiamond.iotaIdJBaseCaseCong
-    (rawWitness := rawWitness) baseStep).hasJoin
+    (motive := motive) (rawWitness := rawWitness) baseStep).hasJoin
 
 /-- Resolver arm for `idJ refl` iota competing with discarded witness
-congruence. -/
+congruence (Phase-Z motive shape). -/
 theorem iotaIdJWitnessCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness steppedRawWitness : RawTerm scope}
     (witnessStep : Step rawWitness steppedRawWitness) :
     (iotaIdJWitnessCong
-      (baseCase := baseCase) witnessStep).HasJoin :=
+      (motive := motive) (baseCase := baseCase) witnessStep).HasJoin :=
   (LocalDiamond.iotaIdJWitnessCong
-    (baseCase := baseCase) witnessStep).hasJoin
+    (motive := motive) (baseCase := baseCase) witnessStep).hasJoin
+
+/-- Resolver arm for `idStrictRec refl` iota competing with discarded motive
+congruence (Phase-Z motive shape). -/
+theorem iotaIdStrictRecMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 2)}
+    {baseCase rawWitness : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (iotaIdStrictRecMotiveCong
+      (baseCase := baseCase) (rawWitness := rawWitness) motiveStep).HasJoin :=
+  (LocalDiamond.iotaIdStrictRecMotiveCong
+    (baseCase := baseCase) (rawWitness := rawWitness) motiveStep).hasJoin
 
 /-- Resolver arm for `idStrictRec refl` iota competing with selected
-base-case congruence. -/
+base-case congruence (Phase-Z motive shape). -/
 theorem iotaIdStrictRecBaseCaseCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase steppedBaseCase rawWitness : RawTerm scope}
     (baseStep : Step baseCase steppedBaseCase) :
     (iotaIdStrictRecBaseCaseCong
-      (rawWitness := rawWitness) baseStep).HasJoin :=
+      (motive := motive) (rawWitness := rawWitness) baseStep).HasJoin :=
   (LocalDiamond.iotaIdStrictRecBaseCaseCong
-    (rawWitness := rawWitness) baseStep).hasJoin
+    (motive := motive) (rawWitness := rawWitness) baseStep).hasJoin
 
 /-- Resolver arm for `idStrictRec refl` iota competing with discarded
-witness congruence. -/
+witness congruence (Phase-Z motive shape). -/
 theorem iotaIdStrictRecWitnessCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness steppedRawWitness : RawTerm scope}
     (witnessStep : Step rawWitness steppedRawWitness) :
     (iotaIdStrictRecWitnessCong
-      (baseCase := baseCase) witnessStep).HasJoin :=
+      (motive := motive) (baseCase := baseCase) witnessStep).HasJoin :=
   (LocalDiamond.iotaIdStrictRecWitnessCong
-    (baseCase := baseCase) witnessStep).hasJoin
+    (motive := motive) (baseCase := baseCase) witnessStep).hasJoin
 
 /-- `fromSteps`-facing `listElim listCons` iota / head congruence arm.
 Phase-Z motive shape. -/
@@ -3033,49 +3063,85 @@ theorem fromSteps_iotaEitherMatchInrMotiveCong_hasJoin {scope : Nat}
         motiveStep).rightStep).HasJoin :=
   iotaEitherMatchInrMotiveCong_hasJoin motiveStep
 
-/-- `fromSteps`-facing `idJ refl` iota / base-case congruence arm. -/
+/-- `fromSteps`-facing `idJ refl` iota / discarded motive congruence arm.
+Phase-Z motive shape. -/
+theorem fromSteps_iotaIdJMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 2)}
+    {baseCase rawWitness : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaIdJRefl
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))
+      (iotaIdJMotiveCong
+        (baseCase := baseCase) (rawWitness := rawWitness)
+        motiveStep).rightStep).HasJoin :=
+  iotaIdJMotiveCong_hasJoin motiveStep
+
+/-- `fromSteps`-facing `idJ refl` iota / base-case congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaIdJBaseCaseCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase steppedBaseCase rawWitness : RawTerm scope}
     (baseStep : Step baseCase steppedBaseCase) :
     (fromSteps
       (Step.iotaIdJRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))
       (iotaIdJBaseCaseCong
-        (rawWitness := rawWitness) baseStep).rightStep).HasJoin :=
-  iotaIdJBaseCaseCong_hasJoin baseStep
+        (motive := motive) (rawWitness := rawWitness) baseStep).rightStep).HasJoin :=
+  iotaIdJBaseCaseCong_hasJoin (motive := motive) baseStep
 
-/-- `fromSteps`-facing `idJ refl` iota / witness congruence arm. -/
+/-- `fromSteps`-facing `idJ refl` iota / witness congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaIdJWitnessCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness steppedRawWitness : RawTerm scope}
     (witnessStep : Step rawWitness steppedRawWitness) :
     (fromSteps
       (Step.iotaIdJRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))
       (iotaIdJWitnessCong
-        (baseCase := baseCase) witnessStep).rightStep).HasJoin :=
-  iotaIdJWitnessCong_hasJoin witnessStep
+        (motive := motive) (baseCase := baseCase) witnessStep).rightStep).HasJoin :=
+  iotaIdJWitnessCong_hasJoin (motive := motive) witnessStep
 
-/-- `fromSteps`-facing `idStrictRec refl` iota / base-case congruence arm. -/
+/-- `fromSteps`-facing `idStrictRec refl` iota / discarded motive congruence
+arm.  Phase-Z motive shape. -/
+theorem fromSteps_iotaIdStrictRecMotiveCong_hasJoin {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 2)}
+    {baseCase rawWitness : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    (fromSteps
+      (Step.iotaIdStrictRecRefl
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))
+      (iotaIdStrictRecMotiveCong
+        (baseCase := baseCase) (rawWitness := rawWitness)
+        motiveStep).rightStep).HasJoin :=
+  iotaIdStrictRecMotiveCong_hasJoin motiveStep
+
+/-- `fromSteps`-facing `idStrictRec refl` iota / base-case congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaIdStrictRecBaseCaseCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase steppedBaseCase rawWitness : RawTerm scope}
     (baseStep : Step baseCase steppedBaseCase) :
     (fromSteps
       (Step.iotaIdStrictRecRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))
       (iotaIdStrictRecBaseCaseCong
-        (rawWitness := rawWitness) baseStep).rightStep).HasJoin :=
-  iotaIdStrictRecBaseCaseCong_hasJoin baseStep
+        (motive := motive) (rawWitness := rawWitness) baseStep).rightStep).HasJoin :=
+  iotaIdStrictRecBaseCaseCong_hasJoin (motive := motive) baseStep
 
-/-- `fromSteps`-facing `idStrictRec refl` iota / witness congruence arm. -/
+/-- `fromSteps`-facing `idStrictRec refl` iota / witness congruence arm.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaIdStrictRecWitnessCong_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness steppedRawWitness : RawTerm scope}
     (witnessStep : Step rawWitness steppedRawWitness) :
     (fromSteps
       (Step.iotaIdStrictRecRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))
       (iotaIdStrictRecWitnessCong
-        (baseCase := baseCase) witnessStep).rightStep).HasJoin :=
-  iotaIdStrictRecWitnessCong_hasJoin witnessStep
+        (motive := motive) (baseCase := baseCase) witnessStep).rightStep).HasJoin :=
+  iotaIdStrictRecWitnessCong_hasJoin (motive := motive) witnessStep
 
 /-- Resolve every local branching whose left step is `optionMatch optionNone` iota.
 
@@ -3374,110 +3440,135 @@ theorem fromSteps_iotaEitherMatchInrRight_hasJoin {scope : Nat}
         (rightBranch := rightBranch))).HasJoin :=
   hasJoin_swap (fromSteps_iotaEitherMatchInrLeft_hasJoin leftStep)
 
-/-- Resolve every local branching whose left step is `idJ refl` iota. -/
+/-- Resolve every local branching whose left step is `idJ refl` iota.
+Phase-Z motive shape: the shared source permits same-root `idJ` refl-case,
+congruence in the motive (head, shift 2), congruence in the selected base case,
+or congruence inside the discarded refl witness. -/
 theorem fromSteps_iotaIdJReflLeft_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_idJ ()
-        (.childCons
-          baseCase
+        (.childCons motive
           (.childCons
-            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-            .childNil)))
+            baseCase
+            (.childCons
+              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+              .childNil))))
       rightReduct) :
     (fromSteps
       (Step.iotaIdJRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaIdJRefl =>
-      exact fromSteps_iotaIdJReflSameRoot_hasJoin baseCase rawWitness
+      exact fromSteps_iotaIdJReflSameRoot_hasJoin motive baseCase rawWitness
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren baseStep =>
-          exact fromSteps_iotaIdJBaseCaseCong_hasJoin baseStep
-      | there baseChild restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaIdJMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
-          | here emptyChildren witnessStep =>
-              cases witnessStep with
-              | cong witnessGenerator witnessPayload witnessChildrenStep =>
-                  cases witnessChildrenStep with
-                  | here emptyChildren rawWitnessStep =>
-                      exact fromSteps_iotaIdJWitnessCong_hasJoin rawWitnessStep
-                  | there witnessChild emptyStep =>
-                      cases emptyStep
-          | there witnessChild emptyStep =>
-              cases emptyStep
+          | here restChildren baseStep =>
+              exact fromSteps_iotaIdJBaseCaseCong_hasJoin (motive := motive) baseStep
+          | there baseChild witnessTailStep =>
+              cases witnessTailStep with
+              | here emptyChildren witnessStep =>
+                  cases witnessStep with
+                  | cong witnessGenerator witnessPayload witnessChildrenStep =>
+                      cases witnessChildrenStep with
+                      | here emptyChildren rawWitnessStep =>
+                          exact fromSteps_iotaIdJWitnessCong_hasJoin
+                            (motive := motive) rawWitnessStep
+                      | there witnessChild emptyStep =>
+                          cases emptyStep
+              | there witnessChild emptyStep =>
+                  cases emptyStep
 
-/-- Resolve every local branching whose right step is `idJ refl` iota. -/
+/-- Resolve every local branching whose right step is `idJ refl` iota.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaIdJReflRight_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_idJ ()
-        (.childCons
-          baseCase
+        (.childCons motive
           (.childCons
-            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-            .childNil)))
+            baseCase
+            (.childCons
+              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+              .childNil))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaIdJRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
   hasJoin_swap (fromSteps_iotaIdJReflLeft_hasJoin leftStep)
 
-/-- Resolve every local branching whose left step is `idStrictRec refl` iota. -/
+/-- Resolve every local branching whose left step is `idStrictRec refl` iota.
+Phase-Z motive shape: same-root, motive congruence (head, shift 2), base-case
+congruence, or congruence inside the discarded refl witness. -/
 theorem fromSteps_iotaIdStrictRecReflLeft_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness rightReduct : RawTerm scope}
     (rightStep : Step
       (.mkGen .gen_idStrictRec ()
-        (.childCons
-          baseCase
+        (.childCons motive
           (.childCons
-            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-            .childNil)))
+            baseCase
+            (.childCons
+              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+              .childNil))))
       rightReduct) :
     (fromSteps
       (Step.iotaIdStrictRecRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))
       rightStep).HasJoin := by
   cases rightStep with
   | iotaIdStrictRecRefl =>
       exact fromSteps_iotaIdStrictRecReflSameRoot_hasJoin
-        baseCase rawWitness
+        motive baseCase rawWitness
   | cong generator payload childStep =>
       cases childStep with
-      | here restChildren baseStep =>
-          exact fromSteps_iotaIdStrictRecBaseCaseCong_hasJoin baseStep
-      | there baseChild restStep =>
+      | here restChildren motiveStep =>
+          exact fromSteps_iotaIdStrictRecMotiveCong_hasJoin motiveStep
+      | there motiveChild restStep =>
           cases restStep with
-          | here emptyChildren witnessStep =>
-              cases witnessStep with
-              | cong witnessGenerator witnessPayload witnessChildrenStep =>
-                  cases witnessChildrenStep with
-                  | here emptyChildren rawWitnessStep =>
-                      exact fromSteps_iotaIdStrictRecWitnessCong_hasJoin
-                        rawWitnessStep
-                  | there witnessChild emptyStep =>
-                      cases emptyStep
-          | there witnessChild emptyStep =>
-              cases emptyStep
+          | here restChildren baseStep =>
+              exact fromSteps_iotaIdStrictRecBaseCaseCong_hasJoin
+                (motive := motive) baseStep
+          | there baseChild witnessTailStep =>
+              cases witnessTailStep with
+              | here emptyChildren witnessStep =>
+                  cases witnessStep with
+                  | cong witnessGenerator witnessPayload witnessChildrenStep =>
+                      cases witnessChildrenStep with
+                      | here emptyChildren rawWitnessStep =>
+                          exact fromSteps_iotaIdStrictRecWitnessCong_hasJoin
+                            (motive := motive) rawWitnessStep
+                      | there witnessChild emptyStep =>
+                          cases emptyStep
+              | there witnessChild emptyStep =>
+                  cases emptyStep
 
-/-- Resolve every local branching whose right step is `idStrictRec refl` iota. -/
+/-- Resolve every local branching whose right step is `idStrictRec refl` iota.
+Phase-Z motive shape. -/
 theorem fromSteps_iotaIdStrictRecReflRight_hasJoin {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness leftReduct : RawTerm scope}
     (leftStep : Step
       (.mkGen .gen_idStrictRec ()
-        (.childCons
-          baseCase
+        (.childCons motive
           (.childCons
-            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-            .childNil)))
+            baseCase
+            (.childCons
+              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+              .childNil))))
       leftReduct) :
     (fromSteps
       leftStep
       (Step.iotaIdStrictRecRefl
-        (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
+        (motive := motive) (baseCase := baseCase) (rawWitness := rawWitness))).HasJoin :=
   hasJoin_swap (fromSteps_iotaIdStrictRecReflLeft_hasJoin leftStep)
 
 /-- Contradiction arm for the mutually-exclusive bool true/false root pair.

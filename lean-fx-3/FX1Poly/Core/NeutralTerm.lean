@@ -27,17 +27,18 @@ head).  The complete current-substrate elimination set is
   · eitherMatch · idJ · idStrictRec
 
 with the *principal* child (the one whose canonical form triggers the rule)
-being child 0 for `fst`/`snd`, child 1 for `idJ`/`idStrictRec` (the identity
-*witness*; the base case is passive), and the LAST child (child 3) for the
-Phase-Z dependent eliminators
-`boolElim`/`natElim`/`natRec`/`listElim`/`optionMatch`/`eitherMatch`, whose
-spine is `(motive, branch…, scrutinee)`.
+being child 0 for `fst`/`snd` and the LAST child for every Phase-Z dependent
+eliminator — child 3 for
+`boolElim`/`natElim`/`natRec`/`listElim`/`optionMatch`/`eitherMatch` and
+child 2 for `idJ`/`idStrictRec` (the identity *witness*; the base case is
+passive) — whose spine is `(motive, branch…, scrutinee)`.
 
 The Phase-Z dependent eliminators carry binder-shift arithmetic on their own
 children: `boolElim`/`listElim`/`optionMatch`/`eitherMatch` have shifts
-`[1, 0, 0, 0]` (the motive binds the scrutinee), and `natElim`/`natRec` have
+`[1, 0, 0, 0]` (the motive binds the scrutinee), `natElim`/`natRec` have
 `[1, 0, 2, 0]` (the motive binds the scrutinee; the succ-branch binds the
-predecessor and the inductive hypothesis).
+predecessor and the inductive hypothesis), and `idJ`/`idStrictRec` have
+`[2, 0, 0]` (the motive binds the endpoint and the path).
 Neutrality only inspects the *scrutinee* child, which lives at the ambient
 `scope`, so the motive and branch shifts do not affect the neutral arms.
 
@@ -144,17 +145,23 @@ inductive IsNeutral : {scope : Nat} → RawTerm scope → Prop where
             (.childCons rightBranch
               (.childCons scrutinee .childNil)))))
   /-- Identity-type elimination is neutral when its witness is neutral; the
-  base case is passive, so it places no neutrality demand. -/
-  | idJ {scope : Nat} {baseCase witness : RawTerm scope}
+  base case is passive, so it places no neutrality demand.
+  Phase-Z motive shape: `(motive, baseCase, witness)` with the motive
+  under TWO binders (endpoint + path) and the witness LAST. -/
+  | idJ {scope : Nat} {motive : RawTerm (scope + 2)}
+      {baseCase witness : RawTerm scope}
       (witnessIsNeutral : IsNeutral witness) :
       IsNeutral (.mkGen .gen_idJ ()
-        (.childCons baseCase (.childCons witness .childNil)))
+        (.childCons motive
+          (.childCons baseCase (.childCons witness .childNil))))
   /-- Strict identity elimination is neutral when its witness is neutral.
   Identical child spine to `idJ`. -/
-  | idStrictRec {scope : Nat} {baseCase witness : RawTerm scope}
+  | idStrictRec {scope : Nat} {motive : RawTerm (scope + 2)}
+      {baseCase witness : RawTerm scope}
       (witnessIsNeutral : IsNeutral witness) :
       IsNeutral (.mkGen .gen_idStrictRec ()
-        (.childCons baseCase (.childCons witness .childNil)))
+        (.childCons motive
+          (.childCons baseCase (.childCons witness .childNil))))
 
 /-- **A neutral term forces an inhabitant of its scope's variable space.**  Every `IsNeutral` derivation
 bottoms out at the atomic `var` arm — a `Fin scope` index — and every other arm is rooted at an eliminator

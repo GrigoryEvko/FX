@@ -431,55 +431,60 @@ theorem ParStep.triangleCongFires {scope : Nat} (gen : Generator) (payload : gen
                   · by_cases hIdJ : gen = .gen_idJ
                     · subst hIdJ
                       cases childrenStep with
-                      | cons _baseStep tailStep => cases tailStep with
-                        | cons reflStep tailNil => cases tailNil with
-                          | nil =>
-                              cases ihChildren with
-                              | cons ihBase ihTail => cases ihTail with
-                                | cons _ihRefl ihNil => cases ihNil with
-                                  | nil =>
-                                      rename_i baseCase _baseCase' reflC _reflC'
-                                      cases reflC with
-                                      | mkGen rg rp rc =>
-                                          by_cases hRefl : rg = .gen_refl
-                                          · subst hRefl
-                                            cases rc with | childCons _witness rcNil => cases rcNil with
-                                              | childNil =>
-                                                  cases reflStep with
-                                                  | cong _ _ csR => cases csR with
-                                                    | cons _ws rR => cases rR with
-                                                      | nil => exact ParStep.iotaIdJRefl ihBase
-                                          · have key : RawTerm.fireRootRedex .gen_idJ payload
-                                                (.childCons baseCase
-                                                  (.childCons (.mkGen rg rp rc) .childNil)) = none :=
-                                              if_neg hRefl
-                                            rw [key] at hfire; nomatch hfire
-                    · by_cases hIdStrictRec : gen = .gen_idStrictRec
-                      · subst hIdStrictRec
-                        cases childrenStep with
-                        | cons _baseStep tailStep => cases tailStep with
+                      | cons _motiveStep tailStep => cases tailStep with
+                        | cons _baseStep tail2 => cases tail2 with
                           | cons reflStep tailNil => cases tailNil with
                             | nil =>
                                 cases ihChildren with
-                                | cons ihBase ihTail => cases ihTail with
-                                  | cons _ihRefl ihNil => cases ihNil with
-                                    | nil =>
-                                        rename_i baseCase _baseCase' reflC _reflC'
-                                        cases reflC with
-                                        | mkGen rg rp rc =>
-                                            by_cases hRefl : rg = .gen_refl
-                                            · subst hRefl
-                                              cases rc with | childCons _witness rcNil => cases rcNil with
-                                                | childNil =>
-                                                    cases reflStep with
-                                                    | cong _ _ csR => cases csR with
-                                                      | cons _ws rR => cases rR with
-                                                        | nil => exact ParStep.iotaIdStrictRecRefl ihBase
-                                            · have key : RawTerm.fireRootRedex .gen_idStrictRec payload
-                                                  (.childCons baseCase
-                                                    (.childCons (.mkGen rg rp rc) .childNil)) = none :=
-                                                if_neg hRefl
-                                              rw [key] at hfire; nomatch hfire
+                                | cons ihMotive ihTail => cases ihTail with
+                                  | cons ihBase ihTail2 => cases ihTail2 with
+                                    | cons _ihRefl ihNil => cases ihNil with
+                                      | nil =>
+                                          rename_i motive _motive' baseCase _baseCase' reflC _reflC'
+                                          cases reflC with
+                                          | mkGen rg rp rc =>
+                                              by_cases hRefl : rg = .gen_refl
+                                              · subst hRefl
+                                                cases rc with | childCons _witness rcNil => cases rcNil with
+                                                  | childNil =>
+                                                      cases reflStep with
+                                                      | cong _ _ csR => cases csR with
+                                                        | cons _ws rR => cases rR with
+                                                          | nil => exact ParStep.iotaIdJRefl ihMotive ihBase
+                                              · have key : RawTerm.fireRootRedex .gen_idJ payload
+                                                    (.childCons motive (.childCons baseCase
+                                                      (.childCons (.mkGen rg rp rc) .childNil))) = none :=
+                                                  if_neg hRefl
+                                                rw [key] at hfire; nomatch hfire
+                    · by_cases hIdStrictRec : gen = .gen_idStrictRec
+                      · subst hIdStrictRec
+                        cases childrenStep with
+                        | cons _motiveStep tailStep => cases tailStep with
+                          | cons _baseStep tail2 => cases tail2 with
+                            | cons reflStep tailNil => cases tailNil with
+                              | nil =>
+                                  cases ihChildren with
+                                  | cons ihMotive ihTail => cases ihTail with
+                                    | cons ihBase ihTail2 => cases ihTail2 with
+                                      | cons _ihRefl ihNil => cases ihNil with
+                                        | nil =>
+                                            rename_i motive _motive' baseCase _baseCase' reflC _reflC'
+                                            cases reflC with
+                                            | mkGen rg rp rc =>
+                                                by_cases hRefl : rg = .gen_refl
+                                                · subst hRefl
+                                                  cases rc with | childCons _witness rcNil => cases rcNil with
+                                                    | childNil =>
+                                                        cases reflStep with
+                                                        | cong _ _ csR => cases csR with
+                                                          | cons _ws rR => cases rR with
+                                                            | nil =>
+                                                                exact ParStep.iotaIdStrictRecRefl ihMotive ihBase
+                                                · have key : RawTerm.fireRootRedex .gen_idStrictRec payload
+                                                      (.childCons motive (.childCons baseCase
+                                                        (.childCons (.mkGen rg rp rc) .childNil))) = none :=
+                                                    if_neg hRefl
+                                                  rw [key] at hfire; nomatch hfire
                       · rw [show RawTerm.fireRootRedex gen payload children = none from by
                             dsimp only [RawTerm.fireRootRedex]
                             rw [dif_neg hApp, dif_neg hBoolElim, dif_neg hFst, dif_neg hSnd,
@@ -556,8 +561,10 @@ theorem ParStep.triangle {scope : Nat} {a b : RawTerm scope} :
               (.cons ihTail .nil)))
             (.cons (ParStep.cong .gen_listElim ()
               (.cons ihMotive (.cons ihNil (.cons ihCons (.cons ihTail .nil))))) .nil)))
-    (fun {_scope} {_baseCase _baseCase' _rawWitness} _step ih => ih)
-    (fun {_scope} {_baseCase _baseCase' _rawWitness} _step ih => ih)
+    (fun {_scope} {_motive _motive' _baseCase _baseCase' _rawWitness}
+        _motiveStep _baseStep _ihMotive ihBase => ihBase)
+    (fun {_scope} {_motive _motive' _baseCase _baseCase' _rawWitness}
+        _motiveStep _baseStep _ihMotive ihBase => ihBase)
     (fun {_scope} => ParStepChildren.nil)
     (fun {_scope _shift _restShifts} {_childHead _childHead' _childTail _childTail'}
         _headStep _tailStep ihHead ihTail => ParStepChildren.cons ihHead ihTail)

@@ -99,9 +99,9 @@ theorem Step.subst {sourceScope targetScope : Nat}
         exact Step.iotaNatRecSucc)
       (fun {scope} {motive} {headVal} {tailVal} {nilBranch} {consBranch}
           {targetScope} sigma => Step.iotaListElimCons)
-      (fun {scope} {baseCase} {rawWitness} {targetScope} sigma =>
+      (fun {scope} {motive} {baseCase} {rawWitness} {targetScope} sigma =>
         Step.iotaIdJRefl)
-      (fun {scope} {baseCase} {rawWitness} {targetScope} sigma =>
+      (fun {scope} {motive} {baseCase} {rawWitness} {targetScope} sigma =>
         Step.iotaIdStrictRecRefl)
       (fun {parentScope} {headShift} {restShifts} {head} {head'} rest
           childStep childStepSubst {targetScope} sigma =>
@@ -196,9 +196,9 @@ theorem StepChildren.subst {parentSourceScope parentTargetScope : Nat}
         exact Step.iotaNatRecSucc)
       (fun {scope} {motive} {headVal} {tailVal} {nilBranch} {consBranch}
           {targetScope} sigma => Step.iotaListElimCons)
-      (fun {scope} {baseCase} {rawWitness} {targetScope} sigma =>
+      (fun {scope} {motive} {baseCase} {rawWitness} {targetScope} sigma =>
         Step.iotaIdJRefl)
-      (fun {scope} {baseCase} {rawWitness} {targetScope} sigma =>
+      (fun {scope} {motive} {baseCase} {rawWitness} {targetScope} sigma =>
         Step.iotaIdStrictRecRefl)
       (fun {parentScope} {headShift} {restShifts} {head} {head'} rest
           childStep childStepSubst {targetScope} sigma =>
@@ -1174,38 +1174,62 @@ theorem Step.preserves_isFreshFor {sourceScope : Nat}
                   (.childCons consBranch
                     (.childCons tailVal .childNil))))) : RawTerm scope)
             secondAppFresh recursiveFresh))
-      (fun {scope} {baseCase} {rawWitness} {targetScope} rawRenaming
+      (fun {scope} {motive} {baseCase} {rawWitness} {targetScope} rawRenaming
           rawSubstitution sourceFresh => by
+        -- Phase-Z idJ spine: (motive, baseCase, refl rawWitness) at shifts [2, 0, 0].
+        -- iotaIdJRefl projects the baseCase (second child); the motive (shift 2) is discarded.
         let sourceChildren :=
-          ((.childCons baseCase
-            (.childCons
-              (.mkGen .gen_refl ()
-                (.childCons rawWitness .childNil))
-              .childNil)) : RawTermChildren [0, 0] scope)
+          ((.childCons motive
+            (.childCons baseCase
+              (.childCons
+                (.mkGen .gen_refl ()
+                  (.childCons rawWitness .childNil))
+                .childNil))) : RawTermChildren [2, 0, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_idJ) rawRenaming rawSubstitution
             nofun () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons baseCase
+                (.childCons
+                  (.mkGen .gen_refl ()
+                    (.childCons rawWitness .childNil))
+                  .childNil)) : RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-          rawRenaming rawSubstitution _ _ childrenFresh)
-      (fun {scope} {baseCase} {rawWitness} {targetScope} rawRenaming
+          rawRenaming rawSubstitution _ _ branchSpineFresh)
+      (fun {scope} {motive} {baseCase} {rawWitness} {targetScope} rawRenaming
           rawSubstitution sourceFresh => by
+        -- Phase-Z idStrictRec spine: (motive, baseCase, refl rawWitness) at [2, 0, 0].
+        -- iotaIdStrictRecRefl projects the baseCase (second child); the motive is discarded.
         let sourceChildren :=
-          ((.childCons baseCase
-            (.childCons
-              (.mkGen .gen_refl ()
-                (.childCons rawWitness .childNil))
-              .childNil)) : RawTermChildren [0, 0] scope)
+          ((.childCons motive
+            (.childCons baseCase
+              (.childCons
+                (.mkGen .gen_refl ()
+                  (.childCons rawWitness .childNil))
+                .childNil))) : RawTermChildren [2, 0, 0] scope)
         have childrenFresh :
             RawTermChildren.isFreshFor rawRenaming rawSubstitution
               sourceChildren :=
           RawTermChildren.isFreshFor_of_nonVarTerm_isFreshFor
             (generator := .gen_idStrictRec) rawRenaming rawSubstitution
             nofun () sourceChildren sourceFresh
+        have branchSpineFresh :
+            RawTermChildren.isFreshFor rawRenaming rawSubstitution
+              ((.childCons baseCase
+                (.childCons
+                  (.mkGen .gen_refl ()
+                    (.childCons rawWitness .childNil))
+                  .childNil)) : RawTermChildren [0, 0] scope) :=
+          RawTermChildren.tail_isFreshFor_of_childCons_isFreshFor
+            rawRenaming rawSubstitution _ _ childrenFresh
         exact RawTermChildren.head_isFreshFor_of_childCons_isFreshFor
-          rawRenaming rawSubstitution _ _ childrenFresh)
+          rawRenaming rawSubstitution _ _ branchSpineFresh)
       (fun {parentScope} {headShift} {restShifts} {head} {head'} rest
           _childStep childFreshIH {targetScope} rawRenaming rawSubstitution
           sourceFresh => by

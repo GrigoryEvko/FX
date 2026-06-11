@@ -305,14 +305,18 @@ theorem cd_listElimCons_eq {scope : Nat} (motive : RawTerm (scope + 1))
             (.childCons (RawTerm.completeDevelopment consBranch)
               (.childCons (RawTerm.completeDevelopment tailValue) .childNil))))) .childNil)) := rfl
 
-theorem cd_idJRefl_eq {scope : Nat} (baseCase rawWitness : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_idJ () (.childCons baseCase
-      (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil))) =
+theorem cd_idJRefl_eq {scope : Nat} (motive : RawTerm (scope + 2))
+    (baseCase rawWitness : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_idJ () (.childCons motive
+      (.childCons baseCase
+        (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))) =
       RawTerm.completeDevelopment baseCase := rfl
 
-theorem cd_idStrictRecRefl_eq {scope : Nat} (baseCase rawWitness : RawTerm scope) :
-    RawTerm.completeDevelopment (.mkGen .gen_idStrictRec () (.childCons baseCase
-      (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil))) =
+theorem cd_idStrictRecRefl_eq {scope : Nat} (motive : RawTerm (scope + 2))
+    (baseCase rawWitness : RawTerm scope) :
+    RawTerm.completeDevelopment (.mkGen .gen_idStrictRec () (.childCons motive
+      (.childCons baseCase
+        (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))) =
       RawTerm.completeDevelopment baseCase := rfl
 
 end FX1Poly.Core

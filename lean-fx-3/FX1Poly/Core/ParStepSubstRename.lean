@@ -128,10 +128,13 @@ theorem ParStep.subst {sourceScope targetScope : Nat}
           ihMotive ihHead ihTail ihNil ihCons {targetScope} sigma =>
         ParStep.iotaListElimCons (ihMotive (RawTermSubst.lift sigma))
           (ihHead sigma) (ihTail sigma) (ihNil sigma) (ihCons sigma))
-      (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma =>
-        ParStep.iotaIdJRefl (ihBase sigma))
-      (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma =>
-        ParStep.iotaIdStrictRecRefl (ihBase sigma))
+      (fun {scope} {motive motive' baseCase baseCase' rawWitness} _stepMotive _stepBase
+          ihMotive ihBase {targetScope} sigma =>
+        ParStep.iotaIdJRefl (ihMotive (RawTermSubst.lift (RawTermSubst.lift sigma))) (ihBase sigma))
+      (fun {scope} {motive motive' baseCase baseCase' rawWitness} _stepMotive _stepBase
+          ihMotive ihBase {targetScope} sigma =>
+        ParStep.iotaIdStrictRecRefl (ihMotive (RawTermSubst.lift (RawTermSubst.lift sigma)))
+          (ihBase sigma))
       (fun {scope} {targetScope} sigma => ParStepChildren.nil)
       (fun {parentScope} {headShift} {restShifts} {childHead childHead' childTail childTail'}
           _headStep _tailStep ihHead ihTail {targetScope} sigma =>
@@ -230,10 +233,13 @@ theorem ParStepChildren.subst {parentSourceScope parentTargetScope : Nat}
           ihMotive ihHead ihTail ihNil ihCons {targetScope} sigma =>
         ParStep.iotaListElimCons (ihMotive (RawTermSubst.lift sigma))
           (ihHead sigma) (ihTail sigma) (ihNil sigma) (ihCons sigma))
-      (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma =>
-        ParStep.iotaIdJRefl (ihBase sigma))
-      (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma =>
-        ParStep.iotaIdStrictRecRefl (ihBase sigma))
+      (fun {scope} {motive motive' baseCase baseCase' rawWitness} _stepMotive _stepBase
+          ihMotive ihBase {targetScope} sigma =>
+        ParStep.iotaIdJRefl (ihMotive (RawTermSubst.lift (RawTermSubst.lift sigma))) (ihBase sigma))
+      (fun {scope} {motive motive' baseCase baseCase' rawWitness} _stepMotive _stepBase
+          ihMotive ihBase {targetScope} sigma =>
+        ParStep.iotaIdStrictRecRefl (ihMotive (RawTermSubst.lift (RawTermSubst.lift sigma)))
+          (ihBase sigma))
       (fun {scope} {targetScope} sigma => ParStepChildren.nil)
       (fun {parentScope} {headShift} {restShifts} {childHead childHead' childTail childTail'}
           _headStep _tailStep ihHead ihTail {targetScope} sigma =>

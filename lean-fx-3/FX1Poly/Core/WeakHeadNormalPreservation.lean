@@ -38,9 +38,11 @@ weak-head-step constructor case the arbitrary `Step subjectType <concreteReduct>
 
 The `beta`/`appCongruence` cases use a nested `Step.weakHeadStep_or_cong` on the function child to decide
 β-redex-vs-`appCongruence`; the sixteen `rootIota` sub-cases are the bulk, one per ι rule, uniform up to
-the scrutinee's child position (0 for every eliminator except `idJ`/`idStrictRec`, where the base case is
-child 0 and the scrutinee is child 1) and arity (nullary constructors refute the impossible cong-into-leaf
-spine by `cases`).  The corollary `weakHeadNormalPreservedByStep` is the four-line contrapositive.
+the scrutinee's child position (Phase-Z places it LAST in every eliminator: child 3 for `boolElim` /
+`natElim` / `natRec` / `listElim` / `optionMatch` / `eitherMatch` whose spines lead with `motive`, child 2
+for `idJ`/`idStrictRec` whose spine is `(motive, baseCase, witness)`, child 0 for `fst`/`snd`) and arity
+(nullary constructors refute the impossible cong-into-leaf spine by `cases`).  The corollary
+`weakHeadNormalPreservedByStep` is the four-line contrapositive.
 
 ## Zero-axiom verification
 
@@ -699,7 +701,12 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
                               | (), .childCons _innerHead (.childCons _innerTail .childNil) =>
                                   exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaListElimCons⟩
                         | there _head4 emptyStep => cases emptyStep
-      | @iotaIdJRefl baseCase rawWitness =>
+      | @iotaIdJRefl motive baseCase rawWitness =>
+          -- Phase-Z spine: (motive, baseCase, witness=refl rawWitness).  A step in motive / base
+          -- leaves the witness a `refl` constructor, so the subject is still an idJ-on-refl redex
+          -- (`rootIota IotaHeadStep.iotaIdJRefl`).  A step in the LAST child (witness) is decided by
+          -- a nested `weakHeadStep_or_cong`: a genuine wh-step lifts via `scrutineeIdJ`, a cong into
+          -- `refl`'s spine leaves it a constructor.
           rcases Step.weakHeadStep_or_cong step with
             ⟨subjectReduct, weakHeadOnSubject⟩
             | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
@@ -712,25 +719,30 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
             subst payloadEquation
             subst childrenAfterEquation
             cases childStep with
-            | here _rest _baseStep =>
+            | here _rest _motiveStep =>
                 exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdJRefl⟩
             | there _head tailStep =>
                 cases tailStep with
-                | here _rest scrutineeStep =>
-                    rcases Step.weakHeadStep_or_cong scrutineeStep with
-                      ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
-                      | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
-                          scrutineeEquation, ctorEquation, _innerChildStep⟩
-                    · exact ⟨_, WeakHeadStep.scrutineeIdJ weakHeadOnScrutinee⟩
-                    · have innerGeneratorEquation : Generator.gen_refl = innerGenerator :=
-                        congrArg RawTerm.rootGenerator ctorEquation
-                      subst innerGeneratorEquation
-                      subst scrutineeEquation
-                      match innerPayload, innerChildren with
-                      | (), .childCons _innerWitness .childNil =>
-                          exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdJRefl⟩
-                | there _head2 emptyStep => cases emptyStep
-      | @iotaIdStrictRecRefl baseCase rawWitness =>
+                | here _rest _baseStep =>
+                    exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdJRefl⟩
+                | there _head2 restStep =>
+                    cases restStep with
+                    | here _rest scrutineeStep =>
+                        rcases Step.weakHeadStep_or_cong scrutineeStep with
+                          ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
+                          | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
+                              scrutineeEquation, ctorEquation, _innerChildStep⟩
+                        · exact ⟨_, WeakHeadStep.scrutineeIdJ weakHeadOnScrutinee⟩
+                        · have innerGeneratorEquation : Generator.gen_refl = innerGenerator :=
+                            congrArg RawTerm.rootGenerator ctorEquation
+                          subst innerGeneratorEquation
+                          subst scrutineeEquation
+                          match innerPayload, innerChildren with
+                          | (), .childCons _innerWitness .childNil =>
+                              exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdJRefl⟩
+                    | there _head3 emptyStep => cases emptyStep
+      | @iotaIdStrictRecRefl motive baseCase rawWitness =>
+          -- Phase-Z spine: (motive, baseCase, witness=refl rawWitness).  Symmetric to the idJ arm.
           rcases Step.weakHeadStep_or_cong step with
             ⟨subjectReduct, weakHeadOnSubject⟩
             | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
@@ -743,24 +755,28 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
             subst payloadEquation
             subst childrenAfterEquation
             cases childStep with
-            | here _rest _baseStep =>
+            | here _rest _motiveStep =>
                 exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdStrictRecRefl⟩
             | there _head tailStep =>
                 cases tailStep with
-                | here _rest scrutineeStep =>
-                    rcases Step.weakHeadStep_or_cong scrutineeStep with
-                      ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
-                      | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
-                          scrutineeEquation, ctorEquation, _innerChildStep⟩
-                    · exact ⟨_, WeakHeadStep.scrutineeIdStrictRec weakHeadOnScrutinee⟩
-                    · have innerGeneratorEquation : Generator.gen_refl = innerGenerator :=
-                        congrArg RawTerm.rootGenerator ctorEquation
-                      subst innerGeneratorEquation
-                      subst scrutineeEquation
-                      match innerPayload, innerChildren with
-                      | (), .childCons _innerWitness .childNil =>
-                          exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdStrictRecRefl⟩
-                | there _head2 emptyStep => cases emptyStep
+                | here _rest _baseStep =>
+                    exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdStrictRecRefl⟩
+                | there _head2 restStep =>
+                    cases restStep with
+                    | here _rest scrutineeStep =>
+                        rcases Step.weakHeadStep_or_cong scrutineeStep with
+                          ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
+                          | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
+                              scrutineeEquation, ctorEquation, _innerChildStep⟩
+                        · exact ⟨_, WeakHeadStep.scrutineeIdStrictRec weakHeadOnScrutinee⟩
+                        · have innerGeneratorEquation : Generator.gen_refl = innerGenerator :=
+                            congrArg RawTerm.rootGenerator ctorEquation
+                          subst innerGeneratorEquation
+                          subst scrutineeEquation
+                          match innerPayload, innerChildren with
+                          | (), .childCons _innerWitness .childNil =>
+                              exact ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdStrictRecRefl⟩
+                    | there _head3 emptyStep => cases emptyStep
   | @scrutineeBoolElim motive scrutinee scrutineeReduct thenBranch elseBranch
       _storedWeakHead inductiveHypothesis =>
       -- Phase-Z spine: (motive, then, else, scrutinee).  The WeakHeadStep reduces the LAST child.
@@ -1009,7 +1025,11 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
                           inductiveHypothesis scrutineeStep
                         exact ⟨_, WeakHeadStep.scrutineeEitherMatch weakHeadOnScrutinee⟩
                     | there _head4 emptyStep => cases emptyStep
-  | @scrutineeIdJ baseCase scrutinee scrutineeReduct _storedWeakHead inductiveHypothesis =>
+  | @scrutineeIdJ motive baseCase scrutinee scrutineeReduct _storedWeakHead inductiveHypothesis =>
+      -- Phase-Z spine: (motive, baseCase, witness=scrutinee).  The WeakHeadStep reduces the LAST
+      -- child.  A step in motive / base leaves the witness still reducible, so the subject still
+      -- weak-head reduces there (`scrutineeIdJ _storedWeakHead`).  A step in the witness (deepest
+      -- child) recurses through the induction hypothesis.
       intro subjectType step
       rcases Step.weakHeadStep_or_cong step with
         ⟨subjectReduct, weakHeadOnSubject⟩
@@ -1023,15 +1043,20 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
         subst payloadEquation
         subst childrenAfterEquation
         cases childStep with
-        | here _rest _baseStep =>
+        | here _rest _motiveStep =>
             exact ⟨_, WeakHeadStep.scrutineeIdJ _storedWeakHead⟩
         | there _head tailStep =>
             cases tailStep with
-            | here _rest scrutineeStep =>
-                obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ := inductiveHypothesis scrutineeStep
-                exact ⟨_, WeakHeadStep.scrutineeIdJ weakHeadOnScrutinee⟩
-            | there _head2 emptyStep => cases emptyStep
-  | @scrutineeIdStrictRec baseCase scrutinee scrutineeReduct _storedWeakHead inductiveHypothesis =>
+            | here _rest _baseStep =>
+                exact ⟨_, WeakHeadStep.scrutineeIdJ _storedWeakHead⟩
+            | there _head2 restStep =>
+                cases restStep with
+                | here _rest scrutineeStep =>
+                    obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ := inductiveHypothesis scrutineeStep
+                    exact ⟨_, WeakHeadStep.scrutineeIdJ weakHeadOnScrutinee⟩
+                | there _head3 emptyStep => cases emptyStep
+  | @scrutineeIdStrictRec motive baseCase scrutinee scrutineeReduct _storedWeakHead inductiveHypothesis =>
+      -- Phase-Z spine: (motive, baseCase, witness=scrutinee).  Symmetric to the idJ scrutinee arm.
       intro subjectType step
       rcases Step.weakHeadStep_or_cong step with
         ⟨subjectReduct, weakHeadOnSubject⟩
@@ -1045,14 +1070,18 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
         subst payloadEquation
         subst childrenAfterEquation
         cases childStep with
-        | here _rest _baseStep =>
+        | here _rest _motiveStep =>
             exact ⟨_, WeakHeadStep.scrutineeIdStrictRec _storedWeakHead⟩
         | there _head tailStep =>
             cases tailStep with
-            | here _rest scrutineeStep =>
-                obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ := inductiveHypothesis scrutineeStep
-                exact ⟨_, WeakHeadStep.scrutineeIdStrictRec weakHeadOnScrutinee⟩
-            | there _head2 emptyStep => cases emptyStep
+            | here _rest _baseStep =>
+                exact ⟨_, WeakHeadStep.scrutineeIdStrictRec _storedWeakHead⟩
+            | there _head2 restStep =>
+                cases restStep with
+                | here _rest scrutineeStep =>
+                    obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ := inductiveHypothesis scrutineeStep
+                    exact ⟨_, WeakHeadStep.scrutineeIdStrictRec weakHeadOnScrutinee⟩
+                | there _head3 emptyStep => cases emptyStep
 
 /-- **Weak-head-normality is preserved under reduction.**  If `subjectType` is weak-head NORMAL (no
 weak-head step) and reduces to `reductType`, then `reductType` is weak-head normal too — a reduction never

@@ -232,7 +232,7 @@ theorem idElimReservedUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
     (typed : HasTypeDescIdElim profile context subject classifier) : False := by
-  rcases HasTypeDescIdElim.subjectIsIdJ typed with ⟨_baseCase, _witness, rfl⟩
+  rcases HasTypeDescIdElim.subjectIsIdJ typed with ⟨_motive, _baseCase, _witness, rfl⟩
   exact Bool.noConfusion reserved
 
 /-- OPTION-MATCH engine. -/

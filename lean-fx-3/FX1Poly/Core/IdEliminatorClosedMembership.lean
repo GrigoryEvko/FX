@@ -31,8 +31,8 @@ base case IS the contractum, and the three shipped pieces compose verbatim with 
 
 1. The cell is strongly normalizing — `idJ_isStronglyNormalizing_of_strongly_normalizing_base` (the SN-base
    strengthening, base×witness two-dimensional accessibility induction) fed the members' CR1 SN witnesses
-   (`.stronglyNormalizing`).  The SN-base — not SN-NORMAL-base — strengthening is what lets the base be a mere
-   member (SN, possibly reducible) rather than a normal form.
+   (`.stronglyNormalizing`) plus the Phase-Z stored motive's SN.  The SN-base — not SN-NORMAL-base —
+   strengthening is what lets the base be a mere member (SN, possibly reducible) rather than a normal form.
 2. The cell reduces to its base case — `idJCanonicalWitnessReducesToBase` on the canonical `refl` witness (the
    witness reaches `refl`, the ι rule fires).
 3. The base case, being a CLOSED member, reduces to a value (`closedReducesToValue` — a closed member is
@@ -62,15 +62,19 @@ the closed `idJ` cell is itself a member.  The cell is SN
 (`closedReducesToValue`); value-reaching weak-head expansion (`ofStepStarReachingValue`) lifts the membership back
 to the cell.  The elimination half of `idJ` reducibility, closed-layer, fundamental-independent. -/
 theorem idJClosedIsMember {isValue : RawTerm 0 → Prop}
-    {baseCase witness : RawTerm 0}
+    {motive : RawTerm 2} {baseCase witness : RawTerm 0}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (witnessMember : CanonicalFormsPredicate isReflValue witness)
     (baseCaseMember : CanonicalFormsPredicate isValue baseCase) :
     CanonicalFormsPredicate isValue
-      (.mkGen .gen_idJ () (.childCons baseCase (.childCons witness .childNil))) := by
+      (.mkGen .gen_idJ ()
+        (.childCons motive (.childCons baseCase (.childCons witness .childNil)))) := by
   have idJStronglyNormalizing :
       IsStronglyNormalizing
-        (.mkGen .gen_idJ () (.childCons baseCase (.childCons witness .childNil))) :=
+        (.mkGen .gen_idJ ()
+          (.childCons motive (.childCons baseCase (.childCons witness .childNil)))) :=
     idJ_isStronglyNormalizing_of_strongly_normalizing_base
+      motiveStronglyNormalizing
       baseCaseMember.stronglyNormalizing witnessMember.stronglyNormalizing
   exact CanonicalFormsPredicate.ofStepStarReachingValue
     (idJCanonicalWitnessReducesToBase witnessMember)
@@ -83,15 +87,19 @@ normalizing_base`), the witness computation (`idStrictRecCanonicalWitnessReduces
 reaches-a-value (`closedReducesToValue`) compose by `ofStepStarReachingValue` into membership.  The elimination
 half of `idStrictRec` reducibility, closed-layer, fundamental-independent. -/
 theorem idStrictRecClosedIsMember {isValue : RawTerm 0 → Prop}
-    {baseCase witness : RawTerm 0}
+    {motive : RawTerm 2} {baseCase witness : RawTerm 0}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (witnessMember : CanonicalFormsPredicate isReflValue witness)
     (baseCaseMember : CanonicalFormsPredicate isValue baseCase) :
     CanonicalFormsPredicate isValue
-      (.mkGen .gen_idStrictRec () (.childCons baseCase (.childCons witness .childNil))) := by
+      (.mkGen .gen_idStrictRec ()
+        (.childCons motive (.childCons baseCase (.childCons witness .childNil)))) := by
   have idStrictRecStronglyNormalizing :
       IsStronglyNormalizing
-        (.mkGen .gen_idStrictRec () (.childCons baseCase (.childCons witness .childNil))) :=
+        (.mkGen .gen_idStrictRec ()
+          (.childCons motive (.childCons baseCase (.childCons witness .childNil)))) :=
     idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base
+      motiveStronglyNormalizing
       baseCaseMember.stronglyNormalizing witnessMember.stronglyNormalizing
   exact CanonicalFormsPredicate.ofStepStarReachingValue
     (idStrictRecCanonicalWitnessReducesToBase witnessMember)

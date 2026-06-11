@@ -159,11 +159,11 @@ theorem Step.reflectRename {sourceScope targetScope : Nat}
       (fun {scope} {motive} {headVal} {tailVal} {nilBranch} {consBranch} {srcScope}
           originTerm originRho req =>
         Step.reflectIotaListElimCons originRho req)
-      -- iotaIdJRefl
-      (fun {scope} {baseCase} {rawWitness} {srcScope} originTerm originRho req =>
+      -- iotaIdJRefl (Phase-Z: motive binder added at scope + 2, witness last)
+      (fun {scope} {motive} {baseCase} {rawWitness} {srcScope} originTerm originRho req =>
         Step.reflectIotaIdJRefl originRho req)
-      -- iotaIdStrictRecRefl
-      (fun {scope} {baseCase} {rawWitness} {srcScope} originTerm originRho req =>
+      -- iotaIdStrictRecRefl (Phase-Z: motive binder added at scope + 2, witness last)
+      (fun {scope} {motive} {baseCase} {rawWitness} {srcScope} originTerm originRho req =>
         Step.reflectIotaIdStrictRecRefl originRho req)
       -- here: the stepping head child reflects via the term-level mutual IH at the lifted renaming
       (fun {parentScope} {headShift} {restShifts} {head} {head'} rest childStep childStepIH

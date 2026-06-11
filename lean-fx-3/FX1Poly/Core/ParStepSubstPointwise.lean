@@ -221,10 +221,20 @@ theorem ParStep.substPointwise {sourceScope targetScope : Nat}
             (RawTermSubst.lift_pointwiseParStep pw))
           (ihHead sigma tau pw) (ihTail sigma tau pw)
           (ihNil sigma tau pw) (ihCons sigma tau pw))
-      (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma tau pw =>
-        ParStep.iotaIdJRefl (ihBase sigma tau pw))
-      (fun {scope} {baseCase baseCase' rawWitness} _step ihBase {targetScope} sigma tau pw =>
-        ParStep.iotaIdStrictRecRefl (ihBase sigma tau pw))
+      (fun {scope} {motive motive' baseCase baseCase' rawWitness} _stepMotive _stepBase
+          ihMotive ihBase {targetScope} sigma tau pw =>
+        ParStep.iotaIdJRefl
+          (ihMotive (RawTermSubst.lift (RawTermSubst.lift sigma))
+            (RawTermSubst.lift (RawTermSubst.lift tau))
+            (RawTermSubst.lift_pointwiseParStep (RawTermSubst.lift_pointwiseParStep pw)))
+          (ihBase sigma tau pw))
+      (fun {scope} {motive motive' baseCase baseCase' rawWitness} _stepMotive _stepBase
+          ihMotive ihBase {targetScope} sigma tau pw =>
+        ParStep.iotaIdStrictRecRefl
+          (ihMotive (RawTermSubst.lift (RawTermSubst.lift sigma))
+            (RawTermSubst.lift (RawTermSubst.lift tau))
+            (RawTermSubst.lift_pointwiseParStep (RawTermSubst.lift_pointwiseParStep pw)))
+          (ihBase sigma tau pw))
       (fun {scope} {targetScope} sigma tau pw => ParStepChildren.nil)
       (fun {parentScope} {headShift} {restShifts} {childHead childHead' childTail childTail'}
           _headStep _tailStep ihHead ihTail {targetScope} sigma tau pw =>

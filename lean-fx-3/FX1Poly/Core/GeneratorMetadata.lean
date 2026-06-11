@@ -468,7 +468,9 @@ def Generator.childSpecs : Generator → List ChildSpec
      ChildSpec.termSameScope, ChildSpec.termSameScope]
   -- Identity-type witnesses + eliminator
   | .gen_refl         => [ChildSpec.termSameScope]
-  | .gen_idJ          => [ChildSpec.termSameScope, ChildSpec.termSameScope]
+  | .gen_idJ          =>
+    [ChildSpec.termUnderTwoBinders, ChildSpec.termSameScope,
+     ChildSpec.termSameScope]
   -- Modal
   | .gen_modIntro     => [ChildSpec.termSameScope]
   | .gen_modElim      => [ChildSpec.termSameScope]
@@ -496,7 +498,8 @@ def Generator.childSpecs : Generator → List ChildSpec
   -- Strict identity
   | .gen_idStrictRefl => [ChildSpec.termSameScope]
   | .gen_idStrictRec  =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope]
+    [ChildSpec.termUnderTwoBinders, ChildSpec.termSameScope,
+     ChildSpec.termSameScope]
   -- Type equivalence
   | .gen_equivIntro   =>
     [ChildSpec.termSameScope, ChildSpec.termSameScope]

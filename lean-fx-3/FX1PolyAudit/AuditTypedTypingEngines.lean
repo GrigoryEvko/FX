@@ -1222,8 +1222,8 @@ the strong equation one green commit at a time, then the table flips. -/
 -- INTRO: refl(x):Id(A,x,x) is the PINNED reflexive intro (witness x:A pins A and BOTH endpoints, which are EQUAL).
 -- reflOfUniverseCodeTyped = the smoke refl(Type@0):Id(Type@1,Type@0,Type@0). subjectIsRefl + classifierIsReflexiveId
 -- = the SR-free inversions (subject is a reflCell, classifier a REFLEXIVE idTypeCell — both endpoints same term).
--- ELIM: the substrate's gen_idJ is the SIMPLIFIED two-child J (idJ(baseCase,witness), motive in the profile layer);
--- on refl its ι SELECTS the base case (idJ(b,refl(x)) ↝ b, Step.iotaIdJRefl) — the BRANCH-SELECTION shape (the
+-- ELIM: gen_idJ carries the Phase-Z spine (motive under two binders, baseCase, witness — shifts [2,0,0]);
+-- on refl its ι SELECTS the base case (idJ(m,b,refl(x)) ↝ b, Step.iotaIdJRefl) — the BRANCH-SELECTION shape (the
 -- boolElim shape reused on identity). idJOfUniverseCodesTyped = the smoke idJ(Type@0,refl(Type@0)):Type@1.
 -- subjectIsIdJ = free-index inversion. ★ idJReflIotaComputesTyped = the typed branch-selection ι (reduct IS the
 -- base case, typed verbatim). Constructor-side → SR-free + propext-free (full witness-congruence SR GrownCtxConv-5-deferred).

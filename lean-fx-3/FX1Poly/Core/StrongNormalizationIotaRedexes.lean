@@ -207,25 +207,30 @@ witness.  (The strictly-more-general "base merely SN" form would need a nested
 two-dimensional accessibility induction over base × witness; the normal-base
 form matches the `boolElim` convention.) -/
 theorem idJ_isStronglyNormalizing_of_normal_base
-    {scope : Nat} {baseCase witness : RawTerm scope}
+    {scope : Nat} {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}
+    (motiveHasNoStep :
+      ∀ targetMotive : RawTerm (scope + 2), Step motive targetMotive → False)
     (baseHasNoStep :
       ∀ targetBase : RawTerm scope, Step baseCase targetBase → False)
     (witnessTerminates : IsStronglyNormalizing witness) :
     IsStronglyNormalizing
       (.mkGen .gen_idJ ()
-        (.childCons baseCase (.childCons witness .childNil)) :
+        (.childCons motive
+          (.childCons baseCase (.childCons witness .childNil))) :
         RawTerm scope) :=
   Acc.ndrec
     (r := StepSuccessor)
     (C := fun currentWitness =>
       IsStronglyNormalizing
         (.mkGen .gen_idJ ()
-          (.childCons baseCase (.childCons currentWitness .childNil)) :
+          (.childCons motive
+            (.childCons baseCase (.childCons currentWitness .childNil))) :
           RawTerm scope))
     (m := fun currentWitness _currentWitnessSuccessors witnessIH =>
       Acc.intro
         (.mkGen .gen_idJ ()
-          (.childCons baseCase (.childCons currentWitness .childNil)) :
+          (.childCons motive
+            (.childCons baseCase (.childCons currentWitness .childNil))) :
           RawTerm scope)
         (fun targetTerm idJStep => by
           cases Step.from_idJ idJStep with
@@ -235,15 +240,21 @@ theorem idJ_isStronglyNormalizing_of_normal_base
               exact isStronglyNormalizing_of_noStep baseHasNoStep
           | inr congruenceBranch =>
               cases congruenceBranch with
-              | inl baseCongruence =>
-                  obtain ⟨baseAfter, _targetIsBaseStep, baseStep⟩ :=
-                    baseCongruence
-                  exact False.elim (baseHasNoStep baseAfter baseStep)
-              | inr witnessCongruence =>
-                  obtain ⟨witnessAfter, targetIsWitnessStep, witnessStep⟩ :=
-                    witnessCongruence
-                  rw [targetIsWitnessStep]
-                  exact witnessIH witnessAfter witnessStep))
+              | inl motiveCongruence =>
+                  obtain ⟨motiveAfter, _targetIsMotiveStep, motiveStep⟩ :=
+                    motiveCongruence
+                  exact False.elim (motiveHasNoStep motiveAfter motiveStep)
+              | inr restAfterMotive =>
+                  cases restAfterMotive with
+                  | inl baseCongruence =>
+                      obtain ⟨baseAfter, _targetIsBaseStep, baseStep⟩ :=
+                        baseCongruence
+                      exact False.elim (baseHasNoStep baseAfter baseStep)
+                  | inr witnessCongruence =>
+                      obtain ⟨witnessAfter, targetIsWitnessStep, witnessStep⟩ :=
+                        witnessCongruence
+                      rw [targetIsWitnessStep]
+                      exact witnessIH witnessAfter witnessStep))
     witnessTerminates
 
 /-- An `idStrictRec`-headed redex is strongly normalizing when its base case is
@@ -252,25 +263,30 @@ normal and its witness is strongly normalizing.  Identical to
 the same `(base, witness)` child spine and the same single ι-rule
 (`idStrictRec … (refl w) ↝ base`). -/
 theorem idStrictRec_isStronglyNormalizing_of_normal_base
-    {scope : Nat} {baseCase witness : RawTerm scope}
+    {scope : Nat} {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}
+    (motiveHasNoStep :
+      ∀ targetMotive : RawTerm (scope + 2), Step motive targetMotive → False)
     (baseHasNoStep :
       ∀ targetBase : RawTerm scope, Step baseCase targetBase → False)
     (witnessTerminates : IsStronglyNormalizing witness) :
     IsStronglyNormalizing
       (.mkGen .gen_idStrictRec ()
-        (.childCons baseCase (.childCons witness .childNil)) :
+        (.childCons motive
+          (.childCons baseCase (.childCons witness .childNil))) :
         RawTerm scope) :=
   Acc.ndrec
     (r := StepSuccessor)
     (C := fun currentWitness =>
       IsStronglyNormalizing
         (.mkGen .gen_idStrictRec ()
-          (.childCons baseCase (.childCons currentWitness .childNil)) :
+          (.childCons motive
+            (.childCons baseCase (.childCons currentWitness .childNil))) :
           RawTerm scope))
     (m := fun currentWitness _currentWitnessSuccessors witnessIH =>
       Acc.intro
         (.mkGen .gen_idStrictRec ()
-          (.childCons baseCase (.childCons currentWitness .childNil)) :
+          (.childCons motive
+            (.childCons baseCase (.childCons currentWitness .childNil))) :
           RawTerm scope)
         (fun targetTerm idStrictRecStep => by
           cases Step.from_idStrictRec idStrictRecStep with
@@ -280,15 +296,21 @@ theorem idStrictRec_isStronglyNormalizing_of_normal_base
               exact isStronglyNormalizing_of_noStep baseHasNoStep
           | inr congruenceBranch =>
               cases congruenceBranch with
-              | inl baseCongruence =>
-                  obtain ⟨baseAfter, _targetIsBaseStep, baseStep⟩ :=
-                    baseCongruence
-                  exact False.elim (baseHasNoStep baseAfter baseStep)
-              | inr witnessCongruence =>
-                  obtain ⟨witnessAfter, targetIsWitnessStep, witnessStep⟩ :=
-                    witnessCongruence
-                  rw [targetIsWitnessStep]
-                  exact witnessIH witnessAfter witnessStep))
+              | inl motiveCongruence =>
+                  obtain ⟨motiveAfter, _targetIsMotiveStep, motiveStep⟩ :=
+                    motiveCongruence
+                  exact False.elim (motiveHasNoStep motiveAfter motiveStep)
+              | inr restAfterMotive =>
+                  cases restAfterMotive with
+                  | inl baseCongruence =>
+                      obtain ⟨baseAfter, _targetIsBaseStep, baseStep⟩ :=
+                        baseCongruence
+                      exact False.elim (baseHasNoStep baseAfter baseStep)
+                  | inr witnessCongruence =>
+                      obtain ⟨witnessAfter, targetIsWitnessStep, witnessStep⟩ :=
+                        witnessCongruence
+                      rw [targetIsWitnessStep]
+                      exact witnessIH witnessAfter witnessStep))
     witnessTerminates
 
 end StepStar

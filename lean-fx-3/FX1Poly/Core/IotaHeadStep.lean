@@ -240,19 +240,23 @@ inductive IotaHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
                   (.childCons nilBranch
                     (.childCons consBranch (.childCons tailVal .childNil)))))
               .childNil)))
-  /-- `idJ baseCase (refl rawWitness) ↝ baseCase`. -/
-  | iotaIdJRefl {baseCase rawWitness : RawTerm scope} :
+  /-- `idJ motive baseCase (refl rawWitness) ↝ baseCase`.
+      Phase-Z motive shape: motive first (under two binders), witness last;
+      the base-case iota discards the motive operationally. -/
+  | iotaIdJRefl {motive : RawTerm (scope + 2)} {baseCase rawWitness : RawTerm scope} :
       IotaHeadStep
         (.mkGen .gen_idJ ()
-          (.childCons baseCase
-            (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))
+          (.childCons motive
+            (.childCons baseCase
+              (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil))))
         baseCase
-  /-- `idStrictRec baseCase (refl rawWitness) ↝ baseCase`. -/
-  | iotaIdStrictRecRefl {baseCase rawWitness : RawTerm scope} :
+  /-- `idStrictRec motive baseCase (refl rawWitness) ↝ baseCase`. -/
+  | iotaIdStrictRecRefl {motive : RawTerm (scope + 2)} {baseCase rawWitness : RawTerm scope} :
       IotaHeadStep
         (.mkGen .gen_idStrictRec ()
-          (.childCons baseCase
-            (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))
+          (.childCons motive
+            (.childCons baseCase
+              (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil))))
         baseCase
 
 /-- **Root-iota reduction is deterministic**: an eliminator-headed code has at most one root-iota reduct.

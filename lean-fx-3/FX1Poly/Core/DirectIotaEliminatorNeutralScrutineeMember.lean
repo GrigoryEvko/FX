@@ -17,12 +17,13 @@ component, NOT a substitution or application —
   * `fst (pair a b) ↝ a`     /  `snd (pair a b) ↝ b`         (component projected directly)
   * `idJ d (refl w) ↝ d`     /  `idStrictRec d (refl w) ↝ d` (base case selected directly)
 
-so their cell-SN-from-children is already shipped with NO extra interface
+so their cell-SN-from-children is already shipped
 (`boolElim_isStronglyNormalizing_of_strongly_normalizing_branches`,
 `fst/snd_isStronglyNormalizing_of_argument`, `idJ/idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base`).
-Hence each neutral member is a pure compose: the cell is neutral (its principal child is neutral, the relevant
-`IsNeutral` arm) and strongly normalizing (the shipped cell-SN on the children's SN), so it inhabits EVERY
-reducibility candidate by `IsReducibilityCandidate.memberOfStronglyNormalizingNeutral`.
+Each member is a pure compose: the cell is neutral (its principal child is neutral, the relevant
+`IsNeutral` arm) and strongly normalizing (the shipped cell-SN on the children's SN, including the stored
+Phase-Z motive's SN), so it inhabits EVERY reducibility candidate by
+`IsReducibilityCandidate.memberOfStronglyNormalizingNeutral`.
 
 This brings the direct-ι eliminators to the neutral-coverage parity already held by the three recursive recursors.
 The remaining two eliminators — `optionMatch` / `eitherMatch` — are application-ι
@@ -93,30 +94,40 @@ theorem sndNeutralArgumentMember {scope : Nat}
     (IsNeutral.snd argumentNeutral)
 
 /-- **`idJ` over a neutral SN witness with a reducible base case is a member of the result candidate.**  The
-identity eliminator is neutral on its WITNESS child (`IsNeutral.idJ`); with the base case reducible and the
-witness SN the cell is SN (`idJ_isStronglyNormalizing_of_strongly_normalizing_base`), so it inhabits the
-candidate by the abstract neutral bridge. -/
+identity eliminator is neutral on its WITNESS child (`IsNeutral.idJ`); with the base case reducible, the
+witness SN, and the stored motive SN the cell is SN (`idJ_isStronglyNormalizing_of_strongly_normalizing_base`),
+so it inhabits the candidate by the abstract neutral bridge.  Phase-Z motive shape: the stored motive head
+child (at `scope + 2`) carries an SN hypothesis; the witness is the LAST (principal) child. -/
 theorem idJNeutralWitnessMember {scope : Nat}
     (resultCandidate : RawTerm scope → Prop) (candidate : IsReducibilityCandidate resultCandidate)
-    {baseCase witness : RawTerm scope}
+    {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (baseCaseMember : resultCandidate baseCase)
     (witnessStronglyNormalizing : IsStronglyNormalizing witness) (witnessNeutral : IsNeutral witness) :
-    resultCandidate (.mkGen .gen_idJ () (.childCons baseCase (.childCons witness .childNil))) :=
+    resultCandidate
+      (.mkGen .gen_idJ ()
+        (.childCons motive (.childCons baseCase (.childCons witness .childNil)))) :=
   candidate.memberOfStronglyNormalizingNeutral
     (idJ_isStronglyNormalizing_of_strongly_normalizing_base
+      motiveStronglyNormalizing
       (candidate.stronglyNormalizing baseCaseMember) witnessStronglyNormalizing)
     (IsNeutral.idJ witnessNeutral)
 
 /-- **`idStrictRec` over a neutral SN witness with a reducible base case is a member of the result candidate**
-(the strict-identity dual of `idJNeutralWitnessMember`). -/
+(the strict-identity dual of `idJNeutralWitnessMember`).  Phase-Z motive shape: the stored motive head child
+(at `scope + 2`) carries an SN hypothesis; the witness is the LAST (principal) child. -/
 theorem idStrictRecNeutralWitnessMember {scope : Nat}
     (resultCandidate : RawTerm scope → Prop) (candidate : IsReducibilityCandidate resultCandidate)
-    {baseCase witness : RawTerm scope}
+    {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (baseCaseMember : resultCandidate baseCase)
     (witnessStronglyNormalizing : IsStronglyNormalizing witness) (witnessNeutral : IsNeutral witness) :
-    resultCandidate (.mkGen .gen_idStrictRec () (.childCons baseCase (.childCons witness .childNil))) :=
+    resultCandidate
+      (.mkGen .gen_idStrictRec ()
+        (.childCons motive (.childCons baseCase (.childCons witness .childNil)))) :=
   candidate.memberOfStronglyNormalizingNeutral
     (idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base
+      motiveStronglyNormalizing
       (candidate.stronglyNormalizing baseCaseMember) witnessStronglyNormalizing)
     (IsNeutral.idStrictRec witnessNeutral)
 

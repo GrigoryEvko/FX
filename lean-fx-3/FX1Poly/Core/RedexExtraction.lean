@@ -412,26 +412,28 @@ theorem hasEitherMatchIotaRoot_exists_step {scope : Nat}
           rw [inrShape]
           exact ⟨_, Step.iotaEitherMatchInr⟩
 
-/-- **idJ iota redex extraction.**  The identity eliminator's root check is a single `isReflSource` on the
-witness child (no disjunction); a `refl` witness yields the base case. -/
+/-- **idJ iota redex extraction.**  Phase-Z spine `[2, 0, 0]`: children are `(motive, baseCase, witness)`
+with the witness LAST and the motive a term under two binders.  The identity eliminator's root check is a
+single `isReflSource` on the witness child (no disjunction); a `refl` witness yields the base case. -/
 theorem hasIdElimIotaRoot_exists_step_idJ {scope : Nat}
-    (children : RawTermChildren [0, 0] scope)
+    (children : RawTermChildren [2, 0, 0] scope)
     (iotaRoot : RawTermChildren.hasIdElimIotaRoot children = true) :
     ∃ target : RawTerm scope, Step (.mkGen .gen_idJ () children) target := by
   match children with
-  | .childCons baseCase (.childCons witness .childNil) =>
+  | .childCons _motive (.childCons baseCase (.childCons witness .childNil)) =>
       replace iotaRoot : RawTerm.isReflSource witness = true := iotaRoot
       obtain ⟨rawWitness, reflShape⟩ := isReflSource_eq_refl iotaRoot
       rw [reflShape]
       exact ⟨baseCase, Step.iotaIdJRefl⟩
 
-/-- **idStrictRec iota redex extraction** (same root check as idJ; `gen_idStrictRec`). -/
+/-- **idStrictRec iota redex extraction** (same root check as idJ; `gen_idStrictRec`).  Phase-Z spine
+`[2, 0, 0]`: children are `(motive, baseCase, witness)` with the witness LAST. -/
 theorem hasIdElimIotaRoot_exists_step_idStrictRec {scope : Nat}
-    (children : RawTermChildren [0, 0] scope)
+    (children : RawTermChildren [2, 0, 0] scope)
     (iotaRoot : RawTermChildren.hasIdElimIotaRoot children = true) :
     ∃ target : RawTerm scope, Step (.mkGen .gen_idStrictRec () children) target := by
   match children with
-  | .childCons baseCase (.childCons witness .childNil) =>
+  | .childCons _motive (.childCons baseCase (.childCons witness .childNil)) =>
       replace iotaRoot : RawTerm.isReflSource witness = true := iotaRoot
       obtain ⟨rawWitness, reflShape⟩ := isReflSource_eq_refl iotaRoot
       rw [reflShape]

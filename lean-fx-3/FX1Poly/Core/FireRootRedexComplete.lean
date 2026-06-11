@@ -162,15 +162,17 @@ theorem RawTerm.hasRootStepSource_imp_fireRootRedex_isSome {scope : Nat} {genera
                             obtain ⟨value, hEq⟩ := isEitherInrSource_eq_eitherInr srcTrue; subst hEq; rfl
                   · by_cases hIdJ : generator = .gen_idJ
                     · subst hIdJ
+                      -- Phase-Z spine: (motive, baseCase, witness); the witness is the LAST child.
                       match children with
-                      | .childCons _baseCase (.childCons witnessChild .childNil) =>
+                      | .childCons _motive (.childCons _baseCase (.childCons witnessChild .childNil)) =>
                           have srcTrue : RawTerm.isReflSource witnessChild = true := detected
                           obtain ⟨rawWitness, hRefl⟩ := isReflSource_eq_refl srcTrue
                           subst hRefl; rfl
                     · by_cases hIdStrictRec : generator = .gen_idStrictRec
                       · subst hIdStrictRec
+                        -- Phase-Z spine: (motive, baseCase, witness); the witness is the LAST child.
                         match children with
-                        | .childCons _baseCase (.childCons witnessChild .childNil) =>
+                        | .childCons _motive (.childCons _baseCase (.childCons witnessChild .childNil)) =>
                             have srcTrue : RawTerm.isReflSource witnessChild = true := detected
                             obtain ⟨rawWitness, hRefl⟩ := isReflSource_eq_refl srcTrue
                             subst hRefl; rfl

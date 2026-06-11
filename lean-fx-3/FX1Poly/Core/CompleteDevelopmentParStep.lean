@@ -303,24 +303,8 @@ theorem RawTerm.completeDevelopment_parStep {scope0 : Nat} (term0 : RawTerm scop
                             · by_cases hIdJ : gen = .gen_idJ
                               · subst hIdJ
                                 cases children with
-                                | childCons baseC rest => cases rest with | childCons reflC rest2 => cases rest2 with
-                                  | childNil =>
-                                      cases reflC with
-                                      | mkGen rg rp rc =>
-                                          by_cases hRefl : rg = .gen_refl
-                                          · subst hRefl
-                                            cases rc with | childCons witness rc2 => cases rc2 with
-                                              | childNil =>
-                                                  cases childrenIH with | cons baseStep _ =>
-                                                      exact ParStep.iotaIdJRefl baseStep
-                                          · have key : RawTerm.fireRootRedex .gen_idJ payload
-                                                (.childCons baseC
-                                                  (.childCons (.mkGen rg rp rc) .childNil)) = none := if_neg hRefl
-                                            rw [key] at hfire; nomatch hfire
-                              · by_cases hIdStrictRec : gen = .gen_idStrictRec
-                                · subst hIdStrictRec
-                                  cases children with
-                                  | childCons baseC rest => cases rest with | childCons reflC rest2 => cases rest2 with
+                                | childCons motive rest => cases rest with | childCons baseC rest2 => cases rest2 with
+                                  | childCons reflC rest3 => cases rest3 with
                                     | childNil =>
                                         cases reflC with
                                         | mkGen rg rp rc =>
@@ -328,12 +312,32 @@ theorem RawTerm.completeDevelopment_parStep {scope0 : Nat} (term0 : RawTerm scop
                                             · subst hRefl
                                               cases rc with | childCons witness rc2 => cases rc2 with
                                                 | childNil =>
-                                                    cases childrenIH with | cons baseStep _ =>
-                                                        exact ParStep.iotaIdStrictRecRefl baseStep
-                                            · have key : RawTerm.fireRootRedex .gen_idStrictRec payload
-                                                  (.childCons baseC
-                                                    (.childCons (.mkGen rg rp rc) .childNil)) = none := if_neg hRefl
+                                                    cases childrenIH with | cons motiveStep restS => cases restS with
+                                                      | cons baseStep _ =>
+                                                          exact ParStep.iotaIdJRefl motiveStep baseStep
+                                            · have key : RawTerm.fireRootRedex .gen_idJ payload
+                                                  (.childCons motive (.childCons baseC
+                                                    (.childCons (.mkGen rg rp rc) .childNil))) = none := if_neg hRefl
                                               rw [key] at hfire; nomatch hfire
+                              · by_cases hIdStrictRec : gen = .gen_idStrictRec
+                                · subst hIdStrictRec
+                                  cases children with
+                                  | childCons motive rest => cases rest with | childCons baseC rest2 => cases rest2 with
+                                    | childCons reflC rest3 => cases rest3 with
+                                      | childNil =>
+                                          cases reflC with
+                                          | mkGen rg rp rc =>
+                                              by_cases hRefl : rg = .gen_refl
+                                              · subst hRefl
+                                                cases rc with | childCons witness rc2 => cases rc2 with
+                                                  | childNil =>
+                                                      cases childrenIH with | cons motiveStep restS => cases restS with
+                                                        | cons baseStep _ =>
+                                                            exact ParStep.iotaIdStrictRecRefl motiveStep baseStep
+                                              · have key : RawTerm.fireRootRedex .gen_idStrictRec payload
+                                                    (.childCons motive (.childCons baseC
+                                                      (.childCons (.mkGen rg rp rc) .childNil))) = none := if_neg hRefl
+                                                rw [key] at hfire; nomatch hfire
                                 · -- non-redex generator: fireRootRedex = none, contradicts hfire
                                   rw [show RawTerm.fireRootRedex gen payload children = none from by
                                     dsimp only [RawTerm.fireRootRedex]

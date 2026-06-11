@@ -1479,82 +1479,122 @@ theorem Step.from_eitherMatch
 
 /-- **Inversion for `idJ`-rooted Step.**
 
-Three-way disjunction: iotaIdJRefl arm + 2 cong positions.  The
-iota arm characterizes "witness was refl" with an existential
-witness for the wrapped value.  Standard eliminator-inversion
-template at 2-child arity. -/
+Four-way disjunction: iotaIdJRefl arm + 3 cong positions.  Phase-Z
+motive shape: the spine is `(motive, baseCase, witness)` with the
+motive a term under TWO binders (`RawTerm (scope + 2)`, var 1 =
+endpoint, var 0 = path) and the witness LAST.  The iota arm
+characterizes "witness was refl" with an existential witness for
+the wrapped value and DISCARDS the motive -- J's computation rule
+returns the base case verbatim.
+
+* **iotaIdJRefl arm**: witness = `refl rawWitness`, target = baseCase.
+* **cong-at-motive arm**: motive stepped (at `scope + 2`).
+* **cong-at-base arm**: baseCase stepped.
+* **cong-at-witness arm**: witness stepped (LAST). -/
 theorem Step.from_idJ
-    {scope : Nat} {baseCase witness : RawTerm scope}
+    {scope : Nat} {motive : RawTerm (scope + 2)}
+    {baseCase witness : RawTerm scope}
     {target : RawTerm scope}
     (reduction :
       Step (.mkGen .gen_idJ ()
-              (.childCons baseCase (.childCons witness .childNil))) target) :
+              (.childCons motive
+                (.childCons baseCase (.childCons witness .childNil)))) target) :
     (∃ (rawWitness : RawTerm scope),
         witness = .mkGen .gen_refl () (.childCons rawWitness .childNil) ∧
         target = baseCase)
     ∨
+    (∃ (motiveAfter : RawTerm (scope + 2)),
+        target = .mkGen .gen_idJ ()
+          (.childCons motiveAfter
+            (.childCons baseCase (.childCons witness .childNil))) ∧
+        Step motive motiveAfter)
+    ∨
     (∃ (baseAfter : RawTerm scope),
         target = .mkGen .gen_idJ ()
-          (.childCons baseAfter (.childCons witness .childNil)) ∧
+          (.childCons motive
+            (.childCons baseAfter (.childCons witness .childNil))) ∧
         Step baseCase baseAfter)
     ∨
     (∃ (witnessAfter : RawTerm scope),
         target = .mkGen .gen_idJ ()
-          (.childCons baseCase (.childCons witnessAfter .childNil)) ∧
+          (.childCons motive
+            (.childCons baseCase (.childCons witnessAfter .childNil))) ∧
         Step witness witnessAfter) := by
   cases reduction with
   | iotaIdJRefl =>
       exact Or.inl ⟨_, rfl, rfl⟩
   | cong _ _ childStep =>
       cases childStep with
-      | here _ baseStep =>
-          rename_i baseAfter
-          exact Or.inr (Or.inl ⟨baseAfter, rfl, baseStep⟩)
+      | here _ motiveStep =>
+          rename_i motiveAfter
+          exact Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩)
       | there _ tailStep =>
           cases tailStep with
-          | here _ witnessStep =>
-              rename_i witnessAfter
-              exact Or.inr (Or.inr ⟨witnessAfter, rfl, witnessStep⟩)
+          | here _ baseStep =>
+              rename_i baseAfter
+              exact Or.inr (Or.inr (Or.inl ⟨baseAfter, rfl, baseStep⟩))
           | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+              cases restStep with
+              | here _ witnessStep =>
+                  rename_i witnessAfter
+                  exact Or.inr (Or.inr (Or.inr ⟨witnessAfter, rfl, witnessStep⟩))
+              | there _ restRestStep =>
+                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `idStrictRec`-rooted Step.**
 
-Symmetric to `Step.from_idJ` for the strict identity eliminator. -/
+Symmetric to `Step.from_idJ` for the strict identity eliminator.
+Four-way: iotaIdStrictRecRefl arm + 3 cong positions over the
+Phase-Z spine `(motive, baseCase, witness)`. -/
 theorem Step.from_idStrictRec
-    {scope : Nat} {baseCase witness : RawTerm scope}
+    {scope : Nat} {motive : RawTerm (scope + 2)}
+    {baseCase witness : RawTerm scope}
     {target : RawTerm scope}
     (reduction :
       Step (.mkGen .gen_idStrictRec ()
-              (.childCons baseCase (.childCons witness .childNil))) target) :
+              (.childCons motive
+                (.childCons baseCase (.childCons witness .childNil)))) target) :
     (∃ (rawWitness : RawTerm scope),
         witness = .mkGen .gen_refl () (.childCons rawWitness .childNil) ∧
         target = baseCase)
     ∨
+    (∃ (motiveAfter : RawTerm (scope + 2)),
+        target = .mkGen .gen_idStrictRec ()
+          (.childCons motiveAfter
+            (.childCons baseCase (.childCons witness .childNil))) ∧
+        Step motive motiveAfter)
+    ∨
     (∃ (baseAfter : RawTerm scope),
         target = .mkGen .gen_idStrictRec ()
-          (.childCons baseAfter (.childCons witness .childNil)) ∧
+          (.childCons motive
+            (.childCons baseAfter (.childCons witness .childNil))) ∧
         Step baseCase baseAfter)
     ∨
     (∃ (witnessAfter : RawTerm scope),
         target = .mkGen .gen_idStrictRec ()
-          (.childCons baseCase (.childCons witnessAfter .childNil)) ∧
+          (.childCons motive
+            (.childCons baseCase (.childCons witnessAfter .childNil))) ∧
         Step witness witnessAfter) := by
   cases reduction with
   | iotaIdStrictRecRefl =>
       exact Or.inl ⟨_, rfl, rfl⟩
   | cong _ _ childStep =>
       cases childStep with
-      | here _ baseStep =>
-          rename_i baseAfter
-          exact Or.inr (Or.inl ⟨baseAfter, rfl, baseStep⟩)
+      | here _ motiveStep =>
+          rename_i motiveAfter
+          exact Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩)
       | there _ tailStep =>
           cases tailStep with
-          | here _ witnessStep =>
-              rename_i witnessAfter
-              exact Or.inr (Or.inr ⟨witnessAfter, rfl, witnessStep⟩)
+          | here _ baseStep =>
+              rename_i baseAfter
+              exact Or.inr (Or.inr (Or.inl ⟨baseAfter, rfl, baseStep⟩))
           | there _ restStep =>
-              exact absurd restStep StepChildren.no_step_at_empty_spine
+              cases restStep with
+              | here _ witnessStep =>
+                  rename_i witnessAfter
+                  exact Or.inr (Or.inr (Or.inr ⟨witnessAfter, rfl, witnessStep⟩))
+              | there _ restRestStep =>
+                  exact absurd restRestStep StepChildren.no_step_at_empty_spine
 
 /-- **Inversion for `app`-rooted Step.**
 

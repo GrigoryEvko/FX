@@ -308,19 +308,23 @@ theorem PolyCell.exists_preservedByIotaOptionMatchNone_dim0
   | gen _ _ sourceSpine =>
       exact ⟨sourceSpine.tail.headAtDim0 rfl, True.intro⟩
 
-/-- Exact witness for `idJ baseCase (refl rawWitness) ↝ baseCase`. -/
+/-- Exact witness for `idJ motive baseCase (refl rawWitness) ↝ baseCase`.
+Phase-Z motive shape: motive first (under two binders), witness last; baseCase
+sits at spine position 1, projected via `tail.headAtDim0`. -/
 theorem PolyCell.exists_preservedByIotaIdJRefl_dim0
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness : RawTerm scope}
     (sourceCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
           ((.mkGen .gen_idJ ()
-            (.childCons baseCase
-              (.childCons
-                (.mkGen .gen_refl ()
-                  (.childCons rawWitness .childNil))
-                .childNil))) : RawTerm scope))) :
+            (.childCons motive
+              (.childCons baseCase
+                (.childCons
+                  (.mkGen .gen_refl ()
+                    (.childCons rawWitness .childNil))
+                  .childNil)))) : RawTerm scope))) :
     ∃ _targetCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase baseCase),
@@ -328,21 +332,25 @@ theorem PolyCell.exists_preservedByIotaIdJRefl_dim0
   generalize hSourceSort : CellSort.term = sourceSort at sourceCell
   cases sourceCell with
   | gen _ _ sourceSpine =>
-      exact ⟨sourceSpine.headAtDim0 rfl, True.intro⟩
+      exact ⟨sourceSpine.tail.headAtDim0 rfl, True.intro⟩
 
-/-- Exact witness for `idStrictRec baseCase (refl rawWitness) ↝ baseCase`. -/
+/-- Exact witness for `idStrictRec motive baseCase (refl rawWitness) ↝ baseCase`.
+Phase-Z motive shape: motive first (under two binders), witness last; baseCase
+sits at spine position 1, projected via `tail.headAtDim0`. -/
 theorem PolyCell.exists_preservedByIotaIdStrictRecRefl_dim0
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness : RawTerm scope}
     (sourceCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase
           ((.mkGen .gen_idStrictRec ()
-            (.childCons baseCase
-              (.childCons
-                (.mkGen .gen_refl ()
-                  (.childCons rawWitness .childNil))
-                .childNil))) : RawTerm scope))) :
+            (.childCons motive
+              (.childCons baseCase
+                (.childCons
+                  (.mkGen .gen_refl ()
+                    (.childCons rawWitness .childNil))
+                  .childNil)))) : RawTerm scope))) :
     ∃ _targetCell :
       PolyCell profile .term 0 scope CellBoundary.trivial
         (.termBase baseCase),
@@ -350,7 +358,7 @@ theorem PolyCell.exists_preservedByIotaIdStrictRecRefl_dim0
   generalize hSourceSort : CellSort.term = sourceSort at sourceCell
   cases sourceCell with
   | gen _ _ sourceSpine =>
-      exact ⟨sourceSpine.headAtDim0 rfl, True.intro⟩
+      exact ⟨sourceSpine.tail.headAtDim0 rfl, True.intro⟩
 
 /-! ## Exact compound iota witnesses
 
@@ -1160,13 +1168,13 @@ theorem StepCellPreserverWitness.polyCell (profile : PolyProfile) :
             exact PolyCell.exists_preservedByIotaListElimCons_dim0
               (PolyCell.gen admission payloadEvidence sourceSpine))
       (iotaIdJRefl := by
-        intro _scope _baseCase _rawWitness _sort sourceCell
+        intro _scope _motive _baseCase _rawWitness _sort sourceCell
         cases sourceCell with
         | gen admission payloadEvidence sourceSpine =>
             exact PolyCell.exists_preservedByIotaIdJRefl_dim0
               (PolyCell.gen admission payloadEvidence sourceSpine))
       (iotaIdStrictRecRefl := by
-        intro _scope _baseCase _rawWitness _sort sourceCell
+        intro _scope _motive _baseCase _rawWitness _sort sourceCell
         cases sourceCell with
         | gen admission payloadEvidence sourceSpine =>
             exact PolyCell.exists_preservedByIotaIdStrictRecRefl_dim0

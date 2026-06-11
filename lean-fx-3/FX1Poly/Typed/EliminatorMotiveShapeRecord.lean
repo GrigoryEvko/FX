@@ -7,18 +7,21 @@ to revised-MILESTONE-A coverage breadth per §11.8.12.1; tracker series M24-Z2�
 machine-checked current-shape pins, a feasibility witness for the cascade-free alternative, and
 the costed decision record.
 
-## The census (2026-06, Phase-Z boolElim + listElim + natElim + natRec + optionMatch + eitherMatch stages SHIPPED)
+## The census (2026-06, Phase-Z eliminator migration COMPLETE — all eight stages SHIPPED)
 
-SIX eliminator generators have LANDED their Phase-Z motive shape: `gen_boolElim`, `gen_listElim`,
-`gen_optionMatch` and `gen_eitherMatch` at arity 4 binderShifts `[1,0,0,0]`, and `gen_natElim` /
-`gen_natRec` at arity 4 binderShifts `[1,0,2,0]` (the recursors' succ-branch sits under TWO binders —
-predecessor + induction hypothesis — and the succ-ι SUBSTITUTES into it).  All six carry children
-`(motive, …branches…, scrutinee)` with the motive a term under one binder and the scrutinee LAST
-(pinned as `rfl` theorems below).  The remaining TWO eliminator generators are still FLAT in the
-current substrate — no motive child, no binder shifts: `gen_idJ`/`gen_idStrictRec` at arity 2 shifts
-`[0,0]`.  The Z₀ spec shapes add a motive child under binders (idJ/idStrictRec shift 2).  The
-binder-shift MECHANISM is live and proven (`gen_lam` at `[0,1]`, `gen_boolElim`/`gen_listElim`/
-`gen_optionMatch`/`gen_eitherMatch` at `[1,0,0,0]`, `gen_natElim`/`gen_natRec` at `[1,0,2,0]`).
+ALL EIGHT eliminator generators now carry their Phase-Z motive shape.  `gen_boolElim`,
+`gen_listElim`, `gen_optionMatch` and `gen_eitherMatch` sit at arity 4 binderShifts `[1,0,0,0]`;
+`gen_natElim` / `gen_natRec` at arity 4 binderShifts `[1,0,2,0]` (the recursors' succ-branch sits
+under TWO binders — predecessor + induction hypothesis — and the succ-ι SUBSTITUTES into it); and
+`gen_idJ` / `gen_idStrictRec` at arity 3 binderShifts `[2,0,0]` (the identity-eliminator motive
+binds the endpoint and the path, so it sits under TWO binders, and its ι DISCARDS the motive —
+pure base-case projection).  The data/list/bool/match families carry children
+`(motive, …branches…, scrutinee)` with the motive a term under one binder and the scrutinee LAST;
+the identity eliminators carry `(motive, baseCase, witness)` with the motive a term under two
+binders and the witness LAST (all pinned as `rfl` theorems below).  The Z₀ eliminator migration is
+COMPLETE — every eliminator stores its motive.  The binder-shift MECHANISM is live and proven
+(`gen_lam` at `[0,1]`, `gen_boolElim`/`gen_listElim`/`gen_optionMatch`/`gen_eitherMatch` at
+`[1,0,0,0]`, `gen_natElim`/`gen_natRec` at `[1,0,2,0]`, `gen_idJ`/`gen_idStrictRec` at `[2,0,0]`).
 
 BLAST RADIUS of changing arity+binderShifts for the 8 generators: 1406 files in
 FX1Poly/FX0Poly/FX1PolyAudit mention at least one eliminator generator (262 for `gen_natElim`
@@ -79,9 +82,11 @@ commitment — staged ONE eliminator at a time (boolElim first: smallest corpus,
 migration playbook; listElim second, exercising the recursive cons-ι motive threading; natElim +
 natRec next, the FIRST shift-2 succ-branch and the FIRST SUBSTITUTING ι, the recursors' 262-file
 footprint; optionMatch + eitherMatch next, the non-recursive function-branch matches whose ι DISCARDS
-the motive), each stage an atomic green commit.  The `rfl` pins below are the regression tripwires:
-each Route-A stage breaks exactly its own generator's two pins, by design.  Remaining flat:
-idJ / idStrictRec.
+the motive; idJ + idStrictRec last, the identity eliminators at arity 3 shift `[2,0,0]` whose
+two-binder motive is DISCARDED by the refl-ι — pure base-case projection), each stage an atomic
+green commit.  The `rfl` pins below are the regression tripwires: each Route-A stage breaks exactly
+its own generator's two pins, by design.  The Z₀ eliminator migration is COMPLETE — all eight
+generators store their motive.
 
 ## Zero-axiom verification
 
@@ -98,14 +103,14 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-! ### The shape pins — Route A's regression tripwires.
 
-`gen_boolElim`/`gen_listElim`/`gen_natElim`/`gen_natRec`/`gen_optionMatch`/`gen_eitherMatch` have all
-LANDED their Phase-Z motive shape; their pins record the SHIPPED motive-carrying shape.  Two naming
-conventions coexist by necessity: the eliminators whose pins were authored before their migration keep
-the `…isFlat` suffix (a historical artifact, kept stable so the per-declaration audit references
-survive) while asserting the new shipped shape; the optionMatch/eitherMatch pins were RENAMED to
-`…hasMotive` when their migration landed (the `…isFlat` name would assert the literal opposite of the
-new `[1,0,0,0]` body).  Each remaining Z₀ migration stage (idJ/idStrictRec) changes exactly its
-generator's two pins; everything else builds on those staying fixed until that stage lands. -/
+All eight eliminator generators have LANDED their Phase-Z motive shape; their pins record the SHIPPED
+motive-carrying shape.  Two naming conventions coexist by necessity.  SIX legacy-named pins keep the
+`…isFlat` suffix (a historical artifact, kept stable so the per-declaration audit references survive)
+while asserting the new shipped shape: boolElim / listElim / natElim / natRec.  TEN `…hasMotive` pins
+carry the descriptive name: the FOUR optionMatch/eitherMatch pins (renamed when their migration landed)
+plus the FOUR NEW idJ/idStrictRec pins (the `…isFlat` name would assert the literal opposite of the new
+`[2,0,0]` body, so the descriptive name was used from the start).  The Z₀ migration is COMPLETE — no pin
+remains to flip. -/
 
 theorem boolElim_arity_isFlat : Generator.gen_boolElim.arity = 4 := rfl
 theorem boolElim_binderShifts_isFlat :
@@ -122,11 +127,11 @@ theorem optionMatch_binderShifts_hasMotive :
 theorem eitherMatch_arity_hasMotive : Generator.gen_eitherMatch.arity = 4 := rfl
 theorem eitherMatch_binderShifts_hasMotive :
     Generator.gen_eitherMatch.binderShifts = [1, 0, 0, 0] := rfl
-theorem idJ_arity_isFlat : Generator.gen_idJ.arity = 2 := rfl
-theorem idJ_binderShifts_isFlat : Generator.gen_idJ.binderShifts = [0, 0] := rfl
-theorem idStrictRec_arity_isFlat : Generator.gen_idStrictRec.arity = 2 := rfl
-theorem idStrictRec_binderShifts_isFlat :
-    Generator.gen_idStrictRec.binderShifts = [0, 0] := rfl
+theorem idJ_arity_hasMotive : Generator.gen_idJ.arity = 3 := rfl
+theorem idJ_binderShifts_hasMotive : Generator.gen_idJ.binderShifts = [2, 0, 0] := rfl
+theorem idStrictRec_arity_hasMotive : Generator.gen_idStrictRec.arity = 3 := rfl
+theorem idStrictRec_binderShifts_hasMotive :
+    Generator.gen_idStrictRec.binderShifts = [2, 0, 0] := rfl
 
 /-- **The DEPENDENT boolean eliminator over the motive-carrying shape.**
 A standalone judgment over the Phase-Z `boolElimCell`: the motive is the cell's STORED head child (a

@@ -15,9 +15,10 @@ normal: weak-head-normalize the scrutinee first, then fire ι.  `WeakHeadStep` i
     function that is itself an eliminator-redex, which `HeadStep`'s β-only congruence misses);
   * `rootIota` — any root-ι step (`IotaHeadStep`);
   * `scrutineeCong<Eliminator>` — reduce the SCRUTINEE of an eliminator by `WeakHeadStep`, one rule per
-    eliminator, at its scrutinee position (child 0 for `fst`/`snd`/`optionMatch`/`eitherMatch`;
-    child 1 for `idJ`/`idStrictRec`; child 3 — LAST — for the Phase-Z `boolElim` / `natElim` /
-    `natRec` / `listElim` whose spines are `(motive, then/zero/nil, else/succ/cons, scrutinee)`).
+    eliminator, at its scrutinee position (child 0 for `fst`/`snd`; child 2 — LAST — for the Phase-Z
+    `idJ`/`idStrictRec` whose spines are `(motive, baseCase, witness)`; child 3 — LAST — for the Phase-Z
+    `boolElim` / `natElim` / `natRec` / `listElim` / `optionMatch` / `eitherMatch` whose spines are
+    `(motive, then/zero/nil/none/left, else/succ/cons/some/right, scrutinee)`).
 
 This is the relation a large-elimination-ready dependent reducibility relation dispatches on: the
 `neutral` arm's honest guard is `¬ WeakHeadStep` (genuinely stuck — no β, no ι, no reducible scrutinee),
@@ -159,18 +160,26 @@ inductive WeakHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
           (.childCons motive
             (.childCons leftBranch
               (.childCons rightBranch (.childCons scrutineeReduct .childNil)))))
-  /-- Reduce the scrutinee (child 1) of `idJ`. -/
-  | scrutineeIdJ {baseCase scrutinee scrutineeReduct : RawTerm scope} :
+  /-- Reduce the witness scrutinee of `idJ` (Phase-Z: scrutinee is the LAST child
+      at child 2; the motive heads the spine at `scope + 2`). -/
+  | scrutineeIdJ {motive : RawTerm (scope + 2)}
+      {baseCase scrutinee scrutineeReduct : RawTerm scope} :
       WeakHeadStep scrutinee scrutineeReduct →
       WeakHeadStep
-        (.mkGen .gen_idJ () (.childCons baseCase (.childCons scrutinee .childNil)))
-        (.mkGen .gen_idJ () (.childCons baseCase (.childCons scrutineeReduct .childNil)))
-  /-- Reduce the scrutinee (child 1) of `idStrictRec`. -/
-  | scrutineeIdStrictRec {baseCase scrutinee scrutineeReduct : RawTerm scope} :
+        (.mkGen .gen_idJ ()
+          (.childCons motive (.childCons baseCase (.childCons scrutinee .childNil))))
+        (.mkGen .gen_idJ ()
+          (.childCons motive (.childCons baseCase (.childCons scrutineeReduct .childNil))))
+  /-- Reduce the witness scrutinee of `idStrictRec` (Phase-Z: scrutinee is the LAST
+      child at child 2; the motive heads the spine at `scope + 2`). -/
+  | scrutineeIdStrictRec {motive : RawTerm (scope + 2)}
+      {baseCase scrutinee scrutineeReduct : RawTerm scope} :
       WeakHeadStep scrutinee scrutineeReduct →
       WeakHeadStep
-        (.mkGen .gen_idStrictRec () (.childCons baseCase (.childCons scrutinee .childNil)))
-        (.mkGen .gen_idStrictRec () (.childCons baseCase (.childCons scrutineeReduct .childNil)))
+        (.mkGen .gen_idStrictRec ()
+          (.childCons motive (.childCons baseCase (.childCons scrutinee .childNil))))
+        (.mkGen .gen_idStrictRec ()
+          (.childCons motive (.childCons baseCase (.childCons scrutineeReduct .childNil))))
 
 /-- A λ-abstraction has no weak-head step: every `WeakHeadStep` constructor concludes an application- or
 eliminator-headed subject (the `rootIota` premise an `IotaHeadStep` on the λ, itself impossible). -/
@@ -225,8 +234,10 @@ theorem WeakHeadStep.toStep {scope : Nat} {term reduct : RawTerm scope}
         (StepChildren.there _
           (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep))))
   | scrutineeIdJ _scrutineeStep scrutineeToStep =>
-      exact Step.cong .gen_idJ () (StepChildren.there _ (StepChildren.here _ scrutineeToStep))
+      exact Step.cong .gen_idJ ()
+        (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep)))
   | scrutineeIdStrictRec _scrutineeStep scrutineeToStep =>
-      exact Step.cong .gen_idStrictRec () (StepChildren.there _ (StepChildren.here _ scrutineeToStep))
+      exact Step.cong .gen_idStrictRec ()
+        (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep)))
 
 end FX1Poly.Core

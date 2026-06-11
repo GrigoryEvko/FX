@@ -196,14 +196,16 @@ def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
             else none
   else if hIdJ : generator = .gen_idJ then
     match (hIdJ ▸ children : RawTermChildren (Generator.gen_idJ.binderShifts) scope) with
-    | .childCons baseCase (.childCons reflChild .childNil) =>
+    -- Phase-Z spine: (motive, baseCase, witness); witness is the LAST child; motive discarded.
+    | .childCons _motive (.childCons baseCase (.childCons reflChild .childNil)) =>
         match reflChild with
         | .mkGen reflGenerator _reflPayload _reflChildren =>
             if reflGenerator = .gen_refl then some baseCase else none
   else if hIdStrictRec : generator = .gen_idStrictRec then
     match (hIdStrictRec ▸ children :
         RawTermChildren (Generator.gen_idStrictRec.binderShifts) scope) with
-    | .childCons baseCase (.childCons reflChild .childNil) =>
+    -- Phase-Z spine: (motive, baseCase, witness); witness is the LAST child; motive discarded.
+    | .childCons _motive (.childCons baseCase (.childCons reflChild .childNil)) =>
         match reflChild with
         | .mkGen reflGenerator _reflPayload _reflChildren =>
             if reflGenerator = .gen_refl then some baseCase else none
@@ -576,8 +578,9 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                                 rw [key] at fired; nomatch fired
                   · by_cases hIdJ : generator = .gen_idJ
                     · subst hIdJ
+                      -- Phase-Z spine: (motive, baseCase, witness); witness head selects the iota.
                       match children with
-                      | .childCons baseCase (.childCons reflChild .childNil) =>
+                      | .childCons motive (.childCons baseCase (.childCons reflChild .childNil)) =>
                           match reflChild with
                           | .mkGen reflGenerator reflPayload reflChildren =>
                               by_cases hRefl : reflGenerator = .gen_refl
@@ -585,21 +588,24 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                                 match reflChildren with
                                 | .childCons witness .childNil =>
                                     have key : RawTerm.fireRootRedex .gen_idJ payload
-                                        (.childCons baseCase
-                                          (.childCons (.mkGen .gen_refl reflPayload
-                                            (.childCons witness .childNil)) .childNil)) =
+                                        (.childCons motive
+                                          (.childCons baseCase
+                                            (.childCons (.mkGen .gen_refl reflPayload
+                                              (.childCons witness .childNil)) .childNil))) =
                                         some baseCase := rfl
                                     rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                                     exact Step.iotaIdJRefl
                               · have key : RawTerm.fireRootRedex .gen_idJ payload
-                                    (.childCons baseCase
-                                      (.childCons (.mkGen reflGenerator reflPayload reflChildren)
-                                        .childNil)) = none := if_neg hRefl
+                                    (.childCons motive
+                                      (.childCons baseCase
+                                        (.childCons (.mkGen reflGenerator reflPayload reflChildren)
+                                          .childNil))) = none := if_neg hRefl
                                 rw [key] at fired; nomatch fired
                     · by_cases hIdStrictRec : generator = .gen_idStrictRec
                       · subst hIdStrictRec
+                        -- Phase-Z spine: (motive, baseCase, witness); witness head selects the iota.
                         match children with
-                        | .childCons baseCase (.childCons reflChild .childNil) =>
+                        | .childCons motive (.childCons baseCase (.childCons reflChild .childNil)) =>
                             match reflChild with
                             | .mkGen reflGenerator reflPayload reflChildren =>
                                 by_cases hRefl : reflGenerator = .gen_refl
@@ -607,16 +613,18 @@ theorem RawTerm.fireRootRedex_sound {scope : Nat} {generator : Generator}
                                   match reflChildren with
                                   | .childCons witness .childNil =>
                                       have key : RawTerm.fireRootRedex .gen_idStrictRec payload
-                                          (.childCons baseCase
-                                            (.childCons (.mkGen .gen_refl reflPayload
-                                              (.childCons witness .childNil)) .childNil)) =
+                                          (.childCons motive
+                                            (.childCons baseCase
+                                              (.childCons (.mkGen .gen_refl reflPayload
+                                                (.childCons witness .childNil)) .childNil))) =
                                           some baseCase := rfl
                                       rw [key] at fired; injection fired with reductEq; rw [← reductEq]
                                       exact Step.iotaIdStrictRecRefl
                                 · have key : RawTerm.fireRootRedex .gen_idStrictRec payload
-                                      (.childCons baseCase
-                                        (.childCons (.mkGen reflGenerator reflPayload reflChildren)
-                                          .childNil)) = none := if_neg hRefl
+                                      (.childCons motive
+                                        (.childCons baseCase
+                                          (.childCons (.mkGen reflGenerator reflPayload reflChildren)
+                                            .childNil))) = none := if_neg hRefl
                                   rw [key] at fired; nomatch fired
                       · -- generator is none of the redex generators: fireRootRedex returns none.
                         rw [show RawTerm.fireRootRedex generator payload children = none from by

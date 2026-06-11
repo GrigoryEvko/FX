@@ -17,8 +17,9 @@ completing per-eliminator host-fold faithfulness to all ten:
     two binders — recursive result + predecessor — filled by SUBSTITUTION rather than application).  These two
     ARE the defining clauses of the host `Nat.rec` recursor, so `gen_natRec` computes exactly the host dependent
     Nat recursor.
-  * **`idStrictRecHostFold`** — `idStrictRec base (refl w) ↝ base` (host strict `Eq.rec` on `rfl` returns the
-    base case) — the strict-recursor twin of `idJHostFold`.
+  * **`idStrictRecHostFold`** — `idStrictRec motive base (refl w) ↝ base` (host strict `Eq.rec` on `rfl` returns
+    the base case; the Phase-Z stored motive is discarded by the refl-ι) — the strict-recursor twin of
+    `idJHostFold`.
 
 `natRecCell` / `idStrictRecCell` are the eliminator-cell builders; their shapes match the
 `Step.iotaNatRec{Zero,Succ}` / `Step.iotaIdStrictRecRefl` redex heads, so each host-fold is a single
@@ -59,9 +60,13 @@ def natRecSuccContractum {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranc
       (RawTermSubst.singleton predecessor))
     succBranch
 
-/-- The `idStrictRec` eliminator cell: base-case + scrutinee (the strict identity recursor). -/
-def idStrictRecCell {scope : Nat} (baseCase scrutinee : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_idStrictRec () (.childCons baseCase (.childCons scrutinee .childNil))
+/-- The `idStrictRec` eliminator cell (the strict identity recursor) — Phase-Z motive shape
+`(motive, baseCase, witness)`: the motive a term under two binders (`RawTerm (scope + 2)`), the base case
+second, the witness LAST. -/
+def idStrictRecCell {scope : Nat} (motive : RawTerm (scope + 2))
+    (baseCase witness : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_idStrictRec ()
+    (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
 
 /-- **★ `natRec` on `natZero` computes the host `Nat.rec` base clause.**  `natRec m z s natZero ↝ z` via
 `Step.iotaNatRecZero` — the recursor on zero projects the zero-branch, exactly as host `Nat.rec`. -/
@@ -80,11 +85,12 @@ theorem natRecSuccHostFold {scope : Nat} (motive : RawTerm (scope + 1))
       (natRecSuccContractum motive zeroBranch succBranch predecessor) :=
   StepStar.single Step.iotaNatRecSucc
 
-/-- **★ `idStrictRec` on `refl` computes the host strict `Eq.rec` base.**  `idStrictRec base (refl w) ↝ base`
-via `Step.iotaIdStrictRecRefl` — strict path induction on reflexivity returns the base case, the strict-recursor
-twin of `idJHostFold`. -/
-theorem idStrictRecHostFold {scope : Nat} (baseCase witness : RawTerm scope) :
-    StepStar (idStrictRecCell baseCase (reflCell witness)) baseCase :=
+/-- **★ `idStrictRec` on `refl` computes the host strict `Eq.rec` base.**  `idStrictRec motive base (refl w) ↝
+base` via `Step.iotaIdStrictRecRefl` — strict path induction on reflexivity returns the base case (the Phase-Z
+stored motive is DISCARDED by the refl-ι), the strict-recursor twin of `idJHostFold`. -/
+theorem idStrictRecHostFold {scope : Nat} (motive : RawTerm (scope + 2))
+    (baseCase witness : RawTerm scope) :
+    StepStar (idStrictRecCell motive baseCase (reflCell witness)) baseCase :=
   StepStar.single Step.iotaIdStrictRecRefl
 
 end FX1Poly.Typed

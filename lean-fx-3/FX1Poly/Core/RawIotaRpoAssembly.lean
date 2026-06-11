@@ -243,10 +243,10 @@ theorem IotaHeadStep.rpoEmbeds {scope : Nat} {source target : RawTerm scope}
         (by decide) _ _ _ _ _
   | iotaIdJRefl =>
       dsimp only [eraseToRose, eraseChildren]
-      exact Rpo.subtermEq Generator.gen_idJ _ _ (List.Mem.head _)
+      exact Rpo.subtermEq Generator.gen_idJ _ _ (List.Mem.tail _ (List.Mem.head _))
   | iotaIdStrictRecRefl =>
       dsimp only [eraseToRose, eraseChildren]
-      exact Rpo.subtermEq Generator.gen_idStrictRec _ _ (List.Mem.head _)
+      exact Rpo.subtermEq Generator.gen_idStrictRec _ _ (List.Mem.tail _ (List.Mem.head _))
 
 /-- Accessibility successor: `laterTerm` is below `earlierTerm` when `earlierTerm` root-ι-contracts to it
 (mirrors `Step.etaSuccessor` / `IotaNonRecursiveStep.successor`).  The FULL relation's successor;

@@ -587,42 +587,56 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                                               (StepStar.single tailValStep)))⟩
                                   | there _head5 emptyStep => cases emptyStep
                       | there _head4 emptyStep => cases emptyStep
-  | @iotaIdJRefl baseCase rawWitness =>
+  | @iotaIdJRefl motive baseCase rawWitness =>
+      -- Phase-Z spine: (motive, baseCase, witness=refl rawWitness).  The cong spine walks
+      -- motive (here) → baseCase → witness.  The iota DISCARDS the motive and projects the
+      -- baseCase (child 1): only a step in the baseCase changes the selected reduct;
+      -- motive/witness steps leave baseCase intact.
       intro other step
       cases step with
       | iotaIdJRefl => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest baseStep =>
-              exact Or.inr ⟨_, IotaHeadStep.iotaIdJRefl, StepStar.single baseStep⟩
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaIdJRefl, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
-              | here _rest scrutineeStep =>
-                  cases scrutineeStep with
-                  | cong _g _p witnessChild =>
-                      cases witnessChild with
-                      | here _rest witnessStep =>
-                          exact Or.inr ⟨_, IotaHeadStep.iotaIdJRefl, StepStar.refl _⟩
-                      | there _head2 emptyStep => cases emptyStep
-              | there _head2 emptyStep => cases emptyStep
-  | @iotaIdStrictRecRefl baseCase rawWitness =>
+              | here _rest baseStep =>
+                  exact Or.inr ⟨_, IotaHeadStep.iotaIdJRefl, StepStar.single baseStep⟩
+              | there _head2 restStep =>
+                  cases restStep with
+                  | here _rest witnessStep =>
+                      cases witnessStep with
+                      | cong _g _p witnessChild =>
+                          cases witnessChild with
+                          | here _rest _rawWitnessStep =>
+                              exact Or.inr ⟨_, IotaHeadStep.iotaIdJRefl, StepStar.refl _⟩
+                          | there _head3 emptyStep => cases emptyStep
+                  | there _head3 emptyStep => cases emptyStep
+  | @iotaIdStrictRecRefl motive baseCase rawWitness =>
+      -- Phase-Z spine: (motive, baseCase, witness=refl rawWitness).  Symmetric to the idJ
+      -- arm: the iota discards the motive and projects the baseCase (child 1).
       intro other step
       cases step with
       | iotaIdStrictRecRefl => exact Or.inl rfl
       | cong _generator _payload childStep =>
           cases childStep with
-          | here _rest baseStep =>
-              exact Or.inr ⟨_, IotaHeadStep.iotaIdStrictRecRefl, StepStar.single baseStep⟩
+          | here _rest _motiveStep =>
+              exact Or.inr ⟨_, IotaHeadStep.iotaIdStrictRecRefl, StepStar.refl _⟩
           | there _head tailStep =>
               cases tailStep with
-              | here _rest scrutineeStep =>
-                  cases scrutineeStep with
-                  | cong _g _p witnessChild =>
-                      cases witnessChild with
-                      | here _rest witnessStep =>
-                          exact Or.inr ⟨_, IotaHeadStep.iotaIdStrictRecRefl, StepStar.refl _⟩
-                      | there _head2 emptyStep => cases emptyStep
-              | there _head2 emptyStep => cases emptyStep
+              | here _rest baseStep =>
+                  exact Or.inr ⟨_, IotaHeadStep.iotaIdStrictRecRefl, StepStar.single baseStep⟩
+              | there _head2 restStep =>
+                  cases restStep with
+                  | here _rest witnessStep =>
+                      cases witnessStep with
+                      | cong _g _p witnessChild =>
+                          cases witnessChild with
+                          | here _rest _rawWitnessStep =>
+                              exact Or.inr ⟨_, IotaHeadStep.iotaIdStrictRecRefl, StepStar.refl _⟩
+                          | there _head3 emptyStep => cases emptyStep
+                  | there _head3 emptyStep => cases emptyStep
 
 /-- **The complete weak-head reduction commutes with arbitrary single-step reduction.**  Given a weak-head
 step `term ↝ʰ reduct` and any step `term ↝ other`, either the arbitrary step contracted the same weak-head
@@ -967,45 +981,60 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
               (fun childStep' =>
                 Step.cong .gen_eitherMatch ()
                   (.there _ (.there _ (.there _ (.here _ childStep'))))) starChain⟩
-  | @scrutineeIdJ baseCase scrutinee scrutineeReduct
+  | @scrutineeIdJ motive baseCase scrutinee scrutineeReduct
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      -- Phase-Z spine: (motive, baseCase, witness=scrutinee).  The WeakHeadStep reduces the LAST
+      -- child (the witness scrutinee).  `Step.from_idJ` is a four-way disjunction in the order
+      -- iotaRefl / cong-motive / cong-base / cong-witness.  The iota disjunct is refuted (a
+      -- reducible witness is not yet `refl`); motive and base steps leave the witness reducible,
+      -- so `other` still weak-head reduces there and `reduct` catches up by a single congruence at
+      -- the stepped child; a witness step recurses through the induction hypothesis.
       intro other step
       rcases Step.from_idJ step with
         ⟨_rawWitness, scrutEq, _⟩
+        | ⟨_motiveAfter, otherEq, motiveStep⟩
         | ⟨_baseAfter, otherEq, baseStep⟩
         | ⟨_witnessAfter, otherEq, witnessStep⟩
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_refl
       · subst otherEq
         exact Or.inr ⟨_, WeakHeadStep.scrutineeIdJ scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_idJ () (.childCons hole (.childCons scrutineeReduct .childNil)))
-            (fun childStep' => Step.cong .gen_idJ () (.here _ childStep'))
-            (StepStar.single baseStep)⟩
+          StepStar.single
+            (Step.cong .gen_idJ () (.here _ motiveStep))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeIdJ scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_idJ () (.there _ (.here _ baseStep)))⟩
       · subst otherEq
         rcases scrutineeInductiveHypothesis _ witnessStep with
           scrutAfterEquation | ⟨_scrutReduct2, weakHeadStep2, starChain⟩
         · subst scrutAfterEquation; exact Or.inl rfl
         · exact Or.inr ⟨_, WeakHeadStep.scrutineeIdJ weakHeadStep2,
             StepStar.congAt
-              (fun hole => .mkGen .gen_idJ () (.childCons baseCase (.childCons hole .childNil)))
-              (fun childStep' => Step.cong .gen_idJ () (.there _ (.here _ childStep'))) starChain⟩
-  | @scrutineeIdStrictRec baseCase scrutinee scrutineeReduct
+              (fun hole => .mkGen .gen_idJ ()
+                (.childCons motive (.childCons baseCase (.childCons hole .childNil))))
+              (fun childStep' =>
+                Step.cong .gen_idJ () (.there _ (.there _ (.here _ childStep')))) starChain⟩
+  | @scrutineeIdStrictRec motive baseCase scrutinee scrutineeReduct
       scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      -- Phase-Z spine: (motive, baseCase, witness=scrutinee).  Symmetric to the idJ scrutinee
+      -- arm; `Step.from_idStrictRec` is the same four-way disjunction.
       intro other step
       rcases Step.from_idStrictRec step with
         ⟨_rawWitness, scrutEq, _⟩
+        | ⟨_motiveAfter, otherEq, motiveStep⟩
         | ⟨_baseAfter, otherEq, baseStep⟩
         | ⟨_witnessAfter, otherEq, witnessStep⟩
       · rw [scrutEq] at scrutineeWeakHeadStep
         exact absurd scrutineeWeakHeadStep WeakHeadStep.not_from_refl
       · subst otherEq
         exact Or.inr ⟨_, WeakHeadStep.scrutineeIdStrictRec scrutineeWeakHeadStep,
-          StepStar.congAt
-            (fun hole => .mkGen .gen_idStrictRec ()
-              (.childCons hole (.childCons scrutineeReduct .childNil)))
-            (fun childStep' => Step.cong .gen_idStrictRec () (.here _ childStep'))
-            (StepStar.single baseStep)⟩
+          StepStar.single
+            (Step.cong .gen_idStrictRec () (.here _ motiveStep))⟩
+      · subst otherEq
+        exact Or.inr ⟨_, WeakHeadStep.scrutineeIdStrictRec scrutineeWeakHeadStep,
+          StepStar.single
+            (Step.cong .gen_idStrictRec () (.there _ (.here _ baseStep)))⟩
       · subst otherEq
         rcases scrutineeInductiveHypothesis _ witnessStep with
           scrutAfterEquation | ⟨_scrutReduct2, weakHeadStep2, starChain⟩
@@ -1013,7 +1042,8 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
         · exact Or.inr ⟨_, WeakHeadStep.scrutineeIdStrictRec weakHeadStep2,
             StepStar.congAt
               (fun hole => .mkGen .gen_idStrictRec ()
-                (.childCons baseCase (.childCons hole .childNil)))
-              (fun childStep' => Step.cong .gen_idStrictRec () (.there _ (.here _ childStep'))) starChain⟩
+                (.childCons motive (.childCons baseCase (.childCons hole .childNil))))
+              (fun childStep' =>
+                Step.cong .gen_idStrictRec () (.there _ (.there _ (.here _ childStep')))) starChain⟩
 
 end FX1Poly.Core

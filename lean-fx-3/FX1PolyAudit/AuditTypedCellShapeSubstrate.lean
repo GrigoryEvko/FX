@@ -1431,9 +1431,9 @@ telescope input, the inert-leaf membership. -/
 #assert_no_axioms FX1Poly.Typed.optionMatch_binderShifts_hasMotive
 #assert_no_axioms FX1Poly.Typed.eitherMatch_arity_hasMotive
 #assert_no_axioms FX1Poly.Typed.eitherMatch_binderShifts_hasMotive
-#assert_no_axioms FX1Poly.Typed.idJ_arity_isFlat
-#assert_no_axioms FX1Poly.Typed.idJ_binderShifts_isFlat
-#assert_no_axioms FX1Poly.Typed.idStrictRec_arity_isFlat
-#assert_no_axioms FX1Poly.Typed.idStrictRec_binderShifts_isFlat
+#assert_no_axioms FX1Poly.Typed.idJ_arity_hasMotive
+#assert_no_axioms FX1Poly.Typed.idJ_binderShifts_hasMotive
+#assert_no_axioms FX1Poly.Typed.idStrictRec_arity_hasMotive
+#assert_no_axioms FX1Poly.Typed.idStrictRec_binderShifts_hasMotive
 #assert_no_axioms FX1Poly.Typed.weakening_isZeroArm
 #assert_no_axioms FX1Poly.Typed.substitution_isZeroArm

@@ -17,7 +17,8 @@ HOST scrutinee, reduces to exactly what the corresponding HOST eliminator comput
   * **`fstHostFold` / `sndHostFold`** — `fst (pair p.1 p.2) ↝* p.1` and `snd ↝* p.2` (host `Prod.fst` / `Prod.snd`).
   * **`optionMatchHostFold`** — `optionMatch (rawOption o) n s ↝* o.elim n (s ·)` (host `Option.elim`).
   * **`eitherMatchHostFold`** — `eitherMatch (rawEither e) l r ↝* Sum.elim (l ·) (r ·) e` (host `Sum.elim`).
-  * **`idJHostFold`** — `idJ base (refl w) ↝* base` (host `Eq.rec` on `rfl` returns the base case).
+  * **`idJHostFold`** — `idJ motive base (refl w) ↝* base` (host `Eq.rec` on `rfl` returns the base case; the
+    Phase-Z stored motive is discarded by the refl-ι).
 
 Each is a two-case (or one-case) proof: `cases` the host scrutinee, then the matching `Step.iota` rule fires the
 ι-reduct, which is DEFINITIONALLY the host eliminator's branch selection (`cond true t e = t`, `Option.elim
@@ -100,10 +101,11 @@ theorem eitherMatchHostFold {scope : Nat} (motive : RawTerm (scope + 1))
   · exact StepStar.single Step.iotaEitherMatchInl
   · exact StepStar.single Step.iotaEitherMatchInr
 
-/-- **★ `idJ` computes the host `Eq.rec` on `rfl`.**  `idJ base (refl w) ↝* base` via `Step.iotaIdJRefl` — path
-induction on the reflexivity proof returns the base case, exactly as host `Eq.rec` (J) on `rfl`. -/
-theorem idJHostFold {scope : Nat} (baseCase witness : RawTerm scope) :
-    StepStar (idJCell baseCase (reflCell witness)) baseCase :=
+/-- **★ `idJ` computes the host `Eq.rec` on `rfl`.**  `idJ motive base (refl w) ↝* base` via `Step.iotaIdJRefl`
+— path induction on the reflexivity proof returns the base case (the Phase-Z stored motive is DISCARDED by the
+refl-ι), exactly as host `Eq.rec` (J) on `rfl`. -/
+theorem idJHostFold {scope : Nat} (motive : RawTerm (scope + 2)) (baseCase witness : RawTerm scope) :
+    StepStar (idJCell motive baseCase (reflCell witness)) baseCase :=
   StepStar.single Step.iotaIdJRefl
 
 /-! ## Concrete branch-selection smokes -/

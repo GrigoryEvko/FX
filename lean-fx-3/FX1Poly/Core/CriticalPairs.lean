@@ -1113,33 +1113,37 @@ def iotaOptionMatchNoneSameRoot {scope : Nat}
   leftStep := Step.iotaOptionMatchNone
   rightStep := Step.iotaOptionMatchNone
 
-/-- The concrete same-root `idJ` refl-case iota branching. -/
+/-- The concrete same-root `idJ` refl-case iota branching.
+Phase-Z motive shape: motive first (under two binders), witness last. -/
 def iotaIdJReflSameRoot {scope : Nat}
-    (baseCase rawWitness : RawTerm scope) :
+    (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_idJ ()
-      (.childCons
-        baseCase
+      (.childCons motive
         (.childCons
-          (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-          .childNil))
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
   leftReduct := baseCase
   rightReduct := baseCase
   leftStep := Step.iotaIdJRefl
   rightStep := Step.iotaIdJRefl
 
-/-- The concrete same-root `idStrictRec` refl-case iota branching. -/
+/-- The concrete same-root `idStrictRec` refl-case iota branching.
+Phase-Z motive shape: motive first (under two binders), witness last. -/
 def iotaIdStrictRecReflSameRoot {scope : Nat}
-    (baseCase rawWitness : RawTerm scope) :
+    (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_idStrictRec ()
-      (.childCons
-        baseCase
+      (.childCons motive
         (.childCons
-          (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-          .childNil))
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
   leftReduct := baseCase
   rightReduct := baseCase
   leftStep := Step.iotaIdStrictRecRefl
@@ -3513,139 +3517,237 @@ def iotaEitherMatchInrRightBranchCong {scope : Nat}
               RawTermChildren [0] scope)
             rightStep)))
 
+/-- Root `idJ refl` iota branching against congruence in the discarded motive
+(Phase-Z motive shape, at `scope + 2`).  The refl-case iota operationally
+discards the motive, so the local diamond joins immediately at the base case. -/
+def iotaIdJMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 2)}
+    {baseCase rawWitness : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_idJ ()
+      (.childCons motive
+        (.childCons
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
+  leftReduct := baseCase
+  rightReduct :=
+    .mkGen .gen_idJ ()
+      (.childCons steppedMotive
+        (.childCons
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
+  leftStep := Step.iotaIdJRefl
+  rightStep :=
+    Step.cong .gen_idJ ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 2) (restShifts := [0, 0])
+        ((.childCons
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)) : RawTermChildren [0, 0] scope)
+        motiveStep)
+
 /-- Root `idJ refl` iota branching against congruence in the selected
 base-case child. -/
 def iotaIdJBaseCaseCong {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase steppedBaseCase rawWitness : RawTerm scope}
     (baseStep : Step baseCase steppedBaseCase) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_idJ ()
-      (.childCons
-        baseCase
+      (.childCons motive
         (.childCons
-          (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-          .childNil))
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
   leftReduct := baseCase
   rightReduct :=
     .mkGen .gen_idJ ()
-      (.childCons
-        steppedBaseCase
+      (.childCons motive
         (.childCons
-          (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-          .childNil))
+          steppedBaseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
   leftStep := Step.iotaIdJRefl
   rightStep :=
     Step.cong .gen_idJ ()
-      (StepChildren.here
-        (parentScope := scope) (headShift := 0) (restShifts := [0])
-        ((.childCons
-          (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-          .childNil) : RawTermChildren [0] scope)
-        baseStep)
+      (StepChildren.there
+        (parentScope := scope) (headShift := 2) (restShifts := [0, 0])
+        motive
+        (StepChildren.here
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          ((.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil) : RawTermChildren [0] scope)
+          baseStep))
 
 /-- Root `idJ refl` iota branching against congruence inside the discarded
 refl witness child. -/
 def iotaIdJWitnessCong {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness steppedRawWitness : RawTerm scope}
     (witnessStep : Step rawWitness steppedRawWitness) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_idJ ()
-      (.childCons
-        baseCase
+      (.childCons motive
         (.childCons
-          (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-          .childNil))
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
   leftReduct := baseCase
   rightReduct :=
     .mkGen .gen_idJ ()
-      (.childCons
-        baseCase
+      (.childCons motive
         (.childCons
-          (.mkGen .gen_refl () (.childCons steppedRawWitness .childNil))
-          .childNil))
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons steppedRawWitness .childNil))
+            .childNil)))
   leftStep := Step.iotaIdJRefl
   rightStep :=
     Step.cong .gen_idJ ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0])
-        baseCase
-        (StepChildren.here
-          (parentScope := scope) (headShift := 0) (restShifts := [])
-          (.childNil : RawTermChildren [] scope)
-          (Step.cong .gen_refl ()
-            (StepChildren.here
-              (parentScope := scope) (headShift := 0) (restShifts := [])
-              (.childNil : RawTermChildren [] scope)
-              witnessStep))))
+        (parentScope := scope) (headShift := 2) (restShifts := [0, 0])
+        motive
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          baseCase
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_refl ()
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0) (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                witnessStep)))))
+
+/-- Root `idStrictRec refl` iota branching against congruence in the discarded
+motive (Phase-Z motive shape, at `scope + 2`).  The refl-case iota operationally
+discards the motive, so the local diamond joins immediately at the base case. -/
+def iotaIdStrictRecMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 2)}
+    {baseCase rawWitness : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalStepBranching (scope := scope) where
+  source :=
+    .mkGen .gen_idStrictRec ()
+      (.childCons motive
+        (.childCons
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
+  leftReduct := baseCase
+  rightReduct :=
+    .mkGen .gen_idStrictRec ()
+      (.childCons steppedMotive
+        (.childCons
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
+  leftStep := Step.iotaIdStrictRecRefl
+  rightStep :=
+    Step.cong .gen_idStrictRec ()
+      (StepChildren.here
+        (parentScope := scope) (headShift := 2) (restShifts := [0, 0])
+        ((.childCons
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)) : RawTermChildren [0, 0] scope)
+        motiveStep)
 
 /-- Root `idStrictRec refl` iota branching against congruence in the selected
 base-case child. -/
 def iotaIdStrictRecBaseCaseCong {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase steppedBaseCase rawWitness : RawTerm scope}
     (baseStep : Step baseCase steppedBaseCase) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_idStrictRec ()
-      (.childCons
-        baseCase
+      (.childCons motive
         (.childCons
-          (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-          .childNil))
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
   leftReduct := baseCase
   rightReduct :=
     .mkGen .gen_idStrictRec ()
-      (.childCons
-        steppedBaseCase
+      (.childCons motive
         (.childCons
-          (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-          .childNil))
+          steppedBaseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
   leftStep := Step.iotaIdStrictRecRefl
   rightStep :=
     Step.cong .gen_idStrictRec ()
-      (StepChildren.here
-        (parentScope := scope) (headShift := 0) (restShifts := [0])
-        ((.childCons
-          (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-          .childNil) : RawTermChildren [0] scope)
-        baseStep)
+      (StepChildren.there
+        (parentScope := scope) (headShift := 2) (restShifts := [0, 0])
+        motive
+        (StepChildren.here
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          ((.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil) : RawTermChildren [0] scope)
+          baseStep))
 
 /-- Root `idStrictRec refl` iota branching against congruence inside the
 discarded refl witness child. -/
 def iotaIdStrictRecWitnessCong {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness steppedRawWitness : RawTerm scope}
     (witnessStep : Step rawWitness steppedRawWitness) :
     LocalStepBranching (scope := scope) where
   source :=
     .mkGen .gen_idStrictRec ()
-      (.childCons
-        baseCase
+      (.childCons motive
         (.childCons
-          (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-          .childNil))
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+            .childNil)))
   leftReduct := baseCase
   rightReduct :=
     .mkGen .gen_idStrictRec ()
-      (.childCons
-        baseCase
+      (.childCons motive
         (.childCons
-          (.mkGen .gen_refl () (.childCons steppedRawWitness .childNil))
-          .childNil))
+          baseCase
+          (.childCons
+            (.mkGen .gen_refl () (.childCons steppedRawWitness .childNil))
+            .childNil)))
   leftStep := Step.iotaIdStrictRecRefl
   rightStep :=
     Step.cong .gen_idStrictRec ()
       (StepChildren.there
-        (parentScope := scope) (headShift := 0) (restShifts := [0])
-        baseCase
-        (StepChildren.here
-          (parentScope := scope) (headShift := 0) (restShifts := [])
-          (.childNil : RawTermChildren [] scope)
-          (Step.cong .gen_refl ()
-            (StepChildren.here
-              (parentScope := scope) (headShift := 0) (restShifts := [])
-              (.childNil : RawTermChildren [] scope)
-              witnessStep))))
+        (parentScope := scope) (headShift := 2) (restShifts := [0, 0])
+        motive
+        (StepChildren.there
+          (parentScope := scope) (headShift := 0) (restShifts := [0])
+          baseCase
+          (StepChildren.here
+            (parentScope := scope) (headShift := 0) (restShifts := [])
+            (.childNil : RawTermChildren [] scope)
+            (Step.cong .gen_refl ()
+              (StepChildren.here
+                (parentScope := scope) (headShift := 0) (restShifts := [])
+                (.childNil : RawTermChildren [] scope)
+                witnessStep)))))
 
 end LocalStepBranching
 
@@ -3930,18 +4032,20 @@ def iotaOptionMatchNoneSameRoot {scope : Nat}
       (LocalStepBranching.iotaOptionMatchNoneSameRoot motive noneBranch someBranch) :=
   sameReduct Step.iotaOptionMatchNone Step.iotaOptionMatchNone
 
-/-- Concrete `idJ` refl-case iota same-root local diamond. -/
+/-- Concrete `idJ` refl-case iota same-root local diamond.
+Phase-Z motive shape. -/
 def iotaIdJReflSameRoot {scope : Nat}
-    (baseCase rawWitness : RawTerm scope) :
+    (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope) :
     LocalDiamond
-      (LocalStepBranching.iotaIdJReflSameRoot baseCase rawWitness) :=
+      (LocalStepBranching.iotaIdJReflSameRoot motive baseCase rawWitness) :=
   sameReduct Step.iotaIdJRefl Step.iotaIdJRefl
 
-/-- Concrete `idStrictRec` refl-case iota same-root local diamond. -/
+/-- Concrete `idStrictRec` refl-case iota same-root local diamond.
+Phase-Z motive shape. -/
 def iotaIdStrictRecReflSameRoot {scope : Nat}
-    (baseCase rawWitness : RawTerm scope) :
+    (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope) :
     LocalDiamond
-      (LocalStepBranching.iotaIdStrictRecReflSameRoot baseCase rawWitness) :=
+      (LocalStepBranching.iotaIdStrictRecReflSameRoot motive baseCase rawWitness) :=
   sameReduct Step.iotaIdStrictRecRefl Step.iotaIdStrictRecRefl
 
 /-- Concrete `optionMatch` some-case iota same-root local diamond.
@@ -5537,12 +5641,35 @@ def iotaEitherMatchInrRightBranchCong {scope : Nat}
               rightStep))
       rightChain := StepStar.single Step.iotaEitherMatchInr }
 
-/-- Root `idJ refl` iota against congruence in the selected base case. -/
+/-- Root `idJ refl` iota against congruence in the discarded motive.
+Phase-Z motive shape; the refl-case iota discards the motive, so the diamond
+joins at the base case immediately. -/
+def iotaIdJMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 2)}
+    {baseCase rawWitness : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalDiamond
+      (LocalStepBranching.iotaIdJMotiveCong
+        (motive := motive)
+        (steppedMotive := steppedMotive)
+        (baseCase := baseCase)
+        (rawWitness := rawWitness)
+        motiveStep) := by
+  dsimp [LocalStepBranching.iotaIdJMotiveCong]
+  exact
+    { commonReduct := baseCase
+      leftChain := StepStar.refl baseCase
+      rightChain := StepStar.single Step.iotaIdJRefl }
+
+/-- Root `idJ refl` iota against congruence in the selected base case.
+Phase-Z motive shape. -/
 def iotaIdJBaseCaseCong {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase steppedBaseCase rawWitness : RawTerm scope}
     (baseStep : Step baseCase steppedBaseCase) :
     LocalDiamond
       (LocalStepBranching.iotaIdJBaseCaseCong
+        (motive := motive)
         (baseCase := baseCase)
         (steppedBaseCase := steppedBaseCase)
         (rawWitness := rawWitness)
@@ -5554,12 +5681,14 @@ def iotaIdJBaseCaseCong {scope : Nat}
       rightChain := StepStar.single Step.iotaIdJRefl }
 
 /-- Root `idJ refl` iota against congruence inside the discarded refl
-witness. -/
+witness.  Phase-Z motive shape. -/
 def iotaIdJWitnessCong {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness steppedRawWitness : RawTerm scope}
     (witnessStep : Step rawWitness steppedRawWitness) :
     LocalDiamond
       (LocalStepBranching.iotaIdJWitnessCong
+        (motive := motive)
         (baseCase := baseCase)
         (rawWitness := rawWitness)
         (steppedRawWitness := steppedRawWitness)
@@ -5570,13 +5699,35 @@ def iotaIdJWitnessCong {scope : Nat}
       leftChain := StepStar.refl baseCase
       rightChain := StepStar.single Step.iotaIdJRefl }
 
+/-- Root `idStrictRec refl` iota against congruence in the discarded motive.
+Phase-Z motive shape; the refl-case iota discards the motive, so the diamond
+joins at the base case immediately. -/
+def iotaIdStrictRecMotiveCong {scope : Nat}
+    {motive steppedMotive : RawTerm (scope + 2)}
+    {baseCase rawWitness : RawTerm scope}
+    (motiveStep : Step motive steppedMotive) :
+    LocalDiamond
+      (LocalStepBranching.iotaIdStrictRecMotiveCong
+        (motive := motive)
+        (steppedMotive := steppedMotive)
+        (baseCase := baseCase)
+        (rawWitness := rawWitness)
+        motiveStep) := by
+  dsimp [LocalStepBranching.iotaIdStrictRecMotiveCong]
+  exact
+    { commonReduct := baseCase
+      leftChain := StepStar.refl baseCase
+      rightChain := StepStar.single Step.iotaIdStrictRecRefl }
+
 /-- Root `idStrictRec refl` iota against congruence in the selected base
-case. -/
+case.  Phase-Z motive shape. -/
 def iotaIdStrictRecBaseCaseCong {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase steppedBaseCase rawWitness : RawTerm scope}
     (baseStep : Step baseCase steppedBaseCase) :
     LocalDiamond
       (LocalStepBranching.iotaIdStrictRecBaseCaseCong
+        (motive := motive)
         (baseCase := baseCase)
         (steppedBaseCase := steppedBaseCase)
         (rawWitness := rawWitness)
@@ -5588,12 +5739,14 @@ def iotaIdStrictRecBaseCaseCong {scope : Nat}
       rightChain := StepStar.single Step.iotaIdStrictRecRefl }
 
 /-- Root `idStrictRec refl` iota against congruence inside the discarded
-refl witness. -/
+refl witness.  Phase-Z motive shape. -/
 def iotaIdStrictRecWitnessCong {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness steppedRawWitness : RawTerm scope}
     (witnessStep : Step rawWitness steppedRawWitness) :
     LocalDiamond
       (LocalStepBranching.iotaIdStrictRecWitnessCong
+        (motive := motive)
         (baseCase := baseCase)
         (rawWitness := rawWitness)
         (steppedRawWitness := steppedRawWitness)

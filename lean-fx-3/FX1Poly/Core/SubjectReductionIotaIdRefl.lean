@@ -37,29 +37,32 @@ namespace FX1Poly.Core
 
 /-- **SR arm: `Step.iotaIdJRefl` preserves `HasCertifiedCellDim0`.**
 
-`idJ baseCase (refl rawWitness) ↝ baseCase`.
+`idJ motive baseCase (refl rawWitness) ↝ baseCase`.
 
-Pure-projection iota: target is the head of the source's spine.
-Like `iotaBoolTrue` but extracting position 0 (head) directly
-instead of position 1 (tail.head, skipping the motive). -/
+Pure-projection iota: target is spine position 1 (the base case).
+Phase-Z motive shape places the motive (under two binders) at
+position 0 and the base case at position 1 — like `iotaBoolTrue`,
+extract via `tail.headAtDim0`, skipping the motive head. -/
 theorem HasCertifiedCellDim0.preservedByIotaIdJRefl
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_idJ ()
-          (.childCons
-            baseCase
+          (.childCons motive
             (.childCons
-              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-              .childNil))
+              baseCase
+              (.childCons
+                (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+                .childNil)))
           : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) baseCase := by
   cases sourceCert with
   | intro sort outerCell =>
     cases outerCell with
     | gen _ _ outerSpine =>
-      exact .intro .term (outerSpine.headAtDim0 rfl)
+      exact .intro .term (outerSpine.tail.headAtDim0 rfl)
 
 /-- **SR arm: `Step.iotaIdStrictRecRefl` preserves `HasCertifiedCellDim0`.**
 
@@ -69,21 +72,23 @@ The substrate treats both eliminators identically at the
 metadata level. -/
 theorem HasCertifiedCellDim0.preservedByIotaIdStrictRecRefl
     {profile : PolyProfile} {scope : Nat}
+    {motive : RawTerm (scope + 2)}
     {baseCase rawWitness : RawTerm scope}
     (sourceCert :
       HasCertifiedCellDim0 (profile := profile)
         (.mkGen .gen_idStrictRec ()
-          (.childCons
-            baseCase
+          (.childCons motive
             (.childCons
-              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-              .childNil))
+              baseCase
+              (.childCons
+                (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+                .childNil)))
           : RawTerm scope)) :
     HasCertifiedCellDim0 (profile := profile) baseCase := by
   cases sourceCert with
   | intro sort outerCell =>
     cases outerCell with
     | gen _ _ outerSpine =>
-      exact .intro .term (outerSpine.headAtDim0 rfl)
+      exact .intro .term (outerSpine.tail.headAtDim0 rfl)
 
 end FX1Poly.Core

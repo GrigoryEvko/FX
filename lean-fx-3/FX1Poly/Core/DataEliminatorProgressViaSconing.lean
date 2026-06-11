@@ -121,13 +121,18 @@ private abbrev eitherMatchCellOn {scope : Nat} (motive : RawTerm (scope + 1))
     (.childCons motive
       (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))
 
-/-- The `idJ` cell over its two children (base case, witness) — definitionally the private `idJCellOn`. -/
-private abbrev idJCellOn {scope : Nat} (baseCase witness : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_idJ () (.childCons baseCase (.childCons witness .childNil))
+/-- The `idJ` cell over its three children — Phase-Z motive shape `(motive, baseCase, witness)`: the motive a
+term under two binders (`RawTerm (scope + 2)`), the base case second, the witness LAST. -/
+private abbrev idJCellOn {scope : Nat} (motive : RawTerm (scope + 2))
+    (baseCase witness : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_idJ ()
+    (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
 
-/-- The `idStrictRec` cell over its two children — definitionally the private `idStrictRecCellOn`. -/
-private abbrev idStrictRecCellOn {scope : Nat} (baseCase witness : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_idStrictRec () (.childCons baseCase (.childCons witness .childNil))
+/-- The `idStrictRec` cell over its three children — same Phase-Z spine as `idJ`. -/
+private abbrev idStrictRecCellOn {scope : Nat} (motive : RawTerm (scope + 2))
+    (baseCase witness : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_idStrictRec ()
+    (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
 
 /-- **`optionMatch` progress on a well-typed scrutinee.**  Given the fundamental obligation
 (closed well-typed option ⟹ option-candidate member) and a well-typed scrutinee, the `optionMatch` reduces
@@ -168,19 +173,19 @@ case — never stuck.  Composition of the fundamental with the fundamental-free
 `idJCanonicalWitnessReducesToBase`. -/
 theorem idJProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isReflValue term)
-    {baseCase witness : RawTerm 0}
+    {motive : RawTerm 2} {baseCase witness : RawTerm 0}
     (witnessTyped : isWellTyped witness) :
-    StepStar (idJCellOn baseCase witness) baseCase :=
-  idJCanonicalWitnessReducesToBase (fundamental witness witnessTyped)
+    StepStar (idJCellOn motive baseCase witness) baseCase :=
+  idJCanonicalWitnessReducesToBase (motive := motive) (fundamental witness witnessTyped)
 
 /-- **`idStrictRec` progress on a well-typed witness.**  Symmetric to `idJProgressViaSconing`:
 given the fundamental obligation and a well-typed witness, the `idStrictRec` reduces to its base case.
 Composition of the fundamental with the fundamental-free `idStrictRecCanonicalWitnessReducesToBase`. -/
 theorem idStrictRecProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
     (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isReflValue term)
-    {baseCase witness : RawTerm 0}
+    {motive : RawTerm 2} {baseCase witness : RawTerm 0}
     (witnessTyped : isWellTyped witness) :
-    StepStar (idStrictRecCellOn baseCase witness) baseCase :=
-  idStrictRecCanonicalWitnessReducesToBase (fundamental witness witnessTyped)
+    StepStar (idStrictRecCellOn motive baseCase witness) baseCase :=
+  idStrictRecCanonicalWitnessReducesToBase (motive := motive) (fundamental witness witnessTyped)
 
 end FX1Poly.Core

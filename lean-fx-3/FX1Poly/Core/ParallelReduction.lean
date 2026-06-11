@@ -170,14 +170,18 @@ mutual
             (.childCons (.mkGen .gen_listElim () (.childCons motive'
                 (.childCons nilBranch' (.childCons consBranch'
                   (.childCons tailVal' .childNil))))) .childNil)))
-    | iotaIdJRefl {scope : Nat} {baseCase baseCase' rawWitness : RawTerm scope} :
-        ParStep baseCase baseCase' →
-        ParStep (.mkGen .gen_idJ () (.childCons baseCase
-            (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil))) baseCase'
-    | iotaIdStrictRecRefl {scope : Nat} {baseCase baseCase' rawWitness : RawTerm scope} :
-        ParStep baseCase baseCase' →
-        ParStep (.mkGen .gen_idStrictRec () (.childCons baseCase
-            (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil))) baseCase'
+    | iotaIdJRefl {scope : Nat} {motive motive' : RawTerm (scope + 2)}
+        {baseCase baseCase' rawWitness : RawTerm scope} :
+        ParStep motive motive' → ParStep baseCase baseCase' →
+        ParStep (.mkGen .gen_idJ () (.childCons motive
+            (.childCons baseCase
+              (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))) baseCase'
+    | iotaIdStrictRecRefl {scope : Nat} {motive motive' : RawTerm (scope + 2)}
+        {baseCase baseCase' rawWitness : RawTerm scope} :
+        ParStep motive motive' → ParStep baseCase baseCase' →
+        ParStep (.mkGen .gen_idStrictRec () (.childCons motive
+            (.childCons baseCase
+              (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))) baseCase'
   /-- **Pointwise parallel reduction of a children spine** — every child reduces simultaneously (distinct
   from `StepChildren`, which steps ONE child).  The shape the diamond argument needs. -/
   inductive ParStepChildren :
@@ -233,8 +237,8 @@ mutual
     | .iotaListElimCons =>
         ParStep.iotaListElimCons (ParStep.refl _) (ParStep.refl _) (ParStep.refl _)
           (ParStep.refl _) (ParStep.refl _)
-    | .iotaIdJRefl => ParStep.iotaIdJRefl (ParStep.refl _)
-    | .iotaIdStrictRecRefl => ParStep.iotaIdStrictRecRefl (ParStep.refl _)
+    | .iotaIdJRefl => ParStep.iotaIdJRefl (ParStep.refl _) (ParStep.refl _)
+    | .iotaIdStrictRecRefl => ParStep.iotaIdStrictRecRefl (ParStep.refl _) (ParStep.refl _)
   /-- **`StepChildren ⊆ ParStepChildren`** (the spine companion of `Step.toParStep`): a single-child step
   lifts to a pointwise parallel reduction — the stepping child parallel-reduces (recursive call), the
   other children stay reflexive. -/
@@ -397,13 +401,17 @@ mutual
                       (StepStar.ofChildrenStar (StepChildrenStar.there _
                         (StepChildrenStar.here _ (ParStep.toStepStar tailPar)))))))))))))
           Step.iotaListElimCons
-    | .iotaIdJRefl basePar =>
+    | .iotaIdJRefl motivePar basePar =>
         StepStar.transLast (StepStar.ofChildrenStar
-          (StepChildrenStar.here _ (ParStep.toStepStar basePar)))
+          (StepChildrenStar.trans_compose
+            (StepChildrenStar.here _ (ParStep.toStepStar motivePar))
+            (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar basePar)))))
           Step.iotaIdJRefl
-    | .iotaIdStrictRecRefl basePar =>
+    | .iotaIdStrictRecRefl motivePar basePar =>
         StepStar.transLast (StepStar.ofChildrenStar
-          (StepChildrenStar.here _ (ParStep.toStepStar basePar)))
+          (StepChildrenStar.trans_compose
+            (StepChildrenStar.here _ (ParStep.toStepStar motivePar))
+            (StepChildrenStar.there _ (StepChildrenStar.here _ (ParStep.toStepStar basePar)))))
           Step.iotaIdStrictRecRefl
   /-- **`ParStepChildren ⊆ StepChildrenStar`** (the spine companion of `ParStep.toStepStar`): a pointwise
   parallel children reduction is a finite sequence of single child-spine steps — reduce the head (via
