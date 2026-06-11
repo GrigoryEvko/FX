@@ -2287,11 +2287,21 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- a first). The typing-row schemas (formation/intro/elim/computation) are recorded as the
 -- OP1-INT landing targets; the verdict question is the sconing admission gate (ONORM-M2).
 -- dimensionTypingRowsGap_coherentWithTier ties the ledger's false to the HON-5 tier pins.
+-- OP1-INT FIRST BRICK (#1231): the two substrate generators are now LANDED at CON-A1 cost —
+-- gen_intervalCode (nullary dimension classifier, tag 203) + gen_bridgeCode (ternary flat
+-- Bridge former on the gen_idCode template, children [type, term, term], tag 204); count pin
+-- 203 → 205, all finite-polygraph/tag-round-trip theorems re-verified at the new size.  Both
+-- are RESERVED (landedParamSubstrate_reserved) — substrate only, no rows, no Step arms; the
+-- ledger flips hasIntervalTypeCode/hasBridgeFormer to true and the remaining OP1-INT gaps are
+-- the GRADED typing rows + the endpoint ι, then the sconing-admission verdict.
 #assert_no_axioms FX1Poly.Typed.pathLam_binderShifts_pin
 #assert_no_axioms FX1Poly.Typed.pathApp_binderShifts_pin
 #assert_no_axioms FX1Poly.Typed.interval0_binderShifts_pin
 #assert_no_axioms FX1Poly.Typed.interval1_binderShifts_pin
 #assert_no_axioms FX1Poly.Typed.idCode_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.intervalCode_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.bridgeCode_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.landedParamSubstrate_reserved
 #assert_no_axioms FX1Poly.Typed.paramSubstrate_allReserved
 #assert_no_axioms FX1Poly.Typed.oeqFamily_allReserved
 #assert_no_axioms FX1Poly.Typed.ParamSubstrateLedger

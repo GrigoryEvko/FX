@@ -210,6 +210,8 @@ def Generator.cellSort : Generator → CellSort
   | .gen_boolCode     => .type
   | .gen_natCode      => .type
   | .gen_unitCode     => .type
+  | .gen_intervalCode => .type
+  | .gen_bridgeCode   => .type
   -- Cumulativity marker on a type code
   | .gen_cumulUpMarker => .type
   -- Univalence-to-equiv vocabulary — term-level operations
@@ -540,6 +542,12 @@ def Generator.childSpecs : Generator → List ChildSpec
   | .gen_natCode      => []
   -- Unit type code (nullary)
   | .gen_unitCode     => []
+  -- Interval type code (nullary — the bridge-dimension classifier)
+  | .gen_intervalCode => []
+  -- Bridge type code: carrier-type, leftEndpoint, rightEndpoint
+  | .gen_bridgeCode   =>
+    [ChildSpec.typeSameScope, ChildSpec.termSameScope,
+     ChildSpec.termSameScope]
   -- Per-shape type codes (atom-shape)
   | .gen_arrowCode    =>
     [ChildSpec.typeSameScope, ChildSpec.typeSameScope]

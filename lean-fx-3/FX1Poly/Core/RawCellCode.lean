@@ -119,6 +119,8 @@ def Generator.toNat : Generator → Nat
   | .gen_universeD => 200
   | .gen_universeOmega => 201
   | .gen_sprop => 202
+  | .gen_intervalCode => 203
+  | .gen_bridgeCode => 204
 
 -- Payload to Nat (for serialization)
 def payloadToNat (generator : Generator) (scope : Nat)

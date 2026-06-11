@@ -152,6 +152,12 @@ inductive Generator : Type
   | gen_natCode
   -- Unit type code (nullary — the unit-eta substrate)
   | gen_unitCode
+  -- Interval type code (nullary — the dimension classifier for the
+  -- gen_param internal-parametricity substrate; gen_interval0/1 inhabit it)
+  | gen_intervalCode
+  -- Bridge type former (ternary flat, on the gen_idCode template —
+  -- Bridge A a b, the internal-parametricity relation former)
+  | gen_bridgeCode
   -- Cumulativity marker
   | gen_cumulUpMarker
   -- Univalence-to-equiv vocabulary
@@ -444,6 +450,8 @@ def Generator.arity : Generator → Nat
   | .gen_boolCode     => 0  -- nullary type code (Bool)
   | .gen_natCode      => 0  -- nullary type code (Nat)
   | .gen_unitCode     => 0  -- nullary type code (Unit)
+  | .gen_intervalCode => 0  -- nullary type code (the bridge dimension)
+  | .gen_bridgeCode   => 3  -- typeCode, leftEndpoint, rightEndpoint
   -- Cumulativity marker
   | .gen_cumulUpMarker => 1 -- innerCodeRaw
   -- Univalence-to-equiv vocabulary
@@ -755,6 +763,8 @@ def Generator.binderShifts : Generator → List Nat
   | .gen_boolCode     => []
   | .gen_natCode      => []
   | .gen_unitCode     => []
+  | .gen_intervalCode => []
+  | .gen_bridgeCode   => [0, 0, 0]
   -- Cumulativity marker
   | .gen_cumulUpMarker => [0]
   -- Univalence-to-equiv vocabulary
@@ -996,6 +1006,8 @@ def Generator.payload : Generator → Nat → Type
   | .gen_boolCode, _ => Unit
   | .gen_natCode, _ => Unit
   | .gen_unitCode, _ => Unit
+  | .gen_intervalCode, _ => Unit
+  | .gen_bridgeCode, _ => Unit
   | .gen_cumulUpMarker, _ => Unit
   | .gen_uaToEquiv, _ => Unit
   | .gen_equivApply, _ => Unit

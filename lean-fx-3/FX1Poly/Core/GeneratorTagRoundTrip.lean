@@ -136,11 +136,13 @@ def Generator.fromTag : Nat → Option Generator
   | 200 => some .gen_universeD
   | 201 => some .gen_universeOmega
   | 202 => some .gen_sprop
+  | 203 => some .gen_intervalCode
+  | 204 => some .gen_bridgeCode
   | _ => none
 
 /-- Round-trip: `fromTag` recovers every generator from its `toNat` tag.  Each
 constructor reduces definitionally (`toNat g` is a literal, `fromTag` matches it),
-so `cases g <;> rfl` discharges all 203.  A mis-transcribed `fromTag` entry would
+so `cases g <;> rfl` discharges all 205.  A mis-transcribed `fromTag` entry would
 fail `rfl` at exactly that constructor. -/
 theorem Generator.fromTag_toNat (generator : Generator) :
     Generator.fromTag generator.toNat = some generator := by

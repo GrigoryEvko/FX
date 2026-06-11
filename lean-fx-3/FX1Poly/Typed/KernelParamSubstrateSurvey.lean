@@ -27,14 +27,13 @@ design the OP1-INT verdict task will land or refute.
 
 ## What is MISSING (the gap statement, pinned as the ledger)
 
-  1. **No interval TYPE code**: `gen_interval0/1` are TERMS with no classifying code, so a
-     dimension binder cannot be context-bound through the standard rules — `TypingContext`
-     binds `RawTerm` types only.  Internal-parametricity rows need either an interval
-     pseudo-code (a nullary code on the `gen_unitCode` template, with the caveat below) or
-     Narya-style judgment-level dimension contexts.
-  2. **No bridge FORMER**: the bridge type `Bridge A a b` is a ternary former on the
-     `gen_idCode` template (`binderShifts = [0, 0, 0]`, flat) — one new generator at
-     CON-A1 cost (table constructor + tag + serializer + count pin 203 → 204).
+  1. **Interval TYPE code — LANDED** (OP1-INT first brick): `gen_intervalCode`, a nullary
+     type code on the `gen_unitCode` template (tag 203), giving the dimension binder a
+     context-bindable classifier.  Substrate-only: `semanticTier = reserved`, no rows yet.
+  2. **Bridge FORMER — LANDED** (OP1-INT first brick): `gen_bridgeCode`, the ternary flat
+     former on the `gen_idCode` template (`binderShifts = [0, 0, 0]`, children
+     [type, term, term], tag 204) — the CON-A1-cost landing (table constructor + tag +
+     serializer + count pin 203 → 205).  Substrate-only: reserved, no rows yet.
   3. **The affinity discipline**: the genuine semantic obstruction.  The BCM bridge dimension
      is AFFINE (each dimension variable used at most once — duplication makes internal
      parametricity collapse).  `TypingContext` is structural; the kernel CANNOT express
@@ -86,8 +85,22 @@ theorem pathApp_binderShifts_pin : Generator.gen_pathApp.binderShifts = [0, 0] :
 theorem interval0_binderShifts_pin : Generator.gen_interval0.binderShifts = [] := rfl
 theorem interval1_binderShifts_pin : Generator.gen_interval1.binderShifts = [] := rfl
 
-/-- The identity-code TEMPLATE for the future bridge former: ternary, flat. -/
+/-- The identity-code TEMPLATE for the bridge former: ternary, flat. -/
 theorem idCode_binderShifts_pin : Generator.gen_idCode.binderShifts = [0, 0, 0] := rfl
+
+/-- The LANDED interval type code (the dimension classifier) is nullary, on the
+`gen_unitCode` template. -/
+theorem intervalCode_binderShifts_pin : Generator.gen_intervalCode.binderShifts = [] := rfl
+
+/-- The LANDED bridge former is ternary flat, exactly the `gen_idCode` template shape. -/
+theorem bridgeCode_binderShifts_pin : Generator.gen_bridgeCode.binderShifts = [0, 0, 0] := rfl
+
+/-- The landed substrate generators are RESERVED — pure substrate, no typing rows, no
+redex head; the rows are the remaining OP1-INT work. -/
+theorem landedParamSubstrate_reserved :
+    semanticTier .gen_intervalCode = .reserved ∧
+    semanticTier .gen_bridgeCode = .reserved :=
+  ⟨rfl, rfl⟩
 
 /-- The ENTIRE param-relevant substrate is semantically RESERVED — no typing rules in any
 engine and no β/ι redex head.  The rows designed above are genuinely NEW semantics, not a
@@ -131,13 +144,14 @@ structure ParamSubstrateLedger where
   usage semiring's affine grade), NOT via the structural type context. -/
   hasAffinityDiscipline : Bool
 
-/-- The surveyed ledger: binder pair + endpoints + (graded) affinity exist; the interval
-code, the bridge former, the typing rows, and the endpoint ι are the OP1-INT landing list. -/
+/-- The ledger after the OP1-INT first brick: binder pair + endpoints + (graded) affinity
+existed from the survey; the interval code and bridge former are now LANDED (reserved
+substrate); the typing rows and the endpoint ι remain the OP1-INT landing list. -/
 def paramSubstrateLedger : ParamSubstrateLedger where
   hasDimensionBinderPair := true
   hasIntervalEndpoints := true
-  hasIntervalTypeCode := false
-  hasBridgeFormer := false
+  hasIntervalTypeCode := true
+  hasBridgeFormer := true
   hasDimensionTypingRows := false
   hasEndpointComputation := false
   hasAffinityDiscipline := true
@@ -145,18 +159,18 @@ def paramSubstrateLedger : ParamSubstrateLedger where
 /-- The gap pins, read off the ledger (stability guard: if a future firing lands one of the
 missing pieces, this theorem breaks and forces the ledger refresh). -/
 theorem paramSubstrateLedger_gapsPinned :
-    paramSubstrateLedger.hasIntervalTypeCode = false ∧
-    paramSubstrateLedger.hasBridgeFormer = false ∧
     paramSubstrateLedger.hasDimensionTypingRows = false ∧
     paramSubstrateLedger.hasEndpointComputation = false :=
-  ⟨rfl, rfl, rfl, rfl⟩
+  ⟨rfl, rfl⟩
 
-/-- The asset pins. -/
+/-- The asset pins — now including the landed substrate generators. -/
 theorem paramSubstrateLedger_assetsPinned :
     paramSubstrateLedger.hasDimensionBinderPair = true ∧
     paramSubstrateLedger.hasIntervalEndpoints = true ∧
+    paramSubstrateLedger.hasIntervalTypeCode = true ∧
+    paramSubstrateLedger.hasBridgeFormer = true ∧
     paramSubstrateLedger.hasAffinityDiscipline = true :=
-  ⟨rfl, rfl, rfl⟩
+  ⟨rfl, rfl, rfl, rfl, rfl⟩
 
 /-- **The reserved-tier coherence of the gap statement**: `hasDimensionTypingRows = false` is
 not an unverified ledger entry — it FOLLOWS from the machine-checked tier pins (a reserved
