@@ -42,7 +42,12 @@ proof-relevant-predicate realization, which is Path A — the STC ledger's
 `fxSTC_hasLogicalRelationConstruction` is witnessed by `STC/FxLogicalRelation.lean`, whose semantic side is
 DEFINITIONALLY the Tait pipeline (`fxStcFundamental_semantic_isTaitWitness`), i.e. the BRIDGED construction,
 not an independent one.  Hence the independent-second-SN goal is not merely unbuilt but zero-axiom-blocked at
-the closed modality; this file pins exactly that boundary.
+the closed modality; this file pins exactly that boundary.  The boundary is now also FORMALIZED as committed
+theorems in `STC/FxIndependenceBoundary.lean`: the STC Prop-payload glue families are SYNTAX-DETERMINED
+(`stcPropGlue_syntaxDetermined` — by definitional proof irrelevance two glues with the same syntax are EQUAL),
+every inhabitant's semantic component IS the kernel witness (`anyStcSNGlue_semantic_isTaitWitness`), and every
+syntax-faithful SN-fundamental equals `fxStcFundamental` (`anySNFundamental_eq_fxStcFundamental`) — the STC
+twin of `anySconingSN_eq_taitComposition` below.
 
 ## What this ships
 

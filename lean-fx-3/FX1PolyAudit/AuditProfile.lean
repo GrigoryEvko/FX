@@ -9,6 +9,7 @@ import FX1Poly.Extension.ProfileLens
 import FX1Poly.STC.FxLogicalRelation
 import FX1Poly.STC.FxBoolCanonicity
 import FX1Poly.STC.FxNormalization
+import FX1Poly.STC.FxIndependenceBoundary
 import FX1Poly.Core.StrengthCalibration
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
@@ -240,3 +241,29 @@ closed typed β-redex.  The two ledger-payoff admissions
 #assert_no_axioms FX1Poly.Core.fxProfile_stcHasNormalizationTheorem
 #assert_no_axioms FX1Poly.Extension.fxProfileMetatheoryAdmission
 #assert_no_axioms FX1Poly.Extension.fxProfileMetatheoryAdmission_claims_both
+
+/-! ## The independence VERDICT gates (SN-102, the STC arc's final rung)
+
+NOT a ledger flip — `fxGenericSTCReplacement` stays false.  The
+committed theorems: the STC Prop-payload glue families are
+SYNTAX-DETERMINED (definitional proof irrelevance — two glues with the
+same syntax are the same glue), so EVERY inhabitant's semantic
+component IS the kernel witness and every syntax-faithful
+SN-fundamental equals `fxStcFundamental`; an independent second SN
+through this interface cannot even differ from the first.  The two
+exits are pinned shut: the shipped ● is a definitional identity
+retraction (the genuine HIT pulls `Quot.sound`), the single-phase ○ is
+pointwise constant. -/
+
+#assert_no_axioms FX1Poly.STC.stcPropGlue_syntaxDetermined
+#assert_no_axioms FX1Poly.STC.fxStcRelation_syntaxDetermined
+#assert_no_axioms FX1Poly.STC.fxStcBoolRelation_syntaxDetermined
+#assert_no_axioms FX1Poly.STC.fxStcNormalizationRelation_syntaxDetermined
+#assert_no_axioms FX1Poly.STC.anyStcSNGlue_semantic_isTaitWitness
+#assert_no_axioms FX1Poly.STC.anyStcBoolGlue_semantic_isKernelWitness
+#assert_no_axioms FX1Poly.STC.anyStcNormalizationGlue_semantic_isKernelWitness
+#assert_no_axioms FX1Poly.STC.anySNFundamental_eq_fxStcFundamental
+#assert_no_axioms FX1Poly.STC.ClosedMod.extract_unit
+#assert_no_axioms FX1Poly.STC.ClosedMod.unit_extract
+#assert_no_axioms FX1Poly.STC.OpenMod.pointwiseConstant
+#assert_no_axioms FX1Poly.STC.fxSTC_hasNoFXGenericSTCReplacement

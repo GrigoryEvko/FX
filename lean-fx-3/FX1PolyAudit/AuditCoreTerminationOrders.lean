@@ -192,7 +192,10 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 -- definitionally the Tait pipeline, fxStcFundamental_semantic_isTaitWitness), and the
 -- canonicityTheorem rung by the equally BRIDGED canonicityViaSTC (STC/FxBoolCanonicity.lean —
 -- semantic side definitionally the kernel's closedBoolCanonicalForms); INDEPENDENCE remains
--- zero-axiom-blocked exactly as this note records.
+-- zero-axiom-blocked exactly as this note records, and the block is now FORMALIZED in
+-- STC/FxIndependenceBoundary.lean (Prop-payload glues are syntax-determined; every inhabitant's
+-- semantic component IS the kernel witness; the shipped ClosedMod is a definitional identity
+-- retraction, not the HIT pushout).
 #assert_no_axioms FX1Poly.Core.sconingScone_computable_eq_candidate
 #assert_no_axioms FX1Poly.Core.normalizationScone_computable_eq_candidate
 #assert_no_axioms FX1Poly.Core.sconingScone_and_normalizationScone_share_computable
