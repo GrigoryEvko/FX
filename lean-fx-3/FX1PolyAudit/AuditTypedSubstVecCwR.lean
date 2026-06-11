@@ -643,6 +643,7 @@ import FX1Poly.Modal.GradedLinearTime
 import FX1Poly.Modal.GradedLinearTimeBound
 import FX1Poly.Core.NormalizeCost
 import FX1Poly.Core.OneStepReducts
+import FX1Poly.Core.OneStepReductsComplete
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1694,6 +1695,25 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.RawTermChildren.oneStepChildrenReducts_sound
 #assert_no_axioms FX1Poly.Core.identityBetaFixture
 #assert_no_axioms FX1Poly.Core.identityBetaFixture_oneStepReducts
+
+-- ★★ Enumeration COMPLETENESS + the Step CHARACTERIZATION (Core/OneStepReductsComplete.lean, COST-3
+-- #1216 brick 3 — the heavy lift's hard half, closed in ONE proof shape). oneStepReducts_complete:
+-- every Step is listed, by mutual Step/StepChildren induction where ALL 17 root arms (β + 16 ι) close
+-- by the IDENTICAL term `listMemAppendLeft _ _ (List.Mem.head _)` — the redex-shaped source makes
+-- fireRootRedex REDUCE DEFINITIONALLY to some(the ctor's reduct) during unification (the dite chain
+-- decides literal generator tags, the children matches destructure the concrete ctor spine, symbolic
+-- leaves flow through; Nat.add_zero-style casts are rfl-proofs so Eq.rec reduces). The cong/here/there
+-- arms map the IHs through the reassemblies via the FORWARD membership trio (listMemAppendLeft/Right +
+-- listMemMapOfMem — hand-rolled generic, completing brick 2's inversion trio). ★ The CHARACTERIZATION
+-- step_iff_mem_oneStepReducts: the computable enumeration decides EXACTLY the Step relation — the
+-- substrate costBound (next brick) folds over (recursive calls justified by soundness; the bound covers
+-- EVERY strategy by completeness). No per-ι firing-equation lemmas were needed — whnf did all 17.
+#assert_no_axioms FX1Poly.Core.listMemAppendLeft
+#assert_no_axioms FX1Poly.Core.listMemAppendRight
+#assert_no_axioms FX1Poly.Core.listMemMapOfMem
+#assert_no_axioms FX1Poly.Core.RawTerm.oneStepReducts_complete
+#assert_no_axioms FX1Poly.Core.RawTermChildren.oneStepChildrenReducts_complete
+#assert_no_axioms FX1Poly.Core.RawTerm.step_iff_mem_oneStepReducts
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
