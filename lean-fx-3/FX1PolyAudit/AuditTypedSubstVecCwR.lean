@@ -679,6 +679,7 @@ import FX1Poly.Typed.HasTypeDescTermIndexedFormerSubjectReduction
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerStronglyNormalizing
 import FX1Poly.Typed.IdFormerTermIndexedRetrofit
 import FX1Poly.Typed.BridgeFormationTermIndexedAdequacy
+import FX1Poly.Typed.TermIndexedFormerSmokeCorpus
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
@@ -2805,6 +2806,19 @@ formation arm IS the table row.  Axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.bridgeRowToStandalone
 #assert_no_axioms FX1Poly.Typed.bridgeFormationTermIndexedAdequacy
 #assert_no_axioms FX1Poly.Typed.bridgeFormationAdequacyAtUniverseSmoke
+
+/-! ## NATIVE-19 (#1296) — term-indexed former smoke corpus + coverage gate
+
+Consolidates the non-vacuous Id/Bridge engine witnesses (NATIVE-12..18) into a coverage gate so the engine's
+exercised properties can NOT silently shrink, and fills the one missing smoke.
+`closedIdUniverseStronglyNormalizing` is the Id SN twin of the shipped bridge one (NATIVE-16).
+`TermIndexedFormerEngineCoverage` is a record whose six fields are the engine's distinct live properties (both
+formers typed + SN, the refl retrofit, the bridge adequacy); `termIndexedFormerEngineCoverageWitness` inhabits it
+from the shipped NATIVE-12..18 witnesses, so deleting any of them breaks the build — the structural coverage gate
+the `#assert_namespace_min_count` macro can't provide (the engine's decls live in the shared `FX1Poly.Typed`
+namespace, not an isolated one).  Axiom-free. -/
+#assert_no_axioms FX1Poly.Typed.closedIdUniverseStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerEngineCoverageWitness
 
 /-! ## NATIVE-03 (#1280) — the graded intro premise IS expressible (SPIKE, verdict GO)
 
