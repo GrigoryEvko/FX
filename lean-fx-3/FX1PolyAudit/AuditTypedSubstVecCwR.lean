@@ -645,7 +645,9 @@ import FX1Poly.Core.NormalizeCost
 import FX1Poly.Core.OneStepReducts
 import FX1Poly.Core.OneStepReductsComplete
 import FX1Poly.Core.CostBound
+import FX1Poly.Core.SpaceBound
 import FX1Poly.Typed.WellTypedCostCalculable
+import FX1Poly.Typed.WellTypedSpaceCalculable
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1761,6 +1763,41 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.canonicalEvaluationCostOpen_isExact
 #assert_no_axioms FX1Poly.Typed.wellTypedClosedProgram_costIsCalculable
 #assert_no_axioms FX1Poly.Typed.identityApplication_costCalculator_isPositive
+
+-- ★★ The kernel SPACE bound (Core/SpaceBound.lean, COST-3 #1216 brick 6 — Dim 15). Space at the
+-- rewriting layer = intermediate term size. OnCanonicalPath: the terms the shipped normalizer
+-- actually visits (+ toStepStar: genuinely reachable). ★ spaceBound: Acc.rec constant-Nat motive,
+-- the SUM of sizes along the canonical path (sum dominates max — Nat.le_max_* leaks propext, the
+-- propext-free SUM discipline; slack accepted). ★ spaceBound_isSound: EVERY canonically-visited
+-- term is size-bounded — here-arm via le_refl/le_add_right, there-arm reconciles the two firing
+-- equations by Option.some INJECTION then `rw [reductEq] at restPath` (NOT subst — subst eliminates
+-- the NAMED var leaving the inaccessible ctor implicit unreferencable). Corollaries: the input and
+-- THE normal form (normalize_onCanonicalPath) are bounded. Smokes: spaceBound unit = 1 by kernel
+-- evaluation; the identity-β fixture's path reaches unit (reduceOnce fires by rfl) and BOTH
+-- endpoints are bounded. Honest scope: CANONICAL strategy's intermediates (the worst-case-over-all-
+-- strategies variant would fold over the brick-2/3 enumeration).
+#assert_no_axioms FX1Poly.Core.RawTerm.OnCanonicalPath
+#assert_no_axioms FX1Poly.Core.RawTerm.OnCanonicalPath.toStepStar
+#assert_no_axioms FX1Poly.Core.RawTerm.spaceBound
+#assert_no_axioms FX1Poly.Core.RawTerm.spaceBound_isSound
+#assert_no_axioms FX1Poly.Core.RawTerm.size_le_spaceBound
+#assert_no_axioms FX1Poly.Core.RawTerm.normalize_onCanonicalPath
+#assert_no_axioms FX1Poly.Core.RawTerm.normalize_size_le_spaceBound
+#assert_no_axioms FX1Poly.Core.RawTerm.spaceBound_unit_isOne
+#assert_no_axioms FX1Poly.Core.identityBetaFixture_canonicalPathReachesUnit
+#assert_no_axioms FX1Poly.Core.identityBetaFixture_spaceBound_boundsBothEndpoints
+
+-- ★★ Every well-typed FX program has calculable SPACE (Typed/WellTypedSpaceCalculable.lean,
+-- COST-3 #1216 brick 6 typed half — the Dim-15 twin of the cost packaging). Typed SN feeds
+-- spaceBound with zero glue: HasTypeDescPi.spaceCalculator (+ open twin over WfContextDesc) bounds
+-- the size of EVERY canonically-visited term; ★ wellTypedClosedProgram_spaceIsCalculable bundles
+-- intermediate-coverage + the normal form. Honest scope: canonical strategy, computed FROM THE
+-- TERM, typing contributes totality.
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.spaceCalculator
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.spaceCalculator_isSound
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.spaceCalculatorOpen
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.spaceCalculatorOpen_isSound
+#assert_no_axioms FX1Poly.Typed.wellTypedClosedProgram_spaceIsCalculable
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
