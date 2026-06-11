@@ -323,13 +323,14 @@ theorem BinaryReducibleTypeStepBounded.candidatePiPairShape {scope : Nat} {env :
             (codomainRelation leftArgument rightArgument)) ∧
         BinaryPointwiseIff relation
           (fun leftFunction rightFunction =>
-            ∀ leftArgument rightArgument : RawTerm scope,
-              domainRelation leftArgument rightArgument →
-              codomainRelation leftArgument rightArgument
-                (.mkGen .gen_app ()
-                  (.childCons leftFunction (.childCons leftArgument .childNil)))
-                (.mkGen .gen_app ()
-                  (.childCons rightFunction (.childCons rightArgument .childNil)))) := by
+            IsStronglyNormalizing leftFunction ∧ IsStronglyNormalizing rightFunction ∧
+              ∀ leftArgument rightArgument : RawTerm scope,
+                domainRelation leftArgument rightArgument →
+                codomainRelation leftArgument rightArgument
+                  (.mkGen .gen_app ()
+                    (.childCons leftFunction (.childCons leftArgument .childNil)))
+                  (.mkGen .gen_app ()
+                    (.childCons rightFunction (.childCons rightArgument .childNil)))) := by
   induction related with
   | whnfExpandLeft weakHeadStep0 _ _ =>
       intro _ _ _ _ leftEq _rightEq; subst leftEq
@@ -385,12 +386,14 @@ theorem BinaryReducibleTypeAtBounded.piTypePairInversion {scope : Nat} {env : Na
           (codomainRelation leftArgument rightArgument)) ∧
       BinaryPointwiseIff relation
         (fun leftFunction rightFunction =>
-          ∀ leftArgument rightArgument : RawTerm scope,
-            domainRelation leftArgument rightArgument →
-            codomainRelation leftArgument rightArgument
-              (.mkGen .gen_app () (.childCons leftFunction (.childCons leftArgument .childNil)))
-              (.mkGen .gen_app ()
-                (.childCons rightFunction (.childCons rightArgument .childNil)))) :=
+          IsStronglyNormalizing leftFunction ∧ IsStronglyNormalizing rightFunction ∧
+            ∀ leftArgument rightArgument : RawTerm scope,
+              domainRelation leftArgument rightArgument →
+              codomainRelation leftArgument rightArgument
+                (.mkGen .gen_app ()
+                  (.childCons leftFunction (.childCons leftArgument .childNil)))
+                (.mkGen .gen_app ()
+                  (.childCons rightFunction (.childCons rightArgument .childNil)))) :=
   related.candidatePiPairShape rfl rfl
 
 /-! ## ★ Binary determinism (direct double induction — no denote bridge exists) -/
@@ -427,22 +430,26 @@ theorem BinaryReducibleTypeStepBounded.deterministic {scope : Nat} {env : Nat �
       refine fun leftFunction rightFunction =>
         Iff.trans ?_ (pwi2 leftFunction rightFunction).symm
       constructor
-      · intro membership1 leftArgument rightArgument domain2Arguments
+      · intro membership1
+        refine ⟨membership1.1, membership1.2.1, ?_⟩
+        intro leftArgument rightArgument domain2Arguments
         have domain1Arguments :=
           (domainIH domainsRelated2 leftArgument rightArgument).mpr domain2Arguments
         have codomainEquivalence :=
           codomainIH leftArgument rightArgument domain1Arguments
             (codomainsRelated2 leftArgument rightArgument domain2Arguments)
         exact (codomainEquivalence _ _).mp
-          (membership1 leftArgument rightArgument domain1Arguments)
-      · intro membership2 leftArgument rightArgument domain1Arguments
+          (membership1.2.2 leftArgument rightArgument domain1Arguments)
+      · intro membership2
+        refine ⟨membership2.1, membership2.2.1, ?_⟩
+        intro leftArgument rightArgument domain1Arguments
         have domain2Arguments :=
           (domainIH domainsRelated2 leftArgument rightArgument).mp domain1Arguments
         have codomainEquivalence :=
           codomainIH leftArgument rightArgument domain1Arguments
             (codomainsRelated2 leftArgument rightArgument domain2Arguments)
         exact (codomainEquivalence _ _).mpr
-          (membership2 leftArgument rightArgument domain2Arguments)
+          (membership2.2.2 leftArgument rightArgument domain2Arguments)
   | universeCode _levelExpr1 _flag1 _belowBound1 =>
       intro relation2 related2 leftTerm rightTerm
       exact (related2.binaryCandidateIffUniverse rfl rfl leftTerm rightTerm).symm
@@ -496,7 +503,7 @@ theorem applicationMemberPairAtBounded {scope : Nat} (env : Nat → Nat) (bound 
       leftArgument rightArgument).mp argumentsInRelation
   exact ⟨codomainRelation leftArgument rightArgument,
     codomainsRelated leftArgument rightArgument argumentsInDomain,
-    functionsApply leftArgument rightArgument argumentsInDomain⟩
+    functionsApply.2.2 leftArgument rightArgument argumentsInDomain⟩
 
 /-- The Π-elimination pair arm under a closing-substitution pair (the FT shape): both sides'
 dependent result types commute by `subst0_subst_commute`, and `subst` distributes over the app

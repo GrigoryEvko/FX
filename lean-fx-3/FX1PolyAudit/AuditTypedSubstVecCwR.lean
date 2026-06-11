@@ -660,6 +660,7 @@ import FX1Poly.Typed.KernelBinaryConvInvariance
 import FX1Poly.Typed.KernelBinaryConvArm
 import FX1Poly.Typed.KernelBinaryTelescope
 import FX1Poly.Typed.KernelBinaryPiFormer
+import FX1Poly.Typed.KernelBinaryMemberSN
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2152,6 +2153,30 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- Type@(lmaxAll [domainLevel, codomainLevel]).
 #assert_no_axioms FX1Poly.Typed.binaryStronglyNormalizingPairOfUniverseMemberAtBounded
 #assert_no_axioms FX1Poly.Typed.binaryFundamentalGenFormationPiArm
+
+-- ★★ THE Π-CANDIDATE STRENGTHENING + BINARY CR1 (OP1-K2 #1228,
+-- Typed/KernelBinaryMemberSN.lean + the piType-arm edit in KernelBinaryParametricity.lean).
+-- Assembly-design analysis found the original NAKED piType member candidate (∀ related args
+-- → related apps) admits NON-SN member pairs (vacuously, over uninhabited domain relations
+-- like the empty candidate at closed scope — (Omega, Omega) qualified), so binary CR1 was
+-- FALSE and the piIntro arm's domainArgumentsSN premise was UNDISCHARGEABLE at Π-shaped
+-- domains: the binary FT assembly was blocked. The correction (the standard binary-LR
+-- construction): bake per-side IsStronglyNormalizing conjuncts into the piType member
+-- candidate. Fallout absorbed: candidatePiPairShape/piTypePairInversion/binaryPiFormationArm
+-- conclusions re-pinned; deterministic + applicationMemberPairAtBounded project .2.2; the
+-- closure legs' piType arms derive the redex SN via betaSpineHeadExpansion (same brick as
+-- the neutral arm); the abstraction lemma proves the λ-pair SN via
+-- lam_isStronglyNormalizing_of_body from NEW open-body-SN premises (per-substitution wall
+-- premises on binaryFundamentalPiIntroArm, discharged at assembly from the unary FT);
+-- bricks 3/4/5a/5b absorbed with ZERO edits.
+-- BinaryReducibleTypeStepBounded.memberPairStronglyNormalizing: ★ BINARY CR1 at the step
+-- functor — every member pair of every assigned candidate is SN×SN (8-arm induction, each
+-- candidate carries or implies its members' SN by construction; the universe arm's SN
+-- conjuncts sit BEFORE the below-family decode so no gate is needed).
+-- binaryMemberPairStronglyNormalizingAtBounded: the member-pair-level corollary — discharges
+-- the piIntro arm's domainArgumentsSN premise for EVERY domain shape.
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.memberPairStronglyNormalizing
+#assert_no_axioms FX1Poly.Typed.binaryMemberPairStronglyNormalizingAtBounded
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 

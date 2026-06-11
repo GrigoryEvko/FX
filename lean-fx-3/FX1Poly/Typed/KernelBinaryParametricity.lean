@@ -154,11 +154,14 @@ inductive BinaryReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
         (.mkGen .gen_piTyCode () (.childCons leftDomain (.childCons leftCodomain .childNil)))
         (.mkGen .gen_piTyCode () (.childCons rightDomain (.childCons rightCodomain .childNil)))
         (fun leftFunction rightFunction =>
-          ∀ leftArgument rightArgument : RawTerm scope,
-            domainRelation leftArgument rightArgument →
-            codomainRelation leftArgument rightArgument
-              (.mkGen .gen_app () (.childCons leftFunction (.childCons leftArgument .childNil)))
-              (.mkGen .gen_app () (.childCons rightFunction (.childCons rightArgument .childNil))))
+          IsStronglyNormalizing leftFunction ∧ IsStronglyNormalizing rightFunction ∧
+            ∀ leftArgument rightArgument : RawTerm scope,
+              domainRelation leftArgument rightArgument →
+              codomainRelation leftArgument rightArgument
+                (.mkGen .gen_app ()
+                  (.childCons leftFunction (.childCons leftArgument .childNil)))
+                (.mkGen .gen_app ()
+                  (.childCons rightFunction (.childCons rightArgument .childNil))))
   | universeCode (levelExpr : LevelExpr) (flag : UniverseFlag)
       (belowBound : LevelExpr.denote levelExpr env < bound) :
       BinaryReducibleTypeStepBounded env lowerAt bound
@@ -351,11 +354,14 @@ theorem binaryPiFormationArm {scope : Nat} {env : Nat → Nat} {bound : Nat}
       (.mkGen .gen_piTyCode () (.childCons leftDomain (.childCons leftCodomain .childNil)))
       (.mkGen .gen_piTyCode () (.childCons rightDomain (.childCons rightCodomain .childNil)))
       (fun leftFunction rightFunction =>
-        ∀ leftArgument rightArgument : RawTerm scope,
-          domainRelation leftArgument rightArgument →
-          codomainRelation leftArgument rightArgument
-            (.mkGen .gen_app () (.childCons leftFunction (.childCons leftArgument .childNil)))
-            (.mkGen .gen_app () (.childCons rightFunction (.childCons rightArgument .childNil)))) :=
+        IsStronglyNormalizing leftFunction ∧ IsStronglyNormalizing rightFunction ∧
+          ∀ leftArgument rightArgument : RawTerm scope,
+            domainRelation leftArgument rightArgument →
+            codomainRelation leftArgument rightArgument
+              (.mkGen .gen_app ()
+                (.childCons leftFunction (.childCons leftArgument .childNil)))
+              (.mkGen .gen_app ()
+                (.childCons rightFunction (.childCons rightArgument .childNil)))) :=
   BinaryReducibleTypeStepBounded.piType codomainRelation domainsRelated codomainsRelated
 
 /-- `Type@levelExpr` is a self-related TYPE PAIR below any dominating bound. -/

@@ -1,6 +1,7 @@
 import FX1Poly.Typed.KernelBinaryPiElim
 import FX1Poly.Core.HeadExpansionClosure
 import FX1Poly.Core.RawTermSubstConsCommute
+import FX1Poly.Core.StrongNormalizationConstructors
 
 /-! # FX1Poly/Typed/KernelBinaryPiIntro
     — the binary Π-INTRODUCTION (λ-pair) arm: two-sided head-expansion closure + env cons (OP1-K2 brick 2)
@@ -156,13 +157,15 @@ theorem BinaryReducibleTypeStepBounded.headExpansionClosedLeft {scope : Nat} {en
       exact ⟨betaSpineHeadExpansion domainAnnSN argumentSN membership.1, membership.2⟩
   | piType codomainRelation _domainsRelated _codomainsRelated _domainIH codomainIH =>
       intro domainAnn body argument spine rightTerm domainAnnSN argumentSN contractumRelated
+      refine ⟨betaSpineHeadExpansion domainAnnSN argumentSN contractumRelated.1,
+        contractumRelated.2.1, ?_⟩
       intro extraLeft extraRight extraRelated
       have contractumAtExtendedSpine :
           codomainRelation extraLeft extraRight
             (RawTerm.applySpineApp (RawTerm.subst0 body argument) (spine ++ [extraLeft]))
             (.mkGen .gen_app () (.childCons rightTerm (.childCons extraRight .childNil))) := by
         rw [applySpineApp_append]
-        exact contractumRelated extraLeft extraRight extraRelated
+        exact contractumRelated.2.2 extraLeft extraRight extraRelated
       have redexAtExtendedSpine :
           codomainRelation extraLeft extraRight
             (RawTerm.applySpineApp
@@ -223,13 +226,15 @@ theorem BinaryReducibleTypeStepBounded.headExpansionClosedRight {scope : Nat} {e
       exact ⟨membership.1, betaSpineHeadExpansion domainAnnSN argumentSN membership.2⟩
   | piType codomainRelation _domainsRelated _codomainsRelated _domainIH codomainIH =>
       intro domainAnn body argument spine leftTerm domainAnnSN argumentSN contractumRelated
+      refine ⟨contractumRelated.1,
+        betaSpineHeadExpansion domainAnnSN argumentSN contractumRelated.2.1, ?_⟩
       intro extraLeft extraRight extraRelated
       have contractumAtExtendedSpine :
           codomainRelation extraLeft extraRight
             (.mkGen .gen_app () (.childCons leftTerm (.childCons extraLeft .childNil)))
             (RawTerm.applySpineApp (RawTerm.subst0 body argument) (spine ++ [extraRight])) := by
         rw [applySpineApp_append]
-        exact contractumRelated extraLeft extraRight extraRelated
+        exact contractumRelated.2.2 extraLeft extraRight extraRelated
       have redexAtExtendedSpine :
           codomainRelation extraLeft extraRight
             (.mkGen .gen_app () (.childCons leftTerm (.childCons extraLeft .childNil)))
@@ -370,6 +375,8 @@ theorem binaryAbstractionMemberPairAtBounded {scope : Nat} (env : Nat → Nat) (
     (domainArgumentsSN : ∀ leftArgument rightArgument : RawTerm scope,
       domainRelation leftArgument rightArgument →
       IsStronglyNormalizing leftArgument ∧ IsStronglyNormalizing rightArgument)
+    (leftBodySN : IsStronglyNormalizing leftBody)
+    (rightBodySN : IsStronglyNormalizing rightBody)
     (bodiesRelated : ∀ leftArgument rightArgument : RawTerm scope,
       domainRelation leftArgument rightArgument →
       codomainRelation leftArgument rightArgument
@@ -380,12 +387,15 @@ theorem binaryAbstractionMemberPairAtBounded {scope : Nat} (env : Nat → Nat) (
       (.mkGen .gen_lam () (.childCons leftDomainAnn (.childCons leftBody .childNil)))
       (.mkGen .gen_lam () (.childCons rightDomainAnn (.childCons rightBody .childNil))) :=
   ⟨fun leftFunction rightFunction =>
-      ∀ leftArgument rightArgument : RawTerm scope,
-        domainRelation leftArgument rightArgument →
-        codomainRelation leftArgument rightArgument
-          (.mkGen .gen_app () (.childCons leftFunction (.childCons leftArgument .childNil)))
-          (.mkGen .gen_app () (.childCons rightFunction (.childCons rightArgument .childNil))),
+      IsStronglyNormalizing leftFunction ∧ IsStronglyNormalizing rightFunction ∧
+        ∀ leftArgument rightArgument : RawTerm scope,
+          domainRelation leftArgument rightArgument →
+          codomainRelation leftArgument rightArgument
+            (.mkGen .gen_app () (.childCons leftFunction (.childCons leftArgument .childNil)))
+            (.mkGen .gen_app () (.childCons rightFunction (.childCons rightArgument .childNil))),
    BinaryReducibleTypeStepBounded.piType codomainRelation domainsRelated codomainsRelated,
+   lam_isStronglyNormalizing_of_body leftDomainAnnSN leftBodySN,
+   lam_isStronglyNormalizing_of_body rightDomainAnnSN rightBodySN,
    fun leftArgument rightArgument argumentsRelated =>
      (codomainsRelated leftArgument rightArgument argumentsRelated).headExpansionClosedLeft
        (spine := [])
@@ -420,6 +430,9 @@ theorem binaryAbstractionMemberPairUnderClosingSubstitutionBounded {scope target
     (domainArgumentsSN : ∀ leftArgument rightArgument : RawTerm targetScope,
       domainRelation leftArgument rightArgument →
       IsStronglyNormalizing leftArgument ∧ IsStronglyNormalizing rightArgument)
+    (leftBodySN : IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift leftSubstitution) body))
+    (rightBodySN :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift rightSubstitution) body))
     (bodiesRelated : ∀ leftArgument rightArgument : RawTerm targetScope,
       domainRelation leftArgument rightArgument →
       codomainRelation leftArgument rightArgument
@@ -452,6 +465,7 @@ theorem binaryAbstractionMemberPairUnderClosingSubstitutionBounded {scope target
   refine binaryAbstractionMemberPairAtBounded (codomainRelation := codomainRelation) env bound
     domainsRelated leftDomainAnnSN rightDomainAnnSN
     (fun leftArgument rightArgument argumentsRelated => ?_) domainArgumentsSN
+    leftBodySN rightBodySN
     (fun leftArgument rightArgument argumentsRelated => ?_)
   · rw [← RawTerm.subst_cons_eq_subst0_lift codomainCode leftArgument leftSubstitution,
       ← RawTerm.subst_cons_eq_subst0_lift codomainCode rightArgument rightSubstitution]
@@ -499,6 +513,11 @@ theorem binaryFundamentalPiIntroArm {profile : PolyProfile} {scope : Nat} (env :
         IsBinaryReducibleTypePairAtBounded env bound
           (RawTerm.subst (RawTermSubst.cons leftArgument leftSubstitution) codomainCode)
           (RawTerm.subst (RawTermSubst.cons rightArgument rightSubstitution) codomainCode))
+    (bodyCodeStronglyNormalizing : ∀ {targetScope : Nat}
+      (leftSubstitution rightSubstitution : RawTermSubst scope targetScope),
+      BinaryReducibleEnvAtBounded env bound context leftSubstitution rightSubstitution →
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift leftSubstitution) body) ∧
+        IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift rightSubstitution) body))
     (bodyConclusion : BinaryFundamentalConclusionAtBounded env bound
       (context.cons domainCode) body codomainCode) :
     BinaryFundamentalConclusionAtBounded env bound context (lamCell domainCode body)
@@ -523,6 +542,8 @@ theorem binaryFundamentalPiIntroArm {profile : PolyProfile} {scope : Nat} (env :
       (codomainsRelatedAtBound leftSubstitution rightSubstitution envRelated
         leftArgument rightArgument argumentsMember).reducibleMemberPairCandidate)
     (domainArgumentsSN leftSubstitution rightSubstitution envRelated)
+    (bodyCodeStronglyNormalizing leftSubstitution rightSubstitution envRelated).1
+    (bodyCodeStronglyNormalizing leftSubstitution rightSubstitution envRelated).2
     (fun leftArgument rightArgument argumentsMember =>
       bodyConclusion (RawTermSubst.cons leftArgument leftSubstitution)
         (RawTermSubst.cons rightArgument rightSubstitution)
