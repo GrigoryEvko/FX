@@ -664,6 +664,7 @@ import FX1Poly.Typed.KernelBinaryMemberSN
 import FX1Poly.Typed.KernelBinaryGenericFormer
 import FX1Poly.Typed.KernelBinaryFundamental
 import FX1Poly.Typed.KernelAbstractionTheorem
+import FX1Poly.Typed.KernelParamSubstrateSurvey
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2269,6 +2270,35 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.kernelFreeTheoremAtFlatCode
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentity_freeTheoremAtFlatCode
 #assert_no_axioms FX1Poly.Typed.polymorphicInstantiationCanonicityAtFlatCode
+
+-- ★ THE gen_param INTERNAL-PARAMETRICITY SUBSTRATE SURVEY (PARAM-GEN #1230,
+-- FX1Poly/Typed/KernelParamSubstrateSurvey.lean): the machine-checked census of what the
+-- 203-generator table provides for internal parametricity (BCM bridges / Cavallo-Harper /
+-- Narya) and what OP1-INT (#1231) must land. ASSETS pinned: the dimension-binder pair
+-- (gen_pathLam binderShifts [1] — the one-fresh-binder dimension abstraction — and
+-- gen_pathApp [0,0]), the interval endpoints (gen_interval0/1 nullary), and the ternary
+-- flat TEMPLATE for a future bridge former (gen_idCode [0,0,0]). GAPS pinned in the
+-- ParamSubstrateLedger: no interval TYPE code (dimension binders cannot be context-bound),
+-- no bridge FORMER (one new generator at CON-A1 cost, 203→204), no typing rows (the whole
+-- family is semanticTier reserved — paramSubstrate_allReserved, 7-way), no endpoint-ι.
+-- THE DESIGN DECISION recorded in the module docstring: BCM bridge-dimension AFFINITY is
+-- inexpressible in the structural TypingContext but IS the shipped usage-semiring affine
+-- grade — the param rows are GRADED rows (type × usage dimensions jointly load-bearing,
+-- a first). The typing-row schemas (formation/intro/elim/computation) are recorded as the
+-- OP1-INT landing targets; the verdict question is the sconing admission gate (ONORM-M2).
+-- dimensionTypingRowsGap_coherentWithTier ties the ledger's false to the HON-5 tier pins.
+#assert_no_axioms FX1Poly.Typed.pathLam_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.pathApp_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.interval0_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.interval1_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.idCode_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.paramSubstrate_allReserved
+#assert_no_axioms FX1Poly.Typed.oeqFamily_allReserved
+#assert_no_axioms FX1Poly.Typed.ParamSubstrateLedger
+#assert_no_axioms FX1Poly.Typed.paramSubstrateLedger
+#assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_gapsPinned
+#assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_assetsPinned
+#assert_no_axioms FX1Poly.Typed.dimensionTypingRowsGap_coherentWithTier
 
 -- ★★ THE UNARY-GUARDED Π CANDIDATE — the Abel binary-over-unary construction (OP1-K2 #1228,
 -- in-place strengthening across KernelBinaryParametricity/PiElim/PiIntro/ConvInvariance/
