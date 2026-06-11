@@ -4,7 +4,12 @@ import FX1PolyAudit.FX0CrossCheck
 import FX1PolyAudit.FX0CrossCheckCertified
 import FX1PolyAudit.FX0CrossCheckCorpus
 import FX1Poly.Core.CertifyRawCellExact
+import FX1Poly.Core.CertifyRawCellExactSound
+import FX1Poly.Core.CertifyRawCellExactShape
+import FX1Poly.Core.CertifyRawCellExactCompHRejects
 import FX1Poly.Core.InferRawCellGeneral
+import FX1Poly.Core.InferRawCellGeneralSound
+import FX1Poly.Core.PolyCellErasure
 import FX1Poly.Core.CertifiedTerm
 import FX0Poly.StructuralRecheck
 import FX0Poly.CertRecheck
@@ -111,3 +116,40 @@ A0 external-verification leg. -/
 #assert_host_minimal FX1Poly.Core.certifyRawCellExactFueled?
 #assert_host_minimal FX1Poly.Core.inferRawCellGeneral?
 #assert_host_minimal FX1Poly.Core.Certified
+
+/-! ### FX0-PC.3 — Layer-1 SOUNDNESS under the host-minimal closure (★ closes #222)
+
+The Layer-1 no-false-positives guarantee, gated at the same trust tier as the certifier itself:
+every theorem below has its FULL transitive closure (statement constants + elaborated proof term)
+verified axiom-free / foreign-free / unsafe-free / opaque-free / quotient-free by
+`#assert_host_minimal`.  The family:
+
+* `certifyRawCellExact?_sound` — the type-level no-laundering headline (term-mode `rfl`): an
+  accepted certification's cell erases (`PolyCell.raw`) to EXACTLY the raw input, because the
+  raw-INDEXED return type pins the rawCell index structurally.
+* `PolyCell.raw` — the erasure extractor the statement is phrased over.
+* `certifyRawCellExact?_compH_rejects` — the rejection-branch behavioral pin (compH is total-off).
+* `certifyRawCellExact?_identityCell_boundary` + the two `_accepted_implies_inner_certs` pins —
+  the behavioral half: the dispatcher's accepting arms are not short-circuited (acceptance forces
+  the recursive sub-certifications), so a dispatch regression cannot hide behind the type-level pin.
+* `inferRawCellGeneral?_sound` — the existential-ingress variant (HEq raw-equality).
+
+Together with the certifier gates above this closes FX0-PC.3 (polycell.md §12.6.5 Layer 1): the
+Lean-side soundness evidence lives entirely inside the calibrated `Init` prelude slice that the
+external re-checker (FX0-PC.4/6) must model.  The Lean proofs are the CONFIDENCE layer, not the
+trust base — the trust base is the external cross-check (FX0-PC.6/8).
+
+Tactic-mode source in the shape pins is irrelevant here: the gate audits the ELABORATED kernel
+artifact (the proof terms the kernel actually checks), which is the honest reading of the
+"term-mode under host-minimal" requirement — what matters is what lands in the checked closure,
+not the surface syntax that produced it. -/
+
+#assert_host_minimal FX1Poly.Core.certifyRawCellExact?_sound
+#assert_host_minimal FX1Poly.Core.PolyCell.raw
+#assert_host_minimal FX1Poly.Core.certifyRawCellExact?_compH_rejects
+#assert_host_minimal FX1Poly.Core.certifyRawCellExact?_identityCell_boundary
+#assert_host_minimal
+  FX1Poly.Core.certifyRawCellExact?_verticalComposite_accepted_implies_inner_certs
+#assert_host_minimal
+  FX1Poly.Core.certifyRawCellExact?_generatingCell_accepted_implies_inner_certs
+#assert_host_minimal FX1Poly.Core.inferRawCellGeneral?_sound
