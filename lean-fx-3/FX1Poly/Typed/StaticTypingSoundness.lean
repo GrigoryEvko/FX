@@ -94,11 +94,11 @@ grown leg reuse `UntypableHeadDecision.isUntypableHead_sound` rather than re-inv
 theorem hasSomeTypingRule_false_imp_isUntypableHead (generator : Generator)
     (reserved : hasSomeTypingRule generator = false) : isUntypableHead generator = true := by
   dsimp only [hasSomeTypingRule] at reserved
-  -- Peel the left-associated 30-disjunct chain to the five grown-relevant atoms.
-  have rest29 := orEqFalse_leftFalse reserved
-  have rest28 := orEqFalse_leftFalse rest29
-  have rest27 := orEqFalse_leftFalse rest28
-  have rest26 := orEqFalse_leftFalse rest27
+  -- Peel the left-associated 27-disjunct chain to the five grown-relevant atoms.
+  -- NATIVE-11 dropped the three interval decides (intervalCode / interval0 / interval1) once they
+  -- became table-resident, shrinking the tail from 30 to 27 — so the peel now starts at `rest26`
+  -- (the four tail disjuncts above `var` are pathApp / pathLam / bridgeCode / universeCode).
+  have rest26 := orEqFalse_leftFalse reserved
   have rest25 := orEqFalse_leftFalse rest26
   have rest24 := orEqFalse_leftFalse rest25
   have rest23 := orEqFalse_leftFalse rest24

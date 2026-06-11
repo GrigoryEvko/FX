@@ -970,6 +970,14 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_fst
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_lam
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_var
+-- NATIVE-11: interval heads stay classified-true via the TABLE selectors after the bespoke decides were
+-- dropped (intervalCode via baseTypeRuleDescOf, interval0/1 via dataIntroNullaryRuleDescOf); bridgeCode is
+-- the one cubical head that REMAINS a decide (its term-indexed former table lands at NATIVE-12).  Each is a
+-- load-bearing `rfl` pin: it would fail to compute `true` had the −3 collapse mis-subsumed a head.
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_intervalCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_interval0
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_interval1
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_bridgeCode
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_hilbertSpace
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_natElim
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_idCode

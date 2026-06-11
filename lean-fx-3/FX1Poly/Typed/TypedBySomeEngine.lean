@@ -56,9 +56,13 @@ open FX1Poly.Core FX1Poly.Universe
 Consults every engine's selector: the grown-engine trio (`typingRuleDescOf` / `introRuleDescOf` /
 `elimRuleDescOf`), the flat data formers (`flatTypingRuleDescOf`), the nullary base type-codes
 (`baseTypeRuleDescOf`), the nullary data constructors (`dataIntroNullaryRuleDescOf`), the sixteen standalone
-intro/elim heads (which key on hardcoded arms, hence the explicit `decide` equalities), and the two bespoke
-typed heads (`gen_var` / `gen_universeCode`).  Unlike `isUntypableHead`, this does NOT conflate the meaningful
-data heads with the reserved-name zoo. -/
+intro/elim heads (which key on hardcoded arms, hence the explicit `decide` equalities), the two bespoke
+typed heads (`gen_var` / `gen_universeCode`), and the residual cubical decides (`gen_bridgeCode` /
+`gen_pathLam` / `gen_pathApp`).  The interval heads (`gen_intervalCode` / `gen_interval0` / `gen_interval1`)
+were dropped from the decide list by NATIVE-11 once they became table-resident (NATIVE-06/07) — they are now
+classified through `baseTypeRuleDescOf` / `dataIntroNullaryRuleDescOf`, the `−3` collapse toward the
+zero-decide table union (NATIVE-40).  Unlike `isUntypableHead`, this does NOT conflate the meaningful data
+heads with the reserved-name zoo. -/
 def hasSomeTypingRule (g : Generator) : Bool :=
   (typingRuleDescOf g).isSome || (introRuleDescOf g).isSome || (elimRuleDescOf g).isSome
   || (flatTypingRuleDescOf g).isSome || (baseTypeRuleDescOf g).isSome
@@ -71,8 +75,7 @@ def hasSomeTypingRule (g : Generator) : Bool :=
   || decide (g = .gen_optionMatch) || decide (g = .gen_eitherMatch)
   || decide (g = .gen_fst) || decide (g = .gen_snd)
   || decide (g = .gen_var) || decide (g = .gen_universeCode)
-  || decide (g = .gen_intervalCode) || decide (g = .gen_bridgeCode)
-  || decide (g = .gen_interval0) || decide (g = .gen_interval1)
+  || decide (g = .gen_bridgeCode)
   || decide (g = .gen_pathLam) || decide (g = .gen_pathApp)
 
 /-! ## LIVE witnesses — one per engine family, by `rfl` -/
@@ -93,6 +96,25 @@ theorem hasSomeTypingRule_fst : hasSomeTypingRule .gen_fst = true := rfl
 theorem hasSomeTypingRule_lam : hasSomeTypingRule .gen_lam = true := rfl
 /-- Bespoke typed head (`HasTypeDesc.var`). -/
 theorem hasSomeTypingRule_var : hasSomeTypingRule .gen_var = true := rfl
+
+/-! ## NATIVE-11: interval heads collapsed into the table selectors -/
+
+/-- **The interval type code stays classified-true via `baseTypeRuleDescOf`, not a bespoke decide.**  After
+NATIVE-06 added `gen_intervalCode` to the base-type formation table, its explicit `decide` disjunct in
+`hasSomeTypingRule` became redundant and was dropped (NATIVE-11).  This `rfl` proves the head is STILL typed
+by some engine — now through the generic `(baseTypeRuleDescOf g).isSome` selector.  The collapse is
+load-bearing: this pin would fail to compute `true` had the table row not subsumed the dropped decide. -/
+theorem hasSomeTypingRule_intervalCode : hasSomeTypingRule .gen_intervalCode = true := rfl
+/-- **The interval endpoints stay classified-true via `dataIntroNullaryRuleDescOf`.**  NATIVE-07 added
+`gen_interval0`/`gen_interval1` to the nullary data-constructor table; NATIVE-11 dropped their bespoke
+decides.  These `rfl` pins prove the endpoints remain typed-by-some-engine through the table selector. -/
+theorem hasSomeTypingRule_interval0 : hasSomeTypingRule .gen_interval0 = true := rfl
+theorem hasSomeTypingRule_interval1 : hasSomeTypingRule .gen_interval1 = true := rfl
+/-- **`gen_bridgeCode` REMAINS a bespoke decide** — the bridge/Id term-indexed former table (NATIVE-12) has
+not yet landed, so it is not table-resident.  This `rfl` documents the one cubical decide that survives the
+NATIVE-11 collapse (the −3 is exactly intervalCode + interval0 + interval1, leaving bridge + the two path
+operators). -/
+theorem hasSomeTypingRule_bridgeCode : hasSomeTypingRule .gen_bridgeCode = true := rfl
 
 /-! ## RESERVED witnesses — genuinely typed by NO engine, by `rfl` -/
 
