@@ -15,7 +15,7 @@ no termination, the Tait/Martin-Löf/Takahashi method — but as a free-standing
 relation.  This file is the ADAPTER that connects the two: given any parallel relation `ParStep` sandwiched
 `Step ⊆ ParStep ⊆ StepStar` whose `DiamondProperty` holds, it discharges BOTH the FX strip property and FX global
 confluence.  The single remaining mathematical obligation — exhibit a concrete FX parallel reduction and prove its
-diamond (the Takahashi complete-development argument over the 194-generator tree) — is the cleanly-stated
+diamond (the Takahashi complete-development argument over the 203-generator tree) — is the cleanly-stated
 hypothesis, deferred to a downstream task; it is NOT faked here.
 
 This is the genuine FX-layer realization of `parStar.confluence`: the generic diamond core is shipped, and

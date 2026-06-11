@@ -3,7 +3,7 @@ import FX1Poly.Core.RawCellCode
 /-! # FX1Poly/Core/GeneratorTagRoundTrip
     — the §11.6.4 Generator-table validation: `Generator.toNat` is injective
 
-`Generator.toNat` (RawCellCode.lean) assigns each of the 194 generators a tag
+`Generator.toNat` (RawCellCode.lean) assigns each of the 203 generators a tag
 0–193; it is the head byte of the FX0 prefix-code serialization
 (`RawTerm.toCode`).  For that serialization to be a faithful prefix code the tag
 assignment MUST be collision-free — otherwise two distinct generators encode to
@@ -28,7 +28,7 @@ collide with the auto-derived `Generator.ofNat`.)
 
 ## Zero-axiom verification
 
-`cases g <;> rfl` over the 194 constructors (each a definitional reduction of
+`cases g <;> rfl` over the 203 constructors (each a definitional reduction of
 the literal `Nat` match — no `decide`, no `omega`, no `simp`), plus
 `Option.some.inj`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, `omega`.  Audit-gated in `FX1PolyAudit`.
@@ -140,7 +140,7 @@ def Generator.fromTag : Nat → Option Generator
 
 /-- Round-trip: `fromTag` recovers every generator from its `toNat` tag.  Each
 constructor reduces definitionally (`toNat g` is a literal, `fromTag` matches it),
-so `cases g <;> rfl` discharges all 194.  A mis-transcribed `fromTag` entry would
+so `cases g <;> rfl` discharges all 203.  A mis-transcribed `fromTag` entry would
 fail `rfl` at exactly that constructor. -/
 theorem Generator.fromTag_toNat (generator : Generator) :
     Generator.fromTag generator.toNat = some generator := by

@@ -41,7 +41,7 @@ algebra : ∀ {scope : Nat}
 ```
 
 This is THE KEY DESIGN CHOICE.  At single-scope, `.mkGen generator
-payload foldedChildren` typechecks UNIFORMLY for all 194 generators
+payload foldedChildren` typechecks UNIFORMLY for all 203 generators
 — including `.gen_var` (where payload is `Fin scope` and children is
 `.childNil`).  No per-generator dispatch needed in the canonical
 algebra body.
@@ -100,7 +100,7 @@ a result term.
 
 For the canonical use case (rename, subst, weaken), the algebra is
 `.mkGen generator payload foldedChildren` — uniform rebuild for all
-194 generators.  Future variants (NbE eval, term-size, ...) can
+203 generators.  Future variants (NbE eval, term-size, ...) can
 supply custom algebras with the same field shape but different
 internal logic. -/
 structure GenAlgebra where
@@ -115,7 +115,7 @@ structure GenAlgebra where
 
 /-- The canonical "rebuild .mkGen" algebra — the universal recipe for
 traversals that preserve term shape (rename, subst, weaken).  Applies
-uniformly to all 194 generators in ONE line: rebuild the input
+uniformly to all 203 generators in ONE line: rebuild the input
 generator with its payload and the folded children spine.
 
 ONE line, reused across traversals: each traversal (rename, subst,

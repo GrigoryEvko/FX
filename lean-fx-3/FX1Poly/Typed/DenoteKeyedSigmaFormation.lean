@@ -8,7 +8,7 @@ import FX1Poly.Core.StrongNormalizationConstructors
 
 `typingRuleDescOf` is `some` for EXACTLY two generators — `gen_piTyCode` and `gen_sigmaTyCode` (the dependent
 type-formers; `HasTypeDesc.lean:94`).  So the grown engine's sole formation arm `HasTypeDescPi.genFormationPi`,
-generic over `typingRuleDescOf generator = some rule`, is a TWO-CASE split, not a 194-way generic dispatch —
+generic over `typingRuleDescOf generator = some rule`, is a TWO-CASE split, not a 203-way generic dispatch —
 and the two cases close by DIFFERENT routes:
 
   * **Σ (`gen_sigmaTyCode`)** — reducible-as-a-type via the FREE neutral arm (`smoke_sigmaFormer_isReducible

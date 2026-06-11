@@ -25,7 +25,7 @@ leaks propext via the pair-index match) — inversion is by `obtain`/`rcases` on
 
 These are the precedence-then-status comparison of RPO, made measure-based termination certificates.  The full
 RECURSIVE path ordering on the FX term structure (the recursive subterm comparison, composing these certificates
-through the 194-generator tree) is a downstream construction (typed-SN-gated); this file supplies the
+through the 203-generator tree) is a downstream construction (typed-SN-gated); this file supplies the
 precedence + argument-order core it builds on.
 
 ## Zero-axiom verification

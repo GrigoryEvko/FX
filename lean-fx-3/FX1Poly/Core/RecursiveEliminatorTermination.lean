@@ -50,7 +50,7 @@ projecting (non-substituting) recursive arms.
 
 This is the de-risking MODEL, not the full FX ι-fragment.  It demonstrates that the genuinely-hard part of
 #1139 — the recursive eliminator's duplicating recursive call — terminates via the shipped multiset RPO,
-Tait-free.  Lifting this to the real `Step` ι-arms over `RawTerm` (the 194-generator measure, one
+Tait-free.  Lifting this to the real `Step` ι-arms over `RawTerm` (the 203-generator measure, one
 `measureDecreases` obligation per ι arm, joined with the easy size-decreasing non-recursive arms and the shipped
 η-SN) is the multi-firing follow-on that closes #1139 proper.
 

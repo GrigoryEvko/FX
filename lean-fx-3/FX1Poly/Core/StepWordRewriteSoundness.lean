@@ -11,7 +11,7 @@ is a word rewrite under `fxStepSystem` — `Step a b ⟹ FxWordRewritesOneStep f
 its many-step closure `StepStar a b ⟹ FxWordRewritesMany …`.
 
 The existing one-step rewriting (`Rewrite.lean`'s `OmegacEWord.RewritesOneStep`) is over the abstract scaffold
-word `OmegacEWord` — the wrong alphabet for the 194-generator kernel.  Here the words are the FX term codes
+word `OmegacEWord` — the wrong alphabet for the 203-generator kernel.  Here the words are the FX term codes
 (`List Nat` via the shipped `RawTerm.toCode`), and the relation is closed under left/right word context by
 construction (the congruence with concatenation).
 

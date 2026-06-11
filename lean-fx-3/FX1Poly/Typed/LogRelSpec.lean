@@ -49,7 +49,7 @@ inductive needs to be reintroduced; `HasTypeDescPi` already IS the `LRTy`-shaped
 ## Lean-4 feasibility (Init-only, zero-axiom) — three encodings assessed
 
 1. **Full `Type`-valued induction-recursion (Adjedj `LRTy`/`LRTm` verbatim).**  Lean 4 supports IR natively,
-   but a `Type`-valued logical relation over the 194-generator table is heavy and risks positivity /
+   but a `Type`-valued logical relation over the 203-generator table is heavy and risks positivity /
    equation-compiler axiom leaks (the indexed-match propext traps catalogued in this project).  RESERVED as
    the deepest fallback — needed ONLY if reducibility must carry `Type`-level semantic VALUE data (e.g. for
    the `Type`-valued NbE values; there the already-shipped `Ty` well-foundedness measure of tracker #383

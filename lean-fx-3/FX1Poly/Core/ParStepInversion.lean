@@ -5,7 +5,7 @@ import FX1Poly.Core.ParallelReduction
 
 The Takahashi triangle (`ParStep a b → ParStep b (completeDevelopment a)`) and its `b := a` instance
 `completeDevelopment_parStep` cannot recurse directly on deep subterms (`completeDevelopment` dispatches on
-the 194-constructor generator by `by_cases`, which hides the subterm relation from Lean's structural
+the 203-constructor generator by `by_cases`, which hides the subterm relation from Lean's structural
 recursion).  The viable route recurses only on the direct children spine and EXTRACTS the per-component
 `ParStep`s by inverting the children's congruence reductions.
 

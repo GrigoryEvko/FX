@@ -14,7 +14,7 @@ type `Nat` itself needs a dedicated TYPE code to be a nameable cell.  `gen_natCo
 This file is the substrate CERTIFICATE: it pins the generator's shape to exactly the
 nullary-type-code profile the `Nat : Type@0` base-type formation consumes.  The serialization
 round-trip (`Generator.toNat_injective` / `Generator.fromTag_toNat`) and the finite-polygraph
-bound (`Generator.toNat_lt` over `Fin 197`) already re-verify `gen_natCode` automatically (they
+bound (`Generator.toNat_lt` over `Fin 203`) already re-verify `gen_natCode` automatically (they
 are `cases generator`-uniform); this file adds the metadata-shape facts those uniform proofs do
 not name.
 

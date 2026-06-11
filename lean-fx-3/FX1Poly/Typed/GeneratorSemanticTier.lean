@@ -3,7 +3,7 @@ import FX1Poly.Core.GeneratorRedexHead
 
 /-! # FX1Poly/Typed/GeneratorSemanticTier — the unified live/reserved ledger (HON-3)
 
-The honest semantic classification of every one of the 197 generators, combining the two axes shipped before
+The honest semantic classification of every one of the 203 generators, combining the two axes shipped before
 it: the STATIC-typing axis `hasSomeTypingRule` (HON-1 — typed by some of the 17 typing engines) and the
 OPERATIONAL axis `Generator.hasRedexHead` (HON-2 — a `Step` fires at its root).  A generator is `live` iff it
 carries meaning on EITHER axis, `reserved` otherwise.  This is the single predicate that answers, honestly, for
@@ -44,7 +44,7 @@ inductive SemanticTier where
 
 /-- **The unified semantic-tier classifier.**  `live` iff the generator is statically typed by some engine
 (`hasSomeTypingRule`, HON-1) OR an operational redex head (`hasRedexHead`, HON-2); `reserved` otherwise.  The
-honest live/reserved partition of all 197 generators. -/
+honest live/reserved partition of all 203 generators. -/
 def semanticTier (g : Generator) : SemanticTier :=
   if hasSomeTypingRule g || g.hasRedexHead then .live else .reserved
 

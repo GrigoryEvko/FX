@@ -1085,7 +1085,7 @@ classifiers, Σ (#361), modal/cubical η (#363), former children (engine-gated).
 -- returns `some reduct` exactly on a root redex, exhibiting the reduct as a concrete RawTerm (vs the
 -- existential `hasRootStepSource_exists_step`).  The reduct-supplier the weak-normalization normalizer
 -- FUNCTION (#261/#480) needs to make `decidableOfNormalForms_of_isStronglyNormalizing` parameter-free.
--- Propext-clean over the 194-ctor table via DecidableEq dite-chains + ▸-casts + full spine destructure.
+-- Propext-clean over the 203-ctor table via DecidableEq dite-chains + ▸-casts + full spine destructure.
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex
 #assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex_sound
 
@@ -1265,7 +1265,7 @@ classifiers, Σ (#361), modal/cubical η (#363), former children (engine-gated).
 -- TYPE code, like every ground datatype). natTypeCell = mkGen gen_natCode () childNil mirrors boolTypeCell /
 -- emptyTypeCell. gen_natCode_isNullaryTypeCode pins the metadata shape (arity 0, binderShifts [], cellSort .type);
 -- gen_natCode_isAdmitted is the SupportedGenerator witness. The serialization round-trip (toNat_injective/
--- fromTag_toNat) + finite-polygraph bound (toNat_lt over Fin 197) already re-verify gen_natCode uniformly.
+-- fromTag_toNat) + finite-polygraph bound (toNat_lt over Fin 203) already re-verify gen_natCode uniformly.
 -- baseTypeRuleDescOf gen_natCode = none today (Nat:Type@0 base-type formation deferred to keep the
 -- baseTypeRuleDescOf two-way enumeration cascade-free); natTypeCell is a raw classifier for HasTypeDescNatIntro.
 #assert_no_axioms FX1Poly.Typed.natTypeCell

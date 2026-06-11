@@ -2,7 +2,7 @@ import FX1Poly.Core.GeneratorCore
 
 /-! # FX1Poly/Core/GeneratorRedexHead — the operational-liveness (redex-head) classifier (HON-2)
 
-The operational axis of the generator-honesty ledger.  `Generator.hasRedexHead` decides, for each of the 197
+The operational axis of the generator-honesty ledger.  `Generator.hasRedexHead` decides, for each of the 203
 generators, whether a `Step` reduction fires at the ROOT of a cell headed by it — i.e. whether the generator is
 an ELIMINATOR with a β/ι rule.  This is exactly the generator set of `RawTerm.hasRootStepSource`
 (`RawTermNF.lean`): the eleven heads `gen_app` (β) and the ι-eliminators

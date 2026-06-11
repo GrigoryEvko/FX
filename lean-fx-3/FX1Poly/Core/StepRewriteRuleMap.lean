@@ -25,7 +25,7 @@ shape-only `encodeRuleWord`.  This file adds the two facts the rule map needs:
 
 * `FxTermRewriteRule` — a rewrite rule over the term-code word alphabet (`List Nat`): the FX-faithful analogue
   of `OmegacEWord`'s `OmegacERewriteRule` (which is over the abstract 2-letter scaffold alphabet — the wrong
-  target for the 194-generator kernel).
+  target for the 203-generator kernel).
 * `Step.inducedRewriteRule` — the map: a reduction `Step redex reduct` induces the rule
   `⟨redex.toCode, reduct.toCode⟩`.
 * `Step.inducedRewriteRule_leftHandSide` / `_rightHandSide` (`rfl`) and `_leftHandSide_ne_nil` /

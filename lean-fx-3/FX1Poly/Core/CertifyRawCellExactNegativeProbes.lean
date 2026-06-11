@@ -25,7 +25,7 @@ coverage, they triangulate the certifier's decision boundary:
 
 ## The reachable-rejection landscape under fxProfile
 
-Under `fxProfile` (all 194 generators admitted), three rejection
+Under `fxProfile` (all 203 generators admitted), three rejection
 branches are runtime-reachable:
 
 * `.unsupportedCompH` — `.horizontalComposite _ _` always rejects
@@ -38,7 +38,7 @@ The remaining seven rejection branches in `CellCheckRejection.all` are
 unreachable under fxProfile:
 
 * `.unknownGenerator` — `supportedGenerator?` always returns `some`
-  under fxProfile (all 194 admitted).  Restricted profiles (e.g.
+  under fxProfile (all 203 admitted).  Restricted profiles (e.g.
   "no-HoTT FX") refine `SupportedGenerator` with fewer arms,
   activating this branch.
 * `.badPayload` — `genPayloadEvidence?` always returns `some` under

@@ -901,7 +901,7 @@ def Generator.binderShifts : Generator → List Nat
   | .gen_npComplete    => [0, 0]
 
 /-- The `binderShifts` table has length exactly `arity g`.
-Proof is case-analysis on `g`; each of the 74 arms closes via
+Proof is case-analysis on `g`; each of the 203 arms closes via
 `rfl` (`[].length = 0`, `[x].length = 1`, etc.).  Recovers the
 total-function discipline that a `Fin g.arity → Nat` signature
 would carry at the type level (but at the cost of a propext

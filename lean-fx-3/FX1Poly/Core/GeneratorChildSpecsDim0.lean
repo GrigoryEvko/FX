@@ -33,7 +33,7 @@ We ship two layers:
   2. **Prop-valued statement** `Generator.childSpecs_cellDimension_zero`
      proving every spec in a generator's children has dim 0.
 
-Both close by case analysis on the Generator enum (194 ctors).  Each
+Both close by case analysis on the Generator enum (203 ctors).  Each
 arm reduces to `rfl` or trivial list membership.
 
 ## Zero-axiom verification
@@ -60,7 +60,7 @@ def Generator.allChildSpecsDim0 (gen : Generator) : Bool :=
 
 /-- **Universal: the Bool check returns `true` for every Generator.**
 
-Closes by case analysis on the Generator enum (194 ctors).  Each case
+Closes by case analysis on the Generator enum (203 ctors).  Each case
 reduces to `rfl` because the `ChildSpec` helpers
 (`sameScopeDimZero` / `underOneBinderDimZero`) set `cellDimension := 0`
 by definition, `@[reducible]` lets the projection unfold, and

@@ -26,7 +26,7 @@ The proof is a **single mutual induction** with FOUR structural arms:
     - `.childNil`
     - `.childCons`
 
-The 194-generator dispatch is amortized into fold ONCE across the
+The 203-generator dispatch is amortized into fold ONCE across the
 kernel.  Adding a new Generator requires NO new pointwise arm — the
 proof closes for the new generator automatically through the non-var
 sub-case.

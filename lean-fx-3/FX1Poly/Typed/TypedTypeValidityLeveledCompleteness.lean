@@ -54,7 +54,7 @@ predicativity inversion `universeClassifierLevelIsSucc` pins `(level, flag)` to 
 `piType` → `invertPiTyCode` + `universeCodeCell_inj_of_conv` pin `(level, flag)` to
 `(lmax domainLevel codomainLevel, sharedFlag)`, then the two inductive hypotheses (the codomain under the
 wf context extended by the domain's own typing) assemble via the `piType` arm.  The boundary refutations
-ride root-generator disequalities (`decide` on the 197-ctor enum, kernel-reduced).  No `axiom`, `sorry`,
+ride root-generator disequalities (`decide` on the 203-ctor enum, kernel-reduced).  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/

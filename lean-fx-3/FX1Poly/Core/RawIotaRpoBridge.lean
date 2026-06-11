@@ -38,7 +38,7 @@ arms sit honestly at the β boundary.
     children (`gen_natElim` binderShifts `[0,0,0]`), so erasure of these shapes is clean.
   * `genRank` / `realGenPrecedence` / `realGenPrecedence_wellFounded` — the real generator precedence
     (`gen_natElim`/`gen_natRec`/`gen_listElim` rank 2 ≻ `gen_app` rank 1 ≻ everything else).  Defined by
-    decidable-equality `if`s (no 194-constructor wildcard match, which would leak propext).
+    decidable-equality `if`s (no 203-constructor wildcard match, which would leak propext).
   * `rpoOrientsElim2` / `rpoOrientsElim3` — the generic 2-arg / 3-arg eliminator-arm orientations
     (firing-69 generalized over the generators); `Elim2` is reused for natElim AND natRec.
   * **`rpo_orients_iotaNatElimSucc` / `rpo_orients_iotaNatRecSucc` / `rpo_orients_iotaListElimCons` (★)** —
@@ -77,7 +77,7 @@ mutual
 end
 
 /-- Generator precedence rank: the three recursive eliminators outrank `app`; everything else is below.
-Defined by decidable-equality `if`s (no 194-constructor wildcard match, which would leak propext). -/
+Defined by decidable-equality `if`s (no 203-constructor wildcard match, which would leak propext). -/
 def genRank (gen : Generator) : Nat :=
   if gen = .gen_natElim ∨ gen = .gen_natRec ∨ gen = .gen_listElim then 2
   else if gen = .gen_app then 1

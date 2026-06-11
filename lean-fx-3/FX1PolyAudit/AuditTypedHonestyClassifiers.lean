@@ -805,7 +805,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- the HON-5 static leg (reserved ⟹ untyped by every engine; grown representative + full-15 bundle) and the
 -- HON-6 operational leg (reserved ⟹ no root redex). semanticTierReservedSound is the headline: a reserved
 -- generator is semantically dead (grown-untyped AND operationally inert). The soundness that makes the honest
--- 197-generator partition a VERIFIED ledger, not an unchecked Bool. Zero-axiom (cases on the || + if_pos + the
+-- 203-generator partition a VERIFIED ledger, not an unchecked Bool. Zero-axiom (cases on the || + if_pos + the
 -- shipped HON-5/HON-6 legs).
 #assert_no_axioms FX1Poly.Typed.semanticTier_reserved_imp_both_false
 #assert_no_axioms FX1Poly.Typed.reservedTierOperationallyInert
@@ -817,14 +817,14 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- the HON-5 bridge) + containment (grown-typable ⟹ union-typed, Bool-contrapositive) + STRICT witness
 -- (gen_boolTrue: grown-untypable yet union-typed, since the standalone HasTypeDescDataIntro engine types it).
 -- The union's typed-set strictly contains the grown-typable set — the standalone data engines genuinely EXTEND
--- typability beyond the grown core, so the honest 197-table classifier is not the grown decision in disguise.
+-- typability beyond the grown core, so the honest 203-table classifier is not the grown decision in disguise.
 -- Zero-axiom (cite HON-5 bridge + cases/rw/Bool.noConfusion + ⟨rfl, rfl⟩ witness).
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_refines_isUntypableHead
 #assert_no_axioms FX1Poly.Typed.grownTypable_imp_unionTyped
 #assert_no_axioms FX1Poly.Typed.boolTrue_grownUntypableButUnionTyped
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRuleStrictlyRefinesUntypableHead
 -- ★ THE HONESTY-ARC CAPSTONE (GeneratorHonestyLedger): one machine-checked ledger bundling the arc's four
--- pillars over the 197-generator table — SOUNDNESS (reserved ⟹ semantically dead, via semanticTierReservedSound),
+-- pillars over the 203-generator table — SOUNDNESS (reserved ⟹ semantically dead, via semanticTierReservedSound),
 -- REFINEMENT (the union classifier strictly refines the grown untypability decision), FAITHFULNESS (a live
 -- eliminator computes its exact host fold: boolElim ↝ cond), NON-VACUITY (the two classifier axes are
 -- complementary). generatorHonestyLedgerHolds discharges every pillar by its shipped zero-axiom theorem — the
@@ -1016,8 +1016,8 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.hilbertSpace_isSemanticallyAdmissible_false
 #assert_no_axioms FX1Poly.Typed.admissionSplit_isStrict
 
--- GeneratorHonestyOverview (HON-4): the build-time honesty dashboard. allGenerators enumerates all 197 via the
--- total tag-inverse Generator.fromTag over 0..196; the four count defs fold the HON-1/HON-2/HON-3 classifiers
+-- GeneratorHonestyOverview (HON-4): the build-time honesty dashboard. allGenerators enumerates all 203 via the
+-- total tag-inverse Generator.fromTag over 0..202; the four count defs fold the HON-1/HON-2/HON-3 classifiers
 -- over it (statically-typed 34 / operational redex-heads 11 / semantically-live 38 / RESERVED 159). A #eval in
 -- the file prints the dashboard on every build that re-elaborates it — the forcing function keeping the gap
 -- visible. The s!-interpolation lives in the #eval COMMAND (not a gated decl), so its toString-propext never

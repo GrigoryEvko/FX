@@ -26,7 +26,7 @@ classifier just the grown decision in disguise, or does it genuinely see more?":
     witness.  The union classifier strictly refines the grown decision — the standalone data engines genuinely
     EXTEND typability beyond the grown core; the honest classifier is not a re-skin of `isUntypableHead`.
 
-This is the structural honesty fact that the 197-table's typability is the UNION of all engines, and that union is
+This is the structural honesty fact that the 203-table's typability is the UNION of all engines, and that union is
 non-trivially larger than any single engine's reach.
 
 (The strict witness is currently `gen_boolTrue`; should a future folding of data-intro rows into the grown table
@@ -77,7 +77,7 @@ theorem boolTrue_grownUntypableButUnionTyped :
 /-- **★ The union classifier STRICTLY refines the grown untypability decision.**  Three facts: (1) union-reserved
 ⟹ grown-untypable (refinement); (2) grown-typable ⟹ union-typed (containment); (3) a grown-untypable head the
 union nonetheless types (`gen_boolTrue` — strictness).  Together: the union's typed-set strictly contains the
-grown-typable set, so the standalone data engines genuinely EXTEND typability — the honest 197-table classifier is
+grown-typable set, so the standalone data engines genuinely EXTEND typability — the honest 203-table classifier is
 not the grown decision in disguise. -/
 theorem hasSomeTypingRuleStrictlyRefinesUntypableHead :
     (∀ g : Generator, hasSomeTypingRule g = false → isUntypableHead g = true) ∧

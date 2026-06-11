@@ -3,9 +3,9 @@ import FX1Poly.Typed.HasTypeDescFlat
 import FX1Poly.Typed.HasTypeDescBaseType
 import FX1Poly.Typed.HasTypeDescDataIntro
 
-/-! # FX1Poly/Typed/TypedBySomeEngine — the honest TOTAL static-typing classifier over all 197 generators
+/-! # FX1Poly/Typed/TypedBySomeEngine — the honest TOTAL static-typing classifier over all 203 generators
 
-The kernel's `Generator` enum has 197 constructors, but only a minority carry STATIC semantics — a typing rule
+The kernel's `Generator` enum has 203 constructors, but only a minority carry STATIC semantics — a typing rule
 in SOME engine.  The shipped classifiers (`typingRoleOf`, `typingHeadKindOf`, `isUntypableHead`) route
 EXCLUSIVELY through the GROWN engine `HasTypeDescPi`'s three tables (`typingRuleDescOf` / `introRuleDescOf` /
 `elimRuleDescOf`).  Consequently they brand every data constructor / eliminator and every flat / base type-code

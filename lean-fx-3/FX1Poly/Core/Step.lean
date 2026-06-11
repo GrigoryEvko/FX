@@ -129,14 +129,14 @@ This relation operates on `RawTerm`.  Reduction at the `RawCell`
 
 ## Why the uniform cong is the L3 leverage point
 
-The PolyCell thesis is "ONE generic operation covers all 194
+The PolyCell thesis is "ONE generic operation covers all 203
 generators uniformly".  `beta` covers only the beta-redex shape;
 `cong + StepChildren` is the uniform congruence rule -- reduction
 under any generator's children spine, without enumerating
 generators.
 
 Every L3 theorem (SR, confluence, SN) handles "congruence under any
-ctor" as a single mutual-induction case rather than 194 enumerated
+ctor" as a single mutual-induction case rather than 203 enumerated
 cases.  This is the L3 expression of the L2 Allais-fold leverage.
 
 ## Zero-axiom verification
@@ -178,7 +178,7 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
       `RawTermChildren` spine, the wrapped term reduces under the
       SAME generator + payload, with the spine replaced.
 
-      ONE rule covers all 194 generators -- this is the L3 leverage
+      ONE rule covers all 203 generators -- this is the L3 leverage
       point that v2's uniform substrate buys. -/
   | cong {scope : Nat} (gen : Generator) (payload : gen.payload scope)
          {children children' : RawTermChildren gen.binderShifts scope}
@@ -573,7 +573,7 @@ has a Step somewhere inside it" generically:
 
 Walking down a spine via `there` and firing `here` at the right
 position lets `Step.cong` congruence-reduce under ANY child of ANY
-generator, uniformly across all 194 generators.
+generator, uniformly across all 203 generators.
 
 Indices: `parentScope` is the outer scope; `binderShifts` is the
 list of per-position scope shifts (from `Generator.binderShifts`).

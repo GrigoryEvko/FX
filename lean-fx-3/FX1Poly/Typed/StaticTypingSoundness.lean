@@ -24,7 +24,7 @@ engine types a cell headed by the given generator.  That file ships the POSITIVE
 family showing a representative live head computes `true`.  This file ships the missing soundness half, turning
 `hasSomeTypingRule` from "computes a `Bool`" into "the `Bool` is TRUTHFUL": **a head the classifier reports as
 RESERVED (`= false`) is typed by NO engine at all.**  Without this, the classifier could lie — branding a
-genuinely-typed head reserved — and the honesty arc's whole premise (that the 197-generator table truthfully
+genuinely-typed head reserved — and the honesty arc's whole premise (that the 203-generator table truthfully
 records which names carry static meaning) would be unverified.
 
 The statement is one negative-soundness theorem per typing engine the classifier consults, each of the form

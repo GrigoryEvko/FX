@@ -4,7 +4,7 @@ import FX1Poly.Core.GeneratorCore
 
 This file ships the generator admission layer: `SupportedGenerator`,
 an indexed inductive parameterized by `Generator` with exactly ONE
-constructor per admitted generator (all 194, grouped by tier).
+constructor per admitted generator (all 203, grouped by tier).
 
 ## The admission contract
 
@@ -20,7 +20,7 @@ the admission discipline:
 
 * **Per-profile restrictability:** a restricted FX profile (e.g.,
   "no-HoTT FX", "constructive-only FX") re-defines this inductive
-  with FEWER arms.  The default — `fxProfile` — admits all 194.
+  with FEWER arms.  The default — `fxProfile` — admits all 203.
   Type-level evidence makes the admission set part of the soundness
   surface, not an invisible runtime check.
 
@@ -49,7 +49,7 @@ admission witness type carries trivial DecEq anyway (one inhabitant per
 generator, by index pinning).  If a downstream consumer needs DecEq, it
 will be provided by hand via case-on-generator.
 
-The 194-arm `cases g <;> exact ...` dispatch closes by structural
+The 203-arm `cases g <;> exact ...` dispatch closes by structural
 recursion on the closed enum — no propext, no Classical, no axiom. -/
 
 namespace FX1Poly.Core
@@ -66,7 +66,7 @@ position (matches the order in `Generator` and the metadata tables for
 diff-readability). -/
 inductive SupportedGenerator : Generator → Type where
   -- ───────────────────────────────────────────────────────────────
-  -- Core 74 (MLTT/HoTT/cubical/modal/refinement spine)
+  -- Core spine (MLTT/HoTT/cubical/modal/refinement)
   -- ───────────────────────────────────────────────────────────────
   | gen_var          : SupportedGenerator .gen_var
   | gen_unit         : SupportedGenerator .gen_unit
@@ -287,13 +287,13 @@ inductive SupportedGenerator : Generator → Type where
 /-- Total admission lookup: every Generator in fxProfile has exactly
 one admission witness, returned by `cases g <;> exact ...`.
 
-Under fxProfile (all 194 generators admitted) the lookup is total.  A
+Under fxProfile (all 203 generators admitted) the lookup is total.  A
 restricted profile re-defines `SupportedGenerator` with fewer arms,
 making the corresponding lookup partial (`Option (SupportedGenerator
 g)`). -/
 def supportedGenerator : (generator : Generator) →
     SupportedGenerator generator
-  -- Core 74
+  -- Core spine
   | .gen_var          => .gen_var
   | .gen_unit         => .gen_unit
   | .gen_lam          => .gen_lam
@@ -515,7 +515,7 @@ is dead code but the interface is forward-compatible. -/
   some (supportedGenerator generator)
 
 /-- The admission decision is always `some` under the default
-`fxProfile` (all 194 generators admitted).  Proof: `rfl` after
+`fxProfile` (all 203 generators admitted).  Proof: `rfl` after
 unfolding — `supportedGenerator?` is definitionally `some _`. -/
 theorem supportedGenerator?_isSome (generator : Generator) :
     (supportedGenerator? generator).isSome = true := by

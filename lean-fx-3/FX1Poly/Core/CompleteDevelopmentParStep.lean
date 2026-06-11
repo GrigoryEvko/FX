@@ -11,7 +11,7 @@ the same step) and the **`b := a` instance** of the Takahashi triangle `ParStep 
 
 ## Why `RawTerm.rec` (not structural recursion)
 
-`completeDevelopment` dispatches on the 194-constructor `Generator` by `by_cases` (a term-mode match would
+`completeDevelopment` dispatches on the 203-constructor `Generator` by `by_cases` (a term-mode match would
 need a propext-leaking >100-ctor wildcard), which hides the deep subterms from Lean's structural-recursion
 checker — a direct mutual `match` definition fails termination ("failed to eliminate recursive application
 completeDevelopment_parStep body").  Routing through the `RawTerm.rec` recursor sidesteps this: the recursor

@@ -46,7 +46,7 @@ The arms:
 `children ⇒ children'` whose source `children` form a syntactic root redex, and the children IH
 `children' ⇒ completeDevelopmentChildren children`, it proves the cong-reduced cell `mkGen gen p children'`
 fires to `fireRootRedexOrSelf gen p (completeDevelopmentChildren children)` in one parallel step.  It
-dispatches on the 11 redex generators (`by_cases`, propext-clean over the 194-constructor table), inverts
+dispatches on the 11 redex generators (`by_cases`, propext-clean over the 203-constructor table), inverts
 the relevant scrutinee/function child's parallel step to learn the post-cong head shape, extracts the
 component development steps from the children IH, and fires the matching `ParStep` β/ι constructor — whose
 reduct is definitionally `fireRootRedexOrSelf`'s output.  The non-firing branches reuse the exact

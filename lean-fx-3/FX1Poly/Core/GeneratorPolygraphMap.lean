@@ -7,7 +7,7 @@ import FX1Poly.Core.GeneratorFinitePolygraph
 generator data into one record with FUNCTION fields.  This file makes the per-generator POLYGRAPH GENERATOR an
 explicit object — `PolygraphGenerator`, carrying a former's tag (table index), child arity (input dimension),
 and per-child binder shifts (the boundary) — and gives the explicit map `Generator.toPolygraphGenerator`
-presenting each of the 194 generators with its boundary, faithfully.
+presenting each of the 203 generators with its boundary, faithfully.
 
 This is the BOUNDARY-PRESENTED layer for the FX kernel polygraph: every generator is presented as a structured
 polygraph generator with its boundary made explicit, and the presentation is FAITHFUL (injective) and INVERTIBLE
@@ -47,7 +47,7 @@ structure PolygraphGenerator where
   /-- The boundary has one shift per child (arity↔boundary coherence). -/
   boundaryArityCoherent : childBoundaryShifts.length = childArity
 
-/-- **The explicit Generator → polygraph-generator map**, presenting each of the 194 FX kernel generators as a
+/-- **The explicit Generator → polygraph-generator map**, presenting each of the 203 FX kernel generators as a
 polygraph generator carrying its boundary (the per-child binder shifts). -/
 def Generator.toPolygraphGenerator (generator : Generator) : PolygraphGenerator where
   tag := generator.toNat
@@ -56,7 +56,7 @@ def Generator.toPolygraphGenerator (generator : Generator) : PolygraphGenerator 
   boundaryArityCoherent := generator.binderShifts_length_eq_arity
 
 /-- **Faithful presentation**: distinct generators present as distinct polygraph generators.  Via the `tag` field
-(`congrArg`) and `Generator.toNat_injective` — the boundary presentation separates all 194 generators. -/
+(`congrArg`) and `Generator.toNat_injective` — the boundary presentation separates all 203 generators. -/
 theorem Generator.toPolygraphGenerator_injective {firstGenerator secondGenerator : Generator}
     (mapsEqual : firstGenerator.toPolygraphGenerator = secondGenerator.toPolygraphGenerator) :
     firstGenerator = secondGenerator := by

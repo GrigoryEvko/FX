@@ -64,7 +64,7 @@ A **4-arm mutual induction**:
 * `.childNil` (rfl)
 * `.childCons head tail` (subst_pointwise bridge + head IH + tail IH)
 
-The 194-generator cascade is amortized into fold.
+The 203-generator cascade is amortized into fold.
 
 ## Zero-axiom verification
 

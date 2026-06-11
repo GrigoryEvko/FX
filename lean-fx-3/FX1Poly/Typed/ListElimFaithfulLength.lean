@@ -5,7 +5,7 @@ import FX1Poly.Typed.NatElimFaithfulArithmetic
 
 `ListElimComputingCanonicity.listElimLengthComputesToNumeral` proved the length fold reaches *some* numeral
 (`∃ out, StepStar … out ∧ IsNatNumeral out`).  That answers "does it terminate at a numeral?" but NOT the honesty
-question the 197-generator audit asks: **does `gen_listElim` truthfully encode the host recursor — does it count
+question the 203-generator audit asks: **does `gen_listElim` truthfully encode the host recursor — does it count
 to the EXACT length?**  This file closes that: the native list recursor, run on the closed `n`-element list,
 reduces to the numeral `n` — the exact image of host `List.length`.
 

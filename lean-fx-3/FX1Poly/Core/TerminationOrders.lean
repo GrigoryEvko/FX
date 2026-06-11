@@ -9,7 +9,7 @@ termination certificates that turn either order into a `WellFounded` proof for a
 
 The lexicographic order is the comparison LPO uses for its arguments ("for ι-eliminator rules") and that
 RPO uses for lexicographic-status symbols; the multiset order is for multiset-status symbols.
-The recursive PATH ordering on the FX term structure (composing a precedence on the 194 generators with these two
+The recursive PATH ordering on the FX term structure (composing a precedence on the 203 generators with these two
 comparison orders) is the larger downstream construction the FX certified-fragment termination
 (typed-SN-gated) assembles — this file supplies the lex comparison order it builds on.
 

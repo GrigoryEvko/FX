@@ -30,7 +30,7 @@ reducible function types.  Each future widening only strengthens the same soundn
 
 Generator dispatch follows the `fireRootEtaRedex?` recipe — a single-ctor `.mkGen` match, `dite`
 on generator equality, `▸`-transported children matched at their concrete index (a literal
-generator pattern with a 197-ctor wildcard leaks `propext` through the match compiler).  The
+generator pattern with a 203-ctor wildcard leaks `propext` through the match compiler).  The
 recursion is STRUCTURAL ON A FUEL `Nat` (decremented at every call) so it both avoids
 `WellFounded.fix` (which leaks `propext`+`Quot.sound` and blocks `rfl`) and computes by `rfl` on
 concrete spines; soundness holds for EVERY fuel.  No `axiom`, `sorry`, `propext`, `Quot.sound`,

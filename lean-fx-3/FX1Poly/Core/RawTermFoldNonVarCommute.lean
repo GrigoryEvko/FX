@@ -10,7 +10,7 @@ the head generator is `.gen_var`:
 
   * VARIABLE case — consult the `Container` (substitute / renumber the de Bruijn index).
   * NON-VARIABLE case — recurse into the children spine and rebuild the cell, casting the payload
-    across scopes via `Generator.payload_scope_invariant_of_not_var` (the 194-generator enumeration
+    across scopes via `Generator.payload_scope_invariant_of_not_var` (the 203-generator enumeration
     in ONE place — every non-`gen_var` payload type is scope-invariant).
 
 For a CONCRETE non-var generator (`.gen_pair`, `.gen_lam`, …) the dispatch reduces by `rfl`, which is
@@ -45,7 +45,7 @@ open FX1Poly.Foundation
 /-- **Generic non-variable `fold` commutation.**  For any non-`gen_var` generator, folding a cell
 equals applying the algebra to the (scope-cast) payload and the folded children spine — the
 NON-VARIABLE branch of `fold`, exposed for an ABSTRACT generator.  The payload cast is
-`Generator.payload_scope_invariant_of_not_var` (the one-site 194-generator enumeration).
+`Generator.payload_scope_invariant_of_not_var` (the one-site 203-generator enumeration).
 
 `dsimp only [fold]` reduces the match on the explicit `.mkGen` constructor to the `if hVar : … then …
 else …`; `dif_neg hNotVar` selects the non-variable branch verbatim. -/

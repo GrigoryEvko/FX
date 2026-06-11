@@ -11,7 +11,7 @@ The **cell-layer fold** for `RawCell`:
 
 The cell layer is structurally simpler than the term layer:
 
-* 5 ctors (vs RawTerm's `.mkGen` with 194 generators).
+* 5 ctors (vs RawTerm's `.mkGen` with 203 generators).
 * No binder shifts at the cell layer — categorical composition
   doesn't introduce new variable binders.  The term layer's fold
   handles all binder plumbing internally.
@@ -20,7 +20,7 @@ The cell layer is structurally simpler than the term layer:
 
 ## Why structural recursion (not fold-like generic engine)
 
-RawCell has only 5 ctors — no need for a 194-generator dispatch
+RawCell has only 5 ctors — no need for a 203-generator dispatch
 abstraction.  Direct structural recursion is simpler, more
 readable, and equally cascade-tax-resistant (adding a new cell
 ctor costs ONE arm, which is intrinsic to cell-layer extension).

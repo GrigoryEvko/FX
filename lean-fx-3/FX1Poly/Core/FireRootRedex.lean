@@ -15,7 +15,7 @@ into a real `RawTerm`-valued normalizer, which in turn makes
 
 ## Propext-clean construction recipe (the lean-fx-3 indexed-children trap)
 
-A naive `match generator with … | _ => none` over the 194-constructor `Generator` enum leaks `propext`
+A naive `match generator with … | _ => none` over the 203-constructor `Generator` enum leaks `propext`
 (the ">100-constructor wildcard" trap), and a partial `match` on the index-dependent `RawTermChildren`
 spine leaks it too.  The clean recipe — validated to keep this whole file zero-axiom — is:
 
@@ -44,7 +44,7 @@ open Foundation
 /-- **Computable root-redex firing.**  Returns `some reduct` exactly when `mkGen generator payload children`
 is a root redex (β or an inductive-eliminator ι), producing the same reduct the matching `Step` constructor
 names; `none` otherwise.  Dispatches via `DecidableEq Generator` `dite`-chains (propext-clean over the
-194-constructor table). -/
+203-constructor table). -/
 def RawTerm.fireRootRedex {scope : Nat} (generator : Generator)
     (_payload : generator.payload scope)
     (children : RawTermChildren generator.binderShifts scope) :

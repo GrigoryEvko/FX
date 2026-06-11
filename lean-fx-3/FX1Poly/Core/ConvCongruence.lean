@@ -2,7 +2,7 @@ import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.StepSubst
 
 /-! # Foundation/PolyCell/Core/ConvCongruence
-   — generic Conv-as-congruence lifter (one theorem for all 194 generators)
+   — generic Conv-as-congruence lifter (one theorem for all 203 generators)
 
 Ships the per-generator Conv-level congruence rules.  The
 surrounding substrate provides:
@@ -17,7 +17,7 @@ Conv-respecting term-replacement reasoning all build on.
 
 ## What this file ships
 
-Rather than ship 194 hand-coded rules, ship ONE generic lifter
+Rather than ship 203 hand-coded rules, ship ONE generic lifter
 that subsumes them all via the PolyCell uniformity thesis:
 
 ```
@@ -156,7 +156,7 @@ end ConvChildren
 
 Given pointwise `Conv` on the children of a generator application,
 `Conv` lifts to the parent application.  ONE theorem covering ALL
-194 generators by exploiting the Generator-table structure — the
+203 generators by exploiting the Generator-table structure — the
 PolyCell uniformity payoff at the Conv level.
 
 Proof:

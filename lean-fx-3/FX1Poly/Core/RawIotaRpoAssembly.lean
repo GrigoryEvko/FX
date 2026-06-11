@@ -73,7 +73,7 @@ the substituting iotas share β's duplication shape) — the honest boundary; η
 
 ## Zero-axiom verification
 
-`iotaGenRank` uses decidable-equality `if`s (no 194-constructor wildcard match, which would leak propext);
+`iotaGenRank` uses decidable-equality `if`s (no 203-constructor wildcard match, which would leak propext);
 `iotaGenPrecedence` is `@[reducible]` so the precedence facts `decide` to `Nat.lt`; the orientations are
 the propext-clean `Rpo` constructors + `List.Mem` `rcases`/`nomatch`; SN is `Subrelation.wf` +
 `InvImage.wf`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.

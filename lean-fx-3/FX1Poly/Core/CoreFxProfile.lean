@@ -56,11 +56,11 @@ predicate's `!`-negation is a Bool reduction.
 
 ## Why list-based, not full enumeration
 
-The clean alternative — a 194-arm match
+The clean alternative — a 203-arm match
 `Generator → Bool | .gen_var => true | .gen_unit => true | ...
 | .gen_modIntro => false | ...` — would honor the
 `feedback_lean_zero_axiom_match` no-wildcard discipline but
-require 194 explicit arms (~200 lines per restricted profile,
+require 203 explicit arms (~200 lines per restricted profile,
 hostile to extensibility).
 
 The list-based approach trades:
@@ -107,7 +107,7 @@ True iff the generator is NOT in `coreFxExcluded`.  The
 their per-generator equations definitionally.
 
 For comparison: `supportedGenerator?` returns `some _` for ALL
-194 Generators (constant-true under fxProfile).  `isInCoreFx`
+203 Generators (constant-true under fxProfile).  `isInCoreFx`
 returns `false` for the 3 excluded Generators — a Bool predicate
 that genuinely rejects some Generator. -/
 @[reducible] def Generator.isInCoreFx (someGenerator : Generator) : Bool :=

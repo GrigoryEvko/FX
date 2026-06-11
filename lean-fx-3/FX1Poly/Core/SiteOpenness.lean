@@ -70,7 +70,7 @@ ordering disciplines reflect different concerns:
 ## Why list-free
 
 `GeneratorTotalityClass` uses list-based exclusion because its domain is
-big (194 generators).  SiteOpenness is parameterised over PROFILES (not
+big (203 generators).  SiteOpenness is parameterised over PROFILES (not
 generators), with only 4 inhabitants, so the total `toRank` function
 handles all 4 cases directly in a propext-safe match (4 arms, no
 wildcard).
@@ -130,7 +130,7 @@ All 9 declarations pass `#assert_no_axioms`.  Audit-gated in
 
 | File                          | Domain     | Pattern              |
 | ----------------------------- | ---------- | -------------------- |
-| GeneratorTotalityClass      | 194 gens   | list-based exclusion |
+| GeneratorTotalityClass      | 203 gens   | list-based exclusion |
 | ConsistencyStrength         | profiles   | Nat rank + LE        |
 | SiteOpenness (THIS FILE)    | profiles   | Nat rank + LE        |
 

@@ -640,7 +640,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
     The two reconstruction theorems witness Π AND Σ through the SAME arm (P13
     cascade-freedom: a new dependent former is one `typingRuleDescOf` row, ZERO
     new arms).  Propext-free `lmaxFold`/`lmaxAll` (no overlapping patterns) +
-    `typingRuleDescOf` (nested `if` over DecidableEq, no 194-ctor wildcard);
+    `typingRuleDescOf` (nested `if` over DecidableEq, no 203-ctor wildcard);
     `TypingRuleDesc` is pure syntax (no HasTypeDesc → genFormation strictly
     positive); output classifier an explicit INDEX (Prop, P14). -/
 

@@ -38,10 +38,10 @@ At each `.mkGen generator payload children` node, fold:
    non-variable generators.
 
 The dispatch uses `if hVar : generator = .gen_var then ... else ...`
-via `DecidableEq Generator`.  No wildcard match, no 194-arm
+via `DecidableEq Generator`.  No wildcard match, no 203-arm
 enumeration in the recursion body itself.
 
-## The scope-invariance helper (one-place 194-arm enumeration)
+## The scope-invariance helper (one-place 203-arm enumeration)
 
 In the non-variable arm, fold needs to convert `payload` from
 `generator.payload sourceScope` to `generator.payload targetScope` to
@@ -60,8 +60,8 @@ theorem ... :
   all_goals rfl
 ```
 
-Three tactic lines that auto-discharge 194 goals (1 absurd + 193
-rfls).  The 194-arm enumeration lives in ONE place (this helper),
+Three tactic lines that auto-discharge 203 goals (1 absurd + 202
+rfls).  The 203-arm enumeration lives in ONE place (this helper),
 and every downstream traversal reuses it without re-enumerating.
 
 ## What this engine ENABLES
@@ -120,18 +120,18 @@ def iterateLiftRaw {Container : Nat → Nat → Type} [LiftsRaw Container]
   | 0 => someAction
   | priorDepth + 1 => LiftsRaw.liftForRaw (iterateLiftRaw someAction priorDepth)
 
-/-- The 194-arm enumeration in ONE place: for any non-variable
+/-- The 203-arm enumeration in ONE place: for any non-variable
 generator, its `payload` type does not depend on scope.
 
 The `.gen_var` case is impossible (it carries payload `Fin scope`, the
-ONE scope-dependent payload).  The 193 non-var cases all have
+ONE scope-dependent payload).  The 202 non-var cases all have
 scope-invariant payload types (Unit, Nat, etc.) — these reduce
 uniformly by `rfl`.
 
 This helper is the architectural unlock for fold's non-variable
 arm: given a `payload : generator.payload sourceScope` in the
 non-variable branch, we cast to `generator.payload targetScope` via
-this equality.  The 194 generators are enumerated once HERE; every
+this equality.  The 203 generators are enumerated once HERE; every
 downstream traversal reuses this lemma. -/
 theorem Generator.payload_scope_invariant_of_not_var
     {generator : Generator} (hNotVar : generator ≠ .gen_var)

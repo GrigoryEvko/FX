@@ -5,7 +5,7 @@ import FX1Poly.Core.RawCell
 
 The Leg-3 (Makkai/Forest) word-problem route decides FX `Conv` as word equality in the free omega-category
 over a generating polygraph (polycell.md §2.3 / §3.9).  The OmegacE toy polygraphs demonstrate the decision on
-concrete systems; `GeneratorFinitePolygraph` presents the FX kernel's 194 term-formers as a finite polygraph.  This file starts
+concrete systems; `GeneratorFinitePolygraph` presents the FX kernel's 203 term-formers as a finite polygraph.  This file starts
 the ACTUAL FX-Conv-to-word bridge: it encodes the `RawCell` composite layer into the free monoid of its
 generating-cell rule ids — the dimension-1 free monoid whose letters are the FX REWRITE RULES.
 
@@ -15,7 +15,7 @@ The abstract scaffold `OmegacECell` (`OmegacEAt.lean`) has exactly two generator
 equivalence) — the wrong alphabet for FX.  The faithful dim-1 free monoid here is over the FX rewrite-rule
 alphabet: a `RawCell.generatingCell` carries a `ruleId : Nat` naming the FX reduction it instantiates, and these
 generating cells ARE the dim-1 (and higher) generators of the REWRITING polygraph — distinct from the
-194 term-FORMERS (the term polygraph).  So the word of a cell is the ordered sequence of rule ids in its
+203 term-FORMERS (the term polygraph).  So the word of a cell is the ordered sequence of rule ids in its
 composite expression — exactly a reduction-path word, which is what the `Conv`-to-word problem ranges over.
 
 `OmegacEWord dimension = {cells : List (OmegacECell dimension)}` is the free monoid on the scaffold alphabet;

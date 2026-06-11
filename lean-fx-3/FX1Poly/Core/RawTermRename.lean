@@ -5,7 +5,7 @@ import FX1Poly.Foundation.RawSubst.ActionInstances
 
 `RawTerm.rename` and `RawTermChildren.rename`, one-line fold
 instantiations: each definition is **one line** because fold
-handles all 194 generators uniformly via the GenAlgebra canonical
+handles all 203 generators uniformly via the GenAlgebra canonical
 algebra and the ActsOnRawTermVar bridge.
 
 ## The one-line definitions

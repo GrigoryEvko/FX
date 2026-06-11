@@ -17,7 +17,7 @@ witness).
 ## Architectural distinction — closed enum vs open set
 
 `SupportedGenerator` is parameterized over `Generator`, a CLOSED
-enum with 194 named constructors.  That makes the total form
+enum with 203 named constructors.  That makes the total form
 `supportedGenerator : (g : Generator) -> SupportedGenerator g`
 well-defined — exhaustive by `cases g`.
 
