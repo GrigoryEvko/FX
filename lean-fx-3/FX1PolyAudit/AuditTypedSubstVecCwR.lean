@@ -668,6 +668,7 @@ import FX1Poly.Typed.KernelParamSubstrateSurvey
 import FX1Poly.Typed.HasTypeDescBridge
 import FX1Poly.Typed.BridgeEndpointStep
 import FX1Poly.Typed.NativityCensus
+import FX1Poly.Typed.UnifiedRuleSignature
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2575,3 +2576,28 @@ decidable-equality route — every theorem verified axiom-free). -/
 #assert_no_axioms FX1Poly.Typed.introTable_onlyLam
 #assert_no_axioms FX1Poly.Typed.elimTable_onlyApp
 #assert_no_axioms FX1Poly.Typed.formationTable_currentCoverage
+
+/-! ## NATIVE-01 (#1278) — the unified RuleDesc + generalized premise telescope (DESIGN LOCK)
+
+The campaign's design lock: the three current tables (`typingRuleDescOf`/`introRuleDescOf`/`elimRuleDescOf`)
+carry only OUTPUT as data, premises hardwired.  This locks the unified PREMISE vocabulary — five
+`PremiseClassifierKind`s (childIsType / childMemberOfInferredType / childMemberOfEarlierType /
+childInferredFunctionFormer / childMotiveInstance) + the orthogonal `UsageGrade` graded dimension — and
+proves it faithfully describes every rule-bearing AND every spike-target generator.  The load-bearing
+check `signature_binderShifts_faithful` ties each signature's premise binder-shifts to the kernel
+generator's own `binderShifts` (a mis-stated binder count fails to build).  Role pins agree with the
+existing tables; `formationGeneratorsAreNative` shows formation is 100% native now; the gap pins
+(bridge→NATIVE-02, pathLam-affine→NATIVE-03, natElim→NATIVE-04) exhibit each spike target's unshipped
+kind.  All `rfl`/`by decide` — every theorem axiom-free. -/
+#assert_no_axioms FX1Poly.Typed.classifierKindInterpreterShipped
+#assert_no_axioms FX1Poly.Typed.unifiedSignatureOf
+#assert_no_axioms FX1Poly.Typed.RuleSignature.premiseBinderShifts
+#assert_no_axioms FX1Poly.Typed.RuleSignature.allPremisesNative
+#assert_no_axioms FX1Poly.Typed.signature_binderShifts_faithful
+#assert_no_axioms FX1Poly.Typed.unifiedRole_formation_agreesWithTable
+#assert_no_axioms FX1Poly.Typed.unifiedRole_introElim_agreesWithTable
+#assert_no_axioms FX1Poly.Typed.formationGeneratorsAreNative
+#assert_no_axioms FX1Poly.Typed.bridgePremisesNeedTermIndexed
+#assert_no_axioms FX1Poly.Typed.pathLamPremiseIsGradedAffine
+#assert_no_axioms FX1Poly.Typed.natElimPremisesNeedMotive
+#assert_no_axioms FX1Poly.Typed.interpreterShippedLedger
