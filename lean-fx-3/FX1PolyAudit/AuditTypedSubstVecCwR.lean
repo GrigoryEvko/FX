@@ -688,6 +688,7 @@ import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.HasTypeDescGeneralElim
 import FX1Poly.Typed.HasTypeNativeUnion
 import FX1Poly.Typed.RecursiveElimUnionSpike
+import FX1Poly.Typed.GradedTableCoherence
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
 import FX1Poly.Typed.UniverseModeGenerators
@@ -2598,6 +2599,30 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.bespokeRejectsEliminatorScrutinee
 #assert_no_axioms FX1Poly.Typed.spikeTypesEliminatorScrutinee
 #assert_no_axioms FX1Poly.Typed.recursiveElimRowGoVerdict
+
+-- NATIVE-26 (#1303) — GRADE-LAYER COHERENCE: table binderUsage ↔ HasGradeOver (the single-binder
+-- projection, GradedTableCoherence). THE KEYSTONE: gradedBinderChecks_iff_gradeSubsumption — the
+-- table check IS grade subsumption of the syntactic count's semiring image through natToUsageGrade
+-- (0↦zero, 1↦one, ≥2↦omega — an additive monoid hom, natToUsageGrade_addHom nine-case rfl) in the
+-- affine usage order zero ≤ one ≤ omega. AGREEMENT: strictLinearLam_meetsAffineDiscipline — the
+-- strict-linear lam rule satisfies the table's affine row through the SHARED interpreter
+-- boundsCount (COST-2a's lamBodyCountBound). THE TWO GAPS, both directions pinned exactly:
+-- FORWARD (fullJudgmentLamGrade_doesNotMeetDiscipline) — full HasGradeOver binder grades are
+-- β-AWARE (App 0-scaling annihilates discarded occurrences: the COST-2a leak, binder graded zero
+-- with two syntactic occurrences); BACKWARD (identityNotGradeableAtOmega) — the table reads grades
+-- as UPPER BOUNDS but Wood/Atkey synthesis has no subsumption (λx.x passes the table at omega yet
+-- #1000 grade-exactness forces binder one). Verdict record + witness. Feeds NATIVE-59: the pathLam
+-- .one row is the affine subsumption reading (count ≤ 1), matching the strict fragment, not the
+-- β-aware judgment grade.
+#assert_no_axioms FX1Poly.Typed.natToUsageGrade_ofZero
+#assert_no_axioms FX1Poly.Typed.natToUsageGrade_addHom
+#assert_no_axioms FX1Poly.Typed.usageBoundsCount_iff_gradeLe
+#assert_no_axioms FX1Poly.Typed.gradedBinderChecks_iff_gradeSubsumption
+#assert_no_axioms FX1Poly.Typed.strictLinearLam_meetsAffineDiscipline
+#assert_no_axioms FX1Poly.Typed.fullJudgmentLamGrade_doesNotMeetDiscipline
+#assert_no_axioms FX1Poly.Typed.identityMeetsDisciplineAtOmega
+#assert_no_axioms FX1Poly.Typed.identityNotGradeableAtOmega
+#assert_no_axioms FX1Poly.Typed.gradeTableCoherenceVerdict
 
 -- ★ NATIVE-08 — THE CROSS-ENGINE WALL FALLS (BridgeEndpointNativeSubjectReduction).
 -- intervalZeroGrownUntypable proved the endpoint-β reduct interval0 escapes the GROWN engine, so a
