@@ -4,6 +4,7 @@ import FX1Poly.Modal.GradeVector
 import FX1Poly.Modal.GradeVectorGeneric
 import FX1Poly.Modal.UsageDiscipline
 import FX1Poly.Modal.GradedTypingGeneric
+import FX1Poly.Modal.GradedBinaryParametricity
 import FX1Poly.Modal.GradedGradeExactness
 import FX1Poly.Modal.GradeErasureGeneric
 import FX1Poly.Modal.GradedWeakeningGeneric
@@ -157,6 +158,25 @@ gated in the generic erasure section above. -/
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.fundamental
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.reducible
 #assert_no_axioms FX1Poly.Modal.HasSimpleType.stronglyNormalizing
+
+/-! ### Binary parametricity over the grade discipline (OP1-M0)
+
+The binary logical relation `ParametricRel` over the GRADED types, the fundamental theorem over the
+GRADED judgment `HasGradeOver R` (the binder grade flows through inertly — the Milestone-0 GO
+verdict), the closed abstraction theorem, and the linear-usage free-theorem demonstration (every
+closed `base -(1)-> base` function over the usage semiring maps β-joinable arguments to β-joinable
+results).  The grade-AWARE relation-scaling refinement is OP1-M1. -/
+
+#assert_no_axioms FX1Poly.Modal.RespectsExpansion
+#assert_no_axioms FX1Poly.Modal.ParametricRel
+#assert_no_axioms FX1Poly.Modal.ParametricRel.expandLeft
+#assert_no_axioms FX1Poly.Modal.ParametricRel.expandRight
+#assert_no_axioms FX1Poly.Modal.ParametricSubstitution
+#assert_no_axioms FX1Poly.Modal.ParametricSubstitution.cons
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.parametric
+#assert_no_axioms FX1Poly.Modal.HasGradeOver.parametricClosed
+#assert_no_axioms FX1Poly.Modal.joinabilityRespectsExpansion
+#assert_no_axioms FX1Poly.Modal.linearUsageFunction_mapsJoinable
 
 -- The usage composition ledger (graded-SR over full β + the SN∧graded-SR metatheory bundle + the ω-scaling
 -- regression witnesses) is subsumed by the GENERIC HasGradeOver.preservedByReduces / .metatheoryBundle +
