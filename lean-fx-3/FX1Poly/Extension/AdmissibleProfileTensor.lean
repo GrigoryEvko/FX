@@ -22,10 +22,17 @@ obligation shapes over the canonical substrate:
    LATTICE machinery ships as theorems now (meet is the greatest
    lower bound of the finite capability lattice, and the order is
    decidable).  (T1) construction and (T2) BKS-sconing preservation
-   are the open research program polycell.md §3.0.7 describes; no
-   `CellularTensorObligations` value is constructed here and the
+   are the open research program polycell.md §3.0.7 describes; the
+   only `CellularTensorObligations` value is the degenerate DIAGONAL
+   instance (the PoC-coherence check), and the
    `fxExtensionConstructionLevel` ledger stays below
    `admissibleProfileTheorem`.
+
+QUARANTINE NOTE: this Extension subsystem is a PROOF OF CONCEPT,
+verified to cohere (the diagonal inhabitant + the register gate) and
+deliberately FROZEN here.  Substantive future work on profile
+composition integrates NATIVELY into the kernel (Core/Typed), not by
+growing this layer.
 
 Anti-fake-completion discipline: no axiom, no sorry, no placeholder
 inhabitant.  Unproved targets are types without terms, and the
@@ -476,6 +483,66 @@ structure CellularTensorObligations
       (admissibilityPreserved admissionA admissionB).capabilities.isBelow
         (admissionA.capabilities.meet admissionB.capabilities)
 
+/-! ## The diagonal instance — the obligation shape's degenerate floor
+
+The genuine (T1)/(T2) content is the tensor of two DIFFERENT profiles
+(realized GAT tensor + BKS sconing composition) — still the open
+research program, still uninhabited.  The DIAGONAL case (both factors
+the SAME profile, tensor = that profile) is constructible today by
+LATTICE means: two admissions of one profile meet to a third
+(`meetAdmission`), and the (T3) bound holds with EQUALITY.  This is
+the obligation shape's coherence floor — the analogue of
+`AdmissibleProfile.bottom` for the tensor record — NOT a tensor
+construction. -/
+
+/-- Two ledger admissions of the SAME profile meet: the meet
+capability record is backed because each meet-available claim is
+already available in (and backed by) the first admission. -/
+def AdmissibleProfile.meetAdmission {profile : PolyProfile}
+    (admissionA admissionB : AdmissibleProfile profile) :
+    AdmissibleProfile profile where
+  capabilities := admissionA.capabilities.meet admissionB.capabilities
+  canonicityBacked := fun claimed =>
+    admissionA.canonicityBacked
+      (CapabilityStatus.eq_available_of_isBelow_of_available
+        (MetatheoreticCapabilities.meet_isBelow_left
+          admissionA.capabilities admissionB.capabilities).1
+        claimed)
+  normalizationBacked := fun claimed =>
+    admissionA.normalizationBacked
+      (CapabilityStatus.eq_available_of_isBelow_of_available
+        (MetatheoreticCapabilities.meet_isBelow_left
+          admissionA.capabilities admissionB.capabilities).2.1
+        claimed)
+  decidableConversionBacked := fun claimed =>
+    admissionA.decidableConversionBacked
+      (CapabilityStatus.eq_available_of_isBelow_of_available
+        (MetatheoreticCapabilities.meet_isBelow_left
+          admissionA.capabilities admissionB.capabilities).2.2.2.2.2.2.1
+        claimed)
+
+/-- ★ The FIRST `CellularTensorObligations` inhabitant: the DIAGONAL
+instance.  Tensor of a profile with itself is the profile;
+admissibility composes by the meet admission; the (T3) bound is
+reflexivity (the bound is attained exactly).  Degenerate by design —
+it pins that the obligation shape is coherent, while heterogeneous
+(T1)/(T2) stay open. -/
+def diagonalCellularTensor (profile : PolyProfile) :
+    CellularTensorObligations profile profile where
+  tensorProfile := profile
+  admissibilityPreserved := AdmissibleProfile.meetAdmission
+  capabilitiesBound := fun admissionA admissionB =>
+    MetatheoreticCapabilities.isBelow_refl
+      (admissionA.capabilities.meet admissionB.capabilities)
+
+/-- Non-vacuity smoke on FX: the diagonal tensor of the two shipped
+non-bottom admissions (canonicity-only ⊓ canonicity+normalization)
+carries exactly the canonicity-only capability record. -/
+theorem diagonalTensor_fx_meetCapabilities :
+    ((diagonalCellularTensor fxProfile).admissibilityPreserved
+        fxProfileCanonicityAdmission fxProfileMetatheoryAdmission).capabilities
+      = fxProfileCanonicityAdmission.capabilities := rfl
+
 /-! ## (T7) Zwart-Marsden no-go register
 
 A static register of published distributive-law no-go cells.  When a
@@ -544,12 +611,84 @@ theorem zwartMarsdenRegister_allReject :
       | head => rfl
       | tail _ membershipEmpty => cases membershipEmpty
 
+/-! ## The (T7) admission gate — computable register lookup
+
+The register was static data; the GATE is the computable lookup a
+tensor-admission contract consults: symmetric in the pair (a tensor
+attempt may present the theories in either order), sound (a hit is a
+registered cell, and every registered cell mandates rejection). -/
+
+/-- Does this cell match the (unordered) theory pair? -/
+def NoGoCell.matchesPair (cell : NoGoCell)
+    (theoryA theoryB : String) : Bool :=
+  (cell.firstTheory == theoryA && cell.secondTheory == theoryB) ||
+    (cell.firstTheory == theoryB && cell.secondTheory == theoryA)
+
+/-- Find the first registered cell matching the unordered theory
+pair. -/
+def findNoGoCell (theoryA theoryB : String) :
+    List NoGoCell → Option NoGoCell
+  | [] => none
+  | cell :: rest =>
+    match cell.matchesPair theoryA theoryB with
+    | true => some cell
+    | false => findNoGoCell theoryA theoryB rest
+
+/-- Lookup soundness: a hit is a member of the searched register. -/
+theorem findNoGoCell_mem (theoryA theoryB : String) :
+    (cells : List NoGoCell) → {cell : NoGoCell} →
+      findNoGoCell theoryA theoryB cells = some cell → cell ∈ cells
+  | [], _, found => nomatch found
+  | headCell :: rest, cell, found => by
+    dsimp only [findNoGoCell] at found
+    cases matchTest : headCell.matchesPair theoryA theoryB with
+    | true =>
+      rw [matchTest] at found
+      have headEqCell : headCell = cell := Option.some.inj found
+      cases headEqCell
+      exact List.Mem.head rest
+    | false =>
+      rw [matchTest] at found
+      exact List.Mem.tail headCell
+        (findNoGoCell_mem theoryA theoryB rest found)
+
+/-- ★ Gate soundness on the shipped register: every hit mandates
+REJECTION — the admission contract cannot silently degrade. -/
+theorem findNoGoCell_register_posture {theoryA theoryB : String}
+    {cell : NoGoCell}
+    (found : findNoGoCell theoryA theoryB zwartMarsdenRegister
+      = some cell) :
+    cell.posture = NoGoPosture.reject :=
+  zwartMarsdenRegister_allReject cell
+    (findNoGoCell_mem theoryA theoryB zwartMarsdenRegister found)
+
+/-- The probability⊗powerset tensor attempt HITS the register. -/
+theorem probabilityPowersetTensor_isRejected :
+    (findNoGoCell "probability (convex combinations)"
+        "powerset (nondeterminism)" zwartMarsdenRegister).isSome
+      = true := rfl
+
+/-- The SYMMETRIC presentation also hits — the gate is unordered. -/
+theorem powersetProbabilityTensor_isRejected :
+    (findNoGoCell "powerset (nondeterminism)"
+        "probability (convex combinations)" zwartMarsdenRegister).isSome
+      = true := rfl
+
+/-- An unregistered pair passes the gate (the register constrains, it
+does not blanket-reject). -/
+theorem unregisteredTensorPair_passesGate :
+    (findNoGoCell "exceptions" "global state"
+        zwartMarsdenRegister).isSome = false := rfl
+
 /-! ## Honesty pins
 
 The construction-level ledger stays below the admission-theorem rung:
 the ledger fragment above is `extendProfile` bookkeeping plus lattice
-laws, not the §3.14 metatheory-transfer theorem, and no
-`CellularTensorObligations` value exists in the tree. -/
+laws, not the §3.14 metatheory-transfer theorem.  The ONLY
+`CellularTensorObligations` value in the tree is the degenerate
+DIAGONAL instance (`diagonalCellularTensor` — same-profile, lattice
+route); no heterogeneous tensor and no realized GAT-tensor algorithm
+exists. -/
 
 theorem extensionLedger_stillBelow_metatheoryTransfer :
     fxExtensionConstructionLevel.hasMetatheoryTransfer = false := rfl
