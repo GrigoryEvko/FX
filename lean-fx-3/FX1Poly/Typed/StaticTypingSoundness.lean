@@ -168,7 +168,7 @@ theorem baseTypeReservedUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
     (typed : HasTypeDescBaseType profile context subject classifier) : False := by
-  rcases HasTypeDescBaseType.subjectIsBaseTypeCode typed with rfl | rfl | rfl | rfl <;>
+  rcases HasTypeDescBaseType.subjectIsBaseTypeCode typed with rfl | rfl | rfl | rfl | rfl <;>
     exact Bool.noConfusion reserved
 
 /-- DATA-INTRO engine (nullary constructors). -/

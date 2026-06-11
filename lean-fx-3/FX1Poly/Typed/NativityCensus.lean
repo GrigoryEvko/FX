@@ -169,20 +169,21 @@ def isHardcodedClassifierHead (g : Generator) : Bool :=
     && (elimRuleDescOf g).isNone && (flatTypingRuleDescOf g).isNone
     && (baseTypeRuleDescOf g).isNone && (dataIntroNullaryRuleDescOf g).isNone
 
-/-- The 22 currently-hardcoded heads (the frankenstein roster), read off `hasSomeTypingRule`'s
-`decide` chain. -/
+/-- The 21 currently-hardcoded heads (the frankenstein roster), read off `hasSomeTypingRule`'s
+`decide` chain.  NATIVE-06 drained `gen_intervalCode` (now a `baseTypeRuleDescOf` formation row, so
+table-covered) — the campaign's first metric drain (22 → 21). -/
 def hardcodedClassifierHeads : List Generator :=
   [.gen_natZero, .gen_natSucc, .gen_refl, .gen_optionNone, .gen_optionSome,
    .gen_eitherInl, .gen_eitherInr, .gen_pair, .gen_listNil, .gen_listCons,
    .gen_boolElim, .gen_idJ, .gen_optionMatch, .gen_eitherMatch, .gen_fst, .gen_snd,
-   .gen_var, .gen_universeCode, .gen_intervalCode, .gen_bridgeCode,
+   .gen_var, .gen_universeCode, .gen_bridgeCode,
    .gen_pathLam, .gen_pathApp]
 
-/-- The roster has 22 heads (the current frankenstein metric). -/
-theorem hardcodedClassifierHeadCount : hardcodedClassifierHeads.length = 22 := rfl
+/-- The roster has 21 heads (the current frankenstein metric, after the NATIVE-06 interval drain). -/
+theorem hardcodedClassifierHeadCount : hardcodedClassifierHeads.length = 21 := rfl
 
 /-- **★ Every rostered head IS genuinely hardcoded** — live yet table-uncovered, machine-checked
-by `decide` over all 22.  This is the metric's truthfulness: the roster is not a hand-maintained
+by `decide` over all 21.  This is the metric's truthfulness: the roster is not a hand-maintained
 list, it is exactly the live-but-uncovered set. -/
 theorem hardcodedRoster_allHardcoded :
     hardcodedClassifierHeads.all isHardcodedClassifierHead = true := by decide
@@ -198,16 +199,17 @@ theorem bespokePrimitiveHeadCount : bespokePrimitiveHeads.length = 2 := rfl
 theorem bespokePrimitives_areHardcoded :
     bespokePrimitiveHeads.all isHardcodedClassifierHead = true := by decide
 
-/-- The 20 MIGRATABLE hardcoded heads — the roster minus the two bespoke primitives.  These drain
-to zero as their rows land (NATIVE-06..40); the metric target is the 2-element bespoke floor. -/
+/-- The 19 MIGRATABLE hardcoded heads — the roster minus the two bespoke primitives.  These drain
+to zero as their rows land (NATIVE-06..40); the metric target is the 2-element bespoke floor.
+NATIVE-06 drained `gen_intervalCode` (the first drain, into `baseTypeRuleDescOf`). -/
 def migratableHardcodedHeads : List Generator :=
   [.gen_natZero, .gen_natSucc, .gen_refl, .gen_optionNone, .gen_optionSome,
    .gen_eitherInl, .gen_eitherInr, .gen_pair, .gen_listNil, .gen_listCons,
    .gen_boolElim, .gen_idJ, .gen_optionMatch, .gen_eitherMatch, .gen_fst, .gen_snd,
-   .gen_intervalCode, .gen_bridgeCode, .gen_pathLam, .gen_pathApp]
+   .gen_bridgeCode, .gen_pathLam, .gen_pathApp]
 
-/-- Twenty migratable heads (22 roster − 2 bespoke). -/
-theorem migratableHardcodedHeadCount : migratableHardcodedHeads.length = 20 := rfl
+/-- Nineteen migratable heads (21 roster − 2 bespoke), after the NATIVE-06 interval drain. -/
+theorem migratableHardcodedHeadCount : migratableHardcodedHeads.length = 19 := rfl
 
 /-- Every migratable head is currently hardcoded (machine-checked) — the drain target set. -/
 theorem migratableHeads_areHardcoded :
@@ -222,9 +224,10 @@ structure FrankensteinMetric where
   /-- Migratable = current − floor; drains to 0 over the campaign. -/
   migratable : Nat
 
-/-- The current metric: 22 hardcoded / 2 floor / 20 migratable. -/
+/-- The current metric: 21 hardcoded / 2 floor / 19 migratable — after the NATIVE-06 interval drain
+(22 → 21, the campaign's first metric reduction; `gen_intervalCode` is now a `baseTypeRuleDescOf` row). -/
 def frankensteinMetric : FrankensteinMetric :=
-  { current := 22, floor := 2, migratable := 20 }
+  { current := 21, floor := 2, migratable := 19 }
 
 /-- The metric's `current` is tied to the machine-checked roster length (not a free number). -/
 theorem frankensteinMetric_current_matchesRoster :
@@ -236,8 +239,17 @@ theorem frankensteinMetric_migratable_matchesRoster :
 
 /-! ## The "before" state — `rfl`-anchors that BREAK as rows land (keeping the census honest) -/
 
-/-- Interval code is NOT YET a formation row — **NATIVE-06 flips this**. -/
-theorem intervalCode_notFormation_yet :
+/-- **★ NATIVE-06 LANDED: interval code IS a formation row** (in `baseTypeRuleDescOf`, the cascade-free
+nullary base-type home).  This is the campaign's first self-updating-census flip — the interval drained
+from the hardcoded frankenstein roster (22 → 21). -/
+theorem intervalCode_inBaseTypeTable :
+    (baseTypeRuleDescOf .gen_intervalCode).isSome = true := rfl
+
+/-- Interval code's GROWN-table (`typingRuleDescOf`) row is still absent — deferred to the NATIVE-44
+BaseType→unified merge (which carries every base-type row into the grown formation table cascade-free,
+once).  Adding it directly here would replicate the per-consumer nullary handling that the merge does
+in one place; the base-type row (above) is the native formation home for now. -/
+theorem intervalCode_notInGrownTable_yet :
     (typingRuleDescOf .gen_intervalCode).isNone = true := rfl
 
 /-- Identity code is NOT YET formable (only ever refl's classifier) — **NATIVE-17 flips this** (the

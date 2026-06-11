@@ -2574,7 +2574,10 @@ decidable-equality route — every theorem verified axiom-free). -/
 #assert_no_axioms FX1Poly.Typed.frankensteinMetric
 #assert_no_axioms FX1Poly.Typed.frankensteinMetric_current_matchesRoster
 #assert_no_axioms FX1Poly.Typed.frankensteinMetric_migratable_matchesRoster
-#assert_no_axioms FX1Poly.Typed.intervalCode_notFormation_yet
+#assert_no_axioms FX1Poly.Typed.intervalCode_inBaseTypeTable
+#assert_no_axioms FX1Poly.Typed.intervalCode_notInGrownTable_yet
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_intervalCode
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.intervalCodeTyped
 #assert_no_axioms FX1Poly.Typed.idCode_notFormation_yet
 #assert_no_axioms FX1Poly.Typed.bridgeCode_notFormation_yet
 #assert_no_axioms FX1Poly.Typed.introTable_onlyLam

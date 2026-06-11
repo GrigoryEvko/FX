@@ -94,7 +94,8 @@ theorem dataIntroAndBaseTypeSubjectsDisjoint {profile : PolyProfile} {scope : Na
     (baseTypeTyped : HasTypeDescBaseType profile context subject typeClassifier) :
     False := by
   rcases dataIntroTyped.subjectIsNullaryValueCell with valueEq | valueEq | valueEq <;>
-    rcases baseTypeTyped.subjectIsBaseTypeCode with typeEq | typeEq | typeEq | typeEq <;>
+    rcases baseTypeTyped.subjectIsBaseTypeCode with
+      typeEq | typeEq | typeEq | typeEq | typeEq <;>
       (rw [valueEq] at typeEq
        exact Generator.noConfusion (congrArg RawTerm.headGenerator typeEq))
 

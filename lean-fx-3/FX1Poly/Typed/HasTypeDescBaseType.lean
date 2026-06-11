@@ -66,6 +66,8 @@ def baseTypeRuleDescOf (generator : Generator) : Option BaseTypeRuleDesc :=
     some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
   else if generator = .gen_unitCode then
     some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
+  else if generator = .gen_intervalCode then
+    some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
   else none
 
 /-- `gen_boolCode` forms a member of `Type@0(standard)` (metadata check, `rfl` on the diagonal). -/
@@ -94,6 +96,18 @@ unit canonicity and of the typed unit-eta judgment).  Same fixed output universe
 nullary base codes, flag-pinned by the rule. -/
 theorem baseTypeRuleDescOf_unitCode :
     baseTypeRuleDescOf .gen_unitCode
+      = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
+  rfl
+
+/-- `gen_intervalCode` forms a member of `Type@0(standard)` (metadata check) — the interval/dimension
+TYPE code's formation row (NATIVE-06).  The bridge-dimension classifier `Interval : Type@0`, formed
+through the standalone base-type engine on the same flag-pinned `Type@0(standard)` output as the other
+nullary base codes — the cascade-free native home that retires the bridge engine's flag-parametric
+`HasTypeDescBridge.intervalFormation` arm (whose `universeCodeCell lzero flag` for ANY flag was the
+uniqueness hazard the base-type pinning fixes).  Carried into the grown formation table by the
+NATIVE-44 BaseType→unified merge. -/
+theorem baseTypeRuleDescOf_intervalCode :
+    baseTypeRuleDescOf .gen_intervalCode
       = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
   rfl
 
@@ -158,6 +172,19 @@ theorem HasTypeDescBaseType.natCodeTyped {profile : PolyProfile} {scope : Nat}
     HasTypeDescBaseType profile context natTypeCell
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
   HasTypeDescBaseType.baseFormation context .gen_natCode () .childNil
+    { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl
+
+/-- **★ `Interval : Type@0` in the base-type engine (NATIVE-06).**  The interval/dimension TYPE code is
+formed at `Type@0(standard)` — the native (non-bridge-engine) formation row for the BCM bridge
+dimension.  The flag is pinned by the rule, so the formation is flag-deterministic, FIXING the
+uniqueness hazard of the bridge engine's `intervalFormation` arm (which typed `intervalTypeCell` at
+`Type@0(flag)` for ANY flag).  This is the first BUILD-phase row of the unified-signature campaign; it
+drains `gen_intervalCode` from the frankenstein hardcoded roster (now table-covered). -/
+theorem HasTypeDescBaseType.intervalCodeTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeDescBaseType profile context (.mkGen .gen_intervalCode () .childNil)
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
+  HasTypeDescBaseType.baseFormation context .gen_intervalCode () .childNil
     { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl
 
 /-- **Partition witness: `boolCode` is NOT a generic formation former.**  `typingRuleDescOf gen_boolCode
