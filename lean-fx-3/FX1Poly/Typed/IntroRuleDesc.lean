@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Modal.GradedLinearTime
 
 /-! # FX1Poly/Typed/IntroRuleDesc — the introduction-rule description table (GTL-15)
 
@@ -43,13 +44,21 @@ of the rule output to `piTyCodeCell` + `HasTypeDescPi.piIntro`.  No `axiom`, `so
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Modal (UsageGrade)
 
 /-- An introduction-rule description: the rule's OUTPUT TYPE (the type whose member it introduces) as a
-function of the scope and the rule's type-parameters.  For the binder-introduction family (Π/λ) the
-parameters are the domain (at `scope`) and the codomain (at `scope+1`).  Pure syntax (no
-`HasTypeDescPi`) ⇒ strictly positive, mirroring `TypingRuleDesc`. -/
+function of the scope and the rule's type-parameters, PLUS (NATIVE-20) the binder's usage grade.  For
+the binder-introduction family (Π/λ) the parameters are the domain (at `scope`) and the codomain (at
+`scope+1`).  Pure syntax (no `HasTypeDescPi`) ⇒ strictly positive, mirroring `TypingRuleDesc`. -/
 structure IntroRuleDesc where
   outputType : (scope : Nat) → RawTerm scope → RawTerm (scope + 1) → RawTerm scope
+  /-- **NATIVE-20: the binder's usage grade.**  The occurrence discipline the introduction's bound
+  variable must satisfy in the body (interpreted by the graded `genIntro` dispatcher via
+  `UsageGrade.boundsCount`): `.zero` ghost (used zero times), `.one` affine (the cubical `pathLam`
+  dimension binder, NATIVE-23), `.omega` unrestricted (the ordinary `gen_lam`).  Defaults to `.omega`
+  so every existing row (and the ordinary λ) is unconstrained — the graded check is a CONSERVATIVE
+  extension that rejects no currently-typed λ. -/
+  binderUsage : UsageGrade := UsageGrade.omega
 
 /-- The output of the Π-introduction rule (λ): the Church-style member `lamCell domain body` inhabits
 `Π domain. codomain`, i.e. `piTyCodeCell domain codomain`.  Factored out so the table row and the
@@ -78,6 +87,26 @@ non-introduction branch). -/
 theorem introRuleDescOf_outputIsPiIntro {generator : Generator} {rule : IntroRuleDesc}
     (isIntro : introRuleDescOf generator = some rule) :
     rule.outputType = piIntroOutput := by
+  by_cases hLam : generator = .gen_lam
+  · subst hLam
+    have hRule : rule = { outputType := piIntroOutput } := Option.some.inj isIntro.symm
+    rw [hRule]
+  · exfalso
+    dsimp only [introRuleDescOf] at isIntro
+    rw [if_neg hLam] at isIntro
+    contradiction
+
+/-- **Introduction-family invariant: every introduction rule in the current table carries the
+unrestricted (`.omega`) binder usage.**  Any generator carrying an introduction rule has
+`rule.binderUsage = UsageGrade.omega` — the ordinary λ binder is unconstrained.  The graded twin of
+`introRuleDescOf_outputIsPiIntro`: the cascade-death substrate for the binder-usage field, so the graded
+`genIntro` consumer reads the usage discipline from HERE instead of its own per-generator split.  Adding
+a non-`.omega` introduction row (the affine `pathLam`, NATIVE-23) extends this lemma by one `by_cases`
+case, with no per-consumer cascade.  Zero-axiom (`Option.some.inj` on the `gen_lam` branch;
+`if_neg`/`contradiction` on the non-introduction branch). -/
+theorem introRuleDescOf_binderUsageIsOmega {generator : Generator} {rule : IntroRuleDesc}
+    (isIntro : introRuleDescOf generator = some rule) :
+    rule.binderUsage = UsageGrade.omega := by
   by_cases hLam : generator = .gen_lam
   · subst hLam
     have hRule : rule = { outputType := piIntroOutput } := Option.some.inj isIntro.symm

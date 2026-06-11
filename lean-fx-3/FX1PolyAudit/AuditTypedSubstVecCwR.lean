@@ -681,6 +681,7 @@ import FX1Poly.Typed.IdFormerTermIndexedRetrofit
 import FX1Poly.Typed.BridgeFormationTermIndexedAdequacy
 import FX1Poly.Typed.TermIndexedFormerSmokeCorpus
 import FX1Poly.Typed.GradedIntroPremiseSpike
+import FX1Poly.Typed.IntroRuleDescGradedBinder
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
 import FX1Poly.Typed.UniverseModeGenerators
@@ -2819,6 +2820,28 @@ the `#assert_namespace_min_count` macro can't provide (the engine's decls live i
 namespace, not an isolated one).  Axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.closedIdUniverseStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerEngineCoverageWitness
+
+/-! ## NATIVE-20 (#1297) — IntroRuleDesc gains binderUsage + genIntro interprets it
+
+The graded-intro pivot.  `IntroRuleDesc` now carries a per-binder usage grade (`binderUsage`, default
+`.omega`), and the generic dispatcher INTERPRETS it: `hasTypeDescPi_gradedGenIntro_dispatchViaTable`
+reads `rule.binderUsage` and demands `gradedBinderChecks rule.binderUsage body` (the NATIVE-03
+grade→occurrence-bound interpreter) as a usage side-condition on top of the type premises.
+`introRuleDescOf_binderUsageIsOmega` is the cascade-death metadata twin (every current row is `.omega`);
+`…genLamConservative` is the conservativity (the graded arm types exactly the same λ-terms as the
+ungraded one — `gradedBinderChecks_ofGenLamRow` discharges the premise for free); `…closedConstantLambda…`
+is the non-vacuous closed witness; `gradedBinder_var_passesAffine` / `…rejectsGhost` show the
+interpreter DISCRIMINATES by grade (the identity body `var 0` passes `.one` but fails `.zero`);
+`gradedIntroDispatchCoverageWitness` is the coverage gate.  All axiom-free. -/
+#assert_no_axioms FX1Poly.Typed.introRuleDescOf_binderUsageIsOmega
+#assert_no_axioms FX1Poly.Typed.gradedBinderChecks_omega
+#assert_no_axioms FX1Poly.Typed.gradedBinderChecks_ofGenLamRow
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_gradedGenIntro_dispatchViaTable
+#assert_no_axioms FX1Poly.Typed.hasTypeDescPi_gradedGenIntro_genLamConservative
+#assert_no_axioms FX1Poly.Typed.closedConstantLambdaGradedTyped
+#assert_no_axioms FX1Poly.Typed.gradedBinder_var_passesAffine
+#assert_no_axioms FX1Poly.Typed.gradedBinder_var_rejectsGhost
+#assert_no_axioms FX1Poly.Typed.gradedIntroDispatchCoverageWitness
 
 /-! ## NATIVE-03 (#1280) — the graded intro premise IS expressible (SPIKE, verdict GO)
 
