@@ -546,6 +546,7 @@ import FX1Poly.Typed.UntypableHeadDecision
 import FX1Poly.Typed.TypingHeadKindClassifier
 import FX1Poly.Typed.TypedBySomeEngine
 import FX1Poly.Typed.GeneratorSemanticTier
+import FX1Poly.Typed.GeneratorAdmissionSplit
 import FX1Poly.Typed.GeneratorHonestyOverview
 import FX1Poly.Typed.StaticTypingSoundness
 import FX1Poly.Typed.SemanticTierSoundness
@@ -992,6 +993,28 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.natElim_reducesButUntyped_stillLive
 #assert_no_axioms FX1Poly.Typed.boolTrue_typedNotRedex_stillLive
 #assert_no_axioms FX1Poly.Typed.semanticTier_discriminates
+
+-- GeneratorAdmissionSplit (M30-Z1): the explicit syntactic-vs-semantic admission split, both DECIDABLE.
+-- Syntactic = a SupportedGenerator row exists (TOTAL under fxProfile, syntacticallyAdmissible_total);
+-- semantic = typed-or-reduces, exactly the HON-3 tier verdict (isSemanticallyAdmissible_iff_tierLive).
+-- The split is STRICT (admissionSplit_isStrict: gen_hilbertSpace is a legal cell head yet semantically
+-- dead) and refining (semanticallyAdmissible_implies_syntactically), with computable type-level admission
+-- witnesses on both notions. Zero-axiom (table lookups; rfl witnesses; if_neg + noConfusion tier bridge;
+-- Bool.decEq Decidable instances).
+#assert_no_axioms FX1Poly.Typed.isSyntacticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.isSemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.SyntacticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.SemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.syntacticallyAdmissible_total
+#assert_no_axioms FX1Poly.Typed.admissionWitnessOfSyntactic
+#assert_no_axioms FX1Poly.Typed.semanticallyAdmissible_implies_syntactically
+#assert_no_axioms FX1Poly.Typed.admissionWitnessOfSemantic
+#assert_no_axioms FX1Poly.Typed.isSemanticallyAdmissible_iff_tierLive
+#assert_no_axioms FX1Poly.Typed.app_isSemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.natElim_isSemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.idJ_isSemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.hilbertSpace_isSemanticallyAdmissible_false
+#assert_no_axioms FX1Poly.Typed.admissionSplit_isStrict
 
 -- GeneratorHonestyOverview (HON-4): the build-time honesty dashboard. allGenerators enumerates all 197 via the
 -- total tag-inverse Generator.fromTag over 0..196; the four count defs fold the HON-1/HON-2/HON-3 classifiers
