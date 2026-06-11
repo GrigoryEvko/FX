@@ -672,6 +672,7 @@ import FX1Poly.Typed.UnifiedRuleSignature
 import FX1Poly.Typed.TermIndexedFormerSpike
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.DependentElimPremiseSpike
+import FX1Poly.Typed.CollapseDecisionGate
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -2660,3 +2661,27 @@ This pins the residual exactly so NATIVE-05 locks the collapse scope with the co
 #assert_no_axioms FX1Poly.Typed.dependentElimSuccIotaConditional
 #assert_no_axioms FX1Poly.Typed.dependentElimExpressibility
 #assert_no_axioms FX1Poly.Typed.dependentElimExpressibility_verdict
+
+/-! ## NATIVE-05 (#1282) — lock the collapse scope + the adequacy-harness shape (DECISION GATE)
+
+Closes the campaign's DESIGN phase.  The collapse decision is DERIVED from the three shipped spike ledgers
+(not re-asserted): `collapseToOneInductiveJustified` ANDs together `termIndexedExpressibility` /
+`gradedIntroExpressibility` / `dependentElimExpressibility` fields, so it degrades if any spike verdict
+weakens.  `spikeVerdicts_pinned` classifies the three (clean GO / clean GO / GO-with-residual);
+`lockedCollapseScope = oneInductive` (primary, justified), `pinnedCoreFallback` the recorded 95% contingency;
+`adequacyHarnessShape` locks the two-leg (rowSuffices + engineIsInstance) adequacy template;
+`lockedBuildPhases` spans the 58 BUILD arcs (06-63) in 8 phases.  All `by decide`/`rfl` — axiom-free. -/
+#assert_no_axioms FX1Poly.Typed.termIndexedVerdict
+#assert_no_axioms FX1Poly.Typed.gradedIntroVerdict
+#assert_no_axioms FX1Poly.Typed.dependentElimVerdict
+#assert_no_axioms FX1Poly.Typed.spikeVerdicts_pinned
+#assert_no_axioms FX1Poly.Typed.collapseToOneInductiveJustified
+#assert_no_axioms FX1Poly.Typed.collapseToOneInductiveJustified_holds
+#assert_no_axioms FX1Poly.Typed.lockedCollapseScope
+#assert_no_axioms FX1Poly.Typed.lockedCollapseScope_coherent
+#assert_no_axioms FX1Poly.Typed.pinnedCoreFallback_distinctFromPrimary
+#assert_no_axioms FX1Poly.Typed.adequacyHarnessShape
+#assert_no_axioms FX1Poly.Typed.adequacyHarnessShape_requiresBothLegs
+#assert_no_axioms FX1Poly.Typed.lockedBuildPhases
+#assert_no_axioms FX1Poly.Typed.lockedBuildPhases_spanAllArcs
+#assert_no_axioms FX1Poly.Typed.lockedBuildPhases_count
