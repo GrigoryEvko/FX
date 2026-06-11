@@ -3,6 +3,7 @@ import FX1Poly.Core.PolyProfile
 import FX1Poly.Tier0.InternalSconing
 import FX1Poly.Tier0.FireTriangle
 import FX1Poly.Extension.ProfileExtension
+import FX1Poly.Extension.AdmissibleProfileTensor
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
 
@@ -33,3 +34,47 @@ axiom leak.
 #audit_namespace FX1Poly.Stratification
 #audit_namespace FX1Poly.Tier0
 #audit_namespace FX1Poly.Extension
+
+/-! ## AdmissibleProfile + cellular tensor headline gates
+
+Explicit per-declaration gates for the ledger admission theorem, the
+capability lattice laws backing the (T3) honesty ledger, the full
+admission / cellular tensor obligation SHAPES, and the Zwart-Marsden
+no-go register. -/
+
+#assert_no_axioms FX1Poly.Tier0.CapabilityStatus.isBelow_refl
+#assert_no_axioms FX1Poly.Tier0.CapabilityStatus.meet_isBelow_left
+#assert_no_axioms FX1Poly.Tier0.CapabilityStatus.meet_isBelow_right
+#assert_no_axioms FX1Poly.Tier0.CapabilityStatus.isBelow_trans
+#assert_no_axioms FX1Poly.Tier0.CapabilityStatus.isBelow_antisymm
+#assert_no_axioms FX1Poly.Tier0.CapabilityStatus.isBelow_meet_iff
+#assert_no_axioms
+  FX1Poly.Tier0.CapabilityStatus.eq_available_of_isBelow_of_available
+#assert_no_axioms FX1Poly.Tier0.MetatheoreticCapabilities.isBelow_refl
+#assert_no_axioms FX1Poly.Tier0.MetatheoreticCapabilities.meet_isBelow_left
+#assert_no_axioms FX1Poly.Tier0.MetatheoreticCapabilities.meet_isBelow_right
+#assert_no_axioms FX1Poly.Tier0.MetatheoreticCapabilities.isBelow_trans
+#assert_no_axioms
+  FX1Poly.Tier0.MetatheoreticCapabilities.isBelow_meet_of_isBelow_both
+#assert_no_axioms FX1Poly.Extension.AdmissibleProfile
+#assert_no_axioms FX1Poly.Extension.AdmissibleProfile.bottom
+#assert_no_axioms FX1Poly.Extension.fxProfileLedgerAdmission
+#assert_no_axioms
+  FX1Poly.Extension.fxProfileLedgerAdmission_capabilities_eq_bot
+#assert_no_axioms FX1Poly.Extension.extendProfile_preserves_admissible
+#assert_no_axioms
+  FX1Poly.Extension.extendProfile_preserves_admissible_capabilities
+#assert_no_axioms FX1Poly.Extension.fxWithEta_admission_capabilities_eq_bot
+#assert_no_axioms FX1Poly.Extension.FullAdmissionObligations
+#assert_no_axioms
+  FX1Poly.Extension.fullAdmission_metatheoryRealized_unrealizable_for_fx
+#assert_no_axioms FX1Poly.Extension.CellularTensorObligations
+#assert_no_axioms FX1Poly.Extension.NoGoPosture
+#assert_no_axioms FX1Poly.Extension.NoGoCell
+#assert_no_axioms FX1Poly.Extension.zwartMarsdenRegister
+#assert_no_axioms FX1Poly.Extension.zwartMarsdenRegister_length
+#assert_no_axioms FX1Poly.Extension.zwartMarsdenRegister_allReject
+#assert_no_axioms
+  FX1Poly.Extension.extensionLedger_stillBelow_metatheoryTransfer
+#assert_no_axioms
+  FX1Poly.Extension.extensionLedger_stillBelow_admissibleProfileTheorem
