@@ -678,6 +678,7 @@ import FX1Poly.Typed.HasTypeDescTermIndexedFormerUniqueness
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerSubjectReduction
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerStronglyNormalizing
 import FX1Poly.Typed.IdFormerTermIndexedRetrofit
+import FX1Poly.Typed.BridgeFormationTermIndexedAdequacy
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
@@ -2788,6 +2789,22 @@ through native rules.  No bespoke `idFormation`.  Axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.reflClassifierTermIndexedFormable
 #assert_no_axioms FX1Poly.Typed.closedIdUniverseFormable
 #assert_no_axioms FX1Poly.Typed.reflProofWithFormableClassifier
+
+/-! ## NATIVE-18 (#1295) — bridge formation adequacy (standalone arm ↔ generic row)
+
+NATIVE-12 gave one direction at the premise level (`reconstructsBridge`).  This lands the full TWO-WAY adequacy at
+the DERIVATION level: the bespoke `HasTypeDescBridge.bridgeFormation` arm and the generic
+`HasTypeDescTermIndexedFormer` row are INTER-DERIVABLE on `bridgeTypeCell` subjects.
+`HasTypeDescBridge.bridgeFormationToTermIndexed` (standalone ⟹ generic — `cases` auto-drops the 5 non-bridge arms
+by subject-index head-generator no-confusion, then `reconstructsBridge`); `…bridgeRowToStandalone` (generic ⟹
+standalone — `cases` the genFormation arm + `termIndexedFormerRuleIsCarrierOutput` + telescope/endpoint
+destructuring rebuilds `bridgeFormation`); `bridgeFormationTermIndexedAdequacy` (the biconditional capstone);
+`…adequacyAtUniverseSmoke` (the closed instance at `Bridge(Type@1,Type@0,Type@0):Type@2`).  The bridge engine's
+formation arm IS the table row.  Axiom-free. -/
+#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.bridgeFormationToTermIndexed
+#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.bridgeRowToStandalone
+#assert_no_axioms FX1Poly.Typed.bridgeFormationTermIndexedAdequacy
+#assert_no_axioms FX1Poly.Typed.bridgeFormationAdequacyAtUniverseSmoke
 
 /-! ## NATIVE-03 (#1280) — the graded intro premise IS expressible (SPIKE, verdict GO)
 
