@@ -672,6 +672,7 @@ import FX1Poly.Typed.BridgeEndpointGeneralArgumentSubjectReduction
 import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
 import FX1Poly.Typed.TermIndexedFormerSpike
+import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
@@ -2664,6 +2665,28 @@ NATIVE-12 work is the INTERPRETER, not the expressibility this settles. -/
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerTyping_buildsBridge
 #assert_no_axioms FX1Poly.Typed.termIndexedExpressibility
 #assert_no_axioms FX1Poly.Typed.termIndexedExpressibility_isGo
+
+/-! ## NATIVE-12 (#1289) [MEGA] — the TermIndexedFormer table + arm + Id/Bridge rows
+
+The INTERPRETER the spike deferred: `termIndexedFormerDescOf` (the table, with the `gen_bridgeCode` /
+`gen_idCode` rows) + `HasTypeDescTermIndexedFormer` (the standalone engine, ONE generic `genFormation` arm
+driven by the table + the children-indexed `TermIndexedFormerTelescope` premise — the term-indexed analogue
+of `HasTypeDesc.genFormation`).  ★ `termIndexedFormerGenFormation_reconstructsBridge` = adequacy: the generic
+arm at `gen_bridgeCode` produces EXACTLY `bridgeFormation`'s conclusion (the bespoke bridge former IS the
+generic arm at one table row).  ★ `termIndexedFormerGenFormation_idCode` = the Id former typed by the SAME arm
+at the OTHER row, NO bespoke `idFormation` anywhere (the table-genericity payoff; the NATIVE-17 Id retrofit
+rides it).  `…_bridgeUniverseSmoke` = non-vacuous closed witness.  Positive recursive inductive over the grown
+engine; the table is `if`-chained `Option`; the witnesses are direct constructor applications (the output
+collapses by `rfl`, the bridge cell IS `bridgeTypeCell` definitionally).  Axiom-free. -/
+#assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints
+#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope
+#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerDescOf_bridgeCode
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerDescOf_idCode
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerDescOf_piTyCode
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerGenFormation_reconstructsBridge
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerGenFormation_idCode
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerGenFormation_bridgeUniverseSmoke
 
 /-! ## NATIVE-03 (#1280) — the graded intro premise IS expressible (SPIKE, verdict GO)
 
