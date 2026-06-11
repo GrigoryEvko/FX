@@ -687,6 +687,7 @@ import FX1Poly.Typed.GradedBetaSubjectReductionGhost
 import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.HasTypeDescGeneralElim
 import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.RecursiveElimUnionSpike
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
 import FX1Poly.Typed.UniverseModeGenerators
@@ -2567,6 +2568,36 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.toNativeUnion
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.toNativeUnionExact
 #assert_no_axioms FX1Poly.Typed.nativeUnionCoverageWitness
+
+-- NATIVE-27 (#1304) [GO/NO-GO → GO] — RECURSIVE-ELIMINATOR ROWS ON THE SEED UNION
+-- (RecursiveElimUnionSpike). The campaign's declared risk class, decided GO: RecursiveElimRule is
+-- the dedicated row schema (natElim/natRec rows; listElim's app-chain shape joins in NATIVE-32);
+-- RecursiveElimUnionSpike = the union + NatIntro embedding + ONE table-driven recursive arm whose
+-- scrutinee/base premises are recursive in the spike. ★ recursiveElimSuccIotaDischargedInternally:
+-- on the IH-return branch family (the exact minimal NATIVE-04 obstruction — the reduct IS the
+-- recursive call, contractum computes by rfl), the succ-ι fires AND the reduct types through the
+-- spike's own arm with NO reductTyped premise — the conditional natElimSuccIotaComputesTyped's
+-- escape hatch, discharged. recursiveElimClosedComputationFullyTyped: closed 2-step typed
+-- computation chain (redex→recursive call→value, every link typed). spikeTypesEliminatorScrutinee
+-- vs bespokeRejectsEliminatorScrutinee: the spike types recursion-on-a-computed-number, which the
+-- bespoke engine PROVABLY rejects (NatIntro head clash via the banked mkGen/childCons injection
+-- drilling). Adequacy both rows (premise parity = the NATIVE-33 fold's delete-safety). Honest
+-- residual: GENERAL branches await the union substitution transport (NATIVE-37) — standard
+-- machinery, not a schema obstruction.
+#assert_no_axioms FX1Poly.Typed.recursiveElimRuleOf_natElim
+#assert_no_axioms FX1Poly.Typed.recursiveElimRuleOf_natRec
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatElim.toRecursiveElimUnionSpike
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatRec.toRecursiveElimUnionSpike
+#assert_no_axioms FX1Poly.Typed.natElimSuccContractum_ihReturn
+#assert_no_axioms FX1Poly.Typed.natRecSuccContractum_ihReturn
+#assert_no_axioms FX1Poly.Typed.recursiveElimSuccIotaDischargedInternally
+#assert_no_axioms FX1Poly.Typed.recursiveRecSuccIotaDischargedInternally
+#assert_no_axioms FX1Poly.Typed.recursiveElimClosedComputationFullyTyped
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.subjectHeadIsNatValue
+#assert_no_axioms FX1Poly.Typed.HasTypeDescNatElim.invertPremises
+#assert_no_axioms FX1Poly.Typed.bespokeRejectsEliminatorScrutinee
+#assert_no_axioms FX1Poly.Typed.spikeTypesEliminatorScrutinee
+#assert_no_axioms FX1Poly.Typed.recursiveElimRowGoVerdict
 
 -- ★ NATIVE-08 — THE CROSS-ENGINE WALL FALLS (BridgeEndpointNativeSubjectReduction).
 -- intervalZeroGrownUntypable proved the endpoint-β reduct interval0 escapes the GROWN engine, so a
