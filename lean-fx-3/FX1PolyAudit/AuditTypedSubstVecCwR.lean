@@ -641,6 +641,7 @@ import FX1Poly.Modal.GradedCostFundamental
 import FX1Poly.Modal.GradedTermSize
 import FX1Poly.Modal.GradedLinearTime
 import FX1Poly.Modal.GradedLinearTimeBound
+import FX1Poly.Core.NormalizeCost
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -1640,6 +1641,35 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Modal.duplicatorRedex_betaDoesNotShrink
 #assert_no_axioms FX1Poly.Modal.omegaFunctionType
 #assert_no_axioms FX1Poly.Modal.omegaDuplicatorLam_typedAtGradeOmega
+
+-- ★ The cost-instrumented KERNEL normalizer (Core/NormalizeCost.lean, COST-3 #1216 brick 1 — the COST-1
+-- recipe at the 198-generator RawTerm substrate). Step (1) of the COST-3 plan was ALREADY SHIPPED:
+-- StepStarN (#368) IS the kernel's step-counted reduction (reflN/transN + both StepStar bridges +
+-- trans_compose + rename/subst length-preservation) — no new relation. THIS brick = step (2):
+-- RawTerm.normalizeWithCost threads a counter through the shipped Acc.rec normalizer (constant pair
+-- motive, rfl unfold handle). ★ normalizeWithCost_isExactChain — the reported cost is attained by a
+-- GENUINE StepStarN chain to the reported output (not an estimate). ★ fst identified with
+-- RawTerm.normalize via normalForm_unique on the SN fragment — NOT by aligning the two Acc.rec matches
+-- (fst's reachability is FREE from the exactness chain via toStepStar; fst's normality by the mirror
+-- induction; uniqueness closes). ★ normalizeCost_isExact — every SN kernel term has an EXACT computable
+-- evaluation cost reaching THE normal form. Non-vacuity: reduceOnce halts on the closed unit value by
+-- KERNEL COMPUTATION (rfl over the 198-generator table), the hand-built Acc.intro witness via
+-- isStepNormalForm_blocks_step, and normalizeCost unit = 0 by rfl THROUGH the Acc witness. The typed
+-- packaging (HasTypeDescPi ⟹ calculable cost, the FX headline) + costBound (worst-case over
+-- oneStepReducts) are the later COST-3 bricks; IsStronglyNormalizing IS Acc StepSuccessor
+-- definitionally, so the shipped typed-SN theorems feed this module directly.
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeWithCost
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeWithCost_unfold
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeCost
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeWithCost_isExactChain
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeWithCost_reducesToFst
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeWithCost_fst_isStepNormalForm
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeWithCost_fst_eq_normalize
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeCost_isExact
+#assert_no_axioms FX1Poly.Core.unitNormalFormFixture
+#assert_no_axioms FX1Poly.Core.unitNormalFormFixture_reduceOnce_halts
+#assert_no_axioms FX1Poly.Core.unitNormalFormFixture_accessible
+#assert_no_axioms FX1Poly.Core.RawTerm.normalizeCost_unit_isZero
 
 /-! ## M24-Z2 (#433) — the four 2LTT universe-mode generators (Z-arc brick 1)
 
