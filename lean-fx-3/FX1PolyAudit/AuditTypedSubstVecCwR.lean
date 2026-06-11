@@ -682,6 +682,7 @@ import FX1Poly.Typed.BridgeFormationTermIndexedAdequacy
 import FX1Poly.Typed.TermIndexedFormerSmokeCorpus
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.IntroRuleDescGradedBinder
+import FX1Poly.Core.RawTermOccurrenceSubst
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
 import FX1Poly.Typed.UniverseModeGenerators
@@ -2461,6 +2462,22 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_rename_avoided
 #assert_no_axioms FX1Poly.Core.RawTermChildren.occurrenceCountAt_rename_avoided
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_weaken_zeroPosition
+-- NATIVE-21 (#1298) — quantitative substitution (occurrenceCountAt of subst0).
+-- occurrenceCountAt_rename_image: the EXACT-HIT companion of the MISS lemma rename_avoided —
+-- a renaming hitting targetPosition exactly at sourcePosition preserves the count (mutual with
+-- the children version; transports through binders via liftHitsSucc / iterateLiftRawHitsRaised).
+-- occurrenceCountAt_weaken_succ: weaken shifts the count up one de Bruijn position (the shift
+-- primitive the master equation needs). occurrenceCountAt_subst0_weaken / _of_strengthens: the
+-- GHOST quantitative substitution lemma — substituting into a weakened/strengthening (unused-binder)
+-- body preserves all occurrence counts; the argument contributes nothing. All zero-axiom.
+#assert_no_axioms FX1Poly.Core.RawRenaming.liftHitsSucc
+#assert_no_axioms FX1Poly.Core.iterateLiftRawHitsRaised
+#assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_rename_image
+#assert_no_axioms FX1Poly.Core.RawTermChildren.occurrenceCountAt_rename_image
+#assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_weaken_succ
+#assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_subst0_weaken
+#assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_subst0_of_strengthens
+#assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_subst0_weaken_self
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.constantBridgeOfTyped
 #assert_no_axioms FX1Poly.Typed.reflexivityBridgeRoundTrip
 
