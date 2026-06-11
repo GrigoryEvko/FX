@@ -1,5 +1,6 @@
 import FX1Poly.Typed.SconingIsEnoughThesis
 import FX1Poly.Typed.GeneratorHonestyOverview
+import FX1Poly.Typed.GeneratorAdmissionSplit
 import FX1Poly.Core.DataReducibilityCoverage
 
 /-! # FX1Poly/Typed/LiveSignatureSconingCoverage
@@ -605,5 +606,29 @@ theorem LiveGenerator.eliminatorHasRedexHead :
   | .boolCode, roleEq => nomatch roleEq
   | .natCode, roleEq => nomatch roleEq
   | .unitCode, roleEq => nomatch roleEq
+
+/-! ## The coverage carrier is EXACTLY the semantically-admissible set
+
+The two directions together pin the reducibility/sconing coverage to the M30 admission
+split: coverage is granted ONLY to semantically admissible generators (soundness — every
+`LiveGenerator`, the carrier of every coverage dispatch above, is admissible), and EVERY
+semantically admissible generator is covered (completeness — composing the M30 tier
+bridge with the O-NORM admission gate `liveSignature_complete`).  Reserved names get no
+reducibility story, and no admissible name is missing one. -/
+
+/-- **Soundness**: every live-signature member is semantically admissible in the M30
+split sense.  40 kernel evaluations of the admission classifier. -/
+theorem LiveGenerator.memberIsSemanticallyAdmissible :
+    ∀ liveGenerator : LiveGenerator, SemanticallyAdmissible liveGenerator.generator := by
+  intro liveGenerator
+  cases liveGenerator <;> rfl
+
+/-- **Completeness**: every semantically admissible generator is in the live signature —
+the reducibility-coverage carrier misses nothing admissible. -/
+theorem liveSignatureMember_of_semanticallyAdmissible
+    (generator : Generator) (semanticAdmission : SemanticallyAdmissible generator) :
+    liveSignatureList.contains generator = true :=
+  liveSignature_complete generator
+    ((isSemanticallyAdmissible_iff_tierLive generator).mp semanticAdmission)
 
 end FX1Poly.Typed

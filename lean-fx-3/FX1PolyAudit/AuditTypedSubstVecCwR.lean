@@ -1280,6 +1280,14 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.abstractionConstructorPreservesSn
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.eliminatorHasRedexHead
 
+-- SN-079: the coverage carrier is EXACTLY the M30 semantically-admissible set — soundness
+-- (every LiveGenerator member is SemanticallyAdmissible, 40 kernel evaluations) + completeness
+-- (every semantically admissible generator is in the live signature, the M30 tier bridge
+-- composed with liveSignature_complete). Reducibility only for — and for all of — the
+-- semantically-admissible generators.
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.memberIsSemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.liveSignatureMember_of_semanticallyAdmissible
+
 -- ★ The FX type-axis AxisObligation — all eight capabilities flipped, each flip BACKED
 -- (TypeAxisObligation.lean, SN-103 #606). fxTypeAxisObligation = the FIRST concrete AxisObligation with
 -- non-bottom capabilities: axis id .universe, no Fire-Triangle restriction (the pure type axis; the
