@@ -136,13 +136,20 @@ def STCConstructionLevel.hasFXGenericSTCReplacement :
   | .normalizationTheorem => false
   | .fxGenericSTCReplacement => true
 
-/-- Current Axis 12 status: record interfaces plus toy Bool retraction.
-There is no FX logical relation or metatheorem here. -/
+/-- Current Axis 12 status: the FX logical relation construction is
+present (`FxLogicalRelation.lean` — `fxStcRelationAt` glues closed
+grown-typed syntax with computability evidence through
+`canonicalSTCModel.Glue`, with the fundamental theorem
+`fxStcFundamental`).  The construction is BRIDGED to Tait
+(`fxStcFundamental_semantic_isTaitWitness`): its semantic side is the
+kernel's Tait-derived SN, not an independent second semantics.  No FX
+canonicity or normalization theorem is claimed at this level. -/
 def fxSTCConstructionLevel : STCConstructionLevel :=
-  .toyBoolWitness
+  .logicalRelationConstruction
 
 theorem fxSTCConstructionLevel_eq :
-    fxSTCConstructionLevel = STCConstructionLevel.toyBoolWitness := rfl
+    fxSTCConstructionLevel
+      = STCConstructionLevel.logicalRelationConstruction := rfl
 
 theorem fxSTC_hasPhaseAndModalInterfaces :
     fxSTCConstructionLevel.hasPhaseAndModalInterfaces = true := rfl
@@ -156,9 +163,11 @@ theorem fxSTC_hasSTCModelRecord :
 theorem fxSTC_hasToyBoolWitness :
     fxSTCConstructionLevel.hasToyBoolWitness = true := rfl
 
-/-- Current Axis 12 has no FX logical relation construction. -/
-theorem fxSTC_hasNoLogicalRelationConstruction :
-    fxSTCConstructionLevel.hasLogicalRelationConstruction = false := rfl
+/-- Current Axis 12 HAS the FX logical relation construction
+(witnessed in `FxLogicalRelation.lean`; BRIDGED to Tait — see the
+ledger docstring). -/
+theorem fxSTC_hasLogicalRelationConstruction :
+    fxSTCConstructionLevel.hasLogicalRelationConstruction = true := rfl
 
 /-- Current Axis 12 has no FX canonicity theorem. -/
 theorem fxSTC_hasNoCanonicityTheorem :

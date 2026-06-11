@@ -6,6 +6,7 @@ import FX1Poly.Extension.ProfileExtension
 import FX1Poly.Extension.AdmissibleProfileTensor
 import FX1Poly.Extension.FxWithEtaCertifier
 import FX1Poly.Extension.ProfileLens
+import FX1Poly.STC.FxLogicalRelation
 import FX1Poly.Core.StrengthCalibration
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
@@ -165,3 +166,24 @@ reserved-slot allocation demonstration on `gen_npComplete`. -/
 #assert_no_axioms FX1Poly.Extension.reservedAllocationDemoLens
 #assert_no_axioms FX1Poly.Extension.reservedAllocationDemoLens_allocates
 #assert_no_axioms FX1Poly.Extension.gen_npComplete_isReserved
+
+/-! ## The FX STC logical relation gates (SN-098/SN-099)
+
+The Axis 12 `logicalRelationConstruction` ledger flip, witnessed by
+the BRIDGED construction: the glue family in the canonical STC
+model's vocabulary, the fundamental theorem (closed fragment), the
+Tait-bridge identification, and the first non-toy ExtensionType
+inhabitant.  Independence stays zero-axiom-blocked (the HIT closed
+modality pulls Quot.sound) — the SN-102 boundary. -/
+
+#assert_no_axioms FX1Poly.STC.ClosedTypedTerm
+#assert_no_axioms FX1Poly.STC.fxStcRelationAt
+#assert_no_axioms FX1Poly.STC.fxStcFundamental
+#assert_no_axioms FX1Poly.STC.fxStcRelationAt_isModelGlue
+#assert_no_axioms FX1Poly.STC.fxStcFundamental_semantic_isTaitWitness
+#assert_no_axioms FX1Poly.STC.fxStcSyntacticOpen
+#assert_no_axioms FX1Poly.STC.fxStcExtension
+#assert_no_axioms FX1Poly.STC.fxStcFundamental_syntactic_eq
+#assert_no_axioms FX1Poly.STC.fxSTC_hasLogicalRelationConstruction
+#assert_no_axioms FX1Poly.STC.fxSTC_hasNoCanonicityTheorem
+#assert_no_axioms FX1Poly.STC.fxSTC_hasNoNormalizationTheorem

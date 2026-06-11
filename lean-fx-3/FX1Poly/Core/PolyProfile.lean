@@ -365,14 +365,15 @@ theorem fxProfile_fibrationHasNoUnboundedProfileTower :
 theorem fxProfile_sscEquationCount :
     fxProfile.sscBackbone.equationCount = 8 := rfl
 
-/-- FX profile has only Axis 12 scaffold records plus toy Bool retraction. -/
+/-- FX profile carries the Axis 12 logical-relation construction
+(BRIDGED to Tait — `STC/FxLogicalRelation.lean`). -/
 theorem fxProfile_stcConstructionLevel :
     fxProfile.stcConstructionLevel =
-      STC.STCConstructionLevel.toyBoolWitness := rfl
+      STC.STCConstructionLevel.logicalRelationConstruction := rfl
 
-/-- FX profile currently has no Axis 12 logical-relation construction. -/
-theorem fxProfile_stcHasNoLogicalRelationConstruction :
-    fxProfile.stcConstructionLevel.hasLogicalRelationConstruction = false :=
+/-- FX profile HAS the Axis 12 logical-relation construction. -/
+theorem fxProfile_stcHasLogicalRelationConstruction :
+    fxProfile.stcConstructionLevel.hasLogicalRelationConstruction = true :=
   rfl
 
 /-- FX profile currently has no Axis 12 canonicity theorem. -/

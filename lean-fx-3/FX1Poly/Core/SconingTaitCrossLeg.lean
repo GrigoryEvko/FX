@@ -37,11 +37,12 @@ reducibility candidate — the synthetic Sterling-Tait-computability logical rel
 modality.  The shipped STC substrate (`FX1Poly.STC`) deliberately CANNOT supply that zero-axiom: its
 `ClosedMod` is a computable one-constructor wrapper, NOT the higher-inductive quotient closed modality the
 synthetic construction requires (the genuine modality pulls `Quot.sound`, breaking the zero-axiom
-discipline).  Accordingly the STC construction ledger honestly records
-`fxSTC_hasNoLogicalRelationConstruction` — there is no synthetic FX logical relation — and the only zero-axiom
-FX logical relation that exists is the proof-relevant-predicate realization, which is Path A.  Hence the
-independent-second-SN goal is not merely unbuilt but zero-axiom-blocked at the closed modality; this file
-pins exactly that boundary.
+discipline).  Accordingly the only zero-axiom FX logical relation that exists is the
+proof-relevant-predicate realization, which is Path A — the STC ledger's
+`fxSTC_hasLogicalRelationConstruction` is witnessed by `STC/FxLogicalRelation.lean`, whose semantic side is
+DEFINITIONALLY the Tait pipeline (`fxStcFundamental_semantic_isTaitWitness`), i.e. the BRIDGED construction,
+not an independent one.  Hence the independent-second-SN goal is not merely unbuilt but zero-axiom-blocked at
+the closed modality; this file pins exactly that boundary.
 
 ## What this ships
 
