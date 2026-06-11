@@ -668,6 +668,7 @@ import FX1Poly.Typed.KernelParamSubstrateSurvey
 import FX1Poly.Typed.HasTypeDescBridge
 import FX1Poly.Typed.BridgeEndpointStep
 import FX1Poly.Typed.BridgeEndpointNativeSubjectReduction
+import FX1Poly.Typed.BridgeEndpointGeneralArgumentSubjectReduction
 import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
 import FX1Poly.Typed.TermIndexedFormerSpike
@@ -2474,6 +2475,22 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.identityPathEndpointSubjectReductionNative
 #assert_no_axioms FX1Poly.Typed.reflexivityBridgeEndpointSubjectReductionNative
 #assert_no_axioms FX1Poly.Typed.endpointBetaNativeSubjectReductionVerdict
+
+-- NATIVE-09 — endpoint-β SR for GENERAL arguments via the grown substitution lemma
+-- (BridgeEndpointGeneralArgumentSubjectReduction). The substitution-transport residual NATIVE-08
+-- deferred: for an ARBITRARY body grown-typed under the interval binder + a GROWN-typed interval argument
+-- (e.g. a context-bound interval variable), HasTypeDescPi.substituteUnderBinding (the grown β-engine)
+-- transports the body and subst0_weaken collapses the classifier, so the reduct body[argument] is
+-- GROWN-typed at the original classifier — for every body shape. endpointBetaGeneralArgumentNativelyTyped
+-- routes it into the NATIVE-08 combined predicate (ofGrown); endpointBetaConstantBodySubsumed recovers
+-- the constant fragment as a special case. ★ intervalVariableEndpointBetaGrownReduct: the non-vacuous
+-- contrast — the identity path applied to a grown interval VARIABLE gives a GROWN reduct (the variable),
+-- where the same path at a bare ENDPOINT (NATIVE-08) reached only the data-intro engine: the endpoint-β
+-- reduct classified BY ARGUMENT (grown arg → grown reduct; endpoint → data reduct). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.endpointBetaGeneralArgumentGrownReduct
+#assert_no_axioms FX1Poly.Typed.endpointBetaGeneralArgumentNativelyTyped
+#assert_no_axioms FX1Poly.Typed.endpointBetaConstantBodySubsumed
+#assert_no_axioms FX1Poly.Typed.intervalVariableEndpointBetaGrownReduct
 
 -- ★★ THE UNARY-GUARDED Π CANDIDATE — the Abel binary-over-unary construction (OP1-K2 #1228,
 -- in-place strengthening across KernelBinaryParametricity/PiElim/PiIntro/ConvInvariance/
