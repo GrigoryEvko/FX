@@ -673,6 +673,7 @@ import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
 import FX1Poly.Typed.TermIndexedFormerSpike
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
+import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
@@ -2687,6 +2688,28 @@ collapses by `rfl`, the bridge cell IS `bridgeTypeCell` definitionally).  Axiom-
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerGenFormation_reconstructsBridge
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerGenFormation_idCode
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerGenFormation_bridgeUniverseSmoke
+
+/-! ## NATIVE-13 (#1290) — the term-indexed former engine's weakening + substitution (P6 first half)
+
+`HasTypeDescTermIndexedFormer` types CODES that appear in OPEN contexts, so it needs the structural metatheory
+the formation/flat engines have.  This ships the P6 first half — the term-indexed twin of
+`HasTypeDescFlatWeakening`/`HasTypeDescFlatSubstitution`.  `…renameRespectingContext` / `…weakenUnderBinding`
+preserve typing along any context-respecting renaming; `…substRespectingContext` / `…substituteUnderBinding`
+(the β-engine, `subst0`) along any well-typed substitution.  The endpoint/carrier transports reuse the grown
+`HasTypeDescPi.renameRespectingContext`/`substRespectingContext`; the carrier-threaded `TermIndexedEndpoints`
+is lighter than the flat telescope (endpoints re-type at the RENAMED/SUBSTITUTED carrier, no per-endpoint
+`rename_universeCodeCell`).  `termIndexedFormerRuleImpliesNotVariable` / `termIndexedFormerRuleIsCarrierOutput`
+are the cell-reconstruction discriminators (the flat-helper idiom).  Axiom-free. -/
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerRuleImpliesNotVariable
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerRuleIsCarrierOutput
+#assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.renameRespectingContext
+#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.renameRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.renameRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.weakenUnderBinding
+#assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.substituteUnderBinding
 
 /-! ## NATIVE-03 (#1280) — the graded intro premise IS expressible (SPIKE, verdict GO)
 
