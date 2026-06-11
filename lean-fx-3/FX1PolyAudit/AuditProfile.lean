@@ -5,6 +5,7 @@ import FX1Poly.Tier0.FireTriangle
 import FX1Poly.Extension.ProfileExtension
 import FX1Poly.Extension.AdmissibleProfileTensor
 import FX1Poly.Extension.FxWithEtaCertifier
+import FX1Poly.Extension.ProfileLens
 import FX1Poly.Core.StrengthCalibration
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
@@ -145,3 +146,22 @@ extended profile, and a concrete eta-pair step run end-to-end. -/
 #assert_no_axioms FX1Poly.Extension.fxWithEta_fibrationTower_eq
 #assert_no_axioms FX1Poly.Extension.fxWithEta_algebraUniverse_eq
 #assert_no_axioms FX1Poly.Extension.fxWithEta_universeConfig_eq
+
+/-! ## ProfileLens gates (V2-L5.1)
+
+The generator-allocation lens: the prism type, injectivity corollary,
+the degenerate instance every constructible extension carries (the
+ledger-backing witness for `hasProfileLensInstance`), the
+eta-shaped-evidence impossibility pin, and the non-degenerate
+reserved-slot allocation demonstration on `gen_npComplete`. -/
+
+#assert_no_axioms FX1Poly.Extension.ProfileLens
+#assert_no_axioms FX1Poly.Extension.ProfileLens.liftGenerator_injective
+#assert_no_axioms FX1Poly.Extension.ProfileLens.degenerate
+#assert_no_axioms FX1Poly.Extension.profileExtension_generatorCount_zero
+#assert_no_axioms FX1Poly.Extension.ProfileExtension.lens
+#assert_no_axioms FX1Poly.Extension.etaReductionExtensionLens
+#assert_no_axioms FX1Poly.Extension.reservedAllocationDemoInterface
+#assert_no_axioms FX1Poly.Extension.reservedAllocationDemoLens
+#assert_no_axioms FX1Poly.Extension.reservedAllocationDemoLens_allocates
+#assert_no_axioms FX1Poly.Extension.gen_npComplete_isReserved

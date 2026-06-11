@@ -125,9 +125,12 @@ def ExtensionConstructionLevel.hasAdmissibleProfileTheorem :
   | .admissibleProfileTheorem => true
 
 /-- Present status: interface records, local admission records, finite
-profile-tower bookkeeping, and a structural lift/forget lens for the current
-`PolyTerm` syntax.  No algebra extension, interaction law proof, or
-metatheory transfer is claimed. -/
+profile-tower bookkeeping, and the generator-allocation `ProfileLens`
+(`ProfileLens.lean`) — every constructible extension carries the
+degenerate instance via `ProfileExtension.lens`, and the
+non-degenerate reserved-slot allocation content is demonstrated by
+`reservedAllocationDemoLens`.  No algebra extension, interaction law
+proof, or metatheory transfer is claimed. -/
 def fxExtensionConstructionLevel : ExtensionConstructionLevel :=
   .profileLensInstance
 
@@ -408,8 +411,10 @@ theorem extendProfile_preserves_mttNormConstructionLevel
     (extendProfile baseProfile extension).mttNormConstructionLevel =
       baseProfile.mttNormConstructionLevel := rfl
 
--- This file defines no `ProfileLens`; a `RawTerm`-level ProfileLens is
--- not part of the current profile-extension subsystem.
+-- The `ProfileLens` type lives in `ProfileLens.lean` (a generator-level
+-- reserved-slot allocation prism).  A `RawTerm`-level term transport is
+-- still future work — it is the identity for every extension
+-- constructible today (see `profileExtension_generatorCount_zero`).
 
 /-- Proof-relevant view of the five local admission evidence fields.
 
@@ -559,8 +564,8 @@ theorem etaReductionExtension_localAdmissionRecord :
     etaReductionExtension.Admitted :=
   etaReductionExtension.admitted_from_fields
 
--- This file defines no structural lens for `etaReductionExtension`; a
--- `RawTerm`-aware structural lens is not part of the current subsystem.
+-- `etaReductionExtension`'s lens is `etaReductionExtensionLens` in
+-- `ProfileLens.lean` (the degenerate instance — eta adds no generators).
 
 /-- Extended FX with eta bookkeeping as a `PolyProfile` value.  The extension
 does not add an algebra-extension theorem. -/
