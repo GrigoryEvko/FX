@@ -437,6 +437,7 @@ import FX1Poly.Typed.UnitCollapseNeutralBoundary
 import FX1Poly.Typed.UnitNeutralSpineDetection
 import FX1Poly.Typed.UnitSpineDetectionBoundary
 import FX1Poly.Typed.TypeDirectedUnitReadback
+import FX1Poly.Typed.EtaReadbackFrameBoundary
 import FX1Poly.Typed.UnitReadbackArgumentBoundary
 import FX1Poly.Typed.UnitReadbackFormerChildBoundary
 import FX1Poly.Typed.UnitReadbackDeepSpineBoundary
@@ -1107,3 +1108,26 @@ costed Route A (staged substrate migration, per-eliminator atomic stages) / Rout
 (extrinsic-motive judgments) / Route C (rejected) decision record. -/
 
 #assert_no_axioms FX1Poly.Typed.boolElim_arity_isFlat
+
+/-! ### The η-readback FRAME BOUNDARY (the Σ/modal/cubical verdict)
+
+The advanced η-long readback arms are FRAME-BLOCKED, not unwritten: each
+advanced η-expansion (`pair (fst t) (snd t)`, `modIntro (modElim t)`,
+`pathLam (...)`, `glueIntro (...) t`) is grown-UNTYPABLE (its head has no
+row in any grown rule table), so an η-expanding arm at those classifiers
+could never satisfy the readback soundness's `ofBetaEtaConv` obligation.
+The shipped behavior at a Σ classifier — neutral-spine delegation — is
+pinned by reduction.  The unlock is named in the module docstring (grown
+intro rows beyond the binder schema, or a combined-engine frame). -/
+
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_pair
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_modIntro
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_pathLam
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_glueIntro
+#assert_no_axioms FX1Poly.Typed.etaPairSource_notGrownTyped
+#assert_no_axioms FX1Poly.Typed.etaModIntroSource_notGrownTyped
+#assert_no_axioms FX1Poly.Typed.etaPathLamSource_notGrownTyped
+#assert_no_axioms FX1Poly.Typed.etaGlueIntroSource_notGrownTyped
+#assert_no_axioms FX1Poly.Typed.sigmaTyCodeCell_ne_unitTypeCell
+#assert_no_axioms FX1Poly.Typed.asPiCode?_sigma_isNone
+#assert_no_axioms FX1Poly.Typed.readbackAtClassifier_sigmaDelegatesToSpine

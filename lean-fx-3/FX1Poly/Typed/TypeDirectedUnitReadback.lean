@@ -57,9 +57,13 @@ classifiers) and the subject grown-typed; data-intro-typed subjects (e.g. `unitC
 enter only as direct-form right-hand sides.  (2) RETIRED (brick 8): literal Π/unit matching is
 COMPLETE on formation-typed classifiers and wf lookups — formation subjects are step-free, so
 `Conv`-disguised type codes do not exist in the soundness domain
-(`FormationClassifierRigidity`).  (3) Σ (surjective pairing, #361) and the modal/cubical η
-classifiers (#363) are not yet arms.  Each widening strengthens the same soundness
-statement.
+(`FormationClassifierRigidity`).  (3) Σ (surjective pairing) and the modal/cubical η
+classifiers are FRAME-BLOCKED, not merely unwritten: their η-expansions are grown-UNTYPABLE
+(the grown engine has no pair/modIntro/pathLam/glueIntro rules), so an η-expanding arm could
+not satisfy this soundness statement's `ofBetaEtaConv` obligation — see
+`EtaReadbackFrameBoundary.lean` for the machine-checked pins, the honest Σ-delegation
+behavior, and the named unlock (grown intro rows beyond the binder schema, or a
+combined-engine soundness frame).
 
 ## Zero-axiom verification
 
