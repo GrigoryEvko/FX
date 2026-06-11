@@ -16,6 +16,7 @@ import FX1Poly.Typed.HasTypeDescIdElim
 import FX1Poly.Typed.HasTypeDescOptionMatch
 import FX1Poly.Typed.HasTypeDescEitherMatch
 import FX1Poly.Typed.HasTypeDescSigmaProjection
+import FX1Poly.Typed.HasTypeDescBridge
 
 /-! # FX1Poly/Typed/StaticTypingSoundness — the honest classifier's NEGATIVE soundness (reserved ⟹ untyped by EVERY engine)
 
@@ -24,7 +25,7 @@ engine types a cell headed by the given generator.  That file ships the POSITIVE
 family showing a representative live head computes `true`.  This file ships the missing soundness half, turning
 `hasSomeTypingRule` from "computes a `Bool`" into "the `Bool` is TRUTHFUL": **a head the classifier reports as
 RESERVED (`= false`) is typed by NO engine at all.**  Without this, the classifier could lie — branding a
-genuinely-typed head reserved — and the honesty arc's whole premise (that the 203-generator table truthfully
+genuinely-typed head reserved — and the honesty arc's whole premise (that the 205-generator table truthfully
 records which names carry static meaning) would be unverified.
 
 The statement is one negative-soundness theorem per typing engine the classifier consults, each of the form
@@ -38,7 +39,8 @@ bundle `reservedHeadUntypedByEveryEngine` conjoining all of them.
     non-bespoke, exactly `isUntypableHead`'s precondition.
   * **Standalone engines** (`HasTypeDescFlat` / `BaseType` / `DataIntro` / `NatIntro` / `IdIntro` / `OptionIntro`
     / `EitherIntro` / `PairIntro` / `ListIntro` / `BoolElim` / `IdElim` / `OptionMatch` / `EitherMatch` /
-    `SigmaProjection`).  Each consumes its shipped `subjectIs…` closed-forms inversion: every typed subject is one
+    `SigmaProjection` / `Bridge`).  Each consumes its shipped `subjectIs…` closed-forms inversion (the bridge leg
+    cases the derivation directly — every arm's subject is a concrete cell): every typed subject is one
     of a fixed set of constructor / eliminator cells, each with a head the classifier reports `true`, so a
     `false` report is `Bool.noConfusion`.  (`Flat` keys on a symbolic generator with a `flatTypingRuleDescOf …
     = some …` witness rather than concrete cells, so its leg collapses the disjunction chain via
@@ -51,7 +53,7 @@ is not a member of the classifier union and is out of scope.
 
 ## Zero-axiom
 
-The grown bridge peels the left-associated 24-disjunct `||` chain with the propext-free `orEqFalse_leftFalse` /
+The grown bridge peels the left-associated 30-disjunct `||` chain with the propext-free `orEqFalse_leftFalse` /
 `orEqFalse_rightFalse` projections (`cases` + `Bool.noConfusion`, never `Bool.or_eq_false_iff` which would leak
 `propext`), reduces `typingRoleOf` via `if_neg` on the three failed guards, and discharges `isUntypableHead` with
 `decide_eq_true` (the propext-free `decide`-introduction).  Each standalone leg is `rcases` on a shipped inversion
@@ -92,9 +94,15 @@ grown leg reuse `UntypableHeadDecision.isUntypableHead_sound` rather than re-inv
 theorem hasSomeTypingRule_false_imp_isUntypableHead (generator : Generator)
     (reserved : hasSomeTypingRule generator = false) : isUntypableHead generator = true := by
   dsimp only [hasSomeTypingRule] at reserved
-  -- Peel the left-associated 24-disjunct chain to the five grown-relevant atoms.
-  have rest23 := orEqFalse_leftFalse reserved
-  have universeCodeFalse := orEqFalse_rightFalse reserved
+  -- Peel the left-associated 30-disjunct chain to the five grown-relevant atoms.
+  have rest29 := orEqFalse_leftFalse reserved
+  have rest28 := orEqFalse_leftFalse rest29
+  have rest27 := orEqFalse_leftFalse rest28
+  have rest26 := orEqFalse_leftFalse rest27
+  have rest25 := orEqFalse_leftFalse rest26
+  have rest24 := orEqFalse_leftFalse rest25
+  have rest23 := orEqFalse_leftFalse rest24
+  have universeCodeFalse := orEqFalse_rightFalse rest24
   have varFalse := orEqFalse_rightFalse rest23
   have rest22 := orEqFalse_leftFalse rest23
   have rest21 := orEqFalse_leftFalse rest22
@@ -261,13 +269,21 @@ theorem sigmaProjectionReservedUntyped {profile : PolyProfile} {scope : Nat}
   rcases HasTypeDescSigmaProjection.subjectIsSigmaProjection typed with ⟨_pairTerm, rfl⟩ | ⟨_pairTerm, rfl⟩ <;>
     exact Bool.noConfusion reserved
 
+/-- BRIDGE engine (interval/bridge formation, endpoints, path intro/elim).  Every arm's subject is a
+concrete cell whose head the classifier reports `true`, so a `false` report is `Bool.noConfusion`. -/
+theorem bridgeReservedUntyped {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
+    (typed : HasTypeDescBridge profile context subject classifier) : False := by
+  cases typed <;> exact Bool.noConfusion reserved
+
 /-! ## ★ The bundle — reserved ⟹ untyped by EVERY engine -/
 
 /-- **★ HON-5 headline: a head the honest classifier reports RESERVED is typed by NO engine.**  For a subject
 whose head `hasSomeTypingRule` reports `false`, every typing engine the classifier consults — grown
-(`HasTypeDescPi`), flat, base-type, and the twelve standalone data intro/elim engines — rejects it at every
-classifier.  This is the soundness that makes `hasSomeTypingRule = false` a TRUTHFUL "statically reserved"
-verdict, not just a `Bool` that happens to compute. -/
+(`HasTypeDescPi`), flat, base-type, the twelve standalone data intro/elim engines, and the bridge engine —
+rejects it at every classifier.  This is the soundness that makes `hasSomeTypingRule = false` a TRUTHFUL
+"statically reserved" verdict, not just a `Bool` that happens to compute. -/
 theorem reservedHeadUntypedByEveryEngine {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false) :
@@ -285,7 +301,8 @@ theorem reservedHeadUntypedByEveryEngine {profile : PolyProfile} {scope : Nat}
     (∀ classifier : RawTerm scope, ¬ HasTypeDescIdElim profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescOptionMatch profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescEitherMatch profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescSigmaProjection profile context subject classifier) :=
+    (∀ classifier : RawTerm scope, ¬ HasTypeDescSigmaProjection profile context subject classifier) ∧
+    (∀ classifier : RawTerm scope, ¬ HasTypeDescBridge profile context subject classifier) :=
   ⟨fun _ typed => grownReservedUntyped reserved typed,
    fun _ typed => flatReservedUntyped reserved typed,
    fun _ typed => baseTypeReservedUntyped reserved typed,
@@ -300,6 +317,7 @@ theorem reservedHeadUntypedByEveryEngine {profile : PolyProfile} {scope : Nat}
    fun _ typed => idElimReservedUntyped reserved typed,
    fun _ typed => optionMatchReservedUntyped reserved typed,
    fun _ typed => eitherMatchReservedUntyped reserved typed,
-   fun _ typed => sigmaProjectionReservedUntyped reserved typed⟩
+   fun _ typed => sigmaProjectionReservedUntyped reserved typed,
+   fun _ typed => bridgeReservedUntyped reserved typed⟩
 
 end FX1Poly.Typed

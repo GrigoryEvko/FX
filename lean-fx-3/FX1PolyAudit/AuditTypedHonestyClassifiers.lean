@@ -749,11 +749,13 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.natElimMulFaithful.threeTimesTwo
 -- ★ HON-5 NEGATIVE soundness of the honest static-typing classifier: a head hasSomeTypingRule reports RESERVED
 -- (= false) is typed by NO engine. Grown leg = the propext-free bridge hasSomeTypingRule_false_imp_isUntypableHead
--- (peels the 24-disjunct || chain via orEqFalse_left/rightFalse, reduces typingRoleOf via if_neg, discharges with
--- decide_eq_true) feeding the shipped isUntypableHead_sound; the 14 standalone legs consume each engine's shipped
--- subjectIs… inversion + Bool.noConfusion (Flat keys on a symbolic generator, so collapses the chain via
--- Bool.or_true/true_or). reservedHeadUntypedByEveryEngine bundles all 15. Turns hasSomeTypingRule = false from a
--- Bool into a TRUTHFUL "statically reserved" verdict.
+-- (peels the 30-disjunct || chain via orEqFalse_left/rightFalse — six more peels since the OP1-INT bridge-family
+-- flip — reduces typingRoleOf via if_neg, discharges with decide_eq_true) feeding the shipped
+-- isUntypableHead_sound; the 15 standalone legs consume each engine's shipped subjectIs… inversion +
+-- Bool.noConfusion (Flat keys on a symbolic generator, so collapses the chain via Bool.or_true/true_or; the
+-- bridge leg cases the HasTypeDescBridge derivation directly — every arm's subject is a concrete cell).
+-- reservedHeadUntypedByEveryEngine bundles all 16. Turns hasSomeTypingRule = false from a Bool into a TRUTHFUL
+-- "statically reserved" verdict.
 #assert_no_axioms FX1Poly.Typed.orEqFalse_leftFalse
 #assert_no_axioms FX1Poly.Typed.orEqFalse_rightFalse
 #assert_no_axioms FX1Poly.Typed.notEqTrue_ofEqFalse
@@ -773,6 +775,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.optionMatchReservedUntyped
 #assert_no_axioms FX1Poly.Typed.eitherMatchReservedUntyped
 #assert_no_axioms FX1Poly.Typed.sigmaProjectionReservedUntyped
+#assert_no_axioms FX1Poly.Typed.bridgeReservedUntyped
 #assert_no_axioms FX1Poly.Typed.reservedHeadUntypedByEveryEngine
 -- ★ RECURSIVE list-eliminator computing canonicity (ListElimComputingCanonicity), completing the
 -- recursive-eliminator computing-canonicity family (nat + list). listElim's cons ι-rule is a TRIPLE-nested app
@@ -802,7 +805,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- ★ SEMANTIC-TIER soundness (SemanticTierSoundness): the unified live/reserved ledger's RESERVED verdict is
 -- TRUTHFUL. semanticTier g = .reserved decomposes (semanticTier_reserved_imp_both_false) into BOTH classifier
 -- Bools false — were the || true the tier if would yield .live, refuted by SemanticTier.noConfusion — feeding
--- the HON-5 static leg (reserved ⟹ untyped by every engine; grown representative + full-15 bundle) and the
+-- the HON-5 static leg (reserved ⟹ untyped by every engine; grown representative + full-16 bundle) and the
 -- HON-6 operational leg (reserved ⟹ no root redex). semanticTierReservedSound is the headline: a reserved
 -- generator is semantically dead (grown-untyped AND operationally inert). The soundness that makes the honest
 -- 203-generator partition a VERIFIED ledger, not an unchecked Bool. Zero-axiom (cases on the || + if_pos + the

@@ -95,25 +95,33 @@ theorem intervalCode_binderShifts_pin : Generator.gen_intervalCode.binderShifts 
 /-- The LANDED bridge former is ternary flat, exactly the `gen_idCode` template shape. -/
 theorem bridgeCode_binderShifts_pin : Generator.gen_bridgeCode.binderShifts = [0, 0, 0] := rfl
 
-/-- The landed substrate generators are RESERVED — pure substrate, no typing rows, no
-redex head; the rows are the remaining OP1-INT work. -/
-theorem landedParamSubstrate_reserved :
-    semanticTier .gen_intervalCode = .reserved ∧
-    semanticTier .gen_bridgeCode = .reserved :=
+/-- The landed substrate generators are LIVE — the HasTypeDescBridge rows give them static
+semantics; the endpoint-ι Step arm is the remaining operational gap. -/
+theorem landedParamSubstrate_live :
+    semanticTier .gen_intervalCode = .live ∧
+    semanticTier .gen_bridgeCode = .live :=
   ⟨rfl, rfl⟩
 
-/-- The ENTIRE param-relevant substrate is semantically RESERVED — no typing rules in any
-engine and no β/ι redex head.  The rows designed above are genuinely NEW semantics, not a
-re-description of existing meaning. -/
-theorem paramSubstrate_allReserved :
-    semanticTier .gen_pathLam = .reserved ∧
-    semanticTier .gen_pathApp = .reserved ∧
-    semanticTier .gen_interval0 = .reserved ∧
-    semanticTier .gen_interval1 = .reserved ∧
+/-- **The bridge-row substrate is now semantically LIVE** (the HasTypeDescBridge rows flipped
+the classifier): the dimension-binder pair, the endpoints, and the landed interval/bridge
+codes are all typed by the standalone bridge engine and covered by the ONORM-M2 admission
+gate's per-role sconing dispatches. -/
+theorem paramSubstrate_rowsLive :
+    semanticTier .gen_pathLam = .live ∧
+    semanticTier .gen_pathApp = .live ∧
+    semanticTier .gen_interval0 = .live ∧
+    semanticTier .gen_interval1 = .live ∧
+    semanticTier .gen_intervalCode = .live ∧
+    semanticTier .gen_bridgeCode = .live :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+/-- The de Morgan CONNECTIONS (Kan-cubical surplus, not consumed by parametricity) remain
+reserved — internal parametricity needs only the endpoints. -/
+theorem paramSubstrate_connectionsReserved :
     semanticTier .gen_intervalOpp = .reserved ∧
     semanticTier .gen_intervalMeet = .reserved ∧
     semanticTier .gen_intervalJoin = .reserved :=
-  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+  ⟨rfl, rfl, rfl⟩
 
 /-- The observational-equality family is likewise reserved (shared endpoint-computation rule
 shape, surveyed for the HOTT track's benefit). -/
@@ -152,32 +160,33 @@ def paramSubstrateLedger : ParamSubstrateLedger where
   hasIntervalEndpoints := true
   hasIntervalTypeCode := true
   hasBridgeFormer := true
-  hasDimensionTypingRows := false
+  hasDimensionTypingRows := true
   hasEndpointComputation := false
   hasAffinityDiscipline := true
 
-/-- The gap pins, read off the ledger (stability guard: if a future firing lands one of the
-missing pieces, this theorem breaks and forces the ledger refresh). -/
+/-- The gap pin, read off the ledger (stability guard: when the endpoint-ι lands, this
+theorem breaks and forces the ledger refresh).  The LAST OP1-INT substrate gap. -/
 theorem paramSubstrateLedger_gapsPinned :
-    paramSubstrateLedger.hasDimensionTypingRows = false ∧
     paramSubstrateLedger.hasEndpointComputation = false :=
-  ⟨rfl, rfl⟩
+  rfl
 
-/-- The asset pins — now including the landed substrate generators. -/
+/-- The asset pins — the landed generators, the GRADED typing rows (HasTypeDescBridge), and
+the affine discipline. -/
 theorem paramSubstrateLedger_assetsPinned :
     paramSubstrateLedger.hasDimensionBinderPair = true ∧
     paramSubstrateLedger.hasIntervalEndpoints = true ∧
     paramSubstrateLedger.hasIntervalTypeCode = true ∧
     paramSubstrateLedger.hasBridgeFormer = true ∧
+    paramSubstrateLedger.hasDimensionTypingRows = true ∧
     paramSubstrateLedger.hasAffinityDiscipline = true :=
-  ⟨rfl, rfl, rfl, rfl, rfl⟩
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
 
-/-- **The reserved-tier coherence of the gap statement**: `hasDimensionTypingRows = false` is
-not an unverified ledger entry — it FOLLOWS from the machine-checked tier pins (a reserved
-generator is untyped by every engine, HON-5). -/
-theorem dimensionTypingRowsGap_coherentWithTier :
-    paramSubstrateLedger.hasDimensionTypingRows = false ∧
-    semanticTier .gen_pathLam = .reserved ∧ semanticTier .gen_pathApp = .reserved :=
-  ⟨rfl, paramSubstrate_allReserved.1, paramSubstrate_allReserved.2.1⟩
+/-- **The live-tier coherence of the rows claim**: `hasDimensionTypingRows = true` is not an
+unverified ledger entry — it is WITNESSED by the classifier flip (the bridge heads are
+semantically live, which the honest classifier derives from `hasSomeTypingRule`). -/
+theorem dimensionTypingRows_coherentWithTier :
+    paramSubstrateLedger.hasDimensionTypingRows = true ∧
+    semanticTier .gen_pathLam = .live ∧ semanticTier .gen_pathApp = .live :=
+  ⟨rfl, paramSubstrate_rowsLive.1, paramSubstrate_rowsLive.2.1⟩
 
 end FX1Poly.Typed

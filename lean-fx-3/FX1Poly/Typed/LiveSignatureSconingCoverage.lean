@@ -111,6 +111,12 @@ inductive LiveGenerator where
   | boolCode
   | natCode
   | unitCode
+  | intervalCode
+  | bridgeCode
+  | interval0
+  | interval1
+  | pathLam
+  | pathApp
 
 /-- The generator each live-signature member names. -/
 def LiveGenerator.generator : LiveGenerator → Generator
@@ -154,6 +160,12 @@ def LiveGenerator.generator : LiveGenerator → Generator
   | .boolCode => .gen_boolCode
   | .natCode => .gen_natCode
   | .unitCode => .gen_unitCode
+  | .intervalCode => .gen_intervalCode
+  | .bridgeCode => .gen_bridgeCode
+  | .interval0 => .gen_interval0
+  | .interval1 => .gen_interval1
+  | .pathLam => .gen_pathLam
+  | .pathApp => .gen_pathApp
 
 /-- **Soundness of the enumeration**: every member of the live-signature enumeration is reported
 live by the honest classifier — 40 kernel evaluations of `semanticTier`. -/
@@ -169,14 +181,15 @@ def LiveGenerator.all : List LiveGenerator :=
    .optionNone, .optionSome, .optionMatch, .eitherInl, .eitherInr, .eitherMatch,
    .refl, .idJ, .idStrictRec, .universeCode, .arrowCode, .piTyCode, .sigmaTyCode,
    .productCode, .sumCode, .listCode, .optionCode, .eitherCode, .equivCode,
-   .emptyCode, .boolCode, .natCode, .unitCode]
+   .emptyCode, .boolCode, .natCode, .unitCode,
+   .intervalCode, .bridgeCode, .interval0, .interval1, .pathLam, .pathApp]
 
 /-- The live signature as a generator list — the carrier of the admission gate. -/
 def liveSignatureList : List Generator := LiveGenerator.all.map LiveGenerator.generator
 
-/-- The live signature has exactly forty members — the count pin (breaks when the enumeration
-grows or shrinks without updating the recorded size). -/
-theorem liveSignature_count : liveSignatureList.length = 40 := rfl
+/-- The live signature has exactly forty-six members — the count pin (breaks when the
+enumeration grows or shrinks without updating the recorded size). -/
+theorem liveSignature_count : liveSignatureList.length = 46 := rfl
 
 /-- ★ **The O-NORM admission gate**: every generator the honest classifier reports semantically
 LIVE is in the enumerated live signature (Boolean `contains` — the `List.Mem` decidability
@@ -210,6 +223,11 @@ inductive SconingCoverageRole where
   | neutralLeaf
   /-- Root-reduction heads: covered by the reduction rule + the per-regime reducibility arc. -/
   | eliminator
+  /-- Typed elimination heads with NO root reduction rule TODAY (the bridge `pathApp`, whose
+  endpoint-ι is the recorded OP1-INT gap): β/ι-inert, hence weak-head normal — covered by the
+  unconditional neutral lift; migrates to `eliminator` when its ι lands (this enum breaks then,
+  by design). -/
+  | inertEliminator
 
 /-- The coverage role of each live-signature member. -/
 def LiveGenerator.sconingRole : LiveGenerator → SconingCoverageRole
@@ -253,6 +271,12 @@ def LiveGenerator.sconingRole : LiveGenerator → SconingCoverageRole
   | .boolCode => .neutralFormer
   | .natCode => .neutralFormer
   | .unitCode => .neutralFormer
+  | .intervalCode => .neutralFormer
+  | .bridgeCode => .neutralFormer
+  | .interval0 => .valueConstructor
+  | .interval1 => .valueConstructor
+  | .pathLam => .abstractionConstructor
+  | .pathApp => .inertEliminator
 
 /-- ★ **Every neutral-former cell admits a glued-model lift** — for EVERY payload and child vector,
 unconditionally: the cell is weak-head normal (no β head, no root ι, no eliminator scrutinee — the
@@ -372,6 +396,22 @@ theorem LiveGenerator.neutralFormerCellHasGluedLift {scope : Nat} :
           (fun _reduct weakHeadStep => by
             cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
           (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
+  | .intervalCode, _roleEq => fun payload children =>
+      ⟨⟨.mkGen .gen_intervalCode payload children, IsStronglyNormalizing,
+        ReducibleType.neutral
+          (fun _reduct weakHeadStep => by
+            cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+          (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
+  | .bridgeCode, _roleEq => fun payload children =>
+      ⟨⟨.mkGen .gen_bridgeCode payload children, IsStronglyNormalizing,
+        ReducibleType.neutral
+          (fun _reduct weakHeadStep => by
+            cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+          (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
+  | .interval0, roleEq => nomatch roleEq
+  | .interval1, roleEq => nomatch roleEq
+  | .pathLam, roleEq => nomatch roleEq
+  | .pathApp, roleEq => nomatch roleEq
 
 /-- **The dependent-former role is exactly Π** — the one live former whose glued lift is
 CONDITIONAL (the SN-091 `piLift` needs the modeled-codomain data; weak-head normality alone cannot
@@ -420,6 +460,12 @@ theorem LiveGenerator.dependentFormerIsPi :
   | .boolCode, roleEq => nomatch roleEq
   | .natCode, roleEq => nomatch roleEq
   | .unitCode, roleEq => nomatch roleEq
+  | .intervalCode, roleEq => nomatch roleEq
+  | .bridgeCode, roleEq => nomatch roleEq
+  | .interval0, roleEq => nomatch roleEq
+  | .interval1, roleEq => nomatch roleEq
+  | .pathLam, roleEq => nomatch roleEq
+  | .pathApp, roleEq => nomatch roleEq
 
 /-- **The Π former's conditional glued lift** — the SN-091 `piLift` restated as the dependent
 former's coverage: given the modeled-codomain data, the Π cell admits a glued lift whose scone is
@@ -481,6 +527,12 @@ def LiveGenerator.constructorFamily :
   | .boolCode, roleEq => nomatch roleEq
   | .natCode, roleEq => nomatch roleEq
   | .unitCode, roleEq => nomatch roleEq
+  | .intervalCode, roleEq => nomatch roleEq
+  | .bridgeCode, roleEq => nomatch roleEq
+  | .interval0, _roleEq => .intervalFamily
+  | .interval1, _roleEq => .intervalFamily
+  | .pathLam, roleEq => nomatch roleEq
+  | .pathApp, roleEq => nomatch roleEq
 
 /-- **Every value constructor's family candidate is a full Girard reducibility candidate** — the
 SN-082 coverage theorem applied at the constructor's own pinned family. -/
@@ -544,6 +596,12 @@ theorem LiveGenerator.neutralLeafMemberOfEveryCandidate {scope : Nat} :
   | .boolCode, roleEq => nomatch roleEq
   | .natCode, roleEq => nomatch roleEq
   | .unitCode, roleEq => nomatch roleEq
+  | .intervalCode, roleEq => nomatch roleEq
+  | .bridgeCode, roleEq => nomatch roleEq
+  | .interval0, roleEq => nomatch roleEq
+  | .interval1, roleEq => nomatch roleEq
+  | .pathLam, roleEq => nomatch roleEq
+  | .pathApp, roleEq => nomatch roleEq
 
 /-- **The abstraction constructor preserves the SN scone**: a λ-cell with strongly-normalizing
 domain annotation and body is strongly normalizing (`lam_isStronglyNormalizing_of_body`).  The full
@@ -606,6 +664,90 @@ theorem LiveGenerator.eliminatorHasRedexHead :
   | .boolCode, roleEq => nomatch roleEq
   | .natCode, roleEq => nomatch roleEq
   | .unitCode, roleEq => nomatch roleEq
+  | .intervalCode, roleEq => nomatch roleEq
+  | .bridgeCode, roleEq => nomatch roleEq
+  | .interval0, roleEq => nomatch roleEq
+  | .interval1, roleEq => nomatch roleEq
+  | .pathLam, roleEq => nomatch roleEq
+  | .pathApp, roleEq => nomatch roleEq
+
+/-- **The bridge abstraction constructor preserves the SN scone** — the `pathLam` twin of the
+λ coverage: a path-abstraction cell with a strongly-normalizing body is strongly normalizing
+(`pathLam_isStronglyNormalizing_of_body`, the unary-binder cong closure).  The full bridge
+MEMBERSHIP of the abstraction — pathLam-cells inhabit the bridge scone — is the OP1-INT
+verdict residual (the affine-dimension glued-model statement over the graded `pathIntro`
+row). -/
+theorem LiveGenerator.pathAbstractionConstructorPreservesSn {scope : Nat}
+    {body : RawTerm (scope + 1)} (bodyNormalizing : IsStronglyNormalizing body) :
+    IsStronglyNormalizing
+      (.mkGen .gen_pathLam () (.childCons body .childNil) : RawTerm scope) :=
+  pathLam_isStronglyNormalizing_of_body bodyNormalizing
+
+/-- **The inert-eliminator coverage** — the typed-but-β/ι-inert elimination heads (today:
+exactly `pathApp`, whose endpoint-ι is the recorded OP1-INT gap).  An inert eliminator's cells
+are weak-head normal (no root rule exists), so the UNCONDITIONAL neutral lift covers them —
+the honest contrast with the `.eliminator` role, whose coverage demands `hasRedexHead = true`.
+When the endpoint-ι lands, `pathApp` migrates to `.eliminator` and this dispatch loses its
+real arm (the enum breaks, by design). -/
+theorem LiveGenerator.inertEliminatorCellHasGluedLift {scope : Nat} :
+    (liveGenerator : LiveGenerator) →
+      liveGenerator.sconingRole = .inertEliminator →
+      ∀ (payload : (liveGenerator.generator).payload scope)
+        (children : RawTermChildren (liveGenerator.generator).binderShifts scope),
+        ∃ glued : GluedTypeCell scope,
+          glued.typeCell = .mkGen liveGenerator.generator payload children
+            ∧ glued.computable = IsStronglyNormalizing
+  | .var, roleEq => nomatch roleEq
+  | .unit, roleEq => nomatch roleEq
+  | .lam, roleEq => nomatch roleEq
+  | .app, roleEq => nomatch roleEq
+  | .pair, roleEq => nomatch roleEq
+  | .fst, roleEq => nomatch roleEq
+  | .snd, roleEq => nomatch roleEq
+  | .boolTrue, roleEq => nomatch roleEq
+  | .boolFalse, roleEq => nomatch roleEq
+  | .boolElim, roleEq => nomatch roleEq
+  | .natZero, roleEq => nomatch roleEq
+  | .natSucc, roleEq => nomatch roleEq
+  | .natElim, roleEq => nomatch roleEq
+  | .natRec, roleEq => nomatch roleEq
+  | .listNil, roleEq => nomatch roleEq
+  | .listCons, roleEq => nomatch roleEq
+  | .listElim, roleEq => nomatch roleEq
+  | .optionNone, roleEq => nomatch roleEq
+  | .optionSome, roleEq => nomatch roleEq
+  | .optionMatch, roleEq => nomatch roleEq
+  | .eitherInl, roleEq => nomatch roleEq
+  | .eitherInr, roleEq => nomatch roleEq
+  | .eitherMatch, roleEq => nomatch roleEq
+  | .refl, roleEq => nomatch roleEq
+  | .idJ, roleEq => nomatch roleEq
+  | .idStrictRec, roleEq => nomatch roleEq
+  | .universeCode, roleEq => nomatch roleEq
+  | .arrowCode, roleEq => nomatch roleEq
+  | .piTyCode, roleEq => nomatch roleEq
+  | .sigmaTyCode, roleEq => nomatch roleEq
+  | .productCode, roleEq => nomatch roleEq
+  | .sumCode, roleEq => nomatch roleEq
+  | .listCode, roleEq => nomatch roleEq
+  | .optionCode, roleEq => nomatch roleEq
+  | .eitherCode, roleEq => nomatch roleEq
+  | .equivCode, roleEq => nomatch roleEq
+  | .emptyCode, roleEq => nomatch roleEq
+  | .boolCode, roleEq => nomatch roleEq
+  | .natCode, roleEq => nomatch roleEq
+  | .unitCode, roleEq => nomatch roleEq
+  | .intervalCode, roleEq => nomatch roleEq
+  | .bridgeCode, roleEq => nomatch roleEq
+  | .interval0, roleEq => nomatch roleEq
+  | .interval1, roleEq => nomatch roleEq
+  | .pathLam, roleEq => nomatch roleEq
+  | .pathApp, _roleEq => fun payload children =>
+      ⟨⟨.mkGen .gen_pathApp payload children, IsStronglyNormalizing,
+        ReducibleType.neutral
+          (fun _reduct weakHeadStep => by
+            cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+          (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
 
 /-! ## The coverage carrier is EXACTLY the semantically-admissible set
 

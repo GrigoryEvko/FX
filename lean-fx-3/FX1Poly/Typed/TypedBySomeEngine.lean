@@ -71,6 +71,9 @@ def hasSomeTypingRule (g : Generator) : Bool :=
   || decide (g = .gen_optionMatch) || decide (g = .gen_eitherMatch)
   || decide (g = .gen_fst) || decide (g = .gen_snd)
   || decide (g = .gen_var) || decide (g = .gen_universeCode)
+  || decide (g = .gen_intervalCode) || decide (g = .gen_bridgeCode)
+  || decide (g = .gen_interval0) || decide (g = .gen_interval1)
+  || decide (g = .gen_pathLam) || decide (g = .gen_pathApp)
 
 /-! ## LIVE witnesses — one per engine family, by `rfl` -/
 

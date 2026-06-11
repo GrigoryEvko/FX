@@ -1274,22 +1274,28 @@ import FX1Poly.Typed.UniverseModeGenerators
 
 -- ★ THE O-NORM ADMISSION GATE: every semantically-live generator is sconing-covered
 -- (LiveSignatureSconingCoverage.lean, ONORM-M2 #1212 — the third SN-110 residual, closed). LiveGenerator =
--- the 40-ctor enumeration of the live signature (14 formers/codes + 15 value constructors + 11 eliminators;
--- LiveGenerator.isLive = 40 semanticTier kernel evaluations; liveSignature_count = 40 pin). ★
--- liveSignature_complete = THE GATE: every classifier-live generator is in the enumeration, by full 198-arm
+-- the 46-ctor enumeration of the live signature (16 formers/codes + 17 constructors/leaves + 11 eliminators
+-- + pathLam abstraction + pathApp inert eliminator; LiveGenerator.isLive = 46 semanticTier kernel
+-- evaluations; liveSignature_count = 46 pin). ★
+-- liveSignature_complete = THE GATE: every classifier-live generator is in the enumeration, by full 205-arm
 -- cases — reserved arms refute via absurd + of_decide_eq_true rfl on ¬(semanticTier g = .live) (EAGER, unlike
 -- nomatch whose postponed elaboration ESCAPES the first combinator — the new Lean trap this firing), live arms
 -- evaluate the Boolean contains by rfl (the List.Mem DECIDABILITY INSTANCE leaks propext — second new trap). A generator going live without an enum ctor + coverage arms BREAKS the theorem. The
--- six-way SconingCoverageRole taxonomy (the uniform "SN-closure for every live generator" is FALSE — untyped
+-- seven-way SconingCoverageRole taxonomy (the uniform "SN-closure for every live generator" is FALSE — untyped
 -- Ω — hence per-role coverage): ★ neutralFormerCellHasGluedLift = the NEW lifts (every non-Π former cell, for
--- EVERY payload/children, admits a glued-model SN-scone lift — the ONORM-M1 modalityLift recipe across all 13
--- live formers; the glued model is closed over the ENTIRE live former signature);
+-- EVERY payload/children, admits a glued-model SN-scone lift — the ONORM-M1 modalityLift recipe across the
+-- live formers incl. the OP1-INT intervalCode/bridgeCode; the glued model is closed over the ENTIRE live
+-- former signature);
 -- dependentFormerIsPi + piTyCode_hasConditionalGluedLift = the honest Π asymmetry (lift conditional on
 -- modeled-codomain data); constructorFamily + constructorFamilyHasTaitCandidate = each value constructor
--- pinned to ITS DataFormerFamily candidate (indexed, no cross-family discharge);
--- neutralLeafMemberOfEveryCandidate = the variable in every canonical-forms candidate;
+-- pinned to ITS DataFormerFamily candidate (indexed, no cross-family discharge — interval0/1 to
+-- intervalFamily); neutralLeafMemberOfEveryCandidate = the variable in every canonical-forms candidate;
 -- abstractionConstructorPreservesSn = λ SN-closure (full membership = the shipped abstraction FT arm);
--- eliminatorHasRedexHead = the operational half (semantic half = the SN-058..069 arc, per regime). HONEST:
+-- pathAbstractionConstructorPreservesSn = the pathLam twin (the graded bridge abstraction);
+-- eliminatorHasRedexHead = the operational half (semantic half = the SN-058..069 arc, per regime);
+-- inertEliminatorCellHasGluedLift = the NEW inertEliminator role (pathApp: typed by HasTypeDescBridge but
+-- β/ι-inert until the endpoint-ι lands — covered by the unconditional neutral lift; when the ι Step arm
+-- lands, hasRedexHead flips, the role migrates to eliminator, and the enum breaks BY DESIGN). HONEST:
 -- the modal fragment is correctly ABSENT (statically untyped + β/ι-inert; ONORM-M1 covers it semantically,
 -- joining this gate when a modal rule-table row lands). All zero-axiom.
 #assert_no_axioms FX1Poly.Typed.LiveGenerator
@@ -1308,7 +1314,9 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.constructorFamilyHasTaitCandidate
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.neutralLeafMemberOfEveryCandidate
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.abstractionConstructorPreservesSn
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.pathAbstractionConstructorPreservesSn
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.eliminatorHasRedexHead
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.inertEliminatorCellHasGluedLift
 
 -- SN-079: the coverage carrier is EXACTLY the M30 semantically-admissible set — soundness
 -- (every LiveGenerator member is SemanticallyAdmissible, 40 kernel evaluations) + completeness
@@ -2279,22 +2287,25 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- (gen_pathLam binderShifts [1] — the one-fresh-binder dimension abstraction — and
 -- gen_pathApp [0,0]), the interval endpoints (gen_interval0/1 nullary), and the ternary
 -- flat TEMPLATE for a future bridge former (gen_idCode [0,0,0]). GAPS pinned in the
--- ParamSubstrateLedger: no interval TYPE code (dimension binders cannot be context-bound),
--- no bridge FORMER (one new generator at CON-A1 cost, 203→204), no typing rows (the whole
--- family is semanticTier reserved — paramSubstrate_allReserved, 7-way), no endpoint-ι.
+-- ParamSubstrateLedger (NOW ALL CLOSED except the endpoint-ι): the interval TYPE code and
+-- bridge FORMER landed (brick 1), the GRADED typing rows landed (brick 2), the family went
+-- LIVE (brick 4) — paramSubstrateLedger_gapsPinned pins the ONE remaining substrate gap,
+-- hasEndpointComputation = false.
 -- THE DESIGN DECISION recorded in the module docstring: BCM bridge-dimension AFFINITY is
 -- inexpressible in the structural TypingContext but IS the shipped usage-semiring affine
 -- grade — the param rows are GRADED rows (type × usage dimensions jointly load-bearing,
--- a first). The typing-row schemas (formation/intro/elim/computation) are recorded as the
--- OP1-INT landing targets; the verdict question is the sconing admission gate (ONORM-M2).
--- dimensionTypingRowsGap_coherentWithTier ties the ledger's false to the HON-5 tier pins.
--- OP1-INT FIRST BRICK (#1231): the two substrate generators are now LANDED at CON-A1 cost —
+-- a first). OP1-INT BRICK 1 (#1231): the two substrate generators LANDED at CON-A1 cost —
 -- gen_intervalCode (nullary dimension classifier, tag 203) + gen_bridgeCode (ternary flat
 -- Bridge former on the gen_idCode template, children [type, term, term], tag 204); count pin
--- 203 → 205, all finite-polygraph/tag-round-trip theorems re-verified at the new size.  Both
--- are RESERVED (landedParamSubstrate_reserved) — substrate only, no rows, no Step arms; the
--- ledger flips hasIntervalTypeCode/hasBridgeFormer to true and the remaining OP1-INT gaps are
--- the GRADED typing rows + the endpoint ι, then the sconing-admission verdict.
+-- 203 → 205, all finite-polygraph/tag-round-trip theorems re-verified at the new size.
+-- OP1-INT BRICK 4 (THE LIVE FLIP): hasSomeTypingRule gained the six bridge-family decides
+-- (the HasTypeDescBridge rows are the static semantics), so semanticTier computes .live for
+-- the whole row family — paramSubstrate_rowsLive (6-way) + landedParamSubstrate_live pin it;
+-- the flip FORCED the ONORM-M2 coverage (the admission-gate mechanism working as designed):
+-- liveSignature 40 → 46 with per-role sconing dispatches for all six, which IS the
+-- sconing-admission GO verdict for the rows-without-ι fragment. The de Morgan connections
+-- stay reserved (paramSubstrate_connectionsReserved — parametricity needs only endpoints).
+-- dimensionTypingRows_coherentWithTier ties the ledger's true to the live tier pins.
 #assert_no_axioms FX1Poly.Typed.pathLam_binderShifts_pin
 #assert_no_axioms FX1Poly.Typed.pathApp_binderShifts_pin
 #assert_no_axioms FX1Poly.Typed.interval0_binderShifts_pin
@@ -2302,14 +2313,15 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.idCode_binderShifts_pin
 #assert_no_axioms FX1Poly.Typed.intervalCode_binderShifts_pin
 #assert_no_axioms FX1Poly.Typed.bridgeCode_binderShifts_pin
-#assert_no_axioms FX1Poly.Typed.landedParamSubstrate_reserved
-#assert_no_axioms FX1Poly.Typed.paramSubstrate_allReserved
+#assert_no_axioms FX1Poly.Typed.landedParamSubstrate_live
+#assert_no_axioms FX1Poly.Typed.paramSubstrate_rowsLive
+#assert_no_axioms FX1Poly.Typed.paramSubstrate_connectionsReserved
 #assert_no_axioms FX1Poly.Typed.oeqFamily_allReserved
 #assert_no_axioms FX1Poly.Typed.ParamSubstrateLedger
 #assert_no_axioms FX1Poly.Typed.paramSubstrateLedger
 #assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_gapsPinned
 #assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_assetsPinned
-#assert_no_axioms FX1Poly.Typed.dimensionTypingRowsGap_coherentWithTier
+#assert_no_axioms FX1Poly.Typed.dimensionTypingRows_coherentWithTier
 
 -- ★ THE GRADED BRIDGE ROWS (OP1-INT brick 2, FX1Poly/Typed/HasTypeDescBridge.lean +
 -- RawTerm.occurrenceCountAt in Core/RawTermFreeVars.lean): the standalone internal-
@@ -2324,8 +2336,10 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- constantBridgeAppliedTyped (pathApp at intervalZero — elim fires on the intro).
 -- pathLamSubjectIsAffine is the graded-row HONESTY inversion: the engine FORCES affinity
 -- (every typed bridge abstraction satisfies the bound), via the equation-motive recipe.
--- HONEST SCOPE: rows only — the endpoint-ι Step arm + the sconing-admission verdict remain
--- the open OP1-INT work; SR/SN for this engine deferred per the DI-family discipline.
+-- HONEST SCOPE: the rows are LIVE and admission-covered (brick 4); the endpoint-ι Step arm
+-- + the affine-dimension glued-model statement over pathIntro remain the open OP1-INT work;
+-- SR/SN for this engine deferred per the DI-family discipline.  The HON-5 negative-soundness
+-- bundle gained the bridge leg (bridgeReservedUntyped, 16th engine — gated with HON-5).
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt
 #assert_no_axioms FX1Poly.Core.RawTermChildren.occurrenceCountAt
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_var_self
