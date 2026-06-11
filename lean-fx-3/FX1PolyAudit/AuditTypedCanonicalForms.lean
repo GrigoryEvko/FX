@@ -739,6 +739,16 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- The grown disjunct (HasTypeDescPi at boolCode via conv/piElim) is the remaining CANON-1 residual. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.standaloneBoolCanonicalForms
 #assert_no_axioms FX1Poly.Typed.standaloneEmptyUninhabited
+-- INTERVAL NATIVE-ENGINE CANONICITY (NATIVE-10, the interval twin of standaloneBoolCanonicalForms): a subject
+-- typed at intervalTypeCell by EITHER standalone engine is interval0/interval1 — the two bridge-dimension
+-- endpoints. The 4th/5th coordinated data-intro rows give the endpoint directly; the bool/unit rows and the
+-- base-type disjunct (Type@0 != intervalCode) are ruled out by classifier-head Generator.noConfusion.
+-- ★ intervalEndpointsDistinct = interval0 != interval1 (head-generator mismatch); the faithfulness companion.
+-- ★ standaloneIntervalCanonicalFormsExactlyTwo = canonicity + distinctness bundled (exactly two distinct closed
+-- canonical inhabitants, the interval analogue of bool's {true,false} two-element canonicity). Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.standaloneIntervalCanonicalForms
+#assert_no_axioms FX1Poly.Typed.intervalEndpointsDistinct
+#assert_no_axioms FX1Poly.Typed.standaloneIntervalCanonicalFormsExactlyTwo
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtBoolType
 #assert_no_axioms FX1Poly.Typed.closedNormalBoolCanonicalForms
 #assert_no_axioms FX1Poly.Typed.closedBoolCanonicalForms

@@ -67,6 +67,59 @@ theorem standaloneBoolCanonicalForms {profile : PolyProfile} {scope : Nat}
       (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
         Generator.gen_boolCode = Generator.gen_universeCode)
 
+/-- **★ Combined interval canonical forms over the standalone engines (NATIVE-10).**  A subject typed at
+the interval/dimension type code `intervalTypeCell` by the data-intro engine OR the base-type engine is
+`intervalZeroValueCell` or `intervalOneValueCell` — the two interval endpoints.  The data-intro disjunct
+yields the endpoint directly (the 4th/5th coordinated rows); the bool/unit data-intro rows are RULED OUT
+by classifier-head mismatch (`gen_intervalCode ≠ gen_boolCode`/`gen_unitCode`), and the base-type disjunct
+is impossible (its classifier is `Type@0`, not `intervalCode`).  The interval twin of
+`standaloneBoolCanonicalForms`: closed canonical forms at the bridge-dimension type, through the native
+engines.  Combined with endpoint-β SR (NATIVE-08/09), a closed `t : intervalCode` reduces to an endpoint. -/
+theorem standaloneIntervalCanonicalForms {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject : RawTerm scope}
+    (typed : HasTypeDescDataIntro profile context subject intervalTypeCell ∨
+             HasTypeDescBaseType profile context subject intervalTypeCell) :
+    subject = intervalZeroValueCell ∨ subject = intervalOneValueCell := by
+  rcases typed with dataIntroTyped | baseTypeTyped
+  · rcases dataIntroTyped.subjectClassifierCoordinated with
+      ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨hSubject, _⟩ | ⟨hSubject, _⟩
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_intervalCode = Generator.gen_boolCode)
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_intervalCode = Generator.gen_boolCode)
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_intervalCode = Generator.gen_unitCode)
+    · exact Or.inl hSubject
+    · exact Or.inr hSubject
+  · exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
+        Generator.gen_intervalCode = Generator.gen_universeCode)
+
+/-- **The two interval canonical forms are DISTINCT.**  `interval0 ≠ interval1` — distinct head
+generators (`gen_interval0` vs `gen_interval1`, refuted by `Generator.noConfusion`).  The faithfulness
+companion to `standaloneIntervalCanonicalForms`: the interval/dimension type has no endpoint collapse. -/
+theorem intervalEndpointsDistinct {scope : Nat} :
+    (intervalZeroValueCell : RawTerm scope) ≠ intervalOneValueCell :=
+  fun endpointsEqual =>
+    Generator.noConfusion
+      (congrArg RawTerm.headGenerator endpointsEqual :
+        Generator.gen_interval0 = Generator.gen_interval1)
+
+/-- **★ The interval type has EXACTLY TWO distinct closed canonical forms.**  A subject typed at
+`intervalTypeCell` by either standalone engine is `interval0` or `interval1` (canonicity), and the two are
+distinct (faithfulness) — so the bridge-dimension type has precisely two closed canonical inhabitants, no
+more and no fewer.  The interval analogue of the bool `{true, false}` two-element canonicity. -/
+theorem standaloneIntervalCanonicalFormsExactlyTwo {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject : RawTerm scope}
+    (typed : HasTypeDescDataIntro profile context subject intervalTypeCell ∨
+             HasTypeDescBaseType profile context subject intervalTypeCell) :
+    (subject = intervalZeroValueCell ∨ subject = intervalOneValueCell) ∧
+    (intervalZeroValueCell : RawTerm scope) ≠ intervalOneValueCell :=
+  ⟨standaloneIntervalCanonicalForms typed, intervalEndpointsDistinct⟩
+
 /-- **The empty type code has no closed standalone inhabitant.**  Nothing is typed at `emptyTypeCell` by
 either standalone engine: the data-intro classifier is `boolTypeCell` (`gen_boolCode`), the base-type
 classifier is `Type@0` (`gen_universeCode`), and neither head is `emptyCode`'s (`gen_emptyCode`).  The
