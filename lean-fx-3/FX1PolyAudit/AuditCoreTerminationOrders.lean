@@ -32,7 +32,6 @@ import FX1Poly.Core.ParallelReduction
 import FX1Poly.Core.CompleteDevelopment
 import FX1Poly.Core.ParStepSubstRename
 import FX1Poly.Core.ParStepSubstPointwise
-import FX1Poly.Core.ParStepInversion
 import FX1Poly.Core.ParStepTriangle
 import FX1Poly.Core.RawConfluence
 import FX1Poly.Core.CommutationConfluence
@@ -349,27 +348,6 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.RawTermSubst.singleton_pointwiseParStep
 #assert_no_axioms FX1Poly.Core.ParStep.subst0_diagonal
 
--- ParStep cong-inversion at the non-redex-head constructors: a parallel reduct of mkGen C .. keeps the head
--- C with components reduced (only the cong arm's source unifies; the beta/iota arms have app/eliminator
--- sources).  These extract the developed sub-components the triangle's beta/iota arms need from the
--- cong-reduced children: completeDevelopment dispatches on the generator by by_cases (hiding deep subterms
--- from structural recursion), so completeDevelopment_parStep recurses only on the direct children spine and
--- extracts per-component ParSteps by these inversions.
-#assert_no_axioms FX1Poly.Core.ParStep.lam_inv
-#assert_no_axioms FX1Poly.Core.ParStep.pair_inv
-#assert_no_axioms FX1Poly.Core.ParStep.natSucc_inv
-#assert_no_axioms FX1Poly.Core.ParStep.listCons_inv
-#assert_no_axioms FX1Poly.Core.ParStep.optionSome_inv
-#assert_no_axioms FX1Poly.Core.ParStep.eitherInl_inv
-#assert_no_axioms FX1Poly.Core.ParStep.eitherInr_inv
--- Nullary scrutinee / witness inversions completing the 13-constructor set: the triangle's cong arm learns
--- from e.g. ParStep boolTrue sc' that sc' = boolTrue, so a cong-reduced redex is still a redex.
-#assert_no_axioms FX1Poly.Core.ParStep.boolTrue_inv
-#assert_no_axioms FX1Poly.Core.ParStep.boolFalse_inv
-#assert_no_axioms FX1Poly.Core.ParStep.natZero_inv
-#assert_no_axioms FX1Poly.Core.ParStep.listNil_inv
-#assert_no_axioms FX1Poly.Core.ParStep.optionNone_inv
-#assert_no_axioms FX1Poly.Core.ParStep.refl_inv
 
 -- The Takahashi triangle: every parallel reduct b of a further parallel-reduces to completeDevelopment a,
 -- the maximal-reduct property that discharges the ParStep DiamondProperty and hence (through the

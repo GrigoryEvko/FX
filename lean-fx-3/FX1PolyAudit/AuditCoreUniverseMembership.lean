@@ -32,7 +32,6 @@ import FX1Poly.Core.ParallelReduction
 import FX1Poly.Core.CompleteDevelopment
 import FX1Poly.Core.ParStepSubstRename
 import FX1Poly.Core.ParStepSubstPointwise
-import FX1Poly.Core.ParStepInversion
 import FX1Poly.Core.ParStepTriangle
 import FX1Poly.Core.RawConfluence
 import FX1Poly.Core.CommutationConfluence

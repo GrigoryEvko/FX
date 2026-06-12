@@ -1,4 +1,4 @@
-import FX1Poly.Core.StepTable
+import FX1Poly.Core.StepOverTable
 import FX1Poly.Core.RawIotaFullStepSN
 
 /-! # IotaTableOrientedSN — IOTA-T8 Tier-2: the SN tier of the rule table
