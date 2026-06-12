@@ -90,6 +90,17 @@ namespace Step
 
 /-- Single-step raw eta reduction, sibling to beta+iota `Step`.
 
+**LEGACY VIEW since the ETA-T7 flip** (`EtaTableCanonicalityFlip`):
+the kernel's canonical eta is the table relation
+(`StepEtaRootTable` / `StepEtaTable` over `etaRuleTable`).  The
+`etaModIntro`/`etaGlueIntro` arms below fire unconditionally on ANY
+raw term — a raw over-approximation the canonical semantics REPAIRS:
+their table rows carry `requiresTypedFiring = true` and refuse to fire
+raw (the divergence is pinned by `bespokeEtaModalOverFiringRepaired` /
+`bespokeEtaGlueOverFiringRepaired`; on typed subjects the relations
+coincide, `HasTypeDescPi.bespokeEtaIffCanonicalEta`).  Full retirement
+is the ETA-T9 task.
+
 The current `Generator` enum contains lambda/application,
 pair/projection, path abstraction/application, modal
 intro/elimination, and Glue intro/elimination.  Clock and

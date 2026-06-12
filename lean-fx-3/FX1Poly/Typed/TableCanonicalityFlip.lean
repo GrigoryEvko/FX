@@ -52,12 +52,14 @@ over any well-formed scope-uniform table or discharged at the canonical
 
 ## Honest exclusions (NOT yet table-driven)
 
-* η stays the bespoke `Step.eta` SIBLING inductive — the ETA-TABLE arc
-  (`EtaRuleDesc`, #1387–#1396) is filed and gated behind this flip;
 * `LevelExpr` normalization is a different carrier (the universe
   payload engine, M22);
 * the typing rules of `HasTypeDescPi` (piIntro/piElim) await the TYTAB
   arc — this flip is the OPERATIONAL semantics only.
+
+η joined the flip in ETA-T7: `EtaTableCanonicalityFlip` declares the
+table eta (`StepEtaRootTable`/`StepEtaTable`) official and repairs the
+bespoke modal/Glue raw over-firing through the typed-tier row gates.
 
 Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 `native_decide`, `omega`.  Per-declaration audit-gated in
