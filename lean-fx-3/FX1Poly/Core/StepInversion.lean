@@ -1,4 +1,5 @@
 import FX1Poly.Core.Step
+import FX1Poly.Core.StepTable
 
 /-! # Foundation/PolyCell/Core/StepInversion — Step inversion lemmas
 
@@ -95,8 +96,12 @@ theorem Step.no_step_from_unit
     {scope : Nat} {target : RawTerm scope} :
     ¬ Step (.mkGen .gen_unit () .childNil) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       exact StepChildren.no_step_at_empty_spine childStep
 
 /-! ## Leaf inversion suite
@@ -128,8 +133,12 @@ theorem Step.no_step_from_boolTrue
     {scope : Nat} {target : RawTerm scope} :
     ¬ Step (.mkGen .gen_boolTrue () .childNil) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       exact StepChildren.no_step_at_empty_spine childStep
 
 /-- **The `boolFalse` constructor admits no Step reduction.** -/
@@ -137,8 +146,12 @@ theorem Step.no_step_from_boolFalse
     {scope : Nat} {target : RawTerm scope} :
     ¬ Step (.mkGen .gen_boolFalse () .childNil) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       exact StepChildren.no_step_at_empty_spine childStep
 
 /-- **The `natZero` constructor admits no Step reduction.** -/
@@ -146,8 +159,12 @@ theorem Step.no_step_from_natZero
     {scope : Nat} {target : RawTerm scope} :
     ¬ Step (.mkGen .gen_natZero () .childNil) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       exact StepChildren.no_step_at_empty_spine childStep
 
 /-- **The `listNil` constructor admits no Step reduction.** -/
@@ -155,8 +172,12 @@ theorem Step.no_step_from_listNil
     {scope : Nat} {target : RawTerm scope} :
     ¬ Step (.mkGen .gen_listNil () .childNil) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       exact StepChildren.no_step_at_empty_spine childStep
 
 /-- **The `optionNone` constructor admits no Step reduction.** -/
@@ -164,8 +185,12 @@ theorem Step.no_step_from_optionNone
     {scope : Nat} {target : RawTerm scope} :
     ¬ Step (.mkGen .gen_optionNone () .childNil) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       exact StepChildren.no_step_at_empty_spine childStep
 
 /-- **No variable reference admits a Step reduction.**
@@ -179,8 +204,12 @@ theorem Step.no_step_from_var
     {scope : Nat} {idx : Fin scope} {target : RawTerm scope} :
     ¬ Step (.mkGen .gen_var idx .childNil) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       exact StepChildren.no_step_at_empty_spine childStep
 
 /-! ## Value-constructor inversions
@@ -234,17 +263,21 @@ theorem Step.from_lam
           .mkGen .gen_lam ()
             (.childCons domainAnn (.childCons bodyAfter .childNil)) ∧
         Step body bodyAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ domainStep =>
           rename_i domainAfter
-          exact Or.inl ⟨domainAfter, rfl, domainStep⟩
+          exact Or.inl ⟨domainAfter, targetEq, domainStep⟩
       | there _ restStep =>
           cases restStep with
           | here _ bodyStep =>
               rename_i bodyAfter
-              exact Or.inr ⟨bodyAfter, rfl, bodyStep⟩
+              exact Or.inr ⟨bodyAfter, targetEq, bodyStep⟩
           | there _ emptyStep =>
               exact absurd emptyStep StepChildren.no_step_at_empty_spine
 
@@ -261,12 +294,16 @@ theorem Step.from_pathLam
     ∃ (bodyAfter : RawTerm (scope + 1)),
       target = .mkGen .gen_pathLam () (.childCons bodyAfter .childNil) ∧
       Step body bodyAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ bodyStep =>
           rename_i bodyAfter
-          exact ⟨bodyAfter, rfl, bodyStep⟩
+          exact ⟨bodyAfter, targetEq, bodyStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -282,12 +319,16 @@ theorem Step.from_diffLambda
     ∃ (bodyAfter : RawTerm (scope + 1)),
       target = .mkGen .gen_diffLambda () (.childCons bodyAfter .childNil) ∧
       Step body bodyAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ bodyStep =>
           rename_i bodyAfter
-          exact ⟨bodyAfter, rfl, bodyStep⟩
+          exact ⟨bodyAfter, targetEq, bodyStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -307,12 +348,16 @@ theorem Step.from_natSucc
     ∃ (predecessorAfter : RawTerm scope),
       target = .mkGen .gen_natSucc () (.childCons predecessorAfter .childNil) ∧
       Step predecessor predecessorAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ predecessorStep =>
           rename_i predecessorAfter
-          exact ⟨predecessorAfter, rfl, predecessorStep⟩
+          exact ⟨predecessorAfter, targetEq, predecessorStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -328,12 +373,16 @@ theorem Step.from_optionSome
     ∃ (valueAfter : RawTerm scope),
       target = .mkGen .gen_optionSome () (.childCons valueAfter .childNil) ∧
       Step value valueAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ valueStep =>
           rename_i valueAfter
-          exact ⟨valueAfter, rfl, valueStep⟩
+          exact ⟨valueAfter, targetEq, valueStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -346,12 +395,16 @@ theorem Step.from_eitherInl
     ∃ (valueAfter : RawTerm scope),
       target = .mkGen .gen_eitherInl () (.childCons valueAfter .childNil) ∧
       Step value valueAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ valueStep =>
           rename_i valueAfter
-          exact ⟨valueAfter, rfl, valueStep⟩
+          exact ⟨valueAfter, targetEq, valueStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -364,12 +417,16 @@ theorem Step.from_eitherInr
     ∃ (valueAfter : RawTerm scope),
       target = .mkGen .gen_eitherInr () (.childCons valueAfter .childNil) ∧
       Step value valueAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ valueStep =>
           rename_i valueAfter
-          exact ⟨valueAfter, rfl, valueStep⟩
+          exact ⟨valueAfter, targetEq, valueStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -389,12 +446,16 @@ theorem Step.from_refl
     ∃ (rawWitnessAfter : RawTerm scope),
       target = .mkGen .gen_refl () (.childCons rawWitnessAfter .childNil) ∧
       Step rawWitness rawWitnessAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ witnessStep =>
           rename_i rawWitnessAfter
-          exact ⟨rawWitnessAfter, rfl, witnessStep⟩
+          exact ⟨rawWitnessAfter, targetEq, witnessStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -411,12 +472,16 @@ theorem Step.from_modIntro
     ∃ (modalAfter : RawTerm scope),
       target = .mkGen .gen_modIntro () (.childCons modalAfter .childNil) ∧
       Step modalTerm modalAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ modalStep =>
           rename_i modalAfter
-          exact ⟨modalAfter, rfl, modalStep⟩
+          exact ⟨modalAfter, targetEq, modalStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -465,17 +530,21 @@ theorem Step.from_pair
         target = .mkGen .gen_pair ()
           (.childCons first (.childCons secondAfter .childNil)) ∧
         Step second secondAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ firstStep =>
           rename_i firstAfter
-          exact Or.inl ⟨firstAfter, rfl, firstStep⟩
+          exact Or.inl ⟨firstAfter, targetEq, firstStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ secondStep =>
               rename_i secondAfter
-              exact Or.inr ⟨secondAfter, rfl, secondStep⟩
+              exact Or.inr ⟨secondAfter, targetEq, secondStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -501,17 +570,21 @@ theorem Step.from_listCons
         target = .mkGen .gen_listCons ()
           (.childCons headVal (.childCons tailAfter .childNil)) ∧
         Step tailVal tailAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ headStep =>
           rename_i headAfter
-          exact Or.inl ⟨headAfter, rfl, headStep⟩
+          exact Or.inl ⟨headAfter, targetEq, headStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ tailValStep =>
               rename_i tailAfter
-              exact Or.inr ⟨tailAfter, rfl, tailValStep⟩
+              exact Or.inr ⟨tailAfter, targetEq, tailValStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -535,17 +608,21 @@ theorem Step.from_glueIntro
         target = .mkGen .gen_glueIntro ()
           (.childCons baseValue (.childCons partialAfter .childNil)) ∧
         Step partialValue partialAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ baseStep =>
           rename_i baseAfter
-          exact Or.inl ⟨baseAfter, rfl, baseStep⟩
+          exact Or.inl ⟨baseAfter, targetEq, baseStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ partialStep =>
               rename_i partialAfter
-              exact Or.inr ⟨partialAfter, rfl, partialStep⟩
+              exact Or.inr ⟨partialAfter, targetEq, partialStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -571,17 +648,21 @@ theorem Step.from_arrowCode
         target = .mkGen .gen_arrowCode ()
           (.childCons domain (.childCons codomainAfter .childNil)) ∧
         Step codomain codomainAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ domainStep =>
           rename_i domainAfter
-          exact Or.inl ⟨domainAfter, rfl, domainStep⟩
+          exact Or.inl ⟨domainAfter, targetEq, domainStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ codomainStep =>
               rename_i codomainAfter
-              exact Or.inr ⟨codomainAfter, rfl, codomainStep⟩
+              exact Or.inr ⟨codomainAfter, targetEq, codomainStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -602,17 +683,21 @@ theorem Step.from_productCode
         target = .mkGen .gen_productCode ()
           (.childCons leftType (.childCons rightTypeAfter .childNil)) ∧
         Step rightType rightTypeAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ leftTypeStep =>
           rename_i leftTypeAfter
-          exact Or.inl ⟨leftTypeAfter, rfl, leftTypeStep⟩
+          exact Or.inl ⟨leftTypeAfter, targetEq, leftTypeStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ rightTypeStep =>
               rename_i rightTypeAfter
-              exact Or.inr ⟨rightTypeAfter, rfl, rightTypeStep⟩
+              exact Or.inr ⟨rightTypeAfter, targetEq, rightTypeStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -633,17 +718,21 @@ theorem Step.from_sumCode
         target = .mkGen .gen_sumCode ()
           (.childCons leftType (.childCons rightTypeAfter .childNil)) ∧
         Step rightType rightTypeAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ leftTypeStep =>
           rename_i leftTypeAfter
-          exact Or.inl ⟨leftTypeAfter, rfl, leftTypeStep⟩
+          exact Or.inl ⟨leftTypeAfter, targetEq, leftTypeStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ rightTypeStep =>
               rename_i rightTypeAfter
-              exact Or.inr ⟨rightTypeAfter, rfl, rightTypeStep⟩
+              exact Or.inr ⟨rightTypeAfter, targetEq, rightTypeStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -664,17 +753,21 @@ theorem Step.from_eitherCode
         target = .mkGen .gen_eitherCode ()
           (.childCons leftType (.childCons rightTypeAfter .childNil)) ∧
         Step rightType rightTypeAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ leftTypeStep =>
           rename_i leftTypeAfter
-          exact Or.inl ⟨leftTypeAfter, rfl, leftTypeStep⟩
+          exact Or.inl ⟨leftTypeAfter, targetEq, leftTypeStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ rightTypeStep =>
               rename_i rightTypeAfter
-              exact Or.inr ⟨rightTypeAfter, rfl, rightTypeStep⟩
+              exact Or.inr ⟨rightTypeAfter, targetEq, rightTypeStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -695,17 +788,21 @@ theorem Step.from_equivCode
         target = .mkGen .gen_equivCode ()
           (.childCons sourceType (.childCons targetTypeAfter .childNil)) ∧
         Step targetType targetTypeAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ sourceTypeStep =>
           rename_i sourceTypeAfter
-          exact Or.inl ⟨sourceTypeAfter, rfl, sourceTypeStep⟩
+          exact Or.inl ⟨sourceTypeAfter, targetEq, sourceTypeStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ targetTypeStep =>
               rename_i targetTypeAfter
-              exact Or.inr ⟨targetTypeAfter, rfl, targetTypeStep⟩
+              exact Or.inr ⟨targetTypeAfter, targetEq, targetTypeStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -732,17 +829,21 @@ theorem Step.from_piTyCode
         target = .mkGen .gen_piTyCode ()
           (.childCons domain (.childCons codomainAfter .childNil)) ∧
         Step codomain codomainAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ domainStep =>
           rename_i domainAfter
-          exact Or.inl ⟨domainAfter, rfl, domainStep⟩
+          exact Or.inl ⟨domainAfter, targetEq, domainStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ codomainStep =>
               rename_i codomainAfter
-              exact Or.inr ⟨codomainAfter, rfl, codomainStep⟩
+              exact Or.inr ⟨codomainAfter, targetEq, codomainStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -763,17 +864,21 @@ theorem Step.from_sigmaTyCode
         target = .mkGen .gen_sigmaTyCode ()
           (.childCons domain (.childCons codomainAfter .childNil)) ∧
         Step codomain codomainAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ domainStep =>
           rename_i domainAfter
-          exact Or.inl ⟨domainAfter, rfl, domainStep⟩
+          exact Or.inl ⟨domainAfter, targetEq, domainStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ codomainStep =>
               rename_i codomainAfter
-              exact Or.inr ⟨codomainAfter, rfl, codomainStep⟩
+              exact Or.inr ⟨codomainAfter, targetEq, codomainStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -798,17 +903,21 @@ theorem Step.from_polyFunctor
           (.childCons positionType
             (.childCons positionFamilyAfter .childNil)) ∧
         Step positionFamily positionFamilyAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ positionTypeStep =>
           rename_i positionTypeAfter
-          exact Or.inl ⟨positionTypeAfter, rfl, positionTypeStep⟩
+          exact Or.inl ⟨positionTypeAfter, targetEq, positionTypeStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ positionFamilyStep =>
               rename_i positionFamilyAfter
-              exact Or.inr ⟨positionFamilyAfter, rfl, positionFamilyStep⟩
+              exact Or.inr ⟨positionFamilyAfter, targetEq, positionFamilyStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -860,14 +969,19 @@ theorem Step.from_fst
     (∃ (argAfter : RawTerm scope),
         target = .mkGen .gen_fst () (.childCons argAfter .childNil) ∧
         Step arg argAfter) := by
-  cases reduction with
-  | iotaFstPair =>
-      exact Or.inl ⟨_, _, rfl, rfl⟩
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead =>
+          cases iotaHead with
+          | iotaFstPair => exact Or.inl ⟨_, _, rfl, rfl⟩
+      | scrutineeFst scrutineeStep =>
+          exact Or.inr ⟨_, rfl, scrutineeStep.toStep⟩
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ argStep =>
-          rename_i argAfter
-          exact Or.inr ⟨argAfter, rfl, argStep⟩
+          exact Or.inr ⟨_, targetEq, argStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -888,14 +1002,19 @@ theorem Step.from_snd
     (∃ (argAfter : RawTerm scope),
         target = .mkGen .gen_snd () (.childCons argAfter .childNil) ∧
         Step arg argAfter) := by
-  cases reduction with
-  | iotaSndPair =>
-      exact Or.inl ⟨_, _, rfl, rfl⟩
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead =>
+          cases iotaHead with
+          | iotaSndPair => exact Or.inl ⟨_, _, rfl, rfl⟩
+      | scrutineeSnd scrutineeStep =>
+          exact Or.inr ⟨_, rfl, scrutineeStep.toStep⟩
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ argStep =>
-          rename_i argAfter
-          exact Or.inr ⟨argAfter, rfl, argStep⟩
+          exact Or.inr ⟨_, targetEq, argStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -967,32 +1086,35 @@ theorem Step.from_boolElim
             (.childCons thenBranch
               (.childCons elseBranch (.childCons scrutineeAfter .childNil)))) ∧
         Step scrutinee scrutineeAfter) := by
-  cases reduction with
-  | iotaBoolTrue =>
-      exact Or.inl ⟨rfl, rfl⟩
-  | iotaBoolFalse =>
-      exact Or.inr (Or.inl ⟨rfl, rfl⟩)
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead =>
+          cases iotaHead with
+          | iotaBoolTrue => exact Or.inl ⟨rfl, rfl⟩
+          | iotaBoolFalse => exact Or.inr (Or.inl ⟨rfl, rfl⟩)
+      | scrutineeBoolElim scrutineeStep =>
+          exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+            ⟨_, rfl, scrutineeStep.toStep⟩))))
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ motiveStep =>
-          rename_i motiveAfter
-          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
+          exact Or.inr (Or.inr (Or.inl ⟨_, targetEq, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ thenStep =>
-              rename_i thenAfter
-              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨thenAfter, rfl, thenStep⟩)))
+              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, thenStep⟩)))
           | there _ restStep =>
               cases restStep with
               | here _ elseStep =>
-                  rename_i elseAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨elseAfter, rfl, elseStep⟩))))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr
+                    (Or.inl ⟨_, targetEq, elseStep⟩))))
               | there _ restRestStep =>
                   cases restRestStep with
                   | here _ scrutineeStep =>
-                      rename_i scrutineeAfter
                       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                        ⟨_, targetEq, scrutineeStep⟩))))
                   | there _ restRestRestStep =>
                       exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
@@ -1068,32 +1190,35 @@ theorem Step.from_natElim
             (.childCons zeroBranch
               (.childCons succBranch (.childCons scrutineeAfter .childNil)))) ∧
         Step scrutinee scrutineeAfter) := by
-  cases reduction with
-  | iotaNatElimZero =>
-      exact Or.inl ⟨rfl, rfl⟩
-  | iotaNatElimSucc =>
-      exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead =>
+          cases iotaHead with
+          | iotaNatElimZero => exact Or.inl ⟨rfl, rfl⟩
+          | iotaNatElimSucc => exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
+      | scrutineeNatElim scrutineeStep =>
+          exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+            ⟨_, rfl, scrutineeStep.toStep⟩))))
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ motiveStep =>
-          rename_i motiveAfter
-          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
+          exact Or.inr (Or.inr (Or.inl ⟨_, targetEq, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ zeroStep =>
-              rename_i zeroAfter
-              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨zeroAfter, rfl, zeroStep⟩)))
+              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, zeroStep⟩)))
           | there _ restStep =>
               cases restStep with
               | here _ succStep =>
-                  rename_i succAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨succAfter, rfl, succStep⟩))))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr
+                    (Or.inl ⟨_, targetEq, succStep⟩))))
               | there _ restRestStep =>
                   cases restRestStep with
                   | here _ scrutineeStep =>
-                      rename_i scrutineeAfter
                       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                        ⟨_, targetEq, scrutineeStep⟩))))
                   | there _ restRestRestStep =>
                       exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
@@ -1156,32 +1281,35 @@ theorem Step.from_natRec
             (.childCons zeroBranch
               (.childCons succBranch (.childCons scrutineeAfter .childNil)))) ∧
         Step scrutinee scrutineeAfter) := by
-  cases reduction with
-  | iotaNatRecZero =>
-      exact Or.inl ⟨rfl, rfl⟩
-  | iotaNatRecSucc =>
-      exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead =>
+          cases iotaHead with
+          | iotaNatRecZero => exact Or.inl ⟨rfl, rfl⟩
+          | iotaNatRecSucc => exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
+      | scrutineeNatRec scrutineeStep =>
+          exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+            ⟨_, rfl, scrutineeStep.toStep⟩))))
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ motiveStep =>
-          rename_i motiveAfter
-          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
+          exact Or.inr (Or.inr (Or.inl ⟨_, targetEq, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ zeroStep =>
-              rename_i zeroAfter
-              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨zeroAfter, rfl, zeroStep⟩)))
+              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, zeroStep⟩)))
           | there _ restStep =>
               cases restStep with
               | here _ succStep =>
-                  rename_i succAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨succAfter, rfl, succStep⟩))))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr
+                    (Or.inl ⟨_, targetEq, succStep⟩))))
               | there _ restRestStep =>
                   cases restRestStep with
                   | here _ scrutineeStep =>
-                      rename_i scrutineeAfter
                       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                        ⟨_, targetEq, scrutineeStep⟩))))
                   | there _ restRestRestStep =>
                       exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
@@ -1265,32 +1393,35 @@ theorem Step.from_listElim
             (.childCons nilBranch
               (.childCons consBranch (.childCons scrutineeAfter .childNil)))) ∧
         Step scrutinee scrutineeAfter) := by
-  cases reduction with
-  | iotaListElimNil =>
-      exact Or.inl ⟨rfl, rfl⟩
-  | iotaListElimCons =>
-      exact Or.inr (Or.inl ⟨_, _, rfl, rfl⟩)
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead =>
+          cases iotaHead with
+          | iotaListElimNil => exact Or.inl ⟨rfl, rfl⟩
+          | iotaListElimCons => exact Or.inr (Or.inl ⟨_, _, rfl, rfl⟩)
+      | scrutineeListElim scrutineeStep =>
+          exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+            ⟨_, rfl, scrutineeStep.toStep⟩))))
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ motiveStep =>
-          rename_i motiveAfter
-          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
+          exact Or.inr (Or.inr (Or.inl ⟨_, targetEq, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ nilStep =>
-              rename_i nilAfter
-              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨nilAfter, rfl, nilStep⟩)))
+              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, nilStep⟩)))
           | there _ restStep =>
               cases restStep with
               | here _ consStep =>
-                  rename_i consAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨consAfter, rfl, consStep⟩))))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr
+                    (Or.inl ⟨_, targetEq, consStep⟩))))
               | there _ restRestStep =>
                   cases restRestStep with
                   | here _ scrutineeStep =>
-                      rename_i scrutineeAfter
                       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                        ⟨_, targetEq, scrutineeStep⟩))))
                   | there _ restRestRestStep =>
                       exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
@@ -1354,32 +1485,35 @@ theorem Step.from_optionMatch
             (.childCons noneBranch
               (.childCons someBranch (.childCons scrutineeAfter .childNil)))) ∧
         Step scrutinee scrutineeAfter) := by
-  cases reduction with
-  | iotaOptionMatchNone =>
-      exact Or.inl ⟨rfl, rfl⟩
-  | iotaOptionMatchSome =>
-      exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead =>
+          cases iotaHead with
+          | iotaOptionMatchNone => exact Or.inl ⟨rfl, rfl⟩
+          | iotaOptionMatchSome => exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
+      | scrutineeOptionMatch scrutineeStep =>
+          exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+            ⟨_, rfl, scrutineeStep.toStep⟩))))
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ motiveStep =>
-          rename_i motiveAfter
-          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
+          exact Or.inr (Or.inr (Or.inl ⟨_, targetEq, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ noneStep =>
-              rename_i noneAfter
-              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨noneAfter, rfl, noneStep⟩)))
+              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, noneStep⟩)))
           | there _ restStep =>
               cases restStep with
               | here _ someStep =>
-                  rename_i someAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨someAfter, rfl, someStep⟩))))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr
+                    (Or.inl ⟨_, targetEq, someStep⟩))))
               | there _ restRestStep =>
                   cases restRestStep with
                   | here _ scrutineeStep =>
-                      rename_i scrutineeAfter
                       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                        ⟨_, targetEq, scrutineeStep⟩))))
                   | there _ restRestRestStep =>
                       exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
@@ -1448,32 +1582,35 @@ theorem Step.from_eitherMatch
             (.childCons leftBranch
               (.childCons rightBranch (.childCons scrutineeAfter .childNil)))) ∧
         Step scrutinee scrutineeAfter) := by
-  cases reduction with
-  | iotaEitherMatchInl =>
-      exact Or.inl ⟨_, rfl, rfl⟩
-  | iotaEitherMatchInr =>
-      exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead =>
+          cases iotaHead with
+          | iotaEitherMatchInl => exact Or.inl ⟨_, rfl, rfl⟩
+          | iotaEitherMatchInr => exact Or.inr (Or.inl ⟨_, rfl, rfl⟩)
+      | scrutineeEitherMatch scrutineeStep =>
+          exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+            ⟨_, rfl, scrutineeStep.toStep⟩))))
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ motiveStep =>
-          rename_i motiveAfter
-          exact Or.inr (Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩))
+          exact Or.inr (Or.inr (Or.inl ⟨_, targetEq, motiveStep⟩))
       | there _ tailStep =>
           cases tailStep with
           | here _ leftStep =>
-              rename_i leftAfter
-              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨leftAfter, rfl, leftStep⟩)))
+              exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, targetEq, leftStep⟩)))
           | there _ restStep =>
               cases restStep with
               | here _ rightStep =>
-                  rename_i rightAfter
-                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨rightAfter, rfl, rightStep⟩))))
+                  exact Or.inr (Or.inr (Or.inr (Or.inr
+                    (Or.inl ⟨_, targetEq, rightStep⟩))))
               | there _ restRestStep =>
                   cases restRestStep with
                   | here _ scrutineeStep =>
-                      rename_i scrutineeAfter
                       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-                        ⟨scrutineeAfter, rfl, scrutineeStep⟩))))
+                        ⟨_, targetEq, scrutineeStep⟩))))
                   | there _ restRestRestStep =>
                       exact absurd restRestRestStep StepChildren.no_step_at_empty_spine
 
@@ -1520,24 +1657,27 @@ theorem Step.from_idJ
           (.childCons motive
             (.childCons baseCase (.childCons witnessAfter .childNil))) ∧
         Step witness witnessAfter) := by
-  cases reduction with
-  | iotaIdJRefl =>
-      exact Or.inl ⟨_, rfl, rfl⟩
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead =>
+          cases iotaHead with
+          | iotaIdJRefl => exact Or.inl ⟨_, rfl, rfl⟩
+      | scrutineeIdJ scrutineeStep =>
+          exact Or.inr (Or.inr (Or.inr ⟨_, rfl, scrutineeStep.toStep⟩))
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ motiveStep =>
-          rename_i motiveAfter
-          exact Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩)
+          exact Or.inr (Or.inl ⟨_, targetEq, motiveStep⟩)
       | there _ tailStep =>
           cases tailStep with
           | here _ baseStep =>
-              rename_i baseAfter
-              exact Or.inr (Or.inr (Or.inl ⟨baseAfter, rfl, baseStep⟩))
+              exact Or.inr (Or.inr (Or.inl ⟨_, targetEq, baseStep⟩))
           | there _ restStep =>
               cases restStep with
               | here _ witnessStep =>
-                  rename_i witnessAfter
-                  exact Or.inr (Or.inr (Or.inr ⟨witnessAfter, rfl, witnessStep⟩))
+                  exact Or.inr (Or.inr (Or.inr ⟨_, targetEq, witnessStep⟩))
               | there _ restRestStep =>
                   exact absurd restRestStep StepChildren.no_step_at_empty_spine
 
@@ -1575,24 +1715,27 @@ theorem Step.from_idStrictRec
           (.childCons motive
             (.childCons baseCase (.childCons witnessAfter .childNil))) ∧
         Step witness witnessAfter) := by
-  cases reduction with
-  | iotaIdStrictRecRefl =>
-      exact Or.inl ⟨_, rfl, rfl⟩
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead =>
+          cases iotaHead with
+          | iotaIdStrictRecRefl => exact Or.inl ⟨_, rfl, rfl⟩
+      | scrutineeIdStrictRec scrutineeStep =>
+          exact Or.inr (Or.inr (Or.inr ⟨_, rfl, scrutineeStep.toStep⟩))
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ motiveStep =>
-          rename_i motiveAfter
-          exact Or.inr (Or.inl ⟨motiveAfter, rfl, motiveStep⟩)
+          exact Or.inr (Or.inl ⟨_, targetEq, motiveStep⟩)
       | there _ tailStep =>
           cases tailStep with
           | here _ baseStep =>
-              rename_i baseAfter
-              exact Or.inr (Or.inr (Or.inl ⟨baseAfter, rfl, baseStep⟩))
+              exact Or.inr (Or.inr (Or.inl ⟨_, targetEq, baseStep⟩))
           | there _ restStep =>
               cases restStep with
               | here _ witnessStep =>
-                  rename_i witnessAfter
-                  exact Or.inr (Or.inr (Or.inr ⟨witnessAfter, rfl, witnessStep⟩))
+                  exact Or.inr (Or.inr (Or.inr ⟨_, targetEq, witnessStep⟩))
               | there _ restRestStep =>
                   exact absurd restRestStep StepChildren.no_step_at_empty_spine
 
@@ -1630,19 +1773,22 @@ theorem Step.from_app
     (∃ (argAfter : RawTerm scope),
         target = .mkGen .gen_app () (.childCons fn (.childCons argAfter .childNil)) ∧
         Step arg argAfter) := by
-  cases reduction with
-  | beta =>
-      exact Or.inl ⟨_, _, rfl, rfl⟩
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | beta => exact Or.inl ⟨_, _, rfl, rfl⟩
+      | appCongruence functionStep =>
+          exact Or.inr (Or.inl ⟨_, rfl, functionStep.toStep⟩)
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ fnStep =>
-          rename_i fnAfter
-          exact Or.inr (Or.inl ⟨fnAfter, rfl, fnStep⟩)
+          exact Or.inr (Or.inl ⟨_, targetEq, fnStep⟩)
       | there _ tailStep =>
           cases tailStep with
           | here _ argStep =>
-              rename_i argAfter
-              exact Or.inr (Or.inr ⟨argAfter, rfl, argStep⟩)
+              exact Or.inr (Or.inr ⟨_, targetEq, argStep⟩)
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 

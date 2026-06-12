@@ -732,6 +732,34 @@ theorem Step.childCongruenceOfElimHeadsExcluded {scope : Nat}
   · exact ⟨children', targetEq,
       StepOverTableChildren.legacyToStepChildren childrenStep⟩
 
+/-- **The master root dispatcher: weak-head step or child congruence.**
+Every `Step` out of a cell either IS a weak-head step to the SAME
+target (a root firing, composed through the per-row head-step
+inversions) or is a child congruence preserving generator and payload.
+This is the strong form of the root/cong dichotomy: because
+`WeakHeadStep`'s constructors carry LITERAL eliminator heads, casing
+the first disjunct at a concrete subject head auto-discharges every
+mismatched arm by index unification — restoring, for the table-driven
+relation, exactly the dispatch economy the bespoke per-constructor
+`Step` arms used to provide.  ONE freed-subject inversion serves every
+eliminator-specific inversion lemma downstream. -/
+theorem Step.weakHeadOrChildCong {scope : Nat}
+    {generator : Generator} {payload : generator.payload scope}
+    {children : RawTermChildren generator.binderShifts scope}
+    {target : RawTerm scope}
+    (step : Step (.mkGen generator payload children) target) :
+    WeakHeadStep (.mkGen generator payload children) target ∨
+    ∃ childrenAfter, target = .mkGen generator payload childrenAfter
+      ∧ StepChildren children childrenAfter := by
+  rcases StepOverTable.invertOrCong
+      (stepOverLegacyTable_iff_step.mpr step) rfl with
+    ⟨rowRule, isRow, elimPayload, spine, cellEq, fires⟩
+    | ⟨childrenAfter, targetEq, childrenStep⟩
+  · exact Or.inl
+      (cellEq ▸ legacyRootFiringToWeakHeadStep isRow elimPayload fires)
+  · exact Or.inr ⟨childrenAfter, targetEq,
+      StepOverTableChildren.legacyToStepChildren childrenStep⟩
+
 /-- Every bespoke `Step` is a full-table `StepTable` step (forward
 through the legacy table, then table monotonicity). -/
 theorem Step.toStepTable {scope : Nat} {source target : RawTerm scope}
