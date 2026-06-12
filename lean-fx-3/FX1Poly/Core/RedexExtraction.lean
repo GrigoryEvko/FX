@@ -1,5 +1,7 @@
 import FX1Poly.Core.RawTermNF
 import FX1Poly.Core.Step
+import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Core/RedexExtraction
     — productive redex extraction: a root-redex source actually takes a `Step` (toward weak normalization)
@@ -70,7 +72,7 @@ theorem hasAppBetaRoot_exists_step {scope : Nat}
       dsimp only [RawTermChildren.hasAppBetaRoot] at betaRoot
       obtain ⟨domainAnn, body, functionIsLam⟩ := isLamSource_eq_lam betaRoot
       subst functionIsLam
-      exact ⟨RawTerm.subst0 body argumentTerm, Step.beta⟩
+      exact ⟨RawTerm.subst0 body argumentTerm, HeadStep.beta.toStep⟩
 
 /-- A `gen_pathLam`-rooted term (per `isPathLamSource`) is a path-lambda cell.
 
@@ -120,7 +122,7 @@ theorem hasPairProjectionIotaRoot_exists_step_fst {scope : Nat}
       dsimp only [RawTermChildren.hasPairProjectionIotaRoot] at iotaRoot
       obtain ⟨firstValue, secondValue, pairShape⟩ := isPairSource_eq_pair iotaRoot
       subst pairShape
-      exact ⟨firstValue, Step.iotaFstPair⟩
+      exact ⟨firstValue, IotaHeadStep.iotaFstPair.toStep⟩
 
 /-- **Snd-projection iota redex extraction.**  Symmetric to `…_fst`: a `gen_snd` cell over a pair takes a
 `Step` to the second component. -/
@@ -133,7 +135,7 @@ theorem hasPairProjectionIotaRoot_exists_step_snd {scope : Nat}
       dsimp only [RawTermChildren.hasPairProjectionIotaRoot] at iotaRoot
       obtain ⟨firstValue, secondValue, pairShape⟩ := isPairSource_eq_pair iotaRoot
       subst pairShape
-      exact ⟨secondValue, Step.iotaSndPair⟩
+      exact ⟨secondValue, IotaHeadStep.iotaSndPair.toStep⟩
 
 /-- A `gen_boolTrue`-rooted term is the `boolTrue` cell. -/
 theorem isBoolTrueSource_eq_boolTrue {scope : Nat} {scrutinee : RawTerm scope}
@@ -179,12 +181,12 @@ theorem hasBoolElimIotaRoot_exists_step {scope : Nat}
       cases trueValue : RawTerm.isBoolTrueSource scrutinee with
       | true =>
           rw [isBoolTrueSource_eq_boolTrue trueValue]
-          exact ⟨thenBranch, Step.iotaBoolTrue⟩
+          exact ⟨thenBranch, IotaHeadStep.iotaBoolTrue.toStep⟩
       | false =>
           rw [trueValue] at iotaRoot
           replace iotaRoot : RawTerm.isBoolFalseSource scrutinee = true := iotaRoot
           rw [isBoolFalseSource_eq_boolFalse iotaRoot]
-          exact ⟨elseBranch, Step.iotaBoolFalse⟩
+          exact ⟨elseBranch, IotaHeadStep.iotaBoolFalse.toStep⟩
 
 /-- A `gen_natZero`-rooted term is the `natZero` cell. -/
 theorem isNatZeroSource_eq_natZero {scope : Nat} {scrutinee : RawTerm scope}
@@ -230,13 +232,13 @@ theorem hasNatElimIotaRoot_exists_step_natElim {scope : Nat}
       cases zeroValue : RawTerm.isNatZeroSource scrutinee with
       | true =>
           rw [isNatZeroSource_eq_natZero zeroValue]
-          exact ⟨zeroBranch, Step.iotaNatElimZero⟩
+          exact ⟨zeroBranch, IotaHeadStep.iotaNatElimZero.toStep⟩
       | false =>
           rw [zeroValue] at iotaRoot
           replace iotaRoot : RawTerm.isNatSuccSource scrutinee = true := iotaRoot
           obtain ⟨predecessor, succShape⟩ := isNatSuccSource_eq_natSucc iotaRoot
           rw [succShape]
-          exact ⟨_, Step.iotaNatElimSucc⟩
+          exact ⟨_, IotaHeadStep.iotaNatElimSucc.toStep⟩
 
 /-- **natRec iota redex extraction.**  The `gen_natRec` twin of `…_natElim` (same root check; the v2
 substrate treats `gen_natElim` and `gen_natRec` identically).  Phase-Z spine `[1, 0, 2, 0]`. -/
@@ -252,13 +254,13 @@ theorem hasNatElimIotaRoot_exists_step_natRec {scope : Nat}
       cases zeroValue : RawTerm.isNatZeroSource scrutinee with
       | true =>
           rw [isNatZeroSource_eq_natZero zeroValue]
-          exact ⟨zeroBranch, Step.iotaNatRecZero⟩
+          exact ⟨zeroBranch, IotaHeadStep.iotaNatRecZero.toStep⟩
       | false =>
           rw [zeroValue] at iotaRoot
           replace iotaRoot : RawTerm.isNatSuccSource scrutinee = true := iotaRoot
           obtain ⟨predecessor, succShape⟩ := isNatSuccSource_eq_natSucc iotaRoot
           rw [succShape]
-          exact ⟨_, Step.iotaNatRecSucc⟩
+          exact ⟨_, IotaHeadStep.iotaNatRecSucc.toStep⟩
 
 /-- A `gen_listNil`-rooted term is the `listNil` cell. -/
 theorem isListNilSource_eq_listNil {scope : Nat} {scrutinee : RawTerm scope}
@@ -378,13 +380,13 @@ theorem hasListElimIotaRoot_exists_step {scope : Nat}
       cases nilValue : RawTerm.isListNilSource scrutinee with
       | true =>
           rw [isListNilSource_eq_listNil nilValue]
-          exact ⟨nilBranch, Step.iotaListElimNil⟩
+          exact ⟨nilBranch, IotaHeadStep.iotaListElimNil.toStep⟩
       | false =>
           rw [nilValue] at iotaRoot
           replace iotaRoot : RawTerm.isListConsSource scrutinee = true := iotaRoot
           obtain ⟨headVal, tailVal, consShape⟩ := isListConsSource_eq_listCons iotaRoot
           rw [consShape]
-          exact ⟨_, Step.iotaListElimCons⟩
+          exact ⟨_, IotaHeadStep.iotaListElimCons.toStep⟩
 
 /-- **optionMatch iota redex extraction.**  Phase-Z spine `[1, 0, 0, 0]`: children are
 `(motive, noneBranch, someBranch, scrutinee)` with the scrutinee LAST. -/
@@ -400,13 +402,13 @@ theorem hasOptionMatchIotaRoot_exists_step {scope : Nat}
       cases noneValue : RawTerm.isOptionNoneSource scrutinee with
       | true =>
           rw [isOptionNoneSource_eq_optionNone noneValue]
-          exact ⟨noneBranch, Step.iotaOptionMatchNone⟩
+          exact ⟨noneBranch, IotaHeadStep.iotaOptionMatchNone.toStep⟩
       | false =>
           rw [noneValue] at iotaRoot
           replace iotaRoot : RawTerm.isOptionSomeSource scrutinee = true := iotaRoot
           obtain ⟨value, someShape⟩ := isOptionSomeSource_eq_optionSome iotaRoot
           rw [someShape]
-          exact ⟨_, Step.iotaOptionMatchSome⟩
+          exact ⟨_, IotaHeadStep.iotaOptionMatchSome.toStep⟩
 
 /-- **eitherMatch iota redex extraction** (both scrutinee constructors are unary).  Phase-Z spine
 `[1, 0, 0, 0]`: children are `(motive, leftBranch, rightBranch, scrutinee)` with the scrutinee LAST. -/
@@ -423,13 +425,13 @@ theorem hasEitherMatchIotaRoot_exists_step {scope : Nat}
       | true =>
           obtain ⟨value, inlShape⟩ := isEitherInlSource_eq_eitherInl inlValue
           rw [inlShape]
-          exact ⟨_, Step.iotaEitherMatchInl⟩
+          exact ⟨_, IotaHeadStep.iotaEitherMatchInl.toStep⟩
       | false =>
           rw [inlValue] at iotaRoot
           replace iotaRoot : RawTerm.isEitherInrSource scrutinee = true := iotaRoot
           obtain ⟨value, inrShape⟩ := isEitherInrSource_eq_eitherInr iotaRoot
           rw [inrShape]
-          exact ⟨_, Step.iotaEitherMatchInr⟩
+          exact ⟨_, IotaHeadStep.iotaEitherMatchInr.toStep⟩
 
 /-- **idJ iota redex extraction.**  Phase-Z spine `[2, 0, 0]`: children are `(motive, baseCase, witness)`
 with the witness LAST and the motive a term under two binders.  The identity eliminator's root check is a
@@ -443,7 +445,7 @@ theorem hasIdElimIotaRoot_exists_step_idJ {scope : Nat}
       replace iotaRoot : RawTerm.isReflSource witness = true := iotaRoot
       obtain ⟨rawWitness, reflShape⟩ := isReflSource_eq_refl iotaRoot
       rw [reflShape]
-      exact ⟨baseCase, Step.iotaIdJRefl⟩
+      exact ⟨baseCase, IotaHeadStep.iotaIdJRefl.toStep⟩
 
 /-- **idStrictRec iota redex extraction** (same root check as idJ; `gen_idStrictRec`).  Phase-Z spine
 `[2, 0, 0]`: children are `(motive, baseCase, witness)` with the witness LAST. -/
@@ -456,6 +458,6 @@ theorem hasIdElimIotaRoot_exists_step_idStrictRec {scope : Nat}
       replace iotaRoot : RawTerm.isReflSource witness = true := iotaRoot
       obtain ⟨rawWitness, reflShape⟩ := isReflSource_eq_refl iotaRoot
       rw [reflShape]
-      exact ⟨baseCase, Step.iotaIdStrictRecRefl⟩
+      exact ⟨baseCase, IotaHeadStep.iotaIdStrictRecRefl.toStep⟩
 
 end FX1Poly.Core
