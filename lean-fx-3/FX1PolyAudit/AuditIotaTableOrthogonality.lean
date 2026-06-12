@@ -7,8 +7,9 @@ Per-declaration zero-axiom gate for the orthogonality certificate: the
 decidable well-formedness checkers, the canonical 18-row table's
 `rfl`-decided certificate (the permanent guard that re-decides on every
 new row), the pairwise extraction lemmas, the head-pinning bricks, and
-the ★ root-firing determinism keystone that collapses the quadratic
-`cd_lemma` SameRoot/SourcesDisjoint arm matrix.  Every declaration
+the ★ root-firing determinism keystone that collapsed the quadratic
+per-iota SameRoot/SourcesDisjoint arm matrix (the `CdLemma` enumeration,
+now DELETED).  Every declaration
 below must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/
 

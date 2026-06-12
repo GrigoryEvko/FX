@@ -1,4 +1,5 @@
 import FX1Poly.Core.StepRenameReflect
+import FX1Poly.Core.NatEliminatorLayer
 
 /-! # FX1Poly/Core/StepRenameReflectEliminatorIota
     — the base-case eliminator ι arms of arbitrary-renaming `Step` reflection

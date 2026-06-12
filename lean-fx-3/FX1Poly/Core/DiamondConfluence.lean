@@ -8,8 +8,8 @@ TERMINATION + weak confluence; this file derives it from the DIAMOND PROPERTY al
 is the Tait/Martin-Löf/Takahashi method: single-step reduction rarely has the diamond (one β-redex can duplicate
 another), but PARALLEL reduction (contract any set of redexes at once) does, and parallel reduction is sandwiched
 between single-step and its closure — so the single-step relation is confluent.  This is the generic core of
-raw confluence (`parStar.confluence via cd_lemma → strip → confluence`): given the FX parallel-reduction diamond (the
-shipped `cd_lemma`), `confluentOfDiamondSimulation` yields raw confluence.
+raw confluence: the table lane (`TableTakahashiTriangle`) exhibits the parallel-reduction diamond over the iota
+table, and `confluentOfDiamondSimulation` / `diamondConfluence` turn it into raw confluence.
 
 Reuses the `ReflTransClosure` / `Joinable` / `Confluent` vocabulary from `Newman.lean`.
 

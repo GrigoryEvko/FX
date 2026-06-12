@@ -10,14 +10,14 @@ typed-term reductions).  As with termination, the FULL word system is the wrong 
 confluence of arbitrary `fxStepSystem` rewriting is a STRING-rewriting critical-pair question (overlaps of
 rule left-hand-side words under concatenation), a different and harder object than the term redex analysis,
 and the full system is not even terminating (SN-131's `untypedWordReductionDiverges`).  The honest, Leg-3-
-relevant confluence is the CERTIFIED-IMAGE reflection: term-layer confluence (the shipped `cd_lemma` /
+relevant confluence is the CERTIFIED-IMAGE reflection: term-layer confluence (the table-backed local join /
 `StepStar` Newman) lifted through `toWordRewrites` — exactly what the roadmap's "reuse the term-layer
-cd_lemma" signals.
+local join" signals.
 
   * **`certifiedWordLocalConfluence`** — LOCAL confluence (the literal SN-132 ask): two single `Step`s from a
-    common term have `toCode`-images that JOIN as `fxStepSystem` word reductions.  Routes the term `cd_lemma`
-    local join (`StepStar.localJoin_of_cdLemma`) through `StepStar.toWordRewrites` on both legs.  No SN needed
-    — pure `cd_lemma` reuse.
+    common term have `toCode`-images that JOIN as `fxStepSystem` word reductions.  Routes the term-layer
+    local join (`StepStar.localJoin`, table-route) through `StepStar.toWordRewrites` on both legs.  No SN
+    needed — pure local-join reuse.
   * **`certifiedWordConfluence`** — the GLOBAL upgrade on the certified fragment: two `StepStar` reductions
     from a WELL-TYPED root have `toCode`-images that join.  Combines the SN-131 ingredient (typed SN, SN-043 /
     `stronglyNormalizingOfWfContextDesc`) with the term-layer Newman global confluence
@@ -28,7 +28,7 @@ cd_lemma" signals.
 
 ## Zero-axiom
 
-Both are `obtain` on the shipped term-layer join (`localJoin_of_cdLemma` / `confluence_of_localJoin_and_
+Both are `obtain` on the shipped term-layer join (`StepStar.localJoin` / `confluence_of_localJoin_and_
 accessible`) followed by `StepStar.toWordRewrites` on each leg of the resulting `StepStar.Join`; the global
 one feeds `stronglyNormalizingOfWfContextDesc` (SN-043) as the accessibility witness.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration audit-gated in
@@ -40,7 +40,7 @@ namespace FX1Poly.Typed
 open FX1Poly.Core
 
 /-- **Local confluence on the certified image.**  Two single `Step`s out of a common term have `toCode`-images
-that JOIN as `fxStepSystem` word reductions: the term `cd_lemma` local join (`StepStar.localJoin_of_cdLemma`)
+that JOIN as `fxStepSystem` word reductions: the term-layer table-backed local join (`StepStar.localJoin`)
 mapped through `StepStar.toWordRewrites` on both legs.  The Leg-3 LOCAL confluence — reflected from the term
 layer, NOT a string-rewriting critical-pair analysis of the full word system. -/
 theorem certifiedWordLocalConfluence {scope : Nat}
@@ -50,7 +50,7 @@ theorem certifiedWordLocalConfluence {scope : Nat}
     ∃ joinTerm : RawTerm scope,
       FxWordRewritesMany fxStepSystem leftReduct.toCode joinTerm.toCode ∧
       FxWordRewritesMany fxStepSystem rightReduct.toCode joinTerm.toCode := by
-  obtain ⟨joinTerm, leftStar, rightStar⟩ := StepStar.localJoin_of_cdLemma leftStep rightStep
+  obtain ⟨joinTerm, leftStar, rightStar⟩ := StepStar.localJoin leftStep rightStep
   exact ⟨joinTerm, leftStar.toWordRewrites, rightStar.toWordRewrites⟩
 
 /-- ★ **Global confluence on the certified fragment.**  Two `StepStar` reductions out of a WELL-TYPED root

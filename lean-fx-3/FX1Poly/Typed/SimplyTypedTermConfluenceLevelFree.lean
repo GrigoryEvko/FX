@@ -11,7 +11,7 @@ the foundation for deciding conversion between simply-typed terms.
 
   * `reductsJoinUnderSubst` — Church-Rosser: any two `StepStar` reducts of a simply-typed term (closed by a
     reducible substitution) join.  This is `confluence_of_localJoin_and_accessible` (the per-term Newman lift:
-    strong normalization + the `cd_lemma` local join ⇒ global confluence below the term) fed the term's
+    strong normalization + the table-backed local join ⇒ global confluence below the term) fed the term's
     strong normalization from `SimplyTypedTermLF.stronglyNormalizingUnderSubst`.
 
   * `normalFormUniqueUnderSubst` / `normalFormUniqueClosed` — normal-form uniqueness: any two NORMAL forms
@@ -36,7 +36,7 @@ open FX1Poly.Core FX1Poly.Universe StepStar
 
 /-- **Church-Rosser for simply-typed terms.**  Any two `StepStar` reducts of a simply-typed term, closed by a
 reducible substitution, join — the per-term Newman lift (`confluence_of_localJoin_and_accessible`: strong
-normalization + the `cd_lemma` local join ⇒ confluence below the term) fed the term's strong normalization
+normalization + the table-backed local join ⇒ confluence below the term) fed the term's strong normalization
 from the fundamental theorem. -/
 theorem SimplyTypedTermLF.reductsJoinUnderSubst {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {term type : RawTerm scope}

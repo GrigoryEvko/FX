@@ -259,7 +259,7 @@ theorem cd_lemma_betaEta {scope : Nat}
   | inl leftStepOnly =>
       cases rightStep with
       | inl rightStepOnly =>
-          exact ofCdLemmaForStepSteps leftStepOnly rightStepOnly
+          exact ofStepStepLocalJoin leftStepOnly rightStepOnly
       | inr rightEtaOnly =>
           exact cd_lemma_step_eta leftStepOnly rightEtaOnly lamDiagonal
   | inr leftEtaOnly =>

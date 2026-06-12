@@ -1,27 +1,29 @@
-import FX1Poly.Core.CdLemma
+import FX1Poly.Core.StepStarConfluenceViaTable
 
 /-! # Foundation/PolyCell/Core/StepStarConfluence
     - confluence bridge over the v2 raw substrate
 
-The local one-step join theorem `cd_lemma` lives elsewhere; this file
-pins the confluence bridge shape without overclaiming global
-Church-Rosser: local confluence alone does not imply global confluence
+The local one-step join is `StepStar.localJoin` — the one-vs-one
+instance of the TABLE-route global confluence
+(`StepStarConfluenceViaTable`); the historical per-iota critical-pair
+matrix (`CriticalPairs`/`CdLemma`) that proved it by quadratic case
+analysis is RETIRED.  This file pins the confluence bridge shape
+without overclaiming global Church-Rosser FROM the local join alone:
+local confluence does not imply global confluence
 for an arbitrary non-terminating rewrite system.  The global theorem is
 therefore factored through the standard strip property, and raw `Conv`
 transitivity is derived from global confluence.
 
 ## Contents
 
-The confluence vocabulary: `StepStar.Join` / `HasConfluence` /
-`HasStrip` / `IsStronglyNormalizing` / `HasStrongNormalization`
-definitions, `Conv.refl` / `Conv.sym` / four conditional
-`Conv.trans_of_*` variants, and the Newman lifts.
+The accessibility vocabulary (`IsStronglyNormalizing` /
+`HasStrongNormalization` — the `Join`/`HasConfluence`/`HasStrip` trio
+lives upstream in `StepStarJoin`), `Conv.refl` / `Conv.sym` / the
+conditional `Conv.trans_of_*` variants, and the Newman lifts.
 
 Downstream consumers:
-* the critical-pair dispatcher cites the `Join` shape;
-* `cd_lemma` cites `localJoin_of_cdLemma`;
-* unconditional confluence cites one of the four `confluence_of_*`
-  Newman variants;
+* unconditional confluence cites one of the `confluence_of_*`
+  Newman variants (or, preferably, `StepStar.rawConfluence` directly);
 * the unconditional Conv-transitivity proof cites
   `Conv.trans_of_strongNormalization` or `Conv.trans_of_confluence`;
 * the beta+eta Newman bridge cites `IsStronglyNormalizing`.
@@ -30,26 +32,6 @@ Downstream consumers:
 namespace FX1Poly.Core
 
 namespace StepStar
-
-/-- Two raw terms join when they reduce to a common reduct by `StepStar`. -/
-def Join {scope : Nat} (leftTerm rightTerm : RawTerm scope) : Prop :=
-  ∃ commonTerm : RawTerm scope,
-    StepStar leftTerm commonTerm ∧ StepStar rightTerm commonTerm
-
-/-- Global Church-Rosser for the v2 raw `StepStar` relation. -/
-def HasConfluence : Prop :=
-  ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
-    StepStar sourceTerm leftReduct →
-    StepStar sourceTerm rightReduct →
-    Join leftReduct rightReduct
-
-/-- Strip property: a single step can be joined against an arbitrary
-`StepStar` chain from the same source. -/
-def HasStrip : Prop :=
-  ∀ {scope : Nat} {sourceTerm leftReduct rightReduct : RawTerm scope},
-    Step sourceTerm leftReduct →
-    StepStar sourceTerm rightReduct →
-    Join leftReduct rightReduct
 
 /-- The one-step-successor relation used for accessibility/termination:
 `laterTerm` is below `earlierTerm` when `earlierTerm` takes one `Step`
@@ -69,15 +51,6 @@ def HasStrongNormalization : Prop :=
   ∀ {scope : Nat} (sourceTerm : RawTerm scope),
     IsStronglyNormalizing sourceTerm
 
-/-- `cd_lemma` gives the one-step/one-step local join, not global
-confluence by itself. -/
-theorem localJoin_of_cdLemma {scope : Nat}
-    {sourceTerm leftReduct rightReduct : RawTerm scope}
-    (leftStep : Step sourceTerm leftReduct)
-    (rightStep : Step sourceTerm rightReduct) :
-    Join leftReduct rightReduct :=
-  cd_lemma leftStep rightStep
-
 /-- A single step joins with the reflexive right chain. -/
 theorem joinStepWithReflRight {scope : Nat}
     {sourceTerm leftReduct : RawTerm scope}
@@ -85,19 +58,16 @@ theorem joinStepWithReflRight {scope : Nat}
     Join leftReduct sourceTerm :=
   ⟨leftReduct, StepStar.refl _, StepStar.single leftStep⟩
 
-/-- A single step joins with a single-step right chain via `cd_lemma`. -/
-theorem joinStepWithSingleRight {scope : Nat}
-    {sourceTerm leftReduct rightReduct : RawTerm scope}
-    (leftStep : Step sourceTerm leftReduct)
-    (rightStep : Step sourceTerm rightReduct) :
-    Join leftReduct rightReduct :=
-  localJoin_of_cdLemma leftStep rightStep
-
 /-- Newman's lift from local one-step confluence plus accessibility to
 global Church-Rosser, specialized to the v2 raw `Step` relation.
 
-This is the SN route to global confluence: `cd_lemma` supplies local
-joins, and an SN theorem supplies `IsStronglyNormalizing sourceTerm`. -/
+This is the SN route to global confluence: the table-backed
+`StepStar.localJoin` supplies local joins, and an SN theorem supplies
+`IsStronglyNormalizing sourceTerm`.  (With the table route's
+unconditional `StepStar.rawConfluence` shipped, this accessibility
+route is no longer load-bearing for the raw headlines — it survives
+for its per-term consumers pending their sweep onto the global
+theorem.) -/
 theorem confluence_of_localJoin_and_accessible {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
     (sourceTerminates : IsStronglyNormalizing sourceTerm)
@@ -127,7 +97,7 @@ theorem confluence_of_localJoin_and_accessible {scope : Nat}
             | trans rightHeadStep rightTailChain =>
                 obtain
                   ⟨localReduct, leftHeadToLocal, rightHeadToLocal⟩ :=
-                    localJoin_of_cdLemma leftHeadStep rightHeadStep
+                    StepStar.localJoin leftHeadStep rightHeadStep
                 obtain
                   ⟨leftCommon, leftTailToCommon, localToLeftCommon⟩ :=
                     currentIH _ leftHeadStep leftTailChain leftHeadToLocal
@@ -144,7 +114,7 @@ theorem confluence_of_localJoin_and_accessible {scope : Nat}
       leftChain
       rightChain
 
-/-- Strong normalization plus the local join theorem (`cd_lemma`) gives
+/-- Strong normalization plus the table-backed local join gives
 global Church-Rosser. -/
 theorem confluence_of_strongNormalization
     (hasStrongNormalization : HasStrongNormalization) :
@@ -269,7 +239,7 @@ theorem trans_of_strip
     firstMiddle middleLast
 
 /-- Raw conversion transitivity follows from strong normalization plus the
-local join theorem (`cd_lemma`). -/
+table-backed local join (`StepStar.localJoin`). -/
 theorem trans_of_strongNormalization
     (hasStrongNormalization : StepStar.HasStrongNormalization)
     {scope : Nat} {firstTerm middleTerm lastTerm : RawTerm scope}

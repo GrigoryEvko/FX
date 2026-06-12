@@ -6,9 +6,9 @@ import FX1Poly.Core.RawTermDecEq
 
 The FX kernel IS a polygraph: the `Generator`s are the generating cells and `Step` is the rewrite
 system.  polycell.md §2.3 (Path B — Makkai-Mimram word problem) reduces decidable conversion to a
-WORD PROBLEM: "FX rewrite as convergent presentation (SN + cd_lemma confluence) → word equality in the
+WORD PROBLEM: "FX rewrite as convergent presentation (SN + local-join confluence) → word equality in the
 free ω-category decidable via Makkai's algorithm → Conv = word equality", and frames Conv as
-membership in the saturated marking (cd_lemma = the marking is closed under composition).
+membership in the saturated marking (the local join = the marking is closed under composition).
 
 This file ships the DECIDER CORE of that chain, INDEPENDENTLY of Path A's reducibility logical
 relation: once the presentation is CONVERGENT — a normalizer sends each cell to a unique normal form
@@ -20,7 +20,7 @@ shipped `Conv.eq_of_noStep` (on no-step normal forms, Conv collapses to Eq) and
 
 The `Normalizer` and `HasConfluence` are explicit hypotheses: they are precisely WHAT THE FULL DECIDER
 NEEDS.  Makkai's / Forest's algorithm is the explicit construction of the normalizer (the word normal
-form); `cd_lemma` (shipped) feeds confluence.  This is the Path-B cross-check that converges on the
+form); the table-backed `StepStar.localJoin` (shipped) feeds confluence.  This is the Path-B cross-check that converges on the
 SAME `Decidable (Conv a b)` as Path A's NbE-readback decider — agreement across two methods sharing no
 proof machinery beyond the rewrite substrate.
 

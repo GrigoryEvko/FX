@@ -742,7 +742,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 
 -- OSN-B8 (WfContextBetaEtaConfluence.lean): the GEUVERS harvest of OSN-1. Raw βη-CR is false (Nederpelt/Klop),
 -- so CR on the WELL-TYPED fragment is the maximal honest statement (Geuvers LICS'92). Factored as raw local
--- βη-confluence (cd_lemma) ⊕ typed βη-SN (OSN-1) → typed global CR via Newman; unique-βη-NF is the CR corollary
+-- βη-confluence (the betaEta local-join dispatcher) ⊕ typed βη-SN (OSN-1) → typed global CR via Newman; unique-βη-NF is the CR corollary
 -- via star-rigidity. Weak βη-normalization (existence) + decidable βη-Conv are DEFERRED to the Path-A βη
 -- normalizer (not faked from confluence). eq_of_noBetaEtaStep is the raw βη star-rigidity (propext-clean cases).
 -- (The βη-CR / unique-βη-NF over WfContextDesc are gated below.)

@@ -1,4 +1,5 @@
-import FX1Poly.Core.CdLemma
+import FX1Poly.Core.StepStarConfluence
+import FX1Poly.Core.StepSubst
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.StepBetaEtaPreservesShape
 
@@ -227,7 +228,7 @@ theorem ofStepPairJoin {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
     {leftStep : Step sourceTerm leftReduct}
     {rightStep : Step sourceTerm rightReduct}
-    (join : StepPairJoin leftStep rightStep) :
+    (join : StepStar.Join leftReduct rightReduct) :
     BetaEtaPairJoin (Or.inl leftStep) (Or.inl rightStep) :=
   Exists.elim join
     (fun commonReduct chains =>
@@ -235,14 +236,15 @@ theorem ofStepPairJoin {scope : Nat}
       , Step.betaEtaStar.ofStepStar chains.1
       , Step.betaEtaStar.ofStepStar chains.2 ⟩)
 
-/-- The beta+iota `cd_lemma` covers the beta-only fragment of the
-betaEta local Church-Rosser theorem. -/
-theorem ofCdLemmaForStepSteps {scope : Nat}
+/-- The table-backed local join (`StepStar.localJoin`) covers the
+beta-only fragment of the betaEta local Church-Rosser theorem. -/
+theorem ofStepStepLocalJoin {scope : Nat}
     {sourceTerm leftReduct rightReduct : RawTerm scope}
     (leftStep : Step sourceTerm leftReduct)
     (rightStep : Step sourceTerm rightReduct) :
     BetaEtaPairJoin (Or.inl leftStep) (Or.inl rightStep) :=
-  ofStepPairJoin (cd_lemma leftStep rightStep)
+  ofStepPairJoin (leftStep := leftStep) (rightStep := rightStep)
+    (StepStar.localJoin leftStep rightStep)
 
 /-- Eta-pair versus a beta+iota step inside the first projected occurrence.
 
@@ -1263,9 +1265,9 @@ def sourceGenerator : EtaStepKind → Generator
   | .etaModIntro => .gen_modIntro
   | .etaGlueIntro => .gen_glueIntro
 
-/-- Does this eta root share beta's source-head generator? -/
+/-- Does this eta root share beta's source-head generator (`gen_app`)? -/
 def hasBetaSourceGenerator (etaKind : EtaStepKind) : Bool :=
-  if etaKind.sourceGenerator = RootStepKind.beta.sourceGenerator then
+  if etaKind.sourceGenerator = Generator.gen_app then
     true
   else
     false

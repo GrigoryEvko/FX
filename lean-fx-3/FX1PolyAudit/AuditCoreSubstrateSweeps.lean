@@ -173,7 +173,10 @@ import FX1Poly.Core.GeneratorCountPin
 (split from the AuditCoreSubstrate monolith for parallel gate elaboration; the full import block is preserved verbatim so the `#audit_namespace` sweeps see every loaded Core/Foundation declaration and the per-decl `#assert_no_axioms` gates resolve). -/
 
 #audit_namespace FX1Poly.Core
-#assert_namespace_min_count FX1Poly.Core 3241
+-- Floor re-pinned 3241 → 3144 after the APPROVED bespoke-iota retirement deletion of
+-- CdLemma.lean + CriticalPairs.lean (the per-iota critical-pair matrix, superseded by
+-- the table route's StepStar.localJoin / StepStar.tableRouteConfluence).
+#assert_namespace_min_count FX1Poly.Core 3144
 #audit_namespace FX1Poly.Foundation
 #assert_namespace_min_count FX1Poly.Foundation 59
 

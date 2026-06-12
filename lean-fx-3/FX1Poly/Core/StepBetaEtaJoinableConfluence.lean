@@ -212,7 +212,7 @@ theorem cd_lemma_betaEta_joinable {scope : Nat}
   | inl leftStepOnly =>
       cases rightStep with
       | inl rightStepOnly =>
-          exact ofCdLemmaForStepSteps leftStepOnly rightStepOnly
+          exact ofStepStepLocalJoin leftStepOnly rightStepOnly
       | inr rightEtaOnly =>
           exact cd_lemma_step_eta_joinable leftStepOnly rightEtaOnly lamJoinable
   | inr leftEtaOnly =>

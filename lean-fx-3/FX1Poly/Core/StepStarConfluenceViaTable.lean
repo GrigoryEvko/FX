@@ -2,7 +2,7 @@ import FX1Poly.Core.StepTable
 import FX1Poly.Core.StepTableEquivariance
 import FX1Poly.Core.TableTakahashiTriangle
 import FX1Poly.Core.IotaTableOrthogonality
-import FX1Poly.Core.StepStarConfluence
+import FX1Poly.Core.StepStarJoin
 import FX1Poly.Core.Newman
 
 /-! # FX1Poly/Core/StepStarConfluenceViaTable
@@ -119,5 +119,19 @@ one-step-vs-many form of Church-Rosser, as the single-step instance of
 theorem StepStar.tableRouteStrip : StepStar.HasStrip := by
   intro scope sourceTerm leftReduct rightReduct firstStep rightChain
   exact StepStar.tableRouteConfluence (StepStar.single firstStep) rightChain
+
+/-- **The local one-step join** — two single steps out of a common source
+join, as the one-vs-one instance of `StepStar.tableRouteConfluence`.
+This is the local Church-Rosser shape the historical per-iota
+critical-pair matrix (`cd_lemma` over the `CriticalPairs`/`CdLemma`
+enumeration) proved by quadratic case analysis; the table route makes it
+a corollary of global confluence, retiring that enumeration. -/
+theorem StepStar.localJoin {scope : Nat}
+    {sourceTerm leftReduct rightReduct : RawTerm scope}
+    (leftStep : Step sourceTerm leftReduct)
+    (rightStep : Step sourceTerm rightReduct) :
+    StepStar.Join leftReduct rightReduct :=
+  StepStar.tableRouteConfluence
+    (StepStar.single leftStep) (StepStar.single rightStep)
 
 end FX1Poly.Core

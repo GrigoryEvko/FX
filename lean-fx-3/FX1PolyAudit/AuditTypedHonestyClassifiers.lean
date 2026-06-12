@@ -987,8 +987,8 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 
 -- CertifiedWordReductionConfluence (SN-132): Leg-3 word-rewrite CONFLUENCE on the certified fragment, the
 -- companion to SN-131's termination. certifiedWordLocalConfluence is the literal SN-132 ask — two single
--- Steps from a common term have toCode-images that JOIN as fxStepSystem word reductions, via the term cd_lemma
--- local join (StepStar.localJoin_of_cdLemma) lifted through StepStar.toWordRewrites (NO string-rewriting
+-- Steps from a common term have toCode-images that JOIN as fxStepSystem word reductions, via the term-layer
+-- table-backed local join (StepStar.localJoin) lifted through StepStar.toWordRewrites (NO string-rewriting
 -- critical-pair analysis — the full word system isn't even terminating per SN-131). certifiedWordConfluence is
 -- the GLOBAL upgrade on the certified fragment: two StepStar reductions from a WELL-TYPED root join, combining
 -- the SN-131 ingredient (typed SN / stronglyNormalizingOfWfContextDesc, SN-043) with term-layer Newman
