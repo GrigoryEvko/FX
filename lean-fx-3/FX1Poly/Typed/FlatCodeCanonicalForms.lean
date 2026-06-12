@@ -1,7 +1,5 @@
 import FX1Poly.Typed.DenoteKeyedBoundedReducibility
 import FX1Poly.Typed.DenoteKeyedBoundedReducibleEnv
-import FX1Poly.Typed.HasTypeDescPairIntro
-import FX1Poly.Typed.HasTypeDescEitherIntro
 
 /-! # FX1Poly/Typed/FlatCodeCanonicalForms — the FLAT-CANON payoff (CAN-6, closes the #936 residual)
 

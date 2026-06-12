@@ -1,4 +1,3 @@
-import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ConvDataCodeInjectivity
 import FX1Poly.Typed.ConvFormationFormerRigidity
@@ -28,8 +27,9 @@ the FORMATION-table substrate:
     `formationFormersNotConvOfDistinct`.
   * **`HasTypeDescPi.noClosedNormalTermAtListType`** — the grown rule-out (CANON-1c instance): no closed-normal
     grown term inhabits a list type.
-  * **`closedNormalListCanonicalForms` (★)** — a closed-NORMAL term typed at `List(A)` by the list-intro engine
-    OR the grown engine is a `nil` or `cons`.
+  * (The zoo-level headline `closedNormalListCanonicalForms` was RETIRED by NATIVE-42 — its union
+    restatement `HasTypeNativeUnion.closedNormalListCanonicalForms` is the live canonicity statement;
+    the rigidities and the grown rule-out are its load-bearing substrate and STAY.)
 
 ## SR deferral (unchanged)
 
@@ -99,24 +99,5 @@ theorem HasTypeDescPi.noClosedNormalTermAtListType {profile : PolyProfile} {subj
   HasTypeDescPi.noClosedNormalTermAtDataClassifier typed normal
     (fun _domainCode _codomainCode convToPiCode => Conv.listCode_not_piTyCode convToPiCode)
     (fun _levelExpr _flag convToUniverseCode => Conv.listCode_not_universeCode convToUniverseCode)
-
-/-- **★ List canonical forms.**  A closed-NORMAL term typed at `List(A)` by the list-introduction engine OR the
-grown engine is a `nil` (`listNilCell`) or `cons` (`listConsCell`).  The list disjunct gives it directly
-(`subjectIsListConstructor`); the grown disjunct is ruled out (`noClosedNormalTermAtListType`).  The non-vacuous
-list canonicity — there exist typed list values (`listNilOfUniverseCodeTyped` / `listConsOfUniverseCodesTyped`),
-and every closed-normal list inhabitant is one. -/
-theorem closedNormalListCanonicalForms {profile : PolyProfile} {subject : RawTerm 0}
-    {elementType : RawTerm 0}
-    (normal : RawTerm.isStepNormalForm subject)
-    (typed :
-      HasTypeDescListIntro profile (TypingContext.empty : TypingContext profile 0) subject
-        (listTypeCell elementType) ∨
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
-        (listTypeCell elementType)) :
-    subject = listNilCell ∨
-    (∃ (headValue tailList : RawTerm 0), subject = listConsCell headValue tailList) := by
-  rcases typed with listTyped | grownTyped
-  · exact listTyped.subjectIsListConstructor
-  · exact (HasTypeDescPi.noClosedNormalTermAtListType grownTyped normal).elim
 
 end FX1Poly.Typed

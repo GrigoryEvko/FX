@@ -1,4 +1,3 @@
-import FX1Poly.Typed.HasTypeDescOptionIntro
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ConvDataCodeInjectivity
 import FX1Poly.Typed.ConvFormationFormerRigidity
@@ -29,8 +28,9 @@ the product/either canonical forms (whose codes are FLAT-table formers, so they 
     via `formationFormersNotConvOfDistinct`.
   * **`HasTypeDescPi.noClosedNormalTermAtOptionType`** — the grown rule-out (CANON-1c instance): no closed-normal
     grown term inhabits an option type.
-  * **`closedNormalOptionCanonicalForms` (★)** — a closed-NORMAL term typed at `option(A)` by the option-intro
-    engine OR the grown engine is an `optionNoneCell` / `optionSomeCell`.
+  * (The zoo-level headline `closedNormalOptionCanonicalForms` was RETIRED by NATIVE-42 — its union
+    restatement `HasTypeNativeUnion.closedNormalOptionCanonicalForms` is the live canonicity statement;
+    the rigidities and the grown rule-out below are its load-bearing substrate and STAY.)
 
 ## SR deferral (unchanged)
 
@@ -100,23 +100,5 @@ theorem HasTypeDescPi.noClosedNormalTermAtOptionType {profile : PolyProfile} {su
   HasTypeDescPi.noClosedNormalTermAtDataClassifier typed normal
     (fun _domainCode _codomainCode convToPiCode => Conv.optionCode_not_piTyCode convToPiCode)
     (fun _levelExpr _flag convToUniverseCode => Conv.optionCode_not_universeCode convToUniverseCode)
-
-/-- **★ Option canonical forms.**  A closed-NORMAL term typed at `option(A)` by the option-introduction engine
-OR the grown engine is an `optionNoneCell` or `optionSomeCell`.  The option disjunct gives it directly
-(`subjectIsOptionConstructor`); the grown disjunct is ruled out (`noClosedNormalTermAtOptionType`).  The
-non-vacuous option canonicity — there exist typed option values (`optionNoneOfUniverseCodeTyped` /
-`optionSomeOfUniverseCodeTyped`), and every closed-normal option inhabitant is one. -/
-theorem closedNormalOptionCanonicalForms {profile : PolyProfile} {subject : RawTerm 0}
-    {elementType : RawTerm 0}
-    (normal : RawTerm.isStepNormalForm subject)
-    (typed :
-      HasTypeDescOptionIntro profile (TypingContext.empty : TypingContext profile 0) subject
-        (optionTypeCell elementType) ∨
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
-        (optionTypeCell elementType)) :
-    subject = optionNoneCell ∨ (∃ value : RawTerm 0, subject = optionSomeCell value) := by
-  rcases typed with optionTyped | grownTyped
-  · exact optionTyped.subjectIsOptionConstructor
-  · exact (HasTypeDescPi.noClosedNormalTermAtOptionType grownTyped normal).elim
 
 end FX1Poly.Typed

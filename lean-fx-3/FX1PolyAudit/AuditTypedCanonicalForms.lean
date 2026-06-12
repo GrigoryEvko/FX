@@ -838,10 +838,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.closedNormalEmptyTypeUninhabited
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtProductType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEitherType
-#assert_no_axioms FX1Poly.Typed.closedNormalProductCanonicalForms
-#assert_no_axioms FX1Poly.Typed.closedNormalEitherCanonicalForms
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtOptionType
-#assert_no_axioms FX1Poly.Typed.closedNormalOptionCanonicalForms
 
 -- CAN-4 (CombinedClosedNormalValueHeads): the COMBINED closed-normal head characterization with
 -- CONSTRUCTOR heads — the #1048 head-extension.  The grown 6-head theorem cannot see constructor
@@ -865,9 +862,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.closedNormalNatCanonicalFormsCombined
 #assert_no_axioms FX1Poly.Typed.closedNormalNatCanonicalFormsCombined.natTwo
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtListType
-#assert_no_axioms FX1Poly.Typed.closedNormalListCanonicalForms
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtIdType
-#assert_no_axioms FX1Poly.Typed.closedNormalIdCanonicalForms
 -- DATA-CANONICITY FOUNDATION: CanonicalFormsPredicate isValue = SN ∧ (neutral ∨ reduces-to-value), the sharper
 -- canonicity-bearing candidate (vs the bare SN candidate the model gives data leaves). Generic over the value
 -- predicate (bool→true/false, Empty→empty pred, nat→zero/succ). CR1 (stronglyNormalizing) = first conjunct; CR3

@@ -946,8 +946,8 @@ positions.  The standing honest-boundary note (2) is RETIRED.  Zero-axiom. -/
 -- = the new head-stable(shapeStable_optionCodeGeneral)-vs-leaf(universe) rigidity (one-child twin of productCode_not_
 -- universeCode); optionCode_not_piTyCode = the within-formation-table rigidity (formationFormersNotConvOfDistinct,
 -- gen_optionCode≠gen_piTyCode). noClosedNormalTermAtOptionType = the CANON-1c grown rule-out instance.
--- closedNormalOptionCanonicalForms = the headline (option-intro disjunct via subjectIsOptionConstructor, grown ruled
--- out). Completes the option data story (intro DI-2c + elim DI-5c + canon). Full canonicity needs master SR / #842.
+-- The zoo headline closedNormalOptionCanonicalForms was retired by NATIVE-42 (union restatement is the live one).
+-- Completes the option data story (intro DI-2c + elim DI-5c + canon). Full canonicity needs master SR / #842.
 #assert_no_axioms FX1Poly.Typed.Conv.optionCode_not_universeCode
 #assert_no_axioms FX1Poly.Typed.Conv.optionCode_not_piTyCode
 -- LIST CANONICAL FORMS (ListCanonicalForms, the DI-2e payoff): NON-VACUOUS closed-normal list canonical forms — a
@@ -956,8 +956,8 @@ positions.  The standing honest-boundary note (2) is RETIRED.  Zero-axiom. -/
 -- so the rule-outs use the FORMATION substrate: listCode_not_universeCode = head-stable(shapeStable_listCodeGeneral)-
 -- vs-leaf(universe) rigidity (one-child twin of optionCode_not_universeCode); listCode_not_piTyCode = the within-
 -- formation-table rigidity (formationFormersNotConvOfDistinct, gen_listCode≠gen_piTyCode). noClosedNormalTermAtList
--- Type = the CANON-1c grown rule-out instance. closedNormalListCanonicalForms = the headline (list-intro disjunct
--- via subjectIsListConstructor, grown ruled out). NOTE: the list ELIMINATOR (listElim) typed-ι is GrownCtxConv-5-class blocked
+-- Type = the CANON-1c grown rule-out instance. The zoo headline closedNormalListCanonicalForms was retired by
+-- NATIVE-42 (union restatement is the live one). NOTE: the list ELIMINATOR (listElim) typed-ι is GrownCtxConv-5-class blocked
 -- — its cons-ι reduct app(app(app(consBranch,h),t), listElim(t,...)) applies consBranch to the TAIL t (a list value)
 -- and the RECURSIVE listElim (elim-engine-typed), NEITHER grown-typed, so piElim can't type them (recursive
 -- eliminators are engine-separation-blocked, unlike the non-recursive ones). Full canonicity needs master SR / #842.
@@ -971,8 +971,8 @@ positions.  The standing honest-boundary note (2) is RETIRED.  Zero-axiom. -/
 -- (shapeStable_idCodeGeneral, 3-child) vs leaf(universe); idCode_not_piTyCode = the TWO-HEAD-STABLE route (BOTH idCode
 -- and piTyCode head-stable → shared reduct carries both heads → noConfusion — the cleaner primitive needing no table
 -- membership, vs the data-canon files' formationFormersNotConvOfDistinct). noClosedNormalTermAtIdType = CANON-1c grown
--- rule-out. closedNormalIdCanonicalForms = the headline (id-intro disjunct via subjectIsRefl, grown ruled out); stated
--- for a GENERAL idTypeCell (rigidities+subjectIsRefl endpoint-agnostic), refl populates only the reflexive left=right.
+-- rule-out. The zoo headline closedNormalIdCanonicalForms was retired by NATIVE-42 (the union restatement
+-- HasTypeNativeUnion.closedNormalIdentityCanonicalForms is the live one).
 #assert_no_axioms FX1Poly.Typed.Conv.idCode_not_universeCode
 #assert_no_axioms FX1Poly.Typed.Conv.idCode_not_piTyCode
 #assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.inversionFormerWithConv

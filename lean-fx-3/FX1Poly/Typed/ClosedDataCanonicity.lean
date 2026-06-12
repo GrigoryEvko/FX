@@ -1,3 +1,7 @@
+import FX1Poly.Typed.HasTypeDescOptionIntro
+import FX1Poly.Typed.HasTypeDescListIntro
+import FX1Poly.Typed.HasTypeDescPairIntro
+import FX1Poly.Typed.HasTypeDescEitherIntro
 import FX1Poly.Typed.OptionCanonicalForms
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.ProductEitherCanonicalForms

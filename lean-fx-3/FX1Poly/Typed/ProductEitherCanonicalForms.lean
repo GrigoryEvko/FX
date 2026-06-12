@@ -1,5 +1,3 @@
-import FX1Poly.Typed.HasTypeDescPairIntro
-import FX1Poly.Typed.HasTypeDescEitherIntro
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ConvFlatCodeInjectivity
 import FX1Poly.Typed.ConvCrossTableFormerRigidity
@@ -30,10 +28,11 @@ The grown engine contributes nothing — it has no closed-normal inhabitant of a
     `Conv.piTyCode_not_conv_productCode`.
   * **`HasTypeDescPi.noClosedNormalTermAtProductType` / `…AtEitherType`** — the grown rule-outs (CANON-1c
     instances): no closed-normal grown term inhabits a product / either type.
-  * **`closedNormalProductCanonicalForms` (★)** — a closed-NORMAL term typed at `product(A, B)` by the pair
-    engine OR the grown engine is a `pairCell`.
-  * **`closedNormalEitherCanonicalForms` (★)** — a closed-NORMAL term typed at `either(A, B)` by the either
-    engine OR the grown engine is an `eitherInlCell` / `eitherInrCell`.
+  * (The zoo-level headlines `closedNormalProductCanonicalForms` / `closedNormalEitherCanonicalForms`
+    were RETIRED by NATIVE-42 — their union restatements
+    `HasTypeNativeUnion.closedNormalProductCanonicalForms` / `…EitherCanonicalForms` are the live
+    canonicity statements; the rigidities and the grown rule-outs are their load-bearing substrate
+    and STAY.)
 
 ## SR deferral (unchanged)
 
@@ -134,40 +133,5 @@ theorem HasTypeDescPi.noClosedNormalTermAtEitherType {profile : PolyProfile} {su
     (fun _domainCode _codomainCode convToPiCode =>
       Conv.piTyCode_not_conv_eitherCode convToPiCode.sym)
     (fun _levelExpr _flag convToUniverseCode => Conv.eitherCode_not_universeCode convToUniverseCode)
-
-/-- **★ Σ canonical forms.**  A closed-NORMAL term typed at `product(A, B)` by the pair-introduction engine
-OR the grown engine is a `pairCell`.  The pair disjunct gives it directly (`subjectIsPair`); the grown
-disjunct is ruled out (`noClosedNormalTermAtProductType`).  The non-vacuous Σ canonicity — there exist typed
-pairs (`pairOfUniverseCodesTyped`), and every closed-normal product inhabitant is one. -/
-theorem closedNormalProductCanonicalForms {profile : PolyProfile} {subject : RawTerm 0}
-    {firstType secondType : RawTerm 0}
-    (normal : RawTerm.isStepNormalForm subject)
-    (typed :
-      HasTypeDescPairIntro profile (TypingContext.empty : TypingContext profile 0) subject
-        (productTypeCell firstType secondType) ∨
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
-        (productTypeCell firstType secondType)) :
-    ∃ (firstValue secondValue : RawTerm 0), subject = pairCell firstValue secondValue := by
-  rcases typed with pairTyped | grownTyped
-  · exact pairTyped.subjectIsPair
-  · exact (HasTypeDescPi.noClosedNormalTermAtProductType grownTyped normal).elim
-
-/-- **★ Coproduct canonical forms.**  A closed-NORMAL term typed at `either(A, B)` by the either-introduction
-engine OR the grown engine is an `eitherInlCell` or `eitherInrCell`.  The either disjunct gives it directly
-(`subjectIsEitherInjection`); the grown disjunct is ruled out (`noClosedNormalTermAtEitherType`).  The
-non-vacuous coproduct canonicity. -/
-theorem closedNormalEitherCanonicalForms {profile : PolyProfile} {subject : RawTerm 0}
-    {leftType rightType : RawTerm 0}
-    (normal : RawTerm.isStepNormalForm subject)
-    (typed :
-      HasTypeDescEitherIntro profile (TypingContext.empty : TypingContext profile 0) subject
-        (eitherTypeCell leftType rightType) ∨
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
-        (eitherTypeCell leftType rightType)) :
-    (∃ value : RawTerm 0, subject = eitherInlCell value) ∨
-    (∃ value : RawTerm 0, subject = eitherInrCell value) := by
-  rcases typed with eitherTyped | grownTyped
-  · exact eitherTyped.subjectIsEitherInjection
-  · exact (HasTypeDescPi.noClosedNormalTermAtEitherType grownTyped normal).elim
 
 end FX1Poly.Typed

@@ -32,8 +32,9 @@ non-convertibilities use the HEAD-STABLE route directly:
 
   * **`HasTypeDescPi.noClosedNormalTermAtIdType`** — the grown rule-out (CANON-1c instance): no closed-normal
     grown term inhabits an identity type.
-  * **`closedNormalIdCanonicalForms` (★)** — a closed-NORMAL term typed at `Id(A, left, right)` by the id-intro
-    engine OR the grown engine is a `refl`.
+  * (The zoo-level headline `closedNormalIdCanonicalForms` was RETIRED by NATIVE-42 — its union
+    restatement `HasTypeNativeUnion.closedNormalIdentityCanonicalForms` is the live canonicity statement;
+    the rigidities and the grown rule-out are its load-bearing substrate and STAY.)
 
 ## SR deferral (unchanged)
 
@@ -107,24 +108,5 @@ theorem HasTypeDescPi.noClosedNormalTermAtIdType {profile : PolyProfile} {subjec
   HasTypeDescPi.noClosedNormalTermAtDataClassifier typed normal
     (fun _domainCode _codomainCode convToPiCode => Conv.idCode_not_piTyCode convToPiCode)
     (fun _levelExpr _flag convToUniverseCode => Conv.idCode_not_universeCode convToUniverseCode)
-
-/-- **★ Identity canonical forms.**  A closed-NORMAL term typed at `Id(A, left, right)` by the
-identity-introduction engine OR the grown engine is a `refl` (`reflCell witness`).  The id-intro disjunct gives
-it directly (`subjectIsRefl`); the grown disjunct is ruled out (`noClosedNormalTermAtIdType`).  The non-vacuous
-identity canonicity — there exist typed reflexivity proofs (`reflOfUniverseCodeTyped`), and every closed-normal
-identity inhabitant is one.  Stated for a GENERAL `idTypeCell typeCode left right` (the rigidities and
-`subjectIsRefl` are endpoint-agnostic); `refl` itself only populates the reflexive case `left = right`. -/
-theorem closedNormalIdCanonicalForms {profile : PolyProfile} {subject : RawTerm 0}
-    {typeCode left right : RawTerm 0}
-    (normal : RawTerm.isStepNormalForm subject)
-    (typed :
-      HasTypeDescIdIntro profile (TypingContext.empty : TypingContext profile 0) subject
-        (idTypeCell typeCode left right) ∨
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
-        (idTypeCell typeCode left right)) :
-    ∃ witness : RawTerm 0, subject = reflCell witness := by
-  rcases typed with idTyped | grownTyped
-  · exact idTyped.subjectIsRefl
-  · exact (HasTypeDescPi.noClosedNormalTermAtIdType grownTyped normal).elim
 
 end FX1Poly.Typed
