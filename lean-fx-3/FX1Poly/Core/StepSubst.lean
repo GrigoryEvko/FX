@@ -3,120 +3,52 @@ import FX1Poly.Core.RawTermSubst0Commute
 import FX1Poly.Core.RawTermSubstPair
 import FX1Poly.Core.RawTermFresh
 import FX1Poly.Core.StructuralInductionPrimitives
+import FX1Poly.Core.StepTable
+import FX1Poly.Core.StepTableEquivariance
 
 /-! # Foundation/PolyCell/Core/StepSubst
 
 Substitution compatibility for one-step reduction on the v2 raw
 substrate.
 
-The load-bearing case is beta: after an outer substitution, the beta
-contractum is reshaped by `RawTerm.subst0_subst_commute`, so the
-substituted redex still contracts in one `Step`.
+`Step.subst` / `StepChildren.subst` are proved through the TABLE PIVOT
+(`stepOverLegacyTable_iff_step`): the bespoke step crosses to the
+legacy-table relation, fires the ONE generic substitution-stability
+theorem `StepOverTable.subst` (scope-uniformity inherited from the
+canonical table's certificate through the sublist embedding), and
+crosses back.  The per-rule substitution arms — including the beta
+`subst0_subst_commute` reshaping and the substituting succ-iota
+`cons_singleton_subst_commute` gymnastics — live ONCE in the generic
+template induction (`IotaTableEquivariance`); this file no longer
+names any redex constructor.
 -/
 
 namespace FX1Poly.Core
 
 open FX1Poly.Foundation
 
-/-- One-step reduction is stable under raw substitution. -/
+/-- Every legacy-table row is scope-uniform — the canonical table's
+certificate restricted through the sublist embedding.  The hypothesis
+`StepOverTable.subst` (and the rename twin) consumes. -/
+theorem legacyIotaRuleTable_rowsScopeUniform :
+    ∀ rule, rule ∈ legacyIotaRuleTable → rule.IsScopeUniform :=
+  fun rule isRow =>
+    iotaRuleTable_isScopeUniform rule (legacyRow_memFullTable isRow)
+
+/-- One-step reduction is stable under raw substitution — through the
+table pivot: cross to the legacy-table relation, fire the generic
+`StepOverTable.subst`, cross back. -/
 theorem Step.subst {sourceScope targetScope : Nat}
     {sourceTerm targetTerm : RawTerm sourceScope}
     (sigma : RawTermSubst sourceScope targetScope)
     (sourceStep : Step sourceTerm targetTerm) :
-    Step (RawTerm.subst sigma sourceTerm) (RawTerm.subst sigma targetTerm) := by
-  let motiveStep :
-      {scope : Nat} → (first second : RawTerm scope) →
-        Step first second → Prop :=
-    fun {scope} first second _ =>
-      ∀ {targetScope : Nat}, (subst : RawTermSubst scope targetScope) →
-        Step (RawTerm.subst subst first) (RawTerm.subst subst second)
-  let motiveChildren :
-      {parentScope : Nat} → {binderShifts : List Nat} →
-        (first second : RawTermChildren binderShifts parentScope) →
-        StepChildren first second → Prop :=
-    fun {parentScope} {_} first second _ =>
-      ∀ {targetScope : Nat}, (subst : RawTermSubst parentScope targetScope) →
-        StepChildren (RawTermChildren.subst subst first)
-          (RawTermChildren.subst subst second)
-  exact
-    (Step.rec
-      (motive_1 := motiveStep)
-      (motive_2 := motiveChildren)
-      (fun {scope} {domainAnn} {body} {arg} {targetScope} sigma => by
-        rw [RawTerm.subst0_subst_commute]
-        exact Step.beta)
-      (fun {scope} generator payload {children} {children'} childStep
-          childStepSubst {targetScope} sigma => by
-        by_cases hVar : generator = .gen_var
-        · subst hVar
-          cases childStep
-        · rw [RawTerm.subst_nonVar_reduces sigma hVar payload children]
-          rw [RawTerm.subst_nonVar_reduces sigma hVar payload children']
-          exact Step.cong generator _ (childStepSubst sigma))
-      (fun {scope} {motive} {thenBranch} {elseBranch} {targetScope} sigma =>
-        Step.iotaBoolTrue)
-      (fun {scope} {motive} {thenBranch} {elseBranch} {targetScope} sigma =>
-        Step.iotaBoolFalse)
-      (fun {scope} {firstValue} {secondValue} {targetScope} sigma =>
-        Step.iotaFstPair)
-      (fun {scope} {firstValue} {secondValue} {targetScope} sigma =>
-        Step.iotaSndPair)
-      (fun {scope} {motive} {zeroBranch} {succBranch} {targetScope} sigma =>
-        Step.iotaNatElimZero)
-      (fun {scope} {motive} {zeroBranch} {succBranch} {targetScope} sigma =>
-        Step.iotaNatRecZero)
-      (fun {scope} {motive} {nilBranch} {consBranch} {targetScope} sigma =>
-        Step.iotaListElimNil)
-      (fun {scope} {motive} {noneBranch} {someBranch} {targetScope} sigma =>
-        Step.iotaOptionMatchNone)
-      (fun {scope} {motive} {value} {noneBranch} {someBranch} {targetScope} sigma =>
-        Step.iotaOptionMatchSome)
-      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
-        Step.iotaEitherMatchInl)
-      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
-        Step.iotaEitherMatchInr)
-      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch}
-          {targetScope} sigma => by
-        -- SUBSTITUTING succ-iota: the substituted source still fires `iotaNatElimSucc`,
-        -- and `cons_singleton_subst_commute` reshapes the substituted reduct to the fired
-        -- reduct (the recursive call `subst sigma (natElim ...)` reduces by `rfl` to the
-        -- substituted-children natElim, matching the constructor's reduct).
-        rw [RawTerm.cons_singleton_subst_commute succBranch
-          (.mkGen .gen_natElim ()
-            (.childCons motive
-              (.childCons zeroBranch
-                (.childCons succBranch (.childCons predecessor .childNil)))))
-          predecessor sigma]
-        exact Step.iotaNatElimSucc)
-      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch}
-          {targetScope} sigma => by
-        rw [RawTerm.cons_singleton_subst_commute succBranch
-          (.mkGen .gen_natRec ()
-            (.childCons motive
-              (.childCons zeroBranch
-                (.childCons succBranch (.childCons predecessor .childNil)))))
-          predecessor sigma]
-        exact Step.iotaNatRecSucc)
-      (fun {scope} {motive} {headVal} {tailVal} {nilBranch} {consBranch}
-          {targetScope} sigma => Step.iotaListElimCons)
-      (fun {scope} {motive} {baseCase} {rawWitness} {targetScope} sigma =>
-        Step.iotaIdJRefl)
-      (fun {scope} {motive} {baseCase} {rawWitness} {targetScope} sigma =>
-        Step.iotaIdStrictRecRefl)
-      (fun {parentScope} {headShift} {restShifts} {head} {head'} rest
-          childStep childStepSubst {targetScope} sigma =>
-        StepChildren.here
-          (RawTermChildren.subst sigma rest)
-          (childStepSubst (iterateLiftRaw sigma headShift)))
-      (fun {parentScope} {headShift} {restShifts} head {rest} {rest'}
-          restStep restStepSubst {targetScope} sigma =>
-        StepChildren.there
-          (RawTerm.subst (iterateLiftRaw sigma headShift) head)
-          (restStepSubst sigma))
-      sourceStep)
-      sigma
+    Step (RawTerm.subst sigma sourceTerm) (RawTerm.subst sigma targetTerm) :=
+  stepOverLegacyTable_iff_step.mp
+    (StepOverTable.subst legacyIotaRuleTable_rowsScopeUniform sigma
+      (stepOverLegacyTable_iff_step.mpr sourceStep))
 
-/-- Child-spine one-step reduction is stable under raw substitution. -/
+/-- Child-spine one-step reduction is stable under raw substitution —
+the spine companion through the same table pivot. -/
 theorem StepChildren.subst {parentSourceScope parentTargetScope : Nat}
     {binderShifts : List Nat}
     {sourceChildren targetChildren :
@@ -124,94 +56,10 @@ theorem StepChildren.subst {parentSourceScope parentTargetScope : Nat}
     (sigma : RawTermSubst parentSourceScope parentTargetScope)
     (childrenStep : StepChildren sourceChildren targetChildren) :
     StepChildren (RawTermChildren.subst sigma sourceChildren)
-      (RawTermChildren.subst sigma targetChildren) := by
-  let motiveStep :
-      {scope : Nat} → (first second : RawTerm scope) →
-        Step first second → Prop :=
-    fun {scope} first second _ =>
-      ∀ {targetScope : Nat}, (subst : RawTermSubst scope targetScope) →
-        Step (RawTerm.subst subst first) (RawTerm.subst subst second)
-  let motiveChildren :
-      {parentScope : Nat} → {binderShifts : List Nat} →
-        (first second : RawTermChildren binderShifts parentScope) →
-        StepChildren first second → Prop :=
-    fun {parentScope} {_} first second _ =>
-      ∀ {targetScope : Nat}, (subst : RawTermSubst parentScope targetScope) →
-        StepChildren (RawTermChildren.subst subst first)
-          (RawTermChildren.subst subst second)
-  exact
-    (StepChildren.rec
-      (motive_1 := motiveStep)
-      (motive_2 := motiveChildren)
-      (fun {scope} {domainAnn} {body} {arg} {targetScope} sigma => by
-        rw [RawTerm.subst0_subst_commute]
-        exact Step.beta)
-      (fun {scope} generator payload {children} {children'} childStep
-          childStepSubst {targetScope} sigma => by
-        by_cases hVar : generator = .gen_var
-        · subst hVar
-          cases childStep
-        · rw [RawTerm.subst_nonVar_reduces sigma hVar payload children]
-          rw [RawTerm.subst_nonVar_reduces sigma hVar payload children']
-          exact Step.cong generator _ (childStepSubst sigma))
-      (fun {scope} {motive} {thenBranch} {elseBranch} {targetScope} sigma =>
-        Step.iotaBoolTrue)
-      (fun {scope} {motive} {thenBranch} {elseBranch} {targetScope} sigma =>
-        Step.iotaBoolFalse)
-      (fun {scope} {firstValue} {secondValue} {targetScope} sigma =>
-        Step.iotaFstPair)
-      (fun {scope} {firstValue} {secondValue} {targetScope} sigma =>
-        Step.iotaSndPair)
-      (fun {scope} {motive} {zeroBranch} {succBranch} {targetScope} sigma =>
-        Step.iotaNatElimZero)
-      (fun {scope} {motive} {zeroBranch} {succBranch} {targetScope} sigma =>
-        Step.iotaNatRecZero)
-      (fun {scope} {motive} {nilBranch} {consBranch} {targetScope} sigma =>
-        Step.iotaListElimNil)
-      (fun {scope} {motive} {noneBranch} {someBranch} {targetScope} sigma =>
-        Step.iotaOptionMatchNone)
-      (fun {scope} {motive} {value} {noneBranch} {someBranch} {targetScope} sigma =>
-        Step.iotaOptionMatchSome)
-      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
-        Step.iotaEitherMatchInl)
-      (fun {scope} {motive} {value} {leftBranch} {rightBranch} {targetScope} sigma =>
-        Step.iotaEitherMatchInr)
-      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch}
-          {targetScope} sigma => by
-        rw [RawTerm.cons_singleton_subst_commute succBranch
-          (.mkGen .gen_natElim ()
-            (.childCons motive
-              (.childCons zeroBranch
-                (.childCons succBranch (.childCons predecessor .childNil)))))
-          predecessor sigma]
-        exact Step.iotaNatElimSucc)
-      (fun {scope} {motive} {predecessor} {zeroBranch} {succBranch}
-          {targetScope} sigma => by
-        rw [RawTerm.cons_singleton_subst_commute succBranch
-          (.mkGen .gen_natRec ()
-            (.childCons motive
-              (.childCons zeroBranch
-                (.childCons succBranch (.childCons predecessor .childNil)))))
-          predecessor sigma]
-        exact Step.iotaNatRecSucc)
-      (fun {scope} {motive} {headVal} {tailVal} {nilBranch} {consBranch}
-          {targetScope} sigma => Step.iotaListElimCons)
-      (fun {scope} {motive} {baseCase} {rawWitness} {targetScope} sigma =>
-        Step.iotaIdJRefl)
-      (fun {scope} {motive} {baseCase} {rawWitness} {targetScope} sigma =>
-        Step.iotaIdStrictRecRefl)
-      (fun {parentScope} {headShift} {restShifts} {head} {head'} rest
-          childStep childStepSubst {targetScope} sigma =>
-        StepChildren.here
-          (RawTermChildren.subst sigma rest)
-          (childStepSubst (iterateLiftRaw sigma headShift)))
-      (fun {parentScope} {headShift} {restShifts} head {rest} {rest'}
-          restStep restStepSubst {targetScope} sigma =>
-        StepChildren.there
-          (RawTerm.subst (iterateLiftRaw sigma headShift) head)
-          (restStepSubst sigma))
-      childrenStep)
-      sigma
+      (RawTermChildren.subst sigma targetChildren) :=
+  StepOverTableChildren.legacyToStepChildren
+    (StepOverTableChildren.subst legacyIotaRuleTable_rowsScopeUniform sigma
+      (StepChildren.toLegacyTableStepChildren childrenStep))
 
 /-- Substitute every term in a `StepStar` chain. -/
 theorem StepStar.subst {sourceScope targetScope : Nat}
