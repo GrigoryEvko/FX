@@ -83,23 +83,22 @@ structure EliminatorLayerCanonicitySpine (profile : PolyProfile) : Prop where
   listElimComputes : ∀ {motive : RawTerm 1} {scrutinee : RawTerm 0}, IsListValue scrutinee →
       ∃ out : RawTerm 0,
         StepStar (listElimCell motive scrutinee natZeroCell lengthNatStep) out ∧ IsNatNumeral out
-  /-- option: a closed `optionMatch` with a typed option scrutinee and constant bool branches computes to a bool.
-  Phase-Z motive shape: the `optionMatch` cell carries a stored motive head child (any motive — the ι discards it). -/
-  optionMatchComputes : ∀ {motive : RawTerm 1} {scrutinee elementType : RawTerm 0},
-    (HasTypeDescOptionIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee
-        (optionTypeCell elementType) ∨
-     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
-        (optionTypeCell elementType)) →
+  /-- option: a closed `optionMatch` with a CANONICAL option scrutinee (reduces to a constructor value —
+  the NATIVE-42 operational re-shape of the retired zoo-typed hypothesis) and constant bool branches
+  computes to a bool.  Phase-Z motive shape: the `optionMatch` cell carries a stored motive head child
+  (any motive — the ι discards it). -/
+  optionMatchComputes : ∀ {motive : RawTerm 1} {scrutinee : RawTerm 0},
+    (∃ scrutValue : RawTerm 0, StepStar scrutinee scrutValue ∧
+      (scrutValue = optionNoneCell ∨ ∃ inner : RawTerm 0, scrutValue = optionSomeCell inner)) →
       ∃ out : RawTerm 0,
         StepStar (optionMatchCell motive boolTrueCell
           (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) scrutinee) out ∧
         (out = boolTrueCell ∨ out = boolFalseCell)
-  /-- either: the either twin of `optionMatchComputes`. -/
-  eitherMatchComputes : ∀ {motive : RawTerm 1} {scrutinee leftType rightType : RawTerm 0},
-    (HasTypeDescEitherIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee
-        (eitherTypeCell leftType rightType) ∨
-     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
-        (eitherTypeCell leftType rightType)) →
+  /-- either: the either twin of `optionMatchComputes` (canonical either-injection scrutinee). -/
+  eitherMatchComputes : ∀ {motive : RawTerm 1} {scrutinee : RawTerm 0},
+    (∃ scrutValue : RawTerm 0, StepStar scrutinee scrutValue ∧
+      ((∃ inner : RawTerm 0, scrutValue = eitherInlCell inner) ∨
+        (∃ inner : RawTerm 0, scrutValue = eitherInrCell inner))) →
       ∃ out : RawTerm 0,
         StepStar (eitherMatchCell motive (lamCell boolTrueCell (boolTrueCell : RawTerm 1))
           (lamCell boolTrueCell (boolFalseCell : RawTerm 1)) scrutinee) out ∧
@@ -114,7 +113,7 @@ theorem eliminatorLayerCanonicitySpineHolds {profile : PolyProfile} :
   boolElimComputes derivation := boolElimValueCanonicity derivation
   natElimComputes scrutineeNumeral := natElimCopyComputesToNumeral scrutineeNumeral
   listElimComputes scrutineeValue := listElimLengthComputesToNumeral scrutineeValue
-  optionMatchComputes scrutineeTyped := closedOptionMatchIntoBoolComputes scrutineeTyped
-  eitherMatchComputes scrutineeTyped := closedEitherMatchIntoBoolComputes scrutineeTyped
+  optionMatchComputes scrutineeCanonical := closedOptionMatchIntoBoolComputes scrutineeCanonical
+  eitherMatchComputes scrutineeCanonical := closedEitherMatchIntoBoolComputes scrutineeCanonical
 
 end FX1Poly.Typed

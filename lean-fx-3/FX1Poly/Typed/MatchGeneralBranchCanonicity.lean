@@ -10,13 +10,15 @@ some/inl/inr payload — as the broader integration.
 
 This file lands the general structural reduction.  The eliminator-computing canonicity has TWO independent parts:
 
-  * the SCRUTINEE part — a closed option/either reduces to a constructor value (`closedOptionCanonicalForms` /
-    `closedEitherCanonicalForms`), carried under the match by the scrutinee congruence, then the matching ι rule
-    fires to select-and-APPLY the branch to the stored payload;
+  * the SCRUTINEE part — the scrutinee reduces to a constructor value (taken as the OPERATIONAL
+    scrutinee-canonicity hypothesis since the NATIVE-42 re-shape; any typing route that yields it — a
+    constructor-headed scrutinee by `refl`, the union arc once its SR/SN lands — discharges it), carried
+    under the match by the scrutinee congruence, then the matching ι rule fires to select-and-APPLY the
+    branch to the stored payload;
   * the BRANCH part — the selected branch, applied to the payload, reduces to a value.
 
-`closedOptionMatchComputes` / `closedEitherMatchComputes` discharge the FIRST part unconditionally and take the
-SECOND as a hypothesis (`branchComputes : ∀ payload, ∃ out, StepStar (app branch payload) out ∧ isValue out`).
+`closedOptionMatchComputes` / `closedEitherMatchComputes` take BOTH parts as hypotheses
+(`branchComputes : ∀ payload, ∃ out, StepStar (app branch payload) out ∧ isValue out`).
 So they reduce eliminator canonicity to branch canonicity for ANY branches — the constant branches of the prior
 file become a one-line corollary (`closedOptionMatchIntoBoolFromGeneral`), and genuinely PAYLOAD-USING branches
 are now in scope (`optionMatch(m, n, branch, scrutinee)`): `closedOptionMatchIdentityIntoBool` feeds the some-payload `boolTrue` straight out through the
@@ -30,7 +32,7 @@ discharge over arbitrary result types remains the named combined-canonicity foll
 
 ## Zero-axiom verification
 
-`closedOptionCanonicalForms` / `closedEitherCanonicalForms` (scrutinee) + `StepStar.optionMatchScrutinee` /
+The scrutinee-canonicity hypothesis (operational) + `StepStar.optionMatchScrutinee` /
 `StepStar.eitherMatchScrutinee` (congruence) + `StepStar.transLast` with `Step.iotaOptionMatch*` /
 `Step.iotaEitherMatch*` (ι) + `StepStar.trans_compose` (chain in the branch reduction) + `Step.beta` (the
 identity/constant branch β).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
@@ -42,27 +44,25 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
 /-- **★ Option-match eliminator-computing canonicity for ARBITRARY branches.**  A closed
-`optionMatch(m, noneBranch, someBranch, scrutinee)` whose scrutinee is typed at `option(elementType)` reduces by
-`↝*` to an `isValue`, GIVEN that the none-branch reduces to an `isValue` and the some-branch applied to any
-payload reduces to an `isValue`.  The scrutinee reduces to `optionNone`/`optionSome inner`
-(`closedOptionCanonicalForms`); the congruence carries it under the match; the ι rule selects (and, for `some`,
-applies) the branch; the branch-canonicity hypothesis finishes.  Reduces eliminator canonicity to branch
-canonicity for ANY branches — including payload-using ones. -/
-theorem closedOptionMatchComputes {profile : PolyProfile}
+`optionMatch(m, noneBranch, someBranch, scrutinee)` whose scrutinee reduces to an option constructor value
+reduces by `↝*` to an `isValue`, GIVEN that the none-branch reduces to an `isValue` and the some-branch
+applied to any payload reduces to an `isValue`.  The congruence carries the scrutinee reduction under the
+match; the ι rule selects (and, for `some`, applies) the branch; the branch-canonicity hypothesis finishes.
+Reduces eliminator canonicity to branch canonicity for ANY branches — including payload-using ones.
+(NATIVE-42 re-shape: the scrutinee hypothesis is the OPERATIONAL canonicity the retired zoo statement
+used to derive.) -/
+theorem closedOptionMatchComputes
     {motive : RawTerm 1}
-    {scrutinee elementType noneBranch someBranch : RawTerm 0}
+    {scrutinee noneBranch someBranch : RawTerm 0}
     {isValue : RawTerm 0 → Prop}
-    (scrutineeTyped :
-      HasTypeDescOptionIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee
-        (optionTypeCell elementType) ∨
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
-        (optionTypeCell elementType))
+    (scrutineeCanonical : ∃ scrutValue : RawTerm 0, StepStar scrutinee scrutValue ∧
+      (scrutValue = optionNoneCell ∨ ∃ inner : RawTerm 0, scrutValue = optionSomeCell inner))
     (noneBranchComputes : ∃ out : RawTerm 0, StepStar noneBranch out ∧ isValue out)
     (someBranchComputes : ∀ payload : RawTerm 0,
       ∃ out : RawTerm 0, StepStar (appCell someBranch payload) out ∧ isValue out) :
     ∃ out : RawTerm 0,
       StepStar (optionMatchCell motive noneBranch someBranch scrutinee) out ∧ isValue out := by
-  obtain ⟨scrutValue, scrutReduces, scrutIsOption⟩ := closedOptionCanonicalForms scrutineeTyped
+  obtain ⟨scrutValue, scrutReduces, scrutIsOption⟩ := scrutineeCanonical
   rcases scrutIsOption with noneEq | ⟨inner, someEq⟩
   · subst noneEq
     obtain ⟨out, branchReduces, branchValue⟩ := noneBranchComputes
@@ -80,25 +80,24 @@ theorem closedOptionMatchComputes {profile : PolyProfile}
       branchValue⟩
 
 /-- **★ Either-match eliminator-computing canonicity for ARBITRARY branches.**  A closed
-`eitherMatch(m, leftBranch, rightBranch, scrutinee)` whose scrutinee is typed at `either(leftType, rightType)`
+`eitherMatch(m, leftBranch, rightBranch, scrutinee)` whose scrutinee reduces to an either injection value
 reduces by `↝*` to an `isValue`, GIVEN that each branch applied to any payload reduces to an `isValue`.  The
-either twin of `closedOptionMatchComputes`. -/
-theorem closedEitherMatchComputes {profile : PolyProfile}
+either twin of `closedOptionMatchComputes`.  (NATIVE-42 re-shape: operational scrutinee-canonicity
+hypothesis.) -/
+theorem closedEitherMatchComputes
     {motive : RawTerm 1}
-    {scrutinee leftType rightType leftBranch rightBranch : RawTerm 0}
+    {scrutinee leftBranch rightBranch : RawTerm 0}
     {isValue : RawTerm 0 → Prop}
-    (scrutineeTyped :
-      HasTypeDescEitherIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee
-        (eitherTypeCell leftType rightType) ∨
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
-        (eitherTypeCell leftType rightType))
+    (scrutineeCanonical : ∃ scrutValue : RawTerm 0, StepStar scrutinee scrutValue ∧
+      ((∃ inner : RawTerm 0, scrutValue = eitherInlCell inner) ∨
+        (∃ inner : RawTerm 0, scrutValue = eitherInrCell inner)))
     (leftBranchComputes : ∀ payload : RawTerm 0,
       ∃ out : RawTerm 0, StepStar (appCell leftBranch payload) out ∧ isValue out)
     (rightBranchComputes : ∀ payload : RawTerm 0,
       ∃ out : RawTerm 0, StepStar (appCell rightBranch payload) out ∧ isValue out) :
     ∃ out : RawTerm 0,
       StepStar (eitherMatchCell motive leftBranch rightBranch scrutinee) out ∧ isValue out := by
-  obtain ⟨scrutValue, scrutReduces, scrutIsEither⟩ := closedEitherCanonicalForms scrutineeTyped
+  obtain ⟨scrutValue, scrutReduces, scrutIsEither⟩ := scrutineeCanonical
   rcases scrutIsEither with ⟨inner, inlEq⟩ | ⟨inner, inrEq⟩
   · subst inlEq
     obtain ⟨out, branchReduces, branchValue⟩ := leftBranchComputes inner
@@ -119,20 +118,17 @@ theorem closedEitherMatchComputes {profile : PolyProfile}
 `closedOptionMatchIntoBoolComputes` (constant `boolTrue` / `λ_.boolTrue` branches) is the general theorem at the
 constant branch canonicity (`app (λ_.boolTrue) payload ↝β boolTrue` for any payload).  Witnesses the general
 theorem subsumes the constant case. -/
-theorem closedOptionMatchIntoBoolFromGeneral {profile : PolyProfile}
-    {scrutinee elementType : RawTerm 0}
-    (scrutineeTyped :
-      HasTypeDescOptionIntro profile (TypingContext.empty : TypingContext profile 0) scrutinee
-        (optionTypeCell elementType) ∨
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) scrutinee
-        (optionTypeCell elementType)) :
+theorem closedOptionMatchIntoBoolFromGeneral
+    {scrutinee : RawTerm 0}
+    (scrutineeCanonical : ∃ scrutValue : RawTerm 0, StepStar scrutinee scrutValue ∧
+      (scrutValue = optionNoneCell ∨ ∃ inner : RawTerm 0, scrutValue = optionSomeCell inner)) :
     ∃ out : RawTerm 0,
       StepStar (optionMatchCell (variableCell (⟨0, by decide⟩ : Fin 1)) boolTrueCell
         (lamCell unitCell (boolTrueCell : RawTerm 1)) scrutinee) out ∧
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   closedOptionMatchComputes
     (isValue := fun value => value = boolTrueCell ∨ value = boolFalseCell)
-    scrutineeTyped
+    scrutineeCanonical
     ⟨boolTrueCell, StepStar.refl _, Or.inl rfl⟩
     (fun _payload => ⟨boolTrueCell, StepStar.transLast (StepStar.refl _) Step.beta, Or.inl rfl⟩)
 

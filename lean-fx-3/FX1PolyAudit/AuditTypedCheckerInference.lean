@@ -284,7 +284,6 @@ import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.CanonicitySyntacticRoute
 import FX1Poly.Typed.GrownRigidityCanonicity
 import FX1Poly.Typed.ClosedNatCanonicity
-import FX1Poly.Typed.ClosedDataCanonicity
 import FX1Poly.Typed.BoolElimClosedNormalForms
 import FX1Poly.Typed.MatchClosedNormalForms
 import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
