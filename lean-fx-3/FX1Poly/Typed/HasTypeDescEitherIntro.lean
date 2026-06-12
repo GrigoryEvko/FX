@@ -45,19 +45,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The left coproduct injection cell `eitherInl(value)` — `gen_eitherInl` (arity 1, `binderShifts = [0]`). -/
-def eitherInlCell {scope : Nat} (value : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_eitherInl () (.childCons value .childNil)
-
-/-- The right coproduct injection cell `eitherInr(value)` — `gen_eitherInr` (arity 1, `binderShifts = [0]`). -/
-def eitherInrCell {scope : Nat} (value : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_eitherInr () (.childCons value .childNil)
-
-/-- The coproduct type code `either(leftType, rightType)` — `gen_eitherCode` (arity 2, `binderShifts =
-[0, 0]`), the non-dependent sum type that classifies the injection cells. -/
-def eitherTypeCell {scope : Nat} (leftType rightType : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_eitherCode () (.childCons leftType (.childCons rightType .childNil))
-
 /-- **The coproduct introduction judgment.**  A standalone layer (NOT mutual with / NOT an arm of any
 existing engine, mirroring `HasTypeDescPairIntro`) typing the two sum-value constructors at their either type
 code.  `eitherInl(a)` needs `a : A` plus a type-formedness witness for the free right component `B`;

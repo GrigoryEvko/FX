@@ -46,19 +46,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The empty-list value cell `nil` — `gen_listNil` (arity 0, no children). -/
-def listNilCell {scope : Nat} : RawTerm scope :=
-  .mkGen .gen_listNil () .childNil
-
-/-- The cons-list value cell `cons(headValue, tailList)` — `gen_listCons` (arity 2, `binderShifts = [0, 0]`). -/
-def listConsCell {scope : Nat} (headValue tailList : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_listCons () (.childCons headValue (.childCons tailList .childNil))
-
-/-- The list type code `List(elementType)` — `gen_listCode` (arity 1, `binderShifts = [0]`), the type that
-classifies the list value cells. -/
-def listTypeCell {scope : Nat} (elementType : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_listCode () (.childCons elementType .childNil)
-
 /-- **The List introduction judgment.**  A standalone layer (NOT mutual with / NOT an arm of any existing
 engine) typing the list value constructors at their list type code.  `nil` needs only a type-formedness witness
 for the free element type `A`; `cons(h, t)` needs a head premise `h : A` (which pins `A`) and a RECURSIVE tail

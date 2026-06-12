@@ -48,18 +48,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The Church-free PAIR value cell `pair(firstValue, secondValue)` — `gen_pair` (arity 2, `binderShifts =
-[0, 0]`, `Unit` payload), both components at the ambient scope (non-dependent).  The data VALUE constructor
-the grown engine proves untyped; this judgment types it. -/
-def pairCell {scope : Nat} (firstValue secondValue : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_pair () (.childCons firstValue (.childCons secondValue .childNil))
-
-/-- The PRODUCT type code `product(firstType, secondType)` — `gen_productCode` (arity 2, `binderShifts =
-[0, 0]`), the non-dependent Σ-type code that classifies `pairCell`.  Inline `mkGen` (no named cell shipped,
-as for the other flat data type codes). -/
-def productTypeCell {scope : Nat} (firstType secondType : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_productCode () (.childCons firstType (.childCons secondType .childNil))
-
 /-- **The PAIR introduction judgment.**  A standalone layer (NOT mutual with / NOT an arm of
 `HasTypeDescDataIntro` or `HasTypeDescPi`, mirroring `HasTypeDescBaseType`) typing the pair VALUE constructor
 at its product type code.  The sole arm: `pair(a, b)` introduces a member of `product(A, B)` from grown

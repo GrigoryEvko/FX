@@ -45,19 +45,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The empty-option value cell `optionNone` — `gen_optionNone` (arity 0, no children). -/
-def optionNoneCell {scope : Nat} : RawTerm scope :=
-  .mkGen .gen_optionNone () .childNil
-
-/-- The present-option value cell `optionSome(value)` — `gen_optionSome` (arity 1, `binderShifts = [0]`). -/
-def optionSomeCell {scope : Nat} (value : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_optionSome () (.childCons value .childNil)
-
-/-- The option type code `option(elementType)` — `gen_optionCode` (arity 1, `binderShifts = [0]`), the
-non-dependent option type that classifies the option value cells. -/
-def optionTypeCell {scope : Nat} (elementType : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_optionCode () (.childCons elementType .childNil)
-
 /-- **The Option introduction judgment.**  A standalone layer (NOT mutual with / NOT an arm of any existing
 engine, mirroring `HasTypeDescEitherIntro`) typing the two option-value constructors at their option type code.
 `optionNone` needs only a type-formedness witness for the free element component `A`; `optionSome(a)` needs a

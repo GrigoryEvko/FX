@@ -126,4 +126,76 @@ constructors, independent of any typing engine. -/
 def unitCell {scope : Nat} : RawTerm scope :=
   .mkGen .gen_unit () .childNil
 
+/-! ## The data-value and data-type cells (extracted from the six
+intro engines — the NATIVE-42 double-duty split: the cells are shared
+vocabulary, the judgments are the retiring zoo) -/
+
+/-- The zero value cell `natZero` — `gen_natZero` (arity 0, no children). -/
+def natZeroCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_natZero () .childNil
+
+/-- The successor value cell `natSucc(predecessor)` — `gen_natSucc` (arity 1, `binderShifts = [0]`). -/
+def natSuccCell {scope : Nat} (predecessor : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_natSucc () (.childCons predecessor .childNil)
+
+/-- The reflexivity value cell `refl(witness)` — `gen_refl` (arity 1, `binderShifts = [0]`). -/
+def reflCell {scope : Nat} (witness : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_refl () (.childCons witness .childNil)
+
+/-- The identity type code `Id(typeCode, left, right)` — `gen_idCode` (arity 3, `binderShifts = [0, 0, 0]`), the
+heterogeneous three-child code (a type and two endpoint terms) that classifies the reflexivity cell. -/
+def idTypeCell {scope : Nat} (typeCode left right : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_idCode () (.childCons typeCode (.childCons left (.childCons right .childNil)))
+
+/-- The empty-option value cell `optionNone` — `gen_optionNone` (arity 0, no children). -/
+def optionNoneCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_optionNone () .childNil
+
+/-- The present-option value cell `optionSome(value)` — `gen_optionSome` (arity 1, `binderShifts = [0]`). -/
+def optionSomeCell {scope : Nat} (value : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_optionSome () (.childCons value .childNil)
+
+/-- The option type code `option(elementType)` — `gen_optionCode` (arity 1, `binderShifts = [0]`), the
+non-dependent option type that classifies the option value cells. -/
+def optionTypeCell {scope : Nat} (elementType : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_optionCode () (.childCons elementType .childNil)
+
+/-- The left coproduct injection cell `eitherInl(value)` — `gen_eitherInl` (arity 1, `binderShifts = [0]`). -/
+def eitherInlCell {scope : Nat} (value : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_eitherInl () (.childCons value .childNil)
+
+/-- The right coproduct injection cell `eitherInr(value)` — `gen_eitherInr` (arity 1, `binderShifts = [0]`). -/
+def eitherInrCell {scope : Nat} (value : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_eitherInr () (.childCons value .childNil)
+
+/-- The coproduct type code `either(leftType, rightType)` — `gen_eitherCode` (arity 2, `binderShifts =
+[0, 0]`), the non-dependent sum type that classifies the injection cells. -/
+def eitherTypeCell {scope : Nat} (leftType rightType : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_eitherCode () (.childCons leftType (.childCons rightType .childNil))
+
+/-- The Church-free PAIR value cell `pair(firstValue, secondValue)` — `gen_pair` (arity 2, `binderShifts =
+[0, 0]`, `Unit` payload), both components at the ambient scope (non-dependent).  The data VALUE constructor
+the grown engine proves untyped; this judgment types it. -/
+def pairCell {scope : Nat} (firstValue secondValue : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_pair () (.childCons firstValue (.childCons secondValue .childNil))
+
+/-- The PRODUCT type code `product(firstType, secondType)` — `gen_productCode` (arity 2, `binderShifts =
+[0, 0]`), the non-dependent Σ-type code that classifies `pairCell`.  Inline `mkGen` (no named cell shipped,
+as for the other flat data type codes). -/
+def productTypeCell {scope : Nat} (firstType secondType : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_productCode () (.childCons firstType (.childCons secondType .childNil))
+
+/-- The empty-list value cell `nil` — `gen_listNil` (arity 0, no children). -/
+def listNilCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_listNil () .childNil
+
+/-- The cons-list value cell `cons(headValue, tailList)` — `gen_listCons` (arity 2, `binderShifts = [0, 0]`). -/
+def listConsCell {scope : Nat} (headValue tailList : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_listCons () (.childCons headValue (.childCons tailList .childNil))
+
+/-- The list type code `List(elementType)` — `gen_listCode` (arity 1, `binderShifts = [0]`), the type that
+classifies the list value cells. -/
+def listTypeCell {scope : Nat} (elementType : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_listCode () (.childCons elementType .childNil)
+
 end FX1Poly.Typed

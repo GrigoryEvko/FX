@@ -53,14 +53,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The zero value cell `natZero` — `gen_natZero` (arity 0, no children). -/
-def natZeroCell {scope : Nat} : RawTerm scope :=
-  .mkGen .gen_natZero () .childNil
-
-/-- The successor value cell `natSucc(predecessor)` — `gen_natSucc` (arity 1, `binderShifts = [0]`). -/
-def natSuccCell {scope : Nat} (predecessor : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_natSucc () (.childCons predecessor .childNil)
-
 /-- **The Nat introduction judgment.**  A standalone layer (NOT mutual with / NOT an arm of any
 existing engine) typing the nat value constructors at the nat type code `natTypeCell`.  `natZero` needs
 NO premise (`Nat` is a closed ground type); `natSucc(p)` needs a RECURSIVE predecessor premise `p : Nat`

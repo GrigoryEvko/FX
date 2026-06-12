@@ -41,15 +41,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The reflexivity value cell `refl(witness)` — `gen_refl` (arity 1, `binderShifts = [0]`). -/
-def reflCell {scope : Nat} (witness : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_refl () (.childCons witness .childNil)
-
-/-- The identity type code `Id(typeCode, left, right)` — `gen_idCode` (arity 3, `binderShifts = [0, 0, 0]`), the
-heterogeneous three-child code (a type and two endpoint terms) that classifies the reflexivity cell. -/
-def idTypeCell {scope : Nat} (typeCode left right : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_idCode () (.childCons typeCode (.childCons left (.childCons right .childNil)))
-
 /-- **The identity-type introduction judgment.**  A standalone layer (NOT mutual with / NOT an arm of any
 existing engine, mirroring `HasTypeDescOptionIntro`) typing the reflexivity constructor.  From a witness
 `x : A`, `refl(x)` inhabits the REFLEXIVE identity type `Id(A, x, x)` (both endpoints the witness — the only
