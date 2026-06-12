@@ -1275,11 +1275,12 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- intervalFamily); neutralLeafMemberOfEveryCandidate = the variable in every canonical-forms candidate;
 -- abstractionConstructorPreservesSn = λ SN-closure (full membership = the shipped abstraction FT arm);
 -- pathAbstractionConstructorPreservesSn = the pathLam twin (the graded bridge abstraction);
--- eliminatorHasRedexHead = the operational half (semantic half = the SN-058..069 arc, per regime);
--- inertEliminatorCellHasGluedLift = the inertEliminator role (pathApp: typed by the NATIVE UNION's
--- generalElim arm; the endpoint-β now fires via the iota TABLE's pathBeta row while this enum still
--- records the pre-migration role — covered by the unconditional neutral lift; the pending
--- candidates/scones role migration moves it to eliminator and breaks the enum BY DESIGN). HONEST:
+-- eliminatorHasReductionRule = the operational half against the TABLE-driven honesty classifier
+-- Generator.hasReductionRule (semantic half = the SN-058..069 arc + the generic IOTA-T8 table-row
+-- head-expansion, per regime); now includes the endpoint-β head pathApp whose pathBetaIotaRow row
+-- fires live in the canonical iota table (pathApp migrated inertEliminator -> eliminator);
+-- inertEliminatorClassIsEmpty = the now-UNOCCUPIED inertEliminator role, retained as a future
+-- typed-but-table-inert-eliminator slot and machine-checked empty by full enumeration. HONEST:
 -- the modal fragment is correctly ABSENT (statically untyped + β/ι-inert; ONORM-M1 covers it semantically,
 -- joining this gate when a modal rule-table row lands). All zero-axiom.
 #assert_no_axioms FX1Poly.Typed.LiveGenerator
@@ -1299,8 +1300,8 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.neutralLeafMemberOfEveryCandidate
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.abstractionConstructorPreservesSn
 #assert_no_axioms FX1Poly.Typed.LiveGenerator.pathAbstractionConstructorPreservesSn
-#assert_no_axioms FX1Poly.Typed.LiveGenerator.eliminatorHasRedexHead
-#assert_no_axioms FX1Poly.Typed.LiveGenerator.inertEliminatorCellHasGluedLift
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.eliminatorHasReductionRule
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.inertEliminatorClassIsEmpty
 
 -- SN-079: the coverage carrier is EXACTLY the M30 semantically-admissible set — soundness
 -- (every LiveGenerator member is SemanticallyAdmissible, 40 kernel evaluations) + completeness
@@ -2359,9 +2360,11 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- carrying it is the table-driven StepTable (StepOverTable iotaRuleTable, fired by
 -- StepTable.pathBetaFires). The bespoke sibling inductive that once modelled it
 -- (StepBridgeEndpoint + sourceShape/deterministic/the smokes) was RETIRED — the table row
--- subsumes it exactly; promotion into core Step is the recorded future event (flips
--- hasRedexHead, migrates the ONORM-M2 role inertEliminator → eliminator, breaks the
--- LiveGenerator enum by design). RawTerm.subst0_weaken = the substitution collapse
+-- subsumes it exactly; promotion into core Step is the recorded future event (would flip the
+-- core β/ι classifier hasRedexHead). The ONORM-M2 sconing role already tracks the TABLE
+-- classifier hasReductionRule, so pathApp has ALREADY migrated inertEliminator → eliminator in
+-- LiveSignatureSconingCoverage (the arm is retained, now machine-checked empty by
+-- inertEliminatorClassIsEmpty). RawTerm.subst0_weaken = the substitution collapse
 -- subst0 (weaken t) a = t (rename_subst_commute + PointwiseEq-to-identity rfl +
 -- subst_identity_apply) — the dimension-constant computation engine, giving the SYMBOLIC
 -- endpointBetaConstantBodyFiresOverTable over the table. endpointBetaIdentityPathFiresOverTable

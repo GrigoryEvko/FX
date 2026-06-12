@@ -2,6 +2,7 @@ import FX1Poly.Typed.SconingIsEnoughThesis
 import FX1Poly.Typed.GeneratorHonestyOverview
 import FX1Poly.Typed.GeneratorAdmissionSplit
 import FX1Poly.Core.DataReducibilityCoverage
+import FX1Poly.Core.IotaTableHonesty
 
 /-! # FX1Poly/Typed/LiveSignatureSconingCoverage
     — ★ the O-NORM admission gate: every semantically-live generator is sconing-covered (ONORM-M2, #1212)
@@ -19,7 +20,10 @@ semantically-live signature, plus a machine-checked admission gate".  This file 
     coverage arm BREAKS THIS THEOREM.  That is the admission discipline, machine-checked.
   * `SconingCoverageRole` + `LiveGenerator.sconingRole` — the six-way coverage taxonomy: dependent
     former (Π), neutral former (the 13 non-Π formers/codes), value constructor (13 data
-    constructors), abstraction constructor (λ), neutral leaf (the variable), eliminator (11).
+    constructors), abstraction constructor (λ and pathLam), neutral leaf (the variable), eliminator
+    (12: the 10 core β/ι eliminators, `app`, and the endpoint-β head `pathApp`).  A seventh arm
+    `inertEliminator` is retained but UNOCCUPIED today (`inertEliminatorClassIsEmpty`) — a future
+    typed-but-table-inert eliminator's slot.
   * ★ `LiveGenerator.neutralFormerCellHasGluedLift` — **the new lifts**: every neutral-former cell,
     for EVERY payload and child vector, admits a glued-model lift with the SN scone (the ONORM-M1
     `modalityLift` recipe applied across the 13 live formers — the glued model is now closed over
@@ -36,10 +40,14 @@ semantically-live signature, plus a machine-checked admission gate".  This file 
   * `LiveGenerator.abstractionConstructorPreservesSn` — λ-cells with strongly-normalizing
     components are strongly normalizing (the SN scone closure; the full dependent-arrow MEMBERSHIP
     of the abstraction is the shipped `DependentArrowCandidate.abstraction` FT-arm content).
-  * `LiveGenerator.eliminatorHasRedexHead` — every eliminator-role generator carries a root
-    reduction rule (`rfl` per arm) — the operational half of its coverage; the per-eliminator
-    candidate-membership facts are the shipped SN-058…069 arc (value-case ι-redex SN,
-    neutral-scrutinee membership, closed-member facts), cited per regime there.
+  * `LiveGenerator.eliminatorHasReductionRule` — every eliminator-role generator carries a reduction
+    rule in the canonical iota table (`Generator.hasReductionRule`, `rfl` per arm) — the operational
+    half of its coverage, now including the endpoint-β head `pathApp` (the `pathBetaIotaRow` row).
+    The per-eliminator candidate-membership facts are the shipped SN-058…069 arc (value-case ι-redex
+    SN, neutral-scrutinee membership, closed-member facts) plus the GENERIC table-row reducibility
+    head-expansion (IOTA-T8), cited per regime there — not re-proven per rule.
+  * `LiveGenerator.inertEliminatorClassIsEmpty` — the `.inertEliminator` role has no occupants
+    today (full enumeration; every arm refutes the role).  Retained as a future-eliminator slot.
 
 ## Honest scope boundary
 
@@ -221,13 +229,18 @@ inductive SconingCoverageRole where
   | abstractionConstructor
   /-- The variable: a member of EVERY canonical-forms candidate. -/
   | neutralLeaf
-  /-- Root-reduction heads: covered by the reduction rule + the per-regime reducibility arc. -/
+  /-- Root-reduction heads: covered by the table reduction rule (`Generator.hasReductionRule`) +
+  the per-regime reducibility arc.  Includes the endpoint-β head `pathApp` since its
+  `pathBetaIotaRow` row went live in the canonical iota table (IOTA-T9). -/
   | eliminator
-  /-- Typed elimination heads with NO root reduction rule in CORE `Step` (the bridge
-  `pathApp` — its endpoint-β ships as the `pathBetaIotaRow` table row in `StepTable`, NOT a
-  core-`Step` arm): core-β/ι-inert, hence weak-head normal for the candidates/scones — covered
-  by the unconditional neutral lift; migrates to `eliminator` when the table rule is PROMOTED into
-  core `Step` (this enum breaks then, by design). -/
+  /-- Typed elimination heads with NO reduction rule anywhere in the canonical iota table —
+  weak-head normal for the candidates/scones, covered by the unconditional neutral lift.  This
+  class is UNOCCUPIED today: `pathApp` (its sole former occupant, while its endpoint-β was a
+  bespoke gated sibling outside the table) has migrated to `eliminator` now that its
+  `pathBetaIotaRow` row fires live in the table.  The arm is retained — not deleted — so a FUTURE
+  typed-but-table-inert eliminator (an elimination head a typing engine admits before a table row
+  eliminates it) has a coverage slot; `LiveGenerator.inertEliminatorClassIsEmpty` machine-checks
+  the current emptiness. -/
   | inertEliminator
 
 /-- The coverage role of each live-signature member. -/
@@ -277,7 +290,7 @@ def LiveGenerator.sconingRole : LiveGenerator → SconingCoverageRole
   | .interval0 => .valueConstructor
   | .interval1 => .valueConstructor
   | .pathLam => .abstractionConstructor
-  | .pathApp => .inertEliminator
+  | .pathApp => .eliminator
 
 /-- ★ **Every neutral-former cell admits a glued-model lift** — for EVERY payload and child vector,
 unconditionally: the cell is weak-head normal (no β head, no root ι, no eliminator scrutinee — the
@@ -617,14 +630,18 @@ theorem LiveGenerator.abstractionConstructorPreservesSn {scope : Nat}
         (.childCons domainAnn (.childCons body .childNil)) : RawTerm scope) :=
   lam_isStronglyNormalizing_of_body domainNormalizing bodyNormalizing
 
-/-- **Every eliminator-role generator carries a root reduction rule** — the operational half of
-eliminator coverage (`rfl` per arm against the HON-2 classifier).  The semantic half — the
-per-eliminator candidate facts (value-case ι-redex SN, neutral-scrutinee membership, closed-member
-facts) — is the shipped SN-058…069 arc, per regime. -/
-theorem LiveGenerator.eliminatorHasRedexHead :
+/-- **Every eliminator-role generator carries a reduction rule in the canonical iota table** — the
+operational half of eliminator coverage (`rfl` per arm against the table-driven HON honesty
+classifier `Generator.hasReductionRule`, which is the lookup `(iotaRuleDescOf generator).isSome`).
+This is the post-IOTA-T9 honest operational axis: it includes the endpoint-β head `gen_pathApp`
+(whose `pathBetaIotaRow` row went live in the canonical table), alongside the ten core β/ι
+eliminators.  The per-eliminator semantic half — the candidate facts (value-case ι-redex SN,
+neutral-scrutinee membership, closed-member facts) plus the GENERIC table-row reducibility
+head-expansion (IOTA-T8, `IotaTableHeadExpansion`) — is consumed per regime, not re-proven here. -/
+theorem LiveGenerator.eliminatorHasReductionRule :
     (liveGenerator : LiveGenerator) →
       liveGenerator.sconingRole = .eliminator →
-      (liveGenerator.generator).hasRedexHead = true
+      Generator.hasReductionRule liveGenerator.generator = true
   | .var, roleEq => nomatch roleEq
   | .unit, roleEq => nomatch roleEq
   | .lam, roleEq => nomatch roleEq
@@ -670,7 +687,7 @@ theorem LiveGenerator.eliminatorHasRedexHead :
   | .interval0, roleEq => nomatch roleEq
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
-  | .pathApp, roleEq => nomatch roleEq
+  | .pathApp, _roleEq => rfl
 
 /-- **The bridge abstraction constructor preserves the SN scone** — the `pathLam` twin of the
 λ coverage: a path-abstraction cell with a strongly-normalizing body is strongly normalizing
@@ -684,21 +701,16 @@ theorem LiveGenerator.pathAbstractionConstructorPreservesSn {scope : Nat}
       (.mkGen .gen_pathLam () (.childCons body .childNil) : RawTerm scope) :=
   pathLam_isStronglyNormalizing_of_body bodyNormalizing
 
-/-- **The inert-eliminator coverage** — the typed-but-core-β/ι-inert elimination heads (today:
-exactly `pathApp`; its endpoint-β EXISTS as the `pathBetaIotaRow` table row in `StepTable`, but core
-`Step` — the relation the candidates/scones are built over — has no rule for it).  An inert
-eliminator's cells are weak-head normal w.r.t. core `Step`, so the UNCONDITIONAL neutral lift
-covers them — the honest contrast with the `.eliminator` role, whose coverage demands
-`hasRedexHead = true`.  When the sibling rule is PROMOTED into core `Step`, `pathApp` migrates
-to `.eliminator` and this dispatch loses its real arm (the enum breaks, by design). -/
-theorem LiveGenerator.inertEliminatorCellHasGluedLift {scope : Nat} :
+/-- **The inert-eliminator class is empty today** — no live-signature generator currently carries
+the `.inertEliminator` role.  The class was occupied by `pathApp` while its endpoint-β was a bespoke
+gated sibling outside the canonical iota table; with the `pathBetaIotaRow` row now firing live in
+the table, `pathApp` has migrated to `.eliminator` (covered by `eliminatorHasReductionRule`), so
+this role has no occupants.  Per the no-delete discipline the taxonomy arm is RETAINED — a future
+typed-but-table-inert eliminator gets a coverage slot — and the current emptiness is machine-checked
+here by full enumeration: every member refutes the role hypothesis (`nomatch roleEq` per arm). -/
+theorem LiveGenerator.inertEliminatorClassIsEmpty :
     (liveGenerator : LiveGenerator) →
-      liveGenerator.sconingRole = .inertEliminator →
-      ∀ (payload : (liveGenerator.generator).payload scope)
-        (children : RawTermChildren (liveGenerator.generator).binderShifts scope),
-        ∃ glued : GluedTypeCell scope,
-          glued.typeCell = .mkGen liveGenerator.generator payload children
-            ∧ glued.computable = IsStronglyNormalizing
+      liveGenerator.sconingRole = .inertEliminator → False
   | .var, roleEq => nomatch roleEq
   | .unit, roleEq => nomatch roleEq
   | .lam, roleEq => nomatch roleEq
@@ -744,12 +756,7 @@ theorem LiveGenerator.inertEliminatorCellHasGluedLift {scope : Nat} :
   | .interval0, roleEq => nomatch roleEq
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
-  | .pathApp, _roleEq => fun payload children =>
-      ⟨⟨.mkGen .gen_pathApp payload children, IsStronglyNormalizing,
-        ReducibleType.neutral
-          (fun _reduct weakHeadStep => by
-            cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
-          (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
+  | .pathApp, roleEq => nomatch roleEq
 
 /-! ## The coverage carrier is EXACTLY the semantically-admissible set
 
