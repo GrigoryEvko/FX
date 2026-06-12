@@ -3,6 +3,7 @@ import FX1Poly.Core.WeakHeadStep
 import FX1Poly.Core.WeakHeadStepNormalForms
 import FX1Poly.Core.HeadStep
 import FX1Poly.Core.StepInversion
+import FX1Poly.Core.StepTable
 import FX1Poly.Core.StepSubst
 import FX1Poly.Core.StepStar
 
@@ -117,9 +118,18 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       -- motive (here) → then → else → scrutinee.  Only a step in the then-branch changes
       -- the selected reduct; motive/else/scrutinee steps leave thenBranch intact.
       intro other step
-      cases step with
-      | iotaBoolTrue => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaBoolTrue => exact Or.inl rfl
+          | scrutineeBoolElim scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaBoolTrue, StepStar.refl _⟩
@@ -134,16 +144,25 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                          exact absurd scrutineeStep Step.no_step_from_boolTrue
                       | there _head4 emptyStep => cases emptyStep
   | @iotaBoolFalse motive thenBranch elseBranch =>
       -- Phase-Z spine: (motive, then, else, scrutinee=boolFalse).  Only a step in the
       -- else-branch changes the selected reduct; motive/then/scrutinee steps leave
       -- elseBranch intact.
       intro other step
-      cases step with
-      | iotaBoolFalse => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaBoolFalse => exact Or.inl rfl
+          | scrutineeBoolElim scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaBoolFalse, StepStar.refl _⟩
@@ -158,17 +177,32 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                          exact absurd scrutineeStep Step.no_step_from_boolFalse
                       | there _head4 emptyStep => cases emptyStep
   | @iotaFstPair firstValue secondValue =>
       intro other step
-      cases step with
-      | iotaFstPair => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaFstPair => exact Or.inl rfl
+          | scrutineeFst scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest scrutineeStep =>
-              cases scrutineeStep with
-              | cong _g _p pairChild =>
+              cases Step.weakHeadOrChildCong scrutineeStep with
+              | inl scrutineeWeakHead =>
+                  cases scrutineeWeakHead with
+                  | rootIota scrutineeIotaHead => cases scrutineeIotaHead
+              | inr scrutineeCongShape =>
+                  obtain ⟨scrutineeChildrenAfter, scrutineeEq, pairChild⟩ :=
+                    scrutineeCongShape
+                  subst scrutineeEq
                   cases pairChild with
                   | here _rest firstStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaFstPair, StepStar.single firstStep⟩
@@ -180,13 +214,28 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
           | there _head emptyStep => cases emptyStep
   | @iotaSndPair firstValue secondValue =>
       intro other step
-      cases step with
-      | iotaSndPair => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaSndPair => exact Or.inl rfl
+          | scrutineeSnd scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest scrutineeStep =>
-              cases scrutineeStep with
-              | cong _g _p pairChild =>
+              cases Step.weakHeadOrChildCong scrutineeStep with
+              | inl scrutineeWeakHead =>
+                  cases scrutineeWeakHead with
+                  | rootIota scrutineeIotaHead => cases scrutineeIotaHead
+              | inr scrutineeCongShape =>
+                  obtain ⟨scrutineeChildrenAfter, scrutineeEq, pairChild⟩ :=
+                    scrutineeCongShape
+                  subst scrutineeEq
                   cases pairChild with
                   | here _rest firstStep =>
                       exact Or.inr ⟨_, IotaHeadStep.iotaSndPair, StepStar.refl _⟩
@@ -201,9 +250,18 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       -- motive (here) → zero → succ → scrutinee.  Only a step in the zero-branch changes
       -- the selected reduct; motive/succ/scrutinee steps leave zeroBranch intact.
       intro other step
-      cases step with
-      | iotaNatElimZero => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaNatElimZero => exact Or.inl rfl
+          | scrutineeNatElim scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaNatElimZero, StepStar.refl _⟩
@@ -218,13 +276,22 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                          exact absurd scrutineeStep Step.no_step_from_natZero
                       | there _head4 emptyStep => cases emptyStep
   | @iotaNatRecZero motive zeroBranch succBranch =>
       intro other step
-      cases step with
-      | iotaNatRecZero => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaNatRecZero => exact Or.inl rfl
+          | scrutineeNatRec scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaNatRecZero, StepStar.refl _⟩
@@ -239,16 +306,25 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                          exact absurd scrutineeStep Step.no_step_from_natZero
                       | there _head4 emptyStep => cases emptyStep
   | @iotaListElimNil motive nilBranch consBranch =>
       -- Phase-Z spine: (motive, nil, cons, scrutinee=listNil).  The cong spine walks
       -- motive (here) → nil → cons → scrutinee.  Only a step in the nil-branch changes
       -- the selected reduct; motive/cons/scrutinee steps leave nilBranch intact.
       intro other step
-      cases step with
-      | iotaListElimNil => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaListElimNil => exact Or.inl rfl
+          | scrutineeListElim scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaListElimNil, StepStar.refl _⟩
@@ -263,16 +339,25 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                          exact absurd scrutineeStep Step.no_step_from_listNil
                       | there _head4 emptyStep => cases emptyStep
   | @iotaOptionMatchNone motive noneBranch someBranch =>
       -- Phase-Z spine: (motive, none, some, scrutinee=optionNone).  The cong spine walks
       -- motive (here) → none → some → scrutinee.  Only a step in the none-branch changes
       -- the selected reduct; motive/some/scrutinee steps leave noneBranch intact.
       intro other step
-      cases step with
-      | iotaOptionMatchNone => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaOptionMatchNone => exact Or.inl rfl
+          | scrutineeOptionMatch scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchNone, StepStar.refl _⟩
@@ -287,7 +372,7 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with | cong _g _p emptyChild => cases emptyChild
+                          exact absurd scrutineeStep Step.no_step_from_optionNone
                       | there _head4 emptyStep => cases emptyStep
   | @iotaOptionMatchSome motive value noneBranch someBranch =>
       -- Phase-Z spine: (motive, none, some, scrutinee=optionSome value).  The reduct is
@@ -295,9 +380,18 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       -- scrutinee.  A motive/none step leaves the reduct intact; a some step pushes the
       -- app function; a step in the scrutinee's wrapped value pushes the app argument.
       intro other step
-      cases step with
-      | iotaOptionMatchSome => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaOptionMatchSome => exact Or.inl rfl
+          | scrutineeOptionMatch scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchSome, StepStar.refl _⟩
@@ -313,8 +407,14 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with
-                          | cong _g _p valueChild =>
+                          cases Step.weakHeadOrChildCong scrutineeStep with
+                          | inl scrutineeWeakHead =>
+                              cases scrutineeWeakHead with
+                              | rootIota scrutineeIotaHead => cases scrutineeIotaHead
+                          | inr scrutineeCongShape =>
+                              obtain ⟨scrutineeChildrenAfter, scrutineeEq, valueChild⟩ :=
+                                scrutineeCongShape
+                              subst scrutineeEq
                               cases valueChild with
                               | here _rest valueStep =>
                                   exact Or.inr ⟨_, IotaHeadStep.iotaOptionMatchSome,
@@ -327,9 +427,18 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       -- scrutinee.  A motive/right step leaves the reduct intact; a left step pushes the
       -- app function; a step in the scrutinee's wrapped value pushes the app argument.
       intro other step
-      cases step with
-      | iotaEitherMatchInl => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaEitherMatchInl => exact Or.inl rfl
+          | scrutineeEitherMatch scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInl, StepStar.refl _⟩
@@ -345,8 +454,14 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with
-                          | cong _g _p valueChild =>
+                          cases Step.weakHeadOrChildCong scrutineeStep with
+                          | inl scrutineeWeakHead =>
+                              cases scrutineeWeakHead with
+                              | rootIota scrutineeIotaHead => cases scrutineeIotaHead
+                          | inr scrutineeCongShape =>
+                              obtain ⟨scrutineeChildrenAfter, scrutineeEq, valueChild⟩ :=
+                                scrutineeCongShape
+                              subst scrutineeEq
                               cases valueChild with
                               | here _rest valueStep =>
                                   exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInl,
@@ -359,9 +474,18 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       -- scrutinee.  A motive/left step leaves the reduct intact; a right step pushes the
       -- app function; a step in the scrutinee's wrapped value pushes the app argument.
       intro other step
-      cases step with
-      | iotaEitherMatchInr => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaEitherMatchInr => exact Or.inl rfl
+          | scrutineeEitherMatch scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInr, StepStar.refl _⟩
@@ -377,8 +501,14 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with
-                          | cong _g _p valueChild =>
+                          cases Step.weakHeadOrChildCong scrutineeStep with
+                          | inl scrutineeWeakHead =>
+                              cases scrutineeWeakHead with
+                              | rootIota scrutineeIotaHead => cases scrutineeIotaHead
+                          | inr scrutineeCongShape =>
+                              obtain ⟨scrutineeChildrenAfter, scrutineeEq, valueChild⟩ :=
+                                scrutineeCongShape
+                              subst scrutineeEq
                               cases valueChild with
                               | here _rest valueStep =>
                                   exact Or.inr ⟨_, IotaHeadStep.iotaEitherMatchInr,
@@ -393,9 +523,18 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       -- substitution via `subst_pointwise_stepStar`, plus (for succ) through the body via
       -- `StepStar.subst`.  The cong spine walks motive (here) → zero → succ → scrutinee.
       intro other step
-      cases step with
-      | iotaNatElimSucc => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaNatElimSucc => exact Or.inl rfl
+          | scrutineeNatElim scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaNatElimSucc,
@@ -438,8 +577,14 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with
-                          | cong _g _p predChild =>
+                          cases Step.weakHeadOrChildCong scrutineeStep with
+                          | inl scrutineeWeakHead =>
+                              cases scrutineeWeakHead with
+                              | rootIota scrutineeIotaHead => cases scrutineeIotaHead
+                          | inr scrutineeCongShape =>
+                              obtain ⟨scrutineeChildrenAfter, scrutineeEq, predChild⟩ :=
+                                scrutineeCongShape
+                              subst scrutineeEq
                               cases predChild with
                               | here _rest predStep =>
                                   exact Or.inr ⟨_, IotaHeadStep.iotaNatElimSucc,
@@ -454,9 +599,18 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                       | there _head4 emptyStep => cases emptyStep
   | @iotaNatRecSucc motive predecessor zeroBranch succBranch =>
       intro other step
-      cases step with
-      | iotaNatRecSucc => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaNatRecSucc => exact Or.inl rfl
+          | scrutineeNatRec scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaNatRecSucc,
@@ -499,8 +653,14 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with
-                          | cong _g _p predChild =>
+                          cases Step.weakHeadOrChildCong scrutineeStep with
+                          | inl scrutineeWeakHead =>
+                              cases scrutineeWeakHead with
+                              | rootIota scrutineeIotaHead => cases scrutineeIotaHead
+                          | inr scrutineeCongShape =>
+                              obtain ⟨scrutineeChildrenAfter, scrutineeEq, predChild⟩ :=
+                                scrutineeCongShape
+                              subst scrutineeEq
                               cases predChild with
                               | here _rest predStep =>
                                   exact Or.inr ⟨_, IotaHeadStep.iotaNatRecSucc,
@@ -520,9 +680,18 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       -- eliminator.  The cong spine walks motive (here) → nil → cons → scrutinee; the scrutinee
       -- (`listCons`) splits into head / tail.
       intro other step
-      cases step with
-      | iotaListElimCons => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaListElimCons => exact Or.inl rfl
+          | scrutineeListElim scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest motiveStep =>
               -- The motive lives at scope + 1; lift its step into the recursive `listElim`'s
@@ -560,8 +729,14 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                   | there _head3 scrutineeTailStep =>
                       cases scrutineeTailStep with
                       | here _rest scrutineeStep =>
-                          cases scrutineeStep with
-                          | cong _g _p consChild =>
+                          cases Step.weakHeadOrChildCong scrutineeStep with
+                          | inl scrutineeWeakHead =>
+                              cases scrutineeWeakHead with
+                              | rootIota scrutineeIotaHead => cases scrutineeIotaHead
+                          | inr scrutineeCongShape =>
+                              obtain ⟨scrutineeChildrenAfter, scrutineeEq, consChild⟩ :=
+                                scrutineeCongShape
+                              subst scrutineeEq
                               cases consChild with
                               | here _rest headStep =>
                                   exact Or.inr ⟨_, IotaHeadStep.iotaListElimCons,
@@ -593,9 +768,18 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       -- baseCase (child 1): only a step in the baseCase changes the selected reduct;
       -- motive/witness steps leave baseCase intact.
       intro other step
-      cases step with
-      | iotaIdJRefl => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaIdJRefl => exact Or.inl rfl
+          | scrutineeIdJ scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaIdJRefl, StepStar.refl _⟩
@@ -606,8 +790,14 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
               | there _head2 restStep =>
                   cases restStep with
                   | here _rest witnessStep =>
-                      cases witnessStep with
-                      | cong _g _p witnessChild =>
+                      cases Step.weakHeadOrChildCong witnessStep with
+                      | inl scrutineeWeakHead =>
+                          cases scrutineeWeakHead with
+                          | rootIota scrutineeIotaHead => cases scrutineeIotaHead
+                      | inr scrutineeCongShape =>
+                          obtain ⟨scrutineeChildrenAfter, scrutineeEq, witnessChild⟩ :=
+                            scrutineeCongShape
+                          subst scrutineeEq
                           cases witnessChild with
                           | here _rest _rawWitnessStep =>
                               exact Or.inr ⟨_, IotaHeadStep.iotaIdJRefl, StepStar.refl _⟩
@@ -617,9 +807,18 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
       -- Phase-Z spine: (motive, baseCase, witness=refl rawWitness).  Symmetric to the idJ
       -- arm: the iota discards the motive and projects the baseCase (child 1).
       intro other step
-      cases step with
-      | iotaIdStrictRecRefl => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl weakHeadStep =>
+          cases weakHeadStep with
+          | rootIota iotaHead =>
+              cases iotaHead with
+              | iotaIdStrictRecRefl => exact Or.inl rfl
+          | scrutineeIdStrictRec scrutineeWeakHeadStep =>
+              cases scrutineeWeakHeadStep with
+              | rootIota iotaInner => cases iotaInner
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest _motiveStep =>
               exact Or.inr ⟨_, IotaHeadStep.iotaIdStrictRecRefl, StepStar.refl _⟩
@@ -630,8 +829,14 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
               | there _head2 restStep =>
                   cases restStep with
                   | here _rest witnessStep =>
-                      cases witnessStep with
-                      | cong _g _p witnessChild =>
+                      cases Step.weakHeadOrChildCong witnessStep with
+                      | inl scrutineeWeakHead =>
+                          cases scrutineeWeakHead with
+                          | rootIota scrutineeIotaHead => cases scrutineeIotaHead
+                      | inr scrutineeCongShape =>
+                          obtain ⟨scrutineeChildrenAfter, scrutineeEq, witnessChild⟩ :=
+                            scrutineeCongShape
+                          subst scrutineeEq
                           cases witnessChild with
                           | here _rest _rawWitnessStep =>
                               exact Or.inr ⟨_, IotaHeadStep.iotaIdStrictRecRefl, StepStar.refl _⟩
@@ -655,9 +860,16 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
   induction weakHeadStep with
   | @beta domainAnn body argument =>
       intro other step
-      cases step with
-      | beta => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl innerWeakHeadStep =>
+          cases innerWeakHeadStep with
+          | beta => exact Or.inl rfl
+          | appCongruence functionStep =>
+              exact absurd functionStep WeakHeadStep.not_from_lam
+          | rootIota iotaHead => cases iotaHead
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest functionStep =>
               rcases Step.from_lam functionStep with
