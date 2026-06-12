@@ -128,25 +128,11 @@ theorem Step.weakHeadStep_or_cong {scope : Nat} {subjectType reductType : RawTer
       subjectType = .mkGen generator payload children ∧
       reductType = .mkGen generator payload childrenAfter ∧
       StepChildren children childrenAfter) := by
-  cases step with
-  | beta => exact Or.inl ⟨_, WeakHeadStep.beta⟩
+  cases stepOverLegacyTable_iff_step.mpr step with
+  | tableRedex isRow elimPayload fires =>
+      exact Or.inl ⟨_, legacyRootFiringToWeakHeadStep isRow elimPayload fires⟩
   | cong generator payload childStep =>
-      exact Or.inr ⟨generator, payload, _, _, rfl, rfl, childStep⟩
-  | iotaBoolTrue => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaBoolTrue⟩
-  | iotaBoolFalse => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaBoolFalse⟩
-  | iotaFstPair => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaFstPair⟩
-  | iotaSndPair => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaSndPair⟩
-  | iotaNatElimZero => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimZero⟩
-  | iotaNatRecZero => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecZero⟩
-  | iotaListElimNil => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaListElimNil⟩
-  | iotaOptionMatchNone => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaOptionMatchNone⟩
-  | iotaOptionMatchSome => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaOptionMatchSome⟩
-  | iotaEitherMatchInl => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaEitherMatchInl⟩
-  | iotaEitherMatchInr => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaEitherMatchInr⟩
-  | iotaNatElimSucc => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatElimSucc⟩
-  | iotaNatRecSucc => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaNatRecSucc⟩
-  | iotaListElimCons => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaListElimCons⟩
-  | iotaIdJRefl => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdJRefl⟩
-  | iotaIdStrictRecRefl => exact Or.inl ⟨_, WeakHeadStep.rootIota IotaHeadStep.iotaIdStrictRecRefl⟩
+      exact Or.inr ⟨generator, payload, _, _, rfl, rfl,
+        StepOverTableChildren.legacyToStepChildren childStep⟩
 
 end FX1Poly.Core
