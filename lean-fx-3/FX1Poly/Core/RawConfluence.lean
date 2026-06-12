@@ -1,6 +1,3 @@
-import FX1Poly.Core.ParStepTriangle
-import FX1Poly.Core.StepParallelConfluence
-import FX1Poly.Core.TakahashiTriangle
 import FX1Poly.Core.NormalFormUnique
 import FX1Poly.Core.RawTermDecEq
 import FX1Poly.Core.PolygraphConvergentDecision
@@ -10,27 +7,20 @@ import FX1Poly.Core.StepStarConfluenceViaTable
     — UNCONDITIONAL raw confluence of the FX reduction relation.
 
 This file closes the raw-confluence pipeline.  `StepStarConfluence.lean` supplies `StepStar.HasConfluence` only
-CONDITIONALLY (the shipped `cd_lemma` is a single-step LOCAL join, and raw β+ι is NOT strongly normalizing,
-so Newman's lemma cannot promote local to global confluence).  The Tait/Martin-Löf/Takahashi parallel-
-reduction route bypasses termination entirely:
+CONDITIONALLY (a single-step LOCAL join, and raw β+ι is NOT strongly normalizing,
+so Newman's lemma cannot promote local to global confluence).  The TABLE route bypasses
+termination entirely: `StepStarConfluenceViaTable.lean` instantiates the generic
+orthogonal-systems table confluence (`StepOverTable.confluent`) at the 17-row legacy table and
+transports it across the IOTA-T1 adequacy, yielding
 
-* `ParallelReduction.lean` ships the parallel reduction `ParStep` with the sandwich
-  `Step ⊆ ParStep ⊆ StepStar` (`Step.toParStep`, `ParStep.toStepStar`);
-* `CompleteDevelopment.lean` ships the Takahashi complete development `completeDevelopment`;
-* `ParStepTriangle.lean` proves the triangle `ParStep.triangle : ParStep a b → ParStep b (completeDevelopment a)`;
-* `TakahashiTriangle.lean` turns a triangle into a `DiamondProperty` (`DiamondProperty.ofTriangle`);
-* `StepParallelConfluence.lean` turns a sandwiched parallel diamond into `StepStar.HasConfluence`
-  (`StepStar.hasConfluence_of_parallelDiamond`, route A).
+* `StepStar.rawConfluence` — global Church-Rosser for the raw `StepStar`, UNCONDITIONALLY
+  (delegating to `StepStar.tableRouteConfluence`);
+* `StepStar.rawStrip` — the one-vs-many Newman-precursor (delegating to
+  `StepStar.tableRouteStrip`).
 
-This file instantiates the diamond at the concrete FX `ParStep` and ships the headline raw
-confluence:
-
-* `ParStep.diamond` — the `ParStep` diamond, from the triangle (the historical bespoke route,
-  retained until the bespoke-iota retirement completes);
-* `StepStar.rawConfluence` — global Church-Rosser for the raw `StepStar`, UNCONDITIONALLY —
-  now discharged through the TABLE route (`StepStar.tableRouteConfluence`,
-  StepStarConfluenceViaTable.lean: generic table confluence at the legacy table + the IOTA-T1
-  adequacy), decoupling the headline from the per-iota `ParStep` mirror.
+The historical Tait/Martin-Löf/Takahashi parallel-reduction route (the `ParStep` sandwich,
+complete development, and the per-iota triangle) proved the same headlines and was RETIRED
+with the bespoke-iota arm files — the table route is the sole proof.
 
 `StepStar.rawConfluence` is exactly global raw confluence: any two `StepStar`-reducts of a common source `Join` (reduce to
 a common term).  No termination hypothesis — the prize strong normalization cannot supply, since raw β+ι is
@@ -39,27 +29,18 @@ not SN (`gen_natRec`/`gen_fixedPoint` give non-terminating raw reductions).
 ## Zero-axiom verification
 
 All theorems are direct instantiations of shipped, separately-gated lemmas
-(`DiamondProperty.ofTriangle` for the diamond; `StepStar.tableRouteConfluence` /
-`StepStar.tableRouteStrip` for the headlines).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditCoreTerminationOrders.lean`.
+(`StepStar.tableRouteConfluence` / `StepStar.tableRouteStrip` for the headlines).  No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration
+gated in `FX1PolyAudit/AuditCoreTerminationOrders.lean`.
 -/
 
 namespace FX1Poly.Core
-
-/-- **The `ParStep` diamond property.**  Two diverging single parallel steps reconverge at the complete
-development of their common source — the Takahashi triangle (`ParStep.triangle`) sends each reduct there in
-one further parallel step.  No quadratic redex-pair case split, no termination. -/
-theorem ParStep.diamond {scope : Nat} : DiamondProperty (@ParStep scope) :=
-  DiamondProperty.ofTriangle (@ParStep.triangle scope)
 
 /-- **Unconditional raw confluence.**  The FX raw reduction relation `StepStar` is globally
 Church-Rosser: any two `StepStar`-reducts of a common source join at a common term — with NO strong-
 normalization assumption (raw β+ι is not SN).  Discharged through the TABLE route
 (`StepStar.tableRouteConfluence`, StepStarConfluenceViaTable.lean): the generic orthogonal-systems
-table confluence at the legacy table, transported across the IOTA-T1 adequacy.  The historical
-parallel-reduction sandwich (`Step ⊆ ParStep ⊆ StepStar` + the `ParStep` diamond) proves the same
-theorem and remains available as `ParStep.diamond` until the bespoke-iota retirement completes. -/
+table confluence at the legacy table, transported across the IOTA-T1 adequacy. -/
 theorem StepStar.rawConfluence : StepStar.HasConfluence :=
   StepStar.tableRouteConfluence
 

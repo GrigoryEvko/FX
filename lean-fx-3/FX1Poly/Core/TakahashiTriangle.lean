@@ -16,11 +16,11 @@ prove the one-sided TRIANGLE property — every parallel reduct of `source` para
 the single complete development, which is therefore their common reduct.
 
 This file ships that abstract reduction — `TriangleProperty`, `DiamondProperty.ofTriangle`,
-`Confluent.ofTriangle` — over an arbitrary relation, so the eventual concrete FX parallel-reduction
+`Confluent.ofTriangle` — over an arbitrary relation, so a concrete parallel-reduction
 diamond (the unconditional raw-confluence prize that strong normalization cannot supply
 because raw β+ι is not SN) reduces to the single linear obligation "exhibit `completeDevelopment` and
 prove its triangle", rather than the quadratic direct diamond.  It composes with the shipped
-`diamondConfluence` and `StepStar.hasConfluence_of_parallelDiamond` to complete the pipeline.
+`diamondConfluence`; the table lane (`TableTakahashiTriangle`) is its consumer.
 
 ## Zero-axiom verification
 

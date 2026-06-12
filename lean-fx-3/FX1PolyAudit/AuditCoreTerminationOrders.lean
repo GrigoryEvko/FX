@@ -26,13 +26,7 @@ import FX1Poly.Typed.RawIotaEtaOperationalSN
 import FX1Poly.Typed.MilestoneAParityMatrix
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
-import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.TakahashiTriangle
-import FX1Poly.Core.ParallelReduction
-import FX1Poly.Core.CompleteDevelopment
-import FX1Poly.Core.ParStepSubstRename
-import FX1Poly.Core.ParStepSubstPointwise
-import FX1Poly.Core.ParStepTriangle
 import FX1Poly.Core.RawConfluence
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
@@ -226,8 +220,7 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 -- Newman: confluence from the diamond property alone, no termination.  ReflTransClosure.monotone/collapse
 -- (the sandwich glue) + DiamondProperty + stripLemma (single strips against many) + diamondConfluence +
 -- confluentOfDiamondSimulation (the parallel-reduction recipe: rel subset parRel subset RTC rel + parRel
--- diamond implies rel confluent, the route by which single-step beta, which lacks the diamond, is proved
--- confluent via parallel reduction).  Zero-axiom.
+-- diamond implies rel confluent — the recipe the TABLE lane's ParStepOverTable discharges).  Zero-axiom.
 #assert_no_axioms FX1Poly.Core.ReflTransClosure.monotone
 #assert_no_axioms FX1Poly.Core.ReflTransClosure.collapse
 #assert_no_axioms FX1Poly.Core.DiamondProperty
@@ -236,130 +229,20 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.diamondConfluence
 #assert_no_axioms FX1Poly.Core.confluentOfDiamondSimulation
 
--- FX-layer wiring connecting the abstract diamond/strip confluence to the concrete raw `StepStar`.
--- StepStar is isomorphic to ReflTransClosure Step (toReflTransClosure / ofReflTransClosure), then
--- hasConfluence_of_parallelDiamond (route A via confluentOfDiamondSimulation) and hasStrip_of_parallelDiamond
--- (route B via stripLemma, realizing StepStarConfluence's `confluence_of_strip`).  A sandwiched parallel
--- relation (Step subset ParStep subset StepStar) with the diamond yields raw global confluence.
-#assert_no_axioms FX1Poly.Core.StepStar.toReflTransClosure
-#assert_no_axioms FX1Poly.Core.StepStar.ofReflTransClosure
-#assert_no_axioms FX1Poly.Core.StepStar.hasConfluence_of_parallelDiamond
-#assert_no_axioms FX1Poly.Core.StepStar.hasStrip_of_parallelDiamond
-
 -- The Takahashi triangle lemma: the linear route to the parallel-reduction diamond.  A completeDevelopment
 -- function with the TriangleProperty (every reduct steps to the source's complete development) yields
 -- DiamondProperty.ofTriangle and Confluent.ofTriangle, reducing the parallel diamond from a quadratic
 -- redex-pair join to the single linear "exhibit completeDevelopment + its triangle" obligation (Takahashi
--- 1995).  Composes with diamondConfluence + hasConfluence_of_parallelDiamond.
+-- 1995).  Composes with diamondConfluence; the TABLE lane (TableTakahashiTriangle) consumes it.
 #assert_no_axioms FX1Poly.Core.DiamondProperty.ofTriangle
 #assert_no_axioms FX1Poly.Core.Confluent.ofTriangle
 -- The existential per-source form (HasMaximalReduct): generalizes the function-based TriangleProperty
--- (HasMaximalReduct.ofTriangle) and is the form the concrete FX parallel reduction discharges by structural
+-- (HasMaximalReduct.ofTriangle) and is the form a concrete parallel reduction discharges by structural
 -- recursion on the source (no separately-defined total completeDevelopment function over RawTerm needed).
 -- ofMaximalReduct yields the diamond; Confluent.ofMaximalReduct composes with diamondConfluence.
 #assert_no_axioms FX1Poly.Core.HasMaximalReduct.ofTriangle
 #assert_no_axioms FX1Poly.Core.DiamondProperty.ofMaximalReduct
 #assert_no_axioms FX1Poly.Core.Confluent.ofMaximalReduct
-
--- The concrete FX parallel reduction: ParStep contracts any set of redexes simultaneously (Takahashi),
--- mirroring all 18 Step rules with parallel sub-reduction of the surviving sub-terms; the pointwise
--- ParStepChildren reduces every child at once.  ParStep.refl / ParStepChildren.refl give reflexivity by mutual
--- structural recursion (term-mode match, no termination_by).  This is the relation that discharges
--- HasMaximalReduct, hence the diamond, hence raw confluence.
-#assert_no_axioms FX1Poly.Core.ParStep.refl
-#assert_no_axioms FX1Poly.Core.ParStepChildren.refl
--- Step subset ParStep (the lower sandwich bound = stepToPar for hasConfluence_of_parallelDiamond): every
--- single reduction is a parallel reduction firing only that redex, surviving sub-terms reflexive; cong maps
--- the single-child StepChildren to a pointwise ParStepChildren.  Mutual term-mode structural recursion on the
--- derivation.  One of the two sandwich bounds the raw-confluence adapter needs.
-#assert_no_axioms FX1Poly.Core.Step.toParStep
-#assert_no_axioms FX1Poly.Core.StepChildren.toParStepChildren
--- ParStep subset StepStar (the upper sandwich bound = parToStepStar): every parallel reduction is a finite
--- sequence of single steps.  Each arm reduces the redex's surviving sub-terms via StepStar.ofChildrenStar (the
--- child-spine congruence lifter) then fires the matching root Step; cong lifts the pointwise ParStepChildren
--- through ofChildrenStar.  With Step.toParStep, this completes the sandwich Step subset ParStep subset StepStar
--- that StepStar.hasConfluence_of_parallelDiamond consumes.
-#assert_no_axioms FX1Poly.Core.ParStep.toStepStar
-#assert_no_axioms FX1Poly.Core.ParStepChildren.toStepChildrenStar
-
--- The Takahashi complete development (the maximal-reduct witness): contract every redex present at once but
--- not the redexes created by contraction.  Propext-clean because the redex-shape detection is delegated to
--- fireRootRedex (a direct overlapping-nested-pattern match leaks propext and defeats the equation compiler);
--- completeDevelopment itself does only flat mkGen / childNil-childCons matches.  completeDevelopment_stepStar
--- is the soundness half (the development is reachable by StepStar): develop the children via ofChildrenStar,
--- then fire the root via fireRootRedex_sound.  This is the function the HasMaximalReduct ParStep (triangle)
--- proof maximizes against, hence the ParStep diamond, hence raw confluence.
-#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelf
--- fireRootRedexOrSelfGated: fire on developed children only when the original children form a syntactic
--- redex.  This gate makes completeDevelopment the standard (non-over-firing) Takahashi development: firing on
--- developed children alone would contract redexes created by developing (an inner redex whose contractum is a
--- lam turns a non-lam-headed app into a beta-redex), breaking the triangle's ParStep a (cd a).
-#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelfGated
-#assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment
-#assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopmentChildren
-#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelf_stepStar
-#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedexOrSelfGated_stepStar
-#assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment_stepStar
-#assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopmentChildren_stepChildrenStar
--- cd_app_lam_eq: the gated beta-redex develops to subst0 of the developed components, by rfl -- the exact
--- equation the Takahashi triangle's beta arm needs, witnessing triangle-readiness of the gated development.
-#assert_no_axioms FX1Poly.Core.cd_app_lam_eq
--- ι reduction-rule equations: per-redex definitional characterization of the gated complete development
--- (all rfl), the companions of cd_app_lam_eq the triangle's 16 ι arms rewrite with before firing.
-#assert_no_axioms FX1Poly.Core.cd_boolElimTrue_eq
-#assert_no_axioms FX1Poly.Core.cd_boolElimFalse_eq
-#assert_no_axioms FX1Poly.Core.cd_fstPair_eq
-#assert_no_axioms FX1Poly.Core.cd_sndPair_eq
-#assert_no_axioms FX1Poly.Core.cd_natElimZero_eq
-#assert_no_axioms FX1Poly.Core.cd_natRecZero_eq
-#assert_no_axioms FX1Poly.Core.cd_listElimNil_eq
-#assert_no_axioms FX1Poly.Core.cd_optionMatchNone_eq
-#assert_no_axioms FX1Poly.Core.cd_optionMatchSome_eq
-#assert_no_axioms FX1Poly.Core.cd_eitherMatchInl_eq
-#assert_no_axioms FX1Poly.Core.cd_eitherMatchInr_eq
-#assert_no_axioms FX1Poly.Core.cd_natElimSucc_eq
-#assert_no_axioms FX1Poly.Core.cd_natRecSucc_eq
-#assert_no_axioms FX1Poly.Core.cd_listElimCons_eq
-#assert_no_axioms FX1Poly.Core.cd_idJRefl_eq
-#assert_no_axioms FX1Poly.Core.cd_idStrictRecRefl_eq
-
--- ParStep stable under substitution + renaming: the parallel-substitution lemma the triangle
--- ParStep a b -> ParStep b (completeDevelopment a) uses at its beta/iota arms is built on these.  ParStep.subst
--- mirrors Step.subst's recursor idiom (all-substitutions motive; beta via subst0_subst_commute, cong via the
--- gen_var split, every iota arm applies its premises' IHs at sigma, the spine lifts sigma by the child binder
--- shift).  ParStep.rename is the corollary via the Step.rename rename-to-subst trick.  These are the
--- renaming/substitution substrate the binder case of the parallel substitution lemma requires.
-#assert_no_axioms FX1Poly.Core.ParStep.subst
-#assert_no_axioms FX1Poly.Core.ParStepChildren.subst
-#assert_no_axioms FX1Poly.Core.ParStep.rename
-#assert_no_axioms FX1Poly.Core.ParStepChildren.rename
-
--- The parallel substitution lemma (the triangle's beta/iota engine): substituting a parallel-reduced
--- argument into a parallel-reduced body parallel-reduces.  ParStep is a single parallel step (not transitive),
--- so the diagonal cannot be composed from two one-sided ParStep.subst applications: it needs the combined
--- induction varying both the substitution (sigma to tau, related by PointwiseParStep, lifted under binders by
--- ParStep.weaken) and the term.  ParStep.subst0_diagonal instantiates substPointwise at the two singleton
--- substitutions; this is what the triangle's beta arm fires with (and the recursive iota arms whose contractums
--- embed subst0 of developed components).
-#assert_no_axioms FX1Poly.Core.ParStep.weaken
-#assert_no_axioms FX1Poly.Core.RawTermSubst.lift_pointwiseParStep
-#assert_no_axioms FX1Poly.Core.iterateLiftRaw_RawTermSubst_pointwiseParStep
-#assert_no_axioms FX1Poly.Core.ParStep.substPointwise
-#assert_no_axioms FX1Poly.Core.RawTermSubst.singleton_pointwiseParStep
-#assert_no_axioms FX1Poly.Core.ParStep.subst0_diagonal
-
-
--- The Takahashi triangle: every parallel reduct b of a further parallel-reduces to completeDevelopment a,
--- the maximal-reduct property that discharges the ParStep DiamondProperty and hence (through the
--- Step subset ParStep subset StepStar sandwich) unconditional raw confluence.  Proved by induction on the
--- ParStep a b derivation (ParStep.rec, termination-free): beta/branch-selection iota arms close by IHs through
--- the cd_<redex>_eq defeq, recursive iota by nested cong, cong by triangleCongFires.  triangleCongFires is the
--- cong-some workhorse: it dispatches on the 11 redex generators, inverts the cong-reduced scrutinee/function
--- child to learn the post-cong head shape, extracts the per-component development steps from the children IH,
--- and fires the matching ParStep ctor (whose contractum is definitionally fireRootRedexOrSelf's output);
--- non-firing branches reuse fireRootRedex_sound's keys.
-#assert_no_axioms FX1Poly.Core.ParStep.triangleCongFires
-#assert_no_axioms FX1Poly.Core.ParStep.triangle
 
 -- ★ THE TABLE-ROUTED RAW CONFLUENCE (StepStarConfluenceViaTable.lean) — the bespoke-iota
 -- retirement's decoupling brick.  The 17-row legacy table carries the same well-formedness
@@ -379,12 +262,12 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.StepStar.tableRouteConfluence
 #assert_no_axioms FX1Poly.Core.StepStar.tableRouteStrip
 
--- Unconditional raw confluence.  ParStep.diamond instantiates DiamondProperty.ofTriangle at
--- ParStep.triangle (the historical bespoke route, retained until the bespoke-iota retirement
--- completes); StepStar.rawConfluence is now discharged through the TABLE route
--- (StepStar.tableRouteConfluence above), yielding global Church-Rosser for the raw StepStar
--- relation with no strong-normalization assumption (raw beta+iota is not SN).
-#assert_no_axioms FX1Poly.Core.ParStep.diamond
+-- Unconditional raw confluence, discharged through the TABLE route
+-- (StepStar.tableRouteConfluence above): global Church-Rosser for the raw StepStar relation with
+-- no strong-normalization assumption (raw beta+iota is not SN).  The historical bespoke route
+-- (ParStep per-iota mirror + complete development + Takahashi triangle) is RETIRED — the abstract
+-- DiamondProperty/Confluent.ofTriangle vocabulary above survives for the table lane's own
+-- Takahashi argument (TableTakahashiTriangle).
 #assert_no_axioms FX1Poly.Core.StepStar.rawConfluence
 
 -- The Newman-precursor strip property, unconditional via the table route

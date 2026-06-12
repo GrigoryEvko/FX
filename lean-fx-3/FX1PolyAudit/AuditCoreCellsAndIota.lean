@@ -27,13 +27,7 @@ import FX1Poly.Typed.RawIotaEtaOperationalSN
 import FX1Poly.Typed.MilestoneAParityMatrix
 import FX1Poly.Core.Newman
 import FX1Poly.Core.DiamondConfluence
-import FX1Poly.Core.StepParallelConfluence
 import FX1Poly.Core.TakahashiTriangle
-import FX1Poly.Core.ParallelReduction
-import FX1Poly.Core.CompleteDevelopment
-import FX1Poly.Core.ParStepSubstRename
-import FX1Poly.Core.ParStepSubstPointwise
-import FX1Poly.Core.ParStepTriangle
 import FX1Poly.Core.RawConfluence
 import FX1Poly.Core.CommutationConfluence
 import FX1Poly.Core.DeterministicConfluence
