@@ -4,6 +4,7 @@ import FX1Poly.Core.WeakHeadStepCommute
 import FX1Poly.Core.WeakHeadStepNormalForms
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.StepSubst
+import FX1Poly.Core.StepTable
 
 /-! # Foundation/PolyCell/Core/ReducibleTypeForwardClosure
     — reduction stability of the dependent reducibility relation (foundations)
@@ -33,9 +34,10 @@ standalone, reusable theorem:
 
 ## Zero-axiom verification
 
-`rootGenerator_eq_of_weakHeadNormal` is `cases` on the step: the β and sixteen ι constructors each expose
-a weak-head redex, refuted by the weak-head-normality hypothesis via `WeakHeadStep.beta` /
-`WeakHeadStep.rootIota`; the uniform `cong` constructor keeps the generator (`rfl` on `rootGenerator`).
+`rootGenerator_eq_of_weakHeadNormal` is `cases` on the TABLE image of the step (the IOTA-T1 adequacy):
+a root firing of any legacy row is a weak-head redex (`legacyRootFiringToWeakHeadStep`), refuted by the
+weak-head-normality hypothesis; the uniform `cong` constructor keeps the generator (`rfl` on
+`rootGenerator`).  TWO arms where the bespoke proof had eighteen.
 `StepStar.subst0Body` is induction on the chain composing `Step.subst0Body` links by `trans_compose`.  No
 `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Swept per declaration
 by `#audit_namespace FX1Poly.Core`.
@@ -51,36 +53,11 @@ theorem Step.rootGenerator_eq_of_weakHeadNormal {scope : Nat} {subjectType reduc
     (weakHeadNormal : ∀ reduct : RawTerm scope, ¬ WeakHeadStep subjectType reduct)
     (step : Step subjectType reductType) :
     reductType.rootGenerator = subjectType.rootGenerator := by
-  cases step with
-  | cong _generator _payload _childStep => rfl
-  | beta => exact absurd WeakHeadStep.beta (weakHeadNormal _)
-  | iotaBoolTrue => exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaBoolTrue) (weakHeadNormal _)
-  | iotaBoolFalse => exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaBoolFalse) (weakHeadNormal _)
-  | iotaFstPair => exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaFstPair) (weakHeadNormal _)
-  | iotaSndPair => exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaSndPair) (weakHeadNormal _)
-  | iotaNatElimZero =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaNatElimZero) (weakHeadNormal _)
-  | iotaNatRecZero =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaNatRecZero) (weakHeadNormal _)
-  | iotaListElimNil =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaListElimNil) (weakHeadNormal _)
-  | iotaOptionMatchNone =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaOptionMatchNone) (weakHeadNormal _)
-  | iotaOptionMatchSome =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaOptionMatchSome) (weakHeadNormal _)
-  | iotaEitherMatchInl =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaEitherMatchInl) (weakHeadNormal _)
-  | iotaEitherMatchInr =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaEitherMatchInr) (weakHeadNormal _)
-  | iotaNatElimSucc =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaNatElimSucc) (weakHeadNormal _)
-  | iotaNatRecSucc =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaNatRecSucc) (weakHeadNormal _)
-  | iotaListElimCons =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaListElimCons) (weakHeadNormal _)
-  | iotaIdJRefl => exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaIdJRefl) (weakHeadNormal _)
-  | iotaIdStrictRecRefl =>
-      exact absurd (WeakHeadStep.rootIota IotaHeadStep.iotaIdStrictRecRefl) (weakHeadNormal _)
+  cases stepOverLegacyTable_iff_step.mpr step with
+  | cong generator payload childStep => rfl
+  | tableRedex isRow elimPayload fires =>
+      exact absurd (legacyRootFiringToWeakHeadStep isRow elimPayload fires)
+        (weakHeadNormal _)
 
 /-- **Replay a body `StepStar` chain through `subst0`.**  A codomain reduction `body ↠ updatedBody`
 induces `subst0 body argument ↠ subst0 updatedBody argument` (fixed argument): the chain lift of
