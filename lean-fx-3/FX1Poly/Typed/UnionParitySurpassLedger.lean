@@ -9,6 +9,7 @@ import FX1Poly.Typed.HasTypeNativeUnionRecursiveInversion
 import FX1Poly.Typed.TypedByTableUnion
 import FX1Poly.Typed.HasTypeDescPiRootGeneric
 import FX1Poly.Typed.HasTypeNativeUnionWeakening
+import FX1Poly.Typed.HasTypeNativeUnionCanonicalForms
 
 /-! # FX1Poly/Typed/UnionParitySurpassLedger — the honest PARITY-AND-SURPASS ledger for `HasTypeNativeUnion`
 
@@ -43,7 +44,7 @@ will close it — it carries NO anchor, because none exists yet.
 | weakening                 | proven   | `HasTypeNativeUnion.renameRespectingContext` (all 25 arms, unconditional)   |
 | uniqueness                | open     | union has no classifier-uniqueness theorem yet (union-uniqueness task) |
 | reducibility / SN         | open     | no union-level SN theorem; bespoke SN lives on the grown engine (union-reducibility task) |
-| canonicity                | open     | no union-level canonicity theorem; closed-form canonicity is per-engine (union-canonicity task) |
+| canonicity                | bridged  | `HasTypeNativeUnion.closedNormalLaneCanonicalForms` (core β/ι fragment — pathApp/pathLam-free boundary until the 17th ι lands) |
 | context conversion        | open     | no union-level context-conversion theorem (union-context-conversion task) |
 
 ## The surpass picture (capabilities NO bespoke engine had)
@@ -65,12 +66,12 @@ will close it — it carries NO anchor, because none exists yet.
 
 ## Honest finding
 
-The five SURPASS items are all SHIPPED and CITED.  On the PARITY side, EIGHT of the twelve capability
-rows are positive (seven `proven` + one `bridged`); FOUR are honestly `open` (uniqueness,
-reducibility/SN, canonicity, context conversion — the union does NOT yet carry these, they live on
-the bespoke / grown engines and have not been restated union-wide).  The ledger does NOT mark a
-single one of those four as proven.  This is the present, honest state — a criterion, not a closure
-claim.
+The five SURPASS items are all SHIPPED and CITED.  On the PARITY side, NINE of the twelve capability
+rows are positive (seven `proven` + two `bridged` — root-SR and canonicity each carry an honest
+fragment qualifier); THREE are honestly `open` (uniqueness, reducibility/SN, context conversion —
+the union does NOT yet carry these, they live on the bespoke / grown engines and have not been
+restated union-wide).  The ledger does NOT mark a single one of those three as proven.  This is the
+present, honest state — a criterion, not a closure claim.
 
 ## Zero-axiom verification
 
@@ -129,7 +130,7 @@ def UnionCapability.parityStatus : UnionCapability → ParityStatus
   | .weakening => .proven
   | .uniqueness => .open
   | .reducibilityStrongNormalization => .open
-  | .canonicity => .open
+  | .canonicity => .bridged
   | .contextConversion => .open
 
 /-! ## Capability anchors (the teeth)
@@ -174,6 +175,9 @@ def unionAnchor_affineRejection := @HasTypeNativeUnion.unionRejectsAffineDoubleU
 /-- Weakening: union typing is preserved along any context-respecting renaming (de-Bruijn insertion),
 all 25 arms (unconditional). -/
 def unionAnchor_weakening := @HasTypeNativeUnion.renameRespectingContext
+/-- Canonicity: the closed-normal lane canonical-forms master over the union (bridged — holds on the
+core β/ι fragment, with the pathApp/pathLam-free boundary hypotheses until the 17th ι lands). -/
+def unionAnchor_canonicity := @HasTypeNativeUnion.closedNormalLaneCanonicalForms
 
 /-! ## Ledger facts (parity) -/
 
@@ -224,10 +228,14 @@ theorem uniqueness_isOpen :
 theorem reducibilityStrongNormalization_isOpen :
     UnionCapability.reducibilityStrongNormalization.parityStatus = .open := rfl
 
-/-- Canonicity is OPEN at the union level: closed-form canonicity is proven per bespoke engine but not
-restated for `HasTypeNativeUnion` (union-canonicity task). -/
-theorem canonicity_isOpen :
-    UnionCapability.canonicity.parityStatus = .open := rfl
+/-- Canonicity is BRIDGED: `HasTypeNativeUnion.closedNormalLaneCanonicalForms` is the closed-normal
+lane canonical-forms master over the ONE union judgment (bool/nat canonicity corollaries included),
+but it carries the honest core-β/ι fragment boundary — the subject must be `pathApp`/`pathLam`-free,
+because endpoint-β lives in the sibling `StepBridgeEndpoint` until the 17th ι lands, making a
+union-typed core-normal `pathApp(pathLam(boolTrue), interval0)` a genuine counterexample to the
+unrestricted statement.  Recorded honestly as `bridged`, not `proven`. -/
+theorem canonicity_isBridged :
+    UnionCapability.canonicity.parityStatus = .bridged := rfl
 
 /-- Context conversion is OPEN at the union level: the grown engine has the conditional
 context-conversion bundle, but the union has no context-conversion theorem (union-context-conversion
@@ -267,22 +275,22 @@ def strictlyProvenCapabilityCount : Nat :=
 def openCapabilityCount : Nat :=
   (allCapabilities.filter (fun capability => not capability.parityStatus.isCovered)).length
 
-/-- ★ The honest present count: EIGHT of twelve capability rows are positive (seven strictly proven
-plus the bridged root-SR row).  Computed by `rfl`. -/
-theorem coveredCapabilityCount_isEight : coveredCapabilityCount = 8 := rfl
+/-- ★ The honest present count: NINE of twelve capability rows are positive (seven strictly proven
+plus the bridged root-SR and canonicity rows).  Computed by `rfl`. -/
+theorem coveredCapabilityCount_isNine : coveredCapabilityCount = 9 := rfl
 
 /-- SEVEN of twelve rows are strictly proven (typing, inversion, substitution, reverse adequacy,
-honesty, affine rejection, weakening); root-SR is bridged, not counted here. -/
+honesty, affine rejection, weakening); root-SR and canonicity are bridged, not counted here. -/
 theorem strictlyProvenCapabilityCount_isSeven : strictlyProvenCapabilityCount = 7 := rfl
 
-/-- FOUR of twelve rows are honestly OPEN (uniqueness, reducibility/SN, canonicity, context
-conversion).  The ledger marks none of these `proven`. -/
-theorem openCapabilityCount_isFour : openCapabilityCount = 4 := rfl
+/-- THREE of twelve rows are honestly OPEN (uniqueness, reducibility/SN, context conversion).  The
+ledger marks none of these `proven`. -/
+theorem openCapabilityCount_isThree : openCapabilityCount = 3 := rfl
 
 /-- The full-parity criterion asks for all twelve capability rows strictly proven. -/
 @[reducible] def unionAchievesFullParity : Prop := strictlyProvenCapabilityCount = 12
 
-/-- ★ Honest: full parity is NOT yet achieved (five rows open, one bridged).  This is the honest
+/-- ★ Honest: full parity is NOT yet achieved (three rows open, two bridged).  This is the honest
 parity CRITERION, not a closure claim. -/
 theorem unionFullParity_not_yet_achieved : ¬ unionAchievesFullParity := by decide
 

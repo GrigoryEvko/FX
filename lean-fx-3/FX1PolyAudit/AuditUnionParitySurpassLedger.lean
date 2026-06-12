@@ -42,6 +42,7 @@ open FX1Poly.Typed
 #assert_no_axioms FX1Poly.Typed.unionAnchor_honestyClassifier_equivalence
 #assert_no_axioms FX1Poly.Typed.unionAnchor_affineRejection
 #assert_no_axioms FX1Poly.Typed.unionAnchor_weakening
+#assert_no_axioms FX1Poly.Typed.unionAnchor_canonicity
 
 /-! ## The parity ledger facts -/
 
@@ -55,7 +56,7 @@ open FX1Poly.Typed
 #assert_no_axioms FX1Poly.Typed.weakening_atParity
 #assert_no_axioms FX1Poly.Typed.uniqueness_isOpen
 #assert_no_axioms FX1Poly.Typed.reducibilityStrongNormalization_isOpen
-#assert_no_axioms FX1Poly.Typed.canonicity_isOpen
+#assert_no_axioms FX1Poly.Typed.canonicity_isBridged
 #assert_no_axioms FX1Poly.Typed.contextConversion_isOpen
 
 /-! ## The parity criterion + computed counts -/
@@ -66,9 +67,9 @@ open FX1Poly.Typed
 #assert_no_axioms FX1Poly.Typed.coveredCapabilityCount
 #assert_no_axioms FX1Poly.Typed.strictlyProvenCapabilityCount
 #assert_no_axioms FX1Poly.Typed.openCapabilityCount
-#assert_no_axioms FX1Poly.Typed.coveredCapabilityCount_isEight
+#assert_no_axioms FX1Poly.Typed.coveredCapabilityCount_isNine
 #assert_no_axioms FX1Poly.Typed.strictlyProvenCapabilityCount_isSeven
-#assert_no_axioms FX1Poly.Typed.openCapabilityCount_isFour
+#assert_no_axioms FX1Poly.Typed.openCapabilityCount_isThree
 #assert_no_axioms FX1Poly.Typed.unionFullParity_not_yet_achieved
 
 /-! ## The surpass enum, projection, anchors, and criterion -/
@@ -99,16 +100,16 @@ flipped to `proven` without a citation, changing the covered/open split) fails t
 than silently passing.  The criterion theorems are re-checked, and the SHIPPED surpass count is pinned
 at five.  All close by the ledger's own `rfl` facts. -/
 
-/-- COVERAGE: the present honest split is 8 covered / 7 strictly proven / 4 open of 12 rows, and all 5
+/-- COVERAGE: the present honest split is 9 covered / 7 strictly proven / 3 open of 12 rows, and all 5
 surpass capabilities are shipped.  Any drift in the ledger breaks this conjunction. -/
 theorem unionParityLedgerCoverageGate :
-    coveredCapabilityCount = 8 ∧
+    coveredCapabilityCount = 9 ∧
     strictlyProvenCapabilityCount = 7 ∧
-    openCapabilityCount = 4 ∧
+    openCapabilityCount = 3 ∧
     shippedSurpassCount = 5 ∧
     ¬ unionAchievesFullParity ∧
     unionSurpasses :=
-  ⟨coveredCapabilityCount_isEight, strictlyProvenCapabilityCount_isSeven, openCapabilityCount_isFour,
+  ⟨coveredCapabilityCount_isNine, strictlyProvenCapabilityCount_isSeven, openCapabilityCount_isThree,
     allSurpassCapabilitiesShipped, unionFullParity_not_yet_achieved, unionSurpasses_isMet⟩
 
 #assert_no_axioms unionParityLedgerCoverageGate
