@@ -694,6 +694,44 @@ theorem stepOverLegacyTable_iff_step {scope : Nat}
     StepOverTable legacyIotaRuleTable source target ↔ Step source target :=
   ⟨StepOverTable.legacyToStep, Step.toLegacyTableStep⟩
 
+
+/-- **Child congruence for heads OUTSIDE the operational table** — the
+generic former-rigidity engine: if a lookup table (formation / flat /
+term-indexed / any future classifier) is `none` on every legacy row's
+eliminator head, then a `Step` out of a cell whose head the lookup
+CLASSIFIES (`some rule`) cannot be a root firing — it is a child
+congruence.  ONE freed-subject table inversion replaces the 17
+per-constructor `nomatch` arms in every consumer; a new iota row owes
+one `rfl` entry in each consumer's exclusion certificate, a new
+CLASSIFIED former is absorbed zero-touch. -/
+theorem Step.childCongruenceOfElimHeadsExcluded {scope : Nat}
+    {generator : Generator} {payload : generator.payload scope}
+    {children : RawTermChildren generator.binderShifts scope}
+    {target : RawTerm scope}
+    {tableValue : Type} {tableLookup : Generator → Option tableValue}
+    {rule : tableValue}
+    (excludesElimHeads : ∀ row : IotaRuleDesc,
+      row ∈ legacyIotaRuleTable → tableLookup row.elimGenerator = none)
+    (isClassified : tableLookup generator = some rule)
+    (step : Step (.mkGen generator payload children) target) :
+    ∃ children', target = .mkGen generator payload children'
+      ∧ StepChildren children children' := by
+  rcases StepOverTable.invertOrCong
+      (stepOverLegacyTable_iff_step.mpr step) rfl with
+    ⟨rowRule, isRow, elimPayload, spine, cellEq, _fires⟩
+    | ⟨children', targetEq, childrenStep⟩
+  · have headEq : rowRule.elimGenerator = generator :=
+      congrArg
+        (fun cell => match cell with
+          | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
+        cellEq
+    have isExcluded : tableLookup generator = none :=
+      headEq ▸ excludesElimHeads rowRule isRow
+    rw [isExcluded] at isClassified
+    nomatch isClassified
+  · exact ⟨children', targetEq,
+      StepOverTableChildren.legacyToStepChildren childrenStep⟩
+
 /-- Every bespoke `Step` is a full-table `StepTable` step (forward
 through the legacy table, then table monotonicity). -/
 theorem Step.toStepTable {scope : Nat} {source target : RawTerm scope}

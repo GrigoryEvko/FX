@@ -2817,6 +2817,7 @@ an endpoint steps the carrier is fixed and only that endpoint re-types by the gr
 #assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.contextConversionExact
 #assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.contextConversionExact
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.contextConversionExact
+#assert_no_axioms FX1Poly.Typed.legacyElimHead_hasNoTermIndexedFormerRule
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerCellStepIsChildCongruence
 #assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.convCarrier
 #assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.subjectReduction

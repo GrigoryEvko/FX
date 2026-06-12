@@ -1,6 +1,7 @@
 import FX1Poly.Typed.UnionRuleTables
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Core.ConvNormalForm
+import FX1Poly.Core.StepTable
 
 /-! # FX1Poly/Typed/ConvFlatFormerRigidity — the CASCADE-FREE cross-former `Conv` discrimination for the
     FLAT data type-code formers (the flat-table twin of `ConvFormationFormerRigidity`).
@@ -41,36 +42,59 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
+/-- **No legacy row's eliminator head carries a FLAT formation rule** — the
+flat-table exclusion certificate: one `rfl` per row. -/
+private theorem legacyElimHead_hasNoFlatFormationRule :
+    ∀ rule : FX1Poly.Core.IotaRuleDesc, rule ∈ FX1Poly.Core.legacyIotaRuleTable →
+      flatTypingRuleDescOf rule.elimGenerator = none := by
+  intro rule isRow
+  cases isRow with
+  | head => rfl
+  | tail _ isRow => cases isRow with
+    | head => rfl
+    | tail _ isRow => cases isRow with
+      | head => rfl
+      | tail _ isRow => cases isRow with
+        | head => rfl
+        | tail _ isRow => cases isRow with
+          | head => rfl
+          | tail _ isRow => cases isRow with
+            | head => rfl
+            | tail _ isRow => cases isRow with
+              | head => rfl
+              | tail _ isRow => cases isRow with
+                | head => rfl
+                | tail _ isRow => cases isRow with
+                  | head => rfl
+                  | tail _ isRow => cases isRow with
+                    | head => rfl
+                    | tail _ isRow => cases isRow with
+                      | head => rfl
+                      | tail _ isRow => cases isRow with
+                        | head => rfl
+                        | tail _ isRow => cases isRow with
+                          | head => rfl
+                          | tail _ isRow => cases isRow with
+                            | head => rfl
+                            | tail _ isRow => cases isRow with
+                              | head => rfl
+                              | tail _ isRow => cases isRow with
+                                | head => rfl
+                                | tail _ isRow => cases isRow with
+                                  | head => rfl
+                                  | tail _ isRow => cases isRow
+
 /-- **Flat-former step inversion.**  A flat-former cell heads no root redex, so any `Step` out of it is a child
-congruence.  Keyed on the FLAT table (`flatTypingRuleDescOf`): each redex head has `flatTypingRuleDescOf = none`
-by rfl, so the `some rule` hypothesis contradicts every redex arm; only the `cong` arm survives, exposing the
-child step directly.  A `Step`/table-only fact (no typing engine), ported verbatim so this file no longer
-depends on the flat typing engine. -/
+congruence — TABLE-ROUTED: the generic `Step.childCongruenceOfElimHeadsExcluded` at the flat-table exclusion
+certificate (two arms, not eighteen). -/
 private theorem flatFormerCellStepIsChildCongruence {scope : Nat} {generator : Generator}
     {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
     {rule : TypingRuleDesc} {target : RawTerm scope}
     (isFlatFormation : flatTypingRuleDescOf generator = some rule)
     (step : Step (.mkGen generator payload children) target) :
-    ∃ children', target = .mkGen generator payload children' ∧ StepChildren children children' := by
-  cases step with
-  | cong _ _ childStep => exact ⟨_, rfl, childStep⟩
-  | beta => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaBoolTrue => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaBoolFalse => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaFstPair => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaSndPair => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaNatElimZero => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaNatRecZero => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaListElimNil => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaOptionMatchNone => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaOptionMatchSome => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaEitherMatchInl => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaEitherMatchInr => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaNatElimSucc => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaNatRecSucc => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaListElimCons => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaIdJRefl => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
-  | iotaIdStrictRecRefl => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+    ∃ children', target = .mkGen generator payload children' ∧ StepChildren children children' :=
+  Step.childCongruenceOfElimHeadsExcluded
+    legacyElimHead_hasNoFlatFormationRule isFlatFormation step
 
 /-- **Generic head-stability under `StepStar` for the FLAT formers.**  A reduction out of any cell whose head
 carries a FLAT formation rule preserves the head generator AND payload, reducing only the children — no flat

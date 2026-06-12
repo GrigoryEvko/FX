@@ -96,18 +96,7 @@ theorem formerCellStepIsChildCongruence {scope : Nat} {generator : Generator}
     (isFormation : typingRuleDescOf generator = some rule)
     (step : Step (.mkGen generator payload children) target) :
     ∃ children', target = .mkGen generator payload children' ∧ StepChildren children children' := by
-  rcases StepOverTable.invertOrCong (stepOverLegacyTable_iff_step.mpr step) rfl with
-    ⟨rowRule, isRow, elimPayload, spine, cellEq, _fires⟩ | ⟨children', targetEq, childrenStep⟩
-  · have headEq : rowRule.elimGenerator = generator :=
-      congrArg
-        (fun cell => match cell with
-          | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
-        cellEq
-    have noFormationRule : typingRuleDescOf generator = none :=
-      headEq ▸ legacyElimHead_hasNoFormationRule rowRule isRow
-    rw [noFormationRule] at isFormation
-    nomatch isFormation
-  · exact ⟨children', targetEq,
-      StepOverTableChildren.legacyToStepChildren childrenStep⟩
+  exact Step.childCongruenceOfElimHeadsExcluded
+    legacyElimHead_hasNoFormationRule isFormation step
 
 end FX1Poly.Typed

@@ -1,6 +1,7 @@
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Typed.HasTypeDescPiContextStepConversion
+import FX1Poly.Core.StepTable
 
 /-! # FX1Poly/Typed/HasTypeDescTermIndexedFormerSubjectReduction — NATIVE-15: context-conversion + subject reduction
 
@@ -96,35 +97,59 @@ theorem HasTypeDescTermIndexedFormer.contextConversionExact {profile : PolyProfi
 
 /-! ## Subject reduction -/
 
+/-- **No legacy row's eliminator head carries a term-indexed-former rule** —
+the term-indexed-table exclusion certificate: one `rfl` per row. -/
+theorem legacyElimHead_hasNoTermIndexedFormerRule :
+    ∀ rule : FX1Poly.Core.IotaRuleDesc, rule ∈ FX1Poly.Core.legacyIotaRuleTable →
+      termIndexedFormerDescOf rule.elimGenerator = none := by
+  intro rule isRow
+  cases isRow with
+  | head => rfl
+  | tail _ isRow => cases isRow with
+    | head => rfl
+    | tail _ isRow => cases isRow with
+      | head => rfl
+      | tail _ isRow => cases isRow with
+        | head => rfl
+        | tail _ isRow => cases isRow with
+          | head => rfl
+          | tail _ isRow => cases isRow with
+            | head => rfl
+            | tail _ isRow => cases isRow with
+              | head => rfl
+              | tail _ isRow => cases isRow with
+                | head => rfl
+                | tail _ isRow => cases isRow with
+                  | head => rfl
+                  | tail _ isRow => cases isRow with
+                    | head => rfl
+                    | tail _ isRow => cases isRow with
+                      | head => rfl
+                      | tail _ isRow => cases isRow with
+                        | head => rfl
+                        | tail _ isRow => cases isRow with
+                          | head => rfl
+                          | tail _ isRow => cases isRow with
+                            | head => rfl
+                            | tail _ isRow => cases isRow with
+                              | head => rfl
+                              | tail _ isRow => cases isRow with
+                                | head => rfl
+                                | tail _ isRow => cases isRow with
+                                  | head => rfl
+                                  | tail _ isRow => cases isRow
+
 /-- **Term-indexed former step inversion.**  An `Id`/`Bridge` former cell heads no root redex, so any `Step` out
-of it is a child congruence.  Clone of `flatFormerCellStepIsChildCongruence` keyed on the term-indexed table
-(`termIndexedFormerDescOf`): each of the 16 ι + β redex heads has `termIndexedFormerDescOf = none` by rfl, so the
-`some rule` hypothesis contradicts them; only the `cong` arm survives, exposing the child step. -/
+of it is a child congruence — TABLE-ROUTED: the generic `Step.childCongruenceOfElimHeadsExcluded` at the
+term-indexed-table exclusion certificate (two arms, not eighteen). -/
 theorem termIndexedFormerCellStepIsChildCongruence {scope : Nat} {generator : Generator}
     {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
     {rule : TermIndexedFormerDesc} {target : RawTerm scope}
     (isTermIndexed : termIndexedFormerDescOf generator = some rule)
     (step : Step (.mkGen generator payload children) target) :
-    ∃ children', target = .mkGen generator payload children' ∧ StepChildren children children' := by
-  cases step with
-  | cong _ _ childStep => exact ⟨_, rfl, childStep⟩
-  | beta => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaBoolTrue => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaBoolFalse => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaFstPair => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaSndPair => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaNatElimZero => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaNatRecZero => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaListElimNil => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaOptionMatchNone => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaOptionMatchSome => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaEitherMatchInl => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaEitherMatchInr => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaNatElimSucc => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaNatRecSucc => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaListElimCons => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaIdJRefl => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
-  | iotaIdStrictRecRefl => nomatch (show (none : Option TermIndexedFormerDesc) = some rule from isTermIndexed)
+    ∃ children', target = .mkGen generator payload children' ∧ StepChildren children children' :=
+  Step.childCongruenceOfElimHeadsExcluded
+    legacyElimHead_hasNoTermIndexedFormerRule isTermIndexed step
 
 /-- **Endpoint carrier-reclassification along `Conv`.**  When the carrier steps `A ↝ A'`, each endpoint `eᵢ : A`
 must be re-classified to `eᵢ : A'`.  The grown `conv` arm does it: `Conv A A'` plus the new carrier typing

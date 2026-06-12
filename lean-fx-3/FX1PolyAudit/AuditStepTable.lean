@@ -87,6 +87,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Core.legacyRootFiringToStep
 #assert_no_axioms FX1Poly.Core.legacyRootFiringToWeakHeadStep
+#assert_no_axioms FX1Poly.Core.Step.childCongruenceOfElimHeadsExcluded
 #assert_no_axioms FX1Poly.Core.StepOverTable.legacyToStep
 #assert_no_axioms FX1Poly.Core.StepOverTableChildren.legacyToStepChildren
 #assert_no_axioms FX1Poly.Core.stepOverLegacyTable_iff_step
