@@ -21,8 +21,8 @@ completing per-eliminator host-fold faithfulness to all ten:
     `idJHostFold`.
 
 `natRecCell` / `idStrictRecCell` are the eliminator-cell builders; their shapes match the
-`Step.iotaNatRec{Zero,Succ}` / `IotaHeadStep.iotaIdStrictRecRefl.toStep` redex heads, so each host-fold is a single
-`StepStar.single` of the matching `Step.iota` rule whose reduct IS the host clause by `rfl`.
+`IotaHeadStep.iotaNatRec{Zero,Succ}` / `IotaHeadStep.iotaIdStrictRecRefl` redex heads, so each host-fold is a single
+`StepStar.single` of the matching root-ι rule (via `toStep`) whose reduct IS the host clause by `rfl`.
 
 Honest strength note: `idStrictRecHostFold` is single-ι branch selection (exactly the strength of `idJHostFold`
 and the other value-case folds).  The two `natRec` theorems are the recursor's host computation CLAUSES (the

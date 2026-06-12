@@ -34,8 +34,8 @@ discharge over arbitrary result types remains the named combined-canonicity foll
 ## Zero-axiom verification
 
 The scrutinee-canonicity hypothesis (operational) + `StepStar.optionMatchScrutinee` /
-`StepStar.eitherMatchScrutinee` (congruence) + `StepStar.transLast` with `Step.iotaOptionMatch*` /
-`Step.iotaEitherMatch*` (ι) + `StepStar.trans_compose` (chain in the branch reduction) + `Step.beta` (the
+`StepStar.eitherMatchScrutinee` (congruence) + `StepStar.transLast` with `IotaHeadStep.iotaOptionMatch*` /
+`IotaHeadStep.iotaEitherMatch*` via `toStep` (ι) + `StepStar.trans_compose` (chain in the branch reduction) + `Step.beta` (the
 identity/constant branch β).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/

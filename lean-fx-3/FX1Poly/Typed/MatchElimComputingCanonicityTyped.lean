@@ -49,7 +49,7 @@ general-branch corner stays the named follow-on.
 
 The scrutinee-canonicity hypothesis (operational) +
 `StepStar.optionMatchScrutinee` / `StepStar.eitherMatchScrutinee` (congruence) + `StepStar.transLast` with
-`Step.iotaOptionMatch*` / `Step.iotaEitherMatch*` (ι) + `Step.beta` (constant-branch β).  No `axiom`, `sorry`,
+`IotaHeadStep.iotaOptionMatch*` / `IotaHeadStep.iotaEitherMatch*` via `toStep` (ι) + `Step.beta` (constant-branch β).  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
