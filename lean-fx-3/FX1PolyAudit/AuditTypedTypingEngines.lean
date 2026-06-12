@@ -296,21 +296,8 @@ import FX1Poly.Typed.ListElimFaithfulLength
 import FX1Poly.Typed.MatchElimComputingCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
-import FX1Poly.Typed.HasTypeDescPairIntro
-import FX1Poly.Typed.HasTypeDescEitherIntro
 import FX1Poly.Typed.ProductEitherCanonicalForms
-import FX1Poly.Typed.HasTypeDescBoolElim
-import FX1Poly.Typed.HasTypeDescEitherMatch
-import FX1Poly.Typed.HasTypeDescOptionIntro
-import FX1Poly.Typed.HasTypeDescOptionMatch
 import FX1Poly.Typed.OptionCanonicalForms
-import FX1Poly.Typed.HasTypeDescSigmaProjection
-import FX1Poly.Typed.HasTypeDescIdIntro
-import FX1Poly.Typed.HasTypeDescIdElim
-import FX1Poly.Typed.HasTypeDescListIntro
-import FX1Poly.Typed.HasTypeDescNatIntro
-import FX1Poly.Typed.HasTypeDescNatElim
-import FX1Poly.Typed.HasTypeDescListElim
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -437,7 +424,6 @@ import FX1Poly.Typed.UnitReadbackAnnotationBoundary
 import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.TypedNbeConvDecision
-import FX1Poly.Typed.SigmaEtaEngineGate
 import FX1Poly.Typed.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
 import FX1Poly.Typed.CascadeFreedomLedger
@@ -1146,19 +1132,12 @@ the strong equation one green commit at a time, then the table flips. -/
 -- CodesTyped = the smoke pair(Type@0,Type@0) : product(Type@1,Type@1). subjectIsPair/classifierIsProduct = the
 -- SR-free closed-forms inversions (subject is a pairCell, classifier a productTypeCell). The SR/SN quartet is the
 -- GrownCtxConv-5-entangled deferral (pair steps when a component steps → consumes grown master SR / #842).
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.pairOfUniverseCodesTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.subjectIsPair
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.classifierIsProduct
 -- EITHER INTRODUCTION (HasTypeDescEitherIntro, DI-2 sum half): the standalone coproduct judgment typing the sum
 -- VALUES eitherInl(a) / eitherInr(b) : either(A,B) — each arm has ONE value premise + ONE type-formedness premise
 -- for the un-injected (free) component (the asymmetry vs pair, whose two components are both value-pinned).
 -- eitherInl/InrOfUniverseCodeTyped = the smokes eitherInl/Inr(Type@0) : either(Type@1,Type@1). subjectIsEither
 -- Injection/classifierIsEither = the SR-free closed-forms inversions (subject is an inl/inr cell, classifier an
 -- eitherTypeCell). Completes the DI-2 "pair / eitherInl / eitherInr" value-typing scope (SR quartet GrownCtxConv-5-deferred).
-#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.eitherInlOfUniverseCodeTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.eitherInrOfUniverseCodeTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.subjectIsEitherInjection
-#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.classifierIsEither
 -- OPTION INTRODUCTION (HasTypeDescOptionIntro, DI-2c): the standalone option judgment typing the option VALUES
 -- optionNone / optionSome(a) : option(A). The optionNone arm carries a type-formedness premise for the FREE
 -- element type A (the None asymmetry — None carries no payload, exactly like eitherInl's free un-injected side);
@@ -1166,10 +1145,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- (DI-5c, next). optionNone/SomeOfUniverseCodeTyped = the smokes optionNone:option(Type@0) /
 -- optionSome(Type@0):option(Type@1). subjectIsOptionConstructor/classifierIsOption = the SR-free closed-forms
 -- inversions (subject is a none/some cell, classifier an optionTypeCell). SR quartet GrownCtxConv-5-deferred.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.optionNoneOfUniverseCodeTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.optionSomeOfUniverseCodeTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.subjectIsOptionConstructor
-#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.classifierIsOption
 -- BOOL ELIMINATOR + TYPED ι-COMPUTATION (HasTypeDescBoolElim, DI-5 first brick): the kernel's data story from
 -- INTRODUCTION to ELIMINATION. The standalone non-dependent boolElim judgment (boolElim(s,t,e):C from scrutinee
 -- s:boolCode via data-intro + branches t,e:C via grown). boolElimOfUniverseCodesTyped = the smoke boolElim(boolTrue,
@@ -1177,8 +1152,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- TYPED ι-COMPUTATION: a typed boolElim on a value ι-reduces (Step.iotaBoolTrue/False) to the typed branch — the
 -- eliminator COMPUTES and PRESERVES TYPING (constructor-side, so SR-free + propext-free; full SR is the GrownCtxConv-5-gated
 -- branch-congruence deferral). Advances DI-5 #1047 (boolElim brick).
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.boolElimOfUniverseCodesTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.subjectIsBoolElim
 -- EITHER ELIMINATOR + TYPED APP-CHAIN ι-COMPUTATION (HasTypeDescEitherMatch, DI-5 second brick): the coproduct
 -- eliminator, the FIRST with the app-chain ι shape. boolElim's ι SELECTS a branch (boolElim(boolTrue,t,e) ↝ t);
 -- eitherMatch's ι APPLIES the matching handler to the wrapped payload (eitherMatch(eitherInl(v),l,r) ↝ app(l,v),
@@ -1189,7 +1162,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- ι-reduces to app(branch, payload), typed at C via piElim with the non-dependent codomain (weaken C).subst0 v
 -- collapsing to C (RawTerm.weaken_subst_singleton). Constructor-side, so SR-free + propext-free (full SR is the
 -- GrownCtxConv-5-gated branch-congruence deferral). Advances DI-5 #1047 (eitherMatch brick, the second eliminator shape).
-#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherMatch.subjectIsEitherMatch
 -- OPTION ELIMINATOR + the FIRST MIXED-ι typed computation (HasTypeDescOptionMatch, DI-5c): optionMatch is the
 -- first eliminator whose two ι rules have DIFFERENT shapes — optionMatch(optionNone,n,sm) ↝ n is branch-SELECTION
 -- (boolElim shape, the None branch n is a VALUE at C); optionMatch(optionSome(v),n,sm) ↝ app(sm,v) is APP-CHAIN
@@ -1200,7 +1172,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- ★ optionMatchSomeIotaComputesTyped = the app-chain typed ι (reduct app(sm,v):C via piElim + the (weaken C).subst0
 -- v → C collapse). Constructor-side, so SR-free + propext-free (full branch-congruence SR GrownCtxConv-5-deferred). ONE
 -- eliminator now demonstrates BOTH ι shapes typed-and-computing. Advances DI-5 #1047 (third eliminator brick).
-#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionMatch.subjectIsOptionMatch
 -- Σ-PROJECTION ELIMINATOR + the THIRD ι shape (HasTypeDescSigmaProjection, DI-5d): completes the Σ/pair data story
 -- (intro DI-2a + canon DI-2-canon + this elim). fst/snd carry the CONTENT-PROJECTION ι (fst(pair(a,b)) ↝ a;
 -- snd(pair(a,b)) ↝ b) — the reduct is a CHILD of the SCRUTINEE, not a branch (boolElim) nor a handler-applied-to-
@@ -1210,8 +1181,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- inversion. ★ fst/sndProjectionIotaComputesTyped = the typed content-projection ι. Constructor-side, SR-free +
 -- propext-free (full scrutinee-congruence SR GrownCtxConv-5-deferred). All THREE non-recursive ι shapes now typed-and-
 -- computing across the data eliminators. Advances DI-5 #1047 / SN-058 (#446, Σ projections).
-#assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.fstOfUniverseCodesTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.subjectIsSigmaProjection
 -- IDENTITY DATA STORY (HasTypeDescIdIntro DI-2d + HasTypeDescIdElim DI-5e): reflexivity intro + idJ eliminator.
 -- INTRO: refl(x):Id(A,x,x) is the PINNED reflexive intro (witness x:A pins A and BOTH endpoints, which are EQUAL).
 -- reflOfUniverseCodeTyped = the smoke refl(Type@0):Id(Type@1,Type@0,Type@0). subjectIsRefl + classifierIsReflexiveId
@@ -1222,11 +1191,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- subjectIsIdJ = free-index inversion. ★ idJReflIotaComputesTyped = the typed branch-selection ι (reduct IS the
 -- base case, typed verbatim). Constructor-side → SR-free + propext-free (full witness-congruence SR GrownCtxConv-5-deferred).
 -- Completes the identity data story (intro + elim). Advances DI-5 #1047 / SN-067/068 (#450, refl + idJ).
-#assert_no_axioms FX1Poly.Typed.HasTypeDescIdIntro.reflOfUniverseCodeTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescIdIntro.subjectIsRefl
-#assert_no_axioms FX1Poly.Typed.HasTypeDescIdIntro.classifierIsReflexiveId
-#assert_no_axioms FX1Poly.Typed.HasTypeDescIdElim.idJOfUniverseCodesTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescIdElim.subjectIsIdJ
 -- LIST INTRODUCTION (HasTypeDescListIntro, DI-2e): the FIRST RECURSIVE data constructor. nil:List(A) is the
 -- NULLARY-free arm (free element type A, type-formedness premise, like optionNone); cons(h,t):List(A) is the
 -- RECURSIVE arm — head h:A (pins A) + tail t:List(A) typed BY THE SAME judgment (the first self-referential
@@ -1235,10 +1199,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- (tail nil typed by the same engine). subjectIsListConstructor/classifierIsList = the SR-free closed-forms
 -- inversions (subject is a nil/cons cell, classifier a listTypeCell). The scrutinee-typing prerequisite for the
 -- list ELIMINATOR (listElim, the first RECURSIVE eliminator, a future brick). SR quartet GrownCtxConv-5-deferred.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.listNilOfUniverseCodeTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.listConsOfUniverseCodesTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.subjectIsListConstructor
-#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.classifierIsList
 -- NAT INTRODUCTION (HasTypeDescNatIntro, DI-3): the nat constructors at the nat type code natTypeCell. natZero:Nat
 -- is the NULLARY arm with NO premise (Nat is a closed ground type, simpler than listNil's free element type);
 -- natSucc(p):Nat is the RECURSIVE arm — predecessor p:Nat typed BY THE SAME judgment (strictly positive, the nat
@@ -1248,11 +1208,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- judgment using natTypeCell as a RAW classifier (no Nat:Type@0 base-type-formation dependency). The
 -- scrutinee-typing prerequisite for the nat ELIMINATORS (natElim/natRec) + nat canonicity (SN-048). SR quartet
 -- engine-separation-deferred (#1078).
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.natZeroTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.natOneTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.natTwoTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.subjectIsNatConstructor
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.classifierIsNat
 
 -- CAN-1 / DI-5f (HasTypeDescNatElim): the RECURSIVE Nat eliminator judgments + typed recursive
 -- ι-computation — the recursive-eliminator wall DI-5 deferred (#1078 engine-separation finding).
@@ -1266,8 +1221,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- reduct with the recursive call typed at the predecessor.  Constructor-side (SR-free,
 -- propext-free); full SR of these judgments is CAN-3.  Closed forms are honestly 3-shape
 -- (cell OR application) — unlike the single-shape non-recursive DI-5 judgments.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatElim.subjectShape
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatRec.subjectShape
 
 -- CAN-2 / DI-5g (HasTypeDescListElim): the SHAPE-5 recursive List eliminator — closes DI-5
 -- (#1047).  The cons ι-reduct is the TRIPLE chain app(app(app cb h) t)(listElim t nb cb); the
@@ -1280,7 +1233,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- the deepest typed ι in the kernel.  With CAN-1, EVERY live eliminator family
 -- (bool/either/option/Σ/id/nat/list) now has a standalone typed judgment with typed
 -- ι-computation.  Constructor-side (SR-free, propext-free); full SR is CAN-3.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescListElim.subjectShape
 -- FLAT-ENGINE INVERSION (#935, first increment): the flat twin of HasTypeDesc.inversionListCode. inversion =
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
@@ -1776,12 +1728,6 @@ carries the costed Route A (widen standalone engines, 4 bricks, pending user sig
 T2 precedent) vs Route B (grown-engine cascade, rejected) decision record; these gates are the
 regression tripwires the Route-A widening must consciously revisit. -/
 
-#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_pairIsNone
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.componentsGrownTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.scrutineeIsLiteralPair
-#assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.fstOfVariableHasNoTyping
-#assert_no_axioms FX1Poly.Typed.etaPairExpansion_hasNoPairIntroTyping
-#assert_no_axioms FX1Poly.Typed.etaPairExpansion_hasNoGrownTyping
 #assert_no_axioms FX1Poly.Typed.uniqueness_isZeroArm
 #assert_no_axioms FX1Poly.Typed.inversion_isZeroArm
 

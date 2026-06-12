@@ -304,21 +304,8 @@ import FX1Poly.Typed.ListElimFaithfulLength
 import FX1Poly.Typed.MatchElimComputingCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
-import FX1Poly.Typed.HasTypeDescPairIntro
-import FX1Poly.Typed.HasTypeDescEitherIntro
 import FX1Poly.Typed.ProductEitherCanonicalForms
-import FX1Poly.Typed.HasTypeDescBoolElim
-import FX1Poly.Typed.HasTypeDescEitherMatch
-import FX1Poly.Typed.HasTypeDescOptionIntro
-import FX1Poly.Typed.HasTypeDescOptionMatch
 import FX1Poly.Typed.OptionCanonicalForms
-import FX1Poly.Typed.HasTypeDescSigmaProjection
-import FX1Poly.Typed.HasTypeDescIdIntro
-import FX1Poly.Typed.HasTypeDescIdElim
-import FX1Poly.Typed.HasTypeDescListIntro
-import FX1Poly.Typed.HasTypeDescNatIntro
-import FX1Poly.Typed.HasTypeDescNatElim
-import FX1Poly.Typed.HasTypeDescListElim
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -445,7 +432,6 @@ import FX1Poly.Typed.UnitReadbackAnnotationBoundary
 import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.TypedNbeConvDecision
-import FX1Poly.Typed.SigmaEtaEngineGate
 import FX1Poly.Typed.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
 import FX1Poly.Typed.CascadeFreedomLedger
@@ -680,8 +666,6 @@ import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.HasTypeDescGeneralElim
 import FX1Poly.Typed.HasTypeNativeUnion
 import FX1Poly.Typed.GradedTableCoherence
-import FX1Poly.Typed.DependentElimPremiseSpike
-import FX1Poly.Typed.CollapseDecisionGate
 import FX1Poly.Typed.UniverseModeGenerators
 
 /-! # FX1PolyAudit/AuditTypedSubstVecCwR — typed-layer zero-axiom gates: the term-carrying CwR substrate (SubstVec, scones, fxBase categories)
@@ -3013,11 +2997,6 @@ types.  `dependentElimEliminatorTyped` (★ non-vacuous closed natElim), `depend
 GO-WITH-RECURSIVE-ι-RESIDUAL ledger: dischargeable by the NATIVE-40 unified engine, the 2-var subst lemma
 shipped; flagged as the 100%-vs-95% risk point).  Direct construction over the shipped engine — axiom-free.
 This pins the residual exactly so NATIVE-05 locks the collapse scope with the cost known. -/
-#assert_no_axioms FX1Poly.Typed.dependentElimEliminatorTyped
-#assert_no_axioms FX1Poly.Typed.dependentElimZeroIotaUnconditional
-#assert_no_axioms FX1Poly.Typed.dependentElimSuccIotaConditional
-#assert_no_axioms FX1Poly.Typed.dependentElimExpressibility
-#assert_no_axioms FX1Poly.Typed.dependentElimExpressibility_verdict
 
 /-! ## NATIVE-05 (#1282) — lock the collapse scope + the adequacy-harness shape (DECISION GATE)
 
@@ -3028,17 +3007,3 @@ weakens.  `spikeVerdicts_pinned` classifies the three (clean GO / clean GO / GO-
 `lockedCollapseScope = oneInductive` (primary, justified), `pinnedCoreFallback` the recorded 95% contingency;
 `adequacyHarnessShape` locks the two-leg (rowSuffices + engineIsInstance) adequacy template;
 `lockedBuildPhases` spans the 58 BUILD arcs (06-63) in 8 phases.  All `by decide`/`rfl` — axiom-free. -/
-#assert_no_axioms FX1Poly.Typed.termIndexedVerdict
-#assert_no_axioms FX1Poly.Typed.gradedIntroVerdict
-#assert_no_axioms FX1Poly.Typed.dependentElimVerdict
-#assert_no_axioms FX1Poly.Typed.spikeVerdicts_pinned
-#assert_no_axioms FX1Poly.Typed.collapseToOneInductiveJustified
-#assert_no_axioms FX1Poly.Typed.collapseToOneInductiveJustified_holds
-#assert_no_axioms FX1Poly.Typed.lockedCollapseScope
-#assert_no_axioms FX1Poly.Typed.lockedCollapseScope_coherent
-#assert_no_axioms FX1Poly.Typed.pinnedCoreFallback_distinctFromPrimary
-#assert_no_axioms FX1Poly.Typed.adequacyHarnessShape
-#assert_no_axioms FX1Poly.Typed.adequacyHarnessShape_requiresBothLegs
-#assert_no_axioms FX1Poly.Typed.lockedBuildPhases
-#assert_no_axioms FX1Poly.Typed.lockedBuildPhases_spanAllArcs
-#assert_no_axioms FX1Poly.Typed.lockedBuildPhases_count

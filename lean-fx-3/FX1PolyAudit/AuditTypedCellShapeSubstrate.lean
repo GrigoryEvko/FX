@@ -296,21 +296,8 @@ import FX1Poly.Typed.ListElimFaithfulLength
 import FX1Poly.Typed.MatchElimComputingCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ClosedNormalEmptyConsistency
-import FX1Poly.Typed.HasTypeDescPairIntro
-import FX1Poly.Typed.HasTypeDescEitherIntro
 import FX1Poly.Typed.ProductEitherCanonicalForms
-import FX1Poly.Typed.HasTypeDescBoolElim
-import FX1Poly.Typed.HasTypeDescEitherMatch
-import FX1Poly.Typed.HasTypeDescOptionIntro
-import FX1Poly.Typed.HasTypeDescOptionMatch
 import FX1Poly.Typed.OptionCanonicalForms
-import FX1Poly.Typed.HasTypeDescSigmaProjection
-import FX1Poly.Typed.HasTypeDescIdIntro
-import FX1Poly.Typed.HasTypeDescIdElim
-import FX1Poly.Typed.HasTypeDescListIntro
-import FX1Poly.Typed.HasTypeDescNatIntro
-import FX1Poly.Typed.HasTypeDescNatElim
-import FX1Poly.Typed.HasTypeDescListElim
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -437,7 +424,6 @@ import FX1Poly.Typed.UnitReadbackAnnotationBoundary
 import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.TypedNbeConvDecision
-import FX1Poly.Typed.SigmaEtaEngineGate
 import FX1Poly.Typed.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
 import FX1Poly.Typed.CascadeFreedomLedger
@@ -1411,6 +1397,5 @@ telescope input, the inert-leaf membership. -/
 
 #assert_no_axioms FX1Poly.Typed.nullaryFormerOutput
 #assert_no_axioms FX1Poly.Typed.formationOutputData
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.pairCellHasNoDataIntroTyping
 #assert_no_axioms FX1Poly.Typed.weakening_isZeroArm
 #assert_no_axioms FX1Poly.Typed.substitution_isZeroArm
