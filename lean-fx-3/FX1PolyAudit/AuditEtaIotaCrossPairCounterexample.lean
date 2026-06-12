@@ -33,4 +33,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.dualityReorders_canonicalRaw_refuted
 #assert_no_axioms FX1Poly.Core.rawEtaIota_quasiCommutation_refuted
 
+/-! ## The etaLam dual — not about pair eta -/
+
+#assert_no_axioms FX1Poly.Core.fstPairIotaRow_memIotaTable
+#assert_no_axioms FX1Poly.Core.etaLamRow_memEtaTable
+#assert_no_axioms FX1Poly.Core.etaLamRow_contractsOnPairCore
+#assert_no_axioms FX1Poly.Core.fstPairIotaRow_firesOnCrossLamMiddle
+#assert_no_axioms FX1Poly.Core.crossLamSource_isIotaIrreducible
+#assert_no_axioms FX1Poly.Core.etaLamRow_memEtaLamOnlyTable
+#assert_no_axioms FX1Poly.Core.crossLamSpineStep
+#assert_no_axioms FX1Poly.Core.crossLamEtaStep
+#assert_no_axioms FX1Poly.Core.crossLamIotaStep
+#assert_no_axioms FX1Poly.Core.rawEtaLamOnly_quasiCommutation_refuted
+
 end FX1PolyAudit
