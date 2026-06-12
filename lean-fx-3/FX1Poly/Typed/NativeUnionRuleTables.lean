@@ -4,12 +4,6 @@ import FX1Poly.Typed.HasTypeDescEitherMatch
 import FX1Poly.Typed.HasTypeDescIdElim
 import FX1Poly.Typed.HasTypeDescSigmaProjection
 import FX1Poly.Typed.HasTypeDescListElim
-import FX1Poly.Typed.HasTypeDescNatIntro
-import FX1Poly.Typed.HasTypeDescListIntro
-import FX1Poly.Typed.HasTypeDescPairIntro
-import FX1Poly.Typed.HasTypeDescEitherIntro
-import FX1Poly.Typed.HasTypeDescOptionIntro
-import FX1Poly.Typed.HasTypeDescIdIntro
 
 /-! # FX1Poly/Typed/NativeUnionRuleTables — NATIVE-36: the native twin rule tables for the
     data-eliminator, n-ary/recursive data-intro, and listElim families (PRE-UNION, imported by the
@@ -22,8 +16,10 @@ union cannot import those tables back without a cycle.  The NATIVE-32 precedent 
 hazard by defining NATIVE TWINS of the recursive-elim table inside the union file
 (`NativeRecursiveElimRule` etc.).  This file follows that pattern but, because these three families
 together carry ELEVEN row schemas, hoists the native twins into a dedicated PRE-UNION module that
-imports ONLY the bespoke cell/intro/elim engines (none of which imports `HasTypeNativeUnion` — verified:
-the only importers of the union are the spike files and the audit shards), and `HasTypeNativeUnion`
+imports ONLY the bespoke cell/elim engines (none of which imports `HasTypeNativeUnion` — verified:
+the only importers of the union are the spike files and the audit shards; the direct zoo INTRO imports
+were dropped with the NATIVE-42 embedding-arm retirement — the cell vocabulary arrives through the
+elim engines until NATIVE-43 retires those too), and `HasTypeNativeUnion`
 imports THIS file.  The arms that reference these tables live on `HasTypeNativeUnion` itself
 (additive); the transfers from the spike judgments live in separate post-union files.
 

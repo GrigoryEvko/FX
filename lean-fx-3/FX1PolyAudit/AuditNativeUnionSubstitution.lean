@@ -49,12 +49,6 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescIdIntro.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.substRespectingContext
 
 /-! ## (1) ★ The pointwise substitution lemma over the union + the binder-check transport -/
 

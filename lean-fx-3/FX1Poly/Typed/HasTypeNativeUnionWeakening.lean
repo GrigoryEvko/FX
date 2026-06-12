@@ -23,11 +23,11 @@ looked-up binding (`RawTerm.rename rawRenaming (sourceContext.lookup index) = ta
 
 ## How the 25 arms discharge
 
-  * The four ENGINE EMBEDDINGS (`ofGrown` / `ofBaseType` / `ofDataIntro` / `ofTermIndexedFormer`) and the
-    five scrutinee/intro embeddings (`ofNatIntro` / `ofOptionIntro` / `ofEitherIntro` / `ofIdIntro` /
-    `ofPairIntro` / `ofListIntro`) route their engine premises through the respective engine's own
-    `renameRespectingContext` (the grown / term-indexed engines ship theirs; the eight data engines'
-    rename twins are supplied below — the rename twins of `NativeUnionEngineSubstitution`) and re-embed.
+  * The four ENGINE EMBEDDINGS (`ofGrown` / `ofBaseType` / `ofDataIntro` / `ofTermIndexedFormer`) route
+    their engine premises through the respective engine's own `renameRespectingContext` (the grown /
+    term-indexed engines ship theirs; the base-type / data-intro twins are supplied below) and re-embed.
+    (The six zoo intro embeddings and their rename twins were RETIRED by NATIVE-42 — every data value
+    now enters through its native table row.)
   * The TABLE-DRIVEN RECURSIVE arms (`gradedBinderIntro` / `generalElim` / `recursiveElim` /
     `twoBranchMatchElim` / `pathInductionElim` / `projectionElim` / `recursiveUnaryIntro` /
     `recursiveBinaryIntro` / `pinnedUnaryIntro` / `nullaryFreeTypeIntro` / `coproductIntro` /
@@ -319,7 +319,8 @@ theorem rename_listStepFunctionType {sourceScope targetScope : Nat}
     rename_listTypeCell, rename_iterateLift_one_weaken_commute, rename_piTyCodeCell,
     rename_iterateLift_one_weaken_commute]
 
-/-! ## The eight data-engine rename twins (the rename mirror of `NativeUnionEngineSubstitution`) -/
+/-! ## The data-engine rename twins (the rename mirror of `NativeUnionEngineSubstitution`; the six
+zoo intro rename twins were retired with the NATIVE-42 embedding-arm deletion) -/
 
 /-- A nullary data-intro rule's output type code is a closed nullary cell, hence renaming-invariant
 across scopes (`rename ρ (output source) = output target`).  Reads off the five-row table. -/
@@ -410,168 +411,6 @@ theorem HasTypeDescDataIntro.renameRespectingContext {profile : PolyProfile} {so
       exact HasTypeDescDataIntro.nullaryIntro targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.rename rawRenaming children) rule isDataIntro
-
-/-- **Nat-intro renaming.**  `natZero` / `natSucc(p)` both classify at `natTypeCell`
-(renaming-invariant); `natSucc` recurses on the predecessor. -/
-theorem HasTypeDescNatIntro.renameRespectingContext {profile : PolyProfile} {sourceScope : Nat}
-    {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeDescNatIntro profile sourceContext subject classifier) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : RawRenaming sourceScope targetScope),
-      (∀ index : Fin sourceScope,
-        RawTerm.rename rawRenaming (sourceContext.lookup index)
-          = targetContext.lookup (rawRenaming index)) →
-      HasTypeDescNatIntro profile targetContext
-        (RawTerm.rename rawRenaming subject) (RawTerm.rename rawRenaming classifier) := by
-  induction derivation with
-  | natZeroIntro =>
-      intro targetScope targetContext rawRenaming _condition
-      rw [show RawTerm.rename rawRenaming (natZeroCell : RawTerm sourceScope) = natZeroCell from rfl,
-        rename_natTypeCell]
-      exact HasTypeDescNatIntro.natZeroIntro targetContext
-  | natSuccIntro predecessor _predecessorTyped predecessorIH =>
-      intro targetScope targetContext rawRenaming condition
-      rw [rename_natSuccCell, rename_natTypeCell]
-      have predecessorRenamed := predecessorIH targetContext rawRenaming condition
-      rw [rename_natTypeCell] at predecessorRenamed
-      exact HasTypeDescNatIntro.natSuccIntro targetContext
-        (RawTerm.rename rawRenaming predecessor) predecessorRenamed
-
-/-- **Option-intro renaming.**  `optionNone` / `optionSome(v)` classify at `option(A)`; the element-type
-formation / value premises route through `HasTypeDescPi.renameRespectingContext`. -/
-theorem HasTypeDescOptionIntro.renameRespectingContext {profile : PolyProfile} {sourceScope : Nat}
-    {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeDescOptionIntro profile sourceContext subject classifier) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : RawRenaming sourceScope targetScope),
-      (∀ index : Fin sourceScope,
-        RawTerm.rename rawRenaming (sourceContext.lookup index)
-          = targetContext.lookup (rawRenaming index)) →
-      HasTypeDescOptionIntro profile targetContext
-        (RawTerm.rename rawRenaming subject) (RawTerm.rename rawRenaming classifier) := by
-  cases derivation with
-  | optionNoneIntro elementType elementLevel flag elementTypeFormed =>
-      intro targetScope targetContext rawRenaming condition
-      rw [rename_optionNoneCell, rename_optionTypeCell]
-      have elementFormRenamed :=
-        elementTypeFormed.renameRespectingContext targetContext rawRenaming condition
-      rw [rename_universeCodeCell] at elementFormRenamed
-      exact HasTypeDescOptionIntro.optionNoneIntro targetContext
-        (RawTerm.rename rawRenaming elementType) elementLevel flag elementFormRenamed
-  | optionSomeIntro value elementType valueTyped =>
-      intro targetScope targetContext rawRenaming condition
-      rw [rename_optionSomeCell, rename_optionTypeCell]
-      exact HasTypeDescOptionIntro.optionSomeIntro targetContext
-        (RawTerm.rename rawRenaming value) (RawTerm.rename rawRenaming elementType)
-        (valueTyped.renameRespectingContext targetContext rawRenaming condition)
-
-/-- **Either-intro renaming.**  `eitherInl(v)` / `eitherInr(v)` classify at `either(A, B)`; the value and
-free-type premises route through `HasTypeDescPi.renameRespectingContext`. -/
-theorem HasTypeDescEitherIntro.renameRespectingContext {profile : PolyProfile} {sourceScope : Nat}
-    {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeDescEitherIntro profile sourceContext subject classifier) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : RawRenaming sourceScope targetScope),
-      (∀ index : Fin sourceScope,
-        RawTerm.rename rawRenaming (sourceContext.lookup index)
-          = targetContext.lookup (rawRenaming index)) →
-      HasTypeDescEitherIntro profile targetContext
-        (RawTerm.rename rawRenaming subject) (RawTerm.rename rawRenaming classifier) := by
-  cases derivation with
-  | eitherInlIntro leftValue leftType rightType rightLevel flag leftTyped rightTypeFormed =>
-      intro targetScope targetContext rawRenaming condition
-      rw [rename_eitherInlCell, rename_eitherTypeCell]
-      have rightFormRenamed :=
-        rightTypeFormed.renameRespectingContext targetContext rawRenaming condition
-      rw [rename_universeCodeCell] at rightFormRenamed
-      exact HasTypeDescEitherIntro.eitherInlIntro targetContext
-        (RawTerm.rename rawRenaming leftValue) (RawTerm.rename rawRenaming leftType)
-        (RawTerm.rename rawRenaming rightType) rightLevel flag
-        (leftTyped.renameRespectingContext targetContext rawRenaming condition) rightFormRenamed
-  | eitherInrIntro rightValue leftType rightType leftLevel flag rightTyped leftTypeFormed =>
-      intro targetScope targetContext rawRenaming condition
-      rw [rename_eitherInrCell, rename_eitherTypeCell]
-      have leftFormRenamed :=
-        leftTypeFormed.renameRespectingContext targetContext rawRenaming condition
-      rw [rename_universeCodeCell] at leftFormRenamed
-      exact HasTypeDescEitherIntro.eitherInrIntro targetContext
-        (RawTerm.rename rawRenaming rightValue) (RawTerm.rename rawRenaming leftType)
-        (RawTerm.rename rawRenaming rightType) leftLevel flag
-        (rightTyped.renameRespectingContext targetContext rawRenaming condition) leftFormRenamed
-
-/-- **Id-intro renaming.**  `refl(w)` classifies at `Id(A, w, w)`; the witness premise routes through
-`HasTypeDescPi.renameRespectingContext`. -/
-theorem HasTypeDescIdIntro.renameRespectingContext {profile : PolyProfile} {sourceScope : Nat}
-    {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeDescIdIntro profile sourceContext subject classifier) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : RawRenaming sourceScope targetScope),
-      (∀ index : Fin sourceScope,
-        RawTerm.rename rawRenaming (sourceContext.lookup index)
-          = targetContext.lookup (rawRenaming index)) →
-      HasTypeDescIdIntro profile targetContext
-        (RawTerm.rename rawRenaming subject) (RawTerm.rename rawRenaming classifier) := by
-  cases derivation with
-  | reflIntro witness typeCode witnessTyped =>
-      intro targetScope targetContext rawRenaming condition
-      rw [rename_reflCell, rename_idTypeCell]
-      exact HasTypeDescIdIntro.reflIntro targetContext
-        (RawTerm.rename rawRenaming witness) (RawTerm.rename rawRenaming typeCode)
-        (witnessTyped.renameRespectingContext targetContext rawRenaming condition)
-
-/-- **Pair-intro renaming.**  `pair(x, y)` classifies at `A × B`; both value premises route through
-`HasTypeDescPi.renameRespectingContext`. -/
-theorem HasTypeDescPairIntro.renameRespectingContext {profile : PolyProfile} {sourceScope : Nat}
-    {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeDescPairIntro profile sourceContext subject classifier) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : RawRenaming sourceScope targetScope),
-      (∀ index : Fin sourceScope,
-        RawTerm.rename rawRenaming (sourceContext.lookup index)
-          = targetContext.lookup (rawRenaming index)) →
-      HasTypeDescPairIntro profile targetContext
-        (RawTerm.rename rawRenaming subject) (RawTerm.rename rawRenaming classifier) := by
-  cases derivation with
-  | pairIntro firstValue secondValue firstType secondType firstTyped secondTyped =>
-      intro targetScope targetContext rawRenaming condition
-      rw [rename_pairCell, rename_productTypeCell]
-      exact HasTypeDescPairIntro.pairIntro targetContext
-        (RawTerm.rename rawRenaming firstValue) (RawTerm.rename rawRenaming secondValue)
-        (RawTerm.rename rawRenaming firstType) (RawTerm.rename rawRenaming secondType)
-        (firstTyped.renameRespectingContext targetContext rawRenaming condition)
-        (secondTyped.renameRespectingContext targetContext rawRenaming condition)
-
-/-- **List-intro renaming.**  `listNil` / `listCons(h, t)` classify at `list(A)`; the element-type
-formation / head premises route through `HasTypeDescPi.renameRespectingContext`, the tail recurses. -/
-theorem HasTypeDescListIntro.renameRespectingContext {profile : PolyProfile} {sourceScope : Nat}
-    {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeDescListIntro profile sourceContext subject classifier) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : RawRenaming sourceScope targetScope),
-      (∀ index : Fin sourceScope,
-        RawTerm.rename rawRenaming (sourceContext.lookup index)
-          = targetContext.lookup (rawRenaming index)) →
-      HasTypeDescListIntro profile targetContext
-        (RawTerm.rename rawRenaming subject) (RawTerm.rename rawRenaming classifier) := by
-  induction derivation with
-  | listNilIntro elementType elementLevel flag elementTypeFormed =>
-      intro targetScope targetContext rawRenaming condition
-      rw [show RawTerm.rename rawRenaming (listNilCell : RawTerm sourceScope) = listNilCell from rfl,
-        rename_listTypeCell]
-      have elementFormRenamed :=
-        elementTypeFormed.renameRespectingContext targetContext rawRenaming condition
-      rw [rename_universeCodeCell] at elementFormRenamed
-      exact HasTypeDescListIntro.listNilIntro targetContext
-        (RawTerm.rename rawRenaming elementType) elementLevel flag elementFormRenamed
-  | listConsIntro headValue tailList elementType headTyped _tailTyped tailIH =>
-      intro targetScope targetContext rawRenaming condition
-      rw [rename_listConsCell, rename_listTypeCell]
-      have tailRenamed := tailIH targetContext rawRenaming condition
-      rw [rename_listTypeCell] at tailRenamed
-      exact HasTypeDescListIntro.listConsIntro targetContext
-        (RawTerm.rename rawRenaming headValue) (RawTerm.rename rawRenaming tailList)
-        (RawTerm.rename rawRenaming elementType)
-        (headTyped.renameRespectingContext targetContext rawRenaming condition) tailRenamed
 
 /-! ## The renaming-respects-context carrier + the binder-crossing helpers -/
 

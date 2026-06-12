@@ -56,12 +56,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_outputRenameStable
 #assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionIntro.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherIntro.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescIdIntro.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPairIntro.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.renameRespectingContext
 
 /-! ## The renaming-respects-context carrier + binder helpers + affine-binder-check transport -/
 
