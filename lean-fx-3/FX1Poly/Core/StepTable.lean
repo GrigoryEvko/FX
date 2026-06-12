@@ -1,6 +1,9 @@
 import FX1Poly.Core.Step
 import FX1Poly.Core.StepOverTable
 import FX1Poly.Core.TableFireRoot
+import FX1Poly.Core.HeadStep
+import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.WeakHeadStepSubsumes
 
 /-! # FX1Poly/Core/StepTable — the Step <-> table ADEQUACY layer (IOTA-T1)
 
@@ -84,12 +87,12 @@ extract the constructor head POSITIVELY from the firing, substitute,
 case the scrutinee's children — at which point the firing equation
 computes and `Option.some.inj` delivers the reduct identification. -/
 
-theorem betaRowFiringToStep {scope : Nat}
+theorem betaRowFiringToHeadStep {scope : Nat}
     (elimPayload : betaIotaRow.elimGenerator.payload scope)
     {spine : RawTermChildren betaIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : betaIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen betaIotaRow.elimGenerator elimPayload spine) reduct := by
+    HeadStep (.mkGen betaIotaRow.elimGenerator elimPayload spine) reduct := by
   revert fires
   cases spine with
   | childCons functionChild restSpine =>
@@ -106,14 +109,25 @@ theorem betaRowFiringToStep {scope : Nat}
           cases lamRest with
           | childCons lamBody lamNil =>
             cases lamNil
-            exact Option.some.inj fires ▸ Step.beta
+            exact Option.some.inj fires ▸ HeadStep.beta
 
-theorem boolTrueRowFiringToStep {scope : Nat}
+/-- The beta row's firing as the bespoke `Step` — the head-step
+inversion pushed through the funnel (kept for the typed-link
+consumers). -/
+theorem betaRowFiringToStep {scope : Nat}
+    (elimPayload : betaIotaRow.elimGenerator.payload scope)
+    {spine : RawTermChildren betaIotaRow.elimGenerator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fires : betaIotaRow.firesOn? elimPayload spine = some reduct) :
+    Step (.mkGen betaIotaRow.elimGenerator elimPayload spine) reduct :=
+  (betaRowFiringToHeadStep elimPayload fires).toStep
+
+theorem boolTrueRowFiringToIotaHead {scope : Nat}
     (elimPayload : boolTrueIotaRow.elimGenerator.payload scope)
     {spine : RawTermChildren boolTrueIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : boolTrueIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen boolTrueIotaRow.elimGenerator elimPayload spine) reduct := by
+    IotaHeadStep (.mkGen boolTrueIotaRow.elimGenerator elimPayload spine) reduct := by
   revert fires
   cases spine with
   | childCons motive restOne =>
@@ -130,14 +144,14 @@ theorem boolTrueRowFiringToStep {scope : Nat}
             have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
             subst isHead
             cases scrutineeChildren
-            exact Option.some.inj fires ▸ Step.iotaBoolTrue
+            exact Option.some.inj fires ▸ IotaHeadStep.iotaBoolTrue
 
-theorem boolFalseRowFiringToStep {scope : Nat}
+theorem boolFalseRowFiringToIotaHead {scope : Nat}
     (elimPayload : boolFalseIotaRow.elimGenerator.payload scope)
     {spine : RawTermChildren boolFalseIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : boolFalseIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen boolFalseIotaRow.elimGenerator elimPayload spine) reduct := by
+    IotaHeadStep (.mkGen boolFalseIotaRow.elimGenerator elimPayload spine) reduct := by
   revert fires
   cases spine with
   | childCons motive restOne =>
@@ -154,14 +168,14 @@ theorem boolFalseRowFiringToStep {scope : Nat}
             have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
             subst isHead
             cases scrutineeChildren
-            exact Option.some.inj fires ▸ Step.iotaBoolFalse
+            exact Option.some.inj fires ▸ IotaHeadStep.iotaBoolFalse
 
-theorem fstPairRowFiringToStep {scope : Nat}
+theorem fstPairRowFiringToIotaHead {scope : Nat}
     (elimPayload : fstPairIotaRow.elimGenerator.payload scope)
     {spine : RawTermChildren fstPairIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : fstPairIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen fstPairIotaRow.elimGenerator elimPayload spine) reduct := by
+    IotaHeadStep (.mkGen fstPairIotaRow.elimGenerator elimPayload spine) reduct := by
   revert fires
   cases spine with
   | childCons scrutineeChild restNil =>
@@ -176,14 +190,14 @@ theorem fstPairRowFiringToStep {scope : Nat}
         cases pairRest with
         | childCons secondValue pairNil =>
           cases pairNil
-          exact Option.some.inj fires ▸ Step.iotaFstPair
+          exact Option.some.inj fires ▸ IotaHeadStep.iotaFstPair
 
-theorem sndPairRowFiringToStep {scope : Nat}
+theorem sndPairRowFiringToIotaHead {scope : Nat}
     (elimPayload : sndPairIotaRow.elimGenerator.payload scope)
     {spine : RawTermChildren sndPairIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : sndPairIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen sndPairIotaRow.elimGenerator elimPayload spine) reduct := by
+    IotaHeadStep (.mkGen sndPairIotaRow.elimGenerator elimPayload spine) reduct := by
   revert fires
   cases spine with
   | childCons scrutineeChild restNil =>
@@ -198,15 +212,15 @@ theorem sndPairRowFiringToStep {scope : Nat}
         cases pairRest with
         | childCons secondValue pairNil =>
           cases pairNil
-          exact Option.some.inj fires ▸ Step.iotaSndPair
+          exact Option.some.inj fires ▸ IotaHeadStep.iotaSndPair
 
-theorem natElimZeroRowFiringToStep {scope : Nat}
+theorem natElimZeroRowFiringToIotaHead {scope : Nat}
     (elimPayload : natElimZeroIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren natElimZeroIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : natElimZeroIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen natElimZeroIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen natElimZeroIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -224,15 +238,15 @@ theorem natElimZeroRowFiringToStep {scope : Nat}
             have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
             subst isHead
             cases scrutineeChildren
-            exact Option.some.inj fires ▸ Step.iotaNatElimZero
+            exact Option.some.inj fires ▸ IotaHeadStep.iotaNatElimZero
 
-theorem natRecZeroRowFiringToStep {scope : Nat}
+theorem natRecZeroRowFiringToIotaHead {scope : Nat}
     (elimPayload : natRecZeroIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren natRecZeroIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : natRecZeroIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen natRecZeroIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen natRecZeroIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -250,15 +264,15 @@ theorem natRecZeroRowFiringToStep {scope : Nat}
             have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
             subst isHead
             cases scrutineeChildren
-            exact Option.some.inj fires ▸ Step.iotaNatRecZero
+            exact Option.some.inj fires ▸ IotaHeadStep.iotaNatRecZero
 
-theorem natElimSuccRowFiringToStep {scope : Nat}
+theorem natElimSuccRowFiringToIotaHead {scope : Nat}
     (elimPayload : natElimSuccIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren natElimSuccIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : natElimSuccIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen natElimSuccIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen natElimSuccIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -278,15 +292,15 @@ theorem natElimSuccRowFiringToStep {scope : Nat}
             cases scrutineeChildren with
             | childCons predecessor succNil =>
               cases succNil
-              exact Option.some.inj fires ▸ Step.iotaNatElimSucc
+              exact Option.some.inj fires ▸ IotaHeadStep.iotaNatElimSucc
 
-theorem natRecSuccRowFiringToStep {scope : Nat}
+theorem natRecSuccRowFiringToIotaHead {scope : Nat}
     (elimPayload : natRecSuccIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren natRecSuccIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : natRecSuccIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen natRecSuccIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen natRecSuccIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -306,15 +320,15 @@ theorem natRecSuccRowFiringToStep {scope : Nat}
             cases scrutineeChildren with
             | childCons predecessor succNil =>
               cases succNil
-              exact Option.some.inj fires ▸ Step.iotaNatRecSucc
+              exact Option.some.inj fires ▸ IotaHeadStep.iotaNatRecSucc
 
-theorem listElimNilRowFiringToStep {scope : Nat}
+theorem listElimNilRowFiringToIotaHead {scope : Nat}
     (elimPayload : listElimNilIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren listElimNilIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : listElimNilIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen listElimNilIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen listElimNilIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -332,15 +346,15 @@ theorem listElimNilRowFiringToStep {scope : Nat}
             have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
             subst isHead
             cases scrutineeChildren
-            exact Option.some.inj fires ▸ Step.iotaListElimNil
+            exact Option.some.inj fires ▸ IotaHeadStep.iotaListElimNil
 
-theorem listElimConsRowFiringToStep {scope : Nat}
+theorem listElimConsRowFiringToIotaHead {scope : Nat}
     (elimPayload : listElimConsIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren listElimConsIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : listElimConsIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen listElimConsIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen listElimConsIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -362,15 +376,15 @@ theorem listElimConsRowFiringToStep {scope : Nat}
               cases consRest with
               | childCons tailValue consNil =>
                 cases consNil
-                exact Option.some.inj fires ▸ Step.iotaListElimCons
+                exact Option.some.inj fires ▸ IotaHeadStep.iotaListElimCons
 
-theorem optionMatchNoneRowFiringToStep {scope : Nat}
+theorem optionMatchNoneRowFiringToIotaHead {scope : Nat}
     (elimPayload : optionMatchNoneIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren optionMatchNoneIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : optionMatchNoneIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen optionMatchNoneIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen optionMatchNoneIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -388,15 +402,15 @@ theorem optionMatchNoneRowFiringToStep {scope : Nat}
             have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
             subst isHead
             cases scrutineeChildren
-            exact Option.some.inj fires ▸ Step.iotaOptionMatchNone
+            exact Option.some.inj fires ▸ IotaHeadStep.iotaOptionMatchNone
 
-theorem optionMatchSomeRowFiringToStep {scope : Nat}
+theorem optionMatchSomeRowFiringToIotaHead {scope : Nat}
     (elimPayload : optionMatchSomeIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren optionMatchSomeIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : optionMatchSomeIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen optionMatchSomeIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen optionMatchSomeIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -416,15 +430,15 @@ theorem optionMatchSomeRowFiringToStep {scope : Nat}
             cases scrutineeChildren with
             | childCons value someNil =>
               cases someNil
-              exact Option.some.inj fires ▸ Step.iotaOptionMatchSome
+              exact Option.some.inj fires ▸ IotaHeadStep.iotaOptionMatchSome
 
-theorem eitherMatchInlRowFiringToStep {scope : Nat}
+theorem eitherMatchInlRowFiringToIotaHead {scope : Nat}
     (elimPayload : eitherMatchInlIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren eitherMatchInlIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : eitherMatchInlIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen eitherMatchInlIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen eitherMatchInlIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -444,15 +458,15 @@ theorem eitherMatchInlRowFiringToStep {scope : Nat}
             cases scrutineeChildren with
             | childCons value inlNil =>
               cases inlNil
-              exact Option.some.inj fires ▸ Step.iotaEitherMatchInl
+              exact Option.some.inj fires ▸ IotaHeadStep.iotaEitherMatchInl
 
-theorem eitherMatchInrRowFiringToStep {scope : Nat}
+theorem eitherMatchInrRowFiringToIotaHead {scope : Nat}
     (elimPayload : eitherMatchInrIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren eitherMatchInrIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : eitherMatchInrIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen eitherMatchInrIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen eitherMatchInrIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -472,14 +486,14 @@ theorem eitherMatchInrRowFiringToStep {scope : Nat}
             cases scrutineeChildren with
             | childCons value inrNil =>
               cases inrNil
-              exact Option.some.inj fires ▸ Step.iotaEitherMatchInr
+              exact Option.some.inj fires ▸ IotaHeadStep.iotaEitherMatchInr
 
-theorem idJReflRowFiringToStep {scope : Nat}
+theorem idJReflRowFiringToIotaHead {scope : Nat}
     (elimPayload : idJReflIotaRow.elimGenerator.payload scope)
     {spine : RawTermChildren idJReflIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : idJReflIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen idJReflIotaRow.elimGenerator elimPayload spine) reduct := by
+    IotaHeadStep (.mkGen idJReflIotaRow.elimGenerator elimPayload spine) reduct := by
   revert fires
   cases spine with
   | childCons motive restOne =>
@@ -496,16 +510,16 @@ theorem idJReflRowFiringToStep {scope : Nat}
           cases scrutineeChildren with
           | childCons rawWitness reflNil =>
             cases reflNil
-            exact Option.some.inj fires ▸ Step.iotaIdJRefl
+            exact Option.some.inj fires ▸ IotaHeadStep.iotaIdJRefl
 
-theorem idStrictRecReflRowFiringToStep {scope : Nat}
+theorem idStrictRecReflRowFiringToIotaHead {scope : Nat}
     (elimPayload : idStrictRecReflIotaRow.elimGenerator.payload scope)
     {spine :
       RawTermChildren idStrictRecReflIotaRow.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires :
       idStrictRecReflIotaRow.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen idStrictRecReflIotaRow.elimGenerator elimPayload spine)
+    IotaHeadStep (.mkGen idStrictRecReflIotaRow.elimGenerator elimPayload spine)
       reduct := by
   revert fires
   cases spine with
@@ -523,7 +537,7 @@ theorem idStrictRecReflRowFiringToStep {scope : Nat}
           cases scrutineeChildren with
           | childCons rawWitness reflNil =>
             cases reflNil
-            exact Option.some.inj fires ▸ Step.iotaIdStrictRecRefl
+            exact Option.some.inj fires ▸ IotaHeadStep.iotaIdStrictRecRefl
 
 /-- The root dispatcher: a firing of ANY legacy row is the bespoke
 `Step` — 17-way membership dispatch into the per-row inversions. -/
@@ -537,51 +551,107 @@ theorem legacyRootFiringToStep {scope : Nat} {rule : IotaRuleDesc}
   cases isRow with
   | head => exact betaRowFiringToStep elimPayload fires
   | tail _ isRow => cases isRow with
-    | head => exact boolTrueRowFiringToStep elimPayload fires
+    | head => exact (boolTrueRowFiringToIotaHead elimPayload fires).toStep
     | tail _ isRow => cases isRow with
-      | head => exact boolFalseRowFiringToStep elimPayload fires
+      | head => exact (boolFalseRowFiringToIotaHead elimPayload fires).toStep
       | tail _ isRow => cases isRow with
-        | head => exact fstPairRowFiringToStep elimPayload fires
+        | head => exact (fstPairRowFiringToIotaHead elimPayload fires).toStep
         | tail _ isRow => cases isRow with
-          | head => exact sndPairRowFiringToStep elimPayload fires
+          | head => exact (sndPairRowFiringToIotaHead elimPayload fires).toStep
           | tail _ isRow => cases isRow with
-            | head => exact natElimZeroRowFiringToStep elimPayload fires
+            | head => exact (natElimZeroRowFiringToIotaHead elimPayload fires).toStep
             | tail _ isRow => cases isRow with
-              | head => exact natRecZeroRowFiringToStep elimPayload fires
+              | head => exact (natRecZeroRowFiringToIotaHead elimPayload fires).toStep
               | tail _ isRow => cases isRow with
-                | head => exact natElimSuccRowFiringToStep elimPayload fires
+                | head => exact (natElimSuccRowFiringToIotaHead elimPayload fires).toStep
                 | tail _ isRow => cases isRow with
-                  | head => exact natRecSuccRowFiringToStep elimPayload fires
+                  | head => exact (natRecSuccRowFiringToIotaHead elimPayload fires).toStep
                   | tail _ isRow => cases isRow with
                     | head =>
-                        exact listElimNilRowFiringToStep elimPayload fires
+                        exact (listElimNilRowFiringToIotaHead elimPayload fires).toStep
                     | tail _ isRow => cases isRow with
                       | head =>
-                          exact listElimConsRowFiringToStep elimPayload fires
+                          exact (listElimConsRowFiringToIotaHead elimPayload fires).toStep
                       | tail _ isRow => cases isRow with
                         | head =>
-                            exact optionMatchNoneRowFiringToStep
-                              elimPayload fires
+                            exact (optionMatchNoneRowFiringToIotaHead
+                              elimPayload fires).toStep
                         | tail _ isRow => cases isRow with
                           | head =>
-                              exact optionMatchSomeRowFiringToStep
-                                elimPayload fires
+                              exact (optionMatchSomeRowFiringToIotaHead
+                                elimPayload fires).toStep
                           | tail _ isRow => cases isRow with
                             | head =>
-                                exact eitherMatchInlRowFiringToStep
-                                  elimPayload fires
+                                exact (eitherMatchInlRowFiringToIotaHead
+                                  elimPayload fires).toStep
                             | tail _ isRow => cases isRow with
                               | head =>
-                                  exact eitherMatchInrRowFiringToStep
-                                    elimPayload fires
+                                  exact (eitherMatchInrRowFiringToIotaHead
+                                    elimPayload fires).toStep
                               | tail _ isRow => cases isRow with
                                 | head =>
-                                    exact idJReflRowFiringToStep
-                                      elimPayload fires
+                                    exact (idJReflRowFiringToIotaHead
+                                      elimPayload fires).toStep
                                 | tail _ isRow => cases isRow with
                                   | head =>
-                                      exact idStrictRecReflRowFiringToStep
-                                        elimPayload fires
+                                      exact (idStrictRecReflRowFiringToIotaHead
+                                        elimPayload fires).toStep
+                                  | tail _ isRow => cases isRow
+
+/-- The root dispatcher at the WEAK-HEAD level: a firing of ANY legacy
+row is a `WeakHeadStep` — the beta row through `HeadStep.toWeakHeadStep`,
+every iota row through `IotaHeadStep.toWeakHeadStep` (the `rootIota`
+embedding).  The bridge every weak-head-normality refutation consumer
+needs to case a TABLE step instead of the bespoke constructors. -/
+theorem legacyRootFiringToWeakHeadStep {scope : Nat} {rule : IotaRuleDesc}
+    (isRow : rule ∈ legacyIotaRuleTable)
+    (elimPayload : rule.elimGenerator.payload scope)
+    {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fires : rule.firesOn? elimPayload spine = some reduct) :
+    WeakHeadStep (.mkGen rule.elimGenerator elimPayload spine) reduct := by
+  cases isRow with
+  | head => exact (betaRowFiringToHeadStep elimPayload fires).toWeakHeadStep
+  | tail _ isRow => cases isRow with
+    | head => exact (boolTrueRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+    | tail _ isRow => cases isRow with
+      | head => exact (boolFalseRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+      | tail _ isRow => cases isRow with
+        | head => exact (fstPairRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+        | tail _ isRow => cases isRow with
+          | head => exact (sndPairRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+          | tail _ isRow => cases isRow with
+            | head => exact (natElimZeroRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+            | tail _ isRow => cases isRow with
+              | head => exact (natRecZeroRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+              | tail _ isRow => cases isRow with
+                | head => exact (natElimSuccRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                | tail _ isRow => cases isRow with
+                  | head => exact (natRecSuccRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                  | tail _ isRow => cases isRow with
+                    | head =>
+                        exact (listElimNilRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                    | tail _ isRow => cases isRow with
+                      | head =>
+                          exact (listElimConsRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                      | tail _ isRow => cases isRow with
+                        | head =>
+                            exact (optionMatchNoneRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                        | tail _ isRow => cases isRow with
+                          | head =>
+                              exact (optionMatchSomeRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                          | tail _ isRow => cases isRow with
+                            | head =>
+                                exact (eitherMatchInlRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                            | tail _ isRow => cases isRow with
+                              | head =>
+                                  exact (eitherMatchInrRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                              | tail _ isRow => cases isRow with
+                                | head =>
+                                    exact (idJReflRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                                | tail _ isRow => cases isRow with
+                                  | head =>
+                                      exact (idStrictRecReflRowFiringToIotaHead elimPayload fires).toWeakHeadStep
                                   | tail _ isRow => cases isRow
 
 mutual

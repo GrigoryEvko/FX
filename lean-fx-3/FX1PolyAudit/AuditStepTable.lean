@@ -64,27 +64,29 @@ namespace FX1PolyAudit
 
 /-! ## The 17 per-row root inversions -/
 
+#assert_no_axioms FX1Poly.Core.betaRowFiringToHeadStep
 #assert_no_axioms FX1Poly.Core.betaRowFiringToStep
-#assert_no_axioms FX1Poly.Core.boolTrueRowFiringToStep
-#assert_no_axioms FX1Poly.Core.boolFalseRowFiringToStep
-#assert_no_axioms FX1Poly.Core.fstPairRowFiringToStep
-#assert_no_axioms FX1Poly.Core.sndPairRowFiringToStep
-#assert_no_axioms FX1Poly.Core.natElimZeroRowFiringToStep
-#assert_no_axioms FX1Poly.Core.natRecZeroRowFiringToStep
-#assert_no_axioms FX1Poly.Core.natElimSuccRowFiringToStep
-#assert_no_axioms FX1Poly.Core.natRecSuccRowFiringToStep
-#assert_no_axioms FX1Poly.Core.listElimNilRowFiringToStep
-#assert_no_axioms FX1Poly.Core.listElimConsRowFiringToStep
-#assert_no_axioms FX1Poly.Core.optionMatchNoneRowFiringToStep
-#assert_no_axioms FX1Poly.Core.optionMatchSomeRowFiringToStep
-#assert_no_axioms FX1Poly.Core.eitherMatchInlRowFiringToStep
-#assert_no_axioms FX1Poly.Core.eitherMatchInrRowFiringToStep
-#assert_no_axioms FX1Poly.Core.idJReflRowFiringToStep
-#assert_no_axioms FX1Poly.Core.idStrictRecReflRowFiringToStep
+#assert_no_axioms FX1Poly.Core.boolTrueRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.boolFalseRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.fstPairRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.sndPairRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.natElimZeroRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.natRecZeroRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.natElimSuccRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.natRecSuccRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.listElimNilRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.listElimConsRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.optionMatchNoneRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.optionMatchSomeRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.eitherMatchInlRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.eitherMatchInrRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.idJReflRowFiringToIotaHead
+#assert_no_axioms FX1Poly.Core.idStrictRecReflRowFiringToIotaHead
 
 /-! ## BACKWARD adequacy + the headline -/
 
 #assert_no_axioms FX1Poly.Core.legacyRootFiringToStep
+#assert_no_axioms FX1Poly.Core.legacyRootFiringToWeakHeadStep
 #assert_no_axioms FX1Poly.Core.StepOverTable.legacyToStep
 #assert_no_axioms FX1Poly.Core.StepOverTableChildren.legacyToStepChildren
 #assert_no_axioms FX1Poly.Core.stepOverLegacyTable_iff_step
