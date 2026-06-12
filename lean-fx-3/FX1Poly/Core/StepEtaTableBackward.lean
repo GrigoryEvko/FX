@@ -405,7 +405,7 @@ theorem etaPairRowContractionToBespokeEta {scope : Nat}
 
 /-! ## The total root backward -/
 
-/-- **★ Every raw-tier table contraction is the bespoke eta** — 5-way
+/-- **★ Every raw-tier table contraction is the bespoke eta** — 6-way
 membership dispatch into the per-row inversions; the typed-tier rows
 contradict the raw-tier gate. -/
 theorem stepEtaTableRootToBespokeEta {scope : Nat} {rule : EtaRuleDesc}
@@ -429,6 +429,8 @@ theorem stepEtaTableRootToBespokeEta {scope : Nat} {rule : EtaRuleDesc}
         | head => exact Bool.noConfusion isRawTier
         | tail _ isRow => cases isRow with
           | head => exact Bool.noConfusion isRawTier
-          | tail _ isRow => cases isRow
+          | tail _ isRow => cases isRow with
+            | head => exact Bool.noConfusion isRawTier
+            | tail _ isRow => cases isRow
 
 end FX1Poly.Core

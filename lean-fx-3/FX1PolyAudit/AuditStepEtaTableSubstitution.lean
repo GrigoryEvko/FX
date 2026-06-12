@@ -25,6 +25,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.etaPathLamRow_isScopeSafe
 #assert_no_axioms FX1Poly.Core.etaModIntroRow_isScopeSafe
 #assert_no_axioms FX1Poly.Core.etaGlueIntroRow_isScopeSafe
+#assert_no_axioms FX1Poly.Core.unitEtaRow_isScopeSafe
 #assert_no_axioms FX1Poly.Core.etaRuleTable_isScopeSafe
 
 /-! ## ★ The canonical-table closure -/

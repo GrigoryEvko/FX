@@ -40,16 +40,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.gen_modIntro_binderShifts
 #assert_no_axioms FX1Poly.Core.gen_glueIntro_binderShifts
 
-/-! ## The five rows + the table -/
+/-! ## The six rows + the table -/
 
 #assert_no_axioms FX1Poly.Core.etaLamRow
 #assert_no_axioms FX1Poly.Core.etaPairRow
 #assert_no_axioms FX1Poly.Core.etaPathLamRow
 #assert_no_axioms FX1Poly.Core.etaModIntroRow
 #assert_no_axioms FX1Poly.Core.etaGlueIntroRow
+#assert_no_axioms FX1Poly.Core.unitEtaRow
 #assert_no_axioms FX1Poly.Core.etaRuleTable
 #assert_no_axioms FX1Poly.Core.etaRuleTable_length
 #assert_no_axioms FX1Poly.Core.etaRuleTable_typedTierLedger
+#assert_no_axioms FX1Poly.Core.unitEtaRow_neverContractsRaw
 
 /-! ## The GO gate — concrete contraction pins -/
 

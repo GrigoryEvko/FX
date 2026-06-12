@@ -165,6 +165,8 @@ theorem etaModIntroRow_memTable : etaModIntroRow ∈ etaRuleTable :=
   .tail _ (.tail _ (.tail _ (.head _)))
 theorem etaGlueIntroRow_memTable : etaGlueIntroRow ∈ etaRuleTable :=
   .tail _ (.tail _ (.tail _ (.tail _ (.head _))))
+theorem unitEtaRow_memTable : unitEtaRow ∈ etaRuleTable :=
+  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))
 
 /-! ## The symbolic contraction equations (the forward content) -/
 
@@ -284,7 +286,9 @@ theorem etaModIntro_tableRefusesRaw :
             | head => exact Bool.noConfusion isRawTier
             | tail _ isRow => cases isRow with
               | head => exact nomatch headsAgree
-              | tail _ isRow => cases isRow
+              | tail _ isRow => cases isRow with
+                | head => exact Bool.noConfusion isRawTier
+                | tail _ isRow => cases isRow
   | inr congShape =>
       obtain ⟨children', targetShape, _childrenStep⟩ := congShape
       have headsClash : Generator.gen_unit = Generator.gen_modIntro :=
@@ -326,7 +330,9 @@ theorem etaGlueIntro_tableRefusesRaw :
             | head => exact nomatch headsAgree
             | tail _ isRow => cases isRow with
               | head => exact Bool.noConfusion isRawTier
-              | tail _ isRow => cases isRow
+              | tail _ isRow => cases isRow with
+                | head => exact Bool.noConfusion isRawTier
+                | tail _ isRow => cases isRow
   | inr congShape =>
       obtain ⟨children', targetShape, _childrenStep⟩ := congShape
       have headsClash : Generator.gen_unit = Generator.gen_glueIntro :=

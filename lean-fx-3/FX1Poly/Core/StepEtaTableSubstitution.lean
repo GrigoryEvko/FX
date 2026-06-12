@@ -147,7 +147,11 @@ theorem etaGlueIntroRow_isScopeSafe : etaGlueIntroRow.IsScopeSafe where
         exact ⟨fun isVar => Generator.noConfusion isVar, Nat.le_refl 0⟩
     | tail _ isMember => cases isMember
 
-/-- Every row of the canonical 5-row table carries its scope-safety
+theorem unitEtaRow_isScopeSafe : unitEtaRow.IsScopeSafe where
+  introIsNotVar := fun isVar => Generator.noConfusion isVar
+  observationsAreScopeSafe := fun _spec isMember => by cases isMember
+
+/-- Every row of the canonical 6-row table carries its scope-safety
 certificate. -/
 theorem etaRuleTable_isScopeSafe :
     ∀ rule, rule ∈ etaRuleTable → rule.IsScopeSafe := by
@@ -162,7 +166,9 @@ theorem etaRuleTable_isScopeSafe :
         | head => exact etaModIntroRow_isScopeSafe
         | tail _ isRow => cases isRow with
           | head => exact etaGlueIntroRow_isScopeSafe
-          | tail _ isRow => cases isRow
+          | tail _ isRow => cases isRow with
+            | head => exact unitEtaRow_isScopeSafe
+            | tail _ isRow => cases isRow
 
 /-! ## Instantiation at the canonical table -/
 

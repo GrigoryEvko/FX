@@ -267,18 +267,37 @@ def etaGlueIntroRow : EtaRuleDesc where
       , binderDepth := 0, freshVarSlots := [] } ]
   requiresTypedFiring := true
 
-/-- The eta-rule table: the five bespoke `Step.eta` arms as rows. -/
+/-- Unit eta: any `u : Unit` is definitionally the canonical
+`gen_unit` star — TYPED-ONLY tier with NO observations.  There is no
+syntactic pattern at all: the rule is sound only type-directed (the
+typed conversion layer identifies every unit-TYPED term with the
+star), so it can never be a `RawTerm` rewrite.  The empty observation
+list makes `contractsOn?` constantly `none` — doubly gated.  The
+previously undocumented Unit-eta absence is now a flagged row. -/
+def unitEtaRow : EtaRuleDesc where
+  introGenerator := .gen_unit
+  observations := []
+  requiresTypedFiring := true
+
+/-- The eta-rule table: the five bespoke `Step.eta` arms as rows, plus
+the typed-only unit row. -/
 def etaRuleTable : List EtaRuleDesc :=
-  [etaLamRow, etaPairRow, etaPathLamRow, etaModIntroRow, etaGlueIntroRow]
+  [ etaLamRow, etaPairRow, etaPathLamRow, etaModIntroRow
+  , etaGlueIntroRow, unitEtaRow ]
 
-/-- Stale-count guard: 5 eta rows. -/
-theorem etaRuleTable_length : etaRuleTable.length = 5 := rfl
+/-- Stale-count guard: 6 eta rows. -/
+theorem etaRuleTable_length : etaRuleTable.length = 6 := rfl
 
-/-- The tier ledger: lam/pair/pathLam fire raw; mod/glue are the
+/-- The tier ledger: lam/pair/pathLam fire raw; mod/glue/unit are the
 typed-only (gated) tier. -/
 theorem etaRuleTable_typedTierLedger :
     etaRuleTable.map EtaRuleDesc.requiresTypedFiring
-      = [false, false, false, true, true] := rfl
+      = [false, false, false, true, true, true] := rfl
+
+/-- The unit row NEVER contracts raw — no observations, no pattern.
+(`gen_unit` is nullary, so its only spine is `childNil`.) -/
+theorem unitEtaRow_neverContractsRaw :
+    unitEtaRow.contractsOn? (scope := 0) .childNil = none := rfl
 
 /-! ## Concrete contraction pins — the GO gate -/
 

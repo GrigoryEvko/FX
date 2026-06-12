@@ -28,6 +28,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.etaPathLamRow_memTable
 #assert_no_axioms FX1Poly.Core.etaModIntroRow_memTable
 #assert_no_axioms FX1Poly.Core.etaGlueIntroRow_memTable
+#assert_no_axioms FX1Poly.Core.unitEtaRow_memTable
 
 /-! ## The symbolic contraction equations -/
 
