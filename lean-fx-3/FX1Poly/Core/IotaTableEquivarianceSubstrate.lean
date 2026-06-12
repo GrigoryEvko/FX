@@ -419,14 +419,51 @@ def SpineReplacements.HasScopeUniformPayloads :
 
 end
 
+/-- Scope uniformity of ONE scrutinee spec: the declared head is not
+the variable generator (a matched scrutinee then substitutes
+structurally, KEEPING its head), and the optional payload guard
+commutes with the scope-invariance transport — so the firing
+dispatcher answers the same question on the substituted spine.  A
+guard reading scope-VARYING content would fire differently on the two
+sides; this clause is the honest boundary for guarded rows. -/
+def ScrutineeSpec.IsScopeUniform (spec : ScrutineeSpec) : Prop :=
+  spec.head ≠ .gen_var ∧
+    match spec.payloadGuard? with
+    | none => True
+    | some payloadGuard =>
+        ∀ (sourceScope targetScope : Nat)
+          (isNotVarHead : spec.head ≠ .gen_var)
+          (matchedPayload : spec.head.payload sourceScope),
+          payloadGuard targetScope
+            (cast (Generator.payload_scope_invariant_of_not_var
+              isNotVarHead sourceScope targetScope) matchedPayload)
+          = payloadGuard sourceScope matchedPayload
+
+/-- Spec-list conjunction of scrutinee scope-uniformity. -/
+def ScrutineeSpecsAreScopeUniform : List ScrutineeSpec → Prop
+  | [] => True
+  | spec :: restSpecs =>
+      spec.IsScopeUniform ∧ ScrutineeSpecsAreScopeUniform restSpecs
+
+/-- A singleton guard-free spec with a concrete constructor head is
+scope-uniform — the shape every kernel row uses. -/
+theorem singletonUnguardedSpec_isScopeUniform {slot : Nat}
+    {head : Generator} (isNotVarHead : head ≠ .gen_var) :
+    ScrutineeSpecsAreScopeUniform [{ slot := slot, head := head }] :=
+  ⟨⟨isNotVarHead, ⟨⟩⟩, ⟨⟩⟩
+
 /-- The row-level equivariance certificate: the eliminator head is not
 the variable generator (variable-headed "rules" cannot substitute
-structurally) and the reduct's payload sources are scope-uniform.  The
-generic interpreter-substitution commutation is CONDITIONAL on this
-certificate — the honest boundary the table discipline surfaces. -/
+structurally), the reduct's payload sources are scope-uniform, and
+every scrutinee spec is scope-uniform (non-var head, guard commutes
+with the payload transport).  The generic interpreter-substitution
+commutation AND the firing-dispatcher naturality are CONDITIONAL on
+this certificate — the honest boundary the table discipline
+surfaces. -/
 structure IotaRuleDesc.IsScopeUniform (rule : IotaRuleDesc) : Prop where
   isNotVarHead : rule.elimGenerator ≠ .gen_var
   targetIsUniform : rule.target.HasScopeUniformPayloads
+  scrutineesAreUniform : ScrutineeSpecsAreScopeUniform rule.scrutinees
 
 /-- The constant-unit application payload source (the app-chain rows'
 shared source) is scope-uniform. -/
@@ -438,30 +475,50 @@ theorem PayloadSource.unitConstantApp_isScopeUniform :
 /-! ## The 18 row certificates -/
 
 theorem betaIotaRow_isScopeUniform : betaIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem boolTrueIotaRow_isScopeUniform : boolTrueIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem boolFalseIotaRow_isScopeUniform : boolFalseIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem fstPairIotaRow_isScopeUniform : fstPairIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem sndPairIotaRow_isScopeUniform : sndPairIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem natElimZeroIotaRow_isScopeUniform :
     natElimZeroIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem natRecZeroIotaRow_isScopeUniform :
     natRecZeroIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem natElimSuccIotaRow_isScopeUniform :
     natElimSuccIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟨⟨⟩, ⟨⟩⟩, ⟨⟩⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟨⟨⟩, ⟨⟩⟩, ⟨⟩⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem natRecSuccIotaRow_isScopeUniform :
     natRecSuccIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟨⟨⟩, ⟨⟩⟩, ⟨⟩⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟨⟨⟩, ⟨⟩⟩, ⟨⟩⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem listElimNilIotaRow_isScopeUniform :
     listElimNilIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem listElimConsIotaRow_isScopeUniform :
     listElimConsIotaRow.IsScopeUniform :=
   ⟨fun contra => Generator.noConfusion contra,
@@ -469,28 +526,44 @@ theorem listElimConsIotaRow_isScopeUniform :
       ⟨PayloadSource.unitConstantApp_isScopeUniform,
         ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩,
         ⟨⟩, ⟨⟩⟩,
-      ⟨⟨⟩, ⟨⟩⟩, ⟨⟩⟩⟩
+      ⟨⟨⟩, ⟨⟩⟩, ⟨⟩⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem optionMatchNoneIotaRow_isScopeUniform :
     optionMatchNoneIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem optionMatchSomeIotaRow_isScopeUniform :
     optionMatchSomeIotaRow.IsScopeUniform :=
   ⟨fun contra => Generator.noConfusion contra,
-    ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩⟩
+    ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem eitherMatchInlIotaRow_isScopeUniform :
     eitherMatchInlIotaRow.IsScopeUniform :=
   ⟨fun contra => Generator.noConfusion contra,
-    ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩⟩
+    ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem eitherMatchInrIotaRow_isScopeUniform :
     eitherMatchInrIotaRow.IsScopeUniform :=
   ⟨fun contra => Generator.noConfusion contra,
-    ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩⟩
+    ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem idJReflIotaRow_isScopeUniform : idJReflIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem idStrictRecReflIotaRow_isScopeUniform :
     idStrictRecReflIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 theorem pathBetaIotaRow_isScopeUniform : pathBetaIotaRow.IsScopeUniform :=
-  ⟨fun contra => Generator.noConfusion contra, ⟨⟩⟩
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 
 end FX1Poly.Core

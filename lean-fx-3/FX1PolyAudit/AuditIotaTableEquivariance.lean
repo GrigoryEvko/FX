@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaTableEquivariance
+import FX1Poly.Core.StepTableEquivariance
 
 /-! # FX1PolyAudit/AuditIotaTableEquivariance — IOTA-T2 audit shard (substrate + headline)
 
@@ -54,6 +54,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.ReductTemplate.HasScopeUniformPayloads
 #assert_no_axioms FX1Poly.Core.ReductTemplateSpine.HasScopeUniformPayloads
 #assert_no_axioms FX1Poly.Core.SpineReplacements.HasScopeUniformPayloads
+#assert_no_axioms FX1Poly.Core.ScrutineeSpec.IsScopeUniform
+#assert_no_axioms FX1Poly.Core.ScrutineeSpecsAreScopeUniform
+#assert_no_axioms FX1Poly.Core.singletonUnguardedSpec_isScopeUniform
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.IsScopeUniform
 #assert_no_axioms FX1Poly.Core.PayloadSource.unitConstantApp_isScopeUniform
 
@@ -99,5 +102,28 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretBuiltChildren?_subst
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretReplacements?_subst
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTarget?_subst
+
+/-! ## Firing-dispatcher naturality -/
+
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeSpecFires_subst
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineesFire_subst
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.firesOn?_subst
+
+/-! ## Relation closure: the table relation substitutes -/
+
+#assert_no_axioms FX1Poly.Core.StepOverTable.subst
+#assert_no_axioms FX1Poly.Core.StepOverTableChildren.subst
+#assert_no_axioms FX1Poly.Core.iotaRuleTable_isScopeUniform
+#assert_no_axioms FX1Poly.Core.StepTable.subst
+
+/-! ## Rename-as-subst factoring + rename closure -/
+
+#assert_no_axioms FX1Poly.Core.RawTermSubst.ofRenaming
+#assert_no_axioms FX1Poly.Core.RawTermSubst.ofRenaming_lift_pointwise
+#assert_no_axioms FX1Poly.Core.RawTermSubst.ofRenaming_iterateLift_pointwise
+#assert_no_axioms FX1Poly.Core.RawTerm.rename_eq_subst_ofRenaming
+#assert_no_axioms FX1Poly.Core.RawTermChildren.rename_eq_subst_ofRenaming
+#assert_no_axioms FX1Poly.Core.StepOverTable.rename
+#assert_no_axioms FX1Poly.Core.StepTable.rename
 
 end FX1PolyAudit
