@@ -67,8 +67,8 @@ pair / refl via the seven intro arms), and the listElim family (via `listElim`, 
 pin "listElim union residency lands with NATIVE-33") RESIDENT in `HasTypeNativeUnion` as table-driven
 arms, with their native twin tables hoisted into the pre-union `NativeUnionRuleTables` (the import-cycle
 hazard avoided exactly as NATIVE-32 avoided it).  The scrutinee-embedding arms the data eliminators need
-(`ofOptionIntro` / `ofEitherIntro` / `ofIdIntro` / `ofPairIntro` / `ofListIntro`) are added here,
-mirroring `ofNatIntro`.  The OTHER embeddings (`ofGrown` / `ofBaseType` / `ofDataIntro` /
+were RETIRED by the NATIVE-42 toNativeRows conversions (every data value now
+enters through its native table row).  The remaining embeddings (`ofGrown` / `ofBaseType` / `ofDataIntro` /
 `ofTermIndexedFormer`) STAY embeddings for now — converting them to table arms is entangled with
 NATIVE-46's conv-closure restatement and is out of scope here.  The spike→union transfers
 (`DataElimUnionSpike.toNativeUnion`, `DataIntroNaryUnionSpike.toNativeUnion`,
@@ -202,14 +202,6 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       HasTypeNativeUnion profile context
         (rule.memberCell scope eliminated argument)
         (rule.outputType scope typeParamA typeParamB argument)
-  /-- Embed the Nat value constructors (numeral scrutinees).  The sanctioned interim embedding form
-  (the NATIVE-36 native-row conversion replaces it later): a numeral typed by `HasTypeDescNatIntro` is
-  an admissible union subject, so a recursive eliminator's scrutinee premise has a union witness.
-  Mirrors the NATIVE-27 spike's `ofNatIntro` embedding. -/
-  | ofNatIntro {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      (natTyped : HasTypeDescNatIntro profile context subject classifier) :
-      HasTypeNativeUnion profile context subject classifier
   /-- The table-driven recursive-eliminator arm (the NATIVE-32 union residency of the spike's
   `recursiveElimRow`): the scrutinee and base-branch premises are RECURSIVE in the UNION itself — so a
   recursive call (`natElimCell` at the predecessor) is an admissible scrutinee-typed subject, closing
@@ -234,35 +226,6 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
           (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))) :
       HasTypeNativeUnion profile context
         (rule.memberCell scope motive baseBranch stepBranch scrutinee) resultType
-  /-- Embed the Option value constructors (`optionNone` / `optionSome` scrutinees) — the data-elim
-  scrutinee embedding for `optionMatch` (NATIVE-36; mirrors `ofNatIntro`). -/
-  | ofOptionIntro {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      (optionTyped : HasTypeDescOptionIntro profile context subject classifier) :
-      HasTypeNativeUnion profile context subject classifier
-  /-- Embed the Either value constructors (`eitherInl` / `eitherInr` scrutinees) — the data-elim
-  scrutinee embedding for `eitherMatch`. -/
-  | ofEitherIntro {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      (eitherTyped : HasTypeDescEitherIntro profile context subject classifier) :
-      HasTypeNativeUnion profile context subject classifier
-  /-- Embed the identity reflexivity constructor (`refl` witnesses) — the data-elim scrutinee embedding
-  for `idJ`. -/
-  | ofIdIntro {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      (idTyped : HasTypeDescIdIntro profile context subject classifier) :
-      HasTypeNativeUnion profile context subject classifier
-  /-- Embed the pair constructor (`pair` scrutinees) — the data-elim scrutinee embedding for fst / snd. -/
-  | ofPairIntro {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      (pairTyped : HasTypeDescPairIntro profile context subject classifier) :
-      HasTypeNativeUnion profile context subject classifier
-  /-- Embed the List value constructors (`listNil` / `listCons` scrutinees) — supplies the listElim
-  scrutinee and the recursive-binary intro base. -/
-  | ofListIntro {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      (listTyped : HasTypeDescListIntro profile context subject classifier) :
-      HasTypeNativeUnion profile context subject classifier
   /-- The table-driven NON-recursive two-branch match arm (the NATIVE-36 union residency of the
   `DataElimUnionSpike.twoBranchMatchRow`): scrutinee and both branches are RECURSIVE in the UNION, with
   the branch classifiers rule-parametric.  Premise parity with the spike (the one-binder motive is
@@ -578,7 +541,7 @@ listElim nil-ι typed through the listElim arm. -/
 
 /-- **★ The numeral `2` types IN THE UNION through the recursive `natSucc` arm applied twice.**
 `2 = natSucc(natSucc(natZero)) : Nat` through `recursiveUnaryIntro` twice, the `natZero` base reached
-via the `ofNatIntro` embedding.  Exactly the statement a host-premise schema could not make — the
+via the native natZero data-intro row.  Exactly the statement a host-premise schema could not make — the
 numeral tower closes purely through the union's own recursive intro arm. -/
 theorem numeralTwoTypedThroughUnionRecursiveIntroTwice {profile : PolyProfile} :
     HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
@@ -587,7 +550,9 @@ theorem numeralTwoTypedThroughUnionRecursiveIntroTwice {profile : PolyProfile} :
     natSuccNativeRecursiveUnaryRule (natSuccCell natZeroCell) rfl
     (HasTypeNativeUnion.recursiveUnaryIntro TypingContext.empty .gen_natSucc
       natSuccNativeRecursiveUnaryRule natZeroCell rfl
-      (HasTypeNativeUnion.ofNatIntro (HasTypeDescNatIntro.natZeroIntro TypingContext.empty)))
+      (HasTypeNativeUnion.ofDataIntro
+        (HasTypeDescDataIntro.nullaryIntro TypingContext.empty .gen_natZero () .childNil
+          { outputTypeCode := fun _ => natTypeCell } rfl)))
 
 /-- **★ One boolElim ι reduct types IN THE UNION through the two-branch match arm.**  A union-typed
 `boolElim` on `boolTrue` (both branches union-typed at the result `C`) ι-reduces to the THEN branch

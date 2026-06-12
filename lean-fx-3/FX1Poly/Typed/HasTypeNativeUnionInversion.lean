@@ -248,34 +248,12 @@ theorem HasTypeNativeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : 
           Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | ofNatIntro natTyped =>
-      rcases natTyped.subjectIsNatConstructor with isZero | ⟨_, isSucc⟩
-      · exact absurd (subjectShape.symm.trans isZero) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isSucc) (by intro headEq; cases headEq)
   | recursiveElim ctx generator rule motive baseBranch stepBranch scrutinee resultType
       isRecursiveElim scrutineeTyped baseBranchTyped =>
       rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       all_goals
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | ofOptionIntro optionTyped =>
-      rcases optionTyped.subjectIsOptionConstructor with isNone | ⟨_, isSome⟩
-      · exact absurd (subjectShape.symm.trans isNone) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isSome) (by intro headEq; cases headEq)
-  | ofEitherIntro eitherTyped =>
-      rcases eitherTyped.subjectIsEitherInjection with ⟨_, isInl⟩ | ⟨_, isInr⟩
-      · exact absurd (subjectShape.symm.trans isInl) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isInr) (by intro headEq; cases headEq)
-  | ofIdIntro idTyped =>
-      obtain ⟨_, isRefl⟩ := idTyped.subjectIsRefl
-      exact absurd (subjectShape.symm.trans isRefl) (by intro headEq; cases headEq)
-  | ofPairIntro pairTyped =>
-      obtain ⟨_, _, isPair⟩ := pairTyped.subjectIsPair
-      exact absurd (subjectShape.symm.trans isPair) (by intro headEq; cases headEq)
-  | ofListIntro listTyped =>
-      rcases listTyped.subjectIsListConstructor with isNil | ⟨_, _, isCons⟩
-      · exact absurd (subjectShape.symm.trans isNil) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isCons) (by intro headEq; cases headEq)
   | twoBranchMatchElim ctx generator rule motive firstBranch secondBranch scrutinee
       typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
       secondBranchTyped =>
@@ -407,34 +385,12 @@ theorem HasTypeNativeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
           Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | ofNatIntro natTyped =>
-      rcases natTyped.subjectIsNatConstructor with isZero | ⟨_, isSucc⟩
-      · exact absurd (subjectShape.symm.trans isZero) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isSucc) (by intro headEq; cases headEq)
   | recursiveElim ctx generator rule motive baseBranch stepBranch scrutinee resultType
       isRecursiveElim scrutineeTyped baseBranchTyped =>
       rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       all_goals
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | ofOptionIntro optionTyped =>
-      rcases optionTyped.subjectIsOptionConstructor with isNone | ⟨_, isSome⟩
-      · exact absurd (subjectShape.symm.trans isNone) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isSome) (by intro headEq; cases headEq)
-  | ofEitherIntro eitherTyped =>
-      rcases eitherTyped.subjectIsEitherInjection with ⟨_, isInl⟩ | ⟨_, isInr⟩
-      · exact absurd (subjectShape.symm.trans isInl) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isInr) (by intro headEq; cases headEq)
-  | ofIdIntro idTyped =>
-      obtain ⟨_, isRefl⟩ := idTyped.subjectIsRefl
-      exact absurd (subjectShape.symm.trans isRefl) (by intro headEq; cases headEq)
-  | ofPairIntro pairTyped =>
-      obtain ⟨_, _, isPair⟩ := pairTyped.subjectIsPair
-      exact absurd (subjectShape.symm.trans isPair) (by intro headEq; cases headEq)
-  | ofListIntro listTyped =>
-      rcases listTyped.subjectIsListConstructor with isNil | ⟨_, _, isCons⟩
-      · exact absurd (subjectShape.symm.trans isNil) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isCons) (by intro headEq; cases headEq)
   | twoBranchMatchElim ctx generator rule motive firstBranch secondBranch scrutinee
       typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
       secondBranchTyped =>
@@ -555,10 +511,6 @@ theorem HasTypeNativeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : 
           Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | ofNatIntro natTyped =>
-      rcases natTyped.subjectIsNatConstructor with isZero | ⟨_, isSucc⟩
-      · exact absurd (subjectShape.symm.trans isZero) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isSucc) (by intro headEq; cases headEq)
   | recursiveElim ctx generator rule armMotive armBase armStep armScrut resultType
       isRecursiveElim scrutineeTyped baseBranchTyped =>
       rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with
@@ -568,24 +520,6 @@ theorem HasTypeNativeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : 
         exact ⟨scrutineeTyped, baseBranchTyped⟩
       · subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | ofOptionIntro optionTyped =>
-      rcases optionTyped.subjectIsOptionConstructor with isNone | ⟨_, isSome⟩
-      · exact absurd (subjectShape.symm.trans isNone) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isSome) (by intro headEq; cases headEq)
-  | ofEitherIntro eitherTyped =>
-      rcases eitherTyped.subjectIsEitherInjection with ⟨_, isInl⟩ | ⟨_, isInr⟩
-      · exact absurd (subjectShape.symm.trans isInl) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isInr) (by intro headEq; cases headEq)
-  | ofIdIntro idTyped =>
-      obtain ⟨_, isRefl⟩ := idTyped.subjectIsRefl
-      exact absurd (subjectShape.symm.trans isRefl) (by intro headEq; cases headEq)
-  | ofPairIntro pairTyped =>
-      obtain ⟨_, _, isPair⟩ := pairTyped.subjectIsPair
-      exact absurd (subjectShape.symm.trans isPair) (by intro headEq; cases headEq)
-  | ofListIntro listTyped =>
-      rcases listTyped.subjectIsListConstructor with isNil | ⟨_, _, isCons⟩
-      · exact absurd (subjectShape.symm.trans isNil) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isCons) (by intro headEq; cases headEq)
   | twoBranchMatchElim ctx generator rule motive firstBranch secondBranch scrutinee
       typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
       secondBranchTyped =>
@@ -709,33 +643,12 @@ theorem HasTypeNativeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : 
           Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | ofNatIntro natTyped =>
-      rw [subjectShape] at natTyped
-      exact Or.inr ⟨_, natTyped, Conv.refl _⟩
   | recursiveElim ctx generator rule motive baseBranch stepBranch scrutinee resultType
       isRecursiveElim scrutineeTyped baseBranchTyped =>
       rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       all_goals
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | ofOptionIntro optionTyped =>
-      rcases optionTyped.subjectIsOptionConstructor with isNone | ⟨_, isSome⟩
-      · exact absurd (subjectShape.symm.trans isNone) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isSome) (by intro headEq; cases headEq)
-  | ofEitherIntro eitherTyped =>
-      rcases eitherTyped.subjectIsEitherInjection with ⟨_, isInl⟩ | ⟨_, isInr⟩
-      · exact absurd (subjectShape.symm.trans isInl) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isInr) (by intro headEq; cases headEq)
-  | ofIdIntro idTyped =>
-      obtain ⟨_, isRefl⟩ := idTyped.subjectIsRefl
-      exact absurd (subjectShape.symm.trans isRefl) (by intro headEq; cases headEq)
-  | ofPairIntro pairTyped =>
-      obtain ⟨_, _, isPair⟩ := pairTyped.subjectIsPair
-      exact absurd (subjectShape.symm.trans isPair) (by intro headEq; cases headEq)
-  | ofListIntro listTyped =>
-      rcases listTyped.subjectIsListConstructor with isNil | ⟨_, _, isCons⟩
-      · exact absurd (subjectShape.symm.trans isNil) (by intro headEq; cases headEq)
-      · exact absurd (subjectShape.symm.trans isCons) (by intro headEq; cases headEq)
   | twoBranchMatchElim ctx generator rule motive firstBranch secondBranch scrutinee
       typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
       secondBranchTyped =>

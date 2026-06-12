@@ -1,3 +1,4 @@
+import FX1Poly.Typed.DataIntroNativeRowConversion
 import FX1Poly.Typed.ListElimRecursiveRow
 
 /-! # FX1Poly/Typed/ListElimUnionSpikeToNativeUnion — NATIVE-36 / NATIVE-33: the listElim spike
@@ -60,7 +61,7 @@ theorem ListElimUnionSpike.toNativeUnion {profile : PolyProfile} {scope : Nat}
     HasTypeNativeUnion profile context subject classifier := by
   induction derivation with
   | ofUnion unionTyped => exact unionTyped
-  | ofListIntro listTyped => exact HasTypeNativeUnion.ofListIntro listTyped
+  | ofListIntro listTyped => exact listTyped.toNativeRows
   | listElimRecursiveRow generator rule motive scrutinee nilBranch consBranch elementType resultType
       isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
       rcases listElimRecursiveRuleOf_spikeCases isListElim with ⟨_generatorEq, ruleEq⟩

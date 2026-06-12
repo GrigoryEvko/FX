@@ -1,3 +1,4 @@
+import FX1Poly.Typed.DataIntroNativeRowConversion
 import FX1Poly.Typed.RecursiveElimUnionSpike
 
 /-! # FX1Poly/Typed/RecursiveElimNativeUnion — NATIVE-32: the recursive-eliminator rows land IN the
@@ -63,7 +64,7 @@ theorem HasTypeDescNatElim.toNativeUnion {profile : PolyProfile} {scope : Nat}
   | natElimIntro _ _ _ _ _ scrutineeTyped zeroBranchTyped =>
       exact HasTypeNativeUnion.recursiveElim _ .gen_natElim natElimNativeRecursiveRule
         motive zeroBranch succBranch scrutinee classifier rfl
-        (HasTypeNativeUnion.ofNatIntro scrutineeTyped)
+        scrutineeTyped.toNativeRows
         (HasTypeNativeUnion.ofGrown zeroBranchTyped)
         stepBranchTyped
 
@@ -86,7 +87,7 @@ theorem HasTypeDescNatRec.toNativeUnion {profile : PolyProfile} {scope : Nat}
   | natRecIntro _ _ _ _ _ scrutineeTyped zeroBranchTyped =>
       exact HasTypeNativeUnion.recursiveElim _ .gen_natRec natRecNativeRecursiveRule
         motive zeroBranch succBranch scrutinee classifier rfl
-        (HasTypeNativeUnion.ofNatIntro scrutineeTyped)
+        scrutineeTyped.toNativeRows
         (HasTypeNativeUnion.ofGrown zeroBranchTyped)
         stepBranchTyped
 
@@ -179,7 +180,7 @@ theorem recursiveElimClosedComputationFullyTypedInUnion {profile : PolyProfile} 
       boolTrueCell boolTypeCell := by
   have zeroScrutineeTyped : HasTypeNativeUnion profile
       (TypingContext.empty : TypingContext profile 0) natZeroCell natTypeCell :=
-    HasTypeNativeUnion.ofNatIntro (HasTypeDescNatIntro.natZeroIntro TypingContext.empty)
+    (HasTypeDescNatIntro.natZeroIntro TypingContext.empty).toNativeRows
   have trueBranchTyped : HasTypeNativeUnion profile
       (TypingContext.empty : TypingContext profile 0) boolTrueCell boolTypeCell :=
     HasTypeNativeUnion.ofDataIntro (HasTypeDescDataIntro.boolTrueTyped TypingContext.empty)
@@ -187,9 +188,8 @@ theorem recursiveElimClosedComputationFullyTypedInUnion {profile : PolyProfile} 
   · exact HasTypeNativeUnion.recursiveElim TypingContext.empty .gen_natElim
       natElimNativeRecursiveRule boolTypeCell boolTrueCell (inductiveHypothesisReturnBranch 0)
       (natSuccCell natZeroCell) boolTypeCell rfl
-      (HasTypeNativeUnion.ofNatIntro
-        (HasTypeDescNatIntro.natSuccIntro TypingContext.empty natZeroCell
-          (HasTypeDescNatIntro.natZeroIntro TypingContext.empty)))
+      (HasTypeDescNatIntro.natSuccIntro TypingContext.empty natZeroCell
+        (HasTypeDescNatIntro.natZeroIntro TypingContext.empty)).toNativeRows
       trueBranchTyped
       (inductiveHypothesisReturnBranchUnionTyped TypingContext.empty boolTypeCell)
   · exact natElimSuccContractum_ihReturn boolTypeCell boolTrueCell natZeroCell ▸
@@ -227,7 +227,7 @@ theorem RecursiveElimUnionSpike.toNativeUnion {profile : PolyProfile} {scope : N
     HasTypeNativeUnion profile context subject classifier := by
   induction derivation with
   | ofUnion unionTyped => exact unionTyped
-  | ofNatIntro natTyped => exact HasTypeNativeUnion.ofNatIntro natTyped
+  | ofNatIntro natTyped => exact natTyped.toNativeRows
   | recursiveElimRow generator rule motive baseBranch stepBranch scrutinee resultType
       isRecursiveElim _scrutineeTyped _baseBranchTyped scrutineeUnion baseBranchUnion =>
       rcases recursiveElimRuleOf_cases isRecursiveElim with

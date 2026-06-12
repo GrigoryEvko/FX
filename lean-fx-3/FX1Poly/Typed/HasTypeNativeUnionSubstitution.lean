@@ -170,30 +170,6 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       intro targetScope targetContext substitution condition
       exact HasTypeNativeUnion.ofTermIndexedFormer
         (formerTyped.substRespectingContext targetContext substitution condition)
-  | ofNatIntro natTyped =>
-      intro targetScope targetContext substitution condition
-      exact HasTypeNativeUnion.ofNatIntro
-        (natTyped.substRespectingContext targetContext substitution condition)
-  | ofOptionIntro optionTyped =>
-      intro targetScope targetContext substitution condition
-      exact HasTypeNativeUnion.ofOptionIntro
-        (optionTyped.substRespectingContext targetContext substitution condition)
-  | ofEitherIntro eitherTyped =>
-      intro targetScope targetContext substitution condition
-      exact HasTypeNativeUnion.ofEitherIntro
-        (eitherTyped.substRespectingContext targetContext substitution condition)
-  | ofIdIntro idTyped =>
-      intro targetScope targetContext substitution condition
-      exact HasTypeNativeUnion.ofIdIntro
-        (idTyped.substRespectingContext targetContext substitution condition)
-  | ofPairIntro pairTyped =>
-      intro targetScope targetContext substitution condition
-      exact HasTypeNativeUnion.ofPairIntro
-        (pairTyped.substRespectingContext targetContext substitution condition)
-  | ofListIntro listTyped =>
-      intro targetScope targetContext substitution condition
-      exact HasTypeNativeUnion.ofListIntro
-        (listTyped.substRespectingContext targetContext substitution condition)
   | recursiveUnaryIntro context generator rule child isRecursiveUnary _childTyped childIH =>
       intro targetScope targetContext substitution condition
       obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary

@@ -30,7 +30,6 @@ namespace FX1PolyAudit
 
 -- The two new union arms (constructors): the NatIntro embedding (numeral scrutinees) and the
 -- table-driven recursive-eliminator arm with recursive scrutinee/base premises.
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.ofNatIntro
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.recursiveElim
 
 /-! ## RecursiveElimUnionSpike.lean — the table-inversion transfer ingredient -/

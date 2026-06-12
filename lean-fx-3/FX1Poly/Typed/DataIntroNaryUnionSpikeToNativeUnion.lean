@@ -1,3 +1,4 @@
+import FX1Poly.Typed.DataIntroNativeRowConversion
 import FX1Poly.Typed.DataIntroNaryUnionSpike
 
 /-! # FX1Poly/Typed/DataIntroNaryUnionSpikeToNativeUnion — NATIVE-36: the n-ary / recursive
@@ -139,8 +140,8 @@ theorem DataIntroNaryUnionSpike.toNativeUnion {profile : PolyProfile} {scope : N
   induction derivation with
   | ofUnion unionTyped => exact unionTyped
   | ofNullaryDataIntro nullaryTyped => exact HasTypeNativeUnion.ofDataIntro nullaryTyped
-  | ofNatIntro natTyped => exact HasTypeNativeUnion.ofNatIntro natTyped
-  | ofListIntro listTyped => exact HasTypeNativeUnion.ofListIntro listTyped
+  | ofNatIntro natTyped => exact natTyped.toNativeRows
+  | ofListIntro listTyped => exact listTyped.toNativeRows
   | recursiveUnaryRow generator rule child isRecursiveUnary _childTyped childUnion =>
       rcases recursiveUnaryDataIntroRuleOf_spikeCases isRecursiveUnary with ⟨_generatorEq, ruleEq⟩
       subst ruleEq

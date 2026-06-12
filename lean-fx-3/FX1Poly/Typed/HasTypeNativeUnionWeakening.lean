@@ -667,30 +667,6 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       intro targetScope targetContext rawRenaming condition
       exact HasTypeNativeUnion.ofTermIndexedFormer
         (formerTyped.renameRespectingContext targetContext rawRenaming condition)
-  | ofNatIntro natTyped =>
-      intro targetScope targetContext rawRenaming condition
-      exact HasTypeNativeUnion.ofNatIntro
-        (natTyped.renameRespectingContext targetContext rawRenaming condition)
-  | ofOptionIntro optionTyped =>
-      intro targetScope targetContext rawRenaming condition
-      exact HasTypeNativeUnion.ofOptionIntro
-        (optionTyped.renameRespectingContext targetContext rawRenaming condition)
-  | ofEitherIntro eitherTyped =>
-      intro targetScope targetContext rawRenaming condition
-      exact HasTypeNativeUnion.ofEitherIntro
-        (eitherTyped.renameRespectingContext targetContext rawRenaming condition)
-  | ofIdIntro idTyped =>
-      intro targetScope targetContext rawRenaming condition
-      exact HasTypeNativeUnion.ofIdIntro
-        (idTyped.renameRespectingContext targetContext rawRenaming condition)
-  | ofPairIntro pairTyped =>
-      intro targetScope targetContext rawRenaming condition
-      exact HasTypeNativeUnion.ofPairIntro
-        (pairTyped.renameRespectingContext targetContext rawRenaming condition)
-  | ofListIntro listTyped =>
-      intro targetScope targetContext rawRenaming condition
-      exact HasTypeNativeUnion.ofListIntro
-        (listTyped.renameRespectingContext targetContext rawRenaming condition)
   | recursiveUnaryIntro context generator rule child isRecursiveUnary _childTyped childIH =>
       intro targetScope targetContext rawRenaming condition
       obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary

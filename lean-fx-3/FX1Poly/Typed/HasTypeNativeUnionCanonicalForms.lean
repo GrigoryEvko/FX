@@ -986,19 +986,6 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
         exact Bool.noConfusion (pathAppFree.symm.trans
           (RawTerm.containsGeneratorBool_headHit .gen_pathApp ()
             (.childCons eliminated (.childCons argument .childNil))))
-  | ofNatIntro natTyped =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      cases natTyped with
-      | natZeroIntro =>
-          have targetEq := laneTarget.pinnedByNatHead convToTarget
-            (fun _reduct chain => headReaches_natTypeCell chain)
-          rw [targetEq]
-          exact LaneValue.natZero
-      | natSuccIntro predecessor _predecessorTyped =>
-          have targetEq := laneTarget.pinnedByNatHead convToTarget
-            (fun _reduct chain => headReaches_natTypeCell chain)
-          rw [targetEq]
-          exact LaneValue.natSucc predecessor
   | recursiveElim context generator rule motive baseBranch stepBranch scrutinee resultType
       isRecursiveElim scrutineeTyped baseBranchTyped stepBranchTyped
       ihScrutinee ihBase ihStep =>
@@ -1049,63 +1036,6 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
           cases normal
         · rw [scrutineeEq] at normal
           cases normal
-  | ofOptionIntro optionTyped =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      cases optionTyped with
-      | optionNoneIntro =>
-          obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
-            (fun _reduct chain => headReaches_optionTypeCell chain)
-          rw [targetEq]
-          exact LaneValue.optionNone targetElement
-      | optionSomeIntro value _valueTyped =>
-          obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
-            (fun _reduct chain => headReaches_optionTypeCell chain)
-          rw [targetEq]
-          exact LaneValue.optionSome targetElement value
-  | ofEitherIntro eitherTyped =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      cases eitherTyped with
-      | eitherInlIntro value _valueTyped =>
-          obtain ⟨targetLeft, targetRight, targetEq⟩ := laneTarget.pinnedByEitherHead convToTarget
-            (fun _reduct chain => headReaches_eitherTypeCell chain)
-          rw [targetEq]
-          exact LaneValue.eitherInl targetLeft targetRight value
-      | eitherInrIntro value _valueTyped =>
-          obtain ⟨targetLeft, targetRight, targetEq⟩ := laneTarget.pinnedByEitherHead convToTarget
-            (fun _reduct chain => headReaches_eitherTypeCell chain)
-          rw [targetEq]
-          exact LaneValue.eitherInr targetLeft targetRight value
-  | ofIdIntro idTyped =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      cases idTyped with
-      | reflIntro witness typeCode _witnessTyped =>
-          obtain ⟨targetType, targetLeft, targetRight, targetEq⟩ :=
-            laneTarget.pinnedByIdentityHead convToTarget
-              (fun _reduct chain => headReaches_idTypeCell chain)
-          rw [targetEq]
-          exact LaneValue.refl targetType targetLeft targetRight witness
-  | ofPairIntro pairTyped =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      cases pairTyped with
-      | pairIntro firstValue secondValue _firstTyped _secondTyped =>
-          obtain ⟨targetFirst, targetSecond, targetEq⟩ :=
-            laneTarget.pinnedByProductHead convToTarget
-              (fun _reduct chain => headReaches_productTypeCell chain)
-          rw [targetEq]
-          exact LaneValue.pair targetFirst targetSecond firstValue secondValue
-  | ofListIntro listTyped =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      cases listTyped with
-      | listNilIntro _elementType _elementLevel _flag _elementTypeFormed =>
-          obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
-            (fun _reduct chain => headReaches_listTypeCell chain)
-          rw [targetEq]
-          exact LaneValue.listNil targetElement
-      | listConsIntro headValue tailList _elementType _headTyped _tailTyped =>
-          obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
-            (fun _reduct chain => headReaches_listTypeCell chain)
-          rw [targetEq]
-          exact LaneValue.listCons targetElement headValue tailList
   | twoBranchMatchElim context generator rule motive firstBranch secondBranch scrutinee
       typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
       secondBranchTyped ihScrutinee ihFirst ihSecond =>

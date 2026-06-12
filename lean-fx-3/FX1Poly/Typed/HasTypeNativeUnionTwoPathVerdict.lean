@@ -1,3 +1,4 @@
+import FX1Poly.Typed.DataIntroNativeRowConversion
 import FX1Poly.Typed.HasTypeNativeUnionInversion
 
 /-! # FX1Poly/Typed/HasTypeNativeUnionTwoPathVerdict — NATIVE-37 part d: THE TWO-PATH EQUIVALENCE
@@ -72,7 +73,7 @@ theorem HasTypeNativeUnion.natSuccEmbeddingSubsumedByRow {profile : PolyProfile}
     (embeddingTyped : HasTypeDescNatIntro profile context (natSuccCell child) classifier) :
     classifier = natTypeCell ∧ HasTypeNativeUnion profile context child natTypeCell := by
   obtain ⟨classifierEq, childIntro⟩ := embeddingTyped.invertNatSucc rfl
-  exact ⟨classifierEq, HasTypeNativeUnion.ofNatIntro childIntro⟩
+  exact ⟨classifierEq, childIntro.toNativeRows⟩
 
 /-! ## The computed-number child: a union-typed `natElim`-headed term at `Nat` -/
 
@@ -94,8 +95,8 @@ theorem HasTypeNativeUnion.computedNumberTypedAtNat {profile : PolyProfile} {sco
       (natElimCell motive natZeroCell stepBranch natZeroCell) natTypeCell :=
   HasTypeNativeUnion.recursiveElim context .gen_natElim natElimNativeRecursiveRule
     motive natZeroCell stepBranch natZeroCell natTypeCell rfl
-    (HasTypeNativeUnion.ofNatIntro (HasTypeDescNatIntro.natZeroIntro context))
-    (HasTypeNativeUnion.ofNatIntro (HasTypeDescNatIntro.natZeroIntro context))
+    (HasTypeDescNatIntro.natZeroIntro context).toNativeRows
+    (HasTypeDescNatIntro.natZeroIntro context).toNativeRows
     stepBranchTyped
 
 /-! ## (2) Row ⟹ embedding is REFUTED: strict generality -/

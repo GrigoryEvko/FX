@@ -116,11 +116,6 @@ individually. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion
 
 -- The five scrutinee-embedding arms (data-elim scrutinees + the list scrutinee/intro base).
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.ofOptionIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.ofEitherIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.ofIdIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.ofPairIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.ofListIntro
 
 -- The three table-driven non-recursive data-eliminator arms.
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.twoBranchMatchElim

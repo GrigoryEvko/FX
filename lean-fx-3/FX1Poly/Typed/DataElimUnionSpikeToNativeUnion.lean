@@ -1,3 +1,4 @@
+import FX1Poly.Typed.DataIntroNativeRowConversion
 import FX1Poly.Typed.DataElimUnionSpike
 
 /-! # FX1Poly/Typed/DataElimUnionSpikeToNativeUnion — NATIVE-36: the NON-recursive data-eliminator
@@ -98,10 +99,10 @@ theorem DataElimUnionSpike.toNativeUnion {profile : PolyProfile} {scope : Nat}
     HasTypeNativeUnion profile context subject classifier := by
   induction derivation with
   | ofUnion unionTyped => exact unionTyped
-  | ofOptionIntro optionTyped => exact HasTypeNativeUnion.ofOptionIntro optionTyped
-  | ofEitherIntro eitherTyped => exact HasTypeNativeUnion.ofEitherIntro eitherTyped
-  | ofIdIntro idTyped => exact HasTypeNativeUnion.ofIdIntro idTyped
-  | ofPairIntro pairTyped => exact HasTypeNativeUnion.ofPairIntro pairTyped
+  | ofOptionIntro optionTyped => exact optionTyped.toNativeRows
+  | ofEitherIntro eitherTyped => exact eitherTyped.toNativeRows
+  | ofIdIntro idTyped => exact idTyped.toNativeRows
+  | ofPairIntro pairTyped => exact pairTyped.toNativeRows
   | twoBranchMatchRow generator rule motive firstBranch secondBranch scrutinee
       typeParamA typeParamB resultType isTwoBranchMatch
       _scrutineeTyped _firstTyped _secondTyped scrutineeUnion firstUnion secondUnion =>
