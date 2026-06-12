@@ -29,7 +29,7 @@ the product/either canonical forms (whose codes are FLAT-table formers, so they 
   * **`HasTypeDescPi.noClosedNormalTermAtOptionType`** — the grown rule-out (CANON-1c instance): no closed-normal
     grown term inhabits an option type.
   * (The zoo-level headline `closedNormalOptionCanonicalForms` was RETIRED by NATIVE-42 — its union
-    restatement `HasTypeNativeUnion.closedNormalOptionCanonicalForms` is the live canonicity statement;
+    restatement `HasTypeUnion.closedNormalOptionCanonicalForms` is the live canonicity statement;
     the rigidities and the grown rule-out below are its load-bearing substrate and STAY.)
 
 ## SR deferral (unchanged)

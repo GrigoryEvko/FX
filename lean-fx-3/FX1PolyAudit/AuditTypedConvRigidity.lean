@@ -934,7 +934,7 @@ positions.  The standing honest-boundary note (2) is RETIRED.  Zero-axiom. -/
 -- and piTyCode head-stable → shared reduct carries both heads → noConfusion — the cleaner primitive needing no table
 -- membership, vs the data-canon files' formationFormersNotConvOfDistinct). noClosedNormalTermAtIdType = CANON-1c grown
 -- rule-out. The zoo headline closedNormalIdCanonicalForms was retired by NATIVE-42 (the union restatement
--- HasTypeNativeUnion.closedNormalIdentityCanonicalForms is the live one).
+-- HasTypeUnion.closedNormalIdentityCanonicalForms is the live one).
 #assert_no_axioms FX1Poly.Typed.Conv.idCode_not_universeCode
 #assert_no_axioms FX1Poly.Typed.Conv.idCode_not_piTyCode
 

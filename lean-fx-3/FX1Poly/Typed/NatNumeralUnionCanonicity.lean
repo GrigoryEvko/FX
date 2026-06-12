@@ -1,24 +1,24 @@
-import FX1Poly.Typed.HasTypeNativeUnionCanonicalForms
-import FX1Poly.Typed.HasTypeNativeUnionInversion
+import FX1Poly.Typed.HasTypeUnionCanonicalForms
+import FX1Poly.Typed.HasTypeUnionInversion
 import FX1Poly.Typed.ClosedNatCanonicity
 import FX1Poly.Core.RawSize
 
 /-! # FX1Poly/Typed/NatNumeralUnionCanonicity — DEEP Nat canonicity over the single union judgment
 
-The NATIVE-38 lane master's nat corollary (`HasTypeNativeUnion.closedNormalNatCanonicalForms`) is
+The NATIVE-38 lane master's nat corollary (`HasTypeUnion.closedNormalNatCanonicalForms`) is
 deliberately SHALLOW: it pins only the HEAD of a closed normal union-typed term at `natTypeCell`
 (`natZero`, or `natSucc` of an ARBITRARY predecessor) — exactly what an ι rule inspects.  The
 Milestone-A Nat-canonicity pillar concludes the RECURSIVE `IsNatNumeral` family (the whole tower is
 numeral-shaped).  This file closes that depth gap over the union:
 
-  * **`HasTypeNativeUnion.closedNormalNatNumeralBounded`** — the fuel-indexed worker: structural
+  * **`HasTypeUnion.closedNormalNatNumeralBounded`** — the fuel-indexed worker: structural
     induction on a `RawTerm.size` bound (the [[feedback_lean_structural_fuel_decoder]] discipline —
     STRUCTURAL on the fuel `Nat`, never `WellFounded.fix`).  Each round: the shallow lane corollary
     pins the head; the `natZero` head closes by `IsNatNumeral.zero`; the `natSucc` head walks through
     the NATIVE-42-exact `invertAtNatSuccHead` (the predecessor child is union-typed at `Nat`), extracts
     the predecessor's normality / path-freeness with the children projections, shrinks the size bound
     (`size (natSucc p) = p.size + 2`, definitionally), and recurses.
-  * **`HasTypeNativeUnion.closedNormalNatNumeral` (★)** — the headline: a closed normal union-typed
+  * **`HasTypeUnion.closedNormalNatNumeral` (★)** — the headline: a closed normal union-typed
     term at `natTypeCell` with no bridge-fragment occurrence IS a deep numeral.  Instantiates the
     worker at `fuel := subject.size`.
 
@@ -44,9 +44,9 @@ open FX1Poly.Core FX1Poly.Universe
 lane corollary pins the head, the exact natSucc inversion recovers the predecessor's union typing,
 the children projections recover its normality / path-freeness, and the size bound shrinks by two
 per `natSucc` layer. -/
-theorem HasTypeNativeUnion.closedNormalNatNumeralBounded {profile : PolyProfile} :
+theorem HasTypeUnion.closedNormalNatNumeralBounded {profile : PolyProfile} :
     ∀ (fuel : Nat) (subject : RawTerm 0), RawTerm.size subject ≤ fuel →
-      HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+      HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
         subject natTypeCell →
       RawTerm.isStepNormalForm subject →
       RawTerm.containsGeneratorBool .gen_pathApp subject = false →
@@ -94,22 +94,22 @@ theorem HasTypeNativeUnion.closedNormalNatNumeralBounded {profile : PolyProfile}
 a closed normal union-typed term at `natCode` with no bridge-fragment occurrence is a deep numeral
 (`IsNatNumeral` — the WHOLE tower, not just the head).  The Milestone-A Nat-canonicity pillar over the
 ONE judgment. -/
-theorem HasTypeNativeUnion.closedNormalNatNumeral {profile : PolyProfile}
+theorem HasTypeUnion.closedNormalNatNumeral {profile : PolyProfile}
     {subject : RawTerm 0}
-    (typed : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       subject natTypeCell)
     (normal : RawTerm.isStepNormalForm subject)
     (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)
     (pathLamFree : RawTerm.containsGeneratorBool .gen_pathLam subject = false) :
     IsNatNumeral subject :=
-  HasTypeNativeUnion.closedNormalNatNumeralBounded (RawTerm.size subject) subject
+  HasTypeUnion.closedNormalNatNumeralBounded (RawTerm.size subject) subject
     (Nat.le_refl _) typed normal pathAppFree pathLamFree
 
 /-- **Non-vacuity**: the numeral `2` — union-typed through the recursive `natSucc` arm twice — is a
 deep numeral by the headline (it is closed, normal, and bridge-free on the nose). -/
-theorem HasTypeNativeUnion.closedNormalNatNumeral.numeralTwo {profile : PolyProfile} :
+theorem HasTypeUnion.closedNormalNatNumeral.numeralTwo {profile : PolyProfile} :
     IsNatNumeral (natSuccCell (natSuccCell natZeroCell) : RawTerm 0) :=
-  HasTypeNativeUnion.closedNormalNatNumeral
+  HasTypeUnion.closedNormalNatNumeral
     (numeralTwoTypedThroughUnionRecursiveIntroTwice (profile := profile)) rfl rfl rfl
 
 end FX1Poly.Typed

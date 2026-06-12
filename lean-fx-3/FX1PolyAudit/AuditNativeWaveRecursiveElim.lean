@@ -1,11 +1,11 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 
 /-! # FX1PolyAudit/AuditNativeWaveRecursiveElim — NATIVE-32 audit shard (recursive-eliminator rows
     integrated into the real union + the listElim row)
 
 Per-declaration zero-axiom gate for the NATIVE-32 wave: the recursive-eliminator rows landed IN the
-`HasTypeNativeUnion` judgment (the two new arms + the native row schema/table), the union-level
+`HasTypeUnion` judgment (the two new arms + the native row schema/table), the union-level
 theorems (bespoke adequacy, the succ-ι internal-discharge GO theorem, the closed 2-step typed
 computation chain, the spike→union transfer), the spike table-inversion ingredient, and the listElim
 sibling row (the app-chain shape: schema, table, spike-sibling judgment, bespoke adequacy, nil-ι typed
@@ -14,7 +14,7 @@ smoke).  Every declaration below must be free of `propext`, `Quot.sound`, `Class
 
 namespace FX1PolyAudit
 
-/-! ## HasTypeNativeUnion.lean — the native recursive-eliminator row schema + the two new union arms -/
+/-! ## HasTypeUnion.lean — the native recursive-eliminator row schema + the two new union arms -/
 
 -- The native recursive-eliminator row schema (field-identical to the spike's `RecursiveElimRule`),
 -- the two Nat rows, and the if-then-else table with its rfl-diagonal metadata.
@@ -27,7 +27,7 @@ namespace FX1PolyAudit
 
 -- The two new union arms (constructors): the NatIntro embedding (numeral scrutinees) and the
 -- table-driven recursive-eliminator arm with recursive scrutinee/base premises.
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.recursiveElim
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.recursiveElim
 
 /-! ## RecursiveElimUnionSpike.lean — the table-inversion transfer ingredient -/
 

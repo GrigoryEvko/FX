@@ -1071,7 +1071,7 @@ the strong equation one green commit at a time, then the table flips. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedGrownTermAtSigmaType
 -- SN-048 NOTE: the zoo-premised closed-Nat-canonicity statements (subjectIsNatNumeral /
 -- standaloneNatCanonicalForms / closedNatCanonicalForms) were retired by NATIVE-42; the live deep
--- restatement is HasTypeNativeUnion.closedNormalNatNumeral (AuditNatNumeralUnionCanonicity).
+-- restatement is HasTypeUnion.closedNormalNatNumeral (AuditNatNumeralUnionCanonicity).
 -- ClosedNatCanonicity keeps IsNatNumeral + the natTypeCell cross-former rigidities (gated below
 -- with the canonical-forms shard's rigidity block).
 -- ARBITRARY-SUBJECT 4-ENGINE BOOL CANONICITY (BoolElimArbitrarySubjectCanonicity): upgrades the closed-normal

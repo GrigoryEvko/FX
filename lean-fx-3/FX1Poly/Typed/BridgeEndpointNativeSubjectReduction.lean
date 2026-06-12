@@ -22,12 +22,12 @@ NATIVE-45 RETIRES the bespoke `HasTypeDescBridge` typing engine.  The combined-r
 `ofBridge` disjunct (which quoted the dead engine) is DROPPED — the union subsumes it.  The predicate
 becomes `{ofGrown, ofDataIntro}`: the grown engine for the constant fragment, the native
 `dataIntroNullary` table row for the bare interval endpoint.  This file sits UPSTREAM of
-`HasTypeNativeUnion` in the import order, so it cannot name the union inductive directly; the
+`HasTypeUnion` in the import order, so it cannot name the union inductive directly; the
 `ofDataIntro` disjunct carries the row witness, definitionally the union's `dataIntroNullary` arm at
 this row (same content, no forward dependency — exactly as before).  The redex-typing companions now
 speak the native graded-intro engine (`identityPathGradedTyped` / `constantBridgeGradedOfTyped`); the
 elimination-side typing (the applied path in ONE union derivation) lives downstream as
-`HasTypeNativeUnion.endpointRedexNativelyTypedWhole`.
+`HasTypeUnion.endpointRedexNativelyTypedWhole`.
 
 ## What ships
 
@@ -53,7 +53,7 @@ elimination-side typing (the applied path in ONE union derivation) lives downstr
   * **`endpointBetaNativeSubjectReductionVerdict` (★★)** — the honest capstone: endpoint-β preserves
     combined-native typing on BOTH fragments (constant → grown, identity-path → dataIntro), and the
     grown-only target is provably insufficient on the identity-path fragment.  The wall has fallen — the
-    union of the native engines is the correct SR target, as `HasTypeNativeUnion` internalizes.
+    union of the native engines is the correct SR target, as `HasTypeUnion` internalizes.
 
 ## Zero-axiom
 
@@ -78,7 +78,7 @@ endpoint-β reduct fragments.
 
 `ofDataIntro` carries the row witness DIRECTLY (`dataIntroNullaryRuleDescOf generator = some rule`, the
 reduct is the row's childless cell, the classifier is the row's output type-code) rather than the
-`HasTypeNativeUnion` derivation: this file sits UPSTREAM of `HasTypeNativeUnion` in the import order, so
+`HasTypeUnion` derivation: this file sits UPSTREAM of `HasTypeUnion` in the import order, so
 it cannot mention the union inductive without a cycle.  The witness is DEFINITIONALLY the union's
 `dataIntroNullary` arm at this row — same content, no forward dependency.
 
@@ -138,7 +138,7 @@ the endpoint-β step FIRES to `interval0`, and the reduct is combined-native-typ
 dataIntroNullary arm, where `intervalZeroGrownUntypable` proves the grown engine cannot type it.  The
 genuine cross-engine SR instance: the bridge eliminator computes INTO the data-value layer,
 type-preservingly under the combined engine.  The whole redex in ONE union derivation lives downstream
-(`HasTypeNativeUnion.endpointRedexNativelyTypedWhole`) where the elim arm is in scope; here the path's
+(`HasTypeUnion.endpointRedexNativelyTypedWhole`) where the elim arm is in scope; here the path's
 INTRO typing carries the redex's well-formedness through the live native engine. -/
 theorem identityPathEndpointSubjectReductionNative {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) :
@@ -177,7 +177,7 @@ combined-native typing on BOTH shipped fragments (the constant fragment lands GR
 endpoint lands DATA-INTRO), AND the grown-only target is provably INSUFFICIENT on the identity-path
 fragment (`intervalZeroGrownUntypable`).  The cross-engine wall has fallen: the union of the native
 engines is the correct endpoint-β SR target — the bridge eliminator computes into whichever native layer
-its reduct inhabits, exactly as `HasTypeNativeUnion`'s single unified engine internalizes.  Bundles the
+its reduct inhabits, exactly as `HasTypeUnion`'s single unified engine internalizes.  Bundles the
 wall-falls witness with the data-intro fragment instance at a single concrete context. -/
 theorem endpointBetaNativeSubjectReductionVerdict {profile : PolyProfile}
     (flag : UniverseFlag) :

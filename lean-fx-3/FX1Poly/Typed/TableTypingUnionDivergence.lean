@@ -1,12 +1,12 @@
 import FX1Poly.Typed.TypedByTableUnion
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 
 /-! # FX1Poly/Typed/TableTypingUnionDivergence — where the union types strictly more than the honesty classifier
 
 `hasTableTypingRule` (`TypedByTableUnion`) is the faithful table-driven twin of the honesty classifier
 `hasSomeTypingRule`: exactly equal, by `hasSomeTypingRule_eq_hasTableTypingRule`.  To stay faithful it
-DELIBERATELY excludes three rule tables that DO drive `HasTypeNativeUnion`:
+DELIBERATELY excludes three rule tables that DO drive `HasTypeUnion`:
 
   * `termIndexedFormerDescOf` (carries the `idCode` formation row, landed by the Id retrofit),
   * `nativeRecursiveElimRuleOf` (carries the `natElim` / `natRec` recursive-eliminator rows), and

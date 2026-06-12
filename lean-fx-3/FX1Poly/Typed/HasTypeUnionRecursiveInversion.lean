@@ -1,54 +1,53 @@
-import FX1Poly.Typed.HasTypeNativeUnionInversion
+import FX1Poly.Typed.HasTypeUnionInversion
 
-/-! # FX1Poly/Typed/HasTypeNativeUnionPathProjInversion — NATIVE-37 part d: per-head inversions for the
-    path-induction head (idJ) and the projection heads (fst / snd).
+/-! # FX1Poly/Typed/HasTypeUnionRecursiveInversion — NATIVE-37 part d: per-head inversions for the
+    remaining recursive eliminator heads (natRec and listElim).
 
-Two more eliminator shapes from the inversion substrate of `HasTypeNativeUnionInversion`:
+The `natElim` head shipped in `HasTypeUnionInversion`; this file adds its `gen_natRec` twin (the
+second row of `nativeRecursiveElimRuleOf`) and the `listElim` head (the `listElim` arm).
 
-  * **idJ** — the survivor is the `pathInductionElim` arm pinned to the `gen_idJ` row (the only row in
-    `nativePathInductionRuleOf`).  Surfaced premises: the witness union-typed at a reflexive identity
-    code `Id(typeCode, endpoint, endpoint)`, the base case union-typed at the result classifier.
-  * **fst / snd** — the survivor is the `projectionElim` arm pinned to the `gen_fst` / `gen_snd` row.
-    Surfaced premise: the pair term union-typed at `product(firstType, secondType)`; the classifier is
-    forced to the selected component (`firstType` for fst, `secondType` for snd).
-
-Both follow the established free-subject `cases` recipe with the three killer classes; the `idJCell`,
-`fstCell`, `sndCell` heads are all untypable in the grown engine (host-head-untyped lemmas shipped), so
-none carries an ofGrown disjunct.
+  * **natRec** — survivor is the `recursiveElim` arm pinned to the `gen_natRec` row.  Surfaced premises:
+    the scrutinee union-typed at `Nat`, the base (zero) branch union-typed at the classifier.  Identical
+    in shape to `invertAtNatElimHead`, only the surviving row differs.
+  * **listElim** — survivor is the `listElim` arm pinned to the `gen_listElim` row.  Surfaced premises:
+    the scrutinee UNION-typed at `List(elementType)` (the NATIVE-42 re-shape made the scrutinee premise
+    union-recursive, retiring the last zoo judgment named inside the union), the nil/cons branches
+    GROWN-typed at the result / 3-arg curried step type.  The reverse adequacy for listElim is therefore
+    RELATIVIZED like every other head (the scrutinee reconstruction map is where computed-list
+    scrutinees fall outside the bespoke engine).
 
 ## Zero-axiom
 
-Free-subject `cases` + the shipped row inverters (`nativePathInductionRuleOf_cases` /
-`nativeProjectionRuleOf_cases`) + head no-confusion + `rcases subjectShape with ⟨⟩`.  No `axiom`,
-`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
+Free-subject `cases` + the shipped row inverters + head no-confusion + `rcases subjectShape with ⟨⟩`.
+No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Modal
 
-/-! ## (1) Inversion at the idJ head -/
+/-! ## (1) Inversion at the natRec head -/
 
-/-- **★ Inversion at the idJ head.**  A union typing of an `idJCell`-headed subject is EXACTLY a
-path-induction typing at the `gen_idJ` row: for some type code `A` and shared endpoint `x`, the witness
-is union-typed at the reflexive identity code `Id(A, x, x)`, and the base case is union-typed at the
-result classifier.  (The two-binder motive is stored, not premised — premise parity with
-`HasTypeDescIdElim`.)  No grown disjunct: `idJCell` is untypable in the grown engine. -/
-theorem HasTypeNativeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
+/-- **★ Inversion at the natRec head.**  A union typing of a `natRecCell`-headed subject is EXACTLY a
+recursive-eliminator typing at the `gen_natRec` row: the scrutinee is union-typed at `Nat` and the base
+(zero) branch is union-typed at the classifier.  (The motive and step branch are stored, not premised.)
+No grown disjunct: `natRecCell` is untypable in the grown engine.  The `gen_natRec` twin of
+`HasTypeUnion.invertAtNatElimHead`. -/
+theorem HasTypeUnion.invertAtNatRecHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}
-    (derivation : HasTypeNativeUnion profile context subject classifier)
-    (subjectShape : subject = idJCell motive baseCase witness) :
-    ∃ typeCode endpoint : RawTerm scope,
-      HasTypeNativeUnion profile context witness (idTypeCell typeCode endpoint endpoint) ∧
-      HasTypeNativeUnion profile context baseCase classifier := by
+    {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
+    {stepBranch : RawTerm (scope + 2)} {scrutinee : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = natRecCell motive zeroBranch stepBranch scrutinee) :
+    HasTypeUnion profile context scrutinee natTypeCell ∧
+    HasTypeUnion profile context zeroBranch classifier := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨typeCode, endpoint, witnessTyped, baseCaseTyped⟩ := innerInversion subjectShape
-      exact ⟨typeCode, endpoint, witnessTyped,
-        HasTypeNativeUnion.conv levelExpr flag baseCaseTyped converts reclassifierTyped⟩
+      obtain ⟨scrutineeTyped, zeroBranchTyped⟩ := innerInversion subjectShape
+      exact ⟨scrutineeTyped,
+        HasTypeUnion.conv levelExpr flag zeroBranchTyped converts reclassifierTyped⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
-      exact absurd hostTyped.idJCellHasNoTyping (fun contra => contra)
+      exact absurd hostTyped.natRecCellHasNoTyping (fun contra => contra)
   | baseTypeFormation context generator payload children rule isBaseType =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
@@ -92,10 +91,13 @@ theorem HasTypeNativeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | recursiveElim ctx generator rule armMotive armBase armStep armScrut resultType
       isRecursiveElim scrutineeTyped baseBranchTyped =>
-      rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
+      rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with
+        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
+      · subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+      · subst ruleEq
+        rcases subjectShape with ⟨⟩
+        exact ⟨scrutineeTyped, baseBranchTyped⟩
   | twoBranchMatchElim ctx generator rule armMotive armFirst armSecond armScrut
       typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
       secondBranchTyped =>
@@ -108,8 +110,7 @@ theorem HasTypeNativeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
       isPathInduction witnessTyped baseCaseTyped =>
       obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
       subst ruleEq
-      rcases subjectShape with ⟨⟩
-      exact ⟨armTypeCode, armEndpoint, witnessTyped, baseCaseTyped⟩
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | projectionElim ctx generator rule pairTerm firstType secondType isProjection pairTyped =>
       rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       all_goals
@@ -156,28 +157,33 @@ theorem HasTypeNativeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
       subst ruleEq
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
-/-! ## (1) Inversion at the fst head -/
+/-! ## (1) Inversion at the listElim head -/
 
-/-- **★ Inversion at the fst head.**  A union typing of an `fstCell`-headed subject is EXACTLY a
-projection typing at the `gen_fst` row: for some second-component type `B`, the pair term is union-typed
-at `product(C, B)` where `C` is the classifier, and the projected type is the first component (the
-classifier).  No grown disjunct: `fstCell` is untypable in the grown engine. -/
-theorem HasTypeNativeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
+/-- **★ Inversion at the listElim head.**  A union typing of a `listElimCell`-headed subject is EXACTLY a
+listElim typing at the `gen_listElim` row: the scrutinee is UNION-typed at `List(elementType)` (the
+NATIVE-42 union-recursive premise), the nil branch is GROWN-typed at the classifier, the cons branch is
+GROWN-typed at the 3-arg curried step type.  No grown disjunct: `listElimCell` is untypable in the grown
+engine. -/
+theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    {pairTerm : RawTerm scope}
-    (derivation : HasTypeNativeUnion profile context subject classifier)
-    (subjectShape : subject = fstCell pairTerm) :
-    ∃ secondType pinnedClassifier : RawTerm scope,
-      HasTypeNativeUnion profile context pairTerm
-        (productTypeCell pinnedClassifier secondType) ∧
+    {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = listElimCell motive scrutinee nilBranch consBranch) :
+    ∃ elementType pinnedClassifier : RawTerm scope,
+      HasTypeUnion profile context scrutinee (listTypeCell elementType) ∧
+      HasTypeDescPi profile context nilBranch pinnedClassifier ∧
+      HasTypeDescPi profile context consBranch
+        (listStepFunctionType elementType pinnedClassifier) ∧
       Conv pinnedClassifier classifier := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨secondType, pinnedClassifier, pairTyped, convInner⟩ := innerInversion subjectShape
-      exact ⟨secondType, pinnedClassifier, pairTyped, convInner.trans converts⟩
+      obtain ⟨elementType, pinnedClassifier, scrutineeTyped, nilTyped, consTyped, convInner⟩ :=
+        innerInversion subjectShape
+      exact ⟨elementType, pinnedClassifier, scrutineeTyped, nilTyped, consTyped,
+        convInner.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
-      exact absurd hostTyped.fstCellHasNoTyping (fun contra => contra)
+      exact absurd hostTyped.listElimCellHasNoTyping (fun contra => contra)
   | baseTypeFormation context generator payload children rule isBaseType =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
@@ -238,12 +244,10 @@ theorem HasTypeNativeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
       obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
       subst ruleEq
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | projectionElim ctx generator rule armPairTerm firstType secondType isProjection pairTyped =>
+  | projectionElim ctx generator rule pairTerm firstType secondType isProjection pairTyped =>
       rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
-        rcases subjectShape with ⟨⟩
-        exact ⟨secondType, _, pairTyped, Conv.refl _⟩
-      · subst ruleEq
+      all_goals
+        subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | recursiveUnaryIntro ctx generator rule armChild isRecursiveUnary childTyped =>
       obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
@@ -284,136 +288,7 @@ theorem HasTypeNativeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
       isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
       obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
       subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-
-/-! ## (1) Inversion at the snd head -/
-
-/-- **★ Inversion at the snd head.**  A union typing of an `sndCell`-headed subject is EXACTLY a
-projection typing at the `gen_snd` row: for some first-component type `A`, the pair term is union-typed
-at `product(A, C)` where `C` is the classifier, and the projected type is the second component (the
-classifier).  No grown disjunct: `sndCell` is untypable in the grown engine. -/
-theorem HasTypeNativeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    {pairTerm : RawTerm scope}
-    (derivation : HasTypeNativeUnion profile context subject classifier)
-    (subjectShape : subject = sndCell pairTerm) :
-    ∃ firstType pinnedClassifier : RawTerm scope,
-      HasTypeNativeUnion profile context pairTerm
-        (productTypeCell firstType pinnedClassifier) ∧
-      Conv pinnedClassifier classifier := by
-  induction derivation with
-  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨firstType, pinnedClassifier, pairTyped, convInner⟩ := innerInversion subjectShape
-      exact ⟨firstType, pinnedClassifier, pairTyped, convInner.trans converts⟩
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      exact absurd hostTyped.sndCellHasNoTyping (fun contra => contra)
-  | baseTypeFormation context generator payload children rule isBaseType =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isBaseType (by intro tableHit; cases tableHit)
-  | dataIntroNullary context generator payload children rule isDataIntro =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isDataIntro (by intro tableHit; cases tableHit)
-  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
-  | ofTermIndexedFormer formerTyped =>
-      exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
-        (fun contra => contra)
-  | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
-      flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
-      rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
-      · subst hLam
-        have ruleEq : rule = lamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathLamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | generalElim ctx generator rule typeParamA typeParamB typeParamC typeParamD eliminated argument
-      isElim eliminatedTyped argumentTyped =>
-      rcases generalElimRuleOf_isAppOrPathApp isElim with hApp | hPath
-      · subst hApp
-        have ruleEq : rule = appGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_app)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathAppGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveElim ctx generator rule armMotive armBase armStep armScrut resultType
-      isRecursiveElim scrutineeTyped baseBranchTyped =>
-      rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | twoBranchMatchElim ctx generator rule armMotive armFirst armSecond armScrut
-      typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
-      secondBranchTyped =>
-      rcases nativeTwoBranchMatchRuleOf_cases isTwoBranchMatch with
-        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | pathInductionElim ctx generator rule armMotive armBase armWitness armTypeCode armEndpoint resultType
-      isPathInduction witnessTyped baseCaseTyped =>
-      obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | projectionElim ctx generator rule armPairTerm firstType secondType isProjection pairTyped =>
-      rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst ruleEq
-        rcases subjectShape with ⟨⟩
-        exact ⟨firstType, _, pairTyped, Conv.refl _⟩
-  | recursiveUnaryIntro ctx generator rule armChild isRecursiveUnary childTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveBinaryIntro ctx generator rule head tail elementType isRecursiveBinary headTyped
-      tailTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | pinnedUnaryIntro ctx generator rule child elementType isPinnedUnary childTyped =>
-      obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | nullaryFreeTypeIntro ctx generator rule elementType elementLevel flag isNullaryFreeType
-      elementTypeFormed =>
-      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
-          ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | coproductIntro ctx generator rule value pinnedType freeType freeLevel flag isCoproduct valueTyped
-      freeTypeFormed =>
-      rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | nonDependentBinaryIntro ctx generator rule firstChild secondChild firstType secondType
-      isNonDependentBinary firstTyped secondTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | reflexiveIntro ctx generator rule witness witnessType isReflexive witnessTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeReflexiveDataIntroRuleOf_cases isReflexive
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | listElim ctx generator rule armMotive armScrut armNil armCons elementType resultType
-      isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
-      obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+      rcases subjectShape with ⟨⟩
+      exact ⟨elementType, _, scrutineeTyped, nilBranchTyped, consBranchTyped, Conv.refl _⟩
 
 end FX1Poly.Typed

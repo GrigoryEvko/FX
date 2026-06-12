@@ -1,12 +1,12 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeNativeUnionCanonicalForms
+import FX1Poly.Typed.HasTypeUnionCanonicalForms
 
-/-! # FX1PolyAudit/AuditHasTypeNativeUnionCanonicalForms — zero-axiom gate for NATIVE-38
+/-! # FX1PolyAudit/AuditHasTypeUnionCanonicalForms — zero-axiom gate for NATIVE-38
 
 Per-declaration `#assert_no_axioms` over every shipped decl of
-`FX1Poly.Typed.HasTypeNativeUnionCanonicalForms`: the generator-containment substrate, the
+`FX1Poly.Typed.HasTypeUnionCanonicalForms`: the generator-containment substrate, the
 head-stability pack, the lane-code/lane-value vocabulary with its pinning lemmas, the two table
-peels, and the headline `HasTypeNativeUnion.closedNormalLaneCanonicalForms` master with its bool/nat
+peels, and the headline `HasTypeUnion.closedNormalLaneCanonicalForms` master with its bool/nat
 canonicity corollaries.
 
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega` is introduced
@@ -80,17 +80,17 @@ open FX1Poly.Core FX1Poly.Typed
 
 /-! ## ★ The NATIVE-38 headline + corollaries -/
 
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalLaneCanonicalForms
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalBoolCanonicalForms
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalNatCanonicalForms
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalOptionCanonicalForms
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalEitherCanonicalForms
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalProductCanonicalForms
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalIdentityCanonicalForms
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalPiCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalLaneCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalBoolCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalNatCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalOptionCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalEitherCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalProductCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalIdentityCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalPiCanonicalForms
 
 /-! ## The list lane (the lane the master was missing) -/
 
 #assert_no_axioms FX1Poly.Typed.LaneValue.atList
 #assert_no_axioms FX1Poly.Typed.IsLaneCode.pinnedByListHead
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalListCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalListCanonicalForms

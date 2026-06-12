@@ -4,13 +4,13 @@ import FX1Poly.Typed.TypedBySomeEngine
 
 The empirical ground truth the unified-signature campaign (NATIVE-00..63) WAS built on, recorded
 as a machine-checked ledger.  **The campaign has CONCLUDED** (NATIVE-42/43/44/45 endgame): the
-kernel's typed layer is now the single union judgment `HasTypeNativeUnion`, and the legacy
+kernel's typed layer is now the single union judgment `HasTypeUnion`, and the legacy
 standalone `HasTypeDesc*` engine zoo that this census surveyed has been DELETED.  The grown engine
 `HasTypeDescPi` survives as the minimal Π-fragment host (var / conv / universe / piIntro / piElim,
 table-driven via `typingRuleDescOf` / `introRuleDescOf` / `elimRuleDescOf` with the cascade-free
 GTL/TG/SR-U metatheory) and is embedded into the union as the `ofGrown` arm; every data / former /
 eliminator family that the standalone engines once carried now lives as a table-driven ARM of
-`HasTypeNativeUnion`, reading the NATIVE rule tables in `NativeUnionRuleTables`
+`HasTypeUnion`, reading the NATIVE rule tables in `NativeUnionRuleTables`
 (`baseTypeRuleDescOf` / `dataIntroNullaryRuleDescOf` / `flatTypingRuleDescOf` / `gradedIntroRuleOf`
 / `generalElimRuleOf` / the `native*RuleOf` recursive-elim and data-intro tables).
 

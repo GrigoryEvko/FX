@@ -779,8 +779,8 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- CAN-4/CAN-5 RETIRED by NATIVE-42: the TypedByValueEngine zoo mini-union and its
 -- closedNormalSubjectHeadCombined / closedNormalNatCanonicalFormsCombined assemblies are
 -- superseded by the ONE-judgment NATIVE-38 union lane master and its per-lane corollaries
--- (HasTypeNativeUnion.closedNormalLaneCanonicalForms + closedNormalNatCanonicalForms etc.,
--- gated in AuditHasTypeNativeUnionCanonicalForms and re-verified in CapstoneSignoff).
+-- (HasTypeUnion.closedNormalLaneCanonicalForms + closedNormalNatCanonicalForms etc.,
+-- gated in AuditHasTypeUnionCanonicalForms and re-verified in CapstoneSignoff).
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtListType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtIdType

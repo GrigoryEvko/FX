@@ -11,8 +11,8 @@ below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `nat
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalNatNumeralBounded
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalNatNumeral
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalNatNumeral.numeralTwo
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalNatNumeralBounded
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalNatNumeral
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalNatNumeral.numeralTwo
 
 end FX1PolyAudit

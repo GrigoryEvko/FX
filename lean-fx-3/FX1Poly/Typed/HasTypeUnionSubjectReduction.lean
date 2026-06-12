@@ -1,11 +1,11 @@
-import FX1Poly.Typed.HasTypeNativeUnionMatchInversion
-import FX1Poly.Typed.HasTypeNativeUnionPathProjInversion
-import FX1Poly.Typed.HasTypeNativeUnionRecursiveInversion
-import FX1Poly.Typed.HasTypeNativeUnionSubstitution
+import FX1Poly.Typed.HasTypeUnionMatchInversion
+import FX1Poly.Typed.HasTypeUnionPathProjInversion
+import FX1Poly.Typed.HasTypeUnionRecursiveInversion
+import FX1Poly.Typed.HasTypeUnionSubstitution
 import FX1Poly.Typed.RecursorHostFold
 
-/-! # FX1Poly/Typed/HasTypeNativeUnionSubjectReduction — root-redex subject reduction for the unified
-    judgment `HasTypeNativeUnion`.
+/-! # FX1Poly/Typed/HasTypeUnionSubjectReduction — root-redex subject reduction for the unified
+    judgment `HasTypeUnion`.
 
 This file proves ROOT-redex subject reduction over the 24-arm native union: for each root reduction
 shape (β plus the sixteen ι eliminator rules of core `Step`), a union typing of the redex at classifier
@@ -56,10 +56,10 @@ classifier (the inversion surfaces it directly). -/
 theorem unionSubjectReductionBoolElimTrue {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {thenBranch elseBranch classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context
+    (typed : HasTypeUnion profile context
       (boolElimCell motive boolTrueCell thenBranch elseBranch) classifier) :
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
-    HasTypeNativeUnion profile context thenBranch classifier := by
+    HasTypeUnion profile context thenBranch classifier := by
   obtain ⟨_scrutineeTyped, thenBranchTyped, _elseBranchTyped⟩ := typed.invertAtBoolElimHead rfl
   exact ⟨Step.iotaBoolTrue, thenBranchTyped⟩
 
@@ -67,10 +67,10 @@ theorem unionSubjectReductionBoolElimTrue {profile : PolyProfile} {scope : Nat}
 theorem unionSubjectReductionBoolElimFalse {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {thenBranch elseBranch classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context
+    (typed : HasTypeUnion profile context
       (boolElimCell motive boolFalseCell thenBranch elseBranch) classifier) :
     Step (boolElimCell motive boolFalseCell thenBranch elseBranch) elseBranch ∧
-    HasTypeNativeUnion profile context elseBranch classifier := by
+    HasTypeUnion profile context elseBranch classifier := by
   obtain ⟨_scrutineeTyped, _thenBranchTyped, elseBranchTyped⟩ := typed.invertAtBoolElimHead rfl
   exact ⟨Step.iotaBoolFalse, elseBranchTyped⟩
 
@@ -80,10 +80,10 @@ theorem unionSubjectReductionNatElimZero {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
     {stepBranch : RawTerm (scope + 2)} {classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context
+    (typed : HasTypeUnion profile context
       (natElimCell motive zeroBranch stepBranch natZeroCell) classifier) :
     Step (natElimCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
-    HasTypeNativeUnion profile context zeroBranch classifier := by
+    HasTypeUnion profile context zeroBranch classifier := by
   obtain ⟨_scrutineeTyped, zeroBranchTyped⟩ := typed.invertAtNatElimHead rfl
   exact ⟨Step.iotaNatElimZero, zeroBranchTyped⟩
 
@@ -92,10 +92,10 @@ theorem unionSubjectReductionNatRecZero {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
     {stepBranch : RawTerm (scope + 2)} {classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context
+    (typed : HasTypeUnion profile context
       (natRecCell motive zeroBranch stepBranch natZeroCell) classifier) :
     Step (natRecCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
-    HasTypeNativeUnion profile context zeroBranch classifier := by
+    HasTypeUnion profile context zeroBranch classifier := by
   obtain ⟨_scrutineeTyped, zeroBranchTyped⟩ := typed.invertAtNatRecHead rfl
   exact ⟨Step.iotaNatRecZero, zeroBranchTyped⟩
 
@@ -105,16 +105,16 @@ theorem unionSubjectReductionNatRecZero {profile : PolyProfile} {scope : Nat}
 theorem unionSubjectReductionListElimNil {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {nilBranch consBranch classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context
+    (typed : HasTypeUnion profile context
       (listElimCell motive listNilCell nilBranch consBranch) classifier) :
     Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
     ∃ pinnedClassifier : RawTerm scope,
-      HasTypeNativeUnion profile context nilBranch pinnedClassifier ∧
+      HasTypeUnion profile context nilBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
   obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, nilBranchHostTyped, _consBranchTyped,
     convPinned⟩ := typed.invertAtListElimHead rfl
   exact ⟨Step.iotaListElimNil,
-    pinnedClassifier, HasTypeNativeUnion.ofGrown nilBranchHostTyped, convPinned⟩
+    pinnedClassifier, HasTypeUnion.ofGrown nilBranchHostTyped, convPinned⟩
 
 /-- **optionMatch on `optionNone` selects the none-branch, typed.**  A union-typed `optionMatch` on
 `optionNone` ι-steps to the none-branch (`Step.iotaOptionMatchNone`), union-typed at the same
@@ -122,11 +122,11 @@ classifier. -/
 theorem unionSubjectReductionOptionMatchNone {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {noneBranch someBranch classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context
+    (typed : HasTypeUnion profile context
       (optionMatchCell motive noneBranch someBranch optionNoneCell) classifier) :
     Step (optionMatchCell motive noneBranch someBranch optionNoneCell) noneBranch ∧
     ∃ pinnedClassifier : RawTerm scope,
-      HasTypeNativeUnion profile context noneBranch pinnedClassifier ∧
+      HasTypeUnion profile context noneBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
   obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, noneBranchTyped, _someBranchTyped,
     convPinned⟩ := typed.invertAtOptionMatchHead rfl
@@ -137,10 +137,10 @@ case (`Step.iotaIdJRefl`), union-typed at the same classifier. -/
 theorem unionSubjectReductionIdJRefl {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 2)} {baseCase rawWitness classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context
+    (typed : HasTypeUnion profile context
       (idJCell motive baseCase (reflCell rawWitness)) classifier) :
     Step (idJCell motive baseCase (reflCell rawWitness)) baseCase ∧
-    HasTypeNativeUnion profile context baseCase classifier := by
+    HasTypeUnion profile context baseCase classifier := by
   obtain ⟨_typeCode, _endpoint, _witnessTyped, baseCaseTyped⟩ := typed.invertAtIdJHead rfl
   exact ⟨Step.iotaIdJRefl, baseCaseTyped⟩
 
@@ -161,16 +161,16 @@ theorem unionSubjectReductionNatElimSucc {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
     (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
-    (predecessorTyped : HasTypeNativeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeNativeUnion profile context zeroBranch resultType)
-    (branchTyped : HasTypeNativeUnion profile
+    (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (branchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
       succBranch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
     (unionTransport : UnionSubstPairTransports profile context natTypeCell resultType) :
     Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType :=
   natElimSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor resultType
     predecessorTyped zeroBranchTyped branchTyped unionTransport
@@ -181,16 +181,16 @@ theorem unionSubjectReductionNatRecSucc {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
     (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
-    (predecessorTyped : HasTypeNativeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeNativeUnion profile context zeroBranch resultType)
-    (branchTyped : HasTypeNativeUnion profile
+    (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (branchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
       succBranch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
     (unionTransport : UnionSubstPairTransports profile context natTypeCell resultType) :
     Step (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natRecSuccContractum motive zeroBranch succBranch predecessor) ∧
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (natRecSuccContractum motive zeroBranch succBranch predecessor) resultType :=
   natRecSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor resultType
     predecessorTyped zeroBranchTyped branchTyped unionTransport
@@ -207,58 +207,58 @@ structure NativeUnionRootRedexSubjectReductionCoverage (profile : PolyProfile) :
   /-- boolElim-true reduct is typed. -/
   boolElimTrueReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {thenBranch elseBranch classifier : RawTerm scope},
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (boolElimCell motive boolTrueCell thenBranch elseBranch) classifier →
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
-    HasTypeNativeUnion profile context thenBranch classifier
+    HasTypeUnion profile context thenBranch classifier
   /-- boolElim-false reduct is typed. -/
   boolElimFalseReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {thenBranch elseBranch classifier : RawTerm scope},
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (boolElimCell motive boolFalseCell thenBranch elseBranch) classifier →
     Step (boolElimCell motive boolFalseCell thenBranch elseBranch) elseBranch ∧
-    HasTypeNativeUnion profile context elseBranch classifier
+    HasTypeUnion profile context elseBranch classifier
   /-- natElim-zero reduct is typed. -/
   natElimZeroReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
     {stepBranch : RawTerm (scope + 2)} {classifier : RawTerm scope},
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (natElimCell motive zeroBranch stepBranch natZeroCell) classifier →
     Step (natElimCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
-    HasTypeNativeUnion profile context zeroBranch classifier
+    HasTypeUnion profile context zeroBranch classifier
   /-- natRec-zero reduct is typed. -/
   natRecZeroReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
     {stepBranch : RawTerm (scope + 2)} {classifier : RawTerm scope},
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (natRecCell motive zeroBranch stepBranch natZeroCell) classifier →
     Step (natRecCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
-    HasTypeNativeUnion profile context zeroBranch classifier
+    HasTypeUnion profile context zeroBranch classifier
   /-- listElim-nil reduct is typed (Conv-modulo: the conv arm reclassifies the host-typed nil branch). -/
   listElimNilReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {nilBranch consBranch classifier : RawTerm scope},
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (listElimCell motive listNilCell nilBranch consBranch) classifier →
     Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
     ∃ pinnedClassifier : RawTerm scope,
-      HasTypeNativeUnion profile context nilBranch pinnedClassifier ∧
+      HasTypeUnion profile context nilBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier
   /-- optionMatch-none reduct is typed (Conv-modulo: the conv arm reclassifies the none branch). -/
   optionMatchNoneReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {noneBranch someBranch classifier : RawTerm scope},
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (optionMatchCell motive noneBranch someBranch optionNoneCell) classifier →
     Step (optionMatchCell motive noneBranch someBranch optionNoneCell) noneBranch ∧
     ∃ pinnedClassifier : RawTerm scope,
-      HasTypeNativeUnion profile context noneBranch pinnedClassifier ∧
+      HasTypeUnion profile context noneBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier
   /-- idJ-refl reduct is typed. -/
   idJReflReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 2)} {baseCase rawWitness classifier : RawTerm scope},
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (idJCell motive baseCase (reflCell rawWitness)) classifier →
     Step (idJCell motive baseCase (reflCell rawWitness)) baseCase ∧
-    HasTypeNativeUnion profile context baseCase classifier
+    HasTypeUnion profile context baseCase classifier
 
 /-- **★ The root-redex subject-reduction coverage gate** — inhabited by the shipped branch-selection
 theorems, so the exercised root-redex subject-reduction property set can NOT silently shrink. -/
@@ -315,10 +315,10 @@ remaining ι, surfaced as `IsDeferredRootRedexShape`).  Total over `Step`; the b
 carry their typing, the rest are honestly scoped. -/
 theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {redex reduct classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context redex classifier)
+    (typed : HasTypeUnion profile context redex classifier)
     (stepHyp : Step redex reduct) :
     (∃ pinnedClassifier : RawTerm scope,
-        HasTypeNativeUnion profile context reduct pinnedClassifier ∧
+        HasTypeUnion profile context reduct pinnedClassifier ∧
         Conv pinnedClassifier classifier)
     ∨ (∃ (generator : Generator) (payload : generator.payload scope)
          (childrenBefore childrenAfter : RawTermChildren generator.binderShifts scope),

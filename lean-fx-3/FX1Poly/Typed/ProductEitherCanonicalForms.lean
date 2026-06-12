@@ -30,7 +30,7 @@ The grown engine contributes nothing — it has no closed-normal inhabitant of a
     instances): no closed-normal grown term inhabits a product / either type.
   * (The zoo-level headlines `closedNormalProductCanonicalForms` / `closedNormalEitherCanonicalForms`
     were RETIRED by NATIVE-42 — their union restatements
-    `HasTypeNativeUnion.closedNormalProductCanonicalForms` / `…EitherCanonicalForms` are the live
+    `HasTypeUnion.closedNormalProductCanonicalForms` / `…EitherCanonicalForms` are the live
     canonicity statements; the rigidities and the grown rule-outs are their load-bearing substrate
     and STAY.)
 

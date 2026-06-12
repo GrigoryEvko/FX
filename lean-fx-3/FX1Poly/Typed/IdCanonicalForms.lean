@@ -32,7 +32,7 @@ non-convertibilities use the HEAD-STABLE route directly:
   * **`HasTypeDescPi.noClosedNormalTermAtIdType`** — the grown rule-out (CANON-1c instance): no closed-normal
     grown term inhabits an identity type.
   * (The zoo-level headline `closedNormalIdCanonicalForms` was RETIRED by NATIVE-42 — its union
-    restatement `HasTypeNativeUnion.closedNormalIdentityCanonicalForms` is the live canonicity statement;
+    restatement `HasTypeUnion.closedNormalIdentityCanonicalForms` is the live canonicity statement;
     the rigidities and the grown rule-out are its load-bearing substrate and STAY.)
 
 ## SR deferral (unchanged)

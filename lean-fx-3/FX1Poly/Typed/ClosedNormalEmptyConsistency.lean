@@ -5,7 +5,7 @@ import FX1Poly.Typed.EmptyTypeValueInversion
 
 The empty type is THE consistency type (`SN-050`: the grown engine has no closed inhabitant of `Empty`).
 The nullary formation/intro content of the kernel — the `dataIntroNullary` row (data values) and the
-`baseTypeFormation` row (base type codes) of `HasTypeNativeUnion` — sits alongside the grown `HasTypeDescPi`.
+`baseTypeFormation` row (base type codes) of `HasTypeUnion` — sits alongside the grown `HasTypeDescPi`.
 This file confirms those layers PRESERVE consistency: no formation/intro layer inhabits `emptyTypeCell` for
 closed-normal subjects.  The empty-type twin of `closedNormalSigmaTypeUninhabited`, and the consistency-grade
 counterpart of `closedNormalBoolCanonicalForms`.

@@ -1,13 +1,13 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.NativeUnionRuleTables
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 
 /-! # FX1PolyAudit/AuditNativeWaveUnionResidency — NATIVE-36 audit shard (the data-eliminator,
     n-ary/recursive data-intro, and listElim families landed IN the real union judgment)
 
 Per-declaration zero-axiom gate for the NATIVE-36 wave: the native twin rule tables (three data-elim
 shapes + seven data-intro shapes + the listElim shape) with their rows / tables / metadata /
-table-inversion lemmas, the new arms on `HasTypeNativeUnion` (the five scrutinee embeddings + the three
+table-inversion lemmas, the new arms on `HasTypeUnion` (the five scrutinee embeddings + the three
 data-elim arms + the seven data-intro arms + the listElim arm), the union-level headline smokes and
 coverage gate, and the three spike→union transfers (each with its spike-table-inversion ingredients).
 Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
@@ -103,33 +103,33 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.listElimNativeRule_consContractum_eq
 #assert_no_axioms FX1Poly.Typed.listElimNativeRuleOf_cases
 
-/-! ## HasTypeNativeUnion.lean — the new arms + the headline smokes + the coverage gate
+/-! ## HasTypeUnion.lean — the new arms + the headline smokes + the coverage gate
 
-The new arms are constructors of `HasTypeNativeUnion`; the inductive itself carries them, so gating the
+The new arms are constructors of `HasTypeUnion`; the inductive itself carries them, so gating the
 inductive certifies every arm's well-formedness is axiom-free.  The smokes and coverage gate are gated
 individually. -/
 
 -- The (extended) union inductive carrying all sixteen new arms.
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion
 
 -- The five scrutinee-embedding arms (data-elim scrutinees + the list scrutinee/intro base).
 
 -- The three table-driven non-recursive data-eliminator arms.
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.twoBranchMatchElim
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.pathInductionElim
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.projectionElim
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.twoBranchMatchElim
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.pathInductionElim
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.projectionElim
 
 -- The seven table-driven data-intro arms.
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.recursiveUnaryIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.recursiveBinaryIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.pinnedUnaryIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.nullaryFreeTypeIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.coproductIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.nonDependentBinaryIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.reflexiveIntro
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.recursiveUnaryIntro
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.recursiveBinaryIntro
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.pinnedUnaryIntro
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.nullaryFreeTypeIntro
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.coproductIntro
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.nonDependentBinaryIntro
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.reflexiveIntro
 
 -- The listElim arm (discharging the batch-1 pin).
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.listElim
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.listElim
 
 -- The headline smokes through the new arms + the coverage record / witness.
 #assert_no_axioms FX1Poly.Typed.numeralTwoTypedThroughUnionRecursiveIntroTwice

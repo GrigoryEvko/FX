@@ -3,7 +3,7 @@ import FX1PolyAudit.FX0CrossCheckCertified
 import FX1Poly.Typed.MilestoneASpineValueLayer
 import FX1Poly.Typed.NatNumeralUnionCanonicity
 import FX1Poly.Typed.ClosedBoolCanonicity
-import FX1Poly.Typed.HasTypeNativeUnionCanonicalForms
+import FX1Poly.Typed.HasTypeUnionCanonicalForms
 import FX1Poly.Typed.HonestCapstoneSignoff
 import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.ClosedStronglyNormalizing
@@ -30,11 +30,11 @@ The three soundness pillars of the grown typed kernel `HasTypeDescPi`, each unco
   * consistency:       `emptyConsistencyViaCandidateBridge` (candidate bridge)
                        + `emptyTypeConsistencySyntactic` (independent syntactic confirm)
   * canonicity:        `closedBoolCanonicalForms` (bool, 3 engines),
-                       `HasTypeNativeUnion.closedNormalNatNumeral` (DEEP Nat numerals over the ONE
+                       `HasTypeUnion.closedNormalNatNumeral` (DEEP Nat numerals over the ONE
                        union judgment — the NATIVE-42 re-point of the retired zoo-level
                        `closedNatCanonicalForms`; closed-NORMAL + bridge-free hypotheses, the
                        reduces-to-numeral form returns with union SR/SN), and
-                       `HasTypeNativeUnion.closedNormalNatCanonicalForms` (per-classifier,
+                       `HasTypeUnion.closedNormalNatCanonicalForms` (per-classifier,
                        constructor heads — the CAN-5 assembly carried by the NATIVE-38 union lane
                        master since NATIVE-42 retired the zoo mini-union)
 
@@ -109,12 +109,12 @@ structure MilestoneASpineSignoff (profile : PolyProfile) : Prop where
   /-- SN + consistency + bool canonicity, bundled (`milestoneAValueLayerSpineHolds`). -/
   valueLayerSpine : MilestoneAValueLayerSpine profile
   /-- Nat canonicity over the ONE union judgment: a closed NORMAL union-typed term at `natTypeCell`
-  with no bridge-fragment occurrence is a DEEP numeral (`HasTypeNativeUnion.closedNormalNatNumeral`
+  with no bridge-fragment occurrence is a DEEP numeral (`HasTypeUnion.closedNormalNatNumeral`
   — the NATIVE-42 re-point of the retired zoo-level `closedNatCanonicalForms`, whose
   reduces-to-numeral content was reflexive on the intro fragment; the reduces form over the union
   returns with the deferred SR/SN arc). -/
   natCanonicity : ∀ {subject : RawTerm 0},
-    HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0) subject
+    HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) subject
       natTypeCell →
     RawTerm.isStepNormalForm subject →
     RawTerm.containsGeneratorBool .gen_pathApp subject = false →
@@ -125,13 +125,13 @@ structure MilestoneASpineSignoff (profile : PolyProfile) : Prop where
   snTriangulationHonest : FX1Poly.Core.ParityMatrix.honestCapstoneMet
 
 /-- **★ The Milestone-A spine sign-off HOLDS** — each field is the shipped named theorem:
-`milestoneAValueLayerSpineHolds`, `HasTypeNativeUnion.closedNormalNatNumeral`,
+`milestoneAValueLayerSpineHolds`, `HasTypeUnion.closedNormalNatNumeral`,
 `honestCapstoneMet_holds`. -/
 theorem milestoneASpineSignoffHolds {profile : PolyProfile} :
     MilestoneASpineSignoff profile where
   valueLayerSpine := milestoneAValueLayerSpineHolds
   natCanonicity typed normal pathAppFree pathLamFree :=
-    HasTypeNativeUnion.closedNormalNatNumeral typed normal pathAppFree pathLamFree
+    HasTypeUnion.closedNormalNatNumeral typed normal pathAppFree pathLamFree
   snTriangulationHonest := FX1Poly.Core.ParityMatrix.honestCapstoneMet_holds
 
 /-- **The Milestone-A₀ sign-off record (#464)** — the §11.8.12.0 release gate as ONE checked
@@ -241,8 +241,8 @@ end FX1Poly.Typed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.emptyConsistencyViaCandidateBridge
 #assert_no_axioms FX1Poly.Typed.closedBoolCanonicalForms
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalNatNumeral
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalNatCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalNatNumeral
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalNatCanonicalForms
 #assert_no_axioms FX1Poly.Typed.milestoneAValueLayerSpineHolds
 -- ★ the positive assembled spine capstone (#501)
 #assert_no_axioms FX1Poly.Typed.milestoneASpineSignoffHolds

@@ -1,9 +1,9 @@
-import FX1Poly.Typed.HasTypeNativeUnionInversion
+import FX1Poly.Typed.HasTypeUnionInversion
 
-/-! # FX1Poly/Typed/HasTypeNativeUnionMatchInversion — NATIVE-37 part d: per-head inversions for the
+/-! # FX1Poly/Typed/HasTypeUnionMatchInversion — NATIVE-37 part d: per-head inversions for the
     two-branch-match eliminator heads (boolElim / optionMatch / eitherMatch) + their REVERSE ADEQUACY.
 
-This file extends the inversion substrate established in `HasTypeNativeUnionInversion` (four heads:
+This file extends the inversion substrate established in `HasTypeUnionInversion` (four heads:
 pathLam / lam / natElim / natSucc) to the three two-branch-match data-eliminator heads.  All three are
 survivors of the SAME union arm — `twoBranchMatchElim` — pinned to their respective rows by the shipped
 `nativeTwoBranchMatchRuleOf_cases` row inverter.
@@ -51,20 +51,20 @@ two-branch-match typing at the `gen_boolElim` row: the scrutinee is union-typed 
 branches are union-typed at the result classifier.  (The motive is stored, not premised — premise parity
 with `HasTypeDescBoolElim`.)  No grown disjunct: `boolElimCell` is untypable in the grown engine (it is a
 recursive eliminator in no host root). -/
-theorem HasTypeNativeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {motive : RawTerm (scope + 1)} {scrutinee thenBranch elseBranch : RawTerm scope}
-    (derivation : HasTypeNativeUnion profile context subject classifier)
+    (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = boolElimCell motive scrutinee thenBranch elseBranch) :
-    HasTypeNativeUnion profile context scrutinee boolTypeCell ∧
-    HasTypeNativeUnion profile context thenBranch classifier ∧
-    HasTypeNativeUnion profile context elseBranch classifier := by
+    HasTypeUnion profile context scrutinee boolTypeCell ∧
+    HasTypeUnion profile context thenBranch classifier ∧
+    HasTypeUnion profile context elseBranch classifier := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped⟩ := innerInversion subjectShape
       exact ⟨scrutineeTyped,
-        HasTypeNativeUnion.conv levelExpr flag thenBranchTyped converts reclassifierTyped,
-        HasTypeNativeUnion.conv levelExpr flag elseBranchTyped converts reclassifierTyped⟩
+        HasTypeUnion.conv levelExpr flag thenBranchTyped converts reclassifierTyped,
+        HasTypeUnion.conv levelExpr flag elseBranchTyped converts reclassifierTyped⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.boolElimCellHasNoTyping (fun contra => contra)
@@ -184,15 +184,15 @@ EXACTLY a two-branch-match typing at the `gen_optionMatch` row: for some element
 is union-typed at `option(A)`, the None branch is union-typed at the result classifier, and the Some
 branch is union-typed at the non-dependent handler `A → C`.  No grown disjunct (`optionMatchCell` is a
 recursive eliminator, untypable in the grown engine). -/
-theorem HasTypeNativeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {motive : RawTerm (scope + 1)} {noneBranch someBranch scrutinee : RawTerm scope}
-    (derivation : HasTypeNativeUnion profile context subject classifier)
+    (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = optionMatchCell motive noneBranch someBranch scrutinee) :
     ∃ (elementType pinnedClassifier : RawTerm scope),
-      HasTypeNativeUnion profile context scrutinee (optionTypeCell elementType) ∧
-      HasTypeNativeUnion profile context noneBranch pinnedClassifier ∧
-      HasTypeNativeUnion profile context someBranch
+      HasTypeUnion profile context scrutinee (optionTypeCell elementType) ∧
+      HasTypeUnion profile context noneBranch pinnedClassifier ∧
+      HasTypeUnion profile context someBranch
         (piTyCodeCell elementType (RawTerm.weaken pinnedClassifier)) ∧
       Conv pinnedClassifier classifier := by
   induction derivation with
@@ -322,16 +322,16 @@ EXACTLY a two-branch-match typing at the `gen_eitherMatch` row: for some left/ri
 scrutinee is union-typed at `either(A, B)`, the left branch is union-typed at the handler `A → C`, and
 the right branch is union-typed at `B → C`.  No grown disjunct (`eitherMatchCell` is a recursive
 eliminator, untypable in the grown engine). -/
-theorem HasTypeNativeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {motive : RawTerm (scope + 1)} {leftBranch rightBranch scrutinee : RawTerm scope}
-    (derivation : HasTypeNativeUnion profile context subject classifier)
+    (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = eitherMatchCell motive leftBranch rightBranch scrutinee) :
     ∃ (leftType rightType pinnedClassifier : RawTerm scope),
-      HasTypeNativeUnion profile context scrutinee (eitherTypeCell leftType rightType) ∧
-      HasTypeNativeUnion profile context leftBranch
+      HasTypeUnion profile context scrutinee (eitherTypeCell leftType rightType) ∧
+      HasTypeUnion profile context leftBranch
         (piTyCodeCell leftType (RawTerm.weaken pinnedClassifier)) ∧
-      HasTypeNativeUnion profile context rightBranch
+      HasTypeUnion profile context rightBranch
         (piTyCodeCell rightType (RawTerm.weaken pinnedClassifier)) ∧
       Conv pinnedClassifier classifier := by
   induction derivation with

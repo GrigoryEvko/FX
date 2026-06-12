@@ -27,17 +27,17 @@ computed-reduct witnesses collapse the substitution before firing.
 ## The retired bridge typing engine (NATIVE-45)
 
 The bespoke `HasTypeDescBridge` typing engine has been RETIRED: the native union
-`HasTypeNativeUnion` (and its keystone substrate `HasTypeDescGradedIntro` for path INTRO,
+`HasTypeUnion` (and its keystone substrate `HasTypeDescGradedIntro` for path INTRO,
 `HasTypeDescGeneralElim` for path ELIM) types everything the bridge engine did, so this file
-no longer imports it.  This file sits UPSTREAM of `HasTypeNativeUnion` and `HasTypeDescGeneralElim`
+no longer imports it.  This file sits UPSTREAM of `HasTypeUnion` and `HasTypeDescGeneralElim`
 in the import order, so its typed companions speak only the engine available here — the native
 graded-intro engine `HasTypeDescGradedIntro` (the substrate the union's `gradedBinderIntro` arm
 embeds) for path INTRO.  The elimination-side typed companions (the applied path, the typed
 round-trips, the cross-engine SR instances) now live DOWNSTREAM where the elim engine is in scope:
 `HasTypeDescGeneralElim.gradedIntroEndpointIotaComputesTyped` (the typed endpoint-ι) and
-`HasTypeNativeUnion.endpointRedexNativelyTypedWhole` (the whole redex in one union derivation);
+`HasTypeUnion.endpointRedexNativelyTypedWhole` (the whole redex in one union derivation);
 the engine-specific inversion stack is subsumed by the union inversion suite
-(`HasTypeNativeUnionInversion` / `HasTypeNativeUnionPathProjInversion`).
+(`HasTypeUnionInversion` / `HasTypeUnionPathProjInversion`).
 
 ## What ships here
 
@@ -168,7 +168,7 @@ parametricity), with the affine usage premise PROVED at grade `0`
 `subst0_weaken`.  Stated against the live native graded-intro engine; its endpoint application
 (the elimination half) computes back to `t` with the same grown typing downstream
 (`HasTypeDescGeneralElim.gradedIntroEndpointIotaComputesTyped`,
-`HasTypeNativeUnion.endpointRedexNativelyTypedWhole`). -/
+`HasTypeUnion.endpointRedexNativelyTypedWhole`). -/
 theorem constantBridgeGradedOfTyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {constantBody typeCode : RawTerm scope}
     (bodyTyped : HasTypeDescPi profile context constantBody typeCode) :
@@ -186,9 +186,9 @@ theorem constantBridgeGradedOfTyped {profile : PolyProfile} {scope : Nat}
 NO grown-typed cell (`isUntypableHead gen_interval0` holds for the grown-only classifier).  So
 the general endpoint-β SR cannot be stated against `HasTypeDescPi` alone: a general-`ε` reduct
 mixes grown structure with interval leaves.  The honest general SR target is the native union
-`HasTypeNativeUnion` (interval endpoints are native `dataIntroNullary` rows) — the wall FALLS
+`HasTypeUnion` (interval endpoints are native `dataIntroNullary` rows) — the wall FALLS
 into the union, witnessed downstream by `BridgeEndpointNativeSubjectReduction`.  Consumed by the
-union adequacy (`HasTypeNativeUnion`) to refute a grown image for the bare interval. -/
+union adequacy (`HasTypeUnion`) to refute a grown image for the bare interval. -/
 theorem intervalZeroGrownUntypable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context (intervalZeroCell (scope := scope)) classifier) :

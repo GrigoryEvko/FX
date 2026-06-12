@@ -22,7 +22,7 @@ the carrier, a constant family — the degenerate case of the dependent `subst0`
     `HasTypeDescPi.piElim`; the pathApp row covers the NEUTRAL-path regime (a path VARIABLE is
     Pi-typed at its bridge-code type) — the canonical-path (pathLam-headed) regime is where endpoint-ι
     FIRES instead (below).  Full path-elimination adequacy with the path/argument premises in the SAME
-    judgment is the native union `HasTypeNativeUnion`'s `generalElim` arm (recursive premises in the
+    judgment is the native union `HasTypeUnion`'s `generalElim` arm (recursive premises in the
     union itself) — the judgment boundary the bespoke (now-retired, NATIVE-45) engine could not cross
     dissolves there.
   * `HasTypeDescGeneralElim.soundness` — every generic typing is a `piElim`-built Pi derivation (app

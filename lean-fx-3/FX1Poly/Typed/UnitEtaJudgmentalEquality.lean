@@ -1,5 +1,5 @@
 import FX1Poly.Typed.BetaEtaConvDecidable
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Typed.RawTermHeadGenerator
 import FX1Poly.Typed.WfContextDescPiFromWfContextDesc
 
@@ -59,7 +59,7 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- **Nullary data-value typing — the union's `dataIntroNullary` arm, projected.**  A childless data
 constructor (`boolTrue` / `boolFalse` / `unit` / `interval0` / `interval1` / `natZero`) inhabits its
-tabled output type-code.  This is exactly the content of `HasTypeNativeUnion.dataIntroNullary`, kept as a
+tabled output type-code.  This is exactly the content of `HasTypeUnion.dataIntroNullary`, kept as a
 standalone projection so the unit-η judgment can carry a value-typed disjunct WITHOUT pulling the whole
 union inductive (whose other arms would also type `gen_pair` cells, defeating the `subjectIsUnit`
 inversion below).  Construct it from the union arm via `ofUnion`. -/
@@ -77,10 +77,10 @@ faithful (every nullary value the projection types is union-typed at the same cl
 theorem NullaryDataValueTyped.ofUnion {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (typed : NullaryDataValueTyped profile context subject classifier) :
-    HasTypeNativeUnion profile context subject classifier := by
+    HasTypeUnion profile context subject classifier := by
   cases typed with
   | intro generator payload children rule isDataIntro =>
-      exact HasTypeNativeUnion.dataIntroNullary context generator payload children rule isDataIntro
+      exact HasTypeUnion.dataIntroNullary context generator payload children rule isDataIntro
 
 /-- **`unit : unitCode` at the nullary value layer.**  The ONE canonical inhabitant of the unit type,
 typed at its code — the substrate the typed unit-η judgment collapses to (the union's `dataIntroNullary`

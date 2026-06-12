@@ -8,7 +8,7 @@ in SOME arm of the unified judgment.  The shipped classifiers (`typingRoleOf`, `
 `isUntypableHead`) route EXCLUSIVELY through the GROWN fragment `HasTypeDescPi`'s three tables
 (`typingRuleDescOf` / `introRuleDescOf` / `elimRuleDescOf`).  Consequently they brand every data constructor /
 eliminator and every flat / base type-code as "untypable" — e.g. `isUntypableHead gen_boolTrue = true` — even
-though `gen_boolTrue` IS typed (by the `dataIntroNullary` arm of `HasTypeNativeUnion`).  That CONFLATES two
+though `gen_boolTrue` IS typed (by the `dataIntroNullary` arm of `HasTypeUnion`).  That CONFLATES two
 genuinely different kinds of generator:
 
   * a MEANINGFUL head not typed by the grown fragment but typed by another union arm (`gen_boolTrue`,

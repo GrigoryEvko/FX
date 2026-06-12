@@ -10,16 +10,16 @@ import FX1Poly.Typed.HasTypeDescSubstitution
 
 The non-recursive data-eliminator rows, the n-ary/recursive data-constructor rows, and the listElim
 row currently live in spike-sibling judgments (`DataElimUnionSpike` / `DataIntroNaryUnionSpike` /
-`ListElimUnionSpike`) whose rule tables are defined in files that IMPORT `HasTypeNativeUnion` — so the
+`ListElimUnionSpike`) whose rule tables are defined in files that IMPORT `HasTypeUnion` — so the
 union cannot import those tables back without a cycle.  The NATIVE-32 precedent resolved exactly this
 hazard by defining NATIVE TWINS of the recursive-elim table inside the union file
 (`NativeRecursiveElimRule` etc.).  This file follows that pattern but, because these three families
 together carry ELEVEN row schemas, hoists the native twins into a dedicated PRE-UNION module that
-imports ONLY the bespoke cell/elim engines (none of which imports `HasTypeNativeUnion` — verified:
+imports ONLY the bespoke cell/elim engines (none of which imports `HasTypeUnion` — verified:
 the only importers of the union are the spike files and the audit shards; the direct zoo INTRO imports
 were dropped with the NATIVE-42 embedding-arm retirement — the cell vocabulary arrives through the
-elim engines until NATIVE-43 retires those too), and `HasTypeNativeUnion`
-imports THIS file.  The arms that reference these tables live on `HasTypeNativeUnion` itself
+elim engines until NATIVE-43 retires those too), and `HasTypeUnion`
+imports THIS file.  The arms that reference these tables live on `HasTypeUnion` itself
 (additive); the transfers from the spike judgments live in separate post-union files.
 
 ## What this ships (the native twins of the spike tables, field-for-field)
@@ -572,7 +572,7 @@ theorem listElimNativeRuleOf_cases {generator : Generator} {rule : NativeListEli
 The non-dependent `[]`-binderShifts base type codes (`boolCode` / `emptyCode` / `natCode` / `unitCode` /
 `intervalCode`) form a member of `Type@0(standard)`; the universe flag is FIXED in the table (never a free
 parameter), so the formation is flag-deterministic by construction.  A new nullary base type code is ONE
-more row.  The `HasTypeNativeUnion.baseTypeFormation` arm reads this table; the cell-stability lemmas below
+more row.  The `HasTypeUnion.baseTypeFormation` arm reads this table; the cell-stability lemmas below
 let the union's rename/substitution metatheory re-fire the arm without an engine round-trip. -/
 
 /-- A formation-rule description for a NULLARY base type-former: the FIXED output universe code (a
@@ -701,7 +701,7 @@ theorem baseTypeRuleDescOf_outputSubstStable {generator : Generator} {rule : Bas
 
 The childless data constructors (`boolTrue` / `boolFalse` / `unit` / `interval0` / `interval1` /
 `natZero`) introduce a member of a closed data type code (`boolCode` / `unitCode` / `intervalCode` /
-`natCode`).  The `HasTypeNativeUnion.dataIntroNullary` arm reads this table. -/
+`natCode`).  The `HasTypeUnion.dataIntroNullary` arm reads this table. -/
 
 /-- An introduction-rule description for a NULLARY data constructor: the fixed output type-code (a
 function of the scope).  Pure syntax, strictly positive. -/
@@ -859,7 +859,7 @@ theorem dataIntroNullaryRuleDescOf_outputSubstStable {generator : Generator}
 
 The non-dependent two-child formers `product` / `sum` / `either` / `arrow` / `equiv` all share
 `universeFormerOutput` (the former lives at the `lmax` of its children's levels).  The
-`HasTypeNativeUnion.flatFormation` arm reads this table; the telescope rename / substitution lemmas below
+`HasTypeUnion.flatFormation` arm reads this table; the telescope rename / substitution lemmas below
 re-type the flat premise spine so the union metatheory can re-fire the arm engine-free. -/
 
 /-- The per-generator description table for the FLAT (non-dependent) type-code formers. -/

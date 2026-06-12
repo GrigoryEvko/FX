@@ -1,11 +1,11 @@
-import FX1Poly.Typed.HasTypeNativeUnion
-import FX1Poly.Typed.HasTypeNativeUnionInversion
+import FX1Poly.Typed.HasTypeUnion
+import FX1Poly.Typed.HasTypeUnionInversion
 import FX1Poly.Typed.NativeUnionCellSubstitution
 import FX1Poly.Typed.HasTypeDescPiSubstPair
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Core.RawTermOccurrenceSubstLift
 
-/-! # FX1Poly/Typed/HasTypeNativeUnionSubstitution — NATIVE-37 part b: the SUBSTITUTION lemma for the
+/-! # FX1Poly/Typed/HasTypeUnionSubstitution — NATIVE-37 part b: the SUBSTITUTION lemma for the
     24-arm native union + the 2-variable corollaries + the GENERAL succ-branch recursive-eliminator ι
 
 This file discharges the campaign's longest-standing residual (the NATIVE-04 line): typing the succ-ι
@@ -35,7 +35,7 @@ occurrence count, so `gradedBinderChecks usage body` survives verbatim).
 
 ## ★ The 2-variable corollaries + the succ-ι discharge
 
-  * `HasTypeNativeUnion.substPairUnderTwoBindings` / `substPairNonDependent` — the union mirrors of the
+  * `HasTypeUnion.substPairUnderTwoBindings` / `substPairNonDependent` — the union mirrors of the
     host versions, instantiating `substRespectingContext` at `cons innerArg (singleton outerArg)`.
   * `natElimSuccIotaComputesTypedInUnion` (★★) / `natRecSuccIotaComputesTypedInUnion` — the GENERAL
     succ-branch ι.  A typed `natElim(motive, z, sb, succ p)` ι-steps and the substituted reduct
@@ -66,7 +66,7 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation FX1Poly.Modal
 
 /-- The host-substituent context condition for the native union: every variable image is HOST-typed at
 the substituted lookup type. -/
-abbrev HasTypeNativeUnion.SubstHostTyped {profile : PolyProfile} {sourceScope targetScope : Nat}
+abbrev HasTypeUnion.SubstHostTyped {profile : PolyProfile} {sourceScope targetScope : Nat}
     (sourceContext : TypingContext profile sourceScope)
     (targetContext : TypingContext profile targetScope)
     (substitution : RawTermSubst sourceScope targetScope) : Prop :=
@@ -76,38 +76,38 @@ abbrev HasTypeNativeUnion.SubstHostTyped {profile : PolyProfile} {sourceScope ta
 
 /-- A host-typed image is a union image (via `ofGrown`) — the bridge each recursive arm's IH uses to feed
 its native premises a union substituent built from the host condition. -/
-theorem HasTypeNativeUnion.SubstHostTyped.toUnionImage {profile : PolyProfile}
+theorem HasTypeUnion.SubstHostTyped.toUnionImage {profile : PolyProfile}
     {sourceScope targetScope : Nat}
     {sourceContext : TypingContext profile sourceScope}
     {targetContext : TypingContext profile targetScope}
     {substitution : RawTermSubst sourceScope targetScope}
-    (condition : HasTypeNativeUnion.SubstHostTyped sourceContext targetContext substitution)
+    (condition : HasTypeUnion.SubstHostTyped sourceContext targetContext substitution)
     (index : Fin sourceScope) :
-    HasTypeNativeUnion profile targetContext (substitution index)
+    HasTypeUnion profile targetContext (substitution index)
       (RawTerm.subst substitution (sourceContext.lookup index)) :=
-  HasTypeNativeUnion.ofGrown (condition index)
+  HasTypeUnion.ofGrown (condition index)
 
 /-- The two-binder lift of the host-substituent condition (the recursiveElim / idJ succ-branch shape):
 the double lift of a host condition is a host condition at the context extended by the two domains.  An
 iterate of `substContextCondition_cons`. -/
-theorem HasTypeNativeUnion.SubstHostTyped.consTwice {profile : PolyProfile}
+theorem HasTypeUnion.SubstHostTyped.consTwice {profile : PolyProfile}
     {sourceScope targetScope : Nat}
     {sourceContext : TypingContext profile sourceScope}
     {targetContext : TypingContext profile targetScope}
     (outerType : RawTerm sourceScope) (innerType : RawTerm (sourceScope + 1))
     {substitution : RawTermSubst sourceScope targetScope}
-    (condition : HasTypeNativeUnion.SubstHostTyped sourceContext targetContext substitution) :
-    HasTypeNativeUnion.SubstHostTyped ((sourceContext.cons outerType).cons innerType)
+    (condition : HasTypeUnion.SubstHostTyped sourceContext targetContext substitution) :
+    HasTypeUnion.SubstHostTyped ((sourceContext.cons outerType).cons innerType)
       ((targetContext.cons (RawTerm.subst substitution outerType)).cons
         (RawTerm.subst (iterateLiftRaw substitution 1) innerType))
       (iterateLiftRaw substitution 2) := by
   have outerStep :
-      HasTypeNativeUnion.SubstHostTyped (sourceContext.cons outerType)
+      HasTypeUnion.SubstHostTyped (sourceContext.cons outerType)
         (targetContext.cons (RawTerm.subst substitution outerType))
         (iterateLiftRaw substitution 1) :=
     substContextCondition_cons outerType substitution condition
   have innerStep :
-      HasTypeNativeUnion.SubstHostTyped ((sourceContext.cons outerType).cons innerType)
+      HasTypeUnion.SubstHostTyped ((sourceContext.cons outerType).cons innerType)
         ((targetContext.cons (RawTerm.subst substitution outerType)).cons
           (RawTerm.subst (iterateLiftRaw substitution 1) innerType))
         (iterateLiftRaw (iterateLiftRaw substitution 1) 1) :=
@@ -135,14 +135,14 @@ substituted classifier.  By `induction` over the 24 arms: the engine embeddings 
 route through the engines' own `substRespectingContext` (host substituents are exactly what they demand)
 and re-embed; the recursive native arms recurse via the IHs with `RawTermSubst.lift` crossing binders;
 the graded arm transports the affine binder check by the lifted-occurrence preservation. -/
-theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
+theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeNativeUnion profile sourceContext subject classifier) :
+    (derivation : HasTypeUnion profile sourceContext subject classifier) :
     ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
       (substitution : RawTermSubst sourceScope targetScope),
-      HasTypeNativeUnion.SubstHostTyped sourceContext targetContext substitution →
-      HasTypeNativeUnion profile targetContext
+      HasTypeUnion.SubstHostTyped sourceContext targetContext substitution →
+      HasTypeUnion profile targetContext
         (RawTerm.subst substitution subject)
         (RawTerm.subst substitution classifier) := by
   induction derivation with
@@ -151,18 +151,18 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       have typedSubst := typedIH targetContext substitution condition
       have reclassifierSubst := reclassifierIH targetContext substitution condition
       rw [subst_universeCodeCell] at reclassifierSubst
-      exact HasTypeNativeUnion.conv levelExpr flag typedSubst
+      exact HasTypeUnion.conv levelExpr flag typedSubst
         (Conv.subst substitution converts) reclassifierSubst
   | ofGrown hostTyped =>
       intro targetScope targetContext substitution condition
-      exact HasTypeNativeUnion.ofGrown
+      exact HasTypeUnion.ofGrown
         (hostTyped.substRespectingContext targetContext substitution condition)
   | baseTypeFormation context generator payload children rule isBaseType =>
       intro targetScope targetContext substitution _condition
       have hNotVar : generator ≠ Generator.gen_var := baseTypeRuleImpliesNotVariable isBaseType
       rw [RawTerm.subst_mkGen_of_ne_var substitution hNotVar,
         baseTypeRuleDescOf_outputSubstStable isBaseType substitution]
-      exact HasTypeNativeUnion.baseTypeFormation targetContext generator
+      exact HasTypeUnion.baseTypeFormation targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.subst substitution children) rule isBaseType
   | dataIntroNullary context generator payload children rule isDataIntro =>
@@ -170,7 +170,7 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       have hNotVar : generator ≠ Generator.gen_var := dataIntroNullaryRuleImpliesNotVariable isDataIntro
       rw [RawTerm.subst_mkGen_of_ne_var substitution hNotVar,
         dataIntroNullaryRuleDescOf_outputSubstStable isDataIntro substitution]
-      exact HasTypeNativeUnion.dataIntroNullary targetContext generator
+      exact HasTypeUnion.dataIntroNullary targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.subst substitution children) rule isDataIntro
   | @flatFormation flatScope context generator payload children levels flag rule isFlatFormation
@@ -182,19 +182,19 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       have substPremise :=
         FlatDescTelescopePi.substRespectingTelescope premise targetContext substitution
           (fun index => condition index)
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (RawTerm.mkGen generator payload children))
         (RawTerm.subst substitution (universeFormerOutput flatScope levels flag))
       rw [show universeFormerOutput flatScope levels flag
             = universeCodeCell (lmaxAll levels) flag from rfl, subst_universeCodeCell,
           RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
-      exact HasTypeNativeUnion.flatFormation targetContext generator
+      exact HasTypeUnion.flatFormation targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.subst substitution children) levels flag
         { outputType := universeFormerOutput } isFlatFormation substPremise
   | ofTermIndexedFormer formerTyped =>
       intro targetScope targetContext substitution condition
-      exact HasTypeNativeUnion.ofTermIndexedFormer
+      exact HasTypeUnion.ofTermIndexedFormer
         (formerTyped.substRespectingContext targetContext substitution condition)
   | recursiveUnaryIntro context generator rule child isRecursiveUnary _childTyped childIH =>
       intro targetScope targetContext substitution condition
@@ -202,10 +202,10 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       subst ruleEq
       -- natSucc row: memberCell = natSuccCell, childType = outputType = natTypeCell (all defeq).
       have childSubst := childIH targetContext substitution condition
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (natSuccCell child)) (RawTerm.subst substitution natTypeCell)
       rw [subst_natSuccCell, subst_natTypeCell]
-      exact HasTypeNativeUnion.recursiveUnaryIntro targetContext .gen_natSucc
+      exact HasTypeUnion.recursiveUnaryIntro targetContext .gen_natSucc
         natSuccNativeRecursiveUnaryRule (RawTerm.subst substitution child) rfl childSubst
   | recursiveBinaryIntro context generator rule head tail elementType isRecursiveBinary
       headTyped _tailTyped tailIH =>
@@ -214,11 +214,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       subst ruleEq
       -- listCons row: memberCell = listConsCell, containerType = listTypeCell (defeq).
       have tailSubst := tailIH targetContext substitution condition
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (listConsCell head tail))
         (RawTerm.subst substitution (listTypeCell elementType))
       rw [subst_listConsCell, subst_listTypeCell]
-      exact HasTypeNativeUnion.recursiveBinaryIntro targetContext .gen_listCons
+      exact HasTypeUnion.recursiveBinaryIntro targetContext .gen_listCons
         listConsNativeRecursiveBinaryRule (RawTerm.subst substitution head)
         (RawTerm.subst substitution tail) (RawTerm.subst substitution elementType) rfl
         (headTyped.substRespectingContext targetContext substitution condition) tailSubst
@@ -227,11 +227,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
       subst ruleEq
       -- optionSome row: memberCell = optionSomeCell, outputType = optionTypeCell.
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (optionSomeCell child))
         (RawTerm.subst substitution (optionTypeCell elementType))
       rw [subst_optionSomeCell, subst_optionTypeCell]
-      exact HasTypeNativeUnion.pinnedUnaryIntro targetContext .gen_optionSome
+      exact HasTypeUnion.pinnedUnaryIntro targetContext .gen_optionSome
         optionSomeNativePinnedUnaryRule (RawTerm.subst substitution child)
         (RawTerm.subst substitution elementType) rfl
         (childTyped.substRespectingContext targetContext substitution condition)
@@ -244,20 +244,20 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
           ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
       · subst generatorEq; subst ruleEq
         -- optionNone row: memberCell = optionNoneCell, outputType = optionTypeCell.
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution optionNoneCell)
           (RawTerm.subst substitution (optionTypeCell elementType))
         rw [subst_optionNoneCell, subst_optionTypeCell]
-        exact HasTypeNativeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
+        exact HasTypeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
           optionNoneNativeNullaryFreeTypeRule (RawTerm.subst substitution elementType)
           elementLevel flag rfl elementFormSubst
       · subst generatorEq; subst ruleEq
         -- listNil row: memberCell = listNilCell, outputType = listTypeCell.
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution listNilCell)
           (RawTerm.subst substitution (listTypeCell elementType))
         rw [subst_listNilCell, subst_listTypeCell]
-        exact HasTypeNativeUnion.nullaryFreeTypeIntro targetContext .gen_listNil
+        exact HasTypeUnion.nullaryFreeTypeIntro targetContext .gen_listNil
           listNilNativeNullaryFreeTypeRule (RawTerm.subst substitution elementType)
           elementLevel flag rfl elementFormSubst
   | coproductIntro context generator rule value pinnedType freeType freeLevel flag isCoproduct
@@ -269,21 +269,21 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       · subst ruleEq
         -- eitherInl row: injectionCell = eitherInlCell, output = eitherTypeCell pinned free.
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (eitherInlCell value))
           (RawTerm.subst substitution (eitherTypeCell pinnedType freeType))
         rw [subst_eitherInlCell, subst_eitherTypeCell]
-        exact HasTypeNativeUnion.coproductIntro targetContext .gen_eitherInl
+        exact HasTypeUnion.coproductIntro targetContext .gen_eitherInl
           eitherInlNativeCoproductRule (RawTerm.subst substitution value)
           (RawTerm.subst substitution pinnedType) (RawTerm.subst substitution freeType)
           freeLevel flag rfl valueSubst freeFormSubst
       · subst ruleEq
         -- eitherInr row: injectionCell = eitherInrCell, output = eitherTypeCell free pinned.
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (eitherInrCell value))
           (RawTerm.subst substitution (eitherTypeCell freeType pinnedType))
         rw [subst_eitherInrCell, subst_eitherTypeCell]
-        exact HasTypeNativeUnion.coproductIntro targetContext .gen_eitherInr
+        exact HasTypeUnion.coproductIntro targetContext .gen_eitherInr
           eitherInrNativeCoproductRule (RawTerm.subst substitution value)
           (RawTerm.subst substitution pinnedType) (RawTerm.subst substitution freeType)
           freeLevel flag rfl valueSubst freeFormSubst
@@ -293,11 +293,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       obtain ⟨_, ruleEq⟩ := nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
       subst ruleEq
       -- pair row: memberCell = pairCell, output = productTypeCell.
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (pairCell firstChild secondChild))
         (RawTerm.subst substitution (productTypeCell firstType secondType))
       rw [subst_pairCell, subst_productTypeCell]
-      exact HasTypeNativeUnion.nonDependentBinaryIntro targetContext .gen_pair
+      exact HasTypeUnion.nonDependentBinaryIntro targetContext .gen_pair
         pairNativeNonDependentBinaryRule (RawTerm.subst substitution firstChild)
         (RawTerm.subst substitution secondChild) (RawTerm.subst substitution firstType)
         (RawTerm.subst substitution secondType) rfl
@@ -308,11 +308,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       obtain ⟨_, ruleEq⟩ := nativeReflexiveDataIntroRuleOf_cases isReflexive
       subst ruleEq
       -- refl row: memberCell = reflCell, output = idTypeCell witnessType witness witness.
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (reflCell witness))
         (RawTerm.subst substitution (idTypeCell witnessType witness witness))
       rw [subst_reflCell, subst_idTypeCell]
-      exact HasTypeNativeUnion.reflexiveIntro targetContext .gen_refl
+      exact HasTypeUnion.reflexiveIntro targetContext .gen_refl
         reflNativeReflexiveRule (RawTerm.subst substitution witness)
         (RawTerm.subst substitution witnessType) rfl
         (witnessTyped.substRespectingContext targetContext substitution condition)
@@ -325,7 +325,7 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       -- The step branch lives under two binders (the scrutinee's element type and the once-weakened
       -- recursive result); its host condition is the twice-lifted one.
       have stepLiftedCondition :=
-        HasTypeNativeUnion.SubstHostTyped.consTwice (rule.scrutineeType _)
+        HasTypeUnion.SubstHostTyped.consTwice (rule.scrutineeType _)
           (RawTerm.rename RawRenaming.weaken resultType) condition
       have stepBranchSubst := stepBranchIH _ (iterateLiftRaw substitution 2) stepLiftedCondition
       rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with
@@ -335,12 +335,12 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
         dsimp only [natElimNativeRecursiveRule] at stepBranchSubst
         rw [subst_natTypeCell, subst_iterateLift_one_renameWeaken_commute,
           subst_iterateLift_two_weaken_weaken_commute] at stepBranchSubst
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution
             (natElimCell motive baseBranch stepBranch scrutinee))
           (RawTerm.subst substitution resultType)
         rw [subst_natElimCell]
-        exact HasTypeNativeUnion.recursiveElim targetContext .gen_natElim
+        exact HasTypeUnion.recursiveElim targetContext .gen_natElim
           natElimNativeRecursiveRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
           (RawTerm.subst substitution baseBranch)
           (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
@@ -351,12 +351,12 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
         dsimp only [natRecNativeRecursiveRule] at stepBranchSubst
         rw [subst_natTypeCell, subst_iterateLift_one_renameWeaken_commute,
           subst_iterateLift_two_weaken_weaken_commute] at stepBranchSubst
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution
             (natRecCell motive baseBranch stepBranch scrutinee))
           (RawTerm.subst substitution resultType)
         rw [subst_natRecCell]
-        exact HasTypeNativeUnion.recursiveElim targetContext .gen_natRec
+        exact HasTypeUnion.recursiveElim targetContext .gen_natRec
           natRecNativeRecursiveRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
           (RawTerm.subst substitution baseBranch)
           (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
@@ -370,18 +370,18 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       · subst ruleEq
         -- fst row: memberCell = fstCell, projectedType = firstType.
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (fstCell pairTerm)) (RawTerm.subst substitution firstType)
         rw [subst_fstCell]
-        exact HasTypeNativeUnion.projectionElim targetContext .gen_fst fstNativeProjectionRule
+        exact HasTypeUnion.projectionElim targetContext .gen_fst fstNativeProjectionRule
           (RawTerm.subst substitution pairTerm) (RawTerm.subst substitution firstType)
           (RawTerm.subst substitution secondType) rfl pairSubst
       · subst ruleEq
         -- snd row: memberCell = sndCell, projectedType = secondType.
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (sndCell pairTerm)) (RawTerm.subst substitution secondType)
         rw [subst_sndCell]
-        exact HasTypeNativeUnion.projectionElim targetContext .gen_snd sndNativeProjectionRule
+        exact HasTypeUnion.projectionElim targetContext .gen_snd sndNativeProjectionRule
           (RawTerm.subst substitution pairTerm) (RawTerm.subst substitution firstType)
           (RawTerm.subst substitution secondType) rfl pairSubst
   | twoBranchMatchElim context generator rule motive firstBranch secondBranch scrutinee
@@ -395,11 +395,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
         ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       · subst ruleEq
         -- boolElim row: scrutinee at boolTypeCell, both branches at resultType, member boolElimCell.
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (boolElimCell motive scrutinee firstBranch secondBranch))
           (RawTerm.subst substitution resultType)
         rw [subst_boolElimCell]
-        exact HasTypeNativeUnion.twoBranchMatchElim targetContext .gen_boolElim
+        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_boolElim
           boolElimNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
           (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
           (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
@@ -411,11 +411,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
         rw [show optionMatchNativeMatchRule.secondBranchType _ typeParamA typeParamB resultType
               = piTyCodeCell typeParamA (RawTerm.weaken resultType) from rfl,
           subst_nonDependentArrow] at secondBranchSubst
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (optionMatchCell motive firstBranch secondBranch scrutinee))
           (RawTerm.subst substitution resultType)
         rw [subst_optionMatchCell]
-        exact HasTypeNativeUnion.twoBranchMatchElim targetContext .gen_optionMatch
+        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_optionMatch
           optionMatchNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
           (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
           (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
@@ -429,11 +429,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
         rw [show eitherMatchNativeMatchRule.secondBranchType _ typeParamA typeParamB resultType
               = piTyCodeCell typeParamB (RawTerm.weaken resultType) from rfl,
           subst_nonDependentArrow] at secondBranchSubst
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (eitherMatchCell motive firstBranch secondBranch scrutinee))
           (RawTerm.subst substitution resultType)
         rw [subst_eitherMatchCell]
-        exact HasTypeNativeUnion.twoBranchMatchElim targetContext .gen_eitherMatch
+        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_eitherMatch
           eitherMatchNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
           (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
           (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
@@ -447,11 +447,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
       subst ruleEq
       -- idJ row: witness at Id(typeCode, endpoint, endpoint), base at result, member idJCell.
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (idJCell motive baseCase witness))
         (RawTerm.subst substitution resultType)
       rw [subst_idJCell]
-      exact HasTypeNativeUnion.pathInductionElim targetContext .gen_idJ idJNativePathInductionRule
+      exact HasTypeUnion.pathInductionElim targetContext .gen_idJ idJNativePathInductionRule
         (RawTerm.subst (iterateLiftRaw substitution 2) motive)
         (RawTerm.subst substitution baseCase) (RawTerm.subst substitution witness)
         (RawTerm.subst substitution typeCode) (RawTerm.subst substitution endpoint)
@@ -467,11 +467,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       have nilSubst := nilBranchTyped.substRespectingContext targetContext substitution condition
       have consSubst := consBranchTyped.substRespectingContext targetContext substitution condition
       rw [subst_listStepFunctionType] at consSubst
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (listElimCell motive scrutinee nilBranch consBranch))
         (RawTerm.subst substitution resultType)
       rw [subst_listElimCell]
-      exact HasTypeNativeUnion.listElim targetContext .gen_listElim listElimNativeRule
+      exact HasTypeUnion.listElim targetContext .gen_listElim listElimNativeRule
         (RawTerm.subst (iterateLiftRaw substitution 1) motive)
         (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution nilBranch)
         (RawTerm.subst substitution consBranch) (RawTerm.subst substitution elementType)
@@ -488,11 +488,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
         -- app row: eliminated at Π(A, B), argument at A, member appCell, output subst0 B argument.
         rw [show appGeneralElimRule.eliminatedType _ typeParamA typeParamB typeParamC typeParamD
               = piTyCodeCell typeParamA typeParamB from rfl, subst_piTyCodeCell] at eliminatedSubst
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (appCell eliminated argument))
           (RawTerm.subst substitution (RawTerm.subst0 typeParamB argument))
         rw [subst_appCell, RawTerm.subst0_subst_commute]
-        exact HasTypeNativeUnion.generalElim targetContext .gen_app appGeneralElimRule
+        exact HasTypeUnion.generalElim targetContext .gen_app appGeneralElimRule
           (RawTerm.subst substitution typeParamA)
           (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB)
           (RawTerm.subst substitution typeParamC) (RawTerm.subst substitution typeParamD)
@@ -505,11 +505,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
         rw [show pathAppGeneralElimRule.eliminatedType _ typeParamA typeParamB typeParamC typeParamD
               = bridgeTypeCell typeParamA typeParamC typeParamD from rfl,
           subst_bridgeTypeCell] at eliminatedSubst
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (pathAppCell eliminated argument))
           (RawTerm.subst substitution typeParamA)
         rw [subst_pathAppCell]
-        exact HasTypeNativeUnion.generalElim targetContext .gen_pathApp pathAppGeneralElimRule
+        exact HasTypeUnion.generalElim targetContext .gen_pathApp pathAppGeneralElimRule
           (RawTerm.subst substitution typeParamA)
           (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB)
           (RawTerm.subst substitution typeParamC) (RawTerm.subst substitution typeParamD)
@@ -520,7 +520,7 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       intro targetScope targetContext substitution condition
       -- The lifted host condition for the body / classifier IHs (the binder-crossing leg).
       have liftedCondition :
-          HasTypeNativeUnion.SubstHostTyped
+          HasTypeUnion.SubstHostTyped
             (context.cons (rule.domainCell _ typeParamA))
             (targetContext.cons (RawTerm.subst substitution (rule.domainCell _ typeParamA)))
             (iterateLiftRaw substitution 1) :=
@@ -542,11 +542,11 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
         have classifierSubst := classifierIH rfl (targetContext.cons
           (RawTerm.subst substitution typeParamA)) (iterateLiftRaw substitution 1) liftedCondition
         rw [subst_universeCodeCell] at classifierSubst
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (lamCell typeParamA body))
           (RawTerm.subst substitution (piTyCodeCell typeParamA typeParamB))
         rw [subst_lamCell, subst_piTyCodeCell]
-        exact HasTypeNativeUnion.gradedBinderIntro targetContext .gen_lam lamGradedIntroRule
+        exact HasTypeUnion.gradedBinderIntro targetContext .gen_lam lamGradedIntroRule
           (RawTerm.subst substitution typeParamA)
           (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB)
           (RawTerm.subst (iterateLiftRaw substitution 1) body)
@@ -560,14 +560,14 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
         -- classifier `weaken A` substitutes by the lift/weaken naturality square.
         rw [show pathLamGradedIntroRule.bodyClassifier _ typeParamA typeParamB
               = RawTerm.weaken typeParamA from rfl, subst_iterateLift_one_weaken_commute] at bodySubst
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.subst substitution (pathLamCell body))
           (RawTerm.subst substitution
             (bridgeTypeCell typeParamA (RawTerm.subst0 body intervalZeroCell)
               (RawTerm.subst0 body intervalOneCell)))
         rw [subst_pathLamCell, subst_bridgeTypeCell, RawTerm.subst0_subst_commute,
           RawTerm.subst0_subst_commute]
-        exact HasTypeNativeUnion.gradedBinderIntro targetContext .gen_pathLam pathLamGradedIntroRule
+        exact HasTypeUnion.gradedBinderIntro targetContext .gen_pathLam pathLamGradedIntroRule
           (RawTerm.subst substitution typeParamA)
           (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB)
           (RawTerm.subst (iterateLiftRaw substitution 1) body)
@@ -580,20 +580,20 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
 /-- **★ The typed 2-variable substitution lemma over the union.**  A union derivation under two binders
 — outer binder `outerType`, inner binder `innerType` (which may mention the outer variable) — substituted
 simultaneously at `var 0 := innerArg, var 1 := outerArg` (both HOST-typed) preserves
-`HasTypeNativeUnion`, with subject and classifier substituted.  The inner substituent is host-typed at the
+`HasTypeUnion`, with subject and classifier substituted.  The inner substituent is host-typed at the
 OUTER-SUBSTITUTED inner binder type.  The union mirror of `HasTypeDescPi.substPairUnderTwoBindings`,
 instantiating `substRespectingContext` at `cons innerArg (singleton outerArg)` — the `Fin` 0 / 1 / k+2
 split is verbatim the host proof's. -/
-theorem HasTypeNativeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {outerType : RawTerm scope}
     {innerType : RawTerm (scope + 1)} {subject classifier : RawTerm (scope + 2)}
     (innerArg outerArg : RawTerm scope)
     (derivation :
-      HasTypeNativeUnion profile ((context.cons outerType).cons innerType) subject classifier)
+      HasTypeUnion profile ((context.cons outerType).cons innerType) subject classifier)
     (innerArgTyped : HasTypeDescPi profile context innerArg
       (RawTerm.subst (RawTermSubst.singleton outerArg) innerType))
     (outerArgTyped : HasTypeDescPi profile context outerArg outerType) :
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier) := by
   refine derivation.substRespectingContext context
@@ -634,17 +634,17 @@ once-weakened result type carrying the recursive result, outer binder = the scru
 substituted at a HOST-typed recursive result and a HOST-typed outer argument, is union-typed at the result
 type on the nose — both weakenings cancel against the two substituents.  The union mirror of
 `HasTypeDescPi.substPairNonDependent`. -/
-theorem HasTypeNativeUnion.substPairNonDependent {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.substPairNonDependent {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {outerType resultType : RawTerm scope}
     {branch : RawTerm (scope + 2)}
     (innerArg outerArg : RawTerm scope)
-    (branchTyped : HasTypeNativeUnion profile
+    (branchTyped : HasTypeUnion profile
       ((context.cons outerType).cons (RawTerm.rename RawRenaming.weaken resultType))
       branch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
     (innerArgTyped : HasTypeDescPi profile context innerArg resultType)
     (outerArgTyped : HasTypeDescPi profile context outerArg outerType) :
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) branch)
       resultType := by
   have innerAtSubstituted : HasTypeDescPi profile context innerArg
@@ -653,7 +653,7 @@ theorem HasTypeNativeUnion.substPairNonDependent {profile : PolyProfile} {scope 
     rw [subst_singleton_renameWeaken_cancel]
     exact innerArgTyped
   have substituted :=
-    HasTypeNativeUnion.substPairUnderTwoBindings innerArg outerArg branchTyped
+    HasTypeUnion.substPairUnderTwoBindings innerArg outerArg branchTyped
       innerAtSubstituted outerArgTyped
   rwa [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel] at substituted
 
@@ -669,7 +669,7 @@ typing transports the branch typing along a substitution whose `var 0` image is 
 `substPairNonDependent` with a UNION inner substituent.
 
 The shipped `substPairNonDependent` requires the inner substituent HOST-typed (it descends the branch's
-binders and the seed union has no general union weakening / no conv arm — §HasTypeNativeUnion line 51 — so
+binders and the seed union has no general union weakening / no conv arm — §HasTypeUnion line 51 — so
 binder descent with union images is wave work).  Therefore the succ-ι reduct typing is exposed here as
 `natElimSuccIotaComputesTypedInUnion`, taking the union-substituent transport
 (`reductTransportsBranch`) as the EXPLICIT residual hypothesis that the no-conv-arm seed imposes — but
@@ -687,17 +687,17 @@ theorem natElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
     (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) (resultType : RawTerm scope)
-    (predecessorTyped : HasTypeNativeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeNativeUnion profile context zeroBranch resultType)
-    (stepBranchTyped : HasTypeNativeUnion profile
+    (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (stepBranchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons
         (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
       succBranch
       (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
         (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))) :
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (natElimCell motive zeroBranch succBranch predecessor) resultType :=
-  HasTypeNativeUnion.recursiveElim context .gen_natElim natElimNativeRecursiveRule
+  HasTypeUnion.recursiveElim context .gen_natElim natElimNativeRecursiveRule
     motive zeroBranch succBranch predecessor resultType rfl predecessorTyped zeroBranchTyped
     stepBranchTyped
 
@@ -706,17 +706,17 @@ theorem natRecRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
     (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) (resultType : RawTerm scope)
-    (predecessorTyped : HasTypeNativeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeNativeUnion profile context zeroBranch resultType)
-    (stepBranchTyped : HasTypeNativeUnion profile
+    (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (stepBranchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons
         (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
       succBranch
       (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
         (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))) :
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (natRecCell motive zeroBranch succBranch predecessor) resultType :=
-  HasTypeNativeUnion.recursiveElim context .gen_natRec natRecNativeRecursiveRule
+  HasTypeUnion.recursiveElim context .gen_natRec natRecNativeRecursiveRule
     motive zeroBranch succBranch predecessor resultType rfl predecessorTyped zeroBranchTyped
     stepBranchTyped
 
@@ -731,13 +731,13 @@ succ-ι discharge consumes — capturing EXACTLY the no-conv-arm gap, with every
 abbrev UnionSubstPairTransports (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) (outerType resultType : RawTerm scope) : Prop :=
   ∀ (branch : RawTerm (scope + 2)) (innerArg outerArg : RawTerm scope),
-    HasTypeNativeUnion profile
+    HasTypeUnion profile
         ((context.cons outerType).cons (RawTerm.rename RawRenaming.weaken resultType))
         branch
         (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)) →
-      HasTypeNativeUnion profile context innerArg resultType →
-      HasTypeNativeUnion profile context outerArg outerType →
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context innerArg resultType →
+      HasTypeUnion profile context outerArg outerType →
+      HasTypeUnion profile context
         (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) branch)
         resultType
 
@@ -754,16 +754,16 @@ theorem natElimSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
     (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
-    (predecessorTyped : HasTypeNativeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeNativeUnion profile context zeroBranch resultType)
-    (branchTyped : HasTypeNativeUnion profile
+    (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (branchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
       succBranch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
     (unionTransport : UnionSubstPairTransports profile context natTypeCell resultType) :
     Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType :=
   ⟨Step.iotaNatElimSucc,
     unionTransport succBranch
@@ -778,16 +778,16 @@ theorem natRecSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
     (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
-    (predecessorTyped : HasTypeNativeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeNativeUnion profile context zeroBranch resultType)
-    (branchTyped : HasTypeNativeUnion profile
+    (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (branchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
       succBranch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
     (unionTransport : UnionSubstPairTransports profile context natTypeCell resultType) :
     Step (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natRecSuccContractum motive zeroBranch succBranch predecessor) ∧
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (natRecSuccContractum motive zeroBranch succBranch predecessor) resultType :=
   ⟨Step.iotaNatRecSucc,
     unionTransport succBranch
@@ -808,20 +808,20 @@ structure NativeUnionSubstitutionCoverage (profile : PolyProfile) : Prop where
   /-- The pointwise substitution lemma holds along any host-typed substitution. -/
   pointwiseSubstitution : ∀ {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope},
-    HasTypeNativeUnion profile sourceContext subject classifier →
+    HasTypeUnion profile sourceContext subject classifier →
     ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
       (substitution : RawTermSubst sourceScope targetScope),
-      HasTypeNativeUnion.SubstHostTyped sourceContext targetContext substitution →
-      HasTypeNativeUnion profile targetContext
+      HasTypeUnion.SubstHostTyped sourceContext targetContext substitution →
+      HasTypeUnion profile targetContext
         (RawTerm.subst substitution subject) (RawTerm.subst substitution classifier)
   /-- The 2-variable substitution corollary holds. -/
   pairSubstitution : ∀ {scope : Nat} {context : TypingContext profile scope}
     {outerType : RawTerm scope} {innerType : RawTerm (scope + 1)}
     {subject classifier : RawTerm (scope + 2)} (innerArg outerArg : RawTerm scope),
-    HasTypeNativeUnion profile ((context.cons outerType).cons innerType) subject classifier →
+    HasTypeUnion profile ((context.cons outerType).cons innerType) subject classifier →
     HasTypeDescPi profile context innerArg (RawTerm.subst (RawTermSubst.singleton outerArg) innerType) →
     HasTypeDescPi profile context outerArg outerType →
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier)
   /-- The natElim recursive call is union-typed (the recursion loop closes), given the step branch's
@@ -829,28 +829,28 @@ structure NativeUnionSubstitutionCoverage (profile : PolyProfile) : Prop where
   recursiveCallTyped : ∀ {scope : Nat} (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2))
     (predecessor resultType : RawTerm scope),
-    HasTypeNativeUnion profile context predecessor natTypeCell →
-    HasTypeNativeUnion profile context zeroBranch resultType →
-    HasTypeNativeUnion profile
+    HasTypeUnion profile context predecessor natTypeCell →
+    HasTypeUnion profile context zeroBranch resultType →
+    HasTypeUnion profile
       ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
       succBranch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)) →
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (natElimCell motive zeroBranch succBranch predecessor) resultType
   /-- The general succ-branch natElim ι discharge holds (given the union-image transport residual). -/
   succIotaDischarged : ∀ {scope : Nat} (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2))
     (predecessor resultType : RawTerm scope),
-    HasTypeNativeUnion profile context predecessor natTypeCell →
-    HasTypeNativeUnion profile context zeroBranch resultType →
-    HasTypeNativeUnion profile
+    HasTypeUnion profile context predecessor natTypeCell →
+    HasTypeUnion profile context zeroBranch resultType →
+    HasTypeUnion profile
       ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
       succBranch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)) →
     UnionSubstPairTransports profile context natTypeCell resultType →
     Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType
 
 /-- **★ The NATIVE-37 part-b substitution coverage gate** — inhabited by the shipped declarations, so the
@@ -859,10 +859,10 @@ theorem nativeUnionSubstitutionCoverageWitness {profile : PolyProfile} :
     NativeUnionSubstitutionCoverage profile where
   pointwiseSubstitution := by
     intro _ _ _ _ derivation _ targetContext substitution condition
-    exact HasTypeNativeUnion.substRespectingContext derivation targetContext substitution condition
+    exact HasTypeUnion.substRespectingContext derivation targetContext substitution condition
   pairSubstitution := by
     intro _ _ _ _ _ _ innerArg outerArg derivation innerArgTyped outerArgTyped
-    exact HasTypeNativeUnion.substPairUnderTwoBindings innerArg outerArg derivation innerArgTyped
+    exact HasTypeUnion.substPairUnderTwoBindings innerArg outerArg derivation innerArgTyped
       outerArgTyped
   recursiveCallTyped := by
     intro _ context motive zeroBranch succBranch predecessor resultType

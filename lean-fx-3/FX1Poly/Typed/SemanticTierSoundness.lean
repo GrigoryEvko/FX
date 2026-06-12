@@ -28,7 +28,7 @@ legs apply directly.
   * **`reservedTierUntypedBySurvivingEngines`** — the COMPLETE static half: a reserved generator heads no cell
     typed by the surviving standalone engine `hasSomeTypingRule` consults (the HON-5 surviving-engine bundle,
     threaded through the head equation; the retired bridge rows and formation arms live on through
-    `HasTypeNativeUnion.reservedHeadUntyped`).
+    `HasTypeUnion.reservedHeadUntyped`).
   * **`semanticTierReservedSound`** — ★ the headline: a reserved generator is semantically dead — its cells are
     grown-untyped AND operationally inert.  (Grown is the headline's static representative; the surviving-engine
     completeness is `reservedTierUntypedBySurvivingEngines`.)
@@ -88,10 +88,10 @@ theorem reservedTierUntypedByGrownEngine {g : Generator}
 the surviving standalone engine the classifier consults — the HON-5 surviving-engine bundle, threaded through the
 head equation.  This is the exhaustive "untyped by the surviving engine" companion to the grown-representative
 headline.  The bespoke `HasTypeDescBridge` engine was RETIRED (NATIVE-45): its rows are now arms of
-`HasTypeNativeUnion`, so its leg is no longer a standalone conjunct.  The retired bridge rows and the base-type /
+`HasTypeUnion`, so its leg is no longer a standalone conjunct.  The retired bridge rows and the base-type /
 data-intro / flat formation arms (now `baseTypeFormation` / `dataIntroNullary` / `flatFormation` arms of
-`HasTypeNativeUnion`) are subsumed by the single-judgment successor over ALL native typing,
-`HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`. -/
+`HasTypeUnion`) are subsumed by the single-judgment successor over ALL native typing,
+`HasTypeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`. -/
 theorem reservedTierUntypedBySurvivingEngines {g : Generator}
     (reserved : semanticTier g = .reserved) {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}

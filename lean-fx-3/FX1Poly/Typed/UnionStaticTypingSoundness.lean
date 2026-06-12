@@ -1,12 +1,12 @@
 import FX1Poly.Typed.TableTypingUnionDivergence
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 
 /-! # FX1Poly/Typed/UnionStaticTypingSoundness — the reserved-head refutation for the SINGLE union judgment
 
 `StaticTypingSoundness.reservedHeadUntypedBySurvivingEngines` is the HON-5 honesty bundle for the
 surviving standalone engines (grown + bridge): each disjunct says "a head the honesty classifier reports
 reserved is untyped by THIS engine".  With the NATIVE-42/43 retirement collapsing the engine zoo into
-`HasTypeNativeUnion`, the honest statement collapses too: ONE lemma over the ONE judgment.  The classifier is `hasUnionEliminatorTypingRule` (`TableTypingUnionDivergence`) — the
+`HasTypeUnion`, the honest statement collapses too: ONE lemma over the ONE judgment.  The classifier is `hasUnionEliminatorTypingRule` (`TableTypingUnionDivergence`) — the
 full-union extension of the table classifier, which (unlike `hasSomeTypingRule`) tracks the three
 union-only tables (`termIndexedFormerDescOf` / `nativeRecursiveElimRuleOf` / `listElimNativeRuleOf`).
 Stating the refutation over the HONESTY classifier would be FALSE: the union types `natElim` / `natRec`
@@ -17,13 +17,13 @@ canonicity-collapse promotion decision stays untouched.
     false (the propext-free `||`-peel, the union sibling of `hasTableTypingRule_falsePeel`).
   * **`hasSomeTypingRule_falseOfUnionReserved`** — union-reserved refines honesty-reserved (through the
     Leg-B equivalence), so the pre-union per-engine refutations remain applicable to the embeddings.
-  * **`HasTypeNativeUnion.reservedHeadUntyped`** (★) — the headline: a subject whose head the
+  * **`HasTypeUnion.reservedHeadUntyped`** (★) — the headline: a subject whose head the
     full-union classifier reports RESERVED is untyped by the union at EVERY context and classifier.
     Induction over the nineteen union arms: the four engine embeddings route through the shipped
     per-engine refutations (the term-indexed former inline — it predates no reserved lemma); each
     table-driven arm pins its generator by the table's `if`-chain, whereupon the subject's head
     computes LIVE, contradicting the verdict; the conv arm recurses (subject unchanged).
-  * **`HasTypeNativeUnion.headIsUnionLive`** (★) — the contrapositive consumer API: every union-typed
+  * **`HasTypeUnion.headIsUnionLive`** (★) — the contrapositive consumer API: every union-typed
     subject's head is classifier-live.  This is the TRUTHFULNESS of `hasUnionEliminatorTypingRule`'s
     negative verdicts — `false` now means "the union types no such head", machine-checked, the exact
     property `hasSomeTypingRule` LOST when the union's recursive-eliminator arms landed.
@@ -76,9 +76,9 @@ context and every classifier.  The single-lemma successor of the HON-5 bundle
 `reservedHeadUntypedBySurvivingEngines`: one judgment, one refutation.  Induction over the nineteen union
 arms; every table-driven arm pins its generator through the table's `if`-chain and dies at the
 computed-live head, the embeddings route through the per-engine refutations, the conv arm recurses. -/
-theorem HasTypeNativeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context subject classifier)
+    (typed : HasTypeUnion profile context subject classifier)
     (reserved : hasUnionEliminatorTypingRule (RawTerm.headGenerator subject) = false) : False := by
   revert reserved
   induction typed with
@@ -318,9 +318,9 @@ theorem HasTypeNativeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : 
 `reservedHeadUntyped`: `hasUnionEliminatorTypingRule`'s negative verdicts are TRUTHFUL about the union
 — `false` means "the union types no subject with this head", the exact property the honesty classifier
 lost when the union's recursive-eliminator arms and the Id retrofit landed. -/
-theorem HasTypeNativeUnion.headIsUnionLive {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.headIsUnionLive {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context subject classifier) :
+    (typed : HasTypeUnion profile context subject classifier) :
     hasUnionEliminatorTypingRule (RawTerm.headGenerator subject) = true := by
   cases liveVerdict : hasUnionEliminatorTypingRule (RawTerm.headGenerator subject) with
   | true => rfl
@@ -335,10 +335,10 @@ theorem hasUnionEliminatorTypingRule_hilbertSpace :
 
 /-- **A `hilbertSpace`-headed subject is union-untypable** — the reserved-exemplar instantiation of
 the headline refutation. -/
-theorem HasTypeNativeUnion.hilbertSpaceHeadUntyped {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.hilbertSpaceHeadUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (headIsHilbert : RawTerm.headGenerator subject = .gen_hilbertSpace)
-    (typed : HasTypeNativeUnion profile context subject classifier) : False :=
+    (typed : HasTypeUnion profile context subject classifier) : False :=
   typed.reservedHeadUntyped
     (by rw [headIsHilbert]; exact hasUnionEliminatorTypingRule_hilbertSpace)
 

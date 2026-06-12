@@ -1,9 +1,9 @@
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 
-/-! # FX1Poly/Typed/HasTypeNativeUnionInversion — NATIVE-37: the FIRST eliminations over the native union
+/-! # FX1Poly/Typed/HasTypeUnionInversion — NATIVE-37: the FIRST eliminations over the native union
 
-This file performs the first-ever `cases`/`induction` over `HasTypeNativeUnion`.  The arm set stabilized at
+This file performs the first-ever `cases`/`induction` over `HasTypeUnion`.  The arm set stabilized at
 twenty-four constructors (four engine embeddings + two recursive keystone arms + the Nat-intro embedding + the
 recursive-eliminator arm + the five batch-2 scrutinee embeddings + the three batch-2 data-eliminator arms + the
 seven batch-2 data-intro arms + the listElim arm), and a deliberate freeze prevented eliminations until the set
@@ -39,17 +39,17 @@ twenty-four arms the threaded `subjectShape` discriminates:
 
 ## What this file ships (deliverables, priority order)
 
-  1. `HasTypeNativeUnion.invertAtPathLamHead` / `invertAtLamHead` / `invertAtNatElimHead` /
+  1. `HasTypeUnion.invertAtPathLamHead` / `invertAtLamHead` / `invertAtNatElimHead` /
      `invertAtNatSuccHead` — the master per-head inversion instantiated for four representative heads.
   2. `HasTypeDescPi.pathLamCellHasNoTyping` — the host pathLam-head refutation (the lemma named in Rung 103,
      extending the `HasTypeDescPiDataHeadUntyped` pattern: `gen_pathLam` is in no host root and no formation
      table).
-  3. `HasTypeNativeUnion.unionRejectsAffineDoubleUse` — ★ the union-wide affine rejection: the
+  3. `HasTypeUnion.unionRejectsAffineDoubleUse` — ★ the union-wide affine rejection: the
      dimension-duplicating path abstraction `pathLam(pair(var 0, var 0))` is untypable in the UNION at EVERY
      classifier and EVERY context.  The ofGrown disjunct dies by (2); the gradedBinderIntro disjunct dies because
      the `.one` graded check fails on the double-use body (occurrence count `2`, the NATIVE-23 rejection
      machinery).
-  3b. `HasTypeNativeUnion.pathLamSubjectIsAffine` — ★ the affine-honesty pin, union-side: every union-typed
+  3b. `HasTypeUnion.pathLamSubjectIsAffine` — ★ the affine-honesty pin, union-side: every union-typed
      pathLam body uses the dimension binder AT MOST ONCE (`occurrenceCountAt body 0 ≤ 1`).  The FORCED-grade
      successor of the retired `HasTypeDescBridge.pathLamSubjectIsAffine`: the grown disjunct dies by (2), the
      graded disjunct surfaces the row's affine binder check directly.
@@ -122,7 +122,7 @@ theorem termIndexedFormerSubjectHeadExcluded {profile : PolyProfile} {scope : Na
 
 /-! ## In-file row inverter for the recursive-eliminator table
 
-The recursive-eliminator table (`nativeRecursiveElimRuleOf`) lives in `HasTypeNativeUnion.lean` and ships only
+The recursive-eliminator table (`nativeRecursiveElimRuleOf`) lives in `HasTypeUnion.lean` and ships only
 the diagonal metadata; the `…_cases` inverter (decidable case analysis over the two-row `if`-table) is supplied
 here so the `recursiveElim` arm can be pinned to its concrete row. -/
 
@@ -156,10 +156,10 @@ that subject (the ofGrown disjunct — impossible by `pathLamCellHasNoTyping`, k
 does not depend on (2)) OR a graded binder-introduction at the pathLam row: the classifier is forced to the bridge
 code at the body's endpoint substitutions, the affine `.one` graded check holds on the body, and the body is
 union-typed at the weakened carrier under the interval-extended context. -/
-theorem HasTypeNativeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {body : RawTerm (scope + 1)}
-    (derivation : HasTypeNativeUnion profile context subject classifier)
+    (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = pathLamCell body) :
     (∃ pinnedClassifier : RawTerm scope,
         HasTypeDescPi profile context (pathLamCell body) pinnedClassifier ∧
@@ -168,7 +168,7 @@ theorem HasTypeNativeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : 
         pinnedClassifier = bridgeTypeCell carrierCode
           (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell) ∧
         gradedBinderChecks UsageGrade.one body ∧
-        HasTypeNativeUnion profile (context.cons intervalTypeCell) body
+        HasTypeUnion profile (context.cons intervalTypeCell) body
           (RawTerm.weaken carrierCode) ∧
         Conv pinnedClassifier classifier) := by
   induction derivation with
@@ -300,10 +300,10 @@ that λ (the ofGrown / `piIntro` disjunct) OR a graded binder-introduction at th
 code over the annotated domain and some codomain, the domain is union-formed at a universe, the codomain is
 union-formed under the domain, and the body is union-typed at the codomain.  (The λ row's graded check is the
 unrestricted `.omega`, vacuous, so it is not surfaced.) -/
-theorem HasTypeNativeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
-    (derivation : HasTypeNativeUnion profile context subject classifier)
+    (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = lamCell domainAnn body) :
     (∃ pinnedClassifier : RawTerm scope,
         HasTypeDescPi profile context (lamCell domainAnn body) pinnedClassifier ∧
@@ -311,10 +311,10 @@ theorem HasTypeNativeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
     ∨ (∃ (codomainCode : RawTerm (scope + 1)) (domainLevel codomainLevel : LevelExpr)
           (flag : UniverseFlag),
         Conv (piTyCodeCell domainAnn codomainCode) classifier ∧
-        HasTypeNativeUnion profile context domainAnn (universeCodeCell domainLevel flag) ∧
-        HasTypeNativeUnion profile (context.cons domainAnn) codomainCode
+        HasTypeUnion profile context domainAnn (universeCodeCell domainLevel flag) ∧
+        HasTypeUnion profile (context.cons domainAnn) codomainCode
           (universeCodeCell codomainLevel flag) ∧
-        HasTypeNativeUnion profile (context.cons domainAnn) body codomainCode) := by
+        HasTypeUnion profile (context.cons domainAnn) body codomainCode) := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       rcases innerInversion subjectShape with ⟨pinnedClassifier, hostInner, convInner⟩ |
@@ -446,19 +446,19 @@ recursive-eliminator typing at the `gen_natElim` row: the scrutinee is union-typ
 branch is union-typed at the classifier.  (The motive and the step branch are stored, not premised — premise
 parity with `HasTypeDescNatElim`; they are not surfaced.)  No grown disjunct: `natElimCell` is untypable in the
 grown engine. -/
-theorem HasTypeNativeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
     {stepBranch : RawTerm (scope + 2)} {scrutinee : RawTerm scope}
-    (derivation : HasTypeNativeUnion profile context subject classifier)
+    (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = natElimCell motive zeroBranch stepBranch scrutinee) :
-    HasTypeNativeUnion profile context scrutinee natTypeCell ∧
-    HasTypeNativeUnion profile context zeroBranch classifier := by
+    HasTypeUnion profile context scrutinee natTypeCell ∧
+    HasTypeUnion profile context zeroBranch classifier := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨scrutineeTyped, zeroBranchTyped⟩ := innerInversion subjectShape
       exact ⟨scrutineeTyped,
-        HasTypeNativeUnion.conv levelExpr flag zeroBranchTyped converts reclassifierTyped⟩
+        HasTypeUnion.conv levelExpr flag zeroBranchTyped converts reclassifierTyped⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natElimCellHasNoTyping (fun contra => contra)
@@ -584,13 +584,13 @@ subject IS a recursive unary data-introduction at the `gen_natSucc` row: the cla
 `Nat` and the predecessor child is union-typed at `Nat`.  The pre-NATIVE-42 statement carried a second
 `ofNatIntro`-embedding disjunct; with that arm deleted the inversion strengthened to the exact row shape —
 this is the predecessor-recursion door the DEEP numeral extraction
-(`HasTypeNativeUnion.closedNormalNatNumeral`) walks through. -/
-theorem HasTypeNativeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : Nat}
+(`HasTypeUnion.closedNormalNatNumeral`) walks through. -/
+theorem HasTypeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {child : RawTerm scope}
-    (derivation : HasTypeNativeUnion profile context subject classifier)
+    (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = natSuccCell child) :
-    Conv natTypeCell classifier ∧ HasTypeNativeUnion profile context child natTypeCell := by
+    Conv natTypeCell classifier ∧ HasTypeUnion profile context child natTypeCell := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨convInner, childTyped⟩ := innerInversion subjectShape
@@ -718,13 +718,13 @@ shipped `doubleDimensionUseBody scope` (at scope `scope`, the body lives at `sco
 binder depth). -/
 
 /-- **★ The union rejects the affine double-use path abstraction.**  `pathLam(pair(var 0, var 0))` is untypable
-in `HasTypeNativeUnion` at EVERY classifier and EVERY context: the union-wide form of the affine-grade rejection.
+in `HasTypeUnion` at EVERY classifier and EVERY context: the union-wide form of the affine-grade rejection.
 The first kernel theorem where a typing is refused by a usage grade read from a table row across the ENTIRE
 unified judgment — every arm that could carry a pathLam head is either head-untyped (the grown disjunct) or
 constrained by the affine binder check (the graded disjunct), and the double-use body violates the latter. -/
-theorem HasTypeNativeUnion.unionRejectsAffineDoubleUse {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.unionRejectsAffineDoubleUse {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (classifier : RawTerm scope) :
-    ¬ HasTypeNativeUnion profile context
+    ¬ HasTypeUnion profile context
         (pathLamCell (doubleDimensionUseBody scope)) classifier := by
   intro derivation
   rcases derivation.invertAtPathLamHead rfl with ⟨_, hostTyped, _⟩ |
@@ -753,10 +753,10 @@ AT MOST ONCE: `occurrenceCountAt body 0 ≤ 1`.  The grade is FORCED by the path
 check, not merely permitted — the union-side successor of the retired `HasTypeDescBridge.pathLamSubjectIsAffine`.
 The grown disjunct of the inversion is impossible (`pathLamCellHasNoTyping`), leaving the graded disjunct, whose
 `bodyAffine` premise IS the bound. -/
-theorem HasTypeNativeUnion.pathLamSubjectIsAffine {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.pathLamSubjectIsAffine {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
     {classifier : RawTerm scope}
-    (derivation : HasTypeNativeUnion profile context (pathLamCell body) classifier) :
+    (derivation : HasTypeUnion profile context (pathLamCell body) classifier) :
     RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1 := by
   rcases derivation.invertAtPathLamHead rfl with ⟨_, hostTyped, _⟩ |
     ⟨_, _, _, bodyAffine, _, _⟩
@@ -779,7 +779,7 @@ structure NativeUnionInversionCoverage (profile : PolyProfile) : Prop where
   Conv-modulo: the conv arm reclassifies, so the pinned classifier is convertible to the actual one. -/
   pathLamInversion : ∀ {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} {body : RawTerm (scope + 1)},
-    HasTypeNativeUnion profile context subject classifier →
+    HasTypeUnion profile context subject classifier →
     subject = pathLamCell body →
     (∃ pinnedClassifier : RawTerm scope,
         HasTypeDescPi profile context (pathLamCell body) pinnedClassifier ∧
@@ -788,35 +788,35 @@ structure NativeUnionInversionCoverage (profile : PolyProfile) : Prop where
         pinnedClassifier = bridgeTypeCell carrierCode
           (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell) ∧
         gradedBinderChecks UsageGrade.one body ∧
-        HasTypeNativeUnion profile (context.cons intervalTypeCell) body
+        HasTypeUnion profile (context.cons intervalTypeCell) body
           (RawTerm.weaken carrierCode) ∧
         Conv pinnedClassifier classifier)
   /-- The natElim-head inversion holds (the single recursive-eliminator survivor). -/
   natElimInversion : ∀ {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} {motive : RawTerm (scope + 1)}
     {zeroBranch : RawTerm scope} {stepBranch : RawTerm (scope + 2)} {scrutinee : RawTerm scope},
-    HasTypeNativeUnion profile context subject classifier →
+    HasTypeUnion profile context subject classifier →
     subject = natElimCell motive zeroBranch stepBranch scrutinee →
-    HasTypeNativeUnion profile context scrutinee natTypeCell ∧
-    HasTypeNativeUnion profile context zeroBranch classifier
+    HasTypeUnion profile context scrutinee natTypeCell ∧
+    HasTypeUnion profile context zeroBranch classifier
   /-- The natSucc-head inversion holds (EXACT since the NATIVE-42 embedding-arm deletion),
   Conv-modulo: the conv arm reclassifies, so the pinned `Nat` classifier is convertible to the
   actual one. -/
   natSuccInversion : ∀ {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} {child : RawTerm scope},
-    HasTypeNativeUnion profile context subject classifier →
+    HasTypeUnion profile context subject classifier →
     subject = natSuccCell child →
-    Conv natTypeCell classifier ∧ HasTypeNativeUnion profile context child natTypeCell
+    Conv natTypeCell classifier ∧ HasTypeUnion profile context child natTypeCell
   /-- The union rejects the affine double-use path abstraction at every classifier and context. -/
   affineDoubleUseRejected : ∀ {scope : Nat} (context : TypingContext profile scope)
     (classifier : RawTerm scope),
-    ¬ HasTypeNativeUnion profile context
+    ¬ HasTypeUnion profile context
         (pathLamCell (doubleDimensionUseBody scope)) classifier
   /-- Every union-typed pathLam body uses the dimension binder at most once (the affine-honesty pin,
   union-side — the FORCED grade, successor of the retired `HasTypeDescBridge.pathLamSubjectIsAffine`). -/
   pathLamBodyAffine : ∀ {scope : Nat} {context : TypingContext profile scope}
     {body : RawTerm (scope + 1)} {classifier : RawTerm scope},
-    HasTypeNativeUnion profile context (pathLamCell body) classifier →
+    HasTypeUnion profile context (pathLamCell body) classifier →
     RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1
 
 /-- **★ The NATIVE-37 inversion coverage gate** — inhabited by the shipped declarations, so the exercised
@@ -828,7 +828,7 @@ theorem nativeUnionInversionCoverageWitness {profile : PolyProfile} :
   natElimInversion := fun derivation subjectShape => derivation.invertAtNatElimHead subjectShape
   natSuccInversion := fun derivation subjectShape => derivation.invertAtNatSuccHead subjectShape
   affineDoubleUseRejected := fun context classifier =>
-    HasTypeNativeUnion.unionRejectsAffineDoubleUse context classifier
+    HasTypeUnion.unionRejectsAffineDoubleUse context classifier
   pathLamBodyAffine := fun derivation => derivation.pathLamSubjectIsAffine
 
 end FX1Poly.Typed

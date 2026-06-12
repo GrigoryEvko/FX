@@ -67,7 +67,7 @@ structure TermIndexedFormerEngineCoverage (profile : PolyProfile) (flag : Univer
       (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag)) : RawTerm 0)
   /-- NATIVE-17: the refl retrofit — `refl(Type@0)` inhabits `Id(Type@1, Type@0, Type@0)` (through the union's
   reflexive data-intro arm, the NATIVE-42 re-base) AND that classifier is itself term-indexed-formable. -/
-  reflRetrofit : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+  reflRetrofit : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       (reflCell (universeCodeCell LevelExpr.lzero flag))
       (idTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
         (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
@@ -78,7 +78,7 @@ structure TermIndexedFormerEngineCoverage (profile : PolyProfile) (flag : Univer
   /-- NATIVE-45: the bridge formation rule is carried by the union (`ofTermIndexedFormer` embedding of the
   generic term-indexed row), now the sole realization since the bespoke `HasTypeDescBridge` engine was
   retired. -/
-  bridgeFormationUnionTyped : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+  bridgeFormationUnionTyped : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       (bridgeTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
         (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
       (universeCodeCell (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag)
@@ -95,6 +95,6 @@ theorem termIndexedFormerEngineCoverageWitness {profile : PolyProfile} (flag : U
   idFormerSN := closedIdUniverseStronglyNormalizing (profile := profile) flag
   reflRetrofit := reflProofWithFormableClassifier flag
   bridgeFormationUnionTyped :=
-    HasTypeNativeUnion.ofTermIndexedFormer (termIndexedFormerGenFormation_bridgeUniverseSmoke flag)
+    HasTypeUnion.ofTermIndexedFormer (termIndexedFormerGenFormation_bridgeUniverseSmoke flag)
 
 end FX1Poly.Typed

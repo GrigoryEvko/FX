@@ -1,5 +1,5 @@
 import FX1PolyAudit.FX0CrossCheck
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.RawTermNF
 
@@ -10,7 +10,7 @@ import FX1Poly.Core.RawTermNF
 `HasTypeDescPi` (Church booleans / numerals / identity / Nat type), routing their strong
 normalization through `externalVerify_accepts_certified` (which consumes a `HasTypeDescPi`
 derivation).  After the NATIVE-42..45 endgame the typed layer is the single union judgment
-`HasTypeNativeUnion`, whose 25 arms carry the data / former / eliminator families the deleted
+`HasTypeUnion`, whose 25 arms carry the data / former / eliminator families the deleted
 standalone engines once held.  Their cross-check is NOT covered by the grown-engine corpus: the
 flagship union terms (a λ whose body lives in the data family, a numeral tower built through the
 recursive intro arm, the whole path-endpoint redex composed across the graded-intro and general-elim
@@ -47,7 +47,7 @@ Each SN witness is the established normal-form accessibility idiom: `reduceOnce`
 
 Each fixture's docstring NAMES the union derivation that types the subject (`numeralTwoTyped…`,
 `constantIntervalLambdaNativelyTyped`, `endpointRedexNativelyTypedWhole`), tying the cross-checked
-byte stream to a real `HasTypeNativeUnion` certificate.
+byte stream to a real `HasTypeUnion` certificate.
 
 ## Zero-axiom verification
 
@@ -65,11 +65,11 @@ open FX1Poly.Core.StepStar (IsStronglyNormalizing StepSuccessor)
 open FX1Poly.Universe (UniverseFlag LevelExpr)
 open FX1Poly.Typed
   (natSuccCell natZeroCell lamCell boolTypeCell intervalZeroCell pathAppCell pathLamCell
-   universeCodeCell HasTypeNativeUnion TypingContext natTypeCell piTyCodeCell intervalTypeCell
+   universeCodeCell HasTypeUnion TypingContext natTypeCell piTyCodeCell intervalTypeCell
    numeralTwoTypedThroughUnionRecursiveIntroTwice constantIntervalLambdaNativelyTyped
    endpointRedexNativelyTypedWhole)
 
-/-! ## The union flagship subjects (mirroring the `HasTypeNativeUnion` fixtures' subjects) -/
+/-! ## The union flagship subjects (mirroring the `HasTypeUnion` fixtures' subjects) -/
 
 /-- The numeral tower `natSucc (natSucc natZero) : Nat` — union-typed by `recursiveUnaryIntro`
 applied twice (`numeralTwoTypedThroughUnionRecursiveIntroTwice`). -/
@@ -158,12 +158,12 @@ theorem externalVerify_accepts_unionEndpointRedex :
 /-! ## ★ The union cross-check coverage gate
 
 The coverage record makes the "typed by the UNION judgment" claim MACHINE-CHECKED, not docstring-only:
-each field pairs the cross-check verdict (accepted + SN) with the actual `HasTypeNativeUnion`
+each field pairs the cross-check verdict (accepted + SN) with the actual `HasTypeUnion`
 derivation that types the SAME subject.  An inhabitant therefore certifies that each cross-checked
 byte stream is the encoding of a genuinely union-typed term. -/
 
 /-- **The union-typed FX0 cross-check coverage record.**  Each field certifies that a flagship term
-typed BY THE UNION JUDGMENT (`HasTypeNativeUnion`, not the grown host) is accepted by the independent
+typed BY THE UNION JUDGMENT (`HasTypeUnion`, not the grown host) is accepted by the independent
 external verifier, is strongly normalizing, AND carries its union derivation.  An inhabitant certifies
 the three flagship union shapes (recursive data-intro tower, λ-over-data, the path-endpoint
 eliminator redex) are all jointly cross-checked and union-typed. -/
@@ -173,14 +173,14 @@ structure UnionCrossCheckCoverage (profile : PolyProfile) (flag : UniverseFlag) 
     (externalVerify (FX0Poly.Cert.encode (encodeCell numeralTwoUnionSubject))
         (encodeCell numeralTwoUnionSubject).budget = FX0Poly.CheckVerdict.accepted
       ∧ IsStronglyNormalizing numeralTwoUnionSubject)
-    ∧ HasTypeNativeUnion profile (FX1Poly.Typed.TypingContext.empty : FX1Poly.Typed.TypingContext profile 0)
+    ∧ HasTypeUnion profile (FX1Poly.Typed.TypingContext.empty : FX1Poly.Typed.TypingContext profile 0)
         numeralTwoUnionSubject FX1Poly.Typed.natTypeCell
   /-- The λ-over-data composition is accepted, SN, and union-typed. -/
   lambdaOverDataCrossChecked :
     (externalVerify (FX0Poly.Cert.encode (encodeCell constantIntervalLambdaUnionSubject))
         (encodeCell constantIntervalLambdaUnionSubject).budget = FX0Poly.CheckVerdict.accepted
       ∧ IsStronglyNormalizing constantIntervalLambdaUnionSubject)
-    ∧ HasTypeNativeUnion profile (FX1Poly.Typed.TypingContext.empty : FX1Poly.Typed.TypingContext profile 0)
+    ∧ HasTypeUnion profile (FX1Poly.Typed.TypingContext.empty : FX1Poly.Typed.TypingContext profile 0)
         constantIntervalLambdaUnionSubject
         (FX1Poly.Typed.piTyCodeCell FX1Poly.Typed.boolTypeCell FX1Poly.Typed.intervalTypeCell)
   /-- The path-endpoint eliminator redex is accepted, core-`Step`-SN, and union-typed. -/
@@ -188,12 +188,12 @@ structure UnionCrossCheckCoverage (profile : PolyProfile) (flag : UniverseFlag) 
     (externalVerify (FX0Poly.Cert.encode (encodeCell endpointRedexUnionSubject))
         (encodeCell endpointRedexUnionSubject).budget = FX0Poly.CheckVerdict.accepted
       ∧ IsStronglyNormalizing endpointRedexUnionSubject)
-    ∧ HasTypeNativeUnion profile (FX1Poly.Typed.TypingContext.empty : FX1Poly.Typed.TypingContext profile 0)
+    ∧ HasTypeUnion profile (FX1Poly.Typed.TypingContext.empty : FX1Poly.Typed.TypingContext profile 0)
         endpointRedexUnionSubject
         (FX1Poly.Typed.universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) UniverseFlag.standard)
 
 /-- **★ The union cross-check coverage gate** — inhabited by the three shipped union fixtures, each
-paired with its `HasTypeNativeUnion` derivation (`numeralTwoTypedThroughUnionRecursiveIntroTwice` /
+paired with its `HasTypeUnion` derivation (`numeralTwoTypedThroughUnionRecursiveIntroTwice` /
 `constantIntervalLambdaNativelyTyped` / `endpointRedexNativelyTypedWhole`).  The endpoint redex's
 derivation forces `flag = standard` (the native interval-formation row pins `standard`); the gate is
 stated at that flag. -/

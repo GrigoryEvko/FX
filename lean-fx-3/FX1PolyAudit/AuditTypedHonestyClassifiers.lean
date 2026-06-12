@@ -713,9 +713,9 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- (= false) is typed by NO surviving standalone engine. Grown leg = the propext-free bridge
 -- hasSomeTypingRule_false_imp_isUntypableHead (peels the 27-disjunct || chain via orEqFalse_left/rightFalse,
 -- reduces typingRoleOf via if_neg, discharges with decide_eq_true) feeding the shipped isUntypableHead_sound.
--- The bespoke HasTypeDescBridge engine was RETIRED (NATIVE-45): its rows are now arms of HasTypeNativeUnion, so
+-- The bespoke HasTypeDescBridge engine was RETIRED (NATIVE-45): its rows are now arms of HasTypeUnion, so
 -- bridgeReservedUntyped is gone and reservedHeadUntypedBySurvivingEngines now carries the lone grown leg. The
--- every-native-rule statement lives in HasTypeNativeUnion.reservedHeadUntyped (UnionStaticTypingSoundness). Turns
+-- every-native-rule statement lives in HasTypeUnion.reservedHeadUntyped (UnionStaticTypingSoundness). Turns
 -- hasSomeTypingRule = false from a Bool into a TRUTHFUL "statically reserved" verdict.
 #assert_no_axioms FX1Poly.Typed.orEqFalse_leftFalse
 #assert_no_axioms FX1Poly.Typed.orEqFalse_rightFalse

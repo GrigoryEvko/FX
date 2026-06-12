@@ -97,7 +97,7 @@ theorem intervalCode_binderShifts_pin : Generator.gen_intervalCode.binderShifts 
 /-- The LANDED bridge former is ternary flat, exactly the `gen_idCode` template shape. -/
 theorem bridgeCode_binderShifts_pin : Generator.gen_bridgeCode.binderShifts = [0, 0, 0] := rfl
 
-/-- The landed substrate generators are LIVE — the `HasTypeNativeUnion` bridge rows give them
+/-- The landed substrate generators are LIVE — the `HasTypeUnion` bridge rows give them
 static semantics (`intervalCode` via `baseTypeFormation`, `bridgeCode` via the term-indexed former
 row); the endpoint-ι Step arm is the remaining operational gap. -/
 theorem landedParamSubstrate_live :
@@ -107,7 +107,7 @@ theorem landedParamSubstrate_live :
 
 /-- **The bridge-row substrate is now semantically LIVE** (the union's bridge rows flipped
 the classifier): the dimension-binder pair, the endpoints, and the landed interval/bridge
-codes are all typed by `HasTypeNativeUnion` (the endpoint values `interval0` / `interval1` via
+codes are all typed by `HasTypeUnion` (the endpoint values `interval0` / `interval1` via
 `dataIntroNullary`, `bridgeCode` via the term-indexed former row, `pathLam` via `gradedBinderIntro`,
 `pathApp` via `generalElim`) and covered by the ONORM-M2 admission gate's per-role sconing
 dispatches.  The standalone bridge engine is retired; its rows now live in the union. -/

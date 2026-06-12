@@ -196,8 +196,8 @@ classifier `boolTypeCell`) OR the grown engine `HasTypeDescPi` (right disjunct) 
 grown disjunct is ruled out by `noClosedNormalTermAtBoolType` (vacuous — the grown engine has no closed-normal
 inhabitant of `boolCode`).  Unconditional: no GrownCtxConv-5, no §5.  The CANON-1 (#1048) normal-subject
 headline — the closed-normal inhabitants of `boolCode` across the whole kernel are exactly the two Boolean
-values.  (The full single-judgment successor is `HasTypeNativeUnion.closedNormalBoolCanonicalForms` in
-`HasTypeNativeUnionCanonicalForms`, stated over the whole union with the bridge-fragment side conditions.) -/
+values.  (The full single-judgment successor is `HasTypeUnion.closedNormalBoolCanonicalForms` in
+`HasTypeUnionCanonicalForms`, stated over the whole union with the bridge-fragment side conditions.) -/
 theorem closedNormalBoolCanonicalForms {profile : PolyProfile} {generator : Generator}
     {payload : generator.payload 0} {children : RawTermChildren generator.binderShifts 0}
     (normal : RawTerm.isStepNormalForm (RawTerm.mkGen generator payload children))

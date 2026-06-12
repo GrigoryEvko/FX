@@ -1,12 +1,12 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeNativeUnionInversion
+import FX1Poly.Typed.HasTypeUnionInversion
 
 /-! # FX1PolyAudit/AuditNativeUnionInversion — NATIVE-37 audit shard (the FIRST eliminations over the
     native union: the inversion substrate + the union-wide affine rejection)
 
 Per-declaration zero-axiom gate for NATIVE-37 part 1: the host pathLam/natSucc head refutations (the Rung-103
 missing lemma plus its data-intro companion), the three engine-embedding subject-head exclusions, the in-file
-recursive-eliminator row inverter, the four representative per-head inversions over `HasTypeNativeUnion`
+recursive-eliminator row inverter, the four representative per-head inversions over `HasTypeUnion`
 (`invertAtPathLamHead` / `invertAtLamHead` / `invertAtNatElimHead` / `invertAtNatSuccHead`), the union-wide
 affine rejection (`unionRejectsAffineDoubleUse`), the affine-honesty pin `pathLamSubjectIsAffine` (the NATIVE-45
 union-side successor of the retired `HasTypeDescBridge.pathLamSubjectIsAffine`), and the inversion coverage record
@@ -30,18 +30,18 @@ namespace FX1PolyAudit
 
 /-! ## (1) The four representative per-head inversions over the union -/
 
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.invertAtPathLamHead
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.invertAtLamHead
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.invertAtNatElimHead
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.invertAtNatSuccHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtPathLamHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtLamHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtNatElimHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtNatSuccHead
 
 /-! ## (3) ★ The union-wide affine rejection -/
 
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.unionRejectsAffineDoubleUse
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.unionRejectsAffineDoubleUse
 
 /-! ## (3b) ★ The affine-honesty pin, union-side (NATIVE-45 — successor of HasTypeDescBridge.pathLamSubjectIsAffine) -/
 
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.pathLamSubjectIsAffine
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.pathLamSubjectIsAffine
 
 /-! ## (5) Coverage record + witness -/
 

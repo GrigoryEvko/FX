@@ -1,12 +1,12 @@
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.ConvFlatCodeInjectivity
 
-/-! # FX1Poly/Typed/HasTypeNativeUnionCanonicalForms — closed-normal canonical forms over the ONE judgment
+/-! # FX1Poly/Typed/HasTypeUnionCanonicalForms — closed-normal canonical forms over the ONE judgment
     (NATIVE-38: canonicity collapses to the single union judgment).
 
-The first canonical-forms theorem stated and proven over `HasTypeNativeUnion` itself — no per-engine
+The first canonical-forms theorem stated and proven over `HasTypeUnion` itself — no per-engine
 `Or`, no `TypedByValueEngine` side union.  A closed normal union-typed term whose classifier converts to a
 LANE code (`bool` / `nat` / `option` / `either` / `product` / `id` / `Pi`) is a VALUE of that lane.
 
@@ -36,7 +36,7 @@ two-head-stable `Conv` rigidity route.
 The mutual containment Bool mirrors `isStepNormalFormBool`; all projections are `Bool` case splits; the
 rigidity refuter destructs `Conv`'s common reduct and runs the shipped head-stability lemmas into
 `Generator.noConfusion`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`.  Per-declaration gated in `FX1PolyAudit/AuditHasTypeNativeUnionCanonicalForms.lean`. -/
+`omega`.  Per-declaration gated in `FX1PolyAudit/AuditHasTypeUnionCanonicalForms.lean`. -/
 
 namespace FX1Poly.Core
 
@@ -824,15 +824,15 @@ theorem nativeRecursiveElimRuleOf_cases {generator : Generator}
       exact absurd tableHit (by intro hit; cases hit)
 
 /-- **★ NATIVE-38: canonicity collapses to the single union judgment.**  A closed normal
-`HasTypeNativeUnion`-typed term on the core beta/iota fragment (no `pathApp` / `pathLam` occurrence —
+`HasTypeUnion`-typed term on the core beta/iota fragment (no `pathApp` / `pathLam` occurrence —
 the honest pre-WAVE-2 boundary, see the file header) whose classifier converts to a lane code is a
 shallow VALUE of that lane.  One derivation induction over all 25 arms; the eliminator arms consume the
 induction hypothesis at their scrutinee's lane and refute normality (the iota redex fires), the intro
 arms emit `LaneValue` constructors after the lane-pinning lemmas, the former arms die by universe
 rigidity, and the conv arm composes `Conv`. -/
-theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (typed : HasTypeNativeUnion profile context subject classifier) :
+    (typed : HasTypeUnion profile context subject classifier) :
     (Fin scope → False) →
     RawTerm.isStepNormalFormBool subject = true →
     RawTerm.containsGeneratorBool .gen_pathApp subject = false →
@@ -1292,11 +1292,11 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
 /-! ## The headline per-classifier corollaries -/
 
 /-- **★ Closed-normal BOOL canonicity over the single union judgment** (core beta/iota fragment): a
-closed normal `HasTypeNativeUnion`-typed term at `boolCode` with no bridge-fragment occurrence is
+closed normal `HasTypeUnion`-typed term at `boolCode` with no bridge-fragment occurrence is
 `boolTrue` or `boolFalse`. -/
-theorem HasTypeNativeUnion.closedNormalBoolCanonicalForms {profile : PolyProfile}
+theorem HasTypeUnion.closedNormalBoolCanonicalForms {profile : PolyProfile}
     {subject : RawTerm 0}
-    (typed : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       subject boolTypeCell)
     (normal : RawTerm.isStepNormalForm subject)
     (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)
@@ -1309,9 +1309,9 @@ theorem HasTypeNativeUnion.closedNormalBoolCanonicalForms {profile : PolyProfile
 /-- **★ Closed-normal NAT canonicity over the single union judgment** (core beta/iota fragment): a
 closed normal union-typed term at `natCode` with no bridge-fragment occurrence is `natZero` or a
 `natSucc`. -/
-theorem HasTypeNativeUnion.closedNormalNatCanonicalForms {profile : PolyProfile}
+theorem HasTypeUnion.closedNormalNatCanonicalForms {profile : PolyProfile}
     {subject : RawTerm 0}
-    (typed : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       subject natTypeCell)
     (normal : RawTerm.isStepNormalForm subject)
     (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)
@@ -1325,9 +1325,9 @@ theorem HasTypeNativeUnion.closedNormalNatCanonicalForms {profile : PolyProfile}
 closed normal union-typed term at `option(A)` with no bridge-fragment occurrence is `optionNone` or an
 `optionSome` — the union restatement of the zoo-level `closedNormalOptionCanonicalForms`, freeing the
 canonicity assembly from `HasTypeDescOptionIntro`. -/
-theorem HasTypeNativeUnion.closedNormalOptionCanonicalForms {profile : PolyProfile}
+theorem HasTypeUnion.closedNormalOptionCanonicalForms {profile : PolyProfile}
     {subject elementType : RawTerm 0}
-    (typed : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       subject (optionTypeCell elementType))
     (normal : RawTerm.isStepNormalForm subject)
     (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)
@@ -1340,9 +1340,9 @@ theorem HasTypeNativeUnion.closedNormalOptionCanonicalForms {profile : PolyProfi
 /-- **★ Closed-normal EITHER canonicity over the single union judgment** (core beta/iota fragment): a
 closed normal union-typed term at `either(A, B)` with no bridge-fragment occurrence is an `eitherInl`
 or an `eitherInr`. -/
-theorem HasTypeNativeUnion.closedNormalEitherCanonicalForms {profile : PolyProfile}
+theorem HasTypeUnion.closedNormalEitherCanonicalForms {profile : PolyProfile}
     {subject leftType rightType : RawTerm 0}
-    (typed : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       subject (eitherTypeCell leftType rightType))
     (normal : RawTerm.isStepNormalForm subject)
     (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)
@@ -1355,9 +1355,9 @@ theorem HasTypeNativeUnion.closedNormalEitherCanonicalForms {profile : PolyProfi
 
 /-- **★ Closed-normal PRODUCT canonicity over the single union judgment** (core beta/iota fragment): a
 closed normal union-typed term at `product(A, B)` with no bridge-fragment occurrence is a `pair`. -/
-theorem HasTypeNativeUnion.closedNormalProductCanonicalForms {profile : PolyProfile}
+theorem HasTypeUnion.closedNormalProductCanonicalForms {profile : PolyProfile}
     {subject firstType secondType : RawTerm 0}
-    (typed : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       subject (productTypeCell firstType secondType))
     (normal : RawTerm.isStepNormalForm subject)
     (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)
@@ -1370,9 +1370,9 @@ theorem HasTypeNativeUnion.closedNormalProductCanonicalForms {profile : PolyProf
 
 /-- **★ Closed-normal IDENTITY canonicity over the single union judgment** (core beta/iota fragment): a
 closed normal union-typed term at `Id(T, a, b)` with no bridge-fragment occurrence is a `refl`. -/
-theorem HasTypeNativeUnion.closedNormalIdentityCanonicalForms {profile : PolyProfile}
+theorem HasTypeUnion.closedNormalIdentityCanonicalForms {profile : PolyProfile}
     {subject typeCode leftEndpoint rightEndpoint : RawTerm 0}
-    (typed : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       subject (idTypeCell typeCode leftEndpoint rightEndpoint))
     (normal : RawTerm.isStepNormalForm subject)
     (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)
@@ -1385,9 +1385,9 @@ theorem HasTypeNativeUnion.closedNormalIdentityCanonicalForms {profile : PolyPro
 
 /-- **★ Closed-normal PI canonicity over the single union judgment** (core beta/iota fragment): a
 closed normal union-typed term at `Pi(A, B)` with no bridge-fragment occurrence is a lambda. -/
-theorem HasTypeNativeUnion.closedNormalPiCanonicalForms {profile : PolyProfile}
+theorem HasTypeUnion.closedNormalPiCanonicalForms {profile : PolyProfile}
     {subject domainCode : RawTerm 0} {codomainCode : RawTerm 1}
-    (typed : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       subject (piTyCodeCell domainCode codomainCode))
     (normal : RawTerm.isStepNormalForm subject)
     (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)
@@ -1401,9 +1401,9 @@ theorem HasTypeNativeUnion.closedNormalPiCanonicalForms {profile : PolyProfile}
 closed normal union-typed term at `list(A)` with no bridge-fragment occurrence is `listNil` or a
 `listCons` — the lane the master was missing; the zoo-level `ListCanonicalForms` restated at the
 union. -/
-theorem HasTypeNativeUnion.closedNormalListCanonicalForms {profile : PolyProfile}
+theorem HasTypeUnion.closedNormalListCanonicalForms {profile : PolyProfile}
     {subject elementType : RawTerm 0}
-    (typed : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       subject (listTypeCell elementType))
     (normal : RawTerm.isStepNormalForm subject)
     (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)

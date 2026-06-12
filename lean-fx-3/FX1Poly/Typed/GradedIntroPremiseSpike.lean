@@ -6,7 +6,7 @@ import FX1Poly.Core.RawTermOccurrenceRename
 /-! # FX1Poly/Typed/GradedIntroPremiseSpike — the graded intro-premise grade-check (LIVE substrate)
 
 This file HOSTS the live grade-check `gradedBinderChecks` consumed by the native union's
-`gradedBinderIntro` arm (`HasTypeNativeUnion.lean`) and the v2 graded-introduction table
+`gradedBinderIntro` arm (`HasTypeUnion.lean`) and the v2 graded-introduction table
 (`HasTypeDescGradedIntro` / `IntroRuleDescGradedBinder`).  An introduction premise carrying a USAGE GRADE on
 its binder is CHECKED by bounding the body's freshest-binder occurrence — the orthogonal graded dimension
 every graded former needs: the affine bridge/path binder (`pathLam`, usage `.one`), the ghost binder
@@ -110,7 +110,7 @@ theorem gradedIntro_affine_constant {profile : PolyProfile} (flag : UniverseFlag
 SUFFICES to construct the affine path abstraction, because its `binderGraded` check (`gradedBinderChecks .one
 body`) IS the path-intro affine premise (`occurrenceCountAt body 0 ≤ 1`) definitionally — was witnessed
 pre-retirement against the bespoke `HasTypeDescBridge.pathIntro`.  That engine has been deleted (NATIVE-45);
-the affine path abstraction is now realized ONLY by the union row `HasTypeNativeUnion.gradedBinderIntro` at
+the affine path abstraction is now realized ONLY by the union row `HasTypeUnion.gradedBinderIntro` at
 `pathLamGradedIntroRule` (selected by `gradedIntroRuleOf_pathLam`), whose `binderGraded` premise is this same
 `gradedBinderChecks rule.binderUsage body`.  The theorem is unstatable here (the union is defined downstream
 of this file), so it does not survive the retirement. -/

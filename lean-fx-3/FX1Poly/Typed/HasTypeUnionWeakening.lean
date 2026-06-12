@@ -1,16 +1,16 @@
-import FX1Poly.Typed.HasTypeNativeUnion
-import FX1Poly.Typed.HasTypeNativeUnionInversion
+import FX1Poly.Typed.HasTypeUnion
+import FX1Poly.Typed.HasTypeUnionInversion
 import FX1Poly.Typed.NativeUnionCellSubstitution
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Core.RawTermOccurrenceSubst
 
-/-! # FX1Poly/Typed/HasTypeNativeUnionWeakening — the RENAMING / WEAKENING lemma for the 25-arm native
-    union (the de-Bruijn-insertion twin of `HasTypeNativeUnion.substRespectingContext`)
+/-! # FX1Poly/Typed/HasTypeUnionWeakening — the RENAMING / WEAKENING lemma for the 25-arm native
+    union (the de-Bruijn-insertion twin of `HasTypeUnion.substRespectingContext`)
 
 The grown engine ships `HasTypeDescPi.renameRespectingContext` (its cartesian-lift fibration leg); the
-unified judgment `HasTypeNativeUnion` must too.  This file supplies that missing union-metatheory
-primitive — `HasTypeNativeUnion` is preserved along ANY renaming respecting the context — the structural
+unified judgment `HasTypeUnion` must too.  This file supplies that missing union-metatheory
+primitive — `HasTypeUnion` is preserved along ANY renaming respecting the context — the structural
 mirror of the union substitution lemma with a RENAMING in place of the substitution.
 
 ## The renaming-respects-context discipline (the formation engine's EQUALITY carrier)
@@ -323,7 +323,7 @@ theorem rename_listStepFunctionType {sourceScope targetScope : Nat}
 /-- The renaming-respects-context condition for the native union: each source binding's looked-up type
 renames to the target's looked-up binding.  IDENTICAL to the grown engine's carrier so the embedding arms
 compose verbatim. -/
-abbrev HasTypeNativeUnion.RenameRespectsContext {profile : PolyProfile} {sourceScope targetScope : Nat}
+abbrev HasTypeUnion.RenameRespectsContext {profile : PolyProfile} {sourceScope targetScope : Nat}
     (sourceContext : TypingContext profile sourceScope)
     (targetContext : TypingContext profile targetScope)
     (rawRenaming : RawRenaming sourceScope targetScope) : Prop :=
@@ -334,14 +334,14 @@ abbrev HasTypeNativeUnion.RenameRespectsContext {profile : PolyProfile} {sourceS
 /-- The two-binder lift of the renaming context-condition (the recursiveElim / idJ step-branch shape):
 the double lift of a renaming context-condition is a context-condition at the context extended by the two
 domains.  An iterate of `renameContextCondition_cons`. -/
-theorem HasTypeNativeUnion.RenameRespectsContext.consTwice {profile : PolyProfile}
+theorem HasTypeUnion.RenameRespectsContext.consTwice {profile : PolyProfile}
     {sourceScope targetScope : Nat}
     {sourceContext : TypingContext profile sourceScope}
     {targetContext : TypingContext profile targetScope}
     (outerType : RawTerm sourceScope) (innerType : RawTerm (sourceScope + 1))
     {rawRenaming : RawRenaming sourceScope targetScope}
-    (condition : HasTypeNativeUnion.RenameRespectsContext sourceContext targetContext rawRenaming) :
-    HasTypeNativeUnion.RenameRespectsContext ((sourceContext.cons outerType).cons innerType)
+    (condition : HasTypeUnion.RenameRespectsContext sourceContext targetContext rawRenaming) :
+    HasTypeUnion.RenameRespectsContext ((sourceContext.cons outerType).cons innerType)
       ((targetContext.cons (RawTerm.rename rawRenaming outerType)).cons
         (RawTerm.rename (iterateLiftRaw rawRenaming 1) innerType))
       (iterateLiftRaw rawRenaming 2) :=
@@ -378,14 +378,14 @@ host-premise arms route through the engines' own `renameRespectingContext` and r
 native arms recurse via the IHs with `RawRenaming.lift` crossing binders; the graded arm transports the
 affine binder check by the lifted-occurrence preservation; the conv arm transports the conversion through
 `Conv.rename`.  The de-Bruijn-insertion twin of `HasTypeDescPi.renameRespectingContext`. -/
-theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
+theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeNativeUnion profile sourceContext subject classifier) :
+    (derivation : HasTypeUnion profile sourceContext subject classifier) :
     ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
       (rawRenaming : RawRenaming sourceScope targetScope),
-      HasTypeNativeUnion.RenameRespectsContext sourceContext targetContext rawRenaming →
-      HasTypeNativeUnion profile targetContext
+      HasTypeUnion.RenameRespectsContext sourceContext targetContext rawRenaming →
+      HasTypeUnion profile targetContext
         (RawTerm.rename rawRenaming subject)
         (RawTerm.rename rawRenaming classifier) := by
   induction derivation with
@@ -394,18 +394,18 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       have typedRenamed := typedIH targetContext rawRenaming condition
       have reclassifierRenamed := reclassifierIH targetContext rawRenaming condition
       rw [rename_universeCodeCell] at reclassifierRenamed
-      exact HasTypeNativeUnion.conv levelExpr flag typedRenamed
+      exact HasTypeUnion.conv levelExpr flag typedRenamed
         (Conv.rename rawRenaming converts) reclassifierRenamed
   | ofGrown hostTyped =>
       intro targetScope targetContext rawRenaming condition
-      exact HasTypeNativeUnion.ofGrown
+      exact HasTypeUnion.ofGrown
         (hostTyped.renameRespectingContext targetContext rawRenaming condition)
   | baseTypeFormation context generator payload children rule isBaseType =>
       intro targetScope targetContext rawRenaming _condition
       have hNotVar : generator ≠ Generator.gen_var := baseTypeRuleImpliesNotVariable isBaseType
       rw [RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar,
         baseTypeRuleDescOf_outputRenameStable isBaseType rawRenaming]
-      exact HasTypeNativeUnion.baseTypeFormation targetContext generator
+      exact HasTypeUnion.baseTypeFormation targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.rename rawRenaming children) rule isBaseType
   | dataIntroNullary context generator payload children rule isDataIntro =>
@@ -413,7 +413,7 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       have hNotVar : generator ≠ Generator.gen_var := dataIntroNullaryRuleImpliesNotVariable isDataIntro
       rw [RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar,
         dataIntroNullaryRuleDescOf_outputRenameStable isDataIntro rawRenaming]
-      exact HasTypeNativeUnion.dataIntroNullary targetContext generator
+      exact HasTypeUnion.dataIntroNullary targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.rename rawRenaming children) rule isDataIntro
   | @flatFormation flatScope context generator payload children levels flag rule isFlatFormation
@@ -424,29 +424,29 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
         flatFormationRuleIsUniverseFormer isFlatFormation
       have renamedPremise :=
         FlatDescTelescopePi.renameRespectingTelescope premise targetContext rawRenaming condition
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.rename rawRenaming (RawTerm.mkGen generator payload children))
         (RawTerm.rename rawRenaming (universeFormerOutput flatScope levels flag))
       rw [show universeFormerOutput flatScope levels flag
             = universeCodeCell (lmaxAll levels) flag from rfl, rename_universeCodeCell,
           RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
-      exact HasTypeNativeUnion.flatFormation targetContext generator
+      exact HasTypeUnion.flatFormation targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.rename rawRenaming children) levels flag
         { outputType := universeFormerOutput } isFlatFormation renamedPremise
   | ofTermIndexedFormer formerTyped =>
       intro targetScope targetContext rawRenaming condition
-      exact HasTypeNativeUnion.ofTermIndexedFormer
+      exact HasTypeUnion.ofTermIndexedFormer
         (formerTyped.renameRespectingContext targetContext rawRenaming condition)
   | recursiveUnaryIntro context generator rule child isRecursiveUnary _childTyped childIH =>
       intro targetScope targetContext rawRenaming condition
       obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
       subst ruleEq
       have childRenamed := childIH targetContext rawRenaming condition
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.rename rawRenaming (natSuccCell child)) (RawTerm.rename rawRenaming natTypeCell)
       rw [rename_natSuccCell, rename_natTypeCell]
-      exact HasTypeNativeUnion.recursiveUnaryIntro targetContext .gen_natSucc
+      exact HasTypeUnion.recursiveUnaryIntro targetContext .gen_natSucc
         natSuccNativeRecursiveUnaryRule (RawTerm.rename rawRenaming child) rfl childRenamed
   | recursiveBinaryIntro context generator rule head tail elementType isRecursiveBinary
       headTyped _tailTyped tailIH =>
@@ -454,11 +454,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       obtain ⟨_, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
       subst ruleEq
       have tailRenamed := tailIH targetContext rawRenaming condition
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.rename rawRenaming (listConsCell head tail))
         (RawTerm.rename rawRenaming (listTypeCell elementType))
       rw [rename_listConsCell, rename_listTypeCell]
-      exact HasTypeNativeUnion.recursiveBinaryIntro targetContext .gen_listCons
+      exact HasTypeUnion.recursiveBinaryIntro targetContext .gen_listCons
         listConsNativeRecursiveBinaryRule (RawTerm.rename rawRenaming head)
         (RawTerm.rename rawRenaming tail) (RawTerm.rename rawRenaming elementType) rfl
         (headTyped.renameRespectingContext targetContext rawRenaming condition) tailRenamed
@@ -466,11 +466,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       intro targetScope targetContext rawRenaming condition
       obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
       subst ruleEq
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.rename rawRenaming (optionSomeCell child))
         (RawTerm.rename rawRenaming (optionTypeCell elementType))
       rw [rename_optionSomeCell, rename_optionTypeCell]
-      exact HasTypeNativeUnion.pinnedUnaryIntro targetContext .gen_optionSome
+      exact HasTypeUnion.pinnedUnaryIntro targetContext .gen_optionSome
         optionSomeNativePinnedUnaryRule (RawTerm.rename rawRenaming child)
         (RawTerm.rename rawRenaming elementType) rfl
         (childTyped.renameRespectingContext targetContext rawRenaming condition)
@@ -483,19 +483,19 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
           ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
       · subst generatorEq; subst ruleEq
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming optionNoneCell)
           (RawTerm.rename rawRenaming (optionTypeCell elementType))
         rw [rename_optionNoneCell, rename_optionTypeCell]
-        exact HasTypeNativeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
+        exact HasTypeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
           optionNoneNativeNullaryFreeTypeRule (RawTerm.rename rawRenaming elementType)
           elementLevel flag rfl elementFormRenamed
       · subst generatorEq; subst ruleEq
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming listNilCell)
           (RawTerm.rename rawRenaming (listTypeCell elementType))
         rw [rename_listNilCell, rename_listTypeCell]
-        exact HasTypeNativeUnion.nullaryFreeTypeIntro targetContext .gen_listNil
+        exact HasTypeUnion.nullaryFreeTypeIntro targetContext .gen_listNil
           listNilNativeNullaryFreeTypeRule (RawTerm.rename rawRenaming elementType)
           elementLevel flag rfl elementFormRenamed
   | coproductIntro context generator rule value pinnedType freeType freeLevel flag isCoproduct
@@ -506,20 +506,20 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       rw [rename_universeCodeCell] at freeFormRenamed
       rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       · subst ruleEq
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (eitherInlCell value))
           (RawTerm.rename rawRenaming (eitherTypeCell pinnedType freeType))
         rw [rename_eitherInlCell, rename_eitherTypeCell]
-        exact HasTypeNativeUnion.coproductIntro targetContext .gen_eitherInl
+        exact HasTypeUnion.coproductIntro targetContext .gen_eitherInl
           eitherInlNativeCoproductRule (RawTerm.rename rawRenaming value)
           (RawTerm.rename rawRenaming pinnedType) (RawTerm.rename rawRenaming freeType)
           freeLevel flag rfl valueRenamed freeFormRenamed
       · subst ruleEq
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (eitherInrCell value))
           (RawTerm.rename rawRenaming (eitherTypeCell freeType pinnedType))
         rw [rename_eitherInrCell, rename_eitherTypeCell]
-        exact HasTypeNativeUnion.coproductIntro targetContext .gen_eitherInr
+        exact HasTypeUnion.coproductIntro targetContext .gen_eitherInr
           eitherInrNativeCoproductRule (RawTerm.rename rawRenaming value)
           (RawTerm.rename rawRenaming pinnedType) (RawTerm.rename rawRenaming freeType)
           freeLevel flag rfl valueRenamed freeFormRenamed
@@ -528,11 +528,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       intro targetScope targetContext rawRenaming condition
       obtain ⟨_, ruleEq⟩ := nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
       subst ruleEq
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.rename rawRenaming (pairCell firstChild secondChild))
         (RawTerm.rename rawRenaming (productTypeCell firstType secondType))
       rw [rename_pairCell, rename_productTypeCell]
-      exact HasTypeNativeUnion.nonDependentBinaryIntro targetContext .gen_pair
+      exact HasTypeUnion.nonDependentBinaryIntro targetContext .gen_pair
         pairNativeNonDependentBinaryRule (RawTerm.rename rawRenaming firstChild)
         (RawTerm.rename rawRenaming secondChild) (RawTerm.rename rawRenaming firstType)
         (RawTerm.rename rawRenaming secondType) rfl
@@ -542,11 +542,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       intro targetScope targetContext rawRenaming condition
       obtain ⟨_, ruleEq⟩ := nativeReflexiveDataIntroRuleOf_cases isReflexive
       subst ruleEq
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.rename rawRenaming (reflCell witness))
         (RawTerm.rename rawRenaming (idTypeCell witnessType witness witness))
       rw [rename_reflCell, rename_idTypeCell]
-      exact HasTypeNativeUnion.reflexiveIntro targetContext .gen_refl
+      exact HasTypeUnion.reflexiveIntro targetContext .gen_refl
         reflNativeReflexiveRule (RawTerm.rename rawRenaming witness)
         (RawTerm.rename rawRenaming witnessType) rfl
         (witnessTyped.renameRespectingContext targetContext rawRenaming condition)
@@ -557,7 +557,7 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       have scrutineeRenamed := scrutineeIH targetContext rawRenaming condition
       have baseBranchRenamed := baseBranchIH targetContext rawRenaming condition
       have stepLiftedCondition :=
-        HasTypeNativeUnion.RenameRespectsContext.consTwice (rule.scrutineeType _)
+        HasTypeUnion.RenameRespectsContext.consTwice (rule.scrutineeType _)
           (RawTerm.rename RawRenaming.weaken resultType) condition
       have stepBranchRenamed := stepBranchIH _ (iterateLiftRaw rawRenaming 2) stepLiftedCondition
       rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with
@@ -566,12 +566,12 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
         dsimp only [natElimNativeRecursiveRule] at stepBranchRenamed
         rw [rename_natTypeCell, rename_iterateLift_one_renameWeaken_commute,
           rename_iterateLift_two_weaken_weaken_commute] at stepBranchRenamed
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming
             (natElimCell motive baseBranch stepBranch scrutinee))
           (RawTerm.rename rawRenaming resultType)
         rw [rename_natElimCell]
-        exact HasTypeNativeUnion.recursiveElim targetContext .gen_natElim
+        exact HasTypeUnion.recursiveElim targetContext .gen_natElim
           natElimNativeRecursiveRule (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
           (RawTerm.rename rawRenaming baseBranch)
           (RawTerm.rename (iterateLiftRaw rawRenaming 2) stepBranch)
@@ -581,12 +581,12 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
         dsimp only [natRecNativeRecursiveRule] at stepBranchRenamed
         rw [rename_natTypeCell, rename_iterateLift_one_renameWeaken_commute,
           rename_iterateLift_two_weaken_weaken_commute] at stepBranchRenamed
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming
             (natRecCell motive baseBranch stepBranch scrutinee))
           (RawTerm.rename rawRenaming resultType)
         rw [rename_natRecCell]
-        exact HasTypeNativeUnion.recursiveElim targetContext .gen_natRec
+        exact HasTypeUnion.recursiveElim targetContext .gen_natRec
           natRecNativeRecursiveRule (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
           (RawTerm.rename rawRenaming baseBranch)
           (RawTerm.rename (iterateLiftRaw rawRenaming 2) stepBranch)
@@ -599,17 +599,17 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       rw [rename_productTypeCell] at pairRenamed
       rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       · subst ruleEq
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (fstCell pairTerm)) (RawTerm.rename rawRenaming firstType)
         rw [rename_fstCell]
-        exact HasTypeNativeUnion.projectionElim targetContext .gen_fst fstNativeProjectionRule
+        exact HasTypeUnion.projectionElim targetContext .gen_fst fstNativeProjectionRule
           (RawTerm.rename rawRenaming pairTerm) (RawTerm.rename rawRenaming firstType)
           (RawTerm.rename rawRenaming secondType) rfl pairRenamed
       · subst ruleEq
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (sndCell pairTerm)) (RawTerm.rename rawRenaming secondType)
         rw [rename_sndCell]
-        exact HasTypeNativeUnion.projectionElim targetContext .gen_snd sndNativeProjectionRule
+        exact HasTypeUnion.projectionElim targetContext .gen_snd sndNativeProjectionRule
           (RawTerm.rename rawRenaming pairTerm) (RawTerm.rename rawRenaming firstType)
           (RawTerm.rename rawRenaming secondType) rfl pairRenamed
   | twoBranchMatchElim context generator rule motive firstBranch secondBranch scrutinee
@@ -622,11 +622,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       rcases nativeTwoBranchMatchRuleOf_cases isTwoBranchMatch with
         ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
       · subst ruleEq
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (boolElimCell motive scrutinee firstBranch secondBranch))
           (RawTerm.rename rawRenaming resultType)
         rw [rename_boolElimCell]
-        exact HasTypeNativeUnion.twoBranchMatchElim targetContext .gen_boolElim
+        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_boolElim
           boolElimNativeMatchRule (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
           (RawTerm.rename rawRenaming firstBranch) (RawTerm.rename rawRenaming secondBranch)
           (RawTerm.rename rawRenaming scrutinee) (RawTerm.rename rawRenaming typeParamA)
@@ -636,11 +636,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
         rw [show optionMatchNativeMatchRule.secondBranchType _ typeParamA typeParamB resultType
               = piTyCodeCell typeParamA (RawTerm.weaken resultType) from rfl,
           rename_nonDependentArrow] at secondBranchRenamed
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (optionMatchCell motive firstBranch secondBranch scrutinee))
           (RawTerm.rename rawRenaming resultType)
         rw [rename_optionMatchCell]
-        exact HasTypeNativeUnion.twoBranchMatchElim targetContext .gen_optionMatch
+        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_optionMatch
           optionMatchNativeMatchRule (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
           (RawTerm.rename rawRenaming firstBranch) (RawTerm.rename rawRenaming secondBranch)
           (RawTerm.rename rawRenaming scrutinee) (RawTerm.rename rawRenaming typeParamA)
@@ -653,11 +653,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
         rw [show eitherMatchNativeMatchRule.secondBranchType _ typeParamA typeParamB resultType
               = piTyCodeCell typeParamB (RawTerm.weaken resultType) from rfl,
           rename_nonDependentArrow] at secondBranchRenamed
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (eitherMatchCell motive firstBranch secondBranch scrutinee))
           (RawTerm.rename rawRenaming resultType)
         rw [rename_eitherMatchCell]
-        exact HasTypeNativeUnion.twoBranchMatchElim targetContext .gen_eitherMatch
+        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_eitherMatch
           eitherMatchNativeMatchRule (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
           (RawTerm.rename rawRenaming firstBranch) (RawTerm.rename rawRenaming secondBranch)
           (RawTerm.rename rawRenaming scrutinee) (RawTerm.rename rawRenaming typeParamA)
@@ -670,11 +670,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       have baseCaseRenamed := baseCaseIH targetContext rawRenaming condition
       obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
       subst ruleEq
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.rename rawRenaming (idJCell motive baseCase witness))
         (RawTerm.rename rawRenaming resultType)
       rw [rename_idJCell]
-      exact HasTypeNativeUnion.pathInductionElim targetContext .gen_idJ idJNativePathInductionRule
+      exact HasTypeUnion.pathInductionElim targetContext .gen_idJ idJNativePathInductionRule
         (RawTerm.rename (iterateLiftRaw rawRenaming 2) motive)
         (RawTerm.rename rawRenaming baseCase) (RawTerm.rename rawRenaming witness)
         (RawTerm.rename rawRenaming typeCode) (RawTerm.rename rawRenaming endpoint)
@@ -689,11 +689,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       have consRenamed := consBranchTyped.renameRespectingContext targetContext rawRenaming condition
       rw [rename_listTypeCell] at scrutineeRenamed
       rw [rename_listStepFunctionType] at consRenamed
-      show HasTypeNativeUnion profile targetContext
+      show HasTypeUnion profile targetContext
         (RawTerm.rename rawRenaming (listElimCell motive scrutinee nilBranch consBranch))
         (RawTerm.rename rawRenaming resultType)
       rw [rename_listElimCell]
-      exact HasTypeNativeUnion.listElim targetContext .gen_listElim listElimNativeRule
+      exact HasTypeUnion.listElim targetContext .gen_listElim listElimNativeRule
         (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
         (RawTerm.rename rawRenaming scrutinee) (RawTerm.rename rawRenaming nilBranch)
         (RawTerm.rename rawRenaming consBranch) (RawTerm.rename rawRenaming elementType)
@@ -709,13 +709,13 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
           Option.some.inj (isElim.symm.trans generalElimRuleOf_app)
         rw [show appGeneralElimRule.eliminatedType _ typeParamA typeParamB typeParamC typeParamD
               = piTyCodeCell typeParamA typeParamB from rfl, rename_piTyCodeCell] at eliminatedRenamed
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (appCell eliminated argument))
           (RawTerm.rename rawRenaming (RawTerm.subst0 typeParamB argument))
         rw [show RawTerm.rename rawRenaming (appCell eliminated argument)
               = appCell (RawTerm.rename rawRenaming eliminated) (RawTerm.rename rawRenaming argument)
                 from rfl, RawTerm.rename_subst0_commute]
-        exact HasTypeNativeUnion.generalElim targetContext .gen_app appGeneralElimRule
+        exact HasTypeUnion.generalElim targetContext .gen_app appGeneralElimRule
           (RawTerm.rename rawRenaming typeParamA)
           (RawTerm.rename (iterateLiftRaw rawRenaming 1) typeParamB)
           (RawTerm.rename rawRenaming typeParamC) (RawTerm.rename rawRenaming typeParamD)
@@ -727,11 +727,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
         rw [show pathAppGeneralElimRule.eliminatedType _ typeParamA typeParamB typeParamC typeParamD
               = bridgeTypeCell typeParamA typeParamC typeParamD from rfl,
           rename_bridgeTypeCell] at eliminatedRenamed
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (pathAppCell eliminated argument))
           (RawTerm.rename rawRenaming typeParamA)
         rw [rename_pathAppCell]
-        exact HasTypeNativeUnion.generalElim targetContext .gen_pathApp pathAppGeneralElimRule
+        exact HasTypeUnion.generalElim targetContext .gen_pathApp pathAppGeneralElimRule
           (RawTerm.rename rawRenaming typeParamA)
           (RawTerm.rename (iterateLiftRaw rawRenaming 1) typeParamB)
           (RawTerm.rename rawRenaming typeParamC) (RawTerm.rename rawRenaming typeParamD)
@@ -741,7 +741,7 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       isIntro binderGraded _domainFormed _classifierFormed _bodyTyped domainIH classifierIH bodyIH =>
       intro targetScope targetContext rawRenaming condition
       have liftedCondition :
-          HasTypeNativeUnion.RenameRespectsContext
+          HasTypeUnion.RenameRespectsContext
             (context.cons (rule.domainCell _ typeParamA))
             (targetContext.cons (RawTerm.rename rawRenaming (rule.domainCell _ typeParamA)))
             (iterateLiftRaw rawRenaming 1) :=
@@ -761,14 +761,14 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
         have classifierRenamed := classifierIH rfl (targetContext.cons
           (RawTerm.rename rawRenaming typeParamA)) (iterateLiftRaw rawRenaming 1) liftedCondition
         rw [rename_universeCodeCell] at classifierRenamed
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (lamCell typeParamA body))
           (RawTerm.rename rawRenaming (piTyCodeCell typeParamA typeParamB))
         rw [show RawTerm.rename rawRenaming (lamCell typeParamA body)
               = lamCell (RawTerm.rename rawRenaming typeParamA)
                   (RawTerm.rename (iterateLiftRaw rawRenaming 1) body) from rfl,
           rename_piTyCodeCell]
-        exact HasTypeNativeUnion.gradedBinderIntro targetContext .gen_lam lamGradedIntroRule
+        exact HasTypeUnion.gradedBinderIntro targetContext .gen_lam lamGradedIntroRule
           (RawTerm.rename rawRenaming typeParamA)
           (RawTerm.rename (iterateLiftRaw rawRenaming 1) typeParamB)
           (RawTerm.rename (iterateLiftRaw rawRenaming 1) body)
@@ -779,14 +779,14 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
           Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
         rw [show pathLamGradedIntroRule.bodyClassifier _ typeParamA typeParamB
               = RawTerm.weaken typeParamA from rfl, rename_iterateLift_one_weaken_commute] at bodyRenamed
-        show HasTypeNativeUnion profile targetContext
+        show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming (pathLamCell body))
           (RawTerm.rename rawRenaming
             (bridgeTypeCell typeParamA (RawTerm.subst0 body intervalZeroCell)
               (RawTerm.subst0 body intervalOneCell)))
         rw [rename_pathLamCell, rename_bridgeTypeCell, RawTerm.rename_subst0_commute,
           RawTerm.rename_subst0_commute]
-        exact HasTypeNativeUnion.gradedBinderIntro targetContext .gen_pathLam pathLamGradedIntroRule
+        exact HasTypeUnion.gradedBinderIntro targetContext .gen_pathLam pathLamGradedIntroRule
           (RawTerm.rename rawRenaming typeParamA)
           (RawTerm.rename (iterateLiftRaw rawRenaming 1) typeParamB)
           (RawTerm.rename (iterateLiftRaw rawRenaming 1) body)
@@ -796,16 +796,16 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
 
 /-! ## ★ The weakening corollary (the `fun _ => rfl` context-condition specialization) -/
 
-/-- **★ INTRINSIC weakening for the native union.**  A `HasTypeNativeUnion` derivation survives extending
+/-- **★ INTRINSIC weakening for the native union.**  A `HasTypeUnion` derivation survives extending
 the context by one fresh binding, subject and classifier shifted by `RawRenaming.weaken` — the union twin
 of `HasTypeDescPi.weakenUnderBinding`.  The corollary of `renameRespectingContext` whose
 context-condition holds DEFINITIONALLY (`fun _ => rfl`): `weaken index` is `Fin.succ index`, the `cons`
 `lookup` fires its successor arm. -/
-theorem HasTypeNativeUnion.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
+theorem HasTypeUnion.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} (newBinding : RawTerm scope)
-    (derivation : HasTypeNativeUnion profile context subject classifier) :
-    HasTypeNativeUnion profile (context.cons newBinding)
+    (derivation : HasTypeUnion profile context subject classifier) :
+    HasTypeUnion profile (context.cons newBinding)
       (RawTerm.rename RawRenaming.weaken subject)
       (RawTerm.rename RawRenaming.weaken classifier) :=
   derivation.renameRespectingContext (context.cons newBinding) RawRenaming.weaken

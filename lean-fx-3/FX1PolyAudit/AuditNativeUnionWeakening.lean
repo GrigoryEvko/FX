@@ -1,8 +1,8 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeNativeUnionWeakening
+import FX1Poly.Typed.HasTypeUnionWeakening
 
 /-! # FX1PolyAudit/AuditNativeUnionWeakening — audit shard for the RENAMING / WEAKENING lemma over the
-    25-arm native union (the de-Bruijn-insertion twin of `HasTypeNativeUnion.substRespectingContext`)
+    25-arm native union (the de-Bruijn-insertion twin of `HasTypeUnion.substRespectingContext`)
 
 Per-declaration zero-axiom gate for the union weakening primitive: the per-cell renaming commutations
 (the rename twins of `subst_*Cell`), the lift/weaken naturality squares, the composite-arrow renaming
@@ -59,13 +59,13 @@ namespace FX1PolyAudit
 
 /-! ## The renaming-respects-context carrier + binder helpers + affine-binder-check transport -/
 
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.RenameRespectsContext
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.RenameRespectsContext.consTwice
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.RenameRespectsContext
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.RenameRespectsContext.consTwice
 #assert_no_axioms FX1Poly.Typed.gradedBinderChecks_rename_lift
 
 /-! ## ★ The pointwise renaming lemma over the union (all 25 arms) + the weakening corollary -/
 
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.weakenUnderBinding
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.renameRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.weakenUnderBinding
 
 end FX1PolyAudit

@@ -1,8 +1,8 @@
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Core.IntervalCanonicalFormsCandidate
 
 /-! # FX1Poly/Typed/StandaloneEngineCanonicity — combined canonical forms over the two NULLARY-FORMATION
-    union arms: `HasTypeNativeUnion.dataIntroNullary` (data values) + `HasTypeNativeUnion.baseTypeFormation`
+    union arms: `HasTypeUnion.dataIntroNullary` (data values) + `HasTypeUnion.baseTypeFormation`
     (base type codes).  A CANON-1 (#1048) ingredient — the cascade-free combined closed-canonical-forms frame.
 
 The `dataIntroNullary` arm types the data VALUE constructors at their data type codes (`boolTrue`/`boolFalse`
@@ -17,7 +17,7 @@ boolTypeCell`) — so a caller holding a `dataIntroNullary` / `baseTypeFormation
 feeds it directly after destructuring the arm.  The arm rows are decoded with the `NativeUnionRuleTables`
 helpers (`dataIntroNullaryRuleTableHitIsValueConstructor` / `baseTypeRuleTableOutputIsType0`); the two retired
 nullary data engines that previously stated these are gone — their formation/intro content is now the
-`dataIntroNullary` / `baseTypeFormation` arms of `HasTypeNativeUnion`.
+`dataIntroNullary` / `baseTypeFormation` arms of `HasTypeUnion`.
 
   * **`standaloneBoolCanonicalForms` (★)** — a cell typed at `boolTypeCell` by the `dataIntroNullary` row OR
     the `baseTypeFormation` row is `boolTrueCell` or `boolFalseCell`.  The data-intro disjunct gives it

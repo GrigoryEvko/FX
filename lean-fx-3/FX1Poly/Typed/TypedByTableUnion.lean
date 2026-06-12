@@ -12,7 +12,7 @@ engine types a cell headed by a generator.  Its definition mixes SIX rule-table 
 `dataIntroNullaryRuleDescOf`) with TWENTY-ONE `decide (g = …)` head equalities — one per standalone data
 intro/elim head, per bespoke head, and per cubical head.  Those decides predate the native-union rule tables
 (`NativeUnionRuleTables`, plus `gradedIntroRuleOf` / `generalElimRuleOf`), which now drive the unified judgment
-`HasTypeNativeUnion` table-FIRST.  Sixteen of the decides are exactly the heads those native tables key on.
+`HasTypeUnion` table-FIRST.  Sixteen of the decides are exactly the heads those native tables key on.
 
 This file ships the table-driven TWIN and the machine-checked equivalence (the delete-readiness evidence for
 swapping `hasSomeTypingRule`'s body):
@@ -64,7 +64,7 @@ open FX1Poly.Core FX1Poly.Universe
 /-! ## The table-driven static-typing classifier -/
 
 /-- **The table-driven honest static-typing classifier.**  `true` iff some rule TABLE driving
-`HasTypeNativeUnion` carries a row for `generator`: the six original tables, the graded intro / general elim
+`HasTypeUnion` carries a row for `generator`: the six original tables, the graded intro / general elim
 tables (covering `lam`/`pathLam`, `app`/`pathApp`), and the eleven native-union tables (the three data-eliminator
 families, the seven n-ary/recursive data-intro families, and listElim's sibling — wait, NO: listElim is
 deliberately excluded; see the four native data-intro/elim families below).  The only `decide`s are the
@@ -291,10 +291,10 @@ engine.**  Routed through the exact equivalence (`hasSomeTypingRule_eq_hasTableT
 `hasTableTypingRule = false` verdict is a `hasSomeTypingRule = false` verdict, so the shipped surviving-engine
 soundness bundle applies unchanged.  The honest classifier and its table twin make the SAME truthful "statically
 reserved" claim.  The bespoke `HasTypeDescBridge` engine was RETIRED (NATIVE-45): its rows are now arms of
-`HasTypeNativeUnion`, so its leg is no longer a standalone conjunct.  The retired bridge rows and the base-type /
+`HasTypeUnion`, so its leg is no longer a standalone conjunct.  The retired bridge rows and the base-type /
 data-intro / flat formation arms (now `baseTypeFormation` / `dataIntroNullary` / `flatFormation` arms of
-`HasTypeNativeUnion`) are subsumed by the single-judgment successor over ALL native typing,
-`HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`. -/
+`HasTypeUnion`) are subsumed by the single-judgment successor over ALL native typing,
+`HasTypeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`. -/
 theorem reservedTableHeadUntypedBySurvivingEngines {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     (reserved : hasTableTypingRule (RawTerm.headGenerator subject) = false) :

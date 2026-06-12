@@ -6,7 +6,7 @@ import FX1Poly.Typed.ConvBoolCodeRigidity
 Originally SN-048's closed Nat canonicity via the syntactic route over the standalone nat-intro engine.
 NATIVE-42 retired the zoo-premised statements (`subjectIsNatNumeral` / `standaloneNatCanonicalForms` /
 `closedNatCanonicalForms` — their live restatement is the DEEP union theorem
-`HasTypeNativeUnion.closedNormalNatNumeral` in `NatNumeralUnionCanonicity`, the Milestone-A Nat pillar);
+`HasTypeUnion.closedNormalNatNumeral` in `NatNumeralUnionCanonicity`, the Milestone-A Nat pillar);
 what remains here is the zoo-free substrate both that theorem and the eliminator-computing canonicity
 lane consume:
 

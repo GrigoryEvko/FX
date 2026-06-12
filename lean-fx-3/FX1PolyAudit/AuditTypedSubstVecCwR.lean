@@ -645,7 +645,7 @@ import FX1Poly.Core.RawTermOccurrenceSubst
 import FX1Poly.Typed.GradedBetaSubjectReductionGhost
 import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.HasTypeDescGeneralElim
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Typed.GradedTableCoherence
 import FX1Poly.Typed.UniverseModeGenerators
 
@@ -2312,7 +2312,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- (formation via the term-indexed-former table; pathLam via the graded-intro row, witnessed
 -- by constantBridgeGradedOfTyped / identityPathGradedTyped gated below; pathApp via the
 -- generalElim row).  The forced-affinity HONESTY inversion survives union-side as
--- HasTypeNativeUnion.pathLamSubjectIsAffine (gated in AuditNativeUnionInversion).
+-- HasTypeUnion.pathLamSubjectIsAffine (gated in AuditNativeUnionInversion).
 -- HONEST SCOPE: the rows are LIVE and admission-covered (brick 4); the endpoint-β
 -- computation fires via the iota TABLE's pathBeta row (the table-driven StepTable relation,
 -- StepTable.pathBetaFires — the bespoke sibling was retired, gated below); the
@@ -2367,7 +2367,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- superseded by the union-side inversion family and the NATIVE endpoint SR family gated
 -- below). ★ intervalZeroGrownUntypable = the machine-checked CROSS-ENGINE WALL: interval0
 -- heads no grown-typed cell, so general endpoint-β SR cannot target HasTypeDescPi alone — the
--- honest general-SR target is an INTEGRATED engine (HasTypeNativeUnion, where the native
+-- honest general-SR target is an INTEGRATED engine (HasTypeUnion, where the native
 -- endpoint SR family now lives). All zero-axiom.
 #assert_no_axioms FX1Poly.Core.RawTerm.subst0_weaken
 #assert_no_axioms FX1Poly.Typed.endpointBetaIdentityPathFiresOverTable
@@ -2488,7 +2488,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.generalElimEngineCoverageWitness
 -- NATIVE-25 (#1302) — the SEED UNIFIED JUDGMENT + Bridge full adequacy (the NATIVE-46 miniature,
 -- pulled forward by the resequencing decision: the judgment-boundary wall is SYSTEMIC, so the union
--- is built ONCE at full width instead of per-family fragments). HasTypeNativeUnion = four engine
+-- is built ONCE at full width instead of per-family fragments). HasTypeUnion = four engine
 -- embeddings (ofGrown/ofBaseType/ofDataIntro/ofTermIndexedFormer — positivity-trivial) + the two
 -- keystone arms with RECURSIVE premises (gradedBinderIntro/generalElim — the compositional closure).
 -- Wall-falls: endpointRedexNativelyTypedWhole (the WHOLE redex pathApp(pathLam _, 0) in ONE
@@ -2674,7 +2674,7 @@ Generator.noConfusion; the directed lift (universeU<->universeD) is the honest u
 The empirical ground truth the NATIVE-00..63 campaign WAS built on, now the HISTORICAL record of a
 CONCLUDED consolidation: 18 principal standalone `HasTypeDesc*` engines (the legacy data/elim zoo,
 DELETED in the NATIVE-42..45 endgame) classified by where their capability LANDED in the single
-union judgment `HasTypeNativeUnion` via the `migrationTarget` / `migrationClass` total functions
+union judgment `HasTypeUnion` via the `migrationTarget` / `migrationClass` total functions
 (Lean exhaustiveness = the historical-record totality gate), and the GENUINELY self-derived
 grown-table-sparsity metric — `isHardcodedClassifierHead g` is `true` iff `g` is statically LIVE yet
 covered by NONE of the six grown / base / data tables it tests, exactly the family heads
@@ -2906,7 +2906,7 @@ interpreter.  `gradedBinderChecks` is the grade-parametric form and is LIVE PROD
 retirement for exactly this reason); `gradedBinderChecks_spectrum` spans omega/one/zero;
 `gradedIntro_ghost_ofWeakened` (★ genuinely-new) shows a weakened body is GHOST-gradeable via the rung-77
 occurrence metatheory; `gradedIntroExpressibility_isGo` records the all-positive verdict (the grade is
-FORCED — now pinned union-side by `HasTypeNativeUnion.pathLamSubjectIsAffine`).  The bespoke-engine adequacy
+FORCED — now pinned union-side by `HasTypeUnion.pathLamSubjectIsAffine`).  The bespoke-engine adequacy
 theorem (`gradedIntroPremise_buildsPathIntro`) was retired with the engine; the union row
 `pathLamGradedIntroRule` is the sole realization.  Thin wrapper + rung-77 lemma — axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.gradedBinderChecks

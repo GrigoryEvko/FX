@@ -1,5 +1,5 @@
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
-import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Typed.HasTypeUnion
 
 /-! # FX1Poly/Typed/IdFormerTermIndexedRetrofit — NATIVE-17: the Id retrofit
 
@@ -88,7 +88,7 @@ formable at `Type@2` through the term-indexed engine — the reflexivity VALUE a
 identity type it inhabits both route through native rules.  The closed demonstration that `refl`'s
 classifier is grown-formable. -/
 theorem reflProofWithFormableClassifier {profile : PolyProfile} (flag : UniverseFlag) :
-    HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
         (reflCell (universeCodeCell LevelExpr.lzero flag))
         (idTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
           (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
@@ -96,7 +96,7 @@ theorem reflProofWithFormableClassifier {profile : PolyProfile} (flag : Universe
           (idTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
             (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
           (universeCodeCell (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag) :=
-  ⟨HasTypeNativeUnion.reflexiveIntro TypingContext.empty .gen_refl reflNativeReflexiveRule
+  ⟨HasTypeUnion.reflexiveIntro TypingContext.empty .gen_refl reflNativeReflexiveRule
       (universeCodeCell LevelExpr.lzero flag)
       (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
       rfl

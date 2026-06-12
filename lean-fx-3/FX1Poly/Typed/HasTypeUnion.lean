@@ -4,7 +4,7 @@ import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.NativeUnionRuleTables
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 
-/-! # FX1Poly/Typed/HasTypeNativeUnion — NATIVE-25: the seed unified judgment + Bridge full adequacy
+/-! # FX1Poly/Typed/HasTypeUnion — NATIVE-25: the seed unified judgment + Bridge full adequacy
 
 THE SEQUENCING PIVOT (the ultrathink resequencing, user-approved direction): the judgment-boundary
 wall is SYSTEMIC, not a pathElim quirk — recursive data constructors need data-typed arguments, data
@@ -65,7 +65,7 @@ NATIVE-36 makes the NON-recursive data-eliminator families (boolElim / optionMat
 `twoBranchMatchElim`, idJ via `pathInductionElim`, fst / snd via `projectionElim`), the n-ary /
 recursive data-INTRO families (natSucc / listCons / optionSome / optionNone / eitherInl / eitherInr /
 pair / refl via the seven intro arms), and the listElim family (via `listElim`, discharging the batch-1
-pin "listElim union residency lands with NATIVE-33") RESIDENT in `HasTypeNativeUnion` as table-driven
+pin "listElim union residency lands with NATIVE-33") RESIDENT in `HasTypeUnion` as table-driven
 arms, with their native twin tables hoisted into the pre-union `NativeUnionRuleTables` (the import-cycle
 hazard avoided exactly as NATIVE-32 avoided it).  The scrutinee-embedding arms the data eliminators need
 were RETIRED by the NATIVE-42 toNativeRows conversions (every data value now
@@ -142,13 +142,13 @@ theorem nativeRecursiveElimRuleOf_natRec :
 typing mass) + the two table-driven keystone arms with RECURSIVE premises (the compositional closure).
 A subject typed here is typed BY THE NATIVE SYSTEM — table rows and their compositions — with no
 judgment boundary between the families. -/
-inductive HasTypeNativeUnion (profile : PolyProfile) :
+inductive HasTypeUnion (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
   /-- Embed the host (grown) engine: var / universe / formation / piIntro / piElim / conv. -/
   | ofGrown {scope : Nat} {context : TypingContext profile scope}
       {subject classifier : RawTerm scope}
       (hostTyped : HasTypeDescPi profile context subject classifier) :
-      HasTypeNativeUnion profile context subject classifier
+      HasTypeUnion profile context subject classifier
   /-- The nullary base-type formation arm (bool/empty/nat/unit/interval codes): the table row IS the
   rule, no engine indirection.  Childless (`binderShifts = []`), output the row's pinned universe. -/
   | baseTypeFormation {scope : Nat} (context : TypingContext profile scope)
@@ -156,7 +156,7 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (children : RawTermChildren generator.binderShifts scope)
       (rule : BaseTypeRuleDesc)
       (isBaseType : baseTypeRuleDescOf generator = some rule) :
-      HasTypeNativeUnion profile context (.mkGen generator payload children)
+      HasTypeUnion profile context (.mkGen generator payload children)
         (rule.outputUniverse scope)
   /-- The nullary data-constructor arm (boolTrue/boolFalse/unit/interval endpoints): a childless value
   typed at the row's pinned data type code, read directly from the table. -/
@@ -165,7 +165,7 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (children : RawTermChildren generator.binderShifts scope)
       (rule : DataIntroNullaryRuleDesc)
       (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :
-      HasTypeNativeUnion profile context (.mkGen generator payload children)
+      HasTypeUnion profile context (.mkGen generator payload children)
         (rule.outputTypeCode scope)
   /-- The flat data-former formation arm (arrow/product/sum/either/equiv codes): all sibling children
   typed at their universes via the flat (non-cumulative) GROWN `FlatDescTelescopePi` premise, output the row's
@@ -176,13 +176,13 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (levels : List LevelExpr) (flag : UniverseFlag) (rule : TypingRuleDesc)
       (isFlatFormation : flatTypingRuleDescOf generator = some rule)
       (premise : FlatDescTelescopePi profile context flag levels children) :
-      HasTypeNativeUnion profile context (.mkGen generator payload children)
+      HasTypeUnion profile context (.mkGen generator payload children)
         (rule.outputType scope levels flag)
   /-- Embed the term-indexed former rows (Id / Bridge formation). -/
   | ofTermIndexedFormer {scope : Nat} {context : TypingContext profile scope}
       {subject classifier : RawTerm scope}
       (formerTyped : HasTypeDescTermIndexedFormer profile context subject classifier) :
-      HasTypeNativeUnion profile context subject classifier
+      HasTypeUnion profile context subject classifier
   /-- The graded binder-introduction arm (the NATIVE-23 keystone arm with RECURSIVE premises): the
   table's usage grade is enforced, and the domain/classifier/body premises live in the UNION — so a
   body typed by ANY native family is admissible (the λ-over-data wall falls). -/
@@ -194,15 +194,15 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (isIntro : gradedIntroRuleOf generator = some rule)
       (binderGraded : gradedBinderChecks rule.binderUsage body)
       (domainFormed : rule.demandsDomainFormation = true →
-        HasTypeNativeUnion profile context (rule.domainCell scope typeParamA)
+        HasTypeUnion profile context (rule.domainCell scope typeParamA)
           (universeCodeCell domainLevel flag))
       (classifierFormed : rule.demandsClassifierFormation = true →
-        HasTypeNativeUnion profile (context.cons (rule.domainCell scope typeParamA))
+        HasTypeUnion profile (context.cons (rule.domainCell scope typeParamA))
           (rule.bodyClassifier scope typeParamA typeParamB)
           (universeCodeCell codomainLevel flag))
-      (bodyTyped : HasTypeNativeUnion profile (context.cons (rule.domainCell scope typeParamA))
+      (bodyTyped : HasTypeUnion profile (context.cons (rule.domainCell scope typeParamA))
         body (rule.bodyClassifier scope typeParamA typeParamB)) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope typeParamA body)
         (rule.outputType scope typeParamA typeParamB body)
   /-- The general elimination arm (the NATIVE-24 keystone arm with RECURSIVE premises): an eliminated
@@ -214,11 +214,11 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (typeParamC typeParamD : RawTerm scope)
       (eliminated argument : RawTerm scope)
       (isElim : generalElimRuleOf generator = some rule)
-      (eliminatedTyped : HasTypeNativeUnion profile context eliminated
+      (eliminatedTyped : HasTypeUnion profile context eliminated
         (rule.eliminatedType scope typeParamA typeParamB typeParamC typeParamD))
-      (argumentTyped : HasTypeNativeUnion profile context argument
+      (argumentTyped : HasTypeUnion profile context argument
         (rule.argumentType scope typeParamA)) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope eliminated argument)
         (rule.outputType scope typeParamA typeParamB argument)
   /-- The table-driven recursive-eliminator arm (the NATIVE-32 union residency of the spike's
@@ -234,16 +234,16 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (stepBranch : RawTerm (scope + 2)) (scrutinee : RawTerm scope)
       (resultType : RawTerm scope)
       (isRecursiveElim : nativeRecursiveElimRuleOf generator = some rule)
-      (scrutineeTyped : HasTypeNativeUnion profile context scrutinee
+      (scrutineeTyped : HasTypeUnion profile context scrutinee
         (rule.scrutineeType scope))
-      (baseBranchTyped : HasTypeNativeUnion profile context baseBranch resultType)
-      (stepBranchTyped : HasTypeNativeUnion profile
+      (baseBranchTyped : HasTypeUnion profile context baseBranch resultType)
+      (stepBranchTyped : HasTypeUnion profile
         ((context.cons (rule.scrutineeType scope)).cons
           (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
         stepBranch
         (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
           (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope motive baseBranch stepBranch scrutinee) resultType
   /-- The table-driven NON-recursive two-branch match arm (the NATIVE-36 union residency of the
   `DataElimUnionSpike.twoBranchMatchRow`): scrutinee and both branches are RECURSIVE in the UNION, with
@@ -255,13 +255,13 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (firstBranch secondBranch scrutinee : RawTerm scope)
       (typeParamA typeParamB resultType : RawTerm scope)
       (isTwoBranchMatch : nativeTwoBranchMatchRuleOf generator = some rule)
-      (scrutineeTyped : HasTypeNativeUnion profile context scrutinee
+      (scrutineeTyped : HasTypeUnion profile context scrutinee
         (rule.scrutineeType scope typeParamA typeParamB))
-      (firstBranchTyped : HasTypeNativeUnion profile context firstBranch
+      (firstBranchTyped : HasTypeUnion profile context firstBranch
         (rule.firstBranchType scope typeParamA typeParamB resultType))
-      (secondBranchTyped : HasTypeNativeUnion profile context secondBranch
+      (secondBranchTyped : HasTypeUnion profile context secondBranch
         (rule.secondBranchType scope typeParamA typeParamB resultType)) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope motive firstBranch secondBranch scrutinee) resultType
   /-- The table-driven path-induction arm (idJ; the NATIVE-36 union residency of
   `DataElimUnionSpike.pathInductionRow`): witness at a reflexive identity code and base case RECURSIVE
@@ -272,10 +272,10 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (baseCase witness : RawTerm scope)
       (typeCode endpoint resultType : RawTerm scope)
       (isPathInduction : nativePathInductionRuleOf generator = some rule)
-      (witnessTyped : HasTypeNativeUnion profile context witness
+      (witnessTyped : HasTypeUnion profile context witness
         (rule.witnessType scope typeCode endpoint))
-      (baseCaseTyped : HasTypeNativeUnion profile context baseCase resultType) :
-      HasTypeNativeUnion profile context
+      (baseCaseTyped : HasTypeUnion profile context baseCase resultType) :
+      HasTypeUnion profile context
         (rule.memberCell scope motive baseCase witness) resultType
   /-- The table-driven projection arm (fst / snd; the NATIVE-36 union residency of
   `DataElimUnionSpike.projectionRow`): scrutinee at a product code RECURSIVE in the UNION, output the
@@ -284,9 +284,9 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (generator : Generator) (rule : NativeProjectionElimRule)
       (pairTerm firstType secondType : RawTerm scope)
       (isProjection : nativeProjectionRuleOf generator = some rule)
-      (pairTyped : HasTypeNativeUnion profile context pairTerm
+      (pairTyped : HasTypeUnion profile context pairTerm
         (productTypeCell firstType secondType)) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope pairTerm) (rule.projectedType scope firstType secondType)
   /-- The RECURSIVE-UNARY data-intro arm (`natSucc`; the NATIVE-36 union residency of
   `DataIntroNaryUnionSpike.recursiveUnaryRow`): the child premise is RECURSIVE in the UNION — a numeral
@@ -294,8 +294,8 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
   | recursiveUnaryIntro {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativeRecursiveUnaryDataIntroRule) (child : RawTerm scope)
       (isRecursiveUnary : nativeRecursiveUnaryDataIntroRuleOf generator = some rule)
-      (childTyped : HasTypeNativeUnion profile context child (rule.childType scope)) :
-      HasTypeNativeUnion profile context
+      (childTyped : HasTypeUnion profile context child (rule.childType scope)) :
+      HasTypeUnion profile context
         (rule.memberCell scope child) (rule.outputType scope)
   /-- The RECURSIVE-BINARY data-intro arm (`listCons`; the NATIVE-36 union residency of
   `DataIntroNaryUnionSpike.recursiveBinaryRow`): a GROWN head plus a UNION-recursive tail — `cons`
@@ -305,9 +305,9 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (head tail elementType : RawTerm scope)
       (isRecursiveBinary : nativeRecursiveBinaryDataIntroRuleOf generator = some rule)
       (headTyped : HasTypeDescPi profile context head elementType)
-      (tailTyped : HasTypeNativeUnion profile context tail
+      (tailTyped : HasTypeUnion profile context tail
         (rule.containerType scope elementType)) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope head tail) (rule.containerType scope elementType)
   /-- The PINNED-UNARY data-intro arm (`optionSome`): a single GROWN child whose classifier pins the
   element type param, the output computed from that param. -/
@@ -315,7 +315,7 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (generator : Generator) (rule : NativePinnedUnaryDataIntroRule) (child elementType : RawTerm scope)
       (isPinnedUnary : nativePinnedUnaryDataIntroRuleOf generator = some rule)
       (childTyped : HasTypeDescPi profile context child elementType) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope child) (rule.outputType scope elementType)
   /-- The NULLARY-FREE-TYPE data-intro arm (`optionNone`): a CHILDLESS value whose element type is
   FREE, carrying a grown type-formedness premise, the container-code output. -/
@@ -325,7 +325,7 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (isNullaryFreeType : nativeNullaryFreeTypeDataIntroRuleOf generator = some rule)
       (elementTypeFormed :
         HasTypeDescPi profile context elementType (universeCodeCell elementLevel flag)) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope) (rule.outputType scope elementType)
   /-- The COPRODUCT data-intro arm (`eitherInl` / `eitherInr`): a GROWN value premise plus a free-type
   formedness premise for the un-injected side, the either-code output. -/
@@ -336,7 +336,7 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (valueTyped : HasTypeDescPi profile context value pinnedType)
       (freeTypeFormed :
         HasTypeDescPi profile context freeType (universeCodeCell freeLevel flag)) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.injectionCell scope value) (rule.outputType scope pinnedType freeType)
   /-- The NON-DEPENDENT-BINARY data-intro arm (`pair`): two GROWN children at two independent type
   params, the product-code output. -/
@@ -346,7 +346,7 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (isNonDependentBinary : nativeNonDependentBinaryDataIntroRuleOf generator = some rule)
       (firstTyped : HasTypeDescPi profile context firstChild firstType)
       (secondTyped : HasTypeDescPi profile context secondChild secondType) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope firstChild secondChild)
         (rule.outputType scope firstType secondType)
   /-- The REFLEXIVE data-intro arm (`refl`): a GROWN witness, a TERM-INDEXED output `Id(A, x, x)`. -/
@@ -354,7 +354,7 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (generator : Generator) (rule : NativeReflexiveDataIntroRule) (witness witnessType : RawTerm scope)
       (isReflexive : nativeReflexiveDataIntroRuleOf generator = some rule)
       (witnessTyped : HasTypeDescPi profile context witness witnessType) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope witness) (rule.outputType scope witnessType witness)
   /-- The table-driven listElim arm (the NATIVE-33 union residency of
   `ListElimUnionSpike.listElimRecursiveRow`, discharging the batch-1 pin): scrutinee RECURSIVE in the
@@ -368,11 +368,11 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       (motive : RawTerm (scope + 1))
       (scrutinee nilBranch consBranch elementType resultType : RawTerm scope)
       (isListElim : listElimNativeRuleOf generator = some rule)
-      (scrutineeTyped : HasTypeNativeUnion profile context scrutinee (listTypeCell elementType))
+      (scrutineeTyped : HasTypeUnion profile context scrutinee (listTypeCell elementType))
       (nilBranchTyped : HasTypeDescPi profile context nilBranch resultType)
       (consBranchTyped : HasTypeDescPi profile context consBranch
         (listStepFunctionType elementType resultType)) :
-      HasTypeNativeUnion profile context
+      HasTypeUnion profile context
         (rule.memberCell scope motive scrutinee nilBranch consBranch) resultType
   /-- The CONVERSION arm (the conv-closure): a union-typed subject reclassifies along a raw
   definitional equality, with the target classifier itself union-typed at a universe code.
@@ -383,12 +383,12 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
   | conv {scope : Nat} {context : TypingContext profile scope}
       {subject classifier reclassifier : RawTerm scope}
       (levelExpr : LevelExpr) (flag : UniverseFlag)
-      (typed : HasTypeNativeUnion profile context subject classifier)
+      (typed : HasTypeUnion profile context subject classifier)
       (converts : Conv classifier reclassifier)
       (reclassifierTyped :
-        HasTypeNativeUnion profile context reclassifier
+        HasTypeUnion profile context reclassifier
           (universeCodeCell levelExpr flag)) :
-      HasTypeNativeUnion profile context subject reclassifier
+      HasTypeUnion profile context subject reclassifier
 
 /-! ## ★ The wall-falls smokes — typable for the FIRST time -/
 
@@ -396,26 +396,26 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
 path through the graded intro arm, the endpoint argument through the data embedding, composed by the
 recursive elim arm.  No prior judgment contained both premises. -/
 theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : UniverseFlag) :
-    HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       (pathAppCell (pathLamCell (universeCodeCell LevelExpr.lzero flag)) intervalZeroCell)
       (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag) :=
-  HasTypeNativeUnion.generalElim TypingContext.empty .gen_pathApp pathAppGeneralElimRule
+  HasTypeUnion.generalElim TypingContext.empty .gen_pathApp pathAppGeneralElimRule
     (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
     (RawTerm.weaken (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag))
     (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag)
     (pathLamCell (universeCodeCell LevelExpr.lzero flag)) intervalZeroCell rfl
-    (HasTypeNativeUnion.gradedBinderIntro TypingContext.empty .gen_pathLam pathLamGradedIntroRule
+    (HasTypeUnion.gradedBinderIntro TypingContext.empty .gen_pathLam pathLamGradedIntroRule
       (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
       (RawTerm.weaken (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag))
       (universeCodeCell LevelExpr.lzero flag)
       LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl (Nat.zero_le 1)
       (fun gateHolds => Bool.noConfusion gateHolds)
       (fun gateHolds => Bool.noConfusion gateHolds)
-      (HasTypeNativeUnion.ofGrown
+      (HasTypeUnion.ofGrown
         (HasTypeDescPi.ofFormation
           (HasTypeDesc.universeFormation
             (TypingContext.empty.cons intervalTypeCell) LevelExpr.lzero flag))))
-    (HasTypeNativeUnion.dataIntroNullary TypingContext.empty .gen_interval0 () .childNil
+    (HasTypeUnion.dataIntroNullary TypingContext.empty .gen_interval0 () .childNil
       { outputTypeCode := fun _ => intervalTypeCell } rfl)
 
 /-- **★ The λ-over-data wall falls.**  `λ(x:Bool).0 : Π(x:Bool).Interval` — a λ whose BODY (`0`) is
@@ -423,18 +423,18 @@ typed by the DATA embedding, with the domain/classifier formation premises throu
 embedding.  Untypable in every prior engine: the host `piIntro` demands a host-typed body and the
 interval endpoint is not host-typable (`intervalZeroGrownUntypable`, the NATIVE-08 wall). -/
 theorem constantIntervalLambdaNativelyTyped {profile : PolyProfile} :
-    HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       (lamCell boolTypeCell intervalZeroCell)
       (piTyCodeCell boolTypeCell intervalTypeCell) :=
-  HasTypeNativeUnion.gradedBinderIntro TypingContext.empty .gen_lam lamGradedIntroRule
+  HasTypeUnion.gradedBinderIntro TypingContext.empty .gen_lam lamGradedIntroRule
     boolTypeCell intervalTypeCell intervalZeroCell
     LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial
-    (fun _ => HasTypeNativeUnion.baseTypeFormation TypingContext.empty .gen_boolCode () .childNil
+    (fun _ => HasTypeUnion.baseTypeFormation TypingContext.empty .gen_boolCode () .childNil
       { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl)
-    (fun _ => HasTypeNativeUnion.baseTypeFormation (TypingContext.empty.cons boolTypeCell)
+    (fun _ => HasTypeUnion.baseTypeFormation (TypingContext.empty.cons boolTypeCell)
       .gen_intervalCode () .childNil
       { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl)
-    (HasTypeNativeUnion.dataIntroNullary (TypingContext.empty.cons boolTypeCell)
+    (HasTypeUnion.dataIntroNullary (TypingContext.empty.cons boolTypeCell)
       .gen_interval0 () .childNil { outputTypeCode := fun _ => intervalTypeCell } rfl)
 
 /-! ## The coverage gate -/
@@ -445,11 +445,11 @@ fields were removed with the bespoke `HasTypeDescBridge` engine (NATIVE-45): the
 now carried directly by the union's rows, so there is no longer a separate engine to translate FROM. -/
 structure NativeUnionCoverage (profile : PolyProfile) (flag : UniverseFlag) : Prop where
   /-- The whole endpoint redex types in one derivation. -/
-  wholeRedexTyped : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+  wholeRedexTyped : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
     (pathAppCell (pathLamCell (universeCodeCell LevelExpr.lzero flag)) intervalZeroCell)
     (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
   /-- The λ-over-data composition types. -/
-  lambdaOverDataTyped : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+  lambdaOverDataTyped : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
     (lamCell boolTypeCell intervalZeroCell)
     (piTyCodeCell boolTypeCell intervalTypeCell)
 
@@ -470,13 +470,13 @@ listElim nil-ι typed through the listElim arm. -/
 via the native natZero data-intro row.  Exactly the statement a host-premise schema could not make — the
 numeral tower closes purely through the union's own recursive intro arm. -/
 theorem numeralTwoTypedThroughUnionRecursiveIntroTwice {profile : PolyProfile} :
-    HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+    HasTypeUnion profile (TypingContext.empty : TypingContext profile 0)
       (natSuccCell (natSuccCell natZeroCell)) natTypeCell :=
-  HasTypeNativeUnion.recursiveUnaryIntro TypingContext.empty .gen_natSucc
+  HasTypeUnion.recursiveUnaryIntro TypingContext.empty .gen_natSucc
     natSuccNativeRecursiveUnaryRule (natSuccCell natZeroCell) rfl
-    (HasTypeNativeUnion.recursiveUnaryIntro TypingContext.empty .gen_natSucc
+    (HasTypeUnion.recursiveUnaryIntro TypingContext.empty .gen_natSucc
       natSuccNativeRecursiveUnaryRule natZeroCell rfl
-      (HasTypeNativeUnion.dataIntroNullary TypingContext.empty .gen_natZero () .childNil
+      (HasTypeUnion.dataIntroNullary TypingContext.empty .gen_natZero () .childNil
         { outputTypeCode := fun _ => natTypeCell } rfl))
 
 /-- **★ One boolElim ι reduct types IN THE UNION through the two-branch match arm.**  A union-typed
@@ -486,15 +486,15 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1))
     (thenBranch elseBranch resultType : RawTerm scope)
-    (thenBranchTyped : HasTypeNativeUnion profile context thenBranch resultType)
-    (elseBranchTyped : HasTypeNativeUnion profile context elseBranch resultType) :
-    HasTypeNativeUnion profile context
+    (thenBranchTyped : HasTypeUnion profile context thenBranch resultType)
+    (elseBranchTyped : HasTypeUnion profile context elseBranch resultType) :
+    HasTypeUnion profile context
       (boolElimCell motive boolTrueCell thenBranch elseBranch) resultType ∧
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
-    HasTypeNativeUnion profile context thenBranch resultType :=
-  ⟨HasTypeNativeUnion.twoBranchMatchElim context .gen_boolElim boolElimNativeMatchRule
+    HasTypeUnion profile context thenBranch resultType :=
+  ⟨HasTypeUnion.twoBranchMatchElim context .gen_boolElim boolElimNativeMatchRule
       motive thenBranch elseBranch boolTrueCell boolTrueCell boolTrueCell resultType rfl
-      (HasTypeNativeUnion.dataIntroNullary context .gen_boolTrue () .childNil
+      (HasTypeUnion.dataIntroNullary context .gen_boolTrue () .childNil
         { outputTypeCode := fun _ => boolTypeCell } rfl)
       thenBranchTyped elseBranchTyped,
     Step.iotaBoolTrue,
@@ -514,13 +514,13 @@ theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     (nilBranchTyped : HasTypeDescPi profile context nilBranch resultType)
     (consBranchTyped : HasTypeDescPi profile context consBranch
       (listStepFunctionType elementType resultType)) :
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (listElimCell motive listNilCell nilBranch consBranch) resultType ∧
     Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
     HasTypeDescPi profile context nilBranch resultType :=
-  ⟨HasTypeNativeUnion.listElim context .gen_listElim listElimNativeRule
+  ⟨HasTypeUnion.listElim context .gen_listElim listElimNativeRule
       motive listNilCell nilBranch consBranch elementType resultType rfl
-      (HasTypeNativeUnion.nullaryFreeTypeIntro context .gen_listNil
+      (HasTypeUnion.nullaryFreeTypeIntro context .gen_listNil
         listNilNativeNullaryFreeTypeRule elementType elementLevel flag rfl elementTypeFormed)
       nilBranchTyped consBranchTyped,
     Step.iotaListElimNil, nilBranchTyped⟩
@@ -533,18 +533,18 @@ eliminator ι reduct types through the match arm, and the listElim nil-ι types 
 An inhabitant certifies the new arms are live (constructed, not just declared). -/
 structure NativeFamiliesUnionResidencyCoverage (profile : PolyProfile) (flag : UniverseFlag) : Prop where
   /-- The numeral `2` types through the recursive `natSucc` intro arm applied twice. -/
-  numeralTowerComposesInUnion : HasTypeNativeUnion profile
+  numeralTowerComposesInUnion : HasTypeUnion profile
     (TypingContext.empty : TypingContext profile 0)
     (natSuccCell (natSuccCell natZeroCell)) natTypeCell
   /-- A boolElim ι reduct types through the two-branch match arm. -/
   boolElimIotaInUnion : ∀ {scope : Nat} (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (thenBranch elseBranch resultType : RawTerm scope),
-    HasTypeNativeUnion profile context thenBranch resultType →
-    HasTypeNativeUnion profile context elseBranch resultType →
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context thenBranch resultType →
+    HasTypeUnion profile context elseBranch resultType →
+    HasTypeUnion profile context
       (boolElimCell motive boolTrueCell thenBranch elseBranch) resultType ∧
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
-    HasTypeNativeUnion profile context thenBranch resultType
+    HasTypeUnion profile context thenBranch resultType
   /-- The listElim nil-ι types through the listElim arm. -/
   listElimNilIotaInUnion : ∀ {scope : Nat} (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1))
@@ -554,7 +554,7 @@ structure NativeFamiliesUnionResidencyCoverage (profile : PolyProfile) (flag : U
     HasTypeDescPi profile context nilBranch resultType →
     HasTypeDescPi profile context consBranch
       (listStepFunctionType elementType resultType) →
-    HasTypeNativeUnion profile context
+    HasTypeUnion profile context
       (listElimCell motive listNilCell nilBranch consBranch) resultType ∧
     Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
     HasTypeDescPi profile context nilBranch resultType

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeNativeUnionSubstitution
+import FX1Poly.Typed.HasTypeUnionSubstitution
 
 /-! # FX1PolyAudit/AuditNativeUnionSubstitution — NATIVE-37 part b audit shard (the SUBSTITUTION lemma for
     the 24-arm native union + the 2-variable corollaries + the general succ-branch ι discharge)
@@ -54,12 +54,12 @@ namespace FX1PolyAudit
 /-! ## (1) ★ The pointwise substitution lemma over the union + the binder-check transport -/
 
 #assert_no_axioms FX1Poly.Typed.gradedBinderChecks_subst_lift
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substRespectingContext
 
 /-! ## (2) ★ The 2-variable corollaries -/
 
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.substPairUnderTwoBindings
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.substPairNonDependent
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairUnderTwoBindings
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairNonDependent
 
 /-! ## (3) ★★ The general succ-branch recursive-eliminator ι discharge -/
 

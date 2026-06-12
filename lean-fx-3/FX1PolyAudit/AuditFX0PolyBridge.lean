@@ -92,7 +92,7 @@ external-verifier soundness — an A₀-release ingredient (#464). -/
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchNatType
 
 /-! ### FX0CrossCheckUnionCorpus — the FX0 cross-check on terms typed by the UNION judgment.
-After the NATIVE-42..45 endgame the typed layer is the single union judgment `HasTypeNativeUnion`;
+After the NATIVE-42..45 endgame the typed layer is the single union judgment `HasTypeUnion`;
 the grown-engine corpus above does not cover its flagship terms (a λ whose body lives in the data
 family, a numeral tower through the recursive intro arm, the whole path-endpoint redex composed
 across the graded-intro and general-elim arms) because they carry NO `HasTypeDescPi` derivation.
