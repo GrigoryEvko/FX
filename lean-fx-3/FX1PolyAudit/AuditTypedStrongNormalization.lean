@@ -72,7 +72,6 @@ import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDesc
 import FX1Poly.Typed.WfContextDescLookup
 import FX1Poly.Typed.WfContextDescValidity
-import FX1Poly.Typed.WfContextDescStronglyNormalizing
 import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiFromWfContextDesc
@@ -609,10 +608,9 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectAndClassifierStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectAndClassifierStronglyNormalizing
--- FORMATION CLASSIFIER-SN over WfContextDesc (WfContextDescStronglyNormalizing.lean): the classifier of a
+-- FORMATION CLASSIFIER-SN over WfContextDesc (HasTypeDescStronglyNormalizing.lean): the classifier of a
 -- HasTypeDesc-typed cell is strongly normalizing, routed through classifierIsTypeDesc then
 -- IsTypeDesc.isStronglyNormalizing. A consumer of the native validity target.
-#assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierStronglyNormalizingNative
 -- SN-026 (cross-check route status, documented-as-deferred per its DONE): the Kripke / all-levels route
 -- (HasTypeDescPiAllLevelFundamentalTheorem = HasTypeDescPi → FundamentalConclusionAtAll, the ∀-level
 -- ReducibleEnvAtAllLevels shape) is the SECOND route to the unconditional FT, parallel to the SN-022/023

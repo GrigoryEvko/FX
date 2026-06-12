@@ -18,8 +18,8 @@ raw-confluence harvest).  The reducibility-based theorem for `HasTypeDescPi` is 
 ## Zero-axiom verification
 
 Each proof is a direct composition of already-gated zero-axiom declarations:
-`HasTypeDesc.subjectStronglyNormalizing`, `HasTypeDesc.classifierStronglyNormalizingNative` (the native
-formation-validity SN twin over `WfContextDesc`), and `Conv.trans`.  No recursion, no proof search, and no use
+`HasTypeDesc.subjectStronglyNormalizing`, the formation-validity bridge `classifierIsTypeDesc`
+(over `WfContextDesc`), and `Conv.trans`.  No recursion, no proof search, and no use
 of `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
 -/
 
@@ -51,9 +51,7 @@ theorem IsTypeDesc.isStronglyNormalizing {profile : PolyProfile} {scope : Nat}
 well-formed context.  This is the classifier-side companion to `HasTypeDesc.isStronglyNormalizing`:
 intrinsic validity (native, over `WfContextDesc`) first turns the classifier into an `IsTypeDesc`, and the
 type-level SN projection then normalizes it.  Composes `classifierIsTypeDesc` (formation validity, from
-`WfContextDescValidity`) with the local `IsTypeDesc.isStronglyNormalizing`, threading `WfContextDesc`.
-(Inlined rather than delegating to the equivalent `classifierStronglyNormalizingNative`, which imports this
-file for `IsTypeDesc.isStronglyNormalizing` and so cannot be imported back without a cycle.) -/
+`WfContextDescValidity`) with the local `IsTypeDesc.isStronglyNormalizing`, threading `WfContextDesc`. -/
 theorem HasTypeDesc.classifierStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
@@ -63,8 +61,8 @@ theorem HasTypeDesc.classifierStronglyNormalizing {profile : PolyProfile} {scope
   (typed.classifierIsTypeDesc wellFormed).isStronglyNormalizing
 
 /-- Formation-engine subject and classifier strong normalization, packaged in the shape consumed by the
-first metatheory spine.  This is deliberately scoped to `HasTypeDesc`: it routes through the native
-formation-engine SN twins (`subjectStronglyNormalizing` / `classifierStronglyNormalizingNative` over
+first metatheory spine.  This is deliberately scoped to `HasTypeDesc`: it routes through the
+formation-engine SN pair (`subjectStronglyNormalizing` / `classifierStronglyNormalizing` over
 `WfContextDesc`), not through the open dependent reducibility theorem for `HasTypeDescPi`. -/
 theorem HasTypeDesc.subjectAndClassifierStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}

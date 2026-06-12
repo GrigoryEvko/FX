@@ -72,7 +72,6 @@ import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDesc
 import FX1Poly.Typed.WfContextDescLookup
 import FX1Poly.Typed.WfContextDescValidity
-import FX1Poly.Typed.WfContextDescStronglyNormalizing
 import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiFromWfContextDesc
@@ -965,7 +964,7 @@ boundary verdicts and is UNPROVEN jointly (O-NORM).  Zero-axiom. -/
 -- refutation reconstructs the denied IsTypeDesc witness via subjectRootGeneratorGeneric + the generic former
 -- inversion + genFormation, with NO Π/Σ enumeration and no typingRuleDescOf_isPiOrSigma else-branch).
 -- decidableOfWellFormedNative = the decision via the IsType-gate on the classifier (Conv principal classifier
--- decided by Conv.decidableOfStronglyNormalizing — principal SN by classifierStronglyNormalizingNative,
+-- decided by Conv.decidableOfStronglyNormalizing — principal SN by classifierStronglyNormalizing,
 -- classifier SN by IsTypeDesc.isStronglyNormalizing via decidableOfWellFormedGeneric) + conv rule forward +
 -- uniqueness refute. The native twin of HasTypeDesc.decidableOfWellFormed.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inferWithWitness

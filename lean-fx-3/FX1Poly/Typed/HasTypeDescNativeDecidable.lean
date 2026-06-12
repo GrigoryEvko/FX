@@ -1,6 +1,6 @@
 import FX1Poly.Typed.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.WfContextDescValidity
-import FX1Poly.Typed.WfContextDescStronglyNormalizing
+import FX1Poly.Typed.HasTypeDescStronglyNormalizing
 import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Core.Normalize
 
@@ -25,7 +25,7 @@ over `WfContextDesc`.  This file supplies `HasTypeDesc.decidableOfWellFormedNati
 * **`HasTypeDesc.decidableOfWellFormedNative`** — the decision.  Synthesise the subject's principal type
   `T0` (`inferWithWitness`); then `HasTypeDesc Γ t T ⟺ Conv T0 T` (forward: uniqueness of the principal type;
   backward: the `conv` rule).  The `Conv` is decided by `Conv.decidableOfStronglyNormalizing` — `T0` is SN by
-  native validity (`classifierStronglyNormalizingNative`), and `T` is SN once gated through the cascade-free
+  native validity (`classifierStronglyNormalizing`), and `T` is SN once gated through the cascade-free
   `IsTypeDesc.decidableOfWellFormedGeneric`: if `T` is NOT a type then `HasTypeDesc Γ t T` is impossible
   (`classifierIsTypeDesc`), and if it IS a type it is SN (`IsTypeDesc.isStronglyNormalizing`).  The
   `isFalse` of a genuine `Conv` mismatch refutes via `uniqueness`.
@@ -103,7 +103,7 @@ def HasTypeDesc.inferWithWitness {profile : PolyProfile} {scope : Nat}
 /-- **Native `Decidable (HasTypeDesc Γ t T)`** — decide the full formation typing judgment.
 Synthesise the subject's principal type `T0` (`inferWithWitness`); the typing holds iff
 `Conv T0 classifier`.  The `Conv` is decided by `Conv.decidableOfStronglyNormalizing` (`T0` SN by
-`classifierStronglyNormalizingNative`; `classifier` SN once gated through the cascade-free
+`classifierStronglyNormalizing`; `classifier` SN once gated through the cascade-free
 `IsTypeDesc.decidableOfWellFormedGeneric` — a non-type classifier makes the typing impossible via
 `classifierIsTypeDesc`).  Forward through the `conv` rule (reclassifying `T0` to the universe-code-typed
 `classifier`); `isFalse` refutes via `uniqueness`.  The decider `HasTypeDesc.decidableOfWellFormed`
@@ -121,7 +121,7 @@ def HasTypeDesc.decidableOfWellFormedNative {profile : PolyProfile} {scope : Nat
             classifierNotType (HasTypeDesc.classifierIsTypeDesc wellFormed typed)
       | isTrue classifierIsType =>
           match Conv.decidableOfStronglyNormalizing
-              (HasTypeDesc.classifierStronglyNormalizingNative wellFormed principalTyped)
+              (HasTypeDesc.classifierStronglyNormalizing wellFormed principalTyped)
               (IsTypeDesc.isStronglyNormalizing classifierIsType) with
           | isTrue convertsToClassifier =>
               isTrue (by

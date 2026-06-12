@@ -72,7 +72,6 @@ import FX1Poly.Typed.SubjectReductionAtFormerGeneric
 import FX1Poly.Typed.WfContextDesc
 import FX1Poly.Typed.WfContextDescLookup
 import FX1Poly.Typed.WfContextDescValidity
-import FX1Poly.Typed.WfContextDescStronglyNormalizing
 import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Typed.WfContextDescPi
 import FX1Poly.Typed.WfContextDescPiFromWfContextDesc

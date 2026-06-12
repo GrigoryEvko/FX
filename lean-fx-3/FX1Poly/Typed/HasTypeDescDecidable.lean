@@ -1,5 +1,5 @@
 import FX1Poly.Typed.HasTypeDescNativeDecidable
-import FX1Poly.Typed.WfContextDescStronglyNormalizing
+import FX1Poly.Typed.HasTypeDescStronglyNormalizing
 import FX1Poly.Typed.WfContextDesc
 import FX1Poly.Core.Normalize
 
@@ -39,7 +39,7 @@ def HasTypeDesc.decidableOfWellFormed {profile : PolyProfile} {scope : Nat}
 
 /-- **Decidable typed classifier conversion for the description engine.**  If two subjects are typed by
 `HasTypeDesc`, their classifiers' convertibility is decidable.  Each classifier is strongly normalizing by the
-native `HasTypeDesc.classifierStronglyNormalizingNative` (its intrinsic native validity turns the classifier
+native `HasTypeDesc.classifierStronglyNormalizing` (its intrinsic native validity turns the classifier
 into an `IsTypeDesc`, whose subject — the classifier — is then SN), and the parameter-free SN-fragment decider
 `Conv.decidableOfStronglyNormalizing` decides by normalizing each side and comparing normal forms.  The
 description-engine typed-Conv leg paired with `HasTypeDesc.decidableOfWellFormed`. -/
@@ -51,7 +51,7 @@ def Conv.decidableOfHasTypeDesc {profile : PolyProfile} {scope : Nat}
     (secondTyped : HasTypeDesc profile context secondSubject secondClassifier) :
     Decidable (Conv firstClassifier secondClassifier) :=
   Conv.decidableOfStronglyNormalizing
-    (firstTyped.classifierStronglyNormalizingNative wellFormed)
-    (secondTyped.classifierStronglyNormalizingNative wellFormed)
+    (firstTyped.classifierStronglyNormalizing wellFormed)
+    (secondTyped.classifierStronglyNormalizing wellFormed)
 
 end FX1Poly.Typed
