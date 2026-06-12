@@ -236,18 +236,28 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
   | nullaryFreeTypeIntro context generator rule elementType elementLevel flag isNullaryFreeType
       elementTypeFormed =>
       intro targetScope targetContext substitution condition
-      obtain ⟨_, ruleEq⟩ := nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType
-      subst ruleEq
-      -- optionNone row: memberCell = optionNoneCell, outputType = optionTypeCell.
       have elementFormSubst := elementTypeFormed.substRespectingContext targetContext substitution condition
       rw [subst_universeCodeCell] at elementFormSubst
-      show HasTypeNativeUnion profile targetContext
-        (RawTerm.subst substitution optionNoneCell)
-        (RawTerm.subst substitution (optionTypeCell elementType))
-      rw [subst_optionNoneCell, subst_optionTypeCell]
-      exact HasTypeNativeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
-        optionNoneNativeNullaryFreeTypeRule (RawTerm.subst substitution elementType)
-        elementLevel flag rfl elementFormSubst
+      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
+          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
+      · subst generatorEq; subst ruleEq
+        -- optionNone row: memberCell = optionNoneCell, outputType = optionTypeCell.
+        show HasTypeNativeUnion profile targetContext
+          (RawTerm.subst substitution optionNoneCell)
+          (RawTerm.subst substitution (optionTypeCell elementType))
+        rw [subst_optionNoneCell, subst_optionTypeCell]
+        exact HasTypeNativeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
+          optionNoneNativeNullaryFreeTypeRule (RawTerm.subst substitution elementType)
+          elementLevel flag rfl elementFormSubst
+      · subst generatorEq; subst ruleEq
+        -- listNil row: memberCell = listNilCell, outputType = listTypeCell.
+        show HasTypeNativeUnion profile targetContext
+          (RawTerm.subst substitution listNilCell)
+          (RawTerm.subst substitution (listTypeCell elementType))
+        rw [subst_listNilCell, subst_listTypeCell]
+        exact HasTypeNativeUnion.nullaryFreeTypeIntro targetContext .gen_listNil
+          listNilNativeNullaryFreeTypeRule (RawTerm.subst substitution elementType)
+          elementLevel flag rfl elementFormSubst
   | coproductIntro context generator rule value pinnedType freeType freeLevel flag isCoproduct
       valueTyped freeTypeFormed =>
       intro targetScope targetContext substitution condition

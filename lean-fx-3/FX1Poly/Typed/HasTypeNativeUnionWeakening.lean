@@ -87,6 +87,11 @@ theorem rename_optionNoneCell {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope) :
     RawTerm.rename rawRenaming (optionNoneCell : RawTerm sourceScope) = optionNoneCell := rfl
 
+/-- `listNil` is closed — renaming fixes it. -/
+theorem rename_listNilCell {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming (listNilCell : RawTerm sourceScope) = listNilCell := rfl
+
 /-- `eitherInl(v)` distributes over the value. -/
 theorem rename_eitherInlCell {sourceScope targetScope : Nat}
     (rawRenaming : RawRenaming sourceScope targetScope) (value : RawTerm sourceScope) :
@@ -720,18 +725,27 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
   | nullaryFreeTypeIntro context generator rule elementType elementLevel flag isNullaryFreeType
       elementTypeFormed =>
       intro targetScope targetContext rawRenaming condition
-      obtain ⟨_, ruleEq⟩ := nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType
-      subst ruleEq
       have elementFormRenamed :=
         elementTypeFormed.renameRespectingContext targetContext rawRenaming condition
       rw [rename_universeCodeCell] at elementFormRenamed
-      show HasTypeNativeUnion profile targetContext
-        (RawTerm.rename rawRenaming optionNoneCell)
-        (RawTerm.rename rawRenaming (optionTypeCell elementType))
-      rw [rename_optionNoneCell, rename_optionTypeCell]
-      exact HasTypeNativeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
-        optionNoneNativeNullaryFreeTypeRule (RawTerm.rename rawRenaming elementType)
-        elementLevel flag rfl elementFormRenamed
+      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
+          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
+      · subst generatorEq; subst ruleEq
+        show HasTypeNativeUnion profile targetContext
+          (RawTerm.rename rawRenaming optionNoneCell)
+          (RawTerm.rename rawRenaming (optionTypeCell elementType))
+        rw [rename_optionNoneCell, rename_optionTypeCell]
+        exact HasTypeNativeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
+          optionNoneNativeNullaryFreeTypeRule (RawTerm.rename rawRenaming elementType)
+          elementLevel flag rfl elementFormRenamed
+      · subst generatorEq; subst ruleEq
+        show HasTypeNativeUnion profile targetContext
+          (RawTerm.rename rawRenaming listNilCell)
+          (RawTerm.rename rawRenaming (listTypeCell elementType))
+        rw [rename_listNilCell, rename_listTypeCell]
+        exact HasTypeNativeUnion.nullaryFreeTypeIntro targetContext .gen_listNil
+          listNilNativeNullaryFreeTypeRule (RawTerm.rename rawRenaming elementType)
+          elementLevel flag rfl elementFormRenamed
   | coproductIntro context generator rule value pinnedType freeType freeLevel flag isCoproduct
       valueTyped freeTypeFormed =>
       intro targetScope targetContext rawRenaming condition

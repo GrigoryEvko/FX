@@ -360,10 +360,18 @@ def optionNoneNativeNullaryFreeTypeRule : NativeNullaryFreeTypeDataIntroRule whe
   memberCell := fun _ => optionNoneCell
   outputType := fun _ => optionTypeCell
 
+/-- The native `gen_listNil` nullary-free-type row — the empty list at a FREE
+element type, the exact shape twin of `optionNone` with the list container
+code (the row that retires the `ofListIntro` embedding's nil half). -/
+def listNilNativeNullaryFreeTypeRule : NativeNullaryFreeTypeDataIntroRule where
+  memberCell := fun _ => listNilCell
+  outputType := fun _ => listTypeCell
+
 /-- The native nullary-free-type data-constructor table. -/
 def nativeNullaryFreeTypeDataIntroRuleOf (generator : Generator) :
     Option NativeNullaryFreeTypeDataIntroRule :=
   if generator = .gen_optionNone then some optionNoneNativeNullaryFreeTypeRule
+  else if generator = .gen_listNil then some listNilNativeNullaryFreeTypeRule
   else none
 
 /-- Table metadata: the native `optionNone` row is hit. -/
@@ -371,17 +379,27 @@ theorem nativeNullaryFreeTypeDataIntroRuleOf_optionNone :
     nativeNullaryFreeTypeDataIntroRuleOf .gen_optionNone = some optionNoneNativeNullaryFreeTypeRule :=
   rfl
 
-/-- **A nullary-free-type table hit pins the optionNone row.** -/
+/-- Table metadata: the native `listNil` row is hit. -/
+theorem nativeNullaryFreeTypeDataIntroRuleOf_listNil :
+    nativeNullaryFreeTypeDataIntroRuleOf .gen_listNil = some listNilNativeNullaryFreeTypeRule :=
+  rfl
+
+/-- **A nullary-free-type table hit pins the optionNone or the listNil row.** -/
 theorem nativeNullaryFreeTypeDataIntroRuleOf_cases {generator : Generator}
     {rule : NativeNullaryFreeTypeDataIntroRule}
     (tableHit : nativeNullaryFreeTypeDataIntroRuleOf generator = some rule) :
-    generator = .gen_optionNone ∧ rule = optionNoneNativeNullaryFreeTypeRule := by
+    (generator = .gen_optionNone ∧ rule = optionNoneNativeNullaryFreeTypeRule) ∨
+    (generator = .gen_listNil ∧ rule = listNilNativeNullaryFreeTypeRule) := by
   unfold nativeNullaryFreeTypeDataIntroRuleOf at tableHit
   by_cases isOptionNone : generator = .gen_optionNone
   · rw [if_pos isOptionNone] at tableHit
-    exact ⟨isOptionNone, (Option.some.inj tableHit).symm⟩
+    exact Or.inl ⟨isOptionNone, (Option.some.inj tableHit).symm⟩
   · rw [if_neg isOptionNone] at tableHit
-    exact absurd tableHit (by intro hit; cases hit)
+    by_cases isListNil : generator = .gen_listNil
+    · rw [if_pos isListNil] at tableHit
+      exact Or.inr ⟨isListNil, (Option.some.inj tableHit).symm⟩
+    · rw [if_neg isListNil] at tableHit
+      exact absurd tableHit (by intro hit; cases hit)
 
 /-- A native COPRODUCT data-constructor row (`eitherInl` / `eitherInr`): a GROWN value premise plus a
 free-type formedness premise for the un-injected side, the either-code output.  Field-identical to

@@ -1235,12 +1235,18 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
   | nullaryFreeTypeIntro context generator rule elementType freeLevel flag isNullaryFreeType
       elementTypeFormed =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      obtain ⟨generatorEq, ruleEq⟩ := nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType
-      subst generatorEq; subst ruleEq
-      obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
-        (fun _reduct chain => headReaches_optionTypeCell chain)
-      rw [targetEq]
-      exact LaneValue.optionNone targetElement
+      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
+          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
+      · subst generatorEq; subst ruleEq
+        obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
+          (fun _reduct chain => headReaches_optionTypeCell chain)
+        rw [targetEq]
+        exact LaneValue.optionNone targetElement
+      · subst generatorEq; subst ruleEq
+        obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
+          (fun _reduct chain => headReaches_listTypeCell chain)
+        rw [targetEq]
+        exact LaneValue.listNil targetElement
   | coproductIntro context generator rule value pinnedType freeType freeLevel flag isCoproduct
       valueTyped freeTypeFormed =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget

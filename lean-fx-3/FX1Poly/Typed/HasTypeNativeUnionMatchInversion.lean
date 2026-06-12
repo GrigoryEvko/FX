@@ -165,9 +165,11 @@ theorem HasTypeNativeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope :
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | nullaryFreeTypeIntro ctx generator rule elementType elementLevel flag isNullaryFreeType
       elementTypeFormed =>
-      obtain ⟨_, ruleEq⟩ := nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
+          ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
+      all_goals
+        subst ruleEq
+        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | coproductIntro ctx generator rule value pinnedType freeType freeLevel flag isCoproduct valueTyped
       freeTypeFormed =>
       rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
@@ -315,9 +317,11 @@ theorem HasTypeNativeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scop
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | nullaryFreeTypeIntro ctx generator rule elementType elementLevel flag isNullaryFreeType
       elementTypeFormed =>
-      obtain ⟨_, ruleEq⟩ := nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
+          ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
+      all_goals
+        subst ruleEq
+        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | coproductIntro ctx generator rule value pinnedType freeType freeLevel flag isCoproduct valueTyped
       freeTypeFormed =>
       rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
@@ -466,9 +470,11 @@ theorem HasTypeNativeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scop
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | nullaryFreeTypeIntro ctx generator rule elementType elementLevel flag isNullaryFreeType
       elementTypeFormed =>
-      obtain ⟨_, ruleEq⟩ := nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
+          ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
+      all_goals
+        subst ruleEq
+        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | coproductIntro ctx generator rule value pinnedType freeType freeLevel flag isCoproduct valueTyped
       freeTypeFormed =>
       rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
