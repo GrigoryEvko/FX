@@ -1,5 +1,6 @@
 import FX1Poly.Typed.MatchElimComputingCanonicity
 import FX1Poly.Core.OptionEitherMatchCanonicalComputation
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/MatchElimComputingCanonicityTyped
     — TYPED option/either MATCH eliminator-computing canonicity, extending firing-63's bool result to the
@@ -75,13 +76,13 @@ theorem closedOptionMatchIntoBoolComputes
   rcases scrutIsOption with noneEq | ⟨inner, someEq⟩
   · subst noneEq
     exact ⟨boolTrueCell,
-      StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) Step.iotaOptionMatchNone,
+      StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) IotaHeadStep.iotaOptionMatchNone.toStep,
       Or.inl rfl⟩
   · subst someEq
     have betaStep : Step (appCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) inner) boolTrueCell := Step.beta
     exact ⟨boolTrueCell,
       StepStar.transLast
-        (StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) Step.iotaOptionMatchSome)
+        (StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) IotaHeadStep.iotaOptionMatchSome.toStep)
         betaStep,
       Or.inl rfl⟩
 
@@ -106,14 +107,14 @@ theorem closedEitherMatchIntoBoolComputes
     have betaStep : Step (appCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) inner) boolTrueCell := Step.beta
     exact ⟨boolTrueCell,
       StepStar.transLast
-        (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) Step.iotaEitherMatchInl)
+        (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) IotaHeadStep.iotaEitherMatchInl.toStep)
         betaStep,
       Or.inl rfl⟩
   · subst inrEq
     have betaStep : Step (appCell (lamCell boolTrueCell (boolFalseCell : RawTerm 1)) inner) boolFalseCell := Step.beta
     exact ⟨boolFalseCell,
       StepStar.transLast
-        (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) Step.iotaEitherMatchInr)
+        (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) IotaHeadStep.iotaEitherMatchInr.toStep)
         betaStep,
       Or.inr rfl⟩
 

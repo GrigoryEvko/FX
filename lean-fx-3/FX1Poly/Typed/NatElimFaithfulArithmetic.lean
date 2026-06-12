@@ -1,4 +1,5 @@
 import FX1Poly.Typed.NatElimComputingCanonicity
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/NatElimFaithfulArithmetic
     — the native `natElim` recursor computes binary addition FAITHFULLY (to the exact numeral)
@@ -70,7 +71,7 @@ theorem natElimAddFaithful (base : Nat) : (scrutinee : Nat) →
       show StepStar (natElimCell (variableCell (⟨0, by decide⟩ : Fin 1))
           (natNumeralCell base) copyNatBranch natZeroCell)
         (natNumeralCell base)
-      exact StepStar.single Step.iotaNatElimZero
+      exact StepStar.single IotaHeadStep.iotaNatElimZero.toStep
   | k + 1 => by
       -- `base + (k + 1)` is DEFINITIONALLY `(base + k) + 1`, so the target numeral is
       -- `natSuccCell (natNumeralCell (base + k))` by unfolding — no rewrite needed.
@@ -82,7 +83,7 @@ theorem natElimAddFaithful (base : Nat) : (scrutinee : Nat) →
               (natNumeralCell base) copyNatBranch (natSuccCell (natNumeralCell k)))
             (natSuccCell (natElimCell (variableCell (⟨0, by decide⟩ : Fin 1))
               (natNumeralCell base) copyNatBranch (natNumeralCell k))) :=
-        StepStar.single Step.iotaNatElimSucc
+        StepStar.single IotaHeadStep.iotaNatElimSucc.toStep
       have congStep :
           StepStar
             (natSuccCell (natElimCell (variableCell (⟨0, by decide⟩ : Fin 1))

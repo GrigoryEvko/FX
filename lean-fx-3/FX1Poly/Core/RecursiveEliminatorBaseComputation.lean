@@ -1,6 +1,7 @@
 import FX1Poly.Core.NatCanonicalFormsCandidate
 import FX1Poly.Core.ListCanonicalFormsCandidate
 import FX1Poly.Core.WeakHeadStepCommute
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Core/RecursiveEliminatorBaseComputation
     — the recursive eliminators COMPUTE on their base constructor (`natElim`/`natRec` on `zero`, `listElim` on
@@ -22,13 +23,13 @@ argument (the fundamental-gated machinery).  This file ships the clean base-case
 * `natElimZeroScrutineeReducesToBranch` / `natRecZeroScrutineeReducesToBranch` /
   `listElimNilScrutineeReducesToBranch` — the headline: when the scrutinee reduces to the base constructor
   (`zero` / `nil`), the eliminator reduces to the base branch.  The scrutinee congruence carries the
-  scrutinee's reduction to `zero` / `nil` under the eliminator, then the base ι (`Step.iotaNatElimZero` /
-  `Step.iotaNatRecZero` / `Step.iotaListElimNil`) selects the branch.
+  scrutinee's reduction to `zero` / `nil` under the eliminator, then the base ι (`IotaHeadStep.iotaNatElimZero.toStep` /
+  `IotaHeadStep.iotaNatRecZero.toStep` / `IotaHeadStep.iotaListElimNil.toStep`) selects the branch.
 
 ## Zero-axiom verification
 
 `StepStar.congAt` (chain induction), `Step.cong` / `StepChildren.here` (the scrutinee congruence step), and the
-`Step.iotaNatElimZero` / `iotaNatRecZero` / `iotaListElimNil` base ι constructors, chained by
+`IotaHeadStep.iotaNatElimZero.toStep` / `iotaNatRecZero` / `iotaListElimNil` base ι constructors, chained by
 `StepStar.transLast`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -128,7 +129,7 @@ theorem StepStar.listElimScrutinee {scope : Nat}
 
 /-- **`natElim` on a zero-reducing scrutinee computes to the zero-branch.**  The fundamental-free base-case half of
 `natElim` canonicity: when the scrutinee reduces to `natZero`, the scrutinee congruence carries that under the
-`natElim`, and the base ι `Step.iotaNatElimZero` selects the zero-branch.  (The `succ` step case SUBSTITUTES —
+`natElim`, and the base ι `IotaHeadStep.iotaNatElimZero.toStep` selects the zero-branch.  (The `succ` step case SUBSTITUTES —
 the ι replaces `var 0`/`var 1` of the succ-branch with the recursive `natElim` call on the predecessor and the
 predecessor itself — and needs Tait.) -/
 theorem natElimZeroScrutineeReducesToBranch {scope : Nat}
@@ -136,26 +137,26 @@ theorem natElimZeroScrutineeReducesToBranch {scope : Nat}
     {scrutinee zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
     (scrutineeReducesToZero : StepStar scrutinee natZeroCell) :
     StepStar (natElimCellOn motive scrutinee zeroBranch succBranch) zeroBranch :=
-  StepStar.transLast (StepStar.natElimScrutinee scrutineeReducesToZero) Step.iotaNatElimZero
+  StepStar.transLast (StepStar.natElimScrutinee scrutineeReducesToZero) IotaHeadStep.iotaNatElimZero.toStep
 
 /-- **`natRec` on a zero-reducing scrutinee computes to the zero-branch.**  Symmetric to
-`natElimZeroScrutineeReducesToBranch` — same base ι (`Step.iotaNatRecZero`). -/
+`natElimZeroScrutineeReducesToBranch` — same base ι (`IotaHeadStep.iotaNatRecZero.toStep`). -/
 theorem natRecZeroScrutineeReducesToBranch {scope : Nat}
     {motive : RawTerm (scope + 1)}
     {scrutinee zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
     (scrutineeReducesToZero : StepStar scrutinee natZeroCell) :
     StepStar (natRecCellOn motive scrutinee zeroBranch succBranch) zeroBranch :=
-  StepStar.transLast (StepStar.natRecScrutinee scrutineeReducesToZero) Step.iotaNatRecZero
+  StepStar.transLast (StepStar.natRecScrutinee scrutineeReducesToZero) IotaHeadStep.iotaNatRecZero.toStep
 
 /-- **`listElim` on a nil-reducing scrutinee computes to the nil-branch.**  The fundamental-free base-case half of
 `listElim` canonicity: when the scrutinee reduces to `listNil`, the scrutinee congruence carries that under the
-`listElim`, and the base ι `Step.iotaListElimNil` selects the nil-branch.  (The `cons` step case grows — the ι
+`listElim`, and the base ι `IotaHeadStep.iotaListElimNil.toStep` selects the nil-branch.  (The `cons` step case grows — the ι
 reappears `listElim` on the tail — and needs Tait.) -/
 theorem listElimNilScrutineeReducesToBranch {scope : Nat}
     {motive : RawTerm (scope + 1)}
     {scrutinee nilBranch consBranch : RawTerm scope}
     (scrutineeReducesToNil : StepStar scrutinee listNilCell) :
     StepStar (listElimCellOn motive scrutinee nilBranch consBranch) nilBranch :=
-  StepStar.transLast (StepStar.listElimScrutinee scrutineeReducesToNil) Step.iotaListElimNil
+  StepStar.transLast (StepStar.listElimScrutinee scrutineeReducesToNil) IotaHeadStep.iotaListElimNil.toStep
 
 end FX1Poly.Core

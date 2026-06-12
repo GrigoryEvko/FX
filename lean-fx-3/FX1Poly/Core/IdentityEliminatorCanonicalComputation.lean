@@ -1,5 +1,6 @@
 import FX1Poly.Core.ReflCanonicalFormsCandidate
 import FX1Poly.Core.WeakHeadStepCommute
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Core/IdentityEliminatorCanonicalComputation
     — closed `idJ` / `idStrictRec` on a canonical `refl` witness COMPUTE to the base case (the identity-eliminator computation core)
@@ -19,13 +20,13 @@ base case from the WITNESS position (vs. the growing recursors that apply a bran
 * `idJCanonicalWitnessReducesToBase` / `idStrictRecCanonicalWitnessReducesToBase` — the headline: a closed `idJ`
   / `idStrictRec` on a canonical `refl` witness reduces to its base case.  The witness reduces to a `refl`
   (identity data canonicity), the witness congruence carries that under the eliminator, and the matching ι rule
-  (`Step.iotaIdJRefl` / `Step.iotaIdStrictRecRefl`) selects the base case.
+  (`IotaHeadStep.iotaIdJRefl.toStep` / `IotaHeadStep.iotaIdStrictRecRefl.toStep`) selects the base case.
 
 ## Zero-axiom verification
 
 `StepStar.congAt` (chain induction), `reflClosedReducesToValue` (identity data canonicity via the candidate),
 `Step.cong` / `StepChildren.there` / `StepChildren.here` (the witness congruence step), and the
-`Step.iotaIdJRefl` / `Step.iotaIdStrictRecRefl` ι constructors, chained by `StepStar.transLast`.  No `axiom`,
+`IotaHeadStep.iotaIdJRefl.toStep` / `IotaHeadStep.iotaIdStrictRecRefl.toStep` ι constructors, chained by `StepStar.transLast`.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -82,7 +83,7 @@ theorem StepStar.idStrictRecWitness {scope : Nat} {motive : RawTerm (scope + 2)}
 /-- **Closed `idJ` on a canonical `refl` witness computes to the base case.**  The identity-eliminator analog of
 closed-bool elimination canonicity: a closed `idJ` whose witness is a member of the identity candidate
 `StepStar`-reduces to its base case.  The witness reduces to a `refl` (`reflClosedReducesToValue`),
-`StepStar.idJWitness` carries that reduction under the `idJ`, and `Step.iotaIdJRefl` selects the base case
+`StepStar.idJWitness` carries that reduction under the `idJ`, and `IotaHeadStep.iotaIdJRefl.toStep` selects the base case
 (the Phase-Z stored motive is passive — the refl-ι DISCARDS it).  Fundamental-free — it uses only identity data
 canonicity plus the witness congruence and the ι rule, no fundamental theorem. -/
 theorem idJCanonicalWitnessReducesToBase {motive : RawTerm 2} {baseCase witness : RawTerm 0}
@@ -91,18 +92,18 @@ theorem idJCanonicalWitnessReducesToBase {motive : RawTerm 2} {baseCase witness 
   obtain ⟨value, witnessReducesToValue, rawWitness, valueIsRefl, _rawWitnessNormal⟩ :=
     reflClosedReducesToValue witnessMember
   subst valueIsRefl
-  exact StepStar.transLast (StepStar.idJWitness witnessReducesToValue) Step.iotaIdJRefl
+  exact StepStar.transLast (StepStar.idJWitness witnessReducesToValue) IotaHeadStep.iotaIdJRefl.toStep
 
 /-- **Closed `idStrictRec` on a canonical `refl` witness computes to the base case.**  Symmetric to
 `idJCanonicalWitnessReducesToBase` — the strict identity eliminator has the same Phase-Z `(motive, base, witness)`
 spine and the same single ι rule (`idStrictRec motive base (refl w) ↝ base`, the motive DISCARDED), inverted by
-`Step.iotaIdStrictRecRefl`. -/
+`IotaHeadStep.iotaIdStrictRecRefl.toStep`. -/
 theorem idStrictRecCanonicalWitnessReducesToBase {motive : RawTerm 2} {baseCase witness : RawTerm 0}
     (witnessMember : CanonicalFormsPredicate isReflValue witness) :
     StepStar (idStrictRecCellOn motive baseCase witness) baseCase := by
   obtain ⟨value, witnessReducesToValue, rawWitness, valueIsRefl, _rawWitnessNormal⟩ :=
     reflClosedReducesToValue witnessMember
   subst valueIsRefl
-  exact StepStar.transLast (StepStar.idStrictRecWitness witnessReducesToValue) Step.iotaIdStrictRecRefl
+  exact StepStar.transLast (StepStar.idStrictRecWitness witnessReducesToValue) IotaHeadStep.iotaIdStrictRecRefl.toStep
 
 end FX1Poly.Core

@@ -1,4 +1,5 @@
 import FX1Poly.Typed.ClosedBoolCanonicity
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/BoolElimValueCanonicity
     — the FIRST genuinely-NON-VACUOUS eliminator-computing canonicity (the eliminator COMPUTES to a value)
@@ -37,7 +38,7 @@ standalone judgment.
 ## Zero-axiom verification
 
 A single-arm positive inductive; the smoke is a direct construction; the typed-ι theorems are
-`Step.iotaBoolTrue`/`iotaBoolFalse` paired with the branch typing; the canonicity is `cases` + two
+`IotaHeadStep.iotaBoolTrue.toStep`/`iotaBoolFalse` paired with the branch typing; the canonicity is `cases` + two
 `standaloneBoolCanonicalForms` + `StepStar.single`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -80,23 +81,23 @@ theorem HasTypeDescBoolElimValue.smoke {profile : PolyProfile} :
     boolTrueStandaloneRowTyped boolTrueStandaloneRowTyped boolFalseStandaloneRowTyped
 
 /-- **Typed ι-computation (true case)**: `boolElim(boolTrue, t, e)` ι-reduces to the then-branch `t`
-(`Step.iotaBoolTrue`), and `t` stays standalone-value-typed at `boolCode` — SR for the eliminator's value-case
+(`IotaHeadStep.iotaBoolTrue.toStep`), and `t` stays standalone-value-typed at `boolCode` — SR for the eliminator's value-case
 computation step. -/
 theorem boolElimValueTrueIotaTyped
     (motive : RawTerm 1) (thenBranch elseBranch : RawTerm 0)
     (thenTyped : boolStandaloneRowTyped thenBranch) :
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
     boolStandaloneRowTyped thenBranch :=
-  ⟨Step.iotaBoolTrue, thenTyped⟩
+  ⟨IotaHeadStep.iotaBoolTrue.toStep, thenTyped⟩
 
 /-- **Typed ι-computation (false case)**: the `boolFalse` mirror — `boolElim(boolFalse, t, e)` ι-reduces to the
-else-branch `e` (`Step.iotaBoolFalse`), typed at `boolCode`. -/
+else-branch `e` (`IotaHeadStep.iotaBoolFalse.toStep`), typed at `boolCode`. -/
 theorem boolElimValueFalseIotaTyped
     (motive : RawTerm 1) (thenBranch elseBranch : RawTerm 0)
     (elseTyped : boolStandaloneRowTyped elseBranch) :
     Step (boolElimCell motive boolFalseCell thenBranch elseBranch) elseBranch ∧
     boolStandaloneRowTyped elseBranch :=
-  ⟨Step.iotaBoolFalse, elseTyped⟩
+  ⟨IotaHeadStep.iotaBoolFalse.toStep, elseTyped⟩
 
 /-- A subject typed by the standalone value layer at `boolTypeCell` IS a bool value cell. -/
 private theorem standaloneBoolValueCell {subject : RawTerm 0}
@@ -114,7 +115,7 @@ private theorem standaloneBoolValueCell {subject : RawTerm 0}
 
 /-- **★ NON-VACUOUS eliminator-computing canonicity.**  A closed `boolElim b t e : Bool` (data-value branches)
 COMPUTES by a single ι-step to a bool VALUE.  The scrutinee is `boolTrue`/`boolFalse`
-(`standaloneBoolCanonicalForms`), so the eliminator FIRES (`Step.iotaBoolTrue`/`iotaBoolFalse`) to the selected
+(`standaloneBoolCanonicalForms`), so the eliminator FIRES (`IotaHeadStep.iotaBoolTrue.toStep`/`iotaBoolFalse`) to the selected
 branch, itself a bool value (the branch is standalone-value-typed at `boolCode`).  The FIRST canonicity in which the
 eliminator genuinely computes — the eliminator-into-data case the four prior firings found vacuous for the
 grown-branch engine. -/
@@ -127,11 +128,11 @@ theorem boolElimValueCanonicity {profile : PolyProfile} {subject : RawTerm 0}
       rcases standaloneBoolValueCell scrutineeTyped with scrutEq | scrutEq
       · subst scrutEq
         rcases standaloneBoolValueCell thenTyped with branchEq | branchEq
-        · subst branchEq; exact ⟨boolTrueCell, StepStar.single Step.iotaBoolTrue, Or.inl rfl⟩
-        · subst branchEq; exact ⟨boolFalseCell, StepStar.single Step.iotaBoolTrue, Or.inr rfl⟩
+        · subst branchEq; exact ⟨boolTrueCell, StepStar.single IotaHeadStep.iotaBoolTrue.toStep, Or.inl rfl⟩
+        · subst branchEq; exact ⟨boolFalseCell, StepStar.single IotaHeadStep.iotaBoolTrue.toStep, Or.inr rfl⟩
       · subst scrutEq
         rcases standaloneBoolValueCell elseTyped with branchEq | branchEq
-        · subst branchEq; exact ⟨boolTrueCell, StepStar.single Step.iotaBoolFalse, Or.inl rfl⟩
-        · subst branchEq; exact ⟨boolFalseCell, StepStar.single Step.iotaBoolFalse, Or.inr rfl⟩
+        · subst branchEq; exact ⟨boolTrueCell, StepStar.single IotaHeadStep.iotaBoolFalse.toStep, Or.inl rfl⟩
+        · subst branchEq; exact ⟨boolFalseCell, StepStar.single IotaHeadStep.iotaBoolFalse.toStep, Or.inr rfl⟩
 
 end FX1Poly.Typed

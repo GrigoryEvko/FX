@@ -1,4 +1,5 @@
 import FX1Poly.Typed.ClosedNumeralSubstInvariant
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/NatElimFaithfulMul — the native `natElim` recursor FAITHFULLY computes host `Nat.mul` (HON-13)
 
@@ -66,10 +67,10 @@ rawNat n) ↝* rawNat (m * n)` for ALL `m n : Nat`, GIVEN `mulStepReduces` — t
 predecessor `natNumeralAt n` reduces to the inner adder `mulBranchSubstitutedTarget m (recursive-call)`.
 
 CONDITIONAL FORM FLAG: `mulStepReduces` packages the MISSING piece — the succ-iota substitution
-(`Step.iotaNatElimSucc`) COMPOSED with the 2-variable subst-commutation that pushes `cons rec (singleton pred)`
+(`IotaHeadStep.iotaNatElimSucc.toStep`) COMPOSED with the 2-variable subst-commutation that pushes `cons rec (singleton pred)`
 through the embedded `natNumeralAt m` (closed, fixed by `natNumeralAt_subst`) and the inner `copyNatBranchAt`
 while replacing the accumulator `var 0` by the recursive call.  DISCHARGED: `mulStepReduces_proved`
-(HasTypeDescPiSubstPair) proves this hypothesis via `Step.iotaNatElimSucc` + `mulNatBranch_substituted`, and
+(HasTypeDescPiSubstPair) proves this hypothesis via `IotaHeadStep.iotaNatElimSucc.toStep` + `mulNatBranch_substituted`, and
 `natElimMulFaithful.unconditional` is the premise-free headline — this conditional form is kept as the
 abstract statement.  Induction on `n` reusing `natElimAddFaithful` as the per-step adder; `m·n + m = m·(n+1)` is
 `Nat.mul_succ`. -/
@@ -84,7 +85,7 @@ theorem natElimMulFaithful (m : Nat)
     StepStar (natElimCell (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) natZeroCell (mulNatBranch m)
         (natNumeralAt n))
       (natNumeralAt (m * n))
-  | 0 => StepStar.single Step.iotaNatElimZero
+  | 0 => StepStar.single IotaHeadStep.iotaNatElimZero.toStep
   | n + 1 => by
       have congArm :
           StepStar

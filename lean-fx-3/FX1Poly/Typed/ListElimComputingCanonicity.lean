@@ -1,6 +1,7 @@
 import FX1Poly.Typed.ClosedNatCanonicity
 import FX1Poly.Core.ListCanonicalFormsCandidate
 import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/ListElimComputingCanonicity
     — the RECURSIVE list eliminator-computing canonicity (completes the recursive-eliminator family)
@@ -67,9 +68,9 @@ closed list value `s`.
 
 Induction on `s`'s `IsListValue`:
 
-  * **nil** — `listElim(nil, nil, cons) ↝ nilBranch` (`Step.iotaListElimNil`), an `isResultValue`.
+  * **nil** — `listElim(nil, nil, cons) ↝ nilBranch` (`IotaHeadStep.iotaListElimNil.toStep`), an `isResultValue`.
   * **cons head tail** — `listElim(cons head tail, nil, cons) ↝ app (app (app cons head) tail) (listElim tail
-    nil cons)` (`Step.iotaListElimCons`).  The IH gives `listElim tail nil cons ↝* r` with `isResultValue r`;
+    nil cons)` (`IotaHeadStep.iotaListElimCons.toStep`).  The IH gives `listElim tail nil cons ↝* r` with `isResultValue r`;
     `StepStar.appArgument` lifts that reduction through the outer application's argument position to reach
     `app (app (app cons head) tail) r`; `stepProduces head tail r` finishes.
 
@@ -87,7 +88,7 @@ theorem listElimComputesToValue {isResultValue : RawTerm 0 → Prop}
     ∃ out : RawTerm 0,
       StepStar (listElimCell motive scrutinee nilBranch consBranch) out ∧ isResultValue out := by
   induction scrutineeValue with
-  | nil => exact ⟨nilBranch, StepStar.single Step.iotaListElimNil, nilBranchValue⟩
+  | nil => exact ⟨nilBranch, StepStar.single IotaHeadStep.iotaListElimNil.toStep, nilBranchValue⟩
   | @cons headVal tailVal _headNormal _tailValue ih =>
       obtain ⟨recResult, recChain, recValue⟩ := ih
       obtain ⟨out, stepChain, outValue⟩ := stepProduces headVal tailVal recResult recValue
@@ -98,7 +99,7 @@ theorem listElimComputesToValue {isResultValue : RawTerm 0 → Prop}
           StepStar (listElimCell motive (listConsCell headVal tailVal) nilBranch consBranch)
             (appCell (appCell (appCell consBranch headVal) tailVal)
               (listElimCell motive tailVal nilBranch consBranch)) :=
-        StepStar.single Step.iotaListElimCons
+        StepStar.single IotaHeadStep.iotaListElimCons.toStep
       have congStep :
           StepStar (appCell (appCell (appCell consBranch headVal) tailVal)
               (listElimCell motive tailVal nilBranch consBranch))

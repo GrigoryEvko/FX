@@ -3,6 +3,7 @@ import FX1Poly.Typed.FlatDescTelescopePi
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.UnionRuleTables
 import FX1Poly.Core.BoolCanonicalFormsCandidate
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/HasTypeUnion — NATIVE-25: the seed unified judgment + Bridge full adequacy
 
@@ -481,7 +482,7 @@ theorem numeralTwoTypedThroughUnionRecursiveIntroTwice {profile : PolyProfile} :
 
 /-- **★ One boolElim ι reduct types IN THE UNION through the two-branch match arm.**  A union-typed
 `boolElim` on `boolTrue` (both branches union-typed at the result `C`) ι-reduces to the THEN branch
-(`Step.iotaBoolTrue`), union-typed at `C`.  The redex and the reduct both type in the union. -/
+(`IotaHeadStep.iotaBoolTrue.toStep`), union-typed at `C`.  The redex and the reduct both type in the union. -/
 theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1))
@@ -497,11 +498,11 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
       (HasTypeUnion.dataIntroNullary context .gen_boolTrue () .childNil
         { outputTypeCode := fun _ => boolTypeCell } rfl)
       thenBranchTyped elseBranchTyped,
-    Step.iotaBoolTrue,
+    IotaHeadStep.iotaBoolTrue.toStep,
     thenBranchTyped⟩
 
 /-- **★ The listElim nil-ι selects the nil branch, typed IN THE UNION.**  A union-typed `listElim` on
-`nil` ι-steps to the nil branch (`Step.iotaListElimNil`), the eliminator typed by the union's own
+`nil` ι-steps to the nil branch (`IotaHeadStep.iotaListElimNil.toStep`), the eliminator typed by the union's own
 `listElim` arm (scrutinee `nil` union-typed through the native listNil nullary-free-type row), and the
 nil branch host-typed. -/
 theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
@@ -523,7 +524,7 @@ theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
       (HasTypeUnion.nullaryFreeTypeIntro context .gen_listNil
         listNilNativeNullaryFreeTypeRule elementType elementLevel flag rfl elementTypeFormed)
       nilBranchTyped consBranchTyped,
-    Step.iotaListElimNil, nilBranchTyped⟩
+    IotaHeadStep.iotaListElimNil.toStep, nilBranchTyped⟩
 
 /-! ## ★ The NATIVE-36 union-residency coverage gate -/
 

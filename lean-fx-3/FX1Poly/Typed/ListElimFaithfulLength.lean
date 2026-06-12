@@ -1,5 +1,6 @@
 import FX1Poly.Typed.ListElimComputingCanonicity
 import FX1Poly.Typed.NatElimFaithfulArithmetic
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/ListElimFaithfulLength — the native `listElim` recursor FAITHFULLY computes host `List.length` (HON-12)
 
@@ -33,7 +34,7 @@ meaning" the generator-honesty arc (HON-1..6) set up to ask.
 
 ## Zero-axiom
 
-`listElimLengthFaithful` is structural recursion on `n` composing `Step.iotaListElimNil`/`iotaListElimCons`
+`listElimLengthFaithful` is structural recursion on `n` composing `IotaHeadStep.iotaListElimNil.toStep`/`iotaListElimCons`
 ι-steps, `StepStar.appArgument` congruence, and `lengthNatStepComputesExact` (three `Step.beta`); the numeral
 bridge `natSucc (natNumeral n) ≡ natNumeral (n+1)` is definitional.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
@@ -77,11 +78,11 @@ numeral" (the existing `listElimLengthComputesToNumeral`) but "reaches the RIGHT
 truthfully encodes `List.length`. -/
 theorem listElimLengthFaithful (motive : RawTerm 1) : ∀ n,
     StepStar (listElimCell motive (rawListReplicate n) natZeroCell lengthNatStep) (natNumeralCell n)
-  | 0 => StepStar.single Step.iotaListElimNil
+  | 0 => StepStar.single IotaHeadStep.iotaListElimNil.toStep
   | n + 1 =>
       -- the cons ι THREADS the same motive into the recursive call (Phase-Z cons ι is not
       -- motive-discarding), so the inner faithful chain runs at the SAME motive.
-      StepStar.trans_compose (StepStar.single Step.iotaListElimCons)
+      StepStar.trans_compose (StepStar.single IotaHeadStep.iotaListElimCons.toStep)
         (StepStar.trans_compose
           (StepStar.appArgument (appCell (appCell lengthNatStep natZeroCell) (rawListReplicate n))
             (listElimLengthFaithful motive n))

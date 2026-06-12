@@ -2,6 +2,7 @@ import FX1Poly.Typed.ClosedNatCanonicity
 import FX1Poly.Core.OptionCanonicalFormsCandidate
 import FX1Poly.Core.EitherCanonicalFormsCandidate
 import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/MatchElimComputingCanonicity
     — the NON-RECURSIVE function-branch eliminator-computing canonicity (completes the coverage)
@@ -66,8 +67,8 @@ open FX1Poly.Core FX1Poly.Universe
 result-valued none-branch and a some-branch that produces a result value from the wrapped (normal) payload
 (`stepProduces`) computes (`↝*`) to a result value, for every closed option value `s`.
 
-Case split on `isOptionValue s` (a disjunction): `none` ι-projects the none-branch (`Step.iotaOptionMatchNone`);
-`some payload` (with `payload` normal) ι-fires to `app branch payload` (`Step.iotaOptionMatchSome`), then the
+Case split on `isOptionValue s` (a disjunction): `none` ι-projects the none-branch (`IotaHeadStep.iotaOptionMatchNone.toStep`);
+`some payload` (with `payload` normal) ι-fires to `app branch payload` (`IotaHeadStep.iotaOptionMatchSome.toStep`), then the
 branch's `stepProduces` on the normal payload finishes.  No recursion — but the some-branch is a function whose
 application must compute (the content the value-branch bool case lacked). -/
 theorem optionMatchComputesToValue {isResultValue : RawTerm 0 → Prop}
@@ -81,15 +82,15 @@ theorem optionMatchComputesToValue {isResultValue : RawTerm 0 → Prop}
       StepStar (optionMatchCell motive noneBranch someBranch scrutinee) out ∧ isResultValue out := by
   rcases scrutineeValue with noneEq | ⟨payload, someEq, payloadNormal⟩
   · subst noneEq
-    exact ⟨noneBranch, StepStar.single Step.iotaOptionMatchNone, noneBranchValue⟩
+    exact ⟨noneBranch, StepStar.single IotaHeadStep.iotaOptionMatchNone.toStep, noneBranchValue⟩
   · subst someEq
     obtain ⟨out, appChain, outValue⟩ := stepProduces payload payloadNormal
-    exact ⟨out, StepStar.trans_compose (StepStar.single Step.iotaOptionMatchSome) appChain, outValue⟩
+    exact ⟨out, StepStar.trans_compose (StepStar.single IotaHeadStep.iotaOptionMatchSome.toStep) appChain, outValue⟩
 
 /-- **★ Non-recursive either-eliminator computing canonicity.**  The either twin of
 `optionMatchComputesToValue`: a closed `eitherMatch(s, left, right)` whose two branches each produce a result
 value from the wrapped (normal) payload (`leftProduces` / `rightProduces`) computes to a result value, for every
-closed either value `s` (`inl` fires `Step.iotaEitherMatchInl`, `inr` fires `Step.iotaEitherMatchInr`). -/
+closed either value `s` (`inl` fires `IotaHeadStep.iotaEitherMatchInl.toStep`, `inr` fires `IotaHeadStep.iotaEitherMatchInr.toStep`). -/
 theorem eitherMatchComputesToValue {isResultValue : RawTerm 0 → Prop}
     {motive : RawTerm 1}
     {leftBranch rightBranch : RawTerm 0}
@@ -103,10 +104,10 @@ theorem eitherMatchComputesToValue {isResultValue : RawTerm 0 → Prop}
   rcases scrutineeValue with ⟨payload, inlEq, payloadNormal⟩ | ⟨payload, inrEq, payloadNormal⟩
   · subst inlEq
     obtain ⟨out, appChain, outValue⟩ := leftProduces payload payloadNormal
-    exact ⟨out, StepStar.trans_compose (StepStar.single Step.iotaEitherMatchInl) appChain, outValue⟩
+    exact ⟨out, StepStar.trans_compose (StepStar.single IotaHeadStep.iotaEitherMatchInl.toStep) appChain, outValue⟩
   · subst inrEq
     obtain ⟨out, appChain, outValue⟩ := rightProduces payload payloadNormal
-    exact ⟨out, StepStar.trans_compose (StepStar.single Step.iotaEitherMatchInr) appChain, outValue⟩
+    exact ⟨out, StepStar.trans_compose (StepStar.single IotaHeadStep.iotaEitherMatchInr.toStep) appChain, outValue⟩
 
 /-! ## Concrete instance 1: the constant fold (`λ_. natZero`, ignores the wrapped payload) -/
 

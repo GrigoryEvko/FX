@@ -4,6 +4,7 @@ import FX1Poly.Typed.UnionCellSubstitution
 import FX1Poly.Typed.HasTypeDescPiSubstPair
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Core.RawTermOccurrenceSubstLift
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/HasTypeUnionSubstitution — NATIVE-37 part b: the SUBSTITUTION lemma for the
     24-arm native union + the 2-variable corollaries + the GENERAL succ-branch recursive-eliminator ι
@@ -742,7 +743,7 @@ abbrev UnionSubstPairTransports (profile : PolyProfile) {scope : Nat}
         resultType
 
 /-- **★★ The GENERAL succ-branch natElim ι discharge.**  A `natElim(motive, zeroBranch, succBranch,
-succ p)` ι-steps (`Step.iotaNatElimSucc`) and the substituted reduct `natElimSuccContractum motive
+succ p)` ι-steps (`IotaHeadStep.iotaNatElimSucc.toStep`) and the substituted reduct `natElimSuccContractum motive
 zeroBranch succBranch p` is UNION-typed at `resultType`.  The recursive-call inner substituent is typed by
 the union's own `recursiveElim` arm (`natElimRecursiveCallUnionTyped`) and the outer substituent is the
 predecessor — both DERIVED (no `reductTyped` premise: the WHOLE reduct typing was premised before
@@ -765,7 +766,7 @@ theorem natElimSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
       (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType :=
-  ⟨Step.iotaNatElimSucc,
+  ⟨IotaHeadStep.iotaNatElimSucc.toStep,
     unionTransport succBranch
       (natElimCell motive zeroBranch succBranch predecessor) predecessor
       branchTyped
@@ -789,7 +790,7 @@ theorem natRecSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat}
         (natRecSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
       (natRecSuccContractum motive zeroBranch succBranch predecessor) resultType :=
-  ⟨Step.iotaNatRecSucc,
+  ⟨IotaHeadStep.iotaNatRecSucc.toStep,
     unionTransport succBranch
       (natRecCell motive zeroBranch succBranch predecessor) predecessor
       branchTyped

@@ -1,5 +1,6 @@
 import FX1Poly.Core.PairCanonicalFormsCandidate
 import FX1Poly.Core.WeakHeadStepCommute
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Core/SigmaProjectionCanonicalComputation
     — closed `fst` / `snd` on a canonical pair scrutinee PROJECT to the components (the projection computation core)
@@ -17,13 +18,13 @@ component (vs. the growing recursors that apply a branch to a payload).
 * `pairCanonicalScrutineeProjectsToComponents` — the headline: a closed `fst` / `snd` on a canonical pair
   scrutinee reduces to the pair's first / second component.  The scrutinee reduces to `pairCell first second`
   (Σ data canonicity), the projection congruences carry that under `fst` / `snd`, and the matching ι rules
-  (`Step.iotaFstPair` / `Step.iotaSndPair`) project out the components.
+  (`IotaHeadStep.iotaFstPair.toStep` / `IotaHeadStep.iotaSndPair.toStep`) project out the components.
 
 ## Zero-axiom verification
 
 `StepStar.congAt` (chain induction), `pairClosedReducesToValue` (Σ data canonicity via the candidate),
-`Step.cong` / `StepChildren.here` (the scrutinee congruence step), and the `Step.iotaFstPair` /
-`Step.iotaSndPair` ι constructors, chained by `StepStar.transLast`.  No `axiom`, `sorry`, `propext`,
+`Step.cong` / `StepChildren.here` (the scrutinee congruence step), and the `IotaHeadStep.iotaFstPair.toStep` /
+`IotaHeadStep.iotaSndPair.toStep` ι constructors, chained by `StepStar.transLast`.  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -76,7 +77,7 @@ theorem pairCanonicalScrutineeProjectsToComponents {scrutinee : RawTerm 0}
     pairClosedReducesToValue scrutineeMember
   subst valueIsPair
   exact ⟨firstComponent, secondComponent, scrutineeReducesToValue,
-    StepStar.transLast (StepStar.fstScrutinee scrutineeReducesToValue) Step.iotaFstPair,
-    StepStar.transLast (StepStar.sndScrutinee scrutineeReducesToValue) Step.iotaSndPair⟩
+    StepStar.transLast (StepStar.fstScrutinee scrutineeReducesToValue) IotaHeadStep.iotaFstPair.toStep,
+    StepStar.transLast (StepStar.sndScrutinee scrutineeReducesToValue) IotaHeadStep.iotaSndPair.toStep⟩
 
 end FX1Poly.Core

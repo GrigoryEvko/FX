@@ -2,6 +2,7 @@ import FX1Poly.Typed.CellConstructors
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.StepStar
+import FX1Poly.Core.IotaHeadStep
 /-! # FX1Poly/Typed/ValueElimHostFold — the value-case eliminators FAITHFULLY compute their HOST folds (HON-14)
 
 `NatElimFaithfulArithmetic` / `NatElimFaithfulMul` (HON-13) and `ListElimFaithfulLength` (HON-12) proved the
@@ -56,25 +57,25 @@ def rawEitherCell {scope : Nat} : (RawTerm scope) ⊕ (RawTerm scope) → RawTer
 
 /-- **★ `boolElim` computes the host `cond` (Bool elimination).**  `boolElim (rawBool b) t e ↝* cond b t e` for
 every host `b : Bool` — the native eliminator selects the branch the host `Bool.rec` selects.  Two cases: the
-`Step.iotaBoolTrue` / `Step.iotaBoolFalse` reducts are `t` / `e`, which are `cond true t e` / `cond false t e`
+`IotaHeadStep.iotaBoolTrue.toStep` / `IotaHeadStep.iotaBoolFalse.toStep` reducts are `t` / `e`, which are `cond true t e` / `cond false t e`
 definitionally. -/
 theorem boolElimHostFold {scope : Nat} (motive : RawTerm (scope + 1)) (selector : Bool)
     (thenBranch elseBranch : RawTerm scope) :
     StepStar (boolElimCell motive (rawBoolCell selector) thenBranch elseBranch)
       (cond selector thenBranch elseBranch) := by
   cases selector
-  · exact StepStar.single Step.iotaBoolFalse
-  · exact StepStar.single Step.iotaBoolTrue
+  · exact StepStar.single IotaHeadStep.iotaBoolFalse.toStep
+  · exact StepStar.single IotaHeadStep.iotaBoolTrue.toStep
 
-/-- **★ `fst` computes the host `Prod.fst`.**  `fst (pair p.1 p.2) ↝* p.1` via `Step.iotaFstPair`. -/
+/-- **★ `fst` computes the host `Prod.fst`.**  `fst (pair p.1 p.2) ↝* p.1` via `IotaHeadStep.iotaFstPair.toStep`. -/
 theorem fstHostFold {scope : Nat} (pairHost : (RawTerm scope) × (RawTerm scope)) :
     StepStar (fstCell (pairCell pairHost.1 pairHost.2)) (Prod.fst pairHost) :=
-  StepStar.single Step.iotaFstPair
+  StepStar.single IotaHeadStep.iotaFstPair.toStep
 
-/-- **★ `snd` computes the host `Prod.snd`.**  `snd (pair p.1 p.2) ↝* p.2` via `Step.iotaSndPair`. -/
+/-- **★ `snd` computes the host `Prod.snd`.**  `snd (pair p.1 p.2) ↝* p.2` via `IotaHeadStep.iotaSndPair.toStep`. -/
 theorem sndHostFold {scope : Nat} (pairHost : (RawTerm scope) × (RawTerm scope)) :
     StepStar (sndCell (pairCell pairHost.1 pairHost.2)) (Prod.snd pairHost) :=
-  StepStar.single Step.iotaSndPair
+  StepStar.single IotaHeadStep.iotaSndPair.toStep
 
 /-- **★ `optionMatch` computes the host `Option.elim`.**  `optionMatch (rawOption o) n s ↝* o.elim n (s ·)` — the
 `none` branch projects `n`, the `some v` branch applies `s` to `v`, exactly as host `Option.elim`. -/
@@ -84,8 +85,8 @@ theorem optionMatchHostFold {scope : Nat} (motive : RawTerm (scope + 1))
     StepStar (optionMatchCell motive noneBranch someBranch (rawOptionCell scrutinee))
       (scrutinee.elim noneBranch (fun value => appCell someBranch value)) := by
   cases scrutinee
-  · exact StepStar.single Step.iotaOptionMatchNone
-  · exact StepStar.single Step.iotaOptionMatchSome
+  · exact StepStar.single IotaHeadStep.iotaOptionMatchNone.toStep
+  · exact StepStar.single IotaHeadStep.iotaOptionMatchSome.toStep
 
 /-- **★ `eitherMatch` computes the host `Sum.elim`.**  `eitherMatch (rawEither e) l r ↝* Sum.elim (l ·) (r ·) e`
 — the `inl a` branch applies `l` to `a`, the `inr b` branch applies `r` to `b`, exactly as host `Sum.elim`. -/
@@ -96,15 +97,15 @@ theorem eitherMatchHostFold {scope : Nat} (motive : RawTerm (scope + 1))
       (Sum.elim (fun value => appCell leftBranch value)
         (fun value => appCell rightBranch value) scrutinee) := by
   cases scrutinee
-  · exact StepStar.single Step.iotaEitherMatchInl
-  · exact StepStar.single Step.iotaEitherMatchInr
+  · exact StepStar.single IotaHeadStep.iotaEitherMatchInl.toStep
+  · exact StepStar.single IotaHeadStep.iotaEitherMatchInr.toStep
 
-/-- **★ `idJ` computes the host `Eq.rec` on `rfl`.**  `idJ motive base (refl w) ↝* base` via `Step.iotaIdJRefl`
+/-- **★ `idJ` computes the host `Eq.rec` on `rfl`.**  `idJ motive base (refl w) ↝* base` via `IotaHeadStep.iotaIdJRefl.toStep`
 — path induction on the reflexivity proof returns the base case (the Phase-Z stored motive is DISCARDED by the
 refl-ι), exactly as host `Eq.rec` (J) on `rfl`. -/
 theorem idJHostFold {scope : Nat} (motive : RawTerm (scope + 2)) (baseCase witness : RawTerm scope) :
     StepStar (idJCell motive baseCase (reflCell witness)) baseCase :=
-  StepStar.single Step.iotaIdJRefl
+  StepStar.single IotaHeadStep.iotaIdJRefl.toStep
 
 /-! ## Concrete branch-selection smokes -/
 

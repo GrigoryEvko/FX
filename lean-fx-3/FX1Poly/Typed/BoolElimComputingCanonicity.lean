@@ -1,5 +1,6 @@
 import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Core.BoolElimCanonicalComputation
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/BoolElimComputingCanonicity
     — genuinely-NON-VACUOUS eliminator-computing bool canonicity, via the COMPONENT-typing route
@@ -20,7 +21,7 @@ over the eliminator's COMPONENT typings rather than over a single unified `boolE
 
 The scrutinee, being a closed bool, reduces to `boolTrue`/`boolFalse` (`closedBoolCanonicalForms`, the
 syntactic route); the scrutinee congruence (`StepStar.boolElimScrutinee`) carries that reduction under the
-`boolElim`; the matching ι rule (`Step.iotaBoolTrue`/`Step.iotaBoolFalse`) fires to select the branch; and the
+`boolElim`; the matching ι rule (`IotaHeadStep.iotaBoolTrue.toStep`/`IotaHeadStep.iotaBoolFalse.toStep`) fires to select the branch; and the
 selected branch, being data-value-typed, IS `boolTrue`/`boolFalse` (`standaloneBoolCanonicalForms`).  So the
 eliminator genuinely COMPUTES to a canonical bool — non-vacuously (the scrutinee may be any closed bool, the
 branches are real data values).  This is the eliminator-layer analogue of the value-layer
@@ -34,7 +35,7 @@ judgment (so `boolElim … : Bool` is a first-class derivation) remains the CANO
 ## Zero-axiom verification
 
 `closedBoolCanonicalForms` (scrutinee) + `StepStar.boolElimScrutinee` (congruence) + `StepStar.transLast` with
-`Step.iotaBoolTrue`/`Step.iotaBoolFalse` (ι) + `standaloneBoolCanonicalForms` (branch value).  No `axiom`,
+`IotaHeadStep.iotaBoolTrue.toStep`/`IotaHeadStep.iotaBoolFalse.toStep` (ι) + `standaloneBoolCanonicalForms` (branch value).  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -78,12 +79,12 @@ theorem closedBoolElimComputesToValue {profile : PolyProfile}
   | inl scrutIsTrue =>
       subst scrutIsTrue
       exact ⟨thenBranch,
-        StepStar.transLast (StepStar.boolElimScrutinee scrutReduces) Step.iotaBoolTrue,
+        StepStar.transLast (StepStar.boolElimScrutinee scrutReduces) IotaHeadStep.iotaBoolTrue.toStep,
         branchIsBoolValue thenTyped⟩
   | inr scrutIsFalse =>
       subst scrutIsFalse
       exact ⟨elseBranch,
-        StepStar.transLast (StepStar.boolElimScrutinee scrutReduces) Step.iotaBoolFalse,
+        StepStar.transLast (StepStar.boolElimScrutinee scrutReduces) IotaHeadStep.iotaBoolFalse.toStep,
         branchIsBoolValue elseTyped⟩
 
 /-- `boolTrue` inhabits the standalone value layer at `boolTypeCell` — the union's `dataIntroNullary` row

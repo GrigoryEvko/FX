@@ -1,6 +1,7 @@
 import FX1Poly.Core.SigmaProjectionCanonicalComputation
 import FX1Poly.Core.StrongNormalizationIotaRedexes
 import FX1Poly.Core.CanonicalFormsWeakHeadExpansion
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Core/SigmaProjectionClosedMembership
     — a closed `fst` / `snd` on a member pair with a member projected component is a data-candidate member
@@ -31,7 +32,7 @@ The scrutinee is a canonical Σ member, so it reduces to `pairCell first second`
 1. The cell is SN — `fst/snd_isStronglyNormalizing_of_argument` on the scrutinee's CR1 SN.
 2. The cell reduces to the component — `pairCanonicalScrutineeProjectsToComponents`: the scrutinee
    reaches `pairCell first second`, the projection congruence carries that under `fst`/`snd`, and the ι rule
-   (`Step.iotaFstPair` / `Step.iotaSndPair`) projects out `first` / `second`.
+   (`IotaHeadStep.iotaFstPair.toStep` / `IotaHeadStep.iotaSndPair.toStep`) projects out `first` / `second`.
 3. The projected component reaches a value — the `firstComponentMember` / `secondComponentMember` hypothesis
    (applied at the witnessed `scrutinee ↝* pairCell first second`) is a member, so `closedReducesToValue`.
 
@@ -71,7 +72,7 @@ theorem fstClosedIsMember {isValue : RawTerm 0 → Prop} {scrutinee : RawTerm 0}
 
 /-- **A closed `snd` on a member pair whose second component is a member is a member of the result candidate.**
 Symmetric to `fstClosedIsMember`, projecting the second component via `snd_isStronglyNormalizing_of_argument`
-and `Step.iotaSndPair`.  The second-projection half of Σ-projection reducibility, closed-layer, fundamental-independent. -/
+and `IotaHeadStep.iotaSndPair.toStep`.  The second-projection half of Σ-projection reducibility, closed-layer, fundamental-independent. -/
 theorem sndClosedIsMember {isValue : RawTerm 0 → Prop} {scrutinee : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isPairValue scrutinee)
     (secondComponentMember : ∀ first second : RawTerm 0,

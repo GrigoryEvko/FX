@@ -1,5 +1,6 @@
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.WeakHeadStepCommute
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Core/BoolElimCanonicalComputation
     — closed `boolElim` on a canonical scrutinee COMPUTES to a branch (the elimination analog of closed-bool canonicity)
@@ -16,7 +17,7 @@ elimination analog of closed-bool canonicity, and a fundamental-free step toward
 * `boolElimCanonicalScrutineeReducesToBranch` — the headline: a closed `boolElim` on a canonical scrutinee
   `StepStar`-reduces to its then-branch OR its else-branch.  The scrutinee reduces to `boolTrue`/`boolFalse`
   (data canonicity), the congruence carries that under the `boolElim`, and the matching ι rule
-  (`Step.iotaBoolTrue` / `Step.iotaBoolFalse`) selects the branch.
+  (`IotaHeadStep.iotaBoolTrue.toStep` / `IotaHeadStep.iotaBoolFalse.toStep`) selects the branch.
 
 NOTE: `gen_boolElim` is the Phase-Z motive shape (arity 4, binderShifts `[1,0,0,0]`): children
 `(motive, thenBranch, elseBranch, scrutinee)` with the motive a term under one binder, scrutinee LAST.  The cell
@@ -25,8 +26,8 @@ shape here matches that 4-child spine; the motive is fixed under the scrutinee c
 ## Zero-axiom verification
 
 `StepStar.congAt` (chain induction), `boolClosedReducesToTrueOrFalse` (data canonicity via the candidate),
-`Step.cong` / `StepChildren.here` (the scrutinee congruence step), and the `Step.iotaBoolTrue` /
-`Step.iotaBoolFalse` ι constructors, chained by `StepStar.transLast`.  No `axiom`, `sorry`, `propext`,
+`Step.cong` / `StepChildren.here` (the scrutinee congruence step), and the `IotaHeadStep.iotaBoolTrue.toStep` /
+`IotaHeadStep.iotaBoolFalse.toStep` ι constructors, chained by `StepStar.transLast`.  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -82,10 +83,10 @@ theorem boolElimCanonicalScrutineeReducesToBranch {motive : RawTerm 1}
   | inl valueIsTrue =>
       subst valueIsTrue
       exact Or.inl
-        (StepStar.transLast (StepStar.boolElimScrutinee scrutineeReducesToValue) Step.iotaBoolTrue)
+        (StepStar.transLast (StepStar.boolElimScrutinee scrutineeReducesToValue) IotaHeadStep.iotaBoolTrue.toStep)
   | inr valueIsFalse =>
       subst valueIsFalse
       exact Or.inr
-        (StepStar.transLast (StepStar.boolElimScrutinee scrutineeReducesToValue) Step.iotaBoolFalse)
+        (StepStar.transLast (StepStar.boolElimScrutinee scrutineeReducesToValue) IotaHeadStep.iotaBoolFalse.toStep)
 
 end FX1Poly.Core

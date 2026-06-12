@@ -3,6 +3,7 @@ import FX1Poly.Typed.HasTypeUnionPathProjInversion
 import FX1Poly.Typed.HasTypeUnionRecursiveInversion
 import FX1Poly.Typed.HasTypeUnionSubstitution
 import FX1Poly.Typed.RecursorHostFold
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/HasTypeUnionSubjectReduction — root-redex subject reduction for the unified
     judgment `HasTypeUnion`.
@@ -51,7 +52,7 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation FX1Poly.Modal
 /-! ## (1) The unconditional branch-selection ι subject-reduction theorems -/
 
 /-- **boolElim on `boolTrue` selects the then-branch, typed.**  A union-typed `boolElim` on `boolTrue`
-ι-steps to the then-branch (`Step.iotaBoolTrue`), and the then-branch is union-typed at the same
+ι-steps to the then-branch (`IotaHeadStep.iotaBoolTrue.toStep`), and the then-branch is union-typed at the same
 classifier (the inversion surfaces it directly). -/
 theorem unionSubjectReductionBoolElimTrue {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
@@ -61,7 +62,7 @@ theorem unionSubjectReductionBoolElimTrue {profile : PolyProfile} {scope : Nat}
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
     HasTypeUnion profile context thenBranch classifier := by
   obtain ⟨_scrutineeTyped, thenBranchTyped, _elseBranchTyped⟩ := typed.invertAtBoolElimHead rfl
-  exact ⟨Step.iotaBoolTrue, thenBranchTyped⟩
+  exact ⟨IotaHeadStep.iotaBoolTrue.toStep, thenBranchTyped⟩
 
 /-- **boolElim on `boolFalse` selects the else-branch, typed.**  Symmetric to the true case. -/
 theorem unionSubjectReductionBoolElimFalse {profile : PolyProfile} {scope : Nat}
@@ -72,10 +73,10 @@ theorem unionSubjectReductionBoolElimFalse {profile : PolyProfile} {scope : Nat}
     Step (boolElimCell motive boolFalseCell thenBranch elseBranch) elseBranch ∧
     HasTypeUnion profile context elseBranch classifier := by
   obtain ⟨_scrutineeTyped, _thenBranchTyped, elseBranchTyped⟩ := typed.invertAtBoolElimHead rfl
-  exact ⟨Step.iotaBoolFalse, elseBranchTyped⟩
+  exact ⟨IotaHeadStep.iotaBoolFalse.toStep, elseBranchTyped⟩
 
 /-- **natElim on `natZero` selects the zero-branch, typed.**  A union-typed `natElim` on `natZero`
-ι-steps to the zero-branch (`Step.iotaNatElimZero`), union-typed at the same classifier. -/
+ι-steps to the zero-branch (`IotaHeadStep.iotaNatElimZero.toStep`), union-typed at the same classifier. -/
 theorem unionSubjectReductionNatElimZero {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
@@ -85,7 +86,7 @@ theorem unionSubjectReductionNatElimZero {profile : PolyProfile} {scope : Nat}
     Step (natElimCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
     HasTypeUnion profile context zeroBranch classifier := by
   obtain ⟨_scrutineeTyped, zeroBranchTyped⟩ := typed.invertAtNatElimHead rfl
-  exact ⟨Step.iotaNatElimZero, zeroBranchTyped⟩
+  exact ⟨IotaHeadStep.iotaNatElimZero.toStep, zeroBranchTyped⟩
 
 /-- **natRec on `natZero` selects the zero-branch, typed.**  The dependent-recursor twin. -/
 theorem unionSubjectReductionNatRecZero {profile : PolyProfile} {scope : Nat}
@@ -97,10 +98,10 @@ theorem unionSubjectReductionNatRecZero {profile : PolyProfile} {scope : Nat}
     Step (natRecCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
     HasTypeUnion profile context zeroBranch classifier := by
   obtain ⟨_scrutineeTyped, zeroBranchTyped⟩ := typed.invertAtNatRecHead rfl
-  exact ⟨Step.iotaNatRecZero, zeroBranchTyped⟩
+  exact ⟨IotaHeadStep.iotaNatRecZero.toStep, zeroBranchTyped⟩
 
 /-- **listElim on `listNil` selects the nil-branch, typed.**  A union-typed `listElim` on `listNil`
-ι-steps to the nil-branch (`Step.iotaListElimNil`).  The listElim arm premises the nil branch HOST-typed
+ι-steps to the nil-branch (`IotaHeadStep.iotaListElimNil.toStep`).  The listElim arm premises the nil branch HOST-typed
 (premise parity with `HasTypeDescListElim`), so the reduct re-embeds via `ofGrown`. -/
 theorem unionSubjectReductionListElimNil {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
@@ -113,11 +114,11 @@ theorem unionSubjectReductionListElimNil {profile : PolyProfile} {scope : Nat}
       Conv pinnedClassifier classifier := by
   obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, nilBranchHostTyped, _consBranchTyped,
     convPinned⟩ := typed.invertAtListElimHead rfl
-  exact ⟨Step.iotaListElimNil,
+  exact ⟨IotaHeadStep.iotaListElimNil.toStep,
     pinnedClassifier, HasTypeUnion.ofGrown nilBranchHostTyped, convPinned⟩
 
 /-- **optionMatch on `optionNone` selects the none-branch, typed.**  A union-typed `optionMatch` on
-`optionNone` ι-steps to the none-branch (`Step.iotaOptionMatchNone`), union-typed at the same
+`optionNone` ι-steps to the none-branch (`IotaHeadStep.iotaOptionMatchNone.toStep`), union-typed at the same
 classifier. -/
 theorem unionSubjectReductionOptionMatchNone {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
@@ -130,10 +131,10 @@ theorem unionSubjectReductionOptionMatchNone {profile : PolyProfile} {scope : Na
       Conv pinnedClassifier classifier := by
   obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, noneBranchTyped, _someBranchTyped,
     convPinned⟩ := typed.invertAtOptionMatchHead rfl
-  exact ⟨Step.iotaOptionMatchNone, pinnedClassifier, noneBranchTyped, convPinned⟩
+  exact ⟨IotaHeadStep.iotaOptionMatchNone.toStep, pinnedClassifier, noneBranchTyped, convPinned⟩
 
 /-- **idJ on `refl` selects the base case, typed.**  A union-typed `idJ` on `refl` ι-steps to the base
-case (`Step.iotaIdJRefl`), union-typed at the same classifier. -/
+case (`IotaHeadStep.iotaIdJRefl.toStep`), union-typed at the same classifier. -/
 theorem unionSubjectReductionIdJRefl {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 2)} {baseCase rawWitness classifier : RawTerm scope}
@@ -142,7 +143,7 @@ theorem unionSubjectReductionIdJRefl {profile : PolyProfile} {scope : Nat}
     Step (idJCell motive baseCase (reflCell rawWitness)) baseCase ∧
     HasTypeUnion profile context baseCase classifier := by
   obtain ⟨_typeCode, _endpoint, _witnessTyped, baseCaseTyped⟩ := typed.invertAtIdJHead rfl
-  exact ⟨Step.iotaIdJRefl, baseCaseTyped⟩
+  exact ⟨IotaHeadStep.iotaIdJRefl.toStep, baseCaseTyped⟩
 
 /-! ## (2) The conditional substituting-ι subject-reduction theorems (the recursive succ branch)
 

@@ -13,6 +13,7 @@ import FX1Poly.Core.StrongNormalizationRedexes
 import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.WeakHeadStep
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Core/DataEliminatorMembershipSmoke
     — concrete closed-witness regression for the data-eliminator MEMBERSHIP family.
@@ -260,7 +261,7 @@ theorem natElimZeroClosedMembershipSmoke :
             (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 1⟩ .childNil)
               (.childCons natZeroCell .childNil))))) :=
   CanonicalFormsPredicate.ofStepStarReachingValue
-    (StepStar.trans Step.iotaNatElimZero (StepStar.refl _))
+    (StepStar.trans IotaHeadStep.iotaNatElimZero.toStep (StepStar.refl _))
     (natElimZero_isStronglyNormalizing_of_branches
       (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
       boolTrue_isStronglyNormalizing
@@ -268,7 +269,7 @@ theorem natElimZeroClosedMembershipSmoke :
     boolTrueCell_isMember.closedReducesToValue
 
 /-- **Concrete `natRec`-on-`natZero` base-case membership regression.**  The dependent-recursor twin of
-`natElimZeroClosedMembershipSmoke` at `gen_natRec` via `Step.iotaNatRecZero` /
+`natElimZeroClosedMembershipSmoke` at `gen_natRec` via `IotaHeadStep.iotaNatRecZero.toStep` /
 `natRecZero_isStronglyNormalizing_of_branches`. -/
 theorem natRecZeroClosedMembershipSmoke :
     CanonicalFormsPredicate (boolIsValue (scope := 0))
@@ -278,7 +279,7 @@ theorem natRecZeroClosedMembershipSmoke :
             (.childCons (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 1⟩ .childNil)
               (.childCons natZeroCell .childNil))))) :=
   CanonicalFormsPredicate.ofStepStarReachingValue
-    (StepStar.trans Step.iotaNatRecZero (StepStar.refl _))
+    (StepStar.trans IotaHeadStep.iotaNatRecZero.toStep (StepStar.refl _))
     (natRecZero_isStronglyNormalizing_of_branches
       (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
       boolTrue_isStronglyNormalizing
@@ -297,7 +298,7 @@ theorem listElimNilClosedMembershipSmoke :
             (.childCons boolTrueCell
               (.childCons listNilCell .childNil))))) :=
   CanonicalFormsPredicate.ofStepStarReachingValue
-    (StepStar.trans Step.iotaListElimNil (StepStar.refl _))
+    (StepStar.trans IotaHeadStep.iotaListElimNil.toStep (StepStar.refl _))
     (listElimNil_isStronglyNormalizing_of_branches
       (var_isStronglyNormalizing ⟨0, Nat.zero_lt_succ 0⟩)
       boolTrue_isStronglyNormalizing boolTrue_isStronglyNormalizing)

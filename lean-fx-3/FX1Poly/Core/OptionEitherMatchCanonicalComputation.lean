@@ -1,6 +1,7 @@
 import FX1Poly.Core.OptionCanonicalFormsCandidate
 import FX1Poly.Core.EitherCanonicalFormsCandidate
 import FX1Poly.Core.WeakHeadStepCommute
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Core/OptionEitherMatchCanonicalComputation
     — closed `optionMatch` / `eitherMatch` on a canonical scrutinee COMPUTE to a branch (the match computation core)
@@ -27,7 +28,7 @@ reducibility.  Fundamental-free.
 
 `StepStar.congAt` (chain induction), `optionClosedReducesToValue` / `eitherClosedReducesToValue` (data canonicity
 via the candidates), `Step.cong` / `StepChildren.here` (the scrutinee congruence step), and the
-`Step.iotaOptionMatchNone` / `iotaOptionMatchSome` / `iotaEitherMatchInl` / `iotaEitherMatchInr` ι constructors,
+`IotaHeadStep.iotaOptionMatchNone.toStep` / `iotaOptionMatchSome` / `iotaEitherMatchInl` / `iotaEitherMatchInr` ι constructors,
 chained by `StepStar.transLast`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -102,7 +103,7 @@ analog of closed-bool elimination canonicity: a closed `optionMatch` whose scrut
 candidate `StepStar`-reduces to its none-branch (if the scrutinee evaluates to `none`) or to `someBranch`
 applied to the wrapped payload (if it evaluates to `some payload`).  The scrutinee reduces to a `none`/`some`
 value (`optionClosedReducesToValue`), `StepStar.optionMatchScrutinee` carries that under the `optionMatch`, and
-`Step.iotaOptionMatchNone` / `Step.iotaOptionMatchSome` fire to select the branch.  Fundamental-free — no fundamental
+`IotaHeadStep.iotaOptionMatchNone.toStep` / `IotaHeadStep.iotaOptionMatchSome.toStep` fire to select the branch.  Fundamental-free — no fundamental
 theorem. -/
 theorem optionMatchCanonicalScrutineeReduces {motive : RawTerm 1}
     {scrutinee noneBranch someBranch : RawTerm 0}
@@ -117,19 +118,19 @@ theorem optionMatchCanonicalScrutineeReduces {motive : RawTerm 1}
   | inl valueIsNone =>
       subst valueIsNone
       exact Or.inl
-        (StepStar.transLast (StepStar.optionMatchScrutinee scrutineeReducesToValue) Step.iotaOptionMatchNone)
+        (StepStar.transLast (StepStar.optionMatchScrutinee scrutineeReducesToValue) IotaHeadStep.iotaOptionMatchNone.toStep)
   | inr valueIsSome =>
       obtain ⟨payload, valueIsSomePayload, _payloadNormal⟩ := valueIsSome
       subst valueIsSomePayload
       exact Or.inr ⟨payload, scrutineeReducesToValue,
-        StepStar.transLast (StepStar.optionMatchScrutinee scrutineeReducesToValue) Step.iotaOptionMatchSome⟩
+        StepStar.transLast (StepStar.optionMatchScrutinee scrutineeReducesToValue) IotaHeadStep.iotaOptionMatchSome.toStep⟩
 
 /-- **Closed `eitherMatch` on a canonical scrutinee computes to a branch.**  Symmetric to
 `optionMatchCanonicalScrutineeReduces`: a closed `eitherMatch` whose scrutinee is a member of the either
 candidate `StepStar`-reduces to `leftBranch` applied to the wrapped payload (if the scrutinee evaluates to
 `inl payload`) or to `rightBranch` applied to the wrapped payload (if it evaluates to `inr payload`), via
-`eitherClosedReducesToValue` + `StepStar.eitherMatchScrutinee` + `Step.iotaEitherMatchInl` /
-`Step.iotaEitherMatchInr`.  Fundamental-free. -/
+`eitherClosedReducesToValue` + `StepStar.eitherMatchScrutinee` + `IotaHeadStep.iotaEitherMatchInl.toStep` /
+`IotaHeadStep.iotaEitherMatchInr.toStep`.  Fundamental-free. -/
 theorem eitherMatchCanonicalScrutineeReduces {motive : RawTerm 1}
     {scrutinee leftBranch rightBranch : RawTerm 0}
     (scrutineeMember : CanonicalFormsPredicate isEitherValue scrutinee) :
@@ -147,11 +148,11 @@ theorem eitherMatchCanonicalScrutineeReduces {motive : RawTerm 1}
       obtain ⟨payload, valueIsInlPayload, _payloadNormal⟩ := valueIsInl
       subst valueIsInlPayload
       exact Or.inl ⟨payload, scrutineeReducesToValue,
-        StepStar.transLast (StepStar.eitherMatchScrutinee scrutineeReducesToValue) Step.iotaEitherMatchInl⟩
+        StepStar.transLast (StepStar.eitherMatchScrutinee scrutineeReducesToValue) IotaHeadStep.iotaEitherMatchInl.toStep⟩
   | inr valueIsInr =>
       obtain ⟨payload, valueIsInrPayload, _payloadNormal⟩ := valueIsInr
       subst valueIsInrPayload
       exact Or.inr ⟨payload, scrutineeReducesToValue,
-        StepStar.transLast (StepStar.eitherMatchScrutinee scrutineeReducesToValue) Step.iotaEitherMatchInr⟩
+        StepStar.transLast (StepStar.eitherMatchScrutinee scrutineeReducesToValue) IotaHeadStep.iotaEitherMatchInr.toStep⟩
 
 end FX1Poly.Core

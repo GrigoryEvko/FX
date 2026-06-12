@@ -1,6 +1,7 @@
 import FX1Poly.Core.RawTermSubstConsCommute
 import FX1Poly.Typed.HasTypeDescPiSubstitution
 import FX1Poly.Typed.NatElimFaithfulMul
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/HasTypeDescPiSubstPair — the typed 2-VARIABLE substitution lemma
     (the substPair lemma the Phase-Z natElim/natRec migration flagged) + the mul-faithfulness discharge
@@ -27,7 +28,7 @@ predecessor)` into the two-binder branch.  Three theorems shipped CONDITIONAL on
   * **`mulNatBranch_substituted`** — the raw 2-variable subst COMPUTES through `mulNatBranch`:
     motive/zero-accumulator/copy-branch children resolve by the cons/singleton/lift var-equations
     (definitionally), the embedded closed `natNumeralAt m` is fixed by `natNumeralAt_subst`.
-  * **`mulStepReduces_proved`** — `Step.iotaNatElimSucc` rewritten by `mulNatBranch_substituted`
+  * **`mulStepReduces_proved`** — `IotaHeadStep.iotaNatElimSucc.toStep` rewritten by `mulNatBranch_substituted`
     discharges the `mulStepReduces` premise of `natElimMulFaithful` IN FULL.
   * **`natElimMulFaithful.unconditional` (★)** — native `gen_natElim` computes host `Nat.mul`
     UNCONDITIONALLY: `natElim(_, natZero, mulBranch m, rawNat n) ↝* rawNat (m * n)` for ALL `m n`,
@@ -49,7 +50,7 @@ genuinely reusable new substrate: it is judgment-shape-generic and seeds the idJ
 ## Zero-axiom verification
 
 `substPairUnderTwoBindings` is `substRespectingContext` + `Fin` case-splitting + two rewrite laws;
-the discharge chain is `Step.iotaNatElimSucc` + `rfl`-computing child substitution +
+the discharge chain is `IotaHeadStep.iotaNatElimSucc.toStep` + `rfl`-computing child substitution +
 `natNumeralAt_subst`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTypedCellShapeSubstrate.lean`.
 -/
@@ -151,7 +152,7 @@ theorem mulNatBranch_substituted (m : Nat) (recursiveCall predecessor : RawTerm 
   rfl
 
 /-- **The `mulStepReduces` premise, DISCHARGED.**  The Phase-Z succ-iota fires
-(`Step.iotaNatElimSucc`) and its substituted reduct is rewritten to the inner adder by
+(`IotaHeadStep.iotaNatElimSucc.toStep`) and its substituted reduct is rewritten to the inner adder by
 `mulNatBranch_substituted` — exactly the per-step reduction `natElimMulFaithful` consumes. -/
 theorem mulStepReduces_proved (m n : Nat) :
     StepStar (natElimCell (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) natZeroCell
@@ -159,11 +160,11 @@ theorem mulStepReduces_proved (m n : Nat) :
       (mulBranchSubstitutedTarget m
         (natElimCell (variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1)) natZeroCell (mulNatBranch m)
           (natNumeralAt n))) := by
-  have iotaStep := Step.iotaNatElimSucc (scope := 0)
+  have iotaStep := (IotaHeadStep.iotaNatElimSucc (scope := 0)
     (motive := variableCell (⟨0, Nat.succ_pos _⟩ : Fin 1))
     (predecessor := natNumeralAt n)
     (zeroBranch := natZeroCell)
-    (succBranch := mulNatBranch m)
+    (succBranch := mulNatBranch m)).toStep
   rw [mulNatBranch_substituted] at iotaStep
   exact StepStar.single iotaStep
 

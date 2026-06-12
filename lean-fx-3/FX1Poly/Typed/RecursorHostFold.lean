@@ -1,4 +1,5 @@
 import FX1Poly.Typed.ValueElimHostFold
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/RecursorHostFold — the last two eliminators compute their host folds (`natRec`, `idStrictRec`)
 
@@ -20,7 +21,7 @@ completing per-eliminator host-fold faithfulness to all ten:
     `idJHostFold`.
 
 `natRecCell` / `idStrictRecCell` are the eliminator-cell builders; their shapes match the
-`Step.iotaNatRec{Zero,Succ}` / `Step.iotaIdStrictRecRefl` redex heads, so each host-fold is a single
+`Step.iotaNatRec{Zero,Succ}` / `IotaHeadStep.iotaIdStrictRecRefl.toStep` redex heads, so each host-fold is a single
 `StepStar.single` of the matching `Step.iota` rule whose reduct IS the host clause by `rfl`.
 
 Honest strength note: `idStrictRecHostFold` is single-ι branch selection (exactly the strength of `idJHostFold`
@@ -39,28 +40,28 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
 /-- **★ `natRec` on `natZero` computes the host `Nat.rec` base clause.**  `natRec m z s natZero ↝ z` via
-`Step.iotaNatRecZero` — the recursor on zero projects the zero-branch, exactly as host `Nat.rec`. -/
+`IotaHeadStep.iotaNatRecZero.toStep` — the recursor on zero projects the zero-branch, exactly as host `Nat.rec`. -/
 theorem natRecZeroHostFold {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
     (succBranch : RawTerm (scope + 2)) :
     StepStar (natRecCell motive zeroBranch succBranch natZeroCell) zeroBranch :=
-  StepStar.single Step.iotaNatRecZero
+  StepStar.single IotaHeadStep.iotaNatRecZero.toStep
 
 /-- **★ `natRec` on `natSucc` computes the host `Nat.rec` successor clause** (Phase-Z SUBSTITUTING).
-`natRec m z s (natSucc p) ↝ s[var 0 := natRec m z s p, var 1 := p]` via `Step.iotaNatRecSucc` — the step-branch's
+`natRec m z s (natSucc p) ↝ s[var 0 := natRec m z s p, var 1 := p]` via `IotaHeadStep.iotaNatRecSucc.toStep` — the step-branch's
 two binders (recursive result + predecessor) filled by SUBSTITUTION, exactly the host `Nat.rec` successor
 equation. -/
 theorem natRecSuccHostFold {scope : Nat} (motive : RawTerm (scope + 1))
     (predecessor zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)) :
     StepStar (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
       (natRecSuccContractum motive zeroBranch succBranch predecessor) :=
-  StepStar.single Step.iotaNatRecSucc
+  StepStar.single IotaHeadStep.iotaNatRecSucc.toStep
 
 /-- **★ `idStrictRec` on `refl` computes the host strict `Eq.rec` base.**  `idStrictRec motive base (refl w) ↝
-base` via `Step.iotaIdStrictRecRefl` — strict path induction on reflexivity returns the base case (the Phase-Z
+base` via `IotaHeadStep.iotaIdStrictRecRefl.toStep` — strict path induction on reflexivity returns the base case (the Phase-Z
 stored motive is DISCARDED by the refl-ι), the strict-recursor twin of `idJHostFold`. -/
 theorem idStrictRecHostFold {scope : Nat} (motive : RawTerm (scope + 2))
     (baseCase witness : RawTerm scope) :
     StepStar (idStrictRecCell motive baseCase (reflCell witness)) baseCase :=
-  StepStar.single Step.iotaIdStrictRecRefl
+  StepStar.single IotaHeadStep.iotaIdStrictRecRefl.toStep
 
 end FX1Poly.Typed

@@ -1,4 +1,5 @@
 import FX1Poly.Typed.MatchElimComputingCanonicityTyped
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/MatchGeneralBranchCanonicity
     — option/either MATCH eliminator-computing canonicity for ARBITRARY branches, abstracting branch canonicity
@@ -68,14 +69,14 @@ theorem closedOptionMatchComputes
     obtain ⟨out, branchReduces, branchValue⟩ := noneBranchComputes
     exact ⟨out,
       StepStar.trans_compose
-        (StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) Step.iotaOptionMatchNone)
+        (StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) IotaHeadStep.iotaOptionMatchNone.toStep)
         branchReduces,
       branchValue⟩
   · subst someEq
     obtain ⟨out, branchReduces, branchValue⟩ := someBranchComputes inner
     exact ⟨out,
       StepStar.trans_compose
-        (StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) Step.iotaOptionMatchSome)
+        (StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) IotaHeadStep.iotaOptionMatchSome.toStep)
         branchReduces,
       branchValue⟩
 
@@ -103,14 +104,14 @@ theorem closedEitherMatchComputes
     obtain ⟨out, branchReduces, branchValue⟩ := leftBranchComputes inner
     exact ⟨out,
       StepStar.trans_compose
-        (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) Step.iotaEitherMatchInl)
+        (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) IotaHeadStep.iotaEitherMatchInl.toStep)
         branchReduces,
       branchValue⟩
   · subst inrEq
     obtain ⟨out, branchReduces, branchValue⟩ := rightBranchComputes inner
     exact ⟨out,
       StepStar.trans_compose
-        (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) Step.iotaEitherMatchInr)
+        (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) IotaHeadStep.iotaEitherMatchInr.toStep)
         branchReduces,
       branchValue⟩
 
@@ -144,7 +145,7 @@ theorem closedOptionMatchIdentityIntoBool {noneBranch : RawTerm 0} :
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   ⟨boolTrueCell,
    StepStar.transLast
-     (StepStar.transLast (StepStar.refl _) Step.iotaOptionMatchSome)
+     (StepStar.transLast (StepStar.refl _) IotaHeadStep.iotaOptionMatchSome.toStep)
      Step.beta,
    Or.inl rfl⟩
 
@@ -158,7 +159,7 @@ theorem closedEitherMatchIdentityIntoBool {rightBranch : RawTerm 0} :
       (out = boolTrueCell ∨ out = boolFalseCell) :=
   ⟨boolTrueCell,
    StepStar.transLast
-     (StepStar.transLast (StepStar.refl _) Step.iotaEitherMatchInl)
+     (StepStar.transLast (StepStar.refl _) IotaHeadStep.iotaEitherMatchInl.toStep)
      Step.beta,
    Or.inl rfl⟩
 

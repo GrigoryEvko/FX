@@ -1,5 +1,6 @@
 import FX1Poly.Typed.ClosedNatCanonicity
 import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Typed/NatElimComputingCanonicity
     — the RECURSIVE eliminator-computing canonicity (the nat analogue of `boolElimValueCanonicity`)
@@ -68,9 +69,9 @@ succ-branch (recursive call threaded into `var 0`, predecessor into `var 1`) —
 
 Induction on `n`'s `IsNatNumeral`:
 
-  * **zero** — `natElim(m, z, s, natZero) ↝ z` (`Step.iotaNatElimZero`), and `z` is a numeral.
+  * **zero** — `natElim(m, z, s, natZero) ↝ z` (`IotaHeadStep.iotaNatElimZero.toStep`), and `z` is a numeral.
   * **succ p** — `natElim(m, z, s, natSucc p) ↝ s[var 0 := natElim m z s p, var 1 := p]`
-    (`Step.iotaNatElimSucc`).  The substituted reduct already contains the recursive call (as the var-0
+    (`IotaHeadStep.iotaNatElimSucc.toStep`).  The substituted reduct already contains the recursive call (as the var-0
     substituent); `substitutedReductProduces p` finishes it to a numeral.
 
 CONDITIONAL: `substitutedReductProduces` is an explicit premise — the typed-engine 2-variable substitution lemma
@@ -88,14 +89,14 @@ theorem natElimComputesToNumeral {motive : RawTerm 1} {zeroBranch : RawTerm 0} {
       StepStar (natElimCell motive zeroBranch succBranch scrutinee) out ∧ IsNatNumeral out := by
   induction scrutineeNumeral with
   | zero =>
-      exact ⟨zeroBranch, StepStar.single Step.iotaNatElimZero, zeroBranchNumeral⟩
+      exact ⟨zeroBranch, StepStar.single IotaHeadStep.iotaNatElimZero.toStep, zeroBranchNumeral⟩
   | @succ predecessor _predNumeral _ih =>
       obtain ⟨out, stepChain, outNumeral⟩ := substitutedReductProduces predecessor _predNumeral
       refine ⟨out, ?_, outNumeral⟩
       have iotaStep :
           StepStar (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
             (natElimSuccContractum motive zeroBranch succBranch predecessor) :=
-        StepStar.single Step.iotaNatElimSucc
+        StepStar.single IotaHeadStep.iotaNatElimSucc.toStep
       exact StepStar.trans_compose iotaStep stepChain
 
 /-! ## Concrete instance 1: the constant-zero fold (discards the recursive result) -/
@@ -195,14 +196,14 @@ theorem natElimCopyComputesToNumeral {motive : RawTerm 1}
       StepStar (natElimCell motive natZeroCell copyNatBranch scrutinee) out ∧ IsNatNumeral out := by
   induction scrutineeNumeral with
   | zero =>
-      exact ⟨natZeroCell, StepStar.single Step.iotaNatElimZero, IsNatNumeral.zero⟩
+      exact ⟨natZeroCell, StepStar.single IotaHeadStep.iotaNatElimZero.toStep, IsNatNumeral.zero⟩
   | @succ predecessor _predNumeral ih =>
       obtain ⟨recResult, recChain, recNumeral⟩ := ih
       refine ⟨natSuccCell recResult, ?_, IsNatNumeral.succ recNumeral⟩
       have iotaStep :
           StepStar (natElimCell motive natZeroCell copyNatBranch (natSuccCell predecessor))
             (natSuccCell (natElimCell motive natZeroCell copyNatBranch predecessor)) :=
-        StepStar.single Step.iotaNatElimSucc
+        StepStar.single IotaHeadStep.iotaNatElimSucc.toStep
       have congStep :
           StepStar (natSuccCell (natElimCell motive natZeroCell copyNatBranch predecessor))
             (natSuccCell recResult) :=
