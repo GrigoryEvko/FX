@@ -769,9 +769,6 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.eliminatorLayerCanonicitySpineHolds
 #assert_no_axioms FX1Poly.Typed.dataCanonicityFromGrownRigidity
 #assert_no_axioms FX1Poly.Typed.boolCanonicityViaGrownRigidity
-#assert_no_axioms FX1Poly.Typed.standaloneNatCanonicalForms
-#assert_no_axioms FX1Poly.Typed.closedNatCanonicalForms
-#assert_no_axioms FX1Poly.Typed.closedNatCanonicalForms.natOne
 -- ★ SN-049: CLOSED DATA CANONICITY for Option/List/Product(Σ)/Either(Sum) (ClosedDataCanonicity, the bulk of the
 -- closed-data-canonicity family after bool SN-047 + nat SN-048). Each is the SAME per-type instantiation of the
 -- generic grown-rigidity packaging (dataCanonicityFromGrownRigidity): the standalone arm is the shipped

@@ -581,32 +581,28 @@ theorem HasTypeNativeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : 
 
 /-! ## (1) The master per-head inversion — instantiated for the natSucc head
 
-The natSucc head has TWO survivors (the two-path fact from batch 2): the recursive-unary data-intro arm at the
-`gen_natSucc` row (native path) AND the `ofNatIntro` embedding (a `HasTypeDescNatIntro` derivation whose subject
-is a `natSucc`).  The grown engine is refuted in place by `HasTypeDescPi.natSuccCellHasNoTyping` (natSucc is a
-data constructor), so there is no ofGrown disjunct. -/
+The natSucc head has ONE survivor since the NATIVE-42 embedding-arm deletion: the recursive-unary
+data-intro arm at the `gen_natSucc` row.  (The `ofNatIntro` embedding was the batch-2 second survivor;
+its arm is GONE, so the inversion is now exact — no disjunction.)  The grown engine is refuted in place
+by `HasTypeDescPi.natSuccCellHasNoTyping` (natSucc is a data constructor), so there is no ofGrown
+disjunct either. -/
 
-/-- **★ Inversion at the natSucc head.**  A union typing of a `natSuccCell`-headed subject is EITHER a recursive
-unary data-introduction at the `gen_natSucc` row (the classifier is `Nat` and the predecessor child is
-union-typed at `Nat` — the native path) OR an `ofNatIntro` embedding (the subject is typed by the standalone Nat
-constructor engine — the embedding path; its predecessor premise lives inside the surfaced derivation).  The
-two-path disjunction documents the batch-2 fact that the numeral tower composes both natively and through the
-embedding.  No grown disjunct: `natSuccCell` is untypable in the grown engine. -/
+/-- **★ Inversion at the natSucc head (EXACT since NATIVE-42).**  A union typing of a `natSuccCell`-headed
+subject IS a recursive unary data-introduction at the `gen_natSucc` row: the classifier is convertible to
+`Nat` and the predecessor child is union-typed at `Nat`.  The pre-NATIVE-42 statement carried a second
+`ofNatIntro`-embedding disjunct; with that arm deleted the inversion strengthened to the exact row shape —
+this is the predecessor-recursion door the DEEP numeral extraction
+(`HasTypeNativeUnion.closedNormalNatNumeral`) walks through. -/
 theorem HasTypeNativeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {child : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context subject classifier)
     (subjectShape : subject = natSuccCell child) :
-    (Conv natTypeCell classifier ∧ HasTypeNativeUnion profile context child natTypeCell)
-    ∨ (∃ pinnedClassifier : RawTerm scope,
-        HasTypeDescNatIntro profile context (natSuccCell child) pinnedClassifier ∧
-        Conv pinnedClassifier classifier) := by
+    Conv natTypeCell classifier ∧ HasTypeNativeUnion profile context child natTypeCell := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      rcases innerInversion subjectShape with ⟨convInner, childTyped⟩ |
-        ⟨pinnedClassifier, natTyped, convInner⟩
-      · exact Or.inl ⟨convInner.trans converts, childTyped⟩
-      · exact Or.inr ⟨pinnedClassifier, natTyped, convInner.trans converts⟩
+      obtain ⟨convInner, childTyped⟩ := innerInversion subjectShape
+      exact ⟨convInner.trans converts, childTyped⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natSuccCellHasNoTyping (fun contra => contra)
@@ -671,7 +667,7 @@ theorem HasTypeNativeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : 
       obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
       subst ruleEq
       rcases subjectShape with ⟨⟩
-      exact Or.inl ⟨Conv.refl natTypeCell, childTyped⟩
+      exact ⟨Conv.refl natTypeCell, childTyped⟩
   | recursiveBinaryIntro ctx generator rule head tail elementType isRecursiveBinary headTyped
       tailTyped =>
       obtain ⟨_, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
@@ -776,16 +772,14 @@ structure NativeUnionInversionCoverage (profile : PolyProfile) : Prop where
     subject = natElimCell motive zeroBranch stepBranch scrutinee →
     HasTypeNativeUnion profile context scrutinee natTypeCell ∧
     HasTypeNativeUnion profile context zeroBranch classifier
-  /-- The natSucc-head inversion holds (the two-path survivors), Conv-modulo: the conv arm
-  reclassifies, so the pinned `Nat`/NatIntro classifier is convertible to the actual one. -/
+  /-- The natSucc-head inversion holds (EXACT since the NATIVE-42 embedding-arm deletion),
+  Conv-modulo: the conv arm reclassifies, so the pinned `Nat` classifier is convertible to the
+  actual one. -/
   natSuccInversion : ∀ {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope} {child : RawTerm scope},
     HasTypeNativeUnion profile context subject classifier →
     subject = natSuccCell child →
-    (Conv natTypeCell classifier ∧ HasTypeNativeUnion profile context child natTypeCell)
-    ∨ (∃ pinnedClassifier : RawTerm scope,
-        HasTypeDescNatIntro profile context (natSuccCell child) pinnedClassifier ∧
-        Conv pinnedClassifier classifier)
+    Conv natTypeCell classifier ∧ HasTypeNativeUnion profile context child natTypeCell
   /-- The union rejects the affine double-use path abstraction at every classifier and context. -/
   affineDoubleUseRejected : ∀ {scope : Nat} (context : TypingContext profile scope)
     (classifier : RawTerm scope),

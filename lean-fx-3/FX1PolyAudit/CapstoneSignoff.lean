@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.FX0CrossCheckCertified
 import FX1Poly.Typed.MilestoneASpineValueLayer
-import FX1Poly.Typed.ClosedNatCanonicity
+import FX1Poly.Typed.NatNumeralUnionCanonicity
 import FX1Poly.Typed.HasTypeNativeUnionCanonicalForms
 import FX1Poly.Typed.HonestCapstoneSignoff
 import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
@@ -28,10 +28,14 @@ The three soundness pillars of the grown typed kernel `HasTypeDescPi`, each unco
                        + `HasTypeDescPi.closedStronglyNormalizing` (closed, hypothesis-free)
   * consistency:       `emptyConsistencyViaCandidateBridge` (candidate bridge)
                        + `emptyTypeConsistencySyntactic` (independent syntactic confirm)
-  * canonicity:        `closedBoolCanonicalForms` (bool, 3 engines), `closedNatCanonicalForms`
-                       (Nat numerals), `HasTypeNativeUnion.closedNormalNatCanonicalForms`
-                       (per-classifier, constructor heads — the CAN-5 assembly carried by the
-                       NATIVE-38 union lane master since NATIVE-42 retired the zoo mini-union)
+  * canonicity:        `closedBoolCanonicalForms` (bool, 3 engines),
+                       `HasTypeNativeUnion.closedNormalNatNumeral` (DEEP Nat numerals over the ONE
+                       union judgment — the NATIVE-42 re-point of the retired zoo-level
+                       `closedNatCanonicalForms`; closed-NORMAL + bridge-free hypotheses, the
+                       reduces-to-numeral form returns with union SR/SN), and
+                       `HasTypeNativeUnion.closedNormalNatCanonicalForms` (per-classifier,
+                       constructor heads — the CAN-5 assembly carried by the NATIVE-38 union lane
+                       master since NATIVE-42 retired the zoo mini-union)
 
 plus the SN-triangulation parity (`honestCapstoneMet_holds`).  The POSITIVE assembled capstone is
 `milestoneASpineSignoffHolds` (NEW, below): the value-layer spine record + Nat canonicity + the
@@ -103,23 +107,30 @@ positive assembled capstone that #501 asked for. -/
 structure MilestoneASpineSignoff (profile : PolyProfile) : Prop where
   /-- SN + consistency + bool canonicity, bundled (`milestoneAValueLayerSpineHolds`). -/
   valueLayerSpine : MilestoneAValueLayerSpine profile
-  /-- Nat canonicity: a closed term typed at `natTypeCell` (intro or grown engine) reduces to a
-  numeral (`closedNatCanonicalForms`). -/
+  /-- Nat canonicity over the ONE union judgment: a closed NORMAL union-typed term at `natTypeCell`
+  with no bridge-fragment occurrence is a DEEP numeral (`HasTypeNativeUnion.closedNormalNatNumeral`
+  — the NATIVE-42 re-point of the retired zoo-level `closedNatCanonicalForms`, whose
+  reduces-to-numeral content was reflexive on the intro fragment; the reduces form over the union
+  returns with the deferred SR/SN arc). -/
   natCanonicity : ∀ {subject : RawTerm 0},
-    (HasTypeDescNatIntro profile (TypingContext.empty : TypingContext profile 0) subject
-        natTypeCell ∨
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject natTypeCell) →
-      ∃ value : RawTerm 0, StepStar subject value ∧ IsNatNumeral value
+    HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0) subject
+      natTypeCell →
+    RawTerm.isStepNormalForm subject →
+    RawTerm.containsGeneratorBool .gen_pathApp subject = false →
+    RawTerm.containsGeneratorBool .gen_pathLam subject = false →
+    IsNatNumeral subject
   /-- The honest SN triangulation: Tait fully independent, sconing bridged, RPO fragment
   (`honestCapstoneMet_holds`). -/
   snTriangulationHonest : FX1Poly.Core.ParityMatrix.honestCapstoneMet
 
 /-- **★ The Milestone-A spine sign-off HOLDS** — each field is the shipped named theorem:
-`milestoneAValueLayerSpineHolds`, `closedNatCanonicalForms`, `honestCapstoneMet_holds`. -/
+`milestoneAValueLayerSpineHolds`, `HasTypeNativeUnion.closedNormalNatNumeral`,
+`honestCapstoneMet_holds`. -/
 theorem milestoneASpineSignoffHolds {profile : PolyProfile} :
     MilestoneASpineSignoff profile where
   valueLayerSpine := milestoneAValueLayerSpineHolds
-  natCanonicity typed := closedNatCanonicalForms typed
+  natCanonicity typed normal pathAppFree pathLamFree :=
+    HasTypeNativeUnion.closedNormalNatNumeral typed normal pathAppFree pathLamFree
   snTriangulationHonest := FX1Poly.Core.ParityMatrix.honestCapstoneMet_holds
 
 /-- **The Milestone-A₀ sign-off record (#464)** — the §11.8.12.0 release gate as ONE checked
@@ -229,7 +240,7 @@ end FX1Poly.Typed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.emptyConsistencyViaCandidateBridge
 #assert_no_axioms FX1Poly.Typed.closedBoolCanonicalForms
-#assert_no_axioms FX1Poly.Typed.closedNatCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalNatNumeral
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalNatCanonicalForms
 #assert_no_axioms FX1Poly.Typed.milestoneAValueLayerSpineHolds
 -- ★ the positive assembled spine capstone (#501)

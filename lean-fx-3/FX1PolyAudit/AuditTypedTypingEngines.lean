@@ -1118,16 +1118,11 @@ the strong equation one green commit at a time, then the table flips. -/
 -- per-type instances now one-liners; eliminator engine (#1138) is the follow-on. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedGrownTermAtDataClassifier
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedGrownTermAtSigmaType
--- ★ SN-048: CLOSED NAT CANONICITY (ClosedNatCanonicity, the first per-type instance of the generic grown-rigidity
--- packaging, unblocked by DI-3's gen_natCode + HasTypeDescNatIntro). IsNatNumeral = the recursive value predicate
--- (natZero, or natSucc of a numeral — Nat has infinitely many, unlike bool's two). subjectIsNatNumeral = every
--- nat-intro-typed subject IS a numeral (two-arm induction, no reduction — nat-intro terms are already values).
--- Conv.natTypeCell_not_{piTyCode,sigmaTyCode,universeCode} = the cross-former rigidities (no-step-leaf +
--- shapeStable/noStep + noConfusion, mirror of the bool rigidities). ★ closedNatCanonicalForms = SN-048: a closed
--- term typed at natTypeCell by the nat-intro OR grown engine reduces to a numeral (standalone arm =
--- standaloneNatCanonicalForms; grown arm derived via noClosedGrownTermAtDataClassifier). natOne = non-vacuity
--- (succ 0 canonical). The recursive natElim-computing canonicity (#1138) is the follow-on. Zero-axiom.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.subjectIsNatNumeral
+-- SN-048 NOTE: the zoo-premised closed-Nat-canonicity statements (subjectIsNatNumeral /
+-- standaloneNatCanonicalForms / closedNatCanonicalForms) were retired by NATIVE-42; the live deep
+-- restatement is HasTypeNativeUnion.closedNormalNatNumeral (AuditNatNumeralUnionCanonicity).
+-- ClosedNatCanonicity keeps IsNatNumeral + the natTypeCell cross-former rigidities (gated below
+-- with the canonical-forms shard's rigidity block).
 -- ARBITRARY-SUBJECT 4-ENGINE BOOL CANONICITY (BoolElimArbitrarySubjectCanonicity): upgrades the closed-normal
 -- 4-engine forms OFF the `normal` hypothesis. ★ KEY: the bool-elim engine's branches are GROWN-typed and the
 -- grown engine has no closed boolCode inhabitant, so a closed boolElim AT boolTypeCell is impossible by inverting
