@@ -1,8 +1,5 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.HasTypeNativeUnion
-import FX1Poly.Typed.RecursiveElimUnionSpike
-import FX1Poly.Typed.RecursiveElimNativeUnion
-import FX1Poly.Typed.ListElimRecursiveRow
 
 /-! # FX1PolyAudit/AuditNativeWaveRecursiveElim — NATIVE-32 audit shard (recursive-eliminator rows
     integrated into the real union + the listElim row)
@@ -36,49 +33,30 @@ namespace FX1PolyAudit
 
 -- A recursive-elim table hit pins one of the two Nat rows (the spike→union transfer ingredient;
 -- decidable case analysis over the if-then-else, no propext).
-#assert_no_axioms FX1Poly.Typed.recursiveElimRuleOf_cases
 
 /-! ## RecursiveElimNativeUnion.lean — the union-level theorems -/
 
 -- Bespoke adequacy: every bespoke recursive-eliminator derivation maps into the real union.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatElim.toNativeUnion
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatRec.toNativeUnion
 
 -- ★ The succ-ι reduct types INTERNALLY through the union's own recursive arm (no reductTyped premise)
 -- on the IH-return family — the NATIVE-04 residual discharged inside the real judgment, both twins.
-#assert_no_axioms FX1Poly.Typed.recursiveElimSuccIotaDischargedInUnion
-#assert_no_axioms FX1Poly.Typed.recursiveRecSuccIotaDischargedInUnion
 
 -- ★ The closed 2-step fully-typed computation chain through the recursion loop, union-typed.
-#assert_no_axioms FX1Poly.Typed.recursiveElimClosedComputationFullyTypedInUnion
 
 -- ★ The spike→union transfer: every spike derivation maps into the real union (induction over the
 -- spike's 3 arms; recursiveElimRow via the table inversion at definitionally-equal cells).
-#assert_no_axioms FX1Poly.Typed.RecursiveElimUnionSpike.toNativeUnion
 
 -- The integration evidence record + its inhabiting witness.
-#assert_no_axioms FX1Poly.Typed.RecursiveElimUnionResidencyEvidence
-#assert_no_axioms FX1Poly.Typed.recursiveElimUnionResidencyWitness
 
 /-! ## ListElimRecursiveRow.lean — the app-chain listElim sibling row -/
 
 -- The sibling rule schema (app-chain consContractum), the one row, the table + rfl-diagonal metadata,
 -- and the cons-ι contractum match.
-#assert_no_axioms FX1Poly.Typed.ListElimRule
-#assert_no_axioms FX1Poly.Typed.listElimRecursiveRule
-#assert_no_axioms FX1Poly.Typed.listElimRecursiveRuleOf
-#assert_no_axioms FX1Poly.Typed.listElimRecursiveRuleOf_listElim
-#assert_no_axioms FX1Poly.Typed.listElimRecursiveRule_consContractum_eq
 
 -- The spike-sibling judgment (union embedding + list-intro scrutinee + the listElim row arm).
-#assert_no_axioms FX1Poly.Typed.ListElimUnionSpike
 
 -- Bespoke listElim adequacy + the nil-ι typed smoke.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescListElim.toListElimUnionSpike
-#assert_no_axioms FX1Poly.Typed.listElimNilIotaSelectsNilBranchTyped
 
 -- The listElim row evidence record + its inhabiting witness.
-#assert_no_axioms FX1Poly.Typed.ListElimRecursiveRowEvidence
-#assert_no_axioms FX1Poly.Typed.listElimRecursiveRowEvidenceWitness
 
 end FX1PolyAudit

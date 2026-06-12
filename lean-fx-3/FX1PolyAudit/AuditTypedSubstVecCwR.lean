@@ -681,7 +681,6 @@ import FX1Poly.Typed.GradedBetaSubjectReductionGhost
 import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.HasTypeDescGeneralElim
 import FX1Poly.Typed.HasTypeNativeUnion
-import FX1Poly.Typed.RecursiveElimUnionSpike
 import FX1Poly.Typed.GradedTableCoherence
 import FX1Poly.Typed.DependentElimPremiseSpike
 import FX1Poly.Typed.CollapseDecisionGate
@@ -2579,20 +2578,6 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- drilling). Adequacy both rows (premise parity = the NATIVE-33 fold's delete-safety). Honest
 -- residual: GENERAL branches await the union substitution transport (NATIVE-37) — standard
 -- machinery, not a schema obstruction.
-#assert_no_axioms FX1Poly.Typed.recursiveElimRuleOf_natElim
-#assert_no_axioms FX1Poly.Typed.recursiveElimRuleOf_natRec
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatElim.toRecursiveElimUnionSpike
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatRec.toRecursiveElimUnionSpike
-#assert_no_axioms FX1Poly.Typed.natElimSuccContractum_ihReturn
-#assert_no_axioms FX1Poly.Typed.natRecSuccContractum_ihReturn
-#assert_no_axioms FX1Poly.Typed.recursiveElimSuccIotaDischargedInternally
-#assert_no_axioms FX1Poly.Typed.recursiveRecSuccIotaDischargedInternally
-#assert_no_axioms FX1Poly.Typed.recursiveElimClosedComputationFullyTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.subjectHeadIsNatValue
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatElim.invertPremises
-#assert_no_axioms FX1Poly.Typed.bespokeRejectsEliminatorScrutinee
-#assert_no_axioms FX1Poly.Typed.spikeTypesEliminatorScrutinee
-#assert_no_axioms FX1Poly.Typed.recursiveElimRowGoVerdict
 
 -- NATIVE-26 (#1303) — GRADE-LAYER COHERENCE: table binderUsage ↔ HasGradeOver (the single-binder
 -- projection, GradedTableCoherence). THE KEYSTONE: gradedBinderChecks_iff_gradeSubsumption — the

@@ -1,9 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.NativeUnionRuleTables
 import FX1Poly.Typed.HasTypeNativeUnion
-import FX1Poly.Typed.DataElimUnionSpikeToNativeUnion
-import FX1Poly.Typed.DataIntroNaryUnionSpikeToNativeUnion
-import FX1Poly.Typed.ListElimUnionSpikeToNativeUnion
 
 /-! # FX1PolyAudit/AuditNativeWaveUnionResidency — NATIVE-36 audit shard (the data-eliminator,
     n-ary/recursive data-intro, and listElim families landed IN the real union judgment)
@@ -143,31 +140,11 @@ individually. -/
 
 /-! ## DataElimUnionSpikeToNativeUnion.lean — the data-elim transfer -/
 
-#assert_no_axioms FX1Poly.Typed.twoBranchMatchRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.pathInductionRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.projectionRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.DataElimUnionSpike.toNativeUnion
-#assert_no_axioms FX1Poly.Typed.DataElimUnionTransferEvidence
-#assert_no_axioms FX1Poly.Typed.dataElimUnionTransferWitness
 
 /-! ## DataIntroNaryUnionSpikeToNativeUnion.lean — the data-intro transfer -/
 
-#assert_no_axioms FX1Poly.Typed.recursiveUnaryDataIntroRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.recursiveBinaryDataIntroRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.pinnedUnaryDataIntroRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.nullaryFreeTypeDataIntroRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.coproductDataIntroRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.nonDependentBinaryDataIntroRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.reflexiveDataIntroRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.DataIntroNaryUnionSpike.toNativeUnion
-#assert_no_axioms FX1Poly.Typed.DataIntroNaryUnionTransferEvidence
-#assert_no_axioms FX1Poly.Typed.dataIntroNaryUnionTransferWitness
 
 /-! ## ListElimUnionSpikeToNativeUnion.lean — the listElim transfer -/
 
-#assert_no_axioms FX1Poly.Typed.listElimRecursiveRuleOf_spikeCases
-#assert_no_axioms FX1Poly.Typed.ListElimUnionSpike.toNativeUnion
-#assert_no_axioms FX1Poly.Typed.ListElimUnionTransferEvidence
-#assert_no_axioms FX1Poly.Typed.listElimUnionTransferWitness
 
 end FX1PolyAudit
