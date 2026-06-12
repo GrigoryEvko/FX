@@ -785,6 +785,35 @@ theorem idStrictRecReflIotaRow_hasSortPreservingTarget :
 theorem pathBetaIotaRow_hasSortPreservingTarget :
     pathBetaIotaRow.HasSortPreservingTarget := ⟨rfl, rfl⟩
 
+/-- ★ **Sort-precise table-redex preservation** — the generic
+replacement for the per-iota `PolyCell.exists_preservedBy*_dim0`
+witnesses: the reduct's cell comes back at the SOURCE cell's own sort
+(dim-0 cells on a `mkGen` erasure are necessarily at the generator's
+table sort, and a sort-preserving target re-certifies there). -/
+def PolyCell.preservedByTableRedex_dim0
+    {profile : PolyProfile} {scope : Nat} {rule : IotaRuleDesc}
+    (targetPreservesSort : rule.HasSortPreservingTarget)
+    (elimPayload : rule.elimGenerator.payload scope)
+    {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fires : rule.firesOn? elimPayload spine = some reduct)
+    {sort : CellSort}
+    (sourceCell :
+      PolyCell profile sort 0 scope CellBoundary.trivial
+        (.termBase (.mkGen rule.elimGenerator elimPayload spine))) :
+    PolyCell profile sort 0 scope CellBoundary.trivial
+      (.termBase reduct) := by
+  have allFire := rule.firesOn?_some_scrutineesFire fires
+  have interpEq : rule.interpretTarget? elimPayload spine = some reduct := by
+    dsimp only [IotaRuleDesc.firesOn?] at fires
+    rw [if_pos allFire] at fires
+    exact fires
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      exact rule.interpretTemplate?_certified elimPayload sourceSpine
+        allFire 0 rule.target rule.elimGenerator.cellSort
+        targetPreservesSort interpEq
+
 /-- Every row of the canonical 18-row table carries its
 sort-preserving certificate. -/
 theorem iotaRuleTable_hasSortPreservingTargets :

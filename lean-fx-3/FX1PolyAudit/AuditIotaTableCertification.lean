@@ -96,6 +96,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.idJReflIotaRow_hasSortPreservingTarget
 #assert_no_axioms FX1Poly.Core.idStrictRecReflIotaRow_hasSortPreservingTarget
 #assert_no_axioms FX1Poly.Core.pathBetaIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.PolyCell.preservedByTableRedex_dim0
 #assert_no_axioms FX1Poly.Core.iotaRuleTable_hasSortPreservingTargets
 
 end FX1PolyAudit
