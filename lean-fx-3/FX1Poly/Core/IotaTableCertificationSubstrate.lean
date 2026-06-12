@@ -40,6 +40,8 @@ declaration in `FX1PolyAudit/AuditIotaTableCertification.lean`. -/
 
 namespace FX1Poly.Core
 
+open FX1Poly.Foundation
+
 /-! ## The dim-0 boundary collapse, factored -/
 
 /-- Collapse any cell of (provably) dimension 0 to the canonical
@@ -285,5 +287,330 @@ theorem HasCertifiedCellDim0.preservedBySubstPair
     (RawTermSubst.pair innerArg outerArg)
     (PolyCell.pairSubstDim0Cells innerArg outerArg innerCell outerCell)
     bodyCert
+
+/-! ## Sort-precise cell builders for the interpreter's primitives
+
+The master template induction is SORT-PRECISE (a built spine's `cons`
+demands each head cell AT its spec's sort), so each interpreter
+primitive gets a sort-preserving cell builder: `HasCertifiedCellDim0`'s
+sort-existential wrappers do not compose. -/
+
+/-- The variable cell, sort-precise (`gen_var`'s table sort is
+`.term`). -/
+def PolyCell.varCell {profile : PolyProfile} {scope : Nat}
+    (varIndex : Fin scope) :
+    PolyCell profile .term 0 scope CellBoundary.trivial
+      (.termBase (.mkGen .gen_var varIndex .childNil)) :=
+  PolyCell.gen SupportedGenerator.gen_var
+    (genPayloadEvidence (generator := .gen_var) (scope := scope) varIndex)
+    CertifiedTermSpine.nil
+
+/-- `subst0` certifies, sort-precise: the body keeps its sort, the
+substituent enters at `.term`. -/
+def PolyCell.subst0_dim0 {profile : PolyProfile} {scope : Nat}
+    {sort : CellSort} {body : RawTerm (scope + 1)} {rawArg : RawTerm scope}
+    (bodyCell :
+      PolyCell profile sort 0 (scope + 1) CellBoundary.trivial
+        (.termBase body))
+    (argCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase rawArg)) :
+    PolyCell profile sort 0 scope CellBoundary.trivial
+      (.termBase (RawTerm.subst0 body rawArg)) :=
+  PolyCell.subst_dim0 (RawTermSubst.singleton rawArg)
+    (PolyCell.singletonSubstDim0Cells rawArg argCell) bodyCell
+
+/-- `substPair` certifies, sort-precise. -/
+def PolyCell.substPair_dim0 {profile : PolyProfile} {scope : Nat}
+    {sort : CellSort} {body : RawTerm (scope + 2)}
+    {innerArg outerArg : RawTerm scope}
+    (bodyCell :
+      PolyCell profile sort 0 (scope + 2) CellBoundary.trivial
+        (.termBase body))
+    (innerCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase innerArg))
+    (outerCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase outerArg)) :
+    PolyCell profile sort 0 scope CellBoundary.trivial
+      (.termBase (RawTerm.substPair body innerArg outerArg)) :=
+  PolyCell.subst_dim0 (RawTermSubst.pair innerArg outerArg)
+    (PolyCell.pairSubstDim0Cells innerArg outerArg innerCell outerCell)
+    bodyCell
+
+/-- Depth weakening certifies (iterated `rename_dim0` at the weakening
+renaming — `RawTerm.weaken` IS that rename, definitionally). -/
+def PolyCell.weakenBy_dim0 {profile : PolyProfile} {scope : Nat}
+    {sort : CellSort} :
+    (depth : Nat) → {term : RawTerm scope} →
+    PolyCell profile sort 0 scope CellBoundary.trivial (.termBase term) →
+    PolyCell profile sort 0 (scope + depth) CellBoundary.trivial
+      (.termBase (RawTerm.weakenBy depth term))
+  | 0, _, cell => cell
+  | innerDepth + 1, _, cell =>
+      PolyCell.rename_dim0 RawRenaming.weaken
+        (PolyCell.weakenBy_dim0 innerDepth cell)
+
+/-- One-binder-body depth weakening certifies (the weakening renaming
+lifted under the body's own binder). -/
+def PolyCell.weakenBodyUnderOneBinderBy_dim0 {profile : PolyProfile}
+    {scope : Nat} {sort : CellSort} :
+    (depth : Nat) → {body : RawTerm (scope + 1)} →
+    PolyCell profile sort 0 (scope + 1) CellBoundary.trivial
+      (.termBase body) →
+    PolyCell profile sort 0 (scope + depth + 1) CellBoundary.trivial
+      (.termBase (RawTerm.weakenBodyUnderOneBinderBy depth body))
+  | 0, _, cell => cell
+  | innerDepth + 1, _, cell =>
+      PolyCell.rename_dim0 (RawRenaming.lift RawRenaming.weaken)
+        (PolyCell.weakenBodyUnderOneBinderBy_dim0 innerDepth cell)
+
+/-- Two-binder-body depth weakening certifies. -/
+def PolyCell.weakenBodyUnderTwoBindersBy_dim0 {profile : PolyProfile}
+    {scope : Nat} {sort : CellSort} :
+    (depth : Nat) → {body : RawTerm (scope + 2)} →
+    PolyCell profile sort 0 (scope + 2) CellBoundary.trivial
+      (.termBase body) →
+    PolyCell profile sort 0 (scope + depth + 2) CellBoundary.trivial
+      (.termBase (RawTerm.weakenBodyUnderTwoBindersBy depth body))
+  | 0, _, cell => cell
+  | innerDepth + 1, _, cell =>
+      PolyCell.rename_dim0
+        (RawRenaming.lift (RawRenaming.lift RawRenaming.weaken))
+        (PolyCell.weakenBodyUnderTwoBindersBy_dim0 innerDepth cell)
+
+/-- Whole-spine depth weakening certifies (iterated spine-level
+rename). -/
+def CertifiedTermSpine.certifiedWeakenSpineBy {profile : PolyProfile}
+    {parentScope : Nat} {childSpecs : List ChildSpec}
+    {binderShifts : List Nat}
+    {children : RawTermChildren binderShifts parentScope}
+    (allSpecsAreDim0 : ∀ spec ∈ childSpecs, spec.cellDimension = 0) :
+    (depth : Nat) →
+    CertifiedTermSpine profile childSpecs parentScope binderShifts
+      children →
+    CertifiedTermSpine profile childSpecs (parentScope + depth)
+      binderShifts (RawTermChildren.weakenSpineBy depth children)
+  | 0, spine => spine
+  | innerDepth + 1, spine =>
+      CertifiedTermSpine.rename_dim0 RawRenaming.weaken allSpecsAreDim0
+        (CertifiedTermSpine.certifiedWeakenSpineBy allSpecsAreDim0
+          innerDepth spine)
+
+/-! ## Slot replacement certifies -/
+
+/-- View a dim-0 trivial-boundary cell at a provably-0 dimension —
+the inverse of `atDim0`, packaging the (unique) boundary for
+`CertifiedTermSpine.cons`. -/
+def PolyCell.ofDim0 {profile : PolyProfile} {sort : CellSort}
+    {scope : Nat} {rawCell : RawCell scope} :
+    (dim : Nat) → (hDim : dim = 0) →
+    PolyCell profile sort 0 scope CellBoundary.trivial rawCell →
+    Σ' boundary : CellBoundary profile sort dim scope,
+      PolyCell profile sort dim scope boundary rawCell
+  | _, rfl, cell => ⟨CellBoundary.trivial, cell⟩
+
+/-- Replacement-at-shift transport (standalone Nat split — the
+projection equation forces the slot's shift to be 0). -/
+def replacementIntoShiftCertified {profile : PolyProfile}
+    {parentScope : Nat} {sort : CellSort} :
+    (shift : Nat) → {replacement : RawTerm parentScope} →
+    (replacementCell :
+      PolyCell profile sort 0 parentScope CellBoundary.trivial
+        (.termBase replacement)) →
+    {shiftedReplacement : RawTerm (parentScope + shift)} →
+    (replacementIntoShift? shift replacement = some shiftedReplacement) →
+    PolyCell profile sort 0 (parentScope + shift) CellBoundary.trivial
+      (.termBase shiftedReplacement)
+  | 0, _, replacementCell, _, shiftEq =>
+      Option.some.inj shiftEq ▸ replacementCell
+  | _ + 1, _, _, _, shiftEq => by injection shiftEq
+
+/-- Slot replacement certifies: replacing a (necessarily shift-0) slot
+with a cell at THAT slot's spec sort keeps the spine certified. -/
+def CertifiedTermSpine.certifiedReplaceChildAt {profile : PolyProfile}
+    {parentScope : Nat} :
+    {childSpecs : List ChildSpec} → {binderShifts : List Nat} →
+    {children : RawTermChildren binderShifts parentScope} →
+    (spine :
+      CertifiedTermSpine profile childSpecs parentScope binderShifts
+        children) →
+    (allSpecsAreDim0 : ∀ spec ∈ childSpecs, spec.cellDimension = 0) →
+    (slot : Nat) → {replacement : RawTerm parentScope} →
+    {slotSpec : ChildSpec} →
+    (listEntryAt? childSpecs slot = some slotSpec) →
+    (replacementCell :
+      PolyCell profile slotSpec.cellSort 0 parentScope
+        CellBoundary.trivial (.termBase replacement)) →
+    {replacedChildren : RawTermChildren binderShifts parentScope} →
+    (children.replaceChildAt? slot replacement = some replacedChildren) →
+    CertifiedTermSpine profile childSpecs parentScope binderShifts
+      replacedChildren
+  | _, _, _, .nil, _, _, _, _, _, _, _, replaceEq => by injection replaceEq
+  | _, _, _, @CertifiedTermSpine.cons _ _ headSpec _ _ _ childTail _
+      headCell restSpine, allSpecsAreDim0, 0, replacement, slotSpec,
+      specLookupEq, replacementCell, replacedChildren, replaceEq => by
+      have specEq : headSpec = slotSpec := Option.some.inj specLookupEq
+      have replaceEqMapped :
+          (replacementIntoShift? headSpec.scopeShift replacement).map
+              (RawTermChildren.childCons · childTail)
+            = some replacedChildren := replaceEq
+      match shiftedEq :
+          replacementIntoShift? headSpec.scopeShift replacement with
+      | none =>
+          rw [shiftedEq] at replaceEqMapped
+          injection replaceEqMapped
+      | some shiftedReplacement =>
+          rw [shiftedEq] at replaceEqMapped
+          obtain rfl := Option.some.inj replaceEqMapped
+          obtain ⟨headBoundary, headCellAtDim⟩ :=
+            PolyCell.ofDim0 _ (allSpecsAreDim0 _ (.head _))
+              (replacementIntoShiftCertified headSpec.scopeShift
+                (specEq.symm ▸ replacementCell) shiftedEq)
+          exact CertifiedTermSpine.cons headCellAtDim restSpine
+  | _, _, _, @CertifiedTermSpine.cons _ _ _ _ _ headRaw childTail _
+      headCell restSpine, allSpecsAreDim0, slot + 1,
+      replacement, _, specLookupEq, replacementCell, replacedChildren,
+      replaceEq => by
+      have replaceEqMapped :
+          (childTail.replaceChildAt? slot replacement).map
+              (RawTermChildren.childCons headRaw ·)
+            = some replacedChildren := replaceEq
+      match restEq :
+          RawTermChildren.replaceChildAt? childTail slot replacement with
+      | none =>
+          rw [restEq] at replaceEqMapped
+          injection replaceEqMapped
+      | some replacedTail =>
+          rw [restEq] at replaceEqMapped
+          obtain rfl := Option.some.inj replaceEqMapped
+          exact CertifiedTermSpine.cons headCell
+            (restSpine.certifiedReplaceChildAt
+              (fun spec specIsMember =>
+                allSpecsAreDim0 spec (.tail _ specIsMember))
+              slot specLookupEq replacementCell restEq)
+
+/-! ## The sort discipline — the IOTA-T3 row certificate
+
+The genuinely CONDITIONAL ingredient of generic structural SR: a
+template certifies only at the sort the generator table assigns to the
+syntax it projects or builds (type-code generators are `.type`-sorted —
+a row whose reduct stuffed a type code into a term slot would
+interpret fine but NOT certify).  The walker mirrors the interpreter
+arm-for-arm; every lookup it constrains is one the interpreter
+performs, so on concrete rows the matches reduce and the 18 pins close
+by `rfl`-shaped conjunction trees. -/
+
+mutual
+
+/-- The template certifies at `expectedSort`, given the row's pattern
+fired (scrutinee heads pinned by their specs). -/
+def ReductTemplate.CertifiesAtSort (rule : IotaRuleDesc) :
+    ReductTemplate → CellSort → Prop
+  | .boundVarAt _, expectedSort => expectedSort = .term
+  | .spineChildAt slot, expectedSort =>
+      match listEntryAt? rule.elimGenerator.childSpecs slot with
+      | none => False
+      | some childSpec => childSpec.cellSort = expectedSort
+  | .scrutineeChildAt scrutineeIndex slot, expectedSort =>
+      match rule.scrutineeSpecAt? scrutineeIndex with
+      | none => False
+      | some scrutineeSpec =>
+          match listEntryAt? scrutineeSpec.head.childSpecs slot with
+          | none => False
+          | some childSpec => childSpec.cellSort = expectedSort
+  | .theScrutineeAt scrutineeIndex, expectedSort =>
+      match rule.scrutineeSpecAt? scrutineeIndex with
+      | none => False
+      | some scrutineeSpec =>
+          match listEntryAt? rule.elimGenerator.childSpecs
+              scrutineeSpec.slot with
+          | none => False
+          | some childSpec => childSpec.cellSort = expectedSort
+  | .motiveInstantiatedWith argTemplate, expectedSort =>
+      (match rule.motiveSlot? with
+        | none => False
+        | some motiveSlot =>
+            match listEntryAt? rule.elimGenerator.childSpecs motiveSlot with
+            | none => False
+            | some motiveSpec => motiveSpec.cellSort = expectedSort) ∧
+      argTemplate.CertifiesAtSort rule .term
+  | .motiveInstantiatedWithPair innerTemplate outerTemplate, expectedSort =>
+      (match rule.motiveSlot? with
+        | none => False
+        | some motiveSlot =>
+            match listEntryAt? rule.elimGenerator.childSpecs motiveSlot with
+            | none => False
+            | some motiveSpec => motiveSpec.cellSort = expectedSort) ∧
+      innerTemplate.CertifiesAtSort rule .term ∧
+      outerTemplate.CertifiesAtSort rule .term
+  | .builtGen builtHead _ childTemplates, expectedSort =>
+      builtHead.cellSort = expectedSort ∧
+      childTemplates.CertifyAgainstSpecs rule builtHead.childSpecs
+  | .reassembledReplacing replacements, expectedSort =>
+      rule.elimGenerator.cellSort = expectedSort ∧
+      replacements.CertifyReplacementSorts rule
+  | .substOneIntoSpineChild bodySlot argTemplate, expectedSort =>
+      (match listEntryAt? rule.elimGenerator.childSpecs bodySlot with
+        | none => False
+        | some bodySpec => bodySpec.cellSort = expectedSort) ∧
+      argTemplate.CertifiesAtSort rule .term
+  | .substOneIntoScrutineeChild scrutineeIndex bodySlot argTemplate,
+      expectedSort =>
+      (match rule.scrutineeSpecAt? scrutineeIndex with
+        | none => False
+        | some scrutineeSpec =>
+            match listEntryAt? scrutineeSpec.head.childSpecs bodySlot with
+            | none => False
+            | some bodySpec => bodySpec.cellSort = expectedSort) ∧
+      argTemplate.CertifiesAtSort rule .term
+  | .substPairIntoSpineChild bodySlot innerTemplate outerTemplate,
+      expectedSort =>
+      (match listEntryAt? rule.elimGenerator.childSpecs bodySlot with
+        | none => False
+        | some bodySpec => bodySpec.cellSort = expectedSort) ∧
+      innerTemplate.CertifiesAtSort rule .term ∧
+      outerTemplate.CertifiesAtSort rule .term
+  | .substPairIntoScrutineeChild scrutineeIndex bodySlot innerTemplate
+      outerTemplate, expectedSort =>
+      (match rule.scrutineeSpecAt? scrutineeIndex with
+        | none => False
+        | some scrutineeSpec =>
+            match listEntryAt? scrutineeSpec.head.childSpecs bodySlot with
+            | none => False
+            | some bodySpec => bodySpec.cellSort = expectedSort) ∧
+      innerTemplate.CertifiesAtSort rule .term ∧
+      outerTemplate.CertifiesAtSort rule .term
+
+/-- Each built child template certifies at its spec's sort, in
+lockstep with the built head's spec list. -/
+def ReductTemplateSpine.CertifyAgainstSpecs (rule : IotaRuleDesc) :
+    ReductTemplateSpine → List ChildSpec → Prop
+  | .spineNil, [] => True
+  | .spineNil, _ :: _ => False
+  | .spineCons _ _, [] => False
+  | .spineCons childTemplate restTemplates, childSpec :: restSpecs =>
+      childTemplate.CertifiesAtSort rule childSpec.cellSort ∧
+      restTemplates.CertifyAgainstSpecs rule restSpecs
+
+/-- Each replacement certifies at its target slot's spec sort. -/
+def SpineReplacements.CertifyReplacementSorts (rule : IotaRuleDesc) :
+    SpineReplacements → Prop
+  | .replaceNil => True
+  | .replaceCons slot replacementTemplate restReplacements =>
+      (match listEntryAt? rule.elimGenerator.childSpecs slot with
+        | none => False
+        | some slotSpec =>
+            replacementTemplate.CertifiesAtSort rule slotSpec.cellSort) ∧
+      restReplacements.CertifyReplacementSorts rule
+
+end
+
+/-- The row-level IOTA-T3 certificate: the reduct template certifies at
+SOME sort.  The master redex theorem consumes the witness inside its
+(Prop-valued) conclusion. -/
+def IotaRuleDesc.HasSortCertifiedTarget (rule : IotaRuleDesc) : Prop :=
+  ∃ targetSort, rule.target.CertifiesAtSort rule targetSort
 
 end FX1Poly.Core

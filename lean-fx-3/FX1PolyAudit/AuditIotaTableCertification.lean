@@ -38,4 +38,27 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.PolyCell.pairSubstDim0Cells
 #assert_no_axioms FX1Poly.Core.HasCertifiedCellDim0.preservedBySubstPair
 
+/-! ## Sort-precise cell builders -/
+
+#assert_no_axioms FX1Poly.Core.PolyCell.varCell
+#assert_no_axioms FX1Poly.Core.PolyCell.subst0_dim0
+#assert_no_axioms FX1Poly.Core.PolyCell.substPair_dim0
+#assert_no_axioms FX1Poly.Core.PolyCell.weakenBy_dim0
+#assert_no_axioms FX1Poly.Core.PolyCell.weakenBodyUnderOneBinderBy_dim0
+#assert_no_axioms FX1Poly.Core.PolyCell.weakenBodyUnderTwoBindersBy_dim0
+#assert_no_axioms FX1Poly.Core.CertifiedTermSpine.certifiedWeakenSpineBy
+
+/-! ## Slot replacement certifies -/
+
+#assert_no_axioms FX1Poly.Core.PolyCell.ofDim0
+#assert_no_axioms FX1Poly.Core.replacementIntoShiftCertified
+#assert_no_axioms FX1Poly.Core.CertifiedTermSpine.certifiedReplaceChildAt
+
+/-! ## The sort discipline (the IOTA-T3 row certificate) -/
+
+#assert_no_axioms FX1Poly.Core.ReductTemplate.CertifiesAtSort
+#assert_no_axioms FX1Poly.Core.ReductTemplateSpine.CertifyAgainstSpecs
+#assert_no_axioms FX1Poly.Core.SpineReplacements.CertifyReplacementSorts
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.HasSortCertifiedTarget
+
 end FX1PolyAudit
