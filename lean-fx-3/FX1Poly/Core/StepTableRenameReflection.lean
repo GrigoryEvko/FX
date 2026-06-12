@@ -203,6 +203,178 @@ theorem IotaRuleDesc.scrutineeSpecFires_reflectRename (rule : IotaRuleDesc)
             exact (guardCommutes scope targetScope isVarHead
               scrutineePayload).symm.trans guardPassedAtTarget
 
+/-! ## Stage EQUATIONS at the rename instantiation
+
+The forward equivariance lemmas are found-IMPLICATIONS because a general
+substitution can turn a failing head test into a passing one (a variable
+maps to an arbitrary cell).  A RENAMING cannot: variables stay variables,
+so every interpreter stage satisfies a total `Option.map` EQUATION — the
+two-sided form that yields both the forward transport and the backward
+reflection in one statement.  These equations feed the interpreter
+isSome-reflection (the `reflectRename` assembly's missing leg). -/
+
+/-- Rename on a variable cell is the renamed-position variable cell
+(definitional — the fold's variable arm). -/
+theorem RawTerm.rename_var_reduces {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope) (varPosition : Fin scope) :
+    RawTerm.rename rho (.mkGen .gen_var varPosition .childNil)
+      = .mkGen .gen_var (rho varPosition) .childNil := rfl
+
+/-- The shift-erased children view of a renamed cell is the
+substituted-at-the-injection view of the original cell's children: a
+variable has no children on either side, and a non-variable keeps its
+children spine (renamed), which views positionally. -/
+theorem RawTerm.scopedChildrenView_rename {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope) :
+    (sourceTerm : RawTerm scope) →
+    (RawTerm.rename rho sourceTerm).scopedChildrenView
+      = sourceTerm.scopedChildrenView.map
+          (ScopedChild.substView (RawTermSubst.ofRenaming rho))
+  | .mkGen someGenerator somePayload someChildren => by
+      by_cases isVarGen : someGenerator = .gen_var
+      · subst isVarGen
+        have childrenAreNil : someChildren = .childNil :=
+          RawTermChildren.eq_childNil someChildren
+        subst childrenAreNil
+        rfl
+      · rw [RawTerm.rename_nonVar_reduces rho isVarGen somePayload
+          someChildren]
+        dsimp only [RawTerm.scopedChildrenView]
+        rw [show foldChildren GenAlgebra.canonical rho someChildren
+            = RawTermChildren.rename rho someChildren from rfl,
+          RawTermChildren.rename_eq_subst_ofRenaming rho someChildren,
+          RawTermChildren.toScopedChildren_subst
+            (RawTermSubst.ofRenaming rho) someChildren]
+
+/-- The derived scrutinee on a renamed spine is the renamed derived
+scrutinee — total equation form. -/
+theorem IotaRuleDesc.scrutineeTermAt?_rename (rule : IotaRuleDesc)
+    {scope targetScope : Nat} (rho : RawRenaming scope targetScope)
+    (spine : RawTermChildren rule.elimGenerator.binderShifts scope)
+    (scrutineeIndex : Nat) :
+    rule.scrutineeTermAt? scrutineeIndex (RawTermChildren.rename rho spine)
+      = (rule.scrutineeTermAt? scrutineeIndex spine).map
+          (RawTerm.rename rho) := by
+  dsimp only [IotaRuleDesc.scrutineeTermAt?]
+  cases specLookup : rule.scrutineeSpecAt? scrutineeIndex with
+  | none => rfl
+  | some spec =>
+      rw [optionSomeBindExplicit, optionSomeBindExplicit]
+      exact scrutineeSlotLookup_rename rho spine spec.slot
+
+/-- The derived scrutinee-children view on a renamed spine is the
+substituted-at-the-injection view of the original — total equation
+form. -/
+theorem IotaRuleDesc.scrutineeChildrenAt?_rename (rule : IotaRuleDesc)
+    {scope targetScope : Nat} (rho : RawRenaming scope targetScope)
+    (spine : RawTermChildren rule.elimGenerator.binderShifts scope)
+    (scrutineeIndex : Nat) :
+    rule.scrutineeChildrenAt? scrutineeIndex
+        (RawTermChildren.rename rho spine)
+      = (rule.scrutineeChildrenAt? scrutineeIndex spine).map
+          (List.map (ScopedChild.substView (RawTermSubst.ofRenaming rho))) := by
+  dsimp only [IotaRuleDesc.scrutineeChildrenAt?]
+  rw [rule.scrutineeTermAt?_rename rho spine scrutineeIndex]
+  cases termLookup : rule.scrutineeTermAt? scrutineeIndex spine with
+  | none => rfl
+  | some scrutineeTerm =>
+      rw [optionSomeMap, optionSomeMap, optionSomeMap, optionSomeMap,
+        RawTerm.scopedChildrenView_rename rho scrutineeTerm]
+
+/-- The reassembly payload transport satisfies the total cast-map
+equation: both sides take the non-variable branch, and the two cast
+chains over the payload type square agree definitionally. -/
+theorem IotaRuleDesc.elimPayloadAtDepth?_rename (rule : IotaRuleDesc)
+    {scope targetScope : Nat}
+    (isNotVarHead : rule.elimGenerator ≠ .gen_var)
+    (elimPayload : rule.elimGenerator.payload scope) (depth : Nat) :
+    rule.elimPayloadAtDepth? depth
+        (cast (Generator.payload_scope_invariant_of_not_var isNotVarHead
+          scope targetScope) elimPayload)
+      = (rule.elimPayloadAtDepth? depth elimPayload).map
+          (cast (Generator.payload_scope_invariant_of_not_var isNotVarHead
+            (scope + depth) (targetScope + depth))) := by
+  dsimp only [IotaRuleDesc.elimPayloadAtDepth?]
+  rw [dif_neg isNotVarHead, dif_neg isNotVarHead, optionSomeMap]
+  exact congrArg some (castCompose
+    (Generator.payload_scope_invariant_of_not_var isNotVarHead
+      scope targetScope)
+    (Generator.payload_scope_invariant_of_not_var isNotVarHead
+      targetScope (targetScope + depth))
+    (Generator.payload_scope_invariant_of_not_var isNotVarHead
+      scope (scope + depth))
+    (Generator.payload_scope_invariant_of_not_var isNotVarHead
+      (scope + depth) (targetScope + depth))
+    elimPayload)
+
+/-- A `builtGen` payload source satisfies the total cast-map equation
+on a renamed spine — GIVEN its scope-uniformity certificate.  A
+constant family is scope-uniform by its clause; a scrutinee transform
+reads the SAME head on both sides (renaming preserves heads — the
+variable case fails the head test on both sides since the declared
+source head is non-variable), and the transform commutes with the
+payload transport by its clause. -/
+theorem IotaRuleDesc.resolvePayloadSource?_rename (rule : IotaRuleDesc)
+    {scope targetScope : Nat} (rho : RawRenaming scope targetScope)
+    (spine : RawTermChildren rule.elimGenerator.binderShifts scope)
+    (depth : Nat) {builtHead : Generator}
+    (payloadSource : PayloadSource builtHead)
+    (isUniform : payloadSource.IsScopeUniform) :
+    ∃ (isNotVarBuilt : builtHead ≠ .gen_var),
+      rule.resolvePayloadSource? (RawTermChildren.rename rho spine) depth
+          payloadSource
+        = (rule.resolvePayloadSource? spine depth payloadSource).map
+            (cast (Generator.payload_scope_invariant_of_not_var
+              isNotVarBuilt (scope + depth) (targetScope + depth))) := by
+  cases payloadSource with
+  | constantFamily payloadFamily =>
+      obtain ⟨isNotVarBuilt, familyUniform⟩ := isUniform
+      refine ⟨isNotVarBuilt, ?_⟩
+      dsimp only [IotaRuleDesc.resolvePayloadSource?]
+      rw [optionSomeMap]
+      exact congrArg some
+        (familyUniform (scope + depth) (targetScope + depth)
+          isNotVarBuilt).symm
+  | transformedFromScrutinee scrutineeIndex sourceHead payloadTransform =>
+      obtain ⟨isNotVarBuilt, isNotVarSource, transformUniform⟩ := isUniform
+      refine ⟨isNotVarBuilt, ?_⟩
+      dsimp only [IotaRuleDesc.resolvePayloadSource?]
+      rw [rule.scrutineeTermAt?_rename rho spine scrutineeIndex]
+      cases termLookup : rule.scrutineeTermAt? scrutineeIndex spine with
+      | none => rfl
+      | some scrutineeTerm =>
+        cases scrutineeTerm with
+        | mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
+          by_cases isVarGen : scrutineeGenerator = .gen_var
+          · subst isVarGen
+            have childrenAreNil : scrutineeChildren = .childNil :=
+              RawTermChildren.eq_childNil scrutineeChildren
+            subst childrenAreNil
+            rw [optionSomeMap, RawTerm.rename_var_reduces rho
+                scrutineePayload,
+              optionSomeBindMonadic, optionSomeBindMonadic]
+            dsimp only
+            rw [dif_neg (fun isVarSource =>
+                isNotVarSource isVarSource.symm),
+              dif_neg (fun isVarSource => isNotVarSource isVarSource.symm)]
+            rfl
+          · rw [optionSomeMap,
+              RawTerm.rename_nonVar_reduces rho isVarGen scrutineePayload
+                scrutineeChildren,
+              optionSomeBindMonadic, optionSomeBindMonadic]
+            dsimp only
+            by_cases isHead : scrutineeGenerator = sourceHead
+            · subst isHead
+              rw [dif_pos rfl, dif_pos rfl, optionSomeMap]
+              exact congrArg some
+                (transformUniform scope (scope + depth) targetScope
+                  (targetScope + depth) isNotVarSource isNotVarBuilt
+                  scrutineePayload).symm
+            · rw [dif_neg isHead, dif_neg isHead]
+              rfl
+
+/-! ## The spec-list conjunction reflects -/
+
 /-- The full pattern test reflects under renaming, spec by spec. -/
 theorem IotaRuleDesc.scrutineesFire_reflectRename (rule : IotaRuleDesc)
     {scope targetScope : Nat} (rho : RawRenaming scope targetScope)
