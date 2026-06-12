@@ -758,17 +758,6 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.flatReservedUntyped
 #assert_no_axioms FX1Poly.Typed.baseTypeReservedUntyped
 #assert_no_axioms FX1Poly.Typed.dataIntroReservedUntyped
-#assert_no_axioms FX1Poly.Typed.natIntroReservedUntyped
-#assert_no_axioms FX1Poly.Typed.idIntroReservedUntyped
-#assert_no_axioms FX1Poly.Typed.optionIntroReservedUntyped
-#assert_no_axioms FX1Poly.Typed.eitherIntroReservedUntyped
-#assert_no_axioms FX1Poly.Typed.pairIntroReservedUntyped
-#assert_no_axioms FX1Poly.Typed.listIntroReservedUntyped
-#assert_no_axioms FX1Poly.Typed.boolElimReservedUntyped
-#assert_no_axioms FX1Poly.Typed.idElimReservedUntyped
-#assert_no_axioms FX1Poly.Typed.optionMatchReservedUntyped
-#assert_no_axioms FX1Poly.Typed.eitherMatchReservedUntyped
-#assert_no_axioms FX1Poly.Typed.sigmaProjectionReservedUntyped
 #assert_no_axioms FX1Poly.Typed.bridgeReservedUntyped
 #assert_no_axioms FX1Poly.Typed.reservedHeadUntypedByEveryEngine
 -- ★ RECURSIVE list-eliminator computing canonicity (ListElimComputingCanonicity), completing the

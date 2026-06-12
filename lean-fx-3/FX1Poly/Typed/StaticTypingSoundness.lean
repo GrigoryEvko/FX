@@ -5,17 +5,6 @@ import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescFlat
 import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.HasTypeDescDataIntroInversion
-import FX1Poly.Typed.HasTypeDescNatIntro
-import FX1Poly.Typed.HasTypeDescIdIntro
-import FX1Poly.Typed.HasTypeDescOptionIntro
-import FX1Poly.Typed.HasTypeDescEitherIntro
-import FX1Poly.Typed.HasTypeDescPairIntro
-import FX1Poly.Typed.HasTypeDescListIntro
-import FX1Poly.Typed.HasTypeDescBoolElim
-import FX1Poly.Typed.HasTypeDescIdElim
-import FX1Poly.Typed.HasTypeDescOptionMatch
-import FX1Poly.Typed.HasTypeDescEitherMatch
-import FX1Poly.Typed.HasTypeDescSigmaProjection
 import FX1Poly.Typed.HasTypeDescBridge
 
 /-! # FX1Poly/Typed/StaticTypingSoundness — the honest classifier's NEGATIVE soundness (reserved ⟹ untyped by EVERY engine)
@@ -37,14 +26,18 @@ bundle `reservedHeadUntypedByEveryEngine` conjoining all of them.
     `UntypableHeadDecision.isUntypableHead_sound` (which already encapsulates the grown induction) via the bridge
     `hasSomeTypingRule_false_imp_isUntypableHead`: a head reserved by the union classifier is roleless and
     non-bespoke, exactly `isUntypableHead`'s precondition.
-  * **Standalone engines** (`HasTypeDescFlat` / `BaseType` / `DataIntro` / `NatIntro` / `IdIntro` / `OptionIntro`
-    / `EitherIntro` / `PairIntro` / `ListIntro` / `BoolElim` / `IdElim` / `OptionMatch` / `EitherMatch` /
-    `SigmaProjection` / `Bridge`).  Each consumes its shipped `subjectIs…` closed-forms inversion (the bridge leg
-    cases the derivation directly — every arm's subject is a concrete cell): every typed subject is one
-    of a fixed set of constructor / eliminator cells, each with a head the classifier reports `true`, so a
-    `false` report is `Bool.noConfusion`.  (`Flat` keys on a symbolic generator with a `flatTypingRuleDescOf …
-    = some …` witness rather than concrete cells, so its leg collapses the disjunction chain via
-    `Bool.or_true` / `Bool.true_or` instead.)
+  * **Standalone engines** (`HasTypeDescFlat` / `BaseType` / `DataIntro` / `Bridge`).  Each consumes its
+    shipped `subjectIs…` closed-forms inversion (the bridge leg cases the derivation directly — every arm's
+    subject is a concrete cell): every typed subject is one of a fixed set of constructor / eliminator cells,
+    each with a head the classifier reports `true`, so a `false` report is `Bool.noConfusion`.  (`Flat` keys
+    on a symbolic generator with a `flatTypingRuleDescOf … = some …` witness rather than concrete cells, so
+    its leg collapses the disjunction chain via `Bool.or_true` / `Bool.true_or` instead.)
+
+The twelve standalone data intro/elim refutations (`NatIntro` / `IdIntro` / `OptionIntro` / `EitherIntro` /
+`PairIntro` / `ListIntro` / `BoolElim` / `IdElim` / `OptionMatch` / `EitherMatch` / `SigmaProjection`) that
+used to live here died with their engines (NATIVE-42/43); the single-judgment successor covering ALL native
+typing is `HasTypeNativeUnion.reservedHeadUntyped` (`UnionStaticTypingSoundness`), stated over the
+full-union classifier `hasUnionEliminatorTypingRule`.
 
 This is the exact honest claim — "untyped by every engine `hasSomeTypingRule` consults".  The formation-only
 engine `HasTypeDesc` is the formation fragment of `HasTypeDescPi` (its subjects are `typingRuleDescOf` heads, so
@@ -180,96 +173,6 @@ theorem dataIntroReservedUntyped {profile : PolyProfile} {scope : Nat}
       rfl | rfl | rfl | rfl | rfl | rfl <;>
     exact Bool.noConfusion reserved
 
-/-- NAT-INTRO engine (`natZero` / `natSucc`). -/
-theorem natIntroReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescNatIntro profile context subject classifier) : False := by
-  rcases HasTypeDescNatIntro.subjectIsNatConstructor typed with rfl | ⟨_predecessor, rfl⟩ <;>
-    exact Bool.noConfusion reserved
-
-/-- ID-INTRO engine (`refl`). -/
-theorem idIntroReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescIdIntro profile context subject classifier) : False := by
-  rcases HasTypeDescIdIntro.subjectIsRefl typed with ⟨_witness, rfl⟩
-  exact Bool.noConfusion reserved
-
-/-- OPTION-INTRO engine (`none` / `some`). -/
-theorem optionIntroReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescOptionIntro profile context subject classifier) : False := by
-  rcases HasTypeDescOptionIntro.subjectIsOptionConstructor typed with rfl | ⟨_value, rfl⟩ <;>
-    exact Bool.noConfusion reserved
-
-/-- EITHER-INTRO engine (`inl` / `inr`). -/
-theorem eitherIntroReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescEitherIntro profile context subject classifier) : False := by
-  rcases HasTypeDescEitherIntro.subjectIsEitherInjection typed with ⟨_value, rfl⟩ | ⟨_value, rfl⟩ <;>
-    exact Bool.noConfusion reserved
-
-/-- PAIR-INTRO engine (`pair`). -/
-theorem pairIntroReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescPairIntro profile context subject classifier) : False := by
-  rcases HasTypeDescPairIntro.subjectIsPair typed with ⟨_firstValue, _secondValue, rfl⟩
-  exact Bool.noConfusion reserved
-
-/-- LIST-INTRO engine (`nil` / `cons`). -/
-theorem listIntroReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescListIntro profile context subject classifier) : False := by
-  rcases HasTypeDescListIntro.subjectIsListConstructor typed with rfl | ⟨_headValue, _tailList, rfl⟩ <;>
-    exact Bool.noConfusion reserved
-
-/-- BOOL-ELIM engine. -/
-theorem boolElimReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescBoolElim profile context subject classifier) : False := by
-  rcases HasTypeDescBoolElim.subjectIsBoolElim typed with ⟨_motive, _scrutinee, _thenBranch, _elseBranch, rfl⟩
-  exact Bool.noConfusion reserved
-
-/-- ID-ELIM engine (`idJ`). -/
-theorem idElimReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescIdElim profile context subject classifier) : False := by
-  rcases HasTypeDescIdElim.subjectIsIdJ typed with ⟨_motive, _baseCase, _witness, rfl⟩
-  exact Bool.noConfusion reserved
-
-/-- OPTION-MATCH engine. -/
-theorem optionMatchReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescOptionMatch profile context subject classifier) : False := by
-  rcases HasTypeDescOptionMatch.subjectIsOptionMatch typed with
-    ⟨_motive, _noneBranch, _someBranch, _scrutinee, rfl⟩
-  exact Bool.noConfusion reserved
-
-/-- EITHER-MATCH engine. -/
-theorem eitherMatchReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescEitherMatch profile context subject classifier) : False := by
-  rcases HasTypeDescEitherMatch.subjectIsEitherMatch typed with
-    ⟨_motive, _leftBranch, _rightBranch, _scrutinee, rfl⟩
-  exact Bool.noConfusion reserved
-
-/-- SIGMA-PROJECTION engine (`fst` / `snd`). -/
-theorem sigmaProjectionReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescSigmaProjection profile context subject classifier) : False := by
-  rcases HasTypeDescSigmaProjection.subjectIsSigmaProjection typed with ⟨_pairTerm, rfl⟩ | ⟨_pairTerm, rfl⟩ <;>
-    exact Bool.noConfusion reserved
-
 /-- BRIDGE engine (interval/bridge formation, endpoints, path intro/elim).  Every arm's subject is a
 concrete cell whose head the classifier reports `true`, so a `false` report is `Bool.noConfusion`. -/
 theorem bridgeReservedUntyped {profile : PolyProfile} {scope : Nat}
@@ -281,10 +184,13 @@ theorem bridgeReservedUntyped {profile : PolyProfile} {scope : Nat}
 /-! ## ★ The bundle — reserved ⟹ untyped by EVERY engine -/
 
 /-- **★ HON-5 headline: a head the honest classifier reports RESERVED is typed by NO engine.**  For a subject
-whose head `hasSomeTypingRule` reports `false`, every typing engine the classifier consults — grown
-(`HasTypeDescPi`), flat, base-type, the twelve standalone data intro/elim engines, and the bridge engine —
-rejects it at every classifier.  This is the soundness that makes `hasSomeTypingRule = false` a TRUTHFUL
-"statically reserved" verdict, not just a `Bool` that happens to compute. -/
+whose head `hasSomeTypingRule` reports `false`, every surviving typing engine — grown (`HasTypeDescPi`),
+flat, base-type, data-intro, and the bridge engine — rejects it at every classifier.  This is the soundness
+that makes `hasSomeTypingRule = false` a TRUTHFUL "statically reserved" verdict, not just a `Bool` that
+happens to compute.  (The NATIVE-42/43 retirement: the twelve standalone data intro/elim conjuncts that used
+to live here died with their engines; their single-judgment successor is
+`HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`, stated over the full-union
+classifier `hasUnionEliminatorTypingRule`.) -/
 theorem reservedHeadUntypedByEveryEngine {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false) :
@@ -292,33 +198,11 @@ theorem reservedHeadUntypedByEveryEngine {profile : PolyProfile} {scope : Nat}
     (∀ classifier : RawTerm scope, ¬ HasTypeDescFlat profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescBaseType profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescDataIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescNatIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescIdIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescOptionIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescEitherIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescPairIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescListIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescBoolElim profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescIdElim profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescOptionMatch profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescEitherMatch profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescSigmaProjection profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescBridge profile context subject classifier) :=
   ⟨fun _ typed => grownReservedUntyped reserved typed,
    fun _ typed => flatReservedUntyped reserved typed,
    fun _ typed => baseTypeReservedUntyped reserved typed,
    fun _ typed => dataIntroReservedUntyped reserved typed,
-   fun _ typed => natIntroReservedUntyped reserved typed,
-   fun _ typed => idIntroReservedUntyped reserved typed,
-   fun _ typed => optionIntroReservedUntyped reserved typed,
-   fun _ typed => eitherIntroReservedUntyped reserved typed,
-   fun _ typed => pairIntroReservedUntyped reserved typed,
-   fun _ typed => listIntroReservedUntyped reserved typed,
-   fun _ typed => boolElimReservedUntyped reserved typed,
-   fun _ typed => idElimReservedUntyped reserved typed,
-   fun _ typed => optionMatchReservedUntyped reserved typed,
-   fun _ typed => eitherMatchReservedUntyped reserved typed,
-   fun _ typed => sigmaProjectionReservedUntyped reserved typed,
    fun _ typed => bridgeReservedUntyped reserved typed⟩
 
 end FX1Poly.Typed

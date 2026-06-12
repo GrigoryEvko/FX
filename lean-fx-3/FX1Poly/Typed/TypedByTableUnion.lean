@@ -289,7 +289,9 @@ theorem hasTableTypingRule_false_imp_isUntypableHead (generator : Generator)
 /-- **★ HON-5 / HON-7 rebased: a head the TABLE classifier reports reserved is typed by NO engine.**  Routed
 through the exact equivalence (`hasSomeTypingRule_eq_hasTableTypingRule`): a `hasTableTypingRule = false` verdict
 is a `hasSomeTypingRule = false` verdict, so the shipped per-engine soundness bundle applies unchanged.  The
-honest classifier and its table twin make the SAME truthful "statically reserved" claim. -/
+honest classifier and its table twin make the SAME truthful "statically reserved" claim.  (The NATIVE-42/43
+retirement shrank the bundle to the five surviving engines; the single-judgment successor over ALL native
+typing is `HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`.) -/
 theorem reservedTableHeadUntypedByEveryEngine {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     (reserved : hasTableTypingRule (RawTerm.headGenerator subject) = false) :
@@ -297,17 +299,6 @@ theorem reservedTableHeadUntypedByEveryEngine {profile : PolyProfile} {scope : N
     (∀ classifier : RawTerm scope, ¬ HasTypeDescFlat profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescBaseType profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescDataIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescNatIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescIdIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescOptionIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescEitherIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescPairIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescListIntro profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescBoolElim profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescIdElim profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescOptionMatch profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescEitherMatch profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescSigmaProjection profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescBridge profile context subject classifier) := by
   rw [← hasSomeTypingRule_eq_hasTableTypingRule] at reserved
   exact reservedHeadUntypedByEveryEngine reserved
