@@ -1,13 +1,17 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaTableEquivarianceSubstrate
+import FX1Poly.Core.IotaTableEquivariance
 
-/-! # FX1PolyAudit/AuditIotaTableEquivariance — IOTA-T2 audit shard (equivariance substrate)
+/-! # FX1PolyAudit/AuditIotaTableEquivariance — IOTA-T2 audit shard (substrate + headline)
 
-Per-declaration zero-axiom gate for the IOTA-T2 substrate: the fold-engine lift-iterate pins, the
-shift-erased view under substitution (substView / lookup-map / per-shift projections), the
-depth-weakening naturality (term, one-binder body, two-binder body — with the under-binder naturality
-squares), and slot-replacement naturality.  Every declaration below must be free of `propext`,
-`Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
+Per-declaration zero-axiom gate for IOTA-T2: the fold-engine lift-iterate pins, the shift-erased
+view under substitution (substView / lookup-map / per-shift projections), the depth-weakening
+naturality (term, one-binder body, two-binder body — with the under-binder naturality squares),
+slot-replacement naturality, the payload scope-uniformity certificate layer with all 18 row pins,
+and the HEADLINE: the mutual template/spine/replacements interpretation naturality square plus the
+depth-0 `interpretTarget?_subst` corollary — substitution equivariance for the whole iota-rule
+table interpreter, conditional only on the per-row scope-uniformity certificates.  Every
+declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 
@@ -73,5 +77,27 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.idJReflIotaRow_isScopeUniform
 #assert_no_axioms FX1Poly.Core.idStrictRecReflIotaRow_isScopeUniform
 #assert_no_axioms FX1Poly.Core.pathBetaIotaRow_isScopeUniform
+
+/-! ## Option pins + cast composition -/
+
+#assert_no_axioms FX1Poly.Core.optionSomeBindMonadic
+#assert_no_axioms FX1Poly.Core.optionSomeBindExplicit
+#assert_no_axioms FX1Poly.Core.optionSomeMap
+#assert_no_axioms FX1Poly.Core.optionMapEqSome
+#assert_no_axioms FX1Poly.Core.castCompose
+
+/-! ## Per-stage interpreter naturality -/
+
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeTermAt?_subst
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeChildLookup_subst
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.elimPayloadAtDepth?_subst
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.resolvePayloadSource?_subst
+
+/-! ## The HEADLINE: interpretation naturality (mutual trio + depth-0 corollary) -/
+
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTemplate?_subst
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretBuiltChildren?_subst
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretReplacements?_subst
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTarget?_subst
 
 end FX1PolyAudit

@@ -90,7 +90,7 @@ theorem RawTermChildren.toScopedChildren_subst
     (RawTermChildren.subst sigma children).toScopedChildren =
       children.toScopedChildren.map (ScopedChild.substView sigma)
   | _, .childNil => rfl
-  | _, .childCons childHead childTail =>
+  | _, .childCons _ childTail =>
       congrArg (List.cons _)
         (RawTermChildren.toScopedChildren_subst sigma childTail)
 
