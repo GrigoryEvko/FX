@@ -4,6 +4,7 @@ import FX1Poly.Typed.TypedChurchBooleanOperations
 import FX1Poly.Typed.TypedChurchNegation
 import FX1Poly.Core.RawTermSubstLiftWeaken
 import FX1Poly.Core.ConvCongruence
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchListLength — the list-length fold and its iteration-semantics faithfulness
 
@@ -90,7 +91,7 @@ theorem lengthConsHandler_reduces (head acc : RawTerm 0) :
     StepStar (appCell (appCell lengthConsHandler head) acc) (appCell churchSucc acc) := by
   have functionBeta : Step (appCell lengthConsHandler head)
       (lamCell churchListDomainAnn (appCell (RawTerm.weaken churchSucc) (variableCell (⟨0, by decide⟩ : Fin 1)))) := by
-    rw [← lengthConsHandlerInnerSubst head]; exact Step.beta
+    rw [← lengthConsHandlerInnerSubst head]; exact HeadStep.beta.toStep
   have congStep : Step (appCell (appCell lengthConsHandler head) acc)
       (appCell (lamCell churchListDomainAnn (appCell (RawTerm.weaken churchSucc) (variableCell (⟨0, by decide⟩ : Fin 1)))) acc) :=
     Step.cong .gen_app ()
@@ -98,7 +99,7 @@ theorem lengthConsHandler_reduces (head acc : RawTerm 0) :
         (.childCons acc .childNil) functionBeta)
   have outerBeta : Step (appCell (lamCell churchListDomainAnn (appCell (RawTerm.weaken churchSucc)
       (variableCell (⟨0, by decide⟩ : Fin 1)))) acc) (appCell churchSucc acc) := by
-    rw [← lengthConsHandlerOuterSubst acc]; exact Step.beta
+    rw [← lengthConsHandlerOuterSubst acc]; exact HeadStep.beta.toStep
   exact StepStar.trans congStep (StepStar.trans outerBeta (StepStar.refl _))
 
 /-- `length list = fold (λh.λacc. churchSucc acc) churchZero list` — the list length as a Church numeral. -/

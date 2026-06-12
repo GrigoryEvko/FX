@@ -1,5 +1,6 @@
 import FX1Poly.Typed.GrownStrengthening
 import FX1Poly.Typed.SimplyTypedTermInhabitationLevelFree
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/GrownStrengtheningRefutation — the existential form of grown strengthening is FALSE
 
@@ -31,7 +32,7 @@ scope-0 term weakens to it.
 ## Zero-axiom verification
 
 The counterexample typing composes `ofFormation`/`universeFormation`/`var`/`piIntro`/`piElim`/
-`conv` with `(Conv.fromStep Step.beta).sym` — all rfl-defeq on the closed cells (weaken, `subst0`,
+`conv` with `(Conv.fromStep HeadStep.beta.toStep).sym` — all rfl-defeq on the closed cells (weaken, `subst0`,
 and the cons-lookup all reduce definitionally).  The image escape is two levels of
 `fold_mkGen_of_ne_var` drilling with `Fin 0` elimination at the variable arms.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Audit-gated in
@@ -95,7 +96,7 @@ theorem weakenedSubjectGrownTypedAtEscapingClassifier (profile : PolyProfile) :
   -- the escaping reclassifier β-reduces to Type@1 (subst0 of the closed body is rfl)
   have betaStep : Step escapingReclassifier
       (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard) :=
-    Step.beta
+    HeadStep.beta.toStep
   exact HasTypeDescPi.conv LevelExpr.lzero.lsucc.lsucc UniverseFlag.standard
     baseTyped (Conv.fromStep betaStep).sym reclassifierTyped
 

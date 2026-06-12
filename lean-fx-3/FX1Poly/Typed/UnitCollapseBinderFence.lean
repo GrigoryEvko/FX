@@ -1,4 +1,5 @@
 import FX1Poly.Typed.UnitCollapseIncompleteness
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/UnitCollapseBinderFence
    — ★ the normalize-FIRST canonicalizer is ALSO incomplete: the binder fence (ULC-4 sub-spike)
@@ -85,12 +86,12 @@ definitionally to the binder-buried weakened variable). -/
 theorem konstAppliedToVariable_normalizes :
     Step.betaEtaStar (appCell konstUnitFunction (variableCell ⟨0, Nat.zero_lt_one⟩))
       konstAppliedToVariableNormalForm :=
-  Step.betaEtaStar.trans (Or.inl Step.beta) (Step.betaEtaStar.refl _)
+  Step.betaEtaStar.trans (Or.inl HeadStep.beta.toStep) (Step.betaEtaStar.refl _)
 
 /-- The unit side β-reduces in ONE step to its normal form. -/
 theorem konstAppliedToUnit_normalizes :
     Step.betaEtaStar (appCell konstUnitFunction unitCell) konstAppliedToUnitNormalForm :=
-  Step.betaEtaStar.trans (Or.inl Step.beta) (Step.betaEtaStar.refl _)
+  Step.betaEtaStar.trans (Or.inl HeadStep.beta.toStep) (Step.betaEtaStar.refl _)
 
 /-- **The two normal forms never βη-join** — both are βη-normal (the unit-difference sits under
 the binder, out of every rule's reach) and they are distinct. -/

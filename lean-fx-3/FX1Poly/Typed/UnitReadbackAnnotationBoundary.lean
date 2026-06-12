@@ -1,5 +1,6 @@
 import FX1Poly.Typed.UnitReadbackDeepSpineBoundary
 import FX1Poly.Core.StepInversion
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/UnitReadbackAnnotationBoundary
    — ★ the 9th boundary, DECIDED: trust-the-classifier annotation canonicalization (#481 brick 7)
@@ -72,7 +73,7 @@ def annotatedByLiteral : RawTerm 0 :=
 innermost variable, so `subst0` computes). -/
 theorem redexAnnotation_steps {scope : Nat} :
     Step (redexAnnotation : RawTerm scope) unitTypeCell :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- The redex annotation is grown-typed at `Type@0` — `piElim` of the identity-on-`Type@0` λ
 at the `Unit` code. -/

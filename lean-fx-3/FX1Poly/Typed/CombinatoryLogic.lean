@@ -1,5 +1,6 @@
 import FX1Poly.Typed.CurryFixpointDivergence
 import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/CombinatoryLogic — the SKI combinator basis in the λ-fragment
 
@@ -79,13 +80,13 @@ theorem combinatorS_stronglyNormalizing : IsStronglyNormalizing combinatorS :=
     RawTerm.isStepNormalForm_blocks_step (by decide) target stp)
 
 /-- The **I-rule**: `I a ↝ a` — a single β-step (`subst0 (var 0) a = a`). -/
-theorem combinatorI_reduces (a : RawTerm 0) : Step (appCell combinatorI a) a := Step.beta
+theorem combinatorI_reduces (a : RawTerm 0) : Step (appCell combinatorI a) a := HeadStep.beta.toStep
 
 /-- The **K-rule**: `K a b ↝* a` — `K a` β-reduces (in function position) to `λy. (weaken a)`, then the outer β
 contracts that applied to `b` back to `a` (the `subst0 (weaken a) b = a` cancellation). -/
 theorem combinatorK_reduces (a b : RawTerm 0) : StepStar (appCell (appCell combinatorK a) b) a := by
   have functionBeta : Step (appCell combinatorK a)
-      (lamCell combinatorDomainAnn (RawTerm.weaken a)) := Step.beta
+      (lamCell combinatorDomainAnn (RawTerm.weaken a)) := HeadStep.beta.toStep
   have congStep : Step (appCell (appCell combinatorK a) b)
       (appCell (lamCell combinatorDomainAnn (RawTerm.weaken a)) b) :=
     Step.cong .gen_app ()
@@ -94,7 +95,7 @@ theorem combinatorK_reduces (a b : RawTerm 0) : StepStar (appCell (appCell combi
   have cancelEq : RawTerm.subst0 (RawTerm.weaken a) b = a := RawTerm.weaken_subst_singleton a b
   have outerBeta : Step (appCell (lamCell combinatorDomainAnn (RawTerm.weaken a)) b)
       (RawTerm.subst0 (RawTerm.weaken a) b) :=
-    Step.beta
+    HeadStep.beta.toStep
   rw [cancelEq] at outerBeta
   exact StepStar.trans congStep (StepStar.trans outerBeta (StepStar.refl _))
 

@@ -1,5 +1,6 @@
 import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Core.Normalize
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ClosedConvDecision
     — the first lane crossing: FT-derived strong normalization feeds the SN-fragment conversion decider
@@ -106,6 +107,6 @@ theorem betaRedexConvertsToReduct (levelExpr : LevelExpr) (flag : UniverseFlag) 
       (appCell (lamCell (universeCodeCell levelExpr.lsucc flag) (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag) : RawTerm 0)
       (universeCodeCell levelExpr flag) :=
-  Conv.fromStep Step.beta
+  Conv.fromStep HeadStep.beta.toStep
 
 end FX1Poly.Typed

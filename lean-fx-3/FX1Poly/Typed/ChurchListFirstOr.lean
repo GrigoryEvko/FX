@@ -2,6 +2,7 @@ import FX1Poly.Typed.ChurchLists
 import FX1Poly.Typed.TypedChurchBooleans
 import FX1Poly.Core.RawTermSubstLiftWeaken
 import FX1Poly.Core.ConvCongruence
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchListFirstOr — `firstOr`: the head accessor, the first list op that PROJECTS DATA out
 
@@ -72,7 +73,7 @@ theorem firstOrHandler_returnsHead (head rest : RawTerm 0) :
     StepStar (appCell (appCell firstOrHandler head) rest) head := by
   have functionBeta : Step (appCell firstOrHandler head)
       (lamCell churchListDomainAnn (RawTerm.weaken head)) := by
-    rw [← firstOrHandlerInnerSubst head]; exact Step.beta
+    rw [← firstOrHandlerInnerSubst head]; exact HeadStep.beta.toStep
   have congStep : Step (appCell (appCell firstOrHandler head) rest)
       (appCell (lamCell churchListDomainAnn (RawTerm.weaken head)) rest) :=
     Step.cong .gen_app ()
@@ -81,7 +82,7 @@ theorem firstOrHandler_returnsHead (head rest : RawTerm 0) :
   have cancel : RawTerm.subst0 (RawTerm.weaken head) rest = head :=
     RawTerm.weaken_subst_singleton head rest
   have outerBeta : Step (appCell (lamCell churchListDomainAnn (RawTerm.weaken head)) rest)
-      (RawTerm.subst0 (RawTerm.weaken head) rest) := Step.beta
+      (RawTerm.subst0 (RawTerm.weaken head) rest) := HeadStep.beta.toStep
   rw [cancel] at outerBeta
   exact StepStar.trans congStep (StepStar.trans outerBeta (StepStar.refl _))
 

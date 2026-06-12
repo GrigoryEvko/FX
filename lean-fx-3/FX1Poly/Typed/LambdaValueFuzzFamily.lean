@@ -1,6 +1,7 @@
 import FX1Poly.Typed.MetatheoryFuzz
 import FX1Poly.Typed.GrownClosedProgressByClassifier
 import FX1Poly.Typed.TypedNormalizer
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/LambdaValueFuzzFamily — a §27.3-L2 fuzz family that evaluates to a FUNCTION value
 
@@ -113,7 +114,7 @@ theorem metatheoryFuzzLambdaFamily_betaStep (n : Nat) :
     Step (metatheoryFuzzLambdaFamily n)
       (lamCell (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard)
         (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- Each member reaches the constant lambda value in a single-step `StepStar` chain. -/
 theorem metatheoryFuzzLambdaFamily_reducesToLambdaValue (n : Nat) :

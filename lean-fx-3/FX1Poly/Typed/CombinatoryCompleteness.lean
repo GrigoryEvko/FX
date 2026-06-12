@@ -1,4 +1,5 @@
 import FX1Poly.Typed.CombinatoryLogic
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/CombinatoryCompleteness — `S K K x ↝* x` (SKK behaves as the identity)
 
@@ -67,14 +68,14 @@ theorem skkReducesToIdentity (arg : RawTerm 0) :
         (.childCons arg .childNil)
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
-            (.childCons combinatorK .childNil) Step.beta)))
+            (.childCons combinatorK .childNil) HeadStep.beta.toStep)))
   have step2 : Step (appCell (appCell (saTerm combinatorK) combinatorK) arg)
       (appCell (sabTerm combinatorK combinatorK) arg) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
-        (.childCons arg .childNil) Step.beta)
+        (.childCons arg .childNil) HeadStep.beta.toStep)
   have step3 : Step (appCell (sabTerm combinatorK combinatorK) arg)
-      (appCell (appCell combinatorK arg) (appCell combinatorK arg)) := Step.beta
+      (appCell (appCell combinatorK arg) (appCell combinatorK arg)) := HeadStep.beta.toStep
   exact StepStar.trans step1 (StepStar.trans step2 (StepStar.trans step3
     (combinatorK_reduces arg (appCell combinatorK arg))))
 

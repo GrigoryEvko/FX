@@ -3,6 +3,7 @@ import FX1Poly.Core.OptionCanonicalFormsCandidate
 import FX1Poly.Core.EitherCanonicalFormsCandidate
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/MatchElimComputingCanonicity
     — the NON-RECURSIVE function-branch eliminator-computing canonicity (completes the coverage)
@@ -124,7 +125,7 @@ theorem optionMatchConstComputesToNumeral {scrutinee : RawTerm 0} (scrutineeValu
     IsNatNumeral.zero
     (fun payload _payloadNormal => by
       refine ⟨natZeroCell, ?_, IsNatNumeral.zero⟩
-      have betaStep : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) payload) natZeroCell := Step.beta
+      have betaStep : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) payload) natZeroCell := HeadStep.beta.toStep
       exact StepStar.single betaStep)
     scrutineeValue
 
@@ -139,11 +140,11 @@ theorem eitherMatchConstComputesToNumeral {scrutinee : RawTerm 0} (scrutineeValu
   eitherMatchComputesToValue (isResultValue := IsNatNumeral)
     (fun payload _payloadNormal => by
       refine ⟨natZeroCell, ?_, IsNatNumeral.zero⟩
-      have betaStep : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) payload) natZeroCell := Step.beta
+      have betaStep : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) payload) natZeroCell := HeadStep.beta.toStep
       exact StepStar.single betaStep)
     (fun payload _payloadNormal => by
       refine ⟨natZeroCell, ?_, IsNatNumeral.zero⟩
-      have betaStep : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) payload) natZeroCell := Step.beta
+      have betaStep : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) payload) natZeroCell := HeadStep.beta.toStep
       exact StepStar.single betaStep)
     scrutineeValue
 
@@ -164,7 +165,7 @@ theorem optionMatchIdComputesToValue {scrutinee : RawTerm 0} (scrutineeValue : i
     (fun payload payloadNormal => by
       refine ⟨payload, ?_, payloadNormal⟩
       have betaStep :
-          Step (appCell (lamCell natZeroCell (variableCell (⟨0, by decide⟩ : Fin 1))) payload) payload := Step.beta
+          Step (appCell (lamCell natZeroCell (variableCell (⟨0, by decide⟩ : Fin 1))) payload) payload := HeadStep.beta.toStep
       exact StepStar.single betaStep)
     scrutineeValue
 

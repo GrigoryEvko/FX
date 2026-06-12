@@ -1,4 +1,5 @@
 import FX1Poly.Core.Step
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Core/StepStar — reflexive-transitive closure of Step
 
@@ -127,7 +128,7 @@ theorem StepStar.identity_lam_beta_unit :
             (.childCons domainAnn (.childCons identityLamBody .childNil)))
           (.childCons unitArg .childNil))
     StepStar app unitArg :=
-  StepStar.trans Step.beta (StepStar.refl _)
+  StepStar.trans HeadStep.beta.toStep (StepStar.refl _)
 
 /-! ## Closure properties of StepStar
 

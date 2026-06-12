@@ -1,6 +1,7 @@
 import FX1Poly.Typed.GrownBetaRedexInAction
 import FX1Poly.Typed.GrownTypeSafety
 import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/MetatheoryFuzz
     — the §27.3 Layer-2 property-based metatheory fuzzer: a total generator of well-typed terms, with
@@ -90,7 +91,7 @@ theorem metatheoryFuzzFamily_typed {profile : PolyProfile} : ∀ n,
 defeq).  The family's reduction is pure β. -/
 theorem metatheoryFuzzFamily_betaStep : ∀ n,
     Step (metatheoryFuzzFamily (n + 1)) (metatheoryFuzzFamily n) :=
-  fun _ => Step.beta
+  fun _ => HeadStep.beta.toStep
 
 /-- **Preservation (β subject reduction) over the family.**  The β-reduct of every redex
 `metatheoryFuzzFamily (n+1)` is still typed at `Type@1` (`betaSubjectReductionDescPi`) — and the reduct IS
@@ -231,7 +232,7 @@ erases the entire inner redex stack in one step. -/
 theorem metatheoryFuzzConstantFamily_betaStep : ∀ n,
     Step (metatheoryFuzzConstantFamily (n + 1))
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
-  fun _ => Step.beta
+  fun _ => HeadStep.beta.toStep
 
 /-- **Preservation (β subject reduction) over the constant family.**  The β-reduct of every redex
 `metatheoryFuzzConstantFamily (n+1)` — which is `Type@0` — is still typed at `Type@1`

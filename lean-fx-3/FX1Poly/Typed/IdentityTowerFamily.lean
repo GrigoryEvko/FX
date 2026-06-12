@@ -1,5 +1,6 @@
 import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Typed.TypedNormalizer
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Typed/IdentityTowerFamily
     — a uniformly-typed infinite identity-application family (recursive piElim + SN + β-chain to value)
@@ -73,7 +74,7 @@ contractions.  Each `(λx. x) t ↝ t` (`Step.beta`, `subst0 (var 0) t = t`) str
 theorem idTower_reducesToValue (levelExpr : LevelExpr) (flag : UniverseFlag) :
     ∀ towerHeight, StepStar (idTower levelExpr flag towerHeight) (universeCodeCell levelExpr flag)
   | 0 => StepStar.refl _
-  | n + 1 => StepStar.trans Step.beta (idTower_reducesToValue levelExpr flag n)
+  | n + 1 => StepStar.trans HeadStep.beta.toStep (idTower_reducesToValue levelExpr flag n)
 
 /-- ★ **The identity tower is a uniformly-typed, strongly-normalizing, value-reaching infinite family.**
 For every height the tower member types at `Type@(e+1)`, is strongly normalizing, and reduces to `Type@e`

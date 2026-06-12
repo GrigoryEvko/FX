@@ -1,5 +1,6 @@
 import FX1Poly.Typed.TypedChurchNegation
 import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/TypedChurchBooleanOperations — the term model COMPUTES conjunction and disjunction
 
@@ -80,13 +81,13 @@ theorem churchFalseSelectsElse (typeArg thenBranch elseBranch : RawTerm 0) :
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             ((.childCons thenBranch .childNil) : RawTermChildren [0] 0)
-            Step.beta))))
+            HeadStep.beta.toStep))))
     (StepStar.trans
       (Step.cong .gen_app ()
         (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
           ((.childCons elseBranch .childNil) : RawTermChildren [0] 0)
-          Step.beta))
-      (StepStar.trans Step.beta (StepStar.refl _)))
+          HeadStep.beta.toStep))
+      (StepStar.trans HeadStep.beta.toStep (StepStar.refl _)))
 
 /-- `churchTrue` selects a CONCRETE `churchTrue` then-branch for any else-branch — the first branch being
 concrete lets the non-innermost `var 1` body resolve. -/
@@ -99,13 +100,13 @@ theorem churchTrueSelectsConcreteTrue (typeArg elseBranch : RawTerm 0) :
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             ((.childCons churchTrueLambda .childNil) : RawTermChildren [0] 0)
-            Step.beta))))
+            HeadStep.beta.toStep))))
     (StepStar.trans
       (Step.cong .gen_app ()
         (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
           ((.childCons elseBranch .childNil) : RawTermChildren [0] 0)
-          Step.beta))
-      (StepStar.trans Step.beta (StepStar.refl _)))
+          HeadStep.beta.toStep))
+      (StepStar.trans HeadStep.beta.toStep (StepStar.refl _)))
 
 /-- `churchTrue` selects a CONCRETE `churchFalse` then-branch for any else-branch. -/
 theorem churchTrueSelectsConcreteFalse (typeArg elseBranch : RawTerm 0) :
@@ -117,13 +118,13 @@ theorem churchTrueSelectsConcreteFalse (typeArg elseBranch : RawTerm 0) :
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             ((.childCons churchFalseLambda .childNil) : RawTermChildren [0] 0)
-            Step.beta))))
+            HeadStep.beta.toStep))))
     (StepStar.trans
       (Step.cong .gen_app ()
         (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
           ((.childCons elseBranch .childNil) : RawTermChildren [0] 0)
-          Step.beta))
-      (StepStar.trans Step.beta (StepStar.refl _)))
+          HeadStep.beta.toStep))
+      (StepStar.trans HeadStep.beta.toStep (StepStar.refl _)))
 
 -- ========== churchAnd ==========
 
@@ -197,10 +198,10 @@ theorem churchAnd_reducesToApplied (selectorArg secondArg : RawTerm 0) :
     StepStar (appCell (appCell churchAndLambda selectorArg) secondArg)
       (appCell (appCell (appCell selectorArg branchMotivePlaceholder) secondArg) churchFalseLambda) := by
   have step1 : Step (appCell churchAndLambda selectorArg) (churchAndPartial selectorArg) := by
-    rw [← churchAndBody_subst_a selectorArg]; exact Step.beta
+    rw [← churchAndBody_subst_a selectorArg]; exact HeadStep.beta.toStep
   have step2 : Step (appCell (churchAndPartial selectorArg) secondArg)
       (appCell (appCell (appCell selectorArg branchMotivePlaceholder) secondArg) churchFalseLambda) := by
-    rw [← churchAndPartialBody_subst_b selectorArg secondArg]; exact Step.beta
+    rw [← churchAndPartialBody_subst_b selectorArg secondArg]; exact HeadStep.beta.toStep
   exact StepStar.trans
     (Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
@@ -298,10 +299,10 @@ theorem churchOr_reducesToApplied (selectorArg secondArg : RawTerm 0) :
     StepStar (appCell (appCell churchOrLambda selectorArg) secondArg)
       (appCell (appCell (appCell selectorArg branchMotivePlaceholder) churchTrueLambda) secondArg) := by
   have step1 : Step (appCell churchOrLambda selectorArg) (churchOrPartial selectorArg) := by
-    rw [← churchOrBody_subst_a selectorArg]; exact Step.beta
+    rw [← churchOrBody_subst_a selectorArg]; exact HeadStep.beta.toStep
   have step2 : Step (appCell (churchOrPartial selectorArg) secondArg)
       (appCell (appCell (appCell selectorArg branchMotivePlaceholder) churchTrueLambda) secondArg) := by
-    rw [← churchOrPartialBody_subst_b selectorArg secondArg]; exact Step.beta
+    rw [← churchOrPartialBody_subst_b selectorArg secondArg]; exact HeadStep.beta.toStep
   exact StepStar.trans
     (Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])

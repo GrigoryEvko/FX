@@ -1,6 +1,7 @@
 import FX1Poly.Core.StepStar
 import FX1Poly.Core.StepRename
 import FX1Poly.Core.StepSubst
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Core/StepStarLength
    — Nat-indexed counted parallel of StepStar (well-founded measure)
@@ -217,6 +218,6 @@ theorem StepStarN.identity_lam_beta_unit_smoke :
             (.childCons domainAnn (.childCons identityLamBody .childNil)))
           (.childCons unitArg .childNil))
     StepStarN 1 appTerm unitArg :=
-  StepStarN.single Step.beta
+  StepStarN.single HeadStep.beta.toStep
 
 end FX1Poly.Core

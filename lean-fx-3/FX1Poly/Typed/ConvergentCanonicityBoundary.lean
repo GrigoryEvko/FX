@@ -1,5 +1,6 @@
 import FX1Poly.Core.RawIotaEtaFullStepSN
 import FX1Poly.Typed.RawIotaEtaOperationalSN
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ConvergentCanonicityBoundary
     — the convergent ι∪η presentation does NOT yield canonicity: its normal forms include
@@ -121,7 +122,7 @@ theorem appLamUnit_betaStepsToUnit :
               (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
           (.childCons (.mkGen .gen_unit () .childNil) .childNil)) : RawTerm 0)
       (.mkGen .gen_unit () .childNil) :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- **★ The convergent ι∪η presentation does not imply canonicity.**  There is a closed term that the
 convergent presentation classifies as NORMAL (no `IotaEtaStep` fires) yet which still `Step`-reduces — to

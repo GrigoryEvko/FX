@@ -4,6 +4,7 @@ import FX1Poly.Typed.SimplyTypedTermSubjectReductionLevelFree
 import FX1Poly.Core.RawTermNF
 import FX1Poly.Core.Step
 import FX1Poly.Core.ExistsStepOfNotNormal
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/SimplyTypedTermCanonicityLevelFree
     — canonicity (progress) for the simply-typed fragment: closed normal forms are lambdas.
@@ -95,7 +96,7 @@ theorem SimplyTypedTermLF.canonicalSplit {profile : PolyProfile} {scope : Nat}
       rcases ihFunction normalFunction with functionNeutral | ⟨functionDomain, body, functionEq⟩
       · exact Or.inl (LnNeutral.app functionNeutral)
       · subst functionEq
-        exact absurd Step.beta (RawTerm.isStepNormalForm_blocks_step normalApp _)
+        exact absurd HeadStep.beta.toStep (RawTerm.isStepNormalForm_blocks_step normalApp _)
   | @lam sourceScope sourceContext body domainCode codomainBase _domainExpr _codomainExpr _bodyTyped _ih =>
       intro _normal
       exact Or.inr ⟨domainCode, body, rfl⟩

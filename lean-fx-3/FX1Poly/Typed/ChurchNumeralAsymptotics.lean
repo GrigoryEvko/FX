@@ -1,6 +1,7 @@
 import FX1Poly.Typed.TypedChurchNumeralAddition
 import FX1Poly.Typed.TypedChurchNumeralMultiplication
 import FX1Poly.Core.StepStarLength
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchNumeralAsymptotics
     — ★ verified Church-numeral asymptotics: arithmetic DISPATCH is constant-time (COST-8)
@@ -75,7 +76,7 @@ theorem churchNumeral_dispatchCounted (depth : Nat) (typeA handlerF baseX : RawT
           (iteratedApplication depth
             (variableCell (⟨1, Nat.succ_lt_succ (Nat.succ_pos 0)⟩ : Fin 2))
             (variableCell (⟨0, Nat.succ_pos 1⟩ : Fin 2))))) := by
-    rw [← churchNumeral_substType depth typeA]; exact Step.beta
+    rw [← churchNumeral_substType depth typeA]; exact HeadStep.beta.toStep
   have step2 : Step
       (appCell (lamCell (piTyCodeCell typeA (RawTerm.weaken typeA))
         (lamCell (RawTerm.weaken typeA)
@@ -85,13 +86,13 @@ theorem churchNumeral_dispatchCounted (depth : Nat) (typeA handlerF baseX : RawT
       (lamCell typeA
         (iteratedApplication depth (RawTerm.weaken handlerF)
           (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) := by
-    rw [← churchNumeral_substStep depth typeA handlerF]; exact Step.beta
+    rw [← churchNumeral_substStep depth typeA handlerF]; exact HeadStep.beta.toStep
   have step3 : Step
       (appCell (lamCell typeA
         (iteratedApplication depth (RawTerm.weaken handlerF)
           (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) baseX)
       (iteratedApplication depth handlerF baseX) := by
-    rw [← iteratedApplication_subst0_weaken_step depth handlerF baseX]; exact Step.beta
+    rw [← iteratedApplication_subst0_weaken_step depth handlerF baseX]; exact HeadStep.beta.toStep
   exact StepStarN.transN
     (Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])

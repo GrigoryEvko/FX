@@ -1,5 +1,6 @@
 import FX1Poly.Typed.CombinatoryLogic
 import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchPairs — Church-encoded products in the λ-fragment
 
@@ -64,7 +65,7 @@ def churchSnd : RawTerm 0 :=
 (`rfl`-definitional — `x` is absent from the body), then the I-rule selects `b`. -/
 theorem secondProjector_reduces (a b : RawTerm 0) :
     StepStar (appCell (appCell secondProjector a) b) b := by
-  have functionBeta : Step (appCell secondProjector a) combinatorI := Step.beta
+  have functionBeta : Step (appCell secondProjector a) combinatorI := HeadStep.beta.toStep
   have congStep : Step (appCell (appCell secondProjector a) b) (appCell combinatorI b) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
@@ -76,10 +77,10 @@ which the K-rule selects to `a`.  The symbolic component `a` re-emerges through 
 cancellation. -/
 theorem pairFst_reduces (a b : RawTerm 0) :
     StepStar (appCell churchFst (pairTerm a b)) a := by
-  have step1 : Step (appCell churchFst (pairTerm a b)) (appCell (pairTerm a b) combinatorK) := Step.beta
+  have step1 : Step (appCell churchFst (pairTerm a b)) (appCell (pairTerm a b) combinatorK) := HeadStep.beta.toStep
   have step2 : Step (appCell (pairTerm a b) combinatorK)
       (appCell (appCell combinatorK (RawTerm.subst0 (RawTerm.weaken a) combinatorK))
-        (RawTerm.subst0 (RawTerm.weaken b) combinatorK)) := Step.beta
+        (RawTerm.subst0 (RawTerm.weaken b) combinatorK)) := HeadStep.beta.toStep
   have cancelA : RawTerm.subst0 (RawTerm.weaken a) combinatorK = a :=
     RawTerm.weaken_subst_singleton a combinatorK
   have cancelB : RawTerm.subst0 (RawTerm.weaken b) combinatorK = b :=
@@ -91,10 +92,10 @@ theorem pairFst_reduces (a b : RawTerm 0) :
 second-projector `λx.λy.y`, yielding `(λx.λy.y) a b`, which the second-projection rule selects to `b`. -/
 theorem pairSnd_reduces (a b : RawTerm 0) :
     StepStar (appCell churchSnd (pairTerm a b)) b := by
-  have step1 : Step (appCell churchSnd (pairTerm a b)) (appCell (pairTerm a b) secondProjector) := Step.beta
+  have step1 : Step (appCell churchSnd (pairTerm a b)) (appCell (pairTerm a b) secondProjector) := HeadStep.beta.toStep
   have step2 : Step (appCell (pairTerm a b) secondProjector)
       (appCell (appCell secondProjector (RawTerm.subst0 (RawTerm.weaken a) secondProjector))
-        (RawTerm.subst0 (RawTerm.weaken b) secondProjector)) := Step.beta
+        (RawTerm.subst0 (RawTerm.weaken b) secondProjector)) := HeadStep.beta.toStep
   have cancelA : RawTerm.subst0 (RawTerm.weaken a) secondProjector = a :=
     RawTerm.weaken_subst_singleton a secondProjector
   have cancelB : RawTerm.subst0 (RawTerm.weaken b) secondProjector = b :=

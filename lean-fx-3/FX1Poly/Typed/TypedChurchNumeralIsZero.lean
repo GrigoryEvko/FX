@@ -1,5 +1,6 @@
 import FX1Poly.Typed.TypedChurchNumeralComputeGeneral
 import FX1Poly.Typed.TypedChurchNegation
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/TypedChurchNumeralIsZero — the term model COMPUTES the `isZero` predicate
 
@@ -67,7 +68,7 @@ theorem constFalseStep_appReducesToFalse (argument : RawTerm 0) :
     dsimp only [RawTerm.subst0]
     exact RawTerm.weaken_subst_singleton churchFalseLambda argument
   rw [← reshape]
-  exact Step.beta
+  exact HeadStep.beta.toStep
 
 /-- ★ The Church-encoded `isZero` combinator `λn. n placeholder (λ_. churchFalse) churchTrue`.  It feeds the
 bound numeral `n` (de Bruijn `var 0`) the constant-false step over the base `churchTrue`; the three arguments
@@ -103,7 +104,7 @@ directly (the empty iterate `iteratedApplication 0 _ churchTrue = churchTrue`). 
 theorem churchIsZero_onZero :
     StepStar (appCell churchIsZeroLambda (churchNumeralLambda 0)) churchTrueLambda :=
   StepStar.trans
-    (by rw [← churchIsZeroBody_substitutes (churchNumeralLambda 0)]; exact Step.beta)
+    (by rw [← churchIsZeroBody_substitutes (churchNumeralLambda 0)]; exact HeadStep.beta.toStep)
     (churchNumeral_appliedReducesToIterate_general 0 branchMotivePlaceholder constFalseStep churchTrueLambda)
 
 /-- ★ `isZero` of a SUCCESSOR numeral computes to `churchFalse`: `churchIsZero (numeral (k+1)) ↝* churchFalse`,
@@ -114,7 +115,7 @@ unevaluated. -/
 theorem churchIsZero_onSucc (priorDepth : Nat) :
     StepStar (appCell churchIsZeroLambda (churchNumeralLambda (priorDepth + 1))) churchFalseLambda :=
   StepStar.trans
-    (by rw [← churchIsZeroBody_substitutes (churchNumeralLambda (priorDepth + 1))]; exact Step.beta)
+    (by rw [← churchIsZeroBody_substitutes (churchNumeralLambda (priorDepth + 1))]; exact HeadStep.beta.toStep)
     (StepStar.trans_compose
       (churchNumeral_appliedReducesToIterate_general (priorDepth + 1) branchMotivePlaceholder
         constFalseStep churchTrueLambda)

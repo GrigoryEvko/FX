@@ -1,4 +1,5 @@
 import FX1Poly.Typed.CurryFixpointDivergence
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/CurryFixpointCombinator — the Curry fixpoint combinator and its fixpoint property
 
@@ -55,7 +56,7 @@ substitution `subst0 fixInnerHalf g` computes to `curryHalf g` definitionally (t
 inner de Bruijn `1` to `weaken g`, by `rfl`). -/
 theorem fixCombinator_applied_step (g : RawTerm 0) :
     Step (appCell fixCombinator g) (curryOmega g) :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- `fix g ↝* g (Ω_g)` in two steps: the instantiation β, then the fixpoint unfolding `Ω_g ↝ g(Ω_g)`. -/
 theorem fixCombinator_reducesToUnfolding (g : RawTerm 0) :

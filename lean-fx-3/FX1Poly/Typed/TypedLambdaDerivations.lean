@@ -3,6 +3,7 @@ import FX1Poly.Typed.ClosedSNSmoke
 import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.IntroRuleDesc
 import FX1Poly.Typed.ElimRuleDesc
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Typed/TypedLambdaDerivations
     - concrete `HasTypeDescPi` typing-engine derivations of real λ-terms
@@ -148,7 +149,7 @@ theorem identityApplicationOnUniverseCode_betaReducesToArgument
           (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
         (universeCodeCell levelExpr flag))
       (universeCodeCell levelExpr flag) :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- ★ Concrete subject reduction for an honest application.  The identity
 application `(λ(x : Type@(e+1)). x) (Type@e)` β-reduces to its argument `Type@e`,
@@ -332,7 +333,7 @@ theorem polymorphicIdentityInstantiation_betaReducesToIdentity (flag : UniverseF
         (universeCodeCell LevelExpr.lzero flag))
       (lamCell (universeCodeCell LevelExpr.lzero flag)
         (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- ★ Concrete subject reduction for the dependent type-instantiation.  The redex
 `(Λ(A : Type@1). λ(x : A). x) (Type@0)` β-reduces to the monomorphic identity
@@ -490,8 +491,8 @@ theorem polymorphicIdentityTwoArgReducesToTypeZero (flag : UniverseFlag) :
       (StepChildren.here
         (parentScope := 0) (headShift := 0) (restShifts := [0])
         ((.childCons (universeCodeCell LevelExpr.lzero flag) .childNil) : RawTermChildren [0] 0)
-        Step.beta))
-    (StepStar.trans Step.beta (StepStar.refl _))
+        HeadStep.beta.toStep))
+    (StepStar.trans HeadStep.beta.toStep (StepStar.refl _))
 
 /-- ★ Subject reduction for the curried 2-argument application.  The redex
 `(Λ(A : Type@2). λ(x : A). x) (Type@1) (Type@0)` reduces (in two β-steps) to the value

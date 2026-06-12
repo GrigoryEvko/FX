@@ -1,6 +1,7 @@
 import FX1Poly.Core.StepWordRewriteSoundness
 import FX1Poly.Core.StepRewriteRuleMap
 import FX1Poly.Core.RawTermNF
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Core/WordRewriteMisalignment
    — the full word system fires on the image of a Step-normal form (the SN-134 verdict)
@@ -69,7 +70,7 @@ def misalignmentRedex : RawTerm 0 :=
 definitionally the unit leaf (innermost-variable substitution computes). -/
 theorem misalignmentRedex_steps :
     Step misalignmentRedex (misalignmentUnitLeaf : RawTerm 0) :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- **The induced rewrite rule, with both sides as literal words.**  The left side is the
 redex's code, the right side the contractum's; both equations are `rfl` over the shipped

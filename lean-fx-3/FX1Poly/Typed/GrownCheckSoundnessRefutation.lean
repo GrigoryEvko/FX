@@ -1,6 +1,7 @@
 import FX1Poly.Typed.GrownCheckContextConversion
 import FX1Poly.Typed.CurryFixpointDivergence
 import FX1Poly.Typed.TypedFragmentAcyclicity
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/GrownCheckSoundnessRefutation — the RAW relation is UNSOUND even at a typed target
 
@@ -77,7 +78,7 @@ theorem recursivePiType_reducesToPi :
     StepStar recursivePiType (piTyCodeCell recursivePiType (typeZeroCode 1)) :=
   have betaStep : Step (appCell piFormerLambda recursivePiType)
       (piTyCodeCell recursivePiType (typeZeroCode 1)) :=
-    Step.beta
+    HeadStep.beta.toStep
   StepStar.trans (curryOmega_step piFormerLambda) (StepStar.single betaStep)
 
 /-- `X ~Conv~ Π X. Type@0` — the recursive-type unfolding as a conversion. -/
@@ -135,7 +136,7 @@ theorem omegaChecksAtTypeZero (profile : PolyProfile) :
 /-- `recursiveOmega` β-self-steps (the annotation is discarded by β, the body `(var 0)(var 0)`
 substituted by the self-applicator recopies it), so it diverges and is NOT strongly normalizing. -/
 theorem recursiveOmega_betaSelfStep : Step recursiveOmega recursiveOmega :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- `recursiveOmega` is NOT strongly normalizing — it self-loops under `Step`. -/
 theorem recursiveOmega_notStronglyNormalizing :

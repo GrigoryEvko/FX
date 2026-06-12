@@ -1,6 +1,7 @@
 import FX1Poly.Typed.ListElimComputingCanonicity
 import FX1Poly.Typed.NatElimFaithfulArithmetic
 import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ListElimFaithfulLength — the native `listElim` recursor FAITHFULLY computes host `List.length` (HON-12)
 
@@ -61,12 +62,12 @@ binders, substitute the recursive result for `r`. -/
 theorem lengthNatStepComputesExact (headVal tailVal recResult : RawTerm 0) :
     StepStar (appCell (appCell (appCell lengthNatStep headVal) tailVal) recResult) (natSuccCell recResult) := by
   have firstBeta : Step (appCell lengthNatStep headVal)
-      (lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) := Step.beta
+      (lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) := HeadStep.beta.toStep
   have secondBeta :
       Step (appCell (lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) tailVal)
-        (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) := Step.beta
+        (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) := HeadStep.beta.toStep
   have thirdBeta : Step (appCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) recResult)
-      (natSuccCell recResult) := Step.beta
+      (natSuccCell recResult) := HeadStep.beta.toStep
   exact StepStar.trans_compose
     (StepStar.appFunction (StepStar.appFunction (StepStar.single firstBeta)))
     (StepStar.trans_compose (StepStar.appFunction (StepStar.single secondBeta)) (StepStar.single thirdBeta))

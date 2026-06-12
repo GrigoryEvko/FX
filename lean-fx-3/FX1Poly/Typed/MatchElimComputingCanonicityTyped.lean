@@ -1,6 +1,7 @@
 import FX1Poly.Typed.MatchElimComputingCanonicity
 import FX1Poly.Core.OptionEitherMatchCanonicalComputation
 import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/MatchElimComputingCanonicityTyped
     — TYPED option/either MATCH eliminator-computing canonicity, extending firing-63's bool result to the
@@ -79,7 +80,7 @@ theorem closedOptionMatchIntoBoolComputes
       StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) IotaHeadStep.iotaOptionMatchNone.toStep,
       Or.inl rfl⟩
   · subst someEq
-    have betaStep : Step (appCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) inner) boolTrueCell := Step.beta
+    have betaStep : Step (appCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) inner) boolTrueCell := HeadStep.beta.toStep
     exact ⟨boolTrueCell,
       StepStar.transLast
         (StepStar.transLast (StepStar.optionMatchScrutinee scrutReduces) IotaHeadStep.iotaOptionMatchSome.toStep)
@@ -104,14 +105,14 @@ theorem closedEitherMatchIntoBoolComputes
   obtain ⟨scrutValue, scrutReduces, scrutIsEither⟩ := scrutineeCanonical
   rcases scrutIsEither with ⟨inner, inlEq⟩ | ⟨inner, inrEq⟩
   · subst inlEq
-    have betaStep : Step (appCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) inner) boolTrueCell := Step.beta
+    have betaStep : Step (appCell (lamCell boolTrueCell (boolTrueCell : RawTerm 1)) inner) boolTrueCell := HeadStep.beta.toStep
     exact ⟨boolTrueCell,
       StepStar.transLast
         (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) IotaHeadStep.iotaEitherMatchInl.toStep)
         betaStep,
       Or.inl rfl⟩
   · subst inrEq
-    have betaStep : Step (appCell (lamCell boolTrueCell (boolFalseCell : RawTerm 1)) inner) boolFalseCell := Step.beta
+    have betaStep : Step (appCell (lamCell boolTrueCell (boolFalseCell : RawTerm 1)) inner) boolFalseCell := HeadStep.beta.toStep
     exact ⟨boolFalseCell,
       StepStar.transLast
         (StepStar.transLast (StepStar.eitherMatchScrutinee scrutReduces) IotaHeadStep.iotaEitherMatchInr.toStep)

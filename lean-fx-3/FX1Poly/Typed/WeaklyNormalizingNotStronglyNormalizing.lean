@@ -1,4 +1,5 @@
 import FX1Poly.Typed.UntypedOmegaNotStronglyNormalizing
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Typed/WeaklyNormalizingNotStronglyNormalizing
     - weak normalization does NOT imply strong normalization in the raw calculus
@@ -61,7 +62,7 @@ no substitution-after-weakening cancellation lemma is required. -/
 theorem discardingApplicationOnOmega_betaReachesBody
     (levelExpr : LevelExpr) (flag : UniverseFlag) :
     Step (discardingApplicationOnOmega levelExpr flag) (universeCodeCell levelExpr flag) :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- The β reduct `Type@levelExpr` is a normal form — it has no outgoing `Step`. -/
 theorem discardedBody_isNormalForm (levelExpr : LevelExpr) (flag : UniverseFlag)

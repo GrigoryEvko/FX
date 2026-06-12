@@ -1,4 +1,5 @@
 import FX1Poly.Typed.ClosedSNSmoke
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Typed/UntypedOmegaNotStronglyNormalizing
     - the SN-043 typing hypothesis is ESSENTIAL
@@ -66,7 +67,7 @@ substitution computes definitionally back to Ω, so the reduct equals the source
 on the nose. -/
 theorem omegaCombinator_betaSelfStep :
     Step omegaCombinator omegaCombinator :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- Ω is NOT strongly normalizing: it steps to itself, so under the
 one-step-successor relation it would have to be accessible from itself — which

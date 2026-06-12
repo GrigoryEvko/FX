@@ -1,4 +1,5 @@
 import FX1Poly.Typed.UntypedOmegaNotStronglyNormalizing
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Typed/UnboundedGrowthNotStronglyNormalizing
     — non-strong-normalization by UNBOUNDED GROWTH (a second, qualitatively different divergence shape)
@@ -112,7 +113,7 @@ congruence step into the FUNCTION child (`StepChildren.here`), carrying the indu
 `growingReductionSequence_steps n`. -/
 theorem growingReductionSequence_steps :
     ∀ index, Step (growingReductionSequence index) (growingReductionSequence (index + 1))
-  | 0 => Step.beta
+  | 0 => HeadStep.beta.toStep
   | n + 1 =>
     Step.cong .gen_app ()
       (StepChildren.here

@@ -2,6 +2,7 @@ import FX1Poly.Typed.ChurchLists
 import FX1Poly.Typed.TypedChurchBooleans
 import FX1Poly.Core.RawTermSubstLiftWeaken
 import FX1Poly.Core.ConvCongruence
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchListIsEmpty — the first DEFINED operation on Church lists: the `isEmpty` predicate
 
@@ -75,7 +76,7 @@ theorem isEmptyHandler_const (head acc : RawTerm 0) :
     StepStar (appCell (appCell isEmptyHandler head) acc) churchFalseLambda := by
   have functionBeta : Step (appCell isEmptyHandler head)
       (lamCell churchListDomainAnn (RawTerm.weaken churchFalseLambda)) := by
-    rw [← isEmptyHandlerInnerSubst head]; exact Step.beta
+    rw [← isEmptyHandlerInnerSubst head]; exact HeadStep.beta.toStep
   have congStep : Step (appCell (appCell isEmptyHandler head) acc)
       (appCell (lamCell churchListDomainAnn (RawTerm.weaken churchFalseLambda)) acc) :=
     Step.cong .gen_app ()
@@ -84,7 +85,7 @@ theorem isEmptyHandler_const (head acc : RawTerm 0) :
   have outerBeta : Step (appCell (lamCell churchListDomainAnn (RawTerm.weaken churchFalseLambda)) acc) churchFalseLambda := by
     have cancel : RawTerm.subst0 (RawTerm.weaken churchFalseLambda) acc = churchFalseLambda :=
       RawTerm.weaken_subst_singleton churchFalseLambda acc
-    rw [← cancel]; exact Step.beta
+    rw [← cancel]; exact HeadStep.beta.toStep
   exact StepStar.trans congStep (StepStar.trans outerBeta (StepStar.refl _))
 
 /-- **★ `isEmpty nil ↝* true`** — the empty list is empty, directly via `foldNil` (the nil-handler IS `true`). -/

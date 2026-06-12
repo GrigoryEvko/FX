@@ -2,6 +2,7 @@ import FX1Poly.Typed.ClosedNatCanonicity
 import FX1Poly.Core.ListCanonicalFormsCandidate
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ListElimComputingCanonicity
     — the RECURSIVE list eliminator-computing canonicity (completes the recursive-eliminator family)
@@ -122,10 +123,10 @@ theorem constNatZeroStep3Produces (headVal tailVal recResult : RawTerm 0)
       IsNatNumeral out := by
   refine ⟨natZeroCell, ?_, IsNatNumeral.zero⟩
   have firstBeta : Step (appCell constNatZeroStep3 headVal)
-      (lamCell natZeroCell (lamCell natZeroCell (natZeroCell : RawTerm 2))) := Step.beta
+      (lamCell natZeroCell (lamCell natZeroCell (natZeroCell : RawTerm 2))) := HeadStep.beta.toStep
   have secondBeta : Step (appCell (lamCell natZeroCell (lamCell natZeroCell (natZeroCell : RawTerm 2))) tailVal)
-      (lamCell natZeroCell (natZeroCell : RawTerm 1)) := Step.beta
-  have thirdBeta : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) recResult) natZeroCell := Step.beta
+      (lamCell natZeroCell (natZeroCell : RawTerm 1)) := HeadStep.beta.toStep
+  have thirdBeta : Step (appCell (lamCell natZeroCell (natZeroCell : RawTerm 1)) recResult) natZeroCell := HeadStep.beta.toStep
   exact StepStar.trans_compose
     (StepStar.appFunction (StepStar.appFunction (StepStar.single firstBeta)))
     (StepStar.trans_compose
@@ -162,11 +163,11 @@ theorem lengthNatStepProduces (headVal tailVal recResult : RawTerm 0)
       IsNatNumeral out := by
   refine ⟨natSuccCell recResult, ?_, IsNatNumeral.succ recResultNumeral⟩
   have firstBeta : Step (appCell lengthNatStep headVal)
-      (lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) := Step.beta
+      (lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) := HeadStep.beta.toStep
   have secondBeta : Step (appCell (lamCell natZeroCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 2))))) tailVal)
-      (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) := Step.beta
+      (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) := HeadStep.beta.toStep
   have thirdBeta : Step (appCell (lamCell natZeroCell (natSuccCell (variableCell (⟨0, by decide⟩ : Fin 1)))) recResult)
-      (natSuccCell recResult) := Step.beta
+      (natSuccCell recResult) := HeadStep.beta.toStep
   exact StepStar.trans_compose
     (StepStar.appFunction (StepStar.appFunction (StepStar.single firstBeta)))
     (StepStar.trans_compose

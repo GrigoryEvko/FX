@@ -1,6 +1,7 @@
 import FX1Poly.Typed.CombinatoryLogic
 import FX1Poly.Core.RawTermSubst0Commute
 import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchLists — Church-encoded (Boehm-Berarducci) lists in the λ-fragment
 
@@ -84,14 +85,14 @@ to `n` it returns `n`.  Both `subst0` contracta are the clean innermost-variable
 theorem foldNil (consHandler nilHandler : RawTerm 0) :
     StepStar (churchFold consHandler nilHandler churchNil) nilHandler := by
   have functionBeta : Step (appCell churchNil consHandler)
-      (lamCell churchListDomainAnn (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) := Step.beta
+      (lamCell churchListDomainAnn (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) := HeadStep.beta.toStep
   have congStep : Step (churchFold consHandler nilHandler churchNil)
       (appCell (lamCell churchListDomainAnn (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) nilHandler) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons nilHandler .childNil) functionBeta)
   have innerBeta : Step (appCell (lamCell churchListDomainAnn (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))) nilHandler)
-      nilHandler := Step.beta
+      nilHandler := HeadStep.beta.toStep
   exact StepStar.trans congStep (StepStar.trans innerBeta (StepStar.refl _))
 
 /-- **`churchNil` is a λ-value.**  Its head generator is `gen_lam` — a closed weak-head-normal function value,
@@ -153,7 +154,7 @@ theorem foldCons (head tail consHandler nilHandler : RawTerm 0) :
             (appCell (RawTerm.weaken tail) (RawTerm.weaken consHandler))
             (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))))) := by
     rw [← churchCons_subst_consHandler head tail consHandler]
-    exact Step.beta
+    exact HeadStep.beta.toStep
   have congStep : Step (churchFold consHandler nilHandler (churchCons head tail))
       (appCell
         (lamCell churchListDomainAnn
@@ -181,7 +182,7 @@ theorem foldCons (head tail consHandler nilHandler : RawTerm 0) :
         (appCell
           (appCell (RawTerm.subst0 (RawTerm.weaken tail) nilHandler)
             (RawTerm.subst0 (RawTerm.weaken consHandler) nilHandler))
-          nilHandler)) := Step.beta
+          nilHandler)) := HeadStep.beta.toStep
   have cancelConsHandler : RawTerm.subst0 (RawTerm.weaken consHandler) nilHandler = consHandler :=
     RawTerm.weaken_subst_singleton consHandler nilHandler
   have cancelHead : RawTerm.subst0 (RawTerm.weaken head) nilHandler = head :=

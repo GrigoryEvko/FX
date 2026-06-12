@@ -1,5 +1,6 @@
 import FX1Poly.Typed.UnboundedGrowthNotStronglyNormalizing
 import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/CurryFixpointDivergence — the parameterized Curry fixpoint Ω_g unfolds and diverges
 
@@ -60,7 +61,7 @@ theorem curryOmega_step (g : RawTerm 0) : Step (curryOmega g) (appCell g (curryO
   have betaStep : Step (curryOmega g)
       (RawTerm.subst0 (appCell (RawTerm.weaken g)
         (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))
-          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) (curryHalf g)) := Step.beta
+          (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))) (curryHalf g)) := HeadStep.beta.toStep
   have contractumEq :
       RawTerm.subst0 (appCell (RawTerm.weaken g)
         (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1))

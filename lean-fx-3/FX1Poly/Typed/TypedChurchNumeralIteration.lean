@@ -1,4 +1,5 @@
 import FX1Poly.Typed.TypedChurchNumerals
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/TypedChurchNumeralIteration — the Church numerals COMPUTE their iteration
 
@@ -63,13 +64,13 @@ theorem churchOne_appliedReducesToIterate (flag : UniverseFlag) :
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             ((.childCons (universeCodeCell LevelExpr.lzero flag) .childNil) : RawTermChildren [0] 0)
-            Step.beta))))
+            HeadStep.beta.toStep))))
     (StepStar.trans
       (Step.cong .gen_app ()
         (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
           ((.childCons (universeCodeCell LevelExpr.lzero.lsucc flag) .childNil) : RawTermChildren [0] 0)
-          Step.beta))
-      (StepStar.trans Step.beta (StepStar.refl _)))
+          HeadStep.beta.toStep))
+      (StepStar.trans HeadStep.beta.toStep (StepStar.refl _)))
 
 /-- ★ The Church numeral `two`, `λ(A:Type@0). λ(f:A→A). λ(x:A). f (f x)`, typed at the Church Nat type.  Its
 body is a NESTED `piElim` — the outer `f (…)` applies `f` to the inner `f x` — extending `churchOne`'s single
@@ -168,12 +169,12 @@ theorem churchTwo_appliedReducesToIterate (flag : UniverseFlag) :
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             ((.childCons (universeCodeCell LevelExpr.lzero flag) .childNil) : RawTermChildren [0] 0)
-            Step.beta))))
+            HeadStep.beta.toStep))))
     (StepStar.trans
       (Step.cong .gen_app ()
         (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
           ((.childCons (universeCodeCell LevelExpr.lzero.lsucc flag) .childNil) : RawTermChildren [0] 0)
-          Step.beta))
-      (StepStar.trans Step.beta (StepStar.refl _)))
+          HeadStep.beta.toStep))
+      (StepStar.trans HeadStep.beta.toStep (StepStar.refl _)))
 
 end FX1Poly.Typed

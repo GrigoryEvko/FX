@@ -1,4 +1,5 @@
 import FX1Poly.Typed.ClosedSNSmoke
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Typed/StepNonDeterministic
     - single-step reduction is non-deterministic, yet the diamond closes
@@ -63,7 +64,7 @@ def innerReduct : RawTerm 0 :=
 reduct is the discarded body `boolTrue` (by `subst0` on a nullary leaf). -/
 theorem nondeterministicTerm_outerStep :
     Step nondeterministicTerm trueValueCell :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- **Inner reduction.**  The argument redex `(λy. y) unit` fires under the
 uniform congruence rule (stepping the second child of the application); the
@@ -73,7 +74,7 @@ theorem nondeterministicTerm_innerStep :
   apply Step.cong .gen_app ()
   apply StepChildren.there
   apply StepChildren.here
-  exact Step.beta
+  exact HeadStep.beta.toStep
 
 /-- The two one-step reducts are DISTINCT: they differ at the root generator
 (`gen_boolTrue` vs `gen_app`), so `Step` is non-deterministic. -/
@@ -89,7 +90,7 @@ theorem outerReduct_reachesCommon :
 /-- The inner reduct `(λx. boolTrue) unit` reduces to the common reduct
 `boolTrue` in one further β-step — the diamond closes. -/
 theorem innerReduct_reachesCommon : StepStar innerReduct trueValueCell :=
-  StepStar.single Step.beta
+  StepStar.single HeadStep.beta.toStep
 
 /-- ★ `Step` is non-deterministic, yet the diamond closes.  There is a closed
 term with two DISTINCT one-step reducts that nonetheless reconverge to a common

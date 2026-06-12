@@ -1,5 +1,6 @@
 import FX1Poly.Typed.TypedLambdaDerivations
 import FX1Poly.Core.ConvCongruence
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Typed/TypedChurchBooleans
     — the Church-boolean encoding, typed by the grown engine
@@ -206,13 +207,13 @@ theorem churchTrue_selectsThenBranch (flag : UniverseFlag) :
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             ((.childCons (universeCodeCell LevelExpr.lzero flag) .childNil) : RawTermChildren [0] 0)
-            Step.beta))))
+            HeadStep.beta.toStep))))
     (StepStar.trans
       (Step.cong .gen_app ()
         (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
           ((.childCons (universeCodeCell LevelExpr.lzero.lsucc flag) .childNil) : RawTermChildren [0] 0)
-          Step.beta))
-      (StepStar.trans Step.beta (StepStar.refl _)))
+          HeadStep.beta.toStep))
+      (StepStar.trans HeadStep.beta.toStep (StepStar.refl _)))
 
 /-- ★ `churchFalse` applied to the SAME arguments β-reduces (three steps) to the SECOND branch `Type@1` — the
 encoding selects the `else` branch.  Together with `churchTrue_selectsThenBranch`, on identical inputs the two
@@ -235,13 +236,13 @@ theorem churchFalse_selectsElseBranch (flag : UniverseFlag) :
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             ((.childCons (universeCodeCell LevelExpr.lzero flag) .childNil) : RawTermChildren [0] 0)
-            Step.beta))))
+            HeadStep.beta.toStep))))
     (StepStar.trans
       (Step.cong .gen_app ()
         (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
           ((.childCons (universeCodeCell LevelExpr.lzero.lsucc flag) .childNil) : RawTermChildren [0] 0)
-          Step.beta))
-      (StepStar.trans Step.beta (StepStar.refl _)))
+          HeadStep.beta.toStep))
+      (StepStar.trans HeadStep.beta.toStep (StepStar.refl _)))
 
 /-! ## Non-convertibility — the two encodings are definitionally distinct
 

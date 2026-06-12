@@ -2,6 +2,7 @@ import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.RawTermNF
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/RawStepNotStronglyNormalizing
     — the honest NEGATIVE counterpart to SN-for-well-typed: the RAW β-reduction is NOT strongly normalizing
@@ -72,7 +73,7 @@ def divergentOmegaCell : RawTerm 0 :=
 for the bound variable in the body `x x` returns `(λx. x x)(λx. x x) = Ω`, so `Step Ω Ω`.  The substitution
 computes definitionally, so this is `Step.beta` directly. -/
 theorem divergentOmega_stepsToSelf : Step divergentOmegaCell divergentOmegaCell :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- **A self-related element is not accessible.**  If `relation element element` holds, `element` cannot be
 `Acc relation`-accessible: the would-be accessibility witness yields, by induction, the same demand on

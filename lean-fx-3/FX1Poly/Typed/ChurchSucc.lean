@@ -1,6 +1,7 @@
 import FX1Poly.Typed.TypedChurchNumeralComputeGeneral
 import FX1Poly.Core.RawTermSubstLiftWeaken
 import FX1Poly.Core.ConvCongruence
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchSucc — the Church successor: constructor, value, and its β-unfold
 
@@ -94,7 +95,7 @@ theorem churchSucc_betaUnfold (numeral : RawTerm 0) :
         (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn (succBody3 numeral)))) := by
   have base : Step (appCell churchSucc numeral)
       (RawTerm.subst0 (lamCell churchSuccDomainAnn
-        (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn succBody4))) numeral) := Step.beta
+        (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn succBody4))) numeral) := HeadStep.beta.toStep
   rw [succ_step1_reshape] at base
   exact base
 

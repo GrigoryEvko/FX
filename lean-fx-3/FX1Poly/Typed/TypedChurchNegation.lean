@@ -1,4 +1,5 @@
 import FX1Poly.Typed.TypedChurchBooleans
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Typed/TypedChurchNegation
     — the term model COMPUTES Boolean negation, and negation is an INVOLUTION
@@ -99,13 +100,13 @@ theorem churchTrueOnFlippedBranches_reducesToFalse :
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             ((.childCons churchFalseLambda .childNil) : RawTermChildren [0] 0)
-            Step.beta))))
+            HeadStep.beta.toStep))))
     (StepStar.trans
       (Step.cong .gen_app ()
         (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
           ((.childCons churchTrueLambda .childNil) : RawTermChildren [0] 0)
-          Step.beta))
-      (StepStar.trans Step.beta (StepStar.refl _)))
+          HeadStep.beta.toStep))
+      (StepStar.trans HeadStep.beta.toStep (StepStar.refl _)))
 
 /-- `churchFalse` applied to the same arguments selects its SECOND candidate, the `else`-branch, which is now
 `churchTrue` — the innermost `var 0` body substitutes directly.  Together with
@@ -121,13 +122,13 @@ theorem churchFalseOnFlippedBranches_reducesToTrue :
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             ((.childCons churchFalseLambda .childNil) : RawTermChildren [0] 0)
-            Step.beta))))
+            HeadStep.beta.toStep))))
     (StepStar.trans
       (Step.cong .gen_app ()
         (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
           ((.childCons churchTrueLambda .childNil) : RawTermChildren [0] 0)
-          Step.beta))
-      (StepStar.trans Step.beta (StepStar.refl _)))
+          HeadStep.beta.toStep))
+      (StepStar.trans HeadStep.beta.toStep (StepStar.refl _)))
 
 /-- ★ Negation of `true` COMPUTES to `false`: `churchNot churchTrue ↝* churchFalse`.  One outer β-step
 (reshaped through `churchNotBody_substitutesToFlippedApplication`) feeds `churchTrue` into the flipped selector,
@@ -135,14 +136,14 @@ which then picks `churchFalse`. -/
 theorem churchNot_negatesTrue :
     StepStar (appCell churchNotLambda churchTrueLambda) churchFalseLambda :=
   StepStar.trans
-    (by rw [← churchNotBody_substitutesToFlippedApplication churchTrueLambda]; exact Step.beta)
+    (by rw [← churchNotBody_substitutesToFlippedApplication churchTrueLambda]; exact HeadStep.beta.toStep)
     churchTrueOnFlippedBranches_reducesToFalse
 
 /-- ★ Negation of `false` COMPUTES to `true`: `churchNot churchFalse ↝* churchTrue`. -/
 theorem churchNot_negatesFalse :
     StepStar (appCell churchNotLambda churchFalseLambda) churchTrueLambda :=
   StepStar.trans
-    (by rw [← churchNotBody_substitutesToFlippedApplication churchFalseLambda]; exact Step.beta)
+    (by rw [← churchNotBody_substitutesToFlippedApplication churchFalseLambda]; exact HeadStep.beta.toStep)
     churchFalseOnFlippedBranches_reducesToTrue
 
 /-- ★ The DOUBLE-NEGATION INVOLUTION on `true`: `churchNot (churchNot churchTrue) =Conv churchTrue`.  Reducing

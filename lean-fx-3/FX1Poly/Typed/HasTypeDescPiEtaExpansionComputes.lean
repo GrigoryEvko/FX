@@ -3,6 +3,7 @@ import FX1Poly.Core.RawTermSubst0Commute
 import FX1Poly.Typed.TypedChurchNumeralComputeGeneral
 import FX1Poly.Typed.TypedChurchNumeralTyping
 import FX1Poly.Typed.HasTypeDescPiEtaExpansionGrown
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/HasTypeDescPiEtaExpansionComputes
     — the OPERATIONAL content of η on top of forward η-expansion typing (#1033)
@@ -47,7 +48,7 @@ numeral changes neither its type nor its computed value.
 
 ## Zero-axiom verification
 
-`Step.etaLamSourceApplication` is `rw [← subst0_etaLamSource_body]; exact Step.beta`; `subst0_etaLamSource_body`
+`Step.etaLamSourceApplication` is `rw [← subst0_etaLamSource_body]; exact HeadStep.beta.toStep`; `subst0_etaLamSource_body`
 is `unfold`/`show` + `weaken_subst_singleton` + the innermost-`var` `rfl`.  The Church witnesses thread the
 shipped `etaExpansionPreservesTypingGrown` / `churchNumeralLambda_hasTypeDescPi` / `churchNumeral_appliedReduces
 ToIterate_general` and the function-position congruence idiom (`Step.cong .gen_app () + StepChildren.here`,
@@ -82,7 +83,7 @@ theorem Step.etaLamSourceApplication {scope : Nat}
     Step (appCell (RawTerm.etaLamSource domainAnn innerFunction) argument)
       (appCell innerFunction argument) := by
   rw [← subst0_etaLamSource_body innerFunction argument]
-  exact Step.beta
+  exact HeadStep.beta.toStep
 
 /-- **η-coherence bundle (typed + operational).**  For any grown `f : Π D C` over a well-formed context, the
 η-redex `etaLamSource f` BOTH types at the same `Π D C` (static, `etaExpansionPreservesTypingGrown`) AND, applied

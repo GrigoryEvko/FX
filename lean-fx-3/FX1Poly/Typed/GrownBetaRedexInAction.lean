@@ -2,6 +2,7 @@ import FX1Poly.Typed.GrownCanonicalFormsNonVacuity
 import FX1Poly.Typed.HasTypeDescPiBetaSR
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionDescPi
 import FX1Poly.Typed.GrownTypeSafety
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/GrownBetaRedexInAction — type safety in action on a concrete reducing closed term
 
@@ -69,7 +70,7 @@ theorem closedIdentityAppRedex_betaStep :
         (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)))
             (universeCodeCell LevelExpr.lzero UniverseFlag.standard) : RawTerm 0)
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- **Type safety in action.**  After the redex `(λ (x : Type@1). x) (Type@0) : Type@1` β-reduces to `Type@0`,
 PRESERVATION holds — the reduct `Type@0` is still typed at `Type@1` (by `betaSubjectReductionDescPi`) — and the reduct

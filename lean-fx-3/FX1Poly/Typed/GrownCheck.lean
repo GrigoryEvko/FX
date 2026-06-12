@@ -1,4 +1,5 @@
 import FX1Poly.Typed.GrownStrengtheningRefutation
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/GrownCheck — the syntax-directed grown checking relation
 
@@ -195,7 +196,7 @@ theorem grownCheckEscapingReclassifierSmoke (profile : PolyProfile) :
       escapingReclassifier :=
   have betaStep : Step escapingReclassifier
       (universeCodeCell LevelExpr.lzero.lsucc UniverseFlag.standard) :=
-    Step.beta
+    HeadStep.beta.toStep
   GrownCheck.universeCode LevelExpr.lzero UniverseFlag.standard
     (Conv.fromStep betaStep).sym
 

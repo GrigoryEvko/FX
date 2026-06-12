@@ -1,5 +1,6 @@
 import FX1Poly.Typed.MatchElimComputingCanonicityTyped
 import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/MatchGeneralBranchCanonicity
     — option/either MATCH eliminator-computing canonicity for ARBITRARY branches, abstracting branch canonicity
@@ -131,7 +132,7 @@ theorem closedOptionMatchIntoBoolFromGeneral
     (isValue := fun value => value = boolTrueCell ∨ value = boolFalseCell)
     scrutineeCanonical
     ⟨boolTrueCell, StepStar.refl _, Or.inl rfl⟩
-    (fun _payload => ⟨boolTrueCell, StepStar.transLast (StepStar.refl _) Step.beta, Or.inl rfl⟩)
+    (fun _payload => ⟨boolTrueCell, StepStar.transLast (StepStar.refl _) HeadStep.beta.toStep, Or.inl rfl⟩)
 
 /-- **★ Payload-USING option canonicity (identity branch).**  A closed `optionMatch(m, noneBranch, λx.x,
 optionSome boolTrue)` reduces to the canonical bool `boolTrue` — the IDENTITY some-branch CONSUMES the stored
@@ -146,7 +147,7 @@ theorem closedOptionMatchIdentityIntoBool {noneBranch : RawTerm 0} :
   ⟨boolTrueCell,
    StepStar.transLast
      (StepStar.transLast (StepStar.refl _) IotaHeadStep.iotaOptionMatchSome.toStep)
-     Step.beta,
+     HeadStep.beta.toStep,
    Or.inl rfl⟩
 
 /-- **★ Payload-USING either canonicity (identity left branch).**  A closed `eitherMatch(m, λx.x, rightBranch,
@@ -160,7 +161,7 @@ theorem closedEitherMatchIdentityIntoBool {rightBranch : RawTerm 0} :
   ⟨boolTrueCell,
    StepStar.transLast
      (StepStar.transLast (StepStar.refl _) IotaHeadStep.iotaEitherMatchInl.toStep)
-     Step.beta,
+     HeadStep.beta.toStep,
    Or.inl rfl⟩
 
 end FX1Poly.Typed

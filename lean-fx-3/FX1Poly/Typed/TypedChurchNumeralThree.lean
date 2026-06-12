@@ -1,4 +1,5 @@
 import FX1Poly.Typed.TypedChurchNumeralDiscrimination
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/TypedChurchNumeralThree — the third numeral, and the {1,2,3} non-convertibility antichain
 
@@ -153,13 +154,13 @@ theorem churchThree_appliedReducesToIterate (flag : UniverseFlag) :
         (Step.cong .gen_app ()
           (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
             ((.childCons (universeCodeCell LevelExpr.lzero flag) .childNil) : RawTermChildren [0] 0)
-            Step.beta))))
+            HeadStep.beta.toStep))))
     (StepStar.trans
       (Step.cong .gen_app ()
         (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
           ((.childCons (universeCodeCell LevelExpr.lzero.lsucc flag) .childNil) : RawTermChildren [0] 0)
-          Step.beta))
-      (StepStar.trans Step.beta (StepStar.refl _)))
+          HeadStep.beta.toStep))
+      (StepStar.trans HeadStep.beta.toStep (StepStar.refl _)))
 
 /-- The once-iterate and the thrice-iterate are not convertible (distinct no-step normal forms; the structural
 difference bottoms out in `Type@1` vs an application, so `decide` is `propext`-free). -/

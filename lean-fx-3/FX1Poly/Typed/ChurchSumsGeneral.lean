@@ -1,5 +1,6 @@
 import FX1Poly.Typed.ChurchSums
 import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchSumsGeneral — Church-sum case selection for an ARBITRARY symbolic payload
 
@@ -81,7 +82,7 @@ theorem caseLeft_selectsLeftHandler_general (payload handlerL handlerR : RawTerm
       (appCell handlerL payload) := by
   have functionBeta : Step (appCell (leftInjection payload) handlerL)
       (lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload))) := by
-    rw [← leftInjection_subst_handlerL payload handlerL]; exact Step.beta
+    rw [← leftInjection_subst_handlerL payload handlerL]; exact HeadStep.beta.toStep
   have congStep : Step (appCell (appCell (leftInjection payload) handlerL) handlerR)
       (appCell (lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload))) handlerR) :=
     Step.cong .gen_app ()
@@ -89,7 +90,7 @@ theorem caseLeft_selectsLeftHandler_general (payload handlerL handlerR : RawTerm
         (.childCons handlerR .childNil) functionBeta)
   have outerBeta : Step (appCell (lamCell churchSumDomainAnn (appCell (RawTerm.weaken handlerL) (RawTerm.weaken payload))) handlerR)
       (appCell (RawTerm.subst0 (RawTerm.weaken handlerL) handlerR)
-        (RawTerm.subst0 (RawTerm.weaken payload) handlerR)) := Step.beta
+        (RawTerm.subst0 (RawTerm.weaken payload) handlerR)) := HeadStep.beta.toStep
   have cancelHandler : RawTerm.subst0 (RawTerm.weaken handlerL) handlerR = handlerL :=
     RawTerm.weaken_subst_singleton handlerL handlerR
   have cancelValue : RawTerm.subst0 (RawTerm.weaken payload) handlerR = payload :=
@@ -104,14 +105,14 @@ theorem caseRight_selectsRightHandler_general (payload handlerL handlerR : RawTe
       (appCell handlerR payload) := by
   have functionBeta : Step (appCell (rightInjection payload) handlerL)
       (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload))) := by
-    rw [← rightInjection_subst_handlerL payload handlerL]; exact Step.beta
+    rw [← rightInjection_subst_handlerL payload handlerL]; exact HeadStep.beta.toStep
   have congStep : Step (appCell (appCell (rightInjection payload) handlerL) handlerR)
       (appCell (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload))) handlerR) :=
     Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])
         (.childCons handlerR .childNil) functionBeta)
   have outerBeta : Step (appCell (lamCell churchSumDomainAnn (appCell (variableCell (⟨0, Nat.succ_pos 0⟩ : Fin 1)) (RawTerm.weaken payload))) handlerR)
-      (appCell handlerR (RawTerm.subst0 (RawTerm.weaken payload) handlerR)) := Step.beta
+      (appCell handlerR (RawTerm.subst0 (RawTerm.weaken payload) handlerR)) := HeadStep.beta.toStep
   have cancelValue : RawTerm.subst0 (RawTerm.weaken payload) handlerR = payload :=
     RawTerm.weaken_subst_singleton payload handlerR
   rw [cancelValue] at outerBeta

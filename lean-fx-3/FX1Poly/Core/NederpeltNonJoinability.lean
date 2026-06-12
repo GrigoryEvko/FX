@@ -1,5 +1,6 @@
 import FX1Poly.Core.StepEtaCriticalPairs
 import FX1Poly.Core.RawTermNF
+import FX1Poly.Core.HeadStep
 
 /-! # Foundation/PolyCell/Core/NederpeltNonJoinability
     — the Church-annotation eta-beta overlap is NOT joinable (L1 refutation)
@@ -63,7 +64,7 @@ theorem Step.nederpeltInnerBetaBody {scope : Nat}
         (RawTerm.subst0
           (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) innerBody)
           RawTerm.newestVar) :=
-    Step.beta
+    HeadStep.beta.toStep
   rw [RawTerm.subst0_lift_weaken_newestVar innerBody] at betaStep
   exact betaStep
 

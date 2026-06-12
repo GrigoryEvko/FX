@@ -1,5 +1,6 @@
 import FX1Poly.Typed.CombinatoryCompleteness
 import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/SymbolicSCombinatorRule — the general S-combinator rule `S a b c ↝* (a c)(b c)`
 
@@ -85,11 +86,11 @@ from the #1023 double-weaken cancellation by pure assembly. -/
 theorem combinatorS_reduces (a b c : RawTerm 0) :
     StepStar (appCell (appCell (appCell combinatorS a) b) c)
       (appCell (appCell a c) (appCell b c)) := by
-  have step1 : Step (appCell combinatorS a) (saTerm a) := Step.beta
+  have step1 : Step (appCell combinatorS a) (saTerm a) := HeadStep.beta.toStep
   have step2 : Step (appCell (saTerm a) b) (sabTerm a b) := by
-    rw [← saTermBody_subst_b a b]; exact Step.beta
+    rw [← saTermBody_subst_b a b]; exact HeadStep.beta.toStep
   have step3 : Step (appCell (sabTerm a b) c) (appCell (appCell a c) (appCell b c)) := by
-    rw [← sabTermBody_subst_c a b c]; exact Step.beta
+    rw [← sabTermBody_subst_c a b c]; exact HeadStep.beta.toStep
   exact StepStar.trans
     (Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0])

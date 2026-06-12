@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDescPiAppInversion
 import FX1Poly.Typed.TypedFragmentAcyclicity
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ClassifierRespectsConvRefuted — `classifierRespectsConv` (the VAL-1 GrownCtxConv-5 reduction
     target) is FALSE; the GrownCtxConv-5 piElim arm cannot route through it.
@@ -72,7 +73,7 @@ abbrev classifierConvCounterexampleRedex : RawTerm 0 :=
 /-- `B ↝ A`: the β-redex discards `Ω` (the body `Type@0` has no `var 0`), stepping to `Type@0`. -/
 theorem classifierConvCounterexampleRedex_stepsToType :
     Step classifierConvCounterexampleRedex classifierConvCounterexampleType :=
-  Step.beta
+  HeadStep.beta.toStep
 
 /-- `A = Type@0` IS a type (classified by `Type@1` via the universe-formation rule). -/
 theorem classifierConvCounterexampleType_isType {profile : PolyProfile} :

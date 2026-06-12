@@ -1,6 +1,7 @@
 import FX1Poly.Typed.ChurchSums
 import FX1Poly.Typed.ClosedNonConvertibility
 import FX1Poly.Core.ConvCongruence
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchSumsDisjoint — the Church-sum injections are DISJOINT (the coproduct capstone)
 
@@ -64,7 +65,7 @@ theorem handlerToUniverse_app_I :
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard) := by
   have beta : Step (appCell handlerToUniverse combinatorI)
       (RawTerm.subst0 (RawTerm.weaken (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) combinatorI) :=
-    Step.beta
+    HeadStep.beta.toStep
   have cancel :
       RawTerm.subst0 (RawTerm.weaken (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) combinatorI
         = universeCodeCell LevelExpr.lzero UniverseFlag.standard :=
@@ -76,7 +77,7 @@ theorem handlerToUniverse_app_I :
 theorem handlerToIdentity_app_I :
     StepStar (appCell handlerToIdentity combinatorI) combinatorI := by
   have beta : Step (appCell handlerToIdentity combinatorI)
-      (RawTerm.subst0 (RawTerm.weaken combinatorI) combinatorI) := Step.beta
+      (RawTerm.subst0 (RawTerm.weaken combinatorI) combinatorI) := HeadStep.beta.toStep
   have cancel : RawTerm.subst0 (RawTerm.weaken combinatorI) combinatorI = combinatorI :=
     RawTerm.weaken_subst_singleton combinatorI combinatorI
   rw [cancel] at beta

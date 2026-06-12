@@ -1,5 +1,6 @@
 import FX1Poly.Typed.ChurchSucc
 import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchSuccApplies — the operational successor: `churchSucc n A f x ↝* f (n A f x)`
 
@@ -31,7 +32,7 @@ Everything is the raw `Step` relation; no typing derivation is consulted.
 
 The reshapes are `unfold` + `show` (defeq distribution) + `rw [subst_lift_weaken / subst_lift_singleton_weaken_weaken
 / weaken_subst_singleton]` + `rfl`.  `churchSucc_applies` chains four `Step.beta`s (via `rw [← reshape]; exact
-Step.beta`) lifted by `Step.cong`; `churchSucc_iteratesOneMore` is `StepStar.trans_compose` with
+HeadStep.beta.toStep`) lifted by `Step.cong`; `churchSucc_iteratesOneMore` is `StepStar.trans_compose` with
 `StepStar.appArgument` over the shipped #1009.  No `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`,
 or `omega`.  Gated per-decl in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -128,14 +129,14 @@ theorem churchSucc_applies (numeral typeA handlerF baseX : RawTerm 0) :
   have step2 : Step (appCell (lamCell churchSuccDomainAnn
         (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn (succBody3 numeral)))) typeA)
       (lamCell churchSuccDomainAnn (lamCell churchSuccDomainAnn (succBody2 numeral typeA))) := by
-    rw [← succ_step2_reshape numeral typeA]; exact Step.beta
+    rw [← succ_step2_reshape numeral typeA]; exact HeadStep.beta.toStep
   have step3 : Step (appCell (lamCell churchSuccDomainAnn
         (lamCell churchSuccDomainAnn (succBody2 numeral typeA))) handlerF)
       (lamCell churchSuccDomainAnn (succBody1 numeral typeA handlerF)) := by
-    rw [← succ_step3_reshape numeral typeA handlerF]; exact Step.beta
+    rw [← succ_step3_reshape numeral typeA handlerF]; exact HeadStep.beta.toStep
   have step4 : Step (appCell (lamCell churchSuccDomainAnn (succBody1 numeral typeA handlerF)) baseX)
       (appCell handlerF (appCell (appCell (appCell numeral typeA) handlerF) baseX)) := by
-    rw [← succ_step4_reshape numeral typeA handlerF baseX]; exact Step.beta
+    rw [← succ_step4_reshape numeral typeA handlerF baseX]; exact HeadStep.beta.toStep
   exact StepStar.trans
     (Step.cong .gen_app ()
       (StepChildren.here (parentScope := 0) (headShift := 0) (restShifts := [0]) (.childCons baseX .childNil)
