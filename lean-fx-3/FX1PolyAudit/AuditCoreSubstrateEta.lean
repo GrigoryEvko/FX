@@ -27,7 +27,6 @@ import FX1Poly.Core.WeakHeadStep
 import FX1Poly.Core.WeakHeadStepDeterministic
 import FX1Poly.Core.WeakHeadStepSubsumes
 import FX1Poly.Core.WeakHeadStepNormalForms
-import FX1Poly.Core.WeakHeadStepSubst
 import FX1Poly.Core.WeakHeadStepRename
 import FX1Poly.Core.WeakHeadStepRenameReflect
 import FX1Poly.Core.StepRenameReflect

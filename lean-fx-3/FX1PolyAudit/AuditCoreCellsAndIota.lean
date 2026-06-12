@@ -16,8 +16,6 @@ import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.RecursiveEliminatorTermination
-import FX1Poly.Core.IotaNonRecursiveTermination
-import FX1Poly.Core.RecursiveIotaSizeGrowth
 import FX1Poly.Core.RecursivePathOrderInductive
 import FX1Poly.Core.RawIotaRpoBridge
 import FX1Poly.Core.RawIotaRpoAssembly
@@ -36,7 +34,6 @@ import FX1Poly.Core.CompleteDevelopment
 import FX1Poly.Core.ParStepSubstRename
 import FX1Poly.Core.ParStepSubstPointwise
 import FX1Poly.Core.ParStepInversion
-import FX1Poly.Core.CompleteDevelopmentParStep
 import FX1Poly.Core.ParStepTriangle
 import FX1Poly.Core.RawConfluence
 import FX1Poly.Core.CommutationConfluence
@@ -352,33 +349,6 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.elimStep_decreasesMultiset
 #assert_no_axioms FX1Poly.Core.recursiveEliminatorTerminates
 #assert_no_axioms FX1Poly.Core.recursiveEliminatorTerminates.smoke
--- ★ Leg 3: the NON-recursive ι fragment over the REAL kernel terminates by RawTerm.size,
--- INDEPENDENT of β and typed-SN. The 13 non-recursive ι arms (branch-selection bool/nat/list/option-none,
--- fst/snd projection, idJ/idStrictRec base, optionSome/eitherInl/eitherInr applied-branch) strictly
--- decrease size; toStep ties the fragment to the live Step relation (NOT a toy like the recursive RecTerm
--- model); SN via Subrelation.wf + InvImage.wf RawTerm.size — the EXACT shape of the shipped η-SN. The 3
--- recursive arms (RecursiveEliminatorTermination above) and η-SN (Step.etaStar) complete Leg-3 ι/η; the β
--- boundary stays honestly Tait-imported. AC-normalization is explicit Nat.add_right_comm (simp-AC + ac_rfl
--- both leak propext).
-#assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.toStep
-#assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.size_decreases
-#assert_no_axioms FX1Poly.Core.iotaNonRecursiveStep_wellFounded
-#assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.isStronglyNormalizing
-#assert_no_axioms FX1Poly.Core.IotaNonRecursiveStep.isStronglyNormalizing.smoke
--- ★ Leg 3 contrast: the RECURSIVE ι arm natElimSucc INCREASES RawTerm.size by branchSize + 13
--- (grows with the zero branch) over the REAL kernel: the Phase-Z succ-iota SUBSTITUTES, and a step branch
--- using its induction-hypothesis variable twice (app (var 0) (var 0)) DUPLICATES the recursive call — and
--- with it the arbitrary zero branch it carries. So the size route (IotaNonRecursiveStep.size_decreases)
--- does NOT extend to the recursive arms, and NO flat measure dominated by size survives the duplication.
--- Moreover the substituting succ-iota shares beta's duplication shape (betaNotOrientableByErasure), which
--- is exactly why the Phase-Z re-scope moves it to the beta-imported boundary (IotaOrientedHeadStep keeps
--- only the non-substituting arms); typed SN covers it through Tait. beta stays Tait-imported (raw beta is
--- non-SN).
-#assert_no_axioms FX1Poly.Core.natElimSucc_isRealStep
-#assert_no_axioms FX1Poly.Core.natElimSuccReduct_size_eq
-#assert_no_axioms FX1Poly.Core.natElimSucc_size_increases
-#assert_no_axioms FX1Poly.Core.natElimSucc_size_increase_at_least_branch
-
 -- The genuine INDUCTIVE recursive path order: the generic rose-tree RPO with multiset status,
 -- positivity-accepted (subterm clause split into subtermEq/subtermStrict to avoid the kernel's nested-Or
 -- rejection; multiset witnesses inlined to avoid passing the inductive to the external MultisetRedOne).

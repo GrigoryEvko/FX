@@ -15,8 +15,6 @@ import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.RecursiveEliminatorTermination
-import FX1Poly.Core.IotaNonRecursiveTermination
-import FX1Poly.Core.RecursiveIotaSizeGrowth
 import FX1Poly.Core.RecursivePathOrderInductive
 import FX1Poly.Core.RawIotaRpoBridge
 import FX1Poly.Core.RawIotaRpoAssembly
@@ -35,7 +33,6 @@ import FX1Poly.Core.CompleteDevelopment
 import FX1Poly.Core.ParStepSubstRename
 import FX1Poly.Core.ParStepSubstPointwise
 import FX1Poly.Core.ParStepInversion
-import FX1Poly.Core.CompleteDevelopmentParStep
 import FX1Poly.Core.ParStepTriangle
 import FX1Poly.Core.RawConfluence
 import FX1Poly.Core.CommutationConfluence

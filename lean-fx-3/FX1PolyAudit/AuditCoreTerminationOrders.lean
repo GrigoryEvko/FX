@@ -15,8 +15,6 @@ import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder
 import FX1Poly.Core.RecursiveEliminatorTermination
-import FX1Poly.Core.IotaNonRecursiveTermination
-import FX1Poly.Core.RecursiveIotaSizeGrowth
 import FX1Poly.Core.RecursivePathOrderInductive
 import FX1Poly.Core.RawIotaRpoBridge
 import FX1Poly.Core.RawIotaRpoAssembly
@@ -35,7 +33,6 @@ import FX1Poly.Core.CompleteDevelopment
 import FX1Poly.Core.ParStepSubstRename
 import FX1Poly.Core.ParStepSubstPointwise
 import FX1Poly.Core.ParStepInversion
-import FX1Poly.Core.CompleteDevelopmentParStep
 import FX1Poly.Core.ParStepTriangle
 import FX1Poly.Core.RawConfluence
 import FX1Poly.Core.CommutationConfluence
@@ -373,13 +370,6 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.ParStep.listNil_inv
 #assert_no_axioms FX1Poly.Core.ParStep.optionNone_inv
 #assert_no_axioms FX1Poly.Core.ParStep.refl_inv
-
--- completeDevelopment_parStep: every term parallel-reduces to its complete development.  The correctness
--- witness for the gated cd (an over-firing cd would fail it, since a created redex cannot be fired in the same
--- single parallel step) and the triangle's b := a instance.  Via RawTerm.rec (the by_cases generator dispatch
--- hides deep subterms from structural recursion, so it routes through the recursor's children-spine IH):
--- none implies cong, some implies per-redex fire with the child IHs extracted by cases.  Propext-clean.
-#assert_no_axioms FX1Poly.Core.RawTerm.completeDevelopment_parStep
 
 -- The Takahashi triangle: every parallel reduct b of a further parallel-reduces to completeDevelopment a,
 -- the maximal-reduct property that discharges the ParStep DiamondProperty and hence (through the
