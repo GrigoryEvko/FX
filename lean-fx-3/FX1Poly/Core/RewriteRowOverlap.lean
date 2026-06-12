@@ -90,4 +90,169 @@ checker — one `rfl` over BOTH canonical tables, so a new row in either re-deci
 theorem fxRewriteBundle_rowsDisjoint :
     allRewriteRowsDisjoint (rewriteBundle iotaRuleTable etaRuleTable) = true := rfl
 
+/-! ## Increment 2 — operational soundness: the disjoint bundle is root-deterministic
+
+The overlap checker above is a STATIC certificate; this section discharges its OPERATIONAL meaning.
+`RewriteRow.rewriteAtRoot?` dispatches a root rewrite — an ι-row FIRES (consuming payload +
+children), an η-row CONTRACTS (consuming children, ignoring the payload) — and
+`rewriteBundle_rootDeterministic` proves that ANY two bundle rows firing on the SAME cell agree on
+the reduct.  The three shipped orthogonality theorems supply the cases: ι×ι via
+`WfIotaTable.rootFiringDeterministic`, η×η via `WfEtaTable.rootContractionDeterministic`, and the
+mixed ι×η case is VACUOUS — `fireAtRoot?` pins the head to an ι-eliminator while `contractAtRoot?`
+pins it to an η-intro former, and `WfEtaTable.introRootsAreNotIotaElims` forbids those from
+coinciding.  This is the local confluence (at the root) the disjointness certificate guarantees. -/
+
+/-- Unified root rewrite over a heterogeneous bundle row: an ι-row fires (using the payload), an
+η-row contracts (ignoring the payload). -/
+def RewriteRow.rewriteAtRoot? (row : RewriteRow) {scope : Nat} (generator : Generator)
+    (payload : generator.payload scope)
+    (children : RawTermChildren generator.binderShifts scope) : Option (RawTerm scope) :=
+  match row with
+  | .iotaRow rule => rule.fireAtRoot? generator payload children
+  | .etaRow rule => rule.contractAtRoot? generator children
+
+/-- The ι-row dispatch is exactly the underlying `fireAtRoot?` — a definitional unfold. -/
+theorem RewriteRow.rewriteAtRoot?_iotaRow (rule : IotaRuleDesc) {scope : Nat} (generator : Generator)
+    (payload : generator.payload scope)
+    (children : RawTermChildren generator.binderShifts scope) :
+    (RewriteRow.iotaRow rule).rewriteAtRoot? generator payload children
+      = rule.fireAtRoot? generator payload children := rfl
+
+/-- The η-row dispatch is exactly the underlying `contractAtRoot?` — a definitional unfold. -/
+theorem RewriteRow.rewriteAtRoot?_etaRow (rule : EtaRuleDesc) {scope : Nat} (generator : Generator)
+    (payload : generator.payload scope)
+    (children : RawTermChildren generator.binderShifts scope) :
+    (RewriteRow.etaRow rule).rewriteAtRoot? generator payload children
+      = rule.contractAtRoot? generator children := rfl
+
+/-- Membership in an append splits to membership in one side — zero-axiom via the `List.Mem` ctors
+(no `mem_append` iff lemma). -/
+theorem mem_appendOr {elementType : Type} {firstList secondList : List elementType}
+    {element : elementType} (isMember : element ∈ firstList ++ secondList) :
+    element ∈ firstList ∨ element ∈ secondList := by
+  induction firstList with
+  | nil => exact Or.inr isMember
+  | cons _ _ inductiveHypothesis =>
+      cases isMember with
+      | head => exact Or.inl (List.Mem.head _)
+      | tail _ restMembership =>
+          cases inductiveHypothesis restMembership with
+          | inl inFirst => exact Or.inl (List.Mem.tail _ inFirst)
+          | inr inSecond => exact Or.inr inSecond
+
+/-- A row in the ι-row image of a table came from an ι-table entry — zero-axiom via `List.Mem`. -/
+theorem mem_mapIotaRow {iotaTable : List IotaRuleDesc} {row : RewriteRow}
+    (isMember : row ∈ iotaTable.map RewriteRow.iotaRow) :
+    ∃ rule, rule ∈ iotaTable ∧ row = RewriteRow.iotaRow rule := by
+  induction iotaTable with
+  | nil => cases isMember
+  | cons headRule _ inductiveHypothesis =>
+      cases isMember with
+      | head => exact ⟨headRule, List.Mem.head _, rfl⟩
+      | tail _ restMembership =>
+          obtain ⟨rule, ruleMember, rowEquals⟩ := inductiveHypothesis restMembership
+          exact ⟨rule, List.Mem.tail _ ruleMember, rowEquals⟩
+
+/-- A row in the η-row image of a table came from an η-table entry — zero-axiom via `List.Mem`. -/
+theorem mem_mapEtaRow {etaTable : List EtaRuleDesc} {row : RewriteRow}
+    (isMember : row ∈ etaTable.map RewriteRow.etaRow) :
+    ∃ rule, rule ∈ etaTable ∧ row = RewriteRow.etaRow rule := by
+  induction etaTable with
+  | nil => cases isMember
+  | cons headRule _ inductiveHypothesis =>
+      cases isMember with
+      | head => exact ⟨headRule, List.Mem.head _, rfl⟩
+      | tail _ restMembership =>
+          obtain ⟨rule, ruleMember, rowEquals⟩ := inductiveHypothesis restMembership
+          exact ⟨rule, List.Mem.tail _ ruleMember, rowEquals⟩
+
+/-- Every bundle row is classified: an ι-row drawn from the ι-table, or an η-row from the η-table. -/
+theorem mem_rewriteBundle {iotaTable : List IotaRuleDesc} {etaTable : List EtaRuleDesc}
+    {row : RewriteRow} (rowIsMember : row ∈ rewriteBundle iotaTable etaTable) :
+    (∃ rule, rule ∈ iotaTable ∧ row = RewriteRow.iotaRow rule) ∨
+    (∃ rule, rule ∈ etaTable ∧ row = RewriteRow.etaRow rule) := by
+  dsimp only [rewriteBundle] at rowIsMember
+  cases mem_appendOr rowIsMember with
+  | inl inIotaImage => exact Or.inl (mem_mapIotaRow inIotaImage)
+  | inr inEtaImage => exact Or.inr (mem_mapEtaRow inEtaImage)
+
+/-- ★ **Operational soundness of the disjoint bundle**: in a well-formed bundle (well-formed ι-table
++ well-formed η-table over that same ι-table), any two rows that both rewrite the SAME root cell
+produce the SAME reduct.  ι×ι and η×η are the two shipped determinism theorems; the mixed ι×η case
+is impossible because an ι-eliminator head is never an η-intro former. -/
+theorem rewriteBundle_rootDeterministic {iotaTable : List IotaRuleDesc}
+    {etaTable : List EtaRuleDesc}
+    (iotaTableIsWf : WfIotaTable iotaTable)
+    (etaTableIsWf : WfEtaTable etaTable iotaTable)
+    {firstRow secondRow : RewriteRow}
+    (firstIsRow : firstRow ∈ rewriteBundle iotaTable etaTable)
+    (secondIsRow : secondRow ∈ rewriteBundle iotaTable etaTable)
+    {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope}
+    {children : RawTermChildren generator.binderShifts scope}
+    {firstReduct secondReduct : RawTerm scope}
+    (firstRewrites : firstRow.rewriteAtRoot? generator payload children = some firstReduct)
+    (secondRewrites : secondRow.rewriteAtRoot? generator payload children = some secondReduct) :
+    firstReduct = secondReduct := by
+  cases mem_rewriteBundle firstIsRow with
+  | inl firstIota =>
+      obtain ⟨firstRule, firstRuleMember, firstRowEquals⟩ := firstIota
+      subst firstRowEquals
+      rw [RewriteRow.rewriteAtRoot?_iotaRow] at firstRewrites
+      cases mem_rewriteBundle secondIsRow with
+      | inl secondIota =>
+          obtain ⟨secondRule, secondRuleMember, secondRowEquals⟩ := secondIota
+          subst secondRowEquals
+          rw [RewriteRow.rewriteAtRoot?_iotaRow] at secondRewrites
+          exact iotaTableIsWf.rootFiringDeterministic firstRuleMember secondRuleMember
+            firstRewrites secondRewrites
+      | inr secondEta =>
+          obtain ⟨secondRule, secondRuleMember, secondRowEquals⟩ := secondEta
+          subst secondRowEquals
+          rw [RewriteRow.rewriteAtRoot?_etaRow] at secondRewrites
+          have firstPinsElim : generator = firstRule.elimGenerator :=
+            IotaRuleDesc.fireAtRoot?_pinsElim firstRewrites
+          have secondPinsIntro : generator = secondRule.introGenerator :=
+            EtaRuleDesc.contractAtRoot?_pinsIntro secondRewrites
+          exact absurd (secondPinsIntro.symm.trans firstPinsElim)
+            (etaTableIsWf.introRootsAreNotIotaElims secondRuleMember firstRuleMember)
+  | inr firstEta =>
+      obtain ⟨firstRule, firstRuleMember, firstRowEquals⟩ := firstEta
+      subst firstRowEquals
+      rw [RewriteRow.rewriteAtRoot?_etaRow] at firstRewrites
+      cases mem_rewriteBundle secondIsRow with
+      | inl secondIota =>
+          obtain ⟨secondRule, secondRuleMember, secondRowEquals⟩ := secondIota
+          subst secondRowEquals
+          rw [RewriteRow.rewriteAtRoot?_iotaRow] at secondRewrites
+          have firstPinsIntro : generator = firstRule.introGenerator :=
+            EtaRuleDesc.contractAtRoot?_pinsIntro firstRewrites
+          have secondPinsElim : generator = secondRule.elimGenerator :=
+            IotaRuleDesc.fireAtRoot?_pinsElim secondRewrites
+          exact absurd (firstPinsIntro.symm.trans secondPinsElim)
+            (etaTableIsWf.introRootsAreNotIotaElims firstRuleMember secondRuleMember)
+      | inr secondEta =>
+          obtain ⟨secondRule, secondRuleMember, secondRowEquals⟩ := secondEta
+          subst secondRowEquals
+          rw [RewriteRow.rewriteAtRoot?_etaRow] at secondRewrites
+          exact etaTableIsWf.rootContractionDeterministic firstRuleMember secondRuleMember
+            firstRewrites secondRewrites
+
+/-- ★ The canonical bundle is root-deterministic — the operational payoff of the disjointness pin,
+instantiated at the kernel's own ι/η tables.  Mentions BOTH canonical well-formedness certificates,
+so a new row in either table re-checks it. -/
+theorem fxRewriteBundle_rootDeterministic
+    {firstRow secondRow : RewriteRow}
+    (firstIsRow : firstRow ∈ rewriteBundle iotaRuleTable etaRuleTable)
+    (secondIsRow : secondRow ∈ rewriteBundle iotaRuleTable etaRuleTable)
+    {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope}
+    {children : RawTermChildren generator.binderShifts scope}
+    {firstReduct secondReduct : RawTerm scope}
+    (firstRewrites : firstRow.rewriteAtRoot? generator payload children = some firstReduct)
+    (secondRewrites : secondRow.rewriteAtRoot? generator payload children = some secondReduct) :
+    firstReduct = secondReduct :=
+  rewriteBundle_rootDeterministic iotaRuleTable_isWf etaRuleTable_isWf
+    firstIsRow secondIsRow firstRewrites secondRewrites
+
 end FX1Poly.Core
