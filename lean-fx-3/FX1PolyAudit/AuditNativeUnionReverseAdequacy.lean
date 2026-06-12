@@ -12,8 +12,8 @@ import FX1Poly.Typed.HasTypeNativeUnionTwoPathVerdict
 Per-declaration zero-axiom gate for NATIVE-37 part d: the eight remaining per-head inversions over
 `HasTypeNativeUnion` (boolElim / optionMatch / eitherMatch / idJ / fst / snd / natRec / listElim — the
 four representatives pathLam / lam / natElim / natSucc were gated in `AuditNativeUnionInversion`), the
-per-family reverse adequacies (the surplus halves + the relativized reconstruction halves + the
-unconditional listElim reverse adequacy), the two-path canonical-path verdict for natSucc (the bespoke
+per-family reverse adequacies (the surplus halves + the relativized reconstruction halves — listElim
+relativized like the rest since the NATIVE-42 re-shape), the two-path canonical-path verdict for natSucc (the bespoke
 natSucc predecessor inversion, the embedding⟹row subsumption, the computed-number witness, the embedding
 refutation, and the strict-generality packaging), and the reverse-adequacy coverage record / witness.
 
@@ -55,9 +55,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.toNatElimRelativized
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.toNatRecRelativized
 
-/-! ## (2) ★ Reverse adequacy — the UNCONDITIONAL listElim reverse adequacy -/
+/-! ## (2) ★ Reverse adequacy — listElim (relativized since the NATIVE-42 re-shape) -/
 
-#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.toListElim
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.listElimSurplus
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.toListElimRelativized
 
 /-! ## (3) ★ The two-path canonical-path verdict (natSucc) -/
 

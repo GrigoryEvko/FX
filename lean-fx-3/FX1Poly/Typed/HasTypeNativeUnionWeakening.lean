@@ -909,12 +909,11 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
         (RawTerm.rename rawRenaming typeCode) (RawTerm.rename rawRenaming endpoint)
         (RawTerm.rename rawRenaming resultType) rfl witnessRenamed baseCaseRenamed
   | listElim context generator rule motive scrutinee nilBranch consBranch elementType resultType
-      isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
+      isListElim _scrutineeTyped nilBranchTyped consBranchTyped scrutineeIH =>
       intro targetScope targetContext rawRenaming condition
       obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
       subst ruleEq
-      have scrutineeRenamed :=
-        scrutineeTyped.renameRespectingContext targetContext rawRenaming condition
+      have scrutineeRenamed := scrutineeIH targetContext rawRenaming condition
       have nilRenamed := nilBranchTyped.renameRespectingContext targetContext rawRenaming condition
       have consRenamed := consBranchTyped.renameRespectingContext targetContext rawRenaming condition
       rw [rename_listTypeCell] at scrutineeRenamed

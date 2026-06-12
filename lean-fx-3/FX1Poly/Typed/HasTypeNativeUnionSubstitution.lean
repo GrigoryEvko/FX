@@ -431,12 +431,13 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
         (RawTerm.subst substitution typeCode) (RawTerm.subst substitution endpoint)
         (RawTerm.subst substitution resultType) rfl witnessSubst baseCaseSubst
   | listElim context generator rule motive scrutinee nilBranch consBranch elementType resultType
-      isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
+      isListElim _scrutineeTyped nilBranchTyped consBranchTyped scrutineeIH =>
       intro targetScope targetContext substitution condition
       obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
       subst ruleEq
-      -- listElim row: scrutinee list-intro-typed, nil at result, cons at the step-function type.
-      have scrutineeSubst := scrutineeTyped.substRespectingContext targetContext substitution condition
+      -- listElim row: scrutinee union-recursive, nil at result, cons at the step-function type.
+      have scrutineeSubst := scrutineeIH targetContext substitution condition
+      rw [subst_listTypeCell] at scrutineeSubst
       have nilSubst := nilBranchTyped.substRespectingContext targetContext substitution condition
       have consSubst := consBranchTyped.substRespectingContext targetContext substitution condition
       rw [subst_listStepFunctionType] at consSubst

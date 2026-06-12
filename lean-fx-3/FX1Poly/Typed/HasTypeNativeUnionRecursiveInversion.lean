@@ -9,12 +9,12 @@ second row of `nativeRecursiveElimRuleOf`) and the `listElim` head (the `listEli
   * **natRec** — survivor is the `recursiveElim` arm pinned to the `gen_natRec` row.  Surfaced premises:
     the scrutinee union-typed at `Nat`, the base (zero) branch union-typed at the classifier.  Identical
     in shape to `invertAtNatElimHead`, only the surviving row differs.
-  * **listElim** — survivor is the `listElim` arm pinned to the `gen_listElim` row.  Surfaced premises
-    are ALREADY the bespoke shapes (scrutinee LIST-INTRO-typed, branches GROWN-typed) — the listElim arm
-    was added to the union with `HasTypeDescListIntro` / `HasTypeDescPi` premises (premise parity with
-    `HasTypeDescListElim.listElimIntro`).  So this inversion surfaces the EXACT bespoke premises, and the
-    reverse adequacy for listElim is UNCONDITIONAL (no relativization needed — the surplus is empty at
-    this head).
+  * **listElim** — survivor is the `listElim` arm pinned to the `gen_listElim` row.  Surfaced premises:
+    the scrutinee UNION-typed at `List(elementType)` (the NATIVE-42 re-shape made the scrutinee premise
+    union-recursive, retiring the last zoo judgment named inside the union), the nil/cons branches
+    GROWN-typed at the result / 3-arg curried step type.  The reverse adequacy for listElim is therefore
+    RELATIVIZED like every other head (the scrutinee reconstruction map is where computed-list
+    scrutinees fall outside the bespoke engine).
 
 ## Zero-axiom
 
@@ -152,19 +152,17 @@ theorem HasTypeNativeUnion.invertAtNatRecHead {profile : PolyProfile} {scope : N
 /-! ## (1) Inversion at the listElim head -/
 
 /-- **★ Inversion at the listElim head.**  A union typing of a `listElimCell`-headed subject is EXACTLY a
-listElim typing at the `gen_listElim` row.  UNIQUELY among the eliminator heads, the surfaced premises
-are ALREADY the bespoke shapes: the scrutinee is LIST-INTRO-typed at `List(elementType)`, the nil branch
-is GROWN-typed at the classifier, the cons branch is GROWN-typed at the 3-arg curried step type.  (The
-union `listElim` arm was added with `HasTypeDescListIntro` / `HasTypeDescPi` premises — premise parity
-with the bespoke `HasTypeDescListElim.listElimIntro`.)  No grown disjunct: `listElimCell` is untypable in
-the grown engine. -/
+listElim typing at the `gen_listElim` row: the scrutinee is UNION-typed at `List(elementType)` (the
+NATIVE-42 union-recursive premise), the nil branch is GROWN-typed at the classifier, the cons branch is
+GROWN-typed at the 3-arg curried step type.  No grown disjunct: `listElimCell` is untypable in the grown
+engine. -/
 theorem HasTypeNativeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context subject classifier)
     (subjectShape : subject = listElimCell motive scrutinee nilBranch consBranch) :
     ∃ elementType pinnedClassifier : RawTerm scope,
-      HasTypeDescListIntro profile context scrutinee (listTypeCell elementType) ∧
+      HasTypeNativeUnion profile context scrutinee (listTypeCell elementType) ∧
       HasTypeDescPi profile context nilBranch pinnedClassifier ∧
       HasTypeDescPi profile context consBranch
         (listStepFunctionType elementType pinnedClassifier) ∧

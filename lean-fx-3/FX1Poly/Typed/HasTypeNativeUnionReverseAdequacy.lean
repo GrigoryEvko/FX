@@ -36,13 +36,14 @@ So the clean reverse-adequacy form is CONDITIONAL/RELATIVIZED:
 The reconstruction hypotheses are exactly the gap between the union arm and the bespoke arm; packaging
 them as premises makes the surplus precise and the agreement exact.
 
-## The listElim EXCEPTION (unconditional, no surplus at the head)
+## listElim joined the relativized family (NATIVE-42)
 
-`listElim` is special: its union arm was added with the BESPOKE premise shapes already
-(`HasTypeDescListIntro` scrutinee, `HasTypeDescPi` branches — premise parity with
-`HasTypeDescListElim.listElimIntro`).  So `invertAtListElimHead` surfaces the EXACT bespoke premises and
-the reverse adequacy is UNCONDITIONAL: a union typing of a `listElimCell` IS a bespoke `HasTypeDescListElim`
-typing, no reconstruction hypotheses needed.  The surplus is empty at this head.
+`listElim` was briefly the exception: its union arm originally carried the bespoke
+`HasTypeDescListIntro` scrutinee premise, so its reverse adequacy was unconditional.  The NATIVE-42
+re-shape made the scrutinee premise union-recursive (retiring the last zoo judgment named inside the
+union), so listElim now has the SAME genuine surplus as every other head — a computed-list scrutinee
+(another eliminator's result, a `recursiveBinaryIntro` cons chain) falls outside the bespoke intro
+engine — and its reverse adequacy is relativized like the rest.
 
 ## Zero-axiom
 
@@ -356,47 +357,71 @@ theorem HasTypeNativeUnion.toNatRecRelativized {profile : PolyProfile} {scope : 
   exact HasTypeDescNatRec.natRecIntro context motive scrutinee zeroBranch stepBranch classifier
     (reconstructScrutinee scrutineeUnion) (reconstructZero zeroUnion)
 
-/-! ## (2) ★ Reverse adequacy — listElim (UNCONDITIONAL: the surplus is empty at this head)
+/-! ## (2) ★ Reverse adequacy — listElim (relativized since the NATIVE-42 re-shape)
 
-The union `listElim` arm carries the bespoke premise shapes already, so the inversion surfaces exactly
-the bespoke premises and the reverse adequacy needs NO reconstruction hypotheses — a union typing of a
-`listElimCell` IS a bespoke `HasTypeDescListElim` typing. -/
+The union `listElim` arm's scrutinee premise is union-recursive (NATIVE-42), so the inversion surfaces a
+union-typed scrutinee and the reconstruction needs a map landing it back in the list-intro engine — the
+same relativized shape as every other head. -/
 
-/-- **★ UNCONDITIONAL reverse adequacy at the listElim head.**  A union typing of a `listElimCell` IS a
-bespoke `HasTypeDescListElim` typing — the union arm's premises ARE the bespoke premises (scrutinee
-list-intro-typed, branches grown-typed), so the surplus is empty at this head and the two judgments AGREE
-on `listElimCell`-headed subjects.  The cleanest reverse adequacy in the family. -/
-theorem HasTypeNativeUnion.toListElim {profile : PolyProfile} {scope : Nat}
+/-- **★ The honest SURPLUS at the listElim head.**  A union typing of a `listElimCell` surfaces an
+element type `A` and the recursive union scrutinee premise at `List(A)` plus the two grown branch
+premises.  The scrutinee surplus is sharp: a computed list (another eliminator's result, a
+`recursiveBinaryIntro` cons chain) is union-typable but falls outside the bespoke intro engine. -/
+theorem HasTypeNativeUnion.listElimSurplus {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope}
     {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
     (derivation : HasTypeNativeUnion profile context
       (listElimCell motive scrutinee nilBranch consBranch) classifier) :
+    ∃ elementType pinnedClassifier : RawTerm scope,
+      HasTypeNativeUnion profile context scrutinee (listTypeCell elementType) ∧
+      HasTypeDescPi profile context nilBranch pinnedClassifier ∧
+      HasTypeDescPi profile context consBranch
+        (listStepFunctionType elementType pinnedClassifier) ∧
+      Conv pinnedClassifier classifier :=
+  derivation.invertAtListElimHead rfl
+
+/-- **★ Reverse adequacy at the listElim head (relativized).**  GIVEN a union typing of a `listElimCell`
+AND, for the surfaced element type, a reconstruction map landing the union-typed scrutinee back in the
+list-intro engine, the bespoke `HasTypeDescListElim` derivation is reconstructed (the branch premises
+are already the bespoke grown shapes — only the scrutinee needs reconstruction). -/
+theorem HasTypeNativeUnion.toListElimRelativized {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
+    (derivation : HasTypeNativeUnion profile context
+      (listElimCell motive scrutinee nilBranch consBranch) classifier)
+    (reconstructScrutinee : ∀ elementType : RawTerm scope,
+      HasTypeNativeUnion profile context scrutinee (listTypeCell elementType) →
+      HasTypeDescListIntro profile context scrutinee (listTypeCell elementType)) :
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeDescListElim profile context
         (listElimCell motive scrutinee nilBranch consBranch) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨elementType, pinnedClassifier, scrutineeIntro, nilGrown, consGrown, convPinned⟩ :=
+  obtain ⟨elementType, pinnedClassifier, scrutineeUnion, nilGrown, consGrown, convPinned⟩ :=
     derivation.invertAtListElimHead rfl
   exact ⟨pinnedClassifier,
     HasTypeDescListElim.listElimIntro context motive scrutinee nilBranch consBranch elementType
-      pinnedClassifier scrutineeIntro nilGrown consGrown,
+      pinnedClassifier (reconstructScrutinee elementType scrutineeUnion) nilGrown consGrown,
     convPinned⟩
 
 /-! ## (5) Coverage record + witness -/
 
 /-- **The NATIVE-37 reverse-adequacy coverage record.**  Each field is a distinct live property of the
-honesty half of the union/family adequacy: the eight per-head inversions (the surplus half), the seven
-relativized reverse adequacies (the reconstruction half), and the ONE unconditional reverse adequacy
-(listElim, no surplus at the head).  An inhabitant certifies the reverse-adequacy substrate is exercised
-(constructed, not just declared) and CANNOT silently shrink. -/
+honesty half of the union/family adequacy: the per-head inversions (the surplus half) and the
+relativized reverse adequacies (the reconstruction half) — listElim included since the NATIVE-42
+re-shape made its scrutinee premise union-recursive.  An inhabitant certifies the reverse-adequacy
+substrate is exercised (constructed, not just declared) and CANNOT silently shrink. -/
 structure NativeUnionReverseAdequacyCoverage (profile : PolyProfile) : Prop where
-  /-- listElim: the UNCONDITIONAL reverse adequacy (Conv-modulo: the conv arm reclassifies, so the
-  bespoke typing holds at a pinned classifier convertible to the actual one). -/
-  listElimUnconditional : ∀ {scope : Nat} {context : TypingContext profile scope}
+  /-- listElim: the relativized reverse adequacy (Conv-modulo: the conv arm reclassifies, so the
+  bespoke typing holds at a pinned classifier convertible to the actual one); the scrutinee
+  reconstruction map is where computed-list scrutinees fall outside the bespoke engine. -/
+  listElimRelativized : ∀ {scope : Nat} {context : TypingContext profile scope}
     {classifier : RawTerm scope} {motive : RawTerm (scope + 1)}
     {scrutinee nilBranch consBranch : RawTerm scope},
     HasTypeNativeUnion profile context
       (listElimCell motive scrutinee nilBranch consBranch) classifier →
+    (∀ elementType : RawTerm scope,
+      HasTypeNativeUnion profile context scrutinee (listTypeCell elementType) →
+      HasTypeDescListIntro profile context scrutinee (listTypeCell elementType)) →
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeDescListElim profile context
         (listElimCell motive scrutinee nilBranch consBranch) pinnedClassifier ∧
@@ -434,7 +459,8 @@ structure NativeUnionReverseAdequacyCoverage (profile : PolyProfile) : Prop wher
 exercised reverse-adequacy property set can NOT silently shrink. -/
 theorem nativeUnionReverseAdequacyCoverageWitness {profile : PolyProfile} :
     NativeUnionReverseAdequacyCoverage profile where
-  listElimUnconditional := fun derivation => derivation.toListElim
+  listElimRelativized := fun derivation reconstructScrutinee =>
+    derivation.toListElimRelativized reconstructScrutinee
   boolElimRelativized := fun derivation reconstructScrutinee reconstructThen reconstructElse =>
     derivation.toBoolElimRelativized reconstructScrutinee reconstructThen reconstructElse
   natElimRelativized := fun derivation reconstructScrutinee reconstructZero =>

@@ -338,15 +338,18 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       HasTypeNativeUnion profile context
         (rule.memberCell scope witness) (rule.outputType scope witnessType witness)
   /-- The table-driven listElim arm (the NATIVE-33 union residency of
-  `ListElimUnionSpike.listElimRecursiveRow`, discharging the batch-1 pin): scrutinee LIST-INTRO-typed,
-  nil/cons branches host-typed at the non-dependent result / 3-arg curried step type.  Premise parity
-  with the bespoke `HasTypeDescListElim.listElimIntro`; the cons branch stays STORED. -/
+  `ListElimUnionSpike.listElimRecursiveRow`, discharging the batch-1 pin): scrutinee RECURSIVE in the
+  UNION at `List(elementType)` — so a computed list (e.g. another eliminator's result, or a `cons` chain
+  built through `recursiveBinaryIntro`) is an admissible scrutinee, exactly like the `recursiveElim`
+  arm's Nat scrutinee.  Nil/cons branches host-typed at the non-dependent result / 3-arg curried step
+  type; the cons branch stays STORED.  (The NATIVE-42 re-shape: the premise was previously the bespoke
+  `HasTypeDescListIntro` shape, the last zoo judgment named inside the union.) -/
   | listElim {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativeListElimRule)
       (motive : RawTerm (scope + 1))
       (scrutinee nilBranch consBranch elementType resultType : RawTerm scope)
       (isListElim : listElimNativeRuleOf generator = some rule)
-      (scrutineeTyped : HasTypeDescListIntro profile context scrutinee (listTypeCell elementType))
+      (scrutineeTyped : HasTypeNativeUnion profile context scrutinee (listTypeCell elementType))
       (nilBranchTyped : HasTypeDescPi profile context nilBranch resultType)
       (consBranchTyped : HasTypeDescPi profile context consBranch
         (listStepFunctionType elementType resultType)) :
@@ -576,7 +579,8 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
 
 /-- **★ The listElim nil-ι selects the nil branch, typed IN THE UNION.**  A union-typed `listElim` on
 `nil` ι-steps to the nil branch (`Step.iotaListElimNil`), the eliminator typed by the union's own
-`listElim` arm (scrutinee `nil` list-intro-typed via `listNilIntro`), and the nil branch host-typed. -/
+`listElim` arm (scrutinee `nil` union-typed through the native listNil nullary-free-type row), and the
+nil branch host-typed. -/
 theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1))
@@ -593,7 +597,8 @@ theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     HasTypeDescPi profile context nilBranch resultType :=
   ⟨HasTypeNativeUnion.listElim context .gen_listElim listElimNativeRule
       motive listNilCell nilBranch consBranch elementType resultType rfl
-      (HasTypeDescListIntro.listNilIntro context elementType elementLevel flag elementTypeFormed)
+      (HasTypeNativeUnion.nullaryFreeTypeIntro context .gen_listNil
+        listNilNativeNullaryFreeTypeRule elementType elementLevel flag rfl elementTypeFormed)
       nilBranchTyped consBranchTyped,
     Step.iotaListElimNil, nilBranchTyped⟩
 

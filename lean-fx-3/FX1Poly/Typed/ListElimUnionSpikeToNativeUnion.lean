@@ -52,9 +52,11 @@ theorem listElimRecursiveRuleOf_spikeCases {generator : Generator} {rule : ListE
 
 /-- **★ Every NATIVE-32(B) `ListElimUnionSpike` derivation maps to a `HasTypeNativeUnion` typing at the
 same subject and classifier.**  Induction over the spike's three arms; `ofUnion` is identity,
-`ofListIntro` maps to the union's `ofListIntro`, and the `listElimRecursiveRow` maps to the union's
-`listElim` arm via the spike-table-inversion lemma at definitionally-equal cells (the scrutinee / nil /
-cons premises are grown — carried verbatim).  Discharges the batch-1 union-residency pin. -/
+`ofListIntro` converts through the native intro rows (`toNativeRows`), and the `listElimRecursiveRow`
+maps to the union's `listElim` arm via the spike-table-inversion lemma at definitionally-equal cells —
+the spike's list-intro scrutinee premise converts through `toNativeRows` into the union arm's
+NATIVE-42 union-recursive scrutinee premise; the nil/cons grown premises carry verbatim.  Discharges
+the batch-1 union-residency pin. -/
 theorem ListElimUnionSpike.toNativeUnion {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : ListElimUnionSpike profile context subject classifier) :
@@ -68,7 +70,7 @@ theorem ListElimUnionSpike.toNativeUnion {profile : PolyProfile} {scope : Nat}
       subst ruleEq
       exact HasTypeNativeUnion.listElim _ .gen_listElim listElimNativeRule
         motive scrutinee nilBranch consBranch elementType resultType rfl
-        scrutineeTyped nilBranchTyped consBranchTyped
+        scrutineeTyped.toNativeRows nilBranchTyped consBranchTyped
 
 /-! ## The transfer gate -/
 

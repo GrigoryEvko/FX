@@ -285,8 +285,8 @@ theorem Conv.refutedByDistinctStableHeads {scope : Nat} {leftTerm rightTerm : Ra
 
 /-- The LANE codes: the classifier shapes a union eliminator's recursive premise can demand.  These are
 exactly the scrutinee/eliminated types of the union's own elimination arms (plus `bool`/`nat` as the
-headline corollary targets).  `list` is absent because the union's `listElim` arm carries a STANDALONE
-intro premise (no recursion); `bridge`/`interval` are absent because the `pathApp` row is outside the
+headline corollary targets) — including `list`, whose `listElim` scrutinee premise is union-recursive
+since the NATIVE-42 re-shape.  `bridge`/`interval` are absent because the `pathApp` row is outside the
 core-Step fragment boundary. -/
 inductive IsLaneCode : {scope : Nat} → RawTerm scope → Prop where
   | bool {scope : Nat} : IsLaneCode (boolTypeCell : RawTerm scope)
@@ -1236,11 +1236,27 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
       rw [targetEq]
       exact LaneValue.refl targetType targetLeft targetRight witness
   | listElim context generator rule motive scrutinee nilBranch consBranch elementType resultType
-      isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
-      intro _closed normal _pathAppFree _pathLamFree target laneTarget convToTarget
+      isListElim scrutineeTyped nilBranchTyped consBranchTyped ihScrutinee =>
+      intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
       obtain ⟨generatorEq, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
       subst generatorEq; subst ruleEq
-      rcases HasTypeDescListIntro.subjectIsListConstructor scrutineeTyped with
+      have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
+        (RawTermChildren.areStepNormalFormsBool_tail
+          (RawTermChildren.areStepNormalFormsBool_tail
+            (RawTermChildren.areStepNormalFormsBool_tail
+              (RawTerm.isStepNormalFormBool_children normal))))
+      have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
+        (RawTermChildren.containGeneratorBool_tail
+          (RawTermChildren.containGeneratorBool_tail
+            (RawTermChildren.containGeneratorBool_tail
+              (RawTerm.containsGeneratorBool_children pathAppFree))))
+      have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
+        (RawTermChildren.containGeneratorBool_tail
+          (RawTermChildren.containGeneratorBool_tail
+            (RawTermChildren.containGeneratorBool_tail
+              (RawTerm.containsGeneratorBool_children pathLamFree))))
+      rcases (ihScrutinee closed scrutineeNormal scrutineeAppFree scrutineeLamFree
+          (IsLaneCode.list elementType) (Conv.refl _)).atList with
           scrutineeEq | ⟨headValue, tailList, scrutineeEq⟩
       · rw [scrutineeEq] at normal
         cases normal
