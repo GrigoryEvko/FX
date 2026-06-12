@@ -1,11 +1,11 @@
 import FX1Poly.Typed.CellConstructors
 import FX1Poly.Typed.CellSubstitution
-import FX1Poly.Typed.NativeUnionRuleTables
+import FX1Poly.Typed.UnionRuleTables
 import FX1Poly.Typed.NatElimComputingCanonicity
 import FX1Poly.Typed.ListElimComputingCanonicity
 import FX1Poly.Typed.RecursorHostFold
 
-/-! # FX1Poly/Typed/NativeUnionCellSubstitution — how `RawTerm.subst` acts on the native-union cells
+/-! # FX1Poly/Typed/UnionCellSubstitution — how `RawTerm.subst` acts on the native-union cells
 
 The native-union substitution lemma (NATIVE-37 part b) reassembles each arm's substituted subject and
 classifier from the substituted children.  The arms' member cells and rule outputs are all `mkGen`
@@ -23,7 +23,7 @@ identities.
 ## Zero-axiom
 
 Every theorem closes by `rfl`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, `omega`.  Audit-gated in `FX1PolyAudit/AuditNativeUnionSubstitution.lean`. -/
+`native_decide`, `omega`.  Audit-gated in `FX1PolyAudit/AuditUnionSubstitution.lean`. -/
 
 namespace FX1Poly.Typed
 

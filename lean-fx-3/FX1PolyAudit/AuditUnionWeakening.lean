@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.HasTypeUnionWeakening
 
-/-! # FX1PolyAudit/AuditNativeUnionWeakening — audit shard for the RENAMING / WEAKENING lemma over the
+/-! # FX1PolyAudit/AuditUnionWeakening — audit shard for the RENAMING / WEAKENING lemma over the
     25-arm native union (the de-Bruijn-insertion twin of `HasTypeUnion.substRespectingContext`)
 
 Per-declaration zero-axiom gate for the union weakening primitive: the per-cell renaming commutations

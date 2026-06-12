@@ -1,5 +1,5 @@
 import FX1Poly.Typed.BridgeEndpointStep
-import FX1Poly.Typed.NativeUnionRuleTables
+import FX1Poly.Typed.UnionRuleTables
 
 /-! # FX1Poly/Typed/BridgeEndpointNativeSubjectReduction — NATIVE-45: the wall falls INTO the native union
 

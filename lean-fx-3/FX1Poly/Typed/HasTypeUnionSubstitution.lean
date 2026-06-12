@@ -1,6 +1,6 @@
 import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Typed.HasTypeUnionInversion
-import FX1Poly.Typed.NativeUnionCellSubstitution
+import FX1Poly.Typed.UnionCellSubstitution
 import FX1Poly.Typed.HasTypeDescPiSubstPair
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Core.RawTermOccurrenceSubstLift
@@ -58,7 +58,7 @@ enters through the branch's own derivation, not the substitution side condition)
 `substRespectingContext` is `induction` over the 24 arms + the cell-subst `rfl` commutations + the
 per-rule `subst0_subst_commute` reshapes + the lifted-occurrence preservation + the engine subst lemmas.
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration
-audit-gated in `FX1PolyAudit/AuditNativeUnionSubstitution.lean`. -/
+audit-gated in `FX1PolyAudit/AuditUnionSubstitution.lean`. -/
 
 namespace FX1Poly.Typed
 

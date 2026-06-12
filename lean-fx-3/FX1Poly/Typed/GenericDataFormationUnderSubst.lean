@@ -1,5 +1,5 @@
 import FX1Poly.Typed.ReducibleSemanticRules
-import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizingNative
+import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizing
 
 /-! # FX1Poly/Typed/GenericDataFormationUnderSubst
    — the SYMBOLIC-generator non-Pi formation membership arm (GTL-06 kernel, brick 3 headline)

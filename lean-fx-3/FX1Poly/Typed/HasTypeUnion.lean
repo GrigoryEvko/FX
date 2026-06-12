@@ -1,7 +1,7 @@
 import FX1Poly.Typed.HasTypeDescGeneralElim
 import FX1Poly.Typed.FlatDescTelescopePi
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
-import FX1Poly.Typed.NativeUnionRuleTables
+import FX1Poly.Typed.UnionRuleTables
 import FX1Poly.Core.BoolCanonicalFormsCandidate
 
 /-! # FX1Poly/Typed/HasTypeUnion — NATIVE-25: the seed unified judgment + Bridge full adequacy
@@ -20,7 +20,7 @@ adequacy INTO it.
     so positivity is trivial (no mutual telescope blocks, the banked positivity trap avoided).  They
     provide the grown / term-indexed typing mass.  The base-type / data-intro / flat families are now
     inlined as their own table-driven arms (`baseTypeFormation` / `dataIntroNullary` / `flatFormation`),
-    reading the rule tables in `NativeUnionRuleTables` directly — no engine indirection.
+    reading the rule tables in `UnionRuleTables` directly — no engine indirection.
   * Two RECURSIVE native arms (`gradedBinderIntro` / `generalElim`) — the NATIVE-23/24 keystone arms
     with premises in the union ITSELF.  These provide the compositional closure that was the walls.
 
@@ -66,7 +66,7 @@ NATIVE-36 makes the NON-recursive data-eliminator families (boolElim / optionMat
 recursive data-INTRO families (natSucc / listCons / optionSome / optionNone / eitherInl / eitherInr /
 pair / refl via the seven intro arms), and the listElim family (via `listElim`, discharging the batch-1
 pin "listElim union residency lands with NATIVE-33") RESIDENT in `HasTypeUnion` as table-driven
-arms, with their native twin tables hoisted into the pre-union `NativeUnionRuleTables` (the import-cycle
+arms, with their native twin tables hoisted into the pre-union `UnionRuleTables` (the import-cycle
 hazard avoided exactly as NATIVE-32 avoided it).  The scrutinee-embedding arms the data eliminators need
 were RETIRED by the NATIVE-42 toNativeRows conversions (every data value now
 enters through its native table row).  The base-type / data-intro / flat embeddings have been inlined as

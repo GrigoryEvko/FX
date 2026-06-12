@@ -1,6 +1,6 @@
 import FX1Poly.Typed.HasTypeDescValidity
 import FX1Poly.Typed.WfContextDescValidity
-import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizingNative
+import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizing
 import FX1Poly.Core.RawConfluence
 
 /-! # FX1Poly/Typed/HasTypeDescStronglyNormalizing

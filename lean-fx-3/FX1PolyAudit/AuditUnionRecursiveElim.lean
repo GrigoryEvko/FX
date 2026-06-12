@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.HasTypeUnion
 
-/-! # FX1PolyAudit/AuditNativeWaveRecursiveElim — NATIVE-32 audit shard (recursive-eliminator rows
+/-! # FX1PolyAudit/AuditUnionRecursiveElim — NATIVE-32 audit shard (recursive-eliminator rows
     integrated into the real union + the listElim row)
 
 Per-declaration zero-axiom gate for the NATIVE-32 wave: the recursive-eliminator rows landed IN the

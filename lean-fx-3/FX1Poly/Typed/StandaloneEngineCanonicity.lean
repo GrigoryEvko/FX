@@ -14,7 +14,7 @@ by EITHER arm — what is it?  The two arms occupy DISJOINT classifier slots (th
 Each lemma takes the arm's table-rule WITNESS data directly — the generator, its `…RuleDescOf … = some rule`
 hit, and the classifier-equality (`rule.outputTypeCode scope = boolTypeCell` / `rule.outputUniverse scope =
 boolTypeCell`) — so a caller holding a `dataIntroNullary` / `baseTypeFormation` arm at the relevant classifier
-feeds it directly after destructuring the arm.  The arm rows are decoded with the `NativeUnionRuleTables`
+feeds it directly after destructuring the arm.  The arm rows are decoded with the `UnionRuleTables`
 helpers (`dataIntroNullaryRuleTableHitIsValueConstructor` / `baseTypeRuleTableOutputIsType0`); the two retired
 nullary data engines that previously stated these are gone — their formation/intro content is now the
 `dataIntroNullary` / `baseTypeFormation` arms of `HasTypeUnion`.

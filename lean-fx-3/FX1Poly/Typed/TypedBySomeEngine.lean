@@ -1,5 +1,5 @@
 import FX1Poly.Typed.TypingHeadKindClassifier
-import FX1Poly.Typed.NativeUnionRuleTables
+import FX1Poly.Typed.UnionRuleTables
 
 /-! # FX1Poly/Typed/TypedBySomeEngine — the honest TOTAL static-typing classifier over all 203 generators
 

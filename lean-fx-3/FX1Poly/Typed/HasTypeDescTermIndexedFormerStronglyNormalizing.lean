@@ -1,5 +1,5 @@
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerSubjectReduction
-import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizingNative
+import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizing
 import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 
 /-! # FX1Poly/Typed/HasTypeDescTermIndexedFormerStronglyNormalizing — NATIVE-16: SN for the term-indexed former engine

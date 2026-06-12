@@ -10,7 +10,7 @@ standalone `HasTypeDesc*` engine zoo that this census surveyed has been DELETED.
 table-driven via `typingRuleDescOf` / `introRuleDescOf` / `elimRuleDescOf` with the cascade-free
 GTL/TG/SR-U metatheory) and is embedded into the union as the `ofGrown` arm; every data / former /
 eliminator family that the standalone engines once carried now lives as a table-driven ARM of
-`HasTypeUnion`, reading the NATIVE rule tables in `NativeUnionRuleTables`
+`HasTypeUnion`, reading the NATIVE rule tables in `UnionRuleTables`
 (`baseTypeRuleDescOf` / `dataIntroNullaryRuleDescOf` / `flatTypingRuleDescOf` / `gradedIntroRuleOf`
 / `generalElimRuleOf` / the `native*RuleOf` recursive-elim and data-intro tables).
 

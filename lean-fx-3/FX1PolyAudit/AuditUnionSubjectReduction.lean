@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.HasTypeUnionSubjectReduction
 
-/-! # FX1PolyAudit/AuditNativeUnionSubjectReduction — NATIVE-37 part a audit shard (ROOT-redex subject
+/-! # FX1PolyAudit/AuditUnionSubjectReduction — NATIVE-37 part a audit shard (ROOT-redex subject
     reduction for the 24-arm native union)
 
 Per-declaration zero-axiom gate for NATIVE-37 part a: the seven unconditional branch-selection /

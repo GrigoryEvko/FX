@@ -1,4 +1,4 @@
-import FX1Poly.Typed.NativeUnionRuleTables
+import FX1Poly.Typed.UnionRuleTables
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Core.ConvNormalForm
 

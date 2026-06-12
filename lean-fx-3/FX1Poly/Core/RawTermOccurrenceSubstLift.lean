@@ -35,7 +35,7 @@ spine; the var case routes the singleton through `contains_singleton_iff` with t
 off via a `Bool`-value `cases`, never a `by_cases` on a payload equality).  The binder transport is the
 shipped `occurrenceCountAt_weaken_succ` / `occurrenceCountAt_weaken_zeroPosition`.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated in
-`FX1PolyAudit/AuditNativeUnionSubstitution.lean`. -/
+`FX1PolyAudit/AuditUnionSubstitution.lean`. -/
 
 namespace FX1Poly.Core
 

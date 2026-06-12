@@ -2310,7 +2310,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- (formation via the term-indexed-former table; pathLam via the graded-intro row, witnessed
 -- by constantBridgeGradedOfTyped / identityPathGradedTyped gated below; pathApp via the
 -- generalElim row).  The forced-affinity HONESTY inversion survives union-side as
--- HasTypeUnion.pathLamSubjectIsAffine (gated in AuditNativeUnionInversion).
+-- HasTypeUnion.pathLamSubjectIsAffine (gated in AuditUnionInversion).
 -- HONEST SCOPE: the rows are LIVE and admission-covered (brick 4); the endpoint-β
 -- computation fires via the iota TABLE's pathBeta row (the table-driven StepTable relation,
 -- StepTable.pathBetaFires — the bespoke sibling was retired, gated below); the

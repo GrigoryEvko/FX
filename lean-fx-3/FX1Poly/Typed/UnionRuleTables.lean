@@ -4,7 +4,7 @@ import FX1Poly.Typed.FlatDescTelescope
 import FX1Poly.Typed.HasTypeDescWeakening
 import FX1Poly.Typed.HasTypeDescSubstitution
 
-/-! # FX1Poly/Typed/NativeUnionRuleTables — NATIVE-36: the native twin rule tables for the
+/-! # FX1Poly/Typed/UnionRuleTables — NATIVE-36: the native twin rule tables for the
     data-eliminator, n-ary/recursive data-intro, and listElim families (PRE-UNION, imported by the
     union)
 
@@ -45,7 +45,7 @@ Every table is an `if`-then-`else` over `DecidableEq Generator` (rfl on the diag
 table-inversion lemma is decidable case analysis (`by_cases generator = .gen_X`, `if_pos` / `if_neg`,
 `Option.some.inj`, `Option.noConfusion` on the `none` tail) — no `propext`, no derivation elimination.
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration
-audit-gated in `FX1PolyAudit/AuditNativeWaveUnionResidency.lean`. -/
+audit-gated in `FX1PolyAudit/AuditUnionResidency.lean`. -/
 
 namespace FX1Poly.Typed
 

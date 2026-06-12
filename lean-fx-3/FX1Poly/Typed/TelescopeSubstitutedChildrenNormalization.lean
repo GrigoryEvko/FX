@@ -1,6 +1,6 @@
 import FX1Poly.Typed.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.TelescopeReducible
-import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizingNative
+import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizing
 
 /-! # FX1Poly/Typed/TelescopeSubstitutedChildrenNormalization
    — telescope reducibility ⟹ SN of every substituted child (GTL-06 kernel, brick 2)

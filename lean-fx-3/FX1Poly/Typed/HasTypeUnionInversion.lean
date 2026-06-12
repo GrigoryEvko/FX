@@ -62,7 +62,7 @@ The host refutation is the one-line `cellHasNoTypingWhenRootGenericallyExcluded`
 free-subject `cases` + table inversions + head-generator no-confusion + `injections`; the affine rejection routes
 through `invertAtPathLamHead` (free-index inversion, never `cases` at the concrete subject) + the shipped
 `doubleDimensionUseBody_occurrenceIsTwo` count fact.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditNativeUnionInversion.lean`. -/
+`native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditUnionInversion.lean`. -/
 
 namespace FX1Poly.Typed
 

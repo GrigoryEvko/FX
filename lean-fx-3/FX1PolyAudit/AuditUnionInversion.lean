@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.HasTypeUnionInversion
 
-/-! # FX1PolyAudit/AuditNativeUnionInversion — NATIVE-37 audit shard (the FIRST eliminations over the
+/-! # FX1PolyAudit/AuditUnionInversion — NATIVE-37 audit shard (the FIRST eliminations over the
     native union: the inversion substrate + the union-wide affine rejection)
 
 Per-declaration zero-axiom gate for NATIVE-37 part 1: the host pathLam/natSucc head refutations (the Rung-103

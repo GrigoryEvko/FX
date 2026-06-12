@@ -92,7 +92,7 @@ theorem NullaryDataValueTyped.unitValueTyped {profile : PolyProfile} {scope : Na
     { outputTypeCode := fun _ => unitTypeCell } rfl
 
 /-- **The nullary value-constructor rows are exactly the six childless data constructors.**  A local
-copy of the rule-table enumerator (kept here so this file is self-sufficient over `NativeUnionRuleTables`'s
+copy of the rule-table enumerator (kept here so this file is self-sufficient over `UnionRuleTables`'s
 `dataIntroNullaryRuleDescOf` def, independent of where the engine satellites relocate). -/
 private theorem nullaryDataRowGenerators {generator : Generator} {rule : DataIntroNullaryRuleDesc}
     (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :

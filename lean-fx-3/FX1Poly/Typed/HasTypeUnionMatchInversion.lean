@@ -38,7 +38,7 @@ bespoke-shaped (the reconstruction hypotheses); without them the surfaced union 
 Free-subject `cases` + the shipped row inverter `nativeTwoBranchMatchRuleOf_cases` + head-generator
 no-confusion + `rcases subjectShape with ⟨⟩` child drilling.  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
-`FX1PolyAudit/AuditNativeUnionReverseAdequacy.lean`. -/
+`FX1PolyAudit/AuditUnionMatchInversion.lean`. -/
 
 namespace FX1Poly.Typed
 

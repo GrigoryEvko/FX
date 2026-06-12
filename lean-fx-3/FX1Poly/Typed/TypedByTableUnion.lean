@@ -1,5 +1,5 @@
 import FX1Poly.Typed.TypedBySomeEngine
-import FX1Poly.Typed.NativeUnionRuleTables
+import FX1Poly.Typed.UnionRuleTables
 import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.HasTypeDescGeneralElim
 import FX1Poly.Typed.StaticTypingSoundness
@@ -11,7 +11,7 @@ engine types a cell headed by a generator.  Its definition mixes SIX rule-table 
 (`typingRuleDescOf` / `introRuleDescOf` / `elimRuleDescOf` / `flatTypingRuleDescOf` / `baseTypeRuleDescOf` /
 `dataIntroNullaryRuleDescOf`) with TWENTY-ONE `decide (g = …)` head equalities — one per standalone data
 intro/elim head, per bespoke head, and per cubical head.  Those decides predate the native-union rule tables
-(`NativeUnionRuleTables`, plus `gradedIntroRuleOf` / `generalElimRuleOf`), which now drive the unified judgment
+(`UnionRuleTables`, plus `gradedIntroRuleOf` / `generalElimRuleOf`), which now drive the unified judgment
 `HasTypeUnion` table-FIRST.  Sixteen of the decides are exactly the heads those native tables key on.
 
 This file ships the table-driven TWIN and the machine-checked equivalence (the delete-readiness evidence for

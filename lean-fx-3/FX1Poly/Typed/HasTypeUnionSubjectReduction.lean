@@ -42,7 +42,7 @@ Each branch-selection arm is the shipped head inversion + the matching `Step` ι
 host-premise families listElim/optionMatch) an `ofGrown` re-embedding.  The master is a free-subject
 `cases` over `Step` (propext-clean — `Step` is a small inductive, no 197-ctor wildcard).  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
-`FX1PolyAudit/AuditNativeUnionSubjectReduction.lean`. -/
+`FX1PolyAudit/AuditUnionSubjectReduction.lean`. -/
 
 namespace FX1Poly.Typed
 

@@ -1,6 +1,6 @@
 import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Typed.HasTypeUnionInversion
-import FX1Poly.Typed.NativeUnionCellSubstitution
+import FX1Poly.Typed.UnionCellSubstitution
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Core.RawTermOccurrenceSubst
@@ -49,7 +49,7 @@ looked-up binding (`RawTerm.rename rawRenaming (sourceContext.lookup index) = ta
 `renameRespectingContext` is `induction` over the 25 arms + the cell-rename `rfl` commutations + the
 per-rule `rename_subst0_commute` reshapes + the lifted-occurrence preservation + the engine rename
 lemmas.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
-Per-declaration audit-gated in `FX1PolyAudit/AuditNativeUnionWeakening.lean`. -/
+Per-declaration audit-gated in `FX1PolyAudit/AuditUnionWeakening.lean`. -/
 
 namespace FX1Poly.Typed
 

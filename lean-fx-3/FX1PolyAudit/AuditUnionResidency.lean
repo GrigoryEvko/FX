@@ -1,8 +1,8 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.NativeUnionRuleTables
+import FX1Poly.Typed.UnionRuleTables
 import FX1Poly.Typed.HasTypeUnion
 
-/-! # FX1PolyAudit/AuditNativeWaveUnionResidency — NATIVE-36 audit shard (the data-eliminator,
+/-! # FX1PolyAudit/AuditUnionResidency — NATIVE-36 audit shard (the data-eliminator,
     n-ary/recursive data-intro, and listElim families landed IN the real union judgment)
 
 Per-declaration zero-axiom gate for the NATIVE-36 wave: the native twin rule tables (three data-elim
@@ -15,7 +15,7 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 
 namespace FX1PolyAudit
 
-/-! ## NativeUnionRuleTables.lean — the native twin rule tables (pre-union) -/
+/-! ## UnionRuleTables.lean — the native twin rule tables (pre-union) -/
 
 -- Data-eliminator shape 1: two-branch match rows (boolElim / optionMatch / eitherMatch).
 #assert_no_axioms FX1Poly.Typed.NativeTwoBranchMatchElimRule

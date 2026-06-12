@@ -7,7 +7,7 @@ import FX1Poly.Typed.GenericFormerTelescopeInversion
 import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Typed.SubjectReductionAtFormerGeneric
-import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizingNative
+import FX1Poly.Typed.HasTypeDescSubjectStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescPiContextConversionFlexibleUnderWf
 import FX1Poly.Typed.GenFormerValidityContextConversion
 import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization

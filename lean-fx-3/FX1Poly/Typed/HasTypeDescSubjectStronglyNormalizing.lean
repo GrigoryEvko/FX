@@ -3,7 +3,7 @@ import FX1Poly.Typed.HasTypeDescSubjectReduction
 import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Core.StrongNormalizationLeaves
 
-/-! # FX1Poly/Typed/HasTypeDescSubjectStronglyNormalizingNative
+/-! # FX1Poly/Typed/HasTypeDescSubjectStronglyNormalizing
     — native subject strong normalization for the description formation engine
 
 This file ships `HasTypeDesc.subjectStronglyNormalizing`: every formation-typed SUBJECT is strongly
