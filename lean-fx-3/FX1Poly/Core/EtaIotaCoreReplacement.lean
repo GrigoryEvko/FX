@@ -112,7 +112,6 @@ theorem observerFreshVarsHold_atSlot {observerScope : Nat}
                         Nat.le_of_succ_le lower, ?_, varLookup⟩
                       rw [Nat.succ_add] at upper
                       exact upper
-  termination_by varSlots => varSlots
 
 /-- The fresh test transfers to any spine whose lookups agree at the
 listed slots. -/
