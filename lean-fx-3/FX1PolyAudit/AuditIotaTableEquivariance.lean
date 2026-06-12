@@ -37,4 +37,41 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Core.RawTermChildren.replaceChildAt?_subst
 
+/-! ## Spine weakening naturality + boundVar fixpoint + bind splitter -/
+
+#assert_no_axioms FX1Poly.Core.RawTermChildren.subst_lift_weaken
+#assert_no_axioms FX1Poly.Core.RawTermChildren.weakenSpineBy_subst
+#assert_no_axioms FX1Poly.Core.iterateLiftRawSubst_fixesTemplateBinder
+#assert_no_axioms FX1Poly.Core.optionBindEqSome
+
+/-! ## Payload scope-uniformity certificates -/
+
+#assert_no_axioms FX1Poly.Core.PayloadSource.IsScopeUniform
+#assert_no_axioms FX1Poly.Core.ReductTemplate.HasScopeUniformPayloads
+#assert_no_axioms FX1Poly.Core.ReductTemplateSpine.HasScopeUniformPayloads
+#assert_no_axioms FX1Poly.Core.SpineReplacements.HasScopeUniformPayloads
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.IsScopeUniform
+#assert_no_axioms FX1Poly.Core.PayloadSource.unitConstantApp_isScopeUniform
+
+/-! ## The 18 row certificates -/
+
+#assert_no_axioms FX1Poly.Core.betaIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.boolTrueIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.boolFalseIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.fstPairIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.sndPairIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.natElimZeroIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.natRecZeroIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.natElimSuccIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.natRecSuccIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.listElimNilIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.listElimConsIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.optionMatchNoneIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.optionMatchSomeIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.eitherMatchInlIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.eitherMatchInrIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.idJReflIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.idStrictRecReflIotaRow_isScopeUniform
+#assert_no_axioms FX1Poly.Core.pathBetaIotaRow_isScopeUniform
+
 end FX1PolyAudit
