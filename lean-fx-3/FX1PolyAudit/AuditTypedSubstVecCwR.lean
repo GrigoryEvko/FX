@@ -1694,19 +1694,13 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.RawTerm.normalizeCost_unit_isZero
 
 -- ★ The kernel ONE-STEP REDUCT ENUMERATION with SOUNDNESS (Core/OneStepReducts.lean, COST-3 #1216
--- brick 2 — the heavy lift's first half). RawTerm.oneStepReducts / RawTermChildren.oneStepChildrenReducts:
--- mutual structural enumeration over the 198-generator table — the root β/ι reduct via fireRootRedex
--- (Option match) ++ every one-child-stepped reassembly (per-position maps over the dependent children
--- spine; the childCons reassemblies keep the binderShifts indices). ★ SOUNDNESS (mutual): every listed
--- element is a genuine Step — root via fireRootRedex_sound, congruence via Step.cong over the mutual
--- StepChildren soundness (here/there per position). Generic hand-rolled membership INVERSION lemmas
--- (listMemAppendInv/listMemMapInv — explicit List.Mem ctors, core mem lemmas unaudited; now GENERIC
--- {α β : Type} unlike COST-1's GradedLambda-specialized ones). split-at on the equation-binderless
--- Option match names the some-arm discharge via `next rootReduct fireEq`. Non-vacuity: the identity-β
--- fixture's enumeration COMPUTES to exactly the singleton β-reduct by kernel evaluation (rfl through
--- fireRootRedex's dite chain — gen_app is the first branch — with all children normal).
--- COMPLETENESS (every Step listed — what costBound's soundness consumes) is brick 3: the congruence
--- half mirrors with FORWARD membership lemmas; the root half needs per-ι fireRootRedex firing equations.
+-- brick 2 — REBASED by the IOTA-T11 brick: the engine is the generic table enumeration
+-- oneStepReductsOverTable at the 17-row LEGACY table, so the per-iota fireRootRedex dispatch is out of
+-- this chain). RawTerm.oneStepReducts / RawTermChildren.oneStepChildrenReducts: the legacy-table
+-- instantiations. ★ SOUNDNESS: the generic table soundness gives a StepOverTable legacyIotaRuleTable
+-- step; the IOTA-T1 backward adequacy (StepOverTable.legacyToStep / .legacyToStepChildren) maps it onto
+-- the bespoke Step. Non-vacuity: the identity-β fixture's enumeration COMPUTES to exactly the singleton
+-- β-reduct by kernel evaluation through the table walk.
 #assert_no_axioms FX1Poly.Core.listMemAppendInv
 #assert_no_axioms FX1Poly.Core.listMemMapInv
 #assert_no_axioms FX1Poly.Core.RawTerm.oneStepReducts
@@ -1717,20 +1711,19 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.identityBetaFixture_oneStepReducts
 
 -- ★★ Enumeration COMPLETENESS + the Step CHARACTERIZATION (Core/OneStepReductsComplete.lean, COST-3
--- #1216 brick 3 — the heavy lift's hard half, closed in ONE proof shape). oneStepReducts_complete:
--- every Step is listed, by mutual Step/StepChildren induction where ALL 17 root arms (β + 16 ι) close
--- by the IDENTICAL term `listMemAppendLeft _ _ (List.Mem.head _)` — the redex-shaped source makes
--- fireRootRedex REDUCE DEFINITIONALLY to some(the ctor's reduct) during unification (the dite chain
--- decides literal generator tags, the children matches destructure the concrete ctor spine, symbolic
--- leaves flow through; Nat.add_zero-style casts are rfl-proofs so Eq.rec reduces). The cong/here/there
--- arms map the IHs through the reassemblies via the FORWARD membership trio (listMemAppendLeft/Right +
--- listMemMapOfMem — hand-rolled generic, completing brick 2's inversion trio). ★ The CHARACTERIZATION
+-- #1216 brick 3 — REBASED by the IOTA-T11 brick: ONE generic theorem instead of the historical 17-arm
+-- per-iota match). oneStepReducts_complete: a bespoke Step's legacy-table image (Step.toLegacyTableStep)
+-- is listed by the generic table completeness (oneStepReductsOverTable_complete) under the legacy
+-- well-formedness pin legacyIotaRuleTable_isWf; the spine companion routes the StepChildren image the
+-- same way. Adding an iota rule changes this file by NOTHING. ★ The CHARACTERIZATION
 -- step_iff_mem_oneStepReducts: the computable enumeration decides EXACTLY the Step relation — the
 -- substrate costBound (next brick) folds over (recursive calls justified by soundness; the bound covers
--- EVERY strategy by completeness). No per-ι firing-equation lemmas were needed — whnf did all 17.
+-- EVERY strategy by completeness). The forward membership lemmas now live with the generic table
+-- enumeration (listMemAppendLeft in StepOverTable.lean; listMemAppendRight/listMemMapForward in
+-- TableOneStepReducts.lean — the bespoke listMemMapOfMem twin retired with the 17-arm match).
 #assert_no_axioms FX1Poly.Core.listMemAppendLeft
 #assert_no_axioms FX1Poly.Core.listMemAppendRight
-#assert_no_axioms FX1Poly.Core.listMemMapOfMem
+#assert_no_axioms FX1Poly.Core.listMemMapForward
 #assert_no_axioms FX1Poly.Core.RawTerm.oneStepReducts_complete
 #assert_no_axioms FX1Poly.Core.RawTermChildren.oneStepChildrenReducts_complete
 #assert_no_axioms FX1Poly.Core.RawTerm.step_iff_mem_oneStepReducts
