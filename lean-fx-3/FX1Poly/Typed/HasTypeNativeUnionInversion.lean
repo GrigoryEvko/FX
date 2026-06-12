@@ -49,6 +49,10 @@ twenty-four arms the threaded `subjectShape` discriminates:
      classifier and EVERY context.  The ofGrown disjunct dies by (2); the gradedBinderIntro disjunct dies because
      the `.one` graded check fails on the double-use body (occurrence count `2`, the NATIVE-23 rejection
      machinery).
+  3b. `HasTypeNativeUnion.pathLamSubjectIsAffine` — ★ the affine-honesty pin, union-side: every union-typed
+     pathLam body uses the dimension binder AT MOST ONCE (`occurrenceCountAt body 0 ≤ 1`).  The FORCED-grade
+     successor of the retired `HasTypeDescBridge.pathLamSubjectIsAffine`: the grown disjunct dies by (2), the
+     graded disjunct surfaces the row's affine binder check directly.
   4. The pattern note (this docstring).
   5. Coverage record + witness.
 
@@ -733,6 +737,33 @@ theorem HasTypeNativeUnion.unionRejectsAffineDoubleUse {profile : PolyProfile} {
     rw [doubleDimensionUseBody_occurrenceIsTwo] at occurrenceBound
     exact absurd occurrenceBound (Nat.not_succ_le_self 1)
 
+/-! ## (3b) ★ The affine-honesty pin, union-side (the retired `HasTypeDescBridge.pathLamSubjectIsAffine`)
+
+The retired bespoke bridge engine carried `pathLamSubjectIsAffine`: every typed pathLam body uses the
+dimension binder AT MOST ONCE — the grade is FORCED by the engine, not merely permitted.  With the bridge
+retired into the union, this positive pin must hold UNION-side.  It does, unconditionally: a union typing of
+ANY pathLam-headed subject inverts (free-index, via `invertAtPathLamHead`) into the grown disjunct — impossible
+by `pathLamCellHasNoTyping` (`gen_pathLam` heads no grown-typed cell) — or the graded pathLam-row disjunct,
+which surfaces exactly the row's affine binder check `gradedBinderChecks UsageGrade.one body` (defeq
+`occurrenceCountAt body 0 ≤ 1`).  So the only surviving image forces the affine bound: the union never types a
+pathLam whose body uses the dimension binder twice. -/
+
+/-- **★ Affine honesty pin, union-side.**  Every pathLam body that the union types uses the dimension binder
+AT MOST ONCE: `occurrenceCountAt body 0 ≤ 1`.  The grade is FORCED by the pathLam row's `UsageGrade.one` binder
+check, not merely permitted — the union-side successor of the retired `HasTypeDescBridge.pathLamSubjectIsAffine`.
+The grown disjunct of the inversion is impossible (`pathLamCellHasNoTyping`), leaving the graded disjunct, whose
+`bodyAffine` premise IS the bound. -/
+theorem HasTypeNativeUnion.pathLamSubjectIsAffine {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
+    {classifier : RawTerm scope}
+    (derivation : HasTypeNativeUnion profile context (pathLamCell body) classifier) :
+    RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1 := by
+  rcases derivation.invertAtPathLamHead rfl with ⟨_, hostTyped, _⟩ |
+    ⟨_, _, _, bodyAffine, _, _⟩
+  · exact absurd hostTyped.pathLamCellHasNoTyping (fun contra => contra)
+  · -- `bodyAffine : gradedBinderChecks .one body` is defeq `occurrenceCountAt body 0 ≤ 1`.
+    exact bodyAffine
+
 /-! ## (5) Coverage record + witness -/
 
 /-- **The NATIVE-37 inversion coverage record.**  Each field is a distinct live property of the first
@@ -781,6 +812,12 @@ structure NativeUnionInversionCoverage (profile : PolyProfile) : Prop where
     (classifier : RawTerm scope),
     ¬ HasTypeNativeUnion profile context
         (pathLamCell (doubleDimensionUseBody scope)) classifier
+  /-- Every union-typed pathLam body uses the dimension binder at most once (the affine-honesty pin,
+  union-side — the FORCED grade, successor of the retired `HasTypeDescBridge.pathLamSubjectIsAffine`). -/
+  pathLamBodyAffine : ∀ {scope : Nat} {context : TypingContext profile scope}
+    {body : RawTerm (scope + 1)} {classifier : RawTerm scope},
+    HasTypeNativeUnion profile context (pathLamCell body) classifier →
+    RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1
 
 /-- **★ The NATIVE-37 inversion coverage gate** — inhabited by the shipped declarations, so the exercised
 inversion-substrate property set can NOT silently shrink. -/
@@ -792,5 +829,6 @@ theorem nativeUnionInversionCoverageWitness {profile : PolyProfile} :
   natSuccInversion := fun derivation subjectShape => derivation.invertAtNatSuccHead subjectShape
   affineDoubleUseRejected := fun context classifier =>
     HasTypeNativeUnion.unionRejectsAffineDoubleUse context classifier
+  pathLamBodyAffine := fun derivation => derivation.pathLamSubjectIsAffine
 
 end FX1Poly.Typed

@@ -1,7 +1,7 @@
+import FX1Poly.Typed.CellConstructors
 import FX1Poly.Typed.CellSubstitution
 import FX1Poly.Typed.NativeUnionRuleTables
 import FX1Poly.Typed.NatElimComputingCanonicity
-import FX1Poly.Typed.HasTypeDescBridge
 import FX1Poly.Typed.ListElimComputingCanonicity
 import FX1Poly.Typed.RecursorHostFold
 

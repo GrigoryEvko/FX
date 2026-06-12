@@ -629,20 +629,17 @@ import FX1Poly.Typed.KernelBinaryGenericFormer
 import FX1Poly.Typed.KernelBinaryFundamental
 import FX1Poly.Typed.KernelAbstractionTheorem
 import FX1Poly.Typed.KernelParamSubstrateSurvey
-import FX1Poly.Typed.HasTypeDescBridge
 import FX1Poly.Typed.BridgeEndpointStep
 import FX1Poly.Typed.BridgeEndpointNativeSubjectReduction
 import FX1Poly.Typed.BridgeEndpointGeneralArgumentSubjectReduction
 import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
-import FX1Poly.Typed.TermIndexedFormerSpike
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerUniqueness
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerSubjectReduction
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerStronglyNormalizing
 import FX1Poly.Typed.IdFormerTermIndexedRetrofit
-import FX1Poly.Typed.BridgeFormationTermIndexedAdequacy
 import FX1Poly.Typed.TermIndexedFormerSmokeCorpus
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.IntroRuleDescGradedBinder
@@ -1279,9 +1276,10 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- abstractionConstructorPreservesSn = λ SN-closure (full membership = the shipped abstraction FT arm);
 -- pathAbstractionConstructorPreservesSn = the pathLam twin (the graded bridge abstraction);
 -- eliminatorHasRedexHead = the operational half (semantic half = the SN-058..069 arc, per regime);
--- inertEliminatorCellHasGluedLift = the NEW inertEliminator role (pathApp: typed by HasTypeDescBridge but
--- β/ι-inert until the endpoint-ι lands — covered by the unconditional neutral lift; when the ι Step arm
--- lands, hasRedexHead flips, the role migrates to eliminator, and the enum breaks BY DESIGN). HONEST:
+-- inertEliminatorCellHasGluedLift = the inertEliminator role (pathApp: typed by the NATIVE UNION's
+-- generalElim arm; the endpoint-β now fires via the iota TABLE's pathBeta row while this enum still
+-- records the pre-migration role — covered by the unconditional neutral lift; the pending
+-- candidates/scones role migration moves it to eliminator and breaks the enum BY DESIGN). HONEST:
 -- the modal fragment is correctly ABSENT (statically untyped + β/ι-inert; ONORM-M1 covers it semantically,
 -- joining this gate when a modal rule-table row lands). All zero-axiom.
 #assert_no_axioms FX1Poly.Typed.LiveGenerator
@@ -2285,7 +2283,8 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- Bridge former on the gen_idCode template, children [type, term, term], tag 204); count pin
 -- 203 → 205, all finite-polygraph/tag-round-trip theorems re-verified at the new size.
 -- OP1-INT BRICK 4 (THE LIVE FLIP): hasSomeTypingRule gained the six bridge-family decides
--- (the HasTypeDescBridge rows are the static semantics), so semanticTier computes .live for
+-- (at the time the bespoke bridge rows were the static semantics; the union's table rows
+-- now are, and hasSomeTypingRule is pure table-isSome), so semanticTier computes .live for
 -- the whole row family — paramSubstrate_rowsLive (6-way) + landedParamSubstrate_live pin it;
 -- the flip FORCED the ONORM-M2 coverage (the admission-gate mechanism working as designed):
 -- liveSignature 40 → 46 with per-role sconing dispatches for all six, which IS the
@@ -2309,24 +2308,23 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_assetsPinned
 #assert_no_axioms FX1Poly.Typed.dimensionTypingRows_coherentWithTier
 
--- ★ THE GRADED BRIDGE ROWS (OP1-INT brick 2, FX1Poly/Typed/HasTypeDescBridge.lean +
--- RawTerm.occurrenceCountAt in Core/RawTermFreeVars.lean): the standalone internal-
--- parametricity typing engine over the landed substrate, realizing the survey's row schemas.
--- THE GRADED ROW: pathIntro is the first kernel rule where the TYPE premise (body typed
+-- ★ THE GRADED BRIDGE ROWS (OP1-INT brick 2; cells now in FX1Poly/Typed/CellConstructors.lean,
+-- RawTerm.occurrenceCountAt in Core/RawTermFreeVars.lean): the internal-parametricity typing
+-- rows over the landed substrate, realizing the survey's row schemas.
+-- THE GRADED ROW: the path intro is the first kernel rule where the TYPE premise (body typed
 -- under the interval-extended context) and the USAGE premise (the dimension binder is
 -- AFFINE — occurrenceCountAt body 0 ≤ 1, the quantitative refinement of UsesPosition,
 -- the kernel realization of the usage semiring's affine grade) are JOINTLY required.
--- Witnesses: bridgeOfUniverseCodesTyped (Bridge(Type@1,Type@0,Type@0) : Type@2),
--- constantBridgeTyped (pathLam(Type@0) — the first graded-row inhabitant; the closed body's
--- affine premise computes to 0 ≤ 1 and the endpoint substitutions collapse definitionally),
--- constantBridgeAppliedTyped (pathApp at intervalZero — elim fires on the intro).
--- pathLamSubjectIsAffine is the graded-row HONESTY inversion: the engine FORCES affinity
--- (every typed bridge abstraction satisfies the bound), via the equation-motive recipe.
+-- The bespoke bridge engine that pioneered these rows (and its HON-5 leg
+-- bridgeReservedUntyped) was RETIRED in NATIVE-45 — the rows live as native-union arms
+-- (formation via the term-indexed-former table; pathLam via the graded-intro row, witnessed
+-- by constantBridgeGradedOfTyped / identityPathGradedTyped gated below; pathApp via the
+-- generalElim row).  The forced-affinity HONESTY inversion survives union-side as
+-- HasTypeNativeUnion.pathLamSubjectIsAffine (gated in AuditNativeUnionInversion).
 -- HONEST SCOPE: the rows are LIVE and admission-covered (brick 4); the endpoint-β
--- computation SHIPPED as the gated sibling StepBridgeEndpoint (brick 5, gated below); the
--- affine-dimension glued-model statement over pathIntro + core-Step promotion remain the
--- open OP1-INT work.  The HON-5 negative-soundness bundle gained the bridge leg
--- (bridgeReservedUntyped, 16th engine — gated with HON-5).
+-- computation fires via the iota TABLE's pathBeta row (the gated sibling StepBridgeEndpoint
+-- remains as the brick-5 historical artifact, gated below); the affine-dimension
+-- glued-model statement over the path intro remains the open OP1-INT work.
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt
 #assert_no_axioms FX1Poly.Core.RawTermChildren.occurrenceCountAt
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_var_self
@@ -2336,11 +2334,6 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.bridgeTypeCell
 #assert_no_axioms FX1Poly.Typed.pathLamCell
 #assert_no_axioms FX1Poly.Typed.pathAppCell
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.bridgeOfUniverseCodesTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.constantBridgeTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.constantBridgeAppliedTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathLamSubjectIsAffine
 
 -- ★ THE INTERVAL DATA REDUCIBILITY CANDIDATE (OP1-INT brick 3a,
 -- FX1Poly/Core/IntervalCanonicalFormsCandidate.lean + the DataFormerFamily.intervalFamily
@@ -2371,18 +2364,14 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- dimension-constant computation engine, giving the SYMBOLIC constantPathBetaComputesToBody.
 -- The identity path pathLam(var 0) : Bridge(dim, 0, 1) = the first inhabitant genuinely
 -- USING its dimension binder (affine count exactly 1 via occurrenceCountAt_var_self); its
--- endpoint application computes to the endpoint. The deterministic INVERSION STACK (no conv
--- arm in the bridge engine): pathAppSubjectInversion + pathLamAtBridgeInversion (explicit
--- injection drilling, 4-field mkGen / 5-field childCons) → pathBetaRedexInversion = the SR
--- skeleton (body typed under the binder AT THE REDEX'S CLASSIFIER + forced affinity +
--- argument interval-typed). pathBetaRoundTrip = general intro-then-elim typed AND fires.
--- TWO NON-VACUOUS SR INSTANCES: constantBridgeEndpointSubjectReduction (CROSS-ENGINE — the
--- reduct is GROWN-typed at the same classifier; the bridge eliminator computes INTO the
--- grown world on the constant fragment) + identityPathEndpointSubjectReduction (WITHIN the
--- bridge engine). ★ intervalZeroGrownUntypable = the machine-checked CROSS-ENGINE WALL:
--- interval0 heads no grown-typed cell, so general endpoint-β SR cannot target HasTypeDescPi
--- alone — the honest general-SR target is an INTEGRATED engine (the recorded residual, the
--- listElim engine-separation shape). All zero-axiom.
+-- endpoint application computes to the endpoint. identityPathGradedTyped types it in the
+-- LIVE graded-intro engine (HasTypeDescGradedIntro — the engine the union's binderGraded
+-- arm embeds; the bespoke bridge engine and its inversion stack were retired under
+-- NATIVE-45, superseded by the union-side inversion family and the NATIVE endpoint SR
+-- family gated below). ★ intervalZeroGrownUntypable = the machine-checked CROSS-ENGINE
+-- WALL: interval0 heads no grown-typed cell, so general endpoint-β SR cannot target
+-- HasTypeDescPi alone — the honest general-SR target is an INTEGRATED engine
+-- (HasTypeNativeUnion, where the native endpoint SR family now lives). All zero-axiom.
 #assert_no_axioms FX1Poly.Core.RawTerm.subst0_weaken
 #assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint
 #assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.sourceShape
@@ -2390,14 +2379,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.constantBridgeAppliedComputes
 #assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.identityPathAppliedComputes
 #assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.constantPathBetaComputesToBody
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.identityPathTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.identityPathAppliedTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathAppSubjectInversion
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathLamAtBridgeInversion
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathBetaRedexInversion
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.pathBetaRoundTrip
-#assert_no_axioms FX1Poly.Typed.constantBridgeEndpointSubjectReduction
-#assert_no_axioms FX1Poly.Typed.identityPathEndpointSubjectReduction
+#assert_no_axioms FX1Poly.Typed.identityPathGradedTyped
 #assert_no_axioms FX1Poly.Typed.intervalZeroGrownUntypable
 
 -- ★★ THE REFLEXIVITY BRIDGE — the GRADED verdict's general positive half (OP1-INT brick 6,
@@ -2413,15 +2395,13 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- every dimension-constant body. PROOF-ENGINEERING NOTE: dsimp only does NOT iota-reduce the
 -- mutual foldChildren/occurrenceCountAt matches — the spine arms reshape by defeq `show`
 -- (delta+iota+zeta are definitional) then fold back via the rfl-lemmas rename_eq_fold /
--- rename_eq_foldChildren. ★★ constantBridgeOfTyped: EVERY grown-typed term t : T embeds as
--- the REFLEXIVITY BRIDGE pathLam(weaken t) : Bridge(T, t, t) — type premise = grown
--- weakening, affine premise = the grade-0 lemma (DISCHARGED, not hypothesized), endpoints
--- collapse by subst0_weaken. ★★ reflexivityBridgeRoundTrip: the full symbolic bundle —
--- bridge typed + application typed at T + endpoint-β FIRES to exactly t + reduct grown-typed
--- at the SAME classifier: the GENERAL symbolic cross-engine SR for the whole
--- dimension-constant fragment (supersedes the concrete universe-code instance). This is the
--- derivable `refl` constructor of the bridge type — the degenerate case of internal
--- parametricity, all four premises machine-discharged. All zero-axiom.
+-- rename_eq_foldChildren. ★★ constantBridgeGradedOfTyped: EVERY grown-typed term t : T
+-- embeds as the REFLEXIVITY BRIDGE pathLam(weaken t) : Bridge(T, t, t) in the LIVE
+-- graded-intro engine — type premise = grown weakening, affine premise = the grade-0 lemma
+-- (DISCHARGED, not hypothesized), endpoints collapse by subst0_weaken. The full symbolic
+-- round-trip bundle now lives NATIVELY as reflexivityBridgeEndpointSubjectReductionNative
+-- (gated in the native endpoint SR section below) — the derivable `refl` constructor of the
+-- bridge type, the degenerate case of internal parametricity. All zero-axiom.
 #assert_no_axioms FX1Poly.Core.RawRenaming.liftAvoidsSucc
 #assert_no_axioms FX1Poly.Core.RawVarSet.raiseParentPosition_zero
 #assert_no_axioms FX1Poly.Core.RawVarSet.raiseParentPosition_succ
@@ -2445,8 +2425,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_subst0_weaken
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_subst0_of_strengthens
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_subst0_weaken_self
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.constantBridgeOfTyped
-#assert_no_axioms FX1Poly.Typed.reflexivityBridgeRoundTrip
+#assert_no_axioms FX1Poly.Typed.constantBridgeGradedOfTyped
 -- NATIVE-22 (#1299) — graded β subject reduction respects the usage bound (GHOST grade).
 -- strengthen_eq_some_of_occurrenceZero: the ★ bridge — a body not using the newest variable
 -- (occurrenceCountAt body 0 = 0, the `.zero` graded check) STRENGTHENS; via a generic
@@ -2521,14 +2500,13 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- keystone arms with RECURSIVE premises (gradedBinderIntro/generalElim — the compositional closure).
 -- Wall-falls: endpointRedexNativelyTypedWhole (the WHOLE redex pathApp(pathLam _, 0) in ONE
 -- derivation) + constantIntervalLambdaNativelyTyped (a λ whose body lives in the data engine —
--- untypable in every prior engine). toNativeUnion: ALL SIX Bridge arms translate, pathElim's
--- recursion dissolving through the union's elim arm exactly as the NATIVE-04 verdict predicted; the
+-- untypable in every prior engine). The bridge-engine adequacy theorems (toNativeUnion /
+-- toNativeUnionExact, ALL SIX Bridge arms translating) were proved here and then RETIRED with the
+-- bespoke engine (NATIVE-45) — the union's rows are the only bridge semantics; the
 -- interval-formation ANY-FLAG liberality is honestly surfaced as an explicit disjunct (the native
 -- base-type row pins standard — flag-determinism is the better semantics, recorded not papered over).
 #assert_no_axioms FX1Poly.Typed.endpointRedexNativelyTypedWhole
 #assert_no_axioms FX1Poly.Typed.constantIntervalLambdaNativelyTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.toNativeUnion
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.toNativeUnionExact
 #assert_no_axioms FX1Poly.Typed.nativeUnionCoverageWitness
 
 -- NATIVE-27 (#1304) [GO/NO-GO → GO] — RECURSIVE-ELIMINATOR ROWS ON THE SEED UNION
@@ -2763,22 +2741,10 @@ kind.  All `rfl`/`by decide` — every theorem axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.natElimPremisesNeedMotive
 #assert_no_axioms FX1Poly.Typed.interpreterShippedLedger
 
-/-! ## NATIVE-02 (#1279) — the term-indexed former premise IS expressible (SPIKE, verdict GO)
-
-The expressibility spike for `childMemberOfEarlierType`: can a premise classify a child term (`b : A`) by
-an EARLIER child (`A : Type`)?  GO — `HasTypeDescBridge.bridgeFormation` already expresses it over the grown
-engine.  This ships the foldable GENERIC form: `TermIndexedFormerPremise` (the back-reference spine,
-endpoints typed at a recorded carrier) + `TermIndexedFormerTyping`, with `termIndexedFormer_universeCodes`
-(non-vacuous) and `termIndexedFormerTyping_buildsBridge` (★ adequacy: the generic spine SUFFICES to
-construct the bridge former — its premise is an instance).  `termIndexedExpressibility_isGo` records the
-all-positive verdict.  Positive recursive inductive; all `rfl` / direct arm application — axiom-free.  The
-NATIVE-12 work is the INTERPRETER, not the expressibility this settles. -/
-#assert_no_axioms FX1Poly.Typed.TermIndexedFormerPremise
-#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTyping
-#assert_no_axioms FX1Poly.Typed.termIndexedFormer_universeCodes
-#assert_no_axioms FX1Poly.Typed.termIndexedFormerTyping_buildsBridge
-#assert_no_axioms FX1Poly.Typed.termIndexedExpressibility
-#assert_no_axioms FX1Poly.Typed.termIndexedExpressibility_isGo
+-- NATIVE-02 (#1279) — the term-indexed former expressibility SPIKE (verdict GO) validated the
+-- childMemberOfEarlierType premise shape against the bespoke bridge engine; its module
+-- (TermIndexedFormerSpike) was RETIRED with that engine (NATIVE-45) — the production
+-- interpreter below (NATIVE-12, HasTypeDescTermIndexedFormer) is the surviving form.
 
 /-! ## NATIVE-12 (#1289) [MEGA] — the TermIndexedFormer table + arm + Id/Bridge rows
 
@@ -2898,22 +2864,6 @@ through native rules.  No bespoke `idFormation`.  Axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.closedIdUniverseFormable
 #assert_no_axioms FX1Poly.Typed.reflProofWithFormableClassifier
 
-/-! ## NATIVE-18 (#1295) — bridge formation adequacy (standalone arm ↔ generic row)
-
-NATIVE-12 gave one direction at the premise level (`reconstructsBridge`).  This lands the full TWO-WAY adequacy at
-the DERIVATION level: the bespoke `HasTypeDescBridge.bridgeFormation` arm and the generic
-`HasTypeDescTermIndexedFormer` row are INTER-DERIVABLE on `bridgeTypeCell` subjects.
-`HasTypeDescBridge.bridgeFormationToTermIndexed` (standalone ⟹ generic — `cases` auto-drops the 5 non-bridge arms
-by subject-index head-generator no-confusion, then `reconstructsBridge`); `…bridgeRowToStandalone` (generic ⟹
-standalone — `cases` the genFormation arm + `termIndexedFormerRuleIsCarrierOutput` + telescope/endpoint
-destructuring rebuilds `bridgeFormation`); `bridgeFormationTermIndexedAdequacy` (the biconditional capstone);
-`…adequacyAtUniverseSmoke` (the closed instance at `Bridge(Type@1,Type@0,Type@0):Type@2`).  The bridge engine's
-formation arm IS the table row.  Axiom-free. -/
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBridge.bridgeFormationToTermIndexed
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.bridgeRowToStandalone
-#assert_no_axioms FX1Poly.Typed.bridgeFormationTermIndexedAdequacy
-#assert_no_axioms FX1Poly.Typed.bridgeFormationAdequacyAtUniverseSmoke
-
 /-! ## NATIVE-19 (#1296) — term-indexed former smoke corpus + coverage gate
 
 Consolidates the non-vacuous Id/Bridge engine witnesses (NATIVE-12..18) into a coverage gate so the engine's
@@ -2953,20 +2903,20 @@ interpreter DISCRIMINATES by grade (the identity body `var 0` passes `.one` but 
 
 The expressibility spike for `binderUsage`: can an intro premise carry a usage grade on its binder and have
 it CHECKED?  GO across the WHOLE grade spectrum — `UsageGrade.boundsCount` is the grade→occurrence-bound
-interpreter and `HasTypeDescBridge.pathIntro` already checks the affine binder (`occurrenceCountAt body 0 ≤ 1`
-= `UsageGrade.one.boundsCount …` by `rfl`).  `gradedBinderChecks` is the grade-parametric form;
-`gradedBinderChecks_spectrum` spans omega/one/zero; `gradedIntro_ghost_ofWeakened` (★ genuinely-new) shows a
-weakened body is GHOST-gradeable via the rung-77 occurrence metatheory; `gradedIntroPremise_buildsPathIntro`
-(★ adequacy) builds `pathIntro` from a `.one` graded premise; `gradedIntroExpressibility_isGo` records the
-all-positive verdict (grade forced by the shipped `pathLamSubjectIsAffine`).  Thin wrapper + rung-77 lemma +
-direct arm — axiom-free.  NATIVE-20/23 is threading per-binder usage into `IntroRuleDesc`, not this. -/
+interpreter.  `gradedBinderChecks` is the grade-parametric form and is LIVE PRODUCTION SUBSTRATE (the
+`binderGraded` premise of the union's `gradedBinderIntro` arm — the file survived the NATIVE-45 engine
+retirement for exactly this reason); `gradedBinderChecks_spectrum` spans omega/one/zero;
+`gradedIntro_ghost_ofWeakened` (★ genuinely-new) shows a weakened body is GHOST-gradeable via the rung-77
+occurrence metatheory; `gradedIntroExpressibility_isGo` records the all-positive verdict (the grade is
+FORCED — now pinned union-side by `HasTypeNativeUnion.pathLamSubjectIsAffine`).  The bespoke-engine adequacy
+theorem (`gradedIntroPremise_buildsPathIntro`) was retired with the engine; the union row
+`pathLamGradedIntroRule` is the sole realization.  Thin wrapper + rung-77 lemma — axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.gradedBinderChecks
 #assert_no_axioms FX1Poly.Typed.gradedBinderChecks_spectrum
 #assert_no_axioms FX1Poly.Typed.affinePremise_isGradedCheckAtOne
 #assert_no_axioms FX1Poly.Typed.GradedIntroPremise
 #assert_no_axioms FX1Poly.Typed.gradedIntro_ghost_ofWeakened
 #assert_no_axioms FX1Poly.Typed.gradedIntro_affine_constant
-#assert_no_axioms FX1Poly.Typed.gradedIntroPremise_buildsPathIntro
 #assert_no_axioms FX1Poly.Typed.gradedIntroExpressibility
 #assert_no_axioms FX1Poly.Typed.gradedIntroExpressibility_isGo
 
@@ -2985,10 +2935,10 @@ This pins the residual exactly so NATIVE-05 locks the collapse scope with the co
 
 /-! ## NATIVE-05 (#1282) — lock the collapse scope + the adequacy-harness shape (DECISION GATE)
 
-Closes the campaign's DESIGN phase.  The collapse decision is DERIVED from the three shipped spike ledgers
-(not re-asserted): `collapseToOneInductiveJustified` ANDs together `termIndexedExpressibility` /
-`gradedIntroExpressibility` / `dependentElimExpressibility` fields, so it degrades if any spike verdict
-weakens.  `spikeVerdicts_pinned` classifies the three (clean GO / clean GO / GO-with-residual);
+Closes the campaign's DESIGN phase.  The collapse decision was DERIVED from the three spike ledgers
+(`termIndexedExpressibility` — retired with its spike module in NATIVE-45 — /
+`gradedIntroExpressibility` / `dependentElimExpressibility`), degrading if any spike verdict
+weakened.  `spikeVerdicts_pinned` classifies the three (clean GO / clean GO / GO-with-residual);
 `lockedCollapseScope = oneInductive` (primary, justified), `pinnedCoreFallback` the recorded 95% contingency;
 `adequacyHarnessShape` locks the two-leg (rowSuffices + engineIsInstance) adequacy template;
 `lockedBuildPhases` spans the 58 BUILD arcs (06-63) in 8 phases.  All `by decide`/`rfl` — axiom-free. -/

@@ -1,20 +1,20 @@
-import FX1Poly.Typed.BridgeFormationTermIndexedAdequacy
 import FX1Poly.Typed.IdFormerTermIndexedRetrofit
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerStronglyNormalizing
 
 /-! # FX1Poly/Typed/TermIndexedFormerSmokeCorpus — NATIVE-19: smoke corpus + coverage gate for the Id/Bridge engine
 
 NATIVE-12..18 built the `HasTypeDescTermIndexedFormer` (Id/Bridge) engine and its full metatheory
-(weaken/subst/inversion/uniqueness/context-conversion/SR/SN + the Id retrofit + the bridge adequacy).  This file
-consolidates the non-vacuous witnesses into a coverage gate so the engine's exercised properties can NOT silently
-shrink, and fills the one missing smoke (the Id strong-normalization twin of the shipped bridge one).
+(weaken/subst/inversion/uniqueness/context-conversion/SR/SN + the Id retrofit + the bridge formation typing).
+This file consolidates the non-vacuous witnesses into a coverage gate so the engine's exercised properties can
+NOT silently shrink, and fills the one missing smoke (the Id strong-normalization twin of the shipped bridge
+one).
 
   * `closedIdUniverseStronglyNormalizing` — the missing Id SN smoke: `Id(Type@1, Type@0, Type@0)` is strongly
     normalizing (the Id twin of `closedBridgeUniverseStronglyNormalizing`, NATIVE-16; both via the closed SN
     headline at the respective formation witness).
   * `TermIndexedFormerEngineCoverage` + `termIndexedFormerEngineCoverageWitness` — the COVERAGE GATE: a record whose
     six fields are the engine's distinct live properties (both formers typed + strongly-normalizing, the refl
-    retrofit, and the bridge standalone↔generic adequacy), inhabited by the shipped NATIVE-12..18 witnesses.  If any
+    retrofit, and the union-typed bridge formation), inhabited by the shipped witnesses.  If any
     of those witnesses is deleted or renamed, the witness `def` fails to elaborate — the structural "can't silently
     shrink" guard the `#assert_namespace_min_count` macro can't provide (the engine's decls live in the shared
     `FX1Poly.Typed` namespace).
@@ -75,12 +75,10 @@ structure TermIndexedFormerEngineCoverage (profile : PolyProfile) (flag : Univer
         (idTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
           (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
         (universeCodeCell (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag)
-  /-- NATIVE-18: the bespoke bridge engine and the generic row are inter-derivable on bridge subjects. -/
-  bridgeAdequacy : HasTypeDescBridge profile (TypingContext.empty : TypingContext profile 0)
-      (bridgeTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
-        (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
-      (universeCodeCell (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag) ↔
-    HasTypeDescTermIndexedFormer profile (TypingContext.empty : TypingContext profile 0)
+  /-- NATIVE-45: the bridge formation rule is carried by the union (`ofTermIndexedFormer` embedding of the
+  generic term-indexed row), now the sole realization since the bespoke `HasTypeDescBridge` engine was
+  retired. -/
+  bridgeFormationUnionTyped : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
       (bridgeTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
         (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
       (universeCodeCell (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag)
@@ -96,6 +94,7 @@ theorem termIndexedFormerEngineCoverageWitness {profile : PolyProfile} (flag : U
   idFormerTyped := closedIdUniverseFormable flag
   idFormerSN := closedIdUniverseStronglyNormalizing (profile := profile) flag
   reflRetrofit := reflProofWithFormableClassifier flag
-  bridgeAdequacy := bridgeFormationTermIndexedAdequacy
+  bridgeFormationUnionTyped :=
+    HasTypeNativeUnion.ofTermIndexedFormer (termIndexedFormerGenFormation_bridgeUniverseSmoke flag)
 
 end FX1Poly.Typed

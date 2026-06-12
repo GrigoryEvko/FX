@@ -337,4 +337,42 @@ def listElimCell {scope : Nat} (motive : RawTerm (scope + 1))
         (.childCons consBranch
           (.childCons scrutinee .childNil))))
 
+/-! ## The bridge / internal-parametricity cells (extracted from the retired standalone bridge
+engine — the same double-duty split as the data cells above: the cells are shared vocabulary
+classified by the union's bridge rows, the standalone judgment was the retiring engine).
+
+These five join `intervalTypeCell` (already above): the dimension-binder pair, the two interval
+endpoints, and the bridge type former.  The union's typing rows are `dataIntroNullary` (the
+endpoint values `interval0` / `interval1`), the term-indexed former row (`bridgeCode`), the
+`gradedBinderIntro` row (`pathLam`, with its affine dimension-usage premise), and the `generalElim`
+row (`pathApp`). -/
+
+/-- The left interval endpoint `0 : dim` (`gen_interval0`, nullary).  The VALUE classified by the
+union's `dataIntroNullary` row at the interval type. -/
+def intervalZeroCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_interval0 () .childNil
+
+/-- The right interval endpoint `1 : dim` (`gen_interval1`, nullary).  The VALUE classified by the
+union's `dataIntroNullary` row at the interval type. -/
+def intervalOneCell {scope : Nat} : RawTerm scope :=
+  .mkGen .gen_interval1 () .childNil
+
+/-- The bridge type code `Bridge(typeCode, left, right)` — `gen_bridgeCode` (arity 3,
+`binderShifts = [0, 0, 0]`, the `gen_idCode` template): a carrier type and two endpoint terms.
+The type former classified by the union's term-indexed former row. -/
+def bridgeTypeCell {scope : Nat} (typeCode left right : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_bridgeCode ()
+    (.childCons typeCode (.childCons left (.childCons right .childNil)))
+
+/-- The bridge abstraction `pathLam(body)` — `gen_pathLam` (arity 1, `binderShifts = [1]`): the
+body lives under ONE fresh dimension binder.  Classified by the union's `gradedBinderIntro` row,
+whose affine usage premise bounds the body's dimension-variable occurrence count. -/
+def pathLamCell {scope : Nat} (body : RawTerm (scope + 1)) : RawTerm scope :=
+  .mkGen .gen_pathLam () (.childCons body .childNil)
+
+/-- The bridge application `pathApp(path, argument)` — `gen_pathApp` (arity 2,
+`binderShifts = [0, 0]`).  Classified by the union's `generalElim` row (the bridge eliminator). -/
+def pathAppCell {scope : Nat} (path argument : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_pathApp () (.childCons path (.childCons argument .childNil))
+
 end FX1Poly.Typed

@@ -1,48 +1,50 @@
-import FX1Poly.Typed.HasTypeDescBridge
+import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Typed.CellConstructors
 import FX1Poly.Modal.GradedLinearTime
 import FX1Poly.Core.RawTermOccurrenceRename
 
-/-! # FX1Poly/Typed/GradedIntroPremiseSpike — NATIVE-03: the graded intro premise IS expressible (SPIKE)
+/-! # FX1Poly/Typed/GradedIntroPremiseSpike — the graded intro-premise grade-check (LIVE substrate)
 
-The GO/NO-GO spike for the `binderUsage` axis of NATIVE-01's locked vocabulary: can an introduction premise
-carry a USAGE GRADE on its binder and have it CHECKED?  This is the orthogonal graded dimension every
-graded former needs — the affine bridge/path binder (`pathLam`, usage `.one`), but also the ghost binder
-(usage `.zero`) and the unrestricted ordinary binder (usage `.omega`).
+This file HOSTS the live grade-check `gradedBinderChecks` consumed by the native union's
+`gradedBinderIntro` arm (`HasTypeNativeUnion.lean`) and the v2 graded-introduction table
+(`HasTypeDescGradedIntro` / `IntroRuleDescGradedBinder`).  An introduction premise carrying a USAGE GRADE on
+its binder is CHECKED by bounding the body's freshest-binder occurrence — the orthogonal graded dimension
+every graded former needs: the affine bridge/path binder (`pathLam`, usage `.one`), the ghost binder
+(usage `.zero`), and the unrestricted ordinary binder (usage `.omega`).
 
-## The answer is GO — substrate already shipped, across the WHOLE grade spectrum
+(The module name retains its original GO/NO-GO-spike heritage; its production decls have since become
+load-bearing — they are NOT a throwaway spike.  The historical adequacy that built the bespoke
+`HasTypeDescBridge.pathIntro` from a `.one` graded premise was witnessed pre-retirement; that engine has been
+deleted (NATIVE-45) and the union row `gradedBinderIntro` at `pathLamGradedIntroRule` — selected by
+`gradedIntroRuleOf_pathLam` — is now definitionally the only realization of the affine path abstraction.)
+
+## The grade-check, across the WHOLE grade spectrum
 
 `UsageGrade.boundsCount` (`GradedLinearTime.lean`) is exactly the grade→occurrence-bound interpreter
-(`.zero ⟹ count = 0`, `.one ⟹ count ≤ 1`, `.omega ⟹ True`), and `HasTypeDescBridge.pathIntro` already
-CHECKS the affine binder via `occurrenceCountAt body 0 ≤ 1` — definitionally `UsageGrade.one.boundsCount …`.
-So the graded intro premise is shipped at the affine grade; this spike exhibits the grade-PARAMETRIC
-foldable form and the two grades the shipped affine row does not name (ghost / unrestricted).
+(`.zero ⟹ count = 0`, `.one ⟹ count ≤ 1`, `.omega ⟹ True`).
 
   * `gradedBinderChecks usage body` — the grade-parametric premise interpreter: bound the body's binder
-    occurrence by `usage.boundsCount`.  At `.one` it IS the `pathIntro` affine premise (`rfl`).
+    occurrence by `usage.boundsCount`.  At `.one` it IS the affine path-intro premise (`rfl`).
   * `gradedBinderChecks_spectrum` — the interpreter handles all three grades: `.omega` is unconstrained
     (the ordinary `gen_lam` binder), `.one` is the affine bound, `.zero` is the ghost (used-zero-times) bound.
   * `GradedIntroPremise` — the grade-parametric intro premise (the body typed under the binder + the graded
-    check), the foldable form of `pathIntro`'s premise set.
-  * `gradedIntro_ghost_ofWeakened` — ★ the genuinely-new content: ANY WEAKENED (dimension-constant) body
-    satisfies the graded check at usage `.zero` (the STRONGEST grade), via the rung-77
-    `occurrenceCountAt_weaken_zeroPosition`.  A constant body is ghost-gradeable, stronger than affine.
-  * `gradedIntroPremise_buildsPathIntro` — ★ ADEQUACY: a `GradedIntroPremise` at usage `.one` SUFFICES to
-    construct `HasTypeDescBridge.pathIntro` — its graded check IS the affine premise.  Plus
-    `HasTypeDescBridge.pathLamSubjectIsAffine` (shipped) gives the honesty: the grade is FORCED.
+    check), the foldable form of the affine path-intro premise set.
+  * `gradedIntro_ghost_ofWeakened` — ★ ANY WEAKENED (dimension-constant) body satisfies the graded check at
+    usage `.zero` (the STRONGEST grade), via the rung-77 `occurrenceCountAt_weaken_zeroPosition`.  A constant
+    body is ghost-gradeable, stronger than affine.
+  * `gradedIntro_affine_constant` — ★ NON-VACUOUS: the constant bridge body is an affine graded intro premise.
   * `gradedIntroExpressibility_isGo` — the all-positive verdict ledger.
 
 ## Honest scope
 
 The interpreter `gradedBinderChecks` reads ONE binder position (`0`, the freshest), which is exactly the
 single-binder intro shape (`pathLam`/`lam`).  The full graded-context substrate (`HasGradeOver R`, the grade
-VECTOR over all binders, the Wood/Atkey context division) is already shipped separately (#901/#876); the
-NATIVE-20/23 work is THREADING a per-binder usage into the unified `IntroRuleDesc`/`genIntro`, not the
-expressibility this settles.
+VECTOR over all binders, the Wood/Atkey context division) is shipped separately (#901/#876).
 
 ## Zero-axiom
 
 `gradedBinderChecks` is a thin wrapper over the shipped `UsageGrade.boundsCount`; the ghost witness is the
-rung-77 weaken lemma; the adequacy is `pathIntro` applied to the definitionally-equal premises.  No `axiom`,
+rung-77 weaken lemma; the affine non-vacuity is a closed-body formation through the grown engine.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated in
 `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
@@ -75,8 +77,8 @@ theorem affinePremise_isGradedCheckAtOne {scope : Nat} (body : RawTerm (scope + 
   rfl
 
 /-- **The grade-parametric intro premise.**  The body is typed under the dimension-binder-extended context,
-and its binder usage is bounded by `usage`.  The foldable form of `HasTypeDescBridge.pathIntro`'s premise
-set, parameterized by the usage grade (the NATIVE-20/23 target). -/
+and its binder usage is bounded by `usage`.  The foldable form of the affine path-intro premise set,
+parameterized by the usage grade — the shape consumed by the v2 `gradedBinderIntro` arm. -/
 structure GradedIntroPremise (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) (usage : UsageGrade)
     (body : RawTerm (scope + 1)) (typeCode : RawTerm scope) : Prop where
@@ -93,7 +95,7 @@ theorem gradedIntro_ghost_ofWeakened {scope : Nat} (sourceTerm : RawTerm scope) 
 
 /-- **★ NON-VACUOUS: the constant bridge body is an affine graded intro premise.**  `pathLam(Type@0)` (the
 dimension-constant body) satisfies `GradedIntroPremise` at usage `.one` — the body is closed so its binder
-occurrence is `0 ≤ 1`.  The grade-parametric analogue of `HasTypeDescBridge.constantBridgeTyped`'s premise. -/
+occurrence is `0 ≤ 1`.  The grade-parametric premise the affine path-intro row consumes. -/
 theorem gradedIntro_affine_constant {profile : PolyProfile} (flag : UniverseFlag) :
     GradedIntroPremise profile (TypingContext.empty : TypingContext profile 0)
       UsageGrade.one (universeCodeCell LevelExpr.lzero flag)
@@ -104,19 +106,14 @@ theorem gradedIntro_affine_constant {profile : PolyProfile} (flag : UniverseFlag
         (TypingContext.cons TypingContext.empty intervalTypeCell) LevelExpr.lzero flag)
   binderGraded := Nat.zero_le 1
 
-/-- **★ ADEQUACY: the grade-parametric premise SUFFICES to construct the path abstraction.**  A
-`GradedIntroPremise` at usage `.one` yields exactly `HasTypeDescBridge.pathIntro` — its `binderGraded` check
-(`gradedBinderChecks .one body`) IS `pathIntro`'s `dimensionAffine` premise (`occurrenceCountAt body 0 ≤ 1`)
-definitionally.  So the bespoke affine `pathIntro` premise IS an instance of the foldable graded intro
-premise (the introduction analogue of NATIVE-02's `termIndexedFormerTyping_buildsBridge`). -/
-theorem gradedIntroPremise_buildsPathIntro {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)} {typeCode : RawTerm scope}
-    (premise : GradedIntroPremise profile context UsageGrade.one body typeCode) :
-    HasTypeDescBridge profile context (pathLamCell body)
-      (bridgeTypeCell typeCode
-        (RawTerm.subst0 body intervalZeroCell)
-        (RawTerm.subst0 body intervalOneCell)) :=
-  HasTypeDescBridge.pathIntro context body typeCode premise.bodyTyped premise.binderGraded
+/- The historical adequacy `gradedIntroPremise_buildsPathIntro` — a `GradedIntroPremise` at usage `.one`
+SUFFICES to construct the affine path abstraction, because its `binderGraded` check (`gradedBinderChecks .one
+body`) IS the path-intro affine premise (`occurrenceCountAt body 0 ≤ 1`) definitionally — was witnessed
+pre-retirement against the bespoke `HasTypeDescBridge.pathIntro`.  That engine has been deleted (NATIVE-45);
+the affine path abstraction is now realized ONLY by the union row `HasTypeNativeUnion.gradedBinderIntro` at
+`pathLamGradedIntroRule` (selected by `gradedIntroRuleOf_pathLam`), whose `binderGraded` premise is this same
+`gradedBinderChecks rule.binderUsage body`.  The theorem is unstatable here (the union is defined downstream
+of this file), so it does not survive the retirement. -/
 
 /-! ## The GO-verdict ledger -/
 
@@ -131,16 +128,18 @@ structure GradedIntroExpressibility where
   weakenedIsGhost : Bool
   /-- It is NON-VACUOUSLY inhabited at the affine grade (`gradedIntro_affine_constant`). -/
   isNonVacuous : Bool
-  /-- The bespoke affine `pathIntro` premise IS an instance (`gradedIntroPremise_buildsPathIntro`). -/
+  /-- The affine path-intro premise IS an instance of the graded intro premise (witnessed pre-retirement;
+  the union row `gradedBinderIntro` at `pathLamGradedIntroRule` is now its sole realization). -/
   pathIntroIsInstance : Bool
-  /-- The grade is FORCED by the engine, not merely permitted (`pathLamSubjectIsAffine`). -/
+  /-- The grade is FORCED by the table row (`pathLamGradedIntroRule.binderUsage = .one`), not merely
+  permitted — the affine bound is enforced as the arm's `binderGraded` premise. -/
   gradeIsForced : Bool
 
-/-- **★ NATIVE-03 verdict: GO.**  The graded intro premise is expressible over the shipped usage semiring,
-spans the ghost/affine/unrestricted spectrum, a weakened body is ghost-gradeable, it is non-vacuously
-inhabited, the `pathIntro` premise is an instance, and the grade is forced.  Every field `true`, witnessed by
-the theorems above (+ shipped `pathLamSubjectIsAffine`).  NATIVE-20/23 is threading a per-binder usage into
-`IntroRuleDesc`/`genIntro` — not the expressibility this settles. -/
+/-- **★ The graded-intro verdict: GO.**  The graded intro premise is expressible over the shipped usage
+semiring, spans the ghost/affine/unrestricted spectrum, a weakened body is ghost-gradeable, it is
+non-vacuously inhabited, the affine path-intro premise is an instance, and the grade is forced by the table
+row.  Every field `true`, witnessed by the live decls above; the per-binder usage is threaded into the v2
+`GradedIntroRule`/`gradedBinderIntro` arm that now carries the path abstraction. -/
 def gradedIntroExpressibility : GradedIntroExpressibility where
   isExpressible := true
   spansGradeSpectrum := true

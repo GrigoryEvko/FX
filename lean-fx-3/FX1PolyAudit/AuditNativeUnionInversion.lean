@@ -8,8 +8,10 @@ Per-declaration zero-axiom gate for NATIVE-37 part 1: the host pathLam/natSucc h
 missing lemma plus its data-intro companion), the three engine-embedding subject-head exclusions, the in-file
 recursive-eliminator row inverter, the four representative per-head inversions over `HasTypeNativeUnion`
 (`invertAtPathLamHead` / `invertAtLamHead` / `invertAtNatElimHead` / `invertAtNatSuccHead`), the union-wide
-affine rejection (`unionRejectsAffineDoubleUse`), and the inversion coverage record / witness.  Every declaration
-below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
+affine rejection (`unionRejectsAffineDoubleUse`), the affine-honesty pin `pathLamSubjectIsAffine` (the NATIVE-45
+union-side successor of the retired `HasTypeDescBridge.pathLamSubjectIsAffine`), and the inversion coverage record
+/ witness.  Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 
@@ -36,6 +38,10 @@ namespace FX1PolyAudit
 /-! ## (3) ★ The union-wide affine rejection -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.unionRejectsAffineDoubleUse
+
+/-! ## (3b) ★ The affine-honesty pin, union-side (NATIVE-45 — successor of HasTypeDescBridge.pathLamSubjectIsAffine) -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.pathLamSubjectIsAffine
 
 /-! ## (5) Coverage record + witness -/
 

@@ -4,11 +4,13 @@ import FX1Poly.Typed.IntroRuleDescGradedBinder
 
 NATIVE-20 threaded `binderUsage` into the v1 `IntroRuleDesc`, but the v1 schema CANNOT express the
 bridge abstraction: `outputType : (scope) → domain → codomain → output` parameterizes by a user-chosen
-domain and a codomain, while `HasTypeDescBridge.pathIntro`'s output is
+domain and a codomain, while the path abstraction's output is
 `bridgeTypeCell typeCode (subst0 body interval0) (subst0 body interval1)` — BODY-DEPENDENT (the
 endpoints are substitution instances of the introduced body), with the domain PINNED to
 `intervalTypeCell` and the member cell `pathLamCell body` (one child, no domain annotation) instead of
-`lamCell domain body`.  Three independent schema mismatches.
+`lamCell domain body`.  Three independent schema mismatches.  (This was the output of the bespoke
+`HasTypeDescBridge.pathIntro` arm, retired NATIVE-45; the affine `pathLamGradedIntroRule` row below is now
+the realization.)
 
 This file is the campaign's intro-schema KEYSTONE — the introduction analogue of the NATIVE-12
 TermIndexedFormer generalization, on the same proven template (table → single generic arm → metadata →
@@ -27,11 +29,11 @@ adequacy → smokes → coverage gate):
     premises, the body premise at the rule's classifier, and the GRADED side-condition
     `gradedBinderChecks rule.binderUsage body` ENFORCED by the arm (not a dead-weight hypothesis: the
     `.one` row makes it a genuine occurrence bound, see the rejection below).
-  * `gradedIntroEngine_typesLam` / `gradedIntroEngine_typesPathLam` — reconstruction: the bespoke
-    `piIntro` / `pathIntro` premises drive the generic arm to the SAME subject and classifier.
-  * `HasTypeDescGradedIntro.soundness` — ★ the reverse: EVERY generic typing is a bespoke derivation
-    (`HasTypeDescPi.piIntro`-built or `HasTypeDescBridge.pathIntro`-built) with the same subject and
-    classifier, the affine bound surfaced on the pathLam disjunct.  Together: per-row adequacy.
+  * `gradedIntroEngine_typesLam` / `gradedIntroEngine_typesPathLam` — reconstruction: the grown `piIntro`
+    premises (and the affine path-intro premises) drive the generic arm to the SAME subject and classifier.
+  * `HasTypeDescGradedIntro.soundness` — ★ the reverse: EVERY generic typing is a λ introduction with a
+    `HasTypeDescPi.piIntro`-built derivation, OR an affine pathLam introduction at the bridge classifier
+    with the affine occurrence bound surfaced.  Together with the reconstructions: per-row adequacy.
   * `gradedIntroEngine_rejectsDoubleDimensionUse` — ★ THE GRADE IS LOAD-BEARING: the body
     `pair(var 0, var 0)` uses the dimension binder TWICE, so `pathLam` over it is UNTYPABLE through the
     engine at EVERY classifier.  First theorem where a kernel typing is refused purely by a usage grade
@@ -97,8 +99,9 @@ def lamGradedIntroRule : GradedIntroRule where
 
 /-- The pathLam row — the FIRST affine introduction row.  Domain PINNED to the interval, classifier is
 the weakened carrier, member is the annotation-free `pathLamCell`, output is the BODY-DEPENDENT bridge
-code at the body's endpoint substitutions, binder AFFINE (`.one`), no formation premises — exactly
-`HasTypeDescBridge.pathIntro`. -/
+code at the body's endpoint substitutions, binder AFFINE (`.one`), no formation premises — the affine path
+abstraction (formerly the bespoke `HasTypeDescBridge.pathIntro`, retired NATIVE-45; this row is now its
+realization, also carried by the downstream union arm `HasTypeNativeUnion.gradedBinderIntro`). -/
 def pathLamGradedIntroRule : GradedIntroRule where
   domainCell := fun _ _ => intervalTypeCell
   bodyClassifier := fun _ carrierCode _ => RawTerm.weaken carrierCode
@@ -197,10 +200,10 @@ theorem gradedIntroEngine_typesLam {profile : PolyProfile} {scope : Nat}
     domainCode codomainCode body domainLevel codomainLevel flag rfl trivial
     (fun _ => domainTyped) (fun _ => codomainTyped) bodyTyped
 
-/-- **The `pathIntro` premises drive the generic arm at the affine pathLam row.**  Same subject
-(`pathLamCell`), same body-dependent classifier (the bridge code at the endpoint substitutions) as
-`HasTypeDescBridge.pathIntro`; the affine premise IS the graded check at `.one` (definitional); the
-absent formation premises are the row's `false` gates. -/
+/-- **The affine path-intro premises drive the generic arm at the affine pathLam row.**  Subject
+`pathLamCell`, body-dependent classifier (the bridge code at the endpoint substitutions) — the affine path
+abstraction the retired `HasTypeDescBridge.pathIntro` arm used to build; the affine premise IS the graded
+check at `.one` (definitional); the absent formation premises are the row's `false` gates. -/
 theorem gradedIntroEngine_typesPathLam {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {carrierCode : RawTerm scope} {body : RawTerm (scope + 1)}
@@ -222,10 +225,13 @@ theorem gradedIntroEngine_typesPathLam {profile : PolyProfile} {scope : Nat}
 
 /-- **★ Per-row soundness.**  Every `HasTypeDescGradedIntro` typing is EITHER a λ introduction with a
 `HasTypeDescPi.piIntro`-built derivation at the SAME subject and classifier, OR an affine pathLam
-introduction with a `HasTypeDescBridge.pathIntro`-built derivation at the same subject and classifier,
-the affine occurrence bound surfaced.  With the reconstructions above this is per-row adequacy — the
-delete-safety statement for the bespoke arms.  `cases` at FREE indices (no equation-motive trap) +
-table enumeration. -/
+introduction at the bridge classifier with the affine occurrence bound surfaced.  With the reconstructions
+above this is per-row adequacy.  (The pathLam disjunct previously also carried a `HasTypeDescBridge.pathIntro`
+derivation; that bespoke engine was retired (NATIVE-45) and the affine path abstraction is now realized only
+by the downstream union row `HasTypeNativeUnion.gradedBinderIntro` at `pathLamGradedIntroRule` — which is
+defined downstream of this file, so the union witness cannot be carried here.  The surviving affine bound is
+exactly the union arm's `binderGraded` premise.)  `cases` at FREE indices (no equation-motive trap) + table
+enumeration. -/
 theorem HasTypeDescGradedIntro.soundness {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescGradedIntro profile context subject classifier) :
@@ -238,11 +244,7 @@ theorem HasTypeDescGradedIntro.soundness {profile : PolyProfile} {scope : Nat}
       subject = pathLamCell body ∧
       classifier = bridgeTypeCell carrierCode
         (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell) ∧
-      RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1 ∧
-      HasTypeDescBridge profile context (pathLamCell body)
-        (bridgeTypeCell carrierCode
-          (RawTerm.subst0 body intervalZeroCell)
-          (RawTerm.subst0 body intervalOneCell))) := by
+      RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1) := by
   cases derivation with
   | genIntro generator rule typeParamA typeParamB body
       domainLevel codomainLevel flag isIntro binderGraded
@@ -260,8 +262,7 @@ theorem HasTypeDescGradedIntro.soundness {profile : PolyProfile} {scope : Nat}
         have hRule : rule = pathLamGradedIntroRule :=
           Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
         subst hRule
-        exact Or.inr ⟨typeParamA, body, rfl, rfl, binderGraded,
-          HasTypeDescBridge.pathIntro context body typeParamA bodyTyped binderGraded⟩
+        exact Or.inr ⟨typeParamA, body, rfl, rfl, binderGraded⟩
       · exfalso
         dsimp only [gradedIntroRuleOf] at isIntro
         rw [if_neg hLam, if_neg hPath] at isIntro
@@ -291,8 +292,8 @@ theorem closedConstantLambdaGradedEngineTyped {profile : PolyProfile} (flag : Un
 
 /-- **★ The constant bridge through the engine's AFFINE row.**  `pathLam(Type@0) :
 Bridge(Type@1, Type@0, Type@0)` — the `.one` graded check read from the table and discharged
-(`0 ≤ 1`, the closed body) on a real derivation.  The engine twin of
-`HasTypeDescBridge.constantBridgeTyped`. -/
+(`0 ≤ 1`, the closed body) on a real derivation.  The graded-engine realization of the constant path
+abstraction the retired `HasTypeDescBridge` engine carried as `constantBridgeTyped`. -/
 theorem constantBridgeGradedEngineTyped {profile : PolyProfile} (flag : UniverseFlag) :
     HasTypeDescGradedIntro profile (TypingContext.empty : TypingContext profile 0)
       (pathLamCell (universeCodeCell LevelExpr.lzero flag))
@@ -328,7 +329,7 @@ theorem gradedIntroEngine_rejectsDoubleDimensionUse {profile : PolyProfile} {sco
   intro derivation
   rcases derivation.soundness with
     ⟨domainCode, body, codomainCode, subjectEq, _, _⟩ |
-    ⟨carrierCode, body, subjectEq, _, bodyAffine, _⟩
+    ⟨carrierCode, body, subjectEq, _, bodyAffine⟩
   · -- λ-row case: head generator mismatch (gen_pathLam vs gen_lam).
     exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
   · -- pathLam-row case: extract the body, then `2 ≤ 1` is absurd.

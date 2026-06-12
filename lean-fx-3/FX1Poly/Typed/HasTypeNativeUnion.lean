@@ -33,18 +33,19 @@ adequacy INTO it.
     in the data engine.  Untypable in every prior engine (the host demands a host-typed body; `0` is
     not host-typable).
 
-## ★ Bridge full adequacy (all 6 arms → the union)
+## ★ The bridge semantics ARE the union's rows (the bespoke engine is RETIRED)
 
-`HasTypeDescBridge.toNativeUnion`: every Bridge derivation translates to a union typing at the SAME
-subject and classifier — intervalFormation→baseType row, endpoints→data rows,
-bridgeFormation→termIndexed row, pathIntro→graded intro row, pathElim→general elim row with the
-RECURSIVE premises discharged by the induction hypotheses (the judgment boundary dissolves exactly as
-the NATIVE-04 verdict predicted).  ONE honest exception, carried as an explicit disjunct:
-`Bridge.intervalFormation` is ANY-flag while the native base-type row pins `standard` (the deliberate
-DI-1b-flagpin determinism discipline) — a bare non-standard-flag interval formation has no native
-image at its own flag; the disjunct records the dropped liberality AND supplies the standard-flag
-native typing.  The bespoke any-flag formation was flag-AMBIGUOUS (no uniqueness); the native
-strictness is the better semantics, recorded rather than papered over.
+The bespoke `HasTypeDescBridge` engine — interval/bridge formation, endpoints, path intro/elim — has
+been deleted (NATIVE-45).  Its six arms were never a separate semantics: each was exactly a row of
+this union (intervalFormation→baseType row, endpoints→data rows, bridgeFormation→termIndexed row,
+pathIntro→graded intro row, pathElim→general elim row with the RECURSIVE premises discharged by the
+arm's own recursion — the judgment boundary dissolves exactly as the NATIVE-04 verdict predicted).
+Full adequacy (`HasTypeDescBridge.toNativeUnion` / `toNativeUnionExact`) was proved INTO this union
+before retirement (Rung 103) and the compat theorems were removed WITH the engine; the rows below are
+now the sole carriers of the bridge semantics.  The one honest divergence the adequacy surfaced
+survives in the rows themselves: the native base-type interval-formation row pins `standard`
+(the deliberate DI-1b-flagpin determinism discipline) where the bespoke any-flag formation was
+flag-AMBIGUOUS — the native strictness is the better semantics, now the only semantics.
 
 ## Honest scope
 
@@ -77,10 +78,9 @@ this union).
 
 ## Zero-axiom
 
-Embeddings are constructor applications; the recursive arms mirror the keystone arms; the adequacy is
-`induction` over the 6 Bridge arms with head-generator no-confusion refutations of the flag disjunct in
-the recursive case.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
+Embeddings are constructor applications; the recursive arms mirror the keystone arms.  No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated
+in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Typed
 
@@ -437,82 +437,12 @@ theorem constantIntervalLambdaNativelyTyped {profile : PolyProfile} :
     (HasTypeNativeUnion.dataIntroNullary (TypingContext.empty.cons boolTypeCell)
       .gen_interval0 () .childNil { outputTypeCode := fun _ => intervalTypeCell } rfl)
 
-/-! ## ★ Bridge full adequacy: all 6 arms translate into the union -/
-
-/-- **★ Every Bridge typing translates to a native-union typing at the same subject and classifier —
-with the interval-formation FLAG LIBERALITY honestly surfaced.**  The left disjunct is the exact
-translation (5 of 6 arms + every recursive composition).  The right disjunct fires ONLY for a bare
-`intervalFormation` instance at a (possibly non-standard) flag: the native base-type row pins
-`standard` (flag-determinism), so the bespoke any-flag formation is reproduced at the PINNED flag with
-the dropped liberality recorded in the equations.  In the recursive `pathElim` case the disjunct is
-REFUTED for both premises by classifier-head no-confusion (a path's classifier is bridge-headed and an
-argument's is interval-headed — never universe-headed), so the recursion always proceeds on exact
-translations: the judgment boundary dissolves through the union's recursive elim arm. -/
-theorem HasTypeDescBridge.toNativeUnion {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (derivation : HasTypeDescBridge profile context subject classifier) :
-    HasTypeNativeUnion profile context subject classifier
-    ∨ (∃ liberalFlag : UniverseFlag,
-        subject = intervalTypeCell ∧
-        classifier = universeCodeCell LevelExpr.lzero liberalFlag ∧
-        HasTypeNativeUnion profile context intervalTypeCell
-          (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) := by
-  induction derivation with
-  | intervalFormation flag =>
-      exact Or.inr ⟨flag, rfl, rfl,
-        HasTypeNativeUnion.baseTypeFormation _ .gen_intervalCode () .childNil
-          { outputUniverse := fun _ =>
-              universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl⟩
-  | intervalZero =>
-      exact Or.inl (HasTypeNativeUnion.dataIntroNullary _ .gen_interval0 () .childNil
-        { outputTypeCode := fun _ => intervalTypeCell } rfl)
-  | intervalOne =>
-      exact Or.inl (HasTypeNativeUnion.dataIntroNullary _ .gen_interval1 () .childNil
-        { outputTypeCode := fun _ => intervalTypeCell } rfl)
-  | bridgeFormation typeCode leftEndpoint rightEndpoint level flag
-      typeCodeTyped leftTyped rightTyped =>
-      exact Or.inl (HasTypeNativeUnion.ofTermIndexedFormer
-        (termIndexedFormerGenFormation_reconstructsBridge typeCode leftEndpoint rightEndpoint
-          level flag typeCodeTyped leftTyped rightTyped))
-  | pathIntro body typeCode bodyTyped dimensionAffine =>
-      exact Or.inl (HasTypeNativeUnion.gradedBinderIntro _ .gen_pathLam pathLamGradedIntroRule
-        typeCode (RawTerm.weaken typeCode) body
-        LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl dimensionAffine
-        (fun gateHolds => Bool.noConfusion gateHolds)
-        (fun gateHolds => Bool.noConfusion gateHolds)
-        (HasTypeNativeUnion.ofGrown bodyTyped))
-  | pathElim path argument typeCode leftEndpoint rightEndpoint
-      pathTyped argumentTyped pathTranslated argumentTranslated =>
-      rcases pathTranslated with pathNative | ⟨_, _, pathClassifierClash, _⟩
-      · rcases argumentTranslated with argumentNative |
-          ⟨_, _, argumentClassifierClash, _⟩
-        · exact Or.inl (HasTypeNativeUnion.generalElim _ .gen_pathApp pathAppGeneralElimRule
-            typeCode (RawTerm.weaken typeCode) leftEndpoint rightEndpoint
-            path argument rfl pathNative argumentNative)
-        · -- The argument premise's classifier is `intervalTypeCell`, never universe-headed.
-          exact absurd (congrArg RawTerm.rootGenerator argumentClassifierClash)
-            (by intro headEq; cases headEq)
-      · -- The path premise's classifier is bridge-headed, never universe-headed.
-        exact absurd (congrArg RawTerm.rootGenerator pathClassifierClash)
-          (by intro headEq; cases headEq)
-
-/-- **The standard-flag corollary: on the flag-disciplined fragment the translation is EXACT.**  A
-Bridge typing whose classifier is not a bare universe code (every endpoint, every bridge formation,
-every path intro/elim — all but the bare `intervalFormation` instances) translates to the union at
-the SAME subject and classifier with no disjunct. -/
-theorem HasTypeDescBridge.toNativeUnionExact {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (derivation : HasTypeDescBridge profile context subject classifier)
-    (isNotBareIntervalFormation : subject ≠ intervalTypeCell) :
-    HasTypeNativeUnion profile context subject classifier := by
-  rcases derivation.toNativeUnion with nativeTyped | ⟨_, subjectEq, _, _⟩
-  · exact nativeTyped
-  · exact absurd subjectEq isNotBareIntervalFormation
-
 /-! ## The coverage gate -/
 
 /-- **The NATIVE-25 coverage record.**  Each field is a distinct live property of the seed union; an
-inhabitant certifies the union is exercised (both wall-falls compositions + both adequacy forms). -/
+inhabitant certifies the union is exercised (both wall-falls compositions).  The two bridge-adequacy
+fields were removed with the bespoke `HasTypeDescBridge` engine (NATIVE-45): the bridge semantics are
+now carried directly by the union's rows, so there is no longer a separate engine to translate FROM. -/
 structure NativeUnionCoverage (profile : PolyProfile) (flag : UniverseFlag) : Prop where
   /-- The whole endpoint redex types in one derivation. -/
   wholeRedexTyped : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
@@ -522,31 +452,12 @@ structure NativeUnionCoverage (profile : PolyProfile) (flag : UniverseFlag) : Pr
   lambdaOverDataTyped : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
     (lamCell boolTypeCell intervalZeroCell)
     (piTyCodeCell boolTypeCell intervalTypeCell)
-  /-- Every Bridge typing translates (with the flag disjunct). -/
-  bridgeTranslates : ∀ {scope : Nat} {context : TypingContext profile scope}
-    {subject classifier : RawTerm scope},
-    HasTypeDescBridge profile context subject classifier →
-    HasTypeNativeUnion profile context subject classifier
-    ∨ (∃ liberalFlag : UniverseFlag,
-        subject = intervalTypeCell ∧
-        classifier = universeCodeCell LevelExpr.lzero liberalFlag ∧
-        HasTypeNativeUnion profile context intervalTypeCell
-          (universeCodeCell LevelExpr.lzero UniverseFlag.standard))
-  /-- On non-interval-formation subjects the translation is exact. -/
-  bridgeTranslatesExact : ∀ {scope : Nat} {context : TypingContext profile scope}
-    {subject classifier : RawTerm scope},
-    HasTypeDescBridge profile context subject classifier →
-    subject ≠ intervalTypeCell →
-    HasTypeNativeUnion profile context subject classifier
 
 /-- **★ The NATIVE-25 coverage gate** — inhabited by the shipped witnesses. -/
 theorem nativeUnionCoverageWitness {profile : PolyProfile} (flag : UniverseFlag) :
     NativeUnionCoverage profile flag where
   wholeRedexTyped := endpointRedexNativelyTypedWhole flag
   lambdaOverDataTyped := constantIntervalLambdaNativelyTyped
-  bridgeTranslates := fun derivation => derivation.toNativeUnion
-  bridgeTranslatesExact := fun derivation isNotBare =>
-    derivation.toNativeUnionExact isNotBare
 
 /-! ## ★ NATIVE-36 headline smokes — the new families exercised IN THE UNION
 

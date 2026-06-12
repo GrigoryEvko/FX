@@ -1,24 +1,36 @@
 import FX1Poly.Typed.BridgeEndpointStep
 import FX1Poly.Typed.NativeUnionRuleTables
 
-/-! # FX1Poly/Typed/BridgeEndpointNativeSubjectReduction — NATIVE-08 ★: the cross-engine wall falls
+/-! # FX1Poly/Typed/BridgeEndpointNativeSubjectReduction — NATIVE-45: the wall falls INTO the native union
 
-`BridgeEndpointStep` ships the endpoint-β reduction `pathApp(pathLam body) ε ↝ body[i := ε]` and two
-non-vacuous subject-reduction fragments, but it ALSO ships the obstruction
+`BridgeEndpointStep` ships the endpoint-β reduction `pathApp(pathLam body) ε ↝ body[i := ε]`, the
+path-intro typed companions against the native graded-intro engine, and the obstruction
 `intervalZeroGrownUntypable`: the identity-path reduct `interval0` heads no GROWN-typed cell
 (`isUntypableHead gen_interval0 = true`, like `boolTrue`), so a general endpoint-β subject reduction
 CANNOT target `HasTypeDescPi` alone — a general-`ε` reduct mixes grown structure with bare interval
 leaves.  That was the recorded **cross-engine wall**.
 
-NATIVE-07 makes the wall FALL.  The interval endpoints are now NATIVELY typed by the union's
-`dataIntroNullary` arm (`interval0`/`interval1 : intervalCode`).  So the endpoint-β reduct that escapes
-the grown engine — `interval0` — is caught by a DIFFERENT native arm.  Endpoint-β is subject-reducing against the COMBINED native engine even though
-it is not against the grown engine alone: the bridge eliminator computes INTO the data-value layer.
+NATIVE-07 made the wall FALL.  The interval endpoints are NATIVELY typed by the union's
+`dataIntroNullary` row (`interval0`/`interval1 : intervalCode`).  So the endpoint-β reduct that escapes
+the grown engine — `interval0` — is caught by a DIFFERENT native arm.  Endpoint-β is subject-reducing
+against the COMBINED native engine even though it is not against the grown engine alone: the bridge
+eliminator computes INTO the data-value layer.
+
+NATIVE-45 RETIRES the bespoke `HasTypeDescBridge` typing engine.  The combined-reduct predicate's
+`ofBridge` disjunct (which quoted the dead engine) is DROPPED — the union subsumes it.  The predicate
+becomes `{ofGrown, ofDataIntro}`: the grown engine for the constant fragment, the native
+`dataIntroNullary` table row for the bare interval endpoint.  This file sits UPSTREAM of
+`HasTypeNativeUnion` in the import order, so it cannot name the union inductive directly; the
+`ofDataIntro` disjunct carries the row witness, definitionally the union's `dataIntroNullary` arm at
+this row (same content, no forward dependency — exactly as before).  The redex-typing companions now
+speak the native graded-intro engine (`identityPathGradedTyped` / `constantBridgeGradedOfTyped`); the
+elimination-side typing (the applied path in ONE union derivation) lives downstream as
+`HasTypeNativeUnion.endpointRedexNativelyTypedWhole`.
 
 ## What ships
 
   * **`EndpointBetaReductNativelyTyped`** — the combined-native typing of an endpoint-β reduct: typed by
-    the grown engine OR the bridge engine OR the union's `dataIntroNullary` arm.  The honest SR target the
+    the grown engine OR the union's `dataIntroNullary` arm.  The honest SR target the
     `intervalZeroGrownUntypable` wall forces (no single engine suffices; their union does).
   * **`intervalZeroReductNativelyTyped` / `intervalOneReductNativelyTyped`** — the bare interval
     endpoints are combined-native-typed (the `ofDataIntro` disjunct), the reducts the grown engine
@@ -28,26 +40,27 @@ it is not against the grown engine alone: the bridge eliminator computes INTO th
   * **`endpointBetaWallFalls` (★)** — the wall-falls witness: `interval0` is combined-native-typed AND
     grown-untypable SIMULTANEOUSLY.  The combined engine succeeds exactly where the grown engine alone
     provably fails — the precise statement of the wall falling.
-  * **`identityPathEndpointSubjectReductionNative` (★)** — the full identity-path endpoint-β SR against
-    the combined engine: the redex is bridge-typed, the step fires, and the reduct `interval0` is
-    combined-native-typed (via dataIntro) where `intervalZeroGrownUntypable` proves the grown engine
-    cannot type it.  The genuine cross-engine SR instance — the eliminator computes into the data layer.
+  * **`identityPathEndpointSubjectReductionNative` (★)** — the identity-path endpoint-β SR against the
+    combined engine: the redex's PATH is graded-intro-typed (`identityPathGradedTyped`), the step fires,
+    and the reduct `interval0` is combined-native-typed (via dataIntro) where `intervalZeroGrownUntypable`
+    proves the grown engine cannot type it.  The genuine cross-engine SR instance — the eliminator
+    computes into the data layer.
   * **`reflexivityBridgeEndpointSubjectReductionNative`** — the constant fragment under the SAME combined
-    target: the reduct lands in the `ofGrown` disjunct.  Both fragments now speak ONE preservation
-    predicate.
+    target: the reflexivity-bridge path is graded-intro-typed, the step fires to the constant body, and
+    the reduct lands in the `ofGrown` disjunct.  Both fragments now speak ONE preservation predicate.
   * **`endpointBetaNativeSubjectReductionVerdict` (★★)** — the honest capstone: endpoint-β preserves
     combined-native typing on BOTH fragments (constant → grown, identity-path → dataIntro), and the
     grown-only target is provably insufficient on the identity-path fragment.  The wall has fallen — the
-    union of the native engines is the correct SR target, as NATIVE-40's unified engine will internalize.
+    union of the native engines is the correct SR target, as `HasTypeNativeUnion` internalizes.
 
 ## Zero-axiom
 
-The combined predicate is a 3-constructor positive `Prop` inductive; every theorem is a constructor
-application over the shipped `BridgeEndpointStep` SR fragments + the NATIVE-07 `intervalZeroTyped` /
-`intervalOneTyped` smokes; the grown-untypability twin is `isUntypableHead_sound rfl` (the `rfl` proves
-`isUntypableHead gen_interval1 = true`, grown-only, unaffected by the union's dataIntroNullary rows).  No `axiom`,
-`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
-`FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
+The combined predicate is a 2-constructor positive `Prop` inductive; every theorem is a constructor
+application over the shipped `BridgeEndpointStep` SR fragments + the native `dataIntroNullary`
+`intervalTypeCell` rows; the grown-untypability twin is `isUntypableHead_sound rfl` (the `rfl` proves
+`isUntypableHead gen_interval1 = true`, grown-only, unaffected by the union's dataIntroNullary rows).  No
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration
+audit-gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Typed
 
@@ -55,8 +68,10 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- **Combined-native typing of an endpoint-β reduct.**  A reduct is native-typed when SOME of the
 kernel's native typing engines types it: the GROWN engine (`HasTypeDescPi`, the constant-fragment
-reduct), the BRIDGE engine (`HasTypeDescBridge`, the within-engine endpoint), or the union's
-`dataIntroNullary` row (the bare interval endpoint — the reduct the grown engine cannot reach).
+reduct), or the union's `dataIntroNullary` row (the bare interval endpoint — the reduct the grown engine
+cannot reach).  The `ofBridge` disjunct that quoted the retired `HasTypeDescBridge` engine (NATIVE-45) is
+GONE: the native union subsumes it, so the grown / data-intro pair is the complete combined target on the
+endpoint-β reduct fragments.
 
 `ofDataIntro` carries the row witness DIRECTLY (`dataIntroNullaryRuleDescOf generator = some rule`, the
 reduct is the row's childless cell, the classifier is the row's output type-code) rather than the
@@ -65,11 +80,10 @@ it cannot mention the union inductive without a cycle.  The witness is DEFINITIO
 `dataIntroNullary` arm at this row — same content, no forward dependency.
 
 The honest endpoint-β SR target: the `intervalZeroGrownUntypable` wall proves no single engine suffices,
-and this union is exactly what NATIVE-40's unified engine internalizes. -/
+and this pair is exactly what the native union internalizes. -/
 inductive EndpointBetaReductNativelyTyped (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) (reduct classifier : RawTerm scope) : Prop where
   | ofGrown (typed : HasTypeDescPi profile context reduct classifier)
-  | ofBridge (typed : HasTypeDescBridge profile context reduct classifier)
   | ofDataIntro (generator : Generator) (payload : generator.payload scope)
       (children : RawTermChildren generator.binderShifts scope)
       (rule : DataIntroNullaryRuleDesc)
@@ -94,7 +108,7 @@ theorem intervalOneReductNativelyTyped {profile : PolyProfile} {scope : Nat}
     { outputTypeCode := fun _ => intervalTypeCell } rfl rfl rfl
 
 /-- **The right-endpoint grown-untypability twin.**  Like `intervalZeroGrownUntypable`: the grown engine
-cannot type `interval1` (`isUntypableHead gen_interval1 = true`, grown-only — unaffected by the standalone
+cannot type `interval1` (`isUntypableHead gen_interval1 = true`, grown-only — unaffected by the native
 data-intro row).  Completes the wall on both endpoints. -/
 theorem intervalOneGrownUntypable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope}
@@ -115,50 +129,53 @@ theorem endpointBetaWallFalls {profile : PolyProfile} {scope : Nat}
    fun grownTyped => intervalZeroGrownUntypable grownTyped⟩
 
 /-- **★ The identity-path endpoint-β subject reduction against the combined engine.**  The
-identity-path redex `pathApp(pathLam(i), 0)` is bridge-typed at `intervalCode`, the endpoint-β step
-FIRES to `interval0`, and the reduct is combined-native-typed — by the union's dataIntroNullary arm, where
-`intervalZeroGrownUntypable` proves the grown engine cannot type it.  The genuine cross-engine SR
-instance: the bridge eliminator computes INTO the data-value layer, type-preservingly under the combined
-engine.  This supersedes `identityPathEndpointSubjectReduction` (which closed inside the bridge engine
-only) by routing the reduct through the native data-value typing — the wall-crossing SR. -/
+identity-path redex `pathApp(pathLam(i), 0)`'s PATH is graded-intro-typed at the bridge code
+(`identityPathGradedTyped`, the native graded-intro engine — the union's `gradedBinderIntro` substrate),
+the endpoint-β step FIRES to `interval0`, and the reduct is combined-native-typed — by the union's
+dataIntroNullary arm, where `intervalZeroGrownUntypable` proves the grown engine cannot type it.  The
+genuine cross-engine SR instance: the bridge eliminator computes INTO the data-value layer,
+type-preservingly under the combined engine.  The whole redex in ONE union derivation lives downstream
+(`HasTypeNativeUnion.endpointRedexNativelyTypedWhole`) where the elim arm is in scope; here the path's
+INTRO typing carries the redex's well-formedness through the live native engine. -/
 theorem identityPathEndpointSubjectReductionNative {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) :
-    HasTypeDescBridge profile context
-      (pathAppCell (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩)) intervalZeroCell)
-      intervalTypeCell ∧
+    HasTypeDescGradedIntro profile context
+      (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩))
+      (bridgeTypeCell intervalTypeCell intervalZeroCell intervalOneCell) ∧
     StepBridgeEndpoint
       (pathAppCell (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩)) intervalZeroCell)
       (intervalZeroCell (scope := scope)) ∧
     EndpointBetaReductNativelyTyped profile context intervalZeroCell intervalTypeCell :=
-  ⟨HasTypeDescBridge.identityPathAppliedTyped context,
+  ⟨identityPathGradedTyped context,
    StepBridgeEndpoint.identityPathAppliedComputes,
    intervalZeroReductNativelyTyped context⟩
 
-/-- **The constant fragment under the SAME combined target.**  From `t : T` (grown) and an interval-typed
-argument, the reflexivity-bridge endpoint-β fires to `t` and the reduct lands in the `ofGrown` disjunct of
-the combined predicate: both endpoint-β fragments now speak ONE preservation predicate (constant → grown,
-identity-path → data-intro).  Harvests `reflexivityBridgeRoundTrip` into the unified target. -/
+/-- **The constant fragment under the SAME combined target.**  From `t : T` (grown), the
+reflexivity-bridge path `pathLam(weaken t)` is graded-intro-typed at `Bridge(T, t, t)`
+(`constantBridgeGradedOfTyped`), the reflexivity-bridge endpoint-β fires to `t`, and the reduct lands in
+the `ofGrown` disjunct of the combined predicate: both endpoint-β fragments now speak ONE preservation
+predicate (constant → grown, identity-path → data-intro).  Harvests the reflexivity-bridge intro
+companion + the `constantPathBetaComputesToBody` collapse into the unified target. -/
 theorem reflexivityBridgeEndpointSubjectReductionNative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {constantBody typeCode : RawTerm scope}
     (bodyTyped : HasTypeDescPi profile context constantBody typeCode)
-    {argument : RawTerm scope}
-    (argumentTyped : HasTypeDescBridge profile context argument intervalTypeCell) :
-    HasTypeDescBridge profile context
-      (pathAppCell (pathLamCell (RawTerm.weaken constantBody)) argument) typeCode ∧
+    (argument : RawTerm scope) :
+    HasTypeDescGradedIntro profile context (pathLamCell (RawTerm.weaken constantBody))
+      (bridgeTypeCell typeCode constantBody constantBody) ∧
     StepBridgeEndpoint
       (pathAppCell (pathLamCell (RawTerm.weaken constantBody)) argument) constantBody ∧
-    EndpointBetaReductNativelyTyped profile context constantBody typeCode := by
-  obtain ⟨_reflexivityTyped, elimTyped, fires, grownReduct⟩ :=
-    reflexivityBridgeRoundTrip bodyTyped argumentTyped
-  exact ⟨elimTyped, fires, EndpointBetaReductNativelyTyped.ofGrown grownReduct⟩
+    EndpointBetaReductNativelyTyped profile context constantBody typeCode :=
+  ⟨constantBridgeGradedOfTyped bodyTyped,
+   StepBridgeEndpoint.constantPathBetaComputesToBody constantBody argument,
+   EndpointBetaReductNativelyTyped.ofGrown bodyTyped⟩
 
 /-- **★★ The endpoint-β native subject-reduction verdict — the honest capstone.**  Endpoint-β preserves
 combined-native typing on BOTH shipped fragments (the constant fragment lands GROWN, the identity-path
 endpoint lands DATA-INTRO), AND the grown-only target is provably INSUFFICIENT on the identity-path
 fragment (`intervalZeroGrownUntypable`).  The cross-engine wall has fallen: the union of the native
 engines is the correct endpoint-β SR target — the bridge eliminator computes into whichever native layer
-its reduct inhabits, exactly as NATIVE-40's single unified engine will internalize.  Bundles the wall-
-falls witness with both fragment instances at a single concrete context. -/
+its reduct inhabits, exactly as `HasTypeNativeUnion`'s single unified engine internalizes.  Bundles the
+wall-falls witness with the data-intro fragment instance at a single concrete context. -/
 theorem endpointBetaNativeSubjectReductionVerdict {profile : PolyProfile}
     (flag : UniverseFlag) :
     -- the identity-path fragment: reduct combined-native-typed where grown alone fails

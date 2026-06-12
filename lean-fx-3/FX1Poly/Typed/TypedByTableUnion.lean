@@ -290,14 +290,15 @@ theorem hasTableTypingRule_false_imp_isUntypableHead (generator : Generator)
 engine.**  Routed through the exact equivalence (`hasSomeTypingRule_eq_hasTableTypingRule`): a
 `hasTableTypingRule = false` verdict is a `hasSomeTypingRule = false` verdict, so the shipped surviving-engine
 soundness bundle applies unchanged.  The honest classifier and its table twin make the SAME truthful "statically
-reserved" claim.  The retired base-type / data-intro / flat formation arms (now `baseTypeFormation` /
-`dataIntroNullary` / `flatFormation` arms of `HasTypeNativeUnion`) are subsumed by the single-judgment successor
-over ALL native typing, `HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`. -/
+reserved" claim.  The bespoke `HasTypeDescBridge` engine was RETIRED (NATIVE-45): its rows are now arms of
+`HasTypeNativeUnion`, so its leg is no longer a standalone conjunct.  The retired bridge rows and the base-type /
+data-intro / flat formation arms (now `baseTypeFormation` / `dataIntroNullary` / `flatFormation` arms of
+`HasTypeNativeUnion`) are subsumed by the single-judgment successor over ALL native typing,
+`HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`. -/
 theorem reservedTableHeadUntypedBySurvivingEngines {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     (reserved : hasTableTypingRule (RawTerm.headGenerator subject) = false) :
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescPi profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescBridge profile context subject classifier) := by
+    ∀ classifier : RawTerm scope, ¬ HasTypeDescPi profile context subject classifier := by
   rw [← hasSomeTypingRule_eq_hasTableTypingRule] at reserved
   exact reservedHeadUntypedBySurvivingEngines reserved
 

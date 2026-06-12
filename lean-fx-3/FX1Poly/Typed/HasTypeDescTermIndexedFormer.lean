@@ -1,14 +1,15 @@
-import FX1Poly.Typed.HasTypeDescBridge
-import FX1Poly.Typed.TermIndexedFormerSpike
+import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Typed.CellConstructors
 
 /-! # FX1Poly/Typed/HasTypeDescTermIndexedFormer — NATIVE-12 [MEGA]: the TermIndexedFormer table + arm + Id/Bridge rows
 
-NATIVE-02 (`TermIndexedFormerSpike`) settled the GO verdict: the term-indexed former premise — a carrier
-typed at a universe plus endpoint terms typed at that carrier — is expressible over the grown engine, and
-`HasTypeDescBridge.bridgeFormation`'s premise IS an instance.  What NATIVE-02 deferred to NATIVE-12 is the
+The term-indexed former premise — a carrier typed at a universe plus endpoint terms typed at that carrier —
+is expressible over the grown engine; the bespoke bridge-formation premise (formerly
+`HasTypeDescBridge.bridgeFormation`, retired NATIVE-45) was an instance of it.  This file is the
 INTERPRETER: a generator-table-driven typing arm that turns a table row + the term-indexed premise into a
 typing, so that EVERY term-indexed former (the identity former `Id A a b`, the bridge former
-`Bridge A a b`) is typed by ONE generic arm — never a bespoke per-former rule.
+`Bridge A a b`) is typed by ONE generic arm — never a bespoke per-former rule.  It is the SOLE realization
+of the bridge/Id formation rule now that the bespoke engine is gone.
 
 This is the term-indexed analogue of the formation table (`typingRuleDescOf` + `HasTypeDesc.genFormation`):
 
@@ -26,8 +27,8 @@ term-indexed former is one more row in `termIndexedFormerDescOf`, never a new ar
   * `TermIndexedFormerDesc` + `termIndexedCarrierOutput` + `termIndexedFormerDescOf` — the rule table, with the
     `gen_bridgeCode` and `gen_idCode` rows (both at the carrier-level output `Type@e`).
   * `TermIndexedEndpoints` — the endpoint sub-telescope (every later child typed at the fixed carrier, over
-    the grown engine, indexed by the `RawTermChildren` spine — the children-data form of NATIVE-02's
-    `TermIndexedFormerPremise`).
+    the grown engine, indexed by the `RawTermChildren` spine — the children-data form of the back-reference
+    endpoint spine).
   * `TermIndexedFormerTelescope` — the full premise indexed by the children: head = carrier typed at a
     universe, tail = endpoints typed at the carrier.
   * `HasTypeDescTermIndexedFormer` — the standalone engine with ONE generic `genFormation` arm, consuming the
@@ -84,7 +85,7 @@ def termIndexedFormerDescOf (generator : Generator) : Option TermIndexedFormerDe
   else none
 
 /-- **The endpoint sub-telescope.**  Every later child (all at binder-shift `0`) is typed at the fixed
-`carrier` via the grown engine — the children-data form of NATIVE-02's `TermIndexedFormerPremise`.  Indexed by
+`carrier` via the grown engine — the children-data form of the back-reference endpoint spine.  Indexed by
 the `RawTermChildren` spine so the generic arm can consume the children abstractly. -/
 inductive TermIndexedEndpoints (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) (carrier : RawTerm scope) :
@@ -146,11 +147,12 @@ theorem termIndexedFormerDescOf_piTyCode :
 
 /-! ## ★ Adequacy + the Id/Bridge rows -/
 
-/-- **★ The generic arm reconstructs the bridge former.**  From `bridgeFormation`'s premises (carrier typed at
+/-- **★ The generic arm types the bridge former.**  From the bridge-formation premises (carrier typed at
 a universe, two endpoints typed at the carrier), the generic table-driven arm at the `gen_bridgeCode` row
-produces EXACTLY `bridgeFormation`'s conclusion `bridgeTypeCell carrier left right : Type@level`.  The bespoke
-`HasTypeDescBridge.bridgeFormation` is therefore the generic `genFormation` arm at one table row — its premise
-IS an instance of the term-indexed premise spine (NATIVE-02's adequacy, now realized through the engine). -/
+produces EXACTLY `bridgeTypeCell carrier left right : Type@level`.  This generic `genFormation` arm at one
+table row IS the bridge formation rule — the premise is an instance of the term-indexed premise spine.  (It
+was the bespoke `HasTypeDescBridge.bridgeFormation` premise before that engine was retired NATIVE-45; this
+arm is now the sole realization.) -/
 theorem termIndexedFormerGenFormation_reconstructsBridge {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (carrier leftEndpoint rightEndpoint : RawTerm scope)
@@ -204,8 +206,9 @@ theorem termIndexedFormerGenFormation_idCode {profile : PolyProfile} {scope : Na
           TermIndexedEndpoints.nil)))
 
 /-- **★ Non-vacuous closed witness.**  `Bridge(Type@1, Type@0, Type@0) : Type@2` typed through the generic
-term-indexed arm — the same subject/classifier as `HasTypeDescBridge.bridgeOfUniverseCodesTyped`, now via the
-table-driven engine (carrier `Type@1 : Type@2`, endpoints `Type@0 : Type@1` members of the carrier). -/
+term-indexed arm — the same subject/classifier the retired `HasTypeDescBridge.bridgeOfUniverseCodesTyped`
+carried, now via the table-driven engine (carrier `Type@1 : Type@2`, endpoints `Type@0 : Type@1` members of
+the carrier). -/
 theorem termIndexedFormerGenFormation_bridgeUniverseSmoke {profile : PolyProfile}
     (flag : UniverseFlag) :
     HasTypeDescTermIndexedFormer profile (TypingContext.empty : TypingContext profile 0)

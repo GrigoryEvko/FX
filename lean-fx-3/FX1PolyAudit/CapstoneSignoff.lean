@@ -73,8 +73,8 @@ The POSITIVE assembled capstone is **`milestoneA0SignoffHolds`** (below): one ch
 whose seven fields are the shipped pillar carriers —
   * checking: `HasTypeDesc.decidableOfWellFormed` (native formation decider) +
     `HasTypeDescPi.decidableCheckOfInferredUniqueAtType` (the grown bidirectional compare step);
-  * boundary: `reservedTierUntypedBySurvivingEngines` (reserved generators head no typed cell — the
-    grown conjunct is the record field; the full nine-engine conjunction is gated by name);
+  * boundary: `reservedTierUntypedBySurvivingEngines` (reserved generators head no typed cell —
+    the grown leg, the sole surviving standalone engine after the NATIVE-42..45 retirements);
   * conversion: `wfContextDefensibleKernel.convDecidable` (typed `Conv` decider, every wf
     context) + `BetaEtaConv.decidableOfWfTyped` (the βη decider) + `checkNbeEqual_sound` (the
     NbE normalize-and-compare check certifies the full judgmental equality `DefEqUnitEtaCong`);
@@ -159,8 +159,8 @@ structure MilestoneA0Signoff (profile : PolyProfile) : Type where
           HasTypeDescPi profile context subject otherType → Conv inferredType otherType) →
         Decidable (HasTypeDescPi profile context subject targetType)
   /-- Pillar 1c — the typed-fragment boundary is PROVEN: a reserved-tier generator heads no
-  grown-typed cell (the grown conjunct of `reservedTierUntypedBySurvivingEngines`; the full
-  nine-engine conjunction is gated by name alongside). -/
+  grown-typed cell (`reservedTierUntypedBySurvivingEngines` — the grown leg, the sole surviving
+  standalone engine after the NATIVE-42..45 retirements). -/
   typedFragmentBoundary :
     ∀ {generator : Generator}, semanticTier generator = .reserved →
       ∀ {scope : Nat} {context : TypingContext profile scope} {subject : RawTerm scope},
@@ -225,7 +225,7 @@ def milestoneA0SignoffHolds {profile : PolyProfile} : MilestoneA0Signoff profile
   checkingDecidableGrownCompare wellFormed :=
     HasTypeDescPi.decidableCheckOfInferredUniqueAtType wellFormed
   typedFragmentBoundary := fun {_generator} reserved {_scope} {_context} {_subject} headEq =>
-    (reservedTierUntypedBySurvivingEngines reserved headEq).1
+    reservedTierUntypedBySurvivingEngines reserved headEq
   conversionDecidableConv := wfContextDefensibleKernel.convDecidable
   conversionDecidableBetaEta contextWellFormed leftTyped rightTyped :=
     BetaEtaConv.decidableOfWfTyped contextWellFormed leftTyped rightTyped

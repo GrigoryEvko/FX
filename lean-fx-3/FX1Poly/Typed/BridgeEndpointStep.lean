@@ -1,4 +1,4 @@
-import FX1Poly.Typed.HasTypeDescBridge
+import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.UntypableHeadDecision
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Core.RawTermSubstIdentity
@@ -19,6 +19,21 @@ SR/ι-refresh budget — that promotion is what flips `Generator.hasRedexHead` f
 and migrates its ONORM-M2 sconing role `inertEliminator → eliminator` (breaking the
 `LiveGenerator` enum BY DESIGN).
 
+## The retired bridge typing engine (NATIVE-45)
+
+The bespoke `HasTypeDescBridge` typing engine has been RETIRED: the native union
+`HasTypeNativeUnion` (and its keystone substrate `HasTypeDescGradedIntro` for path INTRO,
+`HasTypeDescGeneralElim` for path ELIM) types everything the bridge engine did, so this file
+no longer imports it.  This file sits UPSTREAM of `HasTypeNativeUnion` and `HasTypeDescGeneralElim`
+in the import order, so its typed companions speak only the engine available here — the native
+graded-intro engine `HasTypeDescGradedIntro` (the substrate the union's `gradedBinderIntro` arm
+embeds) for path INTRO.  The elimination-side typed companions (the applied path, the typed
+round-trips, the cross-engine SR instances) now live DOWNSTREAM where the elim engine is in scope:
+`HasTypeDescGeneralElim.gradedIntroEndpointIotaComputesTyped` (the typed endpoint-ι) and
+`HasTypeNativeUnion.endpointRedexNativelyTypedWhole` (the whole redex in one union derivation);
+the engine-specific inversion stack is subsumed by the union inversion suite
+(`HasTypeNativeUnionInversion` / `HasTypeNativeUnionPathProjInversion`).
+
 ## What ships here
 
   * **`StepBridgeEndpoint`** — the sibling relation, one `pathBeta` constructor.
@@ -30,30 +45,29 @@ and migrates its ONORM-M2 sconing role `inertEliminator → eliminator` (breakin
   * **Computation smokes** — the constant bridge applied to an endpoint computes to its body;
     the identity path applied to an endpoint computes to that endpoint; SYMBOLIC constant
     bodies compute via the collapse (`constantPathBetaComputesToBody`).
-  * **`pathAppSubjectInversion` / `pathLamAtBridgeInversion` / `pathBetaRedexInversion`** —
-    the deterministic inversion stack (the bridge engine has NO conv arm): typing a redex
-    yields the body's typing under the interval binder, the FORCED affinity bound, and the
-    argument's interval typing — the skeleton every future SR proof consumes.
-  * **`pathBetaRoundTrip`** — intro-then-elim is typed AND the redex fires (the general typed
-    round-trip at a symbolic body/argument, affine premise supplied by the caller).
-  * **Two non-vacuous SR instances**: `constantBridgeEndpointSubjectReduction` (the reduct is
-    GROWN-typed at the same classifier — the bridge eliminator computes INTO the grown world
-    on the dimension-constant fragment) and `identityPathEndpointSubjectReduction` (the reduct
-    is BRIDGE-typed at the same classifier — elimination of the identity path on the interval).
+  * **`identityPathGradedTyped`** — the identity path `pathLam(var 0)` typed at the bridge code
+    NATIVELY by `HasTypeDescGradedIntro` (the graded-intro engine, the union's `gradedBinderIntro`
+    substrate), the affine premise discharged by `occurrenceCountAt_var_self`.  The operational
+    smokes' INTRO-side typed companion.
+  * **`constantBridgeGradedOfTyped`** — ★ every grown-typed term embeds as the reflexivity bridge
+    `pathLam(weaken t)`, typed NATIVELY by `HasTypeDescGradedIntro`: the affine premise is the
+    grade-0 occurrence lemma (`occurrenceCountAt_weaken_zeroPosition`, discharged not hypothesized)
+    and the endpoints collapse by `subst0_weaken`.  The derivable `refl` of internal parametricity,
+    its INTRO half stated against the live native engine.
   * **`intervalZeroGrownUntypable`** — ★ the machine-checked CROSS-ENGINE WALL: the
     identity-path reduct (`interval0`) heads no grown-typed cell, so general endpoint-β SR
     cannot target `HasTypeDescPi` alone.  A general-`ε` reduct mixes grown structure with
-    bridge leaves; the honest general SR statement lives in an INTEGRATED engine (bridge rows
-    folded into the rule tables) — the recorded residual, exactly the listElim
-    engine-separation finding's shape.
+    interval leaves; the honest general SR statement lives in the native union (interval rows
+    are native `dataIntroNullary` rows) — the wall falls into the union, witnessed downstream by
+    `BridgeEndpointNativeSubjectReduction`.
 
 ## Zero-axiom
 
 The sibling inductive is positive and non-indexed-trap (free source/reduct indices); smokes
 are constructor applications closed by `whnf`-defeq substitution computation (nullary cells
-and innermost-var-0 bodies compute by `rfl`); inversions follow the free-subject + threaded
-equality recipe with `injections` drilling; the collapse is
-`rename_subst_commute` + a `PointwiseEq`-to-identity `rfl` + `subst_identity_apply`.
+and innermost-var-0 bodies compute by `rfl`); the native typed companions route through
+`gradedIntroEngine_typesPathLam` with the affine premise discharged by the occurrence lemmas;
+the collapse is `rename_subst_commute` + a `PointwiseEq`-to-identity `rfl` + `subst_identity_apply`.
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Per-declaration audit-gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
@@ -156,259 +170,60 @@ theorem StepBridgeEndpoint.constantPathBetaComputesToBody {scope : Nat}
   rw [RawTerm.subst0_weaken constantBody argument] at fired
   exact fired
 
-/-! ## The identity path — the second typed bridge inhabitant -/
+/-! ## The native path-intro typed companions (`HasTypeDescGradedIntro`, the union substrate)
 
-/-- **The identity path on the interval**: `pathLam(i) : Bridge(dim, 0, 1)` — the dimension
-variable itself as a bridge body, the FIRST inhabitant that genuinely USES its dimension
-binder (affine count exactly 1, discharged by `occurrenceCountAt_var_self`).  The endpoint
-substitutions compute definitionally to the endpoints. -/
-theorem HasTypeDescBridge.identityPathTyped {profile : PolyProfile} {scope : Nat}
+The bespoke `HasTypeDescBridge` typing engine is RETIRED.  The path-INTRO typed companions of
+the operational smokes are restated against the LIVE native graded-intro engine
+`HasTypeDescGradedIntro` (the substrate the union's `gradedBinderIntro` arm embeds, NATIVE-23):
+`pathLam` types via `gradedIntroEngine_typesPathLam` at the body-dependent bridge code, with the
+affine usage premise discharged exactly as the bespoke `pathIntro` discharged it.  The
+elimination-side companions (the applied path, the typed round-trips, the cross-engine SR) live
+DOWNSTREAM where the elim engine is in scope — see the module docstring. -/
+
+/-- **The identity path on the interval, typed natively**: `pathLam(i) :
+Bridge(Interval, 0, 1)` — the dimension variable itself as a bridge body, the FIRST inhabitant
+that genuinely USES its dimension binder (affine count exactly 1, discharged by
+`occurrenceCountAt_var_self`), typed by the native graded-intro engine.  The body's classifier
+is the weakened interval code; its endpoint substitutions compute definitionally to the bare
+endpoints, so the bridge code reads `Bridge(Interval, 0, 1)`. -/
+theorem identityPathGradedTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) :
-    HasTypeDescBridge profile context
+    HasTypeDescGradedIntro profile context
       (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩))
       (bridgeTypeCell intervalTypeCell intervalZeroCell intervalOneCell) :=
-  HasTypeDescBridge.pathIntro context (variableCell ⟨0, Nat.succ_pos scope⟩)
-    intervalTypeCell
+  gradedIntroEngine_typesPathLam (carrierCode := intervalTypeCell)
     (HasTypeDescPi.ofFormation
       (HasTypeDesc.var (context.cons intervalTypeCell) ⟨0, Nat.succ_pos scope⟩))
     (Nat.le_of_eq (RawTerm.occurrenceCountAt_var_self ⟨0, Nat.succ_pos scope⟩))
 
-/-- The identity path eliminated at the left endpoint is typed at the interval. -/
-theorem HasTypeDescBridge.identityPathAppliedTyped {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) :
-    HasTypeDescBridge profile context
-      (pathAppCell (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩)) intervalZeroCell)
-      intervalTypeCell :=
-  HasTypeDescBridge.pathElim context
-    (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩)) intervalZeroCell
-    intervalTypeCell intervalZeroCell intervalOneCell
-    (HasTypeDescBridge.identityPathTyped context)
-    (HasTypeDescBridge.intervalZero context)
-
-/-! ## The deterministic inversion stack (no conv arm in the bridge engine) -/
-
-/-- Inversion at a `pathApp`-headed subject: the only typing arm is `pathElim`, so the
-argument is interval-typed and the path is typed at a bridge over THIS classifier. -/
-theorem HasTypeDescBridge.pathAppSubjectInversion {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (derivation : HasTypeDescBridge profile context subject classifier) :
-    ∀ {path argument : RawTerm scope}, subject = pathAppCell path argument →
-      HasTypeDescBridge profile context argument intervalTypeCell ∧
-      ∃ leftEndpoint rightEndpoint : RawTerm scope,
-        HasTypeDescBridge profile context path
-          (bridgeTypeCell classifier leftEndpoint rightEndpoint) := by
-  cases derivation with
-  | intervalFormation _flag =>
-      intro path argument subjectEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
-  | intervalZero =>
-      intro path argument subjectEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
-  | intervalOne =>
-      intro path argument subjectEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
-  | bridgeFormation _typeCode _leftEndpoint _rightEndpoint _level _flag
-      _typeCodeTyped _leftTyped _rightTyped =>
-      intro path argument subjectEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
-  | pathIntro _armBody _armTypeCode _bodyTyped _dimensionAffine =>
-      intro path argument subjectEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
-  | pathElim armPath armArgument _armTypeCode armLeftEndpoint armRightEndpoint
-      pathTyped argumentTyped =>
-      intro path argument subjectEq
-      injection subjectEq with _scopeEq _generatorEq _payloadEq childrenEq
-      injection childrenEq with _pathScopeEq _pathShiftEq _pathRestShiftsEq pathsEqual restEq
-      injection restEq with _argScopeEq _argShiftEq _argRestShiftsEq argumentsEqual _nilEq
-      exact ⟨argumentsEqual ▸ argumentTyped,
-        armLeftEndpoint, armRightEndpoint, pathsEqual ▸ pathTyped⟩
-
-/-- Inversion at a `pathLam`-headed subject AGAINST a bridge classifier: the only typing arm
-is `pathIntro`, so the body is grown-typed under the interval binder, the affinity bound is
-FORCED, and the classifier's endpoints are exactly the body's endpoint substitutions. -/
-theorem HasTypeDescBridge.pathLamAtBridgeInversion {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (derivation : HasTypeDescBridge profile context subject classifier) :
-    ∀ {body : RawTerm (scope + 1)} {typeCode leftEndpoint rightEndpoint : RawTerm scope},
-      subject = pathLamCell body →
-      classifier = bridgeTypeCell typeCode leftEndpoint rightEndpoint →
-      HasTypeDescPi profile (context.cons intervalTypeCell) body (RawTerm.weaken typeCode) ∧
-      RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1 ∧
-      leftEndpoint = RawTerm.subst0 body intervalZeroCell ∧
-      rightEndpoint = RawTerm.subst0 body intervalOneCell := by
-  cases derivation with
-  | intervalFormation _flag =>
-      intro body typeCode leftEndpoint rightEndpoint subjectEq _classifierEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
-  | intervalZero =>
-      intro body typeCode leftEndpoint rightEndpoint subjectEq _classifierEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
-  | intervalOne =>
-      intro body typeCode leftEndpoint rightEndpoint subjectEq _classifierEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
-  | bridgeFormation _typeCode _leftEndpoint _rightEndpoint _level _flag
-      _typeCodeTyped _leftTyped _rightTyped =>
-      intro body typeCode leftEndpoint rightEndpoint subjectEq _classifierEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
-  | pathIntro armBody armTypeCode bodyTyped dimensionAffine =>
-      intro body typeCode leftEndpoint rightEndpoint subjectEq classifierEq
-      injection subjectEq with _scopeEq _generatorEq _payloadEq bodyChildrenEq
-      injection bodyChildrenEq with _bodyScopeEq _bodyShiftEq _bodyRestShiftsEq
-        bodiesEqual _bodyNilEq
-      injection classifierEq with _cScopeEq _cGeneratorEq _cPayloadEq classifierChildrenEq
-      injection classifierChildrenEq with _tScopeEq _tShiftEq _tRestShiftsEq
-        typeCodesEqual classifierRestEq
-      injection classifierRestEq with _lScopeEq _lShiftEq _lRestShiftsEq
-        leftEqualRaw classifierRest2Eq
-      injection classifierRest2Eq with _rScopeEq _rShiftEq _rRestShiftsEq
-        rightEqualRaw _cNilEq
-      subst bodiesEqual
-      subst typeCodesEqual
-      subst leftEqualRaw
-      subst rightEqualRaw
-      exact ⟨bodyTyped, dimensionAffine, rfl, rfl⟩
-  | pathElim _path _argument _typeCode _leftEndpoint _rightEndpoint
-      _pathTyped _argumentTyped =>
-      intro body typeCode leftEndpoint rightEndpoint subjectEq _classifierEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectEq) (by intro headEq; cases headEq)
-
-/-- **The redex inversion — the SR skeleton.**  Typing an endpoint-β redex yields exactly the
-data subject reduction needs: the body grown-typed under the interval binder AT THE REDEX'S
-OWN CLASSIFIER (weakened), the forced affinity bound, and the argument's interval typing.
-What remains for general SR is ONLY the cross-engine substitution transport — see
-`intervalZeroGrownUntypable` for why that transport cannot target the grown engine alone. -/
-theorem HasTypeDescBridge.pathBetaRedexInversion {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
-    {argument classifier : RawTerm scope}
-    (typed : HasTypeDescBridge profile context
-      (pathAppCell (pathLamCell body) argument) classifier) :
-    HasTypeDescPi profile (context.cons intervalTypeCell) body (RawTerm.weaken classifier) ∧
-    RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1 ∧
-    HasTypeDescBridge profile context argument intervalTypeCell := by
-  obtain ⟨argumentTyped, leftEndpoint, rightEndpoint, pathTyped⟩ :=
-    typed.pathAppSubjectInversion rfl
-  obtain ⟨bodyTyped, dimensionAffine, _, _⟩ :=
-    pathTyped.pathLamAtBridgeInversion rfl rfl
-  exact ⟨bodyTyped, dimensionAffine, argumentTyped⟩
-
-/-! ## The general typed round-trip + the two non-vacuous SR instances -/
-
-/-- **The general endpoint-β round-trip**: intro-then-elim is bridge-typed at the body's own
-type code AND the redex fires to the substituted body — for a SYMBOLIC body and argument
-(the affine premise supplied by the caller; dischargeable by `rfl`-computation for closed
-bodies and by `occurrenceCountAt_var_self` for the identity body). -/
-theorem HasTypeDescBridge.pathBetaRoundTrip {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
-    {typeCode : RawTerm scope}
-    (bodyTyped : HasTypeDescPi profile (context.cons intervalTypeCell) body
-      (RawTerm.weaken typeCode))
-    (dimensionAffine : RawTerm.occurrenceCountAt body ⟨0, Nat.succ_pos scope⟩ ≤ 1)
-    {argument : RawTerm scope}
-    (argumentTyped : HasTypeDescBridge profile context argument intervalTypeCell) :
-    HasTypeDescBridge profile context (pathAppCell (pathLamCell body) argument) typeCode ∧
-    StepBridgeEndpoint (pathAppCell (pathLamCell body) argument)
-      (RawTerm.subst0 body argument) :=
-  ⟨HasTypeDescBridge.pathElim context (pathLamCell body) argument typeCode
-      (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell)
-      (HasTypeDescBridge.pathIntro context body typeCode bodyTyped dimensionAffine)
-      argumentTyped,
-   StepBridgeEndpoint.pathBeta body argument⟩
-
-/-- **★ SR instance 1 — the CROSS-ENGINE fragment (dimension-constant bridges).**  The typed
-constant-bridge redex fires, and its reduct is GROWN-typed at the SAME classifier: the bridge
-eliminator computes INTO the grown world on the constant fragment.  Redex typed (bridge) +
-step fires (sibling) + reduct typed (grown), all at `Type@1`. -/
-theorem constantBridgeEndpointSubjectReduction {profile : PolyProfile} (flag : UniverseFlag) :
-    HasTypeDescBridge profile (TypingContext.empty : TypingContext profile 0)
-      (pathAppCell (pathLamCell (universeCodeCell LevelExpr.lzero flag)) intervalZeroCell)
-      (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag) ∧
-    StepBridgeEndpoint
-      (pathAppCell (pathLamCell (universeCodeCell LevelExpr.lzero flag))
-        (intervalZeroCell (scope := 0)))
-      (universeCodeCell LevelExpr.lzero flag) ∧
-    HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
-      (universeCodeCell LevelExpr.lzero flag)
-      (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag) :=
-  ⟨HasTypeDescBridge.constantBridgeAppliedTyped flag,
-   StepBridgeEndpoint.constantBridgeAppliedComputes flag,
-   HasTypeDescPi.ofFormation
-     (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag)⟩
-
-/-- **★ SR instance 2 — WITHIN the bridge engine (the identity path).**  The typed
-identity-path redex fires to the endpoint, and the endpoint is bridge-typed at the SAME
-classifier (the interval): elimination of the genuinely-dimension-using inhabitant is
-type-preserving inside the engine. -/
-theorem identityPathEndpointSubjectReduction {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) :
-    HasTypeDescBridge profile context
-      (pathAppCell (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩)) intervalZeroCell)
-      intervalTypeCell ∧
-    StepBridgeEndpoint
-      (pathAppCell (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩)) intervalZeroCell)
-      (intervalZeroCell (scope := scope)) ∧
-    HasTypeDescBridge profile context intervalZeroCell intervalTypeCell :=
-  ⟨HasTypeDescBridge.identityPathAppliedTyped context,
-   StepBridgeEndpoint.identityPathAppliedComputes,
-   HasTypeDescBridge.intervalZero context⟩
-
-/-! ## ★★ The REFLEXIVITY BRIDGE — the graded verdict's general positive half
-
-Every grown-typed term embeds as a constant bridge, FULLY SYMBOLICALLY: the type premise is
-grown weakening, the AFFINE premise is the grade-0 occurrence lemma
-(`occurrenceCountAt_weaken_zeroPosition` — discharged, not hypothesized), and the endpoint
-substitutions collapse by `subst0_weaken`.  This is the derivable `refl` constructor of the
-bridge type — the degenerate case of internal parametricity — and its endpoint application
-computes back to the original term with the SAME grown typing: the general symbolic
-cross-engine subject reduction for the entire dimension-constant fragment. -/
-
-/-- **★ Every typed term embeds as a constant bridge.**  `t : T  ⟹  pathLam(weaken t) :
-Bridge(T, t, t)` — the reflexivity bridge, with the affine usage premise PROVED at grade `0`
-and both endpoints collapsing to `t` itself. -/
-theorem HasTypeDescBridge.constantBridgeOfTyped {profile : PolyProfile} {scope : Nat}
+/-- **★ Every typed term embeds as the reflexivity bridge, typed natively.**  `t : T  ⟹
+pathLam(weaken t) : Bridge(T, t, t)` — the reflexivity bridge (the derivable `refl` of internal
+parametricity), with the affine usage premise PROVED at grade `0`
+(`occurrenceCountAt_weaken_zeroPosition`) and both endpoints collapsing to `t` itself by
+`subst0_weaken`.  Stated against the live native graded-intro engine; its endpoint application
+(the elimination half) computes back to `t` with the same grown typing downstream
+(`HasTypeDescGeneralElim.gradedIntroEndpointIotaComputesTyped`,
+`HasTypeNativeUnion.endpointRedexNativelyTypedWhole`). -/
+theorem constantBridgeGradedOfTyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {constantBody typeCode : RawTerm scope}
     (bodyTyped : HasTypeDescPi profile context constantBody typeCode) :
-    HasTypeDescBridge profile context (pathLamCell (RawTerm.weaken constantBody))
+    HasTypeDescGradedIntro profile context (pathLamCell (RawTerm.weaken constantBody))
       (bridgeTypeCell typeCode constantBody constantBody) := by
-  have intro := HasTypeDescBridge.pathIntro context (RawTerm.weaken constantBody) typeCode
+  have intro := gradedIntroEngine_typesPathLam (carrierCode := typeCode)
+    (body := RawTerm.weaken constantBody)
     (bodyTyped.weakenUnderBinding intervalTypeCell)
     (by rw [RawTerm.occurrenceCountAt_weaken_zeroPosition]
         exact Nat.zero_le 1)
   rw [RawTerm.subst0_weaken, RawTerm.subst0_weaken] at intro
   exact intro
 
-/-- **★★ The reflexivity-bridge ROUND-TRIP — general symbolic cross-engine SR for the
-dimension-constant fragment.**  From `t : T` (grown) and any interval-typed argument `ε`:
-the reflexivity bridge is typed at `Bridge(T, t, t)`, its application `pathApp(pathLam(weaken
-t), ε)` is bridge-typed at `T`, the endpoint-β FIRES to exactly `t`, and the reduct `t` is
-grown-typed at the SAME classifier `T` — subject reduction closes by the hypothesis itself.
-This supersedes the concrete universe-code SR instance: the bridge eliminator computes into
-the grown world TYPE-PRESERVINGLY on the whole constant fragment, with every premise
-(including affinity) discharged. -/
-theorem reflexivityBridgeRoundTrip {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {constantBody typeCode : RawTerm scope}
-    (bodyTyped : HasTypeDescPi profile context constantBody typeCode)
-    {argument : RawTerm scope}
-    (argumentTyped : HasTypeDescBridge profile context argument intervalTypeCell) :
-    HasTypeDescBridge profile context (pathLamCell (RawTerm.weaken constantBody))
-      (bridgeTypeCell typeCode constantBody constantBody) ∧
-    HasTypeDescBridge profile context
-      (pathAppCell (pathLamCell (RawTerm.weaken constantBody)) argument) typeCode ∧
-    StepBridgeEndpoint
-      (pathAppCell (pathLamCell (RawTerm.weaken constantBody)) argument) constantBody ∧
-    HasTypeDescPi profile context constantBody typeCode :=
-  ⟨HasTypeDescBridge.constantBridgeOfTyped bodyTyped,
-   HasTypeDescBridge.pathElim context (pathLamCell (RawTerm.weaken constantBody)) argument
-     typeCode constantBody constantBody
-     (HasTypeDescBridge.constantBridgeOfTyped bodyTyped) argumentTyped,
-   StepBridgeEndpoint.constantPathBetaComputesToBody constantBody argument,
-   bodyTyped⟩
-
 /-- **★ The CROSS-ENGINE WALL, machine-checked.**  The identity-path reduct `interval0` heads
-NO grown-typed cell (`isUntypableHead gen_interval0` holds for the grown-only classifier —
-the bridge rows live in the standalone engine).  So the general endpoint-β SR cannot be
-stated against `HasTypeDescPi` alone: a general-`ε` reduct mixes grown structure with bridge
-leaves, and the honest general SR target is an INTEGRATED engine (bridge rows folded into the
-rule tables) — the recorded OP1-INT residual. -/
+NO grown-typed cell (`isUntypableHead gen_interval0` holds for the grown-only classifier).  So
+the general endpoint-β SR cannot be stated against `HasTypeDescPi` alone: a general-`ε` reduct
+mixes grown structure with interval leaves.  The honest general SR target is the native union
+`HasTypeNativeUnion` (interval endpoints are native `dataIntroNullary` rows) — the wall FALLS
+into the union, witnessed downstream by `BridgeEndpointNativeSubjectReduction`.  Consumed by the
+union adequacy (`HasTypeNativeUnion`) to refute a grown image for the bare interval. -/
 theorem intervalZeroGrownUntypable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope}
     (typed : HasTypeDescPi profile context (intervalZeroCell (scope := scope)) classifier) :

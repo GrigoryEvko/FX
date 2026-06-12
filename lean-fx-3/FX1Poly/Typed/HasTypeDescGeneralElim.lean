@@ -20,12 +20,13 @@ the carrier, a constant family — the degenerate case of the dependent `subst0`
     typed at the rule's argument type, member typed at the rule's output.  Premises in `HasTypeDescPi`
     (the host judgment of variables and neutral terms): the app row has EXACT premise parity with
     `HasTypeDescPi.piElim`; the pathApp row covers the NEUTRAL-path regime (a path VARIABLE is
-    Pi-typed at its bridge type) — the canonical-path (pathLam-headed) regime is where endpoint-ι
-    FIRES instead (below).  Full bespoke-`pathElim` adequacy is NATIVE-25 (the Bridge premises live in
-    the Bridge judgment — the same judgment-boundary the NATIVE-04 residual pinned; it dissolves at the
-    unified engine).
+    Pi-typed at its bridge-code type) — the canonical-path (pathLam-headed) regime is where endpoint-ι
+    FIRES instead (below).  Full path-elimination adequacy with the path/argument premises in the SAME
+    judgment is the native union `HasTypeNativeUnion`'s `generalElim` arm (recursive premises in the
+    union itself) — the judgment boundary the bespoke (now-retired, NATIVE-45) engine could not cross
+    dissolves there.
   * `HasTypeDescGeneralElim.soundness` — every generic typing is a `piElim`-built Pi derivation (app
-    row) or a neutral bridge elimination with surfaced Pi premises (pathApp row), same subject and
+    row) or a neutral path elimination with surfaced Pi premises (pathApp row), same subject and
     classifier.
   * `HasTypeDescGradedIntro.invertGeneric` — the keystone engine's free-index premise-surfacing
     inversion (the brick the ι theorem consumes).
@@ -75,9 +76,10 @@ def appGeneralElimRule : GeneralElimRule where
   memberCell := fun _ functionTerm argument => appCell functionTerm argument
   outputType := fun _ _ codomainCode argument => RawTerm.subst0 codomainCode argument
 
-/-- The pathApp row: eliminated at the bridge code, argument PINNED to the interval, member
-`pathAppCell`, CONSTANT output (the carrier) — exactly `HasTypeDescBridge.pathElim`'s conclusion
-shape. -/
+/-- The pathApp row: eliminated at the bridge code `bridgeTypeCell carrier left right`, argument
+PINNED to the interval, member `pathAppCell`, CONSTANT output (the carrier) — the NON-DEPENDENT bridge
+elimination shape (a path applied to an interval endpoint lands in the bridge's carrier, the constant
+family).  This is exactly the conclusion the union's `generalElim` arm produces at this row. -/
 def pathAppGeneralElimRule : GeneralElimRule where
   eliminatedType := fun _ carrierCode _ leftEndpoint rightEndpoint =>
     bridgeTypeCell carrierCode leftEndpoint rightEndpoint
@@ -173,10 +175,10 @@ theorem generalElimEngine_typesPathApp {profile : PolyProfile} {scope : Nat}
 
 /-- **★ Per-row soundness.**  Every `HasTypeDescGeneralElim` typing is EITHER an application with a
 `HasTypeDescPi.piElim`-built derivation at the SAME subject and classifier (exact app-row adequacy),
-OR a bridge elimination with the Pi-typed path and interval-argument premises SURFACED (the
-neutral-path regime; bespoke `pathElim` adequacy is NATIVE-25's union-judgment work — its premises
-live in the Bridge judgment, the pinned judgment-boundary).  `cases` at FREE indices + table
-enumeration. -/
+OR a path elimination with the Pi-typed path and interval-argument premises SURFACED (the
+neutral-path regime; full path-elimination adequacy with the path premise in the SAME judgment is the
+native union's `generalElim` arm, where the recursive premises live in the union itself).  `cases` at
+FREE indices + table enumeration. -/
 theorem HasTypeDescGeneralElim.soundness {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescGeneralElim profile context subject classifier) :
