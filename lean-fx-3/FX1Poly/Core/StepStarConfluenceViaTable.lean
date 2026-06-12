@@ -49,14 +49,6 @@ theorem legacyIotaRuleTable_isWf : WfIotaTable legacyIotaRuleTable :=
     elimRootsAvoidHeads := rfl
     rowsHavePrimaryScrutinee := rfl }
 
-/-- Every legacy row carries its scope-uniformity certificate — inherited
-from the canonical table's certificate through the sublist embedding
-`legacyRow_memFullTable`. -/
-theorem legacyIotaRuleTable_isScopeUniform :
-    ∀ rule, rule ∈ legacyIotaRuleTable → rule.IsScopeUniform :=
-  fun rule isLegacyRow =>
-    iotaRuleTable_isScopeUniform rule (legacyRow_memFullTable isLegacyRow)
-
 /-- **The legacy-table relation is confluent** — the generic
 orthogonal-systems confluence theorem (`StepOverTable.confluent`)
 instantiated at the 17-row legacy table. -/

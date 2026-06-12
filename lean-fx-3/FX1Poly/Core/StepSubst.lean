@@ -27,14 +27,6 @@ namespace FX1Poly.Core
 
 open FX1Poly.Foundation
 
-/-- Every legacy-table row is scope-uniform — the canonical table's
-certificate restricted through the sublist embedding.  The hypothesis
-`StepOverTable.subst` (and the rename twin) consumes. -/
-theorem legacyIotaRuleTable_rowsScopeUniform :
-    ∀ rule, rule ∈ legacyIotaRuleTable → rule.IsScopeUniform :=
-  fun rule isRow =>
-    iotaRuleTable_isScopeUniform rule (legacyRow_memFullTable isRow)
-
 /-- One-step reduction is stable under raw substitution — through the
 table pivot: cross to the legacy-table relation, fire the generic
 `StepOverTable.subst`, cross back. -/
@@ -44,7 +36,7 @@ theorem Step.subst {sourceScope targetScope : Nat}
     (sourceStep : Step sourceTerm targetTerm) :
     Step (RawTerm.subst sigma sourceTerm) (RawTerm.subst sigma targetTerm) :=
   stepOverLegacyTable_iff_step.mp
-    (StepOverTable.subst legacyIotaRuleTable_rowsScopeUniform sigma
+    (StepOverTable.subst legacyIotaRuleTable_isScopeUniform sigma
       (stepOverLegacyTable_iff_step.mpr sourceStep))
 
 /-- Child-spine one-step reduction is stable under raw substitution —
@@ -58,7 +50,7 @@ theorem StepChildren.subst {parentSourceScope parentTargetScope : Nat}
     StepChildren (RawTermChildren.subst sigma sourceChildren)
       (RawTermChildren.subst sigma targetChildren) :=
   StepOverTableChildren.legacyToStepChildren
-    (StepOverTableChildren.subst legacyIotaRuleTable_rowsScopeUniform sigma
+    (StepOverTableChildren.subst legacyIotaRuleTable_isScopeUniform sigma
       (StepChildren.toLegacyTableStepChildren childrenStep))
 
 /-- Substitute every term in a `StepStar` chain. -/

@@ -305,6 +305,15 @@ theorem iotaRuleTable_isScopeUniform :
                                                 truncRecIntroIotaRow_isScopeUniform
                                           | tail _ isRow => cases isRow
 
+/-- Every legacy-table row is scope-uniform — the canonical table's
+certificate restricted through the sublist embedding
+`legacyRow_memFullTable`.  The shared hypothesis the legacy-table
+`StepOverTable.subst`/`rename`/confluence instantiations consume. -/
+theorem legacyIotaRuleTable_isScopeUniform :
+    ∀ rule, rule ∈ legacyIotaRuleTable → rule.IsScopeUniform :=
+  fun rule isRow =>
+    iotaRuleTable_isScopeUniform rule (legacyRow_memFullTable isRow)
+
 /-- ★ **`StepTable` is closed under substitution** — the canonical
 18-row relation, with every certificate discharged.  The table-generic
 replacement for the bespoke per-constructor `Step.subst` arms. -/
