@@ -1,109 +1,74 @@
 import FX1Poly.Core.ReduceOnce
-import FX1Poly.Core.FireRootRedexComplete
+import FX1Poly.Core.ExistsStepOfNotNormal
 
 /-! # FX1Poly/Core/ReduceOnceComplete
     — completeness of `reduceOnce`: it halts (returns `none`) exactly at structural normal forms.
 
-`ReduceOnce.lean` shipped the one-step reducer plus SOUNDNESS (a firing is a real `Step`).  This file ships
-COMPLETENESS: a term `reduceOnce` cannot reduce is structurally normal.  Combined with soundness this pins
-`reduceOnce`'s halting set to exactly `isStepNormalForm` — the precise spec the weak-normalization normalizer
-FUNCTION needs to terminate at a *genuine* normal form.
+`ReduceOnce.lean` ships the table-backed one-step reducer plus SOUNDNESS (a firing is a real
+`Step`).  This file ships COMPLETENESS: a term `reduceOnce` cannot reduce is structurally normal.
+Combined with soundness this pins `reduceOnce`'s halting set to exactly `isStepNormalForm` — the
+precise spec the weak-normalization normalizer FUNCTION needs to terminate at a *genuine* normal
+form.
 
-* `reduceOnce_complete` / `reduceOnceSpine_complete` (mutual) — `reduceOnce term = none → isStepNormalForm
-  term`.  The term case decomposes a `none` result into "no root redex fired" (→ `hasRootStepSource = false`
-  via the contrapositive `fireRootRedex_eq_none_imp_hasRootStepSource_false`) and "no child reduced" (→
-  `areStepNormalFormsBool children = true` via the spine IH), which recombine into the two conjuncts of
-  `isStepNormalFormBool`.
-* `reduceOnce_eq_none_iff_isStepNormalForm` — the biconditional; the backward leg is soundness against
-  `isStepNormalForm_blocks_step` (a normal term blocks every `Step`, so it cannot reduce).
-* `not_isStepNormalForm_imp_reduceOnce_isSome` — the descent guarantee: a non-normal term *does* reduce, so
-  the `Acc StepSuccessor` normalizer always has a successor to step to until it reaches a normal form.
+Since the IOTA-T11 reducer rebase the proof routes through the TABLE: a `none` result means no
+legacy-table step exists (`reduceOnceOverTable_eq_none_blocks_step`, generic); a non-normal term
+would witness a bespoke `Step` (`exists_step_of_not_isStepNormalForm`), which the IOTA-T1 forward
+adequacy (`Step.toLegacyTableStep`) turns into exactly such a legacy-table step — contradiction.
+The per-iota `hasRootStepSource` boolean recombination is no longer in this chain.
+
+* `reduceOnce_complete` / `reduceOnceSpine_complete` — `reduceOnce term = none → isStepNormalForm
+  term` (and the spine companion).
+* `reduceOnce_eq_none_iff_isStepNormalForm` — the biconditional; the backward leg is soundness
+  against `isStepNormalForm_blocks_step` (a normal term blocks every `Step`, so it cannot reduce).
+* `not_isStepNormalForm_imp_reduceOnce_isSome` — the descent guarantee: a non-normal term *does*
+  reduce, so the `Acc StepSuccessor` normalizer always has a successor to step to until it reaches
+  a normal form.
 
 ## Zero-axiom verification
 
-The mutual completeness mirrors the soundness mutual in the `none` direction: `dsimp only [reduceOnce]` /
-`rfl`-unfold for the two-scrutinee spine, `cases` on the sub-results, `nomatch` on impossible `some = none`,
-and a `dsimp`/`show` + `rw` + `decide` recombination of the boolean normality conjuncts.  The corollaries are
-`cases` + `absurd` against soundness and `isStepNormalForm_blocks_step`.  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, or `omega`.  Gated per declaration in
-`FX1PolyAudit/AuditTyped.lean`.
+A `Bool` case split on the normality detector, the shipped redex-extraction witnesses
+(`exists_step_of_not_isStepNormalForm` / the spine twin), the generic table blocking completeness,
+and the legacy adequacy.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, or `omega`.  Gated per declaration in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Core
 
 open Foundation
 
-mutual
-
-/-- **Completeness of `reduceOnce`.**  A term the reducer cannot step is structurally normal. -/
+/-- **Completeness of `reduceOnce`.**  A term the reducer cannot step is structurally normal: were
+it not, redex extraction would witness a bespoke `Step`, whose legacy-table image contradicts the
+generic blocking completeness of the failed walk. -/
 theorem RawTerm.reduceOnce_complete {scope : Nat} {term : RawTerm scope}
     (irreducible : RawTerm.reduceOnce term = none) :
     RawTerm.isStepNormalForm term := by
-  match term with
-  | .mkGen generator payload children =>
-      dsimp only [RawTerm.reduceOnce] at irreducible
-      cases hFire : RawTerm.fireRootRedex generator payload children with
-      | some rootReduct =>
-          rw [hFire] at irreducible
-          nomatch irreducible
-      | none =>
-          rw [hFire] at irreducible
-          cases hSpine : RawTermChildren.reduceOnceSpine children with
-          | some reducedChildren =>
-              rw [hSpine] at irreducible
-              dsimp only [Option.map] at irreducible
-              nomatch irreducible
-          | none =>
-              have hRootFalse : RawTerm.hasRootStepSource (.mkGen generator payload children) = false :=
-                RawTerm.fireRootRedex_eq_none_imp_hasRootStepSource_false hFire
-              have hChildrenBool : RawTermChildren.areStepNormalFormsBool children = true :=
-                RawTermChildren.reduceOnceSpine_complete hSpine
-              show RawTerm.isStepNormalFormBool (.mkGen generator payload children) = true
-              dsimp only [RawTerm.isStepNormalFormBool]
-              rw [hRootFalse, hChildrenBool]
-              rfl
+  cases normalityValue : RawTerm.isStepNormalFormBool term with
+  | true => exact normalityValue
+  | false =>
+      have notNormal : ¬ RawTerm.isStepNormalForm term := fun isNormal =>
+        Bool.noConfusion (normalityValue.symm.trans isNormal)
+      obtain ⟨reduct, bespokeStep⟩ := exists_step_of_not_isStepNormalForm notNormal
+      exact (reduceOnceOverTable_eq_none_blocks_step (table := legacyIotaRuleTable)
+        irreducible bespokeStep.toLegacyTableStep).elim
 
-/-- **Completeness of `reduceOnceSpine`.**  A spine the reducer cannot step is structurally normal. -/
+/-- **Completeness of `reduceOnceSpine`.**  A spine the reducer cannot step is structurally
+normal — the spine companion of `reduceOnce_complete`. -/
 theorem RawTermChildren.reduceOnceSpine_complete {binderShifts : List Nat} {scope : Nat}
     {children : RawTermChildren binderShifts scope}
     (irreducible : RawTermChildren.reduceOnceSpine children = none) :
     RawTermChildren.areStepNormalForms children := by
-  match binderShifts, children with
-  | [], .childNil =>
-      rfl
-  | _headShift :: _restShifts, .childCons childHead childTail =>
-      have unfoldSpine : RawTermChildren.reduceOnceSpine (.childCons childHead childTail) =
-          (match RawTerm.reduceOnce childHead with
-            | some reducedHead => some (.childCons reducedHead childTail)
-            | none =>
-                (RawTermChildren.reduceOnceSpine childTail).map
-                  (fun reducedTail => .childCons childHead reducedTail)) := rfl
-      rw [unfoldSpine] at irreducible
-      cases hHead : RawTerm.reduceOnce childHead with
-      | some reducedHead =>
-          rw [hHead] at irreducible
-          nomatch irreducible
-      | none =>
-          rw [hHead] at irreducible
-          cases hTail : RawTermChildren.reduceOnceSpine childTail with
-          | some reducedTail =>
-              rw [hTail] at irreducible
-              dsimp only [Option.map] at irreducible
-              nomatch irreducible
-          | none =>
-              have hHeadBool : RawTerm.isStepNormalFormBool childHead = true :=
-                RawTerm.reduceOnce_complete hHead
-              have hTailBool : RawTermChildren.areStepNormalFormsBool childTail = true :=
-                RawTermChildren.reduceOnceSpine_complete hTail
-              show (RawTerm.isStepNormalFormBool childHead &&
-                RawTermChildren.areStepNormalFormsBool childTail) = true
-              rw [hHeadBool, hTailBool]
-              rfl
+  cases normalityValue : RawTermChildren.areStepNormalFormsBool children with
+  | true => exact normalityValue
+  | false =>
+      have notNormal : ¬ RawTermChildren.areStepNormalForms children := fun areNormal =>
+        Bool.noConfusion (normalityValue.symm.trans areNormal)
+      obtain ⟨reducedChildren, childrenStep⟩ :=
+        exists_stepChildren_of_not_areStepNormalForms notNormal
+      exact (reduceOnceSpineOverTable_eq_none_blocks_step (table := legacyIotaRuleTable)
+        irreducible (StepChildren.toLegacyTableStepChildren childrenStep)).elim
 
-end
-
-/-- **`reduceOnce` halts exactly at normal forms.**  Forward is completeness; backward is soundness against
-`isStepNormalForm_blocks_step` (a normal term admits no `Step`, hence no reduct). -/
+/-- **`reduceOnce` halts exactly at normal forms.**  Forward is completeness; backward is soundness
+against `isStepNormalForm_blocks_step` (a normal term admits no `Step`, hence no reduct). -/
 theorem RawTerm.reduceOnce_eq_none_iff_isStepNormalForm {scope : Nat} {term : RawTerm scope} :
     RawTerm.reduceOnce term = none ↔ RawTerm.isStepNormalForm term := by
   constructor
