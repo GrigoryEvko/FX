@@ -1,5 +1,6 @@
 import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.HeadStep
 import FX1Poly.Core.StepSubst
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.SubjectReductionEtaStructural
@@ -758,13 +759,13 @@ theorem etaLamBodyBeta {scope : Nat}
             (StepChildren.here
               (parentScope := scope) (headShift := 1) (restShifts := [])
               (.childNil : RawTermChildren [] scope)
-              (Step.beta
+              ((HeadStep.beta
                 (domainAnn :=
                   RawTerm.rename RawRenaming.weaken domainAnn)
                 (body :=
                   RawTerm.rename (RawRenaming.lift RawRenaming.weaken)
                     body)
-                (arg := RawTerm.newestVar (scope := scope)))))))
+                (argument := RawTerm.newestVar (scope := scope))).toStep)))))
       (Or.inr
         (Step.eta.etaLam domainAnn
           (RawTerm.mkGen .gen_lam ()
