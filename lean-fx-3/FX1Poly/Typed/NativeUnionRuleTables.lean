@@ -1,9 +1,5 @@
-import FX1Poly.Typed.HasTypeDescBoolElim
-import FX1Poly.Typed.HasTypeDescOptionMatch
-import FX1Poly.Typed.HasTypeDescEitherMatch
-import FX1Poly.Typed.HasTypeDescIdElim
-import FX1Poly.Typed.HasTypeDescSigmaProjection
-import FX1Poly.Typed.HasTypeDescListElim
+import FX1Poly.Typed.CellConstructors
+import FX1Poly.Typed.HasTypeDescPi
 
 /-! # FX1Poly/Typed/NativeUnionRuleTables — NATIVE-36: the native twin rule tables for the
     data-eliminator, n-ary/recursive data-intro, and listElim families (PRE-UNION, imported by the

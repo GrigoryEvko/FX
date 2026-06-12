@@ -1,5 +1,4 @@
 import FX1Poly.Typed.IntroRuleDescGradedBinder
-import FX1Poly.Typed.HasTypeDescPairIntro
 
 /-! # FX1Poly/Typed/HasTypeDescGradedIntro — NATIVE-23: pathLam as a native graded intro row (the KEYSTONE)
 

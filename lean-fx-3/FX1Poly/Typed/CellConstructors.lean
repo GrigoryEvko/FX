@@ -1,5 +1,6 @@
 import FX1Poly.Core.RawTerm
 import FX1Poly.Core.RawTermWeaken
+import FX1Poly.Core.RawTermSubst0
 import FX1Poly.Universe.LevelExpr
 import FX1Poly.Universe.UniverseFlag
 
@@ -268,5 +269,72 @@ the head. -/
 def listTailStepType {scope : Nat} (elementType resultType : RawTerm scope) : RawTerm scope :=
   piTyCodeCell (listTypeCell elementType)
     (RawTerm.weaken (piTyCodeCell resultType (RawTerm.weaken resultType)))
+
+/-! ## The recursive-eliminator cells + substituted succ-contracta (extracted from the
+operational canonicity files so the union and the rule tables depend only on the cell
+vocabulary, not on the operational lemma homes) -/
+
+/-- The natural-number eliminator cell `natElim(motive, zeroBranch, succBranch, scrutinee)` — Phase-Z
+`gen_natElim` (arity 4, `binderShifts = [1, 0, 2, 0]`, motive under one binder, succ-branch under two, scrutinee
+LAST). -/
+def natElimCell {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (scrutinee : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_natElim ()
+    (.childCons motive
+      (.childCons zeroBranch
+        (.childCons succBranch
+          (.childCons scrutinee .childNil))))
+
+/-- The Phase-Z `natElim` succ-iota SUBSTITUTED reduct:
+`succBranch[var 0 := natElim motive zeroBranch succBranch predecessor, var 1 := predecessor]`.  The recursive
+call THREADS the same motive and branches at the predecessor. -/
+def natElimSuccContractum {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) : RawTerm scope :=
+  RawTerm.subst
+    (RawTermSubst.cons
+      (natElimCell motive zeroBranch succBranch predecessor)
+      (RawTermSubst.singleton predecessor))
+    succBranch
+
+/-- The Phase-Z `natRec` eliminator cell `natRec(motive, zeroBranch, succBranch, scrutinee)` — arity 4,
+`binderShifts = [1, 0, 2, 0]`, motive under one binder, succ-branch under two, scrutinee LAST. -/
+def natRecCell {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (scrutinee : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_natRec ()
+    (.childCons motive
+      (.childCons zeroBranch
+        (.childCons succBranch
+          (.childCons scrutinee .childNil))))
+
+/-- The Phase-Z `natRec` succ-iota SUBSTITUTED reduct:
+`succBranch[var 0 := natRec motive zeroBranch succBranch predecessor, var 1 := predecessor]`. -/
+def natRecSuccContractum {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) : RawTerm scope :=
+  RawTerm.subst
+    (RawTermSubst.cons
+      (natRecCell motive zeroBranch succBranch predecessor)
+      (RawTermSubst.singleton predecessor))
+    succBranch
+
+/-- The `idStrictRec` eliminator cell (the strict identity recursor) — Phase-Z motive shape
+`(motive, baseCase, witness)`: the motive a term under two binders (`RawTerm (scope + 2)`), the base case
+second, the witness LAST. -/
+def idStrictRecCell {scope : Nat} (motive : RawTerm (scope + 2))
+    (baseCase witness : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_idStrictRec ()
+    (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
+
+/-- The list eliminator cell — `gen_listElim` in the Phase-Z motive shape (arity 4,
+`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, scrutinee, nilBranch,
+consBranch)`; the emitted canonical spine is `(motive, nilBranch, consBranch, scrutinee)` — motive FIRST
+(a term under one binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the
+ambient `scope`. -/
+def listElimCell {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee nilBranch consBranch : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_listElim ()
+    (.childCons motive
+      (.childCons nilBranch
+        (.childCons consBranch
+          (.childCons scrutinee .childNil))))
 
 end FX1Poly.Typed

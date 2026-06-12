@@ -60,19 +60,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The list eliminator cell — `gen_listElim` in the Phase-Z motive shape (arity 4,
-`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, scrutinee, nilBranch,
-consBranch)`; the emitted canonical spine is `(motive, nilBranch, consBranch, scrutinee)` — motive FIRST
-(a term under one binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the
-ambient `scope`. -/
-def listElimCell {scope : Nat} (motive : RawTerm (scope + 1))
-    (scrutinee nilBranch consBranch : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_listElim ()
-    (.childCons motive
-      (.childCons nilBranch
-        (.childCons consBranch
-          (.childCons scrutinee .childNil))))
-
 /-- **★ Recursive list-eliminator computing canonicity.**  A closed `listElim(s, nil, cons)` whose nil-branch
 satisfies the result predicate `isResultValue` and whose cons branch produces an `isResultValue` from a head, a
 tail, and an `isResultValue` recursive result (`stepProduces`) computes (`↝*`) to an `isResultValue`, for every

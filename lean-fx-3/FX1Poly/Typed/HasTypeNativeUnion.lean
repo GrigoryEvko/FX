@@ -2,7 +2,6 @@ import FX1Poly.Typed.HasTypeDescGeneralElim
 import FX1Poly.Typed.HasTypeDescBaseType
 import FX1Poly.Typed.HasTypeDescDataIntro
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
-import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.NativeUnionRuleTables
 
 /-! # FX1Poly/Typed/HasTypeNativeUnion — NATIVE-25: the seed unified judgment + Bridge full adequacy

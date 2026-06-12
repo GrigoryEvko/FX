@@ -40,34 +40,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The Phase-Z `natRec` eliminator cell `natRec(motive, zeroBranch, succBranch, scrutinee)` — arity 4,
-`binderShifts = [1, 0, 2, 0]`, motive under one binder, succ-branch under two, scrutinee LAST. -/
-def natRecCell {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (scrutinee : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_natRec ()
-    (.childCons motive
-      (.childCons zeroBranch
-        (.childCons succBranch
-          (.childCons scrutinee .childNil))))
-
-/-- The Phase-Z `natRec` succ-iota SUBSTITUTED reduct:
-`succBranch[var 0 := natRec motive zeroBranch succBranch predecessor, var 1 := predecessor]`. -/
-def natRecSuccContractum {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) : RawTerm scope :=
-  RawTerm.subst
-    (RawTermSubst.cons
-      (natRecCell motive zeroBranch succBranch predecessor)
-      (RawTermSubst.singleton predecessor))
-    succBranch
-
-/-- The `idStrictRec` eliminator cell (the strict identity recursor) — Phase-Z motive shape
-`(motive, baseCase, witness)`: the motive a term under two binders (`RawTerm (scope + 2)`), the base case
-second, the witness LAST. -/
-def idStrictRecCell {scope : Nat} (motive : RawTerm (scope + 2))
-    (baseCase witness : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_idStrictRec ()
-    (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
-
 /-- **★ `natRec` on `natZero` computes the host `Nat.rec` base clause.**  `natRec m z s natZero ↝ z` via
 `Step.iotaNatRecZero` — the recursor on zero projects the zero-branch, exactly as host `Nat.rec`. -/
 theorem natRecZeroHostFold {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)

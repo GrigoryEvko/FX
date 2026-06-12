@@ -1,6 +1,5 @@
 import FX1Poly.Core.RawTermSubstConsCommute
 import FX1Poly.Typed.HasTypeDescPiSubstitution
-import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.NatElimFaithfulMul
 
 /-! # FX1Poly/Typed/HasTypeDescPiSubstPair — the typed 2-VARIABLE substitution lemma

@@ -61,28 +61,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The natural-number eliminator cell `natElim(motive, zeroBranch, succBranch, scrutinee)` — Phase-Z
-`gen_natElim` (arity 4, `binderShifts = [1, 0, 2, 0]`, motive under one binder, succ-branch under two, scrutinee
-LAST). -/
-def natElimCell {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (scrutinee : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_natElim ()
-    (.childCons motive
-      (.childCons zeroBranch
-        (.childCons succBranch
-          (.childCons scrutinee .childNil))))
-
-/-- The Phase-Z `natElim` succ-iota SUBSTITUTED reduct:
-`succBranch[var 0 := natElim motive zeroBranch succBranch predecessor, var 1 := predecessor]`.  The recursive
-call THREADS the same motive and branches at the predecessor. -/
-def natElimSuccContractum {scope : Nat} (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) : RawTerm scope :=
-  RawTerm.subst
-    (RawTermSubst.cons
-      (natElimCell motive zeroBranch succBranch predecessor)
-      (RawTermSubst.singleton predecessor))
-    succBranch
-
 /-- **★ Recursive eliminator-computing canonicity** (Phase-Z SUBSTITUTING shape).  A closed
 `natElim(m, z, s, n)` whose zero-branch `z` is a numeral and whose successor ι-reduct — the SUBSTITUTED
 succ-branch (recursive call threaded into `var 0`, predecessor into `var 1`) — reduces to a numeral

@@ -1,3 +1,9 @@
+import FX1Poly.Typed.HasTypeDescNatIntro
+import FX1Poly.Typed.HasTypeDescOptionIntro
+import FX1Poly.Typed.HasTypeDescEitherIntro
+import FX1Poly.Typed.HasTypeDescPairIntro
+import FX1Poly.Typed.HasTypeDescIdIntro
+import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.HasTypeNativeUnion
 
 /-! # FX1Poly/Typed/DataIntroNativeRowConversion — every zoo intro derivation

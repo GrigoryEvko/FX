@@ -1,4 +1,3 @@
-import FX1Poly.Typed.HasTypeDescIdElim
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.ConvDataCodeInjectivity
 import FX1Poly.Typed.ConvCodeInjectivity
