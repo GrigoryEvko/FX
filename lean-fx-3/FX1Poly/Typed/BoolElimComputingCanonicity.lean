@@ -1,5 +1,4 @@
 import FX1Poly.Typed.ClosedBoolCanonicity
-import FX1Poly.Typed.HasTypeDescBoolElim
 import FX1Poly.Core.BoolElimCanonicalComputation
 
 /-! # FX1Poly/Typed/BoolElimComputingCanonicity

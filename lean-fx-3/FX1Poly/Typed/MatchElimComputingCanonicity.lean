@@ -2,8 +2,6 @@ import FX1Poly.Typed.ClosedNatCanonicity
 import FX1Poly.Core.OptionCanonicalFormsCandidate
 import FX1Poly.Core.EitherCanonicalFormsCandidate
 import FX1Poly.Typed.HasTypeDescPi
-import FX1Poly.Typed.HasTypeDescOptionMatch
-import FX1Poly.Typed.HasTypeDescEitherMatch
 
 /-! # FX1Poly/Typed/MatchElimComputingCanonicity
     — the NON-RECURSIVE function-branch eliminator-computing canonicity (completes the coverage)

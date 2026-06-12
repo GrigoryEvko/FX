@@ -1,4 +1,3 @@
-import FX1Poly.Typed.HasTypeDescBoolElim
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 
 /-! # FX1Poly/Typed/BoolElimValueCanonicity

@@ -1,5 +1,6 @@
-import FX1Poly.Typed.HasTypeDescBoolElim
-
+import FX1Poly.Typed.CellConstructors
+import FX1Poly.Typed.HasTypeDescDataIntro
+import FX1Poly.Core.RawTermSubst0Commute
 /-! # FX1Poly/Typed/EliminatorMotiveShapeRecord — the Phase-Z₀ motive-migration spike (Z0-DECIDE)
 
 The mandated pre-construction spike for the Phase-Z₀ eliminator-motive migration (the gateway
