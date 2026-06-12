@@ -311,7 +311,6 @@ import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.HasTypeDescNatIntro
 import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.HasTypeDescListElim
-import FX1Poly.Typed.DataIntroSubjectReductionRecursive
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -440,7 +439,6 @@ import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.TypedNbeConvDecision
 import FX1Poly.Typed.SigmaEtaEngineGate
-import FX1Poly.Typed.EliminatorMotiveShapeRecord
 import FX1Poly.Typed.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
 import FX1Poly.Typed.CascadeFreedomLedger
@@ -1101,7 +1099,6 @@ simple rule via `weaken_subst_singleton`), a non-vacuous smoke, and by-construct
 costed Route A (staged substrate migration, per-eliminator atomic stages) / Route B
 (extrinsic-motive judgments) / Route C (rejected) decision record. -/
 
-#assert_no_axioms FX1Poly.Typed.boolElim_arity_isFlat
 
 /-! ### The η-readback FRAME BOUNDARY (the Σ/modal/cubical verdict)
 

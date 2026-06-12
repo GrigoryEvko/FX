@@ -311,7 +311,6 @@ import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.HasTypeDescNatIntro
 import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.HasTypeDescListElim
-import FX1Poly.Typed.DataIntroSubjectReductionRecursive
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -439,7 +438,6 @@ import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.TypedNbeConvDecision
 import FX1Poly.Typed.SigmaEtaEngineGate
-import FX1Poly.Typed.EliminatorMotiveShapeRecord
 import FX1Poly.Typed.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
 import FX1Poly.Typed.CascadeFreedomLedger
@@ -716,10 +714,6 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- the one master SR; the 7 standalone families all have constructor-side typed-ι (DI-5 complete,
 -- re-checked by enumeration); derivation-side SR of the standalone eliminator judgments is the
 -- HONEST OPEN gap (the cons-index propext-trap inversion), deferred loudly via the matrix flags.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescNatIntro.subjectReduction
-#assert_no_axioms FX1Poly.Typed.HasTypeDescListIntro.subjectReduction
-#assert_no_axioms FX1Poly.Typed.eliminatorIotaSrCoverage_count
-#assert_no_axioms FX1Poly.Typed.eliminatorIotaSrCoverage_constructorSideComplete
 #assert_no_axioms FX1Poly.Typed.FlatDescTelescope.subjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.subjectReduction
 

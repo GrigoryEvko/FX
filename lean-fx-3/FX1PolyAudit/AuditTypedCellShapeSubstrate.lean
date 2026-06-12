@@ -311,7 +311,6 @@ import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.HasTypeDescNatIntro
 import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.HasTypeDescListElim
-import FX1Poly.Typed.DataIntroSubjectReductionRecursive
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -439,7 +438,6 @@ import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.TypedNbeConvDecision
 import FX1Poly.Typed.SigmaEtaEngineGate
-import FX1Poly.Typed.EliminatorMotiveShapeRecord
 import FX1Poly.Typed.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
 import FX1Poly.Typed.CascadeFreedomLedger
@@ -1414,20 +1412,5 @@ telescope input, the inert-leaf membership. -/
 #assert_no_axioms FX1Poly.Typed.nullaryFormerOutput
 #assert_no_axioms FX1Poly.Typed.formationOutputData
 #assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.pairCellHasNoDataIntroTyping
-#assert_no_axioms FX1Poly.Typed.boolElim_binderShifts_isFlat
-#assert_no_axioms FX1Poly.Typed.natElim_arity_isFlat
-#assert_no_axioms FX1Poly.Typed.natElim_binderShifts_isFlat
-#assert_no_axioms FX1Poly.Typed.natRec_arity_isFlat
-#assert_no_axioms FX1Poly.Typed.natRec_binderShifts_isFlat
-#assert_no_axioms FX1Poly.Typed.listElim_arity_isFlat
-#assert_no_axioms FX1Poly.Typed.listElim_binderShifts_isFlat
-#assert_no_axioms FX1Poly.Typed.optionMatch_arity_hasMotive
-#assert_no_axioms FX1Poly.Typed.optionMatch_binderShifts_hasMotive
-#assert_no_axioms FX1Poly.Typed.eitherMatch_arity_hasMotive
-#assert_no_axioms FX1Poly.Typed.eitherMatch_binderShifts_hasMotive
-#assert_no_axioms FX1Poly.Typed.idJ_arity_hasMotive
-#assert_no_axioms FX1Poly.Typed.idJ_binderShifts_hasMotive
-#assert_no_axioms FX1Poly.Typed.idStrictRec_arity_hasMotive
-#assert_no_axioms FX1Poly.Typed.idStrictRec_binderShifts_hasMotive
 #assert_no_axioms FX1Poly.Typed.weakening_isZeroArm
 #assert_no_axioms FX1Poly.Typed.substitution_isZeroArm

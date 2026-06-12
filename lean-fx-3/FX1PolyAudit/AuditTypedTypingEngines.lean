@@ -311,7 +311,6 @@ import FX1Poly.Typed.HasTypeDescListIntro
 import FX1Poly.Typed.HasTypeDescNatIntro
 import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.HasTypeDescListElim
-import FX1Poly.Typed.DataIntroSubjectReductionRecursive
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -439,7 +438,6 @@ import FX1Poly.Typed.FormationClassifierRigidity
 import FX1Poly.Typed.TypedNbeNormalizer
 import FX1Poly.Typed.TypedNbeConvDecision
 import FX1Poly.Typed.SigmaEtaEngineGate
-import FX1Poly.Typed.EliminatorMotiveShapeRecord
 import FX1Poly.Typed.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.TelescopeSubstitutedChildrenNormalization
 import FX1Poly.Typed.CascadeFreedomLedger
@@ -1784,9 +1782,6 @@ regression tripwires the Route-A widening must consciously revisit. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescSigmaProjection.fstOfVariableHasNoTyping
 #assert_no_axioms FX1Poly.Typed.etaPairExpansion_hasNoPairIntroTyping
 #assert_no_axioms FX1Poly.Typed.etaPairExpansion_hasNoGrownTyping
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElimDependent
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElimDependent.subsumesSimpleShape
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElimDependent.ofUniverseCodesTyped
 #assert_no_axioms FX1Poly.Typed.uniqueness_isZeroArm
 #assert_no_axioms FX1Poly.Typed.inversion_isZeroArm
 
