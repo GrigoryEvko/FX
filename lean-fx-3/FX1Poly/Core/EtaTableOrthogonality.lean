@@ -92,6 +92,26 @@ def rowObservationSlotsWithinArity (rule : EtaRuleDesc) : Bool :=
 def allObservationSlotsWithinArity (table : List EtaRuleDesc) : Bool :=
   listForall rowObservationSlotsWithinArity table
 
+/-- Two observations of one row watch distinct intro slots. -/
+def observationSlotsDiffer (firstSpec secondSpec : EtaObservationSpec) :
+    Bool :=
+  if firstSpec.introChildSlot = secondSpec.introChildSlot then false
+  else true
+
+/-- A row's observations watch pairwise-distinct intro slots — the
+core-replacement chain replaces one observation without disturbing its
+siblings. -/
+def rowObservationSlotsDistinct : List EtaObservationSpec → Bool
+  | [] => true
+  | spec :: restSpecs =>
+      listForall (observationSlotsDiffer spec) restSpecs
+        && rowObservationSlotsDistinct restSpecs
+
+/-- Every row's observations watch pairwise-distinct intro slots. -/
+def allObservationSlotsDistinct (table : List EtaRuleDesc) : Bool :=
+  listForall (fun rule => rowObservationSlotsDistinct rule.observations)
+    table
+
 /-- ★ **The cross-table check**: no eta intro root is any iota row's
 eliminator — decided against the iota table, so every eta/iota overlap
 is parent-child only (never a root/root collision). -/
@@ -115,6 +135,8 @@ structure WfEtaTable (etaTable : List EtaRuleDesc)
   rawRowsHaveObservations : allRawRowsHaveObservation etaTable = true
   observationSlotsRespectArity :
     allObservationSlotsWithinArity etaTable = true
+  observationSlotsAreDistinct :
+    allObservationSlotsDistinct etaTable = true
   introRootsAvoidIotaElimRoots :
     etaIntroRootsAvoidIotaElimRoots etaTable someIotaTable = true
 
@@ -128,6 +150,7 @@ theorem etaRuleTable_isWf : WfEtaTable etaRuleTable iotaRuleTable :=
   { introRootsAreDistinct := rfl
     rawRowsHaveObservations := rfl
     observationSlotsRespectArity := rfl
+    observationSlotsAreDistinct := rfl
     introRootsAvoidIotaElimRoots := rfl }
 
 /-! ## Pairwise extraction -/
