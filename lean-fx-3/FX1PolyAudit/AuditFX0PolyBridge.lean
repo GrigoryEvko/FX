@@ -3,6 +3,7 @@ import FX1PolyAudit.FX0Bridge
 import FX1PolyAudit.FX0CrossCheck
 import FX1PolyAudit.FX0CrossCheckCertified
 import FX1PolyAudit.FX0CrossCheckCorpus
+import FX1PolyAudit.FX0CrossCheckUnionCorpus
 import FX1Poly.Core.CertifyRawCellExact
 import FX1Poly.Core.CertifyRawCellExactSound
 import FX1Poly.Core.CertifyRawCellExactShape
@@ -89,6 +90,27 @@ external-verifier soundness — an A₀-release ingredient (#464). -/
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchNumeral
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_polymorphicIdentity
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_churchNatType
+
+/-! ### FX0CrossCheckUnionCorpus — the FX0 cross-check on terms typed by the UNION judgment.
+After the NATIVE-42..45 endgame the typed layer is the single union judgment `HasTypeNativeUnion`;
+the grown-engine corpus above does not cover its flagship terms (a λ whose body lives in the data
+family, a numeral tower through the recursive intro arm, the whole path-endpoint redex composed
+across the graded-intro and general-elim arms) because they carry NO `HasTypeDescPi` derivation.
+The structural acceptance half is `externalVerify_encodeCell` (universal); the SN half is honest
+per term — each flagship union subject is a core-`Step` NORMAL FORM (the numeral tower and the
+λ-over-data are values, and the endpoint redex's β-rule lives in the canonical TABLE relation, not
+core `Step`, so it is `Step`-irreducible).  The `…_isCoreStepNormalForm` lemma + the section's
+documented exclusion pin the honest scope: the FX0 verifier re-checks STRUCTURE, not reduction, so
+the table-relation `pathBeta` step is an explicit non-claim (the FX0-PC.6 reduction-executing
+re-checker is where it would land). -/
+#assert_no_axioms FX1Poly.FX0CrossCheck.numeralTwoUnionSubject_stronglyNormalizing
+#assert_no_axioms FX1Poly.FX0CrossCheck.constantIntervalLambdaUnionSubject_stronglyNormalizing
+#assert_no_axioms FX1Poly.FX0CrossCheck.endpointRedexUnionSubject_stronglyNormalizing
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_unionNumeralTwo
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_unionConstantIntervalLambda
+#assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_unionEndpointRedex
+#assert_no_axioms FX1Poly.FX0CrossCheck.unionCrossCheckCoverageWitness
+#assert_no_axioms FX1Poly.FX0CrossCheck.endpointRedexUnionSubject_isCoreStepNormalForm
 
 /-! ### FX0-PC.1 — the HOST-MINIMAL gate on the Layer-1 certifier (★ closes #220)
 

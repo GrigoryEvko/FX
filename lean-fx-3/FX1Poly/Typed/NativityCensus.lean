@@ -2,34 +2,56 @@ import FX1Poly.Typed.TypedBySomeEngine
 
 /-! # FX1Poly/Typed/NativityCensus — NATIVE-00: the machine-checked nativity census ledger
 
-The empirical ground truth the unified-signature campaign (NATIVE-00..63) is built on, recorded
-as a machine-checked, SELF-UPDATING ledger.  The kernel's typed layer currently has the grown
-engine `HasTypeDescPi` (the de-facto unified engine for the Π-fragment, table-driven via
-`typingRuleDescOf` / `introRuleDescOf` / `elimRuleDescOf` with the cascade-free GTL/TG/SR-U
-metatheory) PLUS a zoo of legacy standalone `HasTypeDesc*` engines built before the rule tables
-matured.  The campaign folds every standalone engine into table rows so the typed layer becomes
-ONE judgment = the initial model of a single second-order signature.
+The empirical ground truth the unified-signature campaign (NATIVE-00..63) WAS built on, recorded
+as a machine-checked ledger.  **The campaign has CONCLUDED** (NATIVE-42/43/44/45 endgame): the
+kernel's typed layer is now the single union judgment `HasTypeNativeUnion`, and the legacy
+standalone `HasTypeDesc*` engine zoo that this census surveyed has been DELETED.  The grown engine
+`HasTypeDescPi` survives as the minimal Π-fragment host (var / conv / universe / piIntro / piElim,
+table-driven via `typingRuleDescOf` / `introRuleDescOf` / `elimRuleDescOf` with the cascade-free
+GTL/TG/SR-U metatheory) and is embedded into the union as the `ofGrown` arm; every data / former /
+eliminator family that the standalone engines once carried now lives as a table-driven ARM of
+`HasTypeNativeUnion`, reading the NATIVE rule tables in `NativeUnionRuleTables`
+(`baseTypeRuleDescOf` / `dataIntroNullaryRuleDescOf` / `flatTypingRuleDescOf` / `gradedIntroRuleOf`
+/ `generalElimRuleOf` / the `native*RuleOf` recursive-elim and data-intro tables).
+
+This file is the HISTORICAL record of that consolidation: which standalone engine carried which
+family, where each landed, and the structural metric of grown-table sparsity that the union design
+makes PERMANENT.  Every pin below is still a true fact about the surviving grown tables (the
+consolidation deliberately did NOT widen them — the families moved to the union's own native
+tables, not the grown `introRuleDescOf` / `elimRuleDescOf`), so the ledger stays honest after the
+endgame.
 
 ## What this ledger pins (and why it stays honest)
 
-  * **`StandaloneTypingEngine`** — the migration surface: the 18 principal legacy engines (plus
-    two canonicity/motive auxiliaries noted but not independent judgments).  The
-    `migrationTarget` / `migrationClass` total functions ARE the overlap matrix — Lean's
-    exhaustiveness makes "add an engine without classifying it" a build failure.
-  * **`isHardcodedClassifierHead`** — ★ the GENUINELY machine-checked frankenstein metric: a
-    generator is dispatched by a hardcoded `decide` in `hasSomeTypingRule` (rather than table
-    `isSome`) IFF it is statically LIVE yet covered by NO rule table.  `hardcodedRoster_allHardcoded`
-    verifies all 22 current roster heads satisfy this by `rfl`.  When a migration row lands
-    (NATIVE-06..40), the head stops being table-uncovered → the predicate flips → the metric
-    drains.  This is self-derived, not asserted.
-  * **The "before-state" anchors** (`*_notFormation_yet`, `introTable_onlyLam`,
-    `elimTable_onlyApp`) — the `rfl`-checked CURRENT coverage.  These BREAK the moment a row
-    lands (e.g. NATIVE-12 puts `gen_bridgeCode` in the formation table, breaking
-    `bridgeCode_notFormation_yet`), forcing the census to record progress rather than rot.
-  * **`frankensteinMetric`** — current 22 / floor 2 (the bespoke primitives `var` +
-    `universeCode`) / migratable 20, tied to the roster by `rfl`.
+  * **`StandaloneTypingEngine`** — the (now-deleted) migration surface, recorded as history: the 18
+    principal legacy engines (plus two canonicity/motive auxiliaries noted but not independent
+    judgments).  The `migrationTarget` / `migrationClass` total functions ARE the overlap matrix
+    that classified where each engine's capability LANDED in the union — Lean's exhaustiveness
+    kept "add an engine without classifying it" a build failure during the campaign and now keeps
+    the historical record total.
+  * **`isHardcodedClassifierHead`** — ★ the GENUINELY machine-checked grown-table-sparsity metric:
+    a generator is dispatched by a hardcoded `decide` in `hasSomeTypingRule` (rather than the six
+    grown / base / data tables it tests) IFF it is statically LIVE yet covered by NONE of those six
+    tables.  `hardcodedRoster_allHardcoded` verifies all current roster heads satisfy this by
+    `decide`.  This is NOT a draining migration counter: every such head IS covered — by the
+    UNION's own native tables (`generalElimRuleOf` for the eliminators, `gradedIntroRuleOf` for the
+    binders, the `native*RuleOf` data-intro tables), which `isHardcodedClassifierHead` deliberately
+    does not test.  The metric measures the PERMANENT structural fact that the grown engine stays
+    the minimal Π-fragment while the union carries the families; it is self-derived, not asserted.
+  * **The grown-table-coverage anchors** (`*_notFormation_yet`, `introTable_onlyLam`,
+    `elimTable_onlyApp`) — the `rfl`-checked GROWN coverage, deliberately unchanged by the endgame:
+    `gen_bridgeCode` / `gen_idCode` are NOT in the grown formation table, the grown intro table is
+    still the singleton `{gen_lam}`, the grown elim table is still `{gen_app}`.  The families they
+    name are live in the UNION (`gen_bridgeCode` via the term-indexed former row, the data
+    constructors / eliminators via the union's intro / elim arms), not in the grown tables.  These
+    pins fix the boundary between the minimal grown host and the family-carrying union.
+  * **`frankensteinMetric`** — current 20 / floor 2 (the bespoke primitives `var` +
+    `universeCode`) / migratable 18, tied to the roster by `rfl`.  The "migratable" residual
+    records the heads the union carries through its native tables rather than the grown ones; it is
+    a stable design boundary, not pending work.
   * **`riskClassEngines`** — the three recursive eliminators (natElim/natRec/listElim) whose
-    dependent-IH premise (NATIVE-04) decides 100% vs 95%-with-pinned-residual collapse.
+    dependent-IH premise (NATIVE-04) was the design fork; they landed as the union's `recursiveElim`
+    / `listElim` arms with stored motives and union-recursive scrutinee premises.
 
 ## Zero-axiom
 
@@ -43,12 +65,12 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core
 
-/-! ## The standalone-engine migration surface -/
+/-! ## The standalone-engine migration surface (historical — the engines are deleted) -/
 
-/-- The principal legacy standalone typing engines — the surface the campaign folds into rows.
-(The `EliminatorMotiveShapeRecord` boolElim-dependent record and `BoolElimValueCanonicity` are
-canonicity/motive AUXILIARIES absorbed with `boolElim`, not independent typing judgments, so they
-are not enumerated here.) -/
+/-- The principal legacy standalone typing engines — the (now-deleted) surface the campaign folded
+into union arms, recorded as history.  (The `EliminatorMotiveShapeRecord` boolElim-dependent record
+and `BoolElimValueCanonicity` are canonicity/motive AUXILIARIES absorbed with `boolElim`, not
+independent typing judgments, so they are not enumerated here.) -/
 inductive StandaloneTypingEngine where
   | baseType | dataIntroNullary | flat
   | natIntro | idIntro | optionIntro | eitherIntro | pairIntro | listIntro
@@ -65,10 +87,10 @@ def StandaloneTypingEngine.all : List StandaloneTypingEngine :=
    .natElim, .natRec, .listElim,
    .bridge]
 
-/-- Eighteen principal standalone engines await fold-in. -/
+/-- Eighteen principal standalone engines were folded into the union (now deleted). -/
 theorem standaloneTypingEngineCount : StandaloneTypingEngine.all.length = 18 := rfl
 
-/-- The unified rule table each engine's rules migrate INTO. -/
+/-- The unified rule table each engine's rules landed IN (the union's native tables). -/
 inductive MigrationTarget where
   /-- `typingRuleDescOf` — universe-former + base-type rows (Π/Σ/list/option/unit/bool/empty/nat). -/
   | formationTable
@@ -82,9 +104,10 @@ inductive MigrationTarget where
   | dependentElimTable
   deriving DecidableEq, BEq
 
-/-- The overlap matrix (target half): the table each engine folds into.  Bridge's PRIMARY target
-is the term-indexed former (its graded-intro `pathLam` + elim `pathApp` rows are tracked by the
-graded/elim-table tasks). -/
+/-- The overlap matrix (target half): the table each engine's capability landed in (now as union
+arms reading those native tables).  Bridge's PRIMARY target is the term-indexed former (its
+graded-intro `pathLam` + elim `pathApp` rows live in the union's graded-intro / general-elim
+tables). -/
 def StandaloneTypingEngine.migrationTarget : StandaloneTypingEngine → MigrationTarget
   | .baseType => .formationTable
   | .dataIntroNullary => .introTable
@@ -119,9 +142,9 @@ inductive MigrationClass where
   | needsDependentElimSchema
   deriving DecidableEq, BEq
 
-/-- The overlap matrix (difficulty half): the schema work each engine requires.  Bridge's primary
-novelty is the graded `pathLam` row, so it is classed `needsGradedSchema` (it also consumes the
-term-indexed former from NATIVE-12). -/
+/-- The overlap matrix (difficulty half): the schema work each engine required to land in the
+union.  Bridge's primary novelty is the graded `pathLam` row, so it is classed `needsGradedSchema`
+(it also consumes the term-indexed former from NATIVE-12). -/
 def StandaloneTypingEngine.migrationClass : StandaloneTypingEngine → MigrationClass
   | .baseType => .alreadyTableDriven
   | .dataIntroNullary => .alreadyTableDriven
@@ -143,8 +166,9 @@ def StandaloneTypingEngine.migrationClass : StandaloneTypingEngine → Migration
   | .bridge => .needsGradedSchema
 
 /-- The three engines in the risk class — the recursive eliminators whose dependent-IH premise
-(NATIVE-04) decides whether the final system is ONE inductive or one inductive + a pinned,
-adequacy-bridged recursive-elim core. -/
+(NATIVE-04) was the design fork.  They landed as the union's `recursiveElim` / `listElim` arms: ONE
+inductive with stored motives and union-recursive scrutinee / base-branch premises (not a separate
+adequacy-bridged core). -/
 def riskClassEngines : List StandaloneTypingEngine :=
   StandaloneTypingEngine.all.filter (fun e => e.migrationClass == .needsDependentElimSchema)
 
@@ -156,22 +180,28 @@ theorem alreadyTableDrivenCount :
     (StandaloneTypingEngine.all.filter
       (fun e => e.migrationClass == .alreadyTableDriven)).length = 3 := rfl
 
-/-! ## ★ The machine-checked frankenstein metric -/
+/-! ## ★ The machine-checked grown-table-sparsity metric -/
 
 /-- **A generator is a HARDCODED classifier head** iff it is statically LIVE (`hasSomeTypingRule`)
-yet covered by NO rule table — exactly the heads `hasSomeTypingRule` dispatches via a hardcoded
-`decide (g = …)` disjunct instead of table `isSome`.  This is the precise, self-derived
-frankenstein metric: when a migration row lands, the head becomes table-covered, this predicate
-flips to `false`, and the metric drains automatically. -/
+yet covered by NONE of the six GROWN / base / data tables this predicate tests — exactly the heads
+`hasSomeTypingRule` dispatches via a hardcoded `decide (g = …)` disjunct instead of those tables'
+`isSome`.  This is the precise, self-derived grown-table-sparsity metric.  It is NOT a draining
+migration counter: every such head IS covered by the UNION's own native tables (`generalElimRuleOf`
+/ `gradedIntroRuleOf` / the `native*RuleOf` data-intro and recursive-elim tables), which this
+predicate deliberately does not test.  The count records the PERMANENT boundary between the minimal
+grown Π-fragment host and the family-carrying union. -/
 def isHardcodedClassifierHead (g : Generator) : Bool :=
   hasSomeTypingRule g
     && (typingRuleDescOf g).isNone && (introRuleDescOf g).isNone
     && (elimRuleDescOf g).isNone && (flatTypingRuleDescOf g).isNone
     && (baseTypeRuleDescOf g).isNone && (dataIntroNullaryRuleDescOf g).isNone
 
-/-- The 21 currently-hardcoded heads (the frankenstein roster), read off `hasSomeTypingRule`'s
-`decide` chain.  NATIVE-06 drained `gen_intervalCode` (now a `baseTypeRuleDescOf` formation row, so
-table-covered) — the campaign's first metric drain (22 → 21). -/
+/-- The currently-hardcoded heads (the grown-table-sparsity roster), read off `hasSomeTypingRule`'s
+`decide` chain.  NATIVE-06 moved `gen_intervalCode` into a `baseTypeRuleDescOf` formation row (so
+grown/base-table-covered — the 22 → 21 step) and NATIVE-42 moved `gen_natZero` into a
+`dataIntroNullaryRuleDescOf` row (the 21 → 20 step).  The remaining heads are family heads the union
+carries through its OWN native tables (general-elim / graded-intro / data-intro), which this roster
+predicate does not test — a stable boundary, not pending drains. -/
 def hardcodedClassifierHeads : List Generator :=
   [.gen_natSucc, .gen_refl, .gen_optionNone, .gen_optionSome,
    .gen_eitherInl, .gen_eitherInr, .gen_pair, .gen_listNil, .gen_listCons,
@@ -182,9 +212,9 @@ def hardcodedClassifierHeads : List Generator :=
 /-- The roster has 20 heads (after the NATIVE-06 interval drain and the NATIVE-42 natZero drain). -/
 theorem hardcodedClassifierHeadCount : hardcodedClassifierHeads.length = 20 := rfl
 
-/-- **★ Every rostered head IS genuinely hardcoded** — live yet table-uncovered, machine-checked
-by `decide` over all 21.  This is the metric's truthfulness: the roster is not a hand-maintained
-list, it is exactly the live-but-uncovered set. -/
+/-- **★ Every rostered head IS genuinely hardcoded** — live yet grown/base/data-table-uncovered,
+machine-checked by `decide` over the whole roster.  This is the metric's truthfulness: the roster
+is not a hand-maintained list, it is exactly the live-but-grown-table-uncovered set. -/
 theorem hardcodedRoster_allHardcoded :
     hardcodedClassifierHeads.all isHardcodedClassifierHead = true := by decide
 
@@ -199,9 +229,12 @@ theorem bespokePrimitiveHeadCount : bespokePrimitiveHeads.length = 2 := rfl
 theorem bespokePrimitives_areHardcoded :
     bespokePrimitiveHeads.all isHardcodedClassifierHead = true := by decide
 
-/-- The 19 MIGRATABLE hardcoded heads — the roster minus the two bespoke primitives.  These drain
-to zero as their rows land (NATIVE-06..40); the metric target is the 2-element bespoke floor.
-NATIVE-06 drained `gen_intervalCode` (the first drain, into `baseTypeRuleDescOf`). -/
+/-- The 18 family hardcoded heads — the roster minus the two bespoke primitives.  These are the
+data / former / eliminator heads the union carries through its OWN native tables (not the six grown
+/ base / data tables the roster predicate tests); NATIVE-06 moved `gen_intervalCode` into the
+base-type table and NATIVE-42 moved `gen_natZero` into the data-intro-nullary table, leaving these
+as the stable family residual.  The 2-element bespoke floor (`var` + `universeCode`) is the
+irreducible remainder. -/
 def migratableHardcodedHeads : List Generator :=
   [.gen_natSucc, .gen_refl, .gen_optionNone, .gen_optionSome,
    .gen_eitherInl, .gen_eitherInr, .gen_pair, .gen_listNil, .gen_listCons,
@@ -211,22 +244,25 @@ def migratableHardcodedHeads : List Generator :=
 /-- Eighteen migratable heads (20 roster − 2 bespoke), after the interval and natZero drains. -/
 theorem migratableHardcodedHeadCount : migratableHardcodedHeads.length = 18 := rfl
 
-/-- Every migratable head is currently hardcoded (machine-checked) — the drain target set. -/
+/-- Every family head is hardcoded (machine-checked) — the union-carried family residual. -/
 theorem migratableHeads_areHardcoded :
     migratableHardcodedHeads.all isHardcodedClassifierHead = true := by decide
 
-/-- The frankenstein metric ledger: hardcoded-decide count NOW vs the irreducible bespoke floor. -/
+/-- The grown-table-sparsity metric ledger: grown/base/data-table-uncovered live count vs the
+irreducible bespoke floor. -/
 structure FrankensteinMetric where
-  /-- Hardcoded classifier heads at present. -/
+  /-- Hardcoded classifier heads (live yet grown/base/data-table-uncovered). -/
   current : Nat
   /-- The irreducible bespoke primitives (var + universeCode). -/
   floor : Nat
-  /-- Migratable = current − floor; drains to 0 over the campaign. -/
+  /-- Family residual = current − floor; the heads the union carries through its OWN native tables.
+  A stable design boundary, not pending work. -/
   migratable : Nat
 
-/-- The current metric: 20 hardcoded / 2 floor / 18 migratable — after the NATIVE-06 interval drain
-(22 → 21) and the NATIVE-42 natZero drain (21 → 20; `gen_natZero` is now a
-`dataIntroNullaryRuleDescOf` row). -/
+/-- The current metric: 20 hardcoded / 2 floor / 18 family residual — after the NATIVE-06 interval
+move into the base-type table (22 → 21) and the NATIVE-42 natZero move into the
+`dataIntroNullaryRuleDescOf` table (21 → 20).  The 18-head residual is the union's family carry,
+not migration debt. -/
 def frankensteinMetric : FrankensteinMetric :=
   { current := 20, floor := 2, migratable := 18 }
 
@@ -238,47 +274,54 @@ theorem frankensteinMetric_current_matchesRoster :
 theorem frankensteinMetric_migratable_matchesRoster :
     frankensteinMetric.migratable = migratableHardcodedHeads.length := rfl
 
-/-! ## The "before" state — `rfl`-anchors that BREAK as rows land (keeping the census honest) -/
+/-! ## The grown/union boundary — `rfl`-anchors fixing the minimal grown host vs the family-carrying
+union (deliberately unchanged by the NATIVE-42..45 endgame) -/
 
-/-- **★ NATIVE-06 LANDED: interval code IS a formation row** (in `baseTypeRuleDescOf`, the cascade-free
-nullary base-type home).  This is the campaign's first self-updating-census flip — the interval drained
-from the hardcoded frankenstein roster (22 → 21). -/
+/-- **★ Interval code IS a base-type formation row** (in `baseTypeRuleDescOf`, the cascade-free
+nullary base-type home; NATIVE-06).  The union's `baseTypeFormation` arm reads this row, so
+`gen_intervalCode` is live in the union. -/
 theorem intervalCode_inBaseTypeTable :
     (baseTypeRuleDescOf .gen_intervalCode).isSome = true := rfl
 
-/-- Interval code's GROWN-table (`typingRuleDescOf`) row is still absent — deferred to the NATIVE-44
-BaseType→unified merge (which carries every base-type row into the grown formation table cascade-free,
-once).  Adding it directly here would replicate the per-consumer nullary handling that the merge does
-in one place; the base-type row (above) is the native formation home for now. -/
+/-- Interval code's GROWN-table (`typingRuleDescOf`) row is absent BY DESIGN — the grown engine stays
+the minimal Π-fragment host; interval formation lives in the base-type table (above), read by the
+union's `baseTypeFormation` arm.  This pins the grown/union boundary, not pending migration. -/
 theorem intervalCode_notInGrownTable_yet :
     (typingRuleDescOf .gen_intervalCode).isNone = true := rfl
 
-/-- Identity code is NOT YET formable (only ever refl's classifier) — **NATIVE-17 flips this** (the
-Id retrofit). -/
+/-- Identity code is not in the grown formation table — its formation lives in the union's
+term-indexed former row (`HasTypeDescTermIndexedFormer`, the `ofTermIndexedFormer` arm), not the
+minimal grown host. -/
 theorem idCode_notFormation_yet :
     (typingRuleDescOf .gen_idCode).isNone = true := rfl
 
-/-- Bridge code is NOT YET a former row — **NATIVE-12 flips this** (the term-indexed former). -/
+/-- Bridge code is not in the grown formation table — its formation lives in the union's term-indexed
+former row (the `ofTermIndexedFormer` arm), the bridge semantics' sole home after NATIVE-45 retired
+the bespoke bridge engine. -/
 theorem bridgeCode_notFormation_yet :
     (typingRuleDescOf .gen_bridgeCode).isNone = true := rfl
 
-/-- The introduction table is currently the singleton `{gen_lam}` — every data-constructor row is
-pending (**NATIVE-34** lands them). -/
+/-- The GROWN introduction table is the singleton `{gen_lam}` BY DESIGN — every data-constructor row
+lives in the union's intro arms (`recursiveUnaryIntro` / `recursiveBinaryIntro` / `pinnedUnaryIntro`
+/ … reading the `native*RuleOf` data-intro tables), `pathLam` in `gradedBinderIntro`.  The grown
+host stays minimal; the families live in the union. -/
 theorem introTable_onlyLam :
     (introRuleDescOf .gen_lam).isSome = true
     ∧ (introRuleDescOf .gen_natZero).isNone = true
     ∧ (introRuleDescOf .gen_pair).isNone = true
     ∧ (introRuleDescOf .gen_pathLam).isNone = true := ⟨rfl, rfl, rfl, rfl⟩
 
-/-- The elimination table is currently the singleton `{gen_app}` — every eliminator row is pending
-(**NATIVE-28** lands the non-recursive ones, **NATIVE-32** the recursive). -/
+/-- The GROWN elimination table is the singleton `{gen_app}` BY DESIGN — every data eliminator lives
+in the union's elim arms (`twoBranchMatchElim` / `pathInductionElim` / `projectionElim` /
+`recursiveElim` / `listElim`), `pathApp` in `generalElim`.  The grown host stays minimal Π-elim. -/
 theorem elimTable_onlyApp :
     (elimRuleDescOf .gen_app).isSome = true
     ∧ (elimRuleDescOf .gen_boolElim).isNone = true
     ∧ (elimRuleDescOf .gen_pathApp).isNone = true := ⟨rfl, rfl, rfl⟩
 
-/-- The formation table currently covers exactly the universe-former + unit rows (the matured
-table fragment), pinned for the migration baseline. -/
+/-- The grown formation table covers exactly the universe-former + unit rows (the minimal grown
+host's type-former fragment); the flat / base-type / data former families live in the union's
+`flatFormation` / `baseTypeFormation` arms reading the native tables. -/
 theorem formationTable_currentCoverage :
     (typingRuleDescOf .gen_piTyCode).isSome = true
     ∧ (typingRuleDescOf .gen_sigmaTyCode).isSome = true

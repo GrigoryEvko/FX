@@ -2680,15 +2680,20 @@ Generator.noConfusion; the directed lift (universeU<->universeD) is the honest u
 
 /-! ## NATIVE-00 (#1277) — the machine-checked nativity census ledger (unified-signature campaign brick 0)
 
-The empirical ground truth the NATIVE-00..63 campaign folds away: 18 principal standalone
-`HasTypeDesc*` engines (the legacy data/elim zoo) classified into the unified rule tables via the
-`migrationTarget` / `migrationClass` total functions (Lean exhaustiveness = the regression gate),
-and the GENUINELY self-derived frankenstein metric — `isHardcodedClassifierHead g` is `true` iff
-`g` is statically LIVE yet covered by NO rule table, exactly the heads `hasSomeTypingRule`
-dispatches by hardcoded `decide`.  `hardcodedRoster_allHardcoded` checks all 22 by `decide`; the
-"before-state" anchors (`*_notFormation_yet`, `introTable_onlyLam`, `elimTable_onlyApp`) BREAK as
-migration rows land, keeping the census honest.  All `rfl` / `by decide` (the propext-free
-decidable-equality route — every theorem verified axiom-free). -/
+The empirical ground truth the NATIVE-00..63 campaign WAS built on, now the HISTORICAL record of a
+CONCLUDED consolidation: 18 principal standalone `HasTypeDesc*` engines (the legacy data/elim zoo,
+DELETED in the NATIVE-42..45 endgame) classified by where their capability LANDED in the single
+union judgment `HasTypeNativeUnion` via the `migrationTarget` / `migrationClass` total functions
+(Lean exhaustiveness = the historical-record totality gate), and the GENUINELY self-derived
+grown-table-sparsity metric — `isHardcodedClassifierHead g` is `true` iff `g` is statically LIVE yet
+covered by NONE of the six grown / base / data tables it tests, exactly the family heads
+`hasSomeTypingRule` carries through the UNION's own native tables (`generalElimRuleOf` /
+`gradedIntroRuleOf` / the `native*RuleOf` tables, which the predicate deliberately does not test).
+`hardcodedRoster_allHardcoded` checks the whole roster by `decide`; the grown/union-boundary anchors
+(`*_notFormation_yet`, `introTable_onlyLam`, `elimTable_onlyApp`) pin the minimal grown Π-fragment
+host against the family-carrying union — a PERMANENT design boundary, not pending migration.  All
+`rfl` / `by decide` (the propext-free decidable-equality route — every theorem verified
+axiom-free). -/
 #assert_no_axioms FX1Poly.Typed.StandaloneTypingEngine.all
 #assert_no_axioms FX1Poly.Typed.standaloneTypingEngineCount
 #assert_no_axioms FX1Poly.Typed.StandaloneTypingEngine.migrationTarget

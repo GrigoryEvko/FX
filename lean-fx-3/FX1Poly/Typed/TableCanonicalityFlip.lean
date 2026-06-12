@@ -13,9 +13,12 @@ kernel's OFFICIAL relations
 reduction relation is `StepTable` (= `StepOverTable iotaRuleTable`) and
 its canonical conversion is `ConvTable` — rules as DATA, metatheorems
 generic over rows.  The bespoke `Step` survives as a DERIVED VIEW of the
-legacy 17-row fragment (the embeddings below; its retirement is
-IOTA-T11, user-gated), and the table-native endpoint-β is live in the
-canonical semantics with no bespoke constructor anywhere.
+legacy 17-row fragment (the embeddings below); its full retirement is
+deferred, but the IOTA-T11 brick already deleted the bespoke `ParStep`
+parallel-reduction mirror and re-routed raw confluence through the table
+(`StepStar.tableRouteConfluence`), so no bespoke confluence machinery
+remains in the canonical chain.  The table-native endpoint-β is live in
+the canonical semantics with no bespoke constructor anywhere.
 
 ## The headline ledger (what the canonical relations carry)
 
