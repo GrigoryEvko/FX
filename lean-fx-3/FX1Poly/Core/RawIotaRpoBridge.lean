@@ -1,5 +1,6 @@
 import FX1Poly.Core.RecursivePathOrderInductive
 import FX1Poly.Core.Step
+import FX1Poly.Core.IotaHeadStep
 
 /-! # FX1Poly/Core/RawIotaRpoBridge
     — #1139 (Leg 3): the generic rose-tree RPO INSTANTIATED at the REAL `RawTerm` kernel — the three
@@ -330,7 +331,7 @@ theorem listElimConsRaw_isStep {scope : Nat} (motive : RawTerm (scope + 1))
     (headVal tailVal nilBranch consBranch : RawTerm scope) :
     Step (listElimConsRedexRaw motive headVal tailVal nilBranch consBranch)
       (listElimConsReductRaw motive headVal tailVal nilBranch consBranch) :=
-  Step.iotaListElimCons
+  IotaHeadStep.iotaListElimCons.toStep
 
 /-- **★ `Step.iotaListElimCons` is oriented by the real generator RPO** (the deepest recursive ι arm,
 Phase-Z motive shape). -/

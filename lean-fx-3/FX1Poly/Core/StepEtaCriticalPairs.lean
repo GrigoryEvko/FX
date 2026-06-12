@@ -1,4 +1,5 @@
 import FX1Poly.Core.StepStarConfluence
+import FX1Poly.Core.IotaHeadStep
 import FX1Poly.Core.StepSubst
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.SubjectReductionEtaStructural
@@ -373,8 +374,8 @@ theorem etaPairFirstProjectionIota {scope : Nat}
                       (.childCons secondValue .childNil)))
                   .childNil))
               .childNil) : RawTermChildren [0] scope)
-            (Step.iotaFstPair
-              (firstValue := firstValue) (secondValue := secondValue)))))
+            ((IotaHeadStep.iotaFstPair
+              (firstValue := firstValue) (secondValue := secondValue)).toStep))))
       (Or.inr
         (Step.eta.etaPair
           (.mkGen .gen_pair ()
@@ -392,9 +393,9 @@ theorem etaPairFirstProjectionIota {scope : Nat}
                   (parentScope := scope) (headShift := 0)
                   (restShifts := [])
                   (.childNil : RawTermChildren [] scope)
-                  (Step.iotaSndPair
+                  ((IotaHeadStep.iotaSndPair
                     (firstValue := firstValue)
-                    (secondValue := secondValue))))))
+                    (secondValue := secondValue)).toStep)))))
           (Step.betaEtaStar.refl _)
       , Step.betaEtaStar.refl _ ⟩
 
@@ -421,8 +422,8 @@ theorem etaPairSecondProjectionIota {scope : Nat}
               (parentScope := scope) (headShift := 0)
               (restShifts := [])
               (.childNil : RawTermChildren [] scope)
-              (Step.iotaSndPair
-                (firstValue := firstValue) (secondValue := secondValue))))))
+              ((IotaHeadStep.iotaSndPair
+                (firstValue := firstValue) (secondValue := secondValue)).toStep)))))
       (Or.inr
         (Step.eta.etaPair
           (.mkGen .gen_pair ()
@@ -438,9 +439,9 @@ theorem etaPairSecondProjectionIota {scope : Nat}
                 (restShifts := [0])
                 ((.childCons secondValue .childNil) :
                   RawTermChildren [0] scope)
-                (Step.iotaFstPair
+                ((IotaHeadStep.iotaFstPair
                   (firstValue := firstValue)
-                  (secondValue := secondValue)))))
+                  (secondValue := secondValue)).toStep))))
           (Step.betaEtaStar.refl _)
       , Step.betaEtaStar.refl _ ⟩
 
