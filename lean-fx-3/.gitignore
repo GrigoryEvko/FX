@@ -3,3 +3,6 @@
 *.olean
 *.ilean
 *.trace
+
+# Scratch experiments — never part of any lake target; not tracked.
+ScratchFT/
