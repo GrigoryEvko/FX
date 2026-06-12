@@ -5,7 +5,7 @@ import FX1Poly.Typed.HasTypeDescWeakening
 
 The formation twin of the grown `WfContextDescPi.lookupIsType`: in a formation-well-formed context, the type of
 EVERY variable — not just the most-recent binding — is a formation type (`IsTypeDesc`) in the full context.
-This is the `var`-arm engine that lets `HasTypeDesc.classifierIsTypeDescNative` read its variable case off
+This is the `var`-arm engine that lets `HasTypeDesc.classifierIsTypeDesc` read its variable case off
 `WfContextDesc` directly.
 
   * `IsTypeDesc.weakenUnderBinding` — `IsTypeDesc` survives a binding extension (the formation weakening of the

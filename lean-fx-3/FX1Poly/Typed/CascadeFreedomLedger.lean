@@ -30,7 +30,7 @@ evidence located the residuals exactly.
 | --------------------------- | -------------------- | -------------------------------------------------- |
 | Weakening                   | ZERO arms            | `renameRespectingContext` (both engines)           |
 | Substitution                | ZERO arms            | `substRespectingContext` (both engines)            |
-| Uniqueness                  | ZERO arms            | `uniquenessNative` (generic over the table)        |
+| Uniqueness                  | ZERO arms            | `uniqueness` (generic over the table)        |
 | Inversion                   | ZERO arms            | `invertFormerTelescopeWithConvGeneric`             |
 | Subject reduction           | ZERO arms            | generic former arm + both master dispatchers       |
 | Strong normalization        | ZERO arms            | `formerCellStronglyNormalizingOfChildren`          |
@@ -135,7 +135,7 @@ def cascadeAnchor_substitution_formation := @HasTypeDesc.substRespectingContext
 /-- Substitution, grown engine. -/
 def cascadeAnchor_substitution_grown := @HasTypeDescPi.substRespectingContext
 /-- Uniqueness of typing — the native mutual twin, generic over the formation table. -/
-def cascadeAnchor_uniqueness := @HasTypeDesc.uniquenessNative
+def cascadeAnchor_uniqueness := @HasTypeDesc.uniqueness
 /-- Generic former inversion — telescope extraction without per-former enumeration. -/
 def cascadeAnchor_inversion := @HasTypeDescPi.invertFormerTelescopeWithConvGeneric
 /-- Subject reduction, formation master — routes formers through the generic arm. -/

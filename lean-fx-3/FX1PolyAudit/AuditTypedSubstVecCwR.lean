@@ -2793,7 +2793,7 @@ are the cell-reconstruction discriminators (the flat-helper idiom).  Axiom-free.
 The determinism the type-checker rests on.  `…inversionFormerWithConv` is the propext-free second-derivation
 inverter (head-generator alignment via `congrArg headGenerator` BEFORE any `injection`, the
 `HasTypeDescFlat.inversionFormerWithConv` idiom): a typed `mkGen` cell exposes its carrier/level/flag + the
-children-indexed telescope premise + a `Conv` to the carrier's universe code.  `…uniquenessNative` is the
+children-indexed telescope premise + a `Conv` to the carrier's universe code.  `…uniqueness` is the
 headline — two derivations of the SAME subject under a grown-well-formed context have `Conv` classifiers.  The
 route is SHORTER than the flat one: the term-indexed output is `universeCodeCell level flag` for a SINGLE
 (carrier) level, so uniqueness reduces to the grown `convUniverseClassificationUnique` on the shared carrier
@@ -2802,7 +2802,7 @@ head via `TermIndexedFormerTelescope.levelFlagAgree` (stated over a free-variabl
 telescope-wide level-list agreement.  Axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.inversionFormerWithConv
 #assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.levelFlagAgree
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.uniquenessNative
+#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.uniqueness
 
 /-! ## NATIVE-15 (#1292) — the term-indexed former engine's context-conversion + subject reduction
 

@@ -18,7 +18,7 @@ inputs are (1) the no-root-redex inversion — already shipped as `termIndexedFo
 (NATIVE-15) — and (2) each child's SN.
 
 The difference from flat: the flat telescope's children are FORMATION-typed (`HasTypeDesc`), whose SN is
-unconditional (`HasTypeDesc.subjectStronglyNormalizingNative`).  The term-indexed children (carrier + endpoints)
+unconditional (`HasTypeDesc.subjectStronglyNormalizing`).  The term-indexed children (carrier + endpoints)
 are GROWN-typed (`HasTypeDescPi`), whose open SN is the shipped `HasTypeDescPi.stronglyNormalizingOfWfContextDesc`
 (the SN-043 open generalization — itself the Tait/reducibility candidate machinery).  So the term-indexed former
 SN does NOT introduce a bespoke `Id`/`Bridge` reducibility candidate; it is a former over grown-reducible children,

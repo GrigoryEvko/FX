@@ -6,10 +6,10 @@ import FX1Poly.Core.StrongNormalizationLeaves
 /-! # FX1Poly/Typed/HasTypeDescSubjectStronglyNormalizingNative
     — native subject strong normalization for the description formation engine
 
-This file ships `HasTypeDesc.subjectStronglyNormalizingNative`: every formation-typed SUBJECT is strongly
+This file ships `HasTypeDesc.subjectStronglyNormalizing`: every formation-typed SUBJECT is strongly
 normalizing, proved directly on the formation engine's own structure.  The public
 `HasTypeDesc.isStronglyNormalizing` (`HasTypeDescStronglyNormalizing.lean`) delegates to it, parallel to
-`HasTypeDesc.uniquenessNative`.
+`HasTypeDesc.uniqueness`.
 
 ## Structure
 
@@ -29,7 +29,7 @@ SN once every child is SN.
   children SN is SN, routed through the GENERIC `former_step_inv` (shared with the formation SR arms — the single
   isolated `typingRuleDescOf_isPiOrSigma` enumeration site) + the accessibility substrate.  No per-former
   `by_cases`: a new ≥1-child formation row extends it with no change here.
-* `HasTypeDesc.subjectStronglyNormalizingNative` ⋈ `DescTelescope.childrenStronglyNormalizingNative` — the
+* `HasTypeDesc.subjectStronglyNormalizing` ⋈ `DescTelescope.childrenStronglyNormalizing` — the
   genuine MUTUAL recursion (the `toHasType` shape): the subject recursion bottoms out the `genFormation` arm in
   the telescope recursion, which proves each head child SN by calling the subject recursion (a structural
   sub-derivation).  Equation-`match` form so the mutual recursion is recognised structural.
@@ -178,7 +178,7 @@ formation-typed subject is strongly normalizing, proved on the formation engine'
 `genFormation` former cell is SN once its telescope children are SN, discharged by
 `formerCellStronglyNormalizingOfChildren` over the mutual telescope recursion.  The public
 `HasTypeDesc.isStronglyNormalizing` delegates to it. -/
-theorem HasTypeDesc.subjectStronglyNormalizingNative {profile : PolyProfile} {scope : Nat}
+theorem HasTypeDesc.subjectStronglyNormalizing {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (typed : HasTypeDesc profile context subject classifier) :
@@ -187,17 +187,17 @@ theorem HasTypeDesc.subjectStronglyNormalizingNative {profile : PolyProfile} {sc
   | .var _context index =>
       isStronglyNormalizing_of_noStep (fun _ step => noStep_var index step)
   | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped =>
-      HasTypeDesc.subjectStronglyNormalizingNative typedPremise
+      HasTypeDesc.subjectStronglyNormalizing typedPremise
   | .universeFormation _context levelExpr flag =>
       isStronglyNormalizing_of_noStep (fun _ step => noStep_universeCode (levelExpr, flag) step)
   | .genFormation _context _generator _payload _children _levels _flag _rule isFormation premises =>
       formerCellStronglyNormalizingOfChildren isFormation
-        (DescTelescope.childrenStronglyNormalizingNative premises)
+        (DescTelescope.childrenStronglyNormalizing premises)
 
 /-- Every child of a formation telescope is strongly normalizing.  STANDALONE-shaped recursion on the
-telescope but MUTUAL with the subject recursion: each head child's SN is `HasTypeDesc.subjectStronglyNormalizingNative`
+telescope but MUTUAL with the subject recursion: each head child's SN is `HasTypeDesc.subjectStronglyNormalizing`
 of the head typing (a structural sub-derivation), and the rest accumulates recursively. -/
-theorem DescTelescope.childrenStronglyNormalizingNative {profile : PolyProfile}
+theorem DescTelescope.childrenStronglyNormalizing {profile : PolyProfile}
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
     {context : TypingContext profile (baseScope + currentDepth)}
     {levels : List LevelExpr} {flag : UniverseFlag}
@@ -207,8 +207,8 @@ theorem DescTelescope.childrenStronglyNormalizingNative {profile : PolyProfile}
   match telescope with
   | .nil _ _ => True.intro
   | .cons _ _head _headLevel _restLevels _flag _rest headTyped restTyped =>
-      ⟨HasTypeDesc.subjectStronglyNormalizingNative headTyped,
-        DescTelescope.childrenStronglyNormalizingNative restTyped⟩
+      ⟨HasTypeDesc.subjectStronglyNormalizing headTyped,
+        DescTelescope.childrenStronglyNormalizing restTyped⟩
 
 end
 

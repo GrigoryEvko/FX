@@ -11,11 +11,11 @@ consumed by the typechecker's conv-check and by canonicity.
 
 The canonical uniqueness is the mutual twin
 
-  `HasTypeDesc.uniquenessNative` / `DescTelescope.uniquenessAgreeNative`
+  `HasTypeDesc.uniqueness` / `DescTelescope.uniquenessAgree`
   (`WfContextDescUniqueness.lean`)
 
 over the native well-formedness `WfContextDesc`: the head child recurses into
-`uniquenessNative` itself, and the rest-telescope recursion extends via
+`uniqueness` itself, and the rest-telescope recursion extends via
 `WfContextDesc.cons`, whose `IsTypeDesc` binding IS the head typing directly.
 
 This file is the import anchor that brings the formation-engine inversions
@@ -27,8 +27,8 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
--- The canonical uniqueness twins are `HasTypeDesc.uniquenessNative` /
--- `DescTelescope.uniquenessAgreeNative` (`WfContextDescUniqueness.lean`), over the native
+-- The canonical uniqueness twins are `HasTypeDesc.uniqueness` /
+-- `DescTelescope.uniquenessAgree` (`WfContextDescUniqueness.lean`), over the native
 -- `WfContextDesc`.
 
 end FX1Poly.Typed

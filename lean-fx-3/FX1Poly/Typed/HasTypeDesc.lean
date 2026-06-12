@@ -11,8 +11,8 @@ cellularly by a CASCADE-FREE generic `gen` arm — a new feature is one
 for the dependent-type-FORMER family (the most uniform shape).
 
 `HasTypeDesc` is the formation typing engine.  Its metatheory is proved
-INTRINSICALLY — validity (`HasTypeDesc.classifierIsTypeDescNative`), uniqueness
-(`HasTypeDesc.uniquenessNative`), inversion, and strong normalization are all by
+INTRINSICALLY — validity (`HasTypeDesc.classifierIsTypeDesc`), uniqueness
+(`HasTypeDesc.uniqueness`), inversion, and strong normalization are all by
 recursion on `HasTypeDesc` itself over the native well-formedness `WfContextDesc`.
 Arms:
 * `var`, `conv` — the irreducible core (every typed-layer engine has them).

@@ -967,7 +967,7 @@ boundary verdicts and is UNPROVEN jointly (O-NORM).  Zero-axiom. -/
 -- decidableOfWellFormedNative = the decision via the IsType-gate on the classifier (Conv principal classifier
 -- decided by Conv.decidableOfStronglyNormalizing — principal SN by classifierStronglyNormalizingNative,
 -- classifier SN by IsTypeDesc.isStronglyNormalizing via decidableOfWellFormedGeneric) + conv rule forward +
--- uniquenessNative refute. The native twin of HasTypeDesc.decidableOfWellFormed.
+-- uniqueness refute. The native twin of HasTypeDesc.decidableOfWellFormed.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inferWithWitness
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormedNative
 -- IsTypeDescDecidableGeneric = the FULLY cascade-free IsTypeDesc decider (GTL-10/11 payoff): a 3-function

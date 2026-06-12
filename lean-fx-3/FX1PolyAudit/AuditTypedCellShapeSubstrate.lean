@@ -765,7 +765,7 @@ import FX1Poly.Typed.HasTypeDescPiSubstPair
 #assert_no_axioms FX1Poly.Typed.formerCellStepIsChildCongruence
 -- FORMATION LOOKUP-VALIDITY (WfContextDescLookup.lean): in a formation-well-formed context every variable's
 -- type is a formation type (IsTypeDesc) in the full context — the var-arm engine that lets
--- classifierIsTypeDescNative read its variable case off WfContextDesc. Structural context induction +
+-- classifierIsTypeDesc read its variable case off WfContextDesc. Structural context induction +
 -- HasTypeDesc.weakenUnderBinding (the universe code renames to itself). Formation mirror of
 -- WfContextDescPi.lookupIsType.
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.weakenUnderBinding
@@ -969,7 +969,7 @@ classifiers, Σ (#361), modal/cubical η (#363), former children (engine-gated).
 -- FLAT FORMER INVERSION + UNIQUENESS: the propext-free generic flat-former inversion (telescope + classifier
 -- Conv). flatFormerBinderShifts = flat former arity [0,0]. inversionFormerWithConv aligns the generator via
 -- congrArg headGenerator + subst BEFORE injection (cracked-wall idiom), avoiding the dependent-mkGen propext leak.
--- HasTypeDescFlat.uniquenessNative is the flat-engine typing-uniqueness headline: a clean free-index cases on the
+-- HasTypeDescFlat.uniqueness is the flat-engine typing-uniqueness headline: a clean free-index cases on the
 -- first derivation exposes the .mkGen subject, the second derivation is inverted propext-free by
 -- inversionFormerWithConv, and FlatDescTelescope.uniquenessAgree settles levels (and flag, via the two-child
 -- telescope's nonempty level list) so both classifiers reduce to the same universe code.

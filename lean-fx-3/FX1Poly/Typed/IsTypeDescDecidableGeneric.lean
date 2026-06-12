@@ -32,7 +32,7 @@ STRUCTURAL mutual recursion (the `RawTerm`/`RawTermChildren` subterm order — e
 syntactic child).  The `subst hShift` in the spine deciders eliminates `currentDepth` (NOT `childHead`'s
 `shift`), so it does not obscure the recursive argument — the same discipline as the shipped `decideAtFlag`.
 The leaf `inl` witnesses are the formation constructors; the `inr` refutations compose the native inversions +
-`HasTypeDesc.uniquenessNative` + `universeCodeCell_inj_of_conv` + `not_of_rootGenerator`.  No `axiom`, `sorry`,
+`HasTypeDesc.uniqueness` + `universeCodeCell_inj_of_conv` + `not_of_rootGenerator`.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated.
 -/
 
@@ -155,7 +155,7 @@ def DescTelescope.decideSynthGeneric {profile : PolyProfile} {baseScope : Nat} :
                     | cons _ctx _hd _telHeadLevel restLevels _flg _rst telHeadTyped restTyped =>
                         obtain ⟨_, flagAgree⟩ :=
                           universeCodeCell_inj_of_conv
-                            (HasTypeDesc.uniquenessNative telHeadTyped wellFormed headTyped)
+                            (HasTypeDesc.uniqueness telHeadTyped wellFormed headTyped)
                         subst flagAgree
                         exact restRefutes restLevels restTyped))
       else
@@ -211,7 +211,7 @@ def DescTelescope.decideAtFlagGeneric {profile : PolyProfile} {baseScope : Nat}
                   | cons _ctx _hd telHeadLevel _restLevels _flg _rst telHeadTyped _restTyped =>
                       obtain ⟨_, flagAgree⟩ :=
                         universeCodeCell_inj_of_conv
-                          (HasTypeDesc.uniquenessNative headTyped wellFormed telHeadTyped)
+                          (HasTypeDesc.uniqueness headTyped wellFormed telHeadTyped)
                       exact hFlag flagAgree))
       else
         .inr (fun _levels telescope => by

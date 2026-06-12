@@ -33,7 +33,7 @@ open FX1Poly.Core FX1Poly.Universe
 type (`IsTypeDesc`), under the `IsTypeDesc`-based well-formedness `WfContextDesc`.  The `var` arm reads
 `WfContextDesc.lookupIsTypeDesc` directly.  The canonical formation validity, threaded by the formation-engine
 consumers. -/
-theorem HasTypeDesc.classifierIsTypeDescNative {profile : PolyProfile} {scope : Nat}
+theorem HasTypeDesc.classifierIsTypeDesc {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (wellFormed : WfContextDesc context)

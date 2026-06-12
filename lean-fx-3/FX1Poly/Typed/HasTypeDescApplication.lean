@@ -17,7 +17,7 @@ well-formed type (`IsTypeDesc`).
 
 The eliminator output-VALIDITY obligation is a POSITIVE construction, the hard semantic
 content of dependent elimination: it composes three intrinsic bricks — validity
-(`classifierIsTypeDescNative`), Π/Σ inversion-components (`inversion{Pi,Sigma}CodeComponents`),
+(`classifierIsTypeDesc`), Π/Σ inversion-components (`inversion{Pi,Sigma}CodeComponents`),
 and the β-engine substitution (`substituteUnderBinding`) — feeding the intrinsic
 substitution into a dependent-elimination soundness fact.  Non-vacuous: a variable of
 Π-type (resp. Σ-type) and a variable of the domain type inhabit the hypotheses.  Standalone
@@ -34,7 +34,7 @@ flag`, and the `IsTypeDesc` existential witness closes by defeq.
 
 ## Zero-axiom
 
-Composition of `classifierIsTypeDescNative` + `inversion{Pi,Sigma}CodeComponents` +
+Composition of `classifierIsTypeDesc` + `inversion{Pi,Sigma}CodeComponents` +
 `substituteUnderBinding`, plus the `subst0`/`subst_universeCodeCell` defeq.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated.
 -/
@@ -59,7 +59,7 @@ theorem HasTypeDesc.piApplicationOutputIsType {profile : PolyProfile} {scope : N
     (argumentTyped : HasTypeDesc profile context argument domainCode)
     (wellFormed : WfContextDesc context) :
     IsTypeDesc profile context (RawTerm.subst0 codomainCode argument) := by
-  obtain ⟨_piLevel, _piFlag, piTyped⟩ := functionTyped.classifierIsTypeDescNative wellFormed
+  obtain ⟨_piLevel, _piFlag, piTyped⟩ := functionTyped.classifierIsTypeDesc wellFormed
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped, _convToPiCode⟩ :=
     HasTypeDesc.inversionPiCodeComponents piTyped
   have substituted :=
@@ -80,7 +80,7 @@ theorem HasTypeDesc.sigmaProjectionOutputIsType {profile : PolyProfile} {scope :
     (firstProjectionTyped : HasTypeDesc profile context firstProjection domainCode)
     (wellFormed : WfContextDesc context) :
     IsTypeDesc profile context (RawTerm.subst0 codomainCode firstProjection) := by
-  obtain ⟨_sigmaLevel, _sigmaFlag, sigmaTyped⟩ := pairTyped.classifierIsTypeDescNative wellFormed
+  obtain ⟨_sigmaLevel, _sigmaFlag, sigmaTyped⟩ := pairTyped.classifierIsTypeDesc wellFormed
   obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped, _convToSigmaCode⟩ :=
     HasTypeDesc.inversionSigmaCodeComponents sigmaTyped
   have substituted :=

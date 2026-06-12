@@ -589,7 +589,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 
 
 /-! ### Strong normalization and typed conversion for the description formation engine.
-    Native: subject SN (`subjectStronglyNormalizingNative`, the public `isStronglyNormalizing` delegating to it),
+    Native: subject SN (`subjectStronglyNormalizing`, the public `isStronglyNormalizing` delegating to it),
     type SN (`IsTypeDesc.isStronglyNormalizing` — the `IsTypeDesc` witness's subject IS the classifier), and
     typed-middle transitivity (`Conv.trans_of_hasTypeDescMiddle` — the unconditional raw `Conv.trans`, its
     `IsTypeDesc` premise vacuous).  The `WfContext`-validity-bound classifier-SN package
@@ -603,14 +603,14 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Core.accStepChildrenSuccessor_of_allStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.formerCell_isStronglyNormalizing_of_accChildren
 #assert_no_axioms FX1Poly.Typed.formerCellStronglyNormalizingOfChildren
-#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectStronglyNormalizingNative
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectAndClassifierStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.closedSubjectAndClassifierStronglyNormalizing
 -- FORMATION CLASSIFIER-SN over WfContextDesc (WfContextDescStronglyNormalizing.lean): the classifier of a
--- HasTypeDesc-typed cell is strongly normalizing, routed through classifierIsTypeDescNative then
+-- HasTypeDesc-typed cell is strongly normalizing, routed through classifierIsTypeDesc then
 -- IsTypeDesc.isStronglyNormalizing. A consumer of the native validity target.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierStronglyNormalizingNative
 -- SN-026 (cross-check route status, documented-as-deferred per its DONE): the Kripke / all-levels route
@@ -789,10 +789,10 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiPositiveCandidateFundamentalTheorem.toClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiTypeValueCandidateFundamentalTheorem.toClosedStrongNormalizationTheorem
 -- FLAT-ENGINE STRONG NORMALIZATION (#935, next increment): the flat twin of
--- HasTypeDesc.subjectStronglyNormalizingNative. flatFormerCellStronglyNormalizingOfChildren reuses the GENERIC
+-- HasTypeDesc.subjectStronglyNormalizing. flatFormerCellStronglyNormalizingOfChildren reuses the GENERIC
 -- Core accessibility substrate (formerCell_isStronglyNormalizing_of_accChildren) with the firing-45 congruence-
 -- only inversion swapped in; FlatDescTelescope.childrenStronglyNormalizing is a plain (non-mutual) structural
--- recursion calling HasTypeDesc.subjectStronglyNormalizingNative on each head; HasTypeDescFlat.subjectStronglyNormalizing
+-- recursion calling HasTypeDesc.subjectStronglyNormalizing on each head; HasTypeDescFlat.subjectStronglyNormalizing
 -- is the headline; the five closed witnesses show each flat former TYPES and is SN.
 
 -- SN-006 (contingency spec, fallback-only): the Adjedj derivation-indexed LogRel.  Key finding: `HasTypeDescPi`

@@ -10,11 +10,11 @@ type, as seen by the engine — stated against the intrinsic `IsTypeDesc`
 
 The canonical formation validity is
 
-  `HasTypeDesc.classifierIsTypeDescNative` (`WfContextDescValidity.lean`)
+  `HasTypeDesc.classifierIsTypeDesc` (`WfContextDescValidity.lean`)
 
 over the native well-formedness `WfContextDesc`, whose `var` arm reads
 `WfContextDesc.lookupIsTypeDesc` directly.  Consumers thread `WfContextDesc` and call
-`classifierIsTypeDescNative`.
+`classifierIsTypeDesc`.
 
 This file is the import anchor that brings the intrinsic `IsTypeDesc` predicate
 (re-exported from `FX1Poly.Typed.IsTypeDesc`) into scope for the classifier-validity
@@ -26,7 +26,7 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
 -- The intrinsic native type-predicate `IsTypeDesc` lives in `FX1Poly.Typed.IsTypeDesc`
--- (imported above).  The formation classifier-validity is `HasTypeDesc.classifierIsTypeDescNative`
+-- (imported above).  The formation classifier-validity is `HasTypeDesc.classifierIsTypeDesc`
 -- (`WfContextDescValidity.lean`), over the native `WfContextDesc`.
 
 end FX1Poly.Typed

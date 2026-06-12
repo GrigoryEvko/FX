@@ -588,7 +588,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
    clusters kept together; full import block retained for namespace-sweep coverage) -/
 
 #assert_no_axioms FX1Poly.Typed.IsReducibleMemberAt.optionFormerFromTelescope
--- FLAG-UNIQUENESS substrate (GTL-09): the `levels ≠ []` guard of HasTypeDesc.uniquenessNative, made generic over
+-- FLAG-UNIQUENESS substrate (GTL-09): the `levels ≠ []` guard of HasTypeDesc.uniqueness, made generic over
 -- the formation generator. levels_length_eq_binderShifts is a structural telescope recursion (level list and
 -- shift list have equal length); typingRuleDescOf_binderShiftsNonEmpty is the ≥1-child-family table fact
 -- (pi/sigma both carry [0,1]) — extends by ONE by_cases row per ≥1-child data type code, breaks ONLY on a
@@ -612,7 +612,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.DescTermTelescope
 #assert_no_axioms FX1Poly.Typed.DescTelescope.toTermTelescope
 #assert_no_axioms FX1Poly.Typed.descTermTelescope_heterogeneous
-#assert_no_axioms FX1Poly.Typed.DescTelescope.childrenStronglyNormalizingNative
+#assert_no_axioms FX1Poly.Typed.DescTelescope.childrenStronglyNormalizing
 -- Generic former-TELESCOPE inversion (HasTypeDescFormerTelescopeInversion.lean): the wall-bearing half
 -- of the generic former inversion — recover the children DescTelescope for ANY formation generator. The
 -- documented dependent-subst wall (free generator vs arm generator) turned out NAVIGABLE in the
@@ -688,7 +688,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
     are refuted by `headGenerator` clash. -/
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionPiCodeTelescopeGeneral
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.inversionSigmaCodeTelescopeGeneral
-#assert_no_axioms FX1Poly.Typed.DescTelescope.uniquenessAgreeNative
+#assert_no_axioms FX1Poly.Typed.DescTelescope.uniquenessAgree
 -- GROWN CLASSIFIER-VALIDITY, the grown-engine payoff (HasTypeDescPiClassifierValidity.lean, WFG-3): a grown-typed
 -- subject's classifier is a grown type (IsTypeDescPi) under the EXTENDABLE WfContextDescPi — the leg the master SR
 -- dispatcher (SN-055/TG-3) consumes (WfContext can't extend at a grown piIntro binder; WfContextDescPi can). The

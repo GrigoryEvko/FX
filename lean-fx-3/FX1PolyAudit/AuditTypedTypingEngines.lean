@@ -657,7 +657,7 @@ import FX1Poly.Typed.FormationTableShapeFacts
 /-! ### Intrinsic VALIDITY of the description engine (`HasTypeDescValidity`).
     `IsTypeDesc` = the intrinsic "inhabits a universe" over `HasTypeDesc`; it gives the
     description engine its own metatheory.  (Native formation validity lands as
-    `HasTypeDesc.classifierIsTypeDescNative`, gated below.) -/
+    `HasTypeDesc.classifierIsTypeDesc`, gated below.) -/
 #assert_no_axioms FX1Poly.Typed.IsTypeDesc
 
 /-! ### INVERSION (P8 descent, premise half) for the description engine
@@ -840,12 +840,12 @@ import FX1Poly.Typed.FormationTableShapeFacts
 -- FORMATION VALIDITY over WfContextDesc (WfContextDescValidity.lean): a HasTypeDesc-typed cell's classifier is a
 -- formation type (IsTypeDesc), proved over WfContextDesc. The var arm reads WfContextDesc.lookupIsTypeDesc
 -- directly. The canonical formation validity.
-#assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDescNative
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.classifierIsTypeDesc
 -- FORMATION UNIQUENESS (P7) over WfContextDesc (WfContextDescUniqueness.lean): a genuine MUTUAL recursion
--- uniquenessNative/uniquenessAgreeNative — the head child recurses into uniquenessNative itself and the rest
+-- uniqueness/uniquenessAgree — the head child recurses into uniqueness itself and the rest
 -- extends via WfContextDesc.cons whose IsTypeDesc binding IS the head typing; arms invert via the param-free
 -- inversions. The canonical formation uniqueness.
-#assert_no_axioms FX1Poly.Typed.HasTypeDesc.uniquenessNative
+#assert_no_axioms FX1Poly.Typed.HasTypeDesc.uniqueness
 -- GROWN CONTEXT WELL-FORMEDNESS (WfContextDescPi.lean, WFG-1): the grown context predicate over IsTypeDescPi. It
 -- IS extendable at a grown piIntro binder (a grown domain typing is an IsTypeDescPi) — the substrate prerequisite
 -- the master SR dispatcher (TG-3/SN-055) threads through binders. Structural-recursion def + And-projection
@@ -1223,7 +1223,7 @@ the strong equation one green commit at a time, then the table flips. -/
 #assert_no_axioms FX1Poly.Typed.flatFormationRuleImpliesNotVariable
 #assert_no_axioms FX1Poly.Typed.flatFormationRuleIsUniverseFormer
 -- FLAT-ENGINE VALIDITY + TELESCOPE AGREEMENT (#939): formation-engine-parity properties.
--- classifierIsTypeDescNative = flat regularity (UNCONDITIONAL — flat has no var arm, classifier always a universe
+-- classifierIsTypeDesc = flat regularity (UNCONDITIONAL — flat has no var arm, classifier always a universe
 -- code; lighter than the formation twin which needs WfContextDesc). FlatDescTelescope.uniquenessAgree = two flat
 -- telescopes over equal children agree on levels/flag (the uniqueness substrate; flat rest-recursion keeps the
 -- SAME context, no WfContextDesc.cons). The uniqueness headline itself is DEFERRED (propext via dependent mkGen

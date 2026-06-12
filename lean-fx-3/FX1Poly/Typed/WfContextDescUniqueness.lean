@@ -5,20 +5,20 @@ import FX1Poly.Typed.UniverseCodeConversion
 /-! # FX1Poly/Typed/WfContextDescUniqueness — uniqueness of typing (P7) over WfContextDesc
 
 Uniqueness of typing (P7 — any two classifiers a cell receives are convertible) over the `WfContextDesc`
-substrate, as a genuine MUTUAL recursion `uniquenessNative` / `uniquenessAgreeNative`: the head child recurses
-into `uniquenessNative` itself, and the rest-telescope recursion extends the context via `WfContextDesc.cons`,
+substrate, as a genuine MUTUAL recursion `uniqueness` / `uniquenessAgree`: the head child recurses
+into `uniqueness` itself, and the rest-telescope recursion extends the context via `WfContextDesc.cons`,
 whose `IsTypeDesc` binding IS the head typing directly.  The arms invert the second derivation with the
 formation inversions, param-free.  The canonical uniqueness, threaded by consumers over `WfContextDesc`.
 
-## Mutual structure (`uniquenessNative` / `uniquenessAgreeNative`)
+## Mutual structure (`uniqueness` / `uniquenessAgree`)
 
-  * `uniquenessNative` — recursion on the FIRST derivation: `var` / `universeFormation` invert the second
+  * `uniqueness` — recursion on the FIRST derivation: `var` / `universeFormation` invert the second
     derivation with `inversionVariable` / `inversionUniverseCode` and `.sym`; `conv` recurses via the
     unconditional raw `Conv.trans`; `genFormation` inverts the second via `inversionFormerWithConvGeneric`,
-    forces telescope agreement via `uniquenessAgreeNative`, and the classifiers reduce to the same canonical
+    forces telescope agreement via `uniquenessAgree`, and the classifiers reduce to the same canonical
     universe code.
-  * `uniquenessAgreeNative` — STANDALONE-shaped recursion on the first telescope, but MUTUAL with
-    `uniquenessNative`: each head child's level/flag is settled by `uniquenessNative` (the head child is a
+  * `uniquenessAgree` — STANDALONE-shaped recursion on the first telescope, but MUTUAL with
+    `uniqueness`: each head child's level/flag is settled by `uniqueness` (the head child is a
     structural sub-derivation), and the rest extends via `WfContextDesc.cons` with the head typing as the
     `IsTypeDesc` binding.  Equation-`match` form so the mutual recursion is recognised structural.
 
@@ -39,9 +39,9 @@ mutual
 
 /-- **Uniqueness of typing (P7) over `WfContextDesc`.**  Any two classifiers a description-engine
 cell receives are convertible.  Recursion on the FIRST derivation; the `genFormation` head children are settled
-by `uniquenessNative` itself (mutual with `uniquenessAgreeNative`).  The canonical uniqueness, threaded by
+by `uniqueness` itself (mutual with `uniquenessAgree`).  The canonical uniqueness, threaded by
 consumers over `WfContextDesc`. -/
-theorem HasTypeDesc.uniquenessNative {profile : PolyProfile} {scope : Nat}
+theorem HasTypeDesc.uniqueness {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {subject firstClassifier : RawTerm scope}
     (derivation : HasTypeDesc profile context subject firstClassifier)
@@ -55,7 +55,7 @@ theorem HasTypeDesc.uniquenessNative {profile : PolyProfile} {scope : Nat}
   | .conv _levelExpr _flag typedPremise converts _reclassifierTyped =>
       fun secondDerivation =>
         Conv.trans converts.sym
-          (HasTypeDesc.uniquenessNative typedPremise wellFormed secondDerivation)
+          (HasTypeDesc.uniqueness typedPremise wellFormed secondDerivation)
   | .universeFormation _context _levelExpr _flag => fun secondDerivation =>
       (HasTypeDesc.inversionUniverseCode secondDerivation).sym
   | .genFormation _context generator _payload _children levels flag rule
@@ -73,7 +73,7 @@ theorem HasTypeDesc.uniquenessNative {profile : PolyProfile} {scope : Nat}
         obtain ⟨secondLevels, secondFlag, secondTelescope, secondConv⟩ :=
           HasTypeDesc.inversionFormerWithConvGeneric secondDerivation isFormation rfl
         obtain ⟨levelsEq, flagImplication⟩ :=
-          DescTelescope.uniquenessAgreeNative premises secondTelescope wellFormed rfl
+          DescTelescope.uniquenessAgree premises secondTelescope wellFormed rfl
         have levelsNonEmpty : levels ≠ [] :=
           DescTelescope.levels_ne_nil_of_isFormation isFormation isNullary premises
         have flagEq : flag = secondFlag := flagImplication levelsNonEmpty
@@ -82,10 +82,10 @@ theorem HasTypeDesc.uniquenessNative {profile : PolyProfile} {scope : Nat}
 
 /-- Two formation telescopes over CONVERTIBLY-EQUAL children agree on `levels`, and — when non-empty — on
 `flag`, over `WfContextDesc`.  STANDALONE-shaped recursion on the first telescope but MUTUAL with
-`uniquenessNative`: each head child's level/flag is settled by `uniquenessNative` (the head child is a structural
+`uniqueness`: each head child's level/flag is settled by `uniqueness` (the head child is a structural
 sub-derivation); the rest extends via `WfContextDesc.cons` whose `IsTypeDesc` binding is the head typing
 itself. -/
-theorem DescTelescope.uniquenessAgreeNative {profile : PolyProfile}
+theorem DescTelescope.uniquenessAgree {profile : PolyProfile}
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
     {context : TypingContext profile (baseScope + currentDepth)}
     {levels1 levels2 : List LevelExpr} {flag1 flag2 : UniverseFlag}
@@ -105,11 +105,11 @@ theorem DescTelescope.uniquenessAgreeNative {profile : PolyProfile}
         subst restTermEq
         have headConv :
             Conv (universeCodeCell headLevel1 flag1) (universeCodeCell headLevel2 flag2) :=
-          HasTypeDesc.uniquenessNative headTyped1 wellFormed headTyped2
+          HasTypeDesc.uniqueness headTyped1 wellFormed headTyped2
         obtain ⟨headLevelEq, flagEq⟩ :=
           universeCodeCell_inj_of_conv headConv
         obtain ⟨restLevelsEq, _restFlagImplication⟩ :=
-          DescTelescope.uniquenessAgreeNative restTyped1 restTyped2
+          DescTelescope.uniquenessAgree restTyped1 restTyped2
             (WfContextDesc.cons wellFormed ⟨headLevel1, flag1, headTyped1⟩) rfl
         exact ⟨by rw [headLevelEq, restLevelsEq], fun _ => flagEq⟩
 

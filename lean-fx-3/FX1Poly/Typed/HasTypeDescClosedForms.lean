@@ -33,12 +33,12 @@ All THREE closed-form consequences are proved on the native formation-engine rec
   head-to-children reconstructions `eq_{piTyCodeCell,sigmaTyCodeCell,universeCodeCell}_of_headGenerator`
   (`UniverseCodeShape.lean` / `SigmaCodeShape.lean`, the `childCons` dependent-index drilling);
 * `closedClassifierConvUniverseCode` consumes `closedSubjectIsTypeDesc` and the uniqueness
-  `HasTypeDesc.uniquenessNative` (over `WfContextDesc.emptyIsWellFormed`).
+  `HasTypeDesc.uniqueness` (over `WfContextDesc.emptyIsWellFormed`).
 
 ## Zero-axiom verification
 
 The native proofs use the propext-free formation recursion + `typingRuleDescOf_output_isUniverseCode` + the
-native uniqueness (`HasTypeDesc.uniquenessNative`) + the native head-canonical-forms + the `eq_*_of_headGenerator`
+native uniqueness (`HasTypeDesc.uniqueness`) + the native head-canonical-forms + the `eq_*_of_headGenerator`
 reconstructions.  No `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -117,7 +117,7 @@ theorem HasTypeDesc.closedSubjectIsTypeFormer {profile : PolyProfile}
 
 /-- Consistency-facing classifier shape for the description formation engine: every closed
 description-typed subject has a classifier convertible to a universe code.  `closedSubjectIsTypeDesc`
-supplies the subject's universe typing, and the uniqueness `HasTypeDesc.uniquenessNative` (over
+supplies the subject's universe typing, and the uniqueness `HasTypeDesc.uniqueness` (over
 `WfContextDesc.emptyIsWellFormed`) reconciles it with the actual classifier. -/
 theorem HasTypeDesc.closedClassifierConvUniverseCode {profile : PolyProfile}
     {subject classifier : RawTerm 0}
@@ -126,6 +126,6 @@ theorem HasTypeDesc.closedClassifierConvUniverseCode {profile : PolyProfile}
       Conv classifier (universeCodeCell levelExpr flag) := by
   obtain ⟨levelExpr, flag, subjectTypedAtUniverse⟩ := HasTypeDesc.closedSubjectIsTypeDesc typed
   exact ⟨levelExpr, flag,
-    HasTypeDesc.uniquenessNative typed WfContextDesc.emptyIsWellFormed subjectTypedAtUniverse⟩
+    HasTypeDesc.uniqueness typed WfContextDesc.emptyIsWellFormed subjectTypedAtUniverse⟩
 
 end FX1Poly.Typed

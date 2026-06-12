@@ -74,7 +74,7 @@ their level and flag.  Both `mk` constructors expose the shared carrier head (th
 Stated over a FREE-variable `shifts` index (not `generator.binderShifts`): the telescope `cases` must unify the
 children index against the `mk` constructor's `childCons (shift := 0) carrier rest`, and that unification only
 goes through when the shift list is a free variable Lean can substitute — an opaque `generator.binderShifts`
-projection would leave dependent elimination stuck.  `uniquenessNative` applies this lemma at the concrete
+projection would leave dependent elimination stuck.  `uniqueness` applies this lemma at the concrete
 `generator1.binderShifts` AFTER it has the two telescopes in hand, so the stuck-index `cases` never happens at
 the call site. -/
 theorem TermIndexedFormerTelescope.levelFlagAgree {profile : PolyProfile} {scope : Nat}
@@ -98,7 +98,7 @@ subject under a grown-well-formed context have definitionally-`Conv` classifiers
 type-checker rests on.  The term-indexed analogue of the union's `flatFormation`-arm uniqueness: the carrier head is
 shared, so the grown `convUniverseClassificationUnique` (via `TermIndexedFormerTelescope.levelFlagAgree`) settles
 the two carrier-universe classifiers' level + flag, and the outputs (`universeCodeCell levelᵢ flagᵢ`) coincide. -/
-theorem HasTypeDescTermIndexedFormer.uniquenessNative {profile : PolyProfile} {scope : Nat}
+theorem HasTypeDescTermIndexedFormer.uniqueness {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier1 classifier2 : RawTerm scope}
     (derivation1 : HasTypeDescTermIndexedFormer profile context subject classifier1)
     (derivation2 : HasTypeDescTermIndexedFormer profile context subject classifier2)
