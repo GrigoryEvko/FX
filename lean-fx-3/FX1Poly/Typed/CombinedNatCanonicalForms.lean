@@ -57,11 +57,15 @@ theorem closedNormalNatCanonicalFormsCombined {profile : PolyProfile} {subject :
   | ofNatIntro natTyped =>
       exact HasTypeDescNatIntro.subjectIsNatNumeral natTyped
   | ofBoolIntro boolTyped =>
-      rcases HasTypeDescDataIntro.classifierIsNullaryTypeCell boolTyped with
-        hClassifier | hClassifier | hClassifier
+      rcases HasTypeDescDataIntro.subjectClassifierCoordinated boolTyped with
+        ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩
+          | ⟨_, hClassifier⟩ | ⟨hSubject, _⟩
       · exact nomatch congrArg RawTerm.headGenerator hClassifier
       · exact nomatch congrArg RawTerm.headGenerator hClassifier
       · exact nomatch congrArg RawTerm.headGenerator hClassifier
+      · exact nomatch congrArg RawTerm.headGenerator hClassifier
+      · exact nomatch congrArg RawTerm.headGenerator hClassifier
+      · exact hSubject ▸ IsNatNumeral.zero
   | ofListIntro listTyped =>
       obtain ⟨elementType, classifierEq⟩ := HasTypeDescListIntro.classifierIsList listTyped
       exact nomatch congrArg RawTerm.headGenerator classifierEq

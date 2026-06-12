@@ -176,7 +176,8 @@ theorem dataIntroReservedUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
     (typed : HasTypeDescDataIntro profile context subject classifier) : False := by
-  rcases HasTypeDescDataIntro.subjectIsNullaryValueCell typed with rfl | rfl | rfl | rfl | rfl <;>
+  rcases HasTypeDescDataIntro.subjectIsNullaryValueCell typed with
+      rfl | rfl | rfl | rfl | rfl | rfl <;>
     exact Bool.noConfusion reserved
 
 /-- NAT-INTRO engine (`natZero` / `natSucc`). -/

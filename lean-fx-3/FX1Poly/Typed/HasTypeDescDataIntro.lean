@@ -58,6 +58,7 @@ def dataIntroNullaryRuleDescOf (generator : Generator) : Option DataIntroNullary
   else if generator = .gen_unit then some { outputTypeCode := fun _ => unitTypeCell }
   else if generator = .gen_interval0 then some { outputTypeCode := fun _ => intervalTypeCell }
   else if generator = .gen_interval1 then some { outputTypeCode := fun _ => intervalTypeCell }
+  else if generator = .gen_natZero then some { outputTypeCode := fun _ => natTypeCell }
   else none
 
 /-- `gen_unit` introduces a member of `unitCode` (metadata check, `rfl` on the diagonal) — the unit
@@ -74,6 +75,10 @@ theorem dataIntroNullaryRuleDescOf_boolTrue :
       = some { outputTypeCode := fun _ => boolTypeCell } := rfl
 
 /-- `gen_boolFalse` introduces a member of `boolCode` (metadata check). -/
+theorem dataIntroNullaryRuleDescOf_natZero :
+    dataIntroNullaryRuleDescOf .gen_natZero
+      = some { outputTypeCode := fun _ => natTypeCell } := rfl
+
 theorem dataIntroNullaryRuleDescOf_boolFalse :
     dataIntroNullaryRuleDescOf .gen_boolFalse
       = some { outputTypeCode := fun _ => boolTypeCell } := rfl

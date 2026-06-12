@@ -62,7 +62,7 @@ theorem dataIntroNullaryRuleDescOf_outputSubstStable {generator : Generator}
     RawTerm.subst substitution (rule.outputTypeCode sourceScope)
       = rule.outputTypeCode targetScope := by
   rcases dataIntroNullaryRuleDescOf_isNullaryValueConstructor isDataIntro with
-    hTrue | hFalse | hUnit | hZero | hOne
+    hTrue | hFalse | hUnit | hZero | hOne | hNatZero
   · subst hTrue
     have hrule : rule = { outputTypeCode := fun _ => boolTypeCell } :=
       (Option.some.inj isDataIntro).symm
@@ -85,6 +85,11 @@ theorem dataIntroNullaryRuleDescOf_outputSubstStable {generator : Generator}
     rfl
   · subst hOne
     have hrule : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+      (Option.some.inj isDataIntro).symm
+    rw [hrule]
+    rfl
+  · subst hNatZero
+    have hrule : rule = { outputTypeCode := fun _ => natTypeCell } :=
       (Option.some.inj isDataIntro).symm
     rw [hrule]
     rfl

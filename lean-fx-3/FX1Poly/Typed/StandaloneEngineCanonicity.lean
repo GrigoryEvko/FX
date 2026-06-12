@@ -52,6 +52,7 @@ theorem standaloneBoolCanonicalForms {profile : PolyProfile} {scope : Nat}
   rcases typed with dataIntroTyped | baseTypeTyped
   · rcases dataIntroTyped.subjectClassifierCoordinated with
       ⟨hSubject, _⟩ | ⟨hSubject, _⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩
+        | ⟨_, hClassifier⟩
     · exact Or.inl hSubject
     · exact Or.inr hSubject
     · exact Generator.noConfusion
@@ -63,6 +64,9 @@ theorem standaloneBoolCanonicalForms {profile : PolyProfile} {scope : Nat}
     · exact Generator.noConfusion
         (congrArg RawTerm.headGenerator hClassifier :
           Generator.gen_boolCode = Generator.gen_intervalCode)
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_boolCode = Generator.gen_natCode)
   · exact Generator.noConfusion
       (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
         Generator.gen_boolCode = Generator.gen_universeCode)
@@ -83,6 +87,7 @@ theorem standaloneIntervalCanonicalForms {profile : PolyProfile} {scope : Nat}
   rcases typed with dataIntroTyped | baseTypeTyped
   · rcases dataIntroTyped.subjectClassifierCoordinated with
       ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨hSubject, _⟩ | ⟨hSubject, _⟩
+        | ⟨_, hClassifier⟩
     · exact Generator.noConfusion
         (congrArg RawTerm.headGenerator hClassifier :
           Generator.gen_intervalCode = Generator.gen_boolCode)
@@ -94,6 +99,9 @@ theorem standaloneIntervalCanonicalForms {profile : PolyProfile} {scope : Nat}
           Generator.gen_intervalCode = Generator.gen_unitCode)
     · exact Or.inl hSubject
     · exact Or.inr hSubject
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_intervalCode = Generator.gen_natCode)
   · exact Generator.noConfusion
       (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
         Generator.gen_intervalCode = Generator.gen_universeCode)
@@ -131,7 +139,7 @@ theorem standaloneEmptyUninhabited {profile : PolyProfile} {scope : Nat}
     False := by
   rcases typed with dataIntroTyped | baseTypeTyped
   · rcases dataIntroTyped.classifierIsNullaryTypeCell with
-      hClassifier | hClassifier | hClassifier
+      hClassifier | hClassifier | hClassifier | hClassifier
     · exact Generator.noConfusion
         (congrArg RawTerm.headGenerator hClassifier :
           Generator.gen_emptyCode = Generator.gen_boolCode)
@@ -141,6 +149,9 @@ theorem standaloneEmptyUninhabited {profile : PolyProfile} {scope : Nat}
     · exact Generator.noConfusion
         (congrArg RawTerm.headGenerator hClassifier :
           Generator.gen_emptyCode = Generator.gen_intervalCode)
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_emptyCode = Generator.gen_natCode)
   · exact Generator.noConfusion
       (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
         Generator.gen_emptyCode = Generator.gen_universeCode)
@@ -157,7 +168,7 @@ theorem dataIntroAndBaseTypeSubjectsDisjoint {profile : PolyProfile} {scope : Na
     (baseTypeTyped : HasTypeDescBaseType profile context subject typeClassifier) :
     False := by
   rcases dataIntroTyped.subjectIsNullaryValueCell with
-      valueEq | valueEq | valueEq | valueEq | valueEq <;>
+      valueEq | valueEq | valueEq | valueEq | valueEq | valueEq <;>
     rcases baseTypeTyped.subjectIsBaseTypeCode with
       typeEq | typeEq | typeEq | typeEq | typeEq <;>
       (rw [valueEq] at typeEq

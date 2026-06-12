@@ -160,7 +160,7 @@ theorem closedNormalSigmaTypeUninhabited {profile : PolyProfile} {subject : RawT
     False := by
   rcases typed with dataIntroTyped | baseTypeTyped | grownTyped
   · rcases dataIntroTyped.classifierIsNullaryTypeCell with
-      hClassifier | hClassifier | hClassifier
+      hClassifier | hClassifier | hClassifier | hClassifier
     · exact Generator.noConfusion
         (congrArg RawTerm.headGenerator hClassifier :
           Generator.gen_sigmaTyCode = Generator.gen_boolCode)
@@ -170,6 +170,9 @@ theorem closedNormalSigmaTypeUninhabited {profile : PolyProfile} {subject : RawT
     · exact Generator.noConfusion
         (congrArg RawTerm.headGenerator hClassifier :
           Generator.gen_sigmaTyCode = Generator.gen_intervalCode)
+    · exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator hClassifier :
+          Generator.gen_sigmaTyCode = Generator.gen_natCode)
   · exact Generator.noConfusion
       (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
         Generator.gen_sigmaTyCode = Generator.gen_universeCode)

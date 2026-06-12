@@ -59,7 +59,8 @@ theorem dataIntroNullaryRuleDescOf_isNullaryValueConstructor {generator : Genera
     {rule : DataIntroNullaryRuleDesc}
     (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :
     generator = .gen_boolTrue ∨ generator = .gen_boolFalse ∨ generator = .gen_unit ∨
-      generator = .gen_interval0 ∨ generator = .gen_interval1 := by
+      generator = .gen_interval0 ∨ generator = .gen_interval1 ∨
+      generator = .gen_natZero := by
   by_cases hTrue : generator = .gen_boolTrue
   · exact Or.inl hTrue
   · by_cases hFalse : generator = .gen_boolFalse
@@ -69,12 +70,14 @@ theorem dataIntroNullaryRuleDescOf_isNullaryValueConstructor {generator : Genera
       · by_cases hZero : generator = .gen_interval0
         · exact Or.inr (Or.inr (Or.inr (Or.inl hZero)))
         · by_cases hOne : generator = .gen_interval1
-          · exact Or.inr (Or.inr (Or.inr (Or.inr hOne)))
-          · exfalso
-            dsimp only [dataIntroNullaryRuleDescOf] at isDataIntro
-            rw [if_neg hTrue, if_neg hFalse, if_neg hUnit, if_neg hZero, if_neg hOne]
-              at isDataIntro
-            contradiction
+          · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl hOne))))
+          · by_cases hNatZero : generator = .gen_natZero
+            · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr hNatZero))))
+            · exfalso
+              dsimp only [dataIntroNullaryRuleDescOf] at isDataIntro
+              rw [if_neg hTrue, if_neg hFalse, if_neg hUnit, if_neg hZero, if_neg hOne,
+                if_neg hNatZero] at isDataIntro
+              contradiction
 
 /-- **★ Closed canonical forms for the data-intro judgment: a typed subject is a bool constructor.**
 Every term typed by `HasTypeDescDataIntro` is `boolTrueCell` or `boolFalseCell` — the closed-
@@ -86,11 +89,12 @@ theorem HasTypeDescDataIntro.subjectIsNullaryValueCell {profile : PolyProfile} {
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeDescDataIntro profile context subject classifier) :
     subject = boolTrueCell ∨ subject = boolFalseCell ∨ subject = unitCell ∨
-      subject = intervalZeroValueCell ∨ subject = intervalOneValueCell := by
+      subject = intervalZeroValueCell ∨ subject = intervalOneValueCell ∨
+      subject = natZeroCell := by
   cases derivation with
   | nullaryIntro generator payload children rule isDataIntro =>
       rcases dataIntroNullaryRuleDescOf_isNullaryValueConstructor isDataIntro with
-        hTrue | hFalse | hUnit | hZero | hOne
+        hTrue | hFalse | hUnit | hZero | hOne | hNatZero
       · subst hTrue
         cases payload
         cases children
@@ -110,6 +114,10 @@ theorem HasTypeDescDataIntro.subjectIsNullaryValueCell {profile : PolyProfile} {
       · subst hOne
         cases payload
         cases children
-        exact Or.inr (Or.inr (Or.inr (Or.inr rfl)))
+        exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl rfl))))
+      · subst hNatZero
+        cases payload
+        cases children
+        exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr rfl))))
 
 end FX1Poly.Typed

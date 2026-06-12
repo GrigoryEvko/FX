@@ -106,12 +106,13 @@ theorem closedNormalSubjectHeadCombined {profile : PolyProfile} {scope : Nat}
       · exact headEq ▸ IsCombinedValueHead.unitCode
   | ofBoolIntro boolTyped =>
       rcases HasTypeDescDataIntro.subjectIsNullaryValueCell boolTyped with
-        subjectEq | subjectEq | subjectEq | subjectEq | subjectEq
+        subjectEq | subjectEq | subjectEq | subjectEq | subjectEq | subjectEq
       · exact subjectEq ▸ IsCombinedValueHead.boolTrue
       · exact subjectEq ▸ IsCombinedValueHead.boolFalse
       · exact subjectEq ▸ IsCombinedValueHead.unit
       · exact subjectEq ▸ IsCombinedValueHead.interval0
       · exact subjectEq ▸ IsCombinedValueHead.interval1
+      · exact subjectEq ▸ IsCombinedValueHead.natZero
   | ofNatIntro natTyped =>
       rcases HasTypeDescNatIntro.subjectIsNatConstructor natTyped with
         subjectEq | ⟨predecessor, subjectEq⟩

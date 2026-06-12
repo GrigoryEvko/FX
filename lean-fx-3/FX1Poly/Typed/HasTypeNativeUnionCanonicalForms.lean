@@ -890,7 +890,8 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
       exact (laneTarget.notConvFromUniverse convToTarget).elim
   | ofDataIntro dataTyped =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rcases dataTyped.classifierIsNullaryTypeCell with classifierEq | classifierEq | classifierEq
+      rcases dataTyped.classifierIsNullaryTypeCell with
+        classifierEq | classifierEq | classifierEq | classifierEq
       · rw [classifierEq] at convToTarget dataTyped
         have targetEq := laneTarget.pinnedByBoolHead convToTarget
           (fun _reduct chain => headReaches_boolTypeCell chain)
@@ -913,6 +914,29 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)).elim
+      · rw [classifierEq] at convToTarget
+        have targetEq := laneTarget.pinnedByNatHead convToTarget
+          (fun _reduct chain => headReaches_natTypeCell chain)
+        rcases dataTyped.subjectClassifierCoordinated with
+          ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩
+            | ⟨_, hClassifier⟩ | ⟨hSubject, _⟩
+        · exact Generator.noConfusion (congrArg RawTerm.headGenerator
+            (classifierEq.symm.trans hClassifier) :
+              Generator.gen_natCode = Generator.gen_boolCode)
+        · exact Generator.noConfusion (congrArg RawTerm.headGenerator
+            (classifierEq.symm.trans hClassifier) :
+              Generator.gen_natCode = Generator.gen_boolCode)
+        · exact Generator.noConfusion (congrArg RawTerm.headGenerator
+            (classifierEq.symm.trans hClassifier) :
+              Generator.gen_natCode = Generator.gen_unitCode)
+        · exact Generator.noConfusion (congrArg RawTerm.headGenerator
+            (classifierEq.symm.trans hClassifier) :
+              Generator.gen_natCode = Generator.gen_intervalCode)
+        · exact Generator.noConfusion (congrArg RawTerm.headGenerator
+            (classifierEq.symm.trans hClassifier) :
+              Generator.gen_natCode = Generator.gen_intervalCode)
+        · rw [targetEq, hSubject]
+          exact LaneValue.natZero
   | ofTermIndexedFormer formerTyped =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
       cases formerTyped with

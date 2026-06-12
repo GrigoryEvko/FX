@@ -325,12 +325,13 @@ theorem tableClassifierResidualHeadsLive :
     hasTableTypingRule .gen_var = true ∧ hasTableTypingRule .gen_universeCode = true :=
   ⟨rfl, rfl, rfl, rfl⟩
 
-/-- The residual heads carry NO native-union data-intro/elim table row (the reason they stay decides): the
-two-branch / projection / recursive-unary / recursive-binary tables all return `none` on `natZero`. -/
-theorem natZeroHasNoNativeIntroTable :
+/-- The natZero table residency after the NATIVE-42 drain: the native-union recursive/free-type
+tables still return `none` on `natZero` (it is not recursive and its element type is not free), but
+the nullary DATA-INTRO table now carries its row — `natZero` is table-covered, no longer a decide. -/
+theorem natZeroNativeIntroTableResidency :
     (nativeRecursiveUnaryDataIntroRuleOf .gen_natZero).isSome = false ∧
     (nativeNullaryFreeTypeDataIntroRuleOf .gen_natZero).isSome = false ∧
-    (dataIntroNullaryRuleDescOf .gen_natZero).isSome = false :=
+    (dataIntroNullaryRuleDescOf .gen_natZero).isSome = true :=
   ⟨rfl, rfl, rfl⟩
 
 end FX1Poly.Typed

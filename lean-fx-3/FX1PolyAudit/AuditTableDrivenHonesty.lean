@@ -62,7 +62,7 @@ namespace FX1PolyAudit
 /-! ## The irreducible four-decide residual -/
 
 #assert_no_axioms FX1Poly.Typed.tableClassifierResidualHeadsLive
-#assert_no_axioms FX1Poly.Typed.natZeroHasNoNativeIntroTable
+#assert_no_axioms FX1Poly.Typed.natZeroNativeIntroTableResidency
 
 /-! ## The union-divergence findings (the honesty ledger is stale vs the union) -/
 

@@ -173,14 +173,14 @@ def isHardcodedClassifierHead (g : Generator) : Bool :=
 `decide` chain.  NATIVE-06 drained `gen_intervalCode` (now a `baseTypeRuleDescOf` formation row, so
 table-covered) — the campaign's first metric drain (22 → 21). -/
 def hardcodedClassifierHeads : List Generator :=
-  [.gen_natZero, .gen_natSucc, .gen_refl, .gen_optionNone, .gen_optionSome,
+  [.gen_natSucc, .gen_refl, .gen_optionNone, .gen_optionSome,
    .gen_eitherInl, .gen_eitherInr, .gen_pair, .gen_listNil, .gen_listCons,
    .gen_boolElim, .gen_idJ, .gen_optionMatch, .gen_eitherMatch, .gen_fst, .gen_snd,
    .gen_var, .gen_universeCode, .gen_bridgeCode,
    .gen_pathLam, .gen_pathApp]
 
-/-- The roster has 21 heads (the current frankenstein metric, after the NATIVE-06 interval drain). -/
-theorem hardcodedClassifierHeadCount : hardcodedClassifierHeads.length = 21 := rfl
+/-- The roster has 20 heads (after the NATIVE-06 interval drain and the NATIVE-42 natZero drain). -/
+theorem hardcodedClassifierHeadCount : hardcodedClassifierHeads.length = 20 := rfl
 
 /-- **★ Every rostered head IS genuinely hardcoded** — live yet table-uncovered, machine-checked
 by `decide` over all 21.  This is the metric's truthfulness: the roster is not a hand-maintained
@@ -203,13 +203,13 @@ theorem bespokePrimitives_areHardcoded :
 to zero as their rows land (NATIVE-06..40); the metric target is the 2-element bespoke floor.
 NATIVE-06 drained `gen_intervalCode` (the first drain, into `baseTypeRuleDescOf`). -/
 def migratableHardcodedHeads : List Generator :=
-  [.gen_natZero, .gen_natSucc, .gen_refl, .gen_optionNone, .gen_optionSome,
+  [.gen_natSucc, .gen_refl, .gen_optionNone, .gen_optionSome,
    .gen_eitherInl, .gen_eitherInr, .gen_pair, .gen_listNil, .gen_listCons,
    .gen_boolElim, .gen_idJ, .gen_optionMatch, .gen_eitherMatch, .gen_fst, .gen_snd,
    .gen_bridgeCode, .gen_pathLam, .gen_pathApp]
 
-/-- Nineteen migratable heads (21 roster − 2 bespoke), after the NATIVE-06 interval drain. -/
-theorem migratableHardcodedHeadCount : migratableHardcodedHeads.length = 19 := rfl
+/-- Eighteen migratable heads (20 roster − 2 bespoke), after the interval and natZero drains. -/
+theorem migratableHardcodedHeadCount : migratableHardcodedHeads.length = 18 := rfl
 
 /-- Every migratable head is currently hardcoded (machine-checked) — the drain target set. -/
 theorem migratableHeads_areHardcoded :
@@ -224,10 +224,11 @@ structure FrankensteinMetric where
   /-- Migratable = current − floor; drains to 0 over the campaign. -/
   migratable : Nat
 
-/-- The current metric: 21 hardcoded / 2 floor / 19 migratable — after the NATIVE-06 interval drain
-(22 → 21, the campaign's first metric reduction; `gen_intervalCode` is now a `baseTypeRuleDescOf` row). -/
+/-- The current metric: 20 hardcoded / 2 floor / 18 migratable — after the NATIVE-06 interval drain
+(22 → 21) and the NATIVE-42 natZero drain (21 → 20; `gen_natZero` is now a
+`dataIntroNullaryRuleDescOf` row). -/
 def frankensteinMetric : FrankensteinMetric :=
-  { current := 21, floor := 2, migratable := 19 }
+  { current := 20, floor := 2, migratable := 18 }
 
 /-- The metric's `current` is tied to the machine-checked roster length (not a free number). -/
 theorem frankensteinMetric_current_matchesRoster :
