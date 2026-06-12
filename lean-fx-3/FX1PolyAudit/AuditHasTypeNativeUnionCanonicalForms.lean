@@ -88,3 +88,9 @@ open FX1Poly.Core FX1Poly.Typed
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalProductCanonicalForms
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalIdentityCanonicalForms
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalPiCanonicalForms
+
+/-! ## The list lane (the lane the master was missing) -/
+
+#assert_no_axioms FX1Poly.Typed.LaneValue.atList
+#assert_no_axioms FX1Poly.Typed.IsLaneCode.pinnedByListHead
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalListCanonicalForms

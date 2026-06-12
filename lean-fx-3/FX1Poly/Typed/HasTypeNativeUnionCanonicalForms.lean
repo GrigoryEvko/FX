@@ -300,6 +300,7 @@ inductive IsLaneCode : {scope : Nat} → RawTerm scope → Prop where
       IsLaneCode (idTypeCell typeCode leftEndpoint rightEndpoint)
   | pi {scope : Nat} (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) :
       IsLaneCode (piTyCodeCell domainCode codomainCode)
+  | list {scope : Nat} (elementType : RawTerm scope) : IsLaneCode (listTypeCell elementType)
 
 /-- SHALLOW lane values: only the head constructor shape is recorded (an iota rule inspects exactly the
 scrutinee's head), and the lane parameters are fully decoupled from the value's own components (no
@@ -326,6 +327,10 @@ inductive LaneValue : {scope : Nat} → RawTerm scope → RawTerm scope → Prop
   | lam {scope : Nat} (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1))
       (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)) :
       LaneValue (piTyCodeCell domainCode codomainCode) (lamCell domainAnn body)
+  | listNil {scope : Nat} (elementType : RawTerm scope) :
+      LaneValue (listTypeCell elementType) listNilCell
+  | listCons {scope : Nat} (elementType headValue tailList : RawTerm scope) :
+      LaneValue (listTypeCell elementType) (listConsCell headValue tailList)
 
 /-! ## Per-lane value extraction (index discrimination) -/
 
@@ -387,6 +392,15 @@ theorem LaneValue.atPi {scope : Nat} {domainCode subject : RawTerm scope}
   cases laneValue with
   | lam _ _ domainAnn body => exact ⟨domainAnn, body, rfl⟩
 
+/-- A list-lane value is a `listNil` or a `listCons`. -/
+theorem LaneValue.atList {scope : Nat} {elementType subject : RawTerm scope}
+    (laneValue : LaneValue (listTypeCell elementType) subject) :
+    subject = listNilCell ∨
+    ∃ (headValue tailList : RawTerm scope), subject = listConsCell headValue tailList := by
+  cases laneValue with
+  | listNil _ => exact Or.inl rfl
+  | listCons _ headValue tailList => exact Or.inr ⟨headValue, tailList, rfl⟩
+
 /-! ## The lane-mismatch refuter (one call per cross-lane classifier clash) -/
 
 /-- `unitCode` is a no-step leaf. -/
@@ -432,7 +446,8 @@ theorem IsLaneCode.refuteConvFromStableHead {scope : Nat} {classifier target : R
     (notEither : classifierHead = .gen_eitherCode → False)
     (notProduct : classifierHead = .gen_productCode → False)
     (notIdentity : classifierHead = .gen_idCode → False)
-    (notPi : classifierHead = .gen_piTyCode → False) : False := by
+    (notPi : classifierHead = .gen_piTyCode → False)
+    (notList : classifierHead = .gen_listCode → False) : False := by
   cases laneTarget with
   | bool =>
       exact Conv.refutedByDistinctStableHeads convToTarget classifierStable
@@ -455,6 +470,9 @@ theorem IsLaneCode.refuteConvFromStableHead {scope : Nat} {classifier target : R
   | pi domainCode codomainCode =>
       exact Conv.refutedByDistinctStableHeads convToTarget classifierStable
         (fun _reduct chain => headReaches_piTyCodeCell chain) notPi
+  | list elementType =>
+      exact Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_listTypeCell chain) notList
 
 /-- A universe code is never `Conv` a lane code (the classifier shape of every former arm). -/
 theorem IsLaneCode.notConvFromUniverse {scope : Nat} {target : RawTerm scope}
@@ -466,6 +484,7 @@ theorem IsLaneCode.notConvFromUniverse {scope : Nat} {target : RawTerm scope}
     (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
     (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
     (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
+    (fun headsEq => Generator.noConfusion headsEq)
     (fun headsEq => Generator.noConfusion headsEq)
 
 /-! ## The seven lane-pinning lemmas (a stable classifier head pins the lane uniquely) -/
@@ -502,6 +521,10 @@ theorem IsLaneCode.pinnedByBoolHead {scope : Nat} {classifier target : RawTerm s
       exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
         (fun _reduct chain => headReaches_piTyCodeCell chain)
         (fun headsEq => Generator.noConfusion headsEq)).elim
+  | list elementType =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_listTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
 
 /-- A `gen_natCode`-stable classifier `Conv` a lane code pins the nat lane. -/
 theorem IsLaneCode.pinnedByNatHead {scope : Nat} {classifier target : RawTerm scope}
@@ -534,6 +557,10 @@ theorem IsLaneCode.pinnedByNatHead {scope : Nat} {classifier target : RawTerm sc
   | pi domainCode codomainCode =>
       exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
         (fun _reduct chain => headReaches_piTyCodeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
+  | list elementType =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_listTypeCell chain)
         (fun headsEq => Generator.noConfusion headsEq)).elim
 
 /-- A `gen_optionCode`-stable classifier `Conv` a lane code pins the option lane. -/
@@ -568,6 +595,10 @@ theorem IsLaneCode.pinnedByOptionHead {scope : Nat} {classifier target : RawTerm
       exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
         (fun _reduct chain => headReaches_piTyCodeCell chain)
         (fun headsEq => Generator.noConfusion headsEq)).elim
+  | list elementType =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_listTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
 
 /-- A `gen_eitherCode`-stable classifier `Conv` a lane code pins the either lane. -/
 theorem IsLaneCode.pinnedByEitherHead {scope : Nat} {classifier target : RawTerm scope}
@@ -601,6 +632,10 @@ theorem IsLaneCode.pinnedByEitherHead {scope : Nat} {classifier target : RawTerm
       exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
         (fun _reduct chain => headReaches_piTyCodeCell chain)
         (fun headsEq => Generator.noConfusion headsEq)).elim
+  | list elementType =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_listTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
 
 /-- A `gen_productCode`-stable classifier `Conv` a lane code pins the product lane. -/
 theorem IsLaneCode.pinnedByProductHead {scope : Nat} {classifier target : RawTerm scope}
@@ -633,6 +668,10 @@ theorem IsLaneCode.pinnedByProductHead {scope : Nat} {classifier target : RawTer
   | pi domainCode codomainCode =>
       exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
         (fun _reduct chain => headReaches_piTyCodeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
+  | list elementType =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_listTypeCell chain)
         (fun headsEq => Generator.noConfusion headsEq)).elim
 
 /-- A `gen_idCode`-stable classifier `Conv` a lane code pins the identity lane. -/
@@ -668,6 +707,10 @@ theorem IsLaneCode.pinnedByIdentityHead {scope : Nat} {classifier target : RawTe
       exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
         (fun _reduct chain => headReaches_piTyCodeCell chain)
         (fun headsEq => Generator.noConfusion headsEq)).elim
+  | list elementType =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_listTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
 
 /-- A `gen_piTyCode`-stable classifier `Conv` a lane code pins the Pi lane. -/
 theorem IsLaneCode.pinnedByPiHead {scope : Nat} {classifier target : RawTerm scope}
@@ -678,6 +721,10 @@ theorem IsLaneCode.pinnedByPiHead {scope : Nat} {classifier target : RawTerm sco
       target = piTyCodeCell domainCode codomainCode := by
   cases laneTarget with
   | pi domainCode codomainCode => exact ⟨domainCode, codomainCode, rfl⟩
+  | list elementType =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_listTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
   | bool =>
       exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
         (fun _reduct chain => headReaches_boolTypeCell chain)
@@ -704,6 +751,43 @@ theorem IsLaneCode.pinnedByPiHead {scope : Nat} {classifier target : RawTerm sco
         (fun headsEq => Generator.noConfusion headsEq)).elim
 
 /-! ## ★ The MASTER: closed-normal lane canonical forms over the ONE union judgment -/
+
+/-- A `gen_listCode`-stable classifier `Conv` a lane code pins the list lane. -/
+theorem IsLaneCode.pinnedByListHead {scope : Nat} {classifier target : RawTerm scope}
+    (laneTarget : IsLaneCode target) (convToTarget : Conv classifier target)
+    (classifierStable : ∀ reduct : RawTerm scope, StepStar classifier reduct →
+      RawTerm.headGenerator reduct = Generator.gen_listCode) :
+    ∃ elementType : RawTerm scope, target = listTypeCell elementType := by
+  cases laneTarget with
+  | list elementType => exact ⟨elementType, rfl⟩
+  | bool =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_boolTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
+  | nat =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_natTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
+  | option elementType =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_optionTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
+  | either leftType rightType =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_eitherTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
+  | product firstType secondType =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_productTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
+  | identity typeCode leftEndpoint rightEndpoint =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_idTypeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
+  | pi domainCode codomainCode =>
+      exact (Conv.refutedByDistinctStableHeads convToTarget classifierStable
+        (fun _reduct chain => headReaches_piTyCodeCell chain)
+        (fun headsEq => Generator.noConfusion headsEq)).elim
 
 /-- Table peel for the term-indexed former rows (`gen_bridgeCode` / `gen_idCode`): every hit carries
 the shared carrier-level universe output, so the former arm's classifier is a universe code. -/
@@ -819,6 +903,7 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
+          (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)).elim
       · rw [classifierEq] at convToTarget
         exact (laneTarget.refuteConvFromStableHead convToTarget
@@ -826,6 +911,7 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
+          (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)).elim
   | ofTermIndexedFormer formerTyped =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
@@ -985,14 +1071,17 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
           exact LaneValue.pair targetFirst targetSecond firstValue secondValue
   | ofListIntro listTyped =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      obtain ⟨elementType, classifierEq⟩ := listTyped.classifierIsList
-      rw [classifierEq] at convToTarget
-      exact (laneTarget.refuteConvFromStableHead convToTarget
-        (fun _reduct chain => headReaches_listTypeCell chain)
-        (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
-        (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
-        (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
-        (fun headsEq => Generator.noConfusion headsEq)).elim
+      cases listTyped with
+      | listNilIntro _elementType _elementLevel _flag _elementTypeFormed =>
+          obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
+            (fun _reduct chain => headReaches_listTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.listNil targetElement
+      | listConsIntro headValue tailList _elementType _headTyped _tailTyped =>
+          obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
+            (fun _reduct chain => headReaches_listTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.listCons targetElement headValue tailList
   | twoBranchMatchElim context generator rule motive firstBranch secondBranch scrutinee
       typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
       secondBranchTyped ihScrutinee ihFirst ihSecond =>
@@ -1131,12 +1220,10 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
       obtain ⟨generatorEq, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
       subst generatorEq; subst ruleEq
-      exact (laneTarget.refuteConvFromStableHead convToTarget
+      obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
         (fun _reduct chain => headReaches_listTypeCell chain)
-        (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
-        (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
-        (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
-        (fun headsEq => Generator.noConfusion headsEq)).elim
+      rw [targetEq]
+      exact LaneValue.listCons targetElement head tail
   | pinnedUnaryIntro context generator rule child elementType isPinnedUnary childTyped =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
       obtain ⟨generatorEq, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
@@ -1311,5 +1398,22 @@ theorem HasTypeNativeUnion.closedNormalPiCanonicalForms {profile : PolyProfile}
   LaneValue.atPi
     (typed.closedNormalLaneCanonicalForms (fun emptyIndex => emptyIndex.elim0) normal
       pathAppFree pathLamFree (IsLaneCode.pi domainCode codomainCode) (Conv.refl _))
+
+/-- **★ Closed-normal LIST canonicity over the single union judgment** (core beta/iota fragment): a
+closed normal union-typed term at `list(A)` with no bridge-fragment occurrence is `listNil` or a
+`listCons` — the lane the master was missing; the zoo-level `ListCanonicalForms` restated at the
+union. -/
+theorem HasTypeNativeUnion.closedNormalListCanonicalForms {profile : PolyProfile}
+    {subject elementType : RawTerm 0}
+    (typed : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
+      subject (listTypeCell elementType))
+    (normal : RawTerm.isStepNormalForm subject)
+    (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)
+    (pathLamFree : RawTerm.containsGeneratorBool .gen_pathLam subject = false) :
+    subject = listNilCell ∨
+    ∃ (headValue tailList : RawTerm 0), subject = listConsCell headValue tailList :=
+  LaneValue.atList
+    (typed.closedNormalLaneCanonicalForms (fun emptyIndex => emptyIndex.elim0) normal
+      pathAppFree pathLamFree (IsLaneCode.list elementType) (Conv.refl _))
 
 end FX1Poly.Typed
