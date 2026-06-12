@@ -59,7 +59,7 @@ design the OP1-INT verdict task will land or refute.
                   Γ ⊢ pathApp p ε : A
 
       computation pathApp (pathLam body) ε ↝ body[i:=ε]       (the endpoint β — SHIPPED as the
-                                                               gated sibling StepBridgeEndpoint;
+                                                               pathBetaIotaRow table row in StepTable;
                                                                core-Step promotion deferred)
                   pathApp p 0 ≡ a,  pathApp p 1 ≡ b           (endpoint boundary — definitional)
 
@@ -170,11 +170,11 @@ def paramSubstrateLedger : ParamSubstrateLedger where
   hasAffinityDiscipline := true
 
 /-- The gap pin, read off the ledger.  The field tracks a CORE-`Step` arm specifically;
-the endpoint-β computation itself is SHIPPED as the gated sibling `StepBridgeEndpoint`
-(`BridgeEndpointStep.lean`, the η-discipline), so the remaining operational gap is the
-PROMOTION of that rule into core `Step` (the event that flips `hasRedexHead` for
-`gen_pathApp` and migrates its sconing role).  When promotion lands, this theorem breaks
-and forces the ledger refresh. -/
+the endpoint-β computation itself is SHIPPED as the `pathBetaIotaRow` row of the canonical
+iota table (fired by the table-driven `StepTable` relation, `StepTable.pathBetaFires`), so the
+remaining operational gap is the PROMOTION of that rule into core `Step` (the event that flips
+`hasRedexHead` for `gen_pathApp` and migrates its sconing role).  When promotion lands, this
+theorem breaks and forces the ledger refresh. -/
 theorem paramSubstrateLedger_gapsPinned :
     paramSubstrateLedger.hasEndpointComputation = false :=
   rfl

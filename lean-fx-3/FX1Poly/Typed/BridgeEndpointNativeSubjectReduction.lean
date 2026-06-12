@@ -3,8 +3,10 @@ import FX1Poly.Typed.NativeUnionRuleTables
 
 /-! # FX1Poly/Typed/BridgeEndpointNativeSubjectReduction — NATIVE-45: the wall falls INTO the native union
 
-`BridgeEndpointStep` ships the endpoint-β reduction `pathApp(pathLam body) ε ↝ body[i := ε]`, the
-path-intro typed companions against the native graded-intro engine, and the obstruction
+`BridgeEndpointStep` provides the endpoint-β reduction `pathApp(pathLam body) ε ↝ body[i := ε]` —
+now DERIVED from the `pathBetaIotaRow` row of the canonical table (the official `StepTable`
+relation, `StepTable.pathBetaFires`) rather than a bespoke sibling inductive — the path-intro typed
+companions against the native graded-intro engine, and the obstruction
 `intervalZeroGrownUntypable`: the identity-path reduct `interval0` heads no GROWN-typed cell
 (`isUntypableHead gen_interval0 = true`, like `boolTrue`), so a general endpoint-β subject reduction
 CANNOT target `HasTypeDescPi` alone — a general-`ε` reduct mixes grown structure with bare interval
@@ -56,8 +58,9 @@ elimination-side typing (the applied path in ONE union derivation) lives downstr
 ## Zero-axiom
 
 The combined predicate is a 2-constructor positive `Prop` inductive; every theorem is a constructor
-application over the shipped `BridgeEndpointStep` SR fragments + the native `dataIntroNullary`
-`intervalTypeCell` rows; the grown-untypability twin is `isUntypableHead_sound rfl` (the `rfl` proves
+application over the derived table-firing witnesses (`endpointBetaIdentityPathFiresOverTable` /
+`endpointBetaConstantBodyFiresOverTable`, both `StepTable.pathBetaFires`) + the native
+`dataIntroNullary` `intervalTypeCell` rows; the grown-untypability twin is `isUntypableHead_sound rfl` (the `rfl` proves
 `isUntypableHead gen_interval1 = true`, grown-only, unaffected by the union's dataIntroNullary rows).  No
 `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration
 audit-gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
@@ -142,12 +145,12 @@ theorem identityPathEndpointSubjectReductionNative {profile : PolyProfile} {scop
     HasTypeDescGradedIntro profile context
       (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩))
       (bridgeTypeCell intervalTypeCell intervalZeroCell intervalOneCell) ∧
-    StepBridgeEndpoint
+    StepTable
       (pathAppCell (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩)) intervalZeroCell)
       (intervalZeroCell (scope := scope)) ∧
     EndpointBetaReductNativelyTyped profile context intervalZeroCell intervalTypeCell :=
   ⟨identityPathGradedTyped context,
-   StepBridgeEndpoint.identityPathAppliedComputes,
+   endpointBetaIdentityPathFiresOverTable,
    intervalZeroReductNativelyTyped context⟩
 
 /-- **The constant fragment under the SAME combined target.**  From `t : T` (grown), the
@@ -162,11 +165,11 @@ theorem reflexivityBridgeEndpointSubjectReductionNative {profile : PolyProfile} 
     (argument : RawTerm scope) :
     HasTypeDescGradedIntro profile context (pathLamCell (RawTerm.weaken constantBody))
       (bridgeTypeCell typeCode constantBody constantBody) ∧
-    StepBridgeEndpoint
+    StepTable
       (pathAppCell (pathLamCell (RawTerm.weaken constantBody)) argument) constantBody ∧
     EndpointBetaReductNativelyTyped profile context constantBody typeCode :=
   ⟨constantBridgeGradedOfTyped bodyTyped,
-   StepBridgeEndpoint.constantPathBetaComputesToBody constantBody argument,
+   endpointBetaConstantBodyFiresOverTable constantBody argument,
    EndpointBetaReductNativelyTyped.ofGrown bodyTyped⟩
 
 /-- **★★ The endpoint-β native subject-reduction verdict — the honest capstone.**  Endpoint-β preserves

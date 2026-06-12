@@ -2322,9 +2322,9 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- generalElim row).  The forced-affinity HONESTY inversion survives union-side as
 -- HasTypeNativeUnion.pathLamSubjectIsAffine (gated in AuditNativeUnionInversion).
 -- HONEST SCOPE: the rows are LIVE and admission-covered (brick 4); the endpoint-β
--- computation fires via the iota TABLE's pathBeta row (the gated sibling StepBridgeEndpoint
--- remains as the brick-5 historical artifact, gated below); the affine-dimension
--- glued-model statement over the path intro remains the open OP1-INT work.
+-- computation fires via the iota TABLE's pathBeta row (the table-driven StepTable relation,
+-- StepTable.pathBetaFires — the bespoke sibling was retired, gated below); the
+-- affine-dimension glued-model statement over the path intro remains the open OP1-INT work.
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt
 #assert_no_axioms FX1Poly.Core.RawTermChildren.occurrenceCountAt
 #assert_no_axioms FX1Poly.Core.RawTerm.occurrenceCountAt_var_self
@@ -2353,32 +2353,31 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Core.intervalClosedReducesToValue
 #assert_no_axioms FX1Poly.Core.DataFormerFamily.coveredCount_correct
 
--- ★ THE ENDPOINT-β COMPUTATION AS A GATED SIBLING (OP1-INT brick 5,
--- FX1Poly/Typed/BridgeEndpointStep.lean): pathApp(pathLam body, ε) ↝ body[i:=ε] shipped
--- under the Step.eta SIBLING discipline (η-M8b precedent) — by-construction gated
--- (sourceShape: the relation fires ONLY on the exact redex; deterministic), ZERO core-Step
--- cascade; promotion into core Step is the recorded future event (flips hasRedexHead,
--- migrates the ONORM-M2 role inertEliminator → eliminator, breaks the LiveGenerator enum by
--- design). RawTerm.subst0_weaken = the substitution collapse subst0 (weaken t) a = t
--- (rename_subst_commute + PointwiseEq-to-identity rfl + subst_identity_apply) — the
--- dimension-constant computation engine, giving the SYMBOLIC constantPathBetaComputesToBody.
--- The identity path pathLam(var 0) : Bridge(dim, 0, 1) = the first inhabitant genuinely
--- USING its dimension binder (affine count exactly 1 via occurrenceCountAt_var_self); its
--- endpoint application computes to the endpoint. identityPathGradedTyped types it in the
--- LIVE graded-intro engine (HasTypeDescGradedIntro — the engine the union's binderGraded
--- arm embeds; the bespoke bridge engine and its inversion stack were retired under
--- NATIVE-45, superseded by the union-side inversion family and the NATIVE endpoint SR
--- family gated below). ★ intervalZeroGrownUntypable = the machine-checked CROSS-ENGINE
--- WALL: interval0 heads no grown-typed cell, so general endpoint-β SR cannot target
--- HasTypeDescPi alone — the honest general-SR target is an INTEGRATED engine
--- (HasTypeNativeUnion, where the native endpoint SR family now lives). All zero-axiom.
+-- ★ THE ENDPOINT-β COMPUTATION, DERIVED FROM THE IOTA TABLE (OP1-INT brick 5,
+-- FX1Poly/Typed/BridgeEndpointStep.lean): pathApp(pathLam body, ε) ↝ body[i:=ε] is the
+-- pathBetaIotaRow row of the canonical iotaRuleTable, so the official single-step relation
+-- carrying it is the table-driven StepTable (StepOverTable iotaRuleTable, fired by
+-- StepTable.pathBetaFires). The bespoke sibling inductive that once modelled it
+-- (StepBridgeEndpoint + sourceShape/deterministic/the smokes) was RETIRED — the table row
+-- subsumes it exactly; promotion into core Step is the recorded future event (flips
+-- hasRedexHead, migrates the ONORM-M2 role inertEliminator → eliminator, breaks the
+-- LiveGenerator enum by design). RawTerm.subst0_weaken = the substitution collapse
+-- subst0 (weaken t) a = t (rename_subst_commute + PointwiseEq-to-identity rfl +
+-- subst_identity_apply) — the dimension-constant computation engine, giving the SYMBOLIC
+-- endpointBetaConstantBodyFiresOverTable over the table. endpointBetaIdentityPathFiresOverTable
+-- is the identity-path computation over the table. The identity path pathLam(var 0) :
+-- Bridge(dim, 0, 1) = the first inhabitant genuinely USING its dimension binder (affine count
+-- exactly 1 via occurrenceCountAt_var_self). identityPathGradedTyped types it in the LIVE
+-- graded-intro engine (HasTypeDescGradedIntro — the engine the union's binderGraded arm
+-- embeds; the bespoke bridge engine and its inversion stack were retired under NATIVE-45,
+-- superseded by the union-side inversion family and the NATIVE endpoint SR family gated
+-- below). ★ intervalZeroGrownUntypable = the machine-checked CROSS-ENGINE WALL: interval0
+-- heads no grown-typed cell, so general endpoint-β SR cannot target HasTypeDescPi alone — the
+-- honest general-SR target is an INTEGRATED engine (HasTypeNativeUnion, where the native
+-- endpoint SR family now lives). All zero-axiom.
 #assert_no_axioms FX1Poly.Core.RawTerm.subst0_weaken
-#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint
-#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.sourceShape
-#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.deterministic
-#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.constantBridgeAppliedComputes
-#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.identityPathAppliedComputes
-#assert_no_axioms FX1Poly.Typed.StepBridgeEndpoint.constantPathBetaComputesToBody
+#assert_no_axioms FX1Poly.Typed.endpointBetaIdentityPathFiresOverTable
+#assert_no_axioms FX1Poly.Typed.endpointBetaConstantBodyFiresOverTable
 #assert_no_axioms FX1Poly.Typed.identityPathGradedTyped
 #assert_no_axioms FX1Poly.Typed.intervalZeroGrownUntypable
 

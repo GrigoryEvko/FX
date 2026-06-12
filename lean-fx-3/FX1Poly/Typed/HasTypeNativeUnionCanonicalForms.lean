@@ -13,8 +13,8 @@ LANE code (`bool` / `nat` / `option` / `either` / `product` / `id` / `Pi`) is a 
 ## The honest fragment boundary: the core beta/iota Step relation
 
 `RawTerm.isStepNormalForm` is normality for the CORE beta+iota `Step` relation.  The bridge fragment's
-computation rule (endpoint-beta, `pathApp(pathLam b, i0) ↝ b[i0]`) is deliberately a SIBLING relation
-(`StepBridgeEndpoint`) until the WAVE-2 anchor folds it into core `Step` — so `pathApp(pathLam(boolTrue),
+computation rule (endpoint-beta, `pathApp(pathLam b, i0) ↝ b[i0]`) lives in the table-driven `StepTable`
+relation (the `pathBetaIotaRow` row) and is NOT a constructor of core `Step` — so `pathApp(pathLam(boolTrue),
 interval0)` is union-typed at `boolCode`, closed, and core-Step-NORMAL, a genuine non-value inhabitant.
 The theorem therefore carries the fragment boundary EXPLICITLY: the subject contains no `gen_pathApp` and
 no `gen_pathLam` occurrence (`RawTerm.containsGeneratorBool`).  This is not a proof IOU — it is the true

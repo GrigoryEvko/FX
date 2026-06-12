@@ -224,9 +224,9 @@ inductive SconingCoverageRole where
   /-- Root-reduction heads: covered by the reduction rule + the per-regime reducibility arc. -/
   | eliminator
   /-- Typed elimination heads with NO root reduction rule in CORE `Step` (the bridge
-  `pathApp` — its endpoint-β ships as the GATED SIBLING `StepBridgeEndpoint`, η-discipline):
-  core-β/ι-inert, hence weak-head normal for the candidates/scones — covered by the
-  unconditional neutral lift; migrates to `eliminator` when the sibling rule is PROMOTED into
+  `pathApp` — its endpoint-β ships as the `pathBetaIotaRow` table row in `StepTable`, NOT a
+  core-`Step` arm): core-β/ι-inert, hence weak-head normal for the candidates/scones — covered
+  by the unconditional neutral lift; migrates to `eliminator` when the table rule is PROMOTED into
   core `Step` (this enum breaks then, by design). -/
   | inertEliminator
 
@@ -685,7 +685,7 @@ theorem LiveGenerator.pathAbstractionConstructorPreservesSn {scope : Nat}
   pathLam_isStronglyNormalizing_of_body bodyNormalizing
 
 /-- **The inert-eliminator coverage** — the typed-but-core-β/ι-inert elimination heads (today:
-exactly `pathApp`; its endpoint-β EXISTS as the gated sibling `StepBridgeEndpoint`, but core
+exactly `pathApp`; its endpoint-β EXISTS as the `pathBetaIotaRow` table row in `StepTable`, but core
 `Step` — the relation the candidates/scones are built over — has no rule for it).  An inert
 eliminator's cells are weak-head normal w.r.t. core `Step`, so the UNCONDITIONAL neutral lift
 covers them — the honest contrast with the `.eliminator` role, whose coverage demands

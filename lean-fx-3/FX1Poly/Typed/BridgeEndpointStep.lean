@@ -5,19 +5,24 @@ import FX1Poly.Core.RawTermSubstIdentity
 import FX1Poly.Core.RawTermRenameSubstCommute
 import FX1Poly.Core.RawTermSubstPointwise
 import FX1Poly.Core.RawTermOccurrenceRename
+import FX1Poly.Core.StepOverTable
 
-/-! # FX1Poly/Typed/BridgeEndpointStep — the endpoint-β computation as a GATED SIBLING (OP1-INT brick 5)
+/-! # FX1Poly/Typed/BridgeEndpointStep — the endpoint-β computation, DERIVED from the iota TABLE
 
 The bridge family's computation rule `pathApp (pathLam body) ε ↝ body[i := ε]` — the BCM
-endpoint-β — shipped under the **`Step.eta` sibling-inductive discipline**: a standalone
-relation gated BY CONSTRUCTION (the single constructor fires only on the exact redex shape),
-NOT an arm of the core `Step` inductive.  This is the kernel's established zero-cascade route
-for new reduction rules (η-M8b precedent): no refresh of the ~80 full-enumeration Step
-consumers (SR arms, `fireRootRedex`, ParStep, complete development, critical pairs, encode
-bridges); promotion of the rule into core `Step` is a recorded FUTURE event with its own
-SR/ι-refresh budget — that promotion is what flips `Generator.hasRedexHead` for `gen_pathApp`
-and migrates its ONORM-M2 sconing role `inertEliminator → eliminator` (breaking the
-`LiveGenerator` enum BY DESIGN).
+endpoint-β — is now a ROW of the canonical `iotaRuleTable` (`pathBetaIotaRow`), and the
+kernel's official single-step relation is the table-driven `StepTable`
+(`StepOverTable iotaRuleTable`).  The bespoke sibling inductive that this file once carried
+(`StepBridgeEndpoint`, a standalone one-constructor relation modelling endpoint-β OUTSIDE
+core `Step`) has been RETIRED: the table row subsumes it exactly, and the firing witness is
+`StepTable.pathBetaFires` (in `FX1Poly/Core/StepOverTable.lean`).  Endpoint-β firing is
+therefore characterized DERIVED here against `StepTable` rather than restated as a fresh
+inductive.
+
+The endpoint-β computation witnesses below are stated against `StepTable`: the cell shapes
+`pathAppCell`/`pathLamCell` unfold definitionally to the `gen_pathApp`/`gen_pathLam` cells
+the table row matches, so `StepTable.pathBetaFires` discharges the generic redex and the two
+computed-reduct witnesses collapse the substitution before firing.
 
 ## The retired bridge typing engine (NATIVE-45)
 
@@ -36,15 +41,14 @@ the engine-specific inversion stack is subsumed by the union inversion suite
 
 ## What ships here
 
-  * **`StepBridgeEndpoint`** — the sibling relation, one `pathBeta` constructor.
-  * **`sourceShape`** — by-construction gating pin: every step source is exactly a
-    `pathApp(pathLam …, …)` redex (so the relation cannot over-fire); `deterministic`.
   * **`RawTerm.subst0_weaken`** — the substitution collapse `subst0 (weaken t) a = t`
     (rename-then-subst composition down to the identity substitution), the constant-bridge
     computation engine.
-  * **Computation smokes** — the constant bridge applied to an endpoint computes to its body;
-    the identity path applied to an endpoint computes to that endpoint; SYMBOLIC constant
-    bodies compute via the collapse (`constantPathBetaComputesToBody`).
+  * **Derived endpoint-β witnesses** — stated against `StepTable` (the table row):
+    `endpointBetaIdentityPathFiresOverTable` (the identity path applied to an endpoint
+    computes to that endpoint) and `endpointBetaConstantBodyFiresOverTable` (SYMBOLIC
+    constant bodies compute to their body via the `subst0_weaken` collapse).  Both reduce to
+    `StepTable.pathBetaFires`.
   * **`identityPathGradedTyped`** — the identity path `pathLam(var 0)` typed at the bridge code
     NATIVELY by `HasTypeDescGradedIntro` (the graded-intro engine, the union's `gradedBinderIntro`
     substrate), the affine premise discharged by `occurrenceCountAt_var_self`.  The operational
@@ -63,13 +67,13 @@ the engine-specific inversion stack is subsumed by the union inversion suite
 
 ## Zero-axiom
 
-The sibling inductive is positive and non-indexed-trap (free source/reduct indices); smokes
-are constructor applications closed by `whnf`-defeq substitution computation (nullary cells
-and innermost-var-0 bodies compute by `rfl`); the native typed companions route through
-`gradedIntroEngine_typesPathLam` with the affine premise discharged by the occurrence lemmas;
-the collapse is `rename_subst_commute` + a `PointwiseEq`-to-identity `rfl` + `subst_identity_apply`.
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
-Per-declaration audit-gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
+The derived endpoint-β witnesses are `StepTable.pathBetaFires` applications (the table row's
+firing) — the constant-body one closes the `subst0_weaken` collapse before firing; the native
+typed companions route through `gradedIntroEngine_typesPathLam` with the affine premise
+discharged by the occurrence lemmas; the collapse is `rename_subst_commute` + a
+`PointwiseEq`-to-identity `rfl` + `subst_identity_apply`.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
+`FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Core
 
@@ -100,73 +104,34 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **The endpoint-β reduction, gated sibling.**  `pathApp (pathLam body) ε ↝ body[i := ε]` —
-the single rule of the bridge family's operational semantics, a SIBLING of core `Step`
-(η-discipline): by-construction it fires ONLY on the exact redex shape, and it does not touch
-any core-Step consumer.  Promotion into core `Step` (the event that makes `gen_pathApp`
-operationally live for the candidates/scones) is the recorded future task. -/
-inductive StepBridgeEndpoint : {scope : Nat} → RawTerm scope → RawTerm scope → Prop where
-  | pathBeta {scope : Nat} (body : RawTerm (scope + 1)) (argument : RawTerm scope) :
-      StepBridgeEndpoint (pathAppCell (pathLamCell body) argument)
-        (RawTerm.subst0 body argument)
+/-! ## The endpoint-β computation, DERIVED against the iota table
 
-/-- By-construction GATING pin: every `StepBridgeEndpoint` source is exactly an endpoint-β
-redex and every reduct is the corresponding substitution — the relation cannot over-fire. -/
-theorem StepBridgeEndpoint.sourceShape {scope : Nat} {source reduct : RawTerm scope}
-    (step : StepBridgeEndpoint source reduct) :
-    ∃ body : RawTerm (scope + 1), ∃ argument : RawTerm scope,
-      source = pathAppCell (pathLamCell body) argument ∧
-        reduct = RawTerm.subst0 body argument := by
-  cases step with
-  | pathBeta body argument => exact ⟨body, argument, rfl, rfl⟩
+`pathApp (pathLam body) ε ↝ body[i := ε]` is the firing of the `pathBetaIotaRow` row of the
+canonical `iotaRuleTable`, so the official single-step relation that carries it is `StepTable`
+(`StepOverTable iotaRuleTable`).  `StepTable.pathBetaFires` (in `FX1Poly/Core/StepOverTable.lean`)
+is the generic redex firing; the two computed-reduct witnesses below collapse the substitution
+before invoking it, exactly as the retired bespoke smokes did. -/
 
-/-- The endpoint-β step is deterministic: one source, one reduct. -/
-theorem StepBridgeEndpoint.deterministic {scope : Nat}
-    {source firstReduct secondReduct : RawTerm scope}
-    (firstStep : StepBridgeEndpoint source firstReduct)
-    (secondStep : StepBridgeEndpoint source secondReduct) :
-    firstReduct = secondReduct := by
-  obtain ⟨firstBody, firstArgument, firstSourceEq, firstReductEq⟩ := firstStep.sourceShape
-  obtain ⟨secondBody, secondArgument, secondSourceEq, secondReductEq⟩ := secondStep.sourceShape
-  have cellsEqual : pathAppCell (pathLamCell firstBody) firstArgument
-      = pathAppCell (pathLamCell secondBody) secondArgument :=
-    firstSourceEq.symm.trans secondSourceEq
-  injection cellsEqual with _scopeEq _generatorEq _payloadEq childrenEq
-  injection childrenEq with _pathScopeEq _pathShiftEq _pathRestShiftsEq pathCellsEqual restEq
-  injection restEq with _argScopeEq _argShiftEq _argRestShiftsEq argumentsEqual _nilEq
-  injection pathCellsEqual with _innerScopeEq _innerGeneratorEq _innerPayloadEq innerChildrenEq
-  injection innerChildrenEq with _bodyScopeEq _bodyShiftEq _bodyRestShiftsEq bodiesEqual _bodyNilEq
-  rw [firstReductEq, secondReductEq, bodiesEqual, argumentsEqual]
-
-/-! ## Computation smokes — the rule FIRES on the typed witnesses -/
-
-/-- The constant bridge applied to the left endpoint computes to its body:
-`pathApp(pathLam(Type@0), 0) ↝ Type@0` (the closed nullary body is fixed by substitution,
-definitionally). -/
-theorem StepBridgeEndpoint.constantBridgeAppliedComputes {scope : Nat} (flag : UniverseFlag) :
-    StepBridgeEndpoint
-      (pathAppCell (pathLamCell (universeCodeCell LevelExpr.lzero flag))
-        (intervalZeroCell (scope := scope)))
-      (universeCodeCell LevelExpr.lzero flag) :=
-  StepBridgeEndpoint.pathBeta (universeCodeCell LevelExpr.lzero flag) intervalZeroCell
-
-/-- The identity path applied to the left endpoint computes to that endpoint:
-`pathApp(pathLam(i), 0) ↝ 0` (innermost-var-0 substitution computes definitionally). -/
-theorem StepBridgeEndpoint.identityPathAppliedComputes {scope : Nat} :
-    StepBridgeEndpoint
+/-- The identity path applied to the left endpoint computes to that endpoint, over the table:
+`pathApp(pathLam(i), 0) ↝ 0` (innermost-var-0 substitution computes definitionally).  Derived
+from the `pathBetaIotaRow` firing — replaces the retired bespoke `identityPathAppliedComputes`
+smoke. -/
+theorem endpointBetaIdentityPathFiresOverTable {scope : Nat} :
+    StepTable
       (pathAppCell (pathLamCell (variableCell ⟨0, Nat.succ_pos scope⟩))
         (intervalZeroCell (scope := scope)))
       intervalZeroCell :=
-  StepBridgeEndpoint.pathBeta (variableCell ⟨0, Nat.succ_pos scope⟩) intervalZeroCell
+  StepTable.pathBetaFires (variableCell ⟨0, Nat.succ_pos scope⟩) intervalZeroCell
 
-/-- **SYMBOLIC constant-body computation**: for ANY body of the form `weaken constantBody`
-(the dimension-constant bridges) and ANY argument, the redex computes to exactly
-`constantBody` — via the `subst0_weaken` collapse. -/
-theorem StepBridgeEndpoint.constantPathBetaComputesToBody {scope : Nat}
+/-- **SYMBOLIC constant-body computation, over the table**: for ANY body of the form
+`weaken constantBody` (the dimension-constant bridges) and ANY argument, the redex computes to
+exactly `constantBody` — via the `subst0_weaken` collapse on top of the `pathBetaIotaRow`
+firing.  Replaces the retired bespoke `constantPathBetaComputesToBody` smoke. -/
+theorem endpointBetaConstantBodyFiresOverTable {scope : Nat}
     (constantBody argument : RawTerm scope) :
-    StepBridgeEndpoint
+    StepTable
       (pathAppCell (pathLamCell (RawTerm.weaken constantBody)) argument) constantBody := by
-  have fired := StepBridgeEndpoint.pathBeta (RawTerm.weaken constantBody) argument
+  have fired := StepTable.pathBetaFires (RawTerm.weaken constantBody) argument
   rw [RawTerm.subst0_weaken constantBody argument] at fired
   exact fired
 

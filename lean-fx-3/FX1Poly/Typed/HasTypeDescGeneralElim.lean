@@ -257,7 +257,7 @@ theorem gradedIntroEndpointIotaComputesTyped {profile : PolyProfile} {scope : Na
     ∃ carrierCode : RawTerm scope,
       classifier = bridgeTypeCell carrierCode
         (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell) ∧
-      StepBridgeEndpoint (pathAppCell (pathLamCell body) argument)
+      StepTable (pathAppCell (pathLamCell body) argument)
         (RawTerm.subst0 body argument) ∧
       HasTypeDescPi profile context (RawTerm.subst0 body argument) carrierCode := by
   obtain ⟨generator, rule, typeParamA, typeParamB, armBody, isIntro, subjectEq,
@@ -345,7 +345,7 @@ theorem extracts the carrier `Type@1`, fires the step, and grows the reduct — 
 through BOTH v2 engines. -/
 theorem constantBridgeEndpointIotaSmoke {profile : PolyProfile} (flag : UniverseFlag) :
     ∃ carrierCode : RawTerm 1,
-      StepBridgeEndpoint
+      StepTable
         (pathAppCell (pathLamCell (universeCodeCell LevelExpr.lzero flag))
           (variableCell ⟨0, Nat.succ_pos 0⟩))
         (RawTerm.subst0 (universeCodeCell LevelExpr.lzero flag)
@@ -401,7 +401,7 @@ structure GeneralElimEngineCoverage (profile : PolyProfile) (flag : UniverseFlag
     (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
   /-- The typed endpoint-ι fires end-to-end through both v2 engines. -/
   endpointIotaFiresTyped : ∃ carrierCode : RawTerm 1,
-    StepBridgeEndpoint
+    StepTable
       (pathAppCell (pathLamCell (universeCodeCell LevelExpr.lzero flag))
         (variableCell ⟨0, Nat.succ_pos 0⟩))
       (RawTerm.subst0 (universeCodeCell LevelExpr.lzero flag)

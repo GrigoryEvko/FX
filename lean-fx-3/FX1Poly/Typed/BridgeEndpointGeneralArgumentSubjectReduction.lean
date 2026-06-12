@@ -45,8 +45,9 @@ combined-native typing for EVERY grown-typed body, whichever native layer the ar
 ## Zero-axiom
 
 The general theorem is `substituteUnderBinding` (the shipped grown β-engine) composed with the
-`subst0_weaken` classifier collapse + `StepBridgeEndpoint.pathBeta`; the corollary and the subsumption are
-constructor applications.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+`subst0_weaken` classifier collapse + `StepTable.pathBetaFires` (the table row's firing — the
+endpoint-β reduction is now a row of the canonical iota table, not a bespoke relation); the corollary
+and the subsumption are constructor applications.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Typed
@@ -66,10 +67,10 @@ theorem endpointBetaGeneralArgumentGrownReduct {profile : PolyProfile} {scope : 
     (bodyTyped : HasTypeDescPi profile (context.cons intervalTypeCell) body
       (RawTerm.weaken classifier))
     (argumentGrownTyped : HasTypeDescPi profile context argument intervalTypeCell) :
-    StepBridgeEndpoint (pathAppCell (pathLamCell body) argument)
+    StepTable (pathAppCell (pathLamCell body) argument)
       (RawTerm.subst0 body argument) ∧
     HasTypeDescPi profile context (RawTerm.subst0 body argument) classifier := by
-  refine ⟨StepBridgeEndpoint.pathBeta body argument, ?_⟩
+  refine ⟨StepTable.pathBetaFires body argument, ?_⟩
   have substituted :=
     HasTypeDescPi.substituteUnderBinding argument bodyTyped argumentGrownTyped
   rw [RawTerm.subst0_weaken classifier argument] at substituted
@@ -85,7 +86,7 @@ theorem endpointBetaGeneralArgumentNativelyTyped {profile : PolyProfile} {scope 
     (bodyTyped : HasTypeDescPi profile (context.cons intervalTypeCell) body
       (RawTerm.weaken classifier))
     (argumentGrownTyped : HasTypeDescPi profile context argument intervalTypeCell) :
-    StepBridgeEndpoint (pathAppCell (pathLamCell body) argument)
+    StepTable (pathAppCell (pathLamCell body) argument)
       (RawTerm.subst0 body argument) ∧
     EndpointBetaReductNativelyTyped profile context (RawTerm.subst0 body argument) classifier := by
   obtain ⟨fires, grownReduct⟩ :=
@@ -118,7 +119,7 @@ two grown-typed interval variables (the body's path binder, the context's dimens
 `HasTypeDesc.var` lookups — `weaken intervalTypeCell` collapses to `intervalTypeCell` for the closed cell. -/
 theorem intervalVariableEndpointBetaGrownReduct {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) :
-    StepBridgeEndpoint
+    StepTable
       (pathAppCell (pathLamCell (variableCell ⟨0, Nat.succ_pos (scope + 1)⟩))
         (variableCell ⟨0, Nat.succ_pos scope⟩))
       (variableCell ⟨0, Nat.succ_pos scope⟩) ∧
