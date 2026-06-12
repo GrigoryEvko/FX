@@ -87,6 +87,87 @@ theorem PolyCell.exists_preservedByBeta_dim0
               bodyCell,
             True.intro⟩
 
+/-- Exact witness for the endpoint-beta REWRITE SHAPE
+`pathApp(pathLam body, rawArg) ↝ subst0 body rawArg` — harvested for the
+pathBeta IOTA-TABLE row's structural-SR certificate (endpoint beta has NO
+bespoke `Step` constructor; it lands as the first table-native rule).
+Mirrors `exists_preservedByBeta_dim0` at the `gen_pathApp`/`gen_pathLam`
+pair — `gen_pathLam` has the single body child, so the body cell is the
+path-lambda spine's HEAD (no domain-annotation tail step). -/
+theorem PolyCell.exists_preservedByIotaPathBeta_dim0
+    {profile : PolyProfile} {scope : Nat}
+    {body : RawTerm (scope + 1)} {rawArg : RawTerm scope}
+    (sourceCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase
+          ((.mkGen .gen_pathApp ()
+            (.childCons
+              (.mkGen .gen_pathLam () (.childCons body .childNil))
+              (.childCons rawArg .childNil))) : RawTerm scope))) :
+    ∃ _targetCell :
+      PolyCell profile .term 0 scope CellBoundary.trivial
+        (.termBase (RawTerm.subst0 body rawArg)),
+      True := by
+  generalize hSourceSort : CellSort.term = sourceSort at sourceCell
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      have pathLamCell :
+          PolyCell profile .term 0 scope CellBoundary.trivial
+            (.termBase
+              ((.mkGen .gen_pathLam () (.childCons body .childNil)) :
+                RawTerm scope)) :=
+        sourceSpine.headAtDim0 rfl
+      have argCell :
+          PolyCell profile .term 0 scope CellBoundary.trivial
+            (.termBase rawArg) :=
+        sourceSpine.tail.headAtDim0 rfl
+      generalize hPathLamSort : CellSort.term = pathLamSort at pathLamCell
+      cases pathLamCell with
+      | gen _ _ pathLamSpine =>
+          let bodyCell :
+              PolyCell profile .term 0 (scope + 1) CellBoundary.trivial
+                (.termBase body) :=
+            pathLamSpine.headAtDim0 rfl
+          exact ⟨
+            PolyCell.subst_dim0
+              (RawTermSubst.singleton rawArg)
+              (PolyCell.singletonSubstDim0Cells rawArg argCell)
+              bodyCell,
+            True.intro⟩
+
+/-- Structural SR for the endpoint-beta REWRITE SHAPE: from a certified
+`pathApp (pathLam body) rawArg` source, certify the structural target
+`subst0 body rawArg` — harvested for the pathBeta IOTA-TABLE row
+(endpoint beta has NO bespoke `Step` constructor).  Mirrors
+`preservedByBeta` minus the domain-annotation step — `gen_pathLam`'s
+body is its spine HEAD. -/
+theorem HasCertifiedCellDim0.preservedByIotaPathBeta
+    {profile : PolyProfile} {scope : Nat}
+    {body : RawTerm (scope + 1)} {rawArg : RawTerm scope}
+    (sourceCert : HasCertifiedCellDim0 (profile := profile)
+      ((.mkGen .gen_pathApp ()
+        (.childCons
+          (.mkGen .gen_pathLam () (.childCons body .childNil))
+          (.childCons rawArg .childNil))) : RawTerm scope)) :
+    HasCertifiedCellDim0 (profile := profile)
+      (RawTerm.subst0 body rawArg) := by
+  obtain ⟨_, sourceCell⟩ := sourceCert
+  cases sourceCell with
+  | gen _ _ sourceSpine =>
+      have argCell :
+          PolyCell profile .term 0 scope CellBoundary.trivial
+            (.termBase rawArg) :=
+        sourceSpine.tail.headAtDim0 rfl
+      have pathLamCert : HasCertifiedCellDim0 (profile := profile)
+          ((.mkGen .gen_pathLam () (.childCons body .childNil)) :
+            RawTerm scope) :=
+        ⟨.term, sourceSpine.headAtDim0 rfl⟩
+      obtain ⟨_, pathLamCell⟩ := pathLamCert
+      cases pathLamCell with
+      | gen _ _ pathLamSpine =>
+          exact HasCertifiedCellDim0.preservedBySubst0
+            ⟨.term, pathLamSpine.headAtDim0 rfl⟩ argCell
+
 /-! ## Exact projection iota witnesses
 
 These are the iota arms whose target is already a certified child of

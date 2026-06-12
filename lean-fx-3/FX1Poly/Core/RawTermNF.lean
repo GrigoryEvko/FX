@@ -132,6 +132,12 @@ def isReflSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
   | .mkGen generator _payload _children =>
       if generator = .gen_refl then true else false
 
+/-- Shallow generator test for path-lambda terms (the endpoint-beta function head). -/
+def isPathLamSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
+  match sourceTerm with
+  | .mkGen generator _payload _children =>
+      if generator = .gen_pathLam then true else false
+
 end RawTerm
 
 namespace RawTermChildren
@@ -153,6 +159,14 @@ def hasAppBetaRoot {scope : Nat}
   match sourceChildren with
   | .childCons functionTerm (.childCons _argumentTerm .childNil) =>
       RawTerm.isLamSource functionTerm
+
+/-- Root endpoint-beta source shape in the children of `gen_pathApp`
+    (the 17th iota): the path head is a `gen_pathLam` cell. -/
+def hasPathAppBetaRoot {scope : Nat}
+    (sourceChildren : RawTermChildren [0, 0] scope) : Bool :=
+  match sourceChildren with
+  | .childCons pathTerm (.childCons _argumentTerm .childNil) =>
+      RawTerm.isPathLamSource pathTerm
 
 /-- Root bool-eliminator iota source shape.  Phase-Z spine `[1, 0, 0, 0]`:
     children are `(motive, then, else, scrutinee)` with the scrutinee LAST and

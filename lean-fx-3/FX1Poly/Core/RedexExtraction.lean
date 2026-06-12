@@ -72,6 +72,25 @@ theorem hasAppBetaRoot_exists_step {scope : Nat}
       subst functionIsLam
       exact ⟨RawTerm.subst0 body argumentTerm, Step.beta⟩
 
+/-- A `gen_pathLam`-rooted term (per `isPathLamSource`) is a path-lambda cell.
+
+Endpoint lambdas carry no domain annotation: the body under one binder is
+the single child. -/
+theorem isPathLamSource_eq_pathLam {scope : Nat} {pathTerm : RawTerm scope}
+    (sourceIsPathLam : RawTerm.isPathLamSource pathTerm = true) :
+    ∃ body : RawTerm (scope + 1),
+      pathTerm = .mkGen .gen_pathLam () (.childCons body .childNil) := by
+  match pathTerm with
+  | .mkGen generator payload children =>
+      dsimp only [RawTerm.isPathLamSource] at sourceIsPathLam
+      by_cases generatorIsPathLam : generator = .gen_pathLam
+      · subst generatorIsPathLam
+        match children with
+        | .childCons body .childNil =>
+            exact ⟨body, rfl⟩
+      · rw [if_neg generatorIsPathLam] at sourceIsPathLam
+        exact absurd sourceIsPathLam (by decide)
+
 /-- A `gen_pair`-rooted term (per `isPairSource`) is a pair cell. -/
 theorem isPairSource_eq_pair {scope : Nat} {pairTerm : RawTerm scope}
     (sourceIsPair : RawTerm.isPairSource pairTerm = true) :
