@@ -7,7 +7,7 @@ import FX1Poly.Core.StronglyNormalizingConvDecision
       conversion it unlocks.  The culmination of the weak-normalization grind.
 
 Every prior file built one ingredient:
-* `fireRootRedex` + soundness/completeness — fire a root redex, exactly when one exists;
+* `fireTableRedexOver` + soundness/completeness — fire a root redex via the table walk, exactly when one exists;
 * `reduceOnce` + soundness/completeness — one leftmost-outermost step, halting exactly at normal forms;
 * `exists_normalForm_of_isStronglyNormalizing` (∃) / `normalForm_unique` — an SN term has a unique normal form;
 * `Conv.decidableOfNormalForms_of_isStronglyNormalizing` — given the normal forms, conversion is decidable.

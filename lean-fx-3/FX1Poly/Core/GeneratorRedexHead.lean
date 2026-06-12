@@ -21,9 +21,9 @@ It is the complement the honest semantic tier needs ALONGSIDE the static-typing 
   * A generator that is neither a redex head NOR statically typed (e.g. `gen_hilbertSpace`) is genuinely reserved.
 
 `hasRedexHead` is the CLASSIFIER; its soundness — `hasRedexHead g = false → mkGen g _ _ has no root Step` — is
-HON-6 (via the pre-written `dif_neg` chain at `FireRootRedexComplete.lean:166` + the `hasRootStepSource` ↔ `Step`
-pins).  η-extension heads (`gen_pathLam`/`gen_modIntro`/`gen_glueIntro` + their unwraps) are a separate axis
-(HON-15), since `hasRootStepSource` is β+ι only by design.
+HON-6 (`GeneratorRedexHeadSoundness.lean`: a `dif_neg` chain against `hasRootStepSource`'s eleven-head dispatch
++ the `hasRootStepSource` ↔ `Step` pins).  η-extension heads (`gen_pathLam`/`gen_modIntro`/`gen_glueIntro` +
+their unwraps) are a separate axis (HON-15), since `hasRootStepSource` is β+ι only by design.
 
 ## Zero-axiom
 

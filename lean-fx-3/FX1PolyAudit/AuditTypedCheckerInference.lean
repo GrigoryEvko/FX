@@ -129,8 +129,6 @@ import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
-import FX1Poly.Core.FireRootRedex
-import FX1Poly.Core.FireRootRedexComplete
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.Normalize
@@ -833,16 +831,16 @@ boundary verdicts and is UNPROVEN jointly (O-NORM).  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.conv_iff_normalForm_eq
 
 -- REDUCER SMOKE CORPUS — the WN-grind reducer COMPUTES on concrete closed terms (each `by rfl`, no decide).
--- Demonstrates non-vacuity of reduceOnce / fireRootRedex / isStepNormalFormBool: β fires with the right
+-- Demonstrates non-vacuity of reduceOnce / fireTableRedexOver / isStepNormalFormBool: β fires with the right
 -- reduct (identity + binder-ignoring bodies), the reducer halts on normal forms, a two-step normalization
--- trace reaches `unit`, the detector agrees, and the root engine fires directly.  The 8 theorem gates
--- transitively certify the 5 fixture defs are axiom-free too.
+-- trace reaches `unit`, the detector agrees, and the table root engine fires directly at the legacy table.
+-- The 8 theorem gates transitively certify the 5 fixture defs are axiom-free too.
 #assert_no_axioms FX1Poly.Typed.reduceOnce_betaIdentity_fires
 #assert_no_axioms FX1Poly.Typed.reduceOnce_betaConstant_fires
 #assert_no_axioms FX1Poly.Typed.reduceOnce_identityLambda_halts
 #assert_no_axioms FX1Poly.Typed.isStepNormalFormBool_betaRedex_false
 #assert_no_axioms FX1Poly.Typed.isStepNormalFormBool_identityLambda_true
-#assert_no_axioms FX1Poly.Typed.fireRootRedex_betaIdentity_fires
+#assert_no_axioms FX1Poly.Typed.fireTableRedex_betaIdentity_fires
 #assert_no_axioms FX1Poly.Typed.SimplyTypedTermLF.normalForm_typed
 
 -- CANONICITY (PROGRESS) — the classic STLC capstone, completing the simply-typed metatheory.  Closed normal

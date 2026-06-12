@@ -129,8 +129,6 @@ import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
 import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
-import FX1Poly.Core.FireRootRedex
-import FX1Poly.Core.FireRootRedexComplete
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.Normalize
@@ -1038,23 +1036,9 @@ classifiers, Σ (#361), modal/cubical η (#363), former children (engine-gated).
 -- root ingredient for weak normalization (the Acc descent's step-extraction at a non-normal term).
 #assert_no_axioms FX1Poly.Core.hasRootStepSource_exists_step
 
--- The COMPUTABLE root-redex firing FUNCTION + its soundness: `fireRootRedex generator payload children`
--- returns `some reduct` exactly on a root redex, exhibiting the reduct as a concrete RawTerm (vs the
--- existential `hasRootStepSource_exists_step`).  The reduct-supplier the weak-normalization normalizer
--- FUNCTION (#261/#480) needs to make `decidableOfNormalForms_of_isStronglyNormalizing` parameter-free.
--- Propext-clean over the 203-ctor table via DecidableEq dite-chains + ▸-casts + full spine destructure.
-#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex
-#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex_sound
-
--- COMPLETENESS of root-redex firing: fireRootRedex fires on EXACTLY the redexes hasRootStepSource detects
--- (the 11-generator dite-chains agree, via the RedexExtraction source-inversions + rfl firings).  The
--- contrapositive `fireRootRedex = none → hasRootStepSource = false` is the root half of structural normality
--- that reduceOnce completeness consumes.
-#assert_no_axioms FX1Poly.Core.RawTerm.hasRootStepSource_imp_fireRootRedex_isSome
-#assert_no_axioms FX1Poly.Core.RawTerm.fireRootRedex_eq_none_imp_hasRootStepSource_false
-
 -- One deterministic reduction step as a TOTAL FUNCTION + soundness: `reduceOnce` fires a root redex
--- (fireRootRedex) or descends the child spine to the first reducible child; `reduceOnce_sound` /
+-- (the generic table walk `fireTableRedexOver` at the legacy table — the bespoke per-iota `fireRootRedex`
+-- retired with IOTA-T11) or descends the child spine to the first reducible child; `reduceOnce_sound` /
 -- `reduceOnceSpine_sound` show every produced reduct is a genuine Step / StepChildren.  The descent engine
 -- the WN normalizer FUNCTION (#261/#480) iterates along Acc StepSuccessor.
 #assert_no_axioms FX1Poly.Core.RawTerm.reduceOnce

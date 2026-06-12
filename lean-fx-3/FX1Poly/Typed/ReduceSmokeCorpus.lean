@@ -1,6 +1,5 @@
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
-import FX1Poly.Core.FireRootRedex
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.CellConstructors
 
@@ -8,7 +7,7 @@ import FX1Poly.Typed.CellConstructors
     — the WN-grind reducer COMPUTES: concrete reduction fixtures, `rfl`-checked.
 
 The WN-grind line proved `RawTerm.reduceOnce` sound (`reduceOnce_sound`) and complete
-(`reduceOnce_eq_none_iff_isStepNormalForm`), and `RawTerm.fireRootRedex` sound + complete.  Those theorems
+(`reduceOnce_eq_none_iff_isStepNormalForm`), and the table root firing sound + complete.  Those theorems
 certify the reducer is correct WHENEVER it returns a value — but they never pin a single concrete reduct.
 This file closes that gap with a closed-term smoke corpus: each fixture states the EXACT output of the
 reducer on a concrete term and discharges it by `rfl` (pure kernel computation — no `decide`, no
@@ -34,12 +33,13 @@ What the corpus demonstrates:
 * **the normal-form detector agrees with the reducer** — `isStepNormalFormBool` reports `false` on the redex
   and `true` on the normal lambda (`isStepNormalFormBool_betaRedex_false` /
   `isStepNormalFormBool_identityLambda_true`).
-* **the root-redex engine fires directly** — `fireRootRedex .gen_app () [λ.v0, unit] = some unit`
-  (`fireRootRedex_betaIdentity_fires`), confirming the `gen_app`/`gen_lam` β shape and its `Unit` payload.
+* **the root-redex engine fires directly** — `fireTableRedexOver legacyIotaRuleTable .gen_app ()
+  [λ.v0, unit] = some unit` (`fireTableRedex_betaIdentity_fires`), confirming the `gen_app`/`gen_lam`
+  β shape and its `Unit` payload on the table root walk itself.
 
 ## Zero-axiom verification
 
-Every theorem is `by rfl` — definitional computation of `reduceOnce` / `fireRootRedex` /
+Every theorem is `by rfl` — definitional computation of `reduceOnce` / `fireTableRedexOver` /
 `isStepNormalFormBool` on a fully concrete term.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, or `omega`.  Gated per declaration in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -97,10 +97,12 @@ theorem isStepNormalFormBool_betaRedex_false :
 theorem isStepNormalFormBool_identityLambda_true :
     RawTerm.isStepNormalFormBool identityLambda = true := by rfl
 
-/-- **The root-redex engine fires directly.**  `fireRootRedex` on the `gen_app` of `[λ. v0, unit]` returns
-`unit` — confirming the β shape and the `Unit` payload of `gen_app`. -/
-theorem fireRootRedex_betaIdentity_fires :
-    RawTerm.fireRootRedex .gen_app () (.childCons identityLambda (.childCons unitCell .childNil))
+/-- **The root-redex engine fires directly.**  `fireTableRedexOver` at the legacy table on the `gen_app`
+of `[λ. v0, unit]` returns `unit` — confirming the β shape and the `Unit` payload of `gen_app` on the
+table root walk that `reduceOnce` dispatches through. -/
+theorem fireTableRedex_betaIdentity_fires :
+    fireTableRedexOver legacyIotaRuleTable .gen_app ()
+      (.childCons identityLambda (.childCons unitCell .childNil))
       = some unitCell := by rfl
 
 end FX1Poly.Typed
