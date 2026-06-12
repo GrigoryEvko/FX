@@ -54,19 +54,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The boolean eliminator cell — `gen_boolElim` in the Phase-Z motive shape (arity 4,
-`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, scrutinee, thenBranch,
-elseBranch)`; the emitted canonical spine is `(motive, thenBranch, elseBranch, scrutinee)` — motive FIRST
-(a term under one binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the
-ambient `scope`. -/
-def boolElimCell {scope : Nat} (motive : RawTerm (scope + 1))
-    (scrutinee thenBranch elseBranch : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_boolElim ()
-    (.childCons motive
-      (.childCons thenBranch
-        (.childCons elseBranch
-          (.childCons scrutinee .childNil))))
-
 /-- **The boolean eliminator judgment.**  A standalone layer (NOT mutual with / NOT an arm of any existing
 engine) typing the non-dependent `boolElim`: `boolElim(s, t, e)` inhabits the common result type `C` when the
 scrutinee is typed at `boolCode` (by the data-intro engine — so it is `boolTrue` or `boolFalse`) and both

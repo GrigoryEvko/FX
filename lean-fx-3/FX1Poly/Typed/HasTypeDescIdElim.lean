@@ -45,14 +45,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The identity eliminator cell `idJ(motive, baseCase, witness)` — `gen_idJ` (arity 3,
-`binderShifts = [2, 0, 0]`; Phase-Z motive shape: the motive a term under two binders at `scope + 2`, the
-base case second, the witness LAST). -/
-def idJCell {scope : Nat} (motive : RawTerm (scope + 2))
-    (baseCase witness : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_idJ ()
-    (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
-
 /-- **The identity eliminator judgment.**  A standalone layer typing the Phase-Z `idJ`:
 `idJ(motive, baseCase, witness) : C` when the witness is typed at a reflexive identity type `Id(A, x, x)` (by the
 id-intro engine — so it is a `refl`) and the base case is `baseCase : C` (by the grown engine).  The result type

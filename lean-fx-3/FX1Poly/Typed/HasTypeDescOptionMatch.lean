@@ -50,18 +50,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The option eliminator cell — `gen_optionMatch` in the Phase-Z motive shape (arity 4,
-`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, noneBranch, someBranch, scrutinee)`;
-the emitted canonical spine is `(motive, noneBranch, someBranch, scrutinee)` — motive FIRST (a term under one
-binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the ambient `scope`. -/
-def optionMatchCell {scope : Nat} (motive : RawTerm (scope + 1))
-    (noneBranch someBranch scrutinee : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_optionMatch ()
-    (.childCons motive
-      (.childCons noneBranch
-        (.childCons someBranch
-          (.childCons scrutinee .childNil))))
-
 /-- **The option eliminator judgment.**  A standalone layer typing the non-dependent `optionMatch`:
 `optionMatch(s, n, sm) : C` when the scrutinee is typed at `option(A)` (by the option-intro engine), the None
 branch is `n : C` (a value, by the grown engine) and the Some branch is `sm : A → C` (the non-dependent arrow

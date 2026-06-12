@@ -47,14 +47,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The first-projection cell `fst(pairTerm)` — `gen_fst` (arity 1, `binderShifts = [0]`). -/
-def fstCell {scope : Nat} (pairTerm : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_fst () (.childCons pairTerm .childNil)
-
-/-- The second-projection cell `snd(pairTerm)` — `gen_snd` (arity 1, `binderShifts = [0]`). -/
-def sndCell {scope : Nat} (pairTerm : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_snd () (.childCons pairTerm .childNil)
-
 /-- **The Σ-projection eliminator judgment.**  A standalone layer typing the non-dependent projections:
 `fst(p) : A` and `snd(p) : B` when the scrutinee `p` is typed at `product(A, B)` (by the pair-intro engine — so
 it is a `pair`).  The two component types `A`, `B` come straight from the product classifier. -/

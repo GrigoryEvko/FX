@@ -1,4 +1,5 @@
 import FX1Poly.Core.RawTerm
+import FX1Poly.Core.RawTermWeaken
 import FX1Poly.Universe.LevelExpr
 import FX1Poly.Universe.UniverseFlag
 
@@ -197,5 +198,75 @@ def listConsCell {scope : Nat} (headValue tailList : RawTerm scope) : RawTerm sc
 classifies the list value cells. -/
 def listTypeCell {scope : Nat} (elementType : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_listCode () (.childCons elementType .childNil)
+
+/-! ## The eliminator cells (extracted from the NATIVE-43 deletion-target elim engines —
+pure syntax, the cell vocabulary survives the engine retirement) -/
+
+/-- The boolean eliminator cell — `gen_boolElim` in the Phase-Z motive shape (arity 4,
+`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, scrutinee, thenBranch,
+elseBranch)`; the emitted canonical spine is `(motive, thenBranch, elseBranch, scrutinee)` — motive FIRST
+(a term under one binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the
+ambient `scope`. -/
+def boolElimCell {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee thenBranch elseBranch : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_boolElim ()
+    (.childCons motive
+      (.childCons thenBranch
+        (.childCons elseBranch
+          (.childCons scrutinee .childNil))))
+
+/-- The option eliminator cell — `gen_optionMatch` in the Phase-Z motive shape (arity 4,
+`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, noneBranch, someBranch, scrutinee)`;
+the emitted canonical spine is `(motive, noneBranch, someBranch, scrutinee)` — motive FIRST (a term under one
+binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the ambient `scope`. -/
+def optionMatchCell {scope : Nat} (motive : RawTerm (scope + 1))
+    (noneBranch someBranch scrutinee : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_optionMatch ()
+    (.childCons motive
+      (.childCons noneBranch
+        (.childCons someBranch
+          (.childCons scrutinee .childNil))))
+
+/-- The coproduct eliminator cell — `gen_eitherMatch` in the Phase-Z motive shape (arity 4,
+`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, leftBranch, rightBranch, scrutinee)`;
+the emitted canonical spine is `(motive, leftBranch, rightBranch, scrutinee)` — motive FIRST (a term under one
+binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the ambient `scope`. -/
+def eitherMatchCell {scope : Nat} (motive : RawTerm (scope + 1))
+    (leftBranch rightBranch scrutinee : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_eitherMatch ()
+    (.childCons motive
+      (.childCons leftBranch
+        (.childCons rightBranch
+          (.childCons scrutinee .childNil))))
+
+/-- The identity eliminator cell `idJ(motive, baseCase, witness)` — `gen_idJ` (arity 3,
+`binderShifts = [2, 0, 0]`; Phase-Z motive shape: the motive a term under two binders at `scope + 2`, the
+base case second, the witness LAST). -/
+def idJCell {scope : Nat} (motive : RawTerm (scope + 2))
+    (baseCase witness : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_idJ ()
+    (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
+
+/-- The first-projection cell `fst(pairTerm)` — `gen_fst` (arity 1, `binderShifts = [0]`). -/
+def fstCell {scope : Nat} (pairTerm : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_fst () (.childCons pairTerm .childNil)
+
+/-- The second-projection cell `snd(pairTerm)` — `gen_snd` (arity 1, `binderShifts = [0]`). -/
+def sndCell {scope : Nat} (pairTerm : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_snd () (.childCons pairTerm .childNil)
+
+/-- The 3-arg curried step-function type `A → List(A) → C → C` the cons branch of a list
+eliminator inhabits (every codomain weakened past its binder). -/
+def listStepFunctionType {scope : Nat} (elementType resultType : RawTerm scope) : RawTerm scope :=
+  piTyCodeCell elementType
+    (RawTerm.weaken
+      (piTyCodeCell (listTypeCell elementType)
+        (RawTerm.weaken (piTyCodeCell resultType (RawTerm.weaken resultType)))))
+
+/-- The partial-application type `List(A) → C → C` — what remains after the cons branch consumes
+the head. -/
+def listTailStepType {scope : Nat} (elementType resultType : RawTerm scope) : RawTerm scope :=
+  piTyCodeCell (listTypeCell elementType)
+    (RawTerm.weaken (piTyCodeCell resultType (RawTerm.weaken resultType)))
 
 end FX1Poly.Typed

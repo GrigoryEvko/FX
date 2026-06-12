@@ -45,18 +45,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The coproduct eliminator cell — `gen_eitherMatch` in the Phase-Z motive shape (arity 4,
-`binderShifts = [1, 0, 0, 0]`).  Author-facing parameter order is `(motive, leftBranch, rightBranch, scrutinee)`;
-the emitted canonical spine is `(motive, leftBranch, rightBranch, scrutinee)` — motive FIRST (a term under one
-binder, `RawTerm (scope + 1)`), scrutinee LAST.  The other three children are at the ambient `scope`. -/
-def eitherMatchCell {scope : Nat} (motive : RawTerm (scope + 1))
-    (leftBranch rightBranch scrutinee : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_eitherMatch ()
-    (.childCons motive
-      (.childCons leftBranch
-        (.childCons rightBranch
-          (.childCons scrutinee .childNil))))
-
 /-- **The coproduct eliminator judgment.**  A standalone layer typing the non-dependent `eitherMatch`:
 `eitherMatch(s, l, r) : C` when the scrutinee is typed at `either(A, B)` (by the either-intro engine) and the
 two branches are FUNCTIONS `l : A → C` and `r : B → C` (the non-dependent arrows `piTyCodeCell A (weaken C)` /

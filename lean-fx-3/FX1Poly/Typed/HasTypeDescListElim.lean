@@ -51,20 +51,6 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The 3-arg curried step-function type `A → List(A) → C → C` the cons branch of a list
-eliminator inhabits (every codomain weakened past its binder). -/
-def listStepFunctionType {scope : Nat} (elementType resultType : RawTerm scope) : RawTerm scope :=
-  piTyCodeCell elementType
-    (RawTerm.weaken
-      (piTyCodeCell (listTypeCell elementType)
-        (RawTerm.weaken (piTyCodeCell resultType (RawTerm.weaken resultType)))))
-
-/-- The partial-application type `List(A) → C → C` — what remains after the cons branch consumes
-the head. -/
-def listTailStepType {scope : Nat} (elementType resultType : RawTerm scope) : RawTerm scope :=
-  piTyCodeCell (listTypeCell elementType)
-    (RawTerm.weaken (piTyCodeCell resultType (RawTerm.weaken resultType)))
-
 /-- **The recursive List eliminator judgment.**  The CAN-1 mixed-engine template at SHAPE-5:
 the eliminator cell, the cross-engine tail application (grown partial function × DATA-ENGINE
 tail — the rule `piElim` cannot express), and the recursive result application (both parts
