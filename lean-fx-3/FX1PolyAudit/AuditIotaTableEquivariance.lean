@@ -135,7 +135,6 @@ namespace FX1PolyAudit
 
 /-! ## Stage EQUATIONS at the rename instantiation (two-sided forms) -/
 
-#assert_no_axioms FX1Poly.Core.RawTerm.rename_var_reduces
 #assert_no_axioms FX1Poly.Core.RawTerm.scopedChildrenView_rename
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeTermAt?_rename
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeChildrenAt?_rename
@@ -154,8 +153,6 @@ namespace FX1PolyAudit
 
 /-! ## Relation-level reflection: the table relation reflects renaming -/
 
-#assert_no_axioms FX1Poly.Core.StepOverTable.reflectRenameOfEq
-#assert_no_axioms FX1Poly.Core.StepOverTableChildren.reflectRenameOfEq
 #assert_no_axioms FX1Poly.Core.StepOverTable.reflectRename
 
 end FX1PolyAudit

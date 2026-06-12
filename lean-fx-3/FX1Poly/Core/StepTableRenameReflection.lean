@@ -1,6 +1,8 @@
 import FX1Poly.Core.StepTableEquivariance
 import FX1Poly.Core.StructuralInductionPrimitives
 import FX1Poly.Core.RawTermChildrenUnique
+import FX1Poly.Core.StepRenameReflect
+import FX1Poly.Core.RawTermFoldNonVarCommute
 
 /-! # FX1Poly/Core/StepTableRenameReflection — the pattern test REFLECTS under renaming
 
@@ -231,13 +233,6 @@ so every interpreter stage satisfies a total `Option.map` EQUATION — the
 two-sided form that yields both the forward transport and the backward
 reflection in one statement.  These equations feed the interpreter
 isSome-reflection (the `reflectRename` assembly's missing leg). -/
-
-/-- Rename on a variable cell is the renamed-position variable cell
-(definitional — the fold's variable arm). -/
-theorem RawTerm.rename_var_reduces {scope targetScope : Nat}
-    (rho : RawRenaming scope targetScope) (varPosition : Fin scope) :
-    RawTerm.rename rho (.mkGen .gen_var varPosition .childNil)
-      = .mkGen .gen_var (rho varPosition) .childNil := rfl
 
 /-- The shift-erased children view of a renamed cell is the
 substituted-at-the-injection view of the original cell's children: a
@@ -1081,157 +1076,14 @@ reflects through the firing dispatcher's rename equation
 (`firesOn?_rename`), and a congruence recurses through the children
 spine with the per-shift lifted renaming. -/
 
-mutual
-
-/-- Equation-threaded form: a table step out of `rename rho origin` is
-the renamed image of a table step out of `origin`. -/
-theorem StepOverTable.reflectRenameOfEq {table : List IotaRuleDesc}
-    (tableIsUniform : ∀ rule, rule ∈ table → rule.IsScopeUniform) :
-    {targetScope : Nat} →
-    {renamedSource renamedReduct : RawTerm targetScope} →
-    StepOverTable table renamedSource renamedReduct →
-    {sourceScope : Nat} →
-    (originTerm : RawTerm sourceScope) →
-    (rho : RawRenaming sourceScope targetScope) →
-    RawTerm.rename rho originTerm = renamedSource →
-    ∃ originReduct : RawTerm sourceScope,
-      StepOverTable table originTerm originReduct ∧
-        RawTerm.rename rho originReduct = renamedReduct
-  | targetScope, _, _, .tableRedex isRow elimPayload fires,
-      sourceScope, originTerm, rho, originEq => by
-      cases originTerm with
-      | mkGen originGen originPayload originChildren =>
-        by_cases isVarGen : originGen = .gen_var
-        · exfalso
-          subst isVarGen
-          have childrenAreNil : originChildren = .childNil :=
-            RawTermChildren.eq_childNil originChildren
-          subst childrenAreNil
-          rw [RawTerm.rename_var_reduces rho originPayload] at originEq
-          injection originEq with scopeEq genEq _ _
-          exact (tableIsUniform _ isRow).isNotVarHead genEq.symm
-        · rw [RawTerm.rename_nonVar_reduces rho isVarGen originPayload
-            originChildren] at originEq
-          injection originEq with scopeEq genEq payloadHEq childrenHEq
-          subst genEq
-          have payloadEq := eq_of_heq payloadHEq
-          have childrenEq := eq_of_heq childrenHEq
-          rw [← payloadEq, ← childrenEq] at fires
-          have mapped :
-              (_root_.FX1Poly.Core.IotaRuleDesc.firesOn? _ originPayload
-                originChildren).map (RawTerm.rename rho)
-              = some _ :=
-            (IotaRuleDesc.firesOn?_rename _ rho (tableIsUniform _ isRow)
-              originPayload originChildren).symm.trans fires
-          obtain ⟨originReduct, originFires, renameEq⟩ :=
-            optionMapEqSome mapped
-          exact ⟨originReduct, .tableRedex isRow originPayload originFires,
-            renameEq⟩
-  | targetScope, _, _, .cong gen payload childStep,
-      sourceScope, originTerm, rho, originEq => by
-      cases originTerm with
-      | mkGen originGen originPayload originChildren =>
-        by_cases isVarGen : originGen = .gen_var
-        · exfalso
-          subst isVarGen
-          have childrenAreNil : originChildren = .childNil :=
-            RawTermChildren.eq_childNil originChildren
-          subst childrenAreNil
-          rw [RawTerm.rename_var_reduces rho originPayload] at originEq
-          injection originEq with scopeEq genEq _ childrenHEq
-          subst genEq
-          have childrenEq := eq_of_heq childrenHEq
-          rw [← childrenEq] at childStep
-          cases childStep
-        · rw [RawTerm.rename_nonVar_reduces rho isVarGen originPayload
-            originChildren] at originEq
-          injection originEq with scopeEq genEq payloadHEq childrenHEq
-          subst genEq
-          have payloadEq := eq_of_heq payloadHEq
-          have childrenEq := eq_of_heq childrenHEq
-          obtain ⟨originChildrenReduct, originChildStep, renameRestEq⟩ :=
-            StepOverTableChildren.reflectRenameOfEq tableIsUniform
-              childStep originChildren rho childrenEq
-          refine ⟨.mkGen originGen originPayload originChildrenReduct,
-            .cong originGen originPayload originChildStep, ?_⟩
-          rw [RawTerm.rename_nonVar_reduces rho isVarGen originPayload
-            originChildrenReduct]
-          rw [payloadEq,
-            show foldChildren GenAlgebra.canonical rho originChildrenReduct
-              = RawTermChildren.rename rho originChildrenReduct from rfl,
-            renameRestEq]
-
-/-- Spine companion: each congruence position reflects with the
-per-shift lifted renaming. -/
-theorem StepOverTableChildren.reflectRenameOfEq {table : List IotaRuleDesc}
-    (tableIsUniform : ∀ rule, rule ∈ table → rule.IsScopeUniform) :
-    {parentTargetScope : Nat} → {binderShifts : List Nat} →
-    {renamedChildren renamedChildren' :
-      RawTermChildren binderShifts parentTargetScope} →
-    StepOverTableChildren table renamedChildren renamedChildren' →
-    {parentSourceScope : Nat} →
-    (originChildren : RawTermChildren binderShifts parentSourceScope) →
-    (rho : RawRenaming parentSourceScope parentTargetScope) →
-    RawTermChildren.rename rho originChildren = renamedChildren →
-    ∃ originReduct : RawTermChildren binderShifts parentSourceScope,
-      StepOverTableChildren table originChildren originReduct ∧
-        RawTermChildren.rename rho originReduct = renamedChildren'
-  | parentTargetScope, _, _, _,
-      @StepOverTableChildren.here _ _ headShift restShifts renamedHead
-        renamedHead' renamedRest childStep,
-      parentSourceScope, originChildren, rho, originEq => by
-      cases originChildren with
-      | childCons originHead originRest =>
-          have originEqReduced :
-              RawTermChildren.childCons
-                (RawTerm.rename (iterateLiftRaw rho headShift) originHead)
-                (RawTermChildren.rename rho originRest)
-              = RawTermChildren.childCons renamedHead renamedRest :=
-            originEq
-          injection originEqReduced with scopeEq shiftEq restShiftsEq
-            headEq restEq
-          obtain ⟨originHeadReduct, originHeadStep, renameHeadEq⟩ :=
-            StepOverTable.reflectRenameOfEq tableIsUniform childStep
-              originHead (iterateLiftRaw rho headShift) headEq
-          refine ⟨.childCons originHeadReduct originRest,
-            .here originRest originHeadStep, ?_⟩
-          show RawTermChildren.childCons
-              (RawTerm.rename (iterateLiftRaw rho headShift)
-                originHeadReduct)
-              (RawTermChildren.rename rho originRest)
-            = RawTermChildren.childCons renamedHead' renamedRest
-          rw [renameHeadEq, restEq]
-  | parentTargetScope, _, _, _,
-      @StepOverTableChildren.there _ _ headShift restShifts renamedHead
-        renamedRest renamedRest' restStep,
-      parentSourceScope, originChildren, rho, originEq => by
-      cases originChildren with
-      | childCons originHead originRest =>
-          have originEqReduced :
-              RawTermChildren.childCons
-                (RawTerm.rename (iterateLiftRaw rho headShift) originHead)
-                (RawTermChildren.rename rho originRest)
-              = RawTermChildren.childCons renamedHead renamedRest :=
-            originEq
-          injection originEqReduced with scopeEq shiftEq restShiftsEq
-            headEq restEq
-          obtain ⟨originRestReduct, originRestStep, renameRestEq⟩ :=
-            StepOverTableChildren.reflectRenameOfEq tableIsUniform restStep
-              originRest rho restEq
-          refine ⟨.childCons originHead originRestReduct,
-            .there originHead originRestStep, ?_⟩
-          show RawTermChildren.childCons
-              (RawTerm.rename (iterateLiftRaw rho headShift) originHead)
-              (RawTermChildren.rename rho originRestReduct)
-            = RawTermChildren.childCons renamedHead renamedRest'
-          rw [headEq, renameRestEq]
-
-end
-
 /-- ★ **The table relation REFLECTS renaming** — for ANY table whose
 rows are scope-uniform: every table step out of a renamed term is the
-renamed image of a table step out of the source.  TWO generic arms
-replace the bespoke per-iota eliminator dispatch. -/
+renamed image of a table step out of the source.  Proved by the
+`StepOverTable.rec` mutual recursion with the origin-equation motive
+(the `Step.reflectRename` template, table-generic): TWO redex-side arms
+— a root firing reflects through the firing dispatcher's rename
+equation (`firesOn?_rename`), a congruence recurses — replace the
+bespoke per-iota eliminator dispatch. -/
 theorem StepOverTable.reflectRename {table : List IotaRuleDesc}
     (tableIsUniform : ∀ rule, rule ∈ table → rule.IsScopeUniform)
     {sourceScope targetScope : Nat}
@@ -1242,8 +1094,136 @@ theorem StepOverTable.reflectRename {table : List IotaRuleDesc}
       renamedReduct) :
     ∃ sourceReduct : RawTerm sourceScope,
       StepOverTable table sourceTerm sourceReduct ∧
-        RawTerm.rename rho sourceReduct = renamedReduct :=
-  StepOverTable.reflectRenameOfEq tableIsUniform renamedStep sourceTerm
-    rho rfl
+        RawTerm.rename rho sourceReduct = renamedReduct := by
+  let motiveStep :
+      {scope : Nat} → (first second : RawTerm scope) →
+        StepOverTable table first second → Prop :=
+    fun {scope} first second _ =>
+      ∀ {originScope : Nat} (originTerm : RawTerm originScope)
+        (originRenaming : RawRenaming originScope scope),
+        RawTerm.rename originRenaming originTerm = first →
+        ∃ originReduct : RawTerm originScope,
+          StepOverTable table originTerm originReduct ∧
+            RawTerm.rename originRenaming originReduct = second
+  let motiveChildren :
+      {parentScope : Nat} → {binderShifts : List Nat} →
+        (first second : RawTermChildren binderShifts parentScope) →
+        StepOverTableChildren table first second → Prop :=
+    fun {parentScope} {binderShifts} first second _ =>
+      ∀ {originScope : Nat}
+        (originChildren : RawTermChildren binderShifts originScope)
+        (originRenaming : RawRenaming originScope parentScope),
+        RawTermChildren.rename originRenaming originChildren = first →
+        ∃ originReduct : RawTermChildren binderShifts originScope,
+          StepOverTableChildren table originChildren originReduct ∧
+            RawTermChildren.rename originRenaming originReduct = second
+  exact
+    (StepOverTable.rec
+      (motive_1 := motiveStep)
+      (motive_2 := motiveChildren)
+      -- tableRedex: the row refires on the origin spine by the firing
+      -- dispatcher's rename equation
+      (fun {scope} {rule} isRow elimPayload {spine} {reduct} fires
+          {originScope} originTerm originRenaming req => by
+        obtain ⟨sourcePayload, sourceChildren, sourceTermEq⟩ :=
+          RawTerm.rename_eq_mkGen originRenaming req
+        subst sourceTermEq
+        rw [RawTerm.rename_mkGen_of_ne_var originRenaming
+          (tableIsUniform rule isRow).isNotVarHead sourcePayload
+          sourceChildren] at req
+        injection req with scopeEq genEq payloadEq childrenRenameEq
+        rw [← payloadEq, ← childrenRenameEq] at fires
+        have mapped :
+            (rule.firesOn? sourcePayload sourceChildren).map
+              (RawTerm.rename originRenaming) = some reduct :=
+          (IotaRuleDesc.firesOn?_rename rule originRenaming
+            (tableIsUniform rule isRow) sourcePayload
+            sourceChildren).symm.trans fires
+        obtain ⟨originReduct, originFires, renameEq⟩ :=
+          optionMapEqSome mapped
+        exact ⟨originReduct, .tableRedex isRow sourcePayload originFires,
+          renameEq⟩)
+      -- cong: a variable head has no children to step; a non-variable
+      -- head decomposes and recurses through the spine
+      (fun {scope} generator payload {children} {children'} childStep
+          childStepIH {originScope} originTerm originRenaming req => by
+        by_cases isVarGen : generator = .gen_var
+        · subst isVarGen
+          cases childStep
+        · obtain ⟨sourcePayload, sourceChildren, sourceTermEq⟩ :=
+            RawTerm.rename_eq_mkGen originRenaming req
+          subst sourceTermEq
+          rw [RawTerm.rename_mkGen_of_ne_var originRenaming isVarGen
+            sourcePayload sourceChildren] at req
+          injection req with scopeEq genEq payloadEq childrenRenameEq
+          obtain ⟨sourceChildren', childrenStep, childrenImageEq⟩ :=
+            childStepIH sourceChildren originRenaming childrenRenameEq
+          refine ⟨.mkGen generator sourcePayload sourceChildren',
+            StepOverTable.cong generator sourcePayload childrenStep, ?_⟩
+          rw [RawTerm.rename_mkGen_of_ne_var originRenaming isVarGen
+            sourcePayload sourceChildren', childrenImageEq, payloadEq])
+      -- here: the stepping head child reflects via the term-level
+      -- mutual IH at the lifted renaming
+      (fun {parentScope} {headShift} {restShifts} {head} {head'} rest
+          childStep childStepIH {originScope} originChildren
+          originRenaming req => by
+        cases originChildren with
+        | childCons sourceHead sourceRest =>
+            rw [show RawTermChildren.rename originRenaming
+                  (.childCons sourceHead sourceRest) =
+                  (.childCons
+                    (RawTerm.rename (iterateLiftRaw originRenaming headShift)
+                      sourceHead)
+                    (RawTermChildren.rename originRenaming sourceRest)
+                    : RawTermChildren (headShift :: restShifts) parentScope)
+                from rfl] at req
+            injection req with scopeEq shiftEq restShiftsEq headRenameEq
+              restRenameEq
+            obtain ⟨sourceHead', headStep, headImageEq⟩ :=
+              childStepIH sourceHead
+                (iterateLiftRaw originRenaming headShift) headRenameEq
+            refine ⟨.childCons sourceHead' sourceRest,
+              StepOverTableChildren.here sourceRest headStep, ?_⟩
+            rw [show RawTermChildren.rename originRenaming
+                  (.childCons sourceHead' sourceRest) =
+                  (.childCons
+                    (RawTerm.rename (iterateLiftRaw originRenaming headShift)
+                      sourceHead')
+                    (RawTermChildren.rename originRenaming sourceRest)
+                    : RawTermChildren (headShift :: restShifts) parentScope)
+                from rfl,
+              headImageEq, restRenameEq])
+      -- there: the stepping tail spine reflects via the children-level
+      -- mutual IH
+      (fun {parentScope} {headShift} {restShifts} head {rest} {rest'}
+          restStep restStepIH {originScope} originChildren
+          originRenaming req => by
+        cases originChildren with
+        | childCons sourceHead sourceRest =>
+            rw [show RawTermChildren.rename originRenaming
+                  (.childCons sourceHead sourceRest) =
+                  (.childCons
+                    (RawTerm.rename (iterateLiftRaw originRenaming headShift)
+                      sourceHead)
+                    (RawTermChildren.rename originRenaming sourceRest)
+                    : RawTermChildren (headShift :: restShifts) parentScope)
+                from rfl] at req
+            injection req with scopeEq shiftEq restShiftsEq headRenameEq
+              restRenameEq
+            obtain ⟨sourceRest', restStepReflected, restImageEq⟩ :=
+              restStepIH sourceRest originRenaming restRenameEq
+            refine ⟨.childCons sourceHead sourceRest',
+              StepOverTableChildren.there sourceHead restStepReflected, ?_⟩
+            rw [show RawTermChildren.rename originRenaming
+                  (.childCons sourceHead sourceRest') =
+                  (.childCons
+                    (RawTerm.rename (iterateLiftRaw originRenaming headShift)
+                      sourceHead)
+                    (RawTermChildren.rename originRenaming sourceRest')
+                    : RawTermChildren (headShift :: restShifts) parentScope)
+                from rfl,
+              headRenameEq, restImageEq])
+      renamedStep)
+      sourceTerm rho rfl
 
 end FX1Poly.Core
