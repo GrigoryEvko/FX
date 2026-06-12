@@ -203,6 +203,25 @@ theorem IotaRuleDesc.scrutineeSpecFires_reflectRename (rule : IotaRuleDesc)
             exact (guardCommutes scope targetScope isVarHead
               scrutineePayload).symm.trans guardPassedAtTarget
 
+/-- The full pattern test reflects under renaming, spec by spec. -/
+theorem IotaRuleDesc.scrutineesFire_reflectRename (rule : IotaRuleDesc)
+    {scope targetScope : Nat} (rho : RawRenaming scope targetScope)
+    (spine : RawTermChildren rule.elimGenerator.binderShifts scope) :
+    (specs : List ScrutineeSpec) →
+    ScrutineeSpecsAreScopeUniform specs →
+    rule.scrutineesFire (RawTermChildren.rename rho spine) specs = true →
+    rule.scrutineesFire spine specs = true
+  | [], _, _ => rfl
+  | spec :: restSpecs, specsAreUniform, allFire => by
+      obtain ⟨specIsUniform, restAreUniform⟩ := specsAreUniform
+      dsimp only [IotaRuleDesc.scrutineesFire] at allFire ⊢
+      obtain ⟨specFires, restFire⟩ := andEqTrueSplit allFire
+      rw [rule.scrutineeSpecFires_reflectRename rho spine specIsUniform
+          specFires,
+        rule.scrutineesFire_reflectRename rho spine restSpecs
+          restAreUniform restFire]
+      rfl
+
 /-! ## Stage EQUATIONS at the rename instantiation
 
 The forward equivariance lemmas are found-IMPLICATIONS because a general
@@ -373,25 +392,684 @@ theorem IotaRuleDesc.resolvePayloadSource?_rename (rule : IotaRuleDesc)
             · rw [dif_neg isHead, dif_neg isHead]
               rfl
 
-/-! ## The spec-list conjunction reflects -/
+/-- The raw slot lookup on a renamed spine is the substituted-view map
+of the original lookup — the un-composed sibling of
+`scrutineeSlotLookup_rename` (no shift-0 projection), feeding the
+template arms that project at shift 1 or 2. -/
+theorem scopedChildAt?_rename {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope)
+    {binderShifts : List Nat}
+    (spine : RawTermChildren binderShifts scope) (slot : Nat) :
+    scopedChildAt? (RawTermChildren.rename rho spine).toScopedChildren slot
+      = (scopedChildAt? spine.toScopedChildren slot).map
+          (ScopedChild.substView (RawTermSubst.ofRenaming rho)) := by
+  rw [RawTermChildren.rename_eq_subst_ofRenaming rho spine,
+    RawTermChildren.toScopedChildren_subst
+      (RawTermSubst.ofRenaming rho) spine]
+  dsimp only [scopedChildAt?]
+  rw [listEntryAt?_map]
 
-/-- The full pattern test reflects under renaming, spec by spec. -/
-theorem IotaRuleDesc.scrutineesFire_reflectRename (rule : IotaRuleDesc)
+/-! ## Interpreter NONE-preservation under renaming
+
+The shipped forward walk (`interpretTemplate?_subst`) transports a
+SUCCESSFUL interpretation; reflection additionally needs that a FAILING
+interpretation stays failing on the renamed spine — together they give
+the total map-equation.  Failure is a shape question (a missing slot, a
+wrong binder shift, a wrong head, an out-of-range template binder), and
+renaming preserves every shape the interpreter inspects.  Recursive
+sub-template links that DID interpret are advanced with the forward
+theorem at the variable-injection substitution. -/
+
+mutual
+
+/-- A failing template interpretation stays failing on the renamed
+spine — the none leg of the interpreter's rename equation. -/
+theorem IotaRuleDesc.interpretTemplate?_rename_none (rule : IotaRuleDesc)
     {scope targetScope : Nat} (rho : RawRenaming scope targetScope)
+    (isNotVarHead : rule.elimGenerator ≠ .gen_var)
+    (elimPayload : rule.elimGenerator.payload scope)
     (spine : RawTermChildren rule.elimGenerator.binderShifts scope) :
-    (specs : List ScrutineeSpec) →
-    ScrutineeSpecsAreScopeUniform specs →
-    rule.scrutineesFire (RawTermChildren.rename rho spine) specs = true →
-    rule.scrutineesFire spine specs = true
-  | [], _, _ => rfl
-  | spec :: restSpecs, specsAreUniform, allFire => by
-      obtain ⟨specIsUniform, restAreUniform⟩ := specsAreUniform
-      dsimp only [IotaRuleDesc.scrutineesFire] at allFire ⊢
-      obtain ⟨specFires, restFire⟩ := andEqTrueSplit allFire
-      rw [rule.scrutineeSpecFires_reflectRename rho spine specIsUniform
-          specFires,
-        rule.scrutineesFire_reflectRename rho spine restSpecs
-          restAreUniform restFire]
+    (depth : Nat) → (template : ReductTemplate) →
+    template.HasScopeUniformPayloads →
+    rule.interpretTemplate? elimPayload spine depth template = none →
+    rule.interpretTemplate?
+        (cast (Generator.payload_scope_invariant_of_not_var isNotVarHead
+          scope targetScope) elimPayload)
+        (RawTermChildren.rename rho spine) depth template
+      = none
+  | depth, .boundVarAt binderIndex, _, interpreted => by
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      by_cases isBound : binderIndex < depth
+      · rw [dif_pos isBound] at interpreted
+        injection interpreted
+      · rw [dif_neg isBound]
+  | depth, .spineChildAt slot, _, interpreted => by
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      rw [scopedChildAt?_rename rho spine slot]
+      cases lookupShape : scopedChildAt? spine.toScopedChildren slot with
+      | none => rfl
+      | some spineChild =>
+          rw [optionSomeMap, optionSomeBindMonadic,
+            ScopedChild.atShiftZero?_substView]
+          rw [lookupShape, optionSomeBindMonadic] at interpreted
+          cases projShape : spineChild.atShiftZero? with
+          | none => rfl
+          | some childTerm =>
+              rw [projShape, optionSomeBindMonadic] at interpreted
+              injection interpreted
+  | depth, .scrutineeChildAt scrutineeIndex slot, _, interpreted => by
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      rw [rule.scrutineeChildrenAt?_rename rho spine scrutineeIndex]
+      cases childrenShape :
+          rule.scrutineeChildrenAt? scrutineeIndex spine with
+      | none => rfl
+      | some childrenView =>
+          rw [optionSomeMap, optionSomeBindMonadic]
+          rw [childrenShape, optionSomeBindMonadic] at interpreted
+          dsimp only [scopedChildAt?] at interpreted ⊢
+          rw [listEntryAt?_map]
+          cases childShape : listEntryAt? childrenView slot with
+          | none => rfl
+          | some scrutineeChild =>
+              rw [optionSomeMap, optionSomeBindMonadic,
+                ScopedChild.atShiftZero?_substView]
+              rw [childShape, optionSomeBindMonadic] at interpreted
+              cases projShape : scrutineeChild.atShiftZero? with
+              | none => rfl
+              | some childTerm =>
+                  rw [projShape, optionSomeBindMonadic] at interpreted
+                  injection interpreted
+  | depth, .theScrutineeAt scrutineeIndex, _, interpreted => by
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      rw [rule.scrutineeTermAt?_rename rho spine scrutineeIndex]
+      cases termShape : rule.scrutineeTermAt? scrutineeIndex spine with
+      | none => rfl
+      | some scrutineeTerm =>
+          rw [termShape, optionSomeBindMonadic] at interpreted
+          injection interpreted
+  | depth, .motiveInstantiatedWith argTemplate, argUniform,
+      interpreted => by
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      cases motiveShape : rule.motiveSlot? with
+      | none => rfl
+      | some motiveSlot =>
+          rw [optionSomeBindMonadic]
+          rw [motiveShape, optionSomeBindMonadic] at interpreted
+          cases argShape : rule.interpretTemplate? elimPayload spine depth
+              argTemplate with
+          | none =>
+              rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+                elimPayload spine depth argTemplate argUniform argShape]
+              rfl
+          | some argTerm =>
+              have renamedArg := rule.interpretTemplate?_subst
+                (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload
+                spine depth argTemplate argUniform argShape
+              rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+                at renamedArg
+              rw [renamedArg, optionSomeBindMonadic]
+              rw [argShape, optionSomeBindMonadic] at interpreted
+              rw [scopedChildAt?_rename rho spine motiveSlot]
+              cases motiveChildShape :
+                  scopedChildAt? spine.toScopedChildren motiveSlot with
+              | none => rfl
+              | some motiveChild =>
+                  rw [optionSomeMap, optionSomeBindMonadic,
+                    ScopedChild.atShiftOne?_substView]
+                  rw [motiveChildShape, optionSomeBindMonadic]
+                    at interpreted
+                  cases projShape : motiveChild.atShiftOne? with
+                  | none => rfl
+                  | some motiveBody =>
+                      rw [projShape, optionSomeBindMonadic] at interpreted
+                      injection interpreted
+  | depth, .motiveInstantiatedWithPair innerTemplate outerTemplate,
+      isUniform, interpreted => by
+      obtain ⟨innerUniform, outerUniform⟩ := isUniform
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      cases motiveShape : rule.motiveSlot? with
+      | none => rfl
+      | some motiveSlot =>
+          rw [optionSomeBindMonadic]
+          rw [motiveShape, optionSomeBindMonadic] at interpreted
+          cases innerShape : rule.interpretTemplate? elimPayload spine depth
+              innerTemplate with
+          | none =>
+              rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+                elimPayload spine depth innerTemplate innerUniform
+                innerShape]
+              rfl
+          | some innerTerm =>
+              have renamedInner := rule.interpretTemplate?_subst
+                (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload
+                spine depth innerTemplate innerUniform innerShape
+              rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+                at renamedInner
+              rw [renamedInner, optionSomeBindMonadic]
+              rw [innerShape, optionSomeBindMonadic] at interpreted
+              cases outerShape : rule.interpretTemplate? elimPayload spine
+                  depth outerTemplate with
+              | none =>
+                  rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+                    elimPayload spine depth outerTemplate outerUniform
+                    outerShape]
+                  rfl
+              | some outerTerm =>
+                  have renamedOuter := rule.interpretTemplate?_subst
+                    (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload
+                    spine depth outerTemplate outerUniform outerShape
+                  rw [← RawTermChildren.rename_eq_subst_ofRenaming rho
+                    spine] at renamedOuter
+                  rw [renamedOuter, optionSomeBindMonadic]
+                  rw [outerShape, optionSomeBindMonadic] at interpreted
+                  rw [scopedChildAt?_rename rho spine motiveSlot]
+                  cases motiveChildShape :
+                      scopedChildAt? spine.toScopedChildren motiveSlot with
+                  | none => rfl
+                  | some motiveChild =>
+                      rw [optionSomeMap, optionSomeBindMonadic,
+                        ScopedChild.atShiftTwo?_substView]
+                      rw [motiveChildShape, optionSomeBindMonadic]
+                        at interpreted
+                      cases projShape : motiveChild.atShiftTwo? with
+                      | none => rfl
+                      | some motiveBody =>
+                          rw [projShape, optionSomeBindMonadic]
+                            at interpreted
+                          injection interpreted
+  | depth, .builtGen builtHead payloadSource childTemplates, isUniform,
+      interpreted => by
+      obtain ⟨sourceUniform, childrenUniform⟩ := isUniform
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      obtain ⟨isNotVarBuilt, resolveEq⟩ :=
+        rule.resolvePayloadSource?_rename rho spine depth payloadSource
+          sourceUniform
+      rw [resolveEq]
+      cases resolveShape :
+          rule.resolvePayloadSource? spine depth payloadSource with
+      | none => rfl
+      | some builtPayload =>
+          rw [optionSomeMap, optionSomeBindMonadic]
+          rw [resolveShape, optionSomeBindMonadic] at interpreted
+          cases childrenShape : rule.interpretBuiltChildren? elimPayload
+              spine depth builtHead.binderShifts childTemplates with
+          | none =>
+              rw [rule.interpretBuiltChildren?_rename_none rho isNotVarHead
+                elimPayload spine depth builtHead.binderShifts
+                childTemplates childrenUniform childrenShape]
+              rfl
+          | some builtChildren =>
+              rw [childrenShape, optionSomeBindMonadic] at interpreted
+              injection interpreted
+  | depth, .reassembledReplacing replacements, replacementsUniform,
+      interpreted => by
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      rw [rule.elimPayloadAtDepth?_rename isNotVarHead elimPayload depth]
+      cases payloadShape : rule.elimPayloadAtDepth? depth elimPayload with
+      | none => rfl
+      | some payloadAtDepth =>
+          rw [optionSomeMap, optionSomeBindMonadic]
+          rw [payloadShape, optionSomeBindMonadic] at interpreted
+          rw [RawTermChildren.rename_eq_subst_ofRenaming rho spine,
+            ← RawTermChildren.weakenSpineBy_subst
+              (RawTermSubst.ofRenaming rho) depth spine,
+            ← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+          cases replacedShape : rule.interpretReplacements? elimPayload
+              spine depth replacements
+              (RawTermChildren.weakenSpineBy depth spine) with
+          | none =>
+              rw [rule.interpretReplacements?_rename_none rho isNotVarHead
+                elimPayload spine depth replacements replacementsUniform
+                (RawTermChildren.weakenSpineBy depth spine) replacedShape]
+              rfl
+          | some replacedSpine =>
+              rw [replacedShape, optionSomeBindMonadic] at interpreted
+              injection interpreted
+  | depth, .substOneIntoSpineChild bodySlot argTemplate, argUniform,
+      interpreted => by
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      cases argShape : rule.interpretTemplate? elimPayload spine depth
+          argTemplate with
+      | none =>
+          rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+            elimPayload spine depth argTemplate argUniform argShape]
+          rfl
+      | some argTerm =>
+          have renamedArg := rule.interpretTemplate?_subst
+            (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload spine
+            depth argTemplate argUniform argShape
+          rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+            at renamedArg
+          rw [renamedArg, optionSomeBindMonadic]
+          rw [argShape, optionSomeBindMonadic] at interpreted
+          rw [scopedChildAt?_rename rho spine bodySlot]
+          cases bodyChildShape :
+              scopedChildAt? spine.toScopedChildren bodySlot with
+          | none => rfl
+          | some bodyChild =>
+              rw [optionSomeMap, optionSomeBindMonadic,
+                ScopedChild.atShiftOne?_substView]
+              rw [bodyChildShape, optionSomeBindMonadic] at interpreted
+              cases projShape : bodyChild.atShiftOne? with
+              | none => rfl
+              | some bodyTerm =>
+                  rw [projShape, optionSomeBindMonadic] at interpreted
+                  injection interpreted
+  | depth, .substOneIntoScrutineeChild scrutineeIndex bodySlot argTemplate,
+      argUniform, interpreted => by
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      cases argShape : rule.interpretTemplate? elimPayload spine depth
+          argTemplate with
+      | none =>
+          rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+            elimPayload spine depth argTemplate argUniform argShape]
+          rfl
+      | some argTerm =>
+          have renamedArg := rule.interpretTemplate?_subst
+            (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload spine
+            depth argTemplate argUniform argShape
+          rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+            at renamedArg
+          rw [renamedArg, optionSomeBindMonadic]
+          rw [argShape, optionSomeBindMonadic] at interpreted
+          rw [rule.scrutineeChildrenAt?_rename rho spine scrutineeIndex]
+          cases childrenShape :
+              rule.scrutineeChildrenAt? scrutineeIndex spine with
+          | none => rfl
+          | some childrenView =>
+              rw [optionSomeMap, optionSomeBindMonadic]
+              rw [childrenShape, optionSomeBindMonadic] at interpreted
+              dsimp only [scopedChildAt?] at interpreted ⊢
+              rw [listEntryAt?_map]
+              cases childShape : listEntryAt? childrenView bodySlot with
+              | none => rfl
+              | some bodyChild =>
+                  rw [optionSomeMap, optionSomeBindMonadic,
+                    ScopedChild.atShiftOne?_substView]
+                  rw [childShape, optionSomeBindMonadic] at interpreted
+                  cases projShape : bodyChild.atShiftOne? with
+                  | none => rfl
+                  | some bodyTerm =>
+                      rw [projShape, optionSomeBindMonadic] at interpreted
+                      injection interpreted
+  | depth, .substPairIntoSpineChild bodySlot innerTemplate outerTemplate,
+      isUniform, interpreted => by
+      obtain ⟨innerUniform, outerUniform⟩ := isUniform
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      cases innerShape : rule.interpretTemplate? elimPayload spine depth
+          innerTemplate with
+      | none =>
+          rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+            elimPayload spine depth innerTemplate innerUniform innerShape]
+          rfl
+      | some innerTerm =>
+          have renamedInner := rule.interpretTemplate?_subst
+            (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload spine
+            depth innerTemplate innerUniform innerShape
+          rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+            at renamedInner
+          rw [renamedInner, optionSomeBindMonadic]
+          rw [innerShape, optionSomeBindMonadic] at interpreted
+          cases outerShape : rule.interpretTemplate? elimPayload spine
+              depth outerTemplate with
+          | none =>
+              rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+                elimPayload spine depth outerTemplate outerUniform
+                outerShape]
+              rfl
+          | some outerTerm =>
+              have renamedOuter := rule.interpretTemplate?_subst
+                (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload
+                spine depth outerTemplate outerUniform outerShape
+              rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+                at renamedOuter
+              rw [renamedOuter, optionSomeBindMonadic]
+              rw [outerShape, optionSomeBindMonadic] at interpreted
+              rw [scopedChildAt?_rename rho spine bodySlot]
+              cases bodyChildShape :
+                  scopedChildAt? spine.toScopedChildren bodySlot with
+              | none => rfl
+              | some bodyChild =>
+                  rw [optionSomeMap, optionSomeBindMonadic,
+                    ScopedChild.atShiftTwo?_substView]
+                  rw [bodyChildShape, optionSomeBindMonadic] at interpreted
+                  cases projShape : bodyChild.atShiftTwo? with
+                  | none => rfl
+                  | some bodyTerm =>
+                      rw [projShape, optionSomeBindMonadic] at interpreted
+                      injection interpreted
+  | depth, .substPairIntoScrutineeChild scrutineeIndex bodySlot
+      innerTemplate outerTemplate, isUniform, interpreted => by
+      obtain ⟨innerUniform, outerUniform⟩ := isUniform
+      dsimp only [IotaRuleDesc.interpretTemplate?] at interpreted ⊢
+      cases innerShape : rule.interpretTemplate? elimPayload spine depth
+          innerTemplate with
+      | none =>
+          rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+            elimPayload spine depth innerTemplate innerUniform innerShape]
+          rfl
+      | some innerTerm =>
+          have renamedInner := rule.interpretTemplate?_subst
+            (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload spine
+            depth innerTemplate innerUniform innerShape
+          rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+            at renamedInner
+          rw [renamedInner, optionSomeBindMonadic]
+          rw [innerShape, optionSomeBindMonadic] at interpreted
+          cases outerShape : rule.interpretTemplate? elimPayload spine
+              depth outerTemplate with
+          | none =>
+              rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+                elimPayload spine depth outerTemplate outerUniform
+                outerShape]
+              rfl
+          | some outerTerm =>
+              have renamedOuter := rule.interpretTemplate?_subst
+                (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload
+                spine depth outerTemplate outerUniform outerShape
+              rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+                at renamedOuter
+              rw [renamedOuter, optionSomeBindMonadic]
+              rw [outerShape, optionSomeBindMonadic] at interpreted
+              rw [rule.scrutineeChildrenAt?_rename rho spine scrutineeIndex]
+              cases childrenShape :
+                  rule.scrutineeChildrenAt? scrutineeIndex spine with
+              | none => rfl
+              | some childrenView =>
+                  rw [optionSomeMap, optionSomeBindMonadic]
+                  rw [childrenShape, optionSomeBindMonadic] at interpreted
+                  dsimp only [scopedChildAt?] at interpreted ⊢
+                  rw [listEntryAt?_map]
+                  cases childShape : listEntryAt? childrenView bodySlot with
+                  | none => rfl
+                  | some bodyChild =>
+                      rw [optionSomeMap, optionSomeBindMonadic,
+                        ScopedChild.atShiftTwo?_substView]
+                      rw [childShape, optionSomeBindMonadic] at interpreted
+                      cases projShape : bodyChild.atShiftTwo? with
+                      | none => rfl
+                      | some bodyTerm =>
+                          rw [projShape, optionSomeBindMonadic]
+                            at interpreted
+                          injection interpreted
+
+/-- Spine companion: failing `builtGen` children assembly stays failing
+on the renamed spine. -/
+theorem IotaRuleDesc.interpretBuiltChildren?_rename_none
+    (rule : IotaRuleDesc) {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope)
+    (isNotVarHead : rule.elimGenerator ≠ .gen_var)
+    (elimPayload : rule.elimGenerator.payload scope)
+    (spine : RawTermChildren rule.elimGenerator.binderShifts scope) :
+    (depth : Nat) → (childShifts : List Nat) →
+    (childTemplates : ReductTemplateSpine) →
+    childTemplates.HasScopeUniformPayloads →
+    rule.interpretBuiltChildren? elimPayload spine depth childShifts
+        childTemplates
+      = none →
+    rule.interpretBuiltChildren?
+        (cast (Generator.payload_scope_invariant_of_not_var isNotVarHead
+          scope targetScope) elimPayload)
+        (RawTermChildren.rename rho spine) depth childShifts childTemplates
+      = none
+  | depth, [], .spineNil, _, interpreted => by
+      dsimp only [IotaRuleDesc.interpretBuiltChildren?] at interpreted
+      injection interpreted
+  | _, [], .spineCons _ _, _, _ => rfl
+  | _, _ :: _, .spineNil, _, _ => rfl
+  | depth, 0 :: restShifts, .spineCons childTemplate restTemplates,
+      isUniform, interpreted => by
+      obtain ⟨childUniform, restUniform⟩ := isUniform
+      dsimp only [IotaRuleDesc.interpretBuiltChildren?] at interpreted ⊢
+      cases childShape : rule.interpretTemplate? elimPayload spine depth
+          childTemplate with
+      | none =>
+          rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+            elimPayload spine depth childTemplate childUniform childShape]
+          rfl
+      | some childTerm =>
+          have renamedChild := rule.interpretTemplate?_subst
+            (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload spine
+            depth childTemplate childUniform childShape
+          rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+            at renamedChild
+          rw [renamedChild, optionSomeBindMonadic]
+          rw [childShape, optionSomeBindMonadic] at interpreted
+          cases restShape : rule.interpretBuiltChildren? elimPayload spine
+              depth restShifts restTemplates with
+          | none =>
+              rw [rule.interpretBuiltChildren?_rename_none rho isNotVarHead
+                elimPayload spine depth restShifts restTemplates
+                restUniform restShape]
+              rfl
+          | some restChildren =>
+              rw [restShape, optionSomeBindMonadic] at interpreted
+              injection interpreted
+  | depth, 1 :: restShifts, .spineCons childTemplate restTemplates,
+      isUniform, interpreted => by
+      obtain ⟨childUniform, restUniform⟩ := isUniform
+      dsimp only [IotaRuleDesc.interpretBuiltChildren?] at interpreted ⊢
+      cases childShape : rule.interpretTemplate? elimPayload spine
+          (depth + 1) childTemplate with
+      | none =>
+          rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+            elimPayload spine (depth + 1) childTemplate childUniform
+            childShape]
+          rfl
+      | some childTerm =>
+          have renamedChild := rule.interpretTemplate?_subst
+            (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload spine
+            (depth + 1) childTemplate childUniform childShape
+          rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+            at renamedChild
+          rw [renamedChild, optionSomeBindMonadic]
+          rw [childShape, optionSomeBindMonadic] at interpreted
+          cases restShape : rule.interpretBuiltChildren? elimPayload spine
+              depth restShifts restTemplates with
+          | none =>
+              rw [rule.interpretBuiltChildren?_rename_none rho isNotVarHead
+                elimPayload spine depth restShifts restTemplates
+                restUniform restShape]
+              rfl
+          | some restChildren =>
+              rw [restShape, optionSomeBindMonadic] at interpreted
+              injection interpreted
+  | depth, 2 :: restShifts, .spineCons childTemplate restTemplates,
+      isUniform, interpreted => by
+      obtain ⟨childUniform, restUniform⟩ := isUniform
+      dsimp only [IotaRuleDesc.interpretBuiltChildren?] at interpreted ⊢
+      cases childShape : rule.interpretTemplate? elimPayload spine
+          (depth + 2) childTemplate with
+      | none =>
+          rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+            elimPayload spine (depth + 2) childTemplate childUniform
+            childShape]
+          rfl
+      | some childTerm =>
+          have renamedChild := rule.interpretTemplate?_subst
+            (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload spine
+            (depth + 2) childTemplate childUniform childShape
+          rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+            at renamedChild
+          rw [renamedChild, optionSomeBindMonadic]
+          rw [childShape, optionSomeBindMonadic] at interpreted
+          cases restShape : rule.interpretBuiltChildren? elimPayload spine
+              depth restShifts restTemplates with
+          | none =>
+              rw [rule.interpretBuiltChildren?_rename_none rho isNotVarHead
+                elimPayload spine depth restShifts restTemplates
+                restUniform restShape]
+              rfl
+          | some restChildren =>
+              rw [restShape, optionSomeBindMonadic] at interpreted
+              injection interpreted
+  | _, (_ + 3) :: _, .spineCons _ _, _, _ => rfl
+
+/-- Replacements companion: a failing reassembly fold stays failing on
+the renamed spine (with the reassembly argument transported along the
+depth-lifted variable injection). -/
+theorem IotaRuleDesc.interpretReplacements?_rename_none
+    (rule : IotaRuleDesc) {scope targetScope : Nat}
+    (rho : RawRenaming scope targetScope)
+    (isNotVarHead : rule.elimGenerator ≠ .gen_var)
+    (elimPayload : rule.elimGenerator.payload scope)
+    (spine : RawTermChildren rule.elimGenerator.binderShifts scope) :
+    (depth : Nat) → (replacements : SpineReplacements) →
+    replacements.HasScopeUniformPayloads →
+    (reassemblySpine :
+      RawTermChildren rule.elimGenerator.binderShifts (scope + depth)) →
+    rule.interpretReplacements? elimPayload spine depth replacements
+        reassemblySpine
+      = none →
+    rule.interpretReplacements?
+        (cast (Generator.payload_scope_invariant_of_not_var isNotVarHead
+          scope targetScope) elimPayload)
+        (RawTermChildren.rename rho spine) depth replacements
+        (RawTermChildren.subst
+          (iterateLiftRaw (RawTermSubst.ofRenaming rho) depth)
+          reassemblySpine)
+      = none
+  | depth, .replaceNil, _, reassemblySpine, interpreted => by
+      dsimp only [IotaRuleDesc.interpretReplacements?] at interpreted
+      injection interpreted
+  | depth, .replaceCons slot replacementTemplate restReplacements,
+      isUniform, reassemblySpine, interpreted => by
+      obtain ⟨replacementUniform, restUniform⟩ := isUniform
+      dsimp only [IotaRuleDesc.interpretReplacements?] at interpreted ⊢
+      cases replacementShape : rule.interpretTemplate? elimPayload spine
+          depth replacementTemplate with
+      | none =>
+          rw [rule.interpretTemplate?_rename_none rho isNotVarHead
+            elimPayload spine depth replacementTemplate replacementUniform
+            replacementShape]
+          rfl
+      | some replacement =>
+          have renamedReplacement := rule.interpretTemplate?_subst
+            (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload spine
+            depth replacementTemplate replacementUniform replacementShape
+          rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+            at renamedReplacement
+          rw [renamedReplacement, optionSomeBindMonadic]
+          rw [replacementShape, optionSomeBindMonadic] at interpreted
+          rw [← RawTermChildren.replaceChildAt?_subst
+            (iterateLiftRaw (RawTermSubst.ofRenaming rho) depth)
+            reassemblySpine slot replacement]
+          cases replaceShape :
+              reassemblySpine.replaceChildAt? slot replacement with
+          | none => rfl
+          | some replacedOnce =>
+              rw [optionSomeMap, optionSomeBindMonadic]
+              rw [replaceShape, optionSomeBindMonadic] at interpreted
+              exact rule.interpretReplacements?_rename_none rho
+                isNotVarHead elimPayload spine depth restReplacements
+                restUniform replacedOnce interpreted
+
+end
+
+/-! ## The headline EQUATIONS: interpreter and firing dispatcher -/
+
+/-- ★ **The interpreter's total rename equation**: template
+interpretation on the renamed spine IS the depth-lifted
+variable-injection substitution of the original interpretation — the
+none and some legs in one two-sided statement (none by the
+none-preservation walk, some by the shipped forward transport). -/
+theorem IotaRuleDesc.interpretTemplate?_rename (rule : IotaRuleDesc)
+    {scope targetScope : Nat} (rho : RawRenaming scope targetScope)
+    (isNotVarHead : rule.elimGenerator ≠ .gen_var)
+    (elimPayload : rule.elimGenerator.payload scope)
+    (spine : RawTermChildren rule.elimGenerator.binderShifts scope)
+    (depth : Nat) (template : ReductTemplate)
+    (isUniform : template.HasScopeUniformPayloads) :
+    rule.interpretTemplate?
+        (cast (Generator.payload_scope_invariant_of_not_var isNotVarHead
+          scope targetScope) elimPayload)
+        (RawTermChildren.rename rho spine) depth template
+      = (rule.interpretTemplate? elimPayload spine depth template).map
+          (RawTerm.subst
+            (iterateLiftRaw (RawTermSubst.ofRenaming rho) depth)) := by
+  cases originShape : rule.interpretTemplate? elimPayload spine depth
+      template with
+  | none =>
+      rw [rule.interpretTemplate?_rename_none rho isNotVarHead elimPayload
+        spine depth template isUniform originShape]
       rfl
+  | some result =>
+      have renamed := rule.interpretTemplate?_subst
+        (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload spine depth
+        template isUniform originShape
+      rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine] at renamed
+      rw [renamed]
+      rfl
+
+/-- ★ **Row-level rename equation**: a row's reduct interpretation on
+the renamed spine is the renamed reduct interpretation — at depth 0 the
+lifted injection collapses to the renaming itself. -/
+theorem IotaRuleDesc.interpretTarget?_rename (rule : IotaRuleDesc)
+    {scope targetScope : Nat} (rho : RawRenaming scope targetScope)
+    (isNotVarHead : rule.elimGenerator ≠ .gen_var)
+    (elimPayload : rule.elimGenerator.payload scope)
+    (spine : RawTermChildren rule.elimGenerator.binderShifts scope)
+    (isUniform : rule.target.HasScopeUniformPayloads) :
+    rule.interpretTarget?
+        (cast (Generator.payload_scope_invariant_of_not_var isNotVarHead
+          scope targetScope) elimPayload)
+        (RawTermChildren.rename rho spine)
+      = (rule.interpretTarget? elimPayload spine).map
+          (RawTerm.rename rho) := by
+  dsimp only [IotaRuleDesc.interpretTarget?]
+  cases originShape : rule.interpretTemplate? elimPayload spine 0
+      rule.target with
+  | none =>
+      rw [rule.interpretTemplate?_rename_none rho isNotVarHead elimPayload
+        spine 0 rule.target isUniform originShape]
+      rfl
+  | some result =>
+      have renamed := rule.interpretTemplate?_subst
+        (RawTermSubst.ofRenaming rho) isNotVarHead elimPayload spine 0
+        rule.target isUniform originShape
+      rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine] at renamed
+      rw [renamed, optionSomeMap]
+      exact congrArg some
+        (RawTerm.rename_eq_subst_ofRenaming rho result).symm
+
+/-- ★ **Firing-dispatcher rename equation**: a row fires on the renamed
+spine exactly as it fires on the original, producing the renamed reduct
+— the two-sided form whose none leg is the reflection the bespoke
+`Step.reflectRename` eliminator dispatch encodes per rule. -/
+theorem IotaRuleDesc.firesOn?_rename (rule : IotaRuleDesc)
+    {scope targetScope : Nat} (rho : RawRenaming scope targetScope)
+    (isUniform : rule.IsScopeUniform)
+    (elimPayload : rule.elimGenerator.payload scope)
+    (spine : RawTermChildren rule.elimGenerator.binderShifts scope) :
+    rule.firesOn?
+        (cast (Generator.payload_scope_invariant_of_not_var
+          isUniform.isNotVarHead scope targetScope) elimPayload)
+        (RawTermChildren.rename rho spine)
+      = (rule.firesOn? elimPayload spine).map (RawTerm.rename rho) := by
+  dsimp only [IotaRuleDesc.firesOn?]
+  cases originFires : rule.scrutineesFire spine rule.scrutinees with
+  | false =>
+      have renamedNotFire :
+          rule.scrutineesFire (RawTermChildren.rename rho spine)
+            rule.scrutinees = false := by
+        cases renamedShape : rule.scrutineesFire
+            (RawTermChildren.rename rho spine) rule.scrutinees with
+        | false => rfl
+        | true =>
+            have originFire := rule.scrutineesFire_reflectRename rho spine
+              rule.scrutinees isUniform.scrutineesAreUniform renamedShape
+            rw [originFires] at originFire
+            exact Bool.noConfusion originFire
+      rw [renamedNotFire]
+      rfl
+  | true =>
+      have renamedFires := rule.scrutineesFire_subst
+        (RawTermSubst.ofRenaming rho) spine rule.scrutinees
+        isUniform.scrutineesAreUniform originFires
+      rw [← RawTermChildren.rename_eq_subst_ofRenaming rho spine]
+        at renamedFires
+      rw [if_pos renamedFires, if_pos (rfl : (true : Bool) = true)]
+      exact rule.interpretTarget?_rename rho isUniform.isNotVarHead
+        elimPayload spine isUniform.targetIsUniform
 
 end FX1Poly.Core

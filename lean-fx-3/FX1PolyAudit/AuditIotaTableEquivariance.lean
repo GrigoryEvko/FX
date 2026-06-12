@@ -142,4 +142,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.elimPayloadAtDepth?_rename
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.resolvePayloadSource?_rename
 
+/-! ## Interpreter NONE-preservation walk + the headline rename equations -/
+
+#assert_no_axioms FX1Poly.Core.scopedChildAt?_rename
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTemplate?_rename_none
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretBuiltChildren?_rename_none
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretReplacements?_rename_none
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTemplate?_rename
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTarget?_rename
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.firesOn?_rename
+
 end FX1PolyAudit
