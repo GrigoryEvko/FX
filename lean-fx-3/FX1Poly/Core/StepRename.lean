@@ -1,4 +1,5 @@
 import FX1Poly.Core.StepSubst
+import FX1Poly.Core.RawTermSubstLiftWeaken
 import FX1Poly.Core.StepEta
 
 /-! # Foundation/PolyCell/Core/StepRename
@@ -18,20 +19,6 @@ namespace FX1Poly.Core
 open FX1Poly.Foundation
 
 namespace RawTerm
-
-/-- Renaming under a lifted binder commutes with weakening. -/
-theorem rename_lift_weaken {sourceScope targetScope : Nat}
-    (rawRenaming : RawRenaming sourceScope targetScope)
-    (sourceTerm : RawTerm sourceScope) :
-    RawTerm.rename rawRenaming.lift (RawTerm.weaken sourceTerm) =
-      RawTerm.weaken (RawTerm.rename rawRenaming sourceTerm) := by
-  rw [RawTerm.weaken_eq_rename sourceTerm,
-    RawTerm.weaken_eq_rename (RawTerm.rename rawRenaming sourceTerm)]
-  rw [RawTerm.rename_compose RawRenaming.weaken rawRenaming.lift sourceTerm,
-    RawTerm.rename_compose rawRenaming RawRenaming.weaken sourceTerm]
-  apply RawTerm.rename_pointwise
-  intro position
-  exact RawRenaming.weaken_lift_commute rawRenaming position
 
 /-- The newest bound variable is fixed by any lifted renaming. -/
 theorem rename_lift_newestVar {sourceScope targetScope : Nat}

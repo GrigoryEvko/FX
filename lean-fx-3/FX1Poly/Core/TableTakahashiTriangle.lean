@@ -1,6 +1,5 @@
 import FX1Poly.Core.TableParallelStability
 import FX1Poly.Core.TakahashiTriangle
-import FX1Poly.Core.StepParallelConfluence
 
 /-! # FX1Poly/Core/TableTakahashiTriangle — IOTA-T6: complete development, triangle, table confluence
 

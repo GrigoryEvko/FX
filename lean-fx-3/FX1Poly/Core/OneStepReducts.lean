@@ -1,4 +1,5 @@
 import FX1Poly.Core.FireRootRedex
+import FX1Poly.Core.StepOverTable
 
 /-! # FX1Poly/Core/OneStepReducts
     — the kernel one-step reduct enumeration, with SOUNDNESS (COST-3 brick 2)
@@ -35,31 +36,6 @@ open Foundation
 
 /-! ## Generic membership inversion (hand-rolled, explicit `List.Mem`) -/
 
-/-- Membership in an append comes from one of the sides (hand-rolled by
-list induction; the core lemma's axiom status is unaudited). -/
-theorem listMemAppendInv {α : Type} {element : α} :
-    ∀ (firstList secondList : List α), element ∈ firstList ++ secondList →
-      element ∈ firstList ∨ element ∈ secondList
-  | [], _, memSecond => Or.inr memSecond
-  | listHead :: firstRest, secondList, memBoth => by
-      cases memBoth with
-      | head => exact Or.inl (List.Mem.head firstRest)
-      | tail _ memRest =>
-          rcases listMemAppendInv firstRest secondList memRest with inFirst | inSecond
-          · exact Or.inl (List.Mem.tail listHead inFirst)
-          · exact Or.inr inSecond
-
-/-- Membership in a map comes from a source element (hand-rolled). -/
-theorem listMemMapInv {α β : Type} (mapped : α → β) {element : β} :
-    ∀ (sourceList : List α), element ∈ sourceList.map mapped →
-      ∃ source, source ∈ sourceList ∧ mapped source = element
-  | [], memEmpty => nomatch memEmpty
-  | listHead :: rest, memMapped => by
-      cases memMapped with
-      | head => exact ⟨listHead, List.Mem.head rest, rfl⟩
-      | tail _ memRest =>
-          obtain ⟨source, memSource, mappedEq⟩ := listMemMapInv mapped rest memRest
-          exact ⟨source, List.Mem.tail listHead memSource, mappedEq⟩
 
 /-! ## The enumeration -/
 

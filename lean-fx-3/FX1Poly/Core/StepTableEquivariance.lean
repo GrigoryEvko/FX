@@ -1,4 +1,4 @@
-import FX1Poly.Core.StepTable
+import FX1Poly.Core.StepOverTable
 import FX1Poly.Core.IotaTableEquivariance
 import FX1Poly.Core.RawTermRenameAsSubst
 

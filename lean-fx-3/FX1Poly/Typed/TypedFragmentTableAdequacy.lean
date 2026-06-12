@@ -40,43 +40,6 @@ namespace FX1Poly.Typed
 open FX1Poly.Core
 open FX1Poly.Universe (LevelExpr UniverseFlag)
 
-/-! ## The freed-subject inversion on the table relation -/
-
-/-- **Table-step inversion at a known cell**: a table step out of
-`.mkGen gen payload children` is either a ROW FIRING (the row, its
-membership, and the firing surfaced together with the cell
-identification) or a CHILD CONGRUENCE.  Freed-subject form — the
-derivation cases stay index-clean; consumers at a concrete head
-discriminate the first disjunct by head extraction. -/
-theorem _root_.FX1Poly.Core.StepOverTable.invertOrCong
-    {table : List IotaRuleDesc}
-    {scope : Nat} {source target : RawTerm scope}
-    (tableStep : StepOverTable table source target)
-    {gen : Generator} {payload : gen.payload scope}
-    {children : RawTermChildren gen.binderShifts scope}
-    (sourceShape : source = .mkGen gen payload children) :
-    (∃ (rule : IotaRuleDesc) (_ : rule ∈ table)
-        (elimPayload : rule.elimGenerator.payload scope)
-        (spine : RawTermChildren rule.elimGenerator.binderShifts scope),
-        RawTerm.mkGen rule.elimGenerator elimPayload spine
-            = RawTerm.mkGen gen payload children
-        ∧ rule.firesOn? elimPayload spine = some target)
-    ∨ (∃ children', target = .mkGen gen payload children'
-        ∧ StepOverTableChildren table children children') := by
-  cases tableStep with
-  | tableRedex isRow elimPayload fires =>
-      exact Or.inl ⟨_, isRow, elimPayload, _, sourceShape, fires⟩
-  | cong congGen congPayload childrenStep =>
-      have headsAgree : congGen = gen := congrArg
-        (fun cell => match cell with
-          | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
-        sourceShape
-      subst headsAgree
-      injection sourceShape with _scopeRefl _genRefl payloadEq childrenEq
-      subst payloadEq
-      subst childrenEq
-      exact Or.inr ⟨_, rfl, childrenStep⟩
-
 /-! ## Bool head-rigidity checkers + pins -/
 
 /-- No row of the ι table eliminates this head (Bool form, `rfl`-decided

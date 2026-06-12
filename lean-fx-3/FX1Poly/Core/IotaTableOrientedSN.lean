@@ -750,13 +750,6 @@ theorem orientedTableStepToStep {scope : Nat} {source target : RawTerm scope}
 
 /-! ## ★ Strong normalization of the oriented table -/
 
-/-- Accessibility successor for a table relation: `laterTerm` is below
-`earlierTerm` when `earlierTerm` table-contracts to it (mirrors
-`IotaStep.successor`). -/
-def StepOverTable.successorOver (table : List IotaRuleDesc) {scope : Nat}
-    (laterTerm earlierTerm : RawTerm scope) : Prop :=
-  StepOverTable table earlierTerm laterTerm
-
 /-- **★ The oriented 14-row table relation is strongly normalizing** —
 inherited WHOLESALE from `iotaFullStep_wellFounded` through the
 embedding: one recursive path order orients every row that passes the

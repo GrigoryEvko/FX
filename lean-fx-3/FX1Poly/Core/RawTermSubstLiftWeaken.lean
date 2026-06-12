@@ -70,4 +70,18 @@ theorem RawTerm.subst_lift_singleton_weaken_weaken {scope : Nat}
   rw [RawTerm.subst_lift_weaken (RawTermSubst.singleton outerArg) (RawTerm.weaken innerArg)]
   rw [RawTerm.weaken_subst_singleton innerArg outerArg]
 
+/-- Renaming under a lifted binder commutes with weakening. -/
+theorem RawTerm.rename_lift_weaken {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (sourceTerm : RawTerm sourceScope) :
+    RawTerm.rename rawRenaming.lift (RawTerm.weaken sourceTerm) =
+      RawTerm.weaken (RawTerm.rename rawRenaming sourceTerm) := by
+  rw [RawTerm.weaken_eq_rename sourceTerm,
+    RawTerm.weaken_eq_rename (RawTerm.rename rawRenaming sourceTerm)]
+  rw [RawTerm.rename_compose RawRenaming.weaken rawRenaming.lift sourceTerm,
+    RawTerm.rename_compose rawRenaming RawRenaming.weaken sourceTerm]
+  apply RawTerm.rename_pointwise
+  intro position
+  exact RawRenaming.weaken_lift_commute rawRenaming position
+
 end FX1Poly.Core

@@ -38,6 +38,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.StepTable.detectsHeadRoot
 #assert_no_axioms FX1Poly.Core.StepTable.fireRoot_isSome_imp_detectsHeadRoot
 #assert_no_axioms FX1Poly.Core.StepTable.fireRootLegacy
-#assert_no_axioms FX1Poly.Core.StepTable.fireRootLegacy_imp_step
 
 end FX1PolyAudit

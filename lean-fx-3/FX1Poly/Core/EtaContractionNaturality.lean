@@ -1,6 +1,6 @@
 import FX1Poly.Core.EtaStrengthenEquivariance
 import FX1Poly.Core.StepEtaTableBackward
-import FX1Poly.Core.StepTable
+import FX1Poly.Core.StepOverTable
 import FX1Poly.Core.RawTermFoldNonVarCommute
 
 /-! # EtaContractionNaturality — ETA-T2: the firing naturality

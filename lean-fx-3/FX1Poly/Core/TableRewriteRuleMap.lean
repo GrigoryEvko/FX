@@ -1,4 +1,5 @@
 import FX1Poly.Core.StepRewriteRuleMap
+import FX1Poly.Core.StepTable
 import FX1Poly.Core.TableReduceOnce
 
 /-! # TableRewriteRuleMap — IOTA-T9: the rewrite-rule system DERIVED

@@ -1,4 +1,4 @@
-import FX1Poly.Core.StepTable
+import FX1Poly.Core.StepOverTable
 import FX1Poly.Core.Newman
 
 /-! # FX1Poly/Core/TableParallelReduction — IOTA-T6: the table-driven parallel reduction

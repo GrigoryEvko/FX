@@ -1,6 +1,4 @@
-import FX1Poly.Core.IotaTableOrientedSN
 import FX1Poly.Core.TableTakahashiTriangle
-import FX1Poly.Typed.TypedFragmentTableAdequacy
 
 /-! # IotaTableHeadExpansion — IOTA-T8 Tier-3: the generic candidate
 head-expansion arm over rows

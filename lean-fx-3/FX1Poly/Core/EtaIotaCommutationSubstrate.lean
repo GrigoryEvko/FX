@@ -1,5 +1,5 @@
 import FX1Poly.Core.EtaTableOrthogonality
-import FX1Poly.Core.StepTable
+import FX1Poly.Core.StepOverTable
 
 /-! # EtaIotaCommutationSubstrate — ETA-T5 increment 1: positional
 iota steps under shift-checked lookups

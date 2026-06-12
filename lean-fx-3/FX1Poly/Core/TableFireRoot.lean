@@ -1,4 +1,4 @@
-import FX1Poly.Core.StepTable
+import FX1Poly.Core.StepOverTable
 
 /-! # FX1Poly/Core/TableFireRoot — IOTA-T4: generic root firing over the table
 
@@ -259,21 +259,5 @@ def StepTable.fireRootLegacy {scope : Nat} (generator : Generator)
     (children : RawTermChildren generator.binderShifts scope) :
     Option (RawTerm scope) :=
   fireTableRedexOver legacyIotaRuleTable generator payload children
-
-/-- Bridge: a LEGACY-table root firing yields a kernel `Step` (via the
-table↔Step adequacy), so the table firing migrates the bespoke
-`fireRootRedex` onto the table with its kernel-relation soundness
-intact.  (The full canonical table's `pathBeta` is intentionally
-excluded — it is table-native with no `Step` constructor.) -/
-theorem StepTable.fireRootLegacy_imp_step {scope : Nat}
-    {generator : Generator} {payload : generator.payload scope}
-    {children : RawTermChildren generator.binderShifts scope}
-    {reduct : RawTerm scope}
-    (fireEq :
-      StepTable.fireRootLegacy generator payload children = some reduct) :
-    Step (.mkGen generator payload children) reduct :=
-  stepOverLegacyTable_iff_step.1
-    (fireTableRedexOver_sound legacyIotaRuleTable (fun _ isRow => isRow)
-      fireEq)
 
 end FX1Poly.Core

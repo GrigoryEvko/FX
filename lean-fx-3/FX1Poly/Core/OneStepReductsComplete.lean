@@ -36,17 +36,6 @@ open Foundation
 
 /-! ## Generic forward membership (hand-rolled, explicit `List.Mem`) -/
 
-/-- Left-component membership survives an append. -/
-theorem listMemAppendLeft {alpha : Type} {element : alpha} :
-    ∀ (firstList secondList : List alpha), element ∈ firstList →
-      element ∈ firstList ++ secondList
-  | [], _, memEmpty => nomatch memEmpty
-  | listHead :: rest, secondList, memFirst => by
-      cases memFirst with
-      | head => exact List.Mem.head (rest ++ secondList)
-      | tail _ memRest =>
-          exact List.Mem.tail listHead (listMemAppendLeft rest secondList memRest)
-
 /-- Right-component membership survives an append. -/
 theorem listMemAppendRight {alpha : Type} {element : alpha} :
     ∀ (firstList secondList : List alpha), element ∈ secondList →
@@ -77,27 +66,27 @@ mutual
   theorem RawTerm.oneStepReducts_complete :
       ∀ {scope : Nat} {term reduct : RawTerm scope},
         Step term reduct → reduct ∈ RawTerm.oneStepReducts term
-    | _, _, _, .beta .. => listMemAppendLeft _ _ (List.Mem.head _)
+    | _, _, _, .beta .. => listMemAppendLeft _ (List.Mem.head _)
     | _, _, _, .cong _ _ childStep =>
         listMemAppendRight _ _
           (listMemMapOfMem _ _
             (RawTermChildren.oneStepChildrenReducts_complete childStep))
-    | _, _, _, .iotaBoolTrue .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaBoolFalse .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaFstPair .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaSndPair .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaNatElimZero .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaNatRecZero .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaListElimNil .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaOptionMatchNone .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaOptionMatchSome .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaEitherMatchInl .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaEitherMatchInr .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaNatElimSucc .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaNatRecSucc .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaListElimCons .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaIdJRefl .. => listMemAppendLeft _ _ (List.Mem.head _)
-    | _, _, _, .iotaIdStrictRecRefl .. => listMemAppendLeft _ _ (List.Mem.head _)
+    | _, _, _, .iotaBoolTrue .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaBoolFalse .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaFstPair .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaSndPair .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaNatElimZero .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaNatRecZero .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaListElimNil .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaOptionMatchNone .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaOptionMatchSome .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaEitherMatchInl .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaEitherMatchInr .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaNatElimSucc .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaNatRecSucc .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaListElimCons .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaIdJRefl .. => listMemAppendLeft _ (List.Mem.head _)
+    | _, _, _, .iotaIdStrictRecRefl .. => listMemAppendLeft _ (List.Mem.head _)
 
   /-- Spine completeness: a head step lands in the head-map component, a
   tail step in the tail-map component. -/
@@ -107,7 +96,7 @@ mutual
         StepChildren children steppedSpine →
         steppedSpine ∈ RawTermChildren.oneStepChildrenReducts children
     | _, _, _, _, .here rest childStep =>
-        listMemAppendLeft _ _
+        listMemAppendLeft _
           (listMemMapOfMem _ _ (RawTerm.oneStepReducts_complete childStep))
     | _, _, _, _, .there head restStep =>
         listMemAppendRight _ _

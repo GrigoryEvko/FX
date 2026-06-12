@@ -1,4 +1,4 @@
-import FX1Poly.Core.StepTable
+import FX1Poly.Core.StepOverTable
 import FX1Poly.Core.IotaTableCertificationSubstrate
 
 /-! # FX1Poly/Core/IotaTableStructuralSR — IOTA-T3: generic structural SR

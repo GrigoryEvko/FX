@@ -1,5 +1,4 @@
 import FX1Poly.Core.IotaTableHonesty
-import FX1Poly.Core.OneStepReducts
 
 /-! # TableOneStepReducts — IOTA-T9: the exact table reduct enumeration
 

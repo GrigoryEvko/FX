@@ -94,4 +94,8 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Core.StepTable.pathBetaFires
 
+/-! ## The legacy fire-root bridge (lives with the adequacy layer) -/
+
+#assert_no_axioms FX1Poly.Core.StepTable.fireRootLegacy_imp_step
+
 end FX1PolyAudit
