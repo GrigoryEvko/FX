@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.StepTableEquivariance
+import FX1Poly.Core.StepTableRenameReflection
 
 /-! # FX1PolyAudit/AuditIotaTableEquivariance — IOTA-T2 audit shard (substrate + headline)
 
@@ -125,5 +126,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.RawTermChildren.rename_eq_subst_ofRenaming
 #assert_no_axioms FX1Poly.Core.StepOverTable.rename
 #assert_no_axioms FX1Poly.Core.StepTable.rename
+
+/-! ## Rename REFLECTION: the pattern test reflects (backward direction) -/
+
+#assert_no_axioms FX1Poly.Core.scrutineeSlotLookup_rename
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeSpecFires_reflectRename
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineesFire_reflectRename
 
 end FX1PolyAudit
