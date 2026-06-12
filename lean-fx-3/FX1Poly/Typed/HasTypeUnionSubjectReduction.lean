@@ -4,6 +4,7 @@ import FX1Poly.Typed.HasTypeUnionRecursiveInversion
 import FX1Poly.Typed.HasTypeUnionSubstitution
 import FX1Poly.Typed.RecursorHostFold
 import FX1Poly.Core.IotaHeadStep
+import FX1Poly.Core.StepTable
 
 /-! # FX1Poly/Typed/HasTypeUnionSubjectReduction — root-redex subject reduction for the unified
     judgment `HasTypeUnion`.
@@ -327,46 +328,199 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
         reduct = .mkGen generator payload childrenAfter ∧
         StepChildren childrenBefore childrenAfter)
     ∨ IsDeferredRootRedexShape redex := by
-  cases stepHyp with
-  | beta =>
-      exact Or.inr (Or.inr (Or.inl ⟨_, _, _, rfl⟩))
+  cases stepOverLegacyTable_iff_step.mpr stepHyp with
   | cong generator payload childStep =>
-      exact Or.inr (Or.inl ⟨generator, payload, _, _, rfl, rfl, childStep⟩)
-  | iotaBoolTrue =>
-      exact Or.inl ⟨classifier, (unionSubjectReductionBoolElimTrue typed).2, Conv.refl classifier⟩
-  | iotaBoolFalse =>
-      exact Or.inl ⟨classifier, (unionSubjectReductionBoolElimFalse typed).2, Conv.refl classifier⟩
-  | iotaFstPair =>
-      exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, rfl⟩)))
-  | iotaSndPair =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, rfl⟩))))
-  | iotaNatElimZero =>
-      exact Or.inl ⟨classifier, (unionSubjectReductionNatElimZero typed).2, Conv.refl classifier⟩
-  | iotaNatRecZero =>
-      exact Or.inl ⟨classifier, (unionSubjectReductionNatRecZero typed).2, Conv.refl classifier⟩
-  | iotaListElimNil =>
-      exact Or.inl (unionSubjectReductionListElimNil typed).2
-  | iotaOptionMatchNone =>
-      exact Or.inl (unionSubjectReductionOptionMatchNone typed).2
-  | iotaOptionMatchSome =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, _, _, rfl⟩)))))
-  | iotaEitherMatchInl =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, _, _, rfl⟩))))))
-  | iotaEitherMatchInr =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, _, _, rfl⟩)))))))
-  | iotaNatElimSucc =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        (Or.inl ⟨_, _, _, _, rfl⟩))))))))
-  | iotaNatRecSucc =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        (Or.inr (Or.inl ⟨_, _, _, _, rfl⟩)))))))))
-  | iotaListElimCons =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        (Or.inr (Or.inr (Or.inl ⟨_, _, _, _, _, rfl⟩))))))))))
-  | iotaIdJRefl =>
-      exact Or.inl ⟨classifier, (unionSubjectReductionIdJRefl typed).2, Conv.refl classifier⟩
-  | iotaIdStrictRecRefl =>
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        (Or.inr (Or.inr (Or.inr ⟨_, _, _, rfl⟩))))))))))
+      exact Or.inr (Or.inl ⟨generator, payload, _, _, rfl, rfl,
+        StepOverTableChildren.legacyToStepChildren childStep⟩)
+  | tableRedex isRow elimPayload fires =>
+    cases isRow with
+    | head =>
+        -- beta row: the firing pins the function child to a λ, so the
+        -- head-step inversion can only be the β contraction
+        cases betaRowFiringToHeadStep elimPayload fires with
+        | beta => exact Or.inr (Or.inr (Or.inl ⟨_, _, _, rfl⟩))
+        | appCongruence functionStep =>
+            rename_i functionValue _functionReduct _argumentValue
+            cases functionValue with
+            | mkGen functionGen functionPayload functionChildren =>
+              have isLamHead : functionGen = .gen_lam :=
+                IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+              subst isLamHead
+              cases functionChildren with
+              | childCons domainAnn lamRest =>
+                cases lamRest with
+                | childCons lamBody lamNil =>
+                  cases lamNil
+                  exact absurd functionStep HeadStep.not_from_lam
+    | tail _ isRow => cases isRow with
+      | head =>
+          cases boolTrueRowFiringToIotaHead elimPayload fires with
+          | iotaBoolTrue =>
+              exact Or.inl ⟨classifier,
+                (unionSubjectReductionBoolElimTrue typed).2,
+                Conv.refl classifier⟩
+          | iotaBoolFalse =>
+              exact Or.inl ⟨classifier,
+                (unionSubjectReductionBoolElimFalse typed).2,
+                Conv.refl classifier⟩
+      | tail _ isRow => cases isRow with
+        | head =>
+            cases boolFalseRowFiringToIotaHead elimPayload fires with
+            | iotaBoolTrue =>
+                exact Or.inl ⟨classifier,
+                  (unionSubjectReductionBoolElimTrue typed).2,
+                  Conv.refl classifier⟩
+            | iotaBoolFalse =>
+                exact Or.inl ⟨classifier,
+                  (unionSubjectReductionBoolElimFalse typed).2,
+                  Conv.refl classifier⟩
+        | tail _ isRow => cases isRow with
+          | head =>
+              cases fstPairRowFiringToIotaHead elimPayload fires with
+              | iotaFstPair =>
+                  exact Or.inr (Or.inr (Or.inr (Or.inl ⟨_, _, rfl⟩)))
+          | tail _ isRow => cases isRow with
+            | head =>
+                cases sndPairRowFiringToIotaHead elimPayload fires with
+                | iotaSndPair =>
+                    exact Or.inr (Or.inr (Or.inr (Or.inr
+                      (Or.inl ⟨_, _, rfl⟩))))
+            | tail _ isRow => cases isRow with
+              | head =>
+                  cases natElimZeroRowFiringToIotaHead elimPayload fires with
+                  | iotaNatElimZero =>
+                      exact Or.inl ⟨classifier,
+                        (unionSubjectReductionNatElimZero typed).2,
+                        Conv.refl classifier⟩
+                  | iotaNatElimSucc =>
+                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                        (Or.inr (Or.inr (Or.inl ⟨_, _, _, _, rfl⟩))))))))
+              | tail _ isRow => cases isRow with
+                | head =>
+                    cases natRecZeroRowFiringToIotaHead elimPayload fires with
+                    | iotaNatRecZero =>
+                        exact Or.inl ⟨classifier,
+                          (unionSubjectReductionNatRecZero typed).2,
+                          Conv.refl classifier⟩
+                    | iotaNatRecSucc =>
+                        exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                          (Or.inr (Or.inr (Or.inr
+                            (Or.inl ⟨_, _, _, _, rfl⟩)))))))))
+                | tail _ isRow => cases isRow with
+                  | head =>
+                      cases natElimSuccRowFiringToIotaHead elimPayload
+                          fires with
+                      | iotaNatElimZero =>
+                          exact Or.inl ⟨classifier,
+                            (unionSubjectReductionNatElimZero typed).2,
+                            Conv.refl classifier⟩
+                      | iotaNatElimSucc =>
+                          exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                            (Or.inr (Or.inr (Or.inr
+                              (Or.inl ⟨_, _, _, _, rfl⟩))))))))
+                  | tail _ isRow => cases isRow with
+                    | head =>
+                        cases natRecSuccRowFiringToIotaHead elimPayload
+                            fires with
+                        | iotaNatRecZero =>
+                            exact Or.inl ⟨classifier,
+                              (unionSubjectReductionNatRecZero typed).2,
+                              Conv.refl classifier⟩
+                        | iotaNatRecSucc =>
+                            exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                              (Or.inr (Or.inr (Or.inr (Or.inr
+                                (Or.inl ⟨_, _, _, _, rfl⟩)))))))))
+                    | tail _ isRow => cases isRow with
+                      | head =>
+                          cases listElimNilRowFiringToIotaHead elimPayload
+                              fires with
+                          | iotaListElimNil =>
+                              exact Or.inl
+                                (unionSubjectReductionListElimNil typed).2
+                          | iotaListElimCons =>
+                              exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                                (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                                  (Or.inl ⟨_, _, _, _, _, rfl⟩))))))))))
+                      | tail _ isRow => cases isRow with
+                        | head =>
+                            cases listElimConsRowFiringToIotaHead
+                                elimPayload fires with
+                            | iotaListElimNil =>
+                                exact Or.inl
+                                  (unionSubjectReductionListElimNil typed).2
+                            | iotaListElimCons =>
+                                exact Or.inr (Or.inr (Or.inr (Or.inr
+                                  (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                                    (Or.inr (Or.inl
+                                      ⟨_, _, _, _, _, rfl⟩))))))))))
+                        | tail _ isRow => cases isRow with
+                          | head =>
+                              cases optionMatchNoneRowFiringToIotaHead
+                                  elimPayload fires with
+                              | iotaOptionMatchNone =>
+                                  exact Or.inl
+                                    (unionSubjectReductionOptionMatchNone
+                                      typed).2
+                              | iotaOptionMatchSome =>
+                                  exact Or.inr (Or.inr (Or.inr (Or.inr
+                                    (Or.inr (Or.inl ⟨_, _, _, _, rfl⟩)))))
+                          | tail _ isRow => cases isRow with
+                            | head =>
+                                cases optionMatchSomeRowFiringToIotaHead
+                                    elimPayload fires with
+                                | iotaOptionMatchNone =>
+                                    exact Or.inl
+                                      (unionSubjectReductionOptionMatchNone
+                                        typed).2
+                                | iotaOptionMatchSome =>
+                                    exact Or.inr (Or.inr (Or.inr (Or.inr
+                                      (Or.inr (Or.inl ⟨_, _, _, _, rfl⟩)))))
+                            | tail _ isRow => cases isRow with
+                              | head =>
+                                  cases eitherMatchInlRowFiringToIotaHead
+                                      elimPayload fires with
+                                  | iotaEitherMatchInl =>
+                                      exact Or.inr (Or.inr (Or.inr (Or.inr
+                                        (Or.inr (Or.inr (Or.inl
+                                          ⟨_, _, _, _, rfl⟩))))))
+                                  | iotaEitherMatchInr =>
+                                      exact Or.inr (Or.inr (Or.inr (Or.inr
+                                        (Or.inr (Or.inr (Or.inr (Or.inl
+                                          ⟨_, _, _, _, rfl⟩)))))))
+                              | tail _ isRow => cases isRow with
+                                | head =>
+                                    cases eitherMatchInrRowFiringToIotaHead
+                                        elimPayload fires with
+                                    | iotaEitherMatchInl =>
+                                        exact Or.inr (Or.inr (Or.inr
+                                          (Or.inr (Or.inr (Or.inr (Or.inl
+                                            ⟨_, _, _, _, rfl⟩))))))
+                                    | iotaEitherMatchInr =>
+                                        exact Or.inr (Or.inr (Or.inr
+                                          (Or.inr (Or.inr (Or.inr (Or.inr
+                                            (Or.inl
+                                              ⟨_, _, _, _, rfl⟩)))))))
+                                | tail _ isRow => cases isRow with
+                                  | head =>
+                                      cases idJReflRowFiringToIotaHead
+                                          elimPayload fires with
+                                      | iotaIdJRefl =>
+                                          exact Or.inl ⟨classifier,
+                                            (unionSubjectReductionIdJRefl
+                                              typed).2,
+                                            Conv.refl classifier⟩
+                                  | tail _ isRow => cases isRow with
+                                    | head =>
+                                        cases
+                                          idStrictRecReflRowFiringToIotaHead
+                                            elimPayload fires with
+                                        | iotaIdStrictRecRefl =>
+                                            exact Or.inr (Or.inr (Or.inr
+                                              (Or.inr (Or.inr (Or.inr
+                                                (Or.inr (Or.inr (Or.inr
+                                                  (Or.inr (Or.inr
+                                                    ⟨_, _, _,
+                                                      rfl⟩))))))))))
+                                    | tail _ isRow => cases isRow
 
 end FX1Poly.Typed
