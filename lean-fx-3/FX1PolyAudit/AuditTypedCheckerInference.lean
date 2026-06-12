@@ -533,7 +533,6 @@ import FX1Poly.Typed.NatTypeCodeSubstrate
 import FX1Poly.Typed.GrownNoTypeInType
 import FX1Poly.Typed.IsTypeDescRigidity
 import FX1Poly.Typed.IsTypeDescDecidable
-import FX1Poly.Typed.HasTypeDescNativeDecidable
 import FX1Poly.Typed.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.IsTypeDescGenericSmoke
 import FX1Poly.Typed.KnownUnsoundnessCorpus
@@ -958,17 +957,16 @@ boundary verdicts and is UNPROVEN jointly (O-NORM).  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.divergentOmega_reductIsSelf
 #assert_no_axioms FX1Poly.Typed.divergentOmega_starReductIsSelf
 #assert_no_axioms FX1Poly.Typed.divergentOmega_noNormalForm
--- HasTypeDescNativeDecidable = native Decidable (HasTypeDesc Γ t T), CASCADE-FREE. inferWithWitness =
+-- HasTypeDescDecidable = Decidable (HasTypeDesc Γ t T), CASCADE-FREE. inferWithWitness =
 -- principal-type synthesis (non-recursive: var/universe leaves; EVERY other
 -- head delegates to IsTypeDesc.decideTypeGeneric — its universe witness IS the head's principal type, its
 -- refutation reconstructs the denied IsTypeDesc witness via subjectRootGeneratorGeneric + the generic former
 -- inversion + genFormation, with NO Π/Σ enumeration and no typingRuleDescOf_isPiOrSigma else-branch).
--- decidableOfWellFormedNative = the decision via the IsType-gate on the classifier (Conv principal classifier
+-- decidableOfWellFormed (gated above) = the decision via the IsType-gate on the classifier (Conv principal classifier
 -- decided by Conv.decidableOfStronglyNormalizing — principal SN by classifierStronglyNormalizing,
 -- classifier SN by IsTypeDesc.isStronglyNormalizing via decidableOfWellFormedGeneric) + conv rule forward +
--- uniqueness refute. The native twin of HasTypeDesc.decidableOfWellFormed.
+-- uniqueness refute.
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.inferWithWitness
-#assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormedNative
 -- IsTypeDescDecidableGeneric = the FULLY cascade-free IsTypeDesc decider (GTL-10/11 payoff): a 3-function
 -- STRUCTURAL mutual recursion over RawTerm/RawTermChildren (no size measure, no termination_by) with no Π/Σ
 -- enumeration and no typingRuleDescOf_isPiOrSigma else. decideTypeGeneric does the var/universe

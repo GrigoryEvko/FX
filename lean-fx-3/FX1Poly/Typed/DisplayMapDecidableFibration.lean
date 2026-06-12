@@ -32,7 +32,7 @@ names: **"representability = the decidable typing fibration — a term's type is
 ## Honest scope boundary
 
 This is the CATEGORICAL VIEW of the shipped decidable checker, not a new decidability result: the
-fibration's decidable lift IS `HasTypeDesc.decidableOfWellFormedNative` (#461/#303), repackaged at
+fibration's decidable lift IS `HasTypeDesc.decidableOfWellFormed` (#461/#303), repackaged at
 the display-map interface.  The decider is the FORMATION engine's (total); the GROWN engine's
 checking stays bidirectional (per-head combinators `HasTypeDescPi.decidableCheck*` — a bare Curry λ
 has no unique type, so no total grown decider exists; see `HasTypeDescPiCheckOfInferred`).

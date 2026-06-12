@@ -533,7 +533,6 @@ import FX1Poly.Typed.NatTypeCodeSubstrate
 import FX1Poly.Typed.GrownNoTypeInType
 import FX1Poly.Typed.IsTypeDescRigidity
 import FX1Poly.Typed.IsTypeDescDecidable
-import FX1Poly.Typed.HasTypeDescNativeDecidable
 import FX1Poly.Typed.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.IsTypeDescGenericSmoke
 import FX1Poly.Typed.KnownUnsoundnessCorpus

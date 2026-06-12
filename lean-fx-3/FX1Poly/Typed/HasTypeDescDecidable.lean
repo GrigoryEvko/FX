@@ -1,45 +1,144 @@
-import FX1Poly.Typed.HasTypeDescNativeDecidable
+import FX1Poly.Typed.IsTypeDescDecidableGeneric
+import FX1Poly.Typed.WfContextDescValidity
 import FX1Poly.Typed.HasTypeDescStronglyNormalizing
+import FX1Poly.Typed.WfContextDescUniqueness
 import FX1Poly.Typed.WfContextDesc
 import FX1Poly.Core.Normalize
 
 /-! # FX1Poly/Typed/HasTypeDescDecidable — the description engine is DECIDABLE
-    (the P11 "0-FN" payoff, via the cascade-free decider)
+    (the P11 "0-FN" payoff, cascade-free)
 
-The description-driven generic engine `HasTypeDesc` (§11.8.5 / §5.2: the
-Natural-Model display map as a data-driven cascade-free `gen` arm) has a DECISION
-procedure: `Decidable (HasTypeDesc Γ t T)` — its P11 "0 false negatives" property
-(every typing question is decidable).
+The full formation typing judgment `HasTypeDesc Γ t T` is DECIDABLE, built ENTIRELY from `HasTypeDesc`
+pieces over `WfContextDesc` — its P11 "0 false negatives" property (every typing question is decidable).
 
-The decision routes through the native cascade-free
-`HasTypeDesc.decidableOfWellFormedNative` (built entirely from `HasTypeDesc` pieces over
-`WfContextDesc`), and the signature threads `WfContextDesc` natively.
+## The two bricks (CASCADE-FREE)
+
+* **`HasTypeDesc.inferWithWitness`** — principal-type synthesis: a subject either has a principal type
+  (a `Σ'`-packaged `HasTypeDesc` derivation) or has NO type at any classifier (a `∀ T, HasTypeDesc Γ t T →
+  False` refutation).  NON-recursive: `var` synthesises its lookup, `gen_universeCode` its successor universe,
+  and EVERY OTHER head delegates to the cascade-free `IsTypeDesc.decideTypeGeneric` — a former's principal
+  type IS the universe code that `decideTypeGeneric` returns, and a non-typeable head is refuted by mapping any
+  putative typing back through `subjectRootGeneratorGeneric` + `inversionFormerWithConvGeneric` + the generic
+  `genFormation` to an `IsTypeDesc` witness that contradicts the `.inr`.  Names NO formation generator — a new
+  formation row (`listCode`/…) is absorbed zero-touch (the FRAME-2 property), with no Π/Σ enumeration and no
+  `typingRuleDescOf_isPiOrSigma` else-branch.
+
+* **`HasTypeDesc.decidableOfWellFormed`** — the decision.  Synthesise the subject's principal type
+  `T0` (`inferWithWitness`); then `HasTypeDesc Γ t T ⟺ Conv T0 T` (forward: uniqueness of the principal type;
+  backward: the `conv` rule).  The `Conv` is decided by `Conv.decidableOfStronglyNormalizing` — `T0` is SN by
+  validity (`classifierStronglyNormalizing`), and `T` is SN once gated through the cascade-free
+  `IsTypeDesc.decidableOfWellFormedGeneric`: if `T` is NOT a type then `HasTypeDesc Γ t T` is impossible
+  (`classifierIsTypeDesc`), and if it IS a type it is SN (`IsTypeDesc.isStronglyNormalizing`).  The
+  `isFalse` of a genuine `Conv` mismatch refutes via `uniqueness`.
+
+The typed-Conv companion `Conv.decidableOfHasTypeDesc` decides classifier convertibility for typed
+subjects, completing the description-engine decidability pair.
 
 ## Zero-axiom verification
 
-`decidableOfWellFormed` is a thin wrapper over the native `decidableOfWellFormedNative`
-(itself zero-axiom — head `match` + SN-gated `Conv` decision); `Conv.decidableOfHasTypeDesc`
-normalizes each native-SN classifier and compares.  No `axiom`, `sorry`, `propext`,
-`Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated in
-`FX1PolyAudit/AuditTyped.lean`.
+`inferWithWitness` is a head `match` (no recursion) whose `inl` witnesses are the formation constructors /
+`decideTypeGeneric`'s universe witness and whose `inr` refutations compose `subjectRootGeneratorGeneric` +
+`inversionFormerWithConvGeneric` + the generic `genFormation`; the decision composes it with
+`IsTypeDesc.decidableOfWellFormedGeneric` + `Conv.decidableOfStronglyNormalizing` + the shipped validity
+/ SN bridges.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
+Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- The description engine is decidable: `Decidable (HasTypeDesc Γ subject classifier)`.
-Routes through the native cascade-free `HasTypeDesc.decidableOfWellFormedNative` over the
-threaded `WfContextDesc`.  The P11 "0-FN" deliverable for the cascade-free engine. -/
+/-- **Principal-type synthesis for the formation engine** (cascade-free).  Either the subject has a
+principal type (a `HasTypeDesc` derivation) or it inhabits no type at any classifier.  NON-recursive: `var` →
+its context lookup; `gen_universeCode` → the successor universe code; ANY OTHER head delegates to
+`IsTypeDesc.decideTypeGeneric` — its `.inl` universe witness IS the head's principal type; its `.inr` (the head
+is not a type-code) refutes any putative typing by reconstructing the `IsTypeDesc` witness it denies (a
+formation-typed non-var non-universe subject inverts generically to a telescope, whence the generic
+`genFormation` re-derives the universe code).  Names NO formation generator. -/
+def HasTypeDesc.inferWithWitness {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} (wellFormed : WfContextDesc context)
+    (subject : RawTerm scope) :
+    PSum
+      (Σ' (principalType : RawTerm scope), HasTypeDesc profile context subject principalType)
+      (∀ (anyType : RawTerm scope), HasTypeDesc profile context subject anyType → False) :=
+  match subject with
+  | .mkGen generator payload children =>
+      if hVariable : generator = Generator.gen_var then by
+        subst hVariable
+        have cellIsVariable :
+            (RawTerm.mkGen Generator.gen_var payload children) = variableCell payload := by
+          rw [RawTermChildren.eq_childNil children]; rfl
+        exact .inl ⟨context.lookup payload, by
+          rw [cellIsVariable]; exact HasTypeDesc.var context payload⟩
+      else if hUniverse : generator = Generator.gen_universeCode then by
+        subst hUniverse
+        have cellIsUniverseCode :
+            (RawTerm.mkGen Generator.gen_universeCode payload children)
+              = universeCodeCell payload.1 payload.2 := by
+          rw [RawTermChildren.eq_childNil children]; rfl
+        exact .inl ⟨universeCodeCell payload.1.lsucc payload.2, by
+          rw [cellIsUniverseCode]; exact HasTypeDesc.universeFormation context payload.1 payload.2⟩
+      else by
+        exact (match IsTypeDesc.decideTypeGeneric wellFormed (.mkGen generator payload children) with
+          | .inl ⟨levelExpr, flag, typed⟩ =>
+              .inl ⟨universeCodeCell levelExpr flag, typed⟩
+          | .inr notType =>
+              .inr (fun _anyType typed => by
+                apply notType
+                rcases typed.subjectRootGeneratorGeneric with
+                  isVariable | isUniverseCode | ⟨rule, isFormer⟩
+                · exact absurd isVariable hVariable
+                · exact absurd isUniverseCode hUniverse
+                · obtain ⟨levels, telFlag, telescope, _convToCode⟩ :=
+                    HasTypeDesc.inversionFormerWithConvGeneric typed isFormer rfl
+                  -- ROW-SHAPE-AGNOSTIC: `IsTypeDesc` is `∃ level flag, HasTypeDesc ... (universeCodeCell ..)`,
+                  -- so read the output through `typingRuleDescOf_output_isUniverseCode` (it is SOME universe
+                  -- code) rather than the strong `= universeFormerOutput` equation; a future flag-pinned
+                  -- nullary row absorbs here verbatim.
+                  obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+                    typingRuleDescOf_output_isUniverseCode isFormer scope levels telFlag
+                  refine ⟨outputLevel, outputFlag, ?_⟩
+                  have formerTyped :=
+                    HasTypeDesc.genFormation context generator payload children levels telFlag rule
+                      isFormer telescope
+                  rw [hOutput] at formerTyped
+                  exact formerTyped))
+
+/-- **`Decidable (HasTypeDesc Γ t T)`** — decide the full formation typing judgment.
+Synthesise the subject's principal type `T0` (`inferWithWitness`); the typing holds iff
+`Conv T0 classifier`.  The `Conv` is decided by `Conv.decidableOfStronglyNormalizing` (`T0` SN by
+`classifierStronglyNormalizing`; `classifier` SN once gated through the cascade-free
+`IsTypeDesc.decidableOfWellFormedGeneric` — a non-type classifier makes the typing impossible via
+`classifierIsTypeDesc`).  Forward through the `conv` rule (reclassifying `T0` to the universe-code-typed
+`classifier`); `isFalse` refutes via `uniqueness`.  The P11 "0-FN" deliverable for the cascade-free
+engine. -/
 def HasTypeDesc.decidableOfWellFormed {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} (wellFormed : WfContextDesc context)
     (subject classifier : RawTerm scope) :
     Decidable (HasTypeDesc profile context subject classifier) :=
-  HasTypeDesc.decidableOfWellFormedNative wellFormed subject classifier
+  match HasTypeDesc.inferWithWitness wellFormed subject with
+  | .inr subjectHasNoType => isFalse (subjectHasNoType classifier)
+  | .inl ⟨principalType, principalTyped⟩ =>
+      match IsTypeDesc.decidableOfWellFormedGeneric wellFormed classifier with
+      | isFalse classifierNotType =>
+          isFalse fun typed =>
+            classifierNotType (HasTypeDesc.classifierIsTypeDesc wellFormed typed)
+      | isTrue classifierIsType =>
+          match Conv.decidableOfStronglyNormalizing
+              (HasTypeDesc.classifierStronglyNormalizing wellFormed principalTyped)
+              (IsTypeDesc.isStronglyNormalizing classifierIsType) with
+          | isTrue convertsToClassifier =>
+              isTrue (by
+                obtain ⟨levelExpr, flag, classifierTypedAtUniverse⟩ := classifierIsType
+                exact HasTypeDesc.conv levelExpr flag principalTyped convertsToClassifier
+                  classifierTypedAtUniverse)
+          | isFalse doesNotConvert =>
+              isFalse fun typed =>
+                doesNotConvert (HasTypeDesc.uniqueness principalTyped wellFormed typed)
 
 /-- **Decidable typed classifier conversion for the description engine.**  If two subjects are typed by
-`HasTypeDesc`, their classifiers' convertibility is decidable.  Each classifier is strongly normalizing by the
-native `HasTypeDesc.classifierStronglyNormalizing` (its intrinsic native validity turns the classifier
+`HasTypeDesc`, their classifiers' convertibility is decidable.  Each classifier is strongly normalizing by
+`HasTypeDesc.classifierStronglyNormalizing` (its intrinsic validity turns the classifier
 into an `IsTypeDesc`, whose subject — the classifier — is then SN), and the parameter-free SN-fragment decider
 `Conv.decidableOfStronglyNormalizing` decides by normalizing each side and comparing normal forms.  The
 description-engine typed-Conv leg paired with `HasTypeDesc.decidableOfWellFormed`. -/
