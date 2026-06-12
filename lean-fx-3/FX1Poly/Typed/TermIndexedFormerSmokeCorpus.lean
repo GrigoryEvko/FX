@@ -65,9 +65,9 @@ structure TermIndexedFormerEngineCoverage (profile : PolyProfile) (flag : Univer
   idFormerSN : IsStronglyNormalizing
     ((idTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
       (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag)) : RawTerm 0)
-  /-- NATIVE-17: the refl retrofit — `refl(Type@0)` inhabits `Id(Type@1, Type@0, Type@0)` AND that classifier is
-  itself term-indexed-formable. -/
-  reflRetrofit : HasTypeDescIdIntro profile (TypingContext.empty : TypingContext profile 0)
+  /-- NATIVE-17: the refl retrofit — `refl(Type@0)` inhabits `Id(Type@1, Type@0, Type@0)` (through the union's
+  reflexive data-intro arm, the NATIVE-42 re-base) AND that classifier is itself term-indexed-formable. -/
+  reflRetrofit : HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
       (reflCell (universeCodeCell LevelExpr.lzero flag))
       (idTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
         (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))

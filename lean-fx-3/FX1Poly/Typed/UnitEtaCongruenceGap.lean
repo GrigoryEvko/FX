@@ -1,5 +1,4 @@
 import FX1Poly.Typed.UnitEtaJudgmentalEquality
-import FX1Poly.Typed.HasTypeDescPairIntro
 import FX1Poly.Typed.HasTypeDescPiDataHeadUntyped
 
 /-! # FX1Poly/Typed/UnitEtaCongruenceGap

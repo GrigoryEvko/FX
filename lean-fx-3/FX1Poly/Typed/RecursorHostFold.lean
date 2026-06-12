@@ -1,6 +1,4 @@
 import FX1Poly.Typed.ValueElimHostFold
-import FX1Poly.Typed.HasTypeDescNatIntro
-import FX1Poly.Typed.HasTypeDescIdIntro
 
 /-! # FX1Poly/Typed/RecursorHostFold — the last two eliminators compute their host folds (`natRec`, `idStrictRec`)
 

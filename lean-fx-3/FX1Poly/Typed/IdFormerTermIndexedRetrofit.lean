@@ -1,5 +1,5 @@
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
-import FX1Poly.Typed.HasTypeDescIdIntro
+import FX1Poly.Typed.HasTypeNativeUnion
 
 /-! # FX1Poly/Typed/IdFormerTermIndexedRetrofit — NATIVE-17: the Id retrofit
 
@@ -18,7 +18,8 @@ RETROFITS the existing Id story onto that engine:
     both endpoints the witness), given the witness type `A : Type@e`.  `reflProofWithFormableClassifier` is the
     capstone: `refl(Type@0) : Id(Type@1, Type@0, Type@0)` AND that classifier is itself formable at `Type@2`
     through the unified engine — the refl value and the formation of the type it inhabits now both route through
-    native rules (the value through `HasTypeDescIdIntro`, the type through the term-indexed table).
+    native rules (the value through the union's reflexive data-intro arm, the type through the term-indexed
+    table).
 
 This is the adequacy the Id former needed: `refl`'s classifier is no longer a free-floating `idTypeCell`; it is a
 cell the kernel can FORM and (NATIVE-16) strongly normalize.
@@ -81,11 +82,13 @@ theorem closedIdUniverseFormable {profile : PolyProfile} (flag : UniverseFlag) :
       (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
 
 /-- **★ The Id retrofit capstone.**  `refl(Type@0)` inhabits the reflexive identity type
-`Id(Type@1, Type@0, Type@0)` (via `HasTypeDescIdIntro`), AND that classifier is itself formable at `Type@2`
-through the term-indexed engine — the reflexivity VALUE and the FORMATION of the identity type it inhabits both
-route through native rules.  The closed demonstration that `refl`'s classifier is grown-formable. -/
+`Id(Type@1, Type@0, Type@0)` (via the UNION's reflexive data-intro arm at the `gen_refl` row — the
+NATIVE-42 re-base of the retired bespoke `HasTypeDescIdIntro` premise), AND that classifier is itself
+formable at `Type@2` through the term-indexed engine — the reflexivity VALUE and the FORMATION of the
+identity type it inhabits both route through native rules.  The closed demonstration that `refl`'s
+classifier is grown-formable. -/
 theorem reflProofWithFormableClassifier {profile : PolyProfile} (flag : UniverseFlag) :
-    HasTypeDescIdIntro profile (TypingContext.empty : TypingContext profile 0)
+    HasTypeNativeUnion profile (TypingContext.empty : TypingContext profile 0)
         (reflCell (universeCodeCell LevelExpr.lzero flag))
         (idTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
           (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
@@ -93,6 +96,12 @@ theorem reflProofWithFormableClassifier {profile : PolyProfile} (flag : Universe
           (idTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
             (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
           (universeCodeCell (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag) :=
-  ⟨HasTypeDescIdIntro.reflOfUniverseCodeTyped flag, closedIdUniverseFormable flag⟩
+  ⟨HasTypeNativeUnion.reflexiveIntro TypingContext.empty .gen_refl reflNativeReflexiveRule
+      (universeCodeCell LevelExpr.lzero flag)
+      (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
+      rfl
+      (HasTypeDescPi.ofFormation
+        (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag)),
+   closedIdUniverseFormable flag⟩
 
 end FX1Poly.Typed
