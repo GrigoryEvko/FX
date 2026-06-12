@@ -83,3 +83,8 @@ open FX1Poly.Core FX1Poly.Typed
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalLaneCanonicalForms
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalBoolCanonicalForms
 #assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalNatCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalOptionCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalEitherCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalProductCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalIdentityCanonicalForms
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalPiCanonicalForms
