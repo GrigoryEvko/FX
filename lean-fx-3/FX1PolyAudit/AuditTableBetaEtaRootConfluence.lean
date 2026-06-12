@@ -19,4 +19,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStarToUnionStar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.tableBetaEtaRootConfluenceTyped
 
+/-! ## Unique normal forms -/
+
+#assert_no_axioms FX1Poly.Typed.unionStarEqOfNormal
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.tableBetaEtaRootUniqueNormalForm
+
 end FX1PolyAudit

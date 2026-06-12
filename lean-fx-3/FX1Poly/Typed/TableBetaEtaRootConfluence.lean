@@ -163,4 +163,47 @@ theorem HasTypeDescPi.tableBetaEtaRootConfluenceTyped
         typed toRight)
       rightJoins⟩
 
+/-- Union-star rigidity: a union chain out of a union-normal term is
+trivial. -/
+theorem unionStarEqOfNormal {scope : Nat}
+    {startTerm endTerm : RawTerm scope}
+    (isNormal : ∀ next : RawTerm scope,
+      ¬ StepTableBetaEtaRoot startTerm next)
+    (chain : UnionStar (StepTable (scope := scope)) StepEtaRootTable
+      startTerm endTerm) :
+    startTerm = endTerm := by
+  induction chain with
+  | refl => rfl
+  | tailLeft _priorStar tableStep priorIH =>
+      exact absurd (Or.inl (priorIH ▸ tableStep) :
+        StepTableBetaEtaRoot startTerm _) (isNormal _)
+  | tailRight _priorStar rootStep priorIH =>
+      exact absurd (Or.inr (priorIH ▸ rootStep) :
+        StepTableBetaEtaRoot startTerm _) (isNormal _)
+
+/-- ★★ **Unique table beta-eta-root normal forms on typed subjects**:
+two union-normal reducts of a typed subject are equal — Church-Rosser
+plus rigidity. -/
+theorem HasTypeDescPi.tableBetaEtaRootUniqueNormalForm
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope}
+    (contextWellFormed : WfContextDesc context)
+    (typed : HasTypeDescPi profile context subject classifier)
+    {leftNormalForm rightNormalForm : RawTerm scope}
+    (toLeft : UnionStar (StepTable (scope := scope)) StepEtaRootTable
+      subject leftNormalForm)
+    (leftIsNormal : ∀ next : RawTerm scope,
+      ¬ StepTableBetaEtaRoot leftNormalForm next)
+    (toRight : UnionStar (StepTable (scope := scope)) StepEtaRootTable
+      subject rightNormalForm)
+    (rightIsNormal : ∀ next : RawTerm scope,
+      ¬ StepTableBetaEtaRoot rightNormalForm next) :
+    leftNormalForm = rightNormalForm := by
+  obtain ⟨commonReduct, leftJoins, rightJoins⟩ :=
+    HasTypeDescPi.tableBetaEtaRootConfluenceTyped contextWellFormed
+      typed toLeft toRight
+  exact (unionStarEqOfNormal leftIsNormal leftJoins).trans
+    (unionStarEqOfNormal rightIsNormal rightJoins).symm
+
 end FX1Poly.Typed
