@@ -361,18 +361,36 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.ParStep.triangleCongFires
 #assert_no_axioms FX1Poly.Core.ParStep.triangle
 
+-- ★ THE TABLE-ROUTED RAW CONFLUENCE (StepStarConfluenceViaTable.lean) — the bespoke-iota
+-- retirement's decoupling brick.  The 17-row legacy table carries the same well-formedness
+-- (legacyIotaRuleTable_isWf, four rfl-decidable enumeration checks) and scope-uniformity
+-- (legacyIotaRuleTable_isScopeUniform, inherited through legacyRow_memFullTable) certificates as
+-- the canonical 18-row table, so the generic orthogonal-systems table confluence instantiates at
+-- it (StepOverTable.legacyConfluent).  The IOTA-T1 adequacy lifts to stars in both directions
+-- (StepStar.toLegacyTableClosure / ReflTransClosure.legacyToStepStar), and the headlines
+-- transport: StepStar.tableRouteConfluence (many-vs-many) + StepStar.tableRouteStrip
+-- (one-vs-many) — NO parallel-reduction sandwich, NO complete development, NO per-iota
+-- critical-pair matrix.
+#assert_no_axioms FX1Poly.Core.legacyIotaRuleTable_isWf
+#assert_no_axioms FX1Poly.Core.legacyIotaRuleTable_isScopeUniform
+#assert_no_axioms FX1Poly.Core.StepOverTable.legacyConfluent
+#assert_no_axioms FX1Poly.Core.StepStar.toLegacyTableClosure
+#assert_no_axioms FX1Poly.Core.ReflTransClosure.legacyToStepStar
+#assert_no_axioms FX1Poly.Core.StepStar.tableRouteConfluence
+#assert_no_axioms FX1Poly.Core.StepStar.tableRouteStrip
+
 -- Unconditional raw confluence.  ParStep.diamond instantiates DiamondProperty.ofTriangle at
--- ParStep.triangle; StepStar.rawConfluence feeds that diamond + the Step subset ParStep subset StepStar
--- sandwich (Step.toParStep / ParStep.toStepStar) to StepStar.hasConfluence_of_parallelDiamond, yielding global
--- Church-Rosser for the raw StepStar relation with no strong-normalization assumption (raw beta+iota is not
--- SN).
+-- ParStep.triangle (the historical bespoke route, retained until the bespoke-iota retirement
+-- completes); StepStar.rawConfluence is now discharged through the TABLE route
+-- (StepStar.tableRouteConfluence above), yielding global Church-Rosser for the raw StepStar
+-- relation with no strong-normalization assumption (raw beta+iota is not SN).
 #assert_no_axioms FX1Poly.Core.ParStep.diamond
 #assert_no_axioms FX1Poly.Core.StepStar.rawConfluence
 
--- The Newman-precursor strip property, unconditional via the ParStep diamond (route B,
--- hasStrip_of_parallelDiamond): a single Step out of a source joins against any StepStar chain out of it.
--- A distinct statement from rawConfluence (one-vs-many vs many-vs-many); confluence_of_strip turns it into the
--- same Church-Rosser result.  No SN assumption.
+-- The Newman-precursor strip property, unconditional via the table route
+-- (StepStar.tableRouteStrip): a single Step out of a source joins against any StepStar chain out
+-- of it.  A distinct statement from rawConfluence (one-vs-many vs many-vs-many);
+-- confluence_of_strip turns it into the same Church-Rosser result.  No SN assumption.
 #assert_no_axioms FX1Poly.Core.StepStar.rawStrip
 
 -- Raw Conv (= StepStar.Join) is an unconditional equivalence relation.  Conv.refl / Conv.sym are structural;

@@ -4,6 +4,7 @@ import FX1Poly.Core.TakahashiTriangle
 import FX1Poly.Core.NormalFormUnique
 import FX1Poly.Core.RawTermDecEq
 import FX1Poly.Core.PolygraphConvergentDecision
+import FX1Poly.Core.StepStarConfluenceViaTable
 
 /-! # FX1Poly/Core/RawConfluence
     — UNCONDITIONAL raw confluence of the FX reduction relation.
@@ -21,10 +22,15 @@ reduction route bypasses termination entirely:
 * `StepParallelConfluence.lean` turns a sandwiched parallel diamond into `StepStar.HasConfluence`
   (`StepStar.hasConfluence_of_parallelDiamond`, route A).
 
-This file instantiates that pipeline at the concrete FX `ParStep`:
+This file instantiates the diamond at the concrete FX `ParStep` and ships the headline raw
+confluence:
 
-* `ParStep.diamond` — the `ParStep` diamond, from the triangle;
-* `StepStar.rawConfluence` — global Church-Rosser for the raw `StepStar`, UNCONDITIONALLY.
+* `ParStep.diamond` — the `ParStep` diamond, from the triangle (the historical bespoke route,
+  retained until the bespoke-iota retirement completes);
+* `StepStar.rawConfluence` — global Church-Rosser for the raw `StepStar`, UNCONDITIONALLY —
+  now discharged through the TABLE route (`StepStar.tableRouteConfluence`,
+  StepStarConfluenceViaTable.lean: generic table confluence at the legacy table + the IOTA-T1
+  adequacy), decoupling the headline from the per-iota `ParStep` mirror.
 
 `StepStar.rawConfluence` is exactly global raw confluence: any two `StepStar`-reducts of a common source `Join` (reduce to
 a common term).  No termination hypothesis — the prize strong normalization cannot supply, since raw β+ι is
@@ -32,10 +38,11 @@ not SN (`gen_natRec`/`gen_fixedPoint` give non-terminating raw reductions).
 
 ## Zero-axiom verification
 
-Both theorems are direct instantiations of shipped, separately-gated lemmas (`DiamondProperty.ofTriangle`,
-`StepStar.hasConfluence_of_parallelDiamond`) at the concrete `ParStep` / `Step.toParStep` /
-`ParStep.toStepStar` / `ParStep.triangle`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditCore.lean`.
+All theorems are direct instantiations of shipped, separately-gated lemmas
+(`DiamondProperty.ofTriangle` for the diamond; `StepStar.tableRouteConfluence` /
+`StepStar.tableRouteStrip` for the headlines).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, or `omega`.  Per-declaration gated in
+`FX1PolyAudit/AuditCoreTerminationOrders.lean`.
 -/
 
 namespace FX1Poly.Core
@@ -47,21 +54,22 @@ theorem ParStep.diamond {scope : Nat} : DiamondProperty (@ParStep scope) :=
   DiamondProperty.ofTriangle (@ParStep.triangle scope)
 
 /-- **Unconditional raw confluence.**  The FX raw reduction relation `StepStar` is globally
-Church-Rosser: any two `StepStar`-reducts of a common source join at a common term.  Discharged through the
-parallel-reduction sandwich `Step ⊆ ParStep ⊆ StepStar` and the `ParStep` diamond — with NO strong-
-normalization assumption (raw β+ι is not SN).  This closes the raw-confluence pipeline. -/
+Church-Rosser: any two `StepStar`-reducts of a common source join at a common term — with NO strong-
+normalization assumption (raw β+ι is not SN).  Discharged through the TABLE route
+(`StepStar.tableRouteConfluence`, StepStarConfluenceViaTable.lean): the generic orthogonal-systems
+table confluence at the legacy table, transported across the IOTA-T1 adequacy.  The historical
+parallel-reduction sandwich (`Step ⊆ ParStep ⊆ StepStar` + the `ParStep` diamond) proves the same
+theorem and remains available as `ParStep.diamond` until the bespoke-iota retirement completes. -/
 theorem StepStar.rawConfluence : StepStar.HasConfluence :=
-  StepStar.hasConfluence_of_parallelDiamond
-    (@ParStep) (@Step.toParStep) (@ParStep.toStepStar) (@ParStep.diamond)
+  StepStar.tableRouteConfluence
 
 /-- **Unconditional raw strip property** (the Newman-precursor).  A single `Step` out of a source
 joins against ANY `StepStar` chain out of the same source — the asymmetric one-step-vs-many form of
-Church-Rosser.  Discharged from the `ParStep` diamond via route B (`hasStrip_of_parallelDiamond`).  Distinct
-from `rawConfluence` (many-vs-many): `StepStar.confluence_of_strip` turns this into confluence, so `rawStrip`
+Church-Rosser.  Discharged through the TABLE route (`StepStar.tableRouteStrip`).  Distinct from
+`rawConfluence` (many-vs-many): `StepStar.confluence_of_strip` turns this into confluence, so `rawStrip`
 is the alternative spine to the same Church-Rosser result — also with NO strong-normalization assumption. -/
 theorem StepStar.rawStrip : StepStar.HasStrip :=
-  StepStar.hasStrip_of_parallelDiamond
-    (@ParStep) (@Step.toParStep) (@ParStep.toStepStar) (@ParStep.diamond)
+  StepStar.tableRouteStrip
 
 /-! ### Raw conversion is an equivalence relation — the unconditional harvest of confluence.
 
