@@ -136,6 +136,15 @@ theorem hasReductionRule_idJ :
 theorem hasReductionRule_idStrictRec :
     Generator.hasReductionRule .gen_idStrictRec = true := rfl
 
+/-- **The IOTA-T10 ledger flips**: the three demo eliminators went
+operationally LIVE by table rows alone. -/
+theorem hasReductionRule_quotRec :
+    Generator.hasReductionRule .gen_quotRec = true := rfl
+theorem hasReductionRule_quotElim :
+    Generator.hasReductionRule .gen_quotElim = true := rfl
+theorem hasReductionRule_truncRec :
+    Generator.hasReductionRule .gen_truncRec = true := rfl
+
 /-- Variables, binders, constructors, formers have no rules. -/
 theorem hasReductionRule_var :
     Generator.hasReductionRule .gen_var = false := rfl

@@ -565,5 +565,23 @@ theorem pathBetaIotaRow_isScopeUniform : pathBetaIotaRow.IsScopeUniform :=
   ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
     singletonUnguardedSpec_isScopeUniform
       (fun contra => Generator.noConfusion contra)⟩
+theorem quotRecMkIotaRow_isScopeUniform :
+    quotRecMkIotaRow.IsScopeUniform :=
+  ⟨fun contra => Generator.noConfusion contra,
+    ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
+theorem quotElimMkIotaRow_isScopeUniform :
+    quotElimMkIotaRow.IsScopeUniform :=
+  ⟨fun contra => Generator.noConfusion contra,
+    ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
+theorem truncRecIntroIotaRow_isScopeUniform :
+    truncRecIntroIotaRow.IsScopeUniform :=
+  ⟨fun contra => Generator.noConfusion contra,
+    ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 
 end FX1Poly.Core

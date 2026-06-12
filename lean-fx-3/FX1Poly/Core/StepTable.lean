@@ -74,9 +74,12 @@ def legacyIotaRuleTable : List IotaRuleDesc :=
 theorem legacyIotaRuleTable_length : legacyIotaRuleTable.length = 17 := rfl
 
 /-- The full table IS the legacy table extended by the table-native
-endpoint-β row — definitionally. -/
+rows — endpoint-β plus the three IOTA-T10 demo rows —
+definitionally. -/
 theorem iotaRuleTable_eq_legacyAppendPathBeta :
-    iotaRuleTable = legacyIotaRuleTable ++ [pathBetaIotaRow] := rfl
+    iotaRuleTable = legacyIotaRuleTable
+      ++ [pathBetaIotaRow, quotRecMkIotaRow, quotElimMkIotaRow,
+          truncRecIntroIotaRow] := rfl
 
 /-! ## The table-driven reduction relation -/
 

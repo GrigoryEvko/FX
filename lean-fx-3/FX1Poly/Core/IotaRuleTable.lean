@@ -1013,8 +1013,60 @@ def pathBetaIotaRow : IotaRuleDesc where
   typedOutputTemplate? := none
   target := .substOneIntoScrutineeChild 0 0 (.spineChildAt 1)
 
+/-! ## The IOTA-T10 demo rows — NEW iotas landed purely as data
+
+Three reserved eliminators go operationally live as rows ONLY (the
+TG-5-style cascade-death demonstration): the quotient lift
+computation (fx_design §3.7, the EXT-2 substrate), its dependent
+twin, and the truncation recursor.  Every Tier-1 metatheorem
+(equivariance, SR, confluence, firing determinism, the normalizer)
+holds by instantiation; the certificates re-decide. -/
+
+/-- `quotRec(kernelFn, respectsRel, quotMk(v)) ↝ app(kernelFn, v)` —
+the quotient lift computes on the constructor (the `respectsRel`
+witness is consumed by typing, not by the reduct). -/
+def quotRecMkIotaRow : IotaRuleDesc where
+  elimGenerator := .gen_quotRec
+  scrutinees := [{ slot := 2, head := .gen_quotMk }]
+  motiveSlot? := none
+  typedOutputTemplate? := none
+  target := .builtGen .gen_app (.constantFamily fun _ => ())
+    (.spineCons (.spineChildAt 0)
+      (.spineCons (.scrutineeChildAt 0 0) .spineNil))
+
+/-- `quotElim(depMotive, depKernel, quotMk(v)) ↝ app(depKernel, v)` —
+the dependent quotient eliminator; the reduct TYPE is the motive
+family applied to the scrutinee (the motive is a function child at
+shift 0, so the typed output is a built application, not a
+binder-motive instantiation). -/
+def quotElimMkIotaRow : IotaRuleDesc where
+  elimGenerator := .gen_quotElim
+  scrutinees := [{ slot := 2, head := .gen_quotMk }]
+  motiveSlot? := none
+  typedOutputTemplate? := some
+    (.builtGen .gen_app (.constantFamily fun _ => ())
+      (.spineCons (.spineChildAt 0)
+        (.spineCons (.theScrutineeAt 0) .spineNil)))
+  target := .builtGen .gen_app (.constantFamily fun _ => ())
+    (.spineCons (.spineChildAt 1)
+      (.spineCons (.scrutineeChildAt 0 0) .spineNil))
+
+/-- `truncRec(kernelFn, truncIntro(v)) ↝ app(kernelFn, v)` — the
+truncation recursor computes on the constructor (the level payloads
+are coherence data for typing; the reduct reads neither). -/
+def truncRecIntroIotaRow : IotaRuleDesc where
+  elimGenerator := .gen_truncRec
+  scrutinees := [{ slot := 1, head := .gen_truncIntro }]
+  motiveSlot? := none
+  typedOutputTemplate? := none
+  target := .builtGen .gen_app (.constantFamily fun _ => ())
+    (.spineCons (.spineChildAt 0)
+      (.spineCons (.scrutineeChildAt 0 0) .spineNil))
+
 /-- The full ι-rule table: β + the 16 legacy data/identity iotas + the
-table-native endpoint-β.  Key discipline (decided generically at
+table-native endpoint-β + the three IOTA-T10 demo rows (quotient
+lift, dependent quotient eliminator, truncation recursor — landed as
+data with zero new arms).  Key discipline (decided generically at
 IOTA-T5): the slot-to-head maps are pairwise distinct per eliminator,
 no scrutinee head is an eliminator root, and guards on overlapping keys
 are mutually exclusive — the orthogonality certificate. -/
@@ -1028,7 +1080,8 @@ def iotaRuleTable : List IotaRuleDesc :=
   , optionMatchNoneIotaRow, optionMatchSomeIotaRow
   , eitherMatchInlIotaRow, eitherMatchInrIotaRow
   , idJReflIotaRow, idStrictRecReflIotaRow
-  , pathBetaIotaRow ]
+  , pathBetaIotaRow
+  , quotRecMkIotaRow, quotElimMkIotaRow, truncRecIntroIotaRow ]
 
 /-! ## Adequacy — the GO gate: every row interprets to the rule's exact
 reduct, definitionally.  Statements use the SAME reduct expressions as
@@ -1258,9 +1311,46 @@ theorem pathBetaIotaRow_interpretsTarget {scope : Nat}
         (.childCons arg .childNil))
     = some (RawTerm.subst0 body arg) := rfl
 
-/-- Table size pin: 18 rows (β + 16 legacy iotas + table-native
-endpoint-β).  A permanent stale-count guard in the HON-9 style. -/
-theorem iotaRuleTable_length : iotaRuleTable.length = 18 := rfl
+/-- IOTA-T10 GO gate: the quotient lift computes on the constructor. -/
+theorem quotRecMkIotaRow_interpretsTarget {scope : Nat}
+    (kernelFn respectsRel value : RawTerm scope) :
+    quotRecMkIotaRow.interpretTarget? ()
+      (.childCons kernelFn
+        (.childCons respectsRel
+          (.childCons
+            (.mkGen .gen_quotMk () (.childCons value .childNil))
+            .childNil)))
+    = some (.mkGen .gen_app ()
+        (.childCons kernelFn (.childCons value .childNil))) := rfl
+
+/-- IOTA-T10 GO gate: the dependent quotient eliminator computes. -/
+theorem quotElimMkIotaRow_interpretsTarget {scope : Nat}
+    (depMotive depKernel value : RawTerm scope) :
+    quotElimMkIotaRow.interpretTarget? ()
+      (.childCons depMotive
+        (.childCons depKernel
+          (.childCons
+            (.mkGen .gen_quotMk () (.childCons value .childNil))
+            .childNil)))
+    = some (.mkGen .gen_app ()
+        (.childCons depKernel (.childCons value .childNil))) := rfl
+
+/-- IOTA-T10 GO gate: the truncation recursor computes (any intro
+level — coherence is typing's job). -/
+theorem truncRecIntroIotaRow_interpretsTarget {scope : Nat}
+    (kernelFn value : RawTerm scope) (elimLevel introLevel : Nat) :
+    truncRecIntroIotaRow.interpretTarget? elimLevel
+      (.childCons kernelFn
+        (.childCons
+          (.mkGen .gen_truncIntro introLevel (.childCons value .childNil))
+          .childNil))
+    = some (.mkGen .gen_app ()
+        (.childCons kernelFn (.childCons value .childNil))) := rfl
+
+/-- Table size pin: 21 rows (β + 16 legacy iotas + table-native
+endpoint-β + the 3 IOTA-T10 demo rows).  A permanent stale-count
+guard in the HON-9 style. -/
+theorem iotaRuleTable_length : iotaRuleTable.length = 21 := rfl
 
 /-! ## Dependent-wiring pins — the motive metadata is DERIVED, not
 restated: arity 1 for the unary-motive eliminators, arity 2 for the

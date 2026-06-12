@@ -169,19 +169,27 @@ def iotaTableTierLedger : List Bool :=
   iotaRuleTable.map IotaRuleDesc.isRpoOrientable
 
 /-- The pinned ledger: β, the two substituting succ-iotas, and
-endpoint-β are the ONLY rows outside the SN tier. -/
+endpoint-β are the ONLY rows outside the SN tier — the three IOTA-T10
+demo rows (substitution-free built applications) land IN the tier. -/
 theorem iotaTableTierLedger_pinned :
     iotaTableTierLedger =
       [ false
       , true, true, true, true, true, true
       , false, false
       , true, true, true, true, true, true, true, true
-      , false ] := rfl
+      , false
+      , true, true, true ] := rfl
 
 /-! ## The oriented sub-table -/
 
-/-- The 14 RPO-orientable rows, in full-table order — the sub-table
-whose congruence closure is strongly normalizing. -/
+/-- The 14 RPO-orientable LEGACY rows, in table order — the sub-table
+whose congruence closure is strongly normalizing via the bespoke
+`IotaHeadStep` RPO embedding.  Table-NATIVE orientable rows (the
+IOTA-T10 demo rows pass `isRpoOrientable` too) are NOT here: the RPO
+embedding routes through the bespoke head-step inductive, which has
+no constructors for table-native rules by design — their oriented SN
+awaits the table-generic RPO (no bespoke arms will be added for
+them). -/
 def orientedIotaRuleTable : List IotaRuleDesc :=
   [ boolTrueIotaRow, boolFalseIotaRow
   , fstPairIotaRow, sndPairIotaRow
@@ -194,12 +202,12 @@ def orientedIotaRuleTable : List IotaRuleDesc :=
 /-- Stale-count guard: 14 oriented rows. -/
 theorem orientedIotaRuleTable_length : orientedIotaRuleTable.length = 14 := rfl
 
-/-- The oriented table IS the classifier's filter of the full table —
-the membership criterion is the decidable check, definitionally.  A
-future row passing `isRpoOrientable` lands here by re-deciding this
-one certificate. -/
+/-- The oriented table IS the classifier's filter of the LEGACY table
+— the membership criterion is the decidable check, definitionally
+(the bespoke-RPO-embeddable fragment; table-native orientable rows
+are tracked by the full-table tier ledger above). -/
 theorem orientedIotaRuleTable_eq_filter :
-    iotaRuleTable.filter IotaRuleDesc.isRpoOrientable
+    legacyIotaRuleTable.filter IotaRuleDesc.isRpoOrientable
       = orientedIotaRuleTable := rfl
 
 /-- Every oriented row passes the classifier (the companion `rfl`
