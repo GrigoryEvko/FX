@@ -29,7 +29,6 @@ import FX1Poly.Core.WeakHeadStepNormalForms
 import FX1Poly.Core.WeakHeadStepRename
 import FX1Poly.Core.WeakHeadStepRenameReflect
 import FX1Poly.Core.StepRenameReflect
-import FX1Poly.Core.StepRenameReflectEliminatorIota
 import FX1Poly.Core.StepRenameReflectAssembly
 import FX1Poly.Core.WeakHeadStepCommute
 import FX1Poly.Core.WeakHeadNormalPreservation
@@ -170,8 +169,12 @@ import FX1Poly.Core.GeneratorCountPin
 -- (2) the dead per-iota structural-SR cluster — StepBetaEtaPreservesShape + StepPreservesShape
 --     + CongPreservationMutual + SubjectReductionBaseIotas + the 7 SubjectReductionIota* files
 --     (the original M2/M3/M4 Step.preservesShape engine, zero consumers, superseded by the
---     typed SR SR-U4 and the table-generic IotaTableStructuralSR.nRedex).
-#assert_namespace_min_count FX1Poly.Core 3094
+--     typed SR SR-U4 and the table-generic IotaTableStructuralSR.nRedex);
+-- (3) the bespoke rename-reflection dispatch — the 16 per-iota Step.reflectIota* arms +
+--     Step.reflectBeta (StepRenameReflectEliminatorIota.lean + the StepRenameReflect arm block),
+--     superseded by the table-generic StepOverTable.reflectRename harvested across the IOTA-T1
+--     adequacy (uniform-table-redex directive).
+#assert_namespace_min_count FX1Poly.Core 3093
 #audit_namespace FX1Poly.Foundation
 #assert_namespace_min_count FX1Poly.Foundation 59
 
@@ -202,68 +205,13 @@ import FX1Poly.Core.GeneratorCountPin
 -- of every arm of full arbitrary-renaming Step reflection, a per-eliminator induction (the injective
 -- renamePullback above does not serve the all-renamings Kripke-arrow CR3 closure).
 #assert_no_axioms FX1Poly.Core.RawTerm.rename_eq_mkGen
--- The beta arm of arbitrary-rho Step reflection (Step.reflectBeta): rename rho term = app (lam renamedBody)
--- renamedArg implies there is t' with Step term t' and rename rho t' = subst0 renamedBody renamedArg.  Recovers
--- the source beta-redex via rename_eq_app/rename_eq_lam, beta-reduces, and aligns the contractum image by
--- rename_subst0_commute.  The substitution leaf arm of full reflection; a standalone base case.
-#assert_no_axioms FX1Poly.Core.Step.reflectBeta
--- The boolElim child-projection iota arms of arbitrary-rho Step reflection (Step.reflectIotaBoolTrue/BoolFalse):
--- rename rho term = boolElim (boolTrue/boolFalse) then else implies there is t' with Step term t' and
--- rename rho t' = then/else.  Head recovery (rename_eq_mkGen) + concrete gen_boolElim rfl-distribution +
--- injection + gen_boolTrue/boolFalse scrutinee recovery; the contractum is a child (no subst).
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaBoolTrue
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaBoolFalse
--- The pair-projection iota arms of arbitrary-rho Step reflection (Step.reflectIotaFstPair/SndPair):
--- rename rho term = fst/snd (pair first second) implies there is t' with Step term t' and
--- rename rho t' = first/second.  Two-level recovery: gen_fst/gen_snd head (rename_eq_mkGen) + concrete
--- rfl-distribution + injection, then gen_pair scrutinee recovery; the projected child is the contractum.
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaFstPair
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaSndPair
--- The base-case ELIMINATOR child-projection iota arms of arbitrary-rho Step reflection (KRIPKE-REFLECT-ELIM,
--- StepRenameReflectEliminatorIota.lean): natElim/natRec on natZero, listElim on listNil, optionMatch on optionNone
--- each eliminate a NULLARY value and project the matching branch. rename rho term = elim (nullaryValue) b1 b2
--- implies there is t' with Step term t' and rename rho t' = b1 (the projected branch). Structurally identical to
--- reflectIotaBoolTrue: gen-elim head recovery (rename_eq_mkGen) + concrete rfl-distribution + injection + nullary
--- scrutinee recovery + the matching Step.iota constructor. Advances the full Step rename-reflection toward
--- Kripke-arrow CR3 (KripkeCandidateRenameClosure.lean), the renaming dimension of the dependent-arrow reducibility
--- candidate the open-context (Kripke) logical relation needs.
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaNatElimZero
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaNatRecZero
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaListElimNil
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaOptionMatchNone
--- The app-chain (step-case) ELIMINATOR iota arms (KRIPKE-REFLECT-APPCHAIN): optionMatch on optionSome, eitherMatch
--- on eitherInl/eitherInr match a UNARY value and reduce to the branch APPLIED to the wrapped value
--- (optionMatch (optionSome v) n s ↝ app s v). rename rho term = elim (unaryValue renamedV) b1 b2 implies there is
--- t' with Step term t' and rename rho t' = app renamedBranch renamedV. The contractum is a constructed app cell, so
--- the image eq closes by rename-over-app rfl-distribution + the recovered branch/value renamings; the unary scrutinee
--- needs a TWO-level injection (the optionSome/eitherInl/eitherInr mkGen then its childCons) to expose the value.
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaOptionMatchSome
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaEitherMatchInl
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaEitherMatchInr
--- The identity-eliminator (idJ/idStrictRec on refl) + recursive Nat-recursor (natElim/natRec on natSucc) iota arms
--- (KRIPKE-REFLECT-IDREC). Identity: idJ/idStrictRec project the base-case branch past the refl scrutinee (contractum
--- at child-0, refl value at child-1). Recursive Nat: natElim/natRec on natSucc build a nested app-chain containing a
--- RECURSIVE call on the predecessor (natElim (natSucc p) z s ↝ app (app s p) (natElim p z s)); the deep
--- rename-over-(app/app/elim) image collapses to rfl after substituting the recovered predecessor/zero/succ
--- renamings.
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaIdJRefl
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaIdStrictRecRefl
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaNatElimSucc
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaNatRecSucc
--- The deepest redex-leaf arm (KRIPKE-REFLECT-LISTCONS): listElim on listCons. listElim (listCons h t) n c ↝
--- app (app (app c h) t) (listElim t n c) — a TRIPLE-curried application of the cons-branch to head, tail, and a
--- RECURSIVE listElim over the tail. The listCons scrutinee is BINARY (head + tail), so a two-level injection
--- recovers both; substituting the four recovered renamings (head/tail/nil-branch/cons-branch) collapses the
--- deep rename-over-(app/app/app/listElim) image to rfl. This COMPLETES every redex-leaf arm of arbitrary-rho
--- Step reflection-with-image; the ONLY remaining arm is the recursive cong arm (general congruence — needs the
--- sub-reflection IH — the substantive last piece).
-#assert_no_axioms FX1Poly.Core.Step.reflectIotaListElimCons
 -- THE FULL ASSEMBLY (StepRenameReflectAssembly.lean): the complete arbitrary-renaming Step
--- reflection-with-image Step (rename rho t) u → ∃ t', Step t t' ∧ rename rho t' = u, built as the
--- Step.rec mutual recursion (the Step.subst template run backward). The 18 redex-leaf cases delegate to
--- the shipped reflect arms above; the recursive cong/here/there cases thread the lifted renaming
--- (iterateLiftRaw) through the children spine. This is the Kripke-arrow-CR3 ingredient the open-context
--- (Kripke) logical relation needs to discharge GrownCtxConv-5 (#842), the grown context-conversion piElim crux.
+-- reflection-with-image Step (rename rho t) u → ∃ t', Step t t' ∧ rename rho t' = u — TABLE-ROUTED:
+-- the generic StepOverTable.reflectRename (two arms: root firing via firesOn?_rename, congruence
+-- recursion) at the 17-row legacy table, transported across the IOTA-T1 adequacy
+-- stepOverLegacyTable_iff_step. The bespoke 18-arm dispatch is retired. This is the
+-- Kripke-arrow-CR3 ingredient the open-context (Kripke) logical relation needs to discharge
+-- GrownCtxConv-5, the grown context-conversion piElim crux.
 #assert_no_axioms FX1Poly.Core.Step.reflectRename
 
 -- The neutral leaf of the stratified ReducibleTypeStep rename-closure (type + member level): the structural

@@ -29,7 +29,6 @@ import FX1Poly.Core.WeakHeadStepNormalForms
 import FX1Poly.Core.WeakHeadStepRename
 import FX1Poly.Core.WeakHeadStepRenameReflect
 import FX1Poly.Core.StepRenameReflect
-import FX1Poly.Core.StepRenameReflectEliminatorIota
 import FX1Poly.Core.StepRenameReflectAssembly
 import FX1Poly.Core.WeakHeadStepCommute
 import FX1Poly.Core.WeakHeadNormalPreservation
