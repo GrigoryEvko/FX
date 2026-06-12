@@ -284,9 +284,6 @@ import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.CanonicitySyntacticRoute
 import FX1Poly.Typed.GrownRigidityCanonicity
 import FX1Poly.Typed.ClosedNatCanonicity
-import FX1Poly.Typed.BoolElimClosedNormalForms
-import FX1Poly.Typed.MatchClosedNormalForms
-import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
 import FX1Poly.Typed.BoolElimValueCanonicity
 import FX1Poly.Typed.NatElimComputingCanonicity
 import FX1Poly.Typed.NatElimFaithfulArithmetic
@@ -780,26 +777,11 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- constructor. The .smoke witnesses (optionNone / nil / pair / eitherInl of universe codes) prove non-vacuity.
 -- Unit deferred (its type-code rule-out not yet landed; reducibility-route candidate shipped #720). The recursive
 -- eliminator-computing canonicity (#1138) is the follow-on. Zero-axiom.
--- ELIMINATOR-ENGINE CLOSED-NORMAL VACUITY (BoolElimClosedNormalForms, the first concrete piece of #1138): the
--- bool ELIMINATOR engine (HasTypeDescBoolElim, the 4th engine) contributes a VACUOUS disjunct to closed-normal
--- canonical forms — a closed eliminator on a closed VALUE scrutinee always ι-fires, so it is never normal.
--- ★ noClosedNormalBoolElim = the eliminator vacuity (classifier-agnostic): scrutinee is data-intro-typed at
--- boolCode ⟹ boolTrue/boolFalse (standaloneBoolCanonicalForms) ⟹ boolElim is an ι-redex ⟹ `cases normal` refutes
--- (NF checker computes false on the head redex). ★ closedNormalBoolCanonicalFormsWithElim = the FOUR-engine
--- closed-normal bool canonical forms, extending closedNormalBoolCanonicalForms (#1064, 3 engines) with the
--- eliminator as the vacuous 4th disjunct. The arbitrary-subject 4-engine upgrade (combined SN/SR) is the #1138
--- follow-on. Zero-axiom.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.noClosedNormalBoolElim
-#assert_no_axioms FX1Poly.Typed.closedNormalBoolCanonicalFormsWithElim
--- MATCH-ENGINE CLOSED-NORMAL VACUITY (MatchClosedNormalForms): the option/either MATCH eliminator engines
--- (HasTypeDescOptionMatch / HasTypeDescEitherMatch) are likewise VACUOUS disjuncts — a closed match on a closed
--- constructor scrutinee always ι-fires, so it is never normal. Same structural argument as the bool case:
--- scrutinee is option/either-intro-typed ⟹ a constructor (subjectIsOptionConstructor / subjectIsEitherInjection)
--- ⟹ the match is a ι-redex ⟹ `cases normal` refutes. Extends the per-classifier eliminator rule-out from bool
--- to the match family. Zero-axiom.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescOptionMatch.noClosedNormalOptionMatch
-#assert_no_axioms FX1Poly.Typed.HasTypeDescEitherMatch.noClosedNormalEitherMatch
-#assert_no_axioms FX1Poly.Typed.closedBoolCanonicalFormsWithElim
+-- ELIMINATOR-ENGINE CLOSED-NORMAL VACUITY: retired by NATIVE-43 — the per-engine vacuity statements
+-- (BoolElimClosedNormalForms / BoolElimArbitrarySubjectCanonicity / MatchClosedNormalForms) named the
+-- bespoke elim judgments; their content (a closed eliminator on a closed value scrutinee always
+-- ι-fires) is carried by the union lane master's eliminator arms (every elim arm refutes normality
+-- through the scrutinee IH) and the per-lane closed-normal corollaries over the ONE judgment.
 #assert_no_axioms FX1Poly.Typed.boolElimValueCanonicity
 -- GROWN CLOSED-NORMAL CLASSIFIER SHAPE (GrownClosedNormalClassifierShape, CANON-1 generalization): the POSITIVE
 -- characterization behind every data-classifier rule-out. ★ closedNormalClassifierIsFunctionOrType = a closed

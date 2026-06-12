@@ -284,9 +284,6 @@ import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.CanonicitySyntacticRoute
 import FX1Poly.Typed.GrownRigidityCanonicity
 import FX1Poly.Typed.ClosedNatCanonicity
-import FX1Poly.Typed.BoolElimClosedNormalForms
-import FX1Poly.Typed.MatchClosedNormalForms
-import FX1Poly.Typed.BoolElimArbitrarySubjectCanonicity
 import FX1Poly.Typed.BoolElimValueCanonicity
 import FX1Poly.Typed.NatElimComputingCanonicity
 import FX1Poly.Typed.NatElimFaithfulArithmetic
@@ -1132,7 +1129,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- grown branches so it cannot type boolElim b true false : Bool (data-value branches) — eliminator-computing
 -- canonicity AT a data type is VACUOUS for it; the non-vacuous version needs a stronger combined intro/elim engine
 -- (deferred #1138 / GTL table-residency). Zero-axiom.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBoolElim.noClosedBoolElimAtBoolType
 -- ★ NON-VACUOUS ELIMINATOR-COMPUTING CANONICITY (BoolElimValueCanonicity): the FIRST canonicity in which the
 -- eliminator genuinely COMPUTES (not a vacuity). The four prior firings (45-48) found the eliminator VACUOUS at a
 -- data type because the existing HasTypeDescBoolElim has GROWN branches (can't type boolElim b true false : Bool).
