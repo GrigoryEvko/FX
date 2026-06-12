@@ -88,15 +88,7 @@ import FX1Poly.Core.CertifiedToPolyCell
 -- HasCertified intro/composition/projection + subject-reduction iota family
 -- + beta-redex preservation + structural-induction primitives + Pair layer.
 import FX1Poly.Core.HasCertifiedHonestyProbes
-import FX1Poly.Core.SubjectReductionBaseIotas
 import FX1Poly.Core.SubjectReductionEtaStructural
-import FX1Poly.Core.SubjectReductionIotaBoolFalse
-import FX1Poly.Core.SubjectReductionIotaBoolTrue
-import FX1Poly.Core.SubjectReductionIotaEither
-import FX1Poly.Core.SubjectReductionIotaIdRefl
-import FX1Poly.Core.SubjectReductionIotaNatRec
-import FX1Poly.Core.SubjectReductionIotaOption
-import FX1Poly.Core.SubjectReductionIotaProjections
 import FX1Poly.Core.CompoundRenamePreservation
 import FX1Poly.Core.CompoundSubstPreservation
 import FX1Poly.Core.RawTermFoldNonVarCommute
@@ -112,7 +104,7 @@ import FX1Poly.Core.SubstPreservationMutual
 import FX1Poly.Core.NatEliminatorLayer
 import FX1Poly.Core.StructuralInductionWrapper
 import FX1Poly.Core.StepHCCWrappers
--- Confluence + critical pairs + Conv congruence/subst-rename + StepPreservesShape
+-- Confluence + critical pairs + Conv congruence/subst-rename
 -- + remaining dim-0 eliminators (Id) + StepStarLength.
 import FX1Poly.Core.ConvCongruence
 import FX1Poly.Core.ConvSubstRename
@@ -120,7 +112,6 @@ import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.StepStarLength
 import FX1Poly.Core.ConvNormalForm
 import FX1Poly.Core.StepEtaEtaCriticalPairs
-import FX1Poly.Core.StepBetaEtaPreservesShape
 import FX1Poly.Core.SubjectReductionEtaBinder
 import FX1Poly.Core.IdEliminatorLayer
 -- Strong normalization (leaves/neutral/constructors/redexes/eta) + beta-eta
@@ -173,10 +164,14 @@ import FX1Poly.Core.GeneratorCountPin
 (split from the AuditCoreSubstrate monolith for parallel gate elaboration; the full import block is preserved verbatim so the `#audit_namespace` sweeps see every loaded Core/Foundation declaration and the per-decl `#assert_no_axioms` gates resolve). -/
 
 #audit_namespace FX1Poly.Core
--- Floor re-pinned 3241 → 3144 after the APPROVED bespoke-iota retirement deletion of
--- CdLemma.lean + CriticalPairs.lean (the per-iota critical-pair matrix, superseded by
--- the table route's StepStar.localJoin / StepStar.tableRouteConfluence).
-#assert_namespace_min_count FX1Poly.Core 3144
+-- Floor re-pinned 3241 → 3144 → 3094 after the APPROVED bespoke-iota retirement deletions:
+-- (1) CdLemma.lean + CriticalPairs.lean (the per-iota critical-pair matrix, superseded by
+--     the table route's StepStar.localJoin / StepStar.tableRouteConfluence);
+-- (2) the dead per-iota structural-SR cluster — StepBetaEtaPreservesShape + StepPreservesShape
+--     + CongPreservationMutual + SubjectReductionBaseIotas + the 7 SubjectReductionIota* files
+--     (the original M2/M3/M4 Step.preservesShape engine, zero consumers, superseded by the
+--     typed SR SR-U4 and the table-generic IotaTableStructuralSR.nRedex).
+#assert_namespace_min_count FX1Poly.Core 3094
 #audit_namespace FX1Poly.Foundation
 #assert_namespace_min_count FX1Poly.Foundation 59
 

@@ -1,7 +1,8 @@
 import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.StepSubst
 import FX1Poly.Core.StepInversion
-import FX1Poly.Core.StepBetaEtaPreservesShape
+import FX1Poly.Core.SubjectReductionEtaStructural
+import FX1Poly.Core.SubjectReductionEtaBinder
 
 /-! # Foundation/PolyCell/Core/StepEtaCriticalPairs
 

@@ -89,15 +89,7 @@ import FX1Poly.Core.CertifiedToPolyCell
 -- HasCertified intro/composition/projection + subject-reduction iota family
 -- + beta-redex preservation + structural-induction primitives + Pair layer.
 import FX1Poly.Core.HasCertifiedHonestyProbes
-import FX1Poly.Core.SubjectReductionBaseIotas
 import FX1Poly.Core.SubjectReductionEtaStructural
-import FX1Poly.Core.SubjectReductionIotaBoolFalse
-import FX1Poly.Core.SubjectReductionIotaBoolTrue
-import FX1Poly.Core.SubjectReductionIotaEither
-import FX1Poly.Core.SubjectReductionIotaIdRefl
-import FX1Poly.Core.SubjectReductionIotaNatRec
-import FX1Poly.Core.SubjectReductionIotaOption
-import FX1Poly.Core.SubjectReductionIotaProjections
 import FX1Poly.Core.CompoundRenamePreservation
 import FX1Poly.Core.CompoundSubstPreservation
 import FX1Poly.Core.RawTermFoldNonVarCommute
@@ -113,7 +105,7 @@ import FX1Poly.Core.SubstPreservationMutual
 import FX1Poly.Core.NatEliminatorLayer
 import FX1Poly.Core.StructuralInductionWrapper
 import FX1Poly.Core.StepHCCWrappers
--- Confluence + critical pairs + Conv congruence/subst-rename + StepPreservesShape
+-- Confluence + critical pairs + Conv congruence/subst-rename
 -- + remaining dim-0 eliminators (Id) + StepStarLength.
 import FX1Poly.Core.ConvCongruence
 import FX1Poly.Core.ConvSubstRename
@@ -121,7 +113,6 @@ import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.StepStarLength
 import FX1Poly.Core.ConvNormalForm
 import FX1Poly.Core.StepEtaEtaCriticalPairs
-import FX1Poly.Core.StepBetaEtaPreservesShape
 import FX1Poly.Core.SubjectReductionEtaBinder
 import FX1Poly.Core.IdEliminatorLayer
 -- Strong normalization (leaves/neutral/constructors/redexes/eta) + beta-eta
