@@ -760,6 +760,7 @@ import FX1Poly.Typed.HasTypeDescPiSubstPair
 -- permanent table fact no future formation row disturbs). The table-invariant foundation of the cascade-free
 -- former metatheory (TG-2 generic former SR + TG-3 cascade-free dispatcher build on it); zero-touch successor to
 -- the enumerating former_step_inv.
+#assert_no_axioms FX1Poly.Typed.legacyElimHead_hasNoFormationRule
 #assert_no_axioms FX1Poly.Typed.formerCellStepIsChildCongruence
 -- FORMATION LOOKUP-VALIDITY (WfContextDescLookup.lean): in a formation-well-formed context every variable's
 -- type is a formation type (IsTypeDesc) in the full context — the var-arm engine that lets

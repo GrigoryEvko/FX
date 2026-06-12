@@ -1,5 +1,6 @@
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Core.Step
+import FX1Poly.Core.StepTable
 
 /-! # FX1Poly/Typed/FormerStepInversionGeneric
     — the CASCADE-FREE former step-inversion: a formation cell's step is a child congruence, with NO
@@ -19,30 +20,71 @@ absorbed ZERO-TOUCH:
 > `Step (mkGen generator payload children) target` is necessarily a child congruence (`∃ children', target =
 > mkGen generator payload children' ∧ StepChildren children children'`).
 
-## How it dodges the table
+## How it dodges BOTH tables
 
-`cases step` over the 18 `Step` constructors.  The `cong` case IS the conclusion.  Each of the 17 ROOT-redex
-constructors (`beta` + the 16 `iota*`) has a redex whose OUTERMOST head is a FIXED generator — `gen_app` for
-`beta`, `gen_boolElim` for `iotaBoolTrue/False`, `gen_fst`/`gen_snd` for the projections, `gen_natElim`/… for
-the recursors, etc.  Dependent elimination therefore unifies `generator` to that redex head; the hypothesis
-`isFormation : typingRuleDescOf generator = some rule` becomes `typingRuleDescOf <redexHead> = some rule`, and
-`typingRuleDescOf <redexHead>` reduces to `none` (a PERMANENT table fact — eliminators and `gen_app` never carry
-a formation rule).  The case is closed by `nomatch (… : none = some rule)`.  No formation generator is ever
-enumerated; the only table facts used are the `none`-valuations of the redex heads, which no future formation
-row disturbs.  This is the `subjectRootGeneratorGeneric` discipline (the `∃ rule, typingRuleDescOf = some rule`
-disjunct) applied to step inversion — the cascade-free successor `former_step_inv` should eventually delegate to.
+TABLE-ROUTED (uniform-table-redex directive): the step crosses the IOTA-T1 adequacy and is inverted by the
+freed-subject `StepOverTable.invertOrCong` — TWO arms, not eighteen.  The CONG disjunct IS the conclusion
+(children transported back by `legacyToStepChildren`).  The ROW-FIRING disjunct is refuted by ONE permanent
+cross-table fact, `legacyElimHead_hasNoFormationRule`: every legacy row's eliminator head (`gen_app`, the
+eliminators) carries NO formation rule, so the cell identification pins `typingRuleDescOf generator` to
+`none`, contradicting `isFormation`.  No formation generator is ever enumerated — a new formation row is
+absorbed zero-touch, and a new IOTA ROW costs exactly one `rfl` entry in the cross-table fact.
 
 ## Zero-axiom verification
 
-`cases step` with `generator` FREE stays propext-clean (the impossible redex cases are discharged by the
-explicit `nomatch`, not by leaked impossible-case equation lemmas — the raw-routing-inversion concern does not
-arise here).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
+`invertOrCong` + a 17-case `rfl` membership enumeration + `Option.noConfusion`.  No `axiom`, `sorry`,
+`propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
+
+/-- **No legacy row's eliminator head carries a formation rule** — the
+permanent cross-table fact: the operational table's 17 eliminator heads
+(`gen_app` and the data/identity eliminators) are disjoint from the
+formation table's domain.  One `rfl` per row; a new iota row owes
+exactly one new entry. -/
+theorem legacyElimHead_hasNoFormationRule :
+    ∀ rule : IotaRuleDesc, rule ∈ legacyIotaRuleTable →
+      typingRuleDescOf rule.elimGenerator = none := by
+  intro rule isRow
+  cases isRow with
+  | head => rfl
+  | tail _ isRow => cases isRow with
+    | head => rfl
+    | tail _ isRow => cases isRow with
+      | head => rfl
+      | tail _ isRow => cases isRow with
+        | head => rfl
+        | tail _ isRow => cases isRow with
+          | head => rfl
+          | tail _ isRow => cases isRow with
+            | head => rfl
+            | tail _ isRow => cases isRow with
+              | head => rfl
+              | tail _ isRow => cases isRow with
+                | head => rfl
+                | tail _ isRow => cases isRow with
+                  | head => rfl
+                  | tail _ isRow => cases isRow with
+                    | head => rfl
+                    | tail _ isRow => cases isRow with
+                      | head => rfl
+                      | tail _ isRow => cases isRow with
+                        | head => rfl
+                        | tail _ isRow => cases isRow with
+                          | head => rfl
+                          | tail _ isRow => cases isRow with
+                            | head => rfl
+                            | tail _ isRow => cases isRow with
+                              | head => rfl
+                              | tail _ isRow => cases isRow with
+                                | head => rfl
+                                | tail _ isRow => cases isRow with
+                                  | head => rfl
+                                  | tail _ isRow => cases isRow
 
 /-- **Cascade-free former step-inversion.**  A step out of any cell whose head carries a formation rule
 (`typingRuleDescOf generator = some rule`) is a child congruence — proven without enumerating the formation
@@ -54,24 +96,18 @@ theorem formerCellStepIsChildCongruence {scope : Nat} {generator : Generator}
     (isFormation : typingRuleDescOf generator = some rule)
     (step : Step (.mkGen generator payload children) target) :
     ∃ children', target = .mkGen generator payload children' ∧ StepChildren children children' := by
-  cases step with
-  | cong _ _ childStep => exact ⟨_, rfl, childStep⟩
-  | beta => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaBoolTrue => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaBoolFalse => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaFstPair => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaSndPair => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaNatElimZero => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaNatRecZero => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaListElimNil => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaOptionMatchNone => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaOptionMatchSome => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaEitherMatchInl => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaEitherMatchInr => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaNatElimSucc => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaNatRecSucc => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaListElimCons => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaIdJRefl => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
-  | iotaIdStrictRecRefl => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  rcases StepOverTable.invertOrCong (stepOverLegacyTable_iff_step.mpr step) rfl with
+    ⟨rowRule, isRow, elimPayload, spine, cellEq, _fires⟩ | ⟨children', targetEq, childrenStep⟩
+  · have headEq : rowRule.elimGenerator = generator :=
+      congrArg
+        (fun cell => match cell with
+          | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
+        cellEq
+    have noFormationRule : typingRuleDescOf generator = none :=
+      headEq ▸ legacyElimHead_hasNoFormationRule rowRule isRow
+    rw [noFormationRule] at isFormation
+    nomatch isFormation
+  · exact ⟨children', targetEq,
+      StepOverTableChildren.legacyToStepChildren childrenStep⟩
 
 end FX1Poly.Typed
