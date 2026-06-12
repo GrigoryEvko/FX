@@ -464,31 +464,46 @@ theorem etaPairLeftStep {scope : Nat}
     BetaEtaPairJoin
       (Or.inl leftStep)
       (Or.inr (Step.eta.etaPair pairTerm)) := by
-  cases leftStep with
-  | cong _ _ pairChildrenStep =>
+  cases Step.weakHeadOrChildCong leftStep with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, pairChildrenStep⟩ := congShape
+      subst targetEq
       cases pairChildrenStep with
       | here _ firstProjectionStep =>
-          cases firstProjectionStep with
-          | iotaFstPair =>
-              exact etaPairFirstProjectionIota _ _
-          | cong _ _ firstProjectionChildrenStep =>
-              cases firstProjectionChildrenStep with
-              | here _ pairStep =>
-                  exact etaPairFirstCong pairStep
-              | there _ emptyTailStep =>
-                  cases emptyTailStep
+          cases Step.weakHeadOrChildCong firstProjectionStep with
+          | inl weakHeadInner =>
+              cases weakHeadInner with
+              | rootIota iotaInner =>
+                  cases iotaInner with
+                  | iotaFstPair => exact etaPairFirstProjectionIota _ _
+              | scrutineeFst scrutineeStep =>
+                  exact etaPairFirstCong scrutineeStep.toStep
+          | inr innerCongShape =>
+              obtain ⟨innerAfter, innerEq, innerChildStep⟩ := innerCongShape
+              subst innerEq
+              cases innerChildStep with
+              | here _ pairStep => exact etaPairFirstCong pairStep
+              | there _ emptyTailStep => cases emptyTailStep
       | there _ tailStep =>
           cases tailStep with
           | here _ secondProjectionStep =>
-              cases secondProjectionStep with
-              | iotaSndPair =>
-                  exact etaPairSecondProjectionIota _ _
-              | cong _ _ secondProjectionChildrenStep =>
-                  cases secondProjectionChildrenStep with
-                  | here _ pairStep =>
-                      exact etaPairSecondCong pairStep
-                  | there _ emptyTailStep =>
-                      cases emptyTailStep
+              cases Step.weakHeadOrChildCong secondProjectionStep with
+              | inl weakHeadInner =>
+                  cases weakHeadInner with
+                  | rootIota iotaInner =>
+                      cases iotaInner with
+                      | iotaSndPair => exact etaPairSecondProjectionIota _ _
+                  | scrutineeSnd scrutineeStep =>
+                      exact etaPairSecondCong scrutineeStep.toStep
+              | inr innerCongShape =>
+                  obtain ⟨innerAfter, innerEq, innerChildStep⟩ := innerCongShape
+                  subst innerEq
+                  cases innerChildStep with
+                  | here _ pairStep => exact etaPairSecondCong pairStep
+                  | there _ emptyTailStep => cases emptyTailStep
           | there _ emptyTailStep =>
               cases emptyTailStep
 
@@ -638,12 +653,22 @@ theorem etaModIntroLeftStep {scope : Nat}
     BetaEtaPairJoin
       (Or.inl leftStep)
       (Or.inr (Step.eta.etaModIntro modalTerm)) := by
-  cases leftStep with
-  | cong _ _ introChildrenStep =>
+  cases Step.weakHeadOrChildCong leftStep with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, introChildrenStep⟩ := congShape
+      subst targetEq
       cases introChildrenStep with
       | here _ elimStep =>
-          cases elimStep with
-          | cong _ _ elimChildrenStep =>
+          cases Step.weakHeadOrChildCong elimStep with
+          | inl weakHeadInner =>
+              cases weakHeadInner with
+              | rootIota iotaInner => cases iotaInner
+          | inr innerCongShape =>
+              obtain ⟨innerAfter, innerEq, elimChildrenStep⟩ := innerCongShape
+              subst innerEq
               cases elimChildrenStep with
               | here _ modalStep =>
                   exact etaModIntroCong modalStep
@@ -673,12 +698,22 @@ theorem etaGlueIntroLeftStep {scope : Nat}
     BetaEtaPairJoin
       (Or.inl leftStep)
       (Or.inr (Step.eta.etaGlueIntro gluedTerm)) := by
-  cases leftStep with
-  | cong _ _ introChildrenStep =>
+  cases Step.weakHeadOrChildCong leftStep with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, introChildrenStep⟩ := congShape
+      subst targetEq
       cases introChildrenStep with
       | here _ elimStep =>
-          cases elimStep with
-          | cong _ _ elimChildrenStep =>
+          cases Step.weakHeadOrChildCong elimStep with
+          | inl weakHeadInner =>
+              cases weakHeadInner with
+              | rootIota iotaInner => cases iotaInner
+          | inr innerCongShape =>
+              obtain ⟨innerAfter, innerEq, elimChildrenStep⟩ := innerCongShape
+              subst innerEq
               cases elimChildrenStep with
               | here _ gluedStep =>
                   exact etaGlueIntroFirstCong gluedStep
@@ -1135,9 +1170,7 @@ theorem etaLamLeftStep {scope : Nat}
           | inr argumentBranch =>
               obtain ⟨_argumentAfter, _bodyAfterEq, argumentStep⟩ :=
                 argumentBranch
-              cases argumentStep with
-              | cong _ _ childStep =>
-                  cases childStep
+              exact absurd argumentStep Step.no_step_from_var
 
 /-- Reverse orientation of `etaLamLeftStep` (same Nederpelt diagonal guard). -/
 theorem etaLamRightStep {scope : Nat}
@@ -1162,21 +1195,29 @@ theorem etaPathLamLeftStep {scope : Nat}
     BetaEtaPairJoin
       (Or.inl leftStep)
       (Or.inr (Step.eta.etaPathLam innerPath)) := by
-  cases leftStep with
-  | cong _ _ pathLamChildrenStep =>
+  cases Step.weakHeadOrChildCong leftStep with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, pathLamChildrenStep⟩ := congShape
+      subst targetEq
       cases pathLamChildrenStep with
       | here _ bodyStep =>
-          cases bodyStep with
-          | cong _ _ pathAppChildrenStep =>
+          cases Step.weakHeadOrChildCong bodyStep with
+          | inl weakHeadInner =>
+              cases weakHeadInner with
+              | rootIota iotaInner => cases iotaInner
+          | inr innerCongShape =>
+              obtain ⟨innerAfter, innerEq, pathAppChildrenStep⟩ := innerCongShape
+              subst innerEq
               cases pathAppChildrenStep with
               | here _ underBinderStep =>
                   exact etaPathLamArbitraryUnderBinderCong underBinderStep
               | there _ tailStep =>
                   cases tailStep with
                   | here _ argumentStep =>
-                      cases argumentStep with
-                      | cong _ _ childStep =>
-                          cases childStep
+                      exact absurd argumentStep Step.no_step_from_var
                   | there _ emptyStep =>
                       cases emptyStep
       | there _ emptyStep =>
